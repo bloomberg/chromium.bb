@@ -84,7 +84,7 @@ class ASH_EXPORT ShelfButton : public views::CustomButton {
   // views::CustomButton overrides:
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   bool ShouldEnterPushedState(const ui::Event& event) override;
-  bool ShouldShowInkDropHighlight() const override;
+  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   void NotifyClick(const ui::Event& event) override;
 
   // Sets the icon image with a shadow.

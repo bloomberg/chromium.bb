@@ -10,6 +10,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/border.h"
 
@@ -218,6 +219,13 @@ void ToggleButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   thumb_view_->RemoveInkDropLayer(ink_drop_layer);
 }
 
+std::unique_ptr<InkDrop> ToggleButton::CreateInkDrop() {
+  std::unique_ptr<InkDropImpl> ink_drop =
+      CustomButton::CreateDefaultInkDropImpl();
+  ink_drop->SetShowHighlightOnHover(false);
+  return std::move(ink_drop);
+}
+
 std::unique_ptr<InkDropRipple> ToggleButton::CreateInkDropRipple() const {
   gfx::Rect rect = thumb_view_->GetLocalBounds();
   rect.Inset(-ThumbView::GetShadowOutsets());
@@ -226,10 +234,6 @@ std::unique_ptr<InkDropRipple> ToggleButton::CreateInkDropRipple() const {
 
 SkColor ToggleButton::GetInkDropBaseColor() const {
   return GetTrackColor(is_on());
-}
-
-bool ToggleButton::ShouldShowInkDropHighlight() const {
-  return false;
 }
 
 void ToggleButton::AnimationProgressed(const gfx::Animation* animation) {

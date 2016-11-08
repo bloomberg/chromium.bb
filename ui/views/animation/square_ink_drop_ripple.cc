@@ -232,10 +232,6 @@ ui::Layer* SquareInkDropRipple::GetRootLayer() {
   return &root_layer_;
 }
 
-bool SquareInkDropRipple::OverridesHighlight() const {
-  return true;
-}
-
 float SquareInkDropRipple::GetCurrentOpacity() const {
   return root_layer_.opacity();
 }

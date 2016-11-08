@@ -12,6 +12,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 
 BubbleIconView::BubbleIconView(CommandUpdater* command_updater, int command_id)
@@ -140,13 +141,15 @@ void BubbleIconView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   image_->SetPaintToLayer(false);
 }
 
+std::unique_ptr<views::InkDrop> BubbleIconView::CreateInkDrop() {
+  std::unique_ptr<views::InkDropImpl> ink_drop = CreateDefaultInkDropImpl();
+  ink_drop->SetShowHighlightOnFocus(true);
+  return std::move(ink_drop);
+}
+
 SkColor BubbleIconView::GetInkDropBaseColor() const {
   return color_utils::DeriveDefaultIconColor(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldDefaultColor));
-}
-
-bool BubbleIconView::ShouldShowInkDropForFocus() const {
-  return true;
 }
 
 void BubbleIconView::OnGestureEvent(ui::GestureEvent* event) {

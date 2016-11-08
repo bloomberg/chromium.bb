@@ -45,9 +45,9 @@ class VIEWS_EXPORT ToggleButton : public CustomButton {
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
+  std::unique_ptr<InkDrop> CreateInkDrop() override;
   std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override;
   SkColor GetInkDropBaseColor() const override;
-  bool ShouldShowInkDropHighlight() const override;
 
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;

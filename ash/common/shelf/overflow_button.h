@@ -30,9 +30,9 @@ class OverflowButton : public views::CustomButton {
  private:
   // views::CustomButton:
   void OnPaint(gfx::Canvas* canvas) override;
+  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   bool ShouldEnterPushedState(const ui::Event& event) override;
-  bool ShouldShowInkDropHighlight() const override;
   void NotifyClick(const ui::Event& event) override;
 
   // Helper functions to paint the background and foreground of the button

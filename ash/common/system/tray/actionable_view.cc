@@ -13,6 +13,7 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/ink_drop_impl.h"
 
 namespace ash {
 
@@ -78,6 +79,13 @@ void ActionableView::OnBlur() {
   CustomButton::OnBlur();
   // We render differently when focused.
   SchedulePaint();
+}
+
+std::unique_ptr<views::InkDrop> ActionableView::CreateInkDrop() {
+  std::unique_ptr<views::InkDropImpl> ink_drop =
+      CreateDefaultFloodFillInkDropImpl();
+  ink_drop->SetShowHighlightOnHover(false);
+  return std::move(ink_drop);
 }
 
 std::unique_ptr<views::InkDropRipple> ActionableView::CreateInkDropRipple()

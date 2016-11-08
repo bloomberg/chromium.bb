@@ -80,9 +80,6 @@ class VIEWS_EXPORT InkDropRipple {
   // animates to the target HIDDEN state.
   bool IsVisible();
 
-  // Returns true if this ripple is mutually exclusive with InkDropHighlight.
-  virtual bool OverridesHighlight() const = 0;
-
   // Returns a test api to access internals of this. Default implmentations
   // should return nullptr and test specific subclasses can override to return
   // an instance.

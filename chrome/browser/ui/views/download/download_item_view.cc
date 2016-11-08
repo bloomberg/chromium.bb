@@ -59,6 +59,7 @@
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/button/vector_icon_button.h"
@@ -195,7 +196,6 @@ DownloadItemView::DownloadItemView(DownloadItem* download_item,
 
   dropdown_button_->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(kDropdownBorderWidth)));
-  dropdown_button_->set_ink_drop_size(gfx::Size(32, 32));
   AddChildView(dropdown_button_);
 
   LoadIcon();
@@ -489,6 +489,10 @@ void DownloadItemView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
   // The layer that's added to host the ink drop layer must mask to bounds
   // so the hover effect is clipped while animating open.
   layer()->SetMasksToBounds(true);
+}
+
+std::unique_ptr<views::InkDrop> DownloadItemView::CreateInkDrop() {
+  return CreateDefaultFloodFillInkDropImpl();
 }
 
 std::unique_ptr<views::InkDropRipple> DownloadItemView::CreateInkDropRipple()

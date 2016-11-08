@@ -39,11 +39,11 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   void OnFocus() override;
   void OnBlur() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  std::unique_ptr<InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
   SkColor GetInkDropBaseColor() const override;
-  bool ShouldShowInkDropForFocus() const override;
   void SetEnabledTextColors(SkColor color) override;
   void SetText(const base::string16& text) override;
   void AdjustFontSize(int size_delta) override;

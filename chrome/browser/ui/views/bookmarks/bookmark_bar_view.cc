@@ -89,6 +89,7 @@
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -214,6 +215,11 @@ class BookmarkButtonBase : public views::LabelButton {
            event_utils::IsPossibleDispositionEvent(e);
   }
 
+  // LabelButton:
+  std::unique_ptr<views::InkDrop> CreateInkDrop() override {
+    return CreateDefaultFloodFillInkDropImpl();
+  }
+
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
     return base::MakeUnique<views::FloodFillInkDropRipple>(
         CalculateInkDropBounds(size()), GetInkDropCenterBasedOnLastEvent(),
@@ -222,9 +228,6 @@ class BookmarkButtonBase : public views::LabelButton {
 
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override {
-    if (!ShouldShowInkDropHighlight())
-      return nullptr;
-
     const gfx::Rect bounds = CalculateInkDropBounds(size());
     return base::MakeUnique<views::InkDropHighlight>(
         bounds.size(), 0, gfx::RectF(bounds).CenterPoint(),
@@ -313,6 +316,11 @@ class BookmarkMenuButtonBase : public views::MenuButton {
     SetFocusPainter(nullptr);
   }
 
+  // MenuButton:
+  std::unique_ptr<views::InkDrop> CreateInkDrop() override {
+    return CreateDefaultFloodFillInkDropImpl();
+  }
+
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
     return base::MakeUnique<views::FloodFillInkDropRipple>(
         CalculateInkDropBounds(size()), GetInkDropCenterBasedOnLastEvent(),
@@ -321,9 +329,6 @@ class BookmarkMenuButtonBase : public views::MenuButton {
 
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override {
-    if (!ShouldShowInkDropHighlight())
-      return nullptr;
-
     const gfx::Rect bounds = CalculateInkDropBounds(size());
     return base::MakeUnique<views::InkDropHighlight>(
         bounds.size(), 0, gfx::RectF(bounds).CenterPoint(),

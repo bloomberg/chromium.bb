@@ -18,6 +18,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
@@ -149,8 +150,10 @@ void ContentSettingImageView::OnNativeThemeChanged(
   IconLabelBubbleView::OnNativeThemeChanged(native_theme);
 }
 
-bool ContentSettingImageView::ShouldShowInkDropForFocus() const {
-  return true;
+std::unique_ptr<views::InkDrop> ContentSettingImageView::CreateInkDrop() {
+  std::unique_ptr<views::InkDropImpl> ink_drop = CreateDefaultInkDropImpl();
+  ink_drop->SetShowHighlightOnFocus(true);
+  return std::move(ink_drop);
 }
 
 SkColor ContentSettingImageView::GetTextColor() const {

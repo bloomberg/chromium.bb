@@ -30,6 +30,7 @@
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -141,6 +142,12 @@ class TransparentButton : public CustomButton {
   }
 
   // Overridden from InkDropHost:
+  std::unique_ptr<InkDrop> CreateInkDrop() override {
+    std::unique_ptr<views::InkDropImpl> ink_drop = CreateDefaultInkDropImpl();
+    ink_drop->SetShowHighlightOnHover(false);
+    return std::move(ink_drop);
+  }
+
   std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override {
     return std::unique_ptr<views::InkDropRipple>(
         new views::FloodFillInkDropRipple(
@@ -148,10 +155,6 @@ class TransparentButton : public CustomButton {
             GetNativeTheme()->GetSystemColor(
                 ui::NativeTheme::kColorId_LabelEnabledColor),
             ink_drop_visible_opacity()));
-  }
-
-  std::unique_ptr<InkDropHighlight> CreateInkDropHighlight() const override {
-    return nullptr;
   }
 
  private:

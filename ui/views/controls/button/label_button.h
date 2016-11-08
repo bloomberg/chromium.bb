@@ -19,8 +19,6 @@
 
 namespace views {
 
-class InkDropRipple;
-class InkDropHighlight;
 class LabelButtonBorder;
 class Painter;
 
@@ -105,6 +103,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   void EnableCanvasFlippingForRTLUI(bool flip) override;
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
+  std::unique_ptr<InkDrop> CreateInkDrop() override;
   std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<InkDropHighlight> CreateInkDropHighlight() const override;
 
@@ -180,6 +179,10 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   // merely the CustomButton::state(). E.g. ensures the label text color is
   // correct for the current background.
   void ResetLabelEnabledColor();
+
+  // Returns true if the CreateInkDrop*() methods should create flood fill ink
+  // drop components.
+  bool UseFloodFillInkDrop() const;
 
   // The image and label shown in the button.
   ImageView* image_;

@@ -11,6 +11,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/square_ink_drop_ripple.h"
 #include "ui/views/border.h"
 #include "ui/views/painter.h"
@@ -49,6 +50,13 @@ SystemMenuButton::SystemMenuButton(views::ButtonListener* listener,
 
 SystemMenuButton::~SystemMenuButton() {}
 
+std::unique_ptr<views::InkDrop> SystemMenuButton::CreateInkDrop() {
+  std::unique_ptr<views::InkDropImpl> ink_drop =
+      CreateDefaultFloodFillInkDropImpl();
+  ink_drop->SetShowHighlightOnHover(false);
+  return std::move(ink_drop);
+}
+
 std::unique_ptr<views::InkDropRipple> SystemMenuButton::CreateInkDropRipple()
     const {
   const gfx::Size size = GetInkDropSize();
@@ -72,11 +80,6 @@ std::unique_ptr<views::InkDropRipple> SystemMenuButton::CreateInkDropRipple()
 
 std::unique_ptr<views::InkDropHighlight>
 SystemMenuButton::CreateInkDropHighlight() const {
-  // TODO(bruthig): Show the highlight when the ink drop is active. (See
-  // crbug.com/649734)
-  if (!ShouldShowInkDropHighlight())
-    return nullptr;
-
   int highlight_radius = 0;
   switch (ink_drop_style_) {
     case InkDropStyle::SQUARE:
@@ -93,10 +96,6 @@ SystemMenuButton::CreateInkDropHighlight() const {
                                   GetInkDropBaseColor()));
   highlight->set_visible_opacity(kTrayPopupInkDropHighlightOpacity);
   return highlight;
-}
-
-bool SystemMenuButton::ShouldShowInkDropHighlight() const {
-  return false;
 }
 
 gfx::Size SystemMenuButton::GetInkDropSize() const {

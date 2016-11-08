@@ -109,7 +109,9 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   void OnDragDone() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void VisibilityChanged(View* starting_from, bool is_visible) override;
-  std::unique_ptr<InkDropHighlight> CreateInkDropHighlight() const override;
+
+  // Overridden from InkDropHostView:
+  std::unique_ptr<InkDrop> CreateInkDrop() override;
   SkColor GetInkDropBaseColor() const override;
 
   // Overridden from gfx::AnimationDelegate:
@@ -119,7 +121,6 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
   void OnBlur() override;
-  bool ShouldShowInkDropForFocus() const override;
 
  protected:
   // Construct the Button with a Listener. See comment for Button's ctor.
@@ -139,9 +140,6 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   // holds the mouse down over the button. For this implementation,
   // we simply return IsTriggerableEvent(event).
   virtual bool ShouldEnterPushedState(const ui::Event& event);
-
-  // Returns true if highlight effect should be visible.
-  virtual bool ShouldShowInkDropHighlight() const;
 
   void set_has_ink_drop_action_on_click(bool has_ink_drop_action_on_click) {
     has_ink_drop_action_on_click_ = has_ink_drop_action_on_click;

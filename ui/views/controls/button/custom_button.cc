@@ -12,6 +12,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
@@ -212,6 +213,8 @@ void CustomButton::OnMouseCaptureLost() {
   if (state_ != STATE_DISABLED)
     SetState(STATE_NORMAL);
   AnimateInkDrop(views::InkDropState::HIDDEN, nullptr /* event */);
+  GetInkDrop()->SetHovered(false);
+  Button::OnMouseCaptureLost();
 }
 
 void CustomButton::OnMouseEntered(const ui::MouseEvent& event) {
@@ -357,9 +360,10 @@ void CustomButton::VisibilityChanged(View* starting_from, bool visible) {
   SetState(visible && ShouldEnterHoveredState() ? STATE_HOVERED : STATE_NORMAL);
 }
 
-std::unique_ptr<InkDropHighlight> CustomButton::CreateInkDropHighlight() const {
-  return ShouldShowInkDropHighlight() ? Button::CreateInkDropHighlight()
-                                      : nullptr;
+std::unique_ptr<InkDrop> CustomButton::CreateInkDrop() {
+  std::unique_ptr<views::InkDropImpl> ink_drop = CreateDefaultInkDropImpl();
+  ink_drop->SetShowHighlightOnFocus(true);
+  return std::move(ink_drop);
 }
 
 SkColor CustomButton::GetInkDropBaseColor() const {
@@ -395,10 +399,6 @@ void CustomButton::OnBlur() {
   }
 }
 
-bool CustomButton::ShouldShowInkDropForFocus() const {
-  return true;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // CustomButton, protected:
 
@@ -428,11 +428,6 @@ bool CustomButton::IsTriggerableEvent(const ui::Event& event) {
 
 bool CustomButton::ShouldEnterPushedState(const ui::Event& event) {
   return IsTriggerableEvent(event);
-}
-
-bool CustomButton::ShouldShowInkDropHighlight() const {
-  return enabled() && !InDrag() &&
-         (IsMouseHovered() || (ShouldShowInkDropForFocus() && HasFocus()));
 }
 
 bool CustomButton::ShouldEnterHoveredState() {

@@ -23,6 +23,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_source.h"
+#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
@@ -105,9 +106,11 @@ SkColor ToolbarActionView::GetInkDropBaseColor() const {
       ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
 }
 
-bool ToolbarActionView::ShouldShowInkDropHighlight() const {
-  return !delegate_->ShownInsideMenu() &&
-         views::MenuButton::ShouldShowInkDropHighlight();
+std::unique_ptr<views::InkDrop> ToolbarActionView::CreateInkDrop() {
+  std::unique_ptr<views::InkDropImpl> ink_drop =
+      CustomButton::CreateDefaultInkDropImpl();
+  ink_drop->SetShowHighlightOnHover(!delegate_->ShownInsideMenu());
+  return std::move(ink_drop);
 }
 
 content::WebContents* ToolbarActionView::GetCurrentWebContents() const {

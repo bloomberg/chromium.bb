@@ -153,10 +153,6 @@ ui::Layer* FloodFillInkDropRipple::GetRootLayer() {
   return &root_layer_;
 }
 
-bool FloodFillInkDropRipple::OverridesHighlight() const {
-  return false;
-}
-
 void FloodFillInkDropRipple::AnimateStateChange(
     InkDropState old_ink_drop_state,
     InkDropState new_ink_drop_state,

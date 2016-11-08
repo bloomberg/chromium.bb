@@ -17,6 +17,7 @@ class Layer;
 
 namespace views {
 
+class InkDrop;
 class InkDropRipple;
 class InkDropHighlight;
 
@@ -38,10 +39,21 @@ class VIEWS_EXPORT InkDropHost {
   // Removes |ink_drop_layer| from the layer tree.
   virtual void RemoveInkDropLayer(ui::Layer* ink_drop_layer) = 0;
 
-  // Creates and returns the effect used for press.
+  // Returns a configured InkDrop. In general subclasses will return an
+  // InkDropImpl instance that will use the CreateInkDropRipple() and
+  // CreateInkDropHighlight() methods to create the visual effects.
+  //
+  // Subclasses should override this if they need to configure any properties
+  // specific to the InkDrop instance. e.g. the AutoHighlightMode of an
+  // InkDropImpl instance.
+  virtual std::unique_ptr<InkDrop> CreateInkDrop() = 0;
+
+  // Creates and returns the visual effect used for press. Used by InkDropImpl
+  // instances.
   virtual std::unique_ptr<InkDropRipple> CreateInkDropRipple() const = 0;
 
-  // Creates and returns the effect used for hover and focus.
+  // Creates and returns the visual effect used for hover and focus. Used by
+  // InkDropImpl instances.
   virtual std::unique_ptr<InkDropHighlight> CreateInkDropHighlight() const = 0;
 
  private:

@@ -24,6 +24,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/square_ink_drop_ripple.h"
 #include "ui/views/painter.h"
 
@@ -275,8 +276,11 @@ bool AppListButton::ShouldEnterPushedState(const ui::Event& event) {
   return views::ImageButton::ShouldEnterPushedState(event);
 }
 
-bool AppListButton::ShouldShowInkDropHighlight() const {
-  return false;
+std::unique_ptr<views::InkDrop> AppListButton::CreateInkDrop() {
+  std::unique_ptr<views::InkDropImpl> ink_drop =
+      CustomButton::CreateDefaultInkDropImpl();
+  ink_drop->SetShowHighlightOnHover(false);
+  return std::move(ink_drop);
 }
 
 void AppListButton::SetDrawBackgroundAsActive(bool draw_background_as_active) {

@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/square_ink_drop_ripple.h"
 #include "ui/views/animation/test/ink_drop_highlight_test_api.h"
 #include "ui/views/animation/test/square_ink_drop_ripple_test_api.h"
@@ -25,16 +26,14 @@ class TestInkDropRipple : public SquareInkDropRipple {
                     int small_corner_radius,
                     const gfx::Point& center_point,
                     SkColor color,
-                    float visible_opacity,
-                    bool overrides_highlight)
+                    float visible_opacity)
       : SquareInkDropRipple(large_size,
                             large_corner_radius,
                             small_size,
                             small_corner_radius,
                             center_point,
                             color,
-                            visible_opacity),
-        overrides_highlight_(overrides_highlight) {}
+                            visible_opacity) {}
 
   ~TestInkDropRipple() override {}
 
@@ -44,13 +43,8 @@ class TestInkDropRipple : public SquareInkDropRipple {
     return test_api_.get();
   }
 
-  bool OverridesHighlight() const override {
-    return overrides_highlight_;
-  }
-
  private:
   std::unique_ptr<test::InkDropRippleTestApi> test_api_;
-  bool overrides_highlight_;
 
   DISALLOW_COPY_AND_ASSIGN(TestInkDropRipple);
 };
@@ -84,8 +78,6 @@ class TestInkDropHighlight : public InkDropHighlight {
 TestInkDropHost::TestInkDropHost()
     : num_ink_drop_layers_added_(0),
       num_ink_drop_layers_removed_(0),
-      should_show_highlight_(false),
-      ripple_overrides_highlight_(true),
       disable_timers_for_test_(false) {}
 
 TestInkDropHost::~TestInkDropHost() {}
@@ -98,11 +90,15 @@ void TestInkDropHost::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   ++num_ink_drop_layers_removed_;
 }
 
+std::unique_ptr<InkDrop> TestInkDropHost::CreateInkDrop() {
+  NOTREACHED();
+  return nullptr;
+}
+
 std::unique_ptr<InkDropRipple> TestInkDropHost::CreateInkDropRipple() const {
   gfx::Size size(10, 10);
-  std::unique_ptr<InkDropRipple> ripple(
-      new TestInkDropRipple(size, 5, size, 5, gfx::Point(), SK_ColorBLACK,
-                            0.175f, ripple_overrides_highlight_));
+  std::unique_ptr<InkDropRipple> ripple(new TestInkDropRipple(
+      size, 5, size, 5, gfx::Point(), SK_ColorBLACK, 0.175f));
   if (disable_timers_for_test_)
     ripple->GetTestApi()->SetDisableAnimationTimers(true);
   return ripple;
@@ -111,12 +107,10 @@ std::unique_ptr<InkDropRipple> TestInkDropHost::CreateInkDropRipple() const {
 std::unique_ptr<InkDropHighlight> TestInkDropHost::CreateInkDropHighlight()
     const {
   std::unique_ptr<InkDropHighlight> highlight;
-  if (should_show_highlight_) {
-    highlight.reset(new TestInkDropHighlight(gfx::Size(10, 10), 4,
-                                             gfx::PointF(), SK_ColorBLACK));
-    if (disable_timers_for_test_)
-      highlight->GetTestApi()->SetDisableAnimationTimers(true);
-  }
+  highlight.reset(new TestInkDropHighlight(gfx::Size(10, 10), 4, gfx::PointF(),
+                                           SK_ColorBLACK));
+  if (disable_timers_for_test_)
+    highlight->GetTestApi()->SetDisableAnimationTimers(true);
   return highlight;
 }
 

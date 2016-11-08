@@ -29,6 +29,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/skbitmap_operations.h"
+#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/square_ink_drop_ripple.h"
 #include "ui/views/controls/image_view.h"
 
@@ -50,7 +51,6 @@ const int kIndicatorCanvasScale = 5;
 // Shelf item ripple constants.
 const int kInkDropSmallSize = 48;
 const int kInkDropLargeSize = 60;
-const int kInkDropLargeCornerRadius = 4;
 
 // Padding from the edge of the shelf to the application icon when the shelf
 // is horizontally and vertically aligned, respectively.
@@ -520,8 +520,11 @@ bool ShelfButton::ShouldEnterPushedState(const ui::Event& event) {
   return CustomButton::ShouldEnterPushedState(event);
 }
 
-bool ShelfButton::ShouldShowInkDropHighlight() const {
-  return false;
+std::unique_ptr<views::InkDrop> ShelfButton::CreateInkDrop() {
+  std::unique_ptr<views::InkDropImpl> ink_drop =
+      CustomButton::CreateDefaultInkDropImpl();
+  ink_drop->SetShowHighlightOnHover(false);
+  return std::move(ink_drop);
 }
 
 void ShelfButton::NotifyClick(const ui::Event& event) {

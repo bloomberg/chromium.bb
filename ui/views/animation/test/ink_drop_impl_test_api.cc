@@ -4,8 +4,8 @@
 
 #include "ui/views/animation/test/ink_drop_impl_test_api.h"
 
+#include "base/memory/ptr_util.h"
 #include "ui/views/animation/ink_drop_highlight.h"
-#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/animation/test/ink_drop_highlight_test_api.h"
 #include "ui/views/animation/test/ink_drop_ripple_test_api.h"
@@ -13,10 +13,94 @@
 namespace views {
 namespace test {
 
+//
+// AccessFactoryOnExitHighlightState
+//
+
+void InkDropImplTestApi::AccessFactoryOnExitHighlightState::Install(
+    InkDropImpl::HighlightStateFactory* state_factory) {
+  state_factory->ink_drop()->SetHighlightState(
+      base::MakeUnique<InkDropImplTestApi::AccessFactoryOnExitHighlightState>(
+          state_factory));
+}
+
+InkDropImplTestApi::AccessFactoryOnExitHighlightState::
+    AccessFactoryOnExitHighlightState(
+        InkDropImpl::HighlightStateFactory* state_factory)
+    : HighlightState(state_factory) {}
+
+void InkDropImplTestApi::AccessFactoryOnExitHighlightState::Exit() {
+  state_factory()->ink_drop()->SetHovered(false);
+}
+
+void InkDropImplTestApi::AccessFactoryOnExitHighlightState::
+    ShowOnHoverChanged() {}
+
+void InkDropImplTestApi::AccessFactoryOnExitHighlightState::OnHoverChanged() {}
+
+void InkDropImplTestApi::AccessFactoryOnExitHighlightState::
+    ShowOnFocusChanged() {}
+
+void InkDropImplTestApi::AccessFactoryOnExitHighlightState::OnFocusChanged() {}
+
+void InkDropImplTestApi::AccessFactoryOnExitHighlightState::AnimationStarted(
+    InkDropState ink_drop_state) {}
+
+void InkDropImplTestApi::AccessFactoryOnExitHighlightState::AnimationEnded(
+    InkDropState ink_drop_state,
+    InkDropAnimationEndedReason reason) {}
+
+//
+// AccessFactoryOnExitHighlightState
+//
+
+void InkDropImplTestApi::SetStateOnExitHighlightState::Install(
+    InkDropImpl::HighlightStateFactory* state_factory) {
+  state_factory->ink_drop()->SetHighlightState(
+      base::MakeUnique<InkDropImplTestApi::SetStateOnExitHighlightState>(
+          state_factory));
+}
+
+InkDropImplTestApi::SetStateOnExitHighlightState::SetStateOnExitHighlightState(
+    InkDropImpl::HighlightStateFactory* state_factory)
+    : HighlightState(state_factory) {}
+
+void InkDropImplTestApi::SetStateOnExitHighlightState::Exit() {
+  InkDropImplTestApi::AccessFactoryOnExitHighlightState::Install(
+      state_factory());
+}
+
+void InkDropImplTestApi::SetStateOnExitHighlightState::ShowOnHoverChanged() {}
+
+void InkDropImplTestApi::SetStateOnExitHighlightState::OnHoverChanged() {}
+
+void InkDropImplTestApi::SetStateOnExitHighlightState::ShowOnFocusChanged() {}
+
+void InkDropImplTestApi::SetStateOnExitHighlightState::OnFocusChanged() {}
+
+void InkDropImplTestApi::SetStateOnExitHighlightState::AnimationStarted(
+    InkDropState ink_drop_state) {}
+
+void InkDropImplTestApi::SetStateOnExitHighlightState::AnimationEnded(
+    InkDropState ink_drop_state,
+    InkDropAnimationEndedReason reason) {}
+
+//
+// InkDropImplTestApi
+//
+
 InkDropImplTestApi::InkDropImplTestApi(InkDropImpl* ink_drop)
     : ui::test::MultiLayerAnimatorTestController(this), ink_drop_(ink_drop) {}
 
 InkDropImplTestApi::~InkDropImplTestApi() {}
+
+void InkDropImplTestApi::SetShouldHighlight(bool should_highlight) {
+  ink_drop_->SetShowHighlightOnHover(should_highlight);
+  ink_drop_->SetHovered(should_highlight);
+  ink_drop_->SetShowHighlightOnFocus(should_highlight);
+  ink_drop_->SetFocused(should_highlight);
+  DCHECK_EQ(should_highlight, ink_drop_->ShouldHighlight());
+}
 
 const InkDropHighlight* InkDropImplTestApi::highlight() const {
   return ink_drop_->highlight_.get();
@@ -24,6 +108,10 @@ const InkDropHighlight* InkDropImplTestApi::highlight() const {
 
 bool InkDropImplTestApi::IsHighlightFadingInOrVisible() const {
   return ink_drop_->IsHighlightFadingInOrVisible();
+}
+
+bool InkDropImplTestApi::ShouldHighlight() const {
+  return ink_drop_->ShouldHighlight();
 }
 
 std::vector<ui::LayerAnimator*> InkDropImplTestApi::GetLayerAnimators() {

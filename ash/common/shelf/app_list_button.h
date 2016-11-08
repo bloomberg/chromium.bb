@@ -41,7 +41,7 @@ class ASH_EXPORT AppListButton : public views::ImageButton {
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   void NotifyClick(const ui::Event& event) override;
   bool ShouldEnterPushedState(const ui::Event& event) override;
-  bool ShouldShowInkDropHighlight() const override;
+  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
 
   // ui::EventHandler overrides:
   void OnGestureEvent(ui::GestureEvent* event) override;

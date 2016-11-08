@@ -87,14 +87,6 @@ TEST_P(InkDropTest,
   EXPECT_EQ(0, test_ink_drop_host_.num_ink_drop_layers());
 }
 
-TEST_P(InkDropTest,
-       VerifyInkDropLayersRemovedAfterDestructionWhenHoverIsActive) {
-  test_ink_drop_host_.set_should_show_highlight(true);
-  ink_drop_->SetHovered(true);
-  ink_drop_.reset();
-  EXPECT_EQ(0, test_ink_drop_host_.num_ink_drop_layers());
-}
-
 TEST_P(InkDropTest, StateIsHiddenInitially) {
   EXPECT_EQ(InkDropState::HIDDEN, ink_drop_->GetTargetInkDropState());
 }

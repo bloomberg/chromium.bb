@@ -20,6 +20,7 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/square_ink_drop_ripple.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -447,26 +448,29 @@ void LabelButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   ink_drop_container_->SetVisible(false);
 }
 
+std::unique_ptr<InkDrop> LabelButton::CreateInkDrop() {
+  return UseFloodFillInkDrop() ? CreateDefaultFloodFillInkDropImpl()
+                               : CustomButton::CreateInkDrop();
+}
+
 std::unique_ptr<views::InkDropRipple> LabelButton::CreateInkDropRipple() const {
-  return GetText().empty()
-             ? CreateDefaultInkDropRipple(
-                   image()->GetMirroredBounds().CenterPoint())
-             : base::MakeUnique<views::FloodFillInkDropRipple>(
+  return UseFloodFillInkDrop()
+             ? base::MakeUnique<views::FloodFillInkDropRipple>(
                    GetLocalBounds(), GetInkDropCenterBasedOnLastEvent(),
-                   GetInkDropBaseColor(), ink_drop_visible_opacity());
+                   GetInkDropBaseColor(), ink_drop_visible_opacity())
+             : CreateDefaultInkDropRipple(
+                   image()->GetMirroredBounds().CenterPoint());
 }
 
 std::unique_ptr<views::InkDropHighlight> LabelButton::CreateInkDropHighlight()
     const {
-  if (!ShouldShowInkDropHighlight())
-    return nullptr;
-  return GetText().empty()
-             ? CreateDefaultInkDropHighlight(
-                   gfx::RectF(image()->GetMirroredBounds()).CenterPoint())
-             : base::MakeUnique<views::InkDropHighlight>(
+  return UseFloodFillInkDrop()
+             ? base::MakeUnique<views::InkDropHighlight>(
                    size(), kInkDropSmallCornerRadius,
                    gfx::RectF(GetLocalBounds()).CenterPoint(),
-                   GetInkDropBaseColor());
+                   GetInkDropBaseColor())
+             : CreateDefaultInkDropHighlight(
+                   gfx::RectF(image()->GetMirroredBounds()).CenterPoint());
 }
 
 void LabelButton::StateChanged() {
@@ -615,6 +619,10 @@ void LabelButton::ResetLabelEnabledColor() {
           : PlatformStyle::TextColorForButton(button_state_colors_, *this);
   if (state() != STATE_DISABLED && label_->enabled_color() != color)
     label_->SetEnabledColor(color);
+}
+
+bool LabelButton::UseFloodFillInkDrop() const {
+  return !GetText().empty();
 }
 
 }  // namespace views

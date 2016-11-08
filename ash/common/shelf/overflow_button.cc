@@ -26,6 +26,7 @@
 #include "ui/gfx/transform.h"
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop_impl.h"
 
 namespace ash {
 
@@ -82,6 +83,10 @@ void OverflowButton::OnPaint(gfx::Canvas* canvas) {
   PaintForeground(canvas, bounds);
 }
 
+std::unique_ptr<views::InkDrop> OverflowButton::CreateInkDrop() {
+  return CreateDefaultFloodFillInkDropImpl();
+}
+
 std::unique_ptr<views::InkDropRipple> OverflowButton::CreateInkDropRipple()
     const {
   return base::MakeUnique<views::FloodFillInkDropRipple>(
@@ -94,10 +99,6 @@ bool OverflowButton::ShouldEnterPushedState(const ui::Event& event) {
     return false;
 
   return CustomButton::ShouldEnterPushedState(event);
-}
-
-bool OverflowButton::ShouldShowInkDropHighlight() const {
-  return false;
 }
 
 void OverflowButton::NotifyClick(const ui::Event& event) {
