@@ -530,8 +530,9 @@ public class PersonalDataManager {
         mDataObservers.remove(observer);
     }
 
-    // TODO(crbug.com/616102): Reduce the number of Java to Native calls when getting profiles.
     /**
+     * TODO(crbug.com/616102): Reduce the number of Java to Native calls when getting profiles.
+     *
      * Gets the profiles to show in the settings page. Returns all the profiles without any
      * processing.
      *
@@ -543,8 +544,9 @@ public class PersonalDataManager {
                 nativeGetProfileGUIDsForSettings(mPersonalDataManagerAndroid));
     }
 
-    // TODO(crbug.com/616102): Reduce the number of Java to Native calls when getting profiles.
     /**
+     * TODO(crbug.com/616102): Reduce the number of Java to Native calls when getting profiles
+     *
      * Gets the profiles to suggest when filling a form or completing a transaction. The profiles
      * will have been processed to be more relevant to the user.
      *
@@ -555,7 +557,25 @@ public class PersonalDataManager {
         ThreadUtils.assertOnUiThread();
         return getProfilesWithLabels(
                 nativeGetProfileLabelsToSuggest(
-                        mPersonalDataManagerAndroid, includeNameInLabel),
+                        mPersonalDataManagerAndroid, includeNameInLabel,
+                        true /* includeOrganizationInLabel */, true /* includeCountryInLabel */),
+                nativeGetProfileGUIDsToSuggest(mPersonalDataManagerAndroid));
+    }
+
+    /**
+     * TODO(crbug.com/616102): Reduce the number of Java to Native calls when getting profiles.
+     *
+     * Gets the profiles to suggest when associating a billing address to a credit card. The
+     * profiles will have been processed to be more relevant to the user.
+     *
+     * @return The list of billing addresses to suggest to the user.
+     */
+    public List<AutofillProfile> getBillingAddressesToSuggest() {
+        ThreadUtils.assertOnUiThread();
+        return getProfilesWithLabels(
+                nativeGetProfileLabelsToSuggest(
+                        mPersonalDataManagerAndroid, true /* includeNameInLabel */,
+                        false /* includeOrganizationInLabel */, false /* includeCountryInLabel */),
                 nativeGetProfileGUIDsToSuggest(mPersonalDataManagerAndroid));
     }
 
@@ -824,7 +844,8 @@ public class PersonalDataManager {
     private native String[] nativeGetProfileLabelsForSettings(
             long nativePersonalDataManagerAndroid);
     private native String[] nativeGetProfileLabelsToSuggest(long nativePersonalDataManagerAndroid,
-            boolean includeNameInLabel);
+            boolean includeNameInLabel, boolean includeOrganizationInLabel,
+            boolean includeCountryInLabel);
     private native AutofillProfile nativeGetProfileByGUID(long nativePersonalDataManagerAndroid,
             String guid);
     private native String nativeSetProfile(long nativePersonalDataManagerAndroid,

@@ -46,8 +46,10 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
         setTextInCardEditorAndWait(new String[] {"5454-5454-5454-5454", "Bob"}, mEditorTextUpdate);
         setSpinnerSelectionsInCardEditorAndWait(new int[] {11, 1, 0},
                 mBillingAddressChangeProcessed);
+        // The billing address suggestions should include only the name, address, city, state and
+        // zip code of the profile.
         assertTrue(getSpinnerSelectionTextInCardEditor(2).equals(
-                "Jon Doe, Google, 340 Main St, Los Angeles, CA 90291, United States"));
+                "Jon Doe, 340 Main St, Los Angeles, CA 90291"));
     }
 
     /**

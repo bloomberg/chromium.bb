@@ -388,7 +388,10 @@ ScopedJavaLocalRef<jobjectArray>
 PersonalDataManagerAndroid::GetProfileLabelsForSettings(
     JNIEnv* env,
     const JavaParamRef<jobject>& unused_obj) {
-  return GetProfileLabels(env, false, false,
+  return GetProfileLabels(env, false /* address_only */,
+                          false /* include_name_in_label */,
+                          true /* include_organization_in_label */,
+                          true /* include_country_in_label */,
                           personal_data_manager_->GetProfiles());
 }
 
@@ -396,8 +399,12 @@ ScopedJavaLocalRef<jobjectArray>
 PersonalDataManagerAndroid::GetProfileLabelsToSuggest(
     JNIEnv* env,
     const JavaParamRef<jobject>& unused_obj,
-    jboolean include_name_in_label) {
-  return GetProfileLabels(env, true, include_name_in_label,
+    jboolean include_name_in_label,
+    jboolean include_organization_in_label,
+    jboolean include_country_in_label) {
+  return GetProfileLabels(env, true /* address_only */, include_name_in_label,
+                          include_organization_in_label,
+                          include_country_in_label,
                           personal_data_manager_->GetProfilesToSuggest());
 }
 
@@ -770,6 +777,8 @@ ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileLabels(
     JNIEnv* env,
     bool address_only,
     bool include_name_in_label,
+    bool include_organization_in_label,
+    bool include_country_in_label,
     std::vector<AutofillProfile*> profiles) {
   std::unique_ptr<std::vector<ServerFieldType>> suggested_fields;
   size_t minimal_fields_shown = 2;
@@ -777,7 +786,8 @@ ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileLabels(
     suggested_fields.reset(new std::vector<ServerFieldType>);
     if (include_name_in_label)
       suggested_fields->push_back(NAME_FULL);
-    suggested_fields->push_back(COMPANY_NAME);
+    if (include_organization_in_label)
+      suggested_fields->push_back(COMPANY_NAME);
     suggested_fields->push_back(ADDRESS_HOME_LINE1);
     suggested_fields->push_back(ADDRESS_HOME_LINE2);
     suggested_fields->push_back(ADDRESS_HOME_DEPENDENT_LOCALITY);
@@ -785,7 +795,8 @@ ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileLabels(
     suggested_fields->push_back(ADDRESS_HOME_STATE);
     suggested_fields->push_back(ADDRESS_HOME_ZIP);
     suggested_fields->push_back(ADDRESS_HOME_SORTING_CODE);
-    suggested_fields->push_back(ADDRESS_HOME_COUNTRY);
+    if (include_country_in_label)
+      suggested_fields->push_back(ADDRESS_HOME_COUNTRY);
     minimal_fields_shown = suggested_fields->size();
   }
 

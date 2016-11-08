@@ -144,8 +144,8 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
         mAddressEditor = addressEditor;
         mObserverForTest = observerForTest;
 
-        List<AutofillProfile> profiles = PersonalDataManager.getInstance().getProfilesToSuggest(
-                true /* includeNameInLabel */);
+        List<AutofillProfile> profiles =
+                PersonalDataManager.getInstance().getBillingAddressesToSuggest();
         mProfilesForBillingAddress = new HashMap<>();
         for (int i = 0; i < profiles.size(); i++) {
             AutofillProfile profile = profiles.get(i);
