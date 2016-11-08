@@ -4331,6 +4331,55 @@ TEST_P(GLES2DecoderManualInitTest, TexStorageInvalidLevels) {
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
+TEST_P(GLES2DecoderManualInitTest, TexStorageFormatAndTypeES2) {
+  InitState init;
+  init.gl_version = "OpenGL ES 2.0";
+  init.extensions = "GL_ARB_texture_storage";
+  init.bind_generates_resource = true;
+  init.context_type = CONTEXT_TYPE_OPENGLES2;
+  InitDecoder(init);
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  EXPECT_CALL(*gl_, TexStorage2DEXT(GL_TEXTURE_2D, 2, GL_RGBA8_OES, 2, 2))
+      .Times(1)
+      .RetiresOnSaturation();
+  TexStorage2DEXT cmd;
+  cmd.Init(GL_TEXTURE_2D, 2, GL_RGBA8_OES, 2, 2);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  TextureRef* texture_ref =
+      group().texture_manager()->GetTexture(client_texture_id_);
+  Texture* texture = texture_ref->texture();
+  GLenum type;
+  GLenum internal_format;
+  EXPECT_TRUE(texture->GetLevelType(GL_TEXTURE_2D, 0, &type, &internal_format));
+  EXPECT_EQ(static_cast<GLenum>(GL_RGBA), internal_format);
+  EXPECT_EQ(static_cast<GLenum>(GL_UNSIGNED_BYTE), type);
+}
+
+TEST_P(GLES2DecoderManualInitTest, TexStorageFormatAndTypeES3) {
+  InitState init;
+  init.gl_version = "OpenGL ES 3.0";
+  init.bind_generates_resource = true;
+  init.context_type = CONTEXT_TYPE_OPENGLES3;
+  InitDecoder(init);
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  EXPECT_CALL(*gl_, TexStorage2DEXT(GL_TEXTURE_2D, 2, GL_RGBA8, 2, 2))
+      .Times(1)
+      .RetiresOnSaturation();
+  TexStorage2DEXT cmd;
+  cmd.Init(GL_TEXTURE_2D, 2, GL_RGBA8, 2, 2);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  TextureRef* texture_ref =
+      group().texture_manager()->GetTexture(client_texture_id_);
+  Texture* texture = texture_ref->texture();
+  GLenum type;
+  GLenum internal_format;
+  EXPECT_TRUE(texture->GetLevelType(GL_TEXTURE_2D, 0, &type, &internal_format));
+  EXPECT_EQ(static_cast<GLenum>(GL_RGBA8), internal_format);
+  EXPECT_EQ(static_cast<GLenum>(GL_UNSIGNED_BYTE), type);
+}
+
 TEST_P(GLES3DecoderTest, TexStorage3DValidArgs) {
   DoBindTexture(GL_TEXTURE_3D, client_texture_id_, kServiceTextureId);
   EXPECT_CALL(*gl_, TexStorage3D(GL_TEXTURE_3D, 2, GL_RGB565, 4, 5, 6))

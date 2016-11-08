@@ -16676,18 +16676,21 @@ void GLES2DecoderImpl::TexStorageImpl(GLenum target,
     GLsizei level_height = height;
     GLsizei level_depth = depth;
 
+    GLenum adjusted_internal_format =
+        feature_info_->context_type() == CONTEXT_TYPE_OPENGLES2 ?
+        format : internal_format;
     for (int ii = 0; ii < levels; ++ii) {
       if (target == GL_TEXTURE_CUBE_MAP) {
         for (int jj = 0; jj < 6; ++jj) {
           GLenum face = GL_TEXTURE_CUBE_MAP_POSITIVE_X + jj;
           texture_manager()->SetLevelInfo(
-              texture_ref, face, ii, internal_format, level_width, level_height,
-              1, 0, format, type, gfx::Rect());
+              texture_ref, face, ii, adjusted_internal_format, level_width,
+              level_height, 1, 0, format, type, gfx::Rect());
         }
       } else {
         texture_manager()->SetLevelInfo(
-            texture_ref, target, ii, internal_format, level_width, level_height,
-            level_depth, 0, format, type, gfx::Rect());
+            texture_ref, target, ii, adjusted_internal_format, level_width,
+            level_height, level_depth, 0, format, type, gfx::Rect());
       }
       level_width = std::max(1, level_width >> 1);
       level_height = std::max(1, level_height >> 1);
