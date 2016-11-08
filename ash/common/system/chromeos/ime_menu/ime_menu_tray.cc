@@ -36,6 +36,7 @@
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
@@ -49,6 +50,8 @@ namespace {
 // border in dp.
 // TODO(tdanderson): Move this to tray_constants.
 const int kButtonInsideBorderSpacing = 4;
+const int kMenuTitlePadding = 1;
+const int kMenuTitleItemPadding = 2;
 
 // Returns the height range of ImeListView.
 gfx::Range GetImeListViewRange() {
@@ -62,6 +65,13 @@ gfx::Range GetImeListViewRange() {
 void ShowIMESettings() {
   WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_IME_SHOW_DETAILED);
   WmShell::Get()->system_tray_controller()->ShowIMESettings();
+}
+
+// Returns true if the current screen is login or lock screen.
+bool IsInLoginOrLockScreen() {
+  LoginStatus login =
+      WmShell::Get()->system_tray_delegate()->GetUserLoginStatus();
+  return !CanOpenWebUISettings(login);
 }
 
 class ImeMenuLabel : public views::Label {
@@ -97,24 +107,41 @@ SystemMenuButton* CreateImeMenuButton(views::ButtonListener* listener,
 }
 
 // The view that contains IME menu title in the material design.
-class ImeTitleView : public views::View {
+class ImeTitleView : public views::View, public views::ButtonListener {
  public:
-  ImeTitleView() {
-    auto* box_layout = new views::BoxLayout(views::BoxLayout::kHorizontal, 0,
-                                            kMenuSeparatorVerticalPadding, 0);
+  explicit ImeTitleView(bool show_settings_button) : settings_button_(nullptr) {
+    auto* box_layout =
+        new views::BoxLayout(views::BoxLayout::kHorizontal, kMenuTitlePadding,
+                             kMenuTitlePadding, kMenuTitleItemPadding);
     SetLayoutManager(box_layout);
-
-    views::Label* title_label =
+    title_label_ =
         new views::Label(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME));
-    const int title_padding =
-        kMenuSeparatorVerticalPadding + (kMenuButtonSize - kMenuIconSize) / 2;
-    title_label->SetBorder(views::CreateEmptyBorder(0, title_padding, 0, 0));
-    title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    TrayPopupItemStyle style(GetNativeTheme(),
-                             TrayPopupItemStyle::FontStyle::TITLE);
-    style.SetupLabel(title_label);
-    AddChildView(title_label);
-    box_layout->SetFlexForView(title_label, 1);
+    const int title_padding = (kMenuButtonSize - kMenuIconSize) / 2;
+    title_label_->SetBorder(views::CreateEmptyBorder(0, title_padding, 0, 0));
+    title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    AddChildView(title_label_);
+    box_layout->SetFlexForView(title_label_, 1);
+
+    if (show_settings_button) {
+      settings_button_ = CreateImeMenuButton(
+          this, kSystemMenuSettingsIcon, IDS_ASH_STATUS_TRAY_IME_SETTINGS, 0);
+      settings_button_->SetBorder(
+          views::CreateEmptyBorder(gfx::Insets(title_padding, title_padding)));
+      if (IsInLoginOrLockScreen())
+        settings_button_->SetState(views::Button::STATE_DISABLED);
+      AddChildView(settings_button_);
+    }
+  }
+
+  // views::View:
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
+    UpdateStyle();
+  }
+
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
+    if (sender == settings_button_)
+      ShowIMESettings();
   }
 
   ~ImeTitleView() override {}
@@ -129,6 +156,19 @@ class ImeTitleView : public views::View {
   }
 
  private:
+  // Updates the style of |title_label_| based on the current native theme.
+  void UpdateStyle() {
+    TrayPopupItemStyle style(GetNativeTheme(),
+                             TrayPopupItemStyle::FontStyle::TITLE);
+    style.SetupLabel(title_label_);
+  }
+
+  views::Label* title_label_;
+
+  // Settings button that is only used in material design, and only if the
+  // emoji, handwriting and voice buttons are not available.
+  SystemMenuButton* settings_button_;
+
   DISALLOW_COPY_AND_ASSIGN(ImeTitleView);
 };
 
@@ -151,7 +191,8 @@ class ImeButtonsView : public views::View,
     // normal background. Otherwise, show button icons with header background.
     if (show_settings_button && !show_emoji_button &&
         !show_handwriting_button && !show_voice_button) {
-      ShowOneSettingButton();
+      if (!MaterialDesignController::IsSystemTrayMenuMaterial())
+        ShowOneSettingButton();
     } else {
       ShowButtons(show_emoji_button, show_handwriting_button, show_voice_button,
                   show_settings_button);
@@ -209,6 +250,8 @@ class ImeButtonsView : public views::View,
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
             IDS_ASH_STATUS_TRAY_IME_SETTINGS),
         gfx::ALIGN_LEFT, false /* highlight */);
+    if (IsInLoginOrLockScreen())
+      one_settings_button_view_->SetState(views::Button::STATE_DISABLED);
     AddChildView(one_settings_button_view_);
   }
 
@@ -250,7 +293,6 @@ class ImeButtonsView : public views::View,
     }
 
     if (show_settings_button) {
-      // TODO(tdanderson): update this settings icon.
       settings_button_ = CreateImeMenuButton(
           this, kSystemMenuSettingsIcon, IDS_ASH_STATUS_TRAY_IME_SETTINGS, 0);
       AddChildView(settings_button_);
@@ -304,7 +346,8 @@ void ImeMenuTray::ShowImeMenuBubble() {
   // In the material design, we will add a title item with a separator on the
   // top of the IME menu.
   if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    ImeTitleView* title_view = new ImeTitleView();
+    ImeTitleView* title_view =
+        new ImeTitleView(!ShouldShowEmojiHandwritingVoiceButtons());
     bubble_view->AddChildView(title_view);
     views::Separator* separator =
         new views::Separator(views::Separator::HORIZONTAL);
@@ -331,17 +374,15 @@ void ImeMenuTray::ShowImeMenuBubble() {
   }
   bubble_view->AddChildView(ime_list_view_);
 
-  // Adds IME buttons to the bubble if needed.
-  LoginStatus login =
-      WmShell::Get()->system_tray_delegate()->GetUserLoginStatus();
-  if (login != LoginStatus::NOT_LOGGED_IN && login != LoginStatus::LOCKED &&
-      !WmShell::Get()->GetSessionStateDelegate()->IsInSecondaryLoginScreen()) {
-    if (InputMethodManager::Get() &&
-        InputMethodManager::Get()->IsEmojiHandwritingVoiceOnImeMenuEnabled() &&
-        !current_ime_.third_party) {
+  // The bottom view that contains buttons are not supported in login/lock
+  // screen.
+  if (!IsInLoginOrLockScreen()) {
+    if (ShouldShowEmojiHandwritingVoiceButtons()) {
       bubble_view->AddChildView(
           new ImeButtonsView(this, true, true, true, true));
-    } else {
+    } else if (!MaterialDesignController::IsSystemTrayMenuMaterial()) {
+      // For MD, we don't need |ImeButtonsView| as the settings button will be
+      // shown in the title row.
       bubble_view->AddChildView(
           new ImeButtonsView(this, false, false, false, true));
     }
@@ -399,6 +440,12 @@ void ImeMenuTray::ShowKeyboardWithKeyset(const std::string& keyset) {
 
 bool ImeMenuTray::ShouldBlockShelfAutoHide() const {
   return should_block_shelf_auto_hide_;
+}
+
+bool ImeMenuTray::ShouldShowEmojiHandwritingVoiceButtons() const {
+  return InputMethodManager::Get() &&
+         InputMethodManager::Get()->IsEmojiHandwritingVoiceOnImeMenuEnabled() &&
+         !current_ime_.third_party;
 }
 
 void ImeMenuTray::SetShelfAlignment(ShelfAlignment alignment) {

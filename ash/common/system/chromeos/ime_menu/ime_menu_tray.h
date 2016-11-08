@@ -49,6 +49,11 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   // Returns true if it should block the auto hide behavior of the shelf.
   bool ShouldBlockShelfAutoHide() const;
 
+  // Returns true if the menu should show emoji, handwriting and voice buttons
+  // on the bottom. Otherwise, the menu will show a 'Customize...' bottom row
+  // for non-MD UI, and a Settings button in the title row for MD.
+  bool ShouldShowEmojiHandwritingVoiceButtons() const;
+
   // TrayBackgroundView:
   void SetShelfAlignment(ShelfAlignment alignment) override;
   base::string16 GetAccessibleNameForTray() override;
