@@ -17,10 +17,10 @@
 #include "services/ui/public/interfaces/window_manager_window_tree_factory.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
-#include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/mus/capture_synchronizer.h"
 #include "ui/aura/mus/drag_drop_controller_mus.h"
+#include "ui/aura/mus/focus_synchronizer.h"
 #include "ui/aura/mus/in_flight_change.h"
 #include "ui/aura/mus/input_method_mus.h"
 #include "ui/aura/mus/property_converter.h"
@@ -135,7 +135,6 @@ WindowTreeClient::WindowTreeClient(
   // Allow for a null request in tests.
   if (request.is_pending())
     binding_.Bind(std::move(request));
-  delegate_->GetFocusClient()->AddObserver(this);
   client::GetTransientWindowClient()->AddObserver(this);
   if (window_manager_delegate)
     window_manager_delegate->SetWindowManagerClient(this);
@@ -173,7 +172,6 @@ WindowTreeClient::~WindowTreeClient() {
   capture_synchronizer_.reset();
 
   client::GetTransientWindowClient()->RemoveObserver(this);
-  delegate_->GetFocusClient()->RemoveObserver(this);
 }
 
 void WindowTreeClient::ConnectViaWindowTreeFactory(
@@ -290,37 +288,6 @@ bool WindowTreeClient::WasCreatedByThisClient(const WindowMus* window) const {
   // our client id. const_cast is required by set.
   return HiWord(window->server_id()) == client_id_ &&
          roots_.count(const_cast<WindowMus*>(window)) == 0;
-}
-
-void WindowTreeClient::SetFocusFromServer(WindowMus* window) {
-  if (focused_window_ == window)
-    return;
-
-  if (window) {
-    client::FocusClient* focus_client =
-        client::GetFocusClient(window->GetWindow());
-    if (focus_client) {
-      SetFocusFromServerImpl(focus_client, window);
-    } else {
-      SetFocusFromServerImpl(
-          client::GetFocusClient(focused_window_->GetWindow()), nullptr);
-    }
-  } else {
-    SetFocusFromServerImpl(client::GetFocusClient(focused_window_->GetWindow()),
-                           nullptr);
-  }
-}
-
-void WindowTreeClient::SetFocusFromServerImpl(client::FocusClient* focus_client,
-                                              WindowMus* window) {
-  if (!focus_client)
-    return;
-
-  DCHECK(!setting_focus_);
-  base::AutoReset<bool> focus_reset(&setting_focus_, true);
-  base::AutoReset<WindowMus*> window_setting_focus_to_reset(
-      &window_setting_focus_to_, window);
-  focus_client->FocusWindow(window ? window->GetWindow() : nullptr);
 }
 
 InFlightChange* WindowTreeClient::GetOldestInFlightChangeMatching(
@@ -450,6 +417,7 @@ void WindowTreeClient::WindowTreeConnectionEstablished(
   drag_drop_controller_ = base::MakeUnique<DragDropControllerMus>(this, tree_);
   capture_synchronizer_ = base::MakeUnique<CaptureSynchronizer>(
       this, tree_, delegate_->GetCaptureClient());
+  focus_synchronizer_ = base::MakeUnique<FocusSynchronizer>(this, tree_);
 }
 
 void WindowTreeClient::OnConnectionLost() {
@@ -491,7 +459,8 @@ void WindowTreeClient::OnEmbedImpl(ui::mojom::WindowTree* window_tree,
   std::unique_ptr<WindowTreeHostMus> window_tree_host =
       CreateWindowTreeHost(WindowMusType::EMBED, root_data, display_id);
 
-  SetFocusFromServer(GetWindowByServerId(focused_window_id));
+  focus_synchronizer_->SetFocusFromServer(
+      GetWindowByServerId(focused_window_id));
 
   delegate_->OnEmbed(std::move(window_tree_host));
 }
@@ -602,8 +571,8 @@ void WindowTreeClient::OnWindowMusCreated(WindowMus* window) {
 }
 
 void WindowTreeClient::OnWindowMusDestroyed(WindowMus* window) {
-  if (focused_window_ == window)
-    focused_window_ = nullptr;
+  if (focus_synchronizer_->focused_window() == window)
+    focus_synchronizer_->OnFocusedWindowDestroyed();
 
   // TODO: decide how to deal with windows not owned by this client.
   if (WasCreatedByThisClient(window) || IsRoot(window)) {
@@ -771,10 +740,6 @@ std::set<Window*> WindowTreeClient::GetRoots() {
   for (WindowMus* window : roots_)
     roots.insert(window->GetWindow());
   return roots;
-}
-
-Window* WindowTreeClient::GetFocusedWindow() {
-  return focused_window_ ? focused_window_->GetWindow() : nullptr;
 }
 
 gfx::Point WindowTreeClient::GetCursorScreenPoint() {
@@ -1183,11 +1148,12 @@ void WindowTreeClient::OnPointerEventObserved(std::unique_ptr<ui::Event> event,
 
 void WindowTreeClient::OnWindowFocused(Id focused_window_id) {
   WindowMus* focused_window = GetWindowByServerId(focused_window_id);
-  InFlightFocusChange new_change(this, focused_window);
+  InFlightFocusChange new_change(this, focus_synchronizer_.get(),
+                                 focused_window);
   if (ApplyServerChangeToExistingInFlightChange(new_change))
     return;
 
-  SetFocusFromServer(focused_window);
+  focus_synchronizer_->SetFocusFromServer(focused_window);
 }
 
 void WindowTreeClient::OnWindowPredefinedCursorChanged(
@@ -1510,21 +1476,6 @@ void WindowTreeClient::SetUnderlaySurfaceOffsetAndExtendedHitArea(
   }
 }
 
-void WindowTreeClient::OnWindowFocused(Window* gained_focus,
-                                       Window* lost_focus) {
-  WindowMus* gained_focus_mus = WindowMus::Get(gained_focus);
-  if (setting_focus_ && gained_focus_mus == window_setting_focus_to_) {
-    focused_window_ = gained_focus_mus;
-    return;
-  }
-
-  const uint32_t change_id = ScheduleInFlightChange(
-      base::MakeUnique<InFlightFocusChange>(this, focused_window_));
-  focused_window_ = gained_focus_mus;
-  tree_->SetFocus(change_id, focused_window_ ? focused_window_->server_id()
-                                             : kInvalidServerId);
-}
-
 void WindowTreeClient::OnWindowTreeHostBoundsWillChange(
     WindowTreeHostMus* window_tree_host,
     const gfx::Rect& bounds) {
@@ -1586,6 +1537,11 @@ uint32_t WindowTreeClient::CreateChangeIdForDrag(WindowMus* window) {
 uint32_t WindowTreeClient::CreateChangeIdForCapture(WindowMus* window) {
   return ScheduleInFlightChange(base::MakeUnique<InFlightCaptureChange>(
       this, capture_synchronizer_.get(), window));
+}
+
+uint32_t WindowTreeClient::CreateChangeIdForFocus(WindowMus* window) {
+  return ScheduleInFlightChange(base::MakeUnique<InFlightFocusChange>(
+      this, focus_synchronizer_.get(), window));
 }
 
 }  // namespace aura

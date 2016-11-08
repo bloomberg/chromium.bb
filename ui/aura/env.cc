@@ -8,8 +8,11 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_local.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/input_state_lookup.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_observer.h"
 #include "ui/aura/window_port_local.h"
 #include "ui/events/event_target_iterator.h"
 #include "ui/events/platform/platform_event_source.h"
@@ -33,6 +36,36 @@ bool RunningInsideMus() {
 }
 
 }  // namespace
+
+// Observes destruction and changes of the FocusClient for a window.
+// ActiveFocusClientWindowObserver is created for the window the FocusClient is
+// associated with.
+class Env::ActiveFocusClientWindowObserver : public WindowObserver {
+ public:
+  explicit ActiveFocusClientWindowObserver(Window* window) : window_(window) {
+    window_->AddObserver(this);
+  }
+  ~ActiveFocusClientWindowObserver() override { window_->RemoveObserver(this); }
+
+  // WindowObserver:
+  void OnWindowDestroying(Window* window) override {
+    Env::GetInstance()->OnActiveFocusClientWindowDestroying();
+  }
+  void OnWindowPropertyChanged(Window* window,
+                               const void* key,
+                               intptr_t old) override {
+    if (key != client::kFocusClientKey)
+      return;
+
+    // Assume if the focus client changes the window is being destroyed.
+    Env::GetInstance()->OnActiveFocusClientWindowDestroying();
+  }
+
+ private:
+  Window* window_;
+
+  DISALLOW_COPY_AND_ASSIGN(ActiveFocusClientWindowObserver);
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // Env, public:
@@ -85,6 +118,24 @@ bool Env::IsMouseButtonDown() const {
       mouse_button_flags_ != 0;
 }
 
+void Env::SetActiveFocusClient(client::FocusClient* focus_client,
+                               Window* focus_client_root) {
+  if (focus_client == active_focus_client_ &&
+      focus_client_root == active_focus_client_root_) {
+    return;
+  }
+
+  active_focus_client_window_observer_.reset();
+  active_focus_client_ = focus_client;
+  active_focus_client_root_ = focus_client_root;
+  if (focus_client_root) {
+    active_focus_client_window_observer_ =
+        base::MakeUnique<ActiveFocusClientWindowObserver>(focus_client_root);
+  }
+  for (EnvObserver& observer : observers_)
+    observer.OnActiveFocusClientChanged(focus_client, focus_client_root);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Env, private:
 
@@ -124,6 +175,10 @@ void Env::NotifyHostInitialized(WindowTreeHost* host) {
 void Env::NotifyHostActivated(WindowTreeHost* host) {
   for (EnvObserver& observer : observers_)
     observer.OnHostActivated(host);
+}
+
+void Env::OnActiveFocusClientWindowDestroying() {
+  SetActiveFocusClient(nullptr, nullptr);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

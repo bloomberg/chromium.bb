@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/macros.h"
+#include "ui/aura/env_observer.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/views/mus/mus_export.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
@@ -17,7 +18,8 @@ namespace views {
 
 class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
     : public DesktopWindowTreeHost,
-      public aura::WindowTreeHostMus {
+      public aura::WindowTreeHostMus,
+      public aura::EnvObserver {
  public:
   DesktopWindowTreeHostMus(
       internal::NativeWidgetDelegate* native_widget_delegate,
@@ -88,6 +90,11 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   bool IsTranslucentWindowOpacitySupported() const override;
   void SizeConstraintsChanged() override;
 
+  // aura::EnvObserver:
+  void OnWindowInitialized(aura::Window* window) override;
+  void OnActiveFocusClientChanged(aura::client::FocusClient* focus_client,
+                                  aura::Window* window) override;
+
   internal::NativeWidgetDelegate* native_widget_delegate_;
 
   DesktopNativeWidgetAura* desktop_native_widget_aura_;
@@ -100,6 +107,8 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   // children who we're responsible for closing when we CloseNow().
   DesktopWindowTreeHostMus* parent_ = nullptr;
   std::set<DesktopWindowTreeHostMus*> children_;
+
+  bool is_active_ = false;
 
   // Used so that Close() isn't immediate.
   base::WeakPtrFactory<DesktopWindowTreeHostMus> close_widget_factory_;
