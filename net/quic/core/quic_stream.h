@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// The base class for client/server reliable streams.
+// The base class for client/server QUIC streams.
 
 // It does not contain the entire interface needed by an application to interact
 // with a QUIC stream.  Some parts of the interface must be obtained by
-// accessing the owning session object.  A subclass of ReliableQuicStream
+// accessing the owning session object.  A subclass of QuicStream
 // connects the object and the application that generates and consumes the data
 // of the stream.
 
-// The ReliableQuicStream object has a dependent QuicStreamSequencer object,
+// The QuicStream object has a dependent QuicStreamSequencer object,
 // which is given the stream frames as they arrive, and provides stream data in
 // order by invoking ProcessRawData().
 
-#ifndef NET_QUIC_RELIABLE_QUIC_STREAM_H_
-#define NET_QUIC_RELIABLE_QUIC_STREAM_H_
+#ifndef NET_QUIC_CORE_QUIC_STREAM_H_
+#define NET_QUIC_CORE_QUIC_STREAM_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -37,16 +37,16 @@
 namespace net {
 
 namespace test {
-class ReliableQuicStreamPeer;
+class QuicStreamPeer;
 }  // namespace test
 
 class QuicSession;
 
-class NET_EXPORT_PRIVATE ReliableQuicStream {
+class NET_EXPORT_PRIVATE QuicStream {
  public:
-  ReliableQuicStream(QuicStreamId id, QuicSession* session);
+  QuicStream(QuicStreamId id, QuicSession* session);
 
-  virtual ~ReliableQuicStream();
+  virtual ~QuicStream();
 
   // Not in use currently.
   void SetFromConfig();
@@ -223,7 +223,7 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   }
 
  private:
-  friend class test::ReliableQuicStreamPeer;
+  friend class test::QuicStreamPeer;
   friend class QuicStreamUtils;
 
   // Close the read side of the socket.  May cause the stream to be closed.
@@ -313,9 +313,9 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   // For debugging only, used for busy loop check.
   size_t busy_counter_;
 
-  DISALLOW_COPY_AND_ASSIGN(ReliableQuicStream);
+  DISALLOW_COPY_AND_ASSIGN(QuicStream);
 };
 
 }  // namespace net
 
-#endif  // NET_QUIC_RELIABLE_QUIC_STREAM_H_
+#endif  // NET_QUIC_CORE_QUIC_STREAM_H_

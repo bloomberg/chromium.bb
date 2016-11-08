@@ -25,7 +25,7 @@ namespace net {
                                                                      " ")
 
 QuicCryptoStream::QuicCryptoStream(QuicSession* session)
-    : ReliableQuicStream(kCryptoStreamId, session),
+    : QuicStream(kCryptoStreamId, session),
       encryption_established_(false),
       handshake_confirmed_(false),
       crypto_negotiated_params_(new QuicCryptoNegotiatedParameters) {

@@ -31,7 +31,7 @@
 
 namespace net {
 class QuicConnection;
-class ReliableQuicStream;
+class QuicStream;
 }  // namespace net
 
 using std::string;

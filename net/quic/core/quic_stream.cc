@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/core/reliable_quic_stream.h"
+#include "net/quic/core/quic_stream.h"
 
 #include "base/logging.h"
 #include "net/quic/core/quic_bug_tracker.h"
@@ -42,14 +42,13 @@ size_t GetReceivedFlowControlWindow(QuicSession* session) {
 
 }  // namespace
 
-ReliableQuicStream::PendingData::PendingData(
-    string data_in,
-    QuicAckListenerInterface* ack_listener_in)
+QuicStream::PendingData::PendingData(string data_in,
+                                     QuicAckListenerInterface* ack_listener_in)
     : data(std::move(data_in)), offset(0), ack_listener(ack_listener_in) {}
 
-ReliableQuicStream::PendingData::~PendingData() {}
+QuicStream::PendingData::~PendingData() {}
 
-ReliableQuicStream::ReliableQuicStream(QuicStreamId id, QuicSession* session)
+QuicStream::QuicStream(QuicStreamId id, QuicSession* session)
     : queued_data_bytes_(0),
       sequencer_(this, session->connection()->clock()),
       id_(id),
@@ -78,11 +77,11 @@ ReliableQuicStream::ReliableQuicStream(QuicStreamId id, QuicSession* session)
   SetFromConfig();
 }
 
-ReliableQuicStream::~ReliableQuicStream() {}
+QuicStream::~QuicStream() {}
 
-void ReliableQuicStream::SetFromConfig() {}
+void QuicStream::SetFromConfig() {}
 
-void ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
+void QuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
   DCHECK_EQ(frame.stream_id, id_);
 
   DCHECK(!(read_side_closed_ && write_side_closed_));
@@ -95,7 +94,8 @@ void ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
   }
 
   if (read_side_closed_) {
-    DVLOG(1) << ENDPOINT << "Ignoring data in frame " << frame.stream_id;
+    DVLOG(1) << ENDPOINT << "Stream " << frame.stream_id
+             << " is closed for reading. Ignoring newly received stream data.";
     // The subclass does not want to read data:  blackhole the data.
     return;
   }
@@ -122,15 +122,15 @@ void ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
   sequencer_.OnStreamFrame(frame);
 }
 
-int ReliableQuicStream::num_frames_received() const {
+int QuicStream::num_frames_received() const {
   return sequencer_.num_frames_received();
 }
 
-int ReliableQuicStream::num_duplicate_frames_received() const {
+int QuicStream::num_duplicate_frames_received() const {
   return sequencer_.num_duplicate_frames_received();
 }
 
-void ReliableQuicStream::OnStreamReset(const QuicRstStreamFrame& frame) {
+void QuicStream::OnStreamReset(const QuicRstStreamFrame& frame) {
   rst_received_ = true;
   MaybeIncreaseHighestReceivedOffset(frame.byte_offset);
 
@@ -139,8 +139,8 @@ void ReliableQuicStream::OnStreamReset(const QuicRstStreamFrame& frame) {
   CloseReadSide();
 }
 
-void ReliableQuicStream::OnConnectionClosed(QuicErrorCode error,
-                                            ConnectionCloseSource /*source*/) {
+void QuicStream::OnConnectionClosed(QuicErrorCode error,
+                                    ConnectionCloseSource /*source*/) {
   if (read_side_closed_ && write_side_closed_) {
     return;
   }
@@ -153,7 +153,7 @@ void ReliableQuicStream::OnConnectionClosed(QuicErrorCode error,
   CloseReadSide();
 }
 
-void ReliableQuicStream::OnFinRead() {
+void QuicStream::OnFinRead() {
   DCHECK(sequencer_.IsClosed());
   // OnFinRead can be called due to a FIN flag in a headers block, so there may
   // have been no OnStreamFrame call with a FIN in the frame.
@@ -164,23 +164,22 @@ void ReliableQuicStream::OnFinRead() {
   CloseReadSide();
 }
 
-void ReliableQuicStream::Reset(QuicRstStreamErrorCode error) {
+void QuicStream::Reset(QuicRstStreamErrorCode error) {
   stream_error_ = error;
   // Sending a RstStream results in calling CloseStream.
   session()->SendRstStream(id(), error, stream_bytes_written_);
   rst_sent_ = true;
 }
 
-void ReliableQuicStream::CloseConnectionWithDetails(QuicErrorCode error,
-                                                    const string& details) {
+void QuicStream::CloseConnectionWithDetails(QuicErrorCode error,
+                                            const string& details) {
   session()->connection()->CloseConnection(
       error, details, ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
 }
 
-void ReliableQuicStream::WriteOrBufferData(
-    StringPiece data,
-    bool fin,
-    QuicAckListenerInterface* ack_listener) {
+void QuicStream::WriteOrBufferData(StringPiece data,
+                                   bool fin,
+                                   QuicAckListenerInterface* ack_listener) {
   if (data.empty() && !fin) {
     QUIC_BUG << "data.empty() && !fin";
     return;
@@ -213,7 +212,7 @@ void ReliableQuicStream::WriteOrBufferData(
   }
 }
 
-void ReliableQuicStream::OnCanWrite() {
+void QuicStream::OnCanWrite() {
   bool fin = false;
   while (!queued_data_.empty()) {
     PendingData* pending_data = &queued_data_.front();
@@ -247,7 +246,7 @@ void ReliableQuicStream::OnCanWrite() {
   }
 }
 
-void ReliableQuicStream::MaybeSendBlocked() {
+void QuicStream::MaybeSendBlocked() {
   flow_controller_.MaybeSendBlocked();
   if (!stream_contributes_to_connection_flow_control_) {
     return;
@@ -263,7 +262,7 @@ void ReliableQuicStream::MaybeSendBlocked() {
   }
 }
 
-QuicConsumedData ReliableQuicStream::WritevData(
+QuicConsumedData QuicStream::WritevData(
     const struct iovec* iov,
     int iov_count,
     bool fin,
@@ -344,7 +343,7 @@ QuicConsumedData ReliableQuicStream::WritevData(
   return consumed_data;
 }
 
-QuicConsumedData ReliableQuicStream::WritevDataInner(
+QuicConsumedData QuicStream::WritevDataInner(
     QuicIOVector iov,
     QuicStreamOffset offset,
     bool fin,
@@ -353,7 +352,7 @@ QuicConsumedData ReliableQuicStream::WritevDataInner(
                                ack_notifier_delegate);
 }
 
-void ReliableQuicStream::CloseReadSide() {
+void QuicStream::CloseReadSide() {
   if (read_side_closed_) {
     return;
   }
@@ -368,7 +367,7 @@ void ReliableQuicStream::CloseReadSide() {
   }
 }
 
-void ReliableQuicStream::CloseWriteSide() {
+void QuicStream::CloseWriteSide() {
   if (write_side_closed_) {
     return;
   }
@@ -381,24 +380,24 @@ void ReliableQuicStream::CloseWriteSide() {
   }
 }
 
-bool ReliableQuicStream::HasBufferedData() const {
+bool QuicStream::HasBufferedData() const {
   return !queued_data_.empty();
 }
 
-QuicVersion ReliableQuicStream::version() const {
+QuicVersion QuicStream::version() const {
   return session_->connection()->version();
 }
 
-void ReliableQuicStream::StopReading() {
+void QuicStream::StopReading() {
   DVLOG(1) << ENDPOINT << "Stop reading from stream " << id();
   sequencer_.StopReading();
 }
 
-const IPEndPoint& ReliableQuicStream::PeerAddressOfLatestPacket() const {
+const IPEndPoint& QuicStream::PeerAddressOfLatestPacket() const {
   return session_->connection()->last_packet_source_address();
 }
 
-void ReliableQuicStream::OnClose() {
+void QuicStream::OnClose() {
   CloseReadSide();
   CloseWriteSide();
 
@@ -422,8 +421,7 @@ void ReliableQuicStream::OnClose() {
   AddBytesConsumed(bytes_to_consume);
 }
 
-void ReliableQuicStream::OnWindowUpdateFrame(
-    const QuicWindowUpdateFrame& frame) {
+void QuicStream::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
   if (flow_controller_.UpdateSendWindowOffset(frame.byte_offset)) {
     // Writing can be done again!
     // TODO(rjshade): This does not respect priorities (e.g. multiple
@@ -434,7 +432,7 @@ void ReliableQuicStream::OnWindowUpdateFrame(
   }
 }
 
-bool ReliableQuicStream::MaybeIncreaseHighestReceivedOffset(
+bool QuicStream::MaybeIncreaseHighestReceivedOffset(
     QuicStreamOffset new_offset) {
   uint64_t increment =
       new_offset - flow_controller_.highest_received_byte_offset();
@@ -453,14 +451,14 @@ bool ReliableQuicStream::MaybeIncreaseHighestReceivedOffset(
   return true;
 }
 
-void ReliableQuicStream::AddBytesSent(QuicByteCount bytes) {
+void QuicStream::AddBytesSent(QuicByteCount bytes) {
   flow_controller_.AddBytesSent(bytes);
   if (stream_contributes_to_connection_flow_control_) {
     connection_flow_controller_->AddBytesSent(bytes);
   }
 }
 
-void ReliableQuicStream::AddBytesConsumed(QuicByteCount bytes) {
+void QuicStream::AddBytesConsumed(QuicByteCount bytes) {
   // Only adjust stream level flow controller if still reading.
   if (!read_side_closed_) {
     flow_controller_.AddBytesConsumed(bytes);
@@ -471,7 +469,7 @@ void ReliableQuicStream::AddBytesConsumed(QuicByteCount bytes) {
   }
 }
 
-void ReliableQuicStream::UpdateSendWindowOffset(QuicStreamOffset new_window) {
+void QuicStream::UpdateSendWindowOffset(QuicStreamOffset new_window) {
   if (flow_controller_.UpdateSendWindowOffset(new_window)) {
     OnCanWrite();
   }

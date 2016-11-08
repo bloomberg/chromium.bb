@@ -46,8 +46,7 @@ class QuicSpdyClientStream : public QuicSpdyStream {
                            size_t frame_len,
                            const QuicHeaderList& header_list) override;
 
-  // ReliableQuicStream implementation called by the session when there's
-  // data for us.
+  // QuicStream implementation called by the session when there's data for us.
   void OnDataAvailable() override;
 
   // Serializes the headers and body, sends it to the server, and
@@ -63,8 +62,6 @@ class QuicSpdyClientStream : public QuicSpdyStream {
   size_t header_bytes_read() const { return header_bytes_read_; }
 
   size_t header_bytes_written() const { return header_bytes_written_; }
-
-  size_t trailer_bytes_read() const { return header_bytes_read_; }
 
   int response_code() const { return response_code_; }
 

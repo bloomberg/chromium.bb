@@ -743,7 +743,7 @@ QuicChromiumClientSession::CreateIncomingReliableStreamImpl(QuicStreamId id) {
 }
 
 void QuicChromiumClientSession::CloseStream(QuicStreamId stream_id) {
-  ReliableQuicStream* stream = GetOrCreateStream(stream_id);
+  QuicStream* stream = GetOrCreateStream(stream_id);
   if (stream) {
     logger_->UpdateReceivedFrameCounts(stream_id, stream->num_frames_received(),
                                        stream->num_duplicate_frames_received());
@@ -759,7 +759,7 @@ void QuicChromiumClientSession::CloseStream(QuicStreamId stream_id) {
 void QuicChromiumClientSession::SendRstStream(QuicStreamId id,
                                               QuicRstStreamErrorCode error,
                                               QuicStreamOffset bytes_written) {
-  ReliableQuicStream* stream = GetOrCreateStream(id);
+  QuicStream* stream = GetOrCreateStream(id);
   if (stream) {
     if (id % 2 == 0) {
       // Stream with even stream is initiated by server for PUSH.
@@ -1239,7 +1239,7 @@ void QuicChromiumClientSession::CloseSessionOnErrorInner(
 
 void QuicChromiumClientSession::CloseAllStreams(int net_error) {
   while (!dynamic_streams().empty()) {
-    ReliableQuicStream* stream = dynamic_streams().begin()->second.get();
+    QuicStream* stream = dynamic_streams().begin()->second.get();
     QuicStreamId id = stream->id();
     static_cast<QuicChromiumClientStream*>(stream)->OnError(net_error);
     CloseStream(id);

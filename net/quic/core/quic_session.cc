@@ -74,7 +74,7 @@ QuicSession::~QuicSession() {
 void QuicSession::OnStreamFrame(const QuicStreamFrame& frame) {
   // TODO(rch) deal with the error case of stream id 0.
   QuicStreamId stream_id = frame.stream_id;
-  ReliableQuicStream* stream = GetOrCreateStream(stream_id);
+  QuicStream* stream = GetOrCreateStream(stream_id);
   if (!stream) {
     // The stream no longer exists, but we may still be interested in the
     // final stream byte offset sent by the peer. A frame with a FIN can give
@@ -96,7 +96,7 @@ void QuicSession::OnRstStream(const QuicRstStreamFrame& frame) {
     return;
   }
 
-  ReliableQuicStream* stream = GetOrCreateDynamicStream(frame.stream_id);
+  QuicStream* stream = GetOrCreateDynamicStream(frame.stream_id);
   if (!stream) {
     HandleRstOnValidNonexistentStream(frame);
     return;  // Errors are handled by GetOrCreateStream.
@@ -158,7 +158,7 @@ void QuicSession::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
     flow_controller_.UpdateSendWindowOffset(frame.byte_offset);
     return;
   }
-  ReliableQuicStream* stream = GetOrCreateStream(stream_id);
+  QuicStream* stream = GetOrCreateStream(stream_id);
   if (stream != nullptr) {
     stream->OnWindowUpdateFrame(frame);
   }
@@ -172,7 +172,7 @@ void QuicSession::OnBlockedFrame(const QuicBlockedFrame& frame) {
            << "Received BLOCKED frame with stream id: " << frame.stream_id;
 }
 
-bool QuicSession::CheckStreamNotBusyLooping(ReliableQuicStream* stream,
+bool QuicSession::CheckStreamNotBusyLooping(QuicStream* stream,
                                             uint64_t previous_bytes_written,
                                             bool previous_fin_sent) {
   if (  // Stream should not be closed.
@@ -240,8 +240,7 @@ void QuicSession::OnCanWrite() {
       return;
     }
     currently_writing_stream_id_ = write_blocked_streams_.PopFront();
-    ReliableQuicStream* stream =
-        GetOrCreateStream(currently_writing_stream_id_);
+    QuicStream* stream = GetOrCreateStream(currently_writing_stream_id_);
     if (stream != nullptr && !stream->flow_controller()->IsBlocked()) {
       // If the stream can't write all bytes it'll re-add itself to the blocked
       // list.
@@ -283,7 +282,7 @@ void QuicSession::ProcessUdpPacket(const IPEndPoint& self_address,
 }
 
 QuicConsumedData QuicSession::WritevData(
-    ReliableQuicStream* stream,
+    QuicStream* stream,
     QuicStreamId id,
     QuicIOVector iov,
     QuicStreamOffset offset,
@@ -355,12 +354,12 @@ void QuicSession::CloseStreamInner(QuicStreamId stream_id, bool locally_reset) {
   DynamicStreamMap::iterator it = dynamic_stream_map_.find(stream_id);
   if (it == dynamic_stream_map_.end()) {
     // When CloseStreamInner has been called recursively (via
-    // ReliableQuicStream::OnClose), the stream will already have been deleted
+    // QuicStream::OnClose), the stream will already have been deleted
     // from stream_map_, so return immediately.
     DVLOG(1) << ENDPOINT << "Stream is already closed: " << stream_id;
     return;
   }
-  ReliableQuicStream* stream = it->second.get();
+  QuicStream* stream = it->second.get();
 
   // Tell the stream that a RST has been sent.
   if (locally_reset) {
@@ -578,7 +577,7 @@ QuicConfig* QuicSession::config() {
   return &config_;
 }
 
-void QuicSession::ActivateStream(std::unique_ptr<ReliableQuicStream> stream) {
+void QuicSession::ActivateStream(std::unique_ptr<QuicStream> stream) {
   QuicStreamId stream_id = stream->id();
   DVLOG(1) << ENDPOINT << "num_streams: " << dynamic_stream_map_.size()
            << ". activating " << stream_id;
@@ -598,8 +597,7 @@ QuicStreamId QuicSession::GetNextOutgoingStreamId() {
   return id;
 }
 
-ReliableQuicStream* QuicSession::GetOrCreateStream(
-    const QuicStreamId stream_id) {
+QuicStream* QuicSession::GetOrCreateStream(const QuicStreamId stream_id) {
   StaticStreamMap::iterator it = static_stream_map_.find(stream_id);
   if (it != static_stream_map_.end()) {
     return it->second;
@@ -660,7 +658,7 @@ bool QuicSession::ShouldYield(QuicStreamId stream_id) {
   return write_blocked_streams()->ShouldYield(stream_id);
 }
 
-ReliableQuicStream* QuicSession::GetOrCreateDynamicStream(
+QuicStream* QuicSession::GetOrCreateDynamicStream(
     const QuicStreamId stream_id) {
   DCHECK(!base::ContainsKey(static_stream_map_, stream_id))
       << "Attempt to call GetOrCreateDynamicStream for a static stream";

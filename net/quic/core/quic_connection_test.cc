@@ -4406,6 +4406,8 @@ TEST_P(QuicConnectionTest, Blocked) {
   blocked.stream_id = 3;
   EXPECT_CALL(visitor_, OnBlockedFrame(_));
   ProcessFramePacket(QuicFrame(&blocked));
+  EXPECT_EQ(1u, connection_.GetStats().blocked_frames_received);
+  EXPECT_EQ(0u, connection_.GetStats().blocked_frames_sent);
 }
 
 TEST_P(QuicConnectionTest, PathClose) {
@@ -5091,6 +5093,18 @@ TEST_P(QuicConnectionTest, SendPingImmediately) {
   EXPECT_CALL(debug_visitor, OnPacketSent(_, _, _, _, _)).Times(1);
   EXPECT_CALL(debug_visitor, OnPingSent()).Times(1);
   connection_.SendPing();
+  EXPECT_FALSE(connection_.HasQueuedData());
+}
+
+TEST_P(QuicConnectionTest, SendBlockedImmediately) {
+  MockQuicConnectionDebugVisitor debug_visitor;
+  connection_.set_debug_visitor(&debug_visitor);
+
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
+  EXPECT_CALL(debug_visitor, OnPacketSent(_, _, _, _, _)).Times(1);
+  EXPECT_EQ(0u, connection_.GetStats().blocked_frames_sent);
+  connection_.SendBlocked(3);
+  EXPECT_EQ(1u, connection_.GetStats().blocked_frames_sent);
   EXPECT_FALSE(connection_.HasQueuedData());
 }
 

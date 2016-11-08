@@ -68,17 +68,9 @@ QUIC_FLAG(bool, FLAGS_enable_async_get_proof, false)
 // versions less than 33.
 QUIC_FLAG(bool, FLAGS_quic_require_handshake_confirmation_pre33, false)
 
-// If true, defer creation of new connection till its CHLO arrives.
-QUIC_FLAG(bool, FLAGS_quic_buffer_packet_till_chlo, true)
-
 // If true, only open limited number of quic sessions per epoll event. Leave the
-// rest to next event. This flag can be turned on only if
-// --quic_buffer_packet_till_chlo is true.
+// rest to next event.
 QUIC_FLAG(bool, FLAGS_quic_limit_num_new_sessions_per_epoll_loop, true)
-
-// If true, lazy allocate and early release memeory used in
-// QuicStreamSequencerBuffer to buffer incoming data.
-QUIC_FLAG(bool, FLAGS_quic_reduce_sequencer_buffer_memory_life_time, true)
 
 // If true, disables QUIC version less than 34.
 QUIC_FLAG(bool, FLAGS_quic_disable_pre_34, true)

@@ -833,11 +833,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Sets the MTU discovery alarm if necessary.
   void MaybeSetMtuAlarm();
 
-  // On arrival of a new packet, checks to see if the socket addresses have
-  // changed since the last packet we saw on this connection.
-  void CheckForAddressMigration(const IPEndPoint& self_address,
-                                const IPEndPoint& peer_address);
-
   HasRetransmittableData IsRetransmittable(const SerializedPacket& packet);
   bool IsTerminationPacket(const SerializedPacket& packet);
 

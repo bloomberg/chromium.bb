@@ -385,7 +385,7 @@ MockQuicSession::~MockQuicSession() {
 
 // static
 QuicConsumedData MockQuicSession::ConsumeAllData(
-    ReliableQuicStream* /*stream*/,
+    QuicStream* /*stream*/,
     QuicStreamId /*id*/,
     const QuicIOVector& data,
     QuicStreamOffset /*offset*/,

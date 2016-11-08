@@ -978,6 +978,7 @@ bool QuicConnection::OnBlockedFrame(const QuicBlockedFrame& frame) {
            << "BLOCKED_FRAME received for stream: " << frame.stream_id;
   visitor_->OnBlockedFrame(frame);
   visitor_->PostProcessAfterData();
+  stats_.blocked_frames_received++;
   should_last_packet_instigate_acks_ = true;
   return connected_;
 }
@@ -1272,6 +1273,7 @@ void QuicConnection::SendBlocked(QuicStreamId id) {
   // Opportunistically bundle an ack with this outgoing packet.
   ScopedPacketBundler ack_bundler(this, SEND_ACK_IF_PENDING);
   packet_generator_.AddControlFrame(QuicFrame(new QuicBlockedFrame(id)));
+  stats_.blocked_frames_sent++;
 }
 
 void QuicConnection::SendPathClose(QuicPathId path_id) {
