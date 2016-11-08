@@ -11,6 +11,7 @@
 #include <memory>
 #include <set>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/memory_coordinator_client.h"
 #include "base/memory/memory_pressure_listener.h"
@@ -26,6 +27,7 @@ class RenderWidgetHost;
 }
 
 class SessionRestoreStatsCollector;
+class TabLoaderTest;
 
 // TabLoader is responsible for loading tabs after session restore has finished
 // creating all the tabs. Tabs are loaded after a previously tab finishes
@@ -60,6 +62,8 @@ class TabLoader : public content::NotificationObserver,
                           const base::TimeTicks& restore_started);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(TabLoaderTest, OnMemoryStateChange);
+
   friend class base::RefCounted<TabLoader>;
 
   using TabsLoading = std::set<content::NavigationController*>;

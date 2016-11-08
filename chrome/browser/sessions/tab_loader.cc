@@ -115,7 +115,9 @@ void TabLoader::StartLoading(const std::vector<RestoredTab>& tabs) {
       favicon::ContentFaviconDriver* favicon_driver =
           favicon::ContentFaviconDriver::FromWebContents(
               restored_tab.contents());
-      favicon_driver->FetchFavicon(favicon_driver->GetActiveURL());
+      // |favicon_driver| might be null when testing.
+      if (favicon_driver)
+        favicon_driver->FetchFavicon(favicon_driver->GetActiveURL());
     } else {
       tabs_loading_.insert(&restored_tab.contents()->GetController());
     }
