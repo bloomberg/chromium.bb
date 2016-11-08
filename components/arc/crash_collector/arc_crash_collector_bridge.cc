@@ -73,7 +73,7 @@ void ArcCrashCollectorBridge::OnInstanceReady() {
 void ArcCrashCollectorBridge::DumpCrash(const mojo::String& type,
                                         mojo::ScopedHandle pipe) {
   mojo::edk::ScopedPlatformHandle pipe_handle;
-  mojo::edk::PassWrappedPlatformHandle(pipe.get().value(), &pipe_handle);
+  mojo::edk::PassWrappedPlatformHandle(pipe.release().value(), &pipe_handle);
 
   blocking_task_runner_->PostTask(
       FROM_HERE, base::Bind(&RunCrashReporter, type, device_, board_, cpu_abi_,
