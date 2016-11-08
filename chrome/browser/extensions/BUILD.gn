@@ -920,8 +920,6 @@ static_library("extensions") {
 
   if (is_chromeos) {
     sources += [
-      "api/cast_devices_private/cast_devices_private_api.cc",
-      "api/cast_devices_private/cast_devices_private_api.h",
       "api/certificate_provider/certificate_provider_api.cc",
       "api/certificate_provider/certificate_provider_api.h",
       "api/enterprise_device_attributes/enterprise_device_attributes_api.cc",

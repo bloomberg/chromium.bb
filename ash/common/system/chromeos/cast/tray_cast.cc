@@ -313,7 +313,6 @@ CastTrayView::~CastTrayView() {}
 class CastDetailedView : public TrayDetailsView {
  public:
   CastDetailedView(SystemTrayItem* owner,
-                   LoginStatus login,
                    const CastConfigDelegate::ReceiversAndActivities&
                        receivers_and_activities);
   ~CastDetailedView() override;
@@ -333,13 +332,9 @@ class CastDetailedView : public TrayDetailsView {
   views::View* AddToReceiverList(
       const CastConfigDelegate::ReceiverAndActivity& receiverActivity);
 
-  void AppendSettingsEntries();
-
   // TrayDetailsView:
   void HandleViewClicked(views::View* view) override;
 
-  LoginStatus login_;
-  views::View* options_ = nullptr;
   // A mapping from the receiver id to the receiver/activity data.
   std::map<std::string, CastConfigDelegate::ReceiverAndActivity>
       receivers_and_activities_;
@@ -351,9 +346,8 @@ class CastDetailedView : public TrayDetailsView {
 
 CastDetailedView::CastDetailedView(
     SystemTrayItem* owner,
-    LoginStatus login,
     const CastConfigDelegate::ReceiversAndActivities& receivers_and_activities)
-    : TrayDetailsView(owner), login_(login) {
+    : TrayDetailsView(owner) {
   CreateItems();
   UpdateReceiverList(receivers_and_activities);
 }
@@ -372,8 +366,6 @@ void CastDetailedView::SimulateViewClickedForTest(
 
 void CastDetailedView::CreateItems() {
   CreateScrollableList();
-  if (GetCastConfigDelegate()->HasOptions())
-    AppendSettingsEntries();
   CreateTitleRow(IDS_ASH_STATUS_TRAY_CAST);
 }
 
@@ -441,31 +433,7 @@ views::View* CastDetailedView::AddToReceiverList(
   return container;
 }
 
-void CastDetailedView::AppendSettingsEntries() {
-  if (MaterialDesignController::IsSystemTrayMenuMaterial())
-    return;
-
-  // Settings requires a browser window, hide it for non logged in user.
-  if (login_ == LoginStatus::NOT_LOGGED_IN || login_ == LoginStatus::LOCKED ||
-      WmShell::Get()->GetSessionStateDelegate()->IsInSecondaryLoginScreen()) {
-    return;
-  }
-
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  HoverHighlightView* container = new HoverHighlightView(this);
-  container->AddLabel(rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_CAST_OPTIONS),
-                      gfx::ALIGN_LEFT, false /* highlight */);
-
-  AddChildView(container);
-  options_ = container;
-}
-
 void CastDetailedView::HandleViewClicked(views::View* view) {
-  if (view == options_) {
-    GetCastConfigDelegate()->LaunchCastOptions();
-    return;
-  }
-
   // Find the receiver we are going to cast to.
   auto it = receiver_activity_map_.find(view);
   if (it != receiver_activity_map_.end()) {
@@ -515,9 +483,8 @@ views::View* TrayCast::CreateTrayView(LoginStatus status) {
 views::View* TrayCast::CreateDefaultView(LoginStatus status) {
   CHECK(default_ == nullptr);
 
-  if (HasCastExtension()) {
-    CastConfigDelegate* cast_config_delegate = GetCastConfigDelegate();
-
+  CastConfigDelegate* cast_config_delegate = GetCastConfigDelegate();
+  if (cast_config_delegate) {
     // Add the cast observer here instead of the ctor for two reasons:
     // - The ctor gets called too early in the initialization cycle (at least
     //   for the tests); the correct profile hasn't been setup yet.
@@ -548,8 +515,7 @@ views::View* TrayCast::CreateDefaultView(LoginStatus status) {
 views::View* TrayCast::CreateDetailedView(LoginStatus status) {
   WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_DETAILED_CAST_VIEW);
   CHECK(detailed_ == nullptr);
-  detailed_ =
-      new tray::CastDetailedView(this, status, receivers_and_activities_);
+  detailed_ = new tray::CastDetailedView(this, receivers_and_activities_);
   return detailed_;
 }
 
@@ -563,12 +529,6 @@ void TrayCast::DestroyDefaultView() {
 
 void TrayCast::DestroyDetailedView() {
   detailed_ = nullptr;
-}
-
-bool TrayCast::HasCastExtension() {
-  CastConfigDelegate* cast_config_delegate = GetCastConfigDelegate();
-  return cast_config_delegate != nullptr &&
-         cast_config_delegate->HasCastExtension();
 }
 
 void TrayCast::OnDevicesUpdated(
@@ -585,7 +545,7 @@ void TrayCast::OnDevicesUpdated(
 }
 
 void TrayCast::UpdatePrimaryView() {
-  if (HasCastExtension() && !receivers_and_activities_.empty()) {
+  if (GetCastConfigDelegate() && !receivers_and_activities_.empty()) {
     if (default_) {
       if (is_casting_)
         default_->ActivateCastView();

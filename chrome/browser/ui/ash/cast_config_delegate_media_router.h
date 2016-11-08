@@ -28,12 +28,9 @@ class CastConfigDelegateMediaRouter : public ash::CastConfigDelegate {
 
  private:
   // CastConfigDelegate:
-  bool HasCastExtension() const override;
   void RequestDeviceRefresh() override;
   void CastToReceiver(const std::string& receiver_id) override;
   void StopCasting(const std::string& route_id) override;
-  bool HasOptions() const override;
-  void LaunchCastOptions() override;
   void AddObserver(ash::CastConfigDelegate::Observer* observer) override;
   void RemoveObserver(ash::CastConfigDelegate::Observer* observer) override;
 

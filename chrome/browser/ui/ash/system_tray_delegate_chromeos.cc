@@ -64,7 +64,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
-#include "chrome/browser/ui/ash/cast_config_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/cast_config_delegate_media_router.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/networking_config_delegate_chromeos.h"
@@ -100,7 +99,6 @@
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
-#include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
@@ -140,12 +138,6 @@ void BluetoothDeviceConnectError(
     device::BluetoothDevice::ConnectErrorCode error_code) {
 }
 
-std::unique_ptr<ash::CastConfigDelegate> CreateCastConfigDelegate() {
-  if (CastConfigDelegateMediaRouter::IsEnabled())
-    return base::MakeUnique<CastConfigDelegateMediaRouter>();
-  return base::MakeUnique<CastConfigDelegateChromeos>();
-}
-
 void OnAcceptMultiprofilesIntro(bool no_show_again) {
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   prefs->SetBoolean(prefs::kMultiProfileNeverShowIntro, no_show_again);
@@ -155,13 +147,7 @@ void OnAcceptMultiprofilesIntro(bool no_show_again) {
 }  // namespace
 
 SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
-    : user_profile_(NULL),
-      search_key_mapped_to_(input_method::kSearchKey),
-      have_session_start_time_(false),
-      have_session_length_limit_(false),
-      should_run_bluetooth_discovery_(false),
-      session_started_(false),
-      cast_config_delegate_(nullptr),
+    : cast_config_delegate_(base::MakeUnique<CastConfigDelegateMediaRouter>()),
       networking_config_delegate_(new NetworkingConfigDelegateChromeos()),
       vpn_delegate_(new VPNDelegateChromeOS),
       weak_ptr_factory_(this) {
@@ -567,8 +553,6 @@ bool SystemTrayDelegateChromeOS::GetBluetoothDiscovering() {
 }
 
 ash::CastConfigDelegate* SystemTrayDelegateChromeOS::GetCastConfigDelegate() {
-  if (!cast_config_delegate_)
-    cast_config_delegate_ = CreateCastConfigDelegate();
   return cast_config_delegate_.get();
 }
 

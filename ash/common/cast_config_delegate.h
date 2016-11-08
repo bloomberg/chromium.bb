@@ -85,11 +85,6 @@ class CastConfigDelegate {
 
   virtual ~CastConfigDelegate() {}
 
-  // Returns true if cast extension is installed.
-  // TODO(jdufault): Remove this function once the CastConfigDelegateChromeos is
-  // gone. See crbug.com/551132.
-  virtual bool HasCastExtension() const = 0;
-
   // Request fresh data from the backend. When the data is available, all
   // registered observers will get called.
   virtual void RequestDeviceRefresh() = 0;
@@ -100,16 +95,6 @@ class CastConfigDelegate {
   // Stop an ongoing cast (this should be a user initiated stop). |activity_id|
   // is the identifier of the activity/route that should be stopped.
   virtual void StopCasting(const std::string& activity_id) = 0;
-
-  // Does the device have a settings page?
-  // TODO(jdufault): Remove this function once the CastConfigDelegateChromeos is
-  // gone. See crbug.com/551132.
-  virtual bool HasOptions() const = 0;
-
-  // Opens Options page for cast.
-  // TODO(jdufault): Remove this function once the CastConfigDelegateChromeos is
-  // gone. See crbug.com/551132.
-  virtual void LaunchCastOptions() = 0;
 
   // Add or remove an observer.
   virtual void AddObserver(Observer* observer) = 0;

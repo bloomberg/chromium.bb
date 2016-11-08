@@ -39,6 +39,7 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "extensions/browser/app_window/app_window_registry.h"
+#include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/chromeos/ime/input_method_menu_manager.h"
 
@@ -252,15 +253,15 @@ class SystemTrayDelegateChromeOS
   std::unique_ptr<content::NotificationRegistrar> registrar_;
   std::unique_ptr<PrefChangeRegistrar> local_state_registrar_;
   std::unique_ptr<PrefChangeRegistrar> user_pref_registrar_;
-  Profile* user_profile_;
-  int search_key_mapped_to_;
-  bool have_session_start_time_;
+  Profile* user_profile_ = nullptr;
+  int search_key_mapped_to_ = input_method::kSearchKey;
+  bool have_session_start_time_ = false;
   base::TimeTicks session_start_time_;
-  bool have_session_length_limit_;
+  bool have_session_length_limit_ = false;
   base::TimeDelta session_length_limit_;
   std::string enterprise_domain_;
-  bool should_run_bluetooth_discovery_;
-  bool session_started_;
+  bool should_run_bluetooth_discovery_ = false;
+  bool session_started_ = false;
 
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
   std::unique_ptr<device::BluetoothDiscoverySession>

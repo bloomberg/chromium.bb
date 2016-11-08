@@ -151,10 +151,6 @@ CastDeviceCache* CastConfigDelegateMediaRouter::devices() {
   return devices_.get();
 }
 
-bool CastConfigDelegateMediaRouter::HasCastExtension() const {
-  return true;
-}
-
 void CastConfigDelegateMediaRouter::RequestDeviceRefresh() {
   // The media router component isn't ready yet.
   if (!devices())
@@ -222,13 +218,6 @@ void CastConfigDelegateMediaRouter::CastToReceiver(
 void CastConfigDelegateMediaRouter::StopCasting(const std::string& route_id) {
   GetMediaRouter()->TerminateRoute(route_id);
 }
-
-bool CastConfigDelegateMediaRouter::HasOptions() const {
-  // There are no plans to have an options page for the MediaRouter.
-  return false;
-}
-
-void CastConfigDelegateMediaRouter::LaunchCastOptions() {}
 
 void CastConfigDelegateMediaRouter::AddObserver(
     ash::CastConfigDelegate::Observer* observer) {

@@ -51,9 +51,6 @@ class ASH_EXPORT TrayCast : public SystemTrayItem,
   void OnDevicesUpdated(
       const CastConfigDelegate::ReceiversAndActivities& devices) override;
 
-  // Returns true if the cast extension was detected.
-  bool HasCastExtension();
-
   // This makes sure that the current view displayed in the tray is the correct
   // one, depending on if we are currently casting. If we're casting, then a
   // view with a stop button is displayed; otherwise, a view that links to a

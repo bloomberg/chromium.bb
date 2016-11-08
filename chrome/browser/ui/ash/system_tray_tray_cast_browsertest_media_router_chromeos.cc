@@ -94,17 +94,6 @@ class SystemTrayTrayCastMediaRouterChromeOSTest : public InProcessBrowserTest {
 
 }  // namespace
 
-// Sanity check to make sure that the media router delegate is getting used.
-IN_PROC_BROWSER_TEST_F(SystemTrayTrayCastMediaRouterChromeOSTest,
-                       VerifyThatMediaRouterIsBeingUsed) {
-  ash::CastConfigDelegate* cast_config_delegate =
-      ash::WmShell::Get()->system_tray_delegate()->GetCastConfigDelegate();
-
-  // The media router always reports false for HasOptions(); the extension
-  // always reports true.
-  EXPECT_FALSE(cast_config_delegate->HasOptions());
-}
-
 // Verifies that we only show the tray view if there are available cast
 // targets/sinks.
 IN_PROC_BROWSER_TEST_F(SystemTrayTrayCastMediaRouterChromeOSTest,

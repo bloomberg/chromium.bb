@@ -1276,8 +1276,6 @@ split_static_library("ui") {
       "ash/ash_init.h",
       "ash/ash_util.cc",
       "ash/ash_util.h",
-      "ash/cast_config_delegate_chromeos.cc",
-      "ash/cast_config_delegate_chromeos.h",
       "ash/cast_config_delegate_media_router.cc",
       "ash/cast_config_delegate_media_router.h",
       "ash/chrome_keyboard_ui.cc",

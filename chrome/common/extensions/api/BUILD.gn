@@ -91,7 +91,6 @@ if (enable_task_manager) {
 }
 if (is_chromeos) {
   schema_sources += [
-    "cast_devices_private.idl",
     "certificate_provider.idl",
     "certificate_provider_internal.idl",
     "echo_private.json",
