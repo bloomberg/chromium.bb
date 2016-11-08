@@ -53,6 +53,7 @@ class InputHandlerProxy
   enum EventDisposition {
     DID_HANDLE,
     DID_NOT_HANDLE,
+    DID_NOT_HANDLE_NON_BLOCKING_DUE_TO_FLING,
     DID_HANDLE_NON_BLOCKING,
     DROP_EVENT
   };

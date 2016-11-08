@@ -350,7 +350,6 @@ TEST_F(RenderWidgetUnittest, TouchDuringOrOutsideFlingUmaMetrics) {
   SyntheticWebTouchEvent touch;
   touch.PressPoint(10, 10);
   touch.dispatchType = blink::WebInputEvent::DispatchType::Blocking;
-  touch.dispatchedDuringFling = false;
   touch.touchStartOrFirstTouchMove = true;
   widget()->SendInputEvent(touch);
   histogram_tester().ExpectTotalCount("Event.Touch.TouchLatencyOutsideFling",

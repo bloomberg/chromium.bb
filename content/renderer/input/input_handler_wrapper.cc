@@ -61,7 +61,6 @@ blink::WebGestureCurve* InputHandlerWrapper::CreateFlingAnimationCurve(
     blink::WebGestureDevice deviceSource,
     const blink::WebFloatPoint& velocity,
     const blink::WebSize& cumulative_scroll) {
-  DidStartFlinging();
   return blink::Platform::current()->createFlingAnimationCurve(
       deviceSource, velocity, cumulative_scroll);
 }
@@ -77,10 +76,6 @@ void InputHandlerWrapper::DidOverscroll(
   params.current_fling_velocity = current_fling_velocity;
   params.causal_event_viewport_point = causal_event_viewport_point;
   input_handler_manager_->DidOverscroll(routing_id_, params);
-}
-
-void InputHandlerWrapper::DidStartFlinging() {
-  input_handler_manager_->DidStartFlinging(routing_id_);
 }
 
 void InputHandlerWrapper::DidStopFlinging() {

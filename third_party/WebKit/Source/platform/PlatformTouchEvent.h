@@ -32,7 +32,6 @@ class PlatformTouchEvent : public PlatformEvent {
       : PlatformEvent(PlatformEvent::TouchStart),
         m_dispatchType(PlatformEvent::Blocking),
         m_causesScrollingIfUncanceled(false),
-        m_dispatchedDuringFling(false),
         m_touchStartOrFirstTouchMove(false) {}
 
   const Vector<PlatformTouchPoint>& touchPoints() const {
@@ -44,7 +43,6 @@ class PlatformTouchEvent : public PlatformEvent {
   bool causesScrollingIfUncanceled() const {
     return m_causesScrollingIfUncanceled;
   }
-  bool dispatchedDuringFling() const { return m_dispatchedDuringFling; }
   bool touchStartOrFirstTouchMove() const {
     return m_touchStartOrFirstTouchMove;
   }
@@ -54,7 +52,6 @@ class PlatformTouchEvent : public PlatformEvent {
   Vector<PlatformTouchPoint> m_touchPoints;
   DispatchType m_dispatchType;
   bool m_causesScrollingIfUncanceled;
-  bool m_dispatchedDuringFling;
   bool m_touchStartOrFirstTouchMove;
   uint32_t m_uniqueTouchEventId;
 };

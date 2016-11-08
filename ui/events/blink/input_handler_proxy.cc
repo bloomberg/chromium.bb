@@ -812,7 +812,6 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureFlingStart(
                            TRACE_EVENT_SCOPE_THREAD);
       gesture_scroll_on_impl_thread_ = false;
       fling_may_be_active_on_main_thread_ = true;
-      client_->DidStartFlinging();
       return DID_NOT_HANDLE;
     }
     case cc::InputHandler::SCROLL_IGNORED: {
@@ -891,6 +890,10 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchStart(
           cc::EventListenerProperties::kNone) {
     result = DID_HANDLE_NON_BLOCKING;
   }
+
+  bool is_fling_on_impl = fling_curve_ && !fling_may_be_active_on_main_thread_;
+  if (result == DID_NOT_HANDLE && is_fling_on_impl)
+    result = DID_NOT_HANDLE_NON_BLOCKING_DUE_TO_FLING;
 
   return result;
 }
@@ -1327,9 +1330,11 @@ bool InputHandlerProxy::TouchpadFlingScroll(
       // the subarea but then is flung "under" the pointer.
       client_->TransferActiveWheelFlingAnimation(fling_parameters_);
       fling_may_be_active_on_main_thread_ = true;
-      client_->DidStartFlinging();
       CancelCurrentFlingWithoutNotifyingClient();
       break;
+    case DID_NOT_HANDLE_NON_BLOCKING_DUE_TO_FLING:
+      NOTREACHED();
+      return false;
   }
 
   return false;

@@ -59,6 +59,8 @@ const char* GetEventAckName(InputEventAckState ack_result) {
     case INPUT_EVENT_ACK_STATE_IGNORED: return "IGNORED";
     case INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING:
       return "SET_NON_BLOCKING";
+    case INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING:
+      return "SET_NON_BLOCKING_DUE_TO_FLING";
   }
   DLOG(WARNING) << "Unhandled InputEventAckState in GetEventAckName.";
   return "";

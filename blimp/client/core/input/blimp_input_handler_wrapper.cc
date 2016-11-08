@@ -71,6 +71,10 @@ void BlimpInputHandlerWrapper::HandleWebGestureEvent(
     case ui::InputHandlerProxy::EventDisposition::DID_NOT_HANDLE:
       consumed = false;
       break;
+    case ui::InputHandlerProxy::EventDisposition::
+        DID_NOT_HANDLE_NON_BLOCKING_DUE_TO_FLING:
+      NOTREACHED();
+      break;
   }
 
   main_task_runner_->PostTask(
@@ -121,10 +125,6 @@ void BlimpInputHandlerWrapper::DidOverscroll(
     const gfx::Vector2dF& latest_overscroll_delta,
     const gfx::Vector2dF& current_fling_velocity,
     const gfx::PointF& causal_event_viewport_point) {
-  DCHECK(compositor_thread_checker_.CalledOnValidThread());
-}
-
-void BlimpInputHandlerWrapper::DidStartFlinging() {
   DCHECK(compositor_thread_checker_.CalledOnValidThread());
 }
 

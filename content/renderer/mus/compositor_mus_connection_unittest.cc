@@ -132,7 +132,6 @@ class TestInputHandlerManagerClient : public InputHandlerManagerClient {
   void UnregisterRoutingID(int routing_id) override {}
   void DidOverscroll(int routing_id,
                      const ui::DidOverscrollParams& params) override {}
-  void DidStartFlinging(int routing_id) override {}
   void DidStopFlinging(int routing_id) override {}
   void DispatchNonBlockingEventToMainThread(
       int routing_id,

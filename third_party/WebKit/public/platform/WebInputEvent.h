@@ -635,10 +635,6 @@ class WebTouchEvent : public WebInputEvent {
   // touch-point has moved (by whatever amount).
   bool movedBeyondSlopRegion;
 
-  // Whether there was an active fling animation when the event was
-  // dispatched.
-  bool dispatchedDuringFling;
-
   // Whether this touch event is a touchstart or a first touchmove event per
   // scroll.
   bool touchStartOrFirstTouchMove;
@@ -652,7 +648,6 @@ class WebTouchEvent : public WebInputEvent {
         touchesLength(0),
         dispatchType(Blocking),
         movedBeyondSlopRegion(false),
-        dispatchedDuringFling(false),
         touchStartOrFirstTouchMove(false),
         uniqueTouchEventId(0) {}
 };

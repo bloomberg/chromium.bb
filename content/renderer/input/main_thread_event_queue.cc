@@ -68,7 +68,6 @@ MainThreadEventQueue::MainThreadEventQueue(
     blink::scheduler::RendererScheduler* renderer_scheduler)
     : routing_id_(routing_id),
       client_(client),
-      is_flinging_(false),
       last_touch_start_forced_nonblocking_due_to_fling_(false),
       enable_fling_passive_listener_flag_(base::FeatureList::IsEnabled(
           features::kPassiveEventListenersDueToFling)),
@@ -89,6 +88,7 @@ bool MainThreadEventQueue::HandleEvent(
   DCHECK(original_dispatch_type == DISPATCH_TYPE_BLOCKING ||
          original_dispatch_type == DISPATCH_TYPE_NON_BLOCKING);
   DCHECK(ack_result == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING ||
+         ack_result == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING ||
          ack_result == INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
 
   bool non_blocking = original_dispatch_type == DISPATCH_TYPE_NON_BLOCKING ||
@@ -99,7 +99,7 @@ bool MainThreadEventQueue::HandleEvent(
   if (is_touch) {
     blink::WebTouchEvent* touch_event =
         static_cast<blink::WebTouchEvent*>(event.get());
-    touch_event->dispatchedDuringFling = is_flinging_;
+
     // Adjust the |dispatchType| on the event since the compositor
     // determined all event listeners are passive.
     if (non_blocking) {
@@ -114,7 +114,8 @@ bool MainThreadEventQueue::HandleEvent(
         touch_event->dispatchType == blink::WebInputEvent::Blocking) {
       // If the touch start is forced to be passive due to fling, its following
       // touch move should also be passive.
-      if (is_flinging_ || last_touch_start_forced_nonblocking_due_to_fling_) {
+      if (ack_result == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING ||
+          last_touch_start_forced_nonblocking_due_to_fling_) {
         touch_event->dispatchType =
             blink::WebInputEvent::ListenersForcedNonBlockingDueToFling;
         non_blocking = true;

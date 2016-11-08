@@ -465,7 +465,6 @@ PlatformTouchEventBuilder::PlatformTouchEventBuilder(
   m_modifiers = event.modifiers;
   m_timestamp = event.timeStampSeconds;
   m_causesScrollingIfUncanceled = event.movedBeyondSlopRegion;
-  m_dispatchedDuringFling = event.dispatchedDuringFling;
   m_touchStartOrFirstTouchMove = event.touchStartOrFirstTouchMove;
 
   for (unsigned i = 0; i < event.touchesLength; ++i)
