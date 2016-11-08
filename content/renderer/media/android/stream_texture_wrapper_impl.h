@@ -42,7 +42,10 @@ namespace content {
 class CONTENT_EXPORT StreamTextureWrapperImpl
     : public media::StreamTextureWrapper {
  public:
+  // |enable_texture_copy| controls the VideoFrameMetadata::COPY_REQUIRED flag,
+  // making sure it is correctly set on |current_frame_|, for webview scenarios.
   static media::ScopedStreamTextureWrapper Create(
+      bool enable_texture_copy,
       scoped_refptr<StreamTextureFactory> factory,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
 
@@ -80,6 +83,7 @@ class CONTENT_EXPORT StreamTextureWrapperImpl
 
  private:
   StreamTextureWrapperImpl(
+      bool enable_texture_copy,
       scoped_refptr<StreamTextureFactory> factory,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
   ~StreamTextureWrapperImpl() override;
@@ -94,6 +98,8 @@ class CONTENT_EXPORT StreamTextureWrapperImpl
 
   void SetCurrentFrameInternal(
       const scoped_refptr<media::VideoFrame>& video_frame);
+
+  bool enable_texture_copy_;
 
   // Client GL texture ID allocated to the StreamTexture.
   unsigned texture_id_;

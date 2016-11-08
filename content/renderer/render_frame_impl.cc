@@ -2817,6 +2817,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
         render_thread->compositor_task_runner(),
         std::move(mojo_renderer_factory),
         base::Bind(&StreamTextureWrapperImpl::Create,
+                   render_thread->EnableStreamTextureCopy(),
                    render_thread->GetStreamTexureFactory(),
                    base::ThreadTaskRunnerHandle::Get()));
 #endif  // defined(OS_ANDROID)

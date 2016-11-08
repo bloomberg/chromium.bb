@@ -25,7 +25,7 @@ class StreamTextureWrapperImplTest : public testing::Test {
 // be destroyed via StreamTextureWrapper::Deleter.
 TEST_F(StreamTextureWrapperImplTest, ConstructionDestruction_ShouldSucceed) {
   media::ScopedStreamTextureWrapper stream_texture_wrapper =
-      StreamTextureWrapperImpl::Create(nullptr,
+      StreamTextureWrapperImpl::Create(false, nullptr,
                                        base::ThreadTaskRunnerHandle::Get());
 }
 

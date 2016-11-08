@@ -30,9 +30,11 @@ void OnReleaseTexture(scoped_refptr<content::StreamTextureFactory> factories,
 namespace content {
 
 StreamTextureWrapperImpl::StreamTextureWrapperImpl(
+    bool enable_texture_copy,
     scoped_refptr<StreamTextureFactory> factory,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
-    : texture_id_(0),
+    : enable_texture_copy_(enable_texture_copy),
+      texture_id_(0),
       factory_(factory),
       main_task_runner_(main_task_runner),
       weak_factory_(this) {}
@@ -51,10 +53,11 @@ StreamTextureWrapperImpl::~StreamTextureWrapperImpl() {
 }
 
 media::ScopedStreamTextureWrapper StreamTextureWrapperImpl::Create(
+    bool enable_texture_copy,
     scoped_refptr<StreamTextureFactory> factory,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner) {
-  return media::ScopedStreamTextureWrapper(
-      new StreamTextureWrapperImpl(factory, main_task_runner));
+  return media::ScopedStreamTextureWrapper(new StreamTextureWrapperImpl(
+      enable_texture_copy, factory, main_task_runner));
 }
 
 scoped_refptr<media::VideoFrame> StreamTextureWrapperImpl::GetCurrentFrame() {
@@ -97,8 +100,10 @@ void StreamTextureWrapperImpl::ReallocateVideoFrame(
           natural_size, gfx::Rect(natural_size), natural_size,
           base::TimeDelta());
 
-  // TODO(tguilbert): Create and pipe the enable_texture_copy_ flag for Webview
-  // scenarios. See crbug.com/628066.
+  if (enable_texture_copy_) {
+    new_frame->metadata()->SetBoolean(media::VideoFrameMetadata::COPY_REQUIRED,
+                                      true);
+  }
 
   SetCurrentFrameInternal(new_frame);
 }
