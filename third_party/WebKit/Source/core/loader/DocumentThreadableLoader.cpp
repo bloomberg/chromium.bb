@@ -171,7 +171,7 @@ DocumentThreadableLoader::DocumentThreadableLoader(
                               ? kMaxCORSRedirects
                               : 0),
       m_redirectMode(WebURLRequest::FetchRedirectModeFollow),
-      m_didRedirect(false) {
+      m_overrideReferrer(false) {
   DCHECK(client);
 }
 
@@ -312,6 +312,14 @@ void DocumentThreadableLoader::dispatchInitialRequest(
   makeCrossOriginAccessRequest(request);
 }
 
+void DocumentThreadableLoader::prepareCrossOriginRequest(
+    ResourceRequest& request) {
+  if (getSecurityOrigin())
+    request.setHTTPOrigin(getSecurityOrigin());
+  if (m_overrideReferrer)
+    request.setHTTPReferrer(m_referrerAfterRedirect);
+}
+
 void DocumentThreadableLoader::makeCrossOriginAccessRequest(
     const ResourceRequest& request) {
   DCHECK(m_options.crossOriginRequestPolicy == UseAccessControl ||
@@ -353,6 +361,19 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(
   ResourceRequest crossOriginRequest(request);
   ResourceLoaderOptions crossOriginOptions(m_resourceLoaderOptions);
 
+  crossOriginRequest.removeCredentials();
+
+  crossOriginRequest.setAllowStoredCredentials(effectiveAllowCredentials() ==
+                                               AllowStoredCredentials);
+
+  // We update the credentials mode according to effectiveAllowCredentials()
+  // here for backward compatibility. But this is not correct.
+  // FIXME: We should set it in the caller of DocumentThreadableLoader.
+  crossOriginRequest.setFetchCredentialsMode(
+      effectiveAllowCredentials() == AllowStoredCredentials
+          ? WebURLRequest::FetchCredentialsModeInclude
+          : WebURLRequest::FetchCredentialsModeOmit);
+
   // We use isSimpleOrForbiddenRequest() here since |request| may have been
   // modified in the process of loading (not from the user's input). For
   // example, referrer. We need to accept them. For security, we must reject
@@ -362,54 +383,39 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(
         FetchUtils::isSimpleOrForbiddenRequest(request.httpMethod(),
                                                request.httpHeaderFields())) ||
        m_options.preflightPolicy == PreventPreflight)) {
-    updateRequestForAccessControl(crossOriginRequest, getSecurityOrigin(),
-                                  effectiveAllowCredentials());
-    // We update the credentials mode according to effectiveAllowCredentials()
-    // here for backward compatibility. But this is not correct.
-    // FIXME: We should set it in the caller of DocumentThreadableLoader.
-    crossOriginRequest.setFetchCredentialsMode(
-        effectiveAllowCredentials() == AllowStoredCredentials
-            ? WebURLRequest::FetchCredentialsModeInclude
-            : WebURLRequest::FetchCredentialsModeOmit);
-    if (m_didRedirect) {
-      crossOriginRequest.setHTTPReferrer(m_referrerAfterRedirect);
-    }
+    prepareCrossOriginRequest(crossOriginRequest);
     loadRequest(crossOriginRequest, crossOriginOptions);
   } else {
     m_crossOriginNonSimpleRequest = true;
-    // Do not set the Origin header for preflight requests.
-    updateRequestForAccessControl(crossOriginRequest, 0,
-                                  effectiveAllowCredentials());
-    // We update the credentials mode according to effectiveAllowCredentials()
-    // here for backward compatibility. But this is not correct.
-    // FIXME: We should set it in the caller of DocumentThreadableLoader.
-    crossOriginRequest.setFetchCredentialsMode(
-        effectiveAllowCredentials() == AllowStoredCredentials
-            ? WebURLRequest::FetchCredentialsModeInclude
-            : WebURLRequest::FetchCredentialsModeOmit);
-    m_actualRequest = crossOriginRequest;
-    m_actualOptions = crossOriginOptions;
-
-    if (m_didRedirect) {
-      m_actualRequest.setHTTPReferrer(m_referrerAfterRedirect);
-    }
 
     bool shouldForcePreflight =
         request.isExternalRequest() ||
         InspectorInstrumentation::shouldForceCORSPreflight(m_document);
     bool canSkipPreflight =
         CrossOriginPreflightResultCache::shared().canSkipPreflight(
-            getSecurityOrigin()->toString(), m_actualRequest.url(),
-            effectiveAllowCredentials(), m_actualRequest.httpMethod(),
-            m_actualRequest.httpHeaderFields());
+            getSecurityOrigin()->toString(), crossOriginRequest.url(),
+            effectiveAllowCredentials(), crossOriginRequest.httpMethod(),
+            crossOriginRequest.httpHeaderFields());
     if (canSkipPreflight && !shouldForcePreflight) {
-      loadActualRequest();
+      if (getSecurityOrigin())
+        crossOriginRequest.setHTTPOrigin(getSecurityOrigin());
+      if (m_overrideReferrer)
+        crossOriginRequest.setHTTPReferrer(m_referrerAfterRedirect);
+
+      prepareCrossOriginRequest(crossOriginRequest);
+      loadRequest(crossOriginRequest, crossOriginOptions);
     } else {
       ResourceRequest preflightRequest = createAccessControlPreflightRequest(
-          m_actualRequest, getSecurityOrigin());
+          crossOriginRequest, getSecurityOrigin());
+
       // Create a ResourceLoaderOptions for preflight.
-      ResourceLoaderOptions preflightOptions = m_actualOptions;
+      ResourceLoaderOptions preflightOptions = crossOriginOptions;
       preflightOptions.allowCredentials = DoNotAllowStoredCredentials;
+
+      m_actualRequest = crossOriginRequest;
+      m_actualOptions = crossOriginOptions;
+
+      prepareCrossOriginRequest(crossOriginRequest);
       loadRequest(preflightRequest, preflightOptions);
     }
   }
@@ -631,7 +637,7 @@ bool DocumentThreadableLoader::redirectReceived(
     m_forceDoNotAllowStoredCredentials = true;
 
   // Save the referrer to use when following the redirect.
-  m_didRedirect = true;
+  m_overrideReferrer = true;
   m_referrerAfterRedirect =
       Referrer(request.httpReferrer(), request.getReferrerPolicy());
 
@@ -935,8 +941,6 @@ void DocumentThreadableLoader::loadActualRequest() {
   m_actualRequest = ResourceRequest();
   m_actualOptions = ResourceLoaderOptions();
 
-  actualRequest.setHTTPOrigin(getSecurityOrigin());
-
   clearResource();
 
   // Explicitly set the SkipServiceWorker flag here. Even if the page was not
@@ -945,6 +949,7 @@ void DocumentThreadableLoader::loadActualRequest() {
   // the actual request to the SW. https://crbug.com/604583
   actualRequest.setSkipServiceWorker(WebURLRequest::SkipServiceWorker::All);
 
+  prepareCrossOriginRequest(actualRequest);
   loadRequest(actualRequest, actualOptions);
 }
 

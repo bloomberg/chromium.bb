@@ -53,16 +53,6 @@ bool isOnAccessControlResponseHeaderWhitelist(const String& name) {
   return allowedCrossOriginResponseHeaders.contains(name);
 }
 
-void updateRequestForAccessControl(ResourceRequest& request,
-                                   const SecurityOrigin* securityOrigin,
-                                   StoredCredentials allowCredentials) {
-  request.removeCredentials();
-  request.setAllowStoredCredentials(allowCredentials == AllowStoredCredentials);
-
-  if (securityOrigin)
-    request.setHTTPOrigin(securityOrigin);
-}
-
 // Fetch API Spec: https://fetch.spec.whatwg.org/#cors-preflight-fetch-0
 static AtomicString createAccessControlRequestHeadersHeader(
     const HTTPHeaderMap& headers) {
@@ -97,9 +87,13 @@ static AtomicString createAccessControlRequestHeadersHeader(
 ResourceRequest createAccessControlPreflightRequest(
     const ResourceRequest& request,
     const SecurityOrigin* securityOrigin) {
-  ResourceRequest preflightRequest(request.url());
-  updateRequestForAccessControl(preflightRequest, securityOrigin,
-                                DoNotAllowStoredCredentials);
+  const KURL& requestURL = request.url();
+
+  DCHECK(requestURL.user().isEmpty());
+  DCHECK(requestURL.pass().isEmpty());
+
+  ResourceRequest preflightRequest(requestURL);
+  preflightRequest.setAllowStoredCredentials(false);
   preflightRequest.setHTTPMethod(HTTPNames::OPTIONS);
   preflightRequest.setHTTPHeaderField(HTTPNames::Access_Control_Request_Method,
                                       AtomicString(request.httpMethod()));

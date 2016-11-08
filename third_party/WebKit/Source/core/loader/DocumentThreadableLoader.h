@@ -146,6 +146,8 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
 
   void loadRequestAsync(const ResourceRequest&, ResourceLoaderOptions);
   void loadRequestSync(const ResourceRequest&, ResourceLoaderOptions);
+
+  void prepareCrossOriginRequest(ResourceRequest&);
   void loadRequest(const ResourceRequest&, ResourceLoaderOptions);
   bool isAllowedRedirect(const KURL&) const;
   // Returns DoNotAllowStoredCredentials if m_forceDoNotAllowStoredCredentials
@@ -234,7 +236,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
 
   // Holds the referrer after a redirect response was received. This referrer is
   // used to populate the HTTP Referer header when following the redirect.
-  bool m_didRedirect;
+  bool m_overrideReferrer;
   Referrer m_referrerAfterRedirect;
 
   RawResourceClientStateChecker m_checker;

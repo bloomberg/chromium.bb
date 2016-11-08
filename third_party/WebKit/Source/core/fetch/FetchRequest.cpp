@@ -105,17 +105,24 @@ void FetchRequest::setCrossOriginAccessControl(
       useCredentials ? WebURLRequest::FetchCredentialsModeInclude
                      : WebURLRequest::FetchCredentialsModeSameOrigin);
 
-  m_options.allowCredentials = (isSameOriginRequest || useCredentials)
-                                   ? AllowStoredCredentials
-                                   : DoNotAllowStoredCredentials;
+  if (isSameOriginRequest || useCredentials) {
+    m_options.allowCredentials = AllowStoredCredentials;
+    m_resourceRequest.setAllowStoredCredentials(true);
+  } else {
+    m_options.allowCredentials = DoNotAllowStoredCredentials;
+    m_resourceRequest.setAllowStoredCredentials(false);
+  }
   m_options.corsEnabled = IsCORSEnabled;
   m_options.securityOrigin = origin;
   m_options.credentialsRequested = useCredentials
                                        ? ClientRequestedCredentials
                                        : ClientDidNotRequestCredentials;
 
-  updateRequestForAccessControl(m_resourceRequest, origin,
-                                m_options.allowCredentials);
+  // TODO: Credentials should be removed only when the request is cross origin.
+  m_resourceRequest.removeCredentials();
+
+  if (origin)
+    m_resourceRequest.setHTTPOrigin(origin);
 }
 
 void FetchRequest::setResourceWidth(ResourceWidth resourceWidth) {

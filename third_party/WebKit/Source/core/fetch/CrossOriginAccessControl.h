@@ -63,9 +63,6 @@ class CrossOriginAccessControl {
 
 CORE_EXPORT bool isOnAccessControlResponseHeaderWhitelist(const String&);
 
-void updateRequestForAccessControl(ResourceRequest&,
-                                   const SecurityOrigin*,
-                                   StoredCredentials);
 CORE_EXPORT ResourceRequest
 createAccessControlPreflightRequest(const ResourceRequest&,
                                     const SecurityOrigin*);
