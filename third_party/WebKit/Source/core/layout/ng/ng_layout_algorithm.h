@@ -11,6 +11,7 @@
 
 namespace blink {
 
+struct MinAndMaxContentSizes;
 class NGConstraintSpace;
 class NGPhysicalFragment;
 

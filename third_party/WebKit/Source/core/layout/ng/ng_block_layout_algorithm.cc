@@ -13,6 +13,7 @@
 #include "core/layout/ng/ng_units.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/LengthFunctions.h"
+#include "wtf/Optional.h"
 
 namespace blink {
 namespace {
@@ -151,8 +152,13 @@ bool NGBlockLayoutAlgorithm::Layout(NGPhysicalFragment** out) {
       border_and_padding_ =
           ComputeBorders(Style()) + ComputePadding(*constraint_space_, Style());
 
+      WTF::Optional<MinAndMaxContentSizes> sizes;
+      if (NeedMinAndMaxContentSizes(Style())) {
+        // TODOO(layout-ng): Implement
+        sizes = MinAndMaxContentSizes();
+      }
       LayoutUnit inline_size =
-          ComputeInlineSizeForFragment(*constraint_space_, Style());
+          ComputeInlineSizeForFragment(*constraint_space_, Style(), sizes);
       LayoutUnit adjusted_inline_size =
           inline_size - border_and_padding_.InlineSum();
       // TODO(layout-ng): For quirks mode, should we pass blockSize instead of
