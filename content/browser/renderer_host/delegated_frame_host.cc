@@ -82,6 +82,8 @@ DelegatedFrameHost::DelegatedFrameHost(const cc::FrameSinkId& frame_sink_id,
   factory->GetSurfaceManager()->RegisterFrameSinkId(frame_sink_id_);
   factory->GetSurfaceManager()->RegisterSurfaceFactoryClient(frame_sink_id_,
                                                              this);
+  surface_factory_ = base::MakeUnique<cc::SurfaceFactory>(
+      frame_sink_id_, factory->GetSurfaceManager(), this);
 }
 
 void DelegatedFrameHost::WasShown(const ui::LatencyInfo& latency_info) {
@@ -387,7 +389,7 @@ void DelegatedFrameHost::AttemptFrameSubscriberCapture(
         subscriber_texture->target()));
   }
 
-  if (surface_factory_.get()) {
+  if (!local_frame_id_.is_null()) {
     // To avoid unnecessary composites, go directly to the Surface rather than
     // through RequestCopyOfOutput (which goes through the browser
     // compositor).
@@ -456,7 +458,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(uint32_t compositor_frame_sink_id,
     // the DelegatedRendererLayer.
     EvictDelegatedFrame();
 
-    surface_factory_.reset();
+    surface_factory_->Reset();
     if (!surface_returned_resources_.empty()) {
       SendReclaimCompositorResources(last_compositor_frame_sink_id_,
                                      false /* is_swap_ack */);
@@ -474,10 +476,6 @@ void DelegatedFrameHost::SwapDelegatedFrame(uint32_t compositor_frame_sink_id,
   } else {
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
     cc::SurfaceManager* manager = factory->GetSurfaceManager();
-    if (!surface_factory_) {
-      surface_factory_ =
-          base::MakeUnique<cc::SurfaceFactory>(frame_sink_id_, manager, this);
-    }
     if (local_frame_id_.is_null() || frame_size != current_surface_size_ ||
         frame_size_in_dip != current_frame_size_in_dip_) {
       if (!local_frame_id_.is_null())
