@@ -61,7 +61,6 @@ source_set("generated") {
     "//third_party/libwebp",
     "//third_party/libxml",
     "//third_party/libxslt",
-    "//third_party/qcms",
     "//third_party/sqlite",
 
     # FIXME: don't depend on bindings/modules http://crbug.com/358074
@@ -88,7 +87,6 @@ source_set("prerequisites") {
     "//third_party/libxml",
     "//third_party/libxslt",
     "//third_party/ots",
-    "//third_party/qcms",
     "//third_party/snappy",
     "//third_party/sqlite",
     "//third_party/zlib",
@@ -144,7 +142,6 @@ component("core") {
     "//skia",
     "//third_party/WebKit/Source/platform",
     "//third_party/WebKit/Source/wtf",
-    "//third_party/qcms",
     "//url",
     "//v8",
   ]
@@ -945,7 +942,6 @@ target(core_link_small_target_type, "core_generated") {
     "//third_party/libwebp",
     "//third_party/libxml",
     "//third_party/libxslt",
-    "//third_party/qcms",
     "//third_party/sqlite",
 
     # FIXME: don't depend on bindings/modules http://crbug.com/358074

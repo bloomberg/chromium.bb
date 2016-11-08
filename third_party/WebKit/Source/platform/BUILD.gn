@@ -1398,7 +1398,6 @@ component("platform") {
     "//third_party/libpng",
     "//third_party/libwebp",
     "//third_party/ots",
-    "//third_party/qcms",
     "//url",
     "//v8",
   ]
@@ -1595,7 +1594,6 @@ static_library("test_support") {
   deps = [
     "//base/test:test_support",
     "//mojo/edk/system",
-    "//third_party/qcms",
   ]
 
   if (is_win) {
