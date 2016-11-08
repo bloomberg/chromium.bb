@@ -711,6 +711,9 @@ void ResourcePrefetchPredictor::OnHistoryAndCacheLoaded() {
         this, config_, profile_->GetRequestContext());
   }
   initialization_state_ = INITIALIZED;
+
+  if (observer_)
+    observer_->OnPredictorInitialized();
 }
 
 void ResourcePrefetchPredictor::CleanupAbandonedNavigations(

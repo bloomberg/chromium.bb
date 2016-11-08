@@ -60,6 +60,52 @@ RedirectData CreateRedirectData(const std::string& primary_key,
   return data;
 }
 
+NavigationID CreateNavigationID(int process_id,
+                                int render_frame_id,
+                                const std::string& main_frame_url) {
+  NavigationID navigation_id(process_id, render_frame_id, GURL(main_frame_url));
+  navigation_id.creation_time = base::TimeTicks::Now();
+  return navigation_id;
+}
+
+PageRequestSummary CreatePageRequestSummary(
+    const std::string& main_frame_url,
+    const std::string& initial_url,
+    const std::vector<URLRequestSummary>& subresource_requests) {
+  GURL main_frame_gurl(main_frame_url);
+  PageRequestSummary summary(main_frame_gurl);
+  summary.initial_url = GURL(initial_url);
+  summary.subresource_requests = subresource_requests;
+  return summary;
+}
+
+URLRequestSummary CreateURLRequestSummary(int process_id,
+                                          int render_frame_id,
+                                          const std::string& main_frame_url,
+                                          const std::string& resource_url,
+                                          content::ResourceType resource_type,
+                                          net::RequestPriority priority,
+                                          const std::string& mime_type,
+                                          bool was_cached,
+                                          const std::string& redirect_url,
+                                          bool has_validators,
+                                          bool always_revalidate) {
+  URLRequestSummary summary;
+  summary.navigation_id =
+      CreateNavigationID(process_id, render_frame_id, main_frame_url);
+  summary.resource_url =
+      resource_url.empty() ? GURL(main_frame_url) : GURL(resource_url);
+  summary.resource_type = resource_type;
+  summary.priority = priority;
+  summary.mime_type = mime_type;
+  summary.was_cached = was_cached;
+  if (!redirect_url.empty())
+    summary.redirect_url = GURL(redirect_url);
+  summary.has_validators = has_validators;
+  summary.always_revalidate = always_revalidate;
+  return summary;
+}
+
 std::ostream& operator<<(std::ostream& os, const PrefetchData& data) {
   os << "[" << data.primary_key() << "," << data.last_visit_time() << "]"
      << std::endl;

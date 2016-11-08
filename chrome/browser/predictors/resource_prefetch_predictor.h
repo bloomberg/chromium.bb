@@ -163,6 +163,7 @@ class ResourcePrefetchPredictor
  private:
   friend class ::PredictorsHandler;
   friend class ResourcePrefetchPredictorTest;
+  friend class ResourcePrefetchPredictorBrowserTest;
 
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, DeleteUrls);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
@@ -364,6 +365,8 @@ class TestObserver {
   virtual void OnNavigationLearned(
       size_t url_visit_count,
       const ResourcePrefetchPredictor::PageRequestSummary& summary) {}
+
+  virtual void OnPredictorInitialized() {}
 
  protected:
   // |predictor| must be non-NULL and has to outlive the TestObserver.
