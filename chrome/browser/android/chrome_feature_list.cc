@@ -33,6 +33,7 @@ namespace {
 const base::Feature* kFeaturesExposedToJava[] = {
     &autofill::kAutofillScanCardholderName,
     &features::kAutoplayMutedVideos,
+    &features::kConsistentOmniboxGeolocation,
     &features::kCredentialManagementAPI,
     &features::kSimplifiedFullscreenUI,
     &features::kVrShell,
