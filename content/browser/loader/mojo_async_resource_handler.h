@@ -34,7 +34,6 @@ struct ResourceResponse;
 // when LoadingWithMojo runtime flag is enabled.
 //
 // TODO(yhirano): Implement redirects.
-// TODO(yhirano): Implement downloading to file.
 // TODO(yhirano): Add histograms.
 // TODO(yhirano): Set zoom level.
 // TODO(yhirano): Send cached metadata.
@@ -104,6 +103,7 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
   bool is_using_io_buffer_not_from_writer_ = false;
   bool did_defer_ = false;
   base::TimeTicks response_started_ticks_;
+  int64_t reported_total_received_bytes_ = 0;
 
   mojo::Watcher handle_watcher_;
   std::unique_ptr<mojom::URLLoader> url_loader_;

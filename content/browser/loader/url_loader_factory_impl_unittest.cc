@@ -4,6 +4,8 @@
 
 #include "content/browser/loader/url_loader_factory_impl.h"
 
+#include <stdint.h>
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -46,6 +48,7 @@
 #include "net/http/http_util.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
+#include "net/test/url_request/url_request_slow_download_job.h"
 #include "net/url_request/url_request_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -168,7 +171,6 @@ TEST_P(URLLoaderFactoryImplTest, GetResponse) {
   EXPECT_EQ(kRequestId, request_info->GetRequestID());
 
   ASSERT_FALSE(client.has_received_completion());
-  ASSERT_FALSE(client.has_received_completion());
 
   client.RunUntilResponseBodyArrived();
   ASSERT_TRUE(client.response_body().is_valid());
@@ -260,6 +262,129 @@ TEST_P(URLLoaderFactoryImplTest, ShouldNotRequestURL) {
   ASSERT_FALSE(client.has_received_response());
   ASSERT_FALSE(client.response_body().is_valid());
 
+  EXPECT_EQ(net::ERR_ABORTED, client.completion_status().error_code);
+}
+
+TEST_P(URLLoaderFactoryImplTest, DownloadToFile) {
+  constexpr int32_t kRoutingId = 1;
+  constexpr int32_t kRequestId = 2;
+
+  mojom::URLLoaderAssociatedPtr loader;
+  base::FilePath root;
+  PathService::Get(DIR_TEST_DATA, &root);
+  net::URLRequestMockHTTPJob::AddUrlHandlers(root,
+                                             BrowserThread::GetBlockingPool());
+
+  ResourceRequest request;
+  TestURLLoaderClient client;
+  request.url = net::URLRequestMockHTTPJob::GetMockUrl("hello.html");
+  request.method = "GET";
+  request.resource_type = RESOURCE_TYPE_XHR;
+  request.download_to_file = true;
+  request.request_initiator = url::Origin();
+  factory_->CreateLoaderAndStart(
+      mojo::GetProxy(&loader, factory_.associated_group()), kRoutingId,
+      kRequestId, request,
+      client.CreateRemoteAssociatedPtrInfo(factory_.associated_group()));
+  ASSERT_FALSE(client.has_received_response());
+  ASSERT_FALSE(client.has_data_downloaded());
+  ASSERT_FALSE(client.has_received_completion());
+
+  client.RunUntilResponseReceived();
+
+  net::URLRequest* url_request =
+      rdh_.GetURLRequest(GlobalRequestID(kChildId, kRequestId));
+  ASSERT_TRUE(url_request);
+  ResourceRequestInfoImpl* request_info =
+      ResourceRequestInfoImpl::ForRequest(url_request);
+  ASSERT_TRUE(request_info);
+  EXPECT_EQ(kChildId, request_info->GetChildID());
+  EXPECT_EQ(kRoutingId, request_info->GetRouteID());
+  EXPECT_EQ(kRequestId, request_info->GetRequestID());
+
+  ASSERT_FALSE(client.has_received_completion());
+
+  client.RunUntilComplete();
+  ASSERT_TRUE(client.has_data_downloaded());
+  ASSERT_TRUE(client.has_received_completion());
+
+  EXPECT_EQ(200, client.response_head().headers->response_code());
+  std::string content_type;
+  client.response_head().headers->GetNormalizedHeader("content-type",
+                                                      &content_type);
+  EXPECT_EQ("text/html", content_type);
+  EXPECT_EQ(0, client.completion_status().error_code);
+
+  std::string contents;
+  base::ReadFileToString(client.response_head().download_file_path, &contents);
+
+  EXPECT_EQ(static_cast<int64_t>(contents.size()),
+            client.download_data_length());
+  EXPECT_EQ(static_cast<int64_t>(contents.size()),
+            client.encoded_download_data_length());
+
+  std::string expected;
+  base::ReadFileToString(
+      root.Append(base::FilePath(FILE_PATH_LITERAL("hello.html"))), &expected);
+  EXPECT_EQ(expected, contents);
+}
+
+TEST_P(URLLoaderFactoryImplTest, DownloadToFileFailure) {
+  constexpr int32_t kRoutingId = 1;
+  constexpr int32_t kRequestId = 2;
+
+  mojom::URLLoaderAssociatedPtr loader;
+  base::FilePath root;
+  PathService::Get(DIR_TEST_DATA, &root);
+  net::URLRequestSlowDownloadJob::AddUrlHandler();
+
+  ResourceRequest request;
+  TestURLLoaderClient client;
+  request.url = GURL(net::URLRequestSlowDownloadJob::kKnownSizeUrl);
+  request.method = "GET";
+  request.resource_type = RESOURCE_TYPE_XHR;
+  request.download_to_file = true;
+  request.request_initiator = url::Origin();
+  factory_->CreateLoaderAndStart(
+      mojo::GetProxy(&loader, factory_.associated_group()), kRoutingId,
+      kRequestId, request,
+      client.CreateRemoteAssociatedPtrInfo(factory_.associated_group()));
+  ASSERT_FALSE(client.has_received_response());
+  ASSERT_FALSE(client.has_data_downloaded());
+  ASSERT_FALSE(client.has_received_completion());
+
+  client.RunUntilResponseReceived();
+
+  net::URLRequest* url_request =
+      rdh_.GetURLRequest(GlobalRequestID(kChildId, kRequestId));
+  ASSERT_TRUE(url_request);
+  ResourceRequestInfoImpl* request_info =
+      ResourceRequestInfoImpl::ForRequest(url_request);
+  ASSERT_TRUE(request_info);
+  EXPECT_EQ(kChildId, request_info->GetChildID());
+  EXPECT_EQ(kRoutingId, request_info->GetRouteID());
+  EXPECT_EQ(kRequestId, request_info->GetRequestID());
+
+  ASSERT_FALSE(client.has_received_completion());
+
+  client.RunUntilDataDownloaded();
+  ASSERT_TRUE(client.has_data_downloaded());
+  ASSERT_FALSE(client.has_received_completion());
+  EXPECT_LT(0, client.download_data_length());
+  EXPECT_GE(
+      static_cast<int64_t>(net::URLRequestSlowDownloadJob::kFirstDownloadSize),
+      client.download_data_length());
+  EXPECT_LT(0, client.encoded_download_data_length());
+  EXPECT_GE(
+      static_cast<int64_t>(net::URLRequestSlowDownloadJob::kFirstDownloadSize),
+      client.encoded_download_data_length());
+
+  url_request->Cancel();
+  client.RunUntilComplete();
+
+  ASSERT_TRUE(client.has_received_completion());
+
+  EXPECT_EQ(200, client.response_head().headers->response_code());
   EXPECT_EQ(net::ERR_ABORTED, client.completion_status().error_code);
 }
 

@@ -283,6 +283,11 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
     MaybeReportToClient();
   }
 
+  void OnDataDownloaded(int64_t data_length,
+                        int64_t encoded_data_length) override {
+    NOTREACHED();
+  }
+
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override {
     DCHECK(!body_.is_valid());

@@ -29,6 +29,11 @@ interface URLLoaderClient {
   // Called when the response head is received.
   OnReceiveResponse(URLResponseHead head);
 
+  // Called when some data from a resource request has been downloaded to the
+  // file. This is only called in the 'download_to_file' case and replaces
+  // OnStartLoadingResponseBody in the call sequence in that case.
+  OnDataDownloaded(int64 data_length, int64 encoded_length);
+
   // Called when the loader starts loading response body.
   OnStartLoadingResponseBody(handle<data_pipe_consumer> body);
 

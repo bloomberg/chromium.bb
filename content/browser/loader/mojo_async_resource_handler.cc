@@ -230,7 +230,13 @@ bool MojoAsyncResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
 }
 
 void MojoAsyncResourceHandler::OnDataDownloaded(int bytes_downloaded) {
-  // Not implemented.
+  int64_t total_received_bytes = request()->GetTotalReceivedBytes();
+  int64_t bytes_to_report =
+      total_received_bytes - reported_total_received_bytes_;
+  reported_total_received_bytes_ = total_received_bytes;
+  DCHECK_LE(0, bytes_to_report);
+
+  url_loader_client_->OnDataDownloaded(bytes_downloaded, bytes_to_report);
 }
 
 void MojoAsyncResourceHandler::FollowRedirect() {

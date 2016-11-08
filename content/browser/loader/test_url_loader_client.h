@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_LOADER_TEST_URL_LOADER_CLIENT_H_
 #define CONTENT_BROWSER_LOADER_TEST_URL_LOADER_CLIENT_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "content/common/resource_request_completion_status.h"
@@ -26,11 +28,13 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   ~TestURLLoaderClient() override;
 
   void OnReceiveResponse(const ResourceResponseHead& response_head) override;
+  void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnComplete(const ResourceRequestCompletionStatus& status) override;
 
   bool has_received_response() const { return has_received_response_; }
+  bool has_data_downloaded() const { return has_data_downloaded_; }
   bool has_received_completion() const { return has_received_completion_; }
   const ResourceResponseHead& response_head() const { return response_head_; }
   mojo::DataPipeConsumerHandle response_body() { return response_body_.get(); }
@@ -42,6 +46,11 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   // locally.
   mojom::URLLoaderClientAssociatedPtrInfo CreateLocalAssociatedPtrInfo();
 
+  int64_t download_data_length() const { return download_data_length_; }
+  int64_t encoded_download_data_length() const {
+    return encoded_download_data_length_;
+  }
+
   // Creates an AssociatedPtrInfo, binds it to |*this| and returns it. The
   // returned PtrInfo is marked as remote, i.e., expected to be passed to the
   // remote endpoint.
@@ -51,6 +60,7 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   void Unbind();
 
   void RunUntilResponseReceived();
+  void RunUntilDataDownloaded();
   void RunUntilResponseBodyArrived();
   void RunUntilComplete();
 
@@ -60,11 +70,15 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   mojo::ScopedDataPipeConsumerHandle response_body_;
   ResourceRequestCompletionStatus completion_status_;
   bool has_received_response_ = false;
+  bool has_data_downloaded_ = false;
   bool has_received_completion_ = false;
   base::Closure quit_closure_for_on_received_response_;
+  base::Closure quit_closure_for_on_data_downloaded_;
   base::Closure quit_closure_for_on_start_loading_response_body_;
   base::Closure quit_closure_for_on_complete_;
   mojom::URLLoaderFactoryPtr url_loader_factory_;
+  int64_t download_data_length_ = 0;
+  int64_t encoded_download_data_length_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestURLLoaderClient);
 };

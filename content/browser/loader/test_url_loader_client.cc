@@ -82,6 +82,15 @@ void TestURLLoaderClient::OnReceiveResponse(
     quit_closure_for_on_received_response_.Run();
 }
 
+void TestURLLoaderClient::OnDataDownloaded(int64_t data_length,
+                                           int64_t encoded_data_length) {
+  has_data_downloaded_ = true;
+  download_data_length_ += data_length;
+  encoded_download_data_length_ += encoded_data_length;
+  if (quit_closure_for_on_data_downloaded_)
+    quit_closure_for_on_data_downloaded_.Run();
+}
+
 void TestURLLoaderClient::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
   response_body_ = std::move(body);
@@ -132,6 +141,13 @@ void TestURLLoaderClient::RunUntilResponseReceived() {
   quit_closure_for_on_received_response_ = run_loop.QuitClosure();
   run_loop.Run();
   quit_closure_for_on_received_response_.Reset();
+}
+
+void TestURLLoaderClient::RunUntilDataDownloaded() {
+  base::RunLoop run_loop;
+  quit_closure_for_on_data_downloaded_ = run_loop.QuitClosure();
+  run_loop.Run();
+  quit_closure_for_on_data_downloaded_.Reset();
 }
 
 void TestURLLoaderClient::RunUntilResponseBodyArrived() {

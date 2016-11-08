@@ -98,6 +98,11 @@ class URLLoaderClientImpl final : public mojom::URLLoaderClient {
         ResourceMsg_ReceivedResponse(request_id_, response_head));
   }
 
+  void OnDataDownloaded(int64_t data_len, int64_t encoded_data_len) override {
+    resource_dispatcher_->OnMessageReceived(
+        ResourceMsg_DataDownloaded(request_id_, data_len, encoded_data_len));
+  }
+
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override {
     DCHECK(!body_consumer_);
