@@ -71,7 +71,12 @@ TaskHandle::~TaskHandle() {
 }
 
 TaskHandle::TaskHandle(TaskHandle&&) = default;
-TaskHandle& TaskHandle::operator=(TaskHandle&&) = default;
+
+TaskHandle& TaskHandle::operator=(TaskHandle&& other) {
+  TaskHandle tmp(std::move(other));
+  m_runner.swap(tmp.m_runner);
+  return *this;
+}
 
 TaskHandle::TaskHandle(RefPtr<Runner> runner) : m_runner(std::move(runner)) {
   DCHECK(m_runner);

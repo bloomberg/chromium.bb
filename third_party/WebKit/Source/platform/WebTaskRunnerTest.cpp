@@ -63,6 +63,31 @@ TEST(WebTaskRunnerTest, PostCancellableTaskTest) {
   taskRunner.runUntilIdle();
   EXPECT_EQ(0, count);
 
+  // The task should be cancelled when another TaskHandle is assigned on it.
+  count = 0;
+  handle = taskRunner.postCancellableTask(
+      BLINK_FROM_HERE, WTF::bind(&increment, WTF::unretained(&count)));
+  handle = taskRunner.postCancellableTask(BLINK_FROM_HERE, WTF::bind([] {}));
+  EXPECT_EQ(0, count);
+  taskRunner.runUntilIdle();
+  EXPECT_EQ(0, count);
+
+  // Self assign should be nop.
+  count = 0;
+  handle = taskRunner.postCancellableTask(
+      BLINK_FROM_HERE, WTF::bind(&increment, WTF::unretained(&count)));
+#if COMPILER(CLANG)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wself-move"
+  handle = std::move(handle);
+#pragma GCC diagnostic pop
+#else
+  handle = std::move(handle);
+#endif  // COMPILER(CLANG)
+  EXPECT_EQ(0, count);
+  taskRunner.runUntilIdle();
+  EXPECT_EQ(1, count);
+
   // handle->isActive() should switch to false before the task starts running.
   bool isActive = false;
   handle = taskRunner.postCancellableTask(
