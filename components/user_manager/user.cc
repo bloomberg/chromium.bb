@@ -36,10 +36,6 @@ bool User::TypeHasGaiaAccount(UserType user_type) {
          user_type == USER_TYPE_CHILD;
 }
 
-const std::string& User::email() const {
-  return account_id_.GetUserEmail();
-}
-
 // Also used for regular supervised users.
 class RegularUser : public User {
  public:

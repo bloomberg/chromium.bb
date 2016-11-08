@@ -36,11 +36,13 @@ class UserManagerBase;
 class FakeUserManager;
 
 // A class representing information about a previously logged in user.
-// Each user has a canonical email (username), returned by |email()| and
-// may have a different displayed email (in the raw form as entered by user),
-// returned by |displayed_email()|.
-// Displayed emails are for use in UI only, anywhere else users must be referred
-// to by |email()|.
+//   Each user has an |AccountId| containing canonical email (username),
+// returned by |GetAccountId().GetUserEmail()| and may have a different
+// displayed email (in the raw form as entered by user), returned by
+// |displayed_email()|.
+//   Displayed emails are for use in UI only, anywhere else users must be
+// referred to by |GetAccountId()|. Internal details of AccountId should not
+// be relied on unless you have special knowledge of the account type.
 class USER_MANAGER_EXPORT User : public UserInfo {
  public:
   // User OAuth token status according to the last check.
@@ -116,11 +118,6 @@ class USER_MANAGER_EXPORT User : public UserInfo {
 
   // True if the user is a device local account user.
   virtual bool IsDeviceLocalAccount() const;
-
-  // The email the user used to log in.
-  // TODO(alemate): rename this to GetUserEmail() (see crbug.com/548923)
-  // Deprecated, do not use! Use GetAccountId().GetUserEmail() instead.
-  const std::string& email() const;
 
   // The displayed user name.
   base::string16 display_name() const { return display_name_; }
