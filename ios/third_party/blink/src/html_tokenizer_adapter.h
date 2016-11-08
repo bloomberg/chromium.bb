@@ -8,10 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
-
-#define ALWAYS_INLINE inline __attribute__((always_inline))
 
 #define DEFINE_STATIC_LOCAL_STRING(name, arguments)                       \
     static const WebCore::LChar* name = (const WebCore::LChar*)arguments; \
