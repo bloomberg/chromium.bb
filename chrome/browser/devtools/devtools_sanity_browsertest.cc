@@ -1317,8 +1317,16 @@ IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, InspectSharedWorker) {
   RunTest("testSharedWorker", kSharedWorkerTestPage, kSharedWorkerTestWorker);
 }
 
+// Flakey on Win.  http://crbug.com/663351
+#if defined(OS_WIN)
+#define MAYBE_PauseInSharedWorkerInitialization \
+  DISABLED_PauseInSharedWorkerInitialization
+#else
+#define MAYBE_PauseInSharedWorkerInitialization \
+  PauseInSharedWorkerInitialization
+#endif
 IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest,
-                       PauseInSharedWorkerInitialization) {
+                       MAYBE_PauseInSharedWorkerInitialization) {
   ASSERT_TRUE(spawned_test_server()->Start());
   GURL url = spawned_test_server()->GetURL(kReloadSharedWorkerTestPage);
   ui_test_utils::NavigateToURL(browser(), url);
