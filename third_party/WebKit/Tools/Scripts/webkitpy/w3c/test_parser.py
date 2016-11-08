@@ -38,8 +38,7 @@ _log = logging.getLogger(__name__)
 
 class TestParser(object):
 
-    def __init__(self, filename, host, options=None):
-        self.options = options or {'all': False}
+    def __init__(self, filename, host):
         self.filename = filename
         self.host = host
         self.filesystem = self.host.filesystem
@@ -78,7 +77,8 @@ class TestParser(object):
             "reference": related reference test file name if this is a reference test.
             "reference_support_info": extra information about the related reference test and any support files.
             "jstest": A boolean, whether this is a JS test.
-            If the given contents are empty, then None is returned.
+            If the path doesn't look a test or the given contents are empty,
+            then None is returned.
         """
         test_info = None
 
@@ -122,7 +122,14 @@ class TestParser(object):
 
         elif self.is_jstest():
             test_info = {'test': self.filename, 'jstest': True}
-        elif self.options['all'] and '-ref' not in self.filename and 'reference' not in self.filename:
+
+        elif 'csswg-test' in self.filename:
+            # In csswg-test, all other files should be manual tests.
+            # This function isn't called for non-test files in support/.
+            test_info = {'test': self.filename}
+
+        elif '-manual.' in self.filesystem.basename(self.filename):
+            # WPT has a naming convention for manual tests.
             test_info = {'test': self.filename}
 
         return test_info

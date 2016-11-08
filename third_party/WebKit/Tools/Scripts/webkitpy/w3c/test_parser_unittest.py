@@ -154,8 +154,8 @@ class TestParserTest(unittest.TestCase):
         self.assertFalse('refsupport' in test_info.keys(), 'there should be no refsupport files for this test')
         self.assertTrue('jstest' in test_info.keys(), 'test should be a jstest')
 
-    def test_analyze_pixel_test_all_true(self):
-        """Tests analyze_test() using a test that is neither a reftest or jstest with all=False"""
+    def test_analyze_wpt_manual_test(self):
+        """Tests analyze_test() with a manual test that is not in csswg-test."""
 
         test_html = """<html>
 <head>
@@ -170,11 +170,8 @@ CONTENT OF TEST
 </body>
 </html>
 """
-        # Set 'all' to True so this gets found.
-        options = {'all': True}
-
         test_path = '/some/madeup/path/'
-        parser = TestParser(test_path + 'somefile.html', MockHost(), options)
+        parser = TestParser(test_path + 'somefile-manual.html', MockHost())
         test_info = parser.analyze_test(test_contents=test_html)
 
         self.assertNotEqual(test_info, None, 'test_info is None')
@@ -183,8 +180,15 @@ CONTENT OF TEST
         self.assertFalse('refsupport' in test_info.keys(), 'there should be no refsupport files for this test')
         self.assertFalse('jstest' in test_info.keys(), 'test should not be a jstest')
 
-    def test_analyze_pixel_test_all_false(self):
-        """Tests analyze_test() using a test that is neither a reftest or jstest, with -all=False"""
+    def test_analyze_non_test_file_returns_none(self):
+        """Tests analyze_test() using a non-test file."""
+
+        parser = TestParser('/some/madeup/path/somefile.html', MockHost())
+        test_info = parser.analyze_test(test_contents='<html>')
+        self.assertIsNone(test_info, 'test should have been skipped')
+
+    def test_analyze_csswg_manual_test(self):
+        """Tests analyze_test() using a test that is neither a reftest or jstest, in csswg-test"""
 
         test_html = """<html>
 <head>
@@ -199,13 +203,13 @@ CONTENT OF TEST
 </body>
 </html>
 """
-        # Set 'all' to False so this gets skipped.
-        options = {'all': False}
-
-        test_path = '/some/madeup/path/'
-        parser = TestParser(test_path + 'somefile.html', MockHost(), options)
+        parser = TestParser('/some/csswg-test/path/somefile.html', MockHost())
         test_info = parser.analyze_test(test_contents=test_html)
-        self.assertEqual(test_info, None, 'test should have been skipped')
+        self.assertIsNotNone(test_info, 'test_info should not be None')
+        self.assertIn('test', test_info.keys(), 'should find a test file')
+        self.assertNotIn('reference', test_info.keys(), 'shold not have found a reference file')
+        self.assertNotIn('refsupport', test_info.keys(), 'there should be no refsupport files for this test')
+        self.assertNotIn('jstest', test_info.keys(), 'test should not be a jstest')
 
     def test_analyze_non_html_file(self):
         """Tests analyze_test() with a file that has no html"""
