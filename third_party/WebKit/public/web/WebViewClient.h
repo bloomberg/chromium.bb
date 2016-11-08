@@ -31,7 +31,6 @@
 #ifndef WebViewClient_h
 #define WebViewClient_h
 
-#include "../platform/WebDragOperation.h"
 #include "../platform/WebPageVisibilityState.h"
 #include "../platform/WebString.h"
 #include "WebAXEnums.h"
@@ -44,10 +43,8 @@ namespace blink {
 
 class WebAXObject;
 class WebDateTimeChooserCompletion;
-class WebDragData;
 class WebFileChooserCompletion;
 class WebHitTestResult;
-class WebImage;
 class WebNode;
 class WebSpeechRecognizer;
 class WebStorageNamespace;
@@ -159,13 +156,6 @@ class WebViewClient : protected WebWidgetClient {
 
   // Called when keyboard focus switches to an anchor with the given URL.
   virtual void setKeyboardFocusURL(const WebURL&) {}
-
-  // Called when a drag-n-drop operation should begin.
-  virtual void startDragging(WebLocalFrame*,
-                             const WebDragData&,
-                             WebDragOperationsMask,
-                             const WebImage&,
-                             const WebPoint& dragImageOffset) {}
 
   // Called to determine if drag-n-drop operations may initiate a page
   // navigation.

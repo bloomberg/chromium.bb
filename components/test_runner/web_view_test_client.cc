@@ -37,19 +37,6 @@ WebViewTestClient::WebViewTestClient(
 
 WebViewTestClient::~WebViewTestClient() {}
 
-void WebViewTestClient::startDragging(blink::WebLocalFrame* frame,
-                                      const blink::WebDragData& data,
-                                      blink::WebDragOperationsMask mask,
-                                      const blink::WebImage& image,
-                                      const blink::WebPoint& point) {
-  test_runner()->setDragImage(image);
-
-  // When running a test, we need to fake a drag drop operation otherwise
-  // Windows waits for real mouse events to know when the drag is over.
-  delegate()->GetWebWidgetTestProxyBase(frame)->event_sender()->DoDragDrop(
-      data, mask);
-}
-
 // The output from these methods in layout test mode should match that
 // expected by the layout tests. See EditingDelegate.m in DumpRenderTree.
 

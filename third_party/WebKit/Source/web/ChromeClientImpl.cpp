@@ -260,7 +260,11 @@ void ChromeClientImpl::startDragging(LocalFrame* frame,
                                      WebDragOperationsMask mask,
                                      const WebImage& dragImage,
                                      const WebPoint& dragImageOffset) {
-  m_webView->startDragging(frame, dragData, mask, dragImage, dragImageOffset);
+  WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
+  WebReferrerPolicy policy = webFrame->document().referrerPolicy();
+  m_webView->setDoingDragAndDrop(true);
+  webFrame->localRoot()->frameWidget()->client()->startDragging(
+      policy, dragData, mask, dragImage, dragImageOffset);
 }
 
 bool ChromeClientImpl::acceptsLoadDrops() const {

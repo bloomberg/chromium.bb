@@ -175,12 +175,12 @@ class WebViewTestProxy : public Base, public WebViewTestProxyBase {
   void resetInputMethod() override { widget_test_client()->resetInputMethod(); }
 
   // WebViewClient implementation.
-  void startDragging(blink::WebLocalFrame* frame,
+  void startDragging(blink::WebReferrerPolicy policy,
                      const blink::WebDragData& data,
                      blink::WebDragOperationsMask mask,
                      const blink::WebImage& image,
                      const blink::WebPoint& point) override {
-    view_test_client()->startDragging(frame, data, mask, image, point);
+    widget_test_client()->startDragging(policy, data, mask, image, point);
     // Don't forward this call to Base because we don't want to do a real
     // drag-and-drop.
   }

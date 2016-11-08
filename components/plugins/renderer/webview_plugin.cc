@@ -239,7 +239,7 @@ void WebViewPlugin::setToolTipText(const WebString& text,
     container_->element().setAttribute("title", text);
 }
 
-void WebViewPlugin::startDragging(WebLocalFrame*,
+void WebViewPlugin::startDragging(blink::WebReferrerPolicy,
                                   const WebDragData&,
                                   WebDragOperationsMask,
                                   const WebImage&,

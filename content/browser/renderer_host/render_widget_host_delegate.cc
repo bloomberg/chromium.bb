@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
+
+#include "build/build_config.h"
+#include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace content {
@@ -70,6 +72,10 @@ TextInputManager* RenderWidgetHostDelegate::GetTextInputManager() {
 
 bool RenderWidgetHostDelegate::IsHidden() {
   return false;
+}
+
+RenderViewHostDelegateView* RenderWidgetHostDelegate::GetDelegateView() {
+  return nullptr;
 }
 
 }  // namespace content

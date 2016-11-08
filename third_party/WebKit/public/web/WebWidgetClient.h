@@ -33,9 +33,11 @@
 
 #include "WebNavigationPolicy.h"
 #include "public/platform/WebCommon.h"
+#include "public/platform/WebDragOperation.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebRect.h"
+#include "public/platform/WebReferrerPolicy.h"
 #include "public/platform/WebScreenInfo.h"
 #include "public/web/WebMeaningfulLayout.h"
 #include "public/web/WebTextDirection.h"
@@ -43,7 +45,10 @@
 
 namespace blink {
 
+class WebDragData;
 class WebGestureEvent;
+class WebImage;
+class WebLocalFrame;
 class WebNode;
 class WebString;
 class WebWidget;
@@ -180,6 +185,13 @@ class WebWidgetClient {
   // is eanbled.  TODO(oshima): Update the comment when the
   // migration is completed.
   virtual void convertWindowToViewport(WebFloatRect* rect) {}
+
+  // Called when a drag-and-drop operation should begin.
+  virtual void startDragging(WebReferrerPolicy,
+                             const WebDragData&,
+                             WebDragOperationsMask,
+                             const WebImage& dragImage,
+                             const WebPoint& dragImageOffset) {}
 
  protected:
   ~WebWidgetClient() {}

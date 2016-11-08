@@ -123,6 +123,15 @@ class WebWidgetTestProxy : public Base, public WebWidgetTestProxyBase {
     widget_test_client()->setToolTipText(text, hint);
   }
   void resetInputMethod() override { widget_test_client()->resetInputMethod(); }
+  void startDragging(blink::WebReferrerPolicy policy,
+                     const blink::WebDragData& data,
+                     blink::WebDragOperationsMask mask,
+                     const blink::WebImage& image,
+                     const blink::WebPoint& point) override {
+    widget_test_client()->startDragging(policy, data, mask, image, point);
+    // Don't forward this call to Base because we don't want to do a real
+    // drag-and-drop.
+  }
 
  private:
   virtual ~WebWidgetTestProxy() {}

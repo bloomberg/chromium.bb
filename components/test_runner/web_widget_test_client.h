@@ -34,7 +34,7 @@ class WebWidgetTestClient : public blink::WebWidgetClient {
 
   virtual ~WebWidgetTestClient();
 
-  // WebWidgetClient overrides needed by WebViewTestProxy.
+  // WebWidgetClient overrides needed by WebWidgetTestProxy.
   blink::WebScreenInfo screenInfo() override;
   void scheduleAnimation() override;
   bool requestPointerLock() override;
@@ -43,6 +43,11 @@ class WebWidgetTestClient : public blink::WebWidgetClient {
   void setToolTipText(const blink::WebString& text,
                       blink::WebTextDirection direction) override;
   void resetInputMethod() override;
+  void startDragging(blink::WebReferrerPolicy policy,
+                     const blink::WebDragData& data,
+                     blink::WebDragOperationsMask mask,
+                     const blink::WebImage& image,
+                     const blink::WebPoint& point) override;
 
  private:
   void AnimateNow();

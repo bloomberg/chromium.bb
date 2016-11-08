@@ -22,6 +22,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/common/cursors/webcursor.h"
+#include "content/common/drag_event_source_info.h"
 #include "content/common/edit_command.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/public/common/screen_info.h"
@@ -37,6 +38,7 @@
 #include "third_party/WebKit/public/platform/WebDisplayMode.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
+#include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/public/platform/WebTextInputInfo.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
@@ -65,8 +67,10 @@ namespace scheduler {
 class RenderWidgetSchedulingState;
 }
 struct WebDeviceEmulationParams;
+class WebDragData;
 class WebFrameWidget;
 class WebGestureEvent;
+class WebImage;
 class WebLocalFrame;
 class WebMouseEvent;
 class WebNode;
@@ -287,6 +291,11 @@ class CONTENT_EXPORT RenderWidget
   bool requestPointerLock() override;
   void requestPointerUnlock() override;
   bool isPointerLocked() override;
+  void startDragging(blink::WebReferrerPolicy policy,
+                     const blink::WebDragData& data,
+                     blink::WebDragOperationsMask mask,
+                     const blink::WebImage& image,
+                     const blink::WebPoint& imageOffset) override;
 
   // Override point to obtain that the current input method state and caret
   // position.
@@ -813,6 +822,11 @@ class CONTENT_EXPORT RenderWidget
   // Stores edit commands associated to the next key event.
   // Will be cleared as soon as the next key event is processed.
   EditCommands edit_commands_;
+
+  // This field stores drag/drop related info for the event that is currently
+  // being handled. If the current event results in starting a drag/drop
+  // session, this info is sent to the browser along with other drag/drop info.
+  DragEventSourceInfo possible_drag_event_info_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };

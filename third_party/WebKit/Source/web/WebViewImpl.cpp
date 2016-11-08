@@ -3951,19 +3951,6 @@ bool WebViewImpl::useExternalPopupMenus() {
   return shouldUseExternalPopupMenus;
 }
 
-void WebViewImpl::startDragging(LocalFrame* frame,
-                                const WebDragData& dragData,
-                                WebDragOperationsMask mask,
-                                const WebImage& dragImage,
-                                const WebPoint& dragImageOffset) {
-  if (!m_client)
-    return;
-  DCHECK(!m_doingDragAndDrop);
-  m_doingDragAndDrop = true;
-  m_client->startDragging(WebLocalFrameImpl::fromFrame(frame), dragData, mask,
-                          dragImage, dragImageOffset);
-}
-
 void WebViewImpl::setIgnoreInputEvents(bool newValue) {
   DCHECK_NE(m_ignoreInputEvents, newValue);
   m_ignoreInputEvents = newValue;

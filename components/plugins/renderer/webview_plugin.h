@@ -114,11 +114,11 @@ class WebViewPlugin : public blink::WebPlugin,
   void setToolTipText(const blink::WebString&,
                       blink::WebTextDirection) override;
 
-  void startDragging(blink::WebLocalFrame* frame,
-                     const blink::WebDragData& drag_data,
-                     blink::WebDragOperationsMask mask,
-                     const blink::WebImage& image,
-                     const blink::WebPoint& point) override;
+  void startDragging(blink::WebReferrerPolicy,
+                     const blink::WebDragData&,
+                     blink::WebDragOperationsMask,
+                     const blink::WebImage&,
+                     const blink::WebPoint&) override;
 
   // TODO(ojan): Remove this override and have this class use a non-null
   // layerTreeView.

@@ -389,13 +389,6 @@ class WEB_EXPORT WebViewImpl final
   void updateMainFrameLayoutSize();
   void updatePageDefinedViewportConstraints(const ViewportDescription&);
 
-  // Start a system drag and drop operation.
-  void startDragging(LocalFrame*,
-                     const WebDragData& dragData,
-                     WebDragOperationsMask mask,
-                     const WebImage& dragImage,
-                     const WebPoint& dragImageOffset);
-
   PagePopup* openPagePopup(PagePopupClient*);
   void closePagePopup(PagePopup*);
   void cleanupPagePopup();
@@ -510,6 +503,8 @@ class WEB_EXPORT WebViewImpl final
   double lastFrameTimeMonotonic() const { return m_lastFrameTimeMonotonic; }
 
   ChromeClientImpl& chromeClient() const { return *m_chromeClientImpl.get(); }
+
+  void setDoingDragAndDrop(bool doing) { m_doingDragAndDrop = doing; }
 
  private:
   InspectorOverlay* inspectorOverlay();
@@ -669,6 +664,8 @@ class WEB_EXPORT WebViewImpl final
   float m_fakePageScaleAnimationPageScaleFactor;
   bool m_fakePageScaleAnimationUseAnchor;
 
+  // TODO(paulmeyer): Move this to WebWidget once all drag-and-drop functions
+  // are there.
   bool m_doingDragAndDrop;
 
   bool m_ignoreInputEvents;

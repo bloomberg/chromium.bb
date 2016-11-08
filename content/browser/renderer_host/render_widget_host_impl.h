@@ -33,6 +33,7 @@
 #include "content/browser/renderer_host/input/touch_emulator_client.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/common/drag_event_source_info.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/common/input/synthetic_gesture_packet.h"
 #include "content/common/view_message_enums.h"
@@ -558,6 +559,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
 
  private:
   friend class MockRenderWidgetHost;
+  friend class TestRenderViewHost;
 
   // Tell this object to destroy itself. If |also_delete| is specified, the
   // destructor is called as well.
@@ -604,6 +606,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   void OnForwardCompositorProto(const std::vector<uint8_t>& proto);
   void OnSetNeedsBeginFrames(bool needs_begin_frames);
   void OnHittestData(const FrameHostMsg_HittestData_Params& params);
+  void OnStartDragging(const DropData& drop_data,
+                       blink::WebDragOperationsMask operations_allowed,
+                       const SkBitmap& bitmap,
+                       const gfx::Vector2d& bitmap_offset_in_dip,
+                       const DragEventSourceInfo& event_info);
 
   // Called (either immediately or asynchronously) after we're done with our
   // BackingStore and can send an ACK to the renderer so it can paint onto it

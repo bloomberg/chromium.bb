@@ -27,6 +27,8 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "content/common/content_switches_internal.h"
+#include "content/common/drag_event_source_info.h"
+#include "content/common/drag_messages.h"
 #include "content/common/input/synthetic_gesture_packet.h"
 #include "content/common/input_messages.h"
 #include "content/common/render_message_filter.mojom.h"
@@ -38,6 +40,7 @@
 #include "content/public/common/context_menu_params.h"
 #include "content/renderer/cursor_utils.h"
 #include "content/renderer/devtools/render_widget_screen_metrics_emulator.h"
+#include "content/renderer/drop_data_builder.h"
 #include "content/renderer/external_popup_menu.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
 #include "content/renderer/gpu/queue_message_swap_promise.h"
@@ -104,10 +107,14 @@
 using blink::WebCompositionUnderline;
 using blink::WebCursorInfo;
 using blink::WebDeviceEmulationParams;
+using blink::WebDragOperationsMask;
+using blink::WebDragData;
 using blink::WebGestureEvent;
+using blink::WebImage;
 using blink::WebInputEvent;
 using blink::WebInputEventResult;
 using blink::WebKeyboardEvent;
+using blink::WebLocalFrame;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
 using blink::WebNavigationPolicy;
@@ -963,8 +970,10 @@ void RenderWidget::UpdateTextInputState(ShowIme show_ime,
 }
 
 bool RenderWidget::WillHandleGestureEvent(const blink::WebGestureEvent& event) {
-  if (owner_delegate_)
-    return owner_delegate_->RenderWidgetWillHandleGestureEvent(event);
+  possible_drag_event_info_.event_source =
+      ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH;
+  possible_drag_event_info_.event_location =
+      gfx::Point(event.globalX, event.globalY);
 
   return false;
 }
@@ -972,6 +981,11 @@ bool RenderWidget::WillHandleGestureEvent(const blink::WebGestureEvent& event) {
 bool RenderWidget::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
   for (auto& observer : render_frames_)
     observer.RenderWidgetWillHandleMouseEvent();
+
+  possible_drag_event_info_.event_source =
+      ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE;
+  possible_drag_event_info_.event_location =
+      gfx::Point(event.globalX, event.globalY);
 
   if (owner_delegate_)
     return owner_delegate_->RenderWidgetWillHandleMouseEvent(event);
@@ -2064,6 +2078,21 @@ void RenderWidget::requestPointerUnlock() {
 bool RenderWidget::isPointerLocked() {
   return mouse_lock_dispatcher_->IsMouseLockedTo(
       webwidget_mouse_lock_target_.get());
+}
+
+void RenderWidget::startDragging(blink::WebReferrerPolicy policy,
+                                 const WebDragData& data,
+                                 WebDragOperationsMask mask,
+                                 const WebImage& image,
+                                 const WebPoint& webImageOffset) {
+  blink::WebRect offset_in_window(webImageOffset.x, webImageOffset.y, 0, 0);
+  convertViewportToWindow(&offset_in_window);
+  DropData drop_data(DropDataBuilder::Build(data));
+  drop_data.referrer_policy = policy;
+  gfx::Vector2d imageOffset(offset_in_window.x, offset_in_window.y);
+  Send(new DragHostMsg_StartDragging(routing_id_, drop_data, mask,
+                                     image.getSkBitmap(), imageOffset,
+                                     possible_drag_event_info_));
 }
 
 blink::WebWidget* RenderWidget::GetWebWidget() const {

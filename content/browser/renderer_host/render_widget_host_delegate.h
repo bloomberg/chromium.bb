@@ -11,8 +11,11 @@
 
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "content/common/drag_event_source_info.h"
 #include "content/public/browser/renderer_unresponsive_type.h"
+#include "content/public/common/drop_data.h"
 #include "third_party/WebKit/public/platform/WebDisplayMode.h"
+#include "third_party/WebKit/public/platform/WebDragOperation.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -32,6 +35,7 @@ namespace content {
 class BrowserAccessibilityManager;
 class RenderWidgetHostImpl;
 class RenderWidgetHostInputEventRouter;
+class RenderViewHostDelegateView;
 class TextInputManager;
 struct ScreenInfo;
 struct NativeWebKeyboardEvent;
@@ -203,6 +207,9 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // something other than the WebContents attempting to enable visibility of
   // this RenderWidgetHost.
   virtual bool IsHidden();
+
+  // Returns the associated RenderViewHostDelegateView*, if possible.
+  virtual RenderViewHostDelegateView* GetDelegateView();
 
  protected:
   virtual ~RenderWidgetHostDelegate() {}

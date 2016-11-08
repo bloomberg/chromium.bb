@@ -23,7 +23,6 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_owner_delegate.h"
 #include "content/browser/site_instance_impl.h"
-#include "content/common/drag_event_source_info.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_view_host.h"
@@ -291,11 +290,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   void OnDidContentsPreferredSizeChange(const gfx::Size& new_size);
   void OnPasteFromSelectionClipboard();
   void OnRouteCloseEvent();
-  void OnStartDragging(const DropData& drop_data,
-                       blink::WebDragOperationsMask operations_allowed,
-                       const SkBitmap& bitmap,
-                       const gfx::Vector2d& bitmap_offset_in_dip,
-                       const DragEventSourceInfo& event_info);
   void OnUpdateDragCursor(blink::WebDragOperation drag_operation);
   void OnTakeFocus(bool reverse);
   void OnFocusedNodeChanged(bool is_editable_node,

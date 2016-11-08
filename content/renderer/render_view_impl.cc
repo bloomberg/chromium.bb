@@ -1267,22 +1267,8 @@ bool RenderViewImpl::DoesRenderWidgetHaveTouchEventHandlersAt(
   return webview()->hasTouchEventHandlersAt(point);
 }
 
-bool RenderViewImpl::RenderWidgetWillHandleGestureEvent(
-    const blink::WebGestureEvent& event) {
-  possible_drag_event_info_.event_source =
-      ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH;
-  possible_drag_event_info_.event_location =
-      gfx::Point(event.globalX, event.globalY);
-  return false;
-}
-
 bool RenderViewImpl::RenderWidgetWillHandleMouseEvent(
     const blink::WebMouseEvent& event) {
-  possible_drag_event_info_.event_source =
-      ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE;
-  possible_drag_event_info_.event_location =
-      gfx::Point(event.globalX, event.globalY);
-
   // If the mouse is locked, only the current owner of the mouse lock can
   // process mouse events.
   return mouse_lock_dispatcher_->WillHandleMouseEvent(event);
@@ -1821,21 +1807,6 @@ void RenderViewImpl::setMouseOverURL(const WebURL& url) {
 void RenderViewImpl::setKeyboardFocusURL(const WebURL& url) {
   focus_url_ = GURL(url);
   UpdateTargetURL(focus_url_, mouse_over_url_);
-}
-
-void RenderViewImpl::startDragging(WebLocalFrame* frame,
-                                   const WebDragData& data,
-                                   WebDragOperationsMask mask,
-                                   const WebImage& image,
-                                   const WebPoint& webImageOffset) {
-  blink::WebRect offset_in_window(webImageOffset.x, webImageOffset.y, 0, 0);
-  ConvertViewportToWindowViaWidget(&offset_in_window);
-  DropData drop_data(DropDataBuilder::Build(data));
-  drop_data.referrer_policy = frame->document().referrerPolicy();
-  gfx::Vector2d imageOffset(offset_in_window.x, offset_in_window.y);
-  Send(new DragHostMsg_StartDragging(GetRoutingID(), drop_data, mask,
-                                     image.getSkBitmap(), imageOffset,
-                                     possible_drag_event_info_));
 }
 
 bool RenderViewImpl::acceptsLoadDrops() {

@@ -36,11 +36,6 @@ class WebViewTestClient : public blink::WebViewClient {
                              blink::WebTextDirection main_message_hint,
                              const blink::WebString& sub_message,
                              blink::WebTextDirection sub_message_hint) override;
-  void startDragging(blink::WebLocalFrame* frame,
-                     const blink::WebDragData& data,
-                     blink::WebDragOperationsMask mask,
-                     const blink::WebImage& image,
-                     const blink::WebPoint& point) override;
   void didChangeContents() override;
   blink::WebView* createView(blink::WebLocalFrame* creator,
                              const blink::WebURLRequest& request,
