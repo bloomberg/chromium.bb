@@ -508,33 +508,34 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 }
 
 - (BOOL)getPasswordForm:(autofill::PasswordForm*)form
-   fromPasswordFormJSON:(NSString*)jsonString
-                pageURL:(const GURL&)pageURL {
+    fromPasswordFormJSON:(NSString*)JSONNSString
+                 pageURL:(const GURL&)pageURL {
   DCHECK(form);
   // There is no identifiable password form on the page.
-  if ([jsonString isEqualToString:@"noPasswordsFound"])
+  if ([JSONNSString isEqualToString:@"noPasswordsFound"])
     return NO;
 
   int errorCode = 0;
   std::string errorMessage;
-  std::unique_ptr<const base::Value> jsonData(
-      base::JSONReader::ReadAndReturnError(std::string([jsonString UTF8String]),
-                                           false, &errorCode, &errorMessage));
+  std::string JSONString = base::SysNSStringToUTF8(JSONNSString);
+  std::unique_ptr<const base::Value> JSONData(
+      base::JSONReader::ReadAndReturnError(JSONString, false, &errorCode,
+                                           &errorMessage));
 
   // If the the JSON string contains null, there is no identifiable password
   // form on the page.
-  if (!errorCode && !jsonData) {
+  if (!errorCode && !JSONData) {
     return NO;
   }
 
-  if (errorCode || !jsonData->IsType(base::Value::TYPE_DICTIONARY)) {
+  if (errorCode || !JSONData->IsType(base::Value::TYPE_DICTIONARY)) {
     VLOG(1) << "JSON parse error " << errorMessage
-            << " JSON string: " << [jsonString UTF8String];
+            << " JSON string: " << JSONString;
     return NO;
   }
 
   const base::DictionaryValue* passwordJsonData;
-  return jsonData->GetAsDictionary(&passwordJsonData) &&
+  return JSONData->GetAsDictionary(&passwordJsonData) &&
          [self getPasswordForm:form
                 fromDictionary:passwordJsonData
                        pageURL:pageURL];
