@@ -41,5 +41,5 @@ process (using ImageMagick and GIMP) satisfies the above conditions:
 4. Run src/tools/resources/optimize-ico-files.py on the resulting .ico file.
 
 You can also run src/tools/resources/optimize-ico-files.py on existing .ico
-files. This will run a basic PNG optimization pass and fix up any broken image
-masks (http://crbug.com/534679).
+files. This will convert BMPs to PNGs and run a basic PNG optimization pass, as
+well as fix up any broken image masks (http://crbug.com/534679).

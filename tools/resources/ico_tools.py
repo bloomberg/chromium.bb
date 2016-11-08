@@ -11,6 +11,7 @@ import sys
 import tempfile
 
 OPTIMIZE_PNG_FILES = 'tools/resources/optimize-png-files.sh'
+IMAGEMAGICK_CONVERT = 'convert'
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
@@ -65,6 +66,79 @@ def OptimizePng(png_data, optimization_level=None):
                            optimization_level=optimization_level)
 
   finally:
+    if os.path.exists(png_filename):
+      os.unlink(png_filename)
+    os.rmdir(temp_dir)
+
+def ExportSingleEntry(icon_dir_entry, icon_data, outfile):
+  """Export a single icon dir entry to its own ICO file.
+
+  Args:
+    icon_dir_entry: Struct containing the fields of an ICONDIRENTRY.
+    icon_data: Raw pixel data of the icon.
+    outfile: File object to write to.
+  """
+  # Write the ICONDIR header.
+  logging.debug('len(icon_data) = %d', len(icon_data))
+  outfile.write(struct.pack('<HHH', 0, 1, 1))
+
+  # Write the ICONDIRENTRY header.
+  width, height, num_colors, r1, r2, r3, size, _ = icon_dir_entry
+  offset = 22;
+  icon_dir_entry = width, height, num_colors, r1, r2, r3, size, offset
+  outfile.write(struct.pack('<BBBBHHLL', *icon_dir_entry))
+
+  # Write the image data.
+  outfile.write(icon_data)
+
+def ConvertIcoToPng(ico_filename, png_filename):
+  """Convert a single-entry ICO file to a PNG image.
+
+  Requires that the user has `convert` (ImageMagick) installed.
+
+  Raises:
+    OSError: If ImageMagick was not found.
+    subprocess.CalledProcessError: If convert failed.
+  """
+  logging.debug('Converting BMP image to PNG...')
+  args = [IMAGEMAGICK_CONVERT, ico_filename, png_filename]
+  result = subprocess.check_call(args, stdout=sys.stderr)
+  logging.info('Converted BMP image to PNG format')
+
+def OptimizeBmp(icon_dir_entry, icon_data):
+  """Convert a BMP file to PNG and optimize it.
+
+  Args:
+    icon_dir_entry: Struct containing the fields of an ICONDIRENTRY.
+    icon_data: Raw pixel data of the icon.
+
+  Returns:
+    The raw bytes of a PNG file, an optimized version of the input.
+  """
+  temp_dir = tempfile.mkdtemp()
+  try:
+    logging.debug('temp_dir = %s', temp_dir)
+    ico_filename = os.path.join(temp_dir, 'image.ico')
+    png_filename = os.path.join(temp_dir, 'image.png')
+    with open(ico_filename, 'wb') as ico_file:
+      logging.debug('writing %s', ico_filename)
+      ExportSingleEntry(icon_dir_entry, icon_data, ico_file)
+
+    try:
+      ConvertIcoToPng(ico_filename, png_filename)
+    except Exception as e:
+      logging.warning('Could not convert BMP to PNG format: %s', e)
+      if isinstance(e, OSError):
+        logging.info('This is because ImageMagick (`convert`) was not found. '
+                     'Please install it, or manually convert large BMP images '
+                     'into PNG before running this utility.')
+      return icon_data
+
+    return OptimizePngFile(temp_dir, png_filename)
+
+  finally:
+    if os.path.exists(ico_filename):
+      os.unlink(ico_filename)
     if os.path.exists(png_filename):
       os.unlink(png_filename)
     os.rmdir(temp_dir)
@@ -175,18 +249,20 @@ def OptimizeIcoFile(infile, outfile, optimization_level=None):
                  height, size, 'PNG' if entry_is_png else 'BMP')
 
     if entry_is_png:
+      # It is a PNG. Crush it.
       icon_data = OptimizePng(icon_data, optimization_level=optimization_level)
+    elif width >= 256 or height >= 256:
+      # It is a large BMP. Reformat as a PNG, then crush it.
+      # Note: Smaller images are kept uncompressed, for compatibility with
+      # Windows XP.
+      # TODO(mgiuca): Now that we no longer support XP, we can probably compress
+      # all of the images. https://crbug.com/663136
+      icon_data = OptimizeBmp(icon_dir_entries[i], icon_data)
     else:
       new_icon_data = RebuildANDMask(icon_data)
       if new_icon_data != icon_data:
         logging.info('  * Rebuilt AND mask for this image from alpha channel.')
         icon_data = new_icon_data
-
-      if width >= 256 or height >= 256:
-        # TODO(mgiuca): Automatically convert large BMP images to PNGs.
-        logging.warning('Entry #%d is a large image in uncompressed BMP '
-                        'format. Please manually convert to PNG format before '
-                        'running this utility.', i + 1)
 
     new_size = len(icon_data)
     current_offset += new_size
