@@ -484,9 +484,8 @@ class ChannelAssociatedGroupController
       }
       return connector_->Accept(message);
     } else {
-      // We always post tasks to the master endpoint thread when called from the
-      // proxy thread in order to simulate IPC::ChannelProxy::Send behavior.
-      DCHECK(proxy_task_runner_->BelongsToCurrentThread());
+      // We always post tasks to the master endpoint thread when called from
+      // other threads in order to simulate IPC::ChannelProxy::Send behavior.
       task_runner_->PostTask(
           FROM_HERE,
           base::Bind(
