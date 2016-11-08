@@ -130,6 +130,21 @@ Err GetDuplicateOutputError(const std::vector<const Target*>& all_targets,
   return result;
 }
 
+// Given two toolchains with the same name, generates an error message
+// that describes the problem.
+Err GetDuplicateToolchainError(const SourceFile& source_file,
+                               const Toolchain* previous_toolchain,
+                               const Toolchain* toolchain) {
+  Err result(toolchain->defined_from(), "Duplicate toolchain.",
+      "Two or more toolchains write to the same directory:\n  " +
+      source_file.GetDir().value() + "\n\n"
+      "This can be fixed by making sure that distinct toolchains have\n"
+      "distinct names.\n");
+  result.AppendSubErr(
+      Err(previous_toolchain->defined_from(), "Previous toolchain."));
+  return result;
+}
+
 }  // namespace
 
 NinjaBuildWriter::NinjaBuildWriter(
@@ -156,8 +171,7 @@ NinjaBuildWriter::~NinjaBuildWriter() {
 bool NinjaBuildWriter::Run(Err* err) {
   WriteNinjaRules();
   WriteAllPools();
-  WriteSubninjas();
-  return WritePhonyAndAllRules(err);
+  return WriteSubninjas(err) && WritePhonyAndAllRules(err);
 }
 
 // static
@@ -287,7 +301,7 @@ void NinjaBuildWriter::WriteAllPools() {
   }
 }
 
-void NinjaBuildWriter::WriteSubninjas() {
+bool NinjaBuildWriter::WriteSubninjas(Err* err) {
   // Write toolchains sorted by their name, to make output deterministic.
   std::vector<std::pair<const Settings*, const Toolchain*>> sorted_settings(
       used_toolchains_.begin(), used_toolchains_.end());
@@ -302,12 +316,29 @@ void NinjaBuildWriter::WriteSubninjas() {
               return GetNinjaFileForToolchain(a.first) <
                      GetNinjaFileForToolchain(b.first);
             });
+
+  SourceFile previous_subninja;
+  const Toolchain* previous_toolchain = nullptr;
+
   for (const auto& pair : sorted_settings) {
+    SourceFile subninja = GetNinjaFileForToolchain(pair.first);
+
+    // Since the toolchains are sorted, comparing to the previous subninja is
+    // enough to find duplicates.
+    if (subninja == previous_subninja) {
+      *err =
+          GetDuplicateToolchainError(subninja, previous_toolchain, pair.second);
+      return false;
+    }
+
     out_ << "subninja ";
-    path_output_.WriteFile(out_, GetNinjaFileForToolchain(pair.first));
+    path_output_.WriteFile(out_, subninja);
     out_ << std::endl;
+    previous_subninja = subninja;
+    previous_toolchain = pair.second;
   }
   out_ << std::endl;
+  return true;
 }
 
 bool NinjaBuildWriter::WritePhonyAndAllRules(Err* err) {
