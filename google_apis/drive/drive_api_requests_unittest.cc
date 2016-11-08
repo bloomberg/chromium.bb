@@ -567,10 +567,17 @@ TEST_F(DriveApiRequestsTest, FilesInsertRequest) {
                 &run_loop,
                 test_util::CreateCopyResultCallback(&error, &file_resource)));
     request->set_visibility(drive::FILE_VISIBILITY_PRIVATE);
-    request->set_last_viewed_by_me_date(
-        base::Time::FromUTCExploded(kLastViewedByMeDate));
+
+    base::Time last_viewed_by_me_date_utc;
+    ASSERT_TRUE(base::Time::FromUTCExploded(kLastViewedByMeDate,
+                                            &last_viewed_by_me_date_utc));
+    request->set_last_viewed_by_me_date(last_viewed_by_me_date_utc);
+
+    base::Time modified_date_utc;
+    ASSERT_TRUE(base::Time::FromUTCExploded(kModifiedDate, &modified_date_utc));
+    request->set_modified_date(modified_date_utc);
+
     request->set_mime_type("application/vnd.google-apps.folder");
-    request->set_modified_date(base::Time::FromUTCExploded(kModifiedDate));
     request->add_parent("root");
     request->set_title("new directory");
     request->set_properties(testing_properties_);
@@ -632,11 +639,16 @@ TEST_F(DriveApiRequestsTest, FilesPatchRequest) {
     request->set_update_viewed_date(false);
 
     request->set_title("new title");
-    request->set_modified_date(base::Time::FromUTCExploded(kModifiedDate));
-    request->set_last_viewed_by_me_date(
-        base::Time::FromUTCExploded(kLastViewedByMeDate));
-    request->add_parent("parent_resource_id");
+    base::Time modified_date_utc;
+    base::Time::FromUTCExploded(kLastViewedByMeDate);
+    ASSERT_TRUE(base::Time::FromUTCExploded(kModifiedDate, &modified_date_utc));
+    request->set_modified_date(modified_date_utc);
 
+    base::Time last_viewed_by_me_date_utc;
+    ASSERT_TRUE(base::Time::FromUTCExploded(kLastViewedByMeDate,
+                                            &last_viewed_by_me_date_utc));
+    request->set_last_viewed_by_me_date(last_viewed_by_me_date_utc);
+    request->add_parent("parent_resource_id");
     request->set_properties(testing_properties_);
     request_sender_->StartRequestWithAuthRetry(std::move(request));
     run_loop.Run();
@@ -829,7 +841,11 @@ TEST_F(DriveApiRequestsTest, FilesCopyRequest) {
                 test_util::CreateCopyResultCallback(&error, &file_resource)));
     request->set_visibility(drive::FILE_VISIBILITY_PRIVATE);
     request->set_file_id("resource_id");
-    request->set_modified_date(base::Time::FromUTCExploded(kModifiedDate));
+
+    base::Time modified_date_utc;
+    ASSERT_TRUE(base::Time::FromUTCExploded(kModifiedDate, &modified_date_utc));
+
+    request->set_modified_date(modified_date_utc);
     request->add_parent("parent_resource_id");
     request->set_title("new title");
     request_sender_->StartRequestWithAuthRetry(std::move(request));
@@ -1424,9 +1440,15 @@ TEST_F(DriveApiRequestsTest, UploadNewFileWithMetadataRequest) {
             test_util::CreateQuitCallback(
                 &run_loop,
                 test_util::CreateCopyResultCallback(&error, &upload_url)));
-    request->set_modified_date(base::Time::FromUTCExploded(kModifiedDate));
-    request->set_last_viewed_by_me_date(
-        base::Time::FromUTCExploded(kLastViewedByMeDate));
+    base::Time modified_date_utc;
+    ASSERT_TRUE(base::Time::FromUTCExploded(kModifiedDate, &modified_date_utc));
+
+    request->set_modified_date(modified_date_utc);
+
+    base::Time last_viewed_by_me_date_utc;
+    ASSERT_TRUE(base::Time::FromUTCExploded(kLastViewedByMeDate,
+                                            &last_viewed_by_me_date_utc));
+    request->set_last_viewed_by_me_date(last_viewed_by_me_date_utc);
     request_sender_->StartRequestWithAuthRetry(std::move(request));
     run_loop.Run();
   }
@@ -1782,10 +1804,15 @@ TEST_F(DriveApiRequestsTest, UploadExistingFileWithMetadataRequest) {
                                           &error, &upload_url)));
     request->set_parent_resource_id("new_parent_resource_id");
     request->set_title("new file title");
-    request->set_modified_date(base::Time::FromUTCExploded(kModifiedDate));
-    request->set_last_viewed_by_me_date(
-        base::Time::FromUTCExploded(kLastViewedByMeDate));
+    base::Time modified_date_utc;
+    ASSERT_TRUE(base::Time::FromUTCExploded(kModifiedDate, &modified_date_utc));
 
+    request->set_modified_date(modified_date_utc);
+
+    base::Time last_viewed_by_me_date_utc;
+    ASSERT_TRUE(base::Time::FromUTCExploded(kLastViewedByMeDate,
+                                            &last_viewed_by_me_date_utc));
+    request->set_last_viewed_by_me_date(last_viewed_by_me_date_utc);
     request_sender_->StartRequestWithAuthRetry(std::move(request));
     run_loop.Run();
   }

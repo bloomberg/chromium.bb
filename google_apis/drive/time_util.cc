@@ -143,11 +143,13 @@ bool GetTimeFromString(const base::StringPiece& raw_value,
     return false;
 
   if (has_timezone) {
-    *parsed_time = base::Time::FromUTCExploded(exploded);
+    if (!base::Time::FromUTCExploded(exploded, parsed_time))
+      return false;
     if (offset_to_utc_in_minutes != 0)
       *parsed_time -= base::TimeDelta::FromMinutes(offset_to_utc_in_minutes);
   } else {
-    *parsed_time = base::Time::FromLocalExploded(exploded);
+    if (!base::Time::FromLocalExploded(exploded, parsed_time))
+      return false;
   }
 
   return true;
