@@ -414,6 +414,32 @@ TEST_F(CustomElementRegistryTest, adoptedCallback) {
       << "adoptNode() should not invoke other callbacks";
 }
 
+TEST_F(CustomElementRegistryTest, lookupCustomElementDefinition) {
+  NonThrowableExceptionState shouldNotThrow;
+  TestCustomElementDefinitionBuilder builder;
+  CustomElementDefinition* definitionA = registry().define(
+      "a-a", builder, ElementDefinitionOptions(), shouldNotThrow);
+  ElementDefinitionOptions options;
+  options.setExtends("div");
+  CustomElementDefinition* definitionB =
+      registry().define("b-b", builder, options, shouldNotThrow);
+  // look up defined autonomous custom element
+  CustomElementDefinition* definition = registry().definitionFor(
+      CustomElementDescriptor(CustomElementDescriptor("a-a", "a-a")));
+  EXPECT_NE(nullptr, definition) << "a-a, a-a should be registered";
+  EXPECT_EQ(definitionA, definition);
+  // look up undefined autonomous custom element
+  definition = registry().definitionFor(CustomElementDescriptor("a-a", "div"));
+  EXPECT_EQ(nullptr, definition) << "a-a, div should not be registered";
+  // look up defined customized built-in element
+  definition = registry().definitionFor(CustomElementDescriptor("b-b", "div"));
+  EXPECT_NE(nullptr, definition) << "b-b, div should be registered";
+  EXPECT_EQ(definitionB, definition);
+  // look up undefined customized built-in element
+  definition = registry().definitionFor(CustomElementDescriptor("a-a", "div"));
+  EXPECT_EQ(nullptr, definition) << "a-a, div should not be registered";
+}
+
 // TODO(dominicc): Add tests which adjust the "is" attribute when type
 // extensions are implemented.
 

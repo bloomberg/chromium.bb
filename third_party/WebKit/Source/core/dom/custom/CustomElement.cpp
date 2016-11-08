@@ -69,10 +69,11 @@ bool CustomElement::shouldCreateCustomElement(const QualifiedName& tagName) {
          tagName.namespaceURI() == HTMLNames::xhtmlNamespaceURI;
 }
 
-static CustomElementDefinition* definitionForName(const Document& document,
-                                                  const QualifiedName& name) {
+static CustomElementDefinition* definitionFor(
+    const Document& document,
+    const CustomElementDescriptor desc) {
   if (CustomElementRegistry* registry = CustomElement::registry(document))
-    return registry->definitionForName(name.localName());
+    return registry->definitionFor(desc);
   return nullptr;
 }
 
@@ -88,8 +89,9 @@ HTMLElement* CustomElement::createCustomElementSync(
     Document& document,
     const QualifiedName& tagName) {
   DCHECK(shouldCreateCustomElement(tagName));
-  if (CustomElementDefinition* definition =
-          definitionForName(document, tagName))
+  if (CustomElementDefinition* definition = definitionFor(
+          document,
+          CustomElementDescriptor(tagName.localName(), tagName.localName())))
     return definition->createElementSync(document, tagName);
   return createUndefinedElement(document, tagName);
 }
@@ -103,8 +105,9 @@ HTMLElement* CustomElement::createCustomElementAsync(
   // https://dom.spec.whatwg.org/#concept-create-element
   // 6. If definition is non-null, then:
   // 6.2. If the synchronous custom elements flag is not set:
-  if (CustomElementDefinition* definition =
-          definitionForName(document, tagName))
+  if (CustomElementDefinition* definition = definitionFor(
+          document,
+          CustomElementDescriptor(tagName.localName(), tagName.localName())))
     return definition->createElementAsync(document, tagName);
 
   return createUndefinedElement(document, tagName);
@@ -209,8 +212,8 @@ void CustomElement::tryToUpgrade(Element* element) {
   CustomElementRegistry* registry = CustomElement::registry(*element);
   if (!registry)
     return;
-  if (CustomElementDefinition* definition =
-          registry->definitionForName(element->localName()))
+  if (CustomElementDefinition* definition = registry->definitionFor(
+          CustomElementDescriptor(element->localName(), element->localName())))
     definition->enqueueUpgradeReaction(element);
   else
     registry->addCandidate(element);

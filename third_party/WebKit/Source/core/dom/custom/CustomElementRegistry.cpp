@@ -90,37 +90,39 @@ DEFINE_TRACE(CustomElementRegistry) {
   visitor->trace(m_whenDefinedPromiseMap);
 }
 
-void CustomElementRegistry::define(ScriptState* scriptState,
-                                   const AtomicString& name,
-                                   const ScriptValue& constructor,
-                                   const ElementDefinitionOptions& options,
-                                   ExceptionState& exceptionState) {
+CustomElementDefinition* CustomElementRegistry::define(
+    ScriptState* scriptState,
+    const AtomicString& name,
+    const ScriptValue& constructor,
+    const ElementDefinitionOptions& options,
+    ExceptionState& exceptionState) {
   ScriptCustomElementDefinitionBuilder builder(scriptState, this, constructor,
                                                exceptionState);
-  define(name, builder, options, exceptionState);
+  return define(name, builder, options, exceptionState);
 }
 
 // http://w3c.github.io/webcomponents/spec/custom/#dfn-element-definition
-void CustomElementRegistry::define(const AtomicString& name,
-                                   CustomElementDefinitionBuilder& builder,
-                                   const ElementDefinitionOptions& options,
-                                   ExceptionState& exceptionState) {
+CustomElementDefinition* CustomElementRegistry::define(
+    const AtomicString& name,
+    CustomElementDefinitionBuilder& builder,
+    const ElementDefinitionOptions& options,
+    ExceptionState& exceptionState) {
   TRACE_EVENT1("blink", "CustomElementRegistry::define", "name", name.utf8());
   if (!builder.checkConstructorIntrinsics())
-    return;
+    return nullptr;
 
   if (throwIfInvalidName(name, exceptionState))
-    return;
+    return nullptr;
 
   if (nameIsDefined(name) || v0NameIsDefined(name)) {
     exceptionState.throwDOMException(
         NotSupportedError,
         "this name has already been used with this registry");
-    return;
+    return nullptr;
   }
 
   if (!builder.checkConstructorNotRegistered())
-    return;
+    return nullptr;
 
   AtomicString localName = name;
 
@@ -131,13 +133,13 @@ void CustomElementRegistry::define(const AtomicString& name,
     // 7.1. If element interface is valid custom element name, throw exception
     const AtomicString& extends = AtomicString(options.extends());
     if (throwIfValidName(AtomicString(options.extends()), exceptionState))
-      return;
+      return nullptr;
     // 7.2. If element interface is undefined element, throw exception
     if (htmlElementTypeForTag(extends) ==
         HTMLElementType::kHTMLUnknownElement) {
       exceptionState.throwDOMException(
           NotSupportedError, "\"" + extends + "\" is an HTMLUnknownElement");
-      return;
+      return nullptr;
     }
     // 7.3. Set localName to extends
     localName = extends;
@@ -152,7 +154,7 @@ void CustomElementRegistry::define(const AtomicString& name,
   if (m_elementDefinitionIsRunning) {
     exceptionState.throwDOMException(
         NotSupportedError, "an element definition is already being processed");
-    return;
+    return nullptr;
   }
 
   {
@@ -162,11 +164,11 @@ void CustomElementRegistry::define(const AtomicString& name,
 
     // 10.1-2
     if (!builder.checkPrototype())
-      return;
+      return nullptr;
 
     // 10.3-6
     if (!builder.rememberOriginalProperties())
-      return;
+      return nullptr;
 
     // "Then, perform the following substep, regardless of whether
     // the above steps threw an exception or not: Unset this
@@ -190,10 +192,11 @@ void CustomElementRegistry::define(const AtomicString& name,
 
   // 16: when-defined promise processing
   const auto& entry = m_whenDefinedPromiseMap.find(name);
-  if (entry == m_whenDefinedPromiseMap.end())
-    return;
-  entry->value->resolve();
-  m_whenDefinedPromiseMap.remove(entry);
+  if (entry != m_whenDefinedPromiseMap.end()) {
+    entry->value->resolve();
+    m_whenDefinedPromiseMap.remove(entry);
+  }
+  return definition;
 }
 
 // https://html.spec.whatwg.org/multipage/scripting.html#dom-customelementsregistry-get
@@ -207,16 +210,18 @@ ScriptValue CustomElementRegistry::get(const AtomicString& name) {
   return definition->getConstructorForScript();
 }
 
+// https://html.spec.whatwg.org/multipage/scripting.html#look-up-a-custom-element-definition
+// At this point, what the spec calls 'is' is 'name' from desc
 CustomElementDefinition* CustomElementRegistry::definitionFor(
     const CustomElementDescriptor& desc) const {
+  // 4&5. If there is a definition in registry with name equal to is/localName
+  // Autonomous elements have the same name and local name
   CustomElementDefinition* definition = definitionForName(desc.name());
-  if (!definition)
-    return nullptr;
-  // The definition for a customized built-in element, such as
-  // <button is="my-button"> should not be provided for an
-  // autonomous element, such as <my-button>, even though the
-  // name "my-button" matches.
-  return definition->descriptor() == desc ? definition : nullptr;
+  // 4&5. and name equal to localName, return that definition
+  if (definition and definition->descriptor().localName() == desc.localName())
+    return definition;
+  // 6. Return null
+  return nullptr;
 }
 
 bool CustomElementRegistry::nameIsDefined(const AtomicString& name) const {

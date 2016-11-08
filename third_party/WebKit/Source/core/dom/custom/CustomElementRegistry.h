@@ -39,16 +39,16 @@ class CORE_EXPORT CustomElementRegistry final
 
   virtual ~CustomElementRegistry() = default;
 
-  void define(ScriptState*,
-              const AtomicString& name,
-              const ScriptValue& constructor,
-              const ElementDefinitionOptions&,
-              ExceptionState&);
+  CustomElementDefinition* define(ScriptState*,
+                                  const AtomicString& name,
+                                  const ScriptValue& constructor,
+                                  const ElementDefinitionOptions&,
+                                  ExceptionState&);
 
-  void define(const AtomicString& name,
-              CustomElementDefinitionBuilder&,
-              const ElementDefinitionOptions&,
-              ExceptionState&);
+  CustomElementDefinition* define(const AtomicString& name,
+                                  CustomElementDefinitionBuilder&,
+                                  const ElementDefinitionOptions&,
+                                  ExceptionState&);
 
   ScriptValue get(const AtomicString& name);
   bool nameIsDefined(const AtomicString& name) const;
