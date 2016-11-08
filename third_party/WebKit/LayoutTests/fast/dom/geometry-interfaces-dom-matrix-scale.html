@@ -56,6 +56,14 @@ test(function() {
 test(function() {
   var matrix = new DOMMatrix();
   assert_identity_2d_matrix(matrix);
+  var result = matrix.scale3d();
+  assert_identity_2d_matrix(result);
+  assert_identity_2d_matrix(matrix);
+}, "DOMMatrix.scale3d()");
+
+test(function() {
+  var matrix = new DOMMatrix();
+  assert_identity_2d_matrix(matrix);
   var result = matrix.scale3d(3);
   assert_3d_matrix_equals(result, [3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1]);
   assert_identity_2d_matrix(matrix);

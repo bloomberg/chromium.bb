@@ -65,7 +65,10 @@ class CORE_EXPORT DOMMatrixReadOnly
                    double ox = 0,
                    double oy = 0,
                    double oz = 0);
-  DOMMatrix* scale3d(double scale, double ox = 0, double oy = 0, double oz = 0);
+  DOMMatrix* scale3d(double scale = 1,
+                     double ox = 0,
+                     double oy = 0,
+                     double oz = 0);
   DOMMatrix* rotate(double rotX);
   DOMMatrix* rotate(double rotX, double rotY);
   DOMMatrix* rotate(double rotX, double rotY, double rotZ);

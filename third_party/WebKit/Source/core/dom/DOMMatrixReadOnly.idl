@@ -57,7 +57,7 @@
                     optional unrestricted double originX = 0,
                     optional unrestricted double originY = 0,
                     optional unrestricted double originZ = 0);
-    DOMMatrix scale3d(unrestricted double scale,
+    DOMMatrix scale3d(optional unrestricted double scale = 1,
                       optional unrestricted double originX = 0,
                       optional unrestricted double originY = 0,
                       optional unrestricted double originZ = 0);

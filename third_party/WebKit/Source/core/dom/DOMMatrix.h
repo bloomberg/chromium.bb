@@ -88,7 +88,7 @@ class CORE_EXPORT DOMMatrix : public DOMMatrixReadOnly {
                        double ox = 0,
                        double oy = 0,
                        double oz = 0);
-  DOMMatrix* scale3dSelf(double scale,
+  DOMMatrix* scale3dSelf(double scale = 1,
                          double ox = 0,
                          double oy = 0,
                          double oz = 0);
