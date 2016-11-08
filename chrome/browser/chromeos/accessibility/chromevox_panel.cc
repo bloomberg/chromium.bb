@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/chromevox_panel.h"
+#include "chrome/browser/data_use_measurement/data_use_web_contents_observer.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/web_contents.h"
@@ -76,6 +77,8 @@ ChromeVoxPanel::ChromeVoxPanel(content::BrowserContext* browser_context)
   content::WebContents* contents = web_view->GetWebContents();
   web_contents_observer_.reset(
       new ChromeVoxPanelWebContentsObserver(contents, this));
+  data_use_measurement::DataUseWebContentsObserver::CreateForWebContents(
+      contents);
   extensions::SetViewType(contents, extensions::VIEW_TYPE_COMPONENT);
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       contents);
