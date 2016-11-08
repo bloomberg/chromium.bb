@@ -47,6 +47,8 @@ void SaveCardBubbleControllerImpl::ShowBubbleForLocalSave(
     const base::Closure& save_card_callback) {
   is_uploading_ = false;
   is_reshow_ = false;
+  legal_message_lines_.clear();
+
   AutofillMetrics::LogSaveCardPromptMetric(
       AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, is_uploading_,
       is_reshow_);
