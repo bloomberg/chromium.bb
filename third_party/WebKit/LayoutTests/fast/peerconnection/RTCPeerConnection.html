@@ -27,6 +27,7 @@ shouldThrow("new RTCPeerConnection({iceServers:true});");
 shouldThrow("new RTCPeerConnection({iceServers:[1, 2, 3]});");
 shouldThrow("new RTCPeerConnection({iceServers:[{}]});");
 shouldThrow("new RTCPeerConnection({iceServers:[{url:'foo'}]});");
+shouldThrow("new RTCPeerConnection({iceServers:[{urls:'unsupported:scheme'}]});");
 shouldThrow("new RTCPeerConnection({iceServers:[{urls:[1, 'turn:foo.com']}]});");
 
 shouldNotThrow("new RTCPeerConnection({iceServers:[], iceTransports:'none'});");

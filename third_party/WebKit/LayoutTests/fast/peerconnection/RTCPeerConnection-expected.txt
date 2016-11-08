@@ -22,8 +22,9 @@ PASS new RTCPeerConnection({fooServers:[]}); did not throw exception.
 PASS new RTCPeerConnection({iceServers:true}); threw exception TypeError: Failed to construct 'RTCPeerConnection': The value provided is neither an array, nor does it have indexed properties..
 PASS new RTCPeerConnection({iceServers:[1, 2, 3]}); threw exception TypeError: Failed to construct 'RTCPeerConnection': cannot convert to dictionary..
 PASS new RTCPeerConnection({iceServers:[{}]}); threw exception TypeError: Failed to construct 'RTCPeerConnection': Malformed RTCIceServer.
-PASS new RTCPeerConnection({iceServers:[{url:'foo'}]}); threw exception TypeError: Failed to construct 'RTCPeerConnection': Malformed URL.
-PASS new RTCPeerConnection({iceServers:[{urls:[1, 'turn:foo.com']}]}); threw exception TypeError: Failed to construct 'RTCPeerConnection': Malformed URL.
+PASS new RTCPeerConnection({iceServers:[{url:'foo'}]}); threw exception SyntaxError: Failed to construct 'RTCPeerConnection': 'foo' is not a valid URL..
+PASS new RTCPeerConnection({iceServers:[{urls:'unsupported:scheme'}]}); threw exception SyntaxError: Failed to construct 'RTCPeerConnection': 'unsupported' is not one of the supported URL schemes 'stun', 'turn' or 'turns'..
+PASS new RTCPeerConnection({iceServers:[{urls:[1, 'turn:foo.com']}]}); threw exception SyntaxError: Failed to construct 'RTCPeerConnection': '1' is not a valid URL..
 PASS new RTCPeerConnection({iceServers:[], iceTransports:'none'}); did not throw exception.
 PASS new RTCPeerConnection({iceServers:[], iceTransports:'relay'}); did not throw exception.
 PASS new RTCPeerConnection({iceServers:[], iceTransports:'all'}); did not throw exception.
