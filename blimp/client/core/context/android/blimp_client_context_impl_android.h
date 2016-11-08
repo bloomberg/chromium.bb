@@ -31,7 +31,7 @@ class BlimpClientContextImplAndroid : public BlimpClientContextImpl {
       scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
       std::unique_ptr<CompositorDependencies> compositor_dependencies,
-      PrefService* local_state);
+      std::unique_ptr<Settings> settings);
   ~BlimpClientContextImplAndroid() override;
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
@@ -54,6 +54,11 @@ class BlimpClientContextImplAndroid : public BlimpClientContextImpl {
   void InitSettingsPage(JNIEnv* env,
                         const base::android::JavaRef<jobject>& jobj,
                         const base::android::JavaRef<jobject>& blimp_settings);
+
+  // Returns the Settings java object.
+  base::android::ScopedJavaLocalRef<jobject> GetSettings(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& jobj);
 
  protected:
   // BlimpClientContextImpl implementation.

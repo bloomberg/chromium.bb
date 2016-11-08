@@ -42,6 +42,10 @@ source_set("settings") {
     sources += [
       "android/blimp_settings_android.cc",
       "android/blimp_settings_android.h",
+      "android/settings_android.cc",
+      "android/settings_android.h",
+      "android/settings_observer_proxy.cc",
+      "android/settings_observer_proxy.h",
     ]
 
     deps += [
@@ -81,6 +85,10 @@ if (is_android) {
     java_files = [
       "android/java/src/org/chromium/blimp/core/settings/AboutBlimpPreferences.java",
       "android/java/src/org/chromium/blimp/core/settings/BlimpPreferencesDelegate.java",
+      "android/java/src/org/chromium/blimp/core/settings/EmptySettingsObserver.java",
+      "android/java/src/org/chromium/blimp/core/settings/Settings.java",
+      "android/java/src/org/chromium/blimp/core/settings/SettingsObserver.java",
+      "android/java/src/org/chromium/blimp/core/settings/SettingsObserverProxy.java",
     ]
 
     # TODO(xingliu): Clean resources files in the future. http://crbug.com/630687.
@@ -100,6 +108,8 @@ if (is_android) {
 
     sources = [
       "android/java/src/org/chromium/blimp/core/settings/AboutBlimpPreferences.java",
+      "android/java/src/org/chromium/blimp/core/settings/Settings.java",
+      "android/java/src/org/chromium/blimp/core/settings/SettingsObserverProxy.java",
     ]
 
     jni_package = "blimp/client/core/settings"

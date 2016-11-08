@@ -13,6 +13,7 @@ import org.chromium.blimp.core.common.PreferencesUtil;
 import org.chromium.blimp.core.feedback.BlimpFeedbackData;
 import org.chromium.blimp.core.settings.AboutBlimpPreferences;
 import org.chromium.blimp.core.settings.BlimpPreferencesDelegate;
+import org.chromium.blimp.core.settings.Settings;
 import org.chromium.blimp_public.BlimpClientContext;
 import org.chromium.blimp_public.BlimpClientContextDelegate;
 import org.chromium.blimp_public.contents.BlimpContents;
@@ -59,6 +60,14 @@ public class BlimpClientContextImpl implements BlimpClientContext, BlimpPreferen
 
     private BlimpClientContextImpl(long nativeBlimpClientContextImplAndroid) {
         mNativeBlimpClientContextImplAndroid = nativeBlimpClientContextImplAndroid;
+    }
+
+    /**
+     * Get Settings java object, whose lifetime is the same as BlimpClientContextImpl's.
+     */
+    public Settings getSettings() {
+        assert mNativeBlimpClientContextImplAndroid != 0;
+        return nativeGetSettings(mNativeBlimpClientContextImplAndroid);
     }
 
     @Override
@@ -127,4 +136,5 @@ public class BlimpClientContextImpl implements BlimpClientContext, BlimpPreferen
     private native void nativeConnectFromJava(long nativeBlimpClientContextImplAndroid);
     private native void nativeInitSettingsPage(
             long nativeBlimpClientContextImplAndroid, AboutBlimpPreferences preferences);
+    private native Settings nativeGetSettings(long nativeBlimpClientContextImplAndroid);
 }

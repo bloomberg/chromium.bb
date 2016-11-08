@@ -56,7 +56,7 @@ class BlimpClientContextImpl
       scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
       std::unique_ptr<CompositorDependencies> compositor_dependencies,
-      PrefService* local_state);
+      std::unique_ptr<Settings> settings);
   ~BlimpClientContextImpl() override;
 
   // BlimpClientContext implementation.
@@ -77,6 +77,8 @@ class BlimpClientContextImpl
   // BlimpSettingsDelegate implementation.
   IdentitySource* GetIdentitySource() override;
   ConnectionStatus* GetConnectionStatus() override;
+
+  Settings* settings() { return settings_.get(); }
 
  private:
   // Called when the AssignmentSource is finished getting an Assignment.  Will

@@ -13,6 +13,7 @@
 #include "blimp/client/core/contents/blimp_contents_impl.h"
 #include "blimp/client/core/feedback/android/blimp_feedback_data_android.h"
 #include "blimp/client/core/settings/android/blimp_settings_android.h"
+#include "blimp/client/core/settings/android/settings_android.h"
 #include "blimp/client/public/blimp_client_context.h"
 #include "blimp/client/public/compositor/compositor_dependencies.h"
 #include "jni/BlimpClientContextImpl_jni.h"
@@ -50,11 +51,11 @@ BlimpClientContextImplAndroid::BlimpClientContextImplAndroid(
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> file_thread_task_runner,
     std::unique_ptr<CompositorDependencies> compositor_dependencies,
-    PrefService* local_state)
+    std::unique_ptr<Settings> settings)
     : BlimpClientContextImpl(io_thread_task_runner,
                              file_thread_task_runner,
                              std::move(compositor_dependencies),
-                             local_state) {
+                             std::move(settings)) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   java_obj_.Reset(env, Java_BlimpClientContextImpl_create(
@@ -122,6 +123,13 @@ void BlimpClientContextImplAndroid::InitSettingsPage(
 
   // Set the delegate for settings.
   settings_android->SetDelegate(this);
+}
+
+base::android::ScopedJavaLocalRef<jobject>
+BlimpClientContextImplAndroid::GetSettings(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& jobj) {
+  return static_cast<SettingsAndroid*>(settings())->GetJavaObject();
 }
 
 }  // namespace client
