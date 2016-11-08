@@ -27,6 +27,7 @@
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "net/http/http_util.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
@@ -399,6 +400,12 @@ void ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   request.render_frame_id = original_info->GetRenderFrameID();
   request.is_main_frame = original_info->IsMainFrame();
   request.parent_is_main_frame = original_info->ParentIsMainFrame();
+
+  DCHECK(net::HttpUtil::IsValidHeaderValue(
+      version_->navigation_preload_state().header));
+  request.headers = "Service-Worker-Navigation-Preload: " +
+                    version_->navigation_preload_state().header;
+
   const int request_id = ResourceDispatcherHostImpl::Get()->MakeRequestID();
   DCHECK_LT(request_id, -1);
 
@@ -413,8 +420,6 @@ void ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
                           url_loader_factory_.associated_group());
   mojom::URLLoaderAssociatedPtr url_loader_associated_ptr;
 
-  // TODO(horo): Add "Service-Worker-Navigation-Preload" header.
-  // See: https://github.com/w3c/ServiceWorker/issues/920#issuecomment-251150270
   url_loader_factory_->CreateLoaderAndStart(
       mojo::GetProxy(&url_loader_associated_ptr,
                      url_loader_factory_.associated_group()),
