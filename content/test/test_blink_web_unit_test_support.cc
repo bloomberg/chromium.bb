@@ -45,7 +45,7 @@
 #endif
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
-#include "gin/v8_initializer.h"
+#include "gin/v8_initializer.h"  // nogncheck
 #endif
 
 #if defined(ENABLE_WEBRTC)
