@@ -151,6 +151,7 @@ built_test_programs =				\
 	connection-test				\
 	event-loop-test				\
 	fixed-test				\
+	interface-test				\
 	list-test				\
 	map-test				\
 	os-wrappers-test			\
@@ -203,6 +204,8 @@ event_loop_test_SOURCES = tests/event-loop-test.c
 event_loop_test_LDADD = libtest-runner.la
 fixed_test_SOURCES = tests/fixed-test.c
 fixed_test_LDADD = libtest-runner.la
+interface_test_SOURCES = tests/interface-test.c
+interface_test_LDADD = libtest-runner.la
 list_test_SOURCES = tests/list-test.c
 list_test_LDADD = libtest-runner.la
 map_test_SOURCES = tests/map-test.c
