@@ -152,22 +152,23 @@ const char kHelp[] = "help";
 const char kHelp_HelpShort[] =
     "help: Does what you think.";
 const char kHelp_Help[] =
-    "gn help <anything>\n"
-    "\n"
-    "  Yo dawg, I heard you like help on your help so I put help on the help\n"
-    "  in the help.\n"
-    "\n"
-    "  You can also use \"all\" as the parameter to get all help at once.\n"
-    "\n"
-    "Switches\n"
-    "\n"
-    "  --markdown\n"
-    "      Format output in markdown syntax.\n"
-    "\n"
-    "Example\n"
-    "\n"
-    "  gn help --markdown all\n"
-    "      Dump all help to stdout in markdown format.\n";
+    R"(gn help <anything>
+
+  Yo dawg, I heard you like help on your help so I put help on the help in the
+  help.
+
+  You can also use "all" as the parameter to get all help at once.
+
+Switches
+
+  --markdown
+      Format output in markdown syntax.
+
+Example
+
+  gn help --markdown all
+      Dump all help to stdout in markdown format.
+)";
 
 int RunHelp(const std::vector<std::string>& args) {
   std::string what;
