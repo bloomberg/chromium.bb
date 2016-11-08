@@ -728,6 +728,7 @@ test("content_browsertests") {
 
   data_deps = [
     "//content/shell:pak",
+    "//testing/buildbot/filters:content_browsertests",
     "//third_party/mesa:osmesa",
   ]
 
@@ -764,7 +765,6 @@ test("content_browsertests") {
   }
 
   if (is_win || is_linux || is_android) {
-    data += [ "//testing/buildbot/filters/site-per-process.content_browsertests.filter" ]
   }
 
   if (is_win) {
@@ -787,7 +787,6 @@ test("content_browsertests") {
 
   if (is_linux) {
     sources += [ "../zygote/zygote_browsertest.cc" ]
-    data += [ "//testing/buildbot/filters/browser-side-navigation.linux.content_browsertests.filter" ]
   }
 
   if (is_android) {
