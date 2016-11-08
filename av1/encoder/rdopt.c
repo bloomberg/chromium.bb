@@ -2257,6 +2257,9 @@ static int64_t rd_pick_intra4x4block(
           ratey += av1_cost_coeffs(cm, x, 0, block, coeff_ctx, TX_4X4,
                                    scan_order->scan, scan_order->neighbors,
                                    cpi->sf.use_fast_coef_costing);
+          *(tempa + idx) = !(p->eobs[block] == 0);
+          *(templ + idy) = !(p->eobs[block] == 0);
+          can_skip &= (p->eobs[block] == 0);
 #else
           skip = av1_pvq_encode_helper(&x->daala_enc, coeff, ref_coeff, dqcoeff,
                                        &p->eobs[block], pd->dequant, 0, TX_4X4,
