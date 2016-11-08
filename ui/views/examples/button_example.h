@@ -39,7 +39,6 @@ class VIEWS_EXAMPLES_EXPORT ButtonExample : public ExampleBase,
   LabelButton* disabled_button_ = nullptr;
   MdTextButton* md_button_ = nullptr;
   MdTextButton* md_default_button_ = nullptr;
-  MdTextButton* md_prominent_button_ = nullptr;
   ImageButton* image_button_ = nullptr;
 
   const gfx::ImageSkia* icon_ = nullptr;
