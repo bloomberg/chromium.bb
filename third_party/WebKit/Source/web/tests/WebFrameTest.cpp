@@ -10562,12 +10562,7 @@ static void disableCompositing(WebSettings* settings) {
 
 // Make sure overlay scrollbars on non-composited scrollers fade out and set
 // the hidden bit as needed.
-#if OS(MACOSX)
-#define MAYBE(test) DISABLED_##test
-#else
-#define MAYBE(test) test
-#endif
-TEST_F(WebFrameTest, MAYBE(TestNonCompositedOverlayScrollbarsFade)) {
+TEST_F(WebFrameTest, TestNonCompositedOverlayScrollbarsFade) {
   FrameTestHelpers::WebViewHelper webViewHelper;
   WebViewImpl* webViewImpl = webViewHelper.initialize(
       true, nullptr, nullptr, nullptr, &disableCompositing);
