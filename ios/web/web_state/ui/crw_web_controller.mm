@@ -5403,13 +5403,16 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   GURL webViewURL = net::GURLWithNSURL([_webView URL]);
 
   // For failed navigations, WKWebView will sometimes revert to the previous URL
-  // before resettings its |isLoading| property to NO.  If this is the first
-  // navigation for the web view, this will result in an empty URL.
-  if (webViewURL.is_empty() || webViewURL == _documentURL)
+  // before committing the current navigation or resetting the web view's
+  // |isLoading| property to NO.  If this is the first navigation for the web
+  // view, this will result in an empty URL.
+  BOOL navigationWasCommitted = _loadPhase != web::LOAD_REQUESTED;
+  if (!navigationWasCommitted &&
+      (webViewURL.is_empty() || webViewURL == _documentURL)) {
     return;
+  }
 
-  if (_loadPhase == web::LOAD_REQUESTED &&
-      ![_pendingNavigationInfo cancelled]) {
+  if (!navigationWasCommitted && ![_pendingNavigationInfo cancelled]) {
     // A fast back/forward within the same origin does not call
     // |didCommitNavigation:|, so signal page change explicitly.
     DCHECK_EQ(_documentURL.GetOrigin(), webViewURL.GetOrigin());
