@@ -154,12 +154,15 @@ bool ShellContentBrowserClient::DoesSiteRequireDedicatedProcess(
   DCHECK(command_line->HasSwitch(switches::kIsolateSitesForTesting));
   std::string pattern =
       command_line->GetSwitchValueASCII(switches::kIsolateSitesForTesting);
+
   url::Origin origin(effective_site_url);
 
-  // Schemes like blob or filesystem, which have an embedded origin, should
-  // already have been canonicalized to the origin site.
-  CHECK_EQ(origin.scheme(), effective_site_url.scheme())
-      << "a site url should have the same scheme as its origin.";
+  if (!origin.unique()) {
+    // Schemes like blob or filesystem, which have an embedded origin, should
+    // already have been canonicalized to the origin site.
+    CHECK_EQ(origin.scheme(), effective_site_url.scheme())
+        << "a site url should have the same scheme as its origin.";
+  }
 
   // Practically |origin.Serialize()| is the same as
   // |effective_site_url.spec()|, except Origin serialization strips the
