@@ -19,7 +19,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge.DropdownKeyValue;
 import org.chromium.ui.UiUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -59,19 +58,14 @@ class EditorDropdownField implements EditorFieldView {
 
         ArrayAdapter<DropdownKeyValue> adapter;
         if (mFieldModel.getHint() != null) {
-            // Make a copy of the list, so the hint is not added permanently.
-            final List<DropdownKeyValue> tempDropdownKeyValues =
-                    new ArrayList<DropdownKeyValue>(dropdownKeyValues);
+            // Use the BillingAddressAdapter and pass it a hint to be displayed as default.
+            adapter = new BillingAddressAdapter<DropdownKeyValue>(
+                    context, R.layout.multiline_spinner_item, dropdownKeyValues,
+                    new DropdownKeyValue("", mFieldModel.getHint().toString()));
 
-            // Add the hint as the last value.
-            tempDropdownKeyValues.add(new DropdownKeyValue("", mFieldModel.getHint().toString()));
-
-            // Use the HintArrayAdapter so the hint is not displayed as an option.
-            adapter = new HintArrayAdapter<DropdownKeyValue>(
-                    context, R.layout.multiline_spinner_item, tempDropdownKeyValues);
-
-            // If no value is selected, select the hint entry. Using getCount will not result in an
-            // out of bounds index because the hint value is ommited in the count.
+            // If no value is selected, select the hint entry which is the last item in the adapter.
+            // Using getCount will not result in an out of bounds index because the hint value is
+            // ommited in the count.
             if (mFieldModel.getValue() == null) mSelectedIndex = adapter.getCount();
         } else {
             adapter = new ArrayAdapter<DropdownKeyValue>(
