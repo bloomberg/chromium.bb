@@ -21,8 +21,10 @@
             window.scrollTo(1000, 2000);
 
             window.name = "second/load";
-            setTimeout('window.location = "data:text/html,<script>history.back();</scr" + "ipt>"', 0);
         }
+    }
+    function onLoad() {
+        setTimeout('window.location = "data:text/html,<script>history.back();</scr" + "ipt>"', 0);
     }
 
     window.addEventListener('DOMContentLoaded', init, true);
@@ -30,7 +32,7 @@
 
     var jsTestIsAsync = true;
     </script>
-    <body>
+    <body onload="onLoad()">
         <div id="overflow" style='width: 9999px; height:9999px; float:left;'></div>
         <h1 id='console'/>
     </body>
