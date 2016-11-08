@@ -214,10 +214,9 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
 
   std::unique_ptr<cc::LayerTreeHostInProcess> host_;
 
-  // The SurfaceFactory is bound to the lifetime of the |proxy_client_|. When
-  // detached, the surface factory will be destroyed.
   std::unique_ptr<cc::SurfaceFactory> surface_factory_;
   base::WeakPtr<BlimpCompositorFrameSinkProxyClient> proxy_client_;
+  bool bound_to_proxy_;
 
   // Whether or not |host_| has asked for a new CompositorFrameSink.
   bool compositor_frame_sink_request_pending_;

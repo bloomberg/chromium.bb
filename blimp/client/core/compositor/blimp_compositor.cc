@@ -138,6 +138,7 @@ BlimpCompositor::BlimpCompositor(
       frame_sink_id_(compositor_dependencies_->GetEmbedderDependencies()
                          ->AllocateFrameSinkId()),
       proxy_client_(nullptr),
+      bound_to_proxy_(false),
       compositor_frame_sink_request_pending_(false),
       layer_(cc::Layer::Create()),
       remote_proto_channel_receiver_(nullptr),
@@ -149,6 +150,8 @@ BlimpCompositor::BlimpCompositor(
 void BlimpCompositor::Initialize() {
   surface_id_allocator_ = base::MakeUnique<cc::SurfaceIdAllocator>();
   GetEmbedderDeps()->GetSurfaceManager()->RegisterFrameSinkId(frame_sink_id_);
+  surface_factory_ = base::MakeUnique<cc::SurfaceFactory>(
+      frame_sink_id_, GetEmbedderDeps()->GetSurfaceManager(), this);
   host_ = CreateLayerTreeHost();
 
   if (use_threaded_layer_tree_host_) {
@@ -184,7 +187,7 @@ void BlimpCompositor::RequestCopyOfOutput(
     std::unique_ptr<cc::CopyOutputRequest> copy_request,
     bool flush_pending_update) {
   // If we don't have a FrameSink, fail right away.
-  if (!surface_factory_)
+  if (!bound_to_proxy_)
     return;
 
   if (!use_threaded_layer_tree_host_) {
@@ -255,7 +258,7 @@ void BlimpCompositor::ApplyViewportDeltas(
 }
 
 void BlimpCompositor::RequestNewCompositorFrameSink() {
-  DCHECK(!surface_factory_);
+  DCHECK(!bound_to_proxy_);
   DCHECK(!compositor_frame_sink_request_pending_);
 
   compositor_frame_sink_request_pending_ = true;
@@ -278,9 +281,10 @@ void BlimpCompositor::DidCommitAndDrawFrame() {
   for (auto it = pending_commit_trackers_.begin();
        it != pending_commit_trackers_.end();) {
     if (--it->first == 0) {
-      if (surface_factory_)
+      if (bound_to_proxy_) {
         surface_factory_->RequestCopyOfSurface(local_frame_id_,
                                                std::move(it->second));
+      }
       it = pending_commit_trackers_.erase(it);
     } else {
       ++it;
@@ -371,8 +375,8 @@ const base::WeakPtr<cc::InputHandler>& BlimpCompositor::GetInputHandler() {
 void BlimpCompositor::OnContextProvidersCreated(
     const scoped_refptr<cc::ContextProvider>& compositor_context_provider,
     const scoped_refptr<cc::ContextProvider>& worker_context_provider) {
-  DCHECK(!surface_factory_) << "Any connection to the old CompositorFrameSink "
-                               "should have been destroyed";
+  DCHECK(!bound_to_proxy_) << "Any connection to the old CompositorFrameSink "
+                              "should have been destroyed";
 
   // Make sure we still have a host and we're still expecting a
   // CompositorFrameSink. This can happen if the host dies while the request is
@@ -400,16 +404,15 @@ void BlimpCompositor::OnContextProvidersCreated(
 void BlimpCompositor::BindToProxyClient(
     base::WeakPtr<BlimpCompositorFrameSinkProxyClient> proxy_client) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!surface_factory_);
+  DCHECK(!bound_to_proxy_);
 
+  bound_to_proxy_ = true;
   proxy_client_ = proxy_client;
-  surface_factory_ = base::MakeUnique<cc::SurfaceFactory>(
-      frame_sink_id_, GetEmbedderDeps()->GetSurfaceManager(), this);
 }
 
 void BlimpCompositor::SubmitCompositorFrame(cc::CompositorFrame frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(surface_factory_);
+  DCHECK(bound_to_proxy_);
 
   cc::RenderPass* root_pass = frame.render_pass_list.back().get();
   gfx::Size surface_size = root_pass->output_rect.size();
@@ -451,7 +454,6 @@ void BlimpCompositor::SubmitCompositorFrame(cc::CompositorFrame frame) {
 }
 
 void BlimpCompositor::SubmitCompositorFrameAck() {
-  DCHECK(surface_factory_);
   compositor_dependencies_->GetCompositorTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&BlimpCompositorFrameSinkProxyClient::SubmitCompositorFrameAck,
@@ -465,16 +467,17 @@ void BlimpCompositor::MakeCopyRequestOnNextSwap(
 
 void BlimpCompositor::UnbindProxyClient() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(surface_factory_);
+  DCHECK(bound_to_proxy_);
 
   DestroyDelegatedContent();
-  surface_factory_.reset();
+  surface_factory_->Reset();
+  bound_to_proxy_ = false;
   proxy_client_ = nullptr;
 }
 
 void BlimpCompositor::ReturnResources(
     const cc::ReturnedResourceArray& resources) {
-  DCHECK(surface_factory_);
+  DCHECK(bound_to_proxy_);
   compositor_dependencies_->GetCompositorTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(
@@ -560,7 +563,6 @@ void BlimpCompositor::DestroyLayerTreeHost() {
   // Tear down the output surface connection with the old LayerTreeHost
   // instance.
   DestroyDelegatedContent();
-  surface_factory_.reset();
 
   // Destroy the old LayerTreeHost state.
   host_.reset();
