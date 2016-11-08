@@ -82,28 +82,6 @@ found in the LICENSE file.
         assertEquals(firstTimestamp, pi.firstTimestamp_);
         assertEquals(0, pi.allEvents[0].time);
         assertEquals(deltaT, pi.allEvents[1].time);
-
-        assertTrue(undefined !== pi.pastValues[key]);
-
-        console.log(pi.pastValues);
-
-        assertEquals(0, pi.pastValues[key][0].time);
-        assertEquals(deltaT, pi.pastValues[key][1].time);
-      };
-
-      // Check to make sure that properties are correctly
-      // added to the relevant pastValues array.
-      window.testAddPropertyPastValues = function() {
-        var pi = new PlayerInfo('example_ID'),
-          timestamp = 50,
-          key = 'key',
-          value = 'value';
-
-        pi.addProperty(timestamp, key, value);
-
-        assertEquals(value, pi.pastValues[key][0].value);
-        assertEquals(key, pi.pastValues[key][0].key);
-        assertEquals(0, pi.pastValues[key][0].time);
       };
 
       // The list of all events should be recorded in correctly.
@@ -124,8 +102,7 @@ found in the LICENSE file.
         assertEquals(key2, pi.allEvents[1].key);
       };
 
-      // Using noRecord should make it not show up in allEvents,
-      // but it should still show up in pastValues[key].
+      // Using noRecord should make it not show up in allEvents.
       window.testNoRecord = function() {
         var pi = new PlayerInfo('example_ID'),
           timestamp = 50,
@@ -135,7 +112,6 @@ found in the LICENSE file.
 
         assertEquals(value, pi.properties[key]);
         assertEquals(0, pi.allEvents.length);
-        assertEquals(1, pi.pastValues[key].length);
       };
     </script>
   </body>

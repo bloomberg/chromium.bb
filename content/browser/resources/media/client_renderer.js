@@ -13,6 +13,7 @@ var ClientRenderer = (function() {
     this.graphElement = document.getElementById('graphs');
     this.audioPropertyName = document.getElementById('audio-property-name');
 
+    this.players = null;
     this.selectedPlayer = null;
     this.selectedAudioComponentType = null;
     this.selectedAudioComponentId = null;
@@ -33,6 +34,9 @@ var ClientRenderer = (function() {
     for (var i = 0; i < clipboardButtons.length; i++) {
       clipboardButtons[i].onclick = this.copyToClipboard_.bind(this);
     }
+
+    this.saveLogButton = document.getElementById('save-log-button');
+    this.saveLogButton.onclick = this.saveLog_.bind(this);
 
     this.hiddenKeys = ['component_id', 'component_type', 'owner_id'];
 
@@ -91,6 +95,14 @@ var ClientRenderer = (function() {
     }
 
     element.checked = true;
+  }
+
+  function downloadLog(text) {
+    var file = new Blob([text], {type: 'text/plain'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(file);
+    a.download = "media-internals.txt";
+    a.click();
   }
 
   ClientRenderer.prototype = {
@@ -230,7 +242,7 @@ var ClientRenderer = (function() {
       }
     },
 
-    getAudioComponentName_ : function(componentType, id) {
+    getAudioComponentName_: function(componentType, id) {
       var baseName;
       switch (componentType) {
         case 0:
@@ -248,7 +260,7 @@ var ClientRenderer = (function() {
       return baseName + ' ' + id;
     },
 
-    getListElementForAudioComponent_ : function(componentType) {
+    getListElementForAudioComponent_: function(componentType) {
       var listElement;
       switch (componentType) {
         case 0:
@@ -304,8 +316,7 @@ var ClientRenderer = (function() {
       }
     },
 
-    selectAudioComponent_: function(
-          componentType, componentId, componentData) {
+    selectAudioComponent_: function(componentType, componentId, componentData) {
       document.body.classList.remove(
          ClientRenderer.Css_.NO_COMPONENTS_SELECTED);
 
@@ -320,12 +331,16 @@ var ClientRenderer = (function() {
     },
 
     redrawPlayerList_: function(players) {
+      this.players = players;
+
       // Group name imposes rule that only one component can be selected
       // (and have its properties displayed) at a time.
       var buttonGroupName = 'player-buttons';
 
+      var hasPlayers = false;
       var fragment = document.createDocumentFragment();
       for (id in players) {
+        hasPlayers = true;
         var player = players[id];
         var usableName = player.properties.name ||
             player.properties.url ||
@@ -344,6 +359,8 @@ var ClientRenderer = (function() {
         // Re-select the selected player since the button was just recreated.
         selectSelectableButton(this.selectedPlayer.id);
       }
+
+      this.saveLogButton.style.display = hasPlayers ? "inline-block" : "none";
     },
 
     selectPlayer_: function(player) {
@@ -398,6 +415,15 @@ var ClientRenderer = (function() {
           this.selectedPlayerLogIndex);
       toDraw.forEach(this.appendEventToLog_.bind(this));
       this.selectedPlayerLogIndex = this.selectedPlayer.allEvents.length;
+    },
+
+    saveLog_: function() {
+      var strippedPlayers = []
+      for (id in this.players) {
+        var p = this.players[id];
+        strippedPlayers.push({properties: p.properties, events: p.allEvents});
+      }
+      downloadLog(JSON.stringify(strippedPlayers, null, 2));
     },
 
     drawGraphs_: function() {

@@ -17,8 +17,6 @@ var PlayerInfo = (function() {
     this.id = id;
     // The current value of the properties for this player.
     this.properties = {};
-    // All of the past (and present) values of the properties.
-    this.pastValues = {};
 
     // Every single event in the order in which they were received.
     this.allEvents = [];
@@ -48,17 +46,12 @@ var PlayerInfo = (function() {
 
       this.properties[key] = value;
 
-      if (!this.pastValues[key]) {
-        this.pastValues[key] = [];
-      }
-
       var recordValue = {
         time: timestamp - this.firstTimestamp_,
         key: key,
         value: value
       };
 
-      this.pastValues[key].push(recordValue);
       this.allEvents.push(recordValue);
     },
 
