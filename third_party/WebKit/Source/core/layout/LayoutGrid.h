@@ -124,6 +124,13 @@ class LayoutGrid final : public LayoutBlock {
       GridSizingData&,
       LayoutUnit& baseSizesWithoutMaximization,
       LayoutUnit& growthLimitsWithoutMaximization) const;
+  void computeFlexSizedTracksGrowth(
+      GridTrackSizingDirection,
+      Vector<GridTrack>&,
+      const Vector<size_t>& flexibleSizedTracksIndex,
+      double flexFraction,
+      Vector<LayoutUnit>& increments,
+      LayoutUnit& totalGrowth) const;
   LayoutUnit computeUsedBreadthOfMinLength(const GridTrackSize&,
                                            LayoutUnit maxBreadth) const;
   LayoutUnit computeUsedBreadthOfMaxLength(const GridTrackSize&,

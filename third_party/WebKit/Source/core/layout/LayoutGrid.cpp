@@ -876,18 +876,74 @@ void LayoutGrid::computeUsedBreadthOfGridTracks(
     }
   }
 
-  for (const auto& trackIndex : flexibleSizedTracksIndex) {
-    GridTrackSize trackSize = gridTrackSize(direction, trackIndex);
+  LayoutUnit totalGrowth;
+  Vector<LayoutUnit> increments;
+  increments.grow(flexibleSizedTracksIndex.size());
+  computeFlexSizedTracksGrowth(direction, tracks, flexibleSizedTracksIndex,
+                               flexFraction, increments, totalGrowth);
 
+  // We only need to redo the flex fraction computation for indefinite heights
+  // (definite sizes are already constrained by min/max sizes). Regarding
+  // widths, they are always definite at layout time so we shouldn't ever have
+  // to do this.
+  if (!hasDefiniteFreeSpace && direction == ForRows) {
+    auto minSize = computeContentLogicalHeight(
+        MinSize, styleRef().logicalMinHeight(), LayoutUnit(-1));
+    auto maxSize = computeContentLogicalHeight(
+        MaxSize, styleRef().logicalMaxHeight(), LayoutUnit(-1));
+
+    // Redo the flex fraction computation using min|max-height as definite
+    // available space in case the total height is smaller than min-height or
+    // larger than max-height.
+    LayoutUnit rowsSize =
+        totalGrowth + computeTrackBasedLogicalHeight(sizingData);
+    bool checkMinSize = minSize && rowsSize < minSize;
+    bool checkMaxSize = maxSize != -1 && rowsSize > maxSize;
+    if (checkMinSize || checkMaxSize) {
+      LayoutUnit freeSpace = checkMaxSize ? maxSize : LayoutUnit(-1);
+      freeSpace =
+          std::max(freeSpace, minSize) -
+          guttersSize(ForRows, 0, gridRowCount(), sizingData.sizingOperation);
+
+      flexFraction = findFlexFactorUnitSize(
+          tracks, GridSpan::translatedDefiniteGridSpan(0, tracks.size()),
+          ForRows, freeSpace);
+
+      totalGrowth = LayoutUnit(0);
+      computeFlexSizedTracksGrowth(ForRows, tracks, flexibleSizedTracksIndex,
+                                   flexFraction, increments, totalGrowth);
+    }
+  }
+
+  size_t i = 0;
+  for (auto trackIndex : flexibleSizedTracksIndex) {
+    auto& track = tracks[trackIndex];
+    if (LayoutUnit increment = increments[i++])
+      track.setBaseSize(track.baseSize() + increment);
+  }
+  freeSpace -= totalGrowth;
+  growthLimitsWithoutMaximization += totalGrowth;
+}
+
+void LayoutGrid::computeFlexSizedTracksGrowth(
+    GridTrackSizingDirection direction,
+    Vector<GridTrack>& tracks,
+    const Vector<size_t>& flexibleSizedTracksIndex,
+    double flexFraction,
+    Vector<LayoutUnit>& increments,
+    LayoutUnit& totalGrowth) const {
+  size_t numFlexTracks = flexibleSizedTracksIndex.size();
+  DCHECK_EQ(increments.size(), numFlexTracks);
+  for (size_t i = 0; i < numFlexTracks; ++i) {
+    size_t trackIndex = flexibleSizedTracksIndex[i];
+    auto trackSize = gridTrackSize(direction, trackIndex);
+    DCHECK(trackSize.maxTrackBreadth().isFlex());
     LayoutUnit oldBaseSize = tracks[trackIndex].baseSize();
-    LayoutUnit baseSize =
+    LayoutUnit newBaseSize =
         std::max(oldBaseSize,
                  LayoutUnit(flexFraction * trackSize.maxTrackBreadth().flex()));
-    if (LayoutUnit increment = baseSize - oldBaseSize) {
-      tracks[trackIndex].setBaseSize(baseSize);
-      freeSpace -= increment;
-      growthLimitsWithoutMaximization += increment;
-    }
+    increments[i] = newBaseSize - oldBaseSize;
+    totalGrowth += increments[i];
   }
 }
 
