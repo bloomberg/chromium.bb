@@ -15014,6 +15014,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_NTP_OFFLINE_PAGES_DESCRIPTION" desc="Description for the flag to enable badging of offline pages on the NTP.">
         Enables badging of offline pages on the New Tab page. Only relevant if offline pages are enabled.
       </message>
+      <message name="IDS_FLAGS_OFFLINE_PAGES_ASYNC_DOWNLOAD_NAME" desc="Name for the flag to enable offline pages for async download.">
+        Enables showing "DOWNLOAD PAGE LATER" button in error pages. 
+      </message>
+      <message name="IDS_FLAGS_OFFLINE_PAGES_ASYNC_DOWNLOAD_DESCRIPTION" desc="Description for the flag to enable offline pages.">
+        Enables showing "DOWNLOAD PAGE LATER" button in error pages such that the user can click on it to download the page later.
+      </message>
       <message name="IDS_FLAGS_OFFLINE_PAGES_BACKGROUND_LOADING_NAME" desc="Name for the flag to enable offline pages to load in the background.">
         Enables offline pages to load in the background
       </message>

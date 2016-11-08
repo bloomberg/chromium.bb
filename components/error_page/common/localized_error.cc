@@ -999,7 +999,7 @@ void LocalizedError::GetStrings(
 #if defined(OS_ANDROID)
   if (!show_saved_copy_visible &&
       failed_url.SchemeIsHTTPOrHTTPS() &&
-      offline_pages::IsOfflinePagesBackgroundLoadingEnabled()) {
+      offline_pages::IsOfflinePagesAsyncDownloadEnabled()) {
     std::unique_ptr<base::DictionaryValue> download_button =
         base::MakeUnique<base::DictionaryValue>();
     download_button->SetString(

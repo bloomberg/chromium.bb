@@ -16,6 +16,7 @@ extern const base::Feature kOfflinePagesBackgroundLoadingFeature;
 extern const base::Feature kOfflinePagesCTFeature;
 extern const base::Feature kOfflinePagesSharingFeature;
 extern const base::Feature kBackgroundLoaderForDownloadsFeature;
+extern const base::Feature kOfflinePagesAsyncDownloadFeature;
 
 // Returns true if saving bookmarked pages for offline viewing is enabled.
 bool IsOfflineBookmarksEnabled();
@@ -34,7 +35,9 @@ bool IsOfflinePagesSharingEnabled();
 
 bool IsBackgroundLoaderForDownloadsEnabled();
 
+// Returns true if downloading a page asynchonously is enabled.
+bool IsOfflinePagesAsyncDownloadEnabled();
+
 }  // namespace offline_pages
 
-#endif  // COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_FEATURE_H_>>>> Flag for Offline
-        // Page Sharing
+#endif  // COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_FEATURE_H_
