@@ -39,10 +39,8 @@
 #include "bindings/core/v8/V8Document.h"
 #include "bindings/core/v8/V8FormData.h"
 #include "bindings/core/v8/V8HTMLDocument.h"
-#include "bindings/core/v8/V8Stream.h"
 #include "core/dom/Document.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/streams/Stream.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
 #include <v8.h>
@@ -107,12 +105,6 @@ void V8XMLHttpRequest::responseAttributeGetterCustom(
     case XMLHttpRequest::ResponseTypeBlob: {
       Blob* blob = xmlHttpRequest->responseBlob();
       v8SetReturnValueFast(info, blob, xmlHttpRequest);
-      return;
-    }
-
-    case XMLHttpRequest::ResponseTypeLegacyStream: {
-      Stream* stream = xmlHttpRequest->responseLegacyStream();
-      v8SetReturnValueFast(info, stream, xmlHttpRequest);
       return;
     }
 

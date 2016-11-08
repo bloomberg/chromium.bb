@@ -181,11 +181,6 @@
         loadData_(test, url, callback, 'arraybuffer');
     };
 
-    MediaSourceUtil.loadDataStream = function(test, url, callback)
-    {
-        loadData_(test, url, callback, 'legacystream');
-    };
-
     MediaSourceUtil.fetchManifestAndData = function(test, manifestFilename, callback)
     {
         var baseURL = '/media/resources/media-source/';
@@ -261,34 +256,6 @@
                 });
         });
     };
-
-    MediaSourceUtil.fillUpSourceBufferViaAppendStream = function (test, mediaSource, sourceBuffer, mediaURL, onBufferFull, appendSize)
-    {
-        var appendedDataSize = 0;
-        function appendStreamData() {
-            MediaSourceUtil.loadDataStream(test, mediaURL, function(response)
-            {
-                // We are appending data repeatedly in sequence mode, there should be no gaps.
-                assert_false(sourceBuffer.buffered.length > 1, "unexpected gap in buffered ranges.");
-                try {
-                    if (appendSize !== undefined) {
-                      appendedDataSize += appendSize;
-                      sourceBuffer.appendStream(response, appendSize);
-                    } else {
-                      sourceBuffer.appendStream(response);
-                    }
-                } catch(ex) {
-                    assert_equals(ex.name, 'QuotaExceededError');
-                    onBufferFull(appendedDataSize);
-                }
-                test.expectEvent(sourceBuffer, "updateend", "Append ended.");
-                test.waitForExpectedEvents(appendStreamData);
-            });
-        }
-        // Start appending data
-        appendStreamData();
-    };
-
 
     function getFirstSupportedType(typeList)
     {

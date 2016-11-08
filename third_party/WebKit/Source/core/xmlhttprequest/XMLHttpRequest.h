@@ -60,7 +60,6 @@ class ExecutionContext;
 class FormData;
 class ScriptState;
 class SharedBuffer;
-class Stream;
 class TextResourceDecoder;
 class ThreadableLoader;
 class WebDataConsumerHandle;
@@ -97,7 +96,6 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
     ResponseTypeDocument,
     ResponseTypeBlob,
     ResponseTypeArrayBuffer,
-    ResponseTypeLegacyStream,
   };
 
   // ActiveDOMObject
@@ -145,7 +143,6 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   Document* responseXML(ExceptionState&);
   Blob* responseBlob();
   DOMArrayBuffer* responseArrayBuffer();
-  Stream* responseLegacyStream();
   unsigned timeout() const { return m_timeoutMilliseconds; }
   void setTimeout(unsigned timeout, ExceptionState&);
   ResponseTypeCode getResponseTypeCode() const { return m_responseTypeCode; }
@@ -284,7 +281,6 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   AtomicString m_mimeTypeOverride;
   unsigned long m_timeoutMilliseconds;
   TraceWrapperMember<Blob> m_responseBlob;
-  TraceWrapperMember<Stream> m_responseLegacyStream;
 
   Member<ThreadableLoader> m_loader;
   State m_state;

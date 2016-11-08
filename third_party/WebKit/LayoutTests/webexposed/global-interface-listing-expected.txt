@@ -6233,7 +6233,6 @@ interface SourceBuffer : EventTarget
     getter videoTracks
     method abort
     method appendBuffer
-    method appendStream
     method constructor
     method remove
     setter appendWindowEnd
@@ -6334,10 +6333,6 @@ interface StorageManager
     method estimate
     method persist
     method persisted
-interface Stream
-    attribute @@toStringTag
-    getter type
-    method constructor
 interface StylePropertyMap
     attribute @@toStringTag
     method @@iterator

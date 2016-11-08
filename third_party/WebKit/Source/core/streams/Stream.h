@@ -31,7 +31,6 @@
 #ifndef Stream_h
 #define Stream_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "platform/heap/Handle.h"
@@ -43,10 +42,8 @@ namespace blink {
 class ExecutionContext;
 
 class CORE_EXPORT Stream final : public GarbageCollectedFinalized<Stream>,
-                                 public ScriptWrappable,
                                  public ActiveDOMObject {
   USING_GARBAGE_COLLECTED_MIXIN(Stream);
-  DEFINE_WRAPPERTYPEINFO();
 
  public:
   static Stream* create(ExecutionContext* context, const String& mediaType) {

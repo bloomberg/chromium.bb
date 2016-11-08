@@ -10,7 +10,6 @@ PASS xhr.responseType is "blob"
 PASS xhr.responseType is "document"
 PASS xhr.responseType is "json"
 PASS xhr.responseType is "text"
-PASS xhr.responseType is "legacystream"
 PASS xhr.responseType = "dkjdfkjdfkj" did not throw exception.
 PASS xhr.responseType = "text"; xhr.responseType = "asdfasdfasd"; xhr.responseType is "text"
 PASS successfullyParsed is true

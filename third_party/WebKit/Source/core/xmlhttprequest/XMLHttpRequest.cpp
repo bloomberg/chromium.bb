@@ -61,7 +61,6 @@
 #include "core/loader/ThreadableLoader.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
-#include "core/streams/Stream.h"
 #include "core/xmlhttprequest/XMLHttpRequestUpload.h"
 #include "platform/FileMetadata.h"
 #include "platform/HTTPNames.h"
@@ -228,7 +227,6 @@ XMLHttpRequest::XMLHttpRequest(
       ActiveDOMObject(context),
       m_timeoutMilliseconds(0),
       m_responseBlob(this, nullptr),
-      m_responseLegacyStream(this, nullptr),
       m_state(kUnsent),
       m_responseDocument(this, nullptr),
       m_lengthDownloadedToFile(0),
@@ -404,15 +402,6 @@ DOMArrayBuffer* XMLHttpRequest::responseArrayBuffer() {
   return m_responseArrayBuffer.get();
 }
 
-Stream* XMLHttpRequest::responseLegacyStream() {
-  DCHECK_EQ(m_responseTypeCode, ResponseTypeLegacyStream);
-
-  if (m_error || (m_state != kLoading && m_state != kDone))
-    return nullptr;
-
-  return m_responseLegacyStream;
-}
-
 void XMLHttpRequest::setTimeout(unsigned timeout,
                                 ExceptionState& exceptionState) {
   // FIXME: Need to trigger or update the timeout Timer here, if needed.
@@ -473,11 +462,6 @@ void XMLHttpRequest::setResponseType(const String& responseType,
     m_responseTypeCode = ResponseTypeBlob;
   } else if (responseType == "arraybuffer") {
     m_responseTypeCode = ResponseTypeArrayBuffer;
-  } else if (responseType == "legacystream") {
-    if (RuntimeEnabledFeatures::experimentalStreamEnabled())
-      m_responseTypeCode = ResponseTypeLegacyStream;
-    else
-      return;
   } else {
     NOTREACHED();
   }
@@ -497,8 +481,6 @@ String XMLHttpRequest::responseType() {
       return "blob";
     case ResponseTypeArrayBuffer:
       return "arraybuffer";
-    case ResponseTypeLegacyStream:
-      return "legacystream";
   }
   return "";
 }
@@ -1129,9 +1111,6 @@ bool XMLHttpRequest::internalAbort() {
 
   clearVariablesForLoading();
 
-  if (m_responseLegacyStream && m_state != kDone)
-    m_responseLegacyStream->abort();
-
   clearResponse();
   clearRequest();
 
@@ -1174,8 +1153,6 @@ void XMLHttpRequest::clearResponse() {
 
   m_downloadingToFile = false;
   m_lengthDownloadedToFile = 0;
-
-  m_responseLegacyStream = nullptr;
 
   // These variables may referred by the response accessors. So, we can clear
   // this only when we clear the response holder variables above.
@@ -1559,9 +1536,6 @@ void XMLHttpRequest::didFinishLoadingInternal() {
     }
   }
 
-  if (m_responseLegacyStream)
-    m_responseLegacyStream->finalize();
-
   clearVariablesForLoading();
   endLoading();
 }
@@ -1604,7 +1578,6 @@ void XMLHttpRequest::notifyParserStopped() {
   // This should only be called when response document is parsed asynchronously.
   DCHECK(m_responseDocumentParser);
   DCHECK(!m_responseDocumentParser->isParsing());
-  DCHECK(!m_responseLegacyStream);
 
   // Do nothing if we are called from |internalAbort()|.
   if (m_error)
@@ -1767,11 +1740,6 @@ void XMLHttpRequest::didReceiveData(const char* data, unsigned len) {
     if (!m_binaryResponseBuilder)
       m_binaryResponseBuilder = SharedBuffer::create();
     m_binaryResponseBuilder->append(data, len);
-  } else if (m_responseTypeCode == ResponseTypeLegacyStream) {
-    if (!m_responseLegacyStream)
-      m_responseLegacyStream =
-          Stream::create(getExecutionContext(), responseType());
-    m_responseLegacyStream->addData(data, len);
   }
 
   if (m_blobLoader) {
@@ -1856,7 +1824,6 @@ ExecutionContext* XMLHttpRequest::getExecutionContext() const {
 
 DEFINE_TRACE(XMLHttpRequest) {
   visitor->trace(m_responseBlob);
-  visitor->trace(m_responseLegacyStream);
   visitor->trace(m_loader);
   visitor->trace(m_responseDocument);
   visitor->trace(m_responseDocumentParser);
@@ -1871,7 +1838,6 @@ DEFINE_TRACE(XMLHttpRequest) {
 
 DEFINE_TRACE_WRAPPERS(XMLHttpRequest) {
   visitor->traceWrappers(m_responseBlob);
-  visitor->traceWrappers(m_responseLegacyStream);
   visitor->traceWrappers(m_responseDocument);
   visitor->traceWrappers(m_responseArrayBuffer);
   XMLHttpRequestEventTarget::traceWrappers(visitor);
