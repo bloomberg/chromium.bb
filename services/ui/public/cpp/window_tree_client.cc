@@ -650,7 +650,7 @@ void WindowTreeClient::PerformDragDrop(
   DCHECK(!current_drag_state_);
 
   // TODO(erg): Pass |cursor_location| and |bitmap| in PerformDragDrop() when
-  // we start showing an image representation of the drag under he cursor.
+  // we start showing an image representation of the drag under the cursor.
 
   if (window->drop_target()) {
     // To minimize the number of round trips, copy the drag drop data to our

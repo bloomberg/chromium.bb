@@ -256,7 +256,7 @@ bool SharedMemIPCServer::InvokeCallback(const ServerControl* service_context,
   if (handler) {
     switch (params->GetParamsCount()) {
       case 0: {
-        // Ask the IPC dispatcher if she can service this IPC.
+        // Ask the IPC dispatcher if it can service this IPC.
         Dispatcher::Callback0 callback =
             reinterpret_cast<Dispatcher::Callback0>(callback_generic);
         if (!(handler->*callback)(&ipc_info))
@@ -395,7 +395,7 @@ void __stdcall SharedMemIPCServer::ThreadPingEventReady(void* context,
   InvokeCallback(service_context, buffer, &call_result);
 
   // Copy the answer back into the channel and signal the pong event. This
-  // should wake up the client so he can finish the the ipc cycle.
+  // should wake up the client so it can finish the ipc cycle.
   CrossCallParams* call_params = reinterpret_cast<CrossCallParams*>(buffer);
   memcpy(call_params->GetCallReturn(), &call_result, sizeof(call_result));
   ::InterlockedExchange(&service_context->channel->state, kAckChannel);
