@@ -43,6 +43,7 @@ public class ChromePreferenceManager {
             "contextual_search_current_week_number";
     private static final String HERB_FLAVOR_KEY = "herb_flavor";
     private static final String INSTANT_APPS_KEY = "applink.app_link_enabled";
+    private static final String WEBAPK_COMMAND_LINE_KEY = "webapk.command_line_enabled";
     private static final String WEBAPK_RUNTIME_KEY = "webapk.runtime_enabled";
     private static final String CHROME_HOME_ENABLED_KEY = "chrome_home_enabled";
 
@@ -350,6 +351,16 @@ public class ChromePreferenceManager {
     /** Writes the cached value for whether app link is enabled. */
     public void setCachedInstantAppsEnabled(boolean isEnabled) {
         writeBoolean(INSTANT_APPS_KEY, isEnabled);
+    }
+
+    /** Checks the cached value for the WebAPK command line flag. */
+    public boolean getCachedWebApkCommandLineEnabled() {
+        return mSharedPreferences.getBoolean(WEBAPK_COMMAND_LINE_KEY, false);
+    }
+
+    /** Sets the cached value for the WebAPK command line flag. */
+    public void setCachedWebApkCommandLineEnabled(boolean isEnabled) {
+        writeBoolean(WEBAPK_COMMAND_LINE_KEY, isEnabled);
     }
 
     /** Checks the cached value for the webapk feature. */

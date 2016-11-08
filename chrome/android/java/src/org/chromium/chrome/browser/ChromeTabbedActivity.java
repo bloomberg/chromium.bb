@@ -99,6 +99,7 @@ import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
+import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.chrome.browser.widget.emptybackground.EmptyBackgroundViewWrapper;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.content.browser.ContentVideoView;
@@ -376,6 +377,10 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 } else {
                     preferenceManager.setPromosSkippedOnFirstStart(true);
                 }
+
+                // Notify users experimenting with WebAPKs if they need to do extra steps to enable
+                // WebAPKs.
+                ChromeWebApkHost.launchWebApkRequirementsDialogIfNeeded(this);
             }
 
             initializeUI();

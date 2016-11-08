@@ -2710,6 +2710,19 @@ You can control the Physical Web in Chrome Settings.
       <message name="IDS_INSTANT_APPS_OPEN_IN_APP" desc="Button label for the user action that will open an Instant App.">
         Open app
       </message>
+
+      <!-- WebAPK related strings -->
+      <message name="IDS_WEBAPK_UNKNOWN_SOURCES_DIALOG_TITLE" desc="Title of dialog warning user that installation from Unknown sources is required for WebAPK experiment.">
+        Improved Add to Home screen Experiment
+      </message>
+
+      <message name="IDS_WEBAPK_UNKNOWN_SOURCES_DIALOG_MESSAGE" desc="Text of dialog warning user that installation from Unknown sources is required for WebAPK experiment">
+        Turn on “Unknown sources” in Android security settings to try "Improved Add to Home screen" experiment. Be sure to disable this setting when you’re done trying it out.
+      </message>
+
+      <message name="IDS_WEBAPK_UNKNOWN_SOURCES_SETTINGS_BUTTON" desc="Button label for opening Android Settings from dialog warning user that installation from Unknown sources is required for WebAPK experiment.">
+        Settings
+      </message>
     </messages>
   </release>
 </grit>
