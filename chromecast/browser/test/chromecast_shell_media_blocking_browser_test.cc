@@ -6,9 +6,10 @@
 #include "base/run_loop.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chromecast/browser/cast_media_blocker.h"
 #include "chromecast/browser/test/chromecast_browser_test.h"
-#include "chromecast/browser/test/chromecast_browser_test_helper.h"
 #include "chromecast/chromecast_features.h"
+#include "content/public/browser/media_session.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/test_data_util.h"
@@ -23,6 +24,13 @@ class ChromecastShellMediaBlockingBrowserTest : public ChromecastBrowserTest {
   ChromecastShellMediaBlockingBrowserTest() {}
 
  protected:
+  // ChromecastBrowserTest implementation.
+  void TearDownOnMainThread() override {
+    blocker_.reset();
+
+    ChromecastBrowserTest::TearDownOnMainThread();
+  }
+
   void PlayMedia(const std::string& tag, const std::string& media_file) {
     base::StringPairs query_params;
     query_params.push_back(std::make_pair(tag, media_file));
@@ -32,12 +40,15 @@ class ChromecastShellMediaBlockingBrowserTest : public ChromecastBrowserTest {
     GURL gurl = content::GetFileUrlWithQuery(
         media::GetTestDataFilePath("player.html"), query);
 
-    web_contents_ = helper_->NavigateToURL(gurl);
+    web_contents_ = NavigateToURL(gurl);
     WaitForLoadStop(web_contents_);
+
+    blocker_ = base::MakeUnique<CastMediaBlocker>(
+        content::MediaSession::Get(web_contents_), web_contents_);
   }
 
   void BlockAndTestPlayerState(const std::string& media_type, bool blocked) {
-    helper_->BlockMediaLoading(blocked);
+    blocker_->BlockMediaLoading(blocked);
 
     // Changing states is not instant, but should be timely (< 0.5s).
     for (size_t i = 0; i < 5; i++) {
@@ -68,9 +79,10 @@ class ChromecastShellMediaBlockingBrowserTest : public ChromecastBrowserTest {
            << " media element";
   }
 
-  content::WebContents* web_contents_;
-
  private:
+  content::WebContents* web_contents_;
+  std::unique_ptr<CastMediaBlocker> blocker_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromecastShellMediaBlockingBrowserTest);
 };
 

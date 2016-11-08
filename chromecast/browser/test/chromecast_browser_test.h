@@ -17,7 +17,8 @@ class WebContents;
 
 namespace chromecast {
 namespace shell {
-class ChromecastBrowserTestHelper;
+
+class CastContentWindow;
 
 // This test allows for running an entire browser-process lifecycle per unit
 // test, using Chromecast's cast_shell. This starts up the shell, runs a test
@@ -29,17 +30,16 @@ class ChromecastBrowserTest : public content::BrowserTestBase {
   ChromecastBrowserTest();
   ~ChromecastBrowserTest() override;
 
-  // testing::Test implementation:
+  // content::BrowserTestBase implementation:
   void SetUp() override;
-
-  // BrowserTestBase implementation:
+  void TearDownOnMainThread() override;
   void RunTestOnMainThreadLoop() override;
 
- protected:
-  std::unique_ptr<ChromecastBrowserTestHelper> helper_;
+  content::WebContents* NavigateToURL(const GURL& url);
 
  private:
-  bool setup_called_;
+  std::unique_ptr<CastContentWindow> window_;
+  std::unique_ptr<content::WebContents> web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromecastBrowserTest);
 };
