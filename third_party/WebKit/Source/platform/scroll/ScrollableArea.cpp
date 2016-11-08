@@ -550,6 +550,9 @@ void ScrollableArea::setScrollbarsHidden(bool hidden) {
 }
 
 void ScrollableArea::fadeOverlayScrollbarsTimerFired(TimerBase*) {
+#if OS(MACOSX)
+  NOTREACHED();
+#endif
   setScrollbarsHidden(true);
 }
 
@@ -559,6 +562,11 @@ void ScrollableArea::showOverlayScrollbars() {
 
   setScrollbarsHidden(false);
 
+// Speculative fix for Mac specific crashes. Mac code should never create and
+// fire the timer but we're getting timer related crashes right when this code
+// landed. This should definitively rule out or implicate this code.
+// crbug.com/662402.
+#if !OS(MACOSX)
   const double timeUntilDisable =
       ScrollbarTheme::theme().overlayScrollbarFadeOutDelaySeconds() +
       ScrollbarTheme::theme().overlayScrollbarFadeOutDurationSeconds();
@@ -578,6 +586,7 @@ void ScrollableArea::showOverlayScrollbars() {
     m_fadeOverlayScrollbarsTimer->startOneShot(timeUntilDisable,
                                                BLINK_FROM_HERE);
   }
+#endif
 }
 
 IntRect ScrollableArea::visibleContentRect(
