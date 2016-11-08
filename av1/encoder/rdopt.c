@@ -1781,28 +1781,21 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
 #endif
 }
 
-static void super_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x, int *rate,
-                            int64_t *distortion, int *skip, int64_t *psse,
-                            BLOCK_SIZE bs, int64_t ref_best_rd) {
+static void super_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
+                            RD_STATS *rd_stats, BLOCK_SIZE bs,
+                            int64_t ref_best_rd) {
   MACROBLOCKD *xd = &x->e_mbd;
-  int64_t sse;
-  int64_t *ret_sse = psse ? psse : &sse;
-  RD_STATS rd_stats;
-  av1_init_rd_stats(&rd_stats);
+  av1_init_rd_stats(rd_stats);
 
   assert(bs == xd->mi[0]->mbmi.sb_type);
 
   if (xd->lossless[xd->mi[0]->mbmi.segment_id]) {
-    choose_smallest_tx_size(cpi, x, &rd_stats, ref_best_rd, bs);
+    choose_smallest_tx_size(cpi, x, rd_stats, ref_best_rd, bs);
   } else if (cpi->sf.tx_size_search_method == USE_LARGESTALL) {
-    choose_largest_tx_size(cpi, x, &rd_stats, ref_best_rd, bs);
+    choose_largest_tx_size(cpi, x, rd_stats, ref_best_rd, bs);
   } else {
-    choose_tx_size_type_from_rd(cpi, x, &rd_stats, ref_best_rd, bs);
+    choose_tx_size_type_from_rd(cpi, x, rd_stats, ref_best_rd, bs);
   }
-  *rate = rd_stats.rate;
-  *distortion = rd_stats.dist;
-  *ret_sse = rd_stats.sse;
-  *skip = rd_stats.skip;
 }
 
 static int conditional_skipintra(PREDICTION_MODE mode,
@@ -1833,8 +1826,9 @@ static int rd_pick_palette_intra_sby(
   MODE_INFO *const mic = xd->mi[0];
   const int rows = 4 * num_4x4_blocks_high_lookup[bsize];
   const int cols = 4 * num_4x4_blocks_wide_lookup[bsize];
-  int this_rate, this_rate_tokenonly, s, colors, n;
-  int64_t this_distortion, this_rd;
+  int this_rate, colors, n;
+  RD_STATS tokenonly_rd_stats;
+  int64_t this_rd;
   const int src_stride = x->plane[0].src.stride;
   const uint8_t *const src = x->plane[0].src.buf;
 
@@ -1925,12 +1919,11 @@ static int rd_pick_palette_intra_sby(
 
       av1_calc_indices(data, centroids, color_map, rows * cols, k, 1);
 
-      super_block_yrd(cpi, x, &this_rate_tokenonly, &this_distortion, &s, NULL,
-                      bsize, *best_rd);
-      if (this_rate_tokenonly == INT_MAX) continue;
+      super_block_yrd(cpi, x, &tokenonly_rd_stats, bsize, *best_rd);
+      if (tokenonly_rd_stats.rate == INT_MAX) continue;
 
       this_rate =
-          this_rate_tokenonly + dc_mode_cost +
+          tokenonly_rd_stats.rate + dc_mode_cost +
           cpi->common.bit_depth * k * av1_cost_bit(128, 0) +
           cpi->palette_y_size_cost[bsize - BLOCK_8X8][k - 2] +
           write_uniform_cost(k, color_map[0]) +
@@ -1946,7 +1939,7 @@ static int rd_pick_palette_intra_sby(
           this_rate += cpi->palette_y_color_cost[k - 2][color_ctx][color_idx];
         }
       }
-      this_rd = RDCOST(x->rdmult, x->rddiv, this_rate, this_distortion);
+      this_rd = RDCOST(x->rdmult, x->rddiv, this_rate, tokenonly_rd_stats.dist);
 
       if (this_rd < *best_rd) {
         *best_rd = this_rd;
@@ -1956,7 +1949,7 @@ static int rd_pick_palette_intra_sby(
         *mode_selected = DC_PRED;
         *best_tx = mbmi->tx_size;
         *best_tx_type = mbmi->tx_type;
-        rate_overhead = this_rate - this_rate_tokenonly;
+        rate_overhead = this_rate - tokenonly_rd_stats.rate;
       }
     }
   }
@@ -2435,9 +2428,10 @@ static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
   MACROBLOCKD *const xd = &x->e_mbd;
   MODE_INFO *const mic = xd->mi[0];
   MB_MODE_INFO *mbmi = &mic->mbmi;
-  int this_rate, this_rate_tokenonly, s;
+  int this_rate;
+  RD_STATS tokenonly_rd_stats;
   int filter_intra_selected_flag = 0;
-  int64_t this_distortion, this_rd;
+  int64_t this_rd;
   FILTER_INTRA_MODE mode;
   TX_SIZE best_tx_size = TX_4X4;
   FILTER_INTRA_MODE_INFO filter_intra_mode_info;
@@ -2453,14 +2447,13 @@ static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
   for (mode = 0; mode < FILTER_INTRA_MODES; ++mode) {
     if (skip_mask & (1 << mode)) continue;
     mbmi->filter_intra_mode_info.filter_intra_mode[0] = mode;
-    super_block_yrd(cpi, x, &this_rate_tokenonly, &this_distortion, &s, NULL,
-                    bsize, *best_rd);
-    if (this_rate_tokenonly == INT_MAX) continue;
+    super_block_yrd(cpi, x, &tokenonly_rd_stats, bsize, *best_rd);
+    if (tokenonly_rd_stats.rate == INT_MAX) continue;
 
-    this_rate = this_rate_tokenonly +
+    this_rate = tokenonly_rd_stats.rate +
                 av1_cost_bit(cpi->common.fc->filter_intra_probs[0], 1) +
                 write_uniform_cost(FILTER_INTRA_MODES, mode) + mode_cost;
-    this_rd = RDCOST(x->rdmult, x->rddiv, this_rate, this_distortion);
+    this_rd = RDCOST(x->rdmult, x->rddiv, this_rate, tokenonly_rd_stats.dist);
 
     if (this_rd < *best_rd) {
       *best_rd = this_rd;
@@ -2468,9 +2461,9 @@ static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
       filter_intra_mode_info = mbmi->filter_intra_mode_info;
       best_tx_type = mic->mbmi.tx_type;
       *rate = this_rate;
-      *rate_tokenonly = this_rate_tokenonly;
-      *distortion = this_distortion;
-      *skippable = s;
+      *rate_tokenonly = tokenonly_rd_stats.rate;
+      *distortion = tokenonly_rd_stats.dist;
+      *skippable = tokenonly_rd_stats.skip;
       filter_intra_selected_flag = 1;
     }
   }
@@ -2496,15 +2489,15 @@ static void pick_intra_angle_routine_sby(
     int64_t *distortion, int *skippable, int *best_angle_delta,
     TX_SIZE *best_tx_size, TX_TYPE *best_tx_type, INTRA_FILTER *best_filter,
     BLOCK_SIZE bsize, int rate_overhead, int64_t *best_rd) {
-  int this_rate, this_rate_tokenonly, s;
-  int64_t this_distortion, this_rd;
+  int this_rate;
+  RD_STATS tokenonly_rd_stats;
+  int64_t this_rd;
   MB_MODE_INFO *mbmi = &x->e_mbd.mi[0]->mbmi;
-  super_block_yrd(cpi, x, &this_rate_tokenonly, &this_distortion, &s, NULL,
-                  bsize, *best_rd);
-  if (this_rate_tokenonly == INT_MAX) return;
+  super_block_yrd(cpi, x, &tokenonly_rd_stats, bsize, *best_rd);
+  if (tokenonly_rd_stats.rate == INT_MAX) return;
 
-  this_rate = this_rate_tokenonly + rate_overhead;
-  this_rd = RDCOST(x->rdmult, x->rddiv, this_rate, this_distortion);
+  this_rate = tokenonly_rd_stats.rate + rate_overhead;
+  this_rd = RDCOST(x->rdmult, x->rddiv, this_rate, tokenonly_rd_stats.dist);
 
   if (this_rd < *best_rd) {
     *best_rd = this_rd;
@@ -2513,9 +2506,9 @@ static void pick_intra_angle_routine_sby(
     *best_filter = mbmi->intra_filter;
     *best_tx_type = mbmi->tx_type;
     *rate = this_rate;
-    *rate_tokenonly = this_rate_tokenonly;
-    *distortion = this_distortion;
-    *skippable = s;
+    *rate_tokenonly = tokenonly_rd_stats.rate;
+    *distortion = tokenonly_rd_stats.dist;
+    *skippable = tokenonly_rd_stats.skip;
   }
 }
 
@@ -2527,12 +2520,13 @@ static int64_t rd_pick_intra_angle_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
   MACROBLOCKD *const xd = &x->e_mbd;
   MODE_INFO *const mic = xd->mi[0];
   MB_MODE_INFO *mbmi = &mic->mbmi;
-  int this_rate, this_rate_tokenonly, s;
+  int this_rate;
+  RD_STATS tokenonly_rd_stats;
   int angle_delta, best_angle_delta = 0, p_angle;
   const int intra_filter_ctx = av1_get_pred_context_intra_interp(xd);
   INTRA_FILTER filter, best_filter = INTRA_FILTER_LINEAR;
   const double rd_adjust = 1.2;
-  int64_t this_distortion, this_rd;
+  int64_t this_rd;
   TX_SIZE best_tx_size = mic->mbmi.tx_size;
   TX_TYPE best_tx_type = mbmi->tx_type;
 
@@ -2558,17 +2552,17 @@ static int64_t rd_pick_intra_angle_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
             (i == 0 && filter == INTRA_FILTER_LINEAR && best_rd < INT64_MAX)
                 ? (int64_t)(best_rd * rd_adjust)
                 : best_rd;
-        super_block_yrd(cpi, x, &this_rate_tokenonly, &this_distortion, &s,
-                        NULL, bsize, tmp_best_rd);
-        if (this_rate_tokenonly == INT_MAX) {
+        super_block_yrd(cpi, x, &tokenonly_rd_stats, bsize, tmp_best_rd);
+        if (tokenonly_rd_stats.rate == INT_MAX) {
           if (i == 0 && filter == INTRA_FILTER_LINEAR)
             return best_rd;
           else
             continue;
         }
-        this_rate = this_rate_tokenonly + rate_overhead +
+        this_rate = tokenonly_rd_stats.rate + rate_overhead +
                     cpi->intra_filter_cost[intra_filter_ctx][filter];
-        this_rd = RDCOST(x->rdmult, x->rddiv, this_rate, this_distortion);
+        this_rd =
+            RDCOST(x->rdmult, x->rddiv, this_rate, tokenonly_rd_stats.dist);
         if (i == 0 && filter == INTRA_FILTER_LINEAR && best_rd < INT64_MAX &&
             this_rd > best_rd * rd_adjust)
           return best_rd;
@@ -2580,9 +2574,9 @@ static int64_t rd_pick_intra_angle_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
           best_filter = mbmi->intra_filter;
           best_tx_type = mbmi->tx_type;
           *rate = this_rate;
-          *rate_tokenonly = this_rate_tokenonly;
-          *distortion = this_distortion;
-          *skippable = s;
+          *rate_tokenonly = tokenonly_rd_stats.rate;
+          *distortion = tokenonly_rd_stats.dist;
+          *skippable = tokenonly_rd_stats.skip;
         }
       }
     }
@@ -2866,6 +2860,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   /* Y Search for intra prediction mode */
   for (mode_idx = DC_PRED; mode_idx <= FINAL_MODE_SEARCH; ++mode_idx) {
+    RD_STATS this_rd_stats;
     if (mode_idx == FINAL_MODE_SEARCH) {
       if (x->use_default_intra_tx_type == 0) break;
       mic->mbmi.mode = mode_selected;
@@ -2890,12 +2885,16 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
                                         &s, bsize, rate_overhead, best_rd);
     } else {
       mic->mbmi.angle_delta[0] = 0;
-      super_block_yrd(cpi, x, &this_rate_tokenonly, &this_distortion, &s, NULL,
-                      bsize, best_rd);
+      super_block_yrd(cpi, x, &this_rd_stats, bsize, best_rd);
+      this_rate_tokenonly = this_rd_stats.rate;
+      this_distortion = this_rd_stats.dist;
+      s = this_rd_stats.skip;
     }
 #else
-    super_block_yrd(cpi, x, &this_rate_tokenonly, &this_distortion, &s, NULL,
-                    bsize, best_rd);
+    super_block_yrd(cpi, x, &this_rd_stats, bsize, best_rd);
+    this_rate_tokenonly = this_rd_stats.rate;
+    this_distortion = this_rd_stats.dist;
+    s = this_rd_stats.skip;
 #endif  // CONFIG_EXT_INTRA
 
     if (this_rate_tokenonly == INT_MAX) continue;
@@ -7788,32 +7787,41 @@ static int64_t handle_inter_mode(
       RD_STATS rd_stats_uv;
 #endif
 
-// Y cost and distortion
+      {
+        // Y cost and distortion
+        RD_STATS rd_stats_y;
+        av1_subtract_plane(x, bsize, 0);
 #if !CONFIG_PVQ
-      av1_subtract_plane(x, bsize, 0);
+        av1_subtract_plane(x, bsize, 0);
 #endif
 #if CONFIG_VAR_TX
-      if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
-        RD_STATS rd_stats_y;
-        select_tx_type_yrd(cpi, x, &rd_stats_y, bsize, ref_best_rd);
+        if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
+          select_tx_type_yrd(cpi, x, &rd_stats_y, bsize, ref_best_rd);
+          *rate_y = rd_stats_y.rate;
+          distortion_y = rd_stats_y.dist;
+          skippable_y = rd_stats_y.skip;
+          *psse = rd_stats_y.sse;
+        } else {
+          int idx, idy;
+          super_block_yrd(cpi, x, &rd_stats_y, bsize, ref_best_rd);
+          *rate_y = rd_stats_y.rate;
+          distortion_y = rd_stats_y.dist;
+          skippable_y = rd_stats_y.skip;
+          *psse = rd_stats_y.sse;
+          for (idy = 0; idy < xd->n8_h; ++idy)
+            for (idx = 0; idx < xd->n8_w; ++idx)
+              mbmi->inter_tx_size[idy][idx] = mbmi->tx_size;
+          memset(x->blk_skip[0], skippable_y,
+                 sizeof(uint8_t) * xd->n8_h * xd->n8_w * 4);
+        }
+#else
+        super_block_yrd(cpi, x, &rd_stats_y, bsize, ref_best_rd);
         *rate_y = rd_stats_y.rate;
         distortion_y = rd_stats_y.dist;
         skippable_y = rd_stats_y.skip;
         *psse = rd_stats_y.sse;
-      } else {
-        int idx, idy;
-        super_block_yrd(cpi, x, rate_y, &distortion_y, &skippable_y, psse,
-                        bsize, ref_best_rd);
-        for (idy = 0; idy < xd->n8_h; ++idy)
-          for (idx = 0; idx < xd->n8_w; ++idx)
-            mbmi->inter_tx_size[idy][idx] = mbmi->tx_size;
-        memset(x->blk_skip[0], skippable_y,
-               sizeof(uint8_t) * xd->n8_h * xd->n8_w * 4);
-      }
-#else
-    super_block_yrd(cpi, x, rate_y, &distortion_y, &skippable_y, psse, bsize,
-                    ref_best_rd);
 #endif  // CONFIG_VAR_TX
+      }
 
       if (*rate_y == INT_MAX) {
         *rate2 = INT_MAX;
@@ -8938,6 +8946,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 #endif  // CONFIG_EXT_INTER
 
     if (ref_frame == INTRA_FRAME) {
+      RD_STATS rd_stats_y;
       TX_SIZE uv_tx;
       struct macroblockd_plane *const pd = &xd->plane[1];
 #if CONFIG_EXT_INTRA
@@ -8965,12 +8974,16 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                                     &skippable, bsize, rate_overhead, best_rd);
       } else {
         mbmi->angle_delta[0] = 0;
-        super_block_yrd(cpi, x, &rate_y, &distortion_y, &skippable, NULL, bsize,
-                        best_rd);
+        super_block_yrd(cpi, x, &rd_stats_y, bsize, best_rd);
+        rate_y = rd_stats_y.rate;
+        distortion_y = rd_stats_y.dist;
+        skippable = rd_stats_y.skip;
       }
 #else
-      super_block_yrd(cpi, x, &rate_y, &distortion_y, &skippable, NULL, bsize,
-                      best_rd);
+      super_block_yrd(cpi, x, &rd_stats_y, bsize, best_rd);
+      rate_y = rd_stats_y.rate;
+      distortion_y = rd_stats_y.dist;
+      skippable = rd_stats_y.skip;
 #endif  // CONFIG_EXT_INTRA
 
       if (rate_y == INT_MAX) continue;
@@ -9499,10 +9512,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         is_inter_mode(best_mbmode.mode)) ||
        (sf->tx_type_search.fast_intra_tx_type_search == 1 &&
         !is_inter_mode(best_mbmode.mode)))) {
-    int rate_y = 0, rate_uv = 0;
-    int64_t dist_y = 0, dist_uv = 0;
-    int skip_y = 0, skip_uv = 0, skip_blk = 0;
-    int64_t sse_y = 0, sse_uv = 0;
+    int skip_blk = 0;
+    RD_STATS rd_stats_y, rd_stats_uv;
 
     x->use_default_inter_tx_type = 0;
     x->use_default_intra_tx_type = 0;
@@ -9519,9 +9530,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     }
 
     if (is_inter_mode(mbmi->mode)) {
-#if CONFIG_VAR_TX
-      RD_STATS rd_stats_uv;
-#endif
       av1_build_inter_predictors_sb(xd, mi_row, mi_col, bsize);
 #if CONFIG_MOTION_VAR
       if (mbmi->motion_mode == OBMC_CAUSAL)
@@ -9531,55 +9539,45 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       av1_subtract_plane(x, bsize, 0);
 #if CONFIG_VAR_TX
       if (cm->tx_mode == TX_MODE_SELECT || xd->lossless[mbmi->segment_id]) {
-        RD_STATS rd_stats_y;
         select_tx_type_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
-        rate_y = rd_stats_y.rate;
-        dist_y = rd_stats_y.dist;
-        sse_y = rd_stats_y.sse;
-        skip_y = rd_stats_y.skip;
       } else {
         int idx, idy;
-        super_block_yrd(cpi, x, &rate_y, &dist_y, &skip_y, &sse_y, bsize,
-                        INT64_MAX);
+        super_block_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
         for (idy = 0; idy < xd->n8_h; ++idy)
           for (idx = 0; idx < xd->n8_w; ++idx)
             mbmi->inter_tx_size[idy][idx] = mbmi->tx_size;
-        memset(x->blk_skip[0], skip_y,
+        memset(x->blk_skip[0], rd_stats_y.skip,
                sizeof(uint8_t) * xd->n8_h * xd->n8_w * 4);
       }
 
       inter_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
-      rate_uv = rd_stats_uv.rate;
-      dist_uv = rd_stats_uv.dist;
-      skip_uv = rd_stats_uv.skip;
-      sse_uv = rd_stats_uv.sse;
 #else
-      super_block_yrd(cpi, x, &rate_y, &dist_y, &skip_y, &sse_y, bsize,
-                      INT64_MAX);
-      super_block_uvrd(cpi, x, &rate_uv, &dist_uv, &skip_uv, &sse_uv, bsize,
-                       INT64_MAX);
+      super_block_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
+      super_block_uvrd(cpi, x, &rd_stats_uv.rate, &rd_stats_uv.dist,
+                       &rd_stats_uv.skip, &rd_stats_uv.sse, bsize, INT64_MAX);
 #endif  // CONFIG_VAR_TX
     } else {
-      super_block_yrd(cpi, x, &rate_y, &dist_y, &skip_y, &sse_y, bsize,
-                      INT64_MAX);
-      super_block_uvrd(cpi, x, &rate_uv, &dist_uv, &skip_uv, &sse_uv, bsize,
-                       INT64_MAX);
+      super_block_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
+      super_block_uvrd(cpi, x, &rd_stats_uv.rate, &rd_stats_uv.dist,
+                       &rd_stats_uv.skip, &rd_stats_uv.sse, bsize, INT64_MAX);
     }
 
-    if (RDCOST(x->rdmult, x->rddiv, rate_y + rate_uv, (dist_y + dist_uv)) >
-        RDCOST(x->rdmult, x->rddiv, 0, (sse_y + sse_uv))) {
+    if (RDCOST(x->rdmult, x->rddiv, rd_stats_y.rate + rd_stats_uv.rate,
+               (rd_stats_y.dist + rd_stats_uv.dist)) >
+        RDCOST(x->rdmult, x->rddiv, 0, (rd_stats_y.sse + rd_stats_uv.sse))) {
       skip_blk = 1;
-      rate_y = av1_cost_bit(av1_get_skip_prob(cm, xd), 1);
-      rate_uv = 0;
-      dist_y = sse_y;
-      dist_uv = sse_uv;
+      rd_stats_y.rate = av1_cost_bit(av1_get_skip_prob(cm, xd), 1);
+      rd_stats_uv.rate = 0;
+      rd_stats_y.dist = rd_stats_y.sse;
+      rd_stats_uv.dist = rd_stats_uv.sse;
     } else {
       skip_blk = 0;
-      rate_y += av1_cost_bit(av1_get_skip_prob(cm, xd), 0);
+      rd_stats_y.rate += av1_cost_bit(av1_get_skip_prob(cm, xd), 0);
     }
 
     if (RDCOST(x->rdmult, x->rddiv, best_rate_y + best_rate_uv, rd_cost->dist) >
-        RDCOST(x->rdmult, x->rddiv, rate_y + rate_uv, (dist_y + dist_uv))) {
+        RDCOST(x->rdmult, x->rddiv, rd_stats_y.rate + rd_stats_uv.rate,
+               (rd_stats_y.dist + rd_stats_uv.dist))) {
 #if CONFIG_VAR_TX
       int idx, idy;
 #endif
@@ -9596,8 +9594,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
       best_mbmode.min_tx_size = mbmi->min_tx_size;
 #endif
-      rd_cost->rate += (rate_y + rate_uv - best_rate_y - best_rate_uv);
-      rd_cost->dist = dist_y + dist_uv;
+      rd_cost->rate +=
+          (rd_stats_y.rate + rd_stats_uv.rate - best_rate_y - best_rate_uv);
+      rd_cost->dist = rd_stats_y.dist + rd_stats_uv.dist;
       rd_cost->rdcost =
           RDCOST(x->rdmult, x->rddiv, rd_cost->rate, rd_cost->dist);
       best_skip2 = skip_blk;
@@ -9608,12 +9607,13 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   // Only try palette mode when the best mode so far is an intra mode.
   if (cm->allow_screen_content_tools && !is_inter_mode(best_mbmode.mode)) {
     PREDICTION_MODE mode_selected;
-    int rate2 = 0, rate_y = 0;
+    int rate2 = 0;
 #if CONFIG_SUPERTX
     int best_rate_nocoef;
 #endif
-    int64_t distortion2 = 0, distortion_y = 0, dummy_rd = best_rd, this_rd;
+    int64_t distortion2 = 0, dummy_rd = best_rd, this_rd;
     int skippable = 0, rate_overhead_palette = 0;
+    RD_STATS rd_stats_y;
     TX_SIZE best_tx_size, uv_tx;
     TX_TYPE best_tx_type;
     PALETTE_MODE_INFO palette_mode_info;
@@ -9639,9 +9639,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       memcpy(color_map, best_palette_color_map,
              rows * cols * sizeof(best_palette_color_map[0]));
     }
-    super_block_yrd(cpi, x, &rate_y, &distortion_y, &skippable, NULL, bsize,
-                    best_rd);
-    if (rate_y == INT_MAX) goto PALETTE_EXIT;
+    super_block_yrd(cpi, x, &rd_stats_y, bsize, best_rd);
+    if (rd_stats_y.rate == INT_MAX) goto PALETTE_EXIT;
     uv_tx = uv_txsize_lookup[bsize][mbmi->tx_size][xd->plane[1].subsampling_x]
                             [xd->plane[1].subsampling_y];
     if (rate_uv_intra[uv_tx] == INT_MAX) {
@@ -9673,20 +9672,20 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
           filter_intra_mode_info_uv[uv_tx].filter_intra_mode[1];
     }
 #endif  // CONFIG_FILTER_INTRA
-    skippable = skippable && skip_uvs[uv_tx];
-    distortion2 = distortion_y + dist_uvs[uv_tx];
-    rate2 = rate_y + rate_overhead_palette + rate_uv_intra[uv_tx];
+    skippable = rd_stats_y.skip && skip_uvs[uv_tx];
+    distortion2 = rd_stats_y.dist + dist_uvs[uv_tx];
+    rate2 = rd_stats_y.rate + rate_overhead_palette + rate_uv_intra[uv_tx];
     rate2 += ref_costs_single[INTRA_FRAME];
 
     if (skippable) {
-      rate2 -= (rate_y + rate_uv_tokenonly[uv_tx]);
+      rate2 -= (rd_stats_y.rate + rate_uv_tokenonly[uv_tx]);
 #if CONFIG_SUPERTX
       best_rate_nocoef = rate2;
 #endif
       rate2 += av1_cost_bit(av1_get_skip_prob(cm, xd), 1);
     } else {
 #if CONFIG_SUPERTX
-      best_rate_nocoef = rate2 - (rate_y + rate_uv_tokenonly[uv_tx]);
+      best_rate_nocoef = rate2 - (rd_stats_y.rate + rate_uv_tokenonly[uv_tx]);
 #endif
       rate2 += av1_cost_bit(av1_get_skip_prob(cm, xd), 0);
     }
