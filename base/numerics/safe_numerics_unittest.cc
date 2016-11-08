@@ -73,7 +73,7 @@ Dst GetMaxConvertibleToFloat() {
 
 #define TEST_EXPECTED_VALUE(expected, actual)                                \
   EXPECT_EQ(static_cast<Dst>(expected),                                      \
-            CheckedNumeric<Dst>(actual).ValueUnsafe())                       \
+            CheckedNumeric<Dst>(actual).ValueOrDie())                        \
       << "Result test: Value " << +((actual).ValueUnsafe()) << " as " << dst \
       << " on line " << line;
 
@@ -244,28 +244,31 @@ static void TestArithmetic(const char* dst, int line) {
   // Generic addition.
   TEST_EXPECTED_VALUE(1, (CheckedNumeric<Dst>() + 1));
   TEST_EXPECTED_VALUE(2, (CheckedNumeric<Dst>(1) + 1));
-  TEST_EXPECTED_VALUE(0, (CheckedNumeric<Dst>(-1) + 1));
+  if (numeric_limits<Dst>::is_signed)
+    TEST_EXPECTED_VALUE(0, (CheckedNumeric<Dst>(-1) + 1));
   TEST_EXPECTED_SUCCESS(CheckedNumeric<Dst>(DstLimits::min()) + 1);
   TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(DstLimits::max()) +
                         DstLimits::max());
 
   // Generic subtraction.
-  TEST_EXPECTED_VALUE(-1, (CheckedNumeric<Dst>() - 1));
   TEST_EXPECTED_VALUE(0, (CheckedNumeric<Dst>(1) - 1));
-  TEST_EXPECTED_VALUE(-2, (CheckedNumeric<Dst>(-1) - 1));
   TEST_EXPECTED_SUCCESS(CheckedNumeric<Dst>(DstLimits::max()) - 1);
+  if (numeric_limits<Dst>::is_signed) {
+    TEST_EXPECTED_VALUE(-1, (CheckedNumeric<Dst>() - 1));
+    TEST_EXPECTED_VALUE(-2, (CheckedNumeric<Dst>(-1) - 1));
+  }
 
   // Generic multiplication.
   TEST_EXPECTED_VALUE(0, (CheckedNumeric<Dst>() * 1));
   TEST_EXPECTED_VALUE(1, (CheckedNumeric<Dst>(1) * 1));
   TEST_EXPECTED_VALUE(0, (CheckedNumeric<Dst>(0) * 0));
-  TEST_EXPECTED_VALUE(0, (CheckedNumeric<Dst>(-1) * 0));
-  TEST_EXPECTED_VALUE(0, (CheckedNumeric<Dst>(0) * -1));
-  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(DstLimits::max()) *
-                        DstLimits::max());
-  if (DstLimits::is_signed) {
+  if (numeric_limits<Dst>::is_signed) {
+    TEST_EXPECTED_VALUE(0, (CheckedNumeric<Dst>(-1) * 0));
+    TEST_EXPECTED_VALUE(0, (CheckedNumeric<Dst>(0) * -1));
     TEST_EXPECTED_VALUE(-2, (CheckedNumeric<Dst>(-1) * 2));
   }
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(DstLimits::max()) *
+                        DstLimits::max());
 
   // Generic division.
   TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>() / 1);

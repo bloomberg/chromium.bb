@@ -119,24 +119,18 @@ class CheckedNumeric {
   template <typename Src> CheckedNumeric& operator%=(Src rhs);
 
   CheckedNumeric operator-() const {
-    bool is_valid;
-    T value = CheckedNeg(state_.value(), &is_valid);
     // Negation is always valid for floating point.
-    if (std::numeric_limits<T>::is_iec559)
-      return CheckedNumeric<T>(value);
-
-    is_valid &= state_.is_valid();
+    T value = 0;
+    bool is_valid = (std::numeric_limits<T>::is_iec559 || IsValid()) &&
+                    CheckedNeg(state_.value(), &value);
     return CheckedNumeric<T>(value, is_valid);
   }
 
   CheckedNumeric Abs() const {
-    bool is_valid;
-    T value = CheckedAbs(state_.value(), &is_valid);
     // Absolute value is always valid for floating point.
-    if (std::numeric_limits<T>::is_iec559)
-      return CheckedNumeric<T>(value);
-
-    is_valid &= state_.is_valid();
+    T value = 0;
+    bool is_valid = (std::numeric_limits<T>::is_iec559 || IsValid()) &&
+                    CheckedAbs(state_.value(), &value);
     return CheckedNumeric<T>(value, is_valid);
   }
 
@@ -145,7 +139,7 @@ class CheckedNumeric {
   // of the source, and properly handling signed min.
   CheckedNumeric<typename UnsignedOrFloatForSize<T>::type> UnsignedAbs() const {
     return CheckedNumeric<typename UnsignedOrFloatForSize<T>::type>(
-        CheckedUnsignedAbs(state_.value()), state_.is_valid());
+        SafeUnsignedAbs(state_.value()), state_.is_valid());
   }
 
   CheckedNumeric& operator++() {
@@ -220,15 +214,16 @@ class CheckedNumeric {
     /* Floating point always takes the fast path */                            \
     if (std::numeric_limits<T>::is_iec559)                                     \
       return CheckedNumeric<T>(lhs.ValueUnsafe() OP rhs.ValueUnsafe());        \
+    if (!rhs.IsValid() || !lhs.IsValid())                                      \
+      return CheckedNumeric<Promotion>(0, false);                              \
     if (IsIntegerArithmeticSafe<Promotion, T, T>::value)                       \
-      return CheckedNumeric<Promotion>(lhs.ValueUnsafe() OP rhs.ValueUnsafe(), \
-                                       rhs.IsValid() && lhs.IsValid());        \
-    bool is_valid = true;                                                      \
-    T result = static_cast<T>(                                                 \
+      return CheckedNumeric<Promotion>(lhs.ValueUnsafe()                       \
+                                       OP rhs.ValueUnsafe());                  \
+    Promotion result = 0;                                                      \
+    bool is_valid =                                                            \
         Checked##NAME(static_cast<Promotion>(lhs.ValueUnsafe()),               \
-                      static_cast<Promotion>(rhs.ValueUnsafe()), &is_valid));  \
-    return CheckedNumeric<Promotion>(                                          \
-        result, is_valid && lhs.IsValid() && rhs.IsValid());                   \
+                      static_cast<Promotion>(rhs.ValueUnsafe()), &result);     \
+    return CheckedNumeric<Promotion>(result, is_valid);                        \
   }                                                                            \
   /* Assignment arithmetic operator implementation from CheckedNumeric. */     \
   template <typename T>                                                        \
@@ -243,9 +238,10 @@ class CheckedNumeric {
   CheckedNumeric<typename ArithmeticPromotion<T, Src>::type> operator OP(      \
       const CheckedNumeric<Src>& lhs, const CheckedNumeric<T>& rhs) {          \
     typedef typename ArithmeticPromotion<T, Src>::type Promotion;              \
+    if (!rhs.IsValid() || !lhs.IsValid())                                      \
+      return CheckedNumeric<Promotion>(0, false);                              \
     if (IsIntegerArithmeticSafe<Promotion, T, Src>::value)                     \
-      return CheckedNumeric<Promotion>(lhs.ValueUnsafe() OP rhs.ValueUnsafe(), \
-                                       rhs.IsValid() && lhs.IsValid());        \
+      return CheckedNumeric<Promotion>(lhs.ValueUnsafe() OP rhs.ValueUnsafe());\
     return CheckedNumeric<Promotion>::cast(lhs)                                \
         OP CheckedNumeric<Promotion>::cast(rhs);                               \
   }                                                                            \
