@@ -246,55 +246,6 @@ inline bool needsLineBreakIterator(UChar ch) {
   return ch > asciiLineBreakTableLastChar && ch != noBreakSpaceCharacter;
 }
 
-// Customization for ICU line breaking behavior. This allows us to reject ICU
-// line break suggestions which would split an emoji sequence.
-// FIXME crbug.com/593260: Remove this customization once ICU implements this
-// natively.
-static bool isBreakValid(const UChar* buf, size_t length, size_t breakPos) {
-  UChar32 codepoint;
-  size_t prevOffset = breakPos;
-  U16_PREV(buf, 0, prevOffset, codepoint);
-  uint32_t nextCodepoint;
-  size_t nextOffset = breakPos;
-  U16_NEXT(buf, nextOffset, length, nextCodepoint);
-
-  // Possible Emoji ZWJ sequence
-  if (codepoint == zeroWidthJoinerCharacter) {
-    if (nextCodepoint == 0x2764       // HEAVY BLACK HEART
-        || nextCodepoint == 0x1F466   // BOY
-        || nextCodepoint == 0x1F467   // GIRL
-        || nextCodepoint == 0x1F468   // MAN
-        || nextCodepoint == 0x1F469   // WOMAN
-        || nextCodepoint == 0x1F48B   // KISS MARK
-        || nextCodepoint == 0x1F5E8)  // LEFT SPEECH BUBBLE
-    {
-      return false;
-    }
-  }
-
-  // Possible emoji modifier sequence
-  // Proposed Rule LB30b from
-  // http://www.unicode.org/L2/L2016/16011r3-break-prop-emoji.pdf
-  // EB x EM
-  if (Character::isModifier(nextCodepoint)) {
-    if (codepoint == variationSelector16Character && prevOffset > 0) {
-      // Skip over emoji variation selector.
-      U16_PREV(buf, 0, prevOffset, codepoint);
-    }
-    if (Character::isEmojiModifierBase(codepoint)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-// Trivial implementation to match possible template paramters in
-// nextBreakablePosition. There are no emoji sequences in 8bit strings, so we
-// accept all break opportunities.
-static bool isBreakValid(const LChar*, size_t, size_t) {
-  return true;
-}
-
 template <typename CharacterType, LineBreakType lineBreakType>
 static inline int nextBreakablePosition(
     LazyLineBreakIterator& lazyBreakIterator,
@@ -343,10 +294,8 @@ static inline int nextBreakablePosition(
           }
         }
       }
-      if (i == nextBreak && !isBreakableSpace(lastCh) &&
-          isBreakValid(str, length, i)) {
+      if (i == nextBreak && !isBreakableSpace(lastCh))
         return i;
-      }
     }
 
     lastLastCh = lastCh;
@@ -401,8 +350,7 @@ static inline int nextBreakablePositionKeepAllInternal(
           }
         }
       }
-      if (i == nextBreak && !isBreakableSpace(lastCh) &&
-          isBreakValid(str, length, i))
+      if (i == nextBreak && !isBreakableSpace(lastCh))
         return i;
     }
 

@@ -66,16 +66,14 @@ TEST_F(TextBreakIteratorTest, Chinese) {
 }
 
 TEST_F(TextBreakIteratorTest, KeepEmojiZWJFamilyIsolate) {
-  SetTestString(
-      "\xF0\x9F\x91\xA8\xE2\x80\x8D\xF0\x9F\x91\xA9\xE2\x80\x8D\xF0\x9F\x91\xA7"
-      "\xE2\x80\x8D\xF0\x9F\x91\xA6");
+  SetTestString(u8"\U0001F468\u200D\U0001F469\u200D\U0001F467\u200D\U0001F466");
   MATCH_LINE_BREAKS(LineBreakType::Normal, {11});
   MATCH_LINE_BREAKS(LineBreakType::BreakAll, {11});
   MATCH_LINE_BREAKS(LineBreakType::KeepAll, {11});
 }
 
 TEST_F(TextBreakIteratorTest, KeepEmojiModifierSequenceIsolate) {
-  SetTestString("\xE2\x98\x9D\xF0\x9F\x8F\xBB");
+  SetTestString(u8"\u261D\U0001F3FB");
   MATCH_LINE_BREAKS(LineBreakType::Normal, {3});
   MATCH_LINE_BREAKS(LineBreakType::BreakAll, {3});
   MATCH_LINE_BREAKS(LineBreakType::KeepAll, {3});
@@ -83,16 +81,14 @@ TEST_F(TextBreakIteratorTest, KeepEmojiModifierSequenceIsolate) {
 
 TEST_F(TextBreakIteratorTest, KeepEmojiZWJSequence) {
   SetTestString(
-      "abc "
-      "\xF0\x9F\x91\xA9\xE2\x80\x8D\xF0\x9F\x91\xA9\xE2\x80\x8D\xF0\x9F\x91\xA7"
-      "\xE2\x80\x8D\xF0\x9F\x91\xA7 def");
+      u8"abc \U0001F469\u200D\U0001F469\u200D\U0001F467\u200D\U0001F467 def");
   MATCH_LINE_BREAKS(LineBreakType::Normal, {3, 15, 19});
   MATCH_LINE_BREAKS(LineBreakType::BreakAll, {1, 2, 3, 15, 17, 18, 19});
   MATCH_LINE_BREAKS(LineBreakType::KeepAll, {3, 15, 19});
 }
 
 TEST_F(TextBreakIteratorTest, KeepEmojiModifierSequence) {
-  SetTestString("abc \xE2\x98\x9D\xF0\x9F\x8F\xBB def");
+  SetTestString(u8"abc \u261D\U0001F3FB def");
   MATCH_LINE_BREAKS(LineBreakType::Normal, {3, 7, 11});
   MATCH_LINE_BREAKS(LineBreakType::BreakAll, {1, 2, 3, 7, 9, 10, 11});
   MATCH_LINE_BREAKS(LineBreakType::KeepAll, {3, 7, 11});
