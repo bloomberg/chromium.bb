@@ -5,7 +5,6 @@
 -PredictorBrowserTest.RendererInitiatedNavigationPreconnect
 -PrerenderBrowserTest.PrerenderCrossProcessServerRedirect
 -PrerenderBrowserTest.PrerenderCrossProcessServerRedirectNoHang
--RedirectTest.ClientServerServer
 # TabManagerTest.TabManagerBasics crashes sometimes
 -TabManagerTest.TabManagerBasics
 -TemplateURLScraperTest.ScrapeWithOnSubmit
