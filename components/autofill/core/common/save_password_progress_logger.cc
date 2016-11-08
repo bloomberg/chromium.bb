@@ -113,8 +113,7 @@ void SavePasswordProgressLogger::LogNumber(
 void SavePasswordProgressLogger::LogNumber(
     SavePasswordProgressLogger::StringID label,
     size_t unsigned_number) {
-  int signed_number = checked_cast<int, size_t>(unsigned_number);
-  LogNumber(label, signed_number);
+  LogNumber(label, checked_cast<int>(unsigned_number));
 }
 
 void SavePasswordProgressLogger::LogMessage(

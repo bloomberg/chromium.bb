@@ -667,7 +667,7 @@ TEST(SafeNumerics, SaturatedCastChecks) {
                        std::numeric_limits<float>::infinity();
   EXPECT_TRUE(std::isnan(not_a_number));
   EXPECT_DEATH_IF_SUPPORTED(
-      (saturated_cast<int, base::SaturatedCastNaNBehaviorCheck>(not_a_number)),
+      (saturated_cast<int, base::CheckOnFailure>(not_a_number)),
       "");
 }
 

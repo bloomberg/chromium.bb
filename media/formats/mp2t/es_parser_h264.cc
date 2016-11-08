@@ -128,7 +128,7 @@ bool EsParserH264::ParseFromEsQueue() {
   const uint8_t* es;
   int size;
   es_queue_->PeekAt(current_access_unit_pos_, &es, &size);
-  int access_unit_size = base::checked_cast<int, int64_t>(
+  int access_unit_size = base::checked_cast<int>(
       next_access_unit_pos_ - current_access_unit_pos_);
   DCHECK_LE(access_unit_size, size);
   h264_parser_->SetStream(es, access_unit_size);
