@@ -151,16 +151,13 @@ bool ChromeClient::openJavaScriptPrompt(LocalFrame* frame,
 
 void ChromeClient::mouseDidMoveOverElement(LocalFrame& frame,
                                            const HitTestResult& result) {
-  if (!result.scrollbar() && result.innerNode() &&
+  if (result.innerNode() &&
       result.innerNode()->document().isDNSPrefetchEnabled())
     prefetchDNS(result.absoluteLinkURL().host());
 
   showMouseOverURL(result);
 
-  if (result.scrollbar())
-    clearToolTip(frame);
-  else
-    setToolTip(frame, result);
+  setToolTip(frame, result);
 }
 
 void ChromeClient::setToolTip(LocalFrame& frame, const HitTestResult& result) {

@@ -3430,7 +3430,7 @@ MouseEventWithHitTestResults Document::performMouseEventHitTest(
   layoutViewItem().hitTest(result);
 
   if (!request.readOnly())
-    updateHoverActiveState(request, result.innerElement(), result.scrollbar());
+    updateHoverActiveState(request, result.innerElement());
 
   if (isHTMLCanvasElement(result.innerNode())) {
     PlatformMouseEvent eventWithRegion = event;
@@ -5947,23 +5947,22 @@ static LayoutObject* nearestCommonHoverAncestor(LayoutObject* obj1,
 }
 
 void Document::updateHoverActiveState(const HitTestRequest& request,
-                                      Element* innerElement,
-                                      bool hitScrollbar) {
+                                      Element* innerElement) {
   DCHECK(!request.readOnly());
 
-  if (request.active() && m_frame && !hitScrollbar)
+  if (request.active() && m_frame)
     m_frame->eventHandler().notifyElementActivated();
 
-  Element* innerElementInDocument = hitScrollbar ? nullptr : innerElement;
+  Element* innerElementInDocument = innerElement;
   while (innerElementInDocument && innerElementInDocument->document() != this) {
     innerElementInDocument->document().updateHoverActiveState(
-        request, innerElementInDocument, hitScrollbar);
+        request, innerElementInDocument);
     innerElementInDocument = innerElementInDocument->document().localOwner();
   }
 
   updateDistribution();
   Element* oldActiveElement = activeHoverElement();
-  if (oldActiveElement && (!request.active() || hitScrollbar)) {
+  if (oldActiveElement && !request.active()) {
     // The oldActiveElement layoutObject is null, dropped on :active by setting
     // display: none, for instance. We still need to clear the ActiveChain as
     // the mouse is released.

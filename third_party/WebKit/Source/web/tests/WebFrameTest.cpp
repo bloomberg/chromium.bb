@@ -79,18 +79,13 @@
 #include "core/testing/NullExecutionContext.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
-#include "platform/Cursor.h"
 #include "platform/DragImage.h"
-#include "platform/PlatformMouseEvent.h"
 #include "platform/PlatformResourceLoader.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/network/ResourceError.h"
-#include "platform/scroll/Scrollbar.h"
-#include "platform/scroll/ScrollbarTestSuite.h"
 #include "platform/scroll/ScrollbarTheme.h"
-#include "platform/scroll/ScrollbarThemeMock.h"
 #include "platform/scroll/ScrollbarThemeOverlayMock.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/URLTestHelpers.h"
@@ -10457,104 +10452,6 @@ TEST_F(WebFrameTest, HidingScrollbarsOnScrollableAreaDisablesScrollbars) {
   EXPECT_TRUE(scrollerArea->verticalScrollbar()->enabled());
 }
 
-// Makes sure that mouse hover over an overlay scrollbar doesn't activate
-// elements below unless the scrollbar is faded out.
-TEST_F(WebFrameTest, MouseOverLinkAndOverlayScrollbar) {
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initialize(
-      true, nullptr, nullptr, nullptr,
-      [](WebSettings* settings) { settings->setDeviceSupportsMouse(true); });
-  webViewHelper.resize(WebSize(20, 20));
-  WebViewImpl* webView = webViewHelper.webView();
-
-  initializeWithHTML(*webView->mainFrameImpl()->frame(),
-                     "<!DOCTYPE html>"
-                     "<a id='a' href='javascript:void(0);'>"
-                     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-                     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-                     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-                     "</a>"
-                     "<div style='position: absolute; top: 1000px'>end</div>");
-
-  webView->updateAllLifecyclePhases();
-
-  Document* document = webView->mainFrameImpl()->frame()->document();
-  Element* aTag = document->getElementById("a");
-
-  // Ensure hittest has scrollbar and link
-  HitTestResult hitTestResult =
-      webView->coreHitTestResultAt(WebPoint(18, aTag->offsetTop()));
-
-  EXPECT_TRUE(hitTestResult.URLElement());
-  EXPECT_TRUE(hitTestResult.innerElement());
-  EXPECT_TRUE(hitTestResult.scrollbar());
-
-  // Mouse over link. Mouse cursor should be hand.
-  PlatformMouseEvent mouseMoveOverLinkEvent(
-      IntPoint(aTag->offsetLeft(), aTag->offsetTop()),
-      IntPoint(aTag->offsetLeft(), aTag->offsetTop()),
-      WebPointerProperties::Button::NoButton, PlatformEvent::MouseMoved, 0,
-      PlatformEvent::NoModifiers, WTF::monotonicallyIncreasingTime());
-  document->frame()->eventHandler().handleMouseMoveEvent(
-      mouseMoveOverLinkEvent);
-
-  EXPECT_EQ(
-      Cursor::Type::Hand,
-      document->frame()->chromeClient().lastSetCursorForTesting().getType());
-
-  // Mouse over enabled overlay scrollbar. Mouse cursor should be pointer and no
-  // active hover element.
-  PlatformMouseEvent mouseMoveEvent(
-      IntPoint(18, aTag->offsetTop()), IntPoint(18, aTag->offsetTop()),
-      WebPointerProperties::Button::NoButton, PlatformEvent::MouseMoved, 0,
-      PlatformEvent::NoModifiers, WTF::monotonicallyIncreasingTime());
-  document->frame()->eventHandler().handleMouseMoveEvent(mouseMoveEvent);
-
-  EXPECT_EQ(
-      Cursor::Type::Pointer,
-      document->frame()->chromeClient().lastSetCursorForTesting().getType());
-
-  PlatformMouseEvent mousePressEvent(
-      IntPoint(18, aTag->offsetTop()), IntPoint(18, aTag->offsetTop()),
-      WebPointerProperties::Button::Left, PlatformEvent::MousePressed, 0,
-      PlatformEvent::Modifiers::LeftButtonDown,
-      WTF::monotonicallyIncreasingTime());
-  document->frame()->eventHandler().handleMousePressEvent(mousePressEvent);
-
-  EXPECT_FALSE(document->activeHoverElement());
-  EXPECT_FALSE(document->hoverNode());
-
-  PlatformMouseEvent MouseReleaseEvent(
-      IntPoint(18, aTag->offsetTop()), IntPoint(18, aTag->offsetTop()),
-      WebPointerProperties::Button::Left, PlatformEvent::MouseReleased, 0,
-      PlatformEvent::Modifiers::LeftButtonDown,
-      WTF::monotonicallyIncreasingTime());
-  document->frame()->eventHandler().handleMouseReleaseEvent(MouseReleaseEvent);
-
-  // Mouse over disabled overlay scrollbar. Mouse cursor should be hand and has
-  // active hover element.
-  webView->mainFrameImpl()->frameView()->setScrollbarsHidden(true);
-
-  // Ensure hittest only has link
-  hitTestResult = webView->coreHitTestResultAt(WebPoint(18, aTag->offsetTop()));
-
-  EXPECT_TRUE(hitTestResult.URLElement());
-  EXPECT_TRUE(hitTestResult.innerElement());
-  EXPECT_FALSE(hitTestResult.scrollbar());
-
-  document->frame()->eventHandler().handleMouseMoveEvent(mouseMoveEvent);
-
-  EXPECT_EQ(
-      Cursor::Type::Hand,
-      document->frame()->chromeClient().lastSetCursorForTesting().getType());
-
-  document->frame()->eventHandler().handleMousePressEvent(mousePressEvent);
-
-  EXPECT_TRUE(document->activeHoverElement());
-  EXPECT_TRUE(document->hoverNode());
-
-  document->frame()->eventHandler().handleMouseReleaseEvent(MouseReleaseEvent);
-}
 static void disableCompositing(WebSettings* settings) {
   settings->setAcceleratedCompositingEnabled(false);
   settings->setPreferCompositingToLCDTextEnabled(false);
