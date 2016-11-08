@@ -54,6 +54,15 @@ BluetoothRemoteGattCharacteristicAndroid::
     ~BluetoothRemoteGattCharacteristicAndroid() {
   Java_ChromeBluetoothRemoteGattCharacteristic_onBluetoothRemoteGattCharacteristicAndroidDestruction(
       AttachCurrentThread(), j_characteristic_);
+  if (!read_callback_.is_null()) {
+    DCHECK(!read_error_callback_.is_null());
+    read_error_callback_.Run(BluetoothGattService::GATT_ERROR_FAILED);
+  }
+
+  if (!write_callback_.is_null()) {
+    DCHECK(!write_error_callback_.is_null());
+    write_error_callback_.Run(BluetoothGattService::GATT_ERROR_FAILED);
+  }
 }
 
 // static

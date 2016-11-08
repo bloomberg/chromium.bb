@@ -56,6 +56,18 @@ BluetoothRemoteGattCharacteristicWin::~BluetoothRemoteGattCharacteristicWin() {
   }
   parent_service_->GetWinAdapter()->NotifyGattCharacteristicRemoved(this);
 
+  if (!read_characteristic_value_callbacks_.first.is_null()) {
+    DCHECK(!read_characteristic_value_callbacks_.second.is_null());
+    read_characteristic_value_callbacks_.second.Run(
+        BluetoothRemoteGattService::GATT_ERROR_FAILED);
+  }
+
+  if (!write_characteristic_value_callbacks_.first.is_null()) {
+    DCHECK(!write_characteristic_value_callbacks_.second.is_null());
+    write_characteristic_value_callbacks_.second.Run(
+        BluetoothRemoteGattService::GATT_ERROR_FAILED);
+  }
+
   // Clear pending StartNotifySession callbacks.
   for (const auto& callback : start_notify_session_callbacks_)
     callback.second.Run(BluetoothRemoteGattService::GATT_ERROR_FAILED);
