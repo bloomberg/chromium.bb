@@ -13,6 +13,7 @@ from devil.android import apk_helper
 from devil.android import md5sum
 from pylib import constants
 from pylib.base import base_test_result
+from pylib.base import test_exception
 from pylib.base import test_instance
 from pylib.constants import host_paths
 from pylib.instrumentation import test_result
@@ -52,14 +53,14 @@ _NATIVE_CRASH_RE = re.compile('(process|native) crash', re.IGNORECASE)
 _PICKLE_FORMAT_VERSION = 10
 
 
-class MissingSizeAnnotationError(Exception):
+class MissingSizeAnnotationError(test_exception.TestException):
   def __init__(self, class_name):
     super(MissingSizeAnnotationError, self).__init__(class_name +
         ': Test method is missing required size annotation. Add one of: ' +
         ', '.join('@' + a for a in _VALID_ANNOTATIONS))
 
 
-class ProguardPickleException(Exception):
+class ProguardPickleException(test_exception.TestException):
   pass
 
 
@@ -350,6 +351,14 @@ def _SaveTestsToPickle(pickle_path, jar_path, tests):
   }
   with open(pickle_path, 'w') as pickle_file:
     pickle.dump(pickle_data, pickle_file)
+
+
+class UnmatchedFilterException(test_exception.TestException):
+  """Raised when a user specifies a filter that doesn't match any tests."""
+
+  def __init__(self, test_filter):
+    super(UnmatchedFilterException, self).__init__(
+        'Test filter "%s" matched no tests.' % test_filter)
 
 
 class InstrumentationTestInstance(test_instance.TestInstance):
@@ -654,6 +663,8 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     tests = GetAllTests(self.test_jar)
     filtered_tests = FilterTests(
         tests, self._test_filter, self._annotations, self._excluded_annotations)
+    if self._test_filter and not filtered_tests:
+      raise UnmatchedFilterException(self._test_filter)
     return self._ParametrizeTestsWithFlags(self._InflateTests(filtered_tests))
 
   # pylint: disable=no-self-use
