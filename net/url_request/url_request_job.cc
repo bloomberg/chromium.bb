@@ -557,6 +557,8 @@ void URLRequestJob::NotifyStartError(const URLRequestStatus &status) {
   // error case.
   GetResponseInfo(&request_->response_info_);
 
+  MaybeNotifyNetworkBytes();
+
   request_->NotifyResponseStarted(status);
   // |this| may have been deleted here.
 }
