@@ -7,11 +7,9 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/chrome/browser/updatable_config/updatable_array.h"
-
 // Object containing matching locales for unsupported regional variants, loaded
 // from SpeechInputLocaleMatches.plist.
-@interface SpeechInputLocaleMatchConfig : UpdatableArray
+@interface SpeechInputLocaleMatchConfig : NSObject
 
 // Access to singleton object.
 + (instancetype)sharedInstance;

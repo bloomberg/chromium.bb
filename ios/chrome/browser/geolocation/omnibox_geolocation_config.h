@@ -7,13 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/chrome/browser/updatable_config/updatable_dictionary.h"
-
 class GURL;
 
-// Implements updatable configuration for using geolocation for Omnibox
-// queries.
-@interface OmniboxGeolocationConfig : UpdatableDictionary
+// Implements configuration for using geolocation for Omnibox queries.
+@interface OmniboxGeolocationConfig : NSObject
 
 // Returns singleton object for this class.
 + (OmniboxGeolocationConfig*)sharedInstance;

@@ -4,12 +4,10 @@
 
 #import "ios/chrome/browser/voice/speech_input_locale_match_config.h"
 
+#import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
 
 namespace {
-
-// Name of plist file containing locale matches.
-NSString* const kLocaleMatchesFilename = @"SpeechInputLocaleMatches.plist";
 
 // Keys used in SpeechInputLocaleMatches.plist:
 NSString* const kMatchedLocaleKey = @"Locale";
@@ -25,6 +23,9 @@ NSString* const kMatchingLanguagesKey = @"MatchingLanguages";
   base::scoped_nsobject<NSArray> _matches;
 }
 
+// Loads |_matches| from config file |plistFileName|.
+- (void)loadConfigFile:(NSString*)plistFileName;
+
 @end
 
 @implementation SpeechInputLocaleMatchConfig
@@ -39,32 +40,34 @@ NSString* const kMatchingLanguagesKey = @"MatchingLanguages";
 }
 
 - (instancetype)init {
-  self = [super initWithAppId:nil version:nil plist:kLocaleMatchesFilename];
-  if (self)
-    self.stopsUpdateChecksOnAppTermination = YES;
+  self = [super init];
+  if (self) {
+    [self loadConfigFile:@"SpeechInputLocaleMatches"];
+  }
   return self;
 }
 
 #pragma mark Accessors
 
 - (NSArray*)matches {
-  if (!_matches) {
-    NSMutableArray* matches = [NSMutableArray array];
-    for (NSDictionary* matchDict in [self arrayFromConfig]) {
-      SpeechInputLocaleMatch* match = [[[SpeechInputLocaleMatch alloc]
-          initWithDictionary:matchDict] autorelease];
-      [matches addObject:match];
-    }
-    _matches.reset([matches copy]);
-  }
-  return _matches;
+  return _matches.get();
 }
 
-#pragma mark UpdatableConfigBase
+#pragma mark - Private
 
-- (void)resourceDidUpdate:(NSNotification*)notification {
-  [super resourceDidUpdate:notification];
-  _matches.reset();
+- (void)loadConfigFile:(NSString*)plistFileName {
+  NSString* path = [[NSBundle mainBundle] pathForResource:plistFileName
+                                                   ofType:@"plist"
+                                              inDirectory:@"gm-config/ANY"];
+  NSArray* configData = [NSArray arrayWithContentsOfFile:path];
+  NSMutableArray* matches = [NSMutableArray array];
+  for (id item in configData) {
+    NSDictionary* matchDict = base::mac::ObjCCastStrict<NSDictionary>(item);
+    base::scoped_nsobject<SpeechInputLocaleMatch> match(
+        [[SpeechInputLocaleMatch alloc] initWithDictionary:matchDict]);
+    [matches addObject:match];
+  }
+  _matches.reset([matches copy]);
 }
 
 @end
