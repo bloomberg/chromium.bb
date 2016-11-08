@@ -21,7 +21,7 @@ env.Replace(LIBS=[],
 env.FilterOut(CCFLAGS=['-fasynchronous-unwind-tables'])
 
 # This setting will affect the barebones_regs.c test
-if env.Bit('build_arm'):
+if env.Bit('build_arm') or env.Bit('build_mips32'):
   env.Append(CPPDEFINES='SMALL_REGS_TEST')
 
 # NOTE: the x86 linker wants _start() to be the very first function
