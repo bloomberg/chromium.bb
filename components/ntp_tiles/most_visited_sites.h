@@ -73,12 +73,6 @@ class MostVisitedSitesSupervisor {
 };
 
 // Tracks the list of most visited sites and their thumbnails.
-//
-// Do not use, except from MostVisitedSitesBridge. The interface is in flux
-// while we are extracting the functionality of the Java class to make available
-// in C++.
-//
-// TODO(sfiera): finalize interface.
 class MostVisitedSites : public history::TopSitesObserver,
                          public MostVisitedSitesSupervisor::Observer {
  public:
