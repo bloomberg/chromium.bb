@@ -193,32 +193,18 @@ void ProfileImplIOData::Handle::Init(
   if (io_data_->domain_reliability_monitor_)
     io_data_->domain_reliability_monitor_->MoveToNetworkThread();
 
-  io_data_->set_data_reduction_proxy_io_data(
-      CreateDataReductionProxyChromeIOData(
-          g_browser_process->io_thread()->net_log(), profile_->GetPrefs(),
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
-
-  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
-  scoped_refptr<base::SequencedTaskRunner> db_task_runner =
-      pool->GetSequencedTaskRunnerWithShutdownBehavior(
-          pool->GetSequenceToken(),
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
-  std::unique_ptr<data_reduction_proxy::DataStore> store(
-      new data_reduction_proxy::DataStoreImpl(profile_path));
-  DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile_)
-      ->InitDataReductionProxySettings(
-          io_data_->data_reduction_proxy_io_data(), profile_->GetPrefs(),
-          profile_->GetRequestContext(), std::move(store),
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
-          db_task_runner);
-
   io_data_->previews_io_data_ = base::MakeUnique<previews::PreviewsIOData>(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   PreviewsServiceFactory::GetForProfile(profile_)->Initialize(
       io_data_->previews_io_data_.get(),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO), profile_path);
+
+  io_data_->set_data_reduction_proxy_io_data(
+      CreateDataReductionProxyChromeIOData(
+          g_browser_process->io_thread()->net_log(), profile_->GetPrefs(),
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
 }
 
 content::ResourceContext*
@@ -247,6 +233,20 @@ ProfileImplIOData::Handle::CreateMainRequestContextGetter(
   DCHECK(!main_request_context_getter_.get());
   main_request_context_getter_ = ChromeURLRequestContextGetter::Create(
       profile_, io_data_, protocol_handlers, std::move(request_interceptors));
+
+  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
+  scoped_refptr<base::SequencedTaskRunner> db_task_runner =
+      pool->GetSequencedTaskRunnerWithShutdownBehavior(
+          pool->GetSequenceToken(),
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+  std::unique_ptr<data_reduction_proxy::DataStore> store(
+      new data_reduction_proxy::DataStoreImpl(io_data_->profile_path_));
+  DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile_)
+      ->InitDataReductionProxySettings(
+          io_data_->data_reduction_proxy_io_data(), profile_->GetPrefs(),
+          main_request_context_getter_.get(), std::move(store),
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
+          db_task_runner);
 
   io_data_->predictor_
       ->InitNetworkPredictor(profile_->GetPrefs(),
