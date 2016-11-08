@@ -14,6 +14,9 @@ import os
 import re
 import socket
 import sys
+import threading
+import time
+import webbrowser
 
 
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -27,20 +30,49 @@ def main(argv):
   parser.add_argument('-p', '--port', type=int, default=8080,
                       help='port to run on (default = %(default)s)')
   parser.add_argument('-d', '--directory', type=str, default=SRC_DIR)
+  parser.add_argument('file', nargs='?',
+                      help='open file in browser')
   args = parser.parse_args(argv)
 
+  top_level = os.path.abspath(args.directory)
+
+  s = Server(args.port, top_level)
+
+  print('Listening on http://localhost:%s/' % args.port)
+  thread = None
+  if args.file:
+    path = os.path.abspath(args.file)
+    if not path.startswith(top_level):
+      print('%s is not under %s' % (args.file, args.directory))
+      return 1
+    rpath = os.path.relpath(path, top_level)
+    url = 'http://localhost:%d/%s' % (args.port, rpath)
+    print('Opening %s' % url)
+    thread = threading.Thread(target=_open_url, args=(url,))
+    thread.start()
+
+  elif os.path.isfile(os.path.join(top_level, 'docs', 'README.md')):
+    print(' Try loading http://localhost:%d/docs/README.md' % args.port)
+  elif os.path.isfile(os.path.join(args.directory, 'README.md')):
+    print(' Try loading http://localhost:%d/README.md' % args.port)
+
+  retcode = 1
   try:
-    s = Server(args.port, args.directory)
-    print("Listening on http://localhost:%s/" % args.port)
-    if os.path.isfile(os.path.join(args.directory, 'docs', 'README.md')):
-      print(" Try loading http://localhost:%s/docs/README.md" % args.port)
-    elif os.path.isfile(os.path.join(args.directory, 'README.md')):
-      print(" Try loading http://localhost:%s/README.md" % args.port)
     s.serve_forever()
-    s.shutdown()
-    return 0
   except KeyboardInterrupt:
-    return 130
+    retcode = 130
+  except Exception as e:
+    print('Exception raised: %s' % str(e))
+
+  s.shutdown()
+  if thread:
+    thread.join()
+  return retcode
+
+
+def _open_url(url):
+  time.sleep(1)
+  webbrowser.open(url)
 
 
 def _gitiles_slugify(value, _separator):
@@ -77,6 +109,7 @@ class Server(SocketServer.TCPServer):
     SocketServer.TCPServer.__init__(self, ('0.0.0.0', port), Handler)
     self.port = port
     self.top_level = os.path.abspath(top_level)
+    self.retcode = None
 
   def server_bind(self):
     self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
