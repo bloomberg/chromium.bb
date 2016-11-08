@@ -29,7 +29,6 @@ namespace {
 const char kDevice1SourcePath[] = "/device/source_path";
 const char kDevice1MountPath[] = "/device/mount_path";
 const char kDevice2SourcePath[] = "/device/source_path2";
-const char kDevice2MountPath[] = "/device/mount_path2";
 const char kReadOnlyDeviceMountPath[] = "/device/read_only_mount_path";
 const char kReadOnlyDeviceSourcePath[] = "/device/read_only_source_path";
 
@@ -93,7 +92,7 @@ const TestDiskInfo kTestDisks[] = {
   },
   {
     kDevice2SourcePath,
-    kDevice2MountPath,
+    "",  // not mounted initially
     false,  // write_disabled_by_policy
     "/device/prefix/system_path2",
     "/device/file_path2",
@@ -893,6 +892,47 @@ TEST_F(DiskMountManagerTest, MountPath_ReadOnlyDevice) {
   ASSERT_GT(disks.count(kReadOnlyDeviceSourcePath), 0U);
   // The mounted disk should preserve the read-only flag of the block device.
   EXPECT_TRUE(disks.find(kReadOnlyDeviceSourcePath)->second->is_read_only());
+}
+
+TEST_F(DiskMountManagerTest, RemountRemovableDrives) {
+  DiskMountManager* manager = DiskMountManager::GetInstance();
+  // Initially we have 2 mounted devices.
+  // kDevice1MountPath --- read-write device, mounted in read-write mode.
+  // kReadOnlyDeviceMountPath --- read-only device, mounted in read-only mode.
+
+  manager->RemountAllRemovableDrives(chromeos::MOUNT_ACCESS_MODE_READ_ONLY);
+
+  // Simulate cros_disks reporting mount completed.
+  fake_cros_disks_client_->SendMountCompletedEvent(
+      chromeos::MOUNT_ERROR_NONE, kDevice1SourcePath,
+      chromeos::MOUNT_TYPE_DEVICE, kDevice1MountPath);
+
+  // Should remount disks that are not read-only by its hardware device.
+  ASSERT_EQ(1U, observer_->GetEventCount());
+  VerifyMountEvent(observer_->GetMountEvent(0), DiskMountManager::MOUNTING,
+                   chromeos::MOUNT_ERROR_NONE, kDevice1MountPath);
+  // The disk is remounted in read-only mode.
+  EXPECT_TRUE(
+      manager->FindDiskBySourcePath(kDevice1SourcePath)->is_read_only());
+  // Remounted disk should also appear as read-only to observers.
+  EXPECT_TRUE(observer_->GetMountEvent(0).disk->is_read_only());
+
+  // Remount in read-write mode again.
+  manager->RemountAllRemovableDrives(chromeos::MOUNT_ACCESS_MODE_READ_WRITE);
+
+  // Simulate cros_disks reporting mount completed.
+  fake_cros_disks_client_->SendMountCompletedEvent(
+      chromeos::MOUNT_ERROR_NONE, kDevice1SourcePath,
+      chromeos::MOUNT_TYPE_DEVICE, kDevice1MountPath);
+  // Event handlers of observers should be called.
+  ASSERT_EQ(2U, observer_->GetEventCount());
+  VerifyMountEvent(observer_->GetMountEvent(1), DiskMountManager::MOUNTING,
+                   chromeos::MOUNT_ERROR_NONE, kDevice1MountPath);
+  // The read-write device should be remounted in read-write mode.
+  EXPECT_FALSE(
+      manager->FindDiskBySourcePath(kDevice1SourcePath)->is_read_only());
+  // Remounted disk should also appear as writable to observers.
+  EXPECT_FALSE(observer_->GetMountEvent(1).disk->is_read_only());
 }
 
 }  // namespace

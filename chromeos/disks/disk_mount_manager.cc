@@ -112,6 +112,21 @@ class DiskMountManagerImpl : public DiskMountManager {
                                            mount_path));
   }
 
+  void RemountAllRemovableDrives(MountAccessMode mode) override {
+    // TODO(yamaguchi): Retry for tentative remount failures. crbug.com/661455
+    for (const auto& device_path_and_disk : disks_) {
+      const Disk& disk = *device_path_and_disk.second;
+      if (disk.is_read_only_hardware()) {
+        // Read-only devices can be mounted in RO mode only. No need to remount.
+        continue;
+      }
+      if (!disk.is_mounted()) {
+        continue;
+      }
+      RemountRemovableDrive(disk, mode);
+    }
+  }
+
   // DiskMountManager override.
   void FormatMountedDevice(const std::string& mount_path) override {
     MountPointMap::const_iterator mount_point = mount_points_.find(mount_path);
@@ -280,6 +295,39 @@ class DiskMountManagerImpl : public DiskMountManager {
     size_t num_pending_callbacks;
   };
 
+  void RemountRemovableDrive(const Disk& disk,
+                             MountAccessMode access_mode) {
+    const std::string& mount_path = disk.mount_path();
+    MountPointMap::const_iterator mount_point = mount_points_.find(mount_path);
+    if (mount_point == mount_points_.end()) {
+      // Not in mount_points_. This happens when the mount_points ans disks_ are
+      // inconsistent.
+      LOG(ERROR) << "Mount point with path \"" << mount_path << "\" not found.";
+      OnMountCompleted(
+          MountEntry(MOUNT_ERROR_PATH_NOT_MOUNTED, disk.device_path(),
+                     MOUNT_TYPE_DEVICE, mount_path));
+      return;
+    }
+    const std::string& source_path = mount_point->second.source_path;
+
+    // Update the access mode option passed to CrosDisks.
+    // This is needed because CrosDisks service methods doesn't return the info
+    // via DBus, and must be updated before issuing Mount command as it'll be
+    // read by the handler of MountCompleted signal.
+    access_modes_[source_path] = access_mode;
+
+    cros_disks_client_->Mount(
+        mount_point->second.source_path, std::string(), std::string(),
+        access_mode, REMOUNT_OPTION_REMOUNT_EXISTING_DEVICE,
+        // When succeeds, OnMountCompleted will be called by
+        // "MountCompleted" signal instead.
+        base::Bind(&base::DoNothing),
+        base::Bind(&DiskMountManagerImpl::OnMountCompleted,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   MountEntry(MOUNT_ERROR_INTERNAL, source_path,
+                              mount_point->second.mount_type, "")));
+  }
+
   // Unmounts all mount points whose source path is transitively parented by
   // |mount_path|.
   void UnmountChildMounts(const std::string& mount_path_in) {
@@ -358,19 +406,18 @@ class DiskMountManagerImpl : public DiskMountManager {
       if (iter != disks_.end()) {  // disk might have been removed by now?
         Disk* disk = iter->second.get();
         DCHECK(disk);
-        // The is_read_only field in *disk may be incorrect when this is called
-        // from CrosDisksClientImpl::OnMountCompleted.
-        // The disk should be treated as read-only when:
-        //  - the read-only option was passed when issuing mount command
-        //  - or the device hardware is read-only.
+        // Currently the MountCompleted signal doesn't tell whether the device
+        // is mounted in read-only mode or not. Instead use the mount option
+        // recorded by DiskMountManagerImpl::MountPath().
         // |source_path| should be same as |disk->device_path| because
         // |VolumeManager::OnDiskEvent()| passes the latter to cros-disks as a
         // source path when mounting a device.
         AccessModeMap::iterator it = access_modes_.find(entry.source_path());
-        if (it != access_modes_.end() &&
-            it->second == chromeos::MOUNT_ACCESS_MODE_READ_ONLY) {
-          disk->set_write_disabled_by_policy(true);
-        }
+
+        // Store whether the disk was mounted in read-only mode due to a policy.
+        disk->set_write_disabled_by_policy(
+            it != access_modes_.end() && !disk->is_read_only_hardware()
+                && it->second == MOUNT_ACCESS_MODE_READ_ONLY);
         disk->set_mount_path(mount_info.mount_path);
       }
     }

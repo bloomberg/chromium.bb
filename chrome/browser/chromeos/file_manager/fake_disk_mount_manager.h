@@ -43,6 +43,11 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
     chromeos::UnmountOptions options;
   };
 
+  struct RemountAllRequest {
+    RemountAllRequest(chromeos::MountAccessMode access_mode);
+    chromeos::MountAccessMode access_mode;
+  };
+
   FakeDiskMountManager();
   ~FakeDiskMountManager() override;
 
@@ -51,6 +56,9 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
   }
   const std::vector<UnmountRequest>& unmount_requests() const {
     return unmount_requests_;
+  }
+  const std::vector<RemountAllRequest>& remount_all_requests() const {
+    return remount_all_requests_;
   }
 
   // Emulates that all mount request finished.
@@ -79,6 +87,8 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
   void UnmountPath(const std::string& mount_path,
                    chromeos::UnmountOptions options,
                    const UnmountPathCallback& callback) override;
+  void RemountAllRemovableDrives(
+      chromeos::MountAccessMode access_mode) override;
   void FormatMountedDevice(const std::string& mount_path) override;
   void UnmountDeviceRecursively(
       const std::string& device_path,
@@ -97,6 +107,7 @@ class FakeDiskMountManager : public chromeos::disks::DiskMountManager {
 
   std::vector<MountRequest> mount_requests_;
   std::vector<UnmountRequest> unmount_requests_;
+  std::vector<RemountAllRequest> remount_all_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDiskMountManager);
 };

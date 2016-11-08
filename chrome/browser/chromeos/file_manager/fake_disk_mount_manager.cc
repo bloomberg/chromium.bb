@@ -28,6 +28,10 @@ FakeDiskMountManager::UnmountRequest::UnmountRequest(
       options(options) {
 }
 
+FakeDiskMountManager::RemountAllRequest::RemountAllRequest(
+    chromeos::MountAccessMode access_mode)
+    : access_mode(access_mode) {}
+
 FakeDiskMountManager::FakeDiskMountManager() {
 }
 
@@ -106,6 +110,11 @@ void FakeDiskMountManager::UnmountPath(const std::string& mount_path,
   // Enqueue callback so that |FakeDiskMountManager::FinishAllUnmountRequest()|
   // can call them.
   pending_unmount_callbacks_.push(callback);
+}
+
+void FakeDiskMountManager::RemountAllRemovableDrives(
+    chromeos::MountAccessMode access_mode) {
+  remount_all_requests_.push_back(RemountAllRequest(access_mode));
 }
 
 bool FakeDiskMountManager::FinishAllUnmountPathRequests() {

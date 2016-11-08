@@ -165,6 +165,8 @@ class CHROMEOS_EXPORT DiskMountManager {
 
     void clear_mount_path() { mount_path_.clear(); }
 
+    bool is_mounted() const { return !mount_path_.empty(); }
+
    private:
     std::string device_path_;
     std::string mount_path_;
@@ -293,6 +295,10 @@ class CHROMEOS_EXPORT DiskMountManager {
   virtual void UnmountPath(const std::string& mount_path,
                            UnmountOptions options,
                            const UnmountPathCallback& callback) = 0;
+
+  // Remounts mounted removable devices to change the read-only mount option.
+  // Devices that can be mounted only in its read-only mode will be ignored.
+  virtual void RemountAllRemovableDrives(chromeos::MountAccessMode mode) = 0;
 
   // Formats Device given its mount path. Unmounts the device.
   // Example: mount_path: /media/VOLUME_LABEL
