@@ -1270,11 +1270,26 @@ template("ios_xctest_test") {
     _output_name = invoker.output_name
   }
 
-  _xctest_target = _target_name
-  _xctest_output = _output_name
+  # TODO(crbug.com/662404): Remove when downstream have been changed to use
+  # the new name for the xctest app bundles.
+  _use_new_naming_convention = false
+  if (defined(invoker.use_new_naming_convention)) {
+    _use_new_naming_convention = invoker.use_new_naming_convention
+  }
 
-  _host_target = _target_name + "_host"
-  _host_output = _output_name + "_host"
+  if (_use_new_naming_convention) {
+    _xctest_target = _target_name + "_module"
+    _xctest_output = _output_name + "_module"
+
+    _host_target = _target_name
+    _host_output = _output_name
+  } else {
+    _xctest_target = _target_name
+    _xctest_output = _output_name
+
+    _host_target = _target_name + "_host"
+    _host_output = _output_name + "_host"
+  }
 
   _xctest_arch_loadable_module_target = _xctest_target + "_arch_loadable_module"
   _xctest_lipo_loadable_module_target = _xctest_target + "_loadable_module"
@@ -1282,7 +1297,7 @@ template("ios_xctest_test") {
   loadable_module(_xctest_arch_loadable_module_target) {
     visibility = [ ":$_xctest_lipo_loadable_module_target($default_toolchain)" ]
     if (current_toolchain != default_toolchain) {
-      visibility += [ ":$_target_name" ]
+      visibility += [ ":$_xctest_target" ]
     }
 
     sources = [
@@ -1300,7 +1315,7 @@ template("ios_xctest_test") {
     # For fat builds, only the default toolchain will generate a test bundle.
     # For the other toolchains, the template is only used for building the
     # arch-specific binary, thus the default target is just a group().
-    group(_target_name) {
+    group(_xctest_target) {
       forward_variables_from(invoker,
                              [
                                "visibility",
@@ -1316,7 +1331,8 @@ template("ios_xctest_test") {
     ios_info_plist(_xctest_info_plist_target) {
       visibility = [ ":$_xctest_info_plist_bundle" ]
       info_plist = "//build/config/ios/Module-Info.plist"
-      executable_name = _output_name
+      extra_substitutions = [ "MODULE_NAME=$_xctest_output" ]
+      executable_name = _host_output
     }
 
     bundle_data(_xctest_info_plist_bundle) {

@@ -112,17 +112,25 @@ def UpdateProductsProject(file_input, file_output, configurations):
           'ninja -C .',
           'ninja -C "../${CONFIGURATION}${EFFECTIVE_PLATFORM_NAME}"')
 
-    # Configure BUNDLE_LOADER and TEST_HOST for xctest target (assuming that
-    # the host is named "${target}_host") unless gn has already configured
-    # them.
+    # Configure BUNDLE_LOADER and TEST_HOST for xctest targets (if not yet
+    # configured by gn). Old convention was to name the test dynamic module
+    # "foo" and the host "foo_host" while the new convention is to name the
+    # test "foo_module" and the host "foo". Decide which convention to use
+    # by inspecting the target name.
     if isa == 'PBXNativeTarget' and value['productType'] == XCTEST_PRODUCT_TYPE:
       configuration_list = project.objects[value['buildConfigurationList']]
       for config_name in configuration_list['buildConfigurations']:
         config = project.objects[config_name]
         if not config['buildSettings'].get('BUNDLE_LOADER'):
+          if value['name'].endswith('_module'):
+            host_name = value['name'][:-len('_module')]
+          else:
+            # TODO(crbug.com/662404): remove once the targets have been renamed
+            # to use the new naming convention.
+            host_name = value['name'] + '_host'
           config['buildSettings']['BUNDLE_LOADER'] = '$(TEST_HOST)'
           config['buildSettings']['TEST_HOST'] = \
-              '${BUILT_PRODUCTS_DIR}/%(name)s_host.app/%(name)s' % value
+              '${BUILT_PRODUCTS_DIR}/%s.app/%s' % (host_name, host_name)
 
     # Add new configuration, using the first one as default.
     if isa == 'XCConfigurationList':

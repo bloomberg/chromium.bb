@@ -5,7 +5,11 @@
 import("//ios/build/config.gni")
 import("//ios/third_party/earl_grey/ios_eg_test.gni")
 
-ios_eg_test("ios_web_shell_test") {
+ios_eg_test("ios_web_shell_egtests") {
+  # TODO(crbug.com/662404): Remove when downstream have been changed to use
+  # the new name for the xctest app bundles.
+  use_new_naming_convention = true
+
   sources = [
     "context_menu_egtest.mm",
     "meta_tags_egtest.mm",
@@ -81,7 +85,7 @@ source_set("earl_grey_test_support") {
 }
 
 bundle_data("bundle") {
-  visibility = [ ":ios_web_shell_test_host" ]
+  visibility = [ ":ios_web_shell_egtests" ]
   sources = [
     "http_server_files/basic_navigation_test.html",
     "http_server_files/tall_page.html",
