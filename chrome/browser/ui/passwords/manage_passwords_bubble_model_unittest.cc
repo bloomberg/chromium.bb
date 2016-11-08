@@ -48,6 +48,10 @@ using ::testing::_;
 namespace {
 
 const char kFakeGroup[] = "FakeGroup";
+const char kSignInPromoCountTilClickMetric[] =
+    "PasswordManager.SignInPromoCountTilClick";
+const char kSignInPromoDismissalCountMetric[] =
+    "PasswordManager.SignInPromoDismissalCount";
 const char kSignInPromoDismissalReasonMetric[] = "PasswordManager.SignInPromo";
 const char kSiteOrigin[] = "http://example.com/login";
 const char kUsername[] = "Admin";
@@ -371,6 +375,8 @@ TEST_F(ManagePasswordsBubbleModelTest, SuppressSignInPromo) {
   EXPECT_FALSE(model()->ReplaceToShowSignInPromoIfNeeded());
   DestroyModel();
   histogram_tester.ExpectTotalCount(kSignInPromoDismissalReasonMetric, 0);
+  histogram_tester.ExpectTotalCount(kSignInPromoCountTilClickMetric, 0);
+  histogram_tester.ExpectTotalCount(kSignInPromoDismissalCountMetric, 0);
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, SignInPromoOK) {
@@ -395,6 +401,8 @@ TEST_F(ManagePasswordsBubbleModelTest, SignInPromoOK) {
   histogram_tester.ExpectUniqueSample(
       kSignInPromoDismissalReasonMetric,
       password_manager::metrics_util::CHROME_SIGNIN_OK, 1);
+  histogram_tester.ExpectUniqueSample(kSignInPromoCountTilClickMetric, 1, 1);
+  histogram_tester.ExpectTotalCount(kSignInPromoDismissalCountMetric, 0);
   EXPECT_TRUE(prefs()->GetBoolean(
       password_manager::prefs::kWasSignInPasswordPromoClicked));
 }
@@ -420,6 +428,8 @@ TEST_F(ManagePasswordsBubbleModelTest, SignInPromoCancel) {
   histogram_tester.ExpectUniqueSample(
       kSignInPromoDismissalReasonMetric,
       password_manager::metrics_util::CHROME_SIGNIN_CANCEL, 1);
+  histogram_tester.ExpectUniqueSample(kSignInPromoCountTilClickMetric, 1, 1);
+  histogram_tester.ExpectTotalCount(kSignInPromoDismissalCountMetric, 0);
   EXPECT_TRUE(prefs()->GetBoolean(
       password_manager::prefs::kWasSignInPasswordPromoClicked));
 }
@@ -444,6 +454,8 @@ TEST_F(ManagePasswordsBubbleModelTest, SignInPromoDismiss) {
   histogram_tester.ExpectUniqueSample(
       kSignInPromoDismissalReasonMetric,
       password_manager::metrics_util::CHROME_SIGNIN_DISMISSED, 1);
+  histogram_tester.ExpectTotalCount(kSignInPromoCountTilClickMetric, 0);
+  histogram_tester.ExpectUniqueSample(kSignInPromoDismissalCountMetric, 1, 1);
   EXPECT_FALSE(prefs()->GetBoolean(
       password_manager::prefs::kWasSignInPasswordPromoClicked));
 }
