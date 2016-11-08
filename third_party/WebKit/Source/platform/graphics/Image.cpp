@@ -46,6 +46,7 @@
 #include "wtf/StdLibExtras.h"
 
 #include <math.h>
+#include <tuple>
 
 namespace blink {
 
@@ -122,8 +123,7 @@ void Image::drawTiled(GraphicsContext& ctxt,
   startAnimation();
 }
 
-// FIXME: Merge with the other drawTiled() function eventually, since we need a
-// combination of both for some things.
+// TODO(cavalcantii): see crbug.com/662504.
 void Image::drawTiled(GraphicsContext& ctxt,
                       const FloatRect& dstRect,
                       const FloatRect& srcRect,
@@ -131,24 +131,8 @@ void Image::drawTiled(GraphicsContext& ctxt,
                       TileRule hRule,
                       TileRule vRule,
                       SkBlendMode op) {
-  // FIXME: We do not support 'space' yet. For now just map it to 'repeat'.
-  if (hRule == SpaceTile)
-    hRule = RepeatTile;
-  if (vRule == SpaceTile)
-    vRule = RepeatTile;
-
-  // FIXME: if this code is used for background-repeat: round (in addition to
-  // border-image-repeat), then add logic to deal with the background-size: auto
-  // special case. The aspect ratio should be maintained in this case.
+  // TODO(cavalcantii): see crbug.com/662513.
   FloatSize tileScaleFactor = providedTileScaleFactor;
-  bool useLowInterpolationQuality = false;
-  if (hRule == RoundTile) {
-    float hRepetitions = std::max(
-        1.0f,
-        roundf(dstRect.width() / (tileScaleFactor.width() * srcRect.width())));
-    tileScaleFactor.setWidth(dstRect.width() /
-                             (srcRect.width() * hRepetitions));
-  }
   if (vRule == RoundTile) {
     float vRepetitions =
         std::max(1.0f, roundf(dstRect.height() /
@@ -156,34 +140,82 @@ void Image::drawTiled(GraphicsContext& ctxt,
     tileScaleFactor.setHeight(dstRect.height() /
                               (srcRect.height() * vRepetitions));
   }
-  if (hRule == RoundTile || vRule == RoundTile) {
-    // High quality interpolation rounds the scaled tile to an integer size (see
-    // Image::drawPattern). To avoid causing a visual problem, linear
-    // interpolation must be used instead.
-    // FIXME: Allow using high-quality interpolation in this case, too.
-    useLowInterpolationQuality = true;
+
+  if (hRule == RoundTile) {
+    float hRepetitions = std::max(
+        1.0f,
+        roundf(dstRect.width() / (tileScaleFactor.width() * srcRect.width())));
+    tileScaleFactor.setWidth(dstRect.width() /
+                             (srcRect.width() * hRepetitions));
   }
 
   // We want to construct the phase such that the pattern is centered (when
   // stretch is not set for a particular rule).
-  float hPhase = tileScaleFactor.width() * srcRect.x();
   float vPhase = tileScaleFactor.height() * srcRect.y();
-  float scaledTileWidth = tileScaleFactor.width() * srcRect.width();
-  float scaledTileHeight = tileScaleFactor.height() * srcRect.height();
-  if (hRule == Image::RepeatTile)
-    hPhase -= (dstRect.width() - scaledTileWidth) / 2;
-  if (vRule == Image::RepeatTile)
+  float hPhase = tileScaleFactor.width() * srcRect.x();
+  if (vRule == Image::RepeatTile) {
+    float scaledTileHeight = tileScaleFactor.height() * srcRect.height();
     vPhase -= (dstRect.height() - scaledTileHeight) / 2;
+  }
+
+  if (hRule == Image::RepeatTile) {
+    float scaledTileWidth = tileScaleFactor.width() * srcRect.width();
+    hPhase -= (dstRect.width() - scaledTileWidth) / 2;
+  }
+
+  FloatSize spacing;
+  auto calculateSpaceNeeded = [](
+      const float destination, const float source) -> std::tuple<bool, float> {
+    DCHECK_GT(source, 0);
+    DCHECK_GT(destination, 0);
+
+    float repeatTilesCount = floorf(destination / source);
+    if (!repeatTilesCount)
+      return std::make_tuple(false, -1);
+
+    float space = destination;
+    space -= source * repeatTilesCount;
+    space /= repeatTilesCount + 1.0;
+
+    return std::make_tuple(true, space);
+  };
+
+  if (vRule == SpaceTile) {
+    std::tuple<bool, float> space =
+        calculateSpaceNeeded(dstRect.height(), srcRect.height());
+    if (!std::get<0>(space))
+      return;
+
+    spacing.setHeight(std::get<1>(space));
+    tileScaleFactor.setHeight(1.0);
+    vPhase = srcRect.y();
+    vPhase -= spacing.height();
+  }
+
+  if (hRule == SpaceTile) {
+    std::tuple<bool, float> space =
+        calculateSpaceNeeded(dstRect.width(), srcRect.width());
+    if (!std::get<0>(space))
+      return;
+
+    spacing.setWidth(std::get<1>(space));
+    tileScaleFactor.setWidth(1.0);
+    hPhase = srcRect.x();
+    hPhase -= spacing.width();
+  }
+
   FloatPoint patternPhase(dstRect.x() - hPhase, dstRect.y() - vPhase);
 
-  if (useLowInterpolationQuality) {
+  // TODO(cavalcantii): see crbug.com/662507.
+  if ((hRule == RoundTile || vRule == RoundTile)) {
     InterpolationQuality previousInterpolationQuality =
         ctxt.imageInterpolationQuality();
     ctxt.setImageInterpolationQuality(InterpolationLow);
     drawPattern(ctxt, srcRect, tileScaleFactor, patternPhase, op, dstRect);
     ctxt.setImageInterpolationQuality(previousInterpolationQuality);
   } else {
-    drawPattern(ctxt, srcRect, tileScaleFactor, patternPhase, op, dstRect);
+    drawPattern(ctxt, srcRect, tileScaleFactor, patternPhase, op, dstRect,
+                spacing);
   }
 
   startAnimation();
