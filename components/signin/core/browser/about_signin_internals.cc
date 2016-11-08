@@ -6,12 +6,14 @@
 
 #include <stddef.h>
 
+#include <tuple>
 #include <utility>
 
 #include "base/command_line.h"
 #include "base/hash.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -306,8 +308,8 @@ void AboutSigninInternals::OnAccessTokenRequested(
   if (token) {
     *token = TokenInfo(consumer_id, scopes);
   } else {
-    token = new TokenInfo(consumer_id, scopes);
-    signin_status_.token_info_map[account_id].push_back(token);
+    signin_status_.token_info_map[account_id].push_back(
+        base::MakeUnique<TokenInfo>(consumer_id, scopes));
   }
 
   NotifyObservers();
@@ -335,9 +337,8 @@ void AboutSigninInternals::OnFetchAccessTokenComplete(
 void AboutSigninInternals::OnTokenRemoved(
     const std::string& account_id,
     const OAuth2TokenService::ScopeSet& scopes) {
-  for (size_t i = 0; i < signin_status_.token_info_map[account_id].size();
-       ++i) {
-    TokenInfo* token = signin_status_.token_info_map[account_id][i];
+  for (const std::unique_ptr<TokenInfo>& token :
+       signin_status_.token_info_map[account_id]) {
     if (token->scopes == scopes)
       token->Invalidate();
   }
@@ -414,15 +415,11 @@ AboutSigninInternals::TokenInfo::TokenInfo(
 
 AboutSigninInternals::TokenInfo::~TokenInfo() {}
 
-bool AboutSigninInternals::TokenInfo::LessThan(const TokenInfo* a,
-                                               const TokenInfo* b) {
-  if (a->request_time == b->request_time) {
-    if (a->consumer_id == b->consumer_id) {
-      return a->scopes < b->scopes;
-    }
-    return a->consumer_id < b->consumer_id;
-  }
-  return a->request_time < b->request_time;
+bool AboutSigninInternals::TokenInfo::LessThan(
+    const std::unique_ptr<TokenInfo>& a,
+    const std::unique_ptr<TokenInfo>& b) {
+  return std::tie(a->request_time, a->consumer_id, a->scopes) <
+         std::tie(b->request_time, b->consumer_id, b->scopes);
 }
 
 void AboutSigninInternals::TokenInfo::Invalidate() { removed_ = true; }
@@ -476,24 +473,17 @@ AboutSigninInternals::TokenInfo::ToValue() const {
 AboutSigninInternals::SigninStatus::SigninStatus()
     : timed_signin_fields(TIMED_FIELDS_COUNT) {}
 
-AboutSigninInternals::SigninStatus::~SigninStatus() {
-  for (TokenInfoMap::iterator it = token_info_map.begin();
-       it != token_info_map.end();
-       ++it) {
-    base::STLDeleteElements(&it->second);
-  }
-}
+AboutSigninInternals::SigninStatus::~SigninStatus() {}
 
 AboutSigninInternals::TokenInfo* AboutSigninInternals::SigninStatus::FindToken(
     const std::string& account_id,
     const std::string& consumer_id,
     const OAuth2TokenService::ScopeSet& scopes) {
-  for (size_t i = 0; i < token_info_map[account_id].size(); ++i) {
-    TokenInfo* tmp = token_info_map[account_id][i];
-    if (tmp->consumer_id == consumer_id && tmp->scopes == scopes)
-      return tmp;
+  for (const std::unique_ptr<TokenInfo>& token : token_info_map[account_id]) {
+    if (token->consumer_id == consumer_id && token->scopes == scopes)
+      return token.get();
   }
-  return NULL;
+  return nullptr;
 }
 
 std::unique_ptr<base::DictionaryValue>
@@ -625,9 +615,7 @@ AboutSigninInternals::SigninStatus::ToValue(
   // Token information for all services.
   base::ListValue* token_info = new base::ListValue();
   signin_status->Set("token_info", token_info);
-  for (TokenInfoMap::iterator it = token_info_map.begin();
-       it != token_info_map.end();
-       ++it) {
+  for (auto it = token_info_map.begin(); it != token_info_map.end(); ++it) {
     // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460
     // is fixed.
     tracked_objects::ScopedTracker tracking_profile41(
@@ -643,7 +631,7 @@ AboutSigninInternals::SigninStatus::ToValue(
             "422460 AboutSigninInternals::SigninStatus::ToValue42"));
 
     std::sort(it->second.begin(), it->second.end(), TokenInfo::LessThan);
-    const std::vector<TokenInfo*>& tokens = it->second;
+    const auto& tokens = it->second;
 
     // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460
     // is fixed.
@@ -651,8 +639,8 @@ AboutSigninInternals::SigninStatus::ToValue(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "422460 AboutSigninInternals::SigninStatus::ToValue43"));
 
-    for (size_t i = 0; i < tokens.size(); ++i) {
-      token_details->Append(tokens[i]->ToValue());
+    for (const std::unique_ptr<TokenInfo>& token : tokens) {
+      token_details->Append(token->ToValue());
     }
   }
 
