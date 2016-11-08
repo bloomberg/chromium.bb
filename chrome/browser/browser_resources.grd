@@ -104,11 +104,15 @@
         <include name="IDR_ABOUT_SYS_HTML" file="resources\about_sys\about_sys.html" flattenhtml="true" type="BINDATA" />
       </if>
       <include name="IDR_AD_NETWORK_HASHES" file="resources\ad_networks.dat" type="BINDATA" />
-      <include name="IDR_BLUETOOTH_INTERNALS_CSS" file="resources\bluetooth_internals\bluetooth_internals.css" type="BINDATA" compress="gzip" />
-      <include name="IDR_BLUETOOTH_INTERNALS_HTML" file="resources\bluetooth_internals\bluetooth_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
-      <include name="IDR_BLUETOOTH_INTERNALS_JS" file="resources\bluetooth_internals\bluetooth_internals.js" type="BINDATA" compress="gzip" />
       <include name="IDR_BLUETOOTH_ADAPTER_MOJO_JS" file="${root_gen_dir}\device\bluetooth\public\interfaces\adapter.mojom.js" use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_BLUETOOTH_DEVICE_MOJO_JS" file="${root_gen_dir}\device\bluetooth\public\interfaces\device.mojom.js" use_base_dir="false" type="BINDATA" compress="gzip" />
+      <include name="IDR_BLUETOOTH_INTERNALS_CSS" file="resources\bluetooth_internals\bluetooth_internals.css" type="BINDATA" compress="gzip" />
+      <include name="IDR_BLUETOOTH_INTERNALS_ADAPTER_BROKER_JS" file="resources\bluetooth_internals\adapter_broker.js" type="BINDATA" compress="gzip" />
+      <include name="IDR_BLUETOOTH_INTERNALS_DEVICE_COLLECTION_JS" file="resources\bluetooth_internals\device_collection.js" type="BINDATA" compress="gzip" />
+      <include name="IDR_BLUETOOTH_INTERNALS_DEVICE_TABLE_JS" file="resources\bluetooth_internals\device_table.js" type="BINDATA" compress="gzip" />
+      <include name="IDR_BLUETOOTH_INTERNALS_HTML" file="resources\bluetooth_internals\bluetooth_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
+      <include name="IDR_BLUETOOTH_INTERNALS_INTERFACES_JS" file="resources\bluetooth_internals\interfaces.js" type="BINDATA" compress="gzip" />
+      <include name="IDR_BLUETOOTH_INTERNALS_JS" file="resources\bluetooth_internals\bluetooth_internals.js" type="BINDATA" compress="gzip" />
       <include name="IDR_BOOKMARKS_MANIFEST" file="resources\bookmark_manager\manifest.json" type="BINDATA" />
       <if expr="is_posix and not is_macosx and not is_ios">
         <include name="IDR_CERTIFICATE_VIEWER_HTML" file="resources\certificate_viewer.html" type="BINDATA" />
