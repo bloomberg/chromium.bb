@@ -376,7 +376,7 @@ TEST_F(RequestQueueTest, MarkAttemptStarted) {
             update_requests_result()->updated_items.at(0).last_attempt_time());
   EXPECT_EQ(
       1, update_requests_result()->updated_items.at(0).started_attempt_count());
-  EXPECT_EQ(SavePageRequest::RequestState::PRERENDERING,
+  EXPECT_EQ(SavePageRequest::RequestState::OFFLINING,
             update_requests_result()->updated_items.at(0).request_state());
 
   queue()->GetRequests(

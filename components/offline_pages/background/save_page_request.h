@@ -19,8 +19,8 @@ class SavePageRequest {
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.offlinepages
   enum class RequestState {
     AVAILABLE = 0,     // Request can be scheduled when preconditions are met.
-    PAUSED = 1,        // Request is not available until it is unpaused
-    PRERENDERING = 2,  // Request is active in the pre-renderer
+    PAUSED = 1,        // Request is not available until it is unpaused.
+    OFFLINING = 2,     // Request is actively offlining.
   };
 
   SavePageRequest(int64_t request_id,

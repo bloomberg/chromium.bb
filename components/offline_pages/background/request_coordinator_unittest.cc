@@ -184,13 +184,13 @@ class ObserverStub : public RequestCoordinator::Observer {
         completed_called_(false),
         changed_called_(false),
         last_status_(RequestCoordinator::BackgroundSavePageResult::SUCCESS),
-        state_(SavePageRequest::RequestState::PRERENDERING) {}
+        state_(SavePageRequest::RequestState::OFFLINING) {}
 
   void Clear() {
     added_called_ = false;
     completed_called_ = false;
     changed_called_ = false;
-    state_ = SavePageRequest::RequestState::PRERENDERING;
+    state_ = SavePageRequest::RequestState::OFFLINING;
     last_status_ = RequestCoordinator::BackgroundSavePageResult::SUCCESS;
   }
 
@@ -962,6 +962,12 @@ TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingLater) {
 
   // Let all the async parts of the start processing pipeline run to completion.
   PumpLoop();
+
+  // Observer called for starting processing.
+  EXPECT_TRUE(observer().changed_called());
+  EXPECT_EQ(SavePageRequest::RequestState::OFFLINING, observer().state());
+  observer().Clear();
+
   // Since the offliner is disabled, this callback should not be called.
   EXPECT_FALSE(immediate_schedule_callback_called());
 
@@ -974,6 +980,11 @@ TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingLater) {
 
   // Let the async callbacks in the cancel run.
   PumpLoop();
+
+  // Observer called for stopped processing.
+  EXPECT_TRUE(observer().changed_called());
+  EXPECT_EQ(SavePageRequest::RequestState::AVAILABLE, observer().state());
+  observer().Clear();
 
   EXPECT_FALSE(is_busy());
 
@@ -1289,7 +1300,7 @@ TEST_F(RequestCoordinatorTest, MAYBE_PauseAndResumeObserver) {
   PumpLoop();
 
   EXPECT_TRUE(observer().changed_called());
-  EXPECT_EQ(SavePageRequest::RequestState::AVAILABLE, observer().state());
+  EXPECT_EQ(SavePageRequest::RequestState::OFFLINING, observer().state());
 }
 
 TEST_F(RequestCoordinatorTest, RemoveRequest) {

@@ -309,7 +309,7 @@ class RequestCoordinator : public KeyedService,
 
   // Records an aborted attempt for the request and update it in the queue
   // (possibly removing it). Returns the updated copy.
-  void AbortRequestAttempt(SavePageRequest* request);
+  void AbortRequestAttempt(const SavePageRequest& request);
 
   // Remove the attempted request from the queue with status to pass through to
   // any observers and UMA histogram.

@@ -57,7 +57,7 @@ TEST_F(SavePageRequestTest, StartAndCompleteRequest) {
   // Attempt time, attempt count and status will though.
   ASSERT_EQ(start_time, request.last_attempt_time());
   ASSERT_EQ(1, request.started_attempt_count());
-  ASSERT_EQ(SavePageRequest::RequestState::PRERENDERING,
+  ASSERT_EQ(SavePageRequest::RequestState::OFFLINING,
             request.request_state());
 
   request.MarkAttemptCompleted();
@@ -91,7 +91,7 @@ TEST_F(SavePageRequestTest, StartAndAbortRequest) {
   // Attempt time and attempt count will though.
   ASSERT_EQ(start_time, request.last_attempt_time());
   ASSERT_EQ(1, request.started_attempt_count());
-  ASSERT_EQ(SavePageRequest::RequestState::PRERENDERING,
+  ASSERT_EQ(SavePageRequest::RequestState::OFFLINING,
             request.request_state());
 
   request.MarkAttemptAborted();

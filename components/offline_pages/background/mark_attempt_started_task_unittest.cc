@@ -111,7 +111,7 @@ TEST_F(MarkAttemptStartedTaskTest, MarkAttemptStartedWhenExists) {
   EXPECT_GE(base::Time::Now(),
             last_result()->updated_items.at(0).last_attempt_time());
   EXPECT_EQ(1, last_result()->updated_items.at(0).started_attempt_count());
-  EXPECT_EQ(SavePageRequest::RequestState::PRERENDERING,
+  EXPECT_EQ(SavePageRequest::RequestState::OFFLINING,
             last_result()->updated_items.at(0).request_state());
 }
 

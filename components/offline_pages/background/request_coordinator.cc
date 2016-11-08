@@ -247,7 +247,7 @@ void RequestCoordinator::StopPrerendering(Offliner::RequestStatus stop_status) {
 
     // Otherwise, this attempt never really had a chance to run, mark it
     // aborted.
-    AbortRequestAttempt(active_request_.get());
+    AbortRequestAttempt(*active_request_.get());
   }
 
   // Stopping offliner means it will not call callback so set last status.
@@ -302,19 +302,19 @@ bool RequestCoordinator::CancelActiveRequestIfItMatches(
   return false;
 }
 
-void RequestCoordinator::AbortRequestAttempt(SavePageRequest* request) {
-  if (request->started_attempt_count() >= policy_->GetMaxStartedTries()) {
+void RequestCoordinator::AbortRequestAttempt(const SavePageRequest& request) {
+  if (request.started_attempt_count() >= policy_->GetMaxStartedTries()) {
     const BackgroundSavePageResult result(
         BackgroundSavePageResult::START_COUNT_EXCEEDED);
-    event_logger_.RecordDroppedSavePageRequest(request->client_id().name_space,
-                                               result, request->request_id());
-    RemoveAttemptedRequest(*request, result);
+    event_logger_.RecordDroppedSavePageRequest(request.client_id().name_space,
+                                               result, request.request_id());
+    RemoveAttemptedRequest(request, result);
   } else {
     queue_->MarkAttemptAborted(
-        request->request_id(),
+        request.request_id(),
         base::Bind(&RequestCoordinator::MarkAttemptAbortedDone,
-                   weak_ptr_factory_.GetWeakPtr(), request->request_id(),
-                   request->client_id()));
+                   weak_ptr_factory_.GetWeakPtr(), request.request_id(),
+                   request.client_id()));
   }
 }
 
@@ -333,9 +333,11 @@ void RequestCoordinator::MarkAttemptAbortedDone(
     int64_t request_id,
     const ClientId& client_id,
     std::unique_ptr<UpdateRequestsResult> result) {
-  // If the request succeeded, nothing to do.  If it failed, we can't really do
-  // much, so just log it.
-  if (!IsSingleSuccessResult(result.get())) {
+  // If the request succeeded, notify observer. If it failed, we can't really
+  // do much, so just log it.
+  if (IsSingleSuccessResult(result.get())) {
+    NotifyChanged(result->updated_items.at(0));
+  } else {
     DVLOG(1) << "Failed to mark request aborted: " << request_id;
     RequestQueue::UpdateRequestResult request_result =
         result->store_state != StoreState::LOADED
@@ -698,6 +700,9 @@ void RequestCoordinator::StartOffliner(
   active_request_.reset(
       new SavePageRequest(update_result->updated_items.at(0)));
 
+  // Inform observer of active request.
+  NotifyChanged(*active_request_.get());
+
   // Start the load and save process in the offliner (Async).
   if (offliner_->LoadAndSave(
           update_result->updated_items.at(0),
@@ -745,9 +750,7 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
     // Update the request for the canceled attempt.
     // TODO(dougarnett): See if we can conclusively identify other attempt
     // aborted cases to treat this way (eg, for Render Process Killed).
-    SavePageRequest updated_request(request);
-    AbortRequestAttempt(&updated_request);
-    NotifyChanged(updated_request);
+    AbortRequestAttempt(request);
   } else if (status == Offliner::RequestStatus::SAVED) {
     // Remove the request from the queue if it succeeded.
     RemoveAttemptedRequest(request, BackgroundSavePageResult::SUCCESS);
@@ -819,13 +822,13 @@ void RequestCoordinator::MarkRequestCompleted(int64_t request_id) {
 
   // Remove the request, but send out SUCCEEDED instead of removed.
   std::vector<int64_t> request_ids { request_id };
-    queue_->RemoveRequests(
-      request_ids,
-      base::Bind(&RequestCoordinator::HandleRemovedRequestsAndCallback,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Bind(&RequestCoordinator::CompletedRequestCallback,
-                            weak_ptr_factory_.GetWeakPtr()),
-                 BackgroundSavePageResult::SUCCESS));
+  queue_->RemoveRequests(
+    request_ids,
+    base::Bind(&RequestCoordinator::HandleRemovedRequestsAndCallback,
+               weak_ptr_factory_.GetWeakPtr(),
+               base::Bind(&RequestCoordinator::CompletedRequestCallback,
+                          weak_ptr_factory_.GetWeakPtr()),
+               BackgroundSavePageResult::SUCCESS));
 }
 
 const Scheduler::TriggerConditions RequestCoordinator::GetTriggerConditions(
