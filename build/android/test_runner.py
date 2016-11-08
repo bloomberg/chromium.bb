@@ -238,8 +238,8 @@ def AddGTestOptions(parser):
   filter_group.add_argument('--gtest-filter-file', dest='test_filter_file',
                             type=os.path.realpath,
                             help='Path to file that contains googletest-style '
-                                  'filter strings. (Lines will be joined with '
-                                  '":" to create a single filter string.)')
+                                  'filter strings.  See also '
+                                  '//testing/buildbot/filters/README.md.')
 
   AddDeviceOptions(parser)
   AddCommonOptions(parser)
