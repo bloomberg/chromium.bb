@@ -620,7 +620,7 @@ html[dir='rtl'] .gallery .toolbar .bubble {
 
 .gallery > .toolbar paper-button:focus,
 .gallery > .toolbar button:focus {
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .gallery > .toolbar button:focus {

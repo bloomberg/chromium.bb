@@ -19,12 +19,13 @@
     }
 
     .ripple {
-      background-color: black;
+      background-color: white;
       border-radius: 50%;
       height: 50%;
       margin: 0 auto;
       opacity: 0;
       width: 50%;
+      @apply(--files-ripple);
     }
 
     :host([pressed]) .ripple {

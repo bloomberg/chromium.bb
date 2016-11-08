@@ -209,3 +209,15 @@ paper-slider.disabled {
   position: absolute;
   top: -1px;
 }
+
+.control-panel {
+  --files-ripple: {
+    background-color: black;
+  };
+  --files-toggle-ripple: {
+    background-color: black;
+  };
+  --files-toggle-ripple-activated: {
+    background-color: black;
+  };
+}
