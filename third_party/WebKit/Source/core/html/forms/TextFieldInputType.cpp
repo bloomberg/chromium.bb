@@ -179,15 +179,13 @@ void TextFieldInputType::setValue(const String& sanitizedValue,
     }
 
     case DispatchNoEvent:
+      // We need to update textAsOfLastFormControlChangeEvent for |value| IDL
+      // setter without focus because input-assist features use setValue("...",
+      // DispatchChangeEvent) without setting focus.
+      if (!element().isFocused())
+        element().setTextAsOfLastFormControlChangeEvent(element().value());
       break;
   }
-
-  // TODO(tkent): Calling setTextAsOfLastFormControlChangeEvent() twice is very
-  // suspicious.
-  if (!element().isFocused())
-    element().setTextAsOfLastFormControlChangeEvent(element().value());
-  if (eventBehavior == DispatchNoEvent)
-    element().setTextAsOfLastFormControlChangeEvent(element().value());
 }
 
 void TextFieldInputType::handleKeydownEvent(KeyboardEvent* event) {

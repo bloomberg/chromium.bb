@@ -4,29 +4,79 @@
 <script src="../../resources/js-test.js"></script>
 </head>
 <body>
+<div id=container>
 <input id="input" type="text" onchange="changeHandler()">
+<input id="number" type="number" onchange="changeHandler()">
+<textarea id="textarea" onchange="changeHandler()"></textarea>
+</div>
 <script>
-description('This test verifies that the change event is fired, when value is changed in change event handler.');
-var input = document.getElementById('input');
+description('This test verifies that the change event is fired, when value is changed by JavaScript code.');
 var changeEventCounter = 0;
+// shouldBe*() can refer to only global variables.
+var element;
 function changeHandler()
 {
     changeEventCounter++;
-    input.value = '';
+    element.value = '';
 }
 
-input.focus();
-document.execCommand('InsertText', false, 'foo bar baz');
-shouldBeEqualToString('input.value', 'foo bar baz');
-input.blur();
-shouldBe('changeEventCounter', '1');
-shouldBeEqualToString('input.value', '');
+function testValueUpdateOnChange(userInput) {
+    debug('Value is updated in change event handler.');
+    changeEventCounter = 0;
+    element.focus();
+    document.execCommand('InsertText', false, userInput);
+    shouldBeEqualToString('element.value', userInput);
+    element.blur();
+    shouldBe('changeEventCounter', '1');
+    shouldBeEqualToString('element.value', '');
 
-input.focus();
-document.execCommand('InsertText', false, 'foo bar baz');
-shouldBeEqualToString('input.value', 'foo bar baz');
-input.blur();
-shouldBe('changeEventCounter', '2');
+    element.focus();
+    document.execCommand('InsertText', false, userInput);
+    shouldBeEqualToString('element.value', userInput);
+    element.blur();
+    shouldBe('changeEventCounter', '2');
+}
+
+function testValueUpdateWithoutUserEdit(jsInput) {
+    debug('Value is updated while element is focused.');
+    changeEventCounter = 0;
+    element.value = '';
+    element.focus();
+    element.value = jsInput;
+    element.blur();
+    shouldBe('changeEventCounter', '0');
+}
+
+function testValueUpdateAfterUserEdit(userInput, jsInput) {
+    debug('Value is updated after a user edit.');
+    changeEventCounter = 0;
+    element.value = '0';
+    element.focus();
+    document.execCommand('InsertText', false, userInput);
+    element.value = jsInput;
+    element.blur();
+    shouldBe('changeEventCounter', '1');
+}
+
+debug('===> Tests for INPUT[type=text]');
+element = document.getElementById('input');
+testValueUpdateOnChange('foo bar');
+testValueUpdateWithoutUserEdit('FOO BAR');
+testValueUpdateAfterUserEdit('foo bar', 'FOO BAR');
+
+debug('===> Tests for INPUT[type=number]');
+element = document.getElementById('number');
+testValueUpdateOnChange('123');
+testValueUpdateWithoutUserEdit('999');
+testValueUpdateAfterUserEdit('123', '999');
+
+debug('===> Tests for TEXTAREA');
+element = document.getElementById('textarea');
+testValueUpdateOnChange('foo bar');
+testValueUpdateWithoutUserEdit('FOO BAR');
+testValueUpdateAfterUserEdit('foo bar', 'FOO BAR');
+
+document.querySelector('#container').remove();
 </script>
 </body>
 </html>

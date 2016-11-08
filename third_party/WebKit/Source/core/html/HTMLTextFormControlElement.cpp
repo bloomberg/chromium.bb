@@ -216,8 +216,16 @@ void HTMLTextFormControlElement::setChangedSinceLastFormControlChangeEvent(
 void HTMLTextFormControlElement::setFocused(bool flag) {
   HTMLFormControlElementWithState::setFocused(flag);
 
-  if (!flag && wasChangedSinceLastFormControlChangeEvent())
-    dispatchFormControlChangeEvent();
+  if (!flag) {
+    if (wasChangedSinceLastFormControlChangeEvent()) {
+      dispatchFormControlChangeEvent();
+    } else {
+      // |value| IDL attribute setter haven't updated
+      // textAsOfLastFormControlChangeEvent while this is focused. So we
+      // synchronize now.
+      setTextAsOfLastFormControlChangeEvent(value());
+    }
+  }
 }
 
 bool HTMLTextFormControlElement::shouldDispatchFormControlChangeEvent(

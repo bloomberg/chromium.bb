@@ -435,12 +435,23 @@ void HTMLTextAreaElement::setValueCommon(const String& newValue,
   }
 
   notifyFormStateChanged();
-  if (eventBehavior == DispatchNoEvent) {
-    setTextAsOfLastFormControlChangeEvent(normalizedValue);
-  } else {
-    if (eventBehavior == DispatchInputAndChangeEvent)
+  switch (eventBehavior) {
+    case DispatchChangeEvent:
+      dispatchFormControlChangeEvent();
+      break;
+
+    case DispatchInputAndChangeEvent:
       dispatchFormControlInputEvent();
-    dispatchFormControlChangeEvent();
+      dispatchFormControlChangeEvent();
+      break;
+
+    case DispatchNoEvent:
+      // We need to update textAsOfLastFormControlChangeEvent for |value| IDL
+      // setter without focus because input-assist features use setValue("...",
+      // DispatchChangeEvent) without setting focus.
+      if (!isFocused())
+        setTextAsOfLastFormControlChangeEvent(normalizedValue);
+      break;
   }
 }
 

@@ -1,13 +1,41 @@
-This test verifies that the change event is fired, when value is changed in change event handler.
+This test verifies that the change event is fired, when value is changed by JavaScript code.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS input.value is "foo bar baz"
+===> Tests for INPUT[type=text]
+Value is updated in change event handler.
+PASS element.value is "foo bar"
 PASS changeEventCounter is 1
-PASS input.value is ""
-PASS input.value is "foo bar baz"
+PASS element.value is ""
+PASS element.value is "foo bar"
 PASS changeEventCounter is 2
+Value is updated while element is focused.
+PASS changeEventCounter is 0
+Value is updated after a user edit.
+PASS changeEventCounter is 1
+===> Tests for INPUT[type=number]
+Value is updated in change event handler.
+PASS element.value is "123"
+PASS changeEventCounter is 1
+PASS element.value is ""
+PASS element.value is "123"
+PASS changeEventCounter is 2
+Value is updated while element is focused.
+PASS changeEventCounter is 0
+Value is updated after a user edit.
+PASS changeEventCounter is 1
+===> Tests for TEXTAREA
+Value is updated in change event handler.
+PASS element.value is "foo bar"
+PASS changeEventCounter is 1
+PASS element.value is ""
+PASS element.value is "foo bar"
+PASS changeEventCounter is 2
+Value is updated while element is focused.
+PASS changeEventCounter is 0
+Value is updated after a user edit.
+PASS changeEventCounter is 1
 PASS successfullyParsed is true
 
 TEST COMPLETE
