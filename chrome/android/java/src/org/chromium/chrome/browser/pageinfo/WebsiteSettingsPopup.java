@@ -47,6 +47,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
@@ -484,7 +485,12 @@ public class WebsiteSettingsPopup implements OnClickListener {
             mSiteSettingsButton.setVisibility(View.GONE);
         }
 
-        if (!isShowingOfflinePage() || !OfflinePageUtils.isConnected()) {
+        if (isShowingOfflinePage()) {
+            boolean isConnected = OfflinePageUtils.isConnected();
+            RecordHistogram.recordBooleanHistogram(
+                    "OfflinePages.WebsiteSettings.OpenOnlineButtonVisible", isConnected);
+            if (!isConnected) mOpenOnlineButton.setVisibility(View.GONE);
+        } else {
             mOpenOnlineButton.setVisibility(View.GONE);
         }
 
@@ -801,6 +807,9 @@ public class WebsiteSettingsPopup implements OnClickListener {
                     // Attempt to reload to an online version of the viewed offline web page. This
                     // attempt might fail if the user is offline, in which case an offline copy will
                     // be reloaded.
+                    RecordHistogram.recordBooleanHistogram(
+                            "OfflinePages.WebsiteSettings.ConnectedWhenOpenOnlineButtonClicked",
+                            OfflinePageUtils.isConnected());
                     OfflinePageUtils.reload(mTab);
                 }
             });
