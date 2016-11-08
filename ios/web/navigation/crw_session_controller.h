@@ -114,7 +114,6 @@ struct SSLStatus;
 // current entry.
 - (BOOL)canGoBack;
 - (BOOL)canGoForward;
-- (BOOL)canGoDelta:(int)delta;
 // Adjusts the current entry to reflect the navigation in the corresponding
 // direction in history.
 - (void)goBack;
@@ -154,11 +153,6 @@ struct SSLStatus;
 // Set |useDesktopUserAgentForNextPendingEntry_| to YES if there is no pending
 // entry, otherwise set |useDesktopUserAgent| in the pending entry.
 - (void)useDesktopUserAgentForNextPendingEntry;
-
-// Returns the navigation index that differs from the current entry by the
-// specified |delta|, skipping redirect navigation items. The index returned is
-// not guaranteed to be valid.
-- (NSInteger)indexOfEntryForDelta:(int)delta;
 
 @end
 
