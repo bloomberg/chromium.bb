@@ -127,8 +127,8 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
       chromeos::settings::DateTimeHandler::Create(html_source));
 
   html_source->AddBoolean("stylusAllowed", ash::IsPaletteFeatureEnabled());
-  html_source->AddBoolean("quickUnlockEnabled",
-                          chromeos::IsQuickUnlockEnabled());
+  html_source->AddBoolean("pinUnlockEnabled",
+                          chromeos::IsPinUnlockEnabled(profile->GetPrefs()));
 #endif
 
   AddSettingsPageUIHandler(AboutHandler::Create(html_source, profile));

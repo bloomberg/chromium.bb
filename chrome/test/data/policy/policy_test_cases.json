@@ -2658,6 +2658,22 @@
     ]
   },
 
+  "QuickUnlockModeWhitelist": {
+    "os": ["chromeos"],
+    "test_policy": { "QuickUnlockModeWhitelist": ["PIN"] },
+    "pref_mappings": [
+      { "pref": "quick_unlock_mode_whitelist"}
+    ]
+  },
+
+  "QuickUnlockTimeout": {
+    "os": ["chromeos"],
+    "test_policy": { "QuickUnlockTimeout": 0 },
+    "pref_mappings": [
+      { "pref": "quick_unlock_timeout"}
+    ]
+  },
+
   "ArcCertificatesSyncMode": {
     "os": ["chromeos"],
     "can_be_recommended": false,

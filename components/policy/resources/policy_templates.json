@@ -139,7 +139,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 351
+#   For your editing convenience: highest ID currently used: 353
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -9189,7 +9189,81 @@
       This policy has no effect on whether users can configure printers on
       individual devices.  It is intended to be supplementary to the
       configuration of printers by individual users.''',
-    }
+    },
+    {
+      'name': 'QuickUnlockModeWhitelist',
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'string',
+          'enum': [
+            'all',
+            'PIN'
+          ],
+        },
+        'id': 'QuickUnlockModeWhitelist',
+      },
+      'supported_on': ['chrome_os:56-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['PIN'],
+      'id': 352,
+      'caption': '''Configure allowed quick unlock modes.''',
+      'tags': [],
+      'desc': '''Controls which quick unlock modes are allowed to be set up and used.
+      This setting white-lists the allowed quick unlock modes that can be set up and used to unlock the lock screen. The value is a list of strings, each of which should be one of the following: "all", "PIN". If "all" is selected, then all supported quick modes will be available, otherwise the modes in the list will be the ones available.
+
+      If this setting is configured, quick unlock modes which have a type that is not on this list can not be set up or used.
+
+      If this setting is left not configured, "PIN" mode will be enabled, and all other modes will be disabled.''',
+    },
+    {
+      'name': 'QuickUnlockTimeout',
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2, 3 ],
+      },
+      'items': [
+        {
+          'name': 'SixHours',
+          'value': 0,
+          'caption': '''Password entry is required every six hours.''',
+        },
+        {
+          'name': 'TweleveHours',
+          'value': 1,
+          'caption': '''Password entry is required every twelve hours.''',
+        },
+        {
+          'name': 'Day',
+          'value': 2,
+          'caption': '''Password entry is required every day (24 hours).''',
+        },
+        {
+          'name': 'Week',
+          'value': 3,
+          'caption': '''Password entry is required every week (168 hours).''',
+        },
+      ],
+      'supported_on': ['chrome_os:56-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 2,
+      'id': 353,
+      'caption': '''Sets how often user has to enter password to use quick unlock.''',
+      'tags': [],
+      'desc': '''This setting controls how often the lock screen will request the password to be entered in order to continue using quick unlock. Each time the lock screen is entered, if the last password entry was more than this setting, the quick unlock will not be available on entering the lock screen. Should the user stay on the lock screen past this period of time, a password will be requested next time the user enters the wrong code, or re-enters the lock screen, whichever comes first.
+
+      If this setting is configured, users using quick unlock will be requested to enter their passwords on the lock screen depending on this setting.
+
+      If this setting is not configured, users using quick unlock will be requested to enter their password on the lock screen every day.''',
+    },
   ],
   'messages': {
     # Messages that are not associated to any policies.

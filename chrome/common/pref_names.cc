@@ -905,6 +905,19 @@ const char kEolStatus[] = "eol_status";
 // Boolean pref indicating the End Of Life notification was dismissed by the
 // user.
 const char kEolNotificationDismissed[] = "eol_notification_dismissed";
+
+// A list of allowed quick unlock modes. A quick unlock mode can only be used if
+// its type is on this list, or if type all (all quick unlock modes enabled) is
+// on this list.
+const char kQuickUnlockModeWhitelist[] = "quick_unlock_mode_whitelist";
+// Enum that specifies how often a user has to enter their password to continue
+// using quick unlock. These values are the same as the ones in
+// chromeos::QuickUnlockPasswordConfirmationFrequency.
+// 0 - six hours. Users will have to enter their password every six hours.
+// 1 - twelve hours. Users will have to enter their password every twelve hours.
+// 2 - day. Users will have to enter their password every day.
+// 3 - week. Users will have to enter their password every week.
+const char kQuickUnlockTimeout[] = "quick_unlock_timeout";
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be

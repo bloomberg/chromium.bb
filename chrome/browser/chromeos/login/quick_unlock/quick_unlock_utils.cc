@@ -8,23 +8,43 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 
 namespace chromeos {
 
 namespace {
 bool enable_for_testing_ = false;
+// Options for the quick unlock whitelist.
+const char kQuickUnlockWhitelistOptionAll[] = "all";
+const char kQuickUnlockWhitelistOptionPin[] = "PIN";
 }  // namespace
 
-bool IsQuickUnlockEnabled() {
+void RegisterQuickUnlockProfilePrefs(PrefRegistrySimple* registry) {
+  base::ListValue quick_unlock_whitelist_default;
+  quick_unlock_whitelist_default.AppendString(kQuickUnlockWhitelistOptionPin);
+  registry->RegisterListPref(prefs::kQuickUnlockModeWhitelist,
+                             quick_unlock_whitelist_default.DeepCopy());
+  registry->RegisterIntegerPref(
+      prefs::kQuickUnlockTimeout,
+      static_cast<int>(QuickUnlockPasswordConfirmationFrequency::DAY));
+}
+
+bool IsPinUnlockEnabled(PrefService* pref_service) {
   if (enable_for_testing_)
     return true;
 
-  // TODO(jdufault): Implement a proper policy check. For now, just disable if
-  // the device is enterprise enrolled. See crbug.com/612271.
-  if (g_browser_process->platform_part()
-          ->browser_policy_connector_chromeos()
-          ->IsEnterpriseManaged()) {
+  // Check if policy allows PIN.
+  const base::ListValue* quick_unlock_whitelist =
+      pref_service->GetList(prefs::kQuickUnlockModeWhitelist);
+  base::StringValue all_value(kQuickUnlockWhitelistOptionAll);
+  base::StringValue pin_value(kQuickUnlockWhitelistOptionPin);
+  if (quick_unlock_whitelist->Find(all_value) ==
+          quick_unlock_whitelist->end() &&
+      quick_unlock_whitelist->Find(pin_value) ==
+          quick_unlock_whitelist->end()) {
     return false;
   }
 

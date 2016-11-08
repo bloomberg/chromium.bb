@@ -305,6 +305,8 @@ extern const char kQuickUnlockPinSecret[];
 extern const char kEolStatus[];
 extern const char kEolNotificationDismissed[];
 extern const char kQuickUnlockFeatureNotificationShown[];
+extern const char kQuickUnlockModeWhitelist[];
+extern const char kQuickUnlockTimeout[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kShowHomeButton[];
 extern const char kSpeechRecognitionFilterProfanities[];

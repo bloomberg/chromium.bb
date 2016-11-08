@@ -753,8 +753,8 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   values->SetBoolean("allowBluetooth", allow_bluetooth);
 
   values->SetBoolean("showQuickUnlockSettings",
-                     chromeos::IsQuickUnlockEnabled());
-  if (chromeos::IsQuickUnlockEnabled()) {
+                     chromeos::IsPinUnlockEnabled(profile->GetPrefs()));
+  if (chromeos::IsPinUnlockEnabled(profile->GetPrefs())) {
     values->SetString(
         "enableScreenlock",
         l10n_util::GetStringUTF16(

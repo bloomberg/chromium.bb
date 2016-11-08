@@ -23,9 +23,8 @@ namespace chromeos {
 
 class PinStorage : public KeyedService {
  public:
-  // TODO(jdufault): Pull these values in from policy. See crbug.com/612271.
+  // TODO(sammiequon): Pull this value in from policy. See crbug.com/612271.
   static const int kMaximumUnlockAttempts = 3;
-  static const base::TimeDelta kStrongAuthTimeout;
 
   // Registers profile prefs.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);

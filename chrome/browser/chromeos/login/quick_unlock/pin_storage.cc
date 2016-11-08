@@ -37,11 +37,23 @@ std::string ComputeSecret(const std::string& pin, const std::string& salt) {
   return key.GetSecret();
 }
 
-}  // namespace
+base::TimeDelta QuickUnlockPasswordConfirmationFrequencyToTimeDelta(
+    QuickUnlockPasswordConfirmationFrequency frequency) {
+  switch (frequency) {
+    case QuickUnlockPasswordConfirmationFrequency::SIX_HOURS:
+      return base::TimeDelta::FromHours(6);
+    case QuickUnlockPasswordConfirmationFrequency::TWELVE_HOURS:
+      return base::TimeDelta::FromHours(12);
+    case QuickUnlockPasswordConfirmationFrequency::DAY:
+      return base::TimeDelta::FromDays(1);
+    case QuickUnlockPasswordConfirmationFrequency::WEEK:
+      return base::TimeDelta::FromDays(7);
+  }
+  NOTREACHED();
+  return base::TimeDelta();
+}
 
-// static
-const base::TimeDelta PinStorage::kStrongAuthTimeout =
-    base::TimeDelta::FromHours(24);
+}  // namespace
 
 // static
 void PinStorage::RegisterProfilePrefs(
@@ -63,7 +75,16 @@ void PinStorage::MarkStrongAuth() {
 }
 
 bool PinStorage::HasStrongAuth() const {
-  return !last_strong_auth_.is_null();
+  if (last_strong_auth_.is_null())
+    return false;
+
+  QuickUnlockPasswordConfirmationFrequency strong_auth_interval =
+      static_cast<QuickUnlockPasswordConfirmationFrequency>(
+          pref_service_->GetInteger(prefs::kQuickUnlockTimeout));
+  base::TimeDelta strong_auth_timeout =
+      QuickUnlockPasswordConfirmationFrequencyToTimeDelta(strong_auth_interval);
+
+  return TimeSinceLastStrongAuth() < strong_auth_timeout;
 }
 
 base::TimeDelta PinStorage::TimeSinceLastStrongAuth() const {
@@ -107,10 +128,8 @@ std::string PinStorage::PinSecret() const {
 bool PinStorage::IsPinAuthenticationAvailable() const {
   const bool exceeded_unlock_attempts =
       unlock_attempt_count() >= kMaximumUnlockAttempts;
-  const bool has_strong_auth =
-      HasStrongAuth() && TimeSinceLastStrongAuth() < kStrongAuthTimeout;
 
-  return IsQuickUnlockEnabled() && IsPinSet() && has_strong_auth &&
+  return IsPinUnlockEnabled(pref_service_) && IsPinSet() && HasStrongAuth() &&
          !exceeded_unlock_attempts;
 }
 
