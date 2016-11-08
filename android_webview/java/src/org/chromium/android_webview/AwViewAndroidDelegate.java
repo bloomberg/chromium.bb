@@ -99,7 +99,7 @@ public class AwViewAndroidDelegate extends ViewAndroidDelegate {
             }
             containerView.addView(anchorView);
             if (position != null) {
-                float scale = display.getDIPScale();
+                float scale = display.getDipScale();
                 setViewPosition(anchorView, position.mX, position.mY,
                         position.mWidth, position.mHeight, scale,
                         position.mLeftMargin, position.mTopMargin);

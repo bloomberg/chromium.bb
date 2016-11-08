@@ -151,7 +151,7 @@ public class DisplayAndroid {
     /**
      * @return A scaling factor for the Density Independent Pixel unit.
      */
-    public float getDIPScale() {
+    public float getDipScale() {
         return mDisplayMetrics.density;
     }
 

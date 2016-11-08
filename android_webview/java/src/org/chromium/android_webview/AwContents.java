@@ -1071,7 +1071,7 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
         installWebContentsObserver();
         mSettings.setWebContents(webContents);
 
-        final float dipScale = mWindowAndroid.getWindowAndroid().getDisplay().getDIPScale();
+        final float dipScale = mWindowAndroid.getWindowAndroid().getDisplay().getDipScale();
         mDisplayObserver.onDIPScaleChanged(dipScale);
 
         updateContentViewCoreVisibility();

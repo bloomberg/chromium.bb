@@ -181,7 +181,7 @@ public class AwContentsAnchorViewTest extends AwTestBase {
     }
 
     private LayoutParams setLayoutParams(View anchorView, int coords, int dimension) {
-        float scale = DisplayAndroid.getNonMultiDisplay(mContainerView.getContext()).getDIPScale();
+        float scale = DisplayAndroid.getNonMultiDisplay(mContainerView.getContext()).getDipScale();
         mViewDelegate.setViewPosition(
                 anchorView, coords, coords, dimension, dimension, scale, 10, 10);
         return anchorView.getLayoutParams();

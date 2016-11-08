@@ -64,8 +64,8 @@ public class ProfileDataCache implements Observer {
 
         // There's no WindowAndroid present at this time, so get the default display.
         final DisplayAndroid displayAndroid = DisplayAndroid.getNonMultiDisplay(context);
-        mImageSizePx = (int) Math.ceil(PROFILE_IMAGE_SIZE_DP * displayAndroid.getDIPScale());
-        mImageStrokePx = (int) Math.ceil(PROFILE_IMAGE_STROKE_DP * displayAndroid.getDIPScale());
+        mImageSizePx = (int) Math.ceil(PROFILE_IMAGE_SIZE_DP * displayAndroid.getDipScale());
+        mImageStrokePx = (int) Math.ceil(PROFILE_IMAGE_STROKE_DP * displayAndroid.getDipScale());
         mImageStrokeColor = Color.WHITE;
 
         Bitmap placeHolder = BitmapFactory.decodeResource(mContext.getResources(),

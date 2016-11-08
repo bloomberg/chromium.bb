@@ -654,7 +654,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
 
         mZoomControlsDelegate = NO_OP_ZOOM_CONTROLS_DELEGATE;
 
-        final float dipScale = windowAndroid.getDisplay().getDIPScale();
+        final float dipScale = windowAndroid.getDisplay().getDipScale();
 
         mRenderCoordinates.reset();
         mRenderCoordinates.setDeviceScaleFactor(dipScale, windowAndroid.getContext());
@@ -701,7 +701,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
             DisplayAndroid display = windowAndroid.getDisplay();
             display.addObserver(this);
             onRotationChanged(display.getRotation());
-            onDIPScaleChanged(display.getDIPScale());
+            onDIPScaleChanged(display.getDipScale());
         }
     }
 
