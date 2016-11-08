@@ -93,10 +93,6 @@ void DeviceCloudPolicyStoreChromeOS::InstallInitialPolicy(
                  weak_factory_.GetWeakPtr()));
 }
 
-void DeviceCloudPolicyStoreChromeOS::OwnershipStatusChanged() {
-  // Nothing to do.
-}
-
 void DeviceCloudPolicyStoreChromeOS::DeviceSettingsUpdated() {
   if (!weak_factory_.HasWeakPtrs())
     UpdateFromService();

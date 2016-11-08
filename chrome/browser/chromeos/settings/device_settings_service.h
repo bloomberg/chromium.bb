@@ -78,12 +78,12 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
     virtual ~Observer();
 
     // Indicates device ownership status changes.
-    virtual void OwnershipStatusChanged() = 0;
+    virtual void OwnershipStatusChanged();
 
     // Gets call after updates to the device settings.
-    virtual void DeviceSettingsUpdated() = 0;
+    virtual void DeviceSettingsUpdated();
 
-    virtual void OnDeviceSettingsServiceShutdown() = 0;
+    virtual void OnDeviceSettingsServiceShutdown();
   };
 
   // Manage singleton instance.

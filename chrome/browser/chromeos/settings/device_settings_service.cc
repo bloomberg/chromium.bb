@@ -46,6 +46,12 @@ namespace chromeos {
 
 DeviceSettingsService::Observer::~Observer() {}
 
+void DeviceSettingsService::Observer::OwnershipStatusChanged() {}
+
+void DeviceSettingsService::Observer::DeviceSettingsUpdated() {}
+
+void DeviceSettingsService::Observer::OnDeviceSettingsServiceShutdown() {}
+
 static DeviceSettingsService* g_device_settings_service = NULL;
 
 // static

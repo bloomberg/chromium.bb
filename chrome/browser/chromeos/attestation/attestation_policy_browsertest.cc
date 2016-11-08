@@ -40,9 +40,7 @@ class AttestationDevicePolicyTest
       public chromeos::DeviceSettingsService::Observer {
  public:
     // DeviceSettingsService::Observer
-  void OwnershipStatusChanged() override {}
   void DeviceSettingsUpdated() override { operation_complete_ = true; }
-  void OnDeviceSettingsServiceShutdown() override {}
 
  protected:
   AttestationDevicePolicyTest() : operation_complete_(false) {}

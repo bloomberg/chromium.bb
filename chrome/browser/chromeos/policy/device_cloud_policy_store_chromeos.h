@@ -54,7 +54,6 @@ class DeviceCloudPolicyStoreChromeOS
       const enterprise_management::PolicyFetchResponse& policy);
 
   // chromeos::DeviceSettingsService::Observer:
-  void OwnershipStatusChanged() override;
   void DeviceSettingsUpdated() override;
   void OnDeviceSettingsServiceShutdown() override;
 

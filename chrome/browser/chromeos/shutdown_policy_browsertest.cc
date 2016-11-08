@@ -79,12 +79,10 @@ class ShutdownPolicyBaseTest
   ~ShutdownPolicyBaseTest() override {}
 
   // DeviceSettingsService::Observer:
-  void OwnershipStatusChanged() override {}
   void DeviceSettingsUpdated() override {
     if (run_loop_)
       run_loop_->Quit();
   }
-  void OnDeviceSettingsServiceShutdown() override {}
 
   // policy::DevicePolicyCrosBrowserTest:
   void SetUpInProcessBrowserTestFixture() override {
