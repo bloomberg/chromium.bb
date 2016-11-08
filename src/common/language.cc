@@ -73,7 +73,7 @@ class CPPLanguage: public Language {
   }
 
   virtual DemangleResult DemangleName(const string& mangled,
-                                      std::string* demangled) const {
+                                      string* demangled) const {
 #if defined(__ANDROID__)
     // Android NDK doesn't provide abi::__cxa_demangle.
     demangled->clear();
@@ -127,7 +127,7 @@ class SwiftLanguage: public Language {
   }
 
   virtual DemangleResult DemangleName(const string& mangled,
-                                      std::string* demangled) const {
+                                      string* demangled) const {
     // There is no programmatic interface to a Swift demangler. Pass through the
     // mangled form because it encodes more information than the qualified name
     // that would have been built by MakeQualifiedName(). The output can be

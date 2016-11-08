@@ -261,7 +261,7 @@ class DwarfCUToModule::GenericDIEHandler: public dwarf2reader::DIEHandler {
   uint64 offset_;
 
   // Place the name in the global set of strings. Even though this looks
-  // like a copy, all the major std::string implementations use reference
+  // like a copy, all the major string implementations use reference
   // counting internally, so the effect is to have all the data structures
   // share copies of strings whenever possible.
   // FIXME: Should this return something like a string_ref to avoid the

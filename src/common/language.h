@@ -87,7 +87,7 @@ class Language {
 
   // Wraps abi::__cxa_demangle() or similar for languages where appropriate.
   virtual DemangleResult DemangleName(const string& mangled,
-                                      std::string* demangled) const {
+                                      string* demangled) const {
     demangled->clear();
     return kDontDemangle;
   }

@@ -197,7 +197,7 @@ class MockSymbolSupplier: public google_breakpad::SymbolSupplier {
 
   // Copies the passed string contents into a newly allocated buffer.
   // The newly allocated buffer will be freed during destruction.
-  char* CopySymbolDataAndOwnTheCopy(const std::string &info,
+  char* CopySymbolDataAndOwnTheCopy(const string &info,
                                     size_t *symbol_data_size) {
     *symbol_data_size = info.size() + 1;
     char *symbol_data = new char[*symbol_data_size];
