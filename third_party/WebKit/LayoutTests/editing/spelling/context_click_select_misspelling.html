@@ -6,55 +6,50 @@
 
 <script>
 test(() => assert_not_equals(window.internals, undefined),
-     'This test requires internals to set editing behavior.');
+     'This test requires internals to inspect INPUT elements.');
 
 test(() => assert_not_equals(window.eventSender, undefined),
      'This test requires event sender to simulate keyboard and mouse actions.');
 
-function assertContextClickSelection(input, offsetX, expected) {
-  const document = input.ownerDocument;
-  const x = document.offsetLeft + input.offsetLeft + offsetX;
-  const y = document.offsetTop + input.offsetTop + input.offsetHeight / 2;
+const kNumTests = 1;
+const heldTest = async_test(
+    () => assert_true(true),
+    'Dummy async test for blocking test harness.',
+    {finishCount: 0});
+
+add_result_callback(testObj => {
+  if (!testObj.properties.blockHeldTest)
+    return;
+  if (++heldTest.properties.finishCount === kNumTests)
+    heldTest.done();
+});
+
+function findTextNode(node) {
+  if (node.nodeName !== 'INPUT' && node.nodeName !== 'TEXTAREA')
+    return node.firstChild;
+  return internals.shadowRoot(node).getElementById('inner-editor').firstChild;
+}
+
+function assertContextClickSelection(container, offset, expected, title) {
+  const document = container.ownerDocument;
+  const textNode = findTextNode(container);
+  const range = document.createRange();
+  range.setStart(textNode, offset);
+
+  const rect = range.getClientRects()[0];
+  const x = document.offsetLeft + rect.left;
+  const y = document.offsetTop + rect.top + rect.height / 2;
   eventSender.mouseMoveTo(x, y);
   eventSender.contextClick();
 
   // Esc key to hide the context menu.
   eventSender.keyDown('Escape', null);
 
-  assert_equals(document.getSelection().toString(), expected);
+  assert_equals(document.getSelection().toString(), expected, title);
 }
 
-function getTextWidth(input) {
-  const shadowRoot = internals.shadowRoot(input);
-  const innerEditor = shadowRoot.firstChild;
-  const text = innerEditor.firstChild;
-  const range = input.ownerDocument.createRange();
-  range.selectNode(text);
-  return range.getClientRects()[0].width;
-}
-
-function contextClickSelectionTests(input) {
-  const textWidth = getTextWidth(input);
-
-  // There seems to be some bug with testharness.js that, if the first test
-  // completes before the next two tests start, the whole testharness is
-  // considered as ran to complete and the subsequent tests are not evaluated.
-  // Hence, we use async_test and defer the completion as a workaround.
-  const heldTest = async_test(
-      () => assertContextClickSelection(input, textWidth / 4, 'wellcome'),
-      'Context clicking "wellcome" selects the misspelled word');
-
-  ['Win', 'Unix', 'Android', 'Mac'].forEach(platform => {
-    internals.settings.setEditingBehavior(platform);
-    const shouldSelect = platform === 'Mac';
-    test(() => assertContextClickSelection(input, textWidth * 3 / 4,
-                                           shouldSelect ? 'home' : ''),
-         'Context clicking "home" ' +
-           `${shouldSelect ? 'selects' : 'does not select'} ` +
-           `the correctly spelled word on ${platform}`);
-  })
-
-  heldTest.done();
+function isMac(platform) {
+  return platform.includes('Mac');
 }
 
 spellcheck_test(
@@ -62,8 +57,25 @@ spellcheck_test(
     document => document.querySelector('input').focus(),
     '<input type="text" value="#wellcome# home.">',
     {
-      title: 'Mark misspelling in the initial text of an input field.',
-      callback: sample => contextClickSelectionTests(
-          sample.document.querySelector('input'))
+      title: 'Mark misspelling in the initial text of INPUT.',
+      callback: sample => test(() => {
+        const container = sample.document.querySelector('input');
+        assertContextClickSelection(
+            container, 4, 'wellcome',
+            'Context clicking "wellcome" selects the misspelled word');
+
+        const shouldSelect = isMac(navigator.platform);
+        if (shouldSelect) {
+          assertContextClickSelection(
+              container, 11, 'home',
+              'Context clicking "home" selects the correctly spelled word');
+          return;
+        }
+        assertContextClickSelection(
+            container, 11, '',
+            'Context clicking "home" does not select the correctly spelled word');
+      },
+      'Context clicking misspelled word in INPUT selects the word.',
+      {blockHeldTest: true})
     });
 </script>
