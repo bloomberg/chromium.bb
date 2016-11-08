@@ -383,9 +383,8 @@ static int av1_pvq_decode_helper(od_dec_ctx *dec, int16_t *ref_coeff,
 
   od_pvq_decode(dec, ref_int32, out_int32, (int)quant[1] >> quant_shift, pli,
                 bs, OD_PVQ_BETA[use_activity_masking][pli][bs],
-                OD_ROBUST_STREAM,
-                is_keyframe, &flags, ac_dc_coded, dec->state.qm + off,
-                dec->state.qm_inv + off);
+                OD_ROBUST_STREAM, is_keyframe, &flags, ac_dc_coded,
+                dec->state.qm + off, dec->state.qm_inv + off);
 
   // copy int32 result back to int16
   for (i = 0; i < blk_size * blk_size; i++) dqcoeff_pvq[i] = out_int32[i];
@@ -407,9 +406,9 @@ static int av1_pvq_decode_helper(od_dec_ctx *dec, int16_t *ref_coeff,
   return eob;
 }
 
-static int av1_pvq_decode_helper2(
-    MACROBLOCKD *const xd, MB_MODE_INFO *const mbmi, int plane, int row,
-    int col, TX_SIZE tx_size, TX_TYPE tx_type ) {
+static int av1_pvq_decode_helper2(MACROBLOCKD *const xd,
+                                  MB_MODE_INFO *const mbmi, int plane, int row,
+                                  int col, TX_SIZE tx_size, TX_TYPE tx_type) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
   // transform block size in pixels
   int tx_blk_size = tx_size_1d[tx_size];
@@ -464,8 +463,8 @@ static int av1_pvq_decode_helper2(
     for (j = 0; j < tx_blk_size; j++)
       for (i = 0; i < tx_blk_size; i++) dst[j * pd->dst.stride + i] = 0;
 
-    inverse_transform_block(xd, plane, tx_type, tx_size, dst,
-                            pd->dst.stride, eob);
+    inverse_transform_block(xd, plane, tx_type, tx_size, dst, pd->dst.stride,
+                            eob);
   }
 
   return eob;

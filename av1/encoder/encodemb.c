@@ -1317,8 +1317,7 @@ int av1_pvq_encode_helper(daala_enc_ctx *daala_enc, tran_low_t *const coeff,
       (int)quant[1] >> quant_shift,  // scale/quantizer
       // TODO(yushin): Instead of 0,
       //   use daala_enc->use_activity_masking for activity masking.
-      plane, tx_size, OD_PVQ_BETA[0][plane][tx_size],
-      OD_ROBUST_STREAM,
+      plane, tx_size, OD_PVQ_BETA[0][plane][tx_size], OD_ROBUST_STREAM,
       0,        // is_keyframe,
       0, 0, 0,  // q_scaling, bx, by,
       daala_enc->state.qm + off, daala_enc->state.qm_inv + off,
