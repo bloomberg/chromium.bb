@@ -106,23 +106,20 @@ ImageBitmap* WebGL2RenderingContext::transferToImageBitmap(
 }
 
 void WebGL2RenderingContext::registerContextExtensions() {
-  // TODO(kainino): add DraftExtension flag to some of these before WebGL 2
-  // is rolled out.
-  // https://bugs.chromium.org/p/chromium/issues/detail?id=647892
-
   // Register extensions.
   registerExtension<EXTColorBufferFloat>(m_extColorBufferFloat);
   registerExtension<EXTDisjointTimerQueryWebGL2>(m_extDisjointTimerQueryWebGL2);
   registerExtension<EXTTextureFilterAnisotropic>(m_extTextureFilterAnisotropic);
   registerExtension<OESTextureFloatLinear>(m_oesTextureFloatLinear);
-  registerExtension<WebGLCompressedTextureASTC>(m_webglCompressedTextureASTC);
+  registerExtension<WebGLCompressedTextureASTC>(m_webglCompressedTextureASTC,
+                                                DraftExtension);
   registerExtension<WebGLCompressedTextureATC>(m_webglCompressedTextureATC);
   registerExtension<WebGLCompressedTextureETC>(m_webglCompressedTextureETC);
   registerExtension<WebGLCompressedTextureETC1>(m_webglCompressedTextureETC1);
   registerExtension<WebGLCompressedTexturePVRTC>(m_webglCompressedTexturePVRTC);
   registerExtension<WebGLCompressedTextureS3TC>(m_webglCompressedTextureS3TC);
   registerExtension<WebGLCompressedTextureS3TCsRGB>(
-      m_webglCompressedTextureS3TCsRGB);
+      m_webglCompressedTextureS3TCsRGB, DraftExtension);
   registerExtension<WebGLDebugRendererInfo>(m_webglDebugRendererInfo);
   registerExtension<WebGLDebugShaders>(m_webglDebugShaders);
   registerExtension<WebGLLoseContext>(m_webglLoseContext);
