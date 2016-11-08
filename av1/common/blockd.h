@@ -212,7 +212,10 @@ typedef struct {
 #endif  // CONFIG_FILTER_INTRA
 
 #if CONFIG_VAR_TX
+#if CONFIG_RD_DEBUG
 #define TXB_COEFF_COST_MAP_SIZE (2 * MAX_MIB_SIZE)
+#endif
+#endif
 
 // TODO(angiebird): Merge RD_COST and RD_STATS
 typedef struct RD_STATS {
@@ -226,7 +229,6 @@ typedef struct RD_STATS {
                         [TXB_COEFF_COST_MAP_SIZE];
 #endif
 } RD_STATS;
-#endif  // CONFIG_VAR_TX
 
 // This structure now relates to 8x8 block regions.
 typedef struct {

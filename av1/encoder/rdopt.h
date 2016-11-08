@@ -26,7 +26,6 @@ struct AV1_COMP;
 struct macroblock;
 struct RD_COST;
 
-#if CONFIG_VAR_TX
 static INLINE void av1_init_rd_stats(RD_STATS *rd_stats) {
 #if CONFIG_RD_DEBUG
   int plane;
@@ -90,7 +89,6 @@ static INLINE void av1_merge_rd_stats(RD_STATS *rd_stats_dst,
   }
 #endif
 }
-#endif
 
 int av1_cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
                     int block, int coeff_ctx, TX_SIZE tx_size,
