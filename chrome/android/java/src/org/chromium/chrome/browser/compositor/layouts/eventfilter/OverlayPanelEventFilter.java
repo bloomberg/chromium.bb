@@ -550,11 +550,6 @@ public class OverlayPanelEventFilter extends GestureEventFilter {
      */
     private class InternalGestureDetector extends GestureDetector.SimpleOnGestureListener {
         @Override
-        public void onLongPress(MotionEvent e) {
-            mPanel.onLongPress(e.getX() * mPxToDp, e.getY() * mPxToDp);
-        }
-
-        @Override
         public void onShowPress(MotionEvent e) {
             mPanel.onShowPress(e.getX() * mPxToDp, e.getY() * mPxToDp);
         }

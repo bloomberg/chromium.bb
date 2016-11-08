@@ -731,8 +731,6 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
 
     @Override
     public void swipeStarted(ScrollDirection direction, float x, float y) {
-        if (direction == ScrollDirection.UNKNOWN) return;
-
         if (onInterceptBarSwipe()) {
             mIgnoreSwipeEvents = true;
             return;

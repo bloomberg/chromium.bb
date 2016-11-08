@@ -171,9 +171,6 @@ public class SwipeRecognizer extends SimpleOnGestureListener {
             return true;
         }
 
-        // Give the handler a chance to respond to the swipe even if the direction is unknown.
-        if (shouldRecognizeSwipe(e1, e2)) mSwipeHandler.swipeStarted(ScrollDirection.UNKNOWN, x, y);
-
         return false;
     }
 

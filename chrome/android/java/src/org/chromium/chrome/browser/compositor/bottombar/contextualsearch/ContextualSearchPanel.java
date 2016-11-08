@@ -21,7 +21,6 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.PanelPriority;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPromoControl.ContextualSearchPromoHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeEventFilter.ScrollDirection;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilterHost;
 import org.chromium.chrome.browser.compositor.scene_layer.ContextualSearchSceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
@@ -327,27 +326,9 @@ public class ContextualSearchPanel extends OverlayPanel {
     }
 
     @Override
-    public void drag(float x, float y, float deltaX, float deltaY, float tx, float ty) {
-        getSearchBarControl().onScroll();
-        super.drag(x, y, deltaX, deltaY, tx, ty);
-    }
-
-    @Override
-    public void swipeStarted(ScrollDirection direction, float x, float y) {
-        getSearchBarControl().onScroll();
-        super.swipeStarted(direction, x, y);
-    }
-
-    @Override
     public void onShowPress(float x, float y) {
         if (isCoordinateInsideBar(x, y)) getSearchBarControl().onShowPress(x);
         super.onShowPress(x, y);
-    }
-
-    @Override
-    public void onLongPress(float x, float y) {
-        if (isCoordinateInsideBar(x, y)) getSearchBarControl().onLongPress();
-        super.onLongPress(x, y);
     }
 
     // ============================================================================================

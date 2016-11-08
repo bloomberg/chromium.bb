@@ -420,16 +420,6 @@ public class ContextualSearchBarControl
     private boolean mTouchHighlightVisible;
 
     /**
-     * Whether the touch highlight visibility is currently being animated.
-     */
-    private boolean mAnimatingTouchHighlightVisibility;
-
-    /**
-     * Whether the touch highlight should be hidden when its animation finishes.
-     */
-    private boolean mHideTouchHighlightOnAnimationFinish;
-
-    /**
      * Whether the touch that triggered showing the touch highlight was on the end Bar button.
      */
     private boolean mWasTouchOnEndButton;
@@ -486,14 +476,7 @@ public class ContextualSearchBarControl
      * @param x The x-position of the click in px.
      */
     public void onSearchBarClick(float x) {
-        if (mTouchHighlightVisible) {
-            hideTouchHighlight();
-        } else {
-            // #onSearchBarClick() may be called without a call to #onShowPress(). If this happens,
-            // show the touch highlight for the animation duration.
-            mHideTouchHighlightOnAnimationFinish = true;
-            showTouchHighlight(x);
-        }
+        showTouchHighlight(x);
     }
 
     /**
@@ -502,22 +485,7 @@ public class ContextualSearchBarControl
      * @param x The x-position of the touch in px.
      */
     public void onShowPress(float x) {
-        mHideTouchHighlightOnAnimationFinish = false;
         showTouchHighlight(x);
-    }
-
-    /**
-     * Should be called when the Bar is long-pressed.
-     */
-    public void onLongPress() {
-        hideTouchHighlight();
-    }
-
-    /**
-     * Should be called when a scroll event on the Bar or Panel occurs.
-     */
-    public void onScroll() {
-        hideTouchHighlight();
     }
 
     /**
@@ -530,29 +498,12 @@ public class ContextualSearchBarControl
         mWasTouchOnEndButton = isTouchOnEndButton(x);
         mWasDividerVisibleOnTouch = getDividerLineVisibilityPercentage() > 0.f;
         mTouchHighlightVisible = true;
-        mAnimatingTouchHighlightVisibility = true;
 
         // The touch highlight animation is used to ensure the touch highlight is visible for at
         // least OverlayPanelAnimation.BASE_ANIMATION_DURATION_MS.
         // TODO(twellington): Add a material ripple to this animation.
         mOverlayPanel.addToAnimation(this, AnimationType.TOUCH_HIGHLIGHT_VISIBILITY, 0.f, 1.f,
                 OverlayPanelAnimation.BASE_ANIMATION_DURATION_MS, 0);
-    }
-
-    /**
-     * Hides the touch highlight.
-     */
-    private void hideTouchHighlight() {
-        if (!mTouchHighlightVisible) return;
-
-        // If the touch highlight animation is currently running, wait for the animation to finish
-        // before hiding the touch highlight.
-        if (mAnimatingTouchHighlightVisibility) {
-            mHideTouchHighlightOnAnimationFinish = true;
-            return;
-        }
-        mTouchHighlightVisible = false;
-        mOverlayPanel.requestUpdate();
     }
 
     /**
@@ -622,9 +573,7 @@ public class ContextualSearchBarControl
     @Override
     public void onPropertyAnimationFinished(AnimationType prop) {
         if (prop == AnimationType.TOUCH_HIGHLIGHT_VISIBILITY) {
-            mAnimatingTouchHighlightVisibility = false;
-            if (mHideTouchHighlightOnAnimationFinish) mTouchHighlightVisible = false;
-            mHideTouchHighlightOnAnimationFinish = false;
+            mTouchHighlightVisible = false;
         }
     }
 }

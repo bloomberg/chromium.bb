@@ -316,7 +316,7 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
     /**
      * Requests a new frame to be updated and rendered.
      */
-    public void requestUpdate() {
+    protected void requestUpdate() {
         // NOTE(pedrosimonetti): mUpdateHost will be null in the ContextualSearchEventFilterTest,
         // so we always need to check if it's null before calling requestUpdate.
         if (mUpdateHost != null) {
