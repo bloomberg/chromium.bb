@@ -11,7 +11,7 @@ test(() => assert_not_equals(window.internals, undefined),
 test(() => assert_not_equals(window.eventSender, undefined),
      'This test requires event sender to simulate keyboard and mouse actions.');
 
-const kNumTests = 1;
+const kNumTests = 4;
 const heldTest = async_test(
     () => assert_true(true),
     'Dummy async test for blocking test harness.',
@@ -30,7 +30,8 @@ function findTextNode(node) {
   return internals.shadowRoot(node).getElementById('inner-editor').firstChild;
 }
 
-function assertContextClickSelection(container, offset, expected, title) {
+function assertContextClickSelection(
+    container, offset, expected, title, opt_suggestion) {
   const document = container.ownerDocument;
   const textNode = findTextNode(container);
   const range = document.createRange();
@@ -40,12 +41,20 @@ function assertContextClickSelection(container, offset, expected, title) {
   const x = document.offsetLeft + rect.left;
   const y = document.offsetTop + rect.top + rect.height / 2;
   eventSender.mouseMoveTo(x, y);
-  eventSender.contextClick();
+  const contextMenuElements = eventSender.contextClick();
 
   // Esc key to hide the context menu.
   eventSender.keyDown('Escape', null);
 
   assert_equals(document.getSelection().toString(), expected, title);
+
+  if (opt_suggestion === undefined)
+    return;
+  const expectedSuggestion = opt_suggestion !== ''
+                           ? opt_suggestion
+                           : '<separator>';
+  assert_equals(contextMenuElements[contextMenuElements.length - 1],
+                expectedSuggestion);
 }
 
 function isMac(platform) {
@@ -76,6 +85,68 @@ spellcheck_test(
             'Context clicking "home" does not select the correctly spelled word');
       },
       'Context clicking misspelled word in INPUT selects the word.',
+      {blockHeldTest: true})
+    });
+
+spellcheck_test(
+    '<div contenteditable>wellcome home.|</div>',
+    '',
+    '<div contenteditable>#wellcome# home.</div>',
+    {
+      title: 'Mark initial misspelling "wellcome" in editable DIV.',
+      callback: sample => test(() => {
+        const container = sample.document.querySelector('div');
+        assertContextClickSelection(
+            container, 4, 'wellcome',
+            'Context clicking "wellcome" selects the misspelled word',
+            'welcome');
+
+        const shouldSelect = isMac(navigator.platform);
+        if (shouldSelect) {
+          assertContextClickSelection(
+              container, 11, 'home',
+              'Context clicking "home" selects the correctly spelled word', '');
+          return;
+        }
+        assertContextClickSelection(
+            container, 11, '',
+            'Context clicking "home" does not select the correctly spelled word',
+            '');
+      },
+      'Context clicking misspelled word in editable DIV selects the word.',
+      {blockHeldTest: true})
+    });
+
+spellcheck_test(
+    '<div contenteditable>Helllo wordl.|</div>',
+    '',
+    '<div contenteditable>#Helllo# #wordl#.</div>',
+    {
+      title: 'Mark initial misspelling "Helllo" and "wordl" in editable DIV.',
+      callback: sample => test(() => {
+        const container = sample.document.querySelector('div');
+        assertContextClickSelection(
+            container, 9, 'wordl',
+            'Context clicking "wordl" selects the misspelled word.');
+      },
+      'Context clicking the second misspelled word "wordl" in editable DIV selects the word.',
+      {blockHeldTest: true})
+    });
+
+spellcheck_test(
+    '<div contenteditable>It should be upper case.|</div>',
+    '',
+    '<div contenteditable>It should be #upper case#.</div>',
+    {
+      title: 'Mark initial multi-word misspelling "upper case" in editable DIV.',
+      callback: sample => test(() => {
+        const container = sample.document.querySelector('div');
+        assertContextClickSelection(
+            container, 17, 'upper case',
+            'Context clicking "upper case" selects the misspelling.',
+            'uppercase');
+      },
+      'Context clicking multi-word misspelling "upper case" in editable DIV selects the words.',
       {blockHeldTest: true})
     });
 </script>
