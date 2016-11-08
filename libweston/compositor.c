@@ -3932,10 +3932,9 @@ weston_compositor_wake(struct weston_compositor *compositor)
 
 	switch (old_state) {
 	case WESTON_COMPOSITOR_SLEEPING:
-		weston_compositor_dpms(compositor, WESTON_DPMS_ON);
-		/* fall through */
 	case WESTON_COMPOSITOR_IDLE:
 	case WESTON_COMPOSITOR_OFFSCREEN:
+		weston_compositor_dpms(compositor, WESTON_DPMS_ON);
 		wl_signal_emit(&compositor->wake_signal, compositor);
 		/* fall through */
 	default:
@@ -3951,10 +3950,6 @@ weston_compositor_wake(struct weston_compositor *compositor)
  * This is used for example to prevent further rendering while the
  * compositor is shutting down.
  *
- * \note When offscreen state is entered, outputs will be powered
- * back on if they were sleeping (in DPMS off mode), even though
- * no rendering will be performed.
- *
  * Stops the idle timer.
  */
 WL_EXPORT void
@@ -3964,8 +3959,6 @@ weston_compositor_offscreen(struct weston_compositor *compositor)
 	case WESTON_COMPOSITOR_OFFSCREEN:
 		return;
 	case WESTON_COMPOSITOR_SLEEPING:
-		weston_compositor_dpms(compositor, WESTON_DPMS_ON);
-		/* fall through */
 	default:
 		compositor->state = WESTON_COMPOSITOR_OFFSCREEN;
 		wl_event_source_timer_update(compositor->idle_source, 0);
