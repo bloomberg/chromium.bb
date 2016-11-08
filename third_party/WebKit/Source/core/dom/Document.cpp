@@ -6371,6 +6371,7 @@ void Document::incrementPasswordCount() {
 }
 
 void Document::decrementPasswordCount() {
+  DCHECK_GT(m_passwordCount, 0u);
   --m_passwordCount;
 }
 

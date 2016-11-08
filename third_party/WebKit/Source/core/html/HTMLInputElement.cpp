@@ -852,6 +852,9 @@ LayoutObject* HTMLInputElement::createLayoutObject(const ComputedStyle& style) {
 
 void HTMLInputElement::attachLayoutTree(const AttachContext& context) {
   HTMLTextFormControlElement::attachLayoutTree(context);
+  if (layoutObject()) {
+    m_inputType->onAttachWithLayoutObject();
+  }
 
   m_inputTypeView->startResourceLoading();
   m_inputType->countUsage();
@@ -861,6 +864,9 @@ void HTMLInputElement::attachLayoutTree(const AttachContext& context) {
 }
 
 void HTMLInputElement::detachLayoutTree(const AttachContext& context) {
+  if (layoutObject()) {
+    m_inputType->onDetachWithLayoutObject();
+  }
   HTMLTextFormControlElement::detachLayoutTree(context);
   m_needsToUpdateViewValue = true;
   m_inputTypeView->closePopupView();

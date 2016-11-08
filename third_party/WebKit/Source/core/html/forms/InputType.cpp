@@ -645,6 +645,10 @@ const AtomicString& InputType::defaultAutocapitalize() const {
 
 void InputType::copyNonAttributeProperties(const HTMLInputElement&) {}
 
+void InputType::onAttachWithLayoutObject() {}
+
+void InputType::onDetachWithLayoutObject() {}
+
 bool InputType::shouldAppearIndeterminate() const {
   return false;
 }

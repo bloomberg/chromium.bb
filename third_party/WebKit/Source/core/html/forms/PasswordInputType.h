@@ -50,7 +50,8 @@ class PasswordInputType final : public BaseTextInputType {
   bool shouldRespectListAttribute() override;
   void enableSecureTextInput() override;
   void disableSecureTextInput() override;
-  LayoutObject* createLayoutObject(const ComputedStyle&) const override;
+  void onAttachWithLayoutObject() override;
+  void onDetachWithLayoutObject() override;
 };
 
 }  // namespace blink
