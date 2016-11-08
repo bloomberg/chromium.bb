@@ -9,12 +9,12 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/test_offline_page_model_builder.h"
@@ -84,6 +84,7 @@ class OfflinePageUtilsTest
   int64_t offline_id_;
   GURL url_;
   TestingProfile profile_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 OfflinePageUtilsTest::OfflinePageUtilsTest() = default;
@@ -93,11 +94,8 @@ OfflinePageUtilsTest::~OfflinePageUtilsTest() {}
 void OfflinePageUtilsTest::SetUp() {
   // Enables offline pages feature.
   // TODO(jianli): Remove this once the feature is completely enabled.
-  base::FeatureList::ClearInstanceForTesting();
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine(
-      offline_pages::kOfflineBookmarksFeature.name, "");
-  base::FeatureList::SetInstance(std::move(feature_list));
+  scoped_feature_list_.InitAndEnableFeature(
+      offline_pages::kOfflineBookmarksFeature);
 
   // Set up the factory for testing.
   OfflinePageModelFactory::GetInstance()->SetTestingFactoryAndUse(

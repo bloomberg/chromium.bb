@@ -8,9 +8,9 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/variations/field_trial_config/fieldtrial_testing_config.h"
 #include "components/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -127,10 +127,10 @@ TEST_F(FieldTrialUtilTest, AssociateFeaturesFromFieldTrialConfig) {
       array_kFieldTrialConfig_studies, 2
   };
 
-  base::FeatureList::ClearInstanceForTesting();
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   AssociateParamsFromFieldTrialConfig(kConfig, feature_list.get());
-  base::FeatureList::SetInstance(std::move(feature_list));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
 
   // Check the resulting feature and field trial states. Trials should not be
   // active until their associated features are queried.

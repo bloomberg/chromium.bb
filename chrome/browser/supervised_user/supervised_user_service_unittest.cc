@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -448,14 +449,13 @@ class SupervisedUserServiceExtensionTest
 
  protected:
   void InitSupervisedUserInitiatedExtensionInstallFeature(bool enabled) {
-    base::FeatureList::ClearInstanceForTesting();
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
     if (enabled) {
-      feature_list->InitializeFromCommandLine(
-          "SupervisedUserInitiatedExtensionInstall", std::string());
+      scoped_feature_list_.InitAndEnableFeature(
+          supervised_users::kSupervisedUserInitiatedExtensionInstall);
     }
-    base::FeatureList::SetInstance(std::move(feature_list));
   }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(SupervisedUserServiceExtensionTest,

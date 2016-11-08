@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "components/sync/base/attachment_id_proto.h"
@@ -504,7 +505,6 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
 
 TEST_F(SyncApiTest, WriteAndReadPassword) {
   KeyParams params = {"localhost", "username", "passphrase"};
-  base::FeatureList::ClearInstanceForTesting();
   EXPECT_FALSE(base::FeatureList::IsEnabled(kFillPasswordMetadata));
 
   {
@@ -549,12 +549,9 @@ TEST_F(SyncApiTest, WritePasswordAndCheckMetadata) {
     trans.GetCryptographer()->AddKey(params);
   }
 
-  base::FeatureList::ClearInstanceForTesting();
   base::FieldTrialList field_trial_list(nullptr);
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine(kFillPasswordMetadata.name,
-                                          std::string());
-  base::FeatureList::SetInstance(std::move(feature_list));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kFillPasswordMetadata);
 
   EXPECT_TRUE(base::FeatureList::IsEnabled(kFillPasswordMetadata));
   {
@@ -2100,12 +2097,9 @@ TEST_F(SyncManagerTest, UpdatePasswordSetPasswordSpecifics) {
 TEST_F(SyncManagerTest, UpdatePasswordNewPassphrase) {
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
   sync_pb::EntitySpecifics entity_specifics;
-  base::FeatureList::ClearInstanceForTesting();
   base::FieldTrialList field_trial_list(nullptr);
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine(kFillPasswordMetadata.name,
-                                          std::string());
-  base::FeatureList::SetInstance(std::move(feature_list));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kFillPasswordMetadata);
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
     Cryptographer* cryptographer = trans.GetCryptographer();
@@ -2181,7 +2175,6 @@ TEST_F(SyncManagerTest, UpdatePasswordNewPassphrase) {
 // Passwords have their own handling for encryption. Verify it does not result
 // in unnecessary writes via ReencryptEverything.
 TEST_F(SyncManagerTest, UpdatePasswordReencryptEverything) {
-  base::FeatureList::ClearInstanceForTesting();
   EXPECT_FALSE(base::FeatureList::IsEnabled(kFillPasswordMetadata));
 
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
@@ -2214,12 +2207,9 @@ TEST_F(SyncManagerTest, UpdatePasswordReencryptEverything) {
 // written when it's applicable, namely that password specifics entity is marked
 // unsynced, when data was written to the unencrypted metadata field.
 TEST_F(SyncManagerTest, UpdatePasswordReencryptEverythingFillMetadata) {
-  base::FeatureList::ClearInstanceForTesting();
   base::FieldTrialList field_trial_list(nullptr);
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine(kFillPasswordMetadata.name,
-                                          std::string());
-  base::FeatureList::SetInstance(std::move(feature_list));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kFillPasswordMetadata);
   EXPECT_TRUE(base::FeatureList::IsEnabled(kFillPasswordMetadata));
 
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
@@ -2267,12 +2257,9 @@ TEST_F(SyncManagerTest, UpdatePasswordReencryptEverythingFillMetadata) {
 // ReEncryption, entity is not marked as unsynced.
 TEST_F(SyncManagerTest,
        UpdatePasswordReencryptEverythingDontMarkUnsyncWhenNotNeeded) {
-  base::FeatureList::ClearInstanceForTesting();
   base::FieldTrialList field_trial_list(nullptr);
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine(kFillPasswordMetadata.name,
-                                          std::string());
-  base::FeatureList::SetInstance(std::move(feature_list));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kFillPasswordMetadata);
   EXPECT_TRUE(base::FeatureList::IsEnabled(kFillPasswordMetadata));
 
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));

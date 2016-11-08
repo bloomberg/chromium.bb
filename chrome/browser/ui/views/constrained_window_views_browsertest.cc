@@ -5,11 +5,13 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/tab_modal_confirm_dialog_views.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -200,10 +202,8 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, NavigationOnBackspace) {
 
   // Pressing backspace should navigate back and close the dialog with the
   // Finch flag enabled.
-  base::FeatureList::ClearInstanceForTesting();
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine("BackspaceGoesBack", std::string());
-  base::FeatureList::SetInstance(std::move(feature_list));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kBackspaceGoesBackFeature);
 
   EXPECT_TRUE(chrome::CanGoBack(browser()));
   EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_BACK,

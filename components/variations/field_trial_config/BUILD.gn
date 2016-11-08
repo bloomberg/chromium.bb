@@ -54,6 +54,7 @@ source_set("unit_tests") {
   deps = [
     ":field_trial_config",
     "//base",
+    "//base/test:test_support",
     "//components/variations",
     "//testing/gtest",
   ]

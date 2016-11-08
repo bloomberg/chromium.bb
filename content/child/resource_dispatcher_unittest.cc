@@ -13,13 +13,13 @@
 #include <utility>
 #include <vector>
 
-#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/child/request_extra_data.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/common/resource_messages.h"
@@ -379,11 +379,10 @@ TEST_F(ResourceDispatcherTest, RoundTrip) {
 
 // A simple request with an inline data response.
 TEST_F(ResourceDispatcherTest, ResponseWithInlinedData) {
-  auto feature_list = base::MakeUnique<base::FeatureList>();
-  feature_list->InitializeFromCommandLine(
-      features::kOptimizeLoadingIPCForSmallResources.name, std::string());
-  base::FeatureList::ClearInstanceForTesting();
-  base::FeatureList::SetInstance(std::move(feature_list));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kOptimizeLoadingIPCForSmallResources);
+
   std::unique_ptr<ResourceRequest> request(CreateResourceRequest(false));
   TestRequestPeer::Context peer_context;
   StartAsync(std::move(request), NULL, &peer_context);

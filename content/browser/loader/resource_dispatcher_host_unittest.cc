@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -21,6 +20,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -898,16 +898,12 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
         web_contents_->GetRenderProcessHost()->GetID());
     child_ids_.insert(web_contents_->GetRenderProcessHost()->GetID());
 
-    base::FeatureList::ClearInstanceForTesting();
     switch (GetParam()) {
       case TestConfig::kDefault:
-        base::FeatureList::InitializeInstance(std::string(), std::string());
         break;
       case TestConfig::kOptimizeIPCForSmallResourceEnabled: {
-        std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-        feature_list->InitializeFromCommandLine(
-            features::kOptimizeLoadingIPCForSmallResources.name, std::string());
-        base::FeatureList::SetInstance(std::move(feature_list));
+        scoped_feature_list_.InitAndEnableFeature(
+            features::kOptimizeLoadingIPCForSmallResources);
         ASSERT_TRUE(base::FeatureList::IsEnabled(
             features::kOptimizeLoadingIPCForSmallResources));
         break;
@@ -1133,6 +1129,7 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
   std::unique_ptr<base::RunLoop> wait_for_request_complete_loop_;
   RenderViewHostTestEnabler render_view_host_test_enabler_;
   bool auto_advance_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 void ResourceDispatcherHostTest::MakeTestRequest(int render_view_id,

@@ -6,7 +6,9 @@
 
 #include "base/memory/memory_coordinator_proxy.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/browser/memory/memory_monitor.h"
+#include "content/public/common/content_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -51,7 +53,7 @@ class MockMemoryMonitor : public MemoryMonitor {
 class MemoryCoordinatorImplTest : public testing::Test {
  public:
   void SetUp() override {
-    MemoryCoordinator::EnableFeaturesForTesting();
+    scoped_feature_list_.InitAndEnableFeature(features::kMemoryCoordinator);
 
     coordinator_.reset(new MemoryCoordinatorImpl(
         message_loop_.task_runner(), base::WrapUnique(new MockMemoryMonitor)));
@@ -73,6 +75,7 @@ class MemoryCoordinatorImplTest : public testing::Test {
  protected:
   std::unique_ptr<MemoryCoordinatorImpl> coordinator_;
   base::MessageLoop message_loop_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(MemoryCoordinatorImplTest, CalculateNextState) {

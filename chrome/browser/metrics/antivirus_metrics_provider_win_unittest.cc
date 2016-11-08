@@ -7,12 +7,12 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/version.h"
@@ -24,21 +24,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-
-// Helper function to toggle whether the ReportFullAVProductDetails feature is
-// enabled or not.
-void SetFullNamesFeatureEnabled(bool enabled) {
-  base::FeatureList::ClearInstanceForTesting();
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  if (enabled) {
-    feature_list->InitializeFromCommandLine(
-        AntiVirusMetricsProvider::kReportNamesFeature.name, std::string());
-  } else {
-    feature_list->InitializeFromCommandLine(
-        std::string(), AntiVirusMetricsProvider::kReportNamesFeature.name);
-  }
-  base::FeatureList::SetInstance(std::move(feature_list));
-}
 
 void VerifySystemProfileData(const metrics::SystemProfileProto& system_profile,
                              bool expect_unhashed_value) {
@@ -96,10 +81,23 @@ class AntiVirusMetricsProviderTest : public ::testing::TestWithParam<bool> {
     VerifySystemProfileData(system_profile, expect_unhashed_value_);
   }
 
+  // Helper function to toggle whether the ReportFullAVProductDetails feature is
+  // enabled or not.
+  void SetFullNamesFeatureEnabled(bool enabled) {
+    if (enabled) {
+      scoped_feature_list_.InitAndEnableFeature(
+          AntiVirusMetricsProvider::kReportNamesFeature);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          AntiVirusMetricsProvider::kReportNamesFeature);
+    }
+  }
+
   bool got_results_;
   bool expect_unhashed_value_;
   std::unique_ptr<AntiVirusMetricsProvider> provider_;
   content::TestBrowserThreadBundle thread_bundle_;
+  base::test::ScopedFeatureList scoped_feature_list_;
   base::RunLoop run_loop_;
   base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<AntiVirusMetricsProviderTest> weak_ptr_factory_;

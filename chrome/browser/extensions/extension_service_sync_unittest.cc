@@ -11,13 +11,13 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/test/mock_entropy_provider.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/api/webstore_private/webstore_private_api.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -1583,13 +1583,10 @@ class ExtensionServiceTestSupervised : public ExtensionServiceSyncTest,
 
  protected:
   void InitSupervisedUserInitiatedExtensionInstallFeature(bool enabled) {
-    base::FeatureList::ClearInstanceForTesting();
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
     if (enabled) {
-      feature_list->InitializeFromCommandLine(
-          "SupervisedUserInitiatedExtensionInstall", std::string());
+      scoped_feature_list_.InitAndEnableFeature(
+          supervised_users::kSupervisedUserInitiatedExtensionInstall);
     }
-    base::FeatureList::SetInstance(std::move(feature_list));
   }
 
   bool IsPendingCustodianApproval(const std::string& extension_id) {
@@ -1738,6 +1735,7 @@ class ExtensionServiceTestSupervised : public ExtensionServiceSyncTest,
   }
 
   base::FieldTrialList field_trial_list_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 class MockPermissionRequestCreator : public PermissionRequestCreator {

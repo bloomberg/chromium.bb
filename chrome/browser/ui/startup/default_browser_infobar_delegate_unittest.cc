@@ -7,10 +7,10 @@
 #include <memory>
 #include <string>
 
-#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/infobars/core/infobar.h"
@@ -70,11 +70,7 @@ class DefaultBrowserInfoBarDelegateTest : public ::testing::Test {
 
  protected:
   void EnableStickyDefaultBrowserPrompt() {
-    base::FeatureList::ClearInstanceForTesting();
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->InitializeFromCommandLine(kStickyDefaultBrowserPrompt.name,
-                                            std::string());
-    base::FeatureList::SetInstance(std::move(feature_list));
+    scoped_feature_list_.InitAndEnableFeature(kStickyDefaultBrowserPrompt);
   }
 
   void AddDefaultBrowserInfoBar() {
@@ -96,6 +92,8 @@ class DefaultBrowserInfoBarDelegateTest : public ::testing::Test {
 
   // Manages the default browser prompt.
   InfoBarService* infobar_service_;
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultBrowserInfoBarDelegateTest);
 };

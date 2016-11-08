@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -234,10 +235,7 @@ class WebMediaPlayerImplTest : public testing::Test {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableMediaSuspend);
 #endif  // !defined(OS_ANDROID)
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->InitializeFromCommandLine(kResumeBackgroundVideo.name, "");
-    base::FeatureList::ClearInstanceForTesting();
-    base::FeatureList::SetInstance(std::move(feature_list));
+    scoped_feature_list_.InitAndEnableFeature(kResumeBackgroundVideo);
   }
 
   // "Renderer" thread.
@@ -268,6 +266,8 @@ class WebMediaPlayerImplTest : public testing::Test {
   std::unique_ptr<WebMediaPlayerImpl> wmpi_;
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImplTest);
 };
 

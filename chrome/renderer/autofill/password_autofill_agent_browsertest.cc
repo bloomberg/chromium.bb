@@ -2,24 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <components/autofill/core/common/password_form.h>
-#include "base/feature_list.h"
+#include "components/autofill/content/renderer/password_autofill_agent.h"
+
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/renderer/autofill/fake_content_password_manager_driver.h"
 #include "chrome/renderer/autofill/fake_password_manager_client.h"
 #include "chrome/renderer/autofill/password_generation_test_utils.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
-#include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/content/renderer/test_password_autofill_agent.h"
 #include "components/autofill/content/renderer/test_password_generation_agent.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/common/associated_interface_provider.h"
@@ -346,11 +347,8 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   }
 
   void SetFillOnAccountSelect() {
-    base::FeatureList::ClearInstanceForTesting();
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->InitializeFromCommandLine(
-        password_manager::features::kFillOnAccountSelect.name, "");
-    base::FeatureList::SetInstance(std::move(feature_list));
+    scoped_feature_list_.InitAndEnableFeature(
+        password_manager::features::kFillOnAccountSelect);
   }
 
   void UpdateOriginForHTML(const std::string& html) {
@@ -575,6 +573,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
 
   WebInputElement username_element_;
   WebInputElement password_element_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordAutofillAgentTest);

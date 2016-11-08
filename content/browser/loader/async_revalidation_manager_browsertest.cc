@@ -8,14 +8,15 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -43,11 +44,7 @@ class AsyncRevalidationManagerBrowserTest : public ContentBrowserTest {
   ~AsyncRevalidationManagerBrowserTest() override {}
 
   void SetUp() override {
-    base::FeatureList::ClearInstanceForTesting();
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->InitializeFromCommandLine(
-        "StaleWhileRevalidate2", std::string());
-    base::FeatureList::SetInstance(std::move(feature_list));
+    scoped_feature_list_.InitAndEnableFeature(features::kStaleWhileRevalidate);
 
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
     ContentBrowserTest::SetUp();
@@ -151,6 +148,7 @@ class AsyncRevalidationManagerBrowserTest : public ContentBrowserTest {
 
   base::RunLoop run_loop_;
   int requests_counted_ = 0;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncRevalidationManagerBrowserTest);
 };

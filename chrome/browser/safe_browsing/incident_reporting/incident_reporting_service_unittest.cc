@@ -19,6 +19,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_entropy_provider.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -229,12 +230,8 @@ class IncidentReportingServiceTest : public testing::Test {
     field_trial_->group();
 
 #if !defined(GOOGLE_CHROME_BUILD)
-    base::FeatureList::ClearInstanceForTesting();
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    // Disable kIncidentReportingDisableUpload (enable mocked upload).
-    feature_list->InitializeFromCommandLine(
-        std::string(), safe_browsing::kIncidentReportingDisableUpload.name);
-    base::FeatureList::SetInstance(std::move(feature_list));
+    scoped_feature_list_.InitAndDisableFeature(
+        safe_browsing::kIncidentReportingDisableUpload);
 #endif
 
     instance_.reset(new TestIncidentReportingService(
@@ -590,6 +587,8 @@ class IncidentReportingServiceTest : public testing::Test {
 
   // A mapping of profile name to its corresponding properties.
   std::map<std::string, ProfileProperties> profile_properties_;
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // static

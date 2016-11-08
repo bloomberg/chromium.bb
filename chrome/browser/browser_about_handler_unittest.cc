@@ -10,9 +10,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
@@ -113,11 +113,8 @@ TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURLForOptions) {
 #endif
 
 TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURLForMDSettings) {
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine(
-      features::kMaterialDesignSettings.name, "");
-  base::FeatureList::ClearInstanceForTesting();
-  base::FeatureList::SetInstance(std::move(feature_list));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kMaterialDesignSettings);
 
   std::string chrome_prefix(content::kChromeUIScheme);
   chrome_prefix.append(url::kStandardSchemeSeparator);

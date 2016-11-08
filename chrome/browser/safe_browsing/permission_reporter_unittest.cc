@@ -4,9 +4,9 @@
 
 #include "chrome/browser/safe_browsing/permission_reporter.h"
 
-#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/permissions/permission_request.h"
@@ -143,8 +143,8 @@ TEST_F(PermissionReporterTest, SendReportWithFieldTrials) {
       kFeatureOffByDefaultName, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
       trial_two);
 
-  base::FeatureList::ClearInstanceForTesting();
-  base::FeatureList::SetInstance(std::move(feature_list));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
 
   // This is necessary to activate both field trials.
   base::FeatureList::IsEnabled(kFeatureOnByDefault);

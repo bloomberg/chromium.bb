@@ -30,8 +30,6 @@ class CONTENT_EXPORT MemoryCoordinator {
   // Singleton factory/accessor.
   static MemoryCoordinator* GetInstance();
 
-  static void EnableFeaturesForTesting();
-
   // Starts monitoring memory usage. After calling this method, memory
   // coordinator will start dispatching state changes.
   virtual void Start() {}

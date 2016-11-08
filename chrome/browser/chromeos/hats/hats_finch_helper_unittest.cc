@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/hats/hats_finch_helper.h"
+
 #include <map>
 
-#include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/chromeos/hats/hats_finch_helper.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -31,11 +32,8 @@ class HatsFinchHelperTest : public testing::Test {
   HatsFinchHelperTest() : params_manager_(kTrialName, {{}}) {}
 
   void SetUp() override {
-    base::FeatureList::ClearInstanceForTesting();
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->InitializeFromCommandLine(
-        features::kHappinessTrackingSystem.name, std::string());
-    base::FeatureList::SetInstance(std::move(feature_list));
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kHappinessTrackingSystem);
   }
 
   void SetFinchSeedParams(ParamMap params) {
@@ -64,6 +62,7 @@ class HatsFinchHelperTest : public testing::Test {
  private:
   variations::testing::VariationParamsManager params_manager_;
   content::TestBrowserThreadBundle thread_bundle_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(HatsFinchHelperTest);
 };

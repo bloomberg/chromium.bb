@@ -8,10 +8,10 @@
 
 #include "base/base64.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -329,14 +329,6 @@ class ChromeExpectCTReporterWaitTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ChromeExpectCTReporterWaitTest);
 };
 
-void EnableFeature() {
-  base::FeatureList::ClearInstanceForTesting();
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine(features::kExpectCTReporting.name,
-                                          "");
-  base::FeatureList::SetInstance(std::move(feature_list));
-}
-
 }  // namespace
 
 // Test that no report is sent when the feature is not enabled.
@@ -372,7 +364,9 @@ TEST(ChromeExpectCTReporterTest, EmptyReportURI) {
   base::HistogramTester histograms;
   histograms.ExpectTotalCount(kSendHistogramName, 0);
 
-  EnableFeature();
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kExpectCTReporting);
+
   TestCertificateReportSender* sender = new TestCertificateReportSender();
   net::TestURLRequestContext context;
   ChromeExpectCTReporter reporter(&context);
@@ -390,7 +384,9 @@ TEST(ChromeExpectCTReporterTest, EmptyReportURI) {
 
 // Test that if a report fails to send, the UMA metric is recorded.
 TEST_F(ChromeExpectCTReporterWaitTest, SendReportFailure) {
-  EnableFeature();
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kExpectCTReporting);
+
   base::HistogramTester histograms;
   histograms.ExpectTotalCount(kFailureHistogramName, 0);
   histograms.ExpectTotalCount(kSendHistogramName, 0);
@@ -422,7 +418,9 @@ TEST(ChromeExpectCTReporterTest, SendReport) {
   histograms.ExpectTotalCount(kFailureHistogramName, 0);
   histograms.ExpectTotalCount(kSendHistogramName, 0);
 
-  EnableFeature();
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kExpectCTReporting);
+
   TestCertificateReportSender* sender = new TestCertificateReportSender();
   net::TestURLRequestContext context;
   ChromeExpectCTReporter reporter(&context);

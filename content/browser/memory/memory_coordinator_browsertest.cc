@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "content/browser/memory/memory_coordinator.h"
+
+#include "base/test/scoped_feature_list.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/content_browser_test.h"
@@ -15,11 +17,13 @@ class MemoryCoordinatorTest : public ContentBrowserTest {
   MemoryCoordinatorTest() {}
 
   void SetUp() override {
-    MemoryCoordinator::EnableFeaturesForTesting();
+    scoped_feature_list_.InitAndEnableFeature(features::kMemoryCoordinator);
     ContentBrowserTest::SetUp();
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(MemoryCoordinatorTest);
 };
 

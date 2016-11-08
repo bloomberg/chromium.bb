@@ -14,7 +14,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/feature_list.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -23,6 +22,7 @@
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_loader.h"
 #include "content/browser/loader/resource_loader_delegate.h"
@@ -262,11 +262,9 @@ TEST_F(AsyncResourceHandlerTest, OneChunkLengths) {
 TEST_F(AsyncResourceHandlerTest, InlinedChunkLengths) {
   // TODO(ricea): Remove this Feature-enabling code once the feature is on by
   // default.
-  auto feature_list = base::MakeUnique<base::FeatureList>();
-  feature_list->InitializeFromCommandLine(
-      features::kOptimizeLoadingIPCForSmallResources.name, "");
-  base::FeatureList::ClearInstanceForTesting();
-  base::FeatureList::SetInstance(std::move(feature_list));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kOptimizeLoadingIPCForSmallResources);
 
   // Smaller than kInlinedLeadingChunkSize.
   StartRequestAndWaitWithResponseDataSize(8);

@@ -8,6 +8,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/public/browser/web_contents.h"
@@ -95,18 +96,10 @@ class MediaSessionImplVisibilityBrowserTest
   }
 
   void EnableDisableResumingBackgroundVideos(bool enable) {
-    std::string enabled_features;
-    std::string disabled_features;
     if (enable)
-      enabled_features = media::kResumeBackgroundVideo.name;
+      scoped_feature_list_.InitAndEnableFeature(media::kResumeBackgroundVideo);
     else
-      disabled_features = media::kResumeBackgroundVideo.name;
-
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->InitializeFromCommandLine(enabled_features,
-                                            disabled_features);
-    base::FeatureList::ClearInstanceForTesting();
-    base::FeatureList::SetInstance(std::move(feature_list));
+      scoped_feature_list_.InitAndDisableFeature(media::kResumeBackgroundVideo);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -257,6 +250,7 @@ class MediaSessionImplVisibilityBrowserTest
   std::unique_ptr<
       base::CallbackList<void(MediaSessionImpl::State)>::Subscription>
       media_session_state_callback_subscription_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSessionImplVisibilityBrowserTest);
 };

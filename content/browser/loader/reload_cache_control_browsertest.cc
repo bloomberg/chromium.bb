@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/feature_list.h"
 #include "base/files/file_path.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -45,11 +45,8 @@ class ReloadCacheControlBrowserTest : public ContentBrowserTest {
   void SetUpOnMainThread() override {
     // TODO(toyoshim): Tests in this file depend on current reload behavior,
     // and should be modified when we enable the new reload behavior.
-    base::FeatureList::ClearInstanceForTesting();
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->InitializeFromCommandLine(
-        std::string(), features::kNonValidatingReloadOnNormalReload.name);
-    base::FeatureList::SetInstance(std::move(feature_list));
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kNonValidatingReloadOnNormalReload);
 
     SetUpTestServerOnMainThread();
   }
@@ -80,6 +77,8 @@ class ReloadCacheControlBrowserTest : public ContentBrowserTest {
     request_log_.push_back(log);
   }
 
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(ReloadCacheControlBrowserTest);
 };
 
@@ -90,14 +89,13 @@ class ReloadCacheControlWithAnExperimentBrowserTest
   ~ReloadCacheControlWithAnExperimentBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
-    base::FeatureList::ClearInstanceForTesting();
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->InitializeFromCommandLine(
-        features::kNonValidatingReloadOnNormalReload.name, std::string());
-    base::FeatureList::SetInstance(std::move(feature_list));
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kNonValidatingReloadOnNormalReload);
 
     SetUpTestServerOnMainThread();
   }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ReloadCacheControlWithAnExperimentBrowserTest);
 };

@@ -8,8 +8,10 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_view_state_transition.h"
+#include "components/translate/core/browser/translate_prefs.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
@@ -154,17 +156,10 @@ class TranslateBubbleViewTest : public views::ViewsTestBase {
 
     mock_model_ = new MockTranslateBubbleModel(
         TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE);
-
-    base::FeatureList::ClearInstanceForTesting();
-    base::FeatureList::SetInstance(base::WrapUnique(new base::FeatureList));
   }
 
   void TurnOnTranslate2016Q2UIFlag() {
-    base::FeatureList::ClearInstanceForTesting();
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    feature_list->InitializeFromCommandLine(translate::kTranslateUI2016Q2.name,
-                                            std::string());
-    base::FeatureList::SetInstance(std::move(feature_list));
+    scoped_feature_list_.InitAndEnableFeature(translate::kTranslateUI2016Q2);
   }
 
   void CreateAndShowBubble() {
@@ -188,6 +183,7 @@ class TranslateBubbleViewTest : public views::ViewsTestBase {
   std::unique_ptr<views::Widget> anchor_widget_;
   MockTranslateBubbleModel* mock_model_;
   TranslateBubbleView* bubble_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(TranslateBubbleViewTest, TranslateButton) {
