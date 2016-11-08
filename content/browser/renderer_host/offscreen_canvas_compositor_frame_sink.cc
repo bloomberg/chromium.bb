@@ -14,20 +14,24 @@ namespace content {
 OffscreenCanvasCompositorFrameSink::OffscreenCanvasCompositorFrameSink(
     const cc::SurfaceId& surface_id,
     cc::mojom::MojoCompositorFrameSinkClientPtr client)
-    : surface_id_(surface_id), client_(std::move(client)) {}
+    : surface_id_(surface_id), client_(std::move(client)) {
+  cc::SurfaceManager* manager = GetSurfaceManager();
+  surface_factory_ = base::MakeUnique<cc::SurfaceFactory>(
+      surface_id_.frame_sink_id(), manager, this);
+  manager->RegisterFrameSinkId(surface_id_.frame_sink_id());
+  surface_factory_->Create(surface_id_.local_frame_id());
+}
 
 OffscreenCanvasCompositorFrameSink::~OffscreenCanvasCompositorFrameSink() {
-  if (surface_factory_) {
-    cc::SurfaceManager* manager = GetSurfaceManager();
-    if (!manager) {
-      // Inform SurfaceFactory that SurfaceManager's no longer alive to
-      // avoid its destruction error.
-      surface_factory_->DidDestroySurfaceManager();
-    } else {
-      manager->InvalidateFrameSinkId(surface_id_.frame_sink_id());
-    }
-    surface_factory_->Destroy(surface_id_.local_frame_id());
+  cc::SurfaceManager* manager = GetSurfaceManager();
+  if (!manager) {
+    // Inform SurfaceFactory that SurfaceManager's no longer alive to
+    // avoid its destruction error.
+    surface_factory_->DidDestroySurfaceManager();
+  } else {
+    manager->InvalidateFrameSinkId(surface_id_.frame_sink_id());
   }
+  surface_factory_->Destroy(surface_id_.local_frame_id());
 }
 
 // static
@@ -42,14 +46,6 @@ void OffscreenCanvasCompositorFrameSink::Create(
 
 void OffscreenCanvasCompositorFrameSink::SubmitCompositorFrame(
     cc::CompositorFrame frame) {
-  if (!surface_factory_) {
-    cc::SurfaceManager* manager = GetSurfaceManager();
-    surface_factory_ = base::MakeUnique<cc::SurfaceFactory>(
-        surface_id_.frame_sink_id(), manager, this);
-    surface_factory_->Create(surface_id_.local_frame_id());
-
-    manager->RegisterFrameSinkId(surface_id_.frame_sink_id());
-  }
   ++ack_pending_count_;
   surface_factory_->SubmitCompositorFrame(
       surface_id_.local_frame_id(), std::move(frame),
