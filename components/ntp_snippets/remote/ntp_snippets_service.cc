@@ -428,12 +428,15 @@ CategoryStatus NTPSnippetsService::GetCategoryStatus(Category category) {
 CategoryInfo NTPSnippetsService::GetCategoryInfo(Category category) {
   DCHECK(base::ContainsKey(categories_, category));
   const CategoryContent& content = categories_[category];
+  bool is_article = category == articles_category_;
   return CategoryInfo(
       content.localized_title, ContentSuggestionsCardLayout::FULL_CARD,
-      /*has_more_action=*/base::FeatureList::IsEnabled(kFetchMoreFeature),
-      /*has_reload_action=*/true,
+      /*has_more_action=*/is_article
+          ? base::FeatureList::IsEnabled(kFetchMoreFeature)
+          : false,
+      /*has_reload_action=*/is_article,
       /*has_view_all_action=*/false,
-      /*show_if_empty=*/true,
+      /*show_if_empty=*/is_article,
       l10n_util::GetStringUTF16(IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_EMPTY));
 }
 

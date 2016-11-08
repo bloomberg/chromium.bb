@@ -130,6 +130,10 @@ std::string GetTestJsonWithoutTitle(const std::vector<std::string>& snippets) {
   return GetTestJson(snippets, std::string());
 }
 
+// TODO(tschumann): Remove the default parameter other_id. It makes the tests
+// less explicit and hard to read. Also get rid of the convenience
+// other_category() and unknown_category() helpers -- tests can just define
+// their own.
 std::string GetMultiCategoryJson(const std::vector<std::string>& articles,
                                  const std::vector<std::string>& others,
                                  int other_id = 2) {
@@ -758,6 +762,30 @@ TEST_F(NTPSnippetsServiceTest, MultipleCategories) {
               base::UTF16ToUTF8(suggestion.publisher_name()));
     EXPECT_EQ(GURL(kSnippetAmpUrl), suggestion.amp_url());
   }
+}
+
+TEST_F(NTPSnippetsServiceTest, ArticleCategoryInfo) {
+  auto service = MakeSnippetsService();
+  CategoryInfo article_info = service->GetCategoryInfo(articles_category());
+  EXPECT_THAT(article_info.has_more_action(), Eq(true));
+  EXPECT_THAT(article_info.has_reload_action(), Eq(true));
+  EXPECT_THAT(article_info.has_view_all_action(), Eq(false));
+  EXPECT_THAT(article_info.show_if_empty(), Eq(true));
+}
+
+TEST_F(NTPSnippetsServiceTest, ExperimentalCategoryInfo) {
+  auto service = MakeSnippetsService();
+
+  // Load data with multiple categories so that a new experimental category gets
+  // registered.
+  LoadFromJSONString(service.get(),
+                     GetMultiCategoryJson({GetSnippetN(0)}, {GetSnippetN(1)},
+                                          kUnknownRemoteCategoryId));
+  CategoryInfo info = service->GetCategoryInfo(unknown_category());
+  EXPECT_THAT(info.has_more_action(), Eq(false));
+  EXPECT_THAT(info.has_reload_action(), Eq(false));
+  EXPECT_THAT(info.has_view_all_action(), Eq(false));
+  EXPECT_THAT(info.show_if_empty(), Eq(false));
 }
 
 TEST_F(NTPSnippetsServiceTest, PersistCategoryInfos) {
