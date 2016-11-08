@@ -1,0 +1,8 @@
+CONSOLE DEBUG: line 1: Debug
+CONSOLE INFO: line 2: Information
+CONSOLE MESSAGE: line 3: Log
+CONSOLE WARNING: line 4: Warning
+This is a testharness.js-based test.
+PASS Console output on a Worklet. 
+Harness: the test ran to completion.
+
