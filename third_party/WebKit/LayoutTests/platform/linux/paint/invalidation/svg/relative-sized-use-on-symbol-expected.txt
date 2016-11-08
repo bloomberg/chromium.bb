@@ -73,14 +73,6 @@
       "reason": "forced by layout"
     },
     {
-      "object": "LayoutSVGHiddenContainer defs",
-      "reason": "location change"
-    },
-    {
-      "object": "LayoutSVGHiddenContainer symbol id='gamesBorder'",
-      "reason": "location change"
-    },
-    {
       "object": "LayoutSVGPath path",
       "reason": "bounds change"
     },

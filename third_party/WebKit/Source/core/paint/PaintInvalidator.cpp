@@ -424,7 +424,7 @@ void PaintInvalidator::invalidatePaintIfNeeded(
       break;
     case PaintInvalidationSVGResourceChange:
       context.forcedSubtreeInvalidationFlags |=
-          PaintInvalidatorContext::ForcedSubtreeInvalidationChecking;
+          PaintInvalidatorContext::ForcedSubtreeSVGResourceChange;
       break;
     default:
       break;

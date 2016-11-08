@@ -160,10 +160,6 @@
     {
       "object": "InlineTextBox 'PASS'",
       "reason": "forced by layout"
-    },
-    {
-      "object": "LayoutSVGInlineText #text",
-      "reason": "location change"
     }
   ]
 }

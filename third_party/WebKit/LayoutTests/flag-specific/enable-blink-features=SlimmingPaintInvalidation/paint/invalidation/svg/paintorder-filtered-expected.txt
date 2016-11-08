@@ -116,7 +116,7 @@
     },
     {
       "object": "LayoutSVGViewportContainer svg id='poly2'",
-      "reason": "location change"
+      "reason": "SVG resource change"
     },
     {
       "object": "LayoutSVGPath polygon",

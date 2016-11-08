@@ -29,35 +29,35 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "location change"
+      "reason": "SVG resource change"
     },
     {
       "object": "InlineTextBox 'X'",
-      "reason": "location change"
+      "reason": "SVG resource change"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "location change"
+      "reason": "SVG resource change"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "location change"
+      "reason": "SVG resource change"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "location change"
+      "reason": "SVG resource change"
     },
     {
       "object": "InlineTextBox 'Y'",
-      "reason": "location change"
+      "reason": "SVG resource change"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "location change"
+      "reason": "SVG resource change"
     },
     {
       "object": "InlineTextBox 'Z'",
-      "reason": "location change"
+      "reason": "SVG resource change"
     }
   ]
 }

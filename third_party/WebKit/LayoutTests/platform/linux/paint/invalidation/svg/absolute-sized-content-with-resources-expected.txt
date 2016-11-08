@@ -88,26 +88,6 @@
       "reason": "forced by layout"
     },
     {
-      "object": "LayoutSVGHiddenContainer defs",
-      "reason": "location change"
-    },
-    {
-      "object": "LayoutSVGResourceLinearGradient linearGradient id='gradient'",
-      "reason": "location change"
-    },
-    {
-      "object": "LayoutSVGGradientStop stop",
-      "reason": "location change"
-    },
-    {
-      "object": "LayoutSVGGradientStop stop",
-      "reason": "location change"
-    },
-    {
-      "object": "LayoutSVGResourceMasker mask id='mask'",
-      "reason": "location change"
-    },
-    {
       "object": "LayoutSVGEllipse circle",
       "reason": "bounds change"
     },

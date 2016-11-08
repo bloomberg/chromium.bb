@@ -315,7 +315,8 @@ void PaintInvalidationState::updateForChildren(PaintInvalidationReason reason) {
                ForcedSubtreeFullInvalidationForStackedContents);
       break;
     case PaintInvalidationSVGResourceChange:
-      setForceSubtreeInvalidationCheckingWithinContainer();
+      m_forcedSubtreeInvalidationFlags |=
+          PaintInvalidatorContext::ForcedSubtreeSVGResourceChange;
       break;
     default:
       break;

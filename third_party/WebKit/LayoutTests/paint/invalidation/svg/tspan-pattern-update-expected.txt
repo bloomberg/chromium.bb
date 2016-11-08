@@ -29,11 +29,11 @@
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "location change"
+      "reason": "SVG resource change"
     },
     {
       "object": "InlineTextBox 'Y'",
-      "reason": "location change"
+      "reason": "SVG resource change"
     }
   ]
 }

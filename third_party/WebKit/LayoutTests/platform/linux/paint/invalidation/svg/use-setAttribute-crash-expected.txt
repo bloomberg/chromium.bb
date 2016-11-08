@@ -71,14 +71,6 @@
       "reason": "full"
     },
     {
-      "object": "LayoutSVGHiddenContainer svg:defs",
-      "reason": "location change"
-    },
-    {
-      "object": "LayoutSVGHiddenContainer svg:symbol id='symbol'",
-      "reason": "location change"
-    },
-    {
       "object": "LayoutSVGEllipse svg:circle id='circle'",
       "reason": "full"
     },

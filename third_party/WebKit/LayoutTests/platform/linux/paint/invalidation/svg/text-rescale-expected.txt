@@ -276,10 +276,6 @@
       "reason": "bounds change"
     },
     {
-      "object": "LayoutSVGForeignObject foreignObject",
-      "reason": "location change"
-    },
-    {
       "object": "LayoutBlockFlow P",
       "reason": "bounds change"
     },
@@ -320,46 +316,6 @@
       "reason": "full"
     },
     {
-      "object": "LayoutSVGText text",
-      "reason": "location change"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "location change"
-    },
-    {
-      "object": "LayoutSVGInlineText #text",
-      "reason": "location change"
-    },
-    {
-      "object": "InlineTextBox 'PASS '",
-      "reason": "location change"
-    },
-    {
-      "object": "LayoutSVGTSpan tspan",
-      "reason": "location change"
-    },
-    {
-      "object": "InlineFlowBox",
-      "reason": "location change"
-    },
-    {
-      "object": "LayoutSVGInlineText #text",
-      "reason": "location change"
-    },
-    {
-      "object": "InlineTextBox 'PASS'",
-      "reason": "location change"
-    },
-    {
-      "object": "LayoutSVGInlineText #text",
-      "reason": "location change"
-    },
-    {
-      "object": "LayoutSVGForeignObject foreignObject",
-      "reason": "location change"
-    },
-    {
       "object": "LayoutBlockFlow P",
       "reason": "location change"
     },
@@ -369,26 +325,6 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "location change"
-    },
-    {
-      "object": "InlineTextBox 'PASS'",
-      "reason": "location change"
-    },
-    {
-      "object": "LayoutSVGViewportContainer svg",
-      "reason": "location change"
-    },
-    {
-      "object": "LayoutSVGText text",
-      "reason": "location change"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "location change"
-    },
-    {
-      "object": "LayoutSVGInlineText #text",
       "reason": "location change"
     },
     {
@@ -434,10 +370,6 @@
     {
       "object": "LayoutSVGInlineText #text",
       "reason": "bounds change"
-    },
-    {
-      "object": "LayoutSVGForeignObject foreignObject",
-      "reason": "location change"
     },
     {
       "object": "LayoutBlockFlow P",

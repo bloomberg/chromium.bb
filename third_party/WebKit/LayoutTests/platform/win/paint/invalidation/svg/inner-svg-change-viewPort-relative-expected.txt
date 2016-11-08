@@ -75,14 +75,6 @@
       "reason": "full"
     },
     {
-      "object": "LayoutSVGHiddenContainer defs",
-      "reason": "location change"
-    },
-    {
-      "object": "LayoutSVGPath polygon id='triangle'",
-      "reason": "location change"
-    },
-    {
       "object": "LayoutSVGRect rect",
       "reason": "full"
     },

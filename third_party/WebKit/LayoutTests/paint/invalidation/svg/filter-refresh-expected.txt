@@ -293,7 +293,7 @@
     },
     {
       "object": "LayoutSVGContainer use",
-      "reason": "location change"
+      "reason": "SVG resource change"
     },
     {
       "object": "LayoutSVGRect rect id='rect'",
@@ -309,7 +309,7 @@
     },
     {
       "object": "LayoutSVGContainer use",
-      "reason": "location change"
+      "reason": "SVG resource change"
     },
     {
       "object": "LayoutSVGRect rect id='rect'",
@@ -325,7 +325,7 @@
     },
     {
       "object": "LayoutSVGContainer use",
-      "reason": "location change"
+      "reason": "SVG resource change"
     },
     {
       "object": "LayoutSVGRect rect id='rect'",
@@ -337,23 +337,7 @@
     },
     {
       "object": "LayoutSVGContainer use",
-      "reason": "location change"
-    },
-    {
-      "object": "LayoutSVGRect rect id='rect'",
-      "reason": "layoutObject insertion"
-    },
-    {
-      "object": "LayoutSVGContainer g",
       "reason": "SVG resource change"
-    },
-    {
-      "object": "LayoutSVGContainer g",
-      "reason": "SVG resource change"
-    },
-    {
-      "object": "LayoutSVGContainer use",
-      "reason": "location change"
     },
     {
       "object": "LayoutSVGRect rect id='rect'",
@@ -369,7 +353,23 @@
     },
     {
       "object": "LayoutSVGContainer use",
-      "reason": "location change"
+      "reason": "SVG resource change"
+    },
+    {
+      "object": "LayoutSVGRect rect id='rect'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "SVG resource change"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "SVG resource change"
+    },
+    {
+      "object": "LayoutSVGContainer use",
+      "reason": "SVG resource change"
     },
     {
       "object": "LayoutSVGRect rect id='rect'",
@@ -381,7 +381,7 @@
     },
     {
       "object": "LayoutSVGContainer use",
-      "reason": "location change"
+      "reason": "SVG resource change"
     },
     {
       "object": "LayoutSVGRect rect id='rect'",
@@ -393,7 +393,7 @@
     },
     {
       "object": "LayoutSVGContainer use",
-      "reason": "location change"
+      "reason": "SVG resource change"
     },
     {
       "object": "LayoutSVGRect rect id='rect'",
@@ -405,7 +405,7 @@
     },
     {
       "object": "LayoutSVGContainer use",
-      "reason": "location change"
+      "reason": "SVG resource change"
     },
     {
       "object": "LayoutSVGRect rect id='rect'",
@@ -417,7 +417,7 @@
     },
     {
       "object": "LayoutSVGContainer use",
-      "reason": "location change"
+      "reason": "SVG resource change"
     },
     {
       "object": "LayoutSVGRect rect id='rect'",
@@ -429,7 +429,7 @@
     },
     {
       "object": "LayoutSVGContainer use",
-      "reason": "location change"
+      "reason": "SVG resource change"
     },
     {
       "object": "LayoutSVGRect rect id='rect'",
@@ -441,7 +441,7 @@
     },
     {
       "object": "LayoutSVGContainer use",
-      "reason": "location change"
+      "reason": "SVG resource change"
     },
     {
       "object": "LayoutSVGRect rect id='rect'",

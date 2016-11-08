@@ -48,22 +48,6 @@
       "reason": "forced by layout"
     },
     {
-      "object": "LayoutSVGHiddenContainer defs",
-      "reason": "location change"
-    },
-    {
-      "object": "LayoutSVGResourceRadialGradient radialGradient id='grad'",
-      "reason": "location change"
-    },
-    {
-      "object": "LayoutSVGGradientStop stop",
-      "reason": "location change"
-    },
-    {
-      "object": "LayoutSVGGradientStop stop",
-      "reason": "location change"
-    },
-    {
       "object": "LayoutSVGEllipse circle",
       "reason": "SVG resource change"
     }

@@ -534,10 +534,18 @@ ObjectPaintInvalidatorWithContext::invalidatePaintIfNeededWithComputedReason(
       // invalidated for paint offset mutation, but incurs no pixel difference
       // (i.e. bounds stay the same) so no rect-based invalidation is issued.
       // See crbug.com/508383 and crbug.com/515977.  This is a workaround to
-      // force display items to update paint offset.
-      if (m_context.forcedSubtreeInvalidationFlags &
-          PaintInvalidatorContext::ForcedSubtreeInvalidationChecking) {
+      // force display items to update paint offset. Exclude non-root SVG whose
+      // paint offset is always zero.
+      if ((!m_object.isSVG() || m_object.isSVGRoot()) &&
+          (m_context.forcedSubtreeInvalidationFlags &
+           PaintInvalidatorContext::ForcedSubtreeInvalidationChecking)) {
         reason = PaintInvalidationLocationChange;
+        break;
+      }
+      if (m_object.isSVG() &&
+          (m_context.forcedSubtreeInvalidationFlags &
+           PaintInvalidatorContext::ForcedSubtreeSVGResourceChange)) {
+        reason = PaintInvalidationSVGResourceChange;
         break;
       }
       return PaintInvalidationNone;

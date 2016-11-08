@@ -231,8 +231,40 @@
       "reason": "full"
     },
     {
-      "object": "LayoutSVGContainer use",
-      "reason": "location change"
+      "object": "LayoutSVGPath path id='hp'",
+      "reason": "SVG resource change"
+    },
+    {
+      "object": "LayoutSVGContainer g id='inneruse'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path id='hp'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGPath path id='hp'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGContainer g",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGContainer g id='inneruse'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutSVGGradientStop stop id='offset'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGContainer g id='inneruse'",
+      "reason": "full"
     },
     {
       "object": "LayoutSVGPath path id='hp'",
@@ -271,10 +303,6 @@
       "reason": "full"
     },
     {
-      "object": "LayoutSVGContainer use",
-      "reason": "location change"
-    },
-    {
       "object": "LayoutSVGPath path id='hp'",
       "reason": "SVG resource change"
     },
@@ -311,10 +339,6 @@
       "reason": "full"
     },
     {
-      "object": "LayoutSVGContainer use",
-      "reason": "location change"
-    },
-    {
       "object": "LayoutSVGPath path id='hp'",
       "reason": "SVG resource change"
     },
@@ -349,50 +373,6 @@
     {
       "object": "LayoutSVGContainer g id='inneruse'",
       "reason": "full"
-    },
-    {
-      "object": "LayoutSVGContainer use",
-      "reason": "location change"
-    },
-    {
-      "object": "LayoutSVGPath path id='hp'",
-      "reason": "SVG resource change"
-    },
-    {
-      "object": "LayoutSVGContainer g id='inneruse'",
-      "reason": "layoutObject insertion"
-    },
-    {
-      "object": "LayoutSVGContainer g",
-      "reason": "layoutObject insertion"
-    },
-    {
-      "object": "LayoutSVGPath path id='hp'",
-      "reason": "layoutObject insertion"
-    },
-    {
-      "object": "LayoutSVGPath path id='hp'",
-      "reason": "layoutObject removal"
-    },
-    {
-      "object": "LayoutSVGContainer g",
-      "reason": "layoutObject removal"
-    },
-    {
-      "object": "LayoutSVGContainer g id='inneruse'",
-      "reason": "layoutObject removal"
-    },
-    {
-      "object": "LayoutSVGGradientStop stop id='offset'",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutSVGContainer g id='inneruse'",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutSVGContainer use",
-      "reason": "location change"
     },
     {
       "object": "LayoutSVGPath path id='hp'",
