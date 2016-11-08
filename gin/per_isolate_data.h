@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "gin/gin_export.h"
+#include "gin/public/isolate_holder.h"
 #include "gin/public/v8_idle_task_runner.h"
 #include "gin/public/wrapper_info.h"
 #include "v8/include/v8.h"
@@ -29,7 +30,9 @@ class WrappableBase;
 // class stores all the Gin-related data that varies per isolate.
 class GIN_EXPORT PerIsolateData {
  public:
-  PerIsolateData(v8::Isolate* isolate, v8::ArrayBuffer::Allocator* allocator);
+  PerIsolateData(v8::Isolate* isolate,
+                 v8::ArrayBuffer::Allocator* allocator,
+                 IsolateHolder::AccessMode access_mode);
   ~PerIsolateData();
 
   static PerIsolateData* From(v8::Isolate* isolate);
@@ -74,6 +77,8 @@ class GIN_EXPORT PerIsolateData {
     return idle_task_runner_.get();
   }
 
+  IsolateHolder::AccessMode access_mode() const { return access_mode_; }
+
  private:
   typedef std::map<
       WrapperInfo*, v8::Eternal<v8::ObjectTemplate> > ObjectTemplateMap;
@@ -88,6 +93,7 @@ class GIN_EXPORT PerIsolateData {
   // owned by the IsolateHolder, which also owns the PerIsolateData.
   v8::Isolate* isolate_;
   v8::ArrayBuffer::Allocator* allocator_;
+  IsolateHolder::AccessMode access_mode_;
   ObjectTemplateMap object_templates_;
   FunctionTemplateMap function_templates_;
   IndexedPropertyInterceptorMap indexed_interceptors_;

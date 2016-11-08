@@ -22,9 +22,11 @@ using v8::ObjectTemplate;
 namespace gin {
 
 PerIsolateData::PerIsolateData(Isolate* isolate,
-                               ArrayBuffer::Allocator* allocator)
+                               ArrayBuffer::Allocator* allocator,
+                               IsolateHolder::AccessMode access_mode)
     : isolate_(isolate),
       allocator_(allocator),
+      access_mode_(access_mode),
       task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   isolate_->SetData(kEmbedderNativeGin, this);
 }

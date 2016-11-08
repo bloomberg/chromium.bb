@@ -17,6 +17,31 @@ namespace {
 
 base::LazyInstance<V8Platform>::Leaky g_v8_platform = LAZY_INSTANCE_INITIALIZER;
 
+void RunWithLocker(v8::Isolate* isolate, v8::Task* task) {
+  v8::Locker lock(isolate);
+  task->Run();
+}
+
+class IdleTaskWithLocker : public v8::IdleTask {
+ public:
+  IdleTaskWithLocker(v8::Isolate* isolate, v8::IdleTask* task)
+      : isolate_(isolate), task_(task) {}
+
+  ~IdleTaskWithLocker() override = default;
+
+  // v8::IdleTask implementation.
+  void Run(double deadline_in_seconds) override {
+    v8::Locker lock(isolate_);
+    task_->Run(deadline_in_seconds);
+  }
+
+ private:
+  v8::Isolate* isolate_;
+  std::unique_ptr<v8::IdleTask> task_;
+
+  DISALLOW_COPY_AND_ASSIGN(IdleTaskWithLocker);
+};
+
 }  // namespace
 
 // static
@@ -49,22 +74,43 @@ void V8Platform::CallOnBackgroundThread(
 }
 
 void V8Platform::CallOnForegroundThread(v8::Isolate* isolate, v8::Task* task) {
-  PerIsolateData::From(isolate)->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&v8::Task::Run, base::Owned(task)));
+  PerIsolateData* data = PerIsolateData::From(isolate);
+  if (data->access_mode() == IsolateHolder::kUseLocker) {
+    data->task_runner()->PostTask(
+        FROM_HERE, base::Bind(RunWithLocker, base::Unretained(isolate),
+                              base::Owned(task)));
+  } else {
+    data->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&v8::Task::Run, base::Owned(task)));
+  }
 }
 
 void V8Platform::CallDelayedOnForegroundThread(v8::Isolate* isolate,
                                                v8::Task* task,
                                                double delay_in_seconds) {
-  PerIsolateData::From(isolate)->task_runner()->PostDelayedTask(
-      FROM_HERE, base::Bind(&v8::Task::Run, base::Owned(task)),
-      base::TimeDelta::FromSecondsD(delay_in_seconds));
+  PerIsolateData* data = PerIsolateData::From(isolate);
+  if (data->access_mode() == IsolateHolder::kUseLocker) {
+    data->task_runner()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(RunWithLocker, base::Unretained(isolate), base::Owned(task)),
+        base::TimeDelta::FromSecondsD(delay_in_seconds));
+  } else {
+    data->task_runner()->PostDelayedTask(
+        FROM_HERE, base::Bind(&v8::Task::Run, base::Owned(task)),
+        base::TimeDelta::FromSecondsD(delay_in_seconds));
+  }
 }
 
 void V8Platform::CallIdleOnForegroundThread(v8::Isolate* isolate,
                                             v8::IdleTask* task) {
-  DCHECK(PerIsolateData::From(isolate)->idle_task_runner());
-  PerIsolateData::From(isolate)->idle_task_runner()->PostIdleTask(task);
+  PerIsolateData* data = PerIsolateData::From(isolate);
+  DCHECK(data->idle_task_runner());
+  if (data->access_mode() == IsolateHolder::kUseLocker) {
+    data->idle_task_runner()->PostIdleTask(
+        new IdleTaskWithLocker(isolate, task));
+  } else {
+    data->idle_task_runner()->PostIdleTask(task);
+  }
 }
 
 bool V8Platform::IdleTasksEnabled(v8::Isolate* isolate) {

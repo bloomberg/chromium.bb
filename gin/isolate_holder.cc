@@ -41,7 +41,7 @@ IsolateHolder::IsolateHolder(AccessMode access_mode)
                                        base::SysInfo::AmountOfVirtualMemory());
   params.array_buffer_allocator = allocator;
   isolate_ = v8::Isolate::New(params);
-  isolate_data_.reset(new PerIsolateData(isolate_, allocator));
+  isolate_data_.reset(new PerIsolateData(isolate_, allocator, access_mode));
   isolate_memory_dump_provider_.reset(new V8IsolateMemoryDumpProvider(this));
 #if defined(OS_WIN)
   {
