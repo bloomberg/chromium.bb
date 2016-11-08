@@ -116,7 +116,6 @@ class AuraTestBase : public testing::Test,
                            const gfx::Point& cursor_location,
                            const base::Callback<void(bool)>& on_done) override;
   void OnWmCancelMoveLoop(Window* window) override;
-  client::FocusClient* GetFocusClient() override;
   client::CaptureClient* GetCaptureClient() override;
   PropertyConverter* GetPropertyConverter() override;
 

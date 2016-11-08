@@ -6,6 +6,7 @@
 
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/mus/capture_synchronizer.h"
+#include "ui/aura/mus/focus_synchronizer.h"
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
@@ -129,13 +130,15 @@ void InFlightCaptureChange::Revert() {
 // InFlightFocusChange --------------------------------------------------------
 
 InFlightFocusChange::InFlightFocusChange(WindowTreeClient* client,
+                                         FocusSynchronizer* focus_synchronizer,
                                          WindowMus* revert_value)
-    : InFlightWindowTreeClientChange(client, revert_value, ChangeType::FOCUS) {}
+    : InFlightWindowTreeClientChange(client, revert_value, ChangeType::FOCUS),
+      focus_synchronizer_(focus_synchronizer) {}
 
 InFlightFocusChange::~InFlightFocusChange() {}
 
 void InFlightFocusChange::Revert() {
-  client()->SetFocusFromServer(revert_window());
+  focus_synchronizer_->SetFocusFromServer(revert_window());
 }
 
 // InFlightPropertyChange -----------------------------------------------------

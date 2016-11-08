@@ -95,6 +95,7 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory) {
     env_ = Env::CreateInstance(window_impl_factory);
   else
     EnvTestHelper(Env::GetInstance()).SetWindowPortFactory(window_impl_factory);
+  Env::GetInstance()->SetActiveFocusClient(focus_client_.get(), nullptr);
   Env::GetInstance()->set_context_factory(context_factory);
   // Unit tests generally don't want to query the system, rather use the state
   // from RootWindow.
@@ -140,6 +141,7 @@ void AuraTestHelper::TearDown() {
   ui::test::ResetXCursorCache();
 #endif
 
+  Env::GetInstance()->SetActiveFocusClient(nullptr, nullptr);
   window_tree_client_setup_.reset();
   focus_client_.reset();
   capture_client_.reset();

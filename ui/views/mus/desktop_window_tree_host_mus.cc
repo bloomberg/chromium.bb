@@ -8,6 +8,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/aura/env.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
 #include "ui/display/screen.h"
@@ -29,11 +30,13 @@ DesktopWindowTreeHostMus::DesktopWindowTreeHostMus(
       desktop_native_widget_aura_(desktop_native_widget_aura),
       fullscreen_restore_state_(ui::SHOW_STATE_DEFAULT),
       close_widget_factory_(this) {
+  aura::Env::GetInstance()->AddObserver(this);
   // TODO: use display id and bounds if available, likely need to pass in
   // InitParams for that.
 }
 
 DesktopWindowTreeHostMus::~DesktopWindowTreeHostMus() {
+  aura::Env::GetInstance()->RemoveObserver(this);
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(this);
 }
 
@@ -199,18 +202,22 @@ void DesktopWindowTreeHostMus::SetShape(
 }
 
 void DesktopWindowTreeHostMus::Activate() {
-  window()->Focus();
-  if (window()->GetProperty(aura::client::kDrawAttentionKey))
-    window()->SetProperty(aura::client::kDrawAttentionKey, false);
+  aura::Env::GetInstance()->SetActiveFocusClient(
+      aura::client::GetFocusClient(window()), window());
+  if (is_active_) {
+    window()->Focus();
+    if (window()->GetProperty(aura::client::kDrawAttentionKey))
+      window()->SetProperty(aura::client::kDrawAttentionKey, false);
+  }
 }
 
 void DesktopWindowTreeHostMus::Deactivate() {
-  aura::client::GetActivationClient(window()->GetRootWindow())
-      ->DeactivateWindow(window());
+  // TODO: Deactivate() means focus next window, that needs to go to mus.
+  NOTIMPLEMENTED();
 }
 
 bool DesktopWindowTreeHostMus::IsActive() const {
-  return wm::IsActiveWindow(const_cast<aura::Window*>(window()));
+  return is_active_;
 }
 
 void DesktopWindowTreeHostMus::Maximize() {
@@ -351,6 +358,20 @@ void DesktopWindowTreeHostMus::SizeConstraintsChanged() {
                         widget->widget_delegate()->CanMinimize());
   window()->SetProperty(aura::client::kCanResizeKey,
                         widget->widget_delegate()->CanResize());
+}
+
+void DesktopWindowTreeHostMus::OnWindowInitialized(aura::Window* window) {}
+
+void DesktopWindowTreeHostMus::OnActiveFocusClientChanged(
+    aura::client::FocusClient* focus_client,
+    aura::Window* window) {
+  if (window == this->window()) {
+    is_active_ = true;
+    desktop_native_widget_aura_->HandleActivationChanged(true);
+  } else if (is_active_) {
+    is_active_ = false;
+    desktop_native_widget_aura_->HandleActivationChanged(false);
+  }
 }
 
 }  // namespace views

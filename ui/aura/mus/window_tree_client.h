@@ -22,10 +22,10 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "ui/aura/aura_export.h"
-#include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/client/transient_window_client_observer.h"
 #include "ui/aura/mus/capture_synchronizer_delegate.h"
 #include "ui/aura/mus/drag_drop_controller_host.h"
+#include "ui/aura/mus/focus_synchronizer_delegate.h"
 #include "ui/aura/mus/mus_types.h"
 #include "ui/aura/mus/window_manager_delegate.h"
 #include "ui/aura/mus/window_tree_host_mus_delegate.h"
@@ -45,6 +45,7 @@ class Connector;
 namespace aura {
 class CaptureSynchronizer;
 class DragDropControllerMus;
+class FocusSynchronizer;
 class InFlightBoundsChange;
 class InFlightChange;
 class InFlightFocusChange;
@@ -78,10 +79,10 @@ class AURA_EXPORT WindowTreeClient
     : NON_EXPORTED_BASE(public ui::mojom::WindowTreeClient),
       NON_EXPORTED_BASE(public ui::mojom::WindowManager),
       public CaptureSynchronizerDelegate,
+      public FocusSynchronizerDelegate,
       public DragDropControllerHost,
       public WindowManagerClient,
       public WindowTreeHostMusDelegate,
-      public client::FocusChangeObserver,
       public client::TransientWindowClientObserver {
  public:
   explicit WindowTreeClient(
@@ -136,10 +137,6 @@ class AURA_EXPORT WindowTreeClient
   // Returns the root of this connection.
   std::set<Window*> GetRoots();
 
-  // Returns the focused window; null if focus is not yet known or another app
-  // is focused.
-  Window* GetFocusedWindow();
-
   // Returns the current location of the mouse on screen. Note: this method may
   // race the asynchronous initialization; but in that case we return (0, 0).
   gfx::Point GetCursorScreenPoint();
@@ -183,10 +180,6 @@ class AURA_EXPORT WindowTreeClient
 
   // Returns true if the specified window was created by this client.
   bool WasCreatedByThisClient(const WindowMus* window) const;
-
-  void SetFocusFromServer(WindowMus* window);
-  void SetFocusFromServerImpl(client::FocusClient* focus_client,
-                              WindowMus* window);
 
   // Returns the oldest InFlightChange that matches |change|.
   InFlightChange* GetOldestInFlightChangeMatching(const InFlightChange& change);
@@ -418,9 +411,6 @@ class AURA_EXPORT WindowTreeClient
       const gfx::Vector2d& offset,
       const gfx::Insets& hit_area) override;
 
-  // Overriden from client::FocusChangeObserver:
-  void OnWindowFocused(Window* gained_focus, Window* lost_focus) override;
-
   // Overriden from WindowTreeHostMusDelegate:
   void OnWindowTreeHostBoundsWillChange(WindowTreeHostMus* window_tree_host,
                                         const gfx::Rect& bounds) override;
@@ -438,6 +428,9 @@ class AURA_EXPORT WindowTreeClient
 
   // Overrided from CaptureSynchronizerDelegate:
   uint32_t CreateChangeIdForCapture(WindowMus* window) override;
+
+  // Overrided from FocusSynchronizerDelegate:
+  uint32_t CreateChangeIdForFocus(WindowMus* window) override;
 
   // The one int in |cursor_location_mapping_|. When we read from this
   // location, we must always read from it atomically.
@@ -468,9 +461,7 @@ class AURA_EXPORT WindowTreeClient
 
   std::unique_ptr<CaptureSynchronizer> capture_synchronizer_;
 
-  bool setting_focus_ = false;
-  WindowMus* window_setting_focus_to_ = nullptr;
-  WindowMus* focused_window_ = nullptr;
+  std::unique_ptr<FocusSynchronizer> focus_synchronizer_;
 
   mojo::Binding<ui::mojom::WindowTreeClient> binding_;
   ui::mojom::WindowTreePtr tree_ptr_;
