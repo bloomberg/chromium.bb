@@ -98,6 +98,12 @@ public class Desktop
     /** Tracks whether the activity is in the resumed (running) state. */
     private boolean mIsActivityRunning = false;
 
+    /**
+     * Tracks whether the activity is in windowed mode. This mode cannot change during the lifetime
+     * of the activity so it does not receive a value until the first time it is initialized.
+     */
+    private Boolean mIsInWindowedMode = null;
+
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -344,15 +350,20 @@ public class Desktop
         });
     }
 
-    private Boolean inWindowedMode() {
-        // NOTE: This method should only be called after OnResume() is called, otherwise
-        // isInMultiWindowMode() may not be accurate.  The value returned by this method is updated
-        // on a background thread and there is a race-condition between when the UX changes and this
-        // value is updated.  Hence, calling this method from onCreate() is not safe and we need to
-        // be careful when we query this value.
-        Preconditions.isTrue(mIsActivityRunning);
+    private boolean inWindowedMode() {
+        if (mIsInWindowedMode == null) {
+            // NOTE: This method should only be called after OnResume() is called, otherwise
+            // isInMultiWindowMode() may not be accurate.  The value returned by this method is
+            // updated on a background thread and there is a race-condition between when the UX
+            // changes and this value is updated.  Hence, calling this method from onCreate() is not
+            // safe and we need to be careful when we query this value.
+            Preconditions.isTrue(mIsActivityRunning);
 
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInMultiWindowMode();
+            mIsInWindowedMode =
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInMultiWindowMode();
+        }
+
+        return mIsInWindowedMode;
     }
 
     private void setUpAutoHideToolbar() {
@@ -597,8 +608,19 @@ public class Desktop
                 // whenever they occur.
                 boolean oldSoftInputVisible = mSoftInputVisible;
                 mSoftInputVisible = (bottom < mMaxBottomValue);
-                mOnSystemUiVisibilityChanged.raise(new SystemUiVisibilityChangedEventParameter(
-                        isSystemUiVisible(), mSoftInputVisible, left, top, right, bottom));
+
+                // Send the System UI sizes if either the Soft Keyboard is displayed or if we are in
+                // windowed mode and there is System UI present.  The user needs to be able to move
+                // the canvas so they can see where they are typing in the first case and in the
+                // second, the System UI is always present so the user needs a way to position the
+                // canvas so all parts of the desktop can be made visible.
+                if (mSoftInputVisible || (inWindowedMode() && isSystemUiVisible())) {
+                    mOnSystemUiVisibilityChanged.raise(
+                            new SystemUiVisibilityChangedEventParameter(left, top, right, bottom));
+                } else {
+                    mOnSystemUiVisibilityChanged.raise(
+                            new SystemUiVisibilityChangedEventParameter(0, 0, 0, 0));
+                }
 
                 boolean softInputVisibilityChanged = oldSoftInputVisible != mSoftInputVisible;
                 if (!mSoftInputVisible && softInputVisibilityChanged && !isActionBarVisible()) {

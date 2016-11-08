@@ -112,15 +112,24 @@ public class DesktopCanvas {
      * @param parameter The set of values defining the current System UI state.
      */
     public void onSystemUiVisibilityChanged(SystemUiVisibilityChangedEventParameter parameter) {
-        if (parameter.softInputMethodVisible) {
-            mSystemUiScreenRect.set(
-                    parameter.left, parameter.top, parameter.right, parameter.bottom);
+        mSystemUiScreenRect.set(parameter.left, parameter.top, parameter.right, parameter.bottom);
+        stopOffsetReductionAnimation();
 
-            stopOffsetReductionAnimation();
+        PointF targetOffset;
+        if (mSystemUiScreenRect.isEmpty()) {
+            targetOffset = new PointF(0.0f, 0.0f);
         } else {
-            mSystemUiScreenRect.setEmpty();
-            startOffsetReductionAnimation();
+            // If the System UI size has changed such viewport offset is affected, then start an
+            // animation to adjust the amount of offset used.  This functionality ensures that we
+            // don't leave content-less areas on the screen when the System UI resizes.
+            RectF systemUiOverlap = getSystemUiOverlap();
+            RectF newBounds = new RectF(-systemUiOverlap.left, -systemUiOverlap.top,
+                    systemUiOverlap.right, systemUiOverlap.bottom);
+            targetOffset = new PointF(mViewportOffset.x, mViewportOffset.y);
+            constrainPointToBounds(targetOffset, newBounds);
         }
+        startOffsetReductionAnimation(targetOffset);
+
 
         if (mRenderData.initialized()) {
             // The viewport center may have changed so update the position to reflect the new value.
@@ -399,10 +408,11 @@ public class DesktopCanvas {
 
     /**
      * Starts an animation to smoothly reduce the viewport offset.  Does nothing if an animation is
-     * already running or the offset is already 0.
+     * already running, the offset is already 0, or the offset and target are the same.
      */
-    private void startOffsetReductionAnimation() {
-        if (mFrameRenderedCallback != null || mViewportOffset.length() < EPSILON) {
+    private void startOffsetReductionAnimation(final PointF targetOffset) {
+        if (mFrameRenderedCallback != null || mViewportOffset.length() < EPSILON
+                || arePointsEqual(mViewportOffset, targetOffset, EPSILON)) {
             return;
         }
 
@@ -412,8 +422,8 @@ public class DesktopCanvas {
             private final Interpolator mInterpolator = new DecelerateInterpolator();
 
             private long mStartTime = 0;
-            private float mOriginalX = 0.0f;
-            private float mOriginalY = 0.0f;
+            private final float mOriginalX = mViewportOffset.x - targetOffset.x;
+            private final float mOriginalY = mViewportOffset.y - targetOffset.y;
 
             @Override
             public Boolean run(Void p) {
@@ -423,16 +433,15 @@ public class DesktopCanvas {
 
                 if (mStartTime == 0) {
                     mStartTime = SystemClock.elapsedRealtime();
-                    mOriginalX = mViewportOffset.x;
-                    mOriginalY = mViewportOffset.y;
                 }
 
                 float progress = (SystemClock.elapsedRealtime() - mStartTime) / DURATION_MS;
                 if (progress < 1.0f) {
                     float reductionFactor = 1.0f - mInterpolator.getInterpolation(progress);
-                    mViewportOffset.set(mOriginalX * reductionFactor, mOriginalY * reductionFactor);
+                    mViewportOffset.set(mOriginalX * reductionFactor + targetOffset.x,
+                            mOriginalY * reductionFactor + targetOffset.y);
                 } else {
-                    mViewportOffset.set(0.0f, 0.0f);
+                    mViewportOffset.set(targetOffset.x, targetOffset.y);
                     mFrameRenderedCallback = null;
                 }
 
@@ -451,5 +460,9 @@ public class DesktopCanvas {
     private void stopOffsetReductionAnimation() {
         // Setting this value this null will prevent it from continuing to execute.
         mFrameRenderedCallback = null;
+    }
+
+    private boolean arePointsEqual(PointF a, PointF b, float epsilon) {
+        return Math.abs(a.x - b.x) < epsilon && Math.abs(a.y - b.y) < epsilon;
     }
 }

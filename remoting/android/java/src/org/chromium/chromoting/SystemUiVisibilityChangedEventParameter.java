@@ -11,17 +11,12 @@ package org.chromium.chromoting;
  * inset between the System UI elements which is used for our viewable content.
  */
 public final class SystemUiVisibilityChangedEventParameter {
-    public final boolean softInputMethodVisible;
-    public final boolean systemUiVisible;
     public final int left;
     public final int top;
     public final int right;
     public final int bottom;
 
-    public SystemUiVisibilityChangedEventParameter(boolean systemUiVisible,
-            boolean softInputMethodVisible, int left, int top, int right, int bottom) {
-        this.systemUiVisible = systemUiVisible;
-        this.softInputMethodVisible = softInputMethodVisible;
+    public SystemUiVisibilityChangedEventParameter(int left, int top, int right, int bottom) {
         this.left = left;
         this.top = top;
         this.right = right;
