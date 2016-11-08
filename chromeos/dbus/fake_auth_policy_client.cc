@@ -15,7 +15,7 @@ void FakeAuthPolicyClient::JoinAdDomain(const std::string& machine_name,
                                         const std::string& user,
                                         int password_fd,
                                         const JoinCallback& callback) {
-  callback.Run(authpolicy::AD_JOIN_ERROR_UNKNOWN);
+  callback.Run(authpolicy::AD_JOIN_ERROR_NONE);
 }
 
 }  // namespace chromeos
