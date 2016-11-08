@@ -105,7 +105,7 @@ class ChromeSigninClient
 
  protected:
   virtual void ShowUserManager(const base::FilePath& profile_path);
-  virtual void LockProfile(const base::FilePath& profile_path);
+  virtual void LockForceSigninProfile(const base::FilePath& profile_path);
 
  private:
   void MaybeFetchSigninTokenHandle();

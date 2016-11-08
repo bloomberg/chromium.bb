@@ -432,7 +432,7 @@ void ChromeSigninClient::OnCloseBrowsersSuccess(
     const base::FilePath& profile_path) {
   SigninClient::PreSignOut(sign_out);
 
-  LockProfile(profile_path);
+  LockForceSigninProfile(profile_path);
   // After sign out, lock the profile and show UserManager if necessary.
   if (should_display_user_manager_) {
     ShowUserManager(profile_path);
@@ -446,7 +446,8 @@ void ChromeSigninClient::OnCloseBrowsersAborted(
   should_display_user_manager_ = true;
 }
 
-void ChromeSigninClient::LockProfile(const base::FilePath& profile_path) {
+void ChromeSigninClient::LockForceSigninProfile(
+    const base::FilePath& profile_path) {
   ProfileAttributesEntry* entry;
   bool has_entry =
       g_browser_process->profile_manager()
@@ -454,7 +455,7 @@ void ChromeSigninClient::LockProfile(const base::FilePath& profile_path) {
           .GetProfileAttributesWithPath(profile_->GetPath(), &entry);
   if (!has_entry)
     return;
-  entry->SetIsSigninRequired(true);
+  entry->LockForceSigninProfile(true);
 }
 
 void ChromeSigninClient::ShowUserManager(const base::FilePath& profile_path) {

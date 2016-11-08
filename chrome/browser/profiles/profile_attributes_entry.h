@@ -124,6 +124,9 @@ class ProfileAttributesEntry {
 
   void SetAuthInfo(const std::string& gaia_id, const base::string16& user_name);
 
+  // Lock/Unlock the profile, should be called only if force-sign-in is enabled.
+  void LockForceSigninProfile(bool is_lock);
+
  private:
   // These members are an implementation detail meant to smooth the migration
   // of the ProfileInfoCache to the ProfileAttributesStorage interface. They can
@@ -136,6 +139,12 @@ class ProfileAttributesEntry {
   size_t profile_index() const;
   ProfileInfoCache* profile_info_cache_;
   base::FilePath profile_path_;
+
+  // A separate boolean flag indicates whether the signin is required when force
+  // signin is enabled. So that the profile locked status will be stored in
+  // memory only and can be easily reset once the policy is turned off.
+  bool is_force_signin_profile_locked_ = false;
+  bool is_force_signin_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileAttributesEntry);
 };

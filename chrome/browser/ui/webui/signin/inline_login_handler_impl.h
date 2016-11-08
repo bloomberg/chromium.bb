@@ -151,19 +151,19 @@ class InlineSigninHelper : public GaiaAuthConsumer {
     CLOSE
   };
 
-  InlineSigninHelper(
-      base::WeakPtr<InlineLoginHandlerImpl> handler,
-      net::URLRequestContextGetter* getter,
-      Profile* profile,
-      const GURL& current_url,
-      const std::string& email,
-      const std::string& gaia_id,
-      const std::string& password,
-      const std::string& session_index,
-      const std::string& auth_code,
-      const std::string& signin_scoped_device_id,
-      bool choose_what_to_sync,
-      bool confirm_untrusted_signin);
+  InlineSigninHelper(base::WeakPtr<InlineLoginHandlerImpl> handler,
+                     net::URLRequestContextGetter* getter,
+                     Profile* profile,
+                     Profile::CreateStatus create_status,
+                     const GURL& current_url,
+                     const std::string& email,
+                     const std::string& gaia_id,
+                     const std::string& password,
+                     const std::string& session_index,
+                     const std::string& auth_code,
+                     const std::string& signin_scoped_device_id,
+                     bool choose_what_to_sync,
+                     bool confirm_untrusted_signin);
   ~InlineSigninHelper() override;
 
  private:
@@ -189,6 +189,10 @@ class InlineSigninHelper : public GaiaAuthConsumer {
   void OnClientOAuthFailure(const GoogleServiceAuthError& error)
       override;
 
+  void OnClientOAuthSuccessAndBrowserOpened(const ClientOAuthResult& result,
+                                            Profile* profile,
+                                            Profile::CreateStatus status);
+
   // Creates the sync starter.  Virtual for tests. Call to exchange oauth code
   // for tokens.
   virtual void CreateSyncStarter(
@@ -203,6 +207,7 @@ class InlineSigninHelper : public GaiaAuthConsumer {
   GaiaAuthFetcher gaia_auth_fetcher_;
   base::WeakPtr<InlineLoginHandlerImpl> handler_;
   Profile* profile_;
+  Profile::CreateStatus create_status_;
   GURL current_url_;
   std::string email_;
   std::string gaia_id_;

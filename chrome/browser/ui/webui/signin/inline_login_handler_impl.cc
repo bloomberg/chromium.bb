@@ -234,12 +234,38 @@ void CloseModalSigninIfNeeded(InlineLoginHandlerImpl* handler) {
   }
 }
 
+void UnlockProfileAndHideLoginUI(const base::FilePath profile_path,
+                                 InlineLoginHandlerImpl* handler) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  if (profile_manager) {
+    ProfileAttributesEntry* entry;
+    if (profile_manager->GetProfileAttributesStorage()
+            .GetProfileAttributesWithPath(profile_path, &entry)) {
+      entry->SetIsSigninRequired(false);
+    }
+  }
+  if (handler)
+    handler->web_ui()->CallJavascriptFunctionUnsafe("inline.login.closeDialog");
+  UserManager::Hide();
+}
+
+bool IsCrossAccountError(Profile* profile,
+                         const std::string& email,
+                         const std::string& gaia_id) {
+  InvestigatorDependencyProvider provider(profile);
+  InvestigatedScenario scenario =
+      SigninInvestigator(email, gaia_id, &provider).Investigate();
+
+  return scenario == InvestigatedScenario::DIFFERENT_ACCOUNT;
+}
+
 }  // namespace
 
 InlineSigninHelper::InlineSigninHelper(
     base::WeakPtr<InlineLoginHandlerImpl> handler,
     net::URLRequestContextGetter* getter,
     Profile* profile,
+    Profile::CreateStatus create_status,
     const GURL& current_url,
     const std::string& email,
     const std::string& gaia_id,
@@ -252,6 +278,7 @@ InlineSigninHelper::InlineSigninHelper(
     : gaia_auth_fetcher_(this, GaiaConstants::kChromeSource, getter),
       handler_(handler),
       profile_(profile),
+      create_status_(create_status),
       current_url_(current_url),
       email_(email),
       gaia_id_(gaia_id),
@@ -275,6 +302,22 @@ InlineSigninHelper::InlineSigninHelper(
 InlineSigninHelper::~InlineSigninHelper() {}
 
 void InlineSigninHelper::OnClientOAuthSuccess(const ClientOAuthResult& result) {
+  if (signin::IsForceSigninEnabled()) {
+    // With force sign in enabled, the browser window won't be opened until now.
+    profiles::OpenBrowserWindowForProfile(
+        base::Bind(&InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened,
+                   base::Unretained(this), result),
+        true, false, profile_, create_status_);
+  } else {
+    OnClientOAuthSuccessAndBrowserOpened(result, profile_, create_status_);
+  }
+}
+
+void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
+    const ClientOAuthResult& result,
+    Profile* profile,
+    Profile::CreateStatus status) {
+  UnlockProfileAndHideLoginUI(profile_->GetPath(), handler_.get());
   content::WebContents* contents = NULL;
   Browser* browser = NULL;
   if (handler_) {
@@ -381,17 +424,17 @@ bool InlineSigninHelper::HandleCrossAccountError(
     const std::string& refresh_token,
     OneClickSigninSyncStarter::ConfirmationRequired confirmation_required,
     OneClickSigninSyncStarter::StartSyncMode start_mode) {
+  // With force sign in enabled, cross account sign in will be rejected in the
+  // early stage so there is no need to show the warning page here.
+  if (signin::IsForceSigninEnabled())
+    return false;
+
   std::string last_email =
       profile_->GetPrefs()->GetString(prefs::kGoogleServicesLastUsername);
 
-  InvestigatorDependencyProvider provider(profile_);
-  InvestigatedScenario scenario =
-      SigninInvestigator(email_, gaia_id_, &provider).Investigate();
-
   // TODO(skym): Warn for high risk upgrade scenario, crbug.com/572754.
-  if (scenario != InvestigatedScenario::DIFFERENT_ACCOUNT) {
+  if (!IsCrossAccountError(profile_, email_, gaia_id_))
     return false;
-  }
 
   Browser* browser = chrome::FindLastActiveWithProfile(profile_);
   content::WebContents* web_contents =
@@ -574,6 +617,18 @@ bool InlineLoginHandlerImpl::CanOffer(Profile* profile,
         }
       }
     }
+
+    // With force sign in enabled, cross account sign in is not allowed.
+    if (signin::IsForceSigninEnabled() &&
+        IsCrossAccountError(profile, email, gaia_id)) {
+      if (error_message) {
+        std::string last_email =
+            profile->GetPrefs()->GetString(prefs::kGoogleServicesLastUsername);
+        error_message->assign(l10n_util::GetStringFUTF8(
+            IDS_SYNC_USED_PROFILE_ERROR, base::UTF8ToUTF16(last_email)));
+      }
+      return false;
+    }
   }
 
   return true;
@@ -691,6 +746,9 @@ void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
   if (IsSystemProfile(profile)) {
     ProfileManager* manager = g_browser_process->profile_manager();
     base::FilePath path = profiles::GetPathOfProfileWithEmail(manager, email);
+    if (path.empty()) {
+      path = UserManager::GetSigninProfilePath();
+    }
     if (!path.empty()) {
       signin_metrics::Reason reason =
           signin::GetSigninReasonForPromoURL(current_url);
@@ -708,14 +766,23 @@ void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
         // Otherwise, switch to the profile and finish the login. Pass the
         // profile path so it can be marked as unlocked. Don't pass a handler
         // pointer since it will be destroyed before the callback runs.
-        FinishCompleteLoginParams params(nullptr, partition, current_url, path,
+        bool is_force_signin_enabled = signin::IsForceSigninEnabled();
+        InlineLoginHandlerImpl* handler = nullptr;
+        if (is_force_signin_enabled)
+          handler = this;
+        FinishCompleteLoginParams params(handler, partition, current_url, path,
                                          confirm_untrusted_signin_, email,
                                          gaia_id, password, session_index,
                                          auth_code, choose_what_to_sync);
         ProfileManager::CreateCallback callback =
             base::Bind(&InlineLoginHandlerImpl::FinishCompleteLogin, params);
-        profiles::SwitchToProfile(path, true, callback,
-                                  ProfileMetrics::SWITCH_PROFILE_UNLOCK);
+        if (is_force_signin_enabled) {
+          // Browser window will be opened after ClientOAuthSuccess.
+          profiles::LoadProfileAsync(path, callback);
+        } else {
+          profiles::SwitchToProfile(path, true, callback,
+                                    ProfileMetrics::SWITCH_PROFILE_UNLOCK);
+        }
       }
     }
   } else {
@@ -773,7 +840,7 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
   if (net::GetValueForKeyInQuery(params.url, "email", &default_email) &&
       net::GetValueForKeyInQuery(params.url, "validateEmail",
                                  &validate_email) &&
-      validate_email == "1") {
+      validate_email == "1" && !default_email.empty()) {
     if (!gaia::AreEmailsSame(params.email, default_email)) {
       if (params.handler) {
         params.handler->HandleLoginError(
@@ -841,32 +908,17 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
     handler_weak_ptr = params.handler->GetWeakPtr();
 
   // InlineSigninHelper will delete itself.
-  new InlineSigninHelper(handler_weak_ptr,
-                         params.partition->GetURLRequestContext(), profile,
-                         params.url,
-                         params.email, params.gaia_id, params.password,
-                         params.session_index, params.auth_code,
-                         signin_scoped_device_id,
-                         params.choose_what_to_sync,
-                         params.confirm_untrusted_signin);
+  new InlineSigninHelper(
+      handler_weak_ptr, params.partition->GetURLRequestContext(), profile,
+      status, params.url, params.email, params.gaia_id, params.password,
+      params.session_index, params.auth_code, signin_scoped_device_id,
+      params.choose_what_to_sync, params.confirm_untrusted_signin);
 
   // If opened from user manager to unlock a profile, make sure the user manager
   // is closed and that the profile is marked as unlocked.
-  if (!params.profile_path.empty()) {
-    UserManager::Hide();
-    ProfileManager* profile_manager = g_browser_process->profile_manager();
-    if (profile_manager) {
-      ProfileAttributesEntry* entry;
-      if (profile_manager->GetProfileAttributesStorage()
-              .GetProfileAttributesWithPath(params.profile_path, &entry)) {
-        entry->SetIsSigninRequired(false);
-      }
-    }
+  if (!params.profile_path.empty() && !signin::IsForceSigninEnabled()) {
+    UnlockProfileAndHideLoginUI(params.profile_path, params.handler);
   }
-
-  if (params.handler)
-    params.handler->web_ui()->CallJavascriptFunctionUnsafe(
-        "inline.login.closeDialog");
 }
 
 void InlineLoginHandlerImpl::HandleLoginError(const std::string& error_msg,
@@ -875,8 +927,11 @@ void InlineLoginHandlerImpl::HandleLoginError(const std::string& error_msg,
   Browser* browser = GetDesktopBrowser();
   Profile* profile = Profile::FromWebUI(web_ui());
 
+  if (IsSystemProfile(profile))
+    profile = g_browser_process->profile_manager()->GetProfileByPath(
+        UserManager::GetSigninProfilePath());
   CloseModalSigninIfNeeded(this);
-  if (browser && !error_msg.empty()) {
+  if (!error_msg.empty()) {
     LoginUIServiceFactory::GetForProfile(profile)->DisplayLoginResult(
         browser, base::UTF8ToUTF16(error_msg), email);
   }

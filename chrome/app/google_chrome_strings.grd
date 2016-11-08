@@ -781,6 +781,9 @@ Google Chrome is unable to recover your settings.
 
 Signing in anyway will merge Chrome information like bookmarks, history, and other settings to <ph name="ACCOUNT_EMAIL_NEW">$2<ex>user@example.com</ex></ph>.
         </message>
+        <message name="IDS_SYNC_USED_PROFILE_ERROR" desc="An error message shown when user tries to sign in to a profile that is used by other user name before.">
+          Someone previously signed in to Chrome on this computer as <ph name="ACCOUNT_EMAIL_LAST">$1<ex>user@example.com</ex></ph>. Please create a new Chrome user to keep your information separate.
+        </message>
       </if>
 
       <!-- Enterprise sign-in profile linking -->

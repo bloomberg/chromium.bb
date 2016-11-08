@@ -133,7 +133,7 @@ class MockChromeSigninClient : public ChromeSigninClient {
       : ChromeSigninClient(profile, controller) {}
 
   MOCK_METHOD1(ShowUserManager, void(const base::FilePath&));
-  MOCK_METHOD1(LockProfile, void(const base::FilePath&));
+  MOCK_METHOD1(LockForceSigninProfile, void(const base::FilePath&));
 };
 
 class MockSigninManager : public SigninManager {
@@ -187,7 +187,8 @@ TEST_F(ChromeSigninClientSignoutTest, SignOut) {
 
   EXPECT_CALL(*client_, ShowUserManager(browser()->profile()->GetPath()))
       .Times(1);
-  EXPECT_CALL(*client_, LockProfile(browser()->profile()->GetPath())).Times(1);
+  EXPECT_CALL(*client_, LockForceSigninProfile(browser()->profile()->GetPath()))
+      .Times(1);
   EXPECT_CALL(*manager_, DoSignOut(source_metric, delete_metric)).Times(1);
 
   manager_->SignOut(source_metric, delete_metric);
@@ -204,7 +205,8 @@ TEST_F(ChromeSigninClientSignoutTest, SignOutWithoutManager) {
 
   EXPECT_CALL(*client_, ShowUserManager(browser()->profile()->GetPath()))
       .Times(0);
-  EXPECT_CALL(*client_, LockProfile(browser()->profile()->GetPath())).Times(1);
+  EXPECT_CALL(*client_, LockForceSigninProfile(browser()->profile()->GetPath()))
+      .Times(1);
   EXPECT_CALL(*manager_, DoSignOut(source_metric, delete_metric)).Times(1);
   manager_->SignOut(source_metric, delete_metric);
 
@@ -212,7 +214,8 @@ TEST_F(ChromeSigninClientSignoutTest, SignOutWithoutManager) {
 
   EXPECT_CALL(*client_, ShowUserManager(browser()->profile()->GetPath()))
       .Times(1);
-  EXPECT_CALL(*client_, LockProfile(browser()->profile()->GetPath())).Times(1);
+  EXPECT_CALL(*client_, LockForceSigninProfile(browser()->profile()->GetPath()))
+      .Times(1);
   EXPECT_CALL(*manager_, DoSignOut(source_metric, delete_metric)).Times(1);
   manager_->SignOut(source_metric, delete_metric);
 }
@@ -229,7 +232,8 @@ TEST_F(ChromeSigninClientSignoutTest, SignOutWithoutForceSignin) {
 
   EXPECT_CALL(*client_, ShowUserManager(browser()->profile()->GetPath()))
       .Times(0);
-  EXPECT_CALL(*client_, LockProfile(browser()->profile()->GetPath())).Times(0);
+  EXPECT_CALL(*client_, LockForceSigninProfile(browser()->profile()->GetPath()))
+      .Times(0);
   EXPECT_CALL(*manager_, DoSignOut(source_metric, delete_metric)).Times(1);
   manager_->SignOut(source_metric, delete_metric);
 }
@@ -249,7 +253,8 @@ TEST_F(ChromeSigninClientSignoutTest, SignOutGuestSession) {
 
   EXPECT_CALL(*client_, ShowUserManager(browser()->profile()->GetPath()))
       .Times(0);
-  EXPECT_CALL(*client_, LockProfile(browser()->profile()->GetPath())).Times(0);
+  EXPECT_CALL(*client_, LockForceSigninProfile(browser()->profile()->GetPath()))
+      .Times(0);
   EXPECT_CALL(*manager_, DoSignOut(source_metric, delete_metric)).Times(1);
   manager_->SignOut(source_metric, delete_metric);
 }
