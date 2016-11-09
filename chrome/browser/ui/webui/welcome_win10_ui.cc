@@ -6,7 +6,9 @@
 
 #include <string>
 
+#include "base/feature_list.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/startup/startup_features.h"
 #include "chrome/browser/ui/webui/welcome_win10_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -29,6 +31,18 @@ bool UrlContainsKeyValueInQuery(const GURL& url,
   std::string value;
   return net::GetValueForKeyInQuery(url, key, &value) &&
          value == expected_value;
+}
+
+bool ShouldShowInlineStyleVariant(const GURL& url) {
+  // Can be overridden via a query.
+  // TODO(pmonette): Remove these checks when they are no longer needed
+  //                 (crbug.com/658918).
+  if (UrlContainsKeyValueInQuery(url, "style", "inline"))
+    return true;
+  if (UrlContainsKeyValueInQuery(url, "style", "sectioned"))
+    return false;
+
+  return base::FeatureList::IsEnabled(features::kWelcomeWin10InlineStyle);
 }
 
 // Adds all the needed localized strings to |html_source|, depending on
@@ -82,7 +96,7 @@ WelcomeWin10UI::WelcomeWin10UI(content::WebUI* web_ui, const GURL& url)
 
   // Determine which variation to show.
   bool is_first_run = !UrlContainsKeyValueInQuery(url, "text", "faster");
-  bool is_inline_style = UrlContainsKeyValueInQuery(url, "style", "inline");
+  bool is_inline_style = ShouldShowInlineStyleVariant(url);
 
   AddLocalizedStrings(html_source, is_first_run);
 

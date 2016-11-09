@@ -11,6 +11,10 @@ namespace features {
 
 extern const base::Feature kUseConsolidatedStartupFlow;
 
+#if defined(OS_WIN)
+extern const base::Feature kWelcomeWin10InlineStyle;
+#endif
+
 }  // namespace features
 
 #endif  // CHROME_BROWSER_UI_STARTUP_STARTUP_FEATURES_H_

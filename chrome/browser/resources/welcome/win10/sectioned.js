@@ -5,6 +5,12 @@
 cr.define('sectioned', function() {
   'use strict';
 
+  function computeClasses(isCombined) {
+    if (isCombined)
+      return 'section expandable expanded';
+    return 'section';
+  }
+
   function onContinue() {
     chrome.send('handleContinue');
   }
@@ -28,22 +34,41 @@ cr.define('sectioned', function() {
     }
   }
 
-  function computeClasses(isCombined) {
-    if (isCombined)
-      return 'section expandable expanded';
-    return 'section';
-  }
-
   function initialize() {
     var app = $('sectioned-app');
 
-    app.isCombined = window.location.href.includes('variant=combined');
+    // Set variables.
+    // Determines if the combined variant should be displayed. The combined
+    // variant includes instructions on how to pin Chrome to the taskbar.
+    app.isCombined = false;
 
     // Set handlers.
     app.computeClasses = computeClasses;
     app.onContinue = onContinue;
     app.onOpenSettings = onOpenSettings;
     app.onToggle = onToggle.bind(this, app);
+
+
+    // Asynchronously check if Chrome is pinned to the taskbar.
+    cr.sendWithPromise('getPinnedToTaskbarState').then(
+      function(isPinnedToTaskbar) {
+        // Allow overriding of the result via a query parameter.
+        // TODO(pmonette): Remove these checks when they are no longer needed.
+        /** @const */ var VARIANT_KEY = 'variant';
+        var VariantType = {
+          DEFAULT_ONLY: 'defaultonly',
+          COMBINED: 'combined'
+        };
+        var params = new URLSearchParams(location.search.slice(1));
+        if (params.has(VARIANT_KEY)) {
+          if (params.get(VARIANT_KEY) === VariantType.DEFAULT_ONLY)
+            app.isCombined = false;
+          else if (params.get(VARIANT_KEY) === VariantType.COMBINED)
+            app.isCombined = true;
+        } else {
+          app.isCombined = !isPinnedToTaskbar;
+        }
+      });
   }
 
   return {
