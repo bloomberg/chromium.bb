@@ -2408,7 +2408,7 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
 
   if (lut_texture_location != -1) {
     unsigned int lut_texture = color_lut_cache_.GetLUT(
-        quad->video_color_space, frame->device_color_space, 32);
+        quad->video_color_space, frame->device_color_space, 17);
     gl_->ActiveTexture(GL_TEXTURE5);
     gl_->BindTexture(GL_TEXTURE_2D, lut_texture);
     gl_->Uniform1i(lut_texture_location, 5);

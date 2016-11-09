@@ -2140,7 +2140,7 @@ std::string FragmentShaderYUVVideo::GetShaderString(TexCoordPrecision precision,
         // Select layer
         float layer = min(floor(pos.x), size - 2.0);
         // Compress the yz coordinates so they stay within
-        // [0.5 .. 31.5] / 32 (assuming a LUT size of 32^3)
+        // [0.5 .. 31.5] / 17 (assuming a LUT size of 17^3)
         pos.yz = (pos.yz + vec2(0.5)) / size;
         pos.z = (pos.z + layer) / size;
         return mix(texture2D(sampler, pos.yz),
@@ -2150,7 +2150,7 @@ std::string FragmentShaderYUVVideo::GetShaderString(TexCoordPrecision precision,
 
       vec3 yuv2rgb(vec3 yuv) {
         yuv = (yuv - vec3(resource_offset)) * resource_multiplier;
-        return LUT(lut_texture, yuv, 32.0).xyz;
+        return LUT(lut_texture, yuv, 17.0).xyz;
       }
     });
   } else {
