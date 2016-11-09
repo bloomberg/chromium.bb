@@ -35,6 +35,35 @@ set(AOM_LIBWEBM_SRCS
     "${AOM_ROOT}/third_party/libwebm/mkvparser/mkvreader.cc"
     "${AOM_ROOT}/third_party/libwebm/mkvparser/mkvreader.h")
 
+set(AOM_LIBYUV_SRCS
+    "${AOM_ROOT}/third_party/libyuv/include/libyuv/basic_types.h"
+    "${AOM_ROOT}/third_party/libyuv/include/libyuv/convert.h"
+    "${AOM_ROOT}/third_party/libyuv/include/libyuv/convert_argb.h"
+    "${AOM_ROOT}/third_party/libyuv/include/libyuv/convert_from.h"
+    "${AOM_ROOT}/third_party/libyuv/include/libyuv/cpu_id.h"
+    "${AOM_ROOT}/third_party/libyuv/include/libyuv/planar_functions.h"
+    "${AOM_ROOT}/third_party/libyuv/include/libyuv/rotate.h"
+    "${AOM_ROOT}/third_party/libyuv/include/libyuv/row.h"
+    "${AOM_ROOT}/third_party/libyuv/include/libyuv/scale.h"
+    "${AOM_ROOT}/third_party/libyuv/include/libyuv/scale_row.h"
+    "${AOM_ROOT}/third_party/libyuv/source/cpu_id.cc"
+    "${AOM_ROOT}/third_party/libyuv/source/planar_functions.cc"
+    "${AOM_ROOT}/third_party/libyuv/source/row_any.cc"
+    "${AOM_ROOT}/third_party/libyuv/source/row_common.cc"
+    "${AOM_ROOT}/third_party/libyuv/source/row_gcc.cc"
+    "${AOM_ROOT}/third_party/libyuv/source/row_mips.cc"
+    "${AOM_ROOT}/third_party/libyuv/source/row_neon.cc"
+    "${AOM_ROOT}/third_party/libyuv/source/row_neon64.cc"
+    "${AOM_ROOT}/third_party/libyuv/source/row_win.cc"
+    "${AOM_ROOT}/third_party/libyuv/source/scale.cc"
+    "${AOM_ROOT}/third_party/libyuv/source/scale_any.cc"
+    "${AOM_ROOT}/third_party/libyuv/source/scale_common.cc"
+    "${AOM_ROOT}/third_party/libyuv/source/scale_gcc.cc"
+    "${AOM_ROOT}/third_party/libyuv/source/scale_mips.cc"
+    "${AOM_ROOT}/third_party/libyuv/source/scale_neon.cc"
+    "${AOM_ROOT}/third_party/libyuv/source/scale_neon64.cc"
+    "${AOM_ROOT}/third_party/libyuv/source/scale_win.cc")
+
 set(AOM_SRCS
     "${AOM_CONFIG_DIR}/aom_config.c"
     "${AOM_CONFIG_DIR}/aom_config.h"
@@ -407,6 +436,22 @@ add_executable(twopass_encoder
                $<TARGET_OBJECTS:aom_encoder_app_util>)
 include_directories(${AOM_ROOT})
 target_link_libraries(twopass_encoder PUBLIC aom)
+
+if (CONFIG_LIBYUV)
+  add_library(yuv ${AOM_LIBYUV_SRCS})
+  target_compile_options(yuv PRIVATE -Wno-unused-parameter)
+  include_directories("${AOM_ROOT}/third_party/libyuv/include")
+
+  # Add to existing targets.
+  target_link_libraries(aom_cx_set_ref PUBLIC yuv)
+  target_link_libraries(decode_to_md5 PUBLIC yuv)
+  target_link_libraries(decode_with_drops PUBLIC yuv)
+  target_link_libraries(lossless_encoder PUBLIC yuv)
+  target_link_libraries(set_maps PUBLIC yuv)
+  target_link_libraries(simple_decoder PUBLIC yuv)
+  target_link_libraries(simple_encoder PUBLIC yuv)
+  target_link_libraries(twopass_encoder PUBLIC yuv)
+endif ()
 
 if (CONFIG_WEBM_IO)
   add_library(webm ${AOM_LIBWEBM_SRCS})
