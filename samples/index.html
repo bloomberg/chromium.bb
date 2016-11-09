@@ -105,7 +105,7 @@
             { path: "XX-vr-controllers.html", title: "VR Controllers" },
 
             // Tests
-            { test: true, path: "canvas-attributes.html", title: "Canvas Attributes"}
+            { index: "Test", path: "test-canvas-attributes.html", title: "Canvas Attributes"}
           ];
 
           // Append an element for every item in the pages list.
@@ -116,7 +116,7 @@
           for (var i = 0; i < pages.length; ++i) {
             var page = pages[i];
             var wipPage = !page.index;
-            var testPage = page.test;
+            var testPage = (page.index == "Test");
 
             var li = document.createElement("li");
             li.setAttribute("data-index", page.index ? page.index : "XX");
