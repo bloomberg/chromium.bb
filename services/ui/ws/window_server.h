@@ -192,12 +192,6 @@ class WindowServer : public ServerWindowDelegate,
   void ProcessWindowDeleted(ServerWindow* window);
   void ProcessWillChangeWindowPredefinedCursor(ServerWindow* window,
                                                mojom::Cursor cursor_id);
-  void ProcessWindowSurfaceCreated(
-      ServerWindow* window,
-      mojom::CompositorFrameSinkType compositor_frame_sink_type,
-      const cc::SurfaceId& surface_id,
-      const gfx::Size& frame_size,
-      float device_scale_factor);
 
   // Sends an |event| to all WindowTrees belonging to |user_id| that might be
   // observing events. Skips |ignore_tree| if it is non-null. |target_window| is

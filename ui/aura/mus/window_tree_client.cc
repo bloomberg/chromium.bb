@@ -715,12 +715,6 @@ void WindowTreeClient::OnWindowMusPropertyChanged(
                            std::move(transport_value_mojo));
 }
 
-void WindowTreeClient::OnWindowMusSurfaceDetached(
-    WindowMus* window,
-    const cc::SurfaceSequence& sequence) {
-  tree_->OnWindowSurfaceDetached(window->server_id(), sequence);
-}
-
 void WindowTreeClient::OnWmMoveLoopCompleted(uint32_t change_id,
                                              bool completed) {
   if (window_manager_internal_client_)
@@ -1173,7 +1167,6 @@ void WindowTreeClient::OnWindowPredefinedCursorChanged(
 void WindowTreeClient::OnWindowSurfaceChanged(
     Id window_id,
     const cc::SurfaceId& surface_id,
-    const cc::SurfaceSequence& surface_sequence,
     const gfx::Size& frame_size,
     float device_scale_factor) {
   WindowMus* window = GetWindowByServerId(window_id);
@@ -1181,7 +1174,6 @@ void WindowTreeClient::OnWindowSurfaceChanged(
     return;
   std::unique_ptr<SurfaceInfo> surface_info(base::MakeUnique<SurfaceInfo>());
   surface_info->surface_id = surface_id;
-  surface_info->surface_sequence = surface_sequence;
   surface_info->frame_size = frame_size;
   surface_info->device_scale_factor = device_scale_factor;
   window->SetSurfaceIdFromServer(std::move(surface_info));

@@ -6,7 +6,6 @@
 #define SERVICES_UI_PUBLIC_CPP_SURFACE_ID_HANDLER_H_
 
 #include "cc/surfaces/surface_id.h"
-#include "cc/surfaces/surface_sequence.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace ui {
@@ -16,14 +15,11 @@ class Window;
 // Holds information about the current surface held by a Window.
 // |surface_id| uniquely identifies the surface in the display
 // compositor.
-// |surface_sequence| is a reference to the surface to retain
-// this surface even after a new surface has been created.
 // |frame_size| is the size of the frame held by the surface.
 // |device_scale_factor| is the scale factor that the frame was
 // renderered for.
 struct SurfaceInfo {
   cc::SurfaceId surface_id;
-  cc::SurfaceSequence surface_sequence;
   gfx::Size frame_size;
   float device_scale_factor;
 };

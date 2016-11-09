@@ -275,8 +275,6 @@ class AURA_EXPORT WindowTreeClient
   void OnWindowMusPropertyChanged(WindowMus* window,
                                   const void* key,
                                   std::unique_ptr<WindowPortPropertyData> data);
-  void OnWindowMusSurfaceDetached(WindowMus* window,
-                                  const cc::SurfaceSequence& sequence);
 
   // Callback passed from WmPerformMoveLoop().
   void OnWmMoveLoopCompleted(uint32_t change_id, bool completed);
@@ -336,7 +334,6 @@ class AURA_EXPORT WindowTreeClient
                                        ui::mojom::Cursor cursor) override;
   void OnWindowSurfaceChanged(Id window_id,
                               const cc::SurfaceId& surface_id,
-                              const cc::SurfaceSequence& surface_sequence,
                               const gfx::Size& frame_size,
                               float device_scale_factor) override;
   void OnDragDropStart(

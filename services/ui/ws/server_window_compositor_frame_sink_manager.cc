@@ -71,8 +71,6 @@ void ServerWindowCompositorFrameSinkManager::CreateCompositorFrameSink(
         ->AddChildFrameSinkId(mojom::CompositorFrameSinkType::DEFAULT,
                               frame_sink_id);
   }
-
-  data.surface_sequence_generator.set_frame_sink_id(frame_sink_id);
 }
 
 void ServerWindowCompositorFrameSinkManager::AddChildFrameSinkId(
@@ -107,16 +105,6 @@ bool ServerWindowCompositorFrameSinkManager::HasAnyCompositorFrameSink() const {
   return HasCompositorFrameSinkOfType(
              mojom::CompositorFrameSinkType::DEFAULT) ||
          HasCompositorFrameSinkOfType(mojom::CompositorFrameSinkType::UNDERLAY);
-}
-
-cc::SurfaceSequence
-ServerWindowCompositorFrameSinkManager::CreateSurfaceSequence(
-    mojom::CompositorFrameSinkType type) {
-  cc::FrameSinkId frame_sink_id(WindowIdToTransportId(window_->id()),
-                                static_cast<uint32_t>(type));
-  CompositorFrameSinkData& data = type_to_compositor_frame_sink_map_[type];
-  data.surface_sequence_generator.set_frame_sink_id(frame_sink_id);
-  return data.surface_sequence_generator.CreateSurfaceSequence();
 }
 
 gfx::Size ServerWindowCompositorFrameSinkManager::GetLatestFrameSize(

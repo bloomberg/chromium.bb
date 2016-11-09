@@ -769,13 +769,8 @@ void WindowTree::ProcessWindowSurfaceChanged(ServerWindow* window,
     return;
   }
 
-  ServerWindowCompositorFrameSinkManager* compositor_frame_sink_manager =
-      window->GetOrCreateCompositorFrameSinkManager();
-  cc::SurfaceSequence sequence =
-      compositor_frame_sink_manager->CreateSurfaceSequence(
-          mojom::CompositorFrameSinkType::DEFAULT);
-  client()->OnWindowSurfaceChanged(client_window_id.id, surface_id, sequence,
-                                   frame_size, device_scale_factor);
+  client()->OnWindowSurfaceChanged(client_window_id.id, surface_id, frame_size,
+                                   device_scale_factor);
 }
 
 void WindowTree::SendToPointerWatcher(const ui::Event& event,
@@ -1370,17 +1365,6 @@ void WindowTree::AttachCompositorFrameSink(
   window->CreateCompositorFrameSink(type, gfx::kNullAcceleratedWidget, nullptr,
                                     nullptr, std::move(compositor_frame_sink),
                                     std::move(client));
-}
-
-void WindowTree::OnWindowSurfaceDetached(Id transport_window_id,
-                                         const cc::SurfaceSequence& sequence) {
-  ServerWindow* window =
-      GetWindowByClientId(ClientWindowId(transport_window_id));
-  if (!window)
-    return;
-  std::vector<uint32_t> sequences({sequence.sequence});
-  window_server_->GetDisplayCompositor()->ReturnSurfaceReferences(
-      sequence.frame_sink_id, std::move(sequences));
 }
 
 void WindowTree::SetWindowTextInputState(Id transport_window_id,

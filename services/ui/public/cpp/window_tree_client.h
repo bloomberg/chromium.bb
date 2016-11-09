@@ -134,9 +134,6 @@ class WindowTreeClient : public mojom::WindowTreeClient,
       cc::mojom::MojoCompositorFrameSinkRequest compositor_frame_sink,
       cc::mojom::MojoCompositorFrameSinkClientPtr client);
 
-  void OnWindowSurfaceDetached(Id window_id,
-                               const cc::SurfaceSequence& sequence);
-
   // Sets the input capture to |window| without notifying the server.
   void LocalSetCapture(Window* window);
   // Sets focus to |window| without notifying the server.
@@ -334,7 +331,6 @@ class WindowTreeClient : public mojom::WindowTreeClient,
                                        mojom::Cursor cursor) override;
   void OnWindowSurfaceChanged(Id window_id,
                               const cc::SurfaceId& surface_id,
-                              const cc::SurfaceSequence& surface_sequence,
                               const gfx::Size& frame_size,
                               float device_scale_factor) override;
   void OnDragDropStart(

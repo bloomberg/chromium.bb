@@ -163,10 +163,6 @@ void TestWindowTree::AttachCompositorFrameSink(
     mojo::InterfaceRequest<cc::mojom::MojoCompositorFrameSink> surface,
     cc::mojom::MojoCompositorFrameSinkClientPtr client) {}
 
-void TestWindowTree::OnWindowSurfaceDetached(
-    uint32_t window_id,
-    const cc::SurfaceSequence& sequence) {}
-
 void TestWindowTree::AddWindow(uint32_t change_id,
                                uint32_t parent,
                                uint32_t child) {

@@ -124,8 +124,6 @@ class TestWindowTree : public ui::mojom::WindowTree {
       ui::mojom::CompositorFrameSinkType type,
       mojo::InterfaceRequest<cc::mojom::MojoCompositorFrameSink> surface,
       cc::mojom::MojoCompositorFrameSinkClientPtr client) override;
-  void OnWindowSurfaceDetached(uint32_t window_id,
-                               const cc::SurfaceSequence& sequence) override;
   void AddWindow(uint32_t change_id, uint32_t parent, uint32_t child) override;
   void RemoveWindowFromParent(uint32_t change_id, uint32_t window_id) override;
   void AddTransientWindow(uint32_t change_id,

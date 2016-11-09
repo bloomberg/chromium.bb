@@ -435,7 +435,6 @@ class TestWindowTreeClient : public ui::mojom::WindowTreeClient {
                                        mojom::Cursor cursor_id) override;
   void OnWindowSurfaceChanged(Id window_id,
                               const cc::SurfaceId& surface_id,
-                              const cc::SurfaceSequence& surface_sequence,
                               const gfx::Size& frame_size,
                               float device_scale_factor) override;
   void OnDragDropStart(

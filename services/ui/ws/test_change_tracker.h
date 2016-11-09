@@ -89,7 +89,6 @@ struct Change {
   int32_t cursor_id;
   uint32_t change_id;
   cc::SurfaceId surface_id;
-  cc::SurfaceSequence surface_sequence;
   gfx::Size frame_size;
   float device_scale_factor;
 };
@@ -176,7 +175,6 @@ class TestChangeTracker {
                          bool drawn);
   void OnWindowSurfaceChanged(Id window_id,
                               const cc::SurfaceId& surface_id,
-                              const cc::SurfaceSequence& surface_sequence,
                               const gfx::Size& frame_size,
                               float device_scale_factor);
 

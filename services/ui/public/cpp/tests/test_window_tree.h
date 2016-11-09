@@ -114,8 +114,6 @@ class TestWindowTree : public mojom::WindowTree {
                          mojom::MoveLoopSource source,
                          const gfx::Point& cursor_location) override;
   void CancelWindowMove(uint32_t window_id) override;
-  void OnWindowSurfaceDetached(uint32_t window_id,
-                               const cc::SurfaceSequence& sequence) override;
 
   bool got_change_;
   uint32_t change_id_;

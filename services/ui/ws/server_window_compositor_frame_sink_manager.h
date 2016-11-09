@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_WS_SERVER_WINDOW_SURFACE_MANAGER_H_
-#define SERVICES_UI_WS_SERVER_WINDOW_SURFACE_MANAGER_H_
+#ifndef SERVICES_UI_WS_SERVER_WINDOW_COMPOSITOR_FRAME_SINK_MANAGER_H_
+#define SERVICES_UI_WS_SERVER_WINDOW_COMPOSITOR_FRAME_SINK_MANAGER_H_
 
 #include <map>
 
@@ -12,7 +12,6 @@
 #include "cc/output/context_provider.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_id.h"
-#include "cc/surfaces/surface_sequence_generator.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/surfaces/surfaces_context_provider.h"
@@ -37,7 +36,6 @@ struct CompositorFrameSinkData {
 
   cc::SurfaceId latest_submitted_surface_id;
   gfx::Size latest_submitted_frame_size;
-  cc::SurfaceSequenceGenerator surface_sequence_generator;
   cc::mojom::MojoCompositorFrameSinkPrivatePtr compositor_frame_sink;
   cc::mojom::MojoCompositorFrameSinkPrivateRequest
       pending_compositor_frame_sink_request;
@@ -84,10 +82,6 @@ class ServerWindowCompositorFrameSinkManager {
   bool HasCompositorFrameSinkOfType(mojom::CompositorFrameSinkType type) const;
   bool HasAnyCompositorFrameSink() const;
 
-  // Creates a surface dependency token that expires when the
-  // CompositorFrameSink of type |type| goes away associated with this window.
-  cc::SurfaceSequence CreateSurfaceSequence(
-      mojom::CompositorFrameSinkType type);
   gfx::Size GetLatestFrameSize(mojom::CompositorFrameSinkType type) const;
   cc::SurfaceId GetLatestSurfaceId(mojom::CompositorFrameSinkType type) const;
   void SetLatestSurfaceInfo(mojom::CompositorFrameSinkType type,
@@ -125,4 +119,4 @@ class ServerWindowCompositorFrameSinkManager {
 }  // namespace ws
 }  // namespace ui
 
-#endif  // SERVICES_UI_WS_SERVER_WINDOW_SURFACE_MANAGER_H_
+#endif  // SERVICES_UI_WS_SERVER_WINDOW_COMPOSITOR_FRAME_SINK_MANAGER_H_

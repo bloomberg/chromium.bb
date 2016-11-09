@@ -223,9 +223,7 @@ void WindowPortMus::SetSurfaceIdFromServer(
         surface_info ? surface_info->surface_id : cc::SurfaceId();
     if (!existing_surface_id.is_null() &&
         existing_surface_id != new_surface_id) {
-      // Return the existing surface sequence.
-      window_tree_client_->OnWindowMusSurfaceDetached(
-          this, surface_info_->surface_sequence);
+      // TODO(kylechar): Start return reference here?
     }
   }
   WindowPortMus* parent = Get(window_->parent());

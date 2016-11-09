@@ -359,13 +359,6 @@ void WindowTreeClient::AttachCompositorFrameSink(
       window_id, type, std::move(compositor_frame_sink), std::move(client));
 }
 
-void WindowTreeClient::OnWindowSurfaceDetached(
-    Id window_id,
-    const cc::SurfaceSequence& sequence) {
-  DCHECK(tree_);
-  tree_->OnWindowSurfaceDetached(window_id, sequence);
-}
-
 void WindowTreeClient::LocalSetCapture(Window* window) {
   if (capture_window_ == window)
     return;
@@ -1096,7 +1089,6 @@ void WindowTreeClient::OnWindowPredefinedCursorChanged(
 void WindowTreeClient::OnWindowSurfaceChanged(
     Id window_id,
     const cc::SurfaceId& surface_id,
-    const cc::SurfaceSequence& surface_sequence,
     const gfx::Size& frame_size,
     float device_scale_factor) {
   Window* window = GetWindowByServerId(window_id);
@@ -1104,7 +1096,6 @@ void WindowTreeClient::OnWindowSurfaceChanged(
     return;
   std::unique_ptr<SurfaceInfo> surface_info(base::MakeUnique<SurfaceInfo>());
   surface_info->surface_id = surface_id;
-  surface_info->surface_sequence = surface_sequence;
   surface_info->frame_size = frame_size;
   surface_info->device_scale_factor = device_scale_factor;
   WindowPrivate(window).LocalSetSurfaceId(std::move(surface_info));

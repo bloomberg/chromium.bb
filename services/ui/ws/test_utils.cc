@@ -346,7 +346,6 @@ void TestWindowTreeClient::OnWindowPredefinedCursorChanged(
 void TestWindowTreeClient::OnWindowSurfaceChanged(
     Id window_id,
     const cc::SurfaceId& surface_id,
-    const cc::SurfaceSequence& surface_sequence,
     const gfx::Size& frame_size,
     float device_scale_factor) {}
 

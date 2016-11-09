@@ -144,9 +144,6 @@ interface WindowTree {
       cc.mojom.MojoCompositorFrameSink& compositor_frame_sink,
       cc.mojom.MojoCompositorFrameSinkClient client);
 
-  // Returns surface reference back to window server for reclamation.
-  OnWindowSurfaceDetached(uint32 window_id, cc.mojom.SurfaceSequence sequence);
-
   // Reparents a window.
   // This fails for any of the following reasons:
   // . |parent| or |child| does not identify a valid window.
@@ -433,12 +430,11 @@ interface WindowTreeClient {
   // Invoked when a client window submits a new surface ID. The surface ID and
   // associated information is propagated to the parent connection. The parent
   // compositor can take ownership of this surface ID and embed it along with
-  // the SurfaceSequence, frame_size, and device_scale_factor in a layer.
+  // frame_size and device_scale_factor in a layer.
   // TODO(fsamuel): Surface IDs should be passed to parents directly instead of
   // going through the window server. http://crbug.com/655231
   OnWindowSurfaceChanged(uint32 window_id,
                          cc.mojom.SurfaceId surface_id,
-                         cc.mojom.SurfaceSequence surface_sequence,
                          gfx.mojom.Size frame_size,
                          float device_scale_factor);
                          

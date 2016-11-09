@@ -428,14 +428,12 @@ void TestChangeTracker::OnTopLevelCreated(uint32_t change_id,
 void TestChangeTracker::OnWindowSurfaceChanged(
     Id window_id,
     const cc::SurfaceId& surface_id,
-    const cc::SurfaceSequence& surface_sequence,
     const gfx::Size& frame_size,
     float device_scale_factor) {
   Change change;
   change.type = CHANGE_TYPE_SURFACE_CHANGED;
   change.window_id = window_id;
   change.surface_id = surface_id;
-  change.surface_sequence = surface_sequence;
   change.frame_size = frame_size;
   change.device_scale_factor = device_scale_factor;
   AddChange(change);
