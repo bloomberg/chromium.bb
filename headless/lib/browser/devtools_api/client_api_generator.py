@@ -21,8 +21,9 @@ except ImportError:
 # is regenerated, which causes a race condition and breaks concurrent build,
 # since some compile processes will try to read the partially written cache.
 module_path, module_filename = os.path.split(os.path.realpath(__file__))
-third_party_dir = os.path.normpath(os.path.join(
-    module_path, os.pardir, os.pardir, os.pardir, 'third_party'))
+third_party_dir = os.path.normpath(
+    os.path.join(module_path, os.pardir, os.pardir, os.pardir, os.pardir,
+                 'third_party'))
 templates_dir = module_path
 
 # jinja2 is in chromium's third_party directory.
