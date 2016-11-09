@@ -14,6 +14,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer_animation_element.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/public/window_types.h"
 
@@ -137,6 +138,12 @@ class ASH_EXPORT WmWindow {
   virtual void SetColorProperty(WmWindowProperty key, SkColor value) = 0;
   virtual int GetIntProperty(WmWindowProperty key) = 0;
   virtual void SetIntProperty(WmWindowProperty key, int value) = 0;
+  virtual std::string GetStringProperty(WmWindowProperty key) = 0;
+  virtual void SetStringProperty(WmWindowProperty key,
+                                 const std::string& value) = 0;
+
+  virtual gfx::ImageSkia GetWindowIcon() = 0;
+  virtual gfx::ImageSkia GetAppIcon() = 0;
 
   wm::WindowState* GetWindowState() {
     return const_cast<wm::WindowState*>(
@@ -168,6 +175,9 @@ class ASH_EXPORT WmWindow {
   }
   virtual const WmWindow* GetTransientParent() const = 0;
   virtual Windows GetTransientChildren() = 0;
+
+  // Moves this to the display where |event| occurred; returns true if moved.
+  virtual bool MoveToEventRoot(const ui::Event& event) = 0;
 
   virtual void SetLayoutManager(
       std::unique_ptr<WmLayoutManager> layout_manager) = 0;

@@ -857,7 +857,7 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
     // Set Arc id before showing the window to be recognized in
     // ArcAppWindowLauncherController.
     exo::ShellSurface::SetApplicationId(widget->GetNativeWindow(),
-                                        &window_app_id);
+                                        window_app_id);
     widget->Show();
     widget->Activate();
     return widget;

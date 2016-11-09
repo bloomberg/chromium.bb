@@ -203,12 +203,14 @@ TEST_F(ShellSurfaceTest, SetApplicationId) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
+  EXPECT_EQ(nullptr, shell_surface->GetWidget());
+  shell_surface->SetApplicationId("pre-widget-id");
+
   surface->Commit();
-  EXPECT_EQ("", ShellSurface::GetApplicationId(
-                    shell_surface->GetWidget()->GetNativeWindow()));
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+  EXPECT_EQ("pre-widget-id", ShellSurface::GetApplicationId(window));
   shell_surface->SetApplicationId("test");
-  EXPECT_EQ("test", ShellSurface::GetApplicationId(
-                        shell_surface->GetWidget()->GetNativeWindow()));
+  EXPECT_EQ("test", ShellSurface::GetApplicationId(window));
 }
 
 TEST_F(ShellSurfaceTest, Move) {
