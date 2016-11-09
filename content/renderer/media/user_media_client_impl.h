@@ -19,7 +19,6 @@
 #include "content/common/media/media_devices.h"
 #include "content/common/media/media_devices.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "content/renderer/media/media_devices_event_dispatcher.h"
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
 #include "content/renderer/media/media_stream_source.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -225,7 +224,7 @@ class CONTENT_EXPORT UserMediaClientImpl
       const StreamDeviceInfoArray& audio_array,
       const StreamDeviceInfoArray& video_array);
 
-  using EnumerationResult = std::vector<MediaDeviceInfoArray>;
+  using EnumerationResult = std::vector<std::vector<MediaDeviceInfo>>;
   void FinalizeEnumerateDevices(blink::WebMediaDevicesRequest request,
                                 const EnumerationResult& result);
 
@@ -245,11 +244,6 @@ class CONTENT_EXPORT UserMediaClientImpl
 
   const ::mojom::MediaDevicesDispatcherHostPtr& GetMediaDevicesDispatcher();
 
-  // Callback invoked by MediaDevicesEventDispatcher when a device-change
-  // notification arrives.
-  void DevicesChanged(MediaDeviceType device_type,
-                      const MediaDeviceInfoArray& device_infos);
-
   // Weak ref to a PeerConnectionDependencyFactory, owned by the RenderThread.
   // It's valid for the lifetime of RenderThread.
   // TODO(xians): Remove this dependency once audio do not need it for local
@@ -265,8 +259,6 @@ class CONTENT_EXPORT UserMediaClientImpl
   LocalStreamSources local_sources_;
 
   UserMediaRequests user_media_requests_;
-  MediaDevicesEventDispatcher::SubscriptionIdList
-      device_change_subscription_ids_;
 
   blink::WebMediaDeviceChangeObserver media_device_change_observer_;
 
