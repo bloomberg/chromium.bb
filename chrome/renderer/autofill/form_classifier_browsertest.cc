@@ -10,12 +10,20 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
+#include "ui/native_theme/native_theme_switches.h"
 
 namespace autofill {
 
 class FormClassifierTest : public ChromeRenderViewTest {
  public:
   FormClassifierTest() {}
+
+  void SetUp() override {
+    blink::WebRuntimeFeatures::enableOverlayScrollbars(
+        ui::IsOverlayScrollbarEnabled());
+    ChromeRenderViewTest::SetUp();
+  }
 
   void TearDown() override {
     LoadHTML("");

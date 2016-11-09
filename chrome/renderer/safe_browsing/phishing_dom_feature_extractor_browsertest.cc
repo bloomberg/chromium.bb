@@ -32,11 +32,14 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
+#include "ui/native_theme/native_theme_switches.h"
 
 using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::Return;
+using blink::WebRuntimeFeatures;
 
 namespace safe_browsing {
 
@@ -233,6 +236,8 @@ class PhishingDOMFeatureExtractorTest : public ChromeRenderViewTest {
 
   void SetUp() override {
     ChromeRenderViewTest::SetUp();
+    WebRuntimeFeatures::enableOverlayScrollbars(
+        ui::IsOverlayScrollbarEnabled());
     extractor_.reset(new TestPhishingDOMFeatureExtractor(&clock_));
   }
 

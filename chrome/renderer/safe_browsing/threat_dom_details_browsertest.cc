@@ -11,10 +11,14 @@
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "content/public/renderer/render_view.h"
 #include "net/base/escape.h"
+#include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
+#include "ui/native_theme/native_theme_switches.h"
 
 typedef ChromeRenderViewTest ThreatDOMDetailsTest;
 
 TEST_F(ThreatDOMDetailsTest, Everything) {
+  blink::WebRuntimeFeatures::enableOverlayScrollbars(
+      ui::IsOverlayScrollbarEnabled());
   std::unique_ptr<safe_browsing::ThreatDOMDetails> details(
       safe_browsing::ThreatDOMDetails::Create(view_->GetMainRenderFrame()));
   // Lower kMaxNodes for the test. Loading 500 subframes in a

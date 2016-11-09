@@ -719,6 +719,7 @@ test("content_browsertests") {
     "//ui/gfx/geometry",
     "//ui/gl",
     "//ui/gl:test_support",
+    "//ui/native_theme",
     "//ui/resources",
     "//ui/shell_dialogs",
     "//ui/snapshot",
