@@ -57,6 +57,7 @@ crbug.com/414163 [ Debug ] inspector/sources/debugger/promise-tracker.html [ Cra
 crbug.com/480769 http/tests/inspector/service-workers/user-agent-override.html [ Crash ]
 
 crbug.com/662477 imported/wpt/html/webappapis/idle-callbacks/cancel-invoked.html [ Leak ]
+crbug.com/662477 imported/wpt/html/webappapis/scripting/events/onerroreventhandler.html [ Leak ]
 
 # -----------------------------------------------------------------
 # Untriaged but known leaks of ActiveDOMObject (fast).
