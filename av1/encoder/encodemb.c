@@ -1042,6 +1042,7 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
       for (j = 0; j < tx_blk_size; j++)
         for (i = 0; i < tx_blk_size; i++) dst[j * pd->dst.stride + i] = 0;
     }
+#endif  // !CONFIG_PVQ
 #if CONFIG_AOM_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
       if (xd->lossless[xd->mi[0]->mbmi.segment_id]) {
@@ -1054,7 +1055,6 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
       return;
     }
 #endif  //  CONFIG_AOM_HIGHBITDEPTH
-#endif  //  !CONFIG_PVQ
     if (xd->lossless[xd->mi[0]->mbmi.segment_id]) {
       av1_iwht4x4_add(dqcoeff, dst, pd->dst.stride, p->eobs[block]);
     } else {
