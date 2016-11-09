@@ -784,6 +784,27 @@ cr.define('login', function() {
     },
 
     /**
+     * Whether the user pod is disabled.
+     * @type {boolean}
+     */
+    disabled_: false,
+    get disabled() {
+      return this.disabled_;
+    },
+    set disabled(value) {
+      this.disabled_ = value;
+      this.querySelectorAll('button,input').forEach(function(element) {
+        element.disabled = value
+      });
+
+      // Special handling for submit button - the submit button should be
+      // enabled only if there is the password value set.
+      var submitButton = this.submitButton;
+      if (submitButton)
+        submitButton.disabled = value || !this.passwordElement.value;
+    },
+
+    /**
      * Resets tab order for pod elements to its initial state.
      */
     resetTabOrder: function() {
@@ -2624,10 +2645,9 @@ cr.define('login', function() {
     },
     set disabled(value) {
       this.disabled_ = value;
-      var controls = this.querySelectorAll('button,input');
-      for (var i = 0, control; control = controls[i]; ++i) {
-        control.disabled = value;
-      }
+      this.pods.forEach(function(pod) {
+        pod.disabled = value;
+      });
     },
 
     /**
@@ -3300,6 +3320,10 @@ cr.define('login', function() {
      * @param {Event} e Event object.
      */
     setActivatedPod: function(pod, e) {
+      if (this.disabled) {
+        console.error('Cannot activate pod while sign-in UI is disabled.');
+        return;
+      }
       if (pod && pod.activate(e))
         this.activatedPod_ = pod;
     },
