@@ -14,7 +14,6 @@ namespace {
 
 NSString* const kReadingListReadElements = @"ReadingListReadElements";
 NSString* const kReadingListUnreadElements = @"ReadingListUnreadElements";
-NSString* const kReadingListUnseenState = @"ReadingListUnseenState";
 NSString* const kReadingListEntryTitleKey = @"title";
 NSString* const kReadingListEntryURLKey = @"URL";
 NSString* const kReadingListEntryStateKey = @"state";
@@ -118,10 +117,6 @@ ReadingListModelStorageDefaults::LoadPersistentUnreadList() {
   return unread;
 }
 
-bool ReadingListModelStorageDefaults::LoadPersistentHasUnseen() {
-  return [[backend_ objectForKey:kReadingListUnseenState] boolValue];
-}
-
 void ReadingListModelStorageDefaults::SavePersistentReadList(
     const std::vector<ReadingListEntry>& read) {
   NSMutableArray* read_list = [NSMutableArray arrayWithCapacity:read.size()];
@@ -141,7 +136,3 @@ void ReadingListModelStorageDefaults::SavePersistentUnreadList(
   [backend_ setObject:unread_list forKey:kReadingListUnreadElements];
 }
 
-void ReadingListModelStorageDefaults::SavePersistentHasUnseen(bool has_unseen) {
-  [backend_ setObject:[NSNumber numberWithBool:has_unseen]
-               forKey:kReadingListUnseenState];
-}

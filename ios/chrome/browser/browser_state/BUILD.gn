@@ -84,6 +84,7 @@ source_set("browser_state_impl") {
     "//ios/chrome/browser/ntp_snippets",
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/prefs",
+    "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/services/gcm",
     "//ios/chrome/browser/signin",

@@ -12,13 +12,15 @@
 #include "ios/chrome/browser/reading_list/reading_list_model.h"
 
 class ReadingListModelStorage;
+class PrefService;
 
 // Concrete implementation of a reading list model using in memory lists.
 class ReadingListModelImpl : public ReadingListModel, public KeyedService {
  public:
   // Initialize a ReadingListModelImpl to load and save data in
   // |persistence_layer|.
-  ReadingListModelImpl(std::unique_ptr<ReadingListModelStorage> storage_layer);
+  ReadingListModelImpl(std::unique_ptr<ReadingListModelStorage> storage,
+                       PrefService* pref_service);
 
   // Initialize a ReadingListModelImpl without persistence. Data will not be
   // persistent across sessions.
@@ -47,6 +49,9 @@ class ReadingListModelImpl : public ReadingListModel, public KeyedService {
       const GURL& url,
       base::Callback<void(const ReadingListEntry&)> callback) const override;
 
+  void RemoveEntryByURL(const GURL& url) override;
+
+  // Temporary method
   void RemoveEntryByUrl(const GURL& url) override;
 
   const ReadingListEntry& AddEntry(const GURL& url,
@@ -66,12 +71,16 @@ class ReadingListModelImpl : public ReadingListModel, public KeyedService {
   void EndBatchUpdates() override;
 
  private:
+  void SetPersistentHasUnseen(bool has_unseen);
+  bool GetPersistentHasUnseen();
+
   typedef std::vector<ReadingListEntry> ReadingListEntries;
 
   ReadingListEntries unread_;
   ReadingListEntries read_;
-  std::unique_ptr<ReadingListModelStorage> storageLayer_;
-  bool hasUnseen_;
+  std::unique_ptr<ReadingListModelStorage> storage_layer_;
+  PrefService* pref_service_;
+  bool has_unseen_;
   bool loaded_;
 
   DISALLOW_COPY_AND_ASSIGN(ReadingListModelImpl);

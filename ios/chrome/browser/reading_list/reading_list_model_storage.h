@@ -17,13 +17,11 @@ class ReadingListModelStorage {
  public:
   virtual std::vector<ReadingListEntry> LoadPersistentReadList() = 0;
   virtual std::vector<ReadingListEntry> LoadPersistentUnreadList() = 0;
-  virtual bool LoadPersistentHasUnseen() = 0;
 
   virtual void SavePersistentReadList(
       const std::vector<ReadingListEntry>& read) = 0;
   virtual void SavePersistentUnreadList(
       const std::vector<ReadingListEntry>& unread) = 0;
-  virtual void SavePersistentHasUnseen(bool has_unseen) = 0;
 };
 
 #endif  // IOS_CHROME_BROWSER_READING_LIST_READING_LIST_MODEL_STORAGE_H_

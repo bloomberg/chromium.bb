@@ -39,7 +39,6 @@
 #include "ios/chrome/browser/net/http_server_properties_manager_factory.h"
 #include "ios/chrome/browser/notification_promo.h"
 #include "ios/chrome/browser/pref_names.h"
-#include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/voice/voice_search_prefs_registration.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"

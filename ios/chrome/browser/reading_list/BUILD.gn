@@ -22,6 +22,8 @@ source_set("reading_list") {
     "reading_list_model_storage.h",
     "reading_list_model_storage_defaults.h",
     "reading_list_model_storage_defaults.mm",
+    "reading_list_pref_names.cc",
+    "reading_list_pref_names.h",
     "url_downloader.cc",
     "url_downloader.h",
   ]
@@ -29,6 +31,8 @@ source_set("reading_list") {
     "//base",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
+    "//components/pref_registry",
+    "//components/prefs",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/web",

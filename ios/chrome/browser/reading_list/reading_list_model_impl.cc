@@ -5,22 +5,27 @@
 #include "ios/chrome/browser/reading_list/reading_list_model_impl.h"
 
 #include "base/strings/string_util.h"
+#include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_storage.h"
+#include "ios/chrome/browser/reading_list/reading_list_pref_names.h"
 #include "url/gurl.h"
 
-ReadingListModelImpl::ReadingListModelImpl() : ReadingListModelImpl(NULL) {}
+ReadingListModelImpl::ReadingListModelImpl()
+    : ReadingListModelImpl(nullptr, nullptr) {}
 
 ReadingListModelImpl::ReadingListModelImpl(
-    std::unique_ptr<ReadingListModelStorage> storage)
-    : hasUnseen_(false) {
+    std::unique_ptr<ReadingListModelStorage> storage,
+    PrefService* pref_service)
+    : pref_service_(pref_service), has_unseen_(false) {
   if (storage) {
-    storageLayer_ = std::move(storage);
-    read_ = storageLayer_->LoadPersistentReadList();
-    unread_ = storageLayer_->LoadPersistentUnreadList();
-    hasUnseen_ = storageLayer_->LoadPersistentHasUnseen();
+    storage_layer_ = std::move(storage);
+    read_ = storage_layer_->LoadPersistentReadList();
+    unread_ = storage_layer_->LoadPersistentUnreadList();
+    has_unseen_ = GetPersistentHasUnseen();
   }
   loaded_ = true;
 }
+
 ReadingListModelImpl::~ReadingListModelImpl() {}
 
 void ReadingListModelImpl::Shutdown() {
@@ -45,14 +50,14 @@ size_t ReadingListModelImpl::read_size() const {
 
 bool ReadingListModelImpl::HasUnseenEntries() const {
   DCHECK(loaded());
-  return unread_size() && hasUnseen_;
+  return unread_size() && has_unseen_;
 }
 
 void ReadingListModelImpl::ResetUnseenEntries() {
   DCHECK(loaded());
-  hasUnseen_ = false;
-  if (storageLayer_ && !IsPerformingBatchUpdates())
-    storageLayer_->SavePersistentHasUnseen(false);
+  has_unseen_ = false;
+  if (storage_layer_ && !IsPerformingBatchUpdates())
+    SetPersistentHasUnseen(false);
 }
 
 const ReadingListEntry& ReadingListModelImpl::GetUnreadEntryAtIndex(
@@ -92,7 +97,12 @@ bool ReadingListModelImpl::CallbackEntryURL(
   return false;
 }
 
+// Temporary method
 void ReadingListModelImpl::RemoveEntryByUrl(const GURL& url) {
+  return RemoveEntryByURL(url);
+}
+
+void ReadingListModelImpl::RemoveEntryByURL(const GURL& url) {
   DCHECK(loaded());
   const ReadingListEntry entry(url, std::string());
 
@@ -103,8 +113,8 @@ void ReadingListModelImpl::RemoveEntryByUrl(const GURL& url) {
           this, std::distance(unread_.begin(), result));
     }
     unread_.erase(result);
-    if (storageLayer_ && !IsPerformingBatchUpdates())
-      storageLayer_->SavePersistentUnreadList(unread_);
+    if (storage_layer_ && !IsPerformingBatchUpdates())
+      storage_layer_->SavePersistentUnreadList(unread_);
     for (auto& observer : observers_)
       observer.ReadingListDidApplyChanges(this);
     return;
@@ -117,8 +127,8 @@ void ReadingListModelImpl::RemoveEntryByUrl(const GURL& url) {
           this, std::distance(read_.begin(), result));
     }
     read_.erase(result);
-    if (storageLayer_ && !IsPerformingBatchUpdates())
-      storageLayer_->SavePersistentReadList(read_);
+    if (storage_layer_ && !IsPerformingBatchUpdates())
+      storage_layer_->SavePersistentReadList(read_);
     for (auto& observer : observers_)
       observer.ReadingListDidApplyChanges(this);
     return;
@@ -129,7 +139,7 @@ const ReadingListEntry& ReadingListModelImpl::AddEntry(
     const GURL& url,
     const std::string& title) {
   DCHECK(loaded());
-  RemoveEntryByUrl(url);
+  RemoveEntryByURL(url);
 
   std::string trimmedTitle(title);
   base::TrimWhitespaceASCII(trimmedTitle, base::TRIM_ALL, &trimmedTitle);
@@ -138,10 +148,10 @@ const ReadingListEntry& ReadingListModelImpl::AddEntry(
   for (auto& observer : observers_)
     observer.ReadingListWillAddUnreadEntry(this, entry);
   unread_.insert(unread_.begin(), std::move(entry));
-  hasUnseen_ = true;
-  if (storageLayer_ && !IsPerformingBatchUpdates()) {
-    storageLayer_->SavePersistentUnreadList(unread_);
-    storageLayer_->SavePersistentHasUnseen(true);
+  has_unseen_ = true;
+  if (storage_layer_ && !IsPerformingBatchUpdates()) {
+    storage_layer_->SavePersistentUnreadList(unread_);
+    SetPersistentHasUnseen(true);
   }
   for (auto& observer : observers_)
     observer.ReadingListDidApplyChanges(this);
@@ -163,9 +173,9 @@ void ReadingListModelImpl::MarkUnreadByURL(const GURL& url) {
   unread_.insert(unread_.begin(), std::move(*result));
   read_.erase(result);
 
-  if (storageLayer_ && !IsPerformingBatchUpdates()) {
-    storageLayer_->SavePersistentUnreadList(read_);
-    storageLayer_->SavePersistentReadList(unread_);
+  if (storage_layer_ && !IsPerformingBatchUpdates()) {
+    storage_layer_->SavePersistentUnreadList(read_);
+    storage_layer_->SavePersistentReadList(unread_);
   }
   for (ReadingListModelObserver& observer : observers_) {
     observer.ReadingListDidApplyChanges(this);
@@ -187,9 +197,9 @@ void ReadingListModelImpl::MarkReadByURL(const GURL& url) {
   read_.insert(read_.begin(), std::move(*result));
   unread_.erase(result);
 
-  if (storageLayer_ && !IsPerformingBatchUpdates()) {
-    storageLayer_->SavePersistentUnreadList(unread_);
-    storageLayer_->SavePersistentReadList(read_);
+  if (storage_layer_ && !IsPerformingBatchUpdates()) {
+    storage_layer_->SavePersistentUnreadList(unread_);
+    storage_layer_->SavePersistentReadList(read_);
   }
   for (auto& observer : observers_)
     observer.ReadingListDidApplyChanges(this);
@@ -207,8 +217,8 @@ void ReadingListModelImpl::SetEntryTitle(const GURL& url,
           this, std::distance(unread_.begin(), result));
     }
     result->SetTitle(title);
-    if (storageLayer_ && !IsPerformingBatchUpdates())
-      storageLayer_->SavePersistentUnreadList(unread_);
+    if (storage_layer_ && !IsPerformingBatchUpdates())
+      storage_layer_->SavePersistentUnreadList(unread_);
     for (auto& observer : observers_)
       observer.ReadingListDidApplyChanges(this);
     return;
@@ -221,8 +231,8 @@ void ReadingListModelImpl::SetEntryTitle(const GURL& url,
           this, std::distance(read_.begin(), result));
     }
     result->SetTitle(title);
-    if (storageLayer_ && !IsPerformingBatchUpdates())
-      storageLayer_->SavePersistentReadList(read_);
+    if (storage_layer_ && !IsPerformingBatchUpdates())
+      storage_layer_->SavePersistentReadList(read_);
     for (auto& observer : observers_)
       observer.ReadingListDidApplyChanges(this);
     return;
@@ -241,8 +251,8 @@ void ReadingListModelImpl::SetEntryDistilledURL(const GURL& url,
           this, std::distance(unread_.begin(), result));
     }
     result->SetDistilledURL(distilled_url);
-    if (storageLayer_ && !IsPerformingBatchUpdates())
-      storageLayer_->SavePersistentUnreadList(unread_);
+    if (storage_layer_ && !IsPerformingBatchUpdates())
+      storage_layer_->SavePersistentUnreadList(unread_);
     for (auto& observer : observers_)
       observer.ReadingListDidApplyChanges(this);
     return;
@@ -255,8 +265,8 @@ void ReadingListModelImpl::SetEntryDistilledURL(const GURL& url,
           this, std::distance(read_.begin(), result));
     }
     result->SetDistilledURL(distilled_url);
-    if (storageLayer_ && !IsPerformingBatchUpdates())
-      storageLayer_->SavePersistentReadList(read_);
+    if (storage_layer_ && !IsPerformingBatchUpdates())
+      storage_layer_->SavePersistentReadList(read_);
     for (auto& observer : observers_)
       observer.ReadingListDidApplyChanges(this);
     return;
@@ -276,8 +286,8 @@ void ReadingListModelImpl::SetEntryDistilledState(
           this, std::distance(unread_.begin(), result));
     }
     result->SetDistilledState(state);
-    if (storageLayer_ && !IsPerformingBatchUpdates())
-      storageLayer_->SavePersistentUnreadList(unread_);
+    if (storage_layer_ && !IsPerformingBatchUpdates())
+      storage_layer_->SavePersistentUnreadList(unread_);
     for (auto& observer : observers_)
       observer.ReadingListDidApplyChanges(this);
     return;
@@ -290,8 +300,8 @@ void ReadingListModelImpl::SetEntryDistilledState(
           this, std::distance(read_.begin(), result));
     }
     result->SetDistilledState(state);
-    if (storageLayer_ && !IsPerformingBatchUpdates())
-      storageLayer_->SavePersistentReadList(read_);
+    if (storage_layer_ && !IsPerformingBatchUpdates())
+      storage_layer_->SavePersistentReadList(read_);
     for (auto& observer : observers_)
       observer.ReadingListDidApplyChanges(this);
     return;
@@ -300,10 +310,26 @@ void ReadingListModelImpl::SetEntryDistilledState(
 
 void ReadingListModelImpl::EndBatchUpdates() {
   ReadingListModel::EndBatchUpdates();
-  if (IsPerformingBatchUpdates() || !storageLayer_) {
+  if (IsPerformingBatchUpdates() || !storage_layer_) {
     return;
   }
-  storageLayer_->SavePersistentUnreadList(unread_);
-  storageLayer_->SavePersistentReadList(read_);
-  storageLayer_->SavePersistentHasUnseen(hasUnseen_);
+  storage_layer_->SavePersistentUnreadList(unread_);
+  storage_layer_->SavePersistentReadList(read_);
+  SetPersistentHasUnseen(has_unseen_);
+}
+
+void ReadingListModelImpl::SetPersistentHasUnseen(bool has_unseen) {
+  if (!pref_service_) {
+    return;
+  }
+  pref_service_->SetBoolean(reading_list::prefs::kReadingListHasUnseenEntries,
+                            has_unseen);
+}
+
+bool ReadingListModelImpl::GetPersistentHasUnseen() {
+  if (!pref_service_) {
+    return false;
+  }
+  return pref_service_->GetBoolean(
+      reading_list::prefs::kReadingListHasUnseenEntries);
 }

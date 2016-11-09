@@ -25,13 +25,11 @@ class ReadingListModelStorageDefaults : public ReadingListModelStorage {
 
   std::vector<ReadingListEntry> LoadPersistentReadList() override;
   std::vector<ReadingListEntry> LoadPersistentUnreadList() override;
-  bool LoadPersistentHasUnseen() override;
 
   void SavePersistentReadList(
       const std::vector<ReadingListEntry>& read) override;
   void SavePersistentUnreadList(
       const std::vector<ReadingListEntry>& unread) override;
-  void SavePersistentHasUnseen(bool has_unseen) override;
 
  private:
   NSUserDefaults* backend_;
