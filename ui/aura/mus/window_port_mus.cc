@@ -11,6 +11,7 @@
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_property.h"
 
@@ -306,7 +307,10 @@ void WindowPortMus::OnPreInit(Window* window) {
   window_tree_client_->OnWindowMusCreated(this);
 }
 
-void WindowPortMus::OnDeviceScaleFactorChanged(float device_scale_factor) {}
+void WindowPortMus::OnDeviceScaleFactorChanged(float device_scale_factor) {
+  if (window_->delegate())
+    window_->delegate()->OnDeviceScaleFactorChanged(device_scale_factor);
+}
 
 void WindowPortMus::OnWillAddChild(Window* child) {
   ServerChangeData change_data;

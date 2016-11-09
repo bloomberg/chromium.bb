@@ -90,6 +90,11 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   bool IsTranslucentWindowOpacitySupported() const override;
   void SizeConstraintsChanged() override;
 
+  // WindowTreeHostMus:
+  void ShowImpl() override;
+  void HideImpl() override;
+  void SetBounds(const gfx::Rect& bounds_in_pixels) override;
+
   // aura::EnvObserver:
   void OnWindowInitialized(aura::Window* window) override;
   void OnActiveFocusClientChanged(aura::client::FocusClient* focus_client,

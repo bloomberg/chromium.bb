@@ -30,6 +30,17 @@ class TouchSelectionMenuRunnerViewsTest : public ViewsTestBase,
   ~TouchSelectionMenuRunnerViewsTest() override {}
 
  protected:
+  void SetUp() override {
+    ViewsTestBase::SetUp();
+    // These tests expect NativeWidgetAura, force its creation.
+    // TODO(sky): the reason these end up using NativeWidgetAura is because they
+    // create a widget parented to GetContext(). GetContext() currently always
+    // returns an aura::Window in a fake WindowTreeHost. For aura-mus we should
+    // not create a fake WindowTreeHost. http://crbug.com/663561.
+    ViewsDelegate::GetInstance()->set_native_widget_factory(
+        ViewsDelegate::NativeWidgetFactory());
+  }
+
   void set_no_commmand_available(bool no_command) {
     no_command_available_ = no_command;
   }

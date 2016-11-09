@@ -126,7 +126,8 @@ bool DesktopWindowTreeHostMus::IsVisible() const {
 }
 
 void DesktopWindowTreeHostMus::SetSize(const gfx::Size& size) {
-  window()->SetBounds(gfx::Rect(window()->bounds().origin(), size));
+  // TODO: handle device scale, http://crbug.com/663524.
+  SetBounds(gfx::Rect(window()->bounds().origin(), size));
 }
 
 void DesktopWindowTreeHostMus::StackAbove(aura::Window* window) {
@@ -140,13 +141,17 @@ void DesktopWindowTreeHostMus::StackAtTop() {
 void DesktopWindowTreeHostMus::CenterWindow(const gfx::Size& size) {
   NOTIMPLEMENTED();
 }
+
 void DesktopWindowTreeHostMus::GetWindowPlacement(
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
-  NOTIMPLEMENTED();
+  // Implementation matches that of NativeWidgetAura.
+  *bounds = GetRestoredBounds();
+  *show_state = window()->GetProperty(aura::client::kShowStateKey);
 }
+
 gfx::Rect DesktopWindowTreeHostMus::GetWindowBoundsInScreen() const {
-  // TODO: convert to dips.
+  // TODO: convert to dips, http://crbug.com/663524.
   return GetBounds();
 }
 
@@ -358,6 +363,34 @@ void DesktopWindowTreeHostMus::SizeConstraintsChanged() {
                         widget->widget_delegate()->CanMinimize());
   window()->SetProperty(aura::client::kCanResizeKey,
                         widget->widget_delegate()->CanResize());
+}
+
+void DesktopWindowTreeHostMus::ShowImpl() {
+  native_widget_delegate_->OnNativeWidgetVisibilityChanging(true);
+  // Using ui::SHOW_STATE_NORMAL matches that of DesktopWindowTreeHostX11.
+  ShowWindowWithState(ui::SHOW_STATE_NORMAL);
+  WindowTreeHostMus::ShowImpl();
+  native_widget_delegate_->OnNativeWidgetVisibilityChanged(true);
+}
+
+void DesktopWindowTreeHostMus::HideImpl() {
+  native_widget_delegate_->OnNativeWidgetVisibilityChanging(false);
+  WindowTreeHostMus::HideImpl();
+  native_widget_delegate_->OnNativeWidgetVisibilityChanged(false);
+}
+
+void DesktopWindowTreeHostMus::SetBounds(const gfx::Rect& bounds_in_pixels) {
+  // TODO: handle conversion to dips, http://crbug.com/663524.
+  gfx::Rect final_bounds_in_pixels = bounds_in_pixels;
+  if (GetBounds().size() != bounds_in_pixels.size()) {
+    gfx::Size size = bounds_in_pixels.size();
+    size.SetToMax(native_widget_delegate_->GetMinimumSize());
+    const gfx::Size max_size = native_widget_delegate_->GetMaximumSize();
+    if (!max_size.IsEmpty())
+      size.SetToMin(max_size);
+    final_bounds_in_pixels.set_size(size);
+  }
+  WindowTreeHostPlatform::SetBounds(final_bounds_in_pixels);
 }
 
 void DesktopWindowTreeHostMus::OnWindowInitialized(aura::Window* window) {}

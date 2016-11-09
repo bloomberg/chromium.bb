@@ -847,6 +847,10 @@ TEST_F(WidgetObserverTest, DISABLED_VisibilityChange) {
 }
 
 TEST_F(WidgetObserverTest, DestroyBubble) {
+  // This test expect NativeWidgetAura, force its creation.
+  ViewsDelegate::GetInstance()->set_native_widget_factory(
+      ViewsDelegate::NativeWidgetFactory());
+
   WidgetAutoclosePtr anchor(CreateTopLevelPlatformWidget());
   anchor->Show();
 
@@ -1271,6 +1275,11 @@ TEST_F(WidgetTest, DISABLED_FocusChangesOnBubble) {
 }
 
 TEST_F(WidgetTest, BubbleControlsResetOnInit) {
+  // This test creates a NativeWidgetAura and then a bubble parented to it. This
+  // means the test needs a NativeWidgetAura for the bubble as well.
+  ViewsDelegate::GetInstance()->set_native_widget_factory(
+      ViewsDelegate::NativeWidgetFactory());
+
   WidgetAutoclosePtr anchor(CreateTopLevelPlatformWidget());
   anchor->Show();
 
