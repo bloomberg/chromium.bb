@@ -840,7 +840,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   if ([browserActionsContainerView_ isHidden]) {
     CGFloat edgeXPos = [appMenuButton_ frame].origin.x;
     leftDistance = edgeXPos - locationBarXPos -
-        [ToolbarController appMenuLeftPadding];
+        [ToolbarController appMenuLeftPadding] - kButtonInset;
   } else {
     leftDistance = NSMinX([browserActionsContainerView_ animationEndFrame]) -
         locationBarXPos;
