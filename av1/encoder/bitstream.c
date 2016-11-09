@@ -3375,6 +3375,7 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
   size_t total_size = 0;
   const int tile_cols = cm->tile_cols;
   const int tile_rows = cm->tile_rows;
+  unsigned int tile_size = 0;
 #if CONFIG_TILE_GROUPS
   const int n_log2_tiles = cm->log2_tile_rows + cm->log2_tile_cols;
   const int have_tiles = n_log2_tiles > 0;
@@ -3388,6 +3389,9 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
   struct aom_write_bit_buffer comp_hdr_len_wb;
   struct aom_write_bit_buffer tg_params_wb;
   int saved_offset;
+  int mtu_size = cpi->oxcf.mtu;
+  int curr_tg_data_size = 0;
+  int hdr_size;
 #endif
 #if CONFIG_EXT_TILE
   const int have_tiles = tile_cols * tile_rows > 1;
@@ -3415,7 +3419,6 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
 
     for (tile_row = 0; tile_row < tile_rows; tile_row++) {
       TileBufferEnc *const buf = &tile_buffers[tile_row][tile_col];
-      unsigned int tile_size;
       const TOKENEXTRA *tok = tok_buffers[tile_row][tile_col];
       const TOKENEXTRA *tok_end = tok + cpi->tok_count[tile_row][tile_col];
       const int data_offset = have_tiles ? 4 : 0;
@@ -3500,7 +3503,8 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
   dst = wb->bit_buffer;
   comp_hdr_size = write_compressed_header(cpi, dst + uncompressed_hdr_size);
   aom_wb_write_literal(&comp_hdr_len_wb, (int)(comp_hdr_size), 16);
-  total_size += uncompressed_hdr_size + comp_hdr_size;
+  hdr_size = uncompressed_hdr_size + comp_hdr_size;
+  total_size += hdr_size;
 #endif
 
   for (tile_row = 0; tile_row < tile_rows; tile_row++) {
@@ -3513,7 +3517,6 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
       const int tile_idx = tile_row * tile_cols + tile_col;
       TileBufferEnc *const buf = &tile_buffers[tile_row][tile_col];
       const int is_last_col = (tile_col == tile_cols - 1);
-      unsigned int tile_size;
 #if CONFIG_PVQ
       TileDataEnc *this_tile = &cpi->tile_data[tile_idx];
 #endif
@@ -3525,21 +3528,53 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
 #else
       // All tiles in a tile group have a length
       const int is_last_tile = 0;
-      if (tile_count >= tg_size) {
-        // Copy uncompressed header
-        memcpy(dst + total_size, dst, uncompressed_hdr_size * sizeof(uint8_t));
-        // Write the number of tiles in the group into the last uncompressed
-        // header
-        aom_wb_write_literal(&tg_params_wb, tile_idx - tile_count,
-                             n_log2_tiles);
-        aom_wb_write_literal(&tg_params_wb, tile_count - 1, n_log2_tiles);
-        tg_params_wb.bit_offset = saved_offset + 8 * total_size;
-        // Copy compressed header
-        memcpy(dst + total_size + uncompressed_hdr_size,
-               dst + uncompressed_hdr_size, comp_hdr_size * sizeof(uint8_t));
-        total_size += uncompressed_hdr_size;
-        total_size += comp_hdr_size;
-        tile_count = 0;
+
+      if ((!mtu_size && tile_count > tg_size) ||
+          (mtu_size && tile_count && curr_tg_data_size >= mtu_size)) {
+        // We've exceeded the packet size
+        if (tile_count > 1) {
+          /* The last tile exceeded the packet size. The tile group size
+             should therefore be tile_count-1.
+             Move the last tile and insert headers before it
+           */
+          int old_total_size = total_size - tile_size - 4;
+          memmove(dst + old_total_size + hdr_size, dst + old_total_size,
+                  (tile_size + 4) * sizeof(uint8_t));
+          // Copy uncompressed header
+          memmove(dst + old_total_size, dst,
+                  uncompressed_hdr_size * sizeof(uint8_t));
+          // Write the number of tiles in the group into the last uncompressed
+          // header before the one we've just inserted
+          aom_wb_write_literal(&tg_params_wb, tile_idx - tile_count,
+                               n_log2_tiles);
+          aom_wb_write_literal(&tg_params_wb, tile_count - 2, n_log2_tiles);
+          // Update the pointer to the last TG params
+          tg_params_wb.bit_offset = saved_offset + 8 * old_total_size;
+          // Copy compressed header
+          memmove(dst + old_total_size + uncompressed_hdr_size,
+                  dst + uncompressed_hdr_size, comp_hdr_size * sizeof(uint8_t));
+          total_size += hdr_size;
+          tile_count = 1;
+          curr_tg_data_size = hdr_size + tile_size + 4;
+
+        } else {
+          // We exceeded the packet size in just one tile
+          // Copy uncompressed header
+          memmove(dst + total_size, dst,
+                  uncompressed_hdr_size * sizeof(uint8_t));
+          // Write the number of tiles in the group into the last uncompressed
+          // header
+          aom_wb_write_literal(&tg_params_wb, tile_idx - tile_count,
+                               n_log2_tiles);
+          aom_wb_write_literal(&tg_params_wb, tile_count - 1, n_log2_tiles);
+          tg_params_wb.bit_offset = saved_offset + 8 * total_size;
+          // Copy compressed header
+          memmove(dst + total_size + uncompressed_hdr_size,
+                  dst + uncompressed_hdr_size, comp_hdr_size * sizeof(uint8_t));
+          total_size += hdr_size;
+          tile_count = 0;
+          curr_tg_data_size = hdr_size;
+        }
       }
       tile_count++;
 #endif
@@ -3575,6 +3610,9 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
 
       assert(tile_size > 0);
 
+#if CONFIG_TILE_GROUPS
+      curr_tg_data_size += tile_size + 4;
+#endif
       buf->size = tile_size;
 
       if (!is_last_tile) {

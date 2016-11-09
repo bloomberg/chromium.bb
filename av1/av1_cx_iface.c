@@ -49,6 +49,10 @@ struct av1_extracfg {
   unsigned int qm_min;
   unsigned int qm_max;
 #endif
+#if CONFIG_TILE_GROUPS
+  unsigned int num_tg;
+  unsigned int mtu_size;
+#endif
   unsigned int frame_parallel_decoding_mode;
   AQ_MODE aq_mode;
   unsigned int frame_periodic_boost;
@@ -91,6 +95,10 @@ static struct av1_extracfg default_extra_cfg = {
   0,                 // enable_qm
   DEFAULT_QM_FIRST,  // qm_min
   DEFAULT_QM_LAST,   // qm_max
+#endif
+#if CONFIG_TILE_GROUPS
+  1,  // max number of tile groups
+  0,  // mtu_size
 #endif
   1,                           // frame_parallel_decoding_mode
   NO_AQ,                       // aq_mode
@@ -393,6 +401,11 @@ static aom_codec_err_t set_encoder_config(
   oxcf->using_qm = extra_cfg->enable_qm;
   oxcf->qm_minlevel = extra_cfg->qm_min;
   oxcf->qm_maxlevel = extra_cfg->qm_max;
+#endif
+
+#if CONFIG_TILE_GROUPS
+  oxcf->num_tile_groups = extra_cfg->num_tg;
+  oxcf->mtu = extra_cfg->mtu_size;
 #endif
 
   oxcf->under_shoot_pct = cfg->rc_undershoot_pct;
@@ -716,6 +729,21 @@ static aom_codec_err_t ctrl_set_qm_max(aom_codec_alg_priv_t *ctx,
                                        va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.qm_max = CAST(AV1E_SET_QM_MAX, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+#endif
+
+#if CONFIG_TILE_GROUPS
+static aom_codec_err_t ctrl_set_num_tg(aom_codec_alg_priv_t *ctx,
+                                       va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.num_tg = CAST(AV1E_SET_NUM_TG, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_mtu(aom_codec_alg_priv_t *ctx, va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.mtu_size = CAST(AV1E_SET_MTU, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 #endif
@@ -1321,6 +1349,10 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_ENABLE_QM, ctrl_set_enable_qm },
   { AV1E_SET_QM_MIN, ctrl_set_qm_min },
   { AV1E_SET_QM_MAX, ctrl_set_qm_max },
+#endif
+#if CONFIG_TILE_GROUPS
+  { AV1E_SET_NUM_TG, ctrl_set_num_tg },
+  { AV1E_SET_MTU, ctrl_set_mtu },
 #endif
   { AV1E_SET_FRAME_PARALLEL_DECODING, ctrl_set_frame_parallel_decoding_mode },
   { AV1E_SET_AQ_MODE, ctrl_set_aq_mode },

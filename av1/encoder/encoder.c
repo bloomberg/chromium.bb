@@ -4585,10 +4585,12 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
     }
   }
 #if CONFIG_TILE_GROUPS
-  if (cm->error_resilient_mode)
-    cm->num_tg = MAX_NUM_TG;
-  else
-    cm->num_tg = 1;
+  if (cpi->oxcf.mtu == 0) {
+    cm->num_tg = cpi->oxcf.num_tile_groups;
+  } else {
+    // Use a default value for the purposes of weighting costs in probability updates
+    cm->num_tg = DEFAULT_MAX_NUM_TG;
+  }
 #endif
 
   // For 1 pass CBR, check if we are dropping this frame.

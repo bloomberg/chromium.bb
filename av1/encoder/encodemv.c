@@ -142,9 +142,9 @@ static void update_mv(aom_writer *w, const unsigned int ct[2], aom_prob *cur_p,
                       aom_prob upd_p) {
   (void)upd_p;
 #if CONFIG_TILE_GROUPS
-  // Just use the maximum number of tile groups to avoid passing in the actual
+  // Just use the default maximum number of tile groups to avoid passing in the actual
   // number
-  av1_cond_prob_diff_update(w, cur_p, ct, MAX_NUM_TG);
+  av1_cond_prob_diff_update(w, cur_p, ct, DEFAULT_MAX_NUM_TG);
 #else
   av1_cond_prob_diff_update(w, cur_p, ct, 1);
 #endif

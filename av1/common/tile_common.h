@@ -19,7 +19,7 @@ extern "C" {
 struct AV1Common;
 
 #if CONFIG_TILE_GROUPS
-#define MAX_NUM_TG 3
+#define DEFAULT_MAX_NUM_TG 3
 #endif
 
 typedef struct TileInfo {

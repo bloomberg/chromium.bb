@@ -388,6 +388,13 @@ static const arg_def_t qm_min = ARG_DEF(
 static const arg_def_t qm_max = ARG_DEF(
     NULL, "qm_max", 1, "Max quant matrix flatness (0..15), default is 16");
 #endif
+#if CONFIG_TILE_GROUPS
+static const arg_def_t num_tg =
+    ARG_DEF(NULL, "num-tile-groups", 1, "Maximum number of tile groups, default is 1");
+static const arg_def_t mtu_size =
+    ARG_DEF(NULL, "mtu-size", 1,
+            "MTU size for a tile group, default is 0 (no MTU targeting), overrides maximum number of tile groups");
+#endif
 static const arg_def_t frame_parallel_decoding =
     ARG_DEF(NULL, "frame-parallel", 1,
             "Enable frame parallel decodability features "
@@ -486,6 +493,10 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
 #if CONFIG_EXT_PARTITION
                                        &superblock_size,
 #endif  // CONFIG_EXT_PARTITION
+#if CONFIG_TILE_GROUPS
+                                       &num_tg,
+                                       &mtu_size,
+#endif
 #if CONFIG_AOM_HIGHBITDEPTH
                                        &bitdeptharg,
                                        &inbitdeptharg,
@@ -522,6 +533,10 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
 #if CONFIG_EXT_PARTITION
                                         AV1E_SET_SUPERBLOCK_SIZE,
 #endif  // CONFIG_EXT_PARTITION
+#if CONFIG_TILE_GROUPS
+                                        AV1E_SET_NUM_TG,
+                                        AV1E_SET_MTU,
+#endif
                                         0 };
 #endif
 

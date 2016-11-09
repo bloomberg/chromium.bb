@@ -358,6 +358,29 @@ enum aome_enc_control_id {
   AV1E_SET_QM_MAX,
 #endif
 
+#if CONFIG_TILE_GROUPS
+  /*!\brief Codec control function to set a maximum number of tile groups.
+   *
+   * This will set the maximum number of tile groups. This will be
+   * overridden if an MTU size is set. The default value is 1.
+   *
+   * Supported in codecs: AV1
+   */
+  AV1E_SET_NUM_TG,
+
+  /*!\brief Codec control function to set an MTU size for a tile group.
+   *
+   * This will set the maximum number of bytes in a tile group. This can be
+   * exceeded only if a single tile is larger than this amount.
+   *
+   * By default, the value is 0, in which case a fixed number of tile groups
+   * is used.
+   *
+   * Supported in codecs: AV1
+   */
+  AV1E_SET_MTU,
+#endif
+
   /*!\brief Codec control function to set number of tile columns.
    *
    * In encoding and decoding, AV1 allows an input image frame be partitioned
@@ -703,6 +726,13 @@ AOM_CTRL_USE_TYPE(AV1E_SET_QM_MIN, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_QM_MAX, unsigned int)
 #define AOM_CTRL_AV1E_SET_QM_MAX
+#endif
+
+#if CONFIG_TILE_GROUPS
+AOM_CTRL_USE_TYPE(AV1E_SET_NUM_TG, unsigned int)
+#define AOM_CTRL_AV1E_SET_NUM_TG
+AOM_CTRL_USE_TYPE(AV1E_SET_MTU, unsigned int)
+#define AOM_CTRL_AV1E_SET_MTU
 #endif
 
 AOM_CTRL_USE_TYPE(AV1E_SET_FRAME_PARALLEL_DECODING, unsigned int)
