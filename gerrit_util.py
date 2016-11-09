@@ -475,12 +475,13 @@ def GetChange(host, change):
   return ReadHttpJsonResponse(CreateHttpConn(host, path))
 
 
-def GetChangeDetail(host, change, o_params=None):
+def GetChangeDetail(host, change, o_params=None, ignore_404=True):
   """Query a gerrit server for extended information about a single change."""
+  # TODO(tandrii): cahnge ignore_404 to False by default.
   path = 'changes/%s/detail' % change
   if o_params:
     path += '?%s' % '&'.join(['o=%s' % p for p in o_params])
-  return ReadHttpJsonResponse(CreateHttpConn(host, path))
+  return ReadHttpJsonResponse(CreateHttpConn(host, path), ignore_404=ignore_404)
 
 
 def GetChangeCommit(host, change, revision='current'):

@@ -1458,8 +1458,12 @@ class TestGitCl(TestCase):
                    'https://chromium-review.googlesource.com/#/c/123456/1'])
 
   def test_gerrit_patch_not_exists(self):
+    def notExists(_issue, *_, **kwargs):
+      self.assertFalse(kwargs['ignore_404'])
+      raise git_cl.gerrit_util.GerritError(404, '')
+    self.mock(git_cl.gerrit_util, 'GetChangeDetail', notExists)
+
     url = 'https://chromium-review.googlesource.com'
-    self.mock(git_cl.gerrit_util, 'GetChangeDetail', lambda _, __, ___: None)
     self.calls = [
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),

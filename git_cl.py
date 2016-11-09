@@ -2495,10 +2495,13 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     options = options or []
     issue = issue or self.GetIssue()
     assert issue, 'issue is required to query Gerrit'
-    data = gerrit_util.GetChangeDetail(self._GetGerritHost(), str(issue),
-                                       options)
-    if not data:
-      raise GerritIssueNotExists(issue, self.GetCodereviewServer())
+    try:
+      data = gerrit_util.GetChangeDetail(self._GetGerritHost(), str(issue),
+                                         options, ignore_404=False)
+    except gerrit_util.GerritError as e:
+      if e.http_status == 404:
+        raise GerritIssueNotExists(issue, self.GetCodereviewServer())
+      raise
     return data
 
   def _GetChangeCommit(self, issue=None):

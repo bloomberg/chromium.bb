@@ -197,9 +197,16 @@ class GerritAccessor(object):
 
   def _FetchChangeDetail(self, issue):
     # Separate function to be easily mocked in tests.
-    return gerrit_util.GetChangeDetail(
-        self.host, str(issue),
-        ['ALL_REVISIONS', 'DETAILED_LABELS'])
+    try:
+      return gerrit_util.GetChangeDetail(
+          self.host, str(issue),
+          ['ALL_REVISIONS', 'DETAILED_LABELS'],
+          ignore_404=False)
+    except gerrit_util.GerritError as e:
+      if e.http_status == 404:
+        raise Exception('Either Gerrit issue %s doesn\'t exist, or '
+                        'no credentials to fetch issue details' % issue)
+      raise
 
   def GetChangeInfo(self, issue):
     """Returns labels and all revisions (patchsets) for this issue.
