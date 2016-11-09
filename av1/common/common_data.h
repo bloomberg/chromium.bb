@@ -478,11 +478,11 @@ static const int tx_size_2d[TX_SIZES_ALL] = {
 #if CONFIG_CB4X4
   4,
 #endif
-  16, 64, 256, 1024,
+  16,   64, 256, 1024,
 #if CONFIG_TX64X64
   4096,
 #endif  // CONFIG_TX64X64
-  32, 32, 128, 128, 512, 512,
+  32,   32, 128, 128,  512, 512,
 };
 
 static const uint8_t tx_size_1d_log2[TX_SIZES] = { 2, 3, 4, 5 };

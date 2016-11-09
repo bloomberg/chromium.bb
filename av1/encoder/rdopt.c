@@ -7795,11 +7795,11 @@ static int64_t handle_inter_mode(
                  sizeof(uint8_t) * xd->n8_h * xd->n8_w * 4);
         }
 #else
-        super_block_yrd(cpi, x, &rd_stats_y, bsize, ref_best_rd);
-        *rate_y = rd_stats_y.rate;
-        distortion_y = rd_stats_y.dist;
-        skippable_y = rd_stats_y.skip;
-        *psse = rd_stats_y.sse;
+      super_block_yrd(cpi, x, &rd_stats_y, bsize, ref_best_rd);
+      *rate_y = rd_stats_y.rate;
+      distortion_y = rd_stats_y.dist;
+      skippable_y = rd_stats_y.skip;
+      *psse = rd_stats_y.sse;
 #endif  // CONFIG_VAR_TX
       }
 

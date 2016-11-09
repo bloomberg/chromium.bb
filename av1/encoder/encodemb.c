@@ -649,16 +649,16 @@ void av1_xform_quant_nuq(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
   switch (get_tx_scale(tx_size)) {
 #if CONFIG_TX64X64
     case 2:
-      quantize_64x64_nuq(coeff, tx_size_2d[tx_size], x->skip_block,
-                         p->quant, p->quant_shift, pd->dequant,
+      quantize_64x64_nuq(coeff, tx_size_2d[tx_size], x->skip_block, p->quant,
+                         p->quant_shift, pd->dequant,
                          (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
                          (const dequant_val_type_nuq *)pd->dequant_val_nuq[dq],
                          qcoeff, dqcoeff, eob, scan_order->scan, band);
       break;
 #endif  // CONFIG_TX64X64
     case 1:
-      quantize_32x32_nuq(coeff, tx_size_2d[tx_size], x->skip_block,
-                         p->quant, p->quant_shift, pd->dequant,
+      quantize_32x32_nuq(coeff, tx_size_2d[tx_size], x->skip_block, p->quant,
+                         p->quant_shift, pd->dequant,
                          (const cuml_bins_type_nuq *)p->cuml_bins_nuq[dq],
                          (const dequant_val_type_nuq *)pd->dequant_val_nuq[dq],
                          qcoeff, dqcoeff, eob, scan_order->scan, band);
