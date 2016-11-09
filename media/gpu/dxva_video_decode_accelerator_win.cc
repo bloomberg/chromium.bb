@@ -821,6 +821,12 @@ void DXVAVideoDecodeAccelerator::Decode(
         INVALID_ARGUMENT, );
   }
 
+  if (bitstream_buffer.size() == 0) {
+    if (client_)
+      client_->NotifyEndOfBitstreamBuffer(bitstream_buffer.id());
+    return;
+  }
+
   base::win::ScopedComPtr<IMFSample> sample;
   RETURN_AND_NOTIFY_ON_FAILURE(shm.Map(bitstream_buffer.size()),
                                "Failed in base::SharedMemory::Map",
