@@ -9,11 +9,17 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
+namespace rappor {
+class RapporService;
+}
+
 class NavigationMetricsRecorder
     : public content::WebContentsObserver,
       public content::WebContentsUserData<NavigationMetricsRecorder> {
  public:
   ~NavigationMetricsRecorder() override;
+
+  void set_rappor_service_for_testing(rappor::RapporService* rappor_service);
 
  private:
   explicit NavigationMetricsRecorder(content::WebContents* web_contents);
@@ -23,6 +29,8 @@ class NavigationMetricsRecorder
   void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
+
+  rappor::RapporService* rappor_service_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationMetricsRecorder);
 };

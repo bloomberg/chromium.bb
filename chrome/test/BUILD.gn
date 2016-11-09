@@ -1708,6 +1708,7 @@ test("browser_tests") {
       "../browser/sync_file_system/mock_local_change_processor.h",
       "../browser/sync_file_system/mock_remote_file_sync_service.cc",
       "../browser/sync_file_system/mock_remote_file_sync_service.h",
+      "../browser/tab_contents/navigation_metrics_recorder_browsertest.cc",
       "../browser/tab_contents/view_source_browsertest.cc",
       "../browser/task_manager/mock_web_contents_task_manager.cc",
       "../browser/task_manager/mock_web_contents_task_manager.h",

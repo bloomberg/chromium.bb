@@ -10,6 +10,7 @@
 #include "chrome/browser/tab_contents/origins_seen_service_factory.h"
 #include "components/navigation_metrics/navigation_metrics.h"
 #include "components/navigation_metrics/origins_seen_service.h"
+#include "components/rappor/rappor_service.h"
 #include "components/rappor/rappor_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -30,10 +31,15 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(NavigationMetricsRecorder);
 
 NavigationMetricsRecorder::NavigationMetricsRecorder(
     content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {
-}
+    : content::WebContentsObserver(web_contents),
+      rappor_service_(g_browser_process->rappor_service()) {}
 
 NavigationMetricsRecorder::~NavigationMetricsRecorder() {
+}
+
+void NavigationMetricsRecorder::set_rappor_service_for_testing(
+    rappor::RapporService* service) {
+  rappor_service_ = service;
 }
 
 void NavigationMetricsRecorder::DidNavigateMainFrame(
@@ -57,8 +63,7 @@ void NavigationMetricsRecorder::DidNavigateMainFrame(
       !ui::PageTransitionCoreTypeIs(params.transition,
                                     ui::PAGE_TRANSITION_TYPED) &&
       !details.previous_url.is_empty()) {
-    rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
-                                            "Navigation.Scheme.Data",
-                                            details.previous_url);
+    rappor::SampleDomainAndRegistryFromGURL(
+        rappor_service_, "Navigation.Scheme.Data", details.previous_url);
   }
 }
