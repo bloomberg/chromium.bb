@@ -4,6 +4,8 @@
 
 #include "modules/indexeddb/IDBObserver.h"
 
+#include <bitset>
+
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/modules/v8/IDBObserverCallback.h"
 #include "bindings/modules/v8/ToV8ForModules.h"
@@ -18,32 +20,16 @@
 
 namespace blink {
 
-IDBObserver* IDBObserver::create(IDBObserverCallback* callback,
-                                 const IDBObserverInit& options) {
-  return new IDBObserver(callback, options);
+IDBObserver* IDBObserver::create(IDBObserverCallback* callback) {
+  return new IDBObserver(callback);
 }
 
-IDBObserver::IDBObserver(IDBObserverCallback* callback,
-                         const IDBObserverInit& options)
-    : m_callback(callback),
-      m_transaction(options.transaction()),
-      m_values(options.values()),
-      m_noRecords(options.noRecords()) {
-  DCHECK_EQ(m_operationTypes.size(),
-            static_cast<size_t>(WebIDBOperationTypeCount));
-  m_operationTypes.reset();
-  m_operationTypes[WebIDBAdd] =
-      options.operationTypes().contains(IndexedDBNames::add);
-  m_operationTypes[WebIDBPut] =
-      options.operationTypes().contains(IndexedDBNames::put);
-  m_operationTypes[WebIDBDelete] =
-      options.operationTypes().contains(IndexedDBNames::kDelete);
-  m_operationTypes[WebIDBClear] =
-      options.operationTypes().contains(IndexedDBNames::clear);
-}
+IDBObserver::IDBObserver(IDBObserverCallback* callback)
+    : m_callback(callback) {}
 
 void IDBObserver::observe(IDBDatabase* database,
                           IDBTransaction* transaction,
+                          const IDBObserverInit& options,
                           ExceptionState& exceptionState) {
   if (transaction->isFinished() || transaction->isFinishing()) {
     exceptionState.throwDOMException(
@@ -60,9 +46,36 @@ void IDBObserver::observe(IDBDatabase* database,
                                      IDBDatabase::databaseClosedErrorMessage);
     return;
   }
+  if (!options.hasOperationTypes()) {
+    exceptionState.throwTypeError(
+        "operationTypes not specified in observe options.");
+    return;
+  }
+  if (options.operationTypes().isEmpty()) {
+    exceptionState.throwTypeError("operationTypes must be populated.");
+    return;
+  }
+
+  std::bitset<WebIDBOperationTypeCount> types;
+  for (const auto& operationType : options.operationTypes()) {
+    if (operationType == IndexedDBNames::add) {
+      types[WebIDBAdd] = true;
+    } else if (operationType == IndexedDBNames::put) {
+      types[WebIDBPut] = true;
+    } else if (operationType == IndexedDBNames::kDelete) {
+      types[WebIDBDelete] = true;
+    } else if (operationType == IndexedDBNames::clear) {
+      types[WebIDBClear] = true;
+    } else {
+      exceptionState.throwTypeError(
+          "Unknown operation type in observe options: " + operationType);
+      return;
+    }
+  }
 
   std::unique_ptr<WebIDBObserverImpl> observer =
-      WebIDBObserverImpl::create(this);
+      WebIDBObserverImpl::create(this, options.transaction(), options.values(),
+                                 options.noRecords(), types);
   WebIDBObserverImpl* observerPtr = observer.get();
   int32_t observerId =
       database->backend()->addObserver(std::move(observer), transaction->id());

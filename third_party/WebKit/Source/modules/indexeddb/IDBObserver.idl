@@ -8,9 +8,9 @@ callback IDBObserverCallback = void (IDBObserverChanges changes);
 
 [
    Exposed=(Window,Worker),
-   CustomConstructor(IDBObserverCallback callback, IDBObserverInit options),
+   CustomConstructor(IDBObserverCallback callback),
    RuntimeEnabled=IDBObserver
 ] interface IDBObserver {
-    [RaisesException] void observe(IDBDatabase db, IDBTransaction tx);
+    [RaisesException] void observe(IDBDatabase db, IDBTransaction tx, IDBObserverInit options);
     [RaisesException] void unobserve(IDBDatabase db);
 };

@@ -10,12 +10,27 @@ namespace blink {
 
 // static
 std::unique_ptr<WebIDBObserverImpl> WebIDBObserverImpl::create(
-    IDBObserver* observer) {
-  return wrapUnique(new WebIDBObserverImpl(observer));
+    IDBObserver* observer,
+    bool transaction,
+    bool values,
+    bool noRecords,
+    std::bitset<WebIDBOperationTypeCount> operationTypes) {
+  return wrapUnique(new WebIDBObserverImpl(observer, transaction, values,
+                                           noRecords, operationTypes));
 }
 
-WebIDBObserverImpl::WebIDBObserverImpl(IDBObserver* observer)
-    : m_id(kInvalidObserverId), m_observer(observer) {}
+WebIDBObserverImpl::WebIDBObserverImpl(
+    IDBObserver* observer,
+    bool transaction,
+    bool values,
+    bool noRecords,
+    std::bitset<WebIDBOperationTypeCount> operationTypes)
+    : m_id(kInvalidObserverId),
+      m_transaction(transaction),
+      m_values(values),
+      m_noRecords(noRecords),
+      m_operationTypes(operationTypes),
+      m_observer(observer) {}
 
 // Remove observe call id from IDBObserver.
 WebIDBObserverImpl::~WebIDBObserverImpl() {

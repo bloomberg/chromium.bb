@@ -33,9 +33,7 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
     t.done();
   };
 
-  var obs = new IDBObserver(
-      t.step_func(observeFunction),
-      { operationTypes: ['clear', 'put', 'add', 'delete'] });
+  var obs = new IDBObserver(t.step_func(observeFunction));
 
   openDB(t, db1_name, t.step_func(function(db) {
     connection = db;
@@ -54,7 +52,7 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
     });
 
     // Start observing!
-    obs.observe(db, txn);
+    obs.observe(db, txn, {operationTypes: ['clear', 'put', 'add', 'delete']});
 
     txn.oncomplete = observers_added_callback;
     txn.onerror = t.unreached_func('transaction should not fail');
@@ -77,14 +75,12 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
     t.done();
   };
 
-  var obs = new IDBObserver(
-      t.step_func(observeFunction),
-      { operationTypes: ['add'] });
+  var obs = new IDBObserver(t.step_func(observeFunction));
 
   openDB(t, db1_name, t.step_func(function(db) {
     connection = db;
     var txn = db.transaction(['store2'], 'readonly');
-    obs.observe(db, txn);
+    obs.observe(db, txn, {operationTypes: ['add']});
     txn.oncomplete = observers_added_callback;
     txn.onerror = t.unreached_func('transaction should not fail')
   }));
@@ -106,14 +102,12 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
     t.done();
   };
 
-  var obs = new IDBObserver(
-      t.step_func(observeFunction),
-      { operationTypes: ['clear', 'put', 'add', 'delete'] });
+  var obs = new IDBObserver(t.step_func(observeFunction));
 
   openDB(t, db1_name, t.step_func(function(db) {
     connection = db;
     var txn = db.transaction(['store2'], 'readonly');
-    obs.observe(db, txn);
+    obs.observe(db, txn, {operationTypes: ['clear', 'put', 'add', 'delete']});
     txn.oncomplete = observers_added_callback;
     txn.onerror = t.unreached_func('transaction should not fail')
   }));
@@ -160,15 +154,13 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
     }
   };
 
-  var obs = new IDBObserver(
-      t.step_func(observeFunction),
-      { operationTypes: ['clear', 'put', 'add', 'delete'] });
+  var obs = new IDBObserver(t.step_func(observeFunction));
 
   var cb1 = observers_added_barrier(t);
   openDB(t, db1_name, t.step_func(function(db) {
     connection1 = db;
     var txn = db.transaction(['store1', 'store2'], 'readonly');
-    obs.observe(db, txn);
+    obs.observe(db, txn, {operationTypes: ['clear', 'put', 'add', 'delete']});
     txn.oncomplete = cb1;
     txn.onerror = t.unreached_func('transaction should not fail')
   }));
@@ -176,7 +168,7 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
   openDB(t, db2_name, t.step_func(function(db) {
     connection2 = db;
     var txn = db.transaction(['store3', 'store4'], 'readonly');
-    obs.observe(db, txn);
+    obs.observe(db, txn, {operationTypes: ['clear', 'put', 'add', 'delete']});
     txn.oncomplete = cb2;
     txn.onerror = t.unreached_func('transaction should not fail')
   }));
@@ -206,19 +198,58 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
     }
   };
 
-  var obs = new IDBObserver(
-      t.step_func(observeFunction),
-      { operationTypes: ['clear', 'put', 'add', 'delete'] });
+  var obs = new IDBObserver(t.step_func(observeFunction));
 
   openDB(t, db1_name, t.step_func(function(db) {
     connection = db;
     var txn = db.transaction(['store1', 'store2'], 'readonly');
-    obs.observe(db, txn);
-    obs.observe(db, txn);
+    obs.observe(db, txn, {operationTypes: ['clear', 'put', 'add', 'delete']});
+    obs.observe(db, txn, {operationTypes: ['clear', 'put', 'add', 'delete']});
     txn.oncomplete = observers_added_callback;
     txn.onerror = t.unreached_func('transaction should not fail');
   }));
 }, 'IDB Observers: Multiple observer calls');
+
+indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callback) {
+  var expectedChanges1 = {
+    dbName: db1_name,
+    records: {
+      'store1': [{type: 'put', key: 'a'}]
+    }
+  };
+  var expectedChanges2 = {
+    dbName: db1_name,
+    records: {
+      'store2': [{type: 'add', key: 'z'}]
+    }
+  };
+
+  var connection = null;
+  var changeNumber = 0;
+  var observeFunction = function(changes) {
+    assert_true(connection != null);
+    if (changeNumber === 0) {
+      compareChanges(changes, expectedChanges1);
+    } else if(changeNumber === 1) {
+      compareChanges(changes, expectedChanges2);
+      obs.unobserve(connection);
+      t.done();
+    }
+    ++changeNumber;
+    assert_less_than_equal(changeNumber, 1, "incorrect pendingObserves");
+  };
+
+  var obs = new IDBObserver(t.step_func(observeFunction));
+
+  openDB(t, db1_name, t.step_func(function(db) {
+    connection = db;
+    var txn = db.transaction(['store1', 'store2'], 'readonly');
+    obs.observe(db, txn, {operationTypes: ['put']});
+    obs.observe(db, txn, {operationTypes: ['add']});
+    txn.oncomplete = observers_added_callback;
+    txn.onerror = t.unreached_func('transaction should not fail');
+  }));
+}, 'IDB Observers: Multiple observer calls with filtering');
 
 indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callback) {
   var partOneChanges1 = {
@@ -284,15 +315,13 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
     }
   };
 
-  var obs = new IDBObserver(
-      t.step_func(observeFunction),
-      { operationTypes: ['clear', 'put', 'add', 'delete'] });
+  var obs = new IDBObserver(t.step_func(observeFunction));
 
   var cb1 = observers_added_barrier(t);
   openDB(t, db1_name, t.step_func(function(db) {
     connection1 = db;
     var txn = db.transaction(['store1'], 'readonly');
-    obs.observe(db, txn);
+    obs.observe(db, txn, {operationTypes: ['clear', 'put', 'add', 'delete']});
     txn.oncomplete = cb1;
     txn.onerror = t.unreached_func('transaction should not fail');
   }));
@@ -300,7 +329,7 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
   openDB(t, db1_name, t.step_func(function(db) {
     connection2 = db;
     var txn = db.transaction(['store2'], 'readonly');
-    obs.observe(db, txn);
+    obs.observe(db, txn, {operationTypes: ['clear', 'put', 'add', 'delete']});
     txn.oncomplete = cb2;
     txn.onerror = t.unreached_func('transaction should not fail');
   }));
@@ -308,7 +337,7 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
   openDB(t, db2_name, t.step_func(function(db) {
     connection3 = db;
     var txn = db.transaction(['store3', 'store4'], 'readonly');
-    obs.observe(db, txn);
+    obs.observe(db, txn, {operationTypes: ['clear', 'put', 'add', 'delete']});
     txn.oncomplete = cb3;
     txn.onerror = t.unreached_func('transaction should not fail')
   }));
@@ -324,20 +353,19 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
     t.done();
   };
 
-  var obs = new IDBObserver(
-      t.step_func(observeFunction),
-      { operationTypes: ['clear', 'put', 'add', 'delete'] });
+  var obs = new IDBObserver(t.step_func(observeFunction));
 
   openDB(t, db1_name, t.step_func(function(db) {
     connection1 = db;
     var txn = db.transaction(['store1'], 'readonly');
-    obs.observe(db, txn);
+    obs.observe(db, txn, {operationTypes: ['clear', 'put', 'add', 'delete']});
     obs.unobserve(db);
     txn.oncomplete = t.step_func(function() {
       openDB(t, db1_name, t.step_func(function(db) {
         connection2 = db;
         var txn = db.transaction(['store2'], 'readonly');
-        obs.observe(db, txn);
+        obs.observe(
+            db, txn, {operationTypes: ['clear', 'put', 'add', 'delete']});
         txn.oncomplete = observers_added_callback;
         txn.onerror = t.unreached_func('transaction should not fail');
       }));
@@ -356,22 +384,21 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
     t.done();
   };
 
-  var obs = new IDBObserver(
-      t.step_func(observeFunction),
-      { operationTypes: ['clear', 'put', 'add', 'delete'] });
+  var obs = new IDBObserver(t.step_func(observeFunction));
 
   openDB(t, db1_name, t.step_func(function(db) {
     connection1 = db;
     var txn = db.transaction(['store1'], 'readonly');
-    obs.observe(db, txn);
-    obs.observe(db, txn);
-    obs.observe(db, txn);
+    obs.observe(db, txn, {operationTypes: ['clear', 'put', 'add', 'delete']});
+    obs.observe(db, txn, {operationTypes: ['clear', 'put', 'add', 'delete']});
+    obs.observe(db, txn, {operationTypes: ['clear', 'put', 'add', 'delete']});
     obs.unobserve(db);
     txn.oncomplete = t.step_func(function() {
       openDB(t, db1_name, t.step_func(function(db) {
         connection2 = db;
         var txn = db.transaction(['store2'], 'readonly');
-        obs.observe(db, txn);
+        obs.observe(
+            db, txn, {operationTypes: ['clear', 'put', 'add', 'delete']});
         txn.oncomplete = observers_added_callback;
         txn.onerror = t.unreached_func('transaction should not fail');
       }));
@@ -425,9 +452,7 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
     }
   };
 
-  var obs = new IDBObserver(
-      t.step_func(observeFunction),
-      { operationTypes: ['clear', 'put', 'add', 'delete'] });
+  var obs = new IDBObserver(t.step_func(observeFunction));
 
   var cb1 = observers_added_barrier(t);
   var cb2 = observers_added_barrier(t);
@@ -436,8 +461,8 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
     var txn1 = db.transaction(['store1'], 'readonly');
     var txn2 = db.transaction(['store2'], 'readonly');
     // Start observing!
-    obs.observe(db, txn1);
-    obs.observe(db, txn2);
+    obs.observe(db, txn1, {operationTypes: ['clear', 'put', 'add', 'delete']});
+    obs.observe(db, txn2, {operationTypes: ['clear', 'put', 'add', 'delete']});
 
     txn1.oncomplete = cb1;
     txn2.oncomplete = cb2;
@@ -448,7 +473,7 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
   openDB(t, db2_name, t.step_func(function(db) {
     connection2 = db;
     var txn = db.transaction(['store3'], 'readonly');
-    obs.observe(db, txn);
+    obs.observe(db, txn, {operationTypes: ['clear', 'put', 'add', 'delete']});
     txn.oncomplete = cb3;
     txn.onerror = t.unreached_func('transaction should not fail');
   }));
@@ -499,9 +524,7 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
     }
   };
 
-  var obs = new IDBObserver(
-      t.step_func(observeFunction),
-      { operationTypes: ['clear', 'put', 'add', 'delete'] });
+  var obs = new IDBObserver(t.step_func(observeFunction));
 
   var cb1 = observers_added_barrier(t);
   var cb2 = observers_added_barrier(t);
@@ -510,8 +533,8 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
     var txn1 = db.transaction(['store1'], 'readonly');
     var txn2 = db.transaction(['store2'], 'readonly');
     // Start observing!
-    obs.observe(db, txn1);
-    obs.observe(db, txn2);
+    obs.observe(db, txn1, {operationTypes: ['clear', 'put', 'add', 'delete']});
+    obs.observe(db, txn2, {operationTypes: ['clear', 'put', 'add', 'delete']});
 
     txn1.oncomplete = cb1;
     txn2.oncomplete = cb2;
@@ -522,7 +545,7 @@ indexeddb_observers_test(function(t, db1_name, db2_name, observers_added_callbac
   openDB(t, db2_name, t.step_func(function(db) {
     connection2 = db;
     var txn = db.transaction(['store3'], 'readonly');
-    obs.observe(db, txn);
+    obs.observe(db, txn, {operationTypes: ['clear', 'put', 'add', 'delete']});
     txn.oncomplete = cb3;
     txn.onerror = t.unreached_func('transaction should not fail');
   }));
