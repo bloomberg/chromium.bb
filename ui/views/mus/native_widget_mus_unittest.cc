@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/mus/native_widget_mus.h"
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -25,6 +24,7 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/controls/native/native_view_host.h"
+#include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/mus/window_manager_connection.h"
 #include "ui/views/test/focus_manager_test.h"
 #include "ui/views/test/views_test_base.h"
@@ -607,6 +607,56 @@ TEST_F(NativeWidgetMusTest, IsMaximized) {
       ui::mojom::WindowManager::kShowState_Property,
       static_cast<uint32_t>(ui::mojom::ShowState::MAXIMIZED));
   EXPECT_TRUE(widget->IsMaximized());
+}
+
+// This test is to ensure that when initializing a widget with InitParams.parent
+// set to another widget's aura::Window, the ui::Window of the former widget is
+// added as a child to the ui::Window of the latter widget.
+TEST_F(NativeWidgetMusTest, InitNativeWidgetParentsUIWindow) {
+  ASSERT_TRUE(WindowManagerConnection::Exists());
+
+  ui::Window* parent_window = WindowManagerConnection::Get()->NewTopLevelWindow(
+      std::map<std::string, std::vector<uint8_t>>());
+  std::unique_ptr<Widget> parent_widget(new Widget());
+  Widget::InitParams parent_params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW);
+  parent_params.name = "Parent Widget";
+  parent_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  parent_params.shadow_type = Widget::InitParams::SHADOW_TYPE_NONE;
+  parent_params.opacity = Widget::InitParams::OPAQUE_WINDOW;
+  parent_params.parent = nullptr;
+  parent_params.bounds = initial_bounds();
+  parent_params.native_widget =
+      new NativeWidgetMus(parent_widget.get(), parent_window,
+                          ui::mojom::CompositorFrameSinkType::DEFAULT);
+  parent_widget->Init(parent_params);
+
+  std::unique_ptr<Widget> child_widget(new Widget());
+  ui::Window* child_window = parent_window->window_tree()->NewWindow();
+  Widget::InitParams child_params = CreateParams(Widget::InitParams::TYPE_MENU);
+  child_params.parent = parent_widget->GetNativeView();
+  child_params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  child_params.name = "Child Widget";
+  child_params.native_widget =
+      new NativeWidgetMus(child_widget.get(), child_window,
+                          ui::mojom::CompositorFrameSinkType::DEFAULT);
+  child_widget->Init(child_params);
+
+  EXPECT_EQ(child_window->parent(), parent_window);
+
+  std::unique_ptr<Widget> not_child_widget(new Widget());
+  ui::Window* not_child_window = parent_window->window_tree()->NewWindow();
+  Widget::InitParams not_child_params =
+      CreateParams(Widget::InitParams::TYPE_MENU);
+  not_child_params.ownership =
+      views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  not_child_params.name = "Not Child Widget";
+  not_child_params.native_widget =
+      new NativeWidgetMus(not_child_widget.get(), not_child_window,
+                          ui::mojom::CompositorFrameSinkType::DEFAULT);
+  not_child_widget->Init(not_child_params);
+
+  EXPECT_NE(not_child_window->parent(), parent_window);
 }
 
 }  // namespace views

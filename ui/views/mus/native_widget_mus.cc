@@ -775,16 +775,21 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
   content_->set_ignore_events(!params.accept_events);
   hosted_window->AddChild(content_);
 
+  ui::Window* parent_mus = params.parent_mus;
+
   // Set-up transiency if appropriate.
   if (params.parent && !params.child) {
-    aura::Window* parent_root = params.parent->GetRootWindow();
-    ui::Window* parent_mus = parent_root->GetProperty(kMusWindow);
-    if (parent_mus)
-      parent_mus->AddTransientWindow(window_);
+    aura::Window* parent_root_aura = params.parent->GetRootWindow();
+    ui::Window* parent_root_mus = parent_root_aura->GetProperty(kMusWindow);
+    if (parent_root_mus) {
+      parent_root_mus->AddTransientWindow(window_);
+      if (!parent_mus)
+        parent_mus = parent_root_mus;
+    }
   }
 
-  if (params.parent_mus)
-    params.parent_mus->AddChild(window_);
+  if (parent_mus)
+    parent_mus->AddChild(window_);
 
   // TODO(sky): deal with show state.
   if (!params.bounds.size().IsEmpty())
