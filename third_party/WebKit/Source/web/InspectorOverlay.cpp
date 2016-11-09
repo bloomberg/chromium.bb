@@ -410,7 +410,7 @@ void InspectorOverlay::scheduleUpdate() {
   m_needsUpdate = true;
   FrameView* view = m_frameImpl->frameView();
   LocalFrame* frame = m_frameImpl->frame();
-  if (view && frame && frame->host())
+  if (view && frame)
     frame->host()->chromeClient().scheduleAnimation(view);
 }
 

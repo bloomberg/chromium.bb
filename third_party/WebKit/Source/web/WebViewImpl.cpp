@@ -3973,9 +3973,6 @@ void WebViewImpl::setPageOverlayColor(WebColor color) {
   if (color == Color::transparent)
     return;
 
-  if (!mainFrameImpl())
-    return;
-
   m_pageColorOverlay =
       PageOverlay::create(mainFrameImpl(), wrapUnique(new ColorOverlay(color)));
   m_pageColorOverlay->update();

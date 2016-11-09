@@ -71,7 +71,7 @@ void PageOverlay::update() {
     return;
 
   LocalFrame* frame = m_frameImpl->frame();
-  if (!frame || !frame->host())
+  if (!frame)
     return;
 
   if (!m_layer) {
