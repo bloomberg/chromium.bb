@@ -78,15 +78,13 @@ class BlimpCompositorClient {
 // RenderWidget.
 // This class should only be accessed from the main thread.
 class BlimpCompositor : public cc::LayerTreeHostClient,
-                        public cc::RemoteProtoChannel,
                         public BlimpCompositorFrameSinkProxy,
                         public cc::SurfaceFactoryClient,
                         public cc::CompositorStateDeserializerClient {
  public:
   static std::unique_ptr<BlimpCompositor> Create(
       BlimpCompositorDependencies* compositor_dependencies,
-      BlimpCompositorClient* client,
-      bool use_threaded_layer_tree_host);
+      BlimpCompositorClient* client);
 
   ~BlimpCompositor() override;
 
@@ -144,8 +142,7 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
 
  protected:
   BlimpCompositor(BlimpCompositorDependencies* compositor_dependencies,
-                  BlimpCompositorClient* client,
-                  bool use_threaded_layer_tree_host);
+                  BlimpCompositorClient* client);
 
   void Initialize();
   virtual std::unique_ptr<cc::LayerTreeHostInProcess> CreateLayerTreeHost();
@@ -154,10 +151,6 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
 
  private:
   class FrameTrackingSwapPromise;
-
-  // RemoteProtoChannel implementation.
-  void SetProtoReceiver(ProtoReceiver* receiver) override;
-  void SendCompositorProto(const cc::proto::CompositorMessage& proto) override;
 
   // BlimpCompositorFrameSinkProxy implementation.
   void BindToProxyClient(
@@ -168,9 +161,6 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
   // SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
   void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override {}
-
-  void HandleCompositorMessageToImpl(
-      std::unique_ptr<cc::proto::CompositorMessage> message);
 
   // Called when the a ContextProvider has been created by the
   // CompositorDependencies class.  If |host_| is waiting on an
@@ -199,14 +189,7 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
   // an ack for a previous update sent is not pending.
   void FlushClientState();
 
-  // Set to true if we are using a LayerTreeHostInProcess to process frame
-  // updates from the engine.
-  const bool use_threaded_layer_tree_host_;
-
   void MakeCopyRequestOnNextSwap(
-      std::unique_ptr<cc::CopyOutputRequest> copy_request);
-
-  void RequestCopyOfOutputDeprecated(
       std::unique_ptr<cc::CopyOutputRequest> copy_request);
 
   BlimpCompositorClient* client_;
@@ -236,25 +219,8 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
   std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
   scoped_refptr<cc::Layer> layer_;
 
-  // To be notified of any incoming compositor protos that are specifically sent
-  // to |render_widget_id_|.
-  cc::RemoteProtoChannel::ProtoReceiver* remote_proto_channel_receiver_;
-
   std::vector<std::unique_ptr<cc::CopyOutputRequest>>
       copy_requests_for_next_swap_;
-
-  // The number of times a START_COMMIT proto has been received but a call to
-  // DidCommitAndDrawFrame hasn't been seen.  This should track the number of
-  // outstanding commits.
-  size_t outstanding_commits_;
-
-  // When RequestCopyOfOutput is called with a request to flush any pending
-  // updates, |outstanding_commits_| is copied along with the |copy_request|
-  // into this vector. Each time DidCommitAndDrawFrame is called these entries
-  // get decremented.  If they hit 0 the copy request is queued for the current
-  // |local_frame_id_|.
-  std::vector<std::pair<size_t, std::unique_ptr<cc::CopyOutputRequest>>>
-      pending_commit_trackers_;
 
   // Stores a frame update received from the engine, when a threaded
   // LayerTreeHost is used. There can only be a single frame in flight at any

@@ -241,8 +241,7 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
 
   animation_host_ = cc::AnimationHost::CreateMainInstance();
 
-  if (cmd->HasSwitch(switches::kUseRemoteCompositing) &&
-      cmd->HasSwitch(switches::kUseLayerTreeHostRemote)) {
+  if (cmd->HasSwitch(switches::kUseRemoteCompositing)) {
     DCHECK(!threaded_);
 
     cc::LayerTreeHostRemote::InitParams params;
@@ -258,31 +257,24 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
             ->CreateEnginePictureCache();
     params.settings = &settings;
     layer_tree_host_ = base::MakeUnique<cc::LayerTreeHostRemote>(&params);
-    return;
-  }
-
-  cc::LayerTreeHostInProcess::InitParams params;
-  params.client = this;
-  params.settings = &settings;
-  params.task_graph_runner = compositor_deps_->GetTaskGraphRunner();
-  params.main_task_runner =
-      compositor_deps_->GetCompositorMainThreadTaskRunner();
-  params.mutator_host = animation_host_.get();
-
-  if (cmd->HasSwitch(switches::kUseRemoteCompositing)) {
-    DCHECK(!threaded_);
-    params.image_serialization_processor =
-        compositor_deps_->GetImageSerializationProcessor();
-    layer_tree_host_ =
-        cc::LayerTreeHostInProcess::CreateRemoteServer(this, &params);
-  } else if (!threaded_) {
-    // Single-threaded layout tests.
-    layer_tree_host_ =
-        cc::LayerTreeHostInProcess::CreateSingleThreaded(this, &params);
   } else {
-    layer_tree_host_ = cc::LayerTreeHostInProcess::CreateThreaded(
-        compositor_deps_->GetCompositorImplThreadTaskRunner(), &params);
+    cc::LayerTreeHostInProcess::InitParams params;
+    params.client = this;
+    params.settings = &settings;
+    params.task_graph_runner = compositor_deps_->GetTaskGraphRunner();
+    params.main_task_runner =
+        compositor_deps_->GetCompositorMainThreadTaskRunner();
+    params.mutator_host = animation_host_.get();
+    if (!threaded_) {
+      // Single-threaded layout tests.
+      layer_tree_host_ =
+          cc::LayerTreeHostInProcess::CreateSingleThreaded(this, &params);
+    } else {
+      layer_tree_host_ = cc::LayerTreeHostInProcess::CreateThreaded(
+          compositor_deps_->GetCompositorImplThreadTaskRunner(), &params);
+    }
   }
+
   DCHECK(layer_tree_host_);
 }
 

@@ -19,11 +19,7 @@ BlimpDocument::BlimpDocument(int document_id,
                              BlimpCompositorDependencies* compositor_deps,
                              BlimpDocumentManager* document_manager)
     : BlimpDocument(document_id,
-                    BlimpCompositor::Create(
-                        compositor_deps,
-                        this,
-                        base::CommandLine::ForCurrentProcess()->HasSwitch(
-                            switches::kEnableUpdatedCompositingPath)),
+                    BlimpCompositor::Create(compositor_deps, this),
                     compositor_deps,
                     document_manager) {}
 

@@ -25,7 +25,7 @@ BlimpCompositorWithFakeHost::Create(
 BlimpCompositorWithFakeHost::BlimpCompositorWithFakeHost(
     BlimpCompositorDependencies* compositor_dependencies,
     BlimpCompositorClient* client)
-    : BlimpCompositor(compositor_dependencies, client, true) {}
+    : BlimpCompositor(compositor_dependencies, client) {}
 
 BlimpCompositorWithFakeHost::~BlimpCompositorWithFakeHost() = default;
 

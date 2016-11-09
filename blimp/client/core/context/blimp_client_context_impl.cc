@@ -50,11 +50,6 @@ void DropConnectionOnIOThread(ClientNetworkComponents* net_components) {
   net_components->GetBrowserConnectionHandler()->DropCurrentConnection();
 }
 
-void AppendDefaultCommandLineFlags(base::CommandLine* command_line) {
-  // Enables the updated compositing path before any tabs are created.
-  command_line->AppendSwitch(switches::kEnableUpdatedCompositingPath);
-}
-
 }  // namespace
 
 // This function is declared in //blimp/client/public/blimp_client_context.h,
@@ -146,8 +141,6 @@ BlimpClientContextImpl::BlimpClientContextImpl(
   io_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&ClientNetworkComponents::Initialize,
                             base::Unretained(net_components_.get())));
-
-  AppendDefaultCommandLineFlags(base::CommandLine::ForCurrentProcess());
 
   UMA_HISTOGRAM_BOOLEAN("Blimp.Supported", true);
 }

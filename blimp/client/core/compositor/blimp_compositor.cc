@@ -119,21 +119,17 @@ class BlimpCompositor::FrameTrackingSwapPromise : public cc::SwapPromise {
 // static
 std::unique_ptr<BlimpCompositor> BlimpCompositor::Create(
     BlimpCompositorDependencies* compositor_dependencies,
-    BlimpCompositorClient* client,
-    bool use_threaded_layer_tree_host) {
+    BlimpCompositorClient* client) {
   std::unique_ptr<BlimpCompositor> compositor =
-      base::WrapUnique(new BlimpCompositor(compositor_dependencies, client,
-                                           use_threaded_layer_tree_host));
+      base::WrapUnique(new BlimpCompositor(compositor_dependencies, client));
   compositor->Initialize();
   return compositor;
 }
 
 BlimpCompositor::BlimpCompositor(
     BlimpCompositorDependencies* compositor_dependencies,
-    BlimpCompositorClient* client,
-    bool use_threaded_layer_tree_host)
-    : use_threaded_layer_tree_host_(use_threaded_layer_tree_host),
-      client_(client),
+    BlimpCompositorClient* client)
+    : client_(client),
       compositor_dependencies_(compositor_dependencies),
       frame_sink_id_(compositor_dependencies_->GetEmbedderDependencies()
                          ->AllocateFrameSinkId()),
@@ -141,8 +137,6 @@ BlimpCompositor::BlimpCompositor(
       bound_to_proxy_(false),
       compositor_frame_sink_request_pending_(false),
       layer_(cc::Layer::Create()),
-      remote_proto_channel_receiver_(nullptr),
-      outstanding_commits_(0U),
       weak_ptr_factory_(this) {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
@@ -155,14 +149,12 @@ void BlimpCompositor::Initialize() {
   animation_host_ = cc::AnimationHost::CreateMainInstance();
   host_ = CreateLayerTreeHost();
 
-  if (use_threaded_layer_tree_host_) {
     std::unique_ptr<cc::ClientPictureCache> client_picture_cache =
         compositor_dependencies_->GetImageSerializationProcessor()
             ->CreateClientPictureCache();
     compositor_state_deserializer_ =
         base::MakeUnique<cc::CompositorStateDeserializer>(
             host_.get(), std::move(client_picture_cache), this);
-  }
 }
 
 BlimpCompositor::~BlimpCompositor() {
@@ -191,11 +183,6 @@ void BlimpCompositor::RequestCopyOfOutput(
   if (!bound_to_proxy_)
     return;
 
-  if (!use_threaded_layer_tree_host_) {
-    RequestCopyOfOutputDeprecated(std::move(copy_request));
-    return;
-  }
-
   if (flush_pending_update) {
     // Always request a commit when queuing the promise to make sure that any
     // frames pending draws are cleared from the pipeline.
@@ -210,29 +197,12 @@ void BlimpCompositor::RequestCopyOfOutput(
   }
 }
 
-void BlimpCompositor::RequestCopyOfOutputDeprecated(
-    std::unique_ptr<cc::CopyOutputRequest> copy_request) {
-  DCHECK(!use_threaded_layer_tree_host_);
-
-  if (outstanding_commits_ == 0) {
-    surface_factory_->RequestCopyOfSurface(local_frame_id_,
-                                           std::move(copy_request));
-    return;
-  }
-
-  pending_commit_trackers_.push_back(
-      std::make_pair(outstanding_commits_, std::move(copy_request)));
-}
-
 void BlimpCompositor::UpdateLayerTreeHost() {
-  DCHECK(use_threaded_layer_tree_host_);
-
   // UpdateLayerTreeHost marks the end of reporting of any deltas from the impl
   // thread. So send a client state update if the local state was modified now.
   FlushClientState();
 
   if (pending_frame_update_) {
-    DCHECK(use_threaded_layer_tree_host_);
     compositor_state_deserializer_->DeserializeCompositorUpdate(
         pending_frame_update_->layer_tree_host());
     pending_frame_update_ = nullptr;
@@ -252,7 +222,6 @@ void BlimpCompositor::ApplyViewportDeltas(
     const gfx::Vector2dF& elastic_overscroll_delta,
     float page_scale,
     float top_controls_delta) {
-  DCHECK(use_threaded_layer_tree_host_);
   compositor_state_deserializer_->ApplyViewportDeltas(
       inner_delta, outer_delta, elastic_overscroll_delta, page_scale,
       top_controls_delta);
@@ -272,46 +241,10 @@ void BlimpCompositor::DidInitializeCompositorFrameSink() {
   compositor_frame_sink_request_pending_ = false;
 }
 
-void BlimpCompositor::DidCommitAndDrawFrame() {
-  if (use_threaded_layer_tree_host_)
-    return;
-
-  DCHECK_GT(outstanding_commits_, 0U);
-  outstanding_commits_--;
-
-  for (auto it = pending_commit_trackers_.begin();
-       it != pending_commit_trackers_.end();) {
-    if (--it->first == 0) {
-      if (bound_to_proxy_) {
-        surface_factory_->RequestCopyOfSurface(local_frame_id_,
-                                               std::move(it->second));
-      }
-      it = pending_commit_trackers_.erase(it);
-    } else {
-      ++it;
-    }
-  }
-}
-
-void BlimpCompositor::SetProtoReceiver(ProtoReceiver* receiver) {
-  DCHECK(!use_threaded_layer_tree_host_);
-  remote_proto_channel_receiver_ = receiver;
-}
-
-void BlimpCompositor::SendCompositorProto(
-    const cc::proto::CompositorMessage& proto) {
-  DCHECK(!use_threaded_layer_tree_host_);
-  client_->SendCompositorMessage(proto);
-}
+void BlimpCompositor::DidCommitAndDrawFrame() {}
 
 void BlimpCompositor::OnCompositorMessageReceived(
     std::unique_ptr<cc::proto::CompositorMessage> message) {
-  if (message->has_to_impl()) {
-    HandleCompositorMessageToImpl(std::move(message));
-    return;
-  }
-
-  DCHECK(use_threaded_layer_tree_host_);
   cc::proto::CompositorMessage* message_received = message.get();
 
   if (message_received->has_layer_tree_host()) {
@@ -323,7 +256,6 @@ void BlimpCompositor::OnCompositorMessageReceived(
     BlimpStats::GetInstance()->Add(BlimpStats::COMMIT, 1);
 
     pending_frame_update_ = std::move(message);
-    outstanding_commits_++;
     host_->SetNeedsAnimate();
   }
 
@@ -339,36 +271,6 @@ void BlimpCompositor::OnCompositorMessageReceived(
   }
 }
 
-void BlimpCompositor::HandleCompositorMessageToImpl(
-    std::unique_ptr<cc::proto::CompositorMessage> message) {
-  DCHECK(!use_threaded_layer_tree_host_);
-  DCHECK(message->has_to_impl());
-
-  const cc::proto::CompositorMessageToImpl to_impl_proto = message->to_impl();
-  DCHECK(to_impl_proto.has_message_type());
-
-  if (to_impl_proto.message_type() ==
-      cc::proto::CompositorMessageToImpl::START_COMMIT) {
-    BlimpStats::GetInstance()->Add(BlimpStats::COMMIT, 1);
-    outstanding_commits_++;
-  }
-
-  switch (to_impl_proto.message_type()) {
-    case cc::proto::CompositorMessageToImpl::UNKNOWN:
-      NOTIMPLEMENTED() << "Ignoring message of UNKNOWN type";
-      break;
-    case cc::proto::CompositorMessageToImpl::START_COMMIT:
-      UMA_HISTOGRAM_MEMORY_KB("Blimp.Compositor.CommitSizeKb",
-                              (float)message->ByteSize() / 1024);
-    default:
-      // We should have a receiver if we're getting compositor messages that
-      // are not INITIALIZE_IMPL or CLOSE_IMPL.
-      DCHECK(remote_proto_channel_receiver_);
-      remote_proto_channel_receiver_->OnProtoReceived(std::move(message));
-  }
-}
-
-// Returns a reference to the InputHandler owned by layer tree host.
 const base::WeakPtr<cc::InputHandler>& BlimpCompositor::GetInputHandler() {
   return host_->GetInputHandler();
 }
@@ -534,10 +436,8 @@ BlimpCompositor::CreateLayerTreeHost() {
   params.client = this;
   params.task_graph_runner = compositor_dependencies_->GetTaskGraphRunner();
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
-  if (!use_threaded_layer_tree_host_) {
     params.image_serialization_processor =
         compositor_dependencies_->GetImageSerializationProcessor();
-  }
 
   cc::LayerTreeSettings* settings =
       compositor_dependencies_->GetLayerTreeSettings();
@@ -547,13 +447,8 @@ BlimpCompositor::CreateLayerTreeHost() {
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner =
       compositor_dependencies_->GetCompositorTaskRunner();
 
-  if (use_threaded_layer_tree_host_) {
     host = cc::LayerTreeHostInProcess::CreateThreaded(compositor_task_runner,
                                                       &params);
-  } else {
-    host = cc::LayerTreeHostInProcess::CreateRemoteClient(
-        this /* remote_proto_channel */, compositor_task_runner, &params);
-  }
 
   return host;
 }
@@ -571,9 +466,6 @@ void BlimpCompositor::DestroyLayerTreeHost() {
   // Cancel any outstanding CompositorFrameSink requests.  That way if we get an
   // async callback related to the old request we know to drop it.
   compositor_frame_sink_request_pending_ = false;
-
-  // Make sure we don't have a receiver at this point.
-  DCHECK(!remote_proto_channel_receiver_);
 }
 
 }  // namespace client
