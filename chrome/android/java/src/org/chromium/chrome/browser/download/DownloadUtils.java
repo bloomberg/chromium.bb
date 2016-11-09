@@ -20,6 +20,7 @@ import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsIntent;
 import android.text.TextUtils;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
@@ -385,11 +386,24 @@ public class DownloadUtils {
         builder.setActionButton(
                 shareIcon, context.getString(R.string.share), pendingShareIntent, true);
 
+        // The color of the media viewer is dependent on the file type.
+        int backgroundRes;
+        if (DownloadFilter.fromMimeType(mimeType) == DownloadFilter.FILTER_IMAGE) {
+            backgroundRes = R.color.image_viewer_bg;
+        } else {
+            backgroundRes = R.color.media_viewer_bg;
+        }
+        int mediaColor = ApiCompatibilityUtils.getColor(context.getResources(), backgroundRes);
+
         // Build up the Intent further.
         Intent intent = builder.build().intent;
         intent.setPackage(context.getPackageName());
         intent.setData(fileUri);
         intent.putExtra(CustomTabIntentDataProvider.EXTRA_IS_MEDIA_VIEWER, true);
+        intent.putExtra(
+                CustomTabIntentDataProvider.EXTRA_INITIAL_BACKGROUND_COLOR, mediaColor);
+        intent.putExtra(
+                CustomTabsIntent.EXTRA_TOOLBAR_COLOR, mediaColor);
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
         IntentHandler.addTrustedIntentExtras(intent, context);
 

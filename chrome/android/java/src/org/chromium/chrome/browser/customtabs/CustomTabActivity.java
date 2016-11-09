@@ -8,8 +8,12 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.StrictMode;
 import android.support.customtabs.CustomTabsCallback;
@@ -50,6 +54,7 @@ import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.pageinfo.WebsiteSettingsPopup;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabIdManager;
@@ -235,6 +240,16 @@ public class CustomTabActivity extends ChromeActivity {
     }
 
     @Override
+    protected Drawable getBackgroundDrawable() {
+        int initialBackgroundColor = mIntentDataProvider.getInitialBackgroundColor();
+        if (mIntentDataProvider.isTrustedIntent() && initialBackgroundColor != Color.TRANSPARENT) {
+            return new ColorDrawable(initialBackgroundColor);
+        } else {
+            return super.getBackgroundDrawable();
+        }
+    }
+
+    @Override
     public boolean isCustomTab() {
         return true;
     }
@@ -257,8 +272,11 @@ public class CustomTabActivity extends ChromeActivity {
 
     @Override
     public void preInflationStartup() {
-        super.preInflationStartup();
+        // Parse the data from the Intent before calling super to allow the Intent to customize
+        // the Activity parameters, including the background of the page.
         mIntentDataProvider = new CustomTabIntentDataProvider(getIntent(), this);
+
+        super.preInflationStartup();
         mSession = mIntentDataProvider.getSession();
         supportRequestWindowFeature(Window.FEATURE_ACTION_MODE_OVERLAY);
         mHasPrerender = !TextUtils.isEmpty(
@@ -502,6 +520,8 @@ public class CustomTabActivity extends ChromeActivity {
         mMetricsObserver = new PageLoadMetricsObserver(
                 CustomTabsConnection.getInstance(getApplication()), mSession, tab);
         tab.addObserver(mTabObserver);
+
+        prepareTabBackground(tab);
     }
 
     @Override
@@ -895,5 +915,42 @@ public class CustomTabActivity extends ChromeActivity {
         return new ChromeFullscreenManager(this,
                 (ToolbarControlContainer) findViewById(R.id.control_container),
                 getTabModelSelector(), getControlContainerHeightResource(), true);
+    }
+
+    /** Sets the initial background color for the Tab, shown before the page content is ready. */
+    private void prepareTabBackground(final Tab tab) {
+        if (!IntentHandler.isIntentChromeOrFirstParty(getIntent(), this)) return;
+
+        int backgroundColor = mIntentDataProvider.getInitialBackgroundColor();
+        if (backgroundColor == Color.TRANSPARENT) return;
+
+        // Set the background color.
+        tab.getView().setBackgroundColor(backgroundColor);
+
+        // Unset the background when the page has rendered.
+        EmptyTabObserver mediaObserver = new EmptyTabObserver() {
+            @Override
+            public void didFirstVisuallyNonEmptyPaint(final Tab tab) {
+                tab.removeObserver(this);
+
+                // Blink has rendered the page by this point, but Android asynchronously shows it.
+                // Introduce a small delay, then actually show the page.
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!tab.isInitialized() || isActivityDestroyed()) return;
+                        tab.getView().setBackgroundResource(0);
+                    }
+                }, 50);
+            }
+        };
+
+        tab.addObserver(mediaObserver);
+    }
+
+    @Override
+    protected void initializeToolbar() {
+        super.initializeToolbar();
+        if (mIntentDataProvider.isMediaViewer()) getToolbarManager().disableShadow();
     }
 }
