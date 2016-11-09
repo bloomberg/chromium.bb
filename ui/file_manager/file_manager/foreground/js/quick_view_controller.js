@@ -126,6 +126,8 @@ QuickViewController.prototype.onQuickViewKeyDown_ = function(event) {
     case ' ':
     case 'Escape':
       event.preventDefault();
+      // Prevent the open dialog from closing.
+      event.stopImmediatePropagation();
       this.quickView_.close();
       break;
     case 'ArrowRight':
