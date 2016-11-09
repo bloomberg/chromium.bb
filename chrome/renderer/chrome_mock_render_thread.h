@@ -27,11 +27,12 @@ class ChromeMockRenderThread : public content::MockRenderThread {
   void set_io_task_runner(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
- private:
+ protected:
   // Overrides base class implementation to add custom handling for
   // print and extensions.
   bool OnMessageReceived(const IPC::Message& msg) override;
 
+ private:
 #if defined(ENABLE_EXTENSIONS)
   // The callee expects to be returned a valid channel_id.
   void OnOpenChannelToExtension(int routing_id,

@@ -47,6 +47,12 @@ class ChromeRenderViewTest : public content::RenderViewTest {
   void DisableUserGestureSimulationForAutofill();
   void WaitForAutofillDidAssociateFormControl();
 
+  // Tests which need to handle IPC's sent to the browser should override
+  // this method and return a subclass of ChromeMockRenderThread.
+  // The ChromeMockRenderThread pointer is owned by the ChromeRenderViewTest
+  // class.
+  virtual ChromeMockRenderThread* CreateMockRenderThread();
+
 #if defined(ENABLE_EXTENSIONS)
   std::unique_ptr<extensions::DispatcherDelegate>
       extension_dispatcher_delegate_;

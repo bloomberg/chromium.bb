@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
@@ -17,9 +18,13 @@
 #include "chrome/renderer/safe_browsing/mock_feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/test_utils.h"
 #include "chrome/test/base/chrome_render_view_test.h"
+#include "content/common/frame_messages.h"
+#include "content/common/navigation_params.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/resource_response.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/test/test_utils.h"
+#include "ipc/ipc_message_macros.h"
 #include "net/base/escape.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -184,6 +189,48 @@ class PhishingDOMFeatureExtractorTest : public ChromeRenderViewTest {
   }
 
  protected:
+  // Subclasses the ChromeMockRenderThread class for providing functionality
+  // to mock IPCs being sent to the browser from RenderViewTests.
+  class PhishingMockRenderThread : public ChromeMockRenderThread {
+   public:
+    PhishingMockRenderThread()
+        : current_message_routing_id_(-1) {
+    }
+
+   protected:
+    bool OnMessageReceived(const IPC::Message& msg) override {
+      current_message_routing_id_ = msg.routing_id();
+
+      IPC_BEGIN_MESSAGE_MAP(PhishingMockRenderThread, msg)
+        IPC_MESSAGE_HANDLER(FrameHostMsg_BeginNavigation, OnBeginNavigation)
+      IPC_END_MESSAGE_MAP()
+
+      current_message_routing_id_ = -1;
+      return ChromeMockRenderThread::OnMessageReceived(msg);
+    }
+
+    void OnBeginNavigation(
+        const content::CommonNavigationParams& common_params,
+        const content::BeginNavigationParams& begin_params) {
+      std::unique_ptr<IPC::Message> message;
+
+      message.reset(new FrameMsg_CommitNavigation(
+          current_message_routing_id_, content::ResourceResponseHead(),
+          common_params.url, common_params,
+          content::RequestNavigationParams()));
+      content::RenderFrame* frame = content::RenderFrame::FromRoutingID(
+          current_message_routing_id_);
+
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::Bind(
+              base::IgnoreResult(&content::RenderFrame::OnMessageReceived),
+              base::Unretained(frame), *message));
+    }
+
+    int current_message_routing_id_;
+  };
+
   void SetUp() override {
     ChromeRenderViewTest::SetUp();
     extractor_.reset(new TestPhishingDOMFeatureExtractor(&clock_));
@@ -211,6 +258,11 @@ class PhishingDOMFeatureExtractorTest : public ChromeRenderViewTest {
     ASSERT_TRUE(main_frame);
     main_frame->executeScript(blink::WebString(
         "document.body.removeChild(document.getElementById('frame1'));"));
+  }
+
+  // ChromeMockRenderThread overrides.
+  ChromeMockRenderThread* CreateMockRenderThread() override {
+    return new PhishingMockRenderThread();
   }
 
   MockFeatureExtractorClock clock_;
