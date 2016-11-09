@@ -25,11 +25,6 @@ bool AppClient::OnConnect(const ServiceInfo& remote_info,
   return true;
 }
 
-bool AppClient::OnStop() {
-  base::MessageLoop::current()->QuitWhenIdle();
-  return true;
-}
-
 void AppClient::Create(const Identity& remote_identity,
                        mojom::LifecycleControlRequest request) {
   bindings_.AddBinding(this, std::move(request));
@@ -40,7 +35,7 @@ void AppClient::Ping(const PingCallback& callback) {
 }
 
 void AppClient::GracefulQuit() {
-  context_->RequestQuit();
+  base::MessageLoop::current()->QuitWhenIdle();
 }
 
 void AppClient::Crash() {
@@ -58,7 +53,7 @@ void AppClient::CloseServiceManagerConnection() {
 
 void AppClient::BindingLost() {
   if (bindings_.empty())
-    OnStop();
+    GracefulQuit();
 }
 
 }  // namespace test

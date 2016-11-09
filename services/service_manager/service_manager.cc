@@ -19,7 +19,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/connect_util.h"
@@ -30,7 +29,6 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/service_manager/public/interfaces/service.mojom.h"
-#include "services/service_manager/public/interfaces/service_control.mojom.h"
 #include "services/service_manager/public/interfaces/service_manager.mojom.h"
 
 namespace service_manager {
@@ -80,8 +78,7 @@ class ServiceManager::Instance
       public mojom::PIDReceiver,
       public Service,
       public InterfaceFactory<mojom::ServiceManager>,
-      public mojom::ServiceManager,
-      public mojom::ServiceControl {
+      public mojom::ServiceManager {
  public:
   Instance(service_manager::ServiceManager* service_manager,
            const Identity& identity,
@@ -92,7 +89,6 @@ class ServiceManager::Instance
         interface_provider_specs_(interface_provider_specs),
         allow_any_application_(GetConnectionSpec().requires.count("*") == 1),
         pid_receiver_binding_(this),
-        control_binding_(this),
         state_(State::IDLE),
         weak_factory_(this) {
     if (identity_.name() == kServiceManagerName ||
@@ -155,18 +151,9 @@ class ServiceManager::Instance
     Instance* source = service_manager_->GetExistingInstance(params->source());
     if (source)
       specs = source->interface_provider_specs_;
-
-    pending_service_connections_++;
     service_->OnConnect(ServiceInfo(params->source(), specs),
-                        params->TakeRemoteInterfaces(),
-                        base::Bind(&Instance::OnConnectComplete,
-                                   base::Unretained(this)));
+                        params->TakeRemoteInterfaces());
     return true;
-  }
-
-  void OnConnectComplete() {
-    DCHECK_GT(pending_service_connections_, 0);
-    pending_service_connections_--;
   }
 
   void StartWithService(mojom::ServicePtr service) {
@@ -177,7 +164,7 @@ class ServiceManager::Instance
         base::Bind(&Instance::OnServiceLost, base::Unretained(this),
                    service_manager_->GetWeakPtr()));
     service_->OnStart(ServiceInfo(identity_, interface_provider_specs_),
-                      base::Bind(&Instance::OnStartComplete,
+                      base::Bind(&Instance::OnInitializeResponse,
                                  base::Unretained(this)));
   }
 
@@ -424,8 +411,7 @@ class ServiceManager::Instance
     }
   }
 
-  void OnStartComplete(mojom::ConnectorRequest connector_request,
-                       mojom::ServiceControlAssociatedRequest control_request) {
+  void OnInitializeResponse(mojom::ConnectorRequest connector_request) {
     state_ = State::STARTED;
     if (connector_request.is_pending()) {
       connectors_.AddBinding(this, std::move(connector_request));
@@ -433,8 +419,6 @@ class ServiceManager::Instance
           base::Bind(&Instance::OnConnectionLost, base::Unretained(this),
                      service_manager_->GetWeakPtr()));
     }
-    if (control_request.is_pending())
-      control_binding_.Bind(std::move(control_request));
     service_manager_->NotifyServiceStarted(identity_, pid_);
   }
 
@@ -444,13 +428,6 @@ class ServiceManager::Instance
       return;  // We're in the destructor.
 
     service_manager_->OnInstanceError(this);
-  }
-
-  // mojom::ServiceControl:
-  void RequestQuit() override {
-    // If quit is requested, oblige when there are no pending OnConnects.
-    if (!pending_service_connections_)
-      OnServiceLost(service_manager_->GetWeakPtr());
   }
 
   service_manager::ServiceManager* const service_manager_;
@@ -468,15 +445,10 @@ class ServiceManager::Instance
   mojo::Binding<mojom::PIDReceiver> pid_receiver_binding_;
   mojo::BindingSet<mojom::Connector> connectors_;
   mojo::BindingSet<mojom::ServiceManager> service_manager_bindings_;
-  mojo::AssociatedBinding<mojom::ServiceControl> control_binding_;
   base::ProcessId pid_ = base::kNullProcessId;
   Instance* parent_ = nullptr;
   InstanceMap children_;
   State state_;
-
-  // The number of outstanding OnConnect requests which are in flight.
-  int pending_service_connections_ = 0;
-
   base::WeakPtrFactory<Instance> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Instance);
