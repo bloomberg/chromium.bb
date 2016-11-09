@@ -53,10 +53,20 @@ set(AOM_DSP_SRCS
     "${AOM_ROOT}/aom_dsp/blend_a64_hmask.c"
     "${AOM_ROOT}/aom_dsp/blend_a64_mask.c"
     "${AOM_ROOT}/aom_dsp/blend_a64_vmask.c"
+    "${AOM_ROOT}/aom_dsp/daalaboolreader.c"
+    "${AOM_ROOT}/aom_dsp/daalaboolreader.h"
+    "${AOM_ROOT}/aom_dsp/daalaboolwriter.c"
+    "${AOM_ROOT}/aom_dsp/daalaboolwriter.h"
     "${AOM_ROOT}/aom_dsp/dkboolreader.c"
     "${AOM_ROOT}/aom_dsp/dkboolreader.h"
     "${AOM_ROOT}/aom_dsp/dkboolwriter.c"
     "${AOM_ROOT}/aom_dsp/dkboolwriter.h"
+    "${AOM_ROOT}/aom_dsp/entcode.c"
+    "${AOM_ROOT}/aom_dsp/entcode.h"
+    "${AOM_ROOT}/aom_dsp/entdec.c"
+    "${AOM_ROOT}/aom_dsp/entdec.h"
+    "${AOM_ROOT}/aom_dsp/entenc.c"
+    "${AOM_ROOT}/aom_dsp/entenc.h"
     "${AOM_ROOT}/aom_dsp/fwd_txfm.c"
     "${AOM_ROOT}/aom_dsp/fwd_txfm.h"
     "${AOM_ROOT}/aom_dsp/intrapred.c"
@@ -77,9 +87,11 @@ set(AOM_DSP_SRCS
     "${AOM_ROOT}/aom_dsp/simd/v64_intrinsics.h"
     "${AOM_ROOT}/aom_dsp/simd/v64_intrinsics_c.h"
     "${AOM_ROOT}/aom_dsp/subtract.c"
+    "${AOM_ROOT}/aom_dsp/sum_squares.c"
     "${AOM_ROOT}/aom_dsp/txfm_common.h"
     "${AOM_ROOT}/aom_dsp/variance.c"
-    "${AOM_ROOT}/aom_dsp/variance.h")
+    "${AOM_ROOT}/aom_dsp/variance.h"
+    "${AOM_ROOT}/aom_dsp/x86/txfm_common_intrin.h")
 
 set(AOM_MEM_SRCS
     "${AOM_ROOT}/aom_mem/aom_mem.c"
@@ -114,11 +126,16 @@ set(AOM_AV1_COMMON_SRCS
     "${AOM_ROOT}/av1/av1_iface_common.h"
     "${AOM_ROOT}/av1/common/alloccommon.c"
     "${AOM_ROOT}/av1/common/alloccommon.h"
-    "${AOM_ROOT}/av1/common/av1_fwd_txfm.c"
-    "${AOM_ROOT}/av1/common/av1_fwd_txfm.h"
-    "${AOM_ROOT}/av1/common/av1_inv_txfm.c"
-    "${AOM_ROOT}/av1/common/av1_inv_txfm.h"
+    "${AOM_ROOT}/av1/common/av1_fwd_txfm1d.c"
+    "${AOM_ROOT}/av1/common/av1_fwd_txfm1d.h"
+    "${AOM_ROOT}/av1/common/av1_fwd_txfm2d.c"
+    "${AOM_ROOT}/av1/common/av1_fwd_txfm2d_cfg.h"
+    "${AOM_ROOT}/av1/common/av1_inv_txfm1d.c"
+    "${AOM_ROOT}/av1/common/av1_inv_txfm1d.h"
+    "${AOM_ROOT}/av1/common/av1_inv_txfm2d.c"
+    "${AOM_ROOT}/av1/common/av1_inv_txfm2d_cfg.h"
     "${AOM_ROOT}/av1/common/av1_rtcd.c"
+    "${AOM_ROOT}/av1/common/av1_txfm.h"
     "${AOM_ROOT}/av1/common/blockd.c"
     "${AOM_ROOT}/av1/common/blockd.h"
     "${AOM_ROOT}/av1/common/common.h"
@@ -155,6 +172,7 @@ set(AOM_AV1_COMMON_SRCS
     "${AOM_ROOT}/av1/common/reconinter.h"
     "${AOM_ROOT}/av1/common/reconintra.c"
     "${AOM_ROOT}/av1/common/reconintra.h"
+    "${AOM_ROOT}/av1/common/restoration.h"
     "${AOM_ROOT}/av1/common/scale.c"
     "${AOM_ROOT}/av1/common/scale.h"
     "${AOM_ROOT}/av1/common/scan.c"
@@ -242,7 +260,9 @@ set(AOM_AV1_ENCODER_SRCS
     "${AOM_ROOT}/av1/encoder/tokenize.c"
     "${AOM_ROOT}/av1/encoder/tokenize.h"
     "${AOM_ROOT}/av1/encoder/treewriter.c"
-    "${AOM_ROOT}/av1/encoder/treewriter.h")
+    "${AOM_ROOT}/av1/encoder/treewriter.h"
+    "${AOM_ROOT}/av1/encoder/variance_tree.c"
+    "${AOM_ROOT}/av1/encoder/variance_tree.h")
 
 # Targets
 add_library(aom_dsp ${AOM_DSP_SRCS})
