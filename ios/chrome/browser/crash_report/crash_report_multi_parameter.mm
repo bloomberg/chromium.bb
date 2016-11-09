@@ -14,7 +14,7 @@
 #import "ios/chrome/browser/crash_report/breakpad_helper.h"
 
 namespace {
-// Maximum size of a breakpad parameter. he length of the dictionary serialized
+// Maximum size of a breakpad parameter. The length of the dictionary serialized
 // into JSON cannot exceed this length. See declaration in (BreakPad.h) for
 // details.
 const int kMaximumBreakpadValueSize = 255;

@@ -185,10 +185,10 @@ all other OS specific variables will be false.
         A device policy blocked access to your photos
       </message>
       <!-- iOS Net-Export strings -->
-      <message name="IDS_IOS_NET_EXPORT_NO_EMAIL_ACCOUNTS_ALERT_MESSAGE" desc="The message of the alert informing a user with no email accounts that he or she needs to configure an email account to send net-export data. [Length: 70em]">
+      <message name="IDS_IOS_NET_EXPORT_NO_EMAIL_ACCOUNTS_ALERT_MESSAGE" desc="The message of the alert informing a user with no email accounts that they need to configure an email account to send net-export data. [Length: 70em]">
         To send net-export data, please configure your email account in the Settings app.
       </message>
-      <message name="IDS_IOS_NET_EXPORT_NO_EMAIL_ACCOUNTS_ALERT_TITLE" desc="The title of the alert informing a user with no email accounts that he or she needs to configure an email account to send net-export data. [Length: 20em]">
+      <message name="IDS_IOS_NET_EXPORT_NO_EMAIL_ACCOUNTS_ALERT_TITLE" desc="The title of the alert informing a user with no email accounts that they need to configure an email account to send net-export data. [Length: 20em]">
         No Email Accounts
       </message>
 
