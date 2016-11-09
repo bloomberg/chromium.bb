@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2012 Adobe Systems Incorporated. All rights reserved.
+ * Copyright (C) 2013 Adobe Systems Incorporated. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,39 +28,33 @@
  * SUCH DAMAGE.
  */
 
-#include "core/paint/PaintLayerFilterInfo.h"
+#ifndef ReferenceFilterBuilder_h
+#define ReferenceFilterBuilder_h
 
-#include "core/paint/PaintLayer.h"
-#include "core/style/FilterOperations.h"
-#include "platform/graphics/filters/FilterEffect.h"
+#include "core/fetch/DocumentResourceReference.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
-PaintLayerFilterInfo::PaintLayerFilterInfo(PaintLayer* layer)
-    : m_layer(layer) {}
+class Element;
+class FilterOperation;
+class ReferenceFilterOperation;
+class SVGFilterElement;
 
-PaintLayerFilterInfo::~PaintLayerFilterInfo() {
-  DCHECK(!m_layer);
-}
+class ReferenceFilterBuilder {
+  STATIC_ONLY(ReferenceFilterBuilder);
 
-void PaintLayerFilterInfo::setLastEffect(FilterEffect* lastEffect) {
-  m_lastEffect = lastEffect;
-}
+ public:
+  static DocumentResourceReference* documentResourceReference(
+      const FilterOperation*);
+  static void setDocumentResourceReference(const FilterOperation*,
+                                           DocumentResourceReference*);
 
-void PaintLayerFilterInfo::updateReferenceFilterClients(
-    const FilterOperations& operations) {
-  clearFilterReferences();
-  addFilterReferences(operations, m_layer->layoutObject()->document());
-}
-
-void PaintLayerFilterInfo::filterNeedsInvalidation() {
-  if (m_layer)
-    m_layer->filterNeedsPaintInvalidation();
-}
-
-DEFINE_TRACE(PaintLayerFilterInfo) {
-  visitor->trace(m_lastEffect);
-  SVGResourceClient::trace(visitor);
-}
+  static SVGFilterElement* resolveFilterReference(
+      const ReferenceFilterOperation&,
+      Element&);
+};
 
 }  // namespace blink
+
+#endif  // ReferenceFilterBuilder_h

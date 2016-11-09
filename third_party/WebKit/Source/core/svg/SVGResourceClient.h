@@ -7,26 +7,35 @@
 
 #include "core/CoreExport.h"
 #include "core/fetch/DocumentResource.h"
+#include "core/svg/SVGFilterElement.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class TreeScope;
+class Document;
+class FilterOperations;
 
 class CORE_EXPORT SVGResourceClient : public DocumentResourceClient {
+  USING_PRE_FINALIZER(SVGResourceClient, clearFilterReferences);
+
  public:
-  virtual ~SVGResourceClient() {}
+  SVGResourceClient();
+  ~SVGResourceClient() override;
+  void addFilterReferences(const FilterOperations&, const Document&);
+  void clearFilterReferences();
 
-  virtual TreeScope* treeScope() = 0;
+  virtual void filterNeedsInvalidation() = 0;
 
-  virtual void resourceContentChanged() = 0;
-  virtual void resourceElementChanged() = 0;
+  void filterWillBeDestroyed(SVGFilterElement*);
 
- protected:
-  SVGResourceClient() {}
-
+  void notifyFinished(Resource*) override;
   String debugName() const override { return "SVGResourceClient"; }
-  void notifyFinished(Resource*) override { resourceElementChanged(); }
+
+  DECLARE_TRACE();
+
+ private:
+  HeapHashSet<WeakMember<SVGFilterElement>> m_internalFilterReferences;
+  HeapVector<Member<DocumentResource>> m_externalFilterReferences;
 };
 
 }  // namespace blink

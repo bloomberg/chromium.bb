@@ -66,6 +66,8 @@ blink_core_sources("svg") {
     "LayoutSVGTransformableContainer.h",
     "LayoutSVGViewportContainer.cpp",
     "LayoutSVGViewportContainer.h",
+    "ReferenceFilterBuilder.cpp",
+    "ReferenceFilterBuilder.h",
     "SVGCharacterData.h",
     "SVGLayoutSupport.cpp",
     "SVGLayoutSupport.h",

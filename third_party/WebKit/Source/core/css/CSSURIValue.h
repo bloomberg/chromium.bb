@@ -6,35 +6,38 @@
 #define CSSURIValue_h
 
 #include "core/css/CSSValue.h"
-#include "wtf/text/WTFString.h"
+#include "core/fetch/DocumentResource.h"
 
 namespace blink {
 
 class Document;
-class SVGElementProxy;
 
 class CSSURIValue : public CSSValue {
  public:
   static CSSURIValue* create(const String& str) { return new CSSURIValue(str); }
   ~CSSURIValue();
 
-  SVGElementProxy& ensureElementProxy(Document&) const;
+  DocumentResource* cachedDocument() const { return m_document; }
+  DocumentResource* load(Document&) const;
 
   const String& value() const { return m_url; }
   const String& url() const { return m_url; }
 
   String customCSSText() const;
 
+  bool loadRequested() const { return m_loadRequested; }
   bool equals(const CSSURIValue&) const;
 
   DECLARE_TRACE_AFTER_DISPATCH();
 
  private:
-  explicit CSSURIValue(const String&);
+  CSSURIValue(const String&);
 
   String m_url;
 
-  mutable Member<SVGElementProxy> m_proxy;
+  // Document cache.
+  mutable Member<DocumentResource> m_document;
+  mutable bool m_loadRequested;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSURIValue, isURIValue());

@@ -30,6 +30,7 @@
 #include "core/css/CSSURIValue.h"
 #include "core/dom/Document.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/layout/svg/ReferenceFilterBuilder.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ContentData.h"
 #include "core/style/CursorData.h"
@@ -41,7 +42,6 @@
 #include "core/style/StyleImage.h"
 #include "core/style/StyleInvalidImage.h"
 #include "core/style/StylePendingImage.h"
-#include "core/svg/SVGElementProxy.h"
 
 namespace blink {
 
@@ -108,23 +108,36 @@ StyleImage* ElementStyleResources::cursorOrPendingFromValue(
   return value.cachedImage(m_deviceScaleFactor);
 }
 
-SVGElementProxy& ElementStyleResources::cachedOrPendingFromValue(
-    const CSSURIValue& value) {
-  return value.ensureElementProxy(*m_document);
+void ElementStyleResources::addPendingSVGDocument(
+    FilterOperation* filterOperation,
+    const CSSURIValue* cssUriValue) {
+  m_pendingSVGDocuments.set(filterOperation, cssUriValue);
 }
 
 void ElementStyleResources::loadPendingSVGDocuments(
     ComputedStyle* computedStyle) {
-  if (!computedStyle->hasFilter())
+  if (!computedStyle->hasFilter() || m_pendingSVGDocuments.isEmpty())
     return;
+
   FilterOperations::FilterOperationVector& filterOperations =
       computedStyle->mutableFilter().operations();
-  for (auto& filterOperation : filterOperations) {
-    if (filterOperation->type() != FilterOperation::REFERENCE)
-      continue;
-    ReferenceFilterOperation& referenceOperation =
-        toReferenceFilterOperation(*filterOperation);
-    referenceOperation.elementProxy().resolve(*m_document);
+  for (unsigned i = 0; i < filterOperations.size(); ++i) {
+    FilterOperation* filterOperation = filterOperations.at(i);
+    if (filterOperation->type() == FilterOperation::REFERENCE) {
+      ReferenceFilterOperation* referenceFilter =
+          toReferenceFilterOperation(filterOperation);
+
+      const CSSURIValue* value = m_pendingSVGDocuments.get(referenceFilter);
+      if (!value)
+        continue;
+      DocumentResource* resource = value->load(*m_document);
+      if (!resource)
+        continue;
+
+      // Stash the DocumentResource on the reference filter.
+      ReferenceFilterBuilder::setDocumentResourceReference(
+          referenceFilter, new DocumentResourceReference(resource));
+    }
   }
 }
 

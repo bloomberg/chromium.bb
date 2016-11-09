@@ -77,8 +77,8 @@ class StyleChangeReasonForTracing;
 class Text;
 class TouchEvent;
 
-const int nodeStyleChangeShift = 18;
-const int nodeCustomElementShift = 20;
+const int nodeStyleChangeShift = 19;
+const int nodeCustomElementShift = 21;
 
 enum StyleChangeType {
   NoStyleChange = 0,
@@ -472,6 +472,16 @@ class CORE_EXPORT Node : public EventTarget {
 
   void updateDistribution();
 
+  bool svgFilterNeedsLayerUpdate() const {
+    return getFlag(SVGFilterNeedsLayerUpdateFlag);
+  }
+  void setSVGFilterNeedsLayerUpdate() {
+    setFlag(SVGFilterNeedsLayerUpdateFlag);
+  }
+  void clearSVGFilterNeedsLayerUpdate() {
+    clearFlag(SVGFilterNeedsLayerUpdateFlag);
+  }
+
   void setIsLink(bool f);
 
   bool hasEventTargetData() const { return getFlag(HasEventTargetDataFlag); }
@@ -813,29 +823,30 @@ class CORE_EXPORT Node : public EventTarget {
     IsFinishedParsingChildrenFlag = 1 << 12,
 
     // Flags related to recalcStyle.
-    HasCustomStyleCallbacksFlag = 1 << 13,
-    ChildNeedsStyleInvalidationFlag = 1 << 14,
-    NeedsStyleInvalidationFlag = 1 << 15,
-    ChildNeedsDistributionRecalcFlag = 1 << 16,
-    ChildNeedsStyleRecalcFlag = 1 << 17,
+    SVGFilterNeedsLayerUpdateFlag = 1 << 13,
+    HasCustomStyleCallbacksFlag = 1 << 14,
+    ChildNeedsStyleInvalidationFlag = 1 << 15,
+    NeedsStyleInvalidationFlag = 1 << 16,
+    ChildNeedsDistributionRecalcFlag = 1 << 17,
+    ChildNeedsStyleRecalcFlag = 1 << 18,
     StyleChangeMask =
         1 << nodeStyleChangeShift | 1 << (nodeStyleChangeShift + 1),
 
     CustomElementStateMask = 0x3 << nodeCustomElementShift,
 
-    HasNameOrIsEditingTextFlag = 1 << 22,
-    HasEventTargetDataFlag = 1 << 23,
+    HasNameOrIsEditingTextFlag = 1 << 23,
+    HasEventTargetDataFlag = 1 << 24,
 
-    V0CustomElementFlag = 1 << 24,
-    V0CustomElementUpgradedFlag = 1 << 25,
+    V0CustomElementFlag = 1 << 25,
+    V0CustomElementUpgradedFlag = 1 << 26,
 
-    NeedsReattachLayoutTree = 1 << 26,
-    ChildNeedsReattachLayoutTree = 1 << 27,
+    NeedsReattachLayoutTree = 1 << 27,
+    ChildNeedsReattachLayoutTree = 1 << 28,
 
     DefaultNodeFlags = IsFinishedParsingChildrenFlag | NeedsReattachStyleChange
   };
 
-  // 4 bits remaining.
+  // 3 bits remaining.
 
   bool getFlag(NodeFlags mask) const { return m_nodeFlags & mask; }
   void setFlag(bool f, NodeFlags mask) {

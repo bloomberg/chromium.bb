@@ -32,11 +32,11 @@
 namespace blink {
 
 class Document;
-class Element;
 class LayoutSVGResourceContainer;
-class SVGElement;
-class SVGSVGElement;
 class SubtreeLayoutScope;
+class SVGSVGElement;
+class SVGElement;
+class Element;
 
 class SVGDocumentExtensions
     : public GarbageCollectedFinalized<SVGDocumentExtensions> {
@@ -85,6 +85,7 @@ class SVGDocumentExtensions
 
  private:
   Member<Document> m_document;
+  // For SVG 1.2 support this will need to be made more general.
   HeapHashSet<Member<SVGSVGElement>> m_timeContainers;
   using SVGElementSet = HeapHashSet<Member<SVGElement>>;
   SVGElementSet m_webAnimationsPendingSVGElements;

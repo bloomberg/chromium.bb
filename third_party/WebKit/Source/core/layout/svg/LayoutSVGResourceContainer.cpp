@@ -25,7 +25,9 @@
 #include "core/layout/svg/LayoutSVGResourceMasker.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
-#include "core/svg/SVGElementProxy.h"
+#include "core/paint/PaintLayer.h"
+#include "core/svg/SVGFilterElement.h"
+
 #include "wtf/AutoReset.h"
 
 namespace blink {
@@ -61,16 +63,15 @@ void LayoutSVGResourceContainer::layout() {
   clearInvalidationMask();
 }
 
-void LayoutSVGResourceContainer::notifyContentChanged() {
-  if (SVGElementProxySet* proxySet = elementProxySet())
-    proxySet->notifyContentChanged(element()->treeScope());
-}
-
 void LayoutSVGResourceContainer::willBeDestroyed() {
   // Detach all clients referring to this resource. If the resource itself is
   // a client, it will be detached from any such resources by the call to
   // LayoutSVGHiddenContainer::willBeDestroyed() below.
   detachAllClients();
+
+  for (SVGResourceClient* client : m_resourceClients)
+    client->filterWillBeDestroyed(toSVGFilterElement(element()));
+  m_resourceClients.clear();
 
   LayoutSVGHiddenContainer::willBeDestroyed();
   if (m_registered)
@@ -120,11 +121,9 @@ void LayoutSVGResourceContainer::idChanged() {
 
 void LayoutSVGResourceContainer::markAllClientsForInvalidation(
     InvalidationMode mode) {
-  if (m_isInvalidating)
+  if ((m_clients.isEmpty() && m_resourceClients.isEmpty()) || m_isInvalidating)
     return;
-  SVGElementProxySet* proxySet = elementProxySet();
-  if (m_clients.isEmpty() && (!proxySet || proxySet->isEmpty()))
-    return;
+
   if (m_invalidationMask & mode)
     return;
 
@@ -133,9 +132,7 @@ void LayoutSVGResourceContainer::markAllClientsForInvalidation(
   bool needsLayout = mode == LayoutAndBoundariesInvalidation;
   bool markForInvalidation = mode != ParentOnlyInvalidation;
 
-  // Invalidate clients registered on the this object (via SVGResources).
   for (auto* client : m_clients) {
-    DCHECK(client->isSVG());
     if (client->isSVGResourceContainer()) {
       toLayoutSVGResourceContainer(client)->removeAllClientsFromCache(
           markForInvalidation);
@@ -149,10 +146,14 @@ void LayoutSVGResourceContainer::markAllClientsForInvalidation(
         client, needsLayout);
   }
 
-  // Invalidate clients registered via an SVGElementProxy.
-  notifyContentChanged();
+  markAllResourceClientsForInvalidation();
 
   m_isInvalidating = false;
+}
+
+void LayoutSVGResourceContainer::markAllResourceClientsForInvalidation() {
+  for (SVGResourceClient* client : m_resourceClients)
+    client->filterNeedsInvalidation();
 }
 
 void LayoutSVGResourceContainer::markClientForInvalidation(
@@ -192,6 +193,18 @@ void LayoutSVGResourceContainer::removeClient(LayoutObject* client) {
   m_clients.remove(client);
 }
 
+void LayoutSVGResourceContainer::addResourceClient(SVGResourceClient* client) {
+  ASSERT(client);
+  m_resourceClients.add(client);
+  clearInvalidationMask();
+}
+
+void LayoutSVGResourceContainer::removeResourceClient(
+    SVGResourceClient* client) {
+  ASSERT(client);
+  m_resourceClients.remove(client);
+}
+
 void LayoutSVGResourceContainer::invalidateCacheAndMarkForLayout(
     SubtreeLayoutScope* layoutScope) {
   if (selfNeedsLayout())
@@ -220,18 +233,32 @@ void LayoutSVGResourceContainer::registerResource() {
 
   // Update cached resources of pending clients.
   for (const auto& pendingClient : *clients) {
-    DCHECK(pendingClient->hasPendingResources());
+    ASSERT(pendingClient->hasPendingResources());
     extensions.clearHasPendingResourcesIfPossible(pendingClient);
     LayoutObject* layoutObject = pendingClient->layoutObject();
     if (!layoutObject)
       continue;
-    DCHECK(layoutObject->isSVG() && (resourceType() != FilterResourceType ||
-                                     !layoutObject->isSVGRoot()));
+
+    const ComputedStyle& style = layoutObject->styleRef();
+
+    // If the client has a layer (is a non-SVGElement) we need to signal
+    // invalidation in the same way as is done in
+    // markAllResourceClientsForInvalidation above.
+    if (layoutObject->hasLayer() && resourceType() == FilterResourceType) {
+      if (!style.hasFilter())
+        continue;
+      toLayoutBoxModelObject(layoutObject)
+          ->layer()
+          ->filterNeedsPaintInvalidation();
+      if (!layoutObject->isSVGRoot())
+        continue;
+      // A root SVG element with a filter, however, still needs to run
+      // the full invalidation step below.
+    }
 
     StyleDifference diff;
     diff.setNeedsFullLayout();
-    SVGResourcesCache::clientStyleChanged(layoutObject, diff,
-                                          layoutObject->styleRef());
+    SVGResourcesCache::clientStyleChanged(layoutObject, diff, style);
     layoutObject->setNeedsLayoutAndFullPaintInvalidation(
         LayoutInvalidationReason::SvgResourceInvalidated);
   }

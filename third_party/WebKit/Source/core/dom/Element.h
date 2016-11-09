@@ -314,6 +314,8 @@ class CORE_EXPORT Element : public ContainerNode {
   Element* cloneElementWithChildren();
   Element* cloneElementWithoutChildren();
 
+  void scheduleSVGFilterLayerUpdateHack();
+
   void setBooleanAttribute(const QualifiedName&, bool);
 
   virtual const StylePropertySet* additionalPresentationAttributeStyle() {

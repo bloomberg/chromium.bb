@@ -25,6 +25,9 @@
 
 #include "core/style/FilterOperations.h"
 
+#include "platform/LengthFunctions.h"
+#include "platform/geometry/IntSize.h"
+#include "platform/graphics/filters/FEGaussianBlur.h"
 #include <numeric>
 
 namespace blink {
@@ -103,20 +106,6 @@ bool FilterOperations::hasFilterThatMovesPixels() const {
       return true;
   }
   return false;
-}
-
-void FilterOperations::addClient(SVGResourceClient* client) const {
-  for (FilterOperation* operation : m_operations) {
-    if (operation->type() == FilterOperation::REFERENCE)
-      toReferenceFilterOperation(*operation).addClient(client);
-  }
-}
-
-void FilterOperations::removeClient(SVGResourceClient* client) const {
-  for (FilterOperation* operation : m_operations) {
-    if (operation->type() == FilterOperation::REFERENCE)
-      toReferenceFilterOperation(*operation).removeClient(client);
-  }
 }
 
 }  // namespace blink

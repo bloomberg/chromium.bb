@@ -1748,6 +1748,9 @@ void Element::detachLayoutTree(const AttachContext& context) {
   if (context.clearInvalidation)
     document().styleEngine().styleInvalidator().clearInvalidation(*this);
 
+  if (svgFilterNeedsLayerUpdate())
+    document().unscheduleSVGFilterLayerUpdateHack(*this);
+
   setNeedsResizeObserverUpdate();
 
   DCHECK(needsAttach());
@@ -1952,7 +1955,8 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change) {
 
   if (LayoutObject* layoutObject = this->layoutObject()) {
     if (localChange != NoChange ||
-        pseudoStyleCacheIsInvalid(oldStyle.get(), newStyle.get())) {
+        pseudoStyleCacheIsInvalid(oldStyle.get(), newStyle.get()) ||
+        svgFilterNeedsLayerUpdate()) {
       layoutObject->setStyle(newStyle.get());
     } else {
       // Although no change occurred, we use the new style so that the cousin
@@ -3611,6 +3615,10 @@ void Element::updateExtraNamedItemRegistration(const AtomicString& oldId,
 
   if (!newId.isEmpty())
     toHTMLDocument(document()).addExtraNamedItem(newId);
+}
+
+void Element::scheduleSVGFilterLayerUpdateHack() {
+  document().scheduleSVGFilterLayerUpdateHack(*this);
 }
 
 ScrollOffset Element::savedLayerScrollOffset() const {

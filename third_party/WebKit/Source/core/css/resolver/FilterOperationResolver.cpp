@@ -36,6 +36,8 @@
 #include "core/css/CSSURIValue.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/frame/UseCounter.h"
+#include "core/layout/svg/ReferenceFilterBuilder.h"
+#include "core/svg/SVGURIReference.h"
 
 namespace blink {
 
@@ -133,10 +135,19 @@ FilterOperations FilterOperationResolver::createFilterOperations(
       countFilterUse(FilterOperation::REFERENCE, state.document());
 
       const CSSURIValue& urlValue = toCSSURIValue(*currValue);
-      SVGElementProxy& elementProxy =
-          state.elementStyleResources().cachedOrPendingFromValue(urlValue);
-      operations.operations().append(
-          ReferenceFilterOperation::create(urlValue.value(), elementProxy));
+      SVGURLReferenceResolver resolver(urlValue.value(), state.document());
+      ReferenceFilterOperation* operation = ReferenceFilterOperation::create(
+          urlValue.value(), resolver.fragmentIdentifier());
+      if (!resolver.isLocal()) {
+        if (!urlValue.loadRequested())
+          state.elementStyleResources().addPendingSVGDocument(operation,
+                                                              &urlValue);
+        else if (urlValue.cachedDocument())
+          ReferenceFilterBuilder::setDocumentResourceReference(
+              operation,
+              new DocumentResourceReference(urlValue.cachedDocument()));
+      }
+      operations.operations().append(operation);
       continue;
     }
 

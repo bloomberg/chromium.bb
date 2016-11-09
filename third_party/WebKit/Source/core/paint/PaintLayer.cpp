@@ -49,9 +49,11 @@
 #include "core/css/PseudoStyleRequest.h"
 #include "core/dom/Document.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/frame/DeprecatedScheduleStyleRecalcDuringLayout.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/html/HTMLFrameElement.h"
 #include "core/layout/FragmentainerIterator.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
@@ -80,8 +82,11 @@
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/CompositorFilterOperations.h"
 #include "platform/graphics/filters/Filter.h"
+#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/tracing/TraceEvent.h"
+#include "platform/transforms/ScaleTransformOperation.h"
 #include "platform/transforms/TransformationMatrix.h"
+#include "platform/transforms/TranslateTransformOperation.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/allocator/Partitions.h"
@@ -179,10 +184,8 @@ PaintLayer::PaintLayer(LayoutBoxModelObject* layoutObject)
 }
 
 PaintLayer::~PaintLayer() {
-  if (m_rareData && m_rareData->filterInfo) {
-    layoutObject()->styleRef().filter().removeClient(m_rareData->filterInfo);
+  if (m_rareData && m_rareData->filterInfo)
     m_rareData->filterInfo->clearLayer();
-  }
   if (layoutObject()->frame() && layoutObject()->frame()->page()) {
     if (ScrollingCoordinator* scrollingCoordinator =
             layoutObject()->frame()->page()->scrollingCoordinator())
@@ -2645,8 +2648,7 @@ void PaintLayer::ensureCompositedLayerMapping() {
   m_rareData->compositedLayerMapping->setNeedsGraphicsLayerUpdate(
       GraphicsLayerUpdateSubtree);
 
-  if (PaintLayerFilterInfo* filterInfo = this->filterInfo())
-    filterInfo->invalidateFilterChain();
+  updateOrRemoveFilterEffect();
 }
 
 void PaintLayer::clearCompositedLayerMapping(bool layerBeingDestroyed) {
@@ -2664,11 +2666,8 @@ void PaintLayer::clearCompositedLayerMapping(bool layerBeingDestroyed) {
   if (m_rareData)
     m_rareData->compositedLayerMapping.reset();
 
-  if (layerBeingDestroyed)
-    return;
-
-  if (PaintLayerFilterInfo* filterInfo = this->filterInfo())
-    filterInfo->invalidateFilterChain();
+  if (!layerBeingDestroyed)
+    updateOrRemoveFilterEffect();
 }
 
 void PaintLayer::setGroupedMapping(CompositedLayerMapping* groupedMapping,
@@ -2871,17 +2870,9 @@ void PaintLayer::updateFilters(const ComputedStyle* oldStyle,
   if (!newStyle.hasFilterInducingProperty() &&
       (!oldStyle || !oldStyle->hasFilterInducingProperty()))
     return;
-  const bool hadFilterInfo = filterInfo();
-  if (newStyle.hasFilterInducingProperty())
-    newStyle.filter().addClient(&ensureFilterInfo());
-  if (hadFilterInfo && oldStyle)
-    oldStyle->filter().removeClient(filterInfo());
-  if (!newStyle.hasFilterInducingProperty()) {
-    removeFilterInfo();
-    return;
-  }
-  if (PaintLayerFilterInfo* filterInfo = this->filterInfo())
-    filterInfo->invalidateFilterChain();
+
+  updateOrRemoveFilterClients();
+  updateOrRemoveFilterEffect();
 }
 
 bool PaintLayer::attemptDirectCompositingUpdate(StyleDifference diff,
@@ -2904,6 +2895,14 @@ bool PaintLayer::attemptDirectCompositingUpdate(StyleDifference diff,
   // a corresponding StyleDifference if an animation started or ended.
   if (potentialCompositingReasonsFromStyle() !=
       oldPotentialCompositingReasonsFromStyle)
+    return false;
+  // If we're unwinding a scheduleSVGFilterLayerUpdateHack(), then we can't
+  // perform a direct compositing update because the filters code is going
+  // to produce different output this time around. We can remove this code
+  // once we fix the chicken/egg bugs in the filters code and delete the
+  // scheduleSVGFilterLayerUpdateHack().
+  if (layoutObject()->node() &&
+      layoutObject()->node()->svgFilterNeedsLayerUpdate())
     return false;
   if (!m_rareData || !m_rareData->compositedLayerMapping)
     return false;
@@ -3018,13 +3017,6 @@ PaintLayerFilterInfo& PaintLayer::ensureFilterInfo() {
   return *rareData.filterInfo;
 }
 
-void PaintLayer::removeFilterInfo() {
-  if (!m_rareData || !m_rareData->filterInfo)
-    return;
-  m_rareData->filterInfo->clearLayer();
-  m_rareData->filterInfo = nullptr;
-}
-
 void PaintLayer::removeAncestorOverflowLayer(const PaintLayer* removedLayer) {
   // If the current ancestor overflow layer does not match the removed layer
   // the ancestor overflow layer has changed so we can stop searching.
@@ -3047,11 +3039,27 @@ void PaintLayer::removeAncestorOverflowLayer(const PaintLayer* removedLayer) {
   }
 }
 
-FilterEffect* PaintLayer::lastFilterEffect() const {
+void PaintLayer::updateOrRemoveFilterClients() {
+  const auto& filter = layoutObject()->style()->filter();
+  if (filter.isEmpty() && m_rareData && m_rareData->filterInfo) {
+    m_rareData->filterInfo->clearLayer();
+    m_rareData->filterInfo = nullptr;
+  } else if (filter.hasReferenceFilter()) {
+    ensureFilterInfo().updateReferenceFilterClients(filter);
+  } else if (filterInfo()) {
+    filterInfo()->clearFilterReferences();
+  }
+}
+
+FilterEffect* PaintLayer::updateFilterEffect() const {
   // TODO(chrishtr): ensure (and assert) that compositing is clean here.
+
   if (!paintsWithFilters())
     return nullptr;
+
   PaintLayerFilterInfo* filterInfo = this->filterInfo();
+
+  // Should have been added by updateOrRemoveFilterEffect().
   DCHECK(filterInfo);
 
   if (filterInfo->lastEffect())
@@ -3068,13 +3076,16 @@ FilterEffect* PaintLayer::lastFilterEffect() const {
   return filterInfo->lastEffect();
 }
 
+FilterEffect* PaintLayer::lastFilterEffect() const {
+  return updateFilterEffect();
+}
+
 FloatRect PaintLayer::mapRectForFilter(const FloatRect& rect) const {
   if (!hasFilterThatMovesPixels())
     return rect;
 
   // Ensure the filter-chain is refreshed wrt reference filters.
-  // TODO(fs): Avoid having this side-effect inducing call.
-  lastFilterEffect();
+  updateFilterEffect();
 
   FilterOperations filterOperations =
       addReflectionToFilterOperations(layoutObject()->styleRef());
@@ -3096,6 +3107,37 @@ bool PaintLayer::hasFilterThatMovesPixels() const {
   if (style.hasBoxReflect())
     return true;
   return false;
+}
+
+void PaintLayer::updateOrRemoveFilterEffect() {
+  // FilterEffectBuilder is only used to render the filters in software mode,
+  // so we always need to run updateOrRemoveFilterEffect after the composited
+  // mode might have changed for this layer.
+  if (!paintsWithFilters()) {
+    if (PaintLayerFilterInfo* filterInfo = this->filterInfo())
+      filterInfo->setLastEffect(nullptr);
+    return;
+  }
+
+  ensureFilterInfo().setLastEffect(nullptr);
+}
+
+void PaintLayer::filterNeedsPaintInvalidation() {
+  {
+    DeprecatedScheduleStyleRecalcDuringLayout marker(
+        layoutObject()->document().lifecycle());
+    // It's possible for scheduleSVGFilterLayerUpdateHack to schedule a style
+    // recalc, which is a problem because this function can be called right
+    // before performing layout but after style recalc.
+    //
+    // See LayoutView::layout() and the call to
+    // invalidateSVGRootsWithRelativeLengthDescendents(). This violation is
+    // worked around in FrameView::updateStyleAndLayoutIfNeededRecursive() by
+    // doing an extra style recalc and layout in case it's needed.
+    toElement(layoutObject()->node())->scheduleSVGFilterLayerUpdateHack();
+  }
+
+  layoutObject()->setShouldDoFullPaintInvalidation();
 }
 
 void PaintLayer::addLayerHitTestRects(LayerHitTestRects& rects) const {

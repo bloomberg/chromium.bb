@@ -42,7 +42,7 @@ class CSSURIValue;
 class CSSValue;
 class ComputedStyle;
 class Document;
-class SVGElementProxy;
+class FilterOperation;
 class StyleImage;
 class StylePendingImage;
 
@@ -58,9 +58,10 @@ class ElementStyleResources {
   StyleImage* styleImage(CSSPropertyID, const CSSValue&);
   StyleImage* cachedOrPendingFromValue(CSSPropertyID, const CSSImageValue&);
   StyleImage* setOrPendingFromValue(CSSPropertyID, const CSSImageSetValue&);
-  SVGElementProxy& cachedOrPendingFromValue(const CSSURIValue&);
 
   void loadPendingResources(ComputedStyle*);
+
+  void addPendingSVGDocument(FilterOperation*, const CSSURIValue*);
 
  private:
   StyleImage* cursorOrPendingFromValue(CSSPropertyID,
@@ -78,6 +79,8 @@ class ElementStyleResources {
 
   Member<Document> m_document;
   HashSet<CSSPropertyID> m_pendingImageProperties;
+  HeapHashMap<Member<FilterOperation>, Member<const CSSURIValue>>
+      m_pendingSVGDocuments;
   float m_deviceScaleFactor;
 };
 

@@ -32,8 +32,6 @@
 
 namespace blink {
 
-class SVGResourceClient;
-
 class CORE_EXPORT FilterOperations {
   DISALLOW_NEW();
 
@@ -70,9 +68,6 @@ class CORE_EXPORT FilterOperations {
   bool hasFilterThatMovesPixels() const;
 
   bool hasReferenceFilter() const;
-
-  void addClient(SVGResourceClient*) const;
-  void removeClient(SVGResourceClient*) const;
 
   DECLARE_TRACE();
 

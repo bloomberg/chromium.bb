@@ -26,8 +26,8 @@
 
 #include "core/paint/FilterEffectBuilder.h"
 
+#include "core/layout/svg/ReferenceFilterBuilder.h"
 #include "core/style/FilterOperations.h"
-#include "core/svg/SVGElementProxy.h"
 #include "core/svg/SVGFilterElement.h"
 #include "core/svg/SVGLengthContext.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
@@ -404,13 +404,13 @@ CompositorFilterOperations FilterEffectBuilder::buildFilterOperations(
 Filter* FilterEffectBuilder::buildReferenceFilter(
     const ReferenceFilterOperation& referenceOperation,
     FilterEffect* previousEffect) const {
-  DCHECK(m_targetContext);
-  Element* filterElement = referenceOperation.elementProxy().findElement(
-      m_targetContext->treeScope());
-  if (!isSVGFilterElement(filterElement))
+  DCHECK(m_targetContext && m_targetContext->isElementNode());
+  SVGFilterElement* filterElement =
+      ReferenceFilterBuilder::resolveFilterReference(
+          referenceOperation, toElement(*m_targetContext));
+  if (!filterElement)
     return nullptr;
-  return buildReferenceFilter(toSVGFilterElement(*filterElement),
-                              previousEffect);
+  return buildReferenceFilter(*filterElement, previousEffect);
 }
 
 Filter* FilterEffectBuilder::buildReferenceFilter(

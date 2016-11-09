@@ -60,10 +60,6 @@ bool LayoutSVGResourceFilter::isChildAllowed(LayoutObject* child,
   return child->isSVGResourceFilterPrimitive();
 }
 
-SVGElementProxySet* LayoutSVGResourceFilter::elementProxySet() {
-  return &toSVGFilterElement(*element()).elementProxySet();
-}
-
 void LayoutSVGResourceFilter::removeAllClientsFromCache(
     bool markForInvalidation) {
   // LayoutSVGResourceFilter::removeClientFromCache will be called for
@@ -140,7 +136,7 @@ void LayoutSVGResourceFilter::primitiveAttributeChanged(
     // Issue paint invalidations for the image on the screen.
     markClientForInvalidation(filter.key, PaintInvalidation);
   }
-  notifyContentChanged();
+  markAllResourceClientsForInvalidation();
 }
 
 }  // namespace blink

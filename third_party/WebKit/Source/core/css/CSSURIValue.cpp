@@ -6,28 +6,28 @@
 
 #include "core/css/CSSMarkup.h"
 #include "core/dom/Document.h"
-#include "core/svg/SVGElementProxy.h"
-#include "core/svg/SVGURIReference.h"
+#include "core/fetch/FetchInitiatorTypeNames.h"
+#include "core/fetch/FetchRequest.h"
+#include "core/fetch/ResourceFetcher.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
 CSSURIValue::CSSURIValue(const String& urlString)
-    : CSSValue(URIClass), m_url(urlString) {}
+    : CSSValue(URIClass), m_url(urlString), m_loadRequested(false) {}
 
 CSSURIValue::~CSSURIValue() {}
 
-SVGElementProxy& CSSURIValue::ensureElementProxy(Document& document) const {
-  if (m_proxy)
-    return *m_proxy;
-  SVGURLReferenceResolver resolver(m_url, document);
-  AtomicString fragmentId = resolver.fragmentIdentifier();
-  if (resolver.isLocal()) {
-    m_proxy = SVGElementProxy::create(fragmentId);
-  } else {
-    m_proxy =
-        SVGElementProxy::create(resolver.absoluteUrl().getString(), fragmentId);
+DocumentResource* CSSURIValue::load(Document& document) const {
+  if (!m_loadRequested) {
+    m_loadRequested = true;
+
+    FetchRequest request(ResourceRequest(document.completeURL(m_url)),
+                         FetchInitiatorTypeNames::css);
+    m_document =
+        DocumentResource::fetchSVGDocument(request, document.fetcher());
   }
-  return *m_proxy;
+  return m_document;
 }
 
 String CSSURIValue::customCSSText() const {
@@ -39,7 +39,7 @@ bool CSSURIValue::equals(const CSSURIValue& other) const {
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSURIValue) {
-  visitor->trace(m_proxy);
+  visitor->trace(m_document);
   CSSValue::traceAfterDispatch(visitor);
 }
 
