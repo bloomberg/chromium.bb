@@ -5,6 +5,7 @@
 #ifndef ASH_COMMON_SYSTEM_TRAY_TRAY_POPUP_UTILS_H_
 #define ASH_COMMON_SYSTEM_TRAY_TRAY_POPUP_UTILS_H_
 
+#include "ash/common/login_status.h"
 #include "ash/common/system/tray/tri_view.h"
 #include "base/strings/string16.h"
 
@@ -14,6 +15,7 @@ class ImageView;
 class Label;
 class LabelButton;
 class LayoutManager;
+class Separator;
 class Slider;
 class SliderListener;
 }  // namespace views
@@ -62,6 +64,30 @@ class TrayPopupUtils {
   //
   // TODO(bruthig): Update all default rows to use this.
   static views::ImageView* CreateMoreImageView();
+
+  // Creates a button for use in the system menu that only has a visible border
+  // when being hovered/clicked. Caller assumes ownership.
+  static views::LabelButton* CreateTrayPopupBorderlessButton(
+      views::ButtonListener* listener,
+      const base::string16& text);
+
+  // Creates a button for use in the system menu. For MD, this is a prominent
+  // text
+  // button. For non-MD, this does the same thing as the above. Caller assumes
+  // ownership.
+  static views::LabelButton* CreateTrayPopupButton(
+      views::ButtonListener* listener,
+      const base::string16& text);
+
+  // Creates and returns a vertical separator to be used between two items in a
+  // material design system menu row. The caller assumes ownership of the
+  // returned separator.
+  static views::Separator* CreateVerticalSeparator();
+
+  // Returns true if it is possible to open WebUI settings in a browser window,
+  // i.e., the user is logged in, not on the lock screen, and not in a secondary
+  // account flow.
+  static bool CanOpenWebUISettings(LoginStatus status);
 
  private:
   TrayPopupUtils() = delete;

@@ -17,7 +17,7 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
 #include "ash/common/system/tray/tray_popup_label_button_border.h"
-#include "ash/common/system/tray/tray_utils.h"
+#include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/system/user/button_from_view.h"
 #include "ash/common/system/user/login_status.h"
 #include "ash/common/system/user/rounded_image_view.h"
@@ -406,11 +406,12 @@ void UserView::OnDidChangeFocus(View* focused_before, View* focused_now) {
 void UserView::AddLogoutButton(LoginStatus login) {
   const base::string16 title =
       user::GetLocalizedSignOutStringForStatus(login, true);
-  auto* logout_button = CreateTrayPopupBorderlessButton(this, title);
+  auto* logout_button =
+      TrayPopupUtils::CreateTrayPopupBorderlessButton(this, title);
   logout_button->SetAccessibleName(title);
   logout_button_ = logout_button;
   if (UseMd()) {
-    views::View* separator = CreateVerticalSeparator();
+    views::View* separator = TrayPopupUtils::CreateVerticalSeparator();
     separator->SetBorder(views::CreateEmptyBorder(
         gfx::Insets(0, 0, 0, kTrayPopupLabelHorizontalPadding)));
     AddChildView(separator);

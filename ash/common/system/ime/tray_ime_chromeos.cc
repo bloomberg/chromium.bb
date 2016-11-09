@@ -19,6 +19,7 @@
 #include "ash/common/system/tray/tray_item_more.h"
 #include "ash/common/system/tray/tray_item_view.h"
 #include "ash/common/system/tray/tray_popup_item_style.h"
+#include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/system/tray_accessibility.h"
 #include "ash/common/wm_shell.h"
@@ -134,7 +135,7 @@ class IMEDetailedView : public ImeListView {
     ImeListView::Update(list, property_list, show_keyboard_toggle,
                         single_ime_behavior);
     if (!MaterialDesignController::IsSystemTrayMenuMaterial() &&
-        CanOpenWebUISettings(login_)) {
+        TrayPopupUtils::CanOpenWebUISettings(login_)) {
       AppendSettings();
     }
 

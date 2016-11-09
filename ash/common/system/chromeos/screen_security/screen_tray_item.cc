@@ -8,7 +8,7 @@
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/tray_constants.h"
-#include "ash/common/system/tray/tray_utils.h"
+#include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -107,7 +107,7 @@ void ScreenStatusView::CreateItems() {
   AddChildView(label_);
   layout->SetFlexForView(label_, 1);
 
-  stop_button_ = CreateTrayPopupButton(this, stop_button_text_);
+  stop_button_ = TrayPopupUtils::CreateTrayPopupButton(this, stop_button_text_);
   AddChildView(stop_button_);
 }
 

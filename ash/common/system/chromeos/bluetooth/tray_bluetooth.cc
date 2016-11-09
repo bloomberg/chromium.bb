@@ -17,7 +17,7 @@
 #include "ash/common/system/tray/tray_item_more.h"
 #include "ash/common/system/tray/tray_popup_header_button.h"
 #include "ash/common/system/tray/tray_popup_item_style.h"
-#include "ash/common/system/tray/tray_utils.h"
+#include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "device/bluetooth/bluetooth_common.h"
@@ -377,7 +377,7 @@ class BluetoothDetailedView : public TrayDetailsView {
 
     // Add bluetooth device requires a browser window, hide it for non logged in
     // user.
-    if (!CanOpenWebUISettings(login_))
+    if (!TrayPopupUtils::CanOpenWebUISettings(login_))
       return;
 
     SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
@@ -508,7 +508,7 @@ class BluetoothDetailedView : public TrayDetailsView {
   }
 
   void ShowSettings() {
-    if (CanOpenWebUISettings(login_)) {
+    if (TrayPopupUtils::CanOpenWebUISettings(login_)) {
       WmShell::Get()->system_tray_delegate()->ManageBluetoothDevices();
       owner()->system_tray()->CloseSystemBubble();
     }

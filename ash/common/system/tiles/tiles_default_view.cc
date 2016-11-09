@@ -12,7 +12,7 @@
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/tray_constants.h"
-#include "ash/common/system/tray/tray_utils.h"
+#include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "grit/ash_strings.h"
@@ -70,7 +70,7 @@ void TilesDefaultView::Init() {
   // Show the buttons in this row as disabled if the user is at the login
   // screen, lock screen, or in a secondary account flow. The exception is
   // |power_button_| which is always shown as enabled.
-  const bool disable_buttons = !CanOpenWebUISettings(login_);
+  const bool disable_buttons = !TrayPopupUtils::CanOpenWebUISettings(login_);
 
   settings_button_ = new SystemMenuButton(
       this, SystemMenuButton::InkDropStyle::FLOOD_FILL, kSystemMenuSettingsIcon,
@@ -78,7 +78,7 @@ void TilesDefaultView::Init() {
   if (disable_buttons || !shell->system_tray_delegate()->ShouldShowSettings())
     settings_button_->SetState(views::Button::STATE_DISABLED);
   AddChildView(settings_button_);
-  AddChildView(CreateVerticalSeparator());
+  AddChildView(TrayPopupUtils::CreateVerticalSeparator());
 
   help_button_ =
       new SystemMenuButton(this, SystemMenuButton::InkDropStyle::FLOOD_FILL,
@@ -93,7 +93,7 @@ void TilesDefaultView::Init() {
   if (disable_buttons)
     help_button_->SetState(views::Button::STATE_DISABLED);
   AddChildView(help_button_);
-  AddChildView(CreateVerticalSeparator());
+  AddChildView(TrayPopupUtils::CreateVerticalSeparator());
 
 #if !defined(OS_WIN)
   lock_button_ =
@@ -103,7 +103,7 @@ void TilesDefaultView::Init() {
     lock_button_->SetState(views::Button::STATE_DISABLED);
 
   AddChildView(lock_button_);
-  AddChildView(CreateVerticalSeparator());
+  AddChildView(TrayPopupUtils::CreateVerticalSeparator());
 
   power_button_ =
       new SystemMenuButton(this, SystemMenuButton::InkDropStyle::FLOOD_FILL,

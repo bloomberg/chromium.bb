@@ -19,6 +19,7 @@
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_item_style.h"
+#include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
@@ -71,7 +72,7 @@ void ShowIMESettings() {
 bool IsInLoginOrLockScreen() {
   LoginStatus login =
       WmShell::Get()->system_tray_delegate()->GetUserLoginStatus();
-  return !CanOpenWebUISettings(login);
+  return !TrayPopupUtils::CanOpenWebUISettings(login);
 }
 
 class ImeMenuLabel : public views::Label {

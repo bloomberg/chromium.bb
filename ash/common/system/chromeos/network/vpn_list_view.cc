@@ -18,7 +18,7 @@
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
-#include "ash/common/system/tray/tray_utils.h"
+#include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/wm_shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -219,7 +219,7 @@ void VPNListNetworkEntry::UpdateFromNetworkState(
       IsConnectedOrConnecting(network));
   if (IsConnectedOrConnecting(network)) {
     if (UseMd()) {
-      disconnect_button_ = CreateTrayPopupButton(
+      disconnect_button_ = TrayPopupUtils::CreateTrayPopupButton(
           this, l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_VPN_DISCONNECT));
     } else {
       disconnect_button_ = new DisconnectButton(this);

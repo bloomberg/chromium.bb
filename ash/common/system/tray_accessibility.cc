@@ -18,7 +18,7 @@
 #include "ash/common/system/tray/tray_item_more.h"
 #include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
-#include "ash/common/system/tray/tray_utils.h"
+#include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/strings/utf_string_conversions.h"
@@ -237,7 +237,7 @@ void AccessibilityDetailedView::AppendHelpEntries() {
   DCHECK(!UseMdMenu());
   // Currently the help page requires a browser window.
   // TODO(yoshiki): show this even on login/lock screen. crbug.com/158286
-  if (!CanOpenWebUISettings(login_))
+  if (!TrayPopupUtils::CanOpenWebUISettings(login_))
     return;
 
   views::View* bottom_row = new View();
@@ -342,14 +342,14 @@ void AccessibilityDetailedView::CreateExtraTitleRowButtons() {
 }
 
 void AccessibilityDetailedView::ShowSettings() {
-  if (CanOpenWebUISettings(login_)) {
+  if (TrayPopupUtils::CanOpenWebUISettings(login_)) {
     WmShell::Get()->system_tray_controller()->ShowAccessibilitySettings();
     owner()->system_tray()->CloseSystemBubble();
   }
 }
 
 void AccessibilityDetailedView::ShowHelp() {
-  if (CanOpenWebUISettings(login_)) {
+  if (TrayPopupUtils::CanOpenWebUISettings(login_)) {
     WmShell::Get()->system_tray_controller()->ShowAccessibilityHelp();
     owner()->system_tray()->CloseSystemBubble();
   }

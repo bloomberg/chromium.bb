@@ -12,7 +12,7 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_header_button.h"
 #include "ash/common/system/tray/tray_popup_item_style.h"
-#include "ash/common/system/tray/tray_utils.h"
+#include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -113,7 +113,7 @@ views::CustomButton* SpecialPopupRow::AddSettingsButton(
   SystemMenuButton* button = new SystemMenuButton(
       listener, SystemMenuButton::InkDropStyle::SQUARE, kSystemMenuSettingsIcon,
       IDS_ASH_STATUS_TRAY_SETTINGS);
-  if (!CanOpenWebUISettings(status))
+  if (!TrayPopupUtils::CanOpenWebUISettings(status))
     button->SetState(views::Button::STATE_DISABLED);
   AddViewAfterContent(button);
   return button;
@@ -125,7 +125,7 @@ views::CustomButton* SpecialPopupRow::AddHelpButton(
   SystemMenuButton* button =
       new SystemMenuButton(listener, SystemMenuButton::InkDropStyle::SQUARE,
                            kSystemMenuHelpIcon, IDS_ASH_STATUS_TRAY_HELP);
-  if (!CanOpenWebUISettings(status))
+  if (!TrayPopupUtils::CanOpenWebUISettings(status))
     button->SetState(views::Button::STATE_DISABLED);
   AddViewAfterContent(button);
   return button;

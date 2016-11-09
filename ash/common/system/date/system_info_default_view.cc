@@ -5,7 +5,7 @@
 #include "ash/common/system/date/system_info_default_view.h"
 
 #include "ash/common/system/date/date_view.h"
-#include "ash/common/system/tray/tray_utils.h"
+#include "ash/common/system/tray/tray_popup_utils.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -34,13 +34,13 @@ SystemInfoDefaultView::SystemInfoDefaultView(SystemTrayItem* owner,
   if (PowerStatus::Get()->IsBatteryPresent()) {
     // TODO(tdanderson): Align separator with the nearest separator in the
     // tiles row above.
-    AddChildView(CreateVerticalSeparator());
+    AddChildView(TrayPopupUtils::CreateVerticalSeparator());
     power_status_view_ = new ash::PowerStatusView(false);
     AddChildView(power_status_view_);
   }
 #endif  // defined(OS_CHROMEOS)
 
-  if (CanOpenWebUISettings(login))
+  if (TrayPopupUtils::CanOpenWebUISettings(login))
     date_view_->SetAction(tray::DateView::DateAction::SHOW_DATE_SETTINGS);
 }
 
