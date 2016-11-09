@@ -17,10 +17,11 @@ shouldThrow("new RTCPeerConnection('');");
 
 shouldNotThrow("new RTCPeerConnection({iceServers:[]});");
 shouldNotThrow("new RTCPeerConnection({iceServers:[{url:'stun:foo.com'}]});");
-shouldNotThrow("new RTCPeerConnection({iceServers:[{url:'turn:foo.com', credential:'x'}]});");
-shouldNotThrow("new RTCPeerConnection({iceServers:[{url:'turn:foo.com', credential:'x'},{url:'stun:bar.com'}]});");
+shouldNotThrow("new RTCPeerConnection({iceServers:[{url:'turn:foo.com', username:'x', credential:'x'}]});");
+shouldNotThrow("new RTCPeerConnection({iceServers:[{url:'turn:foo.com', username:'x', credential:'x'},{url:'stun:bar.com'}]});");
 shouldNotThrow("new RTCPeerConnection({iceServers:[{urls:'stun:foo.com'}]});");
-shouldNotThrow("new RTCPeerConnection({iceServers:[{urls:['stun:foo.com', 'turn:foo.com']}]});");
+shouldNotThrow("new RTCPeerConnection({iceServers:[{urls:['stun:foo.com', 'turn:foo.com'], username:'x', credential:'x'}]});");
+shouldThrow("new RTCPeerConnection({iceServers:[{urls:['stun:foo.com', 'turn:foo.com']}]});");
 
 shouldNotThrow("new RTCPeerConnection({fooServers:[]});");
 shouldThrow("new RTCPeerConnection({iceServers:true});");

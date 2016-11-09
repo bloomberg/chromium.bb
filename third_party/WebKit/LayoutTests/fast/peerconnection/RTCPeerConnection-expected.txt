@@ -14,10 +14,11 @@ PASS new RTCPeerConnection(); did not throw exception.
 PASS new RTCPeerConnection(''); threw exception TypeError: Failed to construct 'RTCPeerConnection': parameter 1 ('configuration') is not an object..
 PASS new RTCPeerConnection({iceServers:[]}); did not throw exception.
 PASS new RTCPeerConnection({iceServers:[{url:'stun:foo.com'}]}); did not throw exception.
-PASS new RTCPeerConnection({iceServers:[{url:'turn:foo.com', credential:'x'}]}); did not throw exception.
-PASS new RTCPeerConnection({iceServers:[{url:'turn:foo.com', credential:'x'},{url:'stun:bar.com'}]}); did not throw exception.
+PASS new RTCPeerConnection({iceServers:[{url:'turn:foo.com', username:'x', credential:'x'}]}); did not throw exception.
+PASS new RTCPeerConnection({iceServers:[{url:'turn:foo.com', username:'x', credential:'x'},{url:'stun:bar.com'}]}); did not throw exception.
 PASS new RTCPeerConnection({iceServers:[{urls:'stun:foo.com'}]}); did not throw exception.
-PASS new RTCPeerConnection({iceServers:[{urls:['stun:foo.com', 'turn:foo.com']}]}); did not throw exception.
+PASS new RTCPeerConnection({iceServers:[{urls:['stun:foo.com', 'turn:foo.com'], username:'x', credential:'x'}]}); did not throw exception.
+PASS new RTCPeerConnection({iceServers:[{urls:['stun:foo.com', 'turn:foo.com']}]}); threw exception InvalidAccessError: Failed to construct 'RTCPeerConnection': Both username and credential are required when the URL scheme is "turn" or "turns"..
 PASS new RTCPeerConnection({fooServers:[]}); did not throw exception.
 PASS new RTCPeerConnection({iceServers:true}); threw exception TypeError: Failed to construct 'RTCPeerConnection': The value provided is neither an array, nor does it have indexed properties..
 PASS new RTCPeerConnection({iceServers:[1, 2, 3]}); threw exception TypeError: Failed to construct 'RTCPeerConnection': cannot convert to dictionary..

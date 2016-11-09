@@ -319,6 +319,13 @@ WebRTCConfiguration parseConfiguration(ExecutionContext* context,
                                "'stun', 'turn' or 'turns'.");
           return WebRTCConfiguration();
         }
+        if ((url.protocolIs("turn") || url.protocolIs("turns")) &&
+            (username.isNull() || credential.isNull())) {
+          exceptionState.throwDOMException(InvalidAccessError,
+                                           "Both username and credential are "
+                                           "required when the URL scheme is "
+                                           "\"turn\" or \"turns\".");
+        }
         iceServers.append(WebRTCIceServer{url, username, credential});
       }
     }
