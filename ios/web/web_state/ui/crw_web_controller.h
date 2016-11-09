@@ -198,7 +198,8 @@ class WebStateImpl;
 // Navigate forwards or backwards by one page.
 - (void)goBack;
 - (void)goForward;
-// Navigate forwards or backwards by |delta| pages.
+// Navigates forwards or backwards by |delta| pages. No-op if delta is out of
+// bounds.
 - (void)goDelta:(int)delta;
 // Navigates to the item at the given |index|.
 - (void)goToItemAtIndex:(int)index;

@@ -2292,28 +2292,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)goDelta:(int)delta {
   if (delta == 0) {
     [self reload];
-    return;
-  }
-
-  // Abort if there is nothing next in the history.
-  // Note that it is NOT checked that the history depth is at least |delta|.
-  if ((delta < 0 && ![self canGoBack]) || (delta > 0 && ![self canGoForward])) {
-    return;
-  }
-
-  if (delta >= 0 || !_webStateImpl->IsShowingWebInterstitial()) {
-    [self recordStateInHistory];
-  }
-
-  CRWSessionController* sessionController =
-      _webStateImpl->GetNavigationManagerImpl().GetSessionController();
-  // fromEntry is retained because it has the potential to be released
-  // by goDelta: if it has not been committed.
-  base::scoped_nsobject<CRWSessionEntry> fromEntry(
-      [[sessionController currentEntry] retain]);
-  [sessionController goDelta:delta];
-  if (fromEntry) {
-    [self finishHistoryNavigationFromEntry:fromEntry];
+  } else if ([self.sessionController canGoDelta:delta]) {
+    [self goToItemAtIndex:[self.sessionController indexOfEntryForDelta:delta]];
   }
 }
 
