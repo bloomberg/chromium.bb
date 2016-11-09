@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/frame/desktop_browser_frame_auralinux.h"
+#include "chrome/browser/ui/views/frame/desktop_browser_frame_aurax11.h"
 
 #include "base/command_line.h"
 #include "chrome/browser/shell_integration_linux.h"
@@ -12,21 +12,21 @@
 #include "chrome/common/pref_names.h"
 #include "ui/views/widget/widget.h"
 
-DesktopBrowserFrameAuraLinux::DesktopBrowserFrameAuraLinux(
+DesktopBrowserFrameAuraX11::DesktopBrowserFrameAuraX11(
     BrowserFrame* browser_frame,
     BrowserView* browser_view)
     : DesktopBrowserFrameAura(browser_frame, browser_view) {
   use_custom_frame_pref_.Init(
       prefs::kUseCustomChromeFrame,
       browser_view->browser()->profile()->GetPrefs(),
-      base::Bind(&DesktopBrowserFrameAuraLinux::OnUseCustomChromeFrameChanged,
+      base::Bind(&DesktopBrowserFrameAuraX11::OnUseCustomChromeFrameChanged,
                  base::Unretained(this)));
 }
 
-DesktopBrowserFrameAuraLinux::~DesktopBrowserFrameAuraLinux() {
+DesktopBrowserFrameAuraX11::~DesktopBrowserFrameAuraX11() {
 }
 
-views::Widget::InitParams DesktopBrowserFrameAuraLinux::GetWidgetParams() {
+views::Widget::InitParams DesktopBrowserFrameAuraX11::GetWidgetParams() {
   views::Widget::InitParams params;
   params.native_widget = this;
 
@@ -52,12 +52,12 @@ views::Widget::InitParams DesktopBrowserFrameAuraLinux::GetWidgetParams() {
   return params;
 }
 
-bool DesktopBrowserFrameAuraLinux::UseCustomFrame() const {
+bool DesktopBrowserFrameAuraX11::UseCustomFrame() const {
   return use_custom_frame_pref_.GetValue() &&
       browser_view()->IsBrowserTypeNormal();
 }
 
-void DesktopBrowserFrameAuraLinux::OnUseCustomChromeFrameChanged() {
+void DesktopBrowserFrameAuraX11::OnUseCustomChromeFrameChanged() {
   // Tell the window manager to add or remove system borders.
   browser_frame()->set_frame_type(
       UseCustomFrame() ? views::Widget::FRAME_TYPE_FORCE_CUSTOM
