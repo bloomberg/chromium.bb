@@ -3058,7 +3058,10 @@ split_static_library("ui") {
       ]
     }
     if (use_ozone) {
-      sources += [ "views/frame/native_browser_frame_factory_ozone.cc" ]
+      sources += [
+        "views/frame/browser_desktop_window_tree_host_ozone.cc",
+        "views/frame/native_browser_frame_factory_ozone.cc",
+      ]
     }
   }
   if (is_linux) {  # Both desktop Linux and ChromeOS.

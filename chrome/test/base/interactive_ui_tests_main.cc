@@ -13,7 +13,7 @@
 #if defined(USE_AURA)
 #include "ui/aura/test/ui_controls_factory_aura.h"
 #include "ui/base/test/ui_controls_aura.h"
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
 #include "ui/views/test/ui_controls_factory_desktop_aurax11.h"
 #endif
 #endif
@@ -49,13 +49,17 @@ class InteractiveUITestSuite : public ChromeTestSuite {
 #endif
 
 #if defined(OS_LINUX)
+#if defined(USE_OZONE)
+    NOTIMPLEMENTED();
+#else
     ui_controls::InstallUIControlsAura(
         views::test::CreateUIControlsDesktopAura());
+#endif  // defined(USE_OZONE)
 #else
     // TODO(win_ash): when running interactive_ui_tests for Win Ash, use above.
     ui_controls::InstallUIControlsAura(aura::test::CreateUIControlsAura(NULL));
-#endif
-#endif
+#endif  // defined(OS_LINUX)
+#endif  // defined(USE_AURA)
   }
 
   void Shutdown() override {
