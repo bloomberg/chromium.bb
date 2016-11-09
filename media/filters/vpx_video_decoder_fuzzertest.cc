@@ -55,18 +55,43 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   }
 
   // Compute randomized constants. Put all rng() usages here.
-  auto codec = static_cast<VideoCodec>(rng() % kVideoCodecMax);
+  // Use only values that pass DCHECK in VpxVideoDecoder::ConfigureDecoder().
+  VideoCodec codec;
+  VideoPixelFormat pixel_format;
+  if (rng() & 1) {
+    codec = kCodecVP8;
+    // PIXEL_FORMAT_YV12 disabled for kCodecVP8 on Linux.
+    pixel_format = PIXEL_FORMAT_YV12A;
+  } else {
+    codec = kCodecVP9;
+    switch (rng() % 3) {
+      case 0:
+        pixel_format = PIXEL_FORMAT_YV12;
+        break;
+      case 1:
+        pixel_format = PIXEL_FORMAT_YV12A;
+        break;
+      case 2:
+        pixel_format = PIXEL_FORMAT_YV24;
+        break;
+      default:
+        return 0;
+    }
+  }
+
   auto profile =
       static_cast<VideoCodecProfile>(rng() % VIDEO_CODEC_PROFILE_MAX);
-  auto pixel_format = static_cast<VideoPixelFormat>(rng() % PIXEL_FORMAT_MAX);
   auto color_space = static_cast<ColorSpace>(rng() % COLOR_SPACE_MAX);
-  auto coded_size = gfx::Size(rng() % 128, rng() % 128);
-  auto visible_rect = gfx::Rect(rng() % 128, rng() % 128);
-  auto natural_size = gfx::Size(rng() % 128, rng() % 128);
+  auto coded_size = gfx::Size(1 + (rng() % 127), 1 + (rng() % 127));
+  auto visible_rect = gfx::Rect(coded_size);
+  auto natural_size = gfx::Size(1 + (rng() % 127), 1 + (rng() % 127));
 
   VideoDecoderConfig config(codec, profile, pixel_format, color_space,
                             coded_size, visible_rect, natural_size,
                             EmptyExtraData(), Unencrypted());
+
+  if (!config.IsValidConfig())
+    return 0;
 
   VpxVideoDecoder decoder;
 
