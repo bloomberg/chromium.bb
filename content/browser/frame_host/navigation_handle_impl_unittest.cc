@@ -147,7 +147,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
     // in both cases.
     test_handle_->WillProcessResponse(
         main_test_rfh(), scoped_refptr<net::HttpResponseHeaders>(),
-        net::HttpResponseInfo::CONNECTION_INFO_QUIC, SSLStatus(),
+        net::HttpResponseInfo::CONNECTION_INFO_QUIC_35, SSLStatus(),
         GlobalRequestID(), false, false, false, base::Closure(),
         base::Bind(&NavigationHandleImplTest::UpdateThrottleCheckResult,
                    base::Unretained(this)));
@@ -209,7 +209,7 @@ TEST_F(NavigationHandleImplTest, SimpleDataChecks) {
   SimulateWillProcessResponse();
   EXPECT_EQ(REQUEST_CONTEXT_TYPE_LOCATION,
             test_handle()->GetRequestContextType());
-  EXPECT_EQ(net::HttpResponseInfo::CONNECTION_INFO_QUIC,
+  EXPECT_EQ(net::HttpResponseInfo::CONNECTION_INFO_QUIC_35,
             test_handle()->GetConnectionInfo());
 }
 
@@ -220,7 +220,7 @@ TEST_F(NavigationHandleImplTest, SimpleDataCheckNoRedirect) {
 
   test_handle()->Resume();
   SimulateWillProcessResponse();
-  EXPECT_EQ(net::HttpResponseInfo::CONNECTION_INFO_QUIC,
+  EXPECT_EQ(net::HttpResponseInfo::CONNECTION_INFO_QUIC_35,
             test_handle()->GetConnectionInfo());
 }
 

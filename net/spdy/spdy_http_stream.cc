@@ -331,10 +331,10 @@ SpdyResponseHeadersStatus SpdyHttpStream::OnResponseHeadersUpdated(
   // Don't store the SSLInfo in the response here, HttpNetworkTransaction
   // will take care of that part.
   response_info_->was_alpn_negotiated = was_alpn_negotiated_;
-  response_info_->alpn_negotiated_protocol =
-      SSLClientSocket::NextProtoToString(negotiated_protocol_);
   response_info_->request_time = stream_->GetRequestTime();
   response_info_->connection_info = HttpResponseInfo::CONNECTION_INFO_HTTP2;
+  response_info_->alpn_negotiated_protocol =
+      HttpResponseInfo::ConnectionInfoToString(response_info_->connection_info);
   response_info_->vary_data
       .Init(*request_info_, *response_info_->headers.get());
 

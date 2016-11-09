@@ -51,7 +51,12 @@ void ProtocolPageLoadMetricsObserver::OnParseStart(
           "PageLoad.Clients.Protocol.H2.ParseTiming.NavigationToParseStart",
           timing.parse_start.value());
       break;
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_UNKNOWN_VERSION:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_32:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_33:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_34:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_35:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_36:
       PAGE_LOAD_HISTOGRAM(
           "PageLoad.Clients.Protocol.QUIC.ParseTiming.NavigationToParseStart",
           timing.parse_start.value());
@@ -84,7 +89,12 @@ void ProtocolPageLoadMetricsObserver::OnFirstContentfulPaint(
           "ParseStartToFirstContentfulPaint",
           timing.first_contentful_paint.value() - timing.parse_start.value());
       break;
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_UNKNOWN_VERSION:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_32:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_33:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_34:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_35:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_36:
       PAGE_LOAD_HISTOGRAM(
           "PageLoad.Clients.Protocol.QUIC.PaintTiming."
           "ParseStartToFirstContentfulPaint",
@@ -118,7 +128,12 @@ void ProtocolPageLoadMetricsObserver::OnFirstMeaningfulPaint(
           "ParseStartToFirstMeaningfulPaint",
           timing.first_meaningful_paint.value() - timing.parse_start.value());
       break;
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_UNKNOWN_VERSION:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_32:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_33:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_34:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_35:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_36:
       PAGE_LOAD_HISTOGRAM(
           "PageLoad.Clients.Protocol.QUIC.Experimental.PaintTiming."
           "ParseStartToFirstMeaningfulPaint",
@@ -152,7 +167,12 @@ void ProtocolPageLoadMetricsObserver::OnDomContentLoadedEventStart(
           "NavigationToDOMContentLoadedEventFired",
           timing.dom_content_loaded_event_start.value());
       break;
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_UNKNOWN_VERSION:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_32:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_33:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_34:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_35:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_36:
       PAGE_LOAD_HISTOGRAM(
           "PageLoad.Clients.Protocol.QUIC.DocumentTiming."
           "NavigationToDOMContentLoadedEventFired",
@@ -186,7 +206,12 @@ void ProtocolPageLoadMetricsObserver::OnLoadEventStart(
           "NavigationToLoadEventFired",
           timing.load_event_start.value());
       break;
-    case net::HttpResponseInfo::CONNECTION_INFO_QUIC:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_UNKNOWN_VERSION:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_32:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_33:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_34:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_35:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_36:
       PAGE_LOAD_HISTOGRAM(
           "PageLoad.Clients.Protocol.QUIC.DocumentTiming."
           "NavigationToLoadEventFired",

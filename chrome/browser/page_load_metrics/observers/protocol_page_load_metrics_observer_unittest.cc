@@ -102,7 +102,7 @@ TEST_F(ProtocolPageLoadMetricsObserverTest, H2Navigation) {
 }
 
 TEST_F(ProtocolPageLoadMetricsObserverTest, QuicNavigation) {
-  SimulateNavigation(net::HttpResponseInfo::CONNECTION_INFO_QUIC);
+  SimulateNavigation(net::HttpResponseInfo::CONNECTION_INFO_QUIC_35);
   CheckHistograms(5, "QUIC");
 }
 

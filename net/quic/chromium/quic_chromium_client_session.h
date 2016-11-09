@@ -68,6 +68,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
    public:
     virtual ~Observer() {}
     virtual void OnCryptoHandshakeConfirmed() = 0;
+    virtual void OnSuccessfulVersionNegotiation(const QuicVersion& version) = 0;
     virtual void OnSessionClosed(int error, bool port_migration_detected) = 0;
   };
 
@@ -310,6 +311,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   void CancelPush(const GURL& url);
 
   const LoadTimingInfo::ConnectTiming& GetConnectTiming();
+
+  QuicVersion GetQuicVersion() const;
 
  protected:
   // QuicSession methods:

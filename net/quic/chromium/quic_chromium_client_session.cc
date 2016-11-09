@@ -1007,6 +1007,13 @@ void QuicChromiumClientSession::OnSuccessfulVersionNegotiation(
     const QuicVersion& version) {
   logger_->OnSuccessfulVersionNegotiation(version);
   QuicSpdySession::OnSuccessfulVersionNegotiation(version);
+
+  ObserverSet::iterator it = observers_.begin();
+  while (it != observers_.end()) {
+    Observer* observer = *it;
+    ++it;
+    observer->OnSuccessfulVersionNegotiation(version);
+  }
 }
 
 int QuicChromiumClientSession::HandleWriteError(
@@ -1458,6 +1465,10 @@ QuicChromiumClientSession::GetConnectTiming() {
   connect_timing_.ssl_start = connect_timing_.connect_start;
   connect_timing_.ssl_end = connect_timing_.connect_end;
   return connect_timing_;
+}
+
+QuicVersion QuicChromiumClientSession::GetQuicVersion() const {
+  return connection()->version();
 }
 
 }  // namespace net
