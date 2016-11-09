@@ -106,6 +106,10 @@ class PLATFORM_EXPORT ScrollAnimatorBase
   virtual void didAddHorizontalScrollbar(Scrollbar&) {}
   virtual void willRemoveHorizontalScrollbar(Scrollbar&) {}
 
+  virtual bool shouldScrollbarParticipateInHitTesting(Scrollbar&) {
+    return true;
+  }
+
   virtual void notifyContentAreaScrolled(const ScrollOffset&) {}
 
   virtual bool setScrollbarsVisibleForTesting(bool) { return false; }

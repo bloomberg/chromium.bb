@@ -101,7 +101,7 @@ class CORE_EXPORT RootFrameViewport final
   void cancelProgrammaticScrollAnimation() override;
   ScrollBehavior scrollBehaviorStyle() const override;
   Widget* getWidget() override;
-  void clearScrollableArea() override;
+  void clearScrollAnimators() override;
   LayoutBox* layoutBox() const override;
   FloatQuad localToVisibleContentQuad(const FloatQuad&,
                                       const LayoutObject*,

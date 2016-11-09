@@ -328,9 +328,9 @@ void FrameView::dispose() {
   // from non-GC'd objects and RootFrameViewport will still have a pointer to
   // this class.
   if (m_viewportScrollableArea)
-    m_viewportScrollableArea->clearScrollableArea();
+    m_viewportScrollableArea->clearScrollAnimators();
 
-  clearScrollableArea();
+  clearScrollAnimators();
 
   // Destroy |m_autoSizeInfo| as early as possible, to avoid dereferencing
   // partially destroyed |this| via |m_autoSizeInfo->m_frameView|.
@@ -1511,7 +1511,6 @@ void FrameView::removeViewportConstrainedObject(LayoutObject* object) {
 void FrameView::viewportSizeChanged(bool widthChanged, bool heightChanged) {
   DCHECK(widthChanged || heightChanged);
 
-  showOverlayScrollbars();
   if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
     // The background must be repainted when the FrameView is resized, even if
     // the initial containing block does not change (so we can't rely on layout
@@ -2449,8 +2448,6 @@ bool FrameView::scrollbarsCanBeActive() const {
 }
 
 void FrameView::scrollbarVisibilityChanged() {
-  // Scrollbar enabled state is set from updateScrollbarGeometry.
-  updateScrollbarGeometry();
   LayoutViewItem viewItem = layoutViewItem();
   if (!viewItem.isNull())
     viewItem.clearHitTestCache();
@@ -3668,8 +3665,6 @@ void FrameView::updateScrollOffset(const ScrollOffset& offset,
   if (scrollDelta.isZero())
     return;
 
-  showOverlayScrollbars();
-
   if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
     // Don't scroll the FrameView!
     ASSERT_NOT_REACHED();
@@ -3890,6 +3885,10 @@ void FrameView::updateScrollbarsIfNeeded() {
   if (m_needsScrollbarsUpdate || needsScrollbarReconstruction() ||
       scrollOriginChanged())
     updateScrollbars();
+}
+
+void FrameView::didChangeScrollbarsHidden() {
+  updateScrollbars();
 }
 
 void FrameView::updateScrollbars() {

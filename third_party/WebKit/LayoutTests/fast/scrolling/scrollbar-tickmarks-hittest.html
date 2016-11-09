@@ -20,9 +20,8 @@ onload = function()
         window.internals.addTextMatchMarker(range, true);
     }
     if (window.eventSender) {
-        eventSender.mouseMoveTo(window.innerWidth - 1, 10);
+        eventSender.mouseMoveTo(window.innerWidth - 1, window.innerHeight - 1);
         eventSender.mouseDown();
-        eventSender.mouseMoveTo(window.innerWidth - 1, 100);
         eventSender.mouseUp();
     }
 }

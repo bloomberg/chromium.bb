@@ -5,10 +5,10 @@ This tests whether scrolling still works correctly when an overlay scrollbar is 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS eventHistory.length is 2
+FAIL eventHistory.length should be 2. Was 3.
 PASS eventHistory[0] is "plugin.mousedown"
-PASS eventHistory[1] is "plugin.mouseup"
-PASS window.scrollY > 0 became true
+FAIL eventHistory[1] should be plugin.mouseup. Was plugin.mousemove.
+FAIL window.scrollY > 0 failed to change to true in 0.5 seconds.
 PASS successfullyParsed is true
 
 TEST COMPLETE

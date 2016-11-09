@@ -462,16 +462,12 @@ void Scrollbar::mouseExited() {
 }
 
 void Scrollbar::mouseUp(const PlatformMouseEvent& mouseEvent) {
-  bool isCaptured = m_pressedPart == ThumbPart;
   setPressedPart(NoPart);
   m_pressedPos = 0;
   m_draggingDocument = false;
   stopTimerIfNeeded();
 
   if (m_scrollableArea) {
-    if (isCaptured)
-      m_scrollableArea->mouseReleasedScrollbar();
-
     // m_hoveredPart won't be updated until the next mouseMoved or mouseDown, so
     // we have to hit test to really know if the mouse has exited the scrollbar
     // on a mouseUp.
@@ -506,20 +502,17 @@ void Scrollbar::mouseDown(const PlatformMouseEvent& evt) {
     moveThumb(desiredPos);
     return;
   }
-  if (m_pressedPart == ThumbPart) {
+  if (m_pressedPart == ThumbPart)
     m_dragOrigin = m_currentPos;
-    if (m_scrollableArea)
-      m_scrollableArea->mouseCapturedScrollbar();
-  }
 
   m_pressedPos = pressedPos;
 
   autoscrollPressedPart(theme().initialAutoscrollTimerDelay());
 }
 
-void Scrollbar::setScrollbarsHidden(bool hidden) {
+void Scrollbar::visibilityChanged() {
   if (m_scrollableArea)
-    m_scrollableArea->setScrollbarsHidden(hidden);
+    m_scrollableArea->scrollbarVisibilityChanged();
 }
 
 void Scrollbar::setEnabled(bool e) {
@@ -545,7 +538,8 @@ bool Scrollbar::shouldParticipateInHitTesting() {
   // Non-overlay scrollbars should always participate in hit testing.
   if (!isOverlayScrollbar())
     return true;
-  return !m_scrollableArea->scrollbarsHidden();
+  return m_scrollableArea->scrollAnimator()
+      .shouldScrollbarParticipateInHitTesting(*this);
 }
 
 bool Scrollbar::isWindowActive() const {
