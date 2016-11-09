@@ -21,7 +21,7 @@ namespace {
 // Converts physical dimensions to logical ones per
 // https://drafts.csswg.org/css-writing-modes-3/#logical-to-physical
 // For now it's only used to calculate abstract values for margins.
-NGBoxStrut ToLogicalDimensions(const NGPhysicalDimensions& physical_dim,
+NGBoxStrut ToLogicalDimensions(const NGPhysicalBoxStrut& physical_dim,
                                const NGWritingMode writing_mode,
                                const NGDirection direction) {
   bool is_ltr = direction == LeftToRight;
@@ -281,7 +281,7 @@ NGBoxStrut ComputeMargins(const NGConstraintSpace& constraintSpace,
   MinAndMaxContentSizes empty_sizes;
   // Margins always get computed relative to the inline size:
   // https://www.w3.org/TR/CSS2/box.html#value-def-margin-width
-  NGPhysicalDimensions physical_dim;
+  NGPhysicalBoxStrut physical_dim;
   physical_dim.left = ResolveInlineLength(
       constraintSpace, style, empty_sizes, style.marginLeft(),
       LengthResolveType::MarginBorderPaddingSize);

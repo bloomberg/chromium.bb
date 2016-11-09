@@ -167,7 +167,7 @@ struct NGPixelSnappedPhysicalRect {
 // Struct to store physical dimensions, independent of writing mode and
 // direction.
 // See https://drafts.csswg.org/css-writing-modes-3/#abstract-box
-struct NGPhysicalDimensions {
+struct NGPhysicalBoxStrut {
   LayoutUnit left;
   LayoutUnit right;
   LayoutUnit top;
