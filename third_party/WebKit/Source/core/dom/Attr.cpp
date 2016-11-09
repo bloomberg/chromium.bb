@@ -30,7 +30,6 @@
 #include "core/dom/Element.h"
 #include "core/dom/Text.h"
 #include "core/events/ScopedEventQueue.h"
-#include "core/frame/UseCounter.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -83,32 +82,21 @@ const AtomicString& Attr::value() const {
 }
 
 void Attr::setValue(const AtomicString& value) {
+  // Element::setAttribute will remove the attribute if value is null.
+  DCHECK(!value.isNull());
   if (m_element)
     m_element->setAttribute(getQualifiedName(), value);
   else
     m_standaloneValueOrAttachedLocalName = value;
 }
 
-const AtomicString& Attr::valueForBindings() const {
-  UseCounter::count(document(), UseCounter::AttrGetValue);
-  return value();
-}
-
-void Attr::setValueForBindings(const AtomicString& value) {
-  UseCounter::count(document(), UseCounter::AttrSetValue);
-  if (m_element)
-    UseCounter::count(document(), UseCounter::AttrSetValueWithElement);
-  setValue(value);
-}
-
 void Attr::setNodeValue(const String& v) {
   // Attr uses AtomicString type for its value to save memory as there
   // is duplication among Elements' attributes values.
-  setValue(AtomicString(v));
+  setValue(v.isNull() ? emptyAtom : AtomicString(v));
 }
 
 Node* Attr::cloneNode(bool /*deep*/) {
-  UseCounter::count(document(), UseCounter::AttrCloneNode);
   return new Attr(document(), m_name, value());
 }
 

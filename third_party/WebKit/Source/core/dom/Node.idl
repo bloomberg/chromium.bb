@@ -24,7 +24,6 @@
     DependentLifetime,
 ] interface Node : EventTarget {
     const unsigned short ELEMENT_NODE = 1;
-    // FIXME: Attr should not inherit from Node. crbug.com/305105
     const unsigned short ATTRIBUTE_NODE = 2;
     const unsigned short TEXT_NODE = 3;
     const unsigned short CDATA_SECTION_NODE = 4;

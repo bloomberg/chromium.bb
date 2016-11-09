@@ -50,9 +50,6 @@ class CORE_EXPORT Attr final : public Node {
   const AtomicString& value() const;
   void setValue(const AtomicString&);
 
-  const AtomicString& valueForBindings() const;
-  void setValueForBindings(const AtomicString&);
-
   const QualifiedName getQualifiedName() const;
 
   void attachToElement(Element*, const AtomicString&);

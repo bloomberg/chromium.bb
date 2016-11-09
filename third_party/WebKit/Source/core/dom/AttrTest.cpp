@@ -35,7 +35,7 @@ TEST_F(AttrTest, InitialValueState) {
   Attr* attr = createAttribute();
   EXPECT_EQ(emptyAtom, attr->value());
   EXPECT_EQ(emptyString(), attr->toNode()->nodeValue());
-  EXPECT_EQ(String(), attr->textContent());
+  EXPECT_EQ(emptyString(), attr->textContent());
 }
 
 TEST_F(AttrTest, SetValue) {
@@ -43,8 +43,7 @@ TEST_F(AttrTest, SetValue) {
   attr->setValue(value());
   EXPECT_EQ(value(), attr->value());
   EXPECT_EQ(value(), attr->toNode()->nodeValue());
-  // Node::textContent() always returns String() for Attr.
-  EXPECT_EQ(String(), attr->textContent());
+  EXPECT_EQ(value(), attr->textContent());
 }
 
 TEST_F(AttrTest, SetNodeValue) {
@@ -52,17 +51,15 @@ TEST_F(AttrTest, SetNodeValue) {
   attr->toNode()->setNodeValue(value());
   EXPECT_EQ(value(), attr->value());
   EXPECT_EQ(value(), attr->toNode()->nodeValue());
-  // Node::textContent() always returns String() for Attr.
-  EXPECT_EQ(String(), attr->textContent());
+  EXPECT_EQ(value(), attr->textContent());
 }
 
 TEST_F(AttrTest, SetTextContent) {
   Attr* attr = createAttribute();
-  // Node::setTextContent() does nothing for Attr.
   attr->setTextContent(value());
-  EXPECT_EQ(emptyAtom, attr->value());
-  EXPECT_EQ(emptyString(), attr->toNode()->nodeValue());
-  EXPECT_EQ(String(), attr->textContent());
+  EXPECT_EQ(value(), attr->value());
+  EXPECT_EQ(value(), attr->toNode()->nodeValue());
+  EXPECT_EQ(value(), attr->textContent());
 }
 
 TEST_F(AttrTest, LengthOfContents) {

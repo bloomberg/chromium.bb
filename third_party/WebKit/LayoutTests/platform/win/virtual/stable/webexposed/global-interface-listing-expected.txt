@@ -84,15 +84,11 @@ interface Attr : Node
     getter localName
     getter name
     getter namespaceURI
-    getter nodeValue
     getter ownerElement
     getter prefix
     getter specified
-    getter textContent
     getter value
     method constructor
-    setter nodeValue
-    setter textContent
     setter value
 interface Audio
     method constructor

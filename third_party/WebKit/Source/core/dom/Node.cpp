@@ -1219,7 +1219,6 @@ const AtomicString& Node::lookupPrefix(const AtomicString& namespaceURI) const {
     case kDocumentTypeNode:
       context = nullptr;
       break;
-    // FIXME: Remove this when Attr no longer extends Node (CR305105)
     case kAttributeNode:
       context = toAttr(this)->ownerElement();
       break;
@@ -1293,6 +1292,10 @@ String Node::textContent(bool convertBRsToNewlines) const {
   if (isCharacterDataNode())
     return toCharacterData(this)->data();
 
+  // Attribute nodes have their attribute values as textContent.
+  if (isAttributeNode())
+    return toAttr(this)->value();
+
   // Documents and non-container nodes (that are not CharacterData)
   // have null textContent.
   if (isDocumentNode() || !isContainerNode())
@@ -1311,6 +1314,7 @@ String Node::textContent(bool convertBRsToNewlines) const {
 
 void Node::setTextContent(const String& text) {
   switch (getNodeType()) {
+    case kAttributeNode:
     case kTextNode:
     case kCdataSectionNode:
     case kCommentNode:
@@ -1341,7 +1345,6 @@ void Node::setTextContent(const String& text) {
       }
       return;
     }
-    case kAttributeNode:
     case kDocumentNode:
     case kDocumentTypeNode:
       // Do nothing.
