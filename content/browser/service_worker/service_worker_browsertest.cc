@@ -1633,12 +1633,22 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerNavigationPreloadTest, NetworkFallback) {
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
   EXPECT_EQ("Hello world.", GetTextContent());
 
-  // The page request must be sent twice. Once for navigation preload, and once
-  // for fallback since respondWith wasn't used.
-  ASSERT_EQ(2, GetRequestCount(kPageUrl));
-  ASSERT_TRUE(HasNavigationPreloadHeader(request_log_[kPageUrl][0]));
-  EXPECT_EQ("true", GetNavigationPreloadHeader(request_log_[kPageUrl][0]));
-  EXPECT_FALSE(HasNavigationPreloadHeader(request_log_[kPageUrl][1]));
+  // The page request must be sent once or twice:
+  // - A navigation preload request may be sent. But it is possible that the
+  //   navigation preload request is canceled before reaching the server.
+  // - A fallback request must be sent since respondWith wasn't used.
+  const int request_count = GetRequestCount(kPageUrl);
+  ASSERT_TRUE(request_count == 1 || request_count == 2);
+  if (request_count == 1) {
+    // Fallback request.
+    EXPECT_FALSE(HasNavigationPreloadHeader(request_log_[kPageUrl][0]));
+  } else if (request_count == 2) {
+    // Navigation preload request.
+    ASSERT_TRUE(HasNavigationPreloadHeader(request_log_[kPageUrl][0]));
+    EXPECT_EQ("true", GetNavigationPreloadHeader(request_log_[kPageUrl][0]));
+    // Fallback request.
+    EXPECT_FALSE(HasNavigationPreloadHeader(request_log_[kPageUrl][1]));
+  }
 }
 
 IN_PROC_BROWSER_TEST_P(ServiceWorkerNavigationPreloadTest, SetHeaderValue) {
