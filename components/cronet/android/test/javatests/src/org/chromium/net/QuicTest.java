@@ -28,6 +28,7 @@ import java.util.concurrent.Executors;
  */
 public class QuicTest extends CronetTestBase {
     private static final String TAG = "cr.QuicTest";
+    private static final String QUIC_PROTOCOL_STRING_PREFIX = "http/2+quic/";
     private CronetTestFramework mTestFramework;
     private ExperimentalCronetEngine.Builder mBuilder;
 
@@ -91,7 +92,7 @@ public class QuicTest extends CronetTestBase {
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         String expectedContent = "This is a simple text file served by QUIC.\n";
         assertEquals(expectedContent, callback.mResponseAsString);
-        assertEquals("quic/1+spdy/3", callback.mResponseInfo.getNegotiatedProtocol());
+        assertIsQuic(callback.mResponseInfo);
         // The total received bytes should be larger than the content length, to account for
         // headers.
         assertTrue(callback.mResponseInfo.getReceivedBytesCount() > expectedContent.length());
@@ -134,7 +135,7 @@ public class QuicTest extends CronetTestBase {
         callback2.blockForDone();
         assertEquals(200, callback2.mResponseInfo.getHttpStatusCode());
         assertEquals(expectedContent, callback2.mResponseAsString);
-        assertEquals("quic/1+spdy/3", callback2.mResponseInfo.getNegotiatedProtocol());
+        assertIsQuic(callback.mResponseInfo);
         // The total received bytes should be larger than the content length, to account for
         // headers.
         assertTrue(callback2.mResponseInfo.getReceivedBytesCount() > expectedContent.length());
@@ -185,7 +186,7 @@ public class QuicTest extends CronetTestBase {
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         String expectedContent = "This is a simple text file served by QUIC.\n";
         assertEquals(expectedContent, callback.mResponseAsString);
-        assertEquals("quic/1+spdy/3", callback.mResponseInfo.getNegotiatedProtocol());
+        assertIsQuic(callback.mResponseInfo);
 
         // Throughput observation is posted to the network quality estimator on the network thread
         // after the UrlRequest is completed. The observations are then eventually posted to
@@ -229,7 +230,7 @@ public class QuicTest extends CronetTestBase {
         Date endTime = new Date();
 
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
-        assertEquals("quic/1+spdy/3", callback.mResponseInfo.getNegotiatedProtocol());
+        assertIsQuic(callback.mResponseInfo);
 
         RequestFinishedInfo requestInfo = requestFinishedListener.getRequestInfo();
         MetricsTestUtil.checkRequestFinishedInfo(requestInfo, quicURL, startTime, endTime);
@@ -248,7 +249,7 @@ public class QuicTest extends CronetTestBase {
         endTime = new Date();
 
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
-        assertEquals("quic/1+spdy/3", callback.mResponseInfo.getNegotiatedProtocol());
+        assertIsQuic(callback.mResponseInfo);
 
         requestInfo = requestFinishedListener.getRequestInfo();
         MetricsTestUtil.checkRequestFinishedInfo(requestInfo, quicURL, startTime, endTime);
@@ -256,5 +257,10 @@ public class QuicTest extends CronetTestBase {
         MetricsTestUtil.checkNoConnectTiming(requestInfo.getMetrics());
 
         mTestFramework.mCronetEngine.shutdown();
+    }
+
+    // Helper method to assert that the request is negotiated over QUIC.
+    private void assertIsQuic(UrlResponseInfo responseInfo) {
+        assertTrue(responseInfo.getNegotiatedProtocol().startsWith(QUIC_PROTOCOL_STRING_PREFIX));
     }
 }
