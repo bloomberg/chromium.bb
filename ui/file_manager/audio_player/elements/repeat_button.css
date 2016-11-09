@@ -2,35 +2,14 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-:host {
-  border-radius: 2px;
-  cursor: pointer;
-  display: inline-block;
-  height: 32px;
-  outline: none;
-  position: relative;
-  width: 32px;
-}
-
-.repeat-all, .no-repeat {
+[repeat-mode=repeat-all], [repeat-mode=no-repeat] {
   background-image: -webkit-image-set(
       url(../assets/100/player_button_repeat.png) 1x,
       url(../assets/200/player_button_repeat.png) 2x);
 }
 
-.repeat-one {
+[repeat-mode=repeat-one] {
   background-image: -webkit-image-set(
       url(../assets/100/player_button_repeat_one.png) 1x,
       url(../assets/200/player_button_repeat_one.png) 2x);
-}
-
-files-toggle-ripple {
-  background-position: center;
-  background-repeat: no-repeat;
-  height: 28px;
-  left: 2px;
-  pointer-events: none;
-  position: absolute;
-  top: 2px;
-  width: 28px;
 }
