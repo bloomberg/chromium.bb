@@ -43,7 +43,6 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   SpecialPopupRow* title_row() { return title_row_; }
   FixedSizedScrollView* scroller() { return scroller_; }
   views::View* scroll_content() { return scroll_content_; }
-  views::ProgressBar* progress_bar() { return progress_bar_; }
 
  protected:
   // views::View:
@@ -59,15 +58,16 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   // any other view between the list and the footer row at the bottom.
   void CreateScrollableList();
 
-  // Creates a progress bar which overlaps with bottom edge of the |title_row_|.
-  // |title_row_| needs to be created before this method is called.
-  void CreateProgressBar();
-
   // Adds a separator in scrollable list.
   void AddScrollSeparator();
 
   // Removes (and destroys) all child views.
   void Reset();
+
+  // Shows or hides the progress bar below the title row. It occupies the same
+  // space as the separator, so when shown the separator is hidden. If
+  // |progress_bar_| doesn't already exist it will be created.
+  void ShowProgress(double value, bool visible);
 
  private:
   friend class test::TrayDetailsViewTest;
@@ -92,10 +92,6 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   FixedSizedScrollView* scroller_;
   views::View* scroll_content_;
   views::ProgressBar* progress_bar_;
-
-  // |title_row_separator_| has a views::Separator as a child and, optionally,
-  // |progress_bar_| as a child.
-  views::View* title_row_separator_;
 
   ScrollBorder* scroll_border_;  // Weak reference
 
