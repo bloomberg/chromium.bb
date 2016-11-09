@@ -286,7 +286,7 @@
   },
   {
     "prefix": "mojo-loading",
-    "base": "http/tests/xmlhttprequest",
+    "base": "http/tests/xmlhttprequest/web-apps",
     "args": ["--enable-blink-features=LoadingWithMojo"]
   },
   {
