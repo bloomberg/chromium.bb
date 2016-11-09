@@ -1060,7 +1060,7 @@ if (enable_java_templates) {
 
     java_binary(_java_binary_target_name) {
       deps = []
-      jar_name = invoker.target_name
+      output_name = invoker.target_name
       forward_variables_from(invoker, "*")
       testonly = true
       bypass_platform_checks = true
@@ -1104,6 +1104,9 @@ if (enable_java_templates) {
   #
   #   jar_excluded_patterns: List of patterns of .class files to exclude from the
   #     final jar.
+  #
+  #   output_name: File name for the output .jar (not including extension).
+  #     Defaults to the input .jar file name.
   #
   #   proguard_preprocess: If true, proguard preprocessing will be run. This can
   #     be used to remove unwanted parts of the library.
@@ -1156,6 +1159,8 @@ if (enable_java_templates) {
   #     will be added to the javac classpath.
   #   jar_path: Path to the prebuilt jar.
   #   jar_dep: Target that builds jar_path (optional).
+  #   output_name: File name for the output .jar (not including extension).
+  #     Defaults to the input .jar file name.
   #   proguard_preprocess: If true, proguard preprocessing will be run. This can
   #     be used to remove unwanted parts of the library.
   #   proguard_preprocess_config: Path to the proguard config for preprocessing.
@@ -1214,6 +1219,8 @@ if (enable_java_templates) {
   #   proguard_configs: List of proguard configs to use in final apk step for
   #     any apk that depends on this library.
   #
+  #   output_name: File name for the output .jar (not including extension).
+  #     Defaults to the input .jar file name.
   #   dex_path: If set, the resulting .dex.jar file will be placed under this
   #     path.
   #
@@ -1299,6 +1306,8 @@ if (enable_java_templates) {
   #     will be added to the javac classpath. Android resources in dependencies
   #     will be used when building this library.
   #   jar_path: Path to the prebuilt jar.
+  #   output_name: File name for the output .jar (not including extension).
+  #     Defaults to the input .jar file name.
   #   proguard_preprocess: If true, proguard preprocessing will be run. This can
   #     be used to remove unwanted parts of the library.
   #   proguard_preprocess_config: Path to the proguard config for preprocessing.
@@ -2710,6 +2719,8 @@ if (enable_java_templates) {
         }
         supports_android = true
         jar_path = "$_output_path/${_tuple[1]}"
+        _base_output_name = get_path_info(jar_path, "name")
+        output_name = "${invoker.target_name}-$_base_output_name"
       }
     }
 
@@ -2737,6 +2748,7 @@ if (enable_java_templates) {
         }
         supports_android = true
         jar_path = "$_output_path/classes.jar"
+        output_name = invoker.target_name
 
         if (_scanned_files.has_proguard_flags) {
           if (!defined(proguard_configs)) {

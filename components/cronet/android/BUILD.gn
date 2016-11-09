@@ -264,8 +264,9 @@ shared_library("cronet") {
 
 cronet_api_srcjar_deps = [ ":cronet_api_version_srcjar" ]
 
-# cronet_api.jar defines Cronet API.
-android_library("cronet_api") {
+# cronet_api_java.jar defines Cronet API.
+android_library("cronet_api_java") {
+  output_name = "cronet_api"
   java_files = [
     "api/src/org/chromium/net/BidirectionalStream.java",
     "api/src/org/chromium/net/CronetEngine.java",
@@ -318,7 +319,7 @@ android_library("cronet_impl_common_java") {
   ]
 
   deps = [
-    ":cronet_api",
+    ":cronet_api_java",
     "//third_party/android_tools:android_support_annotations_java",
   ]
 
@@ -334,7 +335,7 @@ android_library("cronet_impl_platform_java") {
   ]
 
   deps = [
-    ":cronet_api",
+    ":cronet_api_java",
     ":cronet_impl_common_java",
   ]
 }
@@ -367,7 +368,7 @@ android_library("cronet_impl_native_java") {
   ]
 
   deps = [
-    ":cronet_api",
+    ":cronet_api_java",
     ":cronet_impl_common_java",
     "//base:base_java",
     "//net/android:net_java",
@@ -402,7 +403,7 @@ android_library("cronet_sample_apk_java") {
   ]
 
   deps = [
-    ":cronet_api",
+    ":cronet_api_java",
     ":cronet_impl_all_java",
     ":cronet_sample_apk_resources",
     "//base:base_java",
@@ -455,7 +456,7 @@ instrumentation_test_apk("cronet_sample_test_apk") {
   ]
 
   deps = [
-    ":cronet_api",
+    ":cronet_api_java",
     ":cronet_impl_all_java",
     ":cronet_sample_apk_java",
     ":cronet_sample_test_apk_resources",
@@ -563,7 +564,7 @@ android_library("cronet_test_apk_java") {
   ]
 
   deps = [
-    ":cronet_api",
+    ":cronet_api_java",
     ":cronet_impl_all_java",
     "//base:base_java",
     "//base:base_java_test_support",
@@ -672,7 +673,7 @@ android_library("cronet_javatests") {
   ]
 
   deps = [
-    ":cronet_api",
+    ":cronet_api_java",
     ":cronet_impl_all_java",
     ":cronet_test_apk_java",
     "//base:base_java",
@@ -690,7 +691,7 @@ instrumentation_test_apk("cronet_test_instrumentation_apk") {
   android_manifest = "test/javatests/AndroidManifest.xml"
 
   deps = [
-    ":cronet_api",
+    ":cronet_api_java",
     ":cronet_impl_all_java",
     ":cronet_javatests",
     ":cronet_test_apk_java",
@@ -714,7 +715,7 @@ android_library("cronet_perf_test_apk_java") {
       [ "test/javaperftests/src/org/chromium/net/CronetPerfTestActivity.java" ]
 
   deps = [
-    ":cronet_api",
+    ":cronet_api_java",
     ":cronet_impl_all_java",
     ":cronet_javatests",
     ":cronet_test_apk_java",
@@ -900,7 +901,7 @@ template("jar_src") {
 
 jar_src("jar_cronet_api_source") {
   src_search_dirs = [ "api/src" ]
-  source_deps = [ ":cronet_api" ]
+  source_deps = [ ":cronet_api_java" ]
   srcjar_deps = cronet_api_srcjar_deps
   jar_path = "$_package_dir/cronet_api-src.jar"
 }
@@ -1017,7 +1018,7 @@ copy("cronet_package_copy") {
   ]
 
   deps = [
-    ":cronet_api",
+    ":cronet_api_java",
     ":cronet_impl_common_java",
     ":cronet_impl_platform_java",
   ]

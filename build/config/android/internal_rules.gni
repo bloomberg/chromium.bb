@@ -34,8 +34,6 @@ _java_target_whitelist = [
   "//build/android/pylib/device/commands:chromium_commands",
   "//build/android/rezip:rezip",
   "//chrome/test/android/cast_emulator:cast_emulator",
-  "//components/cronet/android:cronet_api",
-  "//components/cronet/android:cronet_javadoc_classpath",
   "//mojo/public/java:bindings",
   "//third_party/android_tools:emma_device",
   "//third_party/cardboard-java:cardboard-java",
@@ -1738,14 +1736,19 @@ if (enable_java_templates) {
         defined(invoker.supports_android) && invoker.supports_android
 
     assert(defined(invoker.jar_path))
+    if (defined(invoker.output_name)) {
+      _output_name = invoker.output_name
+    } else {
+      _output_name = get_path_info(invoker.jar_path, "name")
+    }
     _base_path = "${target_gen_dir}/$target_name"
 
     # Jar files can be needed at runtime (by Robolectric tests or java binaries),
     # so do not put them under gen/.
     _target_dir_name = get_label_info(":$target_name", "dir")
-    _jar_path = "$root_out_dir/lib.java$_target_dir_name/$target_name.jar"
+    _jar_path = "$root_out_dir/lib.java$_target_dir_name/$_output_name.jar"
     _ijar_path =
-        "$root_out_dir/lib.java$_target_dir_name/$target_name.interface.jar"
+        "$root_out_dir/lib.java$_target_dir_name/$_output_name.interface.jar"
     _build_config = _base_path + ".build_config"
 
     if (_supports_android) {
@@ -2173,14 +2176,16 @@ if (enable_java_templates) {
            defined(invoker.srcjar_deps))
     _base_path = "$target_gen_dir/$target_name"
 
+    if (defined(invoker.output_name)) {
+      _output_name = invoker.output_name
+    } else {
+      _output_name = target_name
+    }
+
     # Jar files can be needed at runtime (by Robolectric tests or java binaries),
     # so do not put them under gen/.
-    _jar_name = target_name
-    if (defined(invoker.jar_name)) {
-      _jar_name = invoker.jar_name
-    }
     target_dir_name = get_label_info(":$target_name", "dir")
-    _jar_path = "$root_out_dir/lib.java$target_dir_name/$_jar_name.jar"
+    _jar_path = "$root_out_dir/lib.java$target_dir_name/$_output_name.jar"
     if (defined(invoker.jar_path)) {
       _jar_path = invoker.jar_path
     }
