@@ -4194,56 +4194,7 @@ BITSTREAM_PROFILE av1_read_profile(struct aom_read_bit_buffer *rb) {
   if (profile > 2) profile += aom_rb_read_bit(rb);
   return (BITSTREAM_PROFILE)profile;
 }
-#if CONFIG_TILE_GROUPS
-static int read_all_headers(AV1Decoder *pbi, struct aom_read_bit_buffer *rb,
-                            const uint8_t **p_data,
-                            const uint8_t **p_data_end) {
-  AV1_COMMON *const cm = &pbi->common;
-  MACROBLOCKD *const xd = &pbi->mb;
-  YV12_BUFFER_CONFIG *fb = (YV12_BUFFER_CONFIG *)xd->cur_buf;
 
-  pbi->first_partition_size = read_uncompressed_header(pbi, rb);
-  pbi->uncomp_hdr_size = aom_rb_bytes_read(rb);
-#if CONFIG_GLOBAL_MOTION
-  xd->global_motion = cm->global_motion;
-#endif  // CONFIG_GLOBAL_MOTION
-
-  if (!pbi->first_partition_size) {
-// showing a frame directly
-#if CONFIG_EXT_REFS
-    if (cm->show_existing_frame)
-      *p_data_end = *p_data + pbi->uncomp_hdr_size;
-    else
-#endif  // CONFIG_EXT_REFS
-      *p_data_end = *p_data + (cm->profile <= PROFILE_2 ? 1 : 2);
-    return 1;
-  }
-
-  *p_data += pbi->uncomp_hdr_size;
-
-  if (!read_is_valid(*p_data, pbi->first_partition_size, *p_data_end))
-    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                       "Truncated packet or corrupt header length");
-
-  *cm->fc = cm->frame_contexts[cm->frame_context_idx];
-  if (!cm->fc->initialized)
-    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                       "Uninitialized entropy context.");
-
-  av1_zero(cm->counts);
-
-  xd->corrupted = 0;
-  fb->corrupted =
-      read_compressed_header(pbi, *p_data, pbi->first_partition_size);
-  if (fb->corrupted)
-    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                       "Decode failed. Frame data header is corrupted.");
-
-  *p_data += pbi->first_partition_size;
-
-  return 0;
-}
-#endif
 void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
                       const uint8_t *data_end, const uint8_t **p_data_end) {
   AV1_COMMON *const cm = &pbi->common;
@@ -4260,6 +4211,10 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
 
   first_partition_size = read_uncompressed_header(
       pbi, init_read_bit_buffer(pbi, &rb, data, data_end, clear_data));
+#if CONFIG_TILE_GROUPS
+  pbi->first_partition_size = first_partition_size;
+  pbi->uncomp_hdr_size = aom_rb_bytes_read(&rb);
+#endif
   new_fb = get_frame_new_buffer(cm);
   xd->cur_buf = new_fb;
 #if CONFIG_GLOBAL_MOTION
