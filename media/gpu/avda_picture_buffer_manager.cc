@@ -175,6 +175,7 @@ void AVDAPictureBufferManager::SetImageForPicture(
   texture_manager->SetLevelStreamTextureImage(texture_ref, GetTextureTarget(),
                                               0, image, image_state,
                                               stream_texture_service_id);
+  texture_manager->SetLevelCleared(texture_ref, GetTextureTarget(), 0, true);
 }
 
 AVDACodecImage* AVDAPictureBufferManager::GetImageForPicture(

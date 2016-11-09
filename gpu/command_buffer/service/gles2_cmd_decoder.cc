@@ -12183,7 +12183,8 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
                                   int yoffset,
                                   int width,
                                   int height) {
-  DCHECK(target != GL_TEXTURE_3D && target != GL_TEXTURE_2D_ARRAY);
+  DCHECK(target != GL_TEXTURE_3D && target != GL_TEXTURE_2D_ARRAY &&
+         target != GL_TEXTURE_EXTERNAL_OES);
   uint32_t channels = GLES2Util::GetChannelsForFormat(format);
   if ((feature_info_->feature_flags().angle_depth_texture ||
        feature_info_->IsWebGL2OrES3Context())

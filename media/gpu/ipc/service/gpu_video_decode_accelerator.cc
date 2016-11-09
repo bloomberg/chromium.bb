@@ -519,8 +519,14 @@ void GpuVideoDecodeAccelerator::SetTextureCleared(const Picture& picture) {
     GLenum target = texture_ref->texture()->target();
     gpu::gles2::TextureManager* texture_manager =
         stub_->decoder()->GetContextGroup()->texture_manager();
-    DCHECK(!texture_ref->texture()->IsLevelCleared(target, 0));
-    texture_manager->SetLevelCleared(texture_ref.get(), target, 0, true);
+
+    // External textures are a special case and expected to already be cleared.
+    if (target == GL_TEXTURE_EXTERNAL_OES) {
+      DCHECK(texture_ref->texture()->IsLevelCleared(target, 0));
+    } else {
+      DCHECK(!texture_ref->texture()->IsLevelCleared(target, 0));
+      texture_manager->SetLevelCleared(texture_ref.get(), target, 0, true);
+    }
   }
   uncleared_textures_.erase(it);
 }
