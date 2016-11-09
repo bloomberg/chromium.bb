@@ -26,7 +26,7 @@ static_library("core") {
     "//base",
     "//components/data_reduction_proxy/core/common",
     "//components/variations",
-    "//net",
+    "//net:net",
     "//sql",
     "//url:url",
   ]
@@ -50,6 +50,8 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/data_reduction_proxy/core/common",
     "//components/variations",
+    "//net:net",
+    "//net:test_support",
     "//sql",
     "//sql:test_support",
     "//testing/gtest",
