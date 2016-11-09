@@ -28,6 +28,7 @@ public final class ContentSuggestionsTestUtils {
         return suggestions;
     }
 
+    @Deprecated
     public static SuggestionsCategoryInfo createInfo(
             @CategoryInt int category, boolean moreButton, boolean showIfEmpty) {
         return createInfo(category, false, true, moreButton, showIfEmpty);
@@ -39,9 +40,11 @@ public final class ContentSuggestionsTestUtils {
                 moreAction, reloadAction, viewAllAction, showIfEmpty, "");
     }
 
-    public static SuggestionsSection createSection(boolean moreButton, boolean showIfEmpty,
-            NodeParent parent, NewTabPageManager manager, OfflinePageDownloadBridge bridge) {
-        SuggestionsCategoryInfo info = createInfo(42, moreButton, showIfEmpty);
-        return new SuggestionsSection(parent, info, manager, bridge);
+    public static SuggestionsSection createSection(boolean hasReloadAction, NodeParent parent,
+            NewTabPageManager manager, OfflinePageDownloadBridge bridge) {
+        return new SuggestionsSection(parent,
+                createInfo(42, /*hasMoreAction=*/false, /*hasReloadAction=*/hasReloadAction,
+                        /*hasViewAllAction=*/false, /*showIfEmpty=*/true),
+                manager, bridge);
     }
 }

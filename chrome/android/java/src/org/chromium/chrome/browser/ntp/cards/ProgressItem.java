@@ -10,21 +10,15 @@ package org.chromium.chrome.browser.ntp.cards;
  *
  * @see ProgressViewHolder
  */
-class ProgressItem extends Leaf {
-    private boolean mVisible = false;
+class ProgressItem extends OptionalLeaf {
+    protected ProgressItem(NodeParent parent) {
+        super(parent);
+    }
 
     @Override
     @ItemViewType
     protected int getItemViewType() {
         return ItemViewType.PROGRESS;
-    }
-
-    public boolean isVisible() {
-        return mVisible;
-    }
-
-    public void setVisible(boolean visible) {
-        mVisible = visible;
     }
 
     @Override

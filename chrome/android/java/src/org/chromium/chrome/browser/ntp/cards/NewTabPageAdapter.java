@@ -570,7 +570,7 @@ public class NewTabPageAdapter
     }
 
     private boolean hasAllBeenDismissed() {
-        return mSections.isEmpty() && !mSigninPromo.isShown();
+        return mSections.isEmpty() && !mSigninPromo.isVisible();
     }
 
     private boolean canLoadSuggestions(@CategoryInt int category, @CategoryStatusEnum int status) {

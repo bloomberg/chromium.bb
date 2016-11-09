@@ -20,9 +20,9 @@ class ActionItem extends OptionalLeaf {
 
     private boolean mImpressionTracked = false;
 
-    public ActionItem(SuggestionsCategoryInfo categoryInfo, SuggestionsSection section) {
+    public ActionItem(SuggestionsSection section) {
         super(section);
-        mCategoryInfo = categoryInfo;
+        mCategoryInfo = section.getCategoryInfo();
         mParentSection = section;
     }
 
@@ -35,11 +35,6 @@ class ActionItem extends OptionalLeaf {
     protected void onBindViewHolder(NewTabPageViewHolder holder) {
         assert holder instanceof ViewHolder;
         ((ViewHolder) holder).onBindViewHolder(this);
-    }
-
-    @Override
-    public boolean isShown() {
-        return mCategoryInfo.hasMoreButton(mParentSection.hasSuggestions());
     }
 
     private int getPosition() {

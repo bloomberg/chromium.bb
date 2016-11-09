@@ -7,14 +7,14 @@ package org.chromium.chrome.browser.ntp.cards;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createDummySuggestions;
+import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createInfo;
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createSection;
 
 import org.junit.Before;
@@ -45,10 +45,6 @@ import java.util.Set;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class SuggestionsSectionTest {
-    /**
-     * Number of items in a section when there are no suggestions: header, status, action, progress.
-     */
-    private static final int EMPTY_SECTION_COUNT = 4;
 
     @Mock private NodeParent mParent;
     @Mock private OfflinePageDownloadBridge mBridge;
@@ -68,7 +64,7 @@ public class SuggestionsSectionTest {
         List<SnippetArticle> snippets = createDummySuggestions(3);
         SuggestionsSection section;
 
-        section = ContentSuggestionsTestUtils.createSection(true, true, mParent, mManager, mBridge);
+        section = ContentSuggestionsTestUtils.createSection(true, mParent, mManager, mBridge);
         section.setStatus(CategoryStatus.AVAILABLE);
         assertNotNull(section.getActionItem());
 
@@ -90,15 +86,17 @@ public class SuggestionsSectionTest {
         final int suggestionCount = 5;
         List<SnippetArticle> snippets = createDummySuggestions(suggestionCount);
 
-        SuggestionsSection section = createSection(false, true, mParent, mManager, mBridge);
-        // Note: when status is not initialised, we insert an item for the status card, but it's
-        // null!
-        assertEquals(EMPTY_SECTION_COUNT, section.getItemCount());
+        SuggestionsSection section = createSection(false, mParent, mManager, mBridge);
+        // Simulate initialisation by the adapter. Here we don't care about the notifications, since
+        // the RecyclerView will be updated through notifyDataSetChanged.
+        section.setStatus(CategoryStatus.AVAILABLE);
+        reset(mParent);
+
+        assertEquals(2, section.getItemCount()); // When empty, we have the header and status card.
 
         section.addSuggestions(snippets, CategoryStatus.AVAILABLE);
-        verify(mParent).onItemRangeChanged(section, 1, EMPTY_SECTION_COUNT - 1);
-        verify(mParent).onItemRangeInserted(
-                section, EMPTY_SECTION_COUNT, suggestionCount - EMPTY_SECTION_COUNT + 1);
+        verify(mParent).onItemRangeInserted(section, 1, suggestionCount);
+        verify(mParent).onItemRangeRemoved(section, 1 + suggestionCount, 1);
     }
 
     @Test
@@ -106,25 +104,37 @@ public class SuggestionsSectionTest {
     public void testSetStatusNotification() {
         final int suggestionCount = 5;
         List<SnippetArticle> snippets = createDummySuggestions(suggestionCount);
+        SuggestionsSection section = createSection(false, mParent, mManager, mBridge);
 
-        SuggestionsSection section = createSection(false, true, mParent, mManager, mBridge);
-
-        section.setStatus(CategoryStatus.AVAILABLE);
-        verify(mParent).onItemRangeChanged(section, 1, EMPTY_SECTION_COUNT - 1);
-
+        // Simulate initialisation by the adapter. Here we don't care about the notifications, since
+        // the RecyclerView will be updated through notifyDataSetChanged.
         section.addSuggestions(snippets, CategoryStatus.AVAILABLE);
+        reset(mParent);
 
         // We don't clear suggestions when the status is AVAILABLE.
         section.setStatus(CategoryStatus.AVAILABLE);
-        verify(mParent, times(2)).onItemRangeChanged(section, 1, EMPTY_SECTION_COUNT - 1);
-        verify(mParent).onItemRangeInserted(
-                section, EMPTY_SECTION_COUNT, suggestionCount - EMPTY_SECTION_COUNT + 1);
+        verifyNoMoreInteractions(mParent);
 
-        // We clear existing suggestions when the status is not AVAILABLE.
+        // We clear existing suggestions when the status is not AVAILABLE, and show the status card.
         section.setStatus(CategoryStatus.SIGNED_OUT);
-        verify(mParent, times(3)).onItemRangeChanged(section, 1, EMPTY_SECTION_COUNT - 1);
-        verify(mParent).onItemRangeRemoved(
-                section, EMPTY_SECTION_COUNT, suggestionCount - EMPTY_SECTION_COUNT + 1);
+        verify(mParent).onItemRangeRemoved(section, 1, suggestionCount);
+        verify(mParent).onItemRangeInserted(section, 1, 1);
+
+        // A loading state item triggers showing the loading item.
+        section.setStatus(CategoryStatus.AVAILABLE_LOADING);
+        verify(mParent).onItemRangeInserted(section, 2, 1);
+
+        section.setStatus(CategoryStatus.AVAILABLE);
+        verify(mParent).onItemRangeRemoved(section, 2, 1);
+        verifyNoMoreInteractions(mParent);
+    }
+
+    @Test(expected = IndexOutOfBoundsException.class)
+    @Feature({"Ntp"})
+    public void testRemoveUnknownSuggestion() {
+        SuggestionsSection section = createSection(false, mParent, mManager, mBridge);
+        section.setStatus(CategoryStatus.AVAILABLE);
+        section.removeSuggestion(createDummySuggestions(1).get(0));
     }
 
     @Test
@@ -133,15 +143,9 @@ public class SuggestionsSectionTest {
         final int suggestionCount = 2;
         List<SnippetArticle> snippets = createDummySuggestions(suggestionCount);
 
-        SuggestionsSection section = createSection(false, true, mParent, mManager, mBridge);
-
-        section.removeSuggestion(snippets.get(0));
-        verify(mParent, never())
-                .onItemRangeChanged(any(SuggestionsSection.class), anyInt(), anyInt());
-        verify(mParent, never())
-                .onItemRangeInserted(any(SuggestionsSection.class), anyInt(), anyInt());
-        verify(mParent, never())
-                .onItemRangeRemoved(any(SuggestionsSection.class), anyInt(), anyInt());
+        SuggestionsSection section = createSection(false, mParent, mManager, mBridge);
+        section.setStatus(CategoryStatus.AVAILABLE);
+        reset(mParent);
 
         section.addSuggestions(snippets, CategoryStatus.AVAILABLE);
 
@@ -150,7 +154,7 @@ public class SuggestionsSectionTest {
 
         section.removeSuggestion(snippets.get(0));
         verify(mParent).onItemRangeRemoved(section, 1, 1);
-        verify(mParent).onItemRangeInserted(section, 1, 3);
+        verify(mParent).onItemRangeInserted(section, 1, 1);
     }
 
     @Test
@@ -159,15 +163,13 @@ public class SuggestionsSectionTest {
         final int suggestionCount = 2;
         List<SnippetArticle> snippets = createDummySuggestions(suggestionCount);
 
-        SuggestionsSection section = createSection(true, true, mParent, mManager, mBridge);
-
-        section.removeSuggestion(snippets.get(0));
-        verify(mParent, never())
-                .onItemRangeChanged(any(SuggestionsSection.class), anyInt(), anyInt());
-        verify(mParent, never())
-                .onItemRangeInserted(any(SuggestionsSection.class), anyInt(), anyInt());
-        verify(mParent, never())
-                .onItemRangeRemoved(any(SuggestionsSection.class), anyInt(), anyInt());
+        SuggestionsSection section = new SuggestionsSection(mParent,
+                createInfo(42, /*hasMoreAction=*/true, /*hasReloadAction=*/true,
+                        /*hasViewAllAction=*/false, /*showIfEmpty=*/true),
+                mManager, mBridge);
+        section.setStatus(CategoryStatus.AVAILABLE);
+        reset(mParent);
+        assertEquals(3, section.getItemCount()); // We have the header and status card and a button.
 
         section.addSuggestions(snippets, CategoryStatus.AVAILABLE);
 
@@ -176,7 +178,7 @@ public class SuggestionsSectionTest {
 
         section.removeSuggestion(snippets.get(1));
         verify(mParent, times(2)).onItemRangeRemoved(section, 1, 1);
-        verify(mParent).onItemRangeInserted(section, 1, 3);
+        verify(mParent).onItemRangeInserted(section, 1, 1); // Only the status card is added.
     }
 
     @Test
@@ -193,7 +195,7 @@ public class SuggestionsSectionTest {
 
         when(mBridge.getAllItems()).thenReturn(Arrays.asList(item0, item1));
 
-        SuggestionsSection section = createSection(true, true, mParent, mManager, mBridge);
+        SuggestionsSection section = createSection(true, mParent, mManager, mBridge);
         section.addSuggestions(snippets, CategoryStatus.AVAILABLE);
 
         // Check that we pick up the correct information.

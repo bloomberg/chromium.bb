@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadIte
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -29,67 +30,38 @@ import java.util.Map;
 public class SuggestionsSection extends InnerNode {
     private static final String TAG = "NtpCards";
 
-    private final List<TreeNode> mChildren = new ArrayList<>();
-    private final List<SnippetArticle> mSuggestions = new ArrayList<>();
-    private final SectionHeader mHeader;
-    private final TreeNode mSuggestionsList = new SuggestionsList(this);
-    private final StatusItem mStatus;
-    private final ProgressItem mProgressIndicator = new ProgressItem();
-    private final ActionItem mMoreButton;
     private final SuggestionsCategoryInfo mCategoryInfo;
     private final OfflinePageDownloadBridge mOfflinePageDownloadBridge;
+    private final List<TreeNode> mChildren = new ArrayList<>();
+
+    // Children
+    private final SectionHeader mHeader;
+    private final SuggestionsList mSuggestionsList;
+    private final StatusItem mStatus;
+    private final ProgressItem mProgressIndicator;
+    private final ActionItem mMoreButton;
 
     public SuggestionsSection(NodeParent parent, SuggestionsCategoryInfo info,
             NewTabPageManager manager, OfflinePageDownloadBridge offlinePageDownloadBridge) {
         super(parent);
-        mHeader = new SectionHeader(info.getTitle());
         mCategoryInfo = info;
-        mMoreButton = new ActionItem(info, this);
-        mStatus = StatusItem.createNoSuggestionsItem(info);
-        resetChildren();
-
         mOfflinePageDownloadBridge = offlinePageDownloadBridge;
+
+        mHeader = new SectionHeader(info.getTitle());
+        mSuggestionsList = new SuggestionsList(this);
+        mStatus = StatusItem.createNoSuggestionsItem(this);
+        mMoreButton = new ActionItem(this);
+        mProgressIndicator = new ProgressItem(this);
+        initializeChildren();
+
         // We need to setup a listener because the OfflinePageDownloadBridge won't be available
         // when Chrome is freshly opened.
         setupOfflinePageDownloadBridgeObserver(manager);
     }
 
-    private void setupOfflinePageDownloadBridgeObserver(NewTabPageManager manager) {
-        // TODO(peconn): Update logic to listen to specific events, not just recalculate every time.
-        final OfflinePageDownloadBridge.Observer observer =
-                new OfflinePageDownloadBridge.Observer() {
-            @Override
-            public void onItemsLoaded() {
-                markSnippetsAvailableOffline();
-            }
+    private static class SuggestionsList extends ChildNode implements Iterable<SnippetArticle> {
+        private final List<SnippetArticle> mSuggestions = new ArrayList<>();
 
-            @Override
-            public void onItemAdded(OfflinePageDownloadItem item) {
-                markSnippetsAvailableOffline();
-            }
-
-            @Override
-            public void onItemDeleted(String guid) {
-                markSnippetsAvailableOffline();
-            }
-
-            @Override
-            public void onItemUpdated(OfflinePageDownloadItem item) {
-                markSnippetsAvailableOffline();
-            }
-        };
-
-        mOfflinePageDownloadBridge.addObserver(observer);
-
-        manager.addDestructionObserver(new DestructionObserver() {
-            @Override
-            public void onDestroy() {
-                mOfflinePageDownloadBridge.removeObserver(observer);
-            }
-        });
-    }
-
-    private class SuggestionsList extends ChildNode {
         public SuggestionsList(NodeParent parent) {
             super(parent);
         }
@@ -120,6 +92,35 @@ public class SuggestionsSection extends InnerNode {
         public int getDismissSiblingPosDelta(int position) {
             return 0;
         }
+
+        public void remove(SnippetArticle suggestion) {
+            int removedIndex = mSuggestions.indexOf(suggestion);
+            if (removedIndex == -1) throw new IndexOutOfBoundsException();
+
+            mSuggestions.remove(removedIndex);
+            notifyItemRemoved(removedIndex);
+        }
+
+        public void clear() {
+            int itemCount = mSuggestions.size();
+            if (itemCount == 0) return;
+
+            mSuggestions.clear();
+            notifyItemRangeRemoved(0, itemCount);
+        }
+
+        public void addAll(List<SnippetArticle> suggestions) {
+            if (suggestions.isEmpty()) return;
+
+            int insertionPointIndex = mSuggestions.size();
+            mSuggestions.addAll(suggestions);
+            notifyItemRangeInserted(insertionPointIndex, suggestions.size());
+        }
+
+        @Override
+        public Iterator<SnippetArticle> iterator() {
+            return mSuggestions.iterator();
+        }
     }
 
     @Override
@@ -127,36 +128,65 @@ public class SuggestionsSection extends InnerNode {
         return mChildren;
     }
 
-    private void resetChildren() {
-        mChildren.clear();
+    private void initializeChildren() {
         mChildren.add(mHeader);
         mChildren.add(mSuggestionsList);
 
-        if (mSuggestions.isEmpty()) mChildren.add(mStatus);
-        mChildren.add(mMoreButton);
-        if (mSuggestions.isEmpty()) mChildren.add(mProgressIndicator);
+        // Optional leaves.
+        mChildren.add(mStatus); // Needs to be refreshed when the status changes.
+
+        mChildren.add(mMoreButton); // Needs to be refreshed when the suggestions change.
+        mChildren.add(mProgressIndicator); // Needs to be refreshed when the suggestions change.
+        refreshChildrenVisibility();
+    }
+
+    private void setupOfflinePageDownloadBridgeObserver(NewTabPageManager manager) {
+        // TODO(peconn): Update logic to listen to specific events, not just recalculate every time.
+        final OfflinePageDownloadBridge.Observer observer =
+                new OfflinePageDownloadBridge.Observer() {
+                    @Override
+                    public void onItemsLoaded() {
+                        markSnippetsAvailableOffline();
+                    }
+
+                    @Override
+                    public void onItemAdded(OfflinePageDownloadItem item) {
+                        markSnippetsAvailableOffline();
+                    }
+
+                    @Override
+                    public void onItemDeleted(String guid) {
+                        markSnippetsAvailableOffline();
+                    }
+
+                    @Override
+                    public void onItemUpdated(OfflinePageDownloadItem item) {
+                        markSnippetsAvailableOffline();
+                    }
+                };
+
+        mOfflinePageDownloadBridge.addObserver(observer);
+
+        manager.addDestructionObserver(new DestructionObserver() {
+            @Override
+            public void onDestroy() {
+                mOfflinePageDownloadBridge.removeObserver(observer);
+            }
+        });
+    }
+
+    private void refreshChildrenVisibility() {
+        mStatus.setVisible(!hasSuggestions());
+        mMoreButton.setVisible(mCategoryInfo.hasMoreButton(hasSuggestions()));
     }
 
     public void removeSuggestion(SnippetArticle suggestion) {
-        int removedIndex = mSuggestions.indexOf(suggestion);
-        if (removedIndex == -1) return;
-
-        mSuggestions.remove(removedIndex);
-
-        resetChildren();
-
-        // Note: Keep this coherent with getItems()
-        int globalRemovedIndex = removedIndex + 1; // Header has index 0 in the section.
-        notifyItemRemoved(globalRemovedIndex);
-
-        // If we still have some suggestions, we are done. Otherwise, we'll have to notify about the
-        // status-related items (status card, action card, and progress indicator) that are
-        // now present.
-        if (!hasSuggestions()) notifyItemRangeInserted(globalRemovedIndex, 3);
+        mSuggestionsList.remove(suggestion);
+        refreshChildrenVisibility();
     }
 
     public void removeSuggestionById(String idWithinCategory) {
-        for (SnippetArticle suggestion : mSuggestions) {
+        for (SnippetArticle suggestion : mSuggestionsList) {
             if (suggestion.mIdWithinCategory.equals(idWithinCategory)) {
                 removeSuggestion(suggestion);
                 return;
@@ -165,43 +195,41 @@ public class SuggestionsSection extends InnerNode {
     }
 
     public boolean hasSuggestions() {
-        return !mSuggestions.isEmpty();
+        return mSuggestionsList.getItemCount() != 0;
     }
 
     public int getSuggestionsCount() {
-        return mSuggestions.size();
+        return mSuggestionsList.getItemCount();
     }
 
     public String[] getDisplayedSuggestionIds() {
-        String[] suggestionIds = new String[mSuggestions.size()];
-        for (int i = 0; i < mSuggestions.size(); ++i) {
-            suggestionIds[i] = mSuggestions.get(i).mIdWithinCategory;
+        String[] suggestionIds = new String[mSuggestionsList.getItemCount()];
+        for (int i = 0; i < mSuggestionsList.getItemCount(); ++i) {
+            suggestionIds[i] = mSuggestionsList.getSuggestionAt(i).mIdWithinCategory;
         }
         return suggestionIds;
     }
 
     public void addSuggestions(List<SnippetArticle> suggestions, @CategoryStatusEnum int status) {
-        int itemCountBefore = getItemCount();
-        setStatusInternal(status);
+        if (!SnippetsBridge.isCategoryStatusAvailable(status)) mSuggestionsList.clear();
+        mProgressIndicator.setVisible(SnippetsBridge.isCategoryLoading(status));
 
-        Log.d(TAG, "addSuggestions: current number of suggestions: %d", mSuggestions.size());
+        Log.d(TAG, "addSuggestions: current number of suggestions: %d",
+                mSuggestionsList.getItemCount());
 
         int sizeBefore = suggestions.size();
 
         // TODO(dgn): remove once the backend stops sending duplicates.
-        if (suggestions.removeAll(mSuggestions)) {
+        if (suggestions.removeAll(mSuggestionsList.mSuggestions)) {
             Log.d(TAG, "addSuggestions: Removed duplicates from incoming suggestions. "
                             + "Count changed from %d to %d",
                     sizeBefore, suggestions.size());
         }
 
-        mSuggestions.addAll(suggestions);
-
+        mSuggestionsList.addAll(suggestions);
         markSnippetsAvailableOffline();
 
-        resetChildren();
-        // TODO(dgn): change to handle only adding new items, or handling no modifications.
-        notifySectionChanged(itemCountBefore);
+        refreshChildrenVisibility();
     }
 
 
@@ -213,7 +241,7 @@ public class SuggestionsSection extends InnerNode {
             urlToOfflineGuid.put(item.getUrl(), item.getGuid());
         }
 
-        for (final SnippetArticle article : mSuggestions) {
+        for (final SnippetArticle article : mSuggestionsList) {
             String guid = urlToOfflineGuid.get(article.mUrl);
             guid = guid != null ? guid : urlToOfflineGuid.get(article.mAmpUrl);
             article.setOfflinePageDownloadGuid(guid);
@@ -222,16 +250,9 @@ public class SuggestionsSection extends InnerNode {
 
     /** Sets the status for the section. Some statuses can cause the suggestions to be cleared. */
     public void setStatus(@CategoryStatusEnum int status) {
-        int itemCountBefore = getItemCount();
-        setStatusInternal(status);
-        resetChildren();
-        notifySectionChanged(itemCountBefore);
-    }
-
-    private void setStatusInternal(@CategoryStatusEnum int status) {
-        if (!SnippetsBridge.isCategoryStatusAvailable(status)) mSuggestions.clear();
-
+        if (!SnippetsBridge.isCategoryStatusAvailable(status)) mSuggestionsList.clear();
         mProgressIndicator.setVisible(SnippetsBridge.isCategoryLoading(status));
+        refreshChildrenVisibility();
     }
 
     @CategoryInt
@@ -243,7 +264,7 @@ public class SuggestionsSection extends InnerNode {
     public int getDismissSiblingPosDelta(int position) {
         // The only dismiss siblings we have so far are the More button and the status card.
         // Exit early if there is no More button.
-        if (!mMoreButton.isShown()) return 0;
+        if (!mMoreButton.isVisible()) return 0;
 
         // When there are suggestions we won't have contiguous status and action items.
         if (hasSuggestions()) return 0;
@@ -259,20 +280,8 @@ public class SuggestionsSection extends InnerNode {
         return 0;
     }
 
-    private void notifySectionChanged(int itemCountBefore) {
-        int itemCountAfter = getItemCount();
-
-        // The header is stable in sections. Don't notify about it.
-        final int startPos = 1;
-        itemCountBefore--;
-        itemCountAfter--;
-
-        notifyItemRangeChanged(startPos, Math.min(itemCountBefore, itemCountAfter));
-        if (itemCountBefore < itemCountAfter) {
-            notifyItemRangeInserted(startPos + itemCountBefore, itemCountAfter - itemCountBefore);
-        } else if (itemCountBefore > itemCountAfter) {
-            notifyItemRangeRemoved(startPos + itemCountAfter, itemCountBefore - itemCountAfter);
-        }
+    public SuggestionsCategoryInfo getCategoryInfo() {
+        return mCategoryInfo;
     }
 
     /**

@@ -13,16 +13,21 @@ import org.chromium.chrome.R;
  * Card that is shown when the user needs to be made aware of some information about their
  * configuration that affects the NTP suggestions.
  */
-public abstract class StatusItem extends Leaf implements StatusCardViewHolder.DataSource {
-    public static StatusItem createNoSuggestionsItem(SuggestionsCategoryInfo categoryInfo) {
-        return new NoSuggestionsItem(categoryInfo);
+public abstract class StatusItem extends OptionalLeaf implements StatusCardViewHolder.DataSource {
+
+    protected StatusItem(NodeParent parent) {
+        super(parent);
+    }
+
+    public static StatusItem createNoSuggestionsItem(SuggestionsSection parentSection) {
+        return new NoSuggestionsItem(parentSection);
     }
 
     private static class NoSuggestionsItem extends StatusItem {
-        private final SuggestionsCategoryInfo mCategoryInfo;
-
-        public NoSuggestionsItem(SuggestionsCategoryInfo info) {
-            mCategoryInfo = info;
+        private final String mDescription;
+        public NoSuggestionsItem(SuggestionsSection parentSection) {
+            super(parentSection);
+            mDescription = parentSection.getCategoryInfo().getNoSuggestionsMessage();
         }
 
         @Override
@@ -33,7 +38,7 @@ public abstract class StatusItem extends Leaf implements StatusCardViewHolder.Da
 
         @Override
         public String getDescription() {
-            return mCategoryInfo.getNoSuggestionsMessage();
+            return mDescription;
         }
 
         @Override

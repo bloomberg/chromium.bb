@@ -24,18 +24,11 @@ import org.chromium.chrome.browser.signin.SigninManager.SignInAllowedObserver;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 
 /**
- * Shows a card prompting the user to sign in. This item is also a {@link TreeNode}, and calling
- * {@link #hide()} or {@link #maybeShow()} will control its visibility.
+ * Shows a card prompting the user to sign in. This item is also an {@link OptionalLeaf}, and sign
+ * in state changes control its visibility.
  */
 public class SignInPromo extends OptionalLeaf
         implements StatusCardViewHolder.DataSource, ImpressionTracker.Listener {
-    /**
-     * Whether the promo should be visible, according to the parent object.
-     *
-     * The {@link NewTabPageAdapter} calls to {@link #maybeShow()} and {@link #hide()} modify this
-     * when the sign in status changes.
-     */
-    private boolean mVisible;
 
     /**
      * Whether the user has seen the promo and dismissed it at some point. When this is set,
@@ -55,7 +48,7 @@ public class SignInPromo extends OptionalLeaf
 
         final SigninManager signinManager = SigninManager.get(ContextUtils.getApplicationContext());
         mObserver = mDismissed ? null : new SigninObserver(signinManager, adapter);
-        mVisible = signinManager.isSignInAllowed() && !signinManager.isSignedInOnNative();
+        setVisible(signinManager.isSignInAllowed() && !signinManager.isSignedInOnNative());
     }
 
     @Override
@@ -110,34 +103,15 @@ public class SignInPromo extends OptionalLeaf
     }
 
     @Override
-    public boolean isShown() {
-        return !mDismissed && mVisible;
-    }
-
-    /** Attempts to show the sign in promo. If the user dismissed it before, it will not be shown.*/
-    private void maybeShow() {
-        if (mVisible) return;
-        mVisible = true;
-
-        if (mDismissed) return;
-
-        notifyItemInserted(0);
-    }
-
-    /** Hides the sign in promo. */
-    private void hide() {
-        if (!mVisible) return;
-        mVisible = false;
-
-        if (mDismissed) return;
-
-        notifyItemRemoved(0);
+    public void setVisible(boolean visible) {
+        super.setVisible(!mDismissed && visible);
     }
 
     /** Hides the sign in promo and sets a preference to make sure it is not shown again. */
     public void dismiss() {
-        hide();
         mDismissed = true;
+        setVisible(false);
+
         ChromePreferenceManager.getInstance(ContextUtils.getApplicationContext())
                 .setNewTabPageSigninPromoDismissed(true);
         mObserver.unregister();
@@ -177,22 +151,18 @@ public class SignInPromo extends OptionalLeaf
             // Listening to onSignInAllowedChanged is important for the FRE. Sign in is not allowed
             // until it is completed, but the NTP is initialised before the FRE is even shown. By
             // implementing this we can show the promo if the user did not sign in during the FRE.
-            if (mSigninManager.isSignInAllowed()) {
-                maybeShow();
-            } else {
-                hide();
-            }
+            setVisible(mSigninManager.isSignInAllowed());
         }
 
         @Override
         public void onSignedIn() {
-            hide();
+            setVisible(false);
             mAdapter.resetSections(/*alwaysAllowEmptySections=*/false);
         }
 
         @Override
         public void onSignedOut() {
-            maybeShow();
+            setVisible(true);
         }
     }
 
