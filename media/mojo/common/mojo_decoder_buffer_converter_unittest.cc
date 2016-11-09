@@ -96,6 +96,16 @@ TEST(MojoDecoderBufferConverterTest, ConvertDecoderBuffer_EOS) {
   converter.ConvertAndVerify(buffer);
 }
 
+// TODO(xhwang): Investigate whether we can get rid of zero-byte-buffer.
+// See http://crbug.com/663438
+TEST(MojoDecoderBufferConverterTest, ConvertDecoderBuffer_ZeroByteBuffer) {
+  base::MessageLoop message_loop;
+  scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(0));
+
+  MojoDecoderBufferConverter converter;
+  converter.ConvertAndVerify(buffer);
+}
+
 TEST(MojoDecoderBufferConverterTest, ConvertDecoderBuffer_KeyFrame) {
   base::MessageLoop message_loop;
   const uint8_t kData[] = "hello, world";

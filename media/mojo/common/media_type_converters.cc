@@ -106,9 +106,12 @@ TypeConverter<media::mojom::DecoderBufferPtr,
 
   media::mojom::DecoderBufferPtr mojo_buffer(
       media::mojom::DecoderBuffer::New());
-  if (input->end_of_stream())
+  if (input->end_of_stream()) {
+    mojo_buffer->is_end_of_stream = true;
     return mojo_buffer;
+  }
 
+  mojo_buffer->is_end_of_stream = false;
   mojo_buffer->timestamp = input->timestamp();
   mojo_buffer->duration = input->duration();
   mojo_buffer->is_key_frame = input->is_key_frame();
@@ -141,7 +144,7 @@ scoped_refptr<media::DecoderBuffer>
 TypeConverter<scoped_refptr<media::DecoderBuffer>,
               media::mojom::DecoderBufferPtr>::
     Convert(const media::mojom::DecoderBufferPtr& input) {
-  if (!input->data_size)
+  if (input->is_end_of_stream)
     return media::DecoderBuffer::CreateEOSBuffer();
 
   scoped_refptr<media::DecoderBuffer> buffer(

@@ -104,8 +104,13 @@ struct DecoderBuffer {
   mojo.common.mojom.TimeDelta timestamp;
   mojo.common.mojom.TimeDelta duration;
 
-  // The number of bytes present in this buffer.  The data is not serialized
+  // Whether the buffer is an end-of-stream (EOS) buffer.
+  bool is_end_of_stream;
+
+  // The number of bytes present in this buffer. The data is not serialized
   // along with this structure and must be read from a separate DataPipe.
+  // Note that |data_size| could be zero even for a non-EOS buffer (e.g.
+  // with non-empty |size_data|). See http://crbug.com/663438
   uint32 data_size;
 
   // Indicates whether or not this buffer is a random access point.

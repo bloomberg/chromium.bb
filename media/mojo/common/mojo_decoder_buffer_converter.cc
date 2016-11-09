@@ -103,7 +103,8 @@ void MojoDecoderBufferReader::ReadDecoderBuffer(
       mojo_buffer.To<scoped_refptr<DecoderBuffer>>());
   DCHECK(media_buffer);
 
-  if (media_buffer->end_of_stream()) {
+  // A non-EOS buffer can have zero size. See http://crbug.com/663438
+  if (media_buffer->end_of_stream() || media_buffer->data_size() == 0) {
     std::move(read_cb).Run(media_buffer);
     return;
   }
@@ -219,7 +220,8 @@ mojom::DecoderBufferPtr MojoDecoderBufferWriter::WriteDecoderBuffer(
   mojom::DecoderBufferPtr mojo_buffer =
       mojom::DecoderBuffer::From(media_buffer);
 
-  if (media_buffer->end_of_stream())
+  // A non-EOS buffer can have zero size. See http://crbug.com/663438
+  if (media_buffer->end_of_stream() || media_buffer->data_size() == 0)
     return mojo_buffer;
 
   // Serialize the data section of the DecoderBuffer into our pipe.
