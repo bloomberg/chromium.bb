@@ -1191,17 +1191,11 @@ void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
   OnFrameMetadataUpdated(frame_metadata.Clone(), false);
 
   // DevTools ScreenCast support for Android WebView.
-  WebContents* web_contents = content_view_core_->GetWebContents();
-  if (DevToolsAgentHost::HasFor(web_contents)) {
-    scoped_refptr<DevToolsAgentHost> dtah =
-        DevToolsAgentHost::GetOrCreateFor(web_contents);
-    // Unblock the compositor.
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(
-            &RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame,
-            static_cast<RenderFrameDevToolsAgentHost*>(dtah.get()),
-            base::Passed(&frame_metadata)));
+  RenderFrameHost* frame_host = RenderViewHost::From(host_)->GetMainFrame();
+  if (frame_host) {
+    RenderFrameDevToolsAgentHost::SignalSynchronousSwapCompositorFrame(
+        frame_host,
+        std::move(frame_metadata));
   }
 }
 

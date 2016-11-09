@@ -72,7 +72,8 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   static void WebContentsCreated(WebContents* web_contents);
 
-  void SynchronousSwapCompositorFrame(
+  static void SignalSynchronousSwapCompositorFrame(
+      RenderFrameHost* frame_host,
       cc::CompositorFrameMetadata frame_metadata);
 
   bool HasRenderFrameHost(RenderFrameHost* host);
@@ -167,6 +168,9 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   bool CheckConsistency();
 
   void CreatePowerSaveBlocker();
+
+  void SynchronousSwapCompositorFrame(
+      cc::CompositorFrameMetadata frame_metadata);
 
   class FrameHostHolder;
 

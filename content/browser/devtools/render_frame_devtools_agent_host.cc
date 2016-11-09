@@ -1052,6 +1052,21 @@ void RenderFrameDevToolsAgentHost::OnSwapCompositorFrame(
   }
 }
 
+void RenderFrameDevToolsAgentHost::SignalSynchronousSwapCompositorFrame(
+    RenderFrameHost* frame_host,
+    cc::CompositorFrameMetadata frame_metadata) {
+  scoped_refptr<RenderFrameDevToolsAgentHost> dtah(FindAgentHost(frame_host));
+  if (dtah) {
+    // Unblock the compositor.
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(
+            &RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame,
+            dtah.get(),
+            base::Passed(std::move(frame_metadata))));
+  }
+}
+
 void RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame(
     cc::CompositorFrameMetadata frame_metadata) {
   if (page_handler_)
