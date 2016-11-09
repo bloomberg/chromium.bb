@@ -120,7 +120,7 @@ EnrollmentHandlerChromeOS::~EnrollmentHandlerChromeOS() {
 
 void EnrollmentHandlerChromeOS::StartEnrollment() {
   CHECK_EQ(STEP_PENDING, enrollment_step_);
-  enrollment_step_ = STEP_STATE_KEYS;
+  SetStep(STEP_STATE_KEYS);
 
   if (client_->machine_id().empty()) {
     LOG(ERROR) << "Machine id empty.";
@@ -148,8 +148,7 @@ std::unique_ptr<CloudPolicyClient> EnrollmentHandlerChromeOS::ReleaseClient() {
 void EnrollmentHandlerChromeOS::OnPolicyFetched(CloudPolicyClient* client) {
   DCHECK_EQ(client_.get(), client);
   CHECK_EQ(STEP_POLICY_FETCH, enrollment_step_);
-
-  enrollment_step_ = STEP_VALIDATION;
+  SetStep(STEP_VALIDATION);
 
   // Validate the policy.
   const em::PolicyFetchResponse* policy = client_->GetPolicyFor(
@@ -197,7 +196,7 @@ void EnrollmentHandlerChromeOS::OnRegistrationStateChanged(
   DCHECK_EQ(client_.get(), client);
 
   if (enrollment_step_ == STEP_REGISTRATION && client_->is_registered()) {
-    enrollment_step_ = STEP_POLICY_FETCH;
+    SetStep(STEP_POLICY_FETCH);
     device_mode_ = client_->device_mode();
     // TODO(rsorokin): remove after have proper test server.
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -275,7 +274,7 @@ void EnrollmentHandlerChromeOS::HandleStateKeysResult(
     }
   }
 
-  enrollment_step_ = STEP_LOADING_STORE;
+  SetStep(STEP_LOADING_STORE);
   StartRegistration();
 }
 
@@ -286,7 +285,7 @@ void EnrollmentHandlerChromeOS::StartRegistration() {
     // after the CloudPolicyStore has initialized.
     return;
   }
-  enrollment_step_ = STEP_REGISTRATION;
+  SetStep(STEP_REGISTRATION);
   if (enrollment_config_.is_mode_attestation()) {
     StartAttestationBasedEnrollmentFlow();
   } else {
@@ -332,7 +331,7 @@ void EnrollmentHandlerChromeOS::HandlePolicyValidationResult(
       domain_ = gaia::ExtractDomainName(gaia::CanonicalizeEmail(username));
     device_id_ = validator->policy_data()->device_id();
     policy_ = std::move(validator->policy());
-    enrollment_step_ = STEP_ROBOT_AUTH_FETCH;
+    SetStep(STEP_ROBOT_AUTH_FETCH);
     client_->FetchRobotAuthCodes(auth_token_);
   } else {
     ReportResult(EnrollmentStatus::ForValidationError(validator->status()));
@@ -349,13 +348,12 @@ void EnrollmentHandlerChromeOS::OnRobotAuthCodesFetched(
     // This allows clients running against the test server to transparently skip
     // robot auth.
     skip_robot_auth_ = true;
-    enrollment_step_ = STEP_LOCK_DEVICE;
+    SetStep(STEP_LOCK_DEVICE);
     StartLockDevice();
     return;
   }
 
-  enrollment_step_ = STEP_ROBOT_AUTH_REFRESH;
-
+  SetStep(STEP_ROBOT_AUTH_REFRESH);
   gaia::OAuthClientInfo client_info;
   client_info.client_id = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
   client_info.client_secret =
@@ -380,7 +378,7 @@ void EnrollmentHandlerChromeOS::OnGetTokensResponse(
 
   robot_refresh_token_ = refresh_token;
 
-  enrollment_step_ = STEP_LOCK_DEVICE;
+  SetStep(STEP_LOCK_DEVICE);
   StartLockDevice();
 }
 
@@ -470,7 +468,7 @@ void EnrollmentHandlerChromeOS::HandleLockDeviceResult(
 }
 
 void EnrollmentHandlerChromeOS::StartStoreRobotAuth() {
-  enrollment_step_ = STEP_STORE_ROBOT_AUTH;
+  SetStep(STEP_STORE_ROBOT_AUTH);
 
   // Don't store the token if robot auth was skipped.
   if (skip_robot_auth_) {
@@ -497,7 +495,7 @@ void EnrollmentHandlerChromeOS::HandleStoreRobotAuthTokenResult(bool result) {
   if (device_mode_ == policy::DEVICE_MODE_ENTERPRISE_AD) {
     ReportResult(EnrollmentStatus::ForStatus(EnrollmentStatus::STATUS_SUCCESS));
   } else {
-    enrollment_step_ = STEP_STORE_POLICY;
+    SetStep(STEP_STORE_POLICY);
     store_->InstallInitialPolicy(*policy_);
   }
 }
@@ -505,7 +503,7 @@ void EnrollmentHandlerChromeOS::HandleStoreRobotAuthTokenResult(bool result) {
 void EnrollmentHandlerChromeOS::Stop() {
   if (client_.get())
     client_->RemoveObserver(this);
-  enrollment_step_ = STEP_FINISHED;
+  SetStep(STEP_FINISHED);
   weak_ptr_factory_.InvalidateWeakPtrs();
   completion_callback_.Reset();
 }
@@ -524,6 +522,12 @@ void EnrollmentHandlerChromeOS::ReportResult(EnrollmentStatus status) {
 
   if (!callback.is_null())
     callback.Run(status);
+}
+
+void EnrollmentHandlerChromeOS::SetStep(EnrollmentStep step) {
+  DCHECK_LE(enrollment_step_, step);
+  VLOG(1) << "Step: " << step;
+  enrollment_step_ = step;
 }
 
 }  // namespace policy
