@@ -296,8 +296,8 @@ class ServiceWorkerVersionTestP
 
 class MessageReceiverDisallowStart : public MessageReceiver {
  public:
-  MessageReceiverDisallowStart()
-      : MessageReceiver() {}
+  MessageReceiverDisallowStart(bool is_mojo_enabled)
+      : MessageReceiver(), is_mojo_enabled_(is_mojo_enabled) {}
   ~MessageReceiverDisallowStart() override {}
 
   enum class StartMode { STALL, FAIL, SUCCEED };
@@ -311,7 +311,14 @@ class MessageReceiverDisallowStart : public MessageReceiver {
       case StartMode::STALL:
         break;  // Do nothing.
       case StartMode::FAIL:
-        OnStopWorker(embedded_worker_id);
+        if (is_mojo_enabled_) {
+          ASSERT_EQ(current_mock_instance_index_ + 1,
+                    mock_instance_clients()->size());
+          // Remove the connection by peer
+          mock_instance_clients()->at(current_mock_instance_index_).reset();
+        } else {
+          OnStopWorker(embedded_worker_id);
+        }
         break;
       case StartMode::SUCCEED:
         MessageReceiver::OnStartWorker(embedded_worker_id,
@@ -319,11 +326,14 @@ class MessageReceiverDisallowStart : public MessageReceiver {
                                        script_url, pause_after_download);
         break;
     }
+    current_mock_instance_index_++;
   }
 
   void set_start_mode(StartMode mode) { mode_ = mode; }
 
  private:
+  const bool is_mojo_enabled_;
+  uint32_t current_mock_instance_index_ = 0;
   StartMode mode_ = StartMode::STALL;
   DISALLOW_COPY_AND_ASSIGN(MessageReceiverDisallowStart);
 };
@@ -339,7 +349,7 @@ class ServiceWorkerFailToStartTest : public ServiceWorkerVersionTestP {
   }
 
   std::unique_ptr<MessageReceiver> GetMessageReceiver() override {
-    return base::MakeUnique<MessageReceiverDisallowStart>();
+    return base::MakeUnique<MessageReceiverDisallowStart>(is_mojo_enabled());
   }
 
  private:
