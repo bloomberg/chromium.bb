@@ -17,7 +17,6 @@
 #include "base/values.h"
 #include "crypto/sha2.h"
 #include "net/base/io_buffer.h"
-#include "net/filter/filter.h"
 #include "net/filter/gzip_header.h"
 
 namespace chromeos {
