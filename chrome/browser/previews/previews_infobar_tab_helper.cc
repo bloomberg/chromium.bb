@@ -4,9 +4,17 @@
 
 #include "chrome/browser/previews/previews_infobar_tab_helper.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "chrome/browser/previews/previews_infobar_delegate.h"
+#include "chrome/browser/previews/previews_service.h"
+#include "chrome/browser/previews/previews_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
+#include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/previews_ui_service.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -16,6 +24,25 @@
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/android/offline_pages/offline_page_tab_helper.h"
+
+namespace {
+
+// Adds the preview navigation to the black list. This method is only used on
+// android currently.
+void AddPreviewNavigationCallback(content::BrowserContext* browser_context,
+                                  const GURL& url,
+                                  previews::PreviewsType type,
+                                  bool opt_out) {
+  PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(browser_context));
+  if (previews_service && previews_service->previews_ui_service()) {
+    previews_service->previews_ui_service()->AddPreviewNavigation(url, type,
+                                                                  opt_out);
+  }
+}
+
+}  // namespace
+
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PreviewsInfoBarTabHelper);
@@ -49,8 +76,11 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
       return;
     }
     is_showing_offline_preview_ = true;
-    PreviewsInfoBarDelegate::Create(web_contents(),
-                                    PreviewsInfoBarDelegate::OFFLINE);
+    PreviewsInfoBarDelegate::Create(
+        web_contents(), PreviewsInfoBarDelegate::OFFLINE,
+        base::Bind(
+            &AddPreviewNavigationCallback, web_contents()->GetBrowserContext(),
+            navigation_handle->GetURL(), previews::PreviewsType::OFFLINE));
     // Don't try to show other infobars if this is an offline preview.
     return;
   }
@@ -59,8 +89,9 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
   const net::HttpResponseHeaders* headers =
       navigation_handle->GetResponseHeaders();
   if (headers && data_reduction_proxy::IsLitePagePreview(*headers)) {
-    PreviewsInfoBarDelegate::Create(web_contents(),
-                                    PreviewsInfoBarDelegate::LITE_PAGE);
+    PreviewsInfoBarDelegate::Create(
+        web_contents(), PreviewsInfoBarDelegate::LITE_PAGE,
+        PreviewsInfoBarDelegate::OnDismissPreviewsInfobarCallback());
   }
 }
 

@@ -6,6 +6,9 @@
 
 #include <memory>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/optional.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -81,7 +84,10 @@ class PreviewsInfoBarDelegateUnitTest : public ChromeRenderViewHostTestHarness {
 
   ConfirmInfoBarDelegate* CreateInfoBar(
       PreviewsInfoBarDelegate::PreviewsInfoBarType type) {
-    PreviewsInfoBarDelegate::Create(web_contents(), type);
+    PreviewsInfoBarDelegate::Create(
+        web_contents(), type,
+        base::Bind(&PreviewsInfoBarDelegateUnitTest::OnDismissPreviewsInfobar,
+                   base::Unretained(this)));
 
     InfoBarService* infobar_service =
         InfoBarService::FromWebContents(web_contents());
@@ -92,12 +98,18 @@ class PreviewsInfoBarDelegateUnitTest : public ChromeRenderViewHostTestHarness {
         ->AsConfirmInfoBarDelegate();
   }
 
+  void OnDismissPreviewsInfobar(bool user_opt_out) {
+    user_opt_out_ = user_opt_out;
+  }
+
   InfoBarService* infobar_service() {
     return InfoBarService::FromWebContents(web_contents());
   }
 
   std::unique_ptr<data_reduction_proxy::DataReductionProxyTestContext>
       drp_test_context_;
+
+  base::Optional<bool> user_opt_out_;
 };
 
 TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestNavigationDismissal) {
@@ -107,14 +119,16 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestNavigationDismissal) {
 
   // Try showing a second infobar. Another should not be shown since the page
   // has not navigated.
-  PreviewsInfoBarDelegate::Create(web_contents(),
-                                  PreviewsInfoBarDelegate::LOFI);
+  PreviewsInfoBarDelegate::Create(
+      web_contents(), PreviewsInfoBarDelegate::LOFI,
+      PreviewsInfoBarDelegate::OnDismissPreviewsInfobarCallback());
   EXPECT_EQ(1U, infobar_service()->infobar_count());
 
   // Navigate and make sure the infobar is dismissed.
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL(kTestUrl));
   EXPECT_EQ(0U, infobar_service()->infobar_count());
+  EXPECT_FALSE(user_opt_out_.value());
 
   tester.ExpectBucketCount(
       kUMAPreviewsInfoBarActionLoFi,
@@ -139,6 +153,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestUserDismissal) {
                            1);
   EXPECT_EQ(0, drp_test_context_->pref_service()->GetInteger(
                    data_reduction_proxy::prefs::kLoFiLoadImagesPerSession));
+  EXPECT_FALSE(user_opt_out_.value());
 }
 
 TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestClickLink) {
@@ -157,6 +172,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestClickLink) {
       PreviewsInfoBarDelegate::INFOBAR_LOAD_ORIGINAL_CLICKED, 1);
   EXPECT_EQ(1, drp_test_context_->pref_service()->GetInteger(
                    data_reduction_proxy::prefs::kLoFiLoadImagesPerSession));
+  EXPECT_TRUE(user_opt_out_.value());
 }
 
 TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestShownOncePerNavigation) {
@@ -168,8 +184,9 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestShownOncePerNavigation) {
   infobar_service()->infobar_at(0)->RemoveSelf();
   EXPECT_EQ(0U, infobar_service()->infobar_count());
 
-  PreviewsInfoBarDelegate::Create(web_contents(),
-                                  PreviewsInfoBarDelegate::LOFI);
+  PreviewsInfoBarDelegate::Create(
+      web_contents(), PreviewsInfoBarDelegate::LOFI,
+      PreviewsInfoBarDelegate::OnDismissPreviewsInfobarCallback());
 
   // Infobar should not be shown again since a navigation hasn't happened.
   EXPECT_EQ(0U, infobar_service()->infobar_count());

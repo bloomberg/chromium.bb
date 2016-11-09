@@ -40,7 +40,9 @@ namespace {
 // PreviewsInfoBarDelegate is created, which handles showing Lo-Fi UI.
 void OnLoFiResponseReceivedOnUI(content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  PreviewsInfoBarDelegate::Create(web_contents, PreviewsInfoBarDelegate::LOFI);
+  PreviewsInfoBarDelegate::Create(
+      web_contents, PreviewsInfoBarDelegate::LOFI,
+      PreviewsInfoBarDelegate::OnDismissPreviewsInfobarCallback());
 }
 
 } // namespace

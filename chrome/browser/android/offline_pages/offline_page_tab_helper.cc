@@ -56,9 +56,7 @@ void OfflinePageTabHelper::DidStartNavigation(
   provisional_offline_info_.Clear();
 
   // If not a fragment navigation, clear the cached offline info.
-  if (offline_info_.offline_page.get() &&
-      !OfflinePageUtils::EqualsIgnoringFragment(offline_info_.offline_page->url,
-                                                navigation_handle->GetURL())) {
+  if (offline_info_.offline_page.get() && !navigation_handle->IsSamePage()) {
     offline_info_.Clear();
   }
 }

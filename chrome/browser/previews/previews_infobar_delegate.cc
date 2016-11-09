@@ -46,11 +46,16 @@ void RecordPreviewsInfoBarAction(
 
 }  // namespace
 
-PreviewsInfoBarDelegate::~PreviewsInfoBarDelegate() {}
+PreviewsInfoBarDelegate::~PreviewsInfoBarDelegate() {
+  if (!on_dismiss_callback_.is_null())
+    on_dismiss_callback_.Run(false);
+}
 
 // static
-void PreviewsInfoBarDelegate::Create(content::WebContents* web_contents,
-                                     PreviewsInfoBarType infobar_type) {
+void PreviewsInfoBarDelegate::Create(
+    content::WebContents* web_contents,
+    PreviewsInfoBarType infobar_type,
+    const OnDismissPreviewsInfobarCallback& on_dismiss_callback) {
   PreviewsInfoBarTabHelper* infobar_tab_helper =
       PreviewsInfoBarTabHelper::FromWebContents(web_contents);
   if (infobar_tab_helper->displayed_preview_infobar())
@@ -61,8 +66,8 @@ void PreviewsInfoBarDelegate::Create(content::WebContents* web_contents,
 
   infobars::InfoBar* infobar =
       infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
-          std::unique_ptr<ConfirmInfoBarDelegate>(
-              new PreviewsInfoBarDelegate(web_contents, infobar_type))));
+          std::unique_ptr<ConfirmInfoBarDelegate>(new PreviewsInfoBarDelegate(
+              web_contents, infobar_type, on_dismiss_callback))));
 
   if (infobar && (infobar_type == LITE_PAGE || infobar_type == LOFI)) {
     auto* data_reduction_proxy_settings =
@@ -77,9 +82,11 @@ void PreviewsInfoBarDelegate::Create(content::WebContents* web_contents,
 
 PreviewsInfoBarDelegate::PreviewsInfoBarDelegate(
     content::WebContents* web_contents,
-    PreviewsInfoBarType infobar_type)
+    PreviewsInfoBarType infobar_type,
+    const OnDismissPreviewsInfobarCallback& on_dismiss_callback)
     : ConfirmInfoBarDelegate(),
-      infobar_type_(infobar_type) {}
+      infobar_type_(infobar_type),
+      on_dismiss_callback_(on_dismiss_callback) {}
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 PreviewsInfoBarDelegate::GetIdentifier() const {
@@ -120,6 +127,10 @@ base::string16 PreviewsInfoBarDelegate::GetLinkText() const {
 
 bool PreviewsInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
   RecordPreviewsInfoBarAction(infobar_type_, INFOBAR_LOAD_ORIGINAL_CLICKED);
+  if (!on_dismiss_callback_.is_null())
+    on_dismiss_callback_.Run(true);
+  on_dismiss_callback_.Reset();
+
   content::WebContents* web_contents =
       InfoBarService::WebContentsFromInfoBar(infobar());
   if (infobar_type_ == LITE_PAGE || infobar_type_ == LOFI) {

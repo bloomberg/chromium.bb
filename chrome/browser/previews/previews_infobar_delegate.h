@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PREVIEWS_PREVIEWS_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_PREVIEWS_PREVIEWS_INFOBAR_DELEGATE_H_
 
+#include "base/callback.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 
 namespace content {
@@ -25,6 +26,8 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
     OFFLINE,   // Offline copy of the page.
   };
 
+  typedef base::Callback<void(bool opt_out)> OnDismissPreviewsInfobarCallback;
+
   // Actions on the previews infobar. This enum must remain synchronized with
   // the enum of the same name in metrics/histograms/histograms.xml.
   enum PreviewsInfoBarAction {
@@ -39,12 +42,16 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // Creates a preview infobar and corresponding delegate and adds the infobar
   // to InfoBarService.
-  static void Create(content::WebContents* web_contents,
-                     PreviewsInfoBarType infobar_type);
+  static void Create(
+      content::WebContents* web_contents,
+      PreviewsInfoBarType infobar_type,
+      const OnDismissPreviewsInfobarCallback& on_dismiss_callback);
 
  private:
-  PreviewsInfoBarDelegate(content::WebContents* web_contents,
-                          PreviewsInfoBarType infobar_type);
+  PreviewsInfoBarDelegate(
+      content::WebContents* web_contents,
+      PreviewsInfoBarType infobar_type,
+      const OnDismissPreviewsInfobarCallback& on_dismiss_callback);
 
   // ConfirmInfoBarDelegate overrides:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
@@ -57,6 +64,8 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool LinkClicked(WindowOpenDisposition disposition) override;
 
   PreviewsInfoBarType infobar_type_;
+
+  OnDismissPreviewsInfobarCallback on_dismiss_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsInfoBarDelegate);
 };
