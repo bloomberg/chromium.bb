@@ -99,7 +99,7 @@ bool PaymentsValidators::isValidScriptCodeFormat(
 }
 
 bool PaymentsValidators::isValidShippingAddress(
-    const blink::mojom::PaymentAddressPtr& address,
+    const mojom::PaymentAddressPtr& address,
     std::string* optionalErrorMessage) {
   if (!isValidCountryCodeFormat(address->country, optionalErrorMessage))
     return false;

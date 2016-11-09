@@ -11,7 +11,8 @@ namespace blink {
 namespace {
 
 TEST(PaymentAddressTest, ValuesAreCopiedOver) {
-  mojom::blink::PaymentAddressPtr input = mojom::blink::PaymentAddress::New();
+  payments::mojom::blink::PaymentAddressPtr input =
+      payments::mojom::blink::PaymentAddress::New();
   input->country = "US";
   input->address_line.append("340 Main St");
   input->address_line.append("BIN1");
@@ -46,7 +47,8 @@ TEST(PaymentAddressTest, ValuesAreCopiedOver) {
 }
 
 TEST(PaymentAddressTest, IgnoreScriptCodeWithEmptyLanguageCode) {
-  mojom::blink::PaymentAddressPtr input = mojom::blink::PaymentAddress::New();
+  payments::mojom::blink::PaymentAddressPtr input =
+      payments::mojom::blink::PaymentAddress::New();
   input->script_code = "Latn";
 
   PaymentAddress output(std::move(input));
@@ -55,7 +57,8 @@ TEST(PaymentAddressTest, IgnoreScriptCodeWithEmptyLanguageCode) {
 }
 
 TEST(PaymentAddressTest, NoHyphenWithEmptyScriptCode) {
-  mojom::blink::PaymentAddressPtr input = mojom::blink::PaymentAddress::New();
+  payments::mojom::blink::PaymentAddressPtr input =
+      payments::mojom::blink::PaymentAddress::New();
   input->language_code = "en";
 
   PaymentAddress output(std::move(input));

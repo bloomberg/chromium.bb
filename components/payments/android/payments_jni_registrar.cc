@@ -21,9 +21,8 @@ jboolean ValidatePaymentDetails(
   jlong buf_size = env->GetDirectBufferCapacity(buffer);
   mojo::Array<uint8_t> mojo_buffer = mojo::Array<uint8_t>::New(buf_size);
   memcpy(&mojo_buffer[0], buf_in, buf_size);
-  blink::mojom::PaymentDetailsPtr details;
-  if (!blink::mojom::PaymentDetails::Deserialize(std::move(mojo_buffer),
-                                                 &details))
+  mojom::PaymentDetailsPtr details;
+  if (!mojom::PaymentDetails::Deserialize(std::move(mojo_buffer), &details))
     return false;
   std::string unused_error_message;
   return payments::validatePaymentDetails(details, &unused_error_message);

@@ -71,7 +71,8 @@ TEST(AbortTest, FailedAbortShouldRejectAbortPromise) {
   request->abort(scope.getScriptState())
       .then(funcs.expectNoCall(), funcs.expectCall());
 
-  static_cast<mojom::blink::PaymentRequestClient*>(request)->OnAbort(false);
+  static_cast<payments::mojom::blink::PaymentRequestClient*>(request)->OnAbort(
+      false);
 }
 
 // After the browser is unable to abort the payment once, the second abort()
@@ -85,7 +86,8 @@ TEST(AbortTest, CanAbortAgainAfterFirstAbortRejected) {
       buildPaymentDetailsForTest(), scope.getExceptionState());
   request->show(scope.getScriptState());
   request->abort(scope.getScriptState());
-  static_cast<mojom::blink::PaymentRequestClient*>(request)->OnAbort(false);
+  static_cast<payments::mojom::blink::PaymentRequestClient*>(request)->OnAbort(
+      false);
 
   request->abort(scope.getScriptState())
       .then(funcs.expectNoCall(), funcs.expectNoCall());
@@ -106,7 +108,8 @@ TEST(AbortTest, SuccessfulAbortShouldRejectShowPromiseAndResolveAbortPromise) {
   request->abort(scope.getScriptState())
       .then(funcs.expectCall(), funcs.expectNoCall());
 
-  static_cast<mojom::blink::PaymentRequestClient*>(request)->OnAbort(true);
+  static_cast<payments::mojom::blink::PaymentRequestClient*>(request)->OnAbort(
+      true);
 }
 
 }  // namespace

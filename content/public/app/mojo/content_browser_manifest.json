@@ -67,7 +67,6 @@
           "autofill::mojom::AutofillDriver",
           "autofill::mojom::PasswordManagerDriver",
           "blink::mojom::MediaSessionService",
-          "blink::mojom::PaymentRequest",
           "blink::mojom::PermissionService",
           "blink::mojom::PresentationService",
           "blink::mojom::SensitiveInputVisibilityService",
@@ -86,7 +85,8 @@
           "media::mojom::InterfaceFactory",
           "media::mojom::RemoterFactory",
           "media::mojom::Renderer",
-          "mojom::MediaDevicesDispatcherHost"
+          "mojom::MediaDevicesDispatcherHost",
+          "payments::mojom::PaymentRequest"
         ]
       },
       "requires": {

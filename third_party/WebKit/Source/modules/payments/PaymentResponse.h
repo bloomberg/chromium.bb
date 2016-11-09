@@ -29,7 +29,8 @@ class MODULES_EXPORT PaymentResponse final
   WTF_MAKE_NONCOPYABLE(PaymentResponse);
 
  public:
-  PaymentResponse(mojom::blink::PaymentResponsePtr, PaymentCompleter*);
+  PaymentResponse(payments::mojom::blink::PaymentResponsePtr,
+                  PaymentCompleter*);
   virtual ~PaymentResponse();
 
   ScriptValue toJSONForBinding(ScriptState*) const;

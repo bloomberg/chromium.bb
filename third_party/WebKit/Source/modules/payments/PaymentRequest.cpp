@@ -35,22 +35,22 @@
 
 namespace mojo {
 
-using blink::mojom::blink::PaymentCurrencyAmount;
-using blink::mojom::blink::PaymentCurrencyAmountPtr;
-using blink::mojom::blink::PaymentDetails;
-using blink::mojom::blink::PaymentDetailsModifier;
-using blink::mojom::blink::PaymentDetailsModifierPtr;
-using blink::mojom::blink::PaymentDetailsPtr;
-using blink::mojom::blink::PaymentErrorReason;
-using blink::mojom::blink::PaymentItem;
-using blink::mojom::blink::PaymentItemPtr;
-using blink::mojom::blink::PaymentMethodData;
-using blink::mojom::blink::PaymentMethodDataPtr;
-using blink::mojom::blink::PaymentOptions;
-using blink::mojom::blink::PaymentOptionsPtr;
-using blink::mojom::blink::PaymentShippingOption;
-using blink::mojom::blink::PaymentShippingOptionPtr;
-using blink::mojom::blink::PaymentShippingType;
+using payments::mojom::blink::PaymentCurrencyAmount;
+using payments::mojom::blink::PaymentCurrencyAmountPtr;
+using payments::mojom::blink::PaymentDetails;
+using payments::mojom::blink::PaymentDetailsModifier;
+using payments::mojom::blink::PaymentDetailsModifierPtr;
+using payments::mojom::blink::PaymentDetailsPtr;
+using payments::mojom::blink::PaymentErrorReason;
+using payments::mojom::blink::PaymentItem;
+using payments::mojom::blink::PaymentItemPtr;
+using payments::mojom::blink::PaymentMethodData;
+using payments::mojom::blink::PaymentMethodDataPtr;
+using payments::mojom::blink::PaymentOptions;
+using payments::mojom::blink::PaymentOptionsPtr;
+using payments::mojom::blink::PaymentShippingOption;
+using payments::mojom::blink::PaymentShippingOptionPtr;
+using payments::mojom::blink::PaymentShippingType;
 
 template <>
 struct TypeConverter<PaymentCurrencyAmountPtr, blink::PaymentCurrencyAmount> {
@@ -418,8 +418,8 @@ String getValidShippingType(const String& shippingType) {
   return validValues[0];
 }
 
-mojom::blink::PaymentDetailsPtr maybeKeepShippingOptions(
-    mojom::blink::PaymentDetailsPtr details,
+payments::mojom::blink::PaymentDetailsPtr maybeKeepShippingOptions(
+    payments::mojom::blink::PaymentDetailsPtr details,
     bool keep) {
   if (!keep)
     details->shipping_options.resize(0);
@@ -455,12 +455,13 @@ bool allowedToUsePaymentRequest(const Frame* frame) {
   return false;
 }
 
-WTF::Vector<mojom::blink::PaymentMethodDataPtr> ConvertPaymentMethodData(
+WTF::Vector<payments::mojom::blink::PaymentMethodDataPtr>
+ConvertPaymentMethodData(
     const Vector<PaymentRequest::MethodData>& blinkMethods) {
-  WTF::Vector<mojom::blink::PaymentMethodDataPtr> mojoMethods(
+  WTF::Vector<payments::mojom::blink::PaymentMethodDataPtr> mojoMethods(
       blinkMethods.size());
   for (size_t i = 0; i < blinkMethods.size(); ++i) {
-    mojoMethods[i] = mojom::blink::PaymentMethodData::New();
+    mojoMethods[i] = payments::mojom::blink::PaymentMethodData::New();
     mojoMethods[i]->supported_methods =
         WTF::Vector<WTF::String>(blinkMethods[i].supportedMethods);
     mojoMethods[i]->stringified_data = blinkMethods[i].stringifiedData;
@@ -562,7 +563,7 @@ ScriptPromise PaymentRequest::complete(ScriptState* scriptState,
   m_completeTimer.stop();
 
   // The payment provider should respond in PaymentRequest::OnComplete().
-  m_paymentProvider->Complete(mojom::blink::PaymentComplete(result));
+  m_paymentProvider->Complete(payments::mojom::blink::PaymentComplete(result));
 
   m_completeResolver = ScriptPromiseResolver::create(scriptState);
   return m_completeResolver->promise();
@@ -601,7 +602,8 @@ void PaymentRequest::onUpdatePaymentDetails(
   }
 
   m_paymentProvider->UpdateWith(maybeKeepShippingOptions(
-      mojom::blink::PaymentDetails::From(details), keepShippingOptions));
+      payments::mojom::blink::PaymentDetails::From(details),
+      keepShippingOptions));
 }
 
 void PaymentRequest::onUpdatePaymentDetailsFailure(const String& error) {
@@ -674,14 +676,14 @@ PaymentRequest::PaymentRequest(ScriptState* scriptState,
       mojo::GetProxy(&m_paymentProvider));
   m_paymentProvider.set_connection_error_handler(convertToBaseCallback(
       WTF::bind(&PaymentRequest::OnError, wrapWeakPersistent(this),
-                mojom::blink::PaymentErrorReason::UNKNOWN)));
+                payments::mojom::blink::PaymentErrorReason::UNKNOWN)));
   m_paymentProvider->Init(
       m_clientBinding.CreateInterfacePtrAndBind(),
       ConvertPaymentMethodData(validatedMethodData),
       maybeKeepShippingOptions(
-          mojom::blink::PaymentDetails::From(details),
+          payments::mojom::blink::PaymentDetails::From(details),
           keepShippingOptions && m_options.requestShipping()),
-      mojom::blink::PaymentOptions::From(m_options));
+      payments::mojom::blink::PaymentOptions::From(m_options));
 }
 
 void PaymentRequest::contextDestroyed() {
@@ -689,7 +691,7 @@ void PaymentRequest::contextDestroyed() {
 }
 
 void PaymentRequest::OnShippingAddressChange(
-    mojom::blink::PaymentAddressPtr address) {
+    payments::mojom::blink::PaymentAddressPtr address) {
   DCHECK(m_showResolver);
   DCHECK(!m_completeResolver);
 
@@ -724,7 +726,7 @@ void PaymentRequest::OnShippingOptionChange(const String& shippingOptionId) {
 }
 
 void PaymentRequest::OnPaymentResponse(
-    mojom::blink::PaymentResponsePtr response) {
+    payments::mojom::blink::PaymentResponsePtr response) {
   DCHECK(m_showResolver);
   DCHECK(!m_completeResolver);
   DCHECK(!m_completeTimer.isActive());
@@ -786,15 +788,15 @@ void PaymentRequest::OnError(mojo::PaymentErrorReason error) {
   String message;
 
   switch (error) {
-    case mojom::blink::PaymentErrorReason::USER_CANCEL:
+    case payments::mojom::blink::PaymentErrorReason::USER_CANCEL:
       message = "Request cancelled";
       break;
-    case mojom::blink::PaymentErrorReason::NOT_SUPPORTED:
+    case payments::mojom::blink::PaymentErrorReason::NOT_SUPPORTED:
       isError = true;
       ec = NotSupportedError;
       message = "The payment method is not supported";
       break;
-    case mojom::blink::PaymentErrorReason::UNKNOWN:
+    case payments::mojom::blink::PaymentErrorReason::UNKNOWN:
       isError = true;
       ec = UnknownError;
       message = "Request failed";
@@ -848,7 +850,7 @@ void PaymentRequest::OnAbort(bool abortedSuccessfully) {
 }
 
 void PaymentRequest::onCompleteTimeout(TimerBase*) {
-  m_paymentProvider->Complete(mojom::blink::PaymentComplete(Fail));
+  m_paymentProvider->Complete(payments::mojom::blink::PaymentComplete(Fail));
   clearResolversAndCloseMojoConnection();
 }
 

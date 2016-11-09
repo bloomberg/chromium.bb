@@ -23,7 +23,7 @@ class MODULES_EXPORT PaymentAddress final
   WTF_MAKE_NONCOPYABLE(PaymentAddress);
 
  public:
-  explicit PaymentAddress(mojom::blink::PaymentAddressPtr);
+  explicit PaymentAddress(payments::mojom::blink::PaymentAddressPtr);
   virtual ~PaymentAddress();
 
   ScriptValue toJSONForBinding(ScriptState*) const;

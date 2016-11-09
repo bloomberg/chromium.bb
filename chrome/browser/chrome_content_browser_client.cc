@@ -2971,7 +2971,7 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
   if (web_contents) {
     registry->AddInterface(
         web_contents->GetJavaInterfaces()
-            ->CreateInterfaceFactory<blink::mojom::PaymentRequest>());
+            ->CreateInterfaceFactory<payments::mojom::PaymentRequest>());
     registry->AddInterface(
         base::Bind(&ForwardShareServiceRequest,
                    web_contents->GetJavaInterfaces()->GetWeakPtr()));
