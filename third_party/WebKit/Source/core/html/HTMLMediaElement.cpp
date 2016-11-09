@@ -2136,26 +2136,33 @@ void HTMLMediaElement::setPreload(const AtomicString& preload) {
 }
 
 WebMediaPlayer::Preload HTMLMediaElement::preloadType() const {
-  // Force preload to none for cellular connections or when data saver is
-  // explicitly set.
-  if (networkStateNotifier().isCellularConnectionType() ||
-      (document().settings() &&
-       (document().settings()->dataSaverEnabled() ||
-        document().settings()->forcePreloadNoneForMediaElements()))) {
-    UseCounter::count(document(),
-                      UseCounter::HTMLMediaElementPreloadForcedNone);
-    return WebMediaPlayer::PreloadNone;
-  }
-
   const AtomicString& preload = fastGetAttribute(preloadAttr);
   if (equalIgnoringCase(preload, "none")) {
     UseCounter::count(document(), UseCounter::HTMLMediaElementPreloadNone);
     return WebMediaPlayer::PreloadNone;
   }
+
+  // Force preload to 'none' on Data Saver and for low end devices.
+  if (document().settings() &&
+      (document().settings()->dataSaverEnabled() ||
+       document().settings()->forcePreloadNoneForMediaElements())) {
+    UseCounter::count(document(),
+                      UseCounter::HTMLMediaElementPreloadForcedNone);
+    return WebMediaPlayer::PreloadNone;
+  }
+
   if (equalIgnoringCase(preload, "metadata")) {
     UseCounter::count(document(), UseCounter::HTMLMediaElementPreloadMetadata);
     return WebMediaPlayer::PreloadMetaData;
   }
+
+  // Force preload to 'metadata' on cellular connections.
+  if (networkStateNotifier().isCellularConnectionType()) {
+    UseCounter::count(document(),
+                      UseCounter::HTMLMediaElementPreloadForcedMetadata);
+    return WebMediaPlayer::PreloadMetaData;
+  }
+
   if (equalIgnoringCase(preload, "auto")) {
     UseCounter::count(document(), UseCounter::HTMLMediaElementPreloadAuto);
     return WebMediaPlayer::PreloadAuto;
@@ -3899,10 +3906,13 @@ bool HTMLMediaElement::isGestureNeededForPlayback() const {
   // We want to allow muted video to autoplay if:
   // - the flag is enabled;
   // - Data Saver is not enabled;
+  // - Preload was not disabled (low end devices);
   // - Autoplay is enabled in settings;
   if (isHTMLVideoElement() && muted() &&
       RuntimeEnabledFeatures::autoplayMutedVideosEnabled() &&
       !(document().settings() && document().settings()->dataSaverEnabled()) &&
+      !(document().settings() &&
+        document().settings()->forcePreloadNoneForMediaElements()) &&
       isAutoplayAllowedPerSettings()) {
     return false;
   }

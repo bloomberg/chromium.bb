@@ -1385,6 +1385,7 @@ class CORE_EXPORT UseCounter {
     V8RTCSessionDescription_Sdp_AttributeSetter = 1676,
     RTCSessionDescriptionInitNoType = 1677,
     RTCSessionDescriptionInitNoSdp = 1678,
+    HTMLMediaElementPreloadForcedMetadata = 1679,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
