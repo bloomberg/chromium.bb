@@ -230,13 +230,15 @@ SCRIPT_TESTS = [
 ]
 
 def add_tester(waterfall, name, perf_id, platform, target_bits=64,
-              num_host_shards=1, num_device_shards=1, swarming=None):
+              num_host_shards=1, num_device_shards=1, swarming=None,
+              use_whitelist=False):
   del perf_id # this will be needed
   waterfall['testers'][name] = {
     'platform': platform,
     'num_device_shards': num_device_shards,
     'num_host_shards': num_host_shards,
     'target_bits': target_bits,
+    'use_whitelist': use_whitelist
   }
 
   if swarming:
@@ -252,14 +254,31 @@ def get_fyi_waterfall_config():
     'android-galaxy-s5-perf', 'android')
   waterfall = add_tester(
     waterfall, 'Win 10 Low-End Perf Tests',
-    'win-low-end-2-core', 'win',
+    'win-10-low-end', 'win',
     swarming=[
       {
        'gpu': '1002:9874',
        'os': 'Windows-10-10586',
-       'device_ids': ['build171-b4', 'build186-b4']
+       'device_ids': [
+           'build171-b4', 'build186-b4', 'build202-b4', 'build203-b4',
+           'build204-b4', 'build205-b4', 'build206-b4', 'build207-b4',
+           'build208-b4', 'build209-b4', 'build210-b4', 'build211-b4',
+           'build212-b4', 'build213-b4', 'build214-b4', 'build215-b4',
+           'build216-b4', 'build217-b4', 'build218-b4', 'build219-b4',
+           'build220-b4', 'build221-b4']
       }
     ])
+  waterfall = add_tester(
+    waterfall, 'Win 10 4 Core Low-End Perf Tests',
+    'win-10-4-core-low-end', 'win',
+    swarming=[
+      {
+       'gpu': '8086:22b1',
+       'os': 'Windows-10-10586',
+       'device_ids': ['build47-b4', 'build48-b4']
+      }
+    ],
+    use_whitelist=True)
   return waterfall
 
 def get_waterfall_config():
@@ -418,7 +437,8 @@ def generate_script_tests(master, tester_name, shard):
       script_tests.append(script)
   return script_tests
 
-def generate_telemetry_tests(tester_config, benchmarks, benchmark_sharding_map):
+def generate_telemetry_tests(
+  tester_config, benchmarks, benchmark_sharding_map, use_whitelist):
   isolated_scripts = []
   # First determine the browser that you need based on the tester
   browser_name = ''
@@ -430,20 +450,29 @@ def generate_telemetry_tests(tester_config, benchmarks, benchmark_sharding_map):
   else:
     browser_name ='release'
 
+  # Our current configuration only ever has one set of swarming dimensions
+  # Make sure this still holds true
+  if len(tester_config['swarming_dimensions']) > 1:
+    raise Exception('Invalid assumption on number of swarming dimensions')
+  num_shards = len(tester_config['swarming_dimensions'][0]['device_ids'])
+  current_shard = 0
   for benchmark in benchmarks:
     # First figure out swarming dimensions this test needs to be triggered on.
     # For each set of dimensions it is only triggered on one of the devices
     swarming_dimensions = []
     for dimension in tester_config['swarming_dimensions']:
-      num_shards = len(dimension['device_ids'])
+      #num_shards = len(dimension['device_ids'])
       sharding_map = benchmark_sharding_map.get(str(num_shards), None)
-      if not sharding_map:
+      if not sharding_map and not use_whitelist:
         raise Exception('Invalid number of shards, generate new sharding map')
-      device_affinity = sharding_map.get(benchmark.Name(), None)
+      device_affinity = None
+      if use_whitelist:
+        device_affinity = current_shard
+      else:
+        device_affinity = sharding_map.get(benchmark.Name(), None)
       if device_affinity is None:
         raise Exception('Device affinity for benchmark %s not found'
           % benchmark.Name())
-
       device_id = dimension['device_ids'][device_affinity]
       # Id is unique within the swarming pool so it is the only needed
       # identifier for the bot to run the test on
@@ -461,6 +490,10 @@ def generate_telemetry_tests(tester_config, benchmarks, benchmark_sharding_map):
     reference_test = generate_telemetry_test(
       swarming_dimensions, benchmark.Name(),'reference')
     isolated_scripts.append(reference_test)
+    if current_shard == (num_shards - 1):
+      current_shard = 0
+    else:
+      current_shard += 1
 
   return isolated_scripts
 
@@ -558,22 +591,28 @@ def shard_benchmarks(num_shards, all_benchmarks):
   return benchmark_to_shard_dict
 
 
-def generate_all_tests(waterfall, use_whitelist):
+def generate_all_tests(waterfall):
   tests = {}
   for builder in waterfall['builders']:
     tests[builder] = {}
-  all_benchmarks = current_benchmarks(use_whitelist)
+  all_benchmarks = current_benchmarks(False)
+  whitelist_benchmarks = current_benchmarks(True)
   # Get benchmark sharding according to common sharding configurations
   # Currently we only have bots sharded 5 directions and 1 direction
   benchmark_sharding_map = {}
+  benchmark_sharding_map['22'] = shard_benchmarks(22, all_benchmarks)
   benchmark_sharding_map['5'] = shard_benchmarks(5, all_benchmarks)
   benchmark_sharding_map['1'] = shard_benchmarks(1, all_benchmarks)
 
   for name, config in waterfall['testers'].iteritems():
+    use_whitelist = config['use_whitelist']
+    benchmark_list = all_benchmarks
+    if use_whitelist:
+      benchmark_list = whitelist_benchmarks
     if config.get('swarming', False):
       # Right now we are only generating benchmarks for the fyi waterfall
       isolated_scripts = generate_telemetry_tests(
-          config, all_benchmarks, benchmark_sharding_map)
+          config, benchmark_list, benchmark_sharding_map, use_whitelist)
       tests[name] = {
         'isolated_scripts': sorted(isolated_scripts, key=lambda x: x['name'])
       }
@@ -608,8 +647,8 @@ def main():
   fyi_waterfall = get_fyi_waterfall_config()
   fyi_waterfall['name'] = 'chromium.perf.fyi'
 
-  generate_all_tests(fyi_waterfall, True)
-  generate_all_tests(waterfall, False)
+  generate_all_tests(fyi_waterfall)
+  generate_all_tests(waterfall)
   return 0
 
 if __name__ == '__main__':
