@@ -919,7 +919,7 @@ void LoggingCanvas::willRestore() {
 }
 
 std::unique_ptr<JSONArray> LoggingCanvas::log() {
-  return JSONArray::cast(m_log->clone());
+  return JSONArray::from(m_log->clone());
 }
 
 #ifndef NDEBUG

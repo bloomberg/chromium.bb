@@ -904,7 +904,7 @@ std::unique_ptr<JSONArray> parseJSONHeader(const String& header) {
   sb.append(header);
   sb.append("]");
   std::unique_ptr<JSONValue> headerValue = parseJSON(sb.toString());
-  return JSONArray::cast(std::move(headerValue));
+  return JSONArray::from(std::move(headerValue));
 }
 
 }  // namespace blink

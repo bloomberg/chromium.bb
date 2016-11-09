@@ -177,9 +177,15 @@ class PLATFORM_EXPORT JSONObject : public JSONValue {
     return static_cast<JSONObject*>(value);
   }
 
-  static std::unique_ptr<JSONObject> cast(std::unique_ptr<JSONValue> value) {
-    return wrapUnique(JSONObject::cast(value.release()));
+  static std::unique_ptr<JSONObject> from(std::unique_ptr<JSONValue> value) {
+    auto maybeObject = wrapUnique(JSONObject::cast(value.get()));
+    if (maybeObject)
+      value.release();
+    return maybeObject;
   }
+
+  static void cast(JSONObject*) = delete;
+  static void cast(std::unique_ptr<JSONObject>) = delete;
 
   void writeJSON(StringBuilder* output) const override;
   std::unique_ptr<JSONValue> clone() const override;
@@ -240,9 +246,15 @@ class PLATFORM_EXPORT JSONArray : public JSONValue {
     return static_cast<JSONArray*>(value);
   }
 
-  static std::unique_ptr<JSONArray> cast(std::unique_ptr<JSONValue> value) {
-    return wrapUnique(JSONArray::cast(value.release()));
+  static std::unique_ptr<JSONArray> from(std::unique_ptr<JSONValue> value) {
+    auto maybeArray = wrapUnique(JSONArray::cast(value.get()));
+    if (maybeArray)
+      value.release();
+    return maybeArray;
   }
+
+  static void cast(JSONArray*) = delete;
+  static void cast(std::unique_ptr<JSONArray>) = delete;
 
   ~JSONArray() override;
 

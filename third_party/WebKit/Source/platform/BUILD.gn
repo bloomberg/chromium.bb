@@ -1705,6 +1705,7 @@ test("blink_platform_unittests") {
     "image-decoders/jpeg/JPEGImageDecoderTest.cpp",
     "image-decoders/webp/WEBPImageDecoderTest.cpp",
     "json/JSONParserTest.cpp",
+    "json/JSONValuesTest.cpp",
     "mac/VersionUtilMacTest.mm",
     "mojo/CommonCustomTypesStructTraitsTest.cpp",
     "mojo/GeometryStructTraitsTest.cpp",
