@@ -55,16 +55,6 @@ struct swap_integer_request_10_7 {
 };
 #pragma pack(pop)
 
-// TODO(rsesek): Libc provides strnlen() starting in 10.7.
-size_t strnlen(const char* str, size_t maxlen) {
-  size_t len = 0;
-  for (; len < maxlen; ++len, ++str) {
-    if (*str == '\0')
-      break;
-  }
-  return len;
-}
-
 class OSCompatibility_10_7 : public OSCompatibility {
  public:
   OSCompatibility_10_7() {}
