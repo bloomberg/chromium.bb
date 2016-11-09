@@ -39,6 +39,11 @@ AnimationWorklet* WindowAnimationWorklet::animationWorklet() {
   return m_animationWorklet.get();
 }
 
+void WindowAnimationWorklet::frameDestroyed() {
+  m_animationWorklet.clear();
+  DOMWindowProperty::frameDestroyed();
+}
+
 DEFINE_TRACE(WindowAnimationWorklet) {
   visitor->trace(m_animationWorklet);
   Supplement<LocalDOMWindow>::trace(visitor);

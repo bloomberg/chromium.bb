@@ -28,6 +28,8 @@ class MODULES_EXPORT WindowAnimationWorklet final
   static Worklet* animationWorklet(DOMWindow&);
   AnimationWorklet* animationWorklet();
 
+  void frameDestroyed() override;
+
   DECLARE_TRACE();
 
  private:
