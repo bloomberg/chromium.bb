@@ -60,11 +60,6 @@
 }
 
 - (void)updateActiveURL:(const GURL&)url {
-#if defined(OS_IOS)
-  // Handoff is only available on iOS 8+.
-  DCHECK(base::ios::IsRunningOnIOS8OrLater());
-#endif
-
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   // Handoff is only available on OSX 10.10+.
   DCHECK(base::mac::IsAtLeastOS10_10());
