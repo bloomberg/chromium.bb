@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -62,6 +62,11 @@ bool IsFrameUnpackedOrInverted(webrtc::DesktopFrame* frame) {
 }
 
 }  // namespace
+
+#if defined(OS_WIN)
+const base::Feature kDirectXCapturer{"DirectXCapturer",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
  public:
@@ -367,8 +372,7 @@ std::unique_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
   options.set_disable_effects(false);
 
 #if defined(OS_WIN)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableDirectXScreenCapturer)) {
+  if (!base::FeatureList::IsEnabled(kDirectXCapturer)) {
     options.set_allow_use_magnification_api(true);
   } else {
     options.set_allow_directx_capturer(true);
