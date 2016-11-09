@@ -61,17 +61,12 @@ ZygoteHandle g_ppapi_zygote;
 class PpapiPluginSandboxedProcessLauncherDelegate
     : public content::SandboxedProcessLauncherDelegate {
  public:
-  PpapiPluginSandboxedProcessLauncherDelegate(bool is_broker,
-                                              ChildProcessHost* host)
-#if defined(OS_WIN)
-      : is_broker_(is_broker) {
-#elif defined(OS_MACOSX) || defined(OS_ANDROID)
-      : ipc_fd_(host->TakeClientFileDescriptor()) {
-#elif defined(OS_POSIX)
-      : ipc_fd_(host->TakeClientFileDescriptor()), is_broker_(is_broker) {
-#else
-  {
+  explicit PpapiPluginSandboxedProcessLauncherDelegate(bool is_broker)
+#if (defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)) || \
+    defined(OS_WIN)
+      : is_broker_(is_broker)
 #endif
+  {
   }
 
   ~PpapiPluginSandboxedProcessLauncherDelegate() override {}
@@ -114,8 +109,7 @@ class PpapiPluginSandboxedProcessLauncherDelegate
     return true;
   }
 
-#elif defined(OS_POSIX)
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#elif defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   ZygoteHandle* GetZygote() override {
     const base::CommandLine& browser_command_line =
         *base::CommandLine::ForCurrentProcess();
@@ -125,9 +119,6 @@ class PpapiPluginSandboxedProcessLauncherDelegate
       return nullptr;
     return GetGenericZygote();
   }
-#endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
-
-  base::ScopedFD TakeIpcFd() override { return std::move(ipc_fd_); }
 #endif  // OS_WIN
 
   SandboxType GetSandboxType() override {
@@ -135,9 +126,6 @@ class PpapiPluginSandboxedProcessLauncherDelegate
   }
 
  private:
-#if defined(OS_POSIX)
-  base::ScopedFD ipc_fd_;
-#endif  // OS_POSIX
 #if (defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)) || \
     defined(OS_WIN)
   bool is_broker_;
@@ -447,8 +435,7 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
   // On posix, never use the zygote for the broker. Also, only use the zygote if
   // we are not using a plugin launcher - having a plugin launcher means we need
   // to use another process instead of just forking the zygote.
-  process_->Launch(new PpapiPluginSandboxedProcessLauncherDelegate(
-                       is_broker_, process_->GetHost()),
+  process_->Launch(new PpapiPluginSandboxedProcessLauncherDelegate(is_broker_),
                    cmd_line, true);
   return true;
 }

@@ -57,9 +57,6 @@ class CONTENT_EXPORT SandboxedProcessLauncherDelegate {
 
   // Override this if the process needs a non-empty environment map.
   virtual base::EnvironmentMap GetEnvironment();
-
-  // Return the file descriptor for the IPC channel.
-  virtual base::ScopedFD TakeIpcFd() = 0;
 #endif
 
   // Returns the SandboxType to enforce on the process, or SANDBOX_TYPE_INVALID

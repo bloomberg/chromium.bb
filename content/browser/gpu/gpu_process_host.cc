@@ -202,13 +202,12 @@ void SendGpuProcessMessageByHostId(int host_id, IPC::Message* message) {
 class GpuSandboxedProcessLauncherDelegate
     : public SandboxedProcessLauncherDelegate {
  public:
-  GpuSandboxedProcessLauncherDelegate(base::CommandLine* cmd_line,
-                                      ChildProcessHost* host)
+  explicit GpuSandboxedProcessLauncherDelegate(base::CommandLine* cmd_line)
 #if defined(OS_WIN)
-      : cmd_line_(cmd_line) {}
-#elif defined(OS_POSIX)
-      : ipc_fd_(host->TakeClientFileDescriptor()) {}
+      : cmd_line_(cmd_line)
 #endif
+  {
+  }
 
   ~GpuSandboxedProcessLauncherDelegate() override {}
 
@@ -289,9 +288,6 @@ class GpuSandboxedProcessLauncherDelegate
 
     return true;
   }
-#elif defined(OS_POSIX)
-
-  base::ScopedFD TakeIpcFd() override { return std::move(ipc_fd_); }
 #endif  // OS_WIN
 
   SandboxType GetSandboxType() override {
@@ -301,8 +297,6 @@ class GpuSandboxedProcessLauncherDelegate
  private:
 #if defined(OS_WIN)
   base::CommandLine* cmd_line_;
-#elif defined(OS_POSIX)
-  base::ScopedFD ipc_fd_;
 #endif  // OS_WIN
 };
 
@@ -1049,9 +1043,8 @@ bool GpuProcessHost::LaunchGpuProcess(gpu::GpuPreferences* gpu_preferences) {
   if (!gpu_launcher.empty())
     cmd_line->PrependWrapper(gpu_launcher);
 
-  process_->Launch(
-      new GpuSandboxedProcessLauncherDelegate(cmd_line, process_->GetHost()),
-      cmd_line, true);
+  process_->Launch(new GpuSandboxedProcessLauncherDelegate(cmd_line), cmd_line,
+                   true);
   process_launched_ = true;
 
   UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessLifetimeEvents",

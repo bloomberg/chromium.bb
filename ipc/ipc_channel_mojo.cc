@@ -404,16 +404,6 @@ void ChannelMojo::OnMessageReceived(const Message& message) {
     listener_->OnBadMessageReceived(message);
 }
 
-#if defined(OS_POSIX) && !defined(OS_NACL_SFI)
-int ChannelMojo::GetClientFileDescriptor() const {
-  return -1;
-}
-
-base::ScopedFD ChannelMojo::TakeClientFileDescriptor() {
-  return base::ScopedFD(GetClientFileDescriptor());
-}
-#endif  // defined(OS_POSIX) && !defined(OS_NACL_SFI)
-
 // static
 MojoResult ChannelMojo::ReadFromMessageAttachmentSet(
     Message* message,

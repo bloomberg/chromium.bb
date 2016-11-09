@@ -228,9 +228,6 @@ class IPC_EXPORT Channel : public Endpoint {
   // connection and listen for new ones, use ResetToAcceptingConnectionState.
   virtual void Close() = 0;
 
-  // Get its own process id. This value is told to the peer.
-  virtual base::ProcessId GetSelfPID() const = 0;
-
   // Gets a helper for associating Mojo interfaces with this Channel.
   //
   // NOTE: Not all implementations support this.
@@ -243,31 +240,9 @@ class IPC_EXPORT Channel : public Endpoint {
   // deleted once the contents of the Message have been sent.
   bool Send(Message* message) override = 0;
 
-  // NaCl in Non-SFI mode runs on Linux directly, and the following functions
-  // compiled on Linux are also needed. Please see also comments in
-  // components/nacl_nonsfi.gyp for more details.
-#if defined(OS_POSIX) && !defined(OS_NACL_SFI)
-  // On POSIX an IPC::Channel wraps a socketpair(), this method returns the
-  // FD # for the client end of the socket.
-  // This method may only be called on the server side of a channel.
-  // This method can be called on any thread.
-  virtual int GetClientFileDescriptor() const = 0;
-
-  // Same as GetClientFileDescriptor, but transfers the ownership of the
-  // file descriptor to the caller.
-  // This method can be called on any thread.
-  virtual base::ScopedFD TakeClientFileDescriptor() = 0;
-#endif
-
 #if !defined(OS_NACL_SFI)
   // Generates a channel ID that's non-predictable and unique.
   static std::string GenerateUniqueRandomChannelID();
-
-  // Generates a channel ID that, if passed to the client as a shared secret,
-  // will validate that the client's authenticity. On platforms that do not
-  // require additional this is simply calls GenerateUniqueRandomChannelID().
-  // For portability the prefix should not include the \ character.
-  static std::string GenerateVerifiedChannelID(const std::string& prefix);
 #endif
 
   // Deprecated: Create a mojo::MessagePipe directly and release() its handles

@@ -43,7 +43,6 @@ class ChannelNacl : public Channel,
 
   // Channel implementation.
   base::ProcessId GetPeerPID() const override;
-  base::ProcessId GetSelfPID() const override;
   bool Connect() override;
   void Close() override;
   bool Send(Message* message) override;

@@ -91,12 +91,6 @@ class TestSink : public Channel {
   bool Connect() override WARN_UNUSED_RESULT;
   void Close() override;
   base::ProcessId GetPeerPID() const override;
-  base::ProcessId GetSelfPID() const override;
-
-#if defined(OS_POSIX) && !defined(OS_NACL)
-  int GetClientFileDescriptor() const override;
-  base::ScopedFD TakeClientFileDescriptor() override;
-#endif  // defined(OS_POSIX) && !defined(OS_NACL)
 
   // Used by the source of the messages to send the message to the sink. This
   // will make a copy of the message and store it in the list.

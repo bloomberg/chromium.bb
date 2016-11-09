@@ -475,8 +475,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     setlocale(LC_ALL, "");
 
     SetupSignalHandlers();
-    g_fds->Set(kPrimaryIPCChannel,
-               kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
     g_fds->Set(kMojoIPCChannel,
                kMojoIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
 #endif  // !OS_ANDROID

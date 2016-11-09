@@ -177,12 +177,6 @@ bool ChildProcessHostImpl::IsChannelOpening() {
   return opening_channel_;
 }
 
-#if defined(OS_POSIX)
-base::ScopedFD ChildProcessHostImpl::TakeClientFileDescriptor() {
-  return channel_->TakeClientFileDescriptor();
-}
-#endif
-
 bool ChildProcessHostImpl::Send(IPC::Message* message) {
   if (!channel_) {
     delete message;

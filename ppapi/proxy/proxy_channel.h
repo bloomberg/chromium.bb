@@ -102,10 +102,6 @@ class PPAPI_PROXY_EXPORT ProxyChannel
     return channel_.get();
   }
 
-#if defined(OS_POSIX) && !defined(OS_NACL)
-  base::ScopedFD TakeRendererFD();
-#endif
-
  protected:
   explicit ProxyChannel();
 

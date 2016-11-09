@@ -377,12 +377,7 @@ ZygoteHandle g_render_zygote;
 class RendererSandboxedProcessLauncherDelegate
     : public SandboxedProcessLauncherDelegate {
  public:
-  explicit RendererSandboxedProcessLauncherDelegate(IPC::ChannelProxy* channel)
-#if defined(OS_POSIX)
-      : ipc_fd_(channel->TakeClientFileDescriptor())
-#endif  // OS_POSIX
-  {
-  }
+  RendererSandboxedProcessLauncherDelegate() {}
 
   ~RendererSandboxedProcessLauncherDelegate() override {}
 
@@ -399,8 +394,7 @@ class RendererSandboxedProcessLauncherDelegate
     return GetContentClient()->browser()->PreSpawnRenderer(policy);
   }
 
-#elif defined(OS_POSIX)
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#elif defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   ZygoteHandle* GetZygote() override {
     const base::CommandLine& browser_command_line =
         *base::CommandLine::ForCurrentProcess();
@@ -410,16 +404,9 @@ class RendererSandboxedProcessLauncherDelegate
       return nullptr;
     return GetGenericZygote();
   }
-#endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
-  base::ScopedFD TakeIpcFd() override { return std::move(ipc_fd_); }
 #endif  // OS_WIN
 
   SandboxType GetSandboxType() override { return SANDBOX_TYPE_RENDERER; }
-
- private:
-#if defined(OS_POSIX)
-  base::ScopedFD ipc_fd_;
-#endif  // OS_POSIX
 };
 
 const char kSessionStorageHolderKey[] = "kSessionStorageHolderKey";
@@ -893,9 +880,8 @@ bool RenderProcessHostImpl::Init() {
     // As long as there's no renderer prefix, we can use the zygote process
     // at this stage.
     child_process_launcher_.reset(new ChildProcessLauncher(
-        new RendererSandboxedProcessLauncherDelegate(channel_.get()), cmd_line,
-        GetID(), this, child_token_,
-        base::Bind(&RenderProcessHostImpl::OnMojoError, id_)));
+        new RendererSandboxedProcessLauncherDelegate(), cmd_line, GetID(), this,
+        child_token_, base::Bind(&RenderProcessHostImpl::OnMojoError, id_)));
     channel_->Pause();
 
     fast_shutdown_started_ = false;

@@ -67,17 +67,16 @@ class UtilitySandboxedProcessLauncherDelegate
   UtilitySandboxedProcessLauncherDelegate(const base::FilePath& exposed_dir,
                                           bool launch_elevated,
                                           bool no_sandbox,
-                                          const base::EnvironmentMap& env,
-                                          ChildProcessHost* host)
+                                          const base::EnvironmentMap& env)
       : exposed_dir_(exposed_dir),
 #if defined(OS_WIN)
         launch_elevated_(launch_elevated)
 #elif defined(OS_POSIX)
-        env_(env),
+        env_(env)
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
-        no_sandbox_(no_sandbox),
+        ,
+        no_sandbox_(no_sandbox)
 #endif  // !defined(OS_MACOSX)  && !defined(OS_ANDROID)
-        ipc_fd_(host->TakeClientFileDescriptor())
 #endif  // OS_WIN
   {}
 
@@ -114,7 +113,6 @@ class UtilitySandboxedProcessLauncherDelegate
   }
 #endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
   base::EnvironmentMap GetEnvironment() override { return env_; }
-  base::ScopedFD TakeIpcFd() override { return std::move(ipc_fd_); }
 #endif  // OS_WIN
 
   SandboxType GetSandboxType() override {
@@ -131,7 +129,6 @@ class UtilitySandboxedProcessLauncherDelegate
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
   bool no_sandbox_;
 #endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
-  base::ScopedFD ipc_fd_;
 #endif  // OS_WIN
 };
 
@@ -341,8 +338,7 @@ bool UtilityProcessHostImpl::StartProcess() {
 #endif
 
     process_->Launch(new UtilitySandboxedProcessLauncherDelegate(
-                         exposed_dir_, run_elevated_, no_sandbox_, env_,
-                         process_->GetHost()),
+                         exposed_dir_, run_elevated_, no_sandbox_, env_),
                      cmd_line, true);
   }
 

@@ -478,12 +478,6 @@ NaClDesc* NaClIPCAdapter::MakeNaClDesc() {
   return MakeNaClDescCustom(this);
 }
 
-#if defined(OS_POSIX)
-base::ScopedFD NaClIPCAdapter::TakeClientFileDescriptor() {
-  return io_thread_data_.channel_->TakeClientFileDescriptor();
-}
-#endif
-
 bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
   uint32_t type = msg.type();
 

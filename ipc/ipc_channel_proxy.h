@@ -238,12 +238,6 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
   base::ProcessId GetPeerPID() const override;
   void OnSetAttachmentBrokerEndpoint() override;
 
-#if defined(OS_POSIX) && !defined(OS_NACL_SFI)
-  // Calls through to the underlying channel's methods.
-  int GetClientFileDescriptor();
-  base::ScopedFD TakeClientFileDescriptor();
-#endif
-
  protected:
   class Context;
   // A subclass uses this constructor if it needs to add more information

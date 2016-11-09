@@ -629,28 +629,6 @@ void ChannelProxy::OnSetAttachmentBrokerEndpoint() {
   context()->set_attachment_broker_endpoint(is_attachment_broker_endpoint());
 }
 
-#if defined(OS_POSIX) && !defined(OS_NACL_SFI)
-// See the TODO regarding lazy initialization of the channel in
-// ChannelProxy::Init().
-int ChannelProxy::GetClientFileDescriptor() {
-  DCHECK(CalledOnValidThread());
-
-  Channel* channel = context_.get()->channel_.get();
-  // Channel must have been created first.
-  DCHECK(channel) << context_.get()->channel_id_;
-  return channel->GetClientFileDescriptor();
-}
-
-base::ScopedFD ChannelProxy::TakeClientFileDescriptor() {
-  DCHECK(CalledOnValidThread());
-
-  Channel* channel = context_.get()->channel_.get();
-  // Channel must have been created first.
-  DCHECK(channel) << context_.get()->channel_id_;
-  return channel->TakeClientFileDescriptor();
-}
-#endif
-
 void ChannelProxy::OnChannelInit() {
 }
 

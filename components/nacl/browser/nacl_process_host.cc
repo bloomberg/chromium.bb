@@ -164,11 +164,7 @@ content::ZygoteHandle g_nacl_zygote;
 class NaClSandboxedProcessLauncherDelegate
     : public content::SandboxedProcessLauncherDelegate {
  public:
-  NaClSandboxedProcessLauncherDelegate(ChildProcessHost* host)
-#if defined(OS_POSIX)
-      : ipc_fd_(host->TakeClientFileDescriptor())
-#endif
-  {}
+  NaClSandboxedProcessLauncherDelegate() {}
 
   ~NaClSandboxedProcessLauncherDelegate() override {}
 
@@ -185,20 +181,11 @@ class NaClSandboxedProcessLauncherDelegate
       DLOG(WARNING) << "Failed to reserve address space for Native Client";
     }
   }
-#elif defined(OS_POSIX)
-#if !defined(OS_MACOSX)
+#elif defined(OS_POSIX) && !defined(OS_MACOSX)
   content::ZygoteHandle* GetZygote() override {
     return content::GetGenericZygote();
   }
-#endif  // !defined(OS_MACOSX)
-
-  base::ScopedFD TakeIpcFd() override { return std::move(ipc_fd_); }
 #endif  // OS_WIN
-
- private:
-#if defined(OS_POSIX)
-  base::ScopedFD ipc_fd_;
-#endif  // OS_POSIX
 };
 
 void CloseFile(base::File file) {
@@ -598,9 +585,8 @@ bool NaClProcessHost::LaunchSelLdr() {
     return true;
   }
 #endif
-  process_->Launch(
-      new NaClSandboxedProcessLauncherDelegate(process_->GetHost()),
-      cmd_line.release(), true);
+  process_->Launch(new NaClSandboxedProcessLauncherDelegate(),
+                   cmd_line.release(), true);
   return true;
 }
 

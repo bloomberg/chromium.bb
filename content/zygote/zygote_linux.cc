@@ -435,8 +435,6 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
       DLOG(ERROR) << "Failed to find kMojoIPCChannel in FD mapping";
       return -1;
     }
-    int ipc_channel_fd = LookUpFd(fd_mapping, kPrimaryIPCChannel);
-    DCHECK_EQ(-1, ipc_channel_fd);
     std::vector<int> fds;
     fds.push_back(mojo_channel_fd);  // kBrowserFDIndex
     fds.push_back(pid_oracle.get());  // kPIDOracleFDIndex

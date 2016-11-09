@@ -70,23 +70,6 @@ class FakeGpuProcess : public IPC::Channel {
     return base::kNullProcessId;
   }
 
-  base::ProcessId GetSelfPID() const override {
-    NOTREACHED();
-    return base::kNullProcessId;
-  }
-
-#if defined(OS_POSIX) && !defined(OS_NACL_SFI)
-  int GetClientFileDescriptor() const override {
-    NOTREACHED();
-    return 0;
-  }
-
-  base::ScopedFD TakeClientFileDescriptor() override {
-    NOTREACHED();
-    return base::ScopedFD();
-  }
-#endif
-
  private:
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 };

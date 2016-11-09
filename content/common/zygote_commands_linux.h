@@ -28,8 +28,7 @@ static const char kZygoteChildPingMessage[] = "CHILD_PING";
 const size_t kZygoteMaxMessageLength = 8192;
 
 // File descriptors initialized by the Zygote Host
-const int kZygoteSocketPairFd =
-    kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor;
+const int kZygoteSocketPairFd = base::GlobalDescriptors::kBaseDescriptor;
 
 // These are the command codes used on the wire between the browser and the
 // zygote.

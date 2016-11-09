@@ -53,13 +53,6 @@ void ProxyChannel::OnChannelError() {
   channel_.reset();
 }
 
-#if defined(OS_POSIX) && !defined(OS_NACL)
-base::ScopedFD ProxyChannel::TakeRendererFD() {
-  DCHECK(channel());
-  return channel()->TakeClientFileDescriptor();
-}
-#endif
-
 IPC::PlatformFileForTransit ProxyChannel::ShareHandleWithRemote(
       base::PlatformFile handle,
       bool should_close_source) {

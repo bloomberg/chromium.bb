@@ -74,13 +74,9 @@ class IPC_EXPORT ChannelMojo
   void Close() override;
   bool Send(Message* message) override;
   base::ProcessId GetPeerPID() const override;
-  base::ProcessId GetSelfPID() const override;
   Channel::AssociatedInterfaceSupport* GetAssociatedInterfaceSupport() override;
 
-#if defined(OS_POSIX) && !defined(OS_NACL_SFI)
-  int GetClientFileDescriptor() const override;
-  base::ScopedFD TakeClientFileDescriptor() override;
-#endif  // defined(OS_POSIX) && !defined(OS_NACL_SFI)
+  base::ProcessId GetSelfPID() const;
 
   // These access protected API of IPC::Message, which has ChannelMojo
   // as a friend class.

@@ -150,10 +150,6 @@ base::ProcessId ChannelNacl::GetPeerPID() const {
   return -1;
 }
 
-base::ProcessId ChannelNacl::GetSelfPID() const {
-  return -1;
-}
-
 bool ChannelNacl::Connect() {
   WillConnect();
 

@@ -101,11 +101,6 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
   // bind
   // interfaces exposed to it from the child.
   virtual service_manager::InterfaceProvider* GetRemoteInterfaces() = 0;
-
-#if defined(OS_POSIX)
-  // See IPC::Channel::TakeClientFileDescriptor.
-  virtual base::ScopedFD TakeClientFileDescriptor() = 0;
-#endif
 };
 
 };  // namespace content

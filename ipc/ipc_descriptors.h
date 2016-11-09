@@ -8,11 +8,8 @@
 // This is a list of global descriptor keys to be used with the
 // base::GlobalDescriptors object (see base/posix/global_descriptors.h)
 enum {
-  kPrimaryIPCChannel = 0,
-  kStatsTableSharedMemFd,
-
   // The first key that can be use to register descriptors.
-  kIPCDescriptorMax
+  kIPCDescriptorMax = 0
 };
 
 #endif  // IPC_IPC_DESCRIPTORS_H_
