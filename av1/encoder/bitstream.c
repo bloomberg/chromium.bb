@@ -3632,10 +3632,24 @@ static void write_bitdepth_colorspace_sampling(
   }
 }
 
+#if CONFIG_REFERENCE_BUFFER
+void write_sequence_header(SequenceHeader *seq_params) {
+  /* Placeholder for actually writing to the bitstream */
+  seq_params->frame_id_numbers_present_flag = FRAME_ID_NUMBERS_PRESENT_FLAG;
+  seq_params->frame_id_length_minus7 = FRAME_ID_LENGTH_MINUS7;
+  seq_params->delta_frame_id_length_minus2 = DELTA_FRAME_ID_LENGTH_MINUS2;
+}
+#endif
+
 static void write_uncompressed_header(AV1_COMP *cpi,
                                       struct aom_write_bit_buffer *wb) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
+
+#if CONFIG_REFERENCE_BUFFER
+  /* TODO: Move outside frame loop or inside key-frame branch */
+  write_sequence_header(&cpi->seq_params);
+#endif
 
   aom_wb_write_literal(wb, AOM_FRAME_MARKER, 2);
 
@@ -3670,6 +3684,14 @@ static void write_uncompressed_header(AV1_COMP *cpi,
   aom_wb_write_bit(wb, cm->frame_type);
   aom_wb_write_bit(wb, cm->show_frame);
   aom_wb_write_bit(wb, cm->error_resilient_mode);
+
+#if CONFIG_REFERENCE_BUFFER
+  cm->invalid_delta_frame_id_minus1 = 0;
+  if (cpi->seq_params.frame_id_numbers_present_flag) {
+    int FidLen = cpi->seq_params.frame_id_length_minus7 + 7;
+    aom_wb_write_literal(wb, cm->current_frame_id, FidLen);
+  }
+#endif
 
   if (cm->frame_type == KEY_FRAME) {
     write_sync_code(wb);
@@ -3732,6 +3754,21 @@ static void write_uncompressed_header(AV1_COMP *cpi,
         aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, ref_frame),
                              REF_FRAMES_LOG2);
         aom_wb_write_bit(wb, cm->ref_frame_sign_bias[ref_frame]);
+#if CONFIG_REFERENCE_BUFFER
+        if (cpi->seq_params.frame_id_numbers_present_flag) {
+          int i = get_ref_frame_map_idx(cpi, ref_frame);
+          int FidLen = cpi->seq_params.frame_id_length_minus7 + 7;
+          int DiffLen = cpi->seq_params.delta_frame_id_length_minus2 + 2;
+          int delta_frame_id_minus1 =
+              ((cm->current_frame_id - cm->ref_frame_id[i] + (1 << FidLen)) %
+               (1 << FidLen)) -
+              1;
+          if (delta_frame_id_minus1 < 0 ||
+              delta_frame_id_minus1 >= (1 << DiffLen))
+            cm->invalid_delta_frame_id_minus1 = 1;
+          aom_wb_write_literal(wb, delta_frame_id_minus1, DiffLen);
+        }
+#endif
       }
 
 #if CONFIG_FRAME_SIZE
@@ -3750,6 +3787,10 @@ static void write_uncompressed_header(AV1_COMP *cpi,
       write_interp_filter(cm->interp_filter, wb);
     }
   }
+
+#if CONFIG_REFERENCE_BUFFER
+  cm->refresh_mask = cm->frame_type == KEY_FRAME ? 0xFF : get_refresh_mask(cpi);
+#endif
 
   if (!cm->error_resilient_mode) {
     aom_wb_write_bit(

@@ -4609,6 +4609,23 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
          MAX_MODES * sizeof(*cpi->mode_chosen_counts));
 #endif
 
+#if CONFIG_REFERENCE_BUFFER
+  {
+    /* Non-normative definition of current_frame_id ("frame counter" with
+    * wraparound) */
+    int FidLen = FRAME_ID_LENGTH_MINUS7 + 7;
+    if (cm->current_frame_id == -1) {
+      /* quasi-random initialization of current_frame_id for a key frame */
+      int lsb = cpi->Source->y_buffer[0] & 0xff;
+      int msb = cpi->Source->y_buffer[1] & 0xff;
+      cm->current_frame_id = ((msb << 8) + lsb) % (1 << FidLen);
+    } else {
+      cm->current_frame_id =
+          (cm->current_frame_id + 1 + (1 << FidLen)) % (1 << FidLen);
+    }
+  }
+#endif
+
   if (cpi->sf.recode_loop == DISALLOW_RECODE) {
     encode_without_recode_loop(cpi);
   } else {
@@ -4658,6 +4675,18 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 
   // Build the bitstream
   av1_pack_bitstream(cpi, dest, size);
+
+#if CONFIG_REFERENCE_BUFFER
+  {
+    int i;
+    /* Update reference frame id values based on the value of refresh_mask */
+    for (i = 0; i < REF_FRAMES; i++) {
+      if ((cm->refresh_mask >> i) & 1) {
+        cm->ref_frame_id[i] = cm->current_frame_id;
+      }
+    }
+  }
+#endif
 
 #if DUMP_RECON_FRAMES == 1
   // NOTE(zoeliu): For debug - Output the filtered reconstructed video.
@@ -5369,6 +5398,12 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   cm->using_qmatrix = cpi->oxcf.using_qm;
   cm->min_qmlevel = cpi->oxcf.qm_minlevel;
   cm->max_qmlevel = cpi->oxcf.qm_maxlevel;
+#endif
+
+#if CONFIG_REFERENCE_BUFFER
+  if (*time_stamp == 0) {
+    cpi->common.current_frame_id = -1;
+  }
 #endif
 
   if (oxcf->pass == 1) {

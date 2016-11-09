@@ -128,6 +128,9 @@ typedef struct AV1Decoder {
   int tg_start;  // First tile in the current tilegroup
   int tg_size_bit_offset;
 #endif
+#if CONFIG_REFERENCE_BUFFER
+  SequenceHeader seq_params;
+#endif
 } AV1Decoder;
 
 int av1_receive_compressed_data(struct AV1Decoder *pbi, size_t size,

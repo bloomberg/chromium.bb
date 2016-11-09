@@ -19,6 +19,11 @@ extern "C" {
 struct AV1Decoder;
 struct aom_read_bit_buffer;
 
+#if CONFIG_REFERENCE_BUFFER
+/* Placeholder for now */
+void read_sequence_header(SequenceHeader *seq_params);
+#endif
+
 int av1_read_sync_code(struct aom_read_bit_buffer *const rb);
 void av1_read_frame_size(struct aom_read_bit_buffer *rb, int *width,
                          int *height);

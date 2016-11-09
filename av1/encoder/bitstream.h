@@ -18,6 +18,10 @@ extern "C" {
 
 #include "av1/encoder/encoder.h"
 
+#if CONFIG_REFERENCE_BUFFER
+void write_sequence_header(SequenceHeader *seq_params);
+#endif
+
 void av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dest, size_t *size);
 
 void av1_encode_token_init(void);

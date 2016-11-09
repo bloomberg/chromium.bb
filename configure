@@ -295,6 +295,7 @@ EXPERIMENT_LIST="
     ec_adapt
     simp_mv_pred
     rd_debug
+    reference_buffer
 "
 CONFIG_LIST="
     dependency_tracking

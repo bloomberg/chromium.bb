@@ -622,6 +622,9 @@ typedef struct AV1_COMP {
 #if CONFIG_GLOBAL_MOTION
   int global_motion_used[TOTAL_REFS_PER_FRAME];
 #endif
+#if CONFIG_REFERENCE_BUFFER
+  SequenceHeader seq_params;
+#endif
 } AV1_COMP;
 
 void av1_initialize_enc(void);

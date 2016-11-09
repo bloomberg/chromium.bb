@@ -48,6 +48,13 @@ extern "C" {
 // normal reference pool.
 #define FRAME_BUFFERS (REF_FRAMES + 7)
 
+#if CONFIG_REFERENCE_BUFFER
+/* Constant values while waiting for the sequence header */
+#define FRAME_ID_NUMBERS_PRESENT_FLAG 1
+#define FRAME_ID_LENGTH_MINUS7 8         // Allows frame id up to 2^15-1
+#define DELTA_FRAME_ID_LENGTH_MINUS2 12  // Allows frame id deltas up to 2^14-1
+#endif
+
 #if CONFIG_EXT_REFS
 #define FRAME_CONTEXTS_LOG2 3
 #else
@@ -404,7 +411,23 @@ typedef struct AV1Common {
 #if CONFIG_TILE_GROUPS
   int num_tg;
 #endif
+#if CONFIG_REFERENCE_BUFFER
+  int current_frame_id;
+  int ref_frame_id[REF_FRAMES];
+  int valid_for_referencing[REF_FRAMES];
+  int refresh_mask;
+  int invalid_delta_frame_id_minus1;
+#endif
 } AV1_COMMON;
+
+#if CONFIG_REFERENCE_BUFFER
+/* Initial version of sequence header structure */
+typedef struct SequenceHeader {
+  int frame_id_numbers_present_flag;
+  int frame_id_length_minus7;
+  int delta_frame_id_length_minus2;
+} SequenceHeader;
+#endif
 
 // TODO(hkuang): Don't need to lock the whole pool after implementing atomic
 // frame reference count.
