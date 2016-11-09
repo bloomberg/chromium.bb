@@ -238,7 +238,7 @@ fuzzer_test("v8_regexp_parser_fuzzer") {
     "//v8:regexp_fuzzer",
   ]
   dict = "dicts/regexp.dict"
-  libfuzzer_options = [ "max_len=1024" ]
+  libfuzzer_options = [ "max_len=64" ]
 }
 
 fuzzer_test("v8_wasm_code_fuzzer") {
