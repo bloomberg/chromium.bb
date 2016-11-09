@@ -15,6 +15,7 @@
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_writing_mode.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 
@@ -221,6 +222,8 @@ bool NGBox::CanUseNewLayout() {
     return true;
   if (!layout_box_->isLayoutBlockFlow())
     return false;
+  if (RuntimeEnabledFeatures::layoutNGInlineEnabled())
+    return true;
   if (HasInlineChildren())
     return false;
   return true;
