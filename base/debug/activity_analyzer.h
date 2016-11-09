@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <string>
 
 #include "base/base_export.h"
 #include "base/debug/activity_tracker.h"
@@ -72,6 +73,8 @@ class BASE_EXPORT ThreadActivityAnalyzer {
     return ThreadKey(activity_snapshot_.process_id,
                      activity_snapshot_.thread_id);
   }
+
+  const ActivitySnapshot& activity_snapshot() { return activity_snapshot_; }
 
  private:
   friend class GlobalActivityAnalyzer;

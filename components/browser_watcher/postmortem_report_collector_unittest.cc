@@ -21,6 +21,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/persistent_memory_allocator.h"
+#include "base/process/process_handle.h"
 #include "base/threading/platform_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,7 +29,6 @@
 
 namespace browser_watcher {
 
-using base::debug::Activity;
 using base::debug::ActivityData;
 using base::debug::GlobalActivityTracker;
 using base::debug::ThreadActivityTracker;
@@ -326,9 +326,16 @@ namespace {
 
 // Parameters for the activity tracking.
 const size_t kFileSize = 2 * 1024;
-const int kStackDepth = 4;
+const int kStackDepth = 5;
 const uint64_t kAllocatorId = 0;
 const char kAllocatorName[] = "PostmortemReportCollectorCollectionTest";
+const uint64_t kTaskSequenceNum = 42;
+const uintptr_t kTaskOrigin = 1000U;
+const uintptr_t kLockAddress = 1001U;
+const uintptr_t kEventAddress = 1002U;
+const int kThreadId = 43;
+const int kProcessId = 44;
+const int kAnotherThreadId = 45;
 
 }  // namespace
 
@@ -341,25 +348,17 @@ class PostmortemReportCollectorCollectionTest : public testing::Test {
     // Create a file backed allocator.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     debug_file_path_ = temp_dir_.GetPath().AppendASCII("debug_file.pma");
-    std::unique_ptr<PersistentMemoryAllocator> allocator = CreateAllocator();
-    ASSERT_NE(nullptr, allocator);
+    allocator_ = CreateAllocator();
+    ASSERT_NE(nullptr, allocator_);
 
     size_t tracker_mem_size =
         ThreadActivityTracker::SizeForStackDepth(kStackDepth);
     ASSERT_GT(kFileSize, tracker_mem_size);
 
-    // Create some debug data using trackers.
-    std::unique_ptr<ThreadActivityTracker> tracker =
-        CreateTracker(allocator.get(), tracker_mem_size);
-    ASSERT_NE(nullptr, tracker);
-    ASSERT_TRUE(tracker->IsValid());
-
-    const void* dummy_task_origin = reinterpret_cast<void*>(0xCAFE);
-    const int dummy_task_sequence_num = 42;
-    tracker->PushActivity(dummy_task_origin, Activity::ACT_TASK_RUN,
-                          ActivityData::ForTask(dummy_task_sequence_num));
-
-    // TODO(manzagop): flesh out the data (more trackers and content).
+    // Create a tracker.
+    tracker_ = CreateTracker(allocator_.get(), tracker_mem_size);
+    ASSERT_NE(nullptr, tracker_);
+    ASSERT_TRUE(tracker_->IsValid());
   }
 
   std::unique_ptr<PersistentMemoryAllocator> CreateAllocator() {
@@ -403,12 +402,33 @@ class PostmortemReportCollectorCollectionTest : public testing::Test {
 
   const base::FilePath& debug_file_path() const { return debug_file_path_; }
 
- private:
+ protected:
   base::ScopedTempDir temp_dir_;
   base::FilePath debug_file_path_;
+
+  std::unique_ptr<PersistentMemoryAllocator> allocator_;
+  std::unique_ptr<ThreadActivityTracker> tracker_;
 };
 
 TEST_F(PostmortemReportCollectorCollectionTest, CollectSuccess) {
+  // Create some activity data.
+  tracker_->PushActivity(reinterpret_cast<void*>(kTaskOrigin),
+                         base::debug::Activity::ACT_TASK_RUN,
+                         ActivityData::ForTask(kTaskSequenceNum));
+  tracker_->PushActivity(
+      nullptr, base::debug::Activity::ACT_LOCK_ACQUIRE,
+      ActivityData::ForLock(reinterpret_cast<void*>(kLockAddress)));
+  tracker_->PushActivity(
+      nullptr, base::debug::Activity::ACT_EVENT_WAIT,
+      ActivityData::ForEvent(reinterpret_cast<void*>(kEventAddress)));
+  tracker_->PushActivity(nullptr, base::debug::Activity::ACT_THREAD_JOIN,
+                         ActivityData::ForThread(kThreadId));
+  tracker_->PushActivity(nullptr, base::debug::Activity::ACT_PROCESS_WAIT,
+                         ActivityData::ForProcess(kProcessId));
+  // Note: this exceeds the activity stack's capacity.
+  tracker_->PushActivity(nullptr, base::debug::Activity::ACT_THREAD_JOIN,
+                         ActivityData::ForThread(kAnotherThreadId));
+
   // Validate collection returns the expected report.
   PostmortemReportCollector collector(kProductName, kVersionNumber,
                                       kChannelName);
@@ -417,13 +437,49 @@ TEST_F(PostmortemReportCollectorCollectionTest, CollectSuccess) {
             collector.Collect(debug_file_path(), &report));
   ASSERT_NE(nullptr, report);
 
-  // Build the expected report.
-  StabilityReport expected_report;
-  ProcessState* process_state = expected_report.add_process_states();
-  ThreadState* thread_state = process_state->add_threads();
-  thread_state->set_thread_name(base::PlatformThread::GetName());
+  // Validate the report.
+  ASSERT_EQ(1, report->process_states_size());
+  const ProcessState& process_state = report->process_states(0);
+  EXPECT_EQ(base::GetCurrentProcId(), process_state.process_id());
+  ASSERT_EQ(1, process_state.threads_size());
 
-  ASSERT_EQ(expected_report.SerializeAsString(), report->SerializeAsString());
+  const ThreadState& thread_state = process_state.threads(0);
+  EXPECT_EQ(base::PlatformThread::GetName(), thread_state.thread_name());
+#if defined(OS_WIN)
+  EXPECT_EQ(base::PlatformThread::CurrentId(), thread_state.thread_id());
+#elif defined(OS_POSIX)
+  EXPECT_EQ(base::PlatformThread::CurrentHandle().platform_handle(),
+            thread_state.thread_id());
+#endif
+
+  EXPECT_EQ(6, thread_state.activity_count());
+  ASSERT_EQ(5, thread_state.activities_size());
+  {
+    const Activity& activity = thread_state.activities(0);
+    EXPECT_EQ(Activity::ACT_TASK_RUN, activity.type());
+    EXPECT_EQ(kTaskOrigin, activity.origin_address());
+    EXPECT_EQ(kTaskSequenceNum, activity.task_sequence_id());
+  }
+  {
+    const Activity& activity = thread_state.activities(1);
+    EXPECT_EQ(Activity::ACT_LOCK_ACQUIRE, activity.type());
+    EXPECT_EQ(kLockAddress, activity.lock_address());
+  }
+  {
+    const Activity& activity = thread_state.activities(2);
+    EXPECT_EQ(Activity::ACT_EVENT_WAIT, activity.type());
+    EXPECT_EQ(kEventAddress, activity.event_address());
+  }
+  {
+    const Activity& activity = thread_state.activities(3);
+    EXPECT_EQ(Activity::ACT_THREAD_JOIN, activity.type());
+    EXPECT_EQ(kThreadId, activity.thread_id());
+  }
+  {
+    const Activity& activity = thread_state.activities(4);
+    EXPECT_EQ(Activity::ACT_PROCESS_WAIT, activity.type());
+    EXPECT_EQ(kProcessId, activity.process_id());
+  }
 }
 
 }  // namespace browser_watcher

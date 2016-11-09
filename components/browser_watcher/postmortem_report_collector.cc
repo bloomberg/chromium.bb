@@ -21,6 +21,7 @@ using base::FilePath;
 
 namespace browser_watcher {
 
+using base::debug::ActivitySnapshot;
 using base::debug::GlobalActivityAnalyzer;
 using base::debug::ThreadActivityAnalyzer;
 using crashpad::CrashReportDatabase;
@@ -174,6 +175,7 @@ PostmortemReportCollector::CollectionStatus PostmortemReportCollector::Collect(
 
   // Iterate through the thread analyzers, fleshing out the report.
   report->reset(new StabilityReport());
+  // Note: a single process is instrumented.
   ProcessState* process_state = (*report)->add_process_states();
 
   for (; thread_analyzer != nullptr;
@@ -182,12 +184,57 @@ PostmortemReportCollector::CollectionStatus PostmortemReportCollector::Collect(
     // GetNextAnalyzer.
     DCHECK(thread_analyzer->IsValid());
 
+    if (!process_state->has_process_id()) {
+      process_state->set_process_id(
+          thread_analyzer->activity_snapshot().process_id);
+    }
+    DCHECK_EQ(thread_analyzer->activity_snapshot().process_id,
+              process_state->process_id());
+
     ThreadState* thread_state = process_state->add_threads();
-    thread_state->set_thread_name(thread_analyzer->GetThreadName());
-    // TODO(manzagop): flesh this out.
+    CollectThread(thread_analyzer->activity_snapshot(), thread_state);
   }
 
   return SUCCESS;
+}
+
+void PostmortemReportCollector::CollectThread(
+    const base::debug::ActivitySnapshot& snapshot,
+    ThreadState* thread_state) {
+  DCHECK(thread_state);
+
+  thread_state->set_thread_name(snapshot.thread_name);
+  thread_state->set_thread_id(snapshot.thread_id);
+  thread_state->set_activity_count(snapshot.activity_stack_depth);
+
+  for (const base::debug::Activity& recorded : snapshot.activity_stack) {
+    Activity* collected = thread_state->add_activities();
+    switch (recorded.activity_type) {
+      case base::debug::Activity::ACT_TASK_RUN:
+        collected->set_type(Activity::ACT_TASK_RUN);
+        collected->set_origin_address(recorded.origin_address);
+        collected->set_task_sequence_id(recorded.data.task.sequence_id);
+        break;
+      case base::debug::Activity::ACT_LOCK_ACQUIRE:
+        collected->set_type(Activity::ACT_LOCK_ACQUIRE);
+        collected->set_lock_address(recorded.data.lock.lock_address);
+        break;
+      case base::debug::Activity::ACT_EVENT_WAIT:
+        collected->set_type(Activity::ACT_EVENT_WAIT);
+        collected->set_event_address(recorded.data.event.event_address);
+        break;
+      case base::debug::Activity::ACT_THREAD_JOIN:
+        collected->set_type(Activity::ACT_THREAD_JOIN);
+        collected->set_thread_id(recorded.data.thread.thread_id);
+        break;
+      case base::debug::Activity::ACT_PROCESS_WAIT:
+        collected->set_type(Activity::ACT_PROCESS_WAIT);
+        collected->set_process_id(recorded.data.process.process_id);
+        break;
+      default:
+        break;
+    }
+  }
 }
 
 bool PostmortemReportCollector::WriteReportToMinidump(

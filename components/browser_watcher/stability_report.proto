@@ -49,14 +49,67 @@ message CodeModule {
   optional string version = 7;
 }
 
+// An activity represents information about something of interest on a thread.
+// Next id: 9
+message Activity {
+  enum Type {
+    NONE = 0;
+    ACT_TASK_RUN = 1;
+    ACT_LOCK_ACQUIRE = 2;
+    ACT_EVENT_WAIT = 3;
+    ACT_THREAD_JOIN = 4;
+    ACT_PROCESS_WAIT = 5;
+  }
+
+  // Identifies the type of the activity (and specifies which fields are
+  // relevant).
+  optional Type type = 1;
+
+  // Creation time of the activity.
+  optional int64 time = 2;
+
+  // The address that is the origin of the activity.
+  // Expected for ACT_TASK_*
+  optional uint64 origin_address = 3;
+
+  // The sequence identifier of the posted task.
+  // Expected for ACT_TASK_*
+  optional uint64 task_sequence_id = 4;
+
+  // The memory address of the lock object.
+  optional uint64 lock_address = 5;
+
+  // The memory address of the event object.
+  optional uint64 event_address = 6;
+
+  // A unique identifier for a thread within a process.
+  optional int64 thread_id = 7;
+
+  // A unique identifier for a process.
+  optional int64 process_id = 8;
+}
+
 // The state of a thread.
+// Next id: 5
 message ThreadState {
+  // The name of the thread, up to a maxiumum length.
   optional string thread_name = 1;
-  // TODO(manzagop): flesh out.
+
+  // The identifier of the thread.
+  optional int64 thread_id = 2;
+
+  // The activity stack. |activity_count| specifies the number of activities on
+  // stack and |activities| holds the base of the stack (up to a maximum size).
+  optional int32 activity_count = 3;
+  repeated Activity activities = 4;
 }
 
 // The state of a process.
+// Next id: 4
 message ProcessState {
+  // The identifier of the process.
+  optional int64 process_id = 3;
+
   // Note: likely only a subset of modules of interest (e.g. Chromium's own
   // modules).
   repeated CodeModule modules = 1;
