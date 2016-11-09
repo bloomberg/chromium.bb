@@ -18,6 +18,23 @@ set(AOM_CONFIG_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 set(AOM_TARGET "generic")
 include("${AOM_ROOT}/build/cmake/aom_configure.cmake")
 
+# TODO(tomfinegan): Use libwebm's cmake support directly.
+set(AOM_LIBWEBM_SRCS
+    "${AOM_ROOT}/third_party/libwebm/common/hdr_util.cc"
+    "${AOM_ROOT}/third_party/libwebm/common/hdr_util.h"
+    "${AOM_ROOT}/third_party/libwebm/common/webmids.h"
+    "${AOM_ROOT}/third_party/libwebm/mkvmuxer/mkvmuxer.cc"
+    "${AOM_ROOT}/third_party/libwebm/mkvmuxer/mkvmuxer.h"
+    "${AOM_ROOT}/third_party/libwebm/mkvmuxer/mkvmuxertypes.h"
+    "${AOM_ROOT}/third_party/libwebm/mkvmuxer/mkvmuxerutil.cc"
+    "${AOM_ROOT}/third_party/libwebm/mkvmuxer/mkvmuxerutil.h"
+    "${AOM_ROOT}/third_party/libwebm/mkvmuxer/mkvwriter.cc"
+    "${AOM_ROOT}/third_party/libwebm/mkvmuxer/mkvwriter.h"
+    "${AOM_ROOT}/third_party/libwebm/mkvparser/mkvparser.cc"
+    "${AOM_ROOT}/third_party/libwebm/mkvparser/mkvparser.h"
+    "${AOM_ROOT}/third_party/libwebm/mkvparser/mkvreader.cc"
+    "${AOM_ROOT}/third_party/libwebm/mkvparser/mkvreader.h")
+
 set(AOM_SRCS
     "${AOM_CONFIG_DIR}/aom_config.c"
     "${AOM_CONFIG_DIR}/aom_config.h"
@@ -391,3 +408,18 @@ add_executable(twopass_encoder
 include_directories(${AOM_ROOT})
 target_link_libraries(twopass_encoder PUBLIC aom)
 
+if (CONFIG_WEBM_IO)
+  add_library(webm ${AOM_LIBWEBM_SRCS})
+  include_directories("${AOM_ROOT}/third_party/libwebm")
+  target_compile_options(webm PRIVATE -Wno-shadow)
+
+  # Add to existing targets.
+  target_link_libraries(aom_cx_set_ref PUBLIC webm)
+  target_link_libraries(decode_to_md5 PUBLIC webm)
+  target_link_libraries(decode_with_drops PUBLIC webm)
+  target_link_libraries(lossless_encoder PUBLIC webm)
+  target_link_libraries(set_maps PUBLIC webm)
+  target_link_libraries(simple_decoder PUBLIC webm)
+  target_link_libraries(simple_encoder PUBLIC webm)
+  target_link_libraries(twopass_encoder PUBLIC webm)
+endif ()
