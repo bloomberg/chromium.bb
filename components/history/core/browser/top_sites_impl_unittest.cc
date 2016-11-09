@@ -25,6 +25,7 @@
 #include "components/history/core/browser/top_sites_cache.h"
 #include "components/history/core/browser/top_sites_observer.h"
 #include "components/history/core/browser/visit_delegate.h"
+#include "components/history/core/test/history_service_test_util.h"
 #include "components/history/core/test/history_unittest_base.h"
 #include "components/history/core/test/test_history_database.h"
 #include "components/history/core/test/wait_top_sites_loaded_observer.h"
@@ -46,25 +47,6 @@ const char kPrepopulatedPageURL[] =
 bool MockCanAddURLToHistory(const GURL& url) {
   return url.is_valid() && !url.SchemeIs(kApplicationScheme);
 }
-
-// Used by WaitForHistory, see it for details.
-class WaitForHistoryTask : public HistoryDBTask {
- public:
-  WaitForHistoryTask() {}
-
-  bool RunOnDBThread(HistoryBackend* backend, HistoryDatabase* db) override {
-    return true;
-  }
-
-  void DoneRunOnMainThread() override {
-    base::MessageLoop::current()->QuitWhenIdle();
-  }
-
- private:
-  ~WaitForHistoryTask() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(WaitForHistoryTask);
-};
 
 // Used for querying top sites. Either runs sequentially, or runs a nested
 // nested message loop until the response is complete. The later is used when
@@ -177,10 +159,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
   // Blocks the caller until history processes a task. This is useful if you
   // need to wait until you know history has processed a task.
   void WaitForHistory() {
-    history_service()->ScheduleDBTask(
-        std::unique_ptr<history::HistoryDBTask>(new WaitForHistoryTask()),
-        &history_tracker_);
-    base::RunLoop().Run();
+    BlockUntilHistoryProcessesPendingRequests(history_service());
   }
 
   // Waits for top sites to finish processing a task. This is useful if you need

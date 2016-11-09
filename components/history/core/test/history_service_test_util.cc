@@ -16,27 +16,6 @@
 #include "components/history/core/browser/url_database.h"
 #include "components/history/core/test/test_history_database.h"
 
-namespace {
-
-class QuitTask : public history::HistoryDBTask {
- public:
-  QuitTask(const base::Closure& task) : task_(task) {}
-  ~QuitTask() override {}
-
-  bool RunOnDBThread(history::HistoryBackend* backend,
-                     history::HistoryDatabase* db) override {
-    return true;
-  }
-
-  void DoneRunOnMainThread() override { task_.Run(); }
-
- private:
-  base::Closure task_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuitTask);
-};
-
-}  // namespace
 
 namespace history {
 
@@ -57,15 +36,8 @@ std::unique_ptr<HistoryService> CreateHistoryService(
 void BlockUntilHistoryProcessesPendingRequests(
     HistoryService* history_service) {
   base::RunLoop run_loop;
-  base::CancelableTaskTracker tracker;
-  history_service->ScheduleDBTask(
-      base::MakeUnique<QuitTask>(run_loop.QuitClosure()), &tracker);
+  history_service->FlushForTest(run_loop.QuitClosure());
   run_loop.Run();
-
-  // Spin the runloop again until idle.  The QuitTask above is destroyed via a
-  // task posted to the current message loop, so spinning allows the task to be
-  // properly destroyed.
-  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace history
