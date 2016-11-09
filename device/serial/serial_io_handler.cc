@@ -158,9 +158,8 @@ void SerialIoHandler::FinishOpen(base::File file) {
   file_ = std::move(file);
 
   bool success = PostOpen() && ConfigurePortImpl();
-  if (!success) {
+  if (!success)
     Close();
-  }
 
   callback.Run(success);
 }

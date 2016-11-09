@@ -7,6 +7,7 @@
 #include <sys/ioctl.h>
 #include <termios.h>
 
+#include "base/files/file_util.h"
 #include "base/posix/eintr_wrapper.h"
 #include "build/build_config.h"
 
@@ -279,6 +280,15 @@ bool SerialIoHandlerPosix::ConfigurePortImpl() {
 #endif
 
   return true;
+}
+
+bool SerialIoHandlerPosix::PostOpen() {
+#if defined(OS_CHROMEOS)
+  // The Chrome OS permission broker does not open devices in async mode.
+  return base::SetNonBlocking(file().GetPlatformFile());
+#else
+  return true;
+#endif
 }
 
 SerialIoHandlerPosix::SerialIoHandlerPosix(

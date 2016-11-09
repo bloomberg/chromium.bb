@@ -28,6 +28,7 @@ class SerialIoHandlerPosix : public SerialIoHandler {
   void CancelReadImpl() override;
   void CancelWriteImpl() override;
   bool ConfigurePortImpl() override;
+  bool PostOpen() override;
   bool Flush() const override;
   serial::DeviceControlSignalsPtr GetControlSignals() const override;
   bool SetControlSignals(
