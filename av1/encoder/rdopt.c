@@ -1229,6 +1229,10 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   }
 #if !CONFIG_PVQ
   this_rd_stats.rate = rate_block(plane, block, coeff_ctx, tx_size, args);
+#if RD_DEBUG
+  av1_update_txb_coeff_cost(&this_rd_stats, plane, tx_size, blk_row, blk_col,
+                            this_rd_stats.rate);
+#endif
   args->t_above[blk_col] = (x->plane[plane].eobs[block] > 0);
   args->t_left[blk_row] = (x->plane[plane].eobs[block] > 0);
 #else
@@ -3199,19 +3203,8 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   rd_stats->rate += txb_coeff_cost;
   rd_stats->skip &= (p->eobs[block] == 0);
 #if CONFIG_RD_DEBUG
-  {
-    int idx, idy;
-    rd_stats->txb_coeff_cost[plane] += txb_coeff_cost;
-
-    for (idy = 0; idy < txb_h; ++idy)
-      for (idx = 0; idx < txb_w; ++idx)
-        rd_stats->txb_coeff_cost_map[plane][blk_row + idy][blk_col + idx] = 0;
-
-    rd_stats->txb_coeff_cost_map[plane][blk_row][blk_col] = txb_coeff_cost;
-
-    assert(blk_row < 16);
-    assert(blk_col < 16);
-  }
+  av1_update_txb_coeff_cost(rd_stats, plane, tx_size, blk_row, blk_col,
+                            txb_coeff_cost);
 #endif
 }
 
@@ -7834,14 +7827,14 @@ static int64_t handle_inter_mode(
 #if CONFIG_VAR_TX
       is_cost_valid_uv =
           inter_block_uvrd(cpi, x, &rd_stats_uv, bsize, ref_best_rd - rdcosty);
-#if CONFIG_RD_DEBUG
-      // record uv planes' transform block coefficient cost
-      if (is_cost_valid_uv) av1_merge_rd_stats(&mbmi->rd_stats, &rd_stats_uv);
-#endif
 #else
       is_cost_valid_uv =
           super_block_uvrd(cpi, x, &rd_stats_uv, bsize, ref_best_rd - rdcosty);
 #endif  // CONFIG_VAR_TX
+#if CONFIG_RD_DEBUG
+      // record uv planes' transform block coefficient cost
+      if (is_cost_valid_uv) av1_merge_rd_stats(&mbmi->rd_stats, &rd_stats_uv);
+#endif
       *rate_uv = rd_stats_uv.rate;
       distortion_uv = rd_stats_uv.dist;
       skippable_uv = rd_stats_uv.skip;

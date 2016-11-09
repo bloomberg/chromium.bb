@@ -26,6 +26,27 @@ struct AV1_COMP;
 struct macroblock;
 struct RD_COST;
 
+#if CONFIG_RD_DEBUG
+static INLINE void av1_update_txb_coeff_cost(RD_STATS *rd_stats, int plane,
+                                             TX_SIZE tx_size, int blk_row,
+                                             int blk_col, int txb_coeff_cost) {
+  const int txb_h = tx_size_high_unit[tx_size];
+  const int txb_w = tx_size_wide_unit[tx_size];
+  int idx, idy;
+
+  rd_stats->txb_coeff_cost[plane] += txb_coeff_cost;
+
+  for (idy = 0; idy < txb_h; ++idy)
+    for (idx = 0; idx < txb_w; ++idx)
+      rd_stats->txb_coeff_cost_map[plane][blk_row + idy][blk_col + idx] = 0;
+
+  rd_stats->txb_coeff_cost_map[plane][blk_row][blk_col] = txb_coeff_cost;
+
+  assert(blk_row < 16);
+  assert(blk_col < 16);
+}
+#endif
+
 static INLINE void av1_init_rd_stats(RD_STATS *rd_stats) {
 #if CONFIG_RD_DEBUG
   int plane;
