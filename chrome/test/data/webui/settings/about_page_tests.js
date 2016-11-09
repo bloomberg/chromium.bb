@@ -65,7 +65,7 @@ cr.define('settings_about_page', function() {
     /** @override */
     refreshUpdateStatus: function() {
       cr.webUIListenerCallback('update-status-changed', {
-        progress: 0,
+        progress: 1,
         status: this.updateStatus_,
       });
       this.methodCalled('refreshUpdateStatus');
@@ -138,10 +138,13 @@ cr.define('settings_about_page', function() {
 
 
   function registerAboutPageTests() {
-    /** @param {!UpdateStatus} status */
-    function fireStatusChanged(status) {
+    /**
+     * @param {!UpdateStatus} status
+     * @param {number=} opt_progress
+     */
+    function fireStatusChanged(status, opt_progress) {
       cr.webUIListenerCallback('update-status-changed', {
-        progress: 0,
+        progress: opt_progress === undefined ? 1 : opt_progress,
         status: status,
       });
     }
@@ -202,10 +205,16 @@ cr.define('settings_about_page', function() {
         assertNotEquals(previousMessageText, statusMessageEl.textContent);
         previousMessageText = statusMessageEl.textContent;
 
-        fireStatusChanged(UpdateStatus.UPDATING);
+        fireStatusChanged(UpdateStatus.UPDATING, 0);
         assertEquals(SPINNER_ICON, icon.src);
         assertEquals(null, icon.getAttribute('icon'));
+        assertFalse(statusMessageEl.textContent.includes('%'));
         assertNotEquals(previousMessageText, statusMessageEl.textContent);
+        previousMessageText = statusMessageEl.textContent;
+
+        fireStatusChanged(UpdateStatus.UPDATING, 1);
+        assertNotEquals(previousMessageText, statusMessageEl.textContent);
+        assertTrue(statusMessageEl.textContent.includes('%'));
         previousMessageText = statusMessageEl.textContent;
 
         fireStatusChanged(UpdateStatus.NEARLY_UPDATED);
