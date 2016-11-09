@@ -34,7 +34,7 @@ function test()
         InspectorTest.addSniffer(WebInspector.StylesSidebarPane.prototype, "doUpdate", rebuildUpdate);
         InspectorTest.domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, attributeChanged, this);
         // Click "Add new rule".
-        document.querySelector(".styles-pane-toolbar").shadowRoot.querySelector(".add-toolbar-item").click();
+        document.querySelector(".styles-pane-toolbar").shadowRoot.querySelector(".largeicon-add").click();
         InspectorTest.evaluateInPage("addStyleClass()", step2);
     }
 
