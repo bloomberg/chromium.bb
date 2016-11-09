@@ -148,13 +148,13 @@ void URLDownloader::DistillerCallback(
     const std::vector<dom_distiller::DistillerViewerInterface::ImageInfo>&
         images,
     const std::string& title) {
-  std::vector<dom_distiller::DistillerViewer::ImageInfo> images_block = images;
-  std::string block_html = html;
   if (html.empty()) {
-    // TODO identify retry from permanent errors
-    DownloadCompletionHandler(page_url, std::string(), ERROR_PERMANENT);
+    DownloadCompletionHandler(page_url, std::string(), ERROR_RETRY);
     return;
   }
+
+  std::vector<dom_distiller::DistillerViewer::ImageInfo> images_block = images;
+  std::string block_html = html;
   task_tracker_.PostTaskAndReplyWithResult(
       web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE).get(),
       FROM_HERE,
