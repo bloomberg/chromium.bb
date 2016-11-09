@@ -146,6 +146,18 @@ class PaintManager {
   pp::Size GetEffectiveSize() const;
   float GetEffectiveDeviceScale() const;
 
+  // Set the transform for the graphics layer.
+  // If |schedule_flush| is true, it ensures a flush will be scheduled for
+  // this change. If |schedule_flush| is false, then the change will not take
+  // effect until another change causes a flush.
+  void SetTransform(float scale,
+                    const pp::Point& origin,
+                    const pp::Point& translate,
+                    bool schedule_flush);
+  // Resets any transform for the graphics layer.
+  // This does not schedule a flush.
+  void ClearTransform();
+
  private:
   // Disallow copy and assign (these are unimplemented).
   PaintManager(const PaintManager&);
@@ -159,6 +171,9 @@ class PaintManager {
 
   // Does the client paint and executes a Flush if necessary.
   void DoPaint();
+
+  // Executes a Flush.
+  void Flush();
 
   // Callback for asynchronous completion of Flush.
   void OnFlushComplete(int32_t);
@@ -185,6 +200,7 @@ class PaintManager {
   // See comment for EnsureCallbackPending for more on how these work.
   bool manual_callback_pending_;
   bool flush_pending_;
+  bool flush_requested_;
 
   // When we get a resize, we don't bind right away (see SetSize). The
   // has_pending_resize_ tells us that we need to do a resize for the next

@@ -400,6 +400,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ZoomManager) {
   RunTestsInFile("zoom_manager_test.js", "test.pdf");
 }
 
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, GestureDetector) {
+  RunTestsInFile("gesture_detector_test.js", "test.pdf");
+}
+
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Elements) {
   // Although this test file does not require a PDF to be loaded, loading the
   // elements without loading a PDF is difficult.

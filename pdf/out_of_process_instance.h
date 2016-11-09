@@ -237,9 +237,29 @@ class OutOfProcessInstance : public pp::Instance,
   // there are 10 pages, the height will be 8000).
   pp::Size document_size_;
 
-  double zoom_;  // Current zoom factor.
+  // Enumeration of pinch states.
+  // This should match PinchPhase enum in
+  // chrome/browser/resources/pdf/viewport.js
+  enum PinchPhase {
+    PINCH_NONE = 0,
+    PINCH_START = 1,
+    PINCH_UPDATE_ZOOM_OUT = 2,
+    PINCH_UPDATE_ZOOM_IN = 3,
+    PINCH_END = 4
+  };
 
-  float device_scale_;  // Current device scale factor.
+  // Current zoom factor.
+  double zoom_;
+  double initial_zoom_ratio_;
+  // True if we request a new bitmap rendering.
+  bool needs_reraster_;
+  // Scroll position at the start of a pinch zoom.
+  pp::FloatPoint starting_scroll_offset_;
+  // True if last bitmap was smaller than screen.
+  bool last_bitmap_smaller_;
+  double last_zoom_when_smaller_;
+  // Current device scale factor.
+  float device_scale_;
   // True if the plugin is full-page.
   bool full_;
 

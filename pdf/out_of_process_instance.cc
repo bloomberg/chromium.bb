@@ -56,6 +56,13 @@ const char kJSViewportType[] = "viewport";
 const char kJSXOffset[] = "xOffset";
 const char kJSYOffset[] = "yOffset";
 const char kJSZoom[] = "zoom";
+const char kJSPinchPhase[] = "pinchPhase";
+// kJSPinchX and kJSPinchY represent the center of the pinch gesture.
+const char kJSPinchX[] = "pinchX";
+const char kJSPinchY[] = "pinchY";
+// kJSPinchVector represents the amount of panning caused by the pinch gesture.
+const char kJSPinchVectorX[] = "pinchVectorX";
+const char kJSPinchVectorY[] = "pinchVectorY";
 // Stop scrolling message (Page -> Plugin)
 const char kJSStopScrollingType[] = "stopScrolling";
 // Document dimension arguments (Plugin -> Page).
@@ -274,6 +281,9 @@ OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
       pp::Printing_Dev(this),
       cursor_(PP_CURSORTYPE_POINTER),
       zoom_(1.0),
+      needs_reraster_(true),
+      last_bitmap_smaller_(false),
+      last_zoom_when_smaller_(1.0),
       device_scale_(1.0),
       full_(false),
       paint_manager_(this, this, true),
@@ -400,12 +410,90 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
   if (type == kJSViewportType &&
       dict.Get(pp::Var(kJSXOffset)).is_number() &&
       dict.Get(pp::Var(kJSYOffset)).is_number() &&
-      dict.Get(pp::Var(kJSZoom)).is_number()) {
+      dict.Get(pp::Var(kJSZoom)).is_number() &&
+      dict.Get(pp::Var(kJSPinchPhase)).is_number()) {
     received_viewport_message_ = true;
     stop_scrolling_ = false;
+    PinchPhase pinch_phase =
+        static_cast<PinchPhase>(dict.Get(pp::Var(kJSPinchPhase)).AsInt());
     double zoom = dict.Get(pp::Var(kJSZoom)).AsDouble();
+    double zoom_ratio = zoom / zoom_;
+
     pp::FloatPoint scroll_offset(dict.Get(pp::Var(kJSXOffset)).AsDouble(),
                                  dict.Get(pp::Var(kJSYOffset)).AsDouble());
+
+    if (pinch_phase == PINCH_START) {
+      starting_scroll_offset_ = scroll_offset;
+      initial_zoom_ratio_ = zoom_ratio;
+      last_bitmap_smaller_ = false;
+      needs_reraster_ = false;
+      return;
+    }
+
+    if (pinch_phase == PINCH_UPDATE_ZOOM_IN) {
+      if (!(dict.Get(pp::Var(kJSPinchX)).is_number() &&
+            dict.Get(pp::Var(kJSPinchY)).is_number() &&
+            dict.Get(pp::Var(kJSPinchVectorX)).is_number() &&
+            dict.Get(pp::Var(kJSPinchVectorY)).is_number())) {
+        NOTREACHED();
+        return;
+      }
+
+      pp::Point pinch_center(dict.Get(pp::Var(kJSPinchX)).AsDouble(),
+                             dict.Get(pp::Var(kJSPinchY)).AsDouble());
+      // Pinch vector is the panning caused due to change in pinch
+      // center between start and end of the gesture.
+      pp::Point pinch_vector =
+          pp::Point(dict.Get(kJSPinchVectorX).AsDouble() * zoom_ratio,
+                    dict.Get(kJSPinchVectorY).AsDouble() * zoom_ratio);
+      pp::Point scroll_delta;
+      // If the rendered document doesn't fill the display area we will
+      // use |paint_offset| to anchor the paint vertically into the same place.
+      // We use the scroll bars instead of the pinch vector to get the actual
+      // position on screen of the paint.
+      pp::Point paint_offset;
+
+      if (plugin_size_.width() > GetDocumentPixelWidth() * zoom_ratio) {
+        // We want to keep the paint in the middle but it must stay in the same
+        // position relative to the scroll bars.
+        paint_offset = pp::Point(0, (1 - zoom_ratio) * pinch_center.y());
+        scroll_delta = pp::Point(0,
+            (scroll_offset.y() -
+             starting_scroll_offset_.y() * zoom_ratio / initial_zoom_ratio_));
+
+        pinch_vector = pp::Point();
+        last_zoom_when_smaller_ = zoom;
+        last_bitmap_smaller_ = true;
+      } else if (last_bitmap_smaller_) {
+          pinch_center = pp::Point((plugin_size_.width() / device_scale_) / 2,
+              (plugin_size_.height() / device_scale_) / 2);
+          paint_offset = pp::Point(
+              (1 - zoom / last_zoom_when_smaller_) * pinch_center.x(),
+              (1 - zoom_ratio) * pinch_center.y());
+          pinch_vector = pp::Point();
+          scroll_delta = pp::Point(
+              (scroll_offset.x() -
+               starting_scroll_offset_.x() * zoom_ratio / initial_zoom_ratio_),
+              (scroll_offset.y() -
+               starting_scroll_offset_.y() * zoom_ratio / initial_zoom_ratio_));
+      }
+
+      paint_manager_.SetTransform(zoom_ratio, pinch_center,
+          pinch_vector + paint_offset + scroll_delta,
+          true);
+      needs_reraster_ = false;
+      return;
+    }
+
+    if (pinch_phase == PINCH_UPDATE_ZOOM_OUT || pinch_phase == PINCH_END) {
+      // We reraster on pinch zoom out in order to solve the invalid regions
+      // that appear after zooming out.
+      // On pinch end the scale is again 1.f and we request a reraster
+      // in the new position.
+      paint_manager_.ClearTransform();
+      last_bitmap_smaller_ = false;
+      needs_reraster_ = true;
+    }
 
     // Bound the input parameters.
     zoom = std::max(kMinZoom, zoom);
@@ -803,7 +891,7 @@ void OutOfProcessInstance::OnPaint(
     ready->push_back(PaintManager::ReadyRect(rect, image_data_, true));
   }
 
-  if (!received_viewport_message_)
+  if (!received_viewport_message_ || !needs_reraster_)
     return;
 
   engine_->PrePaint();
