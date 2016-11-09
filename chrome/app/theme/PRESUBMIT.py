@@ -36,11 +36,13 @@ def _CommonChecks(input_api, output_api):
 
   try:
     sys.path = [resources] + old_path
-    from resource_check import resource_scale_factors
+    from resource_check import resource_scale_factors, ico_files
 
     for paths in path_scales:
       results.extend(resource_scale_factors.ResourceScaleFactors(
           input_api, output_api, paths).RunChecks())
+
+    results.extend(ico_files.IcoFiles(input_api, output_api).RunChecks())
   finally:
     sys.path = old_path
 
