@@ -381,6 +381,11 @@ class PortTest(unittest.TestCase):
         # entry for it.
         self.assertTrue(port.is_test_file(filesystem, LAYOUT_TEST_DIR + '/imported/wpt/console', 'console-is-a-namespace.any.js'))
 
+        # A file in imported/wpt, not a sub directory.
+        self.assertFalse(port.is_test_file(filesystem, LAYOUT_TEST_DIR + '/imported/wpt', 'testharness_runner.html'))
+        # A file in imported/wpt_automation.
+        self.assertTrue(port.is_test_file(filesystem, LAYOUT_TEST_DIR + '/imported/wpt_automation', 'foo.html'))
+
     def test_parse_reftest_list(self):
         port = self.make_port(with_tests=True)
         port.host.filesystem.files['bar/reftest.list'] = "\n".join(["== test.html test-ref.html",

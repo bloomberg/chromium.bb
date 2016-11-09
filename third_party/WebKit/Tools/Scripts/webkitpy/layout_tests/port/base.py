@@ -784,9 +784,12 @@ class Port(object):
         return extension in Port._supported_file_extensions
 
     def is_test_file(self, filesystem, dirname, filename):
-        match = re.search(r'[/\\]imported[/\\]wpt[/\\](.*)$', dirname)
+        match = re.search(r'[/\\]imported[/\\]wpt([/\\].*)?$', dirname)
         if match:
-            path_in_wpt = match.group(1).replace('\\', '/') + '/' + filename
+            if match.group(1):
+                path_in_wpt = match.group(1)[1:].replace('\\', '/') + '/' + filename
+            else:
+                path_in_wpt = filename
             return self._manifest_items_for_path(path_in_wpt) is not None
         return Port._has_supported_extension(
             filesystem, filename) and not Port.is_reference_html_file(filesystem, dirname, filename)
