@@ -39,7 +39,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   pageHolder->document().initContentSecurityPolicy(csp);
 
   // Force a garbage collection.
-  ThreadState::current()->collectGarbage(
+  // Specify namespace explicitly. Otherwise it conflicts on Mac OS X with:
+  // CoreServices.framework/Frameworks/CarbonCore.framework/Headers/Threads.h.
+  blink::ThreadState::current()->collectGarbage(
       BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
 
   return 0;
