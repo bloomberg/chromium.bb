@@ -13,53 +13,12 @@
 
 #include "base/callback.h"
 #include "base/stl_util.h"
+#include "media/cast/cast_config.h"
 #include "media/cast/common/rtp_time.h"
 #include "media/cast/net/cast_transport_defines.h"
 
 namespace media {
 namespace cast {
-
-enum Codec {
-  CODEC_UNKNOWN,
-  CODEC_AUDIO_OPUS,
-  CODEC_AUDIO_PCM16,
-  CODEC_AUDIO_AAC,
-  CODEC_AUDIO_REMOTE,
-  CODEC_VIDEO_FAKE,
-  CODEC_VIDEO_VP8,
-  CODEC_VIDEO_H264,
-  CODEC_VIDEO_REMOTE,
-  CODEC_LAST = CODEC_VIDEO_REMOTE
-};
-
-// Describes the content being transported over RTP streams.
-enum class RtpPayloadType {
-  UNKNOWN = -1,
-
-  // Cast Streaming will encode raw audio frames using one of its available
-  // codec implementations, and transport encoded data in the RTP stream.
-  FIRST = 96,
-  AUDIO_OPUS = 96,
-  AUDIO_AAC = 97,
-  AUDIO_PCM16 = 98,
-
-  // Audio frame data is not modified, and should be transported reliably and
-  // in-sequence. No assumptions about the data can be made.
-  REMOTE_AUDIO = 99,
-
-  AUDIO_LAST = REMOTE_AUDIO,
-
-  // Cast Streaming will encode raw video frames using one of its available
-  // codec implementations, and transport encoded data in the RTP stream.
-  VIDEO_VP8 = 100,
-  VIDEO_H264 = 101,
-
-  // Video frame data is not modified, and should be transported reliably and
-  // in-sequence. No assumptions about the data can be made.
-  REMOTE_VIDEO = 102,
-
-  LAST = REMOTE_VIDEO
-};
 
 struct CastTransportRtpConfig {
   CastTransportRtpConfig();

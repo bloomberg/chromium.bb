@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
-#include "media/cast/net/cast_transport_defines.h"
 
 namespace media {
 namespace cast {

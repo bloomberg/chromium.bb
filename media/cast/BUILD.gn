@@ -106,6 +106,8 @@ source_set("net") {
 
   deps = [
     ":common",
+    "//base",
+    "//net",
   ]
 
   public_deps = [
@@ -153,6 +155,7 @@ source_set("sender") {
   deps = [
     ":common",
     ":net",
+    "//base",
     "//media",
     "//media:media_features",
     "//media:shared_memory_support",
@@ -201,6 +204,7 @@ source_set("receiver") {
   deps = [
     ":common",
     ":net",
+    "//base",
     "//media",
     "//media:shared_memory_support",
     "//third_party/libvpx",
@@ -246,9 +250,11 @@ static_library("test_support") {
   deps = [
     ":net",
     ":receiver",
+    ":sender",
     "//base/test:test_support",
     "//media:test_support",
     "//media/base:test_support",
+    "//net",
     "//testing/gtest",
     "//third_party/libyuv",
     "//third_party/mt19937ar",
@@ -324,12 +330,19 @@ test("cast_unittests") {
 
   deps = [
     ":common",
+    ":net",
     ":receiver",
     ":sender",
     ":test_support",
+    "//base",
     "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//media",
+    "//media/base:test_support",
+    "//net",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/opus",
   ]
 
   if (is_android) {
@@ -370,8 +383,13 @@ if (is_win || is_mac || (is_linux && !is_chromeos)) {
       ":receiver",
       ":sender",
       ":test_support",
+      "//base",
+      "//base/test:test_support",
+      "//media",
+      "//media/base:test_support",
       "//net",
       "//testing/gtest",
+      "//ui/gfx/geometry",
     ]
   }
 
@@ -385,7 +403,11 @@ if (is_win || is_mac || (is_linux && !is_chromeos)) {
       ":net",
       ":receiver",
       ":test_support",
+      "//base",
       "//build/win:default_exe_manifest",
+      "//media",
+      "//net",
+      "//ui/gfx/geometry",
     ]
 
     if (is_linux && !is_chromeos && use_x11) {
@@ -411,7 +433,9 @@ if (is_win || is_mac || (is_linux && !is_chromeos)) {
       ":net",
       ":sender",
       ":test_support",
+      "//base",
       "//build/win:default_exe_manifest",
+      "//media",
     ]
   }
 
@@ -431,9 +455,14 @@ if (is_win || is_mac || (is_linux && !is_chromeos)) {
       ":common",
       ":net",
       ":network_simulation_model_proto",
+      ":receiver",
       ":sender",
       ":test_support",
+      "//base",
+      "//base/test:test_support",
       "//build/win:default_exe_manifest",
+      "//media",
+      "//media/base:test_support",
     ]
   }
 
@@ -475,6 +504,7 @@ if (is_win || is_mac || (is_linux && !is_chromeos)) {
       "//base",
       "//build/config/sanitizers:deps",
       "//build/win:default_exe_manifest",
+      "//net",
     ]
   }
 } else {  # !(is_win || is_mac || (is_linux && !is_chromeos))
@@ -493,6 +523,7 @@ if (is_linux && !is_chromeos) {
       ":test_support",
       "//base",
       "//media",
+      "//net",
     ]
   }
 }
