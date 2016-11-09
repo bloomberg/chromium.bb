@@ -25,10 +25,10 @@
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/Event.h"
-#include "core/events/EventSender.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLDivElement.h"
@@ -67,12 +67,6 @@ class FirstSummarySelectFilter final : public HTMLContentSelectFilter {
   FirstSummarySelectFilter() {}
 };
 
-static DetailsEventSender& detailsToggleEventSender() {
-  DEFINE_STATIC_LOCAL(DetailsEventSender, sharedToggleEventSender,
-                      (DetailsEventSender::create(EventTypeNames::toggle)));
-  return sharedToggleEventSender;
-}
-
 HTMLDetailsElement* HTMLDetailsElement::create(Document& document) {
   HTMLDetailsElement* details = new HTMLDetailsElement(document);
   details->ensureUserAgentShadowRoot();
@@ -86,8 +80,7 @@ HTMLDetailsElement::HTMLDetailsElement(Document& document)
 
 HTMLDetailsElement::~HTMLDetailsElement() {}
 
-void HTMLDetailsElement::dispatchPendingEvent(DetailsEventSender* eventSender) {
-  DCHECK_EQ(eventSender, &detailsToggleEventSender());
+void HTMLDetailsElement::dispatchPendingEvent() {
   dispatchEvent(Event::create(EventTypeNames::toggle));
 }
 
@@ -135,8 +128,12 @@ void HTMLDetailsElement::parseAttribute(const QualifiedName& name,
       return;
 
     // Dispatch toggle event asynchronously.
-    detailsToggleEventSender().cancelEvent(this);
-    detailsToggleEventSender().dispatchEventSoon(this);
+    m_pendingEvent =
+        TaskRunnerHelper::get(TaskType::DOMManipulation, &document())
+            ->postCancellableTask(
+                BLINK_FROM_HERE,
+                WTF::bind(&HTMLDetailsElement::dispatchPendingEvent,
+                          wrapPersistent(this)));
 
     Element* content = ensureUserAgentShadowRoot().getElementById(
         ShadowElementNames::detailsContent());

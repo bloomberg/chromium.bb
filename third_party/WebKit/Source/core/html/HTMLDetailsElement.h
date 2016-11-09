@@ -25,10 +25,6 @@
 
 namespace blink {
 
-template <typename T>
-class EventSender;
-using DetailsEventSender = EventSender<HTMLDetailsElement>;
-
 class HTMLDetailsElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -37,12 +33,12 @@ class HTMLDetailsElement final : public HTMLElement {
   void toggleOpen();
   ~HTMLDetailsElement() override;
 
-  void dispatchPendingEvent(DetailsEventSender*);
-
   Element* findMainSummary() const;
 
  private:
   explicit HTMLDetailsElement(Document&);
+
+  void dispatchPendingEvent();
 
   LayoutObject* createLayoutObject(const ComputedStyle&) override;
   void parseAttribute(const QualifiedName&,
@@ -52,6 +48,7 @@ class HTMLDetailsElement final : public HTMLElement {
   bool isInteractiveContent() const override;
 
   bool m_isOpen;
+  TaskHandle m_pendingEvent;
 };
 
 }  // namespace blink
