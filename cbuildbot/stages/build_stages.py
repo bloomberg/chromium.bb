@@ -268,7 +268,7 @@ class SetupBoardStage(generic_stages.BoardSpecificBuilderStage, InitSDKStage):
                           not self._latest_toolchain)
       commands.UpdateChroot(
           self._build_root, toolchain_boards=[self._current_board],
-          usepkg=usepkg_toolchain)
+          usepkg=usepkg_toolchain, extra_env=self._portage_extra_env)
 
     # Always update the board.
     usepkg = self._run.config.usepkg_build_packages
