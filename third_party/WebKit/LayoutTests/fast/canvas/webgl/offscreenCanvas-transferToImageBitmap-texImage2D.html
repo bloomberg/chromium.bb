@@ -30,11 +30,6 @@ var blob = new Blob([document.getElementById('myWorker').textContent]);
 var worker = new Worker(URL.createObjectURL(blob));
 var bitmap;
 
-var canvas = document.createElement("canvas");
-canvas.width = 128;
-canvas.height = 128;
-var ctx = canvas.getContext('bitmaprenderer');
-
 var width = 32;
 var height = 32;
 var canvas2d = document.createElement("canvas");
