@@ -487,11 +487,32 @@ static void msm_ringbuffer_emit_reloc(struct fd_ringbuffer *ring,
 	reloc->submit_offset = offset_bytes(ring->cur, ring->start);
 
 	addr = msm_bo->presumed;
-	if (r->shift < 0)
-		addr >>= -r->shift;
+	if (reloc->shift < 0)
+		addr >>= -reloc->shift;
 	else
-		addr <<= r->shift;
+		addr <<= reloc->shift;
 	(*ring->cur++) = addr | r->or;
+
+	if (ring->pipe->gpu_id >= 500) {
+		struct drm_msm_gem_submit_reloc *reloc_hi;
+
+		idx = APPEND(cmd, relocs);
+
+		reloc_hi = &cmd->relocs[idx];
+
+		reloc_hi->reloc_idx = reloc->reloc_idx;
+		reloc_hi->reloc_offset = r->offset;
+		reloc_hi->or = r->orhi;
+		reloc_hi->shift = r->shift - 32;
+		reloc_hi->submit_offset = offset_bytes(ring->cur, ring->start);
+
+		addr = msm_bo->presumed >> 32;
+		if (reloc_hi->shift < 0)
+			addr >>= -reloc_hi->shift;
+		else
+			addr <<= reloc_hi->shift;
+		(*ring->cur++) = addr | r->orhi;
+	}
 }
 
 static uint32_t msm_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,

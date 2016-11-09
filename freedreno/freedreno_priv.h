@@ -123,6 +123,7 @@ struct fd_pipe_funcs {
 struct fd_pipe {
 	struct fd_device *dev;
 	enum fd_pipe_id id;
+	uint32_t gpu_id;
 	const struct fd_pipe_funcs *funcs;
 };
 

@@ -37,6 +37,7 @@ struct fd_pipe *
 fd_pipe_new(struct fd_device *dev, enum fd_pipe_id id)
 {
 	struct fd_pipe *pipe = NULL;
+	uint64_t val;
 
 	if (id > FD_PIPE_MAX) {
 		ERROR_MSG("invalid pipe id: %d", id);
@@ -51,6 +52,9 @@ fd_pipe_new(struct fd_device *dev, enum fd_pipe_id id)
 
 	pipe->dev = dev;
 	pipe->id = id;
+
+	fd_pipe_get_param(pipe, FD_GPU_ID, &val);
+	pipe->gpu_id = val;
 
 	return pipe;
 fail:

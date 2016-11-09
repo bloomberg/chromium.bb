@@ -78,9 +78,13 @@ struct fd_reloc {
 	uint32_t offset;
 	uint32_t or;
 	int32_t  shift;
+	uint32_t orhi;      /* used for a5xx+ */
 };
 
-void fd_ringbuffer_reloc(struct fd_ringbuffer *ring, const struct fd_reloc *reloc);
+/* NOTE: relocs are 2 dwords on a5xx+ */
+
+void fd_ringbuffer_reloc2(struct fd_ringbuffer *ring, const struct fd_reloc *reloc);
+will_be_deprecated void fd_ringbuffer_reloc(struct fd_ringbuffer *ring, const struct fd_reloc *reloc);
 will_be_deprecated void fd_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
 		struct fd_ringmarker *target, struct fd_ringmarker *end);
 uint32_t fd_ringbuffer_cmd_count(struct fd_ringbuffer *ring);

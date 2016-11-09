@@ -115,6 +115,13 @@ uint32_t fd_ringbuffer_timestamp(struct fd_ringbuffer *ring)
 void fd_ringbuffer_reloc(struct fd_ringbuffer *ring,
 				    const struct fd_reloc *reloc)
 {
+	assert(ring->pipe->gpu_id < 500);
+	ring->funcs->emit_reloc(ring, reloc);
+}
+
+void fd_ringbuffer_reloc2(struct fd_ringbuffer *ring,
+				     const struct fd_reloc *reloc)
+{
 	ring->funcs->emit_reloc(ring, reloc);
 }
 
@@ -123,6 +130,8 @@ void fd_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
 {
 	uint32_t submit_offset, size;
 
+	/* This function is deprecated and not supported on 64b devices: */
+	assert(ring->pipe->gpu_id < 500);
 	assert(target->ring == end->ring);
 
 	submit_offset = offset_bytes(target->cur, target->ring->start);

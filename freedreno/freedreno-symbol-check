@@ -43,6 +43,7 @@ fd_ringbuffer_flush
 fd_ringbuffer_grow
 fd_ringbuffer_new
 fd_ringbuffer_reloc
+fd_ringbuffer_reloc2
 fd_ringbuffer_reset
 fd_ringbuffer_set_parent
 fd_ringbuffer_timestamp
