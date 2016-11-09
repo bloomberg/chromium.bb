@@ -1727,9 +1727,8 @@ void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
       input_method->SetFocusedTextInputClient(this);
 
       // Often the application can set focus to the view in response to a key
-      // down. However the following char event shouldn't be sent to the web
-      // page.
-      host_->SuppressNextCharEvents();
+      // down. However, the following events shouldn't be sent to the web page.
+      host_->SuppressEventsUntilKeyDown();
     }
 
     BrowserAccessibilityManager* manager =
