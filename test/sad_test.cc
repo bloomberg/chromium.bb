@@ -930,6 +930,11 @@ INSTANTIATE_TEST_CASE_P(SSE2, SADx4Test, ::testing::ValuesIn(x4d_sse2_tests));
 
 #if HAVE_AVX2
 const SadMxNParam avx2_tests[] = {
+#if CONFIG_EXT_PARTITION
+  make_tuple(64, 128, &aom_sad64x128_avx2, -1),
+  make_tuple(128, 64, &aom_sad128x64_avx2, -1),
+  make_tuple(128, 128, &aom_sad128x128_avx2, -1),
+#endif
   make_tuple(64, 64, &aom_sad64x64_avx2, -1),
   make_tuple(64, 32, &aom_sad64x32_avx2, -1),
   make_tuple(32, 64, &aom_sad32x64_avx2, -1),

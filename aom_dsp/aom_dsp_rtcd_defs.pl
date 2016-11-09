@@ -1167,9 +1167,9 @@ foreach (@block_sizes) {
   add_proto qw/unsigned int/, "aom_sad${w}x${h}_avg", "const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred";
 }
 
-specialize qw/aom_sad128x128                        sse2/;
-specialize qw/aom_sad128x64                         sse2/;
-specialize qw/aom_sad64x128                         sse2/;
+specialize qw/aom_sad128x128    avx2                sse2/;
+specialize qw/aom_sad128x64     avx2                sse2/;
+specialize qw/aom_sad64x128     avx2                sse2/;
 specialize qw/aom_sad64x64      avx2       neon msa sse2/;
 specialize qw/aom_sad64x32      avx2            msa sse2/;
 specialize qw/aom_sad32x64      avx2            msa sse2/;

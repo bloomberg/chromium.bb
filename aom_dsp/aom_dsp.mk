@@ -349,6 +349,9 @@ ifeq ($(CONFIG_MOTION_VAR),yes)
 DSP_SRCS-$(HAVE_SSE4_1) += x86/obmc_sad_sse4.c
 DSP_SRCS-$(HAVE_SSE4_1) += x86/obmc_variance_sse4.c
 endif  #CONFIG_MOTION_VAR
+ifeq ($(CONFIG_EXT_PARTITION),yes)
+DSP_SRCS-$(HAVE_AVX2) += x86/sad_impl_avx2.c
+endif
 endif  #CONFIG_AV1_ENCODER
 
 DSP_SRCS-$(HAVE_SSE)    += x86/sad4d_sse2.asm
