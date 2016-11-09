@@ -1856,7 +1856,7 @@ ArcBluetoothBridge::GetDeviceProperties(mojom::BluetoothPropertyType type,
   if (type == mojom::BluetoothPropertyType::ALL ||
       type == mojom::BluetoothPropertyType::BDNAME) {
     mojom::BluetoothPropertyPtr btp = mojom::BluetoothProperty::New();
-    btp->set_bdname(device->GetName() ? device->GetName().value() : nullptr);
+    btp->set_bdname(device->GetName() ? device->GetName().value() : "");
     properties.push_back(std::move(btp));
   }
   if (type == mojom::BluetoothPropertyType::ALL ||
@@ -2027,7 +2027,7 @@ ArcBluetoothBridge::GetAdvertisingData(const BluetoothDevice* device) const {
   mojom::BluetoothAdvertisingDataPtr local_name =
       mojom::BluetoothAdvertisingData::New();
   local_name->set_local_name(device->GetName() ? device->GetName().value()
-                                               : nullptr);
+                                               : "");
   advertising_data.push_back(std::move(local_name));
 
   // Service UUIDs
