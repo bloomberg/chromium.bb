@@ -24,10 +24,12 @@
 #include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_process_policy.h"
 #include "components/guest_view/browser/guest_view_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browser_url_handler.h"
+#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -513,6 +515,33 @@ bool ChromeContentBrowserClientExtensionsPart::AllowServiceWorker(
   // Don't allow a service worker for an extension url with no extension (this
   // could happen in the case of, e.g., an unloaded extension).
   return extension != nullptr;
+}
+
+// static
+void ChromeContentBrowserClientExtensionsPart::OverrideNavigationParams(
+    content::SiteInstance* site_instance,
+    ui::PageTransition* transition,
+    bool* is_renderer_initiated,
+    content::Referrer* referrer) {
+  const Extension* extension =
+      ExtensionRegistry::Get(site_instance->GetBrowserContext())
+          ->enabled_extensions()
+          .GetExtensionOrAppByURL(site_instance->GetSiteURL());
+  if (!extension)
+    return;
+
+  if (extension->id() == extension_misc::kBookmarkManagerId &&
+      ui::PageTransitionCoreTypeIs(*transition, ui::PAGE_TRANSITION_LINK)) {
+    // Link clicks in the bookmark manager count as bookmarks and as browser-
+    // initiated navigations.
+    *transition = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+    *is_renderer_initiated = false;
+  }
+
+  // Hide the referrer for extension pages. We don't want sites to see a
+  // referrer of chrome-extension://<...>.
+  if (extension->is_extension())
+    *referrer = content::Referrer();
 }
 
 // static

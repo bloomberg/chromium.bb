@@ -773,26 +773,19 @@ void NavigatorImpl::RequestOpenURL(
   params.source_site_instance = current_site_instance;
 
   if (render_frame_host->web_ui()) {
-    // Web UI pages sometimes want to override the page transition type for
-    // link clicks (e.g., so the new tab page can specify AUTO_BOOKMARK for
-    // automatically generated suggestions).  We don't override other types
-    // like TYPED because they have different implications (e.g., autocomplete).
-    if (ui::PageTransitionCoreTypeIs(
-        params.transition, ui::PAGE_TRANSITION_LINK))
-      params.transition = render_frame_host->web_ui()->GetLinkTransitionType();
-
-    // Note also that we hide the referrer for Web UI pages. We don't really
-    // want web sites to see a referrer of "chrome://blah" (and some
-    // chrome: URLs might have search terms or other stuff we don't want to
-    // send to the site), so we send no referrer.
+    // Note that we hide the referrer for Web UI pages. We don't really want
+    // web sites to see a referrer of "chrome://blah" (and some chrome: URLs
+    // might have search terms or other stuff we don't want to send to the
+    // site), so we send no referrer.
     params.referrer = Referrer();
 
     // Navigations in Web UI pages count as browser-initiated navigations.
     params.is_renderer_initiated = false;
   }
 
-  GetContentClient()->browser()->OverrideOpenURLParams(current_site_instance,
-                                                       &params);
+  GetContentClient()->browser()->OverrideNavigationParams(
+      current_site_instance, &params.transition, &params.is_renderer_initiated,
+      &params.referrer);
 
   if (delegate_)
     delegate_->RequestOpenURL(render_frame_host, params);
@@ -846,22 +839,19 @@ void NavigatorImpl::RequestTransferURL(
   // navigation.  See https://crbug.com/495161.
   bool is_renderer_initiated = true;
   if (render_frame_host->web_ui()) {
-    // Web UI pages sometimes want to override the page transition type for
-    // link clicks (e.g., so the new tab page can specify AUTO_BOOKMARK for
-    // automatically generated suggestions).  We don't override other types
-    // like TYPED because they have different implications (e.g., autocomplete).
-    if (ui::PageTransitionCoreTypeIs(page_transition, ui::PAGE_TRANSITION_LINK))
-      page_transition = render_frame_host->web_ui()->GetLinkTransitionType();
-
-    // Note also that we hide the referrer for Web UI pages. We don't really
-    // want web sites to see a referrer of "chrome://blah" (and some
-    // chrome: URLs might have search terms or other stuff we don't want to
-    // send to the site), so we send no referrer.
+    // Note that we hide the referrer for Web UI pages. We don't really want
+    // web sites to see a referrer of "chrome://blah" (and some chrome: URLs
+    // might have search terms or other stuff we don't want to send to the
+    // site), so we send no referrer.
     referrer_to_use = Referrer();
 
     // Navigations in Web UI pages count as browser-initiated navigations.
     is_renderer_initiated = false;
   }
+
+  GetContentClient()->browser()->OverrideNavigationParams(
+      current_site_instance, &page_transition, &is_renderer_initiated,
+      &referrer_to_use);
 
   // Create a NavigationEntry for the transfer, without making it the pending
   // entry.  Subframe transfers should only be possible in OOPIF-enabled modes,

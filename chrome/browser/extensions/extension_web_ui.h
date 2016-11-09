@@ -20,38 +20,17 @@ class BrowserContext;
 class WebContents;
 }
 
-namespace extensions {
-class BookmarkManagerPrivateDragEventRouter;
-}
-
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-// This class implements WebUI for extensions and allows extensions to put UI in
-// the main tab contents area. For example, each extension can specify an
-// "options_page", and that page is displayed in the tab contents area and is
-// hosted by this class.
-// TODO(devlin): The above description has nothing to do with this class as far
-// as I can tell.
-class ExtensionWebUI : public content::WebUIController {
+// A collection of methods to handle Chrome URL overrides that are managed by
+// extensions (such as overriding the new tab page).
+// TODO(devlin): Rename this class to ExtensionURLOverrides.
+class ExtensionWebUI {
  public:
   static const char kExtensionURLOverrides[];
 
-  ExtensionWebUI(content::WebUI* web_ui, const GURL& url);
-
-  ~ExtensionWebUI() override;
-
-  // Returns true if the given url requires WebUI bindings.
-  static bool NeedsExtensionWebUI(content::BrowserContext* browser_context,
-                                  const GURL& url);
-
-  // TODO(devlin): The rest of this class is static methods dealing with
-  // chrome url overrides (e.g. changing chrome://newtab to go to an extension-
-  // provided new tab page). This should be in a separate class from the WebUI
-  // controller for the bookmark manager, and the WebUI controller should be
-  // renamed.
-  // BrowserURLHandler
   static bool HandleChromeURLOverride(GURL* url,
                                       content::BrowserContext* browser_context);
   static bool HandleChromeURLOverrideReverse(
@@ -93,11 +72,6 @@ class ExtensionWebUI : public content::WebUIController {
       const GURL& page_url,
       const favicon_base::FaviconResultsCallback& callback);
 
-  extensions::BookmarkManagerPrivateDragEventRouter*
-      bookmark_manager_private_drag_event_router() {
-    return bookmark_manager_private_drag_event_router_.get();
-  }
-
  private:
   // Unregister the specified override, and if it's the currently active one,
   // ensure that something takes its place.
@@ -105,13 +79,6 @@ class ExtensionWebUI : public content::WebUIController {
                                            Profile* profile,
                                            base::ListValue* list,
                                            const base::Value* override);
-
-  // TODO(aa): This seems out of place. Why is it not with the event routers for
-  // the other extension APIs?
-  std::unique_ptr<extensions::BookmarkManagerPrivateDragEventRouter>
-      bookmark_manager_private_drag_event_router_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionWebUI);
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_WEB_UI_H_

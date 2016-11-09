@@ -69,8 +69,7 @@ base::string16 WebUI::GetJavascriptCall(
 }
 
 WebUIImpl::WebUIImpl(WebContents* contents, const std::string& frame_name)
-    : link_transition_type_(ui::PAGE_TRANSITION_LINK),
-      bindings_(BINDINGS_POLICY_WEB_UI),
+    : bindings_(BINDINGS_POLICY_WEB_UI),
       web_contents_(contents),
       web_contents_observer_(new MainFrameNavigationObserver(this, contents)),
       frame_name_(frame_name) {
@@ -138,14 +137,6 @@ const base::string16& WebUIImpl::GetOverriddenTitle() const {
 
 void WebUIImpl::OverrideTitle(const base::string16& title) {
   overridden_title_ = title;
-}
-
-ui::PageTransition WebUIImpl::GetLinkTransitionType() const {
-  return link_transition_type_;
-}
-
-void WebUIImpl::SetLinkTransitionType(ui::PageTransition type) {
-  link_transition_type_ = type;
 }
 
 int WebUIImpl::GetBindings() const {

@@ -16,6 +16,7 @@
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #include "components/undo/bookmark_undo_service.h"
+#include "content/public/browser/web_contents_user_data.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 
@@ -93,11 +94,15 @@ class BookmarkManagerPrivateAPI : public BrowserContextKeyedAPI,
 // Class that handles the drag and drop related chrome.bookmarkManagerPrivate
 // events. This class has one instance per bookmark manager tab.
 class BookmarkManagerPrivateDragEventRouter
-    : public BookmarkTabHelper::BookmarkDrag {
+    : public BookmarkTabHelper::BookmarkDrag,
+      public content::WebContentsUserData<
+          BookmarkManagerPrivateDragEventRouter> {
  public:
-  BookmarkManagerPrivateDragEventRouter(Profile* profile,
-                                        content::WebContents* web_contents);
+  explicit BookmarkManagerPrivateDragEventRouter(
+      content::WebContents* web_contents);
   ~BookmarkManagerPrivateDragEventRouter() override;
+
+  static void MaybeCreateForWebContents(content::WebContents* web_contents);
 
   // BookmarkTabHelper::BookmarkDrag interface
   void OnDragEnter(const bookmarks::BookmarkNodeData& data) override;
@@ -118,8 +123,8 @@ class BookmarkManagerPrivateDragEventRouter
                      const std::string& event_name,
                      std::unique_ptr<base::ListValue> args);
 
-  Profile* profile_;
   content::WebContents* web_contents_;
+  Profile* profile_;
   bookmarks::BookmarkNodeData bookmark_drag_data_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkManagerPrivateDragEventRouter);

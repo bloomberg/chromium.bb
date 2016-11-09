@@ -1214,10 +1214,14 @@ bool ChromeContentBrowserClient::ShouldAllowOpenURL(
   return true;
 }
 
-void ChromeContentBrowserClient::OverrideOpenURLParams(
-    content::SiteInstance* site_instance,
-    content::OpenURLParams* params) {
-  DCHECK(params);
+void ChromeContentBrowserClient::OverrideNavigationParams(
+    SiteInstance* site_instance,
+    ui::PageTransition* transition,
+    bool* is_renderer_initiated,
+    content::Referrer* referrer) {
+  DCHECK(transition);
+  DCHECK(is_renderer_initiated);
+  DCHECK(referrer);
   // TODO(crbug.com/624410): Factor the predicate to identify a URL as an NTP
   // to a shared library.
   if (site_instance &&
@@ -1226,14 +1230,18 @@ void ChromeContentBrowserClient::OverrideOpenURLParams(
            chrome::kChromeSearchRemoteNtpHost ||
        site_instance->GetSiteURL().host() ==
            chrome::kChromeSearchLocalNtpHost) &&
-      ui::PageTransitionCoreTypeIs(params->transition,
-                                   ui::PAGE_TRANSITION_LINK)) {
+      ui::PageTransitionCoreTypeIs(*transition, ui::PAGE_TRANSITION_LINK)) {
     // Use AUTO_BOOKMARK for clicks on tiles of the new tab page, consistently
     // with native implementations like Android's.
-    params->transition = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-    params->is_renderer_initiated = false;
-    params->referrer = content::Referrer();
+    *transition = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+    *is_renderer_initiated = false;
+    *referrer = content::Referrer();
   }
+
+#if defined(ENABLE_EXTENSIONS)
+  ChromeContentBrowserClientExtensionsPart::OverrideNavigationParams(
+      site_instance, transition, is_renderer_initiated, referrer);
+#endif
 }
 
 bool ChromeContentBrowserClient::IsSuitableHost(

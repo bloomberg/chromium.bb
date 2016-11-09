@@ -46,8 +46,6 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   float GetDeviceScaleFactor() const override;
   const base::string16& GetOverriddenTitle() const override;
   void OverrideTitle(const base::string16& title) override;
-  ui::PageTransition GetLinkTransitionType() const override;
-  void SetLinkTransitionType(ui::PageTransition type) override;
   int GetBindings() const override;
   void SetBindings(int bindings) override;
   bool HasRenderFrame() override;
@@ -113,7 +111,6 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   // Options that may be overridden by individual Web UI implementations. The
   // bool options default to false. See the public getters for more information.
   base::string16 overridden_title_;  // Defaults to empty string.
-  ui::PageTransition link_transition_type_;  // Defaults to LINK.
   int bindings_;  // The bindings from BindingsPolicy that should be enabled for
                   // this page.
 

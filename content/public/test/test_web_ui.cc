@@ -35,10 +35,6 @@ const base::string16& TestWebUI::GetOverriddenTitle() const {
   return temp_string_;
 }
 
-ui::PageTransition TestWebUI::GetLinkTransitionType() const {
-  return ui::PAGE_TRANSITION_LINK;
-}
-
 int TestWebUI::GetBindings() const {
   return 0;
 }

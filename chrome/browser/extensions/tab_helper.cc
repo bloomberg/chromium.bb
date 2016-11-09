@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
+#include "chrome/browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api.h"
 #include "chrome/browser/extensions/api/declarative_content/chrome_content_rules_registry.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/bookmark_app_helper.h"
@@ -183,6 +184,9 @@ TabHelper::TabHelper(content::WebContents* web_contents)
   ChromeExtensionWebContentsObserver::CreateForWebContents(web_contents);
   ExtensionWebContentsObserver::GetForWebContents(web_contents)->dispatcher()->
       set_delegate(this);
+
+  BookmarkManagerPrivateDragEventRouter::MaybeCreateForWebContents(
+      web_contents);
 
   registrar_.Add(this,
                  content::NOTIFICATION_LOAD_STOP,

@@ -216,15 +216,6 @@ WebUIController* NewWebUI(WebUI* web_ui, const GURL& url) {
   return new T(web_ui);
 }
 
-#if defined(ENABLE_EXTENSIONS)
-// Special cases for extensions.
-template<>
-WebUIController* NewWebUI<ExtensionWebUI>(WebUI* web_ui,
-                                          const GURL& url) {
-  return new ExtensionWebUI(web_ui, url);
-}
-#endif  // defined(ENABLE_EXTENSIONS)
-
 // Special case for older about: handlers.
 template<>
 WebUIController* NewWebUI<AboutUI>(WebUI* web_ui, const GURL& url) {
@@ -312,11 +303,6 @@ bool IsAboutUI(const GURL& url) {
 WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
                                              Profile* profile,
                                              const GURL& url) {
-#if defined(ENABLE_EXTENSIONS)
-  if (ExtensionWebUI::NeedsExtensionWebUI(profile, url))
-    return &NewWebUI<ExtensionWebUI>;
-#endif
-
   // This will get called a lot to check all URLs, so do a quick check of other
   // schemes to filter out most URLs.
   if (!url.SchemeIs(content::kChromeDevToolsScheme) &&
@@ -671,14 +657,7 @@ bool ChromeWebUIControllerFactory::UseWebUIForURL(
 
 bool ChromeWebUIControllerFactory::UseWebUIBindingsForURL(
     content::BrowserContext* browser_context, const GURL& url) const {
-  bool needs_extensions_web_ui = false;
-#if defined(ENABLE_EXTENSIONS)
-  // Extensions are rendered via WebUI in tabs, but don't actually need WebUI
-  // bindings (see the ExtensionWebUI constructor).
-  needs_extensions_web_ui =
-      ExtensionWebUI::NeedsExtensionWebUI(browser_context, url);
-#endif
-  return !needs_extensions_web_ui && UseWebUIForURL(browser_context, url);
+  return UseWebUIForURL(browser_context, url);
 }
 
 WebUIController* ChromeWebUIControllerFactory::CreateWebUIControllerForURL(

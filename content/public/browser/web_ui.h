@@ -62,11 +62,6 @@ class CONTENT_EXPORT WebUI {
   virtual const base::string16& GetOverriddenTitle() const = 0;
   virtual void OverrideTitle(const base::string16& title) = 0;
 
-  // Returns the transition type that should be used for link clicks on this
-  // Web UI. This will default to LINK but may be overridden.
-  virtual ui::PageTransition GetLinkTransitionType() const = 0;
-  virtual void SetLinkTransitionType(ui::PageTransition type) = 0;
-
   // Allows a controller to override the BindingsPolicy that should be enabled
   // for this page.
   virtual int GetBindings() const = 0;
