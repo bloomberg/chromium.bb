@@ -38,121 +38,12 @@
 
 #include "platform/image-decoders/png/PNGImageDecoder.h"
 
+#include "platform/image-decoders/png/PNGImageReader.h"
 #include "png.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
 
-#if !defined(PNG_LIBPNG_VER_MAJOR) || !defined(PNG_LIBPNG_VER_MINOR)
-#error version error: compile against a versioned libpng.
-#endif
-
-#if PNG_LIBPNG_VER_MAJOR > 1 || \
-    (PNG_LIBPNG_VER_MAJOR == 1 && PNG_LIBPNG_VER_MINOR >= 4)
-#define JMPBUF(png_ptr) png_jmpbuf(png_ptr)
-#else
-#define JMPBUF(png_ptr) png_ptr->jmpbuf
-#endif
-
-namespace {
-
-inline blink::PNGImageDecoder* imageDecoder(png_structp png) {
-  return static_cast<blink::PNGImageDecoder*>(png_get_progressive_ptr(png));
-}
-
-void PNGAPI pngHeaderAvailable(png_structp png, png_infop) {
-  imageDecoder(png)->headerAvailable();
-}
-
-void PNGAPI pngRowAvailable(png_structp png,
-                            png_bytep row,
-                            png_uint_32 rowIndex,
-                            int state) {
-  imageDecoder(png)->rowAvailable(row, rowIndex, state);
-}
-
-void PNGAPI pngComplete(png_structp png, png_infop) {
-  imageDecoder(png)->complete();
-}
-
-void PNGAPI pngFailed(png_structp png, png_const_charp) {
-  longjmp(JMPBUF(png), 1);
-}
-
-}  // namespace
-
 namespace blink {
-
-class PNGImageReader final {
-  USING_FAST_MALLOC(PNGImageReader);
-  WTF_MAKE_NONCOPYABLE(PNGImageReader);
-
- public:
-  PNGImageReader(PNGImageDecoder* decoder, size_t readOffset)
-      : m_decoder(decoder),
-        m_readOffset(readOffset),
-        m_currentBufferSize(0),
-        m_decodingSizeOnly(false),
-        m_hasAlpha(false) {
-    m_png = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, pngFailed, 0);
-    m_info = png_create_info_struct(m_png);
-    png_set_progressive_read_fn(m_png, m_decoder, pngHeaderAvailable,
-                                pngRowAvailable, pngComplete);
-  }
-
-  ~PNGImageReader() {
-    png_destroy_read_struct(m_png ? &m_png : 0, m_info ? &m_info : 0, 0);
-    ASSERT(!m_png && !m_info);
-
-    m_readOffset = 0;
-  }
-
-  bool decode(const SegmentReader& data, bool sizeOnly) {
-    m_decodingSizeOnly = sizeOnly;
-
-    // We need to do the setjmp here. Otherwise bad things will happen.
-    if (setjmp(JMPBUF(m_png)))
-      return m_decoder->setFailed();
-
-    const char* segment;
-    while (size_t segmentLength = data.getSomeData(segment, m_readOffset)) {
-      m_readOffset += segmentLength;
-      m_currentBufferSize = m_readOffset;
-      png_process_data(m_png, m_info,
-                       reinterpret_cast<png_bytep>(const_cast<char*>(segment)),
-                       segmentLength);
-      if (sizeOnly ? m_decoder->isDecodedSizeAvailable()
-                   : m_decoder->frameIsCompleteAtIndex(0))
-        return true;
-    }
-
-    return false;
-  }
-
-  png_structp pngPtr() const { return m_png; }
-  png_infop infoPtr() const { return m_info; }
-
-  size_t getReadOffset() const { return m_readOffset; }
-  void setReadOffset(size_t offset) { m_readOffset = offset; }
-  size_t currentBufferSize() const { return m_currentBufferSize; }
-  bool decodingSizeOnly() const { return m_decodingSizeOnly; }
-  void setHasAlpha(bool hasAlpha) { m_hasAlpha = hasAlpha; }
-  bool hasAlpha() const { return m_hasAlpha; }
-
-  png_bytep interlaceBuffer() const { return m_interlaceBuffer.get(); }
-  void createInterlaceBuffer(int size) {
-    m_interlaceBuffer = wrapArrayUnique(new png_byte[size]);
-  }
-
- private:
-  png_structp m_png;
-  png_infop m_info;
-  PNGImageDecoder* m_decoder;
-  size_t m_readOffset;
-  size_t m_currentBufferSize;
-  bool m_decodingSizeOnly;
-  bool m_hasAlpha;
-  std::unique_ptr<png_byte[]> m_interlaceBuffer;
-};
 
 PNGImageDecoder::PNGImageDecoder(AlphaOption alphaOption,
                                  ColorSpaceOption colorOptions,
