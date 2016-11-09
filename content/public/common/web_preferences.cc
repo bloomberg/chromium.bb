@@ -181,6 +181,10 @@ WebPreferences::WebPreferences()
       animation_policy(IMAGE_ANIMATION_POLICY_ALLOWED),
       user_gesture_required_for_presentation(true),
       text_track_margin_percentage(0.0f),
+      expensive_background_throttling_cpu_budget(-1.0f),
+      expensive_background_throttling_initial_budget(-1.0f),
+      expensive_background_throttling_max_budget(-1.0f),
+      expensive_background_throttling_max_delay(-1.0f),
 #if defined(OS_ANDROID)
       text_autosizing_enabled(true),
       font_scale_factor(1.0f),
@@ -216,8 +220,7 @@ WebPreferences::WebPreferences()
       default_minimum_page_scale_factor(1.f),
       default_maximum_page_scale_factor(4.f),
 #endif
-      hide_download_ui(false)
-{
+      hide_download_ui(false) {
   standard_font_family_map[kCommonScript] =
       base::ASCIIToUTF16("Times New Roman");
   fixed_font_family_map[kCommonScript] = base::ASCIIToUTF16("Courier New");

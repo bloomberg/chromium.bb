@@ -40,7 +40,8 @@ class BLINK_PLATFORM_EXPORT WebSchedulerImpl : public WebScheduler {
   WebTaskRunner* loadingTaskRunner() override;
   WebTaskRunner* timerTaskRunner() override;
   std::unique_ptr<WebViewScheduler> createWebViewScheduler(
-      InterventionReporter*) override;
+      InterventionReporter*,
+      WebViewScheduler::WebViewSchedulerSettings*) override;
   void suspendTimerQueue() override {}
   void resumeTimerQueue() override {}
   void addPendingNavigation(WebScheduler::NavigatingFrameType type) override {}

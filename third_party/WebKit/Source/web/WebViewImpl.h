@@ -100,7 +100,8 @@ class WEB_EXPORT WebViewImpl final
       public RefCounted<WebViewImpl>,
       WTF_NON_EXPORTED_BASE(public WebGestureCurveTarget),
       public PageWidgetEventHandler,
-      public WebScheduler::InterventionReporter {
+      public WebScheduler::InterventionReporter,
+      public WebViewScheduler::WebViewSchedulerSettings {
  public:
   static WebViewImpl* create(WebViewClient*, WebPageVisibilityState);
   static HashSet<WebViewImpl*>& allInstances();
@@ -278,6 +279,12 @@ class WEB_EXPORT WebViewImpl final
 
   // WebScheduler::InterventionReporter implementation:
   void ReportIntervention(const WebString& message) override;
+
+  // WebViewScheduler::WebViewSchedulerSettings implementation:
+  float expensiveBackgroundThrottlingCPUBudget() override;
+  float expensiveBackgroundThrottlingInitialBudget() override;
+  float expensiveBackgroundThrottlingMaxBudget() override;
+  float expensiveBackgroundThrottlingMaxDelay() override;
 
   void didUpdateFullscreenSize();
 

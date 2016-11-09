@@ -2836,7 +2836,7 @@ TEST_F(RendererSchedulerImplTest,
 class WebViewSchedulerImplForTest : public WebViewSchedulerImpl {
  public:
   WebViewSchedulerImplForTest(RendererSchedulerImpl* scheduler)
-      : WebViewSchedulerImpl(nullptr, scheduler, false) {}
+      : WebViewSchedulerImpl(nullptr, nullptr, scheduler, false) {}
   ~WebViewSchedulerImplForTest() override {}
 
   void ReportIntervention(const std::string& message) override {

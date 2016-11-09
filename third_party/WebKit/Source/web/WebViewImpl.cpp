@@ -435,7 +435,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       m_scheduler(wrapUnique(Platform::current()
                                  ->currentThread()
                                  ->scheduler()
-                                 ->createWebViewScheduler(this)
+                                 ->createWebViewScheduler(this, this)
                                  .release())),
       m_lastFrameTimeMonotonic(0),
       m_overrideCompositorVisibility(false) {
@@ -1096,6 +1096,22 @@ void WebViewImpl::ReportIntervention(const WebString& message) {
     return;
   WebConsoleMessage consoleMessage(WebConsoleMessage::LevelWarning, message);
   mainFrame()->addMessageToConsole(consoleMessage);
+}
+
+float WebViewImpl::expensiveBackgroundThrottlingCPUBudget() {
+  return settingsImpl()->expensiveBackgroundThrottlingCPUBudget();
+}
+
+float WebViewImpl::expensiveBackgroundThrottlingInitialBudget() {
+  return settingsImpl()->expensiveBackgroundThrottlingInitialBudget();
+}
+
+float WebViewImpl::expensiveBackgroundThrottlingMaxBudget() {
+  return settingsImpl()->expensiveBackgroundThrottlingMaxBudget();
+}
+
+float WebViewImpl::expensiveBackgroundThrottlingMaxDelay() {
+  return settingsImpl()->expensiveBackgroundThrottlingMaxDelay();
 }
 
 WebInputEventResult WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event) {

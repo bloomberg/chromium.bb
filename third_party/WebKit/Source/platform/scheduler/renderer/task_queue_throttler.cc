@@ -22,9 +22,6 @@ namespace blink {
 namespace scheduler {
 
 namespace {
-constexpr base::TimeDelta kMaxBudgetLevel = base::TimeDelta::FromSeconds(1);
-constexpr base::TimeDelta kMaxThrottlingDuration =
-    base::TimeDelta::FromMinutes(1);
 
 base::Optional<base::TimeTicks> NextTaskRunTime(LazyNow* lazy_now,
                                                 TaskQueue* queue) {
@@ -272,8 +269,6 @@ TaskQueueThrottler::TaskQueueThrottler(
       tick_clock_(renderer_scheduler->tick_clock()),
       tracing_category_(tracing_category),
       time_domain_(new ThrottledTimeDomain(this, tracing_category)),
-      max_budget_level_(kMaxBudgetLevel),
-      max_throttling_duration_(kMaxThrottlingDuration),
       allow_throttling_(true),
       weak_factory_(this) {
   pump_throttled_tasks_closure_.Reset(base::Bind(
@@ -515,10 +510,12 @@ void TaskQueueThrottler::MaybeSchedulePumpThrottledTasks(
 }
 
 TaskQueueThrottler::TimeBudgetPool* TaskQueueThrottler::CreateTimeBudgetPool(
-    const char* name) {
+    const char* name,
+    base::Optional<base::TimeDelta> max_budget_level,
+    base::Optional<base::TimeDelta> max_throttling_duration) {
   TimeBudgetPool* time_budget_pool =
-      new TimeBudgetPool(name, this, tick_clock_->NowTicks(), max_budget_level_,
-                         max_throttling_duration_);
+      new TimeBudgetPool(name, this, tick_clock_->NowTicks(), max_budget_level,
+                         max_throttling_duration);
   time_budget_pools_[time_budget_pool] = base::WrapUnique(time_budget_pool);
   return time_budget_pool;
 }

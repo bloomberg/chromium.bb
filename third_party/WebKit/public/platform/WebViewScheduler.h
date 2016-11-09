@@ -16,6 +16,18 @@ class WebFrameScheduler;
 
 class BLINK_PLATFORM_EXPORT WebViewScheduler {
  public:
+  // Helper interface to plumb settings from WebSettings to scheduler.
+  class BLINK_PLATFORM_EXPORT WebViewSchedulerSettings {
+   public:
+    virtual ~WebViewSchedulerSettings() {}
+
+    // Background throttling aggressiveness settings.
+    virtual float expensiveBackgroundThrottlingCPUBudget() = 0;
+    virtual float expensiveBackgroundThrottlingInitialBudget() = 0;
+    virtual float expensiveBackgroundThrottlingMaxBudget() = 0;
+    virtual float expensiveBackgroundThrottlingMaxDelay() = 0;
+  };
+
   virtual ~WebViewScheduler() {}
 
   // The scheduler may throttle tasks associated with background pages.

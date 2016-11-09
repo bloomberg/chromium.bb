@@ -19,6 +19,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
@@ -27,6 +28,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
@@ -406,6 +408,23 @@ void RenderViewHostImpl::SyncRendererPrefs() {
   Send(new ViewMsg_SetRendererPrefs(GetRoutingID(), renderer_preferences));
 }
 
+namespace {
+
+void SetFloatParameterFromMap(
+    const std::map<std::string, std::string>& settings,
+    const std::string& setting_name,
+    float* value) {
+  const auto& find_it = settings.find(setting_name);
+  if (find_it == settings.end())
+    return;
+  double parsed_value;
+  if (!base::StringToDouble(find_it->second, &parsed_value))
+    return;
+  *value = parsed_value;
+}
+
+}  // namespace
+
 WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   TRACE_EVENT0("browser", "RenderViewHostImpl::GetWebkitPrefs");
   WebPreferences prefs;
@@ -564,6 +583,20 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
 
   if (delegate_ && delegate_->HideDownloadUI())
     prefs.hide_download_ui = true;
+
+  std::map<std::string, std::string> expensive_background_throttling_prefs;
+  variations::GetVariationParamsByFeature(
+      features::kExpensiveBackgroundTimerThrottling,
+      &expensive_background_throttling_prefs);
+  SetFloatParameterFromMap(expensive_background_throttling_prefs, "cpu_budget",
+                           &prefs.expensive_background_throttling_cpu_budget);
+  SetFloatParameterFromMap(
+      expensive_background_throttling_prefs, "initial_budget",
+      &prefs.expensive_background_throttling_initial_budget);
+  SetFloatParameterFromMap(expensive_background_throttling_prefs, "max_budget",
+                           &prefs.expensive_background_throttling_max_budget);
+  SetFloatParameterFromMap(expensive_background_throttling_prefs, "max_delay",
+                           &prefs.expensive_background_throttling_max_delay);
 
   GetContentClient()->browser()->OverrideWebkitPrefs(this, &prefs);
   return prefs;

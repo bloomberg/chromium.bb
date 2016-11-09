@@ -289,6 +289,11 @@ class WebSettings {
   virtual void setWebSecurityEnabled(bool) = 0;
   virtual void setWideViewportQuirkEnabled(bool) = 0;
   virtual void setXSSAuditorEnabled(bool) = 0;
+  // Background timer throttling aggressiveness settings.
+  virtual void setExpensiveBackgroundThrottlingCPUBudget(float) = 0;
+  virtual void setExpensiveBackgroundThrottlingInitialBudget(float) = 0;
+  virtual void setExpensiveBackgroundThrottlingMaxBudget(float) = 0;
+  virtual void setExpensiveBackgroundThrottlingMaxDelay(float) = 0;
 
  protected:
   ~WebSettings() {}

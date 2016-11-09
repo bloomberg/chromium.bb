@@ -202,7 +202,10 @@ class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TimeDomain::Observer {
   const scoped_refptr<TaskQueue>& task_runner() const { return task_runner_; }
 
   // Returned object is owned by |TaskQueueThrottler|.
-  TimeBudgetPool* CreateTimeBudgetPool(const char* name);
+  TimeBudgetPool* CreateTimeBudgetPool(
+      const char* name,
+      base::Optional<base::TimeDelta> max_budget_level,
+      base::Optional<base::TimeDelta> max_throttling_duration);
 
   // Accounts for given task for cpu-based throttling needs.
   void OnTaskRunTimeReported(TaskQueue* task_queue,
@@ -265,9 +268,6 @@ class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TimeDomain::Observer {
   base::TickClock* tick_clock_;                // NOT OWNED
   const char* tracing_category_;               // NOT OWNED
   std::unique_ptr<ThrottledTimeDomain> time_domain_;
-
-  base::Optional<base::TimeDelta> max_budget_level_;
-  base::Optional<base::TimeDelta> max_throttling_duration_;
 
   CancelableClosureHolder pump_throttled_tasks_closure_;
   base::Optional<base::TimeTicks> pending_pump_throttled_tasks_runtime_;

@@ -64,7 +64,7 @@ void WebFrameSchedulerImpl::RemoveTimerQueueFromBackgroundTimeBudgetPool() {
     return;
 
   TaskQueueThrottler::TimeBudgetPool* time_budget_pool =
-      parent_web_view_scheduler_->background_time_budget_pool();
+      parent_web_view_scheduler_->BackgroundTimeBudgetPool();
 
   if (!time_budget_pool)
     return;
@@ -110,7 +110,7 @@ blink::WebTaskRunner* WebFrameSchedulerImpl::timerTaskRunner() {
     timer_task_queue_->SetBlameContext(blame_context_);
 
     TaskQueueThrottler::TimeBudgetPool* time_budget_pool =
-        parent_web_view_scheduler_->background_time_budget_pool();
+        parent_web_view_scheduler_->BackgroundTimeBudgetPool();
     if (time_budget_pool) {
       time_budget_pool->AddQueue(renderer_scheduler_->tick_clock()->NowTicks(),
                                  timer_task_queue_.get());

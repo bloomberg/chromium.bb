@@ -492,7 +492,8 @@ TEST_F(TaskQueueThrottlerTest, IncrementThenEnableVirtualTime) {
 
 TEST_F(TaskQueueThrottlerTest, TimeBudgetPool) {
   TaskQueueThrottler::TimeBudgetPool* pool =
-      task_queue_throttler_->CreateTimeBudgetPool("test");
+      task_queue_throttler_->CreateTimeBudgetPool("test", base::nullopt,
+                                                  base::nullopt);
 
   base::TimeTicks time_zero = clock_->NowTicks();
 
@@ -539,7 +540,8 @@ TEST_F(TaskQueueThrottlerTest, TimeBasedThrottling) {
   std::vector<base::TimeTicks> run_times;
 
   TaskQueueThrottler::TimeBudgetPool* pool =
-      task_queue_throttler_->CreateTimeBudgetPool("test");
+      task_queue_throttler_->CreateTimeBudgetPool("test", base::nullopt,
+                                                  base::nullopt);
 
   pool->SetTimeBudget(base::TimeTicks(), 0.1);
   pool->AddQueue(base::TimeTicks(), timer_queue_.get());
@@ -588,7 +590,8 @@ TEST_F(TaskQueueThrottlerTest, EnableAndDisableTimeBudgetPool) {
   std::vector<base::TimeTicks> run_times;
 
   TaskQueueThrottler::TimeBudgetPool* pool =
-      task_queue_throttler_->CreateTimeBudgetPool("test");
+      task_queue_throttler_->CreateTimeBudgetPool("test", base::nullopt,
+                                                  base::nullopt);
   EXPECT_TRUE(pool->IsThrottlingEnabled());
 
   pool->SetTimeBudget(base::TimeTicks(), 0.1);
@@ -648,7 +651,8 @@ TEST_F(TaskQueueThrottlerTest, ImmediateTasksTimeBudgetThrottling) {
   std::vector<base::TimeTicks> run_times;
 
   TaskQueueThrottler::TimeBudgetPool* pool =
-      task_queue_throttler_->CreateTimeBudgetPool("test");
+      task_queue_throttler_->CreateTimeBudgetPool("test", base::nullopt,
+                                                  base::nullopt);
 
   pool->SetTimeBudget(base::TimeTicks(), 0.1);
   pool->AddQueue(base::TimeTicks(), timer_queue_.get());
@@ -696,7 +700,8 @@ TEST_F(TaskQueueThrottlerTest, TwoQueuesTimeBudgetThrottling) {
       scheduler_->NewTimerTaskRunner(TaskQueue::QueueType::TEST);
 
   TaskQueueThrottler::TimeBudgetPool* pool =
-      task_queue_throttler_->CreateTimeBudgetPool("pool");
+      task_queue_throttler_->CreateTimeBudgetPool("test", base::nullopt,
+                                                  base::nullopt);
 
   pool->SetTimeBudget(base::TimeTicks(), 0.1);
   pool->AddQueue(base::TimeTicks(), timer_queue_.get());
@@ -730,7 +735,8 @@ TEST_F(TaskQueueThrottlerTest, DisabledTimeBudgetDoesNotAffectThrottledQueues) {
   LazyNow lazy_now(clock_.get());
 
   TaskQueueThrottler::TimeBudgetPool* pool =
-      task_queue_throttler_->CreateTimeBudgetPool("pool");
+      task_queue_throttler_->CreateTimeBudgetPool("test", base::nullopt,
+                                                  base::nullopt);
   pool->SetTimeBudget(lazy_now.Now(), 0.1);
   pool->DisableThrottling(&lazy_now);
 
@@ -758,7 +764,8 @@ TEST_F(TaskQueueThrottlerTest,
   std::vector<base::TimeTicks> run_times;
 
   TaskQueueThrottler::TimeBudgetPool* pool =
-      task_queue_throttler_->CreateTimeBudgetPool("pool");
+      task_queue_throttler_->CreateTimeBudgetPool("test", base::nullopt,
+                                                  base::nullopt);
   pool->SetTimeBudget(base::TimeTicks(), 0.1);
 
   LazyNow lazy_now(clock_.get());
@@ -788,7 +795,8 @@ TEST_F(TaskQueueThrottlerTest,
   std::vector<base::TimeTicks> run_times;
 
   TaskQueueThrottler::TimeBudgetPool* pool =
-      task_queue_throttler_->CreateTimeBudgetPool("pool");
+      task_queue_throttler_->CreateTimeBudgetPool("test", base::nullopt,
+                                                  base::nullopt);
   pool->SetTimeBudget(clock_->NowTicks(), 0.1);
 
   pool->AddQueue(clock_->NowTicks(), timer_queue_.get());
@@ -809,7 +817,8 @@ TEST_F(TaskQueueThrottlerTest, MaxThrottlingDuration) {
   std::vector<base::TimeTicks> run_times;
 
   TaskQueueThrottler::TimeBudgetPool* pool =
-      task_queue_throttler_->CreateTimeBudgetPool("test");
+      task_queue_throttler_->CreateTimeBudgetPool(
+          "test", base::nullopt, base::TimeDelta::FromMinutes(1));
 
   pool->SetTimeBudget(base::TimeTicks(), 0.001);
   pool->AddQueue(base::TimeTicks(), timer_queue_.get());
@@ -909,7 +918,8 @@ TEST_F(TaskQueueThrottlerTest, ReportThrottling) {
   std::vector<base::TimeDelta> reported_throttling_times;
 
   TaskQueueThrottler::TimeBudgetPool* pool =
-      task_queue_throttler_->CreateTimeBudgetPool("test");
+      task_queue_throttler_->CreateTimeBudgetPool("test", base::nullopt,
+                                                  base::nullopt);
 
   pool->SetTimeBudget(base::TimeTicks(), 0.1);
   pool->AddQueue(base::TimeTicks(), timer_queue_.get());

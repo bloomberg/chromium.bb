@@ -32,6 +32,7 @@ class BLINK_PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
  public:
   WebViewSchedulerImpl(
       WebScheduler::InterventionReporter* intervention_reporter,
+      WebViewScheduler::WebViewSchedulerSettings* settings,
       RendererSchedulerImpl* renderer_scheduler,
       bool disable_background_timer_throttling);
 
@@ -64,11 +65,9 @@ class BLINK_PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
  private:
   friend class WebFrameSchedulerImpl;
 
-  TaskQueueThrottler::TimeBudgetPool* background_time_budget_pool() const {
-    return background_time_budget_pool_;
-  }
+  TaskQueueThrottler::TimeBudgetPool* BackgroundTimeBudgetPool();
+  void MaybeInitializeBackgroundTimeBudgetPool();
 
- private:
   void setAllowVirtualTimeToAdvance(bool allow_virtual_time_to_advance);
   void ApplyVirtualTimePolicy();
 
@@ -89,6 +88,7 @@ class BLINK_PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   bool reported_background_throttling_since_navigation_;
   TaskQueueThrottler::TimeBudgetPool*
       background_time_budget_pool_;  // Not owned.
+  WebViewScheduler::WebViewSchedulerSettings* settings_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(WebViewSchedulerImpl);
 };

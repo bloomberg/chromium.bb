@@ -52,7 +52,11 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings,
       m_shrinksViewportContentToFit(false),
       m_viewportMetaLayoutSizeQuirk(false),
       m_viewportMetaNonUserScalableQuirk(false),
-      m_clobberUserAgentInitialScaleQuirk(false) {
+      m_clobberUserAgentInitialScaleQuirk(false),
+      m_expensiveBackgroundThrottlingCPUBudget(-1),
+      m_expensiveBackgroundThrottlingInitialBudget(-1),
+      m_expensiveBackgroundThrottlingMaxBudget(-1),
+      m_expensiveBackgroundThrottlingMaxDelay(-1) {
   DCHECK(settings);
 }
 
@@ -689,6 +693,25 @@ void WebSettingsImpl::setV8CacheStrategiesForCacheStorage(
 
 void WebSettingsImpl::setViewportStyle(WebViewportStyle style) {
   m_devToolsEmulator->setViewportStyle(style);
+}
+
+void WebSettingsImpl::setExpensiveBackgroundThrottlingCPUBudget(
+    float cpuBudget) {
+  m_expensiveBackgroundThrottlingCPUBudget = cpuBudget;
+}
+
+void WebSettingsImpl::setExpensiveBackgroundThrottlingInitialBudget(
+    float initialBudget) {
+  m_expensiveBackgroundThrottlingInitialBudget = initialBudget;
+}
+
+void WebSettingsImpl::setExpensiveBackgroundThrottlingMaxBudget(
+    float maxBudget) {
+  m_expensiveBackgroundThrottlingMaxBudget = maxBudget;
+}
+
+void WebSettingsImpl::setExpensiveBackgroundThrottlingMaxDelay(float maxDelay) {
+  m_expensiveBackgroundThrottlingMaxDelay = maxDelay;
 }
 
 }  // namespace blink
