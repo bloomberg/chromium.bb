@@ -21,12 +21,16 @@ crbug.com/508734 imported/wpt/html/semantics/document-metadata/the-link-element/
 crbug.com/508734 imported/wpt/html/semantics/scripting-1/the-script-element/data-url.html [ Failure ]
 crbug.com/508734 imported/wpt/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol/004.xhtml [ Failure ]
 crbug.com/508734 imported/wpt/workers/semantics/xhr/003.html [ Failure ]
+crbug.com/508734 imported/wpt/html/browsers/browsing-the-web/history-traversal/browsing_context_name_cross_origin_3.html [ Failure ]
 
 # Fail differently when run with --enable-wptserve: (crbug.com/508728)
+crbug.com/508728 imported/wpt/dom/nodes/Document-createElement-namespace.html [ Failure ]
 crbug.com/508728 imported/wpt/dom/nodes/Document-createElement.html [ Failure ]
 crbug.com/508728 imported/wpt/dom/nodes/Document-createElementNS.html [ Failure ]
 crbug.com/508728 imported/wpt/html/browsers/offline/application-cache-api/api_update.html [ Failure ]
 crbug.com/508728 imported/wpt/FileAPI/url/url_xmlhttprequest.html [ Failure ]
+crbug.com/508728 imported/wpt/html/browsers/history/the-location-interface/reload_post_1.html [ Timeout ]
+crbug.com/508728 imported/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure ]
 crbug.com/508728 imported/wpt/html/dom/reflection-obsolete.html [ Failure ]
 crbug.com/508728 imported/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-control.html [ Failure ]
 crbug.com/508728 imported/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-insert-br.html [ Failure ]
@@ -34,6 +38,8 @@ crbug.com/508728 imported/wpt/html/semantics/embedded-content/media-elements/loa
 crbug.com/508728 imported/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-insert-text.html [ Failure ]
 crbug.com/508728 imported/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-remove-source.html [ Failure ]
 crbug.com/508728 imported/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-remove-text.html [ Failure ]
+crbug.com/508728 imported/wpt/html/semantics/embedded-content/the-img-element/sizes/parse-a-sizes-attribute.html [ Failure ]
+crbug.com/508728 imported/wpt/html/semantics/forms/form-submission-0/getactionurl.html [ Failure ]
 crbug.com/508734 imported/wpt/html/semantics/scripting-1/the-script-element/script-onerror-insertion-point-2.html [ Failure ]
 crbug.com/508728 imported/wpt/html/webappapis/scripting/processing-model-2/compile-error-cross-origin.html [ Failure ]
 crbug.com/508728 imported/wpt/html/webappapis/scripting/processing-model-2/compile-error-in-setInterval.html [ Failure ]
@@ -50,15 +56,25 @@ crbug.com/508728 imported/wpt/html/browsers/the-window-object/security-window/wi
 
 # Pass when run with --enable-wptserve: (crbug.com/508725)
 # Expectation is [ Failure ] since there is an -expected.txt which doesn't match all-PASS output.
+crbug.com/508725 imported/wpt/html/browsers/browsing-the-web/navigating-across-documents/002.html [ Failure ]
+crbug.com/508725 imported/wpt/html/browsers/browsing-the-web/navigating-across-documents/source/navigate-child-function-parent.html [ Failure ]
+crbug.com/508725 imported/wpt/html/browsers/browsing-the-web/navigating-across-documents/source/navigate-child-function-src.html [ Failure ]
+crbug.com/508725 imported/wpt/html/browsers/browsing-the-web/navigating-across-documents/source/navigate-child-function.html [ Failure ]
+crbug.com/508725 imported/wpt/html/browsers/browsing-the-web/navigating-across-documents/source/navigate-child-src-about-blank.html [ Failure ]
+crbug.com/508725 imported/wpt/html/browsers/history/the-history-interface/009.html [ Failure ]
+crbug.com/508725 imported/wpt/html/browsers/history/the-history-interface/010.html [ Failure ]
 crbug.com/508725 imported/wpt/html/browsers/history/the-history-interface/history_pushstate_err.html [ Failure ]
 crbug.com/508725 imported/wpt/html/browsers/history/the-history-interface/history_replacestate_err.html [ Failure ]
+crbug.com/508725 imported/wpt/html/browsers/history/the-location-interface/security_location_0.htm [ Failure ]
 crbug.com/508725 imported/wpt/html/browsers/offline/application-cache-api/api_status_idle.html [ Failure ]
+crbug.com/508725 imported/wpt/html/browsers/origin/origin-of-data-document.html [ Failure ]
+crbug.com/508725 imported/wpt/html/browsers/the-window-object/Window-document.html [ Failure ]
 crbug.com/508725 imported/wpt/html/dom/elements/global-attributes/the-lang-attribute-003.html [ Failure ]
+crbug.com/508725 imported/wpt/html/semantics/document-metadata/the-base-element/base_href_specified.html [ Failure ]
 crbug.com/508725 imported/wpt/html/semantics/document-metadata/the-link-element/document-without-browsing-context.html [ Failure ]
+crbug.com/508725 imported/wpt/html/semantics/embedded-content/the-iframe-element/same_origin_parentage.html [ Failure ]
 crbug.com/508725 imported/wpt/html/semantics/forms/historical.html [ Failure ]
 crbug.com/508725 imported/wpt/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol.html [ Failure ]
-crbug.com/508725 imported/wpt/html/browsers/history/the-location-interface/security_location_0.htm [ Failure ]
-crbug.com/508725 imported/wpt/html/semantics/document-metadata/the-base-element/base_href_specified.html [ Failure ]
 
 # Pass when run with --enable-wptserve: (crbug.com/508725)
 # Expectation is [ Pass ] since for these there is no -expected.txt,
@@ -88,3 +104,6 @@ crbug.com/602693 imported/wpt/service-workers/stub-4.7.4.1-fetch-event-section.h
 crbug.com/618616 imported/wpt/service-workers/service-worker/fetch-event-redirect.https.html [ Pass Timeout ]
 crbug.com/618616 imported/wpt/service-workers/service-worker/fetch-mixed-content-to-inscope.https.html [ Timeout ]
 crbug.com/618616 imported/wpt/service-workers/service-worker/fetch-mixed-content-to-outscope.https.html [ Timeout ]
+
+# Untriaged service-worker timeout. Is it crbug.com/618616?
+imported/wpt/service-workers/service-worker/update-after-oneday.https.html [ Timeout ]
