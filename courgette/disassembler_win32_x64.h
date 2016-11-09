@@ -16,6 +16,7 @@
 namespace courgette {
 
 class AssemblyProgram;
+class InstructionReceptor;
 
 class DisassemblerWin32X64 : public DisassemblerWin32 {
  public:
@@ -37,10 +38,10 @@ class DisassemblerWin32X64 : public DisassemblerWin32 {
   RVA Address64ToRVA(uint64_t address) const;
 
  protected:
-  // Disassembler interfaces.
+  // DisassemblerWin32 interfaces.
   void ParseRel32RelocsFromSection(const Section* section) override;
   int AbsVAWidth() const override { return 8; }
-  CheckBool EmitAbs(Label* label, AssemblyProgram* program) override;
+  CheckBool EmitAbs(Label* label, InstructionReceptor* receptor) const override;
   bool SupportsRelTableType(int type) const override {
     return type == 10;  // IMAGE_REL_BASED_DIR64
   }

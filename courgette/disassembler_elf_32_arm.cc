@@ -100,7 +100,7 @@ CheckBool DisassemblerElf32ARM::Compress(ARM_RVA type,
 
       temp |= (S << 24) | (i1 << 23) | (i2 << 22);
 
-      if (temp & 0x01000000) // sign extension
+      if (temp & 0x01000000)  // sign extension
         temp |= 0xFE000000;
       uint32_t prefetch;
       if (toARM) {
@@ -299,9 +299,9 @@ CheckBool DisassemblerElf32ARM::TypedRVAARM::ComputeRelativeTarget(
 }
 
 CheckBool DisassemblerElf32ARM::TypedRVAARM::EmitInstruction(
-    AssemblyProgram* program,
-    Label* label) {
-  return program->EmitRel32ARM(c_op(), label, arm_op_, op_size());
+    Label* label,
+    InstructionReceptor* receptor) {
+  return receptor->EmitRel32ARM(c_op(), label, arm_op_, op_size());
 }
 
 DisassemblerElf32ARM::DisassemblerElf32ARM(const uint8_t* start, size_t length)
@@ -332,7 +332,7 @@ CheckBool DisassemblerElf32ARM::RelToRVA(Elf32_Rel rel, RVA* result) const {
 
 CheckBool DisassemblerElf32ARM::ParseRelocationSection(
     const Elf32_Shdr* section_header,
-    AssemblyProgram* program) {
+    InstructionReceptor* receptor) const {
   // This method compresses a contiguous stretch of R_ARM_RELATIVE entries in
   // the relocation table with a Courgette relocation table instruction.
   // It skips any entries at the beginning that appear in a section that
@@ -372,9 +372,8 @@ CheckBool DisassemblerElf32ARM::ParseRelocationSection(
       if (section_relocs_iter->r_offset == *reloc_iter)
         break;
 
-      if (!ParseSimpleRegion(file_offset,
-                             file_offset + sizeof(Elf32_Rel),
-                             program)) {
+      if (!ParseSimpleRegion(file_offset, file_offset + sizeof(Elf32_Rel),
+                             receptor)) {
         return false;
       }
 
@@ -395,12 +394,12 @@ CheckBool DisassemblerElf32ARM::ParseRelocationSection(
 
     if (match) {
       // Skip over relocation tables
-      if (!program->EmitElfARMRelocationInstruction())
+      if (!receptor->EmitElfARMRelocation())
         return false;
     }
   }
 
-  return ParseSimpleRegion(file_offset, section_end, program);
+  return ParseSimpleRegion(file_offset, section_end, receptor);
 }
 
 // TODO(huangs): Detect and avoid overlap with abs32 addresses.

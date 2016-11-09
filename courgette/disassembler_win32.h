@@ -21,6 +21,7 @@
 namespace courgette {
 
 class AssemblyProgram;
+class InstructionReceptor;
 
 class DisassemblerWin32 : public Disassembler {
  public:
@@ -29,8 +30,8 @@ class DisassemblerWin32 : public Disassembler {
   // Disassembler interfaces.
   RVA FileOffsetToRVA(FileOffset file_offset) const override;
   FileOffset RVAToFileOffset(RVA rva) const override;
-  virtual ExecutableType kind() const override = 0;
-  virtual RVA PointerToTargetRVA(const uint8_t* p) const override = 0;
+  ExecutableType kind() const override = 0;
+  RVA PointerToTargetRVA(const uint8_t* p) const override = 0;
   bool ParseHeader() override;
   bool Disassemble(AssemblyProgram* target) override;
 
@@ -61,30 +62,34 @@ class DisassemblerWin32 : public Disassembler {
 
   DisassemblerWin32(const uint8_t* start, size_t length);
 
-  CheckBool ParseFile(AssemblyProgram* target) WARN_UNUSED_RESULT;
+  CheckBool ParseFile(AssemblyProgram* target,
+                      InstructionReceptor* receptor) const WARN_UNUSED_RESULT;
   bool ParseAbs32Relocs();
   void ParseRel32RelocsFromSections();
   virtual void ParseRel32RelocsFromSection(const Section* section) = 0;
 
   CheckBool ParseNonSectionFileRegion(FileOffset start_file_offset,
                                       FileOffset end_file_offset,
-                                      AssemblyProgram* program)
+                                      InstructionReceptor* receptor) const
       WARN_UNUSED_RESULT;
   CheckBool ParseFileRegion(const Section* section,
                             FileOffset start_file_offset,
                             FileOffset end_file_offset,
-                            AssemblyProgram* program) WARN_UNUSED_RESULT;
+                            AssemblyProgram* program,
+                            InstructionReceptor* receptor) const
+      WARN_UNUSED_RESULT;
 
   // Returns address width in byte count.
   virtual int AbsVAWidth() const = 0;
-  // Emits Abs 32/64 |label| to the |program|.
-  virtual CheckBool EmitAbs(Label* label, AssemblyProgram* program) = 0;
+  // Emits Abs 32/64 |label| to the |receptor|.
+  virtual CheckBool EmitAbs(Label* label,
+                            InstructionReceptor* receptor) const = 0;
   // Returns true if type is recognized.
   virtual bool SupportsRelTableType(int type) const = 0;
   virtual uint16_t OffsetOfDataDirectories() const = 0;
 
 #if COURGETTE_HISTOGRAM_TARGETS
-  void HistogramTargets(const char* kind, const std::map<RVA, int>& map);
+  void HistogramTargets(const char* kind, const std::map<RVA, int>& map) const;
 #endif
 
   // Most addresses are represented as 32-bit RVAs. The one address we can't

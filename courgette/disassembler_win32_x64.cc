@@ -32,8 +32,8 @@ RVA DisassemblerWin32X64::Address64ToRVA(uint64_t address) const {
 }
 
 CheckBool DisassemblerWin32X64::EmitAbs(Label* label,
-                                        AssemblyProgram* program) {
-  return program->EmitAbs64(label);
+                                        InstructionReceptor* receptor) const {
+  return receptor->EmitAbs64(label);
 }
 
 void DisassemblerWin32X64::ParseRel32RelocsFromSection(const Section* section) {

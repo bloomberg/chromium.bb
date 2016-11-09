@@ -105,7 +105,94 @@ class InstructionWithLabelARM : public InstructionWithLabel {
   uint16_t op_size_;
 };
 
+/******** InstructionCountReceptor ********/
+
+// An InstructionReceptor that counts space occupied by emitted instructions.
+class InstructionCountReceptor : public InstructionReceptor {
+ public:
+  InstructionCountReceptor() = default;
+
+  size_t size() const { return size_; }
+
+  // InstructionReceptor:
+  // TODO(huangs): 2016/11: Populate these with size_ += ...
+  CheckBool EmitPeRelocs() override { return true; }
+  CheckBool EmitElfRelocation() override { return true; }
+  CheckBool EmitElfARMRelocation() override { return true; }
+  CheckBool EmitOrigin(RVA rva) override { return true; }
+  CheckBool EmitSingleByte(uint8_t byte) override { return true; }
+  CheckBool EmitMultipleBytes(const uint8_t* bytes, size_t len) override {
+    return true;
+  }
+  CheckBool EmitRel32(Label* label) override { return true; }
+  CheckBool EmitRel32ARM(uint16_t op,
+                         Label* label,
+                         const uint8_t* arm_op,
+                         uint16_t op_size) override {
+    return true;
+  }
+  CheckBool EmitAbs32(Label* label) override { return true; }
+  CheckBool EmitAbs64(Label* label) override { return true; }
+
+ private:
+  size_t size_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(InstructionCountReceptor);
+};
+
+/******** InstructionStoreReceptor ********/
+
+// An InstructionReceptor that stores emitted instructions.
+class InstructionStoreReceptor : public InstructionReceptor {
+ public:
+  explicit InstructionStoreReceptor(AssemblyProgram* program)
+      : program_(program) {
+    CHECK(program_);
+  }
+
+  // TODO(huangs): 2016/11: Add Reserve().
+
+  // InstructionReceptor:
+  // TODO(huangs): 2016/11: Replace stub with implementation.
+  CheckBool EmitPeRelocs() override { return program_->EmitPeRelocs(); }
+  CheckBool EmitElfRelocation() override {
+    return program_->EmitElfRelocation();
+  }
+  CheckBool EmitElfARMRelocation() override {
+    return program_->EmitElfARMRelocation();
+  }
+  CheckBool EmitOrigin(RVA rva) override { return program_->EmitOrigin(rva); }
+  CheckBool EmitSingleByte(uint8_t byte) override {
+    return program_->EmitSingleByte(byte);
+  }
+  CheckBool EmitMultipleBytes(const uint8_t* bytes, size_t len) override {
+    return program_->EmitMultipleBytes(bytes, len);
+  }
+  CheckBool EmitRel32(Label* label) override {
+    return program_->EmitRel32(label);
+  }
+  CheckBool EmitRel32ARM(uint16_t op,
+                         Label* label,
+                         const uint8_t* arm_op,
+                         uint16_t op_size) override {
+    return program_->EmitRel32ARM(op, label, arm_op, op_size);
+  }
+  CheckBool EmitAbs32(Label* label) override {
+    return program_->EmitAbs32(label);
+  }
+  CheckBool EmitAbs64(Label* label) override {
+    return program_->EmitAbs64(label);
+  }
+
+ private:
+  AssemblyProgram* program_;
+
+  DISALLOW_COPY_AND_ASSIGN(InstructionStoreReceptor);
+};
+
 }  // namespace
+
+/******** AssemblyProgram ********/
 
 AssemblyProgram::AssemblyProgram(ExecutableType kind)
   : kind_(kind), image_base_(0) {
@@ -123,29 +210,28 @@ AssemblyProgram::~AssemblyProgram() {
   }
 }
 
-CheckBool AssemblyProgram::EmitPeRelocsInstruction() {
+CheckBool AssemblyProgram::EmitPeRelocs() {
   return Emit(ScopedInstruction(UncheckedNew<PeRelocsInstruction>()));
 }
 
-CheckBool AssemblyProgram::EmitElfRelocationInstruction() {
+CheckBool AssemblyProgram::EmitElfRelocation() {
   return Emit(ScopedInstruction(UncheckedNew<ElfRelocsInstruction>()));
 }
 
-CheckBool AssemblyProgram::EmitElfARMRelocationInstruction() {
+CheckBool AssemblyProgram::EmitElfARMRelocation() {
   return Emit(ScopedInstruction(UncheckedNew<ElfARMRelocsInstruction>()));
 }
 
-CheckBool AssemblyProgram::EmitOriginInstruction(RVA rva) {
+CheckBool AssemblyProgram::EmitOrigin(RVA rva) {
   return Emit(ScopedInstruction(UncheckedNew<OriginInstruction>(rva)));
 }
 
-CheckBool AssemblyProgram::EmitByteInstruction(uint8_t byte) {
+CheckBool AssemblyProgram::EmitSingleByte(uint8_t byte) {
   return EmitShared(GetByteInstruction(byte));
 }
 
-CheckBool AssemblyProgram::EmitBytesInstruction(const uint8_t* values,
-                                                size_t len) {
-  return Emit(ScopedInstruction(UncheckedNew<BytesInstruction>(values, len)));
+CheckBool AssemblyProgram::EmitMultipleBytes(const uint8_t* bytes, size_t len) {
+  return Emit(ScopedInstruction(UncheckedNew<BytesInstruction>(bytes, len)));
 }
 
 CheckBool AssemblyProgram::EmitRel32(Label* label) {
@@ -228,6 +314,20 @@ void AssemblyProgram::HandleInstructionLabels(
   }
 }
 
+CheckBool AssemblyProgram::GenerateInstructions(
+    const InstructionGenerator& gen) {
+  // Pass 1: Count the space needed to store instructions.
+  InstructionCountReceptor count_receptor;
+  if (!gen.Run(this, &count_receptor))
+    return false;
+
+  // Pass 2: Emit all instructions to preallocated buffer (uses Phase 1 count).
+  InstructionStoreReceptor store_receptor(this);
+  // TODO(huangs): 2016/11: Pass |count_receptor_->size()| to |store_receptor_|
+  // to reserve space for raw data.
+  return gen.Run(this, &store_receptor);
+}
+
 CheckBool AssemblyProgram::Emit(ScopedInstruction instruction) {
   if (!instruction || !instructions_.push_back(instruction.get()))
     return false;
@@ -250,7 +350,6 @@ void AssemblyProgram::UnassignIndexes(RVAToLabel* labels) {
 
 // DefaultAssignIndexes takes a set of labels and assigns indexes in increasing
 // address order.
-//
 void AssemblyProgram::DefaultAssignIndexes(RVAToLabel* labels) {
   int index = 0;
   for (RVAToLabel::iterator p = labels->begin();  p != labels->end();  ++p) {
@@ -264,7 +363,6 @@ void AssemblyProgram::DefaultAssignIndexes(RVAToLabel* labels) {
 
 // AssignRemainingIndexes assigns indexes to any addresses (labels) that are not
 // yet assigned an index.
-//
 void AssemblyProgram::AssignRemainingIndexes(RVAToLabel* labels) {
   // An address table compresses best when each index is associated with an
   // address that is slight larger than the previous index.
@@ -289,7 +387,6 @@ void AssemblyProgram::AssignRemainingIndexes(RVAToLabel* labels) {
 
   // Are there any unused labels that happen to be adjacent following a used
   // label?
-  //
   int fill_forward_count = 0;
   Label* prev = 0;
   for (RVAToLabel::iterator p = labels->begin();  p != labels->end();  ++p) {
@@ -309,7 +406,6 @@ void AssemblyProgram::AssignRemainingIndexes(RVAToLabel* labels) {
 
   // Are there any unused labels that happen to be adjacent preceeding a used
   // label?
-  //
   int fill_backward_count = 0;
   prev = 0;
   for (RVAToLabel::reverse_iterator p = labels->rbegin();
