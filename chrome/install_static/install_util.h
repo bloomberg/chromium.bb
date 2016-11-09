@@ -1,7 +1,6 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 // This file contains helper functions which provide information about the
 // current version of Chrome. This includes channel information, version
 // information etc. This functionality is provided by using functions in
@@ -15,14 +14,26 @@
 
 namespace install_static {
 
-struct InstallConstants;
-
 enum class ProcessType {
   UNINITIALIZED,
   NON_BROWSER_PROCESS,
   BROWSER_PROCESS,
 };
 
+// TODO(ananta)
+// https://crbug.com/604923
+// The constants defined in this file are also defined in chrome/installer and
+// other places. we need to unify them.
+extern const wchar_t kChromeChannelUnknown[];
+extern const wchar_t kChromeChannelCanary[];
+extern const wchar_t kChromeChannelDev[];
+extern const wchar_t kChromeChannelBeta[];
+extern const wchar_t kChromeChannelStable[];
+extern const wchar_t kChromeChannelStableExplicit[];
+extern const wchar_t kRegPathClientState[];
+extern const wchar_t kRegPathClientStateMedium[];
+extern const wchar_t kRegPathChromePolicy[];
+extern const wchar_t kRegApField[];
 // Registry key to store the stats/crash sampling state of Chrome. If set to 1,
 // stats and crash reports will be uploaded in line with the user's consent,
 // otherwise, uploads will be disabled. It is used to sample clients, to reduce
@@ -30,6 +41,13 @@ enum class ProcessType {
 // MetricsReporting feature in chrome_metrics_services_manager_client.cc and is
 // written when metrics services are started up and when consent changes.
 extern const wchar_t kRegValueChromeStatsSample[];
+// Used to retrieve consent for uploading crashes and metrics.
+extern const wchar_t kRegValueUsageStats[];
+extern const wchar_t kUninstallArgumentsField[];
+extern const wchar_t kMetricsReportingEnabled[];
+extern const wchar_t kAppGuidCanary[];
+extern const wchar_t kAppGuidGoogleChrome[];
+extern const wchar_t kAppGuidGoogleBinaries[];
 
 // TODO(ananta)
 // https://crbug.com/604923
@@ -49,15 +67,24 @@ extern const char kUtilityProcess[];
 extern const char kProcessType[];
 extern const char kCrashpadHandler[];
 
-// Returns true if Chrome is running at system level.
-bool IsSystemInstall();
+// Returns true if |exe_path| points to a Chrome installed in an SxS
+// installation.
+bool IsSxSChrome(const wchar_t* exe_path);
+
+// Returns true if |exe_path| points to a per-user level Chrome installation.
+bool IsSystemInstall(const wchar_t* exe_path);
 
 // Returns true if current installation of Chrome is a multi-install.
-bool IsMultiInstall();
+bool IsMultiInstall(bool is_system_install);
 
 // Returns true if usage stats collecting is enabled for this user for the
 // current executable.
 bool GetCollectStatsConsent();
+
+// Returns true if usage stats collecting is enabled for this user for the
+// executable passed in as |exe_path|.
+// Only used by tests.
+bool GetCollectStatsConsentForTesting(const std::wstring& exe_path);
 
 // Returns true if the current executable is currently in the chosen sample that
 // will report stats and crashes.
@@ -99,7 +126,7 @@ bool GetDefaultCrashDumpLocation(std::wstring* crash_dir);
 // block of the calling process. Returns an empty string if the variable does
 // not exist.
 std::string GetEnvironmentString(const std::string& variable_name);
-std::wstring GetEnvironmentString16(const wchar_t* variable_name);
+std::wstring GetEnvironmentString16(const std::wstring& variable_name);
 
 // Sets the environment variable identified by |variable_name| to the value
 // identified by |new_value|.
@@ -119,7 +146,7 @@ bool HasEnvironmentVariable16(const std::wstring& variable_name);
 // TODO(ananta)
 // http://crbug.com/604923
 // Unify this with the Browser Distribution code.
-void GetExecutableVersionDetails(const std::wstring& exe_path,
+bool GetExecutableVersionDetails(const std::wstring& exe_path,
                                  std::wstring* product_name,
                                  std::wstring* version,
                                  std::wstring* special_build,
@@ -132,7 +159,22 @@ void GetExecutableVersionDetails(const std::wstring& exe_path,
 // TODO(ananta)
 // http://crbug.com/604923
 // Unify this with the Browser Distribution code.
-std::wstring GetChromeChannelName(bool add_modifier);
+void GetChromeChannelName(bool is_per_user_install,
+                          bool add_modifier,
+                          std::wstring* channel_name);
+
+// Returns the version of Google Update that is installed.
+// TODO(ananta)
+// http://crbug.com/604923
+// Unify this with the Browser Distribution code.
+std::string GetGoogleUpdateVersion();
+
+// Returns the Chrome installation subdirectory, i.e. Google Chrome\Chromium,
+// etc.
+// TODO(ananta)
+// http://crbug.com/604923
+// Unify this with the Browser Distribution code.
+std::wstring GetChromeInstallSubDirectory();
 
 // Returns the registry path where the browser crash dumps metrics need to be
 // written to.
@@ -165,17 +207,21 @@ std::vector<std::wstring> TokenizeString16(const std::wstring& str,
                                            wchar_t delimiter,
                                            bool trim_spaces);
 
+// Compares version strings of the form "X.X.X.X" and returns the result of the
+// comparison in the |result| parameter. The result is as below:
+// 0 if the versions are equal.
+// -1 if version1 < version2.
+// 1 if version1 > version2.
+// Returns true on success, false on invalid strings being passed, etc.
+bool CompareVersionStrings(const std::string& version1,
+                           const std::string& version2,
+                           int* result);
+
 // We assume that the command line |command_line| contains multiple switches
 // with the format --<switch name>=<switch value>. This function returns the
 // value of the |switch_name| passed in.
 std::string GetSwitchValueFromCommandLine(const std::string& command_line,
                                           const std::string& switch_name);
-
-// Returns the unadorned channel name based on the channel strategy for the
-// install mode.
-std::wstring DetermineChannel(const InstallConstants& mode,
-                              bool system_level,
-                              bool multi_install);
 
 // Caches the |ProcessType| of the current process.
 extern ProcessType g_process_type;

@@ -10,37 +10,14 @@ assert(is_win)
 # This file only contains utility functions which must only depend on kernel32.
 # Please don't add dependencies on other system libraries.
 static_library("install_static_util") {
-  deps = [
-    "//components/version_info:generate_version_info",
-  ]
-
   public_deps = [
     "//chrome_elf:nt_registry",
   ]
 
   sources = [
-    "install_constants.h",
-    "install_details.cc",
-    "install_details.h",
-    "install_modes.cc",
-    "install_modes.h",
     "install_util.cc",
     "install_util.h",
-    "product_install_details.cc",
-    "product_install_details.h",
   ]
-
-  if (is_chrome_branded) {
-    sources += [
-      "google_chrome_install_modes.cc",
-      "google_chrome_install_modes.h",
-    ]
-  } else {
-    sources += [
-      "chromium_install_modes.cc",
-      "chromium_install_modes.h",
-    ]
-  }
 
   libs = [ "kernel32.lib" ]
 
@@ -53,10 +30,7 @@ static_library("install_static_util") {
 test("install_static_unittests") {
   output_name = "install_static_unittests"
   sources = [
-    "install_details_unittest.cc",
-    "install_modes_unittest.cc",
     "install_util_unittest.cc",
-    "product_install_details_unittest.cc",
   ]
   include_dirs = [ "$target_gen_dir" ]
   deps = [

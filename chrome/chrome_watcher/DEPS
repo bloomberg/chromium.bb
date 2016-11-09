@@ -1,6 +1,6 @@
 include_rules = [
   "+base",
-  "+chrome/install_static",
+  "+chrome/installer/util",
   "+components/browser_watcher",
   "+components/crash",
   "+components/memory_pressure",

@@ -6,26 +6,56 @@
 
 #include <windows.h>
 #include <assert.h>
-#include <string.h>
-
 #include <algorithm>
+#include <iostream>
+#include <iterator>
 #include <memory>
 #include <sstream>
 
-#include "chrome/install_static/install_details.h"
-#include "chrome/install_static/install_modes.h"
 #include "chrome_elf/nt_registry/nt_registry.h"
 
 namespace install_static {
 
 ProcessType g_process_type = ProcessType::UNINITIALIZED;
 
-const wchar_t kRegValueChromeStatsSample[] = L"UsageStatsInSample";
-
 // TODO(ananta)
 // http://crbug.com/604923
 // The constants defined in this file are also defined in chrome/installer and
 // other places. we need to unify them.
+
+// Chrome channel display names.
+const wchar_t kChromeChannelUnknown[] = L"unknown";
+const wchar_t kChromeChannelCanary[] = L"canary";
+const wchar_t kChromeChannelDev[] = L"dev";
+const wchar_t kChromeChannelBeta[] = L"beta";
+const wchar_t kChromeChannelStable[] = L"";
+const wchar_t kChromeChannelStableExplicit[] = L"stable";
+const wchar_t kRegApField[] = L"ap";
+
+#if defined(GOOGLE_CHROME_BUILD)
+const wchar_t kRegPathClientState[] = L"Software\\Google\\Update\\ClientState";
+const wchar_t kRegPathClientStateMedium[] =
+    L"Software\\Google\\Update\\ClientStateMedium";
+const wchar_t kRegPathChromePolicy[] = L"SOFTWARE\\Policies\\Google\\Chrome";
+#else
+const wchar_t kRegPathClientState[] =
+    L"Software\\Chromium\\Update\\ClientState";
+const wchar_t kRegPathClientStateMedium[] =
+    L"Software\\Chromium\\Update\\ClientStateMedium";
+const wchar_t kRegPathChromePolicy[] = L"SOFTWARE\\Policies\\Chromium";
+#endif
+
+const wchar_t kRegValueChromeStatsSample[] = L"UsageStatsInSample";
+const wchar_t kRegValueUsageStats[] = L"usagestats";
+const wchar_t kUninstallArgumentsField[] = L"UninstallArguments";
+const wchar_t kMetricsReportingEnabled[] = L"MetricsReportingEnabled";
+
+const wchar_t kAppGuidCanary[] = L"{4ea16ac7-fd5a-47c3-875b-dbf4a2008c20}";
+const wchar_t kAppGuidGoogleChrome[] =
+    L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
+const wchar_t kAppGuidGoogleBinaries[] =
+    L"{4DC8B4CA-1BDA-483e-B5FA-D3C12E15B62D}";
+
 const wchar_t kHeadless[] = L"CHROME_HEADLESS";
 const wchar_t kShowRestart[] = L"CHROME_CRASHED";
 const wchar_t kRestartInfo[] = L"CHROME_RESTART";
@@ -42,24 +72,21 @@ namespace {
 
 // TODO(ananta)
 // http://crbug.com/604923
-// The constants defined in this file are also defined in chrome/installer and
-// other places. we need to unify them.
-// Chrome channel display names.
-constexpr wchar_t kChromeChannelDev[] = L"dev";
-constexpr wchar_t kChromeChannelBeta[] = L"beta";
-constexpr wchar_t kChromeChannelStableExplicit[] = L"stable";
-
-// TODO(ananta)
-// http://crbug.com/604923
 // These constants are defined in the chrome/installer directory as well. We
 // need to unify them.
-constexpr wchar_t kRegValueAp[] = L"ap";
-constexpr wchar_t kRegValueUsageStats[] = L"usagestats";
-constexpr wchar_t kMetricsReportingEnabled[] = L"MetricsReportingEnabled";
+#if defined(GOOGLE_CHROME_BUILD)
+const wchar_t kSxSSuffix[] = L" SxS";
+const wchar_t kGoogleChromeInstallSubDir1[] = L"Google";
+const wchar_t kGoogleChromeInstallSubDir2[] = L"Chrome";
+#else
+const wchar_t kChromiumInstallSubDir[] = L"Chromium";
+#endif  // defined(GOOGLE_CHROME_BUILD)
 
-constexpr wchar_t kUserDataDirname[] = L"User Data";
-constexpr wchar_t kBrowserCrashDumpMetricsSubKey[] =
-    L"\\BrowserCrashDumpAttempts";
+const wchar_t kUserDataDirname[] = L"User Data";
+const wchar_t kBrowserCrashDumpMetricsSubKey[] = L"\\BrowserCrashDumpAttempts";
+
+const wchar_t kRegPathGoogleUpdate[] = L"Software\\Google\\Update";
+const wchar_t kRegGoogleUpdateVersion[] = L"version";
 
 void Trace(const wchar_t* format_string, ...) {
   static const int kMaxLogBufferSize = 1024;
@@ -151,6 +178,14 @@ bool GetValueFromVersionResource(const char* version_resource,
   return false;
 }
 
+// Returns the executable path for the current process.
+std::wstring GetCurrentProcessExePath() {
+  wchar_t exe_path[MAX_PATH];
+  if (::GetModuleFileName(nullptr, exe_path, MAX_PATH) == 0)
+    return std::wstring();
+  return exe_path;
+}
+
 bool RecursiveDirectoryCreate(const std::wstring& full_path) {
   // If the path exists, we've succeeded if it's a directory, failed otherwise.
   const wchar_t* full_path_str = full_path.c_str();
@@ -200,24 +235,47 @@ bool RecursiveDirectoryCreate(const std::wstring& full_path) {
   return true;
 }
 
-// Appends "[kCompanyPathName\]kProductPathName[install_suffix]" to |path|,
-// returning a reference to |path|.
-std::wstring& AppendChromeInstallSubDirectory(std::wstring* path,
-                                              bool include_suffix) {
-  if (*kCompanyPathName) {
-    path->append(kCompanyPathName);
-    path->push_back(L'\\');
-  }
-  path->append(kProductPathName, kProductPathNameLength);
-  if (!include_suffix)
-    return *path;
-  return path->append(InstallDetails::Get().install_suffix());
-}
-
 std::wstring GetChromeInstallRegistryPath() {
   std::wstring registry_path = L"Software\\";
-  return AppendChromeInstallSubDirectory(&registry_path,
-                                         true /* include_suffix */);
+  registry_path += GetChromeInstallSubDirectory();
+  return registry_path;
+}
+
+bool GetCollectStatsConsentImpl(const std::wstring& exe_path) {
+  bool enabled = true;
+
+  if (ReportingIsEnforcedByPolicy(&enabled))
+    return enabled;
+
+  bool system_install = IsSystemInstall(exe_path.c_str());
+  std::wstring app_guid;
+
+  if (IsSxSChrome(exe_path.c_str())) {
+    app_guid = kAppGuidCanary;
+  } else {
+    app_guid = IsMultiInstall(system_install) ? kAppGuidGoogleBinaries
+                                              : kAppGuidGoogleChrome;
+  }
+
+  DWORD out_value = 0;
+
+  // If system_install, first try kRegPathClientStateMedium.
+  std::wstring full_key_path(kRegPathClientStateMedium);
+  full_key_path.append(1, L'\\');
+  full_key_path.append(app_guid);
+  if (system_install &&
+      nt::QueryRegValueDWORD(nt::HKLM, nt::WOW6432, full_key_path.c_str(),
+                             kRegValueUsageStats, &out_value))
+    return (out_value == 1);
+
+  // Second, try kRegPathClientState.
+  full_key_path = kRegPathClientState;
+  full_key_path.append(1, L'\\');
+  full_key_path.append(app_guid);
+  return (nt::QueryRegValueDWORD((system_install ? nt::HKLM : nt::HKCU),
+                                 nt::WOW6432, full_key_path.c_str(),
+                                 kRegValueUsageStats, &out_value) &&
+          out_value == 1);
 }
 
 // Returns true if the |source| string matches the |pattern|. The pattern
@@ -296,6 +354,12 @@ void TrimT(StringType* str) {
   str->erase(0, str->find_first_not_of(GetWhiteSpacesForType<StringType>()));
 }
 
+bool IsValidNumber(const std::string& str) {
+  if (str.empty())
+    return false;
+  return std::all_of(str.begin(), str.end(), ::isdigit);
+}
+
 // Tokenizes a string based on a single character delimiter.
 template <class StringType>
 std::vector<StringType> TokenizeStringT(
@@ -312,88 +376,47 @@ std::vector<StringType> TokenizeStringT(
   return tokens;
 }
 
-std::wstring ChannelFromAdditionalParameters(const InstallConstants& mode,
-                                             bool system_level,
-                                             bool binaries) {
-  assert(kUseGoogleUpdateIntegration);
-  // InitChannelInfo in google_update_settings.cc only reports a failure in the
-  // case of multi-install Chrome where the binaries' ClientState key exists,
-  // but that the "ap" value therein cannot be read due to some reason *other*
-  // than it not being present. This should be exceedingly rare. For
-  // simplicity's sake, use an empty |value| in case of any error whatsoever
-  // here.
-  std::wstring value;
-  nt::QueryRegValueSZ(system_level ? nt::HKLM : nt::HKCU, nt::WOW6432,
-                      (binaries ? GetBinariesClientStateKeyPath()
-                                : GetClientStateKeyPath(mode.app_guid))
-                          .c_str(),
-                      kRegValueAp, &value);
-
-  static constexpr wchar_t kChromeChannelBetaPattern[] = L"1?1-*";
-  static constexpr wchar_t kChromeChannelBetaX64Pattern[] = L"*x64-beta*";
-  static constexpr wchar_t kChromeChannelDevPattern[] = L"2?0-d*";
-  static constexpr wchar_t kChromeChannelDevX64Pattern[] = L"*x64-dev*";
-
-  std::transform(value.begin(), value.end(), value.begin(), ::tolower);
-
-  // Empty channel names or those containing "stable" should be reported as
-  // an empty string.
-  std::wstring channel_name;
-  if (value.empty() ||
-      (value.find(kChromeChannelStableExplicit) != std::wstring::npos)) {
-  } else if (MatchPattern(value, kChromeChannelDevPattern) ||
-             MatchPattern(value, kChromeChannelDevX64Pattern)) {
-    channel_name.assign(kChromeChannelDev);
-  } else if (MatchPattern(value, kChromeChannelBetaPattern) ||
-             MatchPattern(value, kChromeChannelBetaX64Pattern)) {
-    channel_name.assign(kChromeChannelBeta);
-  }
-  // Else report values with garbage as stable since they will match the stable
-  // rules in the update configs. ChannelInfo::GetChannelName painstakingly
-  // strips off known modifiers (e.g., "-multi-full") to see if the empty string
-  // remains, returning channel "unknown" if not. This differs here in that some
-  // clients will tag crashes as "stable" rather than "unknown" via this
-  // codepath, but it is an accurate reflection of which update channel the
-  // client is on according to the server-side rules.
-
-  return channel_name;
-}
-
 }  // namespace
 
-bool IsSystemInstall() {
-  return InstallDetails::Get().system_level();
+bool IsSxSChrome(const wchar_t* exe_path) {
+  return ::wcsstr(exe_path, L"Chrome SxS\\Application") != nullptr;
 }
 
-bool IsMultiInstall() {
-  return InstallDetails::Get().multi_install();
+bool IsSystemInstall(const wchar_t* exe_path) {
+  wchar_t program_dir[MAX_PATH] = {};
+  DWORD ret = ::GetEnvironmentVariable(L"PROGRAMFILES", program_dir, MAX_PATH);
+  if (ret && ret < MAX_PATH && !::wcsnicmp(exe_path, program_dir, ret)) {
+    return true;
+  }
+
+  ret = ::GetEnvironmentVariable(L"PROGRAMFILES(X86)", program_dir, MAX_PATH);
+  if (ret && ret < MAX_PATH && !::wcsnicmp(exe_path, program_dir, ret)) {
+    return true;
+  }
+
+  return false;
+}
+
+bool IsMultiInstall(bool is_system_install) {
+  std::wstring args;
+
+  std::wstring full_key_path(kRegPathClientState);
+  full_key_path.append(1, L'\\');
+  full_key_path.append(kAppGuidGoogleChrome);
+  if (!nt::QueryRegValueSZ((is_system_install ? nt::HKLM : nt::HKCU),
+                           nt::WOW6432, full_key_path.c_str(),
+                           kUninstallArgumentsField, &args))
+    return false;
+
+  return (args.find(L"--multi-install") != std::wstring::npos);
 }
 
 bool GetCollectStatsConsent() {
-  bool enabled = true;
+  return GetCollectStatsConsentImpl(GetCurrentProcessExePath());
+}
 
-  if (ReportingIsEnforcedByPolicy(&enabled))
-    return enabled;
-
-  const bool system_install = IsSystemInstall();
-
-  DWORD out_value = 0;
-
-  // If system_install, first try ClientStateMedium in HKLM.
-  if (system_install &&
-      nt::QueryRegValueDWORD(
-          nt::HKLM, nt::WOW6432,
-          InstallDetails::Get().GetClientStateMediumKeyPath(true).c_str(),
-          kRegValueUsageStats, &out_value)) {
-    return (out_value == 1);
-  }
-
-  // Second, try ClientState.
-  return (nt::QueryRegValueDWORD(
-              system_install ? nt::HKLM : nt::HKCU, nt::WOW6432,
-              InstallDetails::Get().GetClientStateKeyPath(true).c_str(),
-              kRegValueUsageStats, &out_value) &&
-          out_value == 1);
+bool GetCollectStatsConsentForTesting(const std::wstring& exe_path) {
+  return GetCollectStatsConsentImpl(exe_path);
 }
 
 bool GetCollectStatsInSample() {
@@ -415,29 +438,26 @@ bool SetCollectStatsInSample(bool in_sample) {
   HANDLE key_handle = INVALID_HANDLE_VALUE;
   if (!nt::CreateRegKey(nt::HKCU, registry_path.c_str(),
                         KEY_SET_VALUE | KEY_WOW64_32KEY, &key_handle)) {
+    nt::CloseRegKey(key_handle);
     return false;
   }
 
-  bool success = nt::SetRegValueDWORD(key_handle, kRegValueChromeStatsSample,
-                                      in_sample ? 1 : 0);
-  nt::CloseRegKey(key_handle);
-  return success;
+  return nt::SetRegValueDWORD(key_handle, kRegValueChromeStatsSample,
+                              in_sample ? 1 : 0);
 }
 
 bool ReportingIsEnforcedByPolicy(bool* crash_reporting_enabled) {
-  std::wstring policies_path = L"SOFTWARE\\Policies\\";
-  AppendChromeInstallSubDirectory(&policies_path, false /* !include_suffix */);
   DWORD value = 0;
 
   // First, try HKLM.
-  if (nt::QueryRegValueDWORD(nt::HKLM, nt::NONE, policies_path.c_str(),
+  if (nt::QueryRegValueDWORD(nt::HKLM, nt::NONE, kRegPathChromePolicy,
                              kMetricsReportingEnabled, &value)) {
     *crash_reporting_enabled = (value != 0);
     return true;
   }
 
   // Second, try HKCU.
-  if (nt::QueryRegValueDWORD(nt::HKCU, nt::NONE, policies_path.c_str(),
+  if (nt::QueryRegValueDWORD(nt::HKCU, nt::NONE, kRegPathChromePolicy,
                              kMetricsReportingEnabled, &value)) {
     *crash_reporting_enabled = (value != 0);
     return true;
@@ -474,27 +494,39 @@ bool IsNonBrowserProcess() {
 }
 
 bool GetDefaultUserDataDirectory(std::wstring* result) {
-  // This environment variable should be set on Windows Vista and later
-  // (https://msdn.microsoft.com/library/windows/desktop/dd378457.aspx).
-  std::wstring user_data_dir = GetEnvironmentString16(L"LOCALAPPDATA");
+  static const wchar_t kLocalAppData[] = L"%LOCALAPPDATA%";
 
-  if (user_data_dir.empty()) {
-    // LOCALAPPDATA was not set; fallback to the temporary files path.
-    DWORD size = ::GetTempPath(0, nullptr);
+  std::unique_ptr<wchar_t> user_data_dir_path;
+
+  // This environment variable should be set on Windows 7 and up.
+  // If we fail to find this variable then we default to the temporary files
+  // path.
+  DWORD size = ::ExpandEnvironmentStrings(kLocalAppData, nullptr, 0);
+  if (size) {
+    user_data_dir_path.reset(new wchar_t[size]);
+    if (::ExpandEnvironmentStrings(kLocalAppData, user_data_dir_path.get(),
+                                   size) != size) {
+      user_data_dir_path.reset();
+    }
+  }
+  // We failed to find the %LOCALAPPDATA% folder. Fallback to the temporary
+  // files path. If we fail to find this we bail.
+  if (!user_data_dir_path.get()) {
+    size = ::GetTempPath(0, nullptr);
     if (!size)
       return false;
-    user_data_dir.resize(size + 1);
-    size = ::GetTempPath(size + 1, &user_data_dir[0]);
-    if (!size || size >= user_data_dir.size())
+    user_data_dir_path.reset(new wchar_t[size + 1]);
+    if (::GetTempPath(size + 1, user_data_dir_path.get()) != size)
       return false;
-    user_data_dir.resize(size);
   }
 
-  result->swap(user_data_dir);
+  std::wstring install_sub_directory = GetChromeInstallSubDirectory();
+
+  *result = user_data_dir_path.get();
   if ((*result)[result->length() - 1] != L'\\')
-    result->push_back(L'\\');
-  AppendChromeInstallSubDirectory(result, true /* include_suffix */);
-  result->push_back(L'\\');
+    result->append(L"\\");
+  result->append(install_sub_directory);
+  result->append(L"\\");
   result->append(kUserDataDirname);
   return true;
 }
@@ -508,28 +540,24 @@ bool GetDefaultCrashDumpLocation(std::wstring* crash_dir) {
 
   // We have to make sure the user data dir exists on first run. See
   // http://crbug.com/591504.
-  if (!RecursiveDirectoryCreate(*crash_dir))
+  if (!RecursiveDirectoryCreate(crash_dir->c_str()))
     return false;
   crash_dir->append(L"\\Crashpad");
   return true;
 }
 
 std::string GetEnvironmentString(const std::string& variable_name) {
-  return UTF16ToUTF8(
-      GetEnvironmentString16(UTF8ToUTF16(variable_name).c_str()));
+  return UTF16ToUTF8(GetEnvironmentString16(UTF8ToUTF16(variable_name)));
 }
 
-std::wstring GetEnvironmentString16(const wchar_t* variable_name) {
-  DWORD value_length = ::GetEnvironmentVariableW(variable_name, nullptr, 0);
-  if (!value_length)
+std::wstring GetEnvironmentString16(const std::wstring& variable_name) {
+  DWORD value_length =
+      ::GetEnvironmentVariable(variable_name.c_str(), nullptr, 0);
+  if (value_length == 0)
     return std::wstring();
-  std::wstring value(value_length, L'\0');
-  value_length =
-      ::GetEnvironmentVariableW(variable_name, &value[0], value_length);
-  if (!value_length || value_length >= value.size())
-    return std::wstring();
-  value.resize(value_length);
-  return value;
+  std::unique_ptr<wchar_t[]> value(new wchar_t[value_length]);
+  ::GetEnvironmentVariable(variable_name.c_str(), value.get(), value_length);
+  return value.get();
 }
 
 bool SetEnvironmentString(const std::string& variable_name,
@@ -551,7 +579,7 @@ bool HasEnvironmentVariable16(const std::wstring& variable_name) {
   return !!::GetEnvironmentVariable(variable_name.c_str(), nullptr, 0);
 }
 
-void GetExecutableVersionDetails(const std::wstring& exe_path,
+bool GetExecutableVersionDetails(const std::wstring& exe_path,
                                  std::wstring* product_name,
                                  std::wstring* version,
                                  std::wstring* special_build,
@@ -564,6 +592,7 @@ void GetExecutableVersionDetails(const std::wstring& exe_path,
   // Default values in case we don't find a version resource.
   *product_name = L"Chrome";
   *version = L"0.0.0.0-devel";
+  *channel_name = kChromeChannelUnknown;
   special_build->clear();
 
   DWORD dummy = 0;
@@ -583,20 +612,107 @@ void GetExecutableVersionDetails(const std::wstring& exe_path,
       GetValueFromVersionResource(data.get(), L"SpecialBuild", special_build);
     }
   }
-  *channel_name = GetChromeChannelName(true /* add_modifier */);
+  GetChromeChannelName(!IsSystemInstall(exe_path.c_str()), true, channel_name);
+  return true;
 }
 
-std::wstring GetChromeChannelName(bool add_modifier) {
-  const std::wstring& channel = InstallDetails::Get().channel();
-  if (!add_modifier || !IsMultiInstall())
-    return channel;
-  if (channel.empty())
-    return L"m";
-  return channel + L"-m";
+void GetChromeChannelName(bool is_per_user_install,
+                          bool add_modifier,
+                          std::wstring* channel_name) {
+  // See GoogleChromeSxSDistribution::GetChromeChannel.
+  if (IsSxSChrome(GetCurrentProcessExePath().c_str())) {
+    channel_name->assign(kChromeChannelCanary);
+    return;
+  }
+
+  // InitChannelInfo in google_update_settings.cc only reports a failure in the
+  // case of multi-install Chrome where the binaries' ClientState key exists,
+  // but that the "ap" value therein cannot be read due to some reason *other*
+  // than it not being present. This should be exceedingly rare. For
+  // simplicity's sake, use an empty |value| in case of any error whatsoever
+  // here.
+  std::wstring value;
+  bool is_multi_install = IsMultiInstall(!is_per_user_install);
+  if (is_multi_install) {
+    std::wstring full_key_path(kRegPathClientState);
+    full_key_path.append(1, L'\\');
+    full_key_path.append(kAppGuidGoogleBinaries);
+    nt::QueryRegValueSZ(is_per_user_install ? nt::HKCU : nt::HKLM, nt::WOW6432,
+                        full_key_path.c_str(), kRegApField, &value);
+  } else {
+    std::wstring full_key_path(kRegPathClientState);
+    full_key_path.append(1, L'\\');
+    full_key_path.append(kAppGuidGoogleChrome);
+    nt::QueryRegValueSZ(is_per_user_install ? nt::HKCU : nt::HKLM, nt::WOW6432,
+                        full_key_path.c_str(), kRegApField, &value);
+  }
+
+  static constexpr wchar_t kChromeChannelBetaPattern[] = L"1?1-*";
+  static constexpr wchar_t kChromeChannelBetaX64Pattern[] = L"*x64-beta*";
+  static constexpr wchar_t kChromeChannelDevPattern[] = L"2?0-d*";
+  static constexpr wchar_t kChromeChannelDevX64Pattern[] = L"*x64-dev*";
+
+  std::transform(value.begin(), value.end(), value.begin(), ::tolower);
+
+  // Empty channel names or those containing "stable" should be reported as
+  // an empty string (with the optional modifier).
+  if (value.empty() ||
+      (value.find(kChromeChannelStableExplicit) != std::wstring::npos)) {
+    channel_name->clear();
+  } else if (MatchPattern(value, kChromeChannelDevPattern) ||
+             MatchPattern(value, kChromeChannelDevX64Pattern)) {
+    channel_name->assign(kChromeChannelDev);
+  } else if (MatchPattern(value, kChromeChannelBetaPattern) ||
+             MatchPattern(value, kChromeChannelBetaX64Pattern)) {
+    channel_name->assign(kChromeChannelBeta);
+  } else {
+    // Report values with garbage as stable since they will match the stable
+    // rules in the update configs. ChannelInfo::GetChannelName painstakingly
+    // strips off known modifiers (e.g., "-multi-full") to see if the empty
+    // string remains, returning channel "unknown" if not. This differs here in
+    // that some clients will tag crashes as "stable" rather than "unknown" via
+    // this codepath, but it is an accurate reflection of which update channel
+    // the client is on according to the server-side rules.
+    channel_name->clear();
+  }
+
+  // Tag the channel name if this is a multi-install.
+  if (add_modifier && is_multi_install) {
+    if (!channel_name->empty())
+      channel_name->push_back(L'-');
+    channel_name->push_back(L'm');
+  }
+}
+
+std::string GetGoogleUpdateVersion() {
+  // TODO(ananta)
+  // Consider whether Chromium should connect to Google update to manage
+  // updates. Should this be returning an empty string for Chromium builds?.
+  std::wstring update_version;
+  if (nt::QueryRegValueSZ(nt::AUTO, nt::WOW6432, kRegPathGoogleUpdate,
+                          kRegGoogleUpdateVersion, &update_version))
+    return UTF16ToUTF8(update_version);
+
+  return std::string();
+}
+
+std::wstring GetChromeInstallSubDirectory() {
+#if defined(GOOGLE_CHROME_BUILD)
+  std::wstring result = kGoogleChromeInstallSubDir1;
+  result += L"\\";
+  result += kGoogleChromeInstallSubDir2;
+  if (IsSxSChrome(GetCurrentProcessExePath().c_str()))
+    result += kSxSSuffix;
+  return result;
+#else
+  return std::wstring(kChromiumInstallSubDir);
+#endif
 }
 
 std::wstring GetBrowserCrashDumpAttemptsRegistryPath() {
-  return GetChromeInstallRegistryPath().append(kBrowserCrashDumpMetricsSubKey);
+  std::wstring registry_path = GetChromeInstallRegistryPath();
+  registry_path += kBrowserCrashDumpMetricsSubKey;
+  return registry_path;
 }
 
 bool MatchPattern(const std::wstring& source, const std::wstring& pattern) {
@@ -651,6 +767,83 @@ std::vector<std::wstring> TokenizeString16(const std::wstring& str,
   return TokenizeStringT<std::wstring>(str, delimiter, trim_spaces);
 }
 
+bool CompareVersionStrings(const std::string& version1,
+                           const std::string& version2,
+                           int* result) {
+  if (version1.empty() || version2.empty())
+    return false;
+
+  // Tokenize both version strings with "." as the separator. If either of
+  // the returned token lists are empty then bail.
+  std::vector<std::string> version1_components =
+      TokenizeString(version1, '.', false);
+  if (version1_components.empty())
+    return false;
+
+  std::vector<std::string> version2_components =
+      TokenizeString(version2, '.', false);
+  if (version2_components.empty())
+    return false;
+
+  // You may have less tokens in either string. Use the minimum of the number
+  // of tokens as the initial count.
+  const size_t count =
+      std::min(version1_components.size(), version2_components.size());
+  for (size_t i = 0; i < count; ++i) {
+    // If either of the version components don't contain valid numeric digits
+    // bail.
+    if (!IsValidNumber(version1_components[i]) ||
+        !IsValidNumber(version2_components[i])) {
+      return false;
+    }
+
+    int version1_component = std::stoi(version1_components[i]);
+    int version2_component = std::stoi(version2_components[i]);
+
+    if (version1_component > version2_component) {
+      *result = 1;
+      return true;
+    }
+
+    if (version1_component < version2_component) {
+      *result = -1;
+      return true;
+    }
+  }
+
+  // Handle remaining tokens. Here if we have non zero tokens remaining in the
+  // version 1 list then it means that the version1 string is larger. If the
+  // version 1 token list has tokens left, then if either of these tokens is
+  // greater than 0 then it means that the version1 string is smaller than the
+  // version2 string.
+  if (version1_components.size() > version2_components.size()) {
+    for (size_t i = count; i < version1_components.size(); ++i) {
+      // If the version components don't contain valid numeric digits bail.
+      if (!IsValidNumber(version1_components[i]))
+        return false;
+
+      if (std::stoi(version1_components[i]) > 0) {
+        *result = 1;
+        return true;
+      }
+    }
+  } else if (version1_components.size() < version2_components.size()) {
+    for (size_t i = count; i < version2_components.size(); ++i) {
+      // If the version components don't contain valid numeric digits bail.
+      if (!IsValidNumber(version2_components[i]))
+        return false;
+
+      if (std::stoi(version2_components[i]) > 0) {
+        *result = -1;
+        return true;
+      }
+    }
+  }
+  // Here it means that both versions are equal.
+  *result = 0;
+  return true;
+}
+
 std::string GetSwitchValueFromCommandLine(const std::string& command_line,
                                           const std::string& switch_name) {
   assert(!command_line.empty());
@@ -691,27 +884,6 @@ std::string GetSwitchValueFromCommandLine(const std::string& command_line,
       switch_value_end_offset - (switch_offset + switch_token.length()));
   TrimT<std::string>(&switch_value);
   return switch_value;
-}
-
-// This function takes these inputs rather than accessing the module's
-// InstallDetails instance since it is used to bootstrap InstallDetails.
-std::wstring DetermineChannel(const InstallConstants& mode,
-                              bool system_level,
-                              bool multi_install) {
-  if (!kUseGoogleUpdateIntegration)
-    return std::wstring();
-
-  switch (mode.channel_strategy) {
-    case ChannelStrategy::UNSUPPORTED:
-      assert(false);
-      break;
-    case ChannelStrategy::ADDITIONAL_PARAMETERS:
-      return ChannelFromAdditionalParameters(mode, system_level, multi_install);
-    case ChannelStrategy::FIXED:
-      return mode.default_channel_name;
-  }
-
-  return std::wstring();
 }
 
 }  // namespace install_static

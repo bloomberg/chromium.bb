@@ -21,7 +21,6 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/win/win_util.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/install_static/install_details.h"
 
 #define DLLEXPORT __declspec(dllexport)
 
@@ -55,11 +54,6 @@ int ChromeMain(int argc, const char** argv) {
   _set_FMA3_enable(0);
 #endif  // WIN && ARCH_CPU_X86_64
 
-#if defined(OS_WIN)
-  install_static::InstallDetails::InitializeFromPrimaryModule(
-      chrome::kChromeElfDllName);
-#endif
-
   ChromeMainDelegate chrome_main_delegate(
       base::TimeTicks::FromInternalValue(exe_entry_point_ticks));
   content::ContentMainParams params(&chrome_main_delegate);
@@ -72,7 +66,7 @@ int ChromeMain(int argc, const char** argv) {
   params.sandbox_info = sandbox_info;
 
   // SetDumpWithoutCrashingFunction must be passed the DumpProcess function
-  // from chrome_elf and not from the DLL in order for DumpWithoutCrashing to
+  // from the EXE and not from the DLL in order for DumpWithoutCrashing to
   // function correctly.
   typedef void (__cdecl *DumpProcessFunction)();
   DumpProcessFunction DumpProcess = reinterpret_cast<DumpProcessFunction>(
@@ -80,11 +74,6 @@ int ChromeMain(int argc, const char** argv) {
                        "DumpProcessWithoutCrash"));
   CHECK(DumpProcess);
   base::debug::SetDumpWithoutCrashingFunction(DumpProcess);
-
-  // Verify that chrome_elf and this module (chrome.dll and chrome_child.dll)
-  // have the same version.
-  if (install_static::InstallDetails::Get().VersionMismatch())
-    base::debug::DumpWithoutCrashing();
 #else
   params.argc = argc;
   params.argv = argv;

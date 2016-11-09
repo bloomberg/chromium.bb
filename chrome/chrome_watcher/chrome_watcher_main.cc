@@ -33,9 +33,9 @@
 #include "base/time/time.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
+
 #include "chrome/chrome_watcher/chrome_watcher_main_api.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/install_static/install_details.h"
+#include "chrome/installer/util/util_constants.h"
 #include "components/browser_watcher/endsession_watcher_window_win.h"
 #include "components/browser_watcher/exit_code_watcher_win.h"
 #include "components/browser_watcher/window_hang_monitor_win.h"
@@ -187,9 +187,8 @@ extern "C" int WatcherMain(const base::char16* registry_path,
                            HANDLE process_handle,
                            DWORD main_thread_id,
                            HANDLE on_initialized_event_handle,
-                           const base::char16* browser_data_directory) {
-  install_static::InstallDetails::InitializeFromPrimaryModule(
-      chrome::kChromeElfDllName);
+                           const base::char16* browser_data_directory,
+                           const base::char16* channel_name) {
   base::Process process(process_handle);
   base::win::ScopedHandle on_initialized_event(on_initialized_event_handle);
 

@@ -4,9 +4,6 @@
 
 #include "chrome/test/base/chrome_test_launcher.h"
 
-#include <memory>
-#include <utility>
-
 #include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
 #include "base/files/file_path.h"
@@ -14,7 +11,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/ptr_util.h"
 #include "base/process/process_metrics.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -23,8 +19,6 @@
 #include "chrome/app/chrome_main_delegate.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/install_static/install_details.h"
-#include "chrome/install_static/install_modes.h"
 #include "chrome/test/base/chrome_test_suite.h"
 #include "components/crash/content/app/crashpad.h"
 #include "content/public/app/content_main.h"
@@ -107,16 +101,6 @@ int LaunchChromeTests(int default_jobs,
                       char** argv) {
 #if defined(OS_MACOSX)
   chrome_browser_application_mac::RegisterBrowserCrApp();
-#endif
-
-#if defined(OS_WIN)
-  // Create a primordial InstallDetails instance for the test.
-  std::unique_ptr<install_static::PrimaryInstallDetails> install_details =
-      base::MakeUnique<install_static::PrimaryInstallDetails>();
-  install_details->set_mode(&install_static::kInstallModes[0]);
-  install_details->set_channel(
-      install_static::kInstallModes[0].default_channel_name);
-  install_static::InstallDetails::SetForProcess(std::move(install_details));
 #endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_WIN)
