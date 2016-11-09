@@ -84,6 +84,7 @@ TEST_F(BlimpClientContextImplTest,
       blimp_client_context.CreateBlimpContents(window_);
   DCHECK(blimp_contents);
   DCHECK_EQ(blimp_contents.get(), attached_blimp_contents);
+  blimp_client_context.SetDelegate(nullptr);
 }
 
 }  // namespace

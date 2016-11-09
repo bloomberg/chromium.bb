@@ -158,7 +158,7 @@ BlimpClientContextImpl::~BlimpClientContextImpl() {
 }
 
 void BlimpClientContextImpl::SetDelegate(BlimpClientContextDelegate* delegate) {
-  DCHECK(!delegate_ && delegate);
+  DCHECK(!delegate_ || !delegate);
   delegate_ = delegate;
 
   // TODO(xingliu): Pass the IdentityProvider needed by |assignment_fetcher_|
