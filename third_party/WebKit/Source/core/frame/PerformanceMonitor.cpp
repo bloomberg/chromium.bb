@@ -56,10 +56,7 @@ void PerformanceMonitor::performanceObserverAdded(Performance* performance) {
 // static
 void PerformanceMonitor::performanceObserverRemoved(Performance* performance) {
   LocalFrame* frame = performance->frame();
-  if (!frame) {
-    // TODO: instrument local frame removal in order to clean up.
-    return;
-  }
+  DCHECK(frame);
   PerformanceMonitor* monitor = frame->performanceMonitor();
   monitor->m_webPerformanceObservers.remove(performance);
   monitor->updateInstrumentation();
@@ -155,7 +152,11 @@ PerformanceMonitor* PerformanceMonitor::instrumentingMonitor(
 PerformanceMonitor::PerformanceMonitor(LocalFrame* localRoot)
     : m_localRoot(localRoot) {}
 
-PerformanceMonitor::~PerformanceMonitor() {}
+PerformanceMonitor::~PerformanceMonitor() {
+  m_webPerformanceObservers.clear();
+  m_loggingEnabled = false;
+  updateInstrumentation();
+}
 
 void PerformanceMonitor::setLoggingEnabled(bool enabled) {
   m_loggingEnabled = enabled;

@@ -71,6 +71,9 @@ class CORE_EXPORT Performance final : public PerformanceBase,
  private:
   explicit Performance(LocalFrame*);
 
+  // DOMWindowProperty overrides.
+  void frameDestroyed() override;
+
   mutable Member<PerformanceNavigation> m_navigation;
   mutable Member<PerformanceTiming> m_timing;
 };

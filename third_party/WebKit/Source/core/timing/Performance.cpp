@@ -61,7 +61,13 @@ Performance::Performance(LocalFrame* frame)
     : PerformanceBase(toTimeOrigin(frame)), DOMWindowProperty(frame) {}
 
 Performance::~Performance() {
+  if (frame())
+    PerformanceMonitor::performanceObserverRemoved(this);
+}
+
+void Performance::frameDestroyed() {
   PerformanceMonitor::performanceObserverRemoved(this);
+  DOMWindowProperty::frameDestroyed();
 }
 
 ExecutionContext* Performance::getExecutionContext() const {
