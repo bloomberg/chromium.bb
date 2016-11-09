@@ -51,7 +51,6 @@ using ::testing::SetArgumentPointee;
 using ::testing::StrictMock;
 using content::BrowserThread;
 using content::RenderFrameHostTester;
-using content::ResourceType;
 using content::WebContents;
 
 namespace {
