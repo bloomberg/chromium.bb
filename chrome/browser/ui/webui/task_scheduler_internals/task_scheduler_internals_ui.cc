@@ -82,7 +82,8 @@ class TaskSchedulerDataHandler : public content::WebUIMessageHandler {
       data.Set("histograms", std::move(histogram_value));
     }
 
-    web_ui()->CallJavascriptFunctionUnsafe(
+    AllowJavascript();
+    CallJavascriptFunction(
         "TaskSchedulerInternals.onGetTaskSchedulerData", data);
   }
 
