@@ -330,7 +330,7 @@ NGBoxStrut ComputePadding(const NGConstraintSpace& constraintSpace,
 
 void ApplyAutoMargins(const NGConstraintSpace& constraint_space,
                       const ComputedStyle& style,
-                      const NGFragment& fragment,
+                      const NGFragmentBase& fragment,
                       NGBoxStrut* margins) {
   DCHECK(margins) << "Margins cannot be NULL here";
   const LayoutUnit used_space = fragment.InlineSize() + margins->InlineSum();

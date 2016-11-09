@@ -34,7 +34,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm : public NGLayoutAlgorithm {
                           NGInlineBox* first_child,
                           NGConstraintSpace* space);
 
-  bool Layout(NGPhysicalFragment**) override;
+  bool Layout(NGPhysicalFragmentBase**) override;
 
   DECLARE_VIRTUAL_TRACE();
 

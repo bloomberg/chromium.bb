@@ -6,6 +6,7 @@
 
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
+#include "core/layout/ng/ng_fragment_base.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_layout_opportunity_iterator.h"
@@ -29,7 +30,7 @@ LayoutUnit ComputeCollapsedMarginBlockStart(
 
 // Creates an exclusion from the fragment that will be placed in the provided
 // layout opportunity.
-NGLogicalRect CreateExclusion(const NGFragment& fragment,
+NGLogicalRect CreateExclusion(const NGFragmentBase& fragment,
                               const NGLayoutOpportunity& opportunity,
                               LayoutUnit float_offset,
                               NGBoxStrut margins) {
@@ -59,7 +60,7 @@ NGLogicalRect CreateExclusion(const NGFragment& fragment,
 // @return Layout opportunity for the fragment.
 const NGLayoutOpportunity FindLayoutOpportunityForFragment(
     NGConstraintSpace* space,
-    const NGFragment& fragment,
+    const NGFragmentBase& fragment,
     const NGBoxStrut& margins) {
   NGLayoutOpportunityIterator* opportunity_iter = space->LayoutOpportunities();
   NGLayoutOpportunity opportunity;
@@ -146,7 +147,7 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
   DCHECK(style_);
 }
 
-bool NGBlockLayoutAlgorithm::Layout(NGPhysicalFragment** out) {
+bool NGBlockLayoutAlgorithm::Layout(NGPhysicalFragmentBase** out) {
   switch (state_) {
     case kStateInit: {
       border_and_padding_ =
@@ -229,7 +230,7 @@ bool NGBlockLayoutAlgorithm::Layout(NGPhysicalFragment** out) {
 }
 
 bool NGBlockLayoutAlgorithm::LayoutCurrentChild() {
-  NGFragment* fragment;
+  NGFragmentBase* fragment;
   if (!current_child_->Layout(space_for_current_child_, &fragment))
     return false;
 
@@ -316,9 +317,10 @@ NGBoxStrut NGBlockLayoutAlgorithm::CollapseMargins(
 }
 
 NGLogicalOffset NGBlockLayoutAlgorithm::PositionFragment(
-    const NGFragment& fragment,
+    const NGFragmentBase& fragment,
     const NGBoxStrut& child_margins) {
-  const NGBoxStrut collapsed_margins = CollapseMargins(child_margins, fragment);
+  const NGBoxStrut collapsed_margins =
+      CollapseMargins(child_margins, toNGFragment(fragment));
 
   LayoutUnit inline_offset =
       border_and_padding_.inline_start + child_margins.inline_start;
@@ -332,7 +334,7 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionFragment(
 }
 
 NGLogicalOffset NGBlockLayoutAlgorithm::PositionFloatFragment(
-    const NGFragment& fragment,
+    const NGFragmentBase& fragment,
     const NGBoxStrut& margins) {
   // TODO(glebl@chromium.org): Support the top edge alignment rule.
   // Find a layout opportunity that will fit our float.

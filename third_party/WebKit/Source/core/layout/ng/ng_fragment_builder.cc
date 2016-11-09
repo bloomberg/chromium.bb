@@ -43,7 +43,7 @@ NGFragmentBuilder& NGFragmentBuilder::SetBlockOverflow(LayoutUnit size) {
   return *this;
 }
 
-NGFragmentBuilder& NGFragmentBuilder::AddChild(NGFragment* child,
+NGFragmentBuilder& NGFragmentBuilder::AddChild(NGFragmentBase* child,
                                                NGLogicalOffset offset) {
   DCHECK_EQ(type_, NGPhysicalFragmentBase::FragmentBox)
       << "Only box fragments can have children";

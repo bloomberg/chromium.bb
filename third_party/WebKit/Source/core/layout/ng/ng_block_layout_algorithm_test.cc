@@ -7,6 +7,7 @@
 #include "core/layout/ng/ng_box.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
+#include "core/layout/ng/ng_physical_fragment_base.h"
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_units.h"
@@ -33,10 +34,10 @@ class NGBlockLayoutAlgorithmTest : public ::testing::Test {
   NGPhysicalFragment* RunBlockLayoutAlgorithm(NGConstraintSpace* space,
                                               NGBox* first_child) {
     NGBlockLayoutAlgorithm algorithm(style_, first_child, space);
-    NGPhysicalFragment* frag;
+    NGPhysicalFragmentBase* frag;
     while (!algorithm.Layout(&frag))
       continue;
-    return frag;
+    return toNGPhysicalFragment(frag);
   }
 
   RefPtr<ComputedStyle> style_;
@@ -49,7 +50,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, FixedSize) {
   auto* space = ConstructConstraintSpace(
       HorizontalTopBottom, LeftToRight,
       NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
-  NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, nullptr);
+  NGPhysicalFragmentBase* frag = RunBlockLayoutAlgorithm(space, nullptr);
 
   EXPECT_EQ(LayoutUnit(30), frag->Width());
   EXPECT_EQ(LayoutUnit(40), frag->Height());

@@ -24,7 +24,7 @@ class CORE_EXPORT NGFragmentBuilder final
   NGFragmentBuilder& SetInlineOverflow(LayoutUnit);
   NGFragmentBuilder& SetBlockOverflow(LayoutUnit);
 
-  NGFragmentBuilder& AddChild(NGFragment*, NGLogicalOffset);
+  NGFragmentBuilder& AddChild(NGFragmentBase*, NGLogicalOffset);
 
   // Sets MarginStrut for the resultant fragment.
   NGFragmentBuilder& SetMarginStrutBlockStart(const NGMarginStrut& from);

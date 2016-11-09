@@ -15,7 +15,7 @@ NGTextLayoutAlgorithm::NGTextLayoutAlgorithm(
   DCHECK(inline_box_);
 }
 
-bool NGTextLayoutAlgorithm::Layout(NGPhysicalFragment** out) {
+bool NGTextLayoutAlgorithm::Layout(NGPhysicalFragmentBase** out) {
   // TODO(layout-dev): implement.
   *out = nullptr;
   return true;

@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_physical_constraint_space.h"
+#include "core/layout/ng/ng_physical_fragment_base.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "core/layout/ng/ng_units.h"
 #include "platform/LayoutUnit.h"
@@ -14,8 +15,6 @@
 #include "wtf/Vector.h"
 
 namespace blink {
-
-class NGPhysicalFragmentBase;
 
 class CORE_EXPORT NGFragmentBase : public GarbageCollected<NGFragmentBase> {
  public:
@@ -35,6 +34,8 @@ class CORE_EXPORT NGFragmentBase : public GarbageCollected<NGFragmentBase> {
   // Returns the offset relative to the parent fragement's content-box.
   LayoutUnit InlineOffset() const;
   LayoutUnit BlockOffset() const;
+
+  NGPhysicalFragmentBase::NGFragmentType Type() const;
 
   NGPhysicalFragmentBase* PhysicalFragment() const {
     return physical_fragment_;

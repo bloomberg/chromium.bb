@@ -13,7 +13,7 @@ namespace blink {
 
 struct MinAndMaxContentSizes;
 class NGConstraintSpace;
-class NGPhysicalFragment;
+class NGPhysicalFragmentBase;
 
 // Base class for all LayoutNG algorithms.
 class CORE_EXPORT NGLayoutAlgorithm
@@ -32,7 +32,7 @@ class CORE_EXPORT NGLayoutAlgorithm
   // Returns true when done; when this function returns false, it has to be
   // called again. The out parameter will only be set when this function
   // returns true.
-  virtual bool Layout(NGPhysicalFragment**) = 0;
+  virtual bool Layout(NGPhysicalFragmentBase**) = 0;
 
   enum MinAndMaxState { Success, Pending, NotImplemented };
 

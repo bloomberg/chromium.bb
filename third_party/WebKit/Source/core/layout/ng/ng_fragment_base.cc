@@ -41,6 +41,10 @@ LayoutUnit NGFragmentBase::BlockOffset() const {
              : physical_fragment_->LeftOffset();
 }
 
+NGPhysicalFragmentBase::NGFragmentType NGFragmentBase::Type() const {
+  return physical_fragment_->Type();
+}
+
 DEFINE_TRACE(NGFragmentBase) {
   visitor->trace(physical_fragment_);
 }

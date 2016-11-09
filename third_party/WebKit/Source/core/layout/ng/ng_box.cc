@@ -28,7 +28,7 @@ NGBox::NGBox(ComputedStyle* style) : layout_box_(nullptr), style_(style) {
 }
 
 bool NGBox::Layout(const NGConstraintSpace* constraint_space,
-                   NGFragment** out) {
+                   NGFragmentBase** out) {
   DCHECK(!minmax_algorithm_)
       << "Can't interleave Layout and ComputeMinAndMaxContentSizes";
   if (layout_box_ && layout_box_->isOutOfFlowPositioned())
@@ -54,10 +54,10 @@ bool NGBox::Layout(const NGConstraintSpace* constraint_space,
       }
     }
 
-    NGPhysicalFragment* fragment = nullptr;
+    NGPhysicalFragmentBase* fragment = nullptr;
     if (!layout_algorithm_->Layout(&fragment))
       return false;
-    fragment_ = fragment;
+    fragment_ = toNGPhysicalFragment(fragment);
 
     if (layout_box_) {
       CopyFragmentDataToLayoutBox(*constraint_space);
@@ -124,12 +124,13 @@ bool NGBox::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
   // Layout.
 
   // Have to synthesize this value.
-  NGPhysicalFragment* physical_fragment;
+  NGPhysicalFragmentBase* physical_fragment;
   while (!minmax_algorithm_->Layout(&physical_fragment))
     continue;
-  NGFragment* fragment = new NGFragment(
-      FromPlatformWritingMode(Style()->getWritingMode()),
-      FromPlatformDirection(Style()->direction()), physical_fragment);
+  NGFragment* fragment =
+      new NGFragment(FromPlatformWritingMode(Style()->getWritingMode()),
+                     FromPlatformDirection(Style()->direction()),
+                     toNGPhysicalFragment(physical_fragment));
 
   sizes->min_content = fragment->InlineOverflow();
 
@@ -150,7 +151,7 @@ bool NGBox::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
 
   fragment = new NGFragment(FromPlatformWritingMode(Style()->getWritingMode()),
                             FromPlatformDirection(Style()->direction()),
-                            physical_fragment);
+                            toNGPhysicalFragment(physical_fragment));
   sizes->max_content = fragment->InlineOverflow();
   minmax_algorithm_ = nullptr;
   return true;

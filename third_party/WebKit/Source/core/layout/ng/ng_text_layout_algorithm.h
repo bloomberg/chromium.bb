@@ -30,7 +30,7 @@ class CORE_EXPORT NGTextLayoutAlgorithm : public NGLayoutAlgorithm {
   //              fragments within.
   NGTextLayoutAlgorithm(NGInlineBox* inline_box, NGConstraintSpace* space);
 
-  bool Layout(NGPhysicalFragment**) override;
+  bool Layout(NGPhysicalFragmentBase**) override;
 
   DECLARE_VIRTUAL_TRACE();
 

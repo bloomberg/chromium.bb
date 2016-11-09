@@ -10,7 +10,8 @@
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_direction.h"
-#include "core/layout/ng/ng_fragment.h"
+#include "core/layout/ng/ng_physical_text_fragment.h"
+#include "core/layout/ng/ng_text_fragment.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_writing_mode.h"
@@ -30,7 +31,7 @@ NGInlineBox::NGInlineBox(LayoutObject* start_inline)
 }
 
 bool NGInlineBox::Layout(const NGConstraintSpace* constraint_space,
-                         NGFragment** out) {
+                         NGFragmentBase** out) {
   // TODO(layout-dev): Perform pre-layout text step.
 
   // NOTE: We don't need to change the coordinate system here as we are an
@@ -43,14 +44,15 @@ bool NGInlineBox::Layout(const NGConstraintSpace* constraint_space,
     // TODO(layout-dev): If an atomic inline run the appropriate algorithm.
     layout_algorithm_ = new NGTextLayoutAlgorithm(this, child_constraint_space);
 
-  NGPhysicalFragment* fragment = nullptr;
+  NGPhysicalFragmentBase* fragment = nullptr;
   if (!layout_algorithm_->Layout(&fragment))
     return false;
 
   // TODO(layout-dev): Implement copying of fragment data to LayoutObject tree.
 
-  *out = new NGFragment(constraint_space->WritingMode(),
-                        constraint_space->Direction(), fragment);
+  *out = new NGTextFragment(constraint_space->WritingMode(),
+                            constraint_space->Direction(),
+                            toNGPhysicalTextFragment(fragment));
 
   // Reset algorithm for future use
   layout_algorithm_ = nullptr;

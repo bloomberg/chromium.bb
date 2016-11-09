@@ -13,7 +13,7 @@ namespace blink {
 class LayoutBox;
 class LayoutObject;
 class NGConstraintSpace;
-class NGFragment;
+class NGFragmentBase;
 class NGLayoutAlgorithm;
 class NGPhysicalFragment;
 struct MinAndMaxContentSizes;
@@ -30,7 +30,7 @@ class CORE_EXPORT NGInlineBox final
   // returns true. The same constraint space has to be passed each time.
   // TODO(layout-ng): Should we have a StartLayout function to avoid passing
   // the same space for each Layout iteration?
-  bool Layout(const NGConstraintSpace*, NGFragment**);
+  bool Layout(const NGConstraintSpace*, NGFragmentBase**);
 
   NGInlineBox* NextSibling();
 

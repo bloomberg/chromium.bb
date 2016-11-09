@@ -21,7 +21,7 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
   DCHECK(style_);
 }
 
-bool NGInlineLayoutAlgorithm::Layout(NGPhysicalFragment** out) {
+bool NGInlineLayoutAlgorithm::Layout(NGPhysicalFragmentBase** out) {
   NGFragmentBuilder builder(NGPhysicalFragmentBase::FragmentBox);
 
   *out = builder.ToFragment();
