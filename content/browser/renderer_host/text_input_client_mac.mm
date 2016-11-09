@@ -8,10 +8,32 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/text_input_client_messages.h"
 
 namespace content {
+
+namespace {
+
+// TODO(ekaramad): TextInputClientObserver, the renderer side of
+// TextInputClientMac for each RenderWidgetHost, expects to have a
+// WebFrameWidget to use for handling these IPCs. However, for fullscreen flash,
+// we end up with a PepperWidget. For those scenarios, do not send the IPCs. We
+// need to figure out what features are properly supported and perhaps send the
+// IPC to the parent widget of the plugin (https://crbug.com/663384).
+bool SendMessageToRenderWidget(RenderWidgetHostImpl* widget,
+                               IPC::Message* message) {
+  if (!widget->delegate() ||
+      widget == widget->delegate()->GetFullscreenRenderWidgetHost()) {
+    delete message;
+    return false;
+  }
+
+  DCHECK_EQ(widget->GetRoutingID(), message->routing_id());
+  return widget->Send(message);
+}
+}
 
 // The amount of time in milliseconds that the browser process will wait for a
 // response from the renderer.
@@ -44,7 +66,8 @@ void TextInputClientMac::GetStringAtPoint(
   DCHECK(replyForPointHandler_.get() == nil);
   replyForPointHandler_.reset(reply_handler, base::scoped_policy::RETAIN);
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
-  rwhi->Send(new TextInputClientMsg_StringAtPoint(rwhi->GetRoutingID(), point));
+  SendMessageToRenderWidget(
+      rwhi, new TextInputClientMsg_StringAtPoint(rwhi->GetRoutingID(), point));
 }
 
 void TextInputClientMac::GetStringAtPointReply(NSAttributedString* string,
@@ -62,8 +85,8 @@ void TextInputClientMac::GetStringFromRange(
   DCHECK(replyForRangeHandler_.get() == nil);
   replyForRangeHandler_.reset(reply_handler, base::scoped_policy::RETAIN);
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
-  rwhi->Send(new TextInputClientMsg_StringForRange(rwhi->GetRoutingID(),
-                                                   gfx::Range(range)));
+  SendMessageToRenderWidget(rwhi, new TextInputClientMsg_StringForRange(
+                                      rwhi->GetRoutingID(), gfx::Range(range)));
 }
 
 void TextInputClientMac::GetStringFromRangeReply(NSAttributedString* string,
@@ -80,8 +103,11 @@ NSUInteger TextInputClientMac::GetCharacterIndexAtPoint(RenderWidgetHost* rwh,
 
   BeforeRequest();
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
-  rwhi->Send(new TextInputClientMsg_CharacterIndexForPoint(rwhi->GetRoutingID(),
-                                                          point));
+  if (!SendMessageToRenderWidget(rwhi,
+                                 new TextInputClientMsg_CharacterIndexForPoint(
+                                     rwhi->GetRoutingID(), point)))
+    return NSNotFound;
+
   // http://crbug.com/121917
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
   condition_.TimedWait(base::TimeDelta::FromMilliseconds(kWaitTimeout));
@@ -100,9 +126,11 @@ NSRect TextInputClientMac::GetFirstRectForRange(RenderWidgetHost* rwh,
 
   BeforeRequest();
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
-  rwhi->Send(
-      new TextInputClientMsg_FirstRectForCharacterRange(rwhi->GetRoutingID(),
-                                                        gfx::Range(range)));
+  if (!SendMessageToRenderWidget(
+          rwhi, new TextInputClientMsg_FirstRectForCharacterRange(
+                    rwhi->GetRoutingID(), gfx::Range(range))))
+    return NSRect();
+
   // http://crbug.com/121917
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
   condition_.TimedWait(base::TimeDelta::FromMilliseconds(kWaitTimeout));

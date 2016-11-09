@@ -928,10 +928,9 @@ RenderWidgetHostView* WebContentsImpl::GetTopLevelRenderWidgetHostView() {
 
 RenderWidgetHostView* WebContentsImpl::GetFullscreenRenderWidgetHostView()
     const {
-  RenderWidgetHost* const widget_host =
-      RenderWidgetHostImpl::FromID(fullscreen_widget_process_id_,
-                                   fullscreen_widget_routing_id_);
-  return widget_host ? widget_host->GetView() : NULL;
+  if (auto widget_host = GetFullscreenRenderWidgetHost())
+    return widget_host->GetView();
+  return nullptr;
 }
 
 WebContentsView* WebContentsImpl::GetView() const {
@@ -5013,6 +5012,11 @@ int WebContentsImpl::GetOuterDelegateFrameTreeNodeId() {
     return node_->outer_contents_frame_tree_node_id();
 
   return FrameTreeNode::kFrameTreeNodeInvalidId;
+}
+
+RenderWidgetHostImpl* WebContentsImpl::GetFullscreenRenderWidgetHost() const {
+  return RenderWidgetHostImpl::FromID(fullscreen_widget_process_id_,
+                                      fullscreen_widget_routing_id_);
 }
 
 RenderFrameHostManager* WebContentsImpl::GetRenderManager() const {

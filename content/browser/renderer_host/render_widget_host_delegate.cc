@@ -78,4 +78,9 @@ RenderViewHostDelegateView* RenderWidgetHostDelegate::GetDelegateView() {
   return nullptr;
 }
 
+RenderWidgetHostImpl* RenderWidgetHostDelegate::GetFullscreenRenderWidgetHost()
+    const {
+  return nullptr;
+}
+
 }  // namespace content

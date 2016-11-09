@@ -211,6 +211,11 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Returns the associated RenderViewHostDelegateView*, if possible.
   virtual RenderViewHostDelegateView* GetDelegateView();
 
+  // Returns the current Flash fullscreen RenderWidgetHostImpl if any. This is
+  // not intended for use with other types of fullscreen, such as HTML
+  // fullscreen, and will return nullptr for those cases.
+  virtual RenderWidgetHostImpl* GetFullscreenRenderWidgetHost() const;
+
  protected:
   virtual ~RenderWidgetHostDelegate() {}
 };
