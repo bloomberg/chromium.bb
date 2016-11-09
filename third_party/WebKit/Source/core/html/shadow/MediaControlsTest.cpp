@@ -17,6 +17,7 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/WebMediaPlayer.h"
 #include "public/platform/WebSize.h"
+#include "public/platform/modules/remoteplayback/WebRemotePlaybackClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <memory>
 

@@ -156,6 +156,8 @@ class FrameLoaderClientImpl final : public FrameLoaderClient {
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
       WebMediaPlayerClient*) override;
+  WebRemotePlaybackClient* createWebRemotePlaybackClient(
+      HTMLMediaElement&) override;
   ObjectContentType getObjectContentType(
       const KURL&,
       const WTF::String& mimeType,

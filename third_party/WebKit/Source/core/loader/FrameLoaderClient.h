@@ -69,6 +69,7 @@ class LocalFrame;
 class ResourceError;
 class ResourceRequest;
 class ResourceResponse;
+class ScriptState;
 class SecurityOrigin;
 class SharedWorkerRepositoryClient;
 class SubstituteData;
@@ -78,6 +79,7 @@ class WebCookieJar;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebMediaPlayerSource;
+class WebRemotePlaybackClient;
 class WebRTCPeerConnectionHandler;
 class WebServiceWorkerProvider;
 class Widget;
@@ -199,6 +201,8 @@ class CORE_EXPORT FrameLoaderClient : public FrameClient {
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
       WebMediaPlayerClient*) = 0;
+  virtual WebRemotePlaybackClient* createWebRemotePlaybackClient(
+      HTMLMediaElement&) = 0;
 
   virtual ObjectContentType getObjectContentType(
       const KURL&,

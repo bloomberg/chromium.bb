@@ -14,7 +14,6 @@ namespace blink {
 class HTMLMediaElement;
 class QualifiedName;
 class RemotePlayback;
-class ScriptState;
 
 // Class used to implement the Remote Playback API. It is a supplement to
 // HTMLMediaElement.
@@ -30,7 +29,7 @@ class MODULES_EXPORT HTMLMediaElementRemotePlayback final
                                   bool);
 
   static HTMLMediaElementRemotePlayback& from(HTMLMediaElement&);
-  static RemotePlayback* remote(ScriptState*, HTMLMediaElement&);
+  static RemotePlayback* remote(HTMLMediaElement&);
 
   DECLARE_VIRTUAL_TRACE();
 

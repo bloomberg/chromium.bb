@@ -68,7 +68,7 @@ TEST_F(RemotePlaybackTest, PromptCancelledRejectsWithNotAllowedError) {
 
   HTMLMediaElement* element = HTMLVideoElement::create(pageHolder->document());
   RemotePlayback* remotePlayback =
-      HTMLMediaElementRemotePlayback::remote(scope.getScriptState(), *element);
+      HTMLMediaElementRemotePlayback::remote(*element);
 
   auto resolve = MockFunction::create(scope.getScriptState());
   auto reject = MockFunction::create(scope.getScriptState());
@@ -78,7 +78,8 @@ TEST_F(RemotePlaybackTest, PromptCancelledRejectsWithNotAllowedError) {
 
   UserGestureIndicator indicator(DocumentUserGestureToken::create(
       &pageHolder->document(), UserGestureToken::NewGesture));
-  remotePlayback->prompt().then(resolve->bind(), reject->bind());
+  remotePlayback->prompt(scope.getScriptState())
+      .then(resolve->bind(), reject->bind());
   cancelPrompt(remotePlayback);
 
   // Runs pending promises.
@@ -97,7 +98,7 @@ TEST_F(RemotePlaybackTest, PromptConnectedRejectsWhenCancelled) {
 
   HTMLMediaElement* element = HTMLVideoElement::create(pageHolder->document());
   RemotePlayback* remotePlayback =
-      HTMLMediaElementRemotePlayback::remote(scope.getScriptState(), *element);
+      HTMLMediaElementRemotePlayback::remote(*element);
 
   auto resolve = MockFunction::create(scope.getScriptState());
   auto reject = MockFunction::create(scope.getScriptState());
@@ -109,7 +110,8 @@ TEST_F(RemotePlaybackTest, PromptConnectedRejectsWhenCancelled) {
 
   UserGestureIndicator indicator(DocumentUserGestureToken::create(
       &pageHolder->document(), UserGestureToken::NewGesture));
-  remotePlayback->prompt().then(resolve->bind(), reject->bind());
+  remotePlayback->prompt(scope.getScriptState())
+      .then(resolve->bind(), reject->bind());
   cancelPrompt(remotePlayback);
 
   // Runs pending promises.
@@ -128,7 +130,7 @@ TEST_F(RemotePlaybackTest, PromptConnectedResolvesWhenDisconnected) {
 
   HTMLMediaElement* element = HTMLVideoElement::create(pageHolder->document());
   RemotePlayback* remotePlayback =
-      HTMLMediaElementRemotePlayback::remote(scope.getScriptState(), *element);
+      HTMLMediaElementRemotePlayback::remote(*element);
 
   auto resolve = MockFunction::create(scope.getScriptState());
   auto reject = MockFunction::create(scope.getScriptState());
@@ -140,7 +142,8 @@ TEST_F(RemotePlaybackTest, PromptConnectedResolvesWhenDisconnected) {
 
   UserGestureIndicator indicator(DocumentUserGestureToken::create(
       &pageHolder->document(), UserGestureToken::NewGesture));
-  remotePlayback->prompt().then(resolve->bind(), reject->bind());
+  remotePlayback->prompt(scope.getScriptState())
+      .then(resolve->bind(), reject->bind());
 
   setState(remotePlayback, WebRemotePlaybackState::Disconnected);
 
@@ -160,7 +163,7 @@ TEST_F(RemotePlaybackTest, StateChangeEvents) {
 
   HTMLMediaElement* element = HTMLVideoElement::create(pageHolder->document());
   RemotePlayback* remotePlayback =
-      HTMLMediaElementRemotePlayback::remote(scope.getScriptState(), *element);
+      HTMLMediaElementRemotePlayback::remote(*element);
 
   auto connectingHandler = new ::testing::StrictMock<MockEventListener>();
   auto connectHandler = new ::testing::StrictMock<MockEventListener>();
@@ -201,7 +204,7 @@ TEST_F(RemotePlaybackTest,
 
   HTMLMediaElement* element = HTMLVideoElement::create(pageHolder->document());
   RemotePlayback* remotePlayback =
-      HTMLMediaElementRemotePlayback::remote(scope.getScriptState(), *element);
+      HTMLMediaElementRemotePlayback::remote(*element);
 
   MockFunction* resolve = MockFunction::create(scope.getScriptState());
   MockFunction* reject = MockFunction::create(scope.getScriptState());
@@ -211,7 +214,8 @@ TEST_F(RemotePlaybackTest,
 
   UserGestureIndicator indicator(DocumentUserGestureToken::create(
       &pageHolder->document(), UserGestureToken::NewGesture));
-  remotePlayback->prompt().then(resolve->bind(), reject->bind());
+  remotePlayback->prompt(scope.getScriptState())
+      .then(resolve->bind(), reject->bind());
   HTMLMediaElementRemotePlayback::setBooleanAttribute(
       HTMLNames::disableremoteplaybackAttr, *element, true);
 
@@ -231,7 +235,7 @@ TEST_F(RemotePlaybackTest, DisableRemotePlaybackCancelsAvailabilityCallbacks) {
 
   HTMLMediaElement* element = HTMLVideoElement::create(pageHolder->document());
   RemotePlayback* remotePlayback =
-      HTMLMediaElementRemotePlayback::remote(scope.getScriptState(), *element);
+      HTMLMediaElementRemotePlayback::remote(*element);
 
   MockFunction* callbackFunction = MockFunction::create(scope.getScriptState());
   RemotePlaybackAvailabilityCallback* availabilityCallback =
@@ -248,7 +252,8 @@ TEST_F(RemotePlaybackTest, DisableRemotePlaybackCancelsAvailabilityCallbacks) {
   EXPECT_CALL(*resolve, call(::testing::_)).Times(1);
   EXPECT_CALL(*reject, call(::testing::_)).Times(0);
 
-  remotePlayback->watchAvailability(availabilityCallback)
+  remotePlayback
+      ->watchAvailability(scope.getScriptState(), availabilityCallback)
       .then(resolve->bind(), reject->bind());
 
   HTMLMediaElementRemotePlayback::setBooleanAttribute(

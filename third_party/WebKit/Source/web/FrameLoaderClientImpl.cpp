@@ -59,6 +59,8 @@
 #include "modules/device_orientation/DeviceOrientationController.h"
 #include "modules/encryptedmedia/HTMLMediaElementEncryptedMedia.h"
 #include "modules/gamepad/NavigatorGamepad.h"
+#include "modules/remoteplayback/HTMLMediaElementRemotePlayback.h"
+#include "modules/remoteplayback/RemotePlayback.h"
 #include "modules/serviceworkers/NavigatorServiceWorker.h"
 #include "modules/serviceworkers/ServiceWorkerLinkResource.h"
 #include "modules/storage/DOMWindowStorageController.h"
@@ -773,6 +775,11 @@ std::unique_ptr<WebMediaPlayer> FrameLoaderClientImpl::createWebMediaPlayer(
   return wrapUnique(webFrame->client()->createMediaPlayer(
       source, client, &encryptedMedia, encryptedMedia.contentDecryptionModule(),
       sinkId));
+}
+
+WebRemotePlaybackClient* FrameLoaderClientImpl::createWebRemotePlaybackClient(
+    HTMLMediaElement& htmlMediaElement) {
+  return HTMLMediaElementRemotePlayback::remote(htmlMediaElement);
 }
 
 ObjectContentType FrameLoaderClientImpl::getObjectContentType(

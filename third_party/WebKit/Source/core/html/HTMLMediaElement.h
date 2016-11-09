@@ -308,7 +308,6 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
   WebRemotePlaybackClient* remotePlaybackClient() {
     return m_remotePlaybackClient;
   }
-  void setRemotePlaybackClient(WebRemotePlaybackClient*);
 
  protected:
   HTMLMediaElement(const QualifiedName&, Document&);

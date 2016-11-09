@@ -325,6 +325,8 @@ class CORE_EXPORT EmptyFrameLoaderClient : public FrameLoaderClient {
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
       WebMediaPlayerClient*) override;
+  WebRemotePlaybackClient* createWebRemotePlaybackClient(
+      HTMLMediaElement&) override;
 
   ObjectContentType getObjectContentType(const KURL&,
                                          const String&,

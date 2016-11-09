@@ -40,21 +40,12 @@ const AtomicString& remotePlaybackStateToString(WebRemotePlaybackState state) {
 }  // anonymous namespace
 
 // static
-RemotePlayback* RemotePlayback::create(ScriptState* scriptState,
-                                       HTMLMediaElement& element) {
-  DCHECK(element.document().frame());
-  DCHECK(scriptState);
-
-  RemotePlayback* remotePlayback = new RemotePlayback(scriptState, element);
-  element.setRemotePlaybackClient(remotePlayback);
-
-  return remotePlayback;
+RemotePlayback* RemotePlayback::create(HTMLMediaElement& element) {
+  return new RemotePlayback(element);
 }
 
-RemotePlayback::RemotePlayback(ScriptState* scriptState,
-                               HTMLMediaElement& element)
+RemotePlayback::RemotePlayback(HTMLMediaElement& element)
     : ActiveScriptWrappable(this),
-      m_scriptState(scriptState),
       m_state(element.isPlayingRemotely()
                   ? WebRemotePlaybackState::Connected
                   : WebRemotePlaybackState::Disconnected),
@@ -70,9 +61,9 @@ ExecutionContext* RemotePlayback::getExecutionContext() const {
 }
 
 ScriptPromise RemotePlayback::watchAvailability(
+    ScriptState* scriptState,
     RemotePlaybackAvailabilityCallback* callback) {
-  ScriptPromiseResolver* resolver =
-      ScriptPromiseResolver::create(m_scriptState.get());
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
   if (m_mediaElement->fastHasAttribute(HTMLNames::disableremoteplaybackAttr)) {
@@ -108,9 +99,9 @@ ScriptPromise RemotePlayback::watchAvailability(
   return promise;
 }
 
-ScriptPromise RemotePlayback::cancelWatchAvailability(int id) {
-  ScriptPromiseResolver* resolver =
-      ScriptPromiseResolver::create(m_scriptState.get());
+ScriptPromise RemotePlayback::cancelWatchAvailability(ScriptState* scriptState,
+                                                      int id) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
   if (m_mediaElement->fastHasAttribute(HTMLNames::disableremoteplaybackAttr)) {
@@ -132,9 +123,9 @@ ScriptPromise RemotePlayback::cancelWatchAvailability(int id) {
   return promise;
 }
 
-ScriptPromise RemotePlayback::cancelWatchAvailability() {
-  ScriptPromiseResolver* resolver =
-      ScriptPromiseResolver::create(m_scriptState.get());
+ScriptPromise RemotePlayback::cancelWatchAvailability(
+    ScriptState* scriptState) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
   if (m_mediaElement->fastHasAttribute(HTMLNames::disableremoteplaybackAttr)) {
@@ -149,11 +140,10 @@ ScriptPromise RemotePlayback::cancelWatchAvailability() {
   return promise;
 }
 
-ScriptPromise RemotePlayback::prompt() {
+ScriptPromise RemotePlayback::prompt(ScriptState* scriptState) {
   // TODO(avayvod): implement steps 5, 8, 9 of the algorithm.
   // https://crbug.com/647441
-  ScriptPromiseResolver* resolver =
-      ScriptPromiseResolver::create(m_scriptState.get());
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
   if (m_mediaElement->fastHasAttribute(HTMLNames::disableremoteplaybackAttr)) {

@@ -475,6 +475,12 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName,
     m_lockedPendingUserGesture = true;
   }
 
+  LocalFrame* frame = document.frame();
+  if (frame) {
+    m_remotePlaybackClient =
+        frame->loader().client()->createWebRemotePlaybackClient(*this);
+  }
+
   setHasCustomStyleCallbacks();
   addElementToDocumentMap(this, &document);
 
@@ -3937,11 +3943,6 @@ void HTMLMediaElement::notifyPositionMayHaveChanged(
 
 void HTMLMediaElement::updatePositionNotificationRegistration() {
   m_autoplayHelper->updatePositionNotificationRegistration();
-}
-
-void HTMLMediaElement::setRemotePlaybackClient(
-    WebRemotePlaybackClient* client) {
-  m_remotePlaybackClient = client;
 }
 
 // TODO(liberato): remove once autoplay gesture override experiment concludes.

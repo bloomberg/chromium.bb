@@ -172,6 +172,11 @@ std::unique_ptr<WebMediaPlayer> EmptyFrameLoaderClient::createWebMediaPlayer(
   return nullptr;
 }
 
+WebRemotePlaybackClient* EmptyFrameLoaderClient::createWebRemotePlaybackClient(
+    HTMLMediaElement&) {
+  return nullptr;
+}
+
 void EmptyTextCheckerClient::requestCheckingOfString(TextCheckingRequest*) {}
 
 void EmptyTextCheckerClient::cancelAllPendingRequests() {}
