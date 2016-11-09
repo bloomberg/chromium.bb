@@ -1772,9 +1772,8 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
   if (mbmi->tx_size >= TX_32X32) assert(mbmi->tx_type == DCT_DCT);
 #endif
 #if CONFIG_PVQ
-  if (best_tx < TX_SIZES) {
-    RD_STATS this_rd_stats;
-    txfm_rd_in_plane(x, cpi, &this_rd_stats, ref_best_rd, 0, bs, best_tx,
+  if (best_rd != INT64_MAX) {
+    txfm_rd_in_plane(x, cpi, rd_stats, ref_best_rd, 0, bs, best_tx,
                      cpi->sf.use_fast_coef_costing);
   }
 #endif
