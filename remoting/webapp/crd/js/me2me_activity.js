@@ -264,7 +264,7 @@ remoting.Me2MeActivity.prototype.onConnected = function(connectionInfo) {
 
   // Drop the session after 30s of suspension.  If this timeout is too short, we
   // risk dropping a connection that is self-recoverable. If this timeout is too
-  // long, the user may lose his/her patience and just manually reconnects.
+  // long, the user may lose their patience and just manually reconnect.
   this.desktopActivity_.getSession().dropSessionOnSuspend(30 * 1000);
 };
 
