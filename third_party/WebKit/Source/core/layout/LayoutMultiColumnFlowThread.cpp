@@ -1191,9 +1191,19 @@ void LayoutMultiColumnFlowThread::toggleSpannersInSubtree(
       }
     } else if (descendantIsValidColumnSpanner(object)) {
       // We can now contain spanners, and we found a candidate. Turn it into a
-      // spanner.
-      createAndInsertSpannerPlaceholder(
-          &box, nextInPreOrderAfterChildrenSkippingOutOfFlow(this, &box));
+      // spanner, if it's not already one. We have to check if it's already a
+      // spanner, because in some cases we incorrectly think that we need to
+      // toggle spanners. One known case is when some ancestor changes
+      // writing-mode (which is an inherited property). Writing mode roots
+      // establish block formatting context (which means that there can be no
+      // column spanners inside). When changing the style on one object in the
+      // tree at a time, we're going to see writing mode roots that are not
+      // going to remain writing mode roots when all objects have been updated
+      // (because then all will have got the same writing mode).
+      if (!box.isColumnSpanAll()) {
+        createAndInsertSpannerPlaceholder(
+            &box, nextInPreOrderAfterChildrenSkippingOutOfFlow(this, &box));
+      }
       continue;
     }
     walkChildren = canContainSpannerInParentFragmentationContext(box);
