@@ -4,14 +4,12 @@
   -->
 
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
-<link rel="import" href="chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/elements/files_icon_button.html">
+<link rel="import" href="chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/elements/files_toggle_ripple.html">
 
 <dom-module id="repeat-button">
   <link rel="import" type="css" href="repeat_button.css">
   <template>
-    <!-- TODO(yamaguchi): Eliminate extra ripple effect upon mouse click. -->
-    <files-icon-button active="[[isActive(repeatMode)]]"
-                       repeat-mode$="{{repeatMode}}"></files-icon-button>
+    <files-toggle-ripple activated="[[isActive(repeatMode)]]" class$="{{repeatMode}}"></files-toggle-ripple>
   </template>
 
   <script src="repeat_button.js"></script>
