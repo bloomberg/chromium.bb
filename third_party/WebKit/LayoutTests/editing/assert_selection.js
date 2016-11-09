@@ -48,6 +48,9 @@
 // this file.
 
 (function() {
+/** @const @type {string} */
+const kTextArea = 'TEXTAREA';
+
 /**
  * @param {!Node} node
  * @return {boolean}
@@ -98,6 +101,8 @@ class SampleSelection {
     this.focusNode_ = null;
     /** @type {number} */
     this.focusOffset_ = 0;
+    /** @type {HTMLElement} */
+    this.shadowHost_ = null;
   }
 
   /**
@@ -143,6 +148,11 @@ class SampleSelection {
     return this.focusOffset_;
   }
 
+  /** @public @return {HTMLElement} */
+  get shadowHost() {
+    return this.shadowHost_;
+  }
+
   /**
    * @public
    * @return {boolean}
@@ -170,6 +180,22 @@ class SampleSelection {
     selection.anchorOffset_ = domSelection.anchorOffset;
     selection.focusNode_ = domSelection.focusNode;
     selection.focusOffset_ = domSelection.focusOffset;
+
+    if (selection.anchorNode_ === null)
+      return selection;
+
+    const document = selection.anchorNode_.ownerDocument;
+    selection.shadowHost_ = (() => {
+        if (!document.activeElement)
+          return null;
+        if (document.activeElement.nodeName !== kTextArea)
+          return null;
+        const selectedNode =
+            selection.anchorNode.childNodes[selection.anchorOffset];
+        if (document.activeElement !== selectedNode)
+          return null;
+        return selectedNode;
+    })();
     return selection;
   }
 
@@ -372,6 +398,8 @@ class Serializer {
   handleSelection(parentNode, childIndex) {
     if (this.selection_.isNone)
       return;
+    if (this.selection_.shadowHost)
+      return;
     if (parentNode === this.selection_.focusNode &&
         childIndex === this.selection_.focusOffset) {
       this.emit('|');
@@ -453,12 +481,44 @@ class Serializer {
           this.emit(` ${attr.name}="${value}"`);
         });
     this.emit('>');
+    if (element.nodeName === kTextArea)
+      return this.handleTextArea(element);
     if (element.childNodes.length === 0 &&
         HTML5_VOID_ELEMENTS.has(tagName)) {
       return;
     }
     this.serializeChildren(element);
     this.emit(`</${tagName}>`);
+  }
+
+  /**
+   * @private
+   * @param {!HTMLTextArea}
+   */
+  handleTextArea(textArea) {
+    /** @type {string} */
+    const value = textArea.value;
+    if (this.selection_.shadowHost !== textArea) {
+      this.emit(value);
+    } else {
+      /** @type {number} */
+      const start = textArea.selectionStart;
+      /** @type {number} */
+      const end = textArea.selectionEnd;
+      /** @type {boolean} */
+      const isBackward = start < end &&
+                         textArea.selectionDirection === 'backward';
+      const startMarker = isBackward ? '|' : '^';
+      const endMarker = isBackward ? '^' : '|';
+      this.emit(value.substr(0, start));
+      if (start < end) {
+        this.emit(startMarker);
+        this.emit(value.substr(start, end - start));
+      }
+      this.emit(endMarker);
+      this.emit(value.substr(end));
+    }
+    this.emit('</textarea>');
   }
 
   /**
@@ -594,8 +654,36 @@ class Sample {
     const selection = Parser.parse(this.document_.body);
     if (selection.isNone)
       return;
+    if (this.loadSelectionInTextArea(selection))
+      return;
     this.selection_.collapse(selection.anchorNode, selection.anchorOffset);
     this.selection_.extend(selection.focusNode, selection.focusOffset);
+  }
+
+  /**
+   * @private
+   * @param {!SampleSelection} selection
+   * @return {boolean} Returns true if selection is in TEXTAREA.
+   */
+  loadSelectionInTextArea(selection) {
+    /** @type {Node} */
+    const enclosingNode = selection.anchorNode.parentNode;
+    if (selection.focusNode.parentNode !== enclosingNode)
+      return false;
+    if (enclosingNode.nodeName !== kTextArea)
+      return false;
+    if (selection.anchorNode !== selection.focusNode)
+      throw new Error('Selection in TEXTAREA should be in same Text node.');
+    enclosingNode.focus();
+    if (selection.anchorOffset < selection.focusOffset) {
+      enclosingNode.setSelectionRange(selection.anchorOffset,
+                                      selection.focusOffset);
+      return true;
+    }
+    enclosingNode.setSelectionRange(selection.focusOffset,
+                                    selection.anchorOffset,
+                                    'backward');
+    return true;
   }
 
   /**
