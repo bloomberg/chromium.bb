@@ -44,8 +44,7 @@ class MockPaymentCompleter
 
 TEST(PaymentResponseTest, DataCopiedOver) {
   V8TestingScope scope;
-  payments::mojom::blink::PaymentResponsePtr input =
-      buildPaymentResponseForTest();
+  mojom::blink::PaymentResponsePtr input = buildPaymentResponseForTest();
   input->method_name = "foo";
   input->stringified_details = "{\"transactionId\": 123}";
   input->shipping_option = "standardShippingOption";
@@ -79,8 +78,7 @@ TEST(PaymentResponseTest, DataCopiedOver) {
 
 TEST(PaymentResponseTest, PaymentResponseDetailsJSONObject) {
   V8TestingScope scope;
-  payments::mojom::blink::PaymentResponsePtr input =
-      buildPaymentResponseForTest();
+  mojom::blink::PaymentResponsePtr input = buildPaymentResponseForTest();
   input->stringified_details = "transactionId";
   MockPaymentCompleter* completeCallback = new MockPaymentCompleter;
   PaymentResponse output(std::move(input), completeCallback);
@@ -93,8 +91,7 @@ TEST(PaymentResponseTest, PaymentResponseDetailsJSONObject) {
 
 TEST(PaymentResponseTest, CompleteCalledWithSuccess) {
   V8TestingScope scope;
-  payments::mojom::blink::PaymentResponsePtr input =
-      buildPaymentResponseForTest();
+  mojom::blink::PaymentResponsePtr input = buildPaymentResponseForTest();
   input->method_name = "foo";
   input->stringified_details = "{\"transactionId\": 123}";
   MockPaymentCompleter* completeCallback = new MockPaymentCompleter;
@@ -108,8 +105,7 @@ TEST(PaymentResponseTest, CompleteCalledWithSuccess) {
 
 TEST(PaymentResponseTest, CompleteCalledWithFailure) {
   V8TestingScope scope;
-  payments::mojom::blink::PaymentResponsePtr input =
-      buildPaymentResponseForTest();
+  mojom::blink::PaymentResponsePtr input = buildPaymentResponseForTest();
   input->method_name = "foo";
   input->stringified_details = "{\"transactionId\": 123}";
   MockPaymentCompleter* completeCallback = new MockPaymentCompleter;
@@ -123,15 +119,14 @@ TEST(PaymentResponseTest, CompleteCalledWithFailure) {
 
 TEST(PaymentResponseTest, JSONSerializerTest) {
   V8TestingScope scope;
-  payments::mojom::blink::PaymentResponsePtr input =
-      payments::mojom::blink::PaymentResponse::New();
+  mojom::blink::PaymentResponsePtr input = mojom::blink::PaymentResponse::New();
   input->method_name = "foo";
   input->stringified_details = "{\"transactionId\": 123}";
   input->shipping_option = "standardShippingOption";
   input->payer_email = "abc@gmail.com";
   input->payer_phone = "0123";
   input->payer_name = "Jon Doe";
-  input->shipping_address = payments::mojom::blink::PaymentAddress::New();
+  input->shipping_address = mojom::blink::PaymentAddress::New();
   input->shipping_address->country = "US";
   input->shipping_address->language_code = "en";
   input->shipping_address->script_code = "Latn";

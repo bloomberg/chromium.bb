@@ -11,7 +11,7 @@
 
 namespace payments {
 
-bool validatePaymentDetails(const mojom::PaymentDetailsPtr& details,
+bool validatePaymentDetails(const blink::mojom::PaymentDetailsPtr& details,
                             std::string* error_message);
 
 }  // namespace payments

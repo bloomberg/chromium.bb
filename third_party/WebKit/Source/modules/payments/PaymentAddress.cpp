@@ -9,8 +9,7 @@
 
 namespace blink {
 
-PaymentAddress::PaymentAddress(
-    payments::mojom::blink::PaymentAddressPtr address)
+PaymentAddress::PaymentAddress(mojom::blink::PaymentAddressPtr address)
     : m_country(address->country),
       m_addressLine(address->address_line),
       m_region(address->region),

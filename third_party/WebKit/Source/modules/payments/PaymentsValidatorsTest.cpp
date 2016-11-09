@@ -243,8 +243,7 @@ class PaymentsShippingAddressValidatorTest
     : public testing::TestWithParam<ShippingAddressTestCase> {};
 
 TEST_P(PaymentsShippingAddressValidatorTest, IsValidShippingAddress) {
-  payments::mojom::blink::PaymentAddressPtr address =
-      payments::mojom::blink::PaymentAddress::New();
+  mojom::blink::PaymentAddressPtr address = mojom::blink::PaymentAddress::New();
   address->country = GetParam().countryCode;
   address->language_code = GetParam().languageCode;
   address->script_code = GetParam().scriptCode;

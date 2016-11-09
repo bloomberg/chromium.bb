@@ -7,7 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include <ostream>  // NOLINT
 
-namespace payments {
+namespace blink {
 namespace {
 
 struct CurrencyCodeTestCase {
@@ -244,8 +244,7 @@ class PaymentsShippingAddressValidatorTest
     : public testing::TestWithParam<ShippingAddressTestCase> {};
 
 TEST_P(PaymentsShippingAddressValidatorTest, IsValidShippingAddress) {
-  payments::mojom::PaymentAddressPtr address =
-      payments::mojom::PaymentAddress::New();
+  blink::mojom::PaymentAddressPtr address = blink::mojom::PaymentAddress::New();
   address->country = GetParam().countryCode;
   address->language_code = GetParam().languageCode;
   address->script_code = GetParam().scriptCode;
@@ -277,4 +276,4 @@ INSTANTIATE_TEST_CASE_P(
         ShippingAddressTestCase("US", "", "Latn", false)));
 
 }  // namespace
-}  // namespace payments
+}  // namespace blink

@@ -49,9 +49,8 @@ class MODULES_EXPORT PaymentsValidators final {
   //  - Has a valid language code, if any.
   //  - Has a valid script code, if any.
   // A script code should be present only if language code is present.
-  static bool isValidShippingAddress(
-      const payments::mojom::blink::PaymentAddressPtr&,
-      String* optionalErrorMessage);
+  static bool isValidShippingAddress(const mojom::blink::PaymentAddressPtr&,
+                                     String* optionalErrorMessage);
 
   // Returns false if |error| is too long (greater than 2048).
   static bool isValidErrorMsgFormat(const String& code,

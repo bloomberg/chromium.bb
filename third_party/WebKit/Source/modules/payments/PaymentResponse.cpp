@@ -12,9 +12,8 @@
 
 namespace blink {
 
-PaymentResponse::PaymentResponse(
-    payments::mojom::blink::PaymentResponsePtr response,
-    PaymentCompleter* paymentCompleter)
+PaymentResponse::PaymentResponse(mojom::blink::PaymentResponsePtr response,
+                                 PaymentCompleter* paymentCompleter)
     : m_methodName(response->method_name),
       m_stringifiedDetails(response->stringified_details),
       m_shippingAddress(
