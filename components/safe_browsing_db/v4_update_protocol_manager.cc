@@ -142,6 +142,8 @@ void V4UpdateProtocolManager::ScheduleNextUpdate(
 void V4UpdateProtocolManager::ScheduleNextUpdateWithBackoff(bool back_off) {
   DCHECK(CalledOnValidThread());
 
+  // TODO(vakh): Set disable_auto_update correctly using the command line
+  // switch.
   if (config_.disable_auto_update) {
     DCHECK(!IsUpdateScheduled());
     return;
