@@ -1869,14 +1869,12 @@ void RenderWidget::GetCompositionRange(gfx::Range* range) {
     return;
 #endif
   WebRange web_range = GetWebWidget()->compositionRange();
-  if (!web_range.isNull()) {
-    range->set_start(web_range.startOffset());
-    range->set_end(web_range.endOffset());
-  } else {
-    web_range = GetWebWidget()->caretOrSelectionRange();
-    range->set_start(web_range.startOffset());
-    range->set_end(web_range.endOffset());
+  if (web_range.isNull()) {
+    *range = gfx::Range::InvalidRange();
+    return;
   }
+  range->set_start(web_range.startOffset());
+  range->set_end(web_range.endOffset());
 }
 
 bool RenderWidget::ShouldUpdateCompositionInfo(

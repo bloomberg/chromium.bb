@@ -117,15 +117,14 @@ TEST_F(RenderWidgetTest, GetCompositionRangeValidComposition) {
   EXPECT_EQ(5U, range.end());
 }
 
-TEST_F(RenderWidgetTest, GetCompositionRangeValidSelection) {
+TEST_F(RenderWidgetTest, GetCompositionRangeForSelection) {
   LoadHTML(
       "<div>NOT EDITABLE</div>"
       "<script> document.execCommand('selectAll'); </script>");
   gfx::Range range;
   GetCompositionRange(&range);
-  EXPECT_TRUE(range.IsValid());
-  EXPECT_EQ(0U, range.start());
-  EXPECT_EQ(12U, range.end());
+  // Selection range should not be treated as composition range.
+  EXPECT_FALSE(range.IsValid());
 }
 
 TEST_F(RenderWidgetTest, GetCompositionRangeInvalid) {
