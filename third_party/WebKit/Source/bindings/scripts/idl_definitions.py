@@ -66,7 +66,7 @@ import abc
 
 from idl_types import IdlType, IdlUnionType, IdlArrayType, IdlSequenceType, IdlFrozenArrayType, IdlNullableType
 
-SPECIAL_KEYWORD_LIST = ['GETTER', 'SETTER', 'DELETER']
+SPECIAL_KEYWORD_LIST = ['LEGACYCALLER', 'GETTER', 'SETTER', 'DELETER']
 
 
 ################################################################################

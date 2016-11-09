@@ -57,6 +57,28 @@ static_assert(
 
 namespace TestInterface2V8Internal {
 
+static void legacyCallerMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface2", "legacyCaller");
+
+  TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
+
+  if (UNLIKELY(info.Length() < 1)) {
+    exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+    return;
+  }
+
+  unsigned index;
+  index = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
+  if (exceptionState.hadException())
+    return;
+
+  v8SetReturnValue(info, impl->legacyCaller(index));
+}
+
+void legacyCallerMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterface2V8Internal::legacyCallerMethod(info);
+}
+
 static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface2", "item");
 
@@ -568,6 +590,7 @@ void V8TestInterface2::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* sc
 }
 
 const V8DOMConfiguration::MethodConfiguration V8TestInterface2Methods[] = {
+    {"legacyCaller", TestInterface2V8Internal::legacyCallerMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"item", TestInterface2V8Internal::itemMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"setItem", TestInterface2V8Internal::setItemMethodCallback, 0, 2, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"deleteItem", TestInterface2V8Internal::deleteItemMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
@@ -626,7 +649,7 @@ void V8TestInterface2::installV8TestInterface2Template(v8::Isolate* isolate, con
   // Iterator (@@iterator)
   const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestInterface2V8Internal::iteratorMethodCallback, 0, v8::DontEnum, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype };
   V8DOMConfiguration::installMethod(isolate, world, prototypeTemplate, signature, symbolKeyedIteratorConfiguration);
-}
+  instanceTemplate->SetCallAsFunctionHandler(TestInterface2V8Internal::legacyCallerMethodCallback);}
 
 v8::Local<v8::FunctionTemplate> V8TestInterface2::domTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world) {
   return V8DOMConfiguration::domClassTemplate(isolate, world, const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), V8TestInterface2::installV8TestInterface2TemplateFunction);

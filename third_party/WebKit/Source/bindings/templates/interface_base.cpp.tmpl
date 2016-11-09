@@ -383,7 +383,9 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
   {% endfilter %}
   {% endif %}
 
-  {%- if has_custom_legacy_call_as_function and not is_partial %}{{newline}}
+  {%- if legacy_caller and not is_partial %}{{newline}}
+  instanceTemplate->SetCallAsFunctionHandler({{cpp_class_or_partial}}V8Internal::{{legacy_caller.name}}MethodCallback);
+  {%- elif has_custom_legacy_call_as_function and not is_partial %}{{newline}}
   instanceTemplate->SetCallAsFunctionHandler({{v8_class}}::legacyCallCustom);
   {% endif %}
 

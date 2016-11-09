@@ -400,6 +400,7 @@ def interface_context(interface, interfaces):
     })
 
     context.update({
+        'legacy_caller': legacy_caller(interface.legacy_caller, interface),
         'indexed_property_getter': property_getter(interface.indexed_property_getter, ['index']),
         'indexed_property_setter': property_setter(interface.indexed_property_setter, interface),
         'indexed_property_deleter': property_deleter(interface.indexed_property_deleter),
@@ -1354,6 +1355,12 @@ def interface_length(constructors):
 # Special operations (methods)
 # http://heycam.github.io/webidl/#idl-special-operations
 ################################################################################
+
+def legacy_caller(caller, interface):
+    if not caller:
+        return None
+
+    return v8_methods.method_context(interface, caller)
 
 def property_getter(getter, cpp_arguments):
     if not getter:
