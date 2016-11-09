@@ -116,11 +116,6 @@ static Mutex& threadSetMutex() {
   return mutex;
 }
 
-static HashSet<WorkerThread*>& workerThreads() {
-  DEFINE_STATIC_LOCAL(HashSet<WorkerThread*>, threads, ());
-  return threads;
-}
-
 WorkerThreadLifecycleContext::WorkerThreadLifecycleContext() {
   DCHECK(isMainThread());
 }
@@ -307,6 +302,12 @@ WorkerInspectorController* WorkerThread::workerInspectorController() {
 unsigned WorkerThread::workerThreadCount() {
   MutexLocker lock(threadSetMutex());
   return workerThreads().size();
+}
+
+HashSet<WorkerThread*>& WorkerThread::workerThreads() {
+  DCHECK(isMainThread());
+  DEFINE_STATIC_LOCAL(HashSet<WorkerThread*>, threads, ());
+  return threads;
 }
 
 PlatformThreadId WorkerThread::platformThreadId() {

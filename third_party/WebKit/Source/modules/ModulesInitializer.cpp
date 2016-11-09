@@ -21,9 +21,11 @@
 #include "modules/filesystem/DraggedIsolatedFileSystemImpl.h"
 #include "modules/imagebitmap/ImageBitmapRenderingContext.h"
 #include "modules/offscreencanvas2d/OffscreenCanvasRenderingContext2D.h"
+#include "modules/time_zone_monitor/TimeZoneMonitorClient.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "modules/webgl/WebGL2RenderingContext.h"
 #include "modules/webgl/WebGLRenderingContext.h"
+#include "platform/mojo/MojoHelper.h"
 #include "wtf/PtrUtil.h"
 
 namespace blink {
@@ -47,6 +49,11 @@ void ModulesInitializer::initialize() {
   DraggedIsolatedFileSystem::init(
       DraggedIsolatedFileSystemImpl::prepareForDataObject);
   CSSPaintImageGenerator::init(CSSPaintImageGeneratorImpl::create);
+  // Some unit tests may have no message loop ready, so we can't initialize the
+  // mojo stuff here. They can initialize those mojo stuff they're interested in
+  // later after they got a message loop ready.
+  if (canInitializeMojo())
+    TimeZoneMonitorClient::Init();
 
   CoreInitializer::initialize();
 

@@ -20,6 +20,10 @@
 #include "media/base/android/media_jni_registrar.h"
 #endif
 
+#if !defined(OS_IOS)
+#include "mojo/edk/embedder/embedder.h"
+#endif
+
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
 #include "gin/v8_initializer.h"
 #endif
@@ -82,6 +86,10 @@ void BlinkMediaTestSuite::Initialize() {
   gin::V8Initializer::LoadV8Natives();
 #endif
 
+// Initialize mojo firstly to enable Blink initialization to use it.
+#if !defined(OS_IOS)
+  mojo::edk::Init();
+#endif
   // Dummy task runner is initialized here because the blink::initialize creates
   // IsolateHolder which needs the current task runner handle. There should be
   // no task posted to this task runner.

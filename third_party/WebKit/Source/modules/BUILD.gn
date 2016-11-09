@@ -145,6 +145,7 @@ target(modules_target_type, "modules") {
     "//third_party/WebKit/Source/modules/speech",
     "//third_party/WebKit/Source/modules/srcobject",
     "//third_party/WebKit/Source/modules/storage",
+    "//third_party/WebKit/Source/modules/time_zone_monitor",
     "//third_party/WebKit/Source/modules/vibration",
     "//third_party/WebKit/Source/modules/vr",
     "//third_party/WebKit/Source/modules/wake_lock",

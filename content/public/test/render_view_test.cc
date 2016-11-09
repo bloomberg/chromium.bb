@@ -230,6 +230,12 @@ void RenderViewTest::GoForward(const GURL& url, const PageState& state) {
 }
 
 void RenderViewTest::SetUp() {
+  // Initialize mojo firstly to enable Blink initialization to use it.
+  InitializeMojo();
+  test_io_thread_.reset(new base::TestIOThread(base::TestIOThread::kAutoStart));
+  ipc_support_.reset(
+      new mojo::edk::test::ScopedIPCSupport(test_io_thread_->task_runner()));
+
   // Blink needs to be initialized before calling CreateContentRendererClient()
   // because it uses blink internally.
   blink::initialize(blink_platform_impl_.Get());
@@ -306,11 +312,6 @@ void RenderViewTest::SetUp() {
   view_params.enable_auto_resize = false;
   view_params.min_size = gfx::Size();
   view_params.max_size = gfx::Size();
-
-  InitializeMojo();
-  test_io_thread_.reset(new base::TestIOThread(base::TestIOThread::kAutoStart));
-  ipc_support_.reset(
-      new mojo::edk::test::ScopedIPCSupport(test_io_thread_->task_runner()));
 
   // This needs to pass the mock render thread to the view.
   RenderViewImpl* view =

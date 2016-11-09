@@ -5,6 +5,7 @@ include_rules = [
   "+components/scheduler",  # Only allowed in tests.
   "+gin",
   "+media",
+  "+mojo/edk/embedder",
   "+net/base",
   "+net/http",
   "+third_party/WebKit/public/platform",

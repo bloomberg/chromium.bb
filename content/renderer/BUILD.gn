@@ -419,7 +419,6 @@ target(link_target_type, "renderer") {
     "//device/battery:mojo_bindings",
     "//device/bluetooth",
     "//device/sensors/public/cpp",
-    "//device/time_zone_monitor/public/interfaces",
     "//device/usb/public/interfaces",
     "//device/vibration:mojo_bindings",
     "//device/vr:mojo_bindings",

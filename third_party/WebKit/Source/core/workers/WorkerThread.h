@@ -159,6 +159,10 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   // Number of active worker threads.
   static unsigned workerThreadCount();
 
+  // Returns a set of all worker threads. This must be called only on the main
+  // thread and the returned set must not be stored for future use.
+  static HashSet<WorkerThread*>& workerThreads();
+
   PlatformThreadId platformThreadId();
 
   bool isForciblyTerminated();

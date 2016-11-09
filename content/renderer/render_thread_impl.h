@@ -36,7 +36,6 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/gpu/compositor_dependencies.h"
 #include "content/renderer/layout_test_dependencies.h"
-#include "device/time_zone_monitor/public/interfaces/time_zone_monitor.mojom.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -156,8 +155,6 @@ class CONTENT_EXPORT RenderThreadImpl
       public ChildMemoryCoordinatorDelegate,
       public base::MemoryCoordinatorClient,
       NON_EXPORTED_BASE(public mojom::Renderer),
-      // TODO(blundell): Separate this impl out into Blink.
-      NON_EXPORTED_BASE(public device::mojom::TimeZoneMonitorClient),
       NON_EXPORTED_BASE(public CompositorDependencies) {
  public:
   static RenderThreadImpl* Create(const InProcessChildThreadParams& params);
@@ -176,10 +173,6 @@ class CONTENT_EXPORT RenderThreadImpl
   // When initializing WebKit, ensure that any schemes needed for the content
   // module are registered properly.  Static to allow sharing with tests.
   static void RegisterSchemes();
-
-  // Notify V8 that the date/time configuration of the system might have
-  // changed.
-  static void NotifyTimezoneChange();
 
   // RenderThread implementation:
   bool Send(IPC::Message* msg) override;
@@ -530,8 +523,6 @@ class CONTENT_EXPORT RenderThreadImpl
                              const std::string& highlight_color) override;
   void PurgePluginListCache(bool reload_pages) override;
 
-  // device::mojom::TimeZoneClient:
-  void OnTimeZoneChange(const std::string& zoneId) override;
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
@@ -592,9 +583,6 @@ class CONTENT_EXPORT RenderThreadImpl
   // chrome://webrtc-internals.
   scoped_refptr<AecDumpMessageFilter> aec_dump_message_filter_;
 #endif
-
-  mojo::Binding<device::mojom::TimeZoneMonitorClient>
-      time_zone_monitor_binding_;
 
   // Used on the render thread.
   std::unique_ptr<VideoCaptureImplManager> vc_manager_;

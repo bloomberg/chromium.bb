@@ -110,6 +110,7 @@ test("media_blink_unittests") {
     "//media",
     "//media:shared_memory_support",
     "//media/base:test_support",
+    "//mojo/edk/system",
     "//net",
     "//testing/gmock",
     "//testing/gtest",

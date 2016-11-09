@@ -160,7 +160,6 @@
 #include "third_party/WebKit/public/web/WebScriptController.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebView.h"
-#include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
@@ -324,13 +323,6 @@ void* CreateHistogram(
 void AddHistogramSample(void* hist, int sample) {
   base::Histogram* histogram = static_cast<base::Histogram*>(hist);
   histogram->Add(sample);
-}
-
-void NotifyTimezoneChangeOnThisThread() {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  if (!isolate)
-    return;
-  v8::Date::DateTimeConfigurationChangeNotification(isolate);
 }
 
 class FrameFactoryImpl : public mojom::FrameFactory {
@@ -609,7 +601,6 @@ RenderThreadImpl::RenderThreadImpl(
                           .ConnectToBrowser(true)
                           .Build()),
       renderer_scheduler_(std::move(scheduler)),
-      time_zone_monitor_binding_(this),
       categorized_worker_pool_(new CategorizedWorkerPool()),
       renderer_binding_(this),
       client_id_(1) {
@@ -626,7 +617,6 @@ RenderThreadImpl::RenderThreadImpl(
                           .ConnectToBrowser(true)
                           .Build()),
       renderer_scheduler_(std::move(scheduler)),
-      time_zone_monitor_binding_(this),
       main_message_loop_(std::move(main_message_loop)),
       categorized_worker_pool_(new CategorizedWorkerPool()),
       renderer_binding_(this) {
@@ -899,11 +889,6 @@ void RenderThreadImpl::Init(
 
   GetRemoteInterfaces()->GetInterface(
       mojo::GetProxy(&storage_partition_service_));
-
-  device::mojom::TimeZoneMonitorPtr time_zone_monitor;
-  GetRemoteInterfaces()->GetInterface(mojo::GetProxy(&time_zone_monitor));
-  time_zone_monitor->AddClient(
-      time_zone_monitor_binding_.CreateInterfacePtrAndBind());
 
 #if defined(OS_LINUX)
   ChildProcess::current()->SetIOThreadPriority(base::ThreadPriority::DISPLAY);
@@ -1354,12 +1339,6 @@ void RenderThreadImpl::RegisterSchemes() {
   // view-source:
   WebString view_source_scheme(WebString::fromASCII(kViewSourceScheme));
   WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(view_source_scheme);
-}
-
-void RenderThreadImpl::NotifyTimezoneChange() {
-  NotifyTimezoneChangeOnThisThread();
-  RenderThread::Get()->PostTaskToAllWebWorkers(
-      base::Bind(&NotifyTimezoneChangeOnThisThread));
 }
 
 void RenderThreadImpl::RecordAction(const base::UserMetricsAction& action) {
@@ -2259,18 +2238,6 @@ void RenderThreadImpl::PurgePluginListCache(bool reload_pages) {
 #else
   NOTREACHED();
 #endif
-}
-
-void RenderThreadImpl::OnTimeZoneChange(const std::string& zone_id) {
-  if (!blink_platform_impl_)
-    return;
-  if (!zone_id.empty()) {
-    icu::TimeZone *new_zone = icu::TimeZone::createTimeZone(
-        icu::UnicodeString::fromUTF8(zone_id));
-    icu::TimeZone::adoptDefault(new_zone);
-    VLOG(1) << "ICU default timezone is set to " << zone_id;
-  }
-  NotifyTimezoneChange();
 }
 
 void RenderThreadImpl::OnCreateNewSharedWorker(
