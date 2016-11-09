@@ -12,4 +12,5 @@ class MapsExpectations(GpuTestExpectations):
     # self.Fail('Maps.maps_001',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
 
-    pass
+    # P0: this test recently became flaky on Mac and Win
+    self.Flaky('Maps.maps_004', ['mac', 'win'], bug=626986)
