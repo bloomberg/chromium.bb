@@ -28,7 +28,7 @@ class ASH_EXPORT TrayCast : public SystemTrayItem,
  private:
   // Helper/utility methods for testing.
   friend class TrayCastTestAPI;
-  void StartCastForTest(const std::string& receiver_id);
+  void StartCastForTest(const std::string& sink_id);
   void StopCastForTest();
   // Returns the id of the item we are currently displaying in the cast view.
   // This assumes that the cast view is active.
@@ -49,7 +49,7 @@ class ASH_EXPORT TrayCast : public SystemTrayItem,
 
   // Overridden from CastConfigDelegate::Observer.
   void OnDevicesUpdated(
-      const CastConfigDelegate::ReceiversAndActivities& devices) override;
+      const CastConfigDelegate::SinksAndRoutes& devices) override;
 
   // This makes sure that the current view displayed in the tray is the correct
   // one, depending on if we are currently casting. If we're casting, then a
@@ -58,7 +58,7 @@ class ASH_EXPORT TrayCast : public SystemTrayItem,
   // casting session.
   void UpdatePrimaryView();
 
-  CastConfigDelegate::ReceiversAndActivities receivers_and_activities_;
+  CastConfigDelegate::SinksAndRoutes sinks_and_routes_;
   bool is_casting_ = false;
 
   bool added_observer_ = false;

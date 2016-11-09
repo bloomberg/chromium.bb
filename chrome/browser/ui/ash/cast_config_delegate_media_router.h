@@ -29,7 +29,7 @@ class CastConfigDelegateMediaRouter : public ash::CastConfigDelegate {
  private:
   // CastConfigDelegate:
   void RequestDeviceRefresh() override;
-  void CastToReceiver(const std::string& receiver_id) override;
+  void CastToSink(const std::string& sink_id) override;
   void StopCasting(const std::string& route_id) override;
   void AddObserver(ash::CastConfigDelegate::Observer* observer) override;
   void RemoveObserver(ash::CastConfigDelegate::Observer* observer) override;

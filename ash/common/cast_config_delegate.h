@@ -20,15 +20,15 @@ namespace ash {
 // to access the cast extension.
 class CastConfigDelegate {
  public:
-  struct ASH_EXPORT Receiver {
-    Receiver();
-    ~Receiver();
+  struct ASH_EXPORT Sink {
+    Sink();
+    ~Sink();
 
     std::string id;
     base::string16 name;
   };
 
-  struct ASH_EXPORT Activity {
+  struct ASH_EXPORT Route {
     // The tab identifier that we are casting. These are the special tab values
     // taken from the chromecast extension itself. If an actual tab is being
     // casted, then the TabId will be >= 0.
@@ -43,13 +43,13 @@ class CastConfigDelegate {
       UNKNOWN = -5
     };
 
-    Activity();
-    ~Activity();
+    Route();
+    ~Route();
 
     std::string id;
     base::string16 title;
 
-    // Is the activity source this computer? ie, are we mirroring the display?
+    // Is the route source this computer? ie, are we mirroring the display?
     bool is_local_source = false;
 
     // The id for the tab we are casting. Could be one of the TabId values,
@@ -61,20 +61,20 @@ class CastConfigDelegate {
     int tab_id = TabId::DESKTOP;
   };
 
-  struct ASH_EXPORT ReceiverAndActivity {
-    ReceiverAndActivity();
-    ~ReceiverAndActivity();
+  struct ASH_EXPORT SinkAndRoute {
+    SinkAndRoute();
+    ~SinkAndRoute();
 
-    Receiver receiver;
-    Activity activity;
+    Sink sink;
+    Route route;
   };
 
-  using ReceiversAndActivities = std::vector<ReceiverAndActivity>;
+  using SinksAndRoutes = std::vector<SinkAndRoute>;
 
   class ASH_EXPORT Observer {
    public:
-    // Invoked whenever there is new receiver or activity information available.
-    virtual void OnDevicesUpdated(const ReceiversAndActivities& devices) = 0;
+    // Invoked whenever there is new sink or route information available.
+    virtual void OnDevicesUpdated(const SinksAndRoutes& devices) = 0;
 
    protected:
     virtual ~Observer() {}
@@ -89,12 +89,12 @@ class CastConfigDelegate {
   // registered observers will get called.
   virtual void RequestDeviceRefresh() = 0;
 
-  // Cast to a receiver specified by |receiver_id|.
-  virtual void CastToReceiver(const std::string& receiver_id) = 0;
+  // Cast to a sink specified by |sink_id|.
+  virtual void CastToSink(const std::string& sink_id) = 0;
 
-  // Stop an ongoing cast (this should be a user initiated stop). |activity_id|
-  // is the identifier of the activity/route that should be stopped.
-  virtual void StopCasting(const std::string& activity_id) = 0;
+  // Stop an ongoing cast (this should be a user initiated stop). |route_id|
+  // is the identifier of the sink/route that should be stopped.
+  virtual void StopCasting(const std::string& route_id) = 0;
 
   // Add or remove an observer.
   virtual void AddObserver(Observer* observer) = 0;

@@ -113,14 +113,11 @@ class CastCastView : public ScreenStatusView {
 
   void StopCasting();
 
-  const std::string& displayed_activity_id() const {
-    return displayed_activity_id_;
-  }
+  const std::string& displayed_route_id() const { return displayed_route_id_; }
 
   // Updates the label for the stop view to include information about the
   // current device that is being casted.
-  void UpdateLabel(
-      const CastConfigDelegate::ReceiversAndActivities& receivers_activities);
+  void UpdateLabel(const CastConfigDelegate::SinksAndRoutes& sinks_routes);
 
  private:
   // Overridden from views::ButtonListener.
@@ -128,7 +125,7 @@ class CastCastView : public ScreenStatusView {
 
   // The cast activity id that we are displaying. If the user stops a cast, we
   // send this value to the config delegate so that we stop the right cast.
-  std::string displayed_activity_id_;
+  std::string displayed_route_id_;
 
   DISALLOW_COPY_AND_ASSIGN(CastCastView);
 };
@@ -150,28 +147,28 @@ CastCastView::CastCastView()
 CastCastView::~CastCastView() {}
 
 void CastCastView::StopCasting() {
-  GetCastConfigDelegate()->StopCasting(displayed_activity_id_);
+  GetCastConfigDelegate()->StopCasting(displayed_route_id_);
   WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_CAST_STOP_CAST);
 }
 
 void CastCastView::UpdateLabel(
-    const CastConfigDelegate::ReceiversAndActivities& receivers_activities) {
-  for (auto& i : receivers_activities) {
-    const CastConfigDelegate::Receiver& receiver = i.receiver;
-    const CastConfigDelegate::Activity& activity = i.activity;
+    const CastConfigDelegate::SinksAndRoutes& sinks_routes) {
+  for (auto& i : sinks_routes) {
+    const CastConfigDelegate::Sink& sink = i.sink;
+    const CastConfigDelegate::Route& route = i.route;
 
-    if (!activity.id.empty()) {
-      displayed_activity_id_ = activity.id;
+    if (!route.id.empty()) {
+      displayed_route_id_ = route.id;
 
       // We want to display different labels inside of the title depending on
       // what we are actually casting - either the desktop, a tab, or a fallback
       // that catches everything else (ie, an extension tab).
-      if (activity.tab_id == CastConfigDelegate::Activity::TabId::DESKTOP) {
+      if (route.tab_id == CastConfigDelegate::Route::TabId::DESKTOP) {
         label()->SetText(ElideString(l10n_util::GetStringFUTF16(
-            IDS_ASH_STATUS_TRAY_CAST_CAST_DESKTOP, receiver.name)));
-      } else if (activity.tab_id >= 0) {
+            IDS_ASH_STATUS_TRAY_CAST_CAST_DESKTOP, sink.name)));
+      } else if (route.tab_id >= 0) {
         label()->SetText(ElideString(l10n_util::GetStringFUTF16(
-            IDS_ASH_STATUS_TRAY_CAST_CAST_TAB, activity.title, receiver.name)));
+            IDS_ASH_STATUS_TRAY_CAST_CAST_TAB, route.title, sink.name)));
       } else {
         label()->SetText(
             l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_CAST_CAST_UNKNOWN));
@@ -183,7 +180,7 @@ void CastCastView::UpdateLabel(
       // If this machine is the source of the activity, then we want to display
       // it over any other activity. There can be multiple activities if other
       // devices on the network are casting at the same time.
-      if (activity.is_local_source)
+      if (route.is_local_source)
         break;
     }
   }
@@ -199,10 +196,9 @@ void CastCastView::ButtonPressed(views::Button* sender,
 // is active.
 class CastDuplexView : public views::View {
  public:
-  CastDuplexView(
-      SystemTrayItem* owner,
-      bool show_more,
-      const CastConfigDelegate::ReceiversAndActivities& receivers_activities);
+  CastDuplexView(SystemTrayItem* owner,
+                 bool show_more,
+                 const CastConfigDelegate::SinksAndRoutes& sinks_routes);
   ~CastDuplexView() override;
 
   // Activate either the casting or select view.
@@ -230,10 +226,10 @@ class CastDuplexView : public views::View {
 CastDuplexView::CastDuplexView(
     SystemTrayItem* owner,
     bool show_more,
-    const CastConfigDelegate::ReceiversAndActivities& receivers_activities) {
+    const CastConfigDelegate::SinksAndRoutes& sinks_routes) {
   select_view_ = new CastSelectDefaultView(owner, show_more);
   cast_view_ = new CastCastView();
-  cast_view_->UpdateLabel(receivers_activities);
+  cast_view_->UpdateLabel(sinks_routes);
   SetLayoutManager(new views::FillLayout());
 
   ActivateSelectView();
@@ -313,8 +309,7 @@ CastTrayView::~CastTrayView() {}
 class CastDetailedView : public TrayDetailsView {
  public:
   CastDetailedView(SystemTrayItem* owner,
-                   const CastConfigDelegate::ReceiversAndActivities&
-                       receivers_and_activities);
+                   const CastConfigDelegate::SinksAndRoutes& sinks_and_routes);
   ~CastDetailedView() override;
 
   // Makes the detail view think the view associated with the given receiver_id
@@ -322,22 +317,21 @@ class CastDetailedView : public TrayDetailsView {
   void SimulateViewClickedForTest(const std::string& receiver_id);
 
   // Updates the list of available receivers.
-  void UpdateReceiverList(const CastConfigDelegate::ReceiversAndActivities&
-                              new_receivers_and_activities);
+  void UpdateReceiverList(
+      const CastConfigDelegate::SinksAndRoutes& sinks_routes);
 
  private:
   void CreateItems();
 
   void UpdateReceiverListFromCachedData();
   views::View* AddToReceiverList(
-      const CastConfigDelegate::ReceiverAndActivity& receiverActivity);
+      const CastConfigDelegate::SinkAndRoute& sink_route);
 
   // TrayDetailsView:
   void HandleViewClicked(views::View* view) override;
 
   // A mapping from the receiver id to the receiver/activity data.
-  std::map<std::string, CastConfigDelegate::ReceiverAndActivity>
-      receivers_and_activities_;
+  std::map<std::string, CastConfigDelegate::SinkAndRoute> sinks_and_routes_;
   // A mapping from the view pointer to the associated activity id.
   std::map<views::View*, std::string> receiver_activity_map_;
 
@@ -346,10 +340,10 @@ class CastDetailedView : public TrayDetailsView {
 
 CastDetailedView::CastDetailedView(
     SystemTrayItem* owner,
-    const CastConfigDelegate::ReceiversAndActivities& receivers_and_activities)
+    const CastConfigDelegate::SinksAndRoutes& sinks_and_routes)
     : TrayDetailsView(owner) {
   CreateItems();
-  UpdateReceiverList(receivers_and_activities);
+  UpdateReceiverList(sinks_and_routes);
 }
 
 CastDetailedView::~CastDetailedView() {}
@@ -370,28 +364,27 @@ void CastDetailedView::CreateItems() {
 }
 
 void CastDetailedView::UpdateReceiverList(
-    const CastConfigDelegate::ReceiversAndActivities&
-        new_receivers_and_activities) {
+    const CastConfigDelegate::SinksAndRoutes& new_sinks_and_routes) {
   // Add/update existing.
-  for (auto i = new_receivers_and_activities.begin();
-       i != new_receivers_and_activities.end(); ++i) {
-    receivers_and_activities_[i->receiver.id] = *i;
+  for (auto i = new_sinks_and_routes.begin(); i != new_sinks_and_routes.end();
+       ++i) {
+    sinks_and_routes_[i->sink.id] = *i;
   }
 
-  // Remove non-existent receivers. Removing an element invalidates all existing
+  // Remove non-existent sinks. Removing an element invalidates all existing
   // iterators.
-  auto i = receivers_and_activities_.begin();
-  while (i != receivers_and_activities_.end()) {
+  auto i = sinks_and_routes_.begin();
+  while (i != sinks_and_routes_.end()) {
     bool has_receiver = false;
-    for (auto receiver : new_receivers_and_activities) {
-      if (i->first == receiver.receiver.id)
+    for (auto receiver : new_sinks_and_routes) {
+      if (i->first == receiver.sink.id)
         has_receiver = true;
     }
 
     if (has_receiver)
       ++i;
     else
-      i = receivers_and_activities_.erase(i);
+      i = sinks_and_routes_.erase(i);
   }
 
   // Update UI.
@@ -405,10 +398,9 @@ void CastDetailedView::UpdateReceiverListFromCachedData() {
   scroll_content()->RemoveAllChildViews(true);
 
   // Add a view for each receiver.
-  for (auto& it : receivers_and_activities_) {
-    const CastConfigDelegate::ReceiverAndActivity& receiver_activity =
-        it.second;
-    views::View* container = AddToReceiverList(receiver_activity);
+  for (auto& it : sinks_and_routes_) {
+    const CastConfigDelegate::SinkAndRoute& sink_route = it.second;
+    views::View* container = AddToReceiverList(sink_route);
     receiver_activity_map_[container] = it.first;
   }
 
@@ -417,14 +409,14 @@ void CastDetailedView::UpdateReceiverListFromCachedData() {
 }
 
 views::View* CastDetailedView::AddToReceiverList(
-    const CastConfigDelegate::ReceiverAndActivity& receiverActivity) {
+    const CastConfigDelegate::SinkAndRoute& sink_route) {
   HoverHighlightView* container = new HoverHighlightView(this);
 
   const gfx::ImageSkia* image =
       ui::ResourceBundle::GetSharedInstance()
           .GetImageNamed(IDR_AURA_UBER_TRAY_CAST_DEVICE_ICON)
           .ToImageSkia();
-  const base::string16& name = receiverActivity.receiver.name;
+  const base::string16& name = sink_route.sink.name;
   container->AddIconAndLabelCustomSize(
       *image, name, false, kTrayPopupDetailsIconWidth,
       kTrayPopupPaddingHorizontal, kTrayPopupPaddingBetweenItems);
@@ -437,7 +429,7 @@ void CastDetailedView::HandleViewClicked(views::View* view) {
   // Find the receiver we are going to cast to.
   auto it = receiver_activity_map_.find(view);
   if (it != receiver_activity_map_.end()) {
-    GetCastConfigDelegate()->CastToReceiver(it->second);
+    GetCastConfigDelegate()->CastToSink(it->second);
     WmShell::Get()->RecordUserMetricsAction(
         UMA_STATUS_AREA_DETAILED_CAST_VIEW_LAUNCH_CAST);
   }
@@ -466,7 +458,7 @@ void TrayCast::StopCastForTest() {
 }
 
 const std::string& TrayCast::GetDisplayedCastId() {
-  return default_->cast_view()->displayed_activity_id();
+  return default_->cast_view()->displayed_route_id();
 }
 
 const views::View* TrayCast::GetDefaultView() const {
@@ -503,7 +495,7 @@ views::View* TrayCast::CreateDefaultView(LoginStatus status) {
   }
 
   default_ = new tray::CastDuplexView(this, status != LoginStatus::LOCKED,
-                                      receivers_and_activities_);
+                                      sinks_and_routes_);
   default_->set_id(TRAY_VIEW);
   default_->select_view()->set_id(SELECT_VIEW);
   default_->cast_view()->set_id(CAST_VIEW);
@@ -515,7 +507,7 @@ views::View* TrayCast::CreateDefaultView(LoginStatus status) {
 views::View* TrayCast::CreateDetailedView(LoginStatus status) {
   WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_DETAILED_CAST_VIEW);
   CHECK(detailed_ == nullptr);
-  detailed_ = new tray::CastDetailedView(this, receivers_and_activities_);
+  detailed_ = new tray::CastDetailedView(this, sinks_and_routes_);
   return detailed_;
 }
 
@@ -532,20 +524,20 @@ void TrayCast::DestroyDetailedView() {
 }
 
 void TrayCast::OnDevicesUpdated(
-    const CastConfigDelegate::ReceiversAndActivities& receivers_activities) {
-  receivers_and_activities_ = receivers_activities;
+    const CastConfigDelegate::SinksAndRoutes& sinks_routes) {
+  sinks_and_routes_ = sinks_routes;
 
   if (default_) {
-    bool has_receivers = !receivers_and_activities_.empty();
+    bool has_receivers = !sinks_and_routes_.empty();
     default_->SetVisible(has_receivers);
-    default_->cast_view()->UpdateLabel(receivers_and_activities_);
+    default_->cast_view()->UpdateLabel(sinks_and_routes_);
   }
   if (detailed_)
-    detailed_->UpdateReceiverList(receivers_and_activities_);
+    detailed_->UpdateReceiverList(sinks_and_routes_);
 }
 
 void TrayCast::UpdatePrimaryView() {
-  if (GetCastConfigDelegate() && !receivers_and_activities_.empty()) {
+  if (GetCastConfigDelegate() && !sinks_and_routes_.empty()) {
     if (default_) {
       if (is_casting_)
         default_->ActivateCastView();

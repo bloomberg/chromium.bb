@@ -6,16 +6,16 @@
 
 namespace ash {
 
-CastConfigDelegate::Receiver::Receiver() {}
+CastConfigDelegate::Sink::Sink() {}
 
-CastConfigDelegate::Receiver::~Receiver() {}
+CastConfigDelegate::Sink::~Sink() {}
 
-CastConfigDelegate::Activity::Activity() {}
+CastConfigDelegate::Route::Route() {}
 
-CastConfigDelegate::Activity::~Activity() {}
+CastConfigDelegate::Route::~Route() {}
 
-CastConfigDelegate::ReceiverAndActivity::ReceiverAndActivity() {}
+CastConfigDelegate::SinkAndRoute::SinkAndRoute() {}
 
-CastConfigDelegate::ReceiverAndActivity::~ReceiverAndActivity() {}
+CastConfigDelegate::SinkAndRoute::~SinkAndRoute() {}
 
 }  // namespace ash
