@@ -87,6 +87,9 @@ void URLResponseBodyConsumer::OnReadable(MojoResult unused) {
   if (has_been_cancelled_ || has_seen_end_of_data_)
     return;
 
+  // Protect |this| as RequestPeer::OnReceivedData may call deref.
+  scoped_refptr<URLResponseBodyConsumer> protect(this);
+
   // TODO(yhirano): Suppress notification when deferred.
   while (!has_been_cancelled_) {
     const void* buffer = nullptr;
