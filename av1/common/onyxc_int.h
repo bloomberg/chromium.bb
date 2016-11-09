@@ -775,9 +775,15 @@ static INLINE void set_txfm_ctx(TXFM_CONTEXT *txfm_ctx, uint8_t txs, int len) {
 }
 
 static INLINE void set_txfm_ctxs(TX_SIZE tx_size, int n8_w, int n8_h,
-                                 const MACROBLOCKD *xd) {
+                                 const int skip, const MACROBLOCKD *xd) {
   uint8_t bw = tx_size_wide[tx_size];
   uint8_t bh = tx_size_high[tx_size];
+
+  if (skip) {
+    bw = n8_w * 8;
+    bh = n8_h * 8;
+  }
+
   set_txfm_ctx(xd->above_txfm_context, bw, n8_w);
   set_txfm_ctx(xd->left_txfm_context, bh, n8_h);
 }

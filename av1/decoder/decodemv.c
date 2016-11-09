@@ -1886,7 +1886,7 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
             mbmi->inter_tx_size[idy >> 1][idx >> 1] = mbmi->tx_size;
       }
       mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
-      set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, xd);
+      set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
     }
 #else
   if (inter_block)

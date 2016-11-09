@@ -5492,7 +5492,7 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
     else
       tx_size = (bsize >= BLOCK_8X8) ? tx_size : TX_4X4;
     mbmi->tx_size = tx_size;
-    set_txfm_ctxs(tx_size, xd->n8_w, xd->n8_h, xd);
+    set_txfm_ctxs(tx_size, xd->n8_w, xd->n8_h, (mbmi->skip || seg_skip), xd);
   }
 #endif
 }

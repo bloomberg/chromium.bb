@@ -1305,11 +1305,11 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
       }
 #endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
     } else {
-      set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, xd);
+      set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, skip, xd);
       write_selected_tx_size(cm, xd, w);
     }
   } else {
-    set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, xd);
+    set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, skip, xd);
 #else
     write_selected_tx_size(cm, xd, w);
 #endif
