@@ -673,9 +673,12 @@ void LayoutBox::scrollRectToVisible(const LayoutRect& rect,
     }
   }
 
-  // If we are fixed-position, it is useless to scroll the parent.
-  if (hasLayer() && layer()->scrollsWithViewport())
+  // If we are fixed-position and scroll with the viewport, it is useless to
+  // scroll the parent.
+  if (style()->position() == FixedPosition && hasLayer() &&
+      layer()->scrollsWithViewport()) {
     return;
+  }
 
   if (frame()->page()->autoscrollController().autoscrollInProgress())
     parentBox = enclosingScrollableBox();
