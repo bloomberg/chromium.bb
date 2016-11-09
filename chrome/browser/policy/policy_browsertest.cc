@@ -1215,8 +1215,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ForceGoogleSafeSearch) {
   }
 }
 
-// Flaky. See http://crbug.com/662693.
-IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_Disable3DAPIs) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, Disable3DAPIs) {
   // This test assumes Gpu access.
   if (!content::GpuDataManager::GetInstance()->GpuAccessAllowed(NULL))
     return;
