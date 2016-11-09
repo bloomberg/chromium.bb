@@ -144,7 +144,7 @@ libwayland_cursor_la_CFLAGS =			\
 	-DICONDIR=\"$(ICONDIR)\"
 
 
-TESTS =						\
+built_test_programs =				\
 	array-test				\
 	client-test				\
 	display-test				\
@@ -165,11 +165,13 @@ TESTS =						\
 	protocol-logger-test
 
 if ENABLE_CPP_TEST
-TESTS += cpp-compile-test
+built_test_programs += cpp-compile-test
 endif
 
+TESTS = $(built_test_programs)
+
 check_PROGRAMS =				\
-	$(TESTS)				\
+	$(built_test_programs)			\
 	exec-fd-leak-checker
 
 noinst_PROGRAMS =				\
