@@ -22,7 +22,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::ResourceRequestInfo;
-using content::ResourceType;
 using extensions::Extension;
 using extensions::Manifest;
 using extensions::PermissionsData;
