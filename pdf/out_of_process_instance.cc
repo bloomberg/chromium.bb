@@ -293,7 +293,8 @@ OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
       stop_scrolling_(false),
       background_color_(0),
       top_toolbar_height_(0),
-      accessibility_state_(ACCESSIBILITY_STATE_OFF) {
+      accessibility_state_(ACCESSIBILITY_STATE_OFF),
+      is_print_preview_(false) {
   loader_factory_.Initialize(this);
   timer_factory_.Initialize(this);
   form_factory_.Initialize(this);
@@ -325,8 +326,9 @@ bool OutOfProcessInstance::Init(uint32_t argc,
     return false;
   std::string document_url = document_url_var.AsString();
   base::StringPiece document_url_piece(document_url);
+  is_print_preview_ = document_url_piece.starts_with(kChromePrint);
   if (!document_url_piece.starts_with(kChromeExtension) &&
-      !document_url_piece.starts_with(kChromePrint)) {
+      !is_print_preview_) {
     return false;
   }
 
@@ -377,7 +379,7 @@ bool OutOfProcessInstance::Init(uint32_t argc,
   // A |kJSResetPrintPreviewModeType| message will be sent to the plugin letting
   // it know the url to load. By not loading here we avoid loading the same
   // document twice.
-  if (IsPrintPreviewUrl(original_url))
+  if (IsPrintPreview())
     return true;
 
   LoadUrl(stream_url);
@@ -436,6 +438,10 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
              dict.Get(pp::Var(kJSPrintPreviewGrayscale)).is_bool() &&
              dict.Get(pp::Var(kJSPrintPreviewPageCount)).is_int()) {
     url_ = dict.Get(pp::Var(kJSPrintPreviewUrl)).AsString();
+    // For security reasons we crash if the URL that is trying to be loaded here
+    // isn't a print preview one.
+    CHECK(IsPrintPreview());
+    CHECK(IsPrintPreviewUrl(url_));
     preview_pages_info_ = std::queue<PreviewPageInfo>();
     preview_document_load_state_ = LOAD_STATE_COMPLETE;
     document_load_state_ = LOAD_STATE_LOADING;
@@ -452,7 +458,13 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
   } else if (type == kJSLoadPreviewPageType &&
              dict.Get(pp::Var(kJSPreviewPageUrl)).is_string() &&
              dict.Get(pp::Var(kJSPreviewPageIndex)).is_int()) {
-    ProcessPreviewPageInfo(dict.Get(pp::Var(kJSPreviewPageUrl)).AsString(),
+
+    std::string url = dict.Get(pp::Var(kJSPreviewPageUrl)).AsString();
+    // For security reasons we crash if the URL that is trying to be loaded here
+    // isn't a print preview one.
+    CHECK(IsPrintPreview());
+    CHECK(IsPrintPreviewUrl(url));
+    ProcessPreviewPageInfo(url,
                            dict.Get(pp::Var(kJSPreviewPageIndex)).AsInt());
   } else if (type == kJSStopScrollingType) {
     stop_scrolling_ = true;
@@ -1485,7 +1497,7 @@ void OutOfProcessInstance::AppendBlankPrintPreviewPages() {
 }
 
 bool OutOfProcessInstance::IsPrintPreview() {
-  return IsPrintPreviewUrl(url_);
+  return is_print_preview_;
 }
 
 uint32_t OutOfProcessInstance::GetBackgroundColor() {
@@ -1507,8 +1519,7 @@ void OutOfProcessInstance::IsSelectingChanged(bool is_selecting) {
 
 void OutOfProcessInstance::ProcessPreviewPageInfo(const std::string& url,
                                                   int dst_page_index) {
-  if (!IsPrintPreview())
-    return;
+  DCHECK(IsPrintPreview());
 
   int src_page_index = ExtractPrintPreviewPageIndex(url);
   if (src_page_index < 1)

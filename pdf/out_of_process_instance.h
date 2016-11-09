@@ -371,6 +371,9 @@ class OutOfProcessInstance : public pp::Instance,
     ACCESSIBILITY_STATE_LOADED
   } accessibility_state_;
 
+  // True if the plugin is loaded in print preview, otherwise false.
+  bool is_print_preview_;
+
   DISALLOW_COPY_AND_ASSIGN(OutOfProcessInstance);
 };
 
