@@ -943,7 +943,7 @@
 
     <!-- Easy Unlock Page -->
     <message name="IDS_SETTINGS_EASY_UNLOCK_SECTION_TITLE" desc="The title of the Easy Unlock section on the settings page.">
-      Smart Lock (beta)
+      Smart Lock for Chromebook (beta)
     </message>
     <message name="IDS_SETTINGS_EASY_UNLOCK_SETUP_INTRO" desc="The text to show in Easy Unlock section to introduce the feature.">
       Unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> with your Android phone.

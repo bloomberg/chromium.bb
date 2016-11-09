@@ -67,6 +67,11 @@
         color: var(--settings-error-color);
       }
 
+      #easy-unlock .start {
+        /* Use padding to ensure taller content looks correct. */
+        padding: 11px 0;
+      }
+
       .icon-container {
         display: flex;
         flex-shrink: 0;
@@ -206,8 +211,8 @@
         </template>
 
         <template is="dom-if" if="[[easyUnlockAllowed_]]">
-          <div class="settings-box">
-            <div class="middle">
+          <div id="easy-unlock" class="settings-box two-line">
+            <div class="start">
               <div>$i18n{easyUnlockSectionTitle}</div>
               <div class="secondary">
                 <template is="dom-if" if="[[!easyUnlockEnabled_]]">
@@ -216,7 +221,7 @@
                 <template is="dom-if" if="[[easyUnlockEnabled_]]">
                   $i18n{easyUnlockDescription}
                 </template>
-                <a target="_blank" href$="$i18n{easyUnlockLearnMoreURL}">
+                <a target="_blank" href="$i18n{easyUnlockLearnMoreURL}">
                   $i18n{learnMore}
                 </a>
                 <template is="dom-if" if="[[easyUnlockEnabled_]]">
