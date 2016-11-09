@@ -438,21 +438,11 @@ class SimulatorTestRunner(TestRunner):
 
   def extract_test_data(self):
     """Extracts data emitted by the test."""
-    # Find the directory named after the unique device ID of the simulator we
-    # started. We expect only one because we use a new homedir each time.
-    udid_dir = os.path.join(
-        self.homedir, 'Library', 'Developer', 'CoreSimulator', 'Devices')
-    if not os.path.exists(udid_dir):
-      return
-    udids = os.listdir(udid_dir)
-    if len(udids) != 1:
-      return
-
     # Find the Documents directory of the test app. The app directory names
     # don't correspond with any known information, so we have to examine them
     # all until we find one with a matching CFBundleIdentifier.
     apps_dir = os.path.join(
-        udid_dir, udids[0], 'data', 'Containers', 'Data', 'Application')
+        self.homedir, 'Containers', 'Data', 'Application')
     if os.path.exists(apps_dir):
       for appid_dir in os.listdir(apps_dir):
         docs_dir = os.path.join(apps_dir, appid_dir, 'Documents')
