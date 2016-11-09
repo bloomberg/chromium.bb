@@ -89,5 +89,9 @@ const char kEnableDataReductionProxyLitePage[] =
 const char kEnableDataReductionProxyForcePingback[] =
     "enable-data-reduction-proxy-force-pingback";
 
+// If set, enables use of QUIC with non core data reduction proxies.
+const char kDataReductionProxyEnableQuicOnNonCoreProxies[] =
+    "data-reduction-proxy-enable-quic-on-non-core-proxies";
+
 }  // namespace switches
 }  // namespace data_reduction_proxy

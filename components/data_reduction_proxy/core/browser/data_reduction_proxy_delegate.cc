@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
@@ -13,6 +14,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/url_util.h"
@@ -175,9 +177,11 @@ bool DataReductionProxyDelegate::SupportsQUIC(
     const net::ProxyServer& proxy_server) const {
   // Enable QUIC for whitelisted proxies.
   // TODO(tbansal):  Use client config service to control this whitelist.
-  return proxy_server ==
-         net::ProxyServer(net::ProxyServer::SCHEME_HTTPS,
-                          net::HostPortPair(kDataReductionCoreProxy, 443));
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kDataReductionProxyEnableQuicOnNonCoreProxies) ||
+         proxy_server ==
+             net::ProxyServer(net::ProxyServer::SCHEME_HTTPS,
+                              net::HostPortPair(kDataReductionCoreProxy, 443));
 }
 
 void DataReductionProxyDelegate::RecordQuicProxyStatus(
