@@ -115,6 +115,7 @@ bool OnUserHive(const base::string16& client_state_path,
 }  // namespace
 
 const char kUnPackStatusMetricsName[] = "Setup.Install.LzmaUnPackStatus";
+const char kUnPackNTSTATUSMetricsName[] = "Setup.Install.LzmaUnPackNTSTATUS";
 
 int CourgettePatchFiles(const base::FilePath& src,
                         const base::FilePath& patch,
@@ -627,7 +628,9 @@ bool IsChromeActivelyUsed(const InstallerState& installer_state) {
   return is_used;
 }
 
-void RecordUnPackMetrics(UnPackStatus unpack_status, UnPackConsumer consumer) {
+void RecordUnPackMetrics(UnPackStatus unpack_status,
+                         int32_t status,
+                         UnPackConsumer consumer) {
   std::string consumer_name = "";
 
   switch (consumer) {
@@ -650,6 +653,11 @@ void RecordUnPackMetrics(UnPackStatus unpack_status, UnPackConsumer consumer) {
       UNPACK_STATUS_COUNT, UNPACK_STATUS_COUNT + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag)
       ->Add(unpack_status);
+
+  base::SparseHistogram::FactoryGet(
+      std::string(kUnPackNTSTATUSMetricsName) + "_" + consumer_name,
+      base::HistogramBase::kUmaTargetedHistogramFlag)
+      ->Add(status);
 }
 
 ScopedTokenPrivilege::ScopedTokenPrivilege(const wchar_t* privilege_name)

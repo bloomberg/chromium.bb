@@ -651,7 +651,7 @@ bool GenerateAlternateVersion(const base::FilePath& original_installer_path,
   // Unpack chrome.packed.7z (static build only).
   if (!chrome_packed_7z.empty()) {
     if (UnPackArchive(chrome_packed_7z, work_dir.directory(), &chrome_7z,
-                      nullptr) != ERROR_SUCCESS) {
+                      nullptr, nullptr) != ERROR_SUCCESS) {
       LOG(DFATAL) << "Failed unpacking \"" << chrome_packed_7z.value() << "\"";
       return false;
     }
@@ -659,8 +659,8 @@ bool GenerateAlternateVersion(const base::FilePath& original_installer_path,
   DCHECK(!chrome_7z.empty());
 
   // Unpack chrome.7z
-  if (UnPackArchive(chrome_7z, work_dir.directory(), nullptr, nullptr) !=
-      ERROR_SUCCESS) {
+  if (UnPackArchive(chrome_7z, work_dir.directory(), nullptr, nullptr,
+                    nullptr) != ERROR_SUCCESS) {
     LOG(DFATAL) << "Failed unpacking \"" << chrome_7z.value() << "\"";
     return false;
   }

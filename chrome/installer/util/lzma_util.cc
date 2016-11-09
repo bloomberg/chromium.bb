@@ -5,7 +5,6 @@
 #include "chrome/installer/util/lzma_util.h"
 
 #include <stddef.h>
-#include <winternl.h>
 
 #include <vector>
 
@@ -86,7 +85,7 @@ SRes SzFileReadImp(void* object, void* buffer, size_t* size) {
 DWORD FilterPageError(const LzmaFileAllocator& file_allocator,
                       DWORD exception_code,
                       const EXCEPTION_POINTERS* info,
-                      NTSTATUS* status) {
+                      int32_t* status) {
   if (exception_code != EXCEPTION_IN_PAGE_ERROR)
     return EXCEPTION_CONTINUE_SEARCH;
 
@@ -95,6 +94,7 @@ DWORD FilterPageError(const LzmaFileAllocator& file_allocator,
           exception_record->ExceptionInformation[1])) {
     return EXCEPTION_CONTINUE_SEARCH;
   }
+  // Cast NTSTATUS to int32_t to avoid including winternl.h
   *status = exception_record->ExceptionInformation[2];
 
   return EXCEPTION_EXECUTE_HANDLER;
@@ -105,7 +105,8 @@ DWORD FilterPageError(const LzmaFileAllocator& file_allocator,
 DWORD UnPackArchive(const base::FilePath& archive,
                     const base::FilePath& output_dir,
                     base::FilePath* output_file,
-                    UnPackStatus* unpack_status) {
+                    UnPackStatus* unpack_status,
+                    int32_t* ntstatus) {
   VLOG(1) << "Opening archive " << archive.value();
   LzmaUtilImpl lzma_util;
   DWORD ret;
@@ -119,6 +120,8 @@ DWORD UnPackArchive(const base::FilePath& archive,
   }
   if (unpack_status)
     *unpack_status = lzma_util.GetUnPackStatus();
+  if (ntstatus)
+    *ntstatus = lzma_util.GetNTSTATUSCode();
   return ret;
 }
 
@@ -197,8 +200,7 @@ DWORD LzmaUtilImpl::UnPack(const base::FilePath& location,
     size_t offset = 0;
     size_t outSizeProcessed = 0;
 
-    // Can't include ntstatus.h as it's conflicted with winnt.h
-    NTSTATUS status = 0;  // STATUS_SUCCESS.
+    int32_t status = 0;  // STATUS_SUCCESS
     __try {
       if ((sz_res =
                SzArEx_Extract(&db, &lookStream.s, i, &blockIndex, &outBuffer,
@@ -212,10 +214,10 @@ DWORD LzmaUtilImpl::UnPack(const base::FilePath& location,
     } __except(FilterPageError(fileAllocator, GetExceptionCode(),
                                 GetExceptionInformation(), &status)) {
       ret = ERROR_IO_DEVICE;
-      // TODO(zmin): Report NTSTATUS via extracode1 or UMA.
+      ntstatus_ = status;
       LOG(ERROR) << L"EXCEPTION_IN_PAGE_ERROR while accessing mapped memory; "
                     L"NTSTATUS = "
-                 << status;
+                 << ntstatus_;
       unpack_status_ = UNPACK_EXTRACT_EXCEPTION;
     }
     if (ret != ERROR_SUCCESS)

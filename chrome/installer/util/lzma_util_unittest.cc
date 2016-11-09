@@ -112,21 +112,23 @@ TEST_F(LzmaUtilTest, UnPackArchiveTest) {
   base::FilePath archive = data_dir_.AppendASCII("archive1.7z");
   base::FilePath unpacked_file;
 
-  UnPackStatus status;
-  EXPECT_EQ(static_cast<DWORD>(ERROR_SUCCESS),
-            UnPackArchive(archive, extract_dir, &unpacked_file, &status));
+  EXPECT_EQ(
+      static_cast<DWORD>(ERROR_SUCCESS),
+      UnPackArchive(archive, extract_dir, &unpacked_file, nullptr, nullptr));
 
   EXPECT_TRUE(base::PathExists(extract_dir.AppendASCII("a.exe")));
   EXPECT_TRUE(unpacked_file == extract_dir.AppendASCII("a.exe"));
 
   archive = data_dir_.AppendASCII("archive2.7z");
-  EXPECT_EQ(static_cast<DWORD>(ERROR_SUCCESS),
-            UnPackArchive(archive, extract_dir, &unpacked_file, &status));
+  EXPECT_EQ(
+      static_cast<DWORD>(ERROR_SUCCESS),
+      UnPackArchive(archive, extract_dir, &unpacked_file, nullptr, nullptr));
 
   EXPECT_TRUE(base::PathExists(extract_dir.AppendASCII("b.exe")));
   EXPECT_TRUE(unpacked_file == extract_dir.AppendASCII("b.exe"));
 
   archive = data_dir_.AppendASCII("invalid_archive.7z");
-  EXPECT_EQ(static_cast<DWORD>(ERROR_INVALID_HANDLE),
-            UnPackArchive(archive, extract_dir, &unpacked_file, &status));
+  EXPECT_EQ(
+      static_cast<DWORD>(ERROR_INVALID_HANDLE),
+      UnPackArchive(archive, extract_dir, &unpacked_file, nullptr, nullptr));
 }

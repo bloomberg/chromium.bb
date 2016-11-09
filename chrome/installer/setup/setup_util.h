@@ -37,6 +37,7 @@ class ProductState;
 class MasterPreferences;
 
 extern const char kUnPackStatusMetricsName[];
+extern const char kUnPackNTSTATUSMetricsName[];
 
 // The name of consumers of UnPackArchive which is used to publish metrics.
 enum UnPackConsumer {
@@ -139,7 +140,9 @@ bool IsDowngradeAllowed(const MasterPreferences& prefs);
 bool IsChromeActivelyUsed(const InstallerState& installer_state);
 
 // Records UMA metrics for unpack result.
-void RecordUnPackMetrics(UnPackStatus unpack_status, UnPackConsumer consumer);
+void RecordUnPackMetrics(UnPackStatus unpack_status,
+                         int32_t status,
+                         UnPackConsumer consumer);
 
 // This class will enable the privilege defined by |privilege_name| on the
 // current process' token. The privilege will be disabled upon the

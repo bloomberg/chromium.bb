@@ -38,7 +38,8 @@ enum UnPackStatus {
 DWORD UnPackArchive(const base::FilePath& archive,
                     const base::FilePath& output_dir,
                     base::FilePath* output_file,
-                    UnPackStatus* unpack_status);
+                    UnPackStatus* unpack_status,
+                    int32_t* ntstatus);
 
 // A utility class that wraps LZMA SDK library. Prefer UnPackArchive over using
 // this class directly.
@@ -59,6 +60,7 @@ class LzmaUtilImpl {
   DWORD UnPack(const base::FilePath& location, base::FilePath* output_file);
 
   UnPackStatus GetUnPackStatus() { return unpack_status_; }
+  int32_t GetNTSTATUSCode() { return ntstatus_; }
 
  protected:
   bool CreateDirectory(const base::FilePath& dir);
@@ -67,6 +69,8 @@ class LzmaUtilImpl {
   HANDLE archive_handle_ = nullptr;
   std::set<base::string16> directories_created_;
   UnPackStatus unpack_status_ = UNPACK_NO_ERROR;
+  // Can't include ntstatus.h as it's conflicted with winnt.h
+  int32_t ntstatus_ = 0;  // STATUS_SUCCESS.
 
   DISALLOW_COPY_AND_ASSIGN(LzmaUtilImpl);
 };

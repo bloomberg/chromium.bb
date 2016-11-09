@@ -1449,9 +1449,10 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
   installer_state.SetStage(UNPACKING);
   base::TimeTicks start_time = base::TimeTicks::Now();
   UnPackStatus unpack_status = UNPACK_NO_ERROR;
-  DWORD lzma_result =
-      UnPackArchive(uncompressed_archive, unpack_path, NULL, &unpack_status);
-  RecordUnPackMetrics(unpack_status,
+  int32_t ntstatus = 0;
+  DWORD lzma_result = UnPackArchive(uncompressed_archive, unpack_path, NULL,
+                                    &unpack_status, &ntstatus);
+  RecordUnPackMetrics(unpack_status, ntstatus,
                       UnPackConsumer::UNCOMPRESSED_CHROME_ARCHIVE);
   if (lzma_result) {
     installer_state.WriteInstallerResult(
