@@ -24,8 +24,7 @@ class GpuCommandBufferStub;
 // GLSurfaceAdapter, thereby forwarding GLSurface methods through to it.
 class PassThroughImageTransportSurface : public gl::GLSurfaceAdapter {
  public:
-  PassThroughImageTransportSurface(GpuChannelManager* manager,
-                                   GpuCommandBufferStub* stub,
+  PassThroughImageTransportSurface(GpuCommandBufferStub* stub,
                                    gl::GLSurface* surface);
 
   // GLSurface implementation.

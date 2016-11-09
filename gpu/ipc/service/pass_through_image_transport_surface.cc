@@ -17,7 +17,6 @@
 namespace gpu {
 
 PassThroughImageTransportSurface::PassThroughImageTransportSurface(
-    GpuChannelManager* /* manager */,
     GpuCommandBufferStub* stub,
     gl::GLSurface* surface)
     : GLSurfaceAdapter(surface),

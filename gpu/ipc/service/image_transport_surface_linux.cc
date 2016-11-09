@@ -25,7 +25,7 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
   if (!surface)
     return surface;
   return scoped_refptr<gl::GLSurface>(
-      new PassThroughImageTransportSurface(manager, stub, surface.get()));
+      new PassThroughImageTransportSurface(stub, surface.get()));
 }
 
 }  // namespace gpu
