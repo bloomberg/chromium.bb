@@ -7,6 +7,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -14,6 +15,15 @@
 
 namespace chromeos {
 namespace system {
+
+namespace {
+
+PrefService* GetActiveProfilePrefs() {
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  return profile ? profile->GetPrefs() : nullptr;
+}
+
+}  // namespace
 
 TouchpadSettings::TouchpadSettings() {
 }
@@ -224,23 +234,24 @@ bool InputDeviceSettings::ForceKeyboardDrivenUINavigation() {
 }
 
 // static
-void InputDeviceSettings::RegisterPrefs(PrefRegistrySimple* registry) {
+void InputDeviceSettings::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(::prefs::kTouchScreenEnabled, true);
   registry->RegisterBooleanPref(::prefs::kTouchPadEnabled, true);
 }
 
-void InputDeviceSettings::InitTouchDevicesStatusFromLocalPrefs() {
-  PrefService* local_state = g_browser_process->local_state();
-  DCHECK(local_state);
+void InputDeviceSettings::UpdateTouchDevicesStatusFromActiveProfilePrefs() {
+  PrefService* user_prefs = GetActiveProfilePrefs();
+  if (!user_prefs)
+    return;
 
   const bool touch_screen_status =
-      local_state->HasPrefPath(::prefs::kTouchScreenEnabled)
-          ? local_state->GetBoolean(::prefs::kTouchScreenEnabled)
+      user_prefs->HasPrefPath(::prefs::kTouchScreenEnabled)
+          ? user_prefs->GetBoolean(::prefs::kTouchScreenEnabled)
           : true;
 
   const bool touch_pad_status =
-      local_state->HasPrefPath(::prefs::kTouchPadEnabled)
-          ? local_state->GetBoolean(::prefs::kTouchPadEnabled)
+      user_prefs->HasPrefPath(::prefs::kTouchPadEnabled)
+          ? user_prefs->GetBoolean(::prefs::kTouchPadEnabled)
           : true;
 
   SetTouchscreensEnabled(touch_screen_status);
@@ -248,28 +259,30 @@ void InputDeviceSettings::InitTouchDevicesStatusFromLocalPrefs() {
 }
 
 void InputDeviceSettings::ToggleTouchscreen() {
-  PrefService* local_state = g_browser_process->local_state();
-  DCHECK(local_state);
+  PrefService* user_prefs = GetActiveProfilePrefs();
+  if (!user_prefs)
+    return;
 
   const bool touch_screen_status =
-      local_state->HasPrefPath(::prefs::kTouchScreenEnabled)
-          ? local_state->GetBoolean(::prefs::kTouchScreenEnabled)
+      user_prefs->HasPrefPath(::prefs::kTouchScreenEnabled)
+          ? user_prefs->GetBoolean(::prefs::kTouchScreenEnabled)
           : true;
 
-  local_state->SetBoolean(::prefs::kTouchScreenEnabled, !touch_screen_status);
+  user_prefs->SetBoolean(::prefs::kTouchScreenEnabled, !touch_screen_status);
   SetTouchscreensEnabled(!touch_screen_status);
 }
 
 void InputDeviceSettings::ToggleTouchpad() {
-  PrefService* local_state = g_browser_process->local_state();
-  DCHECK(local_state);
+  PrefService* user_prefs = GetActiveProfilePrefs();
+  if (!user_prefs)
+    return;
 
   const bool touch_pad_status =
-      local_state->HasPrefPath(::prefs::kTouchPadEnabled)
-          ? local_state->GetBoolean(::prefs::kTouchPadEnabled)
+      user_prefs->HasPrefPath(::prefs::kTouchPadEnabled)
+          ? user_prefs->GetBoolean(::prefs::kTouchPadEnabled)
           : true;
 
-  local_state->SetBoolean(::prefs::kTouchPadEnabled, !touch_pad_status);
+  user_prefs->SetBoolean(::prefs::kTouchPadEnabled, !touch_pad_status);
   SetInternalTouchpadEnabled(!touch_pad_status);
 }
 

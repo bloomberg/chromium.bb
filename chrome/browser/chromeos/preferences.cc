@@ -706,6 +706,9 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     user_manager::known_user::SetBooleanPref(user_->GetAccountId(),
                                              prefs::kUse24HourClock, value);
   }
+
+  system::InputDeviceSettings::Get()
+      ->UpdateTouchDevicesStatusFromActiveProfilePrefs();
 }
 
 void Preferences::OnIsSyncingChanged() {

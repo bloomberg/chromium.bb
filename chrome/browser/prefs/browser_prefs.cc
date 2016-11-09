@@ -254,12 +254,6 @@
 
 namespace {
 
-#if defined(OS_WIN)
-// Deprecated 11/2015 (M48). TODO(gab): delete in M52+.
-const char kShownAutoLaunchInfobarDeprecated[] =
-    "browser.shown_autolaunch_infobar";
-#endif  // defined(OS_WIN)
-
 // The SessionStartupPref used this pref to store the list of URLs to restore
 // on startup, and then renamed it to "sessions.startup_urls" in M31. Migration
 // code was added and the timestamp of when the migration happened was tracked
@@ -432,7 +426,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chromeos::SigninScreenHandler::RegisterPrefs(registry);
   chromeos::StartupUtils::RegisterPrefs(registry);
   chromeos::system::AutomaticRebootManager::RegisterPrefs(registry);
-  chromeos::system::InputDeviceSettings::RegisterPrefs(registry);
   chromeos::TimeZoneResolver::RegisterPrefs(registry);
   chromeos::UserImageManager::RegisterPrefs(registry);
   chromeos::UserSessionManager::RegisterPrefs(registry);
@@ -447,6 +440,10 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   policy::DeviceStatusCollector::RegisterPrefs(registry);
   policy::PolicyCertServiceFactory::RegisterPrefs(registry);
   quirks::QuirksManager::RegisterPrefs(registry);
+
+  // Moved to profile prefs, but we still need to register the prefs in local
+  // state until migration is complete (See MigrateObsoleteBrowserPrefs()).
+  chromeos::system::InputDeviceSettings::RegisterProfilePrefs(registry);
 #endif
 
 #if defined(OS_MACOSX)
@@ -607,6 +604,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   chromeos::RegisterQuickUnlockProfilePrefs(registry);
   chromeos::SAMLOfflineSigninLimiter::RegisterProfilePrefs(registry);
   chromeos::ServicesCustomizationDocument::RegisterProfilePrefs(registry);
+  chromeos::system::InputDeviceSettings::RegisterProfilePrefs(registry);
   chromeos::UserImageSyncObserver::RegisterProfilePrefs(registry);
   extensions::EPKPChallengeUserKey::RegisterProfilePrefs(registry);
   flags_ui::PrefServiceFlagsStorage::RegisterProfilePrefs(registry);
@@ -637,10 +635,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
   // Preferences registered only for migration (clearing or moving to a new key)
   // go here.
-
-#if defined(OS_WIN)
-  registry->RegisterIntegerPref(kShownAutoLaunchInfobarDeprecated, 0);
-#endif  // defined(OS_WIN)
 
 #if defined(USE_AURA)
   registry->RegisterIntegerPref(kFlingMaxCancelToDownTimeInMs, 0);
@@ -706,16 +700,16 @@ void RegisterLoginProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 // This method should be periodically pruned of year+ old migrations.
 void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
+#if defined(OS_CHROMEOS)
+  // Added 11/2016
+  local_state->ClearPref(prefs::kTouchScreenEnabled);
+  local_state->ClearPref(prefs::kTouchPadEnabled);
+#endif  // defined(OS_CHROMEOS)
 }
 
 // This method should be periodically pruned of year+ old migrations.
 void MigrateObsoleteProfilePrefs(Profile* profile) {
   PrefService* profile_prefs = profile->GetPrefs();
-
-#if defined(OS_WIN)
-  // Added 11/2015.
-  profile_prefs->ClearPref(kShownAutoLaunchInfobarDeprecated);
-#endif
 
 #if defined(OS_MACOSX)
   // Migrate the value of kHideFullscreenToolbar to kShowFullscreenToolbar if
