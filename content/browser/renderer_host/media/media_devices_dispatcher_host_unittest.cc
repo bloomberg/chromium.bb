@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
@@ -115,9 +116,8 @@ class MediaDevicesDispatcherHostTest : public testing::Test {
                                         bool enumerate_video_input,
                                         bool enumerate_audio_output,
                                         bool permission_override_value = true) {
-    MediaDevicesPermissionChecker permission_checker;
-    permission_checker.OverridePermissionsForTesting(permission_override_value);
-    host_->SetPermissionChecker(permission_checker);
+    host_->SetPermissionChecker(base::MakeUnique<MediaDevicesPermissionChecker>(
+        permission_override_value));
     base::RunLoop run_loop;
     host_->EnumerateDevices(
         enumerate_audio_input, enumerate_video_input, enumerate_audio_output,
@@ -217,9 +217,8 @@ class MediaDevicesDispatcherHostTest : public testing::Test {
   }
 
   void SubscribeAndWaitForResult(bool has_permission) {
-    MediaDevicesPermissionChecker permission_checker;
-    permission_checker.OverridePermissionsForTesting(has_permission);
-    host_->SetPermissionChecker(permission_checker);
+    host_->SetPermissionChecker(
+        base::MakeUnique<MediaDevicesPermissionChecker>(has_permission));
     uint32_t subscription_id = 0u;
     url::Origin origin(GURL("http://localhost"));
     for (size_t i = 0; i < NUM_MEDIA_DEVICE_TYPES; ++i) {

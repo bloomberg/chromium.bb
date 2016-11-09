@@ -79,11 +79,15 @@ MediaDevicesPermissionChecker::MediaDevicesPermissionChecker()
           base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
               switches::kUseFakeUIForMediaStream) != "deny") {}
 
+MediaDevicesPermissionChecker::MediaDevicesPermissionChecker(
+    bool override_value)
+    : use_override_(true), override_value_(override_value) {}
+
 bool MediaDevicesPermissionChecker::CheckPermissionOnUIThread(
     MediaDeviceType device_type,
     int render_process_id,
     int render_frame_id,
-    const url::Origin& security_origin) {
+    const url::Origin& security_origin) const {
   if (use_override_)
     return override_value_;
 
@@ -96,7 +100,7 @@ void MediaDevicesPermissionChecker::CheckPermission(
     int render_process_id,
     int render_frame_id,
     const url::Origin& security_origin,
-    const base::Callback<void(bool)>& callback) {
+    const base::Callback<void(bool)>& callback) const {
   if (use_override_) {
     callback.Run(override_value_);
     return;
@@ -114,7 +118,7 @@ MediaDevicesPermissionChecker::CheckPermissionsOnUIThread(
     MediaDevicesManager::BoolDeviceTypes requested_device_types,
     int render_process_id,
     int render_frame_id,
-    const url::Origin& security_origin) {
+    const url::Origin& security_origin) const {
   if (use_override_) {
     MediaDevicesManager::BoolDeviceTypes result;
     result.fill(override_value_);
@@ -131,7 +135,7 @@ void MediaDevicesPermissionChecker::CheckPermissions(
     int render_frame_id,
     const url::Origin& security_origin,
     const base::Callback<void(const MediaDevicesManager::BoolDeviceTypes&)>&
-        callback) {
+        callback) const {
   if (use_override_) {
     MediaDevicesManager::BoolDeviceTypes result;
     result.fill(override_value_);
@@ -144,12 +148,6 @@ void MediaDevicesPermissionChecker::CheckPermissions(
       base::Bind(&DoCheckPermissionsOnUIThread, requested, render_process_id,
                  render_frame_id, security_origin),
       callback);
-}
-
-void MediaDevicesPermissionChecker::OverridePermissionsForTesting(
-    bool override_value) {
-  use_override_ = true;
-  override_value_ = override_value;
 }
 
 }  // namespace content

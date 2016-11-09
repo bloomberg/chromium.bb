@@ -60,7 +60,7 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
                         const MediaDeviceInfoArray& device_infos) override;
 
   void SetPermissionChecker(
-      const MediaDevicesPermissionChecker& permission_checker);
+      std::unique_ptr<MediaDevicesPermissionChecker> permission_checker);
 
   void SetDeviceChangeListenerForTesting(
       ::mojom::MediaDevicesListenerPtr listener);
@@ -93,7 +93,7 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
 
   // The following fields can only be accessed on the IO thread.
   MediaStreamManager* media_stream_manager_;
-  MediaDevicesPermissionChecker permission_checker_;
+  std::unique_ptr<MediaDevicesPermissionChecker> permission_checker_;
   std::vector<SubscriptionInfo>
       device_change_subscriptions_[NUM_MEDIA_DEVICE_TYPES];
 

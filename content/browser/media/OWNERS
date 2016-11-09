@@ -1,5 +1,6 @@
 file://media/OWNERS
 
+per-file media_devices_*=guidou@chromium.org
 per-file midi_*=toyoshim@chromium.org
 
 # For changes related to the tab media indicators.

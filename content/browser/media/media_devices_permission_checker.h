@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "content/browser/renderer_host/media/media_devices_manager.h"
 #include "content/common/content_export.h"
 
@@ -23,6 +24,9 @@ namespace content {
 class CONTENT_EXPORT MediaDevicesPermissionChecker {
  public:
   MediaDevicesPermissionChecker();
+  // This constructor creates a MediaDevicesPermissionChecker that replies
+  // |override_value| to all permission requests. Use only for testing.
+  explicit MediaDevicesPermissionChecker(bool override_value);
 
   // Checks if the origin |security_origin| associated to a render frame
   // identified by |render_process_id| and |render_frame_id| is allowed to
@@ -31,7 +35,7 @@ class CONTENT_EXPORT MediaDevicesPermissionChecker {
   bool CheckPermissionOnUIThread(MediaDeviceType device_type,
                                  int render_process_id,
                                  int render_frame_id,
-                                 const url::Origin& security_origin);
+                                 const url::Origin& security_origin) const;
 
   // Checks if the origin |security_origin| associated to a render frame
   // identified by |render_process_id| and |render_frame_id| is allowed to
@@ -43,7 +47,7 @@ class CONTENT_EXPORT MediaDevicesPermissionChecker {
                        int render_process_id,
                        int render_frame_id,
                        const url::Origin& security_origin,
-                       const base::Callback<void(bool)>& callback);
+                       const base::Callback<void(bool)>& callback) const;
 
   // Checks if the origin |security_origin| associated to a render frame
   // identified by |render_process_id| and |render_frame_id| is allowed to
@@ -57,7 +61,7 @@ class CONTENT_EXPORT MediaDevicesPermissionChecker {
       MediaDevicesManager::BoolDeviceTypes requested_device_types,
       int render_process_id,
       int render_frame_id,
-      const url::Origin& security_origin);
+      const url::Origin& security_origin) const;
 
   // Checks if the origin |security_origin| associated to a render frame
   // identified by |render_process_id| and |render_frame_id| is allowed to
@@ -74,15 +78,13 @@ class CONTENT_EXPORT MediaDevicesPermissionChecker {
       int render_frame_id,
       const url::Origin& security_origin,
       const base::Callback<void(const MediaDevicesManager::BoolDeviceTypes&)>&
-          callback);
-
-  // Forces a specific value to be returned by the permission-checking functions
-  // for all device types. Use only for testing.
-  void OverridePermissionsForTesting(bool override_value);
+          callback) const;
 
  private:
-  bool use_override_;
-  bool override_value_;
+  const bool use_override_;
+  const bool override_value_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaDevicesPermissionChecker);
 };
 
 }  // namespace content

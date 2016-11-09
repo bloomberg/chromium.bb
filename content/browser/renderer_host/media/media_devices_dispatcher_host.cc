@@ -88,6 +88,7 @@ MediaDevicesDispatcherHost::MediaDevicesDispatcherHost(
       device_id_salt_(device_id_salt),
       group_id_salt_(ResourceContext::CreateRandomMediaDeviceIDSalt()),
       media_stream_manager_(media_stream_manager),
+      permission_checker_(base::MakeUnique<MediaDevicesPermissionChecker>()),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
@@ -129,7 +130,7 @@ void MediaDevicesDispatcherHost::EnumerateDevices(
   devices_to_enumerate[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = request_video_input;
   devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = request_audio_output;
 
-  permission_checker_.CheckPermissions(
+  permission_checker_->CheckPermissions(
       devices_to_enumerate, render_process_id_, render_frame_id_,
       security_origin,
       base::Bind(&MediaDevicesDispatcherHost::DoEnumerateDevices,
@@ -230,7 +231,7 @@ void MediaDevicesDispatcherHost::NotifyDeviceChangeOnUIThread(
   }
 
   for (const auto& subscription : subscriptions) {
-    bool has_permission = permission_checker_.CheckPermissionOnUIThread(
+    bool has_permission = permission_checker_->CheckPermissionOnUIThread(
         type, render_process_id_, render_frame_id_,
         subscription.security_origin);
     media_devices_listener->OnDevicesChanged(
@@ -242,9 +243,10 @@ void MediaDevicesDispatcherHost::NotifyDeviceChangeOnUIThread(
 }
 
 void MediaDevicesDispatcherHost::SetPermissionChecker(
-    const MediaDevicesPermissionChecker& permission_checker) {
+    std::unique_ptr<MediaDevicesPermissionChecker> permission_checker) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  permission_checker_ = permission_checker;
+  DCHECK(permission_checker);
+  permission_checker_ = std::move(permission_checker);
 }
 
 void MediaDevicesDispatcherHost::SetDeviceChangeListenerForTesting(
