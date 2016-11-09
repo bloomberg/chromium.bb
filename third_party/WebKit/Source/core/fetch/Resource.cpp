@@ -395,9 +395,14 @@ void Resource::setResourceBuffer(PassRefPtr<SharedBuffer> resourceBuffer) {
   setEncodedSize(m_data->size());
 }
 
+void Resource::clearData() {
+  m_data.clear();
+  m_encodedSizeMemoryUsage = 0;
+}
+
 void Resource::setDataBufferingPolicy(DataBufferingPolicy dataBufferingPolicy) {
   m_options.dataBufferingPolicy = dataBufferingPolicy;
-  m_data.clear();
+  clearData();
   setEncodedSize(0);
 }
 
@@ -412,7 +417,7 @@ void Resource::error(const ResourceError& error) {
   if (!errorOccurred())
     setStatus(LoadError);
   DCHECK(errorOccurred());
-  m_data.clear();
+  clearData();
   m_loader = nullptr;
   checkNotify();
 }
@@ -800,10 +805,6 @@ void Resource::setEncodedSize(size_t encodedSize) {
   memoryCache()->update(this, oldSize, size());
 }
 
-void Resource::setEncodedSizeMemoryUsage(size_t encodedSize) {
-  m_encodedSizeMemoryUsage = encodedSize;
-}
-
 void Resource::didAccessDecodedData() {
   memoryCache()->updateDecodedResource(this, UpdateForAccess);
 }
@@ -967,7 +968,7 @@ void Resource::revalidationSucceeded(
 
 void Resource::revalidationFailed() {
   SECURITY_CHECK(m_redirectChain.isEmpty());
-  m_data.clear();
+  clearData();
   m_cacheHandler.clear();
   destroyDecodedDataForFailedRevalidation();
   m_isRevalidating = false;

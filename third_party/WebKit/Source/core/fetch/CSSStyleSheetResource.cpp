@@ -153,7 +153,6 @@ void CSSStyleSheetResource::checkNotify() {
   // Note that LinkStyle::setCSSStyleSheet can be called from didAddClient too,
   // but is safe as we should have a cached ResourceIntegrityDisposition.
   clearData();
-  setEncodedSizeMemoryUsage(0);
 }
 
 void CSSStyleSheetResource::destroyDecodedDataIfPossible() {

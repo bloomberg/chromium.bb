@@ -89,7 +89,6 @@ const String& ScriptResource::script() {
   if (m_script.isNull() && data()) {
     String script = decodedText();
     clearData();
-    setEncodedSizeMemoryUsage(0);
     setDecodedSize(script.charactersSizeInBytes());
     m_script = AtomicString(script);
   }

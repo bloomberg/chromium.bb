@@ -347,7 +347,6 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   virtual void destroyDecodedDataForFailedRevalidation() {}
 
   void setEncodedSize(size_t);
-  void setEncodedSizeMemoryUsage(size_t);
   void setDecodedSize(size_t);
   void didAccessDecodedData();
 
@@ -395,7 +394,7 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   void clearRangeRequestHeader();
 
   SharedBuffer* data() const { return m_data.get(); }
-  void clearData() { m_data.clear(); }
+  void clearData();
 
   class ProhibitAddRemoveClientInScope : public AutoReset<bool> {
    public:
