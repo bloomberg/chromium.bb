@@ -30,6 +30,8 @@
 namespace views {
 namespace {
 
+// TODO: property converter should likely live in aura as it needs to be used
+// by both ash and views. http://crbug.com/663522.
 class PropertyConverterImpl : public aura::PropertyConverter {
  public:
   PropertyConverterImpl() {}
@@ -117,7 +119,7 @@ MusClient::MusClient(service_manager::Connector* connector,
       base::MakeUnique<aura::WindowTreeClient>(this, nullptr, nullptr);
   window_tree_client_->ConnectViaWindowTreeFactory(connector_);
 
-  // TODO(sky): wire up PointerWatcherEventRouter.
+  // TODO: wire up PointerWatcherEventRouter. http://crbug.com/663526.
 
   screen_ = base::MakeUnique<ScreenMus>(this);
   screen_->Init(connector);
@@ -147,12 +149,12 @@ void MusClient::OnEmbedRootDestroyed(aura::Window* root) {
 
 void MusClient::OnPointerEventObserved(const ui::PointerEvent& event,
                                        aura::Window* target) {
-  // TODO(sky): wire up pointer events.
+  // TODO: wire up PointerWatcherEventRouter. http://crbug.com/663526.
   NOTIMPLEMENTED();
 }
 
 void MusClient::OnWindowManagerFrameValuesChanged() {
-  // TODO(sky): wire up to DesktopNativeWidgetAura.
+  // TODO: wire up client area. http://crbug.com/663525.
   NOTIMPLEMENTED();
 }
 
@@ -173,7 +175,7 @@ aura::Window* MusClient::GetWindowAtScreenPoint(const gfx::Point& point) {
     aura::WindowTreeHost* window_tree_host = root->GetHost();
     if (!window_tree_host)
       continue;
-    // TODO: this likely gets z-order wrong.
+    // TODO: this likely gets z-order wrong. http://crbug.com/663606.
     gfx::Point relative_point(point);
     window_tree_host->ConvertPointFromNativeScreen(&relative_point);
     if (gfx::Rect(root->bounds().size()).Contains(relative_point))

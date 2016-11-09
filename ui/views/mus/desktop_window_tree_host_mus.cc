@@ -131,10 +131,12 @@ void DesktopWindowTreeHostMus::SetSize(const gfx::Size& size) {
 }
 
 void DesktopWindowTreeHostMus::StackAbove(aura::Window* window) {
+  // TODO: implement window stacking, http://crbug.com/663617.
   NOTIMPLEMENTED();
 }
 
 void DesktopWindowTreeHostMus::StackAtTop() {
+  // TODO: implement window stacking, http://crbug.com/663617.
   NOTIMPLEMENTED();
 }
 
@@ -218,6 +220,7 @@ void DesktopWindowTreeHostMus::Activate() {
 
 void DesktopWindowTreeHostMus::Deactivate() {
   // TODO: Deactivate() means focus next window, that needs to go to mus.
+  // http://crbug.com/663618.
   NOTIMPLEMENTED();
 }
 
@@ -328,7 +331,7 @@ bool DesktopWindowTreeHostMus::IsFullscreen() const {
 }
 void DesktopWindowTreeHostMus::SetOpacity(float opacity) {
   // TODO: this likely need to go to server so that non-client decorations get
-  // opacity.
+  // opacity. http://crbug.com/663619.
   window()->layer()->SetOpacity(opacity);
 }
 
