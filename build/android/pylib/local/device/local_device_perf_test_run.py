@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import collections
 import io
 import json
 import logging
@@ -370,7 +371,7 @@ class LocalDevicePerfTestRun(local_device_test_run.LocalDeviceTestRun):
     # run on the same devices. This is important for perf tests since different
     # devices might yield slightly different performance results.
     test_dict = self._GetStepsFromDict()
-    for test, test_config in test_dict['steps'].iteritems():
+    for test, test_config in sorted(test_dict['steps'].iteritems()):
       try:
         affinity = test_config.get('device_affinity')
         if affinity is None:
@@ -378,7 +379,7 @@ class LocalDevicePerfTestRun(local_device_test_run.LocalDeviceTestRun):
         else:
           if len(self._test_buckets) < affinity + 1:
             while len(self._test_buckets) != affinity + 1:
-              self._test_buckets.append({})
+              self._test_buckets.append(collections.OrderedDict())
           self._test_buckets[affinity][test] = test_config
       except KeyError:
         logging.exception(
