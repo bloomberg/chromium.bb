@@ -799,3 +799,6 @@ imported/wpt/uievents/order-of-events/mouse-events/click-order-manual.html [ Ski
 imported/wpt/uievents/order-of-events/mouse-events/mouseevents-mousemove-manual.htm [ Skip ]
 imported/wpt/uievents/order-of-events/mouse-events/mousemove-across-manual.html [ Skip ]
 imported/wpt/uievents/order-of-events/mouse-events/mousemove-between-manual.html [ Skip ]
+
+# crbug.com/663649: imported/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html is failing on 6 builders
+imported/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Skip ]
