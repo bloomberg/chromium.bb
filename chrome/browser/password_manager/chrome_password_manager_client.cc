@@ -118,6 +118,10 @@ void ReportMetrics(bool password_manager_enabled,
             password_manager::SYNCING_WITH_CUSTOM_PASSPHRASE);
   }
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.Enabled", password_manager_enabled);
+  UMA_HISTOGRAM_BOOLEAN(
+      "PasswordManager.ShouldShowAutoSignInFirstRunExperience",
+      password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
+          profile->GetPrefs()));
 }
 
 }  // namespace
