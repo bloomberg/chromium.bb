@@ -4,15 +4,14 @@
 
 #include "fake_ppapi/fake_file_io_interface.h"
 
-#include <algorithm>
-
 #include <ppapi/c/pp_completion_callback.h>
 #include <ppapi/c/pp_errors.h>
 
 #include "gtest/gtest.h"
 
 #include "fake_ppapi/fake_core_interface.h"
-#include "fake_ppapi/fake_pepper_interface_html5_fs.h"
+#include "fake_ppapi/fake_filesystem.h"
+#include "fake_ppapi/fake_node.h"
 #include "fake_ppapi/fake_util.h"
 
 namespace {
@@ -22,7 +21,7 @@ class FakeFileIoResource : public FakeResource {
   FakeFileIoResource() : node(NULL), open_flags(0) {}
   static const char* classname() { return "FakeFileIoResource"; }
 
-  FakeHtml5FsNode* node;  // Weak reference.
+  FakeNode* node;  // Weak reference.
   int32_t open_flags;
 };
 
@@ -60,9 +59,9 @@ int32_t FakeFileIoInterface::Open(PP_Resource file_io,
   if (file_ref_resource == NULL)
     return PP_ERROR_BADRESOURCE;
 
-  const FakeHtml5FsFilesystem::Path& path = file_ref_resource->path;
-  FakeHtml5FsFilesystem* filesystem = file_ref_resource->filesystem;
-  FakeHtml5FsNode* node = filesystem->GetNode(path);
+  const FakeFilesystem::Path& path = file_ref_resource->path;
+  FakeFilesystem* filesystem = file_ref_resource->filesystem;
+  FakeNode* node = filesystem->GetNode(path);
   bool node_exists = node != NULL;
 
   if (!node_exists) {

@@ -8,20 +8,13 @@
 #include <set>
 #include <string>
 
-#include <gmock/gmock.h>
-#include <ppapi/c/ppb_file_io.h>
-#include <ppapi/c/pp_directory_entry.h>
-#include <ppapi/c/pp_errors.h>
-#include <ppapi/c/pp_instance.h>
-#if defined(WIN32)
-#include <windows.h>  // For Sleep()
-#endif
+#include <ppapi/c/pp_file_info.h>
 
+#include "fake_ppapi/fake_node.h"
 #include "fake_ppapi/fake_pepper_interface_html5_fs.h"
 #include "nacl_io/kernel_handle.h"
 #include "nacl_io/html5fs/html5_fs.h"
 #include "nacl_io/osdirent.h"
-#include "nacl_io/osunistd.h"
 #include "nacl_io/pepper_interface_delegate.h"
 #include "sdk_util/scoped_ref.h"
 #include "mock_util.h"
@@ -40,7 +33,8 @@ namespace {
 
 class Html5FsForTesting : public Html5Fs {
  public:
-  Html5FsForTesting(StringMap_t& string_map, PepperInterface* ppapi,
+  Html5FsForTesting(StringMap_t& string_map,
+                    PepperInterface* ppapi,
                     int expected_error = 0) {
     FsInitArgs args;
     args.string_map = string_map;
@@ -108,8 +102,9 @@ TEST_F(Html5FsTest, FilesystemType) {
 
       ppapi_.SetFileSystemInterfaceDelegate(filesystem_mock);
 
-      ON_CALL(*filesystem_mock, Create(_, _)).WillByDefault(
-          Invoke(filesystem_fake, &FakeFileSystemInterface::Create));
+      ON_CALL(*filesystem_mock, Create(_, _))
+          .WillByDefault(
+              Invoke(filesystem_fake, &FakeFileSystemInterface::Create));
 
       EXPECT_CALL(*filesystem_mock,
                   Create(ppapi_.GetInstance(), expected_filesystem_type));
@@ -143,14 +138,13 @@ TEST_F(Html5FsTest, PassFilesystemResource) {
         ppapi_html5_.GetInstance(), PP_FILESYSTEMTYPE_LOCALPERSISTENT);
 
     ASSERT_EQ(int32_t(PP_OK), ppapi_html5_.GetFileSystemInterface()->Open(
-              filesystem, 0, PP_BlockUntilComplete()));
+                                  filesystem, 0, PP_BlockUntilComplete()));
 
     StringMap_t map;
     char buffer[30];
     snprintf(buffer, 30, "%d", filesystem);
     map["filesystem_resource"] = buffer;
-    ScopedRef<Html5FsForTesting> fs(
-        new Html5FsForTesting(map, &ppapi_));
+    ScopedRef<Html5FsForTesting> fs(new Html5FsForTesting(map, &ppapi_));
 
     ASSERT_TRUE(fs->Exists("/foo"));
 
@@ -159,8 +153,8 @@ TEST_F(Html5FsTest, PassFilesystemResource) {
 }
 
 TEST_F(Html5FsTest, MountSubtree) {
-  EXPECT_TRUE(ppapi_html5_.filesystem_template()->AddEmptyFile("/foo/bar",
-                                                               NULL));
+  EXPECT_TRUE(
+      ppapi_html5_.filesystem_template()->AddEmptyFile("/foo/bar", NULL));
   StringMap_t map;
   map["SOURCE"] = "/foo";
   ScopedRef<Html5FsForTesting> fs(new Html5FsForTesting(map, &ppapi_));
@@ -256,8 +250,8 @@ TEST_F(Html5FsTest, OpenForCreate) {
   // Write some data.
   const char* contents = "contents";
   int bytes_written = 0;
-  EXPECT_EQ(0, node->Write(HandleAttr(), contents, strlen(contents),
-                           &bytes_written));
+  EXPECT_EQ(
+      0, node->Write(HandleAttr(), contents, strlen(contents), &bytes_written));
   EXPECT_EQ(strlen(contents), bytes_written);
 
   // Create again.
@@ -369,9 +363,9 @@ TEST_F(Html5FsTest, GetStat) {
   const char* contents = "contents";
 
   // Create fake file.
-  FakeHtml5FsNode* fake_node;
-  EXPECT_TRUE(ppapi_html5_.filesystem_template()->AddFile(
-      "/file", contents, &fake_node));
+  FakeNode* fake_node;
+  EXPECT_TRUE(ppapi_html5_.filesystem_template()->AddFile("/file", contents,
+                                                          &fake_node));
   fake_node->set_creation_time(creation_time);
   fake_node->set_last_access_time(access_time);
   fake_node->set_last_modified_time(modified_time);

@@ -13,7 +13,8 @@
 #include "gtest/gtest.h"
 
 #include "fake_ppapi/fake_core_interface.h"
-#include "fake_ppapi/fake_pepper_interface_html5_fs.h"
+#include "fake_ppapi/fake_filesystem.h"
+#include "fake_ppapi/fake_node.h"
 #include "fake_ppapi/fake_util.h"
 #include "fake_ppapi/fake_var_interface.h"
 
@@ -75,20 +76,20 @@ int32_t FakeFileRefInterface::MakeDirectory(PP_Resource directory_ref,
   if (make_parents == PP_TRUE)
     return PP_ERROR_FAILED;
 
-  FakeHtml5FsFilesystem* filesystem = directory_ref_resource->filesystem;
-  FakeHtml5FsFilesystem::Path path = directory_ref_resource->path;
+  FakeFilesystem* filesystem = directory_ref_resource->filesystem;
+  FakeFilesystem::Path path = directory_ref_resource->path;
 
   // Pepper returns PP_ERROR_NOACCESS when trying to create the root directory,
   // not PP_ERROR_FILEEXISTS, as you might expect.
   if (path == "/")
     return RunCompletionCallback(&callback, PP_ERROR_NOACCESS);
 
-  FakeHtml5FsNode* node = filesystem->GetNode(path);
+  FakeNode* node = filesystem->GetNode(path);
   if (node != NULL)
     return RunCompletionCallback(&callback, PP_ERROR_FILEEXISTS);
 
-  FakeHtml5FsFilesystem::Path parent_path = filesystem->GetParentPath(path);
-  FakeHtml5FsNode* parent_node = filesystem->GetNode(parent_path);
+  FakeFilesystem::Path parent_path = filesystem->GetParentPath(path);
+  FakeNode* parent_node = filesystem->GetNode(parent_path);
   if (parent_node == NULL)
     return RunCompletionCallback(&callback, PP_ERROR_FILENOTFOUND);
 
@@ -107,9 +108,9 @@ int32_t FakeFileRefInterface::Delete(PP_Resource file_ref,
   if (file_ref_resource == NULL)
     return PP_ERROR_BADRESOURCE;
 
-  FakeHtml5FsFilesystem* filesystem = file_ref_resource->filesystem;
-  FakeHtml5FsFilesystem::Path path = file_ref_resource->path;
-  FakeHtml5FsNode* node = filesystem->GetNode(path);
+  FakeFilesystem* filesystem = file_ref_resource->filesystem;
+  FakeFilesystem::Path path = file_ref_resource->path;
+  FakeNode* node = filesystem->GetNode(path);
   if (node == NULL)
     return RunCompletionCallback(&callback, PP_ERROR_FILENOTFOUND);
 
@@ -125,9 +126,9 @@ int32_t FakeFileRefInterface::Query(PP_Resource file_ref,
   if (file_ref_resource == NULL)
     return PP_ERROR_BADRESOURCE;
 
-  FakeHtml5FsFilesystem* filesystem = file_ref_resource->filesystem;
-  FakeHtml5FsFilesystem::Path path = file_ref_resource->path;
-  FakeHtml5FsNode* node = filesystem->GetNode(path);
+  FakeFilesystem* filesystem = file_ref_resource->filesystem;
+  FakeFilesystem::Path path = file_ref_resource->path;
+  FakeNode* node = filesystem->GetNode(path);
   if (node == NULL)
     return RunCompletionCallback(&callback, PP_ERROR_FILENOTFOUND);
 
@@ -145,16 +146,16 @@ int32_t FakeFileRefInterface::ReadDirectoryEntries(
   if (directory_ref_resource == NULL)
     return PP_ERROR_BADRESOURCE;
 
-  FakeHtml5FsFilesystem* filesystem = directory_ref_resource->filesystem;
-  FakeHtml5FsFilesystem::Path path = directory_ref_resource->path;
-  FakeHtml5FsNode* node = filesystem->GetNode(path);
+  FakeFilesystem* filesystem = directory_ref_resource->filesystem;
+  FakeFilesystem::Path path = directory_ref_resource->path;
+  FakeNode* node = filesystem->GetNode(path);
   if (node == NULL)
     return RunCompletionCallback(&callback, PP_ERROR_FILENOTFOUND);
 
   if (!node->IsDirectory())
     return RunCompletionCallback(&callback, PP_ERROR_FAILED);
 
-  FakeHtml5FsFilesystem::DirectoryEntries fake_dir_entries;
+  FakeFilesystem::DirectoryEntries fake_dir_entries;
   filesystem->GetDirectoryEntries(path, &fake_dir_entries);
 
   uint32_t element_count = fake_dir_entries.size();
@@ -167,8 +168,7 @@ int32_t FakeFileRefInterface::ReadDirectoryEntries(
 
   PP_DirectoryEntry* dir_entries = static_cast<PP_DirectoryEntry*>(data_buffer);
   for (uint32_t i = 0; i < element_count; ++i) {
-    const FakeHtml5FsFilesystem::DirectoryEntry& fake_dir_entry =
-        fake_dir_entries[i];
+    const FakeFilesystem::DirectoryEntry& fake_dir_entry = fake_dir_entries[i];
 
     FakeFileRefResource* file_ref_resource = new FakeFileRefResource;
     file_ref_resource->filesystem = directory_ref_resource->filesystem;
@@ -198,10 +198,10 @@ int32_t FakeFileRefInterface::Rename(PP_Resource file_ref,
   if (new_file_ref_resource == NULL)
     return PP_ERROR_BADRESOURCE;
 
-  FakeHtml5FsFilesystem* filesystem = file_ref_resource->filesystem;
-  FakeHtml5FsFilesystem::Path path = file_ref_resource->path;
-  FakeHtml5FsFilesystem::Path newpath = new_file_ref_resource->path;
-  FakeHtml5FsNode* node = filesystem->GetNode(path);
+  FakeFilesystem* filesystem = file_ref_resource->filesystem;
+  FakeFilesystem::Path path = file_ref_resource->path;
+  FakeFilesystem::Path newpath = new_file_ref_resource->path;
+  FakeNode* node = filesystem->GetNode(path);
   if (node == NULL)
     return RunCompletionCallback(&callback, PP_ERROR_FILENOTFOUND);
   // FakeFileRefResource does not support directory rename.

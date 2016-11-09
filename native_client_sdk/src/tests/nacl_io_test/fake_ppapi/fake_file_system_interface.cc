@@ -8,7 +8,7 @@
 #include <ppapi/c/pp_errors.h>
 
 #include "fake_ppapi/fake_core_interface.h"
-#include "fake_ppapi/fake_pepper_interface_html5_fs.h"
+#include "fake_ppapi/fake_filesystem.h"
 #include "fake_ppapi/fake_util.h"
 
 FakeFileSystemInterface::FakeFileSystemInterface(
@@ -31,7 +31,7 @@ PP_Resource FakeFileSystemInterface::Create(PP_Instance instance,
     return PP_ERROR_BADRESOURCE;
 
   FakeFileSystemResource* file_system_resource = new FakeFileSystemResource;
-  file_system_resource->filesystem = new FakeHtml5FsFilesystem(
+  file_system_resource->filesystem = new FakeFilesystem(
       *instance_resource->filesystem_template, filesystem_type);
 
   return CREATE_RESOURCE(core_interface_->resource_manager(),

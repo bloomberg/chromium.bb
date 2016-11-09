@@ -5,14 +5,11 @@
 #ifndef LIBRARIES_NACL_IO_TEST_FAKE_PEPPER_INTERFACE_HTML5_FS_H_
 #define LIBRARIES_NACL_IO_TEST_FAKE_PEPPER_INTERFACE_HTML5_FS_H_
 
-#include <map>
-#include <string>
-#include <vector>
-
 #include "fake_ppapi/fake_core_interface.h"
 #include "fake_ppapi/fake_file_io_interface.h"
 #include "fake_ppapi/fake_file_ref_interface.h"
 #include "fake_ppapi/fake_file_system_interface.h"
+#include "fake_ppapi/fake_filesystem.h"
 #include "fake_ppapi/fake_var_interface.h"
 #include "fake_ppapi/fake_var_manager.h"
 #include "nacl_io/pepper_interface_dummy.h"
@@ -31,77 +28,10 @@
 //
 // NOTE: This pepper interface creates an instance resource that can only be
 // used with FakePepperInterfaceHtml5Fs, not other fake pepper implementations.
-
-class FakeHtml5FsNode {
- public:
-  FakeHtml5FsNode(const PP_FileInfo& info);
-  FakeHtml5FsNode(const PP_FileInfo& info,
-                  const std::vector<uint8_t>& contents);
-  FakeHtml5FsNode(const PP_FileInfo& info, const std::string& contents);
-
-  int32_t Read(int64_t offset, char* buffer, int32_t bytes_to_read);
-  int32_t Write(int64_t offset, const char* buffer, int32_t bytes_to_write);
-  int32_t Append(const char* buffer, int32_t bytes_to_write);
-  int32_t SetLength(int64_t length);
-  void GetInfo(PP_FileInfo* out_info);
-  bool IsRegular() const;
-  bool IsDirectory() const;
-  PP_FileType file_type() const { return info_.type; }
-
-  // These times are not modified by the fake implementation.
-  void set_creation_time(PP_Time time) { info_.creation_time = time; }
-  void set_last_access_time(PP_Time time) { info_.last_access_time = time; }
-  void set_last_modified_time(PP_Time time) { info_.last_modified_time = time; }
-
-  const std::vector<uint8_t>& contents() const { return contents_; }
-
- private:
-  PP_FileInfo info_;
-  std::vector<uint8_t> contents_;
-};
-
-class FakeHtml5FsFilesystem {
- public:
-  typedef std::string Path;
-
-  struct DirectoryEntry {
-    Path path;
-    const FakeHtml5FsNode* node;
-  };
-  typedef std::vector<DirectoryEntry> DirectoryEntries;
-
-  FakeHtml5FsFilesystem();
-  explicit FakeHtml5FsFilesystem(PP_FileSystemType type);
-  FakeHtml5FsFilesystem(const FakeHtml5FsFilesystem& filesystem,
-                        PP_FileSystemType type);
-
-  void Clear();
-  bool AddEmptyFile(const Path& path, FakeHtml5FsNode** out_node);
-  bool AddFile(const Path& path,
-               const std::string& contents,
-               FakeHtml5FsNode** out_node);
-  bool AddFile(const Path& path,
-               const std::vector<uint8_t>& contents,
-               FakeHtml5FsNode** out_node);
-  bool AddDirectory(const Path& path, FakeHtml5FsNode** out_node);
-  bool RemoveNode(const Path& path);
-
-  FakeHtml5FsNode* GetNode(const Path& path);
-  bool GetDirectoryEntries(const Path& path,
-                           DirectoryEntries* out_dir_entries) const;
-  PP_FileSystemType filesystem_type() const { return filesystem_type_; }
-  static Path GetParentPath(const Path& path);
-
- private:
-  typedef std::map<Path, FakeHtml5FsNode> NodeMap;
-  NodeMap node_map_;
-  PP_FileSystemType filesystem_type_;
-};
-
 class FakePepperInterfaceHtml5Fs : public nacl_io::PepperInterfaceDummy {
  public:
   FakePepperInterfaceHtml5Fs();
-  explicit FakePepperInterfaceHtml5Fs(const FakeHtml5FsFilesystem& filesystem);
+  explicit FakePepperInterfaceHtml5Fs(const FakeFilesystem& filesystem);
   ~FakePepperInterfaceHtml5Fs();
 
   virtual PP_Instance GetInstance() { return instance_; }
@@ -111,7 +41,7 @@ class FakePepperInterfaceHtml5Fs : public nacl_io::PepperInterfaceDummy {
   virtual nacl_io::FileIoInterface* GetFileIoInterface();
   virtual nacl_io::VarInterface* GetVarInterface();
 
-  FakeHtml5FsFilesystem* filesystem_template() { return &filesystem_template_; }
+  FakeFilesystem* filesystem_template() { return &filesystem_template_; }
 
  private:
   void Init();
@@ -120,7 +50,7 @@ class FakePepperInterfaceHtml5Fs : public nacl_io::PepperInterfaceDummy {
   FakeCoreInterface core_interface_;
   FakeVarInterface var_interface_;
   FakeVarManager var_manager_;
-  FakeHtml5FsFilesystem filesystem_template_;
+  FakeFilesystem filesystem_template_;
   FakeFileSystemInterface file_system_interface_;
   FakeFileRefInterface file_ref_interface_;
   FakeFileIoInterface file_io_interface_;
