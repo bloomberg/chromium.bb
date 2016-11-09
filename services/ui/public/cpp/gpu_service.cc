@@ -24,7 +24,7 @@ GpuService::GpuService(service_manager::Connector* connector,
       connector_(connector),
       shutdown_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                       base::WaitableEvent::InitialState::NOT_SIGNALED),
-      gpu_memory_buffer_manager_(new MojoGpuMemoryBufferManager) {
+      gpu_memory_buffer_manager_(new MojoGpuMemoryBufferManager(connector_)) {
   DCHECK(main_task_runner_);
   DCHECK(connector_);
   if (!io_task_runner_) {

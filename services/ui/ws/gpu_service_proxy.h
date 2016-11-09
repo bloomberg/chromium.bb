@@ -56,7 +56,6 @@ class GpuServiceProxy : public mojom::GpuService,
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
-      uint64_t surface_id,
       const mojom::GpuService::CreateGpuMemoryBufferCallback& callback)
       override;
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,

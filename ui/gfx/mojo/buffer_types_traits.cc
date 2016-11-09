@@ -63,17 +63,16 @@ bool StructTraits<
 mojo::ScopedHandle StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
                                 gfx::GpuMemoryBufferHandle>::
     shared_memory_handle(const gfx::GpuMemoryBufferHandle& handle) {
+  if (handle.is_null())
+    return mojo::ScopedHandle();
   base::PlatformFile platform_file = base::kInvalidPlatformFile;
 #if defined(OS_WIN)
   platform_file = handle.handle.GetHandle();
 #elif defined(OS_MACOSX) || defined(OS_IOS)
   NOTIMPLEMENTED();
 #else
-  DCHECK(handle.handle.auto_close || handle.handle.fd == -1);
   platform_file = handle.handle.fd;
 #endif
-  if (platform_file == base::kInvalidPlatformFile)
-    return mojo::ScopedHandle();
   return mojo::WrapPlatformFile(platform_file);
 }
 

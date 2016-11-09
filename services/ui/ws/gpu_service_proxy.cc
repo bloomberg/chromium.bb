@@ -9,9 +9,13 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
+#include "gpu/ipc/client/gpu_memory_buffer_impl_shared_memory.h"
+#include "mojo/public/cpp/system/buffer.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/ui/ws/gpu_service_proxy_delegate.h"
 #include "services/ui/ws/mus_gpu_memory_buffer_manager.h"
+#include "ui/gfx/buffer_format_util.h"
 
 namespace ui {
 namespace ws {
@@ -98,14 +102,54 @@ void GpuServiceProxy::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
-    uint64_t surface_id,
     const mojom::GpuService::CreateGpuMemoryBufferCallback& callback) {
-  NOTIMPLEMENTED();
+  // TODO(sad): Check to see if native gpu memory buffer can be used first.
+  if (!gpu::GpuMemoryBufferImplSharedMemory::IsUsageSupported(usage) ||
+      !gpu::GpuMemoryBufferImplSharedMemory::IsSizeValidForFormat(size,
+                                                                  format)) {
+    callback.Run(gfx::GpuMemoryBufferHandle());
+    return;
+  }
+
+  size_t bytes = 0;
+  if (!gfx::BufferSizeForBufferFormatChecked(size, format, &bytes)) {
+    callback.Run(gfx::GpuMemoryBufferHandle());
+    return;
+  }
+
+  mojo::ScopedSharedBufferHandle mojo_handle =
+      mojo::SharedBufferHandle::Create(bytes);
+  if (!mojo_handle.is_valid()) {
+    callback.Run(gfx::GpuMemoryBufferHandle());
+    return;
+  }
+
+  base::SharedMemoryHandle shm_handle;
+  size_t shm_size;
+  bool readonly;
+  MojoResult result = mojo::UnwrapSharedMemoryHandle(
+      std::move(mojo_handle), &shm_handle, &shm_size, &readonly);
+  if (result != MOJO_RESULT_OK) {
+    callback.Run(gfx::GpuMemoryBufferHandle());
+    return;
+  }
+  DCHECK_EQ(shm_size, bytes);
+  DCHECK(!readonly);
+  const int stride = base::checked_cast<int>(
+      gfx::RowSizeForBufferFormat(size.width(), format, 0));
+
+  gfx::GpuMemoryBufferHandle gmb_handle;
+  gmb_handle.type = gfx::SHARED_MEMORY_BUFFER;
+  gmb_handle.id = id;
+  gmb_handle.handle = shm_handle;
+  gmb_handle.offset = 0;
+  gmb_handle.stride = stride;
+  callback.Run(gmb_handle);
 }
 
 void GpuServiceProxy::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                                              const gpu::SyncToken& sync_token) {
-  NOTIMPLEMENTED();
+  //  NOTIMPLEMENTED();
 }
 
 bool GpuServiceProxy::IsMainThread() {
