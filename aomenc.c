@@ -470,6 +470,11 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &max_inter_rate_pct,
                                        &gf_cbr_boost_pct,
                                        &lossless,
+#if CONFIG_AOM_QM
+                                       &enable_qm,
+                                       &qm_min,
+                                       &qm_max,
+#endif
                                        &frame_parallel_decoding,
                                        &aq_mode,
                                        &frame_periodic_boost,
@@ -501,6 +506,11 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_MAX_INTER_BITRATE_PCT,
                                         AV1E_SET_GF_CBR_BOOST_PCT,
                                         AV1E_SET_LOSSLESS,
+#if CONFIG_AOM_QM
+                                        AV1E_SET_ENABLE_QM,
+                                        AV1E_SET_QM_MIN,
+                                        AV1E_SET_QM_MAX,
+#endif
                                         AV1E_SET_FRAME_PARALLEL_DECODING,
                                         AV1E_SET_AQ_MODE,
                                         AV1E_SET_FRAME_PERIODIC_BOOST,
