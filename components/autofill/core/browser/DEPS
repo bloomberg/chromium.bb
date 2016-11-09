@@ -2,6 +2,7 @@ include_rules = [
   "+components/data_use_measurement/core",
   "+components/infobars/core",
   "+components/keyed_service/core",
+  "+components/security_state",
   "+components/signin/core/browser",
   "+components/signin/core/common",
   "+components/sync",

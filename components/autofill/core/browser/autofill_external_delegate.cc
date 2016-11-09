@@ -28,6 +28,16 @@
 
 namespace autofill {
 
+namespace {
+
+// Returns true if the suggestion entry is an Autofill warning message.
+// Warning message should display on top of suggestion list.
+bool IsAutofillWarningEntry(int frontend_id) {
+  return frontend_id == POPUP_ITEM_ID_WARNING_MESSAGE;
+}
+
+} // anonymous namespace
+
 AutofillExternalDelegate::AutofillExternalDelegate(AutofillManager* manager,
                                                    AutofillDriver* driver)
     : manager_(manager),
@@ -70,8 +80,8 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   // The suggestions and warnings are "above the fold" and are separated from
   // other menu items with a separator.
   std::vector<Suggestion> suggestions(input_suggestions);
-  // Add or hide warnings as appropriate.
-  ApplyAutofillWarnings(&suggestions);
+  // Hide warnings as appropriate.
+  PossiblyRemoveAutofillWarnings(&suggestions);
 
 #if !defined(OS_ANDROID)
   // If there are above the fold suggestions at this point, add a separator to
@@ -299,12 +309,13 @@ void AutofillExternalDelegate::FillAutofillFormData(int unique_id,
                               unique_id);
 }
 
-void AutofillExternalDelegate::ApplyAutofillWarnings(
+void AutofillExternalDelegate::PossiblyRemoveAutofillWarnings(
     std::vector<Suggestion>* suggestions) {
-  if (suggestions->size() > 1 &&
-      (*suggestions)[0].frontend_id == POPUP_ITEM_ID_WARNING_MESSAGE) {
-    // If we received a warning instead of suggestions from Autofill but regular
-    // suggestions from autocomplete, don't show the Autofill warning.
+  while (suggestions->size() > 1 &&
+         IsAutofillWarningEntry(suggestions->front().frontend_id) &&
+         !IsAutofillWarningEntry(suggestions->back().frontend_id)) {
+    // If we received warnings instead of suggestions from Autofill but regular
+    // suggestions from autocomplete, don't show the Autofill warnings.
     suggestions->erase(suggestions->begin());
   }
 }

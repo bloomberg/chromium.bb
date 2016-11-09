@@ -565,10 +565,23 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
       // provide them for secure pages with passive mixed content (see impl. of
       // IsContextSecure).
       if (is_filling_credit_card && !is_context_secure) {
+        // Replace the suggestion content with a warning message explaining why
+        // Autofill is disabled for a website.
         Suggestion warning_suggestion(l10n_util::GetStringUTF16(
             IDS_AUTOFILL_WARNING_INSECURE_CONNECTION));
         warning_suggestion.frontend_id = POPUP_ITEM_ID_WARNING_MESSAGE;
         suggestions.assign(1, warning_suggestion);
+
+        // On top of the explanation message, first show a "Payment not secure"
+        // message.
+        if (IsCreditCardAutofillHttpWarningEnabled()) {
+          Suggestion cc_field_http_warning_suggestion(l10n_util::GetStringUTF16(
+              IDS_AUTOFILL_CREDIT_CARD_HTTP_WARNING_MESSAGE));
+          cc_field_http_warning_suggestion.frontend_id =
+              POPUP_ITEM_ID_WARNING_MESSAGE;
+          suggestions.insert(suggestions.begin(),
+                             cc_field_http_warning_suggestion);
+        }
       } else {
         bool section_is_autofilled =
             SectionIsAutofilled(*form_structure, form,

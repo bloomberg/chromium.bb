@@ -476,6 +476,32 @@ TEST_F(AutofillExternalDelegateUnitTest, AutofillWarnings) {
   external_delegate_->OnSuggestionsReturned(kQueryId, autofill_item);
 }
 
+// Test that Autofill warnings are removed if there are also autocomplete
+// entries in the vector.
+TEST_F(AutofillExternalDelegateUnitTest,
+       AutofillWarningsNotShown_WithSuggestions) {
+  IssueOnQuery(kQueryId);
+
+  // The enums must be cast to ints to prevent compile errors on linux_rel.
+  EXPECT_CALL(
+      autofill_client_,
+      ShowAutofillPopup(
+          _, _, SuggestionVectorIdsAre(testing::ElementsAre(
+                    static_cast<int>(POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY))),
+          _));
+
+  // This should call ShowAutofillPopup.
+  std::vector<Suggestion> suggestions;
+  suggestions.push_back(Suggestion());
+  suggestions[0].frontend_id = POPUP_ITEM_ID_WARNING_MESSAGE;
+  suggestions.push_back(Suggestion());
+  suggestions[1].frontend_id = POPUP_ITEM_ID_WARNING_MESSAGE;
+  suggestions.push_back(Suggestion());
+  suggestions[2].value = ASCIIToUTF16("Rick");
+  suggestions[2].frontend_id = POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY;
+  external_delegate_->OnSuggestionsReturned(kQueryId, suggestions);
+}
+
 // Test that the Autofill delegate doesn't try and fill a form with a
 // negative unique id.
 TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateInvalidUniqueId) {

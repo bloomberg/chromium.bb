@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -16,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_driver.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -24,6 +26,7 @@
 #include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/security_state/switches.h"
 #include "components/strings/grit/components_strings.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -204,6 +207,25 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
         IDS_AUTOFILL_PASSWORD_FIELD_SUGGESTIONS_TITLE));
     password_field_suggestions.frontend_id = autofill::POPUP_ITEM_ID_TITLE;
     suggestions.insert(suggestions.begin(), password_field_suggestions);
+
+    GURL origin = (fill_data_it->second).origin;
+
+    bool is_context_secure = autofill_client_->IsContextSecure(origin) &&
+                             (!origin.is_valid() || !origin.SchemeIs("http"));
+    std::string choice =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            security_state::switches::kMarkHttpAs);
+    if (!is_context_secure &&
+        choice == security_state::switches::
+                      kMarkHttpWithPasswordsOrCcWithChipAndFormWarning) {
+      autofill::Suggestion password_field_http_warning_suggestion(
+          l10n_util::GetStringUTF16(
+              IDS_AUTOFILL_PASSWORD_HTTP_WARNING_MESSAGE));
+      password_field_http_warning_suggestion.frontend_id =
+          autofill::POPUP_ITEM_ID_WARNING_MESSAGE;
+      suggestions.insert(suggestions.begin(),
+                         password_field_http_warning_suggestion);
+    }
   }
   autofill_client_->ShowAutofillPopup(bounds,
                                       text_direction,
