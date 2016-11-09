@@ -1346,7 +1346,7 @@ void ComputedStyle::applyTransform(
   }
 
   if (applyMotionPath == IncludeMotionPath)
-    applyMotionPathTransform(originX, originY, result);
+    applyMotionPathTransform(originX, originY, boundingBox, result);
 
   for (const auto& operation : transform().operations())
     operation->apply(result, boxSize);
@@ -1359,11 +1359,11 @@ void ComputedStyle::applyTransform(
 void ComputedStyle::applyMotionPathTransform(
     float originX,
     float originY,
+    const FloatRect& boundingBox,
     TransformationMatrix& transform) const {
   const StyleMotionData& motionData =
       m_rareNonInheritedData->m_transform->m_motion;
-  // TODO(ericwilligers): crbug.com/638055 Apply offset-position and
-  // offset-anchor.
+  // TODO(ericwilligers): crbug.com/638055 Apply offset-position.
   if (!motionData.m_path) {
     return;
   }
@@ -1386,8 +1386,25 @@ void ComputedStyle::applyMotionPathTransform(
   if (motionData.m_rotation.type == OffsetRotationFixed)
     angle = 0;
 
-  transform.translate(point.x() - originX, point.y() - originY);
+  float originShiftX = 0;
+  float originShiftY = 0;
+  if (RuntimeEnabledFeatures::cssOffsetPositionAnchorEnabled()) {
+    // TODO(ericwilligers): crbug.com/638055 Support offset-anchor: auto.
+    const LengthPoint& anchor = offsetAnchor();
+    originShiftX = floatValueForLength(anchor.x(), boundingBox.width()) -
+                   floatValueForLength(transformOriginX(), boundingBox.width());
+    originShiftY =
+        floatValueForLength(anchor.y(), boundingBox.height()) -
+        floatValueForLength(transformOriginY(), boundingBox.height());
+  }
+
+  transform.translate(point.x() - originX + originShiftX,
+                      point.y() - originY + originShiftY);
   transform.rotate(angle + motionData.m_rotation.angle);
+
+  if (RuntimeEnabledFeatures::cssOffsetPositionAnchorEnabled()) {
+    transform.translate(-originShiftX, -originShiftY);
+  }
 }
 
 void ComputedStyle::setTextShadow(PassRefPtr<ShadowList> s) {

@@ -4006,6 +4006,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   void addAppliedTextDecoration(const AppliedTextDecoration&);
   void applyMotionPathTransform(float originX,
                                 float originY,
+                                const FloatRect& boundingBox,
                                 TransformationMatrix&) const;
 
   bool scrollAnchorDisablingPropertyChanged(const ComputedStyle& other,
