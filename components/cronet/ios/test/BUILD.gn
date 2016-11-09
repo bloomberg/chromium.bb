@@ -8,11 +8,11 @@ import("//testing/test.gni")
 test("cronet_test") {
   testonly = true
   sources = [
-    "cronet_bidirectional_stream_test.mm",
     "cronet_http_test.mm",
     "cronet_test_runner.mm",
-    "quic_test_server.cc",
-    "quic_test_server.h",
+    "get_stream_engine.mm",
+    "start_cronet.h",
+    "start_cronet.mm",
     "test_server.cc",
     "test_server.h",
   ]
@@ -21,6 +21,8 @@ test("cronet_test") {
     "//base",
     "//base:i18n",
     "//components/cronet/ios:cronet_framework+link",
+    "//components/grpc_support:bidirectional_stream_unittest",
+    "//components/grpc_support/test:quic_test_server",
     "//net",
     "//net:simple_quic_tools",
     "//net:test_support",
