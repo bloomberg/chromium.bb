@@ -67,16 +67,23 @@ function checkSession() {
   } else {
     startSessionPromise.then(function(session) {
       if(!session) {
-        sendResult(false, 'Failed to start session');
+        sendResult(false, 'Failed to start session: connection is null');
       } else {
         // set the new session
         startedConnection = session;
-        sendResult(true, '');
+        if (startedConnection.state != "connecting") {
+          sendResult(false,
+            'Expect connection state to be "connecting", actual "' +
+            startedConnection.state + '"');
+        }
+        startedConnection.onconnect = () => {
+          sendResult(true, '');
+        };
       }
-    }).catch(function() {
+    }).catch(function(e) {
       // terminate old session if exists
       startedConnection && startedConnection.terminate();
-      sendResult(false, 'Failed to start session');
+      sendResult(false, 'Failed to start session: encountered exception ' + e);
     })
   }
 }

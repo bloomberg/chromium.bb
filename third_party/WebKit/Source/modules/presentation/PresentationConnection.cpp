@@ -151,8 +151,7 @@ PresentationConnection::PresentationConnection(LocalFrame* frame,
     : DOMWindowProperty(frame),
       m_id(id),
       m_url(url),
-      // TODO(zhaobin): change initial state to Connecting. (crbug/659423)
-      m_state(WebPresentationConnectionState::Connected),
+      m_state(WebPresentationConnectionState::Connecting),
       m_binaryType(BinaryTypeBlob) {}
 
 PresentationConnection::~PresentationConnection() {

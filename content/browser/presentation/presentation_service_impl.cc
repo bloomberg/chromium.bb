@@ -284,13 +284,16 @@ int PresentationServiceImpl::RegisterJoinSessionCallback(
   return request_id;
 }
 
-void PresentationServiceImpl::ListenForConnectionStateChange(
+void PresentationServiceImpl::ListenForConnectionStateChangeAndChangeState(
     const PresentationSessionInfo& connection) {
   if (delegate_) {
     delegate_->ListenForConnectionStateChange(
         render_process_id_, render_frame_id_, connection,
         base::Bind(&PresentationServiceImpl::OnConnectionStateChanged,
                    weak_factory_.GetWeakPtr(), connection));
+    OnConnectionStateChanged(connection,
+                             PresentationConnectionStateChangeInfo(
+                                 PRESENTATION_CONNECTION_STATE_CONNECTED));
   }
 }
 
@@ -304,7 +307,7 @@ void PresentationServiceImpl::OnStartSessionSucceeded(
   pending_start_session_cb_->Run(
       blink::mojom::PresentationSessionInfo::From(session_info),
       blink::mojom::PresentationErrorPtr());
-  ListenForConnectionStateChange(session_info);
+  ListenForConnectionStateChangeAndChangeState(session_info);
   pending_start_session_cb_.reset();
   start_session_request_id_ = kInvalidRequestSessionId;
 }
@@ -329,7 +332,7 @@ void PresentationServiceImpl::OnJoinSessionSucceeded(
           request_session_id,
           blink::mojom::PresentationSessionInfo::From(session_info),
           blink::mojom::PresentationErrorPtr())) {
-    ListenForConnectionStateChange(session_info);
+    ListenForConnectionStateChangeAndChangeState(session_info);
   }
 }
 
@@ -421,6 +424,9 @@ void PresentationServiceImpl::Terminate(const GURL& presentation_url,
 void PresentationServiceImpl::OnConnectionStateChanged(
     const PresentationSessionInfo& connection,
     const PresentationConnectionStateChangeInfo& info) {
+  DVLOG(2) << "PresentationServiceImpl::OnConnectionStateChanged "
+           << "[presentation_id]: " << connection.presentation_id
+           << " [state]: " << info.state;
   DCHECK(client_.get());
   if (info.state == PRESENTATION_CONNECTION_STATE_CLOSED) {
     client_->OnConnectionClosed(
@@ -556,7 +562,7 @@ void PresentationServiceImpl::OnDefaultPresentationStarted(
   DCHECK(client_.get());
   client_->OnDefaultSessionStarted(
       blink::mojom::PresentationSessionInfo::From(connection));
-  ListenForConnectionStateChange(connection);
+  ListenForConnectionStateChangeAndChangeState(connection);
 }
 
 PresentationServiceImpl::ScreenAvailabilityListenerImpl::
