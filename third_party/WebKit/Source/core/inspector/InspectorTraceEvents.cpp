@@ -510,6 +510,38 @@ std::unique_ptr<TracedValue> InspectorSendRequestEvent::data(
   return value;
 }
 
+namespace {
+void recordTiming(const ResourceLoadTiming& timing, TracedValue* value) {
+  value->setDouble("requestTime", timing.requestTime());
+  value->setDouble("proxyStart",
+                   timing.calculateMillisecondDelta(timing.proxyStart()));
+  value->setDouble("proxyEnd",
+                   timing.calculateMillisecondDelta(timing.proxyEnd()));
+  value->setDouble("dnsStart",
+                   timing.calculateMillisecondDelta(timing.dnsStart()));
+  value->setDouble("dnsEnd", timing.calculateMillisecondDelta(timing.dnsEnd()));
+  value->setDouble("connectStart",
+                   timing.calculateMillisecondDelta(timing.connectStart()));
+  value->setDouble("connectEnd",
+                   timing.calculateMillisecondDelta(timing.connectEnd()));
+  value->setDouble("sslStart",
+                   timing.calculateMillisecondDelta(timing.sslStart()));
+  value->setDouble("sslEnd", timing.calculateMillisecondDelta(timing.sslEnd()));
+  value->setDouble("workerStart",
+                   timing.calculateMillisecondDelta(timing.workerStart()));
+  value->setDouble("workerReady",
+                   timing.calculateMillisecondDelta(timing.workerReady()));
+  value->setDouble("sendStart",
+                   timing.calculateMillisecondDelta(timing.sendStart()));
+  value->setDouble("sendEnd",
+                   timing.calculateMillisecondDelta(timing.sendEnd()));
+  value->setDouble("receiveHeadersEnd", timing.calculateMillisecondDelta(
+                                            timing.receiveHeadersEnd()));
+  value->setDouble("pushStart", timing.pushStart());
+  value->setDouble("pushEnd", timing.pushEnd());
+}
+}  // namespace
+
 std::unique_ptr<TracedValue> InspectorReceiveResponseEvent::data(
     unsigned long identifier,
     LocalFrame* frame,
@@ -521,6 +553,11 @@ std::unique_ptr<TracedValue> InspectorReceiveResponseEvent::data(
   value->setString("frame", toHexString(frame));
   value->setInteger("statusCode", response.httpStatusCode());
   value->setString("mimeType", response.mimeType().getString().isolatedCopy());
+  if (response.resourceLoadTiming()) {
+    value->beginDictionary("timing");
+    recordTiming(*response.resourceLoadTiming(), value.get());
+    value->endDictionary();
+  }
   return value;
 }
 
@@ -547,7 +584,7 @@ std::unique_ptr<TracedValue> InspectorResourceFinishEvent::data(
   value->setString("requestId", requestId);
   value->setBoolean("didFail", didFail);
   if (finishTime)
-    value->setDouble("networkTime", finishTime);
+    value->setDouble("finishTime", finishTime);
   return value;
 }
 

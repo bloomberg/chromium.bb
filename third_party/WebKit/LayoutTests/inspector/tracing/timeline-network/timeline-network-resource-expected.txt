@@ -39,7 +39,7 @@ ResourceFinish Properties:
 {
     data : {
         didFail : false
-        networkTime : <number>
+        finishTime : <number>
         requestId : <string>
     }
     endTime : <number>

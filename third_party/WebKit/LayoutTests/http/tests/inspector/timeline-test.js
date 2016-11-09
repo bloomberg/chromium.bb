@@ -38,7 +38,7 @@ InspectorTest.timelinePropertyFormatters = {
     backendNodeId: "formatAsTypeName",
     nodeId: "formatAsTypeName",
     rootNode: "formatAsTypeName",
-    networkTime: "formatAsTypeName",
+    finishTime: "formatAsTypeName",
     thread: "formatAsTypeName",
     allottedMilliseconds: "formatAsTypeName",
     timedOut: "formatAsTypeName"
