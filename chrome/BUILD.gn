@@ -458,6 +458,10 @@ if (is_win) {
   chrome_helper_name = chrome_product_full_name + " Helper"
   chrome_framework_name = chrome_product_full_name + " Framework"
 
+  if (enable_xpc_notifications) {
+    chrome_framework_version = "A"
+  }
+
   group("chrome") {
     deps = [
       ":chrome_app",
@@ -1004,8 +1008,16 @@ if (is_win) {
   mac_framework_bundle("chrome_framework") {
     output_name = chrome_framework_name
 
-    if (enable_xpc_notifications) {
-      framework_version = "A"
+    if (defined(chrome_framework_version)) {
+      framework_version = chrome_framework_version
+      framework_contents = [
+        "Helpers",
+        "Resources",
+      ]
+
+      if (enable_xpc_notifications) {
+        framework_contents += [ "XPCServices" ]
+      }
     }
 
     configs += [ "//build/config/compiler:wexit_time_destructors" ]
@@ -1078,11 +1090,17 @@ if (is_win) {
           hermetic_xcode_path,
         ]
       }
+
+      _framework_path = "$root_out_dir/$chrome_framework_name.framework/"
+      if (defined(chrome_framework_version)) {
+        _framework_path +=
+            "Versions/$chrome_framework_version/$chrome_framework_name"
+      } else {
+        _framework_path += "$chrome_framework_name"
+      }
       args += [
         "_ChromeMain",
-        rebase_path(
-            "$root_out_dir/$chrome_framework_name.framework/$chrome_framework_name",
-            root_out_dir),
+        rebase_path(_framework_path, root_out_dir),
       ]
       outputs = [
         stamp_file,
