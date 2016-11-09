@@ -45,10 +45,9 @@ class ScopedURLFetcherFactory : public base::NonThreadSafe {
 // the callback method when appropriate. In this way it's easy to mock a
 // URLFetcher.
 // Typical usage:
-//   // TestURLFetcher requires a MessageLoop.
-//   MessageLoop message_loop;
-//   // And an IO thread to release URLRequestContextGetter in URLFetcher::Core.
-//   BrowserThreadImpl io_thread(BrowserThread::IO, &message_loop);
+//   // TestURLFetcher requires a MessageLoop and an IO thread to release
+//   // URLRequestContextGetter in URLFetcher::Core.
+//   TestBrowserThreadBundle thread_bundle_;
 //   // Create factory (it automatically sets itself as URLFetcher's factory).
 //   TestURLFetcherFactory factory;
 //   // Do something that triggers creation of a URLFetcher.

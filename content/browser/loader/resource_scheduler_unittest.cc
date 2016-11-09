@@ -8,19 +8,17 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/timer/mock_timer.h"
 #include "base/timer/timer.h"
-#include "content/browser/browser_thread_impl.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/test_render_view_host_factory.h"
 #include "content/test/test_web_contents.h"
 #include "net/base/host_port_pair.h"
@@ -128,9 +126,7 @@ class FakeResourceContext : public ResourceContext {
 
 class ResourceSchedulerTest : public testing::Test {
  protected:
-  ResourceSchedulerTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        io_thread_(BrowserThread::IO, &message_loop_) {
+  ResourceSchedulerTest() {
     InitializeScheduler();
     context_.set_http_server_properties(&http_server_properties_);
   }
@@ -246,10 +242,7 @@ class ResourceSchedulerTest : public testing::Test {
     return scheduler_.get();
   }
 
-  base::MessageLoopForIO message_loop_;
-  BrowserThreadImpl ui_thread_;
-  BrowserThreadImpl io_thread_;
-  ResourceDispatcherHostImpl rdh_;
+  TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<ResourceScheduler> scheduler_;
   base::MockTimer* mock_timer_;
   net::HttpServerPropertiesImpl http_server_properties_;

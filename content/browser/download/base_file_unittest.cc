@@ -13,12 +13,11 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/test_file_util.h"
 #include "build/build_config.h"
-#include "content/browser/browser_thread_impl.h"
 #include "content/public/browser/download_interrupt_reasons.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,9 +55,7 @@ class BaseFileTest : public testing::Test {
   BaseFileTest()
       : expect_file_survives_(false),
         expect_in_progress_(true),
-        expected_error_(DOWNLOAD_INTERRUPT_REASON_NONE),
-        file_thread_(BrowserThread::FILE, &message_loop_) {
-  }
+        expected_error_(DOWNLOAD_INTERRUPT_REASON_NONE) {}
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -199,9 +196,7 @@ class BaseFileTest : public testing::Test {
   std::string expected_data_;
   DownloadInterruptReason expected_error_;
 
-  // Mock file thread to satisfy debug checks in BaseFile.
-  base::MessageLoop message_loop_;
-  BrowserThreadImpl file_thread_;
+  TestBrowserThreadBundle thread_bundle_;
 };
 
 // This will initialize the entire array to zero.

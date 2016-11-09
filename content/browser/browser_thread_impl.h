@@ -12,6 +12,8 @@
 
 namespace content {
 
+// Very few users should use this directly. To mock BrowserThreads, tests should
+// use TestBrowserThreadBundle instead.
 class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread,
                                          public base::Thread {
  public:

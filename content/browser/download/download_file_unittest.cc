@@ -17,7 +17,6 @@
 #include "base/test/test_file_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/browser/browser_thread_impl.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_destination_observer.h"
@@ -26,6 +25,7 @@
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/test/mock_download_manager.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/file_stream.h"
 #include "net/base/mock_file_stream.h"
 #include "net/base/net_errors.h"
@@ -138,15 +138,12 @@ class DownloadFileTest : public testing::Test {
   static const int kDummyChildId;
   static const int kDummyRequestId;
 
-  DownloadFileTest() :
-      observer_(new StrictMock<MockDownloadDestinationObserver>),
-      observer_factory_(observer_.get()),
-      input_stream_(NULL),
-      bytes_(-1),
-      bytes_per_sec_(-1),
-      ui_thread_(BrowserThread::UI, &loop_),
-      file_thread_(BrowserThread::FILE, &loop_) {
-  }
+  DownloadFileTest()
+      : observer_(new StrictMock<MockDownloadDestinationObserver>),
+        observer_factory_(observer_.get()),
+        input_stream_(NULL),
+        bytes_(-1),
+        bytes_per_sec_(-1) {}
 
   ~DownloadFileTest() override {}
 
@@ -372,8 +369,6 @@ class DownloadFileTest : public testing::Test {
   int64_t bytes_;
   int64_t bytes_per_sec_;
 
-  base::MessageLoop loop_;
-
  private:
   void SetRenameResult(const base::Closure& closure,
                        DownloadInterruptReason* reason_p,
@@ -387,10 +382,7 @@ class DownloadFileTest : public testing::Test {
     closure.Run();
   }
 
-  // UI thread.
-  BrowserThreadImpl ui_thread_;
-  // File thread to satisfy debug checks in DownloadFile.
-  BrowserThreadImpl file_thread_;
+  TestBrowserThreadBundle thread_bundle_;
 
   // Keep track of what data should be saved to the disk file.
   std::string expected_data_;

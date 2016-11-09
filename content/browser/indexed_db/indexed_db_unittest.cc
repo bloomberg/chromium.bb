@@ -11,7 +11,6 @@
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
-#include "content/browser/browser_thread_impl.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
@@ -22,6 +21,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,9 +41,7 @@ class IndexedDBTest : public testing::Test {
         kSessionOnlyOrigin(GURL("http://session-only/")),
         task_runner_(new base::TestSimpleTaskRunner),
         special_storage_policy_(new MockSpecialStoragePolicy),
-        quota_manager_proxy_(new MockQuotaManagerProxy(nullptr, nullptr)),
-        file_thread_(BrowserThread::FILE_USER_BLOCKING, &message_loop_),
-        io_thread_(BrowserThread::IO, &message_loop_) {
+        quota_manager_proxy_(new MockQuotaManagerProxy(nullptr, nullptr)) {
     special_storage_policy_->AddSessionOnly(kSessionOnlyOrigin.GetURL());
   }
   ~IndexedDBTest() override {
@@ -53,14 +51,12 @@ class IndexedDBTest : public testing::Test {
  protected:
   void FlushIndexedDBTaskRunner() { task_runner_->RunUntilIdle(); }
 
-  base::MessageLoopForIO message_loop_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   scoped_refptr<MockSpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
 
  private:
-  BrowserThreadImpl file_thread_;
-  BrowserThreadImpl io_thread_;
+  TestBrowserThreadBundle thread_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBTest);
 };

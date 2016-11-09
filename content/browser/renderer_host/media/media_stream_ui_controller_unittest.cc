@@ -6,13 +6,12 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/media/media_stream_settings_requester.h"
 #include "content/browser/renderer_host/media/media_stream_ui_controller.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/public/common/media_stream_request.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,11 +44,6 @@ class MediaStreamDeviceUIControllerTest
 
  protected:
   virtual void SetUp() {
-    message_loop_.reset(new base::MessageLoopForIO);
-    ui_thread_.reset(new BrowserThreadImpl(BrowserThread::UI,
-                                           message_loop_.get()));
-    io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
-                                           message_loop_.get()));
     ui_controller_.reset(new MediaStreamUIController(this));
   }
 
@@ -69,9 +63,7 @@ class MediaStreamDeviceUIControllerTest
                                   std::string());
   }
 
-  std::unique_ptr<base::MessageLoop> message_loop_;
-  std::unique_ptr<BrowserThreadImpl> ui_thread_;
-  std::unique_ptr<BrowserThreadImpl> io_thread_;
+  TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<MediaStreamUIController> ui_controller_;
 
  private:

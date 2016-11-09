@@ -7,8 +7,8 @@
 #include <tuple>
 
 #include "base/memory/ptr_util.h"
-#include "content/browser/browser_thread_impl.h"
 #include "content/common/view_messages.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "ipc/ipc_test_sink.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/mock_proxy_resolver.h"
@@ -66,8 +66,7 @@ class ResolveProxyMsgHelperTest : public testing::Test, public IPC::Listener {
             new net::ProxyService(base::WrapUnique(new MockProxyConfigService),
                                   base::WrapUnique(resolver_factory_),
                                   NULL)),
-        helper_(new TestResolveProxyMsgHelper(service_.get(), this)),
-        io_thread_(BrowserThread::IO, &message_loop_) {
+        helper_(new TestResolveProxyMsgHelper(service_.get(), this)) {
     test_sink_.AddFilter(this);
   }
 
@@ -102,8 +101,7 @@ class ResolveProxyMsgHelperTest : public testing::Test, public IPC::Listener {
     return true;
   }
 
-  base::MessageLoopForIO message_loop_;
-  BrowserThreadImpl io_thread_;
+  TestBrowserThreadBundle thread_bundle_;
   IPC::TestSink test_sink_;
 };
 

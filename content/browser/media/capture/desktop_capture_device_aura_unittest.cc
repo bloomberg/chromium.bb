@@ -11,8 +11,8 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
-#include "content/browser/browser_thread_impl.h"
 #include "content/public/browser/desktop_media_id.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "media/capture/video_capture_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -92,9 +92,8 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
 // Test harness that sets up a minimal environment with necessary stubs.
 class DesktopCaptureDeviceAuraTest : public testing::Test {
  public:
-  DesktopCaptureDeviceAuraTest()
-      : browser_thread_for_ui_(BrowserThread::UI, &message_loop_) {}
-  ~DesktopCaptureDeviceAuraTest() override {}
+  DesktopCaptureDeviceAuraTest() = default;
+  ~DesktopCaptureDeviceAuraTest() override = default;
 
  protected:
   void SetUp() override {
@@ -102,7 +101,8 @@ class DesktopCaptureDeviceAuraTest : public testing::Test {
     bool enable_pixel_output = false;
     ui::ContextFactory* context_factory =
         ui::InitializeContextFactoryForTests(enable_pixel_output);
-    helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
+    helper_.reset(
+        new aura::test::AuraTestHelper(base::MessageLoopForUI::current()));
     helper_->SetUp(context_factory);
     new wm::DefaultActivationClient(helper_->root_window());
 
@@ -131,8 +131,7 @@ class DesktopCaptureDeviceAuraTest : public testing::Test {
   aura::Window* root_window() { return helper_->root_window(); }
 
  private:
-  base::MessageLoopForUI message_loop_;
-  BrowserThreadImpl browser_thread_for_ui_;
+  TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<aura::test::AuraTestHelper> helper_;
   std::unique_ptr<aura::Window> desktop_window_;
   std::unique_ptr<aura::test::TestWindowDelegate> window_delegate_;

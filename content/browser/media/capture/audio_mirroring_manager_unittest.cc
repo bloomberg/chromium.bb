@@ -10,9 +10,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "content/browser/browser_thread_impl.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "media/base/audio_parameters.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -108,9 +107,10 @@ class AudioMirroringManagerTest : public testing::Test {
   typedef AudioMirroringManager::StreamRoutes StreamRoutes;
 
   AudioMirroringManagerTest()
-      : io_thread_(BrowserThread::IO, &message_loop_),
-        params_(AudioParameters::AUDIO_FAKE, media::CHANNEL_LAYOUT_STEREO,
-                AudioParameters::kAudioCDSampleRate, 16,
+      : params_(AudioParameters::AUDIO_FAKE,
+                media::CHANNEL_LAYOUT_STEREO,
+                AudioParameters::kAudioCDSampleRate,
+                16,
                 AudioParameters::kAudioCDSampleRate / 10) {}
 
   MockDiverter* CreateStream(int render_process_id,
@@ -207,8 +207,7 @@ class AudioMirroringManagerTest : public testing::Test {
   }
 
  private:
-  base::MessageLoopForIO message_loop_;
-  BrowserThreadImpl io_thread_;
+  TestBrowserThreadBundle thread_bundle_;
   AudioParameters params_;
   AudioMirroringManager mirroring_manager_;
 

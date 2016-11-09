@@ -489,14 +489,14 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
  public:
   RenderWidgetHostViewAuraTest()
       : widget_host_uses_shutdown_to_destroy_(false),
-        is_guest_view_hack_(false),
-        browser_thread_for_ui_(BrowserThread::UI, &message_loop_) {}
+        is_guest_view_hack_(false) {}
 
   void SetUpEnvironment() {
     ImageTransportFactory::InitializeForUnitTests(
         std::unique_ptr<ImageTransportFactory>(
             new NoTransportImageTransportFactory));
-    aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
+    aura_test_helper_.reset(
+        new aura::test::AuraTestHelper(base::MessageLoopForUI::current()));
     aura_test_helper_->SetUp(
         ImageTransportFactory::GetInstance()->GetContextFactory());
     new wm::DefaultActivationClient(aura_test_helper_->root_window());
@@ -553,8 +553,6 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     browser_context_.reset();
     aura_test_helper_->TearDown();
 
-    message_loop_.task_runner()->DeleteSoon(FROM_HERE,
-                                            browser_context_.release());
     base::RunLoop().RunUntilIdle();
     ImageTransportFactory::Terminate();
   }
@@ -669,8 +667,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
   bool is_guest_view_hack_;
 
-  base::MessageLoopForUI message_loop_;
-  BrowserThreadImpl browser_thread_for_ui_;
+  TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
   std::unique_ptr<BrowserContext> browser_context_;
   std::vector<std::unique_ptr<MockRenderWidgetHostDelegate>> delegates_;
