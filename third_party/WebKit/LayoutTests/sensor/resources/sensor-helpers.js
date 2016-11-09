@@ -1,5 +1,22 @@
 'use strict';
 
+// Wraps callback and calls reject_func if callback throws an error.
+class CallbackWrapper {
+  constructor(callback, reject_func) {
+    this.wrapper_func_ = (args) => {
+      try {
+        callback(args);
+      } catch(e) {
+        reject_func();
+      }
+    }
+  }
+
+  get callback() {
+    return this.wrapper_func_;
+  }
+}
+
 function sensor_mocks(mojo) {
   return define('Generic Sensor API mocks', [
     'mojo/public/js/core',
@@ -53,7 +70,8 @@ function sensor_mocks(mojo) {
         if (!this.start_should_fail_ && this.update_reading_function_ != null) {
           let timeout = (1 / configuration.frequency) * 1000;
           this.sensor_reading_timer_id_ = window.setTimeout(() => {
-            this.update_reading_function_(this.buffer_);
+            if (this.update_reading_function_)
+              this.update_reading_function_(this.buffer_);
             if (this.reporting_mode_ === sensor.ReportingMode.ON_CHANGE) {
               this.client_.sensorReadingChanged();
             }
