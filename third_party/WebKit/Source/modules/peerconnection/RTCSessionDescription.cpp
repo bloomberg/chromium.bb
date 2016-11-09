@@ -83,14 +83,8 @@ void RTCSessionDescription::setSdp(const String& sdp) {
 
 ScriptValue RTCSessionDescription::toJSONForBinding(ScriptState* scriptState) {
   V8ObjectBuilder result(scriptState);
-  if (type().isNull())
-    result.addNull("type");
-  else
-    result.addString("type", type());
-  if (sdp().isNull())
-    result.addNull("sdp");
-  else
-    result.addString("sdp", sdp());
+  result.addStringOrNull("type", type());
+  result.addStringOrNull("sdp", sdp());
   return result.scriptValue();
 }
 
