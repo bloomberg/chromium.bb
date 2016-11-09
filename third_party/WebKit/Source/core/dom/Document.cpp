@@ -5176,17 +5176,7 @@ void Document::beginLifecycleUpdatesIfRenderingReady() {
     return;
   if (!isRenderingReady())
     return;
-  if (LocalFrame* frame = this->frame()) {
-    // Avoid pumping frames for the initially empty document.
-    if (!frame->loader().stateMachine()->committedFirstRealDocumentLoad())
-      return;
-    // The compositor will "defer commits" for the main frame until we
-    // explicitly request them.
-    if (frame->isMainFrame())
-      frame->page()->chromeClient().beginLifecycleUpdates();
-    if (frame->view())
-      frame->view()->setupRenderThrottling();
-  }
+  view()->beginLifecycleUpdates();
 }
 
 Vector<IconURL> Document::iconURLs(int iconTypesMask) {

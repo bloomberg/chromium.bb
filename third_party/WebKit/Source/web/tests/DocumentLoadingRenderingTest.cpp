@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "core/dom/Document.h"
+#include "core/dom/FrameRequestCallback.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/paint/PaintLayer.h"
@@ -235,6 +236,7 @@ TEST_F(DocumentLoadingRenderingTest,
 
   mainResource.complete(
       "<!DOCTYPE html>"
+      "<body style='background: red'>"
       "<iframe id=frame src=frame.html style='border: none'></iframe>"
       "<p style='transform: translateZ(0)'>Hello World</p>");
 
@@ -265,39 +267,77 @@ TEST_F(DocumentLoadingRenderingTest,
   // invalid paint so we shouldn't draw any text.
   EXPECT_FALSE(frame2.contains(SimCanvas::Text));
 
-  LayoutViewItem iframeLayoutViewItem =
-      childFrame->contentDocument()->layoutViewItem();
-  const DisplayItemList& displayItemList = iframeLayoutViewItem.layer()
-                                               ->graphicsLayerBacking()
-                                               ->getPaintController()
-                                               .getDisplayItemList();
-  // Check that the DisplayItemList has no subsequene caching markers. These are
-  // not allowed in pending-style-sheets mode since otherwise caching would be
-  // incorrect.
-  ASSERT_EQ(2u, displayItemList.size());
-  EXPECT_EQ(DisplayItem::kDocumentBackground, displayItemList[0].getType());
-  EXPECT_EQ(DisplayItem::kBoxDecorationBackground,
-            displayItemList[1].getType());
-
-  // 1 for the main frame background (white),
-  // 1 for the iframe background (pink)
-  // 1 for the composited transform layer in the iframe (green).
-  // TODO(esprehn): Why FOUC the background (borders, etc.) of iframes and
-  // composited layers? Seems like a bug.
-  EXPECT_EQ(3, frame2.drawCount());
-  EXPECT_TRUE(frame2.contains(SimCanvas::Rect, "white"));
-  EXPECT_TRUE(frame2.contains(SimCanvas::Rect, "pink"));
-  EXPECT_TRUE(frame2.contains(SimCanvas::Rect, "green"));
+  // 1 for the main frame background (red).
+  // TODO(esprehn): If we were super smart we'd notice that the nested iframe is
+  // actually composited and not repaint the main frame, but that likely
+  // requires doing compositing and paint invalidation bottom up.
+  EXPECT_EQ(1, frame2.drawCount());
+  EXPECT_TRUE(frame2.contains(SimCanvas::Rect, "red"));
 
   // Finish loading the sheets in the child frame. After it should issue a
-  // paint invalidation for every layer since frame2 painted them but skipped
-  // painting the real content to avoid FOUC.
+  // paint invalidation for every layer when the frame becomes unthrottled.
   cssResource.complete();
 
   // First frame where all frames are loaded, should paint the text in the
   // child frame.
   auto frame3 = compositor().beginFrame();
   EXPECT_TRUE(frame3.contains(SimCanvas::Text));
+}
+
+namespace {
+
+class CheckRafCallback final : public FrameRequestCallback {
+ public:
+  void handleEvent(double highResTimeMs) override { m_wasCalled = true; }
+  bool wasCalled() const { return m_wasCalled; }
+
+ private:
+  bool m_wasCalled = false;
+};
+};
+
+TEST_F(DocumentLoadingRenderingTest,
+       ShouldThrottleIframeLifecycleUntilPendingSheetsLoaded) {
+  SimRequest mainResource("https://example.com/main.html", "text/html");
+  SimRequest frameResource("https://example.com/frame.html", "text/html");
+  SimRequest cssResource("https://example.com/frame.css", "text/css");
+
+  loadURL("https://example.com/main.html");
+
+  webView().resize(WebSize(800, 600));
+
+  mainResource.complete(
+      "<!DOCTYPE html>"
+      "<body style='background: red'>"
+      "<iframe id=frame src=frame.html></iframe>");
+
+  frameResource.complete(
+      "<!DOCTYPE html>"
+      "<link rel=stylesheet href=frame.css>"
+      "<body style='background: blue'>");
+
+  auto* childFrame = toHTMLIFrameElement(document().getElementById("frame"));
+
+  // Frame while the child frame still has pending sheets.
+  auto* frame1Callback = new CheckRafCallback();
+  childFrame->contentDocument()->requestAnimationFrame(frame1Callback);
+  auto frame1 = compositor().beginFrame();
+  EXPECT_FALSE(frame1Callback->wasCalled());
+  EXPECT_TRUE(frame1.contains(SimCanvas::Rect, "red"));
+  EXPECT_FALSE(frame1.contains(SimCanvas::Rect, "blue"));
+
+  // Finish loading the sheets in the child frame. Should enable lifecycle
+  // updates and raf callbacks.
+  cssResource.complete();
+
+  // Frame with all lifecycle updates enabled.
+  auto* frame2Callback = new CheckRafCallback();
+  childFrame->contentDocument()->requestAnimationFrame(frame2Callback);
+  auto frame2 = compositor().beginFrame();
+  EXPECT_TRUE(frame1Callback->wasCalled());
+  EXPECT_TRUE(frame2Callback->wasCalled());
+  EXPECT_TRUE(frame2.contains(SimCanvas::Rect, "red"));
+  EXPECT_TRUE(frame2.contains(SimCanvas::Rect, "blue"));
 }
 
 TEST_F(DocumentLoadingRenderingTest,

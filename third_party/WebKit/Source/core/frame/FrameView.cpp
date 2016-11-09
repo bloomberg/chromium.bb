@@ -181,6 +181,7 @@ FrameView::FrameView(LocalFrame* frame)
       m_frameTimingRequestsDirty(true),
       m_hiddenForThrottling(false),
       m_subtreeThrottled(false),
+      m_lifecycleUpdatesThrottled(false),
       m_currentUpdateLifecyclePhasesTargetState(
           DocumentLifecycle::Uninitialized),
       m_scrollAnchor(this),
@@ -228,6 +229,12 @@ DEFINE_TRACE(FrameView) {
 }
 
 void FrameView::reset() {
+  // The compositor throttles the main frame using deferred commits, we can't
+  // throttle it here or it seems the root compositor doesn't get setup
+  // properly.
+  if (RuntimeEnabledFeatures::
+          renderingPipelineThrottlingLoadingIframesEnabled())
+    m_lifecycleUpdatesThrottled = !frame().isMainFrame();
   m_hasPendingLayout = false;
   m_layoutSchedulingEnabled = true;
   m_inSynchronousPostLayout = false;
@@ -299,6 +306,7 @@ void FrameView::setupRenderThrottling() {
                          [](FrameView* frameView, bool isVisible) {
                            frameView->updateRenderThrottlingStatus(
                                !isVisible, frameView->m_subtreeThrottled);
+                           frameView->maybeRecordLoadReason();
                          },
                          wrapWeakPersistent(this)));
   m_visibilityObserver->start();
@@ -4467,6 +4475,19 @@ void FrameView::updateRenderThrottlingStatus(bool hidden,
       hasHandlers)
     scrollingCoordinator->touchEventTargetRectsDidChange();
 
+#if DCHECK_IS_ON()
+  // Make sure we never have an unthrottled frame inside a throttled one.
+  FrameView* parent = parentFrameView();
+  while (parent) {
+    DCHECK(canThrottleRendering() || !parent->canThrottleRendering());
+    parent = parent->parentFrameView();
+  }
+#endif
+}
+
+// TODO(esprehn): Rename this and the method on Document to
+// recordDeferredLoadReason().
+void FrameView::maybeRecordLoadReason() {
   FrameView* parent = parentFrameView();
   if (frame().document()->frame()) {
     if (!parent) {
@@ -4497,14 +4518,6 @@ void FrameView::updateRenderThrottlingStatus(bool hidden,
       }
     }
   }
-
-#if DCHECK_IS_ON()
-  // Make sure we never have an unthrottled frame inside a throttled one.
-  while (parent) {
-    DCHECK(canThrottleRendering() || !parent->canThrottleRendering());
-    parent = parent->parentFrameView();
-  }
-#endif
 }
 
 bool FrameView::shouldThrottleRendering() const {
@@ -4512,16 +4525,32 @@ bool FrameView::shouldThrottleRendering() const {
 }
 
 bool FrameView::canThrottleRendering() const {
+  if (m_lifecycleUpdatesThrottled)
+    return true;
   if (!RuntimeEnabledFeatures::renderingPipelineThrottlingEnabled())
     return false;
-  // We only throttle the rendering pipeline in cross-origin frames. This is
-  // to avoid a situation where an ancestor frame directly depends on the
-  // pipeline timing of a descendant and breaks as a result of throttling.
-  // The rationale is that cross-origin frames must already communicate with
-  // asynchronous messages, so they should be able to tolerate some delay in
-  // receiving replies from a throttled peer.
-  return m_subtreeThrottled ||
-         (m_hiddenForThrottling && m_frame->isCrossOriginSubframe());
+  if (m_subtreeThrottled)
+    return true;
+  // We only throttle hidden cross-origin frames. This is to avoid a situation
+  // where an ancestor frame directly depends on the pipeline timing of a
+  // descendant and breaks as a result of throttling. The rationale is that
+  // cross-origin frames must already communicate with asynchronous messages,
+  // so they should be able to tolerate some delay in receiving replies from a
+  // throttled peer.
+  return m_hiddenForThrottling && m_frame->isCrossOriginSubframe();
+}
+
+void FrameView::beginLifecycleUpdates() {
+  // Avoid pumping frames for the initially empty document.
+  if (!frame().loader().stateMachine()->committedFirstRealDocumentLoad())
+    return;
+  m_lifecycleUpdatesThrottled = false;
+  setupRenderThrottling();
+  updateRenderThrottlingStatus(m_hiddenForThrottling, m_subtreeThrottled);
+  // The compositor will "defer commits" for the main frame until we
+  // explicitly request them.
+  if (frame().isMainFrame())
+    frame().host()->chromeClient().beginLifecycleUpdates();
 }
 
 void FrameView::setInitialViewportSize(const IntSize& viewportSize) {

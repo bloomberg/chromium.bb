@@ -684,6 +684,8 @@ class CORE_EXPORT FrameView final
   // frame.
   void updateRenderThrottlingStatusForTesting();
 
+  void beginLifecycleUpdates();
+
   // Paint properties for SPv2 Only.
   void setPreTranslation(
       PassRefPtr<TransformPaintPropertyNode> preTranslation) {
@@ -837,6 +839,8 @@ class CORE_EXPORT FrameView final
   void performLayout(bool inSubtreeLayout);
   void scheduleOrPerformPostLayoutTasks();
   void performPostLayoutTasks();
+
+  void maybeRecordLoadReason();
 
   DocumentLifecycle& lifecycle() const;
 
@@ -1047,6 +1051,7 @@ class CORE_EXPORT FrameView final
   // notifications, i.e., not in the middle of the lifecycle.
   bool m_hiddenForThrottling;
   bool m_subtreeThrottled;
+  bool m_lifecycleUpdatesThrottled;
 
   // Paint properties for SPv2 Only.
   // The hierarchy of transform subtree created by a FrameView.
