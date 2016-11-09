@@ -416,6 +416,28 @@ class PropertyTreeTestComputeTransformRoot : public PropertyTreeTest {
 DIRECT_AND_SERIALIZED_PROPERTY_TREE_TEST_F(
     PropertyTreeTestComputeTransformRoot);
 
+class PropertyTreeTestSetNeedsUpdate : public PropertyTreeTest {
+ protected:
+  void StartTest() override {
+    PropertyTrees property_trees;
+    TransformTree& tree = property_trees.transform_tree;
+    TransformNode contents_root;
+    contents_root.source_node_id = 0;
+    contents_root.id = tree.Insert(contents_root, 0);
+    tree.SetTargetId(contents_root.id, 0);
+    SetupTransformTreeForTest(&tree);
+
+    EXPECT_FALSE(tree.needs_update());
+    tree.SetRootTransformsAndScales(0.6f, 1.f, gfx::Transform(), gfx::PointF());
+    EXPECT_TRUE(tree.needs_update());
+    tree.set_needs_update(false);
+    tree.SetRootTransformsAndScales(0.6f, 1.f, gfx::Transform(), gfx::PointF());
+    EXPECT_FALSE(tree.needs_update());
+  }
+};
+
+DIRECT_AND_SERIALIZED_PROPERTY_TREE_TEST_F(PropertyTreeTestSetNeedsUpdate);
+
 class PropertyTreeTestComputeTransformChild : public PropertyTreeTest {
  protected:
   void StartTest() override {

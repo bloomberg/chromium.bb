@@ -679,15 +679,18 @@ void TransformTree::SetRootTransformsAndScales(
   gfx::Transform root_from_screen;
   bool invertible = root_to_screen.GetInverse(&root_from_screen);
   DCHECK(invertible);
-  SetToScreen(kRootNodeId, root_to_screen);
-  SetFromScreen(kRootNodeId, root_from_screen);
-  set_needs_update(true);
+  if (root_to_screen != ToScreen(kRootNodeId)) {
+    SetToScreen(kRootNodeId, root_to_screen);
+    SetFromScreen(kRootNodeId, root_from_screen);
+    set_needs_update(true);
+  }
 
   transform.ConcatTransform(root_from_screen);
   TransformNode* contents_root_node = Node(kContentsRootNodeId);
   if (contents_root_node->post_local != transform) {
     contents_root_node->post_local = transform;
     contents_root_node->needs_local_transform_update = true;
+    set_needs_update(true);
   }
 }
 
