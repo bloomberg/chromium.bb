@@ -11,7 +11,7 @@
 namespace blink {
 
 MediaQuerySet* MediaQueryParser::parseMediaQuerySet(const String& queryString) {
-  return parseMediaQuerySet(CSSTokenizer::Scope(queryString).tokenRange());
+  return parseMediaQuerySet(CSSTokenizer(queryString).tokenRange());
 }
 
 MediaQuerySet* MediaQueryParser::parseMediaQuerySet(CSSParserTokenRange range) {

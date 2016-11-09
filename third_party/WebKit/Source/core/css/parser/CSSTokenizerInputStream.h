@@ -15,7 +15,7 @@ class CSSTokenizerInputStream {
   USING_FAST_MALLOC(CSSTokenizerInputStream);
 
  public:
-  explicit CSSTokenizerInputStream(String input);
+  explicit CSSTokenizerInputStream(const String& input);
 
   // Gets the char in the stream replacing NUL characters with a unicode
   // replacement character. Will return (NUL) kEndOfFileMarker when at the

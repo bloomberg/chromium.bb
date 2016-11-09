@@ -9,7 +9,7 @@
 
 namespace blink {
 
-CSSTokenizerInputStream::CSSTokenizerInputStream(String input)
+CSSTokenizerInputStream::CSSTokenizerInputStream(const String& input)
     : m_offset(0), m_stringLength(input.length()), m_string(input.impl()) {}
 
 void CSSTokenizerInputStream::advanceUntilNonWhitespace() {

@@ -74,8 +74,8 @@ TEST(CSSSelectorParserTest, ValidANPlusB) {
     SCOPED_TRACE(testCase.input);
 
     std::pair<int, int> ab;
-    CSSTokenizer::Scope scope(testCase.input);
-    CSSParserTokenRange range = scope.tokenRange();
+    CSSTokenizer tokenizer(testCase.input);
+    CSSParserTokenRange range = tokenizer.tokenRange();
     bool passed = CSSSelectorParser::consumeANPlusB(range, ab);
     EXPECT_TRUE(passed);
     EXPECT_EQ(ab.first, testCase.a);
@@ -96,8 +96,8 @@ TEST(CSSSelectorParserTest, InvalidANPlusB) {
     SCOPED_TRACE(testCase);
 
     std::pair<int, int> ab;
-    CSSTokenizer::Scope scope(testCase);
-    CSSParserTokenRange range = scope.tokenRange();
+    CSSTokenizer tokenizer(testCase);
+    CSSParserTokenRange range = tokenizer.tokenRange();
     bool passed = CSSSelectorParser::consumeANPlusB(range, ab);
     EXPECT_FALSE(passed);
   }
@@ -115,8 +115,8 @@ TEST(CSSSelectorParserTest, ShadowDomPseudoInCompound) {
 
   for (auto testCase : testCases) {
     SCOPED_TRACE(testCase[0]);
-    CSSTokenizer::Scope scope(testCase[0]);
-    CSSParserTokenRange range = scope.tokenRange();
+    CSSTokenizer tokenizer(testCase[0]);
+    CSSParserTokenRange range = tokenizer.tokenRange();
     CSSSelectorList list = CSSSelectorParser::parseSelector(
         range, CSSParserContext(HTMLStandardMode, nullptr), nullptr);
     EXPECT_STREQ(testCase[1], list.selectorsText().ascii().data());
@@ -138,8 +138,8 @@ TEST(CSSSelectorParserTest, PseudoElementsInCompoundLists) {
                              ":-webkit-any(div, ::shadow)"};
 
   for (auto testCase : testCases) {
-    CSSTokenizer::Scope scope(testCase);
-    CSSParserTokenRange range = scope.tokenRange();
+    CSSTokenizer tokenizer(testCase);
+    CSSParserTokenRange range = tokenizer.tokenRange();
     CSSSelectorList list = CSSSelectorParser::parseSelector(
         range, CSSParserContext(HTMLStandardMode, nullptr), nullptr);
     EXPECT_FALSE(list.isValid());
@@ -153,8 +153,8 @@ TEST(CSSSelectorParserTest, ValidSimpleAfterPseudoElementInCompound) {
       "::-webkit-scrollbar:not(:horizontal)"};
 
   for (auto testCase : testCases) {
-    CSSTokenizer::Scope scope(testCase);
-    CSSParserTokenRange range = scope.tokenRange();
+    CSSTokenizer tokenizer(testCase);
+    CSSParserTokenRange range = tokenizer.tokenRange();
     CSSSelectorList list = CSSSelectorParser::parseSelector(
         range, CSSParserContext(HTMLStandardMode, nullptr), nullptr);
     EXPECT_TRUE(list.isValid());
@@ -176,8 +176,8 @@ TEST(CSSSelectorParserTest, InvalidSimpleAfterPseudoElementInCompound) {
       "div ::before.a"};
 
   for (auto testCase : testCases) {
-    CSSTokenizer::Scope scope(testCase);
-    CSSParserTokenRange range = scope.tokenRange();
+    CSSTokenizer tokenizer(testCase);
+    CSSParserTokenRange range = tokenizer.tokenRange();
     CSSSelectorList list = CSSSelectorParser::parseSelector(
         range, CSSParserContext(HTMLStandardMode, nullptr), nullptr);
     EXPECT_FALSE(list.isValid());
@@ -191,8 +191,8 @@ TEST(CSSSelectorParserTest, WorkaroundForInvalidCustomPseudoInUAStyle) {
       "input[type=\"range\" i]::-webkit-media-slider-container > div"};
 
   for (auto testCase : testCases) {
-    CSSTokenizer::Scope scope(testCase);
-    CSSParserTokenRange range = scope.tokenRange();
+    CSSTokenizer tokenizer(testCase);
+    CSSParserTokenRange range = tokenizer.tokenRange();
     CSSSelectorList list = CSSSelectorParser::parseSelector(
         range, CSSParserContext(UASheetMode, nullptr), nullptr);
     EXPECT_TRUE(list.isValid());
@@ -205,8 +205,8 @@ TEST(CSSSelectorParserTest, ValidPseudoElementInNonRightmostCompound) {
                              "::shadow ::first-letter"};
 
   for (auto testCase : testCases) {
-    CSSTokenizer::Scope scope(testCase);
-    CSSParserTokenRange range = scope.tokenRange();
+    CSSTokenizer tokenizer(testCase);
+    CSSParserTokenRange range = tokenizer.tokenRange();
     CSSSelectorList list = CSSSelectorParser::parseSelector(
         range, CSSParserContext(HTMLStandardMode, nullptr), nullptr);
     EXPECT_TRUE(list.isValid());
@@ -219,8 +219,8 @@ TEST(CSSSelectorParserTest, InvalidPseudoElementInNonRightmostCompound) {
                              "::selection *"};
 
   for (auto testCase : testCases) {
-    CSSTokenizer::Scope scope(testCase);
-    CSSParserTokenRange range = scope.tokenRange();
+    CSSTokenizer tokenizer(testCase);
+    CSSParserTokenRange range = tokenizer.tokenRange();
     CSSSelectorList list = CSSSelectorParser::parseSelector(
         range, CSSParserContext(HTMLStandardMode, nullptr), nullptr);
     EXPECT_FALSE(list.isValid());
@@ -234,8 +234,8 @@ TEST(CSSSelectorParserTest, UnresolvedNamespacePrefix) {
   StyleSheetContents* sheet = StyleSheetContents::create(context);
 
   for (auto testCase : testCases) {
-    CSSTokenizer::Scope scope(testCase);
-    CSSParserTokenRange range = scope.tokenRange();
+    CSSTokenizer tokenizer(testCase);
+    CSSParserTokenRange range = tokenizer.tokenRange();
     CSSSelectorList list =
         CSSSelectorParser::parseSelector(range, context, sheet);
     EXPECT_FALSE(list.isValid());
@@ -265,8 +265,8 @@ TEST(CSSSelectorParserTest, SerializedUniversal) {
 
   for (auto testCase : testCases) {
     SCOPED_TRACE(testCase[0]);
-    CSSTokenizer::Scope scope(testCase[0]);
-    CSSParserTokenRange range = scope.tokenRange();
+    CSSTokenizer tokenizer(testCase[0]);
+    CSSParserTokenRange range = tokenizer.tokenRange();
     CSSSelectorList list =
         CSSSelectorParser::parseSelector(range, context, sheet);
     EXPECT_TRUE(list.isValid());

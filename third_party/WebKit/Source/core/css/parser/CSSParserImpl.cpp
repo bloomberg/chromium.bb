@@ -53,8 +53,8 @@ bool CSSParserImpl::parseValue(MutableStylePropertySet* declaration,
     ruleType = StyleRule::Viewport;
   else if (declaration->cssParserMode() == CSSFontFaceRuleMode)
     ruleType = StyleRule::FontFace;
-  CSSTokenizer::Scope scope(string);
-  parser.consumeDeclarationValue(scope.tokenRange(), unresolvedProperty,
+  CSSTokenizer tokenizer(string);
+  parser.consumeDeclarationValue(tokenizer.tokenRange(), unresolvedProperty,
                                  important, ruleType);
   if (parser.m_parsedProperties.isEmpty())
     return false;
@@ -68,8 +68,8 @@ bool CSSParserImpl::parseVariableValue(MutableStylePropertySet* declaration,
                                        const CSSParserContext& context,
                                        bool isAnimationTainted) {
   CSSParserImpl parser(context);
-  CSSTokenizer::Scope scope(value);
-  parser.consumeVariableValue(scope.tokenRange(), propertyName, important,
+  CSSTokenizer tokenizer(value);
+  parser.consumeVariableValue(tokenizer.tokenRange(), propertyName, important,
                               isAnimationTainted);
   if (parser.m_parsedProperties.isEmpty())
     return false;
@@ -139,8 +139,8 @@ ImmutableStylePropertySet* CSSParserImpl::parseInlineStyleDeclaration(
                            : HTMLQuirksMode;
   context.setMode(mode);
   CSSParserImpl parser(context, document.elementSheet().contents());
-  CSSTokenizer::Scope scope(string);
-  parser.consumeDeclarationList(scope.tokenRange(), StyleRule::Style);
+  CSSTokenizer tokenizer(string);
+  parser.consumeDeclarationList(tokenizer.tokenRange(), StyleRule::Style);
   return createStylePropertySet(parser.m_parsedProperties, mode);
 }
 
@@ -151,8 +151,8 @@ bool CSSParserImpl::parseDeclarationList(MutableStylePropertySet* declaration,
   StyleRule::RuleType ruleType = StyleRule::Style;
   if (declaration->cssParserMode() == CSSViewportRuleMode)
     ruleType = StyleRule::Viewport;
-  CSSTokenizer::Scope scope(string);
-  parser.consumeDeclarationList(scope.tokenRange(), ruleType);
+  CSSTokenizer tokenizer(string);
+  parser.consumeDeclarationList(tokenizer.tokenRange(), ruleType);
   if (parser.m_parsedProperties.isEmpty())
     return false;
 
@@ -174,8 +174,8 @@ StyleRuleBase* CSSParserImpl::parseRule(const String& string,
                                         StyleSheetContents* styleSheet,
                                         AllowedRulesType allowedRules) {
   CSSParserImpl parser(context, styleSheet);
-  CSSTokenizer::Scope scope(string);
-  CSSParserTokenRange range = scope.tokenRange();
+  CSSTokenizer tokenizer(string);
+  CSSParserTokenRange range = tokenizer.tokenRange();
   range.consumeWhitespace();
   if (range.atEnd())
     return nullptr;  // Parse error, empty rule
@@ -202,7 +202,7 @@ void CSSParserImpl::parseStyleSheet(const String& string,
 
   TRACE_EVENT_BEGIN0("blink,blink_style",
                      "CSSParserImpl::parseStyleSheet.tokenize");
-  CSSTokenizer::Scope scope(string);
+  CSSTokenizer tokenizer(string);
   TRACE_EVENT_END0("blink,blink_style",
                    "CSSParserImpl::parseStyleSheet.tokenize");
 
@@ -211,19 +211,21 @@ void CSSParserImpl::parseStyleSheet(const String& string,
   CSSParserImpl parser(context, styleSheet);
   if (deferPropertyParsing) {
     parser.m_lazyState = new CSSLazyParsingState(
-        context, scope.takeEscapedStrings(), string, parser.m_styleSheet);
+        context, tokenizer.takeEscapedStrings(), string, parser.m_styleSheet);
   }
-  bool firstRuleValid = parser.consumeRuleList(
-      scope.tokenRange(), TopLevelRuleList, [&styleSheet](StyleRuleBase* rule) {
-        if (rule->isCharsetRule())
-          return;
-        styleSheet->parserAppendRule(rule);
-      });
+  bool firstRuleValid =
+      parser.consumeRuleList(tokenizer.tokenRange(), TopLevelRuleList,
+                             [&styleSheet](StyleRuleBase* rule) {
+                               if (rule->isCharsetRule())
+                                 return;
+                               styleSheet->parserAppendRule(rule);
+                             });
   styleSheet->setHasSyntacticallyValidCSSHeader(firstRuleValid);
   TRACE_EVENT_END0("blink,blink_style", "CSSParserImpl::parseStyleSheet.parse");
 
   TRACE_EVENT_END2("blink,blink_style", "CSSParserImpl::parseStyleSheet",
-                   "tokenCount", scope.tokenCount(), "length", string.length());
+                   "tokenCount", tokenizer.tokenCount(), "length",
+                   string.length());
 }
 
 CSSSelectorList CSSParserImpl::parsePageSelector(
@@ -297,7 +299,7 @@ ImmutableStylePropertySet* CSSParserImpl::parseCustomPropertySet(
 
 std::unique_ptr<Vector<double>> CSSParserImpl::parseKeyframeKeyList(
     const String& keyList) {
-  return consumeKeyframeKeyList(CSSTokenizer::Scope(keyList).tokenRange());
+  return consumeKeyframeKeyList(CSSTokenizer(keyList).tokenRange());
 }
 
 bool CSSParserImpl::supportsDeclaration(CSSParserTokenRange& range) {
@@ -315,10 +317,10 @@ void CSSParserImpl::parseDeclarationListForInspector(
   CSSParserImpl parser(context);
   CSSParserObserverWrapper wrapper(observer);
   parser.m_observerWrapper = &wrapper;
-  CSSTokenizer::Scope scope(declaration, wrapper);
+  CSSTokenizer tokenizer(declaration, wrapper);
   observer.startRuleHeader(StyleRule::Style, 0);
   observer.endRuleHeader(1);
-  parser.consumeDeclarationList(scope.tokenRange(), StyleRule::Style);
+  parser.consumeDeclarationList(tokenizer.tokenRange(), StyleRule::Style);
 }
 
 void CSSParserImpl::parseStyleSheetForInspector(const String& string,
@@ -328,13 +330,14 @@ void CSSParserImpl::parseStyleSheetForInspector(const String& string,
   CSSParserImpl parser(context, styleSheet);
   CSSParserObserverWrapper wrapper(observer);
   parser.m_observerWrapper = &wrapper;
-  CSSTokenizer::Scope scope(string, wrapper);
-  bool firstRuleValid = parser.consumeRuleList(
-      scope.tokenRange(), TopLevelRuleList, [&styleSheet](StyleRuleBase* rule) {
-        if (rule->isCharsetRule())
-          return;
-        styleSheet->parserAppendRule(rule);
-      });
+  CSSTokenizer tokenizer(string, wrapper);
+  bool firstRuleValid =
+      parser.consumeRuleList(tokenizer.tokenRange(), TopLevelRuleList,
+                             [&styleSheet](StyleRuleBase* rule) {
+                               if (rule->isCharsetRule())
+                                 return;
+                               styleSheet->parserAppendRule(rule);
+                             });
   styleSheet->setHasSyntacticallyValidCSSHeader(firstRuleValid);
 }
 

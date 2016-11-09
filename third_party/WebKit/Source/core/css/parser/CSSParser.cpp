@@ -39,8 +39,8 @@ void CSSParser::parseDeclarationListForInspector(
 CSSSelectorList CSSParser::parseSelector(const CSSParserContext& context,
                                          StyleSheetContents* styleSheetContents,
                                          const String& selector) {
-  CSSTokenizer::Scope scope(selector);
-  return CSSSelectorParser::parseSelector(scope.tokenRange(), context,
+  CSSTokenizer tokenizer(selector);
+  return CSSSelectorParser::parseSelector(tokenizer.tokenRange(), context,
                                           styleSheetContents);
 }
 
@@ -48,8 +48,8 @@ CSSSelectorList CSSParser::parsePageSelector(
     const CSSParserContext& context,
     StyleSheetContents* styleSheetContents,
     const String& selector) {
-  CSSTokenizer::Scope scope(selector);
-  return CSSParserImpl::parsePageSelector(scope.tokenRange(),
+  CSSTokenizer tokenizer(selector);
+  return CSSParserImpl::parsePageSelector(tokenizer.tokenRange(),
                                           styleSheetContents);
 }
 
@@ -141,8 +141,8 @@ const CSSValue* CSSParser::parseSingleValue(CSSPropertyID propertyID,
   if (CSSValue* value = CSSParserFastPaths::maybeParseValue(propertyID, string,
                                                             context.mode()))
     return value;
-  CSSTokenizer::Scope scope(string);
-  return CSSPropertyParser::parseSingleValue(propertyID, scope.tokenRange(),
+  CSSTokenizer tokenizer(string);
+  return CSSPropertyParser::parseSingleValue(propertyID, tokenizer.tokenRange(),
                                              context);
 }
 
@@ -165,9 +165,9 @@ StyleRuleKeyframe* CSSParser::parseKeyframeRule(const CSSParserContext& context,
 }
 
 bool CSSParser::parseSupportsCondition(const String& condition) {
-  CSSTokenizer::Scope scope(condition);
+  CSSTokenizer tokenizer(condition);
   CSSParserImpl parser(strictCSSParserContext());
-  return CSSSupportsParser::supportsCondition(scope.tokenRange(), parser) ==
+  return CSSSupportsParser::supportsCondition(tokenizer.tokenRange(), parser) ==
          CSSSupportsParser::Supported;
 }
 

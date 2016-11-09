@@ -115,8 +115,8 @@ TEST(SizesCalcParserTest, Basic) {
   MediaValues* mediaValues = MediaValuesCached::create(data);
 
   for (unsigned i = 0; testCases[i].input; ++i) {
-    SizesCalcParser calcParser(
-        CSSTokenizer::Scope(testCases[i].input).tokenRange(), mediaValues);
+    SizesCalcParser calcParser(CSSTokenizer(testCases[i].input).tokenRange(),
+                               mediaValues);
     ASSERT_EQ(testCases[i].valid, calcParser.isValid());
     if (calcParser.isValid())
       ASSERT_EQ(testCases[i].output, calcParser.result());

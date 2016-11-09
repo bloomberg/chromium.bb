@@ -72,8 +72,8 @@ void parseRootMargin(String rootMarginParameter,
   // "1px 2px" = top/bottom left/right
   // "1px 2px 3px" = top left/right bottom
   // "1px 2px 3px 4px" = top left right bottom
-  CSSTokenizer::Scope tokenizerScope(rootMarginParameter);
-  CSSParserTokenRange tokenRange = tokenizerScope.tokenRange();
+  CSSTokenizer tokenizer(rootMarginParameter);
+  CSSParserTokenRange tokenRange = tokenizer.tokenRange();
   while (tokenRange.peek().type() != EOFToken &&
          !exceptionState.hadException()) {
     if (rootMargin.size() == 4) {

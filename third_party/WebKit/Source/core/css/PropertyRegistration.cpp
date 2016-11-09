@@ -90,10 +90,10 @@ void PropertyRegistration::registerProperty(
   }
 
   if (descriptor.hasInitialValue()) {
-    CSSTokenizer::Scope scope(descriptor.initialValue());
+    CSSTokenizer tokenizer(descriptor.initialValue());
     bool isAnimationTainted = false;
     const CSSValue* initial =
-        syntaxDescriptor.parse(scope.tokenRange(), isAnimationTainted);
+        syntaxDescriptor.parse(tokenizer.tokenRange(), isAnimationTainted);
     if (!initial) {
       exceptionState.throwDOMException(
           SyntaxError,
@@ -106,8 +106,8 @@ void PropertyRegistration::registerProperty(
           "The initial value provided is not computationally independent.");
       return;
     }
-    RefPtr<CSSVariableData> initialVariableData =
-        CSSVariableData::create(scope.tokenRange(), isAnimationTainted, false);
+    RefPtr<CSSVariableData> initialVariableData = CSSVariableData::create(
+        tokenizer.tokenRange(), isAnimationTainted, false);
     registry.registerProperty(atomicName, syntaxDescriptor,
                               descriptor.inherits(), initial,
                               initialVariableData.release());

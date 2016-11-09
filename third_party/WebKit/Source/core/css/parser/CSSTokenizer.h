@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/css/parser/CSSParserToken.h"
+#include "core/css/parser/CSSTokenizerInputStream.h"
 #include "core/html/parser/InputStreamPreprocessor.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/StringView.h"
@@ -22,34 +23,18 @@ class CSSParserTokenRange;
 
 class CORE_EXPORT CSSTokenizer {
   WTF_MAKE_NONCOPYABLE(CSSTokenizer);
-  USING_FAST_MALLOC(CSSTokenizer);
+  DISALLOW_NEW();
 
  public:
-  class CORE_EXPORT Scope {
-    DISALLOW_NEW();
+  CSSTokenizer(const String&);
+  CSSTokenizer(const String&, CSSParserObserverWrapper&);  // For the inspector
 
-   public:
-    Scope(const String&);
-    Scope(const String&, CSSParserObserverWrapper&);  // For the inspector
+  CSSParserTokenRange tokenRange();
+  unsigned tokenCount();
 
-    CSSParserTokenRange tokenRange();
-    unsigned tokenCount();
-
-    Vector<String> takeEscapedStrings() { return std::move(m_stringPool); }
-
-   private:
-    void storeString(const String& string) { m_stringPool.append(string); }
-    Vector<CSSParserToken, 32> m_tokens;
-    // We only allocate strings when escapes are used.
-    Vector<String> m_stringPool;
-    String m_string;
-
-    friend class CSSTokenizer;
-  };
+  Vector<String> takeEscapedStrings() { return std::move(m_stringPool); }
 
  private:
-  CSSTokenizer(CSSTokenizerInputStream&, Scope&);
-
   CSSParserToken nextToken();
 
   UChar consume();
@@ -115,9 +100,12 @@ class CORE_EXPORT CSSTokenizer {
   using CodePoint = CSSParserToken (CSSTokenizer::*)(UChar);
   static const CodePoint codePoints[];
 
+  CSSTokenizerInputStream m_input;
   Vector<CSSParserTokenType, 8> m_blockStack;
-  CSSTokenizerInputStream& m_input;
-  Scope& m_scope;
+
+  Vector<CSSParserToken, 32> m_tokens;
+  // We only allocate strings when escapes are used.
+  Vector<String> m_stringPool;
 };
 
 }  // namespace blink

@@ -71,8 +71,8 @@ void testTokens(const String& string,
 
   CSSParserTokenRange expected(expectedTokens);
 
-  CSSTokenizer::Scope actualScope(string);
-  CSSParserTokenRange actual = actualScope.tokenRange();
+  CSSTokenizer tokenizer(string);
+  CSSParserTokenRange actual = tokenizer.tokenRange();
 
   // Just check that serialization doesn't hit any asserts
   actual.serialize();
@@ -495,8 +495,8 @@ TEST(CSSTokenizerBlockTest, Basic) {
       {0, 0, 0}  // Do not remove the terminator line.
   };
   for (int i = 0; testCases[i].input; ++i) {
-    CSSTokenizer::Scope scope(testCases[i].input);
-    CSSParserTokenRange range = scope.tokenRange();
+    CSSTokenizer tokenizer(testCases[i].input);
+    CSSParserTokenRange range = tokenizer.tokenRange();
     MediaQueryBlockWatcher blockWatcher;
 
     unsigned maxLevel = 0;

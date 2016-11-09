@@ -117,9 +117,9 @@ CSSValue* CSSUnparsedValue::toCSSValue() const {
     }
   }
 
-  CSSTokenizer::Scope scope(tokens.toString());
+  CSSTokenizer tokenizer(tokens.toString());
   return CSSVariableReferenceValue::create(CSSVariableData::create(
-      scope.tokenRange(), false /* isAnimationTainted */,
+      tokenizer.tokenRange(), false /* isAnimationTainted */,
       true /* needsVariableResolution */));
 }
 
