@@ -22,8 +22,12 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/controls/table/table_view_observer.h"
+#include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/controls/textfield/textfield_controller.h"
+#include "ui/views/layout/grid_layout.h"
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/window_manager_connection.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -33,7 +37,8 @@ namespace catalog_viewer {
 namespace {
 
 class CatalogViewerContents : public views::WidgetDelegateView,
-                              public ui::TableModel {
+                              public ui::TableModel,
+                              public views::TextfieldController {
  public:
   CatalogViewerContents(CatalogViewer* catalog_viewer,
                         catalog::mojom::CatalogPtr catalog)
@@ -41,23 +46,35 @@ class CatalogViewerContents : public views::WidgetDelegateView,
         catalog_(std::move(catalog)),
         table_view_(nullptr),
         table_view_parent_(nullptr),
-        observer_(nullptr) {
-    table_view_ = new views::TableView(this, GetColumns(), views::TEXT_ONLY,
-                                       false);
+        observer_(nullptr),
+        capability_(new views::Textfield) {
+    const int kPadding = 5;
     set_background(views::Background::CreateStandardPanelBackground());
 
-    table_view_parent_ = table_view_->CreateParentIfNecessary();
-    AddChildView(table_view_parent_);
+    views::GridLayout* layout = new views::GridLayout(this);
+    layout->SetInsets(kPadding, kPadding, kPadding, kPadding);
+    SetLayoutManager(layout);
 
-    // We don't want to show an empty UI so we just block until we have all the
-    // data. GetEntries is a sync call.
-    std::vector<catalog::mojom::EntryPtr> entries;
-    bool got = catalog_->GetEntries(base::nullopt, &entries);
-    if (got) {
-      for (auto& entry : entries)
-        entries_.push_back(Entry(entry->display_name, entry->name));
-      observer_->OnModelChanged();
-    }
+    views::ColumnSet* columns = layout->AddColumnSet(0);
+    columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
+                       views::GridLayout::USE_PREF, 0, 0);
+    columns->AddPaddingColumn(0, kPadding);
+    columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+                       views::GridLayout::USE_PREF, 0, 0);
+
+    layout->StartRow(0, 0);
+    layout->AddView(new views::Label(base::WideToUTF16(L"Capability:")));
+    layout->AddView(capability_);
+    capability_->set_controller(this);
+
+    layout->StartRowWithPadding(1, 0, 0, kPadding);
+    table_view_ =
+        new views::TableView(this, GetColumns(), views::TEXT_ONLY, false);
+    table_view_parent_ = table_view_->CreateParentIfNecessary();
+    layout->AddView(table_view_parent_, 3, 1, views::GridLayout::FILL,
+                    views::GridLayout::FILL);
+
+    GetAllEntries();
   }
   ~CatalogViewerContents() override {
     table_view_->SetModel(nullptr);
@@ -89,13 +106,6 @@ class CatalogViewerContents : public views::WidgetDelegateView,
     return *rb.GetImageSkiaNamed(IDR_NOTIFICATION_SETTINGS);
   }
 
-  // Overridden from views::View:
-  void Layout() override {
-    gfx::Rect bounds = GetLocalBounds();
-    bounds.Inset(10, 10);
-    table_view_parent_->SetBoundsRect(bounds);
-  }
-
   // Overridden from ui::TableModel:
   int RowCount() override {
     return static_cast<int>(entries_.size());
@@ -114,6 +124,45 @@ class CatalogViewerContents : public views::WidgetDelegateView,
     }
     return base::string16();
   }
+
+  // Overriden from views::TextFieldController:
+  bool HandleKeyEvent(views::Textfield* sender,
+                      const ui::KeyEvent& key_event) override {
+    if (key_event.type() != ui::ET_KEY_PRESSED ||
+        key_event.key_code() != ui::VKEY_RETURN)
+      return false;
+
+    if (sender->text().length()) {
+      catalog_->GetEntriesProvidingCapability(
+          base::UTF16ToUTF8(sender->text()),
+          base::Bind(&CatalogViewerContents::OnReceivedEntries,
+                     base::Unretained(this)));
+    } else {
+      GetAllEntries();
+    }
+
+    return true;
+  }
+
+  void GetAllEntries() {
+    // We don't want to show an empty UI so we just block until we have all the
+    // data. GetEntries is a sync call.
+    std::vector<catalog::mojom::EntryPtr> entries;
+    if (catalog_->GetEntries(base::nullopt, &entries))
+      UpdateEntries(entries);
+  }
+
+  void OnReceivedEntries(std::vector<catalog::mojom::EntryPtr> entries) {
+    UpdateEntries(entries);
+  }
+
+  void UpdateEntries(const std::vector<catalog::mojom::EntryPtr>& entries) {
+    entries_.clear();
+    for (auto& entry : entries)
+      entries_.push_back(Entry(entry->display_name, entry->name));
+    observer_->OnModelChanged();
+  }
+
   void SetObserver(ui::TableModelObserver* observer) override {
     observer_ = observer;
   }
@@ -148,6 +197,7 @@ class CatalogViewerContents : public views::WidgetDelegateView,
   views::TableView* table_view_;
   views::View* table_view_parent_;
   ui::TableModelObserver* observer_;
+  views::Textfield* capability_;
 
   std::vector<Entry> entries_;
 
