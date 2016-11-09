@@ -29,7 +29,6 @@
 #include "net/ssl/ssl_info.h"
 
 using captive_portal::CaptivePortalResult;
-using content::ResourceType;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(CaptivePortalTabHelper);
 
