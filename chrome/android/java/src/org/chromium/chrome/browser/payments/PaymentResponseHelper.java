@@ -28,6 +28,7 @@ public class PaymentResponseHelper implements NormalizedAddressRequestDelegate {
         void onPaymentResponseReady(PaymentResponse response);
     }
 
+    private AutofillAddress mSelectedShippingAddress;
     private PaymentResponse mPaymentResponse;
     private PaymentResponseRequesterDelegate mDelegate;
     private boolean mIsWaitingForShippingNormalization;
@@ -68,23 +69,23 @@ public class PaymentResponseHelper implements NormalizedAddressRequestDelegate {
             // Shipping addresses are created in PaymentRequestImpl.init(). These should all be
             // instances of AutofillAddress.
             assert selectedShippingAddress instanceof AutofillAddress;
-            AutofillAddress selectedAutofillAddress = (AutofillAddress) selectedShippingAddress;
+            mSelectedShippingAddress = (AutofillAddress) selectedShippingAddress;
 
             // Addresses to be sent to the merchant should always be complete.
-            assert selectedAutofillAddress.isComplete();
+            assert mSelectedShippingAddress.isComplete();
 
             // Record the use of the profile.
             PersonalDataManager.getInstance().recordAndLogProfileUse(
-                    selectedAutofillAddress.getProfile().getGUID());
+                    mSelectedShippingAddress.getProfile().getGUID());
 
-            mPaymentResponse.shippingAddress = selectedAutofillAddress.toPaymentAddress();
+            mPaymentResponse.shippingAddress = mSelectedShippingAddress.toPaymentAddress();
 
             // The shipping address needs to be normalized before sending the response to the
             // merchant.
             mIsWaitingForShippingNormalization = true;
             PersonalDataManager.getInstance().normalizeAddress(
-                    selectedAutofillAddress.getProfile().getGUID(),
-                    AutofillAddress.getCountryCode(selectedAutofillAddress.getProfile()), this);
+                    mSelectedShippingAddress.getProfile().getGUID(),
+                    AutofillAddress.getCountryCode(mSelectedShippingAddress.getProfile()), this);
         }
     }
 
@@ -130,8 +131,8 @@ public class PaymentResponseHelper implements NormalizedAddressRequestDelegate {
 
         if (profile != null) {
             // The normalization finished first: use the normalized address.
-            mPaymentResponse.shippingAddress =
-                    new AutofillAddress(profile, true /* isComplete */).toPaymentAddress();
+            mSelectedShippingAddress.completeAddress(profile);
+            mPaymentResponse.shippingAddress = mSelectedShippingAddress.toPaymentAddress();
         }
 
         // Wait for the payment details before sending the response.

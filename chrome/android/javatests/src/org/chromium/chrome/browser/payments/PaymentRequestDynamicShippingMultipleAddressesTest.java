@@ -41,14 +41,19 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest extends PaymentR
                 "Maggie Simpson", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
                 "90210", "", "Uzbekistan", "555 123-4567", "maggie@simpson.com", ""),
 
-        // Incomplete profile.
+        // Incomplete profile (invalid address).
         new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
-                "Marge Simpson", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
-                "90210", "", "US", "", "marge@simpson.com", ""),
+                "Marge Simpson", "Acme Inc.", "123 Main", "California", "", "",
+                "90210", "", "US", "555 123-4567", "marge@simpson.com", ""),
 
-        // Incomplete profile.
+        // Incomplete profile (missing recipient).
         new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
-                "Professor Frink", "Acme Inc.", "123 Main", "California", "", "",
+                "", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
+                "90210", "", "US", "555 123-4567", "lisa@simpson.com", ""),
+
+        // Incomplete profile (need more information).
+        new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+                "", "Acme Inc.", "123 Main", "California", "", "",
                 "90210", "", "US", "555 123-4567", "lisa@simpson.com", ""),
     };
 
@@ -178,5 +183,29 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest extends PaymentR
         CharSequence expectedString = getInstrumentation().getTargetContext().getString(
                 R.string.payments_unsupported_shipping_address);
         assertEquals(expectedString, actualString);
+    }
+
+    /**
+     * Make sure the information required message has been displayed for incomplete profile
+     * correctly.
+     */
+    @MediumTest
+    @Feature({"Payments"})
+    public void testShippingAddressEditRequiredMessage()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        // Create four incomplete profiles with different missing information.
+        mProfilesToAdd = new AutofillProfile[] {AUTOFILL_PROFILES[0], AUTOFILL_PROFILES[4],
+                AUTOFILL_PROFILES[5], AUTOFILL_PROFILES[6]};
+        mCountsToSet = new int[] {15, 10, 5, 1};
+        mDatesToSet = new int[] {5000, 5000, 5000, 1};
+
+        triggerUIAndWait(mReadyForInput);
+        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+
+        assertEquals(4, getNumberOfShippingAddressSuggestions());
+        assertTrue(getShippingAddressSuggestionLabel(0).contains("Phone number required"));
+        assertTrue(getShippingAddressSuggestionLabel(1).contains("Invalid address"));
+        assertTrue(getShippingAddressSuggestionLabel(2).contains("Recipient required"));
+        assertTrue(getShippingAddressSuggestionLabel(3).contains("More information required"));
     }
 }

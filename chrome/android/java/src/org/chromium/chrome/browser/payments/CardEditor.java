@@ -153,7 +153,9 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
             //    browser restart. Server profiles are not supported as billing addresses.
             // 2) Include only complete profiles, so that user launches the editor only when
             //    explicitly selecting [+ ADD ADDRESS] in the dropdown.
-            if (profile.getIsLocal() && mAddressEditor.isProfileComplete(profile)) {
+            if (profile.getIsLocal()
+                    && AutofillAddress.checkAddressCompletionStatus(profile)
+                            == AutofillAddress.COMPLETE) {
                 mProfilesForBillingAddress.put(profile.getGUID(), profile);
             }
         }
@@ -313,13 +315,14 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
     }
 
     /**
-     * Adds the given billing address to the list of billing addresses. If the address is already
-     * known, then updates the existing address. Should be called before opening the card editor.
+     * Adds the given billing address to the list of billing addresses, if it's complete. If the
+     * address is already known, then updates the existing address. Should be called before opening
+     * the card editor.
      *
-     * @param billingAddress The billing address to add or update. Should not be null. Should be
-     *                       complete.
+     * @param billingAddress The billing address to add or update. Should not be null.
      */
-    public void updateBillingAddress(AutofillAddress billingAddress) {
+    public void updateBillingAddressIfComplete(AutofillAddress billingAddress) {
+        if (!billingAddress.isComplete()) return;
         mProfilesForBillingAddress.put(billingAddress.getIdentifier(), billingAddress.getProfile());
     }
 

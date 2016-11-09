@@ -296,8 +296,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
                 // Only suggest addresses that have a street address.
                 if (!TextUtils.isEmpty(profile.getStreetAddress())) {
-                    boolean isComplete = mAddressEditor.isProfileComplete(profile);
-                    addresses.add(new AutofillAddress(profile, isComplete));
+                    addresses.add(new AutofillAddress(mContext, profile));
                 }
             }
 
@@ -786,7 +785,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                     providePaymentInformation();
                 } else {
                     if (toEdit == null) mShippingAddressesSection.addAndSelectItem(completeAddress);
-                    mCardEditor.updateBillingAddress(completeAddress);
+                    mCardEditor.updateBillingAddressIfComplete(completeAddress);
                     mClient.onShippingAddressChange(completeAddress.toPaymentAddress());
                 }
             }
