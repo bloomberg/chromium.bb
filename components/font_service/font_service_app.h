@@ -37,7 +37,7 @@ class FontServiceApp
               mojo::InterfaceRequest<mojom::FontService> request) override;
 
   // FontService:
-  void MatchFamilyName(const mojo::String& family_name,
+  void MatchFamilyName(const std::string& family_name,
                        mojom::TypefaceStylePtr requested_style,
                        const MatchFamilyNameCallback& callback) override;
   void OpenStream(uint32_t id_number,

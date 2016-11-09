@@ -9,8 +9,6 @@ mojom("mojo_bindings") {
     "common/contextual_search_js_api_service.mojom",
     "common/overlay_page_notifier_service.mojom",
   ]
-
-  use_new_wrapper_types = false
 }
 
 static_library("browser") {

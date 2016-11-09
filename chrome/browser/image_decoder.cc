@@ -174,9 +174,7 @@ void ImageDecoder::DecodeImageInSandbox(
     mojo_codec = mojom::ImageCodec::ROBUST_PNG;
 #endif  // defined(OS_CHROMEOS)
   decoder_->DecodeImage(
-      mojo::Array<uint8_t>(std::move(image_data)),
-      mojo_codec,
-      shrink_to_fit,
+      image_data, mojo_codec, shrink_to_fit,
       base::Bind(&OnDecodeImageDone,
                  base::Bind(&ImageDecoder::OnDecodeImageFailed, this),
                  base::Bind(&ImageDecoder::OnDecodeImageSucceeded, this),

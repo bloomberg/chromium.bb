@@ -15,11 +15,10 @@ class ImageDecoderImpl : public mojom::ImageDecoder {
   ~ImageDecoderImpl() override;
 
   // Overridden from mojom::ImageDecoder:
-  void DecodeImage(
-      mojo::Array<uint8_t> encoded_data,
-      mojom::ImageCodec codec,
-      bool shrink_to_fit,
-      const DecodeImageCallback& callback) override;
+  void DecodeImage(const std::vector<uint8_t>& encoded_data,
+                   mojom::ImageCodec codec,
+                   bool shrink_to_fit,
+                   const DecodeImageCallback& callback) override;
 
  private:
   int64_t max_message_size_;

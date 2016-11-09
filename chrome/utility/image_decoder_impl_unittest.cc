@@ -41,8 +41,8 @@ class Request {
 
   void DecodeImage(const std::vector<unsigned char>& image, bool shrink) {
     decoder_->DecodeImage(
-        mojo::Array<uint8_t>::From(image), ImageCodec::DEFAULT,
-        shrink, base::Bind(&Request::OnRequestDone, base::Unretained(this)));
+        image, ImageCodec::DEFAULT, shrink,
+        base::Bind(&Request::OnRequestDone, base::Unretained(this)));
   }
 
   const SkBitmap& bitmap() const { return bitmap_; }

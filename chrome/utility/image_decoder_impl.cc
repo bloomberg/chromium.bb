@@ -34,12 +34,11 @@ ImageDecoderImpl::ImageDecoderImpl(int64_t max_message_size)
 ImageDecoderImpl::~ImageDecoderImpl() {
 }
 
-void ImageDecoderImpl::DecodeImage(
-    mojo::Array<uint8_t> encoded_data,
-    mojom::ImageCodec codec,
-    bool shrink_to_fit,
-    const DecodeImageCallback& callback) {
-  if (encoded_data.size() == 0) {
+void ImageDecoderImpl::DecodeImage(const std::vector<uint8_t>& encoded_data,
+                                   mojom::ImageCodec codec,
+                                   bool shrink_to_fit,
+                                   const DecodeImageCallback& callback) {
+  if (encoded_data.empty()) {
     callback.Run(SkBitmap());
     return;
   }
@@ -48,26 +47,22 @@ void ImageDecoderImpl::DecodeImage(
 #if defined(OS_CHROMEOS)
   if (codec == mojom::ImageCodec::ROBUST_JPEG) {
     // Our robust jpeg decoding is using IJG libjpeg.
-    if (encoded_data.size()) {
-      std::unique_ptr<SkBitmap> decoded_jpeg(gfx::JPEGCodecRobustSlow::Decode(
-          encoded_data.storage().data(), encoded_data.size()));
-      if (decoded_jpeg.get() && !decoded_jpeg->empty())
-        decoded_image = *decoded_jpeg;
-    }
+    std::unique_ptr<SkBitmap> decoded_jpeg(gfx::JPEGCodecRobustSlow::Decode(
+        encoded_data.data(), encoded_data.size()));
+    if (decoded_jpeg.get() && !decoded_jpeg->empty())
+      decoded_image = *decoded_jpeg;
   } else if (codec == mojom::ImageCodec::ROBUST_PNG) {
     // Our robust PNG decoding is using libpng.
-    if (encoded_data.size()) {
-      SkBitmap decoded_png;
-      if (gfx::PNGCodec::Decode(encoded_data.storage().data(),
-                                encoded_data.size(), &decoded_png)) {
-        decoded_image = decoded_png;
-      }
+    SkBitmap decoded_png;
+    if (gfx::PNGCodec::Decode(encoded_data.data(), encoded_data.size(),
+                              &decoded_png)) {
+      decoded_image = decoded_png;
     }
   }
 #endif  // defined(OS_CHROMEOS)
   if (codec == mojom::ImageCodec::DEFAULT) {
-    decoded_image = content::DecodeImage(encoded_data.storage().data(),
-                                         gfx::Size(), encoded_data.size());
+    decoded_image = content::DecodeImage(encoded_data.data(), gfx::Size(),
+                                         encoded_data.size());
   }
 
   if (!decoded_image.isNull()) {

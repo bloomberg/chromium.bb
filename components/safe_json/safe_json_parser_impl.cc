@@ -61,7 +61,7 @@ void SafeJsonParserImpl::OnConnectionError() {
 }
 
 void SafeJsonParserImpl::OnParseDone(const base::ListValue& wrapper,
-                                     mojo::String error) {
+                                     const base::Optional<std::string>& error) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
 
   // Shut down the utility process.
@@ -73,8 +73,8 @@ void SafeJsonParserImpl::OnParseDone(const base::ListValue& wrapper,
     const base::Value* value = nullptr;
     CHECK(wrapper.Get(0, &value));
     parsed_json.reset(value->DeepCopy());
-  } else {
-    error_message = error.get();
+  } else if (error.has_value()) {
+    error_message = error.value();
   }
 
   // Call ReportResults() on caller's thread.

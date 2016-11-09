@@ -66,7 +66,7 @@ void FontServiceApp::Create(
   bindings_.AddBinding(this, std::move(request));
 }
 
-void FontServiceApp::MatchFamilyName(const mojo::String& family_name,
+void FontServiceApp::MatchFamilyName(const std::string& family_name,
                                      mojom::TypefaceStylePtr requested_style,
                                      const MatchFamilyNameCallback& callback) {
   SkFontConfigInterface::FontIdentity result_identity;

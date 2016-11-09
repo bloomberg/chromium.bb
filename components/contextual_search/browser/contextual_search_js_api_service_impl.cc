@@ -18,7 +18,7 @@ ContextualSearchJsApiServiceImpl::ContextualSearchJsApiServiceImpl(
 ContextualSearchJsApiServiceImpl::~ContextualSearchJsApiServiceImpl() {}
 
 void ContextualSearchJsApiServiceImpl::HandleSetCaption(
-    const mojo::String& caption,
+    const std::string& caption,
     bool does_answer) {
   contextual_search_js_api_handler_->SetCaption(caption, does_answer);
 }

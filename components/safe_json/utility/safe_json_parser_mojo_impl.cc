@@ -24,18 +24,18 @@ void SafeJsonParserMojoImpl::Create(
                           std::move(request));
 }
 
-void SafeJsonParserMojoImpl::Parse(const mojo::String& json,
+void SafeJsonParserMojoImpl::Parse(const std::string& json,
                                    const ParseCallback& callback) {
   int error_code;
   std::string error;
   std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
-      json.get(), base::JSON_PARSE_RFC, &error_code, &error);
+      json, base::JSON_PARSE_RFC, &error_code, &error);
   base::ListValue wrapper;
   if (value) {
     wrapper.Append(std::move(value));
-    callback.Run(wrapper, nullptr);
+    callback.Run(wrapper, base::nullopt);
   } else {
-    callback.Run(wrapper, error);
+    callback.Run(wrapper, base::make_optional(std::move(error)));
   }
 }
 

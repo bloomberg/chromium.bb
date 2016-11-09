@@ -106,7 +106,7 @@ void FontServiceThread::MatchFamilyNameImpl(
 
   pending_waitable_events_.insert(done_event);
   font_service_->MatchFamilyName(
-      mojo::String(family_name), std::move(style),
+      family_name, std::move(style),
       base::Bind(&FontServiceThread::OnMatchFamilyNameComplete, this,
                  done_event, out_valid, out_font_identity, out_family_name,
                  out_style));
@@ -119,7 +119,7 @@ void FontServiceThread::OnMatchFamilyNameComplete(
     SkString* out_family_name,
     SkFontStyle* out_style,
     mojom::FontIdentityPtr font_identity,
-    mojo::String family_name,
+    const std::string& family_name,
     mojom::TypefaceStylePtr style) {
   DCHECK_EQ(GetThreadId(), base::PlatformThread::CurrentId());
   pending_waitable_events_.erase(done_event);

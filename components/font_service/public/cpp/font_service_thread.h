@@ -71,7 +71,7 @@ class FontServiceThread : public base::Thread,
       SkString* out_family_name,
       SkFontStyle* out_style,
       mojom::FontIdentityPtr font_identity,
-      mojo::String family_name,
+      const std::string& family_name,
       mojom::TypefaceStylePtr style);
 
   // Implementation of OpenStream; same threading restrictions as MatchFamily.
