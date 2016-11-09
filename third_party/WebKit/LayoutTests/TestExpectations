@@ -535,11 +535,6 @@ crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Fai
 crbug.com/410145 [ Win ] fast/table/column-in-inline.html [ Failure ]
 crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/serviceworker-on-insecure-origin.html [ Pass ]
 
-# Diff of -expected.txt is too large to upload.
-Bug(tkent) imported/wpt/html/dom/reflection-embedded.html [ NeedsManualRebaseline ]
-Bug(tkent) imported/wpt/html/dom/reflection-forms.html [ NeedsManualRebaseline ]
-Bug(tkent) imported/wpt/html/dom/reflection-text.html [ NeedsManualRebaseline ]
-
 # In imported/wpt/html/, we prefer checking in failure
 # expectation files. The following tests with [ Failure ] don't have failure
 # expectation files because they contain local path names.

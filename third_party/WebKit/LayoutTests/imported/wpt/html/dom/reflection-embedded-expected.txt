@@ -1,655 +1,450 @@
-CONSOLE ERROR: line 708: Failed parsing 'srcset' attribute value since it has an unknown descriptor.
-CONSOLE ERROR: line 708: Dropped srcset candidate "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007"
-CONSOLE ERROR: line 708: Failed parsing 'srcset' attribute value since it has an unknown descriptor.
-CONSOLE ERROR: line 708: Dropped srcset candidate "[object"
-CONSOLE ERROR: line 732: Failed parsing 'srcset' attribute value since it has an unknown descriptor.
-CONSOLE ERROR: line 732: Dropped srcset candidate "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007"
-CONSOLE ERROR: line 732: Failed parsing 'srcset' attribute value since it has an unknown descriptor.
-CONSOLE ERROR: line 732: Dropped srcset candidate "[object"
+CONSOLE ERROR: line 707: Failed parsing 'srcset' attribute value since it has an unknown descriptor.
+CONSOLE ERROR: line 707: Dropped srcset candidate "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007"
+CONSOLE ERROR: line 707: Failed parsing 'srcset' attribute value since it has an unknown descriptor.
+CONSOLE ERROR: line 707: Dropped srcset candidate "[object"
+CONSOLE ERROR: line 724: Failed parsing 'srcset' attribute value since it has an unknown descriptor.
+CONSOLE ERROR: line 724: Dropped srcset candidate "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007"
+CONSOLE ERROR: line 724: Failed parsing 'srcset' attribute value since it has an unknown descriptor.
+CONSOLE ERROR: line 724: Dropped srcset candidate "[object"
 This is a testharness.js-based test.
-PASS img.title: 77 tests
-PASS img.lang: 77 tests
-PASS img.dir: 151 tests
-PASS img.className (<img class>): 77 tests
-PASS img.hidden: 79 tests
-PASS img.accessKey: 77 tests
-PASS img.tabIndex: 53 tests
-PASS img.alt: 77 tests
-PASS img.src: 92 tests
-PASS img.srcset: 77 tests
-PASS img.crossOrigin: 127 tests
-PASS img.useMap: 77 tests
-PASS img.isMap: 79 tests
-PASS img.width: 18 tests
-FAIL img.width: IDL set to 2147483648 followed by getAttribute() assert_equals: expected "0" but got "-2147483648"
-FAIL img.width: IDL set to 2147483648 followed by IDL get assert_equals: expected 0 but got -2147483648
-PASS img.width: IDL set to 4294967295 should not throw 
-FAIL img.width: IDL set to 4294967295 followed by getAttribute() assert_equals: expected "0" but got "-1"
-FAIL img.width: IDL set to 4294967295 followed by IDL get assert_equals: expected 0 but got -1
-PASS img.height: 18 tests
-FAIL img.height: IDL set to 2147483648 followed by getAttribute() assert_equals: expected "0" but got "-2147483648"
-FAIL img.height: IDL set to 2147483648 followed by IDL get assert_equals: expected 0 but got -2147483648
-PASS img.height: IDL set to 4294967295 should not throw 
-FAIL img.height: IDL set to 4294967295 followed by getAttribute() assert_equals: expected "0" but got "-1"
-FAIL img.height: IDL set to 4294967295 followed by IDL get assert_equals: expected 0 but got -1
-PASS img.name: 77 tests
-PASS img.lowsrc: 92 tests
-PASS img.align: 77 tests
-PASS img.hspace: 37 tests
-FAIL img.hspace: setAttribute() to "\v7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.hspace: 13 tests
-FAIL img.hspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.hspace: 3 tests
-FAIL img.hspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.hspace: 3 tests
-FAIL img.hspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.hspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL img.hspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.hspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL img.hspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.hspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL img.hspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.hspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL img.hspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.hspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL img.hspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.hspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL img.hspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.hspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL img.hspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.hspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL img.hspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.hspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL img.hspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.hspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL img.hspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.hspace: 3 tests
-FAIL img.hspace: setAttribute() to "　7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.hspace: 45 tests
-PASS img.vspace: 37 tests
-FAIL img.vspace: setAttribute() to "\v7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.vspace: 13 tests
-FAIL img.vspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.vspace: 3 tests
-FAIL img.vspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.vspace: 3 tests
-FAIL img.vspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.vspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL img.vspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.vspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL img.vspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.vspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL img.vspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.vspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL img.vspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.vspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL img.vspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.vspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL img.vspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.vspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL img.vspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.vspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL img.vspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.vspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL img.vspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.vspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL img.vspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.vspace: 3 tests
-FAIL img.vspace: setAttribute() to "　7" followed by IDL get assert_equals: expected 0 but got 7
-PASS img.vspace: 45 tests
-PASS img.longDesc: 92 tests
-PASS img.border: 77 tests
-PASS iframe.title: 77 tests
-PASS iframe.lang: 77 tests
-PASS iframe.dir: 151 tests
-PASS iframe.className (<iframe class>): 77 tests
-PASS iframe.hidden: 79 tests
-PASS iframe.accessKey: 77 tests
-PASS iframe.tabIndex: 53 tests
-PASS iframe.src: 92 tests
-PASS iframe.srcdoc: 77 tests
-PASS iframe.name: 77 tests
-PASS iframe.allowFullscreen: 79 tests
-PASS iframe.width: 77 tests
-PASS iframe.height: 77 tests
-PASS iframe.align: 77 tests
-PASS iframe.scrolling: 77 tests
-PASS iframe.frameBorder: 77 tests
-PASS iframe.longDesc: 92 tests
-PASS iframe.marginHeight: 77 tests
-PASS iframe.marginWidth: 77 tests
-PASS embed.title: 77 tests
-PASS embed.lang: 77 tests
-PASS embed.dir: 151 tests
-PASS embed.className (<embed class>): 77 tests
-PASS embed.hidden: 79 tests
-PASS embed.accessKey: 77 tests
-PASS embed.tabIndex: 53 tests
-PASS embed.src: 92 tests
-PASS embed.type: 77 tests
-PASS embed.width: 77 tests
-PASS embed.height: 77 tests
-PASS embed.align: 77 tests
-PASS embed.name: 77 tests
-PASS object.title: 77 tests
-PASS object.lang: 77 tests
-PASS object.dir: 151 tests
-PASS object.className (<object class>): 77 tests
-PASS object.hidden: 79 tests
-PASS object.accessKey: 77 tests
-PASS object.tabIndex: 53 tests
-PASS object.data: 92 tests
-PASS object.type: 77 tests
+PASS img.title: 32 tests
+PASS img.lang: 32 tests
+PASS img.dir: 62 tests
+PASS img.className (<img class>): 32 tests
+PASS img.hidden: 33 tests
+PASS img.accessKey: 32 tests
+PASS img.tabIndex: 24 tests
+PASS img.alt: 32 tests
+PASS img.src: 38 tests
+PASS img.srcset: 32 tests
+PASS img.crossOrigin: 52 tests
+PASS img.useMap: 32 tests
+PASS img.isMap: 33 tests
+PASS img.width: 7 tests
+FAIL img.width: IDL set to 2147483648 assert_equals: getAttribute() expected "0" but got "-2147483648"
+FAIL img.width: IDL set to 4294967295 assert_equals: getAttribute() expected "0" but got "-1"
+PASS img.height: 7 tests
+FAIL img.height: IDL set to 2147483648 assert_equals: getAttribute() expected "0" but got "-2147483648"
+FAIL img.height: IDL set to 4294967295 assert_equals: getAttribute() expected "0" but got "-1"
+PASS img.name: 32 tests
+PASS img.lowsrc: 38 tests
+PASS img.align: 32 tests
+PASS img.hspace: 19 tests
+FAIL img.hspace: setAttribute() to "\v7" assert_equals: IDL get expected 0 but got 7
+PASS img.hspace: 6 tests
+FAIL img.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+PASS img.hspace: setAttribute() to " 7" 
+FAIL img.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+PASS img.hspace: setAttribute() to "᠎7" 
+FAIL img.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL img.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL img.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL img.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL img.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL img.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL img.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL img.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL img.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL img.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL img.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+PASS img.hspace: setAttribute() to " 7" 
+FAIL img.hspace: setAttribute() to "　7" assert_equals: IDL get expected 0 but got 7
+PASS img.hspace: 19 tests
+PASS img.vspace: 19 tests
+FAIL img.vspace: setAttribute() to "\v7" assert_equals: IDL get expected 0 but got 7
+PASS img.vspace: 6 tests
+FAIL img.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+PASS img.vspace: setAttribute() to " 7" 
+FAIL img.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+PASS img.vspace: setAttribute() to "᠎7" 
+FAIL img.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL img.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL img.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL img.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL img.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL img.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL img.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL img.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL img.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL img.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL img.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+PASS img.vspace: setAttribute() to " 7" 
+FAIL img.vspace: setAttribute() to "　7" assert_equals: IDL get expected 0 but got 7
+PASS img.vspace: 19 tests
+PASS img.longDesc: 38 tests
+PASS img.border: 32 tests
+PASS iframe.title: 32 tests
+PASS iframe.lang: 32 tests
+PASS iframe.dir: 62 tests
+PASS iframe.className (<iframe class>): 32 tests
+PASS iframe.hidden: 33 tests
+PASS iframe.accessKey: 32 tests
+PASS iframe.tabIndex: 24 tests
+PASS iframe.src: 38 tests
+PASS iframe.srcdoc: 32 tests
+PASS iframe.name: 32 tests
+PASS iframe.allowFullscreen: 33 tests
+PASS iframe.width: 32 tests
+PASS iframe.height: 32 tests
+PASS iframe.align: 32 tests
+PASS iframe.scrolling: 32 tests
+PASS iframe.frameBorder: 32 tests
+PASS iframe.longDesc: 38 tests
+PASS iframe.marginHeight: 32 tests
+PASS iframe.marginWidth: 32 tests
+PASS embed.title: 32 tests
+PASS embed.lang: 32 tests
+PASS embed.dir: 62 tests
+PASS embed.className (<embed class>): 32 tests
+PASS embed.hidden: 33 tests
+PASS embed.accessKey: 32 tests
+PASS embed.tabIndex: 24 tests
+PASS embed.src: 38 tests
+PASS embed.type: 32 tests
+PASS embed.width: 32 tests
+PASS embed.height: 32 tests
+PASS embed.align: 32 tests
+PASS embed.name: 32 tests
+PASS object.title: 32 tests
+PASS object.lang: 32 tests
+PASS object.dir: 62 tests
+PASS object.className (<object class>): 32 tests
+PASS object.hidden: 33 tests
+PASS object.accessKey: 32 tests
+PASS object.tabIndex: 24 tests
+PASS object.data: 38 tests
+PASS object.type: 32 tests
 FAIL object.typeMustMatch: typeof IDL attribute assert_equals: expected "boolean" but got "undefined"
 FAIL object.typeMustMatch: IDL get with DOM attribute unset assert_equals: expected (boolean) false but got (undefined) undefined
-PASS object.typeMustMatch: setAttribute() to "" followed by getAttribute() 
-FAIL object.typeMustMatch: setAttribute() to "" followed by IDL get assert_equals: expected (boolean) true but got (undefined) undefined
-PASS object.typeMustMatch: setAttribute() to " foo " followed by getAttribute() 
-FAIL object.typeMustMatch: setAttribute() to " foo " followed by IDL get assert_equals: expected (boolean) true but got (undefined) undefined
-PASS object.typeMustMatch: setAttribute() to undefined followed by getAttribute() 
-FAIL object.typeMustMatch: setAttribute() to undefined followed by IDL get assert_equals: expected (boolean) true but got (undefined) undefined
-PASS object.typeMustMatch: setAttribute() to null followed by getAttribute() 
-FAIL object.typeMustMatch: setAttribute() to null followed by IDL get assert_equals: expected (boolean) true but got (undefined) undefined
-PASS object.typeMustMatch: setAttribute() to 7 followed by getAttribute() 
-FAIL object.typeMustMatch: setAttribute() to 7 followed by IDL get assert_equals: expected (boolean) true but got (undefined) undefined
-PASS object.typeMustMatch: setAttribute() to 1.5 followed by getAttribute() 
-FAIL object.typeMustMatch: setAttribute() to 1.5 followed by IDL get assert_equals: expected (boolean) true but got (undefined) undefined
-PASS object.typeMustMatch: setAttribute() to true followed by getAttribute() 
-FAIL object.typeMustMatch: setAttribute() to true followed by IDL get assert_equals: expected (boolean) true but got (undefined) undefined
-PASS object.typeMustMatch: setAttribute() to false followed by getAttribute() 
-FAIL object.typeMustMatch: setAttribute() to false followed by IDL get assert_equals: expected (boolean) true but got (undefined) undefined
-PASS object.typeMustMatch: setAttribute() to object "[object Object]" followed by getAttribute() 
-FAIL object.typeMustMatch: setAttribute() to object "[object Object]" followed by IDL get assert_equals: expected (boolean) true but got (undefined) undefined
-PASS object.typeMustMatch: setAttribute() to NaN followed by getAttribute() 
-FAIL object.typeMustMatch: setAttribute() to NaN followed by IDL get assert_equals: expected (boolean) true but got (undefined) undefined
-PASS object.typeMustMatch: setAttribute() to Infinity followed by getAttribute() 
-FAIL object.typeMustMatch: setAttribute() to Infinity followed by IDL get assert_equals: expected (boolean) true but got (undefined) undefined
-PASS object.typeMustMatch: setAttribute() to -Infinity followed by getAttribute() 
-FAIL object.typeMustMatch: setAttribute() to -Infinity followed by IDL get assert_equals: expected (boolean) true but got (undefined) undefined
-PASS object.typeMustMatch: setAttribute() to "\0" followed by getAttribute() 
-FAIL object.typeMustMatch: setAttribute() to "\0" followed by IDL get assert_equals: expected (boolean) true but got (undefined) undefined
-PASS object.typeMustMatch: setAttribute() to object "test-toString" followed by getAttribute() 
-FAIL object.typeMustMatch: setAttribute() to object "test-toString" followed by IDL get assert_equals: expected (boolean) true but got (undefined) undefined
-PASS object.typeMustMatch: setAttribute() to object "test-valueOf" followed by getAttribute() 
-FAIL object.typeMustMatch: setAttribute() to object "test-valueOf" followed by IDL get assert_equals: expected (boolean) true but got (undefined) undefined
-PASS object.typeMustMatch: setAttribute() to "typeMustMatch" followed by getAttribute() 
-FAIL object.typeMustMatch: setAttribute() to "typeMustMatch" followed by IDL get assert_equals: expected (boolean) true but got (undefined) undefined
-PASS object.typeMustMatch: IDL set to "" should not throw 
-FAIL object.typeMustMatch: IDL set to "" followed by hasAttribute() assert_equals: expected false but got true
-FAIL object.typeMustMatch: IDL set to "" followed by IDL get assert_equals: expected (boolean) false but got (string) ""
-PASS object.typeMustMatch: 2 tests
-FAIL object.typeMustMatch: IDL set to " foo " followed by IDL get assert_equals: expected (boolean) true but got (string) " foo "
-PASS object.typeMustMatch: IDL set to undefined should not throw 
-FAIL object.typeMustMatch: IDL set to undefined followed by hasAttribute() assert_equals: expected false but got true
-FAIL object.typeMustMatch: IDL set to undefined followed by IDL get assert_equals: expected (boolean) false but got (undefined) undefined
-PASS object.typeMustMatch: IDL set to null should not throw 
-FAIL object.typeMustMatch: IDL set to null followed by hasAttribute() assert_equals: expected false but got true
-FAIL object.typeMustMatch: IDL set to null followed by IDL get assert_equals: expected (boolean) false but got (object) null
-PASS object.typeMustMatch: 2 tests
-FAIL object.typeMustMatch: IDL set to 7 followed by IDL get assert_equals: expected (boolean) true but got (number) 7
-PASS object.typeMustMatch: 2 tests
-FAIL object.typeMustMatch: IDL set to 1.5 followed by IDL get assert_equals: expected (boolean) true but got (number) 1.5
-PASS object.typeMustMatch: 4 tests
-FAIL object.typeMustMatch: IDL set to false followed by hasAttribute() assert_equals: expected false but got true
-PASS object.typeMustMatch: 3 tests
-FAIL object.typeMustMatch: IDL set to object "[object Object]" followed by IDL get assert_equals: expected (boolean) true but got (object) object "[object Object]"
-PASS object.typeMustMatch: IDL set to NaN should not throw 
-FAIL object.typeMustMatch: IDL set to NaN followed by hasAttribute() assert_equals: expected false but got true
-FAIL object.typeMustMatch: IDL set to NaN followed by IDL get assert_equals: expected (boolean) false but got (number) NaN
-PASS object.typeMustMatch: 2 tests
-FAIL object.typeMustMatch: IDL set to Infinity followed by IDL get assert_equals: expected (boolean) true but got (number) Infinity
-PASS object.typeMustMatch: 2 tests
-FAIL object.typeMustMatch: IDL set to -Infinity followed by IDL get assert_equals: expected (boolean) true but got (number) -Infinity
-PASS object.typeMustMatch: 2 tests
-FAIL object.typeMustMatch: IDL set to "\0" followed by IDL get assert_equals: expected (boolean) true but got (string) "\0"
-PASS object.typeMustMatch: 2 tests
-FAIL object.typeMustMatch: IDL set to object "test-toString" followed by IDL get assert_equals: expected (boolean) true but got (object) object "test-toString"
-PASS object.typeMustMatch: 2 tests
-FAIL object.typeMustMatch: IDL set to object "test-valueOf" followed by IDL get assert_equals: expected (boolean) true but got (object) object "test-valueOf"
-PASS object.name: 77 tests
-PASS object.useMap: 77 tests
-PASS object.width: 77 tests
-PASS object.height: 77 tests
-PASS object.align: 77 tests
-PASS object.archive: 77 tests
-PASS object.code: 77 tests
-PASS object.declare: 79 tests
-PASS object.hspace: 37 tests
-FAIL object.hspace: setAttribute() to "\v7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.hspace: 13 tests
-FAIL object.hspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.hspace: 3 tests
-FAIL object.hspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.hspace: 3 tests
-FAIL object.hspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.hspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL object.hspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.hspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL object.hspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.hspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL object.hspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.hspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL object.hspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.hspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL object.hspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.hspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL object.hspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.hspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL object.hspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.hspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL object.hspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.hspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL object.hspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.hspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL object.hspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.hspace: 3 tests
-FAIL object.hspace: setAttribute() to "　7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.hspace: 45 tests
-PASS object.standby: 77 tests
-PASS object.vspace: 37 tests
-FAIL object.vspace: setAttribute() to "\v7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.vspace: 13 tests
-FAIL object.vspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.vspace: 3 tests
-FAIL object.vspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.vspace: 3 tests
-FAIL object.vspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.vspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL object.vspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.vspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL object.vspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.vspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL object.vspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.vspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL object.vspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.vspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL object.vspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.vspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL object.vspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.vspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL object.vspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.vspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL object.vspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.vspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL object.vspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.vspace: setAttribute() to " 7" followed by getAttribute() 
-FAIL object.vspace: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.vspace: 3 tests
-FAIL object.vspace: setAttribute() to "　7" followed by IDL get assert_equals: expected 0 but got 7
-PASS object.vspace: 45 tests
-PASS object.codeBase: 92 tests
-PASS object.codeType: 77 tests
-PASS object.border: 77 tests
-PASS param.title: 77 tests
-PASS param.lang: 77 tests
-PASS param.dir: 151 tests
-PASS param.className (<param class>): 77 tests
-PASS param.hidden: 79 tests
-PASS param.accessKey: 77 tests
-PASS param.tabIndex: 53 tests
-PASS param.name: 77 tests
-PASS param.value: 77 tests
-PASS param.type: 77 tests
-PASS param.valueType: 77 tests
-PASS video.title: 77 tests
-PASS video.lang: 77 tests
-PASS video.dir: 151 tests
-PASS video.className (<video class>): 77 tests
-PASS video.hidden: 79 tests
-PASS video.accessKey: 77 tests
-PASS video.tabIndex: 53 tests
-PASS video.src: 92 tests
-PASS video.crossOrigin: 127 tests
-PASS video.preload: 78 tests
-PASS video.autoplay: 79 tests
-PASS video.loop: 79 tests
+FAIL object.typeMustMatch: setAttribute() to "" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL object.typeMustMatch: setAttribute() to " foo " assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL object.typeMustMatch: setAttribute() to undefined assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL object.typeMustMatch: setAttribute() to null assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL object.typeMustMatch: setAttribute() to 7 assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL object.typeMustMatch: setAttribute() to 1.5 assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL object.typeMustMatch: setAttribute() to true assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL object.typeMustMatch: setAttribute() to false assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL object.typeMustMatch: setAttribute() to object "[object Object]" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL object.typeMustMatch: setAttribute() to NaN assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL object.typeMustMatch: setAttribute() to Infinity assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL object.typeMustMatch: setAttribute() to -Infinity assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL object.typeMustMatch: setAttribute() to "\0" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL object.typeMustMatch: setAttribute() to object "test-toString" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL object.typeMustMatch: setAttribute() to object "test-valueOf" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL object.typeMustMatch: setAttribute() to "typeMustMatch" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL object.typeMustMatch: IDL set to "" assert_equals: hasAttribute() expected false but got true
+FAIL object.typeMustMatch: IDL set to " foo " assert_equals: IDL get expected (boolean) true but got (string) " foo "
+FAIL object.typeMustMatch: IDL set to undefined assert_equals: hasAttribute() expected false but got true
+FAIL object.typeMustMatch: IDL set to null assert_equals: hasAttribute() expected false but got true
+FAIL object.typeMustMatch: IDL set to 7 assert_equals: IDL get expected (boolean) true but got (number) 7
+FAIL object.typeMustMatch: IDL set to 1.5 assert_equals: IDL get expected (boolean) true but got (number) 1.5
+PASS object.typeMustMatch: IDL set to true 
+FAIL object.typeMustMatch: IDL set to false assert_equals: hasAttribute() expected false but got true
+FAIL object.typeMustMatch: IDL set to object "[object Object]" assert_equals: IDL get expected (boolean) true but got (object) object "[object Object]"
+FAIL object.typeMustMatch: IDL set to NaN assert_equals: hasAttribute() expected false but got true
+FAIL object.typeMustMatch: IDL set to Infinity assert_equals: IDL get expected (boolean) true but got (number) Infinity
+FAIL object.typeMustMatch: IDL set to -Infinity assert_equals: IDL get expected (boolean) true but got (number) -Infinity
+FAIL object.typeMustMatch: IDL set to "\0" assert_equals: IDL get expected (boolean) true but got (string) "\0"
+FAIL object.typeMustMatch: IDL set to object "test-toString" assert_equals: IDL get expected (boolean) true but got (object) object "test-toString"
+FAIL object.typeMustMatch: IDL set to object "test-valueOf" assert_equals: IDL get expected (boolean) true but got (object) object "test-valueOf"
+PASS object.name: 32 tests
+PASS object.useMap: 32 tests
+PASS object.width: 32 tests
+PASS object.height: 32 tests
+PASS object.align: 32 tests
+PASS object.archive: 32 tests
+PASS object.code: 32 tests
+PASS object.declare: 33 tests
+PASS object.hspace: 19 tests
+FAIL object.hspace: setAttribute() to "\v7" assert_equals: IDL get expected 0 but got 7
+PASS object.hspace: 6 tests
+FAIL object.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+PASS object.hspace: setAttribute() to " 7" 
+FAIL object.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+PASS object.hspace: setAttribute() to "᠎7" 
+FAIL object.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL object.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL object.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL object.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL object.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL object.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL object.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL object.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL object.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL object.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL object.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+PASS object.hspace: setAttribute() to " 7" 
+FAIL object.hspace: setAttribute() to "　7" assert_equals: IDL get expected 0 but got 7
+PASS object.hspace: 19 tests
+PASS object.standby: 32 tests
+PASS object.vspace: 19 tests
+FAIL object.vspace: setAttribute() to "\v7" assert_equals: IDL get expected 0 but got 7
+PASS object.vspace: 6 tests
+FAIL object.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+PASS object.vspace: setAttribute() to " 7" 
+FAIL object.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+PASS object.vspace: setAttribute() to "᠎7" 
+FAIL object.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL object.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL object.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL object.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL object.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL object.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL object.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL object.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL object.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL object.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL object.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+PASS object.vspace: setAttribute() to " 7" 
+FAIL object.vspace: setAttribute() to "　7" assert_equals: IDL get expected 0 but got 7
+PASS object.vspace: 19 tests
+PASS object.codeBase: 38 tests
+PASS object.codeType: 32 tests
+PASS object.border: 32 tests
+PASS param.title: 32 tests
+PASS param.lang: 32 tests
+PASS param.dir: 62 tests
+PASS param.className (<param class>): 32 tests
+PASS param.hidden: 33 tests
+PASS param.accessKey: 32 tests
+PASS param.tabIndex: 24 tests
+PASS param.name: 32 tests
+PASS param.value: 32 tests
+PASS param.type: 32 tests
+PASS param.valueType: 32 tests
+PASS video.title: 32 tests
+PASS video.lang: 32 tests
+PASS video.dir: 62 tests
+PASS video.className (<video class>): 32 tests
+PASS video.hidden: 33 tests
+PASS video.accessKey: 32 tests
+PASS video.tabIndex: 24 tests
+PASS video.src: 38 tests
+PASS video.crossOrigin: 52 tests
+PASS video.preload: 37 tests
+PASS video.autoplay: 33 tests
+PASS video.loop: 33 tests
 FAIL video.mediaGroup: typeof IDL attribute assert_equals: expected "string" but got "undefined"
 FAIL video.mediaGroup: IDL get with DOM attribute unset assert_equals: expected (string) "" but got (undefined) undefined
-PASS video.mediaGroup: setAttribute() to "" followed by getAttribute() 
-FAIL video.mediaGroup: setAttribute() to "" followed by IDL get assert_equals: expected (string) "" but got (undefined) undefined
-PASS video.mediaGroup: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " followed by getAttribute() 
-FAIL video.mediaGroup: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " followed by IDL get assert_equals: expected (string) " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got (undefined) undefined
-PASS video.mediaGroup: setAttribute() to undefined followed by getAttribute() 
-FAIL video.mediaGroup: setAttribute() to undefined followed by IDL get assert_equals: expected (string) "undefined" but got (undefined) undefined
-PASS video.mediaGroup: setAttribute() to 7 followed by getAttribute() 
-FAIL video.mediaGroup: setAttribute() to 7 followed by IDL get assert_equals: expected (string) "7" but got (undefined) undefined
-PASS video.mediaGroup: setAttribute() to 1.5 followed by getAttribute() 
-FAIL video.mediaGroup: setAttribute() to 1.5 followed by IDL get assert_equals: expected (string) "1.5" but got (undefined) undefined
-PASS video.mediaGroup: setAttribute() to true followed by getAttribute() 
-FAIL video.mediaGroup: setAttribute() to true followed by IDL get assert_equals: expected (string) "true" but got (undefined) undefined
-PASS video.mediaGroup: setAttribute() to false followed by getAttribute() 
-FAIL video.mediaGroup: setAttribute() to false followed by IDL get assert_equals: expected (string) "false" but got (undefined) undefined
-PASS video.mediaGroup: setAttribute() to object "[object Object]" followed by getAttribute() 
-FAIL video.mediaGroup: setAttribute() to object "[object Object]" followed by IDL get assert_equals: expected (string) "[object Object]" but got (undefined) undefined
-PASS video.mediaGroup: setAttribute() to NaN followed by getAttribute() 
-FAIL video.mediaGroup: setAttribute() to NaN followed by IDL get assert_equals: expected (string) "NaN" but got (undefined) undefined
-PASS video.mediaGroup: setAttribute() to Infinity followed by getAttribute() 
-FAIL video.mediaGroup: setAttribute() to Infinity followed by IDL get assert_equals: expected (string) "Infinity" but got (undefined) undefined
-PASS video.mediaGroup: setAttribute() to -Infinity followed by getAttribute() 
-FAIL video.mediaGroup: setAttribute() to -Infinity followed by IDL get assert_equals: expected (string) "-Infinity" but got (undefined) undefined
-PASS video.mediaGroup: setAttribute() to "\0" followed by getAttribute() 
-FAIL video.mediaGroup: setAttribute() to "\0" followed by IDL get assert_equals: expected (string) "\0" but got (undefined) undefined
-PASS video.mediaGroup: setAttribute() to null followed by getAttribute() 
-FAIL video.mediaGroup: setAttribute() to null followed by IDL get assert_equals: expected (string) "null" but got (undefined) undefined
-PASS video.mediaGroup: setAttribute() to object "test-toString" followed by getAttribute() 
-FAIL video.mediaGroup: setAttribute() to object "test-toString" followed by IDL get assert_equals: expected (string) "test-toString" but got (undefined) undefined
-PASS video.mediaGroup: setAttribute() to object "test-valueOf" followed by getAttribute() 
-FAIL video.mediaGroup: setAttribute() to object "test-valueOf" followed by IDL get assert_equals: expected (string) "test-valueOf" but got (undefined) undefined
-PASS video.mediaGroup: IDL set to "" should not throw 
-FAIL video.mediaGroup: IDL set to "" followed by getAttribute() assert_equals: expected "" but got "test-valueOf"
-PASS video.mediaGroup: 2 tests
-FAIL video.mediaGroup: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " followed by getAttribute() assert_equals: expected " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got "test-valueOf"
-PASS video.mediaGroup: 2 tests
-FAIL video.mediaGroup: IDL set to undefined followed by getAttribute() assert_equals: expected "undefined" but got "test-valueOf"
-FAIL video.mediaGroup: IDL set to undefined followed by IDL get assert_equals: expected (string) "undefined" but got (undefined) undefined
-PASS video.mediaGroup: IDL set to 7 should not throw 
-FAIL video.mediaGroup: IDL set to 7 followed by getAttribute() assert_equals: expected "7" but got "test-valueOf"
-FAIL video.mediaGroup: IDL set to 7 followed by IDL get assert_equals: expected (string) "7" but got (number) 7
-PASS video.mediaGroup: IDL set to 1.5 should not throw 
-FAIL video.mediaGroup: IDL set to 1.5 followed by getAttribute() assert_equals: expected "1.5" but got "test-valueOf"
-FAIL video.mediaGroup: IDL set to 1.5 followed by IDL get assert_equals: expected (string) "1.5" but got (number) 1.5
-PASS video.mediaGroup: IDL set to true should not throw 
-FAIL video.mediaGroup: IDL set to true followed by getAttribute() assert_equals: expected "true" but got "test-valueOf"
-FAIL video.mediaGroup: IDL set to true followed by IDL get assert_equals: expected (string) "true" but got (boolean) true
-PASS video.mediaGroup: IDL set to false should not throw 
-FAIL video.mediaGroup: IDL set to false followed by getAttribute() assert_equals: expected "false" but got "test-valueOf"
-FAIL video.mediaGroup: IDL set to false followed by IDL get assert_equals: expected (string) "false" but got (boolean) false
-PASS video.mediaGroup: IDL set to object "[object Object]" should not throw 
-FAIL video.mediaGroup: IDL set to object "[object Object]" followed by getAttribute() assert_equals: expected "[object Object]" but got "test-valueOf"
-FAIL video.mediaGroup: IDL set to object "[object Object]" followed by IDL get assert_equals: expected (string) "[object Object]" but got (object) object "[object Object]"
-PASS video.mediaGroup: IDL set to NaN should not throw 
-FAIL video.mediaGroup: IDL set to NaN followed by getAttribute() assert_equals: expected "NaN" but got "test-valueOf"
-FAIL video.mediaGroup: IDL set to NaN followed by IDL get assert_equals: expected (string) "NaN" but got (number) NaN
-PASS video.mediaGroup: IDL set to Infinity should not throw 
-FAIL video.mediaGroup: IDL set to Infinity followed by getAttribute() assert_equals: expected "Infinity" but got "test-valueOf"
-FAIL video.mediaGroup: IDL set to Infinity followed by IDL get assert_equals: expected (string) "Infinity" but got (number) Infinity
-PASS video.mediaGroup: IDL set to -Infinity should not throw 
-FAIL video.mediaGroup: IDL set to -Infinity followed by getAttribute() assert_equals: expected "-Infinity" but got "test-valueOf"
-FAIL video.mediaGroup: IDL set to -Infinity followed by IDL get assert_equals: expected (string) "-Infinity" but got (number) -Infinity
-PASS video.mediaGroup: IDL set to "\0" should not throw 
-FAIL video.mediaGroup: IDL set to "\0" followed by getAttribute() assert_equals: expected "\0" but got "test-valueOf"
-PASS video.mediaGroup: 2 tests
-FAIL video.mediaGroup: IDL set to null followed by getAttribute() assert_equals: expected "null" but got "test-valueOf"
-FAIL video.mediaGroup: IDL set to null followed by IDL get assert_equals: expected (string) "null" but got (object) null
-PASS video.mediaGroup: IDL set to object "test-toString" should not throw 
-FAIL video.mediaGroup: IDL set to object "test-toString" followed by getAttribute() assert_equals: expected "test-toString" but got "test-valueOf"
-FAIL video.mediaGroup: IDL set to object "test-toString" followed by IDL get assert_equals: expected (string) "test-toString" but got (object) object "test-toString"
-PASS video.mediaGroup: 2 tests
-FAIL video.mediaGroup: IDL set to object "test-valueOf" followed by IDL get assert_equals: expected (string) "test-valueOf" but got (object) object "test-valueOf"
-PASS video.controls: 79 tests
-PASS video.defaultMuted (<video muted>): 79 tests
-PASS video.width: 37 tests
-FAIL video.width: setAttribute() to "\v7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.width: 13 tests
-FAIL video.width: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.width: 3 tests
-FAIL video.width: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.width: 3 tests
-FAIL video.width: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.width: setAttribute() to " 7" followed by getAttribute() 
-FAIL video.width: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.width: setAttribute() to " 7" followed by getAttribute() 
-FAIL video.width: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.width: setAttribute() to " 7" followed by getAttribute() 
-FAIL video.width: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.width: setAttribute() to " 7" followed by getAttribute() 
-FAIL video.width: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.width: setAttribute() to " 7" followed by getAttribute() 
-FAIL video.width: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.width: setAttribute() to " 7" followed by getAttribute() 
-FAIL video.width: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.width: setAttribute() to " 7" followed by getAttribute() 
-FAIL video.width: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.width: setAttribute() to " 7" followed by getAttribute() 
-FAIL video.width: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.width: setAttribute() to " 7" followed by getAttribute() 
-FAIL video.width: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.width: setAttribute() to " 7" followed by getAttribute() 
-FAIL video.width: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.width: 3 tests
-FAIL video.width: setAttribute() to "　7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.width: 45 tests
-PASS video.height: 37 tests
-FAIL video.height: setAttribute() to "\v7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.height: 13 tests
-FAIL video.height: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.height: 3 tests
-FAIL video.height: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.height: 3 tests
-FAIL video.height: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.height: setAttribute() to " 7" followed by getAttribute() 
-FAIL video.height: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.height: setAttribute() to " 7" followed by getAttribute() 
-FAIL video.height: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.height: setAttribute() to " 7" followed by getAttribute() 
-FAIL video.height: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.height: setAttribute() to " 7" followed by getAttribute() 
-FAIL video.height: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.height: setAttribute() to " 7" followed by getAttribute() 
-FAIL video.height: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.height: setAttribute() to " 7" followed by getAttribute() 
-FAIL video.height: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.height: setAttribute() to " 7" followed by getAttribute() 
-FAIL video.height: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.height: setAttribute() to " 7" followed by getAttribute() 
-FAIL video.height: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.height: setAttribute() to " 7" followed by getAttribute() 
-FAIL video.height: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.height: setAttribute() to " 7" followed by getAttribute() 
-FAIL video.height: setAttribute() to " 7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.height: 3 tests
-FAIL video.height: setAttribute() to "　7" followed by IDL get assert_equals: expected 0 but got 7
-PASS video.height: 45 tests
-PASS video.poster: 92 tests
-PASS audio.title: 77 tests
-PASS audio.lang: 77 tests
-PASS audio.dir: 151 tests
-PASS audio.className (<audio class>): 77 tests
-PASS audio.hidden: 79 tests
-PASS audio.accessKey: 77 tests
-PASS audio.tabIndex: 53 tests
-PASS audio.src: 92 tests
-PASS audio.crossOrigin: 127 tests
-PASS audio.preload: 78 tests
-PASS audio.autoplay: 79 tests
-PASS audio.loop: 79 tests
+FAIL video.mediaGroup: setAttribute() to "" assert_equals: IDL get expected (string) "" but got (undefined) undefined
+FAIL video.mediaGroup: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: IDL get expected (string) " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got (undefined) undefined
+FAIL video.mediaGroup: setAttribute() to undefined assert_equals: IDL get expected (string) "undefined" but got (undefined) undefined
+FAIL video.mediaGroup: setAttribute() to 7 assert_equals: IDL get expected (string) "7" but got (undefined) undefined
+FAIL video.mediaGroup: setAttribute() to 1.5 assert_equals: IDL get expected (string) "1.5" but got (undefined) undefined
+FAIL video.mediaGroup: setAttribute() to true assert_equals: IDL get expected (string) "true" but got (undefined) undefined
+FAIL video.mediaGroup: setAttribute() to false assert_equals: IDL get expected (string) "false" but got (undefined) undefined
+FAIL video.mediaGroup: setAttribute() to object "[object Object]" assert_equals: IDL get expected (string) "[object Object]" but got (undefined) undefined
+FAIL video.mediaGroup: setAttribute() to NaN assert_equals: IDL get expected (string) "NaN" but got (undefined) undefined
+FAIL video.mediaGroup: setAttribute() to Infinity assert_equals: IDL get expected (string) "Infinity" but got (undefined) undefined
+FAIL video.mediaGroup: setAttribute() to -Infinity assert_equals: IDL get expected (string) "-Infinity" but got (undefined) undefined
+FAIL video.mediaGroup: setAttribute() to "\0" assert_equals: IDL get expected (string) "\0" but got (undefined) undefined
+FAIL video.mediaGroup: setAttribute() to null assert_equals: IDL get expected (string) "null" but got (undefined) undefined
+FAIL video.mediaGroup: setAttribute() to object "test-toString" assert_equals: IDL get expected (string) "test-toString" but got (undefined) undefined
+FAIL video.mediaGroup: setAttribute() to object "test-valueOf" assert_equals: IDL get expected (string) "test-valueOf" but got (undefined) undefined
+FAIL video.mediaGroup: IDL set to "" assert_equals: getAttribute() expected "" but got "test-valueOf"
+FAIL video.mediaGroup: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: getAttribute() expected " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got "test-valueOf"
+FAIL video.mediaGroup: IDL set to undefined assert_equals: getAttribute() expected "undefined" but got "test-valueOf"
+FAIL video.mediaGroup: IDL set to 7 assert_equals: getAttribute() expected "7" but got "test-valueOf"
+FAIL video.mediaGroup: IDL set to 1.5 assert_equals: getAttribute() expected "1.5" but got "test-valueOf"
+FAIL video.mediaGroup: IDL set to true assert_equals: getAttribute() expected "true" but got "test-valueOf"
+FAIL video.mediaGroup: IDL set to false assert_equals: getAttribute() expected "false" but got "test-valueOf"
+FAIL video.mediaGroup: IDL set to object "[object Object]" assert_equals: getAttribute() expected "[object Object]" but got "test-valueOf"
+FAIL video.mediaGroup: IDL set to NaN assert_equals: getAttribute() expected "NaN" but got "test-valueOf"
+FAIL video.mediaGroup: IDL set to Infinity assert_equals: getAttribute() expected "Infinity" but got "test-valueOf"
+FAIL video.mediaGroup: IDL set to -Infinity assert_equals: getAttribute() expected "-Infinity" but got "test-valueOf"
+FAIL video.mediaGroup: IDL set to "\0" assert_equals: getAttribute() expected "\0" but got "test-valueOf"
+FAIL video.mediaGroup: IDL set to null assert_equals: getAttribute() expected "null" but got "test-valueOf"
+FAIL video.mediaGroup: IDL set to object "test-toString" assert_equals: getAttribute() expected "test-toString" but got "test-valueOf"
+FAIL video.mediaGroup: IDL set to object "test-valueOf" assert_equals: IDL get expected (string) "test-valueOf" but got (object) object "test-valueOf"
+PASS video.controls: 33 tests
+PASS video.defaultMuted (<video muted>): 33 tests
+PASS video.width: 19 tests
+FAIL video.width: setAttribute() to "\v7" assert_equals: IDL get expected 0 but got 7
+PASS video.width: 6 tests
+FAIL video.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+PASS video.width: setAttribute() to " 7" 
+FAIL video.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+PASS video.width: setAttribute() to "᠎7" 
+FAIL video.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL video.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL video.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL video.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL video.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL video.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL video.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL video.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL video.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL video.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL video.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+PASS video.width: setAttribute() to " 7" 
+FAIL video.width: setAttribute() to "　7" assert_equals: IDL get expected 0 but got 7
+PASS video.width: 19 tests
+PASS video.height: 19 tests
+FAIL video.height: setAttribute() to "\v7" assert_equals: IDL get expected 0 but got 7
+PASS video.height: 6 tests
+FAIL video.height: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+PASS video.height: setAttribute() to " 7" 
+FAIL video.height: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+PASS video.height: setAttribute() to "᠎7" 
+FAIL video.height: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL video.height: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL video.height: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL video.height: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL video.height: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL video.height: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL video.height: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL video.height: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL video.height: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL video.height: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+FAIL video.height: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
+PASS video.height: setAttribute() to " 7" 
+FAIL video.height: setAttribute() to "　7" assert_equals: IDL get expected 0 but got 7
+PASS video.height: 19 tests
+PASS video.poster: 38 tests
+PASS audio.title: 32 tests
+PASS audio.lang: 32 tests
+PASS audio.dir: 62 tests
+PASS audio.className (<audio class>): 32 tests
+PASS audio.hidden: 33 tests
+PASS audio.accessKey: 32 tests
+PASS audio.tabIndex: 24 tests
+PASS audio.src: 38 tests
+PASS audio.crossOrigin: 52 tests
+PASS audio.preload: 37 tests
+PASS audio.autoplay: 33 tests
+PASS audio.loop: 33 tests
 FAIL audio.mediaGroup: typeof IDL attribute assert_equals: expected "string" but got "undefined"
 FAIL audio.mediaGroup: IDL get with DOM attribute unset assert_equals: expected (string) "" but got (undefined) undefined
-PASS audio.mediaGroup: setAttribute() to "" followed by getAttribute() 
-FAIL audio.mediaGroup: setAttribute() to "" followed by IDL get assert_equals: expected (string) "" but got (undefined) undefined
-PASS audio.mediaGroup: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " followed by getAttribute() 
-FAIL audio.mediaGroup: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " followed by IDL get assert_equals: expected (string) " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got (undefined) undefined
-PASS audio.mediaGroup: setAttribute() to undefined followed by getAttribute() 
-FAIL audio.mediaGroup: setAttribute() to undefined followed by IDL get assert_equals: expected (string) "undefined" but got (undefined) undefined
-PASS audio.mediaGroup: setAttribute() to 7 followed by getAttribute() 
-FAIL audio.mediaGroup: setAttribute() to 7 followed by IDL get assert_equals: expected (string) "7" but got (undefined) undefined
-PASS audio.mediaGroup: setAttribute() to 1.5 followed by getAttribute() 
-FAIL audio.mediaGroup: setAttribute() to 1.5 followed by IDL get assert_equals: expected (string) "1.5" but got (undefined) undefined
-PASS audio.mediaGroup: setAttribute() to true followed by getAttribute() 
-FAIL audio.mediaGroup: setAttribute() to true followed by IDL get assert_equals: expected (string) "true" but got (undefined) undefined
-PASS audio.mediaGroup: setAttribute() to false followed by getAttribute() 
-FAIL audio.mediaGroup: setAttribute() to false followed by IDL get assert_equals: expected (string) "false" but got (undefined) undefined
-PASS audio.mediaGroup: setAttribute() to object "[object Object]" followed by getAttribute() 
-FAIL audio.mediaGroup: setAttribute() to object "[object Object]" followed by IDL get assert_equals: expected (string) "[object Object]" but got (undefined) undefined
-PASS audio.mediaGroup: setAttribute() to NaN followed by getAttribute() 
-FAIL audio.mediaGroup: setAttribute() to NaN followed by IDL get assert_equals: expected (string) "NaN" but got (undefined) undefined
-PASS audio.mediaGroup: setAttribute() to Infinity followed by getAttribute() 
-FAIL audio.mediaGroup: setAttribute() to Infinity followed by IDL get assert_equals: expected (string) "Infinity" but got (undefined) undefined
-PASS audio.mediaGroup: setAttribute() to -Infinity followed by getAttribute() 
-FAIL audio.mediaGroup: setAttribute() to -Infinity followed by IDL get assert_equals: expected (string) "-Infinity" but got (undefined) undefined
-PASS audio.mediaGroup: setAttribute() to "\0" followed by getAttribute() 
-FAIL audio.mediaGroup: setAttribute() to "\0" followed by IDL get assert_equals: expected (string) "\0" but got (undefined) undefined
-PASS audio.mediaGroup: setAttribute() to null followed by getAttribute() 
-FAIL audio.mediaGroup: setAttribute() to null followed by IDL get assert_equals: expected (string) "null" but got (undefined) undefined
-PASS audio.mediaGroup: setAttribute() to object "test-toString" followed by getAttribute() 
-FAIL audio.mediaGroup: setAttribute() to object "test-toString" followed by IDL get assert_equals: expected (string) "test-toString" but got (undefined) undefined
-PASS audio.mediaGroup: setAttribute() to object "test-valueOf" followed by getAttribute() 
-FAIL audio.mediaGroup: setAttribute() to object "test-valueOf" followed by IDL get assert_equals: expected (string) "test-valueOf" but got (undefined) undefined
-PASS audio.mediaGroup: IDL set to "" should not throw 
-FAIL audio.mediaGroup: IDL set to "" followed by getAttribute() assert_equals: expected "" but got "test-valueOf"
-PASS audio.mediaGroup: 2 tests
-FAIL audio.mediaGroup: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " followed by getAttribute() assert_equals: expected " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got "test-valueOf"
-PASS audio.mediaGroup: 2 tests
-FAIL audio.mediaGroup: IDL set to undefined followed by getAttribute() assert_equals: expected "undefined" but got "test-valueOf"
-FAIL audio.mediaGroup: IDL set to undefined followed by IDL get assert_equals: expected (string) "undefined" but got (undefined) undefined
-PASS audio.mediaGroup: IDL set to 7 should not throw 
-FAIL audio.mediaGroup: IDL set to 7 followed by getAttribute() assert_equals: expected "7" but got "test-valueOf"
-FAIL audio.mediaGroup: IDL set to 7 followed by IDL get assert_equals: expected (string) "7" but got (number) 7
-PASS audio.mediaGroup: IDL set to 1.5 should not throw 
-FAIL audio.mediaGroup: IDL set to 1.5 followed by getAttribute() assert_equals: expected "1.5" but got "test-valueOf"
-FAIL audio.mediaGroup: IDL set to 1.5 followed by IDL get assert_equals: expected (string) "1.5" but got (number) 1.5
-PASS audio.mediaGroup: IDL set to true should not throw 
-FAIL audio.mediaGroup: IDL set to true followed by getAttribute() assert_equals: expected "true" but got "test-valueOf"
-FAIL audio.mediaGroup: IDL set to true followed by IDL get assert_equals: expected (string) "true" but got (boolean) true
-PASS audio.mediaGroup: IDL set to false should not throw 
-FAIL audio.mediaGroup: IDL set to false followed by getAttribute() assert_equals: expected "false" but got "test-valueOf"
-FAIL audio.mediaGroup: IDL set to false followed by IDL get assert_equals: expected (string) "false" but got (boolean) false
-PASS audio.mediaGroup: IDL set to object "[object Object]" should not throw 
-FAIL audio.mediaGroup: IDL set to object "[object Object]" followed by getAttribute() assert_equals: expected "[object Object]" but got "test-valueOf"
-FAIL audio.mediaGroup: IDL set to object "[object Object]" followed by IDL get assert_equals: expected (string) "[object Object]" but got (object) object "[object Object]"
-PASS audio.mediaGroup: IDL set to NaN should not throw 
-FAIL audio.mediaGroup: IDL set to NaN followed by getAttribute() assert_equals: expected "NaN" but got "test-valueOf"
-FAIL audio.mediaGroup: IDL set to NaN followed by IDL get assert_equals: expected (string) "NaN" but got (number) NaN
-PASS audio.mediaGroup: IDL set to Infinity should not throw 
-FAIL audio.mediaGroup: IDL set to Infinity followed by getAttribute() assert_equals: expected "Infinity" but got "test-valueOf"
-FAIL audio.mediaGroup: IDL set to Infinity followed by IDL get assert_equals: expected (string) "Infinity" but got (number) Infinity
-PASS audio.mediaGroup: IDL set to -Infinity should not throw 
-FAIL audio.mediaGroup: IDL set to -Infinity followed by getAttribute() assert_equals: expected "-Infinity" but got "test-valueOf"
-FAIL audio.mediaGroup: IDL set to -Infinity followed by IDL get assert_equals: expected (string) "-Infinity" but got (number) -Infinity
-PASS audio.mediaGroup: IDL set to "\0" should not throw 
-FAIL audio.mediaGroup: IDL set to "\0" followed by getAttribute() assert_equals: expected "\0" but got "test-valueOf"
-PASS audio.mediaGroup: 2 tests
-FAIL audio.mediaGroup: IDL set to null followed by getAttribute() assert_equals: expected "null" but got "test-valueOf"
-FAIL audio.mediaGroup: IDL set to null followed by IDL get assert_equals: expected (string) "null" but got (object) null
-PASS audio.mediaGroup: IDL set to object "test-toString" should not throw 
-FAIL audio.mediaGroup: IDL set to object "test-toString" followed by getAttribute() assert_equals: expected "test-toString" but got "test-valueOf"
-FAIL audio.mediaGroup: IDL set to object "test-toString" followed by IDL get assert_equals: expected (string) "test-toString" but got (object) object "test-toString"
-PASS audio.mediaGroup: 2 tests
-FAIL audio.mediaGroup: IDL set to object "test-valueOf" followed by IDL get assert_equals: expected (string) "test-valueOf" but got (object) object "test-valueOf"
-PASS audio.controls: 79 tests
-PASS audio.defaultMuted (<audio muted>): 79 tests
-PASS source.title: 77 tests
-PASS source.lang: 77 tests
-PASS source.dir: 151 tests
-PASS source.className (<source class>): 77 tests
-PASS source.hidden: 79 tests
-PASS source.accessKey: 77 tests
-PASS source.tabIndex: 53 tests
-PASS source.src: 92 tests
-PASS source.type: 77 tests
-PASS source.media: 77 tests
-PASS track.title: 77 tests
-PASS track.lang: 77 tests
-PASS track.dir: 151 tests
-PASS track.className (<track class>): 77 tests
-PASS track.hidden: 79 tests
-PASS track.accessKey: 77 tests
-PASS track.tabIndex: 53 tests
-PASS track.kind: 201 tests
-PASS track.src: 92 tests
-PASS track.srclang: 77 tests
-PASS track.label: 77 tests
-PASS track.default: 79 tests
-PASS canvas.title: 77 tests
-PASS canvas.lang: 77 tests
-PASS canvas.dir: 151 tests
-PASS canvas.className (<canvas class>): 77 tests
-PASS canvas.hidden: 79 tests
-PASS canvas.accessKey: 77 tests
-PASS canvas.tabIndex: 53 tests
-PASS canvas.width: 35 tests
-FAIL canvas.width: setAttribute() to "\v7" followed by IDL get assert_equals: expected 300 but got 7
-PASS canvas.width: 13 tests
-FAIL canvas.width: setAttribute() to " 7" followed by IDL get assert_equals: expected 300 but got 7
-PASS canvas.width: 3 tests
-FAIL canvas.width: setAttribute() to " 7" followed by IDL get assert_equals: expected 300 but got 7
-PASS canvas.width: 3 tests
-FAIL canvas.width: setAttribute() to " 7" followed by IDL get assert_equals: expected 300 but got 7
-PASS canvas.width: setAttribute() to " 7" followed by getAttribute() 
-FAIL canvas.width: setAttribute() to " 7" followed by IDL get assert_equals: expected 300 but got 7
-PASS canvas.width: setAttribute() to " 7" followed by getAttribute() 
-FAIL canvas.width: setAttribute() to " 7" followed by IDL get assert_equals: expected 300 but got 7
-PASS canvas.width: setAttribute() to " 7" followed by getAttribute() 
-FAIL canvas.width: setAttribute() to " 7" followed by IDL get assert_equals: expected 300 but got 7
-PASS canvas.width: setAttribute() to " 7" followed by getAttribute() 
-FAIL canvas.width: setAttribute() to " 7" followed by IDL get assert_equals: expected 300 but got 7
-PASS canvas.width: setAttribute() to " 7" followed by getAttribute() 
-FAIL canvas.width: setAttribute() to " 7" followed by IDL get assert_equals: expected 300 but got 7
-PASS canvas.width: setAttribute() to " 7" followed by getAttribute() 
-FAIL canvas.width: setAttribute() to " 7" followed by IDL get assert_equals: expected 300 but got 7
-PASS canvas.width: setAttribute() to " 7" followed by getAttribute() 
-FAIL canvas.width: setAttribute() to " 7" followed by IDL get assert_equals: expected 300 but got 7
-PASS canvas.width: setAttribute() to " 7" followed by getAttribute() 
-FAIL canvas.width: setAttribute() to " 7" followed by IDL get assert_equals: expected 300 but got 7
-PASS canvas.width: setAttribute() to " 7" followed by getAttribute() 
-FAIL canvas.width: setAttribute() to " 7" followed by IDL get assert_equals: expected 300 but got 7
-PASS canvas.width: setAttribute() to " 7" followed by getAttribute() 
-FAIL canvas.width: setAttribute() to " 7" followed by IDL get assert_equals: expected 300 but got 7
-PASS canvas.width: 3 tests
-FAIL canvas.width: setAttribute() to "　7" followed by IDL get assert_equals: expected 300 but got 7
-PASS canvas.width: 37 tests
-FAIL canvas.width: IDL set to 2147483648 followed by getAttribute() assert_equals: expected "300" but got "-2147483648"
-PASS canvas.width: 2 tests
-FAIL canvas.width: IDL set to 4294967295 followed by getAttribute() assert_equals: expected "300" but got "-1"
-PASS canvas.width: IDL set to 4294967295 followed by IDL get 
-PASS canvas.height: 35 tests
-FAIL canvas.height: setAttribute() to "\v7" followed by IDL get assert_equals: expected 150 but got 7
-PASS canvas.height: 13 tests
-FAIL canvas.height: setAttribute() to " 7" followed by IDL get assert_equals: expected 150 but got 7
-PASS canvas.height: 3 tests
-FAIL canvas.height: setAttribute() to " 7" followed by IDL get assert_equals: expected 150 but got 7
-PASS canvas.height: 3 tests
-FAIL canvas.height: setAttribute() to " 7" followed by IDL get assert_equals: expected 150 but got 7
-PASS canvas.height: setAttribute() to " 7" followed by getAttribute() 
-FAIL canvas.height: setAttribute() to " 7" followed by IDL get assert_equals: expected 150 but got 7
-PASS canvas.height: setAttribute() to " 7" followed by getAttribute() 
-FAIL canvas.height: setAttribute() to " 7" followed by IDL get assert_equals: expected 150 but got 7
-PASS canvas.height: setAttribute() to " 7" followed by getAttribute() 
-FAIL canvas.height: setAttribute() to " 7" followed by IDL get assert_equals: expected 150 but got 7
-PASS canvas.height: setAttribute() to " 7" followed by getAttribute() 
-FAIL canvas.height: setAttribute() to " 7" followed by IDL get assert_equals: expected 150 but got 7
-PASS canvas.height: setAttribute() to " 7" followed by getAttribute() 
-FAIL canvas.height: setAttribute() to " 7" followed by IDL get assert_equals: expected 150 but got 7
-PASS canvas.height: setAttribute() to " 7" followed by getAttribute() 
-FAIL canvas.height: setAttribute() to " 7" followed by IDL get assert_equals: expected 150 but got 7
-PASS canvas.height: setAttribute() to " 7" followed by getAttribute() 
-FAIL canvas.height: setAttribute() to " 7" followed by IDL get assert_equals: expected 150 but got 7
-PASS canvas.height: setAttribute() to " 7" followed by getAttribute() 
-FAIL canvas.height: setAttribute() to " 7" followed by IDL get assert_equals: expected 150 but got 7
-PASS canvas.height: setAttribute() to " 7" followed by getAttribute() 
-FAIL canvas.height: setAttribute() to " 7" followed by IDL get assert_equals: expected 150 but got 7
-PASS canvas.height: setAttribute() to " 7" followed by getAttribute() 
-FAIL canvas.height: setAttribute() to " 7" followed by IDL get assert_equals: expected 150 but got 7
-PASS canvas.height: 3 tests
-FAIL canvas.height: setAttribute() to "　7" followed by IDL get assert_equals: expected 150 but got 7
-PASS canvas.height: 37 tests
-FAIL canvas.height: IDL set to 2147483648 followed by getAttribute() assert_equals: expected "150" but got "-2147483648"
-PASS canvas.height: 2 tests
-FAIL canvas.height: IDL set to 4294967295 followed by getAttribute() assert_equals: expected "150" but got "-1"
-PASS canvas.height: IDL set to 4294967295 followed by IDL get 
-PASS map.title: 77 tests
-PASS map.lang: 77 tests
-PASS map.dir: 151 tests
-PASS map.className (<map class>): 77 tests
-PASS map.hidden: 79 tests
-PASS map.accessKey: 77 tests
-PASS map.tabIndex: 53 tests
-PASS map.name: 77 tests
-PASS area.title: 77 tests
-PASS area.lang: 77 tests
-PASS area.dir: 151 tests
-PASS area.className (<area class>): 77 tests
-PASS area.hidden: 79 tests
-PASS area.accessKey: 77 tests
-PASS area.tabIndex: 53 tests
-PASS area.alt: 77 tests
-PASS area.coords: 77 tests
-PASS area.shape: 77 tests
-PASS area.target: 77 tests
-PASS area.download: 77 tests
-PASS area.ping: 77 tests
-PASS area.rel: 77 tests
-PASS area.href: 92 tests
-PASS area.noHref: 79 tests
+FAIL audio.mediaGroup: setAttribute() to "" assert_equals: IDL get expected (string) "" but got (undefined) undefined
+FAIL audio.mediaGroup: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: IDL get expected (string) " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got (undefined) undefined
+FAIL audio.mediaGroup: setAttribute() to undefined assert_equals: IDL get expected (string) "undefined" but got (undefined) undefined
+FAIL audio.mediaGroup: setAttribute() to 7 assert_equals: IDL get expected (string) "7" but got (undefined) undefined
+FAIL audio.mediaGroup: setAttribute() to 1.5 assert_equals: IDL get expected (string) "1.5" but got (undefined) undefined
+FAIL audio.mediaGroup: setAttribute() to true assert_equals: IDL get expected (string) "true" but got (undefined) undefined
+FAIL audio.mediaGroup: setAttribute() to false assert_equals: IDL get expected (string) "false" but got (undefined) undefined
+FAIL audio.mediaGroup: setAttribute() to object "[object Object]" assert_equals: IDL get expected (string) "[object Object]" but got (undefined) undefined
+FAIL audio.mediaGroup: setAttribute() to NaN assert_equals: IDL get expected (string) "NaN" but got (undefined) undefined
+FAIL audio.mediaGroup: setAttribute() to Infinity assert_equals: IDL get expected (string) "Infinity" but got (undefined) undefined
+FAIL audio.mediaGroup: setAttribute() to -Infinity assert_equals: IDL get expected (string) "-Infinity" but got (undefined) undefined
+FAIL audio.mediaGroup: setAttribute() to "\0" assert_equals: IDL get expected (string) "\0" but got (undefined) undefined
+FAIL audio.mediaGroup: setAttribute() to null assert_equals: IDL get expected (string) "null" but got (undefined) undefined
+FAIL audio.mediaGroup: setAttribute() to object "test-toString" assert_equals: IDL get expected (string) "test-toString" but got (undefined) undefined
+FAIL audio.mediaGroup: setAttribute() to object "test-valueOf" assert_equals: IDL get expected (string) "test-valueOf" but got (undefined) undefined
+FAIL audio.mediaGroup: IDL set to "" assert_equals: getAttribute() expected "" but got "test-valueOf"
+FAIL audio.mediaGroup: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: getAttribute() expected " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got "test-valueOf"
+FAIL audio.mediaGroup: IDL set to undefined assert_equals: getAttribute() expected "undefined" but got "test-valueOf"
+FAIL audio.mediaGroup: IDL set to 7 assert_equals: getAttribute() expected "7" but got "test-valueOf"
+FAIL audio.mediaGroup: IDL set to 1.5 assert_equals: getAttribute() expected "1.5" but got "test-valueOf"
+FAIL audio.mediaGroup: IDL set to true assert_equals: getAttribute() expected "true" but got "test-valueOf"
+FAIL audio.mediaGroup: IDL set to false assert_equals: getAttribute() expected "false" but got "test-valueOf"
+FAIL audio.mediaGroup: IDL set to object "[object Object]" assert_equals: getAttribute() expected "[object Object]" but got "test-valueOf"
+FAIL audio.mediaGroup: IDL set to NaN assert_equals: getAttribute() expected "NaN" but got "test-valueOf"
+FAIL audio.mediaGroup: IDL set to Infinity assert_equals: getAttribute() expected "Infinity" but got "test-valueOf"
+FAIL audio.mediaGroup: IDL set to -Infinity assert_equals: getAttribute() expected "-Infinity" but got "test-valueOf"
+FAIL audio.mediaGroup: IDL set to "\0" assert_equals: getAttribute() expected "\0" but got "test-valueOf"
+FAIL audio.mediaGroup: IDL set to null assert_equals: getAttribute() expected "null" but got "test-valueOf"
+FAIL audio.mediaGroup: IDL set to object "test-toString" assert_equals: getAttribute() expected "test-toString" but got "test-valueOf"
+FAIL audio.mediaGroup: IDL set to object "test-valueOf" assert_equals: IDL get expected (string) "test-valueOf" but got (object) object "test-valueOf"
+PASS audio.controls: 33 tests
+PASS audio.defaultMuted (<audio muted>): 33 tests
+PASS source.title: 32 tests
+PASS source.lang: 32 tests
+PASS source.dir: 62 tests
+PASS source.className (<source class>): 32 tests
+PASS source.hidden: 33 tests
+PASS source.accessKey: 32 tests
+PASS source.tabIndex: 24 tests
+PASS source.src: 38 tests
+PASS source.type: 32 tests
+PASS source.media: 32 tests
+PASS track.title: 32 tests
+PASS track.lang: 32 tests
+PASS track.dir: 62 tests
+PASS track.className (<track class>): 32 tests
+PASS track.hidden: 33 tests
+PASS track.accessKey: 32 tests
+PASS track.tabIndex: 24 tests
+PASS track.kind: 82 tests
+PASS track.src: 38 tests
+PASS track.srclang: 32 tests
+PASS track.label: 32 tests
+PASS track.default: 33 tests
+PASS canvas.title: 32 tests
+PASS canvas.lang: 32 tests
+PASS canvas.dir: 62 tests
+PASS canvas.className (<canvas class>): 32 tests
+PASS canvas.hidden: 33 tests
+PASS canvas.accessKey: 32 tests
+PASS canvas.tabIndex: 24 tests
+PASS canvas.width: 18 tests
+FAIL canvas.width: setAttribute() to "\v7" assert_equals: IDL get expected 300 but got 7
+PASS canvas.width: 6 tests
+FAIL canvas.width: setAttribute() to " 7" assert_equals: IDL get expected 300 but got 7
+PASS canvas.width: setAttribute() to " 7" 
+FAIL canvas.width: setAttribute() to " 7" assert_equals: IDL get expected 300 but got 7
+PASS canvas.width: setAttribute() to "᠎7" 
+FAIL canvas.width: setAttribute() to " 7" assert_equals: IDL get expected 300 but got 7
+FAIL canvas.width: setAttribute() to " 7" assert_equals: IDL get expected 300 but got 7
+FAIL canvas.width: setAttribute() to " 7" assert_equals: IDL get expected 300 but got 7
+FAIL canvas.width: setAttribute() to " 7" assert_equals: IDL get expected 300 but got 7
+FAIL canvas.width: setAttribute() to " 7" assert_equals: IDL get expected 300 but got 7
+FAIL canvas.width: setAttribute() to " 7" assert_equals: IDL get expected 300 but got 7
+FAIL canvas.width: setAttribute() to " 7" assert_equals: IDL get expected 300 but got 7
+FAIL canvas.width: setAttribute() to " 7" assert_equals: IDL get expected 300 but got 7
+FAIL canvas.width: setAttribute() to " 7" assert_equals: IDL get expected 300 but got 7
+FAIL canvas.width: setAttribute() to " 7" assert_equals: IDL get expected 300 but got 7
+FAIL canvas.width: setAttribute() to " 7" assert_equals: IDL get expected 300 but got 7
+PASS canvas.width: setAttribute() to " 7" 
+FAIL canvas.width: setAttribute() to "　7" assert_equals: IDL get expected 300 but got 7
+PASS canvas.width: 16 tests
+FAIL canvas.width: IDL set to 2147483648 assert_equals: getAttribute() expected "300" but got "-2147483648"
+FAIL canvas.width: IDL set to 4294967295 assert_equals: getAttribute() expected "300" but got "-1"
+PASS canvas.height: 18 tests
+FAIL canvas.height: setAttribute() to "\v7" assert_equals: IDL get expected 150 but got 7
+PASS canvas.height: 6 tests
+FAIL canvas.height: setAttribute() to " 7" assert_equals: IDL get expected 150 but got 7
+PASS canvas.height: setAttribute() to " 7" 
+FAIL canvas.height: setAttribute() to " 7" assert_equals: IDL get expected 150 but got 7
+PASS canvas.height: setAttribute() to "᠎7" 
+FAIL canvas.height: setAttribute() to " 7" assert_equals: IDL get expected 150 but got 7
+FAIL canvas.height: setAttribute() to " 7" assert_equals: IDL get expected 150 but got 7
+FAIL canvas.height: setAttribute() to " 7" assert_equals: IDL get expected 150 but got 7
+FAIL canvas.height: setAttribute() to " 7" assert_equals: IDL get expected 150 but got 7
+FAIL canvas.height: setAttribute() to " 7" assert_equals: IDL get expected 150 but got 7
+FAIL canvas.height: setAttribute() to " 7" assert_equals: IDL get expected 150 but got 7
+FAIL canvas.height: setAttribute() to " 7" assert_equals: IDL get expected 150 but got 7
+FAIL canvas.height: setAttribute() to " 7" assert_equals: IDL get expected 150 but got 7
+FAIL canvas.height: setAttribute() to " 7" assert_equals: IDL get expected 150 but got 7
+FAIL canvas.height: setAttribute() to " 7" assert_equals: IDL get expected 150 but got 7
+FAIL canvas.height: setAttribute() to " 7" assert_equals: IDL get expected 150 but got 7
+PASS canvas.height: setAttribute() to " 7" 
+FAIL canvas.height: setAttribute() to "　7" assert_equals: IDL get expected 150 but got 7
+PASS canvas.height: 16 tests
+FAIL canvas.height: IDL set to 2147483648 assert_equals: getAttribute() expected "150" but got "-2147483648"
+FAIL canvas.height: IDL set to 4294967295 assert_equals: getAttribute() expected "150" but got "-1"
+PASS map.title: 32 tests
+PASS map.lang: 32 tests
+PASS map.dir: 62 tests
+PASS map.className (<map class>): 32 tests
+PASS map.hidden: 33 tests
+PASS map.accessKey: 32 tests
+PASS map.tabIndex: 24 tests
+PASS map.name: 32 tests
+PASS area.title: 32 tests
+PASS area.lang: 32 tests
+PASS area.dir: 62 tests
+PASS area.className (<area class>): 32 tests
+PASS area.hidden: 33 tests
+PASS area.accessKey: 32 tests
+PASS area.tabIndex: 24 tests
+PASS area.alt: 32 tests
+PASS area.coords: 32 tests
+PASS area.shape: 32 tests
+PASS area.target: 32 tests
+PASS area.download: 32 tests
+PASS area.ping: 32 tests
+PASS area.rel: 32 tests
+PASS area.href: 38 tests
+PASS area.noHref: 33 tests
 Harness: the test ran to completion.
 

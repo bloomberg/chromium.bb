@@ -1,366 +1,284 @@
 This is a testharness.js-based test.
-PASS a.title: 77 tests
-PASS a.lang: 77 tests
-PASS a.dir: 151 tests
-PASS a.className (<a class>): 77 tests
-PASS a.hidden: 79 tests
-PASS a.accessKey: 77 tests
-PASS a.tabIndex: 53 tests
-PASS a.target: 77 tests
-PASS a.download: 77 tests
-PASS a.ping: 77 tests
-PASS a.rel: 77 tests
-PASS a.hreflang: 77 tests
-PASS a.type: 77 tests
-PASS a.href: 92 tests
-PASS a.coords: 77 tests
-PASS a.charset: 77 tests
-PASS a.name: 77 tests
-PASS a.rev: 77 tests
-PASS a.shape: 77 tests
-PASS em.title: 77 tests
-PASS em.lang: 77 tests
-PASS em.dir: 151 tests
-PASS em.className (<em class>): 77 tests
-PASS em.hidden: 79 tests
-PASS em.accessKey: 77 tests
-PASS em.tabIndex: 53 tests
-PASS strong.title: 77 tests
-PASS strong.lang: 77 tests
-PASS strong.dir: 151 tests
-PASS strong.className (<strong class>): 77 tests
-PASS strong.hidden: 79 tests
-PASS strong.accessKey: 77 tests
-PASS strong.tabIndex: 53 tests
-PASS small.title: 77 tests
-PASS small.lang: 77 tests
-PASS small.dir: 151 tests
-PASS small.className (<small class>): 77 tests
-PASS small.hidden: 79 tests
-PASS small.accessKey: 77 tests
-PASS small.tabIndex: 53 tests
-PASS s.title: 77 tests
-PASS s.lang: 77 tests
-PASS s.dir: 151 tests
-PASS s.className (<s class>): 77 tests
-PASS s.hidden: 79 tests
-PASS s.accessKey: 77 tests
-PASS s.tabIndex: 53 tests
-PASS cite.title: 77 tests
-PASS cite.lang: 77 tests
-PASS cite.dir: 151 tests
-PASS cite.className (<cite class>): 77 tests
-PASS cite.hidden: 79 tests
-PASS cite.accessKey: 77 tests
-PASS cite.tabIndex: 53 tests
-PASS q.title: 77 tests
-PASS q.lang: 77 tests
-PASS q.dir: 151 tests
-PASS q.className (<q class>): 77 tests
-PASS q.hidden: 79 tests
-PASS q.accessKey: 77 tests
-PASS q.tabIndex: 53 tests
-PASS q.cite: 92 tests
-PASS dfn.title: 77 tests
-PASS dfn.lang: 77 tests
-PASS dfn.dir: 151 tests
-PASS dfn.className (<dfn class>): 77 tests
-PASS dfn.hidden: 79 tests
-PASS dfn.accessKey: 77 tests
-PASS dfn.tabIndex: 53 tests
-PASS abbr.title: 77 tests
-PASS abbr.lang: 77 tests
-PASS abbr.dir: 151 tests
-PASS abbr.className (<abbr class>): 77 tests
-PASS abbr.hidden: 79 tests
-PASS abbr.accessKey: 77 tests
-PASS abbr.tabIndex: 53 tests
-PASS data.title: 77 tests
-PASS data.lang: 77 tests
-PASS data.dir: 151 tests
-PASS data.className (<data class>): 77 tests
-PASS data.hidden: 79 tests
-PASS data.accessKey: 77 tests
-PASS data.tabIndex: 53 tests
+PASS a.title: 32 tests
+PASS a.lang: 32 tests
+PASS a.dir: 62 tests
+PASS a.className (<a class>): 32 tests
+PASS a.hidden: 33 tests
+PASS a.accessKey: 32 tests
+PASS a.tabIndex: 24 tests
+PASS a.target: 32 tests
+PASS a.download: 32 tests
+PASS a.ping: 32 tests
+PASS a.rel: 32 tests
+PASS a.hreflang: 32 tests
+PASS a.type: 32 tests
+PASS a.href: 38 tests
+PASS a.coords: 32 tests
+PASS a.charset: 32 tests
+PASS a.name: 32 tests
+PASS a.rev: 32 tests
+PASS a.shape: 32 tests
+PASS em.title: 32 tests
+PASS em.lang: 32 tests
+PASS em.dir: 62 tests
+PASS em.className (<em class>): 32 tests
+PASS em.hidden: 33 tests
+PASS em.accessKey: 32 tests
+PASS em.tabIndex: 24 tests
+PASS strong.title: 32 tests
+PASS strong.lang: 32 tests
+PASS strong.dir: 62 tests
+PASS strong.className (<strong class>): 32 tests
+PASS strong.hidden: 33 tests
+PASS strong.accessKey: 32 tests
+PASS strong.tabIndex: 24 tests
+PASS small.title: 32 tests
+PASS small.lang: 32 tests
+PASS small.dir: 62 tests
+PASS small.className (<small class>): 32 tests
+PASS small.hidden: 33 tests
+PASS small.accessKey: 32 tests
+PASS small.tabIndex: 24 tests
+PASS s.title: 32 tests
+PASS s.lang: 32 tests
+PASS s.dir: 62 tests
+PASS s.className (<s class>): 32 tests
+PASS s.hidden: 33 tests
+PASS s.accessKey: 32 tests
+PASS s.tabIndex: 24 tests
+PASS cite.title: 32 tests
+PASS cite.lang: 32 tests
+PASS cite.dir: 62 tests
+PASS cite.className (<cite class>): 32 tests
+PASS cite.hidden: 33 tests
+PASS cite.accessKey: 32 tests
+PASS cite.tabIndex: 24 tests
+PASS q.title: 32 tests
+PASS q.lang: 32 tests
+PASS q.dir: 62 tests
+PASS q.className (<q class>): 32 tests
+PASS q.hidden: 33 tests
+PASS q.accessKey: 32 tests
+PASS q.tabIndex: 24 tests
+PASS q.cite: 38 tests
+PASS dfn.title: 32 tests
+PASS dfn.lang: 32 tests
+PASS dfn.dir: 62 tests
+PASS dfn.className (<dfn class>): 32 tests
+PASS dfn.hidden: 33 tests
+PASS dfn.accessKey: 32 tests
+PASS dfn.tabIndex: 24 tests
+PASS abbr.title: 32 tests
+PASS abbr.lang: 32 tests
+PASS abbr.dir: 62 tests
+PASS abbr.className (<abbr class>): 32 tests
+PASS abbr.hidden: 33 tests
+PASS abbr.accessKey: 32 tests
+PASS abbr.tabIndex: 24 tests
+PASS data.title: 32 tests
+PASS data.lang: 32 tests
+PASS data.dir: 62 tests
+PASS data.className (<data class>): 32 tests
+PASS data.hidden: 33 tests
+PASS data.accessKey: 32 tests
+PASS data.tabIndex: 24 tests
 FAIL data.value: typeof IDL attribute assert_equals: expected "string" but got "undefined"
 FAIL data.value: IDL get with DOM attribute unset assert_equals: expected (string) "" but got (undefined) undefined
-PASS data.value: setAttribute() to "" followed by getAttribute() 
-FAIL data.value: setAttribute() to "" followed by IDL get assert_equals: expected (string) "" but got (undefined) undefined
-PASS data.value: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " followed by getAttribute() 
-FAIL data.value: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " followed by IDL get assert_equals: expected (string) " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got (undefined) undefined
-PASS data.value: setAttribute() to undefined followed by getAttribute() 
-FAIL data.value: setAttribute() to undefined followed by IDL get assert_equals: expected (string) "undefined" but got (undefined) undefined
-PASS data.value: setAttribute() to 7 followed by getAttribute() 
-FAIL data.value: setAttribute() to 7 followed by IDL get assert_equals: expected (string) "7" but got (undefined) undefined
-PASS data.value: setAttribute() to 1.5 followed by getAttribute() 
-FAIL data.value: setAttribute() to 1.5 followed by IDL get assert_equals: expected (string) "1.5" but got (undefined) undefined
-PASS data.value: setAttribute() to true followed by getAttribute() 
-FAIL data.value: setAttribute() to true followed by IDL get assert_equals: expected (string) "true" but got (undefined) undefined
-PASS data.value: setAttribute() to false followed by getAttribute() 
-FAIL data.value: setAttribute() to false followed by IDL get assert_equals: expected (string) "false" but got (undefined) undefined
-PASS data.value: setAttribute() to object "[object Object]" followed by getAttribute() 
-FAIL data.value: setAttribute() to object "[object Object]" followed by IDL get assert_equals: expected (string) "[object Object]" but got (undefined) undefined
-PASS data.value: setAttribute() to NaN followed by getAttribute() 
-FAIL data.value: setAttribute() to NaN followed by IDL get assert_equals: expected (string) "NaN" but got (undefined) undefined
-PASS data.value: setAttribute() to Infinity followed by getAttribute() 
-FAIL data.value: setAttribute() to Infinity followed by IDL get assert_equals: expected (string) "Infinity" but got (undefined) undefined
-PASS data.value: setAttribute() to -Infinity followed by getAttribute() 
-FAIL data.value: setAttribute() to -Infinity followed by IDL get assert_equals: expected (string) "-Infinity" but got (undefined) undefined
-PASS data.value: setAttribute() to "\0" followed by getAttribute() 
-FAIL data.value: setAttribute() to "\0" followed by IDL get assert_equals: expected (string) "\0" but got (undefined) undefined
-PASS data.value: setAttribute() to null followed by getAttribute() 
-FAIL data.value: setAttribute() to null followed by IDL get assert_equals: expected (string) "null" but got (undefined) undefined
-PASS data.value: setAttribute() to object "test-toString" followed by getAttribute() 
-FAIL data.value: setAttribute() to object "test-toString" followed by IDL get assert_equals: expected (string) "test-toString" but got (undefined) undefined
-PASS data.value: setAttribute() to object "test-valueOf" followed by getAttribute() 
-FAIL data.value: setAttribute() to object "test-valueOf" followed by IDL get assert_equals: expected (string) "test-valueOf" but got (undefined) undefined
-PASS data.value: IDL set to "" should not throw 
-FAIL data.value: IDL set to "" followed by getAttribute() assert_equals: expected "" but got "test-valueOf"
-PASS data.value: 2 tests
-FAIL data.value: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " followed by getAttribute() assert_equals: expected " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got "test-valueOf"
-PASS data.value: 2 tests
-FAIL data.value: IDL set to undefined followed by getAttribute() assert_equals: expected "undefined" but got "test-valueOf"
-FAIL data.value: IDL set to undefined followed by IDL get assert_equals: expected (string) "undefined" but got (undefined) undefined
-PASS data.value: IDL set to 7 should not throw 
-FAIL data.value: IDL set to 7 followed by getAttribute() assert_equals: expected "7" but got "test-valueOf"
-FAIL data.value: IDL set to 7 followed by IDL get assert_equals: expected (string) "7" but got (number) 7
-PASS data.value: IDL set to 1.5 should not throw 
-FAIL data.value: IDL set to 1.5 followed by getAttribute() assert_equals: expected "1.5" but got "test-valueOf"
-FAIL data.value: IDL set to 1.5 followed by IDL get assert_equals: expected (string) "1.5" but got (number) 1.5
-PASS data.value: IDL set to true should not throw 
-FAIL data.value: IDL set to true followed by getAttribute() assert_equals: expected "true" but got "test-valueOf"
-FAIL data.value: IDL set to true followed by IDL get assert_equals: expected (string) "true" but got (boolean) true
-PASS data.value: IDL set to false should not throw 
-FAIL data.value: IDL set to false followed by getAttribute() assert_equals: expected "false" but got "test-valueOf"
-FAIL data.value: IDL set to false followed by IDL get assert_equals: expected (string) "false" but got (boolean) false
-PASS data.value: IDL set to object "[object Object]" should not throw 
-FAIL data.value: IDL set to object "[object Object]" followed by getAttribute() assert_equals: expected "[object Object]" but got "test-valueOf"
-FAIL data.value: IDL set to object "[object Object]" followed by IDL get assert_equals: expected (string) "[object Object]" but got (object) object "[object Object]"
-PASS data.value: IDL set to NaN should not throw 
-FAIL data.value: IDL set to NaN followed by getAttribute() assert_equals: expected "NaN" but got "test-valueOf"
-FAIL data.value: IDL set to NaN followed by IDL get assert_equals: expected (string) "NaN" but got (number) NaN
-PASS data.value: IDL set to Infinity should not throw 
-FAIL data.value: IDL set to Infinity followed by getAttribute() assert_equals: expected "Infinity" but got "test-valueOf"
-FAIL data.value: IDL set to Infinity followed by IDL get assert_equals: expected (string) "Infinity" but got (number) Infinity
-PASS data.value: IDL set to -Infinity should not throw 
-FAIL data.value: IDL set to -Infinity followed by getAttribute() assert_equals: expected "-Infinity" but got "test-valueOf"
-FAIL data.value: IDL set to -Infinity followed by IDL get assert_equals: expected (string) "-Infinity" but got (number) -Infinity
-PASS data.value: IDL set to "\0" should not throw 
-FAIL data.value: IDL set to "\0" followed by getAttribute() assert_equals: expected "\0" but got "test-valueOf"
-PASS data.value: 2 tests
-FAIL data.value: IDL set to null followed by getAttribute() assert_equals: expected "null" but got "test-valueOf"
-FAIL data.value: IDL set to null followed by IDL get assert_equals: expected (string) "null" but got (object) null
-PASS data.value: IDL set to object "test-toString" should not throw 
-FAIL data.value: IDL set to object "test-toString" followed by getAttribute() assert_equals: expected "test-toString" but got "test-valueOf"
-FAIL data.value: IDL set to object "test-toString" followed by IDL get assert_equals: expected (string) "test-toString" but got (object) object "test-toString"
-PASS data.value: 2 tests
-FAIL data.value: IDL set to object "test-valueOf" followed by IDL get assert_equals: expected (string) "test-valueOf" but got (object) object "test-valueOf"
-PASS time.title: 77 tests
-PASS time.lang: 77 tests
-PASS time.dir: 151 tests
-PASS time.className (<time class>): 77 tests
-PASS time.hidden: 79 tests
-PASS time.accessKey: 77 tests
-PASS time.tabIndex: 53 tests
+FAIL data.value: setAttribute() to "" assert_equals: IDL get expected (string) "" but got (undefined) undefined
+FAIL data.value: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: IDL get expected (string) " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got (undefined) undefined
+FAIL data.value: setAttribute() to undefined assert_equals: IDL get expected (string) "undefined" but got (undefined) undefined
+FAIL data.value: setAttribute() to 7 assert_equals: IDL get expected (string) "7" but got (undefined) undefined
+FAIL data.value: setAttribute() to 1.5 assert_equals: IDL get expected (string) "1.5" but got (undefined) undefined
+FAIL data.value: setAttribute() to true assert_equals: IDL get expected (string) "true" but got (undefined) undefined
+FAIL data.value: setAttribute() to false assert_equals: IDL get expected (string) "false" but got (undefined) undefined
+FAIL data.value: setAttribute() to object "[object Object]" assert_equals: IDL get expected (string) "[object Object]" but got (undefined) undefined
+FAIL data.value: setAttribute() to NaN assert_equals: IDL get expected (string) "NaN" but got (undefined) undefined
+FAIL data.value: setAttribute() to Infinity assert_equals: IDL get expected (string) "Infinity" but got (undefined) undefined
+FAIL data.value: setAttribute() to -Infinity assert_equals: IDL get expected (string) "-Infinity" but got (undefined) undefined
+FAIL data.value: setAttribute() to "\0" assert_equals: IDL get expected (string) "\0" but got (undefined) undefined
+FAIL data.value: setAttribute() to null assert_equals: IDL get expected (string) "null" but got (undefined) undefined
+FAIL data.value: setAttribute() to object "test-toString" assert_equals: IDL get expected (string) "test-toString" but got (undefined) undefined
+FAIL data.value: setAttribute() to object "test-valueOf" assert_equals: IDL get expected (string) "test-valueOf" but got (undefined) undefined
+FAIL data.value: IDL set to "" assert_equals: getAttribute() expected "" but got "test-valueOf"
+FAIL data.value: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: getAttribute() expected " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got "test-valueOf"
+FAIL data.value: IDL set to undefined assert_equals: getAttribute() expected "undefined" but got "test-valueOf"
+FAIL data.value: IDL set to 7 assert_equals: getAttribute() expected "7" but got "test-valueOf"
+FAIL data.value: IDL set to 1.5 assert_equals: getAttribute() expected "1.5" but got "test-valueOf"
+FAIL data.value: IDL set to true assert_equals: getAttribute() expected "true" but got "test-valueOf"
+FAIL data.value: IDL set to false assert_equals: getAttribute() expected "false" but got "test-valueOf"
+FAIL data.value: IDL set to object "[object Object]" assert_equals: getAttribute() expected "[object Object]" but got "test-valueOf"
+FAIL data.value: IDL set to NaN assert_equals: getAttribute() expected "NaN" but got "test-valueOf"
+FAIL data.value: IDL set to Infinity assert_equals: getAttribute() expected "Infinity" but got "test-valueOf"
+FAIL data.value: IDL set to -Infinity assert_equals: getAttribute() expected "-Infinity" but got "test-valueOf"
+FAIL data.value: IDL set to "\0" assert_equals: getAttribute() expected "\0" but got "test-valueOf"
+FAIL data.value: IDL set to null assert_equals: getAttribute() expected "null" but got "test-valueOf"
+FAIL data.value: IDL set to object "test-toString" assert_equals: getAttribute() expected "test-toString" but got "test-valueOf"
+FAIL data.value: IDL set to object "test-valueOf" assert_equals: IDL get expected (string) "test-valueOf" but got (object) object "test-valueOf"
+PASS time.title: 32 tests
+PASS time.lang: 32 tests
+PASS time.dir: 62 tests
+PASS time.className (<time class>): 32 tests
+PASS time.hidden: 33 tests
+PASS time.accessKey: 32 tests
+PASS time.tabIndex: 24 tests
 FAIL time.dateTime: typeof IDL attribute assert_equals: expected "string" but got "undefined"
 FAIL time.dateTime: IDL get with DOM attribute unset assert_equals: expected (string) "" but got (undefined) undefined
-PASS time.dateTime: setAttribute() to "" followed by getAttribute() 
-FAIL time.dateTime: setAttribute() to "" followed by IDL get assert_equals: expected (string) "" but got (undefined) undefined
-PASS time.dateTime: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " followed by getAttribute() 
-FAIL time.dateTime: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " followed by IDL get assert_equals: expected (string) " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got (undefined) undefined
-PASS time.dateTime: setAttribute() to undefined followed by getAttribute() 
-FAIL time.dateTime: setAttribute() to undefined followed by IDL get assert_equals: expected (string) "undefined" but got (undefined) undefined
-PASS time.dateTime: setAttribute() to 7 followed by getAttribute() 
-FAIL time.dateTime: setAttribute() to 7 followed by IDL get assert_equals: expected (string) "7" but got (undefined) undefined
-PASS time.dateTime: setAttribute() to 1.5 followed by getAttribute() 
-FAIL time.dateTime: setAttribute() to 1.5 followed by IDL get assert_equals: expected (string) "1.5" but got (undefined) undefined
-PASS time.dateTime: setAttribute() to true followed by getAttribute() 
-FAIL time.dateTime: setAttribute() to true followed by IDL get assert_equals: expected (string) "true" but got (undefined) undefined
-PASS time.dateTime: setAttribute() to false followed by getAttribute() 
-FAIL time.dateTime: setAttribute() to false followed by IDL get assert_equals: expected (string) "false" but got (undefined) undefined
-PASS time.dateTime: setAttribute() to object "[object Object]" followed by getAttribute() 
-FAIL time.dateTime: setAttribute() to object "[object Object]" followed by IDL get assert_equals: expected (string) "[object Object]" but got (undefined) undefined
-PASS time.dateTime: setAttribute() to NaN followed by getAttribute() 
-FAIL time.dateTime: setAttribute() to NaN followed by IDL get assert_equals: expected (string) "NaN" but got (undefined) undefined
-PASS time.dateTime: setAttribute() to Infinity followed by getAttribute() 
-FAIL time.dateTime: setAttribute() to Infinity followed by IDL get assert_equals: expected (string) "Infinity" but got (undefined) undefined
-PASS time.dateTime: setAttribute() to -Infinity followed by getAttribute() 
-FAIL time.dateTime: setAttribute() to -Infinity followed by IDL get assert_equals: expected (string) "-Infinity" but got (undefined) undefined
-PASS time.dateTime: setAttribute() to "\0" followed by getAttribute() 
-FAIL time.dateTime: setAttribute() to "\0" followed by IDL get assert_equals: expected (string) "\0" but got (undefined) undefined
-PASS time.dateTime: setAttribute() to null followed by getAttribute() 
-FAIL time.dateTime: setAttribute() to null followed by IDL get assert_equals: expected (string) "null" but got (undefined) undefined
-PASS time.dateTime: setAttribute() to object "test-toString" followed by getAttribute() 
-FAIL time.dateTime: setAttribute() to object "test-toString" followed by IDL get assert_equals: expected (string) "test-toString" but got (undefined) undefined
-PASS time.dateTime: setAttribute() to object "test-valueOf" followed by getAttribute() 
-FAIL time.dateTime: setAttribute() to object "test-valueOf" followed by IDL get assert_equals: expected (string) "test-valueOf" but got (undefined) undefined
-PASS time.dateTime: IDL set to "" should not throw 
-FAIL time.dateTime: IDL set to "" followed by getAttribute() assert_equals: expected "" but got "test-valueOf"
-PASS time.dateTime: 2 tests
-FAIL time.dateTime: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " followed by getAttribute() assert_equals: expected " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got "test-valueOf"
-PASS time.dateTime: 2 tests
-FAIL time.dateTime: IDL set to undefined followed by getAttribute() assert_equals: expected "undefined" but got "test-valueOf"
-FAIL time.dateTime: IDL set to undefined followed by IDL get assert_equals: expected (string) "undefined" but got (undefined) undefined
-PASS time.dateTime: IDL set to 7 should not throw 
-FAIL time.dateTime: IDL set to 7 followed by getAttribute() assert_equals: expected "7" but got "test-valueOf"
-FAIL time.dateTime: IDL set to 7 followed by IDL get assert_equals: expected (string) "7" but got (number) 7
-PASS time.dateTime: IDL set to 1.5 should not throw 
-FAIL time.dateTime: IDL set to 1.5 followed by getAttribute() assert_equals: expected "1.5" but got "test-valueOf"
-FAIL time.dateTime: IDL set to 1.5 followed by IDL get assert_equals: expected (string) "1.5" but got (number) 1.5
-PASS time.dateTime: IDL set to true should not throw 
-FAIL time.dateTime: IDL set to true followed by getAttribute() assert_equals: expected "true" but got "test-valueOf"
-FAIL time.dateTime: IDL set to true followed by IDL get assert_equals: expected (string) "true" but got (boolean) true
-PASS time.dateTime: IDL set to false should not throw 
-FAIL time.dateTime: IDL set to false followed by getAttribute() assert_equals: expected "false" but got "test-valueOf"
-FAIL time.dateTime: IDL set to false followed by IDL get assert_equals: expected (string) "false" but got (boolean) false
-PASS time.dateTime: IDL set to object "[object Object]" should not throw 
-FAIL time.dateTime: IDL set to object "[object Object]" followed by getAttribute() assert_equals: expected "[object Object]" but got "test-valueOf"
-FAIL time.dateTime: IDL set to object "[object Object]" followed by IDL get assert_equals: expected (string) "[object Object]" but got (object) object "[object Object]"
-PASS time.dateTime: IDL set to NaN should not throw 
-FAIL time.dateTime: IDL set to NaN followed by getAttribute() assert_equals: expected "NaN" but got "test-valueOf"
-FAIL time.dateTime: IDL set to NaN followed by IDL get assert_equals: expected (string) "NaN" but got (number) NaN
-PASS time.dateTime: IDL set to Infinity should not throw 
-FAIL time.dateTime: IDL set to Infinity followed by getAttribute() assert_equals: expected "Infinity" but got "test-valueOf"
-FAIL time.dateTime: IDL set to Infinity followed by IDL get assert_equals: expected (string) "Infinity" but got (number) Infinity
-PASS time.dateTime: IDL set to -Infinity should not throw 
-FAIL time.dateTime: IDL set to -Infinity followed by getAttribute() assert_equals: expected "-Infinity" but got "test-valueOf"
-FAIL time.dateTime: IDL set to -Infinity followed by IDL get assert_equals: expected (string) "-Infinity" but got (number) -Infinity
-PASS time.dateTime: IDL set to "\0" should not throw 
-FAIL time.dateTime: IDL set to "\0" followed by getAttribute() assert_equals: expected "\0" but got "test-valueOf"
-PASS time.dateTime: 2 tests
-FAIL time.dateTime: IDL set to null followed by getAttribute() assert_equals: expected "null" but got "test-valueOf"
-FAIL time.dateTime: IDL set to null followed by IDL get assert_equals: expected (string) "null" but got (object) null
-PASS time.dateTime: IDL set to object "test-toString" should not throw 
-FAIL time.dateTime: IDL set to object "test-toString" followed by getAttribute() assert_equals: expected "test-toString" but got "test-valueOf"
-FAIL time.dateTime: IDL set to object "test-toString" followed by IDL get assert_equals: expected (string) "test-toString" but got (object) object "test-toString"
-PASS time.dateTime: 2 tests
-FAIL time.dateTime: IDL set to object "test-valueOf" followed by IDL get assert_equals: expected (string) "test-valueOf" but got (object) object "test-valueOf"
-PASS code.title: 77 tests
-PASS code.lang: 77 tests
-PASS code.dir: 151 tests
-PASS code.className (<code class>): 77 tests
-PASS code.hidden: 79 tests
-PASS code.accessKey: 77 tests
-PASS code.tabIndex: 53 tests
-PASS var.title: 77 tests
-PASS var.lang: 77 tests
-PASS var.dir: 151 tests
-PASS var.className (<var class>): 77 tests
-PASS var.hidden: 79 tests
-PASS var.accessKey: 77 tests
-PASS var.tabIndex: 53 tests
-PASS samp.title: 77 tests
-PASS samp.lang: 77 tests
-PASS samp.dir: 151 tests
-PASS samp.className (<samp class>): 77 tests
-PASS samp.hidden: 79 tests
-PASS samp.accessKey: 77 tests
-PASS samp.tabIndex: 53 tests
-PASS kbd.title: 77 tests
-PASS kbd.lang: 77 tests
-PASS kbd.dir: 151 tests
-PASS kbd.className (<kbd class>): 77 tests
-PASS kbd.hidden: 79 tests
-PASS kbd.accessKey: 77 tests
-PASS kbd.tabIndex: 53 tests
-PASS sub.title: 77 tests
-PASS sub.lang: 77 tests
-PASS sub.dir: 151 tests
-PASS sub.className (<sub class>): 77 tests
-PASS sub.hidden: 79 tests
-PASS sub.accessKey: 77 tests
-PASS sub.tabIndex: 53 tests
-PASS sup.title: 77 tests
-PASS sup.lang: 77 tests
-PASS sup.dir: 151 tests
-PASS sup.className (<sup class>): 77 tests
-PASS sup.hidden: 79 tests
-PASS sup.accessKey: 77 tests
-PASS sup.tabIndex: 53 tests
-PASS i.title: 77 tests
-PASS i.lang: 77 tests
-PASS i.dir: 151 tests
-PASS i.className (<i class>): 77 tests
-PASS i.hidden: 79 tests
-PASS i.accessKey: 77 tests
-PASS i.tabIndex: 53 tests
-PASS b.title: 77 tests
-PASS b.lang: 77 tests
-PASS b.dir: 151 tests
-PASS b.className (<b class>): 77 tests
-PASS b.hidden: 79 tests
-PASS b.accessKey: 77 tests
-PASS b.tabIndex: 53 tests
-PASS u.title: 77 tests
-PASS u.lang: 77 tests
-PASS u.dir: 151 tests
-PASS u.className (<u class>): 77 tests
-PASS u.hidden: 79 tests
-PASS u.accessKey: 77 tests
-PASS u.tabIndex: 53 tests
-PASS mark.title: 77 tests
-PASS mark.lang: 77 tests
-PASS mark.dir: 151 tests
-PASS mark.className (<mark class>): 77 tests
-PASS mark.hidden: 79 tests
-PASS mark.accessKey: 77 tests
-PASS mark.tabIndex: 53 tests
-PASS ruby.title: 77 tests
-PASS ruby.lang: 77 tests
-PASS ruby.dir: 151 tests
-PASS ruby.className (<ruby class>): 77 tests
-PASS ruby.hidden: 79 tests
-PASS ruby.accessKey: 77 tests
-PASS ruby.tabIndex: 53 tests
-PASS rt.title: 77 tests
-PASS rt.lang: 77 tests
-PASS rt.dir: 151 tests
-PASS rt.className (<rt class>): 77 tests
-PASS rt.hidden: 79 tests
-PASS rt.accessKey: 77 tests
-PASS rt.tabIndex: 53 tests
-PASS rp.title: 77 tests
-PASS rp.lang: 77 tests
-PASS rp.dir: 151 tests
-PASS rp.className (<rp class>): 77 tests
-PASS rp.hidden: 79 tests
-PASS rp.accessKey: 77 tests
-PASS rp.tabIndex: 53 tests
-PASS bdi.title: 77 tests
-PASS bdi.lang: 77 tests
-PASS bdi.dir: 151 tests
-PASS bdi.className (<bdi class>): 77 tests
-PASS bdi.hidden: 79 tests
-PASS bdi.accessKey: 77 tests
-PASS bdi.tabIndex: 53 tests
-PASS bdo.title: 77 tests
-PASS bdo.lang: 77 tests
-PASS bdo.dir: 151 tests
-PASS bdo.className (<bdo class>): 77 tests
-PASS bdo.hidden: 79 tests
-PASS bdo.accessKey: 77 tests
-PASS bdo.tabIndex: 53 tests
-PASS span.title: 77 tests
-PASS span.lang: 77 tests
-PASS span.dir: 151 tests
-PASS span.className (<span class>): 77 tests
-PASS span.hidden: 79 tests
-PASS span.accessKey: 77 tests
-PASS span.tabIndex: 53 tests
-PASS br.title: 77 tests
-PASS br.lang: 77 tests
-PASS br.dir: 151 tests
-PASS br.className (<br class>): 77 tests
-PASS br.hidden: 79 tests
-PASS br.accessKey: 77 tests
-PASS br.tabIndex: 53 tests
-PASS br.clear: 77 tests
-PASS wbr.title: 77 tests
-PASS wbr.lang: 77 tests
-PASS wbr.dir: 151 tests
-PASS wbr.className (<wbr class>): 77 tests
-PASS wbr.hidden: 79 tests
-PASS wbr.accessKey: 77 tests
-PASS wbr.tabIndex: 53 tests
+FAIL time.dateTime: setAttribute() to "" assert_equals: IDL get expected (string) "" but got (undefined) undefined
+FAIL time.dateTime: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: IDL get expected (string) " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got (undefined) undefined
+FAIL time.dateTime: setAttribute() to undefined assert_equals: IDL get expected (string) "undefined" but got (undefined) undefined
+FAIL time.dateTime: setAttribute() to 7 assert_equals: IDL get expected (string) "7" but got (undefined) undefined
+FAIL time.dateTime: setAttribute() to 1.5 assert_equals: IDL get expected (string) "1.5" but got (undefined) undefined
+FAIL time.dateTime: setAttribute() to true assert_equals: IDL get expected (string) "true" but got (undefined) undefined
+FAIL time.dateTime: setAttribute() to false assert_equals: IDL get expected (string) "false" but got (undefined) undefined
+FAIL time.dateTime: setAttribute() to object "[object Object]" assert_equals: IDL get expected (string) "[object Object]" but got (undefined) undefined
+FAIL time.dateTime: setAttribute() to NaN assert_equals: IDL get expected (string) "NaN" but got (undefined) undefined
+FAIL time.dateTime: setAttribute() to Infinity assert_equals: IDL get expected (string) "Infinity" but got (undefined) undefined
+FAIL time.dateTime: setAttribute() to -Infinity assert_equals: IDL get expected (string) "-Infinity" but got (undefined) undefined
+FAIL time.dateTime: setAttribute() to "\0" assert_equals: IDL get expected (string) "\0" but got (undefined) undefined
+FAIL time.dateTime: setAttribute() to null assert_equals: IDL get expected (string) "null" but got (undefined) undefined
+FAIL time.dateTime: setAttribute() to object "test-toString" assert_equals: IDL get expected (string) "test-toString" but got (undefined) undefined
+FAIL time.dateTime: setAttribute() to object "test-valueOf" assert_equals: IDL get expected (string) "test-valueOf" but got (undefined) undefined
+FAIL time.dateTime: IDL set to "" assert_equals: getAttribute() expected "" but got "test-valueOf"
+FAIL time.dateTime: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: getAttribute() expected " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got "test-valueOf"
+FAIL time.dateTime: IDL set to undefined assert_equals: getAttribute() expected "undefined" but got "test-valueOf"
+FAIL time.dateTime: IDL set to 7 assert_equals: getAttribute() expected "7" but got "test-valueOf"
+FAIL time.dateTime: IDL set to 1.5 assert_equals: getAttribute() expected "1.5" but got "test-valueOf"
+FAIL time.dateTime: IDL set to true assert_equals: getAttribute() expected "true" but got "test-valueOf"
+FAIL time.dateTime: IDL set to false assert_equals: getAttribute() expected "false" but got "test-valueOf"
+FAIL time.dateTime: IDL set to object "[object Object]" assert_equals: getAttribute() expected "[object Object]" but got "test-valueOf"
+FAIL time.dateTime: IDL set to NaN assert_equals: getAttribute() expected "NaN" but got "test-valueOf"
+FAIL time.dateTime: IDL set to Infinity assert_equals: getAttribute() expected "Infinity" but got "test-valueOf"
+FAIL time.dateTime: IDL set to -Infinity assert_equals: getAttribute() expected "-Infinity" but got "test-valueOf"
+FAIL time.dateTime: IDL set to "\0" assert_equals: getAttribute() expected "\0" but got "test-valueOf"
+FAIL time.dateTime: IDL set to null assert_equals: getAttribute() expected "null" but got "test-valueOf"
+FAIL time.dateTime: IDL set to object "test-toString" assert_equals: getAttribute() expected "test-toString" but got "test-valueOf"
+FAIL time.dateTime: IDL set to object "test-valueOf" assert_equals: IDL get expected (string) "test-valueOf" but got (object) object "test-valueOf"
+PASS code.title: 32 tests
+PASS code.lang: 32 tests
+PASS code.dir: 62 tests
+PASS code.className (<code class>): 32 tests
+PASS code.hidden: 33 tests
+PASS code.accessKey: 32 tests
+PASS code.tabIndex: 24 tests
+PASS var.title: 32 tests
+PASS var.lang: 32 tests
+PASS var.dir: 62 tests
+PASS var.className (<var class>): 32 tests
+PASS var.hidden: 33 tests
+PASS var.accessKey: 32 tests
+PASS var.tabIndex: 24 tests
+PASS samp.title: 32 tests
+PASS samp.lang: 32 tests
+PASS samp.dir: 62 tests
+PASS samp.className (<samp class>): 32 tests
+PASS samp.hidden: 33 tests
+PASS samp.accessKey: 32 tests
+PASS samp.tabIndex: 24 tests
+PASS kbd.title: 32 tests
+PASS kbd.lang: 32 tests
+PASS kbd.dir: 62 tests
+PASS kbd.className (<kbd class>): 32 tests
+PASS kbd.hidden: 33 tests
+PASS kbd.accessKey: 32 tests
+PASS kbd.tabIndex: 24 tests
+PASS sub.title: 32 tests
+PASS sub.lang: 32 tests
+PASS sub.dir: 62 tests
+PASS sub.className (<sub class>): 32 tests
+PASS sub.hidden: 33 tests
+PASS sub.accessKey: 32 tests
+PASS sub.tabIndex: 24 tests
+PASS sup.title: 32 tests
+PASS sup.lang: 32 tests
+PASS sup.dir: 62 tests
+PASS sup.className (<sup class>): 32 tests
+PASS sup.hidden: 33 tests
+PASS sup.accessKey: 32 tests
+PASS sup.tabIndex: 24 tests
+PASS i.title: 32 tests
+PASS i.lang: 32 tests
+PASS i.dir: 62 tests
+PASS i.className (<i class>): 32 tests
+PASS i.hidden: 33 tests
+PASS i.accessKey: 32 tests
+PASS i.tabIndex: 24 tests
+PASS b.title: 32 tests
+PASS b.lang: 32 tests
+PASS b.dir: 62 tests
+PASS b.className (<b class>): 32 tests
+PASS b.hidden: 33 tests
+PASS b.accessKey: 32 tests
+PASS b.tabIndex: 24 tests
+PASS u.title: 32 tests
+PASS u.lang: 32 tests
+PASS u.dir: 62 tests
+PASS u.className (<u class>): 32 tests
+PASS u.hidden: 33 tests
+PASS u.accessKey: 32 tests
+PASS u.tabIndex: 24 tests
+PASS mark.title: 32 tests
+PASS mark.lang: 32 tests
+PASS mark.dir: 62 tests
+PASS mark.className (<mark class>): 32 tests
+PASS mark.hidden: 33 tests
+PASS mark.accessKey: 32 tests
+PASS mark.tabIndex: 24 tests
+PASS ruby.title: 32 tests
+PASS ruby.lang: 32 tests
+PASS ruby.dir: 62 tests
+PASS ruby.className (<ruby class>): 32 tests
+PASS ruby.hidden: 33 tests
+PASS ruby.accessKey: 32 tests
+PASS ruby.tabIndex: 24 tests
+PASS rt.title: 32 tests
+PASS rt.lang: 32 tests
+PASS rt.dir: 62 tests
+PASS rt.className (<rt class>): 32 tests
+PASS rt.hidden: 33 tests
+PASS rt.accessKey: 32 tests
+PASS rt.tabIndex: 24 tests
+PASS rp.title: 32 tests
+PASS rp.lang: 32 tests
+PASS rp.dir: 62 tests
+PASS rp.className (<rp class>): 32 tests
+PASS rp.hidden: 33 tests
+PASS rp.accessKey: 32 tests
+PASS rp.tabIndex: 24 tests
+PASS bdi.title: 32 tests
+PASS bdi.lang: 32 tests
+PASS bdi.dir: 62 tests
+PASS bdi.className (<bdi class>): 32 tests
+PASS bdi.hidden: 33 tests
+PASS bdi.accessKey: 32 tests
+PASS bdi.tabIndex: 24 tests
+PASS bdo.title: 32 tests
+PASS bdo.lang: 32 tests
+PASS bdo.dir: 62 tests
+PASS bdo.className (<bdo class>): 32 tests
+PASS bdo.hidden: 33 tests
+PASS bdo.accessKey: 32 tests
+PASS bdo.tabIndex: 24 tests
+PASS span.title: 32 tests
+PASS span.lang: 32 tests
+PASS span.dir: 62 tests
+PASS span.className (<span class>): 32 tests
+PASS span.hidden: 33 tests
+PASS span.accessKey: 32 tests
+PASS span.tabIndex: 24 tests
+PASS br.title: 32 tests
+PASS br.lang: 32 tests
+PASS br.dir: 62 tests
+PASS br.className (<br class>): 32 tests
+PASS br.hidden: 33 tests
+PASS br.accessKey: 32 tests
+PASS br.tabIndex: 24 tests
+PASS br.clear: 32 tests
+PASS wbr.title: 32 tests
+PASS wbr.lang: 32 tests
+PASS wbr.dir: 62 tests
+PASS wbr.className (<wbr class>): 32 tests
+PASS wbr.hidden: 33 tests
+PASS wbr.accessKey: 32 tests
+PASS wbr.tabIndex: 24 tests
 Harness: the test ran to completion.
 
