@@ -116,5 +116,8 @@ bool GetPythonCommand(base::CommandLine* python_cmd) {
   // gtest output in buildbot log files. See http://crbug.com/147368.
   python_cmd->AppendArg("-u");
 
+  // Prevent using system-installed libraries. Use hermetic versioned copies.
+  python_cmd->AppendArg("-S");
+
   return true;
 }
