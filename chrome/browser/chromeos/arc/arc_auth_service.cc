@@ -862,8 +862,11 @@ void ArcAuthService::CancelAuthCode() {
   }
 
   // Update UMA with user cancel only if error is not currently shown.
-  if (ui_page_ == ArcSupportHost::UIPage::ERROR_WITH_FEEDBACK)
+  if (ui_page_ != ArcSupportHost::UIPage::NO_PAGE &&
+      ui_page_ != ArcSupportHost::UIPage::ERROR &&
+      ui_page_ != ArcSupportHost::UIPage::ERROR_WITH_FEEDBACK) {
     UpdateOptInCancelUMA(OptInCancelReason::USER_CANCEL);
+  }
 
   StopArc();
 
