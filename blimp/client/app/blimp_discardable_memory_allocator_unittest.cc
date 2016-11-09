@@ -7,6 +7,8 @@
 #include <stddef.h>
 
 #include "base/memory/discardable_memory.h"
+#include "base/memory/ptr_util.h"
+#include "base/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blimp {
@@ -86,6 +88,28 @@ TEST(BlimpDiscardableMemoryAllocator, DontDiscardLiveChunks) {
   chunk_two->Unlock();
   chunk_three->Unlock();
 }
+
+#if DCHECK_IS_ON()
+TEST(BlimpDiscardableMemoryAllocator, DiscardWhileUnlockedLive) {
+  std::unique_ptr<BlimpDiscardableMemoryAllocator> allocator =
+      base::MakeUnique<BlimpDiscardableMemoryAllocator>();
+
+  std::unique_ptr<base::DiscardableMemory> chunk_one =
+      allocator->AllocateLockedDiscardableMemory(kAlmostOneMegabyte);
+
+  // These accesses will fail if the underlying weak ptr has been deallocated.
+  EXPECT_NE(nullptr, chunk_one->data());
+
+  chunk_one->Unlock();
+
+  allocator.reset();
+
+  EXPECT_DCHECK_DEATH(chunk_one.reset());
+
+  // Leak the DiscardableMemory instance, to avoid triggering the DCHECK.
+  chunk_one.release();
+}
+#endif  // DCHECK_IS_ON()
 
 }  // namespace
 }  // namespace client
