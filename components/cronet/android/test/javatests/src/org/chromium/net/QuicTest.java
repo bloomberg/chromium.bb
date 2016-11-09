@@ -12,6 +12,7 @@ import org.json.JSONObject;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestBase.OnlyRunNativeCronet;
 import org.chromium.net.MetricsTestUtil.TestRequestFinishedListener;
@@ -75,6 +76,7 @@ public class QuicTest extends CronetTestBase {
     @LargeTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
+    @DisabledTest(message = "crbug.com/663789")
     public void testQuicLoadUrl() throws Exception {
         mTestFramework = startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, mBuilder);
         String quicURL = QuicTestServer.getServerURL() + "/simple.txt";
@@ -157,6 +159,7 @@ public class QuicTest extends CronetTestBase {
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
     @SuppressWarnings("deprecation")
+    @DisabledTest(message = "crbug.com/663789")
     public void testRealTimeNetworkQualityObservationsWithQuic() throws Exception {
         mTestFramework = startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, mBuilder);
         String quicURL = QuicTestServer.getServerURL() + "/simple.txt";
@@ -213,6 +216,7 @@ public class QuicTest extends CronetTestBase {
     @SmallTest
     @OnlyRunNativeCronet
     @Feature({"Cronet"})
+    @DisabledTest(message = "crbug.com/663789")
     public void testMetricsWithQuic() throws Exception {
         mTestFramework = startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, mBuilder);
         TestRequestFinishedListener requestFinishedListener = new TestRequestFinishedListener();
