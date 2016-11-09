@@ -179,6 +179,7 @@ public class GeolocationTest extends PermissionTestCaseBase {
      */
     @MediumTest
     @CommandLineFlags.Add("enable-features=" + MODAL_TOGGLE_FLAG)
+    @DisabledTest(message = "crbug.com/663677")  // Flaky.
     @Feature({"Location"})
     public void testGeolocationPersistenceOffAllowedDialog() throws Exception {
         Tab tab = getActivity().getActivityTab();
