@@ -192,6 +192,15 @@ Polymer({
   },
 
   /**
+   * Whether there are any site exceptions added for this content setting.
+   * @return {boolean}
+   * @private
+   */
+  hasSites_: function() {
+    return !!this.sites.length;
+  },
+
+  /**
    * @param {string} source Where the setting came from.
    * @return {boolean}
    * @private

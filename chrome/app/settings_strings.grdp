@@ -1796,9 +1796,6 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_SESSION_ONLY" desc="Label for sites in site settings allowing cookies for the current session only.">
     Clear on exit
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_EXCEPTIONS" desc="Label for exception sites in site settings.">
-    Exceptions
-  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_URL" desc="Label for site URL text entry in site settings.">
     Site URL
   </message>
@@ -1900,6 +1897,9 @@
   </message>
   <message name="IDS_SETTINGS_SITE_DETAILS" desc="A title for the site settings details subpage.">
     Site details
+  </message>
+  <message name="IDS_SETTINGS_SITE_NO_SITES_ADDED" desc="Explenation for not showing a list of site exceptions">
+    No sites added
   </message>
 
   <!-- Sync / People Page -->

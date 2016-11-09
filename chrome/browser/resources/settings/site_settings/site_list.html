@@ -57,6 +57,9 @@
         </button>
       </dialog>
 
+      <div class="list-frame" hidden$="[[hasSites_(sites)]]">
+        <div class="list-item secondary">$i18n{noSitesAdded}</div>
+      </div>
       <div class="list-frame menu-content vertical-list" id="listContainer">
         <template is="dom-repeat" items="[[sites]]">
           <div class="list-item">
