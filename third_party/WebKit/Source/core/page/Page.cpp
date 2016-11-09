@@ -421,17 +421,16 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType) {
     case SettingsDelegate::DOMWorldsChange: {
       if (!settings().forceMainWorldInitialization())
         break;
-      if (!mainFrame() || !mainFrame()->isLocalFrame())
-        break;
-      if (!toLocalFrame(mainFrame())
-               ->loader()
-               .stateMachine()
-               ->committedFirstRealDocumentLoad())
-        break;
       for (Frame* frame = mainFrame(); frame;
            frame = frame->tree().traverseNext()) {
-        if (frame->isLocalFrame())
-          toLocalFrame(frame)->script().initializeMainWorld();
+        if (!frame->isLocalFrame())
+          continue;
+        LocalFrame* localFrame = toLocalFrame(frame);
+        if (localFrame->loader()
+                .stateMachine()
+                ->committedFirstRealDocumentLoad()) {
+          localFrame->script().initializeMainWorld();
+        }
       }
     } break;
   }
