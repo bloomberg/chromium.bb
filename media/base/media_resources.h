@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "media/base/media_export.h"
+#include "media/media_features.h"
 
 namespace media {
 
@@ -26,6 +27,10 @@ enum MessageId {
 #if defined(OS_CHROMEOS)
   BEAMFORMING_ON_DEFAULT_AUDIO_INPUT_DEVICE_NAME,
   BEAMFORMING_OFF_DEFAULT_AUDIO_INPUT_DEVICE_NAME,
+#endif
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
+  MEDIA_REMOTING_CAST_ERROR_TEXT,
+  MEDIA_REMOTING_CASTING_VIDEO_TEXT,
 #endif
 };
 
@@ -44,7 +49,7 @@ MEDIA_EXPORT void SetLocalizedStringProvider(LocalizedStringProvider func);
 // Returns a resource string corresponding to |message_id|. See l10n_util.h.
 // Returns an empty string if the LocalizedStringProvider has not been
 // initialized or if the ID is unrecognized.
-std::string GetLocalizedStringUTF8(MessageId message_id);
+MEDIA_EXPORT std::string GetLocalizedStringUTF8(MessageId message_id);
 base::string16 GetLocalizedStringUTF16(MessageId message_id);
 #endif
 

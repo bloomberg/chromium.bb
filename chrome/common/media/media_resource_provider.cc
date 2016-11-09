@@ -24,6 +24,12 @@ int MediaMessageIdToGrdId(media::MessageId message_id) {
     case media::BEAMFORMING_OFF_DEFAULT_AUDIO_INPUT_DEVICE_NAME:
       return IDS_BEAMFORMING_OFF_DEFAULT_AUDIO_INPUT_DEVICE_NAME;
 #endif
+#if BUILDFLAG(ENABLE_MEDIA_REMOTING)
+    case media::MEDIA_REMOTING_CAST_ERROR_TEXT:
+      return IDS_MEDIA_REMOTING_CAST_ERROR_TEXT;
+    case media::MEDIA_REMOTING_CASTING_VIDEO_TEXT:
+      return IDS_MEDIA_REMOTING_CASTING_VIDEO_TEXT;
+#endif
     default:
       NOTREACHED();
       return 0;

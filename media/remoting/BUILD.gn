@@ -45,6 +45,8 @@ source_set("remoting") {
     "remoting_cdm_controller.h",
     "remoting_cdm_factory.cc",
     "remoting_cdm_factory.h",
+    "remoting_interstitial_ui.cc",
+    "remoting_interstitial_ui.h",
     "remoting_renderer_controller.cc",
     "remoting_renderer_controller.h",
     "remoting_renderer_factory.cc",
@@ -60,6 +62,7 @@ source_set("remoting") {
     "//media",
     "//media/mojo/interfaces:remoting",
     "//mojo/public/cpp/bindings",
+    "//skia",
   ]
 }
 
