@@ -84,6 +84,11 @@ class TooltipControllerTest : public ViewsTestBase {
   void SetUp() override {
     ViewsTestBase::SetUp();
 
+    // TODO: these tests use GetContext(). That should go away for aura-mus
+    // client. http://crbug.com/663781.
+    if (IsAuraMusClient())
+      return;
+
     aura::Window* root_window = GetContext();
 
     new wm::DefaultActivationClient(root_window);
@@ -105,15 +110,17 @@ class TooltipControllerTest : public ViewsTestBase {
   }
 
   void TearDown() override {
+    if (!IsAuraMusClient()) {
 #if defined(OS_CHROMEOS)
-    aura::Window* root_window = GetContext();
-    root_window->RemovePreTargetHandler(controller_.get());
-    aura::client::SetTooltipClient(root_window, NULL);
-    controller_.reset();
+      aura::Window* root_window = GetContext();
+      root_window->RemovePreTargetHandler(controller_.get());
+      aura::client::SetTooltipClient(root_window, NULL);
+      controller_.reset();
 #endif
-    generator_.reset();
-    helper_.reset();
-    widget_.reset();
+      generator_.reset();
+      helper_.reset();
+      widget_.reset();
+    }
     ViewsTestBase::TearDown();
   }
 
@@ -165,6 +172,11 @@ class TooltipControllerTest : public ViewsTestBase {
 };
 
 TEST_F(TooltipControllerTest, ViewTooltip) {
+  // TODO: these tests use GetContext(). That should go away for aura-mus
+  // client. http://crbug.com/663781.
+  if (IsAuraMusClient())
+    return;
+
   view_->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
   EXPECT_EQ(base::string16(), helper_->GetTooltipText());
   EXPECT_EQ(NULL, helper_->GetTooltipWindow());
@@ -190,6 +202,11 @@ TEST_F(TooltipControllerTest, ViewTooltip) {
 }
 
 TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
+  // TODO: these tests use GetContext(). That should go away for aura-mus
+  // client. http://crbug.com/663781.
+  if (IsAuraMusClient())
+    return;
+
   view_->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
   EXPECT_EQ(base::string16(), helper_->GetTooltipText());
   EXPECT_EQ(NULL, helper_->GetTooltipWindow());
@@ -225,6 +242,11 @@ TEST_F(TooltipControllerTest, TooltipsInMultipleViews) {
 }
 
 TEST_F(TooltipControllerTest, EnableOrDisableTooltips) {
+  // TODO: these tests use GetContext(). That should go away for aura-mus
+  // client. http://crbug.com/663781.
+  if (IsAuraMusClient())
+    return;
+
   view_->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
   EXPECT_EQ(base::string16(), helper_->GetTooltipText());
   EXPECT_EQ(NULL, helper_->GetTooltipWindow());
@@ -251,6 +273,11 @@ TEST_F(TooltipControllerTest, EnableOrDisableTooltips) {
 
 // Verifies tooltip isn't shown if tooltip text consists entirely of whitespace.
 TEST_F(TooltipControllerTest, DontShowEmptyTooltips) {
+  // TODO: these tests use GetContext(). That should go away for aura-mus
+  // client. http://crbug.com/663781.
+  if (IsAuraMusClient())
+    return;
+
   view_->set_tooltip_text(ASCIIToUTF16("                     "));
   EXPECT_EQ(base::string16(), helper_->GetTooltipText());
   EXPECT_EQ(NULL, helper_->GetTooltipWindow());
@@ -262,6 +289,11 @@ TEST_F(TooltipControllerTest, DontShowEmptyTooltips) {
 }
 
 TEST_F(TooltipControllerTest, TooltipHidesOnKeyPressAndStaysHiddenUntilChange) {
+  // TODO: these tests use GetContext(). That should go away for aura-mus
+  // client. http://crbug.com/663781.
+  if (IsAuraMusClient())
+    return;
+
   view_->set_tooltip_text(ASCIIToUTF16("Tooltip Text for view 1"));
   EXPECT_EQ(base::string16(), helper_->GetTooltipText());
   EXPECT_EQ(NULL, helper_->GetTooltipWindow());
@@ -311,6 +343,11 @@ TEST_F(TooltipControllerTest, TooltipHidesOnKeyPressAndStaysHiddenUntilChange) {
 }
 
 TEST_F(TooltipControllerTest, TooltipHidesOnTimeoutAndStaysHiddenUntilChange) {
+  // TODO: these tests use GetContext(). That should go away for aura-mus
+  // client. http://crbug.com/663781.
+  if (IsAuraMusClient())
+    return;
+
   view_->set_tooltip_text(ASCIIToUTF16("Tooltip Text for view 1"));
   EXPECT_EQ(base::string16(), helper_->GetTooltipText());
   EXPECT_EQ(NULL, helper_->GetTooltipWindow());
@@ -360,6 +397,11 @@ TEST_F(TooltipControllerTest, TooltipHidesOnTimeoutAndStaysHiddenUntilChange) {
 
 // Verifies a mouse exit event hides the tooltips.
 TEST_F(TooltipControllerTest, HideOnExit) {
+  // TODO: these tests use GetContext(). That should go away for aura-mus
+  // client. http://crbug.com/663781.
+  if (IsAuraMusClient())
+    return;
+
   view_->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
   generator_->MoveMouseToCenterOf(GetWindow());
   base::string16 expected_tooltip = ASCIIToUTF16("Tooltip Text");
@@ -376,6 +418,11 @@ TEST_F(TooltipControllerTest, HideOnExit) {
 }
 
 TEST_F(TooltipControllerTest, ReshowOnClickAfterEnterExit) {
+  // TODO: these tests use GetContext(). That should go away for aura-mus
+  // client. http://crbug.com/663781.
+  if (IsAuraMusClient())
+    return;
+
   // Owned by |view_|.
   TooltipTestView* v1 = new TooltipTestView;
   TooltipTestView* v2 = new TooltipTestView;
@@ -434,12 +481,18 @@ class TooltipControllerCaptureTest : public TooltipControllerTest {
 
   void SetUp() override {
     TooltipControllerTest::SetUp();
+    // TODO: these tests use GetContext(). That should go away for aura-mus
+    // client. http://crbug.com/663781.
+    if (IsAuraMusClient())
+      return;
+
     aura::client::SetScreenPositionClient(GetRootWindow(),
                                           &screen_position_client_);
   }
 
   void TearDown() override {
-    aura::client::SetScreenPositionClient(GetRootWindow(), NULL);
+    if (!IsAuraMusClient())
+      aura::client::SetScreenPositionClient(GetRootWindow(), NULL);
     TooltipControllerTest::TearDown();
   }
 
@@ -453,6 +506,11 @@ class TooltipControllerCaptureTest : public TooltipControllerTest {
 // Verifies when capture is released the TooltipController resets state.
 // Flaky on all builders.  http://crbug.com/388268
 TEST_F(TooltipControllerCaptureTest, DISABLED_CloseOnCaptureLost) {
+  // TODO: these tests use GetContext(). That should go away for aura-mus
+  // client. http://crbug.com/663781.
+  if (IsAuraMusClient())
+    return;
+
   view_->GetWidget()->SetCapture(view_);
   RunPendingMessages();
   view_->set_tooltip_text(ASCIIToUTF16("Tooltip Text"));
@@ -482,7 +540,9 @@ TEST_F(TooltipControllerCaptureTest, DISABLED_CloseOnCaptureLost) {
 // Verifies the correct window is found for tooltips when there is a capture.
 TEST_F(TooltipControllerCaptureTest, MAYBE_Capture) {
   // Currently, capture in one test affects capture in other tests.
-  if (IsMus())
+  // TODO: these tests use GetContext(). That should go away for aura-mus
+  // client. http://crbug.com/663781.
+  if (IsMus() || IsAuraMusClient())
     return;
 
   const base::string16 tooltip_text(ASCIIToUTF16("1"));
@@ -646,6 +706,11 @@ class TooltipControllerTest3 : public ViewsTestBase {
   void SetUp() override {
     ViewsTestBase::SetUp();
 
+  // TODO: these tests use GetContext(). That should go away for aura-mus
+  // client. http://crbug.com/663781.
+  if (IsAuraMusClient())
+    return;
+
     aura::Window* root_window = GetContext();
     new wm::DefaultActivationClient(root_window);
 
@@ -667,13 +732,15 @@ class TooltipControllerTest3 : public ViewsTestBase {
   }
 
   void TearDown() override {
-    GetRootWindow()->RemovePreTargetHandler(controller_.get());
-    aura::client::SetTooltipClient(GetRootWindow(), NULL);
+    if (!IsAuraMusClient()) {
+      GetRootWindow()->RemovePreTargetHandler(controller_.get());
+      aura::client::SetTooltipClient(GetRootWindow(), NULL);
 
-    controller_.reset();
-    generator_.reset();
-    helper_.reset();
-    widget_.reset();
+      controller_.reset();
+      generator_.reset();
+      helper_.reset();
+      widget_.reset();
+    }
     ViewsTestBase::TearDown();
   }
 
@@ -700,6 +767,11 @@ class TooltipControllerTest3 : public ViewsTestBase {
 };
 
 TEST_F(TooltipControllerTest3, TooltipPositionChangesOnTwoViewsWithSameLabel) {
+  // TODO: these tests use GetContext(). That should go away for aura-mus
+  // client. http://crbug.com/663781.
+  if (IsAuraMusClient())
+    return;
+
   // Owned by |view_|.
   // These two views have the same tooltip text
   TooltipTestView* v1 = new TooltipTestView;

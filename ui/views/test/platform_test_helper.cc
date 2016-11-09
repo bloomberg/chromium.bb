@@ -23,6 +23,7 @@ class DefaultPlatformTestHelper : public PlatformTestHelper {
 
 PlatformTestHelper::Factory test_helper_factory;
 bool is_mus = false;
+bool is_aura_mus_client = false;
 
 }  // namespace
 
@@ -46,6 +47,16 @@ void PlatformTestHelper::SetIsMus() {
 // static
 bool PlatformTestHelper::IsMus() {
   return is_mus;
+}
+
+// static
+void PlatformTestHelper::SetIsAuraMusClient() {
+  is_aura_mus_client = true;
+}
+
+// static
+bool PlatformTestHelper::IsAuraMusClient() {
+  return is_aura_mus_client;
 }
 
 }  // namespace views

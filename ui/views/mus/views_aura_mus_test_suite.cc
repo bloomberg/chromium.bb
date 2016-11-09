@@ -177,7 +177,7 @@ ViewsAuraMusTestSuite::ViewsAuraMusTestSuite(int argc, char** argv)
 ViewsAuraMusTestSuite::~ViewsAuraMusTestSuite() {}
 
 void ViewsAuraMusTestSuite::Initialize() {
-  PlatformTestHelper::SetIsMus();
+  PlatformTestHelper::SetIsAuraMusClient();
   // Let other services know that we're running in tests. Do this with a
   // command line flag to avoid making blocking calls to other processes for
   // setup for tests (e.g. to unlock the screen in the window manager).

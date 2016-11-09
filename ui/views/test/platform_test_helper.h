@@ -28,6 +28,9 @@ class PlatformTestHelper {
   static void SetIsMus();
   static bool IsMus();
 
+  static void SetIsAuraMusClient();
+  static bool IsAuraMusClient();
+
   // Called once the ViewsTestHelper has been created, but before SetUp() is
   // called.
   virtual void OnTestHelperCreated(ViewsTestHelper* helper) {}

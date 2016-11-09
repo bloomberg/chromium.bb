@@ -64,6 +64,11 @@ bool ViewsTestBase::IsMus() {
   return PlatformTestHelper::IsMus();
 }
 
+// static
+bool ViewsTestBase::IsAuraMusClient() {
+  return PlatformTestHelper::IsAuraMusClient();
+}
+
 void ViewsTestBase::SetUp() {
   testing::Test::SetUp();
   // ContentTestSuiteBase might have already initialized
