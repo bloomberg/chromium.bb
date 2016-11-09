@@ -96,6 +96,10 @@ class CronetURLRequestContextGetter : public net::URLRequestContextGetter {
 
 namespace cronet {
 
+bool CronetEnvironment::IsOnNetworkThread() {
+  return network_io_thread_->task_runner()->BelongsToCurrentThread();
+}
+
 void CronetEnvironment::PostToNetworkThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
@@ -293,6 +297,7 @@ void CronetEnvironment::InitializeOnNetworkThread() {
       new net::MappedHostResolver(
           net::HostResolver::CreateDefaultResolver(nullptr)));
 
+  mapped_host_resolver->SetRulesFromString(host_resolver_rules_);
   main_context_->set_host_resolver(mapped_host_resolver.release());
 
   if (!cert_verifier_)
@@ -393,24 +398,6 @@ std::vector<uint8_t> CronetEnvironment::GetHistogramDeltas() {
   if (!HistogramManager::GetInstance()->GetDeltas(&data))
     return std::vector<uint8_t>();
   return data;
-}
-
-void CronetEnvironment::SetHostResolverRules(const std::string& rules) {
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  PostToNetworkThread(
-      FROM_HERE,
-      base::Bind(&CronetEnvironment::SetHostResolverRulesOnNetworkThread,
-                 base::Unretained(this), rules, &event));
-  event.Wait();
-}
-
-void CronetEnvironment::SetHostResolverRulesOnNetworkThread(
-    const std::string& rules,
-    base::WaitableEvent* event) {
-  static_cast<net::MappedHostResolver*>(main_context_->host_resolver())
-      ->SetRulesFromString(rules);
-  event->Signal();
 }
 
 }  // namespace cronet

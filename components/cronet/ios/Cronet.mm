@@ -41,6 +41,7 @@ RequestFilterBlock gRequestFilterBlock = nil;
 std::unique_ptr<CronetHttpProtocolHandlerDelegate> gHttpProtocolHandlerDelegate;
 NSURLCache* gPreservedSharedURLCache = nil;
 BOOL gEnableTestCertVerifierForTesting = FALSE;
+NSString* gHostResolverRulesForTesting = @"";
 
 // CertVerifier, which allows any certificates for testing.
 class TestCertVerifier : public net::CertVerifier {
@@ -105,6 +106,8 @@ class CronetHttpProtocolHandlerDelegate
 
 + (void)configureCronetEnvironmentForTesting:
     (cronet::CronetEnvironment*)cronetEnvironment {
+  cronetEnvironment->set_host_resolver_rules(
+      [gHostResolverRulesForTesting UTF8String]);
   if (gEnableTestCertVerifierForTesting) {
     std::unique_ptr<TestCertVerifier> test_cert_verifier =
         base::MakeUnique<TestCertVerifier>();
@@ -251,11 +254,11 @@ class CronetHttpProtocolHandlerDelegate
                             encoding:[NSString defaultCStringEncoding]];
 }
 
-+ (stream_engine*)getGlobalEngine {
++ (cronet_engine*)getGlobalEngine {
   DCHECK(gChromeNet.Get().get());
   if (gChromeNet.Get().get()) {
-    static stream_engine engine;
-    engine.obj = gChromeNet.Get()->GetURLRequestContextGetter();
+    static cronet_engine engine;
+    engine.obj = gChromeNet.Get().get();
     return &engine;
   }
   return nil;
@@ -274,15 +277,13 @@ class CronetHttpProtocolHandlerDelegate
 }
 
 + (void)setHostResolverRulesForTesting:(NSString*)hostResolverRulesForTesting {
-  DCHECK(gChromeNet.Get().get());
-  gChromeNet.Get()->SetHostResolverRules(
-      base::SysNSStringToUTF8(hostResolverRulesForTesting));
+  gHostResolverRulesForTesting = hostResolverRulesForTesting;
 }
 
 // This is a non-public dummy method that prevents the linker from stripping out
-// the otherwise non-referenced methods from 'bidirectional_stream.cc'.
+// the otherwise non-referenced methods from 'cronet_bidirectional_stream.cc'.
 + (void)preventStrippingCronetBidirectionalStream {
-  bidirectional_stream_create(NULL, 0, 0);
+  cronet_bidirectional_stream_create(NULL, 0, 0);
 }
 
 @end

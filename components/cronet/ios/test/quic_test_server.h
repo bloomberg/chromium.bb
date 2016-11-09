@@ -2,19 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_GRPC_SUPPORT_TEST_QUIC_TEST_SERVER_H_
-#define COMPONENTS_GRPC_SUPPORT_TEST_QUIC_TEST_SERVER_H_
+#ifndef COMPONENTS_CRONET_IOS_TEST_QUIC_TEST_SERVER_H_
+#define COMPONENTS_CRONET_IOS_TEST_QUIC_TEST_SERVER_H_
 
-#include <string>
-
-namespace grpc_support {
+namespace cronet {
 
 bool StartQuicTestServer();
 
 void ShutdownQuicTestServer();
 
-int GetQuicTestServerPort();
-
+extern const char kTestServerDomain[];
+extern const int kTestServerPort;
 extern const char kTestServerHost[];
 extern const char kTestServerUrl[];
 
@@ -29,6 +27,6 @@ extern const char kHelloHeaderValue[];
 extern const char kHelloTrailerName[];
 extern const char kHelloTrailerValue[];
 
-}  // namespace grpc_support
+}  // namespace cronet
 
 #endif  // COMPONENTS_CRONET_IOS_TEST_QUIC_TEST_SERVER_H_

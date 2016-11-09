@@ -10,9 +10,8 @@
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/cronet/ios/test/start_cronet.h"
+#include "components/cronet/ios/test/quic_test_server.h"
 #include "components/cronet/ios/test/test_server.h"
-#include "components/grpc_support/test/quic_test_server.h"
 #include "net/base/mac/url_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/cert/mock_cert_verifier.h"
@@ -113,16 +112,16 @@ namespace cronet {
 static const int64_t ns_in_second = 1000000000LL;
 const char kUserAgent[] = "CronetTest/1.0.0.0";
 
+// TODO(mef): Create common header file to declare this.
+void StartCronetIfNecessary();
+
 class HttpTest : public ::testing::Test {
  protected:
   HttpTest() {}
   ~HttpTest() override {}
 
   void SetUp() override {
-    grpc_support::StartQuicTestServer();
-    TestServer::Start();
-
-    StartCronetIfNecessary(grpc_support::GetQuicTestServerPort());
+    StartCronetIfNecessary();
     NSURLSessionConfiguration* config =
         [NSURLSessionConfiguration ephemeralSessionConfiguration];
     [Cronet installIntoSessionConfiguration:config];
@@ -133,10 +132,12 @@ class HttpTest : public ::testing::Test {
     // Take a reference to the session and store it so it doesn't get
     // deallocated until this object does.
     session_.reset([session retain]);
+    StartQuicTestServer();
+    TestServer::Start();
   }
 
   void TearDown() override {
-    grpc_support::ShutdownQuicTestServer();
+    ShutdownQuicTestServer();
     TestServer::Shutdown();
   }
 
@@ -154,23 +155,21 @@ class HttpTest : public ::testing::Test {
 };
 
 TEST_F(HttpTest, NSURLSessionReceivesData) {
-  NSURL* url = net::NSURLWithGURL(GURL(grpc_support::kTestServerUrl));
+  NSURL* url = net::NSURLWithGURL(GURL(kTestServerUrl));
   NSURLSessionDataTask* task = [session_ dataTaskWithURL:url];
   StartDataTaskAndWaitForCompletion(task);
   EXPECT_EQ(nil, [delegate_ error]);
-  EXPECT_STREQ(grpc_support::kHelloBodyValue,
-               base::SysNSStringToUTF8([delegate_ responseBody]).c_str());
+  EXPECT_STREQ(kHelloBodyValue, [[delegate_ responseBody] UTF8String]);
 }
 
 TEST_F(HttpTest, GetGlobalMetricsDeltas) {
   NSData* delta1 = [Cronet getGlobalMetricsDeltas];
 
-  NSURL* url = net::NSURLWithGURL(GURL(grpc_support::kTestServerUrl));
+  NSURL* url = net::NSURLWithGURL(GURL(kTestServerUrl));
   NSURLSessionDataTask* task = [session_ dataTaskWithURL:url];
   StartDataTaskAndWaitForCompletion(task);
   EXPECT_EQ(nil, [delegate_ error]);
-  EXPECT_STREQ(grpc_support::kHelloBodyValue,
-               base::SysNSStringToUTF8([delegate_ responseBody]).c_str());
+  EXPECT_STREQ(kHelloBodyValue, [[delegate_ responseBody] UTF8String]);
 
   NSData* delta2 = [Cronet getGlobalMetricsDeltas];
   EXPECT_FALSE([delta2 isEqualToData:delta1]);

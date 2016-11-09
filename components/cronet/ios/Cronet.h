@@ -4,16 +4,14 @@
 
 #import <Foundation/Foundation.h>
 
-#include "bidirectional_stream_c.h"
+#include "cronet_c_for_grpc.h"
 
 // A block, that takes a request, and returns YES if the request should
 // be handled.
 typedef BOOL (^RequestFilterBlock)(NSURLRequest* request);
 
 // Interface for installing Cronet.
-// TODO(gcasto): Should this macro be separate from the one defined in
-// bidirectional_stream_c.h?
-GRPC_SUPPORT_EXPORT
+CRONET_EXPORT
 @interface Cronet : NSObject
 
 // Sets whether HTTP/2 should be supported by CronetEngine. This method only has
@@ -91,7 +89,7 @@ GRPC_SUPPORT_EXPORT
 + (NSString*)getUserAgent;
 
 // Get a pointer to global instance of cronet_engine for GRPC C API.
-+ (stream_engine*)getGlobalEngine;
++ (cronet_engine*)getGlobalEngine;
 
 // Returns differences in metrics collected by Cronet since the last call to
 // getGlobalMetricsDeltas, serialized as a [protobuf]
@@ -103,7 +101,7 @@ GRPC_SUPPORT_EXPORT
 + (NSData*)getGlobalMetricsDeltas;
 
 // Sets Host Resolver Rules for testing.
-// This method must be called after |start| has been called.
+// This method only has any effect before |start| is called.
 + (void)setHostResolverRulesForTesting:(NSString*)hostResolverRulesForTesting;
 
 // Enables TestCertVerifier which accepts all certificates for testing.

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/grpc_support/test/quic_test_server.h"
+#include "components/cronet/ios/test/quic_test_server.h"
 
 #include <utility>
 
@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "net/base/ip_address.h"
@@ -21,12 +20,14 @@
 #include "net/tools/quic/quic_in_memory_cache.h"
 #include "net/tools/quic/quic_simple_server.h"
 
-namespace grpc_support {
+namespace cronet {
 
 // This must match the certificate used (quic_test.example.com.crt and
 // quic_test.example.com.key.pkcs8).
-const char kTestServerHost[] = "test.example.com";
-const char kTestServerUrl[] = "https://test.example.com/hello.txt";
+const char kTestServerDomain[] = "test.example.com";
+const int kTestServerPort = 6121;
+const char kTestServerHost[] = "test.example.com:6121";
+const char kTestServerUrl[] = "https://test.example.com:6121/hello.txt";
 
 const char kStatusHeader[] = ":status";
 
@@ -42,7 +43,6 @@ const char kHelloTrailerValue[] = "hello trailer value";
 
 base::Thread* g_quic_server_thread = nullptr;
 net::QuicSimpleServer* g_quic_server = nullptr;
-int g_quic_server_port = 0;
 
 void SetupQuicInMemoryCache() {
   static bool setup_done = false;
@@ -50,13 +50,13 @@ void SetupQuicInMemoryCache() {
     return;
   setup_done = true;
   net::SpdyHeaderBlock headers;
-  headers[kHelloHeaderName] = kHelloHeaderValue;
-  headers[kStatusHeader] =  kHelloStatus;
+  headers.AppendValueOrAddHeader(kHelloHeaderName, kHelloHeaderValue);
+  headers.AppendValueOrAddHeader(kStatusHeader, kHelloStatus);
   net::SpdyHeaderBlock trailers;
-  trailers[kHelloTrailerName] = kHelloTrailerValue;
+  trailers.AppendValueOrAddHeader(kHelloTrailerName, kHelloTrailerValue);
   net::QuicInMemoryCache::GetInstance()->AddResponse(
-      base::StringPrintf("%s", kTestServerHost),
-      kHelloPath, std::move(headers), kHelloBodyValue, std::move(trailers));
+      kTestServerHost, kHelloPath, std::move(headers), kHelloBodyValue,
+      std::move(trailers));
 }
 
 void StartQuicServerOnServerThread(const base::FilePath& test_files_root,
@@ -64,6 +64,8 @@ void StartQuicServerOnServerThread(const base::FilePath& test_files_root,
   DCHECK(g_quic_server_thread->task_runner()->BelongsToCurrentThread());
   DCHECK(!g_quic_server);
 
+  // Set up in-memory cache.
+  SetupQuicInMemoryCache();
   net::QuicConfig config;
   // Set up server certs.
   base::FilePath directory;
@@ -71,22 +73,18 @@ void StartQuicServerOnServerThread(const base::FilePath& test_files_root,
   std::unique_ptr<net::ProofSourceChromium> proof_source(
       new net::ProofSourceChromium());
   CHECK(proof_source->Initialize(
-      directory.AppendASCII("quic_test.example.com.crt"),
-      directory.AppendASCII("quic_test.example.com.key.pkcs8"),
-      directory.AppendASCII("quic_test.example.com.key.sct")));
+      directory.Append("quic_test.example.com.crt"),
+      directory.Append("quic_test.example.com.key.pkcs8"),
+      directory.Append("quic_test.example.com.key.sct")));
   g_quic_server =
       new net::QuicSimpleServer(std::move(proof_source), config,
                                 net::QuicCryptoServerConfig::ConfigOptions(),
                                 net::AllSupportedVersions());
 
-  // Start listening on an unbound port.
+  // Start listening.
   int rv = g_quic_server->Listen(
-      net::IPEndPoint(net::IPAddress::IPv4AllZeros(), 0));
+      net::IPEndPoint(net::IPAddress::IPv4AllZeros(), kTestServerPort));
   CHECK_GE(rv, 0) << "Quic server fails to start";
-  g_quic_server_port = g_quic_server->server_address().port();
-
-  SetupQuicInMemoryCache();
-
   server_started_event->Signal();
 }
 
@@ -98,21 +96,24 @@ void ShutdownOnServerThread(base::WaitableEvent* server_stopped_event) {
   server_stopped_event->Signal();
 }
 
+// Quic server is currently hardcoded to run on port 6121 of the localhost on
+// the device.
 bool StartQuicTestServer() {
-  LOG(INFO) << g_quic_server_thread;
   DCHECK(!g_quic_server_thread);
   g_quic_server_thread = new base::Thread("quic server thread");
   base::Thread::Options thread_options;
   thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
   bool started = g_quic_server_thread->StartWithOptions(thread_options);
   DCHECK(started);
-  base::FilePath test_files_root = net::GetTestCertsDirectory();
-
+  base::FilePath test_files_root;
+  if (!PathService::Get(base::DIR_EXE, &test_files_root))
+    return false;
   base::WaitableEvent server_started_event(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   g_quic_server_thread->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&StartQuicServerOnServerThread, test_files_root,
+      FROM_HERE, base::Bind(&StartQuicServerOnServerThread,
+                            test_files_root.Append("net/data/ssl/certificates"),
                             &server_started_event));
   server_started_event.Wait();
   return true;
@@ -132,8 +133,4 @@ void ShutdownQuicTestServer() {
   g_quic_server_thread = nullptr;
 }
 
-int GetQuicTestServerPort() {
-  return g_quic_server_port;
-}
-
-}  // namespace grpc_support
+}  // namespace cronet
