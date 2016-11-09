@@ -85,6 +85,8 @@ const SkColor kMenuIconColorDisabled = SkColorSetA(gfx::kChromeIconGrey, 0x61);
 const int kMenuButtonSize = 48;
 const int kMenuSeparatorVerticalPadding = 4;
 const int kMenuExtraMarginFromLeftEdge = 4;
+const int kMenuEdgeEffectivePadding =
+    kMenuExtraMarginFromLeftEdge + (kMenuButtonSize - kMenuIconSize) / 2;
 
 const int kHitRegionPadding = 4;
 const SkColor kSeparatorColor = SkColorSetA(SK_ColorWHITE, 0x99);

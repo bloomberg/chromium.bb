@@ -47,13 +47,6 @@ using chromeos::input_method::InputMethodManager;
 namespace ash {
 
 namespace {
-// The additional space between the child view area and the host button view
-// border in dp.
-// TODO(tdanderson): Move this to tray_constants.
-const int kButtonInsideBorderSpacing = 4;
-const int kMenuTitlePadding = 1;
-const int kMenuTitleItemPadding = 2;
-
 // Returns the height range of ImeListView.
 gfx::Range GetImeListViewRange() {
   const int max_items = 5;
@@ -111,14 +104,19 @@ SystemMenuButton* CreateImeMenuButton(views::ButtonListener* listener,
 class ImeTitleView : public views::View, public views::ButtonListener {
  public:
   explicit ImeTitleView(bool show_settings_button) : settings_button_(nullptr) {
+    SetBorder(views::CreatePaddedBorder(
+        views::CreateSolidSidedBorder(0, 0, kSeparatorWidth, 0,
+                                      kHorizontalSeparatorColor),
+        gfx::Insets(kMenuSeparatorVerticalPadding - kSeparatorWidth, 0)));
     auto* box_layout =
-        new views::BoxLayout(views::BoxLayout::kHorizontal, kMenuTitlePadding,
-                             kMenuTitlePadding, kMenuTitleItemPadding);
+        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
+    box_layout->set_minimum_cross_axis_size(
+        GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
     SetLayoutManager(box_layout);
     title_label_ =
         new views::Label(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME));
-    const int title_padding = (kMenuButtonSize - kMenuIconSize) / 2;
-    title_label_->SetBorder(views::CreateEmptyBorder(0, title_padding, 0, 0));
+    title_label_->SetBorder(
+        views::CreateEmptyBorder(0, kMenuEdgeEffectivePadding, 0, 0));
     title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     AddChildView(title_label_);
     box_layout->SetFlexForView(title_label_, 1);
@@ -126,8 +124,6 @@ class ImeTitleView : public views::View, public views::ButtonListener {
     if (show_settings_button) {
       settings_button_ = CreateImeMenuButton(
           this, kSystemMenuSettingsIcon, IDS_ASH_STATUS_TRAY_IME_SETTINGS, 0);
-      settings_button_->SetBorder(
-          views::CreateEmptyBorder(gfx::Insets(title_padding, title_padding)));
       if (IsInLoginOrLockScreen())
         settings_button_->SetState(views::Button::STATE_DISABLED);
       AddChildView(settings_button_);
@@ -136,34 +132,19 @@ class ImeTitleView : public views::View, public views::ButtonListener {
 
   // views::View:
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
-    UpdateStyle();
+    TrayPopupItemStyle style(theme, TrayPopupItemStyle::FontStyle::TITLE);
+    style.SetupLabel(title_label_);
   }
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
-    if (sender == settings_button_)
-      ShowIMESettings();
+    DCHECK_EQ(sender, settings_button_);
+    ShowIMESettings();
   }
 
   ~ImeTitleView() override {}
 
-  // views::View:
-  gfx::Size GetPreferredSize() const override {
-    int size = GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT);
-    return gfx::Size(size, size);
-  }
-  int GetHeightForWidth(int width) const override {
-    return GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT);
-  }
-
  private:
-  // Updates the style of |title_label_| based on the current native theme.
-  void UpdateStyle() {
-    TrayPopupItemStyle style(GetNativeTheme(),
-                             TrayPopupItemStyle::FontStyle::TITLE);
-    style.SetupLabel(title_label_);
-  }
-
   views::Label* title_label_;
 
   // Settings button that is only used in material design, and only if the
@@ -186,14 +167,15 @@ class ImeButtonsView : public views::View,
       : ime_menu_tray_(ime_menu_tray) {
     DCHECK(ime_menu_tray_);
 
-    SetBorder(views::CreateSolidSidedBorder(1, 0, 0, 0, kBorderDarkColor));
+    if (!MaterialDesignController::IsSystemTrayMenuMaterial())
+      SetBorder(views::CreateSolidSidedBorder(1, 0, 0, 0, kBorderDarkColor));
 
     // If there's only one settings button, the bottom should be a label with
     // normal background. Otherwise, show button icons with header background.
     if (show_settings_button && !show_emoji_button &&
         !show_handwriting_button && !show_voice_button) {
-      if (!MaterialDesignController::IsSystemTrayMenuMaterial())
-        ShowOneSettingButton();
+      DCHECK(!MaterialDesignController::IsSystemTrayMenuMaterial());
+      ShowOneSettingButton();
     } else {
       ShowButtons(show_emoji_button, show_handwriting_button, show_voice_button,
                   show_settings_button);
@@ -201,11 +183,6 @@ class ImeButtonsView : public views::View,
   }
 
   ~ImeButtonsView() override {}
-
-  // views::View:
-  int GetHeightForWidth(int width) const override {
-    return kMenuButtonSize + 2 * kButtonInsideBorderSpacing;
-  }
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
@@ -261,15 +238,22 @@ class ImeButtonsView : public views::View,
                    bool show_handwriting_button,
                    bool show_voice_button,
                    bool show_settings_button) {
-    auto* box_layout = new views::BoxLayout(views::BoxLayout::kHorizontal,
-                                            kButtonInsideBorderSpacing,
-                                            kButtonInsideBorderSpacing, 0);
-    if (!MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+      SetLayoutManager(
+          new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
+      SetBorder(views::CreatePaddedBorder(
+          views::CreateSolidSidedBorder(kSeparatorWidth, 0, 0, 0,
+                                        kHorizontalSeparatorColor),
+          gfx::Insets(kMenuSeparatorVerticalPadding - kSeparatorWidth,
+                      GetTrayConstant(TRAY_POPUP_ITEM_LEFT_INSET))));
+    } else {
+      auto* box_layout =
+          new views::BoxLayout(views::BoxLayout::kHorizontal, 4, 4, 0);
       set_background(
           views::Background::CreateSolidBackground(kHeaderBackgroundColor));
       box_layout->SetDefaultFlex(1);
+      SetLayoutManager(box_layout);
     }
-    SetLayoutManager(box_layout);
 
     const int right_border = 1;
     if (show_emoji_button) {
@@ -341,22 +325,17 @@ void ImeMenuTray::ShowImeMenuBubble() {
 
   views::TrayBubbleView* bubble_view =
       views::TrayBubbleView::Create(tray_container(), this, &init_params);
-  bubble_view->set_margins(gfx::Insets(7, 0, 0, 0));
   bubble_view->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
 
   // In the material design, we will add a title item with a separator on the
   // top of the IME menu.
   if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    ImeTitleView* title_view =
-        new ImeTitleView(!ShouldShowEmojiHandwritingVoiceButtons());
-    bubble_view->AddChildView(title_view);
-    views::Separator* separator =
-        new views::Separator(views::Separator::HORIZONTAL);
-    separator->SetColor(kBorderLightColor);
-    separator->SetPreferredSize(kSeparatorWidth);
-    separator->SetBorder(
-        views::CreateEmptyBorder(0, 0, kMenuSeparatorVerticalPadding, 0));
-    bubble_view->AddChildView(separator);
+    bubble_view->SetLayoutManager(
+        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+    bubble_view->AddChildView(
+        new ImeTitleView(!ShouldShowEmojiHandwritingVoiceButtons()));
+  } else {
+    bubble_view->set_margins(gfx::Insets(7, 0, 0, 0));
   }
 
   // Adds IME list to the bubble.

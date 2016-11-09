@@ -107,6 +107,8 @@ extern const int kMenuButtonSize;
 extern const int kMenuSeparatorVerticalPadding;
 // The horizontal padding for the system menu separator.
 extern const int kMenuExtraMarginFromLeftEdge;
+// The visual padding to the left of icons in the system menu.
+extern const int kMenuEdgeEffectivePadding;
 
 // The base color used for all ink drops in the system menu.
 extern const SkColor kTrayPopupInkDropBaseColor;

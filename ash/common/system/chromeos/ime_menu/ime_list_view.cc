@@ -4,6 +4,7 @@
 
 #include "ash/common/system/chromeos/ime_menu/ime_list_view.h"
 
+#include "ash/common/ash_view_ids.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/ime_info.h"
@@ -25,6 +26,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/keyboard/keyboard_util.h"
+#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/controls/image_view.h"
@@ -38,8 +40,6 @@
 namespace ash {
 namespace {
 
-const int kKeyboardRowVerticalInset = 4;
-const int kKeyboardRowSeparatorThickness = 1;
 const int kMinFontSizeDelta = -10;
 
 const SkColor kKeyboardRowSeparatorColor = SkColorSetA(SK_ColorBLACK, 0x1F);
@@ -171,26 +171,16 @@ class MaterialKeyboardStatusRowView : public views::View {
   MaterialKeyboardStatusRowView(views::ButtonListener* listener, bool enabled)
       : listener_(listener), label_(nullptr), toggle_(nullptr) {
     Init();
-    SetKeyboardStatusEnabled(enabled);
+    toggle_->SetIsOn(enabled, false);
   }
 
   ~MaterialKeyboardStatusRowView() override {}
-
-  void SetKeyboardStatusEnabled(bool enabled) {
-    toggle_->SetIsOn(enabled, true);
-  }
 
   const views::Button* toggle() const { return toggle_; }
   bool is_toggled() const { return toggle_->is_on(); }
 
  protected:
   // views::View:
-  gfx::Size GetPreferredSize() const override {
-    gfx::Size size = views::View::GetPreferredSize();
-    size.set_height(kMenuButtonSize + kKeyboardRowVerticalInset * 2);
-    return size;
-  }
-
   int GetHeightForWidth(int w) const override {
     return GetPreferredSize().height();
   }
@@ -201,11 +191,11 @@ class MaterialKeyboardStatusRowView : public views::View {
 
  private:
   void Init() {
-    SetBorder(views::CreateSolidSidedBorder(kKeyboardRowSeparatorThickness, 0,
-                                            0, 0, kKeyboardRowSeparatorColor));
+    SetLayoutManager(new views::FillLayout);
+    set_background(views::Background::CreateSolidBackground(kBackgroundColor));
+
     TriView* tri_view = TrayPopupUtils::CreateDefaultRowView();
     AddChildView(tri_view);
-    SetLayoutManager(new views::FillLayout);
 
     // The on-screen keyboard image button.
     views::ImageView* keyboard_image = TrayPopupUtils::CreateMainImageView();
@@ -228,6 +218,8 @@ class MaterialKeyboardStatusRowView : public views::View {
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
             IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD));
     tri_view->AddView(TriView::Container::END, toggle_);
+
+    set_id(VIEW_ID_STICKY_HEADER);
   }
 
   // Updates the style of |label_| based on the current native theme.
@@ -268,11 +260,6 @@ void ImeListView::Update(const IMEInfoList& list,
                          bool show_keyboard_toggle,
                          SingleImeBehavior single_ime_behavior) {
   ResetImeListView();
-  if (show_keyboard_toggle &&
-      MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    AppendMaterialKeyboardStatus();
-  }
-
   ime_map_.clear();
   property_map_.clear();
   CreateScrollableList();
@@ -288,11 +275,14 @@ void ImeListView::Update(const IMEInfoList& list,
     }
   }
 
-  if (show_keyboard_toggle &&
-      !MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    if (list.size() > 1 || !property_list.empty())
-      AddScrollSeparator();
-    AppendKeyboardStatus();
+  if (show_keyboard_toggle) {
+    if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+      PrependMaterialKeyboardStatus();
+    } else {
+      if (list.size() > 1 || !property_list.empty())
+        AddScrollSeparator();
+      AppendKeyboardStatus();
+    }
   }
 
   Layout();
@@ -302,7 +292,7 @@ void ImeListView::Update(const IMEInfoList& list,
 void ImeListView::ResetImeListView() {
   // Children are removed from the view hierarchy and deleted in Reset().
   Reset();
-  material_keyboard_statuts_view_ = nullptr;
+  material_keyboard_status_view_ = nullptr;
   keyboard_status_ = nullptr;
 }
 
@@ -376,15 +366,13 @@ void ImeListView::AppendKeyboardStatus() {
   keyboard_status_ = container;
 }
 
-void ImeListView::AppendMaterialKeyboardStatus() {
+void ImeListView::PrependMaterialKeyboardStatus() {
   DCHECK(MaterialDesignController::IsSystemTrayMenuMaterial());
-  if (material_keyboard_statuts_view_)
-    return;
+  DCHECK(!material_keyboard_status_view_);
   MaterialKeyboardStatusRowView* view =
       new MaterialKeyboardStatusRowView(this, keyboard::IsKeyboardEnabled());
-  view->SetKeyboardStatusEnabled(keyboard::IsKeyboardEnabled());
-  AddChildView(view);
-  material_keyboard_statuts_view_ = view;
+  scroll_content()->AddChildViewAt(view, 0);
+  material_keyboard_status_view_ = view;
 }
 
 void ImeListView::HandleViewClicked(views::View* view) {
@@ -412,10 +400,9 @@ void ImeListView::HandleViewClicked(views::View* view) {
 }
 
 void ImeListView::ButtonPressed(views::Button* sender, const ui::Event& event) {
-  if (material_keyboard_statuts_view_ &&
-      sender == material_keyboard_statuts_view_->toggle()) {
-    WmShell::Get()->ToggleIgnoreExternalKeyboard();
-  }
+  DCHECK(material_keyboard_status_view_);
+  DCHECK_EQ(sender, material_keyboard_status_view_->toggle());
+  WmShell::Get()->ToggleIgnoreExternalKeyboard();
 }
 
 }  // namespace ash

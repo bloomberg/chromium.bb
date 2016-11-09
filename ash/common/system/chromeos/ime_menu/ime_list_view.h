@@ -62,16 +62,15 @@ class ImeListView : public TrayDetailsView {
   // view.
   void AppendKeyboardStatus();
 
-  // Appends the material on-screen keyboard status to the top area of the
-  // detailed view.
-  void AppendMaterialKeyboardStatus();
+  // Inserts the material on-screen keyboard status in the detailed view.
+  void PrependMaterialKeyboardStatus();
 
   std::map<views::View*, std::string> ime_map_;
   std::map<views::View*, std::string> property_map_;
   // On-screen keyboard view which is not used in material design.
   views::View* keyboard_status_;
   // On-screen keyboard view which is only used in material design.
-  MaterialKeyboardStatusRowView* material_keyboard_statuts_view_;
+  MaterialKeyboardStatusRowView* material_keyboard_status_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeListView);
 };
