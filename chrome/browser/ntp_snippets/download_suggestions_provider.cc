@@ -155,7 +155,7 @@ void DownloadSuggestionsProvider::DismissSuggestion(
 
 void DownloadSuggestionsProvider::FetchSuggestionImage(
     const ContentSuggestion::ID& suggestion_id,
-    const ImageFetchedCallback& callback) {
+    const ntp_snippets::ImageFetchedCallback& callback) {
   // TODO(vitaliii): Fetch proper thumbnail from OfflinePageModel once it is
   // available there.
   // TODO(vitaliii): Provide site's favicon for assets downloads. See
@@ -167,11 +167,16 @@ void DownloadSuggestionsProvider::FetchSuggestionImage(
 void DownloadSuggestionsProvider::Fetch(
     const ntp_snippets::Category& category,
     const std::set<std::string>& known_suggestion_ids,
-    const FetchingCallback& callback) {
-  NOTREACHED();
+    const ntp_snippets::FetchDoneCallback& callback) {
+  LOG(DFATAL) << "DownloadSuggestionsProvider has no |Fetch| functionality!";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(callback, base::Passed(std::vector<ContentSuggestion>())));
+      base::Bind(
+          callback,
+          ntp_snippets::Status(
+              ntp_snippets::StatusCode::PERMANENT_ERROR,
+              "DownloadSuggestionsProvider has no |Fetch| functionality!"),
+          base::Passed(std::vector<ContentSuggestion>())));
 }
 
 void DownloadSuggestionsProvider::ClearHistory(
@@ -193,7 +198,7 @@ void DownloadSuggestionsProvider::ClearCachedSuggestions(Category category) {
 
 void DownloadSuggestionsProvider::GetDismissedSuggestionsForDebugging(
     Category category,
-    const DismissedSuggestionsCallback& callback) {
+    const ntp_snippets::DismissedSuggestionsCallback& callback) {
   DCHECK_EQ(provided_category_, category);
 
   offline_page_proxy_->GetAllPages(
@@ -221,7 +226,7 @@ void DownloadSuggestionsProvider::RegisterProfilePrefs(
 // Private methods
 
 void DownloadSuggestionsProvider::GetAllPagesCallbackForGetDismissedSuggestions(
-    const DismissedSuggestionsCallback& callback,
+    const ntp_snippets::DismissedSuggestionsCallback& callback,
     const std::vector<OfflinePageItem>& offline_pages) const {
   std::set<std::string> dismissed_ids = ReadOfflinePageDismissedIDsFromPrefs();
   std::vector<ContentSuggestion> suggestions;

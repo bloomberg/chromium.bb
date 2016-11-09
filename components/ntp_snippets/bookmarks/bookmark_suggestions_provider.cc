@@ -158,11 +158,15 @@ void BookmarkSuggestionsProvider::FetchSuggestionImage(
 void BookmarkSuggestionsProvider::Fetch(
     const Category& category,
     const std::set<std::string>& known_suggestion_ids,
-    const FetchingCallback& callback) {
-  NOTREACHED();
+    const FetchDoneCallback& callback) {
+  LOG(DFATAL) << "BookmarkSuggestionsProvider has no |Fetch| functionality!";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(callback, base::Passed(std::vector<ContentSuggestion>())));
+      base::Bind(
+          callback,
+          Status(StatusCode::PERMANENT_ERROR,
+                 "BookmarkSuggestionsProvider has no |Fetch| functionality!"),
+          base::Passed(std::vector<ContentSuggestion>())));
 }
 
 void BookmarkSuggestionsProvider::ClearHistory(

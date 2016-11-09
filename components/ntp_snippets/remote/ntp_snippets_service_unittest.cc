@@ -76,6 +76,10 @@ MATCHER_P(IsCategory, id, "") {
   return arg.id() == static_cast<int>(id);
 }
 
+MATCHER_P(HasCode, code, "") {
+  return arg.status == code;
+}
+
 const base::Time::Exploded kDefaultCreationTime = {2015, 11, 4, 25, 13, 46, 45};
 const char kTestContentSuggestionsServerEndpoint[] =
     "https://localunittest-chromecontentsuggestions-pa.googleapis.com/v1/"
@@ -531,7 +535,7 @@ class NTPSnippetsServiceTest : public ::testing::Test {
                               const Category& category,
                               const std::string& json,
                               const std::set<std::string>& known_ids,
-                              NTPSnippetsService::FetchingCallback callback) {
+                              FetchDoneCallback callback) {
     SetUpFetchResponse(json);
     service->Fetch(category, known_ids, callback);
     base::RunLoop().RunUntilIdle();
@@ -899,7 +903,7 @@ TEST_F(NTPSnippetsServiceTest, LoadsAdditionalSnippets) {
               ElementsAre(IdEq("http://first")));
 
   auto expect_only_second_suggestion_received =
-      base::Bind([](std::vector<ContentSuggestion> suggestions) {
+      base::Bind([](Status status, std::vector<ContentSuggestion> suggestions) {
         EXPECT_THAT(suggestions, SizeIs(1));
         EXPECT_THAT(suggestions[0].id().id_within_category(),
                     Eq("http://second"));
@@ -940,9 +944,10 @@ namespace {
 
 // Workaround for gMock's lack of support for movable types.
 void SuggestionsLoaded(
-    MockFunction<void(const std::vector<ContentSuggestion>& v)>* loaded,
-    std::vector<ContentSuggestion> v) {
-  loaded->Call(v);
+    MockFunction<void(Status, const std::vector<ContentSuggestion>&)>* loaded,
+    Status status,
+    std::vector<ContentSuggestion> suggestions) {
+  loaded->Call(status, suggestions);
 }
 
 }  // namespace
@@ -950,8 +955,8 @@ void SuggestionsLoaded(
 TEST_F(NTPSnippetsServiceTest, InvokesOnlyCallbackOnFetchingMore) {
   auto service = MakeSnippetsService();
 
-  MockFunction<void(const std::vector<ContentSuggestion>&)> loaded;
-  EXPECT_CALL(loaded, Call(SizeIs(1)));
+  MockFunction<void(Status, const std::vector<ContentSuggestion>&)> loaded;
+  EXPECT_CALL(loaded, Call(HasCode(StatusCode::SUCCESS), SizeIs(1)));
 
   LoadMoreFromJSONString(service.get(), articles_category(),
                          GetTestJson({GetSnippetWithUrl("http://some")}),
@@ -965,8 +970,8 @@ TEST_F(NTPSnippetsServiceTest, InvokesOnlyCallbackOnFetchingMore) {
 
 TEST_F(NTPSnippetsServiceTest, ReturnFetchRequestEmptyBeforeInit) {
   auto service = MakeSnippetsServiceWithoutInitialization();
-  MockFunction<void(const std::vector<ContentSuggestion>&)> loaded;
-  EXPECT_CALL(loaded, Call(SizeIs(0)));
+  MockFunction<void(Status, const std::vector<ContentSuggestion>&)> loaded;
+  EXPECT_CALL(loaded, Call(HasCode(StatusCode::TEMPORARY_ERROR), SizeIs(0)));
   service->Fetch(articles_category(), std::set<std::string>(),
                  base::Bind(&SuggestionsLoaded, &loaded));
   base::RunLoop().RunUntilIdle();

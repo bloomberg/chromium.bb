@@ -92,7 +92,7 @@ class MockProvider : public ContentSuggestionsProvider {
   MOCK_METHOD3(Fetch,
                void(const Category&,
                     const std::set<std::string>&,
-                    const FetchingCallback&));
+                    const FetchDoneCallback&));
   MOCK_METHOD1(ClearCachedSuggestions, void(Category category));
   MOCK_METHOD2(GetDismissedSuggestionsForDebugging,
                void(Category category,
@@ -588,8 +588,7 @@ TEST_F(ContentSuggestionsServiceTest, ShouldForwardFetch) {
   MockProvider* provider = RegisterProvider(category);
   provider->FireCategoryStatusChangedWithCurrentStatus(category);
   EXPECT_CALL(*provider, Fetch(category, known_suggestions, _));
-  service()->Fetch(category, known_suggestions,
-                   ContentSuggestionsService::FetchingCallback());
+  service()->Fetch(category, known_suggestions, FetchDoneCallback());
 }
 
 TEST_F(ContentSuggestionsServiceTest, DismissAndRestoreCategory) {

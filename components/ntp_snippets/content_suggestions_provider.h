@@ -10,14 +10,12 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "components/ntp_snippets/callbacks.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestion.h"
-
-namespace gfx {
-class Image;
-}  // namespace gfx
+#include "components/ntp_snippets/status.h"
 
 namespace ntp_snippets {
 
@@ -29,12 +27,6 @@ namespace ntp_snippets {
 // shut down by the ContentSuggestionsService.
 class ContentSuggestionsProvider {
  public:
-  using ImageFetchedCallback = base::Callback<void(const gfx::Image&)>;
-  using DismissedSuggestionsCallback = base::Callback<void(
-      std::vector<ContentSuggestion> dismissed_suggestions)>;
-  using FetchingCallback =
-      base::Callback<void(std::vector<ContentSuggestion> suggestions)>;
-
   // The observer of a provider is notified when new data is available.
   class Observer {
    public:
@@ -106,10 +98,11 @@ class ContentSuggestionsProvider {
   // Fetches more suggestions for the given category. The new suggestions
   // will not include any suggestion of the |known_suggestion_ids| sets.
   // The given |callback| is called with these suggestions, along with all
-  // existing suggestions.
+  // existing suggestions. It has to be invoked exactly once as the front-end
+  // might wait for its completion.
   virtual void Fetch(const Category& category,
                      const std::set<std::string>& known_suggestion_ids,
-                     const FetchingCallback& callback) = 0;
+                     const FetchDoneCallback& callback) = 0;
 
   // Removes history from the specified time range where the URL matches the
   // |filter|. The data removed depends on the provider. Note that the

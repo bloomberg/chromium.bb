@@ -102,8 +102,10 @@ class CapturingFetchingCallback {
                             const ScopedJavaGlobalRef<jobject>* observer)
       : category_(category), observer_(observer) {}
 
-  void Run(std::vector<ContentSuggestion> suggestions) {
+  void Run(ntp_snippets::Status status,
+           std::vector<ContentSuggestion> suggestions) {
     JNIEnv* env = AttachCurrentThread();
+    // TODO(fhorschig, dgn): Allow refetch or show notification acc. to status.
     Java_SnippetsBridge_onMoreSuggestions(
         env, *observer_, category_.id(),
         ToJavaSuggestionList(env, category_, suggestions));

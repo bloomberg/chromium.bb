@@ -120,7 +120,7 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
                             const ImageFetchedCallback& callback) override;
   void Fetch(const Category& category,
              const std::set<std::string>& known_suggestion_ids,
-             const FetchingCallback& callback) override;
+             const FetchDoneCallback& callback) override;
   void ClearHistory(
       base::Time begin,
       base::Time end,
@@ -208,8 +208,8 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
 
   // Callback for fetch-more requests with the NTPSnippetsFetcher.
   void OnFetchMoreFinished(
-    FetchingCallback fetching_callback,
-    NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories);
+      FetchDoneCallback fetching_callback,
+      NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories);
 
   // Callback for regular fetch requests with the NTPSnippetsFetcher.
   void OnFetchFinished(
@@ -290,7 +290,7 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
   // and passes them to the |callback|.
   // TODO(tschumann): Make |callback| required.
   void NotifyMoreSuggestions(Category category,
-                             base::Optional<FetchingCallback> callback);
+                             base::Optional<FetchDoneCallback> callback);
 
   // Updates the internal status for |category| to |category_status_| and
   // notifies the content suggestions observer if it changed.

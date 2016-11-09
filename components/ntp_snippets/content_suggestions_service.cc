@@ -199,7 +199,7 @@ void ContentSuggestionsService::RegisterProvider(
 void ContentSuggestionsService::Fetch(
     const Category& category,
     const std::set<std::string>& known_suggestion_ids,
-    const FetchingCallback& callback) {
+    const FetchDoneCallback& callback) {
   auto providers_it = providers_by_category_.find(category);
   if (providers_it == providers_by_category_.end())
     return;

@@ -218,11 +218,10 @@ std::vector<ContentSuggestion> ConvertToContentSuggestions(
   return result;
 }
 
-void CallWithEmptyResults(
-    ContentSuggestionsProvider::FetchingCallback callback) {
+void CallWithEmptyResults(FetchDoneCallback callback, Status status) {
   if (callback.is_null())
     return;
-  callback.Run(std::vector<ContentSuggestion>());
+  callback.Run(status, std::vector<ContentSuggestion>());
 }
 
 }  // namespace
@@ -331,9 +330,10 @@ void NTPSnippetsService::FetchSnippetsFromHosts(
 void NTPSnippetsService::Fetch(
     const Category& category,
     const std::set<std::string>& known_suggestion_ids,
-    const FetchingCallback& callback) {
+    const FetchDoneCallback& callback) {
   if (!ready()) {
-    CallWithEmptyResults(callback);
+    CallWithEmptyResults(callback, Status(StatusCode::TEMPORARY_ERROR,
+                                          "NTPSnippetsService is not ready!"));
     return;
   }
   NTPSnippetsFetcher::Params params =
@@ -647,16 +647,23 @@ void NTPSnippetsService::OnDatabaseError() {
 }
 
 void NTPSnippetsService::OnFetchMoreFinished(
-    FetchingCallback fetching_callback,
+    FetchDoneCallback fetching_callback,
     NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories) {
   if (!fetched_categories) {
-    CallWithEmptyResults(fetching_callback);
+    // TODO(fhorschig): Disambiguate the kind of error that led here.
+    CallWithEmptyResults(fetching_callback,
+                         Status(StatusCode::PERMANENT_ERROR,
+                                "The NTPSnippetsFetcher did not "
+                                "complete the fetching successfully."));
     return;
   }
   if (fetched_categories->size() != 1u) {
     LOG(DFATAL) << "Requested one exclusive category but received "
                 << fetched_categories->size() << " categories.";
-    CallWithEmptyResults(fetching_callback);
+    CallWithEmptyResults(
+        fetching_callback,
+        Status(StatusCode::PERMANENT_ERROR,
+               "NTPSnippetsService received more categories than requested."));
     return;
   }
   auto& fetched_category = (*fetched_categories)[0];
@@ -673,7 +680,7 @@ void NTPSnippetsService::OnFetchMoreFinished(
     // Add the snippets to the archive so that we keep track of the image urls.
     ArchiveSnippets(fetched_category.category, &fetched_category.snippets);
   }
-  fetching_callback.Run(std::move(result));
+  fetching_callback.Run(Status(StatusCode::SUCCESS), std::move(result));
 }
 
 void NTPSnippetsService::OnFetchFinished(
@@ -1122,7 +1129,7 @@ void NTPSnippetsService::NotifyNewSuggestions(Category category) {
 
 void NTPSnippetsService::NotifyMoreSuggestions(
     Category category,
-    base::Optional<FetchingCallback> callback) {
+    base::Optional<FetchDoneCallback> callback) {
   DCHECK(base::ContainsKey(categories_, category));
   const CategoryContent& content = categories_[category];
   DCHECK(IsCategoryStatusAvailable(content.status));
@@ -1134,7 +1141,7 @@ void NTPSnippetsService::NotifyMoreSuggestions(
            << " items in category " << category;
   DCHECK(callback);
   DCHECK(!callback->is_null());
-  callback->Run(std::move(result));
+  callback->Run(Status(StatusCode::SUCCESS), std::move(result));
 }
 
 void NTPSnippetsService::UpdateCategoryStatus(Category category,

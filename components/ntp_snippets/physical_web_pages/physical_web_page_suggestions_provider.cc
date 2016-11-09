@@ -98,11 +98,15 @@ void PhysicalWebPageSuggestionsProvider::FetchSuggestionImage(
 void PhysicalWebPageSuggestionsProvider::Fetch(
     const Category& category,
     const std::set<std::string>& known_suggestion_ids,
-    const FetchingCallback& callback) {
-  NOTREACHED();
+    const FetchDoneCallback& callback) {
+  LOG(DFATAL)
+      << "PhysicalWebPageSuggestionsProvider has no |Fetch| functionality!";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(callback, base::Passed(std::vector<ContentSuggestion>())));
+      base::Bind(callback, Status(StatusCode::PERMANENT_ERROR,
+                                  "PhysicalWebPageSuggestionsProvider "
+                                  "has no |Fetch| functionality!"),
+                 base::Passed(std::vector<ContentSuggestion>())));
 }
 
 void PhysicalWebPageSuggestionsProvider::ClearHistory(
