@@ -11,6 +11,7 @@
 #include "base/mac/bundle_locations.h"
 #import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/sprite_view.h"
 #import "chrome/browser/ui/cocoa/tabs/alert_indicator_button_cocoa.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_controller_target.h"
@@ -60,6 +61,17 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
 }  // TabControllerInternal namespace
 
+namespace {
+static const CGFloat kTabLeadingPadding = 18;
+static const CGFloat kTabTrailingPadding = 15;
+static const CGFloat kIconSize = 16;
+static const CGFloat kCloseButtonSize = 16;
+static const CGFloat kInitialTabWidth = 160;
+static const CGFloat kTitleLeadingPadding = 4;
+static const CGFloat kInitialTitleWidth = 92;
+static const CGFloat kTabElementYOrigin = 6;
+}  // namespace
+
 + (CGFloat)defaultTabHeight {
   return 29;
 }
@@ -81,31 +93,41 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
 - (id)init {
   if ((self = [super init])) {
+    BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
     // Icon.
-    // Remember the icon's frame, so that if the icon is ever removed, a new
-    // one can later replace it in the proper location.
-    originalIconFrame_ = NSMakeRect(18, 6, 16, 16);
-    iconView_.reset([[SpriteView alloc] initWithFrame:originalIconFrame_]);
-    [iconView_ setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin];
+    const CGFloat iconOrigin =
+        isRTL ? kInitialTabWidth - kTabLeadingPadding - kIconSize
+              : kTabLeadingPadding;
+    NSRect iconFrame =
+        NSMakeRect(iconOrigin, kTabElementYOrigin, kIconSize, kIconSize);
+    iconView_.reset([[SpriteView alloc] initWithFrame:iconFrame]);
+    [iconView_ setAutoresizingMask:isRTL ? NSViewMinXMargin | NSViewMinYMargin
+                                         : NSViewMaxXMargin | NSViewMinYMargin];
 
-    // When the icon is removed, the title expands to the left to fill the
-    // space left by the icon.  When the close button is removed, the title
-    // expands to the right to fill its space.  These are the amounts to expand
-    // and contract the title frame under those conditions. We don't have to
-    // explicilty save the offset between the title and the close button since
-    // we can just get that value for the close button's frame.
-    NSRect titleFrame = NSMakeRect(35, 6, 92, 17);
+    const CGFloat titleOrigin =
+        isRTL
+            ? NSMinX([iconView_ frame]) - kTitleLeadingPadding -
+                  kInitialTitleWidth
+            : NSMaxX([iconView_ frame]) + kTitleLeadingPadding;
+    NSRect titleFrame =
+        NSMakeRect(titleOrigin, kTabElementYOrigin, kInitialTitleWidth, 17);
 
     // Close button.
-    NSRect closeButtonFrame = NSMakeRect(129, 6, 16, 16);
+    const CGFloat closeButtonOrigin =
+        isRTL ? kTabTrailingPadding
+              : kInitialTabWidth - kCloseButtonSize - kTabTrailingPadding;
+    NSRect closeButtonFrame = NSMakeRect(closeButtonOrigin, kTabElementYOrigin,
+                                         kCloseButtonSize, kCloseButtonSize);
     closeButton_.reset([[HoverCloseButton alloc] initWithFrame:
         closeButtonFrame]);
-    [closeButton_ setAutoresizingMask:NSViewMinXMargin];
+    [closeButton_
+        setAutoresizingMask:isRTL ? NSViewMaxXMargin : NSViewMinXMargin];
     [closeButton_ setTarget:self];
     [closeButton_ setAction:@selector(closeTab:)];
 
     base::scoped_nsobject<TabView> view([[TabView alloc]
-        initWithFrame:NSMakeRect(0, 0, 160, [TabController defaultTabHeight])
+        initWithFrame:NSMakeRect(0, 0, kInitialTabWidth,
+                                 [TabController defaultTabHeight])
            controller:self
           closeButton:closeButton_]);
     [view setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin];
@@ -284,9 +306,10 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 // tab. We never actually do this, but it's a helpful guide for determining
 // how much space we have available.
 - (int)iconCapacity {
-  const CGFloat availableWidth = std::max<CGFloat>(
-      0, NSMaxX([closeButton_ frame]) - NSMinX(originalIconFrame_));
-  const CGFloat widthPerIcon = NSWidth(originalIconFrame_);
+  const CGFloat availableWidth =
+      std::max<CGFloat>(0, NSWidth([[self tabView] frame]) -
+                               kTabLeadingPadding - kTabTrailingPadding);
+  const CGFloat widthPerIcon = kIconSize;
   const int kPaddingBetweenIcons = 2;
   if (availableWidth >= widthPerIcon &&
       availableWidth < (widthPerIcon + kPaddingBetweenIcons)) {
@@ -322,9 +345,12 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   if (image == nil) {
     [self setIconView:nil];
   } else {
+    BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
     if (iconView_.get() == nil) {
       base::scoped_nsobject<SpriteView> iconView([[SpriteView alloc] init]);
-      [iconView setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin];
+      [iconView setAutoresizingMask:isRTL
+                                        ? NSViewMinXMargin | NSViewMinYMargin
+                                        : NSViewMaxXMargin | NSViewMinYMargin];
       [self setIconView:iconView];
     }
 
@@ -332,16 +358,21 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
     if ([self pinned]) {
       NSRect appIconFrame = [iconView_ frame];
-      appIconFrame.origin = originalIconFrame_.origin;
 
       const CGFloat tabWidth = [TabController pinnedTabWidth];
 
       // Center the icon.
-      appIconFrame.origin.x =
-          std::floor((tabWidth - NSWidth(appIconFrame)) / 2.0);
+      appIconFrame.origin = NSMakePoint(
+          std::floor((tabWidth - kIconSize) / 2.0), kTabElementYOrigin);
       [iconView_ setFrame:appIconFrame];
     } else {
-      [iconView_ setFrame:originalIconFrame_];
+      const CGFloat tabWidth = NSWidth([[self tabView] frame]);
+      const CGFloat iconOrigin = isRTL
+                                     ? tabWidth - kIconSize - kTabLeadingPadding
+                                     : kTabLeadingPadding;
+      NSRect iconFrame =
+          NSMakeRect(iconOrigin, kTabElementYOrigin, kIconSize, kIconSize);
+      [iconView_ setFrame:iconFrame];
     }
   }
 }
@@ -367,6 +398,8 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
   [alertIndicatorButton_ setHidden:!newShowAlertIndicator];
 
+  BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
+
   if (newShowAlertIndicator) {
     NSRect newFrame = [alertIndicatorButton_ frame];
     newFrame.size = [[alertIndicatorButton_ image] size];
@@ -374,16 +407,16 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
       // Tab is pinned: Position the alert indicator in the center.
       const CGFloat tabWidth = [TabController pinnedTabWidth];
       newFrame.origin.x = std::floor((tabWidth - NSWidth(newFrame)) / 2);
-      newFrame.origin.y = NSMinY(originalIconFrame_) -
-          std::floor((NSHeight(newFrame) - NSHeight(originalIconFrame_)) / 2);
+      newFrame.origin.y =
+          kTabElementYOrigin - std::floor((NSHeight(newFrame) - kIconSize) / 2);
     } else {
       // The Frame for the alertIndicatorButton_ depends on whether iconView_
       // and/or closeButton_ are visible, and where they have been positioned.
       const NSRect closeButtonFrame = [closeButton_ frame];
       newFrame.origin.x = NSMinX(closeButtonFrame);
-      // Position to the left of the close button when it is showing.
+      // Position before the close button when it is showing.
       if (newShowCloseButton)
-        newFrame.origin.x -= NSWidth(newFrame);
+        newFrame.origin.x += isRTL ? NSWidth(newFrame) : -NSWidth(newFrame);
       // Alert indicator is centered vertically, with respect to closeButton_.
       newFrame.origin.y = NSMinY(closeButtonFrame) -
           std::floor((NSHeight(newFrame) - NSHeight(closeButtonFrame)) / 2);
@@ -399,22 +432,32 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   newTitleFrame.size.height = oldTitleFrame.size.height;
   newTitleFrame.origin.y = oldTitleFrame.origin.y;
 
-  if (newShowIcon) {
-    newTitleFrame.origin.x = NSMaxX([iconView_ frame]) + 4;
+  CGFloat titleLeft, titleRight;
+  if (isRTL) {
+    if (newShowAlertIndicator) {
+      titleLeft = NSMaxX([alertIndicatorButton_ frame]);
+    } else if (newShowCloseButton) {
+      titleLeft = NSMaxX([closeButton_ frame]);
+    } else {
+      titleLeft = kTabLeadingPadding;
+    }
+    titleRight = newShowIcon
+                     ? NSMinX([iconView_ frame]) - kTitleLeadingPadding
+                     : NSWidth([[self tabView] frame]) - kTabLeadingPadding;
   } else {
-    newTitleFrame.origin.x = originalIconFrame_.origin.x;
+    titleLeft = newShowIcon ? NSMaxX([iconView_ frame]) + kTitleLeadingPadding
+                            : kTabLeadingPadding;
+    if (newShowAlertIndicator) {
+      titleRight = NSMinX([alertIndicatorButton_ frame]);
+    } else if (newShowCloseButton) {
+      titleRight = NSMinX([closeButton_ frame]);
+    } else {
+      titleRight = NSWidth([[self tabView] frame]) - kTabTrailingPadding;
+    }
   }
 
-  if (newShowAlertIndicator) {
-    newTitleFrame.size.width = NSMinX([alertIndicatorButton_ frame]) -
-                               newTitleFrame.origin.x;
-  } else if (newShowCloseButton) {
-    newTitleFrame.size.width = NSMinX([closeButton_ frame]) -
-                               newTitleFrame.origin.x;
-  } else {
-    newTitleFrame.size.width = NSMaxX([closeButton_ frame]) -
-                               newTitleFrame.origin.x;
-  }
+  newTitleFrame.size.width = titleRight - titleLeft;
+  newTitleFrame.origin.x = titleLeft;
 
   [tabView setTitleFrame:newTitleFrame];
 }

@@ -5,6 +5,7 @@
 #import <Cocoa/Cocoa.h>
 #include <stddef.h>
 
+#include "base/feature_list.h"
 #include "base/strings/string16.h"
 
 namespace cocoa_l10n_util {
@@ -33,6 +34,7 @@ NSString* ReplaceNSStringPlaceholders(NSString* formatString,
 // Generates a tooltip string for a given URL and title.
 NSString* TooltipForURLAndTitle(NSString* url, NSString* title);
 
+extern const base::Feature kExperimentalMacRTL;
 // Returns whether both:
 // 1) Experimental Mac RTL support is enabled via the ExperimentalMacRTL
 //    feature;

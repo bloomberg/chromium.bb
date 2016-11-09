@@ -49,7 +49,6 @@ class MenuDelegate;
   base::scoped_nsobject<AlertIndicatorButton> alertIndicatorButton_;
   base::scoped_nsobject<HoverCloseButton> closeButton_;
 
-  NSRect originalIconFrame_;  // frame of iconView_ as loaded from nib
   BOOL isIconShowing_;  // last state of iconView_ in updateVisibility
 
   BOOL pinned_;

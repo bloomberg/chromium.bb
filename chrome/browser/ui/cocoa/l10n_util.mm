@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 
-#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
