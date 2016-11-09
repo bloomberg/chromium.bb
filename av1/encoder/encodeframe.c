@@ -5260,7 +5260,7 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
 
 #if CONFIG_PVQ
   x->pvq_speed = 0;
-  x->pvq_coded = !dry_run ? 1 : 0;
+  x->pvq_coded = (dry_run == OUTPUT_ENABLED) ? 1 : 0;
 #endif
 
   if (!is_inter) {
