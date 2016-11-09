@@ -20,7 +20,6 @@ source_set("voice") {
 
   public_deps = [
     "//base",
-    "//ios/chrome/browser/updatable_config",
     "//ios/public/provider/chrome/browser",
   ]
 }
