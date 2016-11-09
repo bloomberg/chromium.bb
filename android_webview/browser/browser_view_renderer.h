@@ -10,6 +10,7 @@
 #include <map>
 #include <set>
 
+#include "android_webview/browser/child_frame.h"
 #include "android_webview/browser/compositor_frame_producer.h"
 #include "android_webview/browser/compositor_id.h"
 #include "android_webview/browser/parent_compositor_draw_constraints.h"
@@ -152,6 +153,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   RootLayerStateAsValue(const gfx::Vector2dF& total_scroll_offset_dip,
                         const gfx::SizeF& scrollable_size_dip);
 
+  void ReturnUncommittedFrames(ChildFrameQueue frame);
   void ReturnUnusedResource(std::unique_ptr<ChildFrame> frame);
   void ReturnResourceFromParent(
       CompositorFrameConsumer* compositor_frame_consumer);

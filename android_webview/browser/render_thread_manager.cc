@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "android_webview/browser/child_frame.h"
 #include "android_webview/browser/compositor_frame_producer.h"
 #include "android_webview/browser/compositor_id.h"
 #include "android_webview/browser/deferred_gpu_command_service.h"
@@ -180,24 +179,53 @@ gfx::Vector2d RenderThreadManager::GetScrollOffsetOnRT() {
   return scroll_offset_;
 }
 
-void RenderThreadManager::SetFrameOnUI(std::unique_ptr<ChildFrame> frame) {
+std::unique_ptr<ChildFrame> RenderThreadManager::SetFrameOnUI(
+    std::unique_ptr<ChildFrame> new_frame) {
+  DCHECK(new_frame);
   base::AutoLock lock(lock_);
-  DCHECK(!child_frame_.get());
-  child_frame_ = std::move(frame);
+  if (child_frames_.empty()) {
+    child_frames_.emplace_back(std::move(new_frame));
+    return nullptr;
+  }
+  std::unique_ptr<ChildFrame> uncommitted_frame;
+  if (new_frame->frame) {
+    // Optimization for synchronous path.
+    // TODO(boliu): Remove when synchronous path is fully removed.
+    DCHECK_LE(child_frames_.size(), 1u);
+    if (!child_frames_.empty()) {
+      uncommitted_frame = std::move(child_frames_.front());
+      child_frames_.pop_front();
+    }
+    child_frames_.emplace_back(std::move(new_frame));
+    return uncommitted_frame;
+  }
+
+  DCHECK_LE(child_frames_.size(), 2u);
+  ChildFrameQueue pruned_frames =
+      HardwareRenderer::WaitAndPruneFrameQueue(&child_frames_);
+  DCHECK_LE(pruned_frames.size(), 1u);
+  if (pruned_frames.size())
+    uncommitted_frame = std::move(pruned_frames.front());
+  child_frames_.emplace_back(std::move(new_frame));
+  return uncommitted_frame;
 }
 
-std::unique_ptr<ChildFrame> RenderThreadManager::PassFrameOnRT() {
+ChildFrameQueue RenderThreadManager::PassFramesOnRT() {
   base::AutoLock lock(lock_);
   hardware_renderer_has_frame_ =
-      hardware_renderer_has_frame_ || child_frame_.get();
-  return std::move(child_frame_);
+      hardware_renderer_has_frame_ || !child_frames_.empty();
+  ChildFrameQueue returned_frames;
+  returned_frames.swap(child_frames_);
+  return returned_frames;
 }
 
-std::unique_ptr<ChildFrame> RenderThreadManager::PassUncommittedFrameOnUI() {
+ChildFrameQueue RenderThreadManager::PassUncommittedFrameOnUI() {
   base::AutoLock lock(lock_);
-  if (child_frame_)
-    child_frame_->WaitOnFutureIfNeeded();
-  return std::move(child_frame_);
+  for (auto& frame_ptr : child_frames_)
+    frame_ptr->WaitOnFutureIfNeeded();
+  ChildFrameQueue returned_frames;
+  returned_frames.swap(child_frames_);
+  return returned_frames;
 }
 
 void RenderThreadManager::PostExternalDrawConstraintsToChildCompositorOnRT(
@@ -374,12 +402,12 @@ void RenderThreadManager::SetCompositorFrameProducer(
 
 bool RenderThreadManager::HasFrameOnUI() const {
   base::AutoLock lock(lock_);
-  return hardware_renderer_has_frame_ || child_frame_.get();
+  return hardware_renderer_has_frame_ || !child_frames_.empty();
 }
 
 bool RenderThreadManager::HasFrameForHardwareRendererOnRT() const {
   base::AutoLock lock(lock_);
-  return !!child_frame_;
+  return !child_frames_.empty();
 }
 
 void RenderThreadManager::InitializeHardwareDrawIfNeededOnUI() {

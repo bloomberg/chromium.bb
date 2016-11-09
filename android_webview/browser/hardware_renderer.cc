@@ -8,7 +8,6 @@
 
 #include "android_webview/browser/aw_gl_surface.h"
 #include "android_webview/browser/aw_render_thread_context_provider.h"
-#include "android_webview/browser/child_frame.h"
 #include "android_webview/browser/parent_compositor_draw_constraints.h"
 #include "android_webview/browser/render_thread_manager.h"
 #include "android_webview/browser/surfaces_instance.h"
@@ -54,27 +53,46 @@ HardwareRenderer::~HardwareRenderer() {
   // Reset draw constraints.
   render_thread_manager_->PostExternalDrawConstraintsToChildCompositorOnRT(
       ParentCompositorDrawConstraints());
-  ReturnResourcesInChildFrame();
+  for (auto& child_frame : child_frames_) {
+    child_frame->WaitOnFutureIfNeeded();
+    ReturnChildFrame(std::move(child_frame));
+  }
 }
 
 void HardwareRenderer::CommitFrame() {
   TRACE_EVENT0("android_webview", "CommitFrame");
   scroll_offset_ = render_thread_manager_->GetScrollOffsetOnRT();
-  std::unique_ptr<ChildFrame> child_frame =
-      render_thread_manager_->PassFrameOnRT();
-  if (!child_frame.get())
+  ChildFrameQueue child_frames = render_thread_manager_->PassFramesOnRT();
+  // |child_frames| should have at most one non-empty frame, and one current
+  // and unwaited frame, in that order.
+  DCHECK_LE(child_frames.size(), 2u);
+  if (child_frames.empty())
     return;
-  ReturnResourcesInChildFrame();
-  child_frame_ = std::move(child_frame);
+  // Insert all except last, ie current frame.
+  while (child_frames.size() > 1u) {
+    child_frames_.emplace_back(std::move(child_frames.front()));
+    child_frames.pop_front();
+  }
+  for (auto& pruned_frame : WaitAndPruneFrameQueue(&child_frames_))
+    ReturnChildFrame(std::move(pruned_frame));
+  DCHECK_LE(child_frames_.size(), 1u);
+  child_frames_.emplace_back(std::move(child_frames.front()));
 }
 
 void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   TRACE_EVENT0("android_webview", "HardwareRenderer::DrawGL");
 
-  if (child_frame_) {
-    child_frame_->WaitOnFutureIfNeeded();
+  for (auto& pruned_frame : WaitAndPruneFrameQueue(&child_frames_))
+    ReturnChildFrame(std::move(pruned_frame));
+  DCHECK_LE(child_frames_.size(), 1u);
+  std::unique_ptr<ChildFrame> child_frame;
+  if (!child_frames_.empty()) {
+    child_frame = std::move(child_frames_.front());
+    child_frames_.clear();
+  }
+  if (child_frame) {
     last_committed_compositor_frame_sink_id_ =
-        child_frame_->compositor_frame_sink_id;
+        child_frame->compositor_frame_sink_id;
   }
 
   // We need to watch if the current Android context has changed and enforce
@@ -90,22 +108,22 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   // during "kModeSync" stage (which does not allow GL) might result in extra
   // kModeProcess. Instead, submit the frame in "kModeDraw" stage to avoid
   // unnecessary kModeProcess.
-  if (child_frame_.get() && child_frame_->frame.get()) {
-    if (!compositor_id_.Equals(child_frame_->compositor_id) ||
+  if (child_frame.get() && child_frame->frame.get()) {
+    if (!compositor_id_.Equals(child_frame->compositor_id) ||
         last_submitted_compositor_frame_sink_id_ !=
-            child_frame_->compositor_frame_sink_id) {
+            child_frame->compositor_frame_sink_id) {
       if (!child_id_.is_null())
         DestroySurface();
 
       // This will return all the resources to the previous compositor.
       surface_factory_->Reset();
-      compositor_id_ = child_frame_->compositor_id;
+      compositor_id_ = child_frame->compositor_id;
       last_submitted_compositor_frame_sink_id_ =
-          child_frame_->compositor_frame_sink_id;
+          child_frame->compositor_frame_sink_id;
     }
 
     std::unique_ptr<cc::CompositorFrame> child_compositor_frame =
-        std::move(child_frame_->frame);
+        std::move(child_frame->frame);
 
     gfx::Size frame_size =
         child_compositor_frame->render_pass_list.back()->output_rect.size();
@@ -132,7 +150,7 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   // compositor might not have the tiles rasterized as the animation goes on.
   ParentCompositorDrawConstraints draw_constraints(
       draw_info->is_layer, transform, viewport.IsEmpty());
-  if (!child_frame_.get() || draw_constraints.NeedUpdate(*child_frame_)) {
+  if (!child_frame.get() || draw_constraints.NeedUpdate(*child_frame)) {
     render_thread_manager_->PostExternalDrawConstraintsToChildCompositorOnRT(
         draw_constraints);
   }
@@ -177,19 +195,56 @@ void HardwareRenderer::SetBeginFrameSource(
   // TODO(tansell): Hook this up.
 }
 
-void HardwareRenderer::ReturnResourcesInChildFrame() {
-  if (child_frame_.get() && child_frame_->frame.get()) {
-    cc::ReturnedResourceArray resources_to_return;
-    cc::TransferableResource::ReturnResources(
-        child_frame_->frame->resource_list, &resources_to_return);
+// static
+ChildFrameQueue HardwareRenderer::WaitAndPruneFrameQueue(
+    ChildFrameQueue* child_frames_ptr) {
+  ChildFrameQueue& child_frames = *child_frames_ptr;
+  ChildFrameQueue pruned_frames;
 
-    // The child frame's compositor id is not necessarily same as
-    // compositor_id_.
-    ReturnResourcesToCompositor(resources_to_return,
-                                child_frame_->compositor_id,
-                                child_frame_->compositor_frame_sink_id);
+  // First find the last non-empty frame.
+  int last_non_empty_index = -1;
+  for (size_t i = 0; i < child_frames.size(); ++i) {
+    auto& child_frame = *child_frames[i];
+    child_frame.WaitOnFutureIfNeeded();
+    if (child_frame.frame)
+      last_non_empty_index = i;
   }
-  child_frame_.reset();
+  if (last_non_empty_index < 0) {
+    child_frames.clear();
+    return pruned_frames;
+  }
+
+  // Prune end.
+  while (child_frames.size() > static_cast<size_t>(last_non_empty_index + 1)) {
+    std::unique_ptr<ChildFrame> frame = std::move(child_frames.back());
+    child_frames.pop_back();
+    if (frame->frame)
+      pruned_frames.emplace_back(std::move(frame));
+  }
+
+  // Prune front.
+  while (child_frames.size() > 1) {
+    std::unique_ptr<ChildFrame> frame = std::move(child_frames.front());
+    child_frames.pop_front();
+    if (frame->frame)
+      pruned_frames.emplace_back(std::move(frame));
+  }
+  return pruned_frames;
+}
+
+void HardwareRenderer::ReturnChildFrame(
+    std::unique_ptr<ChildFrame> child_frame) {
+  if (!child_frame || !child_frame->frame)
+    return;
+
+  cc::ReturnedResourceArray resources_to_return;
+  cc::TransferableResource::ReturnResources(child_frame->frame->resource_list,
+                                            &resources_to_return);
+
+  // The child frame's compositor id is not necessarily same as
+  // compositor_id_.
+  ReturnResourcesToCompositor(resources_to_return, child_frame->compositor_id,
+                              child_frame->compositor_frame_sink_id);
 }
 
 void HardwareRenderer::ReturnResourcesToCompositor(

@@ -5,6 +5,7 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_CHILD_FRAME_H_
 #define ANDROID_WEBVIEW_BROWSER_CHILD_FRAME_H_
 
+#include <deque>
 #include <memory>
 
 #include "android_webview/browser/compositor_id.h"
@@ -52,6 +53,8 @@ class ChildFrame {
  private:
   DISALLOW_COPY_AND_ASSIGN(ChildFrame);
 };
+
+using ChildFrameQueue = std::deque<std::unique_ptr<ChildFrame>>;
 
 }  // namespace webview
 

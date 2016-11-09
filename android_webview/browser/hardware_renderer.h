@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "android_webview/browser/child_frame.h"
 #include "android_webview/browser/compositor_id.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -31,6 +32,18 @@ class SurfacesInstance;
 
 class HardwareRenderer : public cc::SurfaceFactoryClient {
  public:
+  // Two rules:
+  // 1) Never wait on |new_frame| on the UI thread, or in kModeSync. Otherwise
+  //    this defeats the purpose of having a future.
+  // 2) Never replace a non-empty frames with an empty frame.
+  // The only way to do both is to hold up to two frames here. This is a helper
+  // method to do this. General pattern is call this method to prune existing
+  // queue, and then append the new frame. Wait on all frames in queue. Then
+  // remove all except the latest non-empty frame. If all frames are empty,
+  // then the deque is cleared. Return any non-empty frames that are pruned.
+  // Return value does not guarantee relative order is maintained.
+  static ChildFrameQueue WaitAndPruneFrameQueue(ChildFrameQueue* child_frames);
+
   explicit HardwareRenderer(RenderThreadManager* state);
   ~HardwareRenderer() override;
 
@@ -42,7 +55,7 @@ class HardwareRenderer : public cc::SurfaceFactoryClient {
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
   void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
 
-  void ReturnResourcesInChildFrame();
+  void ReturnChildFrame(std::unique_ptr<ChildFrame> child_frame);
   void ReturnResourcesToCompositor(const cc::ReturnedResourceArray& resources,
                                    const CompositorID& compositor_id,
                                    uint32_t compositor_frame_sink_id);
@@ -64,7 +77,7 @@ class HardwareRenderer : public cc::SurfaceFactoryClient {
   // This holds the last ChildFrame received. Contains the frame info of the
   // last frame. The |frame| member may be null if it's already submitted to
   // SurfaceFactory.
-  std::unique_ptr<ChildFrame> child_frame_;
+  ChildFrameQueue child_frames_;
 
   const scoped_refptr<SurfacesInstance> surfaces_;
   cc::FrameSinkId frame_sink_id_;
