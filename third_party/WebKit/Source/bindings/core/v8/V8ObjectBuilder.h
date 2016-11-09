@@ -24,15 +24,17 @@ class CORE_EXPORT V8ObjectBuilder final {
 
   ScriptState* getScriptState() const { return m_scriptState.get(); }
 
-  V8ObjectBuilder& add(const String& name, const V8ObjectBuilder&);
+  V8ObjectBuilder& add(const StringView& name, const V8ObjectBuilder&);
 
-  V8ObjectBuilder& addNull(const String& name);
-  V8ObjectBuilder& addBoolean(const String& name, bool value);
-  V8ObjectBuilder& addNumber(const String& name, double value);
-  V8ObjectBuilder& addString(const String& name, const String& value);
+  V8ObjectBuilder& addNull(const StringView& name);
+  V8ObjectBuilder& addBoolean(const StringView& name, bool value);
+  V8ObjectBuilder& addNumber(const StringView& name, double value);
+  V8ObjectBuilder& addString(const StringView& name, const StringView& value);
+  V8ObjectBuilder& addStringOrNull(const StringView& name,
+                                   const StringView& value);
 
   template <typename T>
-  V8ObjectBuilder& add(const String& name, const T& value) {
+  V8ObjectBuilder& add(const StringView& name, const T& value) {
     addInternal(name, v8::Local<v8::Value>(
                           toV8(value, m_scriptState->context()->Global(),
                                m_scriptState->isolate())));
@@ -43,7 +45,7 @@ class CORE_EXPORT V8ObjectBuilder final {
   v8::Local<v8::Object> v8Value() const { return m_object; }
 
  private:
-  void addInternal(const String& name, v8::Local<v8::Value>);
+  void addInternal(const StringView& name, v8::Local<v8::Value>);
 
   RefPtr<ScriptState> m_scriptState;
   v8::Local<v8::Object> m_object;
