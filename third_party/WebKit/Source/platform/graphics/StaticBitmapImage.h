@@ -17,28 +17,30 @@ class WebGraphicsContext3DProvider;
 
 class PLATFORM_EXPORT StaticBitmapImage : public Image {
  public:
-  ~StaticBitmapImage() override;
-
-  bool currentFrameIsComplete() override { return true; }
-
   static PassRefPtr<StaticBitmapImage> create(sk_sp<SkImage>);
-  void destroyDecodedData() override {}
-  bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override;
-  IntSize size() const override;
+
+  // Methods overrided by all sub-classes
+  virtual ~StaticBitmapImage() {}
+  bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) = 0;
+  sk_sp<SkImage> imageForCurrentFrame() = 0;
+  bool isTextureBacked() = 0;
   void draw(SkCanvas*,
             const SkPaint&,
             const FloatRect& dstRect,
             const FloatRect& srcRect,
             RespectImageOrientationEnum,
-            ImageClampingMode) override;
+            ImageClampingMode) = 0;
 
-  sk_sp<SkImage> imageForCurrentFrame() override;
+  // Methods have common implementation for all sub-classes
+  bool currentFrameIsComplete() override { return true; }
+  void destroyDecodedData() {}
 
-  bool originClean() const { return m_isOriginClean; }
-  void setOriginClean(bool flag) { m_isOriginClean = flag; }
-  bool isPremultiplied() const { return m_isPremultiplied; }
-  void setPremultiplied(bool flag) { m_isPremultiplied = flag; }
-  bool isTextureBacked() override;
+  // Methods that have a default implementation, and overrided by only one
+  // sub-class
+  virtual bool hasMailbox() { return false; }
+  virtual void transfer() {}
+
+  // Methods overrided by AcceleratedStaticBitmapImage only
   virtual void copyToTexture(WebGraphicsContext3DProvider*,
                              GLuint,
                              GLenum,
@@ -46,22 +48,37 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
                              bool) {
     NOTREACHED();
   }
-  virtual bool hasMailbox() { return false; }
-  virtual void transfer() {}
+  virtual void ensureMailbox() { NOTREACHED(); }
+  virtual gpu::Mailbox mailbox() {
+    NOTREACHED();
+    return gpu::Mailbox();
+  }
+  virtual gpu::SyncToken syncToken() {
+    NOTREACHED();
+    return gpu::SyncToken();
+  }
+  virtual void updateSyncToken(gpu::SyncToken) { NOTREACHED(); }
 
-  virtual gpu::Mailbox getMailbox() { return gpu::Mailbox(); }
-  virtual gpu::SyncToken getSyncToken() { return gpu::SyncToken(); }
-  virtual void ensureMailbox() {}
+  // Methods have exactly the same implementation for all sub-classes
+  bool originClean() const { return m_isOriginClean; }
+  void setOriginClean(bool flag) { m_isOriginClean = flag; }
+  bool isPremultiplied() const { return m_isPremultiplied; }
+  void setPremultiplied(bool flag) { m_isPremultiplied = flag; }
 
  protected:
-  StaticBitmapImage(sk_sp<SkImage>);
-  StaticBitmapImage();  // empty constructor for derived class.
-  sk_sp<SkImage> m_image;
+  // Helper for sub-classes
+  void drawHelper(SkCanvas*,
+                  const SkPaint&,
+                  const FloatRect&,
+                  const FloatRect&,
+                  ImageClampingMode,
+                  sk_sp<SkImage>);
 
- private:
+  // These two properties are here because the SkImage API doesn't expose the
+  // info. They applied to both UnacceleratedStaticBitmapImage and
+  // AcceleratedStaticBitmapImage. To change these two properties, the call
+  // site would have to call the API setOriginClean() and setPremultiplied().
   bool m_isOriginClean = true;
-  // The premultiply info is stored here because the SkImage API
-  // doesn't expose this info.
   bool m_isPremultiplied = true;
 };
 

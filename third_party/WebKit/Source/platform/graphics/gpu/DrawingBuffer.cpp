@@ -38,13 +38,13 @@
 #include "platform/graphics/AcceleratedStaticBitmapImage.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
 #include "platform/graphics/gpu/Extensions3DUtil.h"
 #include "platform/tracing/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebExternalBitmap.h"
 #include "public/platform/WebExternalTextureLayer.h"
-#include "public/platform/WebGraphicsContext3DProvider.h"
 #include "skia/ext/texture_handle.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
@@ -142,13 +142,14 @@ DrawingBuffer::DrawingBuffer(
     : m_client(client),
       m_preserveDrawingBuffer(preserve),
       m_webGLVersion(webGLVersion),
-      m_contextProvider(std::move(contextProvider)),
-      m_gl(m_contextProvider->contextGL()),
+      m_contextProvider(wrapUnique(
+          new WebGraphicsContext3DProviderWrapper(std::move(contextProvider)))),
+      m_gl(this->contextProvider()->contextGL()),
       m_extensionsUtil(std::move(extensionsUtil)),
       m_discardFramebufferSupported(discardFramebufferSupported),
       m_wantAlphaChannel(wantAlphaChannel),
       m_premultipliedAlpha(premultipliedAlpha),
-      m_softwareRendering(m_contextProvider->isSoftwareRendering()),
+      m_softwareRendering(this->contextProvider()->isSoftwareRendering()),
       m_wantDepth(wantDepth),
       m_wantStencil(wantStencil),
       m_chromiumImageUsage(chromiumImageUsage) {
@@ -185,7 +186,7 @@ gpu::gles2::GLES2Interface* DrawingBuffer::contextGL() {
 }
 
 WebGraphicsContext3DProvider* DrawingBuffer::contextProvider() {
-  return m_contextProvider.get();
+  return m_contextProvider->contextProvider();
 }
 
 void DrawingBuffer::setIsHidden(bool hidden) {
@@ -442,7 +443,7 @@ PassRefPtr<StaticBitmapImage> DrawingBuffer::transferToStaticBitmapImage() {
 
   // This can be null if the context is lost before the first call to
   // grContext().
-  GrContext* grContext = m_contextProvider->grContext();
+  GrContext* grContext = contextProvider()->grContext();
 
   cc::TextureMailbox textureMailbox;
   std::unique_ptr<cc::SingleReleaseCallback> releaseCallback;
@@ -481,20 +482,6 @@ PassRefPtr<StaticBitmapImage> DrawingBuffer::transferToStaticBitmapImage() {
   // reference to the backing via our |textureId|.
   releaseCallback->Run(gpu::SyncToken(), true /* lostResource */);
 
-  // Store that texture id as the backing for an SkImage.
-  GrGLTextureInfo textureInfo;
-  textureInfo.fTarget = GL_TEXTURE_2D;
-  textureInfo.fID = textureId;
-  GrBackendTextureDesc backendTexture;
-  backendTexture.fOrigin = kBottomLeft_GrSurfaceOrigin;
-  backendTexture.fWidth = m_size.width();
-  backendTexture.fHeight = m_size.height();
-  backendTexture.fConfig = kSkia8888_GrPixelConfig;
-  backendTexture.fTextureHandle =
-      skia::GrGLTextureInfoToGrBackendObject(textureInfo);
-  sk_sp<SkImage> skImage =
-      SkImage::MakeFromAdoptedTexture(grContext, backendTexture);
-
   // We reuse the same mailbox name from above since our texture id was consumed
   // from it.
   const auto& skImageMailbox = textureMailbox.mailbox();
@@ -509,7 +496,8 @@ PassRefPtr<StaticBitmapImage> DrawingBuffer::transferToStaticBitmapImage() {
   // ImageBitmapRenderingContext's transferFromImageBitmap, and try to use them
   // in DrawingBuffer.
   return AcceleratedStaticBitmapImage::createFromWebGLContextImage(
-      std::move(skImage), skImageMailbox, skImageSyncToken);
+      skImageMailbox, skImageSyncToken, textureId,
+      m_contextProvider->createWeakPtr(), m_size);
 }
 
 DrawingBuffer::ColorBufferParameters

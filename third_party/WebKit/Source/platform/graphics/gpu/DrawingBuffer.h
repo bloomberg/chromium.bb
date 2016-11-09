@@ -65,6 +65,7 @@ class Extensions3DUtil;
 class StaticBitmapImage;
 class WebExternalTextureLayer;
 class WebGraphicsContext3DProvider;
+class WebGraphicsContext3DProviderWrapper;
 class WebLayer;
 
 // Manages a rendering target (framebuffer + attachment) for a canvas.  Can
@@ -424,7 +425,7 @@ class PLATFORM_EXPORT DrawingBuffer
   const PreserveDrawingBuffer m_preserveDrawingBuffer;
   const WebGLVersion m_webGLVersion;
 
-  std::unique_ptr<WebGraphicsContext3DProvider> m_contextProvider;
+  std::unique_ptr<WebGraphicsContext3DProviderWrapper> m_contextProvider;
   // Lifetime is tied to the m_contextProvider.
   gpu::gles2::GLES2Interface* m_gl;
   std::unique_ptr<Extensions3DUtil> m_extensionsUtil;

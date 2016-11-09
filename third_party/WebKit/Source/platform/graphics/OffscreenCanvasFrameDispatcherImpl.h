@@ -58,7 +58,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
   HashMap<unsigned, std::unique_ptr<cc::SharedBitmap>> m_sharedBitmaps;
   HashMap<unsigned, GLuint> m_cachedTextureIds;
 
-  bool verifyImageSize(const sk_sp<SkImage>&);
+  bool verifyImageSize(const IntSize);
 
   cc::mojom::blink::MojoCompositorFrameSinkPtr m_sink;
   mojo::Binding<cc::mojom::blink::MojoCompositorFrameSinkClient> m_binding;

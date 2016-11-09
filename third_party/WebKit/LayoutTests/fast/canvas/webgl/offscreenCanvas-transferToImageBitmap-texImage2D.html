@@ -88,7 +88,6 @@ function runTestOnBindingTarget(bindingTarget, program, bitmap)
 
 worker.onmessage = function(msg) {
     bitmap = msg.data.bitmap;
-    ctx.transferFromImageBitmap(bitmap);
     var program = tiu.setupTexturedQuad(gl, internalFormat);
     runTestOnBindingTarget(gl.TEXTURE_2D, program, bitmap);
     testPassed("This test passed");
