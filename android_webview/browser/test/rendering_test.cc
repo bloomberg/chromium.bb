@@ -9,6 +9,8 @@
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/child_frame.h"
 #include "android_webview/browser/render_thread_manager.h"
+#include "android_webview/common/aw_switches.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/compositor_frame.h"
@@ -43,6 +45,9 @@ class TestBrowserViewRenderer : public BrowserViewRenderer {
 }
 
 RenderingTest::RenderingTest() : message_loop_(new base::MessageLoop) {
+  // TODO(boliu): Update unit tests to async code path.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kSyncOnDrawHardware);
   ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
 

@@ -172,7 +172,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
 
   BrowserViewRendererClient* const client_;
   const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
-  const bool async_on_draw_hardware_;
+  const bool sync_on_draw_hardware_;
   CompositorFrameConsumer* current_compositor_frame_consumer_;
   std::set<CompositorFrameConsumer*> compositor_frame_consumers_;
 

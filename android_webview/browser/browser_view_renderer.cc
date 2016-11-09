@@ -93,8 +93,8 @@ BrowserViewRenderer::BrowserViewRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
     : client_(client),
       ui_task_runner_(ui_task_runner),
-      async_on_draw_hardware_(base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAsyncOnDrawHardware)),
+      sync_on_draw_hardware_(base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSyncOnDrawHardware)),
       current_compositor_frame_consumer_(nullptr),
       compositor_(nullptr),
       is_paused_(false),
@@ -234,7 +234,7 @@ bool BrowserViewRenderer::OnDrawHardware() {
 
   scoped_refptr<content::SynchronousCompositor::FrameFuture> future; // Async.
   content::SynchronousCompositor::Frame frame; // Sync.
-  bool async = async_on_draw_hardware_ && allow_async_draw_;
+  bool async = !sync_on_draw_hardware_ && allow_async_draw_;
   if (async) {
     future = compositor_->DemandDrawHwAsync(
         size_, viewport_rect_for_tile_priority, transform_for_tile_priority);
