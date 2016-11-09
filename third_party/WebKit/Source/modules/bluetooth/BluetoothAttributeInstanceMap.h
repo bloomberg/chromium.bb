@@ -50,9 +50,12 @@ class BluetoothAttributeInstanceMap final
       std::unique_ptr<WebBluetoothRemoteGATTCharacteristicInit>,
       BluetoothRemoteGATTService*);
 
+  // Returns true if a BluetoothRemoteGATTCharacteristic with
+  // |characteristicInstanceId| is in the map.
+  bool containsCharacteristic(const String& characteristicInstanceId);
+
   // Removes all Attributes from the map.
-  // TODO(crbug.com/654950): Remove characteristics and descriptors when
-  // implemented.
+  // TODO(crbug.com/654950): Remove descriptors when implemented.
   void Clear();
 
   DECLARE_VIRTUAL_TRACE();

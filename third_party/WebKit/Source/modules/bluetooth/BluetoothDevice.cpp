@@ -59,6 +59,12 @@ BluetoothDevice::getOrCreateBluetoothRemoteGATTCharacteristic(
       context, std::move(webCharacteristic), service);
 }
 
+bool BluetoothDevice::isValidCharacteristic(
+    const String& characteristicInstanceId) {
+  return m_attributeInstanceMap->containsCharacteristic(
+      characteristicInstanceId);
+}
+
 void BluetoothDevice::dispose() {
   disconnectGATTIfConnected();
 }

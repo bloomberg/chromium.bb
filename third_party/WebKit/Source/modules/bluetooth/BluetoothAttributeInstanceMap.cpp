@@ -58,8 +58,14 @@ BluetoothAttributeInstanceMap::getOrCreateBluetoothRemoteGATTCharacteristic(
   return characteristic;
 }
 
+bool BluetoothAttributeInstanceMap::containsCharacteristic(
+    const String& characteristicInstanceId) {
+  return m_characteristicIdToObject.contains(characteristicInstanceId);
+}
+
 void BluetoothAttributeInstanceMap::Clear() {
   m_serviceIdToObject.clear();
+  m_characteristicIdToObject.clear();
 }
 
 DEFINE_TRACE(BluetoothAttributeInstanceMap) {
