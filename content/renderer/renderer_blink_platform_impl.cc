@@ -128,7 +128,7 @@
 #endif
 
 #if defined(USE_AURA)
-#include "content/renderer/webscrollbarbehavior_impl_gtkoraura.h"
+#include "content/renderer/webscrollbarbehavior_impl_aura.h"
 #elif !defined(OS_MACOSX)
 #include "third_party/WebKit/public/platform/WebScrollbarBehavior.h"
 #define WebScrollbarBehaviorImpl blink::WebScrollbarBehavior

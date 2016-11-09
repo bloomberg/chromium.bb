@@ -381,8 +381,8 @@ target(link_target_type, "renderer") {
     "webgraphicscontext3d_provider_impl.h",
     "webpublicsuffixlist_impl.cc",
     "webpublicsuffixlist_impl.h",
-    "webscrollbarbehavior_impl_gtkoraura.cc",
-    "webscrollbarbehavior_impl_gtkoraura.h",
+    "webscrollbarbehavior_impl_aura.cc",
+    "webscrollbarbehavior_impl_aura.h",
     "webscrollbarbehavior_impl_mac.h",
     "webscrollbarbehavior_impl_mac.mm",
     "websharedworker_proxy.cc",
@@ -484,8 +484,8 @@ target(link_target_type, "renderer") {
 
   if (is_mac) {
     sources -= [
-      "webscrollbarbehavior_impl_gtkoraura.cc",
-      "webscrollbarbehavior_impl_gtkoraura.h",
+      "webscrollbarbehavior_impl_aura.cc",
+      "webscrollbarbehavior_impl_aura.h",
     ]
   }
 

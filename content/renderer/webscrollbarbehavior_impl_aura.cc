@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/webscrollbarbehavior_impl_gtkoraura.h"
+#include "content/renderer/webscrollbarbehavior_impl_aura.h"
 
 #include "build/build_config.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
@@ -26,6 +26,13 @@ bool WebScrollbarBehaviorImpl::shouldSnapBackToDragOrigin(
     const blink::WebPoint& eventPoint,
     const blink::WebRect& scrollbarRect,
     bool isHorizontal) {
+// Disable snapback on desktop Linux to better integrate with the desktop
+// behavior.  Typically, Linux apps do not implement scrollbar snapback (this is
+// true for at least GTK and QT apps).
+#if (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  return false;
+#endif
+
   // Constants used to figure the drag rect outside which we should snap the
   // scrollbar thumb back to its origin. These calculations are based on
   // observing the behavior of the MSVC8 main window scrollbar + some
@@ -47,16 +54,7 @@ bool WebScrollbarBehaviorImpl::shouldSnapBackToDragOrigin(
       (isHorizontal ? kOffEndMultiplier : kOffSideMultiplier) * -thickness,
       (isHorizontal ? kOffSideMultiplier : kOffEndMultiplier) * -thickness);
 
-  // On most platforms, we should snap iff the event is outside our calculated
-  // rect.  On Linux, however, we should not snap for events off the ends, but
-  // not the sides, of the rect.
-#if (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-  return isHorizontal ?
-      (eventPoint.y < noSnapRect.y() || eventPoint.y >= noSnapRect.bottom()) :
-      (eventPoint.x < noSnapRect.x() || eventPoint.x >= noSnapRect.right());
-#else
   return !noSnapRect.Contains(eventPoint);
-#endif
 }
 
 }  // namespace content
