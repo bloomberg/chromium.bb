@@ -180,7 +180,7 @@ The
 files, including
 [skia_test_expectations.txt](../../skia/skia_test_expectations.txt))
 contains the list of all known layout test failures. See
-[Test Expectations](https://sites.google.com/a/chromium.org/dev/developers/testing/webkit-layout-tests/testexpectations)
+[Test Expectations](./layout_test_expectations.md)
 for more on this.
 
 ## Testing Runtime Flags
@@ -420,8 +420,7 @@ finding the problem.
   debug without all the overhead of an interactive session, start the
   content_shell with the command-line flag `--run-layout-test`, followed by the
   URL (file: or http:) to your test. More information about running layout tests
-  in content_shell can be found
-  [here](https://www.chromium.org/developers/testing/webkit-layout-tests/content-shell).
+  in content_shell can be found [here](./layout_tests_in_content_shell.md).
     * In VS, you can do this in the Debugging section of the content_shell
       project Properties.
     * Now you're running with exactly the same API, theme, and other setup that
@@ -513,13 +512,15 @@ machine?
 
 ## Rebaselining Layout Tests
 
-_To automatically re-baseline tests across all Chromium platforms, using the
+*** promo
+To automatically re-baseline tests across all Chromium platforms, using the
 buildbot results, see the
-[Rebaselining keywords in TestExpectations](https://www.chromium.org/developers/testing/webkit-layout-tests/testexpectations#TOC-Rebaselining)
-and
+[Rebaselining keywords in TestExpectations](./layout_test_expectations.md)
+and the
 [Rebaselining Tool](https://trac.webkit.org/wiki/Rebaseline).
 Alternatively, to manually run and test and rebaseline it on your workstation,
-read on._
+read on.
+***
 
 By default, text-only tests (ones that call `testRunner.dumpAsText()`) produce
 only text results. Other tests produce both new text results and new image
