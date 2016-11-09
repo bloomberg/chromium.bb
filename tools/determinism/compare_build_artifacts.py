@@ -33,7 +33,7 @@ WHITELIST = {
 
   # https://crbug.com/330263
   'linux': {
-    # Completed.
+    'flatc',
   },
 
   # https://crbug.com/330262
