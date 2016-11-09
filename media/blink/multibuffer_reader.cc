@@ -178,18 +178,13 @@ void MultiBufferReader::NotifyAvailableRange(
   }
   UpdateInternalState();
   if (!progress_callback_.is_null()) {
-    // We redirect the call through a weak pointer to ourselves to guarantee
-    // there are no callbacks from us after we've been destroyed.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(
-            &MultiBufferReader::Call, weak_factory_.GetWeakPtr(),
-            base::Bind(progress_callback_,
-                       static_cast<int64_t>(range.begin)
-                           << multibuffer_->block_size_shift(),
-                       (static_cast<int64_t>(range.end)
-                        << multibuffer_->block_size_shift()) +
-                           multibuffer_->UncommittedBytesAt(range.end))));
+        base::Bind(progress_callback_, static_cast<int64_t>(range.begin)
+                                           << multibuffer_->block_size_shift(),
+                   (static_cast<int64_t>(range.end)
+                    << multibuffer_->block_size_shift()) +
+                       multibuffer_->UncommittedBytesAt(range.end)));
   }
 }
 

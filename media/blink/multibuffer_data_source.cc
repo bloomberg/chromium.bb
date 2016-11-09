@@ -424,8 +424,8 @@ void MultibufferDataSource::ReadTask() {
   } else {
     reader_->Wait(1, base::Bind(&MultibufferDataSource::ReadTask,
                                 weak_factory_.GetWeakPtr()));
-    UpdateLoadingState_Locked(false);
   }
+  UpdateLoadingState_Locked(false);
 }
 
 void MultibufferDataSource::StopInternal_Locked() {
@@ -546,14 +546,20 @@ void MultibufferDataSource::UpdateLoadingState_Locked(bool force_loading) {
     return;
   // Update loading state.
   bool is_loading = !!reader_ && reader_->IsLoading();
-  if (read_op_)
-    is_loading = true;
   if (force_loading || is_loading != loading_) {
-    loading_ = is_loading || force_loading;
+    bool loading = is_loading || force_loading;
 
-    if (!loading_ && cancel_on_defer_) {
+    if (!loading && cancel_on_defer_) {
+      if (read_op_) {
+        // We can't destroy the reader if a read operation is pending.
+        // UpdateLoadingState_Locked will be called again when the read
+        // operation is done.
+        return;
+      }
       reader_.reset(nullptr);
     }
+
+    loading_ = loading;
 
     // Callback could kill us, be sure to call it last.
     downloading_cb_.Run(loading_);

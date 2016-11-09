@@ -1593,4 +1593,44 @@ TEST_F(MultibufferDataSourceTest, CheckBufferSizes) {
   EXPECT_EQ(71 << 20, buffer_size());
 }
 
+// Provoke an edge case where the loading state may not end up transitioning
+// back to "idle" when we're done loading.
+TEST_F(MultibufferDataSourceTest, Http_CheckLoadingTransition) {
+  GURL gurl(kHttpUrl);
+  data_source_.reset(new MockMultibufferDataSource(
+      gurl, UrlData::CORS_UNSPECIFIED, message_loop_.task_runner(), url_index_,
+      view_->mainFrame()->toWebLocalFrame(), &host_));
+  data_source_->SetPreload(preload_);
+
+  response_generator_.reset(new TestResponseGenerator(gurl, kDataSize * 1));
+  EXPECT_CALL(*this, OnInitialize(true));
+  data_source_->Initialize(base::Bind(&MultibufferDataSourceTest::OnInitialize,
+                                      base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+
+  // Not really loading until after OnInitialize is called.
+  EXPECT_EQ(data_source_->downloading(), false);
+
+  EXPECT_CALL(host_, SetTotalBytes(response_generator_->content_length()));
+  Respond(response_generator_->Generate206(0));
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize));
+  ReceiveData(kDataSize);
+
+  EXPECT_EQ(data_source_->downloading(), true);
+  EXPECT_CALL(host_, AddBufferedByteRange(kDataSize, kDataSize + 1));
+  ReceiveDataLow(1);
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 3));
+  data_provider()->didFinishLoading(0);
+
+  EXPECT_CALL(*this, ReadCallback(1));
+  data_source_->Read(kDataSize, 2, buffer_,
+                     base::Bind(&MultibufferDataSourceTest::ReadCallback,
+                                base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+
+  // Make sure we're not downloading anymore.
+  EXPECT_EQ(data_source_->downloading(), false);
+  Stop();
+}
+
 }  // namespace media
