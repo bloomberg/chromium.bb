@@ -11,6 +11,13 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 
+namespace {
+
+const base::FilePath::CharType kTestFilePath[] =
+    FILE_PATH_LITERAL("net/data/url_request_unittest");
+
+}  // namespace
+
 namespace net {
 
 TestNetworkQualityEstimator::TestNetworkQualityEstimator(
@@ -32,12 +39,9 @@ TestNetworkQualityEstimator::TestNetworkQualityEstimator(
                               allow_smaller_responses_for_tests),
       current_network_type_(NetworkChangeNotifier::CONNECTION_UNKNOWN),
       accuracy_recording_intervals_set_(false),
-      rand_double_(0.0) {
+      rand_double_(0.0),
+      embedded_test_server_(base::FilePath(kTestFilePath)) {
   // Set up the embedded test server.
-  embedded_test_server_.ServeFilesFromDirectory(
-      base::FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
-  embedded_test_server_.RegisterRequestHandler(base::Bind(
-      &TestNetworkQualityEstimator::HandleRequest, base::Unretained(this)));
   EXPECT_TRUE(embedded_test_server_.Start());
 }
 
@@ -69,19 +73,12 @@ void TestNetworkQualityEstimator::SimulateNetworkChange(
   OnConnectionTypeChanged(new_connection_type);
 }
 
-std::unique_ptr<test_server::HttpResponse>
-TestNetworkQualityEstimator::HandleRequest(
-    const test_server::HttpRequest& request) {
-  std::unique_ptr<test_server::BasicHttpResponse> http_response(
-      new test_server::BasicHttpResponse());
-  http_response->set_code(HTTP_OK);
-  http_response->set_content("hello");
-  http_response->set_content_type("text/plain");
-  return std::move(http_response);
+const GURL TestNetworkQualityEstimator::GetEchoURL() const {
+  return embedded_test_server_.GetURL("/simple.html");
 }
 
-const GURL TestNetworkQualityEstimator::GetEchoURL() const {
-  return embedded_test_server_.GetURL("/echo.html");
+const GURL TestNetworkQualityEstimator::GetRedirectURL() const {
+  return embedded_test_server_.GetURL("/redirect302-to-https");
 }
 
 EffectiveConnectionType
@@ -192,6 +189,11 @@ double TestNetworkQualityEstimator::RandDouble() const {
 nqe::internal::NetworkID TestNetworkQualityEstimator::GetCurrentNetworkID()
     const {
   return nqe::internal::NetworkID(current_network_type_, current_network_id_);
+}
+
+TestNetworkQualityEstimator::LocalHttpTestServer::LocalHttpTestServer(
+    const base::FilePath& document_root) {
+  AddDefaultHandlers(document_root);
 }
 
 }  // namespace net

@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -57,12 +58,12 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
       NetworkChangeNotifier::ConnectionType new_connection_type,
       const std::string& network_id);
 
-  // Called by the embedded server when an HTTP request is received.
-  std::unique_ptr<test_server::HttpResponse> HandleRequest(
-      const test_server::HttpRequest& request);
-
   // Returns a GURL hosted at the embedded test server.
   const GURL GetEchoURL() const;
+
+  // Returns a GURL hosted at the embedded test server which contains redirect
+  // to another HTTPS URL.
+  const GURL GetRedirectURL() const;
 
   void set_effective_connection_type(EffectiveConnectionType type) {
     // Callers should not set effective connection type along with the
@@ -180,6 +181,11 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   using NetworkQualityEstimator::OnConnectionTypeChanged;
 
  private:
+  class LocalHttpTestServer : public EmbeddedTestServer {
+   public:
+    explicit LocalHttpTestServer(const base::FilePath& document_root);
+  };
+
   // NetworkQualityEstimator implementation that returns the overridden
   // network
   // id (instead of invoking platform APIs).
@@ -217,7 +223,7 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
 
   double rand_double_;
 
-  EmbeddedTestServer embedded_test_server_;
+  LocalHttpTestServer embedded_test_server_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNetworkQualityEstimator);
 };

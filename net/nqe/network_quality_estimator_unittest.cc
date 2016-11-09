@@ -26,6 +26,8 @@
 #include "build/build_config.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_change_notifier.h"
+#include "net/http/http_response_headers.h"
+#include "net/http/http_response_info.h"
 #include "net/http/http_status_code.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/external_estimate_provider.h"
@@ -2185,6 +2187,20 @@ TEST(NetworkQualityEstimatorTest, CorrelationHistogram) {
 
     // Get the bits at index 25-31 which contain the resource load size.
     EXPECT_LE(0, (buckets.at(0).min) % 128);
+
+    // Start another main-frame request which is redirected to an HTTPS URL.
+    // Redirection should not cause any crashes.
+    std::unique_ptr<URLRequest> request_3(context.CreateRequest(
+        estimator.GetRedirectURL(), DEFAULT_PRIORITY, &test_delegate));
+    request_3->Start();
+    base::RunLoop().Run();
+    EXPECT_FALSE(request_3->original_url().SchemeIsCryptographic());
+    EXPECT_TRUE(request_3->url().SchemeIsCryptographic());
+    EXPECT_TRUE(!request_3->response_info().headers.get() ||
+                request_3->response_info().headers->response_code() != HTTP_OK);
+    // Correlation metric should not be logged for redirected requests.
+    histogram_tester.ExpectTotalCount(
+        "NQE.Correlation.ResourceLoadTime.0Kb_128Kb", 1);
   }
 }
 

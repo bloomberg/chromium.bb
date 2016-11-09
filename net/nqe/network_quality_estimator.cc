@@ -29,6 +29,8 @@
 #include "net/base/load_timing_info.h"
 #include "net/base/network_interfaces.h"
 #include "net/base/url_util.h"
+#include "net/http/http_response_headers.h"
+#include "net/http/http_response_info.h"
 #include "net/http/http_status_code.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/nqe/socket_watcher_factory.h"
@@ -570,8 +572,10 @@ void NetworkQualityEstimator::RecordCorrelationMetric(const URLRequest& request,
   // Record UMA only for successful requests that have completed.
   if (net_error != OK)
     return;
-  if (request.GetResponseCode() != HTTP_OK)
+  if (!request.response_info().headers.get() ||
+      request.response_info().headers->response_code() != HTTP_OK) {
     return;
+  }
   if (load_timing_info.receive_headers_end < last_main_frame_request_)
     return;
 
