@@ -28,7 +28,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
-using content::ResourceType;
 
 namespace prerender {
 

@@ -16,8 +16,6 @@
 #include "url/url_canon.h"
 #include "url/url_util.h"
 
-using content::ResourceType;
-
 namespace prerender {
 
 namespace {
