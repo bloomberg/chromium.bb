@@ -393,7 +393,7 @@ void DesktopWindowTreeHostMus::SetBounds(const gfx::Rect& bounds_in_pixels) {
       size.SetToMin(max_size);
     final_bounds_in_pixels.set_size(size);
   }
-  WindowTreeHostPlatform::SetBounds(final_bounds_in_pixels);
+  WindowTreeHostMus::SetBounds(final_bounds_in_pixels);
 }
 
 void DesktopWindowTreeHostMus::OnWindowInitialized(aura::Window* window) {}
