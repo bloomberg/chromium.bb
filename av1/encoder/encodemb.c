@@ -1257,9 +1257,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
                             BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
                             void *arg) {
   struct encode_b_args *const args = arg;
-#if !CONFIG_PVQ
   AV1_COMMON *cm = args->cm;
-#endif
   MACROBLOCK *const x = args->x;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
@@ -1277,27 +1275,12 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   const int dst_stride = pd->dst.stride;
   const int tx1d_width = tx_size_wide[tx_size];
   const int tx1d_height = tx_size_high[tx_size];
-#if !CONFIG_PVQ
   ENTROPY_CONTEXT *a = NULL, *l = NULL;
   int ctx;
   INV_TXFM_PARAM inv_txfm_param;
-#else
-  FWD_TXFM_PARAM fwd_txfm_param;
-  tran_low_t *coeff = BLOCK_OFFSET(p->coeff, block);
-  tran_low_t *ref_coeff = BLOCK_OFFSET(pd->pvq_ref_coeff, block);
-  int16_t *src_int16;
+#if CONFIG_PVQ
   int tx_blk_size;
   int i, j;
-  int16_t *pred = &pd->pred[4 * (blk_row * diff_stride + blk_col)];
-  int skip = 1;
-  PVQ_INFO *pvq_info = NULL;
-  int seg_id = xd->mi[0]->mbmi.segment_id;
-
-  if (x->pvq_coded) {
-    assert(block < MAX_PVQ_BLOCKS_IN_SB);
-    pvq_info = &x->pvq[block][plane];
-  }
-  src_int16 = &p->src_int16[4 * (blk_row * diff_stride + blk_col)];
 #endif
 
   assert(tx1d_width == tx1d_height);
@@ -1321,9 +1304,9 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
                      src_stride, dst, dst_stride);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
-#if !CONFIG_PVQ
   a = &args->ta[blk_col];
   l = &args->tl[blk_row];
+#if !CONFIG_PVQ
   ctx = combine_entropy_contexts(*a, *l);
 
   if (args->enable_optimize_b) {
@@ -1365,73 +1348,39 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
     *(args->skip) = 0;
   }
 #else   // #if !CONFIG_PVQ
+  (void)ctx;
+
+  av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
+                  AV1_XFORM_QUANT_FP);
+
+  *a = *l = !x->pvq_skip[plane];
+
+  // *(args->skip) == mbmi->skip
+  if (!x->pvq_skip[plane]) *(args->skip) = 0;
+
+  if (x->pvq_skip[plane]) return;
+
   // transform block size in pixels
   tx_blk_size = tx_size_wide[tx_size];
-
-  // copy uint8 orig and predicted block to int16 buffer
-  // in order to use existing VP10 transform functions
-  for (j = 0; j < tx_blk_size; j++)
-    for (i = 0; i < tx_blk_size; i++) {
-      src_int16[diff_stride * j + i] = src[src_stride * j + i];
-      pred[diff_stride * j + i] = dst[dst_stride * j + i];
-    }
-
-  fwd_txfm_param.rd_transform = 0;
-  fwd_txfm_param.tx_type = tx_type;
-  fwd_txfm_param.tx_size = tx_size;
-  fwd_txfm_param.fwd_txfm_opt = FWD_TXFM_OPT_NORMAL;
-  fwd_txfm_param.lossless = xd->lossless[mbmi->segment_id];
-  fwd_txfm(src_int16, coeff, diff_stride, &fwd_txfm_param);
-  fwd_txfm(pred, ref_coeff, diff_stride, &fwd_txfm_param);
-
-  // PVQ for intra mode block
-  if (!x->skip_block)
-    skip = av1_pvq_encode_helper(&x->daala_enc,
-                                 coeff,        // target original vector
-                                 ref_coeff,    // reference vector
-                                 dqcoeff,      // de-quantized vector
-                                 eob,          // End of Block marker
-                                 pd->dequant,  // aom's quantizers
-                                 plane,        // image plane
-                                 tx_size,      // block size in log_2 - 2
-                                 tx_type,
-                                 &x->rate,  // rate measured
-                                 x->pvq_speed,
-                                 pvq_info);  // PVQ info for a block
-
-  x->pvq_skip[plane] = skip;
-
-  if (!skip) mbmi->skip = 0;
 
   // Since av1 does not have separate function which does inverse transform
   // but av1_inv_txfm_add_*x*() also does addition of predicted image to
   // inverse transformed image,
   // pass blank dummy image to av1_inv_txfm_add_*x*(), i.e. set dst as zeros
 
-  if (!skip) {
-    for (j = 0; j < tx_blk_size; j++)
-      for (i = 0; i < tx_blk_size; i++) dst[j * dst_stride + i] = 0;
+  for (j = 0; j < tx_blk_size; j++)
+    for (i = 0; i < tx_blk_size; i++) dst[j * dst_stride + i] = 0;
 
-    switch (tx_size) {
-      case TX_32X32:
-        av1_inv_txfm_add_32x32(dqcoeff, dst, dst_stride, *eob, tx_type);
-        break;
-      case TX_16X16:
-        av1_inv_txfm_add_16x16(dqcoeff, dst, dst_stride, *eob, tx_type);
-        break;
-      case TX_8X8:
-        av1_inv_txfm_add_8x8(dqcoeff, dst, dst_stride, *eob, tx_type);
-        break;
-      case TX_4X4:
-        // this is like av1_short_idct4x4 but has a special case around eob<=1
-        // which is significant (not just an optimization) for the lossless
-        // case.
-        av1_inv_txfm_add_4x4(dqcoeff, dst, dst_stride, *eob, tx_type,
-                             xd->lossless[seg_id]);
-        break;
-      default: assert(0); break;
-    }
-  }
+  inv_txfm_param.tx_type = tx_type;
+  inv_txfm_param.tx_size = tx_size;
+  inv_txfm_param.eob = *eob;
+  inv_txfm_param.lossless = xd->lossless[mbmi->segment_id];
+#if CONFIG_AOM_HIGHBITDEPTH
+  #error
+
+#else
+  inv_txfm_add(dqcoeff, dst, dst_stride, &inv_txfm_param);
+#endif
 #endif  // #if !CONFIG_PVQ
 
 #if !CONFIG_PVQ
