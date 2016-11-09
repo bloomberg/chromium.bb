@@ -50,11 +50,11 @@ static INLINE void aom_daala_write(daala_writer *w, int bit, int prob) {
   bitstream_queue_push(bit, cdf, 2);
 #endif
 
-  if (prob == 128) {
-    od_ec_enc_bits(&w->ec, bit, 1);
-  } else {
-    od_ec_encode_bool_q15(&w->ec, bit, p);
-  }
+  od_ec_encode_bool_q15(&w->ec, bit, p);
+}
+
+static INLINE void aom_daala_write_bit(daala_writer *w, int bit) {
+  od_ec_enc_bits(&w->ec, bit, 1);
 }
 
 static INLINE void daala_write_symbol(daala_writer *w, int symb,

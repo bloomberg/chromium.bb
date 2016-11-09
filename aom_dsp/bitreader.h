@@ -163,6 +163,9 @@ static INLINE int aom_read_bit_(aom_reader *r ACCT_STR_PARAM) {
   int ret;
 #if CONFIG_ANS
   ret = uabs_read_bit(r);  // Non trivial optimization at half probability
+#elif CONFIG_DAALA_EC
+  // Note this uses raw bits and is not the same as aom_daala_read(r, 128);
+  ret = aom_daala_read_bit(r);
 #else
   ret = aom_read(r, 128, NULL);  // aom_prob_half
 #endif

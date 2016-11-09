@@ -57,11 +57,7 @@ static INLINE int aom_daala_read(daala_reader *r, int prob) {
 }*/
 #endif
 
-  if (prob == 128) {
-    bit = od_ec_dec_bits(&r->ec, 1, "aom_bits");
-  } else {
-    bit = od_ec_decode_bool_q15(&r->ec, p);
-  }
+  bit = od_ec_decode_bool_q15(&r->ec, p);
 
 #if CONFIG_BITSTREAM_DEBUG
   {
@@ -101,7 +97,7 @@ static INLINE int aom_daala_read(daala_reader *r, int prob) {
 }
 
 static INLINE int aom_daala_read_bit(daala_reader *r) {
-  return aom_daala_read(r, 128);
+  return od_ec_dec_bits(&r->ec, 1, "aom_bits");
 }
 
 static INLINE int aom_daala_reader_has_error(daala_reader *r) {
