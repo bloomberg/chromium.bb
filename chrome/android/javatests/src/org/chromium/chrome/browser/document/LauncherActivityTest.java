@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.document;
 
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -34,6 +36,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class LauncherActivityTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     private Context mContext;
+    private static final long DEVICE_STARTUP_TIMEOUT_MS = scaleTimeout(15000);
 
     public LauncherActivityTest() {
         super(ChromeActivity.class);
@@ -102,7 +105,7 @@ public class LauncherActivityTest extends ChromeActivityTestCaseBase<ChromeActiv
                         launchedActivity.set(references.get(0).get());
                         return launchedActivity.get() instanceof ChromeActivity;
                     }
-                });
+                }, DEVICE_STARTUP_TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         return launchedActivity.get();
     }
 
