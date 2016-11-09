@@ -1051,6 +1051,15 @@ TELEMETRY_TESTS = {
         'allow_on_android': True,
       },
     ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          # TODO(crbug.com/626986) Flaky on Mac and Win.
+          'Mac 10.10 Debug (Intel)',
+          'Win7 Release (NVIDIA)',
+        ],
+      },
+    ],
   },
   'screenshot_sync': {
     'tester_configs': [
