@@ -23,7 +23,7 @@ class FrameSinkId {
   constexpr FrameSinkId(uint32_t client_id, uint32_t sink_id)
       : client_id_(client_id), sink_id_(sink_id) {}
 
-  constexpr bool is_null() const { return client_id_ == 0 && sink_id_ == 0; }
+  constexpr bool is_valid() const { return client_id_ != 0 || sink_id_ != 0; }
 
   constexpr uint32_t client_id() const { return client_id_; }
 

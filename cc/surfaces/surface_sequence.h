@@ -22,7 +22,7 @@ struct SurfaceSequence {
   SurfaceSequence() : sequence(0u) {}
   SurfaceSequence(const FrameSinkId& frame_sink_id, uint32_t sequence)
       : frame_sink_id(frame_sink_id), sequence(sequence) {}
-  bool is_null() const { return frame_sink_id.is_null() && sequence == 0u; }
+  bool is_valid() const { return frame_sink_id.is_valid() && sequence > 0u; }
 
   FrameSinkId frame_sink_id;
   uint32_t sequence;

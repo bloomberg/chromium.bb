@@ -179,7 +179,7 @@ TEST_F(RenderWidgetHostViewChildFrameTest, SwapCompositorFrame) {
       0, CreateDelegatedFrame(scale_factor, view_size, view_rect));
 
   cc::SurfaceId id = GetSurfaceId();
-  if (!id.is_null()) {
+  if (id.is_valid()) {
 #if !defined(OS_ANDROID)
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
     cc::SurfaceManager* manager = factory->GetSurfaceManager();

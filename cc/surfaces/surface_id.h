@@ -40,8 +40,8 @@ class SurfaceId {
                       const LocalFrameId& local_frame_id)
       : frame_sink_id_(frame_sink_id), local_frame_id_(local_frame_id) {}
 
-  bool is_null() const {
-    return frame_sink_id_.is_null() && local_frame_id_.is_null();
+  bool is_valid() const {
+    return frame_sink_id_.is_valid() && local_frame_id_.is_valid();
   }
 
   size_t hash() const {

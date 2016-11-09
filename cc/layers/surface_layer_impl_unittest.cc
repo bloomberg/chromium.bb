@@ -24,7 +24,7 @@ TEST(SurfaceLayerImplTest, Occlusion) {
       impl.AddChildToRoot<SurfaceLayerImpl>();
   surface_layer_impl->SetBounds(layer_size);
   surface_layer_impl->SetDrawsContent(true);
-  SurfaceId surface_id(kArbitraryFrameSinkId, LocalFrameId(9, 0));
+  SurfaceId surface_id(kArbitraryFrameSinkId, LocalFrameId(9, 1));
   surface_layer_impl->SetSurfaceId(surface_id);
   surface_layer_impl->SetSurfaceScale(1.f);
   surface_layer_impl->SetSurfaceSize(layer_size);

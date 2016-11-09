@@ -1152,7 +1152,7 @@ namespace {
 
 bool ContainsSurfaceId(cc::SurfaceId container_surface_id,
                        RenderWidgetHostViewChildFrame* target_view) {
-  if (container_surface_id.is_null())
+  if (!container_surface_id.is_valid())
     return false;
   for (cc::SurfaceId id :
        GetSurfaceManager()->GetSurfaceForId(container_surface_id)

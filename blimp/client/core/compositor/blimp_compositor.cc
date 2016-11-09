@@ -190,7 +190,7 @@ void BlimpCompositor::RequestCopyOfOutput(
         std::move(copy_request), weak_ptr_factory_.GetWeakPtr(),
         base::ThreadTaskRunnerHandle::Get()));
     host_->SetNeedsCommit();
-  } else if (!local_frame_id_.is_null()) {
+  } else if (local_frame_id_.is_valid()) {
     // Make a copy request for the surface directly.
     surface_factory_->RequestCopyOfSurface(local_frame_id_,
                                            std::move(copy_request));
@@ -320,7 +320,7 @@ void BlimpCompositor::SubmitCompositorFrame(cc::CompositorFrame frame) {
   cc::RenderPass* root_pass = frame.render_pass_list.back().get();
   gfx::Size surface_size = root_pass->output_rect.size();
 
-  if (local_frame_id_.is_null() || current_surface_size_ != surface_size) {
+  if (!local_frame_id_.is_valid() || current_surface_size_ != surface_size) {
     DestroyDelegatedContent();
     DCHECK(layer_->children().empty());
 
@@ -417,7 +417,7 @@ CompositorDependencies* BlimpCompositor::GetEmbedderDeps() {
 }
 
 void BlimpCompositor::DestroyDelegatedContent() {
-  if (local_frame_id_.is_null())
+  if (!local_frame_id_.is_valid())
     return;
 
   // Remove any references for the surface layer that uses this

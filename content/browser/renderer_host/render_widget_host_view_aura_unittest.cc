@@ -376,7 +376,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
     return GetDelegatedFrameHost()->LocalFrameIdForTesting();
   }
 
-  bool HasFrameData() const { return !GetLocalFrameId().is_null(); }
+  bool HasFrameData() const { return GetLocalFrameId().is_valid(); }
 
   bool released_front_lock_active() const {
     return GetDelegatedFrameHost()->ReleasedFrontLockActiveForTesting();
@@ -1918,7 +1918,7 @@ TEST_F(RenderWidgetHostViewAuraTest, MirrorLayers) {
       view_->GetNativeView(), false /* sync_bounds */));
 
   cc::SurfaceId id = view_->GetDelegatedFrameHost()->SurfaceIdForTesting();
-  if (!id.is_null()) {
+  if (id.is_valid()) {
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
     cc::SurfaceManager* manager = factory->GetSurfaceManager();
     cc::Surface* surface = manager->GetSurfaceForId(id);
@@ -2049,7 +2049,7 @@ TEST_F(RenderWidgetHostViewAuraTest, Resize) {
   view_->OnSwapCompositorFrame(
       0, MakeDelegatedFrame(1.f, size2, gfx::Rect(size2)));
   cc::SurfaceId surface_id = view_->surface_id();
-  if (surface_id.is_null()) {
+  if (!surface_id.is_valid()) {
     // No frame ack yet.
     EXPECT_EQ(0u, sink_->message_count());
   } else {
@@ -2643,7 +2643,7 @@ class RenderWidgetHostViewAuraCopyRequestTest
         1, MakeDelegatedFrame(1.f, view_rect_.size(), view_rect_));
     cc::SurfaceId surface_id =
         view_->GetDelegatedFrameHost()->SurfaceIdForTesting();
-    if (!surface_id.is_null())
+    if (surface_id.is_valid())
       view_->GetDelegatedFrameHost()->WillDrawSurface(
           surface_id.local_frame_id(), view_rect_);
     ASSERT_TRUE(view_->last_copy_request_);

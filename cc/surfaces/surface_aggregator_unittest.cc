@@ -1754,7 +1754,7 @@ void SubmitCompositorFrameWithResources(ResourceId* resource_ids,
   pass->id = RenderPassId(1, 1);
   SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
   sqs->opacity = 1.f;
-  if (!child_id.is_null()) {
+  if (child_id.is_valid()) {
     SurfaceDrawQuad* surface_quad =
         pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
     surface_quad->SetNew(sqs, gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1),
@@ -1900,13 +1900,13 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TwoSurfaces) {
 TEST_F(SurfaceAggregatorWithResourcesTest, InvalidChildSurface) {
   ResourceTrackingSurfaceFactoryClient client;
   SurfaceFactory factory(kArbitraryFrameSinkId, &manager_, &client);
-  LocalFrameId root_local_frame_id(7u, 0);
+  LocalFrameId root_local_frame_id(7u, 1);
   SurfaceId root_surface_id(kArbitraryFrameSinkId, root_local_frame_id);
   factory.Create(root_local_frame_id);
-  LocalFrameId middle_local_frame_id(8u, 0);
+  LocalFrameId middle_local_frame_id(8u, 1);
   SurfaceId middle_surface_id(kArbitraryFrameSinkId, middle_local_frame_id);
   factory.Create(middle_local_frame_id);
-  LocalFrameId child_local_frame_id(9u, 0);
+  LocalFrameId child_local_frame_id(9u, 1);
   SurfaceId child_surface_id(kArbitraryFrameSinkId, child_local_frame_id);
   factory.Create(child_local_frame_id);
 
@@ -1931,7 +1931,6 @@ TEST_F(SurfaceAggregatorWithResourcesTest, InvalidChildSurface) {
   ASSERT_EQ(1u, pass_list->size());
   EXPECT_EQ(1u, pass_list->back()->shared_quad_state_list.size());
   EXPECT_EQ(3u, pass_list->back()->quad_list.size());
-
   SubmitCompositorFrameWithResources(ids2, arraysize(ids), true,
                                      child_surface_id, &factory,
                                      middle_surface_id);

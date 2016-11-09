@@ -85,7 +85,7 @@ SurfacesInstance::~SurfacesInstance() {
   g_surfaces_instance = nullptr;
 
   DCHECK(child_ids_.empty());
-  if (!root_id_.is_null())
+  if (root_id_.is_valid())
     surface_factory_->Destroy(root_id_);
 
   surface_manager_->InvalidateFrameSinkId(frame_sink_id_);
@@ -136,7 +136,7 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
   frame.render_pass_list.push_back(std::move(render_pass));
   frame.metadata.referenced_surfaces = child_ids_;
 
-  if (root_id_.is_null()) {
+  if (!root_id_.is_valid()) {
     root_id_ = surface_id_allocator_->GenerateId();
     surface_factory_->Create(root_id_);
     display_->SetSurfaceId(cc::SurfaceId(frame_sink_id_, root_id_), 1.f);
@@ -152,7 +152,7 @@ void SurfacesInstance::AddChildId(const cc::SurfaceId& child_id) {
   DCHECK(std::find(child_ids_.begin(), child_ids_.end(), child_id) ==
          child_ids_.end());
   child_ids_.push_back(child_id);
-  if (!root_id_.is_null())
+  if (root_id_.is_valid())
     SetEmptyRootFrame();
 }
 
@@ -160,7 +160,7 @@ void SurfacesInstance::RemoveChildId(const cc::SurfaceId& child_id) {
   auto itr = std::find(child_ids_.begin(), child_ids_.end(), child_id);
   DCHECK(itr != child_ids_.end());
   child_ids_.erase(itr);
-  if (!root_id_.is_null())
+  if (root_id_.is_valid())
     SetEmptyRootFrame();
 }
 

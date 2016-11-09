@@ -69,8 +69,8 @@ void ServerWindowCompositorFrameSink::SubmitCompositorFrame(
   gfx::Size frame_size = frame.render_pass_list[0]->output_rect.size();
   // If the size of the CompostiorFrame has changed then destroy the existing
   // Surface and create a new one of the appropriate size.
-  if (local_frame_id_.is_null() || frame_size != last_submitted_frame_size_) {
-    if (!local_frame_id_.is_null())
+  if (!local_frame_id_.is_valid() || frame_size != last_submitted_frame_size_) {
+    if (local_frame_id_.is_valid())
       surface_factory_.Destroy(local_frame_id_);
     local_frame_id_ = surface_id_allocator_.GenerateId();
     surface_factory_.Create(local_frame_id_);

@@ -70,7 +70,7 @@ void SurfaceLayerImpl::AppendQuads(RenderPass* render_pass,
       render_pass->CreateAndAppendSharedQuadState();
   PopulateScaledSharedQuadState(shared_quad_state, surface_scale_);
 
-  if (surface_id_.is_null())
+  if (!surface_id_.is_valid())
     return;
 
   gfx::Rect quad_rect(surface_size_);

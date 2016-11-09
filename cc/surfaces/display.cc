@@ -126,7 +126,7 @@ void Display::SetVisible(bool visible) {
   if (!visible) {
     // Damage tracker needs a full reset as renderer resources are dropped when
     // not visible.
-    if (aggregator_ && !current_surface_id_.is_null())
+    if (aggregator_ && current_surface_id_.is_valid())
       aggregator_->SetFullDamageForSurface(current_surface_id_);
   }
 }
@@ -164,7 +164,7 @@ void Display::SetOutputIsSecure(bool secure) {
   if (aggregator_) {
     aggregator_->set_output_is_secure(secure);
     // Force a redraw.
-    if (!current_surface_id_.is_null())
+    if (current_surface_id_.is_valid())
       aggregator_->SetFullDamageForSurface(current_surface_id_);
   }
 }
@@ -230,7 +230,7 @@ void Display::DidLoseContextProvider() {
 bool Display::DrawAndSwap() {
   TRACE_EVENT0("cc", "Display::DrawAndSwap");
 
-  if (current_surface_id_.is_null()) {
+  if (!current_surface_id_.is_valid()) {
     TRACE_EVENT_INSTANT0("cc", "No root surface.", TRACE_EVENT_SCOPE_THREAD);
     return false;
   }

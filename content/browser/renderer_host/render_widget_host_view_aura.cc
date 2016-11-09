@@ -1599,7 +1599,7 @@ cc::FrameSinkId RenderWidgetHostViewAura::FrameSinkIdAtPoint(
 
   // It is possible that the renderer has not yet produced a surface, in which
   // case we return our current namespace.
-  if (id.is_null())
+  if (!id.is_valid())
     return GetFrameSinkId();
   return id.frame_sink_id();
 }

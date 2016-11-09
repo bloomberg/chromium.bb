@@ -123,7 +123,7 @@ void RenderWidgetHostViewGuest::Show() {
     // Since we were last shown, our renderer may have had a different surface
     // set (e.g. showing an interstitial), so we resend our current surface to
     // the renderer.
-    if (!local_frame_id_.is_null()) {
+    if (local_frame_id_.is_valid()) {
       cc::SurfaceSequence sequence =
           cc::SurfaceSequence(frame_sink_id_, next_surface_sequence_++);
       cc::SurfaceId surface_id(frame_sink_id_, local_frame_id_);
@@ -300,7 +300,7 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
     current_surface_scale_factor_ = scale_factor;
   }
 
-  if (local_frame_id_.is_null()) {
+  if (!local_frame_id_.is_valid()) {
     local_frame_id_ = id_allocator_->GenerateId();
     surface_factory_->Create(local_frame_id_);
 

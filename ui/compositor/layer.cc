@@ -181,7 +181,7 @@ std::unique_ptr<Layer> Layer::Clone() const {
     clone->SetAlphaShape(base::MakeUnique<SkRegion>(*alpha_shape_));
 
   // cc::Layer state.
-  if (surface_layer_ && !surface_layer_->surface_id().is_null()) {
+  if (surface_layer_ && surface_layer_->surface_id().is_valid()) {
     clone->SetShowSurface(
         surface_layer_->surface_id(),
         surface_layer_->satisfy_callback(),

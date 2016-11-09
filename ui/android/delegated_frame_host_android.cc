@@ -221,7 +221,7 @@ void DelegatedFrameHostAndroid::UpdateContainerSizeinDIP(
 
 void DelegatedFrameHostAndroid::RegisterFrameSinkHierarchy(
     const cc::FrameSinkId& parent_id) {
-  if (!registered_parent_frame_sink_id_.is_null())
+  if (registered_parent_frame_sink_id_.is_valid())
     UnregisterFrameSinkHierarchy();
   registered_parent_frame_sink_id_ = parent_id;
   surface_manager_->RegisterSurfaceFactoryClient(frame_sink_id_, this);
@@ -229,7 +229,7 @@ void DelegatedFrameHostAndroid::RegisterFrameSinkHierarchy(
 }
 
 void DelegatedFrameHostAndroid::UnregisterFrameSinkHierarchy() {
-  if (registered_parent_frame_sink_id_.is_null())
+  if (!registered_parent_frame_sink_id_.is_valid())
     return;
   surface_manager_->UnregisterSurfaceFactoryClient(frame_sink_id_);
   surface_manager_->UnregisterFrameSinkHierarchy(

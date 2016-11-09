@@ -96,7 +96,7 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
   layer_tree_host2->SetRootLayer(layer2);
 
   // Layers haven't been removed, so no sequence should be satisfied.
-  EXPECT_TRUE(blank_change.is_null());
+  EXPECT_FALSE(blank_change.is_valid());
 
   SurfaceSequence expected1(FrameSinkId(1, 1), 1u);
   SurfaceSequence expected2(FrameSinkId(2, 2), 1u);
@@ -224,7 +224,7 @@ class SurfaceLayerSwapPromiseWithDraw : public SurfaceLayerSwapPromise {
     EXPECT_EQ(1u, required_set_.size());
     // Sequence should have been satisfied through Swap, not with the
     // callback.
-    EXPECT_TRUE(satisfied_sequence_.is_null());
+    EXPECT_FALSE(satisfied_sequence_.is_valid());
   }
 };
 

@@ -221,7 +221,7 @@ void WindowPortMus::SetSurfaceIdFromServer(
     const cc::SurfaceId& existing_surface_id = surface_info_->surface_id;
     cc::SurfaceId new_surface_id =
         surface_info ? surface_info->surface_id : cc::SurfaceId();
-    if (!existing_surface_id.is_null() &&
+    if (existing_surface_id.is_valid() &&
         existing_surface_id != new_surface_id) {
       // TODO(kylechar): Start return reference here?
     }

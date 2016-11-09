@@ -216,7 +216,7 @@ class RenderWidgetHostViewGuestSurfaceTest
     DCHECK(view_);
     RenderWidgetHostViewChildFrame* rwhvcf =
         static_cast<RenderWidgetHostViewChildFrame*>(view_);
-    if (rwhvcf->local_frame_id_.is_null())
+    if (!rwhvcf->local_frame_id_.is_valid())
       return cc::SurfaceId();
     return cc::SurfaceId(rwhvcf->frame_sink_id_, rwhvcf->local_frame_id_);
   }
@@ -272,7 +272,7 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
       0, CreateDelegatedFrame(scale_factor, view_size, view_rect));
 
   cc::SurfaceId id = GetSurfaceId();
-  if (!id.is_null()) {
+  if (id.is_valid()) {
 #if !defined(OS_ANDROID)
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
     cc::SurfaceManager* manager = factory->GetSurfaceManager();
@@ -295,7 +295,7 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
       0, CreateDelegatedFrame(scale_factor, view_size, view_rect));
 
   id = GetSurfaceId();
-  if (!id.is_null()) {
+  if (id.is_valid()) {
 #if !defined(OS_ANDROID)
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
     cc::SurfaceManager* manager = factory->GetSurfaceManager();
@@ -317,7 +317,7 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
 
   view_->OnSwapCompositorFrame(
       0, CreateDelegatedFrame(scale_factor, view_size, view_rect));
-  EXPECT_TRUE(GetSurfaceId().is_null());
+  EXPECT_FALSE(GetSurfaceId().is_valid());
 }
 
 }  // namespace content

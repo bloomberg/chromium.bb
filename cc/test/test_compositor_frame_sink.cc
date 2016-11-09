@@ -111,7 +111,7 @@ bool TestCompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
 void TestCompositorFrameSink::DetachFromClient() {
   // Some tests make BindToClient fail on purpose. ^__^
   if (bound_) {
-    if (!delegated_local_frame_id_.is_null())
+    if (delegated_local_frame_id_.is_valid())
       surface_factory_->Destroy(delegated_local_frame_id_);
     surface_manager_->UnregisterSurfaceFactoryClient(frame_sink_id_);
     surface_manager_->InvalidateFrameSinkId(frame_sink_id_);
@@ -128,7 +128,7 @@ void TestCompositorFrameSink::DetachFromClient() {
 void TestCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   test_client_->DisplayReceivedCompositorFrame(frame);
 
-  if (delegated_local_frame_id_.is_null()) {
+  if (!delegated_local_frame_id_.is_valid()) {
     delegated_local_frame_id_ = surface_id_allocator_->GenerateId();
     surface_factory_->Create(delegated_local_frame_id_);
   }
@@ -177,7 +177,7 @@ void TestCompositorFrameSink::DidDrawCallback() {
 
 void TestCompositorFrameSink::ForceReclaimResources() {
   if (capabilities_.can_force_reclaim_resources &&
-      !delegated_local_frame_id_.is_null()) {
+      delegated_local_frame_id_.is_valid()) {
     surface_factory_->SubmitCompositorFrame(delegated_local_frame_id_,
                                             CompositorFrame(),
                                             SurfaceFactory::DrawCallback());

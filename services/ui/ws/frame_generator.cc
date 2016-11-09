@@ -166,10 +166,10 @@ void FrameGenerator::DrawWindowTree(
       window->compositor_frame_sink_manager()->GetLatestSurfaceId(
           mojom::CompositorFrameSinkType::DEFAULT);
 
-  if (underlay_surface_id.is_null() && default_surface_id.is_null())
+  if (!underlay_surface_id.is_valid() && !default_surface_id.is_valid())
     return;
 
-  if (!default_surface_id.is_null()) {
+  if (default_surface_id.is_valid()) {
     gfx::Transform quad_to_target_transform;
     quad_to_target_transform.Translate(absolute_bounds.x(),
                                        absolute_bounds.y());
@@ -193,7 +193,7 @@ void FrameGenerator::DrawWindowTree(
                  bounds_at_origin /* visible_rect */, true /* needs_blending*/,
                  default_surface_id);
   }
-  if (!underlay_surface_id.is_null()) {
+  if (underlay_surface_id.is_valid()) {
     const gfx::Rect underlay_absolute_bounds =
         absolute_bounds - window->underlay_offset();
     gfx::Transform quad_to_target_transform;
@@ -225,7 +225,7 @@ void FrameGenerator::AddOrUpdateSurfaceReference(
     ServerWindow* window) {
   cc::SurfaceId surface_id =
       window->compositor_frame_sink_manager()->GetLatestSurfaceId(type);
-  if (surface_id.is_null())
+  if (!surface_id.is_valid())
     return;
   auto it = dependencies_.find(surface_id.frame_sink_id());
   if (it == dependencies_.end()) {
@@ -295,13 +295,13 @@ void FrameGenerator::OnWindowDestroying(ServerWindow* window) {
   cc::SurfaceId default_surface_id =
       window->compositor_frame_sink_manager()->GetLatestSurfaceId(
           mojom::CompositorFrameSinkType::DEFAULT);
-  if (!default_surface_id.is_null())
+  if (default_surface_id.is_valid())
     ReleaseFrameSinkReference(default_surface_id.frame_sink_id());
 
   cc::SurfaceId underlay_surface_id =
       window->compositor_frame_sink_manager()->GetLatestSurfaceId(
           mojom::CompositorFrameSinkType::UNDERLAY);
-  if (!underlay_surface_id.is_null())
+  if (underlay_surface_id.is_valid())
     ReleaseFrameSinkReference(underlay_surface_id.frame_sink_id());
 }
 

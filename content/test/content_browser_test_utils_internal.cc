@@ -319,7 +319,7 @@ void SurfaceHitTestReadyNotifier::WaitForSurfaceReady() {
 
 bool SurfaceHitTestReadyNotifier::ContainsSurfaceId(
     cc::SurfaceId container_surface_id) {
-  if (container_surface_id.is_null())
+  if (!container_surface_id.is_valid())
     return false;
   for (cc::SurfaceId id :
        surface_manager_->GetSurfaceForId(container_surface_id)

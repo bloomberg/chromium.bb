@@ -231,7 +231,7 @@ Compositor::~Compositor() {
   context_factory_->RemoveCompositor(this);
   auto* manager = context_factory_->GetSurfaceManager();
   for (auto& client : child_frame_sinks_) {
-    DCHECK(!client.is_null());
+    DCHECK(client.is_valid());
     manager->UnregisterFrameSinkHierarchy(frame_sink_id_, client);
   }
   manager->InvalidateFrameSinkId(frame_sink_id_);
@@ -246,7 +246,7 @@ void Compositor::AddFrameSink(const cc::FrameSinkId& frame_sink_id) {
 void Compositor::RemoveFrameSink(const cc::FrameSinkId& frame_sink_id) {
   auto it = child_frame_sinks_.find(frame_sink_id);
   DCHECK(it != child_frame_sinks_.end());
-  DCHECK(!it->is_null());
+  DCHECK(it->is_valid());
   context_factory_->GetSurfaceManager()->UnregisterFrameSinkHierarchy(
       frame_sink_id_, *it);
   child_frame_sinks_.erase(it);

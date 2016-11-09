@@ -248,7 +248,7 @@ Surface::~Surface() {
   if (begin_frame_source_ && needs_begin_frame_)
     begin_frame_source_->RemoveObserver(this);
 
-  if (!local_frame_id_.is_null())
+  if (local_frame_id_.is_valid())
     factory_owner_->surface_factory_->Destroy(local_frame_id_);
 
   surface_manager_->UnregisterSurfaceFactoryClient(
@@ -475,7 +475,7 @@ void Surface::CommitSurfaceHierarchy() {
   }
 
   cc::LocalFrameId old_local_frame_id = local_frame_id_;
-  if (needs_commit_to_new_surface_ || local_frame_id_.is_null()) {
+  if (needs_commit_to_new_surface_ || !local_frame_id_.is_valid()) {
     needs_commit_to_new_surface_ = false;
     local_frame_id_ = factory_owner_->id_allocator_->GenerateId();
     factory_owner_->surface_factory_->Create(local_frame_id_);
@@ -483,7 +483,7 @@ void Surface::CommitSurfaceHierarchy() {
 
   UpdateSurface(true);
 
-  if (!old_local_frame_id.is_null() && old_local_frame_id != local_frame_id_) {
+  if (old_local_frame_id.is_valid() && old_local_frame_id != local_frame_id_) {
     factory_owner_->surface_factory_->SetPreviousFrameSurface(
         local_frame_id_, old_local_frame_id);
     factory_owner_->surface_factory_->Destroy(old_local_frame_id);
@@ -636,7 +636,7 @@ void Surface::CheckIfSurfaceHierarchyNeedsCommitToNewSurfaces() {
 }
 
 void Surface::OnLostResources() {
-  if (local_frame_id_.is_null())
+  if (!local_frame_id_.is_valid())
     return;
 
   UpdateResource(false);

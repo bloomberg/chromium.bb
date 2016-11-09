@@ -57,7 +57,7 @@ SurfaceLayer::SurfaceLayer(const SatisfyCallback& satisfy_callback,
 
 SurfaceLayer::~SurfaceLayer() {
   DCHECK(!layer_tree_host());
-  DCHECK(destroy_sequence_.is_null());
+  DCHECK(!destroy_sequence_.is_valid());
 }
 
 void SurfaceLayer::SetSurfaceId(const SurfaceId& surface_id,
@@ -79,7 +79,7 @@ std::unique_ptr<LayerImpl> SurfaceLayer::CreateLayerImpl(
 }
 
 bool SurfaceLayer::HasDrawableContent() const {
-  return !surface_id_.is_null() && Layer::HasDrawableContent();
+  return surface_id_.is_valid() && Layer::HasDrawableContent();
 }
 
 void SurfaceLayer::SetLayerTreeHost(LayerTreeHost* host) {
@@ -104,7 +104,7 @@ void SurfaceLayer::PushPropertiesTo(LayerImpl* layer) {
 }
 
 void SurfaceLayer::CreateNewDestroySequence() {
-  DCHECK(destroy_sequence_.is_null());
+  DCHECK(!destroy_sequence_.is_valid());
   if (layer_tree_host()) {
     destroy_sequence_ = layer_tree_host()
                             ->GetSurfaceSequenceGenerator()
@@ -116,7 +116,7 @@ void SurfaceLayer::CreateNewDestroySequence() {
 void SurfaceLayer::SatisfyDestroySequence() {
   if (!layer_tree_host())
     return;
-  DCHECK(!destroy_sequence_.is_null());
+  DCHECK(destroy_sequence_.is_valid());
   std::unique_ptr<SatisfySwapPromise> satisfy(
       new SatisfySwapPromise(destroy_sequence_, satisfy_callback_));
   layer_tree_host()->GetSwapPromiseManager()->QueueSwapPromise(

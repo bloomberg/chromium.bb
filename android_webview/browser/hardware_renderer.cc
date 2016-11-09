@@ -43,7 +43,7 @@ HardwareRenderer::HardwareRenderer(RenderThreadManager* state)
 HardwareRenderer::~HardwareRenderer() {
   // Must reset everything before |surface_factory_| to ensure all
   // resources are returned before resetting.
-  if (!child_id_.is_null())
+  if (child_id_.is_valid())
     DestroySurface();
   surface_factory_.reset();
   surfaces_->GetSurfaceManager()->UnregisterSurfaceFactoryClient(
@@ -112,7 +112,7 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
     if (!compositor_id_.Equals(child_frame->compositor_id) ||
         last_submitted_compositor_frame_sink_id_ !=
             child_frame->compositor_frame_sink_id) {
-      if (!child_id_.is_null())
+      if (child_id_.is_valid())
         DestroySurface();
 
       // This will return all the resources to the previous compositor.
@@ -129,8 +129,8 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
         child_compositor_frame->render_pass_list.back()->output_rect.size();
     bool size_changed = frame_size != frame_size_;
     frame_size_ = frame_size;
-    if (child_id_.is_null() || size_changed) {
-      if (!child_id_.is_null())
+    if (!child_id_.is_valid() || size_changed) {
+      if (child_id_.is_valid())
         DestroySurface();
       AllocateSurface();
     }
@@ -155,7 +155,7 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
         draw_constraints);
   }
 
-  if (child_id_.is_null())
+  if (!child_id_.is_valid())
     return;
 
   gfx::Rect clip(draw_info->clip_left, draw_info->clip_top,
@@ -166,14 +166,14 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
 }
 
 void HardwareRenderer::AllocateSurface() {
-  DCHECK(child_id_.is_null());
+  DCHECK(!child_id_.is_valid());
   child_id_ = surface_id_allocator_->GenerateId();
   surface_factory_->Create(child_id_);
   surfaces_->AddChildId(cc::SurfaceId(frame_sink_id_, child_id_));
 }
 
 void HardwareRenderer::DestroySurface() {
-  DCHECK(!child_id_.is_null());
+  DCHECK(child_id_.is_valid());
 
   // Submit an empty frame to force any existing resources to be returned.
   surface_factory_->SubmitCompositorFrame(child_id_, cc::CompositorFrame(),

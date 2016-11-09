@@ -69,7 +69,7 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
 }
 
 RenderWidgetHostViewChildFrame::~RenderWidgetHostViewChildFrame() {
-  if (!local_frame_id_.is_null())
+  if (local_frame_id_.is_valid())
     surface_factory_->Destroy(local_frame_id_);
 
   if (GetSurfaceManager())
@@ -88,7 +88,7 @@ void RenderWidgetHostViewChildFrame::SetCrossProcessFrameConnector(
     return;
 
   if (frame_connector_) {
-    if (!parent_frame_sink_id_.is_null()) {
+    if (parent_frame_sink_id_.is_valid()) {
       GetSurfaceManager()->UnregisterFrameSinkHierarchy(parent_frame_sink_id_,
                                                         frame_sink_id_);
     }
@@ -112,7 +112,7 @@ void RenderWidgetHostViewChildFrame::SetCrossProcessFrameConnector(
         frame_connector_->GetParentRenderWidgetHostView();
     if (parent_view) {
       parent_frame_sink_id_ = parent_view->GetFrameSinkId();
-      DCHECK(!parent_frame_sink_id_.is_null());
+      DCHECK(parent_frame_sink_id_.is_valid());
       GetSurfaceManager()->RegisterFrameSinkHierarchy(parent_frame_sink_id_,
                                                       frame_sink_id_);
     }
@@ -151,7 +151,7 @@ bool RenderWidgetHostViewChildFrame::HasFocus() const {
 }
 
 bool RenderWidgetHostViewChildFrame::IsSurfaceAvailableForCopy() const {
-  return !local_frame_id_.is_null();
+  return local_frame_id_.is_valid();
 }
 
 void RenderWidgetHostViewChildFrame::Show() {
@@ -400,7 +400,7 @@ void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
     current_surface_scale_factor_ = scale_factor;
   }
 
-  if (local_frame_id_.is_null()) {
+  if (!local_frame_id_.is_valid()) {
     local_frame_id_ = id_allocator_->GenerateId();
     surface_factory_->Create(local_frame_id_);
 
@@ -531,7 +531,7 @@ bool RenderWidgetHostViewChildFrame::TransformPointToLocalCoordSpace(
     const cc::SurfaceId& original_surface,
     gfx::Point* transformed_point) {
   *transformed_point = point;
-  if (!frame_connector_ || local_frame_id_.is_null())
+  if (!frame_connector_ || !local_frame_id_.is_valid())
     return false;
 
   return frame_connector_->TransformPointToLocalCoordSpace(
@@ -543,7 +543,7 @@ bool RenderWidgetHostViewChildFrame::TransformPointToCoordSpaceForView(
     const gfx::Point& point,
     RenderWidgetHostViewBase* target_view,
     gfx::Point* transformed_point) {
-  if (!frame_connector_ || local_frame_id_.is_null() || target_view == this)
+  if (!frame_connector_ || !local_frame_id_.is_valid() || target_view == this)
     return false;
 
   return frame_connector_->TransformPointToCoordSpaceForView(
@@ -726,7 +726,7 @@ RenderWidgetHostViewChildFrame::CreateBrowserAccessibilityManager(
 }
 
 void RenderWidgetHostViewChildFrame::ClearCompositorSurfaceIfNecessary() {
-  if (!local_frame_id_.is_null())
+  if (local_frame_id_.is_valid())
     surface_factory_->Destroy(local_frame_id_);
   local_frame_id_ = cc::LocalFrameId();
 }

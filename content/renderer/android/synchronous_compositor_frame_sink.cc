@@ -198,7 +198,7 @@ void SynchronousCompositorFrameSink::DetachFromClient() {
   begin_frame_source_ = nullptr;
   registry_->UnregisterCompositorFrameSink(routing_id_, this);
   client_->SetTreeActivationCallback(base::Closure());
-  if (!root_local_frame_id_.is_null()) {
+  if (root_local_frame_id_.is_valid()) {
     surface_factory_->Destroy(root_local_frame_id_);
     surface_factory_->Destroy(child_local_frame_id_);
   }
@@ -235,7 +235,7 @@ void SynchronousCompositorFrameSink::SubmitCompositorFrame(
     // the |frame| for the software path below.
     submit_frame.metadata = frame.metadata.Clone();
 
-    if (root_local_frame_id_.is_null()) {
+    if (!root_local_frame_id_.is_valid()) {
       root_local_frame_id_ = surface_id_allocator_->GenerateId();
       surface_factory_->Create(root_local_frame_id_);
       child_local_frame_id_ = surface_id_allocator_->GenerateId();

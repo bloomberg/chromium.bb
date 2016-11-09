@@ -23,7 +23,7 @@ class LocalFrameId {
   constexpr LocalFrameId(uint32_t local_id, uint64_t nonce)
       : local_id_(local_id), nonce_(nonce) {}
 
-  constexpr bool is_null() const { return local_id_ == 0 && nonce_ == 0; }
+  constexpr bool is_valid() const { return local_id_ != 0 && nonce_ != 0; }
 
   constexpr uint32_t local_id() const { return local_id_; }
 

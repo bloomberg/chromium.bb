@@ -82,7 +82,7 @@ void DirectCompositorFrameSink::DetachFromClient() {
   // Unregister the SurfaceFactoryClient here instead of the dtor so that only
   // one client is alive for this namespace at any given time.
   surface_manager_->UnregisterSurfaceFactoryClient(frame_sink_id_);
-  if (!delegated_local_frame_id_.is_null())
+  if (delegated_local_frame_id_.is_valid())
     factory_.Destroy(delegated_local_frame_id_);
 
   CompositorFrameSink::DetachFromClient();
@@ -91,7 +91,7 @@ void DirectCompositorFrameSink::DetachFromClient() {
 void DirectCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
   if (frame_size.IsEmpty() || frame_size != last_swap_frame_size_) {
-    if (!delegated_local_frame_id_.is_null()) {
+    if (delegated_local_frame_id_.is_valid()) {
       factory_.Destroy(delegated_local_frame_id_);
     }
     delegated_local_frame_id_ = surface_id_allocator_.GenerateId();
@@ -108,7 +108,7 @@ void DirectCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
 }
 
 void DirectCompositorFrameSink::ForceReclaimResources() {
-  if (!delegated_local_frame_id_.is_null()) {
+  if (delegated_local_frame_id_.is_valid()) {
     factory_.SubmitCompositorFrame(delegated_local_frame_id_, CompositorFrame(),
                                    SurfaceFactory::DrawCallback());
   }
