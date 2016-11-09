@@ -56,6 +56,9 @@ class PlatformSensorAmbientLightMac : public PlatformSensor {
   base::mac::ScopedIOObject<io_object_t> light_sensor_object_;
   // IO Notifications created by IOServiceAddInterestNotification.
   base::mac::ScopedIOObject<io_object_t> light_sensor_notification_;
+  // IO Notifications created by IOServiceAddInterestNotification when the
+  // sensor is busy.
+  base::mac::ScopedIOObject<io_object_t> light_sensor_busy_notification_;
   double current_lux_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformSensorAmbientLightMac);

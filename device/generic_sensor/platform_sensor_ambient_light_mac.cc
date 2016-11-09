@@ -94,6 +94,13 @@ bool PlatformSensorAmbientLightMac::StartSensor(
   if (kr != KERN_SUCCESS)
     return false;
 
+  kr = IOServiceAddInterestNotification(
+      light_sensor_port_.get(), light_sensor_service_, kIOBusyInterest,
+      IOServiceCallback, this,
+      light_sensor_busy_notification_.InitializeInto());
+  if (kr != KERN_SUCCESS)
+    return false;
+
   kr = IOServiceOpen(light_sensor_service_, mach_task_self(), 0,
                      light_sensor_object_.InitializeInto());
   if (kr != KERN_SUCCESS)
@@ -109,6 +116,7 @@ bool PlatformSensorAmbientLightMac::StartSensor(
 void PlatformSensorAmbientLightMac::StopSensor() {
   light_sensor_port_.reset();
   light_sensor_notification_.reset();
+  light_sensor_busy_notification_.reset();
   light_sensor_object_.reset();
   light_sensor_service_.reset();
   current_lux_ = 0.0;
