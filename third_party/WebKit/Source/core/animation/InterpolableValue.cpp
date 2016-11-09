@@ -38,18 +38,6 @@ void InterpolableNumber::interpolate(const InterpolableValue& to,
         m_value * (1 - progress) + toNumber.m_value * progress;
 }
 
-void InterpolableBool::interpolate(const InterpolableValue& to,
-                                   const double progress,
-                                   InterpolableValue& result) const {
-  const InterpolableBool& toBool = toInterpolableBool(to);
-  InterpolableBool& resultBool = toInterpolableBool(result);
-
-  if (progress < 0.5)
-    resultBool.m_value = m_value;
-  else
-    resultBool.m_value = toBool.m_value;
-}
-
 void InterpolableList::interpolate(const InterpolableValue& to,
                                    const double progress,
                                    InterpolableValue& result) const {

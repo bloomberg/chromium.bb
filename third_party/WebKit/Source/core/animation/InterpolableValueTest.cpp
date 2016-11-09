@@ -46,13 +46,6 @@ class AnimationInterpolableValueTest : public ::testing::Test {
     return toInterpolableNumber(interpolationValue(*i.get()))->value();
   }
 
-  bool interpolateBools(bool a, bool b, double progress) {
-    RefPtr<Interpolation> i = SampleInterpolation::create(
-        InterpolableBool::create(a), InterpolableBool::create(b));
-    i->interpolate(0, progress);
-    return toInterpolableBool(interpolationValue(*i.get()))->value();
-  }
-
   void scaleAndAdd(InterpolableValue& base,
                    double scale,
                    const InterpolableValue& add) {
@@ -77,15 +70,6 @@ TEST_F(AnimationInterpolableValueTest, InterpolateNumbers) {
   EXPECT_FLOAT_EQ(21, interpolateNumbers(42, 0, 0.5));
   EXPECT_FLOAT_EQ(0, interpolateNumbers(42, 0, 1));
   EXPECT_FLOAT_EQ(-21, interpolateNumbers(42, 0, 1.5));
-}
-
-TEST_F(AnimationInterpolableValueTest, InterpolateBools) {
-  EXPECT_FALSE(interpolateBools(false, true, -1));
-  EXPECT_FALSE(interpolateBools(false, true, 0));
-  EXPECT_FALSE(interpolateBools(false, true, 0.3));
-  EXPECT_TRUE(interpolateBools(false, true, 0.5));
-  EXPECT_TRUE(interpolateBools(false, true, 1));
-  EXPECT_TRUE(interpolateBools(false, true, 2));
 }
 
 TEST_F(AnimationInterpolableValueTest, SimpleList) {
@@ -113,14 +97,14 @@ TEST_F(AnimationInterpolableValueTest, NestedList) {
   std::unique_ptr<InterpolableList> subListA = InterpolableList::create(1);
   subListA->set(0, InterpolableNumber::create(100));
   listA->set(1, std::move(subListA));
-  listA->set(2, InterpolableBool::create(false));
+  listA->set(2, InterpolableNumber::create(0));
 
   std::unique_ptr<InterpolableList> listB = InterpolableList::create(3);
   listB->set(0, InterpolableNumber::create(100));
   std::unique_ptr<InterpolableList> subListB = InterpolableList::create(1);
   subListB->set(0, InterpolableNumber::create(50));
   listB->set(1, std::move(subListB));
-  listB->set(2, InterpolableBool::create(true));
+  listB->set(2, InterpolableNumber::create(1));
 
   RefPtr<Interpolation> i =
       interpolateLists(std::move(listA), std::move(listB), 0.5);
@@ -129,7 +113,7 @@ TEST_F(AnimationInterpolableValueTest, NestedList) {
   EXPECT_FLOAT_EQ(
       75, toInterpolableNumber(toInterpolableList(outList->get(1))->get(0))
               ->value());
-  EXPECT_TRUE(toInterpolableBool(outList->get(2))->value());
+  EXPECT_FLOAT_EQ(0.5, toInterpolableNumber(outList->get(2))->value());
 }
 
 TEST_F(AnimationInterpolableValueTest, ScaleAndAddNumbers) {

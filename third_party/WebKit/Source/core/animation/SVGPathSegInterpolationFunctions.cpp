@@ -188,8 +188,9 @@ std::unique_ptr<InterpolableValue> consumeArc(const PathSegmentData& segment,
   result->set(2, InterpolableNumber::create(segment.r1()));
   result->set(3, InterpolableNumber::create(segment.r2()));
   result->set(4, InterpolableNumber::create(segment.arcAngle()));
-  result->set(5, InterpolableBool::create(segment.largeArcFlag()));
-  result->set(6, InterpolableBool::create(segment.sweepFlag()));
+  // TODO(alancutter): Make these flags part of the NonInterpolableValue.
+  result->set(5, InterpolableNumber::create(segment.largeArcFlag()));
+  result->set(6, InterpolableNumber::create(segment.sweepFlag()));
   return std::move(result);
 }
 
@@ -207,8 +208,8 @@ PathSegmentData consumeInterpolableArc(const InterpolableValue& value,
   segment.arcRadii().setX(toInterpolableNumber(list.get(2))->value());
   segment.arcRadii().setY(toInterpolableNumber(list.get(3))->value());
   segment.setArcAngle(toInterpolableNumber(list.get(4))->value());
-  segment.arcLarge = toInterpolableBool(list.get(5))->value();
-  segment.arcSweep = toInterpolableBool(list.get(6))->value();
+  segment.arcLarge = toInterpolableNumber(list.get(5))->value() >= 0.5;
+  segment.arcSweep = toInterpolableNumber(list.get(6))->value() >= 0.5;
   return segment;
 }
 

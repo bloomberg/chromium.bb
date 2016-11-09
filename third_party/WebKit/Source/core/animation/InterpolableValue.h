@@ -78,39 +78,6 @@ class CORE_EXPORT InterpolableNumber final : public InterpolableValue {
   explicit InterpolableNumber(double value) : m_value(value) {}
 };
 
-class CORE_EXPORT InterpolableBool final : public InterpolableValue {
- public:
-  static std::unique_ptr<InterpolableBool> create(bool value) {
-    return wrapUnique(new InterpolableBool(value));
-  }
-
-  bool isBool() const final { return true; }
-  bool value() const { return m_value; }
-  bool equals(const InterpolableValue&) const final {
-    NOTREACHED();
-    return false;
-  }
-  std::unique_ptr<InterpolableValue> clone() const final {
-    return create(m_value);
-  }
-  std::unique_ptr<InterpolableValue> cloneAndZero() const final {
-    NOTREACHED();
-    return nullptr;
-  }
-  void scale(double scale) final { NOTREACHED(); }
-  void scaleAndAdd(double scale, const InterpolableValue& other) final {
-    NOTREACHED();
-  }
-
- private:
-  void interpolate(const InterpolableValue& to,
-                   const double progress,
-                   InterpolableValue& result) const final;
-  bool m_value;
-
-  explicit InterpolableBool(bool value) : m_value(value) {}
-};
-
 class CORE_EXPORT InterpolableList : public InterpolableValue {
  public:
   // Explicitly delete operator= because MSVC automatically generate
@@ -204,11 +171,6 @@ DEFINE_TYPE_CASTS(InterpolableNumber,
                   value,
                   value->isNumber(),
                   value.isNumber());
-DEFINE_TYPE_CASTS(InterpolableBool,
-                  InterpolableValue,
-                  value,
-                  value->isBool(),
-                  value.isBool());
 DEFINE_TYPE_CASTS(InterpolableList,
                   InterpolableValue,
                   value,
