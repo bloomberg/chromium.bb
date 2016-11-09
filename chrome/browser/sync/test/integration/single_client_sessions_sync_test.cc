@@ -149,7 +149,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, ResponseCodeIsPreserved) {
   ASSERT_EQ(1, found_navigations);
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
+IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
+                       DISABLED_CookieJarMismatch) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
