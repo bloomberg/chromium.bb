@@ -7,8 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-#include "url/gurl.h"
-
 // This class contains the defining parameters for an XCallback request from
 // another app.
 @interface XCallbackParameters : NSObject<NSCoding, NSCopying>
@@ -16,27 +14,10 @@
 // The id of the calling app.
 @property(nonatomic, readonly, copy) NSString* sourceAppId;
 
-// The user visible name of the calling app. Can be nil.
-@property(nonatomic, readonly, copy) NSString* sourceAppName;
-
-// x-callback-url::x-success URL. If the app is opened using a x-callback-url
-// compliant URL, the value of this parameter is used as callback URL when the
-// user taps the back button.
-@property(nonatomic, readonly) const GURL& successURL;
-
-// Flag to force the creation of a new tab. Default YES.
-@property(nonatomic, readonly) BOOL createNewTab;
-
-// Designated initializer. |sourceAppId| is required. Others may be nil
-// or empty. This is being deprecated, so use -initWithSourceAppId: instead.
+// Designated initializer. |sourceAppId| is the string identifier for the app
+// that launched Chrome and cannot be nil.
 - (instancetype)initWithSourceAppId:(NSString*)sourceAppId
-                      sourceAppName:(NSString*)sourceAppName
-                         successURL:(const GURL&)successURL
-                       createNewTab:(BOOL)createNewTab
     NS_DESIGNATED_INITIALIZER;
-
-// This will become the designated initializer.
-- (instancetype)initWithSourceAppId:(NSString*)sourceAppId;
 
 - (instancetype)init NS_UNAVAILABLE;
 
