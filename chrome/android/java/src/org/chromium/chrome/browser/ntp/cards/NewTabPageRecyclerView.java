@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.util.ViewUtils;
 
 import java.util.HashMap;
@@ -45,6 +46,9 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
     private static final int DISMISS_ANIMATION_TIME_MS = 300;
     private static final Interpolator PEEKING_CARD_INTERPOLATOR = new LinearOutSlowInInterpolator();
     private static final int PEEKING_CARD_ANIMATION_TIME_MS = 1000;
+    private static final int PEEKING_CARD_ANIMATION_START_DELAY_MS = 300;
+
+    private static final String PREF_ANIMATION_RUN_COUNT = "ntp_recycler_view_animation_run_count";
 
     private final GestureDetector mGestureDetector;
     private final LinearLayoutManager mLayoutManager;
@@ -547,18 +551,25 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
      * to be performed when the first card appears.
      */
     public void onFirstCardShown(View cardView) {
+        // We only run if the feature is enabled and once per NTP.
         if (!SnippetsConfig.isIncreasedCardVisibilityEnabled() || mFirstCardAnimationRun) return;
         mFirstCardAnimationRun = true;
 
-        // We only want an animation to run if it is visible from the non-scrolled position.
+        // We only want an animation to run if we are not scrolled.
         if (computeVerticalScrollOffset() != 0) return;
 
-        // The peeking card bounces up from it's position.
+        // We only show the animation a certain number of times to a user.
+        ChromePreferenceManager manager = ChromePreferenceManager.getInstance(getContext());
+        int animCount = manager.getNewTabPageFirstCardAnimationRunCount();
+        if (animCount >= CardsVariationParameters.getFirstCardAnimationMaxRuns()) return;
+        manager.setNewTabPageFirstCardAnimationRunCount(animCount + 1);
+
+        // The peeking card bounces up twice from its position.
         ObjectAnimator animator = ObjectAnimator.ofFloat(cardView, View.TRANSLATION_Y,
-                0f, -mPeekingCardBounceDistance, 0f);
+                0f, -mPeekingCardBounceDistance, 0f, -mPeekingCardBounceDistance, 0f);
+        animator.setStartDelay(PEEKING_CARD_ANIMATION_START_DELAY_MS);
         animator.setDuration(PEEKING_CARD_ANIMATION_TIME_MS);
         animator.setInterpolator(PEEKING_CARD_INTERPOLATOR);
         animator.start();
-
     }
 }

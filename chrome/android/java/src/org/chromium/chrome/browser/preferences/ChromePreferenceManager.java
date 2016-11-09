@@ -50,6 +50,7 @@ public class ChromePreferenceManager {
     private static final String CHROME_DEFAULT_BROWSER = "applink.chrome_default_browser";
 
     private static final String NTP_SIGNIN_PROMO_DISMISSED = "ntp.signin_promo_dismissed";
+    private static final String NTP_ANIMATION_RUN_COUNT = "ntp_recycler_view_animation_run_count";
 
     private static final String SUCCESS_UPLOAD_SUFFIX = "_crash_success_upload";
     private static final String FAILURE_UPLOAD_SUFFIX = "_crash_failure_upload";
@@ -389,6 +390,16 @@ public class ChromePreferenceManager {
     /** Set whether the user dismissed the sign in promo from the new tab page. */
     public void setNewTabPageSigninPromoDismissed(boolean isPromoDismissed) {
         writeBoolean(NTP_SIGNIN_PROMO_DISMISSED, isPromoDismissed);
+    }
+
+    /** Gets the number of times the New Tab Page first card animation has been run. */
+    public int getNewTabPageFirstCardAnimationRunCount() {
+        return readInt(NTP_ANIMATION_RUN_COUNT);
+    }
+
+    /** Records the number of times the New Tab Page first card animation has been run. */
+    public void setNewTabPageFirstCardAnimationRunCount(int value) {
+        writeInt(NTP_ANIMATION_RUN_COUNT, value);
     }
 
     /**
