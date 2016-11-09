@@ -277,6 +277,42 @@ TEST_F(CRWSessionControllerTest,
       [session_controller_ currentEntry]);
 }
 
+// Tests that forward entries are discarded after navigation entry is committed.
+TEST_F(CRWSessionControllerTest, CommitPendingEntryWithExistingForwardEntries) {
+  // Make 3 entries.
+  [session_controller_ addPendingEntry:GURL("http://www.example.com/0")
+                              referrer:MakeReferrer("http://www.example.com/a")
+                            transition:ui::PAGE_TRANSITION_LINK
+                     rendererInitiated:YES];
+  [session_controller_ commitPendingEntry];
+  [session_controller_ addPendingEntry:GURL("http://www.example.com/1")
+                              referrer:MakeReferrer("http://www.example.com/b")
+                            transition:ui::PAGE_TRANSITION_LINK
+                     rendererInitiated:YES];
+  [session_controller_ commitPendingEntry];
+  [session_controller_ addPendingEntry:GURL("http://www.example.com/2")
+                              referrer:MakeReferrer("http://www.example.com/c")
+                            transition:ui::PAGE_TRANSITION_LINK
+                     rendererInitiated:YES];
+  [session_controller_ commitPendingEntry];
+
+  // Go back to the first entry.
+  [session_controller_ goToEntry:[[session_controller_ entries] firstObject]];
+
+  // Create and commit a new pending entry.
+  [session_controller_ addPendingEntry:GURL("http://www.example.com/2")
+                              referrer:MakeReferrer("http://www.example.com/c")
+                            transition:ui::PAGE_TRANSITION_LINK
+                     rendererInitiated:YES];
+  [session_controller_ commitPendingEntry];
+
+  // All forward entries should go away.
+  EXPECT_EQ(2U, [[session_controller_ entries] count]);
+  EXPECT_EQ(0U, [[session_controller_ forwardEntries] count]);
+  ASSERT_EQ(1, [session_controller_ currentNavigationIndex]);
+  ASSERT_EQ(0, [session_controller_ previousNavigationIndex]);
+}
+
 TEST_F(CRWSessionControllerTest,
        DiscardPendingEntryWithoutPendingOrCommittedEntry) {
   [session_controller_ discardNonCommittedEntries];
@@ -964,19 +1000,23 @@ TEST_F(CRWSessionControllerTest, CreateWithNavList) {
   EXPECT_EQ([[controller openerId] length], 0UL);
 }
 
+// Tests index of previous navigation entry.
 TEST_F(CRWSessionControllerTest, PreviousNavigationEntry) {
+  EXPECT_EQ(session_controller_.get().previousNavigationIndex, -1);
   [session_controller_
         addPendingEntry:GURL("http://www.url.com")
                referrer:MakeReferrer("http://www.referer.com")
              transition:ui::PAGE_TRANSITION_TYPED
       rendererInitiated:NO];
   [session_controller_ commitPendingEntry];
+  EXPECT_EQ(session_controller_.get().previousNavigationIndex, -1);
   [session_controller_
         addPendingEntry:GURL("http://www.url1.com")
                referrer:MakeReferrer("http://www.referer.com")
              transition:ui::PAGE_TRANSITION_TYPED
       rendererInitiated:NO];
   [session_controller_ commitPendingEntry];
+  EXPECT_EQ(session_controller_.get().previousNavigationIndex, 0);
   [session_controller_
         addPendingEntry:GURL("http://www.url2.com")
                referrer:MakeReferrer("http://www.referer.com")
@@ -1275,6 +1315,95 @@ TEST_F(CRWSessionControllerTest, IndexOfEntryForDelta) {
   EXPECT_EQ(1, [session_controller_ indexOfEntryForDelta:-3]);
   EXPECT_EQ(5, [session_controller_ indexOfEntryForDelta:1]);
   EXPECT_EQ(6, [session_controller_ indexOfEntryForDelta:2]);
+}
+
+// Tests that visible URL is the same as transient URL if there are no committed
+// entries.
+TEST_F(CRWSessionControllerTest, VisibleEntryWithSingleTransientEntry) {
+  [session_controller_ addTransientEntryWithURL:GURL("http://www.example.com")];
+  web::NavigationItem* visible_item =
+      [[session_controller_ visibleEntry] navigationItem];
+  ASSERT_TRUE(visible_item);
+  EXPECT_EQ("http://www.example.com/", visible_item->GetURL().spec());
+}
+
+// Tests that visible URL is the same as transient URL if there is a committed
+// entry.
+TEST_F(CRWSessionControllerTest, VisibleEntryWithCommittedAndTransientEntries) {
+  [session_controller_ addPendingEntry:GURL("http://www.example.com/0")
+                              referrer:MakeReferrer("http://www.example.com/a")
+                            transition:ui::PAGE_TRANSITION_LINK
+                     rendererInitiated:NO];
+  [session_controller_ commitPendingEntry];
+  [session_controller_ addTransientEntryWithURL:GURL("http://www.example.com")];
+  web::NavigationItem* visible_item =
+      [[session_controller_ visibleEntry] navigationItem];
+  ASSERT_TRUE(visible_item);
+  EXPECT_EQ("http://www.example.com/", visible_item->GetURL().spec());
+}
+
+// Tests that visible URL is the same as pending URL if it was user-initiated.
+TEST_F(CRWSessionControllerTest,
+       VisibleEntryWithSingleUserInitiatedPendingEntry) {
+  [session_controller_ addPendingEntry:GURL("http://www.example.com/0")
+                              referrer:MakeReferrer("http://www.example.com/a")
+                            transition:ui::PAGE_TRANSITION_LINK
+                     rendererInitiated:NO];
+  web::NavigationItem* visible_item =
+      [[session_controller_ visibleEntry] navigationItem];
+  ASSERT_TRUE(visible_item);
+  EXPECT_EQ("http://www.example.com/0", visible_item->GetURL().spec());
+}
+
+// Tests that visible URL is the same as pending URL if it was user-initiated
+// and there is a committed entry.
+TEST_F(CRWSessionControllerTest,
+       VisibleEntryWithCommittedAndUserInitiatedPendingEntry) {
+  [session_controller_ addPendingEntry:GURL("http://www.example.com")
+                              referrer:MakeReferrer("http://www.example.com/a")
+                            transition:ui::PAGE_TRANSITION_LINK
+                     rendererInitiated:NO];
+  [session_controller_ commitPendingEntry];
+  [session_controller_ addPendingEntry:GURL("http://www.example.com/0")
+                              referrer:MakeReferrer("http://www.example.com/b")
+                            transition:ui::PAGE_TRANSITION_LINK
+                     rendererInitiated:NO];
+  web::NavigationItem* visible_item =
+      [[session_controller_ visibleEntry] navigationItem];
+  ASSERT_TRUE(visible_item);
+  EXPECT_EQ("http://www.example.com/0", visible_item->GetURL().spec());
+}
+
+// Tests that visible URL is not the same as pending URL if it was
+// renderer-initiated.
+TEST_F(CRWSessionControllerTest,
+       VisibleEntryWithSingleRendererInitiatedPendingEntry) {
+  [session_controller_ addPendingEntry:GURL("http://www.example.com/0")
+                              referrer:MakeReferrer("http://www.example.com/a")
+                            transition:ui::PAGE_TRANSITION_LINK
+                     rendererInitiated:YES];
+  web::NavigationItem* visible_item =
+      [[session_controller_ visibleEntry] navigationItem];
+  ASSERT_FALSE(visible_item);
+}
+
+// Tests that visible URL is not the same as pending URL if it was
+// renderer-initiated and there is a committed entry.
+TEST_F(CRWSessionControllerTest,
+       VisibleEntryWithCommittedAndRendererInitiatedPendingEntry) {
+  [session_controller_ addPendingEntry:GURL("http://www.example.com")
+                              referrer:MakeReferrer("http://www.example.com/a")
+                            transition:ui::PAGE_TRANSITION_LINK
+                     rendererInitiated:YES];
+  [session_controller_ commitPendingEntry];
+  [session_controller_ addPendingEntry:GURL("http://www.example.com/0")
+                              referrer:MakeReferrer("http://www.example.com/b")
+                            transition:ui::PAGE_TRANSITION_LINK
+                     rendererInitiated:YES];
+  web::NavigationItem* visible_item =
+      [[session_controller_ visibleEntry] navigationItem];
+  ASSERT_TRUE(visible_item);
+  EXPECT_EQ("http://www.example.com/", visible_item->GetURL().spec());
 }
 
 }  // anonymous namespace
