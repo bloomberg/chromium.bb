@@ -189,12 +189,6 @@ TestGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
   return result;
 }
 
-gfx::GpuMemoryBuffer*
-TestGpuMemoryBufferManager::GpuMemoryBufferFromClientBuffer(
-    ClientBuffer buffer) {
-  return reinterpret_cast<gfx::GpuMemoryBuffer*>(buffer);
-}
-
 void TestGpuMemoryBufferManager::SetDestructionSyncToken(
     gfx::GpuMemoryBuffer* buffer,
     const gpu::SyncToken& sync_token) {}

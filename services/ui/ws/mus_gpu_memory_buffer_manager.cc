@@ -60,12 +60,6 @@ MusGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
   return nullptr;
 }
 
-gfx::GpuMemoryBuffer*
-MusGpuMemoryBufferManager::GpuMemoryBufferFromClientBuffer(
-    ClientBuffer buffer) {
-  return gpu::GpuMemoryBufferImpl::FromClientBuffer(buffer);
-}
-
 void MusGpuMemoryBufferManager::SetDestructionSyncToken(
     gfx::GpuMemoryBuffer* buffer,
     const gpu::SyncToken& sync_token) {

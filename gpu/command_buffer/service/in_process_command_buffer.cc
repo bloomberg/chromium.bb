@@ -678,7 +678,7 @@ int32_t InProcessCommandBuffer::CreateImage(ClientBuffer buffer,
 
   DCHECK(gpu_memory_buffer_manager_);
   gfx::GpuMemoryBuffer* gpu_memory_buffer =
-      gpu_memory_buffer_manager_->GpuMemoryBufferFromClientBuffer(buffer);
+      reinterpret_cast<gfx::GpuMemoryBuffer*>(buffer);
   DCHECK(gpu_memory_buffer);
 
   int32_t new_id = next_image_id_.GetNext();

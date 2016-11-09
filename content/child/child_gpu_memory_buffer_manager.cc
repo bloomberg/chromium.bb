@@ -77,12 +77,6 @@ ChildGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
   return nullptr;
 }
 
-gfx::GpuMemoryBuffer*
-ChildGpuMemoryBufferManager::GpuMemoryBufferFromClientBuffer(
-    ClientBuffer buffer) {
-  return gpu::GpuMemoryBufferImpl::FromClientBuffer(buffer);
-}
-
 void ChildGpuMemoryBufferManager::SetDestructionSyncToken(
     gfx::GpuMemoryBuffer* buffer,
     const gpu::SyncToken& sync_token) {

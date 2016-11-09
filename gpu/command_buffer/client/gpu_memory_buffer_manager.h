@@ -33,11 +33,6 @@ class GPU_EXPORT GpuMemoryBufferManager {
       const gfx::Size& size,
       gfx::BufferFormat format) = 0;
 
-  // Returns a GpuMemoryBuffer instance given a ClientBuffer. Returns NULL on
-  // failure.
-  virtual gfx::GpuMemoryBuffer* GpuMemoryBufferFromClientBuffer(
-      ClientBuffer buffer) = 0;
-
   // Associates destruction sync point with |buffer|.
   virtual void SetDestructionSyncToken(gfx::GpuMemoryBuffer* buffer,
                                        const gpu::SyncToken& sync_token) = 0;

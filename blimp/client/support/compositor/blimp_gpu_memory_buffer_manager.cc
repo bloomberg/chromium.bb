@@ -150,12 +150,6 @@ BlimpGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
       handle.offset, handle.stride));
 }
 
-gfx::GpuMemoryBuffer*
-BlimpGpuMemoryBufferManager::GpuMemoryBufferFromClientBuffer(
-    ClientBuffer buffer) {
-  return reinterpret_cast<gfx::GpuMemoryBuffer*>(buffer);
-}
-
 void BlimpGpuMemoryBufferManager::SetDestructionSyncToken(
     gfx::GpuMemoryBuffer* buffer,
     const gpu::SyncToken& sync_token) {

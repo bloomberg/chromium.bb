@@ -60,12 +60,6 @@ std::unique_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImpl::CreateFromHandle(
   }
 }
 
-// static
-GpuMemoryBufferImpl* GpuMemoryBufferImpl::FromClientBuffer(
-    ClientBuffer buffer) {
-  return reinterpret_cast<GpuMemoryBufferImpl*>(buffer);
-}
-
 gfx::Size GpuMemoryBufferImpl::GetSize() const {
   return size_;
 }

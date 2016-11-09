@@ -291,12 +291,6 @@ void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForChildProcess(
       id, size, format, child_process_handle));
 }
 
-gfx::GpuMemoryBuffer*
-BrowserGpuMemoryBufferManager::GpuMemoryBufferFromClientBuffer(
-    ClientBuffer buffer) {
-  return gpu::GpuMemoryBufferImpl::FromClientBuffer(buffer);
-}
-
 void BrowserGpuMemoryBufferManager::SetDestructionSyncToken(
     gfx::GpuMemoryBuffer* buffer,
     const gpu::SyncToken& sync_token) {

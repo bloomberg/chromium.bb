@@ -34,9 +34,6 @@ class GPU_EXPORT GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
       gfx::BufferUsage usage,
       const DestructionCallback& callback);
 
-  // Type-checking upcast routine. Returns an NULL on failure.
-  static GpuMemoryBufferImpl* FromClientBuffer(ClientBuffer buffer);
-
   // Overridden from gfx::GpuMemoryBuffer:
   gfx::Size GetSize() const override;
   gfx::BufferFormat GetFormat() const override;

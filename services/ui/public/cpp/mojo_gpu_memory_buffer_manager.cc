@@ -126,12 +126,6 @@ MojoGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
   return nullptr;
 }
 
-gfx::GpuMemoryBuffer*
-MojoGpuMemoryBufferManager::GpuMemoryBufferFromClientBuffer(
-    ClientBuffer buffer) {
-  return gpu::GpuMemoryBufferImpl::FromClientBuffer(buffer);
-}
-
 void MojoGpuMemoryBufferManager::SetDestructionSyncToken(
     gfx::GpuMemoryBuffer* buffer,
     const gpu::SyncToken& sync_token) {
