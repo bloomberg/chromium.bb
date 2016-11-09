@@ -99,6 +99,10 @@ class DataTypeManagerImpl : public DataTypeManager,
   // high priority to low priority.
   TypeSetPriorityList PrioritizeTypes(const ModelTypeSet& types);
 
+  // Update unready state of types in data_type_status_table_ to match value of
+  // DataTypeController::ReadyForStart().
+  void UpdateUnreadyTypeErrors(const ModelTypeSet& desired_types);
+
   // Post a task to reconfigure when no downloading or association are running.
   void ProcessReconfigure();
 

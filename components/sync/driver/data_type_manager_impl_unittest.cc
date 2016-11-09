@@ -1334,6 +1334,34 @@ TEST_F(SyncDataTypeManagerImplTest, UnreadyType) {
   EXPECT_TRUE(configurer_.activated_types().Empty());
 }
 
+// Tests that unready types are not started after ResetDataTypeErrors and
+// reconfiguration.
+TEST_F(SyncDataTypeManagerImplTest, UnreadyTypeResetReconfigure) {
+  AddController(BOOKMARKS);
+  GetController(BOOKMARKS)->SetReadyForStart(false);
+
+  // Bookmarks is never started due to being unready.
+  SetConfigureStartExpectation();
+  SetConfigureDoneExpectation(
+      DataTypeManager::OK,
+      BuildStatusTable(ModelTypeSet(), ModelTypeSet(), ModelTypeSet(BOOKMARKS),
+                       ModelTypeSet()));
+  Configure(dtm_.get(), ModelTypeSet(BOOKMARKS));
+  // Second Configure sets a flag to perform reconfiguration after the first one
+  // is done.
+  Configure(dtm_.get(), ModelTypeSet(BOOKMARKS));
+
+  // Reset errors before triggering reconfiguration.
+  dtm_->ResetDataTypeErrors();
+
+  // Reconfiguration should update unready errors. Bookmarks shouldn't start.
+  FinishDownload(*dtm_, ModelTypeSet(), ModelTypeSet());
+  FinishDownload(*dtm_, ModelTypeSet(), ModelTypeSet());
+  EXPECT_EQ(DataTypeController::NOT_RUNNING, GetController(BOOKMARKS)->state());
+  EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+  EXPECT_EQ(0U, configurer_.activated_types().Size());
+}
+
 TEST_F(SyncDataTypeManagerImplTest, ModelLoadError) {
   AddController(BOOKMARKS);
   GetController(BOOKMARKS)->SetModelLoadError(
