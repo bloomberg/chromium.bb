@@ -381,12 +381,12 @@ static const arg_def_t lossless =
     ARG_DEF(NULL, "lossless", 1, "Lossless mode (0: false (default), 1: true)");
 #if CONFIG_AOM_QM
 static const arg_def_t enable_qm =
-    ARG_DEF(NULL, "enable_qm", 1,
+    ARG_DEF(NULL, "enable-qm", 1,
             "Enable quantisation matrices (0: false (default), 1: true)");
 static const arg_def_t qm_min = ARG_DEF(
-    NULL, "qm_min", 1, "Min quant matrix flatness (0..15), default is 8");
+    NULL, "qm-min", 1, "Min quant matrix flatness (0..15), default is 8");
 static const arg_def_t qm_max = ARG_DEF(
-    NULL, "qm_max", 1, "Max quant matrix flatness (0..15), default is 16");
+    NULL, "qm-max", 1, "Max quant matrix flatness (0..15), default is 16");
 #endif
 #if CONFIG_TILE_GROUPS
 static const arg_def_t num_tg = ARG_DEF(
