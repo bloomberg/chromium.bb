@@ -70,11 +70,17 @@ class ModelTypeStore {
   class WriteBatch {
    public:
     // Creates a MetadataChangeList that will accumulate metadata changes and
-    // can later pass them to a WriteBatch via TransferChanges. Use this when
+    // can later be passed to a WriteBatch via TransferChanges. Use this when
     // you need a MetadataChangeList and do not have a WriteBatch in scope.
     static std::unique_ptr<MetadataChangeList> CreateMetadataChangeList();
 
     virtual ~WriteBatch();
+
+    // Write the given |value| for data with |id|.
+    void WriteData(const std::string& id, const std::string& value);
+
+    // Delete the record for data with |id|.
+    void DeleteData(const std::string& id);
 
     // Provides access to a MetadataChangeList that will pass its changes
     // directly into this WriteBatch. Use this when you need a
@@ -164,7 +170,12 @@ class ModelTypeStore {
   virtual void CommitWriteBatch(std::unique_ptr<WriteBatch> write_batch,
                                 const CallbackWithResult& callback) = 0;
 
-  // Write operations.
+ protected:
+  friend class AccumulatingMetadataChangeList;
+  friend class ModelTypeStoreImplTest;
+  friend class PassthroughMetadataChangeList;
+
+  // Write operations; access via WriteBatch.
   virtual void WriteData(WriteBatch* write_batch,
                          const std::string& id,
                          const std::string& value) = 0;

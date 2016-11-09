@@ -46,6 +46,9 @@ class ModelTypeStoreImpl : public ModelTypeStore, public base::NonThreadSafe {
   std::unique_ptr<WriteBatch> CreateWriteBatch() override;
   void CommitWriteBatch(std::unique_ptr<WriteBatch> write_batch,
                         const CallbackWithResult& callback) override;
+
+ protected:
+  // ModelTypeStore implementation.
   void WriteData(WriteBatch* write_batch,
                  const std::string& id,
                  const std::string& value) override;

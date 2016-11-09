@@ -69,7 +69,7 @@ class ModelTypeStoreImplTest : public testing::Test {
                         const std::string& key,
                         const std::string& data) {
     auto write_batch = store->CreateWriteBatch();
-    store->WriteData(write_batch.get(), key, data);
+    write_batch->WriteData(key, data);
     ModelTypeStore::Result result;
     store->CommitWriteBatch(std::move(write_batch),
                             base::Bind(&CaptureResult, &result));
@@ -94,6 +94,31 @@ class ModelTypeStoreImplTest : public testing::Test {
                                   const sync_pb::ModelTypeState& state) {
     auto write_batch = store->CreateWriteBatch();
     write_batch->GetMetadataChangeList()->UpdateModelTypeState(state);
+
+    ModelTypeStore::Result result;
+    store->CommitWriteBatch(std::move(write_batch),
+                            base::Bind(&CaptureResult, &result));
+    PumpLoop();
+    ASSERT_EQ(ModelTypeStore::Result::SUCCESS, result);
+  }
+
+  static void WriteRawMetadata(ModelTypeStore* store,
+                               const std::string& key,
+                               const std::string& raw_metadata) {
+    auto write_batch = store->CreateWriteBatch();
+    store->WriteMetadata(write_batch.get(), key, raw_metadata);
+
+    ModelTypeStore::Result result;
+    store->CommitWriteBatch(std::move(write_batch),
+                            base::Bind(&CaptureResult, &result));
+    PumpLoop();
+    ASSERT_EQ(ModelTypeStore::Result::SUCCESS, result);
+  }
+
+  static void WriteRawModelTypeState(ModelTypeStore* store,
+                                     const std::string& raw_model_type_state) {
+    auto write_batch = store->CreateWriteBatch();
+    store->WriteGlobalMetadata(write_batch.get(), raw_model_type_state);
 
     ModelTypeStore::Result result;
     store->CommitWriteBatch(std::move(write_batch),
@@ -236,7 +261,7 @@ TEST_F(ModelTypeStoreImplTest, MissingModelTypeState) {
   ModelTypeStore::Result result;
 
   auto write_batch = store()->CreateWriteBatch();
-  store()->DeleteGlobalMetadata(write_batch.get());
+  write_batch->GetMetadataChangeList()->ClearModelTypeState();
   store()->CommitWriteBatch(std::move(write_batch),
                             base::Bind(&CaptureResult, &result));
   PumpLoop();
@@ -258,13 +283,7 @@ TEST_F(ModelTypeStoreImplTest, CorruptModelTypeState) {
   WriteTestData();
 
   // Write a ModelTypeState that can't be parsed.
-  ModelTypeStore::Result result;
-  auto write_batch = store()->CreateWriteBatch();
-  store()->WriteGlobalMetadata(write_batch.get(), "unparseable");
-  store()->CommitWriteBatch(std::move(write_batch),
-                            base::Bind(&CaptureResult, &result));
-  PumpLoop();
-  ASSERT_EQ(ModelTypeStore::Result::SUCCESS, result);
+  WriteRawModelTypeState(store(), "unparseable");
 
   SyncError error;
   std::unique_ptr<MetadataBatch> metadata_batch;
@@ -282,13 +301,7 @@ TEST_F(ModelTypeStoreImplTest, CorruptEntityMetadata) {
   WriteTestData();
 
   // Write an EntityMetadata that can't be parsed.
-  ModelTypeStore::Result result;
-  auto write_batch = store()->CreateWriteBatch();
-  store()->WriteMetadata(write_batch.get(), "id", "unparseable");
-  store()->CommitWriteBatch(std::move(write_batch),
-                            base::Bind(&CaptureResult, &result));
-  PumpLoop();
-  ASSERT_EQ(ModelTypeStore::Result::SUCCESS, result);
+  WriteRawMetadata(store(), "id", "unparseable");
 
   SyncError error;
   std::unique_ptr<MetadataBatch> metadata_batch;

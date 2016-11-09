@@ -244,7 +244,7 @@ void DeviceInfoSyncBridge::DisableSync() {
   if (!all_data_.empty()) {
     std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
     for (const auto& kv : all_data_) {
-      store_->DeleteData(batch.get(), kv.first);
+      batch->DeleteData(kv.first);
     }
     store_->CommitWriteBatch(
         std::move(batch),
@@ -299,7 +299,7 @@ void DeviceInfoSyncBridge::StoreSpecifics(
     std::unique_ptr<DeviceInfoSpecifics> specifics,
     WriteBatch* batch) {
   const std::string guid = specifics->cache_guid();
-  store_->WriteData(batch, guid, specifics->SerializeAsString());
+  batch->WriteData(guid, specifics->SerializeAsString());
   all_data_[guid] = std::move(specifics);
 }
 
@@ -307,7 +307,7 @@ bool DeviceInfoSyncBridge::DeleteSpecifics(const std::string& guid,
                                            WriteBatch* batch) {
   ClientIdToSpecifics::const_iterator iter = all_data_.find(guid);
   if (iter != all_data_.end()) {
-    store_->DeleteData(batch, guid);
+    batch->DeleteData(guid);
     all_data_.erase(iter);
     return true;
   } else {

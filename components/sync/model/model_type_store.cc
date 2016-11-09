@@ -38,6 +38,15 @@ ModelTypeStore::WriteBatch::WriteBatch(ModelTypeStore* store) : store_(store) {}
 
 ModelTypeStore::WriteBatch::~WriteBatch() {}
 
+void ModelTypeStore::WriteBatch::WriteData(const std::string& id,
+                                           const std::string& value) {
+  store_->WriteData(this, id, value);
+}
+
+void ModelTypeStore::WriteBatch::DeleteData(const std::string& id) {
+  store_->DeleteData(this, id);
+}
+
 MetadataChangeList* ModelTypeStore::WriteBatch::GetMetadataChangeList() {
   if (!metadata_change_list_) {
     metadata_change_list_ =

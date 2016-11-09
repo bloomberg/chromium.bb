@@ -73,18 +73,6 @@ class MockModelTypeStore : public ModelTypeStore {
   void CommitWriteBatch(std::unique_ptr<WriteBatch> write_batch,
                         const CallbackWithResult& callback) override;
 
-  void WriteData(WriteBatch* write_batch,
-                 const std::string& id,
-                 const std::string& value) override;
-  void WriteMetadata(WriteBatch* write_batch,
-                     const std::string& id,
-                     const std::string& value) override;
-  void WriteGlobalMetadata(WriteBatch* write_batch,
-                           const std::string& value) override;
-  void DeleteData(WriteBatch* write_batch, const std::string& id) override;
-  void DeleteMetadata(WriteBatch* write_batch, const std::string& id) override;
-  void DeleteGlobalMetadata(WriteBatch* write_batch) override;
-
   // Register handler functions.
   void RegisterReadDataHandler(const ReadDataSignature& handler);
   void RegisterReadAllDataHandler(const ReadAllDataSignature& handler);
@@ -99,6 +87,20 @@ class MockModelTypeStore : public ModelTypeStore {
   void RegisterDeleteMetadataHandler(const DeleteRecordSignature& handler);
   void RegisterDeleteGlobalMetadataHandler(
       const DeleteGlobalMetadataSignature& handler);
+
+ protected:
+  // ModelTypeStore implementation.
+  void WriteData(WriteBatch* write_batch,
+                 const std::string& id,
+                 const std::string& value) override;
+  void WriteMetadata(WriteBatch* write_batch,
+                     const std::string& id,
+                     const std::string& value) override;
+  void WriteGlobalMetadata(WriteBatch* write_batch,
+                           const std::string& value) override;
+  void DeleteData(WriteBatch* write_batch, const std::string& id) override;
+  void DeleteMetadata(WriteBatch* write_batch, const std::string& id) override;
+  void DeleteGlobalMetadata(WriteBatch* write_batch) override;
 
  private:
   ReadDataSignature read_data_handler_;

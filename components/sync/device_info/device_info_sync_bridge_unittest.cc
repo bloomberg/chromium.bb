@@ -372,8 +372,7 @@ TEST_F(DeviceInfoSyncBridgeTest, GetClientTagEmpty) {
 TEST_F(DeviceInfoSyncBridgeTest, TestWithLocalData) {
   std::unique_ptr<WriteBatch> batch = store()->CreateWriteBatch();
   DeviceInfoSpecifics specifics = CreateSpecifics(1);
-  store()->WriteData(batch.get(), specifics.cache_guid(),
-                     specifics.SerializeAsString());
+  batch->WriteData(specifics.cache_guid(), specifics.SerializeAsString());
   store()->CommitWriteBatch(std::move(batch),
                             base::Bind(&VerifyResultIsSuccess));
 
@@ -388,7 +387,7 @@ TEST_F(DeviceInfoSyncBridgeTest, TestWithLocalMetadata) {
   std::unique_ptr<WriteBatch> batch = store()->CreateWriteBatch();
   ModelTypeState state;
   state.set_encryption_key_name("ekn");
-  store()->WriteGlobalMetadata(batch.get(), state.SerializeAsString());
+  batch->GetMetadataChangeList()->UpdateModelTypeState(state);
   store()->CommitWriteBatch(std::move(batch),
                             base::Bind(&VerifyResultIsSuccess));
   InitializeAndPump();
@@ -401,11 +400,10 @@ TEST_F(DeviceInfoSyncBridgeTest, TestWithLocalMetadata) {
 TEST_F(DeviceInfoSyncBridgeTest, TestWithLocalDataAndMetadata) {
   std::unique_ptr<WriteBatch> batch = store()->CreateWriteBatch();
   DeviceInfoSpecifics specifics = CreateSpecifics(1);
-  store()->WriteData(batch.get(), specifics.cache_guid(),
-                     specifics.SerializeAsString());
+  batch->WriteData(specifics.cache_guid(), specifics.SerializeAsString());
   ModelTypeState state;
   state.set_encryption_key_name("ekn");
-  store()->WriteGlobalMetadata(batch.get(), state.SerializeAsString());
+  batch->GetMetadataChangeList()->UpdateModelTypeState(state);
   store()->CommitWriteBatch(std::move(batch),
                             base::Bind(&VerifyResultIsSuccess));
 
@@ -424,12 +422,9 @@ TEST_F(DeviceInfoSyncBridgeTest, GetData) {
   DeviceInfoSpecifics specifics1 = CreateSpecifics(1);
   DeviceInfoSpecifics specifics2 = CreateSpecifics(2);
   DeviceInfoSpecifics specifics3 = CreateSpecifics(3);
-  store()->WriteData(batch.get(), specifics1.cache_guid(),
-                     specifics1.SerializeAsString());
-  store()->WriteData(batch.get(), specifics2.cache_guid(),
-                     specifics2.SerializeAsString());
-  store()->WriteData(batch.get(), specifics3.cache_guid(),
-                     specifics3.SerializeAsString());
+  batch->WriteData(specifics1.cache_guid(), specifics1.SerializeAsString());
+  batch->WriteData(specifics2.cache_guid(), specifics2.SerializeAsString());
+  batch->WriteData(specifics3.cache_guid(), specifics3.SerializeAsString());
   store()->CommitWriteBatch(std::move(batch),
                             base::Bind(&VerifyResultIsSuccess));
 
@@ -455,10 +450,8 @@ TEST_F(DeviceInfoSyncBridgeTest, GetAllData) {
   DeviceInfoSpecifics specifics2 = CreateSpecifics(2);
   const std::string& guid1 = specifics1.cache_guid();
   const std::string& guid2 = specifics2.cache_guid();
-  store()->WriteData(batch.get(), specifics1.cache_guid(),
-                     specifics1.SerializeAsString());
-  store()->WriteData(batch.get(), specifics2.cache_guid(),
-                     specifics2.SerializeAsString());
+  batch->WriteData(specifics1.cache_guid(), specifics1.SerializeAsString());
+  batch->WriteData(specifics2.cache_guid(), specifics2.SerializeAsString());
   store()->CommitWriteBatch(std::move(batch),
                             base::Bind(&VerifyResultIsSuccess));
 
@@ -599,10 +592,9 @@ TEST_F(DeviceInfoSyncBridgeTest, MergeWithData) {
   conflict_remote.set_cache_guid(conflict_guid);
 
   std::unique_ptr<WriteBatch> batch = store()->CreateWriteBatch();
-  store()->WriteData(batch.get(), unique_local.cache_guid(),
-                     unique_local.SerializeAsString());
-  store()->WriteData(batch.get(), conflict_local.cache_guid(),
-                     conflict_local.SerializeAsString());
+  batch->WriteData(unique_local.cache_guid(), unique_local.SerializeAsString());
+  batch->WriteData(conflict_local.cache_guid(),
+                   conflict_local.SerializeAsString());
   store()->CommitWriteBatch(std::move(batch),
                             base::Bind(&VerifyResultIsSuccess));
 
@@ -653,7 +645,7 @@ TEST_F(DeviceInfoSyncBridgeTest, MergeLocalGuid) {
   const std::string guid = provider_info->guid();
 
   std::unique_ptr<WriteBatch> batch = store()->CreateWriteBatch();
-  store()->WriteData(batch.get(), guid, specifics->SerializeAsString());
+  batch->WriteData(guid, specifics->SerializeAsString());
   store()->CommitWriteBatch(std::move(batch),
                             base::Bind(&VerifyResultIsSuccess));
 
