@@ -46,7 +46,7 @@ InspectorTest.collectTextContent = function(element, indent)
                 InspectorTest.addResult(indent + nodeOutput);
                 nodeOutput = "";
             }
-            if (!child.firstChild && child.className.indexOf("severity") == 0)
+            if (!child.firstChild && child.classList.contains("severity"))
                 nodeOutput = "[" + child.className + "] ";
             else
                 InspectorTest.collectTextContent(child, indent + " ");

@@ -4,7 +4,7 @@ Tests audit formatters performing evals on content scripts in WebInspector Exten
 Running tests...
 RUNNING TEST: extension_testAudits
     Extension audits
-        [severity warning] Rule with details subtree (1)
+        [spritesheet-smallicons smallicon-orange-ball severity] Rule with details subtree (1)
           Test Formatters
                  main world object
                    whereAmI
