@@ -25,8 +25,8 @@ import java.util.Iterator;
  * Controls the interactions with Android framework related to printing.
  *
  * This class is singleton, since at any point at most one printing dialog can exist. Also, since
- * this dialog is modal, user can't interact with browser unless s/he closes the dialog or presses
- * print button. The singleton object lives in UI thread. Interaction with the native side is
+ * this dialog is modal, user can't interact with the browser unless they close the dialog or press
+ * the print button. The singleton object lives in UI thread. Interaction with the native side is
  * carried through PrintingContext class.
  */
 @TargetApi(Build.VERSION_CODES.KITKAT)
