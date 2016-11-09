@@ -30,8 +30,6 @@
 #include "extensions/browser/view_type_utils.h"
 #include "net/base/net_errors.h"
 
-using content::ResourceType;
-
 namespace GetFrame = extensions::api::web_navigation::GetFrame;
 namespace GetAllFrames = extensions::api::web_navigation::GetAllFrames;
 
