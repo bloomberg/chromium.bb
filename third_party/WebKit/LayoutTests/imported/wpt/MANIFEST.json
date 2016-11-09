@@ -125,6 +125,36 @@
             "url": "/fullscreen/model/remove-single-manual.html"
           }
         ],
+        "html/browsers/history/the-location-interface/non-automated/manual_click_assign_during_load-manual.html": [
+          {
+            "path": "html/browsers/history/the-location-interface/non-automated/manual_click_assign_during_load-manual.html",
+            "url": "/html/browsers/history/the-location-interface/non-automated/manual_click_assign_during_load-manual.html"
+          }
+        ],
+        "html/browsers/history/the-location-interface/non-automated/manual_click_location_replace_during_load-manual.html": [
+          {
+            "path": "html/browsers/history/the-location-interface/non-automated/manual_click_location_replace_during_load-manual.html",
+            "url": "/html/browsers/history/the-location-interface/non-automated/manual_click_location_replace_during_load-manual.html"
+          }
+        ],
+        "html/browsers/history/the-location-interface/non-automated/manual_click_replace_during_load-manual.html": [
+          {
+            "path": "html/browsers/history/the-location-interface/non-automated/manual_click_replace_during_load-manual.html",
+            "url": "/html/browsers/history/the-location-interface/non-automated/manual_click_replace_during_load-manual.html"
+          }
+        ],
+        "html/browsers/history/the-location-interface/non-automated/manual_form_submit_assign_during_load-manual.html": [
+          {
+            "path": "html/browsers/history/the-location-interface/non-automated/manual_form_submit_assign_during_load-manual.html",
+            "url": "/html/browsers/history/the-location-interface/non-automated/manual_form_submit_assign_during_load-manual.html"
+          }
+        ],
+        "html/browsers/history/the-location-interface/non-automated/reload_in_resize-manual.html": [
+          {
+            "path": "html/browsers/history/the-location-interface/non-automated/reload_in_resize-manual.html",
+            "url": "/html/browsers/history/the-location-interface/non-automated/reload_in_resize-manual.html"
+          }
+        ],
         "html/browsers/the-window-object/the-windowproxy-object/test-window-proxy-locationbar-manual.html": [
           {
             "path": "html/browsers/the-window-object/the-windowproxy-object/test-window-proxy-locationbar-manual.html",
@@ -5332,11 +5362,11 @@
         "console/console-is-a-namespace.any.js": [
           {
             "path": "console/console-is-a-namespace.any.js",
-            "url": "/console/console-is-a-namespace.any.html"
+            "url": "/console/console-is-a-namespace.any.worker.html"
           },
           {
             "path": "console/console-is-a-namespace.any.js",
-            "url": "/console/console-is-a-namespace.any.worker.html"
+            "url": "/console/console-is-a-namespace.any.html"
           }
         ],
         "custom-elements/CustomElementRegistry.html": [
@@ -6440,6 +6470,12 @@
             "url": "/dom/nodes/Document-createComment.html"
           }
         ],
+        "dom/nodes/Document-createElement-namespace.html": [
+          {
+            "path": "dom/nodes/Document-createElement-namespace.html",
+            "url": "/dom/nodes/Document-createElement-namespace.html"
+          }
+        ],
         "dom/nodes/Document-createElement.html": [
           {
             "path": "dom/nodes/Document-createElement.html",
@@ -6656,6 +6692,12 @@
             "url": "/dom/nodes/Element-getElementsByClassName.html"
           }
         ],
+        "dom/nodes/Element-getElementsByTagName-change-document-HTMLNess.html": [
+          {
+            "path": "dom/nodes/Element-getElementsByTagName-change-document-HTMLNess.html",
+            "url": "/dom/nodes/Element-getElementsByTagName-change-document-HTMLNess.html"
+          }
+        ],
         "dom/nodes/Element-getElementsByTagName.html": [
           {
             "path": "dom/nodes/Element-getElementsByTagName.html",
@@ -6848,6 +6890,12 @@
             "url": "/dom/nodes/Node-isConnected.html"
           }
         ],
+        "dom/nodes/Node-isEqualNode-xhtml.xhtml": [
+          {
+            "path": "dom/nodes/Node-isEqualNode-xhtml.xhtml",
+            "url": "/dom/nodes/Node-isEqualNode-xhtml.xhtml"
+          }
+        ],
         "dom/nodes/Node-isEqualNode.html": [
           {
             "path": "dom/nodes/Node-isEqualNode.html",
@@ -6902,6 +6950,12 @@
             "url": "/dom/nodes/Node-parentElement.html"
           }
         ],
+        "dom/nodes/Node-parentNode.html": [
+          {
+            "path": "dom/nodes/Node-parentNode.html",
+            "url": "/dom/nodes/Node-parentNode.html"
+          }
+        ],
         "dom/nodes/Node-properties.html": [
           {
             "path": "dom/nodes/Node-properties.html",
@@ -6942,6 +6996,18 @@
           {
             "path": "dom/nodes/ParentNode-prepend.html",
             "url": "/dom/nodes/ParentNode-prepend.html"
+          }
+        ],
+        "dom/nodes/ParentNode-querySelector-All-xht.xht": [
+          {
+            "path": "dom/nodes/ParentNode-querySelector-All-xht.xht",
+            "url": "/dom/nodes/ParentNode-querySelector-All-xht.xht"
+          }
+        ],
+        "dom/nodes/ParentNode-querySelector-All.html": [
+          {
+            "path": "dom/nodes/ParentNode-querySelector-All.html",
+            "url": "/dom/nodes/ParentNode-querySelector-All.html"
           }
         ],
         "dom/nodes/ProcessingInstruction-escapes-1.xhtml": [
@@ -7172,6 +7238,12 @@
             "url": "/dom/nodes/getElementsByClassName-30.htm"
           }
         ],
+        "dom/nodes/getElementsByClassName-31.htm": [
+          {
+            "path": "dom/nodes/getElementsByClassName-31.htm",
+            "url": "/dom/nodes/getElementsByClassName-31.htm"
+          }
+        ],
         "dom/nodes/insert-adjacent.html": [
           {
             "path": "dom/nodes/insert-adjacent.html",
@@ -7201,6 +7273,13 @@
             "path": "dom/ranges/Range-attributes.html",
             "timeout": "long",
             "url": "/dom/ranges/Range-attributes.html"
+          }
+        ],
+        "dom/ranges/Range-cloneContents.html": [
+          {
+            "path": "dom/ranges/Range-cloneContents.html",
+            "timeout": "long",
+            "url": "/dom/ranges/Range-cloneContents.html"
           }
         ],
         "dom/ranges/Range-cloneRange.html": [
@@ -7257,11 +7336,32 @@
             "url": "/dom/ranges/Range-constructor.html"
           }
         ],
+        "dom/ranges/Range-deleteContents.html": [
+          {
+            "path": "dom/ranges/Range-deleteContents.html",
+            "timeout": "long",
+            "url": "/dom/ranges/Range-deleteContents.html"
+          }
+        ],
         "dom/ranges/Range-detach.html": [
           {
             "path": "dom/ranges/Range-detach.html",
             "timeout": "long",
             "url": "/dom/ranges/Range-detach.html"
+          }
+        ],
+        "dom/ranges/Range-extractContents.html": [
+          {
+            "path": "dom/ranges/Range-extractContents.html",
+            "timeout": "long",
+            "url": "/dom/ranges/Range-extractContents.html"
+          }
+        ],
+        "dom/ranges/Range-insertNode.html": [
+          {
+            "path": "dom/ranges/Range-insertNode.html",
+            "timeout": "long",
+            "url": "/dom/ranges/Range-insertNode.html"
           }
         ],
         "dom/ranges/Range-intersectsNode-binding.html": [
@@ -7373,6 +7473,13 @@
           {
             "path": "dom/ranges/Range-stringifier.html",
             "url": "/dom/ranges/Range-stringifier.html"
+          }
+        ],
+        "dom/ranges/Range-surroundContents.html": [
+          {
+            "path": "dom/ranges/Range-surroundContents.html",
+            "timeout": "long",
+            "url": "/dom/ranges/Range-surroundContents.html"
           }
         ],
         "dom/traversal/NodeFilter-constants.html": [
@@ -7649,10 +7756,40 @@
             "url": "/html-imports/html-link-element/import-attribute.html"
           }
         ],
+        "html/browsers/browsing-the-web/history-traversal/001.html": [
+          {
+            "path": "html/browsers/browsing-the-web/history-traversal/001.html",
+            "url": "/html/browsers/browsing-the-web/history-traversal/001.html"
+          }
+        ],
         "html/browsers/browsing-the-web/history-traversal/PopStateEvent.html": [
           {
             "path": "html/browsers/browsing-the-web/history-traversal/PopStateEvent.html",
             "url": "/html/browsers/browsing-the-web/history-traversal/PopStateEvent.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/history-traversal/browsing_context_name.html": [
+          {
+            "path": "html/browsers/browsing-the-web/history-traversal/browsing_context_name.html",
+            "url": "/html/browsers/browsing-the-web/history-traversal/browsing_context_name.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/history-traversal/browsing_context_name_cross_origin.html": [
+          {
+            "path": "html/browsers/browsing-the-web/history-traversal/browsing_context_name_cross_origin.html",
+            "url": "/html/browsers/browsing-the-web/history-traversal/browsing_context_name_cross_origin.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/history-traversal/browsing_context_name_cross_origin_2.html": [
+          {
+            "path": "html/browsers/browsing-the-web/history-traversal/browsing_context_name_cross_origin_2.html",
+            "url": "/html/browsers/browsing-the-web/history-traversal/browsing_context_name_cross_origin_2.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/history-traversal/browsing_context_name_cross_origin_3.html": [
+          {
+            "path": "html/browsers/browsing-the-web/history-traversal/browsing_context_name_cross_origin_3.html",
+            "url": "/html/browsers/browsing-the-web/history-traversal/browsing_context_name_cross_origin_3.html"
           }
         ],
         "html/browsers/browsing-the-web/history-traversal/events.html": [
@@ -7689,6 +7826,144 @@
           {
             "path": "html/browsers/browsing-the-web/history-traversal/unset_context_name-1.html",
             "url": "/html/browsers/browsing-the-web/history-traversal/unset_context_name-1.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/navigating-across-documents/001.html": [
+          {
+            "path": "html/browsers/browsing-the-web/navigating-across-documents/001.html",
+            "url": "/html/browsers/browsing-the-web/navigating-across-documents/001.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/navigating-across-documents/002.html": [
+          {
+            "path": "html/browsers/browsing-the-web/navigating-across-documents/002.html",
+            "url": "/html/browsers/browsing-the-web/navigating-across-documents/002.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/navigating-across-documents/003.html": [
+          {
+            "path": "html/browsers/browsing-the-web/navigating-across-documents/003.html",
+            "url": "/html/browsers/browsing-the-web/navigating-across-documents/003.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/navigating-across-documents/004.html": [
+          {
+            "path": "html/browsers/browsing-the-web/navigating-across-documents/004.html",
+            "url": "/html/browsers/browsing-the-web/navigating-across-documents/004.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/navigating-across-documents/005.html": [
+          {
+            "path": "html/browsers/browsing-the-web/navigating-across-documents/005.html",
+            "url": "/html/browsers/browsing-the-web/navigating-across-documents/005.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/navigating-across-documents/006.html": [
+          {
+            "path": "html/browsers/browsing-the-web/navigating-across-documents/006.html",
+            "url": "/html/browsers/browsing-the-web/navigating-across-documents/006.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/navigating-across-documents/007.html": [
+          {
+            "path": "html/browsers/browsing-the-web/navigating-across-documents/007.html",
+            "url": "/html/browsers/browsing-the-web/navigating-across-documents/007.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/navigating-across-documents/011.html": [
+          {
+            "path": "html/browsers/browsing-the-web/navigating-across-documents/011.html",
+            "url": "/html/browsers/browsing-the-web/navigating-across-documents/011.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/navigating-across-documents/012.html": [
+          {
+            "path": "html/browsers/browsing-the-web/navigating-across-documents/012.html",
+            "url": "/html/browsers/browsing-the-web/navigating-across-documents/012.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/navigating-across-documents/013.html": [
+          {
+            "path": "html/browsers/browsing-the-web/navigating-across-documents/013.html",
+            "url": "/html/browsers/browsing-the-web/navigating-across-documents/013.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/navigating-across-documents/014.html": [
+          {
+            "path": "html/browsers/browsing-the-web/navigating-across-documents/014.html",
+            "url": "/html/browsers/browsing-the-web/navigating-across-documents/014.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/navigating-across-documents/015.html": [
+          {
+            "path": "html/browsers/browsing-the-web/navigating-across-documents/015.html",
+            "url": "/html/browsers/browsing-the-web/navigating-across-documents/015.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/navigating-across-documents/child_navigates_parent_location.html": [
+          {
+            "path": "html/browsers/browsing-the-web/navigating-across-documents/child_navigates_parent_location.html",
+            "url": "/html/browsers/browsing-the-web/navigating-across-documents/child_navigates_parent_location.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/navigating-across-documents/child_navigates_parent_submit.html": [
+          {
+            "path": "html/browsers/browsing-the-web/navigating-across-documents/child_navigates_parent_submit.html",
+            "url": "/html/browsers/browsing-the-web/navigating-across-documents/child_navigates_parent_submit.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/navigating-across-documents/empty_fragment.html": [
+          {
+            "path": "html/browsers/browsing-the-web/navigating-across-documents/empty_fragment.html",
+            "url": "/html/browsers/browsing-the-web/navigating-across-documents/empty_fragment.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/navigating-across-documents/javascript-url-query-fragment-components.html": [
+          {
+            "path": "html/browsers/browsing-the-web/navigating-across-documents/javascript-url-query-fragment-components.html",
+            "url": "/html/browsers/browsing-the-web/navigating-across-documents/javascript-url-query-fragment-components.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/navigating-across-documents/javascript-url-return-value-handling.html": [
+          {
+            "path": "html/browsers/browsing-the-web/navigating-across-documents/javascript-url-return-value-handling.html",
+            "url": "/html/browsers/browsing-the-web/navigating-across-documents/javascript-url-return-value-handling.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/navigating-across-documents/navigation_unload_data_url.html": [
+          {
+            "path": "html/browsers/browsing-the-web/navigating-across-documents/navigation_unload_data_url.html",
+            "url": "/html/browsers/browsing-the-web/navigating-across-documents/navigation_unload_data_url.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/navigating-across-documents/navigation_unload_same_origin.html": [
+          {
+            "path": "html/browsers/browsing-the-web/navigating-across-documents/navigation_unload_same_origin.html",
+            "url": "/html/browsers/browsing-the-web/navigating-across-documents/navigation_unload_same_origin.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/navigating-across-documents/source/navigate-child-function-parent.html": [
+          {
+            "path": "html/browsers/browsing-the-web/navigating-across-documents/source/navigate-child-function-parent.html",
+            "url": "/html/browsers/browsing-the-web/navigating-across-documents/source/navigate-child-function-parent.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/navigating-across-documents/source/navigate-child-function-src.html": [
+          {
+            "path": "html/browsers/browsing-the-web/navigating-across-documents/source/navigate-child-function-src.html",
+            "url": "/html/browsers/browsing-the-web/navigating-across-documents/source/navigate-child-function-src.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/navigating-across-documents/source/navigate-child-function.html": [
+          {
+            "path": "html/browsers/browsing-the-web/navigating-across-documents/source/navigate-child-function.html",
+            "url": "/html/browsers/browsing-the-web/navigating-across-documents/source/navigate-child-function.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/navigating-across-documents/source/navigate-child-src-about-blank.html": [
+          {
+            "path": "html/browsers/browsing-the-web/navigating-across-documents/source/navigate-child-src-about-blank.html",
+            "url": "/html/browsers/browsing-the-web/navigating-across-documents/source/navigate-child-src-about-blank.html"
           }
         ],
         "html/browsers/browsing-the-web/read-media/pageload-image.html": [
@@ -7774,6 +8049,126 @@
             "url": "/html/browsers/browsing-the-web/scroll-to-fragid/scroll-to-top.html"
           }
         ],
+        "html/browsers/browsing-the-web/unloading-documents/001.html": [
+          {
+            "path": "html/browsers/browsing-the-web/unloading-documents/001.html",
+            "url": "/html/browsers/browsing-the-web/unloading-documents/001.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/unloading-documents/002.html": [
+          {
+            "path": "html/browsers/browsing-the-web/unloading-documents/002.html",
+            "url": "/html/browsers/browsing-the-web/unloading-documents/002.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/unloading-documents/003.html": [
+          {
+            "path": "html/browsers/browsing-the-web/unloading-documents/003.html",
+            "url": "/html/browsers/browsing-the-web/unloading-documents/003.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/unloading-documents/004.html": [
+          {
+            "path": "html/browsers/browsing-the-web/unloading-documents/004.html",
+            "url": "/html/browsers/browsing-the-web/unloading-documents/004.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/unloading-documents/005.html": [
+          {
+            "path": "html/browsers/browsing-the-web/unloading-documents/005.html",
+            "url": "/html/browsers/browsing-the-web/unloading-documents/005.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/unloading-documents/beforeunload-on-history-back.html": [
+          {
+            "path": "html/browsers/browsing-the-web/unloading-documents/beforeunload-on-history-back.html",
+            "url": "/html/browsers/browsing-the-web/unloading-documents/beforeunload-on-history-back.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/unloading-documents/beforeunload-on-navigation-of-parent.html": [
+          {
+            "path": "html/browsers/browsing-the-web/unloading-documents/beforeunload-on-navigation-of-parent.html",
+            "url": "/html/browsers/browsing-the-web/unloading-documents/beforeunload-on-navigation-of-parent.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/unloading-documents/navigation-within-beforeunload.html": [
+          {
+            "path": "html/browsers/browsing-the-web/unloading-documents/navigation-within-beforeunload.html",
+            "url": "/html/browsers/browsing-the-web/unloading-documents/navigation-within-beforeunload.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/unloading-documents/pagehide-on-history-forward.html": [
+          {
+            "path": "html/browsers/browsing-the-web/unloading-documents/pagehide-on-history-forward.html",
+            "url": "/html/browsers/browsing-the-web/unloading-documents/pagehide-on-history-forward.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/unloading-documents/prompt/001.html": [
+          {
+            "path": "html/browsers/browsing-the-web/unloading-documents/prompt/001.html",
+            "url": "/html/browsers/browsing-the-web/unloading-documents/prompt/001.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/unloading-documents/prompt/002.html": [
+          {
+            "path": "html/browsers/browsing-the-web/unloading-documents/prompt/002.html",
+            "url": "/html/browsers/browsing-the-web/unloading-documents/prompt/002.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/unloading-documents/prompt/003.html": [
+          {
+            "path": "html/browsers/browsing-the-web/unloading-documents/prompt/003.html",
+            "url": "/html/browsers/browsing-the-web/unloading-documents/prompt/003.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/unloading-documents/unload/001.html": [
+          {
+            "path": "html/browsers/browsing-the-web/unloading-documents/unload/001.html",
+            "url": "/html/browsers/browsing-the-web/unloading-documents/unload/001.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/unloading-documents/unload/002.html": [
+          {
+            "path": "html/browsers/browsing-the-web/unloading-documents/unload/002.html",
+            "url": "/html/browsers/browsing-the-web/unloading-documents/unload/002.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/unloading-documents/unload/003.html": [
+          {
+            "path": "html/browsers/browsing-the-web/unloading-documents/unload/003.html",
+            "url": "/html/browsers/browsing-the-web/unloading-documents/unload/003.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/unloading-documents/unload/004.html": [
+          {
+            "path": "html/browsers/browsing-the-web/unloading-documents/unload/004.html",
+            "url": "/html/browsers/browsing-the-web/unloading-documents/unload/004.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/unloading-documents/unload/007.html": [
+          {
+            "path": "html/browsers/browsing-the-web/unloading-documents/unload/007.html",
+            "url": "/html/browsers/browsing-the-web/unloading-documents/unload/007.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/unloading-documents/unload/008.html": [
+          {
+            "path": "html/browsers/browsing-the-web/unloading-documents/unload/008.html",
+            "url": "/html/browsers/browsing-the-web/unloading-documents/unload/008.html"
+          }
+        ],
+        "html/browsers/browsing-the-web/unloading-documents/unload/009.html": [
+          {
+            "path": "html/browsers/browsing-the-web/unloading-documents/unload/009.html",
+            "url": "/html/browsers/browsing-the-web/unloading-documents/unload/009.html"
+          }
+        ],
+        "html/browsers/history/joint-session-history/joint-session-history-only-fully-active.html": [
+          {
+            "path": "html/browsers/history/joint-session-history/joint-session-history-only-fully-active.html",
+            "url": "/html/browsers/history/joint-session-history/joint-session-history-only-fully-active.html"
+          }
+        ],
         "html/browsers/history/the-history-interface/004.html": [
           {
             "path": "html/browsers/history/the-history-interface/004.html",
@@ -7797,6 +8192,18 @@
             "path": "html/browsers/history/the-history-interface/007.html",
             "timeout": "long",
             "url": "/html/browsers/history/the-history-interface/007.html"
+          }
+        ],
+        "html/browsers/history/the-history-interface/009.html": [
+          {
+            "path": "html/browsers/history/the-history-interface/009.html",
+            "url": "/html/browsers/history/the-history-interface/009.html"
+          }
+        ],
+        "html/browsers/history/the-history-interface/010.html": [
+          {
+            "path": "html/browsers/history/the-history-interface/010.html",
+            "url": "/html/browsers/history/the-history-interface/010.html"
           }
         ],
         "html/browsers/history/the-history-interface/011.html": [
@@ -7859,10 +8266,22 @@
             "url": "/html/browsers/history/the-history-interface/history_back.html"
           }
         ],
+        "html/browsers/history/the-history-interface/history_back_1.html": [
+          {
+            "path": "html/browsers/history/the-history-interface/history_back_1.html",
+            "url": "/html/browsers/history/the-history-interface/history_back_1.html"
+          }
+        ],
         "html/browsers/history/the-history-interface/history_forward.html": [
           {
             "path": "html/browsers/history/the-history-interface/history_forward.html",
             "url": "/html/browsers/history/the-history-interface/history_forward.html"
+          }
+        ],
+        "html/browsers/history/the-history-interface/history_forward_1.html": [
+          {
+            "path": "html/browsers/history/the-history-interface/history_forward_1.html",
+            "url": "/html/browsers/history/the-history-interface/history_forward_1.html"
           }
         ],
         "html/browsers/history/the-history-interface/history_go_minus.html": [
@@ -7871,10 +8290,28 @@
             "url": "/html/browsers/history/the-history-interface/history_go_minus.html"
           }
         ],
+        "html/browsers/history/the-history-interface/history_go_no_argument.html": [
+          {
+            "path": "html/browsers/history/the-history-interface/history_go_no_argument.html",
+            "url": "/html/browsers/history/the-history-interface/history_go_no_argument.html"
+          }
+        ],
         "html/browsers/history/the-history-interface/history_go_plus.html": [
           {
             "path": "html/browsers/history/the-history-interface/history_go_plus.html",
             "url": "/html/browsers/history/the-history-interface/history_go_plus.html"
+          }
+        ],
+        "html/browsers/history/the-history-interface/history_go_undefined.html": [
+          {
+            "path": "html/browsers/history/the-history-interface/history_go_undefined.html",
+            "url": "/html/browsers/history/the-history-interface/history_go_undefined.html"
+          }
+        ],
+        "html/browsers/history/the-history-interface/history_go_zero.html": [
+          {
+            "path": "html/browsers/history/the-history-interface/history_go_zero.html",
+            "url": "/html/browsers/history/the-history-interface/history_go_zero.html"
           }
         ],
         "html/browsers/history/the-history-interface/history_pushstate.html": [
@@ -7919,6 +8356,72 @@
             "url": "/html/browsers/history/the-history-interface/history_state.html"
           }
         ],
+        "html/browsers/history/the-history-interface/joint_session_history/001.html": [
+          {
+            "path": "html/browsers/history/the-history-interface/joint_session_history/001.html",
+            "url": "/html/browsers/history/the-history-interface/joint_session_history/001.html"
+          }
+        ],
+        "html/browsers/history/the-history-interface/traverse_the_history_2.html": [
+          {
+            "path": "html/browsers/history/the-history-interface/traverse_the_history_2.html",
+            "url": "/html/browsers/history/the-history-interface/traverse_the_history_2.html"
+          }
+        ],
+        "html/browsers/history/the-history-interface/traverse_the_history_3.html": [
+          {
+            "path": "html/browsers/history/the-history-interface/traverse_the_history_3.html",
+            "url": "/html/browsers/history/the-history-interface/traverse_the_history_3.html"
+          }
+        ],
+        "html/browsers/history/the-history-interface/traverse_the_history_4.html": [
+          {
+            "path": "html/browsers/history/the-history-interface/traverse_the_history_4.html",
+            "url": "/html/browsers/history/the-history-interface/traverse_the_history_4.html"
+          }
+        ],
+        "html/browsers/history/the-history-interface/traverse_the_history_5.html": [
+          {
+            "path": "html/browsers/history/the-history-interface/traverse_the_history_5.html",
+            "url": "/html/browsers/history/the-history-interface/traverse_the_history_5.html"
+          }
+        ],
+        "html/browsers/history/the-history-interface/traverse_the_history_unload_1.html": [
+          {
+            "path": "html/browsers/history/the-history-interface/traverse_the_history_unload_1.html",
+            "url": "/html/browsers/history/the-history-interface/traverse_the_history_unload_1.html"
+          }
+        ],
+        "html/browsers/history/the-history-interface/traverse_the_history_write_after_load_2.html": [
+          {
+            "path": "html/browsers/history/the-history-interface/traverse_the_history_write_after_load_2.html",
+            "url": "/html/browsers/history/the-history-interface/traverse_the_history_write_after_load_2.html"
+          }
+        ],
+        "html/browsers/history/the-history-interface/traverse_the_history_write_onload_1.html": [
+          {
+            "path": "html/browsers/history/the-history-interface/traverse_the_history_write_onload_1.html",
+            "url": "/html/browsers/history/the-history-interface/traverse_the_history_write_onload_1.html"
+          }
+        ],
+        "html/browsers/history/the-history-interface/traverse_the_history_write_onload_2.html": [
+          {
+            "path": "html/browsers/history/the-history-interface/traverse_the_history_write_onload_2.html",
+            "url": "/html/browsers/history/the-history-interface/traverse_the_history_write_onload_2.html"
+          }
+        ],
+        "html/browsers/history/the-location-interface/assign_after_load.html": [
+          {
+            "path": "html/browsers/history/the-location-interface/assign_after_load.html",
+            "url": "/html/browsers/history/the-location-interface/assign_after_load.html"
+          }
+        ],
+        "html/browsers/history/the-location-interface/assign_before_load.html": [
+          {
+            "path": "html/browsers/history/the-location-interface/assign_before_load.html",
+            "url": "/html/browsers/history/the-location-interface/assign_before_load.html"
+          }
+        ],
         "html/browsers/history/the-location-interface/document_location.html": [
           {
             "path": "html/browsers/history/the-location-interface/document_location.html",
@@ -7941,6 +8444,12 @@
           {
             "path": "html/browsers/history/the-location-interface/location_assign.html",
             "url": "/html/browsers/history/the-location-interface/location_assign.html"
+          }
+        ],
+        "html/browsers/history/the-location-interface/location_assign_about_blank.html": [
+          {
+            "path": "html/browsers/history/the-location-interface/location_assign_about_blank.html",
+            "url": "/html/browsers/history/the-location-interface/location_assign_about_blank.html"
           }
         ],
         "html/browsers/history/the-location-interface/location_hash.html": [
@@ -7985,6 +8494,12 @@
             "url": "/html/browsers/history/the-location-interface/location_protocol.html"
           }
         ],
+        "html/browsers/history/the-location-interface/location_reload.html": [
+          {
+            "path": "html/browsers/history/the-location-interface/location_reload.html",
+            "url": "/html/browsers/history/the-location-interface/location_reload.html"
+          }
+        ],
         "html/browsers/history/the-location-interface/location_replace.html": [
           {
             "path": "html/browsers/history/the-location-interface/location_replace.html",
@@ -7995,6 +8510,48 @@
           {
             "path": "html/browsers/history/the-location-interface/location_search.html",
             "url": "/html/browsers/history/the-location-interface/location_search.html"
+          }
+        ],
+        "html/browsers/history/the-location-interface/reload_document_open_write.html": [
+          {
+            "path": "html/browsers/history/the-location-interface/reload_document_open_write.html",
+            "url": "/html/browsers/history/the-location-interface/reload_document_open_write.html"
+          }
+        ],
+        "html/browsers/history/the-location-interface/reload_document_write.html": [
+          {
+            "path": "html/browsers/history/the-location-interface/reload_document_write.html",
+            "url": "/html/browsers/history/the-location-interface/reload_document_write.html"
+          }
+        ],
+        "html/browsers/history/the-location-interface/reload_document_write_onload.html": [
+          {
+            "path": "html/browsers/history/the-location-interface/reload_document_write_onload.html",
+            "url": "/html/browsers/history/the-location-interface/reload_document_write_onload.html"
+          }
+        ],
+        "html/browsers/history/the-location-interface/reload_post_1.html": [
+          {
+            "path": "html/browsers/history/the-location-interface/reload_post_1.html",
+            "url": "/html/browsers/history/the-location-interface/reload_post_1.html"
+          }
+        ],
+        "html/browsers/history/the-location-interface/scripted_click_assign_during_load.html": [
+          {
+            "path": "html/browsers/history/the-location-interface/scripted_click_assign_during_load.html",
+            "url": "/html/browsers/history/the-location-interface/scripted_click_assign_during_load.html"
+          }
+        ],
+        "html/browsers/history/the-location-interface/scripted_click_location_assign_during_load.html": [
+          {
+            "path": "html/browsers/history/the-location-interface/scripted_click_location_assign_during_load.html",
+            "url": "/html/browsers/history/the-location-interface/scripted_click_location_assign_during_load.html"
+          }
+        ],
+        "html/browsers/history/the-location-interface/scripted_form_submit_assign_during_load.html": [
+          {
+            "path": "html/browsers/history/the-location-interface/scripted_form_submit_assign_during_load.html",
+            "url": "/html/browsers/history/the-location-interface/scripted_form_submit_assign_during_load.html"
           }
         ],
         "html/browsers/history/the-location-interface/security_location_0.htm": [
@@ -8069,6 +8626,19 @@
             "url": "/html/browsers/offline/manifest_url_check.html"
           }
         ],
+        "html/browsers/origin/cross-origin-objects/cross-origin-objects.html": [
+          {
+            "path": "html/browsers/origin/cross-origin-objects/cross-origin-objects.html",
+            "timeout": "long",
+            "url": "/html/browsers/origin/cross-origin-objects/cross-origin-objects.html"
+          }
+        ],
+        "html/browsers/origin/origin-of-data-document.html": [
+          {
+            "path": "html/browsers/origin/origin-of-data-document.html",
+            "url": "/html/browsers/origin/origin-of-data-document.html"
+          }
+        ],
         "html/browsers/sandboxing/sandbox-allow-same-origin.html": [
           {
             "path": "html/browsers/sandboxing/sandbox-allow-same-origin.html",
@@ -8099,6 +8669,30 @@
             "url": "/html/browsers/the-window-object/Document-defaultView.html"
           }
         ],
+        "html/browsers/the-window-object/Window-document.html": [
+          {
+            "path": "html/browsers/the-window-object/Window-document.html",
+            "url": "/html/browsers/the-window-object/Window-document.html"
+          }
+        ],
+        "html/browsers/the-window-object/accessing-other-browsing-contexts/indexed-browsing-contexts-01.html": [
+          {
+            "path": "html/browsers/the-window-object/accessing-other-browsing-contexts/indexed-browsing-contexts-01.html",
+            "url": "/html/browsers/the-window-object/accessing-other-browsing-contexts/indexed-browsing-contexts-01.html"
+          }
+        ],
+        "html/browsers/the-window-object/accessing-other-browsing-contexts/indexed-browsing-contexts-02.html": [
+          {
+            "path": "html/browsers/the-window-object/accessing-other-browsing-contexts/indexed-browsing-contexts-02.html",
+            "url": "/html/browsers/the-window-object/accessing-other-browsing-contexts/indexed-browsing-contexts-02.html"
+          }
+        ],
+        "html/browsers/the-window-object/accessing-other-browsing-contexts/indexed-browsing-contexts-03.html": [
+          {
+            "path": "html/browsers/the-window-object/accessing-other-browsing-contexts/indexed-browsing-contexts-03.html",
+            "url": "/html/browsers/the-window-object/accessing-other-browsing-contexts/indexed-browsing-contexts-03.html"
+          }
+        ],
         "html/browsers/the-window-object/accessing-other-browsing-contexts/iterator.html": [
           {
             "path": "html/browsers/the-window-object/accessing-other-browsing-contexts/iterator.html",
@@ -8109,6 +8703,54 @@
           {
             "path": "html/browsers/the-window-object/accessing-other-browsing-contexts/window_length.html",
             "url": "/html/browsers/the-window-object/accessing-other-browsing-contexts/window_length.html"
+          }
+        ],
+        "html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/close_beforeunload.html": [
+          {
+            "path": "html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/close_beforeunload.html",
+            "url": "/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/close_beforeunload.html"
+          }
+        ],
+        "html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/close_script_defer.html": [
+          {
+            "path": "html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/close_script_defer.html",
+            "url": "/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/close_script_defer.html"
+          }
+        ],
+        "html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/close_unload.html": [
+          {
+            "path": "html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/close_unload.html",
+            "url": "/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/close_unload.html"
+          }
+        ],
+        "html/browsers/the-window-object/garbage-collection-and-browsing-contexts/discard_iframe_history_1.html": [
+          {
+            "path": "html/browsers/the-window-object/garbage-collection-and-browsing-contexts/discard_iframe_history_1.html",
+            "url": "/html/browsers/the-window-object/garbage-collection-and-browsing-contexts/discard_iframe_history_1.html"
+          }
+        ],
+        "html/browsers/the-window-object/garbage-collection-and-browsing-contexts/discard_iframe_history_2.html": [
+          {
+            "path": "html/browsers/the-window-object/garbage-collection-and-browsing-contexts/discard_iframe_history_2.html",
+            "url": "/html/browsers/the-window-object/garbage-collection-and-browsing-contexts/discard_iframe_history_2.html"
+          }
+        ],
+        "html/browsers/the-window-object/garbage-collection-and-browsing-contexts/discard_iframe_history_3.html": [
+          {
+            "path": "html/browsers/the-window-object/garbage-collection-and-browsing-contexts/discard_iframe_history_3.html",
+            "url": "/html/browsers/the-window-object/garbage-collection-and-browsing-contexts/discard_iframe_history_3.html"
+          }
+        ],
+        "html/browsers/the-window-object/garbage-collection-and-browsing-contexts/discard_iframe_history_4.html": [
+          {
+            "path": "html/browsers/the-window-object/garbage-collection-and-browsing-contexts/discard_iframe_history_4.html",
+            "url": "/html/browsers/the-window-object/garbage-collection-and-browsing-contexts/discard_iframe_history_4.html"
+          }
+        ],
+        "html/browsers/the-window-object/named-access-on-the-window-object/named-objects.html": [
+          {
+            "path": "html/browsers/the-window-object/named-access-on-the-window-object/named-objects.html",
+            "url": "/html/browsers/the-window-object/named-access-on-the-window-object/named-objects.html"
           }
         ],
         "html/browsers/the-window-object/named-access-on-the-window-object/window-null-names.html": [
@@ -8171,6 +8813,36 @@
             "url": "/html/browsers/windows/browsing-context-first-created.xhtml"
           }
         ],
+        "html/browsers/windows/browsing-context-names/001.html": [
+          {
+            "path": "html/browsers/windows/browsing-context-names/001.html",
+            "url": "/html/browsers/windows/browsing-context-names/001.html"
+          }
+        ],
+        "html/browsers/windows/browsing-context-names/002.html": [
+          {
+            "path": "html/browsers/windows/browsing-context-names/002.html",
+            "url": "/html/browsers/windows/browsing-context-names/002.html"
+          }
+        ],
+        "html/browsers/windows/browsing-context-names/browsing-context-choose-existing.html": [
+          {
+            "path": "html/browsers/windows/browsing-context-names/browsing-context-choose-existing.html",
+            "url": "/html/browsers/windows/browsing-context-names/browsing-context-choose-existing.html"
+          }
+        ],
+        "html/browsers/windows/browsing-context-names/browsing-context-choose-parent.html": [
+          {
+            "path": "html/browsers/windows/browsing-context-names/browsing-context-choose-parent.html",
+            "url": "/html/browsers/windows/browsing-context-names/browsing-context-choose-parent.html"
+          }
+        ],
+        "html/browsers/windows/browsing-context-names/browsing-context-choose-self-1.html": [
+          {
+            "path": "html/browsers/windows/browsing-context-names/browsing-context-choose-self-1.html",
+            "url": "/html/browsers/windows/browsing-context-names/browsing-context-choose-self-1.html"
+          }
+        ],
         "html/browsers/windows/browsing-context-names/browsing-context-default-name.html": [
           {
             "path": "html/browsers/windows/browsing-context-names/browsing-context-default-name.html",
@@ -8187,6 +8859,18 @@
           {
             "path": "html/browsers/windows/nested-browsing-contexts/window-top-001.html",
             "url": "/html/browsers/windows/nested-browsing-contexts/window-top-001.html"
+          }
+        ],
+        "html/browsers/windows/noreferrer-window-name.html": [
+          {
+            "path": "html/browsers/windows/noreferrer-window-name.html",
+            "url": "/html/browsers/windows/noreferrer-window-name.html"
+          }
+        ],
+        "html/browsers/windows/noreferrer.html": [
+          {
+            "path": "html/browsers/windows/noreferrer.html",
+            "url": "/html/browsers/windows/noreferrer.html"
           }
         ],
         "html/browsers/windows/targeting-cross-origin-nested-browsing-contexts.html": [
@@ -8975,6 +9659,84 @@
             "url": "/html/dom/dynamic-markup-insertion/opening-the-input-stream/002.html"
           }
         ],
+        "html/dom/dynamic-markup-insertion/opening-the-input-stream/004.html": [
+          {
+            "path": "html/dom/dynamic-markup-insertion/opening-the-input-stream/004.html",
+            "url": "/html/dom/dynamic-markup-insertion/opening-the-input-stream/004.html"
+          }
+        ],
+        "html/dom/dynamic-markup-insertion/opening-the-input-stream/005.html": [
+          {
+            "path": "html/dom/dynamic-markup-insertion/opening-the-input-stream/005.html",
+            "url": "/html/dom/dynamic-markup-insertion/opening-the-input-stream/005.html"
+          }
+        ],
+        "html/dom/dynamic-markup-insertion/opening-the-input-stream/006.html": [
+          {
+            "path": "html/dom/dynamic-markup-insertion/opening-the-input-stream/006.html",
+            "url": "/html/dom/dynamic-markup-insertion/opening-the-input-stream/006.html"
+          }
+        ],
+        "html/dom/dynamic-markup-insertion/opening-the-input-stream/007.html": [
+          {
+            "path": "html/dom/dynamic-markup-insertion/opening-the-input-stream/007.html",
+            "url": "/html/dom/dynamic-markup-insertion/opening-the-input-stream/007.html"
+          }
+        ],
+        "html/dom/dynamic-markup-insertion/opening-the-input-stream/008.html": [
+          {
+            "path": "html/dom/dynamic-markup-insertion/opening-the-input-stream/008.html",
+            "url": "/html/dom/dynamic-markup-insertion/opening-the-input-stream/008.html"
+          }
+        ],
+        "html/dom/dynamic-markup-insertion/opening-the-input-stream/009.html": [
+          {
+            "path": "html/dom/dynamic-markup-insertion/opening-the-input-stream/009.html",
+            "url": "/html/dom/dynamic-markup-insertion/opening-the-input-stream/009.html"
+          }
+        ],
+        "html/dom/dynamic-markup-insertion/opening-the-input-stream/010.html": [
+          {
+            "path": "html/dom/dynamic-markup-insertion/opening-the-input-stream/010.html",
+            "url": "/html/dom/dynamic-markup-insertion/opening-the-input-stream/010.html"
+          }
+        ],
+        "html/dom/dynamic-markup-insertion/opening-the-input-stream/011.html": [
+          {
+            "path": "html/dom/dynamic-markup-insertion/opening-the-input-stream/011.html",
+            "url": "/html/dom/dynamic-markup-insertion/opening-the-input-stream/011.html"
+          }
+        ],
+        "html/dom/dynamic-markup-insertion/opening-the-input-stream/012.html": [
+          {
+            "path": "html/dom/dynamic-markup-insertion/opening-the-input-stream/012.html",
+            "url": "/html/dom/dynamic-markup-insertion/opening-the-input-stream/012.html"
+          }
+        ],
+        "html/dom/dynamic-markup-insertion/opening-the-input-stream/013.html": [
+          {
+            "path": "html/dom/dynamic-markup-insertion/opening-the-input-stream/013.html",
+            "url": "/html/dom/dynamic-markup-insertion/opening-the-input-stream/013.html"
+          }
+        ],
+        "html/dom/dynamic-markup-insertion/opening-the-input-stream/014.html": [
+          {
+            "path": "html/dom/dynamic-markup-insertion/opening-the-input-stream/014.html",
+            "url": "/html/dom/dynamic-markup-insertion/opening-the-input-stream/014.html"
+          }
+        ],
+        "html/dom/dynamic-markup-insertion/opening-the-input-stream/015.html": [
+          {
+            "path": "html/dom/dynamic-markup-insertion/opening-the-input-stream/015.html",
+            "url": "/html/dom/dynamic-markup-insertion/opening-the-input-stream/015.html"
+          }
+        ],
+        "html/dom/dynamic-markup-insertion/opening-the-input-stream/016.html": [
+          {
+            "path": "html/dom/dynamic-markup-insertion/opening-the-input-stream/016.html",
+            "url": "/html/dom/dynamic-markup-insertion/opening-the-input-stream/016.html"
+          }
+        ],
         "html/dom/dynamic-markup-insertion/opening-the-input-stream/document.open-01.xhtml": [
           {
             "path": "html/dom/dynamic-markup-insertion/opening-the-input-stream/document.open-01.xhtml",
@@ -8985,6 +9747,12 @@
           {
             "path": "html/dom/dynamic-markup-insertion/opening-the-input-stream/document.open-02.html",
             "url": "/html/dom/dynamic-markup-insertion/opening-the-input-stream/document.open-02.html"
+          }
+        ],
+        "html/dom/dynamic-markup-insertion/opening-the-input-stream/document.open-03.html": [
+          {
+            "path": "html/dom/dynamic-markup-insertion/opening-the-input-stream/document.open-03.html",
+            "url": "/html/dom/dynamic-markup-insertion/opening-the-input-stream/document.open-03.html"
           }
         ],
         "html/dom/elements/elements-in-the-dom/unknown-element.html": [
@@ -9302,6 +10070,12 @@
             "url": "/html/editing/editing-0/spelling-and-grammar-checking/user-interaction-editing-spellcheck.html"
           }
         ],
+        "html/editing/focus/document-level-focus-apis/document-level-apis.html": [
+          {
+            "path": "html/editing/focus/document-level-focus-apis/document-level-apis.html",
+            "url": "/html/editing/focus/document-level-focus-apis/document-level-apis.html"
+          }
+        ],
         "html/editing/focus/focus-management/focus-event-targets-simple.html": [
           {
             "path": "html/editing/focus/focus-management/focus-event-targets-simple.html",
@@ -9501,6 +10275,12 @@
           {
             "path": "html/semantics/document-metadata/the-base-element/base_href_unspecified.html",
             "url": "/html/semantics/document-metadata/the-base-element/base_href_unspecified.html"
+          }
+        ],
+        "html/semantics/document-metadata/the-base-element/base_multiple.html": [
+          {
+            "path": "html/semantics/document-metadata/the-base-element/base_multiple.html",
+            "url": "/html/semantics/document-metadata/the-base-element/base_multiple.html"
           }
         ],
         "html/semantics/document-metadata/the-link-element/document-without-browsing-context.html": [
@@ -10115,6 +10895,12 @@
             "url": "/html/semantics/embedded-content/the-embed-element/historical.html"
           }
         ],
+        "html/semantics/embedded-content/the-iframe-element/change_parentage.html": [
+          {
+            "path": "html/semantics/embedded-content/the-iframe-element/change_parentage.html",
+            "url": "/html/semantics/embedded-content/the-iframe-element/change_parentage.html"
+          }
+        ],
         "html/semantics/embedded-content/the-iframe-element/historical.html": [
           {
             "path": "html/semantics/embedded-content/the-iframe-element/historical.html",
@@ -10167,6 +10953,12 @@
           {
             "path": "html/semantics/embedded-content/the-iframe-element/move_iframe_in_dom_04.html",
             "url": "/html/semantics/embedded-content/the-iframe-element/move_iframe_in_dom_04.html"
+          }
+        ],
+        "html/semantics/embedded-content/the-iframe-element/same_origin_parentage.html": [
+          {
+            "path": "html/semantics/embedded-content/the-iframe-element/same_origin_parentage.html",
+            "url": "/html/semantics/embedded-content/the-iframe-element/same_origin_parentage.html"
           }
         ],
         "html/semantics/embedded-content/the-img-element/Image-constructor.html": [
@@ -10260,6 +11052,12 @@
             "url": "/html/semantics/embedded-content/the-object-element/object-attributes.html"
           }
         ],
+        "html/semantics/embedded-content/the-object-element/object-handler.html": [
+          {
+            "path": "html/semantics/embedded-content/the-object-element/object-handler.html",
+            "url": "/html/semantics/embedded-content/the-object-element/object-handler.html"
+          }
+        ],
         "html/semantics/embedded-content/the-object-element/usemap-casing.html": [
           {
             "path": "html/semantics/embedded-content/the-object-element/usemap-casing.html",
@@ -10270,6 +11068,12 @@
           {
             "path": "html/semantics/embedded-content/the-video-element/video-tabindex.html",
             "url": "/html/semantics/embedded-content/the-video-element/video-tabindex.html"
+          }
+        ],
+        "html/semantics/forms/attributes-common-to-form-controls/dirname-ltr.html": [
+          {
+            "path": "html/semantics/forms/attributes-common-to-form-controls/dirname-ltr.html",
+            "url": "/html/semantics/forms/attributes-common-to-form-controls/dirname-ltr.html"
           }
         ],
         "html/semantics/forms/attributes-common-to-form-controls/disabled-elements-01.html": [
@@ -10392,6 +11196,12 @@
             "url": "/html/semantics/forms/form-control-infrastructure/form.html"
           }
         ],
+        "html/semantics/forms/form-submission-0/getactionurl.html": [
+          {
+            "path": "html/semantics/forms/form-submission-0/getactionurl.html",
+            "url": "/html/semantics/forms/form-submission-0/getactionurl.html"
+          }
+        ],
         "html/semantics/forms/historical.html": [
           {
             "path": "html/semantics/forms/historical.html",
@@ -10445,6 +11255,12 @@
           {
             "path": "html/semantics/forms/textfieldselection/textfieldselection-setSelectionRange.html",
             "url": "/html/semantics/forms/textfieldselection/textfieldselection-setSelectionRange.html"
+          }
+        ],
+        "html/semantics/forms/the-button-element/button-activate.html": [
+          {
+            "path": "html/semantics/forms/the-button-element/button-activate.html",
+            "url": "/html/semantics/forms/the-button-element/button-activate.html"
           }
         ],
         "html/semantics/forms/the-button-element/button-events.html": [
@@ -11339,6 +12155,12 @@
           {
             "path": "html/semantics/selectors/pseudo-classes/focus-autofocus.html",
             "url": "/html/semantics/selectors/pseudo-classes/focus-autofocus.html"
+          }
+        ],
+        "html/semantics/selectors/pseudo-classes/focus.html": [
+          {
+            "path": "html/semantics/selectors/pseudo-classes/focus.html",
+            "url": "/html/semantics/selectors/pseudo-classes/focus.html"
           }
         ],
         "html/semantics/selectors/pseudo-classes/indeterminate-radio.html": [
@@ -12640,6 +13462,12 @@
           {
             "path": "html/webappapis/scripting/events/messageevent-constructor.html",
             "url": "/html/webappapis/scripting/events/messageevent-constructor.html"
+          }
+        ],
+        "html/webappapis/scripting/events/onerroreventhandler.html": [
+          {
+            "path": "html/webappapis/scripting/events/onerroreventhandler.html",
+            "url": "/html/webappapis/scripting/events/onerroreventhandler.html"
           }
         ],
         "html/webappapis/scripting/events/uncompiled_event_handler_with_scripting_disabled.html": [

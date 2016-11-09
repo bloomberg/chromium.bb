@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Document in a browsing context assert_equals: expected "file:///common/blank.html" but got "file:///.../common/blank.html"
+Harness: the test ran to completion.
+

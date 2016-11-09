@@ -1,0 +1,5 @@
+CONSOLE ERROR: line 2448: Uncaught Error: assert_equals: expected "navigate-child-function-parent.html" but got ""
+This is a testharness.js-based test.
+FAIL Set location from a parent Uncaught Error: assert_equals: expected "file:///.../html/browsers/browsing-the-web/navigating-across-documents/source/navigate-child-function-parent.html" but got ""
+Harness: the test ran to completion.
+

@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Set location from a function called from a parent assert_equals: expected "file:///.../html/browsers/browsing-the-web/navigating-across-documents/source/support/location-set.html" but got ""
+Harness: the test ran to completion.
+

@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Set src from a function called from a parent assert_equals: expected "file:///.../html/browsers/browsing-the-web/navigating-across-documents/source/navigate-child-function-src.html" but got ""
+Harness: the test ran to completion.
+
