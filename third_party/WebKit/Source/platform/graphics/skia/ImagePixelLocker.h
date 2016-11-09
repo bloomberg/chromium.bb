@@ -29,7 +29,7 @@ class ImagePixelLocker final {
  private:
   const sk_sp<const SkImage> m_image;
   const void* m_pixels;
-  SkAutoMalloc m_pixelStorage;
+  Vector<char> m_pixelStorage;
 };
 
 }  // namespace blink
