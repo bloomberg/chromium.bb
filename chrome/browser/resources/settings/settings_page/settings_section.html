@@ -31,7 +31,6 @@
         background-color: white;
         border-radius: 2px;
         flex: 1;
-        overflow: hidden;
       }
 
       :host(.expanded) #card {
@@ -42,6 +41,7 @@
       :host(.collapsing) #card,
       :host(.expanded) #card {
         @apply(--shadow-elevation-4dp);
+        overflow: hidden;
         /* A stacking context constrains sliding sub-pages to the card. */
         z-index: 0;
       }

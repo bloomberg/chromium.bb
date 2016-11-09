@@ -90,8 +90,14 @@ Polymer({
 
   /** @override */
   attached: function() {
+    this.listen(this, 'freeze-scroll', 'onFreezeScroll_');
     var currentRoute = settings.getCurrentRoute();
     this.hasExpandedSection_ = currentRoute && currentRoute.isSubpage();
+  },
+
+  /** @override */
+  detached: function() {
+    this.unlisten(this, 'freeze-scroll', 'onFreezeScroll_');
   },
 
   /** @private */
@@ -133,12 +139,11 @@ Polymer({
    * Enables or disables user scrolling, via overscroll: hidden. Room for the
    * hidden scrollbar is added to prevent the page width from changing back and
    * forth. Also freezes the overscroll height.
-   * @param {!Event} e
-   * @param {boolean} detail True to freeze, false to unfreeze.
+   * @param {!Event} e |e.detail| is true to freeze, false to unfreeze.
    * @private
    */
-  onFreezeScroll_: function(e, detail) {
-    if (detail) {
+  onFreezeScroll_: function(e) {
+    if (e.detail) {
       // Update the overscroll and ignore scroll events.
       this.setOverscroll_(this.overscrollHeight_());
       this.ignoreScroll_ = true;
