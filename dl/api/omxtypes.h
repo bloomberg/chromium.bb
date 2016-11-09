@@ -2,7 +2,7 @@
  * File: omxtypes.h
  * Brief: Defines basic Data types used in OpenMAX v1.0.2 header files.
  *
- * Copyright © 2005-2008 The Khronos Group Inc. All Rights Reserved. 
+ * Copyright Â© 2005-2008 The Khronos Group Inc. All Rights Reserved. 
  *
  * These materials are protected by copyright laws and contain material 
  * proprietary to the Khronos Group, Inc.  You may use these materials 
