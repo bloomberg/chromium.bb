@@ -125,6 +125,11 @@ class CORE_EXPORT FetchRequest {
     m_options.parserDisposition = parserDisposition;
   }
 
+  void setCacheAwareLoadingEnabled(
+      CacheAwareLoadingEnabled cacheAwareLoadingEnabled) {
+    m_options.cacheAwareLoadingEnabled = cacheAwareLoadingEnabled;
+  }
+
   void makeSynchronous();
 
   PlaceholderImageRequestType placeholderImageRequestType() const {

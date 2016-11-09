@@ -1281,6 +1281,10 @@ bool ResourceFetcher::startLoad(Resource* resource) {
   willSendRequest(resource->identifier(), request, ResourceResponse(),
                   resource->options());
 
+  // TODO(shaochuan): Saving modified ResourceRequest back to |resource|, remove
+  // once willSendRequest() takes const ResourceRequest. crbug.com/632580
+  resource->setResourceRequest(request);
+
   // Resource requests from suborigins should not be intercepted by the service
   // worker of the physical origin. This has the effect that, for now,
   // suborigins do not work with service workers. See
@@ -1297,6 +1301,8 @@ bool ResourceFetcher::startLoad(Resource* resource) {
 
   storeResourceTimingInitiatorInformation(resource);
   resource->setFetcherSecurityOrigin(sourceOrigin);
+
+  loader->activateCacheAwareLoadingIfNeeded(request);
   loader->start(request, context().loadingTaskRunner(),
                 context().defersLoading());
   return true;

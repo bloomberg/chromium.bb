@@ -55,8 +55,9 @@ class CORE_EXPORT ResourceLoader final
              WebTaskRunner* loadingTaskRunner,
              bool defersLoading);
 
-  // This method is currently only used for service worker fallback request,
-  // other users should be careful not to break ResourceLoader state.
+  // This method is currently only used for service worker fallback request and
+  // cache-aware loading, other users should be careful not to break
+  // ResourceLoader state.
   void restart(const ResourceRequest&,
                WebTaskRunner* loadingTaskRunner,
                bool defersLoading);
@@ -66,6 +67,14 @@ class CORE_EXPORT ResourceLoader final
   void setDefersLoading(bool);
 
   void didChangePriority(ResourceLoadPriority, int intraPriorityValue);
+
+  // Called before start() to activate cache-aware loading if enabled in
+  // |m_resource->options()| and applicable.
+  void activateCacheAwareLoadingIfNeeded(const ResourceRequest&);
+
+  bool isCacheAwareLoadingActivated() const {
+    return m_isCacheAwareLoadingActivated;
+  }
 
   // WebURLLoaderClient
   //
@@ -116,6 +125,7 @@ class CORE_EXPORT ResourceLoader final
   std::unique_ptr<WebURLLoader> m_loader;
   Member<ResourceFetcher> m_fetcher;
   Member<Resource> m_resource;
+  bool m_isCacheAwareLoadingActivated;
 };
 
 }  // namespace blink

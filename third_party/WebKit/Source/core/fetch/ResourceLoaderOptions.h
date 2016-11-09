@@ -71,6 +71,11 @@ enum CORSEnabled { NotCORSEnabled, IsCORSEnabled };
 // https://html.spec.whatwg.org/multipage/scripting.html#parser-inserted
 enum ParserDisposition { ParserInserted, NotParserInserted };
 
+enum CacheAwareLoadingEnabled {
+  NotCacheAwareLoadingEnabled,
+  IsCacheAwareLoadingEnabled
+};
+
 struct ResourceLoaderOptions {
   USING_FAST_MALLOC(ResourceLoaderOptions);
 
@@ -83,7 +88,8 @@ struct ResourceLoaderOptions {
         requestInitiatorContext(DocumentContext),
         synchronousPolicy(RequestAsynchronously),
         corsEnabled(NotCORSEnabled),
-        parserDisposition(ParserInserted) {}
+        parserDisposition(ParserInserted),
+        cacheAwareLoadingEnabled(NotCacheAwareLoadingEnabled) {}
 
   ResourceLoaderOptions(
       DataBufferingPolicy dataBufferingPolicy,
@@ -98,7 +104,8 @@ struct ResourceLoaderOptions {
         requestInitiatorContext(requestInitiatorContext),
         synchronousPolicy(RequestAsynchronously),
         corsEnabled(NotCORSEnabled),
-        parserDisposition(ParserInserted) {}
+        parserDisposition(ParserInserted),
+        cacheAwareLoadingEnabled(NotCacheAwareLoadingEnabled) {}
 
   // Answers the question "can a separate request with these different options
   // be re-used" (e.g. preload request) The safe (but possibly slow) answer is
@@ -139,6 +146,7 @@ struct ResourceLoaderOptions {
   String contentSecurityPolicyNonce;
   IntegrityMetadataSet integrityMetadata;
   ParserDisposition parserDisposition;
+  CacheAwareLoadingEnabled cacheAwareLoadingEnabled;
 };
 
 // Encode AtomicString (in FetchInitiatorInfo) as String to cross threads.
@@ -159,7 +167,8 @@ struct CrossThreadResourceLoaderOptionsData {
                            : nullptr),
         contentSecurityPolicyNonce(options.contentSecurityPolicyNonce),
         integrityMetadata(options.integrityMetadata),
-        parserDisposition(options.parserDisposition) {}
+        parserDisposition(options.parserDisposition),
+        cacheAwareLoadingEnabled(options.cacheAwareLoadingEnabled) {}
 
   operator ResourceLoaderOptions() const {
     ResourceLoaderOptions options;
@@ -175,6 +184,7 @@ struct CrossThreadResourceLoaderOptionsData {
     options.contentSecurityPolicyNonce = contentSecurityPolicyNonce;
     options.integrityMetadata = integrityMetadata;
     options.parserDisposition = parserDisposition;
+    options.cacheAwareLoadingEnabled = cacheAwareLoadingEnabled;
     return options;
   }
 
@@ -190,6 +200,7 @@ struct CrossThreadResourceLoaderOptionsData {
   String contentSecurityPolicyNonce;
   IntegrityMetadataSet integrityMetadata;
   ParserDisposition parserDisposition;
+  CacheAwareLoadingEnabled cacheAwareLoadingEnabled;
 };
 
 template <>
