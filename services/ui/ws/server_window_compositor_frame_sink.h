@@ -23,7 +23,6 @@
 #include "cc/surfaces/surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/surfaces/surfaces_context_provider.h"
-#include "services/ui/ws/ids.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -38,8 +37,6 @@ namespace ui {
 class DisplayCompositor;
 
 namespace ws {
-
-class ServerWindow;
 
 // Server side representation of a WindowSurface.
 class ServerWindowCompositorFrameSink

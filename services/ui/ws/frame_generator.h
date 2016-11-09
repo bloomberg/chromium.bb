@@ -22,7 +22,6 @@
 
 namespace cc {
 class CompositorFrame;
-class CopyOutputRequest;
 class RenderPass;
 class SurfaceId;
 }
@@ -34,7 +33,6 @@ class GpuChannelHost;
 namespace ui {
 
 class DisplayCompositor;
-class DisplayCompositorFrameSink;
 
 namespace ws {
 
@@ -44,7 +42,6 @@ class FrameGeneratorTest;
 
 class FrameGeneratorDelegate;
 class ServerWindow;
-class ServerWindowCompositorFrameSink;
 
 // Responsible for redrawing the display in response to the redraw requests by
 // submitting CompositorFrames to the owned CompositorFrameSink.
@@ -57,7 +54,6 @@ class FrameGenerator : public ServerWindowTracker,
   void OnGpuChannelEstablished(scoped_refptr<gpu::GpuChannelHost> gpu_channel);
 
   // Schedules a redraw for the provided region.
-  void RequestRedraw(const gfx::Rect& redraw_region);
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget);
 
  private:
