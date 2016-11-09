@@ -803,11 +803,15 @@ static void amdgpu_command_submission_write_linear_helper(unsigned ip_type)
 	uint32_t *pm4;
 	struct amdgpu_cs_ib_info *ib_info;
 	struct amdgpu_cs_request *ibs_request;
+	struct amdgpu_gpu_info gpu_info = {0};
 	uint64_t bo_mc;
 	volatile uint32_t *bo_cpu;
 	int i, j, r, loop;
 	uint64_t gtt_flags[2] = {0, AMDGPU_GEM_CREATE_CPU_GTT_USWC};
 	amdgpu_va_handle va_handle;
+
+	r = amdgpu_query_gpu_info(device_handle, &gpu_info);
+	CU_ASSERT_EQUAL(r, 0);
 
 	pm4 = calloc(pm4_dw, sizeof(*pm4));
 	CU_ASSERT_NOT_EQUAL(pm4, NULL);
@@ -848,7 +852,10 @@ static void amdgpu_command_submission_write_linear_helper(unsigned ip_type)
 					       SDMA_WRITE_SUB_OPCODE_LINEAR, 0);
 			pm4[i++] = 0xffffffff & bo_mc;
 			pm4[i++] = (0xffffffff00000000 & bo_mc) >> 32;
-			pm4[i++] = sdma_write_length;
+			if (gpu_info.family_id >= AMDGPU_FAMILY_AI)
+				pm4[i++] = sdma_write_length - 1;
+			else
+				pm4[i++] = sdma_write_length;
 			while(j++ < sdma_write_length)
 				pm4[i++] = 0xdeadbeaf;
 		} else if ((ip_type == AMDGPU_HW_IP_GFX) ||
@@ -904,11 +911,15 @@ static void amdgpu_command_submission_const_fill_helper(unsigned ip_type)
 	uint32_t *pm4;
 	struct amdgpu_cs_ib_info *ib_info;
 	struct amdgpu_cs_request *ibs_request;
+	struct amdgpu_gpu_info gpu_info = {0};
 	uint64_t bo_mc;
 	volatile uint32_t *bo_cpu;
 	int i, j, r, loop;
 	uint64_t gtt_flags[2] = {0, AMDGPU_GEM_CREATE_CPU_GTT_USWC};
 	amdgpu_va_handle va_handle;
+
+	r = amdgpu_query_gpu_info(device_handle, &gpu_info);
+	CU_ASSERT_EQUAL(r, 0);
 
 	pm4 = calloc(pm4_dw, sizeof(*pm4));
 	CU_ASSERT_NOT_EQUAL(pm4, NULL);
@@ -949,7 +960,10 @@ static void amdgpu_command_submission_const_fill_helper(unsigned ip_type)
 			pm4[i++] = 0xffffffff & bo_mc;
 			pm4[i++] = (0xffffffff00000000 & bo_mc) >> 32;
 			pm4[i++] = 0xdeadbeaf;
-			pm4[i++] = sdma_write_length;
+			if (gpu_info.family_id >= AMDGPU_FAMILY_AI)
+				pm4[i++] = sdma_write_length - 1;
+			else
+				pm4[i++] = sdma_write_length;
 		} else if ((ip_type == AMDGPU_HW_IP_GFX) ||
 			   (ip_type == AMDGPU_HW_IP_COMPUTE)) {
 			pm4[i++] = PACKET3(PACKET3_DMA_DATA, 5);
@@ -1007,11 +1021,15 @@ static void amdgpu_command_submission_copy_linear_helper(unsigned ip_type)
 	uint32_t *pm4;
 	struct amdgpu_cs_ib_info *ib_info;
 	struct amdgpu_cs_request *ibs_request;
+	struct amdgpu_gpu_info gpu_info = {0};
 	uint64_t bo1_mc, bo2_mc;
 	volatile unsigned char *bo1_cpu, *bo2_cpu;
 	int i, j, r, loop1, loop2;
 	uint64_t gtt_flags[2] = {0, AMDGPU_GEM_CREATE_CPU_GTT_USWC};
 	amdgpu_va_handle bo1_va_handle, bo2_va_handle;
+
+	r = amdgpu_query_gpu_info(device_handle, &gpu_info);
+	CU_ASSERT_EQUAL(r, 0);
 
 	pm4 = calloc(pm4_dw, sizeof(*pm4));
 	CU_ASSERT_NOT_EQUAL(pm4, NULL);
@@ -1064,7 +1082,10 @@ static void amdgpu_command_submission_copy_linear_helper(unsigned ip_type)
 			i = j = 0;
 			if (ip_type == AMDGPU_HW_IP_DMA) {
 				pm4[i++] = SDMA_PACKET(SDMA_OPCODE_COPY, SDMA_COPY_SUB_OPCODE_LINEAR, 0);
-				pm4[i++] = sdma_write_length;
+				if (gpu_info.family_id >= AMDGPU_FAMILY_AI)
+					pm4[i++] = sdma_write_length - 1;
+				else
+					pm4[i++] = sdma_write_length;
 				pm4[i++] = 0;
 				pm4[i++] = 0xffffffff & bo1_mc;
 				pm4[i++] = (0xffffffff00000000 & bo1_mc) >> 32;
