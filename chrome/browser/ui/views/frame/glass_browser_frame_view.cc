@@ -100,17 +100,22 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
       close_button_(nullptr),
       throbber_running_(false),
       throbber_frame_(0) {
-  if (ShowSystemIcon())
+  // We initialize all fields despite some of them being unused in some modes,
+  // since it's possible for modes to flip dynamically (e.g. if the user enables
+  // a high-contrast theme). Throbber icons are only used when ShowSystemIcon()
+  // is true. Everything else here is only used when
+  // ShouldCustomDrawSystemTitlebar() is true.
+
+  if (browser_view->ShouldShowWindowIcon()) {
     InitThrobberIcons();
 
-  if (ShowCustomIcon()) {
     window_icon_ = new TabIconView(this, nullptr);
     window_icon_->set_is_light(true);
     window_icon_->set_id(VIEW_ID_WINDOW_ICON);
     AddChildView(window_icon_);
   }
 
-  if (ShowCustomTitle()) {
+  if (browser_view->ShouldShowWindowTitle()) {
     window_title_ =
         new views::Label(browser_view->GetWindowTitle(),
                          gfx::FontList(BrowserFrame::GetTitleFontList()));
@@ -120,12 +125,10 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
     AddChildView(window_title_);
   }
 
-  if (ShouldCustomDrawSystemTitlebar()) {
-    minimize_button_ = CreateCaptionButton(VIEW_ID_MINIMIZE_BUTTON);
-    maximize_button_ = CreateCaptionButton(VIEW_ID_MAXIMIZE_BUTTON);
-    restore_button_ = CreateCaptionButton(VIEW_ID_RESTORE_BUTTON);
-    close_button_ = CreateCaptionButton(VIEW_ID_CLOSE_BUTTON);
-  }
+  minimize_button_ = CreateCaptionButton(VIEW_ID_MINIMIZE_BUTTON);
+  maximize_button_ = CreateCaptionButton(VIEW_ID_MAXIMIZE_BUTTON);
+  restore_button_ = CreateCaptionButton(VIEW_ID_RESTORE_BUTTON);
+  close_button_ = CreateCaptionButton(VIEW_ID_CLOSE_BUTTON);
 }
 
 GlassBrowserFrameView::~GlassBrowserFrameView() {
