@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/layout.h"
 #include "ui/views/border.h"
@@ -15,6 +16,24 @@ gfx::ImageSkia CreateTestImage(int width, int height) {
   bitmap.allocN32Pixels(width, height);
   return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
 }
+
+class Parent : public views::View {
+ public:
+  Parent() = default;
+
+  void ChildPreferredSizeChanged(views::View* view) override {
+    pref_size_changed_calls_++;
+  }
+
+  int pref_size_changed_calls() const {
+    return pref_size_changed_calls_;
+  }
+
+ private:
+  int pref_size_changed_calls_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(Parent);
+};
 
 }  // namespace
 
@@ -158,6 +177,26 @@ TEST_F(ImageButtonTest, RightAlignedMirrored) {
   // it were ALIGN_LEFT.
   EXPECT_EQ(gfx::Point(0, 0).ToString(),
             button.ComputeImagePaintPosition(image).ToString());
+}
+
+TEST_F(ImageButtonTest, PreferredSizeInvalidation) {
+  Parent parent;
+  ImageButton button(nullptr);
+  gfx::ImageSkia first_image = CreateTestImage(20, 30);
+  gfx::ImageSkia second_image = CreateTestImage(50, 50);
+  button.SetImage(CustomButton::STATE_NORMAL, &first_image);
+  parent.AddChildView(&button);
+  ASSERT_EQ(0, parent.pref_size_changed_calls());
+
+  button.SetImage(CustomButton::STATE_NORMAL, &first_image);
+  EXPECT_EQ(0, parent.pref_size_changed_calls());
+
+  button.SetImage(CustomButton::STATE_HOVERED, &second_image);
+  EXPECT_EQ(0, parent.pref_size_changed_calls());
+
+  // Changing normal state image size leads to a change in preferred size.
+  button.SetImage(CustomButton::STATE_NORMAL, &second_image);
+  EXPECT_EQ(1, parent.pref_size_changed_calls());
 }
 
 }  // namespace views

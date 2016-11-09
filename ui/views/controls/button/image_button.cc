@@ -50,8 +50,12 @@ const gfx::ImageSkia& ImageButton::GetImage(ButtonState state) const {
 void ImageButton::SetImage(ButtonState for_state, const gfx::ImageSkia* image) {
   if (for_state == STATE_HOVERED)
     set_animate_on_state_change(image != nullptr);
+  const gfx::Size old_preferred_size = GetPreferredSize();
   images_[for_state] = image ? *image : gfx::ImageSkia();
-  PreferredSizeChanged();
+
+  if (old_preferred_size != GetPreferredSize())
+    PreferredSizeChanged();
+
   if (state() == for_state)
     SchedulePaint();
 }
