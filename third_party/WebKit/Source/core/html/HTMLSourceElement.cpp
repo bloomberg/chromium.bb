@@ -30,8 +30,8 @@
 #include "core/css/MediaQueryList.h"
 #include "core/css/MediaQueryMatcher.h"
 #include "core/dom/Document.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
-#include "core/events/EventSender.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLPictureElement.h"
 
@@ -40,12 +40,6 @@
 namespace blink {
 
 using namespace HTMLNames;
-
-static SourceEventSender& sourceErrorEventSender() {
-  DEFINE_STATIC_LOCAL(SourceEventSender, sharedErrorEventSender,
-                      (SourceEventSender::create(EventTypeNames::error)));
-  return sharedErrorEventSender;
-}
 
 class HTMLSourceElement::Listener final : public MediaQueryListListener {
  public:
@@ -140,16 +134,21 @@ void HTMLSourceElement::setType(const AtomicString& type) {
 
 void HTMLSourceElement::scheduleErrorEvent() {
   DVLOG(SOURCE_LOG_LEVEL) << "scheduleErrorEvent - " << (void*)this;
-  sourceErrorEventSender().dispatchEventSoon(this);
+
+  m_pendingErrorEvent =
+      TaskRunnerHelper::get(TaskType::DOMManipulation, &document())
+          ->postCancellableTask(
+              BLINK_FROM_HERE,
+              WTF::bind(&HTMLSourceElement::dispatchPendingEvent,
+                        wrapPersistent(this)));
 }
 
 void HTMLSourceElement::cancelPendingErrorEvent() {
   DVLOG(SOURCE_LOG_LEVEL) << "cancelPendingErrorEvent - " << (void*)this;
-  sourceErrorEventSender().cancelEvent(this);
+  m_pendingErrorEvent.cancel();
 }
 
-void HTMLSourceElement::dispatchPendingEvent(SourceEventSender* eventSender) {
-  DCHECK_EQ(eventSender, &sourceErrorEventSender());
+void HTMLSourceElement::dispatchPendingEvent() {
   DVLOG(SOURCE_LOG_LEVEL) << "dispatchPendingEvent - " << (void*)this;
   dispatchEvent(Event::createCancelable(EventTypeNames::error));
 }
