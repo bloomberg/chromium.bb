@@ -49,9 +49,15 @@ declare_args() {
   use_system_xcode = ""
 }
 
-if ((is_mac || is_ios) && use_system_xcode == "") {
-  _result = getenv("FORCE_MAC_TOOLCHAIN")
-  use_system_xcode = _result == ""
+if (use_system_xcode == "") {
+  if (target_os == "mac") {
+    _result =
+        exec_script("//build/mac/should_use_hermetic_xcode.py", [], "value")
+    use_system_xcode = _result == 0
+  }
+  if (target_os == "ios") {
+    use_system_xcode = true
+  }
 }
 
 # The path to the hermetic install of Xcode. Only relevant when
