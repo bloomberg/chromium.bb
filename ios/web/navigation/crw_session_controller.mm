@@ -121,9 +121,6 @@ NSString* const kWindowNameKey = @"windowName";
                              transition:(ui::PageTransition)transition
                     useDesktopUserAgent:(BOOL)useDesktopUserAgent
                       rendererInitiated:(BOOL)rendererInitiated;
-// Return the PageTransition for the underlying navigationItem at |index| in
-// |entries_|
-- (ui::PageTransition)transitionForIndex:(NSUInteger)index;
 // Returns YES if the PageTransition for the underlying navigationItem at
 // |index| in |entries_| has ui::PAGE_TRANSITION_IS_REDIRECT_MASK.
 - (BOOL)isRedirectTransitionForEntryAtIndex:(NSInteger)index;
@@ -592,10 +589,6 @@ NSString* const kWindowNameKey = @"windowName";
   DCHECK_LT((NSUInteger)_currentNavigationIndex, [_entries count]);
 }
 
-- (ui::PageTransition)transitionForIndex:(NSUInteger)index {
-  return [[_entries objectAtIndex:index] navigationItem]->GetTransitionType();
-}
-
 - (BOOL)canGoBack {
   return [self canGoDelta:-1];
 }
@@ -752,9 +745,7 @@ NSString* const kWindowNameKey = @"windowName";
   NSInteger index = _currentNavigationIndex;
   // This will return the first session entry if all other entries are
   // redirects, regardless of the transition state of the first entry.
-  while (index > 0 &&
-         [self transitionForIndex:index] &
-         ui::PAGE_TRANSITION_IS_REDIRECT_MASK) {
+  while (index > 0 && [self isRedirectTransitionForEntryAtIndex:index]) {
     --index;
   }
   return [_entries objectAtIndex:index];
@@ -857,7 +848,8 @@ NSString* const kWindowNameKey = @"windowName";
 }
 
 - (BOOL)isRedirectTransitionForEntryAtIndex:(NSInteger)index {
-  ui::PageTransition transition = [self transitionForIndex:index];
+  ui::PageTransition transition =
+      [_entries[index] navigationItem]->GetTransitionType();
   return (transition & ui::PAGE_TRANSITION_IS_REDIRECT_MASK) ? YES : NO;
 }
 
