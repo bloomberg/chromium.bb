@@ -78,6 +78,10 @@
         <p>These samples are not yet complete and may not accurately portray the API's usage.</p>
         <ul id="wip-samples" class="sample-list"></ul>
 
+        <h2>Testing Pages</h2>
+        <p>These pages help stress browser conformance.</p>
+        <ul id="tests" class="sample-list"></ul>
+
         <br/>
         <hr/>
 
@@ -98,36 +102,45 @@
 
             // WIP samples, no index
             { path: "XX-360-panorama.html", title: "360 Degree Panorama" },
-            { path: "XX-vr-controllers.html", title: "VR Controllers" }
+            { path: "XX-vr-controllers.html", title: "VR Controllers" },
+
+            // Tests
+            { test: true, path: "canvas-attributes.html", title: "Canvas Attributes"}
           ];
 
           // Append an element for every item in the pages list.
           var samples = document.getElementById("samples");
           var wipSamples = document.getElementById("wip-samples");
+          var tests = document.getElementById("tests");
 
           for (var i = 0; i < pages.length; ++i) {
             var page = pages[i];
             var wipPage = !page.index;
+            var testPage = page.test;
 
             var li = document.createElement("li");
-            li.setAttribute("data-index", wipPage ? "XX" : page.index);
+            li.setAttribute("data-index", page.index ? page.index : "XX");
 
             var sampleLink = document.createElement("a");
             sampleLink.href = page.path;
             sampleLink.innerHTML = page.title;
             li.appendChild(sampleLink);
 
-            var polyfillLink = document.createElement("a");
-            polyfillLink.href = page.path + "?polyfill=1";
-            polyfillLink.innerHTML = "(Polyfill)";
-            li.appendChild(polyfillLink);
+            if (!testPage) {
+              var polyfillLink = document.createElement("a");
+              polyfillLink.href = page.path + "?polyfill=1";
+              polyfillLink.innerHTML = "(Polyfill)";
+              li.appendChild(polyfillLink);
+            }
 
             var sourceLink = document.createElement("a");
             sourceLink.href = "https://github.com/toji/webvr.info/blob/master/samples/" + page.path;
             sourceLink.innerHTML = "(Source)";
             li.appendChild(sourceLink);
 
-            if (wipPage) {
+            if (testPage) {
+              tests.appendChild(li);
+            } else if (wipPage) {
               wipSamples.appendChild(li);
             } else {
               samples.appendChild(li);
