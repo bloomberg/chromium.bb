@@ -31,6 +31,7 @@ class FakeChromeUserManager : public user_manager::FakeUserManager,
 
   // Create and add a kiosk app user.
   user_manager::User* AddKioskAppUser(const AccountId& account_id);
+  user_manager::User* AddArcKioskAppUser(const AccountId& account_id);
 
   // Create and add a public account user.
   const user_manager::User* AddPublicAccountUser(const AccountId& account_id);

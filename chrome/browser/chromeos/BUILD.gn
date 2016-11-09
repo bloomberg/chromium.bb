@@ -211,6 +211,8 @@ source_set("chromeos") {
     "arc/arc_service_launcher.h",
     "arc/arc_support_host.cc",
     "arc/arc_support_host.h",
+    "arc/auth/arc_robot_auth.cc",
+    "arc/auth/arc_robot_auth.h",
     "arc/downloads_watcher/arc_downloads_watcher_service.cc",
     "arc/downloads_watcher/arc_downloads_watcher_service.h",
     "arc/enterprise/arc_enterprise_reporting_service.cc",

@@ -44,6 +44,7 @@ class ArcAndroidManagementChecker;
 class ArcAuthCodeFetcher;
 class ArcAuthContext;
 class ArcOptInPreferenceHandler;
+class ArcRobotAuth;
 enum class ProvisioningResult : int;
 
 // This class proxies the request from the client to fetch an auth code from
@@ -236,6 +237,7 @@ class ArcAuthService : public ArcService,
   void RequestAccountInfoInternal(
       std::unique_ptr<AccountInfoNotifier> account_info_notifier);
   void OnAccountInfoReady(mojom::AccountInfoPtr account_info);
+  void OnRobotAuthCodeFetched(const std::string& auth_code);
 
   // Called when the Android management check is done in opt-in flow or
   // re-auth flow.
@@ -277,6 +279,7 @@ class ArcAuthService : public ArcService,
   std::unique_ptr<ArcAuthContext> context_;
   std::unique_ptr<ArcAuthCodeFetcher> auth_code_fetcher_;
   std::unique_ptr<ArcAndroidManagementChecker> android_management_checker_;
+  std::unique_ptr<ArcRobotAuth> arc_robot_auth_;
 
   base::Time sign_in_time_;
 

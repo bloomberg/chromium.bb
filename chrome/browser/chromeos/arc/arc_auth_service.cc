@@ -9,6 +9,7 @@
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
@@ -17,11 +18,13 @@
 #include "chrome/browser/chromeos/arc/arc_auth_context.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
+#include "chrome/browser/chromeos/arc/auth/arc_robot_auth.h"
 #include "chrome/browser/chromeos/arc/optin/arc_optin_preference_handler.h"
 #include "chrome/browser/chromeos/arc/policy/arc_android_management_checker.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
@@ -112,6 +115,16 @@ ProvisioningResult ConvertArcSignInFailureReasonToProvisioningResult(
 
   NOTREACHED() << "unknown reason: " << static_cast<int>(reason);
   return ProvisioningResult::UNKNOWN_ERROR;
+}
+
+bool IsArcKioskMode() {
+  return user_manager::UserManager::Get()->IsLoggedInAsArcKioskApp();
+}
+
+mojom::ChromeAccountType GetAccountType() {
+  if (IsArcKioskMode())
+    return mojom::ChromeAccountType::ROBOT_ACCOUNT;
+  return mojom::ChromeAccountType::USER_ACCOUNT;
 }
 
 }  // namespace
@@ -257,7 +270,7 @@ bool ArcAuthService::IsAllowedForProfile(const Profile* profile) {
 
   user_manager::User const* const user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
-  if (!user || !user->HasGaiaAccount()) {
+  if ((!user || !user->HasGaiaAccount()) && !IsArcKioskMode()) {
     VLOG(1) << "Users without GAIA accounts are not supported in ARC.";
     return false;
   }
@@ -341,11 +354,17 @@ void ArcAuthService::GetAuthCodeDeprecated0(
     const GetAuthCodeDeprecated0Callback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!IsOptInVerificationDisabled());
+  // For robot account we must use RequestAccountInfo because it allows to
+  // specify account type.
+  DCHECK(!IsArcKioskMode());
   callback.Run(GetAndResetAuthCode());
 }
 
 void ArcAuthService::GetAuthCodeDeprecated(
     const GetAuthCodeDeprecatedCallback& callback) {
+  // For robot account we must use RequestAccountInfo because it allows
+  // to specify account type.
+  DCHECK(!IsArcKioskMode());
   RequestAccountInfoInternal(
       base::MakeUnique<ArcAuthService::AccountInfoNotifier>(callback));
 }
@@ -381,14 +400,43 @@ void ArcAuthService::RequestAccountInfoInternal(
   const std::string auth_code = GetAndResetAuthCode();
   const bool is_enforced = !IsOptInVerificationDisabled();
   if (!auth_code.empty() || !is_enforced) {
-    account_info_notifier->Notify(is_enforced, auth_code,
-                                  mojom::ChromeAccountType::USER_ACCOUNT,
+    account_info_notifier->Notify(is_enforced, auth_code, GetAccountType(),
                                   policy_util::IsAccountManaged(profile_));
     return;
   }
 
   account_info_notifier_ = std::move(account_info_notifier);
-  PrepareContextForAuthCodeRequest();
+
+  if (IsArcKioskMode()) {
+    arc_robot_auth_.reset(new ArcRobotAuth());
+    arc_robot_auth_->FetchRobotAuthCode(
+        base::Bind(&ArcAuthService::OnRobotAuthCodeFetched,
+                   weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    PrepareContextForAuthCodeRequest();
+  }
+}
+
+void ArcAuthService::OnRobotAuthCodeFetched(
+    const std::string& robot_auth_code) {
+  // We fetching robot auth code for ARC kiosk only.
+  DCHECK(IsArcKioskMode());
+
+  // Current instance of ArcRobotAuth became useless.
+  arc_robot_auth_.reset();
+
+  if (robot_auth_code.empty()) {
+    VLOG(1) << "Robot account auth code fetching error";
+    // Log out the user. All the cleanup will be done in Shutdown() method.
+    // The callback is not called because auth code is empty.
+    chrome::AttemptUserExit();
+    return;
+  }
+
+  account_info_notifier_->Notify(
+      !IsOptInVerificationDisabled(), robot_auth_code,
+      mojom::ChromeAccountType::ROBOT_ACCOUNT, false);
+  account_info_notifier_.reset();
 }
 
 bool ArcAuthService::IsAuthCodeRequest() const {
@@ -403,6 +451,7 @@ void ArcAuthService::PrepareContextForAuthCodeRequest() {
   // non-signed state.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(state_ != State::ACTIVE || IsAuthCodeRequest());
+  DCHECK(!IsArcKioskMode());
   context_->PrepareContext();
 }
 
@@ -559,8 +608,11 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
 
   context_.reset(new ArcAuthContext(this, profile_));
 
-  // In case UI is disabled we assume that ARC is opted-in.
-  if (IsOptInVerificationDisabled()) {
+  // In case UI is disabled we assume that ARC is opted-in. For ARC Kiosk we
+  // skip ToS because it is very likely that near the device there will be
+  // no one who is eligible to accept them. We skip if Android management check
+  // because there are no managed human users for Kiosk exist.
+  if (IsOptInVerificationDisabled() || IsArcKioskMode()) {
     auth_code_.clear();
     StartArc();
     return;
@@ -606,12 +658,20 @@ void ArcAuthService::Shutdown() {
   pref_change_registrar_.RemoveAll();
   context_.reset();
   profile_ = nullptr;
+  arc_robot_auth_.reset();
   SetState(State::NOT_INITIALIZED);
 }
 
 void ArcAuthService::ShowUI(ArcSupportHost::UIPage page,
                             const base::string16& status) {
   if (g_disable_ui_for_testing || IsOptInVerificationDisabled())
+    return;
+
+  // Don't show UI for ARC Kiosk because the only one UI in kiosk mode must
+  // be the kiosk app. In case of error the UI will be useless as well, because
+  // in typical use case there will be no one nearby the kiosk device, who can
+  // do some action to solve the problem be means of UI.
+  if (IsArcKioskMode())
     return;
 
   SetUIPage(page, status);
@@ -797,7 +857,7 @@ void ArcAuthService::SetAuthCodeAndStartArc(const std::string& auth_code) {
     DCHECK_EQ(state_, State::FETCHING_CODE);
     SetState(State::ACTIVE);
     account_info_notifier_->Notify(!IsOptInVerificationDisabled(), auth_code,
-                                   mojom::ChromeAccountType::USER_ACCOUNT,
+                                   GetAccountType(),
                                    policy_util::IsAccountManaged(profile_));
     account_info_notifier_.reset();
     return;
