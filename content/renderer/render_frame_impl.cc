@@ -802,31 +802,23 @@ bool IsHttpPost(const blink::WebURLRequest& request) {
 
 // Writes to file the serialized and encoded MHTML data from WebThreadSafeData
 // instances.
-bool WriteMHTMLToDisk(bool success,
-                      std::vector<WebThreadSafeData> mhtml_contents,
+bool WriteMHTMLToDisk(std::vector<WebThreadSafeData> mhtml_contents,
                       base::File file) {
-  TRACE_EVENT_BEGIN0("page-serialization",
-                     "WriteMHTMLToDisk (RenderFrameImpl)");
+  TRACE_EVENT0("page-serialization", "WriteMHTMLToDisk (RenderFrameImpl)");
+  SCOPED_UMA_HISTOGRAM_TIMER(
+      "PageSerialization.MhtmlGeneration.WriteToDiskTime.SingleFrame");
   DCHECK(!RenderThread::Get()) << "Should not run in the main renderer thread";
-  if (success) {
-    SCOPED_UMA_HISTOGRAM_TIMER(
-        "PageSerialization.MhtmlGeneration.WriteToDiskTime.SingleFrame");
-    for (const WebThreadSafeData& data : mhtml_contents) {
-      if (!data.isEmpty() &&
-          file.WriteAtCurrentPos(data.data(), data.size()) < 0) {
-        success = false;
-        break;
-      }
+  bool success = true;
+  for (const WebThreadSafeData& data : mhtml_contents) {
+    if (!data.isEmpty() &&
+        file.WriteAtCurrentPos(data.data(), data.size()) < 0) {
+      success = false;
+      break;
     }
-    // Explicitly close the file here to include any flush operations in the UMA
-    // metric. If this block is not executed close will be called upon |file|
-    // destruction at the end of this method's scope, which is still
-    // before any IPC is sent.
-    file.Close();
   }
-
-  TRACE_EVENT_END1("page-serialization", "WriteMHTMLToDisk (RenderFrameImpl)",
-                   "success", success);
+  // Explicitly close |file| here to make sure to include any flush operations
+  // in the UMA metric.
+  file.Close();
   return success;
 }
 
@@ -5381,17 +5373,18 @@ void RenderFrameImpl::OnSerializeAsMHTML(
                                         &serialized_resources_uri_digests);
 
   bool success = true;
+  bool has_some_data = false;
 
   // Generate MHTML header if needed.
   if (IsMainFrame()) {
     TRACE_EVENT0("page-serialization",
                  "RenderFrameImpl::OnSerializeAsMHTML header");
-    // |data| can be empty if the main frame should be skipped.  If the main
-    // frame is skipped, then the whole archive is bad, so bail to the error
-    // condition.
+    // The returned data can be empty if the main frame should be skipped. If
+    // the main frame is skipped, then the whole archive is bad.
     mhtml_contents.emplace_back(WebFrameSerializer::generateMHTMLHeader(
         mhtml_boundary, GetWebFrame(), &delegate));
-    success = !mhtml_contents.back().isEmpty();
+    has_some_data = !mhtml_contents.back().isEmpty();
+    success = has_some_data;
   }
 
   // Generate MHTML parts.  Note that if this is not the main frame, then even
@@ -5400,9 +5393,11 @@ void RenderFrameImpl::OnSerializeAsMHTML(
   if (success) {
     TRACE_EVENT0("page-serialization",
                  "RenderFrameImpl::OnSerializeAsMHTML parts serialization");
-    // |data| can be empty if the frame should be skipped, but this is OK.
+    // The returned data can be empty if the frame should be skipped, but this
+    // is OK.
     mhtml_contents.emplace_back(WebFrameSerializer::generateMHTMLParts(
         mhtml_boundary, GetWebFrame(), &delegate));
+    has_some_data |= !mhtml_contents.back().isEmpty();
   }
 
   // Generate MHTML footer if needed.
@@ -5411,6 +5406,7 @@ void RenderFrameImpl::OnSerializeAsMHTML(
                  "RenderFrameImpl::OnSerializeAsMHTML footer");
     mhtml_contents.emplace_back(
         WebFrameSerializer::generateMHTMLFooter(mhtml_boundary));
+    has_some_data |= !mhtml_contents.back().isEmpty();
   }
 
   // Note: we assume RenderFrameImpl::OnWriteMHTMLToDiskComplete and the rest of
@@ -5421,14 +5417,20 @@ void RenderFrameImpl::OnSerializeAsMHTML(
       "PageSerialization.MhtmlGeneration.RendererMainThreadTime.SingleFrame",
       main_thread_use_time);
 
-  base::PostTaskAndReplyWithResult(
-      RenderThreadImpl::current()->GetFileThreadTaskRunner().get(), FROM_HERE,
-      base::Bind(&WriteMHTMLToDisk, success, base::Passed(&mhtml_contents),
-                 base::Passed(&file)),
-      base::Bind(&RenderFrameImpl::OnWriteMHTMLToDiskComplete,
-                 weak_factory_.GetWeakPtr(), params.job_id,
-                 base::Passed(&serialized_resources_uri_digests),
-                 main_thread_use_time));
+  if (success && has_some_data) {
+    base::PostTaskAndReplyWithResult(
+        RenderThreadImpl::current()->GetFileThreadTaskRunner().get(), FROM_HERE,
+        base::Bind(&WriteMHTMLToDisk, base::Passed(&mhtml_contents),
+                   base::Passed(&file)),
+        base::Bind(&RenderFrameImpl::OnWriteMHTMLToDiskComplete,
+                   weak_factory_.GetWeakPtr(), params.job_id,
+                   base::Passed(&serialized_resources_uri_digests),
+                   main_thread_use_time));
+  } else {
+    file.Close();
+    OnWriteMHTMLToDiskComplete(params.job_id, serialized_resources_uri_digests,
+                               main_thread_use_time, success);
+  }
 }
 
 void RenderFrameImpl::OnWriteMHTMLToDiskComplete(
@@ -5436,6 +5438,9 @@ void RenderFrameImpl::OnWriteMHTMLToDiskComplete(
     std::set<std::string> serialized_resources_uri_digests,
     base::TimeDelta main_thread_use_time,
     bool success) {
+  TRACE_EVENT1("page-serialization",
+               "RenderFrameImpl::OnWriteMHTMLToDiskComplete",
+               "frame serialization was successful", success);
   DCHECK(RenderThread::Get()) << "Must run in the main renderer thread";
   // Notify the browser process about completion.
   // Note: we assume this method is fast enough to not need to be accounted for
