@@ -967,8 +967,13 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
     net::URLRequest* request,
     bool started,
     int net_error) {
+  ExtensionsBrowserClient* client = ExtensionsBrowserClient::Get();
+  if (!client) {
+    // |client| could be NULL during shutdown.
+    return;
+  }
   ExtensionNavigationUIData* navigation_ui_data =
-      ExtensionsBrowserClient::Get()->GetExtensionNavigationUIData(request);
+      client->GetExtensionNavigationUIData(request);
   // We hide events from the system context as well as sensitive requests.
   // However, if the request first became sensitive after redirecting we have
   // already signaled it and thus we have to signal the end of it. This is
