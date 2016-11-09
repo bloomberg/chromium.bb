@@ -86,6 +86,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
@@ -341,8 +342,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private TabRedirectHandler mTabRedirectHandler;
 
     private FullscreenManager mFullscreenManager;
-    private float mPreviousFullscreenBrowserControlsOffsetY = Float.NaN;
-    private float mPreviousFullscreenContentOffsetY = Float.NaN;
+    private float mPreviousTopControlsOffsetY = Float.NaN;
+    private float mPreviousBottomControlsOffsetY = Float.NaN;
+    private float mPreviousContentOffsetY = Float.NaN;
     private int mFullscreenHungRendererToken = FullscreenManager.INVALID_TOKEN;
 
     /**
@@ -379,7 +381,16 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         @Override
         public void onTopControlsChanged(float topControlsOffsetY, float topContentOffsetY) {
             super.onTopControlsChanged(topControlsOffsetY, topContentOffsetY);
-            onOffsetsChanged(topControlsOffsetY, topContentOffsetY, isShowingSadTab());
+            onOffsetsChanged(topControlsOffsetY, mPreviousBottomControlsOffsetY,
+                    topContentOffsetY, isShowingSadTab());
+        }
+
+        @Override
+        public void onBottomControlsChanged(float bottomControlsOffsetY,
+                float bottomContentOffsetY) {
+            super.onBottomControlsChanged(bottomControlsOffsetY, bottomContentOffsetY);
+            onOffsetsChanged(mPreviousTopControlsOffsetY, bottomControlsOffsetY,
+                    mPreviousContentOffsetY, isShowingSadTab());
         }
 
         @Override
@@ -1966,8 +1977,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             mInfoBarContainer = null;
         }
 
-        mPreviousFullscreenBrowserControlsOffsetY = Float.NaN;
-        mPreviousFullscreenContentOffsetY = Float.NaN;
+        mPreviousTopControlsOffsetY = Float.NaN;
+        mPreviousBottomControlsOffsetY = Float.NaN;
+        mPreviousContentOffsetY = Float.NaN;
 
         mNeedsReload = false;
     }
@@ -2613,20 +2625,24 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     /**
      * Called when offset values related with fullscreen functionality has been changed by the
      * compositor.
-     * @param browserControlsOffsetY The Y offset of the browser controls in physical pixels.
+     * @param topControlsOffsetY The Y offset of the top controls in physical pixels.
+     * @param bottomControlsOffsetY The Y offset of the bottom controls in physical pixels.
      * @param contentOffsetY The Y offset of the content in physical pixels.
      * @param isNonFullscreenPage Whether a current page is non-fullscreen page or not.
      */
     private void onOffsetsChanged(
-            float browserControlsOffsetY, float contentOffsetY, boolean isNonFullscreenPage) {
-        mPreviousFullscreenBrowserControlsOffsetY = browserControlsOffsetY;
-        mPreviousFullscreenContentOffsetY = contentOffsetY;
+            float topControlsOffsetY, float bottomControlsOffsetY, float contentOffsetY,
+            boolean isNonFullscreenPage) {
+        mPreviousTopControlsOffsetY = topControlsOffsetY;
+        mPreviousBottomControlsOffsetY = bottomControlsOffsetY;
+        mPreviousContentOffsetY = contentOffsetY;
 
         if (mFullscreenManager == null) return;
         if (isNonFullscreenPage || isNativePage()) {
             mFullscreenManager.setPositionsForTabToNonFullscreen();
         } else {
-            mFullscreenManager.setPositionsForTab(browserControlsOffsetY, contentOffsetY);
+            mFullscreenManager.setPositionsForTab(topControlsOffsetY, bottomControlsOffsetY,
+                    contentOffsetY);
         }
         TabModelImpl.setActualTabSwitchLatencyMetricRequired();
     }
@@ -2736,12 +2752,20 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     public void setFullscreenManager(FullscreenManager manager) {
         mFullscreenManager = manager;
         if (mFullscreenManager != null) {
-            if (Float.isNaN(mPreviousFullscreenBrowserControlsOffsetY)
-                    || Float.isNaN(mPreviousFullscreenContentOffsetY)) {
+            boolean topOffsetsInitialized = !Float.isNaN(mPreviousTopControlsOffsetY)
+                    && !Float.isNaN(mPreviousContentOffsetY);
+            boolean bottomOffsetsInitialized =
+                    !Float.isNaN(mPreviousBottomControlsOffsetY);
+            boolean isChromeHomeEnabled = FeatureUtilities.isChromeHomeEnabled();
+
+            // Make sure the dominant control offsets have been set.
+            if ((!topOffsetsInitialized && !isChromeHomeEnabled)
+                    || (!bottomOffsetsInitialized && isChromeHomeEnabled)) {
                 mFullscreenManager.setPositionsForTabToNonFullscreen();
             } else {
-                mFullscreenManager.setPositionsForTab(mPreviousFullscreenBrowserControlsOffsetY,
-                        mPreviousFullscreenContentOffsetY);
+                mFullscreenManager.setPositionsForTab(mPreviousTopControlsOffsetY,
+                        mPreviousBottomControlsOffsetY,
+                        mPreviousContentOffsetY);
             }
             mFullscreenManager.showControlsTransient();
             updateFullscreenEnabledState();

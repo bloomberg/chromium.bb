@@ -73,8 +73,9 @@ public class ChromeFullscreenManager
     private long mMaxAnimationDurationMs = MAX_ANIMATION_DURATION_MS;
 
     private float mBrowserControlOffset = Float.NaN;
-    private float mRendererControlOffset = Float.NaN;
-    private float mRendererContentOffset;
+    private float mRendererTopControlOffset = Float.NaN;
+    private float mRendererBottomControlOffset = Float.NaN;
+    private float mRendererTopContentOffset;
     private float mPreviousContentOffset = Float.NaN;
     private float mControlOffset;
     private float mPreviousControlOffset;
@@ -231,7 +232,7 @@ public class ChromeFullscreenManager
         mControlContainer = controlContainer;
         Resources resources = mWindow.getContext().getResources();
         mControlContainerHeight = resources.getDimensionPixelSize(resControlContainerHeight);
-        mRendererContentOffset = mControlContainerHeight;
+        mRendererTopContentOffset = mControlContainerHeight;
         mSupportsBrowserOverride = supportsBrowserOverride;
         updateControlOffset();
     }
@@ -455,11 +456,11 @@ public class ChromeFullscreenManager
     }
 
     private float rendererContentOffset() {
-        return mRendererContentOffset;
+        return mRendererTopContentOffset;
     }
 
     private float rendererControlOffset() {
-        return mRendererControlOffset;
+        return mRendererTopControlOffset;
     }
 
     /**
@@ -638,14 +639,15 @@ public class ChromeFullscreenManager
     public void setPositionsForTabToNonFullscreen() {
         Tab tab = getTab();
         if (tab == null || tab.isShowingBrowserControlsEnabled()) {
-            setPositionsForTab(0, mControlContainerHeight);
+            setPositionsForTab(0, 0, mControlContainerHeight);
         } else {
-            setPositionsForTab(-mControlContainerHeight, 0);
+            setPositionsForTab(-mControlContainerHeight, 0, 0);
         }
     }
 
     @Override
-    public void setPositionsForTab(float controlsOffset, float contentOffset) {
+    public void setPositionsForTab(float topControlsOffset, float bottomControlsOffset,
+            float topContentOffset) {
         // Once we get an update from a tab, clear the activity show token and allow the render
         // to control the positions of the browser controls.
         if (mActivityShowToken != INVALID_TOKEN) {
@@ -653,18 +655,24 @@ public class ChromeFullscreenManager
             mActivityShowToken = INVALID_TOKEN;
         }
 
-        float rendererControlOffset =
-                Math.round(Math.max(controlsOffset, -mControlContainerHeight));
-        float rendererContentOffset = Math.min(
-                Math.round(contentOffset), rendererControlOffset + mControlContainerHeight);
+        float rendererTopControlOffset =
+                Math.round(Math.max(topControlsOffset, -mControlContainerHeight));
+        float rendererBottomControlOffset =
+                Math.round(Math.min(bottomControlsOffset, mControlContainerHeight));
 
-        if (Float.compare(rendererControlOffset, mRendererControlOffset) == 0
-                && Float.compare(rendererContentOffset, mRendererContentOffset) == 0) {
+        float rendererTopContentOffset = Math.min(
+                Math.round(topContentOffset), rendererTopControlOffset + mControlContainerHeight);
+
+        if (Float.compare(rendererTopControlOffset, mRendererTopControlOffset) == 0
+                && Float.compare(rendererBottomControlOffset, mRendererBottomControlOffset) == 0
+                && Float.compare(rendererTopContentOffset, mRendererTopContentOffset) == 0) {
             return;
         }
 
-        mRendererControlOffset = rendererControlOffset;
-        mRendererContentOffset = rendererContentOffset;
+        mRendererTopControlOffset = rendererTopControlOffset;
+        mRendererBottomControlOffset = rendererBottomControlOffset;
+
+        mRendererTopContentOffset = rendererTopContentOffset;
         updateControlOffset();
 
         if (mControlAnimation == null) updateVisuals();
