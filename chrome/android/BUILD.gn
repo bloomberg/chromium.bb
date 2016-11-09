@@ -24,6 +24,8 @@ chrome_public_jinja_variables = default_chrome_public_jinja_variables +
                                 [ "manifest_package=$manifest_package" ]
 chrome_public_android_manifest =
     "$target_gen_dir/chrome_public_apk/AndroidManifest.xml"
+chrome_modern_public_android_manifest =
+    "$target_gen_dir/chrome_modern_public_apk/AndroidManifest.xml"
 chrome_sync_shell_android_manifest =
     "$target_gen_dir/chrome_sync_shell_apk/AndroidManifest.xml"
 
@@ -42,6 +44,16 @@ jinja_template("chrome_public_android_manifest") {
   variables = chrome_public_jinja_variables
   variables += [
     "min_sdk_version=16",
+    "target_sdk_version=23",
+  ]
+}
+
+jinja_template("chrome_modern_public_android_manifest") {
+  input = "java/AndroidManifest.xml"
+  output = chrome_modern_public_android_manifest
+  variables = chrome_public_jinja_variables
+  variables += [
+    "min_sdk_version=21",
     "target_sdk_version=23",
   ]
 }
@@ -647,6 +659,9 @@ shared_library("chrome_sync_shell") {
 template("chrome_public_apk_tmpl_shared") {
   chrome_public_apk_tmpl(target_name) {
     forward_variables_from(invoker, "*")
+    if (!defined(deps)) {
+      deps = []
+    }
 
     native_lib_version_rule = "//build/util:chrome_version_json"
     deps += [
@@ -664,8 +679,16 @@ chrome_public_apk_tmpl_shared("chrome_public_apk") {
   android_manifest_dep = ":chrome_public_android_manifest"
   apk_name = "ChromePublic"
   shared_libraries = [ ":chrome" ]
+}
 
-  deps = []
+chrome_public_apk_tmpl_shared("chrome_modern_public_apk") {
+  android_manifest = chrome_modern_public_android_manifest
+  android_manifest_dep = ":chrome_modern_public_android_manifest"
+  apk_name = "ChromeModernPublic"
+  shared_libraries = [ ":chrome" ]
+
+  # Always enable load_library_from_apk.
+  load_library_from_apk = chromium_linker_supported
 }
 
 chrome_public_apk_tmpl_shared("chrome_sync_shell_apk") {
