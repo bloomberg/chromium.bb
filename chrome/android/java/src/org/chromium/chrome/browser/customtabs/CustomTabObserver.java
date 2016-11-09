@@ -10,7 +10,9 @@ import android.graphics.Rect;
 import android.os.SystemClock;
 import android.support.customtabs.CustomTabsCallback;
 import android.support.customtabs.CustomTabsSessionToken;
+import android.text.TextUtils;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
@@ -172,15 +174,24 @@ class CustomTabObserver extends EmptyTabObserver {
         if (mCustomTabsConnection == null) return;
         if (!mCustomTabsConnection.shouldSendNavigationInfoForSession(mSession)) return;
 
-        ContentBitmapCallback callback = new ContentBitmapCallback() {
+        final ContentBitmapCallback callback = new ContentBitmapCallback() {
             @Override
             public void onFinishGetBitmap(Bitmap bitmap, int response) {
+                if (TextUtils.isEmpty(tab.getTitle()) && bitmap == null) return;
                 mCustomTabsConnection.sendNavigationInfo(
                         mSession, tab.getUrl(), tab.getTitle(), bitmap);
             }
         };
-        tab.getWebContents().getContentBitmapAsync(
-                Bitmap.Config.ARGB_8888, mScaleForNavigationInfo, new Rect(), callback);
-        mScreenshotTakenForCurrentNavigation = true;
+        // Delay screenshot capture since the page might be doing post load tasks. And this also
+        // gives time to get rid of any redirects and avoid capturing screenshots for those.
+        ThreadUtils.postOnUiThreadDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!tab.isHidden() && mCurrentState != STATE_RESET) return;
+                tab.getWebContents().getContentBitmapAsync(
+                        Bitmap.Config.ARGB_8888, mScaleForNavigationInfo, new Rect(), callback);
+                mScreenshotTakenForCurrentNavigation = true;
+            }
+        }, 1000);
     }
 }
