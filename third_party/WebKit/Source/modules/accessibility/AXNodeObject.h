@@ -159,8 +159,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   String stringValue() const override;
 
   // ARIA attributes.
-  String ariaDescribedByAttribute() const final;
-  String ariaLabelledbyAttribute() const final;
   AccessibilityRole ariaRoleAttribute() const final;
 
   // AX name calculation.

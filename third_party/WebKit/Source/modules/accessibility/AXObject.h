@@ -812,7 +812,6 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // ARIA attributes.
   virtual AXObject* activeDescendant() { return nullptr; }
   virtual String ariaAutoComplete() const { return String(); }
-  virtual String ariaDescribedByAttribute() const { return String(); }
   virtual void ariaFlowToElements(AXObjectVector&) const {}
   virtual void ariaControlsElements(AXObjectVector&) const {}
   virtual void ariaOwnsElements(AXObjectVector& owns) const {}
@@ -822,7 +821,6 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool isEditable() const { return false; }
   bool isMultiline() const;
   virtual bool isRichlyEditable() const { return false; }
-  virtual String ariaLabelledbyAttribute() const { return String(); }
   bool ariaPressedIsPresent() const;
   virtual AccessibilityRole ariaRoleAttribute() const { return UnknownRole; }
   virtual bool ariaRoleHasPresentationalChildren() const { return false; }

@@ -734,9 +734,6 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(
   if (isGenericFocusableElement() && node->hasChildren())
     return false;
 
-  if (!ariaAccessibilityDescription().isEmpty())
-    return false;
-
   if (isScrollableContainer())
     return false;
 
