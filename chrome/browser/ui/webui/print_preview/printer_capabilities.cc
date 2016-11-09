@@ -25,7 +25,8 @@ const char kPrinterCapabilities[] = "capabilities";
 
 namespace {
 
-// Returns a Dictionary representing printer capabilities as CDD.
+// Returns a dictionary representing printer capabilities as CDD.  Returns
+// nullptr if a dictionary could not be generated.
 std::unique_ptr<base::DictionaryValue>
 GetPrinterCapabilitiesOnBlockingPoolThread(const std::string& device_name) {
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
@@ -94,8 +95,11 @@ std::unique_ptr<base::DictionaryValue> GetSettingsOnBlockingPool(
   printer_info->SetString(kSettingPrinterName, printer_name);
   printer_info->SetString(kSettingPrinterDescription, printer_description);
 
-  printer_info->Set(kPrinterCapabilities,
-                    GetPrinterCapabilitiesOnBlockingPoolThread(device_name));
+  std::unique_ptr<base::DictionaryValue> capabilities =
+      GetPrinterCapabilitiesOnBlockingPoolThread(device_name);
+  if (capabilities)
+    printer_info->Set(kPrinterCapabilities, std::move(capabilities));
+
   return printer_info;
 }
 
