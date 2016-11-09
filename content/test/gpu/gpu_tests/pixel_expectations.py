@@ -30,9 +30,8 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(vmiura) check / generate reference images for Android devices
     self.Fail('Pixel_SolidColorBackground', ['mac', 'android'], bug=624256)
 
-    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing', bug=615325)
     self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker',
-              bug=615325)
+              ['mac', ('nvidia', 0xfe9)], bug=652931)
 
     # TODO(kbr): flakily timing out on this configuration.
     self.Flaky('*', ['linux', 'intel', 'debug'], bug=648369)
