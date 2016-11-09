@@ -107,6 +107,16 @@ cr.define('device_page_tests', function() {
             type: chrome.settingsPrivate.PrefType.NUMBER,
             value: 3,
           },
+          remap_escape_key_to: {
+            key: 'settings.language.remap_escape_key_to',
+            type: chrome.settingsPrivate.PrefType.NUMBER,
+            value: 5,
+          },
+          remap_backspace_key_to: {
+            key: 'settings.language.remap_backspace_key_to',
+            type: chrome.settingsPrivate.PrefType.NUMBER,
+            value: 6,
+          },
           send_function_keys: {
             key: 'settings.language.send_function_keys',
             type: chrome.settingsPrivate.PrefType.BOOLEAN,

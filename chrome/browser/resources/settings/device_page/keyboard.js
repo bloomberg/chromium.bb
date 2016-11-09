@@ -6,15 +6,22 @@
  * @fileoverview
  * 'settings-keyboard' is the settings subpage with keyboard settings.
  */
+cr.exportPath('settings');
 
-// TODO(michaelpg): The docs below are duplicates of settings_dropdown_menu,
-// because we can't depend on settings_dropdown_menu in compiled_resources2.gyp
-// withhout first converting settings_dropdown_menu to compiled_resources2.gyp.
-// After the conversion, we should remove these.
-/** @typedef {{name: string, value: (number|string)}} */
-var DropdownMenuOption;
-/** @typedef {!Array<!DropdownMenuOption>} */
-var DropdownMenuOptionList;
+/**
+ * Modifier key IDs corresponding to the ModifierKey enumerators in
+ * /ui/base/ime/chromeos/ime_keyboard.h.
+ * @enum {number}
+ */
+settings.ModifierKey = {
+  SEARCH_KEY: 0,
+  CONTROL_KEY: 1,
+  ALT_KEY: 2,
+  VOID_KEY: 3,  // Represents a disabled key.
+  CAPS_LOCK_KEY: 4,
+  ESCAPE_KEY: 5,
+  BACKSPACE_KEY: 6,
+};
 
 Polymer({
   is: 'settings-keyboard',
@@ -34,12 +41,6 @@ Polymer({
 
     /** @private {!DropdownMenuOptionList} Menu items for key mapping. */
     keyMapTargets_: Object,
-
-    /**
-     * @private {!DropdownMenuOptionList} Menu items for key mapping, including
-     * Caps Lock.
-     */
-    keyMapTargetsWithCapsLock_: Object,
 
     /**
      * Auto-repeat delays (in ms) for the corresponding slider values, from
@@ -78,20 +79,29 @@ Polymer({
    * @private
    */
   setUpKeyMapTargets_: function() {
-    this.keyMapTargets_ = [
-      {value: 0, name: loadTimeData.getString('keyboardKeySearch')},
-      {value: 1, name: loadTimeData.getString('keyboardKeyCtrl')},
-      {value: 2, name: loadTimeData.getString('keyboardKeyAlt')},
-      {value: 3, name: loadTimeData.getString('keyboardKeyDisabled')},
-      {value: 5, name: loadTimeData.getString('keyboardKeyEscape')},
-    ];
-
-    var keyMapTargetsWithCapsLock = this.keyMapTargets_.slice();
-    // Add Caps Lock, for keys allowed to be mapped to Caps Lock.
-    keyMapTargetsWithCapsLock.splice(4, 0, {
-      value: 4, name: loadTimeData.getString('keyboardKeyCapsLock'),
-    });
-    this.keyMapTargetsWithCapsLock_ = keyMapTargetsWithCapsLock;
+    // Ordering is according to UX, but values match settings.ModifierKey.
+    this.keyMapTargets_ = [{
+      value: settings.ModifierKey.SEARCH_KEY,
+      name: loadTimeData.getString('keyboardKeySearch'),
+    }, {
+      value: settings.ModifierKey.CONTROL_KEY,
+      name: loadTimeData.getString('keyboardKeyCtrl')
+    }, {
+      value: settings.ModifierKey.ALT_KEY,
+      name: loadTimeData.getString('keyboardKeyAlt')
+    }, {
+      value: settings.ModifierKey.CAPS_LOCK_KEY,
+      name: loadTimeData.getString('keyboardKeyCapsLock')
+    }, {
+      value: settings.ModifierKey.ESCAPE_KEY,
+      name: loadTimeData.getString('keyboardKeyEscape')
+    }, {
+      value: settings.ModifierKey.BACKSPACE_KEY,
+      name: loadTimeData.getString('keyboardKeyBackspace')
+    }, {
+      value: settings.ModifierKey.VOID_KEY,
+      name: loadTimeData.getString('keyboardKeyDisabled')
+    }];
   },
 
   /**

@@ -2366,6 +2366,9 @@
     <message name="IDS_SETTINGS_KEYBOARD_KEY_ESCAPE" desc="In Device Settings, the dropdown list item for the Escape key.">
       Escape
     </message>
+    <message name="IDS_SETTINGS_KEYBOARD_KEY_BACKSPACE" desc="In Device Settings, the dropdown list item for the Backspace key.">
+      Backspace
+    </message>
     <message name="IDS_SETTINGS_KEYBOARD_KEY_DISABLED" desc="In Device Settings, the dropdown list item for a disabled key.">
       Disabled
     </message>

@@ -275,6 +275,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[::prefs::kLanguageRemapCapsLockKeyTo] =
       settings_private::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)[::prefs::kLanguageRemapBackspaceKeyTo] =
+      settings_private::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)[::prefs::kLanguageRemapEscapeKeyTo] =
+      settings_private::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[::prefs::kLanguageRemapDiamondKeyTo] =
       settings_private::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[::prefs::kLanguageSendFunctionKeys] =

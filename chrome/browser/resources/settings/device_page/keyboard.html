@@ -16,7 +16,7 @@
       <div class="start">$i18n{keyboardKeySearch}</div>
       <settings-dropdown-menu
           pref="{{prefs.settings.language.xkb_remap_search_key_to}}"
-          menu-options="[[keyMapTargetsWithCapsLock_]]">
+          menu-options="[[keyMapTargets_]]">
       </settings-dropdown-menu>
     </div>
     <div class="settings-box">
@@ -38,7 +38,7 @@
         <div class="start">$i18n{keyboardKeyCapsLock}</div>
         <settings-dropdown-menu
             pref="{{prefs.settings.language.remap_caps_lock_key_to}}"
-            menu-options="[[keyMapTargetsWithCapsLock_]]">
+            menu-options="[[keyMapTargets_]]">
         </settings-dropdown-menu>
       </div>
     </template>
@@ -51,6 +51,20 @@
         </settings-dropdown-menu>
       </div>
     </template>
+    <div class="settings-box">
+      <div class="start">$i18n{keyboardKeyEscape}</div>
+      <settings-dropdown-menu
+          pref="{{prefs.settings.language.remap_escape_key_to}}"
+          menu-options="[[keyMapTargets_]]">
+      </settings-dropdown-menu>
+    </div>
+    <div class="settings-box">
+      <div class="start">$i18n{keyboardKeyBackspace}</div>
+      <settings-dropdown-menu
+          pref="{{prefs.settings.language.remap_backspace_key_to}}"
+          menu-options="[[keyMapTargets_]]">
+      </settings-dropdown-menu>
+    </div>
     <div class="settings-box">
       <settings-checkbox
           pref="{{prefs.settings.language.send_function_keys}}"

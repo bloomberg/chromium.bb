@@ -33,6 +33,7 @@
       'dependencies': [
         '../compiled_resources2.gyp:route',
         '../prefs/compiled_resources2.gyp:prefs_types',
+        '../controls/compiled_resources2.gyp:settings_dropdown_menu',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
