@@ -601,10 +601,6 @@ var WGLUStats = (function() {
   Stats.prototype.render = function(projectionMat, modelViewMat) {
     var gl = this.gl;
 
-    // Render text first, minor win for early fragment discard
-    mat4_multiply(this.modelViewMatrix, modelViewMat, this.textMatrix);
-    this.sevenSegmentText.render(projectionMat, this.modelViewMatrix, this.fps + " FP5");
-
     gl.useProgram(this.program);
 
     gl.uniformMatrix4fv(this.uniforms.projectionMat, false, projectionMat);
@@ -621,6 +617,9 @@ var WGLUStats = (function() {
 
     // Draw the graph and background in a single call
     gl.drawElements(gl.TRIANGLES, this.fpsIndexCount, gl.UNSIGNED_SHORT, 0);
+
+    mat4_multiply(this.modelViewMatrix, modelViewMat, this.textMatrix);
+    this.sevenSegmentText.render(projectionMat, this.modelViewMatrix, this.fps + " FP5");
   }
 
   Stats.prototype.renderOrtho = function(x, y, width, height) {
