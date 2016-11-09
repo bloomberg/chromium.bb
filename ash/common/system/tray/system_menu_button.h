@@ -7,6 +7,7 @@
 
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/macros.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 
@@ -33,9 +34,19 @@ class SystemMenuButton : public views::ImageButton {
   };
 
   // Constructs the button with |listener| and a centered icon corresponding to
-  // |icon|. |ink_drop_style| specifies which flavor of the ink drop should be
-  // used. |accessible_name_id| corresponds to the string in
-  // ui::ResourceBundle to use for the button's accessible and tooltip text.
+  // |normal_icon| when button is enabled and |disabled_icon| when it is
+  // disabled. |ink_drop_style| specifies which flavor of the ink drop should be
+  // used. |accessible_name_id| corresponds to the string in ui::ResourceBundle
+  // to use for the button's accessible and tooltip text.
+  SystemMenuButton(views::ButtonListener* listener,
+                   InkDropStyle ink_drop_style,
+                   gfx::ImageSkia normal_icon,
+                   gfx::ImageSkia disabled_icon,
+                   int accessible_name_id);
+
+  // Similar to the above constructor. Just gets a single vector icon and
+  // creates the normal and disabled icons based on that using default menu icon
+  // colors.
   SystemMenuButton(views::ButtonListener* listener,
                    InkDropStyle ink_drop_style,
                    const gfx::VectorIcon& icon,

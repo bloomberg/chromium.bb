@@ -10,6 +10,7 @@
 #include "ash/common/system/chromeos/network/network_icon.h"
 #include "ash/common/system/chromeos/network/network_icon_animation.h"
 #include "ash/common/system/chromeos/network/network_list_delegate.h"
+#include "ash/common/system/tray/system_menu_button.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -30,7 +31,6 @@
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -54,7 +54,6 @@ const int kSectionHeaderRowVerticalInset = 4;
 const int kSectionHeaderRowLeftInset = 18;
 const int kSectionHeaderRowRightInset = 14;
 const int kSectionHeaderRowChildSpacing = 14;
-const int kFocusBorderInset = 1;
 
 bool IsProhibitedByPolicy(const chromeos::NetworkState* network) {
   if (!NetworkTypePattern::WiFi().MatchesType(network->type()))
@@ -227,7 +226,7 @@ class WifiHeaderRowView : public NetworkListViewMd::SectionHeaderRowView {
   ~WifiHeaderRowView() override {}
 
   void SetEnabled(bool enabled) override {
-    join_->SetVisible(enabled);
+    join_->SetEnabled(enabled);
     SectionHeaderRowView::SetEnabled(enabled);
   }
 
@@ -247,24 +246,17 @@ class WifiHeaderRowView : public NetworkListViewMd::SectionHeaderRowView {
     const SkColor prominent_color =
         theme->GetSystemColor(ui::NativeTheme::kColorId_ProminentButtonColor);
 
-    // TODO(varkha): Make this a SystemMenuButton.
-    join_ = new views::ImageButton(this);
-    join_->SetVisible(enabled);
-    gfx::ImageSkia join_image = network_icon::GetImageForNewWifiNetwork(
-        SkColorSetA(prominent_color, 0xFF / 2), prominent_color);
-    join_->SetImage(views::CustomButton::STATE_NORMAL, &join_image);
-
-    const SkColor focus_color =
-        theme->GetSystemColor(ui::NativeTheme::kColorId_FocusedBorderColor);
-    const int horizontal_padding =
-        (kSectionHeaderRowSize - join_image.width()) / 2;
-    const int vertical_padding =
-        (kSectionHeaderRowSize - join_image.height()) / 2;
-    join_->SetBorder(views::CreateEmptyBorder(
-        gfx::Insets(vertical_padding, horizontal_padding)));
-    join_->SetFocusForPlatform();
-    join_->SetFocusPainter(views::Painter::CreateSolidFocusPainter(
-        focus_color, gfx::Insets(kFocusBorderInset)));
+    gfx::ImageSkia normal_image = network_icon::GetImageForNewWifiNetwork(
+        SkColorSetA(prominent_color, kJoinIconAlpha),
+        SkColorSetA(prominent_color, kJoinBadgeAlpha));
+    gfx::ImageSkia disabled_image = network_icon::GetImageForNewWifiNetwork(
+        SkColorSetA(prominent_color, kDisabledJoinIconAlpha),
+        SkColorSetA(prominent_color, kDisabledJoinBadgeAlpha));
+    join_ = new SystemMenuButton(this, SystemMenuButton::InkDropStyle::SQUARE,
+                                 normal_image, disabled_image,
+                                 IDS_ASH_STATUS_TRAY_OTHER_WIFI);
+    join_->set_ink_drop_base_color(prominent_color);
+    join_->SetEnabled(enabled);
 
     container()->AddChildView(join_);
   }
@@ -278,10 +270,22 @@ class WifiHeaderRowView : public NetworkListViewMd::SectionHeaderRowView {
   }
 
  private:
+  // Full opacity for badge.
+  static constexpr int kJoinBadgeAlpha = 0xFF;
+
+  // .30 opacity for icon.
+  static constexpr int kJoinIconAlpha = 0x4D;
+
+  // .38 opacity for disabled badge.
+  static constexpr int kDisabledJoinBadgeAlpha = 0x61;
+
+  // .30 * .38 opacity for disabled icon.
+  static constexpr int kDisabledJoinIconAlpha = 0x1D;
+
   NetworkListDelegate* network_list_delegate_;
 
   // A button to invoke "Join Wi-Fi network" dialog.
-  views::ImageButton* join_;
+  SystemMenuButton* join_;
 
   DISALLOW_COPY_AND_ASSIGN(WifiHeaderRowView);
 };

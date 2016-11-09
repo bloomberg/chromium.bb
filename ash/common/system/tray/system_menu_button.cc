@@ -20,17 +20,18 @@ namespace ash {
 
 SystemMenuButton::SystemMenuButton(views::ButtonListener* listener,
                                    InkDropStyle ink_drop_style,
-                                   const gfx::VectorIcon& icon,
+                                   gfx::ImageSkia normal_icon,
+                                   gfx::ImageSkia disabled_icon,
                                    int accessible_name_id)
     : views::ImageButton(listener), ink_drop_style_(ink_drop_style) {
-  gfx::ImageSkia image = gfx::CreateVectorIcon(icon, kMenuIconColor);
-  SetImage(views::Button::STATE_NORMAL, &image);
-  gfx::ImageSkia disabled_image =
-      gfx::CreateVectorIcon(icon, kMenuIconColorDisabled);
-  SetImage(views::Button::STATE_DISABLED, &disabled_image);
+  DCHECK_EQ(normal_icon.width(), disabled_icon.width());
+  DCHECK_EQ(normal_icon.height(), disabled_icon.height());
 
-  const int horizontal_padding = (kMenuButtonSize - image.width()) / 2;
-  const int vertical_padding = (kMenuButtonSize - image.height()) / 2;
+  SetImage(views::Button::STATE_NORMAL, &normal_icon);
+  SetImage(views::Button::STATE_DISABLED, &disabled_icon);
+
+  const int horizontal_padding = (kMenuButtonSize - normal_icon.width()) / 2;
+  const int vertical_padding = (kMenuButtonSize - normal_icon.height()) / 2;
   SetBorder(views::CreateEmptyBorder(vertical_padding, horizontal_padding,
                                      vertical_padding, horizontal_padding));
 
@@ -47,6 +48,16 @@ SystemMenuButton::SystemMenuButton(views::ButtonListener* listener,
   set_ink_drop_base_color(kTrayPopupInkDropBaseColor);
   set_ink_drop_visible_opacity(kTrayPopupInkDropRippleOpacity);
 }
+
+SystemMenuButton::SystemMenuButton(views::ButtonListener* listener,
+                                   InkDropStyle ink_drop_style,
+                                   const gfx::VectorIcon& icon,
+                                   int accessible_name_id)
+    : SystemMenuButton(listener,
+                       ink_drop_style,
+                       gfx::CreateVectorIcon(icon, kMenuIconColor),
+                       gfx::CreateVectorIcon(icon, kMenuIconColorDisabled),
+                       accessible_name_id) {}
 
 SystemMenuButton::~SystemMenuButton() {}
 
