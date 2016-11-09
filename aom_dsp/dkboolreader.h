@@ -69,7 +69,8 @@ void aom_dk_reader_fill(struct aom_dk_reader *r);
 const uint8_t *aom_dk_reader_find_end(struct aom_dk_reader *r);
 
 static INLINE uint32_t aom_dk_reader_tell(const struct aom_dk_reader *r) {
-  const uint32_t bits_read = (r->buffer - r->buffer_start) * CHAR_BIT;
+  const uint32_t bits_read =
+      (uint32_t)((r->buffer - r->buffer_start) * CHAR_BIT);
   const int count =
       (r->count < LOTS_OF_BITS) ? r->count : r->count - LOTS_OF_BITS;
   assert(r->buffer >= r->buffer_start);

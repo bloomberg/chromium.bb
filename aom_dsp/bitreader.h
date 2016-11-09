@@ -78,7 +78,7 @@ static INLINE int aom_reader_init(aom_reader *r, const uint8_t *buffer,
 #elif CONFIG_DAALA_EC
   (void)decrypt_cb;
   (void)decrypt_state;
-  return aom_daala_reader_init(r, buffer, size);
+  return aom_daala_reader_init(r, buffer, (int)size);
 #else
   return aom_dk_reader_init(r, buffer, size, decrypt_cb, decrypt_state);
 #endif

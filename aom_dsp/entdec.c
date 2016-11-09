@@ -479,8 +479,8 @@ uint32_t od_ec_dec_bits_(od_ec_dec *dec, unsigned ftb) {
           This will always be slightly larger than the exact value (e.g., all
            rounding error is in the positive direction).*/
 int od_ec_dec_tell(const od_ec_dec *dec) {
-  return ((dec->end - dec->eptr) + (dec->bptr - dec->buf)) * 8 - dec->cnt -
-         dec->nend_bits + dec->tell_offs;
+  return (int)(((dec->end - dec->eptr) + (dec->bptr - dec->buf)) * 8 -
+               dec->cnt - dec->nend_bits + dec->tell_offs);
 }
 
 /*Returns the number of bits "used" by the decoded symbols so far.

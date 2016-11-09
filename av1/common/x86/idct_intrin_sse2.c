@@ -576,7 +576,7 @@ static INLINE void flip_buffer_lr_8x8(__m128i *in) {
 static INLINE void scale_sqrt2_8x4(__m128i *in) {
   // Implements 'ROUND_POWER_OF_TWO(input * Sqrt2, DCT_CONST_BITS)'
   // for each element
-  const __m128i v_scale_w = _mm_set1_epi16(Sqrt2);
+  const __m128i v_scale_w = _mm_set1_epi16((int16_t)Sqrt2);
 
   const __m128i v_p0l_w = _mm_mullo_epi16(in[0], v_scale_w);
   const __m128i v_p0h_w = _mm_mulhi_epi16(in[0], v_scale_w);
@@ -609,7 +609,7 @@ static INLINE void scale_sqrt2_8x4(__m128i *in) {
 static INLINE void scale_sqrt2_8x8(__m128i *in) {
   // Implements 'ROUND_POWER_OF_TWO_SIGNED(input * Sqrt2, DCT_CONST_BITS)'
   // for each element
-  const __m128i v_scale_w = _mm_set1_epi16(Sqrt2);
+  const __m128i v_scale_w = _mm_set1_epi16((int16_t)Sqrt2);
 
   const __m128i v_p0l_w = _mm_mullo_epi16(in[0], v_scale_w);
   const __m128i v_p0h_w = _mm_mulhi_epi16(in[0], v_scale_w);
