@@ -14,8 +14,6 @@
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
-#include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/history_state_util.h"
 #import "ios/web/navigation/crw_session_certificate_policy_manager.h"
@@ -33,8 +31,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-using base::UserMetricsAction;
 
 namespace {
 NSString* const kCertificatePolicyManagerKey = @"certificatePolicyManager";
@@ -634,19 +630,14 @@ NSString* const kWindowNameKey = @"windowName";
     return;
 
   NSInteger newNavigationIndex = [_entries indexOfObject:entry];
-  NSInteger delta = newNavigationIndex - _currentNavigationIndex;
-  if (delta < 0) {
-    for (int i = delta; i < 0; i++) {
-      base::RecordAction(UserMetricsAction("Back"));
-    }
+  if (newNavigationIndex < _currentNavigationIndex) {
+    // Going back.
     [self discardNonCommittedEntries];
-  } else if (0 < delta) {
-    for (int i = 0; i < delta; i++) {
-      base::RecordAction(UserMetricsAction("Forward"));
-    }
+  } else if (_currentNavigationIndex < newNavigationIndex) {
+    // Going forward.
     [self discardTransientEntry];
   } else {
-    // delta is 0, no need to change current navigation index.
+    // |delta| is 0, no need to change current navigation index.
     return;
   }
 
