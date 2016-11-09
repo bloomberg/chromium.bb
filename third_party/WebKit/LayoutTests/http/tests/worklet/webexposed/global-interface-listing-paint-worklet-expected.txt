@@ -258,6 +258,11 @@ CONSOLE MESSAGE: line 137:     method set
 CONSOLE MESSAGE: line 137:     method values
 CONSOLE MESSAGE: line 137: interface WorkletGlobalScope
 CONSOLE MESSAGE: line 137:     method constructor
+CONSOLE MESSAGE: line 137: interface WritableStream
+CONSOLE MESSAGE: line 137:     getter locked
+CONSOLE MESSAGE: line 137:     method abort
+CONSOLE MESSAGE: line 137:     method constructor
+CONSOLE MESSAGE: line 137:     method getWriter
 CONSOLE MESSAGE: line 137: global object
 CONSOLE MESSAGE: line 137:     attribute console
 CONSOLE MESSAGE: line 137:     method gc

@@ -8220,6 +8220,11 @@ interface Worklet
     attribute @@toStringTag
     method constructor
     method import
+interface WritableStream
+    getter locked
+    method abort
+    method constructor
+    method getWriter
 interface XMLDocument : Document
     attribute @@toStringTag
     method constructor
