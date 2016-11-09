@@ -363,8 +363,11 @@ bool RunArcExternalProtocolDialog(const GURL& url,
   // This function is for external protocols that Chrome cannot handle.
   DCHECK(!url.SchemeIsHTTPOrHTTPS()) << url;
 
-  if (ShouldIgnoreNavigation(page_transition))
+  if (ShouldIgnoreNavigation(page_transition)) {
+    LOG(WARNING) << "RunArcExternalProtocolDialog: ignoring " << url
+                 << " with PageTransition=" << page_transition;
     return false;
+  }
 
   auto* instance = ArcIntentHelperBridge::GetIntentHelperInstance(
       "RequestUrlHandlerList", kMinVersionForRequestUrlHandlerList);
