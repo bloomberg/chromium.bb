@@ -384,6 +384,93 @@ TEST_F(CRWSessionControllerTest,
       [session_controller_ currentEntry]);
 }
 
+// Tests copying session controller state without replacing it.
+TEST_F(CRWSessionControllerTest, CopyStateFromSessionController) {
+  // Add 1 committed and 1 pending entry to target controller.
+  [session_controller_ addPendingEntry:GURL("http://www.url.com/2")
+                              referrer:web::Referrer()
+                            transition:ui::PAGE_TRANSITION_TYPED
+                     rendererInitiated:NO];
+  [session_controller_ commitPendingEntry];
+  [session_controller_ addPendingEntry:GURL("http://www.url.com/3")
+                              referrer:web::Referrer()
+                            transition:ui::PAGE_TRANSITION_TYPED
+                     rendererInitiated:NO];
+
+  // Create source session controller with 1 committed entry.
+  base::scoped_nsobject<CRWSessionController> other_session_controller(
+      [[CRWSessionController alloc] initWithWindowName:nil
+                                              openerId:nil
+                                           openedByDOM:NO
+                                 openerNavigationIndex:0
+                                          browserState:&browser_state_]);
+  [other_session_controller addPendingEntry:GURL("http://www.url.com/0")
+                                   referrer:web::Referrer()
+                                 transition:ui::PAGE_TRANSITION_TYPED
+                          rendererInitiated:NO];
+  [other_session_controller commitPendingEntry];
+  [other_session_controller addPendingEntry:GURL("http://www.url.com/1")
+                                   referrer:web::Referrer()
+                                 transition:ui::PAGE_TRANSITION_TYPED
+                          rendererInitiated:NO];
+
+  // Copy and verify the state of target session controller.
+  [session_controller_ copyStateFromAndPrune:other_session_controller.get()
+                                replaceState:NO];
+
+  EXPECT_EQ(2U, [[session_controller_ entries] count]);
+  EXPECT_EQ(1, [session_controller_ currentNavigationIndex]);
+  EXPECT_EQ(-1, [session_controller_ previousNavigationIndex]);
+  EXPECT_EQ(GURL("http://www.url.com/0"),
+            [session_controller_ URLForSessionAtIndex:0]);
+  EXPECT_EQ(GURL("http://www.url.com/2"),
+            [session_controller_ URLForSessionAtIndex:1]);
+  EXPECT_EQ(GURL("http://www.url.com/3"),
+            [[session_controller_ pendingEntry] navigationItem]->GetURL());
+}
+
+// Tests replacing session controller state.
+TEST_F(CRWSessionControllerTest, ReplaceStateFromSessionController) {
+  // Add 1 committed and 1 pending entry to target controller.
+  [session_controller_ addPendingEntry:GURL("http://www.url.com/2")
+                              referrer:web::Referrer()
+                            transition:ui::PAGE_TRANSITION_TYPED
+                     rendererInitiated:NO];
+  [session_controller_ commitPendingEntry];
+  [session_controller_ addPendingEntry:GURL("http://www.url.com/3")
+                              referrer:web::Referrer()
+                            transition:ui::PAGE_TRANSITION_TYPED
+                     rendererInitiated:NO];
+
+  // Create source session controller with 1 committed entry.
+  base::scoped_nsobject<CRWSessionController> other_session_controller(
+      [[CRWSessionController alloc] initWithWindowName:nil
+                                              openerId:nil
+                                           openedByDOM:NO
+                                 openerNavigationIndex:0
+                                          browserState:&browser_state_]);
+  [other_session_controller addPendingEntry:GURL("http://www.url.com/0")
+                                   referrer:web::Referrer()
+                                 transition:ui::PAGE_TRANSITION_TYPED
+                          rendererInitiated:NO];
+  [other_session_controller commitPendingEntry];
+  [other_session_controller addPendingEntry:GURL("http://www.url.com/1")
+                                   referrer:web::Referrer()
+                                 transition:ui::PAGE_TRANSITION_TYPED
+                          rendererInitiated:NO];
+
+  // Copy and verify the state of target session controller.
+  [session_controller_ copyStateFromAndPrune:other_session_controller.get()
+                                replaceState:YES];
+  EXPECT_EQ(1U, [[session_controller_ entries] count]);
+  EXPECT_EQ(0, [session_controller_ currentNavigationIndex]);
+  EXPECT_EQ(-1, [session_controller_ previousNavigationIndex]);
+  EXPECT_EQ(GURL("http://www.url.com/0"),
+            [session_controller_ URLForSessionAtIndex:0]);
+  EXPECT_EQ(GURL("http://www.url.com/3"),
+            [[session_controller_ pendingEntry] navigationItem]->GetURL());
+}
+
 TEST_F(CRWSessionControllerTest, GoBackWithoutCommitedEntry) {
   [session_controller_ goBack];
 
