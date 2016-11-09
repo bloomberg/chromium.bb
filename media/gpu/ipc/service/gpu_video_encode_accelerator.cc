@@ -59,6 +59,10 @@ bool MakeDecoderContextCurrent(
   return true;
 }
 
+void DropSharedMemory(std::unique_ptr<base::SharedMemory> shm) {
+  // Just let |shm| fall out of scope.
+}
+
 #if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
 std::unique_ptr<VideoEncodeAccelerator> CreateV4L2VEA() {
   scoped_refptr<V4L2Device> device = V4L2Device::Create();
@@ -99,13 +103,73 @@ std::unique_ptr<VideoEncodeAccelerator> CreateMediaFoundationVEA() {
 
 }  // anonymous namespace
 
+class GpuVideoEncodeAccelerator::MessageFilter : public IPC::MessageFilter {
+ public:
+  MessageFilter(GpuVideoEncodeAccelerator* owner, int32_t host_route_id)
+      : owner_(owner), host_route_id_(host_route_id) {}
+
+  void OnChannelError() override { sender_ = nullptr; }
+
+  void OnChannelClosing() override { sender_ = nullptr; }
+
+  void OnFilterAdded(IPC::Channel* channel) override { sender_ = channel; }
+
+  void OnFilterRemoved() override { owner_->OnFilterRemoved(); }
+
+  bool OnMessageReceived(const IPC::Message& msg) override {
+    if (msg.routing_id() != host_route_id_)
+      return false;
+
+    IPC_BEGIN_MESSAGE_MAP(MessageFilter, msg)
+      IPC_MESSAGE_FORWARD(AcceleratedVideoEncoderMsg_Encode, owner_,
+                          GpuVideoEncodeAccelerator::OnEncode)
+      IPC_MESSAGE_FORWARD(AcceleratedVideoEncoderMsg_UseOutputBitstreamBuffer,
+                          owner_,
+                          GpuVideoEncodeAccelerator::OnUseOutputBitstreamBuffer)
+      IPC_MESSAGE_FORWARD(
+          AcceleratedVideoEncoderMsg_RequestEncodingParametersChange, owner_,
+          GpuVideoEncodeAccelerator::OnRequestEncodingParametersChange)
+      IPC_MESSAGE_UNHANDLED(return false)
+    IPC_END_MESSAGE_MAP()
+    return true;
+  }
+
+  bool SendOnIOThread(IPC::Message* message) {
+    if (!sender_ || message->is_sync()) {
+      DCHECK(!message->is_sync());
+      delete message;
+      return false;
+    }
+    return sender_->Send(message);
+  }
+
+ protected:
+  ~MessageFilter() override {}
+
+ private:
+  GpuVideoEncodeAccelerator* const owner_;
+  const int32_t host_route_id_;
+  // The sender to which this filter was added.
+  IPC::Sender* sender_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(MessageFilter);
+};
+
 GpuVideoEncodeAccelerator::GpuVideoEncodeAccelerator(
     int32_t host_route_id,
-    gpu::GpuCommandBufferStub* stub)
+    gpu::GpuCommandBufferStub* stub,
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
     : host_route_id_(host_route_id),
       stub_(stub),
       input_format_(PIXEL_FORMAT_UNKNOWN),
       output_buffer_size_(0),
+      filter_removed_(base::WaitableEvent::ResetPolicy::MANUAL,
+                      base::WaitableEvent::InitialState::NOT_SIGNALED),
+      encoder_worker_thread_("EncoderWorkerThread"),
+      main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      io_task_runner_(io_task_runner),
+      encode_task_runner_(main_task_runner_),
+      weak_this_factory_for_encoder_worker_(this),
       weak_this_factory_(this) {
   stub_->AddDestructionObserver(this);
   make_context_current_ =
@@ -116,13 +180,21 @@ GpuVideoEncodeAccelerator::~GpuVideoEncodeAccelerator() {
   // This class can only be self-deleted from OnWillDestroyStub(), which means
   // the VEA has already been destroyed in there.
   DCHECK(!encoder_);
+  if (encoder_worker_thread_.IsRunning()) {
+    encoder_worker_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&GpuVideoEncodeAccelerator::DestroyOnEncoderWorker,
+                   weak_this_factory_for_encoder_worker_.GetWeakPtr()));
+    encoder_worker_thread_.Stop();
+  }
 }
 
 bool GpuVideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
                                            const gfx::Size& input_visible_size,
                                            VideoCodecProfile output_profile,
                                            uint32_t initial_bitrate) {
-  DVLOG(1) << __FUNCTION__
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DVLOG(1) << __func__
            << " input_format=" << VideoPixelFormatToString(input_format)
            << ", input_visible_size=" << input_visible_size.ToString()
            << ", output_profile=" << GetProfileName(output_profile)
@@ -130,14 +202,14 @@ bool GpuVideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
   DCHECK(!encoder_);
 
   if (!stub_->channel()->AddRoute(host_route_id_, stub_->stream_id(), this)) {
-    DLOG(ERROR) << __FUNCTION__ << " failed to add route";
+    DLOG(ERROR) << __func__ << " failed to add route";
     return false;
   }
 
   if (input_visible_size.width() > limits::kMaxDimension ||
       input_visible_size.height() > limits::kMaxDimension ||
       input_visible_size.GetArea() > limits::kMaxCanvas) {
-    DLOG(ERROR) << __FUNCTION__ << "too large input_visible_size "
+    DLOG(ERROR) << __func__ << "too large input_visible_size "
                 << input_visible_size.ToString();
     return false;
   }
@@ -153,11 +225,26 @@ bool GpuVideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
                              initial_bitrate, this)) {
       input_format_ = input_format;
       input_visible_size_ = input_visible_size;
+      // Attempt to set up performing encoding tasks on IO thread, if supported
+      // by the VEA.
+      if (encoder_->TryToSetupEncodeOnSeparateThread(
+              weak_this_factory_.GetWeakPtr(), io_task_runner_)) {
+        filter_ = new MessageFilter(this, host_route_id_);
+        stub_->channel()->AddFilter(filter_.get());
+        encode_task_runner_ = io_task_runner_;
+      }
+
+      if (!encoder_worker_thread_.Start()) {
+        DLOG(ERROR) << "Failed spawning encoder worker thread.";
+        return false;
+      }
+      encoder_worker_task_runner_ = encoder_worker_thread_.task_runner();
+
       return true;
     }
   }
   encoder_.reset();
-  DLOG(ERROR) << __FUNCTION__ << " VEA initialization failed";
+  DLOG(ERROR) << __func__ << " VEA initialization failed";
   return false;
 }
 
@@ -176,12 +263,24 @@ bool GpuVideoEncodeAccelerator::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+bool GpuVideoEncodeAccelerator::Send(IPC::Message* message) {
+  if (filter_ && io_task_runner_->BelongsToCurrentThread()) {
+    return filter_->SendOnIOThread(message);
+  }
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  return stub_->channel()->Send(message);
+}
+
 void GpuVideoEncodeAccelerator::RequireBitstreamBuffers(
     unsigned int input_count,
     const gfx::Size& input_coded_size,
     size_t output_buffer_size) {
-  Send(new AcceleratedVideoEncoderHostMsg_RequireBitstreamBuffers(
-      host_route_id_, input_count, input_coded_size, output_buffer_size));
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  if (!Send(new AcceleratedVideoEncoderHostMsg_RequireBitstreamBuffers(
+          host_route_id_, input_count, input_coded_size, output_buffer_size))) {
+    DLOG(ERROR) << __func__ << " failed.";
+    return;
+  }
   input_coded_size_ = input_coded_size;
   output_buffer_size_ = output_buffer_size;
 }
@@ -191,17 +290,39 @@ void GpuVideoEncodeAccelerator::BitstreamBufferReady(
     size_t payload_size,
     bool key_frame,
     base::TimeDelta timestamp) {
-  Send(new AcceleratedVideoEncoderHostMsg_BitstreamBufferReady(
-      host_route_id_, bitstream_buffer_id, payload_size, key_frame, timestamp));
+  DCHECK(CheckIfCalledOnCorrectThread());
+  if (!Send(new AcceleratedVideoEncoderHostMsg_BitstreamBufferReady(
+          host_route_id_, bitstream_buffer_id, payload_size, key_frame,
+          timestamp))) {
+    DLOG(ERROR) << __func__ << " failed.";
+  }
 }
 
 void GpuVideoEncodeAccelerator::NotifyError(
     VideoEncodeAccelerator::Error error) {
-  Send(new AcceleratedVideoEncoderHostMsg_NotifyError(host_route_id_, error));
+  if (!Send(new AcceleratedVideoEncoderHostMsg_NotifyError(host_route_id_,
+                                                           error))) {
+    DLOG(ERROR) << __func__ << " failed.";
+  }
 }
 
 void GpuVideoEncodeAccelerator::OnWillDestroyStub() {
+  DVLOG(2) << __func__;
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK(stub_);
+
+  // The stub is going away, so we have to stop and destroy VEA here before
+  // returning. We cannot destroy the VEA before the IO thread message filter is
+  // removed however, since we cannot service incoming messages with VEA gone.
+  // We cannot simply check for existence of VEA on IO thread though, because
+  // we don't want to synchronize the IO thread with the ChildThread.
+  // So we have to wait for the RemoveFilter callback here instead and remove
+  // the VEA after it arrives and before returning.
+  if (filter_) {
+    stub_->channel()->RemoveFilter(filter_.get());
+    filter_removed_.Wait();
+  }
+
   stub_->channel()->RemoveRoute(host_route_id_);
   stub_->RemoveDestructionObserver(this);
   encoder_.reset();
@@ -252,27 +373,86 @@ GpuVideoEncodeAccelerator::GetVEAFactoryFunctions(
   return vea_factory_functions;
 }
 
+void GpuVideoEncodeAccelerator::OnFilterRemoved() {
+  DVLOG(2) << __func__;
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+
+  // We're destroying; cancel all callbacks.
+  weak_this_factory_.InvalidateWeakPtrs();
+  filter_removed_.Signal();
+}
+
 void GpuVideoEncodeAccelerator::OnEncode(
     const AcceleratedVideoEncoderMsg_Encode_Params& params) {
-  DVLOG(3) << __FUNCTION__ << " frame_id = " << params.frame_id
+  DVLOG(3) << __func__ << " frame_id = " << params.frame_id
            << ", buffer_size=" << params.buffer_size
            << ", force_keyframe=" << params.force_keyframe;
+  DCHECK(CheckIfCalledOnCorrectThread());
   DCHECK_EQ(PIXEL_FORMAT_I420, input_format_);
-
-  // Wrap into a SharedMemory in the beginning, so that |params.buffer_handle|
-  // is cleaned properly in case of an early return.
-  std::unique_ptr<base::SharedMemory> shm(
-      new base::SharedMemory(params.buffer_handle, true));
 
   if (!encoder_)
     return;
 
   if (params.frame_id < 0) {
-    DLOG(ERROR) << __FUNCTION__ << " invalid frame_id=" << params.frame_id;
+    DLOG(ERROR) << __func__ << " invalid frame_id=" << params.frame_id;
     NotifyError(VideoEncodeAccelerator::kPlatformFailureError);
     return;
   }
 
+  encoder_worker_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&GpuVideoEncodeAccelerator::CreateEncodeFrameOnEncoderWorker,
+                 weak_this_factory_for_encoder_worker_.GetWeakPtr(), params));
+}
+
+void GpuVideoEncodeAccelerator::OnUseOutputBitstreamBuffer(
+    int32_t buffer_id,
+    base::SharedMemoryHandle buffer_handle,
+    uint32_t buffer_size) {
+  DVLOG(3) << __func__ << " buffer_id=" << buffer_id
+           << ", buffer_size=" << buffer_size;
+  DCHECK(CheckIfCalledOnCorrectThread());
+  if (!encoder_)
+    return;
+  if (buffer_id < 0) {
+    DLOG(ERROR) << __func__ << " invalid buffer_id=" << buffer_id;
+    NotifyError(VideoEncodeAccelerator::kPlatformFailureError);
+    return;
+  }
+  if (buffer_size < output_buffer_size_) {
+    DLOG(ERROR) << __func__ << " buffer too small for buffer_id=" << buffer_id;
+    NotifyError(VideoEncodeAccelerator::kPlatformFailureError);
+    return;
+  }
+  encoder_->UseOutputBitstreamBuffer(
+      BitstreamBuffer(buffer_id, buffer_handle, buffer_size));
+}
+
+void GpuVideoEncodeAccelerator::OnDestroy() {
+  DVLOG(2) << __func__;
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  OnWillDestroyStub();
+}
+
+void GpuVideoEncodeAccelerator::OnRequestEncodingParametersChange(
+    uint32_t bitrate,
+    uint32_t framerate) {
+  DVLOG(2) << __func__ << " bitrate=" << bitrate << ", framerate=" << framerate;
+  DCHECK(CheckIfCalledOnCorrectThread());
+  if (!encoder_)
+    return;
+  encoder_->RequestEncodingParametersChange(bitrate, framerate);
+}
+
+void GpuVideoEncodeAccelerator::CreateEncodeFrameOnEncoderWorker(
+    const AcceleratedVideoEncoderMsg_Encode_Params& params) {
+  DVLOG(3) << __func__;
+  DCHECK(encoder_worker_task_runner_->BelongsToCurrentThread());
+
+  // Wrap into a SharedMemory in the beginning, so that |params.buffer_handle|
+  // is cleaned properly in case of an early return.
+  std::unique_ptr<base::SharedMemory> shm(
+      new base::SharedMemory(params.buffer_handle, true));
   const uint32_t aligned_offset =
       params.buffer_offset % base::SysInfo::VMAllocationGranularity();
   base::CheckedNumeric<off_t> map_offset = params.buffer_offset;
@@ -281,15 +461,20 @@ void GpuVideoEncodeAccelerator::OnEncode(
   map_size += aligned_offset;
 
   if (!map_offset.IsValid() || !map_size.IsValid()) {
-    DLOG(ERROR) << __FUNCTION__ << "  invalid map_offset or map_size";
-    NotifyError(VideoEncodeAccelerator::kPlatformFailureError);
+    DLOG(ERROR) << __func__ << "  invalid map_offset or map_size";
+    encode_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&GpuVideoEncodeAccelerator::NotifyError,
+                              weak_this_factory_.GetWeakPtr(),
+                              VideoEncodeAccelerator::kPlatformFailureError));
     return;
   }
 
   if (!shm->MapAt(map_offset.ValueOrDie(), map_size.ValueOrDie())) {
-    DLOG(ERROR) << __FUNCTION__
-                << " could not map frame_id=" << params.frame_id;
-    NotifyError(VideoEncodeAccelerator::kPlatformFailureError);
+    DLOG(ERROR) << __func__ << " could not map frame_id=" << params.frame_id;
+    encode_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&GpuVideoEncodeAccelerator::NotifyError,
+                              weak_this_factory_.GetWeakPtr(),
+                              VideoEncodeAccelerator::kPlatformFailureError));
     return;
   }
 
@@ -300,64 +485,59 @@ void GpuVideoEncodeAccelerator::OnEncode(
       input_visible_size_, shm_memory, params.buffer_size, params.buffer_handle,
       params.buffer_offset, params.timestamp);
   if (!frame) {
-    DLOG(ERROR) << __FUNCTION__ << " could not create a frame";
-    NotifyError(VideoEncodeAccelerator::kPlatformFailureError);
+    DLOG(ERROR) << __func__ << " could not create a frame";
+    encode_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&GpuVideoEncodeAccelerator::NotifyError,
+                              weak_this_factory_.GetWeakPtr(),
+                              VideoEncodeAccelerator::kPlatformFailureError));
     return;
   }
-  frame->AddDestructionObserver(BindToCurrentLoop(base::Bind(
-      &GpuVideoEncodeAccelerator::EncodeFrameFinished,
-      weak_this_factory_.GetWeakPtr(), params.frame_id, base::Passed(&shm))));
-  encoder_->Encode(frame, params.force_keyframe);
+
+  // We wrap |shm| in a callback and add it as a destruction observer, so it
+  // stays alive and mapped until |frame| goes out of scope.
+  frame->AddDestructionObserver(
+      base::Bind(&DropSharedMemory, base::Passed(&shm)));
+  encode_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&GpuVideoEncodeAccelerator::OnEncodeFrameCreated,
+                            weak_this_factory_.GetWeakPtr(), params.frame_id,
+                            params.force_keyframe, frame));
 }
 
-void GpuVideoEncodeAccelerator::OnUseOutputBitstreamBuffer(
-    int32_t buffer_id,
-    base::SharedMemoryHandle buffer_handle,
-    uint32_t buffer_size) {
-  DVLOG(3) << __FUNCTION__ << " buffer_id=" << buffer_id
-           << ", buffer_size=" << buffer_size;
-  if (!encoder_)
-    return;
-  if (buffer_id < 0) {
-    DLOG(ERROR) << __FUNCTION__ << " invalid buffer_id=" << buffer_id;
-    NotifyError(VideoEncodeAccelerator::kPlatformFailureError);
-    return;
-  }
-  if (buffer_size < output_buffer_size_) {
-    DLOG(ERROR) << __FUNCTION__
-                << " buffer too small for buffer_id=" << buffer_id;
-    NotifyError(VideoEncodeAccelerator::kPlatformFailureError);
-    return;
-  }
-  encoder_->UseOutputBitstreamBuffer(
-      BitstreamBuffer(buffer_id, buffer_handle, buffer_size));
+void GpuVideoEncodeAccelerator::DestroyOnEncoderWorker() {
+  DCHECK(encoder_worker_task_runner_->BelongsToCurrentThread());
+  weak_this_factory_for_encoder_worker_.InvalidateWeakPtrs();
 }
 
-void GpuVideoEncodeAccelerator::OnDestroy() {
-  DVLOG(2) << __FUNCTION__;
-  OnWillDestroyStub();
-}
-
-void GpuVideoEncodeAccelerator::OnRequestEncodingParametersChange(
-    uint32_t bitrate,
-    uint32_t framerate) {
-  DVLOG(2) << __FUNCTION__ << " bitrate=" << bitrate
-           << ", framerate=" << framerate;
-  if (!encoder_)
-    return;
-  encoder_->RequestEncodingParametersChange(bitrate, framerate);
-}
-
-void GpuVideoEncodeAccelerator::EncodeFrameFinished(
+void GpuVideoEncodeAccelerator::OnEncodeFrameCreated(
     int32_t frame_id,
-    std::unique_ptr<base::SharedMemory> shm) {
-  Send(new AcceleratedVideoEncoderHostMsg_NotifyInputDone(host_route_id_,
-                                                          frame_id));
-  // Just let |shm| fall out of scope.
+    bool force_keyframe,
+    const scoped_refptr<media::VideoFrame>& frame) {
+  DVLOG(3) << __func__;
+  DCHECK(CheckIfCalledOnCorrectThread());
+
+  if (!frame) {
+    DLOG(ERROR) << __func__ << " could not create a frame";
+    NotifyError(VideoEncodeAccelerator::kPlatformFailureError);
+    return;
+  }
+
+  frame->AddDestructionObserver(BindToCurrentLoop(
+      base::Bind(&GpuVideoEncodeAccelerator::EncodeFrameFinished,
+                 weak_this_factory_.GetWeakPtr(), frame_id)));
+  encoder_->Encode(frame, force_keyframe);
 }
 
-void GpuVideoEncodeAccelerator::Send(IPC::Message* message) {
-  stub_->channel()->Send(message);
+void GpuVideoEncodeAccelerator::EncodeFrameFinished(int32_t frame_id) {
+  DCHECK(CheckIfCalledOnCorrectThread());
+  if (!Send(new AcceleratedVideoEncoderHostMsg_NotifyInputDone(host_route_id_,
+                                                               frame_id))) {
+    DLOG(ERROR) << __func__ << " failed.";
+  }
+}
+
+bool GpuVideoEncodeAccelerator::CheckIfCalledOnCorrectThread() {
+  return (filter_ && io_task_runner_->BelongsToCurrentThread()) ||
+         (!filter_ && main_task_runner_->BelongsToCurrentThread());
 }
 
 }  // namespace media

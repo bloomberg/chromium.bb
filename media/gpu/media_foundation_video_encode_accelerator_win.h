@@ -15,10 +15,8 @@
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_checker.h"
 #include "base/win/scoped_comptr.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/video/video_encode_accelerator.h"
@@ -27,11 +25,12 @@ namespace media {
 
 // Media Foundation implementation of the VideoEncodeAccelerator interface for
 // Windows.
-// This class saves the task runner on which it is constructed and returns
-// encoded data to the client using that same task runner. This class has
-// DCHECKs to makes sure that methods are called in sequence. It starts an
-// internal encoder thread on which VideoEncodeAccelerator implementation tasks
-// are posted.
+// This class saves the task runner on which it is constructed and runs client
+// callbacks using that same task runner. If TryToSetupEncodeOnSeparateThread()
+// is called, it uses the given |encode_task_runner| instead to return encoded
+// data. This class has DCHECKs to makes sure that methods are called in the
+// correct task runners. It starts an internal encoder thread on which
+// VideoEncodeAccelerator implementation tasks are posted.
 class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
     : public VideoEncodeAccelerator {
  public:
@@ -50,6 +49,10 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   void RequestEncodingParametersChange(uint32_t bitrate,
                                        uint32_t framerate) override;
   void Destroy() override;
+  bool TryToSetupEncodeOnSeparateThread(
+      const base::WeakPtr<Client>& encode_client,
+      const scoped_refptr<base::SingleThreadTaskRunner>& encode_task_runner)
+      override;
 
   // Preload dlls required for encoding.
   static void PreSandboxInitialization();
@@ -73,7 +76,8 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   // Initializes encoder parameters for real-time use.
   bool SetEncoderModes();
 
-  // Helper function to notify the client of an error on |client_task_runner_|.
+  // Helper function to notify the client of an error on
+  // |main_client_task_runner_|.
   void NotifyError(VideoEncodeAccelerator::Error error);
 
   // Encoding tasks to be run on |encoder_thread_|.
@@ -86,7 +90,8 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   void UseOutputBitstreamBufferTask(
       std::unique_ptr<BitstreamBufferRef> buffer_ref);
 
-  // Copies EncodeOutput into a BitstreamBuffer and returns it to the |client_|.
+  // Copies EncodeOutput into a BitstreamBuffer and returns it to the
+  // |encode_client_|.
   void ReturnBitstreamBuffer(
       std::unique_ptr<EncodeOutput> encode_output,
       std::unique_ptr<MediaFoundationVideoEncodeAccelerator::BitstreamBufferRef>
@@ -125,15 +130,17 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   base::win::ScopedComPtr<IMFSample> output_sample_;
 
   // To expose client callbacks from VideoEncodeAccelerator.
-  // NOTE: all calls to this object *MUST* be executed on |client_task_runner_|.
-  base::WeakPtr<Client> client_;
-  std::unique_ptr<base::WeakPtrFactory<Client>> client_ptr_factory_;
+  // NOTE: all calls to this object *MUST* be executed on
+  // |main_client_task_runner_|.
+  base::WeakPtr<Client> main_client_;
+  std::unique_ptr<base::WeakPtrFactory<Client>> main_client_weak_factory_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_client_task_runner_;
 
-  // Our original calling task runner for the child thread.
-  const scoped_refptr<base::SequencedTaskRunner> client_task_runner_;
-  // Sequence checker to enforce that the methods of this object are called in
-  // sequence.
-  base::SequenceChecker sequence_checker_;
+  // Used to run client callback BitstreamBufferReady() on
+  // |encode_client_task_runner_| if given by
+  // TryToSetupEncodeOnSeparateThread().
+  base::WeakPtr<Client> encode_client_;
+  scoped_refptr<base::SingleThreadTaskRunner> encode_client_task_runner_;
 
   // This thread services tasks posted from the VEA API entry points by the
   // GPU child thread and CompressionCallback() posted from device thread.

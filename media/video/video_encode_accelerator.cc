@@ -17,6 +17,12 @@ VideoEncodeAccelerator::SupportedProfile::SupportedProfile()
 VideoEncodeAccelerator::SupportedProfile::~SupportedProfile() {
 }
 
+bool VideoEncodeAccelerator::TryToSetupEncodeOnSeparateThread(
+    const base::WeakPtr<Client>& encode_client,
+    const scoped_refptr<base::SingleThreadTaskRunner>& encode_task_runner) {
+  return false;
+}
+
 }  // namespace media
 
 namespace std {

@@ -166,8 +166,8 @@ void MediaGpuChannel::OnCreateVideoEncoder(
     Send(reply_message);
     return;
   }
-  GpuVideoEncodeAccelerator* encoder =
-      new GpuVideoEncodeAccelerator(params.encoder_route_id, stub);
+  GpuVideoEncodeAccelerator* encoder = new GpuVideoEncodeAccelerator(
+      params.encoder_route_id, stub, stub->channel()->io_task_runner());
   bool succeeded =
       encoder->Initialize(params.input_format, params.input_visible_size,
                           params.output_profile, params.initial_bitrate);

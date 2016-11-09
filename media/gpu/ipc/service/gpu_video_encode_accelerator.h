@@ -13,6 +13,8 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/threading/thread.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/service/gpu_command_buffer_stub.h"
 #include "ipc/ipc_listener.h"
@@ -36,11 +38,14 @@ namespace media {
 // IPC coming in from the renderer and passes it to the underlying VEA.
 class GpuVideoEncodeAccelerator
     : public IPC::Listener,
+      public IPC::Sender,
       public VideoEncodeAccelerator::Client,
       public gpu::GpuCommandBufferStub::DestructionObserver {
  public:
-  GpuVideoEncodeAccelerator(int32_t host_route_id,
-                            gpu::GpuCommandBufferStub* stub);
+  GpuVideoEncodeAccelerator(
+      int32_t host_route_id,
+      gpu::GpuCommandBufferStub* stub,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
   ~GpuVideoEncodeAccelerator() override;
 
   // Initialize this accelerator with the given parameters and send
@@ -52,6 +57,9 @@ class GpuVideoEncodeAccelerator
 
   // IPC::Listener implementation
   bool OnMessageReceived(const IPC::Message& message) override;
+
+  // IPC::Sender implementation
+  bool Send(IPC::Message* message) override;
 
   // VideoEncodeAccelerator::Client implementation.
   void RequireBitstreamBuffers(unsigned int input_count,
@@ -79,6 +87,11 @@ class GpuVideoEncodeAccelerator
   static std::vector<VEAFactoryFunction> GetVEAFactoryFunctions(
       const gpu::GpuPreferences& gpu_preferences);
 
+  class MessageFilter;
+
+  // Called on IO thread when |filter_| has been removed.
+  void OnFilterRemoved();
+
   // IPC handlers, proxying VideoEncodeAccelerator for the renderer
   // process.
   void OnEncode(const AcceleratedVideoEncoderMsg_Encode_Params& params);
@@ -89,9 +102,24 @@ class GpuVideoEncodeAccelerator
 
   void OnDestroy();
 
-  void EncodeFrameFinished(int32_t frame_id,
-                           std::unique_ptr<base::SharedMemory> shm);
-  void Send(IPC::Message* message);
+  // Operations that run on encoder worker thread.
+  void CreateEncodeFrameOnEncoderWorker(
+      const AcceleratedVideoEncoderMsg_Encode_Params& params);
+  void DestroyOnEncoderWorker();
+
+  // Completes encode tasks with the received |frame|.
+  void OnEncodeFrameCreated(int32_t frame_id,
+                            bool force_keyframe,
+                            const scoped_refptr<media::VideoFrame>& frame);
+
+  // Notifies renderer that |frame_id| can be reused as input for encode is
+  // completed.
+  void EncodeFrameFinished(int32_t frame_id);
+
+  // Checks that function is called on the correct thread. If MessageFilter is
+  // used, checks if it is called on |io_task_runner_|. If not, checks if it is
+  // called on |main_task_runner_|.
+  bool CheckIfCalledOnCorrectThread();
 
   // Route ID to communicate with the host.
   const uint32_t host_route_id_;
@@ -111,7 +139,36 @@ class GpuVideoEncodeAccelerator
   gfx::Size input_coded_size_;
   size_t output_buffer_size_;
 
-  // Weak pointer for VideoFrames that refer back to |this|.
+  // The message filter to run VEA encode methods on IO thread if VEA supports
+  // it.
+  scoped_refptr<MessageFilter> filter_;
+
+  // Used to wait on for |filter_| to be removed, before we can safely
+  // destroy the VEA.
+  base::WaitableEvent filter_removed_;
+
+  // This thread services the operations necessary for encode so that they
+  // wouldn't block |main_task_runner_| or |io_task_runner_|.
+  base::Thread encoder_worker_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> encoder_worker_task_runner_;
+
+  // GPU main thread task runner.
+  const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+
+  // GPU IO thread task runner.
+  const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+
+  // Task runner used for posting encode tasks. If
+  // TryToSetupEncodeOnSeperateThread() is true, |io_task_runner_| is used,
+  // otherwise |main_thread_task_runner_|.
+  scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner_;
+
+  // Weak pointer for referring back to |this| on |encoder_worker_task_runner_|.
+  base::WeakPtrFactory<GpuVideoEncodeAccelerator>
+      weak_this_factory_for_encoder_worker_;
+
+  // Weak pointer for VideoFrames that refer back to |this| on
+  // |main_task_runner| or |io_task_runner_|.
   base::WeakPtrFactory<GpuVideoEncodeAccelerator> weak_this_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuVideoEncodeAccelerator);

@@ -20,6 +20,7 @@
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/scoped_vector.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/process/process_handle.h"
@@ -890,6 +891,9 @@ class VEAClient : public VideoEncodeAccelerator::Client {
   void CreateEncoder();
   void DestroyEncoder();
 
+  void TryToSetupEncodeOnSeperateThread();
+  void DestroyEncodeOnSeperateThread();
+
   // VideoDecodeAccelerator::Client implementation.
   void RequireBitstreamBuffers(unsigned int input_count,
                                const gfx::Size& input_coded_size,
@@ -901,6 +905,10 @@ class VEAClient : public VideoEncodeAccelerator::Client {
   void NotifyError(VideoEncodeAccelerator::Error error) override;
 
  private:
+  void BitstreamBufferReadyOnMainThread(int32_t bitstream_buffer_id,
+                                        size_t payload_size,
+                                        bool key_frame,
+                                        base::TimeDelta timestamp);
   bool has_encoder() { return encoder_.get(); }
 
   // Return the number of encoded frames per second.
@@ -1085,6 +1093,24 @@ class VEAClient : public VideoEncodeAccelerator::Client {
 
   // The last timestamp popped from |frame_timestamps_|.
   base::TimeDelta previous_timestamp_;
+
+  // Dummy thread used to redirect encode tasks, represents GPU IO thread.
+  base::Thread io_thread_;
+
+  // Task runner on which |encoder_| is created.
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+
+  // Task runner used for posting encode tasks. If
+  // TryToSetupEncodeOnSeperateThread() is true, |io_thread|'s task runner is
+  // used, otherwise |main_thread_task_runner_|.
+  scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner_;
+
+  // Weak factory used for posting tasks on |encode_task_runner_|.
+  std::unique_ptr<base::WeakPtrFactory<VideoEncodeAccelerator>>
+      encoder_weak_factory_;
+
+  // Weak factory used for TryToSetupEncodeOnSeperateThread().
+  base::WeakPtrFactory<VEAClient> client_weak_factory_for_io_;
 };
 
 VEAClient::VEAClient(TestStream* test_stream,
@@ -1123,7 +1149,9 @@ VEAClient::VEAClient(TestStream* test_stream,
       requested_bitrate_(0),
       requested_framerate_(0),
       requested_subsequent_bitrate_(0),
-      requested_subsequent_framerate_(0) {
+      requested_subsequent_framerate_(0),
+      io_thread_("IOThread"),
+      client_weak_factory_for_io_(this) {
   if (keyframe_period_)
     LOG_ASSERT(kMaxKeyframeDelay < keyframe_period_);
 
@@ -1161,6 +1189,9 @@ void VEAClient::CreateEncoder() {
   DCHECK(thread_checker_.CalledOnValidThread());
   LOG_ASSERT(!has_encoder());
 
+  main_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  encode_task_runner_ = main_thread_task_runner_;
+
   std::unique_ptr<VideoEncodeAccelerator> encoders[] = {
       CreateFakeVEA(), CreateV4L2VEA(), CreateVaapiVEA(), CreateVTVEA(),
       CreateMFVEA()};
@@ -1176,6 +1207,9 @@ void VEAClient::CreateEncoder() {
     if (encoder_->Initialize(kInputFormat, test_stream_->visible_size,
                              test_stream_->requested_profile,
                              requested_bitrate_, this)) {
+      encoder_weak_factory_.reset(
+          new base::WeakPtrFactory<VideoEncodeAccelerator>(encoder_.get()));
+      TryToSetupEncodeOnSeperateThread();
       SetStreamParameters(requested_bitrate_, requested_framerate_);
       SetState(CS_INITIALIZED);
 
@@ -1196,6 +1230,20 @@ void VEAClient::DecodeCompleted() {
   SetState(CS_VALIDATED);
 }
 
+void VEAClient::TryToSetupEncodeOnSeperateThread() {
+  // Start dummy thread if not started already.
+  if (!io_thread_.IsRunning())
+    ASSERT_TRUE(io_thread_.Start());
+
+  if (!encoder_->TryToSetupEncodeOnSeparateThread(
+          client_weak_factory_for_io_.GetWeakPtr(), io_thread_.task_runner())) {
+    io_thread_.Stop();
+    return;
+  }
+
+  encode_task_runner_ = io_thread_.task_runner();
+}
+
 void VEAClient::DecodeFailed() {
   SetState(CS_ERROR);
 }
@@ -1204,10 +1252,31 @@ void VEAClient::DestroyEncoder() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!has_encoder())
     return;
+
+  if (io_thread_.IsRunning()) {
+    encode_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&VEAClient::DestroyEncodeOnSeperateThread,
+                              client_weak_factory_for_io_.GetWeakPtr()));
+    io_thread_.Stop();
+  } else {
+    DestroyEncodeOnSeperateThread();
+  }
+
   // Clear the objects that should be destroyed on the same thread as creation.
   encoder_.reset();
   input_timer_.reset();
   quality_validator_.reset();
+}
+
+void VEAClient::DestroyEncodeOnSeperateThread() {
+  encoder_weak_factory_->InvalidateWeakPtrs();
+  // |client_weak_factory_for_io_| is used only when
+  // TryToSetupEncodeOnSeperateThread() returns true, in order to have weak
+  // pointers to use when posting tasks on |io_thread_|. It is safe to
+  // invalidate here because |encode_task_runner_| points to |io_thread_| in
+  // this case. If not, it is safe to invalidate it on
+  // |main_thread_task_runner_| as no weak pointers are used.
+  client_weak_factory_for_io_.InvalidateWeakPtrs();
 }
 
 void VEAClient::UpdateTestStreamData(bool mid_stream_bitrate_switch,
@@ -1330,7 +1399,24 @@ void VEAClient::BitstreamBufferReady(int32_t bitstream_buffer_id,
                                      size_t payload_size,
                                      bool key_frame,
                                      base::TimeDelta timestamp) {
+  ASSERT_TRUE(encode_task_runner_->BelongsToCurrentThread());
+  main_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VEAClient::BitstreamBufferReadyOnMainThread,
+                            base::Unretained(this), bitstream_buffer_id,
+                            payload_size, key_frame, timestamp));
+}
+
+void VEAClient::NotifyError(VideoEncodeAccelerator::Error error) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  SetState(CS_ERROR);
+}
+
+void VEAClient::BitstreamBufferReadyOnMainThread(int32_t bitstream_buffer_id,
+                                                 size_t payload_size,
+                                                 bool key_frame,
+                                                 base::TimeDelta timestamp) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   ASSERT_LE(payload_size, output_buffer_size_);
 
   IdToSHM::iterator it = output_buffers_at_client_.find(bitstream_buffer_id);
@@ -1382,11 +1468,6 @@ void VEAClient::BitstreamBufferReady(int32_t bitstream_buffer_id,
   FeedEncoderWithOutput(shm);
 }
 
-void VEAClient::NotifyError(VideoEncodeAccelerator::Error error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  SetState(CS_ERROR);
-}
-
 void VEAClient::SetState(ClientState new_state) {
   DVLOG(4) << "Changing state " << state_ << "->" << new_state;
   note_->Notify(new_state);
@@ -1399,8 +1480,10 @@ void VEAClient::SetStreamParameters(unsigned int bitrate,
   current_framerate_ = framerate;
   LOG_ASSERT(current_requested_bitrate_ > 0UL);
   LOG_ASSERT(current_framerate_ > 0UL);
-  encoder_->RequestEncodingParametersChange(current_requested_bitrate_,
-                                            current_framerate_);
+  encode_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&VideoEncodeAccelerator::RequestEncodingParametersChange,
+                 encoder_weak_factory_->GetWeakPtr(), bitrate, framerate));
   DVLOG(1) << "Switched parameters to " << current_requested_bitrate_
            << " bps @ " << current_framerate_ << " FPS";
 }
@@ -1499,7 +1582,11 @@ void VEAClient::FeedEncoderWithOneInput() {
     LOG_ASSERT(input_id == static_cast<int32_t>(encode_start_time_.size()));
     encode_start_time_.push_back(base::TimeTicks::Now());
   }
-  encoder_->Encode(video_frame, force_keyframe);
+
+  encode_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VideoEncodeAccelerator::Encode,
+                            encoder_weak_factory_->GetWeakPtr(), video_frame,
+                            force_keyframe));
 }
 
 void VEAClient::FeedEncoderWithOutput(base::SharedMemory* shm) {
@@ -1517,7 +1604,11 @@ void VEAClient::FeedEncoderWithOutput(base::SharedMemory* shm) {
   LOG_ASSERT(output_buffers_at_client_
                  .insert(std::make_pair(bitstream_buffer.id(), shm))
                  .second);
-  encoder_->UseOutputBitstreamBuffer(bitstream_buffer);
+
+  encode_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&VideoEncodeAccelerator::UseOutputBitstreamBuffer,
+                 encoder_weak_factory_->GetWeakPtr(), bitstream_buffer));
 }
 
 bool VEAClient::HandleEncodedFrame(bool keyframe) {
