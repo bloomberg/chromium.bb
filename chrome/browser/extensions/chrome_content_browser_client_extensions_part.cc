@@ -26,6 +26,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_process_policy.h"
+#include "chrome/common/url_constants.h"
 #include "components/guest_view/browser/guest_view_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browser_url_handler.h"
@@ -38,6 +39,7 @@
 #include "content/public/browser/vpn_service_proxy.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
 #include "extensions/browser/bad_message.h"
@@ -602,6 +604,19 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldAllowOpenURL(
     base::debug::DumpWithoutCrashing();
 
     *result = false;
+    return true;
+  }
+
+  // Navigations from chrome:// or chrome-search:// pages need to be allowed,
+  // even if |to_url| is not web-accessible.  See https://crbug.com/662602.
+  //
+  // Note that this is intentionally done after the check for blob: and
+  // filesystem: URLs above, for consistency with the renderer-side checks
+  // which already disallow navigations from chrome URLs to blob/filesystem
+  // URLs.
+  if (site_url.SchemeIs(content::kChromeUIScheme) ||
+      site_url.SchemeIs(chrome::kChromeSearchScheme)) {
+    *result = true;
     return true;
   }
 

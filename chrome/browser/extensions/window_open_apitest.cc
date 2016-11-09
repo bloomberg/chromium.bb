@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -24,6 +25,7 @@
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/constants.h"
@@ -294,17 +296,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenNoPrivileges) {
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
                        WindowOpenInaccessibleResourceFromDataURL) {
   base::HistogramTester uma;
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("uitest").AppendASCII("window_open")));
+  const extensions::Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("uitest").AppendASCII("window_open"));
+  ASSERT_TRUE(extension);
 
   ui_test_utils::NavigateToURL(browser(), GURL("data:text/html,foo"));
 
   // test.html is not web-accessible and should not be loaded.
-  GURL extension_url(extensions::Extension::GetResourceURL(
-      extensions::Extension::GetBaseURLFromExtensionId(
-          last_loaded_extension_id()),
-      "test.html"));
-
+  GURL extension_url(extension->GetResourceURL("test.html"));
   content::WindowedNotificationObserver windowed_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
@@ -326,4 +325,41 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
   uma.ExpectUniqueSample("Extensions.ShouldAllowOpenURL.Failure",
                          2, /* FAILURE_SCHEME_NOT_HTTP_OR_HTTPS_OR_EXTENSION */
                          1);
+}
+
+// Test that navigating to an extension URL is allowed on chrome:// and
+// chrome-search:// pages, even for URLs that are not web-accessible.
+// See https://crbug.com/662602.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
+                       NavigateToInaccessibleResourceFromChromeURL) {
+  // Mint an extension URL which is not web-accessible.
+  const extensions::Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("uitest").AppendASCII("window_open"));
+  ASSERT_TRUE(extension);
+  GURL extension_url(extension->GetResourceURL("test.html"));
+
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Navigate to the non-web-accessible URL from chrome:// and
+  // chrome-search:// pages.  Verify that the page loads correctly.
+  GURL history_url(chrome::kChromeUIHistoryURL);
+  GURL ntp_url(chrome::kChromeSearchLocalNtpUrl);
+  ASSERT_TRUE(history_url.SchemeIs(content::kChromeUIScheme));
+  ASSERT_TRUE(ntp_url.SchemeIs(chrome::kChromeSearchScheme));
+  GURL start_urls[] = {history_url, ntp_url};
+  for (size_t i = 0; i < arraysize(start_urls); i++) {
+    ui_test_utils::NavigateToURL(browser(), start_urls[i]);
+    EXPECT_EQ(start_urls[i], tab->GetMainFrame()->GetLastCommittedURL());
+
+    content::TestNavigationObserver observer(tab);
+    ASSERT_TRUE(content::ExecuteScript(
+        tab, "location.href = '" + extension_url.spec() + "';"));
+    observer.Wait();
+    EXPECT_EQ(extension_url, tab->GetMainFrame()->GetLastCommittedURL());
+    std::string result;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+        tab, "domAutomationController.send(document.body.innerText)", &result));
+    EXPECT_EQ("HOWDIE!!!", result);
+  }
 }
