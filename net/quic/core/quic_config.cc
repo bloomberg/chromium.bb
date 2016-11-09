@@ -423,7 +423,7 @@ QuicConfig::QuicConfig()
       multipath_enabled_(kMPTH, PRESENCE_OPTIONAL),
       connection_migration_disabled_(kNCMR, PRESENCE_OPTIONAL),
       alternate_server_address_(kASAD, PRESENCE_OPTIONAL),
-      force_hol_blocking_(kFHOL, PRESENCE_OPTIONAL) {
+      force_hol_blocking_(kFHL2, PRESENCE_OPTIONAL) {
   SetDefaults();
 }
 
@@ -434,8 +434,8 @@ QuicConfig::~QuicConfig() {}
 bool QuicConfig::SetInitialReceivedConnectionOptions(
     const QuicTagVector& tags) {
   if (HasReceivedConnectionOptions()) {
-    // If we have already received connection options (via handshake or due to a
-    // previous call), don't re-initialize.
+    // If we have already received connection options (via handshake or due to
+    // a previous call), don't re-initialize.
     return false;
   }
   connection_options_.SetReceivedValues(tags);

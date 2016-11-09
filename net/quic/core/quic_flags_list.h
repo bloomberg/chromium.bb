@@ -159,3 +159,6 @@ QUIC_FLAG(bool, FLAGS_quic_bugfix_reset_promised, true)
 // Set the retransmission alarm only when there are unacked
 // retransmittable packets.
 QUIC_FLAG(bool, FLAGS_quic_more_conservative_retransmission_alarm, true)
+
+// Enable QUIC force HOL blocking experiment.
+QUIC_FLAG(bool, FLAGS_quic_enable_force_hol_blocking, true)
