@@ -7784,43 +7784,39 @@ static int64_t handle_inter_mode(
       int64_t sseuv = INT64_MAX;
       int64_t rdcosty = INT64_MAX;
       int is_cost_valid_uv = 0;
+      // cost and distortion
       RD_STATS rd_stats_uv;
-
-      {
-        // Y cost and distortion
-        RD_STATS rd_stats_y;
-        av1_subtract_plane(x, bsize, 0);
-#if !CONFIG_PVQ
-        av1_subtract_plane(x, bsize, 0);
-#endif
+      RD_STATS rd_stats_y;
+      av1_subtract_plane(x, bsize, 0);
 #if CONFIG_VAR_TX
-        if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
-          select_tx_type_yrd(cpi, x, &rd_stats_y, bsize, ref_best_rd);
-          *rate_y = rd_stats_y.rate;
-          distortion_y = rd_stats_y.dist;
-          skippable_y = rd_stats_y.skip;
-          *psse = rd_stats_y.sse;
-        } else {
-          int idx, idy;
-          super_block_yrd(cpi, x, &rd_stats_y, bsize, ref_best_rd);
-          *rate_y = rd_stats_y.rate;
-          distortion_y = rd_stats_y.dist;
-          skippable_y = rd_stats_y.skip;
-          *psse = rd_stats_y.sse;
-          for (idy = 0; idy < xd->n8_h; ++idy)
-            for (idx = 0; idx < xd->n8_w; ++idx)
-              mbmi->inter_tx_size[idy][idx] = mbmi->tx_size;
-          memset(x->blk_skip[0], skippable_y,
-                 sizeof(uint8_t) * xd->n8_h * xd->n8_w * 4);
-        }
+      if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
+        select_tx_type_yrd(cpi, x, &rd_stats_y, bsize, ref_best_rd);
+        *rate_y = rd_stats_y.rate;
+        distortion_y = rd_stats_y.dist;
+        skippable_y = rd_stats_y.skip;
+        *psse = rd_stats_y.sse;
+      } else {
+        int idx, idy;
+        super_block_yrd(cpi, x, &rd_stats_y, bsize, ref_best_rd);
+        *rate_y = rd_stats_y.rate;
+        distortion_y = rd_stats_y.dist;
+        skippable_y = rd_stats_y.skip;
+        *psse = rd_stats_y.sse;
+        for (idy = 0; idy < xd->n8_h; ++idy)
+          for (idx = 0; idx < xd->n8_w; ++idx)
+            mbmi->inter_tx_size[idy][idx] = mbmi->tx_size;
+        memset(x->blk_skip[0], skippable_y,
+               sizeof(uint8_t) * xd->n8_h * xd->n8_w * 4);
+      }
 #else
+    /* clang-format off */
       super_block_yrd(cpi, x, &rd_stats_y, bsize, ref_best_rd);
       *rate_y = rd_stats_y.rate;
       distortion_y = rd_stats_y.dist;
       skippable_y = rd_stats_y.skip;
       *psse = rd_stats_y.sse;
+/* clang-format on */
 #endif  // CONFIG_VAR_TX
-      }
 
       if (*rate_y == INT_MAX) {
         *rate2 = INT_MAX;
