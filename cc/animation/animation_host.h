@@ -25,7 +25,6 @@ class ScrollOffset;
 
 namespace cc {
 
-class AnimationEvents;
 class AnimationPlayer;
 class AnimationTimeline;
 class ElementAnimations;
@@ -98,10 +97,10 @@ class CC_EXPORT AnimationHost : public NON_EXPORTED_BASE(MutatorHost) {
   bool ActivateAnimations() override;
   bool AnimateLayers(base::TimeTicks monotonic_time) override;
   bool UpdateAnimationState(bool start_ready_animations,
-                            AnimationEvents* events) override;
+                            MutatorEvents* events) override;
 
-  std::unique_ptr<AnimationEvents> CreateEvents() override;
-  void SetAnimationEvents(std::unique_ptr<AnimationEvents> events) override;
+  std::unique_ptr<MutatorEvents> CreateEvents() override;
+  void SetAnimationEvents(std::unique_ptr<MutatorEvents> events) override;
 
   bool ScrollOffsetAnimationWasInterrupted(ElementId element_id) const override;
 

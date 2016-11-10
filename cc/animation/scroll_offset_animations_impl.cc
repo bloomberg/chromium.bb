@@ -4,7 +4,6 @@
 
 #include "cc/animation/scroll_offset_animations_impl.h"
 
-#include "cc/animation/animation_events.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_player.h"

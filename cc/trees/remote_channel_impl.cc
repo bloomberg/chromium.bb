@@ -7,13 +7,13 @@
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
-#include "cc/animation/animation_events.h"
 #include "cc/proto/compositor_message.pb.h"
 #include "cc/proto/compositor_message_to_impl.pb.h"
 #include "cc/proto/compositor_message_to_main.pb.h"
 #include "cc/proto/gfx_conversions.h"
 #include "cc/trees/layer_tree_host_in_process.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "cc/trees/mutator_host.h"
 
 namespace cc {
 
@@ -315,7 +315,7 @@ void RemoteChannelImpl::DidCommitAndDrawFrame() {
 }
 
 void RemoteChannelImpl::SetAnimationEvents(
-    std::unique_ptr<AnimationEvents> queue) {}
+    std::unique_ptr<MutatorEvents> queue) {}
 
 void RemoteChannelImpl::DidLoseCompositorFrameSink() {
   DCHECK(task_runner_provider_->IsImplThread());

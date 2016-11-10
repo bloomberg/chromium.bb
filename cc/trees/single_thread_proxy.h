@@ -19,7 +19,7 @@
 
 namespace cc {
 
-class AnimationEvents;
+class MutatorEvents;
 class BeginFrameSource;
 class ContextProvider;
 class LayerTreeHostInProcess;
@@ -87,7 +87,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void SetNeedsCommitOnImplThread() override;
   void SetVideoNeedsBeginFrames(bool needs_begin_frames) override;
   void PostAnimationEventsToMainThreadOnImplThread(
-      std::unique_ptr<AnimationEvents> events) override;
+      std::unique_ptr<MutatorEvents> events) override;
   bool IsInsideDraw() override;
   void RenewTreePriority() override {}
   void PostDelayedAnimationTaskOnImplThread(const base::Closure& task,

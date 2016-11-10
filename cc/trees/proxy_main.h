@@ -15,7 +15,7 @@
 
 namespace cc {
 
-class AnimationEvents;
+class MutatorEvents;
 class BeginFrameSource;
 class ChannelMain;
 class CompositorFrameSink;
@@ -51,7 +51,7 @@ class CC_EXPORT ProxyMain : public Proxy {
   void DidReceiveCompositorFrameAck();
   void BeginMainFrameNotExpectedSoon();
   void DidCommitAndDrawFrame();
-  void SetAnimationEvents(std::unique_ptr<AnimationEvents> events);
+  void SetAnimationEvents(std::unique_ptr<MutatorEvents> events);
   void DidLoseCompositorFrameSink();
   void RequestNewCompositorFrameSink();
   void DidInitializeCompositorFrameSink(bool success);

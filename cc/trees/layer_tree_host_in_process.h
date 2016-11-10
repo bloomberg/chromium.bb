@@ -46,7 +46,7 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
-class AnimationEvents;
+class MutatorEvents;
 class BeginFrameSource;
 class ClientPictureCache;
 class EnginePictureCache;
@@ -207,7 +207,7 @@ class CC_EXPORT LayerTreeHostInProcess : public LayerTreeHost {
     return rendering_stats_instrumentation_.get();
   }
 
-  void SetAnimationEvents(std::unique_ptr<AnimationEvents> events);
+  void SetAnimationEvents(std::unique_ptr<MutatorEvents> events);
 
   bool has_gpu_rasterization_trigger() const {
     return has_gpu_rasterization_trigger_;

@@ -37,6 +37,12 @@ class ElementAnimationsTest : public AnimationTimelinesTest {
  public:
   ElementAnimationsTest() {}
   ~ElementAnimationsTest() override {}
+
+  std::unique_ptr<AnimationEvents> CreateEventsForTesting() {
+    auto mutator_events = host_impl_->CreateEvents();
+    return base::WrapUnique(
+        static_cast<AnimationEvents*>(mutator_events.release()));
+  }
 };
 
 // See animation_player_unittest.cc for integration with AnimationPlayer.
@@ -331,7 +337,7 @@ TEST_F(ElementAnimationsTest, AddedPlayerIsDestroyed) {
 
   element_animations_impl_->Animate(kInitialTickTime);
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
   element_animations_impl_->UpdateState(true, events.get());
   EXPECT_EQ(1u, events->events_.size());
   EXPECT_EQ(AnimationEvent::STARTED, events->events_[0].type);
@@ -360,7 +366,7 @@ TEST_F(ElementAnimationsTest, DoNotClobberStartTimes) {
   EXPECT_EQ(Animation::WAITING_FOR_TARGET_AVAILABILITY,
             player_impl_->GetAnimationById(animation_id)->run_state());
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
   element_animations_impl_->Animate(kInitialTickTime);
   element_animations_impl_->UpdateState(true, events.get());
 
@@ -396,7 +402,7 @@ TEST_F(ElementAnimationsTest, UseSpecifiedStartTimes) {
   EXPECT_EQ(Animation::WAITING_FOR_TARGET_AVAILABILITY,
             player_impl_->GetAnimationById(animation_id)->run_state());
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
   element_animations_impl_->Animate(kInitialTickTime);
   element_animations_impl_->UpdateState(true, events.get());
 
@@ -426,7 +432,7 @@ TEST_F(ElementAnimationsTest, Activation) {
   AnimationHost* host = client_.host();
   AnimationHost* host_impl = client_impl_.host();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   EXPECT_EQ(1u, host->all_element_animations_for_testing().size());
   EXPECT_EQ(1u, host_impl->all_element_animations_for_testing().size());
@@ -465,7 +471,7 @@ TEST_F(ElementAnimationsTest, Activation) {
             player_->GetAnimation(TargetProperty::OPACITY)->run_state());
   EXPECT_EQ(1u, host->active_element_animations_for_testing().size());
 
-  events = host_impl_->CreateEvents();
+  events = CreateEventsForTesting();
 
   element_animations_impl_->Animate(kInitialTickTime +
                                     TimeDelta::FromMilliseconds(1500));
@@ -521,7 +527,7 @@ TEST_F(ElementAnimationsTest, SyncPause) {
   TimeTicks time = kInitialTickTime;
 
   // Start the animations on each animations.
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
   element_animations_impl_->Animate(time);
   element_animations_impl_->UpdateState(true, events.get());
   EXPECT_EQ(1u, events->events_.size());
@@ -573,7 +579,7 @@ TEST_F(ElementAnimationsTest, DoNotSyncFinishedAnimation) {
   AttachTimelinePlayerLayer();
   CreateImplTimelineAndPlayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   EXPECT_FALSE(player_impl_->GetAnimation(TargetProperty::OPACITY));
 
@@ -587,7 +593,7 @@ TEST_F(ElementAnimationsTest, DoNotSyncFinishedAnimation) {
   EXPECT_EQ(Animation::WAITING_FOR_TARGET_AVAILABILITY,
             player_impl_->GetAnimationById(animation_id)->run_state());
 
-  events = host_impl_->CreateEvents();
+  events = CreateEventsForTesting();
   element_animations_impl_->Animate(kInitialTickTime);
   element_animations_impl_->UpdateState(true, events.get());
   EXPECT_EQ(1u, events->events_.size());
@@ -597,7 +603,7 @@ TEST_F(ElementAnimationsTest, DoNotSyncFinishedAnimation) {
   player_->NotifyAnimationStarted(events->events_[0]);
 
   // Complete animation on impl thread.
-  events = host_impl_->CreateEvents();
+  events = CreateEventsForTesting();
   element_animations_impl_->Animate(kInitialTickTime +
                                     TimeDelta::FromSeconds(1));
   element_animations_impl_->UpdateState(true, events.get());
@@ -622,7 +628,7 @@ TEST_F(ElementAnimationsTest, AnimationsAreDeleted) {
   AttachTimelinePlayerLayer();
   CreateImplTimelineAndPlayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   AddOpacityTransitionToPlayer(player_.get(), 1.0, 0.0f, 1.0f, false);
   element_animations_->Animate(kInitialTickTime);
@@ -653,7 +659,7 @@ TEST_F(ElementAnimationsTest, AnimationsAreDeleted) {
   EXPECT_FALSE(host_->needs_push_properties());
   EXPECT_FALSE(host_impl_->needs_push_properties());
 
-  events = host_impl_->CreateEvents();
+  events = CreateEventsForTesting();
   element_animations_impl_->Animate(kInitialTickTime +
                                     TimeDelta::FromMilliseconds(2000));
   element_animations_impl_->UpdateState(true, events.get());
@@ -708,7 +714,7 @@ TEST_F(ElementAnimationsTest, TrivialTransition) {
   CreateTestLayer(true, false);
   AttachTimelinePlayerLayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   std::unique_ptr<Animation> to_add(CreateAnimation(
       std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)),
@@ -738,7 +744,7 @@ TEST_F(ElementAnimationsTest, FilterTransition) {
   CreateTestLayer(true, false);
   AttachTimelinePlayerLayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   std::unique_ptr<KeyframedFilterAnimationCurve> curve(
       KeyframedFilterAnimationCurve::Create());
@@ -790,7 +796,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransition) {
   AttachTimelinePlayerLayer();
   CreateImplTimelineAndPlayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   gfx::ScrollOffset initial_value(100.f, 300.f);
   gfx::ScrollOffset target_value(300.f, 200.f);
@@ -866,7 +872,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransitionOnImplOnly) {
   AttachTimelinePlayerLayer();
   CreateImplTimelineAndPlayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   gfx::ScrollOffset initial_value(100.f, 300.f);
   gfx::ScrollOffset target_value(300.f, 200.f);
@@ -920,7 +926,7 @@ TEST_F(ElementAnimationsTest, UpdateStateWithoutAnimate) {
   AttachTimelinePlayerLayer();
   CreateImplTimelineAndPlayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   // Add first scroll offset animation.
   AddScrollOffsetAnimationToPlayer(player_impl_.get(),
@@ -978,7 +984,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransitionNoImplProvider) {
   EXPECT_TRUE(element_animations_impl_->has_element_in_pending_list());
   EXPECT_FALSE(element_animations_impl_->has_element_in_active_list());
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   gfx::ScrollOffset initial_value(500.f, 100.f);
   gfx::ScrollOffset target_value(300.f, 200.f);
@@ -1063,7 +1069,7 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
   AttachTimelinePlayerLayer();
   CreateImplTimelineAndPlayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   // First test the 1-argument version of RemoveAnimation.
   gfx::ScrollOffset target_value(300.f, 200.f);
@@ -1170,7 +1176,7 @@ TEST_F(ElementAnimationsTest,
   AttachTimelinePlayerLayer();
   CreateImplTimelineAndPlayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   TestAnimationDelegate delegate;
   player_impl_->set_animation_delegate(&delegate);
@@ -1197,7 +1203,7 @@ TEST_F(ElementAnimationsTest,
   EXPECT_TRUE(delegate.started());
   EXPECT_FALSE(delegate.finished());
 
-  events = host_impl_->CreateEvents();
+  events = CreateEventsForTesting();
   element_animations_impl_->Animate(kInitialTickTime + duration);
   EXPECT_EQ(duration, player_impl_->GetAnimation(TargetProperty::SCROLL_OFFSET)
                           ->curve()
@@ -1230,7 +1236,7 @@ TEST_F(ElementAnimationsTest, SpecifiedStartTimesAreSentToMainThreadDelegate) {
   EXPECT_EQ(Animation::WAITING_FOR_TARGET_AVAILABILITY,
             player_impl_->GetAnimationById(animation_id)->run_state());
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
   element_animations_impl_->Animate(kInitialTickTime);
   element_animations_impl_->UpdateState(true, events.get());
 
@@ -1249,7 +1255,7 @@ TEST_F(ElementAnimationsTest,
   CreateTestLayer(false, false);
   AttachTimelinePlayerLayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   std::unique_ptr<Animation> to_add(CreateAnimation(
       std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)),
@@ -1290,7 +1296,7 @@ TEST_F(ElementAnimationsTest, TrivialQueuing) {
   CreateTestLayer(false, false);
   AttachTimelinePlayerLayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   EXPECT_FALSE(player_->needs_to_start_animations());
 
@@ -1332,7 +1338,7 @@ TEST_F(ElementAnimationsTest, Interrupt) {
   CreateTestLayer(false, false);
   AttachTimelinePlayerLayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   player_->AddAnimation(CreateAnimation(
       std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)),
@@ -1368,7 +1374,7 @@ TEST_F(ElementAnimationsTest, ScheduleTogetherWhenAPropertyIsBlocked) {
   CreateTestLayer(false, false);
   AttachTimelinePlayerLayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   player_->AddAnimation(CreateAnimation(
       std::unique_ptr<AnimationCurve>(new FakeTransformTransition(1)), 1,
@@ -1405,7 +1411,7 @@ TEST_F(ElementAnimationsTest, ScheduleTogetherWithAnAnimWaiting) {
   CreateTestLayer(false, false);
   AttachTimelinePlayerLayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   player_->AddAnimation(CreateAnimation(
       std::unique_ptr<AnimationCurve>(new FakeTransformTransition(2)), 1,
@@ -1446,7 +1452,7 @@ TEST_F(ElementAnimationsTest, TrivialLooping) {
   CreateTestLayer(false, false);
   AttachTimelinePlayerLayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   std::unique_ptr<Animation> to_add(CreateAnimation(
       std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)),
@@ -1496,7 +1502,7 @@ TEST_F(ElementAnimationsTest, InfiniteLooping) {
   CreateTestLayer(false, false);
   AttachTimelinePlayerLayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   std::unique_ptr<Animation> to_add(CreateAnimation(
       std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)),
@@ -1543,7 +1549,7 @@ TEST_F(ElementAnimationsTest, PauseResume) {
   CreateTestLayer(false, false);
   AttachTimelinePlayerLayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   player_->AddAnimation(CreateAnimation(
       std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)),
@@ -1591,7 +1597,7 @@ TEST_F(ElementAnimationsTest, AbortAGroupedAnimation) {
   CreateTestLayer(false, false);
   AttachTimelinePlayerLayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   const int animation_id = 2;
   player_->AddAnimation(Animation::Create(
@@ -1635,7 +1641,7 @@ TEST_F(ElementAnimationsTest, PushUpdatesWhenSynchronizedStartTimeNeeded) {
   AttachTimelinePlayerLayer();
   CreateImplTimelineAndPlayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   std::unique_ptr<Animation> to_add(CreateAnimation(
       std::unique_ptr<AnimationCurve>(new FakeFloatTransition(2.0, 0.f, 1.f)),
@@ -1665,7 +1671,7 @@ TEST_F(ElementAnimationsTest, SkipUpdateState) {
   CreateTestLayer(true, false);
   AttachTimelinePlayerLayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   std::unique_ptr<Animation> first_animation(CreateAnimation(
       std::unique_ptr<AnimationCurve>(new FakeTransformTransition(1)), 1,
@@ -1688,7 +1694,7 @@ TEST_F(ElementAnimationsTest, SkipUpdateState) {
 
   element_animations_->Animate(kInitialTickTime +
                                TimeDelta::FromMilliseconds(2000));
-  events = host_impl_->CreateEvents();
+  events = CreateEventsForTesting();
   element_animations_->UpdateState(true, events.get());
 
   // Should have one STARTED event and one FINISHED event.
@@ -1714,7 +1720,7 @@ TEST_F(ElementAnimationsTest, InactiveObserverGetsTicked) {
   AttachTimelinePlayerLayer();
   CreateImplTimelineAndPlayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   const int id = 1;
   player_impl_->AddAnimation(CreateAnimation(
@@ -1958,7 +1964,7 @@ TEST_F(ElementAnimationsTest, ImplThreadAbortedAnimationGetsDeleted) {
   EXPECT_TRUE(host_impl_->needs_push_properties());
   EXPECT_TRUE(player_impl_->needs_push_properties());
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
   element_animations_impl_->Animate(kInitialTickTime);
   element_animations_impl_->UpdateState(true, events.get());
   EXPECT_TRUE(host_impl_->needs_push_properties());
@@ -2025,7 +2031,7 @@ TEST_F(ElementAnimationsTest, ImplThreadTakeoverAnimationGetsDeleted) {
       Animation::ABORTED_BUT_NEEDS_COMPLETION,
       player_impl_->GetAnimation(TargetProperty::SCROLL_OFFSET)->run_state());
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
   element_animations_impl_->Animate(kInitialTickTime);
   element_animations_impl_->UpdateState(true, events.get());
   EXPECT_TRUE(delegate_impl.finished());
@@ -2064,7 +2070,7 @@ TEST_F(ElementAnimationsTest, FinishedEventsForGroup) {
   AttachTimelinePlayerLayer();
   CreateImplTimelineAndPlayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   const int group_id = 1;
 
@@ -2089,7 +2095,7 @@ TEST_F(ElementAnimationsTest, FinishedEventsForGroup) {
   EXPECT_EQ(AnimationEvent::STARTED, events->events_[0].type);
   EXPECT_EQ(AnimationEvent::STARTED, events->events_[1].type);
 
-  events = host_impl_->CreateEvents();
+  events = CreateEventsForTesting();
   element_animations_impl_->Animate(kInitialTickTime +
                                     TimeDelta::FromMilliseconds(1000));
   element_animations_impl_->UpdateState(true, events.get());
@@ -2119,7 +2125,7 @@ TEST_F(ElementAnimationsTest, FinishedAndAbortedEventsForGroup) {
   AttachTimelinePlayerLayer();
   CreateImplTimelineAndPlayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   // Add two animations with the same group id.
   std::unique_ptr<Animation> first_animation(CreateAnimation(
@@ -2144,7 +2150,7 @@ TEST_F(ElementAnimationsTest, FinishedAndAbortedEventsForGroup) {
 
   player_impl_->AbortAnimations(TargetProperty::OPACITY, false);
 
-  events = host_impl_->CreateEvents();
+  events = CreateEventsForTesting();
   element_animations_impl_->Animate(kInitialTickTime +
                                     TimeDelta::FromMilliseconds(1000));
   element_animations_impl_->UpdateState(true, events.get());
@@ -2561,7 +2567,7 @@ TEST_F(ElementAnimationsTest, NewlyPushedAnimationWaitsForActivation) {
   AttachTimelinePlayerLayer();
   CreateImplTimelineAndPlayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   EXPECT_FALSE(player_->needs_to_start_animations());
   int animation_id =
@@ -2620,7 +2626,7 @@ TEST_F(ElementAnimationsTest, ActivationBetweenAnimateAndUpdateState) {
   AttachTimelinePlayerLayer();
   CreateImplTimelineAndPlayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   const int animation_id =
       AddOpacityTransitionToPlayer(player_.get(), 1, 0.5f, 1.f, true);
@@ -2671,7 +2677,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenTransformAnimationChanges) {
   AttachTimelinePlayerLayer();
   CreateImplTimelineAndPlayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   EXPECT_FALSE(client_.GetHasPotentialTransformAnimation(
       element_id_, ElementListType::ACTIVE));
@@ -2892,7 +2898,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenOpacityAnimationChanges) {
   AttachTimelinePlayerLayer();
   CreateImplTimelineAndPlayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   EXPECT_FALSE(client_.GetHasPotentialOpacityAnimation(
       element_id_, ElementListType::ACTIVE));
@@ -3108,7 +3114,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenFilterAnimationChanges) {
   AttachTimelinePlayerLayer();
   CreateImplTimelineAndPlayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   EXPECT_FALSE(client_.GetHasPotentialFilterAnimation(element_id_,
                                                       ElementListType::ACTIVE));
@@ -3350,7 +3356,7 @@ TEST_F(ElementAnimationsTest, PushedDeletedAnimationWaitsForActivation) {
   AttachTimelinePlayerLayer();
   CreateImplTimelineAndPlayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   const int animation_id =
       AddOpacityTransitionToPlayer(player_.get(), 1, 0.5f, 1.f, true);
@@ -3405,7 +3411,7 @@ TEST_F(ElementAnimationsTest, StartAnimationsAffectingDifferentObservers) {
   AttachTimelinePlayerLayer();
   CreateImplTimelineAndPlayer();
 
-  auto events = host_impl_->CreateEvents();
+  auto events = CreateEventsForTesting();
 
   const int first_animation_id =
       AddOpacityTransitionToPlayer(player_.get(), 1, 0.f, 1.f, true);

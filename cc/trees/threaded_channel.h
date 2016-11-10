@@ -119,7 +119,7 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
   void DidReceiveCompositorFrameAck() override;
   void BeginMainFrameNotExpectedSoon() override;
   void DidCommitAndDrawFrame() override;
-  void SetAnimationEvents(std::unique_ptr<AnimationEvents> events) override;
+  void SetAnimationEvents(std::unique_ptr<MutatorEvents> events) override;
   void DidLoseCompositorFrameSink() override;
   void RequestNewCompositorFrameSink() override;
   void DidInitializeCompositorFrameSink(bool success) override;

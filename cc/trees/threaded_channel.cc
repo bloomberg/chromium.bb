@@ -9,9 +9,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/animation/animation_events.h"
 #include "cc/animation/layer_tree_mutator.h"
 #include "cc/trees/layer_tree_host.h"
+#include "cc/trees/mutator_host.h"
 
 namespace cc {
 
@@ -214,7 +214,7 @@ void ThreadedChannel::DidCommitAndDrawFrame() {
 }
 
 void ThreadedChannel::SetAnimationEvents(
-    std::unique_ptr<AnimationEvents> events) {
+    std::unique_ptr<MutatorEvents> events) {
   DCHECK(IsImplThread());
   MainThreadTaskRunner()->PostTask(
       FROM_HERE, base::Bind(&ProxyMain::SetAnimationEvents,

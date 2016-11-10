@@ -10,7 +10,6 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/trace_event/trace_event_synthetic_delay.h"
-#include "cc/animation/animation_events.h"
 #include "cc/debug/benchmark_instrumentation.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/output/compositor_frame_sink.h"
@@ -18,6 +17,7 @@
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/trees/blocking_task_runner.h"
 #include "cc/trees/layer_tree_host_in_process.h"
+#include "cc/trees/mutator_host.h"
 #include "cc/trees/remote_channel_main.h"
 #include "cc/trees/scoped_abort_remaining_swap_promises.h"
 #include "cc/trees/threaded_channel.h"
@@ -88,7 +88,7 @@ void ProxyMain::DidCommitAndDrawFrame() {
   layer_tree_host_->DidCommitAndDrawFrame();
 }
 
-void ProxyMain::SetAnimationEvents(std::unique_ptr<AnimationEvents> events) {
+void ProxyMain::SetAnimationEvents(std::unique_ptr<MutatorEvents> events) {
   TRACE_EVENT0("cc", "ProxyMain::SetAnimationEvents");
   DCHECK(IsMainThread());
   layer_tree_host_->SetAnimationEvents(std::move(events));

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/animation/animation_events.h"
 #include "cc/test/fake_layer_tree_host_impl_client.h"
+#include "cc/trees/mutator_host.h"
 
 namespace cc {
 
@@ -12,6 +12,6 @@ bool FakeLayerTreeHostImplClient::IsInsideDraw() {
 }
 
 void FakeLayerTreeHostImplClient::PostAnimationEventsToMainThreadOnImplThread(
-    std::unique_ptr<AnimationEvents> events) {}
+    std::unique_ptr<MutatorEvents> events) {}
 
 }  // namespace cc

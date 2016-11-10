@@ -20,7 +20,7 @@ class ScrollOffset;
 
 namespace cc {
 
-class AnimationEvents;
+class MutatorEvents;
 class MutatorHostClient;
 
 // A MutatorHost owns all the animation and mutation effects.
@@ -54,10 +54,10 @@ class MutatorHost {
   virtual bool ActivateAnimations() = 0;
   virtual bool AnimateLayers(base::TimeTicks monotonic_time) = 0;
   virtual bool UpdateAnimationState(bool start_ready_animations,
-                                    AnimationEvents* events) = 0;
+                                    MutatorEvents* events) = 0;
 
-  virtual std::unique_ptr<AnimationEvents> CreateEvents() = 0;
-  virtual void SetAnimationEvents(std::unique_ptr<AnimationEvents> events) = 0;
+  virtual std::unique_ptr<MutatorEvents> CreateEvents() = 0;
+  virtual void SetAnimationEvents(std::unique_ptr<MutatorEvents> events) = 0;
 
   virtual bool ScrollOffsetAnimationWasInterrupted(
       ElementId element_id) const = 0;
@@ -125,6 +125,12 @@ class MutatorHost {
       base::TimeDelta delayed_by) = 0;
 
   virtual void ScrollAnimationAbort(bool needs_completion) = 0;
+};
+
+class MutatorEvents {
+ public:
+  virtual ~MutatorEvents() {}
+  virtual bool IsEmpty() const = 0;
 };
 
 }  // namespace cc

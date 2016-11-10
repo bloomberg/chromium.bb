@@ -19,7 +19,7 @@ class FakeChannelImpl : public ChannelImpl {
   void DidReceiveCompositorFrameAck() override {}
   void BeginMainFrameNotExpectedSoon() override {}
   void DidCommitAndDrawFrame() override {}
-  void SetAnimationEvents(std::unique_ptr<AnimationEvents> queue) override;
+  void SetAnimationEvents(std::unique_ptr<MutatorEvents> queue) override;
   void DidLoseCompositorFrameSink() override {}
   void RequestNewCompositorFrameSink() override {}
   void DidInitializeCompositorFrameSink(bool success) override {}

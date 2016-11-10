@@ -10,9 +10,10 @@
 
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_curve.h"
+#include "cc/animation/element_id.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/filter_operations.h"
-#include "cc/trees/mutator_host_client.h"
+#include "cc/trees/mutator_host.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
@@ -46,10 +47,13 @@ struct CC_EXPORT AnimationEvent {
   std::unique_ptr<AnimationCurve> curve;
 };
 
-class CC_EXPORT AnimationEvents {
+class CC_EXPORT AnimationEvents : public NON_EXPORTED_BASE(MutatorEvents) {
  public:
   AnimationEvents();
-  ~AnimationEvents();
+
+  // MutatorEvents implementation.
+  ~AnimationEvents() override;
+  bool IsEmpty() const override;
 
   std::vector<AnimationEvent> events_;
 };

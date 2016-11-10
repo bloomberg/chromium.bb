@@ -50,7 +50,6 @@ class ScrollOffset;
 
 namespace cc {
 
-class AnimationEvents;
 class BrowserControlsOffsetManager;
 class CompletionEvent;
 class CompositorFrameMetadata;
@@ -61,6 +60,7 @@ class FrameRateCounter;
 class LayerImpl;
 class LayerTreeImpl;
 class MemoryHistory;
+class MutatorEvents;
 class MutatorHost;
 class PageScaleAnimation;
 class PendingTreeDurationHistogramTimer;
@@ -111,7 +111,7 @@ class LayerTreeHostImplClient {
   virtual void SetNeedsPrepareTilesOnImplThread() = 0;
   virtual void SetVideoNeedsBeginFrames(bool needs_begin_frames) = 0;
   virtual void PostAnimationEventsToMainThreadOnImplThread(
-      std::unique_ptr<AnimationEvents> events) = 0;
+      std::unique_ptr<MutatorEvents> events) = 0;
   virtual bool IsInsideDraw() = 0;
   virtual void RenewTreePriority() = 0;
   virtual void PostDelayedAnimationTaskOnImplThread(const base::Closure& task,

@@ -300,25 +300,30 @@ bool AnimationHost::AnimateLayers(base::TimeTicks monotonic_time) {
 }
 
 bool AnimationHost::UpdateAnimationState(bool start_ready_animations,
-                                         AnimationEvents* events) {
+                                         MutatorEvents* mutator_events) {
   if (!NeedsAnimateLayers())
     return false;
+
+  auto animation_events = static_cast<AnimationEvents*>(mutator_events);
 
   TRACE_EVENT0("cc", "AnimationHost::UpdateAnimationState");
   ElementToAnimationsMap active_element_animations_map_copy =
       active_element_to_animations_map_;
   for (auto& it : active_element_animations_map_copy)
-    it.second->UpdateState(start_ready_animations, events);
+    it.second->UpdateState(start_ready_animations, animation_events);
 
   return true;
 }
 
-std::unique_ptr<AnimationEvents> AnimationHost::CreateEvents() {
+std::unique_ptr<MutatorEvents> AnimationHost::CreateEvents() {
   return base::MakeUnique<AnimationEvents>();
 }
 
 void AnimationHost::SetAnimationEvents(
-    std::unique_ptr<AnimationEvents> events) {
+    std::unique_ptr<MutatorEvents> mutator_events) {
+  auto events =
+      base::WrapUnique(static_cast<AnimationEvents*>(mutator_events.release()));
+
   for (size_t event_index = 0; event_index < events->events_.size();
        ++event_index) {
     ElementId element_id = events->events_[event_index].element_id;

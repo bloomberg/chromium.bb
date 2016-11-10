@@ -26,8 +26,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "cc/animation/animation_events.h"
-#include "cc/animation/animation_host.h"
 #include "cc/base/math_util.h"
 #include "cc/blimp/client_picture_cache.h"
 #include "cc/blimp/engine_picture_cache.h"
@@ -54,6 +52,7 @@
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/mutator_host.h"
 #include "cc/trees/property_tree_builder.h"
 #include "cc/trees/proxy_main.h"
 #include "cc/trees/remote_channel_impl.h"
@@ -638,7 +637,7 @@ void LayerTreeHostInProcess::SetNextCommitForcesRedraw() {
 }
 
 void LayerTreeHostInProcess::SetAnimationEvents(
-    std::unique_ptr<AnimationEvents> events) {
+    std::unique_ptr<MutatorEvents> events) {
   DCHECK(task_runner_provider_->IsMainThread());
   layer_tree_->mutator_host()->SetAnimationEvents(std::move(events));
 }
@@ -920,12 +919,12 @@ void LayerTreeHostInProcess::UpdateBrowserControlsState(
 
 void LayerTreeHostInProcess::AnimateLayers(base::TimeTicks monotonic_time) {
   MutatorHost* mutator_host = layer_tree_->mutator_host();
-  std::unique_ptr<AnimationEvents> events = mutator_host->CreateEvents();
+  std::unique_ptr<MutatorEvents> events = mutator_host->CreateEvents();
 
   if (mutator_host->AnimateLayers(monotonic_time))
     mutator_host->UpdateAnimationState(true, events.get());
 
-  if (!events->events_.empty())
+  if (!events->IsEmpty())
     layer_tree_->property_trees()->needs_rebuild = true;
 }
 

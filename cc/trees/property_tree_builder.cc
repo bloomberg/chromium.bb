@@ -9,7 +9,6 @@
 #include <map>
 #include <set>
 
-#include "cc/animation/animation_host.h"
 #include "cc/animation/mutable_properties.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/layer.h"

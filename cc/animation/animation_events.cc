@@ -56,4 +56,8 @@ AnimationEvents::AnimationEvents() {}
 
 AnimationEvents::~AnimationEvents() {}
 
+bool AnimationEvents::IsEmpty() const {
+  return events_.empty();
+}
+
 }  // namespace cc
