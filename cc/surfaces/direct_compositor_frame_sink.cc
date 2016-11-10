@@ -74,7 +74,7 @@ bool DirectCompositorFrameSink::BindToClient(
 
   // Avoid initializing GL context here, as this should be sharing the
   // Display's context.
-  display_->Initialize(this, surface_manager_, frame_sink_id_);
+  display_->Initialize(this, surface_manager_);
   return true;
 }
 
@@ -98,8 +98,8 @@ void DirectCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
     factory_.Create(delegated_local_frame_id_);
     last_swap_frame_size_ = frame_size;
   }
-  display_->SetSurfaceId(SurfaceId(frame_sink_id_, delegated_local_frame_id_),
-                         frame.metadata.device_scale_factor);
+  display_->SetLocalFrameId(delegated_local_frame_id_,
+                            frame.metadata.device_scale_factor);
 
   factory_.SubmitCompositorFrame(
       delegated_local_frame_id_, std::move(frame),

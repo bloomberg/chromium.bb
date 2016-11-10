@@ -86,11 +86,11 @@ bool TestCompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
         display_output_surface->capabilities().max_frames_pending));
   }
 
-  display_.reset(
-      new Display(shared_bitmap_manager(), gpu_memory_buffer_manager(),
-                  renderer_settings_, std::move(begin_frame_source),
-                  std::move(display_output_surface), std::move(scheduler),
-                  base::MakeUnique<TextureMailboxDeleter>(task_runner_.get())));
+  display_.reset(new Display(
+      shared_bitmap_manager(), gpu_memory_buffer_manager(), renderer_settings_,
+      frame_sink_id_, std::move(begin_frame_source),
+      std::move(display_output_surface), std::move(scheduler),
+      base::MakeUnique<TextureMailboxDeleter>(task_runner_.get())));
 
   // We want the Display's OutputSurface to hear about lost context, and when
   // this shares a context with it we should not be listening for lost context
@@ -100,7 +100,7 @@ bool TestCompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
 
   surface_manager_->RegisterFrameSinkId(frame_sink_id_);
   surface_manager_->RegisterSurfaceFactoryClient(frame_sink_id_, this);
-  display_->Initialize(this, surface_manager_.get(), frame_sink_id_);
+  display_->Initialize(this, surface_manager_.get());
   display_->renderer_for_testing()->SetEnlargePassTextureAmountForTesting(
       enlarge_pass_texture_amount_);
   display_->SetVisible(true);
@@ -132,8 +132,8 @@ void TestCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
     delegated_local_frame_id_ = surface_id_allocator_->GenerateId();
     surface_factory_->Create(delegated_local_frame_id_);
   }
-  display_->SetSurfaceId(SurfaceId(frame_sink_id_, delegated_local_frame_id_),
-                         frame.metadata.device_scale_factor);
+  display_->SetLocalFrameId(delegated_local_frame_id_,
+                            frame.metadata.device_scale_factor);
 
   gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
   display_->Resize(frame_size);

@@ -726,8 +726,9 @@ void CompositorImpl::InitializeDisplay(
   display_.reset(new cc::Display(
       HostSharedBitmapManager::current(),
       BrowserGpuMemoryBufferManager::current(),
-      host_->GetSettings().renderer_settings, std::move(begin_frame_source),
-      std::move(display_output_surface), std::move(scheduler),
+      host_->GetSettings().renderer_settings, frame_sink_id_,
+      std::move(begin_frame_source), std::move(display_output_surface),
+      std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner)));
 
   auto compositor_frame_sink =

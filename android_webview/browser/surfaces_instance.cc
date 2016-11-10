@@ -69,10 +69,10 @@ SurfacesInstance::SurfacesInstance()
       output_surface_holder->capabilities().max_frames_pending));
   display_.reset(new cc::Display(
       nullptr /* shared_bitmap_manager */,
-      nullptr /* gpu_memory_buffer_manager */, settings,
+      nullptr /* gpu_memory_buffer_manager */, settings, frame_sink_id_,
       std::move(begin_frame_source), std::move(output_surface_holder),
       std::move(scheduler), std::move(texture_mailbox_deleter)));
-  display_->Initialize(this, surface_manager_.get(), frame_sink_id_);
+  display_->Initialize(this, surface_manager_.get());
   display_->SetVisible(true);
 
   DCHECK(!g_surfaces_instance);
@@ -139,7 +139,7 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
   if (!root_id_.is_valid()) {
     root_id_ = surface_id_allocator_->GenerateId();
     surface_factory_->Create(root_id_);
-    display_->SetSurfaceId(cc::SurfaceId(frame_sink_id_, root_id_), 1.f);
+    display_->SetLocalFrameId(root_id_, 1.f);
   }
   surface_factory_->SubmitCompositorFrame(root_id_, std::move(frame),
                                           cc::SurfaceFactory::DrawCallback());

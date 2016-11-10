@@ -58,6 +58,7 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   Display(SharedBitmapManager* bitmap_manager,
           gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
           const RendererSettings& settings,
+          const FrameSinkId& frame_sink_id,
           std::unique_ptr<BeginFrameSource> begin_frame_source,
           std::unique_ptr<OutputSurface> output_surface,
           std::unique_ptr<DisplayScheduler> scheduler,
@@ -65,13 +66,11 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
 
   ~Display() override;
 
-  void Initialize(DisplayClient* client,
-                  SurfaceManager* surface_manager,
-                  const FrameSinkId& frame_sink_id);
+  void Initialize(DisplayClient* client, SurfaceManager* surface_manager);
 
   // device_scale_factor is used to communicate to the external window system
   // what scale this was rendered at.
-  void SetSurfaceId(const SurfaceId& id, float device_scale_factor);
+  void SetLocalFrameId(const LocalFrameId& id, float device_scale_factor);
   void SetVisible(bool visible);
   void Resize(const gfx::Size& new_size);
   void SetColorSpace(const gfx::ColorSpace& color_space);
@@ -110,7 +109,7 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
 
   DisplayClient* client_ = nullptr;
   SurfaceManager* surface_manager_ = nullptr;
-  FrameSinkId frame_sink_id_;
+  const FrameSinkId frame_sink_id_;
   SurfaceId current_surface_id_;
   gfx::Size current_surface_size_;
   float device_scale_factor_ = 1.f;

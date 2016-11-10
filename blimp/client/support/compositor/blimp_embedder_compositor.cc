@@ -218,8 +218,9 @@ void BlimpEmbedderCompositor::HandlePendingCompositorFrameSinkRequest() {
 
   display_ = base::MakeUnique<cc::Display>(
       shared_bitmap_manager, gpu_memory_buffer_manager,
-      host_->GetSettings().renderer_settings, std::move(begin_frame_source),
-      std::move(display_output_surface), std::move(scheduler),
+      host_->GetSettings().renderer_settings, frame_sink_id_,
+      std::move(begin_frame_source), std::move(display_output_surface),
+      std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner.get()));
   display_->SetVisible(true);
   display_->Resize(viewport_size_in_px_);

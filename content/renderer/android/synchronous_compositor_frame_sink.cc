@@ -184,9 +184,9 @@ bool SynchronousCompositorFrameSink::BindToClient(
   display_.reset(new cc::Display(
       nullptr /* shared_bitmap_manager */,
       nullptr /* gpu_memory_buffer_manager */, software_renderer_settings,
-      nullptr /* begin_frame_source */, std::move(output_surface),
+      kFrameSinkId, nullptr /* begin_frame_source */, std::move(output_surface),
       nullptr /* scheduler */, nullptr /* texture_mailbox_deleter */));
-  display_->Initialize(&display_client_, surface_manager_.get(), kFrameSinkId);
+  display_->Initialize(&display_client_, surface_manager_.get());
   display_->SetVisible(true);
   return true;
 }
@@ -242,8 +242,8 @@ void SynchronousCompositorFrameSink::SubmitCompositorFrame(
       surface_factory_->Create(child_local_frame_id_);
     }
 
-    display_->SetSurfaceId(cc::SurfaceId(kFrameSinkId, root_local_frame_id_),
-                           frame.metadata.device_scale_factor);
+    display_->SetLocalFrameId(root_local_frame_id_,
+                              frame.metadata.device_scale_factor);
 
     // The layer compositor should be giving a frame that covers the
     // |sw_viewport_for_current_draw_| but at 0,0.

@@ -191,10 +191,10 @@ void InProcessContextFactory::CreateCompositorFrameSink(
       display_output_surface->capabilities().max_frames_pending));
   per_compositor_data_[compositor.get()] = base::MakeUnique<cc::Display>(
       &shared_bitmap_manager_, &gpu_memory_buffer_manager_,
-      compositor->GetRendererSettings(), std::move(begin_frame_source),
-      std::move(display_output_surface), std::move(scheduler),
-      base::MakeUnique<cc::TextureMailboxDeleter>(
-          compositor->task_runner().get()));
+      compositor->GetRendererSettings(), compositor->frame_sink_id(),
+      std::move(begin_frame_source), std::move(display_output_surface),
+      std::move(scheduler), base::MakeUnique<cc::TextureMailboxDeleter>(
+                                compositor->task_runner().get()));
 
   auto* display = per_compositor_data_[compositor.get()].get();
   auto compositor_frame_sink = base::MakeUnique<cc::DirectCompositorFrameSink>(

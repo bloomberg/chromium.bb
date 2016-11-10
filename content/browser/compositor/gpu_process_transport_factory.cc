@@ -554,12 +554,11 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 
   // The Display owns and uses the |display_output_surface| created above.
   data->display = base::MakeUnique<cc::Display>(
-      HostSharedBitmapManager::current(),
-      GetGpuMemoryBufferManager(),
-      compositor->GetRendererSettings(), std::move(begin_frame_source),
-      std::move(display_output_surface), std::move(scheduler),
-      base::MakeUnique<cc::TextureMailboxDeleter>(
-          compositor->task_runner().get()));
+      HostSharedBitmapManager::current(), GetGpuMemoryBufferManager(),
+      compositor->GetRendererSettings(), compositor->frame_sink_id(),
+      std::move(begin_frame_source), std::move(display_output_surface),
+      std::move(scheduler), base::MakeUnique<cc::TextureMailboxDeleter>(
+                                compositor->task_runner().get()));
 
   // The |delegated_output_surface| is given back to the compositor, it
   // delegates to the Display as its root surface. Importantly, it shares the

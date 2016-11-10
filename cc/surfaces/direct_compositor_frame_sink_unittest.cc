@@ -52,8 +52,8 @@ class DirectCompositorFrameSinkTest : public testing::Test {
 
     display_.reset(new Display(
         &bitmap_manager_, &gpu_memory_buffer_manager_, RendererSettings(),
-        std::move(begin_frame_source), std::move(display_output_surface),
-        std::move(scheduler),
+        kArbitraryFrameSinkId, std::move(begin_frame_source),
+        std::move(display_output_surface), std::move(scheduler),
         base::MakeUnique<TextureMailboxDeleter>(task_runner_.get())));
     compositor_frame_sink_.reset(new DirectCompositorFrameSink(
         kArbitraryFrameSinkId, &surface_manager_, display_.get(),

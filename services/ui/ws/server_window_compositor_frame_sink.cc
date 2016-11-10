@@ -83,8 +83,8 @@ void ServerWindowCompositorFrameSink::SubmitCompositorFrame(
       base::Bind(&ServerWindowCompositorFrameSink::DidReceiveCompositorFrameAck,
                  base::Unretained(this)));
   if (display_) {
-    display_->SetSurfaceId(cc::SurfaceId(frame_sink_id_, local_frame_id_),
-                           frame.metadata.device_scale_factor);
+    display_->SetLocalFrameId(local_frame_id_,
+                              frame.metadata.device_scale_factor);
   }
   last_submitted_frame_size_ = frame_size;
 }
@@ -150,10 +150,11 @@ void ServerWindowCompositorFrameSink::InitDisplay(
 
   display_.reset(new cc::Display(
       nullptr /* bitmap_manager */, gpu_memory_buffer_manager,
-      cc::RendererSettings(), std::move(synthetic_begin_frame_source),
+      cc::RendererSettings(), frame_sink_id_,
+      std::move(synthetic_begin_frame_source),
       std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner_.get())));
-  display_->Initialize(this, display_compositor_->manager(), frame_sink_id_);
+  display_->Initialize(this, display_compositor_->manager());
   display_->SetVisible(true);
 }
 
