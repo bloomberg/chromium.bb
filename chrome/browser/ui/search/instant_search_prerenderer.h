@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/common/search/instant_types.h"
-#include "content/public/browser/navigation_controller.h"
 
 class GURL;
 class Profile;
@@ -39,7 +38,7 @@ class PrerenderHandle;
 // with the prerendered contents.
 class InstantSearchPrerenderer {
  public:
-  InstantSearchPrerenderer(Profile* profile, const GURL& url);
+  InstantSearchPrerenderer(Profile* profile, const GURL& prerender_url);
   ~InstantSearchPrerenderer();
 
   // Returns the InstantSearchPrerenderer instance for the given |profile|.
@@ -73,6 +72,8 @@ class InstantSearchPrerenderer {
   // Returns true and updates |params->target_contents| if a prerendered page
   // exists for |url| and is swapped in.
   bool UsePrerenderedPage(const GURL& url, chrome::NavigateParams* params);
+
+  const GURL& prerender_url() const { return prerender_url_; }
 
   // Returns the last prefetched search query.
   const base::string16& get_last_query() const {

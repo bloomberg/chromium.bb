@@ -35,10 +35,8 @@ bool MatchIsFromDefaultSearchProvider(const AutocompleteMatch& match,
 }  // namespace
 
 InstantSearchPrerenderer::InstantSearchPrerenderer(Profile* profile,
-                                                   const GURL& url)
-    : profile_(profile),
-      prerender_url_(url) {
-}
+                                                   const GURL& prerender_url)
+    : profile_(profile), prerender_url_(prerender_url) {}
 
 InstantSearchPrerenderer::~InstantSearchPrerenderer() {
   if (prerender_handle_)
@@ -51,7 +49,8 @@ InstantSearchPrerenderer* InstantSearchPrerenderer::GetForProfile(
   DCHECK(profile);
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(profile);
-  return instant_service ? instant_service->instant_search_prerenderer() : NULL;
+  return instant_service ? instant_service->GetInstantSearchPrerenderer()
+                         : nullptr;
 }
 
 void InstantSearchPrerenderer::Init(

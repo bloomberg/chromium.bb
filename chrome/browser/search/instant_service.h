@@ -86,9 +86,7 @@ class InstantService : public KeyedService,
   // Sends the current set of search URLs to a renderer process.
   void SendSearchURLsToRenderer(content::RenderProcessHost* rph);
 
-  InstantSearchPrerenderer* instant_search_prerenderer() {
-    return instant_prerenderer_.get();
-  }
+  InstantSearchPrerenderer* GetInstantSearchPrerenderer();
 
  private:
   friend class InstantExtendedTest;
@@ -139,7 +137,7 @@ class InstantService : public KeyedService,
   void OnThemeChanged();
 #endif
 
-  void ResetInstantSearchPrerenderer();
+  void ResetInstantSearchPrerendererIfNecessary();
 
   Profile* const profile_;
 

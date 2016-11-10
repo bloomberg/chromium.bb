@@ -34,13 +34,6 @@
 
 namespace {
 
-InstantSearchPrerenderer* GetInstantSearchPrerenderer(Profile* profile) {
-  DCHECK(profile);
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(profile);
-  return instant_service ? instant_service->instant_search_prerenderer() : NULL;
-}
-
 // Helper class for posting a task to reload a tab, to avoid doing a re-entrant
 // navigation, since it can be called when starting a navigation. This class
 // makes sure to only execute the reload if the WebContents still exists.
@@ -124,7 +117,7 @@ void BrowserInstantController::OpenInstant(WindowOpenDisposition disposition,
     return;
 
   InstantSearchPrerenderer* prerenderer =
-      GetInstantSearchPrerenderer(profile());
+      InstantSearchPrerenderer::GetForProfile(profile());
   if (!prerenderer)
     return;
 
@@ -151,7 +144,7 @@ void BrowserInstantController::ActiveTabChanged() {
 
 void BrowserInstantController::TabDeactivated(content::WebContents* contents) {
   InstantSearchPrerenderer* prerenderer =
-      GetInstantSearchPrerenderer(profile());
+      InstantSearchPrerenderer::GetForProfile(profile());
   if (prerenderer)
     prerenderer->Cancel();
 }

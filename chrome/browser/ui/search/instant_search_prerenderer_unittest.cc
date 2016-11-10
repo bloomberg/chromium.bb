@@ -183,11 +183,11 @@ class InstantSearchPrerendererTest : public InstantUnitTestBase {
   }
 
   InstantSearchPrerenderer* GetInstantSearchPrerenderer() {
-    return instant_service_->instant_search_prerenderer();
+    return instant_service_->GetInstantSearchPrerenderer();
   }
 
   const GURL& GetPrerenderURL() {
-    return GetInstantSearchPrerenderer()->prerender_url_;
+    return GetInstantSearchPrerenderer()->prerender_url();
   }
 
   void SetLastQuery(const base::string16& query) {
