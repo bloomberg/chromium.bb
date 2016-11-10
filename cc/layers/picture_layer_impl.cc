@@ -654,7 +654,7 @@ void PictureLayerImpl::NotifyTileStateChanged(const Tile* tile) {
   }
   if (tile->draw_info().NeedsRaster()) {
     PictureLayerTiling* tiling =
-        tilings_->FindTilingWithScale(tile->contents_scale_key());
+        tilings_->FindTilingWithScaleKey(tile->contents_scale_key());
     if (tiling)
       tiling->set_all_tiles_done(false);
   }
@@ -724,7 +724,8 @@ const PictureLayerTiling* PictureLayerImpl::GetPendingOrActiveTwinTiling(
   PictureLayerImpl* twin_layer = GetPendingOrActiveTwinLayer();
   if (!twin_layer)
     return nullptr;
-  return twin_layer->tilings_->FindTilingWithScale(tiling->contents_scale());
+  return twin_layer->tilings_->FindTilingWithScaleKey(
+      tiling->contents_scale_key());
 }
 
 bool PictureLayerImpl::RequiresHighResToDraw() const {
@@ -892,7 +893,7 @@ void PictureLayerImpl::AddTilingsForRasterScale() {
   tilings_->MarkAllTilingsNonIdeal();
 
   PictureLayerTiling* high_res =
-      tilings_->FindTilingWithScale(raster_contents_scale_);
+      tilings_->FindTilingWithScaleKey(raster_contents_scale_);
   if (!high_res) {
     // We always need a high res tiling, so create one if it doesn't exist.
     high_res = AddTiling(raster_contents_scale_);
@@ -982,7 +983,7 @@ void PictureLayerImpl::AddLowResolutionTilingIfNeeded() {
     return;
 
   PictureLayerTiling* low_res =
-      tilings_->FindTilingWithScale(low_res_raster_contents_scale_);
+      tilings_->FindTilingWithScaleKey(low_res_raster_contents_scale_);
   DCHECK(!low_res || low_res->resolution() != HIGH_RESOLUTION);
 
   // Only create new low res tilings when the transform is static.  This
@@ -1046,7 +1047,7 @@ void PictureLayerImpl::RecalculateRasterScales() {
       while (desired_contents_scale < ideal_contents_scale_)
         desired_contents_scale *= kMaxScaleRatioDuringPinch;
     }
-    raster_contents_scale_ = tilings_->GetSnappedContentsScale(
+    raster_contents_scale_ = tilings_->GetSnappedContentsScaleKey(
         desired_contents_scale, kSnapToExistingTilingRatio);
     raster_page_scale_ =
         raster_contents_scale_ / raster_device_scale_ / raster_source_scale_;

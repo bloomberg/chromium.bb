@@ -65,7 +65,8 @@ FakePictureLayerTilingClient::GetPendingOrActiveTwinTiling(
   if (!twin_set_)
     return twin_tiling_;
   for (size_t i = 0; i < twin_set_->num_tilings(); ++i) {
-    if (twin_set_->tiling_at(i)->contents_scale() == tiling->contents_scale())
+    if (twin_set_->tiling_at(i)->contents_scale_key() ==
+        tiling->contents_scale_key())
       return twin_set_->tiling_at(i);
   }
   return nullptr;
