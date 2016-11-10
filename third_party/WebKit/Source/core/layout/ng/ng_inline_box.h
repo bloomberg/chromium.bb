@@ -83,12 +83,11 @@ class CORE_EXPORT NGInlineBox final
 // element where possible.
 class NGLayoutInlineItem {
  public:
-  NGLayoutInlineItem(const ComputedStyle* style, unsigned start, unsigned end)
+  NGLayoutInlineItem(unsigned start, unsigned end)
       : start_offset_(start),
         end_offset_(end),
         direction_(LTR),
-        script_(USCRIPT_INVALID_CODE),
-        style_(style) {
+        script_(USCRIPT_INVALID_CODE) {
     DCHECK(end >= start);
   }
 
@@ -104,7 +103,6 @@ class NGLayoutInlineItem {
   UScriptCode script_;
   // FontFallbackPriority fallback_priority_;
   // bool rotate_sideways_;
-  const ComputedStyle* style_;
   RefPtr<ShapeResult> shape_result_;
 
   friend class NGInlineBox;

@@ -14,10 +14,24 @@
 #include "web/tests/sim/SimRequest.h"
 #include "web/tests/sim/SimTest.h"
 #include "wtf/CurrentTime.h"
+#include "wtf/text/CharacterNames.h"
 
 namespace blink {
 
-class NGInlineLayoutTest : public SimTest {};
+class NGInlineLayoutTest : public SimTest {
+ public:
+  NGConstraintSpace* constraintSpaceForElement(LayoutNGBlockFlow* blockFlow) {
+    NGConstraintSpaceBuilder builder(
+        FromPlatformWritingMode(blockFlow->style()->getWritingMode()));
+    builder.SetAvailableSize(NGLogicalSize(LayoutUnit(), LayoutUnit()));
+    builder.SetPercentageResolutionSize(
+        NGLogicalSize(LayoutUnit(), LayoutUnit()));
+    NGConstraintSpace* constraintSpace = new NGConstraintSpace(
+        FromPlatformWritingMode(blockFlow->style()->getWritingMode()),
+        blockFlow->style()->direction(), builder.ToConstraintSpace());
+    return constraintSpace;
+  }
+};
 
 TEST_F(NGInlineLayoutTest, BlockWithSingleTextNode) {
   RuntimeEnabledFeatures::setLayoutNGEnabled(true);
@@ -33,15 +47,7 @@ TEST_F(NGInlineLayoutTest, BlockWithSingleTextNode) {
 
   Element* target = document().getElementById("target");
   LayoutNGBlockFlow* blockFlow = toLayoutNGBlockFlow(target->layoutObject());
-
-  NGConstraintSpaceBuilder builder(
-      FromPlatformWritingMode(blockFlow->style()->getWritingMode()));
-  builder.SetAvailableSize(NGLogicalSize(LayoutUnit(), LayoutUnit()));
-  builder.SetPercentageResolutionSize(
-      NGLogicalSize(LayoutUnit(), LayoutUnit()));
-  NGConstraintSpace* constraintSpace = new NGConstraintSpace(
-      FromPlatformWritingMode(blockFlow->style()->getWritingMode()),
-      blockFlow->style()->direction(), builder.ToConstraintSpace());
+  NGConstraintSpace* constraintSpace = constraintSpaceForElement(blockFlow);
 
   NGInlineBox* inlineBox = new NGInlineBox(blockFlow->firstChild());
   NGInlineLayoutAlgorithm* layoutAlgorithm = new NGInlineLayoutAlgorithm(
@@ -49,6 +55,34 @@ TEST_F(NGInlineLayoutTest, BlockWithSingleTextNode) {
 
   String expectedText("Hello World!");
   EXPECT_EQ(expectedText, inlineBox->Text(0, 12));
+
+  NGPhysicalFragmentBase* fragment;
+  layoutAlgorithm->Layout(&fragment);
+}
+
+TEST_F(NGInlineLayoutTest, BlockWithTextAndAtomicInline) {
+  RuntimeEnabledFeatures::setLayoutNGEnabled(true);
+  RuntimeEnabledFeatures::setLayoutNGInlineEnabled(true);
+
+  SimRequest mainResource("https://example.com/", "text/html");
+  loadURL("https://example.com/");
+  mainResource.complete("<div id=\"target\">Hello <img>.</div>");
+
+  compositor().beginFrame();
+  ASSERT_FALSE(compositor().needsBeginFrame());
+
+  Element* target = document().getElementById("target");
+  LayoutNGBlockFlow* blockFlow = toLayoutNGBlockFlow(target->layoutObject());
+  NGConstraintSpace* constraintSpace = constraintSpaceForElement(blockFlow);
+
+  NGInlineBox* inlineBox = new NGInlineBox(blockFlow->firstChild());
+  NGInlineLayoutAlgorithm* layoutAlgorithm = new NGInlineLayoutAlgorithm(
+      blockFlow->style(), inlineBox, constraintSpace);
+
+  String expectedText("Hello ");
+  expectedText.append(objectReplacementCharacter);
+  expectedText.append(".");
+  EXPECT_EQ(expectedText, inlineBox->Text(0, 8));
 
   NGPhysicalFragmentBase* fragment;
   layoutAlgorithm->Layout(&fragment);

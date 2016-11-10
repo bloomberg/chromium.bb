@@ -16,6 +16,7 @@
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_writing_mode.h"
+#include "wtf/text/CharacterNames.h"
 
 namespace blink {
 
@@ -29,14 +30,8 @@ void NGInlineBox::PrepareLayout() {
   // Scan list of siblings collecting all in-flow non-atomic inlines. A single
   // NGInlineBox represent a collection of adjacent non-atomic inlines.
   last_inline_ = start_inline_;
-  for (LayoutObject* curr = start_inline_; curr; curr = curr->nextSibling()) {
-    // TODO(layout-dev): We may want to include floating and OOF positioned
-    // objects.
-    if (curr->isAtomicInlineLevel() && !curr->isFloating() &&
-        !curr->isOutOfFlowPositioned())
-      break;
+  for (LayoutObject* curr = start_inline_; curr; curr = curr->nextSibling())
     last_inline_ = curr;
-  }
 
   CollectInlines(start_inline_, last_inline_);
   CollapseWhiteSpace();
@@ -49,14 +44,24 @@ void NGInlineBox::PrepareLayout() {
 // parent LayoutInline where possible, and joining all text content in a single
 // string to allow bidi resolution and shaping of the entire block.
 void NGInlineBox::CollectNode(LayoutObject* node, unsigned* offset) {
+  unsigned length = 0;
   if (node->isText()) {
     const String& text = toLayoutText(node)->text();
-    unsigned length = text.length();
+    length = text.length();
     text_content_.append(text);
+  }
 
+  // For atomic inlines add a unicode "object replacement character" to signal
+  // the presence of a non-text object to the unicode bidi algorithm.
+  else if (node->isAtomicInlineLevel()) {
+    text_content_.append(objectReplacementCharacter);
+    length = 1;
+  }
+
+  if (length) {
     unsigned start_offset = *offset;
     *offset = *offset + length;
-    items_.append(NGLayoutInlineItem(node->style(), start_offset, *offset));
+    items_.append(NGLayoutInlineItem(start_offset, *offset));
   }
 }
 
