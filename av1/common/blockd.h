@@ -471,7 +471,7 @@ typedef struct macroblockd {
 
   struct aom_internal_error_info *error_info;
 #if CONFIG_GLOBAL_MOTION
-  Global_Motion_Params *global_motion;
+  WarpedMotionParams *global_motion;
 #endif  // CONFIG_GLOBAL_MOTION
 #if CONFIG_DELTA_Q
   int prev_qindex;

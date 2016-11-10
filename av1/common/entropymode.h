@@ -159,7 +159,7 @@ typedef struct frame_contexts {
   aom_prob filter_intra_probs[PLANE_TYPES];
 #endif  // CONFIG_FILTER_INTRA
 #if CONFIG_GLOBAL_MOTION
-  aom_prob global_motion_types_prob[GLOBAL_MOTION_TYPES - 1];
+  aom_prob global_motion_types_prob[GLOBAL_TRANS_TYPES - 1];
 #endif  // CONFIG_GLOBAL_MOTION
 #if CONFIG_LOOP_RESTORATION
   aom_prob switchable_restore_prob[RESTORE_SWITCHABLE_TYPES - 1];

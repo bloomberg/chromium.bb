@@ -553,12 +553,12 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
   const int is_compound = has_second_ref(&mi->mbmi);
   int ref;
 #if CONFIG_GLOBAL_MOTION
-  Global_Motion_Params *gm[2];
+  WarpedMotionParams *gm[2];
   int is_global[2];
   for (ref = 0; ref < 1 + is_compound; ++ref) {
     gm[ref] = &xd->global_motion[mi->mbmi.ref_frame[ref]];
     is_global[ref] =
-        (get_y_mode(mi, block) == ZEROMV && gm[ref]->gmtype > GLOBAL_ZERO);
+        (get_y_mode(mi, block) == ZEROMV && gm[ref]->wmtype != IDENTITY);
   }
   // TODO(sarahparker) remove these once gm works with all experiments
   (void)gm;
@@ -710,7 +710,7 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
 #else  // CONFIG_EXT_INTER
 #if CONFIG_GLOBAL_MOTION
     if (is_global[ref])
-      av1_warp_plane(&(gm[ref]->motion_params),
+      av1_warp_plane(gm[ref],
 #if CONFIG_AOM_HIGHBITDEPTH
                      xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
 #endif  // CONFIG_AOM_HIGHBITDEPTH

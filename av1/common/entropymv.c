@@ -128,13 +128,21 @@ static const uint8_t log_in_base_2[] = {
 };
 
 #if CONFIG_GLOBAL_MOTION
-const aom_tree_index
-    av1_global_motion_types_tree[TREE_SIZE(GLOBAL_MOTION_TYPES)] = {
-      -GLOBAL_ZERO, 2, -GLOBAL_TRANSLATION, 4, -GLOBAL_ROTZOOM, -GLOBAL_AFFINE
-    };
+#if GLOBAL_TRANS_TYPES == 4
+const aom_tree_index av1_global_motion_types_tree[TREE_SIZE(
+    GLOBAL_TRANS_TYPES)] = { -IDENTITY, 2, -TRANSLATION, 4, -ROTZOOM, -AFFINE };
 
-static const aom_prob default_global_motion_types_prob[GLOBAL_MOTION_TYPES -
-                                                       1] = { 224, 128, 128 };
+static const aom_prob default_global_motion_types_prob[GLOBAL_TRANS_TYPES - 1] =
+    { 224, 128, 240 };
+
+#elif GLOBAL_TRANS_TYPES == 3
+
+const aom_tree_index av1_global_motion_types_tree[TREE_SIZE(
+    GLOBAL_TRANS_TYPES)] = { -IDENTITY, 2, -TRANSLATION, -ROTZOOM };
+
+static const aom_prob default_global_motion_types_prob[GLOBAL_TRANS_TYPES - 1] =
+    { 224, 128 };
+#endif  // GLOBAL_TRANS_TYPES
 #endif  // CONFIG_GLOBAL_MOTION
 
 static INLINE int mv_class_base(MV_CLASS_TYPE c) {

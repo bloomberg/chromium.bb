@@ -104,7 +104,7 @@ static struct av1_token ext_tx_intra_encodings[EXT_TX_SETS_INTRA][TX_TYPES];
 static struct av1_token ext_tx_encodings[TX_TYPES];
 #endif  // CONFIG_EXT_TX
 #if CONFIG_GLOBAL_MOTION
-static struct av1_token global_motion_types_encodings[GLOBAL_MOTION_TYPES];
+static struct av1_token global_motion_types_encodings[GLOBAL_TRANS_TYPES];
 #endif  // CONFIG_GLOBAL_MOTION
 #if CONFIG_EXT_INTRA
 static struct av1_token intra_filter_encodings[INTRA_FILTERS];
@@ -3952,39 +3952,35 @@ static void write_uncompressed_header(AV1_COMP *cpi,
 }
 
 #if CONFIG_GLOBAL_MOTION
-static void write_global_motion_params(Global_Motion_Params *params,
+static void write_global_motion_params(WarpedMotionParams *params,
                                        aom_prob *probs, aom_writer *w) {
-  GLOBAL_MOTION_TYPE gmtype = params->gmtype;
+  TransformationType type = params->wmtype;
   av1_write_token(w, av1_global_motion_types_tree, probs,
-                  &global_motion_types_encodings[gmtype]);
-  switch (gmtype) {
-    case GLOBAL_ZERO: break;
-    case GLOBAL_AFFINE:
-    case GLOBAL_ROTZOOM:
+                  &global_motion_types_encodings[type]);
+  switch (type) {
+    case IDENTITY: break;
+    case AFFINE:
+    case ROTZOOM:
       aom_write_primitive_symmetric(
-          w, (params->motion_params.wmmat[2] >> GM_ALPHA_PREC_DIFF) -
-                 (1 << GM_ALPHA_PREC_BITS),
+          w,
+          (params->wmmat[2] >> GM_ALPHA_PREC_DIFF) - (1 << GM_ALPHA_PREC_BITS),
           GM_ABS_ALPHA_BITS);
-      aom_write_primitive_symmetric(
-          w, (params->motion_params.wmmat[3] >> GM_ALPHA_PREC_DIFF),
-          GM_ABS_ALPHA_BITS);
-      if (gmtype == GLOBAL_AFFINE) {
+      aom_write_primitive_symmetric(w, (params->wmmat[3] >> GM_ALPHA_PREC_DIFF),
+                                    GM_ABS_ALPHA_BITS);
+      if (type == AFFINE) {
         aom_write_primitive_symmetric(
-            w, (params->motion_params.wmmat[4] >> GM_ALPHA_PREC_DIFF),
-            GM_ABS_ALPHA_BITS);
-        aom_write_primitive_symmetric(
-            w, (params->motion_params.wmmat[5] >> GM_ALPHA_PREC_DIFF) -
-                   (1 << GM_ALPHA_PREC_BITS),
-            GM_ABS_ALPHA_BITS);
+            w, (params->wmmat[4] >> GM_ALPHA_PREC_DIFF), GM_ABS_ALPHA_BITS);
+        aom_write_primitive_symmetric(w,
+                                      (params->wmmat[5] >> GM_ALPHA_PREC_DIFF) -
+                                          (1 << GM_ALPHA_PREC_BITS),
+                                      GM_ABS_ALPHA_BITS);
       }
     // fallthrough intended
-    case GLOBAL_TRANSLATION:
-      aom_write_primitive_symmetric(
-          w, (params->motion_params.wmmat[0] >> GM_TRANS_PREC_DIFF),
-          GM_ABS_TRANS_BITS);
-      aom_write_primitive_symmetric(
-          w, (params->motion_params.wmmat[1] >> GM_TRANS_PREC_DIFF),
-          GM_ABS_TRANS_BITS);
+    case TRANSLATION:
+      aom_write_primitive_symmetric(w, (params->wmmat[0] >> GM_TRANS_PREC_DIFF),
+                                    GM_ABS_TRANS_BITS);
+      aom_write_primitive_symmetric(w, (params->wmmat[1] >> GM_TRANS_PREC_DIFF),
+                                    GM_ABS_TRANS_BITS);
       break;
     default: assert(0);
   }
@@ -4003,10 +3999,10 @@ static void write_global_motion(AV1_COMP *cpi, aom_writer *w) {
     printf("Enc Ref %d [%d/%d] (used %d): %d %d %d %d\n",
            frame, cm->current_video_frame, cm->show_frame,
            cpi->global_motion_used[frame],
-           cm->global_motion[frame].motion_params.wmmat[0],
-           cm->global_motion[frame].motion_params.wmmat[1],
-           cm->global_motion[frame].motion_params.wmmat[2],
-           cm->global_motion[frame].motion_params.wmmat[3]);
+           cm->global_motion[frame].wmmat[0],
+           cm->global_motion[frame].wmmat[1],
+           cm->global_motion[frame].wmmat[2],
+           cm->global_motion[frame].wmmat[3]);
            */
   }
 }

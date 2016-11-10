@@ -4757,10 +4757,9 @@ static void convert_to_params(const double *params, int32_t *model) {
 }
 
 static void convert_model_to_params(const double *params,
-                                    Global_Motion_Params *model) {
-  convert_to_params(params, model->motion_params.wmmat);
-  model->gmtype = get_gmtype(model);
-  model->motion_params.wmtype = gm_to_trans_type(model->gmtype);
+                                    WarpedMotionParams *model) {
+  convert_to_params(params, model->wmmat);
+  model->wmtype = get_gmtype(model);
 }
 #endif  // CONFIG_GLOBAL_MOTION
 
@@ -4802,9 +4801,9 @@ static void encode_frame_internal(AV1_COMP *cpi) {
         if (compute_global_motion_feature_based(GLOBAL_MOTION_MODEL,
                                                 cpi->Source, ref_buf, params)) {
           convert_model_to_params(params, &cm->global_motion[frame]);
-          if (cm->global_motion[frame].gmtype > GLOBAL_ZERO) {
+          if (cm->global_motion[frame].wmtype != IDENTITY) {
             refine_integerized_param(
-                &cm->global_motion[frame].motion_params,
+                &cm->global_motion[frame],
 #if CONFIG_AOM_HIGHBITDEPTH
                 xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
 #endif  // CONFIG_AOM_HIGHBITDEPTH
@@ -4813,7 +4812,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
                 cpi->Source->y_height, cpi->Source->y_stride, 3);
             // compute the advantage of using gm parameters over 0 motion
             erroradvantage = av1_warp_erroradv(
-                &cm->global_motion[frame].motion_params,
+                &cm->global_motion[frame],
 #if CONFIG_AOM_HIGHBITDEPTH
                 xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
 #endif  // CONFIG_AOM_HIGHBITDEPTH

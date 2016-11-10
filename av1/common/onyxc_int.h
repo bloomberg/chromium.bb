@@ -393,7 +393,7 @@ typedef struct AV1Common {
   aom_cdf_prob kf_y_cdf[INTRA_MODES][INTRA_MODES][INTRA_MODES];
 #endif
 #if CONFIG_GLOBAL_MOTION
-  Global_Motion_Params global_motion[TOTAL_REFS_PER_FRAME];
+  WarpedMotionParams global_motion[TOTAL_REFS_PER_FRAME];
 #endif
 
   BLOCK_SIZE sb_size;  // Size of the superblock used for this frame

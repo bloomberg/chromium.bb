@@ -4020,44 +4020,37 @@ static void read_supertx_probs(FRAME_CONTEXT *fc, aom_reader *r) {
 #endif  // CONFIG_SUPERTX
 
 #if CONFIG_GLOBAL_MOTION
-static void read_global_motion_params(Global_Motion_Params *params,
+static void read_global_motion_params(WarpedMotionParams *params,
                                       aom_prob *probs, aom_reader *r) {
-  GLOBAL_MOTION_TYPE gmtype =
+  TransformationType type =
       aom_read_tree(r, av1_global_motion_types_tree, probs, ACCT_STR);
   set_default_gmparams(params);
-  params->gmtype = gmtype;
-  params->motion_params.wmtype = gm_to_trans_type(gmtype);
-  switch (gmtype) {
-    case GLOBAL_ZERO: break;
-    case GLOBAL_AFFINE:
-    case GLOBAL_ROTZOOM:
-      params->motion_params.wmmat[2] =
-          (aom_read_primitive_symmetric(r, GM_ABS_ALPHA_BITS) *
-           GM_ALPHA_DECODE_FACTOR) +
-          (1 << WARPEDMODEL_PREC_BITS);
-      params->motion_params.wmmat[3] =
-          aom_read_primitive_symmetric(r, GM_ABS_ALPHA_BITS) *
-          GM_ALPHA_DECODE_FACTOR;
-      if (gmtype == GLOBAL_AFFINE) {
-        params->motion_params.wmmat[4] =
-            (aom_read_primitive_symmetric(r, GM_ABS_ALPHA_BITS) *
-             GM_ALPHA_DECODE_FACTOR);
-        params->motion_params.wmmat[5] =
-            aom_read_primitive_symmetric(r, GM_ABS_ALPHA_BITS) *
-                GM_ALPHA_DECODE_FACTOR +
-            (1 << WARPEDMODEL_PREC_BITS);
+  params->wmtype = type;
+  switch (type) {
+    case IDENTITY: break;
+    case AFFINE:
+    case ROTZOOM:
+      params->wmmat[2] = (aom_read_primitive_symmetric(r, GM_ABS_ALPHA_BITS) *
+                          GM_ALPHA_DECODE_FACTOR) +
+                         (1 << WARPEDMODEL_PREC_BITS);
+      params->wmmat[3] = aom_read_primitive_symmetric(r, GM_ABS_ALPHA_BITS) *
+                         GM_ALPHA_DECODE_FACTOR;
+      if (type == AFFINE) {
+        params->wmmat[4] = (aom_read_primitive_symmetric(r, GM_ABS_ALPHA_BITS) *
+                            GM_ALPHA_DECODE_FACTOR);
+        params->wmmat[5] = aom_read_primitive_symmetric(r, GM_ABS_ALPHA_BITS) *
+                               GM_ALPHA_DECODE_FACTOR +
+                           (1 << WARPEDMODEL_PREC_BITS);
       } else {
-        params->motion_params.wmmat[4] = -params->motion_params.wmmat[3];
-        params->motion_params.wmmat[5] = params->motion_params.wmmat[2];
+        params->wmmat[4] = -params->wmmat[3];
+        params->wmmat[5] = params->wmmat[2];
       }
     // fallthrough intended
-    case GLOBAL_TRANSLATION:
-      params->motion_params.wmmat[0] =
-          aom_read_primitive_symmetric(r, GM_ABS_TRANS_BITS) *
-          GM_TRANS_DECODE_FACTOR;
-      params->motion_params.wmmat[1] =
-          aom_read_primitive_symmetric(r, GM_ABS_TRANS_BITS) *
-          GM_TRANS_DECODE_FACTOR;
+    case TRANSLATION:
+      params->wmmat[0] = aom_read_primitive_symmetric(r, GM_ABS_TRANS_BITS) *
+                         GM_TRANS_DECODE_FACTOR;
+      params->wmmat[1] = aom_read_primitive_symmetric(r, GM_ABS_TRANS_BITS) *
+                         GM_TRANS_DECODE_FACTOR;
       break;
     default: assert(0);
   }
@@ -4071,10 +4064,10 @@ static void read_global_motion(AV1_COMMON *cm, aom_reader *r) {
     /*
     printf("Dec Ref %d [%d/%d]: %d %d %d %d\n",
            frame, cm->current_video_frame, cm->show_frame,
-           cm->global_motion[frame].motion_params.wmmat[0],
-           cm->global_motion[frame].motion_params.wmmat[1],
-           cm->global_motion[frame].motion_params.wmmat[2],
-           cm->global_motion[frame].motion_params.wmmat[3]);
+           cm->global_motion[frame].wmmat[0],
+           cm->global_motion[frame].wmmat[1],
+           cm->global_motion[frame].wmmat[2],
+           cm->global_motion[frame].wmmat[3]);
            */
   }
 }
