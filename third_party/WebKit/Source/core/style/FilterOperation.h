@@ -38,6 +38,8 @@
 namespace blink {
 
 class Filter;
+class SVGResourceClient;
+class SVGElementProxy;
 
 // CSS Filters
 
@@ -128,8 +130,8 @@ class CORE_EXPORT FilterOperation
 class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {
  public:
   static ReferenceFilterOperation* create(const String& url,
-                                          const AtomicString& fragment) {
-    return new ReferenceFilterOperation(url, fragment);
+                                          SVGElementProxy& elementProxy) {
+    return new ReferenceFilterOperation(url, elementProxy);
   }
 
   bool affectsOpacity() const override { return true; }
@@ -137,33 +139,30 @@ class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {
   FloatRect mapRect(const FloatRect&) const override;
 
   const String& url() const { return m_url; }
-  const AtomicString& fragment() const { return m_fragment; }
 
   Filter* getFilter() const { return m_filter.get(); }
   void setFilter(Filter* filter) { m_filter = filter; }
 
+  SVGElementProxy& elementProxy() const { return *m_elementProxy; }
+
+  void addClient(SVGResourceClient*);
+  void removeClient(SVGResourceClient*);
+
   DECLARE_VIRTUAL_TRACE();
 
  private:
+  ReferenceFilterOperation(const String& url, SVGElementProxy&);
+
   FilterOperation* blend(const FilterOperation* from,
                          double progress) const override {
     NOTREACHED();
     return nullptr;
   }
 
-  bool operator==(const FilterOperation& o) const override {
-    if (!isSameType(o))
-      return false;
-    const ReferenceFilterOperation* other =
-        static_cast<const ReferenceFilterOperation*>(&o);
-    return m_url == other->m_url;
-  }
-
-  ReferenceFilterOperation(const String& url, const AtomicString& fragment)
-      : FilterOperation(REFERENCE), m_url(url), m_fragment(fragment) {}
+  bool operator==(const FilterOperation&) const override;
 
   String m_url;
-  AtomicString m_fragment;
+  Member<SVGElementProxy> m_elementProxy;
   Member<Filter> m_filter;
 };
 

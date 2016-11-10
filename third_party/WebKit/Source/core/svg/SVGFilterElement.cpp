@@ -25,7 +25,7 @@
 
 #include "core/frame/UseCounter.h"
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
-#include "core/svg/SVGResourceClient.h"
+#include "core/svg/SVGElementProxy.h"
 
 namespace blink {
 
@@ -83,7 +83,7 @@ DEFINE_TRACE(SVGFilterElement) {
   visitor->trace(m_height);
   visitor->trace(m_filterUnits);
   visitor->trace(m_primitiveUnits);
-  visitor->trace(m_clientsToAdd);
+  visitor->trace(m_elementProxySet);
   SVGElement::trace(visitor);
   SVGURIReference::trace(visitor);
 }
@@ -121,13 +121,7 @@ void SVGFilterElement::childrenChanged(const ChildrenChange& change) {
 }
 
 LayoutObject* SVGFilterElement::createLayoutObject(const ComputedStyle&) {
-  LayoutSVGResourceFilter* layoutObject = new LayoutSVGResourceFilter(this);
-
-  for (SVGResourceClient* client : m_clientsToAdd)
-    layoutObject->addResourceClient(client);
-  m_clientsToAdd.clear();
-
-  return layoutObject;
+  return new LayoutSVGResourceFilter(this);
 }
 
 bool SVGFilterElement::selfHasRelativeLengths() const {
@@ -137,14 +131,10 @@ bool SVGFilterElement::selfHasRelativeLengths() const {
          m_height->currentValue()->isRelative();
 }
 
-void SVGFilterElement::addClient(SVGResourceClient* client) {
-  ASSERT(client);
-  m_clientsToAdd.add(client);
-}
-
-void SVGFilterElement::removeClient(SVGResourceClient* client) {
-  ASSERT(client);
-  m_clientsToAdd.remove(client);
+SVGElementProxySet& SVGFilterElement::elementProxySet() {
+  if (!m_elementProxySet)
+    m_elementProxySet = new SVGElementProxySet;
+  return *m_elementProxySet;
 }
 
 }  // namespace blink

@@ -272,13 +272,6 @@ void CanvasRenderingContext2DState::resetTransform() {
   m_isTransformInvertible = true;
 }
 
-static void updateFilterReferences(HTMLCanvasElement* canvasElement,
-                                   CanvasRenderingContext2D* context,
-                                   const FilterOperations& filters) {
-  context->clearFilterReferences();
-  context->addFilterReferences(filters, canvasElement->document());
-}
-
 sk_sp<SkImageFilter> CanvasRenderingContext2DState::getFilter(
     Element* styleResolutionHost,
     IntSize canvasSize,
@@ -322,8 +315,7 @@ sk_sp<SkImageFilter> CanvasRenderingContext2DState::getFilter(
       m_resolvedFilter =
           SkiaImageFilterBuilder::build(lastEffect, ColorSpaceDeviceRGB);
       if (m_resolvedFilter) {
-        updateFilterReferences(toHTMLCanvasElement(styleResolutionHost),
-                               context, filterStyle->filter());
+        context->updateFilterReferences(filterStyle->filter());
         if (lastEffect->originTainted())
           context->setOriginTainted();
       }

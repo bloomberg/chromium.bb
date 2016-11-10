@@ -31,6 +31,7 @@
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
+#include "core/style/FilterOperations.h"
 #include "core/svg/SVGResourceClient.h"
 #include "modules/ModulesExport.h"
 #include "modules/canvas2d/BaseRenderingContext2D.h"
@@ -151,7 +152,12 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   String getIdFromControl(const Element*) override;
 
   // SVGResourceClient implementation
-  void filterNeedsInvalidation() override;
+  TreeScope* treeScope() override;
+  void resourceContentChanged() override;
+  void resourceElementChanged() override;
+
+  void updateFilterReferences(const FilterOperations&);
+  void clearFilterReferences();
 
   // BaseRenderingContext2D implementation
   bool originClean() const final;
@@ -247,6 +253,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   Timer<CanvasRenderingContext2D> m_dispatchContextRestoredEventTimer;
   Timer<CanvasRenderingContext2D> m_tryRestoreContextEventTimer;
 
+  FilterOperations m_filterOperations;
   HashMap<String, Font> m_fontsResolvedUsingCurrentStyle;
   bool m_pruneLocalFontCacheScheduled;
   ListHashSet<String> m_fontLRUList;

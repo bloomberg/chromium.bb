@@ -25,6 +25,7 @@
 
 #include "core/style/FilterOperation.h"
 
+#include "core/svg/SVGElementProxy.h"
 #include "platform/LengthFunctions.h"
 #include "platform/animation/AnimationUtilities.h"
 #include "platform/graphics/filters/FEDropShadow.h"
@@ -44,6 +45,7 @@ FilterOperation* FilterOperation::blend(const FilterOperation* from,
 }
 
 DEFINE_TRACE(ReferenceFilterOperation) {
+  visitor->trace(m_elementProxy);
   visitor->trace(m_filter);
   FilterOperation::trace(visitor);
 }
@@ -53,6 +55,26 @@ FloatRect ReferenceFilterOperation::mapRect(const FloatRect& rect) const {
   if (!lastEffect)
     return rect;
   return lastEffect->mapRect(rect);
+}
+
+ReferenceFilterOperation::ReferenceFilterOperation(
+    const String& url,
+    SVGElementProxy& elementProxy)
+    : FilterOperation(REFERENCE), m_url(url), m_elementProxy(&elementProxy) {}
+
+void ReferenceFilterOperation::addClient(SVGResourceClient* client) {
+  m_elementProxy->addClient(client);
+}
+
+void ReferenceFilterOperation::removeClient(SVGResourceClient* client) {
+  m_elementProxy->removeClient(client);
+}
+
+bool ReferenceFilterOperation::operator==(const FilterOperation& o) const {
+  if (!isSameType(o))
+    return false;
+  const ReferenceFilterOperation& other = toReferenceFilterOperation(o);
+  return m_url == other.m_url && m_elementProxy == other.m_elementProxy;
 }
 
 FilterOperation* BasicColorMatrixFilterOperation::blend(

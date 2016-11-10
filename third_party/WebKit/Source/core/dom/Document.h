@@ -471,11 +471,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void scheduleUseShadowTreeUpdate(SVGUseElement&);
   void unscheduleUseShadowTreeUpdate(SVGUseElement&);
 
-  // FIXME: SVG filters should change to store the filter on the ComputedStyle
-  // instead of the LayoutObject so we can get rid of this hack.
-  void scheduleSVGFilterLayerUpdateHack(Element&);
-  void unscheduleSVGFilterLayerUpdateHack(Element&);
-
   void evaluateMediaQueryList();
 
   FormController& formController();
@@ -1233,10 +1228,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
-  bool hasSVGFilterElementsRequiringLayerUpdate() const {
-    return m_layerUpdateSVGFilterElements.size();
-  }
-
   AtomicString convertLocalName(const AtomicString&);
 
   void platformColorsChanged();
@@ -1362,8 +1353,6 @@ class CORE_EXPORT Document : public ContainerNode,
   bool needsFullLayoutTreeUpdate() const;
 
   void inheritHtmlAndBodyElementStyles(StyleRecalcChange);
-
-  bool dirtyElementsForLayerUpdate();
 
   void updateUseShadowTreesIfNeeded();
   void evaluateMediaQueryListIfNeeded();
@@ -1645,7 +1634,6 @@ class CORE_EXPORT Document : public ContainerNode,
   TaskRunnerTimer<Document> m_didAssociateFormControlsTimer;
 
   HeapHashSet<Member<SVGUseElement>> m_useElementsNeedingUpdate;
-  HeapHashSet<Member<Element>> m_layerUpdateSVGFilterElements;
 
   DOMTimerCoordinator m_timers;
 

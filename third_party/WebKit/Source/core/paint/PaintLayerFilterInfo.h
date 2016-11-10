@@ -37,7 +37,6 @@
 namespace blink {
 
 class FilterEffect;
-class FilterOperations;
 class PaintLayer;
 
 // PaintLayerFilterInfo holds the filter information for painting.
@@ -59,13 +58,16 @@ class PaintLayerFilterInfo final
   explicit PaintLayerFilterInfo(PaintLayer*);
   ~PaintLayerFilterInfo() override;
 
-  FilterEffect* lastEffect() const { return m_lastEffect; }
   void setLastEffect(FilterEffect*);
+  FilterEffect* lastEffect() const;
+  void invalidateFilterChain();
 
-  void updateReferenceFilterClients(const FilterOperations&);
   void clearLayer() { m_layer = nullptr; }
 
-  void filterNeedsInvalidation() override;
+  TreeScope* treeScope() override;
+
+  void resourceContentChanged() override;
+  void resourceElementChanged() override;
 
   DECLARE_TRACE();
 
