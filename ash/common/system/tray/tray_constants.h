@@ -146,10 +146,11 @@ enum TrayConstant {
   // in the system menu that have a main image (e.g. default and detailed).
   TRAY_POPUP_ITEM_MAIN_IMAGE_CONTAINER_WIDTH,
 
-  // The width used for the 'more' arrow images. In general this applies to all
-  // rows in the system menu that have a 'more' image however most, if not all,
-  // are default rows.
-  TRAY_POPUP_ITEM_MORE_IMAGE_CONTAINER_WIDTH,
+  // The width used for the images used in the 'more' region of default rows.
+  TRAY_POPUP_ITEM_MORE_IMAGE_SIZE,
+
+  // The horizontal inset in the 'more' region of default rows.
+  TRAY_POPUP_ITEM_MORE_REGION_HORIZONTAL_INSET,
 
   // The left inset for all tray system menu rows.
   TRAY_POPUP_ITEM_LEFT_INSET,

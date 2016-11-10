@@ -80,6 +80,22 @@ class ASH_EXPORT ActionableView : public views::ButtonListener,
   DISALLOW_COPY_AND_ASSIGN(ActionableView);
 };
 
+// An ActionableView that can be used with a ButtonListener instead of having to
+// extend ActionableView and override PerformAction().
+class ASH_EXPORT ButtonListenerActionableView : public ActionableView {
+ public:
+  ButtonListenerActionableView(SystemTrayItem* owner,
+                               views::ButtonListener* listener);
+
+  // ActionableView:
+  bool PerformAction(const ui::Event& event) override;
+
+ private:
+  views::ButtonListener* listener_;
+
+  DISALLOW_COPY_AND_ASSIGN(ButtonListenerActionableView);
+};
+
 }  // namespace ash
 
 #endif  // ASH_COMMON_SYSTEM_TRAY_ACTIONABLE_VIEW_H_

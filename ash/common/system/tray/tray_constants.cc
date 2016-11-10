@@ -108,9 +108,9 @@ int GetTrayConstant(TrayConstant constant) {
   const int kTrayPopupItemHeight[] = {46, 48, 48};
   // FixedSizedImageViews use the contained ImageView's width for 0 values.
   const int kTrayPopupItemMainImageRegionWidth[] = {0, 48, 48};
-  // FixedSizedImageViews use the contained ImageView's width for 0 values.
-  const int kTrayPopupItemMoreImageRegionWidth[] = {0, 20, 20};
-  const int kTrayPopupItemLeftInset[] = {0, 0, 4};
+  const int kTrayPopupItemMoreImageSize[] = {25, kMenuIconSize, kMenuIconSize};
+  const int kTrayPopupItemMoreRegionHorizontalInset[] = {10, 10, 10};
+  const int kTrayPopupItemLeftInset[] = {0, 4, 4};
   const int kTrayPopupItemRightInset[] = {0, 0, 0};
   const int kTrayPopupItemMinStartWidth[] = {46, 48, 48};
   const int kTrayPopupItemMinEndWidth[] = {40, 40, 40};
@@ -133,8 +133,10 @@ int GetTrayConstant(TrayConstant constant) {
       return kTrayPopupItemHeight[mode];
     case TRAY_POPUP_ITEM_MAIN_IMAGE_CONTAINER_WIDTH:
       return kTrayPopupItemMainImageRegionWidth[mode];
-    case TRAY_POPUP_ITEM_MORE_IMAGE_CONTAINER_WIDTH:
-      return kTrayPopupItemMoreImageRegionWidth[mode];
+    case TRAY_POPUP_ITEM_MORE_IMAGE_SIZE:
+      return kTrayPopupItemMoreImageSize[mode];
+    case TRAY_POPUP_ITEM_MORE_REGION_HORIZONTAL_INSET:
+      return kTrayPopupItemMoreRegionHorizontalInset[mode];
     case TRAY_POPUP_ITEM_LEFT_INSET:
       return kTrayPopupItemLeftInset[mode];
     case TRAY_POPUP_ITEM_RIGHT_INSET:

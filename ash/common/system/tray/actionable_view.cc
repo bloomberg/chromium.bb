@@ -9,6 +9,7 @@
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
@@ -125,6 +126,16 @@ void ActionableView::ButtonPressed(Button* sender, const ui::Event& event) {
     AnimateInkDrop(views::InkDropState::HIDDEN,
                    ui::LocatedEvent::FromIfValid(&event));
   }
+}
+
+ButtonListenerActionableView::ButtonListenerActionableView(
+    SystemTrayItem* owner,
+    views::ButtonListener* listener)
+    : ActionableView(owner), listener_(listener) {}
+
+bool ButtonListenerActionableView::PerformAction(const ui::Event& event) {
+  listener_->ButtonPressed(this, event);
+  return true;
 }
 
 }  // namespace ash

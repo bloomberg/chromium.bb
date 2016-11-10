@@ -5,14 +5,13 @@
 #ifndef ASH_COMMON_SYSTEM_AUDIO_VOLUME_VIEW_H_
 #define ASH_COMMON_SYSTEM_AUDIO_VOLUME_VIEW_H_
 
-#include "ash/common/system/tray/actionable_view.h"
 #include "base/macros.h"
-#include "ui/gfx/font.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/slider.h"
+#include "ui/views/view.h"
 
 namespace views {
-class View;
+class CustomButton;
 class ImageView;
 class Separator;
 class Slider;
@@ -20,6 +19,7 @@ class Slider;
 
 namespace ash {
 class SystemTrayItem;
+class TriView;
 
 namespace system {
 class TrayAudioDelegate;
@@ -28,8 +28,9 @@ class TrayAudioDelegate;
 namespace tray {
 class VolumeButton;
 
-class VolumeView : public ActionableView,
-                   public views::SliderListener {
+class VolumeView : public views::View,
+                   public views::SliderListener,
+                   public views::ButtonListener {
  public:
   VolumeView(SystemTrayItem* owner,
              system::TrayAudioDelegate* audio_delegate,
@@ -43,32 +44,34 @@ class VolumeView : public ActionableView,
   void SetVolumeLevel(float percent);
 
  private:
-  // Updates bar_, device_type_ icon, and more_ buttons.
+  // Updates device_type_ icon and more_ button.
   void UpdateDeviceTypeAndMore();
   void HandleVolumeUp(float percent);
   void HandleVolumeDown(float percent);
 
-  // Overridden from views::SliderListener.
+  // SliderListener:
   void SliderValueChanged(views::Slider* sender,
                           float value,
                           float old_value,
                           views::SliderChangeReason reason) override;
 
-  // Overriden from ActionableView.
-  bool PerformAction(const ui::Event& event) override;
+  // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::View:
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
+  SystemTrayItem* owner_;
+  // The only immediate child view of |this|. All other view elements are added
+  // to the |tri_view_| to handle layout.
+  TriView* tri_view_;
   system::TrayAudioDelegate* audio_delegate_;
-  views::View* more_region_;
+  views::CustomButton* more_button_;
   VolumeButton* icon_;
   views::Slider* slider_;
-  views::Separator* separator_;
+  views::Separator* separator_;  // Not used in material design.
   views::ImageView* device_type_;
-  views::ImageView* more_;
   bool is_default_view_;
 
   DISALLOW_COPY_AND_ASSIGN(VolumeView);
