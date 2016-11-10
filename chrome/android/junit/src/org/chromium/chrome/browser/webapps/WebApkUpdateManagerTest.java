@@ -12,6 +12,7 @@ import static org.chromium.chrome.browser.webapps.ManifestUpgradeDetector.Fetche
 
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.provider.Settings;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -201,6 +202,9 @@ public class WebApkUpdateManagerTest {
     public void setUp() {
         ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         CommandLine.init(null);
+
+        Settings.Secure.putInt(RuntimeEnvironment.application.getContentResolver(),
+                Settings.Secure.INSTALL_NON_MARKET_APPS, 1);
 
         mClock = new MockClock();
         WebappDataStorage.setClockForTests(mClock);

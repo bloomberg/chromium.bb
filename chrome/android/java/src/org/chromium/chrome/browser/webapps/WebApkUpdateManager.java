@@ -4,9 +4,11 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import android.content.ContentResolver;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.provider.Settings;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
@@ -224,6 +226,14 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
      */
     private boolean shouldCheckIfWebManifestUpdated(
             WebappDataStorage storage, WebApkMetaData metaData, boolean previousUpdateSucceeded) {
+        // Updating WebAPKs requires "installation from unknown sources" to be enabled. It is
+        // confusing for a user to see a dialog asking them to enable "installation from unknown
+        // sources" when they are in the middle of using the WebAPK (as opposed to after requesting
+        // to add a WebAPK to the homescreen).
+        if (!installingFromUnknownSourcesAllowed()) {
+            return false;
+        }
+
         if (CommandLine.getInstance().hasSwitch(
                     ChromeSwitches.CHECK_FOR_WEB_MANIFEST_UPDATE_ON_STARTUP)) {
             return true;
@@ -250,6 +260,21 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
         // but a result from the previous request.
         storage.updateTimeOfLastWebApkUpdateRequestCompletion();
         storage.updateDidLastWebApkUpdateRequestSucceed(success);
+    }
+
+    /**
+     * Returns whether the user has enabled installing apps from sources other than the Google
+     * Play Store.
+     */
+    private static boolean installingFromUnknownSourcesAllowed() {
+        ContentResolver contentResolver = ContextUtils.getApplicationContext().getContentResolver();
+        try {
+            int setting = Settings.Secure.getInt(
+                    contentResolver, Settings.Secure.INSTALL_NON_MARKET_APPS);
+            return setting == 1;
+        } catch (Settings.SettingNotFoundException e) {
+            return false;
+        }
     }
 
     /**
