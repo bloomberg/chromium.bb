@@ -166,6 +166,8 @@ struct GPU_EXPORT ContextState {
 
   void Initialize();
 
+  void SetLineWidthBounds(GLfloat min, GLfloat max);
+
   void SetIgnoreCachedStateForTest(bool ignore) {
     ignore_cached_state = ignore;
   }
@@ -192,6 +194,7 @@ struct GPU_EXPORT ContextState {
 
   void PushTextureDecompressionUnpackState() const;
   void RestoreUnpackState() const;
+  void DoLineWidth(GLfloat width) const;
 
   // Helper for getting cached state.
   bool GetStateAsGLint(
@@ -347,6 +350,9 @@ struct GPU_EXPORT ContextState {
   // Each base type is encoded into 2 bits, the lowest 2 bits for location 0,
   // the highest 2 bits for location (max_vertex_attribs - 1).
   std::vector<uint32_t> generic_attrib_base_type_mask_;
+
+  GLfloat line_width_min_ = 0.0f;
+  GLfloat line_width_max_ = 1.0f;
 
   FeatureInfo* feature_info_;
   std::unique_ptr<ErrorState> error_state_;

@@ -748,6 +748,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   void SetupMockGLBehaviors();
 
   void SetupInitStateManualExpectations(bool es3_capable);
+  void SetupInitStateManualExpectationsForDoLineWidth(GLfloat width);
 
   std::unique_ptr<::testing::StrictMock<MockCommandBufferEngine>> engine_;
   GpuPreferences gpu_preferences_;

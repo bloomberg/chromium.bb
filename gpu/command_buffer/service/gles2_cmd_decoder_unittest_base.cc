@@ -2067,6 +2067,11 @@ void GLES2DecoderTestBase::SetupInitStateManualExpectations(bool es3_capable) {
   }
 }
 
+void GLES2DecoderTestBase::SetupInitStateManualExpectationsForDoLineWidth(
+    GLfloat width) {
+  EXPECT_CALL(*gl_, LineWidth(width)).Times(1).RetiresOnSaturation();
+}
+
 GLES2DecoderWithShaderTestBase::MockCommandBufferEngine::
 MockCommandBufferEngine() {
   std::unique_ptr<base::SharedMemory> shm(new base::SharedMemory());

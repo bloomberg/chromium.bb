@@ -501,7 +501,8 @@ _STATES = {
   # GL_ACTIVE_TEXTURE
   'LineWidth': {
     'type': 'Normal',
-    'func': 'LineWidth',
+    'custom_function' : True,
+    'func': 'DoLineWidth',
     'enum': 'GL_LINE_WIDTH',
     'states': [
       {
@@ -10273,7 +10274,10 @@ void ContextState::InitState(const ContextState *prev_state) const {
                            (item_name, item_name))
             if test_prev:
               f.write("    )\n")
-            f.write("  gl%s(%s);\n" % (state['func'], ", ".join(args)))
+            if 'custom_function' in state:
+              f.write("  %s(%s);\n" % (state['func'], ", ".join(args)))
+            else:
+              f.write("  gl%s(%s);\n" % (state['func'], ", ".join(args)))
 
       f.write("  if (prev_state) {")
       WriteStates(True)
@@ -10529,10 +10533,14 @@ void GLES2DecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
               args.append(item['default'])
           # TODO: Currently we do not check array values.
           args = ["_" if isinstance(arg, list) else arg for arg in args]
-          f.write("  EXPECT_CALL(*gl_, %s(%s))\n" %
-                     (state['func'], ", ".join(args)))
-          f.write("      .Times(1)\n")
-          f.write("      .RetiresOnSaturation();\n")
+          if 'custom_function' in state:
+            f.write("  SetupInitStateManualExpectationsFor%s(%s);\n" %
+                       (state['func'], ", ".join(args)))
+          else:
+            f.write("  EXPECT_CALL(*gl_, %s(%s))\n" %
+                       (state['func'], ", ".join(args)))
+            f.write("      .Times(1)\n")
+            f.write("      .RetiresOnSaturation();\n")
           if 'extension_flag' in state:
             f.write("  }\n")
       f.write("  SetupInitStateManualExpectations(es3_capable);\n")

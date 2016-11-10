@@ -76,7 +76,7 @@ void GLES2DecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
         .Times(1)
         .RetiresOnSaturation();
   }
-  EXPECT_CALL(*gl_, LineWidth(1.0f)).Times(1).RetiresOnSaturation();
+  SetupInitStateManualExpectationsForDoLineWidth(1.0f);
   if (feature_info_->feature_flags().chromium_path_rendering) {
     EXPECT_CALL(*gl_, MatrixLoadfEXT(GL_PATH_MODELVIEW_CHROMIUM, _))
         .Times(1)

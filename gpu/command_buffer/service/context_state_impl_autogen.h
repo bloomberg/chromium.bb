@@ -301,7 +301,7 @@ void ContextState::InitState(const ContextState* prev_state) const {
       }
     }
     if ((line_width != prev_state->line_width))
-      glLineWidth(line_width);
+      DoLineWidth(line_width);
     if (feature_info_->feature_flags().chromium_path_rendering) {
       if (memcmp(prev_state->modelview_matrix, modelview_matrix,
                  sizeof(GLfloat) * 16)) {
@@ -394,7 +394,7 @@ void ContextState::InitState(const ContextState* prev_state) const {
       glHint(GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES,
              hint_fragment_shader_derivative);
     }
-    glLineWidth(line_width);
+    DoLineWidth(line_width);
     if (feature_info_->feature_flags().chromium_path_rendering) {
       glMatrixLoadfEXT(GL_PATH_MODELVIEW_CHROMIUM, modelview_matrix);
     }

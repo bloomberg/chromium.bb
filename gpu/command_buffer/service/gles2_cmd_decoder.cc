@@ -3372,6 +3372,7 @@ bool GLES2DecoderImpl::Initialize(
   viewport_max_height_ = viewport_params[1];
 
   glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, line_width_range_);
+  state_.SetLineWidthBounds(line_width_range_[0], line_width_range_[1]);
 
   state_.scissor_width = state_.viewport_width;
   state_.scissor_height = state_.viewport_height;

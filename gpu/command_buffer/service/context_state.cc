@@ -230,6 +230,11 @@ ContextState::ContextState(FeatureInfo* feature_info,
 ContextState::~ContextState() {
 }
 
+void ContextState::SetLineWidthBounds(GLfloat min, GLfloat max) {
+  line_width_min_ = min;
+  line_width_max_ = max;
+}
+
 void ContextState::RestoreTextureUnitBindings(
     GLuint unit, const ContextState* prev_state) const {
   DCHECK_LT(unit, texture_units.size());
@@ -295,6 +300,11 @@ void ContextState::RestoreUnpackState() const {
     glPixelStorei(GL_UNPACK_ROW_LENGTH, unpack_row_length);
     glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, unpack_image_height);
   }
+}
+
+void ContextState::DoLineWidth(GLfloat width) const {
+  glLineWidth(
+      std::min(std::max(width, line_width_min_), line_width_max_));
 }
 
 void ContextState::RestoreBufferBindings() const {
