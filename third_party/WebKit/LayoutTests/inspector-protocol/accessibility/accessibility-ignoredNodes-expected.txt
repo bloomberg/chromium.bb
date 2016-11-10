@@ -3,492 +3,449 @@ non-hidden treeitem
 hidden non-treeitem
  Buttons are leaf nodes
 Descendant of aria-hidden node
-
 List item also presentational
 Div in list isn't presentational
-Content within label refers to label container   
+Content within label refers to label container    
+
+WebArea
+  tree
+    treeitem "non-hidden treeitem"
+    *Ignored
+      text "hidden non-treeitem"
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
-      {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "internalRole",
-          "value": "Div"
-        },
-        "name": {
-          "type": "computedString",
-          "value": "",
-          "sources": [
-            {
-              "type": "relatedElement",
-              "attribute": "aria-labelledby"
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label"
-            },
-            {
-              "type": "attribute",
-              "attribute": "title"
-            }
-          ]
-        },
-        "properties": []
-      }
-    ]
-  }
-}
-{
-  "id": "<int>",
-  "result": {
-    "nodes": [
-      {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "treeitem"
-        },
-        "name": {
-          "type": "computedString",
-          "value": "non-hidden treeitem",
-          "sources": [
-            {
-              "type": "relatedElement",
-              "attribute": "aria-labelledby"
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label"
-            },
-            {
-              "type": "contents",
-              "value": {
-                "type": "computedString",
-                "value": "non-hidden treeitem"
-              }
-            },
-            {
-              "type": "attribute",
-              "attribute": "title",
-              "superseded": true
-            }
-          ]
-        },
-        "properties": [
+  "nodeId": "<string>",
+  "ignored": true,
+  "ignoredReasons": [
+    {
+      "name": "ancestorDisallowsChild",
+      "value": {
+        "type": "idref",
+        "relatedNodes": [
           {
-            "name": "level",
-            "value": {
-              "type": "integer",
-              "value": 1
-            }
-          },
-          {
-            "name": "checked",
-            "value": {
-              "type": "tristate",
-              "value": "false"
-            }
-          },
-          {
-            "name": "selected",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
+            "nodeResult": "div"
           }
         ]
       }
-    ]
-  }
+    }
+  ],
+  "role": {
+    "type": "internalRole",
+    "value": "Ignored"
+  },
+  "domNode": "div"
 }
+
+WebArea
+  img
+    *Ignored
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
-      {
-        "nodeId": "<string>",
-        "ignored": true,
-        "ignoredReasons": [
+  "nodeId": "<string>",
+  "ignored": true,
+  "ignoredReasons": [
+    {
+      "name": "ancestorDisallowsChild",
+      "value": {
+        "type": "idref",
+        "relatedNodes": [
           {
-            "name": "ancestorDisallowsChild",
-            "value": {
-              "type": "idref",
-              "relatedNodes": [
-                {
-                  "nodeResult": "div"
-                }
-              ]
-            }
+            "nodeResult": "div"
           }
-        ],
-        "role": {
-          "type": "internalRole",
-          "value": "Div"
-        }
+        ]
       }
-    ]
-  }
+    }
+  ],
+  "role": {
+    "type": "internalRole",
+    "value": "Ignored"
+  },
+  "domNode": "svg"
 }
+
+WebArea
+  button "Buttons are leaf nodes"
+    *Ignored
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
-      {
-        "nodeId": "<string>",
-        "ignored": true,
-        "ignoredReasons": [
+  "nodeId": "<string>",
+  "ignored": true,
+  "ignoredReasons": [
+    {
+      "name": "ancestorIsLeafNode",
+      "value": {
+        "type": "idref",
+        "relatedNodes": [
           {
-            "name": "ancestorDisallowsChild",
-            "value": {
-              "type": "idref",
-              "relatedNodes": [
-                {
-                  "nodeResult": "div"
-                }
-              ]
-            }
+            "nodeResult": "button"
           }
-        ],
-        "role": {
-          "type": "internalRole",
-          "value": "SVGRoot"
-        }
+        ]
       }
-    ]
-  }
+    }
+  ],
+  "role": {
+    "type": "internalRole",
+    "value": "Ignored"
+  },
+  "domNode": "span"
 }
+
+WebArea
+  Div
+  tree
+  img
+  button "Buttons are leaf nodes"
+  *Ignored
+  text "List item also presentational"
+  Div
+  checkbox "Content within label refers to label container"
+  Div
+  Div
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
-      {
-        "nodeId": "<string>",
-        "ignored": true,
-        "ignoredReasons": [
+  "nodeId": "<string>",
+  "ignored": true,
+  "ignoredReasons": [
+    {
+      "name": "ariaHidden",
+      "value": {
+        "type": "boolean",
+        "value": true
+      }
+    }
+  ],
+  "role": {
+    "type": "internalRole",
+    "value": "Ignored"
+  },
+  "domNode": "div"
+}
+
+WebArea
+  Div
+  tree
+  img
+  button "Buttons are leaf nodes"
+  *Ignored
+  text "List item also presentational"
+  Div
+  checkbox "Content within label refers to label container"
+  Div
+  Div
+{
+  "nodeId": "<string>",
+  "ignored": true,
+  "ignoredReasons": [
+    {
+      "name": "ariaHiddenRoot",
+      "value": {
+        "type": "idref",
+        "relatedNodes": [
           {
-            "name": "ancestorIsLeafNode",
-            "value": {
-              "type": "idref",
-              "relatedNodes": [
-                {
-                  "nodeResult": "button"
-                }
-              ]
-            }
+            "nodeResult": "div"
           }
-        ],
-        "role": {
-          "type": "internalRole",
-          "value": "Unknown"
-        }
+        ]
       }
-    ]
-  }
+    }
+  ],
+  "role": {
+    "type": "internalRole",
+    "value": "Ignored"
+  },
+  "domNode": "div"
 }
+
+WebArea
+  Div
+  tree
+  img
+  button "Buttons are leaf nodes"
+  *Ignored
+    text "List item also presentational"
+    Div
+  checkbox "Content within label refers to label container"
+  Div
+  Div
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
-      {
-        "nodeId": "<string>",
-        "ignored": true,
-        "ignoredReasons": [
+  "nodeId": "<string>",
+  "ignored": true,
+  "ignoredReasons": [
+    {
+      "name": "presentationalRole",
+      "value": {
+        "type": "boolean",
+        "value": true
+      }
+    }
+  ],
+  "role": {
+    "type": "internalRole",
+    "value": "Ignored"
+  },
+  "domNode": "ol"
+}
+
+WebArea
+  Div
+  tree
+  img
+  button "Buttons are leaf nodes"
+  *Ignored
+    text "List item also presentational"
+  Div
+  checkbox "Content within label refers to label container"
+  Div
+  Div
+{
+  "nodeId": "<string>",
+  "ignored": true,
+  "ignoredReasons": [
+    {
+      "name": "inheritsPresentation",
+      "value": {
+        "type": "idref",
+        "relatedNodes": [
           {
-            "name": "ariaHidden",
-            "value": {
-              "type": "boolean",
-              "value": true
-            }
+            "nodeResult": "ol"
           }
-        ],
-        "role": {
-          "type": "internalRole",
-          "value": "Div"
-        }
+        ]
+      }
+    }
+  ],
+  "role": {
+    "type": "internalRole",
+    "value": "Ignored"
+  },
+  "domNode": "li"
+}
+
+WebArea
+  Div
+  tree
+  img
+  button "Buttons are leaf nodes"
+  text "List item also presentational"
+  *Div
+    text "Div in list isn't presentational"
+  checkbox "Content within label refers to label container"
+  Div
+  Div
+{
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "internalRole",
+    "value": "Div"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "",
+    "sources": [
+      {
+        "type": "relatedElement",
+        "attribute": "aria-labelledby"
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label"
+      },
+      {
+        "type": "attribute",
+        "attribute": "title"
       }
     ]
-  }
+  },
+  "properties": [],
+  "domNode": "div"
 }
+
+WebArea
+  Div
+  tree
+  img
+  button "Buttons are leaf nodes"
+  text "List item also presentational"
+  Div
+  *Ignored
+  checkbox "Content within label refers to label container"
+  Div
+  Div
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
-      {
-        "nodeId": "<string>",
-        "ignored": true,
-        "ignoredReasons": [
+  "nodeId": "<string>",
+  "ignored": true,
+  "ignoredReasons": [
+    {
+      "name": "labelFor",
+      "value": {
+        "type": "idref",
+        "relatedNodes": [
           {
-            "name": "ariaHiddenRoot",
-            "value": {
-              "type": "idref",
-              "relatedNodes": [
-                {
-                  "nodeResult": "div"
-                }
-              ]
-            }
+            "idref": "checkbox",
+            "nodeResult": "input#checkbox"
           }
-        ],
-        "role": {
-          "type": "internalRole",
-          "value": "Div"
-        }
+        ]
       }
-    ]
-  }
+    }
+  ],
+  "role": {
+    "type": "internalRole",
+    "value": "Ignored"
+  },
+  "domNode": "label"
 }
+
+WebArea
+  Div
+  tree
+  img
+  button "Buttons are leaf nodes"
+  text "List item also presentational"
+  Div
+  *Ignored
+  checkbox "Content within label refers to label container"
+  Div
+  Div
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
-      {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "img"
-        },
-        "name": {
-          "type": "computedString",
-          "value": "",
-          "sources": [
-            {
-              "type": "relatedElement",
-              "attribute": "aria-labelledby"
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label"
-            },
-            {
-              "type": "attribute",
-              "value": {
-                "type": "computedString",
-                "value": ""
-              },
-              "attribute": "alt",
-              "attributeValue": {
-                "type": "string",
-                "value": ""
-              }
-            },
-            {
-              "type": "attribute",
-              "attribute": "title",
-              "superseded": true
-            }
-          ]
-        },
-        "properties": []
-      }
-    ]
-  }
-}
-{
-  "id": "<int>",
-  "result": {
-    "nodes": [
-      {
-        "nodeId": "<string>",
-        "ignored": true,
-        "ignoredReasons": [
+  "nodeId": "<string>",
+  "ignored": true,
+  "ignoredReasons": [
+    {
+      "name": "labelContainer",
+      "value": {
+        "type": "idref",
+        "relatedNodes": [
           {
-            "name": "presentationalRole",
-            "value": {
-              "type": "boolean",
-              "value": true
-            }
+            "nodeResult": "label"
           }
-        ],
-        "role": {
-          "type": "role",
-          "value": "none"
-        }
+        ]
       }
-    ]
-  }
-}
-{
-  "id": "<int>",
-  "result": {
-    "nodes": [
-      {
-        "nodeId": "<string>",
-        "ignored": true,
-        "ignoredReasons": [
+    },
+    {
+      "name": "labelFor",
+      "value": {
+        "type": "idref",
+        "relatedNodes": [
           {
-            "name": "inheritsPresentation",
-            "value": {
-              "type": "idref",
-              "relatedNodes": [
-                {
-                  "nodeResult": "ol"
-                }
-              ]
-            }
+            "idref": "checkbox",
+            "nodeResult": "input#checkbox"
           }
-        ],
-        "role": {
-          "type": "role",
-          "value": "listitem"
-        }
+        ]
       }
-    ]
-  }
+    }
+  ],
+  "role": {
+    "type": "internalRole",
+    "value": "Ignored"
+  },
+  "domNode": "span"
 }
+
+WebArea
+  Div
+  tree
+  img
+  button "Buttons are leaf nodes"
+  text "List item also presentational"
+  Div
+  checkbox "Content within label refers to label container"
+  *Ignored
+    button "aria-hidden false button"
+  Div
+  Div
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
-      {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "internalRole",
-          "value": "Div"
-        },
-        "name": {
-          "type": "computedString",
-          "value": "",
-          "sources": [
-            {
-              "type": "relatedElement",
-              "attribute": "aria-labelledby"
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label"
-            },
-            {
-              "type": "attribute",
-              "attribute": "title"
-            }
-          ]
-        },
-        "properties": []
+  "nodeId": "<string>",
+  "ignored": true,
+  "ignoredReasons": [
+    {
+      "name": "notRendered",
+      "value": {
+        "type": "boolean",
+        "value": true
       }
-    ]
-  }
+    }
+  ],
+  "role": {
+    "type": "internalRole",
+    "value": "Ignored"
+  },
+  "domNode": "div"
 }
+
+WebArea
+  *Ignored
+  button "aria-hidden false button"
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
-      {
-        "nodeId": "<string>",
-        "ignored": true,
-        "ignoredReasons": [
-          {
-            "name": "labelFor",
-            "value": {
-              "type": "idref",
-              "relatedNodes": [
-                {
-                  "idref": "checkbox",
-                  "nodeResult": "input#checkbox"
-                }
-              ]
-            }
-          }
-        ],
-        "role": {
-          "type": "internalRole",
-          "value": "Label"
-        }
+  "nodeId": "<string>",
+  "ignored": true,
+  "ignoredReasons": [
+    {
+      "name": "notRendered",
+      "value": {
+        "type": "boolean",
+        "value": true
       }
-    ]
-  }
+    }
+  ],
+  "role": {
+    "type": "internalRole",
+    "value": "Ignored"
+  },
+  "domNode": "span"
 }
+
+WebArea
+  Div
+  tree
+  img
+  button "Buttons are leaf nodes"
+  text "List item also presentational"
+  Div
+  checkbox "Content within label refers to label container"
+  *Ignored
+  Div
+  Div
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
-      {
-        "nodeId": "<string>",
-        "ignored": true,
-        "ignoredReasons": [
-          {
-            "name": "labelContainer",
-            "value": {
-              "type": "idref",
-              "relatedNodes": [
-                {
-                  "nodeResult": "label"
-                }
-              ]
-            }
-          },
-          {
-            "name": "labelFor",
-            "value": {
-              "type": "idref",
-              "relatedNodes": [
-                {
-                  "idref": "checkbox",
-                  "nodeResult": "input#checkbox"
-                }
-              ]
-            }
-          }
-        ],
-        "role": {
-          "type": "internalRole",
-          "value": "Unknown"
-        }
+  "nodeId": "<string>",
+  "ignored": true,
+  "ignoredReasons": [
+    {
+      "name": "probablyPresentational",
+      "value": {
+        "type": "boolean",
+        "value": true
       }
-    ]
-  }
+    }
+  ],
+  "role": {
+    "type": "internalRole",
+    "value": "Ignored"
+  },
+  "domNode": "canvas"
 }
+
+WebArea
+  Div
+  tree
+  img
+  button "Buttons are leaf nodes"
+  text "List item also presentational"
+  Div
+  checkbox "Content within label refers to label container"
+  *Ignored
+    Div
+  Div
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
-      {
-        "nodeId": "<string>",
-        "ignored": true,
-        "ignoredReasons": [
-          {
-            "name": "notRendered",
-            "value": {
-              "type": "boolean",
-              "value": true
-            }
-          }
-        ],
-        "role": {
-          "type": "internalRole",
-          "value": "Div"
-        }
+  "nodeId": "<string>",
+  "ignored": true,
+  "ignoredReasons": [
+    {
+      "name": "presentationalRole",
+      "value": {
+        "type": "boolean",
+        "value": true
       }
-    ]
-  }
-}
-{
-  "id": "<int>",
-  "result": {
-    "nodes": [
-      {
-        "nodeId": "<string>",
-        "ignored": true,
-        "ignoredReasons": [
-          {
-            "name": "probablyPresentational",
-            "value": {
-              "type": "boolean",
-              "value": true
-            }
-          }
-        ],
-        "role": {
-          "type": "internalRole",
-          "value": "Canvas"
-        }
-      }
-    ]
-  }
+    }
+  ],
+  "role": {
+    "type": "internalRole",
+    "value": "Ignored"
+  },
+  "domNode": "canvas"
 }
 

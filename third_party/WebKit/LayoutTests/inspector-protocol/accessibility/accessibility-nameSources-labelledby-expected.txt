@@ -1,1376 +1,1268 @@
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "internalRole",
+    "value": "Div"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "internalRole",
-          "value": "Div"
-        },
-        "name": {
-          "type": "computedString",
-          "value": "",
-          "sources": [
-            {
-              "type": "relatedElement",
-              "attribute": "aria-labelledby"
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label"
-            },
-            {
-              "type": "attribute",
-              "attribute": "title"
-            }
-          ]
-        },
-        "properties": []
+        "type": "relatedElement",
+        "attribute": "aria-labelledby"
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label"
+      },
+      {
+        "type": "attribute",
+        "attribute": "title"
       }
     ]
-  }
+  },
+  "properties": [],
+  "domNode": "div#div"
 }
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "button"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "Contents of button",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "button"
-        },
-        "name": {
+        "type": "relatedElement",
+        "attribute": "aria-labelledby"
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label"
+      },
+      {
+        "type": "relatedElement",
+        "nativeSource": "label"
+      },
+      {
+        "type": "contents",
+        "value": {
           "type": "computedString",
-          "value": "Contents of button",
-          "sources": [
+          "value": "Contents of button"
+        }
+      },
+      {
+        "type": "attribute",
+        "attribute": "title",
+        "superseded": true
+      }
+    ]
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    }
+  ],
+  "domNode": "button#self"
+}
+{
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "button"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "Label 1",
+    "sources": [
+      {
+        "type": "relatedElement",
+        "value": {
+          "type": "computedString",
+          "value": "Label 1"
+        },
+        "attribute": "aria-labelledby",
+        "attributeValue": {
+          "type": "idrefList",
+          "value": "label1",
+          "relatedNodes": [
             {
-              "type": "relatedElement",
-              "attribute": "aria-labelledby"
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label"
-            },
-            {
-              "type": "relatedElement",
-              "nativeSource": "label"
-            },
-            {
-              "type": "contents",
-              "value": {
-                "type": "computedString",
-                "value": "Contents of button"
-              }
-            },
-            {
-              "type": "attribute",
-              "attribute": "title",
-              "superseded": true
+              "idref": "label1",
+              "text": "Label 1",
+              "nodeResult": "div#label1"
             }
           ]
+        }
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label",
+        "superseded": true
+      },
+      {
+        "type": "relatedElement",
+        "superseded": true,
+        "nativeSource": "label"
+      },
+      {
+        "type": "contents",
+        "value": {
+          "type": "computedString",
+          "value": "Contents"
         },
-        "properties": [
+        "superseded": true
+      },
+      {
+        "type": "attribute",
+        "attribute": "title",
+        "superseded": true
+      }
+    ]
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    },
+    {
+      "name": "labelledby",
+      "value": {
+        "type": "nodeList",
+        "relatedNodes": [
           {
-            "name": "invalid",
-            "value": {
-              "type": "token",
-              "value": "false"
-            }
+            "idref": "label1",
+            "text": "Label 1",
+            "nodeResult": "div#label1"
           }
         ]
       }
-    ]
-  }
+    }
+  ],
+  "domNode": "button#labelledby"
 }
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "button"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "Contents",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "button"
-        },
-        "name": {
+        "type": "relatedElement",
+        "value": {
           "type": "computedString",
-          "value": "Label 1",
-          "sources": [
+          "value": "Contents"
+        },
+        "attribute": "aria-labelledby",
+        "attributeValue": {
+          "type": "idrefList",
+          "value": "labelledbySelf",
+          "relatedNodes": [
             {
-              "type": "relatedElement",
-              "value": {
-                "type": "computedString",
-                "value": "Label 1"
-              },
-              "attribute": "aria-labelledby",
-              "attributeValue": {
-                "type": "idrefList",
-                "value": "label1",
-                "relatedNodes": [
-                  {
-                    "idref": "label1",
-                    "text": "Label 1",
-                    "nodeResult": "div#label1"
-                  }
-                ]
-              }
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label",
-              "superseded": true
-            },
-            {
-              "type": "relatedElement",
-              "superseded": true,
-              "nativeSource": "label"
-            },
-            {
-              "type": "contents",
-              "value": {
-                "type": "computedString",
-                "value": "Contents"
-              },
-              "superseded": true
-            },
-            {
-              "type": "attribute",
-              "attribute": "title",
-              "superseded": true
+              "idref": "labelledbySelf",
+              "text": "Contents",
+              "nodeResult": "button#labelledbySelf"
             }
           ]
+        }
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label",
+        "superseded": true
+      },
+      {
+        "type": "relatedElement",
+        "superseded": true,
+        "nativeSource": "label"
+      },
+      {
+        "type": "contents",
+        "value": {
+          "type": "computedString",
+          "value": "Contents"
         },
-        "properties": [
+        "superseded": true
+      },
+      {
+        "type": "attribute",
+        "attribute": "title",
+        "superseded": true
+      }
+    ]
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    },
+    {
+      "name": "labelledby",
+      "value": {
+        "type": "nodeList",
+        "relatedNodes": [
           {
-            "name": "invalid",
-            "value": {
-              "type": "token",
-              "value": "false"
+            "idref": "labelledbySelf",
+            "text": "Contents",
+            "nodeResult": "button#labelledbySelf"
+          }
+        ]
+      }
+    }
+  ],
+  "domNode": "button#labelledbySelf"
+}
+{
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "button"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "Contents Label 3",
+    "sources": [
+      {
+        "type": "relatedElement",
+        "value": {
+          "type": "computedString",
+          "value": "Contents Label 3"
+        },
+        "attribute": "aria-labelledby",
+        "attributeValue": {
+          "type": "idrefList",
+          "value": "labelledby3 label3",
+          "relatedNodes": [
+            {
+              "idref": "labelledby3",
+              "text": "Contents",
+              "nodeResult": "button#labelledby3"
+            },
+            {
+              "idref": "label3",
+              "text": "Label 3",
+              "nodeResult": "div#label3"
             }
+          ]
+        }
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label",
+        "superseded": true
+      },
+      {
+        "type": "relatedElement",
+        "superseded": true,
+        "nativeSource": "label"
+      },
+      {
+        "type": "contents",
+        "value": {
+          "type": "computedString",
+          "value": "Contents"
+        },
+        "superseded": true
+      },
+      {
+        "type": "attribute",
+        "attribute": "title",
+        "superseded": true
+      }
+    ]
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    },
+    {
+      "name": "labelledby",
+      "value": {
+        "type": "nodeList",
+        "relatedNodes": [
+          {
+            "idref": "labelledby3",
+            "text": "Contents",
+            "nodeResult": "button#labelledby3"
           },
           {
-            "name": "labelledby",
-            "value": {
-              "type": "nodeList",
-              "relatedNodes": [
-                {
-                  "idref": "label1",
-                  "text": "Label 1",
-                  "nodeResult": "div#label1"
-                }
-              ]
-            }
+            "idref": "label3",
+            "text": "Label 3",
+            "nodeResult": "div#label3"
           }
         ]
       }
-    ]
-  }
+    }
+  ],
+  "domNode": "button#labelledby3"
 }
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "button"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "Contents 4",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "button"
-        },
-        "name": {
+        "type": "relatedElement",
+        "value": {
           "type": "computedString",
-          "value": "Contents",
-          "sources": [
+          "value": "Contents 4"
+        },
+        "attribute": "aria-labelledby",
+        "attributeValue": {
+          "type": "idrefList",
+          "value": "label4",
+          "relatedNodes": [
             {
-              "type": "relatedElement",
-              "value": {
-                "type": "computedString",
-                "value": "Contents"
-              },
-              "attribute": "aria-labelledby",
-              "attributeValue": {
-                "type": "idrefList",
-                "value": "labelledbySelf",
-                "relatedNodes": [
-                  {
-                    "idref": "labelledbySelf",
-                    "text": "Contents",
-                    "nodeResult": "button#labelledbySelf"
-                  }
-                ]
-              }
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label",
-              "superseded": true
-            },
-            {
-              "type": "relatedElement",
-              "superseded": true,
-              "nativeSource": "label"
-            },
-            {
-              "type": "contents",
-              "value": {
-                "type": "computedString",
-                "value": "Contents"
-              },
-              "superseded": true
-            },
-            {
-              "type": "attribute",
-              "attribute": "title",
-              "superseded": true
+              "idref": "label4",
+              "text": "Contents 4",
+              "nodeResult": "div#label4"
             }
           ]
+        }
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label",
+        "superseded": true
+      },
+      {
+        "type": "relatedElement",
+        "superseded": true,
+        "nativeSource": "label"
+      },
+      {
+        "type": "contents",
+        "value": {
+          "type": "computedString",
+          "value": "Contents"
         },
-        "properties": [
+        "superseded": true
+      },
+      {
+        "type": "attribute",
+        "attribute": "title",
+        "superseded": true
+      }
+    ]
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    },
+    {
+      "name": "labelledby",
+      "value": {
+        "type": "nodeList",
+        "relatedNodes": [
           {
-            "name": "invalid",
-            "value": {
-              "type": "token",
-              "value": "false"
-            }
-          },
-          {
-            "name": "labelledby",
-            "value": {
-              "type": "nodeList",
-              "relatedNodes": [
-                {
-                  "idref": "labelledbySelf",
-                  "text": "Contents",
-                  "nodeResult": "button#labelledbySelf"
-                }
-              ]
-            }
+            "idref": "label4",
+            "text": "Contents 4",
+            "nodeResult": "div#label4"
           }
         ]
       }
-    ]
-  }
+    }
+  ],
+  "domNode": "button#labelledby4"
 }
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "button"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "Contents",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "button"
+        "type": "relatedElement",
+        "attribute": "aria-labelledby",
+        "attributeValue": {
+          "type": "string",
+          "value": "label5"
         },
-        "name": {
+        "invalid": true
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label"
+      },
+      {
+        "type": "relatedElement",
+        "nativeSource": "label"
+      },
+      {
+        "type": "contents",
+        "value": {
           "type": "computedString",
-          "value": "Contents Label 3",
-          "sources": [
-            {
-              "type": "relatedElement",
-              "value": {
-                "type": "computedString",
-                "value": "Contents Label 3"
-              },
-              "attribute": "aria-labelledby",
-              "attributeValue": {
-                "type": "idrefList",
-                "value": "labelledby3 label3",
-                "relatedNodes": [
-                  {
-                    "idref": "labelledby3",
-                    "text": "Contents",
-                    "nodeResult": "button#labelledby3"
-                  },
-                  {
-                    "idref": "label3",
-                    "text": "Label 3",
-                    "nodeResult": "div#label3"
-                  }
-                ]
-              }
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label",
-              "superseded": true
-            },
-            {
-              "type": "relatedElement",
-              "superseded": true,
-              "nativeSource": "label"
-            },
-            {
-              "type": "contents",
-              "value": {
-                "type": "computedString",
-                "value": "Contents"
-              },
-              "superseded": true
-            },
-            {
-              "type": "attribute",
-              "attribute": "title",
-              "superseded": true
-            }
-          ]
-        },
-        "properties": [
-          {
-            "name": "invalid",
-            "value": {
-              "type": "token",
-              "value": "false"
-            }
-          },
-          {
-            "name": "labelledby",
-            "value": {
-              "type": "nodeList",
-              "relatedNodes": [
-                {
-                  "idref": "labelledby3",
-                  "text": "Contents",
-                  "nodeResult": "button#labelledby3"
-                },
-                {
-                  "idref": "label3",
-                  "text": "Label 3",
-                  "nodeResult": "div#label3"
-                }
-              ]
-            }
-          }
-        ]
+          "value": "Contents"
+        }
+      },
+      {
+        "type": "attribute",
+        "attribute": "title",
+        "superseded": true
       }
     ]
-  }
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    }
+  ],
+  "domNode": "button#labelledby5"
 }
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "button"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "button"
-        },
-        "name": {
+        "type": "relatedElement",
+        "value": {
           "type": "computedString",
-          "value": "Contents 4",
-          "sources": [
+          "value": ""
+        },
+        "attribute": "aria-labelledby",
+        "attributeValue": {
+          "type": "idrefList",
+          "value": "label6",
+          "relatedNodes": [
             {
-              "type": "relatedElement",
-              "value": {
-                "type": "computedString",
-                "value": "Contents 4"
-              },
-              "attribute": "aria-labelledby",
-              "attributeValue": {
-                "type": "idrefList",
-                "value": "label4",
-                "relatedNodes": [
-                  {
-                    "idref": "label4",
-                    "text": "Contents 4",
-                    "nodeResult": "div#label4"
-                  }
-                ]
-              }
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label",
-              "superseded": true
-            },
-            {
-              "type": "relatedElement",
-              "superseded": true,
-              "nativeSource": "label"
-            },
-            {
-              "type": "contents",
-              "value": {
-                "type": "computedString",
-                "value": "Contents"
-              },
-              "superseded": true
-            },
-            {
-              "type": "attribute",
-              "attribute": "title",
-              "superseded": true
+              "idref": "label6",
+              "text": "",
+              "nodeResult": "div#label6"
             }
           ]
+        }
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label",
+        "superseded": true
+      },
+      {
+        "type": "relatedElement",
+        "superseded": true,
+        "nativeSource": "label"
+      },
+      {
+        "type": "contents",
+        "value": {
+          "type": "computedString",
+          "value": "Contents"
         },
-        "properties": [
+        "superseded": true
+      },
+      {
+        "type": "attribute",
+        "attribute": "title",
+        "superseded": true
+      }
+    ]
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    },
+    {
+      "name": "labelledby",
+      "value": {
+        "type": "nodeList",
+        "relatedNodes": [
           {
-            "name": "invalid",
-            "value": {
-              "type": "token",
-              "value": "false"
-            }
-          },
-          {
-            "name": "labelledby",
-            "value": {
-              "type": "nodeList",
-              "relatedNodes": [
-                {
-                  "idref": "label4",
-                  "text": "Contents 4",
-                  "nodeResult": "div#label4"
-                }
-              ]
-            }
+            "idref": "label6",
+            "text": "",
+            "nodeResult": "div#label6"
           }
         ]
       }
-    ]
-  }
+    }
+  ],
+  "domNode": "button#labelledby6"
 }
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "button"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "Invisible label",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "button"
-        },
-        "name": {
+        "type": "relatedElement",
+        "value": {
           "type": "computedString",
-          "value": "Contents",
-          "sources": [
+          "value": "Invisible label"
+        },
+        "attribute": "aria-labelledby",
+        "attributeValue": {
+          "type": "idrefList",
+          "value": "label7",
+          "relatedNodes": [
             {
-              "type": "relatedElement",
-              "attribute": "aria-labelledby",
-              "attributeValue": {
-                "type": "string",
-                "value": "label5"
-              },
-              "invalid": true
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label"
-            },
-            {
-              "type": "relatedElement",
-              "nativeSource": "label"
-            },
-            {
-              "type": "contents",
-              "value": {
-                "type": "computedString",
-                "value": "Contents"
-              }
-            },
-            {
-              "type": "attribute",
-              "attribute": "title",
-              "superseded": true
+              "idref": "label7",
+              "text": "Invisible label",
+              "nodeResult": "h3#label7"
             }
           ]
+        }
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label",
+        "superseded": true
+      },
+      {
+        "type": "relatedElement",
+        "superseded": true,
+        "nativeSource": "label"
+      },
+      {
+        "type": "contents",
+        "value": {
+          "type": "computedString",
+          "value": "Contents"
         },
-        "properties": [
+        "superseded": true
+      },
+      {
+        "type": "attribute",
+        "attribute": "title",
+        "superseded": true
+      }
+    ]
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    },
+    {
+      "name": "labelledby",
+      "value": {
+        "type": "nodeList",
+        "relatedNodes": [
           {
-            "name": "invalid",
-            "value": {
-              "type": "token",
-              "value": "false"
-            }
+            "idref": "label7",
+            "text": "Invisible label",
+            "nodeResult": "h3#label7"
           }
         ]
       }
-    ]
-  }
+    }
+  ],
+  "domNode": "button#labelledby7"
 }
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "button"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "Display-none label",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "button"
-        },
-        "name": {
+        "type": "relatedElement",
+        "value": {
           "type": "computedString",
-          "value": "",
-          "sources": [
+          "value": "Display-none label"
+        },
+        "attribute": "aria-labelledby",
+        "attributeValue": {
+          "type": "idrefList",
+          "value": "label8",
+          "relatedNodes": [
             {
-              "type": "relatedElement",
-              "value": {
-                "type": "computedString",
-                "value": ""
-              },
-              "attribute": "aria-labelledby",
-              "attributeValue": {
-                "type": "idrefList",
-                "value": "label6",
-                "relatedNodes": [
-                  {
-                    "idref": "label6",
-                    "text": "",
-                    "nodeResult": "div#label6"
-                  }
-                ]
-              }
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label",
-              "superseded": true
-            },
-            {
-              "type": "relatedElement",
-              "superseded": true,
-              "nativeSource": "label"
-            },
-            {
-              "type": "contents",
-              "value": {
-                "type": "computedString",
-                "value": "Contents"
-              },
-              "superseded": true
-            },
-            {
-              "type": "attribute",
-              "attribute": "title",
-              "superseded": true
+              "idref": "label8",
+              "text": "Display-none label",
+              "nodeResult": "h3#label8"
             }
           ]
+        }
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label",
+        "superseded": true
+      },
+      {
+        "type": "relatedElement",
+        "superseded": true,
+        "nativeSource": "label"
+      },
+      {
+        "type": "contents",
+        "value": {
+          "type": "computedString",
+          "value": "Contents"
         },
-        "properties": [
+        "superseded": true
+      },
+      {
+        "type": "attribute",
+        "attribute": "title",
+        "superseded": true
+      }
+    ]
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    },
+    {
+      "name": "labelledby",
+      "value": {
+        "type": "nodeList",
+        "relatedNodes": [
           {
-            "name": "invalid",
-            "value": {
-              "type": "token",
-              "value": "false"
-            }
-          },
-          {
-            "name": "labelledby",
-            "value": {
-              "type": "nodeList",
-              "relatedNodes": [
-                {
-                  "idref": "label6",
-                  "text": "",
-                  "nodeResult": "div#label6"
-                }
-              ]
-            }
+            "idref": "label8",
+            "text": "Display-none label",
+            "nodeResult": "h3#label8"
           }
         ]
       }
-    ]
-  }
+    }
+  ],
+  "domNode": "button#labelledby8"
 }
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "button"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "Label",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "button"
-        },
-        "name": {
+        "type": "relatedElement",
+        "attribute": "aria-labelledby"
+      },
+      {
+        "type": "attribute",
+        "value": {
           "type": "computedString",
-          "value": "Invisible label",
-          "sources": [
-            {
-              "type": "relatedElement",
-              "value": {
-                "type": "computedString",
-                "value": "Invisible label"
-              },
-              "attribute": "aria-labelledby",
-              "attributeValue": {
-                "type": "idrefList",
-                "value": "label7",
-                "relatedNodes": [
-                  {
-                    "idref": "label7",
-                    "text": "Invisible label",
-                    "nodeResult": "h3#label7"
-                  }
-                ]
-              }
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label",
-              "superseded": true
-            },
-            {
-              "type": "relatedElement",
-              "superseded": true,
-              "nativeSource": "label"
-            },
-            {
-              "type": "contents",
-              "value": {
-                "type": "computedString",
-                "value": "Contents"
-              },
-              "superseded": true
-            },
-            {
-              "type": "attribute",
-              "attribute": "title",
-              "superseded": true
-            }
-          ]
+          "value": "Label"
         },
-        "properties": [
-          {
-            "name": "invalid",
-            "value": {
-              "type": "token",
-              "value": "false"
-            }
-          },
-          {
-            "name": "labelledby",
-            "value": {
-              "type": "nodeList",
-              "relatedNodes": [
-                {
-                  "idref": "label7",
-                  "text": "Invisible label",
-                  "nodeResult": "h3#label7"
-                }
-              ]
-            }
-          }
-        ]
+        "attribute": "aria-label",
+        "attributeValue": {
+          "type": "string",
+          "value": "Label"
+        }
+      },
+      {
+        "type": "relatedElement",
+        "superseded": true,
+        "nativeSource": "label"
+      },
+      {
+        "type": "contents",
+        "value": {
+          "type": "computedString",
+          "value": "Contents"
+        },
+        "superseded": true
+      },
+      {
+        "type": "attribute",
+        "attribute": "title",
+        "superseded": true
       }
     ]
-  }
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    }
+  ],
+  "domNode": "button#labelOnly"
 }
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "button"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "Contents",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "button"
-        },
-        "name": {
+        "type": "relatedElement",
+        "attribute": "aria-labelledby"
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label"
+      },
+      {
+        "type": "relatedElement",
+        "nativeSource": "label"
+      },
+      {
+        "type": "contents",
+        "value": {
           "type": "computedString",
-          "value": "Display-none label",
-          "sources": [
-            {
-              "type": "relatedElement",
-              "value": {
-                "type": "computedString",
-                "value": "Display-none label"
-              },
-              "attribute": "aria-labelledby",
-              "attributeValue": {
-                "type": "idrefList",
-                "value": "label8",
-                "relatedNodes": [
-                  {
-                    "idref": "label8",
-                    "text": "Display-none label",
-                    "nodeResult": "h3#label8"
-                  }
-                ]
-              }
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label",
-              "superseded": true
-            },
-            {
-              "type": "relatedElement",
-              "superseded": true,
-              "nativeSource": "label"
-            },
-            {
-              "type": "contents",
-              "value": {
-                "type": "computedString",
-                "value": "Contents"
-              },
-              "superseded": true
-            },
-            {
-              "type": "attribute",
-              "attribute": "title",
-              "superseded": true
-            }
-          ]
-        },
-        "properties": [
-          {
-            "name": "invalid",
-            "value": {
-              "type": "token",
-              "value": "false"
-            }
-          },
-          {
-            "name": "labelledby",
-            "value": {
-              "type": "nodeList",
-              "relatedNodes": [
-                {
-                  "idref": "label8",
-                  "text": "Display-none label",
-                  "nodeResult": "h3#label8"
-                }
-              ]
-            }
-          }
-        ]
+          "value": "Contents"
+        }
+      },
+      {
+        "type": "attribute",
+        "attribute": "title",
+        "superseded": true
       }
     ]
-  }
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    }
+  ],
+  "domNode": "button#emptyLabel1"
 }
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "button"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "Contents",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "button"
-        },
-        "name": {
+        "type": "relatedElement",
+        "attribute": "aria-labelledby"
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label"
+      },
+      {
+        "type": "relatedElement",
+        "nativeSource": "label"
+      },
+      {
+        "type": "contents",
+        "value": {
           "type": "computedString",
-          "value": "Label",
-          "sources": [
-            {
-              "type": "relatedElement",
-              "attribute": "aria-labelledby"
-            },
-            {
-              "type": "attribute",
-              "value": {
-                "type": "computedString",
-                "value": "Label"
-              },
-              "attribute": "aria-label",
-              "attributeValue": {
-                "type": "string",
-                "value": "Label"
-              }
-            },
-            {
-              "type": "relatedElement",
-              "superseded": true,
-              "nativeSource": "label"
-            },
-            {
-              "type": "contents",
-              "value": {
-                "type": "computedString",
-                "value": "Contents"
-              },
-              "superseded": true
-            },
-            {
-              "type": "attribute",
-              "attribute": "title",
-              "superseded": true
-            }
-          ]
-        },
-        "properties": [
-          {
-            "name": "invalid",
-            "value": {
-              "type": "token",
-              "value": "false"
-            }
-          }
-        ]
+          "value": "Contents"
+        }
+      },
+      {
+        "type": "attribute",
+        "attribute": "title",
+        "superseded": true
       }
     ]
-  }
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    }
+  ],
+  "domNode": "button#emptyLabel2"
 }
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "button"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "Labelledby 9",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "button"
-        },
-        "name": {
+        "type": "relatedElement",
+        "value": {
           "type": "computedString",
-          "value": "Contents",
-          "sources": [
+          "value": "Labelledby 9"
+        },
+        "attribute": "aria-labelledby",
+        "attributeValue": {
+          "type": "idrefList",
+          "value": "label9",
+          "relatedNodes": [
             {
-              "type": "relatedElement",
-              "attribute": "aria-labelledby"
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label"
-            },
-            {
-              "type": "relatedElement",
-              "nativeSource": "label"
-            },
-            {
-              "type": "contents",
-              "value": {
-                "type": "computedString",
-                "value": "Contents"
-              }
-            },
-            {
-              "type": "attribute",
-              "attribute": "title",
-              "superseded": true
+              "idref": "label9",
+              "text": "Labelledby 9",
+              "nodeResult": "div#label9"
             }
           ]
+        }
+      },
+      {
+        "type": "attribute",
+        "value": {
+          "type": "computedString",
+          "value": "Label"
         },
-        "properties": [
+        "attribute": "aria-label",
+        "attributeValue": {
+          "type": "string",
+          "value": "Label"
+        },
+        "superseded": true
+      },
+      {
+        "type": "relatedElement",
+        "superseded": true,
+        "nativeSource": "label"
+      },
+      {
+        "type": "contents",
+        "value": {
+          "type": "computedString",
+          "value": "Contents"
+        },
+        "superseded": true
+      },
+      {
+        "type": "attribute",
+        "attribute": "title",
+        "superseded": true
+      }
+    ]
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    },
+    {
+      "name": "labelledby",
+      "value": {
+        "type": "nodeList",
+        "relatedNodes": [
           {
-            "name": "invalid",
-            "value": {
-              "type": "token",
-              "value": "false"
-            }
+            "idref": "label9",
+            "text": "Labelledby 9",
+            "nodeResult": "div#label9"
           }
         ]
       }
-    ]
-  }
+    }
+  ],
+  "domNode": "button#labelledby9"
 }
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "button"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "Label 10 label",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "button"
-        },
-        "name": {
+        "type": "relatedElement",
+        "value": {
           "type": "computedString",
-          "value": "Contents",
-          "sources": [
+          "value": "Label 10 label"
+        },
+        "attribute": "aria-labelledby",
+        "attributeValue": {
+          "type": "idrefList",
+          "value": "label10",
+          "relatedNodes": [
             {
-              "type": "relatedElement",
-              "attribute": "aria-labelledby"
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label"
-            },
-            {
-              "type": "relatedElement",
-              "nativeSource": "label"
-            },
-            {
-              "type": "contents",
-              "value": {
-                "type": "computedString",
-                "value": "Contents"
-              }
-            },
-            {
-              "type": "attribute",
-              "attribute": "title",
-              "superseded": true
+              "idref": "label10",
+              "text": "Label 10 label",
+              "nodeResult": "div#label10"
             }
           ]
+        }
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label",
+        "superseded": true
+      },
+      {
+        "type": "relatedElement",
+        "superseded": true,
+        "nativeSource": "label"
+      },
+      {
+        "type": "contents",
+        "value": {
+          "type": "computedString",
+          "value": "Contents"
         },
-        "properties": [
+        "superseded": true
+      },
+      {
+        "type": "attribute",
+        "attribute": "title",
+        "superseded": true
+      }
+    ]
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    },
+    {
+      "name": "labelledby",
+      "value": {
+        "type": "nodeList",
+        "relatedNodes": [
           {
-            "name": "invalid",
-            "value": {
-              "type": "token",
-              "value": "false"
-            }
+            "idref": "label10",
+            "text": "Label 10 label",
+            "nodeResult": "div#label10"
           }
         ]
       }
-    ]
-  }
+    }
+  ],
+  "domNode": "button#labelledby10"
 }
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "button"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "Contents 11",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "button"
-        },
-        "name": {
+        "type": "relatedElement",
+        "value": {
           "type": "computedString",
-          "value": "Labelledby 9",
-          "sources": [
+          "value": "Contents 11"
+        },
+        "attribute": "aria-labelledby",
+        "attributeValue": {
+          "type": "idrefList",
+          "value": "label11",
+          "relatedNodes": [
             {
-              "type": "relatedElement",
-              "value": {
-                "type": "computedString",
-                "value": "Labelledby 9"
-              },
-              "attribute": "aria-labelledby",
-              "attributeValue": {
-                "type": "idrefList",
-                "value": "label9",
-                "relatedNodes": [
-                  {
-                    "idref": "label9",
-                    "text": "Labelledby 9",
-                    "nodeResult": "div#label9"
-                  }
-                ]
-              }
-            },
-            {
-              "type": "attribute",
-              "value": {
-                "type": "computedString",
-                "value": "Label"
-              },
-              "attribute": "aria-label",
-              "attributeValue": {
-                "type": "string",
-                "value": "Label"
-              },
-              "superseded": true
-            },
-            {
-              "type": "relatedElement",
-              "superseded": true,
-              "nativeSource": "label"
-            },
-            {
-              "type": "contents",
-              "value": {
-                "type": "computedString",
-                "value": "Contents"
-              },
-              "superseded": true
-            },
-            {
-              "type": "attribute",
-              "attribute": "title",
-              "superseded": true
+              "idref": "label11",
+              "text": "Contents 11",
+              "nodeResult": "div#label11"
             }
           ]
+        }
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label",
+        "superseded": true
+      },
+      {
+        "type": "relatedElement",
+        "superseded": true,
+        "nativeSource": "label"
+      },
+      {
+        "type": "contents",
+        "value": {
+          "type": "computedString",
+          "value": "Contents"
         },
-        "properties": [
+        "superseded": true
+      },
+      {
+        "type": "attribute",
+        "attribute": "title",
+        "superseded": true
+      }
+    ]
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    },
+    {
+      "name": "labelledby",
+      "value": {
+        "type": "nodeList",
+        "relatedNodes": [
           {
-            "name": "invalid",
-            "value": {
-              "type": "token",
-              "value": "false"
-            }
-          },
-          {
-            "name": "labelledby",
-            "value": {
-              "type": "nodeList",
-              "relatedNodes": [
-                {
-                  "idref": "label9",
-                  "text": "Labelledby 9",
-                  "nodeResult": "div#label9"
-                }
-              ]
-            }
+            "idref": "label11",
+            "text": "Contents 11",
+            "nodeResult": "div#label11"
           }
         ]
       }
-    ]
-  }
+    }
+  ],
+  "domNode": "button#labelledby11"
 }
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "button"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "Label 12 label",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "button"
-        },
-        "name": {
+        "type": "relatedElement",
+        "value": {
           "type": "computedString",
-          "value": "Label 10 label",
-          "sources": [
+          "value": "Label 12 label"
+        },
+        "attribute": "aria-labelledby",
+        "attributeValue": {
+          "type": "idrefList",
+          "value": "label12",
+          "relatedNodes": [
             {
-              "type": "relatedElement",
-              "value": {
-                "type": "computedString",
-                "value": "Label 10 label"
-              },
-              "attribute": "aria-labelledby",
-              "attributeValue": {
-                "type": "idrefList",
-                "value": "label10",
-                "relatedNodes": [
-                  {
-                    "idref": "label10",
-                    "text": "Label 10 label",
-                    "nodeResult": "div#label10"
-                  }
-                ]
-              }
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label",
-              "superseded": true
-            },
-            {
-              "type": "relatedElement",
-              "superseded": true,
-              "nativeSource": "label"
-            },
-            {
-              "type": "contents",
-              "value": {
-                "type": "computedString",
-                "value": "Contents"
-              },
-              "superseded": true
-            },
-            {
-              "type": "attribute",
-              "attribute": "title",
-              "superseded": true
+              "idref": "label12",
+              "text": "Label 12 label",
+              "nodeResult": "div#label12"
             }
           ]
+        }
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label",
+        "superseded": true
+      },
+      {
+        "type": "relatedElement",
+        "superseded": true,
+        "nativeSource": "label"
+      },
+      {
+        "type": "contents",
+        "value": {
+          "type": "computedString",
+          "value": "Contents"
         },
-        "properties": [
+        "superseded": true
+      },
+      {
+        "type": "attribute",
+        "attribute": "title",
+        "superseded": true
+      }
+    ]
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    },
+    {
+      "name": "labelledby",
+      "value": {
+        "type": "nodeList",
+        "relatedNodes": [
           {
-            "name": "invalid",
-            "value": {
-              "type": "token",
-              "value": "false"
-            }
-          },
-          {
-            "name": "labelledby",
-            "value": {
-              "type": "nodeList",
-              "relatedNodes": [
-                {
-                  "idref": "label10",
-                  "text": "Label 10 label",
-                  "nodeResult": "div#label10"
-                }
-              ]
-            }
+            "idref": "label12",
+            "text": "Label 12 label",
+            "nodeResult": "div#label12"
           }
         ]
       }
-    ]
-  }
+    }
+  ],
+  "domNode": "button#labelledby12"
 }
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "textbox"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "A B C",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "button"
-        },
-        "name": {
+        "type": "relatedElement",
+        "value": {
           "type": "computedString",
-          "value": "Contents 11",
-          "sources": [
+          "value": "A B C"
+        },
+        "attribute": "aria-labelledby",
+        "attributeValue": {
+          "type": "idrefList",
+          "value": "list1",
+          "relatedNodes": [
             {
-              "type": "relatedElement",
-              "value": {
-                "type": "computedString",
-                "value": "Contents 11"
-              },
-              "attribute": "aria-labelledby",
-              "attributeValue": {
-                "type": "idrefList",
-                "value": "label11",
-                "relatedNodes": [
-                  {
-                    "idref": "label11",
-                    "text": "Contents 11",
-                    "nodeResult": "div#label11"
-                  }
-                ]
-              }
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label",
-              "superseded": true
-            },
-            {
-              "type": "relatedElement",
-              "superseded": true,
-              "nativeSource": "label"
-            },
-            {
-              "type": "contents",
-              "value": {
-                "type": "computedString",
-                "value": "Contents"
-              },
-              "superseded": true
-            },
-            {
-              "type": "attribute",
-              "attribute": "title",
-              "superseded": true
+              "idref": "list1",
+              "text": "A B C",
+              "nodeResult": "ul#list1"
             }
           ]
-        },
-        "properties": [
+        }
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label",
+        "superseded": true
+      },
+      {
+        "type": "relatedElement",
+        "superseded": true,
+        "nativeSource": "label"
+      },
+      {
+        "type": "placeholder",
+        "attribute": "placeholder",
+        "superseded": true
+      },
+      {
+        "type": "attribute",
+        "attribute": "title",
+        "superseded": true
+      }
+    ]
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    },
+    {
+      "name": "multiline",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "readonly",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "required",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "labelledby",
+      "value": {
+        "type": "nodeList",
+        "relatedNodes": [
           {
-            "name": "invalid",
-            "value": {
-              "type": "token",
-              "value": "false"
-            }
-          },
-          {
-            "name": "labelledby",
-            "value": {
-              "type": "nodeList",
-              "relatedNodes": [
-                {
-                  "idref": "label11",
-                  "text": "Contents 11",
-                  "nodeResult": "div#label11"
-                }
-              ]
-            }
+            "idref": "list1",
+            "text": "A B C",
+            "nodeResult": "ul#list1"
           }
         ]
       }
-    ]
-  }
-}
-{
-  "id": "<int>",
-  "result": {
-    "nodes": [
-      {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "button"
-        },
-        "name": {
-          "type": "computedString",
-          "value": "Label 12 label",
-          "sources": [
-            {
-              "type": "relatedElement",
-              "value": {
-                "type": "computedString",
-                "value": "Label 12 label"
-              },
-              "attribute": "aria-labelledby",
-              "attributeValue": {
-                "type": "idrefList",
-                "value": "label12",
-                "relatedNodes": [
-                  {
-                    "idref": "label12",
-                    "text": "Label 12 label",
-                    "nodeResult": "div#label12"
-                  }
-                ]
-              }
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label",
-              "superseded": true
-            },
-            {
-              "type": "relatedElement",
-              "superseded": true,
-              "nativeSource": "label"
-            },
-            {
-              "type": "contents",
-              "value": {
-                "type": "computedString",
-                "value": "Contents"
-              },
-              "superseded": true
-            },
-            {
-              "type": "attribute",
-              "attribute": "title",
-              "superseded": true
-            }
-          ]
-        },
-        "properties": [
-          {
-            "name": "invalid",
-            "value": {
-              "type": "token",
-              "value": "false"
-            }
-          },
-          {
-            "name": "labelledby",
-            "value": {
-              "type": "nodeList",
-              "relatedNodes": [
-                {
-                  "idref": "label12",
-                  "text": "Label 12 label",
-                  "nodeResult": "div#label12"
-                }
-              ]
-            }
-          }
-        ]
-      }
-    ]
-  }
-}
-{
-  "id": "<int>",
-  "result": {
-    "nodes": [
-      {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "textbox"
-        },
-        "name": {
-          "type": "computedString",
-          "value": "A B C",
-          "sources": [
-            {
-              "type": "relatedElement",
-              "value": {
-                "type": "computedString",
-                "value": "A B C"
-              },
-              "attribute": "aria-labelledby",
-              "attributeValue": {
-                "type": "idrefList",
-                "value": "list1",
-                "relatedNodes": [
-                  {
-                    "idref": "list1",
-                    "text": "A B C",
-                    "nodeResult": "ul#list1"
-                  }
-                ]
-              }
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label",
-              "superseded": true
-            },
-            {
-              "type": "relatedElement",
-              "superseded": true,
-              "nativeSource": "label"
-            },
-            {
-              "type": "placeholder",
-              "attribute": "placeholder",
-              "superseded": true
-            },
-            {
-              "type": "attribute",
-              "attribute": "title",
-              "superseded": true
-            }
-          ]
-        },
-        "properties": [
-          {
-            "name": "invalid",
-            "value": {
-              "type": "token",
-              "value": "false"
-            }
-          },
-          {
-            "name": "multiline",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "readonly",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "required",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "labelledby",
-            "value": {
-              "type": "nodeList",
-              "relatedNodes": [
-                {
-                  "idref": "list1",
-                  "text": "A B C",
-                  "nodeResult": "ul#list1"
-                }
-              ]
-            }
-          }
-        ]
-      }
-    ]
-  }
+    }
+  ],
+  "domNode": "input#input1"
 }
 

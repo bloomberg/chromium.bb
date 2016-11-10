@@ -2,99 +2,81 @@ Hidden by modal dialog
 (Dialog itself is not hidden)
 Non-hidden element inside dialog
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
-      {
-        "nodeId": "<string>",
-        "ignored": true,
-        "ignoredReasons": [
+  "nodeId": "<string>",
+  "ignored": true,
+  "ignoredReasons": [
+    {
+      "name": "activeModalDialog",
+      "value": {
+        "type": "idref",
+        "relatedNodes": [
           {
-            "name": "activeModalDialog",
-            "value": {
-              "type": "idref",
-              "relatedNodes": [
-                {
-                  "nodeResult": "dialog"
-                }
-              ]
-            }
+            "nodeResult": "dialog"
           }
-        ],
-        "role": {
-          "type": "internalRole",
-          "value": "Div"
-        }
+        ]
       }
-    ]
-  }
+    }
+  ],
+  "role": {
+    "type": "internalRole",
+    "value": "Ignored"
+  },
+  "domNode": "div"
 }
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "dialog"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "dialog"
-        },
-        "name": {
-          "type": "computedString",
-          "value": "",
-          "sources": [
-            {
-              "type": "relatedElement",
-              "attribute": "aria-labelledby"
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label"
-            },
-            {
-              "type": "attribute",
-              "attribute": "title"
-            }
-          ]
-        },
-        "properties": []
+        "type": "relatedElement",
+        "attribute": "aria-labelledby"
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label"
+      },
+      {
+        "type": "attribute",
+        "attribute": "title"
       }
     ]
-  }
+  },
+  "properties": [],
+  "domNode": "dialog"
 }
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "internalRole",
+    "value": "Div"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "internalRole",
-          "value": "Div"
-        },
-        "name": {
-          "type": "computedString",
-          "value": "",
-          "sources": [
-            {
-              "type": "relatedElement",
-              "attribute": "aria-labelledby"
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label"
-            },
-            {
-              "type": "attribute",
-              "attribute": "title"
-            }
-          ]
-        },
-        "properties": []
+        "type": "relatedElement",
+        "attribute": "aria-labelledby"
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label"
+      },
+      {
+        "type": "attribute",
+        "attribute": "title"
       }
     ]
-  }
+  },
+  "properties": [],
+  "domNode": "div"
 }
 

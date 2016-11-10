@@ -1,45 +1,15 @@
 <html>
 <head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/dom-protocol-test.js"></script>
 <script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script type="text/javascript" src="./accessibility-dumpAccessibilityNodes.js"></script>
 <script>
 
 function test()
 {
-    InspectorTest.sendCommand("DOM.getDocument", {}, onGotDocument);
-
-    function onGotDocument(msg)
-    {
-        if (msg.error) {
-            InspectorTest.log(msg.error.message);
-            InspectorTest.completeTest();
-            return;
-        }
-        var rootNode = msg.result.root;
-        InspectorTest.sendCommand("DOM.querySelector", { "nodeId": rootNode.nodeId, "selector": "head" }, onQuerySelector);
-    }
-
-    function onQuerySelector(msg)
-    {
-        if (msg.error) {
-            InspectorTest.log(msg.error.message);
-            InspectorTest.completeTest();
-            return;
-        }
-        var node = msg.result;
-        InspectorTest.sendCommand("Accessibility.getAXNodeChain", { "nodeId": node.nodeId, "fetchAncestors": false }, onGotAccessibilityNode);
-    }
-
-    function onGotAccessibilityNode(msg)
-    {
-        if (msg.error) {
-            InspectorTest.log(msg.error.message);
-            InspectorTest.completeTest();
-            return;
-        }
-
-        InspectorTest.log('result: ' + JSON.stringify(msg.result, null, "  "));
-        InspectorTest.completeTest();
-    }
+    InspectorTest.sendCommand("DOM.getDocument", {}, (msg) => {
+        InspectorTest.dumpAccessibilityNodesBySelectorAndCompleteTest("head", false, msg);
+    });
 }
 
 </script>

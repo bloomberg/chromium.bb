@@ -1,1118 +1,1052 @@
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "textbox"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "textbox"
-        },
-        "name": {
-          "type": "computedString",
-          "value": "",
-          "sources": [
-            {
-              "type": "relatedElement",
-              "attribute": "aria-labelledby"
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label"
-            },
-            {
-              "type": "relatedElement",
-              "nativeSource": "label"
-            },
-            {
-              "type": "placeholder",
-              "attribute": "placeholder"
-            },
-            {
-              "type": "attribute",
-              "attribute": "title"
-            }
-          ]
-        },
-        "properties": [
-          {
-            "name": "invalid",
-            "value": {
-              "type": "token",
-              "value": "false"
-            }
-          },
-          {
-            "name": "multiline",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "readonly",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "required",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          }
-        ]
+        "type": "relatedElement",
+        "attribute": "aria-labelledby"
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label"
+      },
+      {
+        "type": "relatedElement",
+        "nativeSource": "label"
+      },
+      {
+        "type": "placeholder",
+        "attribute": "placeholder"
+      },
+      {
+        "type": "attribute",
+        "attribute": "title"
       }
     ]
-  }
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    },
+    {
+      "name": "multiline",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "readonly",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "required",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    }
+  ],
+  "domNode": "input#text1"
 }
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "textbox"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "text2-title",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "textbox"
-        },
-        "name": {
+        "type": "relatedElement",
+        "attribute": "aria-labelledby"
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label"
+      },
+      {
+        "type": "relatedElement",
+        "nativeSource": "label"
+      },
+      {
+        "type": "placeholder",
+        "attribute": "placeholder"
+      },
+      {
+        "type": "attribute",
+        "value": {
           "type": "computedString",
-          "value": "text2-title",
-          "sources": [
-            {
-              "type": "relatedElement",
-              "attribute": "aria-labelledby"
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label"
-            },
-            {
-              "type": "relatedElement",
-              "nativeSource": "label"
-            },
-            {
-              "type": "placeholder",
-              "attribute": "placeholder"
-            },
-            {
-              "type": "attribute",
-              "value": {
-                "type": "computedString",
-                "value": "text2-title"
-              },
-              "attribute": "title"
-            }
-          ]
+          "value": "text2-title"
         },
-        "properties": [
-          {
-            "name": "invalid",
-            "value": {
-              "type": "token",
-              "value": "false"
-            }
-          },
-          {
-            "name": "multiline",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "readonly",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "required",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          }
-        ]
+        "attribute": "title"
       }
     ]
-  }
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    },
+    {
+      "name": "multiline",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "readonly",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "required",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    }
+  ],
+  "domNode": "input#text2"
 }
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "textbox"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "text3-placeholder",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "textbox"
-        },
-        "name": {
+        "type": "relatedElement",
+        "attribute": "aria-labelledby"
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label"
+      },
+      {
+        "type": "relatedElement",
+        "nativeSource": "label"
+      },
+      {
+        "type": "placeholder",
+        "value": {
           "type": "computedString",
-          "value": "text3-placeholder",
-          "sources": [
-            {
-              "type": "relatedElement",
-              "attribute": "aria-labelledby"
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label"
-            },
-            {
-              "type": "relatedElement",
-              "nativeSource": "label"
-            },
-            {
-              "type": "placeholder",
-              "value": {
-                "type": "computedString",
-                "value": "text3-placeholder"
-              },
-              "attribute": "placeholder",
-              "attributeValue": {
-                "type": "string",
-                "value": "text3-placeholder"
-              }
-            },
-            {
-              "type": "attribute",
-              "value": {
-                "type": "computedString",
-                "value": "text3-title"
-              },
-              "attribute": "title"
-            }
-          ]
+          "value": "text3-placeholder"
         },
-        "description": {
+        "attribute": "placeholder",
+        "attributeValue": {
+          "type": "string",
+          "value": "text3-placeholder"
+        }
+      },
+      {
+        "type": "attribute",
+        "value": {
           "type": "computedString",
           "value": "text3-title"
         },
-        "properties": [
-          {
-            "name": "invalid",
-            "value": {
-              "type": "token",
-              "value": "false"
-            }
-          },
-          {
-            "name": "multiline",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "readonly",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "required",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          }
-        ]
+        "attribute": "title"
       }
     ]
-  }
+  },
+  "description": {
+    "type": "computedString",
+    "value": "text3-title"
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    },
+    {
+      "name": "multiline",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "readonly",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "required",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    }
+  ],
+  "domNode": "input#text3"
 }
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "textbox"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "label-for-text4",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "textbox"
-        },
-        "name": {
+        "type": "relatedElement",
+        "attribute": "aria-labelledby"
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label"
+      },
+      {
+        "type": "relatedElement",
+        "value": {
           "type": "computedString",
-          "value": "label-for-text4",
-          "sources": [
+          "value": "label-for-text4"
+        },
+        "nativeSource": "labelfor",
+        "nativeSourceValue": {
+          "type": "nodeList",
+          "relatedNodes": [
             {
-              "type": "relatedElement",
-              "attribute": "aria-labelledby"
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label"
-            },
-            {
-              "type": "relatedElement",
-              "value": {
-                "type": "computedString",
-                "value": "label-for-text4"
-              },
-              "nativeSource": "labelfor",
-              "nativeSourceValue": {
-                "type": "nodeList",
-                "relatedNodes": [
-                  {
-                    "backendNodeId": "<string>",
-                    "text": "label-for-text4"
-                  }
-                ]
-              }
-            },
-            {
-              "type": "placeholder",
-              "value": {
-                "type": "computedString",
-                "value": "text4-placeholder"
-              },
-              "attribute": "placeholder",
-              "attributeValue": {
-                "type": "string",
-                "value": "text4-placeholder"
-              },
-              "superseded": true
-            },
-            {
-              "type": "attribute",
-              "value": {
-                "type": "computedString",
-                "value": "text4-title"
-              },
-              "attribute": "title",
-              "superseded": true
+              "backendDOMNodeId": "<number>",
+              "text": "label-for-text4"
             }
           ]
-        },
-        "description": {
+        }
+      },
+      {
+        "type": "placeholder",
+        "value": {
           "type": "computedString",
           "value": "text4-placeholder"
         },
-        "properties": [
+        "attribute": "placeholder",
+        "attributeValue": {
+          "type": "string",
+          "value": "text4-placeholder"
+        },
+        "superseded": true
+      },
+      {
+        "type": "attribute",
+        "value": {
+          "type": "computedString",
+          "value": "text4-title"
+        },
+        "attribute": "title",
+        "superseded": true
+      }
+    ]
+  },
+  "description": {
+    "type": "computedString",
+    "value": "text4-placeholder"
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    },
+    {
+      "name": "multiline",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "readonly",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "required",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "labelledby",
+      "value": {
+        "type": "nodeList",
+        "relatedNodes": [
           {
-            "name": "invalid",
-            "value": {
-              "type": "token",
-              "value": "false"
-            }
-          },
-          {
-            "name": "multiline",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "readonly",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "required",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "labelledby",
-            "value": {
-              "type": "nodeList",
-              "relatedNodes": [
-                {
-                  "text": "label-for-text4",
-                  "nodeResult": "label"
-                }
-              ]
-            }
+            "text": "label-for-text4",
+            "nodeResult": "label"
           }
         ]
       }
-    ]
-  }
+    }
+  ],
+  "domNode": "input#text4"
 }
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "textbox"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "text5-aria-label",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "textbox"
-        },
-        "name": {
+        "type": "relatedElement",
+        "attribute": "aria-labelledby"
+      },
+      {
+        "type": "attribute",
+        "value": {
           "type": "computedString",
-          "value": "text5-aria-label",
-          "sources": [
+          "value": "text5-aria-label"
+        },
+        "attribute": "aria-label",
+        "attributeValue": {
+          "type": "string",
+          "value": "text5-aria-label"
+        }
+      },
+      {
+        "type": "relatedElement",
+        "value": {
+          "type": "computedString",
+          "value": "label-for-text5"
+        },
+        "superseded": true,
+        "nativeSource": "labelfor",
+        "nativeSourceValue": {
+          "type": "nodeList",
+          "relatedNodes": [
             {
-              "type": "relatedElement",
-              "attribute": "aria-labelledby"
-            },
-            {
-              "type": "attribute",
-              "value": {
-                "type": "computedString",
-                "value": "text5-aria-label"
-              },
-              "attribute": "aria-label",
-              "attributeValue": {
-                "type": "string",
-                "value": "text5-aria-label"
-              }
-            },
-            {
-              "type": "relatedElement",
-              "value": {
-                "type": "computedString",
-                "value": "label-for-text5"
-              },
-              "superseded": true,
-              "nativeSource": "labelfor",
-              "nativeSourceValue": {
-                "type": "nodeList",
-                "relatedNodes": [
-                  {
-                    "backendNodeId": "<string>",
-                    "text": "label-for-text5"
-                  }
-                ]
-              }
-            },
-            {
-              "type": "placeholder",
-              "value": {
-                "type": "computedString",
-                "value": "text5-placeholder"
-              },
-              "attribute": "placeholder",
-              "attributeValue": {
-                "type": "string",
-                "value": "text5-placeholder"
-              },
-              "superseded": true
-            },
-            {
-              "type": "attribute",
-              "value": {
-                "type": "computedString",
-                "value": "text5-title"
-              },
-              "attribute": "title",
-              "superseded": true
+              "backendDOMNodeId": "<number>",
+              "text": "label-for-text5"
             }
           ]
-        },
-        "description": {
+        }
+      },
+      {
+        "type": "placeholder",
+        "value": {
           "type": "computedString",
           "value": "text5-placeholder"
         },
-        "properties": [
-          {
-            "name": "invalid",
-            "value": {
-              "type": "token",
-              "value": "false"
-            }
-          },
-          {
-            "name": "multiline",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "readonly",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "required",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          }
-        ]
+        "attribute": "placeholder",
+        "attributeValue": {
+          "type": "string",
+          "value": "text5-placeholder"
+        },
+        "superseded": true
+      },
+      {
+        "type": "attribute",
+        "value": {
+          "type": "computedString",
+          "value": "text5-title"
+        },
+        "attribute": "title",
+        "superseded": true
       }
     ]
-  }
+  },
+  "description": {
+    "type": "computedString",
+    "value": "text5-placeholder"
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    },
+    {
+      "name": "multiline",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "readonly",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "required",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    }
+  ],
+  "domNode": "input#text5"
 }
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "textbox"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "labelledby-for-text6",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "textbox"
-        },
-        "name": {
+        "type": "relatedElement",
+        "value": {
           "type": "computedString",
-          "value": "labelledby-for-text6",
-          "sources": [
+          "value": "labelledby-for-text6"
+        },
+        "attribute": "aria-labelledby",
+        "attributeValue": {
+          "type": "idrefList",
+          "value": "text-labelledby6",
+          "relatedNodes": [
             {
-              "type": "relatedElement",
-              "value": {
-                "type": "computedString",
-                "value": "labelledby-for-text6"
-              },
-              "attribute": "aria-labelledby",
-              "attributeValue": {
-                "type": "idrefList",
-                "value": "text-labelledby6",
-                "relatedNodes": [
-                  {
-                    "idref": "text-labelledby6",
-                    "text": "labelledby-for-text6",
-                    "nodeResult": "span#text-labelledby6"
-                  }
-                ]
-              }
-            },
-            {
-              "type": "attribute",
-              "value": {
-                "type": "computedString",
-                "value": "text6-aria-label"
-              },
-              "attribute": "aria-label",
-              "attributeValue": {
-                "type": "string",
-                "value": "text6-aria-label"
-              },
-              "superseded": true
-            },
-            {
-              "type": "relatedElement",
-              "value": {
-                "type": "computedString",
-                "value": "label-for-text6"
-              },
-              "superseded": true,
-              "nativeSource": "labelfor",
-              "nativeSourceValue": {
-                "type": "nodeList",
-                "relatedNodes": [
-                  {
-                    "backendNodeId": "<string>",
-                    "text": "label-for-text6"
-                  }
-                ]
-              }
-            },
-            {
-              "type": "placeholder",
-              "value": {
-                "type": "computedString",
-                "value": "text6-placeholder"
-              },
-              "attribute": "placeholder",
-              "attributeValue": {
-                "type": "string",
-                "value": "text6-placeholder"
-              },
-              "superseded": true
-            },
-            {
-              "type": "attribute",
-              "value": {
-                "type": "computedString",
-                "value": "text6-title"
-              },
-              "attribute": "title",
-              "superseded": true
+              "idref": "text-labelledby6",
+              "text": "labelledby-for-text6",
+              "nodeResult": "span#text-labelledby6"
             }
           ]
+        }
+      },
+      {
+        "type": "attribute",
+        "value": {
+          "type": "computedString",
+          "value": "text6-aria-label"
         },
-        "description": {
+        "attribute": "aria-label",
+        "attributeValue": {
+          "type": "string",
+          "value": "text6-aria-label"
+        },
+        "superseded": true
+      },
+      {
+        "type": "relatedElement",
+        "value": {
+          "type": "computedString",
+          "value": "label-for-text6"
+        },
+        "superseded": true,
+        "nativeSource": "labelfor",
+        "nativeSourceValue": {
+          "type": "nodeList",
+          "relatedNodes": [
+            {
+              "backendDOMNodeId": "<number>",
+              "text": "label-for-text6"
+            }
+          ]
+        }
+      },
+      {
+        "type": "placeholder",
+        "value": {
           "type": "computedString",
           "value": "text6-placeholder"
         },
-        "properties": [
+        "attribute": "placeholder",
+        "attributeValue": {
+          "type": "string",
+          "value": "text6-placeholder"
+        },
+        "superseded": true
+      },
+      {
+        "type": "attribute",
+        "value": {
+          "type": "computedString",
+          "value": "text6-title"
+        },
+        "attribute": "title",
+        "superseded": true
+      }
+    ]
+  },
+  "description": {
+    "type": "computedString",
+    "value": "text6-placeholder"
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    },
+    {
+      "name": "multiline",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "readonly",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "required",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "labelledby",
+      "value": {
+        "type": "nodeList",
+        "relatedNodes": [
           {
-            "name": "invalid",
-            "value": {
-              "type": "token",
-              "value": "false"
-            }
-          },
-          {
-            "name": "multiline",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "readonly",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "required",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "labelledby",
-            "value": {
-              "type": "nodeList",
-              "relatedNodes": [
-                {
-                  "idref": "text-labelledby6",
-                  "text": "labelledby-for-text6",
-                  "nodeResult": "span#text-labelledby6"
-                }
-              ]
-            }
+            "idref": "text-labelledby6",
+            "text": "labelledby-for-text6",
+            "nodeResult": "span#text-labelledby6"
           }
         ]
       }
-    ]
-  }
+    }
+  ],
+  "domNode": "input#text6"
 }
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "textbox"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "label-wrapping-text7",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "textbox"
-        },
-        "name": {
+        "type": "relatedElement",
+        "attribute": "aria-labelledby"
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label"
+      },
+      {
+        "type": "relatedElement",
+        "value": {
           "type": "computedString",
-          "value": "label-wrapping-text7",
-          "sources": [
+          "value": "label-wrapping-text7"
+        },
+        "nativeSource": "labelwrapped",
+        "nativeSourceValue": {
+          "type": "nodeList",
+          "relatedNodes": [
             {
-              "type": "relatedElement",
-              "attribute": "aria-labelledby"
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label"
-            },
-            {
-              "type": "relatedElement",
-              "value": {
-                "type": "computedString",
-                "value": "label-wrapping-text7"
-              },
-              "nativeSource": "labelwrapped",
-              "nativeSourceValue": {
-                "type": "nodeList",
-                "relatedNodes": [
-                  {
-                    "backendNodeId": "<string>",
-                    "text": "label-wrapping-text7"
-                  }
-                ]
-              }
-            },
-            {
-              "type": "placeholder",
-              "attribute": "placeholder",
-              "superseded": true
-            },
-            {
-              "type": "attribute",
-              "value": {
-                "type": "computedString",
-                "value": "text7-title"
-              },
-              "attribute": "title",
-              "superseded": true
+              "backendDOMNodeId": "<number>",
+              "text": "label-wrapping-text7"
             }
           ]
-        },
-        "description": {
+        }
+      },
+      {
+        "type": "placeholder",
+        "attribute": "placeholder",
+        "superseded": true
+      },
+      {
+        "type": "attribute",
+        "value": {
           "type": "computedString",
           "value": "text7-title"
         },
-        "properties": [
+        "attribute": "title",
+        "superseded": true
+      }
+    ]
+  },
+  "description": {
+    "type": "computedString",
+    "value": "text7-title"
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    },
+    {
+      "name": "multiline",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "readonly",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "required",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "labelledby",
+      "value": {
+        "type": "nodeList",
+        "relatedNodes": [
           {
-            "name": "invalid",
-            "value": {
-              "type": "token",
-              "value": "false"
-            }
-          },
-          {
-            "name": "multiline",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "readonly",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "required",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "labelledby",
-            "value": {
-              "type": "nodeList",
-              "relatedNodes": [
-                {
-                  "text": "label-wrapping-text7",
-                  "nodeResult": "label"
-                }
-              ]
-            }
+            "text": "label-wrapping-text7",
+            "nodeResult": "label"
           }
         ]
       }
-    ]
-  }
+    }
+  ],
+  "domNode": "input#text7"
 }
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "textbox"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "textbox"
-        },
-        "name": {
-          "type": "computedString",
-          "value": "",
-          "sources": [
-            {
-              "type": "relatedElement",
-              "attribute": "aria-labelledby"
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label"
-            },
-            {
-              "type": "relatedElement",
-              "nativeSource": "label"
-            },
-            {
-              "type": "placeholder",
-              "attribute": "placeholder"
-            },
-            {
-              "type": "attribute",
-              "attribute": "title"
-            }
-          ]
-        },
-        "properties": [
-          {
-            "name": "invalid",
-            "value": {
-              "type": "token",
-              "value": "false"
-            }
-          },
-          {
-            "name": "multiline",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "readonly",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "required",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          }
-        ]
+        "type": "relatedElement",
+        "attribute": "aria-labelledby"
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label"
+      },
+      {
+        "type": "relatedElement",
+        "nativeSource": "label"
+      },
+      {
+        "type": "placeholder",
+        "attribute": "placeholder"
+      },
+      {
+        "type": "attribute",
+        "attribute": "title"
       }
     ]
-  }
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    },
+    {
+      "name": "multiline",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "readonly",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "required",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    }
+  ],
+  "domNode": "input#text8"
 }
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "textbox"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "label-for-text9 label-wrapping-text9",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "textbox"
-        },
-        "name": {
+        "type": "relatedElement",
+        "attribute": "aria-labelledby"
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label"
+      },
+      {
+        "type": "relatedElement",
+        "value": {
           "type": "computedString",
-          "value": "label-for-text9 label-wrapping-text9",
-          "sources": [
+          "value": "label-for-text9 label-wrapping-text9"
+        },
+        "nativeSource": "labelwrapped",
+        "nativeSourceValue": {
+          "type": "nodeList",
+          "relatedNodes": [
             {
-              "type": "relatedElement",
-              "attribute": "aria-labelledby"
+              "backendDOMNodeId": "<number>",
+              "text": "label-for-text9"
             },
             {
-              "type": "attribute",
-              "attribute": "aria-label"
-            },
-            {
-              "type": "relatedElement",
-              "value": {
-                "type": "computedString",
-                "value": "label-for-text9 label-wrapping-text9"
-              },
-              "nativeSource": "labelwrapped",
-              "nativeSourceValue": {
-                "type": "nodeList",
-                "relatedNodes": [
-                  {
-                    "backendNodeId": "<string>",
-                    "text": "label-for-text9"
-                  },
-                  {
-                    "backendNodeId": "<string>",
-                    "text": "label-wrapping-text9"
-                  }
-                ]
-              }
-            },
-            {
-              "type": "placeholder",
-              "value": {
-                "type": "computedString",
-                "value": "text9-placeholder"
-              },
-              "attribute": "placeholder",
-              "attributeValue": {
-                "type": "string",
-                "value": "text9-placeholder"
-              },
-              "superseded": true
-            },
-            {
-              "type": "attribute",
-              "value": {
-                "type": "computedString",
-                "value": "text9-title"
-              },
-              "attribute": "title",
-              "superseded": true
+              "backendDOMNodeId": "<number>",
+              "text": "label-wrapping-text9"
             }
           ]
-        },
-        "description": {
+        }
+      },
+      {
+        "type": "placeholder",
+        "value": {
           "type": "computedString",
           "value": "text9-placeholder"
         },
-        "properties": [
+        "attribute": "placeholder",
+        "attributeValue": {
+          "type": "string",
+          "value": "text9-placeholder"
+        },
+        "superseded": true
+      },
+      {
+        "type": "attribute",
+        "value": {
+          "type": "computedString",
+          "value": "text9-title"
+        },
+        "attribute": "title",
+        "superseded": true
+      }
+    ]
+  },
+  "description": {
+    "type": "computedString",
+    "value": "text9-placeholder"
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    },
+    {
+      "name": "multiline",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "readonly",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "required",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "labelledby",
+      "value": {
+        "type": "nodeList",
+        "relatedNodes": [
           {
-            "name": "invalid",
-            "value": {
-              "type": "token",
-              "value": "false"
-            }
+            "text": "label-for-text9",
+            "nodeResult": "label"
           },
           {
-            "name": "multiline",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "readonly",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "required",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "labelledby",
-            "value": {
-              "type": "nodeList",
-              "relatedNodes": [
-                {
-                  "text": "label-for-text9",
-                  "nodeResult": "label"
-                },
-                {
-                  "text": "label-wrapping-text9",
-                  "nodeResult": "label"
-                }
-              ]
-            }
+            "text": "label-wrapping-text9",
+            "nodeResult": "label"
           }
         ]
       }
-    ]
-  }
+    }
+  ],
+  "domNode": "input#text9"
 }
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "textbox"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "label-wrapping-text10",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "textbox"
-        },
-        "name": {
+        "type": "relatedElement",
+        "attribute": "aria-labelledby"
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label"
+      },
+      {
+        "type": "relatedElement",
+        "value": {
           "type": "computedString",
-          "value": "label-wrapping-text10",
-          "sources": [
+          "value": "label-wrapping-text10 "
+        },
+        "nativeSource": "labelwrapped",
+        "nativeSourceValue": {
+          "type": "nodeList",
+          "relatedNodes": [
             {
-              "type": "relatedElement",
-              "attribute": "aria-labelledby"
-            },
-            {
-              "type": "attribute",
-              "attribute": "aria-label"
-            },
-            {
-              "type": "relatedElement",
-              "value": {
-                "type": "computedString",
-                "value": "label-wrapping-text10 "
-              },
-              "nativeSource": "labelwrapped",
-              "nativeSourceValue": {
-                "type": "nodeList",
-                "relatedNodes": [
-                  {
-                    "backendNodeId": "<string>",
-                    "text": "label-wrapping-text10 "
-                  }
-                ]
-              }
-            },
-            {
-              "type": "placeholder",
-              "value": {
-                "type": "computedString",
-                "value": "text10-placeholder"
-              },
-              "attribute": "placeholder",
-              "attributeValue": {
-                "type": "string",
-                "value": "text10-placeholder"
-              },
-              "superseded": true
-            },
-            {
-              "type": "attribute",
-              "value": {
-                "type": "computedString",
-                "value": "text10-title"
-              },
-              "attribute": "title",
-              "superseded": true
+              "backendDOMNodeId": "<number>",
+              "text": "label-wrapping-text10 "
             }
           ]
-        },
-        "description": {
+        }
+      },
+      {
+        "type": "placeholder",
+        "value": {
           "type": "computedString",
           "value": "text10-placeholder"
         },
-        "properties": [
+        "attribute": "placeholder",
+        "attributeValue": {
+          "type": "string",
+          "value": "text10-placeholder"
+        },
+        "superseded": true
+      },
+      {
+        "type": "attribute",
+        "value": {
+          "type": "computedString",
+          "value": "text10-title"
+        },
+        "attribute": "title",
+        "superseded": true
+      }
+    ]
+  },
+  "description": {
+    "type": "computedString",
+    "value": "text10-placeholder"
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    },
+    {
+      "name": "multiline",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "readonly",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "required",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "labelledby",
+      "value": {
+        "type": "nodeList",
+        "relatedNodes": [
           {
-            "name": "invalid",
-            "value": {
-              "type": "token",
-              "value": "false"
-            }
-          },
-          {
-            "name": "multiline",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "readonly",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "required",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "labelledby",
-            "value": {
-              "type": "nodeList",
-              "relatedNodes": [
-                {
-                  "text": "label-wrapping-text10 ",
-                  "nodeResult": "label"
-                }
-              ]
-            }
+            "text": "label-wrapping-text10 ",
+            "nodeResult": "label"
           }
         ]
       }
-    ]
-  }
+    }
+  ],
+  "domNode": "input#text10"
 }
 {
-  "id": "<int>",
-  "result": {
-    "nodes": [
+  "nodeId": "<string>",
+  "ignored": false,
+  "role": {
+    "type": "role",
+    "value": "textbox"
+  },
+  "name": {
+    "type": "computedString",
+    "value": "first-label-for-text11 second-label-for-text11",
+    "sources": [
       {
-        "nodeId": "<string>",
-        "ignored": false,
-        "role": {
-          "type": "role",
-          "value": "textbox"
-        },
-        "name": {
+        "type": "relatedElement",
+        "attribute": "aria-labelledby"
+      },
+      {
+        "type": "attribute",
+        "attribute": "aria-label"
+      },
+      {
+        "type": "relatedElement",
+        "value": {
           "type": "computedString",
-          "value": "first-label-for-text11 second-label-for-text11",
-          "sources": [
+          "value": "first-label-for-text11 second-label-for-text11"
+        },
+        "nativeSource": "labelfor",
+        "nativeSourceValue": {
+          "type": "nodeList",
+          "relatedNodes": [
             {
-              "type": "relatedElement",
-              "attribute": "aria-labelledby"
+              "backendDOMNodeId": "<number>",
+              "text": "first-label-for-text11"
             },
             {
-              "type": "attribute",
-              "attribute": "aria-label"
-            },
-            {
-              "type": "relatedElement",
-              "value": {
-                "type": "computedString",
-                "value": "first-label-for-text11 second-label-for-text11"
-              },
-              "nativeSource": "labelfor",
-              "nativeSourceValue": {
-                "type": "nodeList",
-                "relatedNodes": [
-                  {
-                    "backendNodeId": "<string>",
-                    "text": "first-label-for-text11"
-                  },
-                  {
-                    "backendNodeId": "<string>",
-                    "text": "second-label-for-text11"
-                  }
-                ]
-              }
-            },
-            {
-              "type": "placeholder",
-              "attribute": "placeholder",
-              "superseded": true
-            },
-            {
-              "type": "attribute",
-              "attribute": "title",
-              "superseded": true
+              "backendDOMNodeId": "<number>",
+              "text": "second-label-for-text11"
             }
           ]
-        },
-        "properties": [
+        }
+      },
+      {
+        "type": "placeholder",
+        "attribute": "placeholder",
+        "superseded": true
+      },
+      {
+        "type": "attribute",
+        "attribute": "title",
+        "superseded": true
+      }
+    ]
+  },
+  "properties": [
+    {
+      "name": "invalid",
+      "value": {
+        "type": "token",
+        "value": "false"
+      }
+    },
+    {
+      "name": "multiline",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "readonly",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "required",
+      "value": {
+        "type": "boolean",
+        "value": false
+      }
+    },
+    {
+      "name": "labelledby",
+      "value": {
+        "type": "nodeList",
+        "relatedNodes": [
           {
-            "name": "invalid",
-            "value": {
-              "type": "token",
-              "value": "false"
-            }
+            "text": "first-label-for-text11",
+            "nodeResult": "label"
           },
           {
-            "name": "multiline",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "readonly",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "required",
-            "value": {
-              "type": "boolean",
-              "value": false
-            }
-          },
-          {
-            "name": "labelledby",
-            "value": {
-              "type": "nodeList",
-              "relatedNodes": [
-                {
-                  "text": "first-label-for-text11",
-                  "nodeResult": "label"
-                },
-                {
-                  "text": "second-label-for-text11",
-                  "nodeResult": "label"
-                }
-              ]
-            }
+            "text": "second-label-for-text11",
+            "nodeResult": "label"
           }
         ]
       }
-    ]
-  }
+    }
+  ],
+  "domNode": "input#text11"
 }
 

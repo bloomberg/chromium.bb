@@ -106,7 +106,7 @@ std::unique_ptr<AXRelatedNode> relatedNodeForAXObject(const AXObject& axObject,
   if (!backendNodeId)
     return nullptr;
   std::unique_ptr<AXRelatedNode> relatedNode =
-      AXRelatedNode::create().setBackendNodeId(backendNodeId).build();
+      AXRelatedNode::create().setBackendDOMNodeId(backendNodeId).build();
   if (!node->isElementNode())
     return relatedNode;
 

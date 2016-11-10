@@ -7,7 +7,9 @@
 
 function test()
 {
-    InspectorTest.sendCommand("DOM.getDocument", {}, InspectorTest.dumpAccessibilityNodesBySelectorAndCompleteTest.bind(null, "button"));
+    InspectorTest.sendCommand("DOM.getDocument", {}, (msg) => {
+        InspectorTest.dumpAccessibilityNodesBySelectorAndCompleteTest("button", false, msg);
+    });
 }
 
  function done() {

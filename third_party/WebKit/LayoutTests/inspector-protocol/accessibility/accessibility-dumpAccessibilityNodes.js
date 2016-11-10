@@ -7,7 +7,7 @@ function initialize_DumpAccessibilityNodesTest() {
 var nodeInfo = {};
 InspectorTest.trackGetChildNodesEvents(nodeInfo);
 
-InspectorTest.dumpAccessibilityNodesBySelectorAndCompleteTest = function(selector, msg) {
+InspectorTest.dumpAccessibilityNodesBySelectorAndCompleteTest = function(selector, fetchRelatives, msg) {
     if (msg.error) {
         InspectorTest.log(msg.error.message);
         InspectorTest.completeTest();
@@ -15,8 +15,11 @@ InspectorTest.dumpAccessibilityNodesBySelectorAndCompleteTest = function(selecto
     }
 
     var rootNode = msg.result.root;
-    sendQuerySelectorAll(rootNode.nodeId, selector)
-        .then((msg) => { return getAXNodes(msg) } )
+    var rootNodeId = rootNode.nodeId;
+    InspectorTest.addNode(nodeInfo, rootNode);
+
+    sendQuerySelectorAll(rootNodeId, selector)
+        .then((msg) => { return getAXNodes(msg, fetchRelatives || false) } )
         .then(() => { done(); })
         .then(() => {
             InspectorTest.completeTest();
@@ -49,21 +52,31 @@ function sendQuerySelectorAll(nodeId, selector)
  selector });
 }
 
-function getAXNodes(msg)
+function getAXNodes(msg, fetchRelatives)
 {
-    var promise;
+    var promise = Promise.resolve();
+    if (!msg.result || !msg.result.nodeIds) {
+        InspectorTest.log("Unexpected result: " + JSON.stringify(msg));
+        InspectorTest.completeTest();
+    }
     msg.result.nodeIds.forEach((id) => {
-        if (promise)
-            promise = promise.then(() => { return sendCommandPromise("Accessibility.getAXNodeChain", { "nodeId": id, "fetchAncestors": false }); });
-        else
-            promise = sendCommandPromise("Accessibility.getAXNodeChain", { "nodeId": id, "fetchAncestors": false });
-        promise = promise.then((msg) => { return rewriteRelatedNodes(msg); })
-                         .then((msg) => { return dumpNode(null, msg); });
+        if (fetchRelatives) {
+            promise = promise.then(() => {
+                return sendCommandPromise("Accessibility.getPartialAXTree", { "nodeId": id, "fetchRelatives": true });
+            });
+            promise = promise.then((msg) => { return rewriteRelatedNodes(msg, id); })
+                             .then((msg) => { return dumpTreeStructure(msg); });
+
+        }
+        promise = promise.then(() => { return sendCommandPromise("Accessibility.getPartialAXTree", { "nodeId": id, "fetchRelatives": false }); })
+                         .then((msg) => { return rewriteRelatedNodes(msg, id); })
+                         .then((msg) => { return dumpNode(msg); });
+
     });
     return promise;
 }
 
-function describeRelatedNode(nodeData)
+function describeDomNode(nodeData)
 {
     var description = nodeData.nodeName.toLowerCase();
     switch (nodeData.nodeType) {
@@ -75,30 +88,77 @@ function describeRelatedNode(nodeData)
     return description;
 }
 
+function rewriteBackendDomNodeId(axNode, selectedNodeId, promises)
+{
+    if (!("backendDOMNodeId" in axNode))
+        return;
+
+    function rewriteBackendDomNodeIdPromise(resolve, reject)
+    {
+        if (!("backendDOMNodeId" in axNode)) {
+            resolve();
+            return;
+        }
+        var backendDOMNodeId = axNode.backendDOMNodeId;
+
+        function onDomNodeResolved(backendDOMNodeId, message)
+        {
+            if (!message.result || !message.result.nodeIds) {
+                InspectorTest.log("Unexpected result for pushNodesByBackendIdsToFrontend: " + JSON.stringify(message));
+                InspectorTest.completeTest();
+                return;
+            }
+            var nodeId = message.result.nodeIds[0];
+            if (!(nodeId in nodeInfo)) {
+                axNode.domNode = "[NODE NOT FOUND]";
+                resolve();
+                return;
+            }
+            var domNode = nodeInfo[nodeId];
+            delete axNode.backendDOMNodeId;
+            axNode.domNode = describeDomNode(domNode);
+            if (nodeId === selectedNodeId)
+              axNode.selected = true;
+            resolve();
+        }
+
+        var params = { "backendNodeIds": [ backendDOMNodeId ] };
+        InspectorTest.sendCommand("DOM.pushNodesByBackendIdsToFrontend", params , onDomNodeResolved.bind(null, backendDOMNodeId));
+    }
+    promises.push(new Promise(rewriteBackendDomNodeIdPromise));
+}
+
 function rewriteRelatedNode(relatedNode)
 {
     function rewriteRelatedNodePromise(resolve, reject)
     {
-        if (!("backendNodeId" in relatedNode)) {
-            reject("Could not find backendNodeId in " + JSON.stringify(relatedNode));
+        if (!("backendDOMNodeId" in relatedNode)) {
+            reject("Could not find backendDOMNodeId in " + JSON.stringify(relatedNode));
             return;
         }
-        var backendNodeId = relatedNode.backendNodeId;
+        var backendDOMNodeId = relatedNode.backendDOMNodeId;
 
-        function onNodeResolved(backendNodeId, message)
+        function onNodeResolved(backendDOMNodeId, message)
         {
+            if (!message.result || !message.result.nodeIds) {
+                InspectorTest.log("Unexpected result for pushNodesByBackendIdsToFrontend: " + JSON.stringify(message));
+                InspectorTest.completeTest();
+                return;
+            }
             var nodeId = message.result.nodeIds[0];
             if (!(nodeId in nodeInfo)) {
                 relatedNode.nodeResult = "[NODE NOT FOUND]";
                 resolve();
                 return;
             }
-            var node = nodeInfo[nodeId];
-            delete relatedNode.backendNodeId;
-            relatedNode.nodeResult = describeRelatedNode(node);
+            var domNode = nodeInfo[nodeId];
+            delete relatedNode.backendDOMNodeId;
+            relatedNode.nodeResult = describeDomNode(domNode);
             resolve();
         }
-        InspectorTest.sendCommand("DOM.pushNodesByBackendIdsToFrontend", { "backendNodeIds": [ backendNodeId ] }, onNodeResolved.bind(null, backendNodeId));
+        var params = { "backendNodeIds": [ backendDOMNodeId ] };
+        InspectorTest.sendCommand("DOM.pushNodesByBackendIdsToFrontend", params, onNodeResolved.bind(null, backendDOMNodeId));
+
     }
     return new Promise(rewriteRelatedNodePromise);
 }
@@ -147,58 +207,120 @@ function rewriteRelatedNodeValue(value, promises)
     }
 }
 
-function rewriteRelatedNodes(msg)
+function rewriteRelatedNodes(msg, nodeId)
 {
     if (msg.error) {
         throw new Error(msg.error.message);
     }
 
-    var node = msg.result.nodes[0];
-
-    if (node.ignored) {
-        checkExists("result.nodes[0].ignoredReasons", msg);
-        var properties = node.ignoredReasons;
-    } else {
-        checkExists("result.nodes[0].properties", msg);
-        var properties = node.properties;
-    }
     var promises = [];
-    if (node.name && node.name.sources) {
-        for (var source of node.name.sources) {
-            var value;
-            if (source.value)
-                value = source.value;
-            if (source.attributeValue)
-                value = source.attributeValue;
-            if (!value)
-                continue;
-            if (value.type === "idrefList" ||
-                value.type === "idref" ||
-                value.type === "nodeList")
-                rewriteRelatedNodeValue(value, promises);
+    for (var node of msg.result.nodes) {
+        if (node.ignored) {
+            checkExists("ignoredReasons", node);
+            var properties = node.ignoredReasons;
+        } else {
+            checkExists("properties", node);
+            var properties = node.properties;
         }
-    }
-    for (var property of properties) {
-        if (property.value.type === "idrefList" ||
-            property.value.type === "idref" ||
-            property.value.type === "nodeList")
-            rewriteRelatedNodeValue(property.value, promises);
+        if (node.name && node.name.sources) {
+            for (var source of node.name.sources) {
+            var value;
+                if (source.value)
+                    value = source.value;
+                if (source.attributeValue)
+                    value = source.attributeValue;
+                if (!value)
+                    continue;
+                if (value.type === "idrefList" ||
+                    value.type === "idref" ||
+                    value.type === "nodeList")
+                    rewriteRelatedNodeValue(value, promises);
+            }
+        }
+        for (var property of properties) {
+            if (property.value.type === "idrefList" ||
+                property.value.type === "idref" ||
+                property.value.type === "nodeList")
+                rewriteRelatedNodeValue(property.value, promises);
+        }
+        rewriteBackendDomNodeId(node, nodeId, promises);
     }
     return Promise.all(promises).then(() => { return msg; });
 }
 
-function dumpNode(selector, msg)
+function dumpNode(msg)
 {
     function stripIds(key, value)
     {
-        if (key == "id")
-            return "<int>"
-        if (key == "backendNodeId")
-            return "<string>"
-        if (key == "nodeId")
-            return "<string>"
+        var stripKeys = ["id", "backendDOMNodeId", "nodeId", "parentId"];
+        if (stripKeys.indexOf(key) !== -1)
+            return "<" + typeof(value) + ">";
+        var deleteKeys = ["selected"];
+        if (deleteKeys.indexOf(key) !== -1)
+            return undefined;
         return value;
     }
-    InspectorTest.log((selector ? selector + ": " : "") + JSON.stringify(msg, stripIds, "  "));
+    if (!msg.result || !msg.result.nodes || msg.result.nodes.length !== 1) {
+        InspectorTest.log("Expected exactly one node in " + JSON.stringify(msg, null, "  "));
+        return;
+    }
+    InspectorTest.log(JSON.stringify(msg.result.nodes[0], stripIds, "  "));
 }
+
+function dumpTreeStructure(msg)
+{
+    function printNodeAndChildren(node, leadingSpace)
+    {
+        leadingSpace = leadingSpace || "";
+        var string = leadingSpace;
+        if (node.selected)
+            string += "*";
+        if (node.role)
+            string += node.role.value;
+        else
+            string += "<no role>";
+        string += (node.name && node.name.value !== "" ? " \"" + node.name.value + "\"" : "");
+        if (node.children) {
+            for (var child of node.children)
+                string += "\n" + printNodeAndChildren(child, leadingSpace + "  ");
+        }
+        return string;
+    }
+
+    var rawMsg = JSON.stringify(msg, null, "  ");
+    var nodeMap = {};
+    if ("result" in msg && "nodes" in msg.result) {
+        for (var node of msg.result.nodes)
+            nodeMap[node.nodeId] = node;
+    }
+    for (var nodeId in nodeMap) {
+        var node = nodeMap[nodeId];
+        if (node.childIds) {
+            node.children = [];
+            for (var i = 0; i < node.childIds.length && node.childIds.length > 0;) {
+                var childId = node.childIds[i];
+                if (childId in nodeMap) {
+                    var child = nodeMap[childId];
+                    child.parentId = nodeId;
+                    node.children.push(child);
+
+                    node.childIds.splice(i, 1);
+                } else {
+                    node.childIds[i] = "<string>";
+                    i++;
+                }
+            }
+            if (!node.childIds.length)
+                delete node.childIds;
+            if (!node.children.length)
+                delete node.children;
+        }
+    }
+    var rootNode = Object.values(nodeMap).find((node) => !("parentId" in node));
+    for (var node of Object.values(nodeMap))
+        delete node.parentId;
+
+    InspectorTest.log("\n" + printNodeAndChildren(rootNode));
+}
+
 }

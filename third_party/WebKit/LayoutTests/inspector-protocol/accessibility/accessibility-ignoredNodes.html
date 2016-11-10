@@ -7,14 +7,18 @@
 
 function test()
 {
-    InspectorTest.sendCommand("DOM.getDocument", {}, InspectorTest.dumpAccessibilityNodesBySelectorAndCompleteTest.bind(null, '[data-dump]'));
+    InspectorTest.sendCommand("DOM.getDocument",
+                              {},
+                              (result) => {
+        InspectorTest.dumpAccessibilityNodesBySelectorAndCompleteTest('[data-dump]', true, result);
+    });
 }
 </script>
 </head>
 <body onLoad="runTest();">
-    <div data-dump>Non-hidden div for comparison</div>
+  <div>Non-hidden div for comparison</div>
     <div role="tree">
-        <div data-dump role="treeitem">non-hidden treeitem</div>
+        <div role="treeitem">non-hidden treeitem</div>
         <div data-dump >hidden non-treeitem</div>
     </div>
     <div role="img">
@@ -29,7 +33,6 @@ function test()
     <div data-dump aria-hidden="true">
         <div data-dump>Descendant of aria-hidden node</div>
     </div>
-    <img data-dump alt="" src="foo.png">
     <ol role="none" data-dump><!-- list is presentational -->
       <li data-dump>List item also presentational</li>
       <div data-dump>Div in list isn't presentational</div>
@@ -37,9 +40,15 @@ function test()
 
     <label for="checkbox" data-dump><span data-dump>Content within label refers to label container</span></label>
     <input type="checkbox" id="checkbox">
+    <div style="display: none" data-dump>
+      Non-rendered div
+      <span data-dump>Span within non-rendered div</span>
+      <button aria-hidden="false">aria-hidden false button</button>
+    </div>
 
-    <div style="display: none" data-dump>Non-rendered div</div>
+    <canvas style="height: 1px; width: 1px;" data-dump></canvas>
 
-    <canvas style="height: 1px; width: 1px;q" data-dump></canvas>
+    <canvas role="presentation" data-dump><div>Canvas fallback content</div></canvas>
+
 </body>
 </html>

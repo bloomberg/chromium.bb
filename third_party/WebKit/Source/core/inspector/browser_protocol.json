@@ -4233,7 +4233,7 @@
                 "id": "AXRelatedNode",
                 "type": "object",
                 "properties": [
-                    { "name": "backendNodeId", "$ref": "DOM.BackendNodeId", "description": "The BackendNodeId of the related node." },
+                    { "name": "backendDOMNodeId", "$ref": "DOM.BackendNodeId", "description": "The BackendNodeId of the related DOM node." },
                     { "name": "idref", "type": "string", "description": "The IDRef value provided, if any.", "optional": true },
                     { "name": "text", "type": "string", "description": "The text alternative of this node in the current context.", "optional": true }
                 ]
@@ -4298,22 +4298,24 @@
                     { "name": "name", "$ref": "AXValue", "description": "The accessible name for this <code>Node</code>.", "optional": true },
                     { "name": "description", "$ref": "AXValue", "description": "The accessible description for this <code>Node</code>.", "optional": true },
                     { "name": "value", "$ref": "AXValue", "description": "The value for this <code>Node</code>.", "optional": true },
-                    { "name": "properties", "type": "array", "items": { "$ref": "AXProperty" }, "description": "All other properties", "optional": true }
+                    { "name": "properties", "type": "array", "items": { "$ref": "AXProperty" }, "description": "All other properties", "optional": true },
+                    { "name": "childIds", "type": "array", "items": { "$ref": "AXNodeId" }, "description": "IDs for each of this node's child nodes.", "optional": true },
+                    { "name": "backendDOMNodeId", "$ref": "DOM.BackendNodeId", "description": "The backend ID for the associated DOM node, if any.", "optional": true }
                 ],
                 "description": "A node in the accessibility tree."
             }
         ],
         "commands": [
             {
-                "name": "getAXNodeChain",
+                "name": "getPartialAXTree",
                 "parameters": [
-                    { "name": "nodeId", "$ref": "DOM.NodeId", "description": "ID of node to get accessibility node for." },
-                    { "name": "fetchAncestors", "type": "boolean", "description": "Whether to also push down a partial tree (parent chain)." }
+                    { "name": "nodeId", "$ref": "DOM.NodeId", "description": "ID of node to get the partial accessibility tree for." },
+                    { "name": "fetchRelatives", "type": "boolean", "description": "Whether to fetch this nodes ancestors, siblings and children. Defaults to true.", "optional": true }
                 ],
                 "returns": [
-                    { "name": "nodes", "type": "array", "items": { "$ref": "AXNode" }, "description": "The <code>Accessibility.AXNode</code> for this DOM node, if it exists, plus ancestors if requested." }
+                    { "name": "nodes", "type": "array", "items": { "$ref": "AXNode" }, "description": "The <code>Accessibility.AXNode</code> for this DOM node, if it exists, plus its ancestors, siblings and children, if requested." }
                 ],
-                "description": "Fetches the accessibility node for this DOM node, if it exists.",
+                "description": "Fetches the accessibility node and partial accessibility tree for this DOM node, if it exists.",
                 "experimental": true
             }
         ]

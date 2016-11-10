@@ -38,6 +38,8 @@ using namespace HTMLNames;
 
 namespace {
 
+static const AXID kIDForInspectedNodeWithNoAXNode = 0;
+
 void fillLiveRegionProperties(AXObject& axObject,
                               protocol::Array<AXProperty>& properties) {
   if (!axObject.liveRegionRoot())
@@ -373,6 +375,19 @@ std::unique_ptr<AXValue> createRoleNameValue(AccessibilityRole role) {
   return roleNameValue;
 }
 
+bool isAncestorOf(AXObject* possibleAncestor, AXObject* descendant) {
+  if (!possibleAncestor || !descendant)
+    return false;
+
+  AXObject* ancestor = descendant;
+  while (ancestor) {
+    if (ancestor == possibleAncestor)
+      return true;
+    ancestor = ancestor->parentObject();
+  }
+  return false;
+}
+
 }  // namespace
 
 InspectorAccessibilityAgent::InspectorAccessibilityAgent(
@@ -380,10 +395,10 @@ InspectorAccessibilityAgent::InspectorAccessibilityAgent(
     InspectorDOMAgent* domAgent)
     : m_page(page), m_domAgent(domAgent) {}
 
-Response InspectorAccessibilityAgent::getAXNodeChain(
+Response InspectorAccessibilityAgent::getPartialAXTree(
     int domNodeId,
-    bool fetchAncestors,
-    std::unique_ptr<protocol::Array<protocol::Accessibility::AXNode>>* nodes) {
+    Maybe<bool> fetchRelatives,
+    std::unique_ptr<protocol::Array<AXNode>>* nodes) {
   if (!m_domAgent->enabled())
     return Response::Error("DOM agent must be enabled");
   Node* domNode = nullptr;
@@ -405,39 +420,73 @@ Response InspectorAccessibilityAgent::getAXNodeChain(
   AXObject* inspectedAXObject = cache->getOrCreate(domNode);
   *nodes = protocol::Array<protocol::Accessibility::AXNode>::create();
   if (!inspectedAXObject || inspectedAXObject->accessibilityIsIgnored()) {
-    (*nodes)->addItem(buildObjectForIgnoredNode(domNode, inspectedAXObject));
+    (*nodes)->addItem(buildObjectForIgnoredNode(domNode, inspectedAXObject,
+                                                fetchRelatives.fromMaybe(true),
+                                                *nodes, *cache));
   } else {
-    (*nodes)->addItem(buildProtocolAXObject(*inspectedAXObject));
+    (*nodes)->addItem(
+        buildProtocolAXObject(*inspectedAXObject, inspectedAXObject,
+                              fetchRelatives.fromMaybe(true), *nodes, *cache));
   }
 
-  if (fetchAncestors && inspectedAXObject) {
-    AXObject* parent = inspectedAXObject->parentObjectUnignored();
-    while (parent) {
-      (*nodes)->addItem(buildProtocolAXObject(*parent));
-      parent = parent->parentObjectUnignored();
-    }
-  }
+  if (!inspectedAXObject || !inspectedAXObject->isAXLayoutObject())
+    return Response::OK();
+
+  AXObject* parent = inspectedAXObject->parentObjectUnignored();
+  if (!parent)
+    return Response::OK();
+
+  if (fetchRelatives.fromMaybe(true))
+    addAncestors(*parent, inspectedAXObject, *nodes, *cache);
+
   return Response::OK();
+}
+
+void InspectorAccessibilityAgent::addAncestors(
+    AXObject& firstAncestor,
+    AXObject* inspectedAXObject,
+    std::unique_ptr<protocol::Array<AXNode>>& nodes,
+    AXObjectCacheImpl& cache) const {
+  AXObject* ancestor = &firstAncestor;
+  while (ancestor) {
+    nodes->addItem(buildProtocolAXObject(*ancestor, inspectedAXObject, true,
+                                         nodes, cache));
+    ancestor = ancestor->parentObjectUnignored();
+  }
 }
 
 std::unique_ptr<AXNode> InspectorAccessibilityAgent::buildObjectForIgnoredNode(
     Node* domNode,
-    AXObject* axObject) const {
+    AXObject* axObject,
+    bool fetchRelatives,
+    std::unique_ptr<protocol::Array<AXNode>>& nodes,
+    AXObjectCacheImpl& cache) const {
   AXObject::IgnoredReasons ignoredReasons;
-
-  AXID axID = 0;
-  if (axObject)
+  AXID axID = kIDForInspectedNodeWithNoAXNode;
+  if (axObject && axObject->isAXLayoutObject())
     axID = axObject->axObjectID();
   std::unique_ptr<AXNode> ignoredNodeObject =
       AXNode::create().setNodeId(String::number(axID)).setIgnored(true).build();
-  if (axObject) {
+  AccessibilityRole role = AccessibilityRole::IgnoredRole;
+  ignoredNodeObject->setRole(createRoleNameValue(role));
+
+  if (axObject && axObject->isAXLayoutObject()) {
     axObject->computeAccessibilityIsIgnored(&ignoredReasons);
-    axID = axObject->axObjectID();
-    AccessibilityRole role = axObject->roleValue();
-    ignoredNodeObject->setRole(createRoleNameValue(role));
+
+    if (fetchRelatives) {
+      populateRelatives(*axObject, axObject, *(ignoredNodeObject.get()), nodes,
+                        cache);
+    }
   } else if (domNode && !domNode->layoutObject()) {
+    if (fetchRelatives) {
+      populateDOMNodeRelatives(*domNode, *(ignoredNodeObject.get()), nodes,
+                               cache);
+    }
     ignoredReasons.append(IgnoredReason(AXNotRendered));
   }
+
+  if (domNode)
+    ignoredNodeObject->setBackendDOMNodeId(DOMNodeIds::idForNode(domNode));
 
   std::unique_ptr<protocol::Array<AXProperty>> ignoredReasonProperties =
       protocol::Array<AXProperty>::create();
@@ -448,8 +497,97 @@ std::unique_ptr<AXNode> InspectorAccessibilityAgent::buildObjectForIgnoredNode(
   return ignoredNodeObject;
 }
 
+void InspectorAccessibilityAgent::populateDOMNodeRelatives(
+    Node& inspectedDOMNode,
+    AXNode& nodeObject,
+    std::unique_ptr<protocol::Array<AXNode>>& nodes,
+    AXObjectCacheImpl& cache) const {
+  // Populate children.
+  std::unique_ptr<protocol::Array<AXNodeId>> childIds =
+      protocol::Array<AXNodeId>::create();
+  findDOMNodeChildren(childIds, inspectedDOMNode, inspectedDOMNode, nodes,
+                      cache);
+  nodeObject.setChildIds(std::move(childIds));
+
+  // Walk up parents until an AXObject can be found.
+  Node* parentNode = FlatTreeTraversal::parent(inspectedDOMNode);
+  AXObject* parentAXObject = cache.getOrCreate(parentNode);
+  while (parentNode && !parentAXObject) {
+    parentNode = FlatTreeTraversal::parent(inspectedDOMNode);
+    parentAXObject = cache.getOrCreate(parentNode);
+  };
+
+  if (!parentAXObject)
+    return;
+
+  if (parentAXObject->accessibilityIsIgnored())
+    parentAXObject = parentAXObject->parentObjectUnignored();
+  if (!parentAXObject)
+    return;
+
+  // Populate parent, ancestors and siblings.
+  std::unique_ptr<AXNode> parentNodeObject =
+      buildProtocolAXObject(*parentAXObject, nullptr, true, nodes, cache);
+  std::unique_ptr<protocol::Array<AXNodeId>> siblingIds =
+      protocol::Array<AXNodeId>::create();
+  findDOMNodeChildren(siblingIds, *parentNode, inspectedDOMNode, nodes, cache);
+  parentNodeObject->setChildIds(std::move(siblingIds));
+  nodes->addItem(std::move(parentNodeObject));
+
+  AXObject* grandparentAXObject = parentAXObject->parentObjectUnignored();
+  if (grandparentAXObject)
+    addAncestors(*grandparentAXObject, nullptr, nodes, cache);
+}
+
+void InspectorAccessibilityAgent::findDOMNodeChildren(
+    std::unique_ptr<protocol::Array<AXNodeId>>& childIds,
+    Node& parentNode,
+    Node& inspectedDOMNode,
+    std::unique_ptr<protocol::Array<AXNode>>& nodes,
+    AXObjectCacheImpl& cache) const {
+  NodeList* childNodes = parentNode.childNodes();
+  for (size_t i = 0; i < childNodes->length(); ++i) {
+    Node* childNode = childNodes->item(i);
+    if (childNode == &inspectedDOMNode) {
+      childIds->addItem(String::number(kIDForInspectedNodeWithNoAXNode));
+      continue;
+    }
+
+    AXObject* childAXObject = cache.getOrCreate(childNode);
+    if (childAXObject) {
+      if (childAXObject->accessibilityIsIgnored()) {
+        // search for un-ignored descendants
+        findDOMNodeChildren(childIds, *childNode, inspectedDOMNode, nodes,
+                            cache);
+      } else {
+        addChild(childIds, *childAXObject, nullptr, nodes, cache);
+      }
+
+      continue;
+    }
+
+    if (!childAXObject ||
+        childNode->isShadowIncludingInclusiveAncestorOf(&inspectedDOMNode)) {
+      // If the inspected node may be a descendant of this node, keep walking
+      // recursively until we find its actual siblings.
+      findDOMNodeChildren(childIds, *childNode, inspectedDOMNode, nodes, cache);
+      continue;
+    }
+
+    // Otherwise, just add the un-ignored children.
+    const AXObject::AXObjectVector& indirectChildren =
+        childAXObject->children();
+    for (unsigned i = 0; i < indirectChildren.size(); ++i)
+      addChild(childIds, *(indirectChildren[i]), nullptr, nodes, cache);
+  }
+}
+
 std::unique_ptr<AXNode> InspectorAccessibilityAgent::buildProtocolAXObject(
-    AXObject& axObject) const {
+    AXObject& axObject,
+    AXObject* inspectedAXObject,
+    bool fetchRelatives,
+    std::unique_ptr<protocol::Array<AXNode>>& nodes,
+    AXObjectCacheImpl& cache) const {
   AccessibilityRole role = axObject.roleValue();
   std::unique_ptr<AXNode> nodeObject =
       AXNode::create()
@@ -493,12 +631,18 @@ std::unique_ptr<AXNode> InspectorAccessibilityAgent::buildProtocolAXObject(
     nodeObject->setProperties(std::move(properties));
   }
 
-  fillCoreProperties(axObject, *(nodeObject.get()));
+  fillCoreProperties(axObject, inspectedAXObject, fetchRelatives,
+                     *(nodeObject.get()), nodes, cache);
   return nodeObject;
 }
 
-void InspectorAccessibilityAgent::fillCoreProperties(AXObject& axObject,
-                                                     AXNode& nodeObject) const {
+void InspectorAccessibilityAgent::fillCoreProperties(
+    AXObject& axObject,
+    AXObject* inspectedAXObject,
+    bool fetchRelatives,
+    AXNode& nodeObject,
+    std::unique_ptr<protocol::Array<AXNode>>& nodes,
+    AXObjectCacheImpl& cache) const {
   AXNameFrom nameFrom;
   AXObject::AXObjectVector nameObjects;
   axObject.name(nameFrom, &nameObjects);
@@ -518,6 +662,107 @@ void InspectorAccessibilityAgent::fillCoreProperties(AXObject& axObject,
     String stringValue = axObject.stringValue();
     if (!stringValue.isEmpty())
       nodeObject.setValue(createValue(stringValue));
+  }
+
+  if (fetchRelatives)
+    populateRelatives(axObject, inspectedAXObject, nodeObject, nodes, cache);
+
+  Node* node = axObject.getNode();
+  if (node)
+    nodeObject.setBackendDOMNodeId(DOMNodeIds::idForNode(node));
+}
+
+void InspectorAccessibilityAgent::populateRelatives(
+    AXObject& axObject,
+    AXObject* inspectedAXObject,
+    AXNode& nodeObject,
+    std::unique_ptr<protocol::Array<AXNode>>& nodes,
+    AXObjectCacheImpl& cache) const {
+  AXObject* parentObject = axObject.parentObject();
+  if (parentObject && parentObject != inspectedAXObject) {
+    // Use unignored parent unless parent is inspected ignored object.
+    parentObject = axObject.parentObjectUnignored();
+  }
+
+  std::unique_ptr<protocol::Array<AXNodeId>> childIds =
+      protocol::Array<AXNodeId>::create();
+
+  if (inspectedAXObject &&
+      &axObject == inspectedAXObject->parentObjectUnignored() &&
+      inspectedAXObject->accessibilityIsIgnored()) {
+    // This is the parent of an ignored object, so search for its siblings.
+    addSiblingsOfIgnored(childIds, axObject, inspectedAXObject, nodes, cache);
+  } else {
+    addChildren(axObject, inspectedAXObject, childIds, nodes, cache);
+  }
+  nodeObject.setChildIds(std::move(childIds));
+}
+
+void InspectorAccessibilityAgent::addSiblingsOfIgnored(
+    std::unique_ptr<protocol::Array<AXNodeId>>& childIds,
+    AXObject& parentAXObject,
+    AXObject* inspectedAXObject,
+    std::unique_ptr<protocol::Array<AXNode>>& nodes,
+    AXObjectCacheImpl& cache) const {
+  for (AXObject* childAXObject = parentAXObject.rawFirstChild(); childAXObject;
+       childAXObject = childAXObject->rawNextSibling()) {
+    if (!childAXObject->accessibilityIsIgnored() ||
+        childAXObject == inspectedAXObject) {
+      addChild(childIds, *childAXObject, inspectedAXObject, nodes, cache);
+      continue;
+    }
+
+    if (isAncestorOf(childAXObject, inspectedAXObject)) {
+      addSiblingsOfIgnored(childIds, *childAXObject, inspectedAXObject, nodes,
+                           cache);
+      continue;
+    }
+
+    const AXObject::AXObjectVector& indirectChildren =
+        childAXObject->children();
+    for (unsigned i = 0; i < indirectChildren.size(); ++i) {
+      addChild(childIds, *(indirectChildren[i]), inspectedAXObject, nodes,
+               cache);
+    }
+  }
+}
+
+void InspectorAccessibilityAgent::addChild(
+    std::unique_ptr<protocol::Array<AXNodeId>>& childIds,
+    AXObject& childAXObject,
+    AXObject* inspectedAXObject,
+    std::unique_ptr<protocol::Array<AXNode>>& nodes,
+    AXObjectCacheImpl& cache) const {
+  childIds->addItem(String::number(childAXObject.axObjectID()));
+  if (&childAXObject == inspectedAXObject)
+    return;
+  nodes->addItem(buildProtocolAXObject(childAXObject, inspectedAXObject, true,
+                                       nodes, cache));
+}
+
+void InspectorAccessibilityAgent::addChildren(
+    AXObject& axObject,
+    AXObject* inspectedAXObject,
+    std::unique_ptr<protocol::Array<AXNodeId>>& childIds,
+    std::unique_ptr<protocol::Array<AXNode>>& nodes,
+    AXObjectCacheImpl& cache) const {
+  const AXObject::AXObjectVector& children = axObject.children();
+  for (unsigned i = 0; i < children.size(); i++) {
+    AXObject& childAXObject = *children[i].get();
+    childIds->addItem(String::number(childAXObject.axObjectID()));
+    if (&childAXObject == inspectedAXObject)
+      continue;
+    if (&axObject != inspectedAXObject) {
+      if (!inspectedAXObject)
+        continue;
+      if (&axObject != inspectedAXObject->parentObjectUnignored())
+        continue;
+    }
+
+    // Only add children/siblings of inspected node to returned nodes.
+    std::unique_ptr<AXNode> childNode = buildProtocolAXObject(
+        childAXObject, inspectedAXObject, true, nodes, cache);
+    nodes->addItem(std::move(childNode));
   }
 }
 
