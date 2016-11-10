@@ -4588,7 +4588,8 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   if (cpi->oxcf.mtu == 0) {
     cm->num_tg = cpi->oxcf.num_tile_groups;
   } else {
-    // Use a default value for the purposes of weighting costs in probability updates
+    // Use a default value for the purposes of weighting costs in probability
+    // updates
     cm->num_tg = DEFAULT_MAX_NUM_TG;
   }
 #endif

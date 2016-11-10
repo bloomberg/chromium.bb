@@ -1347,7 +1347,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 
     *(args->skip) = 0;
   }
-#else   // #if !CONFIG_PVQ
+#else  // #if !CONFIG_PVQ
   (void)ctx;
 
   av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
@@ -1376,7 +1376,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   inv_txfm_param.eob = *eob;
   inv_txfm_param.lossless = xd->lossless[mbmi->segment_id];
 #if CONFIG_AOM_HIGHBITDEPTH
-  #error
+#error
 
 #else
   inv_txfm_add(dqcoeff, dst, dst_stride, &inv_txfm_param);
