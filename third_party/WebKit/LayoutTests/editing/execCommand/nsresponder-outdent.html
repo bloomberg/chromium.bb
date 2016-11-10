@@ -1,15 +1,15 @@
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-if (window.testRunner)
-     testRunner.dumpEditingCallbacks();
-</script>
-<p>This tests the outdent: method.  You should see an undented 'foo' below.</p>
-<div id="div" contenteditable="true"><blockquote class="webkit-indent-blockquote">foo</blockquote></div>
-
-<script>
-var div = document.getElementById("div");
-var sel = window.getSelection();
-
-sel.collapse(div, 0);
-
-document.execCommand("Outdent");
+test(() => assert_selection(
+  [
+    '<div contenteditable>',
+      '|<blockquote class="abc">foo</blockquote>',
+    '</div>',
+  ].join(''),
+  'outdent',
+  '<div contenteditable>|foo</div>'),
+  'Outdent command with BLOCKQUOTE');
 </script>
