@@ -15,13 +15,18 @@
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
+#include "components/ntp_snippets/status.h"
 
 namespace gfx {
 class Image;
 }
 
 // The C++ counterpart to SnippetsBridge.java. Enables Java code to access
-// the list of snippets to show on the NTP
+// the list of snippets to show on the NTP.
+//
+// This bridge is instantiated, owned, and destroyed from Java. There is one
+// instance for each NTP, and it is destroyed when the NTP is destroyed e.g.
+// when the user navigates away from it.
 class NTPSnippetsBridge
     : public ntp_snippets::ContentSuggestionsService::Observer {
  public:
@@ -138,6 +143,10 @@ class NTPSnippetsBridge
 
   void OnImageFetched(base::android::ScopedJavaGlobalRef<jobject> callback,
                       const gfx::Image& image);
+  void OnSuggestionsFetched(
+      ntp_snippets::Category category,
+      ntp_snippets::Status status,
+      std::vector<ntp_snippets::ContentSuggestion> suggestions);
 
   ntp_snippets::Category CategoryFromIDValue(jint id);
 

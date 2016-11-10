@@ -96,26 +96,6 @@ ScopedJavaLocalRef<jobject> ToJavaSuggestionList(
   return result;
 }
 
-class CapturingFetchingCallback {
- public:
-  CapturingFetchingCallback(const Category category,
-                            const ScopedJavaGlobalRef<jobject>* observer)
-      : category_(category), observer_(observer) {}
-
-  void Run(ntp_snippets::Status status,
-           std::vector<ContentSuggestion> suggestions) {
-    JNIEnv* env = AttachCurrentThread();
-    // TODO(fhorschig, dgn): Allow refetch or show notification acc. to status.
-    Java_SnippetsBridge_onMoreSuggestions(
-        env, *observer_, category_.id(),
-        ToJavaSuggestionList(env, category_, suggestions));
-  }
-
- private:
-  const Category category_;
-  const ScopedJavaGlobalRef<jobject>* observer_;  // Owned by NTPSnippetsBridge.
-};
-
 }  // namespace
 
 static jlong Init(JNIEnv* env,
@@ -281,9 +261,8 @@ void NTPSnippetsBridge::Fetch(
   content_suggestions_service_->Fetch(
       category, std::set<std::string>(known_suggestion_ids.begin(),
                                       known_suggestion_ids.end()),
-      base::Bind(
-          &CapturingFetchingCallback::Run,
-          base::MakeUnique<CapturingFetchingCallback>(category, &observer_)));
+      base::Bind(&NTPSnippetsBridge::OnSuggestionsFetched,
+                 weak_ptr_factory_.GetWeakPtr(), category));
 }
 
 void NTPSnippetsBridge::DismissSuggestion(
@@ -453,6 +432,17 @@ void NTPSnippetsBridge::OnImageFetched(ScopedJavaGlobalRef<jobject> callback,
     j_bitmap = gfx::ConvertToJavaBitmap(image.ToSkBitmap());
 
   base::android::RunCallbackAndroid(callback, j_bitmap);
+}
+
+void NTPSnippetsBridge::OnSuggestionsFetched(
+    Category category,
+    ntp_snippets::Status status,
+    std::vector<ContentSuggestion> suggestions) {
+  JNIEnv* env = AttachCurrentThread();
+  // TODO(fhorschig, dgn): Allow refetch or show notification acc. to status.
+  Java_SnippetsBridge_onMoreSuggestions(
+      env, observer_, category.id(),
+      ToJavaSuggestionList(env, category, suggestions));
 }
 
 Category NTPSnippetsBridge::CategoryFromIDValue(jint id) {

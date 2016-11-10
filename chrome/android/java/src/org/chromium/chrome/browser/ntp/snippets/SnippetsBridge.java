@@ -55,8 +55,8 @@ public class SnippetsBridge implements SuggestionsSource {
     }
 
     /**
-     * Destroys the native service and unregisters observers. This object can't be reused to
-     * communicate with any native service and should be discarded.
+     * Destroys the native bridge. This object can no longer be used to send native commands, and
+     * any observer is nulled out and will stop receiving updates. This object should be discarded.
      */
     public void destroy() {
         assert mNativeSnippetsBridge != 0;
