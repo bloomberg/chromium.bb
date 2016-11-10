@@ -108,12 +108,7 @@ initWithFullscreenToolbarController:(FullscreenToolbarController*)owner
 }
 
 - (BOOL)mouseInsideTrackingArea {
-  if (!trackingArea_)
-    return NO;
-
-  NSPoint mouseLoc = [[contentView_ window] mouseLocationOutsideOfEventStream];
-  NSPoint mousePos = [contentView_ convertPoint:mouseLoc fromView:nil];
-  return NSMouseInRect(mousePos, trackingAreaFrame_, [contentView_ isFlipped]);
+  return [trackingArea_ mouseInsideTrackingAreaForView:contentView_];
 }
 
 - (void)mouseEntered:(NSEvent*)event {

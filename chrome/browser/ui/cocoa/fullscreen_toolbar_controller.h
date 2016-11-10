@@ -16,6 +16,7 @@
 class FullscreenToolbarAnimationController;
 @class FullscreenToolbarMouseTracker;
 @class FullscreenToolbarVisibilityLockController;
+@class ImmersiveFullscreenController;
 
 // This enum class represents the appearance of the fullscreen toolbar, which
 // includes the tab strip and omnibox.
@@ -62,16 +63,9 @@ enum class FullscreenToolbarStyle {
   // object is only set when the browser is in fullscreen mode.
   base::scoped_nsobject<FullscreenToolbarMouseTracker> mouseTracker_;
 
-  // Tracks the currently requested system fullscreen mode, used to show or
-  // hide the menubar.  This should be |kFullScreenModeNormal| when the window
-  // is not main or not fullscreen, |kFullScreenModeHideAll| while the overlay
-  // is hidden, and |kFullScreenModeHideDock| while the overlay is shown.  If
-  // the window is not on the primary screen, this should always be
-  // |kFullScreenModeNormal|.  This value can get out of sync with the correct
-  // state if we miss a notification (which can happen when a window is closed).
-  // Used to track the current state and make sure we properly restore the menu
-  // bar when this controller is destroyed.
-  base::mac::FullScreenMode systemFullscreenMode_;
+  // Controller for immersive fullscreen.
+  base::scoped_nsobject<ImmersiveFullscreenController>
+      immersiveFullscreenController_;
 }
 
 @property(nonatomic, assign) FullscreenToolbarStyle toolbarStyle;
@@ -106,17 +100,8 @@ enum class FullscreenToolbarStyle {
 // Returns YES if the fullscreen toolbar must be shown.
 - (BOOL)mustShowFullscreenToolbar;
 
-// Returns YES if the mouse is on the window's screen. This is used to check
-// if the menubar events belong to window's screen since the menubar would
-// only be revealed if the mouse is there.
-- (BOOL)isMouseOnScreen;
-
 // Called by the BrowserWindowController to update toolbar frame.
 - (void)updateToolbarFrame:(NSRect)frame;
-
-// Returns YES if the browser is in the process of entering/exiting
-// fullscreen.
-- (BOOL)isFullscreenTransitionInProgress;
 
 // Returns YES if the browser in in fullscreen.
 - (BOOL)isInFullscreen;

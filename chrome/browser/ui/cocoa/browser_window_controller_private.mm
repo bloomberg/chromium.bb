@@ -588,13 +588,6 @@ willPositionSheet:(NSWindow*)sheet
   return proposedSize;
 }
 
-- (NSApplicationPresentationOptions)window:(NSWindow*)window
-    willUseFullScreenPresentationOptions:(NSApplicationPresentationOptions)opt {
-  return (opt |
-          NSApplicationPresentationAutoHideDock |
-          NSApplicationPresentationAutoHideMenuBar);
-}
-
 - (void)windowWillEnterFullScreen:(NSNotification*)notification {
   RecordFullscreenWindowLocation([self window]);
   RecordFullscreenStyle(CANONICAL_FULLSCREEN);

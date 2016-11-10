@@ -35,6 +35,10 @@ UI_BASE_EXPORT
 // |-clearOwner| when the notification is observed.
 - (void)clearOwnerWhenWindowWillClose:(NSWindow*)window;
 
+// Returns YES if the mouse is inside the tracking area's rect. |view| is the
+// NSView the tracking area is attached to.
+- (BOOL)mouseInsideTrackingAreaForView:(NSView*)view;
+
 @end
 
 // Scoper //////////////////////////////////////////////////////////////////////
