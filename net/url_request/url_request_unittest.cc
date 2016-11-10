@@ -9085,9 +9085,9 @@ static bool SystemUsesChromiumEVMetadata() {
 #if defined(USE_OPENSSL_CERTS) && !defined(OS_ANDROID)
   // http://crbug.com/117478 - OpenSSL does not support EV validation.
   return false;
-#elif (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_ANDROID)
-  // On OS X and Android, we use the system to tell us whether a certificate is
-  // EV or not and the system won't recognise our testing root.
+#elif defined(OS_ANDROID)
+  // On Android, we use the system to tell us whether a certificate is EV or not
+  // and the system won't recognise our testing root.
   return false;
 #else
   return true;
@@ -9687,10 +9687,10 @@ TEST_F(HTTPSEVCRLSetTest, MissingCRLSetAndRevokedOCSP) {
   CertStatus cert_status;
   DoConnection(ssl_options, &cert_status);
 
-  // Currently only works for Windows. When using NSS or OS X, it's not
-  // possible to determine whether the check failed because of actual
-  // revocation or because there was an OCSP failure.
-#if defined(OS_WIN)
+// Currently only works for Windows and OS X. When using NSS, it's not
+// possible to determine whether the check failed because of actual
+// revocation or because there was an OCSP failure.
+#if defined(OS_WIN) || defined(OS_MACOSX)
   EXPECT_EQ(CERT_STATUS_REVOKED, cert_status & CERT_STATUS_ALL_ERRORS);
 #else
   EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);

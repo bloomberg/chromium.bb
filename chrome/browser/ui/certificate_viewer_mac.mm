@@ -135,7 +135,7 @@ void MaybeConstrainPanelSizeForSierraBug() {
   CFArrayAppendValue(policies, basicPolicy);
   CFRelease(basicPolicy);
 
-  status = net::x509_util::CreateRevocationPolicies(false, false, policies);
+  status = net::x509_util::CreateRevocationPolicies(false, policies);
   if (status != noErr) {
     NOTREACHED();
     return self;
