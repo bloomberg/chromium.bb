@@ -1020,6 +1020,15 @@ if (is_win) {
         "Resources",
       ]
 
+      if (is_chrome_branded) {
+        framework_contents += [ "Default Apps" ]
+      }
+      if (enable_nacl) {
+        framework_contents += [ "Internet Plug-Ins" ]
+      }
+      if (_should_bundle_widevine) {
+        framework_contents += [ "Libraries" ]
+      }
       if (enable_xpc_notifications) {
         framework_contents += [ "XPCServices" ]
       }
