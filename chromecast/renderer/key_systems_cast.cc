@@ -89,11 +89,14 @@ void AddChromecastKeySystems(
     bool enable_persistent_license_support,
     bool force_software_crypto) {
 #if defined(PLAYREADY_CDM_AVAILABLE)
+  bool enable_persistent_license_playready = enable_persistent_license_support;
 #if defined(OS_ANDROID)
-  CHECK(!enable_persistent_license_support);
+  LOG_IF(WARNING, enable_persistent_license_playready)
+      << "Android doesn't support Playready persistent license.";
+  enable_persistent_license_playready = false;
 #endif
   key_systems_properties->emplace_back(
-      new PlayReadyKeySystemProperties(enable_persistent_license_support));
+      new PlayReadyKeySystemProperties(enable_persistent_license_playready));
 #endif  // defined(PLAYREADY_CDM_AVAILABLE)
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
