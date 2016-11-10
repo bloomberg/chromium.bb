@@ -36,9 +36,8 @@ class ImeListView : public TrayDetailsView {
 
   // TrayDetailsView:
   void HandleViewClicked(views::View* view) override;
-
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+  void HandleButtonPressed(views::Button* sender,
+                           const ui::Event& event) override;
 
  private:
   // To allow the test class to access |ime_map_|.

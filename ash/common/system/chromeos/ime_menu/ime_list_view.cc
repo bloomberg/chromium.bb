@@ -399,7 +399,8 @@ void ImeListView::HandleViewClicked(views::View* view) {
   GetWidget()->Close();
 }
 
-void ImeListView::ButtonPressed(views::Button* sender, const ui::Event& event) {
+void ImeListView::HandleButtonPressed(views::Button* sender,
+                                      const ui::Event& event) {
   DCHECK(material_keyboard_status_view_);
   DCHECK_EQ(sender, material_keyboard_status_view_->toggle());
   WmShell::Get()->ToggleIgnoreExternalKeyboard();

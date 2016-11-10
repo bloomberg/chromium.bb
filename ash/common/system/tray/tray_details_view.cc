@@ -354,10 +354,14 @@ void TrayDetailsView::ShowProgress(double value, bool visible) {
   child_at(kTitleRowSeparatorIndex)->SetVisible(!visible);
 }
 
-void TrayDetailsView::HandleViewClicked(views::View* view) {}
+void TrayDetailsView::HandleViewClicked(views::View* view) {
+  NOTREACHED();
+}
 
 void TrayDetailsView::HandleButtonPressed(views::Button* sender,
-                                          const ui::Event& event) {}
+                                          const ui::Event& event) {
+  NOTREACHED();
+}
 
 void TrayDetailsView::CreateExtraTitleRowButtons() {}
 

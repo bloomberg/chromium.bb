@@ -34,10 +34,12 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   ~TrayDetailsView() override;
 
   // ViewClickListener:
-  void OnViewClicked(views::View* sender) override;
+  // Don't override this --- override HandleViewClicked.
+  void OnViewClicked(views::View* sender) final;
 
   // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+  // Don't override this --- override HandleButtonPressed.
+  void ButtonPressed(views::Button* sender, const ui::Event& event) final;
 
   SystemTrayItem* owner() { return owner_; }
   SpecialPopupRow* title_row() { return title_row_; }
