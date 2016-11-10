@@ -19,6 +19,7 @@
 #include "components/offline_pages/background/request_picker.h"
 #include "components/offline_pages/background/save_page_request.h"
 #include "components/offline_pages/client_policy_controller.h"
+#include "components/offline_pages/offline_page_feature.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_model.h"
 
@@ -551,7 +552,8 @@ RequestCoordinator::TryImmediateStart() {
     return OfflinerImmediateStartStatus::BUSY;
 
   // Make sure we are not on svelte device to start immediately.
-  if (is_low_end_device_) {
+  if (is_low_end_device_ &&
+      !offline_pages::IsOfflinePagesSvelteConcurrentLoadingEnabled()) {
     DVLOG(2) << "low end device, returning";
     // Let the scheduler know we are done processing and failed due to svelte.
     immediate_schedule_callback_.Run(false);

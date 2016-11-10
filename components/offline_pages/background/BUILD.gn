@@ -47,6 +47,7 @@ static_library("background_offliner") {
     "//base",
     "//components/keyed_service/core",
     "//components/offline_pages:offline_pages",
+    "//components/offline_pages:switches",
     "//components/offline_pages/core",
     "//net",
     "//sql:sql",
@@ -75,6 +76,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/offline_pages:offline_pages",
+    "//components/offline_pages:switches",
     "//testing/gtest",
     "//url",
   ]

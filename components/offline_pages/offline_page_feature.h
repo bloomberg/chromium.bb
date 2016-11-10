@@ -12,6 +12,7 @@ namespace offline_pages {
 
 extern const base::Feature kOfflineBookmarksFeature;
 extern const base::Feature kOffliningRecentPagesFeature;
+extern const base::Feature kOfflinePagesSvelteConcurrentLoadingFeature;
 extern const base::Feature kOfflinePagesCTFeature;
 extern const base::Feature kOfflinePagesSharingFeature;
 extern const base::Feature kBackgroundLoaderForDownloadsFeature;
@@ -32,6 +33,9 @@ bool IsOfflinePagesSharingEnabled();
 // Returns true if saving a foreground tab that is taking too long using the
 // background scheduler is enabled.
 bool IsBackgroundLoaderForDownloadsEnabled();
+
+// Returns true if concurrent background loading is enabled for svelte.
+bool IsOfflinePagesSvelteConcurrentLoadingEnabled();
 
 // Returns true if downloading a page asynchonously is enabled.
 bool IsOfflinePagesAsyncDownloadEnabled();

@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/sys_info.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -25,6 +26,7 @@
 #include "components/offline_pages/background/request_queue_in_memory_store.h"
 #include "components/offline_pages/background/save_page_request.h"
 #include "components/offline_pages/background/scheduler.h"
+#include "components/offline_pages/offline_page_feature.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -1345,6 +1347,45 @@ TEST_F(RequestCoordinatorTest,
   } else {
     EXPECT_TRUE(is_busy());
   }
+}
+
+TEST_F(RequestCoordinatorTest,
+       SavePageStartsProcessingWhenConnectedOnLowEndDeviceIfFlagEnabled) {
+  // Set up the fake network conditions for the NetworkConnectionNotifier.
+  SetNetworkConditionsForTest(
+      net::NetworkChangeNotifier::ConnectionType::CONNECTION_3G);
+  // Set up the fake network conditions for the network quality estimator.
+  SetEffectiveConnectionTypeForTest(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_3G);
+  // Mark device as low-end device.
+  SetIsLowEndDeviceForTest(true);
+  EXPECT_FALSE(offline_pages::IsOfflinePagesSvelteConcurrentLoadingEnabled());
+
+  // Make a request.
+  EXPECT_NE(coordinator()->SavePageLater(
+                kUrl1, kClientId1, kUserRequested,
+                RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER),
+            0);
+  PumpLoop();
+
+  // Verify not immediately busy (since low-end device).
+  EXPECT_FALSE(is_busy());
+
+  // Set feature flag to allow concurrent loads.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      kOfflinePagesSvelteConcurrentLoadingFeature);
+  EXPECT_TRUE(offline_pages::IsOfflinePagesSvelteConcurrentLoadingEnabled());
+
+  // Make another request.
+  EXPECT_NE(coordinator()->SavePageLater(
+                kUrl2, kClientId2, kUserRequested,
+                RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER),
+            0);
+  PumpLoop();
+
+  // Verify immediate processing did start this time.
+  EXPECT_TRUE(is_busy());
 }
 
 TEST_F(RequestCoordinatorTest, SavePageDoesntStartProcessingWhenDisconnected) {

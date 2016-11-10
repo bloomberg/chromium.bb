@@ -1232,4 +1232,15 @@ TEST(CommandLineFlagsTest, OfflinePagesSharing) {
   EXPECT_TRUE(offline_pages::IsOfflinePagesSharingEnabled());
 }
 
+TEST(CommandLineFlagsTest, OfflinePagesSvelteConcurrentLoading) {
+  // This feature is disabled by default.
+  EXPECT_FALSE(offline_pages::IsOfflinePagesSvelteConcurrentLoadingEnabled());
+
+  // Check if feature is correctly enabled by command-line flag.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      kOfflinePagesSvelteConcurrentLoadingFeature);
+  EXPECT_TRUE(offline_pages::IsOfflinePagesSvelteConcurrentLoadingEnabled());
+}
+
 }  // namespace offline_pages
