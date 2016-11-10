@@ -321,6 +321,14 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
   {%- if interface_name == 'Window' and not is_partial %}{{newline}}
   prototypeTemplate->SetInternalFieldCount(V8Window::internalFieldCount);
   {% endif %}
+  {% if is_immutable_prototype %}{{newline}}
+  // Global object prototype chain consists of Immutable Prototype Exotic Objects
+  prototypeTemplate->SetImmutableProto();
+  {% endif %}
+  {% if is_global %}{{newline}}
+  // Global objects are Immutable Prototype Exotic Objects
+  instanceTemplate->SetImmutableProto();
+  {% endif %}
 
   // Register DOM constants, attributes and operations.
   {% filter runtime_enabled(runtime_enabled_function) %}

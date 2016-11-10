@@ -29,10 +29,12 @@ test(function() {
     anchor.id = 'myAnchor';
     container.appendChild(anchor);
     assert_equals(window.myAnchor, anchor, "Named access should work when WindowProperties is available.");
-    // Remove the WindowProperties object from the prototype chain.  This means,
-    // 'window' no longer supports named access.
-    Window.prototype.__proto__ = EventTarget.prototype;
-    assert_equals(window.myAnchor, undefined, "Named access shouldn't work when WindowProperties is not available.");
+    // Look up the prototype chain and observe that the anchor is defined on the
+    // named properties object, no lower or higher.
+    assert_equals(window.__proto__.myAnchor, anchor, "Named access should work on Window.prototype");
+    assert_equals(window.__proto__.__proto__.myAnchor, anchor, "Named access should work on named properties object");
+    assert_equals(window.__proto__.__proto__.__proto__.myAnchor, undefined, "Named access does not work on EventTarget.prototype");
+    assert_equals(window.__proto__.__proto__.__proto__.__proto__.myAnchor, undefined, "Named access does not work on Object.prototype");
 }, "WindowProperties object should provide named access.");
 
 test(function() {

@@ -173,6 +173,12 @@ static void installV8TestIntegerIndexedGlobalTemplate(v8::Isolate* isolate, cons
   ALLOW_UNUSED_LOCAL(instanceTemplate);
   v8::Local<v8::ObjectTemplate> prototypeTemplate = interfaceTemplate->PrototypeTemplate();
   ALLOW_UNUSED_LOCAL(prototypeTemplate);
+  // Global object prototype chain consists of Immutable Prototype Exotic Objects
+  prototypeTemplate->SetImmutableProto();
+
+  // Global objects are Immutable Prototype Exotic Objects
+  instanceTemplate->SetImmutableProto();
+
   // Register DOM constants, attributes and operations.
   V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestIntegerIndexedGlobalAccessors, WTF_ARRAY_LENGTH(V8TestIntegerIndexedGlobalAccessors));
   V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestIntegerIndexedGlobalMethods, WTF_ARRAY_LENGTH(V8TestIntegerIndexedGlobalMethods));
@@ -198,6 +204,8 @@ v8::Local<v8::FunctionTemplate> V8TestIntegerIndexedGlobal::domTemplateForNamedP
 
   v8::Local<v8::ObjectTemplate> namedPropertiesObjectTemplate = namedPropertiesObjectFunctionTemplate->PrototypeTemplate();
   namedPropertiesObjectTemplate->SetInternalFieldCount(V8TestIntegerIndexedGlobal::internalFieldCount);
+  // Named Properties object has SetPrototype method of Immutable Prototype Exotic Objects
+  namedPropertiesObjectTemplate->SetImmutableProto();
   V8DOMConfiguration::setClassString(isolate, namedPropertiesObjectTemplate, "TestIntegerIndexedGlobalProperties");
   v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(TestIntegerIndexedGlobalV8Internal::namedPropertyGetterCallback, TestIntegerIndexedGlobalV8Internal::namedPropertySetterCallback, TestIntegerIndexedGlobalV8Internal::namedPropertyQueryCallback, TestIntegerIndexedGlobalV8Internal::namedPropertyDeleterCallback, TestIntegerIndexedGlobalV8Internal::namedPropertyEnumeratorCallback, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings) | int(v8::PropertyHandlerFlags::kNonMasking)));
   namedPropertiesObjectTemplate->SetHandler(namedPropertyHandlerConfig);

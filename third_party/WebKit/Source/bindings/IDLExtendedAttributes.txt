@@ -58,6 +58,7 @@ FeaturePolicy=*
 FlexibleArrayBufferView
 Global=|*
 HTMLConstructor
+ImmutablePrototype
 ImplementedAs=*
 ImplementedInPrivateScript
 Iterable

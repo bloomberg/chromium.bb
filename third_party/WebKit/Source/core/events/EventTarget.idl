@@ -22,7 +22,8 @@
 
 [
     CheckSecurity=Receiver,
-    Exposed=(Window,Worker)
+    Exposed=(Window,Worker),
+    ImmutablePrototype,
 ] interface EventTarget {
     [Custom=(CallPrologue,CallEpilogue)] void addEventListener(DOMString type, EventListener? listener, optional (AddEventListenerOptions or boolean) options);
     [Custom=(CallPrologue,CallEpilogue)] void removeEventListener(DOMString type, EventListener? listener, optional (EventListenerOptions or boolean) options);

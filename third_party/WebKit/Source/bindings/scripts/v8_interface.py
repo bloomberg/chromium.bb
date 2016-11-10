@@ -198,6 +198,11 @@ def interface_context(interface, interfaces):
     is_global = ('PrimaryGlobal' in extended_attributes or
                  'Global' in extended_attributes)
 
+    # [ImmutablePrototype]
+    # TODO(littledan): Is it possible to deduce this based on inheritance,
+    # as in the WebIDL spec?
+    is_immutable_prototype = is_global or 'ImmutablePrototype' in extended_attributes
+
     # [SetWrapperReferenceFrom]
     set_wrapper_reference_from = extended_attributes.get('SetWrapperReferenceFrom')
     if set_wrapper_reference_from:
@@ -258,6 +263,7 @@ def interface_context(interface, interfaces):
         'is_event_target': is_event_target,
         'is_exception': interface.is_exception,
         'is_global': is_global,
+        'is_immutable_prototype': is_immutable_prototype,
         'is_node': inherits_interface(interface.name, 'Node'),
         'is_partial': interface.is_partial,
         'is_typed_array_type': is_typed_array_type,

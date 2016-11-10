@@ -3,16 +3,18 @@ description("Test what happens when you set the window's prototype to various va
 var originalWindowPrototype = __proto__;
 var chainPointingBackToWindow = { __proto__: window };
 var anotherObject = { };
+var error = "'TypeError: Immutable prototype object \\'#<Window>\\' cannot have their prototype set'";
 
-shouldThrow("__proto__ = window; __proto", "'TypeError: Cyclic __proto__ value'");
-shouldThrow("__proto__ = chainPointingBackToWindow; __proto__", "'TypeError: Cyclic __proto__ value'");
+shouldThrow("__proto__ = window; __proto__", error);
+shouldThrow("__proto__ = chainPointingBackToWindow; __proto__", error);
 shouldBe("__proto__ = 1; __proto__", "originalWindowPrototype");
 shouldBe("__proto__ = 'a string'; __proto__", "originalWindowPrototype");
-shouldBe("__proto__ = anotherObject; __proto__", "anotherObject");
-shouldThrow("anotherObject.__proto__ = window; __proto__", "'TypeError: Cyclic __proto__ value'");
-shouldBe("__proto__ = 1; __proto__", "anotherObject");
-shouldBe("__proto__ = 'a string'; __proto__", "anotherObject");
-shouldBe("__proto__ = anotherObject; __proto__", "anotherObject");
+shouldThrow("__proto__ = anotherObject; __proto__", error);
+shouldBe("anotherObject.__proto__ = window; __proto__", "originalWindowPrototype");
+shouldBe("__proto__ = 1; __proto__", "originalWindowPrototype");
+shouldBe("__proto__ = 'a string'; __proto__", "originalWindowPrototype");
+shouldThrow("__proto__ = anotherObject; __proto__", error);
 shouldBe("__proto__ = originalWindowPrototype; __proto__", "originalWindowPrototype");
 shouldBe("anotherObject.__proto__ = window; anotherObject.__proto__", "window");
-shouldBe("__proto__ = null; window.__proto__", "undefined");
+shouldThrow("__proto__ = null; __proto__", error);
+shouldThrow("location.__proto__.__proto__ = location", "'TypeError: Cyclic __proto__ value'");
