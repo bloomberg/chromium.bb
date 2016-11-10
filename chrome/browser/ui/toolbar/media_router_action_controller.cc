@@ -15,9 +15,13 @@ MediaRouterActionController::MediaRouterActionController(Profile* profile)
           profile,
           media_router::MediaRouterFactory::GetApiForBrowserContext(profile),
           ToolbarActionsModel::Get(profile),
-          ToolbarActionsModel::Get(profile)->component_migration_helper()) {}
+          ToolbarActionsModel::Get(profile)->component_migration_helper()) {
+  DCHECK(component_action_delegate_);
+  DCHECK(component_migration_helper_);
+}
 
 MediaRouterActionController::~MediaRouterActionController() {
+  DCHECK_EQ(dialog_count_, 0u);
   UnregisterObserver();  // media_router::IssuesObserver.
 }
 
@@ -39,6 +43,18 @@ void MediaRouterActionController::OnRoutesUpdated(
   MaybeAddOrRemoveAction();
 }
 
+void MediaRouterActionController::OnDialogShown() {
+  dialog_count_++;
+  MaybeAddOrRemoveAction();
+}
+
+void MediaRouterActionController::OnDialogHidden() {
+  DCHECK_GT(dialog_count_, 0u);
+  if (dialog_count_)
+    dialog_count_--;
+  MaybeAddOrRemoveAction();
+}
+
 MediaRouterActionController::MediaRouterActionController(
     Profile* profile,
     media_router::MediaRouter* router,
@@ -51,7 +67,6 @@ MediaRouterActionController::MediaRouterActionController(
       component_action_delegate_(component_action_delegate),
       component_migration_helper_(component_migration_helper) {
   DCHECK(profile_);
-  DCHECK(component_action_delegate_);
   RegisterObserver();  // media_router::IssuesObserver.
   pref_change_registrar_.Init(profile->GetPrefs());
   pref_change_registrar_.Add(
@@ -63,9 +78,10 @@ MediaRouterActionController::MediaRouterActionController(
 void MediaRouterActionController::MaybeAddOrRemoveAction() {
   if (ShouldEnableAction()) {
     if (!component_action_delegate_->HasComponentAction(
-            ComponentToolbarActionsFactory::kMediaRouterActionId))
+            ComponentToolbarActionsFactory::kMediaRouterActionId)) {
       component_action_delegate_->AddComponentAction(
           ComponentToolbarActionsFactory::kMediaRouterActionId);
+    }
   } else if (component_action_delegate_->HasComponentAction(
                  ComponentToolbarActionsFactory::kMediaRouterActionId)) {
     component_action_delegate_->RemoveComponentAction(
@@ -74,7 +90,7 @@ void MediaRouterActionController::MaybeAddOrRemoveAction() {
 }
 
 bool MediaRouterActionController::ShouldEnableAction() const {
-  return has_local_display_route_ || has_issue_ ||
+  return has_local_display_route_ || has_issue_ || dialog_count_ ||
          component_migration_helper_->GetComponentActionPref(
              ComponentToolbarActionsFactory::kMediaRouterActionId);
 }

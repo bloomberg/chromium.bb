@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "chrome/browser/media/router/media_router_ui_service.h"
 #include "chrome/browser/media/router/presentation_service_delegate_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -110,6 +111,12 @@ class MediaRouterDialogDelegate : public WebDialogDelegate {
   DISALLOW_COPY_AND_ASSIGN(MediaRouterDialogDelegate);
 };
 
+MediaRouterActionController* GetActionController(WebContents* web_contents) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  return MediaRouterUIService::Get(profile)->action_controller();
+}
+
 }  // namespace
 
 // static
@@ -156,10 +163,13 @@ MediaRouterDialogControllerImpl::MediaRouterDialogControllerImpl(
     WebContents* web_contents)
     : MediaRouterDialogController(web_contents),
       media_router_dialog_pending_(false),
+      action_controller_(GetActionController(web_contents)),
       weak_ptr_factory_(this) {
+  DCHECK(action_controller_);
 }
 
 MediaRouterDialogControllerImpl::~MediaRouterDialogControllerImpl() {
+  Reset();
 }
 
 WebContents* MediaRouterDialogControllerImpl::GetMediaRouterDialog() const {
@@ -262,15 +272,21 @@ void MediaRouterDialogControllerImpl::CreateMediaRouterDialog() {
   dialog_observer_.reset(new DialogWebContentsObserver(
       media_router_dialog, this));
 
+  // The |action_controller_| must be notified after |action_| to avoid a UI
+  // bug in which the drop shadow is drawn in an incorrect position.
   if (action_)
     action_->OnDialogShown();
+  action_controller_->OnDialogShown();
 }
 
 void MediaRouterDialogControllerImpl::Reset() {
+  if (IsShowingMediaRouterDialog()) {
+    if (action_)
+      action_->OnDialogHidden();
+    action_controller_->OnDialogHidden();
+  }
   MediaRouterDialogController::Reset();
   dialog_observer_.reset();
-  if (action_)
-    action_->OnDialogHidden();
 }
 
 void MediaRouterDialogControllerImpl::OnDialogNavigated(

@@ -3,23 +3,34 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "chrome/browser/media/router/media_router_ui_service.h"
+#include "chrome/browser/media/router/test_helper.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/toolbar/mock_media_router_action_controller.h"
 #include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
-#include "chrome/browser/ui/webui/media_router/media_router_test.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
+#include "chrome/browser/ui/webui/media_router/media_router_web_ui_test.h"
 #include "content/public/test/test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 using content::WebContents;
 
 namespace media_router {
 
-class MediaRouterDialogControllerImplTest : public MediaRouterTest {
+class MediaRouterDialogControllerImplTest : public MediaRouterWebUITest {
  public:
-  MediaRouterDialogControllerImplTest() {}
+  MediaRouterDialogControllerImplTest() : MediaRouterWebUITest(true) {}
   ~MediaRouterDialogControllerImplTest() override {}
+
   void OpenMediaRouterDialog();
+
+  MOCK_METHOD2(PresentationSuccessCallback,
+               void(const content::PresentationSessionInfo&,
+                    const MediaRoute::Id&));
+  MOCK_METHOD1(PresentationErrorCallback,
+               void(const content::PresentationError& error));
 
  protected:
   WebContents* initiator_ = nullptr;
@@ -40,9 +51,8 @@ void MediaRouterDialogControllerImplTest::OpenMediaRouterDialog() {
   // Create a reference to initiator contents.
   initiator_ = browser()->tab_strip_model()->GetActiveWebContents();
 
-  MediaRouterDialogControllerImpl::CreateForWebContents(initiator_);
   dialog_controller_ =
-      MediaRouterDialogControllerImpl::FromWebContents(initiator_);
+      MediaRouterDialogControllerImpl::GetOrCreateForWebContents(initiator_);
   ASSERT_TRUE(dialog_controller_);
 
   // Get the media router dialog for the initiator.
@@ -97,9 +107,9 @@ TEST_F(MediaRouterDialogControllerImplTest, MultipleMediaRouterDialogs) {
 
 
   // Create media router dialog for |web_contents_1|.
-  MediaRouterDialogControllerImpl::CreateForWebContents(web_contents_1);
   MediaRouterDialogControllerImpl* dialog_controller_1 =
-      MediaRouterDialogControllerImpl::FromWebContents(web_contents_1);
+      MediaRouterDialogControllerImpl::GetOrCreateForWebContents(
+          web_contents_1);
   ASSERT_TRUE(dialog_controller_1);
 
   dialog_controller_1->ShowMediaRouterDialog();
@@ -112,9 +122,9 @@ TEST_F(MediaRouterDialogControllerImplTest, MultipleMediaRouterDialogs) {
   EXPECT_EQ(2, tab_strip_model->count());
 
   // Create media router dialog for |web_contents_2|.
-  MediaRouterDialogControllerImpl::CreateForWebContents(web_contents_2);
   MediaRouterDialogControllerImpl* dialog_controller_2 =
-      MediaRouterDialogControllerImpl::FromWebContents(web_contents_2);
+      MediaRouterDialogControllerImpl::GetOrCreateForWebContents(
+          web_contents_2);
   ASSERT_TRUE(dialog_controller_2);
 
   dialog_controller_2->ShowMediaRouterDialog();
@@ -227,6 +237,35 @@ TEST_F(MediaRouterDialogControllerImplTest, CloseInitiator) {
   EXPECT_EQ(0, browser()->tab_strip_model()->count());
 
   // The dialog controller is deleted when the WebContents is closed/destroyed.
+}
+
+TEST_F(MediaRouterDialogControllerImplTest, NotifyActionController) {
+  MockMediaRouterActionController* action_controller =
+      static_cast<MockMediaRouterActionController*>(
+          MediaRouterUIService::Get(browser()->profile())->action_controller());
+  ASSERT_TRUE(action_controller);
+
+  EXPECT_CALL(*action_controller, OnDialogShown());
+  OpenMediaRouterDialog();
+  EXPECT_CALL(*action_controller, OnDialogHidden());
+  dialog_controller_->HideMediaRouterDialog();
+
+  EXPECT_CALL(*action_controller, OnDialogShown());
+  dialog_controller_->ShowMediaRouterDialogForPresentation(
+      base::MakeUnique<CreatePresentationConnectionRequest>(
+          RenderFrameHostId(1, 2), GURL("http://test.com"),
+          GURL("http://example.com"),
+          base::Bind(
+              &MediaRouterDialogControllerImplTest::PresentationSuccessCallback,
+              base::Unretained(this)),
+          base::Bind(
+              &MediaRouterDialogControllerImplTest::PresentationErrorCallback,
+              base::Unretained(this))));
+
+  // When |dialog_controller_| is destroyed with its dialog open,
+  // |action_controller| should be notified.
+  EXPECT_CALL(*action_controller, OnDialogHidden());
+  EXPECT_CALL(*this, PresentationErrorCallback(testing::_));
 }
 
 }  // namespace media_router

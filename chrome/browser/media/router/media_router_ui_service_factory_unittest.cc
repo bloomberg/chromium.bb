@@ -52,6 +52,7 @@ TEST_F(MediaRouterUIServiceFactoryUnitTest, CreateService) {
           MediaRouterUIServiceFactory::GetInstance()->BuildServiceInstanceFor(
               profile())));
   ASSERT_TRUE(service);
+  ASSERT_TRUE(service->action_controller());
 }
 
 }  // namespace media_router

@@ -15,6 +15,7 @@
 FORWARD_DECLARE_TEST(MediaRouterActionUnitTest, IconPressedState);
 
 class MediaRouterAction;
+class MediaRouterActionController;
 
 namespace media_router {
 
@@ -40,6 +41,8 @@ class MediaRouterDialogControllerImpl :
   bool IsShowingMediaRouterDialog() const override;
 
   void UpdateMaxDialogSize();
+
+  MediaRouterAction* action() { return action_.get(); }
 
  private:
   class DialogWebContentsObserver;
@@ -74,6 +77,10 @@ class MediaRouterDialogControllerImpl :
   // a browser window. The overflow menu's MediaRouterAction is only created
   // when the overflow menu is opened and destroyed when the menu is closed.
   base::WeakPtr<MediaRouterAction> action_;
+
+  // |action_controller_| is responsible for showing and hiding the toolbar
+  // action. It's owned by MediaRouterUIService, which outlives |this|.
+  MediaRouterActionController* action_controller_;
 
   base::WeakPtrFactory<MediaRouterDialogControllerImpl> weak_ptr_factory_;
 

@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -41,25 +42,10 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
             ->toolbar()
             ->browser_actions();
     ASSERT_TRUE(browser_actions_container);
-
-    browser_action_test_util_.reset(new BrowserActionTestUtil(browser(),
-                                                              false));
-    media_router_action_.reset(new MediaRouterAction(browser(),
-        browser_action_test_util_->GetToolbarActionsBar()));
-
-    toolbar_action_view_widget_ = new views::Widget();
-    views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    toolbar_action_view_widget_->Init(params);
-    toolbar_action_view_widget_->Show();
-
-    // Sets delegate on |media_router_action_|.
-    toolbar_action_view_ = new ToolbarActionView(media_router_action_.get(),
-                                                 browser_actions_container);
-    toolbar_action_view_widget_->SetContentsView(toolbar_action_view_);
+    toolbar_actions_bar_ = browser_actions_container->toolbar_actions_bar();
 
     action_controller_ =
-        &MediaRouterUIService::Get(browser()->profile())->action_controller_;
+        MediaRouterUIService::Get(browser()->profile())->action_controller();
 
     issue_.reset(new Issue(
         "title notification", "message notification",
@@ -69,13 +55,6 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
 
     routes_ = {MediaRoute("routeId1", MediaSource("sourceId"), "sinkId1",
                           "description", true, std::string(), true)};
-  }
-
-  void TearDownOnMainThread() override {
-    toolbar_action_view_widget_->Close();
-    media_router_action_.reset();
-    browser_action_test_util_.reset();
-    InProcessBrowserTest::TearDownOnMainThread();
   }
 
   void OpenMediaRouterDialogAndWaitForNewWebContents() {
@@ -102,9 +81,15 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
     nav_observer.StopWatchingNewWebContents();
   }
 
+  MediaRouterAction* GetMediaRouterAction() {
+    return MediaRouterDialogControllerImpl::GetOrCreateForWebContents(
+               browser()->tab_strip_model()->GetActiveWebContents())
+        ->action();
+  }
+
   void ExecuteMediaRouterAction(AppMenuButton* app_menu_button) {
     EXPECT_TRUE(app_menu_button->IsMenuShowing());
-    media_router_action_->ExecuteAction(true);
+    GetMediaRouterAction()->ExecuteAction(true);
   }
 
   bool ActionExists() {
@@ -121,16 +106,7 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
-  // Must be initialized after |InProcessBrowserTest::SetUpOnMainThread|.
-  std::unique_ptr<BrowserActionTestUtil> browser_action_test_util_;
-  std::unique_ptr<MediaRouterAction> media_router_action_;
-
-  // ToolbarActionView constructed to set the delegate on
-  // |media_router_action_|.
-  ToolbarActionView* toolbar_action_view_ = nullptr;
-
-  // Hosts the |toolbar_action_view_|.
-  views::Widget* toolbar_action_view_widget_ = nullptr;
+  ToolbarActionsBar* toolbar_actions_bar_ = nullptr;
 
   std::unique_ptr<Issue> issue_;
 
@@ -146,6 +122,9 @@ IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest,
   // We start off at about:blank page.
   // Make sure there is 1 tab and media router is enabled.
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
+
+  SetAlwaysShowActionPref(true);
+  EXPECT_TRUE(ActionExists());
 
   OpenMediaRouterDialogAndWaitForNewWebContents();
 
@@ -165,9 +144,12 @@ IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest,
   // The navigation should have removed the previously created dialog.
   // We expect a new dialog WebContents to be created by calling this.
   OpenMediaRouterDialogAndWaitForNewWebContents();
+
+  SetAlwaysShowActionPref(false);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest, EphemeralToolbarIcon) {
+IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest,
+                       EphemeralToolbarIconForRoutesAndIssues) {
   action_controller_->OnIssueUpdated(issue_.get());
   EXPECT_TRUE(ActionExists());
   action_controller_->OnIssueUpdated(nullptr);
@@ -182,6 +164,39 @@ IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest, EphemeralToolbarIcon) {
   SetAlwaysShowActionPref(true);
   EXPECT_TRUE(ActionExists());
   SetAlwaysShowActionPref(false);
+  EXPECT_FALSE(ActionExists());
+}
+
+IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest,
+                       EphemeralToolbarIconForDialog) {
+  MediaRouterDialogController* dialog_controller =
+      MediaRouterDialogController::GetOrCreateForWebContents(
+          browser()->tab_strip_model()->GetActiveWebContents());
+
+  EXPECT_FALSE(ActionExists());
+  dialog_controller->ShowMediaRouterDialog();
+  EXPECT_TRUE(ActionExists());
+  dialog_controller->HideMediaRouterDialog();
+  EXPECT_FALSE(ActionExists());
+
+  dialog_controller->ShowMediaRouterDialog();
+  EXPECT_TRUE(ActionExists());
+  // Clicking on the toolbar icon should hide both the dialog and the icon.
+  GetMediaRouterAction()->ExecuteAction(true);
+  EXPECT_FALSE(dialog_controller->IsShowingMediaRouterDialog());
+  EXPECT_FALSE(ActionExists());
+
+  dialog_controller->ShowMediaRouterDialog();
+  SetAlwaysShowActionPref(true);
+  // When the pref is set to true, hiding the dialog shouldn't hide the icon.
+  dialog_controller->HideMediaRouterDialog();
+  EXPECT_TRUE(ActionExists());
+  dialog_controller->ShowMediaRouterDialog();
+  // While the dialog is showing, setting the pref to false shouldn't hide the
+  // icon.
+  SetAlwaysShowActionPref(false);
+  EXPECT_TRUE(ActionExists());
+  dialog_controller->HideMediaRouterDialog();
   EXPECT_FALSE(ActionExists());
 }
 

@@ -7,6 +7,7 @@
 #include "chrome/browser/media/router/create_presentation_connection_request.h"
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/features.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -78,11 +79,15 @@ class MediaRouterDialogControllerTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<MockWebContentsDelegate> web_contents_delegate_;
 };
 
+#if BUILDFLAG(ANDROID_JAVA_UI)
+// The non-Android implementation is tested in
+// MediaRouterDialogControllerImplTest.
 TEST_F(MediaRouterDialogControllerTest, CreateForWebContents) {
   MediaRouterDialogController* dialog_controller =
       MediaRouterDialogController::GetOrCreateForWebContents(web_contents());
   ASSERT_NE(dialog_controller, nullptr);
 }
+#endif
 
 TEST_F(MediaRouterDialogControllerTest, ShowAndHideDialog) {
   EXPECT_CALL(*web_contents_delegate_, ActivateContents(web_contents()));

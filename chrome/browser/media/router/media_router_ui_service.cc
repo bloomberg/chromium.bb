@@ -20,4 +20,8 @@ MediaRouterUIService* MediaRouterUIService::Get(Profile* profile) {
   return MediaRouterUIServiceFactory::GetForBrowserContext(profile);
 }
 
+MediaRouterActionController* MediaRouterUIService::action_controller() {
+  return &action_controller_;
+}
+
 }  // namespace media_router

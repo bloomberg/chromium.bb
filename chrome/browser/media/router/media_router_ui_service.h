@@ -23,6 +23,8 @@ class MediaRouterUIService : public KeyedService {
 
   static MediaRouterUIService* Get(Profile* profile);
 
+  virtual MediaRouterActionController* action_controller();
+
  private:
   friend class MediaRouterUIBrowserTest;
 

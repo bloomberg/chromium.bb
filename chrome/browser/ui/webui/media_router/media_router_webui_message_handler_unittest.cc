@@ -6,8 +6,8 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/media_router/media_router_test.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
+#include "chrome/browser/ui/webui/media_router/media_router_web_ui_test.h"
 #include "chrome/browser/ui/webui/media_router/media_router_webui_message_handler.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/test_web_ui.h"
@@ -63,7 +63,7 @@ class TestMediaRouterWebUIMessageHandler
   std::string domain_;
 };
 
-class MediaRouterWebUIMessageHandlerTest : public MediaRouterTest {
+class MediaRouterWebUIMessageHandlerTest : public MediaRouterWebUITest {
  public:
   MediaRouterWebUIMessageHandlerTest()
     : web_ui_(new content::TestWebUI()),

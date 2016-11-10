@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/toolbar/media_router_action.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
 #include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
-#include "chrome/browser/ui/webui/media_router/media_router_test.h"
+#include "chrome/browser/ui/webui/media_router/media_router_web_ui_test.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/test/test_utils.h"
@@ -76,10 +76,11 @@ class TestMediaRouterAction : public MediaRouterAction {
   MediaRouterActionPlatformDelegate* platform_delegate_;
 };
 
-class MediaRouterActionUnitTest : public MediaRouterTest {
+class MediaRouterActionUnitTest : public MediaRouterWebUITest {
  public:
   MediaRouterActionUnitTest()
-      : toolbar_model_(nullptr),
+      : MediaRouterWebUITest(true),
+        toolbar_model_(nullptr),
         fake_issue_notification_(media_router::Issue(
             "title notification",
             "message notification",
@@ -117,9 +118,9 @@ class MediaRouterActionUnitTest : public MediaRouterTest {
 
   ~MediaRouterActionUnitTest() override {}
 
-  // MediaRouterTest:
+  // MediaRouterWebUITest:
   void SetUp() override {
-    MediaRouterTest::SetUp();
+    MediaRouterWebUITest::SetUp();
     toolbar_model_ =
         extensions::extension_action_test_util::CreateToolbarModelForProfile(
             profile());
@@ -147,7 +148,7 @@ class MediaRouterActionUnitTest : public MediaRouterTest {
   void TearDown() override {
     action_.reset();
     browser_action_test_util_.reset();
-    MediaRouterTest::TearDown();
+    MediaRouterWebUITest::TearDown();
   }
 
   gfx::Image GetIcon(gfx::VectorIconId icon_id) {
