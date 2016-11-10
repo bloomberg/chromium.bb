@@ -139,7 +139,7 @@ public class ChromeDownloadDelegate {
 
     @CalledByNative
     private void requestFileAccess(final long callbackId) {
-        if (mTab == null) {
+        if (mTab == null || mTab.getWindowAndroid() == null) {
             // TODO(tedchoc): Show toast (only when activity is alive).
             DownloadController.getInstance().onRequestFileAccessResult(callbackId, false);
             return;
