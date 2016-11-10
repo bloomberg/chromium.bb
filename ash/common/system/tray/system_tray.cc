@@ -96,8 +96,11 @@ class PaddingTrayItem : public SystemTrayItem {
 
    private:
     gfx::Size GetPreferredSize() const override {
-      return gfx::Size(GetTrayConstant(TRAY_IMAGE_ITEM_PADDING),
-                       GetTrayConstant(TRAY_IMAGE_ITEM_PADDING));
+      // The other tray items already have some padding baked in so we have to
+      // subtract that off.
+      const int side =
+          kTrayEdgePadding - GetTrayConstant(TRAY_IMAGE_ITEM_PADDING);
+      return gfx::Size(side, side);
     }
 
     DISALLOW_COPY_AND_ASSIGN(PaddingView);

@@ -78,6 +78,7 @@ const int kTrayNotificationContentsWidth =
                           (kTrayPopupPaddingHorizontal / 2) * 3);
 
 const int kTrayIconSize = 16;
+const int kTrayEdgePadding = 8;
 const SkColor kTrayIconColor = SK_ColorWHITE;
 const int kMenuIconSize = 20;
 const SkColor kMenuIconColor = gfx::kChromeIconGrey;

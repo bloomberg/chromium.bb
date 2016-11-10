@@ -96,6 +96,10 @@ extern const int kHorizontalSeparatorHeight;
 extern const int kTrayIconSize;
 extern const SkColor kTrayIconColor;
 
+// The total visual padding at the start and end of the icon/label section
+// of the tray.
+extern const int kTrayEdgePadding;
+
 // The size and foreground color of the icons appearing in the material design
 // system menu.
 extern const int kMenuIconSize;
