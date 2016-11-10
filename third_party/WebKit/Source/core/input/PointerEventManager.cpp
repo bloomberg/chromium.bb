@@ -318,7 +318,8 @@ WebInputEventResult PointerEventManager::handleTouchEvents(
   // associated with so just pick the first finger.
   RefPtr<UserGestureToken> possibleGestureToken;
   if (event.type() == PlatformEvent::TouchEnd &&
-      !m_inCanceledStateForPointerTypeTouch) {
+      !m_inCanceledStateForPointerTypeTouch && !touchInfos.isEmpty() &&
+      touchInfos[0].targetFrame) {
     possibleGestureToken =
         DocumentUserGestureToken::create(touchInfos[0].targetFrame->document());
   }
