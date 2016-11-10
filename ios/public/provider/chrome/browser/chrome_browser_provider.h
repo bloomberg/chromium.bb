@@ -65,7 +65,6 @@ class GeolocationUpdaterProvider;
 class SigninErrorProvider;
 class SigninResourcesProvider;
 class LiveTabContextProvider;
-class UpdatableResourceProvider;
 
 // Setter and getter for the provider. The provider should be set early, before
 // any browser code is called.
@@ -84,8 +83,6 @@ class ChromeBrowserProvider {
   // Registers all prefs that will be used via a PrefService attached to a
   // Profile.
   virtual void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-  // Returns an UpdatableResourceProvider instance.
-  virtual UpdatableResourceProvider* GetUpdatableResourceProvider();
   // Returns an infobar view conforming to the InfoBarViewProtocol. The returned
   // object is retained.
   virtual InfoBarViewPlaceholder CreateInfoBarView(

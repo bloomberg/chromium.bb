@@ -12,7 +12,6 @@
 #include "ios/public/provider/chrome/browser/distribution/test_app_distribution_provider.h"
 #include "ios/public/provider/chrome/browser/omaha/omaha_service_provider.h"
 #include "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
-#import "ios/public/provider/chrome/browser/test_updatable_resource_provider.h"
 #import "ios/public/provider/chrome/browser/voice/test_voice_search_provider.h"
 #import "ios/public/provider/chrome/browser/voice/voice_search_language.h"
 
@@ -33,8 +32,6 @@ TestChromeBrowserProvider::TestChromeBrowserProvider()
     : app_distribution_provider_(
           base::MakeUnique<TestAppDistributionProvider>()),
       omaha_service_provider_(base::MakeUnique<OmahaServiceProvider>()),
-      updatable_resource_provider_(
-          base::MakeUnique<TestUpdatableResourceProvider>()),
       voice_search_provider_(base::MakeUnique<TestVoiceSearchProvider>()) {}
 
 TestChromeBrowserProvider::~TestChromeBrowserProvider() {}
@@ -56,11 +53,6 @@ ChromeIdentityService* TestChromeBrowserProvider::GetChromeIdentityService() {
     chrome_identity_service_.reset(new FakeChromeIdentityService());
   }
   return chrome_identity_service_.get();
-}
-
-UpdatableResourceProvider*
-TestChromeBrowserProvider::GetUpdatableResourceProvider() {
-  return updatable_resource_provider_.get();
 }
 
 UITextField<TextFieldStyling>* TestChromeBrowserProvider::CreateStyledTextField(

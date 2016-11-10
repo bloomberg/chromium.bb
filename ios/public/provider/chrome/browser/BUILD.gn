@@ -34,8 +34,6 @@ source_set("browser") {
     "ui/infobar_view_protocol.h",
     "ui/logo_vendor.h",
     "ui/text_field_styling.h",
-    "updatable_resource_provider.h",
-    "updatable_resource_provider.mm",
     "voice/audio_session_controller.h",
     "voice/logo_animation_controller.h",
     "voice/voice_search_bar.h",
@@ -96,8 +94,6 @@ source_set("test_support") {
     "test_chrome_browser_provider.mm",
     "test_chrome_provider_initializer.h",
     "test_chrome_provider_initializer.mm",
-    "test_updatable_resource_provider.h",
-    "test_updatable_resource_provider.mm",
     "voice/test_voice_search_provider.h",
     "voice/test_voice_search_provider.mm",
   ]

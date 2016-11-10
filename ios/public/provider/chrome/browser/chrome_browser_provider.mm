@@ -35,11 +35,6 @@ void ChromeBrowserProvider::AssertBrowserContextKeyedFactoriesBuilt() {}
 void ChromeBrowserProvider::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {}
 
-UpdatableResourceProvider*
-ChromeBrowserProvider::GetUpdatableResourceProvider() {
-  return nullptr;
-}
-
 InfoBarViewPlaceholder ChromeBrowserProvider::CreateInfoBarView(
     CGRect frame,
     InfoBarViewDelegate* delegate) {
