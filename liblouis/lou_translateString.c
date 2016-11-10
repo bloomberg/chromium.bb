@@ -2806,6 +2806,10 @@ resolveEmphasisWords(
 				word_start = i;
 				word_whole = 0;
 			}
+
+			/*   emphasis started on space   */
+			if(!(wordBuffer[i] & WORD_CHAR))
+				word_start = -1;
 		}
 		
 		/*   check if at end of emphasis   */
