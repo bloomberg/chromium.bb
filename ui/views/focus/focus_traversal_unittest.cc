@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -132,18 +133,9 @@ class PaneView : public View, public FocusTraversable {
 // view hierarchy.
 class BorderView : public NativeViewHost {
  public:
-  explicit BorderView(View* child) : child_(child), widget_(NULL) {
+  explicit BorderView(View* child) : child_(child) {
     DCHECK(child);
     SetFocusBehavior(FocusBehavior::NEVER);
-  }
-
-  ~BorderView() override {
-    // TODO: ifdef should not be necessary. NativeWidgetMac has different
-    // ownership semantics: http://crbug.com/663418.
-#if !defined(OS_MACOSX)
-    if (widget_)
-      widget_->CloseNow();
-#endif
   }
 
   virtual internal::RootView* GetContentsRootView() {
@@ -160,9 +152,10 @@ class BorderView : public NativeViewHost {
 
     if (details.child == this && details.is_add) {
       if (!widget_) {
-        widget_ = new Widget;
+        widget_ = base::MakeUnique<Widget>();
         Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
         params.parent = details.parent->GetWidget()->GetNativeView();
+        params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
         widget_->Init(params);
         widget_->SetFocusTraversableParentView(this);
         widget_->SetContentsView(child_);
@@ -178,7 +171,7 @@ class BorderView : public NativeViewHost {
 
  private:
   View* child_;
-  Widget* widget_;
+  std::unique_ptr<Widget> widget_;
 
   DISALLOW_COPY_AND_ASSIGN(BorderView);
 };
