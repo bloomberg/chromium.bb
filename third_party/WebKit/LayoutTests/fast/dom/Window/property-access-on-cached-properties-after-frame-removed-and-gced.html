@@ -13,6 +13,9 @@ function insertExpectedResult(path, expected)
     if (path.length < 2)
         return;
     var propertyDir = path.slice(0, -1).join('.');
+    // Cached Location properties become undefined.
+    if (propertyDir == "location")
+        expected = "undefined";
     var cachedPropertyDir = "cached_" + propertyDir.replace('.', '_');
     window[cachedPropertyDir] = eval("childWindow." + propertyDir);
     propertiesToVerify.push({
@@ -24,10 +27,10 @@ function insertExpectedResult(path, expected)
 function runTest()
 {
     description("Tests access of cached DOMWindow properties after the associated frame is removed from a web page and garbage collected. Test should not crash and properties should be set to sane defaults.");
-    var frame = document.getElementById("frame");
+    var frame = document.getElementById("test_frame");
     childWindow = frame.contentWindow;
     // Have expected results assume that the frame has been closed (=> window.closed = true.)
-    collectProperties(true);
+    collectProperties(document.getElementById("src_frame").contentWindow, true);
     frame.parentNode.removeChild(frame);
     asyncGC(function () {
         for (var i = 0; i < propertiesToVerify.length; ++i)
@@ -37,7 +40,8 @@ function runTest()
 }
 </script>
 </head>
-<body>
-<iframe id="frame" src="about:blank" onload="runTest()"></iframe>
+<body onload="runTest()">
+<iframe id="src_frame"></iframe>
+<iframe id="test_frame" src="about:blank"></iframe>
 </body>
 </html>

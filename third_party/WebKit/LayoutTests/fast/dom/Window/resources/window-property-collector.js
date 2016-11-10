@@ -1,8 +1,6 @@
-function collectProperties(windowHasBeenGCed)
+function collectProperties(object, windowHasBeenGCed)
 {
-    // Collect properties of the top-level window, since touching the properties
-    // of a DOMWindow affects its internal C++ state.
-    collectPropertiesHelper(window, windowHasBeenGCed, []);
+    collectPropertiesHelper(object, object, windowHasBeenGCed, []);
 
     propertiesToVerify.sort(function (a, b)
     {
@@ -18,7 +16,6 @@ function emitExpectedResult(path, expected)
 {
     // Skip internals properties, since they aren't web accessible.
     if (path[0] == 'internals'
-        || path[0] == 'propertiesToVerify' // Skip the list we're building...
         || path[0] == 'clientInformation' // Just an alias for navigator.
         || path[0] == 'testRunner' // Skip testRunner since they are only for testing.
         || path[0] == 'layoutTestController' // Just an alias for testRunner.
@@ -63,6 +60,9 @@ function emitExpectedResult(path, expected)
     case "location.protocol":
         expected = "'about:'";
         break;
+    case "location.ancestorOrigins.length":
+        expected = "1";
+        break;
     case "navigator.appCodeName":
     case "navigator.appName":
     case "navigator.hardwareConcurrency":
@@ -74,7 +74,7 @@ function emitExpectedResult(path, expected)
     case "navigator.vendor":
         expected = "window." + propertyPath;
         break;
-    case "screen.orientation":
+    case "screen.orientation.type":
         expected = "'portrait-primary'";
         break;
     case "history.scrollRestoration":
@@ -85,7 +85,7 @@ function emitExpectedResult(path, expected)
     insertExpectedResult(path, expected);
 }
 
-function collectPropertiesHelper(object, windowHasBeenGCed, path)
+function collectPropertiesHelper(global, object, windowHasBeenGCed, path)
 {
     if (path.length > 20)
         throw 'Error: probably looping';
@@ -100,11 +100,12 @@ function collectPropertiesHelper(object, windowHasBeenGCed, path)
             if (object[property] === null) {
                 emitExpectedResult(path, "null");
             } else if (!object[property].Window
-                && !(object[property] instanceof Node)
-                && !(object[property] instanceof MimeTypeArray)
-                && !(object[property] instanceof PluginArray)) {
+                && !(object[property] instanceof global.Node)
+                && !(object[property] instanceof global.MimeTypeArray)
+                && !(object[property] instanceof global.PluginArray)
+                && !(object[property] instanceof HTMLElement)) {
                 // Skip some traversing through types that will end up in cycles...
-                collectPropertiesHelper(object[property], windowHasBeenGCed, path);
+                collectPropertiesHelper(global, object[property], windowHasBeenGCed, path);
             }
         } else if (type == "string") {
             emitExpectedResult(path, "''");
@@ -118,4 +119,13 @@ function collectPropertiesHelper(object, windowHasBeenGCed, path)
         }
         path.pop();
     }
+}
+
+function pathExists(object, path) {
+    for (var i = 0; i < path.length; i++) {
+        if (!object || !(path[i] in object))
+            return false;
+        object = object[path[i]];
+    }
+    return true;
 }

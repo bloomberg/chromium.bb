@@ -5,6 +5,7 @@
 <script>
 var jsTestIsAsync = true;
 
+var frame;
 var childWindow;
 var propertiesToVerify = [];
 
@@ -13,6 +14,9 @@ function insertExpectedResult(path, expected)
     if (path.length < 2)
         return;
     var propertyDir = path.slice(0, -1).join('.');
+    // Cached Location properties become undefined.
+    if (propertyDir == "location")
+        expected = "undefined";
     var cachedPropertyDir = "cached_" + propertyDir.replace('.', '_');
     window[cachedPropertyDir] = eval("childWindow." + propertyDir);
     propertiesToVerify.push({
@@ -23,22 +27,26 @@ function insertExpectedResult(path, expected)
 
 function runTest()
 {
-    var frame = document.getElementById("frame");
-    if (frame.src != 'about:blank') {
-        description("Tests access of cached DOMWindow properties after the associated frame is navigated. Test should not crash and properties should be set to sane defaults.");
-        childWindow = frame.contentWindow;
-        // Have expected results assume that the frame hasn't been closed (=> window.closed = false.)
-        collectProperties(false);
-        frame.src = 'about:blank';
-        return;
+    frame = document.getElementById("test_frame");
+    description("Tests access of cached DOMWindow properties after the associated frame is navigated. Test should not crash and properties should be set to sane defaults.");
+    childWindow = frame.contentWindow;
+    // Have expected results assume that the frame hasn't been closed (=> window.closed = false.)
+    collectProperties(document.getElementById("src_frame").contentWindow, false);
+    frame.src = 'about:blank';
+}
+
+function testFrameLoaded()
+{
+    if (frame) {
+        for (var i = 0; i < propertiesToVerify.length; ++i)
+            shouldBe(propertiesToVerify[i].property, propertiesToVerify[i].expected);
+        finishJSTest();
     }
-    for (var i = 0; i < propertiesToVerify.length; ++i)
-        shouldBe(propertiesToVerify[i].property, propertiesToVerify[i].expected);
-    finishJSTest();
 }
 </script>
 </head>
-<body>
-<iframe id="frame" src="resources/blank.html" onload="runTest()"></iframe>
+<body onload="runTest()">
+<iframe id="src_frame"></iframe>
+<iframe id="test_frame" src="resources/blank.html" onload="testFrameLoaded()"></iframe>
 </body>
 </html>

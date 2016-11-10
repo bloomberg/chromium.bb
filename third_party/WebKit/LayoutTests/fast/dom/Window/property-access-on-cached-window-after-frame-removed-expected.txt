@@ -6,46 +6,23 @@ Tests property access on a cached DOMWindow after the associated frame is no lon
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-FAIL childWindow.applicationCache.oncached should be null. Threw exception TypeError: Cannot read property 'oncached' of null
-FAIL childWindow.applicationCache.onchecking should be null. Threw exception TypeError: Cannot read property 'onchecking' of null
-FAIL childWindow.applicationCache.ondownloading should be null. Threw exception TypeError: Cannot read property 'ondownloading' of null
-FAIL childWindow.applicationCache.onerror should be null. Threw exception TypeError: Cannot read property 'onerror' of null
-FAIL childWindow.applicationCache.onnoupdate should be null. Threw exception TypeError: Cannot read property 'onnoupdate' of null
-FAIL childWindow.applicationCache.onobsolete should be null. Threw exception TypeError: Cannot read property 'onobsolete' of null
-FAIL childWindow.applicationCache.onprogress should be null. Threw exception TypeError: Cannot read property 'onprogress' of null
-FAIL childWindow.applicationCache.onupdateready should be null. Threw exception TypeError: Cannot read property 'onupdateready' of null
-FAIL childWindow.applicationCache.status should be 0. Threw exception TypeError: Cannot read property 'status' of null
 PASS childWindow.closed is true
 PASS childWindow.defaultStatus is ''
 PASS childWindow.defaultstatus is ''
 PASS childWindow.devicePixelRatio is 0
-PASS childWindow.frameElement is null
 PASS childWindow.history.length is 0
 PASS childWindow.history.scrollRestoration is 'auto'
 PASS childWindow.history.state is null
 PASS childWindow.innerHeight is 0
 PASS childWindow.innerWidth is 0
-FAIL childWindow.isJsTest should be false (of type boolean). Was undefined (of type undefined).
 PASS childWindow.isSecureContext is false
 PASS childWindow.length is 0
-FAIL childWindow.location.ancestorOrigins.length should be 0. Threw exception TypeError: Cannot read property 'length' of undefined
-FAIL childWindow.location.hash should be  (of type string). Was undefined (of type undefined).
-FAIL childWindow.location.host should be  (of type string). Was undefined (of type undefined).
-FAIL childWindow.location.hostname should be  (of type string). Was undefined (of type undefined).
-FAIL childWindow.location.href should be about:blank (of type string). Was undefined (of type undefined).
-FAIL childWindow.location.origin should be null (of type string). Was undefined (of type undefined).
-FAIL childWindow.location.pathname should be blank (of type string). Was undefined (of type undefined).
-FAIL childWindow.location.port should be  (of type string). Was undefined (of type undefined).
-FAIL childWindow.location.protocol should be about: (of type string). Was undefined (of type undefined).
-FAIL childWindow.location.search should be  (of type string). Was undefined (of type undefined).
 PASS childWindow.locationbar.visible is false
 PASS childWindow.menubar.visible is false
 PASS childWindow.name is ''
 PASS childWindow.navigator.appCodeName is window.navigator.appCodeName
 PASS childWindow.navigator.appName is window.navigator.appName
 PASS childWindow.navigator.appVersion is ''
-FAIL childWindow.navigator.connection.onchange should be null. Threw exception TypeError: Cannot read property 'onchange' of null
-FAIL childWindow.navigator.connection.ontypechange should be null. Threw exception TypeError: Cannot read property 'ontypechange' of null
 PASS childWindow.navigator.cookieEnabled is false
 PASS childWindow.navigator.doNotTrack is null
 PASS childWindow.navigator.hardwareConcurrency is window.navigator.hardwareConcurrency
@@ -62,14 +39,8 @@ PASS childWindow.navigator.mediaSession.onseekbackward is null
 PASS childWindow.navigator.mediaSession.onseekforward is null
 PASS childWindow.navigator.onLine is window.navigator.onLine
 PASS childWindow.navigator.platform is window.navigator.platform
-FAIL childWindow.navigator.presentation.defaultRequest should be null. Threw exception TypeError: Cannot read property 'defaultRequest' of null
 PASS childWindow.navigator.product is window.navigator.product
 PASS childWindow.navigator.productSub is window.navigator.productSub
-FAIL childWindow.navigator.serviceWorker.controller should be null. Threw exception TypeError: Cannot read property 'controller' of null
-FAIL childWindow.navigator.serviceWorker.oncontrollerchange should be null. Threw exception TypeError: Cannot read property 'oncontrollerchange' of null
-FAIL childWindow.navigator.serviceWorker.onmessage should be null. Threw exception TypeError: Cannot read property 'onmessage' of null
-FAIL childWindow.navigator.usb.onconnect should be null. Threw exception TypeError: Cannot read property 'onconnect' of undefined
-FAIL childWindow.navigator.usb.ondisconnect should be null. Threw exception TypeError: Cannot read property 'ondisconnect' of undefined
 PASS childWindow.navigator.userAgent is ''
 PASS childWindow.navigator.vendor is window.navigator.vendor
 PASS childWindow.navigator.vendorSub is ''
@@ -103,6 +74,7 @@ PASS childWindow.ondrop is null
 PASS childWindow.ondurationchange is null
 PASS childWindow.onemptied is null
 PASS childWindow.onended is null
+PASS childWindow.onerror is null
 PASS childWindow.onfocus is null
 PASS childWindow.onhashchange is null
 PASS childWindow.oninput is null
@@ -210,9 +182,6 @@ PASS childWindow.screen.availWidth is 0
 PASS childWindow.screen.colorDepth is 0
 PASS childWindow.screen.height is 0
 PASS childWindow.screen.keepAwake is false
-FAIL childWindow.screen.orientation.angle should be 0. Threw exception TypeError: Cannot read property 'angle' of null
-FAIL childWindow.screen.orientation.onchange should be null. Threw exception TypeError: Cannot read property 'onchange' of null
-FAIL childWindow.screen.orientation.type should be . Threw exception TypeError: Cannot read property 'type' of null
 PASS childWindow.screen.pixelDepth is 0
 PASS childWindow.screen.width is 0
 PASS childWindow.screenLeft is 0
@@ -222,21 +191,10 @@ PASS childWindow.screenY is 0
 PASS childWindow.scrollX is 0
 PASS childWindow.scrollY is 0
 PASS childWindow.scrollbars.visible is false
-FAIL childWindow.speechSynthesis.onvoiceschanged should be null. Threw exception TypeError: Cannot read property 'onvoiceschanged' of null
-FAIL childWindow.speechSynthesis.paused should be false. Threw exception TypeError: Cannot read property 'paused' of null
-FAIL childWindow.speechSynthesis.pending should be false. Threw exception TypeError: Cannot read property 'pending' of null
-FAIL childWindow.speechSynthesis.speaking should be false. Threw exception TypeError: Cannot read property 'speaking' of null
 PASS childWindow.status is ''
 PASS childWindow.statusbar.visible is false
 PASS childWindow.styleMedia.type is ''
 PASS childWindow.toolbar.visible is false
-FAIL childWindow.visualViewport.clientHeight should be 0. Threw exception TypeError: Cannot read property 'clientHeight' of null
-FAIL childWindow.visualViewport.clientWidth should be 0. Threw exception TypeError: Cannot read property 'clientWidth' of null
-FAIL childWindow.visualViewport.pageX should be 0. Threw exception TypeError: Cannot read property 'pageX' of null
-FAIL childWindow.visualViewport.pageY should be 0. Threw exception TypeError: Cannot read property 'pageY' of null
-FAIL childWindow.visualViewport.scale should be 0. Threw exception TypeError: Cannot read property 'scale' of null
-FAIL childWindow.visualViewport.scrollLeft should be 0. Threw exception TypeError: Cannot read property 'scrollLeft' of null
-FAIL childWindow.visualViewport.scrollTop should be 0. Threw exception TypeError: Cannot read property 'scrollTop' of null
 PASS successfullyParsed is true
 
 TEST COMPLETE

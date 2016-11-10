@@ -10,27 +10,30 @@ var propertiesToVerify = [];
 
 function insertExpectedResult(path, expected)
 {
-    var propertyPath = path.join('.');
-    propertiesToVerify.push({'property': "childWindow." + propertyPath, 'expected': expected});
+    propertiesToVerify.push({"path": path.slice(0), "property": path.join("."), "expected": expected});
 }
 
 function runTest()
 {
     description("Tests property access on a cached DOMWindow after the associated frame is removed from a web page and garbage collected. Test should not crash and properties should be set to sane defaults.");
-    var frame = document.getElementById("frame");
+    var frame = document.getElementById("test_frame");
     childWindow = frame.contentWindow;
     // Have expected results assume that the frame has been closed and GCed (=> window.closed = true.)
-    collectProperties(true);
+    collectProperties(document.getElementById("src_frame").contentWindow, true);
     frame.parentNode.removeChild(frame);
     asyncGC(function () {
-        for (var i = 0; i < propertiesToVerify.length; ++i)
-            shouldBe(propertiesToVerify[i].property, propertiesToVerify[i].expected);
+        for (var i = 0; i < propertiesToVerify.length; ++i) {
+            // It's ok if the property no longer exists.
+            if (pathExists(childWindow, propertiesToVerify[i].path))
+                shouldBe("childWindow." + propertiesToVerify[i].property, propertiesToVerify[i].expected);
+        }
         finishJSTest();
     });
 }
 </script>
 </head>
-<body>
-<iframe id="frame" src="about:blank" onload="runTest()"></iframe>
+<body onload="runTest()">
+<iframe id="src_frame"></iframe>
+<iframe id="test_frame" src="about:blank"></iframe>
 </body>
 </html>

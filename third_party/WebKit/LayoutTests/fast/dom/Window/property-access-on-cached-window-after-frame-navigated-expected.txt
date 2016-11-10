@@ -19,15 +19,12 @@ PASS oldChildWindow.closed is newChildWindow.closed
 PASS oldChildWindow.defaultStatus is newChildWindow.defaultStatus
 PASS oldChildWindow.defaultstatus is newChildWindow.defaultstatus
 PASS oldChildWindow.devicePixelRatio is newChildWindow.devicePixelRatio
-PASS oldChildWindow.frameElement is newChildWindow.frameElement
 PASS oldChildWindow.history.length is newChildWindow.history.length
 PASS oldChildWindow.history.scrollRestoration is newChildWindow.history.scrollRestoration
 PASS oldChildWindow.history.state is newChildWindow.history.state
 PASS oldChildWindow.innerHeight is newChildWindow.innerHeight
 PASS oldChildWindow.innerWidth is newChildWindow.innerWidth
-PASS oldChildWindow.isJsTest is newChildWindow.isJsTest
 PASS oldChildWindow.isSecureContext is newChildWindow.isSecureContext
-PASS oldChildWindow.jsTestIsAsync is newChildWindow.jsTestIsAsync
 PASS oldChildWindow.length is newChildWindow.length
 PASS oldChildWindow.location.ancestorOrigins.length is newChildWindow.location.ancestorOrigins.length
 PASS oldChildWindow.location.hash is newChildWindow.location.hash
@@ -104,6 +101,7 @@ PASS oldChildWindow.ondrop is newChildWindow.ondrop
 PASS oldChildWindow.ondurationchange is newChildWindow.ondurationchange
 PASS oldChildWindow.onemptied is newChildWindow.onemptied
 PASS oldChildWindow.onended is newChildWindow.onended
+PASS oldChildWindow.onerror is newChildWindow.onerror
 PASS oldChildWindow.onfocus is newChildWindow.onfocus
 PASS oldChildWindow.onhashchange is newChildWindow.onhashchange
 PASS oldChildWindow.oninput is newChildWindow.oninput
@@ -238,8 +236,7 @@ PASS oldChildWindow.visualViewport.pageY is newChildWindow.visualViewport.pageY
 PASS oldChildWindow.visualViewport.scale is newChildWindow.visualViewport.scale
 PASS oldChildWindow.visualViewport.scrollLeft is newChildWindow.visualViewport.scrollLeft
 PASS oldChildWindow.visualViewport.scrollTop is newChildWindow.visualViewport.scrollTop
-PASS oldChildWindow.wasPostTestScriptParsed is newChildWindow.wasPostTestScriptParsed
 PASS successfullyParsed is true
 
 TEST COMPLETE
-
+ 
