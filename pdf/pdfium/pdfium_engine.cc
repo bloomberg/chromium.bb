@@ -320,7 +320,9 @@ struct FPDF_SYSFONTINFO_WITHMETRICS : public FPDF_SYSFONTINFO {
     default_sysfontinfo = sysfontinfo;
   }
 
-  ~FPDF_SYSFONTINFO_WITHMETRICS() { delete default_sysfontinfo; }
+  ~FPDF_SYSFONTINFO_WITHMETRICS() {
+    FPDF_FreeDefaultSystemFontInfo(default_sysfontinfo);
+  }
 
   FPDF_SYSFONTINFO* default_sysfontinfo;
 };
@@ -651,11 +653,10 @@ bool InitializeSDK() {
 }
 
 void ShutdownSDK() {
+  FPDF_DestroyLibrary();
 #if !defined(OS_LINUX)
-  FPDF_FreeDefaultSystemFontInfo(g_font_info->default_sysfontinfo);
   delete g_font_info;
 #endif
-  FPDF_DestroyLibrary();
   TearDownV8();
 }
 
