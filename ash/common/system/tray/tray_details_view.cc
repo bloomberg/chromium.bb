@@ -390,7 +390,7 @@ void TrayDetailsView::Layout() {
 
   if (scroller_) {
     if (UseMd()) {
-      gfx::Size scroller_size = scroll_content_->GetPreferredSize();
+      gfx::Size scroller_size = scroller()->GetPreferredSize();
       gfx::Size pref_size = GetPreferredSize();
       scroller()->ClipHeightTo(
           0, scroller_size.height() - (pref_size.height() - height()));
