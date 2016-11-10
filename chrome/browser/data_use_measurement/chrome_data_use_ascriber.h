@@ -5,17 +5,8 @@
 #ifndef CHROME_BROWSER_DATA_USE_MEASUREMENT_CHROME_DATA_USE_ASCRIBER_H_
 #define CHROME_BROWSER_DATA_USE_MEASUREMENT_CHROME_DATA_USE_ASCRIBER_H_
 
-#include <list>
-#include <memory>
-#include <unordered_map>
-#include <utility>
-
-#include "base/containers/hash_tables.h"
-#include "base/hash.h"
 #include "base/macros.h"
-#include "base/supports_user_data.h"
 #include "components/data_use_measurement/core/data_use_ascriber.h"
-#include "content/public/browser/global_request_id.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -50,14 +41,8 @@ class ChromeDataUseAscriber : public DataUseAscriber {
 
   ~ChromeDataUseAscriber() override;
 
-  // DataUseAscriber implementation:
+  // DataUseAscriber:
   DataUseRecorder* GetDataUseRecorder(net::URLRequest* request) override;
-
-  // Called before a request is sent.
-  void OnBeforeUrlRequest(net::URLRequest* request) override;
-
-  // Called when a URLRequest completes.
-  void OnUrlRequestCompleted(net::URLRequest* request, bool started) override;
 
   // Called when a render frame host is created.
   void RenderFrameCreated(int render_process_id,
@@ -77,15 +62,12 @@ class ChromeDataUseAscriber : public DataUseAscriber {
                                    int render_frame_id,
                                    void* navigation_handle);
 
-  // Called when a main frame navigation is ready to be committed in a
-  // renderer.
-  void ReadyToCommitMainFrameNavigation(
-      GURL gurl,
-      content::GlobalRequestID global_request_id,
-      int render_process_id,
-      int render_frame_id,
-      bool is_same_page_navigation,
-      void* navigation_handle);
+  // Called when a main frame navigation is completed.
+  void DidFinishMainFrameNavigation(GURL gurl,
+                                    int render_process_id,
+                                    int render_frame_id,
+                                    bool is_same_page_navigation,
+                                    void* navigation_handle);
 
   // Called when a main frame navigation is redirected.
   void DidRedirectMainFrameNavigation(GURL gurl,
@@ -94,56 +76,6 @@ class ChromeDataUseAscriber : public DataUseAscriber {
                                       void* navigation_handle);
 
  private:
-  // Use as a key in the render frame map. Corresponds to a unique
-  // RenderFrameHost.
-  typedef std::pair<int, int> RenderFrameHostID;
-
-  // Entry in the |data_use_recorders_| list which owns all instances of
-  // DataUseRecorder.
-  typedef std::list<std::unique_ptr<data_use_measurement::DataUseRecorder>>::
-      iterator DataUseRecorderEntry;
-
-  struct GlobalRequestIDHash {
-   public:
-    std::size_t operator()(const content::GlobalRequestID& x) const {
-      return base::HashInts(x.child_id, x.request_id);
-    }
-  };
-
-  class DataUseRecorderEntryAsUserData : public base::SupportsUserData::Data {
-   public:
-    explicit DataUseRecorderEntryAsUserData(DataUseRecorderEntry entry);
-
-    ~DataUseRecorderEntryAsUserData() override;
-
-    DataUseRecorderEntry recorder_entry() { return entry_; }
-
-    static const void* kUserDataKey;
-
-   private:
-    DataUseRecorderEntry entry_;
-  };
-
-  void DeletePendingNavigationEntry(content::GlobalRequestID global_request_id);
-
-  // Owner for all instances of DataUseRecorder. An instance is kept in this
-  // list if any entity (render frame hosts, URLRequests, pending navigations)
-  // that ascribe data use to the instance exists, and deleted when all
-  // ascribing entities go away.
-  std::list<std::unique_ptr<DataUseRecorder>> data_use_recorders_;
-
-  // Map from RenderFrameHost to the DataUseRecorderEntry in
-  // |data_use_recorders_| that the frame ascribe data use to.
-  base::hash_map<RenderFrameHostID, DataUseRecorderEntry>
-      render_frame_data_use_map_;
-
-  // Map from pending navigations to the DataUseRecorderEntry in
-  // |data_use_recorders_| that the navigation ascribes data use to.
-  std::unordered_map<content::GlobalRequestID,
-                     DataUseRecorderEntry,
-                     GlobalRequestIDHash>
-      pending_navigation_data_use_map_;
-
   DISALLOW_COPY_AND_ASSIGN(ChromeDataUseAscriber);
 };
 

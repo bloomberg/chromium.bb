@@ -32,13 +32,22 @@ class DataUseWebContentsObserver
 
   ~DataUseWebContentsObserver() override;
 
-  // WebContentsObserver implementation:
+  // WebContentsObserver:
+  // Called when a render frame host is created.
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
+
+  // Called when a render frame host is deleted.
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
+
+  // Called when a navigation is started.
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void ReadyToCommitNavigation(
+
+  // Called when a navigation is completed.
+  void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+
+  // Called when a navigation is redirected.
   void DidRedirectNavigation(
       content::NavigationHandle* navigation_handle) override;
 

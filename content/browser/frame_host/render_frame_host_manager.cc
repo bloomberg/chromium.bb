@@ -7,9 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
@@ -286,7 +284,7 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
   // the destination render frame will take ownership, so release ownership of
   // the transferring NavigationHandle.
   if (transfer_navigation_handle_.get() &&
-      transfer_navigation_handle_->GetGlobalRequestID() ==
+      transfer_navigation_handle_->request_id() ==
           entry.transferred_global_request_id()) {
     // The navigating RenderFrameHost should take ownership of the
     // NavigationHandle that came from the transferring RenderFrameHost.
@@ -2278,8 +2276,7 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
   // This ensures the network request will not be destroyed along the pending
   // RFH but will persist until it is picked up by the new RFH.
   if (transfer_navigation_handle_.get() &&
-      transfer_navigation_handle_->GetGlobalRequestID() ==
-          transferred_request_id &&
+      transfer_navigation_handle_->request_id() == transferred_request_id &&
       new_instance.get() !=
           transfer_navigation_handle_->GetRenderFrameHost()
               ->GetSiteInstance()) {
@@ -2346,7 +2343,7 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
       // We don't need to stop the old renderer or run beforeunload/unload
       // handlers, because those have already been done.
       DCHECK(transfer_navigation_handle_ &&
-             transfer_navigation_handle_->GetGlobalRequestID() ==
+             transfer_navigation_handle_->request_id() ==
                  transferred_request_id);
     } else if (!pending_render_frame_host_->are_navigations_suspended()) {
       // If the pending RFH hasn't already been suspended from a previous
@@ -2473,7 +2470,7 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::SetRenderFrameHost(
 }
 
 RenderViewHostImpl* RenderFrameHostManager::GetSwappedOutRenderViewHost(
-    SiteInstance* instance) const {
+   SiteInstance* instance) const {
   RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(instance);
   if (proxy)
     return proxy->GetRenderViewHost();

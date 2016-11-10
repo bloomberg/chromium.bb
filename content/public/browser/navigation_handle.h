@@ -6,7 +6,6 @@
 #define CONTENT_PUBLIC_BROWSER_NAVIGATION_HANDLE_H_
 
 #include <memory>
-#include <string>
 
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -22,7 +21,6 @@ class HttpResponseHeaders;
 }  // namespace net
 
 namespace content {
-struct GlobalRequestID;
 class NavigationData;
 class NavigationThrottle;
 class RenderFrameHost;
@@ -184,14 +182,6 @@ class CONTENT_EXPORT NavigationHandle {
   // NavigationThrottle::CANCEL_AND_IGNORE.
   virtual void CancelDeferredNavigation(
       NavigationThrottle::ThrottleCheckResult result) = 0;
-
-  // Returns the ID of the URLRequest associated with this navigation. Can only
-  // be called from NavigationThrottle::WillProcessResponse and
-  // WebContentsObserver::ReadyToCommitNavigation.
-  // In the case of transfer navigations, this is the ID of the first request
-  // made. The transferred request's ID will not be tracked by the
-  // NavigationHandle.
-  virtual const GlobalRequestID& GetGlobalRequestID() = 0;
 
   // Testing methods ----------------------------------------------------------
   //
