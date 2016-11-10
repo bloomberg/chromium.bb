@@ -23,6 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://dvcs.w3.org/hg/speech-api/raw-file/tip/webspeechapi.html#tts-section
+
 [
     Constructor(optional DOMString text = null),
     ConstructorCallWith=ExecutionContext,
@@ -30,7 +32,7 @@
 ] interface SpeechSynthesisUtterance : EventTarget {
     attribute DOMString text;
     attribute DOMString lang;
-    [LegacyInterfaceTypeChecking] attribute SpeechSynthesisVoice voice;
+    attribute SpeechSynthesisVoice? voice;
     attribute float volume;
     attribute float rate;
     attribute float pitch;
