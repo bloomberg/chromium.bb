@@ -34,9 +34,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
                          NGConstraintSpace* space,
                          NGBreakToken* break_token = nullptr);
 
-  NGLayoutStatus Layout(NGFragmentBase*,
-                        NGPhysicalFragmentBase**,
-                        NGBox**) override;
+  bool Layout(NGPhysicalFragmentBase**) override;
 
   DECLARE_VIRTUAL_TRACE();
 

@@ -13,11 +13,8 @@
 namespace blink {
 
 struct MinAndMaxContentSizes;
-class NGBox;
 class NGConstraintSpace;
 class NGPhysicalFragmentBase;
-
-enum NGLayoutStatus { NotFinished, ChildAlgorithmRequired, NewFragment };
 
 // Base class for all LayoutNG algorithms.
 class CORE_EXPORT NGLayoutAlgorithm
@@ -33,14 +30,10 @@ class CORE_EXPORT NGLayoutAlgorithm
   // resulting layout information.
   // This function can not be const because for interruptible layout, we have
   // to be able to store state information.
-  // If this function returns NotFinished, it has to be called again.
-  // If it returns ChildAlgorithmRequired, the NGBox out parameter will
-  // be set with the NGBox that needs to be layed out next.
-  // If it returns NewFragment, the NGPhysicalFragmentBase out parameter
-  // will contain the new fragment.
-  virtual NGLayoutStatus Layout(NGFragmentBase*,
-                                NGPhysicalFragmentBase**,
-                                NGBox**) = 0;
+  // Returns true when done; when this function returns false, it has to be
+  // called again. The out parameter will only be set when this function
+  // returns true.
+  virtual bool Layout(NGPhysicalFragmentBase**) = 0;
 
   enum MinAndMaxState { Success, Pending, NotImplemented };
 

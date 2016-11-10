@@ -150,10 +150,7 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
   DCHECK(style_);
 }
 
-NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
-    NGFragmentBase*,
-    NGPhysicalFragmentBase** fragment_out,
-    NGBox**) {
+bool NGBlockLayoutAlgorithm::Layout(NGPhysicalFragmentBase** out) {
   switch (state_) {
     case kStateInit: {
       border_and_padding_ =
@@ -200,20 +197,20 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
         space_for_current_child_ = CreateConstraintSpaceForCurrentChild();
 
       state_ = kStateChildLayout;
-      return NotFinished;
+      return false;
     }
     case kStateChildLayout: {
       if (current_child_) {
         if (!LayoutCurrentChild())
-          return NotFinished;
+          return false;
         current_child_ = current_child_->NextSibling();
         if (current_child_) {
           space_for_current_child_ = CreateConstraintSpaceForCurrentChild();
-          return NotFinished;
+          return false;
         }
       }
       state_ = kStateFinalize;
-      return NotFinished;
+      return false;
     }
     case kStateFinalize: {
       content_size_ += border_and_padding_.block_end;
@@ -225,14 +222,14 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
       builder_->SetBlockSize(block_size)
           .SetInlineOverflow(max_inline_size_)
           .SetBlockOverflow(content_size_);
-      *fragment_out = builder_->ToFragment();
+      *out = builder_->ToFragment();
       state_ = kStateInit;
-      return NewFragment;
+      return true;
     }
   };
   NOTREACHED();
-  *fragment_out = nullptr;
-  return NewFragment;
+  *out = nullptr;
+  return true;
 }
 
 bool NGBlockLayoutAlgorithm::LayoutCurrentChild() {

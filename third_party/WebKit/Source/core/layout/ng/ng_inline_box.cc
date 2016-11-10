@@ -110,7 +110,7 @@ bool NGInlineBox::Layout(const NGConstraintSpace* constraint_space,
     layout_algorithm_ = new NGTextLayoutAlgorithm(this, child_constraint_space);
 
   NGPhysicalFragmentBase* fragment = nullptr;
-  if (!layout_algorithm_->Layout(nullptr, &fragment, nullptr))
+  if (!layout_algorithm_->Layout(&fragment))
     return false;
 
   // TODO(layout-dev): Implement copying of fragment data to LayoutObject tree.
