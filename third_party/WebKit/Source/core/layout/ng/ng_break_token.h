@@ -6,7 +6,7 @@
 #define NGBreakToken_h
 
 #include "core/CoreExport.h"
-#include "wtf/Allocator.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 

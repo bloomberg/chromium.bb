@@ -6,6 +6,7 @@
 #define NGPhysicalFragmentBase_h
 
 #include "core/CoreExport.h"
+#include "core/layout/ng/ng_break_token.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_units.h"
 #include "platform/LayoutUnit.h"
@@ -59,21 +60,24 @@ class CORE_EXPORT NGPhysicalFragmentBase
     has_been_placed_ = true;
   }
 
-  DEFINE_INLINE_TRACE_AFTER_DISPATCH() {}
+  DEFINE_INLINE_TRACE_AFTER_DISPATCH() { visitor->trace(break_token_); }
   DECLARE_TRACE();
 
  protected:
   NGPhysicalFragmentBase(NGPhysicalSize size,
                          NGPhysicalSize overflow,
-                         NGFragmentType type)
+                         NGFragmentType type,
+                         NGBreakToken* break_token = nullptr)
       : size_(size),
         overflow_(overflow),
+        break_token_(break_token),
         type_(type),
         has_been_placed_(false) {}
 
   NGPhysicalSize size_;
   NGPhysicalSize overflow_;
   NGPhysicalOffset offset_;
+  Member<NGBreakToken> break_token_;
 
   unsigned type_ : 1;
   unsigned has_been_placed_ : 1;
