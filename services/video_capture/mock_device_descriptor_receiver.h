@@ -17,8 +17,9 @@ class MockDeviceDescriptorReceiver {
   MockDeviceDescriptorReceiver();
   ~MockDeviceDescriptorReceiver();
 
-  MOCK_METHOD1(OnEnumerateDeviceDescriptorsCallback,
-               void(const std::vector<media::VideoCaptureDeviceDescriptor>&));
+  MOCK_METHOD1(
+      OnEnumerateDeviceDescriptorsCallback,
+      void(const std::vector<media::VideoCaptureDeviceDescriptor>&));
 };
 
 }  // namespace video_capture

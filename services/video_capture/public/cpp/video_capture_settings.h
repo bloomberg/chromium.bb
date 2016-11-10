@@ -15,6 +15,10 @@ struct VideoCaptureFormat {
   gfx::Size frame_size;
   float frame_rate;
 
+  bool operator==(const VideoCaptureFormat& other) const {
+    return frame_size == other.frame_size && frame_rate == other.frame_rate;
+  }
+
   void ConvertToMediaVideoCaptureFormat(
       media::VideoCaptureFormat* target) const {
     target->frame_size = frame_size;

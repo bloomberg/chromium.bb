@@ -48,6 +48,7 @@ struct StructTraits<video_capture::mojom::VideoCaptureSettingsDataView,
   static bool Read(video_capture::mojom::VideoCaptureSettingsDataView data,
                    video_capture::VideoCaptureSettings* out);
 };
+
 }
 
 #endif  // SERVICES_VIDEO_CAPTURE_PUBLIC_INTERFACES_VIDEO_CAPTURE_SETTINGS_TRAITS_H_

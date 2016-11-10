@@ -48,7 +48,23 @@ void DeviceFactoryMediaToMojoAdapter::GetSupportedFormats(
     const media::VideoCaptureDeviceDescriptor& device_descriptor,
     const GetSupportedFormatsCallback& callback) {
   std::vector<VideoCaptureFormat> result;
-  NOTIMPLEMENTED();
+  std::vector<media::VideoCaptureFormat> media_formats;
+  device_factory_->GetSupportedFormats(device_descriptor, &media_formats);
+  for (const auto& media_format : media_formats) {
+    // The Video Capture Service requires devices to deliver frames either in
+    // I420 or MJPEG formats.
+    // TODO(chfremer): Add support for Y16 format. See crbug.com/624436.
+    if (media_format.pixel_format != media::PIXEL_FORMAT_I420 &&
+        media_format.pixel_format != media::PIXEL_FORMAT_MJPEG) {
+      continue;
+    }
+    VideoCaptureFormat format;
+    format.frame_size = media_format.frame_size;
+    format.frame_rate = media_format.frame_rate;
+    if (base::ContainsValue(result, format))
+      continue;  // Result already contains this format
+    result.push_back(format);
+  }
   callback.Run(std::move(result));
 }
 

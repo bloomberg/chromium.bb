@@ -11,6 +11,14 @@
 #include "media/capture/video/fake_video_capture_device.h"
 #include "services/video_capture/device_mock_to_media_adapter.h"
 
+namespace {
+// Report a single hard-coded supported format to clients.
+media::VideoCaptureFormat kSupportedFormat(gfx::Size(),
+                                           25.0f,
+                                           media::PIXEL_FORMAT_I420,
+                                           media::PIXEL_STORAGE_CPU);
+}
+
 namespace video_capture {
 
 MockDeviceFactory::MockDeviceFactory() = default;
@@ -41,7 +49,7 @@ void MockDeviceFactory::GetDeviceDescriptors(
 void MockDeviceFactory::GetSupportedFormats(
     const media::VideoCaptureDeviceDescriptor& device_descriptor,
     media::VideoCaptureFormats* supported_formats) {
-  NOTIMPLEMENTED();
+  supported_formats->push_back(kSupportedFormat);
 }
 
 }  // namespace video_capture

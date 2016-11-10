@@ -91,6 +91,7 @@ test("video_capture_unittests") {
     ":video_capture",
     "//base",
     "//base/test:test_support",
+    "//media",
     "//media/capture:capture",
     "//media/capture/mojo:capture_types",
     "//media/mojo/common:common",

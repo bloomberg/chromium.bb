@@ -11,12 +11,38 @@ using testing::Invoke;
 
 namespace video_capture {
 
+FakeDeviceTest::MockSupportedFormatsReceiver::MockSupportedFormatsReceiver() =
+    default;
+
+FakeDeviceTest::MockSupportedFormatsReceiver::~MockSupportedFormatsReceiver() =
+    default;
+
 FakeDeviceTest::FakeDeviceTest() : FakeDeviceDescriptorTest() {}
 
 FakeDeviceTest::~FakeDeviceTest() = default;
 
 void FakeDeviceTest::SetUp() {
   FakeDeviceDescriptorTest::SetUp();
+
+  // Query factory for supported formats of fake device
+  base::RunLoop wait_loop;
+  EXPECT_CALL(supported_formats_receiver_, OnGetSupportedFormatsCallback(_))
+      .WillOnce(Invoke(
+          [this, &wait_loop](const std::vector<VideoCaptureFormat>& formats) {
+            fake_device_first_supported_format_ = formats[0];
+            wait_loop.Quit();
+          }));
+  factory_->GetSupportedFormats(
+      fake_device_descriptor_,
+      base::Bind(&MockSupportedFormatsReceiver::OnGetSupportedFormatsCallback,
+      base::Unretained(&supported_formats_receiver_)));
+  wait_loop.Run();
+
+  requestable_settings_.format = fake_device_first_supported_format_;
+  requestable_settings_.resolution_change_policy =
+      media::RESOLUTION_POLICY_FIXED_RESOLUTION;
+  requestable_settings_.power_line_frequency =
+      media::PowerLineFrequency::FREQUENCY_DEFAULT;
 
   factory_->CreateDeviceProxy(
       std::move(fake_device_descriptor_), mojo::GetProxy(&fake_device_proxy_),
