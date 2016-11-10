@@ -387,6 +387,7 @@ struct MappingData {
     {"046d", "c219", MapperDirectInputStyle},    // Logitech F710, D mode
     {"054c", "0268", MapperPlaystationSixAxis},  // Playstation SIXAXIS
     {"054c", "05c4", MapperDualshock4},          // Playstation Dualshock 4
+    {"054c", "09cc", MapperDualshock4},          // Dualshock 4 (PS4 Slim)
     {"0583", "2060", MapperIBuffalo},            // iBuffalo Classic
     {"0925", "0005", MapperSmartJoyPLUS},        // SmartJoy PLUS Adapter
     {"0955", "7210", MapperNvShield},            // Nvidia Shield gamepad

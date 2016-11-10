@@ -242,6 +242,7 @@ struct MappingData {
     {"0079", "0011", Mapper2Axes8Keys},          // 2Axes 8Keys Game Pad
     {"046d", "c216", MapperLogitechDualAction},  // Logitech DualAction
     {"054c", "05c4", MapperDualshock4},          // Playstation Dualshock 4
+    {"054c", "09cc", MapperDualshock4},          // Dualshock 4 (PS4 Slim)
     {"0583", "2060", MapperIBuffalo},            // iBuffalo Classic
     {"0955", "7210", MapperNvShield},            // Nvidia Shield gamepad
     {"0b05", "4500", MapperADT1},                // Nexus Player Controller
