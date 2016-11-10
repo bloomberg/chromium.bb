@@ -66,9 +66,9 @@ void WorkerInspectorController::connectFrontend() {
 
   // sessionId will be overwritten by WebDevToolsAgent::sendProtocolNotification
   // call.
-  m_session = new InspectorSession(this, m_instrumentingAgents.get(), 0,
-                                   m_debugger->v8Inspector(),
-                                   m_debugger->contextGroupId(), nullptr);
+  m_session = new InspectorSession(
+      this, m_instrumentingAgents.get(), 0, m_debugger->v8Inspector(),
+      m_debugger->contextGroupId(m_thread), nullptr);
   m_session->append(
       new InspectorLogAgent(m_thread->consoleMessageStorage(), nullptr));
   m_thread->workerBackingThread().backingThread().addTaskObserver(this);

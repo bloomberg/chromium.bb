@@ -32,9 +32,8 @@ ThreadedWorkletGlobalScope::~ThreadedWorkletGlobalScope() {
 
 void ThreadedWorkletGlobalScope::dispose() {
   DCHECK(isContextThread());
-  m_thread = nullptr;
-
   WorkletGlobalScope::dispose();
+  m_thread = nullptr;
 }
 
 bool ThreadedWorkletGlobalScope::isContextThread() const {
@@ -62,7 +61,7 @@ void ThreadedWorkletGlobalScope::exceptionThrown(ErrorEvent* errorEvent) {
   DCHECK(isContextThread());
   if (WorkerThreadDebugger* debugger =
           WorkerThreadDebugger::from(thread()->isolate()))
-    debugger->exceptionThrown(errorEvent);
+    debugger->exceptionThrown(m_thread, errorEvent);
 }
 
 }  // namespace blink

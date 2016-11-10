@@ -139,7 +139,7 @@ void WorkerGlobalScope::exceptionUnhandled(int exceptionId) {
   DCHECK(event);
   if (WorkerThreadDebugger* debugger =
           WorkerThreadDebugger::from(thread()->isolate()))
-    debugger->exceptionThrown(event);
+    debugger->exceptionThrown(m_thread, event);
 }
 
 void WorkerGlobalScope::registerEventListener(

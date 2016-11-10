@@ -35,6 +35,7 @@
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/inspector/WorkerThreadDebugger.h"
 #include "core/origin_trials/OriginTrialContext.h"
+#include "core/workers/ThreadedWorkletGlobalScope.h"
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -114,6 +115,13 @@ class WorkerThread::ForceTerminationTask final {
 static Mutex& threadSetMutex() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, new Mutex);
   return mutex;
+}
+
+static int getNextWorkerThreadId() {
+  DCHECK(isMainThread());
+  static int nextWorkerThreadId = 1;
+  CHECK_LT(nextWorkerThreadId, std::numeric_limits<int>::max());
+  return nextWorkerThreadId++;
 }
 
 WorkerThreadLifecycleContext::WorkerThreadLifecycleContext() {
@@ -335,7 +343,8 @@ bool WorkerThread::isForciblyTerminated() {
 
 WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
                            WorkerReportingProxy& workerReportingProxy)
-    : m_forceTerminationDelayInMs(kForceTerminationDelayInMs),
+    : m_workerThreadId(getNextWorkerThreadId()),
+      m_forceTerminationDelayInMs(kForceTerminationDelayInMs),
       m_inspectorTaskRunner(wrapUnique(new InspectorTaskRunner())),
       m_workerLoaderProxy(workerLoaderProxy),
       m_workerReportingProxy(workerReportingProxy),
@@ -475,10 +484,6 @@ void WorkerThread::initializeOnWorkerThread(
 
     if (isOwningBackingThread())
       workerBackingThread().initialize();
-
-    if (shouldAttachThreadDebugger())
-      V8PerIsolateData::from(isolate())->setThreadDebugger(
-          wrapUnique(new WorkerThreadDebugger(this, isolate())));
     workerBackingThread().backingThread().addTaskObserver(this);
 
     // Optimize for memory usage instead of latency for the worker isolate.
@@ -542,11 +547,11 @@ void WorkerThread::prepareForShutdownOnWorkerThread() {
   InspectorInstrumentation::allAsyncTasksCanceled(globalScope());
 
   globalScope()->notifyContextDestroyed();
-  globalScope()->dispose();
   if (m_workerInspectorController) {
     m_workerInspectorController->dispose();
     m_workerInspectorController.clear();
   }
+  globalScope()->dispose();
   m_consoleMessageStorage.clear();
   workerBackingThread().backingThread().removeTaskObserver(this);
 }

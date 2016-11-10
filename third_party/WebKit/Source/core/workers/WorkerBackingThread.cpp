@@ -9,6 +9,7 @@
 #include "bindings/core/v8/V8IdleTaskRunner.h"
 #include "bindings/core/v8/V8Initializer.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
+#include "core/inspector/WorkerThreadDebugger.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/WebThreadSupportingGC.h"
@@ -78,6 +79,9 @@ void WorkerBackingThread::initialize() {
                        backingThread().platformThread().scheduler())));
   if (m_isOwningThread)
     Platform::current()->didStartWorkerThread();
+
+  V8PerIsolateData::from(m_isolate)->setThreadDebugger(
+      wrapUnique(new WorkerThreadDebugger(m_isolate)));
 }
 
 void WorkerBackingThread::shutdown() {

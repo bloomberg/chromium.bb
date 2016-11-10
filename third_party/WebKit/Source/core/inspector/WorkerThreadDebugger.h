@@ -45,16 +45,16 @@ class CORE_EXPORT WorkerThreadDebugger final : public ThreadDebugger {
   WTF_MAKE_NONCOPYABLE(WorkerThreadDebugger);
 
  public:
-  explicit WorkerThreadDebugger(WorkerThread*, v8::Isolate*);
+  explicit WorkerThreadDebugger(v8::Isolate*);
   ~WorkerThreadDebugger() override;
 
   static WorkerThreadDebugger* from(v8::Isolate*);
   bool isWorker() override { return true; }
 
-  int contextGroupId();
-  void contextCreated(v8::Local<v8::Context>);
-  void contextWillBeDestroyed(v8::Local<v8::Context>);
-  void exceptionThrown(ErrorEvent*);
+  int contextGroupId(WorkerThread*);
+  void contextCreated(WorkerThread*, v8::Local<v8::Context>);
+  void contextWillBeDestroyed(WorkerThread*, v8::Local<v8::Context>);
+  void exceptionThrown(WorkerThread*, ErrorEvent*);
 
  private:
   int contextGroupId(ExecutionContext*) override;
@@ -85,7 +85,8 @@ class CORE_EXPORT WorkerThreadDebugger final : public ThreadDebugger {
                          unsigned columnNumber,
                          v8_inspector::V8StackTrace*) override;
 
-  WorkerThread* m_workerThread;
+  int m_pausedContextGroupId;
+  WTF::HashMap<int, WorkerThread*> m_workerThreads;
 };
 
 }  // namespace blink
