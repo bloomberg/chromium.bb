@@ -17,7 +17,7 @@ namespace {
 template <typename T>
 bool validateShippingOptionOrPaymentItem(
     const T& item,
-    const blink::mojom::PaymentItemPtr& total,
+    const payments::mojom::PaymentItemPtr& total,
     std::string* error_message) {
   if (item->label.empty()) {
     *error_message = "Item label required";
@@ -66,8 +66,8 @@ bool validateShippingOptionOrPaymentItem(
 }
 
 bool validateDisplayItems(
-    const std::vector<blink::mojom::PaymentItemPtr>& items,
-    const blink::mojom::PaymentItemPtr& total,
+    const std::vector<payments::mojom::PaymentItemPtr>& items,
+    const payments::mojom::PaymentItemPtr& total,
     std::string* error_message) {
   for (const auto& item : items) {
     if (!validateShippingOptionOrPaymentItem(item, total, error_message))
@@ -77,8 +77,8 @@ bool validateDisplayItems(
 }
 
 bool validateShippingOptions(
-    const std::vector<blink::mojom::PaymentShippingOptionPtr>& options,
-    const blink::mojom::PaymentItemPtr& total,
+    const std::vector<payments::mojom::PaymentShippingOptionPtr>& options,
+    const payments::mojom::PaymentItemPtr& total,
     std::string* error_message) {
   std::set<std::string> uniqueIds;
   for (const auto& option : options) {
@@ -100,8 +100,8 @@ bool validateShippingOptions(
 }
 
 bool validatePaymentDetailsModifiers(
-    const std::vector<blink::mojom::PaymentDetailsModifierPtr>& modifiers,
-    const blink::mojom::PaymentItemPtr& total,
+    const std::vector<payments::mojom::PaymentDetailsModifierPtr>& modifiers,
+    const payments::mojom::PaymentItemPtr& total,
     std::string* error_message) {
   if (modifiers.empty()) {
     *error_message = "Must specify at least one payment details modifier";
@@ -148,7 +148,7 @@ bool validatePaymentDetailsModifiers(
 
 namespace payments {
 
-bool validatePaymentDetails(const blink::mojom::PaymentDetailsPtr& details,
+bool validatePaymentDetails(const mojom::PaymentDetailsPtr& details,
                             std::string* error_message) {
   if (details->total.is_null()) {
     *error_message = "Must specify total";

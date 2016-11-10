@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 [JavaPackage="org.chromium.payments.mojom"]
-module blink.mojom;
+module payments.mojom;
 
 // The shipping address that the browser process provides to the renderer
 // process. Built either by the browser or a payment app.

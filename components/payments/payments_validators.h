@@ -46,7 +46,7 @@ class PaymentsValidators {
   //  - Has a valid language code, if any.
   //  - Has a valid script code, if any.
   // A script code should be present only if language code is present.
-  static bool isValidShippingAddress(const blink::mojom::PaymentAddressPtr&,
+  static bool isValidShippingAddress(const mojom::PaymentAddressPtr&,
                                      std::string* optionalErrorMessage);
 
   // Returns false if |error| is too long (greater than 2048).

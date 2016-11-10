@@ -77,7 +77,7 @@ PaymentDetails buildPaymentDetailsErrorMsgForTest(
 
 HeapVector<PaymentMethodData> buildPaymentMethodDataForTest();
 
-mojom::blink::PaymentResponsePtr buildPaymentResponseForTest();
+payments::mojom::blink::PaymentResponsePtr buildPaymentResponseForTest();
 
 void makePaymentRequestOriginSecure(Document&);
 
