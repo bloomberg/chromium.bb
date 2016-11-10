@@ -1,0 +1,60 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../http/tests/inspector/sources-test.js"></script>
+
+<link rel="stylesheet" type="text/css" href="resources/highlight-in-source.css">
+<script>
+
+function test()
+{
+    Runtime.experiments.enableForTest("timelineRuleUsageRecording");
+
+    var panel = WebInspector.panels.timeline;
+    panel._markUnusedCSS.set(true);
+
+    InspectorTest.runTestSuite([
+        function testMarking(next)
+        {            
+            InspectorTest.startTimeline(timelineStarted);
+
+            function timelineStarted()
+            {
+                InspectorTest.stopTimeline(printResults);
+            }
+
+            function printResults()
+            {
+                WebInspector.inspectorView.showPanel("sources").then(showSource);
+            }
+        
+            function showSource()
+            {
+                InspectorTest.showScriptSource("highlight-in-source.css", waitForDecorations);
+            }
+
+            function waitForDecorations()
+            {
+                InspectorTest.addSniffer(WebInspector.CoverageProfile.LineDecorator.prototype, "decorate", didShowDecorations);
+            }
+
+            function didShowDecorations(sourceFrame)
+            {
+                var lines = Array.prototype.map.call(document.querySelectorAll(".text-editor-line-marker-coverage"), 
+                                                        e => e.parentElement.previousSibling.textContent);
+
+                InspectorTest.addResult(lines);   
+                next();
+            }
+        }
+    ]);
+}
+</script>
+</head>
+<p id="id">PASS</p>
+<body onload="runTest()">
+<p>Tests the CSS highlight in sources after the timeline recording finishes.</p>
+</body>
+</html>
