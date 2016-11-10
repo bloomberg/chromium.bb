@@ -122,12 +122,23 @@ void DesktopWindowTreeHostMus::ShowMaximizedWithBounds(
 }
 
 bool DesktopWindowTreeHostMus::IsVisible() const {
-  return window()->IsVisible();
+  // Go through the DesktopNativeWidgetAura::IsVisible() for checking
+  // visibility of the parent as it has additional checks beyond checking the
+  // aura::Window.
+  return window()->IsVisible() &&
+         (!parent_ ||
+          static_cast<const internal::NativeWidgetPrivate*>(
+              parent_->desktop_native_widget_aura_)
+              ->IsVisible());
 }
 
 void DesktopWindowTreeHostMus::SetSize(const gfx::Size& size) {
-  // TODO: handle device scale, http://crbug.com/663524.
-  SetBounds(gfx::Rect(window()->bounds().origin(), size));
+  // Use GetBounds() as the origin of window() is always at 0, 0.
+  gfx::Rect screen_bounds = GetBounds();
+  // TODO: handle device scale, http://crbug.com/663524. Also, |screen_bounds|
+  // is in pixels and should be dip.
+  screen_bounds.set_size(size);
+  SetBounds(screen_bounds);
 }
 
 void DesktopWindowTreeHostMus::StackAbove(aura::Window* window) {
