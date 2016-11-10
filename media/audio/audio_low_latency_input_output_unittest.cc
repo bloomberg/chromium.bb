@@ -430,7 +430,7 @@ TEST_F(AudioLowLatencyInputOutputTest, DISABLED_FullDuplexDelayMeasurement) {
   ais->Start(&full_duplex);
   aos->Start(&full_duplex);
 
-  // Wait for approximately 10 seconds. The user shall hear his own voice
+  // Wait for approximately 10 seconds. The user will hear their own voice
   // in loop back during this time. At the same time, delay recordings are
   // performed and stored in the output text file.
   message_loop()->task_runner()->PostDelayedTask(

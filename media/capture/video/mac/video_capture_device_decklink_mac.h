@@ -36,7 +36,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceDeckLinkMac : public VideoCaptureDevice {
  public:
   // Gets descriptors for all DeckLink video capture devices connected to this
   // computer, as enumerated by the DeckLink SDK. To allow the user to choose
-  // exactly which capture format she wants, we enumerate as many cameras as
+  // exactly which capture format they want, we enumerate as many cameras as
   // capture formats.
   static void EnumerateDevices(
       VideoCaptureDeviceDescriptors* device_descriptors);
