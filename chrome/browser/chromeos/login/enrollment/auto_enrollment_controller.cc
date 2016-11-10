@@ -124,14 +124,14 @@ void AutoEnrollmentController::Start() {
            chromeos::switches::kEnterpriseEnrollmentInitialModulus) &&
        !command_line->HasSwitch(
            chromeos::switches::kEnterpriseEnrollmentModulusLimit))) {
-    LOG(WARNING) << "Auto-enrollment disabled: " << "command line.";
+    VLOG(1) << "Auto-enrollment disabled: command line.";
     UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
     return;
   }
 
   // Skip if mode comes up as none.
   if (GetMode() == MODE_NONE) {
-    LOG(WARNING) << "Auto-enrollment disabled: " << "no mode.";
+    VLOG(1) << "Auto-enrollment disabled: no mode.";
     UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
     return;
   }
@@ -139,7 +139,7 @@ void AutoEnrollmentController::Start() {
   // This enables factories to start full guest sessions for testing, see
   // http://crbug.com/397354 for more context.
   if (CanSkipFRE()) {
-    LOG(WARNING) << "Auto-enrollment disabled: " << "first setup.";
+    VLOG(1) << "Auto-enrollment disabled: first setup.";
     UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
     return;
   }
@@ -201,8 +201,7 @@ void AutoEnrollmentController::OnOwnershipStatusCheckDone(
       break;
     }
     case DeviceSettingsService::OWNERSHIP_TAKEN: {
-      // Logging as "WARNING" to make sure it's preserved in the logs.
-      LOG(WARNING) << "Device already owned, skipping auto-enrollment check.";
+      VLOG(1) << "Device already owned, skipping auto-enrollment check.";
       UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
       break;
     }
@@ -254,9 +253,7 @@ void AutoEnrollmentController::StartClient(
 
 void AutoEnrollmentController::UpdateState(
     policy::AutoEnrollmentState new_state) {
-  // This is part of normal operation.  Logging as "WARNING" nevertheless to
-  // make sure it's preserved in the logs.
-  LOG(WARNING) << "New auto-enrollment state: " << new_state;
+  VLOG(1) << "New auto-enrollment state: " << new_state;
   state_ = new_state;
 
   // Stop the safeguard timer once a result comes in.
