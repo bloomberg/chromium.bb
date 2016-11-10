@@ -917,7 +917,6 @@ int pseudo_inverse(double *inv, double *matx, const int M, const int N) {
 }
 
 static void normalize_homography(double *pts, int n, double *T) {
-  // Assume the points are 2d coordinates with scale = 1
   double *p = pts;
   double mean[2] = { 0, 0 };
   double msqe = 0;
@@ -974,7 +973,23 @@ static void denormalize_homography(double *params, double *T1, double *T2) {
   multiply_mat(iT2, params2, params, 3, 3, 3);
 }
 
-static void denormalize_affine(double *params, double *T1, double *T2) {
+static void denormalize_homography_reorder(double *params, double *T1,
+                                           double *T2) {
+  double params_denorm[MAX_PARAMDIM];
+  memcpy(params_denorm, params, sizeof(*params) * 8);
+  params_denorm[8] = 1.0;
+  denormalize_homography(params_denorm, T1, T2);
+  params[0] = params_denorm[2];
+  params[1] = params_denorm[5];
+  params[2] = params_denorm[0];
+  params[3] = params_denorm[1];
+  params[4] = params_denorm[3];
+  params[5] = params_denorm[4];
+  params[6] = params_denorm[6];
+  params[7] = params_denorm[7];
+}
+
+static void denormalize_affine_reorder(double *params, double *T1, double *T2) {
   double params_denorm[MAX_PARAMDIM];
   params_denorm[0] = params[0];
   params_denorm[1] = params[1];
@@ -994,7 +1009,8 @@ static void denormalize_affine(double *params, double *T1, double *T2) {
   params[6] = params[7] = 0;
 }
 
-static void denormalize_rotzoom(double *params, double *T1, double *T2) {
+static void denormalize_rotzoom_reorder(double *params, double *T1,
+                                        double *T2) {
   double params_denorm[MAX_PARAMDIM];
   params_denorm[0] = params[0];
   params_denorm[1] = params[1];
@@ -1014,7 +1030,8 @@ static void denormalize_rotzoom(double *params, double *T1, double *T2) {
   params[6] = params[7] = 0;
 }
 
-static void denormalize_translation(double *params, double *T1, double *T2) {
+static void denormalize_translation_reorder(double *params, double *T1,
+                                            double *T2) {
   double params_denorm[MAX_PARAMDIM];
   params_denorm[0] = 1;
   params_denorm[1] = 0;
@@ -1054,7 +1071,7 @@ int find_translation(const int np, double *pts1, double *pts2, double *mat) {
   }
   mat[0] = sumx / np;
   mat[1] = sumy / np;
-  denormalize_translation(mat, T1, T2);
+  denormalize_translation_reorder(mat, T1, T2);
   return 0;
 }
 
@@ -1093,7 +1110,7 @@ int find_rotzoom(const int np, double *pts1, double *pts2, double *mat) {
     return 1;
   }
   multiply_mat(temp, b, mat, 4, np2, 1);
-  denormalize_rotzoom(mat, T1, T2);
+  denormalize_rotzoom_reorder(mat, T1, T2);
   aom_free(a);
   return 0;
 }
@@ -1137,7 +1154,7 @@ int find_affine(const int np, double *pts1, double *pts2, double *mat) {
     return 1;
   }
   multiply_mat(temp, b, mat, 6, np2, 1);
-  denormalize_affine(mat, T1, T2);
+  denormalize_affine_reorder(mat, T1, T2);
   aom_free(a);
   return 0;
 }
@@ -1147,7 +1164,7 @@ int find_homography(const int np, double *pts1, double *pts2, double *mat) {
   const int np3 = np * 3;
   double *a = (double *)aom_malloc(sizeof(*a) * np3 * 18);
   double *U = a + np3 * 9;
-  double S[9], V[9 * 9];
+  double S[9], V[9 * 9], H[9];
   int i, mini;
   double sx, sy, dx, dy;
   double T1[9], T2[9];
@@ -1202,11 +1219,15 @@ int find_homography(const int np, double *pts1, double *pts2, double *mat) {
     }
   }
 
-  for (i = 0; i < 9; i++) mat[i] = V[i * 9 + mini];
-  denormalize_homography(mat, T1, T2);
+  for (i = 0; i < 9; i++) H[i] = V[i * 9 + mini];
+  denormalize_homography_reorder(H, T1, T2);
   aom_free(a);
-  if (mat[8] == 0.0) {
+  if (H[8] == 0.0) {
     return 1;
+  } else {
+    // normalize
+    double f = 1.0 / H[8];
+    for (i = 0; i < 8; i++) mat[i] = f * H[i];
   }
   return 0;
 }
