@@ -33,18 +33,21 @@ inline SVGMaskElement::SVGMaskElement(Document& document)
       SVGTests(this),
       m_x(SVGAnimatedLength::create(this,
                                     SVGNames::xAttr,
-                                    SVGLength::create(SVGLengthMode::Width))),
+                                    SVGLength::create(SVGLengthMode::Width),
+                                    CSSPropertyX)),
       m_y(SVGAnimatedLength::create(this,
                                     SVGNames::yAttr,
-                                    SVGLength::create(SVGLengthMode::Height))),
-      m_width(
-          SVGAnimatedLength::create(this,
-                                    SVGNames::widthAttr,
-                                    SVGLength::create(SVGLengthMode::Width))),
+                                    SVGLength::create(SVGLengthMode::Height),
+                                    CSSPropertyY)),
+      m_width(SVGAnimatedLength::create(this,
+                                        SVGNames::widthAttr,
+                                        SVGLength::create(SVGLengthMode::Width),
+                                        CSSPropertyWidth)),
       m_height(
           SVGAnimatedLength::create(this,
                                     SVGNames::heightAttr,
-                                    SVGLength::create(SVGLengthMode::Height))),
+                                    SVGLength::create(SVGLengthMode::Height),
+                                    CSSPropertyHeight)),
       m_maskUnits(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::create(
           this,
           SVGNames::maskUnitsAttr,
@@ -84,22 +87,6 @@ DEFINE_TRACE(SVGMaskElement) {
 }
 
 DEFINE_NODE_FACTORY(SVGMaskElement)
-
-bool SVGMaskElement::isPresentationAttribute(
-    const QualifiedName& attrName) const {
-  if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr ||
-      attrName == SVGNames::widthAttr || attrName == SVGNames::heightAttr)
-    return true;
-  return SVGElement::isPresentationAttribute(attrName);
-}
-
-bool SVGMaskElement::isPresentationAttributeWithSVGDOM(
-    const QualifiedName& attrName) const {
-  if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr ||
-      attrName == SVGNames::widthAttr || attrName == SVGNames::heightAttr)
-    return true;
-  return SVGElement::isPresentationAttributeWithSVGDOM(attrName);
-}
 
 void SVGMaskElement::collectStyleForPresentationAttribute(
     const QualifiedName& name,

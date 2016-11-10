@@ -44,6 +44,7 @@ enum AnimatedPropertyType {
   AnimatedStringList,
   AnimatedTransform,
   AnimatedTransformList,
+  NumberOfAnimatedPropertyTypes
 };
 
 }  // namespace blink

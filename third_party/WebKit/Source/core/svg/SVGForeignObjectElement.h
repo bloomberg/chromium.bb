@@ -43,8 +43,6 @@ class SVGForeignObjectElement final : public SVGGraphicsElement {
  private:
   explicit SVGForeignObjectElement(Document&);
 
-  bool isPresentationAttribute(const QualifiedName&) const override;
-  bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
   void collectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;

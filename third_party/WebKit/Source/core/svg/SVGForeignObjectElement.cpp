@@ -32,18 +32,21 @@ inline SVGForeignObjectElement::SVGForeignObjectElement(Document& document)
     : SVGGraphicsElement(SVGNames::foreignObjectTag, document),
       m_x(SVGAnimatedLength::create(this,
                                     SVGNames::xAttr,
-                                    SVGLength::create(SVGLengthMode::Width))),
+                                    SVGLength::create(SVGLengthMode::Width),
+                                    CSSPropertyX)),
       m_y(SVGAnimatedLength::create(this,
                                     SVGNames::yAttr,
-                                    SVGLength::create(SVGLengthMode::Height))),
-      m_width(
-          SVGAnimatedLength::create(this,
-                                    SVGNames::widthAttr,
-                                    SVGLength::create(SVGLengthMode::Width))),
+                                    SVGLength::create(SVGLengthMode::Height),
+                                    CSSPropertyY)),
+      m_width(SVGAnimatedLength::create(this,
+                                        SVGNames::widthAttr,
+                                        SVGLength::create(SVGLengthMode::Width),
+                                        CSSPropertyWidth)),
       m_height(
           SVGAnimatedLength::create(this,
                                     SVGNames::heightAttr,
-                                    SVGLength::create(SVGLengthMode::Height))) {
+                                    SVGLength::create(SVGLengthMode::Height),
+                                    CSSPropertyHeight)) {
   addToPropertyMap(m_x);
   addToPropertyMap(m_y);
   addToPropertyMap(m_width);
@@ -61,22 +64,6 @@ DEFINE_TRACE(SVGForeignObjectElement) {
 }
 
 DEFINE_NODE_FACTORY(SVGForeignObjectElement)
-
-bool SVGForeignObjectElement::isPresentationAttribute(
-    const QualifiedName& name) const {
-  if (name == SVGNames::xAttr || name == SVGNames::yAttr ||
-      name == SVGNames::widthAttr || name == SVGNames::heightAttr)
-    return true;
-  return SVGGraphicsElement::isPresentationAttribute(name);
-}
-
-bool SVGForeignObjectElement::isPresentationAttributeWithSVGDOM(
-    const QualifiedName& attrName) const {
-  if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr ||
-      attrName == SVGNames::widthAttr || attrName == SVGNames::heightAttr)
-    return true;
-  return SVGGraphicsElement::isPresentationAttributeWithSVGDOM(attrName);
-}
 
 void SVGForeignObjectElement::collectStyleForPresentationAttribute(
     const QualifiedName& name,

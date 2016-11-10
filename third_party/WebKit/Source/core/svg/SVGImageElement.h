@@ -60,8 +60,6 @@ class SVGImageElement final : public SVGGraphicsElement,
     return !hrefString().isNull();
   }
 
-  bool isPresentationAttribute(const QualifiedName&) const override;
-  bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
   void collectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;

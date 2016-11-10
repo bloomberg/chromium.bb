@@ -131,6 +131,8 @@ SVGPropertyBase* SVGAnimatedTypeAnimator::createPropertyForCSSAnimation(
     case AnimatedTransformList:
     case AnimatedUnknown:
       break;
+    default:
+      break;
   }
   NOTREACHED();
   return nullptr;

@@ -53,10 +53,12 @@ inline SVGUseElement::SVGUseElement(Document& document)
       SVGURIReference(this),
       m_x(SVGAnimatedLength::create(this,
                                     SVGNames::xAttr,
-                                    SVGLength::create(SVGLengthMode::Width))),
+                                    SVGLength::create(SVGLengthMode::Width),
+                                    CSSPropertyX)),
       m_y(SVGAnimatedLength::create(this,
                                     SVGNames::yAttr,
-                                    SVGLength::create(SVGLengthMode::Height))),
+                                    SVGLength::create(SVGLengthMode::Height),
+                                    CSSPropertyY)),
       m_width(
           SVGAnimatedLength::create(this,
                                     SVGNames::widthAttr,
@@ -170,20 +172,6 @@ static void transferUseWidthAndHeightIfNeeded(
             ? AtomicString(use.height()->currentValue()->valueAsString())
             : originalElement.getAttribute(SVGNames::heightAttr));
   }
-}
-
-bool SVGUseElement::isPresentationAttribute(
-    const QualifiedName& attrName) const {
-  if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr)
-    return true;
-  return SVGGraphicsElement::isPresentationAttribute(attrName);
-}
-
-bool SVGUseElement::isPresentationAttributeWithSVGDOM(
-    const QualifiedName& attrName) const {
-  if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr)
-    return true;
-  return SVGGraphicsElement::isPresentationAttributeWithSVGDOM(attrName);
 }
 
 void SVGUseElement::collectStyleForPresentationAttribute(

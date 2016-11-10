@@ -33,10 +33,12 @@
 namespace blink {
 
 SVGAnimatedPath::SVGAnimatedPath(SVGElement* contextElement,
-                                 const QualifiedName& attributeName)
+                                 const QualifiedName& attributeName,
+                                 CSSPropertyID cssPropertyId)
     : SVGAnimatedProperty<SVGPath>(contextElement,
                                    attributeName,
-                                   SVGPath::create()) {}
+                                   SVGPath::create(),
+                                   cssPropertyId) {}
 
 SVGAnimatedPath::~SVGAnimatedPath() {}
 

@@ -30,25 +30,29 @@ inline SVGRectElement::SVGRectElement(Document& document)
     : SVGGeometryElement(SVGNames::rectTag, document),
       m_x(SVGAnimatedLength::create(this,
                                     SVGNames::xAttr,
-                                    SVGLength::create(SVGLengthMode::Width))),
+                                    SVGLength::create(SVGLengthMode::Width),
+                                    CSSPropertyX)),
       m_y(SVGAnimatedLength::create(this,
                                     SVGNames::yAttr,
-                                    SVGLength::create(SVGLengthMode::Height))),
-      m_width(
-          SVGAnimatedLength::create(this,
-                                    SVGNames::widthAttr,
-                                    SVGLength::create(SVGLengthMode::Width))),
+                                    SVGLength::create(SVGLengthMode::Height),
+                                    CSSPropertyY)),
+      m_width(SVGAnimatedLength::create(this,
+                                        SVGNames::widthAttr,
+                                        SVGLength::create(SVGLengthMode::Width),
+                                        CSSPropertyWidth)),
       m_height(
           SVGAnimatedLength::create(this,
                                     SVGNames::heightAttr,
-                                    SVGLength::create(SVGLengthMode::Height))),
+                                    SVGLength::create(SVGLengthMode::Height),
+                                    CSSPropertyHeight)),
       m_rx(SVGAnimatedLength::create(this,
                                      SVGNames::rxAttr,
-                                     SVGLength::create(SVGLengthMode::Width))),
-      m_ry(
-          SVGAnimatedLength::create(this,
-                                    SVGNames::ryAttr,
-                                    SVGLength::create(SVGLengthMode::Height))) {
+                                     SVGLength::create(SVGLengthMode::Width),
+                                     CSSPropertyRx)),
+      m_ry(SVGAnimatedLength::create(this,
+                                     SVGNames::ryAttr,
+                                     SVGLength::create(SVGLengthMode::Height),
+                                     CSSPropertyRy)) {
   addToPropertyMap(m_x);
   addToPropertyMap(m_y);
   addToPropertyMap(m_width);
@@ -110,24 +114,6 @@ Path SVGRectElement::asPath() const {
 
   path.addRect(FloatRect(x, y, width, height));
   return path;
-}
-
-bool SVGRectElement::isPresentationAttribute(
-    const QualifiedName& attrName) const {
-  if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr ||
-      attrName == SVGNames::widthAttr || attrName == SVGNames::heightAttr ||
-      attrName == SVGNames::rxAttr || attrName == SVGNames::ryAttr)
-    return true;
-  return SVGGeometryElement::isPresentationAttribute(attrName);
-}
-
-bool SVGRectElement::isPresentationAttributeWithSVGDOM(
-    const QualifiedName& attrName) const {
-  if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr ||
-      attrName == SVGNames::widthAttr || attrName == SVGNames::heightAttr ||
-      attrName == SVGNames::rxAttr || attrName == SVGNames::ryAttr)
-    return true;
-  return SVGGeometryElement::isPresentationAttributeWithSVGDOM(attrName);
 }
 
 void SVGRectElement::collectStyleForPresentationAttribute(

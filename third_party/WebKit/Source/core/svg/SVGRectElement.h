@@ -48,8 +48,6 @@ class SVGRectElement final : public SVGGeometryElement {
  private:
   explicit SVGRectElement(Document&);
 
-  bool isPresentationAttribute(const QualifiedName&) const override;
-  bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
   void collectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;

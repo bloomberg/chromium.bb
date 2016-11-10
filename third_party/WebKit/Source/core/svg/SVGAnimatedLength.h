@@ -42,10 +42,13 @@ class SVGAnimatedLength : public SVGAnimatedProperty<SVGLength>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SVGAnimatedLength* create(SVGElement* contextElement,
-                                   const QualifiedName& attributeName,
-                                   SVGLength* initialValue) {
-    return new SVGAnimatedLength(contextElement, attributeName, initialValue);
+  static SVGAnimatedLength* create(
+      SVGElement* contextElement,
+      const QualifiedName& attributeName,
+      SVGLength* initialValue,
+      CSSPropertyID cssPropertyId = CSSPropertyInvalid) {
+    return new SVGAnimatedLength(contextElement, attributeName, initialValue,
+                                 cssPropertyId);
   }
 
   void setDefaultValueAsString(const String&);
@@ -56,10 +59,12 @@ class SVGAnimatedLength : public SVGAnimatedProperty<SVGLength>,
  protected:
   SVGAnimatedLength(SVGElement* contextElement,
                     const QualifiedName& attributeName,
-                    SVGLength* initialValue)
+                    SVGLength* initialValue,
+                    CSSPropertyID cssPropertyId = CSSPropertyInvalid)
       : SVGAnimatedProperty<SVGLength>(contextElement,
                                        attributeName,
-                                       initialValue) {}
+                                       initialValue,
+                                       cssPropertyId) {}
 };
 
 }  // namespace blink

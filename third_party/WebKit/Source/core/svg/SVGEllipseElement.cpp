@@ -30,17 +30,20 @@ inline SVGEllipseElement::SVGEllipseElement(Document& document)
     : SVGGeometryElement(SVGNames::ellipseTag, document),
       m_cx(SVGAnimatedLength::create(this,
                                      SVGNames::cxAttr,
-                                     SVGLength::create(SVGLengthMode::Width))),
+                                     SVGLength::create(SVGLengthMode::Width),
+                                     CSSPropertyCx)),
       m_cy(SVGAnimatedLength::create(this,
                                      SVGNames::cyAttr,
-                                     SVGLength::create(SVGLengthMode::Height))),
+                                     SVGLength::create(SVGLengthMode::Height),
+                                     CSSPropertyCy)),
       m_rx(SVGAnimatedLength::create(this,
                                      SVGNames::rxAttr,
-                                     SVGLength::create(SVGLengthMode::Width))),
-      m_ry(
-          SVGAnimatedLength::create(this,
-                                    SVGNames::ryAttr,
-                                    SVGLength::create(SVGLengthMode::Height))) {
+                                     SVGLength::create(SVGLengthMode::Width),
+                                     CSSPropertyRx)),
+      m_ry(SVGAnimatedLength::create(this,
+                                     SVGNames::ryAttr,
+                                     SVGLength::create(SVGLengthMode::Height),
+                                     CSSPropertyRy)) {
   addToPropertyMap(m_cx);
   addToPropertyMap(m_cy);
   addToPropertyMap(m_rx);
@@ -85,22 +88,6 @@ Path SVGEllipseElement::asPath() const {
       rx * 2, ry * 2));
 
   return path;
-}
-
-bool SVGEllipseElement::isPresentationAttribute(
-    const QualifiedName& attrName) const {
-  if (attrName == SVGNames::cxAttr || attrName == SVGNames::cyAttr ||
-      attrName == SVGNames::rxAttr || attrName == SVGNames::ryAttr)
-    return true;
-  return SVGGeometryElement::isPresentationAttribute(attrName);
-}
-
-bool SVGEllipseElement::isPresentationAttributeWithSVGDOM(
-    const QualifiedName& attrName) const {
-  if (attrName == SVGNames::cxAttr || attrName == SVGNames::cyAttr ||
-      attrName == SVGNames::rxAttr || attrName == SVGNames::ryAttr)
-    return true;
-  return SVGGeometryElement::isPresentationAttributeWithSVGDOM(attrName);
 }
 
 void SVGEllipseElement::collectStyleForPresentationAttribute(

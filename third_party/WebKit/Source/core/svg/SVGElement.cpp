@@ -744,7 +744,15 @@ bool SVGElement::isAnimatableCSSProperty(const QualifiedName& attrName) {
 }
 
 bool SVGElement::isPresentationAttribute(const QualifiedName& name) const {
+  if (const SVGAnimatedPropertyBase* property = propertyFromAttribute(name))
+    return property->hasPresentationAttributeMapping();
   return cssPropertyIdForSVGAttributeName(name) > 0;
+}
+
+bool SVGElement::isPresentationAttributeWithSVGDOM(
+    const QualifiedName& name) const {
+  const SVGAnimatedPropertyBase* property = propertyFromAttribute(name);
+  return property && property->hasPresentationAttributeMapping();
 }
 
 void SVGElement::collectStyleForPresentationAttribute(

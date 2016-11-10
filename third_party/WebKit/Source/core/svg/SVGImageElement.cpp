@@ -33,18 +33,21 @@ inline SVGImageElement::SVGImageElement(Document& document)
       SVGURIReference(this),
       m_x(SVGAnimatedLength::create(this,
                                     SVGNames::xAttr,
-                                    SVGLength::create(SVGLengthMode::Width))),
+                                    SVGLength::create(SVGLengthMode::Width),
+                                    CSSPropertyX)),
       m_y(SVGAnimatedLength::create(this,
                                     SVGNames::yAttr,
-                                    SVGLength::create(SVGLengthMode::Height))),
-      m_width(
-          SVGAnimatedLength::create(this,
-                                    SVGNames::widthAttr,
-                                    SVGLength::create(SVGLengthMode::Width))),
+                                    SVGLength::create(SVGLengthMode::Height),
+                                    CSSPropertyY)),
+      m_width(SVGAnimatedLength::create(this,
+                                        SVGNames::widthAttr,
+                                        SVGLength::create(SVGLengthMode::Width),
+                                        CSSPropertyWidth)),
       m_height(
           SVGAnimatedLength::create(this,
                                     SVGNames::heightAttr,
-                                    SVGLength::create(SVGLengthMode::Height))),
+                                    SVGLength::create(SVGLengthMode::Height),
+                                    CSSPropertyHeight)),
       m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(
           this,
           SVGNames::preserveAspectRatioAttr)),
@@ -80,22 +83,6 @@ bool SVGImageElement::currentFrameHasSingleSecurityOrigin() const {
   }
 
   return true;
-}
-
-bool SVGImageElement::isPresentationAttribute(
-    const QualifiedName& attrName) const {
-  if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr ||
-      attrName == SVGNames::widthAttr || attrName == SVGNames::heightAttr)
-    return true;
-  return SVGGraphicsElement::isPresentationAttribute(attrName);
-}
-
-bool SVGImageElement::isPresentationAttributeWithSVGDOM(
-    const QualifiedName& attrName) const {
-  if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr ||
-      attrName == SVGNames::widthAttr || attrName == SVGNames::heightAttr)
-    return true;
-  return SVGGraphicsElement::isPresentationAttributeWithSVGDOM(attrName);
 }
 
 void SVGImageElement::collectStyleForPresentationAttribute(

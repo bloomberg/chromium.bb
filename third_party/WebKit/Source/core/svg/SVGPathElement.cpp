@@ -54,7 +54,7 @@ class SVGAnimatedPathLength final : public SVGAnimatedNumber {
 inline SVGPathElement::SVGPathElement(Document& document)
     : SVGGeometryElement(SVGNames::pathTag, document),
       m_pathLength(SVGAnimatedPathLength::create(this)),
-      m_path(SVGAnimatedPath::create(this, SVGNames::dAttr)) {
+      m_path(SVGAnimatedPath::create(this, SVGNames::dAttr, CSSPropertyD)) {
   addToPropertyMap(m_pathLength);
   addToPropertyMap(m_path);
 }
@@ -114,20 +114,6 @@ SVGPointTearOff* SVGPathElement::getPointAtLength(float length) {
 unsigned SVGPathElement::getPathSegAtLength(float length) {
   document().updateStyleAndLayoutIgnorePendingStylesheets();
   return SVGPathQuery(pathByteStream()).getPathSegIndexAtLength(length);
-}
-
-bool SVGPathElement::isPresentationAttribute(
-    const QualifiedName& attrName) const {
-  if (attrName == SVGNames::dAttr)
-    return true;
-  return SVGGeometryElement::isPresentationAttribute(attrName);
-}
-
-bool SVGPathElement::isPresentationAttributeWithSVGDOM(
-    const QualifiedName& attrName) const {
-  if (attrName == SVGNames::dAttr)
-    return true;
-  return SVGGeometryElement::isPresentationAttributeWithSVGDOM(attrName);
 }
 
 void SVGPathElement::svgAttributeChanged(const QualifiedName& attrName) {

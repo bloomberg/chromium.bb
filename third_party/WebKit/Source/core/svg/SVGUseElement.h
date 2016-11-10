@@ -67,11 +67,9 @@ class SVGUseElement final : public SVGGraphicsElement,
 
   FloatRect getBBox() override;
 
-  bool isPresentationAttribute(const QualifiedName&) const override;
   void collectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
-  bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
 
   bool isStructurallyExternal() const override;
 

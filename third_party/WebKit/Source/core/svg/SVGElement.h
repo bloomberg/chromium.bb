@@ -206,9 +206,7 @@ class CORE_EXPORT SVGElement : public Element {
   static const AtomicString& eventParameterName();
 
   bool isPresentationAttribute(const QualifiedName&) const override;
-  virtual bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const {
-    return false;
-  }
+  virtual bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const;
 
  protected:
   SVGElement(const QualifiedName&,

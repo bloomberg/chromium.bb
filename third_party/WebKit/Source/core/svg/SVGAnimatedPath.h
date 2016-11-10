@@ -40,13 +40,17 @@ class SVGAnimatedPath : public SVGAnimatedProperty<SVGPath> {
  public:
   ~SVGAnimatedPath() override;
 
-  static SVGAnimatedPath* create(SVGElement* contextElement,
-                                 const QualifiedName& attributeName) {
-    return new SVGAnimatedPath(contextElement, attributeName);
+  static SVGAnimatedPath* create(
+      SVGElement* contextElement,
+      const QualifiedName& attributeName,
+      CSSPropertyID cssPropertyId = CSSPropertyInvalid) {
+    return new SVGAnimatedPath(contextElement, attributeName, cssPropertyId);
   }
 
  protected:
-  SVGAnimatedPath(SVGElement*, const QualifiedName&);
+  SVGAnimatedPath(SVGElement*,
+                  const QualifiedName&,
+                  CSSPropertyID = CSSPropertyInvalid);
 };
 
 }  // namespace blink

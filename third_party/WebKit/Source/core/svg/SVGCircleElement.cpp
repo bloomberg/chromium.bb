@@ -30,13 +30,16 @@ inline SVGCircleElement::SVGCircleElement(Document& document)
     : SVGGeometryElement(SVGNames::circleTag, document),
       m_cx(SVGAnimatedLength::create(this,
                                      SVGNames::cxAttr,
-                                     SVGLength::create(SVGLengthMode::Width))),
+                                     SVGLength::create(SVGLengthMode::Width),
+                                     CSSPropertyCx)),
       m_cy(SVGAnimatedLength::create(this,
                                      SVGNames::cyAttr,
-                                     SVGLength::create(SVGLengthMode::Height))),
+                                     SVGLength::create(SVGLengthMode::Height),
+                                     CSSPropertyCy)),
       m_r(SVGAnimatedLength::create(this,
                                     SVGNames::rAttr,
-                                    SVGLength::create(SVGLengthMode::Other))) {
+                                    SVGLength::create(SVGLengthMode::Other),
+                                    CSSPropertyR)) {
   addToPropertyMap(m_cx);
   addToPropertyMap(m_cy);
   addToPropertyMap(m_r);
@@ -72,22 +75,6 @@ Path SVGCircleElement::asPath() const {
   }
 
   return path;
-}
-
-bool SVGCircleElement::isPresentationAttribute(
-    const QualifiedName& attrName) const {
-  if (attrName == SVGNames::cxAttr || attrName == SVGNames::cyAttr ||
-      attrName == SVGNames::rAttr)
-    return true;
-  return SVGGeometryElement::isPresentationAttribute(attrName);
-}
-
-bool SVGCircleElement::isPresentationAttributeWithSVGDOM(
-    const QualifiedName& attrName) const {
-  if (attrName == SVGNames::cxAttr || attrName == SVGNames::cyAttr ||
-      attrName == SVGNames::rAttr)
-    return true;
-  return SVGGeometryElement::isPresentationAttributeWithSVGDOM(attrName);
 }
 
 void SVGCircleElement::collectStyleForPresentationAttribute(

@@ -67,18 +67,21 @@ inline SVGSVGElement::SVGSVGElement(Document& doc)
       SVGFitToViewBox(this),
       m_x(SVGAnimatedLength::create(this,
                                     SVGNames::xAttr,
-                                    SVGLength::create(SVGLengthMode::Width))),
+                                    SVGLength::create(SVGLengthMode::Width),
+                                    CSSPropertyX)),
       m_y(SVGAnimatedLength::create(this,
                                     SVGNames::yAttr,
-                                    SVGLength::create(SVGLengthMode::Height))),
-      m_width(
-          SVGAnimatedLength::create(this,
-                                    SVGNames::widthAttr,
-                                    SVGLength::create(SVGLengthMode::Width))),
+                                    SVGLength::create(SVGLengthMode::Height),
+                                    CSSPropertyY)),
+      m_width(SVGAnimatedLength::create(this,
+                                        SVGNames::widthAttr,
+                                        SVGLength::create(SVGLengthMode::Width),
+                                        CSSPropertyWidth)),
       m_height(
           SVGAnimatedLength::create(this,
                                     SVGNames::heightAttr,
-                                    SVGLength::create(SVGLengthMode::Height))),
+                                    SVGLength::create(SVGLengthMode::Height),
+                                    CSSPropertyHeight)),
       m_useCurrentView(false),
       m_timeContainer(SMILTimeContainer::create(*this)),
       m_translation(SVGPoint::create()),
@@ -217,19 +220,16 @@ void SVGSVGElement::parseAttribute(const QualifiedName& name,
 }
 
 bool SVGSVGElement::isPresentationAttribute(const QualifiedName& name) const {
-  if (isOutermostSVGSVGElement() &&
-      (name == SVGNames::widthAttr || name == SVGNames::heightAttr))
-    return true;
-  else if (name == SVGNames::xAttr || name == SVGNames::yAttr)
-    return true;
-
+  if ((name == SVGNames::widthAttr || name == SVGNames::heightAttr) &&
+      !isOutermostSVGSVGElement())
+    return false;
   return SVGGraphicsElement::isPresentationAttribute(name);
 }
 
 bool SVGSVGElement::isPresentationAttributeWithSVGDOM(
     const QualifiedName& attrName) const {
-  if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr)
-    return true;
+  if (attrName == SVGNames::widthAttr || attrName == SVGNames::heightAttr)
+    return false;
   return SVGGraphicsElement::isPresentationAttributeWithSVGDOM(attrName);
 }
 

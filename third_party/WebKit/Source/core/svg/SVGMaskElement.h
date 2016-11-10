@@ -56,8 +56,6 @@ class SVGMaskElement final : public SVGElement, public SVGTests {
   bool isValid() const override { return SVGTests::isValid(); }
   bool needsPendingResourceHandling() const override { return false; }
 
-  bool isPresentationAttribute(const QualifiedName&) const override;
-  bool isPresentationAttributeWithSVGDOM(const QualifiedName&) const override;
   void collectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,
                                             MutableStylePropertySet*) override;
