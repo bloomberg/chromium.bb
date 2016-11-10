@@ -301,6 +301,9 @@ class VolumeManager : public KeyedService,
   // Called on change to kExternalStorageDisabled pref.
   void OnExternalStorageDisabledChanged();
 
+  // Called on change to kExternalStorageReadOnly pref.
+  void OnExternalStorageReadOnlyChanged();
+
   // RemovableStorageObserver overrides.
   void OnRemovableStorageAttached(
       const storage_monitor::StorageInfo& info) override;

@@ -371,6 +371,10 @@ void VolumeManager::Initialize() {
       prefs::kExternalStorageDisabled,
       base::Bind(&VolumeManager::OnExternalStorageDisabledChanged,
                  weak_ptr_factory_.GetWeakPtr()));
+  pref_change_registrar_.Add(
+      prefs::kExternalStorageReadOnly,
+      base::Bind(&VolumeManager::OnExternalStorageReadOnlyChanged,
+                 weak_ptr_factory_.GetWeakPtr()));
 
   // Subscribe to storage monitor for MTP notifications.
   if (storage_monitor::StorageMonitor::GetInstance()) {
@@ -716,6 +720,11 @@ void VolumeManager::OnExternalStorageDisabledChanged() {
             &VolumeManager::OnExternalStorageDisabledChangedUnmountCallback,
             weak_ptr_factory_.GetWeakPtr()));
   }
+}
+
+void VolumeManager::OnExternalStorageReadOnlyChanged() {
+  disk_mount_manager_->RemountAllRemovableDrives(
+      GetExternalStorageAccessMode(profile_));
 }
 
 void VolumeManager::OnRemovableStorageAttached(

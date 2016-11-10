@@ -787,6 +787,25 @@ TEST_F(VolumeManagerTest, ExternalStorageDisabledPolicyMultiProfile) {
   secondary.volume_manager()->RemoveObserver(&secondary_observer);
 }
 
+TEST_F(VolumeManagerTest, OnExternalStorageReadOnlyChanged) {
+  // Emulate updates of kExternalStorageReadOnly (change to true, then false).
+  profile()->GetPrefs()->SetBoolean(prefs::kExternalStorageReadOnly, true);
+  volume_manager()->OnExternalStorageReadOnlyChanged();
+  profile()->GetPrefs()->SetBoolean(prefs::kExternalStorageReadOnly, false);
+  volume_manager()->OnExternalStorageReadOnlyChanged();
+
+  // Verify that remount of removable disks is triggered for each update.
+  ASSERT_EQ(2U, disk_mount_manager_->remount_all_requests().size());
+  const FakeDiskMountManager::RemountAllRequest& remount_request1 =
+      disk_mount_manager_->remount_all_requests()[0];
+  EXPECT_EQ(chromeos::MOUNT_ACCESS_MODE_READ_ONLY,
+            remount_request1.access_mode);
+  const FakeDiskMountManager::RemountAllRequest& remount_request2 =
+      disk_mount_manager_->remount_all_requests()[1];
+  EXPECT_EQ(chromeos::MOUNT_ACCESS_MODE_READ_WRITE,
+            remount_request2.access_mode);
+}
+
 TEST_F(VolumeManagerTest, GetVolumeList) {
   volume_manager()->Initialize();  // Adds "Downloads"
   std::vector<base::WeakPtr<Volume>> volume_list =
