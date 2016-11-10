@@ -98,3 +98,19 @@ source_set("test_support") {
     "//testing/gmock",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "ios_chrome_profile_sync_service_factory_unittest.cc",
+  ]
+  deps = [
+    ":sync",
+    "//base",
+    "//components/browser_sync",
+    "//components/sync",
+    "//ios/chrome/browser/browser_state:test_support",
+    "//ios/web:test_support",
+    "//testing/gtest",
+  ]
+}
