@@ -33,6 +33,9 @@ static_library("web_contents_delegate_android") {
 android_resources("web_contents_delegate_android_java_resources") {
   custom_package = "org.chromium.components.web_contents_delegate_android"
   resource_dirs = [ "android/java/res" ]
+  deps = [
+    "//components/strings:components_strings_grd",
+  ]
 }
 
 android_library("web_contents_delegate_android_java") {
@@ -44,8 +47,16 @@ android_library("web_contents_delegate_android_java") {
   ]
   java_files = [
     "android/java/src/org/chromium/components/web_contents_delegate_android/ColorChooserAndroid.java",
+    "android/java/src/org/chromium/components/web_contents_delegate_android/ColorPickerAdvanced.java",
+    "android/java/src/org/chromium/components/web_contents_delegate_android/ColorPickerAdvancedComponent.java",
+    "android/java/src/org/chromium/components/web_contents_delegate_android/ColorPickerDialog.java",
+    "android/java/src/org/chromium/components/web_contents_delegate_android/ColorPickerMoreButton.java",
+    "android/java/src/org/chromium/components/web_contents_delegate_android/ColorPickerSimple.java",
+    "android/java/src/org/chromium/components/web_contents_delegate_android/ColorSuggestion.java",
+    "android/java/src/org/chromium/components/web_contents_delegate_android/ColorSuggestionListAdapter.java",
     "android/java/src/org/chromium/components/web_contents_delegate_android/ValidationMessageBubble.java",
     "android/java/src/org/chromium/components/web_contents_delegate_android/WebContentsDelegateAndroid.java",
+    "android/java/src/org/chromium/components/web_contents_delegate_android/OnColorChangedListener.java",
   ]
 }
 

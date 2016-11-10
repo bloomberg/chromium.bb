@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.ui;
+package org.chromium.components.web_contents_delegate_android;
 
 import android.content.Context;
 import android.graphics.Color;

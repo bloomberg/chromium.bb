@@ -9,9 +9,6 @@ import android.content.Context;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.ui.ColorPickerDialog;
-import org.chromium.ui.ColorSuggestion;
-import org.chromium.ui.OnColorChangedListener;
 import org.chromium.ui.base.WindowAndroid;
 
 /**

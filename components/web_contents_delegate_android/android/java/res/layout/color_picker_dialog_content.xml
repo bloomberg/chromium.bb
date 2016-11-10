@@ -15,13 +15,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <org.chromium.ui.ColorPickerAdvanced
+        <org.chromium.components.web_contents_delegate_android.ColorPickerAdvanced
             android:id="@+id/color_picker_advanced"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
     </ScrollView>
 
-    <org.chromium.ui.ColorPickerSimple
+    <org.chromium.components.web_contents_delegate_android.ColorPickerSimple
         android:id="@+id/color_picker_simple"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -39,7 +39,7 @@
         android:background="@drawable/color_picker_border"
         android:padding="1px">
 
-        <org.chromium.ui.ColorPickerMoreButton
+        <org.chromium.components.web_contents_delegate_android.ColorPickerMoreButton
             android:id="@+id/more_colors_button"
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="match_parent"

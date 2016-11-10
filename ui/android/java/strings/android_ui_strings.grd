@@ -101,53 +101,6 @@
         Failed to open selected file
       </message>
 
-      <!-- Color picker -->
-      <message name="IDS_COLOR_PICKER_BUTTON_MORE" desc="Text for ColorPicker button to go to advanced view. [CHAR-LIMIT=20]">
-        More
-      </message>
-      <message name="IDS_COLOR_PICKER_HUE" desc="Label for hue slider in ColorPicker.">
-        Hue
-      </message>
-      <message name="IDS_COLOR_PICKER_SATURATION" desc="Label for saturation slider in ColorPicker.">
-        Saturation
-      </message>
-      <message name="IDS_COLOR_PICKER_VALUE" desc="Label for value slider in ColorPicker.">
-        Value
-      </message>
-      <message name="IDS_COLOR_PICKER_BUTTON_SET" desc="Label for button in ColorPicker dialog for user to accept the currently chosen color. [CHAR-LIMIT=20]">       
-        Set
-      </message>
-      <message name="IDS_COLOR_PICKER_BUTTON_CANCEL" desc="Label for button in ColorPicker dialog for user to cancel picking a color. [CHAR-LIMIT=20]">
-        Cancel
-      </message>
-      <message name="IDS_COLOR_PICKER_DIALOG_TITLE" desc="Title of ColorPicker dialog. [CHAR-LIMIT=20]">
-        Select color
-      </message>
-      <message name="IDS_COLOR_PICKER_BUTTON_RED" desc="Accessibility label for button to select the red color.">
-        Red
-      </message>
-      <message name="IDS_COLOR_PICKER_BUTTON_CYAN" desc="Accessibility label for button to select the cyan color.">
-        Cyan
-      </message>
-      <message name="IDS_COLOR_PICKER_BUTTON_BLUE" desc="Accessibility label for button to select the blue color.">
-        Blue
-      </message>
-      <message name="IDS_COLOR_PICKER_BUTTON_GREEN" desc="Accessibility label for button to select the green color.">
-        Green
-      </message>
-      <message name="IDS_COLOR_PICKER_BUTTON_MAGENTA" desc="Accessibility label for button to select the magenta color.">
-        Magenta
-      </message>
-      <message name="IDS_COLOR_PICKER_BUTTON_YELLOW" desc="Accessibility label for button to select the yellow color.">
-        Yellow
-      </message>
-      <message name="IDS_COLOR_PICKER_BUTTON_BLACK" desc="Accessibility label for button to select the black color.">
-        Black
-      </message>
-      <message name="IDS_COLOR_PICKER_BUTTON_WHITE" desc="Accessibility label for button to select the white color.">
-        White
-      </message>
-
       <!-- Clipboard -->
       <message name="IDS_COPY_TO_CLIPBOARD_FAILURE_MESSAGE" desc="Notification for when copying to the clipboard fails. [CHAR-LIMIT=64]">
         Failed to copy to the clipboard
