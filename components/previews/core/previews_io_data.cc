@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/default_clock.h"
 #include "components/previews/core/previews_black_list.h"
@@ -20,6 +21,23 @@
 #include "url/gurl.h"
 
 namespace previews {
+
+namespace {
+
+void LogPreviewsEligibilityReason(PreviewsEligibilityReason status,
+                                  PreviewsType type) {
+  switch (type) {
+    case PreviewsType::OFFLINE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "Previews.EligibilityReason.Offline", static_cast<int>(status),
+          static_cast<int>(PreviewsEligibilityReason::LAST));
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
+}  // namespace
 
 PreviewsIOData::PreviewsIOData(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
@@ -73,19 +91,34 @@ bool PreviewsIOData::ShouldAllowPreview(const net::URLRequest& request,
     return false;
   // The blacklist will disallow certain hosts for periods of time based on
   // user's opting out of the preview
-  if (!previews_black_list_ ||
-      !previews_black_list_->IsLoadedAndAllowed(request.url(), type)) {
+  if (!previews_black_list_) {
+    LogPreviewsEligibilityReason(
+        PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE, type);
+    return false;
+  }
+  PreviewsEligibilityReason status =
+      previews_black_list_->IsLoadedAndAllowed(request.url(), type);
+  if (status != PreviewsEligibilityReason::ALLOWED) {
+    LogPreviewsEligibilityReason(status, type);
     return false;
   }
   net::NetworkQualityEstimator* network_quality_estimator =
       request.context()->network_quality_estimator();
-  if (!network_quality_estimator)
+  if (!network_quality_estimator ||
+      network_quality_estimator->GetEffectiveConnectionType() <
+          net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
+    LogPreviewsEligibilityReason(
+        PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE, type);
     return false;
-
-  net::EffectiveConnectionType effective_connection_type =
-      network_quality_estimator->GetEffectiveConnectionType();
-  return effective_connection_type >= net::EFFECTIVE_CONNECTION_TYPE_OFFLINE &&
-         effective_connection_type <= net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
+  }
+  if (network_quality_estimator->GetEffectiveConnectionType() >
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G) {
+    LogPreviewsEligibilityReason(PreviewsEligibilityReason::NETWORK_NOT_SLOW,
+                                 type);
+    return false;
+  }
+  LogPreviewsEligibilityReason(PreviewsEligibilityReason::ALLOWED, type);
+  return true;
 }
 
 }  // namespace previews
