@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chooser_controller/mock_chooser_controller.h"
 #include "chrome/grit/generated_resources.h"
@@ -46,9 +47,9 @@ class ChooserContentViewTest : public views::ViewsTestBase {
     std::unique_ptr<MockChooserController> mock_chooser_controller(
         new MockChooserController(nullptr));
     mock_chooser_controller_ = mock_chooser_controller.get();
-    mock_table_view_observer_.reset(new MockTableViewObserver());
-    chooser_content_view_.reset(new ChooserContentView(
-        mock_table_view_observer_.get(), std::move(mock_chooser_controller)));
+    mock_table_view_observer_ = base::MakeUnique<MockTableViewObserver>();
+    chooser_content_view_ = base::MakeUnique<ChooserContentView>(
+        mock_table_view_observer_.get(), std::move(mock_chooser_controller));
     table_view_ = chooser_content_view_->table_view_;
     ASSERT_TRUE(table_view_);
     table_model_ = table_view_->model();
@@ -57,19 +58,19 @@ class ChooserContentViewTest : public views::ViewsTestBase {
     ASSERT_TRUE(throbber_);
     turn_adapter_off_help_ = chooser_content_view_->turn_adapter_off_help_;
     ASSERT_TRUE(turn_adapter_off_help_);
-    footnote_link_.reset(chooser_content_view_->CreateFootnoteView());
+    footnote_link_ = chooser_content_view_->footnote_link();
     ASSERT_TRUE(footnote_link_);
   }
 
  protected:
   std::unique_ptr<MockTableViewObserver> mock_table_view_observer_;
   std::unique_ptr<ChooserContentView> chooser_content_view_;
-  MockChooserController* mock_chooser_controller_;
-  views::TableView* table_view_;
-  ui::TableModel* table_model_;
-  views::Throbber* throbber_;
-  views::StyledLabel* turn_adapter_off_help_;
-  std::unique_ptr<views::StyledLabel> footnote_link_;
+  MockChooserController* mock_chooser_controller_ = nullptr;
+  views::TableView* table_view_ = nullptr;
+  ui::TableModel* table_model_ = nullptr;
+  views::Throbber* throbber_ = nullptr;
+  views::StyledLabel* turn_adapter_off_help_ = nullptr;
+  views::StyledLabel* footnote_link_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChooserContentViewTest);
@@ -629,11 +630,11 @@ TEST_F(ChooserContentViewTest, ClickAdapterOffHelpLink) {
 TEST_F(ChooserContentViewTest, ClickRescanLink) {
   EXPECT_CALL(*mock_chooser_controller_, RefreshOptions()).Times(1);
   chooser_content_view_->StyledLabelLinkClicked(
-      footnote_link_.get(), chooser_content_view_->re_scan_text_range_, 0);
+      footnote_link_, chooser_content_view_->re_scan_text_range_, 0);
 }
 
 TEST_F(ChooserContentViewTest, ClickGetHelpLink) {
   EXPECT_CALL(*mock_chooser_controller_, OpenHelpCenterUrl()).Times(1);
   chooser_content_view_->StyledLabelLinkClicked(
-      footnote_link_.get(), chooser_content_view_->help_text_range_, 0);
+      footnote_link_, chooser_content_view_->help_text_range_, 0);
 }

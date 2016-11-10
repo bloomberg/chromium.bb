@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/chooser_content_view.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -86,6 +87,10 @@ ChooserContentView::ChooserContentView(
       views::StyledLabel::RangeStyleInfo::CreateForLink());
   turn_adapter_off_help_->SetVisible(false);
   AddChildView(turn_adapter_off_help_);
+  footnote_link_ = base::MakeUnique<views::StyledLabel>(help_text_, this);
+  footnote_link_->set_owned_by_client();
+  footnote_link_->AddStyleRange(
+      help_text_range_, views::StyledLabel::RangeStyleInfo::CreateForLink());
 }
 
 ChooserContentView::~ChooserContentView() {
@@ -251,7 +256,7 @@ void ChooserContentView::StyledLabelLinkClicked(views::StyledLabel* label,
                                                 int event_flags) {
   if (label == turn_adapter_off_help_) {
     chooser_controller_->OpenAdapterOffHelpUrl();
-  } else if (label == footnote_link_) {
+  } else if (label == footnote_link_.get()) {
     if (range == help_text_range_)
       chooser_controller_->OpenHelpCenterUrl();
     else if (range == re_scan_text_range_)
@@ -277,13 +282,6 @@ base::string16 ChooserContentView::GetDialogButtonLabel(
 bool ChooserContentView::IsDialogButtonEnabled(ui::DialogButton button) const {
   return button != ui::DIALOG_BUTTON_OK ||
          !table_view_->selection_model().empty();
-}
-
-views::StyledLabel* ChooserContentView::CreateFootnoteView() {
-  footnote_link_ = new views::StyledLabel(help_text_, this);
-  footnote_link_->AddStyleRange(
-      help_text_range_, views::StyledLabel::RangeStyleInfo::CreateForLink());
-  return footnote_link_;
 }
 
 void ChooserContentView::Accept() {

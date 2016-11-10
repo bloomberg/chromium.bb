@@ -120,7 +120,7 @@ bool ChooserBubbleUiViewDelegate::IsDialogButtonEnabled(
 }
 
 views::View* ChooserBubbleUiViewDelegate::CreateFootnoteView() {
-  return chooser_content_view_->CreateFootnoteView();
+  return chooser_content_view_->footnote_link();
 }
 
 bool ChooserBubbleUiViewDelegate::Accept() {

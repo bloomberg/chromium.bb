@@ -102,7 +102,11 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
   NonClientFrameView* CreateNonClientFrameView(Widget* widget) override;
 
   // Create a frame view using the new dialog style.
-  static NonClientFrameView* CreateDialogFrameView(Widget* widget);
+  // |content_margins|: margins between the content and the inside of the
+  // border, in pixels.
+  static NonClientFrameView* CreateDialogFrameView(
+      Widget* widget,
+      const gfx::Insets& content_margins);
 
   // Returns true if this particular dialog should use a Chrome-styled frame
   // like the one used for bubbles. The alternative is a more platform-native

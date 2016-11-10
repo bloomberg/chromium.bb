@@ -32,6 +32,9 @@ class ChooserDialogView : public views::DialogDelegateView,
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   views::View* CreateFootnoteView() override;
+  views::ClientView* CreateClientView(views::Widget* widget) override;
+  views::NonClientFrameView* CreateNonClientFrameView(
+      views::Widget* widget) override;
   bool Accept() override;
   bool Cancel() override;
   bool Close() override;

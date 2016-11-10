@@ -63,8 +63,7 @@ class ChooserContentView : public views::View,
   base::string16 GetWindowTitle() const;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const;
   bool IsDialogButtonEnabled(ui::DialogButton button) const;
-  // Ownership of the view is passed to the caller.
-  views::StyledLabel* CreateFootnoteView();
+  views::StyledLabel* footnote_link() { return footnote_link_.get(); }
   void Accept();
   void Cancel();
   void Close();
@@ -88,7 +87,7 @@ class ChooserContentView : public views::View,
   views::View* table_parent_ = nullptr;  // Weak.
   views::StyledLabel* turn_adapter_off_help_ = nullptr;  // Weak.
   views::Throbber* throbber_ = nullptr;  // Weak.
-  views::StyledLabel* footnote_link_ = nullptr;  // Weak.
+  std::unique_ptr<views::StyledLabel> footnote_link_;
   base::string16 help_text_;
   base::string16 help_and_scanning_text_;
   base::string16 help_and_re_scan_text_;
