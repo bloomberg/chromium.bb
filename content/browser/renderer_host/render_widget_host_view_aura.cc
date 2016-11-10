@@ -756,6 +756,8 @@ gfx::Rect RenderWidgetHostViewAura::GetViewBounds() const {
 }
 
 void RenderWidgetHostViewAura::SetBackgroundColor(SkColor color) {
+  if (color == background_color())
+    return;
   RenderWidgetHostViewBase::SetBackgroundColor(color);
   bool opaque = GetBackgroundOpaque();
   host_->SetBackgroundOpaque(opaque);
@@ -905,6 +907,12 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
     uint32_t compositor_frame_sink_id,
     cc::CompositorFrame frame) {
   TRACE_EVENT0("content", "RenderWidgetHostViewAura::OnSwapCompositorFrame");
+
+  // Override the background color to the current compositor background.
+  // This allows us to, when navigating to a new page, transfer this color to
+  // that page. This allows us to pass this background color to new views on
+  // navigation.
+  SetBackgroundColor(frame.metadata.root_background_color);
 
   last_scroll_offset_ = frame.metadata.root_scroll_offset;
   if (frame.render_pass_list.empty())

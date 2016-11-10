@@ -94,6 +94,10 @@ void RenderWidgetHostViewBase::SetBackgroundColor(SkColor color) {
   background_color_ = color;
 }
 
+SkColor RenderWidgetHostViewBase::background_color() {
+  return background_color_;
+}
+
 void RenderWidgetHostViewBase::SetBackgroundColorToDefault() {
   SetBackgroundColor(SK_ColorWHITE);
 }

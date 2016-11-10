@@ -129,6 +129,7 @@ class CONTENT_EXPORT RenderWidgetHostView {
   virtual void SetBackgroundColor(SkColor color) = 0;
   // Convenience method to fill the background layer with the default color by
   // calling |SetBackgroundColor|.
+  virtual SkColor background_color() = 0;
   virtual void SetBackgroundColorToDefault() = 0;
   virtual bool GetBackgroundOpaque() = 0;
 

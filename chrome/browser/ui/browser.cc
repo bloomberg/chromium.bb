@@ -1851,6 +1851,18 @@ void Browser::SwapTabContents(content::WebContents* old_contents,
                               content::WebContents* new_contents,
                               bool did_start_load,
                               bool did_finish_load) {
+  // Copies the background color from an old WebContents to a new one that
+  // replaces it on the screen. This allows the new WebContents to use the
+  // old one's background color as the starting background color, before having
+  // loaded any contents. As a result, we avoid flashing white when navigating
+  // from a site whith a dark background to another site with a dark background.
+  if (old_contents && new_contents) {
+    RenderWidgetHostView* old_view = old_contents->GetMainFrame()->GetView();
+    RenderWidgetHostView* new_view = new_contents->GetMainFrame()->GetView();
+    if (old_view && new_view)
+      new_view->SetBackgroundColor(old_view->background_color());
+  }
+
   int index = tab_strip_model_->GetIndexOfWebContents(old_contents);
   DCHECK_NE(TabStripModel::kNoTab, index);
   tab_strip_model_->ReplaceWebContentsAt(index, new_contents);
