@@ -27,6 +27,8 @@ namespace {
 
 static constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
 static constexpr FrameSinkId kAnotherArbitraryFrameSinkId(2, 2);
+static const base::UnguessableToken kArbitraryToken =
+    base::UnguessableToken::Create();
 
 class TestSurfaceFactoryClient : public SurfaceFactoryClient {
  public:
@@ -69,7 +71,7 @@ class SurfaceFactoryTest : public testing::Test, public SurfaceObserver {
   SurfaceFactoryTest()
       : factory_(
             new SurfaceFactory(kArbitraryFrameSinkId, &manager_, &client_)),
-        local_frame_id_(3, 1),
+        local_frame_id_(3, kArbitraryToken),
         frame_sync_token_(GenTestSyncToken(4)),
         consumer_sync_token_(GenTestSyncToken(5)) {
     manager_.AddObserver(this);
@@ -433,7 +435,7 @@ TEST_F(SurfaceFactoryTest, ResourceLifetime) {
 }
 
 TEST_F(SurfaceFactoryTest, BlankNoIndexIncrement) {
-  LocalFrameId local_frame_id(6, 1);
+  LocalFrameId local_frame_id(6, kArbitraryToken);
   SurfaceId surface_id(kArbitraryFrameSinkId, local_frame_id);
   factory_->Create(local_frame_id);
   Surface* surface = manager_.GetSurfaceForId(surface_id);
@@ -449,14 +451,14 @@ TEST_F(SurfaceFactoryTest, BlankNoIndexIncrement) {
 
 void CreateSurfaceDrawCallback(SurfaceFactory* factory,
                                uint32_t* execute_count) {
-  LocalFrameId new_id(7, 0);
+  LocalFrameId new_id(7, base::UnguessableToken::Create());
   factory->Create(new_id);
   factory->Destroy(new_id);
   *execute_count += 1;
 }
 
 TEST_F(SurfaceFactoryTest, AddDuringDestroy) {
-  LocalFrameId local_frame_id(6, 1);
+  LocalFrameId local_frame_id(6, kArbitraryToken);
   factory_->Create(local_frame_id);
 
   uint32_t execute_count = 0;
@@ -475,7 +477,7 @@ void DrawCallback(uint32_t* execute_count) {
 
 // Tests doing a DestroyAll before shutting down the factory;
 TEST_F(SurfaceFactoryTest, DestroyAll) {
-  LocalFrameId id(7, 1);
+  LocalFrameId id(7, kArbitraryToken);
   factory_->Create(id);
 
   TransferableResource resource;
@@ -494,7 +496,7 @@ TEST_F(SurfaceFactoryTest, DestroyAll) {
 
 // Tests that SurfaceFactory doesn't return resources after Reset().
 TEST_F(SurfaceFactoryTest, Reset) {
-  LocalFrameId id(7, 0);
+  LocalFrameId id(7, kArbitraryToken);
   factory_->Create(id);
 
   TransferableResource resource;
@@ -517,7 +519,7 @@ TEST_F(SurfaceFactoryTest, Reset) {
 }
 
 TEST_F(SurfaceFactoryTest, DestroySequence) {
-  LocalFrameId local_frame_id2(5, 1);
+  LocalFrameId local_frame_id2(5, kArbitraryToken);
   SurfaceId id2(kArbitraryFrameSinkId, local_frame_id2);
   factory_->Create(local_frame_id2);
 
@@ -551,7 +553,7 @@ TEST_F(SurfaceFactoryTest, DestroySequence) {
 TEST_F(SurfaceFactoryTest, InvalidFrameSinkId) {
   FrameSinkId frame_sink_id(1234, 5678);
 
-  LocalFrameId local_frame_id(5, 1);
+  LocalFrameId local_frame_id(5, kArbitraryToken);
   SurfaceId id(factory_->frame_sink_id(), local_frame_id);
   factory_->Create(local_frame_id);
 
@@ -571,7 +573,7 @@ TEST_F(SurfaceFactoryTest, InvalidFrameSinkId) {
 }
 
 TEST_F(SurfaceFactoryTest, DestroyCycle) {
-  LocalFrameId local_frame_id2(5, 1);
+  LocalFrameId local_frame_id2(5, kArbitraryToken);
   SurfaceId id2(kArbitraryFrameSinkId, local_frame_id2);
   factory_->Create(local_frame_id2);
 

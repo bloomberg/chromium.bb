@@ -9,6 +9,7 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/filter_operations.h"
 #include "cc/quads/debug_border_draw_quad.h"
@@ -621,7 +622,7 @@ bool ParamTraits<cc::LocalFrameId>::Read(const base::Pickle* m,
   if (!ReadParam(m, iter, &local_id))
     return false;
 
-  uint64_t nonce;
+  base::UnguessableToken nonce;
   if (!ReadParam(m, iter, &nonce))
     return false;
 

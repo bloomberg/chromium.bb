@@ -7,6 +7,7 @@
 
 #include "cc/ipc/local_frame_id.mojom-shared.h"
 #include "cc/surfaces/local_frame_id.h"
+#include "mojo/common/common_custom_types_struct_traits.h"
 
 namespace mojo {
 
@@ -16,13 +17,18 @@ struct StructTraits<cc::mojom::LocalFrameIdDataView, cc::LocalFrameId> {
     return local_frame_id.local_id();
   }
 
-  static uint64_t nonce(const cc::LocalFrameId& local_frame_id) {
+  static const base::UnguessableToken& nonce(
+      const cc::LocalFrameId& local_frame_id) {
     return local_frame_id.nonce();
   }
 
   static bool Read(cc::mojom::LocalFrameIdDataView data,
                    cc::LocalFrameId* out) {
-    *out = cc::LocalFrameId(data.local_id(), data.nonce());
+    base::UnguessableToken nonce;
+    if (!data.ReadNonce(&nonce))
+      return false;
+
+    *out = cc::LocalFrameId(data.local_id(), nonce);
     return true;
   }
 };

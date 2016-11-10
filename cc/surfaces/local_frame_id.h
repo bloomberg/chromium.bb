@@ -10,24 +10,27 @@
 
 #include "base/hash.h"
 #include "base/strings/stringprintf.h"
+#include "base/unguessable_token.h"
 
 namespace cc {
 
 class LocalFrameId {
  public:
-  constexpr LocalFrameId() : local_id_(0), nonce_(0) {}
+  constexpr LocalFrameId() : local_id_(0) {}
 
   constexpr LocalFrameId(const LocalFrameId& other)
       : local_id_(other.local_id_), nonce_(other.nonce_) {}
 
-  constexpr LocalFrameId(uint32_t local_id, uint64_t nonce)
+  constexpr LocalFrameId(uint32_t local_id, const base::UnguessableToken& nonce)
       : local_id_(local_id), nonce_(nonce) {}
 
-  constexpr bool is_valid() const { return local_id_ != 0 && nonce_ != 0; }
+  constexpr bool is_valid() const {
+    return local_id_ != 0 && !nonce_.is_empty();
+  }
 
   constexpr uint32_t local_id() const { return local_id_; }
 
-  constexpr uint64_t nonce() const { return nonce_; }
+  constexpr const base::UnguessableToken& nonce() const { return nonce_; }
 
   bool operator==(const LocalFrameId& other) const {
     return local_id_ == other.local_id_ && nonce_ == other.nonce_;
@@ -40,16 +43,19 @@ class LocalFrameId {
            std::tie(other.local_id_, other.nonce_);
   }
 
-  size_t hash() const { return base::HashInts(local_id_, nonce_); }
+  size_t hash() const {
+    return base::HashInts(
+        local_id_, static_cast<uint64_t>(base::UnguessableTokenHash()(nonce_)));
+  }
 
   std::string ToString() const {
-    return base::StringPrintf("LocalFrameId(%d, %" PRIu64 ")", local_id_,
-                              nonce_);
+    return base::StringPrintf("LocalFrameId(%d, %s" PRIu64 ")", local_id_,
+                              nonce_.ToString().c_str());
   }
 
  private:
   uint32_t local_id_;
-  uint64_t nonce_;
+  base::UnguessableToken nonce_;
 };
 
 struct LocalFrameIdHash {

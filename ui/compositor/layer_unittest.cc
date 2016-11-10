@@ -1852,7 +1852,9 @@ TEST_F(LayerWithDelegateTest, ExternalContentMirroring) {
   const auto satisfy_callback = base::Bind(&FakeSatisfyCallback);
   const auto require_callback = base::Bind(&FakeRequireCallback);
 
-  cc::SurfaceId surface_id(cc::FrameSinkId(0, 1), cc::LocalFrameId(2, 3));
+  cc::SurfaceId surface_id(
+      cc::FrameSinkId(0, 1),
+      cc::LocalFrameId(2, base::UnguessableToken::Create()));
   layer->SetShowSurface(surface_id, satisfy_callback, require_callback,
                         gfx::Size(10, 10), 1.0f, gfx::Size(10, 10));
 
@@ -1867,7 +1869,9 @@ TEST_F(LayerWithDelegateTest, ExternalContentMirroring) {
   EXPECT_EQ(gfx::Size(10, 10), surface->surface_size());
   EXPECT_EQ(1.0f, surface->surface_scale());
 
-  surface_id = cc::SurfaceId(cc::FrameSinkId(1, 2), cc::LocalFrameId(3, 4));
+  surface_id =
+      cc::SurfaceId(cc::FrameSinkId(1, 2),
+                    cc::LocalFrameId(3, base::UnguessableToken::Create()));
   layer->SetShowSurface(surface_id, satisfy_callback, require_callback,
                         gfx::Size(20, 20), 2.0f, gfx::Size(20, 20));
 

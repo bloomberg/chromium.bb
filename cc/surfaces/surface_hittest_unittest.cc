@@ -72,8 +72,9 @@ TEST(SurfaceHittestTest, Hittest_BadCompositorFrameDoesNotCrash) {
   CompositorFrame root_frame = CreateCompositorFrame(root_rect, &root_pass);
 
   // Add a reference to a non-existant child surface on the root surface.
-  SurfaceId child_surface_id(kArbitraryFrameSinkId,
-                             LocalFrameId(0xdeadbeef, 0));
+  SurfaceId child_surface_id(
+      kArbitraryFrameSinkId,
+      LocalFrameId(0xdeadbeef, base::UnguessableToken::Create()));
   gfx::Rect child_rect(200, 200);
   CreateSurfaceDrawQuad(root_pass,
                         gfx::Transform(),
