@@ -725,8 +725,7 @@ def print_stats(similarity, find_copies, args):
     del env['GIT_EXTERNAL_DIFF']
 
   if find_copies:
-    similarity_options = ['--find-copies-harder', '-l100000',
-                          '-C%s' % similarity]
+    similarity_options = ['-l100000', '-C%s' % similarity]
   else:
     similarity_options = ['-M%s' % similarity]
 

@@ -403,8 +403,8 @@ class TestGitCl(TestCase):
 
     if find_copies:
       stat_call = ((['git', 'diff', '--no-ext-diff', '--stat',
-                   '--find-copies-harder', '-l100000', '-C'+similarity,
-                   'fake_ancestor_sha', 'HEAD'],), '+dat')
+                     '-l100000', '-C'+similarity,
+                     'fake_ancestor_sha', 'HEAD'],), '+dat')
     else:
       stat_call = ((['git', 'diff', '--no-ext-diff', '--stat',
                    '-M'+similarity, 'fake_ancestor_sha', 'HEAD'],), '+dat')
@@ -588,9 +588,8 @@ class TestGitCl(TestCase):
   def _dcommit_calls_3(cls):
     return [
       ((['git',
-         'diff', '--no-ext-diff', '--stat', '--find-copies-harder',
-         '-l100000', '-C50', 'fake_ancestor_sha',
-         'refs/heads/working'],),
+         'diff', '--no-ext-diff', '--stat', '-l100000', '-C50',
+         'fake_ancestor_sha', 'refs/heads/working'],),
        (' PRESUBMIT.py |    2 +-\n'
         ' 1 files changed, 1 insertions(+), 1 deletions(-)\n')),
       ((['git', 'show-ref', '--quiet', '--verify',
@@ -857,8 +856,8 @@ class TestGitCl(TestCase):
       ]) + [
         ((['git', 'config', 'user.email'],), 'me@example.com'),
         ((['git',
-           'diff', '--no-ext-diff', '--stat', '--find-copies-harder',
-           '-l100000', '-C50', 'fake_ancestor_sha', 'HEAD'],),
+           'diff', '--no-ext-diff', '--stat', '-l100000', '-C50',
+           'fake_ancestor_sha', 'HEAD'],),
          '+dat'),
       ]
 
