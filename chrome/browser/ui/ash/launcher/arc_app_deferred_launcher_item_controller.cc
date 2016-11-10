@@ -69,10 +69,6 @@ void ArcAppDeferredLauncherItemController::Close() {
     host_->Close(app_id());
 }
 
-bool ArcAppDeferredLauncherItemController::IsOpen() const {
-  return true;
-}
-
 bool ArcAppDeferredLauncherItemController::IsVisible() const {
   return true;
 }

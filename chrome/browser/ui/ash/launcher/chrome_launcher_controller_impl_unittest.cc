@@ -263,7 +263,6 @@ class TestV2AppLauncherItemController : public LauncherItemController {
   ~TestV2AppLauncherItemController() override {}
 
   // Override for LauncherItemController:
-  bool IsOpen() const override { return true; }
   bool IsVisible() const override { return true; }
   void Launch(ash::LaunchSource source, int event_flags) override {}
   ash::ShelfItemDelegate::PerformedAction Activate(

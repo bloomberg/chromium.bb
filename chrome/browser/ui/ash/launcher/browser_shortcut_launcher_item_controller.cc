@@ -130,16 +130,6 @@ void BrowserShortcutLauncherItemController::SetShelfIDForBrowserWindowContents(
           launcher_controller()->GetShelfIDForWebContents(web_contents));
 }
 
-bool BrowserShortcutLauncherItemController::IsOpen() const {
-  const BrowserList* browser_list = BrowserList::GetInstance();
-  for (BrowserList::const_iterator it = browser_list->begin();
-       it != browser_list->end(); ++it) {
-    if (IsBrowserFromActiveUser(*it))
-      return true;
-  }
-  return false;
-}
-
 bool BrowserShortcutLauncherItemController::IsVisible() const {
   Browser* last_browser =
       chrome::FindTabbedBrowser(launcher_controller()->profile(), true);

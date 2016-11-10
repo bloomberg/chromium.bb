@@ -19,7 +19,6 @@ class AppListControllerDelegateAsh : public AppListControllerDelegate {
   explicit AppListControllerDelegateAsh(app_list::AppListPresenterImpl*);
   ~AppListControllerDelegateAsh() override;
 
- private:
   // AppListControllerDelegate overrides:
   void DismissView() override;
   gfx::NativeWindow GetAppListWindow() override;
@@ -50,6 +49,7 @@ class AppListControllerDelegateAsh : public AppListControllerDelegate {
   void ShowForProfileByPath(const base::FilePath& profile_path) override;
   bool ShouldShowUserIcon() override;
 
+ private:
   ash::LaunchSource AppListSourceToLaunchSource(AppListSource source);
 
   // Not owned.

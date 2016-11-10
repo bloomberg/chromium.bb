@@ -72,10 +72,6 @@ void AppWindowLauncherItemController::SetActiveWindow(aura::Window* window) {
     last_active_window_ = app_window;
 }
 
-bool AppWindowLauncherItemController::IsOpen() const {
-  return !windows_.empty();
-}
-
 bool AppWindowLauncherItemController::IsVisible() const {
   // Return true if any windows are visible.
   for (const auto* window : windows_) {

@@ -68,9 +68,6 @@ class LauncherItemController : public ash::ShelfItemDelegate {
     image_set_by_controller_ = image_set_by_controller;
   }
 
-  // Returns true if this item is open.
-  virtual bool IsOpen() const = 0;
-
   // Returns true if this item is visible (e.g. not minimized).
   virtual bool IsVisible() const = 0;
 

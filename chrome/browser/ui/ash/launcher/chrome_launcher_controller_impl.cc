@@ -460,10 +460,8 @@ void ChromeLauncherControllerImpl::Close(ash::ShelfID id) {
 }
 
 bool ChromeLauncherControllerImpl::IsOpen(ash::ShelfID id) {
-  LauncherItemController* controller = GetLauncherItemController(id);
-  if (!controller)
-    return false;
-  return controller->IsOpen();
+  const int index = model_->ItemIndexByID(id);
+  return index >= 0 && model_->items()[index].status != ash::STATUS_CLOSED;
 }
 
 bool ChromeLauncherControllerImpl::IsPlatformApp(ash::ShelfID id) {

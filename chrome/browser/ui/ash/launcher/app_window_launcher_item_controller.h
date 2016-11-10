@@ -46,7 +46,6 @@ class AppWindowLauncherItemController : public LauncherItemController,
   const std::string& launch_id() const { return launch_id_; }
 
   // LauncherItemController overrides:
-  bool IsOpen() const override;
   bool IsVisible() const override;
   void Launch(ash::LaunchSource source, int event_flags) override;
   ash::ShelfItemDelegate::PerformedAction Activate(

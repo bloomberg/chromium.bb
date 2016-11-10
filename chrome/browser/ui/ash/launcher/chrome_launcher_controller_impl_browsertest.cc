@@ -2099,18 +2099,20 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
                        BrowserShortcutLauncherItemController) {
   LauncherItemController* item_controller =
       controller_->GetBrowserShortcutLauncherItemController();
+  const ash::ShelfID id = item_controller->shelf_id();
+  EXPECT_NE(ash::kInvalidShelfID, id);
 
   // Get the number of browsers.
   size_t running_browser = chrome::GetTotalBrowserCount();
   EXPECT_EQ(0u, running_browser);
-  EXPECT_FALSE(item_controller->IsOpen());
+  EXPECT_FALSE(controller_->IsOpen(id));
 
   // Activate. This creates new browser
   item_controller->Activate(ash::LAUNCH_FROM_UNKNOWN);
   // New Window is created.
   running_browser = chrome::GetTotalBrowserCount();
   EXPECT_EQ(1u, running_browser);
-  EXPECT_TRUE(item_controller->IsOpen());
+  EXPECT_TRUE(controller_->IsOpen(id));
 
   // Minimize Window.
   ash::wm::WindowState* window_state = ash::wm::GetActiveWindowState();
@@ -2122,7 +2124,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
   item_controller->Activate(ash::LAUNCH_FROM_UNKNOWN);
   running_browser = chrome::GetTotalBrowserCount();
   EXPECT_EQ(1u, running_browser);
-  EXPECT_TRUE(item_controller->IsOpen());
+  EXPECT_TRUE(controller_->IsOpen(id));
   EXPECT_FALSE(window_state->IsMinimized());
 }
 

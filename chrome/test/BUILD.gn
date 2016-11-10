@@ -2075,6 +2075,7 @@ test("browser_tests") {
       sources += [
         "../browser/ui/ash/accelerator_commands_browsertest.cc",
         "../browser/ui/ash/accelerator_controller_browsertest.cc",
+        "../browser/ui/ash/app_list/app_list_controller_ash_browsertest.cc",
         "../browser/ui/ash/chrome_new_window_client_browsertest.cc",
         "../browser/ui/ash/keyboard_controller_browsertest.cc",
         "../browser/ui/ash/launcher/chrome_launcher_controller_impl_browsertest.cc",

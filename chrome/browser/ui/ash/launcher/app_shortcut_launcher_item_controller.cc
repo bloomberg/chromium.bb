@@ -97,11 +97,6 @@ AppShortcutLauncherItemController::AppShortcutLauncherItemController(
 AppShortcutLauncherItemController::~AppShortcutLauncherItemController() {
 }
 
-bool AppShortcutLauncherItemController::IsOpen() const {
-  return !chrome_launcher_controller_->
-      GetV1ApplicationsFromAppId(app_id()).empty();
-}
-
 bool AppShortcutLauncherItemController::IsVisible() const {
   // Return true if any browser window associated with the app is visible.
   std::vector<content::WebContents*> content =

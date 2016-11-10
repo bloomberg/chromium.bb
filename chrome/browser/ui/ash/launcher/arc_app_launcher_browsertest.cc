@@ -361,3 +361,21 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, AppListShown) {
   SendPackageAdded(true);
   EXPECT_FALSE(app_list_service->IsAppListVisible());
 }
+
+// Test AppListControllerDelegate::IsAppOpen for Arc apps.
+IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, IsAppOpen) {
+  StartInstance();
+  InstallTestApps(false);
+  SendPackageAdded(true);
+  const std::string app_id = GetTestApp1Id();
+
+  AppListService* service = AppListService::Get();
+  AppListControllerDelegate* delegate = service->GetControllerDelegate();
+  EXPECT_FALSE(delegate->IsAppOpen(app_id));
+  arc::LaunchApp(profile(), app_id);
+  EXPECT_FALSE(delegate->IsAppOpen(app_id));
+  // Simulate task creation so the app is marked as running/open.
+  std::unique_ptr<ArcAppListPrefs::AppInfo> info = app_prefs()->GetApp(app_id);
+  app_host()->OnTaskCreated(0, info->package_name, info->activity, info->name);
+  EXPECT_TRUE(delegate->IsAppOpen(app_id));
+}
