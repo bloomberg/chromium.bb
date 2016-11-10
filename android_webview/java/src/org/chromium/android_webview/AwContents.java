@@ -360,7 +360,7 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
     // Do not use directly, call isDestroyed() instead.
     private boolean mIsDestroyed = false;
 
-    private static String sCurrentLocale = "";
+    private static String sCurrentLocales = "";
 
     private static final class AwContentsDestroyRunnable implements Runnable {
         private final long mNativeAwContents;
@@ -694,7 +694,11 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
 
         @Override
         public void onConfigurationChanged(Configuration configuration) {
-            setLocale(LocaleUtils.toLanguageTag(configuration.locale));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                setLocale(LocaleUtils.toLanguageTags(configuration.getLocales()));
+            } else {
+                setLocale(LocaleUtils.toLanguageTag(configuration.locale));
+            }
             mSettings.updateAcceptLanguages();
         }
     };
@@ -1019,11 +1023,12 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
         return wrapper;
     }
 
+    // Deal with a string that represents either a single locale or a locale list.
     @VisibleForTesting
-    public static void setLocale(String locale) {
-        if (!sCurrentLocale.equals(locale)) {
-            sCurrentLocale = locale;
-            nativeSetLocale(sCurrentLocale);
+    public static void setLocale(String locales) {
+        if (!sCurrentLocales.equals(locales)) {
+            sCurrentLocales = locales;
+            nativeSetLocale(sCurrentLocales);
         }
     }
 
