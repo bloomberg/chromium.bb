@@ -16,9 +16,15 @@ Polymer({
   properties: {
     /**
      * A list of all USB devices.
-     * @type {Array<UsbDeviceEntry>}
+     * @private {!Array<!UsbDeviceEntry>}
      */
-    devices: Array,
+    devices_: Array,
+
+    /**
+     * The targetted object for menu operations.
+     * @private {?Object}
+     */
+    actionMenuModel_: Object
   },
 
   ready: function() {
@@ -31,19 +37,34 @@ Polymer({
    */
   fetchUsbDevices_: function() {
     this.browserProxy.fetchUsbDevices().then(function(deviceList) {
-      this.devices = deviceList;
+      this.devices_ = deviceList;
     }.bind(this));
   },
 
   /**
    * A handler when an action is selected in the action menu.
+   * @private
+   */
+  onRemoveTap_: function() {
+    this.$$('dialog[is=cr-action-menu]').close();
+
+    var item = this.actionMenuModel_;
+    this.browserProxy.removeUsbDevice(
+        item.origin, item.embeddingOrigin, item.object);
+    this.actionMenuModel_ = null;
+    this.fetchUsbDevices_();
+  },
+
+  /**
+   * A handler to show the action menu next to the clicked menu button.
    * @param {!{model: !{item: UsbDeviceEntry}}} event
    * @private
    */
-  onActionMenuIronActivate_: function(event) {
-    var item = event.model.item;
-    this.browserProxy.removeUsbDevice(
-        item.origin, item.embeddingOrigin, item.object);
-    this.fetchUsbDevices_();
-  },
+  showMenu_: function(event) {
+    this.actionMenuModel_ = event.model.item;
+    /** @type {!CrActionMenuElement} */ (
+        this.$$('dialog[is=cr-action-menu]')).showAt(
+            /** @type {!Element} */ (
+                Polymer.dom(/** @type {!Event} */ (event)).localTarget));
+  }
 });

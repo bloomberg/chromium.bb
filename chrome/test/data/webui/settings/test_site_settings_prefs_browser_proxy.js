@@ -50,9 +50,11 @@ var prefsEmpty = {
  */
 var TestSiteSettingsPrefsBrowserProxy = function() {
   settings.TestBrowserProxy.call(this, [
+    'fetchUsbDevices',
     'fetchZoomLevels',
     'getDefaultValueForContentType',
     'getExceptionList',
+    'removeUsbDevice',
     'removeZoomLevel',
     'resetCategoryPermissionForOrigin',
     'setCategoryPermissionForOrigin',
@@ -64,6 +66,9 @@ var TestSiteSettingsPrefsBrowserProxy = function() {
 
   /** @private {!Array<ZoomLevelEntry>} */
   this.zoomList_ = [];
+
+  /** @private {!Array<UsbDeviceEntry>} */
+  this.usbDevices_ = [];
 };
 
 TestSiteSettingsPrefsBrowserProxy.prototype = {
@@ -87,10 +92,19 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
 
   /**
    * Sets the prefs to use when testing.
-   * @param !Array<ZoomLevelEntry> list The zoom list to set.
+   * @param {!Array<ZoomLevelEntry>} list The zoom list to set.
    */
   setZoomList: function(list) {
     this.zoomList_ = list;
+  },
+
+  /**
+   * Sets the prefs to use when testing.
+   * @param {!Array<UsbDeviceEntry>} list The usb device entry list to set.
+   */
+  setUsbDevices: function(list) {
+    // Shallow copy of the passed-in array so mutation won't impact the source
+    this.usbDevices_ = list.slice();
   },
 
   /** @override */
@@ -207,4 +221,15 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
   removeZoomLevel: function(host) {
     this.methodCalled('removeZoomLevel', [host]);
   },
+
+  /** @override */
+  fetchUsbDevices: function() {
+    this.methodCalled('fetchUsbDevices');
+    return Promise.resolve(this.usbDevices_);
+  },
+
+  /** @override */
+  removeUsbDevice: function() {
+    this.methodCalled('removeUsbDevice', arguments);
+  }
 };

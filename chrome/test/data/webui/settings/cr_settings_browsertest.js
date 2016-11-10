@@ -632,6 +632,7 @@ CrSettingsSiteSettingsTest.prototype = {
     'test_browser_proxy.js',
     'test_site_settings_prefs_browser_proxy.js',
     'zoom_levels_tests.js',
+    'usb_devices_tests.js'
   ]),
 };
 
@@ -641,6 +642,7 @@ TEST_F('CrSettingsSiteSettingsTest', 'SiteSettings', function() {
   site_list.registerTests();
   site_settings_category.registerTests();
   zoom_levels.registerTests();
+  usb_devices.registerTests();
 
   mocha.run();
 });
