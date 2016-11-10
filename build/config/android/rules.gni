@@ -2314,7 +2314,7 @@ if (enable_java_templates) {
       install_script_name = _install_script_name
       deps += [ "//testing/android/broker:broker_java" ]
       data_deps += [
-        "//testing/android/driver:driver_apk",
+        "//build/android/pylib/device/commands",
         "//tools/android/forwarder2",
         "//tools/android/md5sum",
       ]
@@ -2446,7 +2446,10 @@ if (enable_java_templates) {
         "//testing/android/appurify_support:appurify_support_java",
         "//testing/android/reporter:reporter_java",
       ]
-      data_deps += [ "//tools/android/md5sum" ]
+      data_deps += [
+        "//build/android/pylib/device/commands",
+        "//tools/android/md5sum",
+      ]
       if (host_os == "linux") {
         data_deps += [ "//tools/android/forwarder2" ]
       }
