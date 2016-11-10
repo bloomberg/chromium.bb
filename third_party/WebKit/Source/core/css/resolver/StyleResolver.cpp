@@ -1608,8 +1608,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state,
                                 1);
 
   unsigned cacheHash =
-      RuntimeEnabledFeatures::styleMatchedPropertiesCacheEnabled() &&
-              matchResult.isCacheable()
+      matchResult.isCacheable()
           ? computeMatchedPropertiesHash(matchResult.matchedProperties().data(),
                                          matchResult.matchedProperties().size())
           : 0;
@@ -1762,7 +1761,6 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state,
 
   if (!cachedMatchedProperties && cacheHash &&
       MatchedPropertiesCache::isCacheable(state)) {
-    DCHECK(RuntimeEnabledFeatures::styleMatchedPropertiesCacheEnabled());
     INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(),
                                   matchedPropertyCacheAdded, 1);
     m_matchedPropertiesCache.add(*state.style(), *state.parentStyle(),

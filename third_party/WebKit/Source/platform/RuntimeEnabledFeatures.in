@@ -221,7 +221,6 @@ SlimmingPaintStrictCullRectClipping
 StableBlinkFeatures status=stable
 StackedCSSPropertyAnimations status=experimental
 StyleSharing status=stable
-StyleMatchedPropertiesCache status=stable
 // Do not turn this flag into stable, because many interfaces that should not
 // be shipped would be enabled. Instead, remove the flag from the shipping
 // interface.
