@@ -446,9 +446,9 @@ TEST_F(SSLErrorHandlerDateInvalidTest, TimeQueryStarted) {
 
   // Enable network time queries and handle the error. A bad clock interstitial
   // should be shown.
-  EXPECT_TRUE(test_server()->Start());
   test_server()->RegisterRequestHandler(
       base::Bind(&network_time::GoodTimeResponseHandler));
+  EXPECT_TRUE(test_server()->Start());
   tracker()->SetTimeServerURLForTesting(test_server()->GetURL("/"));
   field_trial_test()->SetNetworkQueriesWithVariationsService(
       true, 0.0, network_time::FieldTrialTest::FETCHES_ON_DEMAND_ONLY);
@@ -500,10 +500,10 @@ TEST_F(SSLErrorHandlerDateInvalidTest, TimeQueryHangs) {
   // Enable network time queries and handle the error. Because the
   // network time cannot be determined before the timer elapses, an SSL
   // interstitial should be shown.
-  EXPECT_TRUE(test_server()->Start());
   base::RunLoop wait_for_time_query_loop;
   test_server()->RegisterRequestHandler(
       base::Bind(&WaitForRequest, wait_for_time_query_loop.QuitClosure()));
+  EXPECT_TRUE(test_server()->Start());
   tracker()->SetTimeServerURLForTesting(test_server()->GetURL("/"));
   field_trial_test()->SetNetworkQueriesWithVariationsService(
       true, 0.0, network_time::FieldTrialTest::FETCHES_ON_DEMAND_ONLY);

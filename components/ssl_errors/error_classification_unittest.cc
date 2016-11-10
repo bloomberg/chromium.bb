@@ -338,7 +338,7 @@ TEST_F(SSLErrorClassificationTest, NetworkClockStateHistogram) {
   EXPECT_TRUE(io_thread.StartWithOptions(thread_options));
 
   net::EmbeddedTestServer test_server;
-  ASSERT_TRUE(test_server.Start());
+  ASSERT_TRUE(test_server.InitializeAndListen());
 
   base::HistogramTester histograms;
   histograms.ExpectTotalCount(kNetworkTimeHistogram, 0);
@@ -371,6 +371,7 @@ TEST_F(SSLErrorClassificationTest, NetworkClockStateHistogram) {
 
   // First sync attempt is pending.
   test_server.RegisterRequestHandler(base::Bind(&NetworkErrorResponseHandler));
+  test_server.StartAcceptingConnections();
   EXPECT_TRUE(network_time_tracker.QueryTimeServiceForTesting());
   EXPECT_EQ(
       ssl_errors::ClockState::CLOCK_STATE_UNKNOWN,
