@@ -12,11 +12,4 @@ const char kOzonePlatform[] = "ozone-platform";
 // Specify location for image dumps.
 const char kOzoneDumpFile[] = "ozone-dump-file";
 
-// Specifies the size of the primary display at initialization.
-const char kOzoneInitialDisplayBounds[] = "ozone-initial-display-bounds";
-
-// Specifies the physical display size in millimeters.
-const char kOzoneInitialDisplayPhysicalSizeMm[] =
-    "ozone-initial-display-physical-size-mm";
-
 }  // namespace switches

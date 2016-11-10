@@ -8,7 +8,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
-#include "ui/ozone/common/display_util.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"

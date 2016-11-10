@@ -172,8 +172,6 @@ void DeriveCommandLine(const GURL& start_url,
 #endif
     ::switches::kDisableVaapiAcceleratedVideoEncode,
 #if defined(USE_OZONE)
-    ::switches::kOzoneInitialDisplayBounds,
-    ::switches::kOzoneInitialDisplayPhysicalSizeMm,
     ::switches::kOzonePlatform,
 #endif
     app_list::switches::kDisableSyncAppList,

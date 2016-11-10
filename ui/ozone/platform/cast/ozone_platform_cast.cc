@@ -13,7 +13,7 @@
 #include "chromecast/chromecast_features.h"
 #include "chromecast/public/cast_egl_platform.h"
 #include "chromecast/public/cast_egl_platform_shlib.h"
-#include "ui/ozone/common/native_display_delegate_ozone.h"
+#include "ui/display/types/native_display_delegate.h"
 #include "ui/ozone/platform/cast/overlay_manager_cast.h"
 #include "ui/ozone/platform/cast/platform_window_cast.h"
 #include "ui/ozone/platform/cast/surface_factory_cast.h"
@@ -68,7 +68,8 @@ class OzonePlatformCast : public OzonePlatform {
   }
   std::unique_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override {
-    return base::MakeUnique<NativeDisplayDelegateOzone>();
+    NOTREACHED();
+    return nullptr;
   }
 
   void InitializeUI() override {
