@@ -337,7 +337,15 @@ def get_waterfall_config():
     'mac', num_host_shards=5)
   waterfall = add_tester(
     waterfall, 'Mac 10.10 Perf', 'chromium-rel-mac10',
-    'mac', num_host_shards=5)
+    'mac',
+    swarming=[
+      {
+       'os': 'Mac-10.10',
+       'device_ids': [
+           'build158-m1', 'build159-m1', 'build160-m1',
+           'build161-m1', 'build162-m1']
+      }
+    ])
   waterfall = add_tester(
     waterfall, 'Mac Retina Perf',
     'chromium-rel-mac-retina', 'mac', num_host_shards=5)
@@ -476,12 +484,14 @@ def generate_telemetry_tests(
       device_id = dimension['device_ids'][device_affinity]
       # Id is unique within the swarming pool so it is the only needed
       # identifier for the bot to run the test on
-      swarming_dimensions.append({
+      complete_dimension = {
         'id': device_id,
-        'gpu': dimension['gpu'],
         'os': dimension['os'],
         'pool': 'Chrome-perf',
-      })
+      }
+      if 'gpu' in dimension:
+        complete_dimension['gpu'] = dimension['gpu']
+      swarming_dimensions.append(complete_dimension)
 
     test = generate_telemetry_test(
       swarming_dimensions, benchmark.Name(), browser_name)
