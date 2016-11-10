@@ -270,6 +270,9 @@ void FetchHistogramsFromChildProcesses();
 // prescribed by https://tools.ietf.org/html/rfc7231#section-6.4.7) a test might
 // want to use HTTP 307 response instead.  This can be accomplished by replacing
 // "/cross-site/" URL substring above with "/cross-site-307/".
+//
+// |embedded_test_server| should not be running when passing it to this function
+// because adding the request handler won't be thread safe.
 void SetupCrossSiteRedirector(net::EmbeddedTestServer* embedded_test_server);
 
 // Waits for an interstitial page to attach to given web contents.

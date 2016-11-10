@@ -275,7 +275,7 @@ void SetCookieOnIOThread(const GURL& url,
 }
 
 std::unique_ptr<net::test_server::HttpResponse>
-CrossSiteRedirectResponseHandler(const GURL& server_base_url,
+CrossSiteRedirectResponseHandler(const net::EmbeddedTestServer* test_server,
                                  const net::test_server::HttpRequest& request) {
   net::HttpStatusCode http_status_code;
 
@@ -306,7 +306,8 @@ CrossSiteRedirectResponseHandler(const GURL& server_base_url,
   // Replace the host of the URL with the one passed in the URL.
   GURL::Replacements replace_host;
   replace_host.SetHostStr(base::StringPiece(params).substr(0, slash));
-  GURL redirect_server = server_base_url.ReplaceComponents(replace_host);
+  GURL redirect_server =
+      test_server->base_url().ReplaceComponents(replace_host);
 
   // Append the real part of the path to the new URL.
   std::string path = params.substr(slash + 1);
@@ -961,9 +962,8 @@ void FetchHistogramsFromChildProcesses() {
 }
 
 void SetupCrossSiteRedirector(net::EmbeddedTestServer* embedded_test_server) {
-   embedded_test_server->RegisterRequestHandler(
-       base::Bind(&CrossSiteRedirectResponseHandler,
-                  embedded_test_server->base_url()));
+  embedded_test_server->RegisterRequestHandler(
+      base::Bind(&CrossSiteRedirectResponseHandler, embedded_test_server));
 }
 
 void WaitForInterstitialAttach(content::WebContents* web_contents) {
