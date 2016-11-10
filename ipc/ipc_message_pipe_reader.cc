@@ -85,18 +85,15 @@ void MessagePipeReader::GetRemoteInterface(
 }
 
 void MessagePipeReader::SetPeerPid(int32_t peer_pid) {
-  peer_pid_ = peer_pid;
-  delegate_->OnPeerPidReceived();
+  delegate_->OnPeerPidReceived(peer_pid);
 }
 
 void MessagePipeReader::Receive(
     const std::vector<uint8_t>& data,
     base::Optional<std::vector<mojom::SerializedHandlePtr>> handles) {
-  DCHECK_NE(peer_pid_, base::kNullProcessId);
   Message message(
       data.empty() ? "" : reinterpret_cast<const char*>(data.data()),
       static_cast<uint32_t>(data.size()));
-  message.set_sender_pid(peer_pid_);
 
   DVLOG(4) << "Receive " << message.type() << ": " << message.size();
   MojoResult write_result =

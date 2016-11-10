@@ -65,11 +65,6 @@ class FakeGpuProcess : public IPC::Channel {
 
   void Close() override { NOTREACHED(); }
 
-  base::ProcessId GetPeerPID() const override {
-    NOTREACHED();
-    return base::kNullProcessId;
-  }
-
  private:
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 };

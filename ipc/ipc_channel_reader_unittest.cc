@@ -47,8 +47,6 @@ class MockChannelReader : public ChannelReader {
 
   void DispatchMessage(Message* m) override { last_dispatched_message_ = m; }
 
-  base::ProcessId GetSenderPID() override { return base::kNullProcessId; }
-
   Message* get_last_dispatched_message() { return last_dispatched_message_; }
 
   void AppendData(const void* data, size_t size) {

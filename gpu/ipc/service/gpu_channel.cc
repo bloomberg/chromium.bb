@@ -642,7 +642,8 @@ base::WeakPtr<GpuChannel> GpuChannel::AsWeakPtr() {
 }
 
 base::ProcessId GpuChannel::GetClientPID() const {
-  return channel_->GetPeerPID();
+  DCHECK_NE(peer_pid_, base::kNullProcessId);
+  return peer_pid_;
 }
 
 uint32_t GpuChannel::GetProcessedOrderNum() const {
@@ -667,6 +668,10 @@ bool GpuChannel::OnMessageReceived(const IPC::Message& msg) {
   // All messages should be pushed to channel_messages_ and handled separately.
   NOTREACHED();
   return false;
+}
+
+void GpuChannel::OnChannelConnected(int32_t peer_pid) {
+  peer_pid_ = peer_pid;
 }
 
 void GpuChannel::OnChannelError() {

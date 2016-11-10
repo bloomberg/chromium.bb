@@ -48,8 +48,7 @@ ChannelProxy::Context::Context(
       ipc_task_runner_(ipc_task_runner),
       channel_connected_called_(false),
       message_filter_router_(new MessageFilterRouter()),
-      peer_pid_(base::kNullProcessId),
-      attachment_broker_endpoint_(false) {
+      peer_pid_(base::kNullProcessId) {
   DCHECK(ipc_task_runner_.get());
   // The Listener thread where Messages are handled must be a separate thread
   // to avoid oversubscribing the IO thread. If you trigger this error, you
@@ -76,7 +75,6 @@ void ChannelProxy::Context::CreateChannel(
   DCHECK_EQ(factory->GetIPCTaskRunner(), ipc_task_runner_);
   channel_id_ = factory->GetName();
   channel_ = factory->BuildChannel(this);
-  channel_->SetAttachmentBrokerEndpoint(attachment_broker_endpoint_);
 
   Channel::AssociatedInterfaceSupport* support =
       channel_->GetAssociatedInterfaceSupport();
@@ -150,7 +148,7 @@ void ChannelProxy::Context::OnChannelConnected(int32_t peer_pid) {
   // We cache off the peer_pid so it can be safely accessed from both threads.
   {
     base::AutoLock l(peer_pid_lock_);
-    peer_pid_ = channel_->GetPeerPID();
+    peer_pid_ = peer_pid;
   }
 
   // Add any pending filters.  This avoids a race condition where someone
@@ -622,16 +620,6 @@ void ChannelProxy::ClearIPCTaskRunner() {
   DCHECK(CalledOnValidThread());
 
   context()->ClearIPCTaskRunner();
-}
-
-base::ProcessId ChannelProxy::GetPeerPID() const {
-  base::AutoLock l(context_->peer_pid_lock_);
-  return context_->peer_pid_;
-}
-
-void ChannelProxy::OnSetAttachmentBrokerEndpoint() {
-  CHECK(!did_init_);
-  context()->set_attachment_broker_endpoint(is_attachment_broker_endpoint());
 }
 
 void ChannelProxy::OnChannelInit() {

@@ -34,11 +34,6 @@ void TestSink::Close() {
   NOTIMPLEMENTED();
 }
 
-base::ProcessId TestSink::GetPeerPID() const {
-  NOTIMPLEMENTED();
-  return base::ProcessId();
-}
-
 bool TestSink::OnMessageReceived(const Message& msg) {
   for (auto& observer : filter_list_) {
     if (observer.OnMessageReceived(msg))

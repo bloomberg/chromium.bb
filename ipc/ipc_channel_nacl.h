@@ -42,7 +42,6 @@ class ChannelNacl : public Channel,
   ~ChannelNacl() override;
 
   // Channel implementation.
-  base::ProcessId GetPeerPID() const override;
   bool Connect() override;
   void Close() override;
   bool Send(Message* message) override;
@@ -66,7 +65,6 @@ class ChannelNacl : public Channel,
   bool GetNonBrokeredAttachments(Message* msg) override;
   bool DidEmptyInputBuffers() override;
   void HandleInternalMessage(const Message& msg) override;
-  base::ProcessId GetSenderPID() override;
 
   Mode mode_;
   bool waiting_connect_;

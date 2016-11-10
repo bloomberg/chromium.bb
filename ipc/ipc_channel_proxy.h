@@ -19,7 +19,6 @@
 #include "build/build_config.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_handle.h"
-#include "ipc/ipc_endpoint.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
@@ -73,7 +72,7 @@ class SendCallbackHelper;
 // |channel_lifetime_lock_| is used to protect it. The locking overhead is only
 // paid if the underlying channel supports thread-safe |Send|.
 //
-class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
+class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
  public:
 #if defined(ENABLE_IPC_FUZZER)
   // Interface for a filter to be imposed on outgoing messages which can
@@ -234,10 +233,6 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
   // Called to clear the pointer to the IPC task runner when it's going away.
   void ClearIPCTaskRunner();
 
-  // Endpoint overrides.
-  base::ProcessId GetPeerPID() const override;
-  void OnSetAttachmentBrokerEndpoint() override;
-
  protected:
   class Context;
   // A subclass uses this constructor if it needs to add more information
@@ -307,12 +302,6 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
     // Create the Channel
     void CreateChannel(std::unique_ptr<ChannelFactory> factory);
 
-    void set_attachment_broker_endpoint(bool is_endpoint) {
-      attachment_broker_endpoint_ = is_endpoint;
-      if (channel_)
-        channel_->SetAttachmentBrokerEndpoint(is_endpoint);
-    }
-
     // Methods called on the IO thread.
     void OnSendMessage(std::unique_ptr<Message> message_ptr);
     void OnAddFilter();
@@ -371,10 +360,6 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
     // listener threads.
     base::ProcessId peer_pid_;
     base::Lock peer_pid_lock_;
-
-    // Whether this channel is used as an endpoint for sending and receiving
-    // brokerable attachment messages to/from the broker process.
-    bool attachment_broker_endpoint_;
 
     mojo::AssociatedGroup associated_group_;
 

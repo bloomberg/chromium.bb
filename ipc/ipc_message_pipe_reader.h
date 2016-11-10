@@ -48,7 +48,7 @@ class IPC_EXPORT MessagePipeReader : public NON_EXPORTED_BASE(mojom::Channel) {
  public:
   class Delegate {
    public:
-    virtual void OnPeerPidReceived() = 0;
+    virtual void OnPeerPidReceived(int32_t peer_pid) = 0;
     virtual void OnMessageReceived(const Message& message) = 0;
     virtual void OnPipeError() = 0;
     virtual void OnAssociatedInterfaceRequest(
@@ -86,8 +86,6 @@ class IPC_EXPORT MessagePipeReader : public NON_EXPORTED_BASE(mojom::Channel) {
   void GetRemoteInterface(const std::string& name,
                           mojo::ScopedInterfaceEndpointHandle handle);
 
-  base::ProcessId GetPeerPid() const { return peer_pid_; }
-
   mojom::Channel* sender() const { return sender_.get(); }
 
  protected:
@@ -106,7 +104,6 @@ class IPC_EXPORT MessagePipeReader : public NON_EXPORTED_BASE(mojom::Channel) {
 
   // |delegate_| is null once the message pipe is closed.
   Delegate* delegate_;
-  base::ProcessId peer_pid_ = base::kNullProcessId;
   mojom::ChannelAssociatedPtr sender_;
   mojo::AssociatedBinding<mojom::Channel> binding_;
   base::ThreadChecker thread_checker_;

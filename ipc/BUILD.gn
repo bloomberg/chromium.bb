@@ -31,8 +31,6 @@ component("ipc") {
     "ipc_channel_reader.cc",
     "ipc_channel_reader.h",
     "ipc_descriptors.h",
-    "ipc_endpoint.cc",
-    "ipc_endpoint.h",
     "ipc_export.h",
     "ipc_listener.h",
     "ipc_logging.cc",

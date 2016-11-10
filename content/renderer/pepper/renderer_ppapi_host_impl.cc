@@ -178,7 +178,7 @@ blink::WebPluginContainer* RendererPpapiHostImpl::GetContainerForInstance(
 
 base::ProcessId RendererPpapiHostImpl::GetPluginPID() const {
   if (dispatcher_)
-    return dispatcher_->channel()->GetPeerPID();
+    return dispatcher_->peer_pid();
   return base::kNullProcessId;
 }
 

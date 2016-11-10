@@ -90,7 +90,6 @@ class TestSink : public Channel {
   bool Send(IPC::Message* message) override;
   bool Connect() override WARN_UNUSED_RESULT;
   void Close() override;
-  base::ProcessId GetPeerPID() const override;
 
   // Used by the source of the messages to send the message to the sink. This
   // will make a copy of the message and store it in the list.

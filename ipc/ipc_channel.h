@@ -19,8 +19,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel_handle.h"
-#include "ipc/ipc_endpoint.h"
 #include "ipc/ipc_message.h"
+#include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
@@ -42,7 +42,7 @@ class Listener;
 // Channels are implemented using mojo message pipes on all platforms other
 // than NaCl.
 
-class IPC_EXPORT Channel : public Endpoint {
+class IPC_EXPORT Channel : public Sender {
   // Security tests need access to the pipe handle.
   friend class ChannelTest;
 
@@ -283,9 +283,6 @@ class IPC_EXPORT Channel : public Endpoint {
     void* buffer_;
     size_t length_;
   };
-
-  // Endpoint overrides.
-  void OnSetAttachmentBrokerEndpoint() override;
 
   // Subclasses must call this method at the beginning of their implementation
   // of Connect().

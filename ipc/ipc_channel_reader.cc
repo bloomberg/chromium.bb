@@ -188,8 +188,6 @@ bool ChannelReader::HandleTranslatedMessage(Message* translated_message) {
     return true;
   }
 
-  translated_message->set_sender_pid(GetSenderPID());
-
   return HandleExternalMessage(translated_message);
 }
 

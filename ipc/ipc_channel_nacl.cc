@@ -144,12 +144,6 @@ ChannelNacl::~ChannelNacl() {
   Close();
 }
 
-base::ProcessId ChannelNacl::GetPeerPID() const {
-  // This shouldn't actually get used in the untrusted side of the proxy, and we
-  // don't have the real pid anyway.
-  return -1;
-}
-
 bool ChannelNacl::Connect() {
   WillConnect();
 
@@ -315,7 +309,7 @@ bool ChannelNacl::ProcessOutgoingMessages() {
 }
 
 void ChannelNacl::CallOnChannelConnected() {
-  listener()->OnChannelConnected(GetPeerPID());
+  listener()->OnChannelConnected(-1);
 }
 
 ChannelNacl::ReadState ChannelNacl::ReadData(
@@ -376,12 +370,6 @@ void ChannelNacl::HandleInternalMessage(const Message& msg) {
   // The trusted side IPC::Channel should handle the "hello" handshake; we
   // should not receive the "Hello" message.
   NOTREACHED();
-}
-
-base::ProcessId ChannelNacl::GetSenderPID() {
-  // The untrusted side of the IPC::Channel should never have to worry about
-  // sender's process id.
-  return base::kNullProcessId;
 }
 
 // Channel's methods
