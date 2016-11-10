@@ -32,7 +32,6 @@
 #include "platform/mediastream/MediaStreamCenter.h"
 
 #include "platform/mediastream/MediaStreamDescriptor.h"
-#include "platform/mediastream/MediaStreamTrackSourcesRequest.h"
 #include "platform/mediastream/MediaStreamWebAudioSource.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebAudioSourceProvider.h"

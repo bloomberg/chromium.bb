@@ -16,8 +16,6 @@
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamTrackSourcesRequest.h"
-#include "third_party/WebKit/public/platform/WebSourceInfo.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebMediaDevicesRequest.h"
@@ -29,8 +27,6 @@ using blink::WebMediaDevicesRequest;
 using blink::WebMediaStream;
 using blink::WebMediaStreamSource;
 using blink::WebMediaStreamTrack;
-using blink::WebMediaStreamTrackSourcesRequest;
-using blink::WebSourceInfo;
 using blink::WebString;
 using blink::WebUserMediaRequest;
 using blink::WebVector;
@@ -149,41 +145,6 @@ void MockWebUserMediaClient::requestMediaDevices(
   should_enumerate_extra_device_ = !should_enumerate_extra_device_;
   if (!media_device_change_observer_.isNull())
     media_device_change_observer_.didChangeMediaDevices();
-}
-
-void MockWebUserMediaClient::requestSources(
-    const blink::WebMediaStreamTrackSourcesRequest& request) {
-  struct {
-    const char* id;
-    WebSourceInfo::SourceKind kind;
-    const char* label;
-    WebSourceInfo::VideoFacingMode facing;
-  } test_sources[] = {
-    {
-      "device1",
-      WebSourceInfo::SourceKindAudio,
-      "Built-in microphone",
-      WebSourceInfo::VideoFacingModeNone,
-    },
-    {
-      "device2",
-      WebSourceInfo::SourceKindVideo,
-      "Build-in webcam",
-      WebSourceInfo::VideoFacingModeEnvironment,
-    },
-  };
-
-  WebVector<WebSourceInfo> sources(arraysize(test_sources));
-  for (size_t i = 0; i < arraysize(test_sources); ++i) {
-  sources[i].initialize(WebString::fromUTF8(test_sources[i].id),
-                        test_sources[i].kind,
-                        WebString::fromUTF8(test_sources[i].label),
-                        test_sources[i].facing);
-  }
-
-  delegate_->PostTask(base::Bind(
-      &WebMediaStreamTrackSourcesRequest::requestSucceeded,
-      base::Owned(new WebMediaStreamTrackSourcesRequest(request)), sources));
 }
 
 void MockWebUserMediaClient::setMediaDeviceChangeObserver(

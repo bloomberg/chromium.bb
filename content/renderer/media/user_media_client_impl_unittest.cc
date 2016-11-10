@@ -28,7 +28,6 @@
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamTrackSourcesRequest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebHeap.h"
@@ -124,12 +123,6 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
     requestMediaDevices(media_devices_request);
   }
 
-  void RequestSources() {
-    blink::WebMediaStreamTrackSourcesRequest sources_request;
-    state_ = REQUEST_NOT_COMPLETE;
-    requestSources(sources_request);
-  }
-
   void SetMediaDeviceChangeObserver() {
     blink::WebMediaDeviceChangeObserver observer(true);
     setMediaDeviceChangeObserver(observer);
@@ -161,13 +154,6 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
       blink::WebVector<blink::WebMediaDeviceInfo>& devices) override {
     state_ = REQUEST_SUCCEEDED;
     last_devices_ = devices;
-  }
-
-  void EnumerateSourcesSucceded(
-      blink::WebMediaStreamTrackSourcesRequest* request,
-      blink::WebVector<blink::WebSourceInfo>& sources) override {
-    state_ = REQUEST_SUCCEEDED;
-    last_sources_ = sources;
   }
 
   void SetCreateSourceThatFails(bool should_fail) {
@@ -213,10 +199,6 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
     return last_devices_;
   }
 
-  const blink::WebVector<blink::WebSourceInfo>& last_sources() {
-    return last_sources_;
-  }
-
   void ClearLastGeneratedStream() {
     last_generated_stream_.reset();
   }
@@ -247,7 +229,6 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
   content::MediaStreamRequestResult result_;
   blink::WebString result_name_;
   blink::WebVector<blink::WebMediaDeviceInfo> last_devices_;
-  blink::WebVector<blink::WebSourceInfo> last_sources_;
   PeerConnectionDependencyFactory* factory_;
   bool create_source_that_fails_;
   MockMediaStreamVideoCapturerSource* video_source_;
@@ -642,42 +623,6 @@ TEST_F(UserMediaClientImplTest, EnumerateMediaDevices) {
                   used_media_impl_->last_devices()[4].groupId()));
   EXPECT_FALSE(used_media_impl_->last_devices()[1].groupId().equals(
                    used_media_impl_->last_devices()[4].groupId()));
-}
-
-TEST_F(UserMediaClientImplTest, EnumerateSources) {
-  used_media_impl_->RequestSources();
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(UserMediaClientImplUnderTest::REQUEST_SUCCEEDED,
-            used_media_impl_->request_state());
-  EXPECT_EQ(static_cast<size_t>(4), used_media_impl_->last_sources().size());
-
-  // Audio input devices.
-  const blink::WebSourceInfo* source = &used_media_impl_->last_sources()[0];
-  EXPECT_FALSE(source->id().isEmpty());
-  EXPECT_EQ(blink::WebSourceInfo::SourceKindAudio, source->kind());
-  EXPECT_FALSE(source->label().isEmpty());
-  EXPECT_EQ(blink::WebSourceInfo::VideoFacingModeNone, source->facing());
-
-  source = &used_media_impl_->last_sources()[1];
-  EXPECT_FALSE(source->id().isEmpty());
-  EXPECT_EQ(blink::WebSourceInfo::SourceKindAudio, source->kind());
-  EXPECT_FALSE(source->label().isEmpty());
-  EXPECT_EQ(blink::WebSourceInfo::VideoFacingModeNone, source->facing());
-
-  // Video input device user facing.
-  source = &used_media_impl_->last_sources()[2];
-  EXPECT_FALSE(source->id().isEmpty());
-  EXPECT_EQ(blink::WebSourceInfo::SourceKindVideo, source->kind());
-  EXPECT_FALSE(source->label().isEmpty());
-  EXPECT_EQ(blink::WebSourceInfo::VideoFacingModeNone, source->facing());
-
-  // Video input device environment facing.
-  source = &used_media_impl_->last_sources()[3];
-  EXPECT_FALSE(source->id().isEmpty());
-  EXPECT_EQ(blink::WebSourceInfo::SourceKindVideo, source->kind());
-  EXPECT_FALSE(source->label().isEmpty());
-  EXPECT_EQ(blink::WebSourceInfo::VideoFacingModeNone, source->facing());
 }
 
 TEST_F(UserMediaClientImplTest, RenderToAssociatedSinkConstraint) {

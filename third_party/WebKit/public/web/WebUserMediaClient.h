@@ -34,7 +34,6 @@
 namespace blink {
 
 class WebMediaDevicesRequest;
-class WebMediaStreamTrackSourcesRequest;
 class WebUserMediaRequest;
 class WebMediaDeviceChangeObserver;
 
@@ -45,7 +44,6 @@ class WebUserMediaClient {
   virtual void requestUserMedia(const WebUserMediaRequest&) = 0;
   virtual void cancelUserMediaRequest(const WebUserMediaRequest&) = 0;
   virtual void requestMediaDevices(const WebMediaDevicesRequest&) = 0;
-  virtual void requestSources(const WebMediaStreamTrackSourcesRequest&) = 0;
   virtual void setMediaDeviceChangeObserver(
       const WebMediaDeviceChangeObserver&) = 0;
 };

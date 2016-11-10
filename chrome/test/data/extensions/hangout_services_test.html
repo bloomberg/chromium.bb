@@ -20,7 +20,7 @@ the Hangout Services component extension and the APIs it uses.
 // Populates UI elements with initial contents.
 function populate() {
   populateSinks();
-  MediaStreamTrack.getSources(populateSources);
+  navigator.mediaDevices.enumerateDevices().then(populateSources);
 }
 
 // Populates the select box with information on all sinks and the
@@ -42,14 +42,14 @@ function populateSinks() {
     });
 }
 
-function populateSources(sources) {
+function populateSources(devices) {
   var select = document.getElementById('selectSource');
-  for (var i = 0; i < sources.length; ++i) {
-    var source = sources[i];
-    if (source.kind == 'audio') {
+  for (var i = 0; i < devices.length; ++i) {
+    var device = devices[i];
+    if (device.kind == 'audioinput') {
       var option = document.createElement('option');
-      option.value = source.id;
-      option.text = source.label + ' (' + source.id + ')';
+      option.value = device.deviceId;
+      option.text = device.label + ' (' + device.deviceId + ')';
       select.add(option);
     }
   }

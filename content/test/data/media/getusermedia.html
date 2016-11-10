@@ -11,15 +11,17 @@
   });
 
   function getSources() {
-    MediaStreamTrack.getSources(function(devices) {
+    navigator.mediaDevices.enumerateDevices().then(function(devices) {
       document.title = 'Media devices available';
       var results = [];
       for (var device, i = 0; device = devices[i]; ++i) {
+        if (device.kind != "audioinput" && device.kind != "videoinput")
+          continue;
         results.push({
-          'id': device.id,
-          'kind': device.kind,
+          'id': device.deviceId,
+          'kind': device.kind == "audioinput" ? "audio" : "video",
           'label': device.label,
-          'facing': device.facing
+          'facing': ""
         });
       }
       sendValueToTest(JSON.stringify(results));
