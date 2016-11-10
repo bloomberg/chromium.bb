@@ -23,6 +23,7 @@ class CryptohomeClient;
 class DebugDaemonClient;
 class EasyUnlockClient;
 class ImageBurnerClient;
+class ImageLoaderClient;
 class LorgnetteManagerClient;
 
 // D-Bus clients used only in the browser process.
@@ -46,6 +47,7 @@ class CHROMEOS_EXPORT DBusClientsBrowser {
   std::unique_ptr<DebugDaemonClient> debug_daemon_client_;
   std::unique_ptr<EasyUnlockClient> easy_unlock_client_;
   std::unique_ptr<ImageBurnerClient> image_burner_client_;
+  std::unique_ptr<ImageLoaderClient> image_loader_client_;
   std::unique_ptr<LorgnetteManagerClient> lorgnette_manager_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusClientsBrowser);

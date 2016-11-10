@@ -69,8 +69,7 @@ const base::FilePath::CharType kComponentUpdatedFlashHint[] =
 
 #if defined(OS_CHROMEOS)
 const base::FilePath::CharType kChromeOSComponentFlash[] = FILE_PATH_LITERAL(
-    "/mnt/stateful_partition/imageloader_mounts/PepperFlashPlayer/"
-    "libpepflashplayer.so");
+    "/run/imageloader/PepperFlashPlayer/libpepflashplayer.so");
 #endif  // defined(OS_CHROMEOS)
 
 static base::LazyInstance<base::FilePath>

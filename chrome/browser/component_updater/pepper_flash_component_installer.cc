@@ -43,9 +43,14 @@
 #include "content/public/common/pepper_plugin_info.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
+#include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/image_loader_client.h"
+#include "content/public/browser/browser_thread.h"
+#elif defined(OS_LINUX)
 #include "chrome/common/component_flash_hint_file_linux.h"
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_CHROMEOS)
 
 using content::BrowserThread;
 using content::PluginService;
@@ -60,6 +65,32 @@ const uint8_t kSha2Hash[] = {0xc8, 0xce, 0x99, 0xba, 0xce, 0x89, 0xf8, 0x20,
                              0xac, 0xd3, 0x7e, 0x86, 0x8c, 0x86, 0x2c, 0x11,
                              0xb9, 0x40, 0xc5, 0x55, 0xaf, 0x08, 0x63, 0x70,
                              0x54, 0xf9, 0x56, 0xd3, 0xe7, 0x88, 0xba, 0x8c};
+
+#if defined(OS_CHROMEOS)
+void LogRegistrationResult(chromeos::DBusMethodCallStatus call_status,
+                           bool result) {
+  if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
+    LOG(ERROR) << "Call to imageloader service failed.";
+    return;
+  }
+  if (!result)
+    LOG(ERROR) << "Component flash registration failed";
+}
+
+void ImageLoaderRegistration(const std::string& version,
+                             const base::FilePath& install_dir) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  chromeos::ImageLoaderClient* loader =
+      chromeos::DBusThreadManager::Get()->GetImageLoaderClient();
+
+  if (loader) {
+    loader->RegisterComponent("PepperFlashPlayer", version, install_dir.value(),
+                              base::Bind(&LogRegistrationResult));
+  } else {
+    LOG(ERROR) << "Failed to get ImageLoaderClient object.";
+  }
+}
+#endif  // defined(OS_CHROMEOS)
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
 #if !defined(OS_LINUX) && defined(GOOGLE_CHROME_BUILD)
@@ -192,16 +223,21 @@ update_client::CrxInstaller::Result
 FlashComponentInstallerTraits::OnCustomInstall(
     const base::DictionaryValue& manifest,
     const base::FilePath& install_dir) {
-#if defined(OS_LINUX)
-  const base::FilePath flash_path =
-      install_dir.Append(chrome::kPepperFlashPluginFilename);
-  // Populate the component updated flash hint file so that the zygote can
-  // locate and preload the latest version of flash.
   std::string version;
   if (!manifest.GetString("version", &version)) {
     return update_client::CrxInstaller::Result(
         update_client::InstallError::GENERIC_ERROR);
   }
+
+#if defined(OS_CHROMEOS)
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&ImageLoaderRegistration, version, install_dir));
+#elif defined(OS_LINUX)
+  const base::FilePath flash_path =
+      install_dir.Append(chrome::kPepperFlashPluginFilename);
+  // Populate the component updated flash hint file so that the zygote can
+  // locate and preload the latest version of flash.
   if (!component_flash_hint_file::RecordFlashUpdate(flash_path, flash_path,
                                                     version)) {
     return update_client::CrxInstaller::Result(
@@ -269,6 +305,7 @@ void RegisterPepperFlashComponent(ComponentUpdateService* cus) {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kDisableBundledPpapiFlash))
     return;
+
   std::unique_ptr<ComponentInstallerTraits> traits(
       new FlashComponentInstallerTraits);
   // |cus| will take ownership of |installer| during installer->Register(cus).

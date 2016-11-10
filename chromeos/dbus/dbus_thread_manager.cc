@@ -23,6 +23,7 @@
 #include "chromeos/dbus/easy_unlock_client.h"
 #include "chromeos/dbus/gsm_sms_client.h"
 #include "chromeos/dbus/image_burner_client.h"
+#include "chromeos/dbus/image_loader_client.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
 #include "chromeos/dbus/permission_broker_client.h"
@@ -174,6 +175,11 @@ GsmSMSClient* DBusThreadManager::GetGsmSMSClient() {
 
 ImageBurnerClient* DBusThreadManager::GetImageBurnerClient() {
   return clients_browser_ ? clients_browser_->image_burner_client_.get()
+                          : nullptr;
+}
+
+ImageLoaderClient* DBusThreadManager::GetImageLoaderClient() {
+  return clients_browser_ ? clients_browser_->image_loader_client_.get()
                           : nullptr;
 }
 
@@ -350,6 +356,12 @@ void DBusThreadManagerSetter::SetShillThirdPartyVpnDriverClient(
 void DBusThreadManagerSetter::SetImageBurnerClient(
     std::unique_ptr<ImageBurnerClient> client) {
   DBusThreadManager::Get()->clients_browser_->image_burner_client_ =
+      std::move(client);
+}
+
+void DBusThreadManagerSetter::SetImageLoaderClient(
+    std::unique_ptr<ImageLoaderClient> client) {
+  DBusThreadManager::Get()->clients_browser_->image_loader_client_ =
       std::move(client);
 }
 

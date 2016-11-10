@@ -497,12 +497,16 @@ void RegisterComponentsForUpdate() {
   // Registration can be before or after cus->Start() so it is ok to post
   // a task to the UI thread to do registration once you done the necessary
   // file IO to know you existing component version.
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#if !defined(OS_ANDROID)
+#if !defined(OS_CHROMEOS)
   RegisterRecoveryComponent(cus, g_browser_process->local_state());
+#endif  // !defined(OS_CHROMEOS)
   RegisterPepperFlashComponent(cus);
+#if !defined(OS_CHROMEOS)
   RegisterSwiftShaderComponent(cus);
   RegisterWidevineCdmComponent(cus);
-#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#endif  // !defined(OS_CHROMEOS)
+#endif  // !defined(OS_ANDROID)
 
 #if !defined(DISABLE_NACL) && !defined(OS_ANDROID)
 #if defined(OS_CHROMEOS)

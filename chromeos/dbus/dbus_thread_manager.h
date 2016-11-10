@@ -37,6 +37,7 @@ class DebugDaemonClient;
 class EasyUnlockClient;
 class GsmSMSClient;
 class ImageBurnerClient;
+class ImageLoaderClient;
 class LorgnetteManagerClient;
 class ModemMessagingClient;
 class PermissionBrokerClient;
@@ -126,6 +127,7 @@ class CHROMEOS_EXPORT DBusThreadManager {
   EasyUnlockClient* GetEasyUnlockClient();
   GsmSMSClient* GetGsmSMSClient();
   ImageBurnerClient* GetImageBurnerClient();
+  ImageLoaderClient* GetImageLoaderClient();
   LorgnetteManagerClient* GetLorgnetteManagerClient();
   ModemMessagingClient* GetModemMessagingClient();
   PermissionBrokerClient* GetPermissionBrokerClient();
@@ -185,6 +187,7 @@ class CHROMEOS_EXPORT DBusThreadManagerSetter {
   void SetShillThirdPartyVpnDriverClient(
       std::unique_ptr<ShillThirdPartyVpnDriverClient> client);
   void SetImageBurnerClient(std::unique_ptr<ImageBurnerClient> client);
+  void SetImageLoaderClient(std::unique_ptr<ImageLoaderClient> client);
   void SetPermissionBrokerClient(
       std::unique_ptr<PermissionBrokerClient> client);
   void SetPowerManagerClient(std::unique_ptr<PowerManagerClient> client);

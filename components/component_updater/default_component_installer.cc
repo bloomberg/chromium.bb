@@ -86,6 +86,14 @@ Result DefaultComponentInstaller::InstallHelper(
     PLOG(ERROR) << "Move failed.";
     return Result(InstallError::GENERIC_ERROR);
   }
+
+#if defined(OS_CHROMEOS)
+  if (!base::SetPosixFilePermissions(install_path, 0755)) {
+    PLOG(ERROR) << "SetPosixFilePermissions failed: " << install_path.value();
+    return  Result(InstallError::GENERIC_ERROR);
+  }
+#endif  // defined(OS_CHROMEOS)
+
   const auto result =
       installer_traits_->OnCustomInstall(manifest, install_path);
   if (result.error) {
@@ -235,6 +243,14 @@ void DefaultComponentInstaller::StartRegistration(ComponentUpdateService* cus) {
                 << base_dir.MaybeAsASCII() << ").";
     return;
   }
+
+#if defined(OS_CHROMEOS)
+  if (!base::SetPosixFilePermissions(base_dir, 0755)) {
+    PLOG(ERROR) << "SetPosixFilePermissions failed: " << base_dir.value();
+    return;
+  }
+#endif  // defined(OS_CHROMEOS)
+
   std::vector<base::FilePath> older_paths;
   base::FileEnumerator file_enumerator(
       base_dir, false, base::FileEnumerator::DIRECTORIES);
