@@ -318,17 +318,24 @@ cr.define('settings', function() {
    * Navigates to a canonical route and pushes a new history entry.
    * @param {!settings.Route} route
    * @param {URLSearchParams=} opt_dynamicParameters Navigations to the same
-   *     search parameters in a different order will still push to history.
+   *     URL parameters in a different order will still push to history.
+   * @param {boolean=} opt_removeSearch Whether to strip the 'search' URL
+   *     parameter during navigation. Defaults to false.
    */
-  var navigateTo = function(route, opt_dynamicParameters) {
+  var navigateTo = function(route, opt_dynamicParameters, opt_removeSearch) {
     var params = opt_dynamicParameters || new URLSearchParams();
+    var removeSearch = !!opt_removeSearch;
+
+    var oldSearchParam = getQueryParameters().get('search') || '';
+    var newSearchParam = params.get('search') || '';
+
+    if (!removeSearch && oldSearchParam && !newSearchParam)
+      params.append('search', oldSearchParam);
 
     var url = route.path;
-    if (opt_dynamicParameters) {
-      var queryString = opt_dynamicParameters.toString();
-      if (queryString)
-        url += '?' + queryString;
-    }
+    var queryString = params.toString();
+    if (queryString)
+      url += '?' + queryString;
 
     // History serializes the state, so we don't push the actual route object.
     window.history.pushState(currentRoute_.path, '', url);

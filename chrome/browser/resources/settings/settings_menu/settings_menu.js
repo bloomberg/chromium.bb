@@ -75,7 +75,8 @@ Polymer({
   openPage_: function(event) {
     var route = settings.getRouteForPath(event.currentTarget.dataset.path);
     assert(route, 'settings-menu has an an entry with an invalid path');
-    settings.navigateTo(route);
+    settings.navigateTo(
+        route, /* dynamicParams */ null, /* removeSearch */ true);
   },
 
   /**

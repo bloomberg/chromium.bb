@@ -126,6 +126,20 @@ suite('route', function() {
     assertEquals(settings.Route.BASIC, settings.getCurrentRoute());
   });
 
+  test('navigateTo respects removeSearch optional parameter', function() {
+    var params = new URLSearchParams('search=foo');
+    settings.navigateTo(settings.Route.BASIC, params);
+    assertEquals(params.toString(), settings.getQueryParameters().toString());
+
+    settings.navigateTo(
+        settings.Route.SITE_SETTINGS, null, /* removeSearch */ false);
+    assertEquals(params.toString(), settings.getQueryParameters().toString());
+
+    settings.navigateTo(
+        settings.Route.SEARCH_ENGINES, null, /* removeSearch */ true);
+    assertEquals('', settings.getQueryParameters().toString());
+  });
+
   test('popstate flag works', function() {
     settings.navigateTo(settings.Route.BASIC);
     assertFalse(settings.lastRouteChangeWasPopstate());

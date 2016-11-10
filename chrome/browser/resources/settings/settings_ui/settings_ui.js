@@ -122,18 +122,6 @@ Polymer({
 
   /** @param {!settings.Route} route */
   currentRouteChanged: function(route) {
-    // New searches always take place on the BASIC route. Navigations into
-    // subpages are either non-searches, or continuations of an existing search.
-    //
-    // TODO(dpapad): Address corner-case where the user:
-    //  1) Visits a subpage first.
-    //  2) Triggers a search.
-    //  3) Clicks the "back" button.
-    //  Currently nothing happens. Should clear search results and navigate to
-    //  the subpage instead.
-    if (route.isSubpage())
-      return;
-
     var urlSearchQuery = settings.getQueryParameters().get('search') || '';
     if (urlSearchQuery == this.lastSearchQuery_)
       return;
@@ -171,8 +159,8 @@ Polymer({
 
     settings.navigateTo(
         settings.Route.BASIC,
-        query.length > 0 ?
-            new URLSearchParams(`search=${query}`) : undefined);
+        query.length > 0 ? new URLSearchParams(`search=${query}`) : undefined,
+        /* removeSearch */ true);
   },
 
   /**

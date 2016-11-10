@@ -67,6 +67,18 @@ cr.define('settings_menu', function() {
         assertEquals('/reset',
             advancedPage.querySelector('paper-menu').selected);
       });
+
+      // Test that navigating via the paper menu always clears the current
+      // search URL parameter.
+      test('clearsUrlSearchParam', function() {
+        var urlParams = new URLSearchParams('search=foo');
+        settings.navigateTo(settings.Route.BASIC, urlParams);
+        assertEquals(
+            urlParams.toString(),
+            settings.getQueryParameters().toString());
+        MockInteractions.tap(settingsMenu.$.people);
+        assertEquals('', settings.getQueryParameters().toString());
+      });
     });
   }
 
