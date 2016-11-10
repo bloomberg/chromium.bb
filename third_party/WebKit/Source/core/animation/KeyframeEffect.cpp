@@ -58,10 +58,11 @@ KeyframeEffect* KeyframeEffect::create(
     double duration,
     ExceptionState& exceptionState) {
   DCHECK(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
-  if (element)
+  if (element) {
     UseCounter::count(
         element->document(),
         UseCounter::AnimationConstructorKeyframeListEffectObjectTiming);
+  }
   Timing timing;
   if (!TimingInput::convert(duration, timing, exceptionState))
     return nullptr;
@@ -77,10 +78,11 @@ KeyframeEffect* KeyframeEffect::create(
     const KeyframeEffectOptions& timingInput,
     ExceptionState& exceptionState) {
   DCHECK(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
-  if (element)
+  if (element) {
     UseCounter::count(
         element->document(),
         UseCounter::AnimationConstructorKeyframeListEffectObjectTiming);
+  }
   Timing timing;
   Document* document = element ? &element->document() : nullptr;
   if (!TimingInput::convert(timingInput, timing, document, exceptionState))
@@ -96,10 +98,11 @@ KeyframeEffect* KeyframeEffect::create(
     const DictionarySequenceOrDictionary& effectInput,
     ExceptionState& exceptionState) {
   DCHECK(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
-  if (element)
+  if (element) {
     UseCounter::count(
         element->document(),
         UseCounter::AnimationConstructorKeyframeListEffectNoTiming);
+  }
   return create(element, EffectInput::convert(element, effectInput,
                                               executionContext, exceptionState),
                 Timing());

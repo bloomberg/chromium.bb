@@ -24,18 +24,34 @@
 
 namespace blink {
 
-// Web Animations API Bindings constructors. We never actually want to create a
-// KeyframeEffectReadOnly object, we just want to provide a read-only interface
-// to the KeyframeEffect object, so pass straight through to the subclass
-// factory methods.
+KeyframeEffectReadOnly* KeyframeEffectReadOnly::create(
+    Element* target,
+    EffectModel* model,
+    const Timing& timing,
+    Priority priority,
+    EventDelegate* eventDelegate) {
+  return new KeyframeEffectReadOnly(target, model, timing, priority,
+                                    eventDelegate);
+}
+
 KeyframeEffectReadOnly* KeyframeEffectReadOnly::create(
     ExecutionContext* executionContext,
     Element* element,
     const DictionarySequenceOrDictionary& effectInput,
     double duration,
     ExceptionState& exceptionState) {
-  return KeyframeEffect::create(executionContext, element, effectInput,
-                                duration, exceptionState);
+  DCHECK(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
+  if (element) {
+    UseCounter::count(
+        element->document(),
+        UseCounter::AnimationConstructorKeyframeListEffectObjectTiming);
+  }
+  Timing timing;
+  if (!TimingInput::convert(duration, timing, exceptionState))
+    return nullptr;
+  return create(element, EffectInput::convert(element, effectInput,
+                                              executionContext, exceptionState),
+                timing);
 }
 
 KeyframeEffectReadOnly* KeyframeEffectReadOnly::create(
@@ -44,8 +60,19 @@ KeyframeEffectReadOnly* KeyframeEffectReadOnly::create(
     const DictionarySequenceOrDictionary& effectInput,
     const KeyframeEffectOptions& timingInput,
     ExceptionState& exceptionState) {
-  return KeyframeEffect::create(executionContext, element, effectInput,
-                                timingInput, exceptionState);
+  DCHECK(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
+  if (element) {
+    UseCounter::count(
+        element->document(),
+        UseCounter::AnimationConstructorKeyframeListEffectObjectTiming);
+  }
+  Timing timing;
+  Document* document = element ? &element->document() : nullptr;
+  if (!TimingInput::convert(timingInput, timing, document, exceptionState))
+    return nullptr;
+  return create(element, EffectInput::convert(element, effectInput,
+                                              executionContext, exceptionState),
+                timing);
 }
 
 KeyframeEffectReadOnly* KeyframeEffectReadOnly::create(
@@ -53,8 +80,15 @@ KeyframeEffectReadOnly* KeyframeEffectReadOnly::create(
     Element* element,
     const DictionarySequenceOrDictionary& effectInput,
     ExceptionState& exceptionState) {
-  return KeyframeEffect::create(executionContext, element, effectInput,
-                                exceptionState);
+  DCHECK(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
+  if (element) {
+    UseCounter::count(
+        element->document(),
+        UseCounter::AnimationConstructorKeyframeListEffectNoTiming);
+  }
+  return create(element, EffectInput::convert(element, effectInput,
+                                              executionContext, exceptionState),
+                Timing());
 }
 
 KeyframeEffectReadOnly::KeyframeEffectReadOnly(Element* target,

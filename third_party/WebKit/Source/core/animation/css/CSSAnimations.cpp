@@ -38,6 +38,7 @@
 #include "core/animation/InertEffect.h"
 #include "core/animation/Interpolation.h"
 #include "core/animation/KeyframeEffectModel.h"
+#include "core/animation/KeyframeEffectReadOnly.h"
 #include "core/animation/LegacyStyleInterpolation.h"
 #include "core/animation/css/CSSAnimatableValueFactory.h"
 #include "core/css/CSSKeyframeRule.h"
@@ -250,8 +251,8 @@ static const KeyframeEffectModelBase* getKeyframeEffectModelBase(
   if (!effect)
     return nullptr;
   const EffectModel* model = nullptr;
-  if (effect->isKeyframeEffect())
-    model = toKeyframeEffect(effect)->model();
+  if (effect->isKeyframeEffectReadOnly())
+    model = toKeyframeEffectReadOnly(effect)->model();
   else if (effect->isInertEffect())
     model = toInertEffect(effect)->model();
   if (!model || !model->isKeyframeEffectModel())
@@ -487,7 +488,8 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element) {
     animation->setCompositorPending(true);
 
   for (const auto& entry : m_pendingUpdate.animationsWithUpdates()) {
-    KeyframeEffect* effect = toKeyframeEffect(entry.animation->effect());
+    KeyframeEffectReadOnly* effect =
+        toKeyframeEffectReadOnly(entry.animation->effect());
 
     effect->setModel(entry.effect->model());
     effect->updateSpecifiedTiming(entry.effect->specifiedTiming());
@@ -527,26 +529,27 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element) {
   // be when transitions are retargeted. Instead of triggering complete style
   // recalculation, we find these cases by searching for new transitions that
   // have matching cancelled animation property IDs on the compositor.
-  HeapHashMap<CSSPropertyID, std::pair<Member<KeyframeEffect>, double>>
+  HeapHashMap<CSSPropertyID, std::pair<Member<KeyframeEffectReadOnly>, double>>
       retargetedCompositorTransitions;
   for (CSSPropertyID id : m_pendingUpdate.cancelledTransitions()) {
     DCHECK(m_transitions.contains(id));
 
     Animation* animation = m_transitions.take(id).animation;
-    KeyframeEffect* effect = toKeyframeEffect(animation->effect());
+    KeyframeEffectReadOnly* effect =
+        toKeyframeEffectReadOnly(animation->effect());
     if (effect->hasActiveAnimationsOnCompositor(id) &&
         m_pendingUpdate.newTransitions().find(id) !=
             m_pendingUpdate.newTransitions().end() &&
         !animation->limited())
       retargetedCompositorTransitions.add(
-          id, std::pair<KeyframeEffect*, double>(
+          id, std::pair<KeyframeEffectReadOnly*, double>(
                   effect, animation->startTimeInternal()));
     animation->cancel();
     // after cancelation, transitions must be downgraded or they'll fail
     // to be considered when retriggering themselves. This can happen if
     // the transition is captured through getAnimations then played.
-    if (animation->effect() && animation->effect()->isKeyframeEffect())
-      toKeyframeEffect(animation->effect())->downgradeToNormal();
+    if (animation->effect() && animation->effect()->isKeyframeEffectReadOnly())
+      toKeyframeEffectReadOnly(animation->effect())->downgradeToNormal();
     animation->update(TimingUpdateOnDemand);
   }
 
@@ -555,8 +558,9 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element) {
     if (m_transitions.contains(id)) {
       Animation* animation = m_transitions.take(id).animation;
       // Transition must be downgraded
-      if (animation->effect() && animation->effect()->isKeyframeEffect())
-        toKeyframeEffect(animation->effect())->downgradeToNormal();
+      if (animation->effect() &&
+          animation->effect()->isKeyframeEffectReadOnly())
+        toKeyframeEffectReadOnly(animation->effect())->downgradeToNormal();
     }
   }
 
@@ -579,9 +583,9 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element) {
     EffectModel* model = inertAnimation->model();
 
     if (retargetedCompositorTransitions.contains(id)) {
-      const std::pair<Member<KeyframeEffect>, double>& oldTransition =
+      const std::pair<Member<KeyframeEffectReadOnly>, double>& oldTransition =
           retargetedCompositorTransitions.get(id);
-      KeyframeEffect* oldAnimation = oldTransition.first;
+      KeyframeEffectReadOnly* oldAnimation = oldTransition.first;
       double oldStartTime = oldTransition.second;
       double inheritedTime =
           isNull(oldStartTime)

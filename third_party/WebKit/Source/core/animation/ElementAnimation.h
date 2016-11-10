@@ -37,6 +37,7 @@
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/KeyframeEffect.h"
 #include "core/animation/KeyframeEffectOptions.h"
+#include "core/animation/KeyframeEffectReadOnly.h"
 #include "core/animation/TimingInput.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -108,7 +109,7 @@ class ElementAnimation {
     for (const auto& animation :
          element.document().timeline().getAnimations()) {
       DCHECK(animation->effect());
-      if (toKeyframeEffect(animation->effect())->target() == element &&
+      if (toKeyframeEffectReadOnly(animation->effect())->target() == element &&
           (animation->effect()->isCurrent() ||
            animation->effect()->isInEffect()))
         animations.append(animation);

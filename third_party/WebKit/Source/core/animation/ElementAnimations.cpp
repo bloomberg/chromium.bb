@@ -41,8 +41,9 @@ void ElementAnimations::updateAnimationFlags(ComputedStyle& style) {
     const Animation& animation = *entry.key;
     DCHECK(animation.effect());
     // FIXME: Needs to consider AnimationGroup once added.
-    DCHECK(animation.effect()->isKeyframeEffect());
-    const KeyframeEffect& effect = *toKeyframeEffect(animation.effect());
+    DCHECK(animation.effect()->isKeyframeEffectReadOnly());
+    const KeyframeEffectReadOnly& effect =
+        *toKeyframeEffectReadOnly(animation.effect());
     if (effect.isCurrent()) {
       if (effect.affects(PropertyHandle(CSSPropertyOpacity)))
         style.setHasCurrentOpacityAnimation(true);

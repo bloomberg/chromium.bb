@@ -1,0 +1,57 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/elements-test.js"></script>
+<script>
+function startAnimationWithKeyframeEffect()
+{
+    var effect = new KeyframeEffect(node, { opacity : [ 0, 0.9 ] }, 1000);
+    var anim = node.animate(null);
+    anim.effect = effect;
+}
+
+function startAnimationWithKeyframeEffectReadOnly()
+{
+    var effect = new KeyframeEffectReadOnly(nodeRO, { opacity : [ 0, 0.9 ] }, 1000);
+    var anim = nodeRO.animate(null);
+    anim.effect = effect;
+}
+
+var initialize_Animations = function() {
+
+    InspectorTest.preloadModule("animation");
+}
+
+function test()
+{
+    WebInspector.viewManager.showView("animations");
+    var timeline = self.runtime.sharedInstance(WebInspector.AnimationTimeline);
+    InspectorTest.evaluateInPage("startAnimationWithKeyframeEffect()");
+    InspectorTest.waitForAnimationAdded(step2);
+
+    function step2(group)
+    {
+        InspectorTest.waitForAnimationAdded(step3);
+        InspectorTest.evaluateInPage("startAnimationWithKeyframeEffectReadOnly()");
+    }
+
+    function step3(group)
+    {
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that animations can be created with KeyframeEffect and
+KeyframeEffectReadOnly without crashing.
+</p>
+
+<div id="node" style="background-color: red; height: 100px"></div>
+<div id="nodeRO" style="background-color: red; height: 100px"></div>
+
+</body>
+</html>

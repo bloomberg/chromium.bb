@@ -7,7 +7,7 @@
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/animation/Animation.h"
-#include "core/animation/KeyframeEffect.h"
+#include "core/animation/KeyframeEffectReadOnly.h"
 #include "core/css/invalidation/InvalidationSet.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/StyleChangeReason.h"
@@ -1007,8 +1007,8 @@ std::unique_ptr<TracedValue> InspectorAnimationEvent::data(
   value->setString("state", animation.playState());
   if (const AnimationEffectReadOnly* effect = animation.effect()) {
     value->setString("name", animation.id());
-    if (effect->isKeyframeEffect()) {
-      if (Element* target = toKeyframeEffect(effect)->target())
+    if (effect->isKeyframeEffectReadOnly()) {
+      if (Element* target = toKeyframeEffectReadOnly(effect)->target())
         setNodeInfo(value.get(), target, "nodeId", "nodeName");
     }
   }

@@ -10,8 +10,8 @@
 #include "core/animation/ComputedTimingProperties.h"
 #include "core/animation/EffectModel.h"
 #include "core/animation/ElementAnimation.h"
-#include "core/animation/KeyframeEffect.h"
 #include "core/animation/KeyframeEffectModel.h"
+#include "core/animation/KeyframeEffectReadOnly.h"
 #include "core/animation/StringKeyframe.h"
 #include "core/css/CSSKeyframeRule.h"
 #include "core/css/CSSKeyframesRule.h"
@@ -90,7 +90,8 @@ void InspectorAnimationAgent::didCommitLoadForLocalFrame(LocalFrame* frame) {
 }
 
 static std::unique_ptr<protocol::Animation::AnimationEffect>
-buildObjectForAnimationEffect(KeyframeEffect* effect, bool isTransition) {
+buildObjectForAnimationEffect(KeyframeEffectReadOnly* effect,
+                              bool isTransition) {
   ComputedTimingProperties computedTiming = effect->getComputedTiming();
   double delay = computedTiming.delay();
   double duration = computedTiming.duration().getAsUnrestrictedDouble();
@@ -143,7 +144,7 @@ buildObjectForStringKeyframe(const StringKeyframe* keyframe) {
 }
 
 static std::unique_ptr<protocol::Animation::KeyframesRule>
-buildObjectForAnimationKeyframes(const KeyframeEffect* effect) {
+buildObjectForAnimationKeyframes(const KeyframeEffectReadOnly* effect) {
   if (!effect || !effect->model() || !effect->model()->isKeyframeEffectModel())
     return nullptr;
   const KeyframeEffectModelBase* model =
@@ -168,7 +169,8 @@ buildObjectForAnimationKeyframes(const KeyframeEffect* effect) {
 
 std::unique_ptr<protocol::Animation::Animation>
 InspectorAnimationAgent::buildObjectForAnimation(blink::Animation& animation) {
-  const Element* element = toKeyframeEffect(animation.effect())->target();
+  const Element* element =
+      toKeyframeEffectReadOnly(animation.effect())->target();
   CSSAnimations& cssAnimations = element->elementAnimations()->cssAnimations();
   std::unique_ptr<protocol::Animation::KeyframesRule> keyframeRule = nullptr;
   String animationType;
@@ -178,8 +180,8 @@ InspectorAnimationAgent::buildObjectForAnimation(blink::Animation& animation) {
     animationType = AnimationType::CSSTransition;
   } else {
     // Keyframe based animations
-    keyframeRule =
-        buildObjectForAnimationKeyframes(toKeyframeEffect(animation.effect()));
+    keyframeRule = buildObjectForAnimationKeyframes(
+        toKeyframeEffectReadOnly(animation.effect()));
     animationType = cssAnimations.isAnimationForInspector(animation)
                         ? AnimationType::CSSAnimation
                         : AnimationType::WebAnimation;
@@ -191,7 +193,7 @@ InspectorAnimationAgent::buildObjectForAnimation(blink::Animation& animation) {
 
   std::unique_ptr<protocol::Animation::AnimationEffect> animationEffectObject =
       buildObjectForAnimationEffect(
-          toKeyframeEffect(animation.effect()),
+          toKeyframeEffectReadOnly(animation.effect()),
           animationType == AnimationType::CSSTransition);
   animationEffectObject->setKeyframesRule(std::move(keyframeRule));
 
@@ -273,7 +275,8 @@ blink::Animation* InspectorAnimationAgent::animationClone(
     blink::Animation* animation) {
   const String id = String::number(animation->sequenceNumber());
   if (!m_idToAnimationClone.get(id)) {
-    KeyframeEffect* oldEffect = toKeyframeEffect(animation->effect());
+    KeyframeEffectReadOnly* oldEffect =
+        toKeyframeEffectReadOnly(animation->effect());
     ASSERT(oldEffect->model()->isKeyframeEffectModel());
     KeyframeEffectModelBase* oldModel =
         toKeyframeEffectModelBase(oldEffect->model());
@@ -406,7 +409,8 @@ Response InspectorAnimationAgent::resolveAnimation(
     return response;
   if (m_idToAnimationClone.get(animationId))
     animation = m_idToAnimationClone.get(animationId);
-  const Element* element = toKeyframeEffect(animation->effect())->target();
+  const Element* element =
+      toKeyframeEffectReadOnly(animation->effect())->target();
   Document* document = element->ownerDocument();
   LocalFrame* frame = document ? document->frame() : nullptr;
   ScriptState* scriptState = frame ? ScriptState::forMainWorld(frame) : nullptr;
@@ -449,7 +453,7 @@ String InspectorAnimationAgent::createCSSId(blink::Animation& animation) {
       m_idToAnimationType.get(String::number(animation.sequenceNumber()));
   ASSERT(type != AnimationType::WebAnimation);
 
-  KeyframeEffect* effect = toKeyframeEffect(animation.effect());
+  KeyframeEffectReadOnly* effect = toKeyframeEffectReadOnly(animation.effect());
   Vector<CSSPropertyID> cssProperties;
   if (type == AnimationType::CSSAnimation) {
     for (CSSPropertyID property : animationProperties)

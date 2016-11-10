@@ -112,8 +112,8 @@ void AnimationEffectReadOnly::getComputedTiming(
   // KeyframeEffectOptions members.
   computedTiming.setDelay(specifiedTiming().startDelay * 1000);
   computedTiming.setEndDelay(specifiedTiming().endDelay * 1000);
-  computedTiming.setFill(Timing::fillModeString(
-      resolvedFillMode(specifiedTiming().fillMode, isKeyframeEffect())));
+  computedTiming.setFill(Timing::fillModeString(resolvedFillMode(
+      specifiedTiming().fillMode, isKeyframeEffectReadOnly())));
   computedTiming.setIterationStart(specifiedTiming().iterationStart);
   computedTiming.setIterations(specifiedTiming().iterationCount);
 
@@ -153,7 +153,8 @@ void AnimationEffectReadOnly::updateInheritedTime(
     const AnimationEffectReadOnly::Phase parentPhase =
         AnimationEffectReadOnly::PhaseActive;
     const double activeTime = calculateActiveTime(
-        activeDuration, resolvedFillMode(m_timing.fillMode, isKeyframeEffect()),
+        activeDuration,
+        resolvedFillMode(m_timing.fillMode, isKeyframeEffectReadOnly()),
         localTime, parentPhase, currentPhase, m_timing);
 
     double currentIteration;
@@ -206,7 +207,7 @@ void AnimationEffectReadOnly::updateInheritedTime(
           calculatePhase(localActiveDuration, localLocalTime, m_timing);
       const double localActiveTime = calculateActiveTime(
           localActiveDuration,
-          resolvedFillMode(m_timing.fillMode, isKeyframeEffect()),
+          resolvedFillMode(m_timing.fillMode, isKeyframeEffectReadOnly()),
           localLocalTime, parentPhase, localCurrentPhase, m_timing);
       const double startOffset =
           m_timing.iterationStart * localIterationDuration;
