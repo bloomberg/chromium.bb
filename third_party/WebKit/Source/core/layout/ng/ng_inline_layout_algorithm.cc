@@ -4,6 +4,7 @@
 
 #include "core/layout/ng/ng_inline_layout_algorithm.h"
 
+#include "core/layout/ng/ng_break_token.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_inline_box.h"
@@ -14,10 +15,12 @@ namespace blink {
 NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
     PassRefPtr<const ComputedStyle> style,
     NGInlineBox* first_child,
-    NGConstraintSpace* constraint_space)
+    NGConstraintSpace* constraint_space,
+    NGBreakToken* break_token)
     : style_(style),
       first_child_(first_child),
-      constraint_space_(constraint_space) {
+      constraint_space_(constraint_space),
+      break_token_(break_token) {
   DCHECK(style_);
 }
 
@@ -32,6 +35,7 @@ DEFINE_TRACE(NGInlineLayoutAlgorithm) {
   NGLayoutAlgorithm::trace(visitor);
   visitor->trace(first_child_);
   visitor->trace(constraint_space_);
+  visitor->trace(break_token_);
 }
 
 }  // namespace blink

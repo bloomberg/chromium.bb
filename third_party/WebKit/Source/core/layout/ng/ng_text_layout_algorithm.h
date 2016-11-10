@@ -15,6 +15,7 @@ namespace blink {
 class ComputedStyle;
 class NGConstraintSpace;
 class NGPhysicalFragment;
+class NGBreakToken;
 
 // A class for text layout. This takes a NGInlineBox which consists only
 // non-atomic inlines and produces NGTextFragments.
@@ -28,7 +29,9 @@ class CORE_EXPORT NGTextLayoutAlgorithm : public NGLayoutAlgorithm {
   // @param inline_box The inline box to produce fragments from.
   // @param space The constraint space which the algorithm should generate a
   //              fragments within.
-  NGTextLayoutAlgorithm(NGInlineBox* inline_box, NGConstraintSpace* space);
+  NGTextLayoutAlgorithm(NGInlineBox* inline_box,
+                        NGConstraintSpace* space,
+                        NGBreakToken* break_token = nullptr);
 
   bool Layout(NGPhysicalFragmentBase**) override;
 
@@ -37,6 +40,7 @@ class CORE_EXPORT NGTextLayoutAlgorithm : public NGLayoutAlgorithm {
  private:
   Member<NGInlineBox> inline_box_;
   Member<NGConstraintSpace> constraint_space_;
+  Member<NGBreakToken> break_token_;
 };
 
 }  // namespace blink

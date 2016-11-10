@@ -17,6 +17,7 @@ namespace blink {
 class ComputedStyle;
 class NGConstraintSpace;
 class NGPhysicalFragmentBase;
+class NGBreakToken;
 
 // A class for general block layout (e.g. a <div> with no special style).
 // Lays out the children in sequence.
@@ -30,7 +31,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   //              fragment within.
   NGBlockLayoutAlgorithm(PassRefPtr<const ComputedStyle>,
                          NGBox* first_child,
-                         NGConstraintSpace* space);
+                         NGConstraintSpace* space,
+                         NGBreakToken* break_token = nullptr);
 
   bool Layout(NGPhysicalFragmentBase**) override;
 
@@ -86,6 +88,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
 
   Member<NGBox> first_child_;
   Member<NGConstraintSpace> constraint_space_;
+  Member<NGBreakToken> break_token_;
   Member<NGFragmentBuilder> builder_;
   Member<NGConstraintSpaceBuilder> space_builder_;
   Member<NGConstraintSpace> space_for_current_child_;

@@ -4,6 +4,7 @@
 
 #include "core/layout/ng/ng_block_layout_algorithm.h"
 
+#include "core/layout/ng/ng_break_token.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_base.h"
@@ -138,11 +139,13 @@ bool IsNewFormattingContextForInFlowBlockLevelChild(
 NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
     PassRefPtr<const ComputedStyle> style,
     NGBox* first_child,
-    NGConstraintSpace* constraint_space)
+    NGConstraintSpace* constraint_space,
+    NGBreakToken* break_token)
     : state_(kStateInit),
       style_(style),
       first_child_(first_child),
       constraint_space_(constraint_space),
+      break_token_(break_token),
       is_fragment_margin_strut_block_start_updated_(false) {
   DCHECK(style_);
 }
@@ -391,6 +394,7 @@ DEFINE_TRACE(NGBlockLayoutAlgorithm) {
   NGLayoutAlgorithm::trace(visitor);
   visitor->trace(first_child_);
   visitor->trace(constraint_space_);
+  visitor->trace(break_token_);
   visitor->trace(builder_);
   visitor->trace(space_builder_);
   visitor->trace(space_for_current_child_);
