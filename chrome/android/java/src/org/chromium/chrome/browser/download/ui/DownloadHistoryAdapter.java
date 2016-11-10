@@ -8,7 +8,6 @@ import android.content.ComponentName;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.metrics.RecordHistogram;
@@ -191,9 +190,9 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
 
     @Override
     public ViewHolder createViewHolder(ViewGroup parent) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(
+        DownloadItemView v = (DownloadItemView) LayoutInflater.from(parent.getContext()).inflate(
                 R.layout.download_item_view, parent, false);
-        ((DownloadItemView) v).setSelectionDelegate(getSelectionDelegate());
+        v.setSelectionDelegate(getSelectionDelegate());
         return new DownloadHistoryItemViewHolder(v);
     }
 
@@ -202,7 +201,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         final DownloadHistoryItemWrapper item = (DownloadHistoryItemWrapper) timedItem;
 
         DownloadHistoryItemViewHolder holder = (DownloadHistoryItemViewHolder) current;
-        holder.displayItem(mBackendProvider, item);
+        holder.getItemView().displayItem(mBackendProvider, item);
     }
 
     /**
