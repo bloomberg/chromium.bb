@@ -14,7 +14,10 @@
 #include "chrome/browser/geolocation/geolocation_infobar_delegate_android.h"
 #include "chrome/browser/media/midi_permission_infobar_delegate_android.h"
 #include "chrome/browser/media/protected_media_identifier_infobar_delegate_android.h"
+#include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
+#include "chrome/browser/media/webrtc/media_stream_infobar_delegate_android.h"
 #include "chrome/browser/notifications/notification_permission_infobar_delegate.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/android/content_view_core.h"
@@ -48,6 +51,20 @@ void PermissionDialogDelegate::Create(
       web_contents,
       PermissionInfoBarDelegate::CreateDelegate(
           type, requesting_frame, user_gesture, profile, callback));
+}
+
+// static
+void PermissionDialogDelegate::CreateMediaStreamDialog(
+    content::WebContents* web_contents,
+    std::unique_ptr<MediaStreamDevicesController> controller) {
+  // Called this way because the infobar delegate has a private destructor.
+  std::unique_ptr<PermissionInfoBarDelegate> infobar_delegate;
+  infobar_delegate.reset(new MediaStreamInfoBarDelegateAndroid(
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+      std::move(controller)));
+
+  // Dispatch the dialog to Java, which manages the lifetime of this object.
+  new PermissionDialogDelegate(web_contents, std::move(infobar_delegate));
 }
 
 // static

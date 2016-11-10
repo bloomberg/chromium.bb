@@ -34,6 +34,18 @@
               navigator.webkitGetUserMedia(
                     {video : true, audio: true}, gotCombined, errorCallback);
             }
+
+            // The modal permission dialog requires a user gesture to trigger. Hook up
+            // a click event listener to run a specified method (which may be changed by
+            // the test).
+            var functionToRun = 'initiate_getCombined()';
+            function runFunctionOnClick() {
+                eval(functionToRun);
+            }
+
+            window.addEventListener('load', () => {
+                window.addEventListener('click', runFunctionOnClick);
+            });
         </script>
     </head>
     <body>

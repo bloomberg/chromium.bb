@@ -21,6 +21,7 @@ namespace content {
 class WebContents;
 }
 
+class MediaStreamDevicesController;
 class GURL;
 class PermissionInfoBarDelegate;
 class Profile;
@@ -46,6 +47,12 @@ class PermissionDialogDelegate : content::WebContentsObserver {
                      Profile* profile,
                      const PermissionSetCallback& callback);
 
+  // Creates a modal dialog for a media stream permission request.
+  // TODO(dominickn): remove this when media stream requests are eventually
+  // folded in with other permission requests.
+  static void CreateMediaStreamDialog(
+      content::WebContents* web_contents,
+      std::unique_ptr<MediaStreamDevicesController> controller);
 
   // Returns true if we should show the user a modal permission prompt rather
   // than an infobar.

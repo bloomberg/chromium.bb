@@ -5,16 +5,17 @@
 package org.chromium.chrome.browser.permissions;
 
 import android.test.suitebuilder.annotation.MediumTest;
-import android.test.suitebuilder.annotation.Smoke;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 
 /**
  * Test suite for media permissions requests.
  */
+@RetryOnFailure
 public class MediaTest extends PermissionTestCaseBase {
     private static final String FAKE_DEVICE = ChromeSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM;
     private static final String TEST_FILE = "/content/test/data/android/media_permissions.html";
@@ -36,13 +37,24 @@ public class MediaTest extends PermissionTestCaseBase {
      * Verify asking for microphone creates an InfoBar and works when the permission is granted.
      * @throws Exception
      */
-    @Smoke
     @MediumTest
     @Feature({"MediaPermissions", "Main"})
     @CommandLineFlags.Add(FAKE_DEVICE)
-    public void testMicrophonePermissionsPlumbing() throws Exception {
+    public void testMicrophonePermissionsPlumbingInfoBar() throws Exception {
         testMediaPermissionsPlumbing(
                 "Mic count:", "initiate_getMicrophone()", 1, false, false, false, false);
+    }
+
+    /**
+     * Verify asking for microphone creates a dialog and works when the permission is granted.
+     * @throws Exception
+     */
+    @MediumTest
+    @Feature({"MediaPermissions", "Main"})
+    @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + MODAL_FLAG})
+    public void testMicrophoneMediaPermissionsPlumbingDialog() throws Exception {
+        testMediaPermissionsPlumbing(
+                "Mic count:", "initiate_getMicrophone()", 1, true, true, false, false);
     }
 
     /**
@@ -52,7 +64,20 @@ public class MediaTest extends PermissionTestCaseBase {
     @MediumTest
     @Feature({"MediaPermissions", "Main"})
     @CommandLineFlags.Add(FAKE_DEVICE)
-    public void testCameraPermissionsPlumbing() throws Exception {
+    public void testCameraPermissionsPlumbingInfoBar() throws Exception {
+        testMediaPermissionsPlumbing(
+                "Camera count:", "initiate_getCamera()", 1, false, false, false, false);
+    }
+
+    /**
+     * Verify asking for camera with no gesture creates an infobar when the modal flag is turned on,
+     * and works when the permission is granted.
+     * @throws Exception
+     */
+    @MediumTest
+    @Feature({"MediaPermissions", "Main"})
+    @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + MODAL_FLAG})
+    public void testCameraPermissionsPlumbingNoGestureCreatesInfoBar() throws Exception {
         testMediaPermissionsPlumbing(
                 "Camera count:", "initiate_getCamera()", 1, false, false, false, false);
     }
@@ -71,29 +96,68 @@ public class MediaTest extends PermissionTestCaseBase {
     }
 
     /**
-     * Verify microphone prompts with a persistence toggle if that feature is enabled. Check the
-     * switch appears and that permission is granted with it toggled on.
+     * Verify asking for both mic and camera creates a combined dialog and works when the
+     * permissions are granted.
+     * @throws Exception
+     */
+    @MediumTest
+    @Feature({"MediaPermissions", "Main"})
+    @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + MODAL_FLAG})
+    public void testCombinedPermissionsPlumbingDialog() throws Exception {
+        testMediaPermissionsPlumbing(
+                "Combined count:", "initiate_getCombined()", 1, true, true, false, false);
+    }
+
+    /**
+     * Verify microphone creates an InfoBar with a persistence toggle if that feature is enabled.
+     * Check the switch appears and that permission is granted with it toggled on.
      * @throws Exception
      */
     @MediumTest
     @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + TOGGLE_FLAG})
     @Feature({"MediaPermissions"})
-    public void testMicrophonePersistenceOn() throws Exception {
+    public void testMicrophonePersistenceOnInfoBar() throws Exception {
         testMediaPermissionsPlumbing(
                 "Mic count:", "initiate_getMicrophone()", 1, false, false, true, false);
     }
 
     /**
-     * Verify microphone prompts with a persistence toggle if that feature is enabled. Check the
-     * switch appears and that permission is granted with it toggled off.
+     * Verify microphone creates an InfoBar with a persistence toggle if that feature is enabled.
+     * Check the switch appears and that permission is granted with it toggled off.
      * @throws Exception
      */
     @MediumTest
     @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + TOGGLE_FLAG})
     @Feature({"MediaPermissions"})
-    public void testMicrophonePersistenceOff() throws Exception {
+    public void testMicrophonePersistenceOffInfoBar() throws Exception {
         testMediaPermissionsPlumbing(
                 "Mic count:", "initiate_getMicrophone()", 1, false, false, true, true);
+    }
+
+    /**
+     * Verify microphone creates a dialog with a persistence toggle if that feature is enabled.
+     * Check the switch appears and that permission is granted with it toggled on.
+     * @throws Exception
+     */
+    @MediumTest
+    @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + MODAL_TOGGLE_FLAG})
+    @Feature({"MediaPermissions"})
+    public void testMicrophonePersistenceOnDialog() throws Exception {
+        testMediaPermissionsPlumbing(
+                "Mic count:", "initiate_getMicrophone()", 1, true, true, true, false);
+    }
+
+    /**
+     * Verify microphone creates a dialog with a persistence toggle if that feature is enabled.
+     * Check the switch appears and that permission is granted with it toggled off.
+     * @throws Exception
+     */
+    @MediumTest
+    @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + MODAL_TOGGLE_FLAG})
+    @Feature({"MediaPermissions"})
+    public void testMicrophonePersistenceOffDialog() throws Exception {
+        testMediaPermissionsPlumbing(
+                "Mic count:", "initiate_getMicrophone()", 1, true, true, true, true);
     }
 
     /**
@@ -123,27 +187,53 @@ public class MediaTest extends PermissionTestCaseBase {
     }
 
     /**
-     * Verify combined prompts show a persistence toggle if that feature is enabled. Check the
-     * switch appears and that permission is granted with it toggled on.
+     * Verify combined creates an InfoBar with a persistence toggle if that feature is enabled.
+     * Check the switch appears and that permission is granted with it toggled on.
      * @throws Exception
      */
     @MediumTest
     @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + TOGGLE_FLAG})
     @Feature({"MediaPermissions"})
-    public void testCombinedPersistenceOn() throws Exception {
+    public void testCombinedPersistenceOnInfoBar() throws Exception {
         testMediaPermissionsPlumbing(
                 "Combined count:", "initiate_getCombined()", 1, false, false, true, false);
     }
 
     /**
-     * Verify combined prompts show a persistence toggle if that feature is enabled. Check the
-     * switch appears and that permission is granted with it toggled of.
+     * Verify combined creates an InfoBar with a persistence toggle if that feature is enabled.
+     * Check the switch appears and that permission is granted with it toggled off.
      * @throws Exception
      */
     @MediumTest
     @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + TOGGLE_FLAG})
     @Feature({"MediaPermissions"})
-    public void testCombinedPersistenceOff() throws Exception {
+    public void testCombinedPersistenceOffInfoBar() throws Exception {
+        testMediaPermissionsPlumbing(
+                "Combined count:", "initiate_getCombined()", 1, false, false, true, true);
+    }
+
+    /**
+     * Verify combined creates a dialog with a persistence toggle if that feature is enabled. Check
+     * the switch appears and that permission is granted with it toggled on.
+     * @throws Exception
+     */
+    @MediumTest
+    @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + MODAL_TOGGLE_FLAG})
+    @Feature({"MediaPermissions"})
+    public void testCombinedPersistenceOnDialog() throws Exception {
+        testMediaPermissionsPlumbing(
+                "Combined count:", "initiate_getCombined()", 1, true, true, true, false);
+    }
+
+    /**
+     * Verify combined creates a dialog with a persistence toggle if that feature is enabled. Check
+     * the switch appears and that permission is granted with it toggled off.
+     * @throws Exception
+     */
+    @MediumTest
+    @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + MODAL_TOGGLE_FLAG})
+    @Feature({"MediaPermissions"})
+    public void testCombinedPersistenceOffDialog() throws Exception {
         testMediaPermissionsPlumbing(
                 "Combined count:", "initiate_getCombined()", 1, false, false, true, true);
     }

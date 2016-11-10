@@ -26,12 +26,12 @@ class MediaStreamInfoBarDelegateAndroid : public PermissionInfoBarDelegate {
   static bool Create(content::WebContents* web_contents,
                      std::unique_ptr<MediaStreamDevicesController> controller);
 
- private:
-  friend class WebRtcTestBase;
-
   MediaStreamInfoBarDelegateAndroid(
       Profile* profile,
       std::unique_ptr<MediaStreamDevicesController> controller);
+ private:
+  friend class WebRtcTestBase;
+
   ~MediaStreamInfoBarDelegateAndroid() override;
 
   // PermissionInfoBarDelegate:

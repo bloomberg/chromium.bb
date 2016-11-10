@@ -27,6 +27,7 @@
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/media/webrtc/media_stream_infobar_delegate_android.h"
 #include "chrome/browser/media/webrtc/screen_capture_infobar_delegate_android.h"
+#include "chrome/browser/permissions/permission_dialog_delegate.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
 #else
 #include "chrome/browser/permissions/permission_request_manager.h"
@@ -191,8 +192,13 @@ void PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest(
   }
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
-  MediaStreamInfoBarDelegateAndroid::Create(web_contents,
-                                            std::move(controller));
+  if (PermissionDialogDelegate::ShouldShowDialog(request.user_gesture)) {
+    PermissionDialogDelegate::CreateMediaStreamDialog(web_contents,
+                                                      std::move(controller));
+  } else {
+    MediaStreamInfoBarDelegateAndroid::Create(web_contents,
+                                              std::move(controller));
+  }
 #else
   PermissionRequestManager* permission_request_manager =
       PermissionRequestManager::FromWebContents(web_contents);
