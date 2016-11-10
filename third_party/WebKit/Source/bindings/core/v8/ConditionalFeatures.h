@@ -42,7 +42,8 @@ CORE_EXPORT InstallConditionalFeaturesFunction
 // when the V8 context is reused (i.e., after navigation)
 CORE_EXPORT void installPendingConditionalFeaturesOnWindow(const ScriptState*);
 
-bool isFeatureEnabledInFrame(const FeaturePolicy::Feature&, const LocalFrame*);
+CORE_EXPORT bool isFeatureEnabledInFrame(const FeaturePolicy::Feature&,
+                                         const LocalFrame*);
 
 }  // namespace blink
 
