@@ -1372,7 +1372,8 @@ static void fpm_sync(void *const data, int mi_row) {
 static void read_inter_block_mode_info(AV1Decoder *const pbi,
                                        MACROBLOCKD *const xd,
                                        MODE_INFO *const mi,
-#if (CONFIG_MOTION_VAR || CONFIG_EXT_INTER) && CONFIG_SUPERTX
+#if (CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION || CONFIG_EXT_INTER) && \
+    CONFIG_SUPERTX
                                        int mi_row, int mi_col, aom_reader *r,
                                        int supertx_enabled) {
 #else
@@ -1911,7 +1912,8 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
 
   if (inter_block)
     read_inter_block_mode_info(pbi, xd,
-#if (CONFIG_MOTION_VAR || CONFIG_EXT_INTER) && CONFIG_SUPERTX
+#if (CONFIG_MOTION_VAR || CONFIG_EXT_INTER || CONFIG_WARPED_MOTION) && \
+    CONFIG_SUPERTX
 
                                mi, mi_row, mi_col, r, supertx_enabled);
 #else
