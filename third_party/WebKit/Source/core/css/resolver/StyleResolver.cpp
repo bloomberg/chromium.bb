@@ -1021,14 +1021,14 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForPage(int pageIndex) {
 
   NeedsApplyPass needsApplyPass;
   const MatchResult& result = collector.matchedResult();
-  applyMatchedProperties<HighPropertyPriority>(state, result.allRules(), false,
-                                               inheritedOnly, needsApplyPass);
+  applyMatchedProperties<HighPropertyPriority, UpdateNeedsApplyPass>(
+      state, result.allRules(), false, inheritedOnly, needsApplyPass);
 
   // If our font got dirtied, go ahead and update it now.
   updateFont(state);
 
-  applyMatchedProperties<LowPropertyPriority>(state, result.allRules(), false,
-                                              inheritedOnly, needsApplyPass);
+  applyMatchedProperties<LowPropertyPriority, CheckNeedsApplyPass>(
+      state, result.allRules(), false, inheritedOnly, needsApplyPass);
 
   loadPendingResources(state);
 
@@ -1466,7 +1466,8 @@ void StyleResolver::applyAllProperty(
   }
 }
 
-template <CSSPropertyPriority priority>
+template <CSSPropertyPriority priority,
+          StyleResolver::ShouldUpdateNeedsApplyPass shouldUpdateNeedsApplyPass>
 void StyleResolver::applyPropertiesForApplyAtRule(
     StyleResolverState& state,
     const CSSValue& value,
@@ -1481,12 +1482,14 @@ void StyleResolver::applyPropertiesForApplyAtRule(
       state.customPropertySetForApplyAtRule(name);
   bool inheritedOnly = false;
   if (propertySet) {
-    applyProperties<priority>(state, propertySet, isImportant, inheritedOnly,
-                              needsApplyPass, propertyWhitelistType);
+    applyProperties<priority, shouldUpdateNeedsApplyPass>(
+        state, propertySet, isImportant, inheritedOnly, needsApplyPass,
+        propertyWhitelistType);
   }
 }
 
-template <CSSPropertyPriority priority>
+template <CSSPropertyPriority priority,
+          StyleResolver::ShouldUpdateNeedsApplyPass shouldUpdateNeedsApplyPass>
 void StyleResolver::applyProperties(
     StyleResolverState& state,
     const StylePropertySet* properties,
@@ -1501,14 +1504,14 @@ void StyleResolver::applyProperties(
 
     if (property == CSSPropertyApplyAtRule) {
       DCHECK(!inheritedOnly);
-      applyPropertiesForApplyAtRule<priority>(state, current.value(),
-                                              isImportant, needsApplyPass,
-                                              propertyWhitelistType);
+      applyPropertiesForApplyAtRule<priority, shouldUpdateNeedsApplyPass>(
+          state, current.value(), isImportant, needsApplyPass,
+          propertyWhitelistType);
       continue;
     }
 
     if (property == CSSPropertyAll && isImportant == current.isImportant()) {
-      if (needsApplyPass.needsUpdate()) {
+      if (shouldUpdateNeedsApplyPass) {
         needsApplyPass.set(HighPropertyPriority, isImportant);
         needsApplyPass.set(LowPropertyPriority, isImportant);
       }
@@ -1517,7 +1520,7 @@ void StyleResolver::applyProperties(
       continue;
     }
 
-    if (needsApplyPass.needsUpdate())
+    if (shouldUpdateNeedsApplyPass)
       needsApplyPass.set(priorityForProperty(property), current.isImportant());
 
     if (isImportant != current.isImportant())
@@ -1542,7 +1545,8 @@ void StyleResolver::applyProperties(
   }
 }
 
-template <CSSPropertyPriority priority>
+template <CSSPropertyPriority priority,
+          StyleResolver::ShouldUpdateNeedsApplyPass shouldUpdateNeedsApplyPass>
 void StyleResolver::applyMatchedProperties(StyleResolverState& state,
                                            const MatchedPropertiesRange& range,
                                            bool isImportant,
@@ -1551,8 +1555,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state,
   if (range.isEmpty())
     return;
 
-  if (!needsApplyPass.needsUpdate() &&
-      !needsApplyPass.get(priority, isImportant))
+  if (!shouldUpdateNeedsApplyPass && !needsApplyPass.get(priority, isImportant))
     return;
 
   if (state.style()->insideLink() != NotInsideLink) {
@@ -1565,20 +1568,20 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state,
       state.setApplyPropertyToVisitedLinkStyle(linkMatchType &
                                                CSSSelector::MatchVisited);
 
-      applyProperties<priority>(state, matchedProperties.properties.get(),
-                                isImportant, inheritedOnly, needsApplyPass,
-                                static_cast<PropertyWhitelistType>(
-                                    matchedProperties.m_types.whitelistType));
+      applyProperties<priority, shouldUpdateNeedsApplyPass>(
+          state, matchedProperties.properties.get(), isImportant, inheritedOnly,
+          needsApplyPass, static_cast<PropertyWhitelistType>(
+                              matchedProperties.m_types.whitelistType));
     }
     state.setApplyPropertyToRegularStyle(true);
     state.setApplyPropertyToVisitedLinkStyle(false);
     return;
   }
   for (const auto& matchedProperties : range) {
-    applyProperties<priority>(state, matchedProperties.properties.get(),
-                              isImportant, inheritedOnly, needsApplyPass,
-                              static_cast<PropertyWhitelistType>(
-                                  matchedProperties.m_types.whitelistType));
+    applyProperties<priority, shouldUpdateNeedsApplyPass>(
+        state, matchedProperties.properties.get(), isImportant, inheritedOnly,
+        needsApplyPass, static_cast<PropertyWhitelistType>(
+                            matchedProperties.m_types.whitelistType));
   }
 }
 
@@ -1656,25 +1659,24 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state,
 
   // TODO(leviw): We need the proper bit for tracking whether we need to do this
   // work.
-  applyMatchedProperties<ResolveVariables>(state, matchResult.authorRules(),
-                                           false, applyInheritedOnly,
-                                           needsApplyPass);
-  applyMatchedProperties<ResolveVariables>(state, matchResult.authorRules(),
-                                           true, applyInheritedOnly,
-                                           needsApplyPass);
+  applyMatchedProperties<ResolveVariables, UpdateNeedsApplyPass>(
+      state, matchResult.authorRules(), false, applyInheritedOnly,
+      needsApplyPass);
+  applyMatchedProperties<ResolveVariables, CheckNeedsApplyPass>(
+      state, matchResult.authorRules(), true, applyInheritedOnly,
+      needsApplyPass);
   // TODO(leviw): stop recalculating every time
   CSSVariableResolver::resolveVariableDefinitions(state);
 
   if (RuntimeEnabledFeatures::cssApplyAtRulesEnabled()) {
     if (cacheCustomPropertiesForApplyAtRules(state,
                                              matchResult.authorRules())) {
-      needsApplyPass.setNeedsUpdate(true);
-      applyMatchedProperties<ResolveVariables>(state, matchResult.authorRules(),
-                                               false, applyInheritedOnly,
-                                               needsApplyPass);
-      applyMatchedProperties<ResolveVariables>(state, matchResult.authorRules(),
-                                               true, applyInheritedOnly,
-                                               needsApplyPass);
+      applyMatchedProperties<ResolveVariables, UpdateNeedsApplyPass>(
+          state, matchResult.authorRules(), false, applyInheritedOnly,
+          needsApplyPass);
+      applyMatchedProperties<ResolveVariables, CheckNeedsApplyPass>(
+          state, matchResult.authorRules(), true, applyInheritedOnly,
+          needsApplyPass);
       CSSVariableResolver::resolveVariableDefinitions(state);
     }
   }
@@ -1684,14 +1686,13 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state,
   // other properties depend on.  The order is (1) high-priority not important,
   // (2) high-priority important, (3) normal not important and (4) normal
   // important.
-  needsApplyPass.setNeedsUpdate(true);
-  applyMatchedProperties<HighPropertyPriority>(
+  applyMatchedProperties<HighPropertyPriority, UpdateNeedsApplyPass>(
       state, matchResult.allRules(), false, applyInheritedOnly, needsApplyPass);
   for (auto range : ImportantAuthorRanges(matchResult)) {
-    applyMatchedProperties<HighPropertyPriority>(
+    applyMatchedProperties<HighPropertyPriority, CheckNeedsApplyPass>(
         state, range, true, applyInheritedOnly, needsApplyPass);
   }
-  applyMatchedProperties<HighPropertyPriority>(
+  applyMatchedProperties<HighPropertyPriority, CheckNeedsApplyPass>(
       state, matchResult.uaRules(), true, applyInheritedOnly, needsApplyPass);
 
   if (UNLIKELY(isSVGForeignObjectElement(element))) {
@@ -1729,7 +1730,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state,
   CSSVariableResolver::computeRegisteredVariables(state);
 
   // Now do the normal priority UA properties.
-  applyMatchedProperties<LowPropertyPriority>(
+  applyMatchedProperties<LowPropertyPriority, CheckNeedsApplyPass>(
       state, matchResult.uaRules(), false, applyInheritedOnly, needsApplyPass);
 
   // Cache the UA properties to pass them to LayoutTheme in adjustComputedStyle.
@@ -1737,14 +1738,14 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state,
 
   // Now do the author and user normal priority properties and all the
   // !important properties.
-  applyMatchedProperties<LowPropertyPriority>(state, matchResult.authorRules(),
-                                              false, applyInheritedOnly,
-                                              needsApplyPass);
+  applyMatchedProperties<LowPropertyPriority, CheckNeedsApplyPass>(
+      state, matchResult.authorRules(), false, applyInheritedOnly,
+      needsApplyPass);
   for (auto range : ImportantAuthorRanges(matchResult)) {
-    applyMatchedProperties<LowPropertyPriority>(
+    applyMatchedProperties<LowPropertyPriority, CheckNeedsApplyPass>(
         state, range, true, applyInheritedOnly, needsApplyPass);
   }
-  applyMatchedProperties<LowPropertyPriority>(
+  applyMatchedProperties<LowPropertyPriority, CheckNeedsApplyPass>(
       state, matchResult.uaRules(), true, applyInheritedOnly, needsApplyPass);
 
   if (state.style()->hasAppearance() && !applyInheritedOnly) {

@@ -219,16 +219,10 @@ class CORE_EXPORT StyleResolver final
   // and isImportant is required.
   class NeedsApplyPass {
    public:
-    bool needsUpdate() const { return m_needsUpdate; }
-    bool setNeedsUpdate(bool needsUpdate) {
-      return m_needsUpdate = needsUpdate;
-    }
     bool get(CSSPropertyPriority priority, bool isImportant) const {
-      DCHECK(!needsUpdate());
       return m_flags[getIndex(priority, isImportant)];
     }
     void set(CSSPropertyPriority priority, bool isImportant) {
-      DCHECK(needsUpdate());
       m_flags[getIndex(priority, isImportant)] = true;
     }
 
@@ -237,17 +231,21 @@ class CORE_EXPORT StyleResolver final
       DCHECK(priority >= 0 && priority < PropertyPriorityCount);
       return priority * 2 + isImportant;
     }
-    bool m_needsUpdate = true;
     bool m_flags[PropertyPriorityCount * 2] = {0};
   };
 
-  template <CSSPropertyPriority priority>
+  enum ShouldUpdateNeedsApplyPass {
+    CheckNeedsApplyPass = false,
+    UpdateNeedsApplyPass = true,
+  };
+
+  template <CSSPropertyPriority priority, ShouldUpdateNeedsApplyPass>
   void applyMatchedProperties(StyleResolverState&,
                               const MatchedPropertiesRange&,
                               bool important,
                               bool inheritedOnly,
                               NeedsApplyPass&);
-  template <CSSPropertyPriority priority>
+  template <CSSPropertyPriority priority, ShouldUpdateNeedsApplyPass>
   void applyProperties(StyleResolverState&,
                        const StylePropertySet* properties,
                        bool isImportant,
@@ -262,7 +260,7 @@ class CORE_EXPORT StyleResolver final
                         const CSSValue&,
                         bool inheritedOnly,
                         PropertyWhitelistType);
-  template <CSSPropertyPriority priority>
+  template <CSSPropertyPriority priority, ShouldUpdateNeedsApplyPass>
   void applyPropertiesForApplyAtRule(StyleResolverState&,
                                      const CSSValue&,
                                      bool isImportant,
