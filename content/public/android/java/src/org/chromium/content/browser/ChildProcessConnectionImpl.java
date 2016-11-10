@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.DeadObjectException;
 import android.os.IBinder;
@@ -225,7 +224,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
         int initialFlags = Context.BIND_AUTO_CREATE;
         if (mAlwaysInForeground) initialFlags |= Context.BIND_IMPORTANT;
         int extralBindFlags = 0;
-        if (isExternalService(inSandbox, mContext, mServiceName)) {
+        if (isExportedService(inSandbox, mContext, mServiceName)) {
             extralBindFlags = Context.BIND_EXTERNAL_SERVICE;
         }
         mInitialBinding = new ChildServiceConnection(initialFlags | extralBindFlags);
@@ -237,7 +236,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
                 Context.BIND_AUTO_CREATE | extralBindFlags);
     }
 
-    private static boolean isExternalService(boolean inSandbox, Context context,
+    private static boolean isExportedService(boolean inSandbox, Context context,
             ComponentName serviceName) {
         // Check for the cached value first. It is assumed that all pooled child services
         // have identical attributes in the manifest.
@@ -245,19 +244,11 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
         if (sNeedsExtrabindFlags[arrayIndex] != null) {
             return sNeedsExtrabindFlags[arrayIndex].booleanValue();
         }
-        // The {@link Context.BIND_EXTERNAL_SERVICE} is added since API 24.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-            sNeedsExtrabindFlags[arrayIndex] = false;
-            return false;
-        }
         boolean result = false;
         try {
             PackageManager packageManager = context.getPackageManager();
             ServiceInfo serviceInfo = packageManager.getServiceInfo(serviceName, 0);
-            // TODO(hanxi): crbug.com/663888. Find a better solution to set the flag based on
-            // the caller's expectation whether service to bind should be an external service or
-            // not.
-            result = (serviceInfo.flags & ServiceInfo.FLAG_EXTERNAL_SERVICE) != 0;
+            result = serviceInfo.exported;
         } catch (PackageManager.NameNotFoundException e) {
             Log.e(TAG, "Could not retrieve info about service %s", serviceName, e);
         }
