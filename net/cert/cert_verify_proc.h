@@ -129,6 +129,7 @@ class NET_EXPORT CertVerifyProc
 
   // Emergency kill-switch for SHA-1 deprecation. Disabled by default.
   static const base::Feature kSHA1LegacyMode;
+  const bool sha1_legacy_mode_enabled;
 
   DISALLOW_COPY_AND_ASSIGN(CertVerifyProc);
 };

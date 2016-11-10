@@ -390,7 +390,8 @@ CertVerifyProc* CertVerifyProc::CreateDefault() {
 #endif
 }
 
-CertVerifyProc::CertVerifyProc() {}
+CertVerifyProc::CertVerifyProc()
+    : sha1_legacy_mode_enabled(base::FeatureList::IsEnabled(kSHA1LegacyMode)) {}
 
 CertVerifyProc::~CertVerifyProc() {}
 
@@ -489,17 +490,16 @@ int CertVerifyProc::Verify(X509Certificate* cert,
       // - Reject all publicly trusted SHA-1
       // - ... unless it's in the intermediate and SHA-1 intermediates are
       //   allowed for that platform. See https://crbug.com/588789
-      (!base::FeatureList::IsEnabled(kSHA1LegacyMode) &&
+      (!sha1_legacy_mode_enabled &&
        (verify_result->is_issued_by_known_root &&
         (verify_result->has_sha1_leaf ||
          (verify_result->has_sha1 && !AreSHA1IntermediatesAllowed())))) ||
       // Legacy SHA-1 behaviour:
       // - Reject all publicly trusted SHA-1 leaf certs issued after
       //   2016-01-01.
-      (base::FeatureList::IsEnabled(kSHA1LegacyMode) &&
-       (verify_result->has_sha1_leaf &&
-        verify_result->is_issued_by_known_root &&
-        IsPastSHA1DeprecationDate(*cert)))) {
+      (sha1_legacy_mode_enabled && (verify_result->has_sha1_leaf &&
+                                    verify_result->is_issued_by_known_root &&
+                                    IsPastSHA1DeprecationDate(*cert)))) {
     verify_result->cert_status |= CERT_STATUS_WEAK_SIGNATURE_ALGORITHM;
     // Avoid replacing a more serious error, such as an OS/library failure,
     // by ensuring that if verification failed, it failed with a certificate
