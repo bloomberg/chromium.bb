@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/time/clock.h"
 #include "components/previews/core/previews_black_list_item.h"
@@ -74,13 +73,6 @@ void PreviewsBlackList::AddPreviewNavigation(const GURL& url,
                                              PreviewsType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(url.has_host());
-  switch (type) {
-    case PreviewsType::OFFLINE:
-      UMA_HISTOGRAM_BOOLEAN("Previews.OptOut.UserOptedOut.Offline", opt_out);
-      break;
-    default:
-      NOTREACHED();
-  }
   if (opt_out) {
     last_opt_out_time_ = clock_->Now();
   }
@@ -116,26 +108,23 @@ void PreviewsBlackList::AddPreviewNavigationSync(const GURL& url,
   opt_out_store_->AddPreviewNavigation(opt_out, host_name, type, now);
 }
 
-PreviewsEligibilityReason PreviewsBlackList::IsLoadedAndAllowed(
-    const GURL& url,
-    PreviewsType type) const {
+bool PreviewsBlackList::IsLoadedAndAllowed(const GURL& url,
+                                           PreviewsType type) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(url.has_host());
   if (!loaded_)
-    return PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED;
+    return false;
   DCHECK(black_list_item_map_);
   if (last_opt_out_time_ &&
       clock_->Now() <
           last_opt_out_time_.value() + params::SingleOptOutDuration()) {
-    return PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT;
+    return false;
   }
   if (host_indifferent_black_list_item_->IsBlackListed(clock_->Now()))
-    return PreviewsEligibilityReason::USER_BLACKLISTED;
+    return false;
   PreviewsBlackListItem* black_list_item =
       GetBlackListItemFromMap(*black_list_item_map_, url.host());
-  if (black_list_item && black_list_item->IsBlackListed(clock_->Now()))
-    return PreviewsEligibilityReason::HOST_BLACKLISTED;
-  return PreviewsEligibilityReason::ALLOWED;
+  return !black_list_item || !black_list_item->IsBlackListed(clock_->Now());
 }
 
 void PreviewsBlackList::ClearBlackList(base::Time begin_time,

@@ -30,28 +30,6 @@ class Clock;
 namespace previews {
 class PreviewsBlackListItem;
 
-enum class PreviewsEligibilityReason {
-  // The preview navigation was allowed.
-  ALLOWED = 0,
-  // The black list was not initialized.
-  BLACKLIST_UNAVAILABLE = 1,
-  // The black list has not loaded from disk yet.
-  BLACKLIST_DATA_NOT_LOADED = 2,
-  // The user has opted out of a preview recently.
-  USER_RECENTLY_OPTED_OUT = 3,
-  // The user has opted out of previews often, and is no longer shown previews
-  // on any host.
-  USER_BLACKLISTED = 4,
-  // The user has opted out of previews on a specific host often, and was not
-  // not shown a previews on that host.
-  HOST_BLACKLISTED = 5,
-  // The network quality estimate is not available.
-  NETWORK_QUALITY_UNAVAILABLE = 6,
-  // The network was fast enough to not warrant previews.
-  NETWORK_NOT_SLOW = 7,
-  LAST = 8,
-};
-
 // Manages the state of black listed domains for the previews experiment. Loads
 // the stored black list from |opt_out_store| and manages an in memory black
 // list on the IO thread. Updates to the black list are stored in memory and
@@ -80,10 +58,9 @@ class PreviewsBlackList {
   void AddPreviewNavigation(const GURL& url, bool opt_out, PreviewsType type);
 
   // Synchronously determines if |host_name| should be allowed to show previews.
-  // Returns the reason the blacklist disallowed the preview, or
-  // PreviewsEligibilityReason::ALLOWED if the preview is allowed.
-  PreviewsEligibilityReason IsLoadedAndAllowed(const GURL& url,
-                                               PreviewsType type) const;
+  // If the black list has loaded yet, this will always return false. |type| is
+  // not used to make this decision.
+  bool IsLoadedAndAllowed(const GURL& url, PreviewsType type) const;
 
   // Asynchronously deletes all entries in the in-memory black list. Informs
   // the backing store to delete entries between |begin_time| and |end_time|,

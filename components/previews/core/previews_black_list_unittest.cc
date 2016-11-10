@@ -14,7 +14,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -115,30 +114,24 @@ TEST_F(PreviewsBlackListTest, PerHostBlackListNoStore) {
   std::unique_ptr<PreviewsBlackList> black_list(
       new PreviewsBlackList(nullptr, base::WrapUnique(test_clock)));
 
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
 
   black_list->AddPreviewNavigation(url_a, true, PreviewsType::OFFLINE);
   test_clock->Advance(base::TimeDelta::FromSeconds(1));
   black_list->AddPreviewNavigation(url_a, true, PreviewsType::OFFLINE);
   test_clock->Advance(base::TimeDelta::FromSeconds(1));
 
-  EXPECT_EQ(PreviewsEligibilityReason::HOST_BLACKLISTED,
-            black_list->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
 
   black_list->AddPreviewNavigation(url_b, true, PreviewsType::OFFLINE);
   test_clock->Advance(base::TimeDelta::FromSeconds(1));
   black_list->AddPreviewNavigation(url_b, true, PreviewsType::OFFLINE);
   test_clock->Advance(base::TimeDelta::FromSeconds(1));
 
-  EXPECT_EQ(PreviewsEligibilityReason::HOST_BLACKLISTED,
-            black_list->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::HOST_BLACKLISTED,
-            black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
 
   black_list->AddPreviewNavigation(url_b, false, PreviewsType::OFFLINE);
   test_clock->Advance(base::TimeDelta::FromSeconds(1));
@@ -147,17 +140,13 @@ TEST_F(PreviewsBlackListTest, PerHostBlackListNoStore) {
   black_list->AddPreviewNavigation(url_b, false, PreviewsType::OFFLINE);
   test_clock->Advance(base::TimeDelta::FromSeconds(1));
 
-  EXPECT_EQ(PreviewsEligibilityReason::HOST_BLACKLISTED,
-            black_list->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
 
   black_list->ClearBlackList(start, test_clock->Now());
 
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
 
   variations::testing::ClearAllVariationParams();
 }
@@ -205,45 +194,33 @@ TEST_F(PreviewsBlackListTest, PerHostBlackListWithStore) {
   std::unique_ptr<PreviewsBlackList> black_list(new PreviewsBlackList(
       base::WrapUnique(opt_out_store), base::WrapUnique(test_clock)));
 
-  EXPECT_EQ(PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
-            black_list->IsLoadedAndAllowed(url_a1, PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
-            black_list->IsLoadedAndAllowed(url_a2, PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
-            black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_a1, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_a2, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(url_a1, PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(url_a2, PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_a1, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_a2, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
 
   black_list->AddPreviewNavigation(url_a1, true, PreviewsType::OFFLINE);
   test_clock->Advance(base::TimeDelta::FromSeconds(1));
   black_list->AddPreviewNavigation(url_a1, true, PreviewsType::OFFLINE);
   test_clock->Advance(base::TimeDelta::FromSeconds(1));
 
-  EXPECT_EQ(PreviewsEligibilityReason::HOST_BLACKLISTED,
-            black_list->IsLoadedAndAllowed(url_a1, PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::HOST_BLACKLISTED,
-            black_list->IsLoadedAndAllowed(url_a2, PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_a1, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_a2, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
 
   black_list->AddPreviewNavigation(url_b, true, PreviewsType::OFFLINE);
   test_clock->Advance(base::TimeDelta::FromSeconds(1));
   black_list->AddPreviewNavigation(url_b, true, PreviewsType::OFFLINE);
   test_clock->Advance(base::TimeDelta::FromSeconds(1));
 
-  EXPECT_EQ(PreviewsEligibilityReason::HOST_BLACKLISTED,
-            black_list->IsLoadedAndAllowed(url_a1, PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::HOST_BLACKLISTED,
-            black_list->IsLoadedAndAllowed(url_a2, PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::HOST_BLACKLISTED,
-            black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_a1, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_a2, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
 
   black_list->AddPreviewNavigation(url_b, false, PreviewsType::OFFLINE);
   test_clock->Advance(base::TimeDelta::FromSeconds(1));
@@ -252,33 +229,24 @@ TEST_F(PreviewsBlackListTest, PerHostBlackListWithStore) {
   black_list->AddPreviewNavigation(url_b, false, PreviewsType::OFFLINE);
   test_clock->Advance(base::TimeDelta::FromSeconds(1));
 
-  EXPECT_EQ(PreviewsEligibilityReason::HOST_BLACKLISTED,
-            black_list->IsLoadedAndAllowed(url_a1, PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::HOST_BLACKLISTED,
-            black_list->IsLoadedAndAllowed(url_a2, PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_a1, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_a2, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
 
   EXPECT_EQ(0, opt_out_store->clear_blacklist_count());
   black_list->ClearBlackList(start, base::Time::Now());
   EXPECT_EQ(1, opt_out_store->clear_blacklist_count());
 
-  EXPECT_EQ(PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
-            black_list->IsLoadedAndAllowed(url_a1, PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
-            black_list->IsLoadedAndAllowed(url_a2, PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
-            black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_a1, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_a2, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, opt_out_store->clear_blacklist_count());
 
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(url_a1, PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(url_a1, PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_a1, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_a1, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
 
   variations::testing::ClearAllVariationParams();
 }
@@ -321,44 +289,31 @@ TEST_F(PreviewsBlackListTest, HostIndifferentBlackList) {
   std::unique_ptr<PreviewsBlackList> black_list(
       new PreviewsBlackList(nullptr, base::WrapUnique(test_clock)));
 
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(urls[0], PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(urls[1], PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(urls[2], PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(urls[3], PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(urls[0], PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(urls[1], PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(urls[2], PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(urls[3], PreviewsType::OFFLINE));
 
   for (size_t i = 0; i < host_indifferent_threshold; i++) {
     black_list->AddPreviewNavigation(urls[i], true, PreviewsType::OFFLINE);
-    EXPECT_EQ(i != 3 ? PreviewsEligibilityReason::ALLOWED
-                     : PreviewsEligibilityReason::USER_BLACKLISTED,
+    EXPECT_EQ(i != 3,
               black_list->IsLoadedAndAllowed(urls[0], PreviewsType::OFFLINE));
     test_clock->Advance(base::TimeDelta::FromSeconds(1));
   }
 
-  EXPECT_EQ(PreviewsEligibilityReason::USER_BLACKLISTED,
-            black_list->IsLoadedAndAllowed(urls[0], PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::USER_BLACKLISTED,
-            black_list->IsLoadedAndAllowed(urls[1], PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::USER_BLACKLISTED,
-            black_list->IsLoadedAndAllowed(urls[2], PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::USER_BLACKLISTED,
-            black_list->IsLoadedAndAllowed(urls[3], PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(urls[0], PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(urls[1], PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(urls[2], PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(urls[3], PreviewsType::OFFLINE));
 
   black_list->AddPreviewNavigation(urls[3], false, PreviewsType::OFFLINE);
   test_clock->Advance(base::TimeDelta::FromSeconds(1));
 
   // New non-opt-out entry will cause these to be allowed now.
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(urls[0], PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(urls[1], PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(urls[2], PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(urls[3], PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(urls[0], PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(urls[1], PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(urls[2], PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(urls[3], PreviewsType::OFFLINE));
 
   variations::testing::ClearAllVariationParams();
 }
@@ -404,17 +359,14 @@ TEST_F(PreviewsBlackListTest, QueueBehavior) {
     std::unique_ptr<PreviewsBlackList> black_list(new PreviewsBlackList(
         base::WrapUnique(opt_out_store), base::WrapUnique(test_clock)));
 
-    EXPECT_EQ(PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
-              black_list->IsLoadedAndAllowed(url, PreviewsType::OFFLINE));
+    EXPECT_FALSE(black_list->IsLoadedAndAllowed(url, PreviewsType::OFFLINE));
     black_list->AddPreviewNavigation(url, opt_out, PreviewsType::OFFLINE);
     test_clock->Advance(base::TimeDelta::FromSeconds(1));
     black_list->AddPreviewNavigation(url, opt_out, PreviewsType::OFFLINE);
     test_clock->Advance(base::TimeDelta::FromSeconds(1));
-    EXPECT_EQ(PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED,
-              black_list->IsLoadedAndAllowed(url, PreviewsType::OFFLINE));
+    EXPECT_FALSE(black_list->IsLoadedAndAllowed(url, PreviewsType::OFFLINE));
     base::RunLoop().RunUntilIdle();
-    EXPECT_EQ(opt_out ? PreviewsEligibilityReason::HOST_BLACKLISTED
-                      : PreviewsEligibilityReason::ALLOWED,
+    EXPECT_EQ(!opt_out,
               black_list->IsLoadedAndAllowed(url, PreviewsType::OFFLINE));
     black_list->AddPreviewNavigation(url, opt_out, PreviewsType::OFFLINE);
     test_clock->Advance(base::TimeDelta::FromSeconds(1));
@@ -431,10 +383,8 @@ TEST_F(PreviewsBlackListTest, QueueBehavior) {
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(1, opt_out_store->clear_blacklist_count());
 
-    EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-              black_list->IsLoadedAndAllowed(url, PreviewsType::OFFLINE));
-    EXPECT_EQ(opt_out ? PreviewsEligibilityReason::HOST_BLACKLISTED
-                      : PreviewsEligibilityReason::ALLOWED,
+    EXPECT_TRUE(black_list->IsLoadedAndAllowed(url, PreviewsType::OFFLINE));
+    EXPECT_EQ(!opt_out,
               black_list->IsLoadedAndAllowed(url2, PreviewsType::OFFLINE));
   }
 
@@ -492,24 +442,18 @@ TEST_F(PreviewsBlackListTest, MaxHosts) {
   test_clock->Advance(base::TimeDelta::FromSeconds(1));
   black_list->AddPreviewNavigation(url_c, false, PreviewsType::OFFLINE);
   // url_a should stay in the map, since it has an opt out time.
-  EXPECT_EQ(PreviewsEligibilityReason::HOST_BLACKLISTED,
-            black_list->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(url_c, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_c, PreviewsType::OFFLINE));
 
   test_clock->Advance(base::TimeDelta::FromSeconds(1));
   black_list->AddPreviewNavigation(url_d, true, PreviewsType::OFFLINE);
   test_clock->Advance(base::TimeDelta::FromSeconds(1));
   black_list->AddPreviewNavigation(url_e, true, PreviewsType::OFFLINE);
   // url_d and url_e should remain in the map, but url_a should be evicted.
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::HOST_BLACKLISTED,
-            black_list->IsLoadedAndAllowed(url_d, PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::HOST_BLACKLISTED,
-            black_list->IsLoadedAndAllowed(url_e, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_d, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_e, PreviewsType::OFFLINE));
 
   variations::testing::ClearAllVariationParams();
 }
@@ -555,52 +499,29 @@ TEST_F(PreviewsBlackListTest, SingleOptOut) {
       new PreviewsBlackList(nullptr, base::WrapUnique(test_clock)));
 
   black_list->AddPreviewNavigation(url_a, false, PreviewsType::OFFLINE);
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(url_c, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_c, PreviewsType::OFFLINE));
 
   test_clock->Advance(
       base::TimeDelta::FromSeconds(single_opt_out_duration + 1));
 
   black_list->AddPreviewNavigation(url_b, true, PreviewsType::OFFLINE);
-  EXPECT_EQ(PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
-            black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
-            black_list->IsLoadedAndAllowed(url_c, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_c, PreviewsType::OFFLINE));
 
   test_clock->Advance(
       base::TimeDelta::FromSeconds(single_opt_out_duration - 1));
 
-  EXPECT_EQ(PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
-            black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
-            black_list->IsLoadedAndAllowed(url_c, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_c, PreviewsType::OFFLINE));
 
   test_clock->Advance(
       base::TimeDelta::FromSeconds(single_opt_out_duration + 1));
 
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
-  EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
-            black_list->IsLoadedAndAllowed(url_c, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_c, PreviewsType::OFFLINE));
 
   variations::testing::ClearAllVariationParams();
-}
-
-TEST_F(PreviewsBlackListTest, AddPreviewUMA) {
-  base::HistogramTester histogram_tester;
-  base::SimpleTestClock* test_clock = new base::SimpleTestClock();
-  const GURL url("http://www.url.com");
-  std::unique_ptr<PreviewsBlackList> black_list(
-      new PreviewsBlackList(nullptr, base::WrapUnique(test_clock)));
-
-  black_list->AddPreviewNavigation(url, false, PreviewsType::OFFLINE);
-  histogram_tester.ExpectUniqueSample("Previews.OptOut.UserOptedOut.Offline", 0,
-                                      1);
-  black_list->AddPreviewNavigation(url, true, PreviewsType::OFFLINE);
-  histogram_tester.ExpectBucketCount("Previews.OptOut.UserOptedOut.Offline", 1,
-                                     1);
 }
 
 }  // namespace previews
