@@ -21,7 +21,7 @@ import org.chromium.ui.widget.Toast;
 import java.io.File;
 
 /** Wraps different classes that contain information about downloads. */
-public abstract class DownloadHistoryItemWrapper implements TimedItem {
+public abstract class DownloadHistoryItemWrapper extends TimedItem {
     protected final BackendProvider mBackendProvider;
     protected final ComponentName mComponentName;
     private Long mStableId;
