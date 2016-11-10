@@ -5,13 +5,16 @@
 #include "components/test_runner/text_input_controller.h"
 
 #include "base/macros.h"
+#include "components/test_runner/web_test_delegate.h"
 #include "components/test_runner/web_view_test_proxy.h"
 #include "gin/arguments.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
+#include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebInputMethodController.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebRange.h"
@@ -48,6 +51,7 @@ class TextInputControllerBindings
   std::vector<int> FirstRectForCharacterRange(unsigned location,
                                               unsigned length);
   void SetComposition(const std::string& text);
+  void ForceTextInputStateUpdate();
 
   base::WeakPtr<TextInputController> controller_;
 
@@ -96,8 +100,9 @@ TextInputControllerBindings::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetMethod("selectedRange", &TextInputControllerBindings::SelectedRange)
       .SetMethod("firstRectForCharacterRange",
                  &TextInputControllerBindings::FirstRectForCharacterRange)
-      .SetMethod("setComposition",
-                 &TextInputControllerBindings::SetComposition);
+      .SetMethod("setComposition", &TextInputControllerBindings::SetComposition)
+      .SetMethod("forceTextInputStateUpdate",
+                 &TextInputControllerBindings::ForceTextInputStateUpdate);
 }
 
 void TextInputControllerBindings::InsertText(const std::string& text) {
@@ -145,7 +150,10 @@ void TextInputControllerBindings::SetComposition(const std::string& text) {
   if (controller_)
     controller_->SetComposition(text);
 }
-
+void TextInputControllerBindings::ForceTextInputStateUpdate() {
+  if (controller_)
+    controller_->ForceTextInputStateUpdate();
+}
 // TextInputController ---------------------------------------------------------
 
 TextInputController::TextInputController(
@@ -160,11 +168,12 @@ void TextInputController::Install(blink::WebLocalFrame* frame) {
 }
 
 void TextInputController::InsertText(const std::string& text) {
-  view()->commitText(blink::WebString::fromUTF8(text), 0);
+  inputMethodController()->commitText(blink::WebString::fromUTF8(text), 0);
 }
 
 void TextInputController::UnmarkText() {
-  view()->finishComposingText(blink::WebWidget::KeepSelection);
+  inputMethodController()->finishComposingText(
+      blink::WebInputMethodController::KeepSelection);
 }
 
 void TextInputController::DoCommand(const std::string& text) {
@@ -203,7 +212,8 @@ void TextInputController::SetMarkedText(const std::string& text,
     underlines.push_back(underline);
   }
 
-  view()->setComposition(web_text, underlines, start, start + length);
+  inputMethodController()->setComposition(web_text, underlines, start,
+                                          start + length);
 }
 
 bool TextInputController::HasMarkedText() {
@@ -292,13 +302,27 @@ void TextInputController::SetComposition(const std::string& text) {
   std::vector<blink::WebCompositionUnderline> underlines;
   underlines.push_back(blink::WebCompositionUnderline(
       0, textLength, SK_ColorBLACK, false, SK_ColorTRANSPARENT));
-  view()->setComposition(
+  inputMethodController()->setComposition(
       newText, blink::WebVector<blink::WebCompositionUnderline>(underlines),
       textLength, textLength);
 }
 
+void TextInputController::ForceTextInputStateUpdate() {
+  web_view_test_proxy_base_->delegate()->ForceTextInputStateUpdate(
+      view()->mainFrame());
+}
+
 blink::WebView* TextInputController::view() {
   return web_view_test_proxy_base_->web_view();
+}
+
+blink::WebInputMethodController* TextInputController::inputMethodController() {
+  blink::WebLocalFrame* mainFrame = view()->mainFrame()->toWebLocalFrame();
+  if (!mainFrame) {
+    CHECK(false) << "WebView does not have a local main frame and"
+                    " cannot handle input method controller tasks.";
+  }
+  return mainFrame->frameWidget()->getActiveWebInputMethodController();
 }
 
 }  // namespace test_runner

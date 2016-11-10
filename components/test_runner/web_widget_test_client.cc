@@ -95,14 +95,6 @@ void WebWidgetTestClient::setToolTipText(const blink::WebString& text,
   test_runner()->setToolTipText(text);
 }
 
-void WebWidgetTestClient::resetInputMethod() {
-  // If a composition text exists, then we need to let the browser process
-  // to cancel the input method's ongoing composition session.
-  if (web_widget_test_proxy_base_)
-    web_widget_test_proxy_base_->web_widget()->finishComposingText(
-        blink::WebWidget::KeepSelection);
-}
-
 void WebWidgetTestClient::startDragging(blink::WebReferrerPolicy policy,
                                         const blink::WebDragData& data,
                                         blink::WebDragOperationsMask mask,

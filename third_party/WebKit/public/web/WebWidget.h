@@ -141,37 +141,6 @@ class WebWidget {
   // Called to inform the WebWidget that it has gained or lost keyboard focus.
   virtual void setFocus(bool) {}
 
-  // Called to inform the WebWidget of a new composition text.
-  // If selectionStart and selectionEnd has the same value, then it indicates
-  // the input caret position. If the text is empty, then the existing
-  // composition text will be cancelled.
-  // Returns true if the composition text was set successfully.
-  virtual bool setComposition(
-      const WebString& text,
-      const WebVector<WebCompositionUnderline>& underlines,
-      int selectionStart,
-      int selectionEnd) {
-    return false;
-  }
-
-  enum ConfirmCompositionBehavior {
-    DoNotKeepSelection,
-    KeepSelection,
-  };
-
-  // Called to inform the WebWidget that deleting the ongoing composition if
-  // any, inserting the specified text, and moving the caret according to
-  // relativeCaretPosition.
-  virtual bool commitText(const WebString& text, int relativeCaretPosition) {
-    return false;
-  }
-
-  // Called to inform the WebWidget to confirm an ongoing composition.
-  virtual bool finishComposingText(
-      ConfirmCompositionBehavior selectionBehavior) {
-    return false;
-  }
-
   // Fetches the character range of the current composition, also called the
   // "marked range."
   virtual WebRange compositionRange() { return WebRange(); }

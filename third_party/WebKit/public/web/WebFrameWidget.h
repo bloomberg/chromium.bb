@@ -38,6 +38,7 @@
 namespace blink {
 
 class WebLocalFrame;
+class WebInputMethodController;
 class WebView;
 class WebWidgetClient;
 
@@ -77,6 +78,13 @@ class WebFrameWidget : public WebWidget {
 
   // WebWidget implementation.
   bool isWebFrameWidget() const final { return true; }
+
+  // Current instance of the active WebInputMethodController, that is, the
+  // WebInputMethodController corresponding to (and owned by) the focused
+  // WebLocalFrameImpl. It might return nullptr when there are no focused
+  // frames or possibly when the WebFrameWidget does not accept IME events.
+  virtual WebInputMethodController* getActiveWebInputMethodController()
+      const = 0;
 };
 
 }  // namespace blink

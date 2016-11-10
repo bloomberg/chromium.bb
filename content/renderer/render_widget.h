@@ -71,6 +71,7 @@ class WebDragData;
 class WebFrameWidget;
 class WebGestureEvent;
 class WebImage;
+class WebInputMethodController;
 class WebLocalFrame;
 class WebMouseEvent;
 class WebNode;
@@ -162,6 +163,12 @@ class CONTENT_EXPORT RenderWidget
 
   CompositorDependencies* compositor_deps() const { return compositor_deps_; }
   virtual blink::WebWidget* GetWebWidget() const;
+
+  // Returns the current instance of WebInputMethodController which is to be
+  // used for IME related tasks. This instance corresponds to the one from
+  // focused frame and can be nullptr.
+  blink::WebInputMethodController* GetInputMethodController() const;
+
   const gfx::Size& size() const { return size_; }
   bool is_fullscreen_granted() const { return is_fullscreen_granted_; }
   blink::WebDisplayMode display_mode() const { return display_mode_; }

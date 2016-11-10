@@ -173,6 +173,10 @@ std::string DumpBackForwardList(std::vector<PageState>& page_state,
 // Run all pending idle tasks immediately, and then invoke callback.
 void SchedulerRunIdleTasks(const base::Closure& callback);
 
+// Causes the RenderWidget corresponding to |render_frame| to update its
+// TextInputState.
+void ForceTextInputStateUpdateForRenderFrame(RenderFrame* render_frame);
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_LAYOUTTEST_SUPPORT_H_

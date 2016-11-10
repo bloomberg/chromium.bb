@@ -4,6 +4,7 @@
 
 #include "web/WebViewFrameWidget.h"
 
+#include "web/WebInputMethodControllerImpl.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 
@@ -114,25 +115,6 @@ void WebViewFrameWidget::setFocus(bool enable) {
   return m_webView->setFocus(enable);
 }
 
-bool WebViewFrameWidget::setComposition(
-    const WebString& text,
-    const WebVector<WebCompositionUnderline>& underlines,
-    int selectionStart,
-    int selectionEnd) {
-  return m_webView->setComposition(text, underlines, selectionStart,
-                                   selectionEnd);
-}
-
-bool WebViewFrameWidget::finishComposingText(
-    ConfirmCompositionBehavior selectionBehavior) {
-  return m_webView->finishComposingText(selectionBehavior);
-}
-
-bool WebViewFrameWidget::commitText(const WebString& text,
-                                    int relativeCaretPosition) {
-  return m_webView->commitText(text, relativeCaretPosition);
-}
-
 WebRange WebViewFrameWidget::compositionRange() {
   return m_webView->compositionRange();
 }
@@ -230,6 +212,11 @@ void WebViewFrameWidget::setBaseBackgroundColor(WebColor color) {
 
 WebLocalFrameImpl* WebViewFrameWidget::localRoot() {
   return m_webView->mainFrameImpl();
+}
+
+WebInputMethodControllerImpl*
+WebViewFrameWidget::getActiveWebInputMethodController() const {
+  return m_webView->getActiveWebInputMethodController();
 }
 
 void WebViewFrameWidget::scheduleAnimation() {

@@ -173,6 +173,7 @@
 #include "web/ValidationMessageClientImpl.h"
 #include "web/WebDevToolsAgentImpl.h"
 #include "web/WebInputEventConversion.h"
+#include "web/WebInputMethodControllerImpl.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPagePopupImpl.h"
 #include "web/WebPluginContainerImpl.h"
@@ -2341,100 +2342,6 @@ void WebViewImpl::setFocus(bool enable) {
 
 // TODO(ekaramad):This method is almost duplicated in WebFrameWidgetImpl as
 // well. This code needs to be refactored  (http://crbug.com/629721).
-bool WebViewImpl::setComposition(
-    const WebString& text,
-    const WebVector<WebCompositionUnderline>& underlines,
-    int selectionStart,
-    int selectionEnd) {
-  LocalFrame* focused = focusedLocalFrameAvailableForIme();
-  if (!focused)
-    return false;
-
-  if (WebPlugin* plugin = focusedPluginIfInputMethodSupported(focused))
-    return plugin->setComposition(text, underlines, selectionStart,
-                                  selectionEnd);
-
-  // The input focus has been moved to another WebWidget object.
-  // We should use this |editor| object only to complete the ongoing
-  // composition.
-  InputMethodController& inputMethodController =
-      focused->inputMethodController();
-  if (!focused->editor().canEdit() && !inputMethodController.hasComposition())
-    return false;
-
-  // We should verify the parent node of this IME composition node are
-  // editable because JavaScript may delete a parent node of the composition
-  // node. In this case, WebKit crashes while deleting texts from the parent
-  // node, which doesn't exist any longer.
-  const EphemeralRange range =
-      inputMethodController.compositionEphemeralRange();
-  if (range.isNotNull()) {
-    Node* node = range.startPosition().computeContainerNode();
-    focused->document()->updateStyleAndLayoutTree();
-    if (!node || !hasEditableStyle(*node))
-      return false;
-  }
-
-  // A keypress event is canceled. If an ongoing composition exists, then the
-  // keydown event should have arisen from a handled key (e.g., backspace).
-  // In this case we ignore the cancellation and continue; otherwise (no
-  // ongoing composition) we exit and signal success only for attempts to
-  // clear the composition.
-  if (m_suppressNextKeypressEvent && !inputMethodController.hasComposition())
-    return text.isEmpty();
-
-  UserGestureIndicator gestureIndicator(DocumentUserGestureToken::create(
-      focused->document(), UserGestureToken::NewGesture));
-
-  // When the range of composition underlines overlap with the range between
-  // selectionStart and selectionEnd, WebKit somehow won't paint the selection
-  // at all (see InlineTextBox::paint() function in InlineTextBox.cpp).
-  // But the selection range actually takes effect.
-  inputMethodController.setComposition(
-      String(text), CompositionUnderlineVectorBuilder(underlines),
-      selectionStart, selectionEnd);
-
-  return text.isEmpty() || inputMethodController.hasComposition();
-}
-
-// TODO(ekaramad):These methods are almost duplicated in WebFrameWidgetImpl as
-// well. This code needs to be refactored  (http://crbug.com/629721).
-bool WebViewImpl::finishComposingText(
-    ConfirmCompositionBehavior selectionBehavior) {
-  LocalFrame* focused = focusedLocalFrameAvailableForIme();
-  if (!focused)
-    return false;
-
-  if (WebPlugin* plugin = focusedPluginIfInputMethodSupported(focused))
-    return plugin->finishComposingText(selectionBehavior);
-
-  return focused->inputMethodController().finishComposingText(
-      selectionBehavior == KeepSelection
-          ? InputMethodController::KeepSelection
-          : InputMethodController::DoNotKeepSelection);
-}
-
-bool WebViewImpl::commitText(const WebString& text, int relativeCaretPosition) {
-  LocalFrame* focused = focusedLocalFrameAvailableForIme();
-  if (!focused)
-    return false;
-
-  UserGestureIndicator gestureIndicator(DocumentUserGestureToken::create(
-      focused->document(), UserGestureToken::NewGesture));
-
-  if (WebPlugin* plugin = focusedPluginIfInputMethodSupported(focused))
-    return plugin->commitText(text, relativeCaretPosition);
-
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  focused->document()->updateStyleAndLayoutIgnorePendingStylesheets();
-
-  return focused->inputMethodController().commitText(text,
-                                                     relativeCaretPosition);
-}
-
-// TODO(ekaramad):This method is almost duplicated in WebFrameWidgetImpl as
-// well. This code needs to be refactored  (http://crbug.com/629721).
 WebRange WebViewImpl::compositionRange() {
   LocalFrame* focused = focusedLocalFrameAvailableForIme();
   if (!focused)
@@ -3833,6 +3740,12 @@ void WebViewImpl::setIsTransparent(bool isTransparent) {
 
 bool WebViewImpl::isTransparent() const {
   return m_isTransparent;
+}
+
+WebInputMethodControllerImpl* WebViewImpl::getActiveWebInputMethodController()
+    const {
+  return WebInputMethodControllerImpl::fromFrame(
+      focusedLocalFrameAvailableForIme());
 }
 
 void WebViewImpl::setBaseBackgroundColor(WebColor color) {

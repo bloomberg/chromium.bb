@@ -571,10 +571,12 @@ bool BrowserPlugin::commitText(const blink::WebString& text,
 }
 
 bool BrowserPlugin::finishComposingText(
-    blink::WebWidget::ConfirmCompositionBehavior selection_behavior) {
+    blink::WebInputMethodController::ConfirmCompositionBehavior
+        selection_behavior) {
   if (!attached())
     return false;
-  bool keep_selection = (selection_behavior == blink::WebWidget::KeepSelection);
+  bool keep_selection =
+      (selection_behavior == blink::WebInputMethodController::KeepSelection);
   BrowserPluginManager::Get()->Send(
       new BrowserPluginHostMsg_ImeFinishComposingText(keep_selection));
   // TODO(kochi): This assumes the IPC handling always succeeds.

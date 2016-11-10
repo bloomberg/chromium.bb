@@ -37,8 +37,10 @@
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebSize.h"
 #include "public/web/WebInputEvent.h"
+#include "public/web/WebInputMethodController.h"
 #include "web/PageWidgetDelegate.h"
 #include "web/WebFrameWidgetBase.h"
+#include "web/WebInputMethodControllerImpl.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 #include "wtf/Assertions.h"
@@ -97,13 +99,6 @@ class WebFrameWidgetImpl final
                            float browserControlsDelta) override;
   void mouseCaptureLost() override;
   void setFocus(bool enable) override;
-  bool setComposition(const WebString& text,
-                      const WebVector<WebCompositionUnderline>& underlines,
-                      int selectionStart,
-                      int selectionEnd) override;
-  bool commitText(const WebString& text, int relativeCaretPosition) override;
-  bool finishComposingText(
-      ConfirmCompositionBehavior selectionBehavior) override;
   WebRange compositionRange() override;
   WebTextInputInfo textInputInfo() override;
   WebTextInputType textInputType() override;
@@ -128,6 +123,8 @@ class WebFrameWidgetImpl final
   bool isTransparent() const override;
   void setIsTransparent(bool) override;
   void setBaseBackgroundColor(WebColor) override;
+  WebInputMethodControllerImpl* getActiveWebInputMethodController()
+      const override;
 
   Frame* focusedCoreFrame() const;
 

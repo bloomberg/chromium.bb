@@ -122,7 +122,6 @@ class WebWidgetTestProxy : public Base, public WebWidgetTestProxyBase {
     Base::setToolTipText(text, hint);
     widget_test_client()->setToolTipText(text, hint);
   }
-  void resetInputMethod() override { widget_test_client()->resetInputMethod(); }
   void startDragging(blink::WebReferrerPolicy policy,
                      const blink::WebDragData& data,
                      blink::WebDragOperationsMask mask,

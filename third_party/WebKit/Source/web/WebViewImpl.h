@@ -84,6 +84,7 @@ class UserGestureToken;
 class WebActiveGestureAnimation;
 class WebDevToolsAgentImpl;
 class WebElement;
+class WebInputMethodControllerImpl;
 class WebLayerTreeView;
 class WebLocalFrame;
 class WebLocalFrameImpl;
@@ -136,13 +137,6 @@ class WEB_EXPORT WebViewImpl final
                            float browserControlsShownRatioDelta) override;
   void mouseCaptureLost() override;
   void setFocus(bool enable) override;
-  bool setComposition(const WebString& text,
-                      const WebVector<WebCompositionUnderline>& underlines,
-                      int selectionStart,
-                      int selectionEnd) override;
-  bool commitText(const WebString& text, int relativeCaretPosition) override;
-  bool finishComposingText(
-      ConfirmCompositionBehavior selectionBehavior) override;
   WebRange compositionRange() override;
   WebTextInputInfo textInputInfo() override;
   WebTextInputType textInputType() override;
@@ -512,6 +506,11 @@ class WEB_EXPORT WebViewImpl final
   ChromeClientImpl& chromeClient() const { return *m_chromeClientImpl.get(); }
 
   void setDoingDragAndDrop(bool doing) { m_doingDragAndDrop = doing; }
+
+  // Returns the currently active WebInputMethodController which the one
+  // corresponding to the focused frame. It will return nullptr if there are
+  // none or |m_imeAcceptEvents| is false.
+  WebInputMethodControllerImpl* getActiveWebInputMethodController() const;
 
  private:
   InspectorOverlay* inspectorOverlay();

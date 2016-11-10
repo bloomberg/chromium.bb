@@ -42,7 +42,6 @@ class WebWidgetTestClient : public blink::WebWidgetClient {
   bool isPointerLocked() override;
   void setToolTipText(const blink::WebString& text,
                       blink::WebTextDirection direction) override;
-  void resetInputMethod() override;
   void startDragging(blink::WebReferrerPolicy policy,
                      const blink::WebDragData& data,
                      blink::WebDragOperationsMask mask,

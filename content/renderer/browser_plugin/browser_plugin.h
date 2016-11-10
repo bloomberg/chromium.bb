@@ -16,8 +16,8 @@
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebDragStatus.h"
+#include "third_party/WebKit/public/web/WebInputMethodController.h"
 #include "third_party/WebKit/public/web/WebNode.h"
-#include "third_party/WebKit/public/web/WebWidget.h"
 
 namespace cc {
 class SurfaceId;
@@ -118,7 +118,8 @@ class CONTENT_EXPORT BrowserPlugin :
   bool commitText(const blink::WebString& text,
                   int relative_cursor_pos) override;
   bool finishComposingText(
-      blink::WebWidget::ConfirmCompositionBehavior selection_behavior) override;
+      blink::WebInputMethodController::ConfirmCompositionBehavior
+          selection_behavior) override;
 
   void extendSelectionAndDelete(int before, int after) override;
 

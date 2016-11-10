@@ -745,6 +745,10 @@ void BlinkTestRunner::RunIdleTasks(const base::Closure& callback) {
     SchedulerRunIdleTasks(callback);
 }
 
+void BlinkTestRunner::ForceTextInputStateUpdate(WebFrame* frame) {
+  ForceTextInputStateUpdateForRenderFrame(RenderFrame::FromWebFrame(frame));
+}
+
 bool BlinkTestRunner::AddMediaStreamVideoSourceAndTrack(
     blink::WebMediaStream* stream) {
   DCHECK(stream);

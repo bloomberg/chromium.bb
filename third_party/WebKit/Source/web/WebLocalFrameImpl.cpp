@@ -203,6 +203,7 @@
 #include "public/web/WebHistoryItem.h"
 #include "public/web/WebIconURL.h"
 #include "public/web/WebInputElement.h"
+#include "public/web/WebInputMethodController.h"
 #include "public/web/WebKit.h"
 #include "public/web/WebNode.h"
 #include "public/web/WebPerformance.h"
@@ -1566,6 +1567,7 @@ WebLocalFrameImpl::WebLocalFrameImpl(WebTreeScopeType scope,
       m_contentSettingsClient(0),
       m_inputEventsScaleFactorForEmulation(1),
       m_webDevToolsFrontend(0),
+      m_inputMethodController(new WebInputMethodControllerImpl(this)),
       m_selfKeepAlive(this) {
   DCHECK(m_client);
   frameCount++;
@@ -2404,6 +2406,10 @@ void WebLocalFrameImpl::usageCountChromeLoadTimes(const WebString& metric) {
     feature = UseCounter::ChromeLoadTimesConnectionInfo;
   }
   UseCounter::count(frame(), feature);
+}
+
+WebInputMethodControllerImpl* WebLocalFrameImpl::inputMethodController() const {
+  return m_inputMethodController.get();
 }
 
 }  // namespace blink

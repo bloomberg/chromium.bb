@@ -31,6 +31,7 @@
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/history_entry.h"
 #include "content/renderer/history_serialization.h"
+#include "content/renderer/input/render_widget_input_handler_delegate.h"
 #include "content/renderer/layout_test_dependencies.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
@@ -1127,6 +1128,14 @@ void SchedulerRunIdleTasks(const base::Closure& callback) {
   blink::scheduler::RendererScheduler* scheduler =
       content::RenderThreadImpl::current()->GetRendererScheduler();
   blink::scheduler::RunIdleTasksForTesting(scheduler, callback);
+}
+
+void ForceTextInputStateUpdateForRenderFrame(RenderFrame* frame) {
+  if (auto* render_widget =
+          static_cast<RenderFrameImpl*>(frame)->GetRenderWidget()) {
+    render_widget->UpdateTextInputState(ShowIme::IF_NEEDED,
+                                        ChangeSource::FROM_NON_IME);
+  }
 }
 
 }  // namespace content

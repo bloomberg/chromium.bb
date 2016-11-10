@@ -25,7 +25,7 @@ class DictionaryValue;
 namespace blink {
 class WebDeviceMotionData;
 class WebDeviceOrientationData;
-class WebLocalFrame;
+class WebFrame;
 class WebGamepad;
 class WebGamepads;
 class WebHistoryItem;
@@ -297,6 +297,10 @@ class WebTestDelegate {
 
   // Run all pending idle tasks, and then run callback.
   virtual void RunIdleTasks(const base::Closure& callback) = 0;
+
+  // Forces a text input state update for the client of WebFrameWidget
+  // associated with |frame|.
+  virtual void ForceTextInputStateUpdate(blink::WebFrame* frame) = 0;
 };
 
 }  // namespace test_runner

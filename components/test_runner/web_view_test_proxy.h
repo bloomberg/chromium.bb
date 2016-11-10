@@ -172,7 +172,6 @@ class WebViewTestProxy : public Base, public WebViewTestProxyBase {
     widget_test_client()->setToolTipText(text, hint);
     Base::setToolTipText(text, hint);
   }
-  void resetInputMethod() override { widget_test_client()->resetInputMethod(); }
 
   // WebViewClient implementation.
   void startDragging(blink::WebReferrerPolicy policy,

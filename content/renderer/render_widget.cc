@@ -68,6 +68,7 @@
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
+#include "third_party/WebKit/public/web/WebInputMethodController.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebPagePopup.h"
@@ -112,6 +113,7 @@ using blink::WebGestureEvent;
 using blink::WebImage;
 using blink::WebInputEvent;
 using blink::WebInputEventResult;
+using blink::WebInputMethodController;
 using blink::WebKeyboardEvent;
 using blink::WebLocalFrame;
 using blink::WebMouseEvent;
@@ -1412,7 +1414,10 @@ void RenderWidget::OnImeSetComposition(
   if (!ShouldHandleImeEvent())
     return;
   ImeEventGuard guard(this);
-  if (!GetWebWidget()->setComposition(
+  blink::WebInputMethodController* controller = GetInputMethodController();
+  DCHECK(controller);
+  if (!controller ||
+      !controller->setComposition(
           text, WebVector<WebCompositionUnderline>(underlines), selection_start,
           selection_end)) {
     // If we failed to set the composition text, then we need to let the browser
@@ -1442,7 +1447,8 @@ void RenderWidget::OnImeCommitText(const base::string16& text,
     return;
   ImeEventGuard guard(this);
   input_handler_->set_handling_input_event(true);
-  GetWebWidget()->commitText(text, relative_cursor_pos);
+  if (auto* controller = GetInputMethodController())
+    controller->commitText(text, relative_cursor_pos);
   input_handler_->set_handling_input_event(false);
   UpdateCompositionInfo(false /* not an immediate request */);
 }
@@ -1460,9 +1466,11 @@ void RenderWidget::OnImeFinishComposingText(bool keep_selection) {
     return;
   ImeEventGuard guard(this);
   input_handler_->set_handling_input_event(true);
-  GetWebWidget()->finishComposingText(keep_selection
-                                      ? WebWidget::KeepSelection
-                                      : WebWidget::DoNotKeepSelection);
+  if (auto* controller = GetInputMethodController()) {
+    controller->finishComposingText(
+        keep_selection ? WebInputMethodController::KeepSelection
+                       : WebInputMethodController::DoNotKeepSelection);
+  }
   input_handler_->set_handling_input_event(false);
   UpdateCompositionInfo(false /* not an immediate request */);
 }
@@ -1940,7 +1948,10 @@ void RenderWidget::resetInputMethod() {
   if (text_input_type_ != ui::TEXT_INPUT_TYPE_NONE) {
     // If a composition text exists, then we need to let the browser process
     // to cancel the input method's ongoing composition session.
-    if (GetWebWidget()->finishComposingText(WebWidget::DoNotKeepSelection))
+    blink::WebInputMethodController* controller = GetInputMethodController();
+    if (controller &&
+        controller->finishComposingText(
+            WebInputMethodController::DoNotKeepSelection))
       Send(new InputHostMsg_ImeCancelComposition(routing_id()));
   }
 
@@ -2094,6 +2105,15 @@ void RenderWidget::startDragging(blink::WebReferrerPolicy policy,
 
 blink::WebWidget* RenderWidget::GetWebWidget() const {
   return webwidget_internal_;
+}
+
+blink::WebInputMethodController* RenderWidget::GetInputMethodController()
+    const {
+  // TODO(ekaramad): Remove this CHECK when GetWebWidget() is
+  // always a WebFrameWidget.
+  CHECK(GetWebWidget()->isWebFrameWidget());
+  return static_cast<blink::WebFrameWidget*>(GetWebWidget())
+      ->getActiveWebInputMethodController();
 }
 
 }  // namespace content

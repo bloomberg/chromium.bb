@@ -193,6 +193,8 @@ component("web") {
     "WebInputElement.cpp",
     "WebInputEventConversion.cpp",
     "WebInputEventConversion.h",
+    "WebInputMethodControllerImpl.cpp",
+    "WebInputMethodControllerImpl.h",
     "WebKit.cpp",
     "WebLabelElement.cpp",
     "WebLeakDetector.cpp",
