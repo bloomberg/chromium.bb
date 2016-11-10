@@ -29,26 +29,26 @@ GvrDevice::GvrDevice(GvrDeviceProvider* provider, GvrDelegate* delegate)
 
 GvrDevice::~GvrDevice() {}
 
-VRDisplayPtr GvrDevice::GetVRDevice() {
+mojom::VRDisplayInfoPtr GvrDevice::GetVRDevice() {
   TRACE_EVENT0("input", "GvrDevice::GetVRDevice");
 
-  VRDisplayPtr device = VRDisplay::New();
+  mojom::VRDisplayInfoPtr device = mojom::VRDisplayInfo::New();
 
   device->index = id();
 
-  device->capabilities = VRDisplayCapabilities::New();
+  device->capabilities = mojom::VRDisplayCapabilities::New();
   device->capabilities->hasOrientation = true;
   device->capabilities->hasPosition = false;
   device->capabilities->hasExternalDisplay = false;
   device->capabilities->canPresent = true;
 
-  device->leftEye = VREyeParameters::New();
-  device->rightEye = VREyeParameters::New();
-  VREyeParametersPtr& left_eye = device->leftEye;
-  VREyeParametersPtr& right_eye = device->rightEye;
+  device->leftEye = mojom::VREyeParameters::New();
+  device->rightEye = mojom::VREyeParameters::New();
+  mojom::VREyeParametersPtr& left_eye = device->leftEye;
+  mojom::VREyeParametersPtr& right_eye = device->rightEye;
 
-  left_eye->fieldOfView = VRFieldOfView::New();
-  right_eye->fieldOfView = VRFieldOfView::New();
+  left_eye->fieldOfView = mojom::VRFieldOfView::New();
+  right_eye->fieldOfView = mojom::VRFieldOfView::New();
 
   left_eye->offset = mojo::Array<float>::New(3);
   right_eye->offset = mojo::Array<float>::New(3);
@@ -127,10 +127,13 @@ VRDisplayPtr GvrDevice::GetVRDevice() {
   return device;
 }
 
-VRPosePtr GvrDevice::GetPose() {
+mojom::VRPosePtr GvrDevice::GetPose(VRServiceImpl* service) {
   TRACE_EVENT0("input", "GvrDevice::GetSensorState");
 
-  VRPosePtr pose = VRPose::New();
+  if (!IsAccessAllowed(service))
+    return nullptr;
+
+  mojom::VRPosePtr pose = mojom::VRPose::New();
 
   pose->timestamp = base::Time::Now().ToJsTime();
 
@@ -186,7 +189,10 @@ VRPosePtr GvrDevice::GetPose() {
   return pose;
 }
 
-void GvrDevice::ResetPose() {
+void GvrDevice::ResetPose(VRServiceImpl* service) {
+  if (!IsAccessAllowed(service))
+    return;
+
   gvr::GvrApi* gvr_api = GetGvrApi();
 
   // Should never call RecenterTracking when using with Daydream viewers. On
@@ -195,25 +201,40 @@ void GvrDevice::ResetPose() {
     gvr_api->RecenterTracking();
 }
 
-bool GvrDevice::RequestPresent(bool secure_origin) {
+bool GvrDevice::RequestPresent(VRServiceImpl* service, bool secure_origin) {
+  if (!IsAccessAllowed(service))
+    return false;
+
+  // One service could present on several devices at the same time
+  // and different service could present on different devices the same time
+  if (presenting_service_ == nullptr)
+    presenting_service_ = service;
+
   secure_origin_ = secure_origin;
   if (delegate_)
     delegate_->SetWebVRSecureOrigin(secure_origin_);
+
   return gvr_provider_->RequestPresent();
 }
 
-void GvrDevice::ExitPresent() {
+void GvrDevice::ExitPresent(VRServiceImpl* service) {
+  if (IsPresentingService(service))
+    presenting_service_ = nullptr;
+
   gvr_provider_->ExitPresent();
+  OnExitPresent(service);
 }
 
-void GvrDevice::SubmitFrame(VRPosePtr pose) {
-  if (delegate_)
-    delegate_->SubmitWebVRFrame();
+void GvrDevice::SubmitFrame(VRServiceImpl* service, mojom::VRPosePtr pose) {
+  if (!IsPresentingService(service) || !delegate_)
+    return;
+  delegate_->SubmitWebVRFrame();
 }
 
-void GvrDevice::UpdateLayerBounds(VRLayerBoundsPtr leftBounds,
-                                  VRLayerBoundsPtr rightBounds) {
-  if (!delegate_)
+void GvrDevice::UpdateLayerBounds(VRServiceImpl* service,
+                                  mojom::VRLayerBoundsPtr leftBounds,
+                                  mojom::VRLayerBoundsPtr rightBounds) {
+  if (!IsAccessAllowed(service) || !delegate_)
     return;
 
   delegate_->UpdateWebVRTextureBounds(0,  // Left eye
@@ -230,7 +251,7 @@ void GvrDevice::SetDelegate(GvrDelegate* delegate) {
   // Notify the clients that this device has changed
   if (delegate_) {
     delegate_->SetWebVRSecureOrigin(secure_origin_);
-    VRDeviceManager::GetInstance()->OnDeviceChanged(GetVRDevice());
+    OnDisplayChanged();
   }
 }
 
