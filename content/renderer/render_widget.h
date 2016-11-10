@@ -34,6 +34,7 @@
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/render_widget_mouse_lock_dispatcher.h"
 #include "ipc/ipc_listener.h"
+#include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/WebKit/public/platform/WebDisplayMode.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -133,7 +134,7 @@ class CONTENT_EXPORT RenderWidget
                               const ScreenInfo& screen_info);
 
   // Creates a new RenderWidget that will be attached to a RenderFrame.
-  static RenderWidget* CreateForFrame(int routing_id,
+  static RenderWidget* CreateForFrame(int widget_routing_id,
                                       bool hidden,
                                       const ScreenInfo& screen_info,
                                       CompositorDependencies* compositor_deps,
@@ -158,8 +159,10 @@ class CONTENT_EXPORT RenderWidget
   // https://crbug.com/545684
   virtual void CloseForFrame();
 
-  int32_t routing_id() const { return routing_id_; }
-  void SetRoutingID(int32_t routing_id);
+  int32_t routing_id() const {
+    DCHECK(routing_id_ != MSG_ROUTING_NONE);
+    return routing_id_;
+  }
 
   CompositorDependencies* compositor_deps() const { return compositor_deps_; }
   virtual blink::WebWidget* GetWebWidget() const;
@@ -419,8 +422,6 @@ class CONTENT_EXPORT RenderWidget
   // For unit tests.
   friend class RenderWidgetTest;
 
-  using CreateWidgetCallback = base::OnceCallback<bool()>;
-
   enum ResizeAck {
     SEND_RESIZE_ACK,
     NO_RESIZE_ACK,
@@ -442,13 +443,12 @@ class CONTENT_EXPORT RenderWidget
   // Creates a WebWidget based on the popup type.
   static blink::WebWidget* CreateWebWidget(RenderWidget* render_widget);
 
-  // Initializes this view with the given opener.
-  bool Init(int32_t opener_id);
+  // Called by Create() functions and subclasses, after the routing_id is
+  // available. Must be called before Init().
+  void InitRoutingID(int32_t routing_id);
 
-  // Called by Init and subclasses to perform initialization.
-  bool DoInit(int32_t opener_id,
-              blink::WebWidget* web_widget,
-              CreateWidgetCallback create_widget_callback);
+  // Called by Create() functions and subclasses to finish initialization.
+  void Init(int32_t opener_id, blink::WebWidget* web_widget);
 
   // Allows the process to exit once the unload handler has finished, if there
   // are no other active RenderWidgets.
@@ -807,10 +807,6 @@ class CONTENT_EXPORT RenderWidget
   // window rect.
   void ScreenRectToEmulatedIfNeeded(blink::WebRect* window_rect) const;
   void EmulatedToScreenRectIfNeeded(blink::WebRect* window_rect) const;
-
-  bool CreateWidget(int32_t opener_id,
-                    blink::WebPopupType popup_type,
-                    int32_t* routing_id);
 
   // Indicates whether this widget has focus.
   bool has_focus_;

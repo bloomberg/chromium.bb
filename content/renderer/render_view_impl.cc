@@ -697,21 +697,20 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
 
 void RenderViewImpl::Initialize(const mojom::CreateViewParams& params,
                                 bool was_created_by_renderer) {
-  SetRoutingID(params.view_id);
+  RenderWidget::InitRoutingID(params.view_id);
 
-  int opener_view_routing_id;
+  int opener_view_routing_id = MSG_ROUTING_NONE;
   WebFrame* opener_frame = RenderFrameImpl::ResolveOpener(
       params.opener_frame_route_id, &opener_view_routing_id);
-  if (opener_view_routing_id != MSG_ROUTING_NONE && was_created_by_renderer)
-    opener_id_ = opener_view_routing_id;
+  if (!was_created_by_renderer)
+    opener_view_routing_id = MSG_ROUTING_NONE;
 
   display_mode_ = params.initial_size.display_mode;
 
   webview_ =
       WebView::create(this, is_hidden() ? blink::WebPageVisibilityStateHidden
                                         : blink::WebPageVisibilityStateVisible);
-  RenderWidget::DoInit(MSG_ROUTING_NONE, webview_->widget(),
-                       CreateWidgetCallback());
+  RenderWidget::Init(opener_view_routing_id, webview_->widget());
 
   g_view_map.Get().insert(std::make_pair(webview(), this));
   g_routing_id_view_map.Get().insert(std::make_pair(GetRoutingID(), this));
@@ -2143,6 +2142,8 @@ RenderFrameImpl* RenderViewImpl::GetMainRenderFrame() {
 }
 
 int RenderViewImpl::GetRoutingID() const {
+  DCHECK_NE(routing_id(), MSG_ROUTING_NONE)
+      << "Tried to obtain routing ID before it was set.";
   return routing_id();
 }
 

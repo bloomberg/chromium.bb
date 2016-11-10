@@ -41,28 +41,19 @@ WebWidget* RenderWidgetFullscreen::CreateWebWidget() {
   return RenderWidget::CreateWebWidget(this);
 }
 
-bool RenderWidgetFullscreen::CreateFullscreenWidget(int32_t opener_id,
-                                                    int32_t* routing_id) {
-  RenderThreadImpl::current_render_message_filter()->CreateFullscreenWidget(
-      opener_id, routing_id);
-  return true;
-}
-
 bool RenderWidgetFullscreen::Init(int32_t opener_id) {
   DCHECK(!GetWebWidget());
 
-  bool success = RenderWidget::DoInit(
-      opener_id, CreateWebWidget(),
-      base::Bind(&RenderWidgetFullscreen::CreateFullscreenWidget,
-          base::Unretained(this), opener_id, &routing_id_));
-
-  if (success) {
-    // TODO(fsamuel): This is a bit ugly. The |create_widget_message| should
-    // probably be factored out of RenderWidget::DoInit.
-    SetRoutingID(routing_id_);
-    return true;
+  // Synchronous IPC to obtain a routing id for ourselves.
+  int32_t routing_id = MSG_ROUTING_NONE;
+  if (!RenderThreadImpl::current_render_message_filter()
+           ->CreateFullscreenWidget(opener_id, &routing_id)) {
+    return false;
   }
-  return false;
+
+  RenderWidget::InitRoutingID(routing_id);
+  RenderWidget::Init(opener_id, CreateWebWidget());
+  return true;
 }
 
 }  // namespace content

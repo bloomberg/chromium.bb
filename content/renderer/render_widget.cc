@@ -295,26 +295,34 @@ RenderWidget* RenderWidget::Create(int32_t opener_id,
                                    blink::WebPopupType popup_type,
                                    const ScreenInfo& screen_info) {
   DCHECK(opener_id != MSG_ROUTING_NONE);
+
+  // Do a synchronous IPC to obtain a routing ID.
+  int32_t routing_id = MSG_ROUTING_NONE;
+  if (!RenderThreadImpl::current_render_message_filter()->CreateNewWidget(
+          opener_id, popup_type, &routing_id)) {
+    return nullptr;
+  }
+
   scoped_refptr<RenderWidget> widget(new RenderWidget(
       compositor_deps, popup_type, screen_info, false, false, false));
-  if (widget->Init(opener_id)) {  // adds reference on success.
-    return widget.get();
-  }
-  return NULL;
+  widget->InitRoutingID(routing_id);
+  widget->Init(opener_id, RenderWidget::CreateWebWidget(widget.get()));
+  DCHECK(!widget->HasOneRef());  // RenderWidget::Init() adds a reference.
+  return widget.get();
 }
 
 // static
 RenderWidget* RenderWidget::CreateForFrame(
-    int routing_id,
+    int widget_routing_id,
     bool hidden,
     const ScreenInfo& screen_info,
     CompositorDependencies* compositor_deps,
     blink::WebLocalFrame* frame) {
-  CHECK_NE(routing_id, MSG_ROUTING_NONE);
+  CHECK_NE(widget_routing_id, MSG_ROUTING_NONE);
   // TODO(avi): Before RenderViewImpl has-a RenderWidget, the browser passes the
   // same routing ID for both the view routing ID and the main frame widget
   // routing ID. https://crbug.com/545684
-  RenderViewImpl* view = RenderViewImpl::FromRoutingID(routing_id);
+  RenderViewImpl* view = RenderViewImpl::FromRoutingID(widget_routing_id);
   if (view) {
     view->AttachWebFrameWidget(
         RenderWidget::CreateWebFrameWidget(view->GetWidget(), frame));
@@ -326,18 +334,16 @@ RenderWidget* RenderWidget::CreateForFrame(
                                    screen_info, false, hidden, false)
           : new RenderWidget(compositor_deps, blink::WebPopupTypeNone,
                              screen_info, false, hidden, false));
-  widget->SetRoutingID(routing_id);
   widget->for_oopif_ = true;
-  // DoInit increments the reference count on |widget|, keeping it alive after
+  // Init increments the reference count on |widget|, keeping it alive after
   // this function returns.
-  if (widget->DoInit(MSG_ROUTING_NONE,
-                     RenderWidget::CreateWebFrameWidget(widget.get(), frame),
-                     CreateWidgetCallback())) {
-    if (g_render_widget_initialized)
-      g_render_widget_initialized(widget.get());
-    return widget.get();
-  }
-  return nullptr;
+  widget->InitRoutingID(widget_routing_id);
+  widget->Init(MSG_ROUTING_NONE,
+               RenderWidget::CreateWebFrameWidget(widget.get(), frame));
+
+  if (g_render_widget_initialized)
+    g_render_widget_initialized(widget.get());
+  return widget.get();
 }
 
 // static
@@ -369,12 +375,6 @@ void RenderWidget::CloseForFrame() {
   OnClose();
 }
 
-void RenderWidget::SetRoutingID(int32_t routing_id) {
-  routing_id_ = routing_id;
-  input_handler_.reset(new RenderWidgetInputHandler(
-      GetRenderWidgetInputHandlerDelegate(this), this));
-}
-
 void RenderWidget::SetSwappedOut(bool is_swapped_out) {
   // We should only toggle between states.
   DCHECK(is_swapped_out_ != is_swapped_out);
@@ -389,29 +389,16 @@ void RenderWidget::SetSwappedOut(bool is_swapped_out) {
     RenderProcess::current()->AddRefProcess();
 }
 
-bool RenderWidget::CreateWidget(int32_t opener_id,
-                                blink::WebPopupType popup_type,
-                                int32_t* routing_id) {
-  RenderThreadImpl::current_render_message_filter()->CreateNewWidget(
-      opener_id, popup_type, routing_id);
-  return true;
+void RenderWidget::InitRoutingID(int32_t routing_id) {
+  DCHECK_EQ(routing_id_, MSG_ROUTING_NONE);
+  routing_id_ = routing_id;
+  input_handler_.reset(new RenderWidgetInputHandler(
+      GetRenderWidgetInputHandlerDelegate(this), this));
 }
 
-bool RenderWidget::Init(int32_t opener_id) {
-  bool success = DoInit(opener_id, RenderWidget::CreateWebWidget(this),
-      base::Bind(&RenderWidget::CreateWidget, base::Unretained(this),
-           opener_id, popup_type_, &routing_id_));
-  if (success) {
-    SetRoutingID(routing_id_);
-    return true;
-  }
-  return false;
-}
-
-bool RenderWidget::DoInit(int32_t opener_id,
-                          WebWidget* web_widget,
-                          CreateWidgetCallback create_widget_callback) {
+void RenderWidget::Init(int32_t opener_id, WebWidget* web_widget) {
   DCHECK(!webwidget_internal_);
+  DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
 
   if (opener_id != MSG_ROUTING_NONE)
     opener_id_ = opener_id;
@@ -421,25 +408,14 @@ bool RenderWidget::DoInit(int32_t opener_id,
       new WebWidgetLockTarget(webwidget_internal_));
   mouse_lock_dispatcher_.reset(new RenderWidgetMouseLockDispatcher(this));
 
-  bool result = true;
-  if (!create_widget_callback.is_null())
-    result = std::move(create_widget_callback).Run();
-
-  if (result) {
-    RenderThread::Get()->AddRoute(routing_id_, this);
-    // Take a reference on behalf of the RenderThread.  This will be balanced
-    // when we receive ViewMsg_Close.
-    AddRef();
-    if (RenderThreadImpl::current()) {
-      RenderThreadImpl::current()->WidgetCreated();
-      if (is_hidden_)
-        RenderThreadImpl::current()->WidgetHidden();
-    }
-
-    return true;
-  } else {
-    // The above Send can fail when the tab is closing.
-    return false;
+  RenderThread::Get()->AddRoute(routing_id_, this);
+  // Take a reference on behalf of the RenderThread.  This will be balanced
+  // when we receive ViewMsg_Close.
+  AddRef();
+  if (RenderThreadImpl::current()) {
+    RenderThreadImpl::current()->WidgetCreated();
+    if (is_hidden_)
+      RenderThreadImpl::current()->WidgetHidden();
   }
 }
 
