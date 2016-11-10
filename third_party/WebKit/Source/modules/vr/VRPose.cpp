@@ -19,7 +19,7 @@ DOMFloat32Array* mojoArrayToFloat32Array(const mojo::WTFArray<float>& vec) {
 
 VRPose::VRPose() {}
 
-void VRPose::setPose(const device::mojom::blink::VRPosePtr& state) {
+void VRPose::setPose(const device::blink::VRPosePtr& state) {
   if (state.is_null())
     return;
 

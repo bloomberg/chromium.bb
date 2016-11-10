@@ -13,13 +13,12 @@ component("vr") {
   output_name = "device_vr"
 
   sources = [
+    "vr_client_dispatcher.h",
     "vr_device.cc",
     "vr_device.h",
     "vr_device_manager.cc",
     "vr_device_manager.h",
     "vr_device_provider.h",
-    "vr_display_impl.cc",
-    "vr_display_impl.h",
     "vr_service_impl.cc",
     "vr_service_impl.h",
   ]

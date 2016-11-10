@@ -29,7 +29,7 @@ class VREyeParameters final : public GarbageCollected<VREyeParameters>,
   unsigned long renderWidth() const { return m_renderWidth; }
   unsigned long renderHeight() const { return m_renderHeight; }
 
-  void update(const device::mojom::blink::VREyeParametersPtr&);
+  void update(const device::blink::VREyeParametersPtr&);
 
   DECLARE_VIRTUAL_TRACE()
 

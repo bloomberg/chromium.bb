@@ -16,7 +16,7 @@ VRStageParameters::VRStageParameters() : m_sizeX(0.0f), m_sizeZ(0.0f) {
 }
 
 void VRStageParameters::update(
-    const device::mojom::blink::VRStageParametersPtr& stage) {
+    const device::blink::VRStageParametersPtr& stage) {
   m_standingTransform =
       DOMFloat32Array::create(&(stage->standingTransform.front()), 16);
   m_sizeX = stage->sizeX;

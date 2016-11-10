@@ -43,6 +43,11 @@ void GvrDeviceProvider::GetDevices(std::vector<VRDevice*>* devices) {
     devices->push_back(vr_device_.get());
 }
 
+void GvrDeviceProvider::SetClient(VRClientDispatcher* client) {
+  if (!client_)
+    client_.reset(client);
+}
+
 void GvrDeviceProvider::Initialize() {
   device::GvrDelegateProvider* delegate_provider =
       device::GvrDelegateProvider::GetInstance();
@@ -52,6 +57,7 @@ void GvrDeviceProvider::Initialize() {
   if (!vr_device_) {
     vr_device_.reset(
         new GvrDevice(this, delegate_provider->GetNonPresentingDelegate()));
+    client_->OnDeviceConnectionStatusChanged(vr_device_.get(), true);
   }
 }
 
@@ -82,6 +88,9 @@ void GvrDeviceProvider::ExitPresent() {
       GAMEPAD_SOURCE_GVR);
 
   delegate_provider->ExitWebVRPresent();
+
+  if (client_)
+    client_->OnPresentEnded(vr_device_.get());
 }
 
 void GvrDeviceProvider::OnGvrDelegateReady(GvrDelegate* delegate) {

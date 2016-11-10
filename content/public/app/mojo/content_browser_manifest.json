@@ -76,7 +76,7 @@
           "blink::mojom::WebSocket",
           // TODO(beng): figure out how to overlay test interfaces like this.
           "content::mojom::BrowserTarget",
-          "device::mojom::VRService",
+          "device::VRService",
           "device::VibrationManager",
           "device::mojom::GeolocationService",
           "device::mojom::SensorProvider",

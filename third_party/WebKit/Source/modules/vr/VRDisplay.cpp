@@ -57,10 +57,9 @@ class VRDisplayFrameRequestCallback : public FrameRequestCallback {
 
 }  // namespace
 
-VRDisplay::VRDisplay(NavigatorVR* navigatorVR,
-                     device::mojom::blink::VRDisplayPtr display,
-                     device::mojom::blink::VRDisplayClientRequest request)
+VRDisplay::VRDisplay(NavigatorVR* navigatorVR)
     : m_navigatorVR(navigatorVR),
+      m_displayId(0),
       m_isConnected(false),
       m_isPresenting(false),
       m_canUpdateFramePose(true),
@@ -71,11 +70,7 @@ VRDisplay::VRDisplay(NavigatorVR* navigatorVR,
       m_depthFar(10000.0),
       m_fullscreenCheckTimer(this, &VRDisplay::onFullscreenCheck),
       m_animationCallbackRequested(false),
-      m_inAnimationFrame(false),
-      m_display(std::move(display)),
-      m_binding(this, std::move(request)) {
-  ThreadState::current()->registerPreFinalizer(this);
-}
+      m_inAnimationFrame(false) {}
 
 VRDisplay::~VRDisplay() {}
 
@@ -83,7 +78,7 @@ VRController* VRDisplay::controller() {
   return m_navigatorVR->controller();
 }
 
-void VRDisplay::update(const device::mojom::blink::VRDisplayInfoPtr& display) {
+void VRDisplay::update(const device::blink::VRDisplayPtr& display) {
   m_displayId = display->index;
   m_displayName = display->displayName;
   m_isConnected = true;
@@ -138,21 +133,14 @@ VRPose* VRDisplay::getPose() {
 
 void VRDisplay::updatePose() {
   if (m_canUpdateFramePose) {
-    if (!m_display)
-      return;
-    device::mojom::blink::VRPosePtr pose;
-    m_display->GetPose(&pose);
-    m_framePose = std::move(pose);
+    m_framePose = controller()->getPose(m_displayId);
     if (m_isPresenting)
       m_canUpdateFramePose = false;
   }
 }
 
 void VRDisplay::resetPose() {
-  if (!m_display)
-    return;
-
-  m_display->ResetPose();
+  controller()->resetPose(m_displayId);
 }
 
 VREyeParameters* VRDisplay::getEyeParameters(const String& whichEye) {
@@ -311,16 +299,7 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState,
 
   if (firstPresent) {
     bool secureContext = scriptState->getExecutionContext()->isSecureContext();
-    if (!m_display) {
-      DOMException* exception = DOMException::create(
-          InvalidStateError, "The service is no longer active.");
-      resolver->reject(exception);
-      return promise;
-    }
-    m_display->RequestPresent(
-        secureContext, convertToBaseCallback(WTF::bind(
-                           &VRDisplay::onPresentComplete, wrapPersistent(this),
-                           wrapPersistent(resolver))));
+    controller()->requestPresent(resolver, m_displayId, secureContext);
   } else {
     updateLayerBounds();
     resolver->resolve();
@@ -328,18 +307,6 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState,
   }
 
   return promise;
-}
-
-void VRDisplay::onPresentComplete(ScriptPromiseResolver* resolver,
-                                  bool success) {
-  if (success) {
-    this->beginPresent(resolver);
-  } else {
-    this->forceExitPresent();
-    DOMException* exception = DOMException::create(
-        NotAllowedError, "Presentation request was denied.");
-    resolver->reject(exception);
-  }
 }
 
 ScriptPromise VRDisplay::exitPresent(ScriptState* scriptState) {
@@ -354,13 +321,7 @@ ScriptPromise VRDisplay::exitPresent(ScriptState* scriptState) {
     return promise;
   }
 
-  if (!m_display) {
-    DOMException* exception =
-        DOMException::create(InvalidStateError, "VRService is not available.");
-    resolver->reject(exception);
-    return promise;
-  }
-  m_display->ExitPresent();
+  controller()->exitPresent(m_displayId);
 
   resolver->resolve();
 
@@ -407,14 +368,11 @@ void VRDisplay::forceExitPresent() {
 }
 
 void VRDisplay::updateLayerBounds() {
-  if (!m_display)
-    return;
-
   // Set up the texture bounds for the provided layer
-  device::mojom::blink::VRLayerBoundsPtr leftBounds =
-      device::mojom::blink::VRLayerBounds::New();
-  device::mojom::blink::VRLayerBoundsPtr rightBounds =
-      device::mojom::blink::VRLayerBounds::New();
+  device::blink::VRLayerBoundsPtr leftBounds =
+      device::blink::VRLayerBounds::New();
+  device::blink::VRLayerBoundsPtr rightBounds =
+      device::blink::VRLayerBounds::New();
 
   if (m_layer.leftBounds().size() == 4) {
     leftBounds->left = m_layer.leftBounds()[0];
@@ -442,7 +400,8 @@ void VRDisplay::updateLayerBounds() {
     rightBounds->height = 1.0f;
   }
 
-  m_display->UpdateLayerBounds(std::move(leftBounds), std::move(rightBounds));
+  controller()->updateLayerBounds(m_displayId, std::move(leftBounds),
+                                  std::move(rightBounds));
 }
 
 HeapVector<VRLayer> VRDisplay::getLayers() {
@@ -456,9 +415,6 @@ HeapVector<VRLayer> VRDisplay::getLayers() {
 }
 
 void VRDisplay::submitFrame() {
-  if (!m_display)
-    return;
-
   Document* doc = m_navigatorVR->document();
   if (!m_isPresenting) {
     if (doc) {
@@ -512,27 +468,8 @@ void VRDisplay::submitFrame() {
   m_renderingContext->restoreColorMask();
   m_renderingContext->restoreClearColor();
 
-  m_display->SubmitFrame(m_framePose.Clone());
+  controller()->submitFrame(m_displayId, m_framePose.Clone());
   m_canUpdateFramePose = true;
-}
-
-void VRDisplay::OnDisplayChanged(
-    device::mojom::blink::VRDisplayInfoPtr display) {
-  update(display);
-}
-
-void VRDisplay::OnExitPresent() {
-  forceExitPresent();
-}
-
-void VRDisplay::onDisplayConnected() {
-  m_navigatorVR->fireVREvent(VRDisplayEvent::create(
-      EventTypeNames::vrdisplayconnect, true, false, this, "connect"));
-}
-
-void VRDisplay::onDisplayDisconnected() {
-  m_navigatorVR->fireVREvent(VRDisplayEvent::create(
-      EventTypeNames::vrdisplaydisconnect, true, false, this, "disconnect"));
 }
 
 void VRDisplay::onFullscreenCheck(TimerBase*) {
@@ -545,9 +482,7 @@ void VRDisplay::onFullscreenCheck(TimerBase*) {
     m_isPresenting = false;
     m_navigatorVR->fireVRDisplayPresentChange(this);
     m_fullscreenCheckTimer.stop();
-    if (!m_display)
-      return;
-    m_display->ExitPresent();
+    controller()->exitPresent(m_displayId);
   }
 }
 
@@ -557,10 +492,6 @@ ScriptedAnimationController& VRDisplay::ensureScriptedAnimationController(
     m_scriptedAnimationController = ScriptedAnimationController::create(doc);
 
   return *m_scriptedAnimationController;
-}
-
-void VRDisplay::dispose() {
-  m_binding.Close();
 }
 
 DEFINE_TRACE(VRDisplay) {

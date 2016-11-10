@@ -27,7 +27,7 @@ class VRStageParameters final : public GarbageCollected<VRStageParameters>,
   float sizeX() const { return m_sizeX; }
   float sizeZ() const { return m_sizeZ; }
 
-  void update(const device::mojom::blink::VRStageParametersPtr&);
+  void update(const device::blink::VRStageParametersPtr&);
 
   DECLARE_VIRTUAL_TRACE()
 

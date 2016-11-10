@@ -40,7 +40,7 @@ class VRFrameData final : public GarbageCollected<VRFrameData>,
   // Populate a the VRFrameData with a pose and the necessary eye parameters.
   // TODO(bajones): The full frame data should be provided by the VRService,
   // not computed here.
-  bool update(const device::mojom::blink::VRPosePtr&,
+  bool update(const device::blink::VRPosePtr&,
               VREyeParameters* leftEye,
               VREyeParameters* rightEye,
               float depthNear,

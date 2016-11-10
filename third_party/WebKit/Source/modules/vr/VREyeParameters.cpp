@@ -14,7 +14,7 @@ VREyeParameters::VREyeParameters() {
 }
 
 void VREyeParameters::update(
-    const device::mojom::blink::VREyeParametersPtr& eyeParameters) {
+    const device::blink::VREyeParametersPtr& eyeParameters) {
   m_offset->data()[0] = eyeParameters->offset[0];
   m_offset->data()[1] = eyeParameters->offset[1];
   m_offset->data()[2] = eyeParameters->offset[2];
