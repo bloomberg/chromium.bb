@@ -236,6 +236,11 @@ const char FakeBluetoothDeviceClient::kLowEnergyName[] =
 const uint32_t FakeBluetoothDeviceClient::kLowEnergyClass =
     0x000918;  // Major class "Health", Minor class "Heart/Pulse Rate Monitor."
 
+const char FakeBluetoothDeviceClient::kDualPath[] = "/fake/hci0/devF";
+const char FakeBluetoothDeviceClient::kDualAddress[] = "00:1A:11:00:15:40";
+const char FakeBluetoothDeviceClient::kDualName[] =
+    "Bluetooth 4.0 Battery Monitor";
+
 const char FakeBluetoothDeviceClient::kPairedUnconnectableDevicePath[] =
     "/fake/hci0/devD";
 const char FakeBluetoothDeviceClient::kPairedUnconnectableDeviceAddress[] =
@@ -746,10 +751,17 @@ void FakeBluetoothDeviceClient::CreateDevice(
     properties->name.set_valid(true);
     properties->services_resolved.ReplaceValue(false);
     properties->type.ReplaceValue(BluetoothDeviceClient::kTypeLe);
-
-    std::vector<std::string> uuids;
-    uuids.push_back(FakeBluetoothGattServiceClient::kHeartRateServiceUUID);
-    properties->uuids.ReplaceValue(uuids);
+    properties->uuids.ReplaceValue(std::vector<std::string>(
+        {FakeBluetoothGattServiceClient::kHeartRateServiceUUID}));
+  } else if (device_path == dbus::ObjectPath(kDualPath)) {
+    properties->address.ReplaceValue(kDualAddress);
+    properties->name.ReplaceValue(kDualName);
+    properties->name.set_valid(true);
+    properties->services_resolved.ReplaceValue(false);
+    properties->type.ReplaceValue(BluetoothDeviceClient::kTypeDual);
+    properties->uuids.ReplaceValue(std::vector<std::string>(
+        {FakeBluetoothGattServiceClient::kGenericAccessServiceUUID,
+         FakeBluetoothGattServiceClient::kHeartRateServiceUUID}));
   } else if (device_path ==
              dbus::ObjectPath(kConnectedTrustedNotPairedDevicePath)) {
     properties->address.ReplaceValue(kConnectedTrustedNotPairedDeviceAddress);

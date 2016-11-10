@@ -52,6 +52,7 @@
 
 using device::BluetoothAdapter;
 using device::BluetoothDevice;
+using UUIDSet = device::BluetoothDevice::UUIDSet;
 using device::BluetoothDiscoveryFilter;
 using device::BluetoothSocket;
 using device::BluetoothUUID;
@@ -396,6 +397,35 @@ bool BluetoothAdapterBlueZ::IsDiscovering() const {
           ->GetProperties(object_path_);
 
   return properties->discovering.value();
+}
+
+std::unordered_map<BluetoothDevice*, UUIDSet>
+BluetoothAdapterBlueZ::RetrieveGattConnectedDevicesWithDiscoveryFilter(
+    const BluetoothDiscoveryFilter& discovery_filter) {
+  std::unordered_map<BluetoothDevice*, UUIDSet> connected_devices;
+
+  std::set<BluetoothUUID> filter_uuids;
+  discovery_filter.GetUUIDs(filter_uuids);
+
+  for (BluetoothDevice* device : GetDevices()) {
+    if (device->IsGattConnected() &&
+        (device->GetType() & device::BLUETOOTH_TRANSPORT_LE)) {
+      UUIDSet device_uuids = device->GetUUIDs();
+
+      UUIDSet intersection;
+      for (const BluetoothUUID& uuid : filter_uuids) {
+        if (base::ContainsKey(device_uuids, uuid)) {
+          intersection.insert(uuid);
+        }
+      }
+
+      if (filter_uuids.empty() || !intersection.empty()) {
+        connected_devices[device] = std::move(intersection);
+      }
+    }
+  }
+
+  return connected_devices;
 }
 
 BluetoothAdapterBlueZ::UUIDList BluetoothAdapterBlueZ::GetUUIDs() const {

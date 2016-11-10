@@ -89,6 +89,8 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattServiceClient
   static const char kBatteryServicePathComponent[];
   static const char kBatteryServiceUUID[];
 
+  static const char kGenericAccessServiceUUID[];
+
  private:
   // Property callback passed when we create Properties structures.
   void OnPropertyChanged(const dbus::ObjectPath& object_path,

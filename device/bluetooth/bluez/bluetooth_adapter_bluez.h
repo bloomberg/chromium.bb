@@ -37,6 +37,7 @@ class TimeDelta;
 }  // namespace base
 
 namespace device {
+class BluetoothDevice;
 class BluetoothSocketThread;
 class BluetoothTestBlueZ;
 }  // namespace device
@@ -105,6 +106,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
                        const ErrorCallback& error_callback) override;
   uint32_t GetDiscoverableTimeout() const;
   bool IsDiscovering() const override;
+  std::unordered_map<device::BluetoothDevice*, device::BluetoothDevice::UUIDSet>
+  RetrieveGattConnectedDevicesWithDiscoveryFilter(
+      const device::BluetoothDiscoveryFilter& discovery_filter) override;
   void CreateRfcommService(
       const device::BluetoothUUID& uuid,
       const ServiceOptions& options,

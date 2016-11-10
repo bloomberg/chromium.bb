@@ -249,6 +249,10 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
   static const char kLowEnergyAddress[];
   static const uint32_t kLowEnergyClass;
 
+  static const char kDualPath[];
+  static const char kDualName[];
+  static const char kDualAddress[];
+
   static const char kPairedUnconnectableDevicePath[];
   static const char kPairedUnconnectableDeviceName[];
   static const char kPairedUnconnectableDeviceAlias[];

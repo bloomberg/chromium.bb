@@ -15,6 +15,7 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/bluetooth_discovery_filter.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
@@ -34,6 +35,7 @@
 
 using device::BluetoothAdapter;
 using device::BluetoothDevice;
+using device::BluetoothDiscoveryFilter;
 using device::BluetoothRemoteGattCharacteristic;
 using device::BluetoothGattConnection;
 using device::BluetoothRemoteGattDescriptor;
@@ -42,10 +44,22 @@ using device::BluetoothGattNotifySession;
 using device::BluetoothUUID;
 using device::TestBluetoothAdapterObserver;
 
+using UUIDSet = device::BluetoothDevice::UUIDSet;
+
+typedef std::unordered_map<device::BluetoothDevice*,
+                           device::BluetoothDevice::UUIDSet>
+    DeviceToUUIDs;
+
 namespace bluez {
 
 namespace {
 
+const BluetoothUUID kGenericAccessServiceUUID(
+    bluez::FakeBluetoothGattServiceClient::kGenericAccessServiceUUID);
+const BluetoothUUID kBatteryServiceUUID(
+    bluez::FakeBluetoothGattServiceClient::kBatteryServiceUUID);
+const BluetoothUUID kHeartRateServiceUUID(
+    bluez::FakeBluetoothGattServiceClient::kHeartRateServiceUUID);
 const BluetoothUUID kHeartRateMeasurementUUID(
     bluez::FakeBluetoothGattCharacteristicClient::kHeartRateMeasurementUUID);
 const BluetoothUUID kBodySensorLocationUUID(
@@ -128,6 +142,31 @@ class BluetoothGattBlueZTest : public testing::Test {
     ASSERT_TRUE(adapter_->IsInitialized());
     ASSERT_TRUE(adapter_->IsPresent());
   }
+
+  BluetoothDevice* AddLeDevice() {
+    fake_bluetooth_device_client_->CreateDevice(
+        dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+        dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+    bluez::FakeBluetoothDeviceClient::Properties* properties1 =
+        fake_bluetooth_device_client_->GetProperties(
+            dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+    properties1->connected.ReplaceValue(true);
+
+    return adapter_->GetDevice(
+        bluez::FakeBluetoothDeviceClient::kLowEnergyAddress);
+  }
+
+  BluetoothDevice* AddDualDevice() {
+    fake_bluetooth_device_client_->CreateDevice(
+        dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+        dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kDualPath));
+    bluez::FakeBluetoothDeviceClient::Properties* properties2 =
+        fake_bluetooth_device_client_->GetProperties(
+            dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kDualPath));
+    properties2->connected.ReplaceValue(true);
+
+    return adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kDualAddress);
+  };
 
   void BatteryServiceShouldBeComplete(BluetoothDevice* device) {
     ASSERT_TRUE(device);
@@ -264,6 +303,105 @@ class BluetoothGattBlueZTest : public testing::Test {
   std::vector<uint8_t> last_read_value_;
   BluetoothRemoteGattService::GattErrorCode last_service_error_;
 };
+
+TEST_F(BluetoothGattBlueZTest,
+       RetrieveGattConnectedDevicesWithDiscoveryFilter_NoFilter) {
+  BluetoothDevice* le = AddLeDevice();
+  BluetoothDevice* dual = AddDualDevice();
+
+  BluetoothDiscoveryFilter discovery_filter(device::BLUETOOTH_TRANSPORT_LE);
+  DeviceToUUIDs result =
+      adapter_->RetrieveGattConnectedDevicesWithDiscoveryFilter(
+          discovery_filter);
+
+  EXPECT_EQ(DeviceToUUIDs({{le, UUIDSet()}, {dual, UUIDSet()}}), result);
+}
+
+TEST_F(BluetoothGattBlueZTest,
+       RetrieveGattConnectedDevicesWithDiscoveryFilter_NonMatchingFilter) {
+  AddLeDevice();
+  AddDualDevice();
+
+  BluetoothDiscoveryFilter discovery_filter(device::BLUETOOTH_TRANSPORT_LE);
+  discovery_filter.AddUUID(kBatteryServiceUUID);
+
+  DeviceToUUIDs result =
+      adapter_->RetrieveGattConnectedDevicesWithDiscoveryFilter(
+          discovery_filter);
+
+  EXPECT_TRUE(result.empty());
+}
+
+TEST_F(
+    BluetoothGattBlueZTest,
+    RetrieveGattConnectedDevicesWithDiscoveryFilter_OneMatchingServiceOneDevice) {
+  AddLeDevice();
+  BluetoothDevice* dual = AddDualDevice();
+
+  BluetoothDiscoveryFilter discovery_filter(device::BLUETOOTH_TRANSPORT_LE);
+  discovery_filter.AddUUID(kGenericAccessServiceUUID);
+
+  DeviceToUUIDs result =
+      adapter_->RetrieveGattConnectedDevicesWithDiscoveryFilter(
+          discovery_filter);
+
+  EXPECT_EQ(DeviceToUUIDs({{dual, UUIDSet({kGenericAccessServiceUUID})}}),
+            result);
+}
+
+TEST_F(
+    BluetoothGattBlueZTest,
+    RetrieveGattConnectedDevicesWithDiscoveryFilter_OneMatchingServiceTwoDevices) {
+  BluetoothDevice* le = AddLeDevice();
+  BluetoothDevice* dual = AddDualDevice();
+
+  BluetoothDiscoveryFilter discovery_filter(device::BLUETOOTH_TRANSPORT_LE);
+  discovery_filter.AddUUID(kHeartRateServiceUUID);
+
+  DeviceToUUIDs result =
+      adapter_->RetrieveGattConnectedDevicesWithDiscoveryFilter(
+          discovery_filter);
+
+  EXPECT_EQ(DeviceToUUIDs({{le, UUIDSet({kHeartRateServiceUUID})},
+                           {dual, UUIDSet({kHeartRateServiceUUID})}}),
+            result);
+}
+
+TEST_F(BluetoothGattBlueZTest,
+       RetrieveGattConnectedDevicesWithDiscoveryFilter_TwoServicesTwoDevices) {
+  BluetoothDevice* le = AddLeDevice();
+  BluetoothDevice* dual = AddDualDevice();
+
+  BluetoothDiscoveryFilter discovery_filter(device::BLUETOOTH_TRANSPORT_LE);
+  discovery_filter.AddUUID(kGenericAccessServiceUUID);
+  discovery_filter.AddUUID(kHeartRateServiceUUID);
+
+  DeviceToUUIDs result =
+      adapter_->RetrieveGattConnectedDevicesWithDiscoveryFilter(
+          discovery_filter);
+
+  EXPECT_EQ(DeviceToUUIDs({{le, UUIDSet({kHeartRateServiceUUID})},
+                           {dual, UUIDSet({kHeartRateServiceUUID,
+                                           kGenericAccessServiceUUID})}}),
+            result);
+}
+
+TEST_F(
+    BluetoothGattBlueZTest,
+    RetrieveGattConnectedDevicesWithDiscoveryFilter_OneMatchingServiceOneNonMatchingService) {
+  AddLeDevice();
+  BluetoothDevice* dual = AddDualDevice();
+  BluetoothDiscoveryFilter discovery_filter(device::BLUETOOTH_TRANSPORT_LE);
+  discovery_filter.AddUUID(kGenericAccessServiceUUID);
+  discovery_filter.AddUUID(kBatteryServiceUUID);
+
+  DeviceToUUIDs result =
+      adapter_->RetrieveGattConnectedDevicesWithDiscoveryFilter(
+          discovery_filter);
+
+  EXPECT_EQ(DeviceToUUIDs({{dual, UUIDSet({kGenericAccessServiceUUID})}}),
+            result);
+}
 
 TEST_F(BluetoothGattBlueZTest, GattConnection) {
   fake_bluetooth_device_client_->CreateDevice(
