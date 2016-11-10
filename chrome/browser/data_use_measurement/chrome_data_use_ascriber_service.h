@@ -50,10 +50,10 @@ class ChromeDataUseAscriberService : public KeyedService {
   // cannot be called on the IO thread, so the pointer is cast to void*.
   void DidStartNavigation(content::NavigationHandle* navigation_handle);
 
-  // Called when a navigation is finished. Propagates main frame navigation
-  // finish to the |ascriber_| on the IO thread. NavigationHandle methods
-  // cannot be called on the IO thread, so the pointer is cast to void*.
-  void DidFinishNavigation(content::NavigationHandle* navigation_handle);
+  // Called when the navigation is ready to be committed in a renderer.
+  // Propagates the event to the |ascriber_| on the IO thread. NavigationHandle
+  // methods cannot be called on the IO thread, so the pointer is cast to void*.
+  void ReadyToCommitNavigation(content::NavigationHandle* navigation_handle);
 
   // Called when a navigation is redirected. Propagates main frame navigation
   // redirect to the |ascriber_| on the IO thread. NavigationHandle methods
@@ -72,14 +72,12 @@ class ChromeDataUseAscriberService : public KeyedService {
   // might set |ascriber_| to nullptr.
   bool is_initialized_;
 
-  // Frame and navigation events might arrive from the UI thread before
-  // |ascriber_| is set. A queue of frame and navigation events that arrive
-  // before |ascriber_| is set are maintained in these fields so that they can
-  // be propagated immediately after |ascriber_| is set. The RenderFrameHost
-  // and NavigationHandle pointers in the queues are valid for the duration that
-  // they are in the queue.
+  // Frame events might arrive from the UI thread before |ascriber_| is set. A
+  // queue of frame events that arrive before |ascriber_| is set is maintained
+  // in this field so that they can be propagated immediately after |ascriber_|
+  // is set. The RenderFrameHost pointers in the queues are valid for the
+  // duration that they are in the queue.
   std::list<content::RenderFrameHost*> pending_frames_queue_;
-  std::list<content::NavigationHandle*> pending_navigations_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDataUseAscriberService);
 };

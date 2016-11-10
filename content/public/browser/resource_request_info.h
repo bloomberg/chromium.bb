@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/common/resource_type.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
@@ -91,6 +92,9 @@ class ResourceRequestInfo {
   // To get a WebContents, use GetWebContentsGetterForRequest instead.
   // Don't use this method for new code, as RenderViews are going away.
   virtual int GetRouteID() const = 0;
+
+  // The globally unique identifier for this request.
+  virtual GlobalRequestID GetGlobalRequestID() const = 0;
 
   // The pid of the originating process, if the request is sent on behalf of a
   // another process.  Otherwise it is 0.

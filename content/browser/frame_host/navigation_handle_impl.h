@@ -8,7 +8,11 @@
 #include "content/public/browser/navigation_handle.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -128,6 +132,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       const std::string& raw_response_header) override;
   void CallDidCommitNavigationForTesting(const GURL& url) override;
   bool WasStartedFromContextMenu() const override;
+  const GlobalRequestID& GetGlobalRequestID() override;
 
   NavigationData* GetNavigationData() override;
 
@@ -264,15 +269,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   }
 
   SSLStatus ssl_status() { return ssl_status_; }
-
-  // This is valid after the network response has started.
-  // TODO(clamy): See if this can be initialized earlier if needed by
-  // non-transfer code. There may be some issues in PlzNavigate, where
-  // WillStartRequest will be called before starting a request on the IO thread.
-  const GlobalRequestID& request_id() const {
-    DCHECK_GE(state_, WILL_PROCESS_RESPONSE);
-    return request_id_;
-  }
 
   // Called when the navigation is transferred to a different renderer.
   void Transfer();

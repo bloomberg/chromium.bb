@@ -119,11 +119,6 @@ void ChromeDataUseAscriberService::DidStartNavigation(
   if (!navigation_handle->IsInMainFrame())
     return;
 
-  if (!is_initialized_) {
-    pending_navigations_queue_.push_back(navigation_handle);
-    return;
-  }
-
   if (!ascriber_)
     return;
 
@@ -137,20 +132,12 @@ void ChromeDataUseAscriberService::DidStartNavigation(
                  navigation_handle));
 }
 
-void ChromeDataUseAscriberService::DidFinishNavigation(
+void ChromeDataUseAscriberService::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!navigation_handle->IsInMainFrame())
     return;
-
-  if (!is_initialized_) {
-    // While remove() is a O(n) operation, the pending queue is not expected
-    // to have a significant number of elements.
-    DCHECK_GE(50u, pending_navigations_queue_.size());
-    pending_navigations_queue_.remove(navigation_handle);
-    return;
-  }
 
   if (!ascriber_)
     return;
@@ -159,8 +146,9 @@ void ChromeDataUseAscriberService::DidFinishNavigation(
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(
-          &ChromeDataUseAscriber::DidFinishMainFrameNavigation,
+          &ChromeDataUseAscriber::ReadyToCommitMainFrameNavigation,
           base::Unretained(ascriber_), navigation_handle->GetURL(),
+          navigation_handle->GetGlobalRequestID(),
           web_contents->GetRenderProcessHost()->GetID(),
           web_contents->GetMainFrame()->GetRoutingID(),
           !navigation_handle->HasCommitted() || navigation_handle->IsSamePage(),
@@ -199,11 +187,6 @@ void ChromeDataUseAscriberService::SetDataUseAscriber(
     RenderFrameCreated(it);
   }
   pending_frames_queue_.clear();
-
-  for (auto& it : pending_navigations_queue_) {
-    DidStartNavigation(it);
-  }
-  pending_navigations_queue_.clear();
 }
 
 }  // namespace data_use_measurement
