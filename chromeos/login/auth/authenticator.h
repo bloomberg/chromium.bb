@@ -73,11 +73,11 @@ class CHROMEOS_EXPORT Authenticator
 
   // Call these methods on the UI thread.
   // If a password logs the user in online, but cannot be used to
-  // mount his cryptohome, we expect that a password change has
+  // mount their cryptohome, we expect that a password change has
   // occurred.
   // Call this method to migrate the user's encrypted data
-  // forward to use his new password.  |old_password| is the password
-  // his data was last encrypted with.
+  // forward to use their new password. |old_password| is the password
+  // their data was last encrypted with.
   virtual void RecoverEncryptedData(const std::string& old_password) = 0;
 
   // Call this method to erase the user's encrypted data
