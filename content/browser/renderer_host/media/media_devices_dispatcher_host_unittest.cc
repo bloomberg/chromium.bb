@@ -104,6 +104,11 @@ class MediaDevicesDispatcherHostTest : public testing::Test {
     ASSERT_GT(physical_devices_[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT].size(), 0u);
   }
 
+  MOCK_METHOD1(UniqueOriginCallback,
+               void(const std::vector<std::vector<MediaDeviceInfo>>&));
+  MOCK_METHOD1(ValidOriginCallback,
+               void(const std::vector<std::vector<MediaDeviceInfo>>&));
+
  protected:
   void DevicesEnumerated(
       const base::Closure& closure,
@@ -304,6 +309,23 @@ TEST_F(MediaDevicesDispatcherHostTest, SubscribeDeviceChange) {
 
 TEST_F(MediaDevicesDispatcherHostTest, SubscribeDeviceChangeNoAccess) {
   SubscribeAndWaitForResult(false);
+}
+
+TEST_F(MediaDevicesDispatcherHostTest, EnumerateAllDevicesUniqueOrigin) {
+  EXPECT_CALL(*this, UniqueOriginCallback(testing::_)).Times(0);
+  host_->EnumerateDevices(
+      true, true, true, url::Origin(),
+      base::Bind(&MediaDevicesDispatcherHostTest::UniqueOriginCallback,
+                 base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+
+  // Verify that the callback for a valid origin does get called.
+  EXPECT_CALL(*this, ValidOriginCallback(testing::_));
+  host_->EnumerateDevices(
+      true, true, true, url::Origin(GURL("http://localhost")),
+      base::Bind(&MediaDevicesDispatcherHostTest::ValidOriginCallback,
+                 base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
 }
 
 };  // namespace content

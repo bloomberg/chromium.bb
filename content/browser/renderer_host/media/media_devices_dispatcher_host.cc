@@ -118,6 +118,10 @@ void MediaDevicesDispatcherHost::EnumerateDevices(
     return;
   }
 
+  // Ignore requests from unique origins, but do not crash the renderer.
+  if (security_origin.unique())
+    return;
+
   if (!MediaStreamManager::IsOriginAllowed(render_process_id_,
                                            security_origin)) {
     bad_message::ReceivedBadMessage(render_process_id_,
