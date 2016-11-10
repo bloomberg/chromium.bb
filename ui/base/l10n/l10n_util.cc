@@ -215,9 +215,8 @@ bool IsDuplicateName(const std::string& locale_name) {
   if (base::StartsWith(locale_name, "es_",
                        base::CompareCase::INSENSITIVE_ASCII))
     return !base::EndsWith(locale_name, "419", base::CompareCase::SENSITIVE);
-
-  for (size_t i = 0; i < arraysize(kDuplicateNames); ++i) {
-    if (base::EqualsCaseInsensitiveASCII(kDuplicateNames[i], locale_name))
+  for (const char* duplicate_name : kDuplicateNames) {
+    if (base::EqualsCaseInsensitiveASCII(duplicate_name, locale_name))
       return true;
   }
   return false;
@@ -397,10 +396,9 @@ bool CheckAndResolveLocale(const std::string& locale,
       {"iw", "he"},
       {"en", "en-US"},
   };
-
-  for (size_t i = 0; i < arraysize(alias_map); ++i) {
-    if (base::LowerCaseEqualsASCII(lang, alias_map[i].source)) {
-      std::string tmp_locale(alias_map[i].dest);
+  for (const auto& alias : alias_map) {
+    if (base::LowerCaseEqualsASCII(lang, alias.source)) {
+      std::string tmp_locale(alias.dest);
       if (IsLocaleAvailable(tmp_locale)) {
         resolved_locale->swap(tmp_locale);
         return true;
@@ -862,14 +860,13 @@ const std::vector<std::string>& GetAvailableLocales() {
 
 void GetAcceptLanguagesForLocale(const std::string& display_locale,
                                  std::vector<std::string>* locale_codes) {
-  for (size_t i = 0; i < arraysize(kAcceptLanguageList); ++i) {
-    if (!l10n_util::IsLocaleNameTranslated(kAcceptLanguageList[i],
-                                           display_locale)) {
+  for (const char* accept_language : kAcceptLanguageList) {
+    if (!l10n_util::IsLocaleNameTranslated(accept_language, display_locale)) {
       // TODO(jungshik) : Put them at the end of the list with language codes
       // enclosed by brackets instead of skipping.
       continue;
     }
-    locale_codes->push_back(kAcceptLanguageList[i]);
+    locale_codes->push_back(accept_language);
   }
 }
 
