@@ -102,8 +102,10 @@ class AssociatedInterfacePtrState {
         base::WrapUnique(new typename Interface::ResponseValidator_()), false,
         std::move(runner), 0u));
     proxy_.reset(new Proxy(endpoint_client_.get()));
-    proxy_->serialization_context()->group_controller =
-        endpoint_client_->group_controller();
+    if (Interface::PassesAssociatedKinds_) {
+      proxy_->serialization_context()->group_controller =
+          endpoint_client_->group_controller();
+    }
   }
 
   // After this method is called, the object is in an invalid state and

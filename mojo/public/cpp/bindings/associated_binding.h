@@ -110,8 +110,10 @@ class AssociatedBinding {
         base::WrapUnique(new typename Interface::RequestValidator_()),
         Interface::HasSyncMethods_, std::move(runner), Interface::Version_));
 
-    stub_.serialization_context()->group_controller =
-        endpoint_client_->group_controller();
+    if (Interface::PassesAssociatedKinds_) {
+      stub_.serialization_context()->group_controller =
+          endpoint_client_->group_controller();
+    }
   }
 
   // Adds a message filter to be notified of each incoming message before
