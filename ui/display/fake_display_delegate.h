@@ -56,10 +56,10 @@ namespace display {
 //
 // Two 800x800 displays, with first display as internal display:
 //  --screen-config=800x800/i,800x800
-// One 1920x1080 display as internal display with alternate resolutions:
-//  --screen-config=1920x1080#1600x900:1280x720/i
-// One 1600x900 display with 120 refresh rate and high-DPI:
-//   --screen-config=1600x900%120^300
+// One 1600x900 display as internal display with 120 refresh rate and high-DPI:
+//  --screen-config=1600x900%120^300/i
+// One 1920x1080 display with alternate resolutions:
+//  --screen-config=1920x1080#1600x900:1280x720
 // No displays:
 //  --screen-config=none
 //
@@ -113,9 +113,9 @@ class DISPLAY_EXPORT FakeDisplayDelegate : public ui::NativeDisplayDelegate,
   FakeDisplayController* GetFakeDisplayController() override;
 
  protected:
-  // Sets initial display snapshots from command line flag. Returns true if
-  // command line flag was provided.
-  bool InitFromCommandLine();
+  // Sets initial display snapshots from command line flag. Returns true if the
+  // spec was parsed successfully.
+  bool InitializeFromSpecString(const std::string& str);
 
   // Updates observers when display configuration has changed. Will not update
   // until after |Initialize()| has been called.

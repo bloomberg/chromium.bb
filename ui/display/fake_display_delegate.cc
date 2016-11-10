@@ -51,10 +51,6 @@ int64_t FakeDisplayDelegate::AddDisplay(const gfx::Size& display_size) {
   builder.SetId(id).SetNativeMode(display_size);
   builder.SetName(base::StringPrintf("Fake Display %" PRId64, id));
 
-  // Add the first display as internal.
-  if (displays_.empty())
-    builder.SetType(ui::DISPLAY_CONNECTION_TYPE_INTERNAL);
-
   return AddDisplay(builder.Build()) ? id : Display::kInvalidDisplayID;
 }
 
@@ -95,9 +91,18 @@ bool FakeDisplayDelegate::RemoveDisplay(int64_t display_id) {
 void FakeDisplayDelegate::Initialize() {
   DCHECK(!initialized_);
 
-  // If no command line flags are provided then initialize a default display.
-  if (!InitFromCommandLine())
-    AddDisplay(gfx::Size(1024, 768));
+  // The default display will be an internal display with a native resolution
+  // of 1024x768 if --screen-config not specified on the command line.
+  std::string command_str = "1024x768/i";
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kScreenConfig))
+    command_str = command_line->GetSwitchValueASCII(switches::kScreenConfig);
+
+  if (!InitializeFromSpecString(command_str)) {
+    NOTREACHED() << "Bad --" << switches::kScreenConfig << " flag provided.";
+    return;
+  }
 
   initialized_ = true;
 }
@@ -194,21 +199,14 @@ FakeDisplayController* FakeDisplayDelegate::GetFakeDisplayController() {
   return static_cast<FakeDisplayController*>(this);
 }
 
-bool FakeDisplayDelegate::InitFromCommandLine() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kScreenConfig))
-    return false;
-
-  const std::string command_string =
-      command_line->GetSwitchValueASCII(switches::kScreenConfig);
-
+bool FakeDisplayDelegate::InitializeFromSpecString(const std::string& str) {
   // Start without any displays.
-  if (command_string == "none")
+  if (str == "none")
     return true;
 
   // Split on commas and parse each display string.
-  for (std::string part : base::SplitString(
-           command_string, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+  for (const std::string& part : base::SplitString(
+           str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
     int64_t id = GenerateDisplayID(kReservedManufacturerID, kProductCodeHash,
                                    next_display_id_);
     std::unique_ptr<ui::DisplaySnapshot> snapshot =
@@ -218,6 +216,7 @@ bool FakeDisplayDelegate::InitFromCommandLine() {
       next_display_id_++;
     } else {
       LOG(ERROR) << "Failed to parse display \"" << part << "\"";
+      return false;
     }
   }
 
