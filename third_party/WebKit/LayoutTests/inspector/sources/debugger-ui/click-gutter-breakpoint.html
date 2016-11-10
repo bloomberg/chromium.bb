@@ -6,19 +6,21 @@
 <script>
 function test()
 {
-    function clickCodeMirrorLineNumber(lineNumber)
+    function clickCodeMirrorLineNumber(lineNumber, isRemove, sourceFrame)
     {
         var element = Array.from(document.getElementsByClassName("CodeMirror-linenumber")).filter(x => x.textContent === (lineNumber + 1).toString())[0];
         if (!element) {
             InspectorTest.addResult("CodeMirror Gutter Not Found:" + lineNumber);
             InspectorTest.completeDebuggerTest();
-            return false;
+            return Promise.resolve();
         }
         var rect = element.getBoundingClientRect();
         eventSender.mouseMoveTo(rect.left + rect.width / 2, rect.top + rect.height / 2);
         eventSender.mouseDown();
         eventSender.mouseUp();
-        return true;
+        if (!isRemove)
+            return new Promise(resolve => InspectorTest.addSniffer(sourceFrame.__proto__, "_breakpointWasSetForTest", resolve, false));
+        return Promise.resolve();
     }
 
     WebInspector.breakpointManager._storage._breakpoints = {};
@@ -29,11 +31,16 @@ function test()
     InspectorTest.startDebuggerTest(() => InspectorTest.showScriptSource("click-breakpoints.js", didShowScriptSource));
 
 
-    function didShowScriptSource()
+    function didShowScriptSource(sourceFrame)
     {
-        clickCodeMirrorLineNumber(2);
-        clickCodeMirrorLineNumber(2);
-        clickCodeMirrorLineNumber(3);
+        clickCodeMirrorLineNumber(2, false, sourceFrame)
+            .then(() => clickCodeMirrorLineNumber(2, true, sourceFrame))
+            .then(() => clickCodeMirrorLineNumber(3, false, sourceFrame))
+            .then(runScript);
+    }
+
+    function runScript()
+    {
         InspectorTest.waitUntilPaused(pausedInF2);
         InspectorTest.evaluateInPageWithTimeout("f2()");
     }
