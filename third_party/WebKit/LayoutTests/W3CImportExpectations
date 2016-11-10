@@ -300,8 +300,9 @@ imported/wpt/server-side.md [ Skip ]
 imported/wpt/service-workers/cache-storage [ Skip ]
 ## Owners: kochi@chromium.org crbug.com/505364
 # imported/wpt/shadow-dom [ Pass ]
+## Owners: domenic@chromium.org,ricea@chromium.org,tyoshino@chromium.org
+imported/wpt/streams [ Pass ]
 ## Owners: jww@chromium.org
-imported/wpt/streams [ Skip ]
 imported/wpt/subresource-integrity [ Skip ]
 ## Owners: foolip@chromium.org
 imported/wpt/svg [ Pass ]
