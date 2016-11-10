@@ -49,7 +49,8 @@ void PerformanceObserver::observe(const PerformanceObserverInit& observerInit,
   }
   if (entryTypes == PerformanceEntry::Invalid) {
     exceptionState.throwTypeError(
-        "A Performance Observer MUST have a non-empty entryTypes attribute.");
+        "A Performance Observer MUST have at least one valid entryType in its "
+        "entryTypes attribute.");
     return;
   }
   m_filterOptions = entryTypes;
