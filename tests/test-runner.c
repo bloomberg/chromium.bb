@@ -226,10 +226,11 @@ set_xdg_runtime_dir(void)
 
 	xrd_env = getenv("XDG_RUNTIME_DIR");
 	/* if XDG_RUNTIME_DIR is not set in environ, fallback to /tmp */
-	assert((snprintf(xdg_runtime_dir, PATH_MAX, "%s/wayland-tests",
+	assert((snprintf(xdg_runtime_dir, PATH_MAX, "%s/wayland-tests-XXXXXX",
 			 xrd_env ? xrd_env : "/tmp") < PATH_MAX)
 		&& "test error: XDG_RUNTIME_DIR too long");
 
+	assert(mkdtemp(xdg_runtime_dir) && "test error: mkdtemp failed");
 	if (mkdir(xdg_runtime_dir, 0700) == -1)
 		if (errno != EEXIST) {
 			perror("Creating XDG_RUNTIME_DIR");
