@@ -532,6 +532,7 @@ component("cc") {
     "trees/layer_tree_host_single_thread_client.h",
     "trees/layer_tree_impl.cc",
     "trees/layer_tree_impl.h",
+    "trees/layer_tree_mutator.h",
     "trees/layer_tree_settings.cc",
     "trees/layer_tree_settings.h",
     "trees/mutator_host.h",

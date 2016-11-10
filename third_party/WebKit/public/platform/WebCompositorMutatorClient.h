@@ -6,7 +6,8 @@
 #define WebCompositorMutatorClient_h
 
 #include "WebCommon.h"
-#include "cc/animation/layer_tree_mutator.h"
+
+#include "cc/trees/layer_tree_mutator.h"
 
 namespace blink {
 

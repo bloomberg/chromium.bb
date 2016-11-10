@@ -4,7 +4,7 @@
 
 #include "cc/test/fake_proxy.h"
 
-#include "cc/animation/layer_tree_mutator.h"
+#include "cc/trees/layer_tree_mutator.h"
 
 namespace cc {
 

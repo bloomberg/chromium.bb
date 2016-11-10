@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_ANIMATION_LAYER_TREE_MUTATOR_H_
-#define CC_ANIMATION_LAYER_TREE_MUTATOR_H_
+#ifndef CC_TREES_LAYER_TREE_MUTATOR_H_
+#define CC_TREES_LAYER_TREE_MUTATOR_H_
 
 #include "base/callback_forward.h"
 #include "base/time/time.h"
@@ -37,4 +37,4 @@ class CC_EXPORT LayerTreeMutator {
 
 }  // namespace cc
 
-#endif  // CC_ANIMATION_LAYER_TREE_MUTATOR_H_
+#endif  // CC_TREES_LAYER_TREE_MUTATOR_H_

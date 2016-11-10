@@ -9,8 +9,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/animation/layer_tree_mutator.h"
 #include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree_mutator.h"
 #include "cc/trees/mutator_host.h"
 
 namespace cc {
