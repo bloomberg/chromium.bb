@@ -198,9 +198,8 @@ class HitTestBridgedNativeWidget : public BridgedNativeWidget {
       : BridgedNativeWidget(widget) {}
 
   // BridgedNativeWidget:
-  bool ShouldRepostPendingLeftMouseDown(NSPoint location_in_window) override {
-    did_repost_ = BridgedNativeWidget::ShouldRepostPendingLeftMouseDown(
-        location_in_window);
+  bool ShouldRepostPendingLeftMouseDown(NSEvent* event) override {
+    did_repost_ = BridgedNativeWidget::ShouldRepostPendingLeftMouseDown(event);
 
     if (run_loop_)
       run_loop_->Quit();
@@ -323,38 +322,65 @@ TEST_F(BridgedNativeWidgetUITest, HitTest) {
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   init_params.bounds = gfx::Rect(100, 200, 400, 300);
   widget.Init(init_params);
+
+  WidgetActivationWaiter activation_waiter(&widget, true);
   widget.Show();
+  activation_waiter.Wait();
 
   // Points inside the resize area.
   const NSPoint bottom_right_point = {398, 2};
   const NSPoint right_of_bottom_right = {398 + 10, 2};
 
   NSWindow* window = widget.GetNativeWindow();
+
+  EXPECT_FALSE([window ignoresMouseEvents]);
+  // OSX uses both the alpha value of the window and the underlying CALayer to
+  // decide whether to send mouse events to window, in case [window
+  // ignoresMouseEvent] is not explicitly initialized. Since, no frames are
+  // drawn during tests and the underlying CALayer has a transparent background,
+  // explicitly call setIgnoresMouseEvents: to ensure the window receives the
+  // mouse events.
+  [window setIgnoresMouseEvents:NO];
+
   HitTestBridgedNativeWidget* bridge = native_widget->bridge();
+
+  const bool using_drag_event_monitor =
+      BridgedNativeWidget::ShouldUseDragEventMonitor();
 
   // Dragging the window should work.
   frame_view->set_hit_test_result(HTCAPTION);
   {
     EXPECT_EQ(100, [window frame].origin.x);
 
+    base::scoped_nsobject<WindowedNSNotificationObserver> will_move_observer(
+        [[WindowedNSNotificationObserver alloc]
+            initForNotification:NSWindowWillMoveNotification]);
     NSEvent* mouse_down = cocoa_test_event_utils::LeftMouseDownAtPointInWindow(
         NSMakePoint(20, 20), window);
     EXPECT_FALSE(bridge->IsDraggable());
     CGEventPost(kCGSessionEventTap, [mouse_down CGEvent]);
-    bridge->WaitForShouldRepost();
-    EXPECT_TRUE(bridge->did_repost());
-    EXPECT_TRUE(bridge->IsDraggable());
-    bridge->WaitForShouldRepost();
-    EXPECT_FALSE(bridge->did_repost());
-    EXPECT_FALSE(bridge->IsDraggable());
+    if (using_drag_event_monitor) {
+      bridge->WaitForShouldRepost();
+      EXPECT_TRUE(bridge->did_repost());
+      EXPECT_TRUE(bridge->IsDraggable());
+      bridge->WaitForShouldRepost();
+      EXPECT_FALSE(bridge->did_repost());
+      EXPECT_FALSE(bridge->IsDraggable());
+    } else {
+      WaitForEvent(NSLeftMouseDownMask);
+    }
 
-    base::scoped_nsobject<WindowedNSNotificationObserver> ns_observer(
+    base::scoped_nsobject<WindowedNSNotificationObserver> did_move_observer(
         [[WindowedNSNotificationObserver alloc]
             initForNotification:NSWindowDidMoveNotification]);
     NSEvent* mouse_drag = cocoa_test_event_utils::MouseEventAtPointInWindow(
         NSMakePoint(30, 30), NSLeftMouseDragged, window, 0);
     CGEventPost(kCGSessionEventTap, [mouse_drag CGEvent]);
-    [ns_observer wait];
+    WaitForEvent(NSLeftMouseDraggedMask);
+    // NSWindowWillMoveNotification should have been observed by the time the
+    // mouse drag event is received.
+    EXPECT_EQ(1, [will_move_observer notificationCount]);
+    EXPECT_TRUE([did_move_observer wait]);
     EXPECT_EQ(110, [window frame].origin.x);
 
     NSEvent* mouse_up = cocoa_test_event_utils::MouseEventAtPointInWindow(
@@ -368,24 +394,33 @@ TEST_F(BridgedNativeWidgetUITest, HitTest) {
   {
     EXPECT_EQ(110, [window frame].origin.x);
 
+    base::scoped_nsobject<WindowedNSNotificationObserver> will_move_observer(
+        [[WindowedNSNotificationObserver alloc]
+            initForNotification:NSWindowWillMoveNotification]);
     NSEvent* mouse_down = cocoa_test_event_utils::LeftMouseDownAtPointInWindow(
         bottom_right_point, window);
     EXPECT_FALSE(bridge->IsDraggable());
     CGEventPost(kCGSessionEventTap, [mouse_down CGEvent]);
-    bridge->WaitForShouldRepost();
-    EXPECT_TRUE(bridge->did_repost());
-    EXPECT_TRUE(bridge->IsDraggable());
-    bridge->WaitForShouldRepost();
-    EXPECT_FALSE(bridge->did_repost());
-    EXPECT_FALSE(bridge->IsDraggable());
+    if (using_drag_event_monitor) {
+      bridge->WaitForShouldRepost();
+      EXPECT_TRUE(bridge->did_repost());
+      EXPECT_TRUE(bridge->IsDraggable());
+      bridge->WaitForShouldRepost();
+      EXPECT_FALSE(bridge->did_repost());
+      EXPECT_FALSE(bridge->IsDraggable());
+    } else {
+      WaitForEvent(NSLeftMouseDownMask);
+    }
 
-    base::scoped_nsobject<WindowedNSNotificationObserver> ns_observer(
+    base::scoped_nsobject<WindowedNSNotificationObserver> did_move_observer(
         [[WindowedNSNotificationObserver alloc]
             initForNotification:NSWindowDidMoveNotification]);
     NSEvent* mouse_drag = cocoa_test_event_utils::MouseEventAtPointInWindow(
         right_of_bottom_right, NSLeftMouseDragged, window, 0);
     CGEventPost(kCGSessionEventTap, [mouse_drag CGEvent]);
-    [ns_observer wait];
+    WaitForEvent(NSLeftMouseDraggedMask);
+    EXPECT_EQ(1, [will_move_observer notificationCount]);
+    EXPECT_TRUE([did_move_observer wait]);
     EXPECT_EQ(120, [window frame].origin.x);
 
     NSEvent* mouse_up = cocoa_test_event_utils::MouseEventAtPointInWindow(
@@ -406,12 +441,17 @@ TEST_F(BridgedNativeWidgetUITest, HitTest) {
 
     // Enqueue all mouse events first because AppKit will run its own loop to
     // consume them.
-
+    base::scoped_nsobject<WindowedNSNotificationObserver> will_move_observer(
+        [[WindowedNSNotificationObserver alloc]
+            initForNotification:NSWindowWillMoveNotification]);
     NSEvent* mouse_down = cocoa_test_event_utils::LeftMouseDownAtPointInWindow(
         bottom_right_point, window);
     EXPECT_FALSE(bridge->IsDraggable());
     CGEventPost(kCGSessionEventTap, [mouse_down CGEvent]);
 
+    base::scoped_nsobject<WindowedNSNotificationObserver> did_resize_observer(
+        [[WindowedNSNotificationObserver alloc]
+            initForNotification:NSWindowDidResizeNotification]);
     NSEvent* mouse_drag = cocoa_test_event_utils::MouseEventAtPoint(
         NSMakePoint(x + 408, y + 2), NSLeftMouseDragged, 0);
     CGEventPost(kCGSessionEventTap, [mouse_drag CGEvent]);
@@ -420,11 +460,16 @@ TEST_F(BridgedNativeWidgetUITest, HitTest) {
         NSMakePoint(x + 408, y + 2), NSLeftMouseUp, 0);
     CGEventPost(kCGSessionEventTap, [mouse_up CGEvent]);
 
-    // The only event observed by us is the original mouse-down. It should not
-    // be reposted.
-    bridge->WaitForShouldRepost();
-    EXPECT_FALSE(bridge->did_repost());
-    EXPECT_FALSE(bridge->IsDraggable());
+    if (using_drag_event_monitor) {
+      // The only event observed by us is the original mouse-down. It should not
+      // be reposted.
+      bridge->WaitForShouldRepost();
+      EXPECT_FALSE(bridge->did_repost());
+      EXPECT_FALSE(bridge->IsDraggable());
+    }
+
+    EXPECT_TRUE([did_resize_observer wait]);
+    EXPECT_EQ(0, [will_move_observer notificationCount]);
     EXPECT_EQ(410, [window frame].size.width);
 
     // Origin is unchanged.
@@ -436,8 +481,11 @@ TEST_F(BridgedNativeWidgetUITest, HitTest) {
   {
     EXPECT_EQ(120, [window frame].origin.x);
 
-    base::scoped_nsobject<WindowedNSNotificationObserver> ns_observer(
+    base::scoped_nsobject<WindowedNSNotificationObserver> will_move_observer(
         [[WindowedNSNotificationObserver alloc]
+            initForNotification:NSWindowWillMoveNotification]);
+    base::scoped_nsobject<WindowedNSNotificationObserver>
+        did_miniaturize_observer([[WindowedNSNotificationObserver alloc]
             initForNotification:NSWindowDidMiniaturizeNotification]);
 
     // Position this on the minimize button.
@@ -449,7 +497,8 @@ TEST_F(BridgedNativeWidgetUITest, HitTest) {
         NSMakePoint(30, 290), NSLeftMouseUp, window, 0);
     EXPECT_FALSE([window isMiniaturized]);
     CGEventPost(kCGSessionEventTap, [mouse_up CGEvent]);
-    [ns_observer wait];
+    [did_miniaturize_observer wait];
+    EXPECT_EQ(0, [will_move_observer notificationCount]);
     EXPECT_TRUE([window isMiniaturized]);
     [window deminiaturize:nil];
 
@@ -462,6 +511,9 @@ TEST_F(BridgedNativeWidgetUITest, HitTest) {
   {
     EXPECT_EQ(120, [window frame].origin.x);
 
+    base::scoped_nsobject<WindowedNSNotificationObserver> will_move_observer(
+        [[WindowedNSNotificationObserver alloc]
+            initForNotification:NSWindowWillMoveNotification]);
     NSEvent* mouse_down = cocoa_test_event_utils::LeftMouseDownAtPointInWindow(
         NSMakePoint(20, 20), window);
     CGEventPost(kCGSessionEventTap, [mouse_down CGEvent]);
@@ -471,6 +523,7 @@ TEST_F(BridgedNativeWidgetUITest, HitTest) {
         NSMakePoint(30, 30), NSLeftMouseDragged, window, 0);
     CGEventPost(kCGSessionEventTap, [mouse_drag CGEvent]);
     WaitForEvent(NSLeftMouseDraggedMask);
+    EXPECT_EQ(0, [will_move_observer notificationCount]);
     EXPECT_EQ(120, [window frame].origin.x);
 
     NSEvent* mouse_up = cocoa_test_event_utils::MouseEventAtPointInWindow(

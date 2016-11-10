@@ -276,6 +276,10 @@ BASE_EXPORT extern NSString* const NSAppearanceNameVibrantLight;
 @property(readonly, strong) NSLayoutYAxisAnchor* bottomAnchor;
 @end
 
+@interface NSWindow (ElCapitanSDK)
+- (void)performWindowDragWithEvent:(NSEvent*)event;
+@end
+
 #endif  // MAC_OS_X_VERSION_10_11
 
 // Once Chrome no longer supports OSX 10.11, everything within this
