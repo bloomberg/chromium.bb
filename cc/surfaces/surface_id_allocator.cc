@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include "base/rand_util.h"
-#include "base/unguessable_token.h"
 
 namespace cc {
 
@@ -17,7 +16,8 @@ SurfaceIdAllocator::~SurfaceIdAllocator() {
 }
 
 LocalFrameId SurfaceIdAllocator::GenerateId() {
-  LocalFrameId id(next_id_, base::UnguessableToken::Create());
+  uint64_t nonce = base::RandUint64();
+  LocalFrameId id(next_id_, nonce);
   next_id_++;
   return id;
 }

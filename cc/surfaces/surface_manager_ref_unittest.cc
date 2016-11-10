@@ -21,8 +21,8 @@ namespace {
 constexpr FrameSinkId kFrameSink1(1, 0);
 constexpr FrameSinkId kFrameSink2(2, 0);
 constexpr FrameSinkId kFrameSink3(3, 0);
-const LocalFrameId kLocalFrame1(1, base::UnguessableToken::Create());
-const LocalFrameId kLocalFrame2(2, base::UnguessableToken::Create());
+constexpr LocalFrameId kLocalFrame1(1, 0);
+constexpr LocalFrameId kLocalFrame2(2, 0);
 
 // Tests for reference tracking in SurfaceManager.
 class SurfaceManagerRefTest : public testing::Test {
@@ -247,8 +247,7 @@ TEST_F(SurfaceManagerRefTest, CheckGCWithSequences) {
 
 TEST_F(SurfaceManagerRefTest, TryAddReferenceToBadSurface) {
   // Not creating an accompanying Surface and SurfaceFactory.
-  SurfaceId id(FrameSinkId(100u, 200u),
-               LocalFrameId(1u, base::UnguessableToken::Create()));
+  SurfaceId id(FrameSinkId(100u, 200u), LocalFrameId(1u, 123123u));
 
   // Adding reference from root to the Surface should do nothing because
   // SurfaceManager doesn't know Surface for |id| exists.

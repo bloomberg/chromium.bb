@@ -24,8 +24,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
   OffscreenCanvasFrameDispatcherImpl(uint32_t clientId,
                                      uint32_t sinkId,
                                      uint32_t localId,
-                                     uint64_t nonceHigh,
-                                     uint64_t nonceLow,
+                                     uint64_t nonce,
                                      int width,
                                      int height);
 

@@ -17,8 +17,6 @@ static constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
 TEST(SurfaceLayerImplTest, Occlusion) {
   gfx::Size layer_size(1000, 1000);
   gfx::Size viewport_size(1000, 1000);
-  const LocalFrameId kArbitraryLocalFrameId(9,
-                                            base::UnguessableToken::Create());
 
   LayerTestCommon::LayerImplTest impl;
 
@@ -26,7 +24,7 @@ TEST(SurfaceLayerImplTest, Occlusion) {
       impl.AddChildToRoot<SurfaceLayerImpl>();
   surface_layer_impl->SetBounds(layer_size);
   surface_layer_impl->SetDrawsContent(true);
-  SurfaceId surface_id(kArbitraryFrameSinkId, kArbitraryLocalFrameId);
+  SurfaceId surface_id(kArbitraryFrameSinkId, LocalFrameId(9, 1));
   surface_layer_impl->SetSurfaceId(surface_id);
   surface_layer_impl->SetSurfaceScale(1.f);
   surface_layer_impl->SetSurfaceSize(layer_size);

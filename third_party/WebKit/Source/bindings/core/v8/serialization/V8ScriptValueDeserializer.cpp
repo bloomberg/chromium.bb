@@ -236,15 +236,14 @@ ScriptWrappable* V8ScriptValueDeserializer::readDOMObject(
     case OffscreenCanvasTransferTag: {
       uint32_t width = 0, height = 0, canvasId = 0, clientId = 0, sinkId = 0,
                localId = 0;
-      uint64_t nonceHigh = 0, nonceLow = 0;
+      uint64_t nonce = 0;
       if (!readUint32(&width) || !readUint32(&height) ||
           !readUint32(&canvasId) || !readUint32(&clientId) ||
-          !readUint32(&sinkId) || !readUint32(&localId) ||
-          !readUint64(&nonceHigh) || !readUint64(&nonceLow))
+          !readUint32(&sinkId) || !readUint32(&localId) || !readUint64(&nonce))
         return nullptr;
       OffscreenCanvas* canvas = OffscreenCanvas::create(width, height);
       canvas->setAssociatedCanvasId(canvasId);
-      canvas->setSurfaceId(clientId, sinkId, localId, nonceHigh, nonceLow);
+      canvas->setSurfaceId(clientId, sinkId, localId, nonce);
       return canvas;
     }
     default:

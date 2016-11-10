@@ -3,13 +3,14 @@
 // found in the LICENSE file.
 
 module cc.mojom;
-import "mojo/common/common_custom_types.mojom";
 
 struct LocalFrameId {
   // An identifier allocated by the client uniquely identifying a surface within
   // a client process.
   uint32 local_id;
 
-  mojo.common.mojom.UnguessableToken nonce;
+  // A cryptographically secure random int chosen to make the LocalFrameId
+  // unguessable by other clients.
+  uint64 nonce;
 };
 

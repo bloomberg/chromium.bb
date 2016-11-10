@@ -36,12 +36,9 @@ namespace {
 
 static constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
 static constexpr FrameSinkId kArbitraryChildFrameSinkId(2, 2);
-static const base::UnguessableToken kArbitraryToken =
-    base::UnguessableToken::Create();
 
 SurfaceId InvalidSurfaceId() {
-  static SurfaceId invalid(kArbitraryFrameSinkId,
-                           LocalFrameId(0xdeadbeef, kArbitraryToken));
+  static SurfaceId invalid(kArbitraryFrameSinkId, LocalFrameId(0xdeadbeef, 0));
   return invalid;
 }
 
@@ -82,7 +79,7 @@ class SurfaceAggregatorTest : public testing::Test {
 };
 
 TEST_F(SurfaceAggregatorTest, ValidSurfaceNoFrame) {
-  LocalFrameId local_frame_id(7, base::UnguessableToken::Create());
+  LocalFrameId local_frame_id(7, 0);
   SurfaceId one_id(kArbitraryFrameSinkId, local_frame_id);
   factory_.Create(local_frame_id);
 
@@ -1796,7 +1793,7 @@ void SubmitCompositorFrameWithResources(ResourceId* resource_ids,
 TEST_F(SurfaceAggregatorWithResourcesTest, TakeResourcesOneSurface) {
   ResourceTrackingSurfaceFactoryClient client;
   SurfaceFactory factory(kArbitraryFrameSinkId, &manager_, &client);
-  LocalFrameId local_frame_id(7u, base::UnguessableToken::Create());
+  LocalFrameId local_frame_id(7u, 0);
   SurfaceId surface_id(kArbitraryFrameSinkId, local_frame_id);
   factory.Create(local_frame_id);
 
@@ -1827,7 +1824,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeResourcesOneSurface) {
 TEST_F(SurfaceAggregatorWithResourcesTest, TakeInvalidResources) {
   ResourceTrackingSurfaceFactoryClient client;
   SurfaceFactory factory(kArbitraryFrameSinkId, &manager_, &client);
-  LocalFrameId local_frame_id(7u, base::UnguessableToken::Create());
+  LocalFrameId local_frame_id(7u, 0);
   SurfaceId surface_id(kArbitraryFrameSinkId, local_frame_id);
   factory.Create(local_frame_id);
 
@@ -1860,11 +1857,11 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeInvalidResources) {
 TEST_F(SurfaceAggregatorWithResourcesTest, TwoSurfaces) {
   ResourceTrackingSurfaceFactoryClient client;
   SurfaceFactory factory(kArbitraryFrameSinkId, &manager_, &client);
-  LocalFrameId local_frame1_id(7u, base::UnguessableToken::Create());
+  LocalFrameId local_frame1_id(7u, 0);
   SurfaceId surface1_id(kArbitraryFrameSinkId, local_frame1_id);
   factory.Create(local_frame1_id);
 
-  LocalFrameId local_frame2_id(8u, base::UnguessableToken::Create());
+  LocalFrameId local_frame2_id(8u, 0);
   SurfaceId surface2_id(kArbitraryFrameSinkId, local_frame2_id);
   factory.Create(local_frame2_id);
 
@@ -1903,13 +1900,13 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TwoSurfaces) {
 TEST_F(SurfaceAggregatorWithResourcesTest, InvalidChildSurface) {
   ResourceTrackingSurfaceFactoryClient client;
   SurfaceFactory factory(kArbitraryFrameSinkId, &manager_, &client);
-  LocalFrameId root_local_frame_id(7u, kArbitraryToken);
+  LocalFrameId root_local_frame_id(7u, 1);
   SurfaceId root_surface_id(kArbitraryFrameSinkId, root_local_frame_id);
   factory.Create(root_local_frame_id);
-  LocalFrameId middle_local_frame_id(8u, kArbitraryToken);
+  LocalFrameId middle_local_frame_id(8u, 1);
   SurfaceId middle_surface_id(kArbitraryFrameSinkId, middle_local_frame_id);
   factory.Create(middle_local_frame_id);
-  LocalFrameId child_local_frame_id(9u, kArbitraryToken);
+  LocalFrameId child_local_frame_id(9u, 1);
   SurfaceId child_surface_id(kArbitraryFrameSinkId, child_local_frame_id);
   factory.Create(child_local_frame_id);
 
@@ -1953,11 +1950,11 @@ TEST_F(SurfaceAggregatorWithResourcesTest, InvalidChildSurface) {
 TEST_F(SurfaceAggregatorWithResourcesTest, SecureOutputTexture) {
   ResourceTrackingSurfaceFactoryClient client;
   SurfaceFactory factory(kArbitraryFrameSinkId, &manager_, &client);
-  LocalFrameId local_frame1_id(7u, base::UnguessableToken::Create());
+  LocalFrameId local_frame1_id(7u, 0);
   SurfaceId surface1_id(kArbitraryFrameSinkId, local_frame1_id);
   factory.Create(local_frame1_id);
 
-  LocalFrameId local_frame2_id(8u, base::UnguessableToken::Create());
+  LocalFrameId local_frame2_id(8u, 0);
   SurfaceId surface2_id(kArbitraryFrameSinkId, local_frame2_id);
   factory.Create(local_frame2_id);
 

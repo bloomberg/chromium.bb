@@ -524,8 +524,7 @@ TEST(DrawQuadTest, CopyStreamVideoDrawQuad) {
 
 TEST(DrawQuadTest, CopySurfaceDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
-  SurfaceId surface_id(kArbitraryFrameSinkId,
-                       LocalFrameId(1234, base::UnguessableToken::Create()));
+  SurfaceId surface_id(kArbitraryFrameSinkId, LocalFrameId(1234, 0));
   CREATE_SHARED_STATE();
 
   CREATE_QUAD_2_NEW(SurfaceDrawQuad, visible_rect, surface_id);
@@ -814,8 +813,7 @@ TEST_F(DrawQuadIteratorTest, StreamVideoDrawQuad) {
 
 TEST_F(DrawQuadIteratorTest, SurfaceDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
-  SurfaceId surface_id(kArbitraryFrameSinkId,
-                       LocalFrameId(4321, base::UnguessableToken::Create()));
+  SurfaceId surface_id(kArbitraryFrameSinkId, LocalFrameId(4321, 0));
 
   CREATE_SHARED_STATE();
   CREATE_QUAD_2_NEW(SurfaceDrawQuad, visible_rect, surface_id);
