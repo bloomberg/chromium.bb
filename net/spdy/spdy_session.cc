@@ -661,10 +661,6 @@ SpdySession::SpdySession(const SpdySessionKey& spdy_session_key,
       streams_pushed_count_(0),
       streams_pushed_and_claimed_count_(0),
       streams_abandoned_count_(0),
-      total_bytes_received_(0),
-      sent_settings_(false),
-      received_settings_(false),
-      stalled_streams_(0),
       pings_in_flight_(0),
       next_ping_id_(1),
       last_activity_time_(time_func()),
@@ -801,7 +797,6 @@ int SpdySession::TryCreateStream(
     return CreateStream(*request, stream);
   }
 
-  stalled_streams_++;
   net_log().AddEvent(NetLogEventType::HTTP2_SESSION_STALLED_MAX_STREAMS);
   RequestPriority priority = request->priority();
   CHECK_GE(priority, MINIMUM_PRIORITY);
@@ -1320,10 +1315,7 @@ int SpdySession::DoReadComplete(int result) {
   // TODO(mbelshe): support arbitrarily large frames!
 
   if (result == 0) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdySession.BytesRead.EOF",
-                                total_bytes_received_, 1, 100000000, 50);
     DoDrainSession(ERR_CONNECTION_CLOSED, "Connection closed");
-
     return ERR_CONNECTION_CLOSED;
   }
 
@@ -1334,7 +1326,6 @@ int SpdySession::DoReadComplete(int result) {
     return result;
   }
   CHECK_LE(result, kReadBufferSize);
-  total_bytes_received_ += result;
 
   last_activity_time_ = time_func_();
 
@@ -1639,8 +1630,6 @@ void SpdySession::DoDrainSession(Error err, const std::string& description) {
       base::Bind(&NetLogSpdySessionCloseCallback, err, &description));
 
   UMA_HISTOGRAM_SPARSE_SLOWLY("Net.SpdySession.ClosedOnError", -err);
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdySession.BytesRead.OtherErrors",
-                              total_bytes_received_, 1, 100000000, 50);
 
   if (err == OK) {
     // We ought to be going away already, as this is a graceful close.
@@ -1728,9 +1717,6 @@ std::unique_ptr<base::Value> SpdySession::GetInfoAsValue() const {
   DCHECK(buffered_spdy_framer_.get());
   dict->SetInteger("frames_received", buffered_spdy_framer_->frames_received());
 
-  dict->SetBoolean("sent_settings", sent_settings_);
-  dict->SetBoolean("received_settings", received_settings_);
-
   dict->SetInteger("send_window_size", session_send_window_size_);
   dict->SetInteger("recv_window_size", session_recv_window_size_);
   dict->SetInteger("unacked_recv_window_bytes",
@@ -1759,27 +1745,17 @@ size_t SpdySession::count_unclaimed_pushed_streams_for_url(
 }
 
 int SpdySession::GetPeerAddress(IPEndPoint* address) const {
-  int rv = ERR_SOCKET_NOT_CONNECTED;
-  if (connection_->socket()) {
-    rv = connection_->socket()->GetPeerAddress(address);
-  }
+  if (connection_->socket())
+    return connection_->socket()->GetPeerAddress(address);
 
-  UMA_HISTOGRAM_BOOLEAN("Net.SpdySessionSocketNotConnectedGetPeerAddress",
-                        rv == ERR_SOCKET_NOT_CONNECTED);
-
-  return rv;
+  return ERR_SOCKET_NOT_CONNECTED;
 }
 
 int SpdySession::GetLocalAddress(IPEndPoint* address) const {
-  int rv = ERR_SOCKET_NOT_CONNECTED;
-  if (connection_->socket()) {
-    rv = connection_->socket()->GetLocalAddress(address);
-  }
+  if (connection_->socket())
+    return connection_->socket()->GetLocalAddress(address);
 
-  UMA_HISTOGRAM_BOOLEAN("Net.SpdySessionSocketNotConnectedGetLocalAddress",
-                        rv == ERR_SOCKET_NOT_CONNECTED);
-
-  return rv;
+  return ERR_SOCKET_NOT_CONNECTED;
 }
 
 void SpdySession::EnqueueSessionWrite(
@@ -2091,7 +2067,6 @@ void SpdySession::OnSetting(SpdySettingsIds id, uint8_t flags, uint32_t value) {
   HandleSetting(id, value);
   http_server_properties_->SetSpdySetting(
       GetServer(), id, static_cast<SpdySettingsFlags>(flags), value);
-  received_settings_ = true;
 
   // Log the setting.
   net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_RECV_SETTING,
@@ -2726,7 +2701,6 @@ void SpdySession::SendSettings(const SettingsMap& settings) {
   DCHECK(buffered_spdy_framer_.get());
   std::unique_ptr<SpdySerializedFrame> settings_frame(
       buffered_spdy_framer_->CreateSettings(settings));
-  sent_settings_ = true;
   EnqueueSessionWrite(HIGHEST, SETTINGS, std::move(settings_frame));
 }
 
@@ -2890,60 +2864,6 @@ void SpdySession::RecordHistograms() {
   DCHECK_LE(bytes_pushed_and_unclaimed_count_, bytes_pushed_count_);
   UMA_HISTOGRAM_COUNTS_1M("Net.SpdySession.PushedAndUnclaimedBytes",
                           bytes_pushed_and_unclaimed_count_);
-  UMA_HISTOGRAM_ENUMERATION("Net.SpdySettingsSent",
-                            sent_settings_ ? 1 : 0, 2);
-  UMA_HISTOGRAM_ENUMERATION("Net.SpdySettingsReceived",
-                            received_settings_ ? 1 : 0, 2);
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdyStreamStallsPerSession",
-                              stalled_streams_, 1, 300, 50);
-  UMA_HISTOGRAM_ENUMERATION("Net.SpdySessionsWithStalls",
-                            stalled_streams_ > 0 ? 1 : 0, 2);
-
-  if (received_settings_) {
-    // Enumerate the saved settings, and set histograms for it.
-    const SettingsMap& settings_map =
-        http_server_properties_->GetSpdySettings(GetServer());
-
-    SettingsMap::const_iterator it;
-    for (it = settings_map.begin(); it != settings_map.end(); ++it) {
-      const SpdySettingsIds id = it->first;
-      const uint32_t val = it->second.second;
-      switch (id) {
-        case SETTINGS_CURRENT_CWND:
-          // Record several different histograms to see if cwnd converges
-          // for larger volumes of data being sent.
-          UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdySettingsCwnd",
-                                      val, 1, 200, 100);
-          if (total_bytes_received_ > 10 * 1024) {
-            UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdySettingsCwnd10K",
-                                        val, 1, 200, 100);
-            if (total_bytes_received_ > 25 * 1024) {
-              UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdySettingsCwnd25K",
-                                          val, 1, 200, 100);
-              if (total_bytes_received_ > 50 * 1024) {
-                UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdySettingsCwnd50K",
-                                            val, 1, 200, 100);
-                if (total_bytes_received_ > 100 * 1024) {
-                  UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdySettingsCwnd100K",
-                                              val, 1, 200, 100);
-                }
-              }
-            }
-          }
-          break;
-        case SETTINGS_ROUND_TRIP_TIME:
-          UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdySettingsRTT",
-                                      val, 1, 1200, 100);
-          break;
-        case SETTINGS_DOWNLOAD_RETRANS_RATE:
-          UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdySettingsRetransRate",
-                                      val, 1, 100, 50);
-          break;
-        default:
-          break;
-      }
-    }
-  }
 }
 
 void SpdySession::CompleteStreamRequest(

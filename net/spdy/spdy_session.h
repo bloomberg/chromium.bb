@@ -1106,15 +1106,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   int streams_pushed_and_claimed_count_;
   int streams_abandoned_count_;
 
-  // |total_bytes_received_| keeps track of all the bytes read by the
-  // SpdySession. It is used by the |Net.SpdySettingsCwnd...| histograms.
-  int total_bytes_received_;
-
-  bool sent_settings_;      // Did this session send settings when it started.
-  bool received_settings_;  // Did this session receive at least one settings
-                            // frame.
-  int stalled_streams_;     // Count of streams that were ever stalled.
-
   // Count of all pings on the wire, for which we have not gotten a response.
   int64_t pings_in_flight_;
 
