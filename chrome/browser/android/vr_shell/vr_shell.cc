@@ -21,11 +21,12 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/screen_info.h"
 #include "jni/VrShellImpl_jni.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/base/page_transition_types.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/init/gl_factory.h"
 
@@ -749,11 +750,10 @@ void VrShell::ContentSurfaceChanged(JNIEnv* env,
                                     jint height,
                                     const JavaParamRef<jobject>& surface) {
   content_compositor_->SurfaceChanged((int)width, (int)height, surface);
-  content::ScreenInfo result;
-  main_contents_->GetRenderWidgetHostView()->GetRenderWidgetHost()
-      ->GetScreenInfo(&result);
-  content_tex_width_ = width / result.device_scale_factor;
-  content_tex_height_ = height / result.device_scale_factor;
+  float scale_factor = display::Screen::GetScreen()
+      ->GetPrimaryDisplay().device_scale_factor();
+  content_tex_width_ = width / scale_factor;
+  content_tex_height_ = height / scale_factor;
 }
 
 void VrShell::UiSurfaceChanged(JNIEnv* env,
@@ -762,11 +762,10 @@ void VrShell::UiSurfaceChanged(JNIEnv* env,
                                jint height,
                                const JavaParamRef<jobject>& surface) {
   ui_compositor_->SurfaceChanged((int)width, (int)height, surface);
-  content::ScreenInfo result;
-  ui_contents_->GetRenderWidgetHostView()->GetRenderWidgetHost()->GetScreenInfo(
-      &result);
-  ui_tex_width_ = width / result.device_scale_factor;
-  ui_tex_height_ = height / result.device_scale_factor;
+  float scale_factor = display::Screen::GetScreen()
+      ->GetPrimaryDisplay().device_scale_factor();
+  ui_tex_width_ = width / scale_factor;
+  ui_tex_height_ = height / scale_factor;
 }
 
 UiScene* VrShell::GetScene() {

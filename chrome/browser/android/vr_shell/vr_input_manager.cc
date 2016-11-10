@@ -80,6 +80,8 @@ WebGestureEvent VrInputManager::MakeGestureEvent(WebInputEvent::Type type,
 
 void VrInputManager::ForwardGestureEvent(
     const blink::WebGestureEvent& gesture) {
+  if (!web_contents_->GetRenderWidgetHostView())
+    return;
   content::RenderWidgetHost* rwh =
       web_contents_->GetRenderWidgetHostView()->GetRenderWidgetHost();
   if (rwh)
@@ -88,6 +90,8 @@ void VrInputManager::ForwardGestureEvent(
 
 void VrInputManager::ForwardMouseEvent(
     const blink::WebMouseEvent& mouse_event) {
+  if (!web_contents_->GetRenderWidgetHostView())
+      return;
   content::RenderWidgetHost* rwh =
       web_contents_->GetRenderWidgetHostView()->GetRenderWidgetHost();
   if (rwh)

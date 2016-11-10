@@ -22,7 +22,9 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.content_public.common.BrowserControlsState;
 
 import java.lang.reflect.Constructor;
@@ -35,7 +37,8 @@ import java.lang.reflect.InvocationTargetException;
 public class VrShellDelegate {
     private static final String TAG = "VrShellDelegate";
 
-    private ChromeTabbedActivity mActivity;
+    private final ChromeTabbedActivity mActivity;
+    private final TabObserver mTabObserver;
 
     private boolean mVrAvailable;
     private Boolean mVrShellEnabled;
@@ -51,6 +54,7 @@ public class VrShellDelegate {
     private int mRestoreOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
     private String mVrExtra;
     private long mNativeVrShellDelegate;
+    private Tab mTab;
 
     private static final String DAYDREAM_DON_AUTO_TRANSITION =
             "org.chromium.chrome.browser.vr_shell.DAYDREAM_DON_AUTO_TRANSITION";
@@ -68,6 +72,23 @@ public class VrShellDelegate {
             }
             createVrDaydreamApi();
         }
+
+        mTabObserver = new EmptyTabObserver() {
+            @Override
+            public void onContentChanged(Tab tab) {
+                if (tab.getNativePage() != null || tab.isShowingSadTab()) {
+                    // For now we don't handle native pages. crbug.com/661609
+                    exitVRIfNecessary();
+                }
+            }
+
+            @Override
+            public void onWebContentsSwapped(Tab tab, boolean didStartLoad, boolean didFinishLoad) {
+                // TODO(mthiesse): Update the native WebContents pointer and compositor. This
+                // doesn't seem to get triggered in VR Shell currently, but that's likely to change
+                // when we have omnibar navigation.
+            }
+        };
     }
 
     /**
@@ -120,7 +141,17 @@ public class VrShellDelegate {
         if (tab == null || tab.getContentViewCore() == null) {
             return false;
         }
+
+        // For now we don't handle native pages. crbug.com/661609
+        if (tab.getNativePage() != null || tab.isShowingSadTab()) {
+            return false;
+        }
+
         if (mInVr) return true;
+
+        mTab = tab;
+        mTab.addObserver(mTabObserver);
+
         mRestoreOrientation = mActivity.getRequestedOrientation();
         // VrShell must be initialized in Landscape mode due to a bug in the GVR library.
         mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
@@ -130,11 +161,11 @@ public class VrShellDelegate {
         }
         addVrViews();
         setupVrModeWindowFlags();
-        mVrShell.initializeNative(tab, this);
+        mVrShell.initializeNative(mTab, this);
         if (inWebVR) mVrShell.setWebVrModeEnabled(true);
         mVrShell.setVrModeEnabled(true);
         mInVr = true;
-        tab.updateFullscreenEnabledState();
+        mTab.updateFullscreenEnabledState();
         return true;
     }
 
@@ -284,11 +315,9 @@ public class VrShellDelegate {
         clearVrModeWindowFlags();
         destroyVrShell();
         mInVr = false;
-        Tab tab = mActivity.getActivityTab();
-        if (tab != null) {
-            tab.updateFullscreenEnabledState();
-            tab.updateBrowserControlsState(BrowserControlsState.SHOWN, true);
-        }
+        mTab.removeObserver(mTabObserver);
+        mTab.updateFullscreenEnabledState();
+        mTab.updateBrowserControlsState(BrowserControlsState.SHOWN, true);
     }
 
     private boolean createVrDaydreamApi() {

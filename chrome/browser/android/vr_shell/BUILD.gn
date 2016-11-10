@@ -58,6 +58,7 @@ static_library("vr_common") {
     "//third_party/gvr-android-sdk:libgvr",
     "//ui/android",
     "//ui/base",
+    "//ui/display",
     "//ui/gl",
     "//ui/gl/init",
   ]
