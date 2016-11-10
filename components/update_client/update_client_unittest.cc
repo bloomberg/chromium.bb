@@ -234,8 +234,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
     }
 
     bool CheckForUpdates(
-        const std::map<std::string, std::unique_ptr<CrxUpdateItem>>&
-            items_to_check,
+        const IdToCrxUpdateItemMap& items_to_check,
         const std::string& additional_attributes,
         bool enabled_component_updates,
         const UpdateCheckCallback& update_check_callback) override {
@@ -344,8 +343,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
     }
 
     bool CheckForUpdates(
-        const std::map<std::string, std::unique_ptr<CrxUpdateItem>>&
-            items_to_check,
+        const IdToCrxUpdateItemMap& items_to_check,
         const std::string& additional_attributes,
         bool enabled_component_updates,
         const UpdateCheckCallback& update_check_callback) override {
@@ -532,8 +530,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
     }
 
     bool CheckForUpdates(
-        const std::map<std::string, std::unique_ptr<CrxUpdateItem>>&
-            items_to_check,
+        const IdToCrxUpdateItemMap& items_to_check,
         const std::string& additional_attributes,
         bool enabled_component_updates,
         const UpdateCheckCallback& update_check_callback) override {
@@ -782,8 +779,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
     }
 
     bool CheckForUpdates(
-        const std::map<std::string, std::unique_ptr<CrxUpdateItem>>&
-            items_to_check,
+        const IdToCrxUpdateItemMap& items_to_check,
         const std::string& additional_attributes,
         bool enabled_component_updates,
         const UpdateCheckCallback& update_check_callback) override {
@@ -1035,8 +1031,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
     }
 
     bool CheckForUpdates(
-        const std::map<std::string, std::unique_ptr<CrxUpdateItem>>&
-            items_to_check,
+        const IdToCrxUpdateItemMap& items_to_check,
         const std::string& additional_attributes,
         bool enabled_component_updates,
         const UpdateCheckCallback& update_check_callback) override {
@@ -1330,8 +1325,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
     }
 
     bool CheckForUpdates(
-        const std::map<std::string, std::unique_ptr<CrxUpdateItem>>&
-            items_to_check,
+        const IdToCrxUpdateItemMap& items_to_check,
         const std::string& additional_attributes,
         bool enabled_component_updates,
         const UpdateCheckCallback& update_check_callback) override {
@@ -1516,8 +1510,7 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
     }
 
     bool CheckForUpdates(
-        const std::map<std::string, std::unique_ptr<CrxUpdateItem>>&
-            items_to_check,
+        const IdToCrxUpdateItemMap& items_to_check,
         const std::string& additional_attributes,
         bool enabled_component_updates,
         const UpdateCheckCallback& update_check_callback) override {
@@ -1807,8 +1800,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
     }
 
     bool CheckForUpdates(
-        const std::map<std::string, std::unique_ptr<CrxUpdateItem>>&
-            items_to_check,
+        const IdToCrxUpdateItemMap& items_to_check,
         const std::string& additional_attributes,
         bool enabled_component_updates,
         const UpdateCheckCallback& update_check_callback) override {
@@ -1909,8 +1901,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
     }
 
     bool CheckForUpdates(
-        const std::map<std::string, std::unique_ptr<CrxUpdateItem>>&
-            items_to_check,
+        const IdToCrxUpdateItemMap& items_to_check,
         const std::string& additional_attributes,
         bool enabled_component_updates,
         const UpdateCheckCallback& update_check_callback) override {
@@ -2098,8 +2089,7 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
     }
 
     bool CheckForUpdates(
-        const std::map<std::string, std::unique_ptr<CrxUpdateItem>>&
-            items_to_check,
+        const IdToCrxUpdateItemMap& items_to_check,
         const std::string& additional_attributes,
         bool enabled_component_updates,
         const UpdateCheckCallback& update_check_callback) override {
@@ -2194,8 +2184,7 @@ TEST_F(UpdateClientTest, EmptyIdList) {
     }
 
     bool CheckForUpdates(
-        const std::map<std::string, std::unique_ptr<CrxUpdateItem>>&
-            items_to_check,
+        const IdToCrxUpdateItemMap& items_to_check,
         const std::string& additional_attributes,
         bool enabled_component_updates,
         const UpdateCheckCallback& update_check_callback) override {
@@ -2242,8 +2231,7 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
     }
 
     bool CheckForUpdates(
-        const std::map<std::string, std::unique_ptr<CrxUpdateItem>>&
-            items_to_check,
+        const IdToCrxUpdateItemMap& items_to_check,
         const std::string& additional_attributes,
         bool enabled_component_updates,
         const UpdateCheckCallback& update_check_callback) override {
@@ -2342,8 +2330,7 @@ TEST_F(UpdateClientTest, RetryAfter) {
     }
 
     bool CheckForUpdates(
-        const std::map<std::string, std::unique_ptr<CrxUpdateItem>>&
-            items_to_check,
+        const IdToCrxUpdateItemMap& items_to_check,
         const std::string& additional_attributes,
         bool enabled_component_updates,
         const UpdateCheckCallback& update_check_callback) override {
@@ -2508,8 +2495,7 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
     }
 
     bool CheckForUpdates(
-        const std::map<std::string, std::unique_ptr<CrxUpdateItem>>&
-            items_to_check,
+        const IdToCrxUpdateItemMap& items_to_check,
         const std::string& additional_attributes,
         bool enabled_component_updates,
         const UpdateCheckCallback& update_check_callback) override {

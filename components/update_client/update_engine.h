@@ -34,7 +34,6 @@ class SingleThreadTaskRunner;
 namespace update_client {
 
 class Configurator;
-struct CrxUpdateItem;
 struct UpdateContext;
 
 // Handles updates for a group of components. Updates for different groups
@@ -147,8 +146,8 @@ struct UpdateContext {
 
   std::unique_ptr<Action> current_action;
 
-  // Map of id to item.
-  std::map<std::string, std::unique_ptr<CrxUpdateItem>> update_items;
+  // Contains the CrxUpdateItem instances of the items to update.
+  IdToCrxUpdateItemMap update_items;
 
   // Contains the ids of the items to update.
   std::queue<std::string> queue;

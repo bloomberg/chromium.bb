@@ -47,8 +47,7 @@ update_client::InstallerAttributes SanitizeInstallerAttributes(
 }
 
 // Returns true if at least one item requires network encryption.
-bool IsEncryptionRequired(
-    const std::map<std::string, std::unique_ptr<CrxUpdateItem>>& items) {
+bool IsEncryptionRequired(const IdToCrxUpdateItemMap& items) {
   for (const auto& item : items) {
     if (item.second->component.requires_network_encryption)
       return true;
@@ -70,12 +69,11 @@ bool IsEncryptionRequired(
 //        <package fp="abcd"/>
 //      </packages>
 //    </app>
-std::string BuildUpdateCheckRequest(
-    const Configurator& config,
-    const std::map<std::string, std::unique_ptr<CrxUpdateItem>>& items,
-    PersistedData* metadata,
-    const std::string& additional_attributes,
-    bool enabled_component_updates) {
+std::string BuildUpdateCheckRequest(const Configurator& config,
+                                    const IdToCrxUpdateItemMap& items,
+                                    PersistedData* metadata,
+                                    const std::string& additional_attributes,
+                                    bool enabled_component_updates) {
   const std::string brand(SanitizeBrand(config.GetBrand()));
   std::string app_elements;
   for (const auto& item_pair : items) {
@@ -140,8 +138,7 @@ class UpdateCheckerImpl : public UpdateChecker {
 
   // Overrides for UpdateChecker.
   bool CheckForUpdates(
-      const std::map<std::string, std::unique_ptr<CrxUpdateItem>>&
-          items_to_check,
+      const IdToCrxUpdateItemMap& items_to_check,
       const std::string& additional_attributes,
       bool enabled_component_updates,
       const UpdateCheckCallback& update_check_callback) override;
@@ -171,7 +168,7 @@ UpdateCheckerImpl::~UpdateCheckerImpl() {
 }
 
 bool UpdateCheckerImpl::CheckForUpdates(
-    const std::map<std::string, std::unique_ptr<CrxUpdateItem>>& items_to_check,
+    const IdToCrxUpdateItemMap& items_to_check,
     const std::string& additional_attributes,
     bool enabled_component_updates,
     const UpdateCheckCallback& update_check_callback) {

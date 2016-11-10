@@ -5,6 +5,7 @@
 #include "components/update_client/update_checker.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -175,7 +176,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccess) {
 
   std::unique_ptr<CrxUpdateItem> item = BuildCrxUpdateItem();
   item->component.installer_attributes["ap"] = "some_ap";
-  std::map<std::string, std::unique_ptr<CrxUpdateItem>> items_to_check;
+  IdToCrxUpdateItemMap items_to_check;
   items_to_check[kUpdateItemId] = std::move(item);
 
   update_checker_->CheckForUpdates(
@@ -231,7 +232,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckInvalidAp) {
   std::unique_ptr<CrxUpdateItem> item = BuildCrxUpdateItem();
   // Make "ap" too long.
   item->component.installer_attributes["ap"] = std::string(257, 'a');
-  std::map<std::string, std::unique_ptr<CrxUpdateItem>> items_to_check;
+  IdToCrxUpdateItemMap items_to_check;
   items_to_check[kUpdateItemId] = std::move(item);
 
   update_checker_->CheckForUpdates(
@@ -258,7 +259,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccessNoBrand) {
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
 
   std::unique_ptr<CrxUpdateItem> item = BuildCrxUpdateItem();
-  std::map<std::string, std::unique_ptr<CrxUpdateItem>> items_to_check;
+  IdToCrxUpdateItemMap items_to_check;
   items_to_check[kUpdateItemId] = std::move(item);
 
   update_checker_->CheckForUpdates(
@@ -285,7 +286,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckError) {
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
 
   std::unique_ptr<CrxUpdateItem> item = BuildCrxUpdateItem();
-  std::map<std::string, std::unique_ptr<CrxUpdateItem>> items_to_check;
+  IdToCrxUpdateItemMap items_to_check;
   items_to_check[kUpdateItemId] = std::move(item);
 
   update_checker_->CheckForUpdates(
@@ -312,7 +313,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckDownloadPreference) {
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
 
   std::unique_ptr<CrxUpdateItem> item = BuildCrxUpdateItem();
-  std::map<std::string, std::unique_ptr<CrxUpdateItem>> items_to_check;
+  IdToCrxUpdateItemMap items_to_check;
   items_to_check[kUpdateItemId] = std::move(item);
 
   update_checker_->CheckForUpdates(
@@ -338,7 +339,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckCupError) {
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
 
   std::unique_ptr<CrxUpdateItem> item = BuildCrxUpdateItem();
-  std::map<std::string, std::unique_ptr<CrxUpdateItem>> items_to_check;
+  IdToCrxUpdateItemMap items_to_check;
   items_to_check[kUpdateItemId] = std::move(item);
 
   update_checker_->CheckForUpdates(
@@ -376,7 +377,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckRequiresEncryptionError) {
 
   std::unique_ptr<CrxUpdateItem> item = BuildCrxUpdateItem();
   item->component.requires_network_encryption = true;
-  std::map<std::string, std::unique_ptr<CrxUpdateItem>> items_to_check;
+  IdToCrxUpdateItemMap items_to_check;
   items_to_check[kUpdateItemId] = std::move(item);
 
   update_checker_->CheckForUpdates(
@@ -400,7 +401,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckDateLastRollCall) {
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
 
   std::unique_ptr<CrxUpdateItem> item = BuildCrxUpdateItem();
-  std::map<std::string, std::unique_ptr<CrxUpdateItem>> items_to_check;
+  IdToCrxUpdateItemMap items_to_check;
   items_to_check[kUpdateItemId] = std::move(item);
 
   // Do two update-checks.
@@ -443,7 +444,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckUpdateDisabled) {
   // include the "updatedisabled" attribute.
   EXPECT_FALSE(
       item_ptr->component.supports_group_policy_enable_component_updates);
-  std::map<std::string, std::unique_ptr<CrxUpdateItem>> items_to_check;
+  IdToCrxUpdateItemMap items_to_check;
   items_to_check[kUpdateItemId] = std::move(item);
   update_checker_->CheckForUpdates(
       items_to_check, "", false,
