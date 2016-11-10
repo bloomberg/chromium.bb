@@ -337,6 +337,16 @@ class PLATFORM_EXPORT TransformationMatrix {
     return applyTransformOrigin(origin.x(), origin.y(), origin.z());
   }
 
+  // Changes the transform to:
+  //
+  //     scale3d(z, z, z) * mat * scale3d(1/z, 1/z, 1/z)
+  //
+  // Useful for mapping zoomed points to their zoomed transformed result:
+  //
+  //     new_mat * (scale3d(z, z, z) * x) == scale3d(z, z, z) * (mat * x)
+  //
+  TransformationMatrix& zoom(double zoomFactor);
+
   bool isInvertible() const;
 
   // This method returns the identity matrix if it is not invertible.

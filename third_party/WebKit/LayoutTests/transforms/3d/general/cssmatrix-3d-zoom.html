@@ -17,7 +17,7 @@ body {
 }
 
 .translate {
-    transform: translate(100px, 50px);
+    transform: perspective(200px) translate3d(100px, 50px, 25px) rotateY(45deg);
     background-color: red;
 }
 
@@ -41,7 +41,8 @@ function runTest() {
         var y2 = element2.getBoundingClientRect().top;
 
         var resultString = '';
-        if (x1 == x2 && y1 == y2) {
+        var tolerance = 1e-2;
+        if (Math.abs(x1 - x2) < tolerance && Math.abs(y1 - y2) < tolerance) {
             resultString += "PASS - Element " + id1 + " and Element " + id2 + " had identical positions";
         } else {
             resultString += "FAIL - Element " + id1 + " and Element " + id2 + " had different positions";
@@ -60,7 +61,7 @@ function runTest() {
 <div id='b' class="box matrix"></div>
 
 <script>
-    document.getElementById('b').style.webkitTransform = new WebKitCSSMatrix('matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 100, 50, 0, 1)');
+    document.getElementById('b').style.webkitTransform = new WebKitCSSMatrix('matrix3d(0.707107, 0, -0.707107, 0.00353553, 0, 1, 0, 0, 0.707107, 0, 0.707107, -0.00353553, 100, 50, 25, 0.875)');
 </script>
 </body>
 </html>

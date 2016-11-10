@@ -508,4 +508,36 @@ TEST(TransformOperationsTest, AbsoluteSequenceBoundsTest) {
                       FloatBox(-7, -3, 2, 15, 23, 20), bounds);
 }
 
+TEST(TransformOperationsTest, ZoomTest) {
+  double zoomFactor = 1.25;
+
+  FloatPoint3D originalPoint(2, 3, 4);
+
+  TransformOperations ops;
+  ops.operations().append(TranslateTransformOperation::create(
+      Length(1, Fixed), Length(2, Fixed), 3, TransformOperation::Translate3D));
+  ops.operations().append(PerspectiveTransformOperation::create(1234));
+  ops.operations().append(
+      Matrix3DTransformOperation::create(TransformationMatrix(
+          1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)));
+
+  // Apply unzoomed ops to unzoomed units, then zoom in
+  FloatPoint3D unzoomedPoint = originalPoint;
+  TransformOperations unzoomedOps = ops;
+  TransformationMatrix unzoomedMatrix;
+  ops.apply(FloatSize(0, 0), unzoomedMatrix);
+  FloatPoint3D result1 = unzoomedMatrix.mapPoint(unzoomedPoint);
+  result1.scale(zoomFactor, zoomFactor, zoomFactor);
+
+  // Apply zoomed ops to zoomed units
+  FloatPoint3D zoomedPoint = originalPoint;
+  zoomedPoint.scale(zoomFactor, zoomFactor, zoomFactor);
+  TransformOperations zoomedOps = ops.zoom(zoomFactor);
+  TransformationMatrix zoomedMatrix;
+  zoomedOps.apply(FloatSize(0, 0), zoomedMatrix);
+  FloatPoint3D result2 = zoomedMatrix.mapPoint(zoomedPoint);
+
+  EXPECT_EQ(result1, result2);
+}
+
 }  // namespace blink

@@ -54,8 +54,7 @@ PassRefPtr<TransformOperation> Matrix3DTransformOperation::blend(
 
 PassRefPtr<TransformOperation> Matrix3DTransformOperation::zoom(double factor) {
   TransformationMatrix result = m_matrix;
-  result.setM41(result.m41() * factor);
-  result.setM42(result.m42() * factor);
+  result.zoom(factor);
   return create(result);
 }
 

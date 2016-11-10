@@ -1266,6 +1266,16 @@ TransformationMatrix& TransformationMatrix::applyTransformOrigin(double x,
   return *this;
 }
 
+TransformationMatrix& TransformationMatrix::zoom(double zoomFactor) {
+  m_matrix[0][3] /= zoomFactor;
+  m_matrix[1][3] /= zoomFactor;
+  m_matrix[2][3] /= zoomFactor;
+  m_matrix[3][0] *= zoomFactor;
+  m_matrix[3][1] *= zoomFactor;
+  m_matrix[3][2] *= zoomFactor;
+  return *this;
+}
+
 // Calculates *this = *this * mat.
 // Note: A * B means that the transforms represented by A happen first, and
 // then the transforms represented by B. That is, the matrix A * B corresponds

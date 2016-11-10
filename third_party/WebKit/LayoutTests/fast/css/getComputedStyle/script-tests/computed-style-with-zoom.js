@@ -49,7 +49,7 @@ var testData = [
     ['-webkit-mask-position-y', '20px', '-20px'],
     ['-webkit-perspective-origin', '20px 20px'],
     ['-webkit-text-stroke-width'],
-    ['-webkit-transform', 'translate(20px, 20px)', 'translate3d(20px, 20px, 20px)'],
+    ['-webkit-transform', 'translate(20px, 20px)', 'translate3d(20px, 20px, 20px)', 'matrix3d(16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1)'],
     ['-webkit-transform-origin', '20px 20px', '-20px -20px'],
     ['background-position-x', '20px', '-20px'],
     ['background-position-y', '20px', '-20px'],

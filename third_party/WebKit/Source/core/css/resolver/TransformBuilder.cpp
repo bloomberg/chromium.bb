@@ -305,12 +305,11 @@ TransformOperations TransformBuilder::createTransformOperations(
             toCSSPrimitiveValue(transformValue->item(9)).getDoubleValue(),
             toCSSPrimitiveValue(transformValue->item(10)).getDoubleValue(),
             toCSSPrimitiveValue(transformValue->item(11)).getDoubleValue(),
-            zoomFactor *
-                toCSSPrimitiveValue(transformValue->item(12)).getDoubleValue(),
-            zoomFactor *
-                toCSSPrimitiveValue(transformValue->item(13)).getDoubleValue(),
+            toCSSPrimitiveValue(transformValue->item(12)).getDoubleValue(),
+            toCSSPrimitiveValue(transformValue->item(13)).getDoubleValue(),
             toCSSPrimitiveValue(transformValue->item(14)).getDoubleValue(),
             toCSSPrimitiveValue(transformValue->item(15)).getDoubleValue());
+        matrix.zoom(zoomFactor);
         operations.operations().append(
             Matrix3DTransformOperation::create(matrix));
         break;
