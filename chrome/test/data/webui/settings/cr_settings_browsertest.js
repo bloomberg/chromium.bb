@@ -838,6 +838,9 @@ CrSettingsNonExistentRouteTest.prototype = {
 
   /** @override */
   browsePreload: 'chrome://md-settings/non/existent/route',
+
+  /** @override */
+  runAccessibilityChecks: false,
 };
 
 TEST_F('CrSettingsNonExistentRouteTest', 'All', function() {
@@ -868,6 +871,9 @@ CrSettingsRouteDynamicParametersTest.prototype = {
 
   /** @override */
   browsePreload: 'chrome://md-settings/people?guid=a%2Fb&foo=42',
+
+  /** @override */
+  runAccessibilityChecks: false,
 };
 
 TEST_F('CrSettingsRouteDynamicParametersTest', 'MAYBE_All', function() {
