@@ -26,27 +26,7 @@ PASS pre.className (<pre class>): 32 tests
 PASS pre.hidden: 33 tests
 PASS pre.accessKey: 32 tests
 PASS pre.tabIndex: 24 tests
-PASS pre.width: 19 tests
-FAIL pre.width: setAttribute() to "\v7" assert_equals: IDL get expected 0 but got 7
-PASS pre.width: 6 tests
-FAIL pre.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-PASS pre.width: setAttribute() to " 7" 
-FAIL pre.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-PASS pre.width: setAttribute() to "᠎7" 
-FAIL pre.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL pre.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL pre.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL pre.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL pre.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL pre.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL pre.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL pre.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL pre.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL pre.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL pre.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-PASS pre.width: setAttribute() to " 7" 
-FAIL pre.width: setAttribute() to "　7" assert_equals: IDL get expected 0 but got 7
-PASS pre.width: 17 tests
+PASS pre.width: 60 tests
 PASS blockquote.title: 32 tests
 PASS blockquote.lang: 32 tests
 PASS blockquote.dir: 62 tests
@@ -102,27 +82,7 @@ PASS li.className (<li class>): 32 tests
 PASS li.hidden: 33 tests
 PASS li.accessKey: 32 tests
 PASS li.tabIndex: 24 tests
-PASS li.value: 19 tests
-FAIL li.value: setAttribute() to "\v7" assert_equals: IDL get expected 0 but got 7
-PASS li.value: 6 tests
-FAIL li.value: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-PASS li.value: setAttribute() to " 7" 
-FAIL li.value: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-PASS li.value: setAttribute() to "᠎7" 
-FAIL li.value: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL li.value: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL li.value: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL li.value: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL li.value: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL li.value: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL li.value: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL li.value: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL li.value: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL li.value: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL li.value: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-PASS li.value: setAttribute() to " 7" 
-FAIL li.value: setAttribute() to "　7" assert_equals: IDL get expected 0 but got 7
-PASS li.value: 17 tests
+PASS li.value: 60 tests
 PASS li.type: 32 tests
 PASS dl.title: 32 tests
 PASS dl.lang: 32 tests

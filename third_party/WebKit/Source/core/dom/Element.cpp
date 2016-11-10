@@ -3326,7 +3326,9 @@ KURL Element::getNonEmptyURLAttribute(const QualifiedName& name) const {
 }
 
 int Element::getIntegralAttribute(const QualifiedName& attributeName) const {
-  return getAttribute(attributeName).toInt();
+  int integralValue = 0;
+  parseHTMLInteger(getAttribute(attributeName), integralValue);
+  return integralValue;
 }
 
 void Element::setIntegralAttribute(const QualifiedName& attributeName,

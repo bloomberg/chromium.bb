@@ -29,48 +29,8 @@ FAIL img.height: IDL set to 4294967295 assert_equals: getAttribute() expected "0
 PASS img.name: 32 tests
 PASS img.lowsrc: 38 tests
 PASS img.align: 32 tests
-PASS img.hspace: 19 tests
-FAIL img.hspace: setAttribute() to "\v7" assert_equals: IDL get expected 0 but got 7
-PASS img.hspace: 6 tests
-FAIL img.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-PASS img.hspace: setAttribute() to " 7" 
-FAIL img.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-PASS img.hspace: setAttribute() to "᠎7" 
-FAIL img.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL img.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL img.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL img.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL img.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL img.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL img.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL img.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL img.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL img.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL img.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-PASS img.hspace: setAttribute() to " 7" 
-FAIL img.hspace: setAttribute() to "　7" assert_equals: IDL get expected 0 but got 7
-PASS img.hspace: 19 tests
-PASS img.vspace: 19 tests
-FAIL img.vspace: setAttribute() to "\v7" assert_equals: IDL get expected 0 but got 7
-PASS img.vspace: 6 tests
-FAIL img.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-PASS img.vspace: setAttribute() to " 7" 
-FAIL img.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-PASS img.vspace: setAttribute() to "᠎7" 
-FAIL img.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL img.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL img.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL img.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL img.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL img.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL img.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL img.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL img.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL img.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL img.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-PASS img.vspace: setAttribute() to " 7" 
-FAIL img.vspace: setAttribute() to "　7" assert_equals: IDL get expected 0 but got 7
-PASS img.vspace: 19 tests
+PASS img.hspace: 62 tests
+PASS img.vspace: 62 tests
 PASS img.longDesc: 38 tests
 PASS img.border: 32 tests
 PASS iframe.title: 32 tests
@@ -155,49 +115,9 @@ PASS object.align: 32 tests
 PASS object.archive: 32 tests
 PASS object.code: 32 tests
 PASS object.declare: 33 tests
-PASS object.hspace: 19 tests
-FAIL object.hspace: setAttribute() to "\v7" assert_equals: IDL get expected 0 but got 7
-PASS object.hspace: 6 tests
-FAIL object.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-PASS object.hspace: setAttribute() to " 7" 
-FAIL object.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-PASS object.hspace: setAttribute() to "᠎7" 
-FAIL object.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL object.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL object.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL object.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL object.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL object.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL object.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL object.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL object.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL object.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL object.hspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-PASS object.hspace: setAttribute() to " 7" 
-FAIL object.hspace: setAttribute() to "　7" assert_equals: IDL get expected 0 but got 7
-PASS object.hspace: 19 tests
+PASS object.hspace: 62 tests
 PASS object.standby: 32 tests
-PASS object.vspace: 19 tests
-FAIL object.vspace: setAttribute() to "\v7" assert_equals: IDL get expected 0 but got 7
-PASS object.vspace: 6 tests
-FAIL object.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-PASS object.vspace: setAttribute() to " 7" 
-FAIL object.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-PASS object.vspace: setAttribute() to "᠎7" 
-FAIL object.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL object.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL object.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL object.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL object.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL object.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL object.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL object.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL object.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL object.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL object.vspace: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-PASS object.vspace: setAttribute() to " 7" 
-FAIL object.vspace: setAttribute() to "　7" assert_equals: IDL get expected 0 but got 7
-PASS object.vspace: 19 tests
+PASS object.vspace: 62 tests
 PASS object.codeBase: 38 tests
 PASS object.codeType: 32 tests
 PASS object.border: 32 tests
@@ -258,48 +178,8 @@ FAIL video.mediaGroup: IDL set to object "test-toString" assert_equals: getAttri
 FAIL video.mediaGroup: IDL set to object "test-valueOf" assert_equals: IDL get expected (string) "test-valueOf" but got (object) object "test-valueOf"
 PASS video.controls: 33 tests
 PASS video.defaultMuted (<video muted>): 33 tests
-PASS video.width: 19 tests
-FAIL video.width: setAttribute() to "\v7" assert_equals: IDL get expected 0 but got 7
-PASS video.width: 6 tests
-FAIL video.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-PASS video.width: setAttribute() to " 7" 
-FAIL video.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-PASS video.width: setAttribute() to "᠎7" 
-FAIL video.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL video.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL video.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL video.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL video.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL video.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL video.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL video.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL video.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL video.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL video.width: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-PASS video.width: setAttribute() to " 7" 
-FAIL video.width: setAttribute() to "　7" assert_equals: IDL get expected 0 but got 7
-PASS video.width: 19 tests
-PASS video.height: 19 tests
-FAIL video.height: setAttribute() to "\v7" assert_equals: IDL get expected 0 but got 7
-PASS video.height: 6 tests
-FAIL video.height: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-PASS video.height: setAttribute() to " 7" 
-FAIL video.height: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-PASS video.height: setAttribute() to "᠎7" 
-FAIL video.height: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL video.height: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL video.height: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL video.height: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL video.height: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL video.height: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL video.height: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL video.height: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL video.height: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL video.height: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-FAIL video.height: setAttribute() to " 7" assert_equals: IDL get expected 0 but got 7
-PASS video.height: setAttribute() to " 7" 
-FAIL video.height: setAttribute() to "　7" assert_equals: IDL get expected 0 but got 7
-PASS video.height: 19 tests
+PASS video.width: 62 tests
+PASS video.height: 62 tests
 PASS video.poster: 38 tests
 PASS audio.title: 32 tests
 PASS audio.lang: 32 tests
