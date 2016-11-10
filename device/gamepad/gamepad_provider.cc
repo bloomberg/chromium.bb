@@ -72,9 +72,18 @@ GamepadProvider::~GamepadProvider() {
   if (monitor)
     monitor->RemoveDevicesChangedObserver(this);
 
+  // Delete GamepadDataFetchers on |polling_thread_|. This is important because
+  // some of them require their destructor to be called on the same sequence as
+  // their other methods.
+  polling_thread_->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&GamepadFetcherVector::clear,
+                            base::Unretained(&data_fetchers_)));
+
   // Use Stop() to join the polling thread, as there may be pending callbacks
   // which dereference |polling_thread_|.
   polling_thread_->Stop();
+
+  DCHECK(data_fetchers_.empty());
 }
 
 base::SharedMemoryHandle GamepadProvider::GetSharedMemoryHandleForProcess(
