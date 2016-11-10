@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
@@ -57,6 +58,7 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   void ReusePictureBuffer(int32_t picture_buffer_id) override;
   void Flush() override;
   void Reset() override;
+  void SetSurface(int32_t surface_id) override;
   void Destroy() override;
   bool TryToSetupDecodeOnSeparateThread(
       const base::WeakPtr<Client>& decode_client,
@@ -277,6 +279,12 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // have safer versions elsewhere.
   bool IsMediaCodecSoftwareDecodingForbidden() const;
 
+  // On platforms which support seamless surface changes, this will reinitialize
+  // the picture buffer manager with the new surface. This function reads and
+  // clears the surface id from |pending_surface_id_|. It will issue a decode
+  // error if the surface change fails. Returns false on failure.
+  bool UpdateSurface();
+
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;
 
@@ -382,6 +390,12 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // True if surface creation and |picture_buffer_manager_| initialization has
   // been defered until the first Decode() call.
   bool defer_surface_creation_;
+
+  // Has a value if a SetSurface() call has occurred and a new surface should be
+  // switched to when possible. Cleared during OnDestroyingSurface() and if all
+  // pictures have been rendered in DequeueOutput().
+  int32_t surface_id_;
+  base::Optional<int32_t> pending_surface_id_;
 
   // Copy of the VDA::Config we were given.
   Config config_;

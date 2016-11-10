@@ -620,6 +620,18 @@ class MediaCodecBridge {
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.M)
+    @CalledByNative
+    private boolean setSurface(Surface surface) {
+        try {
+            mMediaCodec.setOutputSurface(surface);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            Log.e(TAG, "Cannot set output surface", e);
+            return false;
+        }
+        return true;
+    }
+
     @CalledByNative
     private static void setFrameHasADTSHeader(MediaFormat format) {
         format.setInteger(MediaFormat.KEY_IS_ADTS, 1);

@@ -204,6 +204,7 @@ bool GpuVideoDecodeAccelerator::OnMessageReceived(const IPC::Message& msg) {
                         OnReusePictureBuffer)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_Flush, OnFlush)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_Reset, OnReset)
+    IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_SetSurface, OnSetSurface)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderMsg_Destroy, OnDestroy)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -495,6 +496,11 @@ void GpuVideoDecodeAccelerator::OnFlush() {
 void GpuVideoDecodeAccelerator::OnReset() {
   DCHECK(video_decode_accelerator_);
   video_decode_accelerator_->Reset();
+}
+
+void GpuVideoDecodeAccelerator::OnSetSurface(int32_t surface_id) {
+  DCHECK(video_decode_accelerator_);
+  video_decode_accelerator_->SetSurface(surface_id);
 }
 
 void GpuVideoDecodeAccelerator::OnDestroy() {

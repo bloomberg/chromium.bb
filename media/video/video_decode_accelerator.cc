@@ -45,6 +45,10 @@ void VideoDecodeAccelerator::ImportBufferForPicture(
   NOTREACHED() << "Buffer import not supported.";
 }
 
+void VideoDecodeAccelerator::SetSurface(int32_t surface_id) {
+  NOTREACHED() << "Surfaces are not supported.";
+}
+
 GLenum VideoDecodeAccelerator::GetSurfaceInternalFormat() const {
   return GL_RGBA;
 }

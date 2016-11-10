@@ -343,6 +343,8 @@ void WebMediaPlayerImpl::DisableOverlay() {
 
   if (decoder_requires_restart_for_overlay_)
     ScheduleRestart();
+  else if (!set_surface_cb_.is_null())
+    set_surface_cb_.Run(overlay_surface_id_);
 }
 
 void WebMediaPlayerImpl::enteredFullscreen() {
@@ -1501,45 +1503,46 @@ void WebMediaPlayerImpl::NotifyDownloading(bool is_downloading) {
 }
 
 void WebMediaPlayerImpl::OnSurfaceCreated(int surface_id) {
-  if (force_video_overlays_ && surface_id == SurfaceManager::kNoSurfaceID)
-    LOG(ERROR) << "Create surface failed.";
-
   overlay_surface_id_ = surface_id;
-  if (!pending_surface_request_cb_.is_null())
-    base::ResetAndReturn(&pending_surface_request_cb_).Run(surface_id);
+  if (!set_surface_cb_.is_null()) {
+    // If restart is required, the callback is one-shot only.
+    if (decoder_requires_restart_for_overlay_)
+      base::ResetAndReturn(&set_surface_cb_).Run(surface_id);
+    else
+      set_surface_cb_.Run(surface_id);
+  }
 }
 
-// TODO(watk): Move this state management out of WMPI.
 void WebMediaPlayerImpl::OnSurfaceRequested(
-    const SurfaceCreatedCB& surface_created_cb) {
+    bool decoder_requires_restart_for_overlay,
+    const SurfaceCreatedCB& set_surface_cb) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK(surface_manager_);
   DCHECK(!use_fallback_path_);
 
   // A null callback indicates that the decoder is going away.
-  if (surface_created_cb.is_null()) {
+  if (set_surface_cb.is_null()) {
     decoder_requires_restart_for_overlay_ = false;
-    pending_surface_request_cb_.Reset();
+    set_surface_cb_.Reset();
     return;
   }
 
-  // If we're getting a surface request it means GVD is initializing, so until
-  // we get a null surface request, GVD is the active decoder. While that's the
-  // case we should restart the pipeline on fullscreen transitions so that when
-  // we create a new GVD it will request a surface again and get the right kind
-  // of surface for the fullscreen state.
-  // TODO(watk): Don't require a pipeline restart to switch surfaces for
-  // cases where it isn't necessary.
-  decoder_requires_restart_for_overlay_ = true;
-  if (overlay_enabled_) {
-    if (overlay_surface_id_ != SurfaceManager::kNoSurfaceID)
-      surface_created_cb.Run(overlay_surface_id_);
-    else
-      pending_surface_request_cb_ = surface_created_cb;
-  } else {
-    // Tell the decoder to create its own surface.
-    surface_created_cb.Run(SurfaceManager::kNoSurfaceID);
-  }
+  // If we get a surface request it means GpuVideoDecoder is initializing, so
+  // until we get a null surface request, GVD is the active decoder.
+  //
+  // If |decoder_requires_restart_for_overlay| is true, we must restart the
+  // pipeline for fullscreen transitions. The decoder is unable to switch
+  // surfaces otherwise. If false, we simply need to tell the decoder about the
+  // new surface and it will handle things seamlessly.
+  decoder_requires_restart_for_overlay_ = decoder_requires_restart_for_overlay;
+  set_surface_cb_ = set_surface_cb;
+
+  // If we're waiting for the surface to arrive, OnSurfaceCreated() will be
+  // called later when it arrives; so do nothing for now.
+  if (overlay_enabled_ && overlay_surface_id_ == SurfaceManager::kNoSurfaceID)
+    return;
+
+  OnSurfaceCreated(overlay_surface_id_);
 }
 
 std::unique_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer() {

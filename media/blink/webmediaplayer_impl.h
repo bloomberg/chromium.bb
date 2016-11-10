@@ -280,7 +280,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Called by GpuVideoDecoder on Android to request a surface to render to (if
   // necessary).
-  void OnSurfaceRequested(const SurfaceCreatedCB& surface_created_cb);
+  void OnSurfaceRequested(bool decoder_requires_restart_for_overlay,
+                          const SurfaceCreatedCB& surface_created_cb);
 
   // Creates a Renderer via the |renderer_factory_|.
   std::unique_ptr<Renderer> CreateRenderer();
@@ -526,8 +527,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   int overlay_surface_id_;
 
   // If a surface is requested before it's finished being created, the request
-  // is saved and satisfied once the surface is available.
-  SurfaceCreatedCB pending_surface_request_cb_;
+  // is saved and satisfied once the surface is available. If the decoder does
+  // not require restart to change surfaces, this is callback is kept until
+  // cleared by the decoder.
+  SurfaceCreatedCB set_surface_cb_;
 
   // Force to use SurfaceView instead of SurfaceTexture on Android.
   bool force_video_overlays_;

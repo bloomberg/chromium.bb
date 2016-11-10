@@ -122,6 +122,8 @@ void AVDASharedState::WaitForFrameAvailable() {
 void AVDASharedState::SetSurfaceTexture(
     scoped_refptr<gl::SurfaceTexture> surface_texture,
     GLuint attached_service_id) {
+  DCHECK(surface_texture);
+  DCHECK(attached_service_id);
   surface_texture_ = surface_texture;
   surface_texture_service_id_ = attached_service_id;
   context_ = gl::GLContext::GetCurrent();

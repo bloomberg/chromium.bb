@@ -169,7 +169,7 @@ class AVDAManager {
   // is assumed to be on the way out, so we fail its allocation request.
   bool AllocateSurface(int surface_id, AndroidVideoDecodeAccelerator* avda) {
     // Nobody has to wait for no surface.
-    if (surface_id == AndroidVideoDecodeAccelerator::Config::kNoSurfaceID)
+    if (surface_id == SurfaceManager::kNoSurfaceID)
       return true;
 
     auto iter = surface_waiter_map_.find(surface_id);
@@ -225,8 +225,7 @@ class AVDAManager {
   // defer the surface creation until the codec is actually used if we know no
   // software fallback exists.
   bool ShouldDeferSurfaceCreation(int surface_id, VideoCodec codec) {
-    return surface_id == AndroidVideoDecodeAccelerator::Config::kNoSurfaceID &&
-           codec == kCodecH264 &&
+    return surface_id == SurfaceManager::kNoSurfaceID && codec == kCodecH264 &&
            g_avda_codec_allocator.Get().IsAnyRegisteredAVDA() &&
            (base::android::BuildInfo::GetInstance()->sdk_int() <= 18 ||
             base::SysInfo::IsLowEndDevice());
@@ -319,6 +318,7 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
       deferred_initialization_pending_(false),
       codec_needs_reset_(false),
       defer_surface_creation_(false),
+      surface_id_(SurfaceManager::kNoSurfaceID),
       weak_this_factory_(this) {}
 
 AndroidVideoDecodeAccelerator::~AndroidVideoDecodeAccelerator() {
@@ -397,15 +397,21 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
+  // If SetSurface() was called before initialize, pick up the surface.
+  if (pending_surface_id_) {
+    surface_id_ = pending_surface_id_.value();
+    pending_surface_id_.reset();
+  }
+
   // If we're low on resources, we may decide to defer creation of the surface
   // until the codec is actually used.
-  if (g_avda_manager.Get().ShouldDeferSurfaceCreation(config_.surface_id,
+  if (g_avda_manager.Get().ShouldDeferSurfaceCreation(surface_id_,
                                                       codec_config_->codec_)) {
     DCHECK(!deferred_initialization_pending_);
 
     // We should never be here if a SurfaceView is required.
-    DCHECK_EQ(config_.surface_id, Config::kNoSurfaceID);
-    DCHECK(g_avda_manager.Get().AllocateSurface(config_.surface_id, this));
+    DCHECK_EQ(surface_id_, SurfaceManager::kNoSurfaceID);
+    DCHECK(g_avda_manager.Get().AllocateSurface(surface_id_, this));
 
     defer_surface_creation_ = true;
     NotifyInitializationComplete(true);
@@ -420,7 +426,7 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
-  if (g_avda_manager.Get().AllocateSurface(config_.surface_id, this)) {
+  if (g_avda_manager.Get().AllocateSurface(surface_id_, this)) {
     // We have successfully owned the surface, so finish initialization now.
     return InitializePictureBufferManager();
   }
@@ -446,8 +452,7 @@ bool AndroidVideoDecodeAccelerator::InitializePictureBufferManager() {
     return false;
   }
 
-  codec_config_->surface_ =
-      picture_buffer_manager_.Initialize(config_.surface_id);
+  codec_config_->surface_ = picture_buffer_manager_.Initialize(surface_id_);
   if (codec_config_->surface_.IsEmpty())
     return false;
 
@@ -652,6 +657,16 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
       !IsDrainingForResetOrDestroy()) {
     // Don't have any picture buffer to send. Need to wait.
     return false;
+  }
+
+  // If we're waiting to switch surfaces pause output release until we have all
+  // picture buffers returned. This is so we can ensure the right flags are set
+  // on the picture buffers returned to the client.
+  if (pending_surface_id_) {
+    if (picture_buffer_manager_.HasUnrenderedPictures())
+      return false;
+    if (!UpdateSurface())
+      return false;
   }
 
   bool eos = false;
@@ -884,10 +899,14 @@ void AndroidVideoDecodeAccelerator::DecodeBuffer(
 
 void AndroidVideoDecodeAccelerator::RequestPictureBuffers() {
   if (client_) {
-    client_->ProvidePictureBuffers(
-        kNumPictureBuffers, PIXEL_FORMAT_UNKNOWN, 1,
-        picture_buffer_manager_.GetPictureBufferSize(),
-        picture_buffer_manager_.GetTextureTarget());
+    // Allocate a picture buffer that is the actual frame size.  Note that it
+    // will be an external texture anyway, so it doesn't allocate an image of
+    // that size.  It's important to get the coded size right, so that
+    // VideoLayerImpl doesn't try to scale the texture when building the quad
+    // for it.
+    client_->ProvidePictureBuffers(kNumPictureBuffers, PIXEL_FORMAT_UNKNOWN, 1,
+                                   size_,
+                                   AVDAPictureBufferManager::kTextureTarget);
   }
 }
 
@@ -907,13 +926,7 @@ void AndroidVideoDecodeAccelerator::AssignPictureBuffers(
       << "Failed to make GL context current for Assign, continuing.";
 
   for (size_t i = 0; i < buffers.size(); ++i) {
-    if (buffers[i].size() != picture_buffer_manager_.GetPictureBufferSize()) {
-      POST_ERROR(INVALID_ARGUMENT,
-                 "Invalid picture buffer size assigned. Wanted "
-                     << size_.ToString() << ", but got "
-                     << buffers[i].size().ToString());
-      return;
-    }
+    DCHECK(buffers[i].size() == size_);
     int32_t id = buffers[i].id();
     output_picture_buffers_.insert(std::make_pair(id, buffers[i]));
     free_picture_ids_.push(id);
@@ -1241,6 +1254,18 @@ void AndroidVideoDecodeAccelerator::Reset() {
   }
 }
 
+void AndroidVideoDecodeAccelerator::SetSurface(int32_t surface_id) {
+  if (surface_id == surface_id_) {
+    pending_surface_id_.reset();
+    return;
+  }
+
+  // Surface changes never take effect immediately, they will be handled during
+  // DequeOutput() once we get to a good switch point or immediately during an
+  // OnDestroyingSurface() call.
+  pending_surface_id_ = surface_id;
+}
+
 void AndroidVideoDecodeAccelerator::Destroy() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -1274,7 +1299,7 @@ void AndroidVideoDecodeAccelerator::ActualDestroy() {
 
   // We no longer care about |surface_id|, in case we did before.  It's okay
   // if we have no surface and/or weren't the owner or a waiter.
-  g_avda_manager.Get().DeallocateSurface(config_.surface_id, this);
+  g_avda_manager.Get().DeallocateSurface(surface_id_, this);
 
   // Note that async codec construction might still be in progress.  In that
   // case, the codec will be deleted when it completes once we invalidate all
@@ -1308,8 +1333,28 @@ void AndroidVideoDecodeAccelerator::OnDestroyingSurface(int surface_id) {
   TRACE_EVENT0("media", "AVDA::OnDestroyingSurface");
   DVLOG(1) << __FUNCTION__ << " surface_id: " << surface_id;
 
-  if (surface_id != config_.surface_id)
+  if (surface_id != surface_id_)
     return;
+
+  // If the API is available avoid having to restart the decoder in order to
+  // leave fullscreen. If we don't clear the surface immediately during this
+  // callback, the MediaCodec will throw an error as the surface is destroyed.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >= 23) {
+    // Since we can't wait for a transition, we must invalidate all outstanding
+    // picture buffers to avoid putting the GL system in a broken state.
+    picture_buffer_manager_.ReleaseCodecBuffers(output_picture_buffers_);
+
+    // Switch away from the surface being destroyed to a surface texture.
+    DCHECK_NE(surface_id_, SurfaceManager::kNoSurfaceID);
+
+    // The leaving fullscreen notification may come in before this point.
+    if (pending_surface_id_)
+      DCHECK_EQ(pending_surface_id_.value(), SurfaceManager::kNoSurfaceID);
+
+    pending_surface_id_ = SurfaceManager::kNoSurfaceID;
+    UpdateSurface();
+    return;
+  }
 
   // If we're currently asynchronously configuring a codec, it will be destroyed
   // when configuration completes and it notices that |state_| has changed to
@@ -1582,6 +1627,37 @@ bool AndroidVideoDecodeAccelerator::IsMediaCodecSoftwareDecodingForbidden()
   // more secure and up to date versions in the renderer process.
   return !config_.is_encrypted && (codec_config_->codec_ == kCodecVP8 ||
                                    codec_config_->codec_ == kCodecVP9);
+}
+
+bool AndroidVideoDecodeAccelerator::UpdateSurface() {
+  DCHECK(pending_surface_id_);
+  DCHECK_NE(surface_id_, pending_surface_id_.value());
+
+  // Ensure the current context is active when switching surfaces; we may need
+  // to create a new texture.
+  if (!make_context_current_cb_.Run()) {
+    POST_ERROR(PLATFORM_FAILURE,
+               "Failed to make this decoder's GL context current when "
+               "switching surfaces.");
+    return false;
+  }
+
+  surface_id_ = pending_surface_id_.value();
+  codec_config_->surface_ =
+      picture_buffer_manager_.Initialize(pending_surface_id_.value());
+  if (codec_config_->surface_.IsEmpty()) {
+    POST_ERROR(PLATFORM_FAILURE, "An error occurred while switching surfaces.");
+    return false;
+  }
+
+  if (media_codec_ &&
+      !media_codec_->SetSurface(codec_config_->surface_.j_surface().obj())) {
+    POST_ERROR(PLATFORM_FAILURE, "MediaCodec failed to switch surfaces.");
+    return false;
+  }
+
+  pending_surface_id_.reset();
+  return true;
 }
 
 }  // namespace media

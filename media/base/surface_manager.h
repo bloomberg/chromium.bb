@@ -13,7 +13,7 @@
 namespace media {
 
 using SurfaceCreatedCB = base::Callback<void(int)>;
-using RequestSurfaceCB = base::Callback<void(const SurfaceCreatedCB&)>;
+using RequestSurfaceCB = base::Callback<void(bool, const SurfaceCreatedCB&)>;
 
 class MEDIA_EXPORT SurfaceManager {
  public:

@@ -164,6 +164,10 @@ class MEDIA_EXPORT VideoCodecBridge : public SdkMediaCodecBridge {
   // the new size.
   bool IsAdaptivePlaybackSupported(int width, int height);
 
+  // Changes the output surface for the MediaCodec. May only be used on API
+  // level 23 and higher (Marshmallow).
+  bool SetSurface(jobject surface);
+
   // Test-only method to set the return value of IsAdaptivePlaybackSupported().
   // Without this function, the return value of that function will be device
   // dependent. If |adaptive_playback_supported| is equal to 0, the return value

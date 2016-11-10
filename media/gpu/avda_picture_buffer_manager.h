@@ -45,15 +45,13 @@ class MEDIA_GPU_EXPORT AVDAPictureBufferManager {
   // Must be called before anything else. If |surface_id| is |kNoSurfaceID|
   // then a new SurfaceTexture will be returned. Otherwise, the corresponding
   // SurfaceView will be returned.
+  //
+  // May be called multiple times to switch to a new |surface_id|. Picture
+  // buffers will be updated to use the new surface during the call to
+  // UseCodecBufferForPictureBuffer().
   gl::ScopedJavaSurface Initialize(int surface_id);
 
   void Destroy(const PictureBufferMap& buffers);
-
-  // Returns the GL texture target that the PictureBuffer textures use.
-  uint32_t GetTextureTarget() const;
-
-  // Returns the size to use when requesting picture buffers.
-  gfx::Size GetPictureBufferSize() const;
 
   // Sets up |picture_buffer| so that its texture will refer to the image that
   // is represented by the decoded output buffer at codec_buffer_index.
@@ -80,6 +78,14 @@ class MEDIA_GPU_EXPORT AVDAPictureBufferManager {
 
   // Whether the pictures buffers are overlayable.
   bool ArePicturesOverlayable();
+
+  // Are there any unrendered picture buffers oustanding?
+  bool HasUnrenderedPictures() const;
+
+  // Returns the GL texture target that the PictureBuffer textures use.
+  // Always use OES textures even though this will cause flickering in dev tools
+  // when inspecting a fullscreen video.  See http://crbug.com/592798
+  static constexpr GLenum kTextureTarget = GL_TEXTURE_EXTERNAL_OES;
 
  private:
   // Release any codec buffer that is associated with the given picture buffer

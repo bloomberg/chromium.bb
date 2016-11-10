@@ -26,7 +26,7 @@ AVDACodecImage::AVDACodecImage(
       codec_buffer_index_(kInvalidCodecBufferIndex),
       media_codec_(codec),
       decoder_(decoder),
-      has_surface_texture_(!!shared_state_->surface_texture_service_id()),
+      has_surface_texture_(false),
       texture_(0) {}
 
 AVDACodecImage::~AVDACodecImage() {}
@@ -130,6 +130,22 @@ void AVDACodecImage::UpdateSurface(UpdateMode update_mode) {
 void AVDACodecImage::CodecChanged(MediaCodecBridge* codec) {
   media_codec_ = codec;
   codec_buffer_index_ = kInvalidCodecBufferIndex;
+}
+
+void AVDACodecImage::SetBufferMetadata(int buffer_index,
+                                       bool has_surface_texture,
+                                       const gfx::Size& size) {
+  has_surface_texture_ = has_surface_texture;
+  codec_buffer_index_ = buffer_index;
+  size_ = size;
+}
+
+bool AVDACodecImage::SetSharedState(
+    scoped_refptr<AVDASharedState> shared_state) {
+  if (shared_state == shared_state_)
+    return false;
+  shared_state_ = shared_state;
+  return true;
 }
 
 void AVDACodecImage::UpdateSurfaceInternal(

@@ -652,6 +652,12 @@ VideoCodecBridge::VideoCodecBridge(const std::string& mime,
     : SdkMediaCodecBridge(mime, is_secure, direction, require_software_codec),
       adaptive_playback_supported_for_testing_(-1) {}
 
+bool VideoCodecBridge::SetSurface(jobject surface) {
+  DCHECK_GE(base::android::BuildInfo::GetInstance()->sdk_int(), 23);
+  JNIEnv* env = AttachCurrentThread();
+  return Java_MediaCodecBridge_setSurface(env, media_codec(), surface);
+}
+
 void VideoCodecBridge::SetVideoBitrate(int bps, int frame_rate) {
   JNIEnv* env = AttachCurrentThread();
   Java_MediaCodecBridge_setVideoBitrate(env, media_codec(), bps, frame_rate);
