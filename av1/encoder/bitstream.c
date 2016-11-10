@@ -4164,8 +4164,14 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
                         &counts->mv);
 #endif
 #if CONFIG_DAALA_EC
+#if CONFIG_REF_MV
+    for (i = 0; i < NMV_CONTEXTS; ++i)
+      av1_tree_to_cdf(av1_mv_joint_tree, cm->fc->nmvc[i].joints,
+                      cm->fc->nmvc[i].joint_cdf);
+#else
     av1_tree_to_cdf(av1_mv_joint_tree, cm->fc->nmvc.joints,
                     cm->fc->nmvc.joint_cdf);
+#endif
 #endif
 #if !CONFIG_EC_ADAPT
     update_ext_tx_probs(cm, header_bc);
@@ -4179,7 +4185,11 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
   }
 #if CONFIG_EC_MULTISYMBOL
   av1_coef_pareto_cdfs(fc);
+#if CONFIG_REF_MV
+  for (i = 0; i < NMV_CONTEXTS; ++i) av1_set_mv_cdfs(&fc->nmvc[i]);
+#else
   av1_set_mv_cdfs(&fc->nmvc);
+#endif
 #if CONFIG_DAALA_EC
   av1_set_mode_cdfs(cm);
 #endif
