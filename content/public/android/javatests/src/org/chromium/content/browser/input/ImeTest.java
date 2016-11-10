@@ -10,7 +10,6 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Handler;
-import android.os.Looper;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.InputType;
@@ -23,13 +22,10 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.base.test.util.parameter.Parameter;
-import org.chromium.base.test.util.parameter.ParameterizedTest;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -49,25 +45,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
- * IME (input method editor) and text input tests. Note that we run each test case twice,
- * once with ImeThread feature and once without it.
+ * IME (input method editor) and text input tests.
  */
-@ParameterizedTest.Set(tests = {
-        @ParameterizedTest(parameters = {
-                @Parameter(
-                        tag = CommandLineFlags.Parameter.PARAMETER_TAG,
-                        arguments = {
-                                @Parameter.Argument(
-                                        name = CommandLineFlags.Parameter.ADD_ARG,
-                                        stringArray = {"enable-features=ImeThread"})})}),
-        @ParameterizedTest(parameters = {
-                @Parameter(
-                        tag = CommandLineFlags.Parameter.PARAMETER_TAG,
-                        arguments = {
-                                @Parameter.Argument(
-                                        name = CommandLineFlags.Parameter.ADD_ARG,
-                                        stringArray = {"disable-features=ImeThread"})})})
-        })
 public class ImeTest extends ContentShellTestBase {
     protected ChromiumBaseInputConnection mConnection;
     private TestInputConnectionFactory mConnectionFactory;
@@ -105,10 +84,6 @@ public class ImeTest extends ContentShellTestBase {
         mConnection = getInputConnection();
         mImeAdapter = getImeAdapter();
 
-        if (usingReplicaInputConnection()) {
-            // This is not needed if onCreateInputConnection() can return correct selection range.
-            waitAndVerifyUpdateSelection(0, 0, 0, -1, -1);
-        }
         waitForKeyboardStates(1, 0, 1, new Integer[] {TextInputType.TEXT});
         assertEquals(0, mConnectionFactory.getOutAttrs().initialSelStart);
         assertEquals(0, mConnectionFactory.getOutAttrs().initialSelEnd);
@@ -182,7 +157,6 @@ public class ImeTest extends ContentShellTestBase {
     @SmallTest
     @Feature({"TextInput", "Main"})
     public void testCompositionWithNullTextNotCrash() throws Throwable {
-        if (usingReplicaInputConnection()) return;
         commitText(null, 1);
         assertTextsAroundCursor("", null, "");
 
@@ -242,10 +216,6 @@ public class ImeTest extends ContentShellTestBase {
     @SmallTest
     @Feature({"TextInput", "Main"})
     public void testSetComposingTextForNewCursorPositions() throws Throwable {
-        // When newCursorPosition != 1, setComposingText doesn't work for ReplicaInputConnection
-        // because there is a bug in BaseInputConnection.
-        if (usingReplicaInputConnection()) return;
-
         // Cursor is on the right of composing text when newCursorPosition > 0.
         setComposingText("ab", 1);
         waitAndVerifyUpdateSelection(0, 2, 2, 0, 2);
@@ -293,10 +263,6 @@ public class ImeTest extends ContentShellTestBase {
     @Feature({"TextInput", "Main"})
     @RetryOnFailure
     public void testCommitTextForNewCursorPositions() throws Throwable {
-        // When newCursorPosition != 1, commitText doesn't work for ReplicaInputConnection
-        // because there is a bug in BaseInputConnection.
-        if (usingReplicaInputConnection()) return;
-
         // Cursor is on the left of committing text.
         commitText("ab", 0);
         waitAndVerifyUpdateSelection(0, 0, 0, -1, -1);
@@ -494,18 +460,8 @@ public class ImeTest extends ContentShellTestBase {
     private void assertTextsAroundCursor(
             CharSequence before, CharSequence selected, CharSequence after) throws Exception {
         assertEquals(before, getTextBeforeCursor(100, 0));
-
-        CharSequence actualSelected = getSelectedText(0);
-        assertEquals(selected, actualSelected);
-
-        if (usingReplicaInputConnection() && after.equals("\n")) {
-            // When the text ends with \n, we have a second new line that is not user
-            // visible/editable one, it is a side effect of using <br> internally.
-            // Replica model simply deviates from the blink editor in this case.
-            assertEquals("", getTextAfterCursor(100, 0));
-        } else {
-            assertEquals(after, getTextAfterCursor(100, 0));
-        }
+        assertEquals(selected, getSelectedText(0));
+        assertEquals(after, getTextAfterCursor(100, 0));
     }
 
     private void waitForKeyboardStates(int show, int hide, int restart, Integer[] history)
@@ -818,15 +774,11 @@ public class ImeTest extends ContentShellTestBase {
         assertTextsAroundCursor("blablargblarg", null, "");
     }
 
+    // crbug.com/606059
     @MediumTest
     @Feature({"TextInput"})
     @RetryOnFailure
     public void testPasteLongText() throws Exception {
-        // Chrome can crash after pasting long text into textarea, becasue there is an overflow bug
-        // in SpannableStringBuilder#replace(). This can be avoided by enabling ImeThread.
-        // crbug.com/606059
-        if (usingReplicaInputConnection()) return;
-
         final int textLength = 25000;
         final String text = new String(new char[textLength]).replace("\0", "a");
         setClip(text);
@@ -1119,10 +1071,6 @@ public class ImeTest extends ContentShellTestBase {
         dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_B));
         assertEquals("hôˆb", getTextBeforeCursor(9, 0));
         int index = 4;
-        if (usingReplicaInputConnection()) {
-            // A transitional state due to finishComposingText.
-            waitAndVerifyUpdateSelection(index++, 3, 3, -1, -1);
-        }
         waitAndVerifyUpdateSelection(index++, 4, 4, -1, -1);
 
         // ALT-i
@@ -1138,10 +1086,6 @@ public class ImeTest extends ContentShellTestBase {
         assertEquals("hôˆb", getTextBeforeCursor(9, 0));
         dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL));
         assertEquals("hôˆb", getTextBeforeCursor(9, 0));
-        if (usingReplicaInputConnection()) {
-            // A transitional state due to finishComposingText in deleteSurroundingTextImpl.
-            waitAndVerifyUpdateSelection(index++, 5, 5, -1, -1);
-        }
         waitAndVerifyUpdateSelection(index++, 4, 4, -1, -1);
     }
 
@@ -1225,50 +1169,7 @@ public class ImeTest extends ContentShellTestBase {
         dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_LEFT));
         dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_LEFT));
 
-        if (usingReplicaInputConnection()) {
-            // Ideally getTextBeforeCursor immediately after dispatchKeyEvent should return a
-            // correct value, but we have a stop-gap solution in render_widget_input_handler and it
-            // make take some round trip time until we get the correct value.
-            waitUntilGetCharacterBeforeCursorBecomes("l");
-        } else {
-            assertTextsAroundCursor("hell", null, "o");
-        }
-    }
-
-    private void waitUntilGetCharacterBeforeCursorBecomes(final String expectedText)
-            throws InterruptedException {
-        pollForCriteriaOnThread(Criteria.equals(expectedText, new Callable<String>() {
-            @Override
-            public String call() {
-                return (String) mConnection.getTextBeforeCursor(1, 0);
-            }
-        }));
-    }
-
-    private void pollForCriteriaOnThread(final Criteria criteria) throws InterruptedException {
-        final Callable<Boolean> callable = new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return criteria.isSatisfied();
-            }
-        };
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                try {
-                    return runBlockingOnImeThread(callable);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    fail();
-                    return false;
-                }
-            }
-
-            @Override
-            public String getFailureReason() {
-                return criteria.getFailureReason();
-            }
-        });
+        assertTextsAroundCursor("hell", null, "o");
     }
 
     @SmallTest
@@ -1487,27 +1388,8 @@ public class ImeTest extends ContentShellTestBase {
     private void waitForEventLogs(String expectedLogs) throws Exception {
         final String code = "getEventLogs()";
         final String sanitizedExpectedLogs = "\"" + expectedLogs + "\"";
-        if (usingReplicaInputConnection()) {
-            // When using replica input connection, update from JavaScript will come at a later
-            // time.
-            CriteriaHelper.pollInstrumentationThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    try {
-                        String eventLogs = JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                                getContentViewCore().getWebContents(), code);
-                        updateFailureReason(eventLogs);
-                        return sanitizedExpectedLogs.equals(eventLogs);
-                    } catch (InterruptedException | TimeoutException e) {
-                        updateFailureReason(e.getMessage());
-                        return false;
-                    }
-                }
-            });
-        } else {
-            assertEquals(sanitizedExpectedLogs, JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                    getContentViewCore().getWebContents(), code));
-        }
+        assertEquals(sanitizedExpectedLogs, JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                                                    getContentViewCore().getWebContents(), code));
     }
 
     // https://crbug.com/604675
@@ -1939,10 +1821,6 @@ public class ImeTest extends ContentShellTestBase {
         }));
         // When we focus another element, the connection may be recreated.
         mConnection = getInputConnection();
-    }
-
-    private boolean usingReplicaInputConnection() {
-        return mConnectionFactory.getHandler().getLooper() == Looper.getMainLooper();
     }
 
     private static class TestInputConnectionFactory implements ChromiumBaseInputConnection.Factory {
