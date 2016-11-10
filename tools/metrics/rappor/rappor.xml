@@ -1912,6 +1912,20 @@ now we are only interested in H264, VP8 and VP9.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="VR.WebVR.GetDisplays" type="ETLD_PLUS_ONE">
+  <owner>billorr@chromium.org</owner>
+  <summary>
+    The host of the URL that called WebVR APIs to obtain the list of VRDisplays.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="VR.WebVR.PresentSuccess" type="ETLD_PLUS_ONE">
+  <owner>billorr@chromium.org</owner>
+  <summary>
+    The host of the URL that succeeded in presenting WebVR content.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="WebComponents.DocumentRegisterElement"
     type="ETLD_PLUS_ONE">
   <owner>kojii@chromium.org</owner>

@@ -17,6 +17,7 @@
 #include "modules/vr/VRDisplay.h"
 #include "modules/vr/VRGetDevicesCallback.h"
 #include "modules/vr/VRPose.h"
+#include "public/platform/Platform.h"
 #include "wtf/PtrUtil.h"
 
 namespace blink {
@@ -61,6 +62,8 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* scriptState) {
   String errorMessage;
   if (!executionContext->isSecureContext(errorMessage))
     UseCounter::count(*document, UseCounter::VRGetDisplaysInsecureOrigin);
+
+  Platform::current()->recordRapporURL("VR.WebVR.GetDisplays", document->url());
 
   controller()->getDisplays(resolver);
 

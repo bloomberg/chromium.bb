@@ -342,6 +342,12 @@ void VRDisplay::beginPresent(ScriptPromiseResolver* resolver) {
     return;
   }
 
+  Document* doc = m_navigatorVR->document();
+  if (doc) {
+    Platform::current()->recordRapporURL("VR.WebVR.PresentSuccess",
+                                         WebURL(doc->url()));
+  }
+
   m_isPresenting = true;
   ReportPresentationResult(PresentationResult::Success);
 
