@@ -128,7 +128,8 @@ AudioParamTimeline::ParamEvent::ParamEvent(Type type,
       m_timeConstant(timeConstant),
       m_duration(duration),
       m_initialValue(initialValue),
-      m_callTime(callTime) {
+      m_callTime(callTime),
+      m_needsTimeClampCheck(true) {
   if (curve) {
     // Copy the curve data
     unsigned curveLength = curve->length();
@@ -456,12 +457,33 @@ float AudioParamTimeline::valuesForFrameRangeImpl(size_t startFrame,
     return defaultValue;
   }
 
-  // Optimize the case where the last event is in the past.
-  if (m_events.size() > 0) {
+  int numberOfEvents = m_events.size();
+
+  if (numberOfEvents > 0) {
+    double currentTime = startFrame / sampleRate;
+
+    // Look at all the events in the timeline and check to see if any needs
+    // to clamp the start time to the current time.
+    for (int k = 0; k < numberOfEvents; ++k) {
+      ParamEvent& event = m_events[k];
+
+      // We're examining the event for the first time and the event time is
+      // in the past so clamp the event time to the current time (start of
+      // the rendering quantum).
+      if (event.needsTimeClampCheck()) {
+        if (event.time() < currentTime)
+          event.setTime(currentTime);
+
+        // In all cases, we can clear the flag because the event is either
+        // in the future, or we've already checked it (just now).
+        event.clearTimeClampCheck();
+      }
+    }
+
+    // Optimize the case where the last event is in the past.
     ParamEvent& lastEvent = m_events[m_events.size() - 1];
     ParamEvent::Type lastEventType = lastEvent.getType();
     double lastEventTime = lastEvent.time();
-    double currentTime = startFrame / sampleRate;
 
     // If the last event is in the past and the event has ended, then we can
     // just propagate the same value.  Except for SetTarget which lasts
@@ -509,11 +531,10 @@ float AudioParamTimeline::valuesForFrameRangeImpl(size_t startFrame,
 
   // Go through each event and render the value buffer where the times overlap,
   // stopping when we've rendered all the requested values.
-  int n = m_events.size();
   int lastSkippedEventIndex = 0;
-  for (int i = 0; i < n && writeIndex < numberOfValues; ++i) {
+  for (int i = 0; i < numberOfEvents && writeIndex < numberOfValues; ++i) {
     ParamEvent& event = m_events[i];
-    ParamEvent* nextEvent = i < n - 1 ? &(m_events[i + 1]) : 0;
+    ParamEvent* nextEvent = i < numberOfEvents - 1 ? &(m_events[i + 1]) : 0;
 
     // Wait until we get a more recent event.
     //
@@ -600,8 +621,12 @@ float AudioParamTimeline::valuesForFrameRangeImpl(size_t startFrame,
                 event.timeConstant(), controlRate));
         value += (event.value() - value) * discreteTimeConstant;
       }
+
+      // Insert a SetValueEvent to mark the starting value and time.
+      // Clear the clamp check because this doesn't need it.
       m_events[i] =
           ParamEvent::createSetValueEvent(value, currentFrame / sampleRate);
+      m_events[i].clearTimeClampCheck();
     }
 
     float value1 = event.value();

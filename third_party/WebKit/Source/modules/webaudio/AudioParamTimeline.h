@@ -127,11 +127,14 @@ class AudioParamTimeline {
     Type getType() const { return m_type; }
     float value() const { return m_value; }
     double time() const { return m_time; }
+    void setTime(double newTime) { m_time = newTime; }
     double timeConstant() const { return m_timeConstant; }
     double duration() const { return m_duration; }
     Vector<float>& curve() { return m_curve; }
     float initialValue() const { return m_initialValue; }
     double callTime() const { return m_callTime; }
+    bool needsTimeClampCheck() const { return m_needsTimeClampCheck; }
+    void clearTimeClampCheck() { m_needsTimeClampCheck = false; }
 
    private:
     ParamEvent(Type type,
@@ -155,6 +158,9 @@ class AudioParamTimeline {
     // have a preceding event.
     float m_initialValue;
     double m_callTime;
+    // True if the start time needs to be checked against current time
+    // to implement clamping.
+    bool m_needsTimeClampCheck;
   };
 
   void insertEvent(const ParamEvent&, ExceptionState&);
