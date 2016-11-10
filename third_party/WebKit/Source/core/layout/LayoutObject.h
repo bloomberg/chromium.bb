@@ -1682,6 +1682,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     void setHasPreviousLocationInBacking(bool b) {
       m_layoutObject.m_bitfields.setHasPreviousLocationInBacking(b);
     }
+    void setHasPreviousSelectionVisualRect(bool b) {
+      m_layoutObject.m_bitfields.setHasPreviousSelectionVisualRect(b);
+    }
+    void setHasPreviousBoxGeometries(bool b) {
+      m_layoutObject.m_bitfields.setHasPreviousBoxGeometries(b);
+    }
     void setPreviousBackgroundObscured(bool b) {
       m_layoutObject.setPreviousBackgroundObscured(b);
     }
@@ -1742,11 +1748,16 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return m_bitfields.isBackgroundAttachmentFixedObject();
   }
 
-  // ObjectPaintInvalidator will access the internal global map storing
-  // previousLocationInBacking only when the flag is set, to avoid unnecessary
-  // map lookups.
+  // Paint invalidators will access the internal global map storing the data
+  // only when the flag is set, to avoid unnecessary map lookups.
   bool hasPreviousLocationInBacking() const {
     return m_bitfields.hasPreviousLocationInBacking();
+  }
+  bool hasPreviousSelectionVisualRect() const {
+    return m_bitfields.hasPreviousSelectionVisualRect();
+  }
+  bool hasPreviousBoxGeometries() const {
+    return m_bitfields.hasPreviousBoxGeometries();
   }
 
  protected:
@@ -2089,12 +2100,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           m_scrollAnchorDisablingStyleChanged(false),
           m_hasBoxDecorationBackground(false),
           m_hasPreviousLocationInBacking(false),
+          m_hasPreviousSelectionVisualRect(false),
+          m_hasPreviousBoxGeometries(false),
           m_positionedState(IsStaticallyPositioned),
           m_selectionState(SelectionNone),
           m_backgroundObscurationState(BackgroundObscurationStatusInvalid),
           m_fullPaintInvalidationReason(PaintInvalidationNone) {}
-
-    // 32 bits have been used in the first word, and 20 in the second.
 
     // Self needs layout means that this layout object is marked for a full
     // layout. This is the default layout but it is expensive as it recomputes
@@ -2255,6 +2266,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
     ADD_BOOLEAN_BITFIELD(hasPreviousLocationInBacking,
                          HasPreviousLocationInBacking);
+    ADD_BOOLEAN_BITFIELD(hasPreviousSelectionVisualRect,
+                         HasPreviousSelectionVisualRect);
+    ADD_BOOLEAN_BITFIELD(hasPreviousBoxGeometries, HasPreviousBoxGeometries);
+
+   protected:
+    // Use protected to avoid warning about unused variable.
+    unsigned m_unusedBits : 10;
 
    private:
     // This is the cached 'position' value of this object

@@ -26,10 +26,17 @@ static SelectionVisualRectMap& selectionVisualRectMap() {
 
 static void setPreviousSelectionVisualRect(const LayoutObject& object,
                                            const LayoutRect& rect) {
-  if (rect.isEmpty())
-    selectionVisualRectMap().remove(&object);
-  else
+  DCHECK(object.hasPreviousSelectionVisualRect() ==
+         selectionVisualRectMap().contains(&object));
+  if (rect.isEmpty()) {
+    if (object.hasPreviousSelectionVisualRect()) {
+      selectionVisualRectMap().remove(&object);
+      object.getMutableForPainting().setHasPreviousSelectionVisualRect(false);
+    }
+  } else {
     selectionVisualRectMap().set(&object, rect);
+    object.getMutableForPainting().setHasPreviousSelectionVisualRect(true);
+  }
 }
 
 typedef HashMap<const LayoutObject*, LayoutPoint> LocationInBackingMap;
@@ -39,8 +46,10 @@ static LocationInBackingMap& locationInBackingMap() {
 }
 
 void ObjectPaintInvalidator::objectWillBeDestroyed(const LayoutObject& object) {
-  // TODO(wangxianzhu): Use the same mechanism as for locatinInBackingMap().
-  selectionVisualRectMap().remove(&object);
+  DCHECK(object.hasPreviousSelectionVisualRect() ==
+         selectionVisualRectMap().contains(&object));
+  if (object.hasPreviousSelectionVisualRect())
+    selectionVisualRectMap().remove(&object);
 
   DCHECK(object.hasPreviousLocationInBacking() ==
          locationInBackingMap().contains(&object));
@@ -500,7 +509,11 @@ void ObjectPaintInvalidatorWithContext::invalidateSelectionIfNeeded(
   if (!fullInvalidation && !m_object.shouldInvalidateSelection())
     return;
 
-  LayoutRect oldSelectionRect = selectionVisualRectMap().get(&m_object);
+  DCHECK(m_object.hasPreviousSelectionVisualRect() ==
+         selectionVisualRectMap().contains(&m_object));
+  LayoutRect oldSelectionRect;
+  if (m_object.hasPreviousSelectionVisualRect())
+    oldSelectionRect = selectionVisualRectMap().get(&m_object);
   LayoutRect newSelectionRect = m_object.localSelectionRect();
   if (!newSelectionRect.isEmpty()) {
     m_context.mapLocalRectToPaintInvalidationBacking(m_object,
