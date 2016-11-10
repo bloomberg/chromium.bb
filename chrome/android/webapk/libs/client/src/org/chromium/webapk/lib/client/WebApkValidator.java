@@ -101,11 +101,11 @@ public class WebApkValidator {
 
         final Signature[] arrSignatures = packageInfo.signatures;
         if (arrSignatures != null && arrSignatures.length == 2) {
-            // The first signature is the per-app key, and the second is the host key.
-            Signature signature = arrSignatures[1];
-            if (Arrays.equals(sExpectedSignature, signature.toByteArray())) {
-                Log.d(TAG, "WebApk valid - signature match!");
-                return true;
+            for (Signature signature : arrSignatures) {
+                if (Arrays.equals(sExpectedSignature, signature.toByteArray())) {
+                    Log.d(TAG, "WebApk valid - signature match!");
+                    return true;
+                }
             }
         }
         Log.d(TAG, "WebApk invalid");
