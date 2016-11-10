@@ -19,10 +19,13 @@ NGTextLayoutAlgorithm::NGTextLayoutAlgorithm(
   DCHECK(inline_box_);
 }
 
-bool NGTextLayoutAlgorithm::Layout(NGPhysicalFragmentBase** out) {
+NGLayoutStatus NGTextLayoutAlgorithm::Layout(
+    NGFragmentBase*,
+    NGPhysicalFragmentBase** fragment_out,
+    NGBox**) {
   // TODO(layout-dev): implement.
-  *out = nullptr;
-  return true;
+  *fragment_out = nullptr;
+  return NewFragment;
 }
 
 DEFINE_TRACE(NGTextLayoutAlgorithm) {
