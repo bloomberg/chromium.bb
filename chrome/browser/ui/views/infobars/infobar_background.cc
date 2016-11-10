@@ -14,7 +14,7 @@
 
 InfoBarBackground::InfoBarBackground(
     infobars::InfoBarDelegate::Type infobar_type) {
-  SetNativeControlColor(infobars::InfoBar::GetTopColor(infobar_type));
+  SetNativeControlColor(infobars::InfoBar::GetBackgroundColor(infobar_type));
 }
 
 InfoBarBackground::~InfoBarBackground() {

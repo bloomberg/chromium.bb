@@ -66,13 +66,8 @@ MaterialDesignController::Mode MaterialDesignController::GetMode() {
 }
 
 // static
-bool MaterialDesignController::IsModeMaterial() {
-  return true;
-}
-
-// static
 bool MaterialDesignController::IsSecondaryUiMaterial() {
-  return IsModeMaterial() && include_secondary_ui_;
+  return include_secondary_ui_;
 }
 
 // static

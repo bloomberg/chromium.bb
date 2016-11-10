@@ -138,11 +138,5 @@ TEST_F(MaterialDesignControllerTestInvalid, InvalidCommandLineValue) {
             MaterialDesignController::GetMode());
 }
 
-// Verify that MaterialDesignController::IsModeMaterial() will be true when
-// initialized with command line flag "material".
-TEST_F(MaterialDesignControllerTestMaterial, IsModeMaterialInitializesMode) {
-  EXPECT_TRUE(MaterialDesignController::IsModeMaterial());
-}
-
 }  // namespace
 }  // namespace ui

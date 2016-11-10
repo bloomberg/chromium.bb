@@ -11,7 +11,6 @@
 #include "build/build_config.h"
 #include "components/infobars/core/infobar_container.h"
 #include "components/infobars/core/infobar_manager.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/animation/slide_animation.h"
 
 namespace infobars {
@@ -36,36 +35,14 @@ InfoBar::~InfoBar() {
 }
 
 // static
-SkColor InfoBar::GetTopColor(InfoBarDelegate::Type infobar_type) {
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    static const SkColor kWarningBackgroundColorMd =
-        SkColorSetRGB(0xFF, 0xEC, 0xB3);  // Yellow
-    static const SkColor kPageActionBackgroundColorMd = SK_ColorWHITE;
+SkColor InfoBar::GetBackgroundColor(InfoBarDelegate::Type infobar_type) {
+  static const SkColor kWarningBackgroundColor =
+      SkColorSetRGB(0xFF, 0xEC, 0xB3);  // Yellow
+  static constexpr SkColor kPageActionBackgroundColor = SK_ColorWHITE;
 
-    return infobar_type == InfoBarDelegate::WARNING_TYPE ?
-        kWarningBackgroundColorMd : kPageActionBackgroundColorMd;
-  }
-
-  static const SkColor kWarningBackgroundColorTop =
-      SkColorSetRGB(255, 242, 183);  // Yellow
-  static const SkColor kPageActionBackgroundColorTop =
-      SkColorSetRGB(237, 237, 237);  // Gray
-  return (infobar_type == InfoBarDelegate::WARNING_TYPE) ?
-      kWarningBackgroundColorTop : kPageActionBackgroundColorTop;
-}
-
-// static
-SkColor InfoBar::GetBottomColor(InfoBarDelegate::Type infobar_type) {
-  // No gradient in MD.
-  if (ui::MaterialDesignController::IsModeMaterial())
-    return GetTopColor(infobar_type);
-
-  static const SkColor kWarningBackgroundColorBottom =
-      SkColorSetRGB(250, 230, 145);  // Yellow
-  static const SkColor kPageActionBackgroundColorBottom =
-      SkColorSetRGB(217, 217, 217);  // Gray
-  return (infobar_type == InfoBarDelegate::WARNING_TYPE) ?
-      kWarningBackgroundColorBottom : kPageActionBackgroundColorBottom;
+  return infobar_type == InfoBarDelegate::WARNING_TYPE
+             ? kWarningBackgroundColor
+             : kPageActionBackgroundColor;
 }
 
 void InfoBar::SetOwner(InfoBarManager* owner) {

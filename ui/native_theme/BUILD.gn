@@ -60,8 +60,6 @@ if (is_win) {
 
     # These files cannot work in the renderer on Windows.
     sources = [
-      "native_theme_dark_win.cc",
-      "native_theme_dark_win.h",
       "native_theme_win.cc",
       "native_theme_win.h",
     ]

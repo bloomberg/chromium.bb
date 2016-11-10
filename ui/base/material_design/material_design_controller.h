@@ -32,9 +32,6 @@ class UI_BASE_EXPORT MaterialDesignController {
   // Get the current Mode that should be used by the system.
   static Mode GetMode();
 
-  // Returns true. TODO(estade): remove.
-  static bool IsModeMaterial();
-
   // Returns true if the current mode is a material design variant and this mode
   // should be extended to cover secondary UI.
   static bool IsSecondaryUiMaterial();

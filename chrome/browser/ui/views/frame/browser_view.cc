@@ -138,6 +138,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/scoped_canvas.h"
+#include "ui/native_theme/native_theme_dark_aura.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -169,7 +170,7 @@
 #include "chrome/browser/win/jumplist.h"
 #include "chrome/browser/win/jumplist_factory.h"
 #include "ui/gfx/color_palette.h"
-#include "ui/native_theme/native_theme_dark_win.h"
+#include "ui/native_theme/native_theme_win.h"
 #include "ui/views/win/scoped_fullscreen_visibility.h"
 #endif
 
@@ -179,7 +180,6 @@
 #endif
 
 #if defined(OS_LINUX)
-#include "ui/native_theme/native_theme_dark_aura.h"
 #endif
 
 using base::TimeDelta;
@@ -1906,11 +1906,10 @@ void BrowserView::OnThemeChanged() {
     // the usage of dark or normal hinges on the browser theme), so we have to
     // propagate both kinds of change.
     base::AutoReset<bool> reset(&handling_theme_changed_, true);
+    ui::NativeThemeDarkAura::instance()->NotifyObservers();
 #if defined(OS_WIN)
-    ui::NativeThemeDarkWin::instance()->NotifyObservers();
     ui::NativeThemeWin::instance()->NotifyObservers();
 #elif defined(OS_LINUX)
-    ui::NativeThemeDarkAura::instance()->NotifyObservers();
     ui::NativeThemeAura::instance()->NotifyObservers();
 #endif
   }

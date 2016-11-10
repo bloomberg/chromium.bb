@@ -12,7 +12,6 @@
 #include "chrome/grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSColor+Luminance.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
@@ -52,7 +51,9 @@ NSImage* ThemeService::GetNSImageNamed(int id, bool incognito) const {
       id == IDR_THEME_TOOLBAR_INACTIVE ||
       id == IDR_THEME_TAB_BACKGROUND ||
       id == IDR_THEME_TOOLBAR;
-  bool isModeMaterial = ui::MaterialDesignController::IsModeMaterial();
+  // TODO(ellyjones): remove traces of the MD redesign from this file. See
+  // crbug.com/648281
+  bool isModeMaterial = true;
 
   // In Material Design, Incognito mode draws tabs and the toolbar using colors
   // that are different from non-Incognito mode. If in MD, offset these ids so
@@ -153,7 +154,7 @@ NSColor* ThemeService::GetNSImageColorNamed(int id, bool incognito) const {
       id == IDR_THEME_TOOLBAR_INACTIVE ||
       id == IDR_THEME_TAB_BACKGROUND ||
       id == IDR_THEME_TOOLBAR;
-  bool isModeMaterial = ui::MaterialDesignController::IsModeMaterial();
+  bool isModeMaterial = true;
 
   // In Material Design, Incognito mode draws tabs and the toolbar using colors
   // that are different from non-Incognito mode. If in MD, offset these ids so
@@ -189,7 +190,7 @@ NSColor* ThemeService::GetNSColor(int id, bool incognito) const {
   DCHECK(CalledOnValidThread());
 
   int original_id = id;
-  const bool is_mode_material = ui::MaterialDesignController::IsModeMaterial();
+  const bool is_mode_material = true;
   if (is_mode_material && incognito) {
     id += kMaterialDesignIdOffset;
   }

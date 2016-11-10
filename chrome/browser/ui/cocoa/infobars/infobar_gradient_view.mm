@@ -39,8 +39,9 @@
 }
 
 - (void)setInfobarType:(infobars::InfoBarDelegate::Type)infobarType {
-  SkColor topColor = infobars::InfoBar::GetTopColor(infobarType);
-  SkColor bottomColor = infobars::InfoBar::GetBottomColor(infobarType);
+  // TODO(ellyjones): no need to use a gradient here.
+  SkColor topColor = infobars::InfoBar::GetBackgroundColor(infobarType);
+  SkColor bottomColor = topColor;
   base::scoped_nsobject<NSGradient> gradient([[NSGradient alloc]
       initWithStartingColor:skia::SkColorToCalibratedNSColor(topColor)
                 endingColor:skia::SkColorToCalibratedNSColor(bottomColor)]);

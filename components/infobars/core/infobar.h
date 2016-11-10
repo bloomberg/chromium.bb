@@ -44,8 +44,7 @@ class InfoBar : public gfx::AnimationDelegate {
   explicit InfoBar(std::unique_ptr<InfoBarDelegate> delegate);
   ~InfoBar() override;
 
-  static SkColor GetTopColor(InfoBarDelegate::Type infobar_type);
-  static SkColor GetBottomColor(InfoBarDelegate::Type infobar_type);
+  static SkColor GetBackgroundColor(InfoBarDelegate::Type infobar_type);
 
   InfoBarManager* owner() { return owner_; }
   InfoBarDelegate* delegate() const { return delegate_.get(); }

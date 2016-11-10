@@ -483,25 +483,6 @@ void NativeThemeWin::PaintDirect(SkCanvas* destination_canvas,
 }
 
 SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
-  const bool md = ui::MaterialDesignController::IsModeMaterial();
-  if (!md) {
-    // Link:
-    const SkColor kLinkPressedColor = SkColorSetRGB(200, 0, 0);
-
-    switch (color_id) {
-      // Link
-      case kColorId_LinkDisabled:
-        return system_colors_[COLOR_WINDOWTEXT];
-      case kColorId_LinkEnabled:
-        return system_colors_[COLOR_HOTLIGHT];
-      case kColorId_LinkPressed:
-        return kLinkPressedColor;
-
-      default:
-        break;
-    }
-  }
-
   // TODO: Obtain the correct colors using GetSysColor.
   // Dialogs:
   const SkColor kDialogBackgroundColor = SkColorSetRGB(251, 251, 251);
@@ -518,8 +499,7 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
   const SkColor kPositiveTextColor = SkColorSetRGB(0x0b, 0x80, 0x43);
   const SkColor kNegativeTextColor = SkColorSetRGB(0xc5, 0x39, 0x29);
   // Results Tables:
-  const SkColor kResultsTableUrlColor =
-      md ? gfx::kGoogleBlue700 : SkColorSetRGB(0x0b, 0x80, 0x43);
+  const SkColor kResultsTableUrlColor = gfx::kGoogleBlue700;
   const SkColor kResultsTableSelectedUrlColor = SK_ColorWHITE;
   // Label:
   const SkColor kLabelTextSelectionBackgroundFocusedColor = gfx::kGoogleBlue700;

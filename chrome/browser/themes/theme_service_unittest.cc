@@ -32,8 +32,6 @@
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/base/ui_base_switches.h"
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -285,11 +283,9 @@ TEST_F(ThemeServiceTest, IncognitoTest) {
       ThemeService::GetThemeProviderForProfile(
           profile_->GetOffTheRecordProfile());
   EXPECT_NE(&provider, &otr_provider);
-  // And (some) colors should be different in MD mode.
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    EXPECT_NE(provider.GetColor(ThemeProperties::COLOR_TOOLBAR),
-              otr_provider.GetColor(ThemeProperties::COLOR_TOOLBAR));
-  }
+  // And (some) colors should be different.
+  EXPECT_NE(provider.GetColor(ThemeProperties::COLOR_TOOLBAR),
+            otr_provider.GetColor(ThemeProperties::COLOR_TOOLBAR));
 #endif
 }
 
@@ -400,31 +396,9 @@ TEST_F(ThemeServiceSupervisedUserTest, SupervisedUserThemeReplacesNativeTheme) {
 #endif // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 #if !defined(OS_MACOSX)  // Mac uses different colors than other platforms.
-// Simple class to run tests in material design mode.
-class ThemeServiceMaterialDesignTest : public ThemeServiceTest {
- public:
-  void SetUp() override {
-    ThemeServiceTest::SetUp();
-    material_design_state_.reset(
-        new ui::test::MaterialDesignControllerTestAPI(
-            ui::MaterialDesignController::MATERIAL_NORMAL));
-  }
-
-  void TearDown() override {
-    material_design_state_.reset();
-    ThemeServiceTest::TearDown();
-  }
-
- private:
-  std::unique_ptr<ui::test::MaterialDesignControllerTestAPI>
-      material_design_state_;
-};
-
 // Check that the function which computes the separator color behaves as
-// expected for a variety of inputs.  We run in material design mode so we can
-// use the material normal and incognito color combinations, which differ from
-// each other in ways that are interesting to test.
-TEST_F(ThemeServiceMaterialDesignTest, SeparatorColor) {
+// expected for a variety of inputs.
+TEST_F(ThemeServiceTest, SeparatorColor) {
   // Ensure Windows 10 machines use the built-in default colors rather than the
   // current system native colors.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
