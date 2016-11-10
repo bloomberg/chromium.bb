@@ -207,10 +207,10 @@ static int clpf_rdo(int y, int x, const YV12_BUFFER_CONFIG *rec,
     w2 = AOMMIN(w - (1 << (fb_size_log2 - bslog)), w >> 1);
     h2 = AOMMIN(h - (1 << (fb_size_log2 - bslog)), h >> 1);
     i = get_msb(MAX_FB_SIZE) - fb_size_log2;
-    sum1 = res[i][1];
-    sum2 = res[i][2];
-    sum3 = res[i][3];
-    oldfiltered = res[i][0];
+    sum1 = (int)res[i][1];
+    sum2 = (int)res[i][2];
+    sum3 = (int)res[i][3];
+    oldfiltered = (int)res[i][0];
     res[i][0] = 0;
 
     filtered |= clpf_rdo(y, x, rec, org, cm, block_size, fb_size_log2, w1, h1,

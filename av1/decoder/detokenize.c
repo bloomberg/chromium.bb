@@ -333,7 +333,12 @@ void av1_decode_palette_tokens(MACROBLOCKD *const xd, int plane,
 int av1_decode_block_tokens(MACROBLOCKD *const xd, int plane,
                             const SCAN_ORDER *sc, int x, int y, TX_SIZE tx_size,
                             TX_TYPE tx_type, int16_t *max_scan_line,
-                            aom_reader *r, int seg_id) {
+#if CONFIG_ANS
+                            struct AnsDecoder *const r,
+#else
+                            aom_reader *r,
+#endif  // CONFIG_ANS
+                            int seg_id) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
   const int16_t *const dequant = pd->seg_dequant[seg_id];
   const int ctx =

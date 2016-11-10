@@ -74,7 +74,7 @@ static INLINE int aom_reader_init(aom_reader *r, const uint8_t *buffer,
   (void)decrypt_cb;
   (void)decrypt_state;
   assert(size <= INT_MAX);
-  return ans_read_init(r, buffer, size);
+  return ans_read_init(r, buffer, (int)size);
 #elif CONFIG_DAALA_EC
   (void)decrypt_cb;
   (void)decrypt_state;
