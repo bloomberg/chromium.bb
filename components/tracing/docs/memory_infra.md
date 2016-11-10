@@ -94,7 +94,7 @@ and it is discounted from malloc and the blue columns.
 [oilpan]:     /third_party/WebKit/Source/platform/heap/BlinkGCDesign.md
 [cc-memory]:  /cc/memory.md
 [gpu-memory]: memory_infra_gpu.md
-[partalloc]:  /third_party/WebKit/Source/wtf/PartitionAlloc.md
+[partalloc]:  /third_party/WebKit/Source/wtf/allocator/PartitionAlloc.md
 
 ## Related Pages
 
