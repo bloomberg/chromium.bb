@@ -1247,7 +1247,7 @@ static void build_intra_predictors_high(
   assert(n_bottomleft_px >= 0);
 
   if ((!need_above && n_left_px == 0) || (!need_left && n_top_px == 0)) {
-    const int val = (n_left_px == 0) ? base + 1 : base - 1;
+    const int val = need_left ? base + 1 : base - 1;
     for (i = 0; i < bs; ++i) {
       aom_memset16(dst, val, bs);
       dst += dst_stride;
@@ -1409,7 +1409,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   assert(n_bottomleft_px >= 0);
 
   if ((!need_above && n_left_px == 0) || (!need_left && n_top_px == 0)) {
-    const int val = (n_left_px == 0) ? 129 : 127;
+    const int val = need_left ? 129 : 127;
     for (i = 0; i < bs; ++i) {
       memset(dst, val, bs);
       dst += dst_stride;
