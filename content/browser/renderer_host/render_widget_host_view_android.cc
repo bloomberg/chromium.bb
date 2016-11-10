@@ -600,12 +600,6 @@ void RenderWidgetHostViewAndroid::Focus() {
   host_->Focus();
   if (overscroll_controller_)
     overscroll_controller_->Enable();
-  if (content_view_core_) {
-    WebContentsImpl* web_contents_impl =
-        static_cast<WebContentsImpl*>(content_view_core_->GetWebContents());
-    if (web_contents_impl->ShowingInterstitialPage())
-      content_view_core_->ForceUpdateImeAdapter(GetNativeImeAdapter());
-  }
 }
 
 bool RenderWidgetHostViewAndroid::HasFocus() const {

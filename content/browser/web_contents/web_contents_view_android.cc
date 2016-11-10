@@ -129,10 +129,15 @@ void WebContentsViewAndroid::SizeContents(const gfx::Size& size) {
 }
 
 void WebContentsViewAndroid::Focus() {
-  if (web_contents_->ShowingInterstitialPage())
+  RenderWidgetHostViewAndroid* rwhv = static_cast<RenderWidgetHostViewAndroid*>(
+      web_contents_->GetRenderWidgetHostView());
+  if (web_contents_->ShowingInterstitialPage()) {
     web_contents_->GetInterstitialPage()->Focus();
-  else
-    web_contents_->GetRenderWidgetHostView()->Focus();
+    if (content_view_core_)
+      content_view_core_->ForceUpdateImeAdapter(rwhv->GetNativeImeAdapter());
+  } else {
+    rwhv->Focus();
+  }
 }
 
 void WebContentsViewAndroid::SetInitialFocus() {
