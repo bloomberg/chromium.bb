@@ -143,6 +143,13 @@ scoped_refptr<SchedulerTqmDelegate> CreateTaskRunnerDelegate(
                                              std::move(test_time_source));
 }
 
+void ShutdownIdleTask(IdleHelper* helper,
+                      bool* shutdown_task_run,
+                      base::TimeTicks deadline) {
+  *shutdown_task_run = true;
+  helper->Shutdown();
+}
+
 };  // namespace
 
 class IdleHelperForTest : public IdleHelper, public IdleHelper::Delegate {
@@ -208,6 +215,8 @@ class BaseIdleHelperTest : public testing::Test {
   }
 
   void TearDown() override {
+    EXPECT_CALL(*idle_helper_, OnIdlePeriodEnded()).Times(AnyNumber());
+    idle_helper_->Shutdown();
     DCHECK(!mock_task_runner_.get() || !message_loop_.get());
     if (mock_task_runner_.get()) {
       // Check that all tests stop posting tasks.
@@ -779,7 +788,7 @@ TEST_F(IdleHelperTest, TestLongIdlePeriodWhenShutdown) {
 
   idle_task_runner_->PostIdleTask(
       FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
-  scheduler_helper_->Shutdown();
+  idle_helper_->Shutdown();
 
   // We shouldn't be able to enter a long idle period when shutdown
   idle_helper_->EnableLongIdlePeriod();
@@ -1041,6 +1050,34 @@ TEST_F(IdleHelperTest, NoLongIdlePeriodWhenDeadlineTooClose) {
   idle_helper_->EnableLongIdlePeriod();
   RunUntilIdle();
   EXPECT_EQ(1, run_count);
+}
+
+TEST_F(IdleHelperWithQuiescencePeriodTest,
+       PendingEnableLongIdlePeriodNotRunAfterShutdown) {
+  MakeNonQuiescent();
+
+  bool shutdown_task_run = false;
+  int run_count = 0;
+  base::TimeTicks deadline_in_task;
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE,
+      base::Bind(&ShutdownIdleTask, base::Unretained(idle_helper_.get()),
+                 &shutdown_task_run));
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
+
+  // Delayed call to IdleHelper::EnableLongIdlePeriod enables idle tasks.
+  idle_helper_->EnableLongIdlePeriod();
+  clock_->Advance(maximum_idle_period_duration() * 2.0);
+  mock_task_runner_->RunPendingTasks();
+  EXPECT_TRUE(shutdown_task_run);
+  EXPECT_EQ(0, run_count);
+
+  // Shutdown immediately after idle period started should prevent the idle
+  // task from running.
+  idle_helper_->Shutdown();
+  mock_task_runner_->RunUntilIdle();
+  EXPECT_EQ(0, run_count);
 }
 
 }  // namespace scheduler

@@ -220,6 +220,7 @@ void RendererSchedulerImpl::Shutdown() {
 
   task_queue_throttler_.reset();
   helper_.Shutdown();
+  idle_helper_.Shutdown();
   MainThreadOnly().was_shutdown = true;
   MainThreadOnly().rail_mode_observer = nullptr;
 }
