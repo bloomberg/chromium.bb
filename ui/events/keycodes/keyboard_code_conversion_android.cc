@@ -127,6 +127,8 @@ DomKey GetDomKeyFromAndroidKeycode(int keycode) {
       return DomKey::PAGE_UP;
     case AKEYCODE_PAGE_DOWN:
       return DomKey::PAGE_DOWN;
+    case AKEYCODE_SWITCH_CHARSET:
+      return DomKey::MODE_CHANGE;
     case AKEYCODE_ESCAPE:
       return DomKey::ESCAPE;
     case AKEYCODE_FORWARD_DEL:
@@ -154,7 +156,7 @@ DomKey GetDomKeyFromAndroidKeycode(int keycode) {
     case AKEYCODE_INSERT:
       return DomKey::INSERT;
     case AKEYCODE_FORWARD:
-      return DomKey::MEDIA_SKIP;
+      return DomKey::BROWSER_FORWARD;
     case AKEYCODE_MEDIA_PLAY:
       return DomKey::MEDIA_PLAY;
     case AKEYCODE_MEDIA_PAUSE:
@@ -191,6 +193,8 @@ DomKey GetDomKeyFromAndroidKeycode(int keycode) {
       return DomKey::F12;
     case AKEYCODE_NUM_LOCK:
       return DomKey::NUM_LOCK;
+    case AKEYCODE_NUMPAD_ENTER:
+      return DomKey::ENTER;
     case AKEYCODE_VOLUME_MUTE:
       return DomKey::AUDIO_VOLUME_MUTE;
     case AKEYCODE_INFO:
@@ -207,6 +211,8 @@ DomKey GetDomKeyFromAndroidKeycode(int keycode) {
       return DomKey::TV;
     case AKEYCODE_GUIDE:
       return DomKey::GUIDE;
+    case AKEYCODE_BOOKMARK:
+      return DomKey::BROWSER_FAVORITES;
     case AKEYCODE_CAPTIONS:
       return DomKey::CLOSED_CAPTION_TOGGLE;
     case AKEYCODE_SETTINGS:
@@ -231,6 +237,8 @@ DomKey GetDomKeyFromAndroidKeycode(int keycode) {
       return DomKey::COLOR_F2_YELLOW;
     case AKEYCODE_PROG_BLUE:
       return DomKey::COLOR_F3_BLUE;
+    case AKEYCODE_LANGUAGE_SWITCH:
+      return DomKey::GROUP_NEXT;
     case AKEYCODE_CALENDAR:
       return DomKey::LAUNCH_CALENDAR;
     case AKEYCODE_MUSIC:
@@ -241,6 +249,10 @@ DomKey GetDomKeyFromAndroidKeycode(int keycode) {
       return DomKey::ZENKAKU_HANKAKU;
     case AKEYCODE_EISU:
       return DomKey::EISU;
+    case AKEYCODE_MUHENKAN:
+      return DomKey::NON_CONVERT;
+    case AKEYCODE_HENKAN:
+      return DomKey::CONVERT;
     case AKEYCODE_KATAKANA_HIRAGANA:
       return DomKey::HIRAGANA_KATAKANA;
     case AKEYCODE_BRIGHTNESS_DOWN:
@@ -334,7 +346,6 @@ DomKey GetDomKeyFromAndroidKeycode(int keycode) {
     // case AKEYCODE_NUMPAD_ADD:
     // case AKEYCODE_NUMPAD_DOT:
     // case AKEYCODE_NUMPAD_COMMA:
-    // case AKEYCODE_NUMPAD_ENTER:
     // case AKEYCODE_NUMPAD_EQUALS:
     // case AKEYCODE_NUMPAD_LEFT_PAREN:
     // case AKEYCODE_NUMPAD_RIGHT_PAREN:
@@ -354,7 +365,6 @@ DomKey GetDomKeyFromAndroidKeycode(int keycode) {
     // case AKEYCODE_FOCUS:
     // case AKEYCODE_NOTIFICATION:
     // case AKEYCODE_PICTSYMBOLS:
-    // case AKEYCODE_SWITCH_CHARSET:
     // case AKEYCODE_BUTTON_A:
     // case AKEYCODE_BUTTON_B:
     // case AKEYCODE_BUTTON_C:
@@ -372,7 +382,6 @@ DomKey GetDomKeyFromAndroidKeycode(int keycode) {
     // case AKEYCODE_BUTTON_MODE:
     // case AKEYCODE_WINDOW:
     // case AKEYCODE_DVR:
-    // case AKEYCODE_BOOKMARK:
     // case AKEYCODE_APP_SWITCH:
     // case AKEYCODE_BUTTON_1:
     // case AKEYCODE_BUTTON_2:
@@ -390,12 +399,9 @@ DomKey GetDomKeyFromAndroidKeycode(int keycode) {
     // case AKEYCODE_BUTTON_14:
     // case AKEYCODE_BUTTON_15:
     // case AKEYCODE_BUTTON_16:
-    // case AKEYCODE_LANGUAGE_SWITCH:
     // case AKEYCODE_MANNER_MODE:
     // case AKEYCODE_3D_MODE:
     // case AKEYCODE_CONTACTS:
-    // case AKEYCODE_MUHENKAN:
-    // case AKEYCODE_HENKAN:
     // case AKEYCODE_YEN:
     // case AKEYCODE_RO:
     // case AKEYCODE_KANA:
