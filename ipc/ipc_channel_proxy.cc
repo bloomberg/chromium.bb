@@ -212,6 +212,11 @@ void ChannelProxy::Context::OnChannelClosed() {
     return;
 
   for (auto& filter : pending_filters_) {
+    // OnFilterAdded and OnChannelConnected have not been called on
+    // MessageFilters in |pending_filters_|. Call them here to match
+    // OnChannelClosing and OnFilterRemoved.
+    filter->OnFilterAdded(nullptr);
+    filter->OnChannelConnected(peer_pid_);
     filter->OnChannelClosing();
     filter->OnFilterRemoved();
   }
