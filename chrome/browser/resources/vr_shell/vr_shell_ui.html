@@ -18,31 +18,42 @@ found in the LICENSE file.
 <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
 </head>
 <body>
-  <div id="webvr-not-secure-permanent" class="webvr-message-box">
-    <div class="webvr-box">
-      <img class="webvr-not-secure-icon" width="36" height="36"
+  <div id="ui">
+    <div id="webvr-not-secure-permanent" class="webvr-message-box">
+      <div class="webvr-box">
+        <img class="webvr-not-secure-icon" width="36" height="36"
+             src="../../../../ui/webui/resources/images/i_circle.svg">
+        <div class="webvr-string">$i18n{insecureWebVrContentPermanent}</div>
+      </div>
+    </div>
+    <div id="webvr-not-secure-transient" class="webvr-message-box">
+      <div>
+        <div>$i18n{insecureWebVrContentTransient}</div>
+      </div>
+    </div>
+
+    <div id="omni">
+      <img id="connection-security"
            src="../../../../ui/webui/resources/images/i_circle.svg">
-      <div class="webvr-string">$i18n{insecureWebVrContentPermanent}</div>
+      <div id="url">
+          <span id="domain"></span><span id="path"></span>
+      </div>
     </div>
-  </div>
-  <div id="webvr-not-secure-transient" class="webvr-message-box">
-    <div>
-      <div>$i18n{insecureWebVrContentTransient}</div>
+
+    <div class="round-button" id="back">
+      <div class="button"></div>
+      <div class="caption">$i18n{back}</div>
     </div>
+    <div class="round-button" id="reload">
+      <div class="button"></div>
+      <div class="caption">$i18n{reload}</div>
+    </div>
+    <div class="round-button" id="forward">
+      <div class="button"></div>
+      <div class="caption">$i18n{forward}</div>
+    </div>
+    <div id="reload-ui-button">Reload UI</div>
   </div>
-  <div class="round-button" id="back">
-    <div class="button"></div>
-    <div class="caption">$i18n{back}</div>
-  </div>
-  <div class="round-button" id="reload">
-    <div class="button"></div>
-    <div class="caption">$i18n{reload}</div>
-  </div>
-  <div class="round-button" id="forward">
-    <div class="button"></div>
-    <div class="caption">$i18n{forward}</div>
-  </div>
-  <div id="reload-ui-button">Reload UI</div>
 </body>
 
 <!-- Run script after creating body, to let it add its own elements. -->

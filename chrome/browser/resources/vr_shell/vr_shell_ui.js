@@ -8,6 +8,15 @@ var vrShellUi = (function() {
   let scene = new ui.Scene();
   let sceneManager;
 
+  let uiRootElement = document.querySelector('#ui');
+  let uiStyle = window.getComputedStyle(uiRootElement);
+  let scaleFactor = uiStyle.getPropertyValue('--scaleFactor');
+
+  function getStyleFloat(style, property) {
+    let value = parseFloat(style.getPropertyValue(property));
+    return isNaN(value) ? 0 : value;
+  }
+
   class ContentQuad {
     constructor() {
       /** @const */ var SCREEN_HEIGHT = 1.6;
@@ -38,13 +47,22 @@ var vrShellUi = (function() {
       let style = window.getComputedStyle(domElement);
 
       // Pull copy rectangle from DOM element properties.
-      let pixelX = domElement.offsetLeft;
-      let pixelY = domElement.offsetTop;
-      let pixelWidth = parseInt(style.getPropertyValue('width'));
-      let pixelHeight = parseInt(style.getPropertyValue('height'));
+      let pixelX = Math.round(domElement.offsetLeft / scaleFactor);
+      let pixelY = Math.round(domElement.offsetTop / scaleFactor);
+      let pixelWidth = Math.round(
+          parseInt(style.getPropertyValue('width')) / scaleFactor);
+      let pixelHeight = Math.round(
+          parseInt(style.getPropertyValue('height')) / scaleFactor);
 
       let element = new api.UiElement(pixelX, pixelY, pixelWidth, pixelHeight);
-      element.setSize(pixelWidth / 1000, pixelHeight / 1000);
+      element.setSize(scaleFactor * pixelWidth / 1000,
+          scaleFactor * pixelHeight / 1000);
+
+      // Pull additional custom properties from CSS.
+      element.setTranslation(
+          getStyleFloat(style, '--tranX'),
+          getStyleFloat(style, '--tranY'),
+          getStyleFloat(style, '--tranZ'));
 
       this.uiElementId = scene.addElement(element);
       this.uiAnimationId = -1;
@@ -100,17 +118,14 @@ var vrShellUi = (function() {
           }],
       ];
 
-      /** @const */ var BUTTON_SPACING = 0.3;
+      /** @const */ var BUTTON_SPACING = 0.136;
 
       let startPosition = -BUTTON_SPACING * (descriptors.length / 2.0 - 0.5);
       for (let i = 0; i < descriptors.length; i++) {
         // Use an invisible parent to simplify Z-axis movement on hover.
         let position = new api.UiElement(0, 0, 0, 0);
-        position.setParentId(contentQuadId);
         position.setVisible(false);
-        position.setAnchoring(api.XAnchoring.XNONE, api.YAnchoring.YBOTTOM);
-        position.setTranslation(
-            startPosition + i * BUTTON_SPACING, -0.3, 0.3);
+        position.setTranslation(startPosition + i * BUTTON_SPACING, -0.68, -1);
         let id = scene.addElement(position);
 
         let domId = descriptors[i][0];
@@ -121,7 +136,6 @@ var vrShellUi = (function() {
         let update = new api.UiElementUpdate();
         update.setParentId(id);
         update.setVisible(false);
-        update.setScale(2.2, 2.2, 1);
         scene.updateElement(element.uiElementId, update);
       }
 
@@ -234,7 +248,38 @@ var vrShellUi = (function() {
       this.secureOriginTimer = null;
       scene.flush();
     }
+  };
 
+  class Omnibox {
+    constructor(contentQuadId) {
+      this.setSecure(false);
+      this.domUiElement = new DomUiElement('#omni');
+      let update = new api.UiElementUpdate();
+      update.setVisible(false);
+      scene.updateElement(this.domUiElement.uiElementId, update);
+    }
+
+    show(visible) {
+      let update = new api.UiElementUpdate();
+      update.setVisible(visible);
+      scene.updateElement(this.domUiElement.uiElementId, update);
+    }
+
+    setLoading(loading) {
+      this.domUiElement.domElement.className = loading ? 'loading' : 'idle';
+    }
+
+    setURL(host, path) {
+      let omnibox = this.domUiElement.domElement;
+      omnibox.querySelector('#domain').innerHTML = host;
+      omnibox.querySelector('#path').innerHTML = path;
+    }
+
+    setSecure(secure) {
+      let image = secure ? 'lock.svg' : 'i_circle.svg';
+      let path = '../../../../ui/webui/resources/images/' + image;
+      document.querySelector('#connection-security').src = path;
+    }
   };
 
   class SceneManager {
@@ -246,12 +291,14 @@ var vrShellUi = (function() {
 
       this.controls = new Controls(contentId);
       this.secureOriginWarnings = new SecureOriginWarnings();
+      this.omnibox = new Omnibox(contentId);
     }
 
     setMode(mode) {
       this.mode = mode;
       this.contentQuad.show(mode == api.Mode.STANDARD);
       this.controls.show(mode == api.Mode.STANDARD);
+      this.omnibox.show(mode == api.Mode.STANDARD);
       this.secureOriginWarnings.show(mode == api.Mode.WEB_VR);
     }
 
@@ -260,7 +307,6 @@ var vrShellUi = (function() {
     }
 
     setReloadUiEnabled(enabled) {
-      console.log('ENABLE');
       this.controls.setReloadUiEnabled(enabled);
     }
   };
@@ -281,6 +327,13 @@ var vrShellUi = (function() {
     }
     if ('enableReloadUi' in dict) {
       sceneManager.setReloadUiEnabled(dict['enableReloadUi']);
+    }
+    if ('url' in dict) {
+      let url = dict['url'];
+      sceneManager.omnibox.setURL(url['host'], url['path']);
+    }
+    if ('loading' in dict) {
+      sceneManager.omnibox.setLoading(dict['loading']);
     }
     scene.flush();
   }

@@ -6,6 +6,14 @@ html {
   background-color: rgba(255, 255, 255, 0);
 }
 
+#ui {
+  --scaleFactor: 4;
+  left: 0;
+  position: absolute;
+  top: 0;
+  transform: scale(0.25, 0.25);
+}
+
 .webvr-message-box {
   align-items: center;
   display: flex;
@@ -155,4 +163,60 @@ html {
   text-align: center;
   top: 0;
   width: 96px;
+}
+
+#omni {
+  --tranX: 0;
+  --tranY: -0.5;
+  --tranZ: -1.0;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 100px;
+  box-sizing: border-box;
+  height: 104px;
+  left: 0;
+  opacity: 1;
+  position: absolute;
+  top: 402px;
+  transition: opacity 250ms ease, margin-top 250ms ease;
+  white-space: nowrap;
+  width: 504px;
+}
+
+#omni #connection-security {
+  left: 35px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+#omni #url {
+  color: #252525;
+  font-size: 34px;
+  left: 80px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+}
+
+#omni #path {
+  color: #868686;
+}
+
+#omni.hide {
+  margin-top: 60px;
+  opacity: 0;
+}
+
+#omni.loading {
+  border: 4px solid rgb(86, 203, 255);
+}
+
+#omni.idle {
+  background-color: #ECECEC;
+  box-shadow: 0 2px 24px 0 rgba(0, 0, 0, 0.1);
+}
+
+#omni.idle #domain {
+  color: black;
 }
