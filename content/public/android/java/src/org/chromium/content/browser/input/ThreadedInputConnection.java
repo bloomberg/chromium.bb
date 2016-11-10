@@ -115,10 +115,14 @@ public class ThreadedInputConnection extends BaseInputConnection
     }
 
     @Override
-    public void updateStateOnUiThread(final String text, final int selectionStart,
+    public void updateStateOnUiThread(String text, final int selectionStart,
             final int selectionEnd, final int compositionStart, final int compositionEnd,
             boolean singleLine, final boolean isNonImeChange) {
         ImeUtils.checkOnUiThread();
+
+        // crbug.com/663880: Non-breaking spaces can cause the IME to get confused. Replace with
+        // normal spaces.
+        text = text.replace('\u00A0', ' ');
 
         mCachedTextInputState =
                 new TextInputState(text, new Range(selectionStart, selectionEnd),
