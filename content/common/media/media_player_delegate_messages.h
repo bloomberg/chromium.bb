@@ -16,8 +16,7 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START MediaPlayerDelegateMsgStart
 
-IPC_ENUM_TRAITS_MAX_VALUE(media::MediaContentType,
-                          media::MediaContentType::Uncontrollable)
+IPC_ENUM_TRAITS_MAX_VALUE(media::MediaContentType, media::MediaContentType::Max)
 
 // ----------------------------------------------------------------------------
 // Messages from the browser to the renderer requesting playback state changes.

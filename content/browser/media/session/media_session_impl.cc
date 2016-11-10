@@ -4,6 +4,7 @@
 
 #include "content/browser/media/session/media_session_impl.h"
 
+#include <algorithm>
 #include "content/browser/media/session/audio_focus_delegate.h"
 #include "content/browser/media/session/media_session_player_observer.h"
 #include "content/browser/media/session/media_session_service_impl.h"
@@ -66,7 +67,9 @@ MediaSessionImpl* MediaSessionImpl::Get(WebContents* web_contents) {
 }
 
 MediaSessionImpl::~MediaSessionImpl() {
-  DCHECK(players_.empty());
+  DCHECK(normal_players_.empty());
+  DCHECK(pepper_players_.empty());
+  DCHECK(one_shot_players_.empty());
   DCHECK(audio_focus_state_ == State::INACTIVE);
   for (auto& observer : observers_)
     observer.MediaSessionDestroyed();
@@ -80,8 +83,9 @@ void MediaSessionImpl::WebContentsDestroyed() {
   // talk with AudioFocusManager out to a seperate class. The AudioFocusManager
   // unit tests then could mock the interface and abandon audio focus when
   // WebContents is destroyed. See https://crbug.com/651069
-  players_.clear();
+  normal_players_.clear();
   pepper_players_.clear();
+  one_shot_players_.clear();
   AbandonSystemAudioFocusIfNeeded();
 }
 
@@ -108,16 +112,13 @@ void MediaSessionImpl::SetMetadata(
 bool MediaSessionImpl::AddPlayer(MediaSessionPlayerObserver* observer,
                                  int player_id,
                                  media::MediaContentType media_content_type) {
-  if (media_content_type == media::MediaContentType::Uncontrollable)
-    return true;
+  if (media_content_type == media::MediaContentType::OneShot)
+    return AddOneShotPlayer(observer, player_id);
   if (media_content_type == media::MediaContentType::Pepper)
     return AddPepperPlayer(observer, player_id);
 
   observer->OnSetVolumeMultiplier(player_id, GetVolumeMultiplier());
 
-  // Determine the audio focus type required for playing the new player.
-  // TODO(zqzhang): handle duckable and uncontrollable.
-  // See https://crbug.com/639277.
   AudioFocusManager::AudioFocusType required_audio_focus_type;
   if (media_content_type == media::MediaContentType::Persistent) {
     required_audio_focus_type = AudioFocusManager::AudioFocusType::Gain;
@@ -133,7 +134,7 @@ bool MediaSessionImpl::AddPlayer(MediaSessionPlayerObserver* observer,
   if (audio_focus_state_ == State::ACTIVE &&
       (audio_focus_type_ == AudioFocusManager::AudioFocusType::Gain ||
        audio_focus_type_ == required_audio_focus_type)) {
-    players_.insert(PlayerIdentifier(observer, player_id));
+    normal_players_.insert(PlayerIdentifier(observer, player_id));
     return true;
   }
 
@@ -146,31 +147,47 @@ bool MediaSessionImpl::AddPlayer(MediaSessionPlayerObserver* observer,
   // The session should be reset if a player is starting while all players are
   // suspended.
   if (old_audio_focus_state != State::ACTIVE)
-    players_.clear();
+    normal_players_.clear();
 
-  players_.insert(PlayerIdentifier(observer, player_id));
-  UpdateWebContents();
+  normal_players_.insert(PlayerIdentifier(observer, player_id));
+  NotifyAboutStateChange();
 
   return true;
 }
 
 void MediaSessionImpl::RemovePlayer(MediaSessionPlayerObserver* observer,
                                     int player_id) {
-  auto it = players_.find(PlayerIdentifier(observer, player_id));
-  if (it != players_.end())
-    players_.erase(it);
+  bool was_controllable = IsControllable();
 
-  it = pepper_players_.find(PlayerIdentifier(observer, player_id));
+  PlayerIdentifier identifier(observer, player_id);
+
+  auto it = normal_players_.find(identifier);
+  if (it != normal_players_.end())
+    normal_players_.erase(it);
+
+  it = pepper_players_.find(identifier);
   if (it != pepper_players_.end())
     pepper_players_.erase(it);
 
+  it = one_shot_players_.find(identifier);
+  if (it != one_shot_players_.end())
+    one_shot_players_.erase(it);
+
   AbandonSystemAudioFocusIfNeeded();
+
+  // The session may become controllable after removing a one-shot player.
+  // However AbandonSystemAudioFocusIfNeeded will short-return and won't notify
+  // about the state change.
+  if (!was_controllable && IsControllable())
+    NotifyAboutStateChange();
 }
 
 void MediaSessionImpl::RemovePlayers(MediaSessionPlayerObserver* observer) {
-  for (auto it = players_.begin(); it != players_.end();) {
+  bool was_controllable = IsControllable();
+
+  for (auto it = normal_players_.begin(); it != normal_players_.end();) {
     if (it->observer == observer)
-      players_.erase(it++);
+      normal_players_.erase(it++);
     else
       ++it;
   }
@@ -182,7 +199,20 @@ void MediaSessionImpl::RemovePlayers(MediaSessionPlayerObserver* observer) {
       ++it;
   }
 
+  for (auto it = one_shot_players_.begin(); it != one_shot_players_.end();) {
+    if (it->observer == observer)
+      one_shot_players_.erase(it++);
+    else
+      ++it;
+  }
+
   AbandonSystemAudioFocusIfNeeded();
+
+  // The session may become controllable after removing a one-shot player.
+  // However AbandonSystemAudioFocusIfNeeded will short-return and won't notify
+  // about the state change.
+  if (!was_controllable && IsControllable())
+    NotifyAboutStateChange();
 }
 
 void MediaSessionImpl::RecordSessionDuck() {
@@ -197,15 +227,23 @@ void MediaSessionImpl::OnPlayerPaused(MediaSessionPlayerObserver* observer,
   // Also, this method may be called when a player that is not added
   // to this session (e.g. a silent video) is paused. MediaSessionImpl
   // should ignore the paused player for this case.
-  if (!players_.count(PlayerIdentifier(observer, player_id)) &&
-      !pepper_players_.count(PlayerIdentifier(observer, player_id))) {
+  PlayerIdentifier identifier(observer, player_id);
+  if (!normal_players_.count(identifier) &&
+      !pepper_players_.count(identifier) &&
+      !one_shot_players_.count(identifier)) {
     return;
   }
 
   // If the player to be removed is a pepper player, or there is more than one
   // observer, remove the paused one from the session.
-  if (pepper_players_.count(PlayerIdentifier(observer, player_id)) ||
-      players_.size() != 1) {
+  if (pepper_players_.count(identifier) || normal_players_.size() != 1) {
+    RemovePlayer(observer, player_id);
+    return;
+  }
+
+  // If the player is a one-shot player, just remove it since it is not expected
+  // to resume a one-shot player via resuming MediaSession.
+  if (one_shot_players_.count(identifier)) {
     RemovePlayer(observer, player_id);
     return;
   }
@@ -256,7 +294,7 @@ void MediaSessionImpl::Stop(SuspendType suspend_type) {
     OnSuspendInternal(suspend_type, State::SUSPENDED);
 
   DCHECK(audio_focus_state_ == State::SUSPENDED);
-  players_.clear();
+  normal_players_.clear();
 
   AbandonSystemAudioFocusIfNeeded();
 }
@@ -294,7 +332,7 @@ void MediaSessionImpl::StopDucking() {
 }
 
 void MediaSessionImpl::UpdateVolumeMultiplier() {
-  for (const auto& it : players_)
+  for (const auto& it : normal_players_)
     it.observer->OnSetVolumeMultiplier(it.player_id, GetVolumeMultiplier());
   for (const auto& it : pepper_players_)
     it.observer->OnSetVolumeMultiplier(it.player_id, GetVolumeMultiplier());
@@ -319,9 +357,11 @@ bool MediaSessionImpl::IsSuspended() const {
 
 bool MediaSessionImpl::IsControllable() const {
   // Only media session having focus Gain can be controllable unless it is
-  // inactive.
+  // inactive. Also, the session will be uncontrollable if it contains one-shot
+  // players.
   return audio_focus_state_ != State::INACTIVE &&
-         audio_focus_type_ == AudioFocusManager::AudioFocusType::Gain;
+         audio_focus_type_ == AudioFocusManager::AudioFocusType::Gain &&
+         one_shot_players_.empty();
 }
 
 bool MediaSessionImpl::HasPepper() const {
@@ -348,7 +388,9 @@ MediaSessionUmaHelper* MediaSessionImpl::uma_helper_for_test() {
 }
 
 void MediaSessionImpl::RemoveAllPlayersForTest() {
-  players_.clear();
+  normal_players_.clear();
+  pepper_players_.clear();
+  one_shot_players_.clear();
   AbandonSystemAudioFocusIfNeeded();
 }
 
@@ -359,6 +401,9 @@ void MediaSessionImpl::OnSuspendInternal(SuspendType suspend_type,
   DCHECK(new_state == State::SUSPENDED || new_state == State::INACTIVE);
   // UI suspend cannot use State::INACTIVE.
   DCHECK(suspend_type == SuspendType::SYSTEM || new_state == State::SUSPENDED);
+
+  if (!one_shot_players_.empty())
+    return;
 
   if (audio_focus_state_ != State::ACTIVE)
     return;
@@ -394,14 +439,14 @@ void MediaSessionImpl::OnSuspendInternal(SuspendType suspend_type,
     // SuspendType::CONTENT happens when the suspend action came from
     // the page in which case the player is already paused.
     // Otherwise, the players need to be paused.
-    for (const auto& it : players_)
+    for (const auto& it : normal_players_)
       it.observer->OnSuspend(it.player_id);
   }
 
   for (const auto& it : pepper_players_)
     it.observer->OnSetVolumeMultiplier(it.player_id, kDuckingVolumeMultiplier);
 
-  UpdateWebContents();
+  NotifyAboutStateChange();
 }
 
 void MediaSessionImpl::OnResumeInternal(SuspendType suspend_type) {
@@ -410,13 +455,13 @@ void MediaSessionImpl::OnResumeInternal(SuspendType suspend_type) {
 
   SetAudioFocusState(State::ACTIVE);
 
-  for (const auto& it : players_)
+  for (const auto& it : normal_players_)
     it.observer->OnResume(it.player_id);
 
   for (const auto& it : pepper_players_)
     it.observer->OnSetVolumeMultiplier(it.player_id, GetVolumeMultiplier());
 
-  UpdateWebContents();
+  NotifyAboutStateChange();
 }
 
 MediaSessionImpl::MediaSessionImpl(WebContents* web_contents)
@@ -448,17 +493,17 @@ bool MediaSessionImpl::RequestSystemAudioFocus(
 }
 
 void MediaSessionImpl::AbandonSystemAudioFocusIfNeeded() {
-  if (audio_focus_state_ == State::INACTIVE || !players_.empty() ||
-      !pepper_players_.empty()) {
+  if (audio_focus_state_ == State::INACTIVE || !normal_players_.empty() ||
+      !pepper_players_.empty() || !one_shot_players_.empty()) {
     return;
   }
   delegate_->AbandonAudioFocus();
 
   SetAudioFocusState(State::INACTIVE);
-  UpdateWebContents();
+  NotifyAboutStateChange();
 }
 
-void MediaSessionImpl::UpdateWebContents() {
+void MediaSessionImpl::NotifyAboutStateChange() {
   media_session_state_listeners_.Notify(audio_focus_state_);
   for (auto& observer : observers_)
     observer.MediaSessionStateChanged(IsControllable(), IsSuspended());
@@ -491,6 +536,18 @@ bool MediaSessionImpl::AddPepperPlayer(MediaSessionPlayerObserver* observer,
   pepper_players_.insert(PlayerIdentifier(observer, player_id));
 
   observer->OnSetVolumeMultiplier(player_id, GetVolumeMultiplier());
+
+  NotifyAboutStateChange();
+  return success;
+}
+
+bool MediaSessionImpl::AddOneShotPlayer(MediaSessionPlayerObserver* observer,
+                                        int player_id) {
+  if (!RequestSystemAudioFocus(AudioFocusManager::AudioFocusType::Gain))
+    return false;
+
+  one_shot_players_.insert(PlayerIdentifier(observer, player_id));
+  NotifyAboutStateChange();
 
   return true;
 }

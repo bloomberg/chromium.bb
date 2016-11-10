@@ -21,9 +21,12 @@ enum class MediaContentType {
   // Type indicating that a player is a Pepper instance. MediaSession may duck
   // the player instead of pausing it.
   Pepper,
-  // Type indicating that a player cannot be controlled. MediaSession wil ignore
-  // this player.
-  Uncontrollable
+  // Type indicating that a player cannot be controlled. MediaSession will take
+  // audio focus when the player joins but will not let it respond to audio
+  // focus changes.
+  OneShot,
+  // The maximum number of media content types.
+  Max = OneShot,
 };
 
 // Utility function for deciding the MediaContentType of a player based on its

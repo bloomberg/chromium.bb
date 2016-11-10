@@ -226,8 +226,8 @@ class MediaSessionImpl : public MediaSession,
   // delegate to abandon the audio focus.
   CONTENT_EXPORT void AbandonSystemAudioFocusIfNeeded();
 
-  // Notifies WebContents about the state change of the media session.
-  void UpdateWebContents();
+  // Notifies observers about the state change of the media session.
+  void NotifyAboutStateChange();
 
   // Internal method that should be used instead of setting audio_focus_state_.
   // It sets audio_focus_state_ and notifies observers about the state change.
@@ -248,9 +248,13 @@ class MediaSessionImpl : public MediaSession,
   CONTENT_EXPORT bool AddPepperPlayer(MediaSessionPlayerObserver* observer,
                                       int player_id);
 
+  CONTENT_EXPORT bool AddOneShotPlayer(MediaSessionPlayerObserver* observer,
+                                       int player_id);
+
   std::unique_ptr<AudioFocusDelegate> delegate_;
-  PlayersMap players_;
+  PlayersMap normal_players_;
   PlayersMap pepper_players_;
+  PlayersMap one_shot_players_;
 
   State audio_focus_state_;
   MediaSession::SuspendType suspend_type_;

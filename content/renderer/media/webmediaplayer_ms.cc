@@ -181,11 +181,11 @@ void WebMediaPlayerMS::play() {
     audio_renderer_->Play();
 
   if (delegate_) {
-    // TODO(perkj, magjed): We use Uncontrollable type here to avoid creating an
-    // interactive media session on Android. See http://crbug.com/596516 for
-    // more details.
+    // TODO(perkj, magjed): We use OneShot focus type here so that it takes
+    // audio focus once it starts, and then will not respond to further audio
+    // focus changes. See http://crbug.com/596516 for more details.
     delegate_->DidPlay(delegate_id_, hasVideo(), hasAudio(), false,
-                       media::MediaContentType::Persistent);
+                       media::MediaContentType::OneShot);
   }
 
   paused_ = false;

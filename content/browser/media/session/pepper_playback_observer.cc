@@ -65,7 +65,7 @@ void PepperPlaybackObserver::PepperStartsPlayback(int32_t pp_instance) {
   MediaSessionImpl::Get(contents_)->AddPlayer(
       players_map_[pp_instance].get(), PepperPlayerDelegate::kPlayerId,
       ShouldDuckFlash() ? media::MediaContentType::Pepper
-                        : media::MediaContentType::Persistent);
+                        : media::MediaContentType::OneShot);
 }
 
 void PepperPlaybackObserver::PepperStopsPlayback(int32_t pp_instance) {
