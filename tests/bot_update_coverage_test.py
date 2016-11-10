@@ -167,7 +167,9 @@ class BotUpdateUnittests(unittest.TestCase):
     self.filesystem = FakeFilesystem()
     self.call = MockedCall(self.filesystem)
     self.gclient = MockedGclientSync(self.filesystem)
-    self.call.expect(('gclient', 'sync')).returns(self.gclient)
+    self.call.expect(
+        (sys.executable, '-u', bot_update.GCLIENT_PATH, 'sync')
+    ).returns(self.gclient)
     self.old_call = getattr(bot_update, 'call')
     self.params = copy.deepcopy(DEFAULT_PARAMS)
     setattr(bot_update, 'call', self.call)
@@ -188,7 +190,9 @@ class BotUpdateUnittests(unittest.TestCase):
 
   def overrideSetupForWindows(self):
     sys.platform = 'win'
-    self.call.expect(('gclient.bat', 'sync')).returns(self.gclient)
+    self.call.expect(
+        (sys.executable, '-u', bot_update.GCLIENT_PATH, 'sync')
+    ).returns(self.gclient)
 
   def testBasic(self):
     bot_update.ensure_checkout(**self.params)
@@ -205,7 +209,7 @@ class BotUpdateUnittests(unittest.TestCase):
     gclient_sync_cmd = None
     for record in self.call.records:
       args = record[0]
-      if args[0] == 'gclient.bat' and args[1] == 'sync':
+      if args[:4] == (sys.executable, '-u', bot_update.GCLIENT_PATH, 'sync'):
         gclient_sync_cmd = args
     self.assertTrue('--break_repo_locks' in gclient_sync_cmd)
 

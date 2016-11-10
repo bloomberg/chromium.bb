@@ -82,6 +82,7 @@ cache_dir = r%(cache_dir)s
 ATTEMPTS = 5
 
 GIT_CACHE_PATH = path.join(DEPOT_TOOLS_DIR, 'git_cache.py')
+GCLIENT_PATH = path.join(DEPOT_TOOLS_DIR, 'gclient.py')
 
 # If there is less than 100GB of disk space on the system, then we do
 # a shallow checkout.
@@ -319,6 +320,18 @@ def ensure_no_checkout(dir_names):
       print 'done'
 
 
+def call_gclient(*args, **kwargs):
+  """Run the "gclient.py" tool with the supplied arguments.
+
+  Args:
+    args: command-line arguments to pass to gclient.
+    kwargs: keyword arguments to pass to call.
+  """
+  cmd = [sys.executable, '-u', GCLIENT_PATH]
+  cmd.extend(args)
+  return call(*cmd, **kwargs)
+
+
 def gclient_configure(solutions, target_os, target_os_only, git_cache_dir):
   """Should do the same thing as gclient --spec='...'."""
   with codecs.open('.gclient', mode='w', encoding='utf-8') as f:
@@ -330,19 +343,19 @@ def gclient_sync(with_branch_heads, shallow, break_repo_locks):
   # We just need to allocate a filename.
   fd, gclient_output_file = tempfile.mkstemp(suffix='.json')
   os.close(fd)
-  gclient_bin = 'gclient.bat' if sys.platform.startswith('win') else 'gclient'
-  cmd = [gclient_bin, 'sync', '--verbose', '--reset', '--force',
+
+  args = ['sync', '--verbose', '--reset', '--force',
          '--ignore_locks', '--output-json', gclient_output_file,
          '--nohooks', '--noprehooks', '--delete_unversioned_trees']
   if with_branch_heads:
-    cmd += ['--with_branch_heads']
+    args += ['--with_branch_heads']
   if shallow:
-    cmd += ['--shallow']
+    args += ['--shallow']
   if break_repo_locks:
-    cmd += ['--break_repo_locks']
+    args += ['--break_repo_locks']
 
   try:
-    call(*cmd, tries=1)
+    call_gclient(*args, tries=1)
   except SubprocessFailed as e:
     # Throw a GclientSyncFailed exception so we can catch this independently.
     raise GclientSyncFailed(e.message, e.code, e.output)
@@ -354,8 +367,7 @@ def gclient_sync(with_branch_heads, shallow, break_repo_locks):
 
 
 def gclient_revinfo():
-  gclient_bin = 'gclient.bat' if sys.platform.startswith('win') else 'gclient'
-  return call(gclient_bin, 'revinfo', '-a') or ''
+  return call_gclient('revinfo', '-a') or ''
 
 
 def create_manifest():
