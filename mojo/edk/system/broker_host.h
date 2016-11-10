@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
+#include "base/strings/string_piece.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/channel.h"
@@ -25,12 +26,17 @@ class BrokerHost : public Channel::Delegate,
   BrokerHost(base::ProcessHandle client_process, ScopedPlatformHandle handle);
 
   // Send |handle| to the child, to be used to establish a NodeChannel to us.
-  void SendChannel(ScopedPlatformHandle handle);
+  bool SendChannel(ScopedPlatformHandle handle);
+
+#if defined(OS_WIN)
+  // Sends a named channel to the child. Like above, but for named pipes.
+  void SendNamedChannel(const base::StringPiece16& pipe_name);
+#endif
 
  private:
   ~BrokerHost() override;
 
-  void PrepareHandlesForClient(PlatformHandleVector* handles);
+  bool PrepareHandlesForClient(PlatformHandleVector* handles);
 
   // Channel::Delegate:
   void OnChannelMessage(const void* payload,

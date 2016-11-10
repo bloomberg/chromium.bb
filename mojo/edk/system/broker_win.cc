@@ -8,6 +8,9 @@
 #include <utility>
 
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/string_piece.h"
+#include "mojo/edk/embedder/named_platform_handle.h"
+#include "mojo/edk/embedder/named_platform_handle_utils.h"
 #include "mojo/edk/embedder/platform_handle.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
@@ -23,56 +26,77 @@ namespace {
 // 256 bytes should be enough for anyone!
 const size_t kMaxBrokerMessageSize = 256;
 
-bool WaitForBrokerMessage(PlatformHandle platform_handle,
-                          BrokerMessageType expected_type,
-                          size_t expected_num_handles,
-                          ScopedPlatformHandle* out_handles) {
+bool TakeHandlesFromBrokerMessage(Channel::Message* message,
+                                  size_t num_handles,
+                                  ScopedPlatformHandle* out_handles) {
+  if (message->num_handles() != num_handles) {
+    DLOG(ERROR) << "Received unexpected number of handles in broker message";
+    return false;
+  }
+
+  ScopedPlatformHandleVectorPtr handles = message->TakeHandles();
+  DCHECK(handles);
+  DCHECK_EQ(handles->size(), num_handles);
+  DCHECK(out_handles);
+
+  for (size_t i = 0; i < num_handles; ++i)
+    out_handles[i] = ScopedPlatformHandle((*handles)[i]);
+  handles->clear();
+  return true;
+}
+
+Channel::MessagePtr WaitForBrokerMessage(PlatformHandle platform_handle,
+                                         BrokerMessageType expected_type) {
   char buffer[kMaxBrokerMessageSize];
   DWORD bytes_read = 0;
   BOOL result = ::ReadFile(platform_handle.handle, buffer,
                            kMaxBrokerMessageSize, &bytes_read, nullptr);
   if (!result) {
     PLOG(ERROR) << "Error reading broker pipe";
-    return false;
+    return nullptr;
   }
 
   Channel::MessagePtr message =
       Channel::Message::Deserialize(buffer, static_cast<size_t>(bytes_read));
   if (!message || message->payload_size() < sizeof(BrokerMessageHeader)) {
     LOG(ERROR) << "Invalid broker message";
-    return false;
-  }
-
-  if (message->num_handles() != expected_num_handles) {
-    LOG(ERROR) << "Received unexpected number of handles in broker message";
-    return false;
+    return nullptr;
   }
 
   const BrokerMessageHeader* header =
       reinterpret_cast<const BrokerMessageHeader*>(message->payload());
   if (header->type != expected_type) {
-    LOG(ERROR) << "Unknown broker message type";
-    return false;
+    LOG(ERROR) << "Unexpected broker message type";
+    return nullptr;
   }
 
-  ScopedPlatformHandleVectorPtr handles = message->TakeHandles();
-  DCHECK(handles);
-  DCHECK_EQ(handles->size(), expected_num_handles);
-  DCHECK(out_handles);
-
-  for (size_t i = 0; i < expected_num_handles; ++i)
-    out_handles[i] = ScopedPlatformHandle(handles->at(i));
-  handles->clear();
-  return true;
+  return message;
 }
 
 }  // namespace
 
 Broker::Broker(ScopedPlatformHandle handle) : sync_channel_(std::move(handle)) {
   CHECK(sync_channel_.is_valid());
-  bool result = WaitForBrokerMessage(
-      sync_channel_.get(), BrokerMessageType::INIT, 1, &parent_channel_);
-  DCHECK(result);
+  Channel::MessagePtr message =
+      WaitForBrokerMessage(sync_channel_.get(), BrokerMessageType::INIT);
+  CHECK(message);
+
+  if (!TakeHandlesFromBrokerMessage(message.get(), 1, &parent_channel_)) {
+    // If the message has no handles, we expect it to carry pipe name instead.
+    const BrokerMessageHeader* header =
+        static_cast<const BrokerMessageHeader*>(message->payload());
+    CHECK_GE(message->payload_size(),
+             sizeof(BrokerMessageHeader) + sizeof(InitData));
+    const InitData* data = reinterpret_cast<const InitData*>(header + 1);
+    CHECK_EQ(message->payload_size(),
+             sizeof(BrokerMessageHeader) + sizeof(InitData) +
+             data->pipe_name_length * sizeof(base::char16));
+    const base::char16* name_data =
+        reinterpret_cast<const base::char16*>(data + 1);
+    CHECK(data->pipe_name_length);
+    parent_channel_ = CreateClientHandle(NamedPlatformHandle(
+        base::StringPiece16(name_data, data->pipe_name_length)));
+  }
 }
 
 Broker::~Broker() {}
@@ -85,7 +109,7 @@ scoped_refptr<PlatformSharedBuffer> Broker::GetSharedBuffer(size_t num_bytes) {
   base::AutoLock lock(lock_);
   BufferRequestData* buffer_request;
   Channel::MessagePtr out_message = CreateBrokerMessage(
-      BrokerMessageType::BUFFER_REQUEST, 0, &buffer_request);
+      BrokerMessageType::BUFFER_REQUEST, 0, 0, &buffer_request);
   buffer_request->size = base::checked_cast<uint32_t>(num_bytes);
   DWORD bytes_written = 0;
   BOOL result = ::WriteFile(sync_channel_.get().handle, out_message->data(),
@@ -98,9 +122,10 @@ scoped_refptr<PlatformSharedBuffer> Broker::GetSharedBuffer(size_t num_bytes) {
   }
 
   ScopedPlatformHandle handles[2];
-  if (WaitForBrokerMessage(sync_channel_.get(),
-                           BrokerMessageType::BUFFER_RESPONSE, 2,
-                           &handles[0])) {
+  Channel::MessagePtr response = WaitForBrokerMessage(
+      sync_channel_.get(), BrokerMessageType::BUFFER_RESPONSE);
+  if (response &&
+      TakeHandlesFromBrokerMessage(response.get(), 2, &handles[0])) {
     return PlatformSharedBuffer::CreateFromPlatformHandlePair(
         num_bytes, std::move(handles[0]), std::move(handles[1]));
   }

@@ -94,7 +94,7 @@ scoped_refptr<PlatformSharedBuffer> Broker::GetSharedBuffer(size_t num_bytes) {
 
   BufferRequestData* buffer_request;
   Channel::MessagePtr out_message = CreateBrokerMessage(
-      BrokerMessageType::BUFFER_REQUEST, 0, &buffer_request);
+      BrokerMessageType::BUFFER_REQUEST, 0, 0, &buffer_request);
   buffer_request->size = num_bytes;
   ssize_t write_result = PlatformChannelWrite(
       sync_channel_.get(), out_message->data(), out_message->data_num_bytes());

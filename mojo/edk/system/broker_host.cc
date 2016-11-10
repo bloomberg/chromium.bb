@@ -10,6 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "mojo/edk/embedder/named_platform_channel_pair.h"
+#include "mojo/edk/embedder/named_platform_handle.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
 #include "mojo/edk/system/broker_messages.h"
@@ -48,7 +50,7 @@ BrokerHost::~BrokerHost() {
     channel_->ShutDown();
 }
 
-void BrokerHost::PrepareHandlesForClient(PlatformHandleVector* handles) {
+bool BrokerHost::PrepareHandlesForClient(PlatformHandleVector* handles) {
 #if defined(OS_WIN)
   if (!Channel::Message::RewriteHandles(
       base::GetCurrentProcessHandle(), client_process_, handles)) {
@@ -56,23 +58,53 @@ void BrokerHost::PrepareHandlesForClient(PlatformHandleVector* handles) {
     // prevent any message from being sent. The client should handle unexpected
     // invalid handles appropriately.
     DLOG(ERROR) << "Failed to rewrite one or more handles to broker client.";
+    return false;
   }
 #endif
+  return true;
 }
 
-void BrokerHost::SendChannel(ScopedPlatformHandle handle) {
+bool BrokerHost::SendChannel(ScopedPlatformHandle handle) {
   CHECK(handle.is_valid());
   CHECK(channel_);
 
+#if defined(OS_WIN)
+  InitData* data;
+  Channel::MessagePtr message =
+      CreateBrokerMessage(BrokerMessageType::INIT, 1, 0, &data);
+  data->pipe_name_length = 0;
+#else
   Channel::MessagePtr message =
       CreateBrokerMessage(BrokerMessageType::INIT, 1, nullptr);
+#endif
   ScopedPlatformHandleVectorPtr handles;
   handles.reset(new PlatformHandleVector(1));
   handles->at(0) = handle.release();
-  PrepareHandlesForClient(handles.get());
-  message->SetHandles(std::move(handles));
+
+  // This may legitimately fail on Windows if the client process is in another
+  // session, e.g., is an elevated process.
+  if (!PrepareHandlesForClient(handles.get()))
+    return false;
+
+   message->SetHandles(std::move(handles));
+  channel_->Write(std::move(message));
+  return true;
+}
+
+#if defined(OS_WIN)
+
+void BrokerHost::SendNamedChannel(const base::StringPiece16& pipe_name) {
+  InitData* data;
+  base::char16* name_data;
+  Channel::MessagePtr message = CreateBrokerMessage(
+      BrokerMessageType::INIT, 0, sizeof(*name_data) * pipe_name.length(),
+      &data, reinterpret_cast<void**>(&name_data));
+  data->pipe_name_length = static_cast<uint32_t>(pipe_name.length());
+  std::copy(pipe_name.begin(), pipe_name.end(), name_data);
   channel_->Write(std::move(message));
 }
+
+#endif  // defined(OS_WIN)
 
 void BrokerHost::OnBufferRequest(uint32_t num_bytes) {
   scoped_refptr<PlatformSharedBuffer> buffer;

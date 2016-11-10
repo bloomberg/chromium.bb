@@ -18,6 +18,8 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "mojo/edk/embedder/embedder_internal.h"
+#include "mojo/edk/embedder/named_platform_channel_pair.h"
+#include "mojo/edk/embedder/named_platform_handle.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/system/broker.h"
 #include "mojo/edk/system/broker_host.h"
@@ -400,18 +402,32 @@ void NodeController::ConnectToChildOnIOThread(
 
 #if !defined(OS_MACOSX) && !defined(OS_NACL)
   PlatformChannelPair node_channel;
+  ScopedPlatformHandle server_handle = node_channel.PassServerHandle();
   // BrokerHost owns itself.
   BrokerHost* broker_host =
       new BrokerHost(process_handle, std::move(platform_handle));
-  broker_host->SendChannel(node_channel.PassClientHandle());
-  scoped_refptr<NodeChannel> channel = NodeChannel::Create(
-      this, node_channel.PassServerHandle(), io_task_runner_,
-      process_error_callback);
+  bool channel_ok = broker_host->SendChannel(node_channel.PassClientHandle());
+
+#if defined(OS_WIN)
+  if (!channel_ok) {
+    // On Windows the above operation may fail if the channel is crossing a
+    // session boundary. In that case we fall back to a named pipe.
+    NamedPlatformChannelPair named_channel;
+    server_handle = named_channel.PassServerHandle();
+    broker_host->SendNamedChannel(named_channel.handle().name);
+  }
 #else
+  CHECK(channel_ok);
+#endif  // defined(OS_WIN)
+
+  scoped_refptr<NodeChannel> channel = NodeChannel::Create(
+      this, std::move(server_handle), io_task_runner_, process_error_callback);
+
+#else  // !defined(OS_MACOSX) && !defined(OS_NACL)
   scoped_refptr<NodeChannel> channel =
       NodeChannel::Create(this, std::move(platform_handle), io_task_runner_,
                           process_error_callback);
-#endif
+#endif  // !defined(OS_MACOSX) && !defined(OS_NACL)
 
   // We set up the child channel with a temporary name so it can be identified
   // as a pending child if it writes any messages to the channel. We may start

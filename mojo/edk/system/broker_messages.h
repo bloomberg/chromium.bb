@@ -30,19 +30,34 @@ struct BufferRequestData {
   uint32_t size;
 };
 
+#if defined(OS_WIN)
+struct InitData {
+  // NOTE: InitData in the payload is followed by string16 data with exactly
+  // |pipe_name_length| wide characters (i.e., |pipe_name_length|*2 bytes.)
+  // This applies to Windows only.
+  uint32_t pipe_name_length;
+};
+#endif
+
 #pragma pack(pop)
 
 template <typename T>
-inline Channel::MessagePtr CreateBrokerMessage(BrokerMessageType type,
-                                               size_t num_handles,
-                                               T** out_message_data) {
-  const size_t message_size = sizeof(BrokerMessageHeader) + sizeof(T);
+inline Channel::MessagePtr CreateBrokerMessage(
+    BrokerMessageType type,
+    size_t num_handles,
+    size_t extra_data_size,
+    T** out_message_data,
+    void** out_extra_data = nullptr) {
+  const size_t message_size = sizeof(BrokerMessageHeader) +
+      sizeof(**out_message_data) + extra_data_size;
   Channel::MessagePtr message(new Channel::Message(message_size, num_handles));
   BrokerMessageHeader* header =
       reinterpret_cast<BrokerMessageHeader*>(message->mutable_payload());
   header->type = type;
   header->padding = 0;
   *out_message_data = reinterpret_cast<T*>(header + 1);
+  if (out_extra_data)
+    *out_extra_data = *out_message_data + 1;
   return message;
 }
 

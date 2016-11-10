@@ -58,6 +58,8 @@ class MOJO_SYSTEM_IMPL_EXPORT NamedPlatformChannelPair {
   void PrepareToPassClientHandleToChildProcess(
       base::CommandLine* command_line) const;
 
+  const NamedPlatformHandle& handle() const { return pipe_handle_; }
+
  private:
   NamedPlatformHandle pipe_handle_;
   ScopedPlatformHandle server_handle_;
