@@ -118,8 +118,8 @@ class LineLayoutBlockFlow : public LineLayoutBox {
         *toLayoutBox(box.layoutObject()));
   }
 
-  bool positionNewFloats(LineWidth* width) {
-    return toBlockFlow()->positionNewFloats(width);
+  bool positionNewFloats(LayoutUnit logicalTop, LineWidth* width) {
+    return toBlockFlow()->positionNewFloats(logicalTop, width);
   }
 
   LayoutUnit nextFloatLogicalBottomBelow(LayoutUnit logicalHeight) const {

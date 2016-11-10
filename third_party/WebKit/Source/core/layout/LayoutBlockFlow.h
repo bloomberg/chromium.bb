@@ -348,9 +348,14 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   FloatingObject* insertFloatingObject(LayoutBox&);
 
-  // Called from lineWidth, to position the floats added in the last line.
+  // Position all floats that have not yet been positioned.
+  //
+  // |logicalTop| is the minimum logical top for the floats. The final logical
+  // top of the floats will also be affected by clearance and space available
+  // after having positioned earlier floats.
+  //
   // Returns true if and only if it has positioned any floats.
-  bool positionNewFloats(LineWidth* = nullptr);
+  bool positionNewFloats(LayoutUnit logicalTop, LineWidth* = nullptr);
 
   LayoutUnit nextFloatLogicalBottomBelow(LayoutUnit) const;
   LayoutUnit nextFloatLogicalBottomBelowForBlock(LayoutUnit) const;

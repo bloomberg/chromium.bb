@@ -2118,12 +2118,10 @@ void LayoutBlockFlow::adjustFloatingBlock(const MarginInfo& marginInfo) {
   // tested for by simply calling canCollapseWithMarginBefore. See
   // http://www.hixie.ch/tests/adhoc/css/box/block/margin-collapse/046.html for
   // an example of this scenario.
-  LayoutUnit marginOffset = marginInfo.canCollapseWithMarginBefore()
-                                ? LayoutUnit()
-                                : marginInfo.margin();
-  setLogicalHeight(logicalHeight() + marginOffset);
-  positionNewFloats();
-  setLogicalHeight(logicalHeight() - marginOffset);
+  LayoutUnit logicalTop = logicalHeight();
+  if (!marginInfo.canCollapseWithMarginBefore())
+    logicalTop += marginInfo.margin();
+  positionNewFloats(logicalTop);
 }
 
 void LayoutBlockFlow::handleAfterSideOfBlock(LayoutBox* lastChild,
@@ -3340,7 +3338,7 @@ void LayoutBlockFlow::childBecameNonInline(LayoutObject*) {
 }
 
 void LayoutBlockFlow::clearFloats(EClear clear) {
-  positionNewFloats();
+  positionNewFloats(logicalHeight());
   // set y position
   LayoutUnit newY;
   switch (clear) {
@@ -3592,7 +3590,8 @@ void LayoutBlockFlow::removeFloatingObjectsBelow(FloatingObject* lastFloat,
   }
 }
 
-bool LayoutBlockFlow::positionNewFloats(LineWidth* width) {
+bool LayoutBlockFlow::positionNewFloats(LayoutUnit logicalTop,
+                                        LineWidth* width) {
   if (!m_floatingObjects)
     return false;
 
@@ -3619,8 +3618,6 @@ bool LayoutBlockFlow::positionNewFloats(LineWidth* width) {
       break;
     }
   }
-
-  LayoutUnit logicalTop = logicalHeight();
 
   // The float cannot start above the top position of the last positioned float.
   if (lastPlacedFloatingObject)
