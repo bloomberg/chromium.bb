@@ -28,8 +28,18 @@ if (is_component_build) {
   link_target_type = "static_library"
 }
 target(link_target_type, "base") {
-  # This is part of the media component.
-  visibility = [ "//media/*" ]
+  # This should only be depended on by "media" target. Other targets should
+  # depend on "media" target directly.
+  visibility = [
+    "//media",
+
+    # TODO(xhwang): Clean up the dependency graph within "media" target.
+    "//media/audio",
+    "//media/ffmpeg",
+
+    # TODO(xhwang): Remove this dependency.
+    "//media/capture",
+  ]
   sources = [
     "audio_block_fifo.cc",
     "audio_block_fifo.h",
