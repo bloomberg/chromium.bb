@@ -30,7 +30,7 @@ crbug.com/508728 imported/wpt/dom/nodes/Document-createElementNS.html [ Failure 
 crbug.com/508728 imported/wpt/html/browsers/offline/application-cache-api/api_update.html [ Failure ]
 crbug.com/508728 imported/wpt/FileAPI/url/url_xmlhttprequest.html [ Failure ]
 crbug.com/508728 imported/wpt/html/browsers/history/the-location-interface/reload_post_1.html [ Timeout ]
-crbug.com/508728 imported/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure ]
+crbug.com/508728 imported/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure Timeout ]
 crbug.com/508728 imported/wpt/html/dom/reflection-obsolete.html [ Failure ]
 crbug.com/508728 imported/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-control.html [ Failure ]
 crbug.com/508728 imported/wpt/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-insert-br.html [ Failure ]
