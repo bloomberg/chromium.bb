@@ -424,7 +424,6 @@ TEST_F('CrSettingsResetPageTest', 'ResetPage', function() {
 });
 
 /**
- * Test fixture for chrome/browser/resources/settings/appearance_page/.
  * @constructor
  * @extends {CrSettingsBrowserTest}
  */
@@ -444,8 +443,32 @@ CrSettingsAppearancePageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsAppearancePageTest', 'AppearancePage', function() {
-  settings_appearance.registerTests();
+TEST_F('CrSettingsAppearancePageTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsAppearanceFontsPageTest() {}
+
+CrSettingsAppearanceFontsPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://md-settings/appearance_page/appearance_fonts_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    'test_browser_proxy.js',
+    'appearance_fonts_page_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsAppearanceFontsPageTest', 'All', function() {
   mocha.run();
 });
 
