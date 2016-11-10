@@ -53,6 +53,7 @@ class PaletteToolManagerTest : public ::testing::Test,
  protected:
   // PaletteToolManager::Delegate:
   void HidePalette() override {}
+  void HidePaletteImmediately() override {}
   void OnActiveToolChanged() override { ++tool_changed_count_; }
   WmWindow* GetWindow() override {
     NOTREACHED();

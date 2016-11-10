@@ -73,7 +73,7 @@ TEST_F(ScreenshotToolTest, EnablingCaptureScreenCallsDelegateAndDisablesTool) {
       base::MakeUnique<CaptureScreenAction>(palette_tool_delegate_.get());
   EXPECT_CALL(*palette_tool_delegate_.get(),
               DisableTool(PaletteToolId::CAPTURE_SCREEN));
-  EXPECT_CALL(*palette_tool_delegate_.get(), HidePalette());
+  EXPECT_CALL(*palette_tool_delegate_.get(), HidePaletteImmediately());
   tool->OnEnable();
   EXPECT_EQ(1, test_palette_delegate()->take_screenshot_count());
 }

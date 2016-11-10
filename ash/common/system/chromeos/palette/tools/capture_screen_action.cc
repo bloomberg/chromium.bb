@@ -29,9 +29,9 @@ PaletteToolId CaptureScreenAction::GetToolId() const {
 void CaptureScreenAction::OnEnable() {
   CommonPaletteTool::OnEnable();
 
-  WmShell::Get()->palette_delegate()->TakeScreenshot();
   delegate()->DisableTool(GetToolId());
-  delegate()->HidePalette();
+  delegate()->HidePaletteImmediately();
+  WmShell::Get()->palette_delegate()->TakeScreenshot();
 }
 
 views::View* CaptureScreenAction::CreateView() {

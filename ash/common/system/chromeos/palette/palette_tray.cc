@@ -361,6 +361,12 @@ void PaletteTray::HidePalette() {
   shelf()->UpdateAutoHideState();
 }
 
+void PaletteTray::HidePaletteImmediately() {
+  if (bubble_)
+    bubble_->bubble_widget()->SetVisibilityChangedAnimationsEnabled(false);
+  HidePalette();
+}
+
 void PaletteTray::RecordPaletteOptionsUsage(PaletteTrayOptions option) {
   DCHECK_NE(option, PaletteTrayOptions::PALETTE_OPTIONS_COUNT);
 

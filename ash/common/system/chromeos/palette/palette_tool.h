@@ -50,6 +50,9 @@ class ASH_EXPORT PaletteTool {
     // Hide the entire palette. This should not change any tool state.
     virtual void HidePalette() = 0;
 
+    // Hide the entire palette without showing a hide animation.
+    virtual void HidePaletteImmediately() = 0;
+
     // Returns the root window.
     virtual WmWindow* GetWindow() = 0;
 

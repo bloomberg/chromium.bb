@@ -124,6 +124,10 @@ void PaletteToolManager::HidePalette() {
   delegate_->HidePalette();
 }
 
+void PaletteToolManager::HidePaletteImmediately() {
+  delegate_->HidePaletteImmediately();
+}
+
 WmWindow* PaletteToolManager::GetWindow() {
   return delegate_->GetWindow();
 }

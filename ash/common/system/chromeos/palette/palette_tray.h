@@ -61,6 +61,7 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
 
   // PaletteToolManager::Delegate:
   void HidePalette() override;
+  void HidePaletteImmediately() override;
   void RecordPaletteOptionsUsage(PaletteTrayOptions option) override;
   void RecordPaletteModeCancellation(PaletteModeCancelType type) override;
 
