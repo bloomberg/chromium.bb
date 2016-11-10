@@ -310,8 +310,8 @@ TEST_F(ApplyRulesetsTest, AddUniversalRuleToDocument) {
   ActiveStyleSheetVector newStyleSheets;
   newStyleSheets.append(std::make_pair(sheet, &sheet->contents()->ruleSet()));
 
-  applyRuleSetChanges(styleEngine(), document(), ActiveStyleSheetVector(),
-                      newStyleSheets);
+  styleEngine().applyRuleSetChanges(document(), ActiveStyleSheetVector(),
+                                    newStyleSheets);
 
   EXPECT_EQ(SubtreeStyleChange, document().getStyleChangeType());
 }
@@ -329,8 +329,8 @@ TEST_F(ApplyRulesetsTest, AddUniversalRuleToShadowTree) {
   ActiveStyleSheetVector newStyleSheets;
   newStyleSheets.append(std::make_pair(sheet, &sheet->contents()->ruleSet()));
 
-  applyRuleSetChanges(styleEngine(), shadowRoot, ActiveStyleSheetVector(),
-                      newStyleSheets);
+  styleEngine().applyRuleSetChanges(shadowRoot, ActiveStyleSheetVector(),
+                                    newStyleSheets);
 
   EXPECT_FALSE(document().needsStyleRecalc());
   EXPECT_EQ(SubtreeStyleChange, host->getStyleChangeType());
@@ -344,8 +344,8 @@ TEST_F(ApplyRulesetsTest, AddShadowV0BoundaryCrossingRuleToDocument) {
   ActiveStyleSheetVector newStyleSheets;
   newStyleSheets.append(std::make_pair(sheet, &sheet->contents()->ruleSet()));
 
-  applyRuleSetChanges(styleEngine(), document(), ActiveStyleSheetVector(),
-                      newStyleSheets);
+  styleEngine().applyRuleSetChanges(document(), ActiveStyleSheetVector(),
+                                    newStyleSheets);
 
   EXPECT_EQ(SubtreeStyleChange, document().getStyleChangeType());
 }
@@ -363,8 +363,8 @@ TEST_F(ApplyRulesetsTest, AddShadowV0BoundaryCrossingRuleToShadowTree) {
   ActiveStyleSheetVector newStyleSheets;
   newStyleSheets.append(std::make_pair(sheet, &sheet->contents()->ruleSet()));
 
-  applyRuleSetChanges(styleEngine(), shadowRoot, ActiveStyleSheetVector(),
-                      newStyleSheets);
+  styleEngine().applyRuleSetChanges(shadowRoot, ActiveStyleSheetVector(),
+                                    newStyleSheets);
 
   EXPECT_FALSE(document().needsStyleRecalc());
   EXPECT_EQ(SubtreeStyleChange, host->getStyleChangeType());
@@ -379,8 +379,8 @@ TEST_F(ApplyRulesetsTest, AddFontFaceRuleToDocument) {
   ActiveStyleSheetVector newStyleSheets;
   newStyleSheets.append(std::make_pair(sheet, &sheet->contents()->ruleSet()));
 
-  applyRuleSetChanges(styleEngine(), document(), ActiveStyleSheetVector(),
-                      newStyleSheets);
+  styleEngine().applyRuleSetChanges(document(), ActiveStyleSheetVector(),
+                                    newStyleSheets);
 
   EXPECT_EQ(SubtreeStyleChange, document().getStyleChangeType());
 }
@@ -399,8 +399,8 @@ TEST_F(ApplyRulesetsTest, AddFontFaceRuleToShadowTree) {
   ActiveStyleSheetVector newStyleSheets;
   newStyleSheets.append(std::make_pair(sheet, &sheet->contents()->ruleSet()));
 
-  applyRuleSetChanges(styleEngine(), shadowRoot, ActiveStyleSheetVector(),
-                      newStyleSheets);
+  styleEngine().applyRuleSetChanges(shadowRoot, ActiveStyleSheetVector(),
+                                    newStyleSheets);
 
   EXPECT_FALSE(document().needsLayoutTreeUpdate());
 }
@@ -426,8 +426,8 @@ TEST_F(ApplyRulesetsTest, RemoveSheetFromShadowTree) {
   ActiveStyleSheetVector oldStyleSheets;
   oldStyleSheets.append(
       std::make_pair(cssSheet, &cssSheet->contents()->ruleSet()));
-  applyRuleSetChanges(styleEngine(), shadowRoot, oldStyleSheets,
-                      ActiveStyleSheetVector());
+  styleEngine().applyRuleSetChanges(shadowRoot, oldStyleSheets,
+                                    ActiveStyleSheetVector());
 
   EXPECT_TRUE(styleEngine().treeBoundaryCrossingScopes().isEmpty());
 }

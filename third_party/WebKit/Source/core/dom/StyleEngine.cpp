@@ -1029,6 +1029,96 @@ PassRefPtr<ComputedStyle> StyleEngine::findSharedStyle(
              m_globalRuleSet.uncommonAttributeRuleSet(), *m_resolver)
       .findSharedStyle();
 }
+namespace {
+
+enum RuleSetFlags {
+  FontFaceRules = 1 << 0,
+  KeyframesRules = 1 << 1,
+  FullRecalcRules = 1 << 2
+};
+
+unsigned getRuleSetFlags(const HeapVector<Member<RuleSet>> ruleSets) {
+  unsigned flags = 0;
+  for (auto& ruleSet : ruleSets) {
+    ruleSet->compactRulesIfNeeded();
+    if (!ruleSet->keyframesRules().isEmpty())
+      flags |= KeyframesRules;
+    if (!ruleSet->fontFaceRules().isEmpty())
+      flags |= FontFaceRules;
+    if (ruleSet->needsFullRecalcForRuleSetInvalidation())
+      flags |= FullRecalcRules;
+  }
+  return flags;
+}
+
+}  // namespace
+
+void StyleEngine::applyRuleSetChanges(
+    TreeScope& treeScope,
+    const ActiveStyleSheetVector& oldStyleSheets,
+    const ActiveStyleSheetVector& newStyleSheets) {
+  HeapVector<Member<RuleSet>> changedRuleSets;
+
+  ActiveSheetsChange change =
+      compareActiveStyleSheets(oldStyleSheets, newStyleSheets, changedRuleSets);
+  if (change == NoActiveSheetsChanged)
+    return;
+
+  // With rules added or removed, we need to re-aggregate rule meta data.
+  m_globalRuleSet.markDirty();
+
+  unsigned changedRuleFlags = getRuleSetFlags(changedRuleSets);
+  bool fontsChanged = treeScope.rootNode().isDocumentNode() &&
+                      (changedRuleFlags & FontFaceRules);
+  unsigned appendStartIndex = 0;
+
+  // We don't need to clear the font cache if new sheets are appended.
+  if (fontsChanged && change == ActiveSheetsChanged)
+    clearFontCache();
+
+  // - If all sheets were removed, we remove the ScopedStyleResolver.
+  // - If new sheets were appended to existing ones, start appending after the
+  //   common prefix.
+  // - For other diffs, reset author style and re-add all sheets for the
+  //   TreeScope.
+  if (treeScope.scopedStyleResolver()) {
+    if (newStyleSheets.isEmpty())
+      resetAuthorStyle(treeScope);
+    else if (change == ActiveSheetsAppended)
+      appendStartIndex = oldStyleSheets.size();
+    else
+      treeScope.scopedStyleResolver()->resetAuthorStyle();
+  }
+
+  if (!newStyleSheets.isEmpty()) {
+    treeScope.ensureScopedStyleResolver().appendActiveStyleSheets(
+        appendStartIndex, newStyleSheets);
+  }
+
+  if (treeScope.document().hasPendingForcedStyleRecalc())
+    return;
+
+  if (!treeScope.document().body() ||
+      treeScope.document().hasNodesWithPlaceholderStyle()) {
+    treeScope.document().setNeedsStyleRecalc(
+        SubtreeStyleChange, StyleChangeReasonForTracing::create(
+                                StyleChangeReason::CleanupPlaceholderStyles));
+    return;
+  }
+
+  if (changedRuleFlags & KeyframesRules)
+    ScopedStyleResolver::keyframesRulesAdded(treeScope);
+
+  if (fontsChanged || (changedRuleFlags & FullRecalcRules)) {
+    ScopedStyleResolver::invalidationRootForTreeScope(treeScope)
+        .setNeedsStyleRecalc(SubtreeStyleChange,
+                             StyleChangeReasonForTracing::create(
+                                 StyleChangeReason::ActiveStylesheetsUpdate));
+    return;
+  }
+
+  scheduleInvalidationsForRuleSets(treeScope, changedRuleSets);
+}
 
 DEFINE_TRACE(StyleEngine) {
   visitor->trace(m_document);

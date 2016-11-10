@@ -33,6 +33,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/CoreExport.h"
+#include "core/css/ActiveStyleSheets.h"
 #include "core/css/CSSFontSelectorClient.h"
 #include "core/css/CSSGlobalRuleSet.h"
 #include "core/css/invalidation/StyleInvalidator.h"
@@ -246,6 +247,10 @@ class CORE_EXPORT StyleEngine final
   void setStatsEnabled(bool);
 
   PassRefPtr<ComputedStyle> findSharedStyle(const ElementResolveContext&);
+
+  void applyRuleSetChanges(TreeScope&,
+                           const ActiveStyleSheetVector& oldStyleSheets,
+                           const ActiveStyleSheetVector& newStyleSheets);
 
   DECLARE_VIRTUAL_TRACE();
   DECLARE_TRACE_WRAPPERS();

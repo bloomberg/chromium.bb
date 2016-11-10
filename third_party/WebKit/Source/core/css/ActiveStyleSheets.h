@@ -29,12 +29,6 @@ compareActiveStyleSheets(const ActiveStyleSheetVector& oldStyleSheets,
                          const ActiveStyleSheetVector& newStyleSheets,
                          HeapVector<Member<RuleSet>>& changedRuleSets);
 
-CORE_EXPORT void applyRuleSetChanges(
-    StyleEngine&,
-    TreeScope&,
-    const ActiveStyleSheetVector& oldStyleSheets,
-    const ActiveStyleSheetVector& newStyleSheets);
-
 }  // namespace blink
 
 #endif  // ActiveStyleSheets_h
