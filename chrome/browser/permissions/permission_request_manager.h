@@ -70,7 +70,9 @@ class PermissionRequestManager
   // at which time the caller is free to delete the request.
   void CancelRequest(PermissionRequest* request);
 
-  // Hides the bubble.
+  // Temporarily hides the bubble, and destroys the prompt UI surface. Any
+  // existing requests will be reshown when DisplayPendingRequests is called
+  // (e.g. when switching tabs away and back to a page with a prompt).
   void HideBubble();
 
   // Will show a permission bubble if there is a pending permission request on

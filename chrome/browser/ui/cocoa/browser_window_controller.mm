@@ -1581,9 +1581,9 @@ bool IsTabDetachingInFullscreenEnabled() {
 }
 
 - (void)dismissPermissionBubble {
-  PermissionRequestManager* manager = [self permissionRequestManager];
-  if (manager)
-    manager->HideBubble();
+  PermissionPrompt::Delegate* delegate = [self permissionRequestManager];
+  if (delegate)
+    delegate->Closing();
 }
 
 // Nil out the weak translate bubble controller reference.

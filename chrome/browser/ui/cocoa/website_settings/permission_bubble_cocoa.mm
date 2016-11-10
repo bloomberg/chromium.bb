@@ -12,9 +12,7 @@
 #import "ui/base/cocoa/nsview_additions.h"
 
 PermissionBubbleCocoa::PermissionBubbleCocoa(Browser* browser)
-    : browser_(browser), delegate_(nullptr), bubbleController_(nil) {
-  DCHECK(browser);
-}
+    : browser_(browser), delegate_(nullptr), bubbleController_(nil) {}
 
 PermissionBubbleCocoa::~PermissionBubbleCocoa() {
 }
@@ -22,6 +20,8 @@ PermissionBubbleCocoa::~PermissionBubbleCocoa() {
 void PermissionBubbleCocoa::Show(
     const std::vector<PermissionRequest*>& requests,
     const std::vector<bool>& accept_state) {
+  DCHECK(browser_);
+
   if (!bubbleController_) {
     bubbleController_ =
         [[PermissionBubbleController alloc] initWithBrowser:browser_

@@ -228,6 +228,9 @@ const NSInteger kFullscreenLeftOffset = 40;
 // vertical center of |viewB|.
 + (void)alignCenterOf:(NSView*)viewA verticallyToCenterOf:(NSView*)viewB;
 
+// BaseBubbleController override.
+- (IBAction)cancel:(id)sender;
+
 @end
 
 @implementation PermissionBubbleController
@@ -662,6 +665,13 @@ const NSInteger kFullscreenLeftOffset = 40;
   frameA.origin.y =
       NSMinY(frameB) + std::floor((NSHeight(frameB) - NSHeight(frameA)) / 2);
   [viewA setFrameOrigin:frameA.origin];
+}
+
+- (IBAction)cancel:(id)sender {
+  // This is triggered by ESC when the bubble has focus.
+  DCHECK(delegate_);
+  delegate_->Closing();
+  [super cancel:sender];
 }
 
 @end  // implementation PermissionBubbleController
