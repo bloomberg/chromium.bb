@@ -791,18 +791,21 @@ bool SelectionController::handleMouseReleaseEvent(
     // needs to be audited.  See http://crbug.com/590369 for more details.
     m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-    SelectionInFlatTree::Builder builder;
+    VisibleSelectionInFlatTree newSelection;
     Node* node = event.innerNode();
     if (node && node->layoutObject() && hasEditableStyle(*node)) {
       const VisiblePositionInFlatTree pos =
           visiblePositionOfHitTestResult(event.hitTestResult());
-      if (pos.isNotNull())
+      if (pos.isNotNull()) {
+        SelectionInFlatTree::Builder builder;
         builder.collapse(pos.toPositionWithAffinity());
+        newSelection = createVisibleSelection(builder.build());
+      }
     }
 
     if (selection().visibleSelection<EditingInFlatTreeStrategy>() !=
-        createVisibleSelection(builder.build())) {
-      selection().setSelection(builder.build());
+        newSelection) {
+      selection().setSelection(newSelection);
     }
 
     handled = true;
@@ -946,12 +949,12 @@ void SelectionController::passMousePressEventToSubframe(
   const VisiblePositionInFlatTree& visiblePos =
       visiblePositionOfHitTestResult(mev.hitTestResult());
   if (visiblePos.isNull()) {
-    selection().setSelection(SelectionInFlatTree());
+    selection().setSelection(VisibleSelectionInFlatTree());
     return;
   }
-  selection().setSelection(SelectionInFlatTree::Builder()
-                               .collapse(visiblePos.toPositionWithAffinity())
-                               .build());
+  SelectionInFlatTree::Builder builder;
+  builder.collapse(visiblePos.toPositionWithAffinity());
+  selection().setSelection(createVisibleSelection(builder.build()));
 }
 
 void SelectionController::initializeSelectionState() {
