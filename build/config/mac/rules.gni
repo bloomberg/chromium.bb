@@ -328,17 +328,13 @@ template("mac_framework_bundle") {
     ]
 
     if (defined(invoker.framework_version)) {
-      outputs += [ "$_framework_base_dir/Versions/Current" ]
       args += [
                 "--version",
                 invoker.framework_version,
                 "--contents",
               ] + _framework_contents
-
       # It is not possible to list _framework_contents as outputs, since
-      # ninja does not properly stat symbolic links. The exception is the
-      # "Current" symlink, since package_framework.py will ensure that
-      # directory exists so the resolved-symlink mtime will be up-to-date.
+      # ninja does not properly stat symbolic links.
       # https://github.com/ninja-build/ninja/issues/1186
     }
   }
