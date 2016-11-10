@@ -199,6 +199,7 @@ ForwardingSchemaRegistry::ForwardingSchemaRegistry(SchemaRegistry* wrapped)
   schema_map_ = wrapped_->schema_map();
   wrapped_->AddObserver(this);
   wrapped_->AddInternalObserver(this);
+  UpdateReadiness();
 }
 
 ForwardingSchemaRegistry::~ForwardingSchemaRegistry() {
@@ -230,6 +231,10 @@ void ForwardingSchemaRegistry::OnSchemaRegistryUpdated(bool has_new_schemas) {
   Notify(has_new_schemas);
 }
 
+void ForwardingSchemaRegistry::OnSchemaRegistryReady() {
+  UpdateReadiness();
+}
+
 void ForwardingSchemaRegistry::OnSchemaRegistryShuttingDown(
     SchemaRegistry* registry) {
   DCHECK_EQ(wrapped_, registry);
@@ -237,6 +242,11 @@ void ForwardingSchemaRegistry::OnSchemaRegistryShuttingDown(
   wrapped_->RemoveInternalObserver(this);
   wrapped_ = NULL;
   // Keep serving the same |schema_map_|.
+}
+
+void ForwardingSchemaRegistry::UpdateReadiness() {
+  if (wrapped_->IsReady())
+    SetAllDomainsReady();
 }
 
 }  // namespace policy

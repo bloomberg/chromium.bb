@@ -87,7 +87,8 @@ class POLICY_EXPORT CloudPolicyManager
       const std::string& policy_type,
       const base::FilePath& policy_cache_path,
       const scoped_refptr<net::URLRequestContextGetter>& request_context,
-      CloudPolicyClient* client);
+      CloudPolicyClient* client,
+      SchemaRegistry* schema_registry);
 
   void ClearAndDestroyComponentCloudPolicyService();
 

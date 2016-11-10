@@ -58,7 +58,7 @@ void UserCloudPolicyManager::Connect(
     std::unique_ptr<CloudPolicyClient> client) {
   CreateComponentCloudPolicyService(
       dm_protocol::kChromeExtensionPolicyType, component_policy_cache_path_,
-      request_context, client.get());
+      request_context, client.get(), schema_registry());
   core()->Connect(std::move(client));
   core()->StartRefreshScheduler();
   core()->TrackRefreshDelayPref(local_state,

@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/policy/schema_registry_service_factory.h"
@@ -19,6 +20,8 @@
 #include "components/policy/core/common/policy_service_impl.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -106,7 +109,14 @@ ProfilePolicyConnectorFactory::CreateForBrowserContextInternal(
 #if defined(OS_CHROMEOS)
   Profile* const profile = Profile::FromBrowserContext(context);
   const user_manager::User* user = nullptr;
-  if (!chromeos::ProfileHelper::IsSigninProfile(profile)) {
+  if (chromeos::ProfileHelper::IsSigninProfile(profile)) {
+    policy::BrowserPolicyConnectorChromeOS* browser_policy_connector =
+        g_browser_process->platform_part()->browser_policy_connector_chromeos();
+    policy::DeviceCloudPolicyManagerChromeOS* device_cloud_policy_manager =
+        browser_policy_connector->GetDeviceCloudPolicyManager();
+    device_cloud_policy_manager->SetSigninProfileSchemaRegistry(
+        schema_registry);
+  } else {
     user = chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
     CHECK(user);
   }

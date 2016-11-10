@@ -64,6 +64,9 @@ class ManagedValueStoreCache : public ValueStoreCache,
                        const policy::PolicyMap& previous,
                        const policy::PolicyMap& current) override;
 
+  // Returns the policy domain that should be used for the specified profile.
+  static policy::PolicyDomain GetPolicyDomain(Profile* profile);
+
   // Posted by OnPolicyUpdated() to update a PolicyValueStore on the FILE
   // thread.
   void UpdatePolicyOnFILE(const std::string& extension_id,

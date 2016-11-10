@@ -39,6 +39,10 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/one_shot_event.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#endif
+
 using content::BrowserContext;
 using content::BrowserThread;
 
@@ -238,7 +242,7 @@ ManagedValueStoreCache::ManagedValueStoreCache(
     const scoped_refptr<ValueStoreFactory>& factory,
     const scoped_refptr<SettingsObserverList>& observers)
     : profile_(Profile::FromBrowserContext(context)),
-      policy_domain_(policy::POLICY_DOMAIN_EXTENSIONS),
+      policy_domain_(GetPolicyDomain(profile_)),
       policy_service_(
           policy::ProfilePolicyConnectorFactory::GetForBrowserContext(context)
               ->policy_service()),
@@ -329,6 +333,17 @@ void ManagedValueStoreCache::OnPolicyUpdated(const policy::PolicyNamespace& ns,
                  base::Unretained(this),
                  ns.component_id,
                  base::Passed(current.DeepCopy())));
+}
+
+// static
+policy::PolicyDomain ManagedValueStoreCache::GetPolicyDomain(Profile* profile) {
+#if defined(OS_CHROMEOS)
+  return chromeos::ProfileHelper::IsSigninProfile(profile)
+             ? policy::POLICY_DOMAIN_SIGNIN_EXTENSIONS
+             : policy::POLICY_DOMAIN_EXTENSIONS;
+#else
+  return policy::POLICY_DOMAIN_EXTENSIONS;
+#endif
 }
 
 void ManagedValueStoreCache::UpdatePolicyOnFILE(

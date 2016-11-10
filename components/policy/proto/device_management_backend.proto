@@ -184,6 +184,7 @@ message PolicyFetchRequest {
   //   google/chromeos/user => ChromeSettingsProto
   //   google/chromeos/publicaccount => ChromeSettingsProto
   //   google/chrome/extension => ExternalPolicyData
+  //   google/chromeos/signinextension => ExternalPolicyData
   //   google/android/user => ChromeSettingsProto
   //   google/ios/user => ChromeSettingsProto
   optional string policy_type = 1;

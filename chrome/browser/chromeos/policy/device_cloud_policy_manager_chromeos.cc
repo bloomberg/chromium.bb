@@ -12,10 +12,13 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/sys_info.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/attestation/attestation_policy_observer.h"
@@ -31,17 +34,20 @@
 #include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_constants.h"
+#include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/remote_commands/remote_commands_factory.h"
+#include "components/policy/core/common/schema_registry.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -189,6 +195,7 @@ void DeviceCloudPolicyManagerChromeOS::Shutdown() {
   heartbeat_scheduler_.reset();
   state_keys_update_subscription_.reset();
   CloudPolicyManager::Shutdown();
+  signin_profile_forwarding_schema_registry_.reset();
 }
 
 // static
@@ -236,8 +243,21 @@ void DeviceCloudPolicyManagerChromeOS::StartConnection(
   if (ForcedReEnrollmentEnabled())
     client_to_connect->SetStateKeysToUpload(state_keys_broker_->state_keys());
 
+  if (is_component_policy_enabled_) {
+    base::FilePath component_policy_cache_dir;
+    CHECK(PathService::Get(chromeos::DIR_SIGNIN_PROFILE_COMPONENT_POLICY,
+                           &component_policy_cache_dir));
+    CHECK(signin_profile_forwarding_schema_registry_);
+    CreateComponentCloudPolicyService(
+        dm_protocol::kChromeSigninExtensionPolicyType,
+        component_policy_cache_dir, g_browser_process->system_request_context(),
+        client_to_connect.get(),
+        signin_profile_forwarding_schema_registry_.get());
+  }
+
   core()->Connect(std::move(client_to_connect));
   core()->StartRefreshScheduler();
+  core()->RefreshSoon();
   core()->StartRemoteCommandsService(std::unique_ptr<RemoteCommandsFactory>(
       new DeviceCommandsFactoryChromeOS()));
   core()->TrackRefreshDelayPref(local_state_,
@@ -281,6 +301,13 @@ void DeviceCloudPolicyManagerChromeOS::Disconnect() {
   core()->Disconnect();
 
   NotifyDisconnected();
+}
+
+void DeviceCloudPolicyManagerChromeOS::SetSigninProfileSchemaRegistry(
+    SchemaRegistry* schema_registry) {
+  DCHECK(!signin_profile_forwarding_schema_registry_);
+  signin_profile_forwarding_schema_registry_.reset(
+      new ForwardingSchemaRegistry(schema_registry));
 }
 
 void DeviceCloudPolicyManagerChromeOS::OnStateKeysUpdated() {

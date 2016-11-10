@@ -53,6 +53,9 @@ const base::FilePath::CharType kDeviceDisplayProfileDirectory[] =
 const base::FilePath::CharType kDeviceExtensionLocalCache[] =
     FILE_PATH_LITERAL("/var/cache/external_cache");
 
+const base::FilePath::CharType kSigninProfileComponentPolicy[] =
+    FILE_PATH_LITERAL("/var/cache/signin_profile_component_policy");
+
 bool PathProvider(int key, base::FilePath* result) {
   switch (key) {
     case FILE_DEFAULT_APP_ORDER:
@@ -90,6 +93,9 @@ bool PathProvider(int key, base::FilePath* result) {
       break;
     case DIR_DEVICE_EXTENSION_LOCAL_CACHE:
       *result = base::FilePath(kDeviceExtensionLocalCache);
+      break;
+    case DIR_SIGNIN_PROFILE_COMPONENT_POLICY:
+      *result = base::FilePath(kSigninProfileComponentPolicy);
       break;
     default:
       return false;
@@ -140,6 +146,9 @@ void RegisterStubPathOverrides(const base::FilePath& stubs_dir) {
   PathService::Override(
       DIR_DEVICE_EXTENSION_LOCAL_CACHE,
       parent.AppendASCII("stub_device_local_extension_cache"));
+  PathService::Override(
+      DIR_SIGNIN_PROFILE_COMPONENT_POLICY,
+      parent.AppendASCII("stub_signin_profile_component_policy"));
 }
 
 }  // namespace chromeos

@@ -137,7 +137,7 @@ void UserCloudPolicyManagerChromeOS::Connect(
       nullptr /* signing_service */));
   CreateComponentCloudPolicyService(
       dm_protocol::kChromeExtensionPolicyType, component_policy_cache_path_,
-      system_request_context, cloud_policy_client.get());
+      system_request_context, cloud_policy_client.get(), schema_registry());
   core()->Connect(std::move(cloud_policy_client));
   client()->AddObserver(this);
 

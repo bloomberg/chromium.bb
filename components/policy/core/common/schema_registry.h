@@ -150,11 +150,14 @@ class POLICY_EXPORT ForwardingSchemaRegistry
 
   // SchemaRegistry::Observer:
   void OnSchemaRegistryUpdated(bool has_new_schemas) override;
+  void OnSchemaRegistryReady() override;
 
   // SchemaRegistry::InternalObserver:
   void OnSchemaRegistryShuttingDown(SchemaRegistry* registry) override;
 
  private:
+  void UpdateReadiness();
+
   SchemaRegistry* wrapped_;
 
   DISALLOW_COPY_AND_ASSIGN(ForwardingSchemaRegistry);
