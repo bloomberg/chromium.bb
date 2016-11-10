@@ -213,7 +213,10 @@ void AuraTestBase::OnWmClientJankinessChanged(
 
 void AuraTestBase::OnWmNewDisplay(
     std::unique_ptr<WindowTreeHostMus> window_tree_host,
-    const display::Display& display) {}
+    const display::Display& display) {
+  // Take ownership of the WindowTreeHost.
+  window_tree_host_mus_ = std::move(window_tree_host);
+}
 
 void AuraTestBase::OnWmDisplayRemoved(Window* window) {}
 

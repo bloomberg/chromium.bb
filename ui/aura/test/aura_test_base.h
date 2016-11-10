@@ -130,6 +130,7 @@ class AuraTestBase : public testing::Test,
   base::MessageLoopForUI message_loop_;
   std::unique_ptr<PropertyConverter> property_converter_;
   std::unique_ptr<AuraTestHelper> helper_;
+  std::unique_ptr<WindowTreeHostMus> window_tree_host_mus_;
 
   DISALLOW_COPY_AND_ASSIGN(AuraTestBase);
 };
