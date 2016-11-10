@@ -71,14 +71,21 @@
       </header>
 
       <main class="main" id="main">
-        <p>These sample pages demonstrate how to use various aspects of the WebVR API.</p>
+        <p>Sample pages demonstrating how to use various aspects of the WebVR API.</p>
+
+        <h2>Non-presenting samples</h2>
+        <p>These samples use the WebVR API but do not display anything in the headset.</p>
+        <ul id="non-presenting-samples" class="sample-list"></ul>
+
+        <h2>Presenting samples</h2>
+        <p>These samples use the WebVR API to display imagery in the headset.</p>
         <ul id="samples" class="sample-list"></ul>
 
         <h2>Work-in-progress samples</h2>
         <p>These samples are not yet complete and may not accurately portray the API's usage.</p>
         <ul id="wip-samples" class="sample-list"></ul>
 
-        <h2>Testing Pages</h2>
+        <h2>Testing pages</h2>
         <p>These pages help stress browser conformance.</p>
         <ul id="tests" class="sample-list"></ul>
 
@@ -89,9 +96,9 @@
 
         <script>
           var pages = [
-            { index: "00", path: "00-hello-webvr.html", title: "Hello WebVR!" },
-            { index: "01", path: "01-vr-input.html", title: "VR Input" },
-            { index: "02", path: "02-stereo-rendering.html", title: "Stereo Rendering" },
+            { index: "00", path: "00-hello-webvr.html", title: "Hello WebVR!", nonPresenting: true},
+            { index: "01", path: "01-vr-input.html", title: "VR Input", nonPresenting: true },
+            { index: "02", path: "02-stereo-rendering.html", title: "Stereo Rendering", nonPresenting: true },
             { index: "03", path: "03-vr-presentation.html", title: "VR Presentation" },
             { index: "04", path: "04-simple-mirroring.html", title: "Simple Mirroring" },
             { index: "04b", path: "04b-simple-mirroring-2.html", title: "Simple Mirroring pt. 2" },
@@ -109,6 +116,7 @@
           ];
 
           // Append an element for every item in the pages list.
+          var npSamples = document.getElementById("non-presenting-samples");
           var samples = document.getElementById("samples");
           var wipSamples = document.getElementById("wip-samples");
           var tests = document.getElementById("tests");
@@ -142,6 +150,8 @@
               tests.appendChild(li);
             } else if (wipPage) {
               wipSamples.appendChild(li);
+            } else if (page.nonPresenting) {
+              npSamples.appendChild(li);
             } else {
               samples.appendChild(li);
             }
