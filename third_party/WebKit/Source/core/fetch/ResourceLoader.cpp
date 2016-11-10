@@ -246,7 +246,8 @@ void ResourceLoader::didFail(WebURLLoader*, const WebURLError& error) {
 }
 
 void ResourceLoader::didFail(const ResourceError& error) {
-  if (m_isCacheAwareLoadingActivated && error.isCacheMiss()) {
+  if (m_isCacheAwareLoadingActivated && error.isCacheMiss() &&
+      m_fetcher->context().shouldLoadNewResource(m_resource->getType())) {
     m_resource->willReloadAfterDiskCacheMiss();
     m_isCacheAwareLoadingActivated = false;
     restart(m_resource->resourceRequest(),

@@ -1204,6 +1204,12 @@ void ResourceFetcher::didReceiveResponse(Resource* resource,
       // safe because of http://crbug.com/604084 the
       // wasFallbackRequiredByServiceWorker flag is never set when foreign fetch
       // handled a request.
+      if (!context().shouldLoadNewResource(resource->getType())) {
+        // Cancel the request if we should not trigger a reload now.
+        resource->loader()->didFail(
+            ResourceError::cancelledError(response.url()));
+        return;
+      }
       request.setSkipServiceWorker(
           WebURLRequest::SkipServiceWorker::Controlling);
       resource->loader()->restart(request, context().loadingTaskRunner(),
