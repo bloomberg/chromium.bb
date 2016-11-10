@@ -110,9 +110,12 @@ class MemoryTracingTest : public ContentBrowserTest {
   }
 
   void EnableMemoryTracing() {
-    CHECK(!base::trace_event::TraceLog::GetInstance()->IsEnabled())
-        << "Tracing seems to be already enabled. Very likely this is because "
-           "the startup tracing file has been leaked from a previous test.";
+    // Re-enabling tracing could crash these tests https://crbug.com/657628 .
+    if (base::trace_event::TraceLog::GetInstance()->IsEnabled()) {
+      FAIL() << "Tracing seems to be already enabled. "
+                "Very likely this is because the startup tracing file "
+                "has been leaked from a previous test.";
+    }
     // Enable tracing without periodic dumps.
     base::trace_event::TraceConfig trace_config(
         base::trace_event::TraceConfigMemoryTestUtil::

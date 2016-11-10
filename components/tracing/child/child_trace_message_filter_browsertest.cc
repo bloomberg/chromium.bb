@@ -116,6 +116,13 @@ class ChildTracingTest : public content::RenderViewTest, public IPC::Listener {
   }
 
   void EnableTracingWithMemoryDumps() {
+    // Re-enabling tracing could crash these tests https://crbug.com/656729 .
+    if (base::trace_event::TraceLog::GetInstance()->IsEnabled()) {
+      FAIL() << "Tracing seems to be already enabled. "
+                "Very likely this is because the startup tracing file "
+                "has been leaked from a previous test.";
+    }
+
     std::string category_filter = "-*,";  // Disable all other trace categories.
     category_filter += MemoryDumpManager::kTraceCategory;
     base::trace_event::TraceConfig trace_config(category_filter, "");
