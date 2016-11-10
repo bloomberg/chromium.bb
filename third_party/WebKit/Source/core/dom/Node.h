@@ -728,7 +728,7 @@ class CORE_EXPORT Node : public EventTarget {
 
   void dispatchSubtreeModifiedEvent();
   DispatchEventResult dispatchDOMActivateEvent(int detail,
-                                               Event* underlyingEvent);
+                                               Event& underlyingEvent);
 
   DispatchEventResult dispatchMouseEvent(const PlatformMouseEvent&,
                                          const AtomicString& eventType,

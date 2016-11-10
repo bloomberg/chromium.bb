@@ -2095,14 +2095,15 @@ void Node::dispatchSubtreeModifiedEvent() {
 }
 
 DispatchEventResult Node::dispatchDOMActivateEvent(int detail,
-                                                   Event* underlyingEvent) {
+                                                   Event& underlyingEvent) {
 #if DCHECK_IS_ON()
   DCHECK(!EventDispatchForbiddenScope::isEventDispatchForbidden());
 #endif
   UIEvent* event = UIEvent::create();
   event->initUIEvent(EventTypeNames::DOMActivate, true, true,
                      document().domWindow(), detail);
-  event->setUnderlyingEvent(underlyingEvent);
+  event->setUnderlyingEvent(&underlyingEvent);
+  event->setComposed(underlyingEvent.composed());
   dispatchScopedEvent(event);
 
   // TODO(dtapuska): Dispatching scoped events shouldn't check the return
@@ -2146,7 +2147,7 @@ void Node::defaultEventHandler(Event* event) {
   } else if (eventType == EventTypeNames::click) {
     int detail =
         event->isUIEvent() ? static_cast<UIEvent*>(event)->detail() : 0;
-    if (dispatchDOMActivateEvent(detail, event) !=
+    if (dispatchDOMActivateEvent(detail, *event) !=
         DispatchEventResult::NotCanceled)
       event->setDefaultHandled();
   } else if (eventType == EventTypeNames::contextmenu) {

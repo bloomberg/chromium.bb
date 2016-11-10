@@ -233,6 +233,11 @@ class CORE_EXPORT Event : public GarbageCollectedFinalized<Event>,
   bool isTrusted() const { return m_isTrusted; }
   void setTrusted(bool value) { m_isTrusted = value; }
 
+  void setComposed(bool composed) {
+    DCHECK(!isBeingDispatched());
+    m_composed = composed;
+  }
+
   void setHandlingPassive(PassiveMode);
 
   bool preventDefaultCalledDuringPassive() const {
@@ -265,10 +270,6 @@ class CORE_EXPORT Event : public GarbageCollectedFinalized<Event>,
   virtual void receivedTarget();
 
   void setCanBubble(bool bubble) { m_canBubble = bubble; }
-  void setComposed(bool composed) {
-    DCHECK(!isBeingDispatched());
-    m_composed = composed;
-  }
 
   PassiveMode handlingPassive() const { return m_handlingPassive; }
 

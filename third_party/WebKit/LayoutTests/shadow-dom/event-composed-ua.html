@@ -69,6 +69,12 @@ function doubleClick(x, y) {
     eventSender.mouseUp();
 }
 
+function click(x, y) {
+    eventSender.mouseMoveTo(x, y);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
+}
+
 async_test((test) => {
   input.addEventListener('dblclick', test.step_func_done((e) => {
     assert_true(e.composed);
@@ -76,4 +82,12 @@ async_test((test) => {
 }, 'A dblclick event should be a composed event');
 
 doubleClick(input.offsetLeft, input.offsetTop);
+
+async_test((test) => {
+  input.addEventListener('DOMActivate', test.step_func_done((e) => {
+    assert_true(e.composed);
+  }));
+}, 'A DOMActivate event should be a composed event');
+
+click(input.offsetLeft, input.offsetTop);
 </script>
