@@ -4,7 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Luanch stunnel once and only once. This should never crash, but if it does,
+# Launch stunnel once and only once. This should never crash, but if it does,
 # everything should die.
 stunnel \
   -p /engine/data/stunnel.pem \
@@ -19,6 +19,7 @@ while :; do
   LD_LIBRARY_PATH=/engine/ /engine/blimp_engine_app \
     --android-fonts-path=/engine/fonts/font_bundle/marshmallow \
     --blimp-client-token-path=/engine/data/client_token \
+    --vmodule="remote_channel_main=1,blimp*=1" \
     $@ &
 
   # Wait for a process to exit. Bomb out if anything had an error.
