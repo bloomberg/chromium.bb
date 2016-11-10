@@ -1481,7 +1481,7 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
         // TODO(jingning): This can be simplified for decoder performance.
         const BLOCK_SIZE plane_bsize =
             get_plane_block_size(AOMMAX(bsize, BLOCK_8X8), pd);
-        const TX_SIZE max_tx_size = max_txsize_lookup[plane_bsize];
+        const TX_SIZE max_tx_size = max_txsize_rect_lookup[plane_bsize];
         const int bh_var_tx = tx_size_high_unit[max_tx_size];
         const int bw_var_tx = tx_size_wide_unit[max_tx_size];
 #if CONFIG_EXT_TX && CONFIG_RECT_TX

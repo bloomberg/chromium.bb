@@ -1841,7 +1841,7 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
         xd->left_txfm_context_buffer + (mi_row & MAX_MIB_MASK);
     if (bsize >= BLOCK_8X8 && cm->tx_mode == TX_MODE_SELECT && !mbmi->skip &&
         inter_block) {
-      const TX_SIZE max_tx_size = max_txsize_lookup[bsize];
+      const TX_SIZE max_tx_size = max_txsize_rect_lookup[bsize];
       const int bh = tx_size_high_unit[max_tx_size];
       const int bw = tx_size_wide_unit[max_tx_size];
       const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];

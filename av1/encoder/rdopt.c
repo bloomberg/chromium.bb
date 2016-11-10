@@ -3366,7 +3366,7 @@ static void inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
     const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
     const int mi_width = num_4x4_blocks_wide_lookup[plane_bsize];
     const int mi_height = num_4x4_blocks_high_lookup[plane_bsize];
-    const TX_SIZE max_tx_size = max_txsize_lookup[plane_bsize];
+    const TX_SIZE max_tx_size = max_txsize_rect_lookup[plane_bsize];
     const int bh = tx_size_high_unit[max_tx_size];
     const int bw = tx_size_wide_unit[max_tx_size];
     int idx, idy;
@@ -3704,7 +3704,7 @@ static int inter_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x,
     const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
     const int mi_width = num_4x4_blocks_wide_lookup[plane_bsize];
     const int mi_height = num_4x4_blocks_high_lookup[plane_bsize];
-    const TX_SIZE max_tx_size = max_txsize_lookup[plane_bsize];
+    const TX_SIZE max_tx_size = max_txsize_rect_lookup[plane_bsize];
     const int bh = tx_size_high_unit[max_tx_size];
     const int bw = tx_size_wide_unit[max_tx_size];
     int idx, idy;

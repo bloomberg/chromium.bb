@@ -613,8 +613,6 @@ void tokenize_vartx(ThreadData *td, TOKENEXTRA **t, RUN_TYPE dry_run,
   const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
   TX_SIZE plane_tx_size;
 
-  assert(tx_size < TX_SIZES);
-
   if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
 
   plane_tx_size =
@@ -685,7 +683,7 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
     const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
     const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
     const int mi_height = block_size_high[plane_bsize] >> tx_size_wide_log2[0];
-    const TX_SIZE max_tx_size = max_txsize_lookup[plane_bsize];
+    const TX_SIZE max_tx_size = max_txsize_rect_lookup[plane_bsize];
     const BLOCK_SIZE txb_size = txsize_to_bsize[max_tx_size];
     int bw = block_size_wide[txb_size] >> tx_size_wide_log2[0];
     int bh = block_size_high[txb_size] >> tx_size_wide_log2[0];

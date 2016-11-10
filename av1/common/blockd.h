@@ -601,7 +601,19 @@ static INLINE int is_rect_tx(TX_SIZE tx_size) { return tx_size >= TX_SIZES; }
 static INLINE TX_SIZE tx_size_from_tx_mode(BLOCK_SIZE bsize, TX_MODE tx_mode,
                                            int is_inter) {
   const TX_SIZE largest_tx_size = tx_mode_to_biggest_tx_size[tx_mode];
+#if CONFIG_VAR_TX
+  const TX_SIZE max_tx_size = max_txsize_rect_lookup[bsize];
+
+  if (!is_inter || bsize < BLOCK_8X8)
+    return AOMMIN(max_txsize_lookup[bsize], largest_tx_size);
+
+  if (txsize_sqr_map[max_tx_size] <= largest_tx_size)
+    return max_tx_size;
+  else
+    return largest_tx_size;
+#else
   const TX_SIZE max_tx_size = max_txsize_lookup[bsize];
+#endif
 
 #if CONFIG_EXT_TX && CONFIG_RECT_TX
   if (!is_inter) {

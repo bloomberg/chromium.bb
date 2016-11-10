@@ -5166,7 +5166,7 @@ static void tx_partition_count_update(const AV1_COMMON *const cm, MACROBLOCK *x,
   MACROBLOCKD *xd = &x->e_mbd;
   const int mi_width = num_4x4_blocks_wide_lookup[plane_bsize];
   const int mi_height = num_4x4_blocks_high_lookup[plane_bsize];
-  TX_SIZE max_tx_size = max_txsize_lookup[plane_bsize];
+  TX_SIZE max_tx_size = max_txsize_rect_lookup[plane_bsize];
   const int bh = tx_size_high_unit[max_tx_size];
   const int bw = tx_size_wide_unit[max_tx_size];
   int idx, idy;
@@ -5224,7 +5224,7 @@ static void tx_partition_set_contexts(const AV1_COMMON *const cm,
                                       int mi_row, int mi_col) {
   const int mi_width = num_4x4_blocks_wide_lookup[plane_bsize];
   const int mi_height = num_4x4_blocks_high_lookup[plane_bsize];
-  TX_SIZE max_tx_size = max_txsize_lookup[plane_bsize];
+  TX_SIZE max_tx_size = max_txsize_rect_lookup[plane_bsize];
   const int bh = tx_size_high_unit[max_tx_size];
   const int bw = tx_size_wide_unit[max_tx_size];
   int idx, idy;
