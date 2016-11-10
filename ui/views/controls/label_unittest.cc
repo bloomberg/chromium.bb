@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -17,6 +18,7 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/render_text.h"
+#include "ui/gfx/switches.h"
 #include "ui/views/border.h"
 #include "ui/views/test/focus_manager_test.h"
 #include "ui/views/test/views_test_base.h"
@@ -60,6 +62,32 @@ class LabelTest : public ViewsTestBase {
 
   Widget* widget() { return &widget_; }
 
+ private:
+  Label* label_ = nullptr;
+  Widget widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(LabelTest);
+};
+
+// Test fixture for text selection related tests.
+class LabelSelectionTest : public LabelTest {
+ public:
+  LabelSelectionTest() {}
+
+  // LabelTest overrides:
+  void SetUp() override {
+#if defined(OS_MACOSX)
+    // On Mac, by default RenderTextMac is used for labels which does not
+    // support text selection. Instead use RenderTextHarfBuzz for selection
+    // related tests. TODO(crbug.com/661394): Remove this once Mac also uses
+    // RenderTextHarfBuzz for Labels.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableHarfBuzzRenderText);
+#endif
+    LabelTest::SetUp();
+  }
+
+ protected:
   View* GetFocusedView() {
     return widget()->GetFocusManager()->GetFocusedView();
   }
@@ -104,10 +132,7 @@ class LabelTest : public ViewsTestBase {
   }
 
  private:
-  Label* label_ = nullptr;
-  Widget widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(LabelTest);
+  DISALLOW_COPY_AND_ASSIGN(LabelSelectionTest);
 };
 
 namespace {
@@ -773,12 +798,7 @@ TEST_F(LabelTest, EmptyLabel) {
   EXPECT_LT(label()->font_list().GetHeight(), focus_bounds.height());
 }
 
-// Disabled on Mac since it uses RenderTextMac, which does not support text
-// selection.
-// TODO(crbug.com/661394): Re-enable these once Mac uses RenderTextHarfBuzz for
-// Labels.
-#if !defined(OS_MACOSX)
-TEST_F(LabelTest, Selectable) {
+TEST_F(LabelSelectionTest, Selectable) {
   // By default, labels don't support text selection.
   EXPECT_FALSE(label()->selectable());
 
@@ -792,7 +812,7 @@ TEST_F(LabelTest, Selectable) {
 }
 
 // Verify that labels supporting text selection get focus on clicks.
-TEST_F(LabelTest, FocusOnClick) {
+TEST_F(LabelSelectionTest, FocusOnClick) {
   label()->SetText(ASCIIToUTF16("text"));
   label()->SizeToPreferredSize();
 
@@ -807,7 +827,7 @@ TEST_F(LabelTest, FocusOnClick) {
 
 // Verify that labels supporting text selection do not get focus on tab
 // traversal by default.
-TEST_F(LabelTest, FocusTraversal) {
+TEST_F(LabelSelectionTest, FocusTraversal) {
   // Add another view before |label()|.
   View* view = new View();
   view->SetFocusBehavior(View::FocusBehavior::ALWAYS);
@@ -837,7 +857,7 @@ TEST_F(LabelTest, FocusTraversal) {
 }
 
 // Verify label text selection behavior on double and triple clicks.
-TEST_F(LabelTest, DoubleTripleClick) {
+TEST_F(LabelSelectionTest, DoubleTripleClick) {
   label()->SetText(ASCIIToUTF16("Label double click"));
   label()->SizeToPreferredSize();
   ASSERT_TRUE(label()->SetSelectable(true));
@@ -865,7 +885,7 @@ TEST_F(LabelTest, DoubleTripleClick) {
 }
 
 // Verify label text selection behavior on mouse drag.
-TEST_F(LabelTest, MouseDrag) {
+TEST_F(LabelSelectionTest, MouseDrag) {
   label()->SetText(ASCIIToUTF16("Label mouse drag"));
   label()->SizeToPreferredSize();
   ASSERT_TRUE(label()->SetSelectable(true));
@@ -884,7 +904,7 @@ TEST_F(LabelTest, MouseDrag) {
 
 // Verify the initially selected word on a double click, remains selected on
 // mouse dragging.
-TEST_F(LabelTest, MouseDragWord) {
+TEST_F(LabelSelectionTest, MouseDragWord) {
   label()->SetText(ASCIIToUTF16("Label drag word"));
   label()->SizeToPreferredSize();
   ASSERT_TRUE(label()->SetSelectable(true));
@@ -900,12 +920,11 @@ TEST_F(LabelTest, MouseDragWord) {
   PerformMouseRelease(gfx::Point(200, 0));
   EXPECT_STR_EQ("drag word", GetSelectedText());
 }
-#endif  // OS_MACOSX
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // Verify selection clipboard behavior on text selection. Disabled due to
 // http://crbug.com/396477.
-TEST_F(LabelTest, DISABLED_SelectionClipboard) {
+TEST_F(LabelSelectionTest, DISABLED_SelectionClipboard) {
   label()->SetText(ASCIIToUTF16("Label selection clipboard"));
   label()->SizeToPreferredSize();
   ASSERT_TRUE(label()->SetSelectable(true));

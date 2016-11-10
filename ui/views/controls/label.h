@@ -13,7 +13,7 @@
 #include "ui/views/view.h"
 
 namespace views {
-class LabelTest;
+class LabelSelectionTest;
 class SelectionController;
 
 // A view subclass that can display a string.
@@ -216,7 +216,7 @@ class VIEWS_EXPORT Label : public View, public SelectionControllerDelegate {
   FRIEND_TEST_ALL_PREFIXES(LabelTest, EmptyLabel);
   FRIEND_TEST_ALL_PREFIXES(LabelTest, FocusBounds);
   FRIEND_TEST_ALL_PREFIXES(LabelTest, MultiLineSizingWithElide);
-  friend class LabelTest;
+  friend class LabelSelectionTest;
 
   // SelectionControllerDelegate overrides:
   gfx::RenderText* GetRenderTextForSelectionController() override;
