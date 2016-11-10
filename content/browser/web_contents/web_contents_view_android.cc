@@ -46,6 +46,22 @@ void WebContentsView::GetDefaultScreenInfo(ScreenInfo* results) {
   results->is_monochrome = display.is_monochrome();
 }
 
+// static
+void SynchronousCompositor::SetClientForWebContents(
+    WebContents* contents,
+    SynchronousCompositorClient* client) {
+  DCHECK(contents);
+  DCHECK(client);
+  WebContentsViewAndroid* wcva = static_cast<WebContentsViewAndroid*>(
+      static_cast<WebContentsImpl*>(contents)->GetView());
+  DCHECK(!wcva->synchronous_compositor_client());
+  wcva->set_synchronous_compositor_client(client);
+  RenderWidgetHostViewAndroid* rwhv = static_cast<RenderWidgetHostViewAndroid*>(
+      contents->GetRenderWidgetHostView());
+  if (rwhv)
+    rwhv->SetSynchronousCompositorClient(client);
+}
+
 WebContentsView* CreateWebContentsView(
     WebContentsImpl* web_contents,
     WebContentsViewDelegate* delegate,
@@ -61,7 +77,8 @@ WebContentsViewAndroid::WebContentsViewAndroid(
     WebContentsViewDelegate* delegate)
     : web_contents_(web_contents),
       content_view_core_(NULL),
-      delegate_(delegate) {
+      delegate_(delegate),
+      synchronous_compositor_client_(nullptr) {
 }
 
 WebContentsViewAndroid::~WebContentsViewAndroid() {
@@ -189,7 +206,10 @@ RenderWidgetHostViewBase* WebContentsViewAndroid::CreateViewForWidget(
   // order to paint it. See ContentView::GetRenderWidgetHostViewAndroid for an
   // example of how this is achieved for InterstitialPages.
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(render_widget_host);
-  return new RenderWidgetHostViewAndroid(rwhi, content_view_core_);
+  RenderWidgetHostViewAndroid* rwhv =
+      new RenderWidgetHostViewAndroid(rwhi, content_view_core_);
+  rwhv->SetSynchronousCompositorClient(synchronous_compositor_client_);
+  return rwhv;
 }
 
 RenderWidgetHostViewBase* WebContentsViewAndroid::CreateViewForPopupWidget(

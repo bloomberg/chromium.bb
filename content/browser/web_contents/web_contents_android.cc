@@ -247,7 +247,6 @@ bool WebContentsAndroid::Register(JNIEnv* env) {
 WebContentsAndroid::WebContentsAndroid(WebContentsImpl* web_contents)
     : web_contents_(web_contents),
       navigation_controller_(&(web_contents->GetController())),
-      synchronous_compositor_client_(nullptr),
       weak_factory_(this) {
   g_allocated_web_contents_androids.Get().insert(this);
   JNIEnv* env = AttachCurrentThread();

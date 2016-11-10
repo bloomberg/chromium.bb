@@ -18,6 +18,8 @@
 
 namespace content {
 class ContentViewCoreImpl;
+class RenderWidgetHostViewAndroid;
+class SynchronousCompositorClient;
 class WebContentsImpl;
 
 // Android-specific implementation of the WebContentsView.
@@ -32,6 +34,14 @@ class WebContentsViewAndroid : public WebContentsView,
   // by its Java ContentViewCore counterpart, whose lifetime is managed
   // by the UI frontend.
   void SetContentViewCore(ContentViewCoreImpl* content_view_core);
+
+  void set_synchronous_compositor_client(SynchronousCompositorClient* client) {
+    synchronous_compositor_client_ = client;
+  }
+
+  SynchronousCompositorClient* synchronous_compositor_client() const {
+    return synchronous_compositor_client_;
+  }
 
   // WebContentsView implementation --------------------------------------------
   gfx::NativeView GetNativeView() const override;
@@ -102,6 +112,9 @@ class WebContentsViewAndroid : public WebContentsView,
 
   // The native view associated with the contents of the web.
   ui::ViewAndroid view_;
+
+  // Interface used to get notified of events from the synchronous compositor.
+  SynchronousCompositorClient* synchronous_compositor_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAndroid);
 };

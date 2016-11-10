@@ -21,7 +21,6 @@
 
 namespace content {
 
-class SynchronousCompositorClient;
 class WebContentsImpl;
 
 // Android wrapper around WebContents that provides safer passage from java and
@@ -175,13 +174,6 @@ class CONTENT_EXPORT WebContentsAndroid
   void ReloadLoFiImages(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj);
 
-  void set_synchronous_compositor_client(SynchronousCompositorClient* client) {
-    synchronous_compositor_client_ = client;
-  }
-  SynchronousCompositorClient* synchronous_compositor_client() const {
-    return synchronous_compositor_client_;
-  }
-
   int DownloadImage(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,
                     const base::android::JavaParamRef<jstring>& url,
@@ -216,7 +208,6 @@ class CONTENT_EXPORT WebContentsAndroid
   WebContentsImpl* web_contents_;
   NavigationControllerAndroid navigation_controller_;
   base::android::ScopedJavaGlobalRef<jobject> obj_;
-  SynchronousCompositorClient* synchronous_compositor_client_;
 
   base::WeakPtrFactory<WebContentsAndroid> weak_factory_;
 
