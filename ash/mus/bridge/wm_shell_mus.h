@@ -108,6 +108,7 @@ class WmShellMus : public WmShell, public ui::WindowTreeClientObserver {
   void AddPointerWatcher(views::PointerWatcher* watcher,
                          views::PointerWatcherEventTypes events) override;
   void RemovePointerWatcher(views::PointerWatcher* watcher) override;
+  void RequestShutdown() override;
   bool IsTouchDown() override;
 #if defined(OS_CHROMEOS)
   void ToggleIgnoreExternalKeyboard() override;

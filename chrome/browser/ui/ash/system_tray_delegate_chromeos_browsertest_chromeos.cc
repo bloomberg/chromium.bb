@@ -12,6 +12,7 @@
 #include "ash/common/system/date/system_info_default_view.h"
 #include "ash/common/system/date/tray_date.h"
 #include "ash/common/system/date/tray_system_info.h"
+#include "ash/common/system/tray/system_tray.h"
 #include "ash/shell.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"

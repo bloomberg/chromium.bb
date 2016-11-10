@@ -135,13 +135,12 @@ const tray::DateView* DateDefaultView::GetDateView() const {
 void DateDefaultView::ButtonPressed(views::Button* sender,
                                     const ui::Event& event) {
   WmShell* shell = WmShell::Get();
-  SystemTrayDelegate* tray_delegate = shell->system_tray_delegate();
   if (sender == help_button_) {
     shell->RecordUserMetricsAction(UMA_TRAY_HELP);
     shell->system_tray_controller()->ShowHelp();
   } else if (sender == shutdown_button_) {
     shell->RecordUserMetricsAction(UMA_TRAY_SHUT_DOWN);
-    tray_delegate->RequestShutdown();
+    shell->RequestShutdown();
   } else if (sender == lock_button_) {
     shell->RecordUserMetricsAction(UMA_TRAY_LOCK_SCREEN);
 #if defined(OS_CHROMEOS)

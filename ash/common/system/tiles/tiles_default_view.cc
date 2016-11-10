@@ -135,7 +135,7 @@ void TilesDefaultView::ButtonPressed(views::Button* sender,
 #endif
   } else if (sender == power_button_) {
     shell->RecordUserMetricsAction(UMA_TRAY_SHUT_DOWN);
-    shell->system_tray_delegate()->RequestShutdown();
+    shell->RequestShutdown();
   }
 
   owner_->system_tray()->CloseSystemBubble();

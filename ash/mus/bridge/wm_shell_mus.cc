@@ -417,6 +417,10 @@ void WmShellMus::RemovePointerWatcher(views::PointerWatcher* watcher) {
   pointer_watcher_event_router_->RemovePointerWatcher(watcher);
 }
 
+void WmShellMus::RequestShutdown() {
+  NOTIMPLEMENTED();
+}
+
 bool WmShellMus::IsTouchDown() {
   // TODO: implement me, http://crbug.com/634967.
   // NOTIMPLEMENTED is too spammy here.

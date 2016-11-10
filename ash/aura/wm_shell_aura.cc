@@ -24,6 +24,7 @@
 #include "ash/shell.h"
 #include "ash/touch/touch_uma.h"
 #include "ash/wm/drag_window_resizer.h"
+#include "ash/wm/lock_state_controller.h"
 #include "ash/wm/maximize_mode/maximize_mode_event_handler_aura.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_cycle_event_filter_aura.h"
@@ -280,6 +281,10 @@ void WmShellAura::AddPointerWatcher(views::PointerWatcher* watcher,
 
 void WmShellAura::RemovePointerWatcher(views::PointerWatcher* watcher) {
   pointer_watcher_adapter_->RemovePointerWatcher(watcher);
+}
+
+void WmShellAura::RequestShutdown() {
+  Shell::GetInstance()->lock_state_controller()->RequestShutdown();
 }
 
 bool WmShellAura::IsTouchDown() {

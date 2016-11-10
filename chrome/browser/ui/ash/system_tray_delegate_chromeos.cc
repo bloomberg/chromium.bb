@@ -22,16 +22,12 @@
 #include "ash/common/system/chromeos/shutdown_policy_observer.h"
 #include "ash/common/system/date/clock_observer.h"
 #include "ash/common/system/ime/ime_observer.h"
-#include "ash/common/system/tray/system_tray.h"
-#include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray_accessibility.h"
 #include "ash/common/system/update/update_observer.h"
 #include "ash/common/system/user/user_observer.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shell.h"
 #include "ash/system/chromeos/rotation/tray_rotation_lock.h"
-#include "ash/wm/lock_state_controller.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
@@ -410,10 +406,6 @@ void SystemTrayDelegateChromeOS::RequestRestartForUpdate() {
   chrome::NotifyAndTerminate(true /* fast path */);
 }
 
-void SystemTrayDelegateChromeOS::RequestShutdown() {
-  ash::Shell::GetInstance()->lock_state_controller()->RequestShutdown();
-}
-
 void SystemTrayDelegateChromeOS::GetAvailableBluetoothDevices(
     ash::BluetoothDeviceList* list) {
   device::BluetoothAdapter::DeviceList devices =
@@ -647,10 +639,6 @@ void SystemTrayDelegateChromeOS::UserChangedChildStatus(
   // At some point profile is not yet fully initiated.
   if (session_started_ && user_profile && user_profile_ == user_profile)
     ash::WmShell::Get()->UpdateAfterLoginStatusChange(GetUserLoginStatus());
-}
-
-ash::SystemTray* SystemTrayDelegateChromeOS::GetPrimarySystemTray() {
-  return ash::Shell::GetInstance()->GetPrimarySystemTray();
 }
 
 ash::SystemTrayNotifier* SystemTrayDelegateChromeOS::GetSystemTrayNotifier() {
