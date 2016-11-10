@@ -33,6 +33,10 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 
+#if defined(OS_IOS)
+#include "components/ntp_tiles/country_code_ios.h"
+#endif
+
 using net::URLFetcher;
 using variations::VariationsService;
 
@@ -120,6 +124,11 @@ std::string GetCountryToUse(const PrefService* prefs,
 
   if (country_code.empty() && variations_service)
     country_code = variations_service->GetStoredPermanentCountry();
+
+#if defined(OS_IOS)
+  if (country_code.empty())
+    country_code = GetDeviceCountryCode();
+#endif
 
   if (country_code.empty())
     country_code = kPopularSitesDefaultCountryCode;
