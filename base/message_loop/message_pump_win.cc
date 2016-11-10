@@ -35,9 +35,6 @@ enum MessageLoopProblems {
 // task (a series of such messages creates a continuous task pump).
 static const int kMsgHaveWork = WM_USER + 1;
 
-// The application-defined code passed to the hook procedure.
-static const int kMessageFilterCode = 0x5001;
-
 //-----------------------------------------------------------------------------
 // MessagePumpWin public:
 
@@ -362,9 +359,6 @@ bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
   if (msg.message == kMsgHaveWork && msg.hwnd == message_window_.hwnd())
     return ProcessPumpReplacementMessage();
 
-  if (CallMsgFilter(const_cast<MSG*>(&msg), kMessageFilterCode))
-    return true;
-
   TranslateMessage(&msg);
   DispatchMessage(&msg);
 
@@ -536,10 +530,8 @@ bool MessagePumpForGpu::ProcessNextMessage() {
     return true;
   }
 
-  if (!CallMsgFilter(const_cast<MSG*>(&msg), kMessageFilterCode)) {
-    TranslateMessage(&msg);
-    DispatchMessage(&msg);
-  }
+  TranslateMessage(&msg);
+  DispatchMessage(&msg);
 
   return true;
 }
