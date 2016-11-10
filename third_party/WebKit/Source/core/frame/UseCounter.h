@@ -1264,7 +1264,6 @@ class CORE_EXPORT UseCounter {
     DragAndDropScrollStart = 1554,
     PresentationConnectionListConnectionAvailableEventListener = 1555,
     WebAudioAutoplayCrossOriginIframe = 1556,
-    ScriptInvalidTypeOrLanguage = 1557,
     VRGetDisplays = 1558,
     VRPresent = 1559,
     VRDeprecatedGetPose = 1560,

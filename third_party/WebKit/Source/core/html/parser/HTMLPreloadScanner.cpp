@@ -253,12 +253,6 @@ class TokenPreloadScanner::StartTagScanner {
     request->setDefer(m_defer);
     request->setIntegrityMetadata(m_integrityMetadata);
 
-    // TODO(csharrison): Once this is deprecated, just abort the request here.
-    if (match(m_tagImpl, scriptTag) &&
-        !ScriptLoader::isValidScriptTypeAndLanguage(
-            m_typeAttributeValue, m_languageAttributeValue,
-            ScriptLoader::AllowLegacyTypeInTypeAttribute))
-      request->setScriptHasInvalidTypeOrLanguage();
     return request;
   }
 
@@ -492,6 +486,12 @@ class TokenPreloadScanner::StartTagScanner {
       return false;
     if (match(m_tagImpl, inputTag) && !m_inputIsImage)
       return false;
+    if (match(m_tagImpl, scriptTag) &&
+        !ScriptLoader::isValidScriptTypeAndLanguage(
+            m_typeAttributeValue, m_languageAttributeValue,
+            ScriptLoader::AllowLegacyTypeInTypeAttribute)) {
+      return false;
+    }
     return true;
   }
 

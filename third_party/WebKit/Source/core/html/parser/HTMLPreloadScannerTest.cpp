@@ -755,4 +755,52 @@ TEST_F(HTMLPreloadScannerTest, testNoDataUrls) {
     test(testCase);
 }
 
+// The preload scanner should follow the same policy that the ScriptLoader does
+// with regard to the type and language attribute.
+TEST_F(HTMLPreloadScannerTest, testScriptTypeAndLanguage) {
+  TestCase testCases[] = {
+      // Allow empty src and language attributes.
+      {"http://example.test", "<script src='test.js'></script>", "test.js",
+       "http://example.test/", Resource::Script, 0},
+      {"http://example.test",
+       "<script type='' language='' src='test.js'></script>", "test.js",
+       "http://example.test/", Resource::Script, 0},
+      // Allow standard language and type attributes.
+      {"http://example.test",
+       "<script type='text/javascript' src='test.js'></script>", "test.js",
+       "http://example.test/", Resource::Script, 0},
+      {"http://example.test",
+       "<script type='text/javascript' language='javascript' "
+       "src='test.js'></script>",
+       "test.js", "http://example.test/", Resource::Script, 0},
+      // Allow legacy languages in the "language" attribute with an empty
+      // type.
+      {"http://example.test",
+       "<script language='javascript1.1' src='test.js'></script>", "test.js",
+       "http://example.test/", Resource::Script, 0},
+      // Allow legacy languages in the "type" attribute.
+      {"http://example.test",
+       "<script type='javascript' src='test.js'></script>", "test.js",
+       "http://example.test/", Resource::Script, 0},
+      {"http://example.test",
+       "<script type='javascript1.7' src='test.js'></script>", "test.js",
+       "http://example.test/", Resource::Script, 0},
+      // Do not allow invalid types in the "type" attribute.
+      {"http://example.test", "<script type='invalid' src='test.js'></script>",
+       nullptr, "http://example.test/", Resource::Script, 0},
+      {"http://example.test", "<script type='asdf' src='test.js'></script>",
+       nullptr, "http://example.test/", Resource::Script, 0},
+      // Do not allow invalid languages.
+      {"http://example.test",
+       "<script language='french' src='test.js'></script>", nullptr,
+       "http://example.test/", Resource::Script, 0},
+      {"http://example.test",
+       "<script language='python' src='test.js'></script>", nullptr,
+       "http://example.test/", Resource::Script, 0},
+  };
+
+  for (const auto& testCase : testCases)
+    test(testCase);
+}
+
 }  // namespace blink

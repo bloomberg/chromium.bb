@@ -1,3 +1,2 @@
-CONSOLE WARNING: Fetching scripts with an invalid type/language attributes is deprecated and will be removed in M56, around January 2017. See https://www.chromestatus.com/features/5760718284521472 for more details.
 Unknown script types should not be loaded nor executed. If this test fails, an extra line will appear in the output with the script's MIME type.
 

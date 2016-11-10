@@ -2,12 +2,7 @@
 <script>
   if (window.testRunner) {
     testRunner.dumpAsText();
-
-    // FIXME: Fetch test is disabled for now.
-    // In the current Blink implementation, HTMLPreloadScanner may fetch srcs even though they are invalid.
-    // The current HTMLPreloadScanner does not check if the script tag has valid type/language attribute.
-    // See crbug.com/329531 for the current status.
-    // testRunner.dumpResourceResponseMIMETypes();
+    testRunner.dumpResourceResponseMIMETypes();
   }
 
   function fail(str) {

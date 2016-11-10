@@ -94,11 +94,6 @@ void HTMLResourcePreloader::preload(
                       ("WebCore.PreloadDelayMs", 0, 2000, 20));
   preloadDelayHistogram.count(duration);
 
-  if (preload->scriptHasInvalidTypeOrLanguage()) {
-    Deprecation::countDeprecation(m_document,
-                                  UseCounter::ScriptInvalidTypeOrLanguage);
-  }
-
   Resource* resource =
       m_document->loader()->startPreload(preload->resourceType(), request);
   if (resource && preload->resourceType() == Resource::CSSStyleSheet) {

@@ -437,11 +437,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
       return willBeRemoved("SVGViewElement.viewTarget", M56,
                            "5665473114931200");
 
-    case UseCounter::ScriptInvalidTypeOrLanguage:
-      return willBeRemoved(
-          "Fetching scripts with an invalid type/language attributes", M56,
-          "5760718284521472");
-
     case UseCounter::VRDeprecatedFieldOfView:
       return replacedBy("VREyeParameters.fieldOfView",
                         "projection matrices provided by VRFrameData");
