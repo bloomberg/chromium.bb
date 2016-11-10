@@ -104,6 +104,10 @@ class ASH_EXPORT SystemTrayDelegate {
   // Returns the domain that manages the device, if it is enterprise-enrolled.
   virtual std::string GetEnterpriseDomain() const;
 
+  // Returns the realm that manages the device, if it is enterprise enrolled
+  // with Active Directory and joined the realm (Active Directory domain).
+  virtual std::string GetEnterpriseRealm() const;
+
   // Returns notification for enterprise enrolled devices.
   virtual base::string16 GetEnterpriseMessage() const;
 

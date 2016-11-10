@@ -38,6 +38,10 @@ std::string SystemTrayDelegate::GetEnterpriseDomain() const {
   return std::string();
 }
 
+std::string SystemTrayDelegate::GetEnterpriseRealm() const {
+  return std::string();
+}
+
 base::string16 SystemTrayDelegate::GetEnterpriseMessage() const {
   return base::string16();
 }

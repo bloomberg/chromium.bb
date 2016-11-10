@@ -82,6 +82,7 @@ class SystemTrayDelegateChromeOS
   void Initialize() override;
   ash::LoginStatus GetUserLoginStatus() const override;
   std::string GetEnterpriseDomain() const override;
+  std::string GetEnterpriseRealm() const override;
   base::string16 GetEnterpriseMessage() const override;
   std::string GetSupervisedUserManager() const override;
   base::string16 GetSupervisedUserManagerName() const override;
@@ -260,6 +261,7 @@ class SystemTrayDelegateChromeOS
   bool have_session_length_limit_ = false;
   base::TimeDelta session_length_limit_;
   std::string enterprise_domain_;
+  std::string enterprise_realm_;
   bool should_run_bluetooth_discovery_ = false;
   bool session_started_ = false;
 

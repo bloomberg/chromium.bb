@@ -276,11 +276,21 @@ std::string SystemTrayDelegateChromeOS::GetEnterpriseDomain() const {
   return enterprise_domain_;
 }
 
+std::string SystemTrayDelegateChromeOS::GetEnterpriseRealm() const {
+  return enterprise_realm_;
+}
+
 base::string16 SystemTrayDelegateChromeOS::GetEnterpriseMessage() const {
-  if (GetEnterpriseDomain().empty())
-    return base::string16();
-  return l10n_util::GetStringFUTF16(IDS_DEVICE_OWNED_BY_NOTICE,
-                                    base::UTF8ToUTF16(GetEnterpriseDomain()));
+  if (!GetEnterpriseRealm().empty()) {
+    // TODO(rsorokin): Maybe change a message for the Active Directory devices.
+    return l10n_util::GetStringFUTF16(IDS_DEVICE_OWNED_BY_NOTICE,
+                                      base::UTF8ToUTF16(GetEnterpriseRealm()));
+  }
+  if (!GetEnterpriseDomain().empty()) {
+    return l10n_util::GetStringFUTF16(IDS_DEVICE_OWNED_BY_NOTICE,
+                                      base::UTF8ToUTF16(GetEnterpriseDomain()));
+  }
+  return base::string16();
 }
 
 std::string SystemTrayDelegateChromeOS::GetSupervisedUserManager() const {
@@ -964,8 +974,11 @@ void SystemTrayDelegateChromeOS::UpdateEnterpriseDomain() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   std::string enterprise_domain = connector->GetEnterpriseDomain();
-  if (enterprise_domain_ != enterprise_domain) {
+  std::string enterprise_realm = connector->GetRealm();
+  if (enterprise_domain_ != enterprise_domain ||
+      enterprise_realm_ != enterprise_realm) {
     enterprise_domain_ = enterprise_domain;
+    enterprise_realm_ = enterprise_realm;
     GetSystemTrayNotifier()->NotifyEnterpriseDomainChanged();
   }
 }
