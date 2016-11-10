@@ -1193,14 +1193,6 @@ void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
   }
 }
 
-void RenderWidgetHostViewAndroid::SetSynchronousCompositorClient(
-      SynchronousCompositorClient* client) {
-  synchronous_compositor_client_ = client;
-  if (!sync_compositor_ && synchronous_compositor_client_) {
-    sync_compositor_ = SynchronousCompositorHost::Create(this);
-  }
-}
-
 bool RenderWidgetHostViewAndroid::SupportsAnimation() const {
   // The synchronous (WebView) compositor does not have a proper browser
   // compositor with which to drive animations.
