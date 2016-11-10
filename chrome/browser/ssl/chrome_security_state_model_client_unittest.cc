@@ -273,6 +273,10 @@ class ChromeSecurityStateModelClientHistogramTest
 
   void navigate_to_http() { NavigateAndCommit(GURL("http://example.test")); }
 
+  void navigate_to_different_http_page() {
+    NavigateAndCommit(GURL("http://example2.test"));
+  }
+
  private:
   ChromeSecurityStateModelClient* client_;
   DISALLOW_COPY_AND_ASSIGN(ChromeSecurityStateModelClientHistogramTest);
@@ -296,7 +300,7 @@ TEST_F(ChromeSecurityStateModelClientHistogramTest,
   histograms.ExpectUniqueSample(kHTTPBadHistogram, true, 1);
 
   // Navigate to a new page and ensure a sample is recorded.
-  navigate_to_http();
+  navigate_to_different_http_page();
   histograms.ExpectUniqueSample(kHTTPBadHistogram, true, 1);
   signal_password();
   histograms.ExpectUniqueSample(kHTTPBadHistogram, true, 2);
@@ -319,7 +323,7 @@ TEST_F(ChromeSecurityStateModelClientHistogramTest,
   histograms.ExpectUniqueSample(kHTTPBadHistogram, false, 1);
 
   // Navigate to a new page and ensure a sample is recorded.
-  navigate_to_http();
+  navigate_to_different_http_page();
   histograms.ExpectUniqueSample(kHTTPBadHistogram, false, 1);
   signal_password();
   histograms.ExpectUniqueSample(kHTTPBadHistogram, false, 2);

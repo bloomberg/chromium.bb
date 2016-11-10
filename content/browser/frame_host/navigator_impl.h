@@ -56,7 +56,8 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                             bool was_ignored_by_handler) override;
   void DidNavigate(
       RenderFrameHostImpl* render_frame_host,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params) override;
+      const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+      std::unique_ptr<NavigationHandleImpl> navigation_handle) override;
   bool NavigateToPendingEntry(FrameTreeNode* frame_tree_node,
                               const FrameNavigationEntry& frame_entry,
                               ReloadType reload_type,
@@ -96,8 +97,6 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       const base::TimeTicks& renderer_before_unload_start_time,
       const base::TimeTicks& renderer_before_unload_end_time) override;
   void CancelNavigation(FrameTreeNode* frame_tree_node) override;
-  NavigationHandleImpl* GetNavigationHandleForFrameHost(
-      RenderFrameHostImpl* render_frame_host) override;
   void DiscardPendingEntryIfNeeded(NavigationHandleImpl* handle) override;
 
  private:

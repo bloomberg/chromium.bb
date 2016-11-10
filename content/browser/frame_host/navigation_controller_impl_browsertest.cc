@@ -6913,4 +6913,126 @@ IN_PROC_BROWSER_TEST_F(RequestMonitoringNavigationBrowserTest,
                   testing::Key("X-ExtraHeadersVsSubresources"))));
 }
 
+class NavigationHandleCommitObserver : public WebContentsObserver {
+ public:
+  NavigationHandleCommitObserver(WebContents* web_contents, const GURL& url)
+      : WebContentsObserver(web_contents),
+        url_(url),
+        has_committed_(false),
+        was_same_page_(false),
+        was_renderer_initiated_(false) {}
+
+  bool has_committed() const { return has_committed_; }
+  bool was_same_page() const { return was_same_page_; }
+  bool was_renderer_initiated() const { return was_renderer_initiated_; }
+
+ private:
+  void DidFinishNavigation(NavigationHandle* handle) override {
+    if (handle->GetURL() != url_)
+      return;
+    has_committed_ = true;
+    was_same_page_ = handle->IsSamePage();
+    was_renderer_initiated_ = handle->IsRendererInitiated();
+  }
+
+  const GURL url_;
+  bool has_committed_;
+  bool was_same_page_;
+  bool was_renderer_initiated_;
+};
+
+// Test that a same-page navigation does not lead to the deletion of the
+// NavigationHandle for an ongoing different page navigation.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       SamePageNavigationDoesntDeleteNavigationHandle) {
+  const GURL kURL1 = embedded_test_server()->GetURL("/title1.html");
+  const GURL kPushStateURL =
+      embedded_test_server()->GetURL("/title1.html#fragment");
+  const GURL kURL2 = embedded_test_server()->GetURL("/title2.html");
+
+  // Navigate to the initial page.
+  EXPECT_TRUE(NavigateToURL(shell(), kURL1));
+  RenderFrameHostImpl* main_frame =
+      static_cast<WebContentsImpl*>(shell()->web_contents())->GetMainFrame();
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  EXPECT_FALSE(main_frame->navigation_handle());
+  EXPECT_FALSE(root->navigation_request());
+
+  // Start navigating to the second page.
+  TestNavigationManager manager(shell()->web_contents(), kURL2);
+  NavigationHandleCommitObserver navigation_observer(shell()->web_contents(),
+                                                     kURL2);
+  shell()->web_contents()->GetController().LoadURL(
+      kURL2, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
+  EXPECT_TRUE(manager.WaitForRequestStart());
+
+  // This should create a NavigationHandle.
+  NavigationHandleImpl* handle = main_frame->navigation_handle();
+  NavigationRequest* request = root->navigation_request();
+  if (IsBrowserSideNavigationEnabled()) {
+    EXPECT_TRUE(request);
+  } else {
+    EXPECT_TRUE(handle);
+  }
+
+  // The current page does a PushState.
+  NavigationHandleCommitObserver push_state_observer(shell()->web_contents(),
+                                                     kPushStateURL);
+  std::string push_state =
+      "history.pushState({}, \"title 1\", \"" + kPushStateURL.spec() + "\");";
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), push_state));
+  NavigationEntry* last_committed =
+      shell()->web_contents()->GetController().GetLastCommittedEntry();
+  ASSERT_TRUE(last_committed);
+  EXPECT_EQ(kPushStateURL, last_committed->GetURL());
+
+  EXPECT_TRUE(push_state_observer.has_committed());
+  EXPECT_TRUE(push_state_observer.was_same_page());
+  EXPECT_TRUE(push_state_observer.was_renderer_initiated());
+
+  // This shouldn't affect the ongoing navigation.
+  if (IsBrowserSideNavigationEnabled()) {
+    EXPECT_TRUE(root->navigation_request());
+    EXPECT_EQ(request, root->navigation_request());
+  } else {
+    EXPECT_TRUE(main_frame->navigation_handle());
+    EXPECT_EQ(handle, main_frame->navigation_handle());
+  }
+
+  // Let the navigation finish. It should commit successfully.
+  manager.WaitForNavigationFinished();
+  last_committed =
+      shell()->web_contents()->GetController().GetLastCommittedEntry();
+  ASSERT_TRUE(last_committed);
+  EXPECT_EQ(kURL2, last_committed->GetURL());
+
+  EXPECT_TRUE(navigation_observer.has_committed());
+  EXPECT_FALSE(navigation_observer.was_same_page());
+  EXPECT_FALSE(navigation_observer.was_renderer_initiated());
+
+}
+
+// Tests that a same-page browser-initiated navigation is properly reported by
+// the NavigationHandle.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       SamePageBrowserInitiated) {
+  const GURL kURL = embedded_test_server()->GetURL("/title1.html");
+  const GURL kFragmentURL =
+      embedded_test_server()->GetURL("/title1.html#fragment");
+
+  // Navigate to the initial page.
+  EXPECT_TRUE(NavigateToURL(shell(), kURL));
+
+  // Do a browser-initiated fragment navigation.
+  NavigationHandleCommitObserver handle_observer(shell()->web_contents(),
+                                                 kFragmentURL);
+  EXPECT_TRUE(NavigateToURL(shell(), kFragmentURL));
+
+  EXPECT_TRUE(handle_observer.has_committed());
+  EXPECT_TRUE(handle_observer.was_same_page());
+  EXPECT_FALSE(handle_observer.was_renderer_initiated());
+}
+
 }  // namespace content

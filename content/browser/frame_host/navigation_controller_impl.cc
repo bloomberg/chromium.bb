@@ -781,7 +781,8 @@ bool NavigationControllerImpl::RendererDidNavigate(
     RenderFrameHostImpl* rfh,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
     LoadCommittedDetails* details,
-    bool is_navigation_within_page) {
+    bool is_navigation_within_page,
+    NavigationHandleImpl* navigation_handle) {
   is_initial_navigation_ = false;
 
   // Save the previous state before we clobber it.
@@ -812,7 +813,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
 
   // Save reload type and timestamp for a reload navigation to detect
   // consecutive reloads when the next reload is requested.
-  if (PendingEntryMatchesHandle(rfh->navigation_handle())) {
+  if (PendingEntryMatchesHandle(navigation_handle)) {
     if (pending_entry_->reload_type() != ReloadType::NONE) {
       last_committed_reload_type_ = pending_entry_->reload_type();
       last_committed_reload_time_ =
@@ -827,14 +828,16 @@ bool NavigationControllerImpl::RendererDidNavigate(
   switch (details->type) {
     case NAVIGATION_TYPE_NEW_PAGE:
       RendererDidNavigateToNewPage(rfh, params, details->is_in_page,
-                                   details->did_replace_entry);
+                                   details->did_replace_entry,
+                                   navigation_handle);
       break;
     case NAVIGATION_TYPE_EXISTING_PAGE:
       details->did_replace_entry = details->is_in_page;
-      RendererDidNavigateToExistingPage(rfh, params, details->is_in_page);
+      RendererDidNavigateToExistingPage(rfh, params, details->is_in_page,
+                                        navigation_handle);
       break;
     case NAVIGATION_TYPE_SAME_PAGE:
-      RendererDidNavigateToSamePage(rfh, params);
+      RendererDidNavigateToSamePage(rfh, params, navigation_handle);
       break;
     case NAVIGATION_TYPE_NEW_SUBFRAME:
       RendererDidNavigateNewSubframe(rfh, params, details->is_in_page,
@@ -1063,7 +1066,8 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
     RenderFrameHostImpl* rfh,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
     bool is_in_page,
-    bool replace_entry) {
+    bool replace_entry,
+    NavigationHandleImpl* handle) {
   std::unique_ptr<NavigationEntryImpl> new_entry;
   bool update_virtual_url = false;
 
@@ -1088,17 +1092,13 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
 
   // Only make a copy of the pending entry if it is appropriate for the new page
   // that was just loaded. Verify this by checking if the entry corresponds
-  // to the current navigation handle. Note that in some tests the render frame
-  // host does not have a valid handle. Additionally, coarsely check that:
+  // to the given navigation handle. Additionally, coarsely check that:
   // 1. The SiteInstance hasn't been assigned to something else.
   // 2. The pending entry was intended as a new entry, rather than being a
   // history navigation that was interrupted by an unrelated,
   // renderer-initiated navigation.
   // TODO(csharrison): Investigate whether we can remove some of the coarser
   // checks.
-  NavigationHandleImpl* handle = rfh->navigation_handle();
-  DCHECK(handle);
-
   if (!new_entry &&
       PendingEntryMatchesHandle(handle) && pending_entry_index_ == -1 &&
       (!pending_entry_->site_instance() ||
@@ -1178,7 +1178,8 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
 void NavigationControllerImpl::RendererDidNavigateToExistingPage(
     RenderFrameHostImpl* rfh,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-    bool is_in_page) {
+    bool is_in_page,
+    NavigationHandleImpl* handle) {
   // We should only get here for main frame navigations.
   DCHECK(!rfh->GetParent());
 
@@ -1186,7 +1187,6 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
   // in https://crbug.com/596707.
 
   NavigationEntryImpl* entry;
-  NavigationHandleImpl* handle = rfh->navigation_handle();
   if (params.intended_as_new_entry) {
     // This was intended as a new entry but the pending entry was lost in the
     // meanwhile and no new page was created. We are stuck at the last committed
@@ -1259,7 +1259,8 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
 
 void NavigationControllerImpl::RendererDidNavigateToSamePage(
     RenderFrameHostImpl* rfh,
-    const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
+    const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+    NavigationHandleImpl* handle) {
   // This classification says that we have a pending entry that's the same as
   // the last committed entry. This entry is guaranteed to exist by
   // ClassifyNavigation. All we need to do is update the existing entry.
@@ -1284,7 +1285,7 @@ void NavigationControllerImpl::RendererDidNavigateToSamePage(
   // If a user presses enter in the omnibox and the server redirects, the URL
   // might change (but it's still considered a SAME_PAGE navigation). So we must
   // update the SSL status.
-  existing_entry->GetSSL() = rfh->navigation_handle()->ssl_status();
+  existing_entry->GetSSL() = handle->ssl_status();
 
   // The extra headers may have changed due to reloading with different headers.
   existing_entry->set_extra_headers(pending_entry_->extra_headers());

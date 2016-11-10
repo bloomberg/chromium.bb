@@ -50,6 +50,7 @@ class GURL;
 struct AccessibilityHostMsg_EventParams;
 struct AccessibilityHostMsg_FindInPageResultParams;
 struct AccessibilityHostMsg_LocationChangeParams;
+struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 struct FrameHostMsg_DidFailProvisionalLoadWithError_Params;
 struct FrameHostMsg_OpenURL_Params;
 struct FrameMsg_TextTrackSettings_Params;
@@ -808,6 +809,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void OnRendererConnect(const service_manager::ServiceInfo& local_info,
                          const service_manager::ServiceInfo& remote_info);
+
+  // Returns ownership of the NavigationHandle associated with a navigation that
+  // just committed.
+  std::unique_ptr<NavigationHandleImpl> TakeNavigationHandleForCommit(
+      const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
 
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each

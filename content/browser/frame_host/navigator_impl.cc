@@ -511,7 +511,8 @@ bool NavigatorImpl::NavigateNewChildFrame(
 
 void NavigatorImpl::DidNavigate(
     RenderFrameHostImpl* render_frame_host,
-    const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
+    const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+    std::unique_ptr<NavigationHandleImpl> navigation_handle) {
   FrameTree* frame_tree = render_frame_host->frame_tree_node()->frame_tree();
   bool oopifs_possible = SiteIsolationPolicy::AreCrossProcessFramesPossible();
 
@@ -618,7 +619,8 @@ void NavigatorImpl::DidNavigate(
   int old_entry_count = controller_->GetEntryCount();
   LoadCommittedDetails details;
   bool did_navigate = controller_->RendererDidNavigate(
-      render_frame_host, params, &details, is_navigation_within_page);
+      render_frame_host, params, &details, is_navigation_within_page,
+      navigation_handle.get());
 
   // If the history length and/or offset changed, update other renderers in the
   // FrameTree.
@@ -667,9 +669,9 @@ void NavigatorImpl::DidNavigate(
     delegate_->DidCommitProvisionalLoad(render_frame_host,
                                         params.url,
                                         transition_type);
-    render_frame_host->navigation_handle()->DidCommitNavigation(
-        params, is_navigation_within_page, render_frame_host);
-    render_frame_host->SetNavigationHandle(nullptr);
+    navigation_handle->DidCommitNavigation(params, is_navigation_within_page,
+                                           render_frame_host);
+    navigation_handle.reset();
   }
 
   if (!did_navigate)
@@ -1068,11 +1070,6 @@ void NavigatorImpl::LogBeforeUnloadTime(
     navigation_data_->before_unload_delay_ =
         renderer_before_unload_end_time - renderer_before_unload_start_time;
   }
-}
-
-NavigationHandleImpl* NavigatorImpl::GetNavigationHandleForFrameHost(
-    RenderFrameHostImpl* render_frame_host) {
-  return render_frame_host->navigation_handle();
 }
 
 void NavigatorImpl::DiscardPendingEntryIfNeeded(NavigationHandleImpl* handle) {

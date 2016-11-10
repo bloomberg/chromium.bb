@@ -799,7 +799,9 @@ void FrameLoader::updateForSameDocumentNavigation(
   // Generate start and stop notifications only when loader is completed so that
   // we don't fire them for fragment redirection that happens in window.onload
   // handler. See https://bugs.webkit.org/show_bug.cgi?id=31838
-  if (m_frame->document()->loadEventFinished())
+  // Do not fire the notifications if the frame is concurrently navigating away
+  // from the document, since a new document is already loading.
+  if (m_frame->document()->loadEventFinished() && !m_provisionalDocumentLoader)
     client()->didStartLoading(NavigationWithinSameDocument);
 
   HistoryCommitType historyCommitType = loadTypeToCommitType(type);
@@ -822,7 +824,7 @@ void FrameLoader::updateForSameDocumentNavigation(
   client()->dispatchDidNavigateWithinPage(
       m_currentItem.get(), historyCommitType, !!initiatingDocument);
   client()->dispatchDidReceiveTitle(m_frame->document()->title());
-  if (m_frame->document()->loadEventFinished())
+  if (m_frame->document()->loadEventFinished() && !m_provisionalDocumentLoader)
     client()->didStopLoading();
 }
 

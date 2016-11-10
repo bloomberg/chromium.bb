@@ -139,7 +139,8 @@ class CONTENT_EXPORT NavigationControllerImpl
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
       LoadCommittedDetails* details,
-      bool is_navigation_within_page);
+      bool is_navigation_within_page,
+      NavigationHandleImpl* navigation_handle);
 
   // Notifies us that we just became active. This is used by the WebContentsImpl
   // so that we know to load URLs that were pending as "lazy" loads.
@@ -276,14 +277,17 @@ class CONTENT_EXPORT NavigationControllerImpl
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
       bool is_in_page,
-      bool replace_entry);
+      bool replace_entry,
+      NavigationHandleImpl* handle);
   void RendererDidNavigateToExistingPage(
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-      bool is_in_page);
+      bool is_in_page,
+      NavigationHandleImpl* handle);
   void RendererDidNavigateToSamePage(
       RenderFrameHostImpl* rfh,
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
+      const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+      NavigationHandleImpl* handle);
   void RendererDidNavigateNewSubframe(
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
