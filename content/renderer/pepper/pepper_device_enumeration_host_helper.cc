@@ -25,69 +25,97 @@ using ppapi::host::HostMessageContext;
 namespace content {
 
 // Makes sure that StopEnumerateDevices() is called for each EnumerateDevices().
-class PepperDeviceEnumerationHostHelper::ScopedRequest
-    : public base::SupportsWeakPtr<ScopedRequest> {
+class PepperDeviceEnumerationHostHelper::ScopedEnumerationRequest
+    : public base::SupportsWeakPtr<ScopedEnumerationRequest> {
  public:
   // |owner| must outlive this object.
-  ScopedRequest(PepperDeviceEnumerationHostHelper* owner,
-                const Delegate::EnumerateDevicesCallback& callback)
-      : owner_(owner),
-        callback_(callback),
-        requested_(false),
-        request_id_(0),
-        sync_call_(false) {
-    if (!owner_->document_url_.is_valid())
+  ScopedEnumerationRequest(PepperDeviceEnumerationHostHelper* owner,
+                           const Delegate::DevicesCallback& callback)
+      : callback_(callback), requested_(false), sync_call_(false) {
+    if (!owner->document_url_.is_valid())
       return;
 
     requested_ = true;
 
     // Note that the callback passed into
     // PepperDeviceEnumerationHostHelper::Delegate::EnumerateDevices() may be
-    // called synchronously. In that case, |request_id_| hasn't been updated
-    // when the callback is called. Moreover, |callback| may destroy this
+    // called synchronously. In that case, |callback| may destroy this
     // object. So we don't pass in |callback| directly. Instead, we use
     // EnumerateDevicesCallbackBody() to ensure that we always call |callback|
     // asynchronously.
     sync_call_ = true;
-    DCHECK(owner_->delegate_);
-    request_id_ = owner_->delegate_->EnumerateDevices(
-        owner_->device_type_,
-        owner_->document_url_,
-        base::Bind(&ScopedRequest::EnumerateDevicesCallbackBody, AsWeakPtr()));
+    DCHECK(owner->delegate_);
+    owner->delegate_->EnumerateDevices(
+        owner->device_type_, owner->document_url_,
+        base::Bind(&ScopedEnumerationRequest::EnumerateDevicesCallbackBody,
+                   AsWeakPtr()));
     sync_call_ = false;
-  }
-
-  ~ScopedRequest() {
-    if (requested_ && owner_->delegate_) {
-      owner_->delegate_->StopEnumerateDevices(request_id_);
-    }
   }
 
   bool requested() const { return requested_; }
 
  private:
   void EnumerateDevicesCallbackBody(
-      int request_id,
       const std::vector<ppapi::DeviceRefData>& devices) {
     if (sync_call_) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(&ScopedRequest::EnumerateDevicesCallbackBody,
-                                AsWeakPtr(), request_id, devices));
+          FROM_HERE,
+          base::Bind(&ScopedEnumerationRequest::EnumerateDevicesCallbackBody,
+                     AsWeakPtr(), devices));
     } else {
-      DCHECK_EQ(request_id_, request_id);
-      callback_.Run(request_id, devices);
+      callback_.Run(devices);
       // This object may have been destroyed at this point.
     }
   }
 
-  PepperDeviceEnumerationHostHelper* owner_;
-  PepperDeviceEnumerationHostHelper::Delegate::EnumerateDevicesCallback
-      callback_;
+  PepperDeviceEnumerationHostHelper::Delegate::DevicesCallback callback_;
   bool requested_;
-  int request_id_;
   bool sync_call_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedRequest);
+  DISALLOW_COPY_AND_ASSIGN(ScopedEnumerationRequest);
+};
+
+// Makes sure that StopMonitoringDevices() is called for each
+// StartMonitoringDevices().
+class PepperDeviceEnumerationHostHelper::ScopedMonitoringRequest
+    : public base::SupportsWeakPtr<ScopedMonitoringRequest> {
+ public:
+  // |owner| must outlive this object.
+  ScopedMonitoringRequest(PepperDeviceEnumerationHostHelper* owner,
+                          const Delegate::DevicesCallback& callback)
+      : owner_(owner),
+        callback_(callback),
+        requested_(false),
+        subscription_id_(0) {
+    DCHECK(owner_);
+    if (!owner_->document_url_.is_valid())
+      return;
+
+    requested_ = true;
+
+    DCHECK(owner_->delegate_);
+    // |callback| is never called synchronously by StartMonitoringDevices(),
+    // so it is OK to pass it directly, even if |callback| destroys |this|.
+    subscription_id_ = owner_->delegate_->StartMonitoringDevices(
+        owner_->device_type_, owner_->document_url_, callback);
+  }
+
+  ~ScopedMonitoringRequest() {
+    if (requested_ && owner_->delegate_) {
+      owner_->delegate_->StopMonitoringDevices(owner_->device_type_,
+                                               subscription_id_);
+    }
+  }
+
+  bool requested() const { return requested_; }
+
+ private:
+  PepperDeviceEnumerationHostHelper* const owner_;
+  PepperDeviceEnumerationHostHelper::Delegate::DevicesCallback callback_;
+  bool requested_;
+  int subscription_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedMonitoringRequest);
 };
 
 PepperDeviceEnumerationHostHelper::PepperDeviceEnumerationHostHelper(
@@ -136,7 +164,7 @@ int32_t PepperDeviceEnumerationHostHelper::OnEnumerateDevices(
   if (enumerate_devices_context_.is_valid())
     return PP_ERROR_INPROGRESS;
 
-  enumerate_.reset(new ScopedRequest(
+  enumerate_.reset(new ScopedEnumerationRequest(
       this,
       base::Bind(&PepperDeviceEnumerationHostHelper::OnEnumerateDevicesComplete,
                  base::Unretained(this))));
@@ -150,11 +178,9 @@ int32_t PepperDeviceEnumerationHostHelper::OnEnumerateDevices(
 int32_t PepperDeviceEnumerationHostHelper::OnMonitorDeviceChange(
     HostMessageContext* /* context */,
     uint32_t callback_id) {
-  monitor_.reset(new ScopedRequest(
-      this,
-      base::Bind(&PepperDeviceEnumerationHostHelper::OnNotifyDeviceChange,
-                 base::Unretained(this),
-                 callback_id)));
+  monitor_.reset(new ScopedMonitoringRequest(
+      this, base::Bind(&PepperDeviceEnumerationHostHelper::OnNotifyDeviceChange,
+                       base::Unretained(this), callback_id)));
 
   return monitor_->requested() ? PP_OK : PP_ERROR_FAILED;
 }
@@ -166,7 +192,6 @@ int32_t PepperDeviceEnumerationHostHelper::OnStopMonitoringDeviceChange(
 }
 
 void PepperDeviceEnumerationHostHelper::OnEnumerateDevicesComplete(
-    int /* request_id */,
     const std::vector<ppapi::DeviceRefData>& devices) {
   DCHECK(enumerate_devices_context_.is_valid());
 
@@ -181,7 +206,6 @@ void PepperDeviceEnumerationHostHelper::OnEnumerateDevicesComplete(
 
 void PepperDeviceEnumerationHostHelper::OnNotifyDeviceChange(
     uint32_t callback_id,
-    int /* request_id */,
     const std::vector<ppapi::DeviceRefData>& devices) {
   resource_host_->host()->SendUnsolicitedReply(
       resource_host_->pp_resource(),

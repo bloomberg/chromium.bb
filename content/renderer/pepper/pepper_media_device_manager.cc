@@ -8,21 +8,48 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/renderer/media/media_devices_event_dispatcher.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/render_frame_impl.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace content {
 
 namespace {
 
-ppapi::DeviceRefData FromStreamDeviceInfo(const StreamDeviceInfo& info) {
+PP_DeviceType_Dev FromMediaDeviceType(MediaDeviceType type) {
+  switch (type) {
+    case MEDIA_DEVICE_TYPE_AUDIO_INPUT:
+      return PP_DEVICETYPE_DEV_AUDIOCAPTURE;
+    case MEDIA_DEVICE_TYPE_VIDEO_INPUT:
+      return PP_DEVICETYPE_DEV_VIDEOCAPTURE;
+    default:
+      NOTREACHED();
+      return PP_DEVICETYPE_DEV_INVALID;
+  }
+}
+
+MediaDeviceType ToMediaDeviceType(PP_DeviceType_Dev type) {
+  switch (type) {
+    case PP_DEVICETYPE_DEV_AUDIOCAPTURE:
+      return MEDIA_DEVICE_TYPE_AUDIO_INPUT;
+    case PP_DEVICETYPE_DEV_VIDEOCAPTURE:
+      return MEDIA_DEVICE_TYPE_VIDEO_INPUT;
+    default:
+      NOTREACHED();
+      return MEDIA_DEVICE_TYPE_AUDIO_OUTPUT;
+  }
+}
+
+ppapi::DeviceRefData FromMediaDeviceInfo(MediaDeviceType type,
+                                         const MediaDeviceInfo& info) {
   ppapi::DeviceRefData data;
-  data.id = info.device.id;
+  data.id = info.device_id;
   // Some Flash content can't handle an empty string, so stick a space in to
   // make them happy. See crbug.com/408404.
-  data.name = info.device.name.empty() ? std::string(" ") : info.device.name;
-  data.type = PepperMediaDeviceManager::FromMediaStreamType(info.device.type);
+  data.name = info.label.empty() ? std::string(" ") : info.label;
+  data.type = FromMediaDeviceType(type);
   return data;
 }
 
@@ -44,52 +71,52 @@ PepperMediaDeviceManager::PepperMediaDeviceManager(RenderFrame* render_frame)
       next_id_(1) {}
 
 PepperMediaDeviceManager::~PepperMediaDeviceManager() {
-  DCHECK(enumerate_callbacks_.empty());
   DCHECK(open_callbacks_.empty());
 }
 
-int PepperMediaDeviceManager::EnumerateDevices(
+void PepperMediaDeviceManager::EnumerateDevices(
     PP_DeviceType_Dev type,
     const GURL& document_url,
-    const EnumerateDevicesCallback& callback) {
-  enumerate_callbacks_[next_id_] = callback;
-  int request_id = next_id_++;
-
+    const DevicesCallback& callback) {
 #if defined(ENABLE_WEBRTC)
-  GetMediaStreamDispatcher()->EnumerateDevices(
-      request_id, AsWeakPtr(),
-      PepperMediaDeviceManager::FromPepperDeviceType(type),
-      url::Origin(document_url.GetOrigin()));
+  bool request_audio_input = type == PP_DEVICETYPE_DEV_AUDIOCAPTURE;
+  bool request_video_input = type == PP_DEVICETYPE_DEV_VIDEOCAPTURE;
+  GetMediaDevicesDispatcher()->EnumerateDevices(
+      request_audio_input, request_video_input, false /* audio_output */,
+      url::Origin(document_url.GetOrigin()),
+      base::Bind(&PepperMediaDeviceManager::DevicesEnumerated, AsWeakPtr(),
+                 callback, ToMediaDeviceType(type)));
 #else
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&PepperMediaDeviceManager::OnDevicesEnumerated,
-                            AsWeakPtr(), request_id, StreamDeviceInfoArray()));
-#endif
-
-  return request_id;
-}
-
-void PepperMediaDeviceManager::StopEnumerateDevices(int request_id) {
-  enumerate_callbacks_.erase(request_id);
-
-#if defined(ENABLE_WEBRTC)
-  // Need to post task since this function might be called inside the callback
-  // of EnumerateDevices.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&PepperMediaDeviceManager::StopEnumerateDevicesDelayed,
-                 AsWeakPtr(), request_id));
+      base::Bind(&PepperMediaDeviceManager::DevicesEnumerated, AsWeakPtr(),
+                 callback, ToMediaDeviceType(type), MediaDeviceInfoArray()));
 #endif
 }
 
-void PepperMediaDeviceManager::StopEnumerateDevicesDelayed(int request_id) {
+uint32_t PepperMediaDeviceManager::StartMonitoringDevices(
+    PP_DeviceType_Dev type,
+    const GURL& document_url,
+    const DevicesCallback& callback) {
 #if defined(ENABLE_WEBRTC)
-  // This method is being invoked by the message loop at some unknown
-  // point-in-time after StopEnumerateDevices().  Therefore, check that
-  // render_frame() is not NULL, in order to guarantee
-  // GetMediaStreamDispatcher() won't return NULL.
-  if (render_frame())
-    GetMediaStreamDispatcher()->StopEnumerateDevices(request_id, AsWeakPtr());
+  base::WeakPtr<MediaDevicesEventDispatcher> event_dispatcher =
+      MediaDevicesEventDispatcher::GetForRenderFrame(render_frame());
+  return event_dispatcher->SubscribeDeviceChangeNotifications(
+      ToMediaDeviceType(type), url::Origin(document_url.GetOrigin()),
+      base::Bind(&PepperMediaDeviceManager::DevicesChanged, AsWeakPtr(),
+                 callback));
+#else
+  return 0;
+#endif
+}
+
+void PepperMediaDeviceManager::StopMonitoringDevices(PP_DeviceType_Dev type,
+                                                     uint32_t subscription_id) {
+#if defined(ENABLE_WEBRTC)
+  base::WeakPtr<MediaDevicesEventDispatcher> event_dispatcher =
+      MediaDevicesEventDispatcher::GetForRenderFrame(render_frame());
+  event_dispatcher->UnsubscribeDeviceChangeNotifications(
+      ToMediaDeviceType(type), subscription_id);
 #endif
 }
 
@@ -162,23 +189,7 @@ void PepperMediaDeviceManager::OnDeviceStopped(
 void PepperMediaDeviceManager::OnDevicesEnumerated(
     int request_id,
     const StreamDeviceInfoArray& device_array) {
-  EnumerateCallbackMap::iterator iter = enumerate_callbacks_.find(request_id);
-  if (iter == enumerate_callbacks_.end()) {
-    // This might be enumerated result sent before StopEnumerateDevices is
-    // called since EnumerateDevices is persistent request.
-    return;
-  }
-
-  EnumerateDevicesCallback callback = iter->second;
-
-  std::vector<ppapi::DeviceRefData> devices;
-  devices.reserve(device_array.size());
-  for (StreamDeviceInfoArray::const_iterator info = device_array.begin();
-       info != device_array.end();
-       ++info) {
-    devices.push_back(FromStreamDeviceInfo(*info));
-  }
-  callback.Run(request_id, devices);
+  NOTREACHED();
 }
 
 void PepperMediaDeviceManager::OnDeviceOpened(
@@ -210,22 +221,6 @@ MediaStreamType PepperMediaDeviceManager::FromPepperDeviceType(
   }
 }
 
-// static
-PP_DeviceType_Dev PepperMediaDeviceManager::FromMediaStreamType(
-    MediaStreamType type) {
-  switch (type) {
-    case MEDIA_NO_SERVICE:
-      return PP_DEVICETYPE_DEV_INVALID;
-    case MEDIA_DEVICE_AUDIO_CAPTURE:
-      return PP_DEVICETYPE_DEV_AUDIOCAPTURE;
-    case MEDIA_DEVICE_VIDEO_CAPTURE:
-      return PP_DEVICETYPE_DEV_VIDEOCAPTURE;
-    default:
-      NOTREACHED();
-      return PP_DEVICETYPE_DEV_INVALID;
-  }
-}
-
 void PepperMediaDeviceManager::NotifyDeviceOpened(int request_id,
                                                   bool succeeded,
                                                   const std::string& label) {
@@ -241,6 +236,25 @@ void PepperMediaDeviceManager::NotifyDeviceOpened(int request_id,
   callback.Run(request_id, succeeded, label);
 }
 
+void PepperMediaDeviceManager::DevicesEnumerated(
+    const DevicesCallback& client_callback,
+    MediaDeviceType type,
+    const std::vector<MediaDeviceInfoArray>& enumeration) {
+  DevicesChanged(client_callback, type, enumeration[type]);
+}
+
+void PepperMediaDeviceManager::DevicesChanged(
+    const DevicesCallback& client_callback,
+    MediaDeviceType type,
+    const MediaDeviceInfoArray& device_infos) {
+  std::vector<ppapi::DeviceRefData> devices;
+  devices.reserve(device_infos.size());
+  for (const auto& device_info : device_infos)
+    devices.push_back(FromMediaDeviceInfo(type, device_info));
+
+  client_callback.Run(devices);
+}
+
 MediaStreamDispatcher* PepperMediaDeviceManager::GetMediaStreamDispatcher()
     const {
   DCHECK(render_frame());
@@ -248,6 +262,17 @@ MediaStreamDispatcher* PepperMediaDeviceManager::GetMediaStreamDispatcher()
       static_cast<RenderFrameImpl*>(render_frame())->GetMediaStreamDispatcher();
   DCHECK(dispatcher);
   return dispatcher;
+}
+
+const ::mojom::MediaDevicesDispatcherHostPtr&
+PepperMediaDeviceManager::GetMediaDevicesDispatcher() {
+  if (!media_devices_dispatcher_) {
+    DCHECK(render_frame());
+    render_frame()->GetRemoteInterfaces()->GetInterface(
+        mojo::GetProxy(&media_devices_dispatcher_));
+  }
+
+  return media_devices_dispatcher_;
 }
 
 void PepperMediaDeviceManager::OnDestruct() {
