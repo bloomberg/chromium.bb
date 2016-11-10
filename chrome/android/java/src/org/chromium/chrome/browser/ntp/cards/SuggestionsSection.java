@@ -177,7 +177,7 @@ public class SuggestionsSection extends InnerNode {
 
     private void refreshChildrenVisibility() {
         mStatus.setVisible(!hasSuggestions());
-        mMoreButton.setVisible(mCategoryInfo.hasMoreButton(hasSuggestions()));
+        mMoreButton.refreshVisibility();
     }
 
     public void removeSuggestion(SnippetArticle suggestion) {
@@ -246,6 +246,11 @@ public class SuggestionsSection extends InnerNode {
             guid = guid != null ? guid : urlToOfflineGuid.get(article.mAmpUrl);
             article.setOfflinePageDownloadGuid(guid);
         }
+    }
+
+    /** Lets the {@link SuggestionsSection} know when the FetchMore action has been triggered. */
+    public void onFetchMore() {
+        mProgressIndicator.setVisible(true);
     }
 
     /** Sets the status for the section. Some statuses can cause the suggestions to be cleared. */

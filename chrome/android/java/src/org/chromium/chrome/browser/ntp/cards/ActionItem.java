@@ -4,26 +4,49 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
+import android.support.annotation.IntDef;
 import android.view.View;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * Item that allows the user to perform an action on the NTP.
+ * Note: Use {@link #refreshVisibility()} to update the visibility of the button instead of calling
+ * {@link #setVisible(boolean)} directly.
  */
 class ActionItem extends OptionalLeaf {
+    @IntDef({ACTION_NONE, ACTION_VIEW_ALL, ACTION_FETCH_MORE, ACTION_RELOAD})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Action {}
+    public static final int ACTION_NONE = 0;
+    public static final int ACTION_VIEW_ALL = 1;
+    public static final int ACTION_FETCH_MORE = 2;
+    public static final int ACTION_RELOAD = 3;
+
     private final SuggestionsCategoryInfo mCategoryInfo;
     private final SuggestionsSection mParentSection;
 
-    private boolean mImpressionTracked = false;
+    @Action
+    private int mCurrentAction = ACTION_NONE;
+    private boolean mImpressionTracked;
 
     public ActionItem(SuggestionsSection section) {
         super(section);
         mCategoryInfo = section.getCategoryInfo();
         mParentSection = section;
+    }
+
+    /** Call this instead of {@link #setVisible(boolean)} to update the visibility. */
+    public void refreshVisibility() {
+        mCurrentAction = findAppropriateAction();
+        setVisible(mCurrentAction != ACTION_NONE);
     }
 
     @Override
@@ -42,27 +65,37 @@ class ActionItem extends OptionalLeaf {
         return mParentSection.getSuggestionsCount();
     }
 
-    private void performAction(NewTabPageManager manager, NewTabPageAdapter adapter) {
+    @VisibleForTesting
+    void performAction(NewTabPageManager manager, NewTabPageAdapter adapter) {
         manager.trackSnippetCategoryActionClick(mCategoryInfo.getCategory(), getPosition());
 
-        if (mCategoryInfo.hasViewAllAction()) {
-            mCategoryInfo.performViewAllAction(manager);
-            return;
+        switch (mCurrentAction) {
+            case ACTION_VIEW_ALL:
+                mCategoryInfo.performViewAllAction(manager);
+                return;
+            case ACTION_FETCH_MORE:
+                manager.getSuggestionsSource().fetchSuggestions(
+                        mCategoryInfo.getCategory(), mParentSection.getDisplayedSuggestionIds());
+                mParentSection.onFetchMore();
+                return;
+            case ACTION_RELOAD:
+                // TODO(dgn): reload only the current section. https://crbug.com/634892
+                adapter.reloadSnippets();
+                return;
+            case ACTION_NONE:
+            default:
+                // Should never be reached.
+                assert false;
         }
+    }
 
-        if (mCategoryInfo.hasMoreAction() && mParentSection.hasSuggestions()) {
-            manager.getSuggestionsSource().fetchSuggestions(
-                    mCategoryInfo.getCategory(), mParentSection.getDisplayedSuggestionIds());
-            return;
-        }
-
-        if (mCategoryInfo.hasReloadAction()) {
-            // TODO(dgn): reload only the current section. https://crbug.com/634892
-            adapter.reloadSnippets();
-        }
-
-        // Should not be reached. Otherwise the action item was shown at an inappropriate moment.
-        assert false;
+    @Action
+    private int findAppropriateAction() {
+        boolean hasSuggestions = mParentSection.hasSuggestions();
+        if (mCategoryInfo.hasViewAllAction()) return ACTION_VIEW_ALL;
+        if (hasSuggestions && mCategoryInfo.hasFetchMoreAction()) return ACTION_FETCH_MORE;
+        if (!hasSuggestions && mCategoryInfo.hasReloadAction()) return ACTION_RELOAD;
+        return ACTION_NONE;
     }
 
     public static class ViewHolder extends CardViewHolder {

@@ -40,7 +40,7 @@ public class SuggestionsCategoryInfo {
      * the category, while keeping the current ones.
      * @see ActionItem
      */
-    private final boolean mHasMoreAction;
+    private final boolean mHasFetchMoreAction;
 
     /**
      * Whether the category supports a "Reload" action, that triggers fetching new suggestions to
@@ -72,7 +72,7 @@ public class SuggestionsCategoryInfo {
         mCategory = category;
         mTitle = title;
         mCardLayout = cardLayout;
-        mHasMoreAction = hasMoreAction;
+        mHasFetchMoreAction = hasMoreAction;
         mHasReloadAction = hasReloadAction;
         mHasViewAllAction = hasViewAllAction;
         mShowIfEmpty = showIfEmpty;
@@ -93,8 +93,8 @@ public class SuggestionsCategoryInfo {
         return mCardLayout;
     }
 
-    public boolean hasMoreAction() {
-        return mHasMoreAction;
+    public boolean hasFetchMoreAction() {
+        return mHasFetchMoreAction;
     }
 
     public boolean hasReloadAction() {
@@ -103,12 +103,6 @@ public class SuggestionsCategoryInfo {
 
     public boolean hasViewAllAction() {
         return mHasViewAllAction;
-    }
-
-    public boolean hasMoreButton(boolean hasSuggestions) {
-        if (hasViewAllAction()) return true;
-        if (hasSuggestions) return hasMoreAction();
-        return hasReloadAction();
     }
 
     public boolean showIfEmpty() {

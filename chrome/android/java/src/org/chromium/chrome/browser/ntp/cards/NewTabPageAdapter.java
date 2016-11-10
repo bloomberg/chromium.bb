@@ -267,8 +267,6 @@ public class NewTabPageAdapter
 
     @Override
     public void onMoreSuggestions(@CategoryInt int category, List<SnippetArticle> suggestions) {
-        if (suggestions.isEmpty()) return;
-
         @CategoryStatusEnum
         int status = mNewTabPageManager.getSuggestionsSource().getCategoryStatus(category);
         if (!canLoadSuggestions(category, status)) return;

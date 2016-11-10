@@ -5,9 +5,16 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -31,6 +38,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
+import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -217,7 +225,144 @@ public class SuggestionsSectionTest {
         assertEquals(snippets.get(2).getOfflinePageDownloadGuid(), "guid2");
     }
 
+    @Test
+    @Feature({"Ntp"})
+    public void testViewAllActionPriority() {
+        // When all the actions are enabled, ViewAll always has the priority and is shown.
+
+        // Spy so that VerifyAction can check methods being called.
+        SuggestionsCategoryInfo info =
+                spy(createInfo(42, /*hasMoreAction=*/true, /*hasReloadAction=*/true,
+                        /*hasViewAllAction=*/true, /*showIfEmpty=*/true));
+        SuggestionsSection section = new SuggestionsSection(mParent, info, mManager, mBridge);
+
+        assertTrue(section.getActionItem().isVisible());
+        verifyAction(section, ActionItem.ACTION_VIEW_ALL);
+
+        section.addSuggestions(createDummySuggestions(3), CategoryStatus.AVAILABLE);
+
+        assertTrue(section.getActionItem().isVisible());
+        verifyAction(section, ActionItem.ACTION_VIEW_ALL);
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    public void testReloadAndFetchMoreActionPriority() {
+        // When both Reload and FetchMore are enabled, FetchMore runs when we have suggestions, and
+        // Reload when we don't.
+
+        // Spy so that VerifyAction can check methods being called.
+        SuggestionsCategoryInfo info = spy(createInfo(42, /*hasMoreAction=*/true,
+                /*hasReloadAction=*/true, /*hasViewAllAction=*/false, /*showIfEmpty=*/true));
+        SuggestionsSection section = new SuggestionsSection(mParent, info, mManager, mBridge);
+
+        assertTrue(section.getActionItem().isVisible());
+        verifyAction(section, ActionItem.ACTION_RELOAD);
+
+        section.addSuggestions(createDummySuggestions(3), CategoryStatus.AVAILABLE);
+
+        assertTrue(section.getActionItem().isVisible());
+        verifyAction(section, ActionItem.ACTION_FETCH_MORE);
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    public void testReloadActionPriority() {
+        // When only Reload is enabled, it only shows when we have no suggestions.
+
+        // Spy so that VerifyAction can check methods being called.
+        SuggestionsCategoryInfo info = spy(createInfo(42, /*hasMoreAction=*/false,
+                /*hasReloadAction=*/true, /*hasViewAllAction=*/false, /*showIfEmpty=*/true));
+        SuggestionsSection section = new SuggestionsSection(mParent, info, mManager, mBridge);
+
+        assertTrue(section.getActionItem().isVisible());
+        verifyAction(section, ActionItem.ACTION_RELOAD);
+
+        section.addSuggestions(createDummySuggestions(3), CategoryStatus.AVAILABLE);
+
+        assertFalse(section.getActionItem().isVisible());
+        verifyAction(section, ActionItem.ACTION_NONE);
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    public void testFetchMoreActionPriority() {
+        // When only FetchMore is enabled, it only shows when we have suggestions.
+
+        // Spy so that VerifyAction can check methods being called.
+        SuggestionsCategoryInfo info = spy(createInfo(42, /*hasMoreAction=*/true,
+                /*hasReloadAction=*/false, /*hasViewAllAction=*/false, /*showIfEmpty=*/true));
+        SuggestionsSection section = new SuggestionsSection(mParent, info, mManager, mBridge);
+
+        assertFalse(section.getActionItem().isVisible());
+        verifyAction(section, ActionItem.ACTION_NONE);
+
+        section.addSuggestions(createDummySuggestions(3), CategoryStatus.AVAILABLE);
+
+        assertTrue(section.getActionItem().isVisible());
+        verifyAction(section, ActionItem.ACTION_FETCH_MORE);
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    public void testNoAction() {
+        // Test where no action is enabled.
+
+        // Spy so that VerifyAction can check methods being called.
+        SuggestionsCategoryInfo info = spy(createInfo(42, /*hasMoreAction=*/false,
+                /*hasReloadAction=*/false, /*hasViewAllAction=*/false, /*showIfEmpty=*/true));
+        SuggestionsSection section = new SuggestionsSection(mParent, info, mManager, mBridge);
+
+        assertFalse(section.getActionItem().isVisible());
+        verifyAction(section, ActionItem.ACTION_NONE);
+
+        section.addSuggestions(createDummySuggestions(3), CategoryStatus.AVAILABLE);
+
+        assertFalse(section.getActionItem().isVisible());
+        verifyAction(section, ActionItem.ACTION_NONE);
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    public void testFetchMoreProgressDisplay() {
+        final int suggestionCount = 3;
+        SuggestionsSection section = new SuggestionsSection(mParent,
+                spy(createInfo(42, /*hasMoreAction=*/true, /*hasReloadAction=*/false,
+                        /*hasViewAllAction=*/false, /*showIfEmpty=*/true)),
+                mManager, mBridge);
+        section.addSuggestions(createDummySuggestions(suggestionCount), CategoryStatus.AVAILABLE);
+        assertFalse(section.getProgressItemForTesting().isVisible());
+
+        // Tap the button
+        verifyAction(section, ActionItem.ACTION_FETCH_MORE);
+        assertTrue(section.getProgressItemForTesting().isVisible());
+
+        // Simulate receiving suggestions.
+        section.addSuggestions(createDummySuggestions(suggestionCount), CategoryStatus.AVAILABLE);
+        assertFalse(section.getProgressItemForTesting().isVisible());
+    }
+
     private OfflinePageDownloadItem createOfflineItem(String url, String guid) {
         return new OfflinePageDownloadItem(guid, url, "", "", 0, 0);
+    }
+
+    private static void verifyAction(SuggestionsSection section, @ActionItem.Action int action) {
+        NewTabPageAdapter adapter = mock(NewTabPageAdapter.class);
+        SuggestionsSource suggestionsSource = mock(SuggestionsSource.class);
+        NewTabPageManager manager = mock(NewTabPageManager.class);
+        when(manager.getSuggestionsSource()).thenReturn(suggestionsSource);
+
+        try {
+            section.getActionItem().performAction(manager, adapter);
+        } catch (AssertionError e) {
+            if (action != ActionItem.ACTION_NONE) throw e;
+        }
+
+        verify(section.getCategoryInfo(),
+                (action == ActionItem.ACTION_VIEW_ALL ? times(1) : never()))
+                .performViewAllAction(manager);
+        verify(suggestionsSource, action == ActionItem.ACTION_FETCH_MORE ? times(1) : never())
+                .fetchSuggestions(anyInt(), any(String[].class));
+        verify(adapter, action == ActionItem.ACTION_RELOAD ? times(1) : never()).reloadSnippets();
     }
 }
