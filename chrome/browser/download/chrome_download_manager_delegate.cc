@@ -57,7 +57,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
-#include "chrome/browser/android/download/chrome_download_manager_overwrite_infobar_delegate.h"
+#include "chrome/browser/android/download/chrome_duplicate_download_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #endif
 
@@ -617,8 +617,13 @@ void ChromeDownloadManagerDelegate::PromptUserForDownloadPath(
     const DownloadTargetDeterminerDelegate::FileSelectedCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if BUILDFLAG(ANDROID_JAVA_UI)
-  chrome::android::ChromeDownloadManagerOverwriteInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(download->GetWebContents()), download,
+  content::WebContents* web_contents = download->GetWebContents();
+  if (!web_contents) {
+    callback.Run(base::FilePath());
+    return;
+  }
+  chrome::android::ChromeDuplicateDownloadInfoBarDelegate::Create(
+      InfoBarService::FromWebContents(web_contents), download,
       suggested_path, callback);
 #else
   DownloadFilePicker::ShowFilePicker(download, suggested_path, callback);

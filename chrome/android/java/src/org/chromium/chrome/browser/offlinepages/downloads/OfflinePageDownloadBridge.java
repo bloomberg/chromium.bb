@@ -7,11 +7,9 @@ package org.chromium.chrome.browser.offlinepages.downloads;
 import android.content.ComponentName;
 import android.support.annotation.Nullable;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadServiceDelegate;
 import org.chromium.chrome.browser.download.ui.BackendProvider.OfflinePageDelegate;
@@ -198,8 +196,7 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate, Offli
      * @param tab a tab contents of which will be saved locally.
      */
     public void startDownload(Tab tab) {
-        nativeStartDownload(mNativeOfflinePageDownloadBridge, tab,
-                ContextUtils.getApplicationContext().getString(R.string.menu_downloads));
+        nativeStartDownload(mNativeOfflinePageDownloadBridge, tab);
     }
 
     /**
@@ -286,6 +283,5 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate, Offli
     native void nativeResumeDownload(long nativeOfflinePageDownloadBridge, String guid);
     native void nativeDeleteItemByGuid(long nativeOfflinePageDownloadBridge, String guid);
     native long nativeGetOfflineIdByGuid(long nativeOfflinePageDownloadBridge, String guid);
-    native void nativeStartDownload(
-            long nativeOfflinePageDownloadBridge, Tab tab, String downloadsLabel);
+    native void nativeStartDownload(long nativeOfflinePageDownloadBridge, Tab tab);
 }

@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_OFFLINE_PAGES_DOWNLOADS_OFFLINE_PAGE_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_ANDROID_OFFLINE_PAGES_DOWNLOADS_OFFLINE_PAGE_INFOBAR_DELEGATE_H_
 
-#include "base/callback_forward.h"
-#include "chrome/browser/android/download/download_overwrite_infobar_delegate.h"
+#include "base/callback.h"
+#include "chrome/browser/android/download/duplicate_download_infobar_delegate.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "url/gurl.h"
 
@@ -23,41 +23,38 @@ namespace offline_pages {
 // not straightforward for offline pages, the behavior is to delete ALL other
 // pages that are saved for the given URL, then save the newly requested page.
 class OfflinePageInfoBarDelegate
-    : public chrome::android::DownloadOverwriteInfoBarDelegate {
+    : public chrome::android::DuplicateDownloadInfoBarDelegate {
  public:
-  enum class Action { CREATE_NEW, OVERWRITE };
-
   // Creates an offline page infobar and a delegate and adds the infobar to the
   // InfoBarService associated with |web_contents|. |page_name| is the name
   // shown for this file in the infobar text.
-  static void Create(const base::Callback<void(Action)>& confirm_continuation,
-                     const std::string& downloads_label,
+  static void Create(const base::Closure& confirm_continuation,
                      const GURL& page_to_download,
                      content::WebContents* web_contents);
   ~OfflinePageInfoBarDelegate() override;
 
  private:
   OfflinePageInfoBarDelegate(
-      const base::Callback<void(Action)>& confirm_continuation,
-      const std::string& downloads_label,
-      const std::string& page_name);
+      const base::Closure& confirm_continuation,
+      const std::string& page_name,
+      const GURL& page_to_download);
 
-  // DownloadOverwriteInfoBarDelegate:
+  // DuplicateDownloadInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   bool EqualsDelegate(InfoBarDelegate* delegate) const override;
-  bool OverwriteExistingFile() override;
-  bool CreateNewFile() override;
-  std::string GetFileName() const override;
-  std::string GetDirName() const override;
-  std::string GetDirFullPath() const override;
+  bool Accept() override;
+  bool Cancel() override;
+  std::string GetFilePath() const override;
+  bool IsOfflinePage() const override;
+  std::string GetPageURL() const override;
   bool ShouldExpire(const NavigationDetails& details) const override;
   OfflinePageInfoBarDelegate* AsOfflinePageInfoBarDelegate() override;
 
   // Continuation called when the user chooses to create a new file.
-  base::Callback<void(Action)> confirm_continuation_;
+  base::Closure confirm_continuation_;
 
-  std::string downloads_label_;
   std::string page_name_;
+  GURL page_to_download_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageInfoBarDelegate);
 };

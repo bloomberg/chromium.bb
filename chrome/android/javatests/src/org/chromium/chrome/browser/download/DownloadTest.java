@@ -143,7 +143,7 @@ public class DownloadTest extends DownloadTestBase {
     @MediumTest
     @Feature({"Downloads"})
     @RetryOnFailure
-    public void testDuplicateHttpPostDownload_Overwrite() throws Exception {
+    public void testDuplicateHttpPostDownload_Download() throws Exception {
         // Snackbar overlaps the infobar which is clicked in this test.
         getActivity().getSnackbarManager().disableForTesting();
         // Download a file.
@@ -162,20 +162,19 @@ public class DownloadTest extends DownloadTestBase {
         callCount = getChromeDownloadCallCount();
         singleClickView(currentView);
         assertPollForInfoBarSize(1);
-        assertTrue("OVERWRITE button wasn't found",
+        assertTrue("Download button wasn't found",
                 InfoBarUtil.clickPrimaryButton(getInfoBars().get(0)));
         assertTrue("Failed to finish downloading file for the second time.",
                 waitForChromeDownloadToFinish(callCount));
 
         assertTrue("Missing first download", hasDownload(FILENAME_TEXT, SUPERBO_CONTENTS));
-        assertFalse("Should not have second download",
-                hasDownload(FILENAME_TEXT_1, SUPERBO_CONTENTS));
+        assertTrue("Missing second download", hasDownload(FILENAME_TEXT_1, SUPERBO_CONTENTS));
     }
 
     @MediumTest
     @Feature({"Downloads"})
     @DisabledTest(message = "crbug.com/597230")
-    public void testDuplicateHttpPostDownload_CreateNew() throws Exception {
+    public void testDuplicateHttpPostDownload_Cancel() throws Exception {
         // Download a file.
         loadUrl(mTestServer.getURL(TEST_DOWNLOAD_DIRECTORY + "post.html"));
         waitForFocus();
@@ -194,12 +193,8 @@ public class DownloadTest extends DownloadTestBase {
         assertPollForInfoBarSize(1);
         assertTrue("CREATE NEW button wasn't found",
                 InfoBarUtil.clickSecondaryButton(getInfoBars().get(0)));
-        assertTrue("Failed to finish downloading file for the second time.",
+        assertFalse("Download should not happen when clicking cancel button",
                 waitForChromeDownloadToFinish(callCount));
-
-        assertTrue("Missing first download", hasDownload(FILENAME_TEXT, SUPERBO_CONTENTS));
-        assertTrue("Missing second download",
-                hasDownload(FILENAME_TEXT_1, SUPERBO_CONTENTS));
     }
 
     @MediumTest

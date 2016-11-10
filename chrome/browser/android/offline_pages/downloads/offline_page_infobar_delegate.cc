@@ -7,7 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/ui/android/infobars/download_overwrite_infobar.h"
+#include "chrome/browser/ui/android/infobars/duplicate_download_infobar.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ui/gfx/text_elider.h"
 
@@ -15,8 +15,7 @@ namespace offline_pages {
 
 // static
 void OfflinePageInfoBarDelegate::Create(
-    const base::Callback<void(Action)>& confirm_continuation,
-    const std::string& downloads_label,
+    const base::Closure& confirm_continuation,
     const GURL& page_to_download,
     content::WebContents* web_contents) {
   // The URL could be very long, especially since we are including query
@@ -38,20 +37,21 @@ void OfflinePageInfoBarDelegate::Create(
   gfx::ElideString(formatted_url, kMaxLengthOfDisplayedPageUrl, &elided_url);
 
   InfoBarService::FromWebContents(web_contents)
-      ->AddInfoBar(DownloadOverwriteInfoBar::CreateInfoBar(base::WrapUnique(
-          new OfflinePageInfoBarDelegate(confirm_continuation, downloads_label,
-                                         base::UTF16ToUTF8(elided_url)))));
+      ->AddInfoBar(DuplicateDownloadInfoBar::CreateInfoBar(base::WrapUnique(
+          new OfflinePageInfoBarDelegate(confirm_continuation,
+                                         base::UTF16ToUTF8(elided_url),
+                                         page_to_download))));
 }
 
 OfflinePageInfoBarDelegate::~OfflinePageInfoBarDelegate() {}
 
 OfflinePageInfoBarDelegate::OfflinePageInfoBarDelegate(
-    const base::Callback<void(Action)>& confirm_continuation,
-    const std::string& downloads_label,
-    const std::string& page_name)
+    const base::Closure& confirm_continuation,
+    const std::string& page_name,
+    const GURL& page_to_download)
     : confirm_continuation_(confirm_continuation),
-      downloads_label_(downloads_label),
-      page_name_(page_name) {}
+      page_name_(page_name),
+      page_to_download_(page_to_download) {}
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 OfflinePageInfoBarDelegate::GetIdentifier() const {
@@ -62,30 +62,28 @@ bool OfflinePageInfoBarDelegate::EqualsDelegate(
     InfoBarDelegate* delegate) const {
   OfflinePageInfoBarDelegate* confirm_delegate =
       delegate->AsOfflinePageInfoBarDelegate();
-  return confirm_delegate && GetFileName() == confirm_delegate->GetFileName();
+  return confirm_delegate && GetFilePath() == confirm_delegate->GetFilePath();
 }
 
-bool OfflinePageInfoBarDelegate::OverwriteExistingFile() {
-  // TODO(dewittj): Downloads UI intends to remove this functionality.
-  confirm_continuation_.Run(Action::OVERWRITE);
+bool OfflinePageInfoBarDelegate::Cancel() {
   return true;
 }
 
-bool OfflinePageInfoBarDelegate::CreateNewFile() {
-  confirm_continuation_.Run(Action::CREATE_NEW);
+bool OfflinePageInfoBarDelegate::Accept() {
+  confirm_continuation_.Run();
   return true;
 }
 
-std::string OfflinePageInfoBarDelegate::GetFileName() const {
+std::string OfflinePageInfoBarDelegate::GetFilePath() const {
   return page_name_;
 }
 
-std::string OfflinePageInfoBarDelegate::GetDirName() const {
-  return downloads_label_;
+bool OfflinePageInfoBarDelegate::IsOfflinePage() const {
+  return true;
 }
 
-std::string OfflinePageInfoBarDelegate::GetDirFullPath() const {
-  return std::string();
+std::string OfflinePageInfoBarDelegate::GetPageURL() const {
+  return page_to_download_.spec();
 }
 
 bool OfflinePageInfoBarDelegate::ShouldExpire(
