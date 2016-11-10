@@ -130,7 +130,7 @@ ninja -C out/OzoneChromeOS chrome
 Then to run for example the X11 platform:
 
 ``` shell
-./out/OzoneChromeOS/chrome --ozone-platform=x11 --disable-setuid-sandbox
+./out/OzoneChromeOS/chrome --ozone-platform=x11
 ```
 
 ### Embedded
@@ -155,8 +155,7 @@ ninja -C out/OzoneEmbedded content_shell
 Then to run for example the headless platform:
 
 ``` shell
-./out/OzoneEmbedded/content_shell --disable-setuid-sandbox \
-                                  --ozone-platform=headless \
+./out/OzoneEmbedded/content_shell --ozone-platform=headless \
                                   --ozone-dump-file=/tmp/
 ```
 
@@ -178,7 +177,6 @@ Then to run for example the X11 platform:
 
 ``` shell
 ./out/OzoneLinuxDesktop/chrome --ozone-platform=x11 \
-                               --disable-setuid-sandbox \
                                --mash
 ```
 
@@ -202,12 +200,10 @@ by default.
 ## Running with Ozone
 
 Specify the platform you want to use at runtime using the `--ozone-platform`
-flag. Disabling the setuid sandbox may be required during development.
-
-For example, to run content_shell with the GBM platform:
+flag. For example, to run `content_shell` with the GBM platform:
 
 ``` shell
-content_shell --disable-setuid-sandbox --ozone-platform=gbm
+content_shell --ozone-platform=gbm
 ```
 
 Caveats:
@@ -215,6 +211,8 @@ Caveats:
 * `content_shell` always runs at 800x600 resolution.
 * For the GBM platform, you may need to terminate your X server (or any other
   display server) prior to testing.
+* During development, you may need to configure
+  [sandboxing](linux_sandboxing.md) or to disable it.
 
 ## Ozone Platforms
 
@@ -228,8 +226,7 @@ by specifying `--ozone-dump-file=/path/to/output-directory` on the
 command line:
 
 ``` shell
-content_shell --disable-setuid-sandbox \
-              --ozone-platform=headless \
+content_shell --ozone-platform=headless \
               --ozone-dump-file=/tmp/
 ```
 
@@ -270,8 +267,7 @@ following commands:
 gn args out/OzoneWayland --args="use_ozone=true enable_package_mash_services=true"
 ninja -C out/OzoneWayland chrome
 ./out/OzoneWayland/chrome --ozone-platform=wayland \
-                          --mash \
-                          --disable-setuid-sandbox
+                          --mash
 ```
 
 ### Caca
@@ -298,7 +294,7 @@ with the following commands:
 gn args out/OzoneCaca \
         --args="use_ozone=true ozone_platform_caca=true use_sysroot=false ozone_auto_platforms=false toolkit_views=false"
 ninja -C out/OzoneCaca content_shell
-./out/OzoneCaca/content_shell --disable-setuid-sandbox
+./out/OzoneCaca/content_shell
 ```
 
   Note: traditional TTYs are not the ideal browsing experience.<br/>
