@@ -41,11 +41,6 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
  public:
   ~ChildProcessHostImpl() override;
 
-  // Public and static for reuse by RenderMessageFilter.
-  static void AllocateSharedMemory(
-      size_t buffer_size, base::ProcessHandle child_process,
-      base::SharedMemoryHandle* handle);
-
   // Returns a unique ID to identify a child process. On construction, this
   // function will be used to generate the id_, but it is also used to generate
   // IDs for the RenderProcessHost, which doesn't inherit from us, and whose IDs
@@ -93,8 +88,6 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
 
   // Message handlers:
   void OnShutdownRequest();
-  void OnAllocateSharedMemory(uint32_t buffer_size,
-                              base::SharedMemoryHandle* handle);
   void OnAllocateGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                                  uint32_t width,
                                  uint32_t height,

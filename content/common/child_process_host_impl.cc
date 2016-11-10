@@ -185,18 +185,6 @@ bool ChildProcessHostImpl::Send(IPC::Message* message) {
   return channel_->Send(message);
 }
 
-void ChildProcessHostImpl::AllocateSharedMemory(
-      size_t buffer_size, base::ProcessHandle child_process_handle,
-      base::SharedMemoryHandle* shared_memory_handle) {
-  base::SharedMemory shared_buf;
-  if (!shared_buf.CreateAnonymous(buffer_size)) {
-    *shared_memory_handle = base::SharedMemory::NULLHandle();
-    NOTREACHED() << "Cannot create shared memory buffer";
-    return;
-  }
-  shared_buf.GiveToProcess(child_process_handle, shared_memory_handle);
-}
-
 int ChildProcessHostImpl::GenerateChildProcessUniqueId() {
   // This function must be threadsafe.
   //
@@ -255,12 +243,9 @@ bool ChildProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_BEGIN_MESSAGE_MAP(ChildProcessHostImpl, msg)
       IPC_MESSAGE_HANDLER(ChildProcessHostMsg_ShutdownRequest,
                           OnShutdownRequest)
-      // NB: The SyncAllocateSharedMemory, SyncAllocateGpuMemoryBuffer, and
-      // DeletedGpuMemoryBuffer IPCs are handled here for non-renderer child
-      // processes. For renderer processes, they are handled in
-      // RenderMessageFilter.
-      IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SyncAllocateSharedMemory,
-                          OnAllocateSharedMemory)
+      // NB: The SyncAllocateGpuMemoryBuffer and DeletedGpuMemoryBuffer IPCs are
+      // handled here for non-renderer child processes. For renderer processes,
+      // they are handled in RenderMessageFilter.
       IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer,
                           OnAllocateGpuMemoryBuffer)
       IPC_MESSAGE_HANDLER(ChildProcessHostMsg_DeletedGpuMemoryBuffer,
@@ -305,12 +290,6 @@ void ChildProcessHostImpl::OnChannelError() {
 
 void ChildProcessHostImpl::OnBadMessageReceived(const IPC::Message& message) {
   delegate_->OnBadMessageReceived(message);
-}
-
-void ChildProcessHostImpl::OnAllocateSharedMemory(
-    uint32_t buffer_size,
-    base::SharedMemoryHandle* handle) {
-  AllocateSharedMemory(buffer_size, peer_process_.Handle(), handle);
 }
 
 void ChildProcessHostImpl::OnShutdownRequest() {
