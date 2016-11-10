@@ -20,19 +20,22 @@ Polymer({
   behaviors: [I18nBehavior],
 
   properties: {
-    /** @private {!settings.AppearanceBrowserProxy} */
-    browserProxy_: Object,
+    /**
+     * Dictionary defining page visibility.
+     * @type {!AppearancePageVisibility}
+     */
+    pageVisibility: Object,
 
     prefs: {
       type: Object,
       notify: true,
     },
 
+    /** @private {!settings.AppearanceBrowserProxy} */
+    browserProxy_: Object,
+
     /** @private */
-    useSystemTheme_: {
-      type: Boolean,
-      value: false,  // Can only be true on Linux, but value exists everywhere.
-    },
+    defaultZoom_: Number,
 
     /**
      * List of options for the font size drop-down menu.
@@ -84,11 +87,11 @@ Polymer({
     /** @private */
     themeSublabel_: String,
 
-    /**
-     * Dictionary defining page visibility.
-     * @type {!AppearancePageVisibility}
-     */
-    pageVisibility: Object,
+    /** @private */
+    useSystemTheme_: {
+      type: Boolean,
+      value: false,  // Can only be true on Linux, but value exists everywhere.
+    },
   },
 
   /** @private {string} */
@@ -112,7 +115,7 @@ Polymer({
     // TODO(dschuyler): Look into adding a listener for the
     // default zoom percent.
     chrome.settingsPrivate.getDefaultZoom(function(zoom) {
-      this.$.zoomLevel.value = zoom;
+      this.defaultZoom_ = zoom;
     }.bind(this));
   },
 
@@ -249,5 +252,16 @@ Polymer({
    */
   getFirst_: function(bookmarksBarVisible) {
     return !bookmarksBarVisible ? 'first' : '';
-  }
+  },
+
+  /**
+   * @see content::ZoomValuesEqual().
+   * @param {number} zoom1
+   * @param {number} zoom2
+   * @return {boolean}
+   * @private
+   */
+  zoomValuesEqual_: function(zoom1, zoom2) {
+    return Math.abs(zoom1 - zoom2) <= 0.001;
+  },
 });

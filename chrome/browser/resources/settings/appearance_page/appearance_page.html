@@ -151,7 +151,10 @@
             <select id="zoomLevel" class="md-select"
                 on-change="onZoomLevelChange_">
               <template is="dom-repeat" items="[[pageZoomLevels_]]">
-                <option value="[[item]]">[[formatZoom_(item)]]%</option>
+                <option value="[[item]]"
+                    selected$="[[zoomValuesEqual_(item, defaultZoom_)]]">
+                  [[formatZoom_(item)]]%
+                </option>
               </template>
             </select>
             <span class="md-select-underline"></span>
