@@ -81,9 +81,14 @@ bool IsDownloadCompleted(const DownloadItem& item) {
          !item.GetFileExternallyRemoved();
 }
 
+base::Time GetAssetDownloadPublishedTime(const DownloadItem& item) {
+  return item.GetStartTime();
+}
+
 struct OrderDownloadsMostRecentlyDownloadedFirst {
   bool operator()(const DownloadItem* left, const DownloadItem* right) const {
-    return left->GetEndTime() > right->GetEndTime();
+    return GetAssetDownloadPublishedTime(*left) >
+           GetAssetDownloadPublishedTime(*right);
   }
 };
 
@@ -428,10 +433,9 @@ ContentSuggestion DownloadSuggestionsProvider::ConvertDownloadItem(
       ContentSuggestion::ID(provided_category_, GetAssetDownloadPerCategoryID(
                                                     download_item.GetId())),
       download_item.GetOriginalUrl());
-  // TODO(vitaliii): Set proper title.
   suggestion.set_title(
       download_item.GetTargetFilePath().BaseName().LossyDisplayName());
-  suggestion.set_publish_date(download_item.GetEndTime());
+  suggestion.set_publish_date(GetAssetDownloadPublishedTime(download_item));
   suggestion.set_publisher_name(
       base::UTF8ToUTF16(download_item.GetURL().host()));
   auto extra = base::MakeUnique<ntp_snippets::DownloadSuggestionExtra>();
@@ -460,8 +464,10 @@ bool DownloadSuggestionsProvider::CacheAssetDownloadIfNeeded(
     auto oldest = std::max_element(cached_asset_downloads_.begin(),
                                    cached_asset_downloads_.end(),
                                    OrderDownloadsMostRecentlyDownloadedFirst());
-    if (item->GetEndTime() <= (*oldest)->GetEndTime())
+    if (GetAssetDownloadPublishedTime(*item) <=
+        GetAssetDownloadPublishedTime(**oldest)) {
       return false;
+    }
 
     *oldest = item;
   } else {

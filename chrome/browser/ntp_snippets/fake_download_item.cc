@@ -77,6 +77,14 @@ bool FakeDownloadItem::GetFileExternallyRemoved() const {
   return is_file_externally_removed_;
 }
 
+void FakeDownloadItem::SetStartTime(const base::Time& start_time) {
+  start_time_ = start_time;
+}
+
+base::Time FakeDownloadItem::GetStartTime() const {
+  return start_time_;
+}
+
 void FakeDownloadItem::SetEndTime(const base::Time& end_time) {
   end_time_ = end_time;
 }
@@ -312,11 +320,6 @@ int64_t FakeDownloadItem::GetTotalBytes() const {
 int64_t FakeDownloadItem::GetReceivedBytes() const {
   NOTREACHED();
   return 1;
-}
-
-base::Time FakeDownloadItem::GetStartTime() const {
-  NOTREACHED();
-  return base::Time();
 }
 
 bool FakeDownloadItem::CanShowInFolder() {

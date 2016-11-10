@@ -155,7 +155,7 @@ std::unique_ptr<FakeDownloadItem> CreateDummyAssetDownload(int id) {
       base::FilePath::FromUTF8Unsafe("folder/file" + id_string + ".mhtml"));
   item->SetURL(GURL("http://download.com/redirected" + id_string));
   item->SetOriginalUrl(GURL("http://download.com/" + id_string));
-  item->SetEndTime(base::Time::Now());
+  item->SetStartTime(base::Time::Now());
   item->SetFileExternallyRemoved(false);
   item->SetState(DownloadItem::DownloadState::COMPLETE);
   item->SetMimeType("application/pdf");
@@ -164,9 +164,9 @@ std::unique_ptr<FakeDownloadItem> CreateDummyAssetDownload(int id) {
 
 std::unique_ptr<FakeDownloadItem> CreateDummyAssetDownload(
     int id,
-    const base::Time end_time) {
+    const base::Time& start_time) {
   std::unique_ptr<FakeDownloadItem> item = CreateDummyAssetDownload(id);
-  item->SetEndTime(end_time);
+  item->SetStartTime(start_time);
   return item;
 }
 

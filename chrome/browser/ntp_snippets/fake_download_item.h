@@ -48,6 +48,9 @@ class FakeDownloadItem : public content::DownloadItem {
   void SetFileExternallyRemoved(bool is_file_externally_removed);
   bool GetFileExternallyRemoved() const override;
 
+  void SetStartTime(const base::Time& start_time);
+  base::Time GetStartTime() const override;
+
   void SetEndTime(const base::Time& end_time);
   base::Time GetEndTime() const override;
 
@@ -103,7 +106,6 @@ class FakeDownloadItem : public content::DownloadItem {
   bool AllDataSaved() const override;
   int64_t GetTotalBytes() const override;
   int64_t GetReceivedBytes() const override;
-  base::Time GetStartTime() const override;
   bool CanShowInFolder() override;
   bool CanOpenDownload() override;
   bool ShouldOpenFileBasedOnExtension() override;
@@ -125,6 +127,7 @@ class FakeDownloadItem : public content::DownloadItem {
   GURL url_;
   base::FilePath file_path_;
   bool is_file_externally_removed_;
+  base::Time start_time_;
   base::Time end_time_;
   DownloadState download_state_;
   std::string mime_type_;
