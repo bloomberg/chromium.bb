@@ -1596,3 +1596,5 @@ crbug.com/657646 [ Win ] fast/text/international/thai-line-breaks.html [ Failure
 crbug.com/664005 [ Linux Win ] fast/hidpi/scrollbar-appearance-increase-device-scale-factor.html [ Timeout ]
 
 crbug.com/664059 [ Precise Mac10.11 Debug ] imported/wpt/html/browsers/history/the-location-interface/reload_post_1.html [ Failure ]
+
+crbug.com/664256 imported/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Failure ]
