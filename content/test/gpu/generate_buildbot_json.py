@@ -1135,12 +1135,16 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       {
         'swarming_dimension_sets': [
           # crbug.com/555545 and crbug.com/649824:
-          # Disable webgl_conformance_gl_tests on older Win/AMD cards.
-          # (They seem to be running fine on newer cards.)
+          # Disable webgl_conformance_gl_tests on some Win/AMD cards.
+          # Always fails on older cards, flaky on newer cards.
           # Note that these must match the GPUs exactly; wildcard
           # matches (i.e., only device ID) aren't supported!
           {
             'gpu': '1002:6779',
+            'os': 'Windows-2008ServerR2-SP1'
+          },
+          {
+            'gpu': '1002:6613',
             'os': 'Windows-2008ServerR2-SP1'
           },
           # BUG 590951: Disable webgl_conformance_gl_tests on Win/Intel
