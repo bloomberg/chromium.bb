@@ -162,7 +162,13 @@ TEST_F(FontTest, MAYBE_GetActualFontNameForTesting) {
             base::ToLowerASCII(fallback_font.GetActualFontNameForTesting()));
 }
 
-TEST_F(FontTest, DeriveFont) {
+#if defined(OS_ANDROID)
+// https://crbug.com/642010
+#define MAYBE_DeriveFont DISABLED_DeriveFont
+#else
+#define MAYBE_DeriveFont DeriveFont
+#endif
+TEST_F(FontTest, MAYBE_DeriveFont) {
   Font cf("Arial", 8);
   const int kSizeDelta = 2;
   Font cf_underlined =

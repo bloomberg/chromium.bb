@@ -17,6 +17,8 @@ PlatformFont* PlatformFont::CreateDefault() {
 // static
 PlatformFont* PlatformFont::CreateFromNameAndSize(const std::string& font_name,
                                                   int font_size) {
+  // If you implement this, enable FontTest.DeriveFont on Android,
+  // https://crbug.com/642010
   NOTIMPLEMENTED();
   return NULL;
 }

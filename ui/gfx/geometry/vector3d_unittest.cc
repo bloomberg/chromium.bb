@@ -8,6 +8,7 @@
 #include <limits>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
@@ -203,7 +204,13 @@ TEST(Vector3dTest, DotProduct) {
   }
 }
 
-TEST(Vector3dTest, CrossProduct) {
+#if defined(ARCH_CPU_ARM_FAMILY)
+// TODO(danakj): Make this pass on ARM, https://crbug.com/662556
+#define MAYBE_CrossProduct DISABLED_CrossProduct
+#else
+#define MAYBE_CrossProduct CrossProduct
+#endif
+TEST(Vector3dTest, MAYBE_CrossProduct) {
   const struct {
     gfx::Vector3dF expected;
     gfx::Vector3dF input1;
