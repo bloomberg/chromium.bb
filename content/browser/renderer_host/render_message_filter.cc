@@ -183,9 +183,11 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
         ViewHostMsg_SetNeedsBeginFrames,
         ResizeHelperPostMsgToUIThread(render_process_id_, message))
 #endif
-    // NB: The SyncAllocateGpuMemoryBuffer and DeletedGpuMemoryBuffer IPCs are
-    // handled here for renderer processes. For non-renderer child processes,
-    // they are handled in ChildProcessHostImpl.
+    // NB: The SyncAllocateSharedMemory, SyncAllocateGpuMemoryBuffer, and
+    // DeletedGpuMemoryBuffer IPCs are handled here for renderer processes. For
+    // non-renderer child processes, they are handled in ChildProcessHostImpl.
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(
+        ChildProcessHostMsg_SyncAllocateSharedMemory, OnAllocateSharedMemory)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
         ChildProcessHostMsg_SyncAllocateSharedBitmap, OnAllocateSharedBitmap)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
@@ -333,6 +335,25 @@ void RenderMessageFilter::SendLoadFontReply(IPC::Message* reply,
 }
 
 #endif  // defined(OS_MACOSX)
+
+void RenderMessageFilter::AllocateSharedMemoryOnFileThread(
+    uint32_t buffer_size,
+    IPC::Message* reply_msg) {
+  base::SharedMemoryHandle handle;
+  ChildProcessHostImpl::AllocateSharedMemory(buffer_size, PeerHandle(),
+                                             &handle);
+  ChildProcessHostMsg_SyncAllocateSharedMemory::WriteReplyParams(reply_msg,
+                                                                 handle);
+  Send(reply_msg);
+}
+
+void RenderMessageFilter::OnAllocateSharedMemory(uint32_t buffer_size,
+                                                 IPC::Message* reply_msg) {
+  BrowserThread::PostTask(
+      BrowserThread::FILE_USER_BLOCKING, FROM_HERE,
+      base::Bind(&RenderMessageFilter::AllocateSharedMemoryOnFileThread, this,
+                 buffer_size, reply_msg));
+}
 
 void RenderMessageFilter::AllocateSharedBitmapOnFileThread(
     uint32_t buffer_size,

@@ -149,6 +149,9 @@ class CONTENT_EXPORT RenderMessageFilter
   // Used to ask the browser to allocate a block of shared memory for the
   // renderer to send back data in, since shared memory can't be created
   // in the renderer on POSIX due to the sandbox.
+  void AllocateSharedMemoryOnFileThread(uint32_t buffer_size,
+                                        IPC::Message* reply_msg);
+  void OnAllocateSharedMemory(uint32_t buffer_size, IPC::Message* reply_msg);
   void AllocateSharedBitmapOnFileThread(uint32_t buffer_size,
                                         const cc::SharedBitmapId& id,
                                         IPC::Message* reply_msg);

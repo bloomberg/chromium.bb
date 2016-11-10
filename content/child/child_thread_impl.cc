@@ -65,8 +65,6 @@
 #include "mojo/edk/embedder/named_platform_channel_pair.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
-#include "mojo/public/cpp/system/buffer.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -731,23 +729,27 @@ std::unique_ptr<base::SharedMemory> ChildThreadImpl::AllocateSharedMemory(
     size_t buf_size,
     IPC::Sender* sender,
     bool* out_of_memory) {
-  mojo::ScopedSharedBufferHandle mojo_buf =
-      mojo::SharedBufferHandle::Create(buf_size);
-  if (!mojo_buf->is_valid()) {
-    LOG(WARNING) << "Browser failed to allocate shared memory";
+  std::unique_ptr<base::SharedMemory> shared_buf;
+  // Ask the browser to create the shared memory, since this is blocked by the
+  // sandbox on most platforms.
+  base::SharedMemoryHandle shared_mem_handle;
+  if (sender->Send(new ChildProcessHostMsg_SyncAllocateSharedMemory(
+          buf_size, &shared_mem_handle))) {
+    if (base::SharedMemory::IsHandleValid(shared_mem_handle)) {
+      shared_buf.reset(new base::SharedMemory(shared_mem_handle, false));
+    } else {
+      LOG(WARNING) << "Browser failed to allocate shared memory";
+      if (out_of_memory)
+        *out_of_memory = true;
+      return nullptr;
+    }
+  } else {
+    // Send is allowed to fail during shutdown. Return null in this case.
     if (out_of_memory)
-      *out_of_memory = true;
+      *out_of_memory = false;
     return nullptr;
   }
-
-  base::SharedMemoryHandle shared_buf;
-  if (mojo::UnwrapSharedMemoryHandle(std::move(mojo_buf), &shared_buf,
-                                     nullptr, nullptr) != MOJO_RESULT_OK) {
-    LOG(WARNING) << "Browser failed to allocate shared memory";
-    return nullptr;
-  }
-
-  return base::MakeUnique<base::SharedMemory>(shared_buf, false);
+  return shared_buf;
 }
 
 #if defined(OS_LINUX)
