@@ -10,8 +10,6 @@
 namespace reading_list {
 namespace prefs {
 
-// Boolean to track if some reading list entries have never been seen on this
-// device. Not synced.
 extern const char kReadingListHasUnseenEntries[];
 
 }  // namespace prefs

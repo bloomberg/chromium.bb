@@ -97,11 +97,6 @@ bool ReadingListModelImpl::CallbackEntryURL(
   return false;
 }
 
-// Temporary method
-void ReadingListModelImpl::RemoveEntryByUrl(const GURL& url) {
-  return RemoveEntryByURL(url);
-}
-
 void ReadingListModelImpl::RemoveEntryByURL(const GURL& url) {
   DCHECK(loaded());
   const ReadingListEntry entry(url, std::string());

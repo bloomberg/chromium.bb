@@ -7,6 +7,8 @@
 namespace reading_list {
 namespace prefs {
 
+// Boolean to track if some reading list entries have never been seen on this
+// device. Not synced.
 const char kReadingListHasUnseenEntries[] = "reading_list.has_unseen_entries";
 
 }  // namespace prefs

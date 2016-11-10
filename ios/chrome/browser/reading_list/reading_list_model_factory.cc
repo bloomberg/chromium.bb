@@ -54,9 +54,9 @@ std::unique_ptr<KeyedService> ReadingListModelFactory::BuildServiceInstanceFor(
   auto storage = base::MakeUnique<ReadingListModelStorageDefaults>();
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  std::unique_ptr<ReadingListModelImpl> reading_list_model(
-      new ReadingListModelImpl(std::move(storage),
-                               chrome_browser_state->GetPrefs()));
+  std::unique_ptr<KeyedService> reading_list_model =
+      base::MakeUnique<ReadingListModelImpl>(std::move(storage),
+                                             chrome_browser_state->GetPrefs());
   return reading_list_model;
 }
 

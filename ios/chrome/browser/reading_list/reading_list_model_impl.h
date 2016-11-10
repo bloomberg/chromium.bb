@@ -51,9 +51,6 @@ class ReadingListModelImpl : public ReadingListModel, public KeyedService {
 
   void RemoveEntryByURL(const GURL& url) override;
 
-  // Temporary method
-  void RemoveEntryByUrl(const GURL& url) override;
-
   const ReadingListEntry& AddEntry(const GURL& url,
                                    const std::string& title) override;
 
