@@ -11589,6 +11589,12 @@
           "can_use_on_swarming_builders": false
         },
         "test": "mus_ws_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "views_aura_mus_unittests"
       }
     ]
   },
