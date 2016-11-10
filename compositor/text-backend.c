@@ -132,6 +132,7 @@ deactivate_input_method(struct input_method *input_method)
 		zwp_input_method_v1_send_deactivate(
 			input_method->input_method_binding,
 			input_method->context->resource);
+		input_method->context->input = NULL;
 	}
 
 	wl_list_remove(&input_method->link);
