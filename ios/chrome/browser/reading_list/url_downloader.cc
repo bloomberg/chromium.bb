@@ -15,6 +15,7 @@
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/dom_distiller/distiller_viewer.h"
 #include "ios/web/public/web_thread.h"
+#include "net/base/escape.h"
 #include "url/gurl.h"
 
 namespace {
@@ -201,8 +202,10 @@ bool URLDownloader::CreateOfflineURLDirectory(const GURL& url) {
 bool URLDownloader::SaveImage(const GURL& url,
                               const GURL& image_url,
                               const std::string& data,
-                              base::FilePath& path) {
-  path = OfflineURLDirectoryPath(url).Append(base::MD5String(image_url.spec()));
+                              std::string* image_name) {
+  std::string image_hash = base::MD5String(image_url.spec());
+  *image_name = image_hash;
+  base::FilePath path = OfflineURLDirectoryPath(url).Append(image_hash);
   if (!base::PathExists(path)) {
     return base::WriteFile(path, data.c_str(), data.length()) > 0;
   }
@@ -217,16 +220,16 @@ std::string URLDownloader::SaveAndReplaceImagesInHTML(
   std::string mutable_html = html;
   for (size_t i = 0; i < images.size(); i++) {
     base::FilePath local_image_path;
-    if (!SaveImage(url, images[i].url, images[i].data, local_image_path)) {
+    std::string local_image_name;
+    if (!SaveImage(url, images[i].url, images[i].data, &local_image_name)) {
       return std::string();
     }
-    const std::string& image_url = images[i].url.spec();
+    std::string image_url = net::EscapeForHTML(images[i].url.spec());
     size_t image_url_size = image_url.size();
     size_t pos = mutable_html.find(image_url, 0);
     while (pos != std::string::npos) {
-      mutable_html.replace(pos, image_url_size,
-                           local_image_path.AsUTF8Unsafe());
-      pos = mutable_html.find(image_url, pos + image_url_size);
+      mutable_html.replace(pos, image_url_size, local_image_name);
+      pos = mutable_html.find(image_url, pos + local_image_name.size());
     }
   }
   return mutable_html;

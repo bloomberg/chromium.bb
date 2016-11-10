@@ -98,7 +98,7 @@ class URLDownloader {
   bool SaveImage(const GURL& url,
                  const GURL& imageURL,
                  const std::string& data,
-                 base::FilePath& path);
+                 std::string* image_name);
   // Saves images in |images| array to disk and replaces references in |html| to
   // local path. Returns updated html.
   std::string SaveAndReplaceImagesInHTML(
