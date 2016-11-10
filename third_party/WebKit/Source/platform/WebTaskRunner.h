@@ -8,14 +8,11 @@
 #include "base/callback_forward.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebTraceLocation.h"
-#include <memory>
-
-#ifdef INSIDE_BLINK
 #include "wtf/Compiler.h"
 #include "wtf/Functional.h"
 #include "wtf/RefCounted.h"
 #include "wtf/WeakPtr.h"
-#endif
+#include <memory>
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -24,8 +21,6 @@ class SingleThreadTaskRunner;
 namespace blink {
 
 using SingleThreadTaskRunner = base::SingleThreadTaskRunner;
-
-#ifdef INSIDE_BLINK
 
 // TaskHandle is associated to a task posted by
 // WebTaskRunner::postCancellableTask or
@@ -58,8 +53,6 @@ class BLINK_PLATFORM_EXPORT TaskHandle {
   explicit TaskHandle(RefPtr<Runner>);
   RefPtr<Runner> m_runner;
 };
-
-#endif
 
 // The blink representation of a chromium SingleThreadTaskRunner.
 class BLINK_PLATFORM_EXPORT WebTaskRunner {
@@ -117,7 +110,6 @@ class BLINK_PLATFORM_EXPORT WebTaskRunner {
   // Returns the underlying task runner object.
   virtual SingleThreadTaskRunner* toSingleThreadTaskRunner() = 0;
 
-#ifdef INSIDE_BLINK
   // Helpers for posting bound functions as tasks.
 
   // For cross-thread posting. Can be called from any thread.
@@ -140,7 +132,6 @@ class BLINK_PLATFORM_EXPORT WebTaskRunner {
   TaskHandle postDelayedCancellableTask(const WebTraceLocation&,
                                         std::unique_ptr<WTF::Closure>,
                                         long long delayMs) WARN_UNUSED_RETURN;
-#endif
 };
 
 }  // namespace blink
