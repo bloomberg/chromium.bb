@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionO
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.DownloadState;
 
 import java.util.List;
 
@@ -158,7 +157,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mAdapter.onDownloadItemUpdated(updateItem, false, DownloadState.COMPLETE);
+                mAdapter.onDownloadItemUpdated(updateItem, false);
             }
         });
         mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(callCount);
@@ -171,7 +170,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mAdapter.onDownloadItemUpdated(deletedItem, false, DownloadState.COMPLETE);
+                mAdapter.onDownloadItemUpdated(deletedItem, false);
             }
         });
         mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(callCount);
@@ -287,8 +286,8 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mAdapter.onDownloadItemUpdated(item7, false, DownloadState.COMPLETE);
-                mAdapter.onDownloadItemUpdated(item8, false, DownloadState.COMPLETE);
+                mAdapter.onDownloadItemUpdated(item7, false);
+                mAdapter.onDownloadItemUpdated(item8, false);
             }
         });
         mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(callCount, 2);
@@ -364,8 +363,8 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mAdapter.onDownloadItemUpdated(item7, false, DownloadState.COMPLETE);
-                mAdapter.onDownloadItemUpdated(item8, false, DownloadState.COMPLETE);
+                mAdapter.onDownloadItemUpdated(item7, false);
+                mAdapter.onDownloadItemUpdated(item8, false);
             }
         });
         mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(callCount, 2);

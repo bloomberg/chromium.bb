@@ -1552,16 +1552,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
     }
 
     @CalledByNative
-    private void addDownloadItemToList(List<DownloadItem> list, String guid, String displayName,
-            String filepath, String url, String mimeType, long startTimestamp, long totalBytes,
-            boolean hasBeenExternallyRemoved) {
-        // Remap the MIME type first.
-        File file = new File(filepath);
-        String newMimeType =
-                ChromeDownloadDelegate.remapGenericMimeType(mimeType, url, file.getName());
-        list.add(createDownloadItem(
-                guid, displayName, filepath, url, newMimeType, startTimestamp, totalBytes,
-                hasBeenExternallyRemoved));
+    private void addDownloadItemToList(List<DownloadItem> list, DownloadItem item) {
+        list.add(item);
     }
 
     @CalledByNative
@@ -1572,14 +1564,9 @@ public class DownloadManagerService extends BroadcastReceiver implements
     }
 
     @CalledByNative
-    private void onDownloadItemUpdated(int state, String guid, String displayName, String filepath,
-            String url, String mimeType, long startTimestamp, long totalBytes,
-            boolean isOffTheRecord, boolean hasBeenExternallyRemoved) {
-        DownloadItem item = createDownloadItem(
-                guid, displayName, filepath, url, mimeType, startTimestamp, totalBytes,
-                hasBeenExternallyRemoved);
+    private void onDownloadItemUpdated(DownloadItem item) {
         for (DownloadHistoryAdapter adapter : mHistoryAdapters) {
-            adapter.onDownloadItemUpdated(item, isOffTheRecord, state);
+            adapter.onDownloadItemUpdated(item, item.getDownloadInfo().isOffTheRecord());
         }
     }
 
@@ -1655,16 +1642,27 @@ public class DownloadManagerService extends BroadcastReceiver implements
     @Override
     public void purgeActiveNetworkList(long[] activeNetIds) {}
 
+    @CalledByNative
     private static DownloadItem createDownloadItem(String guid, String displayName,
             String filepath, String url, String mimeType, long startTimestamp, long totalBytes,
-            boolean hasBeenExternallyRemoved) {
+            boolean hasBeenExternallyRemoved, boolean isIncognito, int state,
+            int percentCompleted, boolean isPaused) {
+        // Remap the MIME type first.
+        File file = new File(filepath);
+        String newMimeType =
+                ChromeDownloadDelegate.remapGenericMimeType(mimeType, url, file.getName());
+
         DownloadInfo.Builder builder = new DownloadInfo.Builder()
                 .setDownloadGuid(guid)
                 .setFileName(displayName)
                 .setFilePath(filepath)
                 .setUrl(url)
-                .setMimeType(mimeType)
-                .setContentLength(totalBytes);
+                .setMimeType(newMimeType)
+                .setContentLength(totalBytes)
+                .setIsOffTheRecord(isIncognito)
+                .setPercentCompleted(percentCompleted)
+                .setIsPaused(isPaused)
+                .setState(state);
         DownloadItem downloadItem = new DownloadItem(false, builder.build());
         downloadItem.setStartTime(startTimestamp);
         downloadItem.setHasBeenExternallyRemoved(hasBeenExternallyRemoved);

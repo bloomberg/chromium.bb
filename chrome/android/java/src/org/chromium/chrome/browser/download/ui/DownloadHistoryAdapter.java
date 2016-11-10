@@ -121,6 +121,9 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         for (DownloadItem item : result) {
             DownloadItemWrapper wrapper = createDownloadItemWrapper(item, isOffTheRecord);
 
+            // Don't display any incomplete downloads, yet.
+            if (item.getDownloadInfo().state() != DownloadState.COMPLETE) continue;
+
             // TODO(twellington): The native downloads service should remove externally deleted
             //                    downloads rather than passing them to Java.
             if (getExternallyDeletedItemsMap(isOffTheRecord).containsKey(wrapper.getId())) {
@@ -207,11 +210,11 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     /**
      * Updates the list when new information about a download comes in.
      */
-    public void onDownloadItemUpdated(DownloadItem item, boolean isOffTheRecord, int state) {
+    public void onDownloadItemUpdated(DownloadItem item, boolean isOffTheRecord) {
         if (isOffTheRecord && !mShowOffTheRecord) return;
 
         // The adapter currently only cares about completion events.
-        if (state != DownloadState.COMPLETE) return;
+        if (item.getDownloadInfo().state() != DownloadState.COMPLETE) return;
 
         List<DownloadItemWrapper> list = getDownloadItemList(isOffTheRecord);
         int index = findItemIndex(list, item.getId());

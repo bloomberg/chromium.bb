@@ -31,7 +31,7 @@ bool ShouldShowDownloadItem(content::DownloadItem* item) {
   return !item->IsTemporary() &&
       !item->GetFileNameToReportUser().empty() &&
       !item->GetTargetFilePath().empty() &&
-      item->GetState() == content::DownloadItem::COMPLETE;
+      item->GetState() != content::DownloadItem::CANCELLED;
 }
 
 void updateNotifier(DownloadManagerService* service,
@@ -60,6 +60,24 @@ void RemoveDownloadsFromDownloadManager(
       item->Remove();
     }
   }
+}
+
+ScopedJavaLocalRef<jobject> CreateJavaDownloadItem(
+    JNIEnv* env, content::DownloadItem* item) {
+  return Java_DownloadManagerService_createDownloadItem(
+      env,
+      ConvertUTF8ToJavaString(env, item->GetGuid()),
+      ConvertUTF8ToJavaString(env,
+                              item->GetFileNameToReportUser().value()),
+      ConvertUTF8ToJavaString(env, item->GetTargetFilePath().value()),
+      ConvertUTF8ToJavaString(env, item->GetTabUrl().spec()),
+      ConvertUTF8ToJavaString(env, item->GetMimeType()),
+      item->GetStartTime().ToJavaTime(), item->GetTotalBytes(),
+      item->GetFileExternallyRemoved(),
+      item->GetBrowserContext()->IsOffTheRecord(),
+      item->GetState(),
+      item->PercentComplete(),
+      item->IsPaused());
 }
 
 }  // namespace
@@ -178,15 +196,9 @@ void DownloadManagerService::GetAllDownloadsInternal(bool is_off_the_record) {
     if (!ShouldShowDownloadItem(item))
       continue;
 
+    ScopedJavaLocalRef<jobject> j_item = CreateJavaDownloadItem(env, item);
     Java_DownloadManagerService_addDownloadItemToList(
-        env, java_ref_, j_download_item_list,
-        ConvertUTF8ToJavaString(env, item->GetGuid()),
-        ConvertUTF8ToJavaString(env, item->GetFileNameToReportUser().value()),
-        ConvertUTF8ToJavaString(env, item->GetTargetFilePath().value()),
-        ConvertUTF8ToJavaString(env, item->GetTabUrl().spec()),
-        ConvertUTF8ToJavaString(env, item->GetMimeType()),
-        item->GetStartTime().ToJavaTime(), item->GetTotalBytes(),
-        item->GetFileExternallyRemoved());
+        env, java_ref_, j_download_item_list, j_item);
   }
 
   Java_DownloadManagerService_onAllDownloadsRetrieved(
@@ -274,21 +286,9 @@ void DownloadManagerService::OnDownloadUpdated(
     return;
 
   JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_item = CreateJavaDownloadItem(env, item);
   Java_DownloadManagerService_onDownloadItemUpdated(
-      env,
-      java_ref_.obj(),
-      item->GetState(),
-      ConvertUTF8ToJavaString(env, item->GetGuid()).obj(),
-      ConvertUTF8ToJavaString(
-          env, item->GetFileNameToReportUser().value()).obj(),
-      ConvertUTF8ToJavaString(
-          env, item->GetTargetFilePath().value()).obj(),
-      ConvertUTF8ToJavaString(env, item->GetTabUrl().spec()).obj(),
-      ConvertUTF8ToJavaString(env, item->GetMimeType()).obj(),
-      item->GetStartTime().ToJavaTime(),
-      item->GetTotalBytes(),
-      item->GetBrowserContext()->IsOffTheRecord(),
-      item->GetFileExternallyRemoved());
+      env, java_ref_.obj(), j_item);
 }
 
 void DownloadManagerService::OnDownloadRemoved(

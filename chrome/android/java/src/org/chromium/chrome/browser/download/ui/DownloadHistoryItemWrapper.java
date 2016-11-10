@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
 import org.chromium.chrome.browser.widget.DateDividedAdapter.TimedItem;
+import org.chromium.content_public.browser.DownloadState;
 import org.chromium.ui.widget.Toast;
 
 import java.io.File;
@@ -66,6 +67,9 @@ public abstract class DownloadHistoryItemWrapper implements TimedItem {
 
     /** @return The mime type or null if the item doesn't have one. */
     public abstract String getMimeType();
+
+    /** @return How much of the download has completed, or -1 if there is no progress. */
+    public abstract int getDownloadProgress();
 
     /** Called when the user wants to open the file. */
     abstract void open();
@@ -144,7 +148,11 @@ public abstract class DownloadHistoryItemWrapper implements TimedItem {
 
         @Override
         public long getFileSize() {
-            return mItem.getDownloadInfo().getContentLength();
+            if (mItem.getDownloadInfo().state() == DownloadState.COMPLETE) {
+                return mItem.getDownloadInfo().getContentLength();
+            } else {
+                return 0;
+            }
         }
 
         @Override
@@ -160,6 +168,11 @@ public abstract class DownloadHistoryItemWrapper implements TimedItem {
         @Override
         public String getMimeType() {
             return mItem.getDownloadInfo().getMimeType();
+        }
+
+        @Override
+        public int getDownloadProgress() {
+            return mItem.getDownloadInfo().getPercentCompleted();
         }
 
         @Override
@@ -263,6 +276,11 @@ public abstract class DownloadHistoryItemWrapper implements TimedItem {
         @Override
         public String getMimeType() {
             return "text/plain";
+        }
+
+        @Override
+        public int getDownloadProgress() {
+            return -1;
         }
 
         @Override
