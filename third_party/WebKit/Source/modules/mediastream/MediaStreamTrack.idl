@@ -54,4 +54,7 @@ enum MediaStreamTrackState {
 
     // Non-standard APIs
     [MeasureAs=MediaStreamTrackRemote] readonly attribute boolean remote;
+    // TODO(guidou): Remove MediaStreamTrack.getSources().
+    // https://crbug.com/649710
+    [CallWith=ExecutionContext, RaisesException, DeprecateAs=MediaStreamTrackGetSources] static void getSources(MediaStreamTrackSourcesCallback callback);
 };

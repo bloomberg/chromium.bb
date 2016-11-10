@@ -34,6 +34,7 @@
 #include "modules/ModulesExport.h"
 #include "modules/mediastream/MediaDevicesRequest.h"
 #include "modules/mediastream/UserMediaRequest.h"
+#include "platform/mediastream/MediaStreamTrackSourcesRequest.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -48,6 +49,7 @@ class UserMediaClient {
   virtual void requestUserMedia(UserMediaRequest*) = 0;
   virtual void cancelUserMediaRequest(UserMediaRequest*) = 0;
   virtual void requestMediaDevices(MediaDevicesRequest*) = 0;
+  virtual void requestSources(MediaStreamTrackSourcesRequest*) = 0;
   virtual void setMediaDeviceChangeObserver(MediaDevices*) = 0;
   virtual ~UserMediaClient() {}
 };

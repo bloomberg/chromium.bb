@@ -3987,6 +3987,7 @@ interface MediaStreamEvent : Event
     getter stream
     method constructor
 interface MediaStreamTrack : EventTarget
+    static method getSources
     attribute @@toStringTag
     getter enabled
     getter id

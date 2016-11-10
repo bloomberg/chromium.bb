@@ -285,6 +285,7 @@ source_set("blink_headers") {
     "platform/WebSize.h",
     "platform/WebSourceBuffer.h",
     "platform/WebSourceBufferClient.h",
+    "platform/WebSourceInfo.h",
     "platform/WebSpeechSynthesisUtterance.h",
     "platform/WebSpeechSynthesisVoice.h",
     "platform/WebSpeechSynthesizer.h",

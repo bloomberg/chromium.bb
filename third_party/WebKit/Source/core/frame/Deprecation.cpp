@@ -402,6 +402,10 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
       return replacedBy("'Performance.onwebkitresourcetimingbufferfull'",
                         "'Performance.onresourcetimingbufferfull'");
 
+    case UseCounter::MediaStreamTrackGetSources:
+      return willBeRemoved("MediaStreamTrack.getSources", M56,
+                           "4765305641369600");
+
     case UseCounter::WebAnimationHyphenatedProperty:
       return "Hyphenated property names in Web Animations keyframes are "
              "invalid and therefore ignored. Please use camelCase instead.";

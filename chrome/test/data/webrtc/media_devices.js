@@ -11,7 +11,19 @@
  * Returns the list of devices available.
  */
 function getMediaDevices() {
-  navigator.mediaDevices.enumerateDevices().then(function(devices) {
+  navigator.getMediaDevices(function(devices) {
     returnToTest(JSON.stringify(devices));
   });
 }
+
+/**
+ * Queries for media sources on the current system using the getSources API.
+ *
+ * Returns the list of sources available.
+ */
+function getSources() {
+  MediaStreamTrack.getSources(function(sources) {
+    returnToTest(JSON.stringify(sources));
+  });
+}
+

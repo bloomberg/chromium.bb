@@ -30,6 +30,7 @@
 
 #include "web/UserMediaClientImpl.h"
 
+#include "public/platform/WebMediaStreamTrackSourcesRequest.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebMediaDeviceChangeObserver.h"
 #include "public/web/WebMediaDevicesRequest.h"
@@ -56,6 +57,12 @@ void UserMediaClientImpl::cancelUserMediaRequest(UserMediaRequest* request) {
 void UserMediaClientImpl::requestMediaDevices(MediaDevicesRequest* request) {
   if (m_client)
     m_client->requestMediaDevices(request);
+}
+
+void UserMediaClientImpl::requestSources(
+    MediaStreamTrackSourcesRequest* request) {
+  if (m_client)
+    m_client->requestSources(request);
 }
 
 void UserMediaClientImpl::setMediaDeviceChangeObserver(MediaDevices* observer) {
