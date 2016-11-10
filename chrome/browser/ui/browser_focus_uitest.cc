@@ -54,15 +54,6 @@
 using content::RenderViewHost;
 using content::WebContents;
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-// TODO(jcampan): http://crbug.com/23683 for linux.
-// TODO(suzhe): http://crbug.com/49737 for mac.
-#define MAYBE_TabsRememberFocusFindInPage DISABLED_TabsRememberFocusFindInPage
-#elif defined(OS_WIN)
-// Flaky, http://crbug.com/62537.
-#define MAYBE_TabsRememberFocusFindInPage DISABLED_TabsRememberFocusFindInPage
-#endif
-
 namespace {
 
 #if defined(OS_POSIX)
@@ -339,8 +330,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabsRememberFocus) {
 }
 
 // Tabs remember focus with find-in-page box.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_TabsRememberFocusFindInPage) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabsRememberFocusFindInPage) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  ui_test_utils::BrowserActivationWaiter waiter(browser());
+  waiter.WaitForActivation();
   const GURL url = embedded_test_server()->GetURL(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
