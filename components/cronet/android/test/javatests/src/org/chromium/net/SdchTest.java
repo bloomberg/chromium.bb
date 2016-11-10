@@ -147,10 +147,11 @@ public class SdchTest extends CronetTestBase {
     }
 
     private static class DictionaryAddedObserver extends SdchObserver {
-        ConditionVariable mBlock = new ConditionVariable();
+        private final ConditionVariable mBlock;
 
         public DictionaryAddedObserver(String targetUrl, long contextAdapter) {
             super(targetUrl, contextAdapter);
+            mBlock = new ConditionVariable();
         }
 
         @Override
