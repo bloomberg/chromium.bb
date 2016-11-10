@@ -167,7 +167,7 @@ source_set("test_support") {
 
   public_deps = [
     ":browser",
-    "//chromecast:cast_shell_common",
+    "//chromecast:cast_shell_lib",
     "//content/test:test_support",
   ]
 
@@ -201,10 +201,6 @@ test("cast_shell_tests") {
     "//mojo/edk/system",
     "//testing/gtest",
   ]
-
-  if (chromecast_branding != "public") {
-    deps += [ "//chromecast/internal:cast_shell_internal" ]
-  }
 }
 
 test("cast_shell_browser_test") {
@@ -224,11 +220,6 @@ test("cast_shell_browser_test") {
     "//testing/gtest",
     "//url",
   ]
-
-  # TODO(slan): Find a better way to do this.
-  if (chromecast_branding != "public") {
-    deps += [ "//chromecast/internal:cast_shell_internal" ]
-  }
 
   if (chromecast_branding == "public") {
     # Link default libcast_media_1.0 statically not to link dummy one

@@ -28,7 +28,7 @@ shared_library("libcast_shell_android") {
   deps = [
     ":platform_jni_loader",
     "//base",
-    "//chromecast:cast_shell_common",
+    "//chromecast:cast_shell_lib",
     "//chromecast/app",
     "//chromecast/app:cast_crash_client",
     "//chromecast/base",
@@ -42,9 +42,7 @@ shared_library("libcast_shell_android") {
     "//skia",
   ]
 
-  if (chromecast_branding != "public") {
-    deps += [ "//chromecast/internal:cast_shell_android_internal" ]
-  } else {
+  if (chromecast_branding == "public") {
     sources += [ "platform_jni_loader_stub.cc" ]
   }
 }

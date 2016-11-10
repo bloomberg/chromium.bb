@@ -276,24 +276,17 @@ if (is_android) {
   }
 }
 
-source_set("cast_shell_common") {
+group("cast_shell_lib") {
   deps = [
-    ":cast_shell_pak",
-    ":chromecast_locales_pak",
     "//chromecast/app",
     "//chromecast/browser",
     "//chromecast/common",
-    "//chromecast/common/media",
     "//chromecast/renderer",
   ]
-}
 
-source_set("cast_shell_media") {
-  deps = [
-    "//chromecast/common/media",
-    "//chromecast/media/service",
-    "//chromecast/renderer/media",
-  ]
+  if (chromecast_branding != "public") {
+    deps += [ "//chromecast/internal/shell" ]
+  }
 }
 
 executable("cast_shell") {
@@ -302,16 +295,13 @@ executable("cast_shell") {
   ]
 
   deps = [
-    ":cast_shell_common",
-    ":cast_shell_media",
+    ":cast_shell_lib",
+    ":cast_shell_pak",
+    ":chromecast_locales_pak",
     "//build/config/sanitizers:deps",
     "//chromecast/app",
     "//content/public/app:both",
   ]
-
-  if (chromecast_branding != "public") {
-    deps += [ "//chromecast/internal:cast_shell_internal" ]
-  }
 }
 
 repack("cast_shell_pak") {
