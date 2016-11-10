@@ -11,7 +11,7 @@
 namespace blink {
 
 LayoutNGBlockFlow::LayoutNGBlockFlow(Element* element)
-    : LayoutBlockFlow(element) {}
+    : LayoutBlockFlow(element), m_box(new NGBox(this)) {}
 
 bool LayoutNGBlockFlow::isOfType(LayoutObjectType type) const {
   return type == LayoutObjectNGBlockFlow || LayoutBlockFlow::isOfType(type);
@@ -22,9 +22,8 @@ void LayoutNGBlockFlow::layoutBlock(bool relayoutChildren) {
 
   const auto* constraint_space =
       NGConstraintSpace::CreateFromLayoutObject(*this);
-  NGBox* box = new NGBox(this);
   NGFragmentBase* fragment;
-  while (!box->Layout(constraint_space, &fragment))
+  while (!m_box->Layout(constraint_space, &fragment))
     ;
   clearNeedsLayout();
 }

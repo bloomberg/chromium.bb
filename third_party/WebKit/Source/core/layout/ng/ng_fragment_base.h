@@ -21,7 +21,9 @@ class CORE_EXPORT NGFragmentBase : public GarbageCollected<NGFragmentBase> {
   NGWritingMode WritingMode() const {
     return static_cast<NGWritingMode>(writing_mode_);
   }
-  NGDirection Direction() const { return static_cast<NGDirection>(direction_); }
+  TextDirection Direction() const {
+    return static_cast<TextDirection>(direction_);
+  }
 
   // Returns the border-box size.
   LayoutUnit InlineSize() const;
@@ -45,7 +47,7 @@ class CORE_EXPORT NGFragmentBase : public GarbageCollected<NGFragmentBase> {
 
  protected:
   NGFragmentBase(NGWritingMode writing_mode,
-                 NGDirection direction,
+                 TextDirection direction,
                  NGPhysicalFragmentBase* physical_fragment)
       : physical_fragment_(physical_fragment),
         writing_mode_(writing_mode),

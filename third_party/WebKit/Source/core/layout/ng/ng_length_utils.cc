@@ -23,8 +23,8 @@ namespace {
 // For now it's only used to calculate abstract values for margins.
 NGBoxStrut ToLogicalDimensions(const NGPhysicalBoxStrut& physical_dim,
                                const NGWritingMode writing_mode,
-                               const NGDirection direction) {
-  bool is_ltr = direction == LeftToRight;
+                               const TextDirection direction) {
+  bool is_ltr = direction == LTR;
   NGBoxStrut logical_dim;
   switch (writing_mode) {
     case VerticalRightLeft:
@@ -96,10 +96,9 @@ LayoutUnit ResolveInlineLength(
     case Auto:
     case FillAvailable: {
       LayoutUnit content_size = constraintSpace.AvailableSize().inline_size;
-      NGBoxStrut margins =
-          ComputeMargins(constraintSpace, style,
-                         FromPlatformWritingMode(style.getWritingMode()),
-                         FromPlatformDirection(style.direction()));
+      NGBoxStrut margins = ComputeMargins(
+          constraintSpace, style,
+          FromPlatformWritingMode(style.getWritingMode()), style.direction());
       return std::max(border_and_padding.InlineSum(),
                       content_size - margins.InlineSum());
     }
@@ -129,10 +128,9 @@ LayoutUnit ResolveInlineLength(
         // max-content. See css-sizing section 2.1.
         value = min_and_max->max_content;
       } else {
-        NGBoxStrut margins =
-            ComputeMargins(constraintSpace, style,
-                           FromPlatformWritingMode(style.getWritingMode()),
-                           FromPlatformDirection(style.direction()));
+        NGBoxStrut margins = ComputeMargins(
+            constraintSpace, style,
+            FromPlatformWritingMode(style.getWritingMode()), style.direction());
         LayoutUnit fill_available =
             std::max(LayoutUnit(), available_size - margins.InlineSum() -
                                        border_and_padding.InlineSum());
@@ -179,10 +177,9 @@ LayoutUnit ResolveBlockLength(const NGConstraintSpace& constraintSpace,
   switch (length.type()) {
     case FillAvailable: {
       LayoutUnit content_size = constraintSpace.AvailableSize().block_size;
-      NGBoxStrut margins =
-          ComputeMargins(constraintSpace, style,
-                         FromPlatformWritingMode(style.getWritingMode()),
-                         FromPlatformDirection(style.direction()));
+      NGBoxStrut margins = ComputeMargins(
+          constraintSpace, style,
+          FromPlatformWritingMode(style.getWritingMode()), style.direction());
       return std::max(border_and_padding.BlockSum(),
                       content_size - margins.BlockSum());
     }
@@ -276,7 +273,7 @@ LayoutUnit ComputeBlockSizeForFragment(const NGConstraintSpace& constraintSpace,
 NGBoxStrut ComputeMargins(const NGConstraintSpace& constraintSpace,
                           const ComputedStyle& style,
                           const NGWritingMode writing_mode,
-                          const NGDirection direction) {
+                          const TextDirection direction) {
   // We don't need these for margin computations
   MinAndMaxContentSizes empty_sizes;
   // Margins always get computed relative to the inline size:

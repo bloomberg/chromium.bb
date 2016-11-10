@@ -7,7 +7,6 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_physical_fragment_base.h"
-#include "core/layout/ng/ng_layout_input_text.h"
 #include "platform/LayoutUnit.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
@@ -19,17 +18,9 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragmentBase {
   NGPhysicalTextFragment(NGPhysicalSize size, NGPhysicalSize overflow)
       : NGPhysicalFragmentBase(size, overflow, FragmentText) {}
 
-  String Text() const { return text_list_->Text(start_offset_, end_offset_); }
-
   DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
-    visitor->trace(text_list_);
     NGPhysicalFragmentBase::traceAfterDispatch(visitor);
   }
-
- private:
-  Member<NGLayoutInputText> text_list_;
-  unsigned start_offset_;
-  unsigned end_offset_;
 };
 
 DEFINE_TYPE_CASTS(NGPhysicalTextFragment,

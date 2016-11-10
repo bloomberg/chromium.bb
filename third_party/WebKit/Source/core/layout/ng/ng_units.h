@@ -6,9 +6,9 @@
 #define NGUnits_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/ng_direction.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "platform/LayoutUnit.h"
+#include "platform/text/TextDirection.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -53,8 +53,8 @@ struct NGLogicalOffset {
   // @param outer_size the size of the rect (typically a fragment).
   // @param inner_size the size of the inner rect (typically a child fragment).
   CORE_EXPORT NGPhysicalOffset
-  ConvertToPhysical(NGWritingMode mode,
-                    NGDirection direction,
+  ConvertToPhysical(NGWritingMode,
+                    TextDirection,
                     NGPhysicalSize outer_size,
                     NGPhysicalSize inner_size) const;
   bool operator==(const NGLogicalOffset& other) const;

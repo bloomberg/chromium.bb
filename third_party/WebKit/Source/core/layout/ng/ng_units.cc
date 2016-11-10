@@ -49,19 +49,19 @@ String NGLogicalRect::ToString() const {
 
 NGPhysicalOffset NGLogicalOffset::ConvertToPhysical(
     NGWritingMode mode,
-    NGDirection direction,
+    TextDirection direction,
     NGPhysicalSize outer_size,
     NGPhysicalSize inner_size) const {
   switch (mode) {
     case HorizontalTopBottom:
-      if (direction == LeftToRight)
+      if (direction == LTR)
         return NGPhysicalOffset(inline_offset, block_offset);
       else
         return NGPhysicalOffset(
             outer_size.width - inline_offset - inner_size.width, block_offset);
     case VerticalRightLeft:
     case SidewaysRightLeft:
-      if (direction == LeftToRight)
+      if (direction == LTR)
         return NGPhysicalOffset(
             outer_size.width - block_offset - inner_size.width, inline_offset);
       else
@@ -69,14 +69,14 @@ NGPhysicalOffset NGLogicalOffset::ConvertToPhysical(
             outer_size.width - block_offset - inner_size.width,
             outer_size.height - inline_offset - inner_size.height);
     case VerticalLeftRight:
-      if (direction == LeftToRight)
+      if (direction == LTR)
         return NGPhysicalOffset(block_offset, inline_offset);
       else
         return NGPhysicalOffset(
             block_offset,
             outer_size.height - inline_offset - inner_size.height);
     case SidewaysLeftRight:
-      if (direction == LeftToRight)
+      if (direction == LTR)
         return NGPhysicalOffset(
             block_offset,
             outer_size.height - inline_offset - inner_size.height);

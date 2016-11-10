@@ -20,7 +20,7 @@ namespace blink {
 class CORE_EXPORT NGFragment final : public NGFragmentBase {
  public:
   NGFragment(NGWritingMode writing_mode,
-             NGDirection direction,
+             TextDirection direction,
              NGPhysicalFragment* physical_fragment)
       : NGFragmentBase(writing_mode, direction, physical_fragment) {}
 

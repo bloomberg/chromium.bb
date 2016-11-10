@@ -6,6 +6,7 @@
 #define LayoutNGBlockFlow_h
 
 #include "core/layout/LayoutBlockFlow.h"
+#include "core/layout/ng/ng_box.h"
 
 namespace blink {
 
@@ -16,9 +17,12 @@ class LayoutNGBlockFlow final : public LayoutBlockFlow {
   ~LayoutNGBlockFlow() override = default;
 
   void layoutBlock(bool relayoutChildren) override;
+  NGBox* boxForTesting() const { return m_box.get(); }
 
  private:
   bool isOfType(LayoutObjectType) const override;
+
+  Persistent<NGBox> m_box;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutNGBlockFlow, isLayoutNGBlockFlow());

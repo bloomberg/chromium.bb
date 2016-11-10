@@ -18,7 +18,7 @@ namespace blink {
 namespace {
 
 NGConstraintSpace* ConstructConstraintSpace(NGWritingMode writing_mode,
-                                            NGDirection direction,
+                                            TextDirection direction,
                                             NGLogicalSize size) {
   NGConstraintSpaceBuilder builder(writing_mode);
   builder.SetAvailableSize(size).SetPercentageResolutionSize(size);
@@ -48,7 +48,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, FixedSize) {
   style_->setHeight(Length(40, Fixed));
 
   auto* space = ConstructConstraintSpace(
-      HorizontalTopBottom, LeftToRight,
+      HorizontalTopBottom, LTR,
       NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
   NGPhysicalFragmentBase* frag = RunBlockLayoutAlgorithm(space, nullptr);
 
@@ -78,7 +78,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, LayoutBlockChildren) {
   first_child->SetNextSibling(second_child);
 
   auto* space = ConstructConstraintSpace(
-      HorizontalTopBottom, LeftToRight,
+      HorizontalTopBottom, LTR,
       NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, first_child);
 
@@ -124,7 +124,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, LayoutBlockChildrenWithWritingMode) {
   div1->SetFirstChild(div2);
 
   auto* space =
-      ConstructConstraintSpace(HorizontalTopBottom, LeftToRight,
+      ConstructConstraintSpace(HorizontalTopBottom, LTR,
                                NGLogicalSize(LayoutUnit(500), LayoutUnit(500)));
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
 
@@ -168,7 +168,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase1) {
   div1->SetFirstChild(div2);
 
   auto* space = ConstructConstraintSpace(
-      HorizontalTopBottom, LeftToRight,
+      HorizontalTopBottom, LTR,
       NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
   space->SetIsNewFormattingContext(true);
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
@@ -243,7 +243,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase2) {
   div6->SetNextSibling(div7);
 
   auto* space = ConstructConstraintSpace(
-      HorizontalTopBottom, LeftToRight,
+      HorizontalTopBottom, LTR,
       NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
 
@@ -292,7 +292,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase3) {
   div1->SetFirstChild(div2);
 
   auto* space = ConstructConstraintSpace(
-      HorizontalTopBottom, LeftToRight,
+      HorizontalTopBottom, LTR,
       NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
 
@@ -341,7 +341,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase4) {
   div1->SetFirstChild(div2);
 
   auto* space = ConstructConstraintSpace(
-      HorizontalTopBottom, LeftToRight,
+      HorizontalTopBottom, LTR,
       NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
 
@@ -396,9 +396,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase5) {
 
   vertical_div->SetNextSibling(horizontal_div);
 
-  auto* space =
-      ConstructConstraintSpace(VerticalLeftRight, LeftToRight,
-                               NGLogicalSize(LayoutUnit(500), LayoutUnit(500)));
+  auto* space = ConstructConstraintSpace(
+      VerticalLeftRight, LTR, NGLogicalSize(LayoutUnit(500), LayoutUnit(500)));
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, vertical_div);
 
   ASSERT_EQ(frag->Children().size(), 2UL);
@@ -455,7 +454,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase6) {
   div1->SetNextSibling(div3);
 
   auto* space =
-      ConstructConstraintSpace(HorizontalTopBottom, LeftToRight,
+      ConstructConstraintSpace(HorizontalTopBottom, LTR,
                                NGLogicalSize(LayoutUnit(500), LayoutUnit(500)));
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
 
@@ -518,7 +517,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, BorderAndPadding) {
   div1->SetFirstChild(div2);
 
   auto* space = ConstructConstraintSpace(
-      HorizontalTopBottom, LeftToRight,
+      HorizontalTopBottom, LTR,
       NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
 
@@ -552,7 +551,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, PercentageResolutionSize) {
   NGBox* first_child = new NGBox(first_style.get());
 
   auto* space = ConstructConstraintSpace(
-      HorizontalTopBottom, LeftToRight,
+      HorizontalTopBottom, LTR,
       NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, first_child);
 
@@ -580,7 +579,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, AutoMargin) {
   NGBox* first_child = new NGBox(first_style.get());
 
   auto* space = ConstructConstraintSpace(
-      HorizontalTopBottom, LeftToRight,
+      HorizontalTopBottom, LTR,
       NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, first_child);
 
@@ -661,7 +660,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatFragments) {
   div3->SetNextSibling(div4);
 
   auto* space = ConstructConstraintSpace(
-      HorizontalTopBottom, LeftToRight,
+      HorizontalTopBottom, LTR,
       NGLogicalSize(LayoutUnit(kParentSize), LayoutUnit(kParentSize)));
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
   ASSERT_EQ(frag->Children().size(), 4UL);

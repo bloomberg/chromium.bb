@@ -8,7 +8,6 @@
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_fragment_base.h"
 #include "core/layout/ng/ng_physical_text_fragment.h"
-#include "core/layout/ng/ng_layout_input_text.h"
 #include "platform/LayoutUnit.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
@@ -18,13 +17,9 @@ namespace blink {
 class CORE_EXPORT NGTextFragment final : public NGFragmentBase {
  public:
   NGTextFragment(NGWritingMode writing_mode,
-                 NGDirection direction,
+                 TextDirection direction,
                  NGPhysicalTextFragment* physical_text_fragment)
       : NGFragmentBase(writing_mode, direction, physical_text_fragment) {}
-
-  String Text() const {
-    return toNGPhysicalTextFragment(physical_fragment_)->Text();
-  }
 };
 
 }  // namespace blink

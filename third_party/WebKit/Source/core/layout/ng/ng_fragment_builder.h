@@ -16,7 +16,7 @@ class CORE_EXPORT NGFragmentBuilder final
   NGFragmentBuilder(NGPhysicalFragmentBase::NGFragmentType);
 
   NGFragmentBuilder& SetWritingMode(NGWritingMode);
-  NGFragmentBuilder& SetDirection(NGDirection);
+  NGFragmentBuilder& SetDirection(TextDirection);
 
   NGFragmentBuilder& SetInlineSize(LayoutUnit);
   NGFragmentBuilder& SetBlockSize(LayoutUnit);
@@ -41,7 +41,7 @@ class CORE_EXPORT NGFragmentBuilder final
  private:
   NGPhysicalFragmentBase::NGFragmentType type_;
   NGWritingMode writing_mode_;
-  NGDirection direction_;
+  TextDirection direction_;
 
   NGLogicalSize size_;
   NGLogicalSize overflow_;

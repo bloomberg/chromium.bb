@@ -37,7 +37,7 @@ class NGLengthUtilsTest : public ::testing::Test {
         .SetIsFixedSizeInline(fixed_inline)
         .SetIsFixedSizeBlock(fixed_block);
 
-    return new NGConstraintSpace(HorizontalTopBottom, LeftToRight,
+    return new NGConstraintSpace(HorizontalTopBottom, LTR,
                                  builder.ToConstraintSpace());
   }
 
@@ -276,8 +276,8 @@ TEST_F(NGLengthUtilsTest, testMargins) {
 
   NGConstraintSpace* constraintSpace(ConstructConstraintSpace(200, 300));
 
-  NGBoxStrut margins = ComputeMargins(*constraintSpace, *style_,
-                                      HorizontalTopBottom, LeftToRight);
+  NGBoxStrut margins =
+      ComputeMargins(*constraintSpace, *style_, HorizontalTopBottom, LTR);
 
   EXPECT_EQ(LayoutUnit(20), margins.block_start);
   EXPECT_EQ(LayoutUnit(52), margins.inline_end);
@@ -329,7 +329,7 @@ TEST_F(NGLengthUtilsTest, testAutoMargins) {
   builder.SetInlineSize(LayoutUnit(150));
   NGPhysicalFragment* physical_fragment = builder.ToFragment();
   NGFragment* fragment =
-      new NGFragment(HorizontalTopBottom, LeftToRight, physical_fragment);
+      new NGFragment(HorizontalTopBottom, LTR, physical_fragment);
 
   NGConstraintSpace* constraint_space(ConstructConstraintSpace(200, 300));
 

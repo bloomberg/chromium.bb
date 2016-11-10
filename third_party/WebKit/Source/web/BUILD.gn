@@ -342,6 +342,7 @@ test("webkit_unit_tests") {
     "tests/LinkSelectionTest.cpp",
     "tests/ListenerLeakTest.cpp",
     "tests/MHTMLTest.cpp",
+    "tests/NGInlineLayoutTest.cpp",
     "tests/PrerenderingTest.cpp",
     "tests/ProgrammaticScrollTest.cpp",
     "tests/ResizeObserverTest.cpp",

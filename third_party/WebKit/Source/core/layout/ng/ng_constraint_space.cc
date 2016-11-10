@@ -14,7 +14,7 @@
 namespace blink {
 
 NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
-                                     NGDirection direction,
+                                     TextDirection direction,
                                      NGPhysicalConstraintSpace* physical_space)
     : physical_space_(physical_space),
       size_(physical_space->available_size_.ConvertToLogical(writing_mode)),
@@ -68,8 +68,7 @@ NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
 
   return new NGConstraintSpace(
       FromPlatformWritingMode(box.styleRef().getWritingMode()),
-      FromPlatformDirection(box.styleRef().direction()),
-      builder.ToConstraintSpace());
+      box.styleRef().direction(), builder.ToConstraintSpace());
 }
 
 void NGConstraintSpace::AddExclusion(const NGLogicalRect& exclusion) const {

@@ -122,8 +122,8 @@ InputMultipleFieldsUI status=stable
 InstalledApp status=experimental
 IntersectionObserver status=stable
 LangAttributeAwareFormControlUI
-LayoutNG
-LayoutNGInline depends_on=LayoutNG
+LayoutNG depends_on=LayoutNGInline
+LayoutNGInline
 LinkServiceWorker status=experimental, origin_trial_feature_name=ForeignFetch
 LongTaskObserver status=experimental, origin_trial_feature_name=LongTaskObserver
 FractionalScrollOffsets

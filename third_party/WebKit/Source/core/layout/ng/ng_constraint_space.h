@@ -30,7 +30,7 @@ class CORE_EXPORT NGConstraintSpace final
   // NGPhysicalConstraintSpace. Sets this constraint space's size to the
   // physical constraint space's available size, converted to logical
   // coordinates.
-  NGConstraintSpace(NGWritingMode, NGDirection, NGPhysicalConstraintSpace*);
+  NGConstraintSpace(NGWritingMode, TextDirection, NGPhysicalConstraintSpace*);
 
   // This should live on NGBox or another layout bridge and probably take a root
   // NGConstraintSpace or a NGPhysicalConstraintSpace.
@@ -53,7 +53,9 @@ class CORE_EXPORT NGConstraintSpace final
     return PhysicalSpace()->Exclusions();
   }
 
-  NGDirection Direction() const { return static_cast<NGDirection>(direction_); }
+  TextDirection Direction() const {
+    return static_cast<TextDirection>(direction_);
+  }
 
   NGWritingMode WritingMode() const {
     return static_cast<NGWritingMode>(writing_mode_);
