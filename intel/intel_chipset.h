@@ -218,6 +218,9 @@
 #define PCI_CHIP_BROXTON_3		0x1A85
 #define PCI_CHIP_BROXTON_4		0x5A85
 
+#define PCI_CHIP_GLK			0x3184
+#define PCI_CHIP_GLK_2X6		0x3185
+
 #define IS_MOBILE(devid)	((devid) == PCI_CHIP_I855_GM || \
 				 (devid) == PCI_CHIP_I915_GM || \
 				 (devid) == PCI_CHIP_I945_GM || \
@@ -446,9 +449,13 @@
 				 (devid) == PCI_CHIP_BROXTON_3	|| \
 				 (devid) == PCI_CHIP_BROXTON_4)
 
-#define IS_GEN9(devid)		(IS_SKYLAKE(devid) || \
-				 IS_BROXTON(devid) || \
-				 IS_KABYLAKE(devid))
+#define IS_GEMINILAKE(devid)	((devid) == PCI_CHIP_GLK || \
+				 (devid) == PCI_CHIP_GLK_2X6)
+
+#define IS_GEN9(devid)		(IS_SKYLAKE(devid)  || \
+				 IS_BROXTON(devid)  || \
+				 IS_KABYLAKE(devid) || \
+				 IS_GEMINILAKE(devid))
 
 #define IS_9XX(dev)		(IS_GEN3(dev) || \
 				 IS_GEN4(dev) || \
