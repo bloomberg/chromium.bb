@@ -42,7 +42,8 @@ CompositorOverlayCandidateValidatorOzone::
 void CompositorOverlayCandidateValidatorOzone::GetStrategies(
     cc::OverlayProcessor::StrategyList* strategies) {
   if (single_fullscreen_) {
-    strategies->push_back(base::MakeUnique<cc::OverlayStrategyFullscreen>());
+    strategies->push_back(
+        base::MakeUnique<cc::OverlayStrategyFullscreen>(this));
   } else {
     strategies->push_back(
         base::MakeUnique<cc::OverlayStrategySingleOnTop>(this));
@@ -58,8 +59,16 @@ void CompositorOverlayCandidateValidatorOzone::CheckOverlaySupport(
     cc::OverlayCandidateList* surfaces) {
   // SW mirroring copies out of the framebuffer, so we can't remove any
   // quads for overlaying, otherwise the output is incorrect.
-  if (software_mirror_active_)
+  if (software_mirror_active_) {
+    for (size_t i = 0; i < surfaces->size(); i++) {
+      surfaces->at(i).overlay_handled = false;
+    }
     return;
+  }
+
+  if (single_fullscreen_) {
+    return;  // No need for validation for single fullscreen.
+  }
 
   DCHECK_GE(2U, surfaces->size());
   ui::OverlayCandidatesOzone::OverlaySurfaceCandidateList ozone_surface_list;

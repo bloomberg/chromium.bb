@@ -13,7 +13,11 @@
 
 namespace cc {
 
-OverlayStrategyFullscreen::OverlayStrategyFullscreen() {}
+OverlayStrategyFullscreen::OverlayStrategyFullscreen(
+    OverlayCandidateValidator* capability_checker)
+    : capability_checker_(capability_checker) {
+  DCHECK(capability_checker);
+}
 
 OverlayStrategyFullscreen::~OverlayStrategyFullscreen() {}
 
@@ -52,7 +56,12 @@ bool OverlayStrategyFullscreen::Attempt(ResourceProvider* resource_provider,
   candidate.overlay_handled = true;
   OverlayCandidateList new_candidate_list;
   new_candidate_list.push_back(candidate);
+  capability_checker_->CheckOverlaySupport(&new_candidate_list);
+  if (!new_candidate_list.front().overlay_handled)
+    return false;
+
   candidate_list->swap(new_candidate_list);
+
   render_pass->quad_list = QuadList();  // Remove all the quads
   return true;
 }

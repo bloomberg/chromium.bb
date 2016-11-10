@@ -16,7 +16,8 @@ class OverlayCandidateValidator;
 // should be possible to use it as such.
 class CC_EXPORT OverlayStrategyFullscreen : public OverlayProcessor::Strategy {
  public:
-  OverlayStrategyFullscreen();
+  explicit OverlayStrategyFullscreen(
+      OverlayCandidateValidator* capability_checker);
   ~OverlayStrategyFullscreen() override;
 
   bool Attempt(ResourceProvider* resource_provider,
@@ -24,6 +25,8 @@ class CC_EXPORT OverlayStrategyFullscreen : public OverlayProcessor::Strategy {
                OverlayCandidateList* candidate_list) override;
 
  private:
+  OverlayCandidateValidator* capability_checker_;  // Weak.
+
   DISALLOW_COPY_AND_ASSIGN(OverlayStrategyFullscreen);
 };
 

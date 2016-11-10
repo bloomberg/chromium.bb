@@ -69,13 +69,10 @@ void MailboxReleased(const gpu::SyncToken& sync_token,
 class FullscreenOverlayValidator : public OverlayCandidateValidator {
  public:
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override {
-    strategies->push_back(base::MakeUnique<OverlayStrategyFullscreen>());
+    strategies->push_back(base::MakeUnique<OverlayStrategyFullscreen>(this));
   }
   bool AllowCALayerOverlays() override { return false; }
-  void CheckOverlaySupport(OverlayCandidateList* surfaces) override {
-    // We're not checking for support.
-    ASSERT_TRUE(false);
-  }
+  void CheckOverlaySupport(OverlayCandidateList* surfaces) override {}
 };
 
 class SingleOverlayValidator : public OverlayCandidateValidator {
