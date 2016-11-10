@@ -242,6 +242,8 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
   // Sets to nullptr in Config::SINGLE_INTERFACE* mode.
   std::unique_ptr<base::Lock> lock_;
   PipeControlMessageHandler control_message_handler_;
+
+  // NOTE: It is unsafe to call into this object while holding |lock_|.
   PipeControlMessageProxy control_message_proxy_;
 
   std::map<InterfaceId, scoped_refptr<InterfaceEndpoint>> endpoints_;

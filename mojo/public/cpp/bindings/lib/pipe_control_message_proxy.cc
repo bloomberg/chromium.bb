@@ -54,7 +54,8 @@ void PipeControlMessageProxy::NotifyPeerEndpointClosed(InterfaceId id) {
       pipe_control::RunOrClosePipeInput::New());
   input->set_peer_associated_endpoint_closed_event(std::move(event));
 
-  SendRunOrClosePipeMessage(receiver_, std::move(input), &context_);
+  internal::SerializationContext context;
+  SendRunOrClosePipeMessage(receiver_, std::move(input), &context);
 }
 
 void PipeControlMessageProxy::NotifyEndpointClosedBeforeSent(InterfaceId id) {
@@ -67,7 +68,8 @@ void PipeControlMessageProxy::NotifyEndpointClosedBeforeSent(InterfaceId id) {
       pipe_control::RunOrClosePipeInput::New());
   input->set_associated_endpoint_closed_before_sent_event(std::move(event));
 
-  SendRunOrClosePipeMessage(receiver_, std::move(input), &context_);
+  internal::SerializationContext context;
+  SendRunOrClosePipeMessage(receiver_, std::move(input), &context);
 }
 
 }  // namespace mojo

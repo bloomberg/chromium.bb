@@ -169,6 +169,8 @@ class ChannelAssociatedGroupController
     if (!is_local) {
       DCHECK(ContainsKey(endpoints_, id));
       DCHECK(!mojo::IsMasterInterfaceId(id));
+
+      base::AutoUnlock unlocker(lock_);
       control_message_proxy_.NotifyEndpointClosedBeforeSent(id);
       return;
     }
@@ -179,6 +181,7 @@ class ChannelAssociatedGroupController
     DCHECK(!endpoint->closed());
     MarkClosedAndMaybeRemove(endpoint);
 
+    base::AutoUnlock unlocker(lock_);
     if (!mojo::IsMasterInterfaceId(id))
       control_message_proxy_.NotifyPeerEndpointClosed(id);
   }
@@ -742,10 +745,13 @@ class ChannelAssociatedGroupController
     if (mojo::IsMasterInterfaceId(id))
       return false;
 
-    base::AutoLock locker(lock_);
-    Endpoint* endpoint = FindOrInsertEndpoint(id, nullptr);
-    DCHECK(!endpoint->closed());
-    MarkClosedAndMaybeRemove(endpoint);
+    {
+      base::AutoLock locker(lock_);
+      Endpoint* endpoint = FindOrInsertEndpoint(id, nullptr);
+      DCHECK(!endpoint->closed());
+      MarkClosedAndMaybeRemove(endpoint);
+    }
+
     control_message_proxy_.NotifyPeerEndpointClosed(id);
     return true;
   }
@@ -762,6 +768,8 @@ class ChannelAssociatedGroupController
   mojo::FilterChain filters_;
   mojo::PipeControlMessageHandler control_message_handler_;
   ControlMessageProxyThunk control_message_proxy_thunk_;
+
+  // NOTE: It is unsafe to call into this object while holding |lock_|.
   mojo::PipeControlMessageProxy control_message_proxy_;
 
   // Outgoing messages that were sent before this controller was bound to a

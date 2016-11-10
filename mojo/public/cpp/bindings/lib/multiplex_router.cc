@@ -402,6 +402,7 @@ void MultiplexRouter::CloseEndpointHandle(InterfaceId id, bool is_local) {
     DCHECK(!IsMasterInterfaceId(id));
 
     // We will receive a NotifyPeerEndpointClosed message from the other side.
+    MayAutoUnlock unlocker(lock_.get());
     control_message_proxy_.NotifyEndpointClosedBeforeSent(id);
 
     return;
@@ -413,8 +414,10 @@ void MultiplexRouter::CloseEndpointHandle(InterfaceId id, bool is_local) {
   DCHECK(!endpoint->closed());
   UpdateEndpointStateMayRemove(endpoint, ENDPOINT_CLOSED);
 
-  if (!IsMasterInterfaceId(id))
+  if (!IsMasterInterfaceId(id)) {
+    MayAutoUnlock unlocker(lock_.get());
     control_message_proxy_.NotifyPeerEndpointClosed(id);
+  }
 
   ProcessTasks(NO_DIRECT_CLIENT_CALLS, nullptr);
 }
@@ -596,6 +599,7 @@ bool MultiplexRouter::OnAssociatedEndpointClosedBeforeSent(InterfaceId id) {
   DCHECK(!endpoint->closed());
   UpdateEndpointStateMayRemove(endpoint, ENDPOINT_CLOSED);
 
+  MayAutoUnlock unlocker(lock_.get());
   control_message_proxy_.NotifyPeerEndpointClosed(id);
 
   return true;
@@ -781,6 +785,7 @@ bool MultiplexRouter::ProcessIncomingMessage(
     // registration. We continue to process remaining tasks in the queue, as
     // long as there are refs keeping the router alive. If there are remaining
     // messages for the master endpoint, we will get here.
+    MayAutoUnlock unlocker(lock_.get());
     if (!IsMasterInterfaceId(id))
       control_message_proxy_.NotifyPeerEndpointClosed(id);
     return true;

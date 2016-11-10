@@ -15,9 +15,12 @@ namespace mojo {
 class MessageReceiver;
 
 // Proxy for request messages defined in pipe_control_messages.mojom.
+//
+// NOTE: This object may be used from multiple threads.
 class MOJO_CPP_BINDINGS_EXPORT PipeControlMessageProxy {
  public:
-  // Doesn't take ownership of |receiver|. It must outlive this object.
+  // Doesn't take ownership of |receiver|. If This PipeControlMessageProxy will
+  // be used from multiple threads, |receiver| must be thread-safe.
   explicit PipeControlMessageProxy(MessageReceiver* receiver);
 
   void NotifyPeerEndpointClosed(InterfaceId id);
@@ -26,7 +29,6 @@ class MOJO_CPP_BINDINGS_EXPORT PipeControlMessageProxy {
  private:
   // Not owned.
   MessageReceiver* receiver_;
-  internal::SerializationContext context_;
 
   DISALLOW_COPY_AND_ASSIGN(PipeControlMessageProxy);
 };

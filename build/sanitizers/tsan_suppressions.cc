@@ -273,9 +273,6 @@ char kTSanDefaultSuppressions[] =
 // http://crbug.com/638583
 "race:webrtc/modules/audio_processing/aec/aec_rdft.cc\n"
 
-// http://crbug.com/663557
-"deadlock:mojo::Connector::ReadSingleMessage\n"
-
 // End of suppressions.
 ;  // Please keep this semicolon.
 
