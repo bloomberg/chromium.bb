@@ -731,16 +731,29 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
 
     UINT flags = D3D11_CREATE_DEVICE_VIDEO_SUPPORT;
 
+    D3D_FEATURE_LEVEL feature_level_out = D3D_FEATURE_LEVEL_11_0;
 #if defined _DEBUG
     flags |= D3D11_CREATE_DEVICE_DEBUG;
-#endif
 
-    D3D_FEATURE_LEVEL feature_level_out = D3D_FEATURE_LEVEL_11_0;
     hr = D3D11CreateDevice(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, flags,
                            feature_levels, arraysize(feature_levels),
                            D3D11_SDK_VERSION, d3d11_device_.Receive(),
                            &feature_level_out, d3d11_device_context_.Receive());
-    RETURN_ON_HR_FAILURE(hr, "Failed to create DX11 device", false);
+    if (hr == DXGI_ERROR_SDK_COMPONENT_MISSING) {
+      LOG(ERROR)
+          << "Debug DXGI device creation failed, falling back to release.";
+      flags &= ~D3D11_CREATE_DEVICE_DEBUG;
+    } else {
+      RETURN_ON_HR_FAILURE(hr, "Failed to create debug DX11 device", false);
+    }
+#endif
+    if (!d3d11_device_context_) {
+      hr = D3D11CreateDevice(
+          NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, flags, feature_levels,
+          arraysize(feature_levels), D3D11_SDK_VERSION, d3d11_device_.Receive(),
+          &feature_level_out, d3d11_device_context_.Receive());
+      RETURN_ON_HR_FAILURE(hr, "Failed to create DX11 device", false);
+    }
   }
 
   D3D11_FEATURE_DATA_D3D11_OPTIONS options;
