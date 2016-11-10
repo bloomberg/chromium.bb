@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/timer/timer.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
@@ -238,11 +239,18 @@ V4GetHashProtocolManager::V4GetHashProtocolManager(
       url_fetcher_id_(0),
       clock_(new base::DefaultClock()) {
   DCHECK(!stores_to_check.empty());
+  std::set<PlatformType> platform_types;
+  std::set<ThreatEntryType> threat_entry_types;
+  std::set<ThreatType> threat_types;
   for (const ListIdentifier& store : stores_to_check) {
-    platform_types_.insert(store.platform_type());
-    threat_entry_types_.insert(store.threat_entry_type());
-    threat_types_.insert(store.threat_type());
+    platform_types.insert(store.platform_type());
+    threat_entry_types.insert(store.threat_entry_type());
+    threat_types.insert(store.threat_type());
   }
+  platform_types_.assign(platform_types.begin(), platform_types.end());
+  threat_entry_types_.assign(threat_entry_types.begin(),
+                             threat_entry_types.end());
+  threat_types_.assign(threat_types.begin(), threat_types.end());
 }
 
 V4GetHashProtocolManager::~V4GetHashProtocolManager() {}
@@ -529,6 +537,15 @@ bool V4GetHashProtocolManager::ParseHashResponse(
 
     ListIdentifier list_id(match.platform_type(), match.threat_entry_type(),
                            match.threat_type());
+    if (!base::ContainsValue(platform_types_, list_id.platform_type()) ||
+        !base::ContainsValue(threat_entry_types_,
+                             list_id.threat_entry_type()) ||
+        !base::ContainsValue(threat_types_, list_id.threat_type())) {
+      // The server may send a ThreatMatch response for lists that we didn't ask
+      // for so ignore those ThreatMatch responses.
+      continue;
+    }
+
     base::Time positive_expiry;
     if (match.has_cache_duration()) {
       // Seconds resolution is good enough so we ignore the nanos field.

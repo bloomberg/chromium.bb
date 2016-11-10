@@ -335,9 +335,9 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
   // The following sets represent the combination of lists that we would always
   // request from the server, irrespective of which list we found the hash
   // prefix match in.
-  std::unordered_set<PlatformType> platform_types_;
-  std::unordered_set<ThreatEntryType> threat_entry_types_;
-  std::unordered_set<ThreatType> threat_types_;
+  std::vector<PlatformType> platform_types_;
+  std::vector<ThreatEntryType> threat_entry_types_;
+  std::vector<ThreatType> threat_types_;
 
   DISALLOW_COPY_AND_ASSIGN(V4GetHashProtocolManager);
 };

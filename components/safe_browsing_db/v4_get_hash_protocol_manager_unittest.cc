@@ -80,7 +80,11 @@ class V4GetHashProtocolManagerTest : public PlatformTest {
     config.client_name = kClient;
     config.version = kAppVer;
     config.key_param = kKeyParam;
-    StoresToCheck stores_to_check({GetUrlMalwareId(), GetChromeUrlApiId()});
+    StoresToCheck stores_to_check(
+        {GetUrlMalwareId(), GetChromeUrlApiId(),
+         ListIdentifier(CHROME_PLATFORM, URL, SOCIAL_ENGINEERING_PUBLIC),
+         ListIdentifier(CHROME_PLATFORM, URL,
+                        POTENTIALLY_HARMFUL_APPLICATION)});
     return V4GetHashProtocolManager::Create(NULL, stores_to_check, config);
   }
 
@@ -285,13 +289,18 @@ TEST_F(V4GetHashProtocolManagerTest,
 TEST_F(V4GetHashProtocolManagerTest, TestGetHashRequest) {
   FindFullHashesRequest req;
   ThreatInfo* info = req.mutable_threat_info();
-  info->add_platform_types(GetCurrentPlatformType());
-  info->add_platform_types(CHROME_PLATFORM);
+  for (const PlatformType& p :
+       std::set<PlatformType>{GetCurrentPlatformType(), CHROME_PLATFORM}) {
+    info->add_platform_types(p);
+  }
 
   info->add_threat_entry_types(URL);
 
-  info->add_threat_types(MALWARE_THREAT);
-  info->add_threat_types(API_ABUSE);
+  for (const ThreatType& tt :
+       std::set<ThreatType>{MALWARE_THREAT, SOCIAL_ENGINEERING_PUBLIC,
+                            POTENTIALLY_HARMFUL_APPLICATION, API_ABUSE}) {
+    info->add_threat_types(tt);
+  }
 
   HashPrefix one = "hashone";
   HashPrefix two = "hashtwo";
@@ -331,6 +340,14 @@ TEST_F(V4GetHashProtocolManagerTest, TestParseHashResponse) {
       m->mutable_threat_entry_metadata()->add_entries();
   e->set_key("permission");
   e->set_value("NOTIFICATIONS");
+  // Add another ThreatMatch for a list we don't track. This response should
+  // get dropped.
+  m = res.add_matches();
+  m->set_threat_type(THREAT_TYPE_UNSPECIFIED);
+  m->set_platform_type(CHROME_PLATFORM);
+  m->set_threat_entry_type(URL);
+  m->mutable_cache_duration()->set_seconds(300);
+  m->mutable_threat()->set_hash(full_hash);
 
   // Serialize.
   std::string res_data;
@@ -341,6 +358,8 @@ TEST_F(V4GetHashProtocolManagerTest, TestParseHashResponse) {
   EXPECT_TRUE(pm->ParseHashResponse(res_data, &full_hash_infos, &cache_expire));
 
   EXPECT_EQ(now + base::TimeDelta::FromSeconds(600), cache_expire);
+  // Even though the server responded with two ThreatMatch responses, one
+  // should have been dropped.
   ASSERT_EQ(1ul, full_hash_infos.size());
   const FullHashInfo& fhi = full_hash_infos[0];
   EXPECT_EQ(full_hash, fhi.full_hash);
