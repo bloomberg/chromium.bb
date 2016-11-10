@@ -18,10 +18,9 @@ ResourceSchedulingFilter::ResourceSchedulingFilter(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_task_runner,
     ResourceDispatcher* resource_dispatcher)
     : main_thread_task_runner_(main_thread_task_runner),
-      resource_dispatcher_(resource_dispatcher),
+      resource_dispatcher_(resource_dispatcher->GetWeakPtr()),
       weak_ptr_factory_(this) {
   DCHECK(main_thread_task_runner_.get());
-  DCHECK(resource_dispatcher_);
 }
 
 ResourceSchedulingFilter::~ResourceSchedulingFilter() {
@@ -71,7 +70,8 @@ bool ResourceSchedulingFilter::GetSupportedMessageClasses(
 }
 
 void ResourceSchedulingFilter::DispatchMessage(const IPC::Message& message) {
-  resource_dispatcher_->OnMessageReceived(message);
+  if (resource_dispatcher_)
+    resource_dispatcher_->OnMessageReceived(message);
 }
 
 }  // namespace content

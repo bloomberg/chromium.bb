@@ -146,6 +146,10 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   void SetResourceSchedulingFilter(
       scoped_refptr<ResourceSchedulingFilter> resource_scheduling_filter);
 
+  base::WeakPtr<ResourceDispatcher> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
  private:
   friend class URLResponseBodyConsumer;
   friend class ResourceDispatcherTest;

@@ -55,7 +55,7 @@ class CONTENT_EXPORT ResourceSchedulingFilter : public IPC::MessageFilter {
   RequestIdToTaskRunnerMap request_id_to_task_runner_map_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-  ResourceDispatcher* resource_dispatcher_;  // NOT OWNED
+  base::WeakPtr<ResourceDispatcher> resource_dispatcher_;
   base::WeakPtrFactory<ResourceSchedulingFilter> weak_ptr_factory_;
 
  private:
