@@ -4,7 +4,7 @@
 # found in the LICENSE file.
 
 # This script builds out/pnacl_multicrx_<rev>.zip for upload to the Chrome
-# Web Store. It runs gyp + ninja once for each architecture and assembles
+# Web Store. It runs GN + ninja once for each architecture and assembles
 # the results along with a manifest file.
 
 # TODO(sbc): rewrite this in python
@@ -16,41 +16,28 @@ SCRIPT_DIR="$(cd $(dirname $0) && pwd)"
 CHROME_SRC=$(dirname $(dirname $(dirname ${SCRIPT_DIR})))
 cd ${CHROME_SRC}
 
-run_gyp() {
-  # The original version of the script ran 'gclient runhooks' which run turn
-  # runs gyp_chromium. However its a lot faster and quieter to just run the
-  # gyp file containing the target we need.
-  gyp_dir=ppapi/native_client/src/untrusted/pnacl_support_extension
-  build/gyp_chromium --depth=. $gyp_dir/pnacl_support_extension.gyp
+run_gn() {
+  local arch=$1
+  gn gen out_pnacl/$arch --args="target_cpu=\"$arch\" is_debug=false"
+}
+
+cpu_package() {
+  local arch=$1
+  local alt_arch=$2
+  local base_out_dir=out
+
+  rm -rf out_pnacl/$arch
+  run_gn $arch
+  ninja -C out_pnacl/$arch pnacl_support_extension
+  local target_dir=${base_out_dir}/pnacl_${alt_arch}
+  mkdir -p ${target_dir}
+  cp out_pnacl/$arch/pnacl/* ${target_dir}/.
 }
 
 individual_packages() {
-  export GYP_GENERATOR_FLAGS="output_dir=out_pnacl"
-  local base_out_dir=out
-
-  # arm
-  rm -rf out_pnacl/
-  GYP_DEFINES="target_arch=arm" run_gyp
-  ninja -C out_pnacl/Release/ pnacl_support_extension
-  local target_dir=${base_out_dir}/pnacl_arm
-  mkdir -p ${target_dir}
-  cp out_pnacl/Release/pnacl/* ${target_dir}/.
-
-  # ia32
-  rm -rf out_pnacl/
-  GYP_DEFINES="target_arch=ia32" run_gyp
-  ninja -C out_pnacl/Release/ pnacl_support_extension
-  target_dir=${base_out_dir}/pnacl_x86_32
-  mkdir -p ${target_dir}
-  cp out_pnacl/Release/pnacl/* ${target_dir}/.
-
-  # x64
-  rm -rf out_pnacl/
-  GYP_DEFINES="target_arch=x64" run_gyp
-  ninja -C out_pnacl/Release/ pnacl_support_extension
-  target_dir=${base_out_dir}/pnacl_x86_64
-  mkdir -p ${target_dir}
-  cp out_pnacl/Release/pnacl/* ${target_dir}/.
+  cpu_package x64 x86_64
+  cpu_package arm arm
+  cpu_package x86 x86_32
 }
 
 multi_crx() {
