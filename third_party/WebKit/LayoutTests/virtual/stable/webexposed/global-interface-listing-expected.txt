@@ -123,6 +123,7 @@ interface AudioContext : BaseAudioContext
     attribute @@toStringTag
     method close
     method constructor
+    method suspend
 interface AudioDestinationNode : AudioNode
     attribute @@toStringTag
     getter maxChannelCount
@@ -179,6 +180,39 @@ interface BarProp
     attribute @@toStringTag
     getter visible
     method constructor
+interface BaseAudioContext : EventTarget
+    attribute @@toStringTag
+    getter currentTime
+    getter destination
+    getter listener
+    getter onstatechange
+    getter sampleRate
+    getter state
+    method constructor
+    method createAnalyser
+    method createBiquadFilter
+    method createBuffer
+    method createBufferSource
+    method createChannelMerger
+    method createChannelSplitter
+    method createConstantSource
+    method createConvolver
+    method createDelay
+    method createDynamicsCompressor
+    method createGain
+    method createIIRFilter
+    method createMediaElementSource
+    method createMediaStreamDestination
+    method createMediaStreamSource
+    method createOscillator
+    method createPanner
+    method createPeriodicWave
+    method createScriptProcessor
+    method createStereoPanner
+    method createWaveShaper
+    method decodeAudioData
+    method resume
+    setter onstatechange
 interface BatteryManager : EventTarget
     attribute @@toStringTag
     getter charging
@@ -3669,7 +3703,6 @@ interface OfflineAudioContext : BaseAudioContext
     getter length
     getter oncomplete
     method constructor
-    method resume
     method startRendering
     method suspend
     setter oncomplete
@@ -7240,6 +7273,7 @@ interface webkitAudioContext : BaseAudioContext
     attribute @@toStringTag
     method close
     method constructor
+    method suspend
 interface webkitIDBCursor
     attribute @@toStringTag
     getter direction
@@ -7378,7 +7412,6 @@ interface webkitOfflineAudioContext : BaseAudioContext
     getter length
     getter oncomplete
     method constructor
-    method resume
     method startRendering
     method suspend
     setter oncomplete

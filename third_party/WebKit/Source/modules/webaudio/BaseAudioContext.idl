@@ -12,7 +12,6 @@ enum AudioContextState {
 [
     ActiveScriptWrappable,
     DependentLifetime,
-    NoInterfaceObject,
 ] interface BaseAudioContext : EventTarget {
     // All rendered audio ultimately connects to destination, which represents the audio hardware.
     readonly attribute AudioDestinationNode destination;
@@ -58,7 +57,6 @@ enum AudioContextState {
     [RaisesException, MeasureAs=AudioContextCreateChannelMerger] ChannelMergerNode createChannelMerger(optional unsigned long numberOfInputs);
 
     // Pause/resume
-    [MeasureAs=AudioContextSuspend, CallWith=ScriptState, ImplementedAs=suspendContext] Promise<void> suspend();
     [MeasureAs=AudioContextResume, CallWith=ScriptState, ImplementedAs=resumeContext] Promise<void> resume();
 
     // TODO(rtoy): These really belong to the AudioContext, but we need them

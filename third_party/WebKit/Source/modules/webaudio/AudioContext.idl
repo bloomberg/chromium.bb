@@ -33,7 +33,7 @@
     NoInterfaceObject,
     RaisesException=Constructor,
 ] interface AudioContext : BaseAudioContext {
-    // Close
+    [MeasureAs=AudioContextSuspend, CallWith=ScriptState, ImplementedAs=suspendContext] Promise<void> suspend();
     [MeasureAs=AudioContextClose, CallWith=ScriptState, ImplementedAs=closeContext] Promise<void> close();
 
     // Sources
