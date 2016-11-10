@@ -109,6 +109,10 @@ void SyncBackendHostImpl::Initialize(
     factory_switches.pre_commit_updates_policy =
         EngineComponentsFactory::FORCE_ENABLE_PRE_COMMIT_UPDATE_AVOIDANCE;
   }
+  if (cl->HasSwitch(switches::kSyncShortNudgeDelayForTest)) {
+    factory_switches.nudge_delay =
+        EngineComponentsFactory::NudgeDelay::SHORT_NUDGE_DELAY;
+  }
 
   std::map<ModelType, int64_t> invalidation_versions;
   sync_prefs_->GetInvalidationVersions(&invalidation_versions);

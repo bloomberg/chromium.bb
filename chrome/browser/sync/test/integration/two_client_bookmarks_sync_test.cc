@@ -109,30 +109,26 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, Sanity) {
   ASSERT_NE(nullptr, AddURL(0, "Google", google_url));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_NE(nullptr, AddURL(1, "Yahoo", GURL("http://www.yahoo.com")));
-  ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   const BookmarkNode* new_folder = AddFolder(0, 2, "New Folder");
   Move(0, GetUniqueNodeByURL(0, google_url), new_folder, 0);
   SetTitle(0, GetBookmarkBarNode(0)->GetChild(0), "Yahoo!!");
   ASSERT_NE(nullptr, AddURL(0, GetBookmarkBarNode(0), 1, "CNN",
                             GURL("http://www.cnn.com")));
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   ASSERT_NE(nullptr, AddURL(1, "Facebook", GURL("http://www.facebook.com")));
-  ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   SortChildren(1, GetBookmarkBarNode(1));
-  ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   DisableVerifier();
   SetTitle(0, GetUniqueNodeByURL(0, google_url), "Google++");
   SetTitle(1, GetUniqueNodeByURL(1, google_url), "Google--");
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SimultaneousURLChanges) {
@@ -150,12 +146,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SimultaneousURLChanges) {
   DisableVerifier();
   ASSERT_NE(nullptr, SetURL(0, GetUniqueNodeByURL(0, initial_url), second_url));
   ASSERT_NE(nullptr, SetURL(1, GetUniqueNodeByURL(1, initial_url), third_url));
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
 
   SetTitle(0, GetBookmarkBarNode(0)->GetChild(0), "Google1");
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
 }
 
 // Test Scribe ID - 370558.
@@ -164,8 +158,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_AddFirstFolder) {
   ASSERT_TRUE(AllModelsMatchVerifier());
 
   ASSERT_NE(nullptr, AddFolder(0, kGenericFolderName));
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 370559.
@@ -175,26 +168,22 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(AllModelsMatchVerifier());
 
   ASSERT_NE(nullptr, AddURL(0, kGenericURLTitle, GURL(kGenericURL)));
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 370489.
 IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_AddFirstBMWithFavicon) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllModelsMatchVerifier());
-
   const GURL page_url(kGenericURL);
   const GURL icon_url("http://www.google.com/favicon.ico");
 
   const BookmarkNode* bookmark = AddURL(0, kGenericURLTitle, page_url);
-
   ASSERT_NE(nullptr, bookmark);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   SetFavicon(0, bookmark, icon_url, CreateFavicon(SK_ColorWHITE),
              bookmarks_helper::FROM_UI);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test that the history service logic for not losing the hidpi versions of
@@ -223,19 +212,16 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_SetFaviconHiDPI) {
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   SetFavicon(0, bookmark0, icon_url1, CreateFavicon(SK_ColorWHITE),
              bookmarks_helper::FROM_UI);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   const BookmarkNode* bookmark1 = GetUniqueNodeByURL(1, page_url);
   SetFavicon(1, bookmark1, icon_url1, CreateFavicon(SK_ColorBLUE),
              bookmarks_helper::FROM_UI);
-  ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   SetFavicon(0, bookmark0, icon_url2, CreateFavicon(SK_ColorGREEN),
              bookmarks_helper::FROM_UI);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test that if sync does not modify a favicon bitmap's data that it does not
@@ -269,8 +255,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ExpireFavicon(0, bookmark0);
   CheckFaviconExpired(0, icon_url);
 
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   // Change the bookmark's title for profile 1. Changing the title will cause
   // the bookmark's favicon data to be synced from profile 1 to profile 0 even
@@ -279,8 +264,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_NE(kNewTitle, kGenericURLTitle);
   const BookmarkNode* bookmark1 = GetUniqueNodeByURL(1, page_url);
   SetTitle(1, bookmark1, kNewTitle);
-  ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   // The favicon for profile 0 should still be expired.
   CheckFaviconExpired(0, icon_url);
@@ -308,15 +292,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
 
   SetFavicon(0, bookmark01, icon_url, CreateFavicon(SK_ColorWHITE),
              bookmarks_helper::FROM_UI);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   // Set |page_url2| with the new (blue) favicon at |icon_url|. The sync favicon
   // for both |page_url1| and |page_url2| should be updated to the blue one.
   SetFavicon(0, bookmark02, icon_url, CreateFavicon(SK_ColorBLUE),
              bookmarks_helper::FROM_UI);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   // Set the title for |page_url1|. This should not revert either of the
   // bookmark favicons back to white.
@@ -324,8 +306,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_STRNE(kGenericURLTitle, kNewTitle);
   const BookmarkNode* bookmark11 = GetUniqueNodeByURL(1, page_url1);
   SetTitle(1, bookmark11, std::string(kNewTitle));
-  ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 370560.
@@ -336,8 +317,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_AddNonHTTPBMs) {
   ASSERT_NE(nullptr,
             AddURL(0, "FTP UR", GURL("ftp://user:password@host:1234/path")));
   ASSERT_NE(nullptr, AddURL(0, "File UR", GURL("file://host/path")));
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 370561.
@@ -349,8 +329,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   const BookmarkNode* folder = AddFolder(0, kGenericFolderName);
   ASSERT_NE(nullptr, folder);
   ASSERT_NE(nullptr, AddURL(0, folder, 0, kGenericURLTitle, GURL(kGenericURL)));
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 370562.
@@ -365,8 +344,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
     ASSERT_NE(nullptr, AddURL(0, i, title, url));
     ASSERT_NE(nullptr, AddURL(0, GetOtherNode(0), i, title, url));
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 370563.
@@ -398,8 +376,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
     GURL url = GURL(IndexedURL(i));
     ASSERT_NE(nullptr, AddURL(0, GetOtherNode(0), i, title, url));
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 370641.
@@ -412,8 +389,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   GURL url1 = GURL(IndexedURL(1));
   ASSERT_NE(nullptr, AddURL(0, kGenericURLTitle, url0));
   ASSERT_NE(nullptr, AddURL(0, kGenericURLTitle, url1));
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 370639 - Add bookmarks with different name and same URL.
@@ -426,8 +402,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   std::string title1 = IndexedURLTitle(1);
   ASSERT_NE(nullptr, AddURL(0, title0, GURL(kGenericURL)));
   ASSERT_NE(nullptr, AddURL(0, title1, GURL(kGenericURL)));
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 371817.
@@ -438,13 +413,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_RenameBMName) {
   std::string title = IndexedURLTitle(1);
   const BookmarkNode* bookmark = AddURL(0, title, GURL(kGenericURL));
   ASSERT_NE(nullptr, bookmark);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   std::string new_title = IndexedURLTitle(2);
   SetTitle(0, bookmark, new_title);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 371822.
@@ -455,13 +428,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_RenameBMURL) {
   GURL url = GURL(IndexedURL(1));
   const BookmarkNode* bookmark = AddURL(0, kGenericURLTitle, url);
   ASSERT_NE(nullptr, bookmark);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   GURL new_url = GURL(IndexedURL(2));
   ASSERT_NE(nullptr, SetURL(0, bookmark, new_url));
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 
@@ -474,17 +445,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   std::string title = IndexedURLTitle(1);
   const BookmarkNode* bookmark = AddURL(0, title, GURL(kGenericURL));
   ASSERT_NE(nullptr, bookmark);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   std::string new_title = IndexedURLTitle(2);
   SetTitle(0, bookmark, new_title);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   SetTitle(0, bookmark, title);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 371823 - Renaming the same bookmark URL twice.
@@ -496,17 +464,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   GURL url = GURL(IndexedURL(1));
   const BookmarkNode* bookmark = AddURL(0, kGenericURLTitle, url);
   ASSERT_NE(nullptr, bookmark);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   GURL new_url = GURL(IndexedURL(2));
   ASSERT_NE(nullptr, SetURL(0, bookmark, new_url));
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   ASSERT_NE(nullptr, SetURL(0, bookmark, url));
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 371824.
@@ -517,13 +482,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_RenameBMFolder) {
   std::string title = IndexedFolderName(1);
   const BookmarkNode* folder = AddFolder(0, title);
   ASSERT_NE(nullptr, AddURL(0, folder, 0, kGenericURLTitle, GURL(kGenericURL)));
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   std::string new_title = IndexedFolderName(2);
   SetTitle(0, folder, new_title);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 371825.
@@ -533,13 +496,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_RenameEmptyBMFolder) {
 
   std::string title = IndexedFolderName(1);
   const BookmarkNode* folder = AddFolder(0, title);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   std::string new_title = IndexedFolderName(2);
   SetTitle(0, folder, new_title);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 371826.
@@ -561,13 +522,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
       ASSERT_NE(nullptr, AddFolder(0, folder, i, title));
     }
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   std::string new_title = IndexedFolderName(2);
   SetTitle(0, folder, new_title);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 371827.
@@ -595,13 +554,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
       ASSERT_NE(nullptr, AddFolder(0, subfolder, i, title));
     }
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   std::string new_title = IndexedSubfolderName(2);
   SetTitle(0, subfolder, new_title);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 371828.
@@ -613,16 +570,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_RenameBMNameAndURL) {
   std::string title = IndexedURLTitle(1);
   const BookmarkNode* bookmark = AddURL(0, title, url);
   ASSERT_NE(nullptr, bookmark);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   GURL new_url = GURL(IndexedURL(2));
   std::string new_title = IndexedURLTitle(2);
   bookmark = SetURL(0, bookmark, new_url);
   ASSERT_NE(nullptr, bookmark);
   SetTitle(0, bookmark, new_title);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 371832.
@@ -632,12 +587,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(AllModelsMatchVerifier());
 
   ASSERT_NE(nullptr, AddURL(0, kGenericURLTitle, GURL(kGenericURL)));
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   Remove(0, GetBookmarkBarNode(0), 0);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 371833.
@@ -651,12 +604,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
     GURL url = GURL(IndexedURL(i));
     ASSERT_NE(nullptr, AddURL(0, i, title, url));
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   Remove(0, GetBookmarkBarNode(0), 0);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 371835.
@@ -672,12 +623,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
     GURL url = GURL(IndexedURL(i));
     ASSERT_NE(nullptr, AddURL(0, folder, i, title, url));
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   Remove(0, folder, 0);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 371836.
@@ -693,12 +642,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
     GURL url = GURL(IndexedURL(i));
     ASSERT_NE(nullptr, AddURL(0, folder, i, title, url));
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   Remove(0, folder, folder->child_count() - 1);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 371856.
@@ -714,12 +661,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
     GURL url = GURL(IndexedURL(i));
     ASSERT_NE(nullptr, AddURL(0, folder, i, title, url));
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   Remove(0, folder, 4);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 371857.
@@ -735,15 +680,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
     GURL url = GURL(IndexedURL(i));
     ASSERT_NE(nullptr, AddURL(0, folder, i, title, url));
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   int child_count = folder->child_count();
   for (int i = 0; i < child_count; ++i) {
     Remove(0, folder, 0);
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 371858.
@@ -753,12 +696,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(AllModelsMatchVerifier());
 
   ASSERT_NE(nullptr, AddFolder(0, kGenericFolderName));
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   Remove(0, GetBookmarkBarNode(0), 0);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 371869.
@@ -778,12 +719,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
       ASSERT_NE(nullptr, AddFolder(0, i, title));
     }
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   Remove(0, GetBookmarkBarNode(0), 0);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 371879.
@@ -810,12 +749,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
     GURL url = GURL(IndexedURL(i));
     ASSERT_NE(nullptr, AddURL(0, folder, i, title, url));
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   Remove(0, GetBookmarkBarNode(0), 1);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 371880.
@@ -861,12 +798,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
       }
     }
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   Remove(0, GetBookmarkBarNode(0), 1);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 371882.
@@ -895,12 +830,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
       ASSERT_NE(nullptr, AddFolder(0, subfolder, i, title));
     }
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   Remove(0, folder, 0);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 371931.
@@ -917,12 +850,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   const BookmarkNode* bookmark1 = AddURL(0, 1, title1, url1);
   ASSERT_NE(nullptr, bookmark0);
   ASSERT_NE(nullptr, bookmark1);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   Move(0, bookmark0, GetBookmarkBarNode(0), 2);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 371933.
@@ -935,12 +866,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_ReverseTheOrderOf10BMs) {
     GURL url = GURL(IndexedURL(i));
     ASSERT_NE(nullptr, AddURL(0, i, title, url));
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   ReverseChildOrder(0, GetBookmarkBarNode(0));
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 371954.
@@ -964,8 +893,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
     GURL url = GURL(IndexedURL(i));
     ASSERT_NE(nullptr, AddURL(0, i, title, url));
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   int num_bookmarks_to_move =
       GetBookmarkBarNode(0)->child_count() - 2;
@@ -998,8 +926,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
     GURL url = GURL(IndexedURL(i));
     ASSERT_NE(nullptr, AddURL(0, folder, i, title, url));
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   int num_bookmarks_to_move = folder->child_count() - 2;
   for (int i = 0; i < num_bookmarks_to_move; ++i) {
@@ -1030,15 +957,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
     GURL url = GURL(IndexedURL(i + 3));
     ASSERT_NE(nullptr, AddURL(0, subfolder, i, title, url));
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   for (int i = 0; i < 3; ++i) {
     GURL url = GURL(IndexedURL(i));
     Move(0, GetUniqueNodeByURL(0, url), subfolder, i + 10);
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 371964.
@@ -1062,15 +987,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
     GURL url = GURL(IndexedURL(i + 3));
     ASSERT_NE(nullptr, AddURL(0, subfolder, i, title, url));
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   for (int i = 0; i < 3; ++i) {
     GURL url = GURL(IndexedURL(i + 3));
     Move(0, GetUniqueNodeByURL(0, url), folder, i + 4);
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 371967.
@@ -1099,8 +1022,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_HoistBMs10LevelUp) {
     GURL url = GURL(IndexedURL(i + 10));
     ASSERT_NE(nullptr, AddURL(0, folder_L10, i, title, url));
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   GURL url10 = GURL(IndexedURL(10));
   Move(0, GetUniqueNodeByURL(
@@ -1109,8 +1031,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_HoistBMs10LevelUp) {
   Move(0, GetUniqueNodeByURL(0, url11), folder_L0, 0);
   GURL url12 = GURL(IndexedURL(12));
   Move(0, GetUniqueNodeByURL(0, url12), folder_L0, 1);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 371968.
@@ -1140,8 +1061,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_SinkBMs10LevelDown) {
     GURL url = GURL(IndexedURL(i + 10));
     ASSERT_NE(nullptr, AddURL(0, folder_L0, 0, title, url));
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   GURL url10 = GURL(IndexedURL(10));
   Move(0, GetUniqueNodeByURL(0, url10), folder_L10, folder_L10->child_count());
@@ -1149,8 +1069,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, SC_SinkBMs10LevelDown) {
   Move(0, GetUniqueNodeByURL(0, url11), folder_L10, 0);
   GURL url12 = GURL(IndexedURL(12));
   Move(0, GetUniqueNodeByURL(0, url12), folder_L10, 1);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 371980.
@@ -1177,12 +1096,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   folder = AddFolder(
       0, GetBookmarkBarNode(0)->child_count(), kGenericFolderName);
   ASSERT_NE(nullptr, folder);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   Move(0, folder, folder_L5, folder_L5->child_count());
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 371997.
@@ -1213,12 +1130,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
     GURL url = GURL(IndexedURL(i));
     ASSERT_NE(nullptr, AddURL(0, folder, i, title, url));
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   Move(0, folder, folder_L5, folder_L5->child_count());
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 372006.
@@ -1249,12 +1164,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
     GURL url = GURL(IndexedURL(i));
     ASSERT_NE(nullptr, AddURL(0, folder, i, title, url));
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   Move(0, folder, GetBookmarkBarNode(0), GetBookmarkBarNode(0)->child_count());
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 372026.
@@ -1273,12 +1186,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
       ASSERT_NE(nullptr, AddURL(0, folder, j, title, url));
     }
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   ReverseChildOrder(0, GetBookmarkBarNode(0));
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 372028.
@@ -1297,12 +1208,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
       ASSERT_NE(nullptr, AddURL(0, folder, j, title, url));
     }
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   ReverseChildOrder(0, GetBookmarkBarNode(0));
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 // Test Scribe ID - 373379.
@@ -1320,8 +1229,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
     GURL url1 = GURL(IndexedURL(2*i+1));
     ASSERT_NE(nullptr, AddURL(1, title1, url1));
   }
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
@@ -1340,8 +1248,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
     ASSERT_NE(nullptr, AddURL(0, title, url));
     ASSERT_NE(nullptr, AddURL(1, title, url));
   }
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
 }
 
 // Test Scribe ID - 373506.
@@ -1371,8 +1278,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_NE(nullptr, AddURL(1, folder1, 2, "bOOKMARK 2", GURL(kGenericURL)));
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
@@ -1399,8 +1305,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   }
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
@@ -1424,8 +1329,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   }
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
@@ -1443,8 +1347,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   }
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
@@ -1467,8 +1370,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
     ASSERT_NE(nullptr, AddURL(1, folder1, i, title1, url1));
   }
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
@@ -1509,8 +1411,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
     ASSERT_NE(nullptr, AddURL(1, title, url));
   }
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
@@ -1535,8 +1436,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
     }
   }
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
@@ -1559,8 +1459,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   }
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
   ASSERT_FALSE(ContainsDuplicateBookmarks(1));
 }
@@ -1591,8 +1490,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
             AddURL(1, folder1, 4, IndexedURLTitle(1), GURL(IndexedURL(1))));
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
@@ -1622,8 +1520,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
             AddURL(1, folder1, 3, IndexedURLTitle(8), GURL(IndexedURL(8))));
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
@@ -1647,8 +1544,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   }
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
@@ -1676,8 +1572,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   }
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
 
   for (int i = 1; i < 5 ; ++i) {
     ASSERT_EQ(i, CountBookmarksWithTitlesMatching(1, IndexedURLTitle(i)));
@@ -1695,8 +1590,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, DisableBookmarks) {
   ASSERT_FALSE(AllModelsMatch());
 
   ASSERT_TRUE(GetClient(1)->EnableSyncForDatatype(syncer::BOOKMARKS));
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
 }
 
 // TCM ID - 7343544.
@@ -1713,8 +1607,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, DisableSync) {
   ASSERT_FALSE(AllModelsMatch());
 
   ASSERT_TRUE(GetClient(1)->EnableSyncForAllDatatypes());
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
 }
 
 // TCM ID - 3662298 - Test adding duplicate folder - Both with different BMs
@@ -1737,8 +1630,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, MC_DuplicateFolders) {
   }
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
@@ -1788,8 +1680,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
     GURL url = GURL(IndexedURL(i));
     ASSERT_NE(nullptr, AddURL(0, folder0, i, title, url));
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 
   DisableVerifier();
@@ -1797,8 +1688,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   SetTitle(0, GetUniqueNodeByURL(0, url), "Title++");
   SetTitle(1, GetUniqueNodeByURL(1, url), "Title--");
 
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
@@ -1815,8 +1705,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
     GURL url = GURL(IndexedURL(i));
     ASSERT_NE(nullptr, AddURL(0, folder0, i, title, url));
   }
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 
   DisableVerifier();
@@ -1826,8 +1715,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(SetURL(
       1, GetUniqueNodeByURL(1, url), GURL("http://www.google.com/11")));
 
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
@@ -1876,29 +1764,25 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   }
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 
   // Simultaneously rename folder A on both clients.
   SetTitle(0, folderA[0], "Folder A++");
   SetTitle(1, folderA[1], "Folder A--");
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 
   // Simultaneously rename folder B on both clients.
   SetTitle(0, folderB[0], "Folder B++");
   SetTitle(1, folderB[1], "Folder B--");
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 
   // Simultaneously rename folder C on both clients.
   SetTitle(0, folderC[0], "Folder C++");
   SetTitle(1, folderC[1], "Folder C--");
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }
 
@@ -1971,8 +1855,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
 
   ASSERT_NE(nullptr, AddURL(0, IndexedURLTitle(1), GURL(IndexedURL(1))));
   ASSERT_NE(nullptr, AddFolder(0, IndexedFolderName(0)));
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
@@ -1984,8 +1867,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_NE(nullptr, AddURL(0, 0, IndexedURLTitle(0), GURL(IndexedURL(0))));
   ASSERT_NE(nullptr, AddURL(0, 1, IndexedURLTitle(1), GURL(IndexedURL(1))));
   ASSERT_NE(nullptr, AddURL(0, 2, IndexedURLTitle(2), GURL(IndexedURL(2))));
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   // Set a passphrase and enable encryption on Client 0. Client 1 will not
   // understand the bookmark updates.
@@ -2008,14 +1890,12 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(PassphraseRequiredChecker(GetSyncService(1)).Wait());
   ASSERT_TRUE(GetSyncService(1)->SetDecryptionPassphrase(kValidPassphrase));
   ASSERT_TRUE(PassphraseAcceptedChecker(GetSyncService(1)).Wait());
-  ASSERT_TRUE(AwaitQuiescence());
-  EXPECT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_EQ(0, GetClient(1)->GetLastCycleSnapshot().num_encryption_conflicts());
 
   // Ensure everything is syncing normally by appending a final bookmark.
   ASSERT_NE(nullptr, AddURL(1, 5, IndexedURLTitle(5), GURL(IndexedURL(5))));
-  ASSERT_TRUE(GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0)));
-  EXPECT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_EQ(0, GetClient(1)->GetLastCycleSnapshot().num_encryption_conflicts());
 }
 
@@ -2055,8 +1935,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, RacyPositionChanges) {
     Move(1, node, node->parent(), rand_pos);
   }
 
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
 
   // Now make changes to client 1 first.
   for (size_t i = 0; i < num_bookmarks; ++i) {
@@ -2076,8 +1955,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, RacyPositionChanges) {
     Move(0, node, node->parent(), rand_pos);
   }
 
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
 }
 
 // Trigger the server side creation of Synced Bookmarks. Ensure both clients
@@ -2093,8 +1971,7 @@ IN_PROC_BROWSER_TEST_F(LegacyTwoClientBookmarksSyncTest,
   // Add a bookmark on Client 0 and ensure it syncs over. This will also trigger
   // both clients downloading the new Synced Bookmarks folder.
   ASSERT_NE(nullptr, AddURL(0, "Google", GURL("http://www.google.com")));
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
 
   // Now add a bookmark within the Synced Bookmarks folder and ensure it syncs
   // over.
@@ -2102,8 +1979,7 @@ IN_PROC_BROWSER_TEST_F(LegacyTwoClientBookmarksSyncTest,
   ASSERT_TRUE(synced_bookmarks);
   ASSERT_NE(nullptr, AddURL(0, synced_bookmarks, 0, "Google2",
                             GURL("http://www.google2.com")));
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
@@ -2147,8 +2023,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   ASSERT_TRUE(
       AddURL(0, GetBookmarkBarNode(0), 2, "Gmai", GURL("http://gmail.com")));
 
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
 
   // Remove all
   RemoveAll(0);
@@ -2192,8 +2067,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, ManagedBookmarks) {
   // Verify that adding a bookmark is observed by the second Profile.
   GURL google_url("http://www.google.com");
   ASSERT_NE(nullptr, AddURL(0, "Google", google_url));
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
   ASSERT_EQ(1, bar_node0->child_count());
   ASSERT_EQ(1, bar_node1->child_count());
 
@@ -2213,8 +2087,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, ManagedBookmarks) {
 
   // Now add another user bookmark and wait for it to sync.
   ASSERT_NE(nullptr, AddURL(0, "Google 2", google_url));
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllModelsMatchVerifier());
+  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
 
   EXPECT_FALSE(GetSyncService(0)->HasUnrecoverableError());
   EXPECT_FALSE(GetSyncService(1)->HasUnrecoverableError());

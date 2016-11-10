@@ -235,8 +235,6 @@ FaviconData GetFaviconData(BookmarkModel* model,
     model->GetFavicon(node);
     observer.WaitForGetFavicon();
   }
-  EXPECT_TRUE(node->is_favicon_loaded());
-  EXPECT_FALSE(model->GetFavicon(node).IsEmpty());
   return FaviconData(model->GetFavicon(node), node->icon_url());
 }
 
@@ -904,6 +902,18 @@ bool BookmarksMatchChecker::IsExitConditionSatisfied() {
 
 std::string BookmarksMatchChecker::GetDebugMessage() const {
   return "Waiting for matching models";
+}
+
+BookmarksMatchVerifierChecker::BookmarksMatchVerifierChecker()
+    : MultiClientStatusChangeChecker(
+          sync_datatype_helper::test()->GetSyncServices()) {}
+
+bool BookmarksMatchVerifierChecker::IsExitConditionSatisfied() {
+  return bookmarks_helper::AllModelsMatchVerifier();
+}
+
+std::string BookmarksMatchVerifierChecker::GetDebugMessage() const {
+  return "Waiting for model to match verifier";
 }
 
 BookmarksTitleChecker::BookmarksTitleChecker(int profile_index,

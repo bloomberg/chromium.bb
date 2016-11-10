@@ -4,6 +4,7 @@
 
 #include "components/sync/engine/engine_components_factory_impl.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/sync/engine_impl/backoff_delay_provider.h"
 #include "components/sync/engine_impl/cycle/sync_cycle_context.h"
 #include "components/sync/engine_impl/sync_scheduler_impl.h"
@@ -11,6 +12,10 @@
 #include "components/sync/syncable/on_disk_directory_backing_store.h"
 
 using base::TimeDelta;
+
+namespace {
+const int kShortNudgeDelayDurationMS = 1;
+}
 
 namespace syncer {
 
@@ -27,11 +32,28 @@ std::unique_ptr<SyncScheduler> EngineComponentsFactoryImpl::BuildScheduler(
   std::unique_ptr<BackoffDelayProvider> delay(
       BackoffDelayProvider::FromDefaults());
 
-  if (switches_.backoff_override == BACKOFF_SHORT_INITIAL_RETRY_OVERRIDE)
+  if (switches_.backoff_override == BACKOFF_SHORT_INITIAL_RETRY_OVERRIDE) {
     delay.reset(BackoffDelayProvider::WithShortInitialRetryOverride());
+  }
 
-  return std::unique_ptr<SyncScheduler>(new SyncSchedulerImpl(
-      name, delay.release(), context, new Syncer(cancelation_signal)));
+  std::unique_ptr<SyncSchedulerImpl> scheduler =
+      base::MakeUnique<SyncSchedulerImpl>(name, delay.release(), context,
+                                          new Syncer(cancelation_signal));
+  if (switches_.nudge_delay == NudgeDelay::SHORT_NUDGE_DELAY) {
+    // Set the default nudge delay to 0 because the default is used as a floor
+    // for override values, and we don't want the below override to be ignored.
+    scheduler->SetDefaultNudgeDelay(TimeDelta::FromMilliseconds(0));
+    // Only protocol types can have their delay customized.
+    ModelTypeSet protocol_types = syncer::ProtocolTypes();
+    std::map<ModelType, base::TimeDelta> nudge_delays;
+    for (ModelTypeSet::Iterator it = protocol_types.First(); it.Good();
+         it.Inc()) {
+      nudge_delays[it.Get()] =
+          TimeDelta::FromMilliseconds(kShortNudgeDelayDurationMS);
+    }
+    scheduler->OnReceivedCustomNudgeDelays(nudge_delays);
+  }
+  return std::move(scheduler);
 }
 
 std::unique_ptr<SyncCycleContext> EngineComponentsFactoryImpl::BuildContext(

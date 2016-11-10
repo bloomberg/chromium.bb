@@ -227,6 +227,16 @@ class BookmarksMatchChecker : public MultiClientStatusChangeChecker {
   std::string GetDebugMessage() const override;
 };
 
+// Checker used to block until bookmarks match the verifier bookmark model.
+class BookmarksMatchVerifierChecker : public MultiClientStatusChangeChecker {
+ public:
+  BookmarksMatchVerifierChecker();
+
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied() override;
+  std::string GetDebugMessage() const override;
+};
+
 // Checker used to block until the actual number of bookmarks with the given
 // title match the expected count.
 // TODO(pvalenzuela): Remove this class and instead use
