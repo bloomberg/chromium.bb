@@ -463,8 +463,7 @@ void AesDecryptor::Decrypt(StreamType stream_type,
   CHECK(encrypted->decrypt_config());
 
   scoped_refptr<DecoderBuffer> decrypted;
-  // An empty iv string signals that the frame is unencrypted.
-  if (encrypted->decrypt_config()->iv().empty()) {
+  if (!encrypted->decrypt_config()->is_encrypted()) {
     decrypted = DecoderBuffer::CopyFrom(encrypted->data(),
                                         encrypted->data_size());
   } else {
