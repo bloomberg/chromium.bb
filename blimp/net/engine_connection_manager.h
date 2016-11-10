@@ -43,9 +43,12 @@ class BLIMP_NET_EXPORT EngineConnectionManager {
                         EngineTransportType transport_type);
 
  private:
-  // Callback invoked by |transport| to indicate that it has a connection
+  // Invokes transport_->Connect to listen for a connection.
+  void Connect();
+
+  // Callback invoked by |transport_| to indicate that it has a connection
   // ready to be authenticated.
-  void OnConnectResult(BlimpTransport* transport, int result);
+  void OnConnectResult(int result);
 
   ConnectionHandler* connection_handler_;
   net::NetLog* net_log_;

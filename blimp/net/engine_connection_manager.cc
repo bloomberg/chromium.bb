@@ -44,16 +44,19 @@ void EngineConnectionManager::ConnectTransport(
     }
   }
 
-  transport_->Connect(base::Bind(&EngineConnectionManager::OnConnectResult,
-                                 base::Unretained(this),
-                                 base::Unretained(transport_.get())));
+  Connect();
   transport_->GetLocalAddress(ip_endpoint);
 }
 
-void EngineConnectionManager::OnConnectResult(BlimpTransport* transport,
-                                              int result) {
-  CHECK_EQ(net::OK, result) << "Transport failure:" << transport->GetName();
-  connection_handler_->HandleConnection(transport->MakeConnection());
+void EngineConnectionManager::Connect() {
+  transport_->Connect(base::Bind(&EngineConnectionManager::OnConnectResult,
+                                 base::Unretained(this)));
+}
+
+void EngineConnectionManager::OnConnectResult(int result) {
+  CHECK_EQ(net::OK, result) << "Transport failure:" << transport_->GetName();
+  connection_handler_->HandleConnection(transport_->MakeConnection());
+  Connect();
 }
 
 }  // namespace blimp

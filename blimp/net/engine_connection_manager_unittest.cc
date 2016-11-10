@@ -62,4 +62,24 @@ TEST_F(EngineConnectionManagerTest, ConnectionSucceeds) {
   EXPECT_EQ(net::OK, connect_callback.WaitForResult());
 }
 
+TEST_F(EngineConnectionManagerTest, TwoConnectionsSucceed) {
+  EXPECT_CALL(connection_handler_, HandleConnectionPtr(_)).Times(2);
+
+  net::IPAddress ip_addr(net::IPAddress::IPv4Localhost());
+  net::IPEndPoint engine_endpoint(ip_addr, 0);
+
+  manager_->ConnectTransport(&engine_endpoint,
+                             EngineConnectionManager::EngineTransportType::TCP);
+
+  net::TestCompletionCallback connect_callback;
+  TCPClientTransport client(engine_endpoint, nullptr);
+
+  client.Connect(connect_callback.callback());
+  EXPECT_EQ(net::OK, connect_callback.WaitForResult());
+  std::unique_ptr<BlimpConnection> connection = client.MakeConnection();
+
+  client.Connect(connect_callback.callback());
+  EXPECT_EQ(net::OK, connect_callback.WaitForResult());
+}
+
 }  // namespace blimp
