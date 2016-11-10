@@ -357,6 +357,7 @@ DispatchEventResult MouseEventDispatchMediator::dispatchEvent(
       mouseEvent.screenY(), mouseEvent.clientX(), mouseEvent.clientY(),
       mouseEvent.modifiers(), mouseEvent.button(), relatedTarget,
       mouseEvent.sourceCapabilities(), mouseEvent.buttons());
+  doubleClickEvent->setComposed(mouseEvent.composed());
 
   // Inherit the trusted status from the original event.
   doubleClickEvent->setTrusted(mouseEvent.isTrusted());

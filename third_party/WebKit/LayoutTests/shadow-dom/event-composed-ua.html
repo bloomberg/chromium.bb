@@ -60,4 +60,20 @@ async_test(function(t) {
 target.select();
 var userError = new Event('error');
 target.dispatchEvent(userError);
+
+function doubleClick(x, y) {
+    eventSender.mouseMoveTo(x, y);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
+    eventSender.mouseDown();
+    eventSender.mouseUp();
+}
+
+async_test((test) => {
+  input.addEventListener('dblclick', test.step_func_done((e) => {
+    assert_true(e.composed);
+  }));
+}, 'A dblclick event should be a composed event');
+
+doubleClick(input.offsetLeft, input.offsetTop);
 </script>
