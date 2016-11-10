@@ -19,6 +19,7 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
 #include "ash/common/system/tray/tray_popup_utils.h"
+#include "ash/common/system/tray/tri_view.h"
 #include "ash/common/wm_shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -224,7 +225,14 @@ void VPNListNetworkEntry::UpdateFromNetworkState(
     } else {
       disconnect_button_ = new DisconnectButton(this);
     }
-    AddChildView(disconnect_button_);
+    if (UseMd()) {
+      DCHECK(tri_view());
+      tri_view()->AddView(TriView::Container::END, disconnect_button_);
+      tri_view()->SetContainerVisible(TriView::Container::END, true);
+    } else {
+      AddChildView(disconnect_button_);
+    }
+
     SetBorder(
         views::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0,
                                  UseMd() ? kTrayPopupButtonEndMargin : 3));
@@ -232,18 +240,15 @@ void VPNListNetworkEntry::UpdateFromNetworkState(
     SetBorder(views::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0, 0));
   }
 
-  // The icon and the disconnect button are always set to their preferred size.
-  // All remaining space is used for the network name.
-  views::BoxLayout* layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, UseMd() ? 0 : 3,
-                           kTrayPopupPaddingBetweenItems);
-  if (UseMd()) {
-    layout->set_cross_axis_alignment(
-        views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+  if (!UseMd()) {
+    // The icon and the disconnect button are always set to their preferred
+    // size. All remaining space is used for the network name.
+    views::BoxLayout* layout = new views::BoxLayout(
+        views::BoxLayout::kHorizontal, 0, 3, kTrayPopupPaddingBetweenItems);
+    SetLayoutManager(layout);
+    layout->SetDefaultFlex(0);
+    layout->SetFlexForView(text_label(), 1);
   }
-  SetLayoutManager(layout);
-  layout->SetDefaultFlex(0);
-  layout->SetFlexForView(text_label(), 1);
   Layout();
 }
 

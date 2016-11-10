@@ -74,17 +74,19 @@ views::View* LabelTrayView::CreateChildView(
     const base::string16& message) const {
   HoverHighlightView* child = new HoverHighlightView(click_listener_);
   if (icon_resource_id_) {
+    const bool use_md = MaterialDesignController::IsSystemTrayMenuMaterial();
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     gfx::ImageSkia icon =
-        MaterialDesignController::IsSystemTrayMenuMaterial()
-            ? gfx::CreateVectorIcon(ResourceIdToVectorIcon(icon_resource_id_),
-                                    kMenuIconColor)
-            : *rb.GetImageSkiaNamed(icon_resource_id_);
-    child->AddIconAndLabel(icon, message, false /* highlight */);
-    child->SetBorder(views::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0,
-                                              kTrayPopupPaddingHorizontal));
+        use_md ? gfx::CreateVectorIcon(
+                     ResourceIdToVectorIcon(icon_resource_id_), kMenuIconColor)
+               : *rb.GetImageSkiaNamed(icon_resource_id_);
+    child->AddIconAndLabelForDefaultView(icon, message, false /* highlight */);
     child->text_label()->SetMultiLine(true);
-    child->text_label()->SizeToFit(kTrayNotificationContentsWidth);
+    if (!use_md) {
+      child->SetBorder(views::CreateEmptyBorder(
+          0, kTrayPopupPaddingHorizontal, 0, kTrayPopupPaddingHorizontal));
+      child->text_label()->SizeToFit(kTrayNotificationContentsWidth);
+    }
   } else {
     child->AddLabel(message, gfx::ALIGN_LEFT, false /* highlight */);
     child->text_label()->SetMultiLine(true);

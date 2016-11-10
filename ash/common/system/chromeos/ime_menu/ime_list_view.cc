@@ -98,6 +98,9 @@ class ImeListItemView : public ActionableView {
                   bool selected,
                   const SkColor button_color)
       : ActionableView(owner), ime_list_view_(list_view) {
+    if (MaterialDesignController::IsSystemTrayMenuMaterial())
+      SetInkDropMode(InkDropHostView::InkDropMode::ON);
+
     TriView* tri_view = TrayPopupUtils::CreateDefaultRowView();
     AddChildView(tri_view);
     SetLayoutManager(new views::FillLayout);
@@ -108,6 +111,14 @@ class ImeListItemView : public ActionableView {
     const gfx::FontList& base_font_list =
         rb.GetFontList(ui::ResourceBundle::MediumBoldFont);
     id_label->SetFontList(base_font_list);
+
+    // TODO(bruthig): Fix this so that |label| uses the kBackgroundColor to
+    // perform subpixel rendering instead of disabling subpixel rendering.
+    //
+    // Text rendered on a non-opaque background looks ugly and it is possible
+    // for labels to given a a clear canvas at paint time when an ink drop is
+    // visible. See http://crbug.com/661714.
+    id_label->SetSubpixelRenderingEnabled(false);
 
     // For IMEs whose short name are more than 2 characters (INTL, EXTD, etc.),
     // |kMenuIconSize| is not enough. The label will trigger eliding as "I..."
@@ -121,7 +132,8 @@ class ImeListItemView : public ActionableView {
     tri_view->AddView(TriView::Container::START, id_label);
 
     // The label shows the IME name.
-    label_ = new views::Label(label);
+    label_ = TrayPopupUtils::CreateDefaultLabel();
+    label_->SetText(label);
     UpdateStyle();
     label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     tri_view->AddView(TriView::Container::CENTER, label_);
@@ -204,11 +216,10 @@ class MaterialKeyboardStatusRowView : public views::View {
     tri_view->AddView(TriView::Container::START, keyboard_image);
 
     // The on-screen keyboard label.
-    label_ = new views::Label(
-        ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-            IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD));
+    label_ = TrayPopupUtils::CreateDefaultLabel();
+    label_->SetText(ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+        IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD));
     UpdateStyle();
-    label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     tri_view->AddView(TriView::Container::CENTER, label_);
 
     // The on-screen keyboard toggle button.

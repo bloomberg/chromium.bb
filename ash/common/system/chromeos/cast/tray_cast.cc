@@ -411,14 +411,15 @@ void CastDetailedView::UpdateReceiverListFromCachedData() {
 views::View* CastDetailedView::AddToReceiverList(
     const CastConfigDelegate::SinkAndRoute& sink_route) {
   HoverHighlightView* container = new HoverHighlightView(this);
-
-  const gfx::ImageSkia* image =
-      ui::ResourceBundle::GetSharedInstance()
-          .GetImageNamed(IDR_AURA_UBER_TRAY_CAST_DEVICE_ICON)
-          .ToImageSkia();
+  const gfx::ImageSkia image =
+      MaterialDesignController::IsSystemTrayMenuMaterial()
+          ? gfx::CreateVectorIcon(kSystemMenuCastDeviceIcon, kMenuIconColor)
+          : *ui::ResourceBundle::GetSharedInstance()
+                 .GetImageNamed(IDR_AURA_UBER_TRAY_CAST_DEVICE_ICON)
+                 .ToImageSkia();
   const base::string16& name = sink_route.sink.name;
   container->AddIconAndLabelCustomSize(
-      *image, name, false, kTrayPopupDetailsIconWidth,
+      image, name, false, kTrayPopupDetailsIconWidth,
       kTrayPopupPaddingHorizontal, kTrayPopupPaddingBetweenItems);
 
   scroll_content()->AddChildView(container);

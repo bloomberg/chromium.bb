@@ -100,6 +100,8 @@ action("aggregate_vector_icons") {
     "system_menu_caps_lock.icon",
     "system_menu_cast.1x.icon",
     "system_menu_cast.icon",
+    "system_menu_cast_device.1x.icon",
+    "system_menu_cast_device.icon",
     "system_menu_child_user.1x.icon",
     "system_menu_child_user.icon",
     "system_menu_computer.1x.icon",
