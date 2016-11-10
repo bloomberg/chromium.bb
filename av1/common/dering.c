@@ -33,8 +33,14 @@ int sb_all_skip(const AV1_COMMON *const cm, int mi_row, int mi_col) {
   int skip = 1;
   maxc = cm->mi_cols - mi_col;
   maxr = cm->mi_rows - mi_row;
+#if CONFIG_EXT_PARTITION
+  if (maxr > cm->mib_size_log2) maxr = cm->mib_size_log2;
+  if (maxc > cm->mib_size_log2) maxc = cm->mib_size_log2;
+#else
   if (maxr > MAX_MIB_SIZE) maxr = MAX_MIB_SIZE;
   if (maxc > MAX_MIB_SIZE) maxc = MAX_MIB_SIZE;
+#endif
+
   for (r = 0; r < maxr; r++) {
     for (c = 0; c < maxc; c++) {
       skip = skip &&
@@ -54,8 +60,13 @@ int sb_compute_dering_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
   grid = cm->mi_grid_visible;
   maxc = cm->mi_cols - mi_col;
   maxr = cm->mi_rows - mi_row;
+#if CONFIG_EXT_PARTITION
+  if (maxr > cm->mib_size_log2) maxr = cm->mib_size_log2;
+  if (maxc > cm->mib_size_log2) maxc = cm->mib_size_log2;
+#else
   if (maxr > MAX_MIB_SIZE) maxr = MAX_MIB_SIZE;
   if (maxc > MAX_MIB_SIZE) maxc = MAX_MIB_SIZE;
+#endif
   for (r = 0; r < maxr; r++) {
     MODE_INFO **grid_row;
     grid_row = &grid[(mi_row + r) * cm->mi_stride + mi_col];

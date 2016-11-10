@@ -1981,7 +1981,19 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
 #if CONFIG_DERING
+#if CONFIG_EXT_PARTITION
+  if (cm->sb_size == BLOCK_128X128 && bsize == BLOCK_128X128) {
+    if (cm->dering_level != 0 && !sb_all_skip(cm, mi_row, mi_col)) {
+      cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col]->mbmi.dering_gain =
+          aom_read_literal(r, DERING_REFINEMENT_BITS, ACCT_STR);
+    } else {
+      cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col]->mbmi.dering_gain =
+          0;
+    }
+  } else if (cm->sb_size == BLOCK_64X64 && bsize == BLOCK_64X64) {
+#else
   if (bsize == BLOCK_64X64) {
+#endif
     if (cm->dering_level != 0 && !sb_all_skip(cm, mi_row, mi_col)) {
       cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col]->mbmi.dering_gain =
           aom_read_literal(r, DERING_REFINEMENT_BITS, ACCT_STR);
@@ -1993,8 +2005,51 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #endif
 
 #if CONFIG_CLPF
-  if (bsize == BLOCK_64X64 && cm->clpf_strength_y &&
-      cm->clpf_size != CLPF_NOSIZE) {
+#if CONFIG_EXT_PARTITION
+  if (cm->sb_size == BLOCK_128X128 && bsize == BLOCK_128X128 &&
+      cm->clpf_strength_y && cm->clpf_size != CLPF_NOSIZE) {
+    const int tl = mi_row * MI_SIZE / MIN_FB_SIZE * cm->clpf_stride +
+                   mi_col * MI_SIZE / MIN_FB_SIZE;
+    if (cm->clpf_size == CLPF_128X128) {
+      cm->clpf_blocks[tl] = aom_read_literal(r, 1, ACCT_STR);
+    } else if (cm->clpf_size == CLPF_64X64) {
+      const int tr = tl + 2;
+      const int bl = tl + 2 * cm->clpf_stride;
+      const int br = tr + 2 * cm->clpf_stride;
+      const int size = 64 / MI_SIZE;
+
+      // Up to four bits per SB
+      if (!clpf_all_skip(cm, mi_col, mi_row, size))
+        cm->clpf_blocks[tl] = aom_read_literal(r, 1, ACCT_STR);
+
+      if (mi_col + size < cm->mi_cols &&
+          !clpf_all_skip(cm, mi_col + size, mi_row, size))
+        cm->clpf_blocks[tr] = aom_read_literal(r, 1, ACCT_STR);
+
+      if (mi_row + size < cm->mi_rows &&
+          !clpf_all_skip(cm, mi_col, mi_row + size, size))
+        cm->clpf_blocks[bl] = aom_read_literal(r, 1, ACCT_STR);
+
+      if (mi_col + size < cm->mi_cols && mi_row + size < cm->mi_rows &&
+          !clpf_all_skip(cm, mi_col + size, mi_row + size, size))
+        cm->clpf_blocks[br] = aom_read_literal(r, 1, ACCT_STR);
+    } else if (cm->clpf_size == CLPF_32X32) {
+      int i, j;
+      const int size = 32 / MI_SIZE;
+      for (i = 0; i < 4; ++i)
+        for (j = 0; j < 4; ++j) {
+          const int index = tl + i * cm->clpf_stride + j;
+          if (mi_row + i * size < cm->mi_rows &&
+              mi_col + j * size < cm->mi_cols &&
+              !clpf_all_skip(cm, mi_col + j * size, mi_row + i * size, size))
+            cm->clpf_blocks[index] = aom_read_literal(r, 1, ACCT_STR);
+        }
+    }
+  } else if (cm->sb_size == BLOCK_64X64 && bsize == BLOCK_64X64 &&
+#else
+  if (bsize == BLOCK_64X64 &&
+#endif  // CONFIG_EXT_PARTITION
+             cm->clpf_strength_y && cm->clpf_size != CLPF_NOSIZE) {
     const int tl = mi_row * MI_SIZE / MIN_FB_SIZE * cm->clpf_stride +
                    mi_col * MI_SIZE / MIN_FB_SIZE;
 
@@ -2027,7 +2082,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
         cm->clpf_blocks[br] = aom_read_literal(r, 1, ACCT_STR);
     }
   }
-#endif
+#endif  // CONFIG_CLPF
 }
 
 #if !CONFIG_ANS

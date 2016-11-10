@@ -2269,8 +2269,18 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
 #if CONFIG_DERING
-  if (bsize == BLOCK_64X64 && cm->dering_level != 0 &&
-      !sb_all_skip(cm, mi_row, mi_col)) {
+#if CONFIG_EXT_PARTITION
+  if (cm->sb_size == BLOCK_128X128 && bsize == BLOCK_128X128 &&
+      cm->dering_level != 0 && !sb_all_skip(cm, mi_row, mi_col)) {
+    aom_write_literal(
+        w,
+        cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col]->mbmi.dering_gain,
+        DERING_REFINEMENT_BITS);
+  } else if (cm->sb_size == BLOCK_64X64 && bsize == BLOCK_64X64 &&
+#else
+  if (bsize == BLOCK_64X64 &&
+#endif  // CONFIG_EXT_PARTITION
+             cm->dering_level != 0 && !sb_all_skip(cm, mi_row, mi_col)) {
     aom_write_literal(
         w,
         cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col]->mbmi.dering_gain,
@@ -2279,8 +2289,50 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
 #endif
 
 #if CONFIG_CLPF
-  if (bsize == BLOCK_64X64 && cm->clpf_blocks && cm->clpf_strength_y &&
-      cm->clpf_size != CLPF_NOSIZE) {
+#if CONFIG_EXT_PARTITION
+  if (cm->sb_size == BLOCK_128X128 && bsize == BLOCK_128X128 &&
+      cm->clpf_blocks && cm->clpf_strength_y && cm->clpf_size != CLPF_NOSIZE) {
+    const int tl = mi_row * MI_SIZE / MIN_FB_SIZE * cm->clpf_stride +
+                   mi_col * MI_SIZE / MIN_FB_SIZE;
+    if (cm->clpf_size == CLPF_128X128 && cm->clpf_blocks[tl] != CLPF_NOFLAG) {
+      aom_write_literal(w, cm->clpf_blocks[tl], 1);
+    } else if (cm->clpf_size == CLPF_64X64) {
+      const int tr = tl + 2;
+      const int bl = tl + 2 * cm->clpf_stride;
+      const int br = tr + 2 * cm->clpf_stride;
+
+      // Up to four bits per SB.
+      if (cm->clpf_blocks[tl] != CLPF_NOFLAG)
+        aom_write_literal(w, cm->clpf_blocks[tl], 1);
+
+      if (mi_col + MI_SIZE < cm->mi_cols && cm->clpf_blocks[tr] != CLPF_NOFLAG)
+        aom_write_literal(w, cm->clpf_blocks[tr], 1);
+
+      if (mi_row + MI_SIZE < cm->mi_rows && cm->clpf_blocks[bl] != CLPF_NOFLAG)
+        aom_write_literal(w, cm->clpf_blocks[bl], 1);
+
+      if (mi_row + MI_SIZE < cm->mi_rows && mi_col + MI_SIZE < cm->mi_cols &&
+          cm->clpf_blocks[br] != CLPF_NOFLAG)
+        aom_write_literal(w, cm->clpf_blocks[br], 1);
+    } else if (cm->clpf_size == CLPF_32X32) {
+      int i, j;
+      const int size = 32 / MI_SIZE;
+      // Up to sixteen bits per SB.
+      for (i = 0; i < 4; ++i)
+        for (j = 0; j < 4; ++j) {
+          const int index = tl + i * cm->clpf_stride + j;
+          if (mi_row + i * size < cm->mi_rows &&
+              mi_col + j * size < cm->mi_cols &&
+              cm->clpf_blocks[index] != CLPF_NOFLAG)
+            aom_write_literal(w, cm->clpf_blocks[index], 1);
+        }
+    }
+  } else if (cm->sb_size == BLOCK_64X64 && bsize == BLOCK_64X64 &&
+#else
+  if (bsize == BLOCK_64X64 &&
+#endif  // CONFIG_EXT_PARTITION
+             cm->clpf_blocks && cm->clpf_strength_y &&
+             cm->clpf_size != CLPF_NOSIZE) {
     const int tl = mi_row * MI_SIZE / MIN_FB_SIZE * cm->clpf_stride +
                    mi_col * MI_SIZE / MIN_FB_SIZE;
     const int tr = tl + 1;
@@ -2307,7 +2359,7 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
         cm->clpf_blocks[br] != CLPF_NOFLAG)
       aom_write_literal(w, cm->clpf_blocks[br], 1);
   }
-#endif
+#endif  // CONFIG_CLPF
 }
 
 static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
