@@ -15,6 +15,9 @@ libs/logdog/bootstrap.py
 libs/logdog/stream.py
 libs/logdog/streamname.py
 libs/logdog/varint.py
+libs/luci_context/__init__.py
+libs/luci_context/luci_context.py
+named_cache.py
 run_isolated.py
 third_party/__init__.py
 third_party/chromium/__init__.py
@@ -121,6 +124,8 @@ third_party/httplib2/__init__.py
 third_party/httplib2/iri2uri.py
 third_party/httplib2/socks.py
 third_party/infra_libs/__init__.py
+third_party/infra_libs/_command_line_linux.py
+third_party/infra_libs/_command_line_stub.py
 third_party/infra_libs/app.py
 third_party/infra_libs/authentication.py
 third_party/infra_libs/event_mon/__init__.py
@@ -160,9 +165,16 @@ third_party/infra_libs/ts_mon/common/standard_metrics.py
 third_party/infra_libs/ts_mon/common/targets.py
 third_party/infra_libs/ts_mon/config.py
 third_party/infra_libs/ts_mon/protos/__init__.py
-third_party/infra_libs/ts_mon/protos/acquisition_network_device_pb2.py
-third_party/infra_libs/ts_mon/protos/acquisition_task_pb2.py
-third_party/infra_libs/ts_mon/protos/metrics_pb2.py
+third_party/infra_libs/ts_mon/protos/current/__init__.py
+third_party/infra_libs/ts_mon/protos/current/acquisition_network_device_pb2.py
+third_party/infra_libs/ts_mon/protos/current/acquisition_task_pb2.py
+third_party/infra_libs/ts_mon/protos/current/metrics_pb2.py
+third_party/infra_libs/ts_mon/protos/new/__init__.py
+third_party/infra_libs/ts_mon/protos/new/acquisition_network_device_pb2.py
+third_party/infra_libs/ts_mon/protos/new/acquisition_task_pb2.py
+third_party/infra_libs/ts_mon/protos/new/any_pb2.py
+third_party/infra_libs/ts_mon/protos/new/metrics_pb2.py
+third_party/infra_libs/ts_mon/protos/new/timestamp_pb2.py
 third_party/infra_libs/utils.py
 third_party/oauth2client/__init__.py
 third_party/oauth2client/_helpers.py
@@ -271,6 +283,7 @@ third_party/rsa/rsa/varblock.py
 third_party/six/__init__.py
 third_party/uritemplate/__init__.py
 utils/__init__.py
+utils/authenticators.py
 utils/file_path.py
 utils/fs.py
 utils/large.py
