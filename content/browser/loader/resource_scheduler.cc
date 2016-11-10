@@ -178,6 +178,7 @@ class ResourceScheduler::ScheduledResourceRequest : public ResourceThrottle {
         scheduler_(scheduler),
         priority_(priority),
         fifo_ordering_(0),
+        host_port_pair_(net::HostPortPair::FromURL(request->url())),
         weak_ptr_factory_(this) {
     DCHECK(!request_->GetUserData(kUserDataKey));
     request_->SetUserData(kUserDataKey, new UnownedPointer(this));
@@ -243,6 +244,7 @@ class ResourceScheduler::ScheduledResourceRequest : public ResourceThrottle {
   void set_attributes(RequestAttributes attributes) {
     attributes_ = attributes;
   }
+  const net::HostPortPair& host_port_pair() const { return host_port_pair_; }
 
  private:
   class UnownedPointer : public base::SupportsUserData::Data {
@@ -276,6 +278,8 @@ class ResourceScheduler::ScheduledResourceRequest : public ResourceThrottle {
   ResourceScheduler* scheduler_;
   RequestPriorityParams priority_;
   uint32_t fifo_ordering_;
+  // Cached to excessive recomputation in ShouldKeepSearching.
+  const net::HostPortPair host_port_pair_;
 
   base::WeakPtrFactory<ResourceScheduler::ScheduledResourceRequest>
       weak_ptr_factory_;
@@ -546,9 +550,7 @@ class ResourceScheduler::Client {
     size_t same_host_count = 0;
     for (RequestSet::const_iterator it = in_flight_requests_.begin();
          it != in_flight_requests_.end(); ++it) {
-      net::HostPortPair host_port_pair =
-          net::HostPortPair::FromURL((*it)->url_request()->url());
-      if (active_request_host.Equals(host_port_pair)) {
+      if (active_request_host.Equals((*it)->host_port_pair())) {
         same_host_count++;
         if (same_host_count >= kMaxNumDelayableRequestsPerHostPerClient)
           return true;
@@ -610,8 +612,7 @@ class ResourceScheduler::Client {
     if (!url_request.url().SchemeIsHTTPOrHTTPS())
       return START_REQUEST;
 
-    net::HostPortPair host_port_pair =
-        net::HostPortPair::FromURL(url_request.url());
+    const net::HostPortPair& host_port_pair = request->host_port_pair();
 
     if (!priority_requests_delayable_) {
       if (using_spdy_proxy_ && url_request.url().SchemeIs(url::kHttpScheme))
