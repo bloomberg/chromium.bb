@@ -115,7 +115,7 @@ public class TabModelSelectorObserverTestBase extends NativeLibraryTestBase {
                 boolean incognito, TabModelOrderController orderController,
                 TabContentManager tabContentManager, TabPersistentStore tabPersistentStore,
                 TabModelDelegate modelDelegate) {
-            super(incognito, null, null, null, orderController, tabContentManager,
+            super(incognito, false, null, null, null, orderController, tabContentManager,
                     tabPersistentStore, modelDelegate, false);
         }
 

@@ -35,10 +35,11 @@ const char* ProtoEnumToString(
 const char* ProtoEnumToString(
     sync_pb::SessionWindow::BrowserType browser_type) {
   ASSERT_ENUM_BOUNDS(sync_pb::SessionWindow, BrowserType, TYPE_TABBED,
-                     TYPE_POPUP);
+                     TYPE_CUSTOM_TAB);
   switch (browser_type) {
     ENUM_CASE(sync_pb::SessionWindow, TYPE_TABBED);
     ENUM_CASE(sync_pb::SessionWindow, TYPE_POPUP);
+    ENUM_CASE(sync_pb::SessionWindow, TYPE_CUSTOM_TAB);
   }
   NOTREACHED();
   return "";

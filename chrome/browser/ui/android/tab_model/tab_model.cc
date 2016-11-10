@@ -20,11 +20,12 @@ using content::NotificationService;
 // chrome/android/java/src/org/chromium/chrome/browser/tabmodel/TabList.java
 static int INVALID_TAB_INDEX = -1;
 
-TabModel::TabModel(Profile* profile)
+TabModel::TabModel(Profile* profile, bool is_tabbed_activity)
     : profile_(profile),
       live_tab_context_(new AndroidLiveTabContext(this)),
       synced_window_delegate_(
-          new browser_sync::SyncedWindowDelegateAndroid(this)) {
+          new browser_sync::SyncedWindowDelegateAndroid(this,
+                                                        is_tabbed_activity)) {
   if (profile) {
     // A normal Profile creates an OTR profile if it does not exist when
     // GetOffTheRecordProfile() is called, so we guard it with

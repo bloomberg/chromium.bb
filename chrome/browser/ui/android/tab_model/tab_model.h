@@ -66,7 +66,7 @@ class TabModel : public content::NotificationObserver {
   virtual bool IsSessionRestoreInProgress() const = 0;
 
  protected:
-  explicit TabModel(Profile* profile);
+  explicit TabModel(Profile* profile, bool is_tabbed_activity);
   ~TabModel() override;
 
   // Instructs the TabModel to broadcast a notification that all tabs are now

@@ -164,11 +164,9 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
             Callable<TabModelImpl> callable = new Callable<TabModelImpl>() {
                 @Override
                 public TabModelImpl call() {
-                    return new TabModelImpl(false,
-                            mTabCreatorManager.getTabCreator(false),
-                            mTabCreatorManager.getTabCreator(true),
-                            null, mTabModelOrderController, null, mTabPersistentStore,
-                            TestTabModelSelector.this, true);
+                    return new TabModelImpl(false, false, mTabCreatorManager.getTabCreator(false),
+                            mTabCreatorManager.getTabCreator(true), null, mTabModelOrderController,
+                            null, mTabPersistentStore, TestTabModelSelector.this, true);
                 }
             };
             TabModelImpl regularTabModel = ThreadUtils.runOnUiThreadBlocking(callable);

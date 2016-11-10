@@ -245,9 +245,14 @@ void SessionsSyncManager::AssociateWindows(
       if ((*i)->IsTypeTabbed()) {
         window_s.set_browser_type(
             sync_pb::SessionWindow_BrowserType_TYPE_TABBED);
-      } else {
+      } else if ((*i)->IsTypePopup()) {
         window_s.set_browser_type(
             sync_pb::SessionWindow_BrowserType_TYPE_POPUP);
+      } else {
+        // This is a custom tab within an app. These will not be restored on
+        // startup if not present.
+        window_s.set_browser_type(
+            sync_pb::SessionWindow_BrowserType_TYPE_CUSTOM_TAB);
       }
 
       bool found_tabs = false;
@@ -836,6 +841,8 @@ void SessionsSyncManager::BuildSyncedSessionFromSpecifics(
         sync_pb::SessionWindow_BrowserType_TYPE_TABBED) {
       session_window->type = sessions::SessionWindow::TYPE_TABBED;
     } else {
+      // Note: custom tabs are treated like popup windows on restore, as you can
+      // restore a custom tab on a platform that doesn't support them.
       session_window->type = sessions::SessionWindow::TYPE_POPUP;
     }
   }

@@ -15,7 +15,8 @@ class TabModelListTest : public ChromeRenderViewHostTestHarness {};
 
 class TestTabModel : public TabModel {
  public:
-  explicit TestTabModel(Profile* profile) : TabModel(profile), tab_count_(0) {}
+  explicit TestTabModel(Profile* profile)
+      : TabModel(profile, false), tab_count_(0) {}
 
   int GetTabCount() const override { return tab_count_; }
   int GetActiveIndex() const override { return 0; }

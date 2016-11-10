@@ -29,8 +29,7 @@ class TabModelAndroidProfileMock : public TestingProfile {
 
 class TestTabModel : public TabModel {
  public:
-  explicit TestTabModel(Profile* profile)
-    : TabModel(profile) {}
+  explicit TestTabModel(Profile* profile) : TabModel(profile, false) {}
 
   int GetTabCount() const override { return 0; }
   int GetActiveIndex() const override { return 0; }

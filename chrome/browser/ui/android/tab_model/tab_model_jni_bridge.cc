@@ -45,8 +45,9 @@ static Profile* FindProfile(jboolean is_incognito) {
 
 TabModelJniBridge::TabModelJniBridge(JNIEnv* env,
                                      jobject jobj,
-                                     bool is_incognito)
-    : TabModel(FindProfile(is_incognito)),
+                                     bool is_incognito,
+                                     bool is_tabbed_activity)
+    : TabModel(FindProfile(is_incognito), is_tabbed_activity),
       java_object_(env, env->NewWeakGlobalRef(jobj)) {
   TabModelList::AddTabModel(this);
 }
@@ -215,7 +216,9 @@ bool TabModelJniBridge::Register(JNIEnv* env) {
 
 static jlong Init(JNIEnv* env,
                   const JavaParamRef<jobject>& obj,
-                  jboolean is_incognito) {
-  TabModel* tab_model = new TabModelJniBridge(env, obj, is_incognito);
+                  jboolean is_incognito,
+                  jboolean is_tabbed_activity) {
+  TabModel* tab_model =
+      new TabModelJniBridge(env, obj, is_incognito, is_tabbed_activity);
   return reinterpret_cast<intptr_t>(tab_model);
 }

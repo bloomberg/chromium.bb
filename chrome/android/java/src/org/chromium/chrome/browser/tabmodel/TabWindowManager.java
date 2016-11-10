@@ -217,7 +217,8 @@ public class TabWindowManager implements ActivityStateListener {
                     && getInstance().getNumberOfAssignedTabModelSelectors() == 0;
             TabPersistencePolicy persistencePolicy = new TabbedModeTabPersistencePolicy(
                     selectorIndex, mergeTabs);
-            return new TabModelSelectorImpl(activity, tabCreatorManager, persistencePolicy, true);
+            return new TabModelSelectorImpl(
+                    activity, tabCreatorManager, persistencePolicy, true, true);
         }
     }
 }

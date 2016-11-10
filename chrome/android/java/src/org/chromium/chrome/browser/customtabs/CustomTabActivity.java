@@ -331,7 +331,7 @@ public class CustomTabActivity extends ChromeActivity {
         TabPersistencePolicy persistencePolicy = new CustomTabTabPersistencePolicy(
                 getTaskId(), getSavedInstanceState() != null);
 
-        return new TabModelSelectorImpl(this, this, persistencePolicy, false);
+        return new TabModelSelectorImpl(this, this, persistencePolicy, false, false);
     }
 
     @Override
