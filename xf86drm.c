@@ -3303,3 +3303,54 @@ free_locals:
     free(local_devices);
     return ret;
 }
+
+char *drmGetDeviceNameFromFd2(int fd)
+{
+#ifdef __linux__
+    struct stat sbuf;
+    char *device_name = NULL;
+    unsigned int maj, min;
+    FILE *f;
+    char buf[512];
+    static const char match[9] = "\nDEVNAME=";
+    int expected = 1;
+
+
+    if (fstat(fd, &sbuf))
+        return NULL;
+
+    maj = major(sbuf.st_rdev);
+    min = minor(sbuf.st_rdev);
+
+    if (maj != DRM_MAJOR || !S_ISCHR(sbuf.st_mode))
+        return NULL;
+
+    snprintf(buf, sizeof(buf), "/sys/dev/char/%d:%d/uevent", maj, min);
+    if (!(f = fopen(buf, "r")))
+        return NULL;
+
+    while (expected < sizeof(match)) {
+        int c = getc(f);
+
+        if (c == EOF) {
+            fclose(f);
+            return NULL;
+        } else if (c == match[expected] )
+            expected++;
+        else
+            expected = 0;
+    }
+
+    strcpy(buf, "/dev/");
+    if (fgets(buf + 5, sizeof(buf) - 5, f)) {
+        buf[strcspn(buf, "\n")] = '\0';
+        device_name = strdup(buf);
+    }
+
+    fclose(f);
+    return device_name;
+#else
+#warning "Missing implementation of drmGetDeviceNameFromFd2"
+    return NULL;
+#endif
+}
