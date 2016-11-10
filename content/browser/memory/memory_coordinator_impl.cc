@@ -4,6 +4,7 @@
 
 #include "content/browser/memory/memory_coordinator_impl.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/memory/memory_monitor.h"
@@ -154,6 +155,12 @@ base::MemoryState MemoryCoordinatorImpl::CalculateNextState() {
   using MemoryState = base::MemoryState;
 
   int available = memory_monitor_->GetFreeMemoryUntilCriticalMB();
+
+  // TODO(chrisha): Move this histogram recording to a better place when
+  // https://codereview.chromium.org/2479673002/ is landed.
+  UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Coordinator.FreeMemoryUntilCritical",
+                                available);
+
   if (available <= 0)
     return MemoryState::SUSPENDED;
 
