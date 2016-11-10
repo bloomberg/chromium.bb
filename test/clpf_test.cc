@@ -175,12 +175,12 @@ void test_clpf_speed(int w, int h, int depth, int iterations,
   aom_usec_timer_start(&ref_timer);
   test_clpf(w, h, depth, iterations, ref_clpf, ref_clpf);
   aom_usec_timer_mark(&ref_timer);
-  int ref_elapsed_time = aom_usec_timer_elapsed(&ref_timer);
+  int ref_elapsed_time = (int)aom_usec_timer_elapsed(&ref_timer);
 
   aom_usec_timer_start(&timer);
   test_clpf(w, h, depth, iterations, clpf, clpf);
   aom_usec_timer_mark(&timer);
-  int elapsed_time = aom_usec_timer_elapsed(&timer);
+  int elapsed_time = (int)aom_usec_timer_elapsed(&timer);
 
 #if 0
   std::cout << "[          ] C time = " << ref_elapsed_time / 1000

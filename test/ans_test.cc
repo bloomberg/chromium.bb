@@ -63,7 +63,7 @@ bool check_uabs(const PvVec &pv_vec, uint8_t *buf) {
   if (ans_read_init(&d, buf, offset)) return false;
   start = std::clock();
   for (PvVec::const_iterator it = pv_vec.begin(); it != pv_vec.end(); ++it) {
-    okay &= uabs_read(&d, 256 - it->first) == it->second;
+    okay = okay && (uabs_read(&d, 256 - it->first) != 0) == it->second;
   }
   std::clock_t dec_time = std::clock() - start;
   if (!okay) return false;
@@ -71,7 +71,7 @@ bool check_uabs(const PvVec &pv_vec, uint8_t *buf) {
     printf("uABS size %d enc_time %f dec_time %f\n", offset,
            static_cast<float>(enc_time) / CLOCKS_PER_SEC,
            static_cast<float>(dec_time) / CLOCKS_PER_SEC);
-  return ans_read_end(&d);
+  return ans_read_end(&d) != 0;
 }
 
 const aom_cdf_prob spareto65[] = { 8320, 6018, 4402, 3254, 4259,
@@ -138,7 +138,7 @@ bool check_rans(const std::vector<int> &sym_vec, const rans_sym *const tab,
     printf("rANS size %d enc_time %f dec_time %f\n", offset,
            static_cast<float>(enc_time) / CLOCKS_PER_SEC,
            static_cast<float>(dec_time) / CLOCKS_PER_SEC);
-  return ans_read_end(&d);
+  return ans_read_end(&d) != 0;
 }
 
 class AbsTest : public ::testing::Test {
