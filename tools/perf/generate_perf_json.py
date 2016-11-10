@@ -341,6 +341,7 @@ def get_waterfall_config():
     swarming=[
       {
        'os': 'Mac-10.10',
+       'gpu': 'Intel Iris Graphics 5100',
        'device_ids': [
            'build158-m1', 'build159-m1', 'build160-m1',
            'build161-m1', 'build162-m1']
