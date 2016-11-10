@@ -275,6 +275,38 @@ bool GpuCommandBufferStub::Send(IPC::Message* message) {
   return channel_->Send(message);
 }
 
+void GpuCommandBufferStub::DidSwapBuffersComplete(
+    SwapBuffersCompleteParams params) {
+  GpuCommandBufferMsg_SwapBuffersCompleted_Params send_params;
+#if defined(OS_MACOSX)
+  send_params.ca_context_id = params.ca_context_id;
+  send_params.fullscreen_low_power_ca_context_valid =
+      params.fullscreen_low_power_ca_context_valid;
+  send_params.io_surface = params.io_surface;
+  send_params.pixel_size = params.pixel_size;
+  send_params.scale_factor = params.scale_factor;
+  send_params.in_use_responses = params.in_use_responses;
+#endif
+  send_params.latency_info = std::move(params.latency_info);
+  send_params.result = params.result;
+  Send(new GpuCommandBufferMsg_SwapBuffersCompleted(route_id_, send_params));
+}
+
+const gles2::FeatureInfo* GpuCommandBufferStub::GetFeatureInfo() const {
+  return context_group_->feature_info();
+}
+
+void GpuCommandBufferStub::SetLatencyInfoCallback(
+    const LatencyInfoCallback& callback) {
+  latency_info_callback_ = callback;
+}
+
+void GpuCommandBufferStub::UpdateVSyncParameters(base::TimeTicks timebase,
+                                                 base::TimeDelta interval) {
+  Send(new GpuCommandBufferMsg_UpdateVSyncParameters(route_id_, timebase,
+                                                     interval));
+}
+
 bool GpuCommandBufferStub::IsScheduled() {
   return (!executor_.get() || executor_->scheduled());
 }
@@ -524,7 +556,7 @@ bool GpuCommandBufferStub::Initialize(
     surface_ = default_surface;
   } else {
     surface_ = ImageTransportSurface::CreateNativeSurface(
-        manager, this, surface_handle_, surface_format);
+        manager, AsWeakPtr(), surface_handle_, surface_format);
     if (!surface_ || !surface_->Initialize(surface_format)) {
       surface_ = nullptr;
       DLOG(ERROR) << "Failed to create surface.";
@@ -652,11 +684,6 @@ void GpuCommandBufferStub::OnCreateStreamTexture(uint32_t texture_id,
 #else
   *succeeded = false;
 #endif
-}
-
-void GpuCommandBufferStub::SetLatencyInfoCallback(
-    const LatencyInfoCallback& callback) {
-  latency_info_callback_ = callback;
 }
 
 void GpuCommandBufferStub::OnSetGetBuffer(int32_t shm_id,
@@ -1061,10 +1088,6 @@ void GpuCommandBufferStub::RemoveDestructionObserver(
   destruction_observers_.RemoveObserver(observer);
 }
 
-const gles2::FeatureInfo* GpuCommandBufferStub::GetFeatureInfo() const {
-  return context_group_->feature_info();
-}
-
 gles2::MemoryTracker* GpuCommandBufferStub::GetMemoryTracker() const {
   return context_group_->memory_tracker();
 }
@@ -1106,17 +1129,6 @@ void GpuCommandBufferStub::MarkContextLost() {
   if (decoder_)
     decoder_->MarkContextLost(error::kUnknown);
   command_buffer_->SetParseError(error::kLostContext);
-}
-
-void GpuCommandBufferStub::SendSwapBuffersCompleted(
-    const GpuCommandBufferMsg_SwapBuffersCompleted_Params& params) {
-  Send(new GpuCommandBufferMsg_SwapBuffersCompleted(route_id_, params));
-}
-
-void GpuCommandBufferStub::SendUpdateVSyncParameters(base::TimeTicks timebase,
-                                                     base::TimeDelta interval) {
-  Send(new GpuCommandBufferMsg_UpdateVSyncParameters(route_id_, timebase,
-                                                     interval));
 }
 
 }  // namespace gpu

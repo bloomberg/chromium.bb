@@ -26,7 +26,6 @@ typedef void* GLeglImageOES;
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "ui/accelerated_widget_mac/ca_layer_tree_coordinator.h"
@@ -62,8 +61,8 @@ void IOSurfaceContextNoOp(scoped_refptr<ui::IOSurfaceContext>) {
 namespace gpu {
 
 ImageTransportSurfaceOverlayMac::ImageTransportSurfaceOverlayMac(
-    GpuCommandBufferStub* stub)
-    : stub_(stub->AsWeakPtr()),
+    base::WeakPtr<ImageTransportSurfaceDelegate> delegate)
+    : delegate_(delegate),
       use_remote_layer_api_(ui::RemoteLayerAPISupported()),
       scale_factor_(1),
       gl_renderer_id_(0) {
@@ -75,7 +74,7 @@ ImageTransportSurfaceOverlayMac::ImageTransportSurfaceOverlayMac(
 
   bool allow_av_sample_buffer_display_layer =
       !av_disabled_at_command_line &&
-      !stub_->GetFeatureInfo()
+      !delegate_->GetFeatureInfo()
            ->workarounds()
            .disable_av_sample_buffer_display_layer;
 
@@ -85,18 +84,15 @@ ImageTransportSurfaceOverlayMac::ImageTransportSurfaceOverlayMac(
 
 ImageTransportSurfaceOverlayMac::~ImageTransportSurfaceOverlayMac() {
   ui::GpuSwitchingManager::GetInstance()->RemoveObserver(this);
-  if (stub_.get()) {
-    stub_->SetLatencyInfoCallback(
+  if (delegate_.get()) {
+    delegate_->SetLatencyInfoCallback(
         base::Callback<void(const std::vector<ui::LatencyInfo>&)>());
   }
   Destroy();
 }
 
 bool ImageTransportSurfaceOverlayMac::Initialize(gl::GLSurface::Format format) {
-  if (!stub_.get() || !stub_->decoder())
-    return false;
-
-  stub_->SetLatencyInfoCallback(
+  delegate_->SetLatencyInfoCallback(
       base::Bind(&ImageTransportSurfaceOverlayMac::SetLatencyInfo,
                  base::Unretained(this)));
 
@@ -151,7 +147,7 @@ void ImageTransportSurfaceOverlayMac::SendAcceleratedSurfaceBuffersSwapped(
                        "GLImpl", static_cast<int>(gl::GetGLImplementation()),
                        "width", size.width());
 
-  GpuCommandBufferMsg_SwapBuffersCompleted_Params params;
+  SwapBuffersCompleteParams params;
   params.ca_context_id = ca_context_id;
   params.fullscreen_low_power_ca_context_valid =
       fullscreen_low_power_ca_context_valid;
@@ -178,7 +174,7 @@ void ImageTransportSurfaceOverlayMac::SendAcceleratedSurfaceBuffersSwapped(
   }
   ca_layer_in_use_queries_.clear();
 
-  stub_->SendSwapBuffersCompleted(params);
+  delegate_->DidSwapBuffersComplete(std::move(params));
 }
 
 gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(

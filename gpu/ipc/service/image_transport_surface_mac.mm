@@ -42,7 +42,7 @@ bool g_allow_os_mesa = false;
 // static
 scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
     GpuChannelManager* manager,
-    GpuCommandBufferStub* stub,
+    base::WeakPtr<ImageTransportSurfaceDelegate> delegate,
     SurfaceHandle surface_handle,
     gl::GLSurface::Format format) {
   DCHECK_NE(surface_handle, kNullSurfaceHandle);
@@ -52,7 +52,7 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
     case gl::kGLImplementationDesktopGLCoreProfile:
     case gl::kGLImplementationAppleGL:
       return make_scoped_refptr<gl::GLSurface>(
-          new ImageTransportSurfaceOverlayMac(stub));
+          new ImageTransportSurfaceOverlayMac(delegate));
     case gl::kGLImplementationMockGL:
       return make_scoped_refptr<gl::GLSurface>(new gl::GLSurfaceStub);
     default:
@@ -67,7 +67,7 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
       if (!surface.get() || !surface->Initialize(format))
         return surface;
       return make_scoped_refptr<gl::GLSurface>(
-          new PassThroughImageTransportSurface(stub, surface.get()));
+          new PassThroughImageTransportSurface(delegate, surface.get()));
   }
 }
 

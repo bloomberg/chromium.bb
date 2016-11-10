@@ -26,6 +26,7 @@
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/service/gpu_memory_manager.h"
+#include "gpu/ipc/service/image_transport_surface_delegate.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "ui/events/latency_info.h"
@@ -59,6 +60,7 @@ struct WaitForCommandState;
 class GPU_EXPORT GpuCommandBufferStub
     : public IPC::Listener,
       public IPC::Sender,
+      public ImageTransportSurfaceDelegate,
       public base::SupportsWeakPtr<GpuCommandBufferStub> {
  public:
   class DestructionObserver {
@@ -87,6 +89,13 @@ class GPU_EXPORT GpuCommandBufferStub
 
   // IPC::Sender implementation:
   bool Send(IPC::Message* msg) override;
+
+  // PassThroughImageTransportSuraceDelegate implementation:
+  void DidSwapBuffersComplete(SwapBuffersCompleteParams params) override;
+  const gles2::FeatureInfo* GetFeatureInfo() const override;
+  void SetLatencyInfoCallback(const LatencyInfoCallback& callback) override;
+  void UpdateVSyncParameters(base::TimeTicks timebase,
+                             base::TimeDelta interval) override;
 
   gles2::MemoryTracker* GetMemoryTracker() const;
 
@@ -120,16 +129,7 @@ class GPU_EXPORT GpuCommandBufferStub
   void AddDestructionObserver(DestructionObserver* observer);
   void RemoveDestructionObserver(DestructionObserver* observer);
 
-  void SetLatencyInfoCallback(const LatencyInfoCallback& callback);
-
   void MarkContextLost();
-
-  const gles2::FeatureInfo* GetFeatureInfo() const;
-
-  void SendSwapBuffersCompleted(
-      const GpuCommandBufferMsg_SwapBuffersCompleted_Params& params);
-  void SendUpdateVSyncParameters(base::TimeTicks timebase,
-                                 base::TimeDelta interval);
 
  private:
   GpuCommandBufferStub(GpuChannel* channel,
