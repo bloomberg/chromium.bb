@@ -2897,6 +2897,7 @@ bool WebGLImageConversion::packImageData(Image* image,
 bool WebGLImageConversion::extractImageData(const uint8_t* imageData,
                                             DataFormat sourceDataFormat,
                                             const IntSize& imageDataSize,
+                                            const IntRect& sourceImageSubRect,
                                             GLenum format,
                                             GLenum type,
                                             bool flipY,
@@ -2911,13 +2912,14 @@ bool WebGLImageConversion::extractImageData(const uint8_t* imageData,
   // Output data is tightly packed (alignment == 1).
   PixelStoreParams params;
   params.alignment = 1;
-  if (computeImageSizeInBytes(format, type, width, height, 1, params,
+  if (computeImageSizeInBytes(format, type, sourceImageSubRect.width(),
+                              sourceImageSubRect.height(), 1, params,
                               &packedSize, 0, 0) != GL_NO_ERROR)
     return false;
   data.resize(packedSize);
 
   if (!packPixels(imageData, sourceDataFormat, width, height,
-                  IntRect(0, 0, width, height), 0, format, type,
+                  sourceImageSubRect, 0, format, type,
                   premultiplyAlpha ? AlphaDoPremultiply : AlphaDoNothing,
                   data.data(), flipY))
     return false;

@@ -229,6 +229,7 @@ class PLATFORM_EXPORT WebGLImageConversion final {
   static bool extractImageData(const uint8_t*,
                                DataFormat sourceDataFormat,
                                const IntSize&,
+                               const IntRect&,
                                GLenum format,
                                GLenum type,
                                bool flipY,

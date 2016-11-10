@@ -1022,6 +1022,36 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                     const IntRect&,
                     GLsizei depth,
                     GLint unpackImageHeight);
+  template <typename T>
+  bool validateTexImageSubRectangle(const char* functionName,
+                                    T* image,
+                                    const IntRect& subRect,
+                                    bool* selectingSubRectangle) {
+    *selectingSubRectangle = image &&
+                             !(subRect.x() == 0 && subRect.y() == 0 &&
+                               subRect.width() == image->width() &&
+                               subRect.height() == image->height());
+    // If the source image rect selects anything except the entire
+    // contents of the image, assert that we're running WebGL 2.0 or
+    // higher, since this should never happen for WebGL 1.0 (even though
+    // the code could support it). If the image is null, that will be
+    // signaled as an error later.
+    DCHECK(!*selectingSubRectangle || isWebGL2OrHigher())
+        << "subRect = (" << subRect.width() << " x " << subRect.height()
+        << ") @ (" << subRect.x() << ", " << subRect.y() << "), image = ("
+        << (image ? image->width() : -1) << " x "
+        << (image ? image->height() : -1) << ")";
+
+    if (subRect.x() < 0 || subRect.y() < 0 || subRect.maxX() > image->width() ||
+        subRect.maxY() > image->height() || subRect.width() < 0 ||
+        subRect.height() < 0) {
+      synthesizeGLError(GL_INVALID_OPERATION, functionName,
+                        "source sub-rectangle specified via pixel unpack "
+                        "parameters is invalid");
+      return false;
+    }
+    return true;
+  }
 
   // Copy from the source directly to the texture via the gpu, without a
   // read-back to system memory.  Souce could be canvas or imageBitmap.
@@ -1480,7 +1510,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                GLint,
                                GLint,
                                GLint,
-                               ImageData*);
+                               ImageData*,
+                               const IntRect&);
   void texImageHelperHTMLImageElement(TexImageFunctionID,
                                       GLenum,
                                       GLint,
@@ -1531,6 +1562,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   static const char* getTexImageFunctionName(TexImageFunctionID);
   IntRect sentinelEmptyRect();
   IntRect safeGetImageSize(Image*);
+  IntRect getImageDataSize(ImageData*);
 
   // Helper implementing readPixels for WebGL 1.0 and 2.0.
   void readPixelsHelper(GLint x,
