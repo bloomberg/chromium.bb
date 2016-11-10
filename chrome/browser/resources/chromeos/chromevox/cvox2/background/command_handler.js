@@ -159,7 +159,11 @@ CommandHandler.onCommand = function(command) {
           cvox.QueueMode.FLUSH);
       return false;
     case 'reportIssue':
-      var url = Background.ISSUE_URL;
+      var url = 'https://code.google.com/p/chromium/issues/entry?' +
+          'labels=Type-Bug,Pri-2,cvox2,OS-Chrome&' +
+          'components=UI>accessibility&' +
+          'description=';
+
       var description = {};
       description['Mode'] = ChromeVoxState.instance.mode;
       description['Version'] = chrome.app.getDetails().version;

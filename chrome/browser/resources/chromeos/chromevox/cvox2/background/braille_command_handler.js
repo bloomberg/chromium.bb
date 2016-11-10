@@ -8,10 +8,6 @@
 
 goog.provide('BrailleCommandHandler');
 
-goog.require('ChromeVoxState');
-goog.require('CommandHandler');
-
-
 goog.scope(function() {
 /**
  * Maps a dot pattern to a command.
@@ -33,13 +29,63 @@ BrailleCommandHandler.makeDotPattern = function(dots) {
 };
 
 /**
- * Perform a braille command based on a dot pattern from a chord.
- * @param {number} dots Braille dot pattern
+ * Gets a braille command based on a dot pattern from a chord.
+ * @param {number} dots
+ * @return {string?}
  */
-BrailleCommandHandler.onBrailleCommand = function(dots) {
+BrailleCommandHandler.getCommand = function(dots) {
   var command = BrailleCommandHandler.DOT_PATTERN_TO_COMMAND[dots];
-  if (command)
-    CommandHandler.onCommand(command);
+  return command;
+};
+
+/**
+ * Gets a dot shortcut for a command.
+ * @param {string} command
+ * @param {boolean=} opt_chord True if the pattern comes from a chord.
+ * @return {string} The shortcut.
+ */
+BrailleCommandHandler.getDotShortcut = function(command, opt_chord) {
+  var commandDots = BrailleCommandHandler.getDots(command);
+  return BrailleCommandHandler.makeShortcutText(commandDots, opt_chord);
+};
+
+/**
+ * @param {number} pattern
+ * @param {boolean=} opt_chord
+ * @return {string}
+ */
+BrailleCommandHandler.makeShortcutText = function(pattern, opt_chord) {
+  var dots = [];
+  for (var shifter = 0; shifter <= 7; shifter++) {
+    if ((1 << shifter) & pattern)
+      dots.push(shifter + 1);
+  }
+  var msgid;
+  if (dots.length > 1)
+    msgid = 'braille_dots';
+  else if (dots.length == 1)
+    msgid = 'braille_dot';
+
+  if (msgid) {
+    var dotText = Msgs.getMsg(msgid, [dots.join('-')]);
+    if (opt_chord)
+      dotText = Msgs.getMsg('braille_chord', [dotText]);
+    return dotText;
+  }
+  return '';
+};
+
+/**
+ * @param {string} command
+ * @return {number} The dot pattern for |command|.
+ */
+BrailleCommandHandler.getDots = function(command) {
+  for (var key in BrailleCommandHandler.DOT_PATTERN_TO_COMMAND) {
+    key = parseInt(key, 10);
+    if (command == BrailleCommandHandler.DOT_PATTERN_TO_COMMAND[key])
+      return key;
+  }
+  return 0;
 };
 
 /**

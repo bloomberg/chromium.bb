@@ -198,8 +198,8 @@
       <message desc="The description of the showOptionsPage key. Displayed in the Options page." name="IDS_CHROMEVOX_SHOW_OPTIONS_PAGE">
         Open options page
       </message>
-      <message desc="The description of the showKbExplorerPage key. Displayed in the Options page." name="IDS_CHROMEVOX_SHOW_KB_EXPLORER_PAGE">
-        Open keyboard explorer
+      <message desc="The description of the showKbExplorerPage key; this allows users to learn about their keyboard. Displayed in the Options page." name="IDS_CHROMEVOX_SHOW_KB_EXPLORER_PAGE">
+        Open learn mode
       </message>
       <message desc="The description of the decreaseTtsRate key. Displayed in the Options page." name="IDS_CHROMEVOX_DECREASE_TTS_RATE">
         Decrease rate of speech
@@ -528,11 +528,11 @@
       <message desc="An option for setting the key combination that will be used as the ChromeVox modifier key (aka, the 'Cvox' key)." name="IDS_CHROMEVOX_OPTIONS_CVOX_MODIFIER_KEY">
         ChromeVox modifier key
       </message>
-      <message desc="The title of the ChromeOS Keyboard explorer page.  The keyboard explorer voices the name of each key when the user presses it." name="IDS_CHROMEVOX_KBEXPLORER_TITLE">
-        ChromeOS Keyboard Explorer
+      <message desc="The title of ChromeVox Learn Mode page.  The keyboard explorer voices the name of each key when the user presses it." name="IDS_CHROMEVOX_KBEXPLORER_TITLE">
+        ChromeVox Learn Mode
       </message>
-      <message desc="The instructions for the keyboard explorer.  The keyboard explorer voices the name of each key when the user presses it. * These instructions describe how to use the keyboard explorer." name="IDS_CHROMEVOX_KBEXPLORER_INSTRUCTIONS">
-        Press any key to learn its name. Ctrl+W will close the keyboard explorer.
+      <message desc="The instructions for ChromeVox Learn Mode.  The keyboard explorer voices the name of each key when the user presses it. * These instructions describe how to use the keyboard explorer." name="IDS_CHROMEVOX_KBEXPLORER_INSTRUCTIONS">
+        Press any key to learn its name. Ctrl+W will close learn mode.
       </message>
       <message desc="Spoken when a new Chrome tab named 'title' is opened." name="IDS_CHROMEVOX_CHROME_TAB_CREATED">
         tab created
@@ -2299,7 +2299,7 @@
         {COUNT, plural, =1 {bullet}other {# bullets}}
       </message>
       <message desc="Describes the braille click command. Displayed in the options page." name="IDS_CHROMEVOX_BRAILLE_ROUTING">
-        Click the item under a routing key
+        Click the item under routing key $1
       </message>
       <message desc="Describes the braille pan backward command. Displayed in the options page." name="IDS_CHROMEVOX_BRAILLE_PAN_LEFT">
         Pan backward
@@ -2318,6 +2318,15 @@
       </message>
       <message desc="The description of the braille bottom command.  Displayed in the Options page." name="IDS_CHROMEVOX_BRAILLE_BOTTOM">
         Move braille display to bottom of page
+      </message>
+      <message desc="Describes a single physical braille dot on a refreshable braille display.  Will usually be followed with numbers to describe the layout of a braille cell. For example, dot 8" name="IDS_CHROMEVOX_BRAILLE_DOT">
+        dot <ph name="dot">$1</ph>
+      </message>
+      <message desc="Describes multiple physical braille dots on a refreshable braille display.  Will usually be followed with numbers to describe the layout of a braille cell. For example, dots 1 2 3 4 8" name="IDS_CHROMEVOX_BRAILLE_DOTS">
+        dots <ph name="dot">$1</ph>
+      </message>
+      <message desc="Describes dots on a refreshable braille display pressed with the space key. For example, dots 1 2 3 4 8 chord" name="IDS_CHROMEVOX_BRAILLE_CHORD">
+        $1 chord
       </message>
       <message desc="Spoken to describe an access key.  An access key consists of a single letter. When pressed along with a modifier (usually alt, but depends on platform), a targetted node will be activated." name="IDS_CHROMEVOX_ACCESS_KEY">
         has access key, <ph name="key">$1</ph>

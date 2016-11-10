@@ -77,8 +77,10 @@ PanelMenu.prototype = {
    * @param {Function} callback The function to call if this item is selected.
    * @return {!PanelMenuItem} The menu item just created.
    */
-  addMenuItem: function(menuItemTitle, menuItemShortcut, callback) {
-    var menuItem = new PanelMenuItem(menuItemTitle, menuItemShortcut, callback);
+  addMenuItem: function(
+      menuItemTitle, menuItemShortcut, menuItemBraille, callback) {
+    var menuItem = new PanelMenuItem(
+        menuItemTitle, menuItemShortcut, menuItemBraille, callback);
     this.items_.push(menuItem);
     this.menuElement.appendChild(menuItem.element);
 
@@ -308,7 +310,7 @@ PanelNodeMenu.prototype = {
         var range = cursors.Range.fromNode(node);
         output.withSpeech(range, range, Output.EventType.NAVIGATE);
         var label = output.toString();
-        this.addMenuItem(label, '', function() {
+        this.addMenuItem(label, '', '', function() {
           chrome.extension.getBackgroundPage().ChromeVoxState
               .instance['navigateToRange'](cursors.Range.fromNode(node));
         });
@@ -338,7 +340,7 @@ PanelNodeMenu.prototype = {
   finish_: function() {
     if (!this.items_.length) {
       this.addMenuItem(
-          Msgs.getMsg('panel_menu_item_none'), '', function() {});
+          Msgs.getMsg('panel_menu_item_none'), '', '', function() {});
       this.activateItem(0);
     }
   }

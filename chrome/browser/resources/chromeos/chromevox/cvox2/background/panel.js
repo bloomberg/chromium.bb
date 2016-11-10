@@ -8,6 +8,7 @@
 
 goog.provide('Panel');
 
+goog.require('BrailleCommandHandler');
 goog.require('ISearchUI');
 goog.require('Msgs');
 goog.require('PanelCommand');
@@ -362,6 +363,7 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
       menu.addMenuItem(
           binding.title,
           binding.keySeq,
+          BrailleCommandHandler.getDotShortcut(binding.command, true),
           function() {
             var CommandHandler =
                 chrome.extension.getBackgroundPage()['CommandHandler'];
@@ -379,7 +381,7 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
           var title = tabs[j].title;
           if (tabs[j].active && windows[i].id == lastFocusedWindow.id)
             title += ' ' + Msgs.getMsg('active_tab');
-          tabsMenu.addMenuItem(title, '', (function(win, tab) {
+          tabsMenu.addMenuItem(title, '', '', (function(win, tab) {
             bkgnd.chrome.windows.update(win.id, {focused: true}, function() {
               bkgnd.chrome.tabs.update(tab.id, {active: true});
             });
@@ -391,7 +393,7 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
 
   // Add a menu item that disables / closes ChromeVox.
   chromevoxMenu.addMenuItem(
-      Msgs.getMsg('disable_chromevox'), 'Ctrl+Alt+Z', function() {
+      Msgs.getMsg('disable_chromevox'), 'Ctrl+Alt+Z', '', function() {
         Panel.onClose();
       });
 

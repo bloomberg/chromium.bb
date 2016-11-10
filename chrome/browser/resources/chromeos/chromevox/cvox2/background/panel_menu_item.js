@@ -11,10 +11,12 @@ goog.provide('PanelMenuItem');
 /**
  * @param {string} menuItemTitle The title of the menu item.
  * @param {string} menuItemShortcut The keystrokes to select this item.
+ * @param {string} menuItemBraille The braille keystrokes to select this item.
  * @param {Function} callback The function to call if this item is selected.
  * @constructor
  */
-PanelMenuItem = function(menuItemTitle, menuItemShortcut, callback) {
+PanelMenuItem = function(
+    menuItemTitle, menuItemShortcut, menuItemBraille, callback) {
   this.callback = callback;
 
   this.element = document.createElement('tr');
@@ -35,6 +37,13 @@ PanelMenuItem = function(menuItemTitle, menuItemShortcut, callback) {
   shortcut.className = 'menu-item-shortcut';
   shortcut.textContent = menuItemShortcut;
   this.element.appendChild(shortcut);
+
+  if (localStorage['brailleCaptions'] === String(true)) {
+    var braille = document.createElement('td');
+    braille.className = 'menu-item-shortcut';
+    braille.textContent = menuItemBraille;
+    this.element.appendChild(braille);
+  }
 };
 
 PanelMenuItem.prototype = {

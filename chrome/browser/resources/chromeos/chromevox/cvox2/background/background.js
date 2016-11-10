@@ -178,14 +178,6 @@ Background = function() {
 };
 
 /**
- * @const {string}
- */
-Background.ISSUE_URL = 'https://code.google.com/p/chromium/issues/entry?' +
-    'labels=Type-Bug,Pri-2,cvox2,OS-Chrome&' +
-    'components=UI>accessibility&' +
-    'description=';
-
-/**
  * Map from gesture names (AXGesture defined in ui/accessibility/ax_enums.idl)
  *     to commands when in Classic mode.
  * @type {Object<string, string>}
@@ -552,7 +544,9 @@ Background.prototype = {
         if (!evt.brailleDots)
           return false;
 
-        BrailleCommandHandler.onBrailleCommand(evt.brailleDots);
+        var command = BrailleCommandHandler.getCommand(evt.brailleDots);
+        if (command)
+          CommandHandler.onCommand(command);
         break;
       default:
         return false;
