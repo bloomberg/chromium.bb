@@ -177,8 +177,10 @@ void av1_encode_token_init(void) {
   /* This hack is necessary because the four TX_TYPES are not consecutive,
       e.g., 0, 1, 2, 3, when doing an in-order traversal of the av1_ext_tx_tree
       structure. */
+#if !CONFIG_EXT_TX
   av1_indices_from_tree(av1_ext_tx_ind, av1_ext_tx_inv, TX_TYPES,
                         av1_ext_tx_tree);
+#endif
   av1_indices_from_tree(av1_intra_mode_ind, av1_intra_mode_inv, INTRA_MODES,
                         av1_intra_mode_tree);
   av1_indices_from_tree(av1_inter_mode_ind, av1_inter_mode_inv, INTER_MODES,

@@ -171,8 +171,10 @@ typedef struct frame_contexts {
   aom_cdf_prob switchable_interp_cdf[SWITCHABLE_FILTER_CONTEXTS]
                                     [SWITCHABLE_FILTERS];
   aom_cdf_prob inter_mode_cdf[INTER_MODE_CONTEXTS][INTER_MODES];
+#if !CONFIG_EXT_TX
   aom_cdf_prob intra_ext_tx_cdf[EXT_TX_SIZES][TX_TYPES][TX_TYPES];
   aom_cdf_prob inter_ext_tx_cdf[EXT_TX_SIZES][TX_TYPES];
+#endif
 #endif
 #if CONFIG_DELTA_Q
   aom_prob delta_q_prob[DELTA_Q_CONTEXTS];
@@ -357,7 +359,7 @@ void av1_setup_past_independence(struct AV1Common *cm);
 
 void av1_adapt_intra_frame_probs(struct AV1Common *cm);
 void av1_adapt_inter_frame_probs(struct AV1Common *cm);
-#if CONFIG_DAALA_EC
+#if CONFIG_DAALA_EC && !CONFIG_EXT_TX
 extern int av1_ext_tx_ind[TX_TYPES];
 extern int av1_ext_tx_inv[TX_TYPES];
 #endif
