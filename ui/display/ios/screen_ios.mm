@@ -2,17 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/display/screen.h"
-
 #import <UIKit/UIKit.h>
 
 #include "base/logging.h"
 #include "ui/display/display.h"
+#include "ui/display/screen_base.h"
 
 namespace display {
 namespace {
 
-class ScreenIos : public Screen {
+class ScreenIos : public ScreenBase {
+ public:
+  ScreenIos() {
+    UIScreen* mainScreen = [UIScreen mainScreen];
+    CHECK(mainScreen);
+    Display display(0, gfx::Rect(mainScreen.bounds));
+    display.set_device_scale_factor([mainScreen scale]);
+    ProcessDisplayChanged(display, true /* is_primary */);
+  }
+
   gfx::Point GetCursorScreenPoint() override {
     NOTIMPLEMENTED();
     return gfx::Point(0, 0);
@@ -37,45 +45,8 @@ class ScreenIos : public Screen {
 #endif
   }
 
-  std::vector<Display> GetAllDisplays() const override {
-    NOTIMPLEMENTED();
-    return std::vector<Display>(1, GetPrimaryDisplay());
-  }
-
-  // Returns the display nearest the specified window.
-  Display GetDisplayNearestWindow(gfx::NativeView view) const override {
-    NOTIMPLEMENTED();
-    return Display();
-  }
-
-  // Returns the the display nearest the specified point.
-  Display GetDisplayNearestPoint(const gfx::Point& point) const override {
-    NOTIMPLEMENTED();
-    return Display();
-  }
-
-  // Returns the display that most closely intersects the provided bounds.
-  Display GetDisplayMatching(const gfx::Rect& match_rect) const override {
-    NOTIMPLEMENTED();
-    return Display();
-  }
-
-  // Returns the primary display.
-  Display GetPrimaryDisplay() const override {
-    UIScreen* mainScreen = [UIScreen mainScreen];
-    CHECK(mainScreen);
-    Display display(0, gfx::Rect(mainScreen.bounds));
-    display.set_device_scale_factor([mainScreen scale]);
-    return display;
-  }
-
-  void AddObserver(DisplayObserver* observer) override {
-    // no display change on iOS.
-  }
-
-  void RemoveObserver(DisplayObserver* observer) override {
-    // no display change on iOS.
-  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScreenIos);
 };
 
 }  // namespace

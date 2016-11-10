@@ -2,33 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/display/screen.h"
-
 #include "base/logging.h"
 #include "base/macros.h"
 #include "ui/display/display.h"
+#include "ui/display/screen_base.h"
 #include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
 namespace display {
 
-class ScreenAndroid : public Screen {
+class ScreenAndroid : public ScreenBase {
  public:
-  ScreenAndroid() {}
-
-  gfx::Point GetCursorScreenPoint() override { return gfx::Point(); }
-
-  bool IsWindowUnderCursor(gfx::NativeWindow window) override {
-    NOTIMPLEMENTED();
-    return false;
-  }
-
-  gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override {
-    NOTIMPLEMENTED();
-    return NULL;
-  }
-
-  Display GetPrimaryDisplay() const override {
+  ScreenAndroid() {
     gfx::DeviceDisplayInfo device_info;
     const float device_scale_factor = device_info.GetDIPScale();
     // Note: GetPhysicalDisplayWidth/Height() does not subtract window
@@ -50,33 +35,23 @@ class ScreenAndroid : public Screen {
     display.set_color_depth(device_info.GetBitsPerPixel());
     display.set_depth_per_component(device_info.GetBitsPerComponent());
     display.set_is_monochrome(device_info.GetBitsPerComponent() == 0);
-    return display;
+    ProcessDisplayChanged(display, true /* is_primary */);
+  }
+
+  gfx::Point GetCursorScreenPoint() override { return gfx::Point(); }
+
+  bool IsWindowUnderCursor(gfx::NativeWindow window) override {
+    NOTIMPLEMENTED();
+    return false;
+  }
+
+  gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override {
+    NOTIMPLEMENTED();
+    return NULL;
   }
 
   Display GetDisplayNearestWindow(gfx::NativeView view) const override {
     return GetPrimaryDisplay();
-  }
-
-  Display GetDisplayNearestPoint(const gfx::Point& point) const override {
-    return GetPrimaryDisplay();
-  }
-
-  int GetNumDisplays() const override { return 1; }
-
-  std::vector<Display> GetAllDisplays() const override {
-    return std::vector<Display>(1, GetPrimaryDisplay());
-  }
-
-  Display GetDisplayMatching(const gfx::Rect& match_rect) const override {
-    return GetPrimaryDisplay();
-  }
-
-  void AddObserver(DisplayObserver* observer) override {
-    // no display change on Android.
-  }
-
-  void RemoveObserver(DisplayObserver* observer) override {
-    // no display change on Android.
   }
 
  private:
