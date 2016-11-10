@@ -1270,26 +1270,19 @@ template("ios_xctest_test") {
     _output_name = invoker.output_name
   }
 
-  # TODO(crbug.com/662404): Remove when downstream have been changed to use
-  # the new name for the xctest app bundles.
-  _use_new_naming_convention = false
+  # TODO(crbug.com/662404): Remove when all downstream uses has been removed.
+  # If the variable is overridden, assert that it is true as all uses should
+  # have set it to true (otherwise changing the default would break things).
   if (defined(invoker.use_new_naming_convention)) {
-    _use_new_naming_convention = invoker.use_new_naming_convention
+    assert(invoker.use_new_naming_convention,
+           "use_new_naming_convention must be true if defined.")
   }
 
-  if (_use_new_naming_convention) {
-    _xctest_target = _target_name + "_module"
-    _xctest_output = _output_name + "_module"
+  _xctest_target = _target_name + "_module"
+  _xctest_output = _output_name + "_module"
 
-    _host_target = _target_name
-    _host_output = _output_name
-  } else {
-    _xctest_target = _target_name
-    _xctest_output = _output_name
-
-    _host_target = _target_name + "_host"
-    _host_output = _output_name + "_host"
-  }
+  _host_target = _target_name
+  _host_output = _output_name
 
   _xctest_arch_loadable_module_target = _xctest_target + "_arch_loadable_module"
   _xctest_lipo_loadable_module_target = _xctest_target + "_loadable_module"

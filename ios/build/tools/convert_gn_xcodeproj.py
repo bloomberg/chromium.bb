@@ -122,12 +122,8 @@ def UpdateProductsProject(file_input, file_output, configurations):
       for config_name in configuration_list['buildConfigurations']:
         config = project.objects[config_name]
         if not config['buildSettings'].get('BUNDLE_LOADER'):
-          if value['name'].endswith('_module'):
-            host_name = value['name'][:-len('_module')]
-          else:
-            # TODO(crbug.com/662404): remove once the targets have been renamed
-            # to use the new naming convention.
-            host_name = value['name'] + '_host'
+          assert value['name'].endswith('_module')
+          host_name = value['name'][:-len('_module')]
           config['buildSettings']['BUNDLE_LOADER'] = '$(TEST_HOST)'
           config['buildSettings']['TEST_HOST'] = \
               '${BUILT_PRODUCTS_DIR}/%s.app/%s' % (host_name, host_name)

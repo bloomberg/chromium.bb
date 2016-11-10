@@ -675,15 +675,6 @@ class DeviceTestRunner(TestRunner):
       # e.g. ios_web_shell_egtests
       env['APP_TARGET_NAME'] = os.path.splitext(
           os.path.basename(self.app_path))[0]
-
-      # Two convention for the test name have been in use. Old convention was to
-      # use the host name without _host suffix while the new convention is to
-      # use host name with _module suffix. As new convention does not use _host
-      # suffix its presence can be used to determine correct name for the test
-      # target. TODO(crbug.com/662404): remove once only new convention is used.
       # e.g. ios_web_shell_egtests_module
-      if env['APP_TARGET_NAME'].endswith('_host'):
-        env['TEST_TARGET_NAME'] = env['APP_TARGET_NAME'].rsplit('_', 1)[0]
-      else:
-        env['TEST_TARGET_NAME'] = env['APP_TARGET_NAME'] + '_module'
+      env['TEST_TARGET_NAME'] = env['APP_TARGET_NAME'] + '_module'
     return env
