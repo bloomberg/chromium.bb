@@ -41,25 +41,10 @@ ScriptValue PaymentResponse::toJSONForBinding(ScriptState* scriptState) const {
   else
     result.addNull("shippingAddress");
 
-  if (shippingOption().isNull())
-    result.addNull("shippingOption");
-  else
-    result.addString("shippingOption", shippingOption());
-
-  if (payerName().isNull())
-    result.addNull("payerName");
-  else
-    result.addString("payerName", payerName());
-
-  if (payerEmail().isNull())
-    result.addNull("payerEmail");
-  else
-    result.addString("payerEmail", payerEmail());
-
-  if (payerPhone().isNull())
-    result.addNull("payerPhone");
-  else
-    result.addString("payerPhone", payerPhone());
+  result.addStringOrNull("shippingOption", shippingOption())
+      .addStringOrNull("payerName", payerName())
+      .addStringOrNull("payerEmail", payerEmail())
+      .addStringOrNull("payerPhone", payerPhone());
 
   return result.scriptValue();
 }
