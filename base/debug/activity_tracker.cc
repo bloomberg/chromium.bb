@@ -151,10 +151,12 @@ void ActivityTrackerMemoryAllocator::ReleaseObjectReference(Reference ref) {
 
 // static
 void Activity::FillFrom(Activity* activity,
+                        const void* program_counter,
                         const void* origin,
                         Type type,
                         const ActivityData& data) {
   activity->time_internal = base::TimeTicks::Now().ToInternalValue();
+  activity->calling_address = reinterpret_cast<uintptr_t>(program_counter);
   activity->origin_address = reinterpret_cast<uintptr_t>(origin);
   activity->activity_type = type;
   activity->data = data;
@@ -309,7 +311,8 @@ ThreadActivityTracker::ThreadActivityTracker(void* base, size_t size)
 
 ThreadActivityTracker::~ThreadActivityTracker() {}
 
-void ThreadActivityTracker::PushActivity(const void* origin,
+void ThreadActivityTracker::PushActivity(const void* program_counter,
+                                         const void* origin,
                                          Activity::Type type,
                                          const ActivityData& data) {
   // A thread-checker creates a lock to check the thread-id which means
@@ -333,7 +336,7 @@ void ThreadActivityTracker::PushActivity(const void* origin,
   // Get a pointer to the next activity and load it. No atomicity is required
   // here because the memory is known only to this thread. It will be made
   // known to other threads once the depth is incremented.
-  Activity::FillFrom(&stack_[depth], origin, type, data);
+  Activity::FillFrom(&stack_[depth], program_counter, origin, type, data);
 
   // Save the incremented depth. Because this guards |activity| memory filled
   // above that may be read by another thread once the recorded depth changes,
@@ -678,12 +681,13 @@ void GlobalActivityTracker::OnTLSDestroy(void* value) {
   delete reinterpret_cast<ManagedActivityTracker*>(value);
 }
 
-ScopedActivity::ScopedActivity(const tracked_objects::Location& location,
+ScopedActivity::ScopedActivity(const void* program_counter,
                                uint8_t action,
                                uint32_t id,
                                int32_t info)
     : GlobalActivityTracker::ScopedThreadActivity(
-          location.program_counter(),
+          program_counter,
+          nullptr,
           static_cast<Activity::Type>(Activity::ACT_GENERIC | action),
           ActivityData::ForGeneric(id, info),
           /*lock_allowed=*/true),
@@ -708,32 +712,41 @@ void ScopedActivity::ChangeActionAndInfo(uint8_t action, int32_t info) {
                     ActivityData::ForGeneric(id_, info));
 }
 
-ScopedTaskRunActivity::ScopedTaskRunActivity(const base::PendingTask& task)
+ScopedTaskRunActivity::ScopedTaskRunActivity(
+    const void* program_counter,
+    const base::PendingTask& task)
     : GlobalActivityTracker::ScopedThreadActivity(
+          program_counter,
           task.posted_from.program_counter(),
           Activity::ACT_TASK_RUN,
           ActivityData::ForTask(task.sequence_num),
           /*lock_allowed=*/true) {}
 
 ScopedLockAcquireActivity::ScopedLockAcquireActivity(
+    const void* program_counter,
     const base::internal::LockImpl* lock)
     : GlobalActivityTracker::ScopedThreadActivity(
+          program_counter,
           nullptr,
           Activity::ACT_LOCK_ACQUIRE,
           ActivityData::ForLock(lock),
           /*lock_allowed=*/false) {}
 
 ScopedEventWaitActivity::ScopedEventWaitActivity(
+    const void* program_counter,
     const base::WaitableEvent* event)
     : GlobalActivityTracker::ScopedThreadActivity(
+          program_counter,
           nullptr,
           Activity::ACT_EVENT_WAIT,
           ActivityData::ForEvent(event),
           /*lock_allowed=*/true) {}
 
 ScopedThreadJoinActivity::ScopedThreadJoinActivity(
+    const void* program_counter,
     const base::PlatformThreadHandle* thread)
     : GlobalActivityTracker::ScopedThreadActivity(
+          program_counter,
           nullptr,
           Activity::ACT_THREAD_JOIN,
           ActivityData::ForThread(*thread),
@@ -741,8 +754,10 @@ ScopedThreadJoinActivity::ScopedThreadJoinActivity(
 
 #if !defined(OS_NACL) && !defined(OS_IOS)
 ScopedProcessWaitActivity::ScopedProcessWaitActivity(
+    const void* program_counter,
     const base::Process* process)
     : GlobalActivityTracker::ScopedThreadActivity(
+          program_counter,
           nullptr,
           Activity::ACT_PROCESS_WAIT,
           ActivityData::ForProcess(process->Pid()),

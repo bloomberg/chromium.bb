@@ -102,6 +102,11 @@ class BASE_EXPORT ThreadActivityAnalyzer {
 // show small inconsistencies between threads if attempted on a live system.
 class BASE_EXPORT GlobalActivityAnalyzer {
  public:
+  struct ProgramLocation {
+    int module;
+    uintptr_t offset;
+  };
+
   using ThreadKey = ThreadActivityAnalyzer::ThreadKey;
 
   // Creates a global analyzer from a persistent memory allocator.
@@ -126,6 +131,10 @@ class BASE_EXPORT GlobalActivityAnalyzer {
   // Gets the analyzer for a specific thread or null if there is none.
   // Ownership stays with the global analyzer object.
   ThreadActivityAnalyzer* GetAnalyzerForThread(const ThreadKey& key);
+
+  // Gets the corresponding "program location" for a given "program counter".
+  // This will return {0,0} if no mapping could be found.
+  ProgramLocation GetProgramLocationFromAddress(uint64_t address);
 
  private:
   using AnalyzerMap =

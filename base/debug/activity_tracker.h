@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "base/base_export.h"
+#include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/threading/platform_thread.h"
@@ -222,6 +223,9 @@ struct Activity {
   // but when returned in a snapshot, it is "wall time".
   int64_t time_internal;
 
+  // The address that pushed the activity onto the stack as a raw number.
+  uint64_t calling_address;
+
   // The address that is the origin of the activity if it not obvious from
   // the call stack. This is useful for things like tasks that are posted
   // from a completely different thread though most activities will leave
@@ -248,6 +252,7 @@ struct Activity {
   ActivityData data;
 
   static void FillFrom(Activity* activity,
+                       const void* program_counter,
                        const void* origin,
                        Type type,
                        const ActivityData& data);
@@ -301,12 +306,13 @@ class BASE_EXPORT ThreadActivityTracker {
   class BASE_EXPORT ScopedActivity {
    public:
     ScopedActivity(ThreadActivityTracker* tracker,
+                   const void* program_counter,
                    const void* origin,
                    Activity::Type type,
                    const ActivityData& data)
         : tracker_(tracker) {
       if (tracker_)
-        tracker_->PushActivity(origin, type, data);
+        tracker_->PushActivity(program_counter, origin, type, data);
     }
 
     ~ScopedActivity() {
@@ -335,10 +341,21 @@ class BASE_EXPORT ThreadActivityTracker {
 
   // Indicates that an activity has started from a given |origin| address in
   // the code, though it can be null if the creator's address is not known.
-  // The |type| and |data| describe the activity.
-  void PushActivity(const void* origin,
+  // The |type| and |data| describe the activity. |program_counter| should be
+  // the result of GetProgramCounter() where push is called.
+  void PushActivity(const void* program_counter,
+                    const void* origin,
                     Activity::Type type,
                     const ActivityData& data);
+
+  // An inlined version of the above that gets the program counter where it
+  // is called.
+  ALWAYS_INLINE
+  void PushActivity(const void* origin,
+                    Activity::Type type,
+                    const ActivityData& data) {
+    PushActivity(::tracked_objects::GetProgramCounter(), origin, type, data);
+  }
 
   // Changes the activity |type| and |data| of the top-most entry on the stack.
   // This is useful if the information has changed and it is desireable to
@@ -398,7 +415,7 @@ class BASE_EXPORT GlobalActivityTracker {
   // will be safely ignored. These are public so that an external process
   // can recognize records of this type within an allocator.
   enum : uint32_t {
-    kTypeIdActivityTracker     = 0x5D7381AF + 1,  // SHA1(ActivityTracker) v1
+    kTypeIdActivityTracker     = 0x5D7381AF + 2,  // SHA1(ActivityTracker) v2
     kTypeIdActivityTrackerFree = ~kTypeIdActivityTracker,
   };
 
@@ -409,12 +426,14 @@ class BASE_EXPORT GlobalActivityTracker {
   class BASE_EXPORT ScopedThreadActivity
       : public ThreadActivityTracker::ScopedActivity {
    public:
-    ScopedThreadActivity(const void* origin,
+    ScopedThreadActivity(const void* program_counter,
+                         const void* origin,
                          Activity::Type type,
                          const ActivityData& data,
                          bool lock_allowed)
         : ThreadActivityTracker::ScopedActivity(
               GetOrCreateTracker(lock_allowed),
+              program_counter,
               origin,
               type,
               data) {}
@@ -584,17 +603,16 @@ class BASE_EXPORT ScopedActivity
   //   echo -n "MayNeverExit" | sha1sum   =>   e44873ccab21e2b71270da24aa1...
   //
   //   void MayNeverExit(int32_t foo) {
-  //     base::debug::ScopedActivity track_me(FROM_HERE, 0, 0xE44873CC, foo);
+  //     base::debug::ScopedActivity track_me(0, 0xE44873CC, foo);
   //     ...
   //   }
-  ScopedActivity(const tracked_objects::Location& location,
-                 uint8_t action,
-                 uint32_t id,
-                 int32_t info);
-
-  // Because this is inline, the FROM_HERE macro will resolve the current
-  // program-counter as the location in the calling code.
-  ScopedActivity() : ScopedActivity(FROM_HERE, 0, 0, 0) {}
+  ALWAYS_INLINE
+  ScopedActivity(uint8_t action, uint32_t id, int32_t info)
+      : ScopedActivity(::tracked_objects::GetProgramCounter(),
+                       action,
+                       id,
+                       info) {}
+  ScopedActivity() : ScopedActivity(0, 0, 0) {}
 
   // Changes the |action| and/or |info| of this activity on the stack. This
   // is useful for tracking progress through a function, updating the action
@@ -606,6 +624,12 @@ class BASE_EXPORT ScopedActivity
   void ChangeActionAndInfo(uint8_t action, int32_t info);
 
  private:
+  // Constructs the object using a passed-in program-counter.
+  ScopedActivity(const void* program_counter,
+                 uint8_t action,
+                 uint32_t id,
+                 int32_t info);
+
   // A copy of the ID code so it doesn't have to be passed by the caller when
   // changing the |info| field.
   uint32_t id_;
@@ -619,32 +643,56 @@ class BASE_EXPORT ScopedActivity
 class BASE_EXPORT ScopedTaskRunActivity
     : public GlobalActivityTracker::ScopedThreadActivity {
  public:
-  explicit ScopedTaskRunActivity(const base::PendingTask& task);
+  ALWAYS_INLINE
+  explicit ScopedTaskRunActivity(const base::PendingTask& task)
+      : ScopedTaskRunActivity(::tracked_objects::GetProgramCounter(),
+                              task) {}
+
  private:
+  ScopedTaskRunActivity(const void* program_counter,
+                        const base::PendingTask& task);
   DISALLOW_COPY_AND_ASSIGN(ScopedTaskRunActivity);
 };
 
 class BASE_EXPORT ScopedLockAcquireActivity
     : public GlobalActivityTracker::ScopedThreadActivity {
  public:
-  explicit ScopedLockAcquireActivity(const base::internal::LockImpl* lock);
+  ALWAYS_INLINE
+  explicit ScopedLockAcquireActivity(const base::internal::LockImpl* lock)
+      : ScopedLockAcquireActivity(::tracked_objects::GetProgramCounter(),
+                                  lock) {}
+
  private:
+  ScopedLockAcquireActivity(const void* program_counter,
+                            const base::internal::LockImpl* lock);
   DISALLOW_COPY_AND_ASSIGN(ScopedLockAcquireActivity);
 };
 
 class BASE_EXPORT ScopedEventWaitActivity
     : public GlobalActivityTracker::ScopedThreadActivity {
  public:
-  explicit ScopedEventWaitActivity(const base::WaitableEvent* event);
+  ALWAYS_INLINE
+  explicit ScopedEventWaitActivity(const base::WaitableEvent* event)
+      : ScopedEventWaitActivity(::tracked_objects::GetProgramCounter(),
+                                event) {}
+
  private:
+  ScopedEventWaitActivity(const void* program_counter,
+                          const base::WaitableEvent* event);
   DISALLOW_COPY_AND_ASSIGN(ScopedEventWaitActivity);
 };
 
 class BASE_EXPORT ScopedThreadJoinActivity
     : public GlobalActivityTracker::ScopedThreadActivity {
  public:
-  explicit ScopedThreadJoinActivity(const base::PlatformThreadHandle* thread);
+  ALWAYS_INLINE
+  explicit ScopedThreadJoinActivity(const base::PlatformThreadHandle* thread)
+      : ScopedThreadJoinActivity(::tracked_objects::GetProgramCounter(),
+                                 thread) {}
+
  private:
+  ScopedThreadJoinActivity(const void* program_counter,
+                           const base::PlatformThreadHandle* thread);
   DISALLOW_COPY_AND_ASSIGN(ScopedThreadJoinActivity);
 };
 
@@ -653,8 +701,14 @@ class BASE_EXPORT ScopedThreadJoinActivity
 class BASE_EXPORT ScopedProcessWaitActivity
     : public GlobalActivityTracker::ScopedThreadActivity {
  public:
-  explicit ScopedProcessWaitActivity(const base::Process* process);
+  ALWAYS_INLINE
+  explicit ScopedProcessWaitActivity(const base::Process* process)
+      : ScopedProcessWaitActivity(::tracked_objects::GetProgramCounter(),
+                                  process) {}
+
  private:
+  ScopedProcessWaitActivity(const void* program_counter,
+                            const base::Process* process);
   DISALLOW_COPY_AND_ASSIGN(ScopedProcessWaitActivity);
 };
 #endif
