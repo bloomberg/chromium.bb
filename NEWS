@@ -1,6 +1,6 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
-* Noteworthy changes in release 3.1.0 (2016-10-??)
+* Noteworthy changes in release 3.1.0 (2016-11-??)
 ** New features
 - Meta data
 
@@ -33,6 +33,8 @@ complete.
 
 ** Bug fixes
 - Fixes implicit declaration of 'pattern_check' thanks to  Reiner Dolp
+- Fix a stackoverflow crash on applications with smaller stack size.
+  Thanks to Victor Montalvão.
 ** Other changes
 - Improvements to the emacs mode for editing liblouis tables thanks to
   Christian Egli
