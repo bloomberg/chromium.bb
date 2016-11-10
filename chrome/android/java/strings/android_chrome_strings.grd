@@ -1544,8 +1544,20 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
 
       <!-- Add to Home screen strings -->
-      <message name="IDS_MENU_ADD_TO_HOMESCREEN" desc="Menu item for adding a shortcut to the Home screen. [CHAR-LIMIT=27]">
+      <message name="IDS_MENU_ADD_TO_HOMESCREEN" desc="Menu item for adding a shortcut to the Home screen (default title). [CHAR-LIMIT=27]">
         Add to Home screen
+      </message>
+      <message name="IDS_MENU_ADD_TO_HOMESCREEN_ADD" desc="Menu item for adding a shortcut to the Home screen. [CHAR-LIMIT=27]">
+        Add shortcut
+      </message>
+      <message name="IDS_MENU_ADD_TO_HOMESCREEN_INSTALL" desc="Menu item for adding a shortcut to the Home screen. [CHAR-LIMIT=27]">
+        Install web app
+      </message>
+      <message name="IDS_APP_BANNER_ADD" desc="A button in an app banner to confirm adding a site to homescreen">
+        Add
+      </message>
+      <message name="IDS_APP_BANNER_INSTALL" desc="A button in an app banner to confirm adding a site to homescreen">
+        Install
       </message>
       <message name="IDS_ADDED_TO_HOMESCREEN" desc="Indicates that the website with the specified name was added to the user's Home screen.">
         <ph name="NAME">%1$s<ex>Google</ex></ph> was added to your Home screen

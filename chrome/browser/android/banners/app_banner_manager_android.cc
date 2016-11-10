@@ -17,6 +17,7 @@
 #include "chrome/browser/android/webapk/webapk_metrics.h"
 #include "chrome/browser/android/webapk/webapk_web_manifest_checker.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
+#include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/manifest/manifest_icon_downloader.h"
 #include "chrome/browser/manifest/manifest_icon_selector.h"
 #include "content/public/browser/web_contents.h"
@@ -286,6 +287,13 @@ std::string AppBannerManagerAndroid::ExtractQueryValueForName(
 bool AppBannerManagerAndroid::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
+
+// static
+jint GetHomescreenLanguageOption(JNIEnv* env,
+                                 const JavaParamRef<jclass>& clazz) {
+  return AppBannerSettingsHelper::GetHomescreenLanguageOption();
+}
+
 
 // static
 ScopedJavaLocalRef<jobject> GetJavaBannerManagerForWebContents(

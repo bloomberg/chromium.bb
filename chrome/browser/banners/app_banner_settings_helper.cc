@@ -81,6 +81,7 @@ const char kBannerParamsEngagementTotalKey[] = "site_engagement_total";
 const char kBannerParamsDaysAfterBannerDismissedKey[] = "days_after_dismiss";
 const char kBannerParamsDaysAfterBannerIgnoredKey[] = "days_after_ignore";
 const char kBannerSiteEngagementParamsKey[] = "use_site_engagement";
+const char kBannerParamsLanguageKey[] = "language_option";
 
 // Engagement weight assigned to direct and indirect navigations.
 // By default, a direct navigation is a page visit via ui::PAGE_TRANSITION_TYPED
@@ -672,6 +673,21 @@ void AppBannerSettingsHelper::UpdateFromFieldTrial() {
     UpdateEngagementWeights();
     UpdateMinutesBetweenVisits();
   }
+}
+
+AppBannerSettingsHelper::LanguageOption
+AppBannerSettingsHelper::GetHomescreenLanguageOption() {
+  std::string param = variations::GetVariationParamValue(
+      kBannerParamsKey, kBannerParamsLanguageKey);
+  unsigned int language_option = 0;
+
+  if (param.empty() || !base::StringToUint(param, &language_option) ||
+      language_option < LANGUAGE_OPTION_MIN ||
+      language_option > LANGUAGE_OPTION_MAX) {
+    return LANGUAGE_OPTION_DEFAULT;
+  }
+
+  return static_cast<LanguageOption>(language_option);
 }
 
 bool AppBannerSettingsHelper::ShouldUseSiteEngagementScore() {

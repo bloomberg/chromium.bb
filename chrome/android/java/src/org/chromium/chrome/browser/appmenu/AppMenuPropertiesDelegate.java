@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
@@ -162,10 +163,12 @@ public class AppMenuPropertiesDelegate {
             //               can not be added to the homescreen.
             // 4.) If creating shortcuts it not supported by the current home screen.
             MenuItem homescreenItem = menu.findItem(R.id.add_to_homescreen_id);
-            boolean canAddShortcutToHomescreen =
-                    ShortcutHelper.isAddToHomeIntentSupported(mActivity);
-            homescreenItem.setVisible(
-                    canAddShortcutToHomescreen && !isChromeScheme && !isFileScheme && !isIncognito);
+            boolean homescreenItemVisible = ShortcutHelper.isAddToHomeIntentSupported(mActivity)
+                    && !isChromeScheme && !isFileScheme && !isIncognito;
+            if (homescreenItemVisible) {
+                homescreenItem.setTitle(AppBannerManager.getHomescreenLanguageOption());
+            }
+            homescreenItem.setVisible(homescreenItemVisible);
 
             // Hide request desktop site on all chrome:// pages except for the NTP. Check request
             // desktop site if it's activated on this page.

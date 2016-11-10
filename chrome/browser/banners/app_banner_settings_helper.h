@@ -40,6 +40,18 @@ class Profile;
 // what we count as a day matches what the user perceives to be days.
 class AppBannerSettingsHelper {
  public:
+  // An enum for determining the title to use for the add to homescreen / app
+  // banner functionality.
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.banners
+  enum LanguageOption {
+    LANGUAGE_OPTION_DEFAULT = 0,
+    LANGUAGE_OPTION_MIN = LANGUAGE_OPTION_DEFAULT,
+    LANGUAGE_OPTION_ADD = 1,
+    LANGUAGE_OPTION_INSTALL = 2,
+    LANGUAGE_OPTION_MAX = LANGUAGE_OPTION_INSTALL,
+  };
+
   // TODO(mariakhomenko): Rename events to reflect that they are used in more
   // contexts now.
   enum AppBannerEvent {
@@ -173,6 +185,10 @@ class AppBannerSettingsHelper {
 
   // Updates all values from field trial.
   static void UpdateFromFieldTrial();
+
+  // Queries variations to determine which language option should be used for
+  // app banners and add to homescreen.
+  static LanguageOption GetHomescreenLanguageOption();
 
   // Returns true if the app banner trigger condition should use the site
   // engagement score instead of the navigation-based heuristic.
