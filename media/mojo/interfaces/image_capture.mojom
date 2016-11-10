@@ -8,10 +8,10 @@ module media.mojom;
 // allowed variations of a Capability or an Option.
 // https://www.w3.org/TR/image-capture/#MediaSettingsRange
 struct Range {
-  int32 max;
-  int32 min;
-  int32 current;
-  int32 step;
+  double max;
+  double min;
+  double current;
+  double step;
 };
 
 // https://www.w3.org/TR/image-capture/#MeteringMode
@@ -55,13 +55,13 @@ struct PhotoSettings {
   bool has_white_balance_mode;
   MeteringMode white_balance_mode;
   bool has_color_temperature;
-  uint32 color_temperature;
+  double color_temperature;
   bool has_exposure_mode;
   MeteringMode exposure_mode;
   bool has_exposure_compensation;
-  uint32 exposure_compensation;
+  double exposure_compensation;
   bool has_iso;
-  uint32 iso;
+  double iso;
   bool has_red_eye_reduction;
   bool red_eye_reduction;
   bool has_focus_mode;
@@ -69,19 +69,19 @@ struct PhotoSettings {
   array<Point2D> points_of_interest;
 
   bool has_brightness;
-  uint32 brightness;
+  double brightness;
   bool has_contrast;
-  uint32 contrast;
+  double contrast;
   bool has_saturation;
-  uint32 saturation;
+  double saturation;
   bool has_sharpness;
-  uint32 sharpness;
+  double sharpness;
   bool has_zoom;
-  uint32 zoom;
+  double zoom;
   bool has_width;
-  uint32 width;
+  double width;
   bool has_height;
-  uint32 height;
+  double height;
   bool has_fill_light_mode;
   FillLightMode fill_light_mode;
 };

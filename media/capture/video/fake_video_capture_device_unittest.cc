@@ -338,12 +338,12 @@ TEST_F(FakeVideoCaptureDeviceTest, GetAndSetCapabilities) {
   EXPECT_EQ(0, capabilities->iso->step);
   EXPECT_EQ(capture_params.requested_format.frame_size.height(),
             capabilities->height->current);
-  EXPECT_EQ(240, capabilities->height->min);
+  EXPECT_EQ(96, capabilities->height->min);
   EXPECT_EQ(1080, capabilities->height->max);
   EXPECT_EQ(1, capabilities->height->step);
   EXPECT_EQ(capture_params.requested_format.frame_size.width(),
             capabilities->width->current);
-  EXPECT_EQ(320, capabilities->width->min);
+  EXPECT_EQ(96, capabilities->width->min);
   EXPECT_EQ(1920, capabilities->width->max);
   EXPECT_EQ(1, capabilities->width->step);
   EXPECT_EQ(100, capabilities->zoom->min);

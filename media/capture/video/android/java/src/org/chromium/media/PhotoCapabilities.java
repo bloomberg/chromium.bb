@@ -24,16 +24,16 @@ class PhotoCapabilities {
     public final int minWidth;
     public final int currentWidth;
     public final int stepWidth;
-    public final int maxZoom;
-    public final int minZoom;
-    public final int currentZoom;
-    public final int stepZoom;
+    public final double maxZoom;
+    public final double minZoom;
+    public final double currentZoom;
+    public final double stepZoom;
     public final int focusMode;
     public final int exposureMode;
-    public final int maxExposureCompensation;
-    public final int minExposureCompensation;
-    public final int currentExposureCompensation;
-    public final int stepExposureCompensation;
+    public final double maxExposureCompensation;
+    public final double minExposureCompensation;
+    public final double currentExposureCompensation;
+    public final double stepExposureCompensation;
     public final int whiteBalanceMode;
     public final int fillLightMode;
     public final boolean redEyeReduction;
@@ -44,10 +44,10 @@ class PhotoCapabilities {
 
     PhotoCapabilities(int maxIso, int minIso, int currentIso, int stepIso, int maxHeight,
             int minHeight, int currentHeight, int stepHeight, int maxWidth, int minWidth,
-            int currentWidth, int stepWidth, int maxZoom, int minZoom, int currentZoom,
-            int stepZoom, int focusMode, int exposureMode, int maxExposureCompensation,
-            int minExposureCompensation, int currentExposureCompensation,
-            int stepExposureCompensation, int whiteBalanceMode, int fillLightMode,
+            int currentWidth, int stepWidth, double maxZoom, double minZoom, double currentZoom,
+            double stepZoom, int focusMode, int exposureMode, double maxExposureCompensation,
+            double minExposureCompensation, double currentExposureCompensation,
+            double stepExposureCompensation, int whiteBalanceMode, int fillLightMode,
             boolean redEyeReduction, int maxColorTemperature, int minColorTemperature,
             int currentColorTemperature, int stepColorTemperature) {
         this.maxIso = maxIso;
@@ -142,22 +142,22 @@ class PhotoCapabilities {
     }
 
     @CalledByNative
-    public int getMinZoom() {
+    public double getMinZoom() {
         return minZoom;
     }
 
     @CalledByNative
-    public int getMaxZoom() {
+    public double getMaxZoom() {
         return maxZoom;
     }
 
     @CalledByNative
-    public int getCurrentZoom() {
+    public double getCurrentZoom() {
         return currentZoom;
     }
 
     @CalledByNative
-    public int getStepZoom() {
+    public double getStepZoom() {
         return stepZoom;
     }
 
@@ -172,22 +172,22 @@ class PhotoCapabilities {
     }
 
     @CalledByNative
-    public int getMinExposureCompensation() {
+    public double getMinExposureCompensation() {
         return minExposureCompensation;
     }
 
     @CalledByNative
-    public int getMaxExposureCompensation() {
+    public double getMaxExposureCompensation() {
         return maxExposureCompensation;
     }
 
     @CalledByNative
-    public int getCurrentExposureCompensation() {
+    public double getCurrentExposureCompensation() {
         return currentExposureCompensation;
     }
 
     @CalledByNative
-    public int getStepExposureCompensation() {
+    public double getStepExposureCompensation() {
         return stepExposureCompensation;
     }
 
@@ -239,16 +239,16 @@ class PhotoCapabilities {
         public int minWidth;
         public int currentWidth;
         public int stepWidth;
-        public int maxZoom;
-        public int minZoom;
-        public int currentZoom;
-        public int stepZoom;
+        public double maxZoom;
+        public double minZoom;
+        public double currentZoom;
+        public double stepZoom;
         public int focusMode;
         public int exposureMode;
-        public int maxExposureCompensation;
-        public int minExposureCompensation;
-        public int currentExposureCompensation;
-        public int stepExposureCompensation;
+        public double maxExposureCompensation;
+        public double minExposureCompensation;
+        public double currentExposureCompensation;
+        public double stepExposureCompensation;
         public int whiteBalanceMode;
         public int fillLightMode;
         public boolean redEyeReduction;
@@ -319,22 +319,22 @@ class PhotoCapabilities {
             return this;
         }
 
-        public Builder setMaxZoom(int maxZoom) {
+        public Builder setMaxZoom(double maxZoom) {
             this.maxZoom = maxZoom;
             return this;
         }
 
-        public Builder setMinZoom(int minZoom) {
+        public Builder setMinZoom(double minZoom) {
             this.minZoom = minZoom;
             return this;
         }
 
-        public Builder setCurrentZoom(int currentZoom) {
+        public Builder setCurrentZoom(double currentZoom) {
             this.currentZoom = currentZoom;
             return this;
         }
 
-        public Builder setStepZoom(int stepZoom) {
+        public Builder setStepZoom(double stepZoom) {
             this.stepZoom = stepZoom;
             return this;
         }
@@ -349,22 +349,22 @@ class PhotoCapabilities {
             return this;
         }
 
-        public Builder setMaxExposureCompensation(int maxExposureCompensation) {
+        public Builder setMaxExposureCompensation(double maxExposureCompensation) {
             this.maxExposureCompensation = maxExposureCompensation;
             return this;
         }
 
-        public Builder setMinExposureCompensation(int minExposureCompensation) {
+        public Builder setMinExposureCompensation(double minExposureCompensation) {
             this.minExposureCompensation = minExposureCompensation;
             return this;
         }
 
-        public Builder setCurrentExposureCompensation(int currentExposureCompensation) {
+        public Builder setCurrentExposureCompensation(double currentExposureCompensation) {
             this.currentExposureCompensation = currentExposureCompensation;
             return this;
         }
 
-        public Builder setStepExposureCompensation(int stepExposureCompensation) {
+        public Builder setStepExposureCompensation(double stepExposureCompensation) {
             this.stepExposureCompensation = stepExposureCompensation;
             return this;
         }

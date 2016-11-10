@@ -52,10 +52,6 @@ const int kMjpegHeight = 480;
 // Typical framerate, in fps
 const int kTypicalFramerate = 30;
 
-// Constant used to multiply zoom values to avoid using floating point. Used to
-// scale both the readings (min, max, current) and the value to set it to.
-const int kZoomMultiplier = 100;
-
 // V4L2 color formats supported by V4L2CaptureDelegate derived classes.
 // This list is ordered by precedence of use -- but see caveats for MJPEG.
 static struct {
@@ -447,9 +443,9 @@ void V4L2CaptureDelegate::SetPhotoOptions(
   if (settings->has_zoom) {
     v4l2_control zoom_current = {};
     zoom_current.id = V4L2_CID_ZOOM_ABSOLUTE;
-    zoom_current.value = settings->zoom / kZoomMultiplier;
+    zoom_current.value = settings->zoom;
     if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_S_CTRL, &zoom_current)) < 0)
-      DPLOG(ERROR) << "setting zoom to " << settings->zoom / kZoomMultiplier;
+      DPLOG(ERROR) << "setting zoom to " << settings->zoom;
   }
 
   if (settings->has_white_balance_mode &&

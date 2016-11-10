@@ -14,28 +14,28 @@ class MediaSettingsRange final : public GarbageCollected<MediaSettingsRange>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static MediaSettingsRange* create(long max,
-                                    long min,
-                                    long current,
-                                    long step) {
+  static MediaSettingsRange* create(double max,
+                                    double min,
+                                    double current,
+                                    double step) {
     return new MediaSettingsRange(max, min, current, step);
   }
 
-  long max() const { return m_max; }
-  long min() const { return m_min; }
-  long current() const { return m_current; }
-  long step() const { return m_step; }
+  double max() const { return m_max; }
+  double min() const { return m_min; }
+  double current() const { return m_current; }
+  double step() const { return m_step; }
 
   DEFINE_INLINE_TRACE() {}
 
  private:
-  MediaSettingsRange(long max, long min, long current, long step)
+  MediaSettingsRange(double max, double min, double current, double step)
       : m_max(max), m_min(min), m_current(current), m_step(step) {}
 
-  long m_max;
-  long m_min;
-  long m_current;
-  long m_step;
+  double m_max;
+  double m_min;
+  double m_current;
+  double m_step;
 };
 
 }  // namespace blink

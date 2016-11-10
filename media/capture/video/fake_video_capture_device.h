@@ -69,7 +69,7 @@ class CAPTURE_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
   base::TimeDelta elapsed_time_;
   VideoCaptureFormat capture_format_;
 
-  uint32_t current_zoom_;
+  double current_zoom_;
 
   // The system time when we receive the first frame.
   base::TimeTicks first_ref_time_;

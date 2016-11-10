@@ -7,8 +7,8 @@
 [
     OriginTrialEnabled=ImageCapture,
 ] interface MediaSettingsRange {
-    readonly attribute long max;
-    readonly attribute long min;
-    readonly attribute long current;
-    readonly attribute long step;
+    readonly attribute double max;
+    readonly attribute double min;
+    readonly attribute double current;
+    readonly attribute double step;
 };

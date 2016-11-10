@@ -31,9 +31,9 @@ static const int kBeepInterval = 500;
 // Gradient travels from bottom to top in 5 seconds.
 static const float kGradientFrequency = 1.f / 5;
 
-static const uint32_t kMinZoom = 100;
-static const uint32_t kMaxZoom = 400;
-static const uint32_t kZoomStep = 1;
+static const double kMinZoom = 100.0;
+static const double kMaxZoom = 400.0;
+static const double kZoomStep = 1.0;
 
 // Starting from top left, -45 deg gradient.  Value at point (row, column) is
 // calculated as (top_left_value + (row + column) * step) % MAX_VALUE, where
@@ -85,7 +85,7 @@ void DrawPacman(VideoPixelFormat frame_format,
                 base::TimeDelta elapsed_time,
                 float frame_rate,
                 const gfx::Size& frame_size,
-                uint32_t zoom) {
+                double zoom) {
   // |kN32_SkColorType| stands for the appropriate RGBA/BGRA format.
   const SkColorType colorspace = (frame_format == PIXEL_FORMAT_ARGB)
                                      ? kN32_SkColorType
@@ -247,19 +247,19 @@ void FakeVideoCaptureDevice::GetPhotoCapabilities(
   mojom::PhotoCapabilitiesPtr photo_capabilities =
       mojom::PhotoCapabilities::New();
   photo_capabilities->iso = mojom::Range::New();
-  photo_capabilities->iso->current = 100;
-  photo_capabilities->iso->max = 100;
-  photo_capabilities->iso->min = 100;
-  photo_capabilities->iso->step = 0;
+  photo_capabilities->iso->current = 100.0;
+  photo_capabilities->iso->max = 100.0;
+  photo_capabilities->iso->min = 100.0;
+  photo_capabilities->iso->step = 0.0;
   photo_capabilities->height = mojom::Range::New();
   photo_capabilities->height->current = capture_format_.frame_size.height();
-  photo_capabilities->height->max = 1080;
-  photo_capabilities->height->min = 240;
-  photo_capabilities->height->step = 1;
+  photo_capabilities->height->max = 1080.0;
+  photo_capabilities->height->min = 96.0;
+  photo_capabilities->height->step = 1.0;
   photo_capabilities->width = mojom::Range::New();
   photo_capabilities->width->current = capture_format_.frame_size.width();
-  photo_capabilities->width->max = 1920;
-  photo_capabilities->width->min = 320;
+  photo_capabilities->width->max = 1920.0;
+  photo_capabilities->width->min = 96.0;
   photo_capabilities->width->step = 1;
   photo_capabilities->zoom = mojom::Range::New();
   photo_capabilities->zoom->current = current_zoom_;

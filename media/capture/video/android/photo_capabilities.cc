@@ -80,22 +80,22 @@ int PhotoCapabilities::getStepWidth() const {
   return Java_PhotoCapabilities_getStepWidth(AttachCurrentThread(), object_);
 }
 
-int PhotoCapabilities::getMinZoom() const {
+double PhotoCapabilities::getMinZoom() const {
   DCHECK(!object_.is_null());
   return Java_PhotoCapabilities_getMinZoom(AttachCurrentThread(), object_);
 }
 
-int PhotoCapabilities::getMaxZoom() const {
+double PhotoCapabilities::getMaxZoom() const {
   DCHECK(!object_.is_null());
   return Java_PhotoCapabilities_getMaxZoom(AttachCurrentThread(), object_);
 }
 
-int PhotoCapabilities::getCurrentZoom() const {
+double PhotoCapabilities::getCurrentZoom() const {
   DCHECK(!object_.is_null());
   return Java_PhotoCapabilities_getCurrentZoom(AttachCurrentThread(), object_);
 }
 
-int PhotoCapabilities::getStepZoom() const {
+double PhotoCapabilities::getStepZoom() const {
   DCHECK(!object_.is_null());
   return Java_PhotoCapabilities_getStepZoom(AttachCurrentThread(), object_);
 }
@@ -113,25 +113,25 @@ PhotoCapabilities::AndroidMeteringMode PhotoCapabilities::getExposureMode()
       Java_PhotoCapabilities_getExposureMode(AttachCurrentThread(), object_));
 }
 
-int PhotoCapabilities::getMinExposureCompensation() const {
+double PhotoCapabilities::getMinExposureCompensation() const {
   DCHECK(!object_.is_null());
   return Java_PhotoCapabilities_getMinExposureCompensation(
       AttachCurrentThread(), object_);
 }
 
-int PhotoCapabilities::getMaxExposureCompensation() const {
+double PhotoCapabilities::getMaxExposureCompensation() const {
   DCHECK(!object_.is_null());
   return Java_PhotoCapabilities_getMaxExposureCompensation(
       AttachCurrentThread(), object_);
 }
 
-int PhotoCapabilities::getCurrentExposureCompensation() const {
+double PhotoCapabilities::getCurrentExposureCompensation() const {
   DCHECK(!object_.is_null());
   return Java_PhotoCapabilities_getCurrentExposureCompensation(
       AttachCurrentThread(), object_);
 }
 
-int PhotoCapabilities::getStepExposureCompensation() const {
+double PhotoCapabilities::getStepExposureCompensation() const {
   DCHECK(!object_.is_null());
   return Java_PhotoCapabilities_getStepExposureCompensation(
       AttachCurrentThread(), object_);
