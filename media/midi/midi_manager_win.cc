@@ -89,6 +89,10 @@ std::string MmversionToString(MMVERSION version) {
   return base::StringPrintf("%d.%d", HIBYTE(version), LOBYTE(version));
 }
 
+void CloseOutputPortOnTaskThread(HMIDIOUT midi_out_handle) {
+  midiOutClose(midi_out_handle);
+}
+
 class MIDIHDRDeleter {
  public:
   void operator()(MIDIHDR* header) {
@@ -828,8 +832,11 @@ class MidiServiceWinImpl : public MidiServiceWin,
         make_scoped_refptr(new MidiOutputDeviceState(MidiDeviceInfo(caps)));
     state->midi_handle = midi_out_handle;
     const auto& state_device_info = state->device_info;
-    if (IsUnsupportedDevice(state_device_info))
+    if (IsUnsupportedDevice(state_device_info)) {
+      task_thread_.task_runner()->PostTask(
+          FROM_HERE, base::Bind(&CloseOutputPortOnTaskThread, midi_out_handle));
       return;
+    }
     bool add_new_port = false;
     uint32_t port_number = 0;
     {
