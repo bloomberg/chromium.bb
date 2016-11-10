@@ -92,9 +92,9 @@ const char ContentSecurityPolicy::FormAction[] = "form-action";
 const char ContentSecurityPolicy::FrameAncestors[] = "frame-ancestors";
 const char ContentSecurityPolicy::PluginTypes[] = "plugin-types";
 
-// CSP Editor's Draft:
-// https://w3c.github.io/webappsec/specs/content-security-policy
+// CSP Level 3 Directives
 const char ContentSecurityPolicy::ManifestSrc[] = "manifest-src";
+const char ContentSecurityPolicy::WorkerSrc[] = "worker-src";
 
 // Mixed Content Directive
 // https://w3c.github.io/webappsec/specs/mixedcontent/#strict-mode
@@ -125,6 +125,7 @@ bool ContentSecurityPolicy::isDirectiveName(const String& name) {
       equalIgnoringCase(name, FrameAncestors) ||
       equalIgnoringCase(name, PluginTypes) ||
       equalIgnoringCase(name, ManifestSrc) ||
+      equalIgnoringCase(name, WorkerSrc) ||
       equalIgnoringCase(name, BlockAllMixedContent) ||
       equalIgnoringCase(name, UpgradeInsecureRequests) ||
       equalIgnoringCase(name, TreatAsPublicAddress) ||
@@ -844,7 +845,7 @@ bool ContentSecurityPolicy::allowRequest(
       return allowFormAction(url, redirectStatus, reportingStatus);
     case WebURLRequest::RequestContextFrame:
     case WebURLRequest::RequestContextIframe:
-      return allowChildFrameFromSource(url, redirectStatus, reportingStatus);
+      return allowFrameFromSource(url, redirectStatus, reportingStatus);
     case WebURLRequest::RequestContextImport:
     case WebURLRequest::RequestContextScript:
       return allowScriptFromSource(url, nonce, parserDisposition,
@@ -892,11 +893,11 @@ bool ContentSecurityPolicy::allowObjectFromSource(
       m_policies, url, redirectStatus, reportingStatus);
 }
 
-bool ContentSecurityPolicy::allowChildFrameFromSource(
+bool ContentSecurityPolicy::allowFrameFromSource(
     const KURL& url,
     RedirectStatus redirectStatus,
     ContentSecurityPolicy::ReportingStatus reportingStatus) const {
-  return isAllowedByAll<&CSPDirectiveList::allowChildFrameFromSource>(
+  return isAllowedByAll<&CSPDirectiveList::allowFrameFromSource>(
       m_policies, url, redirectStatus, reportingStatus);
 }
 
@@ -971,7 +972,7 @@ bool ContentSecurityPolicy::allowWorkerContextFromSource(
   // impact of this backwards-incompatible change.
   if (Document* document = this->document()) {
     UseCounter::count(*document, UseCounter::WorkerSubjectToCSP);
-    if (isAllowedByAll<&CSPDirectiveList::allowChildContextFromSource>(
+    if (isAllowedByAll<&CSPDirectiveList::allowWorkerFromSource>(
             m_policies, url, redirectStatus, SuppressReport) &&
         !isAllowedByAll<&CSPDirectiveList::allowScriptFromSource>(
             m_policies, url, AtomicString(), NotParserInserted, redirectStatus,
@@ -981,7 +982,7 @@ bool ContentSecurityPolicy::allowWorkerContextFromSource(
     }
   }
 
-  return isAllowedByAll<&CSPDirectiveList::allowChildContextFromSource>(
+  return isAllowedByAll<&CSPDirectiveList::allowWorkerFromSource>(
       m_policies, url, redirectStatus, reportingStatus);
 }
 

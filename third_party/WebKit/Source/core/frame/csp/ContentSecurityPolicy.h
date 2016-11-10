@@ -92,9 +92,9 @@ class CORE_EXPORT ContentSecurityPolicy
   static const char FrameAncestors[];
   static const char PluginTypes[];
 
-  // Manifest Directives (to be merged into CSP Level 2)
-  // https://w3c.github.io/manifest/#content-security-policy
+  // CSP Level 3 Directives
   static const char ManifestSrc[];
+  static const char WorkerSrc[];
 
   // Mixed Content Directive
   // https://w3c.github.io/webappsec/specs/mixedcontent/#strict-mode
@@ -182,9 +182,9 @@ class CORE_EXPORT ContentSecurityPolicy
   bool allowObjectFromSource(const KURL&,
                              RedirectStatus = RedirectStatus::NoRedirect,
                              ReportingStatus = SendReport) const;
-  bool allowChildFrameFromSource(const KURL&,
-                                 RedirectStatus = RedirectStatus::NoRedirect,
-                                 ReportingStatus = SendReport) const;
+  bool allowFrameFromSource(const KURL&,
+                            RedirectStatus = RedirectStatus::NoRedirect,
+                            ReportingStatus = SendReport) const;
   bool allowImageFromSource(const KURL&,
                             RedirectStatus = RedirectStatus::NoRedirect,
                             ReportingStatus = SendReport) const;

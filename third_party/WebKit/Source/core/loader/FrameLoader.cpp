@@ -1596,8 +1596,8 @@ bool FrameLoader::shouldContinueForNavigationPolicy(
     if (parentFrame) {
       ContentSecurityPolicy* parentPolicy =
           parentFrame->securityContext()->contentSecurityPolicy();
-      if (!parentPolicy->allowChildFrameFromSource(request.url(),
-                                                   request.redirectStatus())) {
+      if (!parentPolicy->allowFrameFromSource(request.url(),
+                                              request.redirectStatus())) {
         // Fire a load event, as timing attacks would otherwise reveal that the
         // frame was blocked. This way, it looks like every other cross-origin
         // page load.

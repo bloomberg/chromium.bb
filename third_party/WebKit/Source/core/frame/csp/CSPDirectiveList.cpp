@@ -430,11 +430,17 @@ bool CSPDirectiveList::checkSourceAndReportViolation(
   if (checkSource(directive, url, redirectStatus) && !checkDynamic(directive))
     return true;
 
+  // We should never have a violation against `child-src` or `default-src`
+  // directly; the effective directive should always be one of the explicit
+  // fetch directives.
+  DCHECK_NE(ContentSecurityPolicy::ChildSrc, effectiveDirective);
+  DCHECK_NE(ContentSecurityPolicy::DefaultSrc, effectiveDirective);
+
   String prefix;
   if (ContentSecurityPolicy::BaseURI == effectiveDirective)
     prefix = "Refused to set the document's base URI to '";
-  else if (ContentSecurityPolicy::ChildSrc == effectiveDirective)
-    prefix = "Refused to create a child context containing '";
+  else if (ContentSecurityPolicy::WorkerSrc == effectiveDirective)
+    prefix = "Refused to create a worker from '";
   else if (ContentSecurityPolicy::ConnectSrc == effectiveDirective)
     prefix = "Refused to connect to '";
   else if (ContentSecurityPolicy::FontSrc == effectiveDirective)
@@ -626,15 +632,14 @@ bool CSPDirectiveList::allowObjectFromSource(
                            redirectStatus);
 }
 
-bool CSPDirectiveList::allowChildFrameFromSource(
+bool CSPDirectiveList::allowFrameFromSource(
     const KURL& url,
     ResourceRequest::RedirectStatus redirectStatus,
     ContentSecurityPolicy::ReportingStatus reportingStatus) const {
   if (url.protocolIsAbout())
     return true;
 
-  // 'frame-src' is the only directive which overrides something other than the
-  // default sources.  It overrides 'child-src', which overrides the default
+  // 'frame-src' overrides 'child-src', which overrides the default
   // sources. So, we do this nested set of calls to 'operativeDirective()' to
   // grab 'frame-src' if it exists, 'child-src' if it doesn't, and 'defaut-src'
   // if neither are available.
@@ -745,16 +750,22 @@ bool CSPDirectiveList::allowBaseURI(
              : checkSource(m_baseURI.get(), url, redirectStatus);
 }
 
-bool CSPDirectiveList::allowChildContextFromSource(
+bool CSPDirectiveList::allowWorkerFromSource(
     const KURL& url,
     ResourceRequest::RedirectStatus redirectStatus,
     ContentSecurityPolicy::ReportingStatus reportingStatus) const {
+  // 'worker-src' overrides 'child-src', which overrides the default
+  // sources. So, we do this nested set of calls to 'operativeDirective()' to
+  // grab 'worker-src' if it exists, 'child-src' if it doesn't, and 'defaut-src'
+  // if neither are available.
+  SourceListDirective* whichDirective = operativeDirective(
+      m_workerSrc.get(), operativeDirective(m_childSrc.get()));
+
   return reportingStatus == ContentSecurityPolicy::SendReport
-             ? checkSourceAndReportViolation(
-                   operativeDirective(m_childSrc.get()), url,
-                   ContentSecurityPolicy::ChildSrc, redirectStatus)
-             : checkSource(operativeDirective(m_childSrc.get()), url,
-                           redirectStatus);
+             ? checkSourceAndReportViolation(whichDirective, url,
+                                             ContentSecurityPolicy::WorkerSrc,
+                                             redirectStatus)
+             : checkSource(whichDirective, url, redirectStatus);
 }
 
 bool CSPDirectiveList::allowAncestors(
@@ -1106,6 +1117,8 @@ void CSPDirectiveList::addDirective(const String& name, const String& value) {
     setCSPDirective<SourceListDirective>(name, value, m_baseURI);
   } else if (equalIgnoringCase(name, ContentSecurityPolicy::ChildSrc)) {
     setCSPDirective<SourceListDirective>(name, value, m_childSrc);
+  } else if (equalIgnoringCase(name, ContentSecurityPolicy::WorkerSrc)) {
+    setCSPDirective<SourceListDirective>(name, value, m_workerSrc);
   } else if (equalIgnoringCase(name, ContentSecurityPolicy::FormAction)) {
     setCSPDirective<SourceListDirective>(name, value, m_formAction);
   } else if (equalIgnoringCase(name, ContentSecurityPolicy::PluginTypes)) {
@@ -1146,6 +1159,7 @@ DEFINE_TRACE(CSPDirectiveList) {
   visitor->trace(m_objectSrc);
   visitor->trace(m_scriptSrc);
   visitor->trace(m_styleSrc);
+  visitor->trace(m_workerSrc);
 }
 
 }  // namespace blink

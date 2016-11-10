@@ -83,9 +83,9 @@ class CORE_EXPORT CSPDirectiveList
   bool allowObjectFromSource(const KURL&,
                              ResourceRequest::RedirectStatus,
                              ContentSecurityPolicy::ReportingStatus) const;
-  bool allowChildFrameFromSource(const KURL&,
-                                 ResourceRequest::RedirectStatus,
-                                 ContentSecurityPolicy::ReportingStatus) const;
+  bool allowFrameFromSource(const KURL&,
+                            ResourceRequest::RedirectStatus,
+                            ContentSecurityPolicy::ReportingStatus) const;
   bool allowImageFromSource(const KURL&,
                             ResourceRequest::RedirectStatus,
                             ContentSecurityPolicy::ReportingStatus) const;
@@ -107,10 +107,9 @@ class CORE_EXPORT CSPDirectiveList
   bool allowBaseURI(const KURL&,
                     ResourceRequest::RedirectStatus,
                     ContentSecurityPolicy::ReportingStatus) const;
-  bool allowChildContextFromSource(
-      const KURL&,
-      ResourceRequest::RedirectStatus,
-      ContentSecurityPolicy::ReportingStatus) const;
+  bool allowWorkerFromSource(const KURL&,
+                             ResourceRequest::RedirectStatus,
+                             ContentSecurityPolicy::ReportingStatus) const;
   // |allowAncestors| does not need to know whether the resource was a
   // result of a redirect. After a redirect, source paths are usually
   // ignored to stop a page from learning the path to which the
@@ -294,6 +293,7 @@ class CORE_EXPORT CSPDirectiveList
   Member<SourceListDirective> m_objectSrc;
   Member<SourceListDirective> m_scriptSrc;
   Member<SourceListDirective> m_styleSrc;
+  Member<SourceListDirective> m_workerSrc;
 
   uint8_t m_requireSRIFor;
 

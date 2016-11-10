@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="../resources/testharness-helper.js"></script>
+<meta http-equiv="Content-Security-Policy" content="worker-src http://127.0.0.1:8000; child-src 'none'">
+<script>
+  var url = new URL("/security/contentSecurityPolicy/resources/ping.js", document.baseURI).toString();
+  assert_service_worker_is_loaded(url, "Same-origin service worker allowed by host-source expression.");
+</script>
