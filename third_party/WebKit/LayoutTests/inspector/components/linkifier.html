@@ -53,6 +53,10 @@ function test()
         InspectorTest.addResult("Disposed linkifier");
         dumpLiveLocationsCount();
 
+        // Ensures urls with lots of slashes does not bog down the regex.
+        WebInspector.linkifyStringAsFragment("/".repeat(1000));
+        WebInspector.linkifyStringAsFragment("/a/".repeat(1000));
+
         InspectorTest.completeTest();
     }
 
