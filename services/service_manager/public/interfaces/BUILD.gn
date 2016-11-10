@@ -11,6 +11,7 @@ mojom("interfaces") {
     "interface_provider_spec.mojom",
     "resolver.mojom",
     "service.mojom",
+    "service_control.mojom",
     "service_factory.mojom",
     "service_manager.mojom",
   ]

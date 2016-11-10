@@ -28,9 +28,6 @@
 #include "services/service_manager/service_manager.h"
 #include "services/service_manager/switches.h"
 
-using service_manager::mojom::Service;
-using service_manager::mojom::ServicePtr;
-
 namespace {
 
 const char kTestRunnerName[] = "exe:mash_browser_tests";
