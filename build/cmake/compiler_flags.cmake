@@ -13,6 +13,13 @@ cmake_minimum_required(VERSION 3.2)
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
 
+# Strings used to cache failed C/CXX flags.
+set(AOM_FAILED_C_FLAGS)
+set(AOM_FAILED_CXX_FLAGS)
+
+# Checks C compiler for support of $c_flag. Adds $c_flag to $CMAKE_C_FLAGS when
+# the compile test passes. Caches $c_flag in $AOM_FAILED_C_FLAGS when the test
+# fails.
 function (add_c_flag_if_supported c_flag)
   unset(C_FLAG_FOUND CACHE)
   string(FIND "${CMAKE_C_FLAGS}" "${c_flag}" C_FLAG_FOUND)
@@ -32,6 +39,9 @@ function (add_c_flag_if_supported c_flag)
   endif ()
 endfunction ()
 
+# Checks C++ compiler for support of $cxx_flag. Adds $cxx_flag to
+# $CMAKE_CXX_FLAGS when the compile test passes. Caches $c_flag in
+# $AOM_FAILED_CXX_FLAGS when the test fails.
 function (add_cxx_flag_if_supported cxx_flag)
   unset(CXX_FLAG_FOUND CACHE)
   string(FIND "${CMAKE_CXX_FLAGS}" "${cxx_flag}" CXX_FLAG_FOUND)
@@ -52,6 +62,8 @@ function (add_cxx_flag_if_supported cxx_flag)
   endif ()
 endfunction ()
 
+# Convenience method for adding a flag to both the C and C++ compiler command
+# lines.
 function (add_compiler_flag_if_supported flag)
   add_c_flag_if_supported(${flag})
   add_cxx_flag_if_supported(${flag})
