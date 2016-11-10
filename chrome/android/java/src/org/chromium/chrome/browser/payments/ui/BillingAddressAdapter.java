@@ -70,10 +70,11 @@ public class BillingAddressAdapter<T> extends ArrayAdapter<T> {
 
     @Override
     public View getDropDownView(int position, View convertView, ViewGroup parent) {
-        View view = super.getDropDownView(position, convertView, parent);
+        View view;
 
         // Add a "+" icon and a blue tint to the last element.
         if (position == getCount() - 1) {
+            view = super.getDropDownView(position, convertView, parent);
             TextView tv = (TextView) view;
             Resources resources = getContext().getResources();
 
@@ -90,6 +91,9 @@ public class BillingAddressAdapter<T> extends ArrayAdapter<T> {
             tv.setTypeface(Typeface.create(
                     resources.getString(R.string.roboto_medium_typeface),
                     R.integer.roboto_medium_textstyle));
+        } else {
+            // Don't use the recycled convertView, as it may have the style of the last element.
+            view = super.getDropDownView(position, null, parent);
         }
 
         return view;
