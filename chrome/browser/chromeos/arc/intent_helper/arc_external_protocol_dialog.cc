@@ -329,7 +329,15 @@ void OnUrlHandlerList(int render_process_host_id,
     return;  // the |url| has been handled.
   }
 
-  // Otherwise, retrieve icons of the activities.
+  // Otherwise, retrieve icons of the activities. First, swap |handler| elements
+  // to ensure Chrome is visible in the UI by default. Since this function is
+  // for handling external protocols, Chrome is rarely in the list, but if the
+  // |url| is intent: with fallback or geo:, for example, it may be.
+  std::pair<size_t, size_t> indices;
+  if (ArcNavigationThrottle::IsSwapElementsNeeded(handlers, &indices))
+    std::swap(handlers[indices.first], handlers[indices.second]);
+
+  // Then request the icons.
   std::vector<ActivityIconLoader::ActivityName> activities;
   for (const auto& handler : handlers) {
     activities.emplace_back(handler->package_name, handler->activity_name);

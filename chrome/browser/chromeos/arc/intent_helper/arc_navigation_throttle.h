@@ -91,13 +91,18 @@ class ArcNavigationThrottle : public content::NavigationThrottle {
   // continued or redirected to Chrome or ARC respectively, via UMA histograms.
   static void RecordUma(CloseReason close_reason, Platform platform);
 
+  // Swaps Chrome app with any app in row |kMaxAppResults-1| iff its index is
+  // bigger, thus ensuring the user can always see Chrome without scrolling.
+  // When swap is needed, fills |out_indices| and returns true. If |handlers|
+  // do not have Chrome, returns false.
+  static bool IsSwapElementsNeeded(
+      const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers,
+      std::pair<size_t, size_t>* out_indices);
+
   static bool IsAppAvailableForTesting(
       const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers);
   static size_t FindPreferredAppForTesting(
       const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers);
-  static bool IsSwapElementsNeededForTesting(
-      const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers,
-      std::pair<size_t, size_t>* out_indices);
 
  private:
   // content::Navigation implementation:

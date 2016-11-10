@@ -95,29 +95,6 @@ size_t FindPreferredApp(
   return handlers.size();  // not found
 }
 
-// Swaps Chrome app with any app in row |kMaxAppResults-1| iff its index is
-// bigger, thus ensuring the user can always see Chrome without scrolling.
-// When swap is needed, fills |out_indices| and returns true. If |handlers|
-// do not have Chrome, returns false.
-bool IsSwapElementsNeeded(
-    const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers,
-    std::pair<size_t, size_t>* out_indices) {
-  size_t chrome_app_index = 0;
-  for (size_t i = 0; i < handlers.size(); ++i) {
-    if (ArcIntentHelperBridge::IsIntentHelperPackage(
-            handlers[i]->package_name)) {
-      chrome_app_index = i;
-      break;
-    }
-  }
-  if (chrome_app_index < ArcNavigationThrottle::kMaxAppResults)
-    return false;
-
-  *out_indices = std::make_pair(ArcNavigationThrottle::kMaxAppResults - 1,
-                                chrome_app_index);
-  return true;
-}
-
 }  // namespace
 
 ArcNavigationThrottle::ArcNavigationThrottle(
@@ -429,10 +406,23 @@ size_t ArcNavigationThrottle::FindPreferredAppForTesting(
 }
 
 // static
-bool ArcNavigationThrottle::IsSwapElementsNeededForTesting(
+bool ArcNavigationThrottle::IsSwapElementsNeeded(
     const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers,
     std::pair<size_t, size_t>* out_indices) {
-  return IsSwapElementsNeeded(handlers, out_indices);
+  size_t chrome_app_index = 0;
+  for (size_t i = 0; i < handlers.size(); ++i) {
+    if (ArcIntentHelperBridge::IsIntentHelperPackage(
+            handlers[i]->package_name)) {
+      chrome_app_index = i;
+      break;
+    }
+  }
+  if (chrome_app_index < ArcNavigationThrottle::kMaxAppResults)
+    return false;
+
+  *out_indices = std::make_pair(ArcNavigationThrottle::kMaxAppResults - 1,
+                                chrome_app_index);
+  return true;
 }
 
 }  // namespace arc
