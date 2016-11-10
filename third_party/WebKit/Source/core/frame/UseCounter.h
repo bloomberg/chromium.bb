@@ -1387,6 +1387,8 @@ class CORE_EXPORT UseCounter {
     RTCSessionDescriptionInitNoType = 1677,
     RTCSessionDescriptionInitNoSdp = 1678,
     HTMLMediaElementPreloadForcedMetadata = 1679,
+    GenericSensorStart = 1680,
+    GenericSensorStop = 1681,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
