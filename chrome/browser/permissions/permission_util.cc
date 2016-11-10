@@ -4,6 +4,7 @@
 
 #include "chrome/browser/permissions/permission_util.h"
 
+#include "build/build_config.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -52,6 +53,34 @@ std::string PermissionUtil::GetPermissionString(
   }
   NOTREACHED();
   return std::string();
+}
+
+PermissionRequestType PermissionUtil::GetRequestType(
+    content::PermissionType type) {
+  switch (type) {
+    case content::PermissionType::GEOLOCATION:
+      return PermissionRequestType::PERMISSION_GEOLOCATION;
+#if defined(ENABLE_NOTIFICATIONS)
+    case content::PermissionType::NOTIFICATIONS:
+      return PermissionRequestType::PERMISSION_NOTIFICATIONS;
+#endif
+    case content::PermissionType::MIDI_SYSEX:
+      return PermissionRequestType::PERMISSION_MIDI_SYSEX;
+    case content::PermissionType::PUSH_MESSAGING:
+      return PermissionRequestType::PERMISSION_PUSH_MESSAGING;
+    case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
+      return PermissionRequestType::PERMISSION_PROTECTED_MEDIA_IDENTIFIER;
+    case content::PermissionType::FLASH:
+      return PermissionRequestType::PERMISSION_FLASH;
+    default:
+      NOTREACHED();
+      return PermissionRequestType::UNKNOWN;
+  }
+}
+
+PermissionRequestGestureType PermissionUtil::GetGestureType(bool user_gesture) {
+  return user_gesture ? PermissionRequestGestureType::GESTURE
+                      : PermissionRequestGestureType::NO_GESTURE;
 }
 
 bool PermissionUtil::GetPermissionType(ContentSettingsType type,

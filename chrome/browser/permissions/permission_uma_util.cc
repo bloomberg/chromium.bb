@@ -371,10 +371,7 @@ void PermissionUmaUtil::PermissionPromptShown(
     permission_gesture_type = requests[0]->GetGestureType();
   }
 
-  PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptShown, permission_prompt_type);
-  PERMISSION_BUBBLE_GESTURE_TYPE_UMA(
-      kPermissionsPromptShownGesture, kPermissionsPromptShownNoGesture,
-      permission_gesture_type, permission_prompt_type);
+  RecordPermissionPromptShown(permission_prompt_type, permission_gesture_type);
 
   UMA_HISTOGRAM_ENUMERATION(
       kPermissionsPromptRequestsPerPrompt,
@@ -417,17 +414,11 @@ void PermissionUmaUtil::PermissionPromptAccepted(
   }
 
   if (all_accepted) {
-    PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptAccepted,
-                               permission_prompt_type);
-    PERMISSION_BUBBLE_GESTURE_TYPE_UMA(
-        kPermissionsPromptAcceptedGesture, kPermissionsPromptAcceptedNoGesture,
-        permission_gesture_type, permission_prompt_type);
+    RecordPermissionPromptAccepted(permission_prompt_type,
+                                   permission_gesture_type);
   } else {
-    PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptDenied,
-                               permission_prompt_type);
-    PERMISSION_BUBBLE_GESTURE_TYPE_UMA(
-        kPermissionsPromptDeniedGesture, kPermissionsPromptDeniedNoGesture,
-        permission_gesture_type, permission_prompt_type);
+    RecordPermissionPromptDenied(permission_prompt_type,
+                                 permission_gesture_type);
   }
 }
 
@@ -436,11 +427,35 @@ void PermissionUmaUtil::PermissionPromptDenied(
   DCHECK(!requests.empty());
   DCHECK(requests.size() == 1);
 
-  PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptDenied,
-                             requests[0]->GetPermissionRequestType());
+  RecordPermissionPromptDenied(requests[0]->GetPermissionRequestType(),
+                               requests[0]->GetGestureType());
+}
+
+void PermissionUmaUtil::RecordPermissionPromptShown(
+    PermissionRequestType request_type,
+    PermissionRequestGestureType gesture_type) {
+  PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptShown, request_type);
   PERMISSION_BUBBLE_GESTURE_TYPE_UMA(
-      kPermissionsPromptDeniedGesture, kPermissionsPromptDeniedNoGesture,
-      requests[0]->GetGestureType(), requests[0]->GetPermissionRequestType());
+      kPermissionsPromptShownGesture, kPermissionsPromptShownNoGesture,
+      gesture_type, request_type);
+}
+
+void PermissionUmaUtil::RecordPermissionPromptAccepted(
+    PermissionRequestType request_type,
+    PermissionRequestGestureType gesture_type) {
+  PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptAccepted, request_type);
+  PERMISSION_BUBBLE_GESTURE_TYPE_UMA(kPermissionsPromptAcceptedGesture,
+                                     kPermissionsPromptAcceptedNoGesture,
+                                     gesture_type, request_type);
+}
+
+void PermissionUmaUtil::RecordPermissionPromptDenied(
+    PermissionRequestType request_type,
+    PermissionRequestGestureType gesture_type) {
+  PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptDenied, request_type);
+  PERMISSION_BUBBLE_GESTURE_TYPE_UMA(kPermissionsPromptDeniedGesture,
+                                     kPermissionsPromptDeniedNoGesture,
+                                     gesture_type, request_type);
 }
 
 void PermissionUmaUtil::RecordPermissionPromptPriorCount(

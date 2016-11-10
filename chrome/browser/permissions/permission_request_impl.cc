@@ -145,33 +145,12 @@ bool PermissionRequestImpl::ShouldShowPersistenceToggle() const {
 
 PermissionRequestType PermissionRequestImpl::GetPermissionRequestType()
     const {
-  switch (permission_type_) {
-    case content::PermissionType::GEOLOCATION:
-      return PermissionRequestType::PERMISSION_GEOLOCATION;
-#if defined(ENABLE_NOTIFICATIONS)
-    case content::PermissionType::NOTIFICATIONS:
-      return PermissionRequestType::PERMISSION_NOTIFICATIONS;
-#endif
-    case content::PermissionType::MIDI_SYSEX:
-      return PermissionRequestType::PERMISSION_MIDI_SYSEX;
-    case content::PermissionType::PUSH_MESSAGING:
-      return PermissionRequestType::PERMISSION_PUSH_MESSAGING;
-#if defined(OS_CHROMEOS)
-    case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
-      return PermissionRequestType::PERMISSION_PROTECTED_MEDIA_IDENTIFIER;
-#endif
-    case content::PermissionType::FLASH:
-      return PermissionRequestType::PERMISSION_FLASH;
-    default:
-      NOTREACHED();
-      return PermissionRequestType::UNKNOWN;
-  }
+  return PermissionUtil::GetRequestType(permission_type_);
 }
 
 PermissionRequestGestureType PermissionRequestImpl::GetGestureType()
     const {
-  return has_gesture_ ? PermissionRequestGestureType::GESTURE
-                      : PermissionRequestGestureType::NO_GESTURE;
+  return PermissionUtil::GetGestureType(has_gesture_);
 }
 
 ContentSettingsType PermissionRequestImpl::GetContentSettingsType() const {

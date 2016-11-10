@@ -66,6 +66,8 @@ class PermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   void set_persist(bool persist) { persist_ = persist; }
   bool persist() const { return persist_; }
 
+  bool user_gesture() const { return user_gesture_; }
+
   // ConfirmInfoBarDelegate:
   bool Accept() override;
   bool Cancel() override;

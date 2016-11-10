@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_util.h"
 
 enum class PermissionRequestGestureType;
@@ -137,6 +138,21 @@ class PermissionUmaUtil {
 
   static void PermissionPromptDenied(
       const std::vector<PermissionRequest*>& requests);
+
+  // Records the request type and gesture type for a shown, accepted, and denied
+  // prompt. Defined separately as Android must call this method explicitly
+  // until the removal of PermissionQueueController is completed.
+  static void RecordPermissionPromptShown(
+      PermissionRequestType request_type,
+      PermissionRequestGestureType gesture_type);
+
+  static void RecordPermissionPromptAccepted(
+      PermissionRequestType request_type,
+      PermissionRequestGestureType gesture_type);
+
+  static void RecordPermissionPromptDenied(
+      PermissionRequestType request_type,
+      PermissionRequestGestureType gesture_type);
 
   // A permission prompt was accepted or denied, and the prompt displayed a
   // persistence toggle. Records whether the toggle was enabled (persist) or

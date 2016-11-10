@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/browser/permissions/permission_request.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "url/gurl.h"
@@ -43,6 +44,13 @@ class PermissionUtil {
  public:
   // Returns the permission string for the given PermissionType.
   static std::string GetPermissionString(content::PermissionType permission);
+
+  // Returns the request type corresponding to a permission type.
+  static PermissionRequestType GetRequestType(content::PermissionType type);
+
+  // Returns the gesture type corresponding to whether a permission request is
+  // made with or without a user gesture.
+  static PermissionRequestGestureType GetGestureType(bool user_gesture);
 
   // Limited conversion of ContentSettingsType to PermissionType. Intended for
   // recording Permission UMA metrics from areas of the codebase which have not

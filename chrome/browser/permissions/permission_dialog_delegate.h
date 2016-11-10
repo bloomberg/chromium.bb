@@ -52,6 +52,7 @@ class PermissionDialogDelegate : content::WebContentsObserver {
   // folded in with other permission requests.
   static void CreateMediaStreamDialog(
       content::WebContents* web_contents,
+      bool user_gesture,
       std::unique_ptr<MediaStreamDevicesController> controller);
 
   // Returns true if we should show the user a modal permission prompt rather

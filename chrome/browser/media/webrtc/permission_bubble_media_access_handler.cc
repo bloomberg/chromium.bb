@@ -28,7 +28,9 @@
 #include "chrome/browser/media/webrtc/media_stream_infobar_delegate_android.h"
 #include "chrome/browser/media/webrtc/screen_capture_infobar_delegate_android.h"
 #include "chrome/browser/permissions/permission_dialog_delegate.h"
+#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
+#include "chrome/browser/permissions/permission_util.h"
 #else
 #include "chrome/browser/permissions/permission_request_manager.h"
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
@@ -74,8 +76,7 @@ PermissionBubbleMediaAccessHandler::PermissionBubbleMediaAccessHandler() {
                                content::NotificationService::AllSources());
 }
 
-PermissionBubbleMediaAccessHandler::~PermissionBubbleMediaAccessHandler() {
-}
+PermissionBubbleMediaAccessHandler::~PermissionBubbleMediaAccessHandler() {}
 
 bool PermissionBubbleMediaAccessHandler::SupportsStreamType(
     const content::MediaStreamType type,
@@ -103,7 +104,8 @@ bool PermissionBubbleMediaAccessHandler::CheckMediaAccessPermission(
           : CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
 
   MediaPermission permission(content_settings_type, security_origin,
-      web_contents->GetLastCommittedURL().GetOrigin(), profile);
+                             web_contents->GetLastCommittedURL().GetOrigin(),
+                             profile);
   content::MediaStreamRequestResult unused;
   return permission.GetPermissionStatus(&unused) == CONTENT_SETTING_ALLOW;
 }
@@ -184,20 +186,22 @@ void PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest(
             web_contents, content_settings_types)) {
       PermissionUpdateInfoBarDelegate::Create(
           web_contents, content_settings_types,
-          base::Bind(
-              &OnPermissionConflictResolved, base::Passed(&controller)));
+          base::Bind(&OnPermissionConflictResolved, base::Passed(&controller)));
     }
 #endif
     return;
   }
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
+  PermissionUmaUtil::RecordPermissionPromptShown(
+      controller->GetPermissionRequestType(),
+      PermissionUtil::GetGestureType(request.user_gesture));
   if (PermissionDialogDelegate::ShouldShowDialog(request.user_gesture)) {
-    PermissionDialogDelegate::CreateMediaStreamDialog(web_contents,
-                                                      std::move(controller));
+    PermissionDialogDelegate::CreateMediaStreamDialog(
+        web_contents, request.user_gesture, std::move(controller));
   } else {
-    MediaStreamInfoBarDelegateAndroid::Create(web_contents,
-                                              std::move(controller));
+    MediaStreamInfoBarDelegateAndroid::Create(
+        web_contents, request.user_gesture, std::move(controller));
   }
 #else
   PermissionRequestManager* permission_request_manager =

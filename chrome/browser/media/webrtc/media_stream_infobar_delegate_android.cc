@@ -33,6 +33,7 @@ void DoNothing(bool update_content_setting, PermissionAction decision) {}
 // static
 bool MediaStreamInfoBarDelegateAndroid::Create(
     content::WebContents* web_contents,
+    bool user_gesture,
     std::unique_ptr<MediaStreamDevicesController> controller) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
@@ -47,6 +48,7 @@ bool MediaStreamInfoBarDelegateAndroid::Create(
       CreatePermissionInfoBar(std::unique_ptr<PermissionInfoBarDelegate>(
           new MediaStreamInfoBarDelegateAndroid(
               Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+              user_gesture,
               std::move(controller)))));
   for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
     infobars::InfoBar* old_infobar = infobar_service->infobar_at(i);
@@ -76,6 +78,7 @@ int MediaStreamInfoBarDelegateAndroid::GetIconId() const {
 
 MediaStreamInfoBarDelegateAndroid::MediaStreamInfoBarDelegateAndroid(
     Profile* profile,
+    bool user_gesture,
     std::unique_ptr<MediaStreamDevicesController> controller)
     : PermissionInfoBarDelegate(
           controller->GetOrigin(),
@@ -87,7 +90,7 @@ MediaStreamInfoBarDelegateAndroid::MediaStreamInfoBarDelegateAndroid(
           // GroupedPermissionInfoBarDelegate. See crbug.com/606138.
           content::PermissionType::AUDIO_CAPTURE,
           CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-          false,
+          user_gesture,
           profile,
           // This is only passed in to fit into PermissionInfoBarDelegate.
           // Infobar accepted/denied/dismissed is handled by controller, not via
@@ -137,12 +140,16 @@ int MediaStreamInfoBarDelegateAndroid::GetMessageResourceId() const {
 }
 
 bool MediaStreamInfoBarDelegateAndroid::Accept() {
+  // TODO(dominickn): fold these metrics calls into
+  // PermissionUmaUtil::PermissionGranted. See crbug.com/638076.
+  PermissionUmaUtil::RecordPermissionPromptAccepted(
+      controller_->GetPermissionRequestType(),
+      PermissionUtil::GetGestureType(user_gesture()));
+
   bool persist_permission = true;
   if (ShouldShowPersistenceToggle()) {
     persist_permission = persist();
 
-    // TODO(dominickn): fold these metrics calls into
-    // PermissionUmaUtil::PermissionGranted. See crbug.com/638076.
     if (controller_->IsAskingForAudio()) {
       PermissionUmaUtil::PermissionPromptAcceptedWithPersistenceToggle(
           content::PermissionType::AUDIO_CAPTURE, persist_permission);
@@ -159,12 +166,16 @@ bool MediaStreamInfoBarDelegateAndroid::Accept() {
 }
 
 bool MediaStreamInfoBarDelegateAndroid::Cancel() {
+  // TODO(dominickn): fold these metrics calls into
+  // PermissionUmaUtil::PermissionDenied. See crbug.com/638076.
+  PermissionUmaUtil::RecordPermissionPromptDenied(
+      controller_->GetPermissionRequestType(),
+      PermissionUtil::GetGestureType(user_gesture()));
+
   bool persist_permission = true;
   if (ShouldShowPersistenceToggle()) {
     persist_permission = persist();
 
-    // TODO(dominickn): fold these metrics calls into
-    // PermissionUmaUtil::PermissionGranted. See crbug.com/638076.
     if (controller_->IsAskingForAudio()) {
       PermissionUmaUtil::PermissionPromptDeniedWithPersistenceToggle(
           content::PermissionType::AUDIO_CAPTURE, persist_permission);

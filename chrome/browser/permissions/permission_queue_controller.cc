@@ -4,6 +4,7 @@
 
 #include "chrome/browser/permissions/permission_queue_controller.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -63,6 +64,14 @@ class PermissionQueueController::PendingInfobarRequest {
 
   bool IsForPair(const GURL& requesting_frame,
                  const GURL& embedder) const;
+
+  PermissionRequestType request_type() const {
+    return PermissionUtil::GetRequestType(type_);
+  }
+
+  PermissionRequestGestureType gesture_type() const {
+    return PermissionUtil::GetGestureType(user_gesture_);
+  }
 
   const PermissionRequestID& id() const { return id_; }
   const GURL& requesting_frame() const { return requesting_frame_; }
@@ -209,19 +218,22 @@ void PermissionQueueController::OnPermissionSet(const PermissionRequestID& id,
                                                 PermissionAction decision) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // TODO(miguelg): move the permission persistence to
-  // PermissionContextBase once all the types are moved there.
+  PermissionRequestType request_type =
+      PermissionUtil::GetRequestType(permission_type_);
   PermissionRequestGestureType gesture_type =
-      user_gesture ? PermissionRequestGestureType::GESTURE
-                   : PermissionRequestGestureType::NO_GESTURE;
+      PermissionUtil::GetGestureType(user_gesture);
   switch (decision) {
     case GRANTED:
       PermissionUmaUtil::PermissionGranted(permission_type_, gesture_type,
                                            requesting_frame, profile_);
+      PermissionUmaUtil::RecordPermissionPromptAccepted(request_type,
+                                                        gesture_type);
       break;
     case DENIED:
       PermissionUmaUtil::PermissionDenied(permission_type_, gesture_type,
                                           requesting_frame, profile_);
+      PermissionUmaUtil::RecordPermissionPromptDenied(request_type,
+                                                      gesture_type);
       break;
     case DISMISSED:
       PermissionUmaUtil::PermissionDismissed(permission_type_, gesture_type,
@@ -231,6 +243,8 @@ void PermissionQueueController::OnPermissionSet(const PermissionRequestID& id,
       NOTREACHED();
   }
 
+  // TODO(miguelg): move the permission persistence to
+  // PermissionContextBase once all the types are moved there.
   if (update_content_setting)
     UpdateContentSetting(requesting_frame, embedder, decision);
 
@@ -361,6 +375,8 @@ void PermissionQueueController::ShowQueuedInfoBarForTab(
       if (!show_dialog)
         RegisterForInfoBarNotifications(infobar_service);
 
+      PermissionUmaUtil::RecordPermissionPromptShown(i->request_type(),
+                                                     i->gesture_type());
       i->CreatePrompt(this, show_dialog);
       return;
     }

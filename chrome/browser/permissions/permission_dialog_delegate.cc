@@ -56,11 +56,13 @@ void PermissionDialogDelegate::Create(
 // static
 void PermissionDialogDelegate::CreateMediaStreamDialog(
     content::WebContents* web_contents,
+    bool user_gesture,
     std::unique_ptr<MediaStreamDevicesController> controller) {
   // Called this way because the infobar delegate has a private destructor.
   std::unique_ptr<PermissionInfoBarDelegate> infobar_delegate;
   infobar_delegate.reset(new MediaStreamInfoBarDelegateAndroid(
       Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+      user_gesture,
       std::move(controller)));
 
   // Dispatch the dialog to Java, which manages the lifetime of this object.
