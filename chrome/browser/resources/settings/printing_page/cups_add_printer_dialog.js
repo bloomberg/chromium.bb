@@ -363,7 +363,8 @@ Polymer({
   /** Opens the Add printer discovery dialog. */
   open: function() {
     this.resetData_();
-    this.switchDialog_('', AddPrinterDialogs.DISCOVERY, 'showDiscoveryDialog_');
+    this.switchDialog_(
+        '', AddPrinterDialogs.MANUALLY, 'showManuallyAddDialog_');
   },
 
   /**
@@ -435,10 +436,7 @@ Polymer({
 
   /** @private */
   configuringDialogClosed_: function() {
-    if (this.previousDialog_ == AddPrinterDialogs.DISCOVERY) {
-      this.switchDialog_(
-          this.currentDialog_, this.previousDialog_, 'showDiscoveryDialog_');
-    } else if (this.previousDialog_ == AddPrinterDialogs.MANUALLY) {
+    if (this.previousDialog_ == AddPrinterDialogs.MANUALLY) {
       this.switchDialog_(
           this.currentDialog_, this.previousDialog_, 'showManuallyAddDialog_');
     } else if (this.previousDialog_ == AddPrinterDialogs.MANUFACTURER) {
