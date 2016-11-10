@@ -209,6 +209,7 @@ void DisplayManager::OnDisplayModified(
       factory->window_tree()->OnWmDisplayModified(display->ToDisplay());
   }
 
+  // Change the root ServerWindow size after sending IPC to WM.
   display->OnViewportMetricsChanged(metrics);
   OnDisplayUpdate(display);
 }

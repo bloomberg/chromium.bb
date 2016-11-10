@@ -295,11 +295,11 @@ void Display::OnNativeCaptureLost() {
 }
 
 void Display::OnViewportMetricsChanged(
-    const display::ViewportMetrics& new_metrics) {
-  if (!root_ || root_->bounds().size() == new_metrics.bounds.size())
+    const display::ViewportMetrics& metrics) {
+  if (root_->bounds().size() == metrics.pixel_size)
     return;
 
-  gfx::Rect new_bounds(new_metrics.bounds.size());
+  gfx::Rect new_bounds(metrics.pixel_size);
   root_->SetBounds(new_bounds);
   for (auto& pair : window_manager_display_root_map_)
     pair.second->root()->SetBounds(new_bounds);

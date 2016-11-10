@@ -73,8 +73,10 @@ void DefaultPlatformDisplay::Init(PlatformDisplayDelegate* delegate) {
   platform_window_ = base::MakeUnique<ui::WinWindow>(this, bounds);
 #elif defined(USE_X11)
   platform_window_ = base::MakeUnique<ui::X11Window>(this);
+  platform_window_->SetBounds(bounds);
 #elif defined(OS_ANDROID)
   platform_window_ = base::MakeUnique<ui::PlatformWindowAndroid>(this);
+  platform_window_->SetBounds(bounds);
 #elif defined(USE_OZONE)
   platform_window_ =
       ui::OzonePlatform::GetInstance()->CreatePlatformWindow(this, bounds);
@@ -82,7 +84,6 @@ void DefaultPlatformDisplay::Init(PlatformDisplayDelegate* delegate) {
   NOTREACHED() << "Unsupported platform";
 #endif
 
-  platform_window_->SetBounds(bounds);
   platform_window_->Show();
 }
 
