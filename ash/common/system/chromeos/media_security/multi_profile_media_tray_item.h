@@ -10,10 +10,6 @@
 
 namespace ash {
 
-namespace tray {
-class MultiProfileMediaTrayView;
-}
-
 // The tray item for media recording.
 class ASH_EXPORT MultiProfileMediaTrayItem : public SystemTrayItem {
  public:
@@ -22,11 +18,8 @@ class ASH_EXPORT MultiProfileMediaTrayItem : public SystemTrayItem {
 
   // SystemTrayItem:
   views::View* CreateTrayView(LoginStatus status) override;
-  void DestroyTrayView() override;
 
  private:
-  tray::MultiProfileMediaTrayView* tray_view_;
-
   DISALLOW_COPY_AND_ASSIGN(MultiProfileMediaTrayItem);
 };
 

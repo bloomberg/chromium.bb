@@ -173,6 +173,8 @@ action("aggregate_vector_icons") {
     "system_tray_caps_lock.icon",
     "system_tray_cast.1x.icon",
     "system_tray_cast.icon",
+    "system_tray_recording.1x.icon",
+    "system_tray_recording.icon",
     "system_tray_rotation_lock_locked.1x.icon",
     "system_tray_rotation_lock_locked.icon",
     "system_tray_screen_share.1x.icon",

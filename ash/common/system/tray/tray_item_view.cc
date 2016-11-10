@@ -77,6 +77,11 @@ void TrayItemView::SetVisible(bool set_visible) {
   }
 }
 
+// static
+bool TrayItemView::UseMd() {
+  return MaterialDesignController::UseMaterialDesignSystemIcons();
+}
+
 int TrayItemView::GetAnimationDurationMS() {
   return kTrayItemAnimationDurationMS;
 }
@@ -84,7 +89,7 @@ int TrayItemView::GetAnimationDurationMS() {
 gfx::Size TrayItemView::GetPreferredSize() const {
   DCHECK_EQ(1, child_count());
   gfx::Size size;
-  if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
+  if (UseMd()) {
     gfx::Size inner_size = views::View::GetPreferredSize();
     if (image_view_)
       inner_size = gfx::Size(kTrayIconSize, kTrayIconSize);

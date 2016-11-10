@@ -9,12 +9,14 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/chromeos/media_security/media_capture_observer.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
+#include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_item_view.h"
 #include "ash/common/wm_shell.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
-#include "ui/views/layout/fill_layout.h"
 
 namespace ash {
 namespace tray {
@@ -24,11 +26,12 @@ class MultiProfileMediaTrayView : public TrayItemView,
  public:
   explicit MultiProfileMediaTrayView(SystemTrayItem* system_tray_item)
       : TrayItemView(system_tray_item) {
-    SetLayoutManager(new views::FillLayout);
     CreateImageView();
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     image_view()->SetImage(
-        bundle.GetImageNamed(IDR_AURA_UBER_TRAY_RECORDING).ToImageSkia());
+        UseMd()
+            ? gfx::CreateVectorIcon(kSystemTrayRecordingIcon, kTrayIconColor)
+            : *bundle.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_RECORDING));
     OnMediaCaptureChanged();
     WmShell::Get()->system_tray_notifier()->AddMediaCaptureObserver(this);
     set_id(VIEW_ID_MEDIA_TRAY_VIEW);
@@ -61,18 +64,12 @@ class MultiProfileMediaTrayView : public TrayItemView,
 }  // namespace tray
 
 MultiProfileMediaTrayItem::MultiProfileMediaTrayItem(SystemTray* system_tray)
-    : SystemTrayItem(system_tray, UMA_MULTI_PROFILE_MEDIA),
-      tray_view_(nullptr) {}
+    : SystemTrayItem(system_tray, UMA_MULTI_PROFILE_MEDIA) {}
 
 MultiProfileMediaTrayItem::~MultiProfileMediaTrayItem() {}
 
 views::View* MultiProfileMediaTrayItem::CreateTrayView(LoginStatus status) {
-  tray_view_ = new tray::MultiProfileMediaTrayView(this);
-  return tray_view_;
-}
-
-void MultiProfileMediaTrayItem::DestroyTrayView() {
-  tray_view_ = nullptr;
+  return new tray::MultiProfileMediaTrayView(this);
 }
 
 }  // namespace ash
