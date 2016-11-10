@@ -38,26 +38,6 @@ void installConditionalFeaturesCore(const WrapperTypeInfo* wrapperTypeInfo,
           interfaceObject);
     }
   }
-
-  // Install feature-policy-controlled features
-  LocalFrame* frame = nullptr;
-  if (executionContext->isDocument())
-    frame = toDocument(executionContext)->executingFrame();
-
-  if (wrapperTypeInfo == &V8Document::wrapperTypeInfo) {
-    if (isFeatureEnabledInFrame(blink::kDocumentCookie, frame)) {
-      V8Document::installDocumentCookie(isolate, world, v8::Local<v8::Object>(),
-                                        prototypeObject, interfaceObject);
-    }
-    if (isFeatureEnabledInFrame(blink::kDocumentDomain, frame)) {
-      V8Document::installDocumentDomain(isolate, world, v8::Local<v8::Object>(),
-                                        prototypeObject, interfaceObject);
-    }
-    if (isFeatureEnabledInFrame(blink::kDocumentWrite, frame)) {
-      V8Document::installDocumentWrite(isolate, world, v8::Local<v8::Object>(),
-                                       prototypeObject, interfaceObject);
-    }
-  }
 }
 
 namespace {
