@@ -13,6 +13,7 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "content/browser/android/synchronous_compositor_browser_filter.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
+#include "content/browser/web_contents/web_contents_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/android/sync_compositor_messages.h"
 #include "content/common/android/sync_compositor_statics.h"
@@ -31,23 +32,41 @@
 namespace content {
 
 // static
+void SynchronousCompositor::SetClientForWebContents(
+    WebContents* contents,
+    SynchronousCompositorClient* client) {
+  DCHECK(contents);
+  DCHECK(client);
+  WebContentsAndroid* web_contents_android =
+      static_cast<WebContentsImpl*>(contents)->GetWebContentsAndroid();
+  DCHECK(!web_contents_android->synchronous_compositor_client());
+  web_contents_android->set_synchronous_compositor_client(client);
+}
+
+// static
 std::unique_ptr<SynchronousCompositorHost> SynchronousCompositorHost::Create(
-    RenderWidgetHostViewAndroid* rwhva) {
-  if (!rwhva->synchronous_compositor_client())
+    RenderWidgetHostViewAndroid* rwhva,
+    WebContents* web_contents) {
+  DCHECK(web_contents);
+  WebContentsAndroid* web_contents_android =
+      static_cast<WebContentsImpl*>(web_contents)->GetWebContentsAndroid();
+  if (!web_contents_android->synchronous_compositor_client())
     return nullptr;  // Not using sync compositing.
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   bool use_in_proc_software_draw =
       command_line->HasSwitch(switches::kSingleProcess);
   return base::WrapUnique(new SynchronousCompositorHost(
-      rwhva, use_in_proc_software_draw));
+      rwhva, web_contents_android->synchronous_compositor_client(),
+      use_in_proc_software_draw));
 }
 
 SynchronousCompositorHost::SynchronousCompositorHost(
     RenderWidgetHostViewAndroid* rwhva,
+    SynchronousCompositorClient* client,
     bool use_in_proc_software_draw)
     : rwhva_(rwhva),
-      client_(rwhva->synchronous_compositor_client()),
+      client_(client),
       ui_task_runner_(BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)),
       process_id_(rwhva_->GetRenderWidgetHost()->GetProcess()->GetID()),
       routing_id_(rwhva_->GetRenderWidgetHost()->GetRoutingID()),

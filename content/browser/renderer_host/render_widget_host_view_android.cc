@@ -450,7 +450,6 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
                         this),
       stylus_text_selector_(this),
       using_browser_compositor_(CompositorImpl::IsInitialized()),
-      synchronous_compositor_client_(nullptr),
       frame_evictor_(new DelegatedFrameEvictor(this)),
       locks_on_frame_count_(0),
       observing_root_window_(false),
@@ -1202,14 +1201,6 @@ void RenderWidgetHostViewAndroid::SetSynchronousCompositorClient(
   }
 }
 
-void RenderWidgetHostViewAndroid::SetSynchronousCompositorClient(
-      SynchronousCompositorClient* client) {
-  synchronous_compositor_client_ = client;
-  if (!sync_compositor_ && synchronous_compositor_client_) {
-    sync_compositor_ = SynchronousCompositorHost::Create(this);
-  }
-}
-
 bool RenderWidgetHostViewAndroid::SupportsAnimation() const {
   // The synchronous (WebView) compositor does not have a proper browser
   // compositor with which to drive animations.
@@ -1792,6 +1783,11 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
       view_.GetWindowAndroid()->GetCompositor()) {
     overscroll_controller_ = CreateOverscrollController(
         content_view_core_, ui::GetScaleFactorForNativeView(GetNativeView()));
+  }
+
+  if (!sync_compositor_) {
+    sync_compositor_ = SynchronousCompositorHost::Create(
+        this, content_view_core_->GetWebContents());
   }
 }
 
