@@ -13,20 +13,24 @@ function templateString()
 
 function test()
 {
-    function testCompletions(base, prefix, expected)
+    var consoleEditor;
+    function testCompletions(text, expected, force)
     {
-        var callback;
-        var promise = new Promise(fulfill => callback = fulfill);
-        WebInspector.JavaScriptAutocomplete.completionsForTextInCurrentContext(base, prefix).then(checkExpected);
-        return promise;
+        consoleEditor.setText(text);
+        consoleEditor.setSelection(WebInspector.TextRange.createFromLocation(Infinity, Infinity));
+        consoleEditor._autocompleteController.autocomplete(force);
+        return InspectorTest.addSnifferPromise(consoleEditor._autocompleteController, "_onSuggestionsShownForTest").then(checkExpected);
 
-        function checkExpected(completions)
+        function checkExpected(suggestions)
         {
-            InspectorTest.addResult("Checking '" + base + prefix + "'");
+            var completions = new Set(suggestions.map(suggestion => suggestion.title));
+            var message = "Checking '" + text + "'";
+            if (force)
+                message += " forcefully";
+            InspectorTest.addResult(message);
             for (var i = 0; i < expected.length; i++)
-                InspectorTest.addResult(((completions.indexOf(expected[i]) !== -1) ? "Found" : "Not Found") + ": " + expected[i]);
+                InspectorTest.addResult((completions.has(expected[i]) ? "Found" : "Not Found") + ": " + expected[i]);
             InspectorTest.addResult("");
-            callback();
         }
     }
     function sequential(tests)
@@ -38,20 +42,27 @@ function test()
     }
 
     sequential([
-        () => testCompletions("window.", "do", ["document"]),
-        () => testCompletions("", "win", ["window"]),
-        () => testCompletions("window[", '"doc', ['"document"]']),
-        () => testCompletions('window["document"].', "bo", ["body"]),
-        () => testCompletions('window["document"]["body"].', "textC", ["textContent"]),
-        () => testCompletions('document.body.', "inner", ["innerText", "innerHTML"]),
-        () => testCompletions('document["body"][window.', "do", ["document"]),
-        () => testCompletions('document["body"][window["document"].body.childNodes[0].', "text", ["textContent"]),
-        () => testCompletions("templateString`asdf`", "should", ["shouldNotFindThis"]),
-        () => testCompletions("window.document.", "BODY", ["body"]),
-        () => testCompletions("window.", "dOcUmE", ["document"]),
-        () => testCompletions("window.", "node", ["NodeList", "AudioNode", "GainNode"]),
-        () => testCompletions("", "32", ["Float32Array", "Int32Array"]),
-        () => testCompletions("window.", "32", ["Float32Array", "Int32Array"])
+        InspectorTest.waitUntilConsoleEditorLoaded().then(e => consoleEditor = e),
+        () => testCompletions("window.do", ["document"]),
+        () => testCompletions("win", ["window"]),
+        () => testCompletions('window["doc', ['"document"]']),
+        () => testCompletions('window["document"].bo', ["body"]),
+        () => testCompletions('window["document"]["body"].textC', ["textContent"]),
+        () => testCompletions('document.body.inner', ["innerText", "innerHTML"]),
+        () => testCompletions('document["body"][window.do', ["document"]),
+        () => testCompletions('document["body"][window["document"].body.childNodes[0].text', ["textContent"]),
+        () => testCompletions("templateString`asdf`should", ["shouldNotFindThis"]),
+        () => testCompletions("window.document.BODY", ["body"]),
+        () => testCompletions("window.dOcUmE", ["document"]),
+        () => testCompletions("window.node", ["NodeList", "AudioNode", "GainNode"]),
+        () => testCompletions("32", ["Float32Array", "Int32Array"]),
+        () => testCompletions("window.32", ["Float32Array", "Int32Array"]),
+        () => testCompletions("", ["window"], false),
+        () => testCompletions("", ["window"], true),
+        () => testCompletions('"string g', ["getComputedStyle"], false),
+        () => testCompletions("`template string docu", ["document"], false),
+        () => testCompletions("`${do", ["document"], false),
+        () => testCompletions("// do", ["document"], false)
     ]).then(InspectorTest.completeTest);
 
 }

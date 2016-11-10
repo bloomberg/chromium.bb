@@ -47,4 +47,22 @@ Checking 'window.32'
 Found: Float32Array
 Found: Int32Array
 
+Checking ''
+Not Found: window
+
+Checking '' forcefully
+Found: window
+
+Checking '"string g'
+Not Found: getComputedStyle
+
+Checking '`template string docu'
+Not Found: document
+
+Checking '`${do'
+Found: document
+
+Checking '// do'
+Not Found: document
+
 
