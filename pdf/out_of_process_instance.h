@@ -331,11 +331,9 @@ class OutOfProcessInstance : public pp::Instance,
   // the stats if a feature shows up many times per document.
   std::set<std::string> unsupported_features_reported_;
 
-#if defined(OS_LINUX)
   // Keeps track of whether font substitution has been reported, so we avoid
   // spamming the stats if a document requested multiple substitutes.
   bool font_substitution_reported_;
-#endif
 
   // Number of pages in print preview mode, 0 if not in print preview mode.
   int print_preview_page_count_;
