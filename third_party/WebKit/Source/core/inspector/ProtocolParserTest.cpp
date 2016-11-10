@@ -8,10 +8,13 @@
 
 namespace blink {
 
-using protocol::parseJSON;
 using protocol::DictionaryValue;
 using protocol::ListValue;
 using protocol::Value;
+
+static std::unique_ptr<protocol::Value> parseJSON(const String& string) {
+  return protocol::StringUtil::parseJSON(string);
+}
 
 TEST(ProtocolParserTest, Reading) {
   Value* tmpValue;

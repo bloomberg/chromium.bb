@@ -41,14 +41,18 @@ String toCoreString(std::unique_ptr<v8_inspector::StringBuffer> buffer) {
 
 namespace protocol {
 
-std::unique_ptr<protocol::Value> parseJSON(const String& string) {
+// static
+std::unique_ptr<protocol::Value> StringUtil::parseJSON(const String& string) {
   if (string.isNull())
     return nullptr;
-  if (string.is8Bit())
-    return parseJSON(reinterpret_cast<const uint8_t*>(string.characters8()),
-                     string.length());
-  return parseJSON(reinterpret_cast<const uint16_t*>(string.characters16()),
-                   string.length());
+  if (string.is8Bit()) {
+    return parseJSONCharacters(
+        reinterpret_cast<const uint8_t*>(string.characters8()),
+        string.length());
+  }
+  return parseJSONCharacters(
+      reinterpret_cast<const uint16_t*>(string.characters16()),
+      string.length());
 }
 
 }  // namespace protocol

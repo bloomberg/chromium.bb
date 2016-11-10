@@ -31,7 +31,7 @@ void UiDevToolsClient::Disconnect() {
 }
 
 void UiDevToolsClient::Dispatch(const std::string& data) {
-  dispatcher_.dispatch(protocol::parseJSON(data));
+  dispatcher_.dispatch(protocol::StringUtil::parseJSON(data));
 }
 
 bool UiDevToolsClient::connected() const {

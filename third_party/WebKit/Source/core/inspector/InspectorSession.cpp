@@ -31,7 +31,8 @@ InspectorSession::InspectorSession(Client* client,
       m_instrumentingAgents(instrumentingAgents),
       m_inspectorBackendDispatcher(new protocol::UberDispatcher(this)) {
   if (savedState) {
-    std::unique_ptr<protocol::Value> state = protocol::parseJSON(*savedState);
+    std::unique_ptr<protocol::Value> state =
+        protocol::StringUtil::parseJSON(*savedState);
     if (state)
       m_state = protocol::DictionaryValue::cast(std::move(state));
     if (!m_state)
@@ -77,10 +78,12 @@ void InspectorSession::dispatchProtocolMessage(const String& method,
                                                const String& message) {
   DCHECK(!m_disposed);
   if (v8_inspector::V8InspectorSession::canDispatchMethod(
-          toV8InspectorStringView(method)))
+          toV8InspectorStringView(method))) {
     m_v8Session->dispatchProtocolMessage(toV8InspectorStringView(message));
-  else
-    m_inspectorBackendDispatcher->dispatch(protocol::parseJSON(message));
+  } else {
+    m_inspectorBackendDispatcher->dispatch(
+        protocol::StringUtil::parseJSON(message));
+  }
 }
 
 void InspectorSession::didCommitLoadForLocalFrame(LocalFrame* frame) {

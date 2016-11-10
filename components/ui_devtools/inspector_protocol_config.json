@@ -8,7 +8,6 @@
     "lib": {
         "package": "components/ui_devtools",
         "output": "",
-        "string_header": "components/ui_devtools/string_util.h",
-        "platform_header": "components/ui_devtools/protocol_platform.h"
+        "string_header": "components/ui_devtools/string_util.h"
     }
 }

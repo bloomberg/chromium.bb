@@ -19,8 +19,6 @@ namespace protocol {
 
 class Value;
 
-std::unique_ptr<Value> parseJSON(const String& string);
-
 class CustomStringBuilder {
   String s_;
 
@@ -51,6 +49,7 @@ class StringUtil {
     builder.reserveCapacity(capacity);
   }
   static const size_t kNotFound = static_cast<size_t>(-1);
+  static std::unique_ptr<Value> parseJSON(const String& string);
 };
 
 }  // namespace protocol

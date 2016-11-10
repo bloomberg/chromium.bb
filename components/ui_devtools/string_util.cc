@@ -11,11 +11,12 @@ namespace ui {
 namespace devtools {
 namespace protocol {
 
-std::unique_ptr<Value> parseJSON(const String& string) {
+// static
+std::unique_ptr<Value> StringUtil::parseJSON(const String& string) {
   DCHECK(base::IsStringUTF8(string));
   // TODO(mhashmi): 16-bit strings need to be handled
-  return parseJSON(reinterpret_cast<const uint8_t*>(&string[0]),
-                   string.length());
+  return parseJSONCharacters(reinterpret_cast<const uint8_t*>(&string[0]),
+                             string.length());
 };
 
 }  // namespace protocol

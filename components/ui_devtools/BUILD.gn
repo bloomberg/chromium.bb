@@ -58,7 +58,6 @@ source_set("ui_devtools") {
     "devtools_client.h",
     "devtools_server.cc",
     "devtools_server.h",
-    "protocol_platform.h",
     "string_util.cc",
     "string_util.h",
     "switches.cc",

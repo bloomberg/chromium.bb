@@ -52,6 +52,7 @@ def read_config():
         cmdline_parser.add_option("--output_base")
         cmdline_parser.add_option("--jinja_dir")
         cmdline_parser.add_option("--config")
+        cmdline_parser.add_option("--config_value", action="append", type="string")
         arg_options, _ = cmdline_parser.parse_args()
         jinja_dir = arg_options.jinja_dir
         if not jinja_dir:
@@ -63,6 +64,9 @@ def read_config():
         if not config_file:
             raise Exception("Config file name must be specified")
         config_base = os.path.dirname(config_file)
+        config_values = arg_options.config_value
+        if not config_values:
+            config_values = []
     except Exception:
         # Work with python 2 and 3 http://docs.python.org/py3k/howto/pyporting.html
         exc = sys.exc_info()[1]
@@ -90,6 +94,10 @@ def read_config():
             ".lib.export_macro": "",
             ".lib.export_header": False,
         }
+        for key_value in config_values:
+            parts = key_value.split("=")
+            if len(parts) == 2:
+                defaults["." + parts[0]] = parts[1]
         return (jinja_dir, config_file, init_defaults(config_partial, "", defaults))
     except Exception:
         # Work with python 2 and 3 http://docs.python.org/py3k/howto/pyporting.html
@@ -287,7 +295,6 @@ def wrap_array_definition(type):
         "raw_type": "protocol::Array<%s>" % type["raw_type"],
         "raw_pass_type": "protocol::Array<%s>*" % type["raw_type"],
         "raw_return_type": "protocol::Array<%s>*" % type["raw_type"],
-        "create_type": "wrapUnique(new protocol::Array<%s>())" % type["raw_type"],
         "out_type": "protocol::Array<%s>&" % type["raw_type"],
     }
 

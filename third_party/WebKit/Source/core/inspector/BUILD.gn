@@ -79,7 +79,6 @@ blink_core_sources("inspector") {
     "MainThreadDebugger.h",
     "NetworkResourcesData.cpp",
     "NetworkResourcesData.h",
-    "ProtocolPlatform.h",
     "ThreadDebugger.cpp",
     "ThreadDebugger.h",
     "V8InspectorString.cpp",
@@ -126,6 +125,8 @@ inspector_protocol_generate("protocol_sources") {
   out_dir = blink_core_output_dir
 
   config_file = "inspector_protocol_config.json"
+  _imported = rebase_path(v8_inspector_js_protocol, root_build_dir)
+  config_values = [ "imported.path=$_imported" ]
 
   inputs = [
     "browser_protocol.json",

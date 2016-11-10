@@ -88,7 +88,7 @@ DispatcherBase::~DispatcherBase()
 // static
 bool DispatcherBase::getCommandName(const String& message, String* result)
 {
-    std::unique_ptr<protocol::Value> value = parseJSON(message);
+    std::unique_ptr<protocol::Value> value = StringUtil::parseJSON(message);
     if (!value)
         return false;
 

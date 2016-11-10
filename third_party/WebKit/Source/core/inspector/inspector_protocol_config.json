@@ -93,7 +93,6 @@
     },
 
     "imported": {
-        "path": "../../../../../v8/src/inspector/js_protocol.json",
         "header": "<v8-inspector-protocol.h>",
         "to_imported_string": "toV8InspectorStringView(%s)",
         "from_imported_string": "toCoreString(%s)",
@@ -104,7 +103,6 @@
         "package": "core/inspector/protocol",
         "output": "inspector/protocol",
         "string_header": "core/inspector/V8InspectorString.h",
-        "platform_header": "core/inspector/ProtocolPlatform.h",
         "export_macro": "CORE_EXPORT",
         "export_header": "core/CoreExport.h"
     }

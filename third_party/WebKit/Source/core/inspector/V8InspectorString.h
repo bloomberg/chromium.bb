@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "platform/Decimal.h"
 #include "wtf/Allocator.h"
+#include "wtf/Assertions.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/StringView.h"
@@ -48,9 +49,8 @@ class CORE_EXPORT StringUtil {
   static void builderReserve(StringBuilder& builder, unsigned capacity) {
     builder.reserveCapacity(capacity);
   }
+  static std::unique_ptr<protocol::Value> parseJSON(const String&);
 };
-
-CORE_EXPORT std::unique_ptr<protocol::Value> parseJSON(const String&);
 
 }  // namespace protocol
 
