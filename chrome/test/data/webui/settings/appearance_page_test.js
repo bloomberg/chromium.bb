@@ -9,19 +9,29 @@
  */
 var TestAppearanceBrowserProxy = function() {
   settings.TestBrowserProxy.call(this, [
+    'getDefaultZoom',
     'getThemeInfo',
     'isSupervised',
     'openWallpaperManager',
     'useDefaultTheme',
     'useSystemTheme',
   ]);
+
+  /** @private */
+  this.defaultZoom_ = 1;
+
+  /** @private */
+  this.isSupervised_ = false;
 };
 
 TestAppearanceBrowserProxy.prototype = {
   __proto__: settings.TestBrowserProxy.prototype,
 
-  /** @private */
-  isSupervised_: false,
+  /** @override */
+  getDefaultZoom: function() {
+    this.methodCalled('getDefaultZoom');
+    return Promise.resolve(this.defaultZoom_);
+  },
 
   /** @override */
   getThemeInfo: function(themeId) {
@@ -50,6 +60,11 @@ TestAppearanceBrowserProxy.prototype = {
     this.methodCalled('useSystemTheme');
   },
 
+  /** @param {number} defaultZoom */
+  setDefaultZoom: function(defaultZoom) {
+    this.defaultZoom_ = defaultZoom;
+  },
+
   /** @param {boolean} Whether the user is supervised */
   setIsSupervised: function(isSupervised) {
     this.isSupervised_ = isSupervised;
@@ -61,28 +76,33 @@ var appearancePage = null;
 /** @type {?TestAppearanceBrowserProxy} */
 var appearanceBrowserProxy = null;
 
+function createAppearancePage() {
+  appearanceBrowserProxy.reset();
+  PolymerTest.clearBody();
+
+  appearancePage = document.createElement('settings-appearance-page');
+  appearancePage.set('prefs', {
+    extensions: {
+      theme: {
+        id: {
+          value: '',
+        },
+        use_system: {
+          value: false,
+        },
+      },
+    },
+  });
+
+  document.body.appendChild(appearancePage);
+  Polymer.dom.flush();
+}
+
 suite('AppearanceHandler', function() {
   setup(function() {
     appearanceBrowserProxy = new TestAppearanceBrowserProxy();
     settings.AppearanceBrowserProxyImpl.instance_ = appearanceBrowserProxy;
-
-    PolymerTest.clearBody();
-
-    appearancePage = document.createElement('settings-appearance-page');
-    appearancePage.set('prefs', {
-      extensions: {
-        theme: {
-          id: {
-            value: '',
-          },
-          use_system: {
-            value: false,
-          },
-        },
-      },
-    });
-    document.body.appendChild(appearancePage);
-    Polymer.dom.flush();
+    createAppearancePage();
   });
 
   teardown(function() { appearancePage.remove(); });
@@ -175,4 +195,33 @@ suite('AppearanceHandler', function() {
       return appearanceBrowserProxy.whenCalled('useDefaultTheme');
     });
   }
+
+  test('default zoom handling', function() {
+    function getDefaultZoomText() {
+      var zoomLevel = appearancePage.$.zoomLevel;
+      return zoomLevel.options[zoomLevel.selectedIndex].textContent.trim();
+    }
+
+    return appearanceBrowserProxy.whenCalled('getDefaultZoom').then(function() {
+      assertEquals('100%', getDefaultZoomText());
+
+      appearanceBrowserProxy.setDefaultZoom(2 / 3);
+      createAppearancePage();
+      return appearanceBrowserProxy.whenCalled('getDefaultZoom');
+    }).then(function() {
+      assertEquals('67%', getDefaultZoomText());
+
+      appearanceBrowserProxy.setDefaultZoom(11 / 10);
+      createAppearancePage();
+      return appearanceBrowserProxy.whenCalled('getDefaultZoom');
+    }).then(function() {
+      assertEquals('110%', getDefaultZoomText());
+
+      appearanceBrowserProxy.setDefaultZoom(1.7499999999999);
+      createAppearancePage();
+      return appearanceBrowserProxy.whenCalled('getDefaultZoom');
+    }).then(function() {
+      assertEquals('175%', getDefaultZoomText());
+    });
+  });
 });

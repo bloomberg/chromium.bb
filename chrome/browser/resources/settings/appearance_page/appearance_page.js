@@ -31,9 +31,6 @@ Polymer({
       notify: true,
     },
 
-    /** @private {!settings.AppearanceBrowserProxy} */
-    browserProxy_: Object,
-
     /** @private */
     defaultZoom_: Number,
 
@@ -94,6 +91,9 @@ Polymer({
     },
   },
 
+  /** @private {?settings.AppearanceBrowserProxy} */
+  browserProxy_: null,
+
   /** @private {string} */
   themeUrl_: '',
 
@@ -114,7 +114,7 @@ Polymer({
     this.$.defaultFontSize.menuOptions = this.fontSizeOptions_;
     // TODO(dschuyler): Look into adding a listener for the
     // default zoom percent.
-    chrome.settingsPrivate.getDefaultZoom(function(zoom) {
+    this.browserProxy_.getDefaultZoom().then(function(zoom) {
       this.defaultZoom_ = zoom;
     }.bind(this));
   },

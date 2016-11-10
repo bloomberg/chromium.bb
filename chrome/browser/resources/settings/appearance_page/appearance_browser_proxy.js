@@ -7,6 +7,9 @@ cr.define('settings', function() {
   function AppearanceBrowserProxy() {}
 
   AppearanceBrowserProxy.prototype = {
+    /** @return {!Promise<number>} */
+    getDefaultZoom: assertNotReached,
+
     /**
      * @param {string} themeId
      * @return {!Promise<!chrome.management.ExtensionInfo>} Theme info.
@@ -36,6 +39,13 @@ cr.define('settings', function() {
   cr.addSingletonGetter(AppearanceBrowserProxyImpl);
 
   AppearanceBrowserProxyImpl.prototype = {
+    /** @override */
+    getDefaultZoom: function() {
+      return new Promise(function(resolve) {
+        chrome.settingsPrivate.getDefaultZoom(resolve);
+      });
+    },
+
     /** @override */
     getThemeInfo: function(themeId) {
       return new Promise(function(resolve) {
