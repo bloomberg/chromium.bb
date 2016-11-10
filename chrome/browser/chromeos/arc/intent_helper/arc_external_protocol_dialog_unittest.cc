@@ -445,4 +445,79 @@ TEST(ArcExternalProtocolDialogTest, TestShouldIgnoreNavigation) {
       ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_HOME_PAGE)));
 }
 
+// Test that GetUrlToNavigateOnDeactivate returns an empty GURL when |handlers|
+// is empty.
+TEST(ArcExternalProtocolDialogTest, TestGetUrlToNavigateOnDeactivateEmpty) {
+  mojo::Array<mojom::IntentHandlerInfoPtr> handlers;
+  EXPECT_EQ(GURL(), GetUrlToNavigateOnDeactivateForTesting(handlers));
+}
+
+// Test that GetUrlToNavigateOnDeactivate returns an empty GURL when |handlers|
+// only contains a (non-Chrome) app.
+TEST(ArcExternalProtocolDialogTest, TestGetUrlToNavigateOnDeactivateAppOnly) {
+  mojo::Array<mojom::IntentHandlerInfoPtr> handlers;
+  // On production, when |handlers| only contains app(s), the fallback field is
+  // empty, but to make the test more reliable, use non-empty fallback URL.
+  handlers.push_back(
+      Create("App", "app.package", false, GURL("http://www")));
+  EXPECT_EQ(GURL(), GetUrlToNavigateOnDeactivateForTesting(handlers));
+}
+
+// Test that GetUrlToNavigateOnDeactivate returns an empty GURL when |handlers|
+// only contains (non-Chrome) apps.
+TEST(ArcExternalProtocolDialogTest, TestGetUrlToNavigateOnDeactivateAppsOnly) {
+  mojo::Array<mojom::IntentHandlerInfoPtr> handlers;
+  // On production, when |handlers| only contains app(s), the fallback field is
+  // empty, but to make the test more reliable, use non-empty fallback URL.
+  handlers.push_back(
+      Create("App1", "app1.package", false, GURL("http://www")));
+  handlers.push_back(
+      Create("App2", "app2.package", false, GURL("http://www")));
+  EXPECT_EQ(GURL(), GetUrlToNavigateOnDeactivateForTesting(handlers));
+}
+
+// Test that GetUrlToNavigateOnDeactivate returns an empty GURL when |handlers|
+// contains Chrome, but it's not for http(s).
+TEST(ArcExternalProtocolDialogTest, TestGetUrlToNavigateOnDeactivateGeoUrl) {
+  mojo::Array<mojom::IntentHandlerInfoPtr> handlers;
+  handlers.push_back(Create("Chrome", kChromePackageName, false,
+                            GURL("geo:37.4220,-122.0840")));
+  EXPECT_EQ(GURL(), GetUrlToNavigateOnDeactivateForTesting(handlers));
+}
+
+// Test that GetUrlToNavigateOnDeactivate returns non-empty GURL when |handlers|
+// contains Chrome and an app.
+TEST(ArcExternalProtocolDialogTest,
+     TestGetUrlToNavigateOnDeactivateChromeAndApp) {
+  mojo::Array<mojom::IntentHandlerInfoPtr> handlers;
+  // On production, all handlers have the same fallback URL, but to make sure
+  // that "Chrome" is actually selected by the function, use different URLs.
+  handlers.push_back(Create("A browser app", "browser.app.package", false,
+                            GURL("http://www1/")));
+  handlers.push_back(
+      Create("Chrome", kChromePackageName, false, GURL("http://www2/")));
+  handlers.push_back(Create("Yet another browser app",
+                            "yet.another.browser.app.package", false,
+                            GURL("http://www3/")));
+
+  EXPECT_EQ(GURL("http://www2/"),
+            GetUrlToNavigateOnDeactivateForTesting(handlers));
+}
+
+// Does the same with https, just in case.
+TEST(ArcExternalProtocolDialogTest,
+     TestGetUrlToNavigateOnDeactivateChromeAndAppHttps) {
+  mojo::Array<mojom::IntentHandlerInfoPtr> handlers;
+  handlers.push_back(Create("A browser app", "browser.app.package", false,
+                            GURL("https://www1/")));
+  handlers.push_back(
+      Create("Chrome", kChromePackageName, false, GURL("https://www2/")));
+  handlers.push_back(Create("Yet another browser app",
+                            "yet.another.browser.app.package", false,
+                            GURL("https://www3/")));
+
+  EXPECT_EQ(GURL("https://www2/"),
+            GetUrlToNavigateOnDeactivateForTesting(handlers));
+}
+
 }  // namespace arc

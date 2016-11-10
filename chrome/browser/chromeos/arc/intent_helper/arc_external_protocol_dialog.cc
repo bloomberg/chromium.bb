@@ -204,6 +204,35 @@ bool HandleUrl(int render_process_host_id,
   return false;
 }
 
+// Returns a fallback http(s) in |handlers| which Chrome can handle. Returns
+// an empty GURL if none found.
+GURL GetUrlToNavigateOnDeactivate(
+    const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers) {
+  const GURL empty_url;
+  for (size_t i = 0; i < handlers.size(); ++i) {
+    std::pair<GURL, std::string> url_and_package;
+    if (GetActionInternal(empty_url, handlers[i], &url_and_package) ==
+        GetActionResult::OPEN_URL_IN_CHROME) {
+      DCHECK(url_and_package.first.SchemeIsHTTPOrHTTPS());
+      return url_and_package.first;
+    }
+  }
+  return empty_url;  // nothing found.
+}
+
+// Called when the dialog is just deactivated without pressing one of the
+// buttons.
+void OnIntentPickerDialogDeactivated(
+    int render_process_host_id,
+    int routing_id,
+    const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers) {
+  const GURL url_to_open_in_chrome = GetUrlToNavigateOnDeactivate(handlers);
+  if (url_to_open_in_chrome.is_empty())
+    CloseTabIfNeeded(render_process_host_id, routing_id);
+  else
+    OpenUrlInChrome(render_process_host_id, routing_id, url_to_open_in_chrome);
+}
+
 // Called when the dialog is closed. Note that once we show the UI, we should
 // never show the Chrome OS' fallback dialog.
 void OnIntentPickerClosed(int render_process_host_id,
@@ -260,7 +289,8 @@ void OnIntentPickerClosed(int render_process_host_id,
     }
     case ArcNavigationThrottle::CloseReason::DIALOG_DEACTIVATED: {
       // The user didn't select any ARC activity.
-      CloseTabIfNeeded(render_process_host_id, routing_id);
+      OnIntentPickerDialogDeactivated(render_process_host_id, routing_id,
+                                      handlers);
       break;
     }
   }
@@ -408,6 +438,11 @@ GetActionResult GetActionForTesting(
     std::pair<GURL, std::string>* out_url_and_package) {
   return GetAction(original_url, handlers, selected_app_index,
                    out_url_and_package);
+}
+
+GURL GetUrlToNavigateOnDeactivateForTesting(
+    const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers) {
+  return GetUrlToNavigateOnDeactivate(handlers);
 }
 
 }  // namespace arc

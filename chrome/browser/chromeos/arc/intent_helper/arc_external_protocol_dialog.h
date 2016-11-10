@@ -51,6 +51,9 @@ GetActionResult GetActionForTesting(
     size_t selected_app_index,
     std::pair<GURL, std::string>* out_url_and_package);
 
+GURL GetUrlToNavigateOnDeactivateForTesting(
+    const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers);
+
 }  // namespace arc
 
 #endif  // CHROME_BROWSER_CHROMEOS_ARC_INTENT_HELPER_ARC_EXTERNAL_PROTOCOL_DIALOG_H_
