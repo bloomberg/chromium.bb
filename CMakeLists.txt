@@ -272,47 +272,122 @@ set(AOM_AV1_ENCODER_SRCS
     "${AOM_ROOT}/av1/encoder/variance_tree.c"
     "${AOM_ROOT}/av1/encoder/variance_tree.h")
 
+set(AOM_COMMON_APP_UTIL_SOURCES
+    "${AOM_ROOT}/md5_utils.c"
+    "${AOM_ROOT}/md5_utils.h"
+    "${AOM_ROOT}/tools_common.c"
+    "${AOM_ROOT}/tools_common.h"
+    "${AOM_ROOT}/video_common.h")
+
+set(AOM_DECODER_APP_UTIL_SOURCES
+    "${AOM_ROOT}/ivfdec.c"
+    "${AOM_ROOT}/ivfdec.h"
+    "${AOM_ROOT}/video_reader.c"
+    "${AOM_ROOT}/video_reader.h")
+
+set(AOM_ENCODER_APP_UTIL_SOURCES
+    "${AOM_ROOT}/ivfenc.c"
+    "${AOM_ROOT}/ivfenc.h"
+    "${AOM_ROOT}/video_writer.c"
+    "${AOM_ROOT}/video_writer.h")
+
 # Targets
-add_library(aom_dsp ${AOM_DSP_SRCS})
+# TODO(tomfinegan): Add support for enable/disable encoder/decoder.
+# TODO(tomfinegan): Add support for WEBM_IO from the old build system.
+add_library(aom_dsp OBJECT ${AOM_DSP_SRCS})
 include_directories(${AOM_ROOT} ${AOM_CONFIG_DIR})
 AomAddRtcdGenerationCommand(${AOM_ROOT}/aom_dsp/aom_dsp_rtcd_defs.pl
                             ${AOM_CONFIG_DIR}/aom_dsp_rtcd.h
                             ${AOM_CONFIG_DIR}/aom_dsp/aom_dsp_rtcd.c
                             aom_dsp_rtcd)
 
-add_library(aom_mem ${AOM_MEM_SRCS})
+add_library(aom_mem OBJECT ${AOM_MEM_SRCS})
 
-add_library(aom_scale ${AOM_SCALE_SRCS})
+add_library(aom_scale OBJECT ${AOM_SCALE_SRCS})
 include_directories(${AOM_ROOT} ${AOM_CONFIG_DIR})
 AomAddRtcdGenerationCommand(${AOM_ROOT}/aom_scale/aom_scale_rtcd.pl
                             ${AOM_CONFIG_DIR}/aom_scale_rtcd.h
                             ${AOM_CONFIG_DIR}/aom_scale/aom_scale_rtcd.c
                             aom_scale_rtcd)
 
-add_library(aom_util ${AOM_UTIL_SRCS})
+add_library(aom_util OBJECT ${AOM_UTIL_SRCS})
 
-add_library(aom_av1_common ${AOM_AV1_COMMON_SRCS})
+add_library(aom_av1_common OBJECT ${AOM_AV1_COMMON_SRCS})
 include_directories(${AOM_ROOT} ${AOM_CONFIG_DIR})
 AomAddRtcdGenerationCommand(${AOM_ROOT}/av1/common/av1_rtcd_defs.pl
                             ${AOM_CONFIG_DIR}/av1_rtcd.h
                             ${AOM_CONFIG_DIR}/av1/common/av1_rtcd.c
                             aom_av1_rtcd)
 
-add_library(aom_av1_decoder ${AOM_AV1_DECODER_SRCS})
-add_library(aom_av1_encoder ${AOM_AV1_ENCODER_SRCS})
-add_library(aom ${AOM_SRCS})
-target_link_libraries(aom LINK_PUBLIC
-                      aom_dsp
-                      aom_mem
-                      aom_scale
-                      aom_util
-                      aom_av1_common
-                      aom_av1_decoder
-                      aom_av1_encoder)
-add_executable(simple_decoder examples/simple_decoder.c)
+add_library(aom_av1_decoder OBJECT ${AOM_AV1_DECODER_SRCS})
+add_library(aom_av1_encoder OBJECT ${AOM_AV1_ENCODER_SRCS})
+add_library(aom
+            ${AOM_SRCS}
+            $<TARGET_OBJECTS:aom_dsp>
+            $<TARGET_OBJECTS:aom_mem>
+            $<TARGET_OBJECTS:aom_scale>
+            $<TARGET_OBJECTS:aom_util>
+            $<TARGET_OBJECTS:aom_av1_common>
+            $<TARGET_OBJECTS:aom_av1_decoder>
+            $<TARGET_OBJECTS:aom_av1_encoder>)
+
+add_library(aom_common_app_util OBJECT ${AOM_COMMON_APP_UTIL_SOURCES})
+add_library(aom_decoder_app_util OBJECT ${AOM_DECODER_APP_UTIL_SOURCES})
+add_library(aom_encoder_app_util OBJECT ${AOM_ENCODER_APP_UTIL_SOURCES})
+
+add_executable(aom_cx_set_ref
+               "${AOM_ROOT}/examples/aom_cx_set_ref.c"
+               $<TARGET_OBJECTS:aom_common_app_util>
+               $<TARGET_OBJECTS:aom_encoder_app_util>)
 include_directories(${AOM_ROOT})
-target_link_libraries(simple_decoder LINK_PUBLIC aom)
-add_executable(simple_encoder examples/simple_encoder.c)
+target_link_libraries(aom_cx_set_ref PUBLIC aom)
+
+add_executable(decode_to_md5
+               "${AOM_ROOT}/examples/decode_to_md5.c"
+               $<TARGET_OBJECTS:aom_common_app_util>
+               $<TARGET_OBJECTS:aom_decoder_app_util>)
 include_directories(${AOM_ROOT})
-target_link_libraries(simple_encoder LINK_PUBLIC aom)
+target_link_libraries(decode_to_md5 PUBLIC aom)
+
+add_executable(decode_with_drops
+               "${AOM_ROOT}/examples/decode_with_drops.c"
+               $<TARGET_OBJECTS:aom_common_app_util>
+               $<TARGET_OBJECTS:aom_decoder_app_util>)
+include_directories(${AOM_ROOT})
+target_link_libraries(decode_with_drops PUBLIC aom)
+
+add_executable(lossless_encoder
+               "${AOM_ROOT}/examples/lossless_encoder.c"
+               $<TARGET_OBJECTS:aom_common_app_util>
+               $<TARGET_OBJECTS:aom_encoder_app_util>)
+include_directories(${AOM_ROOT})
+target_link_libraries(lossless_encoder PUBLIC aom)
+
+add_executable(set_maps
+               "${AOM_ROOT}/examples/set_maps.c"
+               $<TARGET_OBJECTS:aom_common_app_util>
+               $<TARGET_OBJECTS:aom_encoder_app_util>)
+include_directories(${AOM_ROOT})
+target_link_libraries(set_maps PUBLIC aom)
+
+add_executable(simple_decoder
+               "${AOM_ROOT}/examples/simple_decoder.c"
+               $<TARGET_OBJECTS:aom_common_app_util>
+               $<TARGET_OBJECTS:aom_decoder_app_util>)
+include_directories(${AOM_ROOT})
+target_link_libraries(simple_decoder PUBLIC aom)
+
+add_executable(simple_encoder
+               "${AOM_ROOT}/examples/simple_encoder.c"
+               $<TARGET_OBJECTS:aom_common_app_util>
+               $<TARGET_OBJECTS:aom_encoder_app_util>)
+include_directories(${AOM_ROOT})
+target_link_libraries(simple_encoder PUBLIC aom)
+
+add_executable(twopass_encoder
+               "${AOM_ROOT}/examples/twopass_encoder.c"
+               $<TARGET_OBJECTS:aom_common_app_util>
+               $<TARGET_OBJECTS:aom_encoder_app_util>)
+include_directories(${AOM_ROOT})
+target_link_libraries(twopass_encoder PUBLIC aom)
 
