@@ -686,6 +686,7 @@
                 "recovery"
             ],
             "internal": true,
+            "latest_toolchain": true,
             "manifest": "official.xml",
             "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
             "manifest_version": true,

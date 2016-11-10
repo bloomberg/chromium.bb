@@ -1571,6 +1571,7 @@ def ToolchainBuilders(site_config, board_configs, hw_test_list):
       'llvm_next_toolchain',
       site_config.templates.llvm_toolchain,
       description='Full release build with LLVM (next) toolchain',
+      latest_toolchain=True,
       useflags=['clang', 'llvm-next', '-test_security_OpenFDs',
                 '-test_platform_SyncCrash'],
   )
