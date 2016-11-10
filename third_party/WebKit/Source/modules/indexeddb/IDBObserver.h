@@ -21,9 +21,8 @@ class IDBObserverInit;
 class IDBTransaction;
 struct WebIDBObservation;
 
-class MODULES_EXPORT IDBObserver final
-    : public GarbageCollectedFinalized<IDBObserver>,
-      public ScriptWrappable {
+class MODULES_EXPORT IDBObserver final : public GarbageCollected<IDBObserver>,
+                                         public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -44,7 +43,7 @@ class MODULES_EXPORT IDBObserver final
   DECLARE_TRACE();
 
  private:
-  IDBObserver(IDBObserverCallback*);
+  explicit IDBObserver(IDBObserverCallback*);
 
   Member<IDBObserverCallback> m_callback;
   HeapHashMap<int32_t, WeakMember<IDBDatabase>> m_observerIds;
