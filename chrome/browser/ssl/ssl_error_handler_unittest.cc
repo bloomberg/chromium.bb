@@ -522,5 +522,4 @@ TEST_F(SSLErrorHandlerDateInvalidTest, TimeQueryHangs) {
 
   // Shut down the server to cancel the pending request.
   ASSERT_TRUE(test_server()->ShutdownAndWaitUntilComplete());
-  tracker()->WaitForFetchForTesting(123123123);
 }
