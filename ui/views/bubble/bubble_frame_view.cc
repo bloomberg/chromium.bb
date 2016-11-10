@@ -407,7 +407,7 @@ void BubbleFrameView::SetFootnoteView(View* view) {
 }
 
 gfx::Rect BubbleFrameView::GetUpdatedWindowBounds(const gfx::Rect& anchor_rect,
-                                                  gfx::Size client_size,
+                                                  const gfx::Size& client_size,
                                                   bool adjust_if_offscreen) {
   gfx::Size size(GetSizeForClientSize(client_size));
 

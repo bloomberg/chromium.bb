@@ -90,6 +90,8 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
     return host_.get();
   }
 
+  aura::Window* content_window() { return content_window_; }
+
   // Ensures that the correct window is activated/deactivated based on whether
   // we are being activated/deactivated.
   void HandleActivationChanged(bool active);

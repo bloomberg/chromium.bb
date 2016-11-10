@@ -46,7 +46,11 @@ bool DesktopWindowTreeHostMus::IsDocked() const {
 }
 
 void DesktopWindowTreeHostMus::Init(aura::Window* content_window,
-                                    const Widget::InitParams& params) {}
+                                    const Widget::InitParams& params) {
+  // TODO: handle device scale, http://crbug.com/663524.
+  if (!params.bounds.IsEmpty())
+    SetBounds(params.bounds);
+}
 
 void DesktopWindowTreeHostMus::OnNativeWidgetCreated(
     const Widget::InitParams& params) {
@@ -110,8 +114,20 @@ void DesktopWindowTreeHostMus::ShowWindowWithState(ui::WindowShowState state) {
   window()->Show();
   if (compositor())
     compositor()->SetVisible(true);
-  // TODO: likely needs code to activate, but after content_window_ is shown.
-  // See NativeWidgetAura::ShowWithWindowState().
+
+  if (native_widget_delegate_->CanActivate()) {
+    if (state != ui::SHOW_STATE_INACTIVE)
+      Activate();
+
+    // SetInitialFocus() should be always be called, even for
+    // SHOW_STATE_INACTIVE. If the window has to stay inactive, the method will
+    // do the right thing.
+    // Activate() might fail if the window is non-activatable. In this case, we
+    // should pass SHOW_STATE_INACTIVE to SetInitialFocus() to stop the initial
+    // focused view from getting focused. See crbug.com/515594 for example.
+    native_widget_delegate_->SetInitialFocus(
+        IsActive() ? state : ui::SHOW_STATE_INACTIVE);
+  }
 }
 
 void DesktopWindowTreeHostMus::ShowMaximizedWithBounds(
@@ -152,7 +168,25 @@ void DesktopWindowTreeHostMus::StackAtTop() {
 }
 
 void DesktopWindowTreeHostMus::CenterWindow(const gfx::Size& size) {
-  NOTIMPLEMENTED();
+  gfx::Rect bounds_to_center_in = GetWorkAreaBoundsInScreen();
+
+  // If there is a transient parent and it fits |size|, then center over it.
+  aura::Window* content_window = desktop_native_widget_aura_->content_window();
+  if (wm::GetTransientParent(content_window)) {
+    gfx::Rect transient_parent_bounds =
+        wm::GetTransientParent(content_window)->GetBoundsInScreen();
+    if (transient_parent_bounds.height() >= size.height() &&
+        transient_parent_bounds.width() >= size.width()) {
+      bounds_to_center_in = transient_parent_bounds;
+    }
+  }
+
+  gfx::Rect resulting_bounds(bounds_to_center_in);
+  resulting_bounds.ClampToCenteredSize(size);
+
+  // TODO: handle device scale, http://crbug.com/663524. SetBounds() expects
+  // pixels.
+  SetBounds(resulting_bounds);
 }
 
 void DesktopWindowTreeHostMus::GetWindowPlacement(
@@ -261,7 +295,10 @@ bool DesktopWindowTreeHostMus::IsMinimized() const {
 }
 
 bool DesktopWindowTreeHostMus::HasCapture() const {
-  return const_cast<aura::Window*>(window())->HasCapture();
+  // Capture state is held by DesktopNativeWidgetAura::content_window_.
+  // DesktopNativeWidgetAura::HasCapture() calls content_window_->HasCapture(),
+  // and this. That means this function can always return true.
+  return true;
 }
 
 void DesktopWindowTreeHostMus::SetAlwaysOnTop(bool always_on_top) {

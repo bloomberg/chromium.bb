@@ -80,7 +80,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   // of the bubble window. The bubble's arrow location may change if the bubble
   // does not fit on the monitor and |adjust_if_offscreen| is true.
   gfx::Rect GetUpdatedWindowBounds(const gfx::Rect& anchor_rect,
-                                   gfx::Size client_size,
+                                   const gfx::Size& client_size,
                                    bool adjust_if_offscreen);
 
   bool close_button_clicked() const { return close_button_clicked_; }
