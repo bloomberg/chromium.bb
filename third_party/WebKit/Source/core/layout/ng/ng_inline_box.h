@@ -11,6 +11,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/text/TextDirection.h"
 #include "wtf/text/WTFString.h"
+#include <unicode/ubidi.h>
 #include <unicode/uscript.h>
 
 namespace blink {
@@ -27,12 +28,12 @@ struct MinAndMaxContentSizes;
 
 // Represents an inline node to be laid out.
 // TODO(layout-dev): Make this and NGBox inherit from a common class.
-class CORE_EXPORT NGInlineBox final
-    : public GarbageCollectedFinalized<NGInlineBox> {
+class CORE_EXPORT NGInlineBox : public GarbageCollectedFinalized<NGInlineBox> {
  public:
   using const_iterator = Vector<NGLayoutInlineItem>::const_iterator;
 
-  explicit NGInlineBox(LayoutObject* start_inline);
+  NGInlineBox(LayoutObject* start_inline, ComputedStyle* block_style);
+  virtual ~NGInlineBox();
 
   // Prepare inline and text content for layout. Must be called before
   // calling the Layout method.
@@ -57,7 +58,8 @@ class CORE_EXPORT NGInlineBox final
 
   DECLARE_VIRTUAL_TRACE();
 
- private:
+ protected:
+  NGInlineBox();  // This constructor is only for testing.
   void CollectNode(LayoutObject*, unsigned* offset);
   void CollectInlines(LayoutObject* start, LayoutObject* last);
   void CollapseWhiteSpace();
@@ -66,6 +68,7 @@ class CORE_EXPORT NGInlineBox final
 
   LayoutObject* start_inline_;
   LayoutObject* last_inline_;
+  RefPtr<ComputedStyle> block_style_;
 
   Member<NGInlineBox> next_sibling_;
   Member<NGLayoutAlgorithm> layout_algorithm_;
@@ -86,20 +89,28 @@ class NGLayoutInlineItem {
   NGLayoutInlineItem(unsigned start, unsigned end)
       : start_offset_(start),
         end_offset_(end),
-        direction_(LTR),
+        bidi_level_(UBIDI_LTR),
         script_(USCRIPT_INVALID_CODE) {
     DCHECK(end >= start);
   }
 
   unsigned StartOffset() const { return start_offset_; }
   unsigned EndOffset() const { return end_offset_; }
-  TextDirection Direection() const { return direction_; }
+  TextDirection Direction() const { return bidi_level_ & 1 ? RTL : LTR; }
   UScriptCode Script() const { return script_; }
+
+  static void Split(Vector<NGLayoutInlineItem>&,
+                    unsigned index,
+                    unsigned offset);
+  static unsigned SetBidiLevel(Vector<NGLayoutInlineItem>&,
+                               unsigned index,
+                               unsigned end_offset,
+                               UBiDiLevel);
 
  private:
   unsigned start_offset_;
   unsigned end_offset_;
-  TextDirection direction_;
+  UBiDiLevel bidi_level_;
   UScriptCode script_;
   // FontFallbackPriority fallback_priority_;
   // bool rotate_sideways_;

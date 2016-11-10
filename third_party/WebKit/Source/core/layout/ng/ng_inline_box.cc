@@ -7,6 +7,7 @@
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/style/ComputedStyle.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
+#include "core/layout/ng/ng_bidi_paragraph.h"
 #include "core/layout/ng/ng_text_layout_algorithm.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_constraint_space.h"
@@ -20,11 +21,18 @@
 
 namespace blink {
 
-NGInlineBox::NGInlineBox(LayoutObject* start_inline)
-    : start_inline_(start_inline), last_inline_(nullptr) {
+NGInlineBox::NGInlineBox(LayoutObject* start_inline, ComputedStyle* block_style)
+    : start_inline_(start_inline),
+      last_inline_(nullptr),
+      block_style_(block_style) {
   DCHECK(start_inline);
   PrepareLayout();  // TODO(layout-dev): Shouldn't be called here.
 }
+
+NGInlineBox::NGInlineBox()
+    : start_inline_(nullptr), last_inline_(nullptr), block_style_(nullptr) {}
+
+NGInlineBox::~NGInlineBox() {}
 
 void NGInlineBox::PrepareLayout() {
   // Scan list of siblings collecting all in-flow non-atomic inlines. A single
@@ -90,7 +98,67 @@ void NGInlineBox::CollapseWhiteSpace() {
 }
 
 void NGInlineBox::SegmentText() {
-  // TODO(kojii): Implement
+  if (text_content_.isEmpty())
+    return;
+  // TODO(kojii): Move this to caller, this will be used again after line break.
+  NGBidiParagraph bidi;
+  text_content_.ensure16Bit();
+  if (!bidi.SetParagraph(text_content_, block_style_.get())) {
+    // On failure, give up bidi resolving and reordering.
+    NOTREACHED();
+    return;
+  }
+  UBiDiDirection direction = bidi.Direction();
+  if (direction != UBIDI_MIXED) {
+    // TODO(kojii): Only LTR or RTL, we can have an optimized code path.
+  }
+  unsigned item_index = 0;
+  for (unsigned start = 0; start < text_content_.length();) {
+    UBiDiLevel level;
+    unsigned end = bidi.GetLogicalRun(start, &level);
+    DCHECK_EQ(items_[item_index].start_offset_, start);
+    item_index =
+        NGLayoutInlineItem::SetBidiLevel(items_, item_index, end, level);
+    start = end;
+  }
+  DCHECK_EQ(item_index, items_.size());
+}
+
+// Set bidi level to a list of NGLayoutInlineItem from |index| to the item that
+// ends with |end_offset|.
+// If |end_offset| is mid of an item, the item is split to ensure each item has
+// one bidi level.
+// @param items The list of NGLayoutInlineItem.
+// @param index The first index of the list to set.
+// @param end_offset The exclusive end offset to set.
+// @param level The level to set.
+// @return The index of the next item.
+unsigned NGLayoutInlineItem::SetBidiLevel(Vector<NGLayoutInlineItem>& items,
+                                          unsigned index,
+                                          unsigned end_offset,
+                                          UBiDiLevel level) {
+  for (; items[index].end_offset_ < end_offset; index++)
+    items[index].bidi_level_ = level;
+  items[index].bidi_level_ = level;
+  if (items[index].end_offset_ > end_offset)
+    Split(items, index, end_offset);
+  return index + 1;
+}
+
+// Split |items[index]| to 2 items at |offset|.
+// All properties other than offsets are copied to the new item and it is
+// inserted at |items[index + 1]|.
+// @param items The list of NGLayoutInlineItem.
+// @param index The index to split.
+// @param offset The offset to split at.
+void NGLayoutInlineItem::Split(Vector<NGLayoutInlineItem>& items,
+                               unsigned index,
+                               unsigned offset) {
+  DCHECK_GT(offset, items[index].start_offset_);
+  DCHECK_LT(offset, items[index].end_offset_);
+  items.insert(index + 1, items[index]);
+  items[index].end_offset_ = offset;
+  items[index + 1].start_offset_ = offset;
 }
 
 void NGInlineBox::ShapeText() {}
@@ -128,7 +196,9 @@ NGInlineBox* NGInlineBox::NextSibling() {
   if (!next_sibling_) {
     LayoutObject* next_sibling =
         last_inline_ ? last_inline_->nextSibling() : nullptr;
-    next_sibling_ = next_sibling ? new NGInlineBox(next_sibling) : nullptr;
+    next_sibling_ = next_sibling
+                        ? new NGInlineBox(next_sibling, block_style_.get())
+                        : nullptr;
   }
   return next_sibling_;
 }

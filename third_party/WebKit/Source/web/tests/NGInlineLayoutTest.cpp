@@ -49,7 +49,8 @@ TEST_F(NGInlineLayoutTest, BlockWithSingleTextNode) {
   LayoutNGBlockFlow* blockFlow = toLayoutNGBlockFlow(target->layoutObject());
   NGConstraintSpace* constraintSpace = constraintSpaceForElement(blockFlow);
 
-  NGInlineBox* inlineBox = new NGInlineBox(blockFlow->firstChild());
+  NGInlineBox* inlineBox =
+      new NGInlineBox(blockFlow->firstChild(), blockFlow->mutableStyle());
   NGInlineLayoutAlgorithm* layoutAlgorithm = new NGInlineLayoutAlgorithm(
       blockFlow->style(), inlineBox, constraintSpace);
 
@@ -75,7 +76,8 @@ TEST_F(NGInlineLayoutTest, BlockWithTextAndAtomicInline) {
   LayoutNGBlockFlow* blockFlow = toLayoutNGBlockFlow(target->layoutObject());
   NGConstraintSpace* constraintSpace = constraintSpaceForElement(blockFlow);
 
-  NGInlineBox* inlineBox = new NGInlineBox(blockFlow->firstChild());
+  NGInlineBox* inlineBox =
+      new NGInlineBox(blockFlow->firstChild(), blockFlow->mutableStyle());
   NGInlineLayoutAlgorithm* layoutAlgorithm = new NGInlineLayoutAlgorithm(
       blockFlow->style(), inlineBox, constraintSpace);
 

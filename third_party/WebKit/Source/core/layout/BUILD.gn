@@ -281,6 +281,8 @@ blink_core_sources("layout") {
     "line/TrailingObjects.h",
     "ng/layout_ng_block_flow.cc",
     "ng/layout_ng_block_flow.h",
+    "ng/ng_bidi_paragraph.cc",
+    "ng/ng_bidi_paragraph.h",
     "ng/ng_block_layout_algorithm.cc",
     "ng/ng_block_layout_algorithm.h",
     "ng/ng_box.cc",

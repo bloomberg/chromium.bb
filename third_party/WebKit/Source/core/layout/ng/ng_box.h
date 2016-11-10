@@ -46,6 +46,7 @@ class CORE_EXPORT NGBox final : public GarbageCollectedFinalized<NGBox> {
   bool ComputeMinAndMaxContentSizes(MinAndMaxContentSizes*);
 
   const ComputedStyle* Style() const;
+  ComputedStyle* MutableStyle();
 
   NGBox* NextSibling();
 

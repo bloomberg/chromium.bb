@@ -48,7 +48,8 @@ bool NGBox::Layout(const NGConstraintSpace* constraint_space,
 
       if (HasInlineChildren()) {
         layout_algorithm_ = new NGInlineLayoutAlgorithm(
-            Style(), new NGInlineBox(layout_box_->slowFirstChild()),
+            Style(),
+            new NGInlineBox(layout_box_->slowFirstChild(), MutableStyle()),
             child_constraint_space);
       } else {
         layout_algorithm_ = new NGBlockLayoutAlgorithm(Style(), FirstChild(),
@@ -154,6 +155,13 @@ bool NGBox::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
   sizes->max_content = fragment->InlineOverflow();
   minmax_algorithm_ = nullptr;
   return true;
+}
+
+ComputedStyle* NGBox::MutableStyle() {
+  if (style_)
+    return style_.get();
+  DCHECK(layout_box_);
+  return layout_box_->mutableStyle();
 }
 
 const ComputedStyle* NGBox::Style() const {
