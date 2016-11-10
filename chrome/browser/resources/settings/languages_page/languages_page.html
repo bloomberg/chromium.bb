@@ -59,6 +59,11 @@
       paper-checkbox.dropdown-item {
         --checkbox-margin-start: 0;
       }
+
+      #uiLanguageItem:focus,
+      #offerTranslations:focus {
+        background-color: transparent;
+      }
     </style>
     <settings-languages languages="{{languages}}" prefs="{{prefs}}"
         language-helper="{{languageHelper}}">
@@ -206,7 +211,7 @@
                 $i18n{displayInThisLanguage}
             </paper-checkbox>
 </if>
-            <paper-checkbox class="dropdown-item"
+            <paper-checkbox id="offerTranslations" class="dropdown-item"
                 checked="[[detailLanguage_.translateEnabled]]"
                 on-change="onTranslateCheckboxChange_"
                 hidden="[[!prefs.translate.enabled.value]]"
