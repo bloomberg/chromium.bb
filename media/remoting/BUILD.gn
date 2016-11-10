@@ -24,6 +24,7 @@ source_set("rpc") {
 
   deps = [
     "//base",
+    "//media",
   ]
 
   public_deps = [

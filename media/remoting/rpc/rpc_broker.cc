@@ -9,7 +9,6 @@
 #include "base/atomic_sequence_num.h"
 #include "base/logging.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/remoting/rpc/proto_utils.h"
 
 namespace media {
 namespace remoting {
