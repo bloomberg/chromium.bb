@@ -23,7 +23,6 @@
 #include "components/offline_pages/client_namespace_constants.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "net/base/filename_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 
@@ -158,8 +157,8 @@ void DownloadSuggestionsProvider::FetchSuggestionImage(
     const ntp_snippets::ImageFetchedCallback& callback) {
   // TODO(vitaliii): Fetch proper thumbnail from OfflinePageModel once it is
   // available there.
-  // TODO(vitaliii): Provide site's favicon for assets downloads. See
-  // crbug.com/631447.
+  // TODO(vitaliii): Provide site's favicon for assets downloads or file type.
+  // See crbug.com/631447.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, gfx::Image()));
 }
@@ -425,12 +424,10 @@ ContentSuggestion DownloadSuggestionsProvider::ConvertOfflinePage(
 
 ContentSuggestion DownloadSuggestionsProvider::ConvertDownloadItem(
     const DownloadItem& download_item) const {
-  // TODO(vitaliii): Ensure that files are opened in browser, but not downloaded
-  // again. See crbug.com/641568.
   ContentSuggestion suggestion(
       ContentSuggestion::ID(provided_category_, GetAssetDownloadPerCategoryID(
                                                     download_item.GetId())),
-      net::FilePathToFileURL(download_item.GetTargetFilePath()));
+      download_item.GetOriginalUrl());
   // TODO(vitaliii): Set proper title.
   suggestion.set_title(
       download_item.GetTargetFilePath().BaseName().LossyDisplayName());
@@ -442,7 +439,6 @@ ContentSuggestion DownloadSuggestionsProvider::ConvertDownloadItem(
   extra->mime_type = download_item.GetMimeType();
   extra->is_download_asset = true;
   suggestion.set_download_suggestion_extra(std::move(extra));
-  // TODO(vitaliii): Set suggestion icon.
   return suggestion;
 }
 

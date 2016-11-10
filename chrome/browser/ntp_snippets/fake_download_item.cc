@@ -52,7 +52,7 @@ uint32_t FakeDownloadItem::GetId() const {
   return id_;
 }
 
-void FakeDownloadItem::SetURL(GURL url) {
+void FakeDownloadItem::SetURL(const GURL& url) {
   url_ = url;
 }
 
@@ -99,6 +99,14 @@ void FakeDownloadItem::SetMimeType(const std::string& mime_type) {
 
 std::string FakeDownloadItem::GetMimeType() const {
   return mime_type_;
+}
+
+void FakeDownloadItem::SetOriginalUrl(const GURL& url) {
+  original_url_ = url;
+}
+
+const GURL& FakeDownloadItem::GetOriginalUrl() const {
+  return original_url_;
 }
 
 // The methods below are not supported and are not expected to be called.
@@ -169,11 +177,6 @@ bool FakeDownloadItem::IsDone() const {
 const std::vector<GURL>& FakeDownloadItem::GetUrlChain() const {
   NOTREACHED();
   return dummy_url_vector;
-}
-
-const GURL& FakeDownloadItem::GetOriginalUrl() const {
-  NOTREACHED();
-  return dummy_url;
 }
 
 const GURL& FakeDownloadItem::GetReferrerUrl() const {

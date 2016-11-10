@@ -39,7 +39,7 @@ class FakeDownloadItem : public content::DownloadItem {
   void SetId(uint32_t id);
   uint32_t GetId() const override;
 
-  void SetURL(GURL url);
+  void SetURL(const GURL& url);
   const GURL& GetURL() const override;
 
   void SetTargetFilePath(const base::FilePath& file_path);
@@ -57,6 +57,9 @@ class FakeDownloadItem : public content::DownloadItem {
   void SetMimeType(const std::string& mime_type);
   std::string GetMimeType() const override;
 
+  void SetOriginalUrl(const GURL& url);
+  const GURL& GetOriginalUrl() const override;
+
   // The methods below are not supported and are not expected to be called.
   void ValidateDangerousDownload() override;
   void StealDangerousDownload(const AcquireFileCallback& callback) override;
@@ -73,7 +76,6 @@ class FakeDownloadItem : public content::DownloadItem {
   bool CanResume() const override;
   bool IsDone() const override;
   const std::vector<GURL>& GetUrlChain() const override;
-  const GURL& GetOriginalUrl() const override;
   const GURL& GetReferrerUrl() const override;
   const GURL& GetSiteUrl() const override;
   const GURL& GetTabUrl() const override;
@@ -126,6 +128,7 @@ class FakeDownloadItem : public content::DownloadItem {
   base::Time end_time_;
   DownloadState download_state_;
   std::string mime_type_;
+  GURL original_url_;
 
   // The members below are to be returned by methods, which return by reference.
   std::string dummy_string;

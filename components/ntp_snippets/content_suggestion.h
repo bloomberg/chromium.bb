@@ -21,8 +21,6 @@ namespace ntp_snippets {
 // download suggestions.
 struct DownloadSuggestionExtra {
   // The file path of the downloaded file once download completes.
-  // TODO(tschumann): Consider removing this if the Java side doesn't need the
-  // file location and can just get everything out of the URI.
   base::FilePath target_file_path;
   // The effective MIME type of downloaded content.
   std::string mime_type;
