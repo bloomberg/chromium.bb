@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilterHos
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContextualSearchClient;
+import org.chromium.content.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -86,7 +87,11 @@ public class ContextualSearchTapEventTest extends ChromeActivityTestCaseBase<Chr
                 WindowAndroid windowAndroid) {
             super(activity, windowAndroid, null);
             setSelectionController(new MockCSSelectionController(activity, this));
-            getSelectionController().getBaseContentView().setContextualSearchClient(this);
+            ContentViewCore contentView = getSelectionController().getBaseContentView();
+            contentView.setSelectionPopupControllerForTesting(
+                    new SelectionPopupController(activity, null, null, null,
+                            contentView.getRenderCoordinates(), null));
+            contentView.setContextualSearchClient(this);
             MockContextualSearchPolicy policy = new MockContextualSearchPolicy(activity);
             setContextualSearchPolicy(policy);
             mTranslateController = new MockedCSTranslateController(activity, policy, null);

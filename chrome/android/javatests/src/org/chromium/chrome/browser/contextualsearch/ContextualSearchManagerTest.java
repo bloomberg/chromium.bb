@@ -1997,7 +1997,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                contentViewCore.hideSelectActionMode();
+                contentViewCore.destroySelectActionMode();
             }
         });
         assertWaitForSelectActionBarVisible(false);

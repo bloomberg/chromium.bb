@@ -672,6 +672,14 @@ int WebContentsAndroid::DownloadImage(
                      env, jcallback))));
 }
 
+void WebContentsAndroid::DismissTextHandles(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
+  if (view)
+    view->DismissTextHandles();
+}
+
 void WebContentsAndroid::OnFinishGetContentBitmap(
     ScopedJavaGlobalRef<jobject>* obj,
     ScopedJavaGlobalRef<jobject>* callback,

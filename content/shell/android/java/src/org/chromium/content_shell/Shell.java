@@ -9,7 +9,10 @@ import android.content.Context;
 import android.graphics.drawable.ClipDrawable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.view.ActionMode;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
@@ -29,6 +32,7 @@ import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewRenderView;
+import org.chromium.content_public.browser.ActionModeCallbackHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
@@ -294,6 +298,7 @@ public class Shell extends LinearLayout {
         ContentView cv = ContentView.createContentView(context, mContentViewCore);
         mContentViewCore.initialize(ViewAndroidDelegate.createBasicDelegate(cv), cv,
                 webContents, mWindow);
+        mContentViewCore.setActionModeCallback(defaultActionCallback());
         mContentViewCore.setContentViewClient(mContentViewClient);
         mWebContents = mContentViewCore.getWebContents();
         mNavigationController = mWebContents.getNavigationController();
@@ -307,6 +312,38 @@ public class Shell extends LinearLayout {
                         FrameLayout.LayoutParams.MATCH_PARENT));
         cv.requestFocus();
         mContentViewRenderView.setCurrentContentViewCore(mContentViewCore);
+    }
+
+    /**
+     * {link @ActionMode.Callback} that uses the default implementation in
+     * {@link SelectionPopupController}.
+     */
+    private ActionMode.Callback defaultActionCallback() {
+        final ActionModeCallbackHelper helper =
+                mContentViewCore.getActionModeCallbackHelper();
+
+        return new ActionMode.Callback() {
+            @Override
+            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                helper.onCreateActionMode(mode, menu);
+                return true;
+            }
+
+            @Override
+            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                return helper.onPrepareActionMode(mode, menu);
+            }
+
+            @Override
+            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                return helper.onActionItemClicked(mode, item);
+            }
+
+            @Override
+            public void onDestroyActionMode(ActionMode mode) {
+                helper.onDestroyActionMode();
+            }
+        };
     }
 
     @CalledByNative

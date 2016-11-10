@@ -825,13 +825,15 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
         onContainerViewChanged();
     }
 
-    private static void initializeContentViewCore(ContentViewCore contentViewCore,
+    private void initializeContentViewCore(ContentViewCore contentViewCore,
             Context context, ViewAndroidDelegate viewDelegate,
             InternalAccessDelegate internalDispatcher, WebContents webContents,
             GestureStateListener gestureStateListener, ContentViewClient contentViewClient,
             ContentViewCore.ZoomControlsDelegate zoomControlsDelegate,
             WindowAndroid windowAndroid) {
         contentViewCore.initialize(viewDelegate, internalDispatcher, webContents, windowAndroid);
+        contentViewCore.setActionModeCallback(
+                new AwActionModeCallback(this, contentViewCore.getActionModeCallbackHelper()));
         contentViewCore.addGestureStateListener(gestureStateListener);
         contentViewCore.setContentViewClient(contentViewClient);
         contentViewCore.setZoomControlsDelegate(zoomControlsDelegate);

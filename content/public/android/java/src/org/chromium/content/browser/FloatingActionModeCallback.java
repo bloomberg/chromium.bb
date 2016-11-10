@@ -12,42 +12,46 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import org.chromium.content_public.browser.ActionModeCallbackHelper;
+
 /**
- * A wrapper for SelectActionModeCallback that extends ActionMode.Callback2 to
- * support floating ActionModes.
+ * A class thatextends ActionMode.Callback2 to support floating ActionModes.
  */
 @TargetApi(Build.VERSION_CODES.M)
-public class FloatingWebActionModeCallback extends ActionMode.Callback2 {
-    private final WebActionModeCallback mWrappedCallback;
+class FloatingActionModeCallback extends ActionMode.Callback2 {
+    private final ActionModeCallbackHelper mHelper;
+    private final ActionMode.Callback mCallback;
 
-    public FloatingWebActionModeCallback(WebActionModeCallback wrappedCallback) {
-        mWrappedCallback = wrappedCallback;
+    public FloatingActionModeCallback(ActionModeCallbackHelper helper,
+            ActionMode.Callback callback) {
+        mHelper = helper;
+        mCallback = callback;
     }
 
     @Override
     public boolean onCreateActionMode(ActionMode mode, Menu menu) {
         // If the created ActionMode isn't actually floating, abort creation altogether.
         if (mode.getType() != ActionMode.TYPE_FLOATING) return false;
-        return mWrappedCallback.onCreateActionMode(mode, menu);
+        return mCallback.onCreateActionMode(mode, menu);
     }
 
     @Override
     public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-        return mWrappedCallback.onPrepareActionMode(mode, menu);
+        return mCallback.onPrepareActionMode(mode, menu);
     }
 
     @Override
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-        return mWrappedCallback.onActionItemClicked(mode, item);
+        return mCallback.onActionItemClicked(mode, item);
     }
 
     @Override
     public void onDestroyActionMode(ActionMode mode) {
-        mWrappedCallback.onDestroyActionMode(mode);
+        mCallback.onDestroyActionMode(mode);
     }
 
     @Override
     public void onGetContentRect(ActionMode mode, View view, Rect outRect) {
-        mWrappedCallback.onGetContentRect(mode, view, outRect);
+        mHelper.onGetContentRect(mode, view, outRect);
     }
 }

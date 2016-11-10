@@ -80,10 +80,13 @@ public class PopupZoomerTest extends ContentShellTestBase {
         super.setUp();
         mPopupZoomer = createPopupZoomerForTest(getInstrumentation().getTargetContext());
         mContentViewCore = new ContentViewCore(getActivity(), "");
+        ImeAdapter imeAdapter = new ImeAdapter(new TestInputMethodManagerWrapper(mContentViewCore),
+                new TestImeAdapterDelegate(getContentViewCore().getContainerView()));
+        mContentViewCore.setSelectionPopupControllerForTesting(
+                new SelectionPopupController(getActivity(), null, null, null,
+                        mContentViewCore.getRenderCoordinates(), imeAdapter));
         mContentViewCore.setPopupZoomerForTest(mPopupZoomer);
-        mContentViewCore.setImeAdapterForTest(
-                new ImeAdapter(new TestInputMethodManagerWrapper(mContentViewCore),
-                        new TestImeAdapterDelegate(getContentViewCore().getContainerView())));
+        mContentViewCore.setImeAdapterForTest(imeAdapter);
     }
 
     @SmallTest

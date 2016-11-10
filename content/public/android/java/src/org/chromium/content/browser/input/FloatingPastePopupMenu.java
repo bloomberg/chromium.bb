@@ -6,15 +6,17 @@ package org.chromium.content.browser.input;
 
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Build;
 import android.util.TypedValue;
 import android.view.ActionMode;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 
-import org.chromium.content.browser.FloatingWebActionModeCallback;
-import org.chromium.content.browser.WebActionModeCallback;
+import org.chromium.content.R;
+import org.chromium.content.browser.SelectionPopupController;
+import org.chromium.ui.base.DeviceFormFactor;
 
 /**
  * Paste popup implementation based on floating ActionModes.
@@ -38,7 +40,6 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
     private final int mSlopLengthSquared;
 
     private ActionMode mActionMode;
-    private WebActionModeCallback.ActionHandler mActionHandler;
     private int mRawPositionX;
     private int mRawPositionY;
 
@@ -106,9 +107,8 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
         if (mActionMode != null) return;
         if (mFallbackPastePopupMenu != null) return;
 
-        ActionMode.Callback2 callback2 = new FloatingWebActionModeCallback(
-                new WebActionModeCallback(mParent.getContext(), getActionHandler()));
-        ActionMode actionMode = mParent.startActionMode(callback2, ActionMode.TYPE_FLOATING);
+        ActionMode actionMode = mParent.startActionMode(
+                new ActionModeCallback(), ActionMode.TYPE_FLOATING);
         if (actionMode != null) {
             // crbug.com/651706
             LGEmailActionModeWorkaround.runIfNecessary(mContext, actionMode);
@@ -121,70 +121,50 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
         }
     }
 
-    private WebActionModeCallback.ActionHandler getActionHandler() {
-        if (mActionHandler != null) return mActionHandler;
-        mActionHandler = new WebActionModeCallback.ActionHandler() {
-            @Override
-            public void selectAll() {}
+    private class ActionModeCallback extends ActionMode.Callback2 {
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            createPasteMenu(mode, menu);
+            return true;
+        }
 
-            @Override
-            public void cut() {}
+        private void createPasteMenu(ActionMode mode, Menu menu) {
+            mode.setTitle(DeviceFormFactor.isTablet(mContext)
+                    ? mContext.getString(R.string.actionbar_textselection_title) : null);
+            mode.setSubtitle(null);
+            SelectionPopupController.initializeMenu(mContext, mode, menu);
+            menu.removeItem(R.id.select_action_menu_select_all);
+            menu.removeItem(R.id.select_action_menu_cut);
+            menu.removeItem(R.id.select_action_menu_copy);
+            menu.removeItem(R.id.select_action_menu_share);
+            menu.removeItem(R.id.select_action_menu_web_search);
+        }
 
-            @Override
-            public void copy() {}
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
 
-            @Override
-            public void paste() {
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            if (item.getItemId() == R.id.select_action_menu_paste) {
                 mDelegate.paste();
+                mode.finish();
             }
+            return true;
+        }
 
-            @Override
-            public void share() {}
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            mActionMode = null;
+        }
 
-            @Override
-            public void search() {}
-
-            @Override
-            public void processText(Intent intent) {}
-
-            @Override
-            public boolean isSelectionPassword() {
-                return false;
-            }
-
-            @Override
-            public boolean isSelectionEditable() {
-                return true;
-            }
-
-            @Override
-            public boolean isInsertion() {
-                return true;
-            }
-
-            @Override
-            public void onDestroyActionMode() {
-                mActionMode = null;
-            }
-
-            @Override
-            public void onGetContentRect(Rect outRect) {
-                // Use a rect that spans above and below the insertion point.
-                // This avoids paste popup overlap with selection handles.
-                outRect.set(mRawPositionX - mContentRectOffset, mRawPositionY - mContentRectOffset,
-                        mRawPositionX + mContentRectOffset, mRawPositionY + mContentRectOffset);
-            }
-
-            @Override
-            public boolean isIncognito() {
-                return false;
-            }
-
-            @Override
-            public boolean isSelectActionModeAllowed(int actionModeItem) {
-                return false;
-            }
-        };
-        return mActionHandler;
-    }
+        @Override
+        public void onGetContentRect(ActionMode mode, View view, Rect outRect) {
+            // Use a rect that spans above and below the insertion point.
+            // This avoids paste popup overlap with selection handles.
+            outRect.set(mRawPositionX - mContentRectOffset, mRawPositionY - mContentRectOffset,
+                    mRawPositionX + mContentRectOffset, mRawPositionY + mContentRectOffset);
+        }
+    };
 }

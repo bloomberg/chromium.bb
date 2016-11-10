@@ -5,7 +5,6 @@
 package org.chromium.android_webview;
 
 import android.content.Context;
-import android.content.Intent;
 import android.view.KeyEvent;
 
 import org.chromium.content.browser.ContentViewClient;
@@ -54,20 +53,5 @@ public class AwContentViewClient extends ContentViewClient {
         }
 
         return super.shouldOverrideKeyEvent(event);
-    }
-
-    @Override
-    public boolean doesPerformProcessText() {
-        return true;
-    }
-
-    @Override
-    public void startProcessTextIntent(Intent intent) {
-        mAwContents.startProcessTextIntent(intent);
-    }
-
-    @Override
-    public boolean isSelectActionModeAllowed(int actionModeItem) {
-        return mAwContents.isSelectActionModeAllowed(actionModeItem);
     }
 }

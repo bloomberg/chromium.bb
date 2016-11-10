@@ -189,6 +189,8 @@ class CONTENT_EXPORT WebContentsAndroid
                     jint max_bitmap_size,
                     jboolean bypass_cache,
                     const base::android::JavaParamRef<jobject>& jcallback);
+  void DismissTextHandles(JNIEnv* env,
+                          const base::android::JavaParamRef<jobject>& obj);
 
   void SetMediaSession(
       const base::android::ScopedJavaLocalRef<jobject>& j_media_session);

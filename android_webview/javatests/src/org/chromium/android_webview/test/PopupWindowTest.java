@@ -127,7 +127,8 @@ public class PopupWindowTest extends AwTestBase {
         assertTrue(runTestOnUiThreadAndGetResult(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                return popupContents.getContentViewCore().hasSelection();
+                return popupContents.getContentViewCore()
+                        .getSelectionPopupControllerForTesting().hasSelection();
             }
         }));
 
@@ -157,7 +158,7 @@ public class PopupWindowTest extends AwTestBase {
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                cvc.hideSelectActionMode();
+                cvc.destroySelectActionMode();
             }
         });
     }

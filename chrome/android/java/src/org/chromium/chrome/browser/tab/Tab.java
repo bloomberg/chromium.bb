@@ -38,6 +38,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.blimp_public.contents.BlimpContents;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActionModeCallback;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -68,13 +69,11 @@ import org.chromium.chrome.browser.ntp.NativePageAssassin;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
-import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.rlz.RevenueStats;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
@@ -399,20 +398,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         }
 
         @Override
-        public void onContextualActionBarShown() {
-            for (TabObserver observer : mObservers) {
-                observer.onContextualActionBarVisibilityChanged(Tab.this, true);
-            }
-        }
-
-        @Override
-        public void onContextualActionBarHidden() {
-            for (TabObserver observer : mObservers) {
-                observer.onContextualActionBarVisibilityChanged(Tab.this, false);
-            }
-        }
-
-        @Override
         public void onImeEvent() {
             // Some text was set in the page. Don't reuse it if a tab is
             // open from the same external application, we might lose some
@@ -424,26 +409,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         public void onFocusedNodeEditabilityChanged(boolean editable) {
             if (getFullscreenManager() == null) return;
             updateFullscreenEnabledState();
-        }
-
-        @Override
-        public boolean doesPerformWebSearch() {
-            return true;
-        }
-
-        @Override
-        public void performWebSearch(String searchQuery) {
-            if (TextUtils.isEmpty(searchQuery)) return;
-            if (getTabModelSelector() == null) return;
-            String url = TemplateUrlService.getInstance().getUrlForSearchQuery(searchQuery);
-            String headers = GeolocationHeader.getGeoHeader(getApplicationContext(), url,
-                    isIncognito());
-
-            LoadUrlParams loadUrlParams = new LoadUrlParams(url);
-            loadUrlParams.setVerbatimHeaders(headers);
-            loadUrlParams.setTransitionType(PageTransition.GENERATED);
-            getTabModelSelector().openNewTab(loadUrlParams,
-                    TabLaunchType.FROM_LONGPRESS_FOREGROUND, Tab.this, isIncognito());
         }
 
         @Override
@@ -784,6 +749,16 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
+     * Called when the contextual ActionBar is shown or hidden.
+     * @param show {@code true} when the ActionBar is shown; {@code false} otherwise.
+     */
+    public void notifyContextualActionBarVisibilityChanged(boolean show) {
+        for (TabObserver observer : mObservers) {
+            observer.onContextualActionBarVisibilityChanged(this, show);
+        }
+    }
+
+    /**
      * Load the original image (uncompressed by spdy proxy) in this tab.
      */
     void loadOriginalImage() {
@@ -869,7 +844,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @return {@link TabModelSelector} that currently hosts the {@link TabModel} for this
      *         {@link Tab}.
      */
-    TabModelSelector getTabModelSelector() {
+    public TabModelSelector getTabModelSelector() {
         if (getActivity() == null) return null;
         return getActivity().getTabModelSelector();
     }
@@ -1724,13 +1699,20 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      *                    {@link ContentViewCore}.
      */
     protected void initContentViewCore(WebContents webContents) {
+        setContentViewCore(createContentViewCore(webContents));
+    }
+
+    private ContentViewCore createContentViewCore(WebContents webContents) {
         ContentViewCore cvc = new ContentViewCore(mThemedApplicationContext, PRODUCT_VERSION);
         ContentView cv = ContentView.createContentView(mThemedApplicationContext, cvc);
         cv.setContentDescription(mThemedApplicationContext.getResources().getString(
                 R.string.accessibility_content_view));
         cvc.initialize(ViewAndroidDelegate.createBasicDelegate(cv), cv, webContents,
                 getWindowAndroid());
-        setContentViewCore(cvc);
+        ChromeActionModeCallback actionModeCallback = new ChromeActionModeCallback(
+                mThemedApplicationContext, this, cvc.getActionModeCallbackHelper());
+        cvc.setActionModeCallback(actionModeCallback);
+        return cvc;
     }
 
     /**
@@ -2409,12 +2391,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     @CalledByNative
     public void swapWebContents(
             WebContents webContents, boolean didStartLoad, boolean didFinishLoad) {
-        ContentViewCore cvc = new ContentViewCore(mThemedApplicationContext, PRODUCT_VERSION);
-        ContentView cv = ContentView.createContentView(mThemedApplicationContext, cvc);
-        cv.setContentDescription(mThemedApplicationContext.getResources().getString(
-                R.string.accessibility_content_view));
-        cvc.initialize(ViewAndroidDelegate.createBasicDelegate(cv), cv, webContents,
-                getWindowAndroid());
+        ContentViewCore cvc = createContentViewCore(webContents);
         swapContentViewCore(cvc, false, didStartLoad, didFinishLoad);
     }
 

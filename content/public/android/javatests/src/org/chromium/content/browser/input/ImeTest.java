@@ -27,6 +27,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content.browser.SelectionPopupController;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
@@ -57,6 +58,7 @@ public class ImeTest extends ContentShellTestBase {
 
     private ContentViewCore mContentViewCore;
     private WebContents mWebContents;
+    private SelectionPopupController mSelectionPopupController;
     private TestCallbackHelperContainer mCallbackContainer;
     protected TestInputMethodManagerWrapper mInputMethodManagerWrapper;
 
@@ -65,6 +67,7 @@ public class ImeTest extends ContentShellTestBase {
         super.setUp();
         startActivityWithTestUrl(INPUT_FORM_HTML);
         mContentViewCore = getContentViewCore();
+        mSelectionPopupController = mContentViewCore.getSelectionPopupControllerForTesting();
         mWebContents = getWebContents();
 
         mInputMethodManagerWrapper = new TestInputMethodManagerWrapper(mContentViewCore);
@@ -1191,7 +1194,7 @@ public class ImeTest extends ContentShellTestBase {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return mContentViewCore.isPastePopupShowing();
+                return mSelectionPopupController.isPastePopupShowing();
             }
         });
 
@@ -1199,10 +1202,10 @@ public class ImeTest extends ContentShellTestBase {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return !mContentViewCore.isPastePopupShowing();
+                return !mSelectionPopupController.isPastePopupShowing();
             }
         });
-        assertFalse(mContentViewCore.hasInsertion());
+        assertFalse(mSelectionPopupController.isInsertion());
     }
 
     @SmallTest
@@ -1216,7 +1219,7 @@ public class ImeTest extends ContentShellTestBase {
 
         setComposingText("h", 1);
         assertWaitForSelectActionBarStatus(false);
-        assertFalse(mContentViewCore.hasSelection());
+        assertFalse(mSelectionPopupController.hasSelection());
     }
 
     @SmallTest
@@ -1225,11 +1228,11 @@ public class ImeTest extends ContentShellTestBase {
     public void testTextHandlesPreservedWithDpadNavigation() throws Throwable {
         DOMUtils.longPressNode(this, mContentViewCore, "plain_text");
         assertWaitForSelectActionBarStatus(true);
-        assertTrue(mContentViewCore.hasSelection());
+        assertTrue(mSelectionPopupController.hasSelection());
 
         dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_DOWN));
         assertWaitForSelectActionBarStatus(true);
-        assertTrue(mContentViewCore.hasSelection());
+        assertTrue(mSelectionPopupController.hasSelection());
     }
 
     @MediumTest

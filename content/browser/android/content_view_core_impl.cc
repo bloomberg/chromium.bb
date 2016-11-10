@@ -1170,13 +1170,6 @@ void ContentViewCoreImpl::PinchBy(JNIEnv* env,
   SendGestureEvent(event);
 }
 
-void ContentViewCoreImpl::DismissTextHandles(JNIEnv* env,
-                                             const JavaParamRef<jobject>& obj) {
-  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
-  if (rwhv)
-    rwhv->DismissTextHandles();
-}
-
 void ContentViewCoreImpl::SetTextHandlesTemporarilyHidden(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

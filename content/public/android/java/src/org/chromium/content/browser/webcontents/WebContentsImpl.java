@@ -451,6 +451,11 @@ import java.util.UUID;
         callback.onFinishDownloadImage(id, httpStatusCode, imageUrl, bitmaps, sizes);
     }
 
+    @Override
+    public void dismissTextHandles() {
+        nativeDismissTextHandles(mNativeWebContentsAndroid);
+    }
+
     @CalledByNative
     private final void setMediaSession(MediaSessionImpl mediaSession) {
         mMediaSession = mediaSession;
@@ -535,4 +540,5 @@ import java.util.UUID;
     private native int nativeDownloadImage(long nativeWebContentsAndroid,
             String url, boolean isFavicon, int maxBitmapSize,
             boolean bypassCache, ImageDownloadCallback callback);
+    private native void nativeDismissTextHandles(long nativeWebContentsAndroid);
 }

@@ -118,6 +118,11 @@ public interface WebContents extends Parcelable {
     void onShow();
 
     /**
+     * Removes handles used in text selection.
+     */
+    void dismissTextHandles();
+
+    /**
      * Suspends all media players for this WebContents.  Note: There may still
      * be activities generating audio, so setAudioMuted() should also be called
      * to ensure all audible activity is silenced.

@@ -539,6 +539,7 @@ source_set("common") {
 android_library("android_webview_java") {
   java_files = [
     "java/src/org/chromium/android_webview/AndroidProtocolHandler.java",
+    "java/src/org/chromium/android_webview/AwActionModeCallback.java",
     "java/src/org/chromium/android_webview/AwAutofillClient.java",
     "java/src/org/chromium/android_webview/AwBrowserContext.java",
     "java/src/org/chromium/android_webview/AwBrowserProcess.java",
