@@ -71,7 +71,7 @@ class UI_ANDROID_EXPORT CrushedSpriteResource {
   int GetFrameCount();
 
   // Returns the memory usage of the bitmap.
-  size_t GetAllocatedSizeInBytes() const;
+  size_t EstimateMemoryUsage() const;
 
  private:
   SkBitmap bitmap_;

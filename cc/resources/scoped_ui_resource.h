@@ -33,9 +33,7 @@ class CC_EXPORT ScopedUIResource : public UIResourceClient {
   UIResourceId id() { return id_; }
 
   // Returns the memory usage of the bitmap.
-  size_t GetAllocatedSizeInBytes() const {
-    return bitmap_.GetAllocatedSizeInBytes();
-  }
+  size_t EstimateMemoryUsage() const { return bitmap_.EstimateMemoryUsage(); }
 
  protected:
   ScopedUIResource(UIResourceManager* ui_resource_manager,

@@ -4,6 +4,7 @@
 
 #include "ui/android/resources/resource_manager.h"
 
+#include "base/trace_event/memory_usage_estimator.h"
 #include "ui/gfx/geometry/insets_f.h"
 
 namespace ui {
@@ -33,6 +34,10 @@ gfx::Rect ResourceManager::Resource::Border(const gfx::Size& bounds,
   return gfx::Rect(aperture.x() * left_scale, aperture.y() * top_scale,
                    (size.width() - aperture.width()) * right_scale,
                    (size.height() - aperture.height()) * bottom_scale);
+}
+
+size_t ResourceManager::Resource::EstimateMemoryUsage() const {
+  return base::trace_event::EstimateMemoryUsage(ui_resource);
 }
 
 }  // namespace ui

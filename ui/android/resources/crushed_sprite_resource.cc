@@ -59,7 +59,7 @@ int CrushedSpriteResource::GetFrameCount() {
   return src_dst_rects_.size();
 }
 
-size_t CrushedSpriteResource::GetAllocatedSizeInBytes() const {
+size_t CrushedSpriteResource::EstimateMemoryUsage() const {
   return bitmap_.getSize();
 }
 
