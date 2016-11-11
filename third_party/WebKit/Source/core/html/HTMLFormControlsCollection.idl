@@ -26,7 +26,6 @@
     SetWrapperReferenceFrom=ownerNode,
 ] interface HTMLFormControlsCollection : HTMLCollection {
     // inherits length and item()
-    // FIXME: namedItem() should be a legacycaller. crbug.com/465009
     [ImplementedAs=namedGetter] getter (RadioNodeList or Element)? namedItem(DOMString name); // shadows inherited namedItem()
     // FIXME: This getter is not in the spec.
     [ImplementedAs=item] getter Node (unsigned long index);

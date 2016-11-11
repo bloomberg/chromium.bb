@@ -20,6 +20,8 @@
 
 // https://html.spec.whatwg.org/#the-object-element
 
+// TODO(foolip): HTMLObjectElement should not have
+// [Custom=LegacyCallAsFunction]. https://crbug.com/663662
 // TODO(yukishiino): HTMLObjectElement should not have [OverrideBuiltins].
 [
     Custom=LegacyCallAsFunction,
@@ -44,8 +46,6 @@
     boolean checkValidity();
     boolean reportValidity();
     void setCustomValidity(DOMString error);
-
-    // TODO(foolip): legacycaller any (any... arguments); crbug.com/465009
 
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLObjectElement-partial
