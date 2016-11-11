@@ -802,6 +802,12 @@ bool RenderProcessHostImpl::Init() {
 
   sent_render_process_ready_ = false;
 
+  // We may reach Init() during process death notification (e.g.
+  // RenderProcessExited on some observer). In this case the Channel may be
+  // null, so we re-initialize it here.
+  if (!channel_)
+    InitializeChannelProxy();
+
   // Unpause the Channel briefly. This will be paused again below if we launch a
   // real child process. Note that messages may be sent in the short window
   // between now and then (e.g. in response to RenderProcessWillLaunch) and we
@@ -809,7 +815,6 @@ bool RenderProcessHostImpl::Init() {
   //
   // |channel_| must always be non-null here: either it was initialized in
   // the constructor, or in the most recent call to ProcessDied().
-  DCHECK(channel_);
   channel_->Unpause(false /* flush */);
 
   // Call the embedder first so that their IPC filters have priority.
