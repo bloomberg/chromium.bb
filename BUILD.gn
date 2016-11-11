@@ -997,6 +997,7 @@ if (is_android) {
 } else {
   data_dir = "common"
 }
+# TODO(GYP): Support to use host byteorder to select the icu date file
 if (current_cpu == "mips" || current_cpu == "mips64") {
   data_bundle_prefix = "icudtb"
 } else {
