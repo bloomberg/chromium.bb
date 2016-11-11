@@ -69,7 +69,7 @@ check_targets = [
   #"//media/*",  # Lots of errors.
   #"//media/base/*",
   #"//media/capture/*",
-  #"//media/cast/*",
+  "//media/cast/*",
   "//media:media",
   "//media:shared_memory_support",
   "//media:media_unittests",
