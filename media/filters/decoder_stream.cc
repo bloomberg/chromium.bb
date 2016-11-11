@@ -56,7 +56,6 @@ DecoderStream<StreamType>::DecoderStream(
                                                         std::move(decoders),
                                                         media_log)),
       decoded_frames_since_fallback_(0),
-      active_splice_(false),
       decoding_eos_(false),
       pending_decode_requests_(0),
       duration_tracker_(8),
@@ -666,14 +665,6 @@ void DecoderStream<StreamType>::OnBufferReady(
     return;
   }
 
-  if (!splice_observer_cb_.is_null() && !buffer->end_of_stream()) {
-    const bool has_splice_ts = buffer->splice_timestamp() != kNoTimestamp;
-    if (active_splice_ || has_splice_ts) {
-      splice_observer_cb_.Run(buffer->splice_timestamp());
-      active_splice_ = has_splice_ts;
-    }
-  }
-
   DCHECK(status == DemuxerStream::kOk) << status;
   Decode(buffer);
 
@@ -778,7 +769,6 @@ void DecoderStream<StreamType>::OnDecoderReset() {
 
   if (state_ != STATE_FLUSHING_DECODER) {
     state_ = STATE_NORMAL;
-    active_splice_ = false;
     base::ResetAndReturn(&reset_cb_).Run();
     return;
   }

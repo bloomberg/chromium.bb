@@ -50,7 +50,6 @@ blink::WebMediaPlayer::NetworkState PipelineErrorToNetworkState(
     case CHUNK_DEMUXER_ERROR_APPEND_FAILED:
     case CHUNK_DEMUXER_ERROR_EOS_STATUS_DECODE_ERROR:
     case AUDIO_RENDERER_ERROR:
-    case AUDIO_RENDERER_ERROR_SPLICE_FAILED:
       return blink::WebMediaPlayer::NetworkStateDecodeError;
 
     case PIPELINE_OK:

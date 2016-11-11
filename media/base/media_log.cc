@@ -140,8 +140,6 @@ std::string MediaLog::PipelineStatusToString(PipelineStatus status) {
       return "chunk demuxer: application requested network error on eos";
     case AUDIO_RENDERER_ERROR:
       return "audio renderer: output device reported an error";
-    case AUDIO_RENDERER_ERROR_SPLICE_FAILED:
-      return "audio renderer: post-decode audio splicing failed";
   }
   NOTREACHED();
   return NULL;

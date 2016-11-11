@@ -118,7 +118,6 @@ class VideoFrameStreamTest
     DCHECK(!pending_stop_);
   }
 
-  MOCK_METHOD1(OnNewSpliceBuffer, void(base::TimeDelta));
   MOCK_METHOD0(OnWaitingForDecryptionKey, void(void));
 
   void OnStatistics(const PipelineStatistics& statistics) {
@@ -617,26 +616,6 @@ TEST_P(VideoFrameStreamTest, Reset_AfterNormalRead) {
   Initialize();
   Read();
   Reset();
-  Read();
-}
-
-TEST_P(VideoFrameStreamTest, Reset_AfterNormalReadWithActiveSplice) {
-  video_frame_stream_->set_splice_observer(base::Bind(
-      &VideoFrameStreamTest::OnNewSpliceBuffer, base::Unretained(this)));
-  Initialize();
-
-  // Send buffers with a splice timestamp, which sets the active splice flag.
-  const base::TimeDelta splice_timestamp = base::TimeDelta();
-  demuxer_stream_->set_splice_timestamp(splice_timestamp);
-  EXPECT_CALL(*this, OnNewSpliceBuffer(splice_timestamp)).Times(AnyNumber());
-  Read();
-
-  // Issue an explicit Reset() and clear the splice timestamp.
-  Reset();
-  demuxer_stream_->set_splice_timestamp(kNoTimestamp);
-
-  // Ensure none of the upcoming calls indicate they have a splice timestamp.
-  EXPECT_CALL(*this, OnNewSpliceBuffer(_)).Times(0);
   Read();
 }
 

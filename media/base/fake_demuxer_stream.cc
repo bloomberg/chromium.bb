@@ -61,7 +61,6 @@ void FakeDemuxerStream::Initialize() {
   num_buffers_returned_ = 0;
   current_timestamp_ = base::TimeDelta::FromMilliseconds(kStartTimestampMs);
   duration_ = base::TimeDelta::FromMilliseconds(kDurationMs);
-  splice_timestamp_ = kNoTimestamp;
   next_coded_size_ = gfx::Size(kStartWidth, kStartHeight);
   next_read_num_ = 0;
 }
@@ -206,7 +205,6 @@ void FakeDemuxerStream::DoRead() {
   }
   buffer->set_timestamp(current_timestamp_);
   buffer->set_duration(duration_);
-  buffer->set_splice_timestamp(splice_timestamp_);
   current_timestamp_ += duration_;
 
   num_buffers_left_in_current_config_--;

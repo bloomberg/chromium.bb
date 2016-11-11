@@ -460,7 +460,7 @@ int SourceBufferRange::GetNextConfigId() const {
   CHECK(HasNextBuffer()) << next_buffer_index_;
   // If the next buffer is an audio splice frame, the next effective config id
   // comes from the first fade out preroll buffer.
-  return buffers_[next_buffer_index_]->GetSpliceBufferConfigId(0);
+  return buffers_[next_buffer_index_]->GetConfigId();
 }
 
 DecodeTimestamp SourceBufferRange::GetNextTimestamp() const {

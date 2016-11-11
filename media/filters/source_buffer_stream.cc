@@ -1310,7 +1310,7 @@ SourceBufferStream::Status SourceBufferStream::GetNextBufferInternal(
 
     // If the next buffer is an audio splice frame, the next effective config id
     // comes from the first splice buffer.
-    if (next_buffer->GetSpliceBufferConfigId(0) != current_config_index_) {
+    if (next_buffer->GetConfigId() != current_config_index_) {
       config_change_pending_ = true;
       DVLOG(1) << "Config change (track buffer config ID does not match).";
       return kConfigChange;
@@ -1591,7 +1591,7 @@ void SourceBufferStream::CompleteConfigChange() {
   config_change_pending_ = false;
 
   if (!track_buffer_.empty()) {
-    current_config_index_ = track_buffer_.front()->GetSpliceBufferConfigId(0);
+    current_config_index_ = track_buffer_.front()->GetConfigId();
     return;
   }
 

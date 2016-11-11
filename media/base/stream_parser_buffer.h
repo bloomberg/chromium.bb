@@ -134,11 +134,6 @@ class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
   int GetConfigId() const;
   void SetConfigId(int config_id);
 
-  // Returns the config ID of this buffer if it has no splice buffers or
-  // |index| is out of range.  Otherwise returns the config ID for the
-  // buffer in |splice_buffers_| at position |index|.
-  int GetSpliceBufferConfigId(size_t index) const;
-
   // Gets the parser's media type associated with this buffer. Value is
   // meaningless for EOS buffers.
   Type type() const { return type_; }
@@ -148,24 +143,10 @@ class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
   // meaningless for EOS buffers.
   TrackId track_id() const { return track_id_; }
 
-  // Converts this buffer to a splice buffer.  |pre_splice_buffers| must not
-  // have any EOS buffers, must not have any splice buffers, nor must have any
-  // buffer with preroll.
-  //
-  // |pre_splice_buffers| will be deep copied and each copy's splice_timestamp()
-  // will be set to this buffer's splice_timestamp().  A copy of |this|, with a
-  // splice_timestamp() of kNoTimestamp, will be added to the end of
-  // |splice_buffers_|.
-  //
-  // See the Audio Splice Frame Algorithm in the MSE specification for details.
-  typedef StreamParser::BufferQueue BufferQueue;
-  void ConvertToSpliceBuffer(const BufferQueue& pre_splice_buffers);
-  const BufferQueue& splice_buffers() const { return splice_buffers_; }
-
   // Specifies a buffer which must be decoded prior to this one to ensure this
   // buffer can be accurately decoded.  The given buffer must be of the same
-  // type, must not be a splice buffer, must not have any discard padding, and
-  // must not be an end of stream buffer.  |preroll| is not copied.
+  // type, must not have any discard padding, and must not be an end of stream
+  // buffer.  |preroll| is not copied.
   //
   // It's expected that this preroll buffer will be discarded entirely post
   // decoding.  As such it's discard_padding() will be set to kInfiniteDuration.
@@ -199,7 +180,6 @@ class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
   int config_id_;
   Type type_;
   TrackId track_id_;
-  BufferQueue splice_buffers_;
   scoped_refptr<StreamParserBuffer> preroll_buffer_;
   bool is_duration_estimated_;
 

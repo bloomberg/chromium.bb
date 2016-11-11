@@ -47,7 +47,6 @@ namespace media {
 class AudioBufferConverter;
 class AudioBus;
 class AudioClock;
-class AudioSplicer;
 class DecryptingDemuxerStream;
 
 class MEDIA_EXPORT AudioRendererImpl
@@ -124,9 +123,10 @@ class MEDIA_EXPORT AudioRendererImpl
   void DecodedAudioReady(AudioBufferStream::Status status,
                          const scoped_refptr<AudioBuffer>& buffer);
 
-  // Handles buffers that come out of |splicer_|.
+  // Handles buffers that come out of decoder (MSE: after passing through
+  // |buffer_converter_|).
   // Returns true if more buffers are needed.
-  bool HandleSplicerBuffer_Locked(const scoped_refptr<AudioBuffer>& buffer);
+  bool HandleDecodedBuffer_Locked(const scoped_refptr<AudioBuffer>& buffer);
 
   // Helper functions for DecodeStatus values passed to
   // DecodedAudioReady().
@@ -190,9 +190,6 @@ class MEDIA_EXPORT AudioRendererImpl
   // Called when the |decoder_|.Reset() has completed.
   void ResetDecoderDone();
 
-  // Called by the AudioBufferStream when a splice buffer is demuxed.
-  void OnNewSpliceBuffer(base::TimeDelta);
-
   // Called by the AudioBufferStream when a config change occurs.
   void OnConfigChange();
 
@@ -201,7 +198,6 @@ class MEDIA_EXPORT AudioRendererImpl
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  std::unique_ptr<AudioSplicer> splicer_;
   std::unique_ptr<AudioBufferConverter> buffer_converter_;
 
   // Whether or not we expect to handle config changes.
@@ -231,7 +227,7 @@ class MEDIA_EXPORT AudioRendererImpl
   std::unique_ptr<base::TickClock> tick_clock_;
 
   // Memory usage of |algorithm_| recorded during the last
-  // HandleSplicerBuffer_Locked() call.
+  // HandleDecodedBuffer_Locked() call.
   int64_t last_audio_memory_usage_;
 
   // Sample rate of the last decoded audio buffer. Allows for detection of

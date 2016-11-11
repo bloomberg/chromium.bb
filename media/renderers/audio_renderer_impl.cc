@@ -21,7 +21,6 @@
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_buffer_converter.h"
 #include "media/base/audio_latency.h"
-#include "media/base/audio_splicer.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_log.h"
@@ -58,8 +57,6 @@ AudioRendererImpl::AudioRendererImpl(
       rendered_end_of_stream_(false),
       is_suspending_(false),
       weak_factory_(this) {
-  audio_buffer_stream_->set_splice_observer(base::Bind(
-      &AudioRendererImpl::OnNewSpliceBuffer, weak_factory_.GetWeakPtr()));
   audio_buffer_stream_->set_config_change_observer(base::Bind(
       &AudioRendererImpl::OnConfigChange, weak_factory_.GetWeakPtr()));
 
@@ -301,7 +298,6 @@ void AudioRendererImpl::ResetDecoderDone() {
     if (buffering_state_ != BUFFERING_HAVE_NOTHING)
       SetBufferingState_Locked(BUFFERING_HAVE_NOTHING);
 
-    splicer_->Reset();
     if (buffer_converter_)
       buffer_converter_->Reset();
     algorithm_->FlushBuffers();
@@ -466,7 +462,6 @@ void AudioRendererImpl::OnAudioBufferStreamInitialized(bool success) {
 
   if (expecting_config_changes_)
     buffer_converter_.reset(new AudioBufferConverter(audio_parameters_));
-  splicer_.reset(new AudioSplicer(audio_parameters_.sample_rate(), media_log_));
 
   // We're all good! Continue initializing the rest of the audio renderer
   // based on the decoder format.
@@ -561,6 +556,8 @@ void AudioRendererImpl::DecodedAudioReady(
     return;
   }
 
+  bool need_another_buffer = true;
+
   if (expecting_config_changes_) {
     if (last_decoded_sample_rate_ &&
         buffer->sample_rate() != last_decoded_sample_rate_) {
@@ -574,11 +571,10 @@ void AudioRendererImpl::DecodedAudioReady(
 
     DCHECK(buffer_converter_);
     buffer_converter_->AddInput(buffer);
+
     while (buffer_converter_->HasNextBuffer()) {
-      if (!splicer_->AddInput(buffer_converter_->GetNextBuffer())) {
-        HandleAbortedReadOrDecodeError(AUDIO_RENDERER_ERROR_SPLICE_FAILED);
-        return;
-      }
+      need_another_buffer =
+          HandleDecodedBuffer_Locked(buffer_converter_->GetNextBuffer());
     }
   } else {
     // TODO(chcunningham, tguilbert): Figure out if we want to support implicit
@@ -601,20 +597,8 @@ void AudioRendererImpl::DecodedAudioReady(
       return;
     }
 
-    if (!splicer_->AddInput(buffer)) {
-      HandleAbortedReadOrDecodeError(AUDIO_RENDERER_ERROR_SPLICE_FAILED);
-      return;
-    }
+    need_another_buffer = HandleDecodedBuffer_Locked(buffer);
   }
-
-  if (!splicer_->HasNextBuffer()) {
-    AttemptRead_Locked();
-    return;
-  }
-
-  bool need_another_buffer = false;
-  while (splicer_->HasNextBuffer())
-    need_another_buffer = HandleSplicerBuffer_Locked(splicer_->GetNextBuffer());
 
   if (!need_another_buffer && !CanRead_Locked())
     return;
@@ -622,7 +606,7 @@ void AudioRendererImpl::DecodedAudioReady(
   AttemptRead_Locked();
 }
 
-bool AudioRendererImpl::HandleSplicerBuffer_Locked(
+bool AudioRendererImpl::HandleDecodedBuffer_Locked(
     const scoped_refptr<AudioBuffer>& buffer) {
   lock_.AssertAcquired();
   if (buffer->end_of_stream()) {
@@ -935,20 +919,10 @@ void AudioRendererImpl::ChangeState_Locked(State new_state) {
   state_ = new_state;
 }
 
-void AudioRendererImpl::OnNewSpliceBuffer(base::TimeDelta splice_timestamp) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  splicer_->SetSpliceTimestamp(splice_timestamp);
-}
-
 void AudioRendererImpl::OnConfigChange() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(expecting_config_changes_);
   buffer_converter_->ResetTimestampState();
-  // Drain flushed buffers from the converter so the AudioSplicer receives all
-  // data ahead of any OnNewSpliceBuffer() calls.  Since discontinuities should
-  // only appear after config changes, AddInput() should never fail here.
-  while (buffer_converter_->HasNextBuffer())
-    CHECK(splicer_->AddInput(buffer_converter_->GetNextBuffer()));
 }
 
 void AudioRendererImpl::SetBufferingState_Locked(

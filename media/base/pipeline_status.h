@@ -44,7 +44,7 @@ enum PipelineStatus {
 
   // Audio rendering errors.
   AUDIO_RENDERER_ERROR = 19,
-  AUDIO_RENDERER_ERROR_SPLICE_FAILED = 20,
+  // Deprecated: AUDIO_RENDERER_ERROR_SPLICE_FAILED = 20,
 
   // Must be equal to the largest value ever logged.
   PIPELINE_STATUS_MAX = PIPELINE_ERROR_EXTERNAL_RENDERER_FAILED,

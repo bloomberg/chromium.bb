@@ -24,6 +24,8 @@
 namespace media {
 namespace mp2t {
 
+typedef StreamParser::BufferQueue BufferQueue;
+
 namespace {
 
 VideoDecoderConfig CreateFakeVideoConfig() {
@@ -35,13 +37,12 @@ VideoDecoderConfig CreateFakeVideoConfig() {
                             natural_size, EmptyExtraData(), Unencrypted());
 }
 
-StreamParserBuffer::BufferQueue
-GenerateFakeBuffers(const int* frame_pts_ms,
-                    const bool* is_key_frame,
-                    size_t frame_count) {
+BufferQueue GenerateFakeBuffers(const int* frame_pts_ms,
+                                const bool* is_key_frame,
+                                size_t frame_count) {
   uint8_t dummy_buffer[] = {0, 0, 0, 0};
 
-  StreamParserBuffer::BufferQueue buffers(frame_count);
+  BufferQueue buffers(frame_count);
   for (size_t k = 0; k < frame_count; k++) {
     buffers[k] = StreamParserBuffer::CopyFrom(
         dummy_buffer, arraysize(dummy_buffer),
@@ -66,7 +67,7 @@ class EsAdapterVideoTest : public testing::Test {
   // Feed the ES adapter with the buffers from |buffer_queue|.
   // Return the durations computed by the ES adapter as well as
   // whether each frame emitted by the adapter is a key frame.
-  std::string RunAdapterTest(const StreamParser::BufferQueue& buffer_queue);
+  std::string RunAdapterTest(const BufferQueue& buffer_queue);
 
  private:
   void OnNewConfig(const VideoDecoderConfig& video_config);
@@ -96,12 +97,12 @@ void EsAdapterVideoTest::OnNewBuffer(
 }
 
 std::string EsAdapterVideoTest::RunAdapterTest(
-    const StreamParserBuffer::BufferQueue& buffer_queue) {
+    const BufferQueue& buffer_queue) {
   buffer_descriptors_.clear();
 
   es_adapter_.OnConfigChanged(CreateFakeVideoConfig());
-  for (StreamParserBuffer::BufferQueue::const_iterator it =
-       buffer_queue.begin(); it != buffer_queue.end(); ++it) {
+  for (BufferQueue::const_iterator it = buffer_queue.begin();
+       it != buffer_queue.end(); ++it) {
     es_adapter_.OnNewBuffer(*it);
   }
   es_adapter_.Flush();
@@ -117,7 +118,7 @@ TEST_F(EsAdapterVideoTest, FrameDurationSimpleGop) {
   bool is_key_frame[] = {
     true, false, false, false,
     false, false, false, false };
-  StreamParserBuffer::BufferQueue buffer_queue =
+  BufferQueue buffer_queue =
       GenerateFakeBuffers(pts_ms, is_key_frame, arraysize(pts_ms));
 
   EXPECT_EQ("(1,Y) (2,N) (3,N) (4,N) (5,N) (6,N) (7,N) (7,N)",
@@ -130,7 +131,7 @@ TEST_F(EsAdapterVideoTest, FrameDurationComplexGop) {
   bool is_key_frame[] = {
     true, false, false, false, false,
     false, false, false, false, false };
-  StreamParserBuffer::BufferQueue buffer_queue =
+  BufferQueue buffer_queue =
       GenerateFakeBuffers(pts_ms, is_key_frame, arraysize(pts_ms));
 
   EXPECT_EQ("(30,Y) (30,N) (30,N) (30,N) (30,N) "
@@ -141,7 +142,7 @@ TEST_F(EsAdapterVideoTest, FrameDurationComplexGop) {
 TEST_F(EsAdapterVideoTest, LeadingNonKeyFrames) {
   int pts_ms[] = {30, 40, 50, 120, 150, 180};
   bool is_key_frame[] = {false, false, false, true, false, false};
-  StreamParserBuffer::BufferQueue buffer_queue =
+  BufferQueue buffer_queue =
       GenerateFakeBuffers(pts_ms, is_key_frame, arraysize(pts_ms));
 
   EXPECT_EQ("(30,Y) (30,Y) (30,Y) (30,Y) (30,N) (30,N)",
@@ -151,7 +152,7 @@ TEST_F(EsAdapterVideoTest, LeadingNonKeyFrames) {
 TEST_F(EsAdapterVideoTest, LeadingKeyFrameWithNoTimestamp) {
   int pts_ms[] = {-1, 40, 50, 120, 150, 180};
   bool is_key_frame[] = {true, false, false, true, false, false};
-  StreamParserBuffer::BufferQueue buffer_queue =
+  BufferQueue buffer_queue =
       GenerateFakeBuffers(pts_ms, is_key_frame, arraysize(pts_ms));
 
   EXPECT_EQ("(40,Y) (40,Y) (30,Y) (30,N) (30,N)",
@@ -161,7 +162,7 @@ TEST_F(EsAdapterVideoTest, LeadingKeyFrameWithNoTimestamp) {
 TEST_F(EsAdapterVideoTest, LeadingFramesWithNoTimestamp) {
   int pts_ms[] = {-1, -1, 50, 120, 150, 180};
   bool is_key_frame[] = {false, false, false, true, false, false};
-  StreamParserBuffer::BufferQueue buffer_queue =
+  BufferQueue buffer_queue =
       GenerateFakeBuffers(pts_ms, is_key_frame, arraysize(pts_ms));
 
   EXPECT_EQ("(70,Y) (30,Y) (30,N) (30,N)",
