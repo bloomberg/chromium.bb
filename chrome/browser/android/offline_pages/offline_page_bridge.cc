@@ -23,7 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "components/offline_pages/background/request_coordinator.h"
-#include "components/offline_pages/background/request_queue.h"
+#include "components/offline_pages/background/request_queue_results.h"
 #include "components/offline_pages/background/save_page_request.h"
 #include "components/offline_pages/offline_page_feature.h"
 #include "components/offline_pages/offline_page_item.h"
@@ -167,20 +167,19 @@ void OnGetAllRequestsDone(
   base::android::RunCallbackAndroid(j_callback_obj, j_result_obj);
 }
 
-RequestQueue::UpdateRequestResult ToUpdateRequestResult(
-    ItemActionStatus status) {
+UpdateRequestResult ToUpdateRequestResult(ItemActionStatus status) {
   switch (status) {
     case ItemActionStatus::SUCCESS:
-      return RequestQueue::UpdateRequestResult::SUCCESS;
+      return UpdateRequestResult::SUCCESS;
     case ItemActionStatus::NOT_FOUND:
-      return RequestQueue::UpdateRequestResult::REQUEST_DOES_NOT_EXIST;
+      return UpdateRequestResult::REQUEST_DOES_NOT_EXIST;
     case ItemActionStatus::STORE_ERROR:
-      return RequestQueue::UpdateRequestResult::STORE_FAILURE;
+      return UpdateRequestResult::STORE_FAILURE;
     case ItemActionStatus::ALREADY_EXISTS:
     default:
       NOTREACHED();
   }
-  return RequestQueue::UpdateRequestResult::STORE_FAILURE;
+  return UpdateRequestResult::STORE_FAILURE;
 }
 
 void OnRemoveRequestsDone(const ScopedJavaGlobalRef<jobject>& j_callback_obj,

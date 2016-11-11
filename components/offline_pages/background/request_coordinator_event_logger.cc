@@ -66,14 +66,13 @@ static std::string BackgroundSavePageResultToString(
   }
 }
 
-static std::string UpdateRequestResultToString(
-    RequestQueue::UpdateRequestResult result) {
+static std::string UpdateRequestResultToString(UpdateRequestResult result) {
   switch (result) {
-    case RequestQueue::UpdateRequestResult::SUCCESS:
+    case UpdateRequestResult::SUCCESS:
       return "SUCCESS";
-    case RequestQueue::UpdateRequestResult::STORE_FAILURE:
+    case UpdateRequestResult::STORE_FAILURE:
       return "STORE_FAILURE";
-    case RequestQueue::UpdateRequestResult::REQUEST_DOES_NOT_EXIST:
+    case UpdateRequestResult::REQUEST_DOES_NOT_EXIST:
       return "REQUEST_DOES_NOT_EXIST";
     default:
       NOTREACHED();
@@ -103,7 +102,7 @@ void RequestCoordinatorEventLogger::RecordDroppedSavePageRequest(
 
 void RequestCoordinatorEventLogger::RecordUpdateRequestFailed(
     const std::string& name_space,
-    RequestQueue::UpdateRequestResult result) {
+    UpdateRequestResult result) {
   RecordActivity("Updating queued request for " + name_space + " failed - " +
                  UpdateRequestResultToString(result));
 }

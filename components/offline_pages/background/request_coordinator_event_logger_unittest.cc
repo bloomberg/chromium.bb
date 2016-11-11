@@ -15,8 +15,8 @@ const Offliner::RequestStatus kOfflinerStatus = Offliner::SAVED;
 const RequestNotifier::BackgroundSavePageResult kDroppedResult =
     RequestNotifier::BackgroundSavePageResult::START_COUNT_EXCEEDED;
 const int64_t kId = 1234;
-const RequestQueue::UpdateRequestResult kQueueUpdateResult =
-    RequestQueue::UpdateRequestResult::STORE_FAILURE;
+const UpdateRequestResult kQueueUpdateResult =
+    UpdateRequestResult::STORE_FAILURE;
 
 const char kOfflinerStatusLogString[] =
     "Background save attempt for last_n:1234 - SAVED";

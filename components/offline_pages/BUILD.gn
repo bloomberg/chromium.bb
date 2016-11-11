@@ -112,7 +112,7 @@ if (is_android) {
   java_cpp_enum("offline_page_model_enums_java") {
     sources = [
       "background/request_notifier.h",
-      "background/request_queue.h",
+      "background/request_queue_results.h",
       "background/save_page_request.h",
       "offline_page_types.h",
       "offline_store_types.h",

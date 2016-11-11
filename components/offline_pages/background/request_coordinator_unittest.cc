@@ -22,6 +22,7 @@
 #include "components/offline_pages/background/offliner.h"
 #include "components/offline_pages/background/offliner_factory.h"
 #include "components/offline_pages/background/offliner_policy.h"
+#include "components/offline_pages/background/pick_request_task_factory.h"
 #include "components/offline_pages/background/request_queue.h"
 #include "components/offline_pages/background/request_queue_in_memory_store.h"
 #include "components/offline_pages/background/save_page_request.h"
@@ -263,11 +264,10 @@ class RequestCoordinatorTest
   }
 
   // Callback for Add requests.
-  void AddRequestDone(RequestQueue::AddRequestResult result,
-                      const SavePageRequest& request);
+  void AddRequestDone(AddRequestResult result, const SavePageRequest& request);
 
   // Callback for getting requests.
-  void GetRequestsDone(RequestQueue::GetRequestsResult result,
+  void GetRequestsDone(GetRequestsResult result,
                        std::vector<std::unique_ptr<SavePageRequest>> requests);
 
   // Callback for removing requests.
@@ -283,7 +283,7 @@ class RequestCoordinatorTest
   void SendOfflinerDoneCallback(const SavePageRequest& request,
                                 Offliner::RequestStatus status);
 
-  RequestQueue::GetRequestsResult last_get_requests_result() const {
+  GetRequestsResult last_get_requests_result() const {
     return last_get_requests_result_;
   }
 
@@ -376,7 +376,7 @@ class RequestCoordinatorTest
   }
 
  private:
-  RequestQueue::GetRequestsResult last_get_requests_result_;
+  GetRequestsResult last_get_requests_result_;
   MultipleItemStatuses last_remove_results_;
   std::vector<std::unique_ptr<SavePageRequest>> last_requests_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
@@ -390,7 +390,7 @@ class RequestCoordinatorTest
 };
 
 RequestCoordinatorTest::RequestCoordinatorTest()
-    : last_get_requests_result_(RequestQueue::GetRequestsResult::STORE_FAILURE),
+    : last_get_requests_result_(GetRequestsResult::STORE_FAILURE),
       task_runner_(new base::TestMockTimeTaskRunner),
       task_runner_handle_(task_runner_),
       offliner_(nullptr),
@@ -402,20 +402,26 @@ RequestCoordinatorTest::~RequestCoordinatorTest() {}
 
 void RequestCoordinatorTest::SetUp() {
   std::unique_ptr<OfflinerPolicy> policy(new OfflinerPolicy());
-  std::unique_ptr<OfflinerFactory> factory(new OfflinerFactoryStub());
+  std::unique_ptr<OfflinerFactory> offliner_factory(new OfflinerFactoryStub());
   // Save the offliner for use by the tests.
-  offliner_ =
-      reinterpret_cast<OfflinerStub*>(factory->GetOffliner(policy.get()));
+  offliner_ = reinterpret_cast<OfflinerStub*>(
+      offliner_factory->GetOffliner(policy.get()));
   std::unique_ptr<RequestQueueInMemoryStore>
       store(new RequestQueueInMemoryStore());
   std::unique_ptr<RequestQueue> queue(new RequestQueue(std::move(store)));
   std::unique_ptr<Scheduler> scheduler_stub(new SchedulerStub());
   network_quality_estimator_.reset(new NetworkQualityEstimatorStub());
   coordinator_.reset(new RequestCoordinator(
-      std::move(policy), std::move(factory), std::move(queue),
+      std::move(policy), std::move(offliner_factory), std::move(queue),
       std::move(scheduler_stub), network_quality_estimator_.get()));
   coordinator_->AddObserver(&observer_);
   SetNetworkConnected(true);
+  std::unique_ptr<PickRequestTaskFactory> picker_factory(
+      new PickRequestTaskFactory(
+          coordinator_->policy(),
+          static_cast<RequestNotifier*>(coordinator_.get()),
+          coordinator_->GetLogger()));
+  coordinator_->queue()->SetPickerFactory(std::move(picker_factory));
 }
 
 void RequestCoordinatorTest::PumpLoop() {
@@ -423,7 +429,7 @@ void RequestCoordinatorTest::PumpLoop() {
 }
 
 void RequestCoordinatorTest::GetRequestsDone(
-    RequestQueue::GetRequestsResult result,
+    GetRequestsResult result,
     std::vector<std::unique_ptr<SavePageRequest>> requests) {
   last_get_requests_result_ = result;
   last_requests_ = std::move(requests);
@@ -441,9 +447,8 @@ void RequestCoordinatorTest::GetQueuedRequestsDone(
   waiter_.Signal();
 }
 
-void RequestCoordinatorTest::AddRequestDone(
-    RequestQueue::AddRequestResult result,
-    const SavePageRequest& request) {}
+void RequestCoordinatorTest::AddRequestDone(AddRequestResult result,
+                                            const SavePageRequest& request) {}
 
 void RequestCoordinatorTest::SetupForOfflinerDoneCallbackTest(
     offline_pages::SavePageRequest* request) {

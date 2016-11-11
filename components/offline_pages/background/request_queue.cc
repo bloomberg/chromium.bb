@@ -13,6 +13,8 @@
 #include "components/offline_pages/background/mark_attempt_aborted_task.h"
 #include "components/offline_pages/background/mark_attempt_completed_task.h"
 #include "components/offline_pages/background/mark_attempt_started_task.h"
+#include "components/offline_pages/background/pick_request_task.h"
+#include "components/offline_pages/background/pick_request_task_factory.h"
 #include "components/offline_pages/background/remove_requests_task.h"
 #include "components/offline_pages/background/request_queue_store.h"
 #include "components/offline_pages/background/save_page_request.h"
@@ -24,9 +26,8 @@ namespace {
 void GetRequestsDone(const RequestQueue::GetRequestsCallback& callback,
                      bool success,
                      std::vector<std::unique_ptr<SavePageRequest>> requests) {
-  RequestQueue::GetRequestsResult result =
-      success ? RequestQueue::GetRequestsResult::SUCCESS
-              : RequestQueue::GetRequestsResult::STORE_FAILURE;
+  GetRequestsResult result =
+      success ? GetRequestsResult::SUCCESS : GetRequestsResult::STORE_FAILURE;
   // TODO(fgorski): Filter out expired requests based on policy.
   // This may trigger the purging if necessary.
   // Also this may be turned into a method on the request queue or add a policy
@@ -38,16 +39,16 @@ void GetRequestsDone(const RequestQueue::GetRequestsCallback& callback,
 void AddRequestDone(const RequestQueue::AddRequestCallback& callback,
                     const SavePageRequest& request,
                     ItemActionStatus status) {
-  RequestQueue::AddRequestResult result;
+  AddRequestResult result;
   switch (status) {
     case ItemActionStatus::SUCCESS:
-      result = RequestQueue::AddRequestResult::SUCCESS;
+      result = AddRequestResult::SUCCESS;
       break;
     case ItemActionStatus::ALREADY_EXISTS:
-      result = RequestQueue::AddRequestResult::ALREADY_EXISTS;
+      result = AddRequestResult::ALREADY_EXISTS;
       break;
     case ItemActionStatus::STORE_ERROR:
-      result = RequestQueue::AddRequestResult::STORE_FAILURE;
+      result = AddRequestResult::STORE_FAILURE;
       break;
     case ItemActionStatus::NOT_FOUND:
     default:
@@ -113,5 +114,20 @@ void RequestQueue::MarkAttemptCompleted(int64_t request_id,
 }
 
 void RequestQueue::PurgeRequests(const PurgeRequestsCallback& callback) {}
+
+void RequestQueue::PickNextRequest(
+    PickRequestTask::RequestPickedCallback picked_callback,
+    PickRequestTask::RequestNotPickedCallback not_picked_callback,
+    DeviceConditions& conditions,
+    std::set<int64_t>& disabled_requests) {
+  // Using the PickerContext, create a picker task.
+  std::unique_ptr<Task> task(picker_factory_->CreatePickerTask(
+      store_.get(), picked_callback, not_picked_callback, conditions,
+      disabled_requests));
+
+  // Queue up the picking task, it will call one of the callbacks when it
+  // completes.
+  task_queue_.AddTask(std::move(task));
+}
 
 }  // namespace offline_pages

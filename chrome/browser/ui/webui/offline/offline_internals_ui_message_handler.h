@@ -13,6 +13,10 @@
 #include "components/offline_pages/offline_store_types.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
+namespace offline_pages {
+enum class GetRequestsResult;
+}
+
 namespace offline_internals {
 
 // Class acting as a controller of the chrome://offline-internals WebUI.
@@ -63,7 +67,7 @@ class OfflineInternalsUIMessageHandler : public content::WebUIMessageHandler {
   // Callback for async GetRequests calls.
   void HandleRequestQueueCallback(
       std::string callback_id,
-      offline_pages::RequestQueue::GetRequestsResult result,
+      offline_pages::GetRequestsResult result,
       std::vector<std::unique_ptr<offline_pages::SavePageRequest>> requests);
 
   // Callback for DeletePage/DeleteAllPages calls.

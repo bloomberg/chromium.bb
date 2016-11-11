@@ -16,7 +16,6 @@
 #include "base/time/time.h"
 #include "components/offline_pages/background/offliner_factory.h"
 #include "components/offline_pages/background/offliner_policy.h"
-#include "components/offline_pages/background/request_picker.h"
 #include "components/offline_pages/background/save_page_request.h"
 #include "components/offline_pages/client_policy_controller.h"
 #include "components/offline_pages/offline_page_feature.h"
@@ -181,8 +180,9 @@ RequestCoordinator::RequestCoordinator(
       immediate_schedule_callback_(base::Bind(&EmptySchedulerCallback)),
       weak_ptr_factory_(this) {
   DCHECK(policy_ != nullptr);
-  picker_.reset(
-      new RequestPicker(queue_.get(), policy_.get(), this, &event_logger_));
+  std::unique_ptr<PickRequestTaskFactory> picker_factory(
+      new PickRequestTaskFactory(policy_.get(), this, &event_logger_));
+  queue_->SetPickerFactory(std::move(picker_factory));
 }
 
 RequestCoordinator::~RequestCoordinator() {}
@@ -232,7 +232,7 @@ void RequestCoordinator::GetAllRequests(const GetRequestsCallback& callback) {
 
 void RequestCoordinator::GetQueuedRequestsCallback(
     const GetRequestsCallback& callback,
-    RequestQueue::GetRequestsResult result,
+    GetRequestsResult result,
     std::vector<std::unique_ptr<SavePageRequest>> requests) {
   callback.Run(std::move(requests));
 }
@@ -267,7 +267,7 @@ void RequestCoordinator::StopPrerendering(Offliner::RequestStatus stop_status) {
 }
 
 void RequestCoordinator::GetRequestsForSchedulingCallback(
-    RequestQueue::GetRequestsResult result,
+    GetRequestsResult result,
     std::vector<std::unique_ptr<SavePageRequest>> requests) {
   bool user_requested = false;
 
@@ -305,8 +305,8 @@ bool RequestCoordinator::CancelActiveRequestIfItMatches(
 
 void RequestCoordinator::AbortRequestAttempt(const SavePageRequest& request) {
   if (request.started_attempt_count() >= policy_->GetMaxStartedTries()) {
-    const BackgroundSavePageResult result(
-        BackgroundSavePageResult::START_COUNT_EXCEEDED);
+    const RequestNotifier::BackgroundSavePageResult result(
+        RequestNotifier::BackgroundSavePageResult::START_COUNT_EXCEEDED);
     event_logger_.RecordDroppedSavePageRequest(request.client_id().name_space,
                                                result, request.request_id());
     RemoveAttemptedRequest(request, result);
@@ -321,7 +321,7 @@ void RequestCoordinator::AbortRequestAttempt(const SavePageRequest& request) {
 
 void RequestCoordinator::RemoveAttemptedRequest(
     const SavePageRequest& request,
-    BackgroundSavePageResult result) {
+    RequestNotifier::BackgroundSavePageResult result) {
   std::vector<int64_t> remove_requests;
   remove_requests.push_back(request.request_id());
   queue_->RemoveRequests(remove_requests,
@@ -340,10 +340,10 @@ void RequestCoordinator::MarkAttemptAbortedDone(
     NotifyChanged(result->updated_items.at(0));
   } else {
     DVLOG(1) << "Failed to mark request aborted: " << request_id;
-    RequestQueue::UpdateRequestResult request_result =
+    UpdateRequestResult request_result =
         result->store_state != StoreState::LOADED
-            ? RequestQueue::UpdateRequestResult::STORE_FAILURE
-            : RequestQueue::UpdateRequestResult::REQUEST_DOES_NOT_EXIST;
+            ? UpdateRequestResult::STORE_FAILURE
+            : UpdateRequestResult::REQUEST_DOES_NOT_EXIST;
     event_logger_.RecordUpdateRequestFailed(client_id.name_space,
                                             request_result);
   }
@@ -357,7 +357,7 @@ void RequestCoordinator::RemoveRequests(
       request_ids,
       base::Bind(&RequestCoordinator::HandleRemovedRequestsAndCallback,
                  weak_ptr_factory_.GetWeakPtr(), callback,
-                 BackgroundSavePageResult::REMOVED));
+                 RequestNotifier::BackgroundSavePageResult::REMOVED));
 
   // Record the network quality when this request is made.
   if (network_quality_estimator_) {
@@ -420,7 +420,7 @@ RequestCoordinator::GetConnectionType() {
 }
 
 void RequestCoordinator::AddRequestResultCallback(
-    RequestQueue::AddRequestResult result,
+    AddRequestResult result,
     const SavePageRequest& request) {
   NotifyAdded(request);
   // Inform the scheduler that we have an outstanding task.
@@ -438,10 +438,10 @@ void RequestCoordinator::MarkAttemptCompletedDoneCallback(
     NotifyChanged(result->updated_items.at(0));
   } else {
     DVLOG(1) << "Failed to mark request completed " << request_id;
-    RequestQueue::UpdateRequestResult request_result =
+    UpdateRequestResult request_result =
         result->store_state != StoreState::LOADED
-            ? RequestQueue::UpdateRequestResult::STORE_FAILURE
-            : RequestQueue::UpdateRequestResult::REQUEST_DOES_NOT_EXIST;
+            ? UpdateRequestResult::STORE_FAILURE
+            : UpdateRequestResult::REQUEST_DOES_NOT_EXIST;
     event_logger_.RecordUpdateRequestFailed(client_id.name_space,
                                             request_result);
   }
@@ -473,7 +473,7 @@ void RequestCoordinator::CompletedRequestCallback(
 
 void RequestCoordinator::HandleRemovedRequestsAndCallback(
     const RemoveRequestsCallback& callback,
-    BackgroundSavePageResult status,
+    RequestNotifier::BackgroundSavePageResult status,
     std::unique_ptr<UpdateRequestsResult> result) {
   // TODO(dougarnett): Define status code for user/api cancel and use here
   // to determine whether to record cancel time UMA.
@@ -484,7 +484,7 @@ void RequestCoordinator::HandleRemovedRequestsAndCallback(
 }
 
 void RequestCoordinator::HandleRemovedRequests(
-    BackgroundSavePageResult status,
+    RequestNotifier::BackgroundSavePageResult status,
     std::unique_ptr<UpdateRequestsResult> result) {
   for (const auto& request : result->updated_items)
     NotifyCompleted(request, status);
@@ -515,6 +515,7 @@ void RequestCoordinator::HandleWatchdogTimeout() {
 bool RequestCoordinator::StartProcessing(
     const DeviceConditions& device_conditions,
     const base::Callback<void(bool)>& callback) {
+  DVLOG(2) << "Scheduled " << __func__;
   return StartProcessingInternal(ProcessingWindowState::SCHEDULED_WINDOW,
                                  device_conditions, callback);
 }
@@ -547,6 +548,7 @@ void RequestCoordinator::StartImmediatelyIfConnected() {
 
 RequestCoordinator::OfflinerImmediateStartStatus
 RequestCoordinator::TryImmediateStart() {
+  DVLOG(2) << "Immediate " << __func__;
   // Make sure not already busy processing.
   if (is_busy_)
     return OfflinerImmediateStartStatus::BUSY;
@@ -605,14 +607,17 @@ void RequestCoordinator::TryNextRequest() {
     return;
   }
 
-  // Choose a request to process that meets the available conditions.
-  // This is an async call, and returns right away.
-  picker_->ChooseNextRequest(base::Bind(&RequestCoordinator::RequestPicked,
-                                        weak_ptr_factory_.GetWeakPtr()),
-                             base::Bind(&RequestCoordinator::RequestNotPicked,
-                                        weak_ptr_factory_.GetWeakPtr()),
-                             current_conditions_.get(),
-                             disabled_requests_);
+  // Ask request queue to make a new PickRequestTask object, then put it on the
+  // task queue.
+  queue_->PickNextRequest(base::Bind(&RequestCoordinator::RequestPicked,
+                                     weak_ptr_factory_.GetWeakPtr()),
+                          base::Bind(&RequestCoordinator::RequestNotPicked,
+                                     weak_ptr_factory_.GetWeakPtr()),
+                          *current_conditions_.get(), disabled_requests_);
+  // TODO(petewil): Verify current_conditions has a good value on all calling
+  // paths.  It is really more of a "last known conditions" than "current
+  // conditions".  Consider having a call to Java to check the current
+  // conditions.
 }
 
 // Called by the request picker when a request has been picked.
@@ -689,10 +694,10 @@ void RequestCoordinator::StartOffliner(
     // TODO(fgorski): what is the best result? Do we create a new status?
     StopProcessing(Offliner::PRERENDERING_NOT_STARTED);
     DVLOG(1) << "Failed to mark attempt started: " << request_id;
-    RequestQueue::UpdateRequestResult request_result =
+    UpdateRequestResult request_result =
         update_result->store_state != StoreState::LOADED
-            ? RequestQueue::UpdateRequestResult::STORE_FAILURE
-            : RequestQueue::UpdateRequestResult::REQUEST_DOES_NOT_EXIST;
+            ? UpdateRequestResult::STORE_FAILURE
+            : UpdateRequestResult::REQUEST_DOES_NOT_EXIST;
     event_logger_.RecordUpdateRequestFailed(client_namespace, request_result);
     return;
   }
@@ -755,18 +760,19 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
     AbortRequestAttempt(request);
   } else if (status == Offliner::RequestStatus::SAVED) {
     // Remove the request from the queue if it succeeded.
-    RemoveAttemptedRequest(request, BackgroundSavePageResult::SUCCESS);
-  } else if (status == Offliner::RequestStatus::PRERENDERING_FAILED_NO_RETRY) {
     RemoveAttemptedRequest(request,
-                           BackgroundSavePageResult::PRERENDER_FAILURE);
+                           RequestNotifier::BackgroundSavePageResult::SUCCESS);
+  } else if (status == Offliner::RequestStatus::PRERENDERING_FAILED_NO_RETRY) {
+    RemoveAttemptedRequest(
+        request, RequestNotifier::BackgroundSavePageResult::PRERENDER_FAILURE);
   } else if (request.completed_attempt_count() + 1 >=
              policy_->GetMaxCompletedTries()) {
     // Remove from the request queue if we exceeded max retries. The +1
     // represents the request that just completed. Since we call
     // MarkAttemptCompleted within the if branches, the completed_attempt_count
     // has not yet been updated when we are checking the if condition.
-    const BackgroundSavePageResult result(
-        BackgroundSavePageResult::RETRY_COUNT_EXCEEDED);
+    const RequestNotifier::BackgroundSavePageResult result(
+        RequestNotifier::BackgroundSavePageResult::RETRY_COUNT_EXCEEDED);
     event_logger_.RecordDroppedSavePageRequest(request.client_id().name_space,
                                                result, request.request_id());
     RemoveAttemptedRequest(request, result);
@@ -825,12 +831,12 @@ void RequestCoordinator::MarkRequestCompleted(int64_t request_id) {
   // Remove the request, but send out SUCCEEDED instead of removed.
   std::vector<int64_t> request_ids { request_id };
   queue_->RemoveRequests(
-    request_ids,
-    base::Bind(&RequestCoordinator::HandleRemovedRequestsAndCallback,
-               weak_ptr_factory_.GetWeakPtr(),
-               base::Bind(&RequestCoordinator::CompletedRequestCallback,
-                          weak_ptr_factory_.GetWeakPtr()),
-               BackgroundSavePageResult::SUCCESS));
+      request_ids,
+      base::Bind(&RequestCoordinator::HandleRemovedRequestsAndCallback,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Bind(&RequestCoordinator::CompletedRequestCallback,
+                            weak_ptr_factory_.GetWeakPtr()),
+                 RequestNotifier::BackgroundSavePageResult::SUCCESS));
 }
 
 const Scheduler::TriggerConditions RequestCoordinator::GetTriggerConditions(
@@ -855,8 +861,9 @@ void RequestCoordinator::NotifyAdded(const SavePageRequest& request) {
     observer.OnAdded(request);
 }
 
-void RequestCoordinator::NotifyCompleted(const SavePageRequest& request,
-                                         BackgroundSavePageResult status) {
+void RequestCoordinator::NotifyCompleted(
+    const SavePageRequest& request,
+    RequestNotifier::BackgroundSavePageResult status) {
   for (Observer& observer : observers_)
     observer.OnCompleted(request, status);
 }

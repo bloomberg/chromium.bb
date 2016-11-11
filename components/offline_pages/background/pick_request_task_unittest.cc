@@ -2,20 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/offline_pages/background/request_picker.h"
+#include "components/offline_pages/background/pick_request_task.h"
+
+#include <memory>
+#include <set>
 
 #include "base/bind.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/time.h"
 #include "components/offline_pages/background/device_conditions.h"
-#include "components/offline_pages/background/offliner_factory.h"
 #include "components/offline_pages/background/offliner_policy.h"
+#include "components/offline_pages/background/request_coordinator.h"
+#include "components/offline_pages/background/request_coordinator_event_logger.h"
 #include "components/offline_pages/background/request_notifier.h"
-#include "components/offline_pages/background/request_queue.h"
 #include "components/offline_pages/background/request_queue_in_memory_store.h"
+#include "components/offline_pages/background/request_queue_store.h"
 #include "components/offline_pages/background/save_page_request.h"
-#include "components/offline_pages/offline_page_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -48,6 +50,7 @@ const SavePageRequest kEmptyRequest(0UL,
                                     true);
 }  // namespace
 
+// Helper class needed by the PickRequestTask
 class RequestNotifierStub : public RequestNotifier {
  public:
   RequestNotifierStub()
@@ -80,111 +83,121 @@ class RequestNotifierStub : public RequestNotifier {
   int32_t total_expired_requests_;
 };
 
-class RequestPickerTest : public testing::Test {
+class PickRequestTaskTest : public testing::Test {
  public:
-  RequestPickerTest();
+  PickRequestTaskTest();
 
-  ~RequestPickerTest() override;
+  ~PickRequestTaskTest() override;
 
   void SetUp() override;
 
   void PumpLoop();
 
-  void AddRequestDone(RequestQueue::AddRequestResult result,
-                      const SavePageRequest& request);
+  void AddRequestDone(ItemActionStatus status);
 
   void RequestPicked(const SavePageRequest& request);
 
   void RequestNotPicked(const bool non_user_requested_tasks_remaining);
 
-  void QueueRequestsAndChooseOne(const SavePageRequest& request1,
-                                 const SavePageRequest& request2);
+  void QueueRequests(const SavePageRequest& request1,
+                     const SavePageRequest& request2);
+
+  // Reset the factory and the task using the current policy.
+  void MakeFactoryAndTask();
 
   RequestNotifierStub* GetNotifier() { return notifier_.get(); }
 
+  PickRequestTask* task() { return task_.get(); }
+
+  void TaskCompletionCallback(Task* completed_task);
+
  protected:
-  // The request queue is simple enough we will use a real queue with a memory
-  // store instead of a stub.
-  std::unique_ptr<RequestQueue> queue_;
-  std::unique_ptr<RequestPicker> picker_;
+  std::unique_ptr<RequestQueueStore> store_;
   std::unique_ptr<RequestNotifierStub> notifier_;
   std::unique_ptr<SavePageRequest> last_picked_;
   std::unique_ptr<OfflinerPolicy> policy_;
   RequestCoordinatorEventLogger event_logger_;
+  std::set<int64_t> disabled_requests_;
+  std::unique_ptr<PickRequestTaskFactory> factory_;
+  std::unique_ptr<PickRequestTask> task_;
   bool request_queue_not_picked_called_;
+  bool task_complete_called_;
 
  private:
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
 };
 
-RequestPickerTest::RequestPickerTest()
+PickRequestTaskTest::PickRequestTaskTest()
     : task_runner_(new base::TestSimpleTaskRunner),
       task_runner_handle_(task_runner_) {}
 
-RequestPickerTest::~RequestPickerTest() {}
+PickRequestTaskTest::~PickRequestTaskTest() {}
 
-void RequestPickerTest::SetUp() {
-  std::unique_ptr<RequestQueueInMemoryStore> store(
-      new RequestQueueInMemoryStore());
-  queue_.reset(new RequestQueue(std::move(store)));
+void PickRequestTaskTest::SetUp() {
+  DeviceConditions conditions;
+  store_.reset(new RequestQueueInMemoryStore());
   policy_.reset(new OfflinerPolicy());
   notifier_.reset(new RequestNotifierStub());
-  picker_.reset(new RequestPicker(queue_.get(), policy_.get(), notifier_.get(),
-                                  &event_logger_));
+  MakeFactoryAndTask();
   request_queue_not_picked_called_ = false;
+  task_complete_called_ = false;
+  last_picked_.reset();
 }
 
-void RequestPickerTest::PumpLoop() {
+void PickRequestTaskTest::PumpLoop() {
   task_runner_->RunUntilIdle();
 }
 
-void RequestPickerTest::AddRequestDone(RequestQueue::AddRequestResult result,
-                                       const SavePageRequest& request) {}
+void PickRequestTaskTest::TaskCompletionCallback(Task* completed_task) {
+  task_complete_called_ = true;
+}
 
-void RequestPickerTest::RequestPicked(const SavePageRequest& request) {
+void PickRequestTaskTest::AddRequestDone(ItemActionStatus status) {}
+
+void PickRequestTaskTest::RequestPicked(const SavePageRequest& request) {
   last_picked_.reset(new SavePageRequest(request));
 }
 
-void RequestPickerTest::RequestNotPicked(
+void PickRequestTaskTest::RequestNotPicked(
     const bool non_user_requested_tasks_remaining) {
   request_queue_not_picked_called_ = true;
 }
 
-// Test helper to queue the two given requests and then pick one of them per
-// configured policy.
-void RequestPickerTest::QueueRequestsAndChooseOne(
-    const SavePageRequest& request1, const SavePageRequest& request2) {
+// Test helper to queue the two given requests.
+void PickRequestTaskTest::QueueRequests(const SavePageRequest& request1,
+                                        const SavePageRequest& request2) {
   DeviceConditions conditions;
   std::set<int64_t> disabled_requests;
   // Add test requests on the Queue.
-  queue_->AddRequest(request1, base::Bind(&RequestPickerTest::AddRequestDone,
+  store_->AddRequest(request1, base::Bind(&PickRequestTaskTest::AddRequestDone,
                                           base::Unretained(this)));
-  queue_->AddRequest(request2, base::Bind(&RequestPickerTest::AddRequestDone,
+  store_->AddRequest(request2, base::Bind(&PickRequestTaskTest::AddRequestDone,
                                           base::Unretained(this)));
 
   // Pump the loop to give the async queue the opportunity to do the adds.
   PumpLoop();
-
-  // Call the method under test.
-  picker_->ChooseNextRequest(
-      base::Bind(&RequestPickerTest::RequestPicked, base::Unretained(this)),
-      base::Bind(&RequestPickerTest::RequestNotPicked, base::Unretained(this)),
-      &conditions, disabled_requests);
-
-  // Pump the loop again to give the async queue the opportunity to return
-  // results from the Get operation, and for the picker to call the "picked"
-  // callback.
-  PumpLoop();
 }
 
-TEST_F(RequestPickerTest, PickFromEmptyQueue) {
+void PickRequestTaskTest::MakeFactoryAndTask() {
+  factory_.reset(new PickRequestTaskFactory(policy_.get(), notifier_.get(),
+                                            &event_logger_));
   DeviceConditions conditions;
-  std::set<int64_t> disabled_requests;
-  picker_->ChooseNextRequest(
-      base::Bind(&RequestPickerTest::RequestPicked, base::Unretained(this)),
-      base::Bind(&RequestPickerTest::RequestNotPicked, base::Unretained(this)),
-      &conditions, disabled_requests);
+  task_ = factory_->CreatePickerTask(
+      store_.get(),
+      base::Bind(&PickRequestTaskTest::RequestPicked, base::Unretained(this)),
+      base::Bind(&PickRequestTaskTest::RequestNotPicked,
+                 base::Unretained(this)),
+      conditions, disabled_requests_);
+  task_->SetTaskCompletionCallbackForTesting(
+      task_runner_.get(),
+      base::Bind(&PickRequestTaskTest::TaskCompletionCallback,
+                 base::Unretained(this)));
+}
+
+TEST_F(PickRequestTaskTest, PickFromEmptyQueue) {
+  task()->Run();
+  PumpLoop();
 
   // Pump the loop again to give the async queue the opportunity to return
   // results from the Get operation, and for the picker to call the "QueueEmpty"
@@ -192,29 +205,34 @@ TEST_F(RequestPickerTest, PickFromEmptyQueue) {
   PumpLoop();
 
   EXPECT_TRUE(request_queue_not_picked_called_);
+  EXPECT_TRUE(task_complete_called_);
 }
 
-TEST_F(RequestPickerTest, ChooseRequestWithHigherRetryCount) {
+TEST_F(PickRequestTaskTest, ChooseRequestWithHigherRetryCount) {
+  // Set up policy to prefer higher retry count.
   policy_.reset(new OfflinerPolicy(
       kPreferUntried, kPreferEarlier, kPreferRetryCount, kMaxStartedTries,
       kMaxCompletedTries + 1, kBackgroundProcessingTimeBudgetSeconds));
-  picker_.reset(new RequestPicker(queue_.get(), policy_.get(), notifier_.get(),
-                                  &event_logger_));
+  MakeFactoryAndTask();
 
   base::Time creation_time = base::Time::Now();
-  SavePageRequest request1(
-      kRequestId1, kUrl1, kClientId1, creation_time, kUserRequested);
-  SavePageRequest request2(
-      kRequestId2, kUrl2, kClientId2, creation_time, kUserRequested);
+  SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time,
+                           kUserRequested);
+  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time,
+                           kUserRequested);
   request2.set_completed_attempt_count(kAttemptCount);
 
-  QueueRequestsAndChooseOne(request1, request2);
+  QueueRequests(request1, request2);
+
+  task()->Run();
+  PumpLoop();
 
   EXPECT_EQ(kRequestId2, last_picked_->request_id());
   EXPECT_FALSE(request_queue_not_picked_called_);
+  EXPECT_TRUE(task_complete_called_);
 }
 
-TEST_F(RequestPickerTest, ChooseRequestWithSameRetryCountButEarlier) {
+TEST_F(PickRequestTaskTest, ChooseRequestWithSameRetryCountButEarlier) {
   base::Time creation_time1 =
       base::Time::Now() - base::TimeDelta::FromSeconds(10);
   base::Time creation_time2 = base::Time::Now();
@@ -223,19 +241,22 @@ TEST_F(RequestPickerTest, ChooseRequestWithSameRetryCountButEarlier) {
   SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time2,
                            kUserRequested);
 
-  QueueRequestsAndChooseOne(request1, request2);
+  QueueRequests(request1, request2);
+
+  task()->Run();
+  PumpLoop();
 
   EXPECT_EQ(kRequestId1, last_picked_->request_id());
   EXPECT_FALSE(request_queue_not_picked_called_);
+  EXPECT_TRUE(task_complete_called_);
 }
 
-TEST_F(RequestPickerTest, ChooseEarlierRequest) {
+TEST_F(PickRequestTaskTest, ChooseEarlierRequest) {
   // We need a custom policy object prefering recency to retry count.
   policy_.reset(new OfflinerPolicy(
       kPreferUntried, kPreferEarlier, !kPreferRetryCount, kMaxStartedTries,
       kMaxCompletedTries, kBackgroundProcessingTimeBudgetSeconds));
-  picker_.reset(new RequestPicker(queue_.get(), policy_.get(), notifier_.get(),
-                                  &event_logger_));
+  MakeFactoryAndTask();
 
   base::Time creation_time1 =
       base::Time::Now() - base::TimeDelta::FromSeconds(10);
@@ -246,19 +267,22 @@ TEST_F(RequestPickerTest, ChooseEarlierRequest) {
                            kUserRequested);
   request2.set_completed_attempt_count(kAttemptCount);
 
-  QueueRequestsAndChooseOne(request1, request2);
+  QueueRequests(request1, request2);
+
+  task()->Run();
+  PumpLoop();
 
   EXPECT_EQ(kRequestId1, last_picked_->request_id());
   EXPECT_FALSE(request_queue_not_picked_called_);
+  EXPECT_TRUE(task_complete_called_);
 }
 
-TEST_F(RequestPickerTest, ChooseSameTimeRequestWithHigherRetryCount) {
+TEST_F(PickRequestTaskTest, ChooseSameTimeRequestWithHigherRetryCount) {
   // We need a custom policy object preferring recency to retry count.
   policy_.reset(new OfflinerPolicy(
       kPreferUntried, kPreferEarlier, !kPreferRetryCount, kMaxStartedTries,
       kMaxCompletedTries + 1, kBackgroundProcessingTimeBudgetSeconds));
-  picker_.reset(new RequestPicker(queue_.get(), policy_.get(), notifier_.get(),
-                                  &event_logger_));
+  MakeFactoryAndTask();
 
   base::Time creation_time = base::Time::Now();
   SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time,
@@ -267,19 +291,22 @@ TEST_F(RequestPickerTest, ChooseSameTimeRequestWithHigherRetryCount) {
                            kUserRequested);
   request2.set_completed_attempt_count(kAttemptCount);
 
-  QueueRequestsAndChooseOne(request1, request2);
+  QueueRequests(request1, request2);
+
+  task()->Run();
+  PumpLoop();
 
   EXPECT_EQ(kRequestId2, last_picked_->request_id());
   EXPECT_FALSE(request_queue_not_picked_called_);
+  EXPECT_TRUE(task_complete_called_);
 }
 
-TEST_F(RequestPickerTest, ChooseRequestWithLowerRetryCount) {
+TEST_F(PickRequestTaskTest, ChooseRequestWithLowerRetryCount) {
   // We need a custom policy object preferring lower retry count.
   policy_.reset(new OfflinerPolicy(
       !kPreferUntried, kPreferEarlier, kPreferRetryCount, kMaxStartedTries,
       kMaxCompletedTries + 1, kBackgroundProcessingTimeBudgetSeconds));
-  picker_.reset(new RequestPicker(queue_.get(), policy_.get(), notifier_.get(),
-                                  &event_logger_));
+  MakeFactoryAndTask();
 
   base::Time creation_time = base::Time::Now();
   SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time,
@@ -288,19 +315,22 @@ TEST_F(RequestPickerTest, ChooseRequestWithLowerRetryCount) {
                            kUserRequested);
   request2.set_completed_attempt_count(kAttemptCount);
 
-  QueueRequestsAndChooseOne(request1, request2);
+  QueueRequests(request1, request2);
+
+  task()->Run();
+  PumpLoop();
 
   EXPECT_EQ(kRequestId1, last_picked_->request_id());
   EXPECT_FALSE(request_queue_not_picked_called_);
+  EXPECT_TRUE(task_complete_called_);
 }
 
-TEST_F(RequestPickerTest, ChooseLaterRequest) {
+TEST_F(PickRequestTaskTest, ChooseLaterRequest) {
   // We need a custom policy preferring recency over retry, and later requests.
   policy_.reset(new OfflinerPolicy(
       kPreferUntried, !kPreferEarlier, !kPreferRetryCount, kMaxStartedTries,
       kMaxCompletedTries, kBackgroundProcessingTimeBudgetSeconds));
-  picker_.reset(new RequestPicker(queue_.get(), policy_.get(), notifier_.get(),
-                                  &event_logger_));
+  MakeFactoryAndTask();
 
   base::Time creation_time1 =
       base::Time::Now() - base::TimeDelta::FromSeconds(10);
@@ -310,13 +340,17 @@ TEST_F(RequestPickerTest, ChooseLaterRequest) {
   SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time2,
                            kUserRequested);
 
-  QueueRequestsAndChooseOne(request1, request2);
+  QueueRequests(request1, request2);
+
+  task()->Run();
+  PumpLoop();
 
   EXPECT_EQ(kRequestId2, last_picked_->request_id());
   EXPECT_FALSE(request_queue_not_picked_called_);
+  EXPECT_TRUE(task_complete_called_);
 }
 
-TEST_F(RequestPickerTest, ChooseNonExpiredRequest) {
+TEST_F(PickRequestTaskTest, ChooseNonExpiredRequest) {
   base::Time creation_time = base::Time::Now();
   base::Time expired_time =
       creation_time - base::TimeDelta::FromSeconds(
@@ -326,8 +360,9 @@ TEST_F(RequestPickerTest, ChooseNonExpiredRequest) {
   SavePageRequest request2(kRequestId2, kUrl2, kClientId2, expired_time,
                            kUserRequested);
 
-  QueueRequestsAndChooseOne(request1, request2);
+  QueueRequests(request1, request2);
 
+  task()->Run();
   PumpLoop();
 
   EXPECT_EQ(kRequestId1, last_picked_->request_id());
@@ -336,9 +371,10 @@ TEST_F(RequestPickerTest, ChooseNonExpiredRequest) {
   EXPECT_EQ(RequestNotifier::BackgroundSavePageResult::EXPIRED,
             GetNotifier()->last_request_expiration_status());
   EXPECT_EQ(1, GetNotifier()->total_expired_requests());
+  EXPECT_TRUE(task_complete_called_);
 }
 
-TEST_F(RequestPickerTest, ChooseRequestThatHasNotExceededStartLimit) {
+TEST_F(PickRequestTaskTest, ChooseRequestThatHasNotExceededStartLimit) {
   base::Time creation_time1 =
       base::Time::Now() - base::TimeDelta::FromSeconds(1);
   base::Time creation_time2 = base::Time::Now();
@@ -351,13 +387,17 @@ TEST_F(RequestPickerTest, ChooseRequestThatHasNotExceededStartLimit) {
   // However, we will make the earlier reqeust exceed the limit.
   request1.set_started_attempt_count(policy_->GetMaxStartedTries());
 
-  QueueRequestsAndChooseOne(request1, request2);
+  QueueRequests(request1, request2);
+
+  task()->Run();
+  PumpLoop();
 
   EXPECT_EQ(kRequestId2, last_picked_->request_id());
   EXPECT_FALSE(request_queue_not_picked_called_);
+  EXPECT_TRUE(task_complete_called_);
 }
 
-TEST_F(RequestPickerTest, ChooseRequestThatHasNotExceededCompletionLimit) {
+TEST_F(PickRequestTaskTest, ChooseRequestThatHasNotExceededCompletionLimit) {
   base::Time creation_time1 =
       base::Time::Now() - base::TimeDelta::FromSeconds(1);
   base::Time creation_time2 = base::Time::Now();
@@ -370,46 +410,38 @@ TEST_F(RequestPickerTest, ChooseRequestThatHasNotExceededCompletionLimit) {
   // However, we will make the earlier reqeust exceed the limit.
   request1.set_completed_attempt_count(policy_->GetMaxCompletedTries());
 
-  QueueRequestsAndChooseOne(request1, request2);
+  QueueRequests(request1, request2);
+
+  task()->Run();
+  PumpLoop();
 
   EXPECT_EQ(kRequestId2, last_picked_->request_id());
   EXPECT_FALSE(request_queue_not_picked_called_);
+  EXPECT_TRUE(task_complete_called_);
 }
 
-
-TEST_F(RequestPickerTest, ChooseRequestThatIsNotDisabled) {
+TEST_F(PickRequestTaskTest, ChooseRequestThatIsNotDisabled) {
   policy_.reset(new OfflinerPolicy(
       kPreferUntried, kPreferEarlier, kPreferRetryCount, kMaxStartedTries,
       kMaxCompletedTries + 1, kBackgroundProcessingTimeBudgetSeconds));
-  picker_.reset(new RequestPicker(queue_.get(), policy_.get(), notifier_.get(),
-                                  &event_logger_));
-
-  base::Time creation_time = base::Time::Now();
-  SavePageRequest request1(
-      kRequestId1, kUrl1, kClientId1, creation_time, kUserRequested);
-  SavePageRequest request2(
-      kRequestId2, kUrl2, kClientId2, creation_time, kUserRequested);
-  request2.set_completed_attempt_count(kAttemptCount);
 
   // put request 2 on disabled list, ensure request1 picked instead,
   // even though policy would prefer 2.
-  std::set<int64_t> disabled_requests {kRequestId2};
-  DeviceConditions conditions;
+  disabled_requests_.insert(kRequestId2);
+  MakeFactoryAndTask();
+
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request1(kRequestId1, kUrl1, kClientId1, creation_time,
+                           kUserRequested);
+  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time,
+                           kUserRequested);
+  request2.set_completed_attempt_count(kAttemptCount);
 
   // Add test requests on the Queue.
-  queue_->AddRequest(request1, base::Bind(&RequestPickerTest::AddRequestDone,
-                                          base::Unretained(this)));
-  queue_->AddRequest(request2, base::Bind(&RequestPickerTest::AddRequestDone,
-                                          base::Unretained(this)));
+  QueueRequests(request1, request2);
 
-  // Pump the loop to give the async queue the opportunity to do the adds.
+  task()->Run();
   PumpLoop();
-
-  // Call the method under test.
-  picker_->ChooseNextRequest(
-      base::Bind(&RequestPickerTest::RequestPicked, base::Unretained(this)),
-      base::Bind(&RequestPickerTest::RequestNotPicked, base::Unretained(this)),
-      &conditions, disabled_requests);
 
   // Pump the loop again to give the async queue the opportunity to return
   // results from the Get operation, and for the picker to call the "picked"
@@ -418,5 +450,7 @@ TEST_F(RequestPickerTest, ChooseRequestThatIsNotDisabled) {
 
   EXPECT_EQ(kRequestId1, last_picked_->request_id());
   EXPECT_FALSE(request_queue_not_picked_called_);
+  EXPECT_TRUE(task_complete_called_);
 }
+
 }  // namespace offline_pages

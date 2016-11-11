@@ -8,12 +8,17 @@
 #include <stdint.h>
 
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/offline_pages/background/device_conditions.h"
+#include "components/offline_pages/background/pick_request_task.h"
+#include "components/offline_pages/background/pick_request_task_factory.h"
+#include "components/offline_pages/background/request_queue_results.h"
 #include "components/offline_pages/background/save_page_request.h"
 #include "components/offline_pages/core/task_queue.h"
 #include "components/offline_pages/offline_page_item.h"
@@ -22,31 +27,11 @@
 namespace offline_pages {
 
 class RequestQueueStore;
-typedef StoreUpdateResult<SavePageRequest> UpdateRequestsResult;
+class PickRequestTaskFactory;
 
 // Class responsible for managing save page requests.
 class RequestQueue {
  public:
-  enum class GetRequestsResult {
-    SUCCESS,
-    STORE_FAILURE,
-  };
-
-  enum class AddRequestResult {
-    SUCCESS,
-    STORE_FAILURE,
-    ALREADY_EXISTS,
-    REQUEST_QUOTA_HIT,  // Cannot add a request with this namespace, as it has
-                        // reached a quota of active requests.
-  };
-
-  // GENERATED_JAVA_ENUM_PACKAGE:org.chromium.components.offlinepages.background
-  enum class UpdateRequestResult {
-    SUCCESS,
-    STORE_FAILURE,
-    REQUEST_DOES_NOT_EXIST,  // Failed to delete the request because it does not
-                             // exist.
-  };
 
   // Callback used for |GetRequests|.
   typedef base::Callback<void(GetRequestsResult,
@@ -103,6 +88,22 @@ class RequestQueue {
   // are returned through |callback|.
   void MarkAttemptCompleted(int64_t request_id, const UpdateCallback& callback);
 
+  // Make a task to pick the next request, and report our choice to the
+  // callbacks.
+  void PickNextRequest(
+      PickRequestTask::RequestPickedCallback picked_callback,
+      PickRequestTask::RequestNotPickedCallback not_picked_callback,
+      DeviceConditions& conditions,
+      std::set<int64_t>& disabled_requests);
+
+  // Takes ownership of the factory.  We use a setter to allow users of the
+  // request queue to not need a PickerFactory to create it, since we have lots
+  // of code using the request queue.  The request coordinator will set a
+  // factory before calling PickNextRequest.
+  void SetPickerFactory(std::unique_ptr<PickRequestTaskFactory> factory) {
+    picker_factory_ = std::move(factory);
+  }
+
  private:
   // Callback used by |PurgeRequests|.
   typedef base::Callback<void(UpdateRequestResult,
@@ -118,6 +119,9 @@ class RequestQueue {
 
   // Task queue to serialize store access.
   TaskQueue task_queue_;
+
+  // Builds PickRequestTask objects.
+  std::unique_ptr<PickRequestTaskFactory> picker_factory_;
 
   // Allows us to pass a weak pointer to callbacks.
   base::WeakPtrFactory<RequestQueue> weak_ptr_factory_;

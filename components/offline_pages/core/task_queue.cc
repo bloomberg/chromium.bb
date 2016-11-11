@@ -30,6 +30,8 @@ bool TaskQueue::HasRunningTask() const {
 }
 
 void TaskQueue::MaybeStartTask() {
+  DVLOG(2) << "running? " << HasRunningTask() << ", pending? "
+           << HasPendingTasks() << " " << __func__;
   if (HasRunningTask() || !HasPendingTasks())
     return;
 

@@ -10,7 +10,7 @@
 
 #include "components/offline_pages/background/offliner.h"
 #include "components/offline_pages/background/request_notifier.h"
-#include "components/offline_pages/background/request_queue.h"
+#include "components/offline_pages/background/request_queue_results.h"
 #include "components/offline_pages/offline_event_logger.h"
 
 namespace offline_pages {
@@ -30,7 +30,7 @@ class RequestCoordinatorEventLogger : public OfflineEventLogger {
       int64_t request_id);
 
   void RecordUpdateRequestFailed(const std::string& name_space,
-                                 RequestQueue::UpdateRequestResult result);
+                                 UpdateRequestResult result);
 };
 
 }  // namespace offline_pages

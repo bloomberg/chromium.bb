@@ -10,15 +10,20 @@
 #include "base/bind.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/offline_pages/background/device_conditions.h"
+#include "components/offline_pages/background/offliner_policy.h"
+#include "components/offline_pages/background/request_coordinator.h"
+#include "components/offline_pages/background/request_coordinator_event_logger.h"
+#include "components/offline_pages/background/request_notifier.h"
 #include "components/offline_pages/background/request_queue_in_memory_store.h"
 #include "components/offline_pages/background/save_page_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
 
-using AddRequestResult = RequestQueue::AddRequestResult;
-using GetRequestsResult = RequestQueue::GetRequestsResult;
-using UpdateRequestResult = RequestQueue::UpdateRequestResult;
+using AddRequestResult = AddRequestResult;
+using GetRequestsResult = GetRequestsResult;
+using UpdateRequestResult = UpdateRequestResult;
 
 namespace {
 // Data for request 1.
@@ -31,7 +36,49 @@ const GURL kUrl2("http://test.com");
 const ClientId kClientId2("bookmark", "567");
 const bool kUserRequested = true;
 const int64_t kRequestId3 = 99;
+const int kOneWeekInSeconds = 7 * 24 * 60 * 60;
+
+// Default request
+const SavePageRequest kEmptyRequest(0UL,
+                                    GURL(""),
+                                    ClientId("", ""),
+                                    base::Time(),
+                                    true);
+
 }  // namespace
+
+// Helper class needed by the PickRequestTask
+class RequestNotifierStub : public RequestNotifier {
+ public:
+  RequestNotifierStub()
+      : last_expired_request_(kEmptyRequest), total_expired_requests_(0) {}
+
+  void NotifyAdded(const SavePageRequest& request) override {}
+  void NotifyChanged(const SavePageRequest& request) override {}
+
+  void NotifyCompleted(const SavePageRequest& request,
+                       BackgroundSavePageResult status) override {
+    last_expired_request_ = request;
+    last_request_expiration_status_ = status;
+    total_expired_requests_++;
+  }
+
+  const SavePageRequest& last_expired_request() {
+    return last_expired_request_;
+  }
+
+  RequestCoordinator::BackgroundSavePageResult
+  last_request_expiration_status() {
+    return last_request_expiration_status_;
+  }
+
+  int32_t total_expired_requests() { return total_expired_requests_; }
+
+ private:
+  BackgroundSavePageResult last_request_expiration_status_;
+  SavePageRequest last_expired_request_;
+  int32_t total_expired_requests_;
+};
 
 // TODO(fgorski): Add tests for store failures in add/remove/get.
 class RequestQueueTest : public testing::Test {
@@ -75,6 +122,9 @@ class RequestQueueTest : public testing::Test {
   UpdateRequestsResult* update_requests_result() const {
     return update_requests_result_.get();
   }
+
+  void RequestPickedCallback(const SavePageRequest& request) {}
+  void RequestNotPickedCallback(bool non_user_requested_tasks_remain) {}
 
  private:
   AddRequestResult last_add_result_;
@@ -482,6 +532,55 @@ TEST_F(RequestQueueTest, MarkAttemptCompleted) {
   EXPECT_EQ(1UL, update_requests_result()->updated_items.size());
   EXPECT_EQ(SavePageRequest::RequestState::AVAILABLE,
             update_requests_result()->updated_items.at(0).request_state());
+}
+
+// Request expiration is detected during the call to pick a request, which
+// is why this test calls PickNextRequest().
+TEST_F(RequestQueueTest, CleanStaleRequests) {
+  // Create a request that is already expired.
+  base::Time creation_time =
+      base::Time::Now() - base::TimeDelta::FromSeconds(2 * kOneWeekInSeconds);
+
+  SavePageRequest original_request(kRequestId, kUrl, kClientId, creation_time,
+                                   kUserRequested);
+  queue()->AddRequest(
+      original_request,
+      base::Bind(&RequestQueueTest::AddRequestDone, base::Unretained(this)));
+  this->PumpLoop();
+  this->ClearResults();
+
+  // Set up a picker factory pointing to our fake notifier.
+  OfflinerPolicy policy;
+  RequestNotifierStub notifier;
+  RequestCoordinatorEventLogger event_logger;
+  std::unique_ptr<PickRequestTaskFactory> picker_factory(
+      new PickRequestTaskFactory(&policy, &notifier, &event_logger));
+  queue()->SetPickerFactory(std::move(picker_factory));
+
+  // Do a pick and clean operation, which will remove stale entries.
+  DeviceConditions conditions;
+  std::set<int64_t> disabled_list;
+  queue()->PickNextRequest(
+      base::Bind(&RequestQueueTest::RequestPickedCallback,
+                 base::Unretained(this)),
+      base::Bind(&RequestQueueTest::RequestNotPickedCallback,
+                 base::Unretained(this)),
+      conditions, disabled_list);
+
+  this->PumpLoop();
+
+  // Notifier should have been notified that the request was removed.
+  ASSERT_EQ(notifier.last_expired_request().request_id(), kRequestId);
+  ASSERT_EQ(notifier.last_request_expiration_status(),
+            RequestNotifier::BackgroundSavePageResult::EXPIRED);
+
+  // Doing a get should show no entries left in the queue since the expired
+  // request has been removed.
+  queue()->GetRequests(
+      base::Bind(&RequestQueueTest::GetRequestsDone, base::Unretained(this)));
+  this->PumpLoop();
+  ASSERT_EQ(GetRequestsResult::SUCCESS, this->last_get_requests_result());
+  ASSERT_TRUE(this->last_requests().empty());
 }
 
 }  // namespace offline_pages
