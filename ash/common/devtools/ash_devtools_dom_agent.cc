@@ -129,11 +129,11 @@ void AshDevToolsDOMAgent::OnWindowStackingChanged(WmWindow* window) {
 std::unique_ptr<DOM::Node> AshDevToolsDOMAgent::BuildTreeForWindow(
     ash::WmWindow* window) {
   std::unique_ptr<Array<DOM::Node>> children = Array<DOM::Node>::create();
+  views::Widget* widget = window->GetInternalWidget();
+  if (widget)
+    children->addItem(BuildTreeForRootWidget(widget));
   for (ash::WmWindow* child : window->GetChildren()) {
     children->addItem(BuildTreeForWindow(child));
-    views::Widget* widget = child->GetInternalWidget();
-    if (widget)
-      children->addItem(BuildTreeForRootWidget(widget));
   }
   std::unique_ptr<ui::devtools::protocol::DOM::Node> node =
       BuildNode("Window", GetAttributes(window), std::move(children));

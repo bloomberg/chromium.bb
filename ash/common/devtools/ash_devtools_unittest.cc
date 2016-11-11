@@ -69,18 +69,20 @@ std::string GetAttributeValue(const std::string& attribute, DOM::Node* node) {
   return nullptr;
 }
 
-bool Equals(views::Widget* widget, DOM::Node* node) {
-  return "Widget" == node->getNodeName() &&
-         widget->GetName() == GetAttributeValue("name", node) &&
-         (widget->GetRootView() ? 1 : 0) ==
-             node->getChildNodeCount(kDefaultChildNodeCount);
-}
-
 bool Equals(WmWindow* window, DOM::Node* node) {
+  int children_count = static_cast<int>(window->GetChildren().size());
+  if (window->GetInternalWidget())
+    children_count++;
   return "Window" == node->getNodeName() &&
          window->GetName() == GetAttributeValue("name", node) &&
-         static_cast<int>(window->GetChildren().size()) ==
-             node->getChildNodeCount(kDefaultChildNodeCount);
+         children_count == node->getChildNodeCount(kDefaultChildNodeCount);
+}
+
+void Compare(views::Widget* widget, DOM::Node* node) {
+  EXPECT_EQ("Widget", node->getNodeName());
+  EXPECT_EQ(widget->GetName(), GetAttributeValue("name", node));
+  EXPECT_EQ(widget->GetRootView() ? 1 : 0,
+            node->getChildNodeCount(kDefaultChildNodeCount));
 }
 
 void Compare(views::View* view, DOM::Node* node) {
@@ -106,20 +108,6 @@ DOM::Node* FindInRoot(WmWindow* window, DOM::Node* root) {
       return window_node;
   }
   return window_node;
-}
-
-DOM::Node* FindInRoot(views::Widget* widget, DOM::Node* root) {
-  if (Equals(widget, root))
-    return root;
-
-  Array<DOM::Node>* children = root->getChildren(nullptr);
-  DOM::Node* widget_node = nullptr;
-  for (size_t i = 0; i < children->length(); i++) {
-    widget_node = FindInRoot(widget, children->get(i));
-    if (widget_node)
-      return widget_node;
-  }
-  return widget_node;
 }
 
 }  // namespace
@@ -192,11 +180,12 @@ TEST_F(AshDevToolsTest, GetDocumentWithWindowWidgetView) {
   dom_agent()->getDocument(&root);
 
   DOM::Node* parent_node = FindInRoot(parent_window, root.get());
-  DOM::Node* widget_node = FindInRoot(widget.get(), root.get());
   ASSERT_TRUE(parent_node);
-  ASSERT_TRUE(widget_node);
-  ASSERT_TRUE(parent_node->getChildren(nullptr));
-  Compare(child_window, parent_node->getChildren(nullptr)->get(0));
+  Array<DOM::Node>* parent_children = parent_node->getChildren(nullptr);
+  ASSERT_TRUE(parent_children);
+  DOM::Node* widget_node = parent_children->get(0);
+  Compare(widget.get(), widget_node);
+  Compare(child_window, parent_children->get(1));
   Array<DOM::Node>* widget_children = widget_node->getChildren(nullptr);
   ASSERT_TRUE(widget_children);
   Compare(widget->GetRootView(), widget_children->get(0));
@@ -231,6 +220,8 @@ TEST_F(AshDevToolsTest, WindowDestroyedChildNodeRemoved) {
   DOM::Node* parent_node = root_node->getChildren(nullptr)->get(0);
   DOM::Node* child_node = parent_node->getChildren(nullptr)->get(0);
 
+  Compare(parent_window, parent_node);
+  Compare(child_window, child_node);
   child_window->Destroy();
   ExpectChildNodeRemoved(parent_node->getNodeId(), child_node->getNodeId());
 }
@@ -252,6 +243,8 @@ TEST_F(AshDevToolsTest, WindowReorganizedChildNodeRemovedAndInserted) {
       target_node_children->get(target_node_children->length() - 1);
   DOM::Node* child_node = parent_node->getChildren(nullptr)->get(0);
 
+  Compare(target_window, target_node);
+  Compare(child_window, child_node);
   target_window->AddChild(child_window);
   ExpectChildNodeRemoved(parent_node->getNodeId(), child_node->getNodeId());
   ExpectChildNodeInserted(target_node->getNodeId(), sibling_node->getNodeId());
@@ -272,6 +265,8 @@ TEST_F(AshDevToolsTest, WindowStackingChangedChildNodeRemovedAndInserted) {
   DOM::Node* sibling_node = parent_node_children->get(1);
   int parent_id = parent_node->getNodeId();
 
+  Compare(parent_window, parent_node);
+  Compare(child_window, child_node);
   parent_window->StackChildAbove(child_window, target_window);
   ExpectChildNodeRemoved(parent_id, child_node->getNodeId());
   ExpectChildNodeInserted(parent_id, sibling_node->getNodeId());
