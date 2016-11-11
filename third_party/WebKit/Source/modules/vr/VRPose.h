@@ -26,7 +26,7 @@ class VRPose final : public GarbageCollected<VRPose>, public ScriptWrappable {
   DOMFloat32Array* angularAcceleration() const { return m_angularAcceleration; }
   DOMFloat32Array* linearAcceleration() const { return m_linearAcceleration; }
 
-  void setPose(const device::blink::VRPosePtr&);
+  void setPose(const device::mojom::blink::VRPosePtr&);
 
   DECLARE_VIRTUAL_TRACE();
 

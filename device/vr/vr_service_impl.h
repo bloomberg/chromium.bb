@@ -9,47 +9,47 @@
 
 #include "base/macros.h"
 
+#include "device/vr/vr_device.h"
+#include "device/vr/vr_display_impl.h"
 #include "device/vr/vr_export.h"
 #include "device/vr/vr_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace device {
 
-class VRServiceImpl : public VRService {
+class VRServiceImpl : public mojom::VRService {
  public:
   DEVICE_VR_EXPORT ~VRServiceImpl() override;
 
   DEVICE_VR_EXPORT static void BindRequest(
-      mojo::InterfaceRequest<VRService> request);
+      mojo::InterfaceRequest<mojom::VRService> request);
 
-  VRServiceClientPtr& client() { return client_; }
+  mojom::VRServiceClient* client() { return client_.get(); }
+
+  VRDisplayImpl* GetVRDisplayImpl(VRDevice* device);
 
  private:
   friend class VRServiceTestBinding;
+  friend class VRDeviceManagerTest;
+  friend class VRDisplayImpl;
 
   DEVICE_VR_EXPORT VRServiceImpl();
 
   // Mojo connection handling.
-  DEVICE_VR_EXPORT void Bind(mojo::InterfaceRequest<VRService> request);
+  DEVICE_VR_EXPORT void Bind(mojo::InterfaceRequest<mojom::VRService> request);
   void RemoveFromDeviceManager();
+  void RemoveDevice(VRDevice* device);
 
   // mojom::VRService implementation
-  void SetClient(VRServiceClientPtr client) override;
-  void GetDisplays(const GetDisplaysCallback& callback) override;
-  void GetPose(uint32_t index, const GetPoseCallback& callback) override;
-  void ResetPose(uint32_t index) override;
+  void SetClient(mojom::VRServiceClientPtr service_client,
+                 const SetClientCallback& callback) override;
 
-  void RequestPresent(uint32_t index,
-                      bool secureOrigin,
-                      const RequestPresentCallback& callback) override;
-  void ExitPresent(uint32_t index) override;
-  void SubmitFrame(uint32_t index, VRPosePtr pose) override;
-  void UpdateLayerBounds(uint32_t index,
-                         VRLayerBoundsPtr leftBounds,
-                         VRLayerBoundsPtr rightBounds) override;
+  using DisplayImplMap = std::map<VRDevice*, std::unique_ptr<VRDisplayImpl>>;
+  DisplayImplMap displays_;
 
-  std::unique_ptr<mojo::Binding<VRService>> binding_;
-  VRServiceClientPtr client_;
+  mojom::VRServiceClientPtr client_;
+
+  std::unique_ptr<mojo::Binding<mojom::VRService>> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(VRServiceImpl);
 };

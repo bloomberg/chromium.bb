@@ -174,7 +174,7 @@ VRFrameData::VRFrameData() : m_timestamp(0.0) {
   m_pose = VRPose::create();
 }
 
-bool VRFrameData::update(const device::blink::VRPosePtr& pose,
+bool VRFrameData::update(const device::mojom::blink::VRPosePtr& pose,
                          VREyeParameters* leftEye,
                          VREyeParameters* rightEye,
                          float depthNear,

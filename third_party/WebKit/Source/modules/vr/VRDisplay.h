@@ -11,6 +11,7 @@
 #include "device/vr/vr_service.mojom-blink.h"
 #include "modules/vr/VRDisplayCapabilities.h"
 #include "modules/vr/VRLayer.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
@@ -38,8 +39,10 @@ class WebGLRenderingContextBase;
 enum VREye { VREyeNone, VREyeLeft, VREyeRight };
 
 class VRDisplay final : public GarbageCollectedFinalized<VRDisplay>,
+                        public device::mojom::blink::VRDisplayClient,
                         public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
+  USING_PRE_FINALIZER(VRDisplay, dispose);
 
  public:
   ~VRDisplay();
@@ -81,9 +84,11 @@ class VRDisplay final : public GarbageCollectedFinalized<VRDisplay>,
  protected:
   friend class VRController;
 
-  VRDisplay(NavigatorVR*);
+  VRDisplay(NavigatorVR*,
+            device::mojom::blink::VRDisplayPtr,
+            device::mojom::blink::VRDisplayClientRequest);
 
-  void update(const device::blink::VRDisplayPtr&);
+  void update(const device::mojom::blink::VRDisplayInfoPtr&);
 
   void updatePose();
 
@@ -97,6 +102,14 @@ class VRDisplay final : public GarbageCollectedFinalized<VRDisplay>,
 
  private:
   void onFullscreenCheck(TimerBase*);
+  void onPresentComplete(ScriptPromiseResolver*, bool);
+
+  void onDisplayConnected();
+  void onDisplayDisconnected();
+
+  // VRDisplayClient
+  void OnDisplayChanged(device::mojom::blink::VRDisplayInfoPtr) override;
+  void OnExitPresent() override;
 
   ScriptedAnimationController& ensureScriptedAnimationController(Document*);
 
@@ -111,10 +124,12 @@ class VRDisplay final : public GarbageCollectedFinalized<VRDisplay>,
   Member<VRStageParameters> m_stageParameters;
   Member<VREyeParameters> m_eyeParametersLeft;
   Member<VREyeParameters> m_eyeParametersRight;
-  device::blink::VRPosePtr m_framePose;
+  device::mojom::blink::VRPosePtr m_framePose;
   VRLayer m_layer;
   double m_depthNear;
   double m_depthFar;
+
+  void dispose();
 
   Timer<VRDisplay> m_fullscreenCheckTimer;
   gpu::gles2::GLES2Interface* m_contextGL;
@@ -123,6 +138,10 @@ class VRDisplay final : public GarbageCollectedFinalized<VRDisplay>,
   Member<ScriptedAnimationController> m_scriptedAnimationController;
   bool m_animationCallbackRequested;
   bool m_inAnimationFrame;
+
+  device::mojom::blink::VRDisplayPtr m_display;
+
+  mojo::Binding<device::mojom::blink::VRDisplayClient> m_binding;
 };
 
 using VRDisplayVector = HeapVector<Member<VRDisplay>>;
