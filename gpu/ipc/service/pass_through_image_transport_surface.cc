@@ -142,8 +142,6 @@ void PassThroughImageTransportSurface::SetLatencyInfo(
 void PassThroughImageTransportSurface::SendVSyncUpdateIfAvailable() {
   gfx::VSyncProvider* vsync_provider = GetVSyncProvider();
   if (vsync_provider) {
-    // PassThroughImageTransportSurface owns the VSyncProvider and will
-    // outlive it. Thus, base::Unretained is safe here.
     vsync_provider->GetVSyncParameters(base::Bind(
         &ImageTransportSurfaceDelegate::UpdateVSyncParameters, delegate_));
   }
