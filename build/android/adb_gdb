@@ -572,8 +572,8 @@ get_arch_gnu_config () {
 # $1: NDK architecture name (e.g. 'arm')
 # Out: NDK toolchain name prefix (e.g. 'arm-linux-androideabi')
 get_arch_toolchain_prefix () {
-  # Return the configure triplet, except for x86!
-  if [ "$1" = "x86" ]; then
+  # Return the configure triplet, except for x86 and x86_64!
+  if [ "$1" = "x86" -o "$1" = "x86_64" ]; then
     echo "$1"
   else
     get_arch_gnu_config $1
