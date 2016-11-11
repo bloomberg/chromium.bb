@@ -555,7 +555,6 @@ class VideoEncodeAcceleratorTestEnvironment : public ::testing::Environment {
 
 enum ClientState {
   CS_CREATED,
-  CS_ENCODER_SET,
   CS_INITIALIZED,
   CS_ENCODING,
   // Encoding has finished.
@@ -1203,7 +1202,6 @@ void VEAClient::CreateEncoder() {
     if (!encoders[i])
       continue;
     encoder_ = std::move(encoders[i]);
-    SetState(CS_ENCODER_SET);
     if (encoder_->Initialize(kInputFormat, test_stream_->visible_size,
                              test_stream_->requested_profile,
                              requested_bitrate_, this)) {
@@ -1964,8 +1962,8 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
   }
 
   // All encoders must pass through states in this order.
-  enum ClientState state_transitions[] = {
-      CS_ENCODER_SET, CS_INITIALIZED, CS_ENCODING, CS_FINISHED, CS_VALIDATED};
+  enum ClientState state_transitions[] = {CS_INITIALIZED, CS_ENCODING,
+                                          CS_FINISHED, CS_VALIDATED};
 
   // Wait for all encoders to go through all states and finish.
   // Do this by waiting for all encoders to advance to state n before checking
