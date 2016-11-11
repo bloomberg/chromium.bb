@@ -64,10 +64,10 @@ void StatusAreaWidget::CreateTrayViews() {
   AddSystemTray();
   AddWebNotificationTray();
 #if defined(OS_CHROMEOS)
-  AddLogoutButtonTray();
   AddPaletteTray();
   AddVirtualKeyboardTray();
   AddImeMenuTray();
+  AddLogoutButtonTray();
 #endif
 
   SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();

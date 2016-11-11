@@ -327,7 +327,7 @@ gfx::Rect PaletteTray::GetAnchorRect(
     if (tray_container()->border())
       icon_size -= tray_container()->border()->GetInsets().width();
 
-    r.Offset(-r.width() + icon_size, 0);
+    r.Offset(-r.width() + icon_size + x(), 0);
   } else {
     // Vertical layout doesn't need the border adjustment that horizontal needs.
     r.Offset(0, -r.height() + tray_container()->height());
