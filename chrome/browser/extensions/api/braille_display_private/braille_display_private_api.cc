@@ -169,11 +169,15 @@ BrailleDisplayPrivateWriteDotsFunction::
 bool BrailleDisplayPrivateWriteDotsFunction::Prepare() {
   params_ = WriteDots::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_);
+  EXTENSION_FUNCTION_VALIDATE(
+      params_->cells.size() >=
+      static_cast<size_t>(params_->columns * params_->rows));
   return true;
 }
 
 void BrailleDisplayPrivateWriteDotsFunction::Work() {
-  BrailleController::GetInstance()->WriteDots(params_->cells);
+  BrailleController::GetInstance()->WriteDots(params_->cells, params_->columns,
+                                              params_->rows);
 }
 
 bool BrailleDisplayPrivateWriteDotsFunction::Respond() {

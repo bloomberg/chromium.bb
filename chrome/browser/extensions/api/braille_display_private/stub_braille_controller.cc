@@ -15,8 +15,9 @@ std::unique_ptr<DisplayState> StubBrailleController::GetDisplayState() {
   return std::unique_ptr<DisplayState>(new DisplayState);
 }
 
-void StubBrailleController::WriteDots(const std::vector<char>& cells) {
-}
+void StubBrailleController::WriteDots(const std::vector<char>& cells,
+                                      unsigned int cols,
+                                      unsigned int rows) {}
 
 void StubBrailleController::AddObserver(BrailleObserver* observer) {
 }

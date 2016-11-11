@@ -8,7 +8,8 @@
 chrome.brailleDisplayPrivate = {};
 
 /**
- * @param {function(!{available: boolean, textCellCount: (number|undefined)})}
+ * @param {function(!{available: boolean, textRowCount: (number|undefined),
+ *        textColumnCount: (number|undefined)})}
  *        callback
  */
 chrome.brailleDisplayPrivate.getDisplayState = function(callback) {};
@@ -25,8 +26,10 @@ chrome.brailleDisplayPrivate.onKeyEvent;
 
 /**
  * @param {ArrayBuffer} cells
+ * @param {number} columns
+ * @param {number} rows
  */
-chrome.brailleDisplayPrivate.writeDots = function(cells) {};
+chrome.brailleDisplayPrivate.writeDots = function(cells, columns, rows) {};
 
 /**
  * @const

@@ -19,7 +19,7 @@ namespace braille_display_private {
 namespace {
 // Default virtual terminal.  This can be overriden by setting the
 // WINDOWPATH environment variable.  This is only used when not running
-// under Crhome OS (that is in aura for a Linux desktop).
+// under Chrome OS (that is in aura for a Linux desktop).
 // TODO(plundblad): Find a way to detect the controlling terminal of the
 // X server.
 static const int kDefaultTtyLinux = 7;
@@ -41,8 +41,8 @@ class BrlapiConnectionImpl : public BrlapiConnection {
   bool Connected() override { return handle_ != nullptr; }
   brlapi_error_t* BrlapiError() override;
   std::string BrlapiStrError() override;
-  bool GetDisplaySize(size_t* size) override;
-  bool WriteDots(const unsigned char* cells) override;
+  bool GetDisplaySize(unsigned int* rows, unsigned int* columns) override;
+  bool WriteDots(const std::vector<unsigned char>& cells) override;
   int ReadKey(brlapi_keyCode_t* keyCode) override;
 
  private:
@@ -93,9 +93,10 @@ BrlapiConnection::ConnectResult BrlapiConnectionImpl::Connect(
     Disconnect();
     return CONNECT_ERROR_RETRY;
   }
+  unsigned int rows = 0;
+  unsigned int columns = 0;
 
-  size_t size;
-  if (!GetDisplaySize(&size)) {
+  if (!GetDisplaySize(&rows, &columns)) {
     // Error already logged.
     Disconnect();
     return CONNECT_ERROR_RETRY;
@@ -104,7 +105,7 @@ BrlapiConnection::ConnectResult BrlapiConnectionImpl::Connect(
   // A display size of 0 means no display connected.  We can't reliably
   // detect when a display gets connected, so fail and let the caller
   // retry connecting.
-  if (size == 0) {
+  if (rows * columns == 0) {
     VLOG(1) << "No braille display connected";
     Disconnect();
     return CONNECT_ERROR_RETRY;
@@ -148,24 +149,24 @@ std::string BrlapiConnectionImpl::BrlapiStrError() {
   return libbrlapi_loader_->brlapi_strerror(BrlapiError());
 }
 
-bool BrlapiConnectionImpl::GetDisplaySize(size_t* size) {
+bool BrlapiConnectionImpl::GetDisplaySize(unsigned int* columns,
+                                          unsigned int* rows) {
   if (!CheckConnected()) {
     return false;
   }
-  unsigned int columns, rows;
-  if (libbrlapi_loader_->brlapi__getDisplaySize(
-          handle_.get(), &columns, &rows) < 0) {
+  if (libbrlapi_loader_->brlapi__getDisplaySize(handle_.get(), columns, rows) <
+      0) {
     LOG(ERROR) << "Couldn't get braille display size " << BrlapiStrError();
     return false;
   }
-  *size = columns * rows;
   return true;
 }
 
-bool BrlapiConnectionImpl::WriteDots(const unsigned char* cells) {
+bool BrlapiConnectionImpl::WriteDots(const std::vector<unsigned char>& cells) {
+  // Cells is a 2D vector, compressed into 1D.
   if (!CheckConnected())
     return false;
-  if (libbrlapi_loader_->brlapi__writeDots(handle_.get(), cells) < 0) {
+  if (libbrlapi_loader_->brlapi__writeDots(handle_.get(), cells.data()) < 0) {
     VLOG(1) << "Couldn't write to brlapi: " << BrlapiStrError();
     return false;
   }

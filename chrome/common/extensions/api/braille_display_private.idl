@@ -52,8 +52,10 @@ namespace brailleDisplayPrivate {
   dictionary DisplayState {
     // Whether a braille display is currently available.
     boolean available;
-    // Number of braille cells on the currently connected display.
-    long? textCellCount;
+    // Number of rows of braille cells on the currently connected display.
+    long? textRowCount;
+    // Number of columns of braille cells on the currently connected display.
+    long? textColumnCount;
   };
 
   callback DisplayStateCallback = void(DisplayState result);
@@ -67,8 +69,11 @@ namespace brailleDisplayPrivate {
     // raised in the corresponding cell with the low-order bit representing
     // dot 1 and so on until bit 7 which corresponds to dot 8.  If the number
     // of bytes in the buffer is not equal to the display size, the buffer
-    // will either be clipped or padded with blank cells on the right.
-    static void writeDots(ArrayBuffer cells);
+    // will either be clipped or padded with blank cells on the right. The
+    // buffer is a 2D array compressed into 1D. The |columns| and |rows|
+    // parameters give the original 2D dimensions of the buffer. To access
+    // an element cells[r][c], simply access cells[r * columns + c].
+    static void writeDots(ArrayBuffer cells, long columns, long rows);
   };
 
   interface Events {

@@ -14,8 +14,10 @@ MockBrailleController::MockBrailleController()
 std::unique_ptr<DisplayState> MockBrailleController::GetDisplayState() {
   std::unique_ptr<DisplayState> state(new DisplayState());
   state->available = available_;
-  if (available_)
-    state->text_cell_count.reset(new int(18));
+  if (available_) {
+    state->text_column_count.reset(new int(18));
+    state->text_row_count.reset(new int(18));
+  }
   return state;
 }
 

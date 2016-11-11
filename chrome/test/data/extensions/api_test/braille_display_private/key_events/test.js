@@ -47,7 +47,7 @@ function waitForDisplay(callback) {
       return;
     }
     chrome.test.assertTrue(state.available, "Display not available");
-    chrome.test.assertEq(11, state.textCellCount);
+    chrome.test.assertEq(11, state.textColumnCount);
     callback(state);
     callbackCompleted();
     chrome.brailleDisplayPrivate.onDisplayStateChanged.removeListener(

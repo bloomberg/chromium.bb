@@ -54,7 +54,8 @@ brlapi_keyCode_t kErrorKeyCode = BRLAPI_KEY_MAX;
 // itself.
 struct MockBrlapiConnectionData {
   bool connected;
-  size_t display_size;
+  size_t display_columns;
+  size_t display_rows;
   brlapi_error_t error;
   std::vector<std::string> written_content;
   // List of brlapi key codes.  A negative number makes the connection mock
@@ -84,7 +85,7 @@ class MockBrlapiConnection : public BrlapiConnection {
   void Disconnect() override {
     data_->connected = false;
     if (data_->reappear_on_disconnect) {
-      data_->display_size *= 2;
+      data_->display_columns *= 2;
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::Bind(&BrailleControllerImpl::PokeSocketDirForTesting,
@@ -100,14 +101,16 @@ class MockBrlapiConnection : public BrlapiConnection {
     return data_->error.brlerrno != BRLAPI_ERROR_SUCCESS ? "Error" : "Success";
   }
 
-  bool GetDisplaySize(size_t* size) override {
-    *size = data_->display_size;
+  bool GetDisplaySize(unsigned int* columns, unsigned int* rows) override {
+    *columns = data_->display_columns;
+    *rows = data_->display_rows;
     return true;
   }
 
-  bool WriteDots(const unsigned char* cells) override {
-    std::string written(reinterpret_cast<const char*>(cells),
-                        data_->display_size);
+  bool WriteDots(const std::vector<unsigned char>& cells) override {
+    std::string written(
+        cells.begin(),
+        cells.begin() + data_->display_rows * data_->display_columns);
     data_->written_content.push_back(written);
     return true;
   }
@@ -147,7 +150,8 @@ class BrailleDisplayPrivateApiTest : public ExtensionApiTest {
   void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
     connection_data_.connected = false;
-    connection_data_.display_size = 0;
+    connection_data_.display_rows = 0;
+    connection_data_.display_columns = 0;
     connection_data_.error.brlerrno = BRLAPI_ERROR_SUCCESS;
     connection_data_.reappear_on_disconnect = false;
     BrailleControllerImpl::GetInstance()->SetCreateBrlapiConnectionForTesting(
@@ -178,22 +182,25 @@ class BrailleDisplayPrivateApiTest : public ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateApiTest, WriteDots) {
-  connection_data_.display_size = 11;
+  connection_data_.display_columns = 11;
+  connection_data_.display_rows = 1;
   ASSERT_TRUE(RunComponentExtensionTest("braille_display_private/write_dots"))
       << message_;
   ASSERT_EQ(3U, connection_data_.written_content.size());
-  const std::string expected_content(connection_data_.display_size, '\0');
+  const std::string expected_content(
+      connection_data_.display_columns * connection_data_.display_rows, '\0');
   for (size_t i = 0; i < connection_data_.written_content.size(); ++i) {
-    ASSERT_EQ(std::string(
-        connection_data_.display_size,
-        static_cast<char>(i)),
-                 connection_data_.written_content[i])
+    ASSERT_EQ(std::string(connection_data_.display_columns *
+                              connection_data_.display_rows,
+                          static_cast<char>(i)),
+              connection_data_.written_content[i])
         << "String " << i << " doesn't match";
   }
 }
 
 IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateApiTest, KeyEvents) {
-  connection_data_.display_size = 11;
+  connection_data_.display_columns = 11;
+  connection_data_.display_rows = 1;
 
   // Braille navigation commands.
   connection_data_.pending_keys.push_back(BRLAPI_KEY_TYPE_CMD |
@@ -256,7 +263,8 @@ IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateApiTest, KeyEvents) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrailleDisplayPrivateApiTest, DisplayStateChanges) {
-  connection_data_.display_size = 11;
+  connection_data_.display_columns = 11;
+  connection_data_.display_rows = 1;
   connection_data_.pending_keys.push_back(kErrorKeyCode);
   connection_data_.reappear_on_disconnect = true;
   ASSERT_TRUE(RunComponentExtensionTest(

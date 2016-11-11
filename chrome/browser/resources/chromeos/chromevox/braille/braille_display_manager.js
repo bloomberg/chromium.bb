@@ -67,7 +67,8 @@ cvox.BrailleDisplayManager = function(translatorManager) {
    * @type {!cvox.BrailleDisplayState}
    * @private
    */
-  this.displayState_ = {available: false, textCellCount: undefined};
+  this.displayState_ = {available: false, textRowCount: undefined,
+      textColumnCount: undefined};
   /**
    * State reported from the chrome api, reflecting a real hardware
    * display.
@@ -157,7 +158,8 @@ cvox.BrailleDisplayManager.prototype.setCommandListener = function(func) {
  */
 cvox.BrailleDisplayManager.prototype.refreshDisplayState_ = function(
     newState) {
-  var oldSize = this.displayState_.textCellCount || 0;
+  var oldSize = this.displayState_.textColumnCount *
+                this.displayState_.textRowCount || 0;
   this.realDisplayState_ = newState;
   if (newState.available) {
     this.displayState_ = newState;
@@ -165,7 +167,8 @@ cvox.BrailleDisplayManager.prototype.refreshDisplayState_ = function(
     this.displayState_ =
         cvox.BrailleCaptionsBackground.getVirtualDisplayState();
   }
-  var newSize = this.displayState_.textCellCount || 0;
+  var newSize = this.displayState_.textColumnCount *
+                this.displayState_.textRowCount || 0;
   if (oldSize != newSize) {
     this.panStrategy_.setDisplaySize(newSize);
   }
@@ -193,7 +196,7 @@ cvox.BrailleDisplayManager.prototype.refresh_ = function() {
   var viewPort = this.panStrategy_.viewPort;
   var buf = this.displayedContent_.slice(viewPort.start, viewPort.end);
   if (this.realDisplayState_.available) {
-    chrome.brailleDisplayPrivate.writeDots(buf);
+    chrome.brailleDisplayPrivate.writeDots(buf, buf.byteLength, 1);
   }
   if (cvox.BrailleCaptionsBackground.isEnabled()) {
     var start = this.brailleToTextPosition_(viewPort.start);
@@ -388,7 +391,7 @@ cvox.BrailleDisplayManager.prototype.brailleToTextPosition_ =
 cvox.BrailleDisplayManager.prototype.updatePanStrategy_ = function(wordWrap) {
   var newStrategy = wordWrap ? new cvox.WrappingPanStrategy() :
       new cvox.FixedPanStrategy();
-  newStrategy.setDisplaySize(this.displayState_.textCellCount || 0);
+  newStrategy.setDisplaySize(this.displayState_.textColumnCount || 0);
   newStrategy.setContent(this.translatedContent_,
                          this.panStrategy_.viewPort.start);
   this.panStrategy_ = newStrategy;

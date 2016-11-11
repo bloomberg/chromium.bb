@@ -9,9 +9,9 @@ var pass = chrome.test.callbackPass;
 
 var callbackCompleted;
 var EXPECTED_EVENTS = [
-  { "available": true, "textCellCount": 11 },
+  { "available": true, "textColumnCount": 11, "textRowCount": 1 },
   { "available": false },
-  { "available": true, "textCellCount": 22 },
+  { "available": true, "textColumnCount": 22, "textRowCount": 1 },
 ];
 
 var eventNumber = 0;

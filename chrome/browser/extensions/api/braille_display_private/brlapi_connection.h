@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -50,14 +51,15 @@ class BrlapiConnection {
   // for logging.
   virtual std::string BrlapiStrError() = 0;
 
-  // Gets the total size of the display, which may be 0 if no display is
-  // present, returning true on success.  Note that this is cached in the
-  // brlapi client so it is cheap.
-  virtual bool GetDisplaySize(size_t* size) = 0;
+  // Gets the row and column size of the display. Row x columns might be 0
+  // if no display is present, returning true on success. Note that this is
+  // cached in the brlapi client so it is cheap.
+  virtual bool GetDisplaySize(unsigned int* columns, unsigned int* rows) = 0;
 
   // Sends the specified cells to the display.  The array size must
-  // be equal to what GetDisplaySize() last returned for this connection.
-  virtual bool WriteDots(const unsigned char* cells) = 0;
+  // be equal to what GetDisplaySize() last returned for this connection,
+  // that is, cells must have a size of rows x columns.
+  virtual bool WriteDots(const std::vector<unsigned char>& cells) = 0;
 
   // Reads the next keyboard command, returning true on success.
   // Returns < 0 on error, 0 if no more keys are pending and > 0

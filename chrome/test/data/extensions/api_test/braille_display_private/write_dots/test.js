@@ -22,7 +22,7 @@ function waitForDisplay(callback) {
       return;
     }
     chrome.test.assertTrue(state.available, "Display not available");
-    chrome.test.assertEq(11, state.textCellCount);
+    chrome.test.assertEq(11, state.textColumnCount);
     callback(state);
     callbackCompleted();
     chrome.brailleDisplayPrivate.onDisplayStateChanged.removeListener(
@@ -45,7 +45,7 @@ function waitForDisplay(callback) {
 chrome.test.runTests([
   function testWriteEmptyCells() {
     waitForDisplay(pass(function() {
-      chrome.brailleDisplayPrivate.writeDots(new ArrayBuffer(0));
+      chrome.brailleDisplayPrivate.writeDots(new ArrayBuffer(0), 0, 0);
       chrome.brailleDisplayPrivate.getDisplayState(pass());
     }));
   },
@@ -53,9 +53,9 @@ chrome.test.runTests([
   function testWriteOversizedCells() {
     waitForDisplay(pass(function(state) {
       chrome.brailleDisplayPrivate.writeDots(
-          createBuffer(state.textCellCount + 1, 1));
+          createBuffer(state.textColumnCount + 1, 1), state.textColumnCount, 1);
       chrome.brailleDisplayPrivate.writeDots(
-          createBuffer(1000000, 2));
+          createBuffer(1000000, 2), 1000000, 1);
       chrome.brailleDisplayPrivate.getDisplayState(pass());
     }));
   }

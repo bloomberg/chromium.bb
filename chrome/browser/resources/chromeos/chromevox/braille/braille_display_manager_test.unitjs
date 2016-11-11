@@ -49,7 +49,7 @@ CvoxBrailleDisplayManagerUnitTest.prototype = {
   },
 
   displayAvailable: function() {
-    this.displayState = {available: true, textCellCount: this.DISPLAY_SIZE};
+    this.displayState = {available: true, textRowCount: 1, textColumnCount: this.DISPLAY_SIZE};
   },
 
   /**

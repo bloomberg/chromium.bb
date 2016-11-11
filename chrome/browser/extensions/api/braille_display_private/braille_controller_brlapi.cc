@@ -87,29 +87,41 @@ std::unique_ptr<DisplayState> BrailleControllerImpl::GetDisplayState() {
   StartConnecting();
   std::unique_ptr<DisplayState> display_state(new DisplayState);
   if (connection_.get() && connection_->Connected()) {
-    size_t size;
-    if (!connection_->GetDisplaySize(&size)) {
+    unsigned int columns = 0;
+    unsigned int rows = 0;
+    if (!connection_->GetDisplaySize(&columns, &rows)) {
       Disconnect();
-    } else if (size > 0) {  // size == 0 means no display present.
+    } else if (rows * columns > 0) {
+      // rows * columns == 0 means no display present.
       display_state->available = true;
-      display_state->text_cell_count.reset(new int(size));
+      display_state->text_column_count.reset(new int(columns));
+      display_state->text_row_count.reset(new int(rows));
     }
   }
   return display_state;
 }
 
-void BrailleControllerImpl::WriteDots(const std::vector<char>& cells) {
+void BrailleControllerImpl::WriteDots(const std::vector<char>& cells,
+                                      unsigned int cells_cols,
+                                      unsigned int cells_rows) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (connection_ && connection_->Connected()) {
-    size_t size;
-    if (!connection_->GetDisplaySize(&size)) {
+    // Row count and column count of current display.
+    unsigned int columns = 0;
+    unsigned int rows = 0;
+    if (!connection_->GetDisplaySize(&columns, &rows)) {
       Disconnect();
     }
-    std::vector<unsigned char> sizedCells(size);
-    std::memcpy(&sizedCells[0], cells.data(), std::min(cells.size(), size));
-    if (size > cells.size())
-      std::fill(sizedCells.begin() + cells.size(), sizedCells.end(), 0);
-    if (!connection_->WriteDots(&sizedCells[0]))
+    std::vector<unsigned char> sized_cells(rows * columns, 0);
+    unsigned int row_limit = std::min(rows, cells_rows);
+    unsigned int col_limit = std::min(columns, cells_cols);
+    for (unsigned int row = 0; row < row_limit; row++) {
+      for (unsigned int col = 0; col < col_limit; col++) {
+        sized_cells[row * columns + col] = cells[row * cells_cols + col];
+      }
+    }
+
+    if (!connection_->WriteDots(sized_cells))
       Disconnect();
   }
 }
