@@ -247,9 +247,14 @@ class PageLoadTracker {
   // be the first abort action the user performed.
   UserAbortType abort_type_;
 
-  // This boolean is only an approximation. As the aborts pipeline is updated,
-  // more abort types will have this set to true. Currently, this is only set
-  // for navigations aborting navigations.
+  // Whether the abort for this page load was user initiated. For example, if
+  // this page load was aborted by a new navigation, this field tracks whether
+  // that new navigation was user-initiated. This field is only useful if this
+  // page load's abort type is a value other than ABORT_NONE. Note that this
+  // value is currently experimental, and is subject to change. In particular,
+  // this field is never set to true for some abort types, such as stop and
+  // close, since we don't yet have sufficient instrumentation to know if a stop
+  // or close was caused by a user action.
   bool abort_user_initiated_;
 
   base::TimeTicks abort_time_;
@@ -274,7 +279,7 @@ class PageLoadTracker {
 
   // This is derived from the user gesture bit in the renderer. For browser
   // initiated navigations this will always be true.
-  bool user_gesture_;
+  bool user_initiated_;
 
   // This is a subtle member. If a provisional load A gets aborted by
   // provisional load B, which gets aborted by C that eventually commits, then

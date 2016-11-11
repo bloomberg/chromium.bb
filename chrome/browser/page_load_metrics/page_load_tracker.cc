@@ -86,11 +86,16 @@ void LogAbortChainSameURLHistogram(int aborted_chain_size_same_url) {
   }
 }
 
-// TODO(crbug.com/617904): Browser initiated navigations should have
-// HasUserGesture() set to true. Update this once we get enough data from just
-// renderer initiated aborts.
 bool IsNavigationUserInitiated(content::NavigationHandle* handle) {
-  return handle->HasUserGesture();
+  // TODO(crbug.com/617904): Browser initiated navigations should have
+  // HasUserGesture() set to true. In the meantime, we consider all
+  // browser-initiated navigations to be user initiated.
+  //
+  // TODO(crbug.com/637345): Some browser-initiated navigations incorrectly
+  // report that they are renderer-initiated. We will currently report that
+  // these navigations are not user initiated, when in fact they are user
+  // initiated.
+  return handle->HasUserGesture() || !handle->IsRendererInitiated();
 }
 
 namespace {
@@ -294,7 +299,7 @@ PageLoadTracker::PageLoadTracker(
       page_transition_(navigation_handle->GetPageTransition()),
       num_cache_requests_(0),
       num_network_requests_(0),
-      user_gesture_(IsNavigationUserInitiated(navigation_handle)),
+      user_initiated_(IsNavigationUserInitiated(navigation_handle)),
       aborted_chain_size_(aborted_chain_size),
       aborted_chain_size_same_url_(aborted_chain_size_same_url),
       embedder_interface_(embedder_interface) {
@@ -435,7 +440,7 @@ void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
   committed_url_ = navigation_handle->GetURL();
   // Some transitions (like CLIENT_REDIRECT) are only known at commit time.
   page_transition_ = navigation_handle->GetPageTransition();
-  user_gesture_ = navigation_handle->HasUserGesture();
+  user_initiated_ = IsNavigationUserInitiated(navigation_handle);
 
   INVOKE_AND_PRUNE_OBSERVERS(observers_, OnCommit, navigation_handle);
   LogAbortChainHistograms(navigation_handle);
@@ -594,7 +599,7 @@ PageLoadExtraInfo PageLoadTracker::ComputePageLoadExtraInfo() {
   DCHECK(abort_type_ != ABORT_NONE || !abort_user_initiated_);
   return PageLoadExtraInfo(
       first_background_time, first_foreground_time, started_in_foreground_,
-      user_gesture_, committed_url_, start_url_, abort_type_,
+      user_initiated_, committed_url_, start_url_, abort_type_,
       abort_user_initiated_, time_to_abort, num_cache_requests_,
       num_network_requests_, metadata_);
 }
@@ -664,6 +669,14 @@ void PageLoadTracker::UpdateAbortInternal(UserAbortType abort_type,
   }
   abort_type_ = abort_type;
   abort_time_ = timestamp;
+  // A client redirect can never be user initiated. Due to the way Blink
+  // implements user gesture tracking, where all events that occur within 1
+  // second after a user interaction are considered to be triggered by user
+  // activation (based on HTML spec:
+  // https://html.spec.whatwg.org/multipage/interaction.html#triggered-by-user-activation),
+  // these navs may sometimes be reported as user initiated by Blink. Thus, we
+  // explicitly filter these types of aborts out when deciding if the abort was
+  // user initiated.
   abort_user_initiated_ = user_initiated && abort_type != ABORT_CLIENT_REDIRECT;
 
   if (is_certainly_browser_timestamp) {

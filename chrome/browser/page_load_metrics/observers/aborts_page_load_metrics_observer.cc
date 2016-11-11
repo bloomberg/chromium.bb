@@ -71,7 +71,12 @@ const char kHistogramAbortReloadUserInitiated[] =
 namespace {
 
 bool IsAbortUserInitiated(const page_load_metrics::PageLoadExtraInfo& info) {
-  return info.abort_user_initiated && info.user_gesture;
+  // We consider an abort to be user initiated if the abort was triggered by a
+  // user action, and the page load being aborted was also user initiated. A
+  // user may abort a non-user-initiated page load, but we exclude these from
+  // our user initiated abort tracking since it's less clear that such an abort
+  // is interesting from a user perspective.
+  return info.abort_user_initiated && info.user_initiated;
 }
 
 void RecordAbortBeforeCommit(UserAbortType abort_type,

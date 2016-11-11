@@ -199,7 +199,6 @@ const char kHistogramFirstScrollInputAfterFirstPaint[] =
 
 CorePageLoadMetricsObserver::CorePageLoadMetricsObserver()
     : transition_(ui::PAGE_TRANSITION_LINK),
-      initiated_by_user_gesture_(false),
       was_no_store_main_resource_(false) {}
 
 CorePageLoadMetricsObserver::~CorePageLoadMetricsObserver() {}
@@ -208,7 +207,6 @@ page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 CorePageLoadMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle) {
   transition_ = navigation_handle->GetPageTransition();
-  initiated_by_user_gesture_ = navigation_handle->HasUserGesture();
   navigation_start_ = navigation_handle->NavigationStart();
   const net::HttpResponseHeaders* headers =
       navigation_handle->GetResponseHeaders();
@@ -327,7 +325,7 @@ void CorePageLoadMetricsObserver::OnFirstContentfulPaint(
                           timing.first_contentful_paint.value());
     }
 
-    if (info.user_gesture) {
+    if (info.user_initiated) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstContentfulPaintUserInitiated,
                           timing.first_contentful_paint.value());
     }
@@ -337,7 +335,7 @@ void CorePageLoadMetricsObserver::OnFirstContentfulPaint(
         PAGE_LOAD_HISTOGRAM(
             internal::kHistogramLoadTypeFirstContentfulPaintReload,
             timing.first_contentful_paint.value());
-        if (initiated_by_user_gesture_) {
+        if (info.user_initiated) {
           PAGE_LOAD_HISTOGRAM(
               internal::kHistogramLoadTypeFirstContentfulPaintReloadByGesture,
               timing.first_contentful_paint.value());

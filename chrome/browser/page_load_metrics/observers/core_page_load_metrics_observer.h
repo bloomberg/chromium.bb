@@ -113,7 +113,6 @@ class CorePageLoadMetricsObserver
                     const page_load_metrics::PageLoadExtraInfo& info);
 
   ui::PageTransition transition_;
-  bool initiated_by_user_gesture_;
   bool was_no_store_main_resource_;
 
   // True if we've received a non-scroll input (touch tap or mouse up)
