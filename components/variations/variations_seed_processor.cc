@@ -54,14 +54,6 @@ void RegisterVariationIds(const Study_Experiment& experiment,
                                     experiment.name(),
                                     variation_id);
   }
-  if (experiment.has_google_update_experiment_id()) {
-    const VariationID variation_id =
-        static_cast<VariationID>(experiment.google_update_experiment_id());
-    AssociateGoogleVariationIDForce(GOOGLE_UPDATE_SERVICE,
-                                    trial_name,
-                                    experiment.name(),
-                                    variation_id);
-  }
   if (experiment.has_chrome_sync_experiment_id()) {
     const VariationID variation_id =
         static_cast<VariationID>(experiment.chrome_sync_experiment_id());
@@ -206,7 +198,6 @@ bool VariationsSeedProcessor::ShouldStudyUseLowEntropy(const Study& study) {
     const Study_Experiment& experiment = study.experiment(i);
     if (experiment.has_google_web_experiment_id() ||
         experiment.has_google_web_trigger_experiment_id() ||
-        experiment.has_google_update_experiment_id() ||
         experiment.has_chrome_sync_experiment_id()) {
       return true;
     }

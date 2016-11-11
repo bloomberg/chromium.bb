@@ -823,7 +823,7 @@ TEST_F(SessionsSyncManagerTest, SetVariationIds) {
   CreateAndActivateFieldTrial("trial name 2", "group name", kVariationId2,
                               variations::CHROME_SYNC_SERVICE);
   CreateAndActivateFieldTrial("trial name 3", "group name", kVariationId3,
-                              variations::GOOGLE_UPDATE_SERVICE);
+                              variations::GOOGLE_WEB_PROPERTIES);
 
   sessions::SessionTab session_tab;
   manager()->SetVariationIds(&session_tab);

@@ -64,9 +64,6 @@ enum IDCollectionKey {
   // server side experimental behavior, transmitted through the
   // X-Client-Data header.
   GOOGLE_WEB_PROPERTIES_TRIGGER,
-  // This collection is used by Google update services, transmitted through the
-  // Google Update experiment labels.
-  GOOGLE_UPDATE_SERVICE,
   // This collection is used by Chrome Sync services, transmitted through the
   // Chrome Sync experiment labels.
   CHROME_SYNC_SERVICE,

@@ -73,9 +73,6 @@ message Study {
     // behavior on Google web properties.
     optional uint64 google_web_trigger_experiment_id = 8;
 
-    // Optional id used to uniquely identify this experiment for Google Update.
-    optional uint64 google_update_experiment_id = 4;
-
     // Optional id used to uniquely identify this experiment for Chrome Sync.
     optional uint64 chrome_sync_experiment_id = 10;
 

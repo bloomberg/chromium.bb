@@ -606,8 +606,6 @@ split_static_library("browser") {
     "metrics/time_ticks_experiment_win.h",
     "metrics/variations/chrome_variations_service_client.cc",
     "metrics/variations/chrome_variations_service_client.h",
-    "metrics/variations/variations_registry_syncer_win.cc",
-    "metrics/variations/variations_registry_syncer_win.h",
     "mod_pagespeed/mod_pagespeed_metrics.cc",
     "mod_pagespeed/mod_pagespeed_metrics.h",
     "native_window_notification_source.h",

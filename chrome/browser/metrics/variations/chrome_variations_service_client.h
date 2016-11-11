@@ -11,10 +11,6 @@
 #include "build/build_config.h"
 #include "components/variations/service/variations_service_client.h"
 
-#if defined(OS_WIN)
-#include "chrome/browser/metrics/variations/variations_registry_syncer_win.h"
-#endif
-
 // ChromeVariationsServiceClient provides an implementation of
 // VariationsServiceClient that depends on chrome/.
 class ChromeVariationsServiceClient
@@ -33,15 +29,6 @@ class ChromeVariationsServiceClient
   version_info::Channel GetChannel() override;
   bool OverridesRestrictParameter(std::string* parameter) override;
   void OnInitialStartup() override;
-
- private:
-#if defined(OS_WIN)
-  // Starts syncing Google Update Variation IDs with the registry.
-  void StartGoogleUpdateRegistrySync();
-
-  // Helper that handles synchronizing Variations with the Registry.
-  chrome_variations::VariationsRegistrySyncer registry_syncer_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeVariationsServiceClient);
 };
