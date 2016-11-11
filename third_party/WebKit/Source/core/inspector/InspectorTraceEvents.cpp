@@ -15,6 +15,7 @@
 #include "core/fetch/CSSStyleSheetResource.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutImage.h"
@@ -784,22 +785,37 @@ std::unique_ptr<TracedValue> InspectorPaintEvent::data(
 
 std::unique_ptr<TracedValue> frameEventData(LocalFrame* frame) {
   std::unique_ptr<TracedValue> value = TracedValue::create();
-  value->setString("frame", toHexString(frame));
   bool isMainFrame = frame && frame->isMainFrame();
   value->setBoolean("isMainFrame", isMainFrame);
   value->setString("page", toHexString(frame->localFrameRoot()));
   return value;
 }
 
-std::unique_ptr<TracedValue> InspectorCommitLoadEvent::data(LocalFrame* frame) {
-  std::unique_ptr<TracedValue> frameData = frameEventData(frame);
+void fillCommonFrameData(TracedValue* frameData, LocalFrame* frame) {
+  frameData->setString("frame", toHexString(frame));
   frameData->setString("url", urlForFrame(frame));
   frameData->setString("name", frame->tree().name());
+
+  FrameOwner* owner = frame->owner();
+  if (owner && owner->isLocal()) {
+    frameData->setInteger(
+        "nodeId", DOMNodeIds::idForNode(toHTMLFrameOwnerElement(owner)));
+  }
+  Frame* parent = frame->tree().parent();
+  if (parent && parent->isLocalFrame())
+    frameData->setString("parent", toHexString(parent));
+}
+
+std::unique_ptr<TracedValue> InspectorCommitLoadEvent::data(LocalFrame* frame) {
+  std::unique_ptr<TracedValue> frameData = frameEventData(frame);
+  fillCommonFrameData(frameData.get(), frame);
   return frameData;
 }
 
 std::unique_ptr<TracedValue> InspectorMarkLoadEvent::data(LocalFrame* frame) {
-  return frameEventData(frame);
+  std::unique_ptr<TracedValue> frameData = frameEventData(frame);
+  frameData->setString("frame", toHexString(frame));
+  return frameData;
 }
 
 std::unique_ptr<TracedValue> InspectorScrollLayerEvent::data(
@@ -982,9 +998,7 @@ std::unique_ptr<TracedValue> InspectorTracingStartedInFrame::data(
     if (!f->isLocalFrame())
       continue;
     value->beginDictionary();
-    value->setString("frame", toHexString(f));
-    value->setString("url", urlForFrame(toLocalFrame(f)));
-    value->setString("name", f->tree().name());
+    fillCommonFrameData(value.get(), toLocalFrame(f));
     value->endDictionary();
   }
   value->endArray();

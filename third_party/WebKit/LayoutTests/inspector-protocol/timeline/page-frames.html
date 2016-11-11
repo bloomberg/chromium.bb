@@ -38,11 +38,12 @@ function test()
     function dumpFrame(frame)
     {
         var url = frame.url.replace(/.*\/(([^/]*\/){2}[^/]*$)/, "$1");
-        InspectorTest.log(`url: ${url} name: ${frame.name}`);
+        InspectorTest.log(`url: ${url} name: ${frame.name} parent: ${typeof frame.parent} nodeId: ${typeof frame.nodeId}`);
     }
 }
 </script>
 </head>
 <body onLoad="runTest();">
+<iframe src="data:text/html,<script>window.foo = 42</script>" name="frame0"></iframe>
 </body>
 </html>
