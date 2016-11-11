@@ -12,6 +12,7 @@
 #include <wayland-client-protocol.h>
 
 #include <iostream>
+#include <string>
 #include <vector>
 
 #include "base/at_exit.h"
@@ -21,6 +22,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/scoped_generic.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -39,6 +41,7 @@
 #if defined(OZONE_PLATFORM_GBM)
 #include <drm_fourcc.h>
 #include <gbm.h>
+#include <xf86drm.h>
 #endif
 
 // Convenient macro that is used to define default deleters for object
@@ -90,8 +93,8 @@ const int32_t kDrmFormat = DRM_FORMAT_ABGR8888;
 const size_t kBytesPerPixel = 4;
 
 #if defined(OZONE_PLATFORM_GBM)
-// DRI render node path.
-const char kDriRenderNode[] = "/dev/dri/renderD128";
+// DRI render node path template.
+const char kDriRenderNodeTemplate[] = "/dev/dri/renderD%u";
 #endif
 
 // Number of buffers.
@@ -297,7 +300,7 @@ class MotionEvents {
                size_t height,
                int scale,
                size_t num_rects,
-               bool use_drm,
+               const std::string* use_drm,
                bool fullscreen)
       : width_(width),
         height_(height),
@@ -318,7 +321,7 @@ class MotionEvents {
   const size_t height_;
   const int scale_;
   const size_t num_rects_;
-  const bool use_drm_;
+  const std::string* use_drm_;
   const bool fullscreen_;
 
   Globals globals_;
@@ -384,17 +387,43 @@ int MotionEvents::Run() {
   }
 
 #if defined(OZONE_PLATFORM_GBM)
-  drm_fd_.reset(open(kDriRenderNode, O_RDWR));
-  if (drm_fd_.get() < 0) {
-    LOG(ERROR) << "Can't open drm device '" << kDriRenderNode << "'";
-    return 1;
+  if (use_drm_) {
+    // Number of files to look for when discovering DRM devices.
+    const uint32_t kDrmMaxMinor = 15;
+    const uint32_t kRenderNodeStart = 128;
+    const uint32_t kRenderNodeEnd = kRenderNodeStart + kDrmMaxMinor;
+
+    for (uint32_t i = kRenderNodeStart; i < kRenderNodeEnd; i++) {
+      std::string dri_render_node(
+          base::StringPrintf(kDriRenderNodeTemplate, i));
+      base::ScopedFD drm_fd(open(dri_render_node.c_str(), O_RDWR));
+      if (drm_fd.get() < 0)
+        continue;
+      drmVersionPtr drm_version = drmGetVersion(drm_fd.get());
+      if (!drm_version) {
+        LOG(ERROR) << "Can't get version for device: '" << dri_render_node
+                   << "'";
+        return 1;
+      }
+      if (strstr(drm_version->name, use_drm_->c_str())) {
+        drm_fd_ = std::move(drm_fd);
+        break;
+      }
+    }
+
+    if (drm_fd_.get() < 0) {
+      LOG_IF(ERROR, use_drm_) << "Can't find drm device: '" << *use_drm_ << "'";
+      LOG_IF(ERROR, !use_drm_) << "Can't find drm device";
+      return 1;
+    }
+
+    device_.reset(gbm_create_device(drm_fd_.get()));
+    if (!device_) {
+      LOG(ERROR) << "Can't create gbm device";
+      return 1;
+    }
   }
 
-  device_.reset(gbm_create_device(drm_fd_.get()));
-  if (!device_) {
-    LOG(ERROR) << "Can't create gbm device";
-    return 1;
-  }
   sk_sp<const GrGLInterface> native_interface(GrGLCreateNativeInterface());
   DCHECK(native_interface);
   gr_context_ = sk_sp<GrContext>(GrContext::Create(
@@ -707,10 +736,15 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  bool use_drm = command_line->HasSwitch(switches::kUseDrm);
+  std::unique_ptr<std::string> use_drm;
+  if (command_line->HasSwitch(switches::kUseDrm)) {
+    use_drm.reset(
+        new std::string(command_line->GetSwitchValueASCII(switches::kUseDrm)));
+  }
+
   bool fullscreen = command_line->HasSwitch(switches::kFullscreen);
 
   exo::wayland::clients::MotionEvents client(width, height, scale, num_rects,
-                                             use_drm, fullscreen);
+                                             use_drm.get(), fullscreen);
   return client.Run();
 }
