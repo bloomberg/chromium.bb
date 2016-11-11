@@ -346,7 +346,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         // Verify that the HTTP RTT, transport RTT and downstream throughput
         // estimates are available.
         if (testFramework.mCronetEngine.getEffectiveConnectionType()
-                != EffectiveConnectionType.TYPE_OFFLINE) {
+                != ExperimentalCronetEngine.EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
             assertTrue(testFramework.mCronetEngine.getHttpRttMs() > 0);
             assertTrue(testFramework.mCronetEngine.getTransportRttMs() > 0);
             assertTrue(testFramework.mCronetEngine.getDownstreamThroughputKbps() > 0);

@@ -24,7 +24,9 @@ public abstract class ExperimentalUrlRequest extends UrlRequest {
          * the session.
          * @return the builder to facilitate chaining.
          */
-        public abstract Builder disableConnectionMigration();
+        public Builder disableConnectionMigration() {
+            return this;
+        }
 
         /**
          * Associates the annotation object with this request. May add more than one.
@@ -35,7 +37,9 @@ public abstract class ExperimentalUrlRequest extends UrlRequest {
          * {@link RequestFinishedInfo}.
          * @return the builder to facilitate chaining.
          */
-        public abstract Builder addRequestAnnotation(Object annotation);
+        public Builder addRequestAnnotation(Object annotation) {
+            return this;
+        }
 
         // To support method chaining, override superclass methods to return an
         // instance of this class instead of the parent.

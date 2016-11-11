@@ -346,7 +346,7 @@ public class CronetUrlRequestContext extends CronetEngineBase {
             throw new IllegalStateException("Network quality estimator must be enabled");
         }
         synchronized (mNetworkQualityLock) {
-            return mEffectiveConnectionType;
+            return convertConnectionTypeToApiValue(mEffectiveConnectionType);
         }
     }
 
@@ -356,7 +356,9 @@ public class CronetUrlRequestContext extends CronetEngineBase {
             throw new IllegalStateException("Network quality estimator must be enabled");
         }
         synchronized (mNetworkQualityLock) {
-            return mHttpRttMs;
+            return mHttpRttMs != RttThroughputValues.INVALID_RTT_THROUGHPUT
+                    ? mHttpRttMs
+                    : CONNECTION_METRIC_UNKNOWN;
         }
     }
 
@@ -366,7 +368,9 @@ public class CronetUrlRequestContext extends CronetEngineBase {
             throw new IllegalStateException("Network quality estimator must be enabled");
         }
         synchronized (mNetworkQualityLock) {
-            return mTransportRttMs;
+            return mTransportRttMs != RttThroughputValues.INVALID_RTT_THROUGHPUT
+                    ? mTransportRttMs
+                    : CONNECTION_METRIC_UNKNOWN;
         }
     }
 
@@ -376,7 +380,9 @@ public class CronetUrlRequestContext extends CronetEngineBase {
             throw new IllegalStateException("Network quality estimator must be enabled");
         }
         synchronized (mNetworkQualityLock) {
-            return mDownstreamThroughputKbps;
+            return mDownstreamThroughputKbps != RttThroughputValues.INVALID_RTT_THROUGHPUT
+                    ? mDownstreamThroughputKbps
+                    : CONNECTION_METRIC_UNKNOWN;
         }
     }
 
@@ -550,6 +556,27 @@ public class CronetUrlRequestContext extends CronetEngineBase {
             loggingLevel = LOG_NONE;
         }
         return loggingLevel;
+    }
+
+    private static int convertConnectionTypeToApiValue(
+            @EffectiveConnectionType.EffectiveConnectionTypeEnum int type) {
+        switch (type) {
+            case EffectiveConnectionType.TYPE_OFFLINE:
+                return EFFECTIVE_CONNECTION_TYPE_OFFLINE;
+            case EffectiveConnectionType.TYPE_SLOW_2G:
+                return EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
+            case EffectiveConnectionType.TYPE_2G:
+                return EFFECTIVE_CONNECTION_TYPE_2G;
+            case EffectiveConnectionType.TYPE_3G:
+                return EFFECTIVE_CONNECTION_TYPE_3G;
+            case EffectiveConnectionType.TYPE_4G:
+                return EFFECTIVE_CONNECTION_TYPE_4G;
+            case EffectiveConnectionType.TYPE_UNKNOWN:
+                return EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+            default:
+                throw new RuntimeException(
+                        "Internal Error: Illegal EffectiveConnectionType value " + type);
+        }
     }
 
     @SuppressWarnings("unused")

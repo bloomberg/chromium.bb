@@ -8,12 +8,10 @@ import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 import static android.os.Process.THREAD_PRIORITY_MORE_FAVORABLE;
 
 import org.chromium.net.BidirectionalStream;
-import org.chromium.net.EffectiveConnectionType;
 import org.chromium.net.ExperimentalBidirectionalStream;
 import org.chromium.net.NetworkQualityRttListener;
 import org.chromium.net.NetworkQualityThroughputListener;
 import org.chromium.net.RequestFinishedInfo;
-import org.chromium.net.RttThroughputValues;
 import org.chromium.net.UrlRequest;
 
 import java.io.IOException;
@@ -120,22 +118,22 @@ public final class JavaCronetEngine extends CronetEngineBase {
 
     @Override
     public int getEffectiveConnectionType() {
-        return EffectiveConnectionType.TYPE_UNKNOWN;
+        return EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
     }
 
     @Override
     public int getHttpRttMs() {
-        return RttThroughputValues.INVALID_RTT_THROUGHPUT;
+        return CONNECTION_METRIC_UNKNOWN;
     }
 
     @Override
     public int getTransportRttMs() {
-        return RttThroughputValues.INVALID_RTT_THROUGHPUT;
+        return CONNECTION_METRIC_UNKNOWN;
     }
 
     @Override
     public int getDownstreamThroughputKbps() {
-        return RttThroughputValues.INVALID_RTT_THROUGHPUT;
+        return CONNECTION_METRIC_UNKNOWN;
     }
 
     @Override

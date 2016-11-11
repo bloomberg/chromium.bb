@@ -28,7 +28,9 @@ public abstract class ExperimentalBidirectionalStream extends BidirectionalStrea
          * {@link RequestFinishedInfo}.
          * @return the builder to facilitate chaining.
          */
-        public abstract Builder addRequestAnnotation(Object annotation);
+        public Builder addRequestAnnotation(Object annotation) {
+            return this;
+        }
 
         // To support method chaining, override superclass methods to return an
         // instance of this class instead of the parent.

@@ -23,6 +23,53 @@ import java.util.concurrent.Executor;
  */
 public abstract class ExperimentalCronetEngine extends CronetEngine {
     /**
+     * The value of a connection metric is unknown.
+     */
+    public static final int CONNECTION_METRIC_UNKNOWN = -1;
+
+    /**
+     * The estimate of the effective connection type is unknown.
+     *
+     * @see #getEffectiveConnectionType
+     */
+    public static final int EFFECTIVE_CONNECTION_TYPE_UNKNOWN = 0;
+
+    /**
+     * The device is offline.
+     *
+     * @see #getEffectiveConnectionType
+     */
+    public static final int EFFECTIVE_CONNECTION_TYPE_OFFLINE = 1;
+
+    /**
+     * The estimate of the effective connection type is slow 2G.
+     *
+     * @see #getEffectiveConnectionType
+     */
+    public static final int EFFECTIVE_CONNECTION_TYPE_SLOW_2G = 2;
+
+    /**
+     * The estimate of the effective connection type is 2G.
+     *
+     * @see #getEffectiveConnectionType
+     */
+    public static final int EFFECTIVE_CONNECTION_TYPE_2G = 3;
+
+    /**
+     * The estimate of the effective connection type is 3G.
+     *
+     * @see #getEffectiveConnectionType
+     */
+    public static final int EFFECTIVE_CONNECTION_TYPE_3G = 4;
+
+    /**
+     * The estimate of the effective connection type is 4G.
+     *
+     * @see #getEffectiveConnectionType
+     */
+    public static final int EFFECTIVE_CONNECTION_TYPE_4G = 5;
+
+    /**
      * Builder for building {@link ExperimentalCronetEngine}.
      */
     public static class Builder extends CronetEngine.Builder {
@@ -235,13 +282,19 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
      * @param maxSize the maximum total disk space in bytes that should be used by NetLog. Actual
      *            disk space usage may exceed this limit slightly.
      */
-    public abstract void startNetLogToDisk(String dirPath, boolean logAll, int maxSize);
+    public void startNetLogToDisk(String dirPath, boolean logAll, int maxSize) {}
 
     /**
-     * Returns the effective connection type computed by the network quality
-     * estimator.
+     * Returns an estimate of the effective connection type computed by the network quality
+     * estimator. Call {@link Builder#enableNetworkQualityEstimator} to begin computing this
+     * value.
+     *
+     * @return the estimated connection type. The returned value is one of
+     * {@link #EFFECTIVE_CONNECTION_TYPE_UNKNOWN EFFECTIVE_CONNECTION_TYPE_* }.
      */
-    public abstract int getEffectiveConnectionType();
+    public int getEffectiveConnectionType() {
+        return EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+    }
 
     /**
      * Configures the network quality estimator for testing. This must be called
@@ -251,8 +304,8 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
      * @param useSmallerResponses include small responses in throughput
      * estimates.
      */
-    public abstract void configureNetworkQualityEstimatorForTesting(
-            boolean useLocalHostRequests, boolean useSmallerResponses);
+    public void configureNetworkQualityEstimatorForTesting(
+            boolean useLocalHostRequests, boolean useSmallerResponses) {}
 
     /**
      * Registers a listener that gets called whenever the network quality
@@ -264,7 +317,7 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
      * is passed to {@link Builder#enableNetworkQualityEstimator}.
      * @param listener the listener of round trip times.
      */
-    public abstract void addRttListener(NetworkQualityRttListener listener);
+    public void addRttListener(NetworkQualityRttListener listener) {}
 
     /**
      * Removes a listener of round trip times if previously registered with
@@ -273,7 +326,7 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
      * observations.
      * @param listener the listener of round trip times.
      */
-    public abstract void removeRttListener(NetworkQualityRttListener listener);
+    public void removeRttListener(NetworkQualityRttListener listener) {}
 
     /**
      * Registers a listener that gets called whenever the network quality
@@ -285,7 +338,7 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
      * {@link Builder#enableNetworkQualityEstimator}.
      * @param listener the listener of throughput.
      */
-    public abstract void addThroughputListener(NetworkQualityThroughputListener listener);
+    public void addThroughputListener(NetworkQualityThroughputListener listener) {}
 
     /**
      * Removes a listener of throughput. This should be called after a
@@ -293,7 +346,7 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
      * {@link #addThroughputListener} in order to stop receiving observations.
      * @param listener the listener of throughput.
      */
-    public abstract void removeThroughputListener(NetworkQualityThroughputListener listener);
+    public void removeThroughputListener(NetworkQualityThroughputListener listener) {}
 
     /**
      * Establishes a new connection to the resource specified by the {@link URL} {@code url}
@@ -308,7 +361,9 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
      * @throws IOException if an error occurs while opening the connection.
      */
     // TODO(pauljensen): Expose once implemented, http://crbug.com/418111
-    public abstract URLConnection openConnection(URL url, Proxy proxy) throws IOException;
+    public URLConnection openConnection(URL url, Proxy proxy) throws IOException {
+        return url.openConnection(proxy);
+    }
 
     /**
      * Registers a listener that gets called after the end of each request with the request info.
@@ -318,14 +373,14 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
      *
      * @param listener the listener for finished requests.
      */
-    public abstract void addRequestFinishedListener(RequestFinishedInfo.Listener listener);
+    public void addRequestFinishedListener(RequestFinishedInfo.Listener listener) {}
 
     /**
      * Removes a finished request listener.
      *
      * @param listener the listener to remove.
      */
-    public abstract void removeRequestFinishedListener(RequestFinishedInfo.Listener listener);
+    public void removeRequestFinishedListener(RequestFinishedInfo.Listener listener) {}
 
     /**
      * Returns serialized representation of certificate verifier's cache
@@ -338,38 +393,44 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
      * @return serialized representation of certificate verification results
      *         data.
      */
-    public abstract String getCertVerifierData(long timeout);
+    public String getCertVerifierData(long timeout) {
+        return "";
+    }
 
     /**
      * Returns the HTTP RTT estimate (in milliseconds) computed by the network
-     * quality estimator. Set to
-     * {@link RttThroughputValues.INVALID_RTT_THROUGHPUT} if a valid value
+     * quality estimator. Set to {@link #CONNECTION_METRIC_UNKNOWN} if the value
      * is unavailable. This must be called after
      * {@link Builder#enableNetworkQualityEstimator}, and will throw an
      * exception otherwise.
      * @return Estimate of the HTTP RTT in milliseconds.
      */
-    public abstract int getHttpRttMs();
+    public int getHttpRttMs() {
+        return CONNECTION_METRIC_UNKNOWN;
+    }
 
     /**
      * Returns the transport RTT estimate (in milliseconds) computed by the
-     * network quality estimator. Set to
-     * {@link RttThroughputValues.INVALID_RTT_THROUGHPUT} if a valid value is
-     * unavailable.  This must be called after
+     * network quality estimator. Set to {@link #CONNECTION_METRIC_UNKNOWN} if
+     * the value is unavailable. This must be called after
      * {@link Builder#enableNetworkQualityEstimator}, and will throw an
      * exception otherwise.
      * @return Estimate of the transport RTT in milliseconds.
      */
-    public abstract int getTransportRttMs();
+    public int getTransportRttMs() {
+        return CONNECTION_METRIC_UNKNOWN;
+    }
 
     /**
      * Returns the downstream throughput estimate (in kilobits per second)
      * computed by the network quality estimator. Set to
-     * {@link RttThroughputValues.INVALID_RTT_THROUGHPUT} if a valid value is
-     * unavailable.  This must be called after
+     * {@link #CONNECTION_METRIC_UNKNOWN} if the value is
+     * unavailable. This must be called after
      * {@link Builder#enableNetworkQualityEstimator}, and will
      * throw an exception otherwise.
      * @return Estimate of the downstream throughput in kilobits per second.
      */
-    public abstract int getDownstreamThroughputKbps();
+    public int getDownstreamThroughputKbps() {
+        return CONNECTION_METRIC_UNKNOWN;
+    }
 }
