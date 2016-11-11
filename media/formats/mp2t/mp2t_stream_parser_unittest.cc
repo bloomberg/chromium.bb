@@ -64,7 +64,9 @@ class Mp2tStreamParserTest : public testing::Test {
         audio_min_dts_(kNoDecodeTimestamp()),
         audio_max_dts_(kNoDecodeTimestamp()),
         video_min_dts_(kNoDecodeTimestamp()),
-        video_max_dts_(kNoDecodeTimestamp()) {
+        video_max_dts_(kNoDecodeTimestamp()),
+        audio_track_id_(0),
+        video_track_id_(0) {
     bool has_sbr = false;
     parser_.reset(new Mp2tStreamParser(has_sbr));
   }
