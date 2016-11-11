@@ -4613,7 +4613,7 @@ static int input_fpmb_stats(FIRSTPASS_MB_STATS *firstpass_mb_stats,
 
 #if CONFIG_GLOBAL_MOTION
 #define MIN_TRANS_THRESH (1 * GM_TRANS_DECODE_FACTOR)
-#define GLOBAL_MOTION_ADVANTAGE_THRESH 0.60
+#define GLOBAL_MOTION_ADVANTAGE_THRESH 0.75
 #define GLOBAL_MOTION_MODEL ROTZOOM
 
 // Adds some offset to a global motion parameter and handles
