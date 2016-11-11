@@ -588,7 +588,8 @@ class SafeBrowsingBlockingPageBrowserTest
     model_client->GetSecurityInfo(&security_info);
     EXPECT_EQ(security_state::SecurityStateModel::DANGEROUS,
               security_info.security_level);
-    EXPECT_TRUE(security_info.fails_malware_check);
+    EXPECT_NE(security_state::SecurityStateModel::MALICIOUS_CONTENT_STATUS_NONE,
+              security_info.malicious_content_status);
     // TODO(felt): Restore this check when https://crbug.com/641187 is fixed.
     // EXPECT_EQ(cert_status, model_client->GetSecurityInfo().cert_status);
   }
@@ -601,7 +602,8 @@ class SafeBrowsingBlockingPageBrowserTest
     model_client->GetSecurityInfo(&security_info);
     EXPECT_EQ(security_state::SecurityStateModel::NONE,
               security_info.security_level);
-    EXPECT_FALSE(security_info.fails_malware_check);
+    EXPECT_EQ(security_state::SecurityStateModel::MALICIOUS_CONTENT_STATUS_NONE,
+              security_info.malicious_content_status);
   }
 
  protected:

@@ -135,12 +135,17 @@ class SafeBrowsingUIManager
   // |url| is already displaying *or* if the user has seen an
   // interstitial for |url| before in this WebContents and proceeded
   // through it. Called on the UI thread.
+  //
+  // If the resource was found in the whitelist or pending for the
+  // whitelist, |threat_type| will be set to the SBThreatType for which
+  // the URL was first whitelisted.
   bool IsUrlWhitelistedOrPendingForWebContents(
       const GURL& url,
       bool is_subresource,
       content::NavigationEntry* entry,
       content::WebContents* web_contents,
-      bool whitelist_only);
+      bool whitelist_only,
+      SBThreatType* threat_type);
 
   // The blocking page for |web_contents| on the UI thread has
   // completed, with |proceed| set to true if the user has chosen to
@@ -214,7 +219,8 @@ class SafeBrowsingUIManager
   // Updates the whitelist URL set for |web_contents|. Called on the UI thread.
   void AddToWhitelistUrlSet(const GURL& whitelist_url,
                             content::WebContents* web_contents,
-                            bool is_pending);
+                            bool is_pending,
+                            SBThreatType threat_type);
 
   // Removes |whitelist_url| from the pending whitelist for
   // |web_contents|. Called on the UI thread.

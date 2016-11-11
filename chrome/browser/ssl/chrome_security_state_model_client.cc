@@ -158,9 +158,36 @@ void CheckSafeBrowsingStatus(content::NavigationEntry* entry,
   if (!sb_service)
     return;
   scoped_refptr<SafeBrowsingUIManager> sb_ui_manager = sb_service->ui_manager();
+  safe_browsing::SBThreatType threat_type;
   if (sb_ui_manager->IsUrlWhitelistedOrPendingForWebContents(
-          entry->GetURL(), false, entry, web_contents, false)) {
-    state->fails_malware_check = true;
+          entry->GetURL(), false, entry, web_contents, false, &threat_type)) {
+    switch (threat_type) {
+      case safe_browsing::SB_THREAT_TYPE_SAFE:
+        break;
+      case safe_browsing::SB_THREAT_TYPE_URL_PHISHING:
+      case safe_browsing::SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL:
+        state->malicious_content_status = security_state::SecurityStateModel::
+            MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING;
+        break;
+      case safe_browsing::SB_THREAT_TYPE_URL_MALWARE:
+      case safe_browsing::SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL:
+        state->malicious_content_status = security_state::SecurityStateModel::
+            MALICIOUS_CONTENT_STATUS_MALWARE;
+        break;
+      case safe_browsing::SB_THREAT_TYPE_URL_UNWANTED:
+        state->malicious_content_status = security_state::SecurityStateModel::
+            MALICIOUS_CONTENT_STATUS_UNWANTED_SOFTWARE;
+        break;
+      case safe_browsing::SB_THREAT_TYPE_BINARY_MALWARE_URL:
+      case safe_browsing::SB_THREAT_TYPE_EXTENSION:
+      case safe_browsing::SB_THREAT_TYPE_BLACKLISTED_RESOURCE:
+      case safe_browsing::SB_THREAT_TYPE_API_ABUSE:
+        // These threat types are not currently associated with
+        // interstitials, and thus resources with these threat types are
+        // not ever whitelisted or pending whitelisting.
+        NOTREACHED();
+        break;
+    }
   }
 }
 

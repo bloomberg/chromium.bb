@@ -94,14 +94,23 @@ class SecurityStateModel {
     CONTENT_STATUS_DISPLAYED_AND_RAN,
   };
 
+  // Describes whether the page contains malicious resources such as
+  // malware or phishing attacks.
+  enum MaliciousContentStatus {
+    MALICIOUS_CONTENT_STATUS_NONE,
+    MALICIOUS_CONTENT_STATUS_MALWARE,
+    MALICIOUS_CONTENT_STATUS_UNWANTED_SOFTWARE,
+    MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING,
+  };
+
   // Describes the security status of a page or request. This is the
   // main data structure provided by this class.
   struct SecurityInfo {
     SecurityInfo();
     ~SecurityInfo();
     SecurityLevel security_level;
-    // True if the page fails the browser's malware or phishing checks.
-    bool fails_malware_check;
+    // Describes the nature of the page's malicious content, if any.
+    MaliciousContentStatus malicious_content_status;
     SHA1DeprecationStatus sha1_deprecation_status;
     // |mixed_content_status| describes the presence of content that was
     // loaded over a nonsecure (HTTP) connection.
@@ -153,8 +162,7 @@ class SecurityStateModel {
     bool operator==(const VisibleSecurityState& other) const;
     GURL url;
 
-    // True if the page fails the browser's malware or phishing checks.
-    bool fails_malware_check;
+    MaliciousContentStatus malicious_content_status;
 
     // CONNECTION SECURITY FIELDS
     // Whether the connection security fields are initialized.

@@ -39,37 +39,57 @@ using content::BrowserThread;
 using content::NavigationEntry;
 using content::WebContents;
 using safe_browsing::HitReport;
+using safe_browsing::SBThreatType;
 
 namespace {
 
 const void* const kWhitelistKey = &kWhitelistKey;
 
-// A WhitelistUrlSet holds the set of URLs that have been whitelisted for a
-// specific WebContents, along with pending entries that are still undecided.
-// The URLs in this set should come from GetWhitelistUrl() or
-// GetMainFrameWhitelistUrlForResource().
+// A WhitelistUrlSet holds the set of URLs that have been whitelisted
+// for a specific WebContents, along with pending entries that are still
+// undecided. Each URL is associated with the first SBThreatType that
+// was seen for that URL. The URLs in this set should come from
+// GetWhitelistUrl() or GetMainFrameWhitelistUrlForResource().
 class WhitelistUrlSet : public base::SupportsUserData::Data {
  public:
   WhitelistUrlSet() {}
 
-  bool Contains(const GURL url) { return set_.find(url) != set_.end(); }
+  bool Contains(const GURL url, SBThreatType* threat_type) {
+    auto found = map_.find(url);
+    if (found == map_.end())
+      return false;
+    if (threat_type)
+      *threat_type = found->second;
+    return true;
+  }
 
   void RemovePending(const GURL& url) { pending_.erase(url); }
 
-  void Insert(const GURL url) {
-    set_.insert(url);
+  void Insert(const GURL url, SBThreatType threat_type) {
+    if (Contains(url, nullptr))
+      return;
+    map_[url] = threat_type;
     RemovePending(url);
   }
 
-  bool ContainsPending(const GURL url) {
-    return pending_.find(url) != pending_.end();
+  bool ContainsPending(const GURL& url, SBThreatType* threat_type) {
+    auto found = pending_.find(url);
+    if (found == pending_.end())
+      return false;
+    if (threat_type)
+      *threat_type = found->second;
+    return true;
   }
 
-  void InsertPending(const GURL url) { pending_.insert(url); }
+  void InsertPending(const GURL url, SBThreatType threat_type) {
+    if (ContainsPending(url, nullptr))
+      return;
+    pending_[url] = threat_type;
+  }
 
  private:
-  std::set<GURL> set_;
-  std::set<GURL> pending_;
+  std::map<GURL, SBThreatType> map_;
+  std::map<GURL, SBThreatType> pending_;
 
   DISALLOW_COPY_AND_ASSIGN(WhitelistUrlSet);
 };
@@ -205,7 +225,8 @@ void SafeBrowsingUIManager::OnBlockingPageDone(
         nullptr /* no navigation entry needed for main resource */);
     if (proceed) {
       AddToWhitelistUrlSet(whitelist_url, web_contents,
-                           false /* Pending -> permanent */);
+                           false /* Pending -> permanent */,
+                           resource.threat_type);
     } else if (web_contents) {
       // |web_contents| doesn't exist if the tab has been closed.
       RemoveFromPendingWhitelistUrlSet(whitelist_url, web_contents);
@@ -302,7 +323,8 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
   }
   AddToWhitelistUrlSet(GetMainFrameWhitelistUrlForResource(resource),
                        resource.web_contents_getter.Run(),
-                       true /* A decision is now pending */);
+                       true /* A decision is now pending */,
+                       resource.threat_type);
   SafeBrowsingBlockingPage::ShowBlockingPage(this, resource);
 }
 
@@ -421,7 +443,8 @@ void SafeBrowsingUIManager::SendSerializedThreatDetails(
 void SafeBrowsingUIManager::AddToWhitelistUrlSet(
     const GURL& whitelist_url,
     content::WebContents* web_contents,
-    bool pending) {
+    bool pending,
+    SBThreatType threat_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // A WebContents might not exist if the tab has been closed.
@@ -434,9 +457,9 @@ void SafeBrowsingUIManager::AddToWhitelistUrlSet(
     return;
 
   if (pending) {
-    site_list->InsertPending(whitelist_url);
+    site_list->InsertPending(whitelist_url, threat_type);
   } else {
-    site_list->Insert(whitelist_url);
+    site_list->Insert(whitelist_url, threat_type);
   }
 
   // Notify security UI that security state has changed.
@@ -473,7 +496,7 @@ void SafeBrowsingUIManager::RemoveFromPendingWhitelistUrlSet(
   // remove the main-frame URL from the pending whitelist, so the
   // main-frame URL will have already been removed when the subsequent
   // blocking pages are dismissed.
-  if (site_list->ContainsPending(whitelist_url))
+  if (site_list->ContainsPending(whitelist_url, nullptr))
     site_list->RemovePending(whitelist_url);
 
   // Notify security UI that security state has changed.
@@ -485,9 +508,10 @@ bool SafeBrowsingUIManager::IsWhitelisted(const UnsafeResource& resource) {
   if (resource.is_subresource) {
     entry = resource.GetNavigationEntryForResource();
   }
+  SBThreatType unused_threat_type;
   return IsUrlWhitelistedOrPendingForWebContents(
       resource.url, resource.is_subresource, entry,
-      resource.web_contents_getter.Run(), true);
+      resource.web_contents_getter.Run(), true, &unused_threat_type);
 }
 
 // Check if the user has already seen and/or ignored a SB warning for this
@@ -497,7 +521,8 @@ bool SafeBrowsingUIManager::IsUrlWhitelistedOrPendingForWebContents(
     bool is_subresource,
     NavigationEntry* entry,
     content::WebContents* web_contents,
-    bool whitelist_only) {
+    bool whitelist_only,
+    SBThreatType* threat_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   GURL lookup_url = GetWhitelistUrl(url, is_subresource, entry);
@@ -509,11 +534,11 @@ bool SafeBrowsingUIManager::IsUrlWhitelistedOrPendingForWebContents(
   if (!site_list)
     return false;
 
-  bool whitelisted = site_list->Contains(lookup_url);
+  bool whitelisted = site_list->Contains(lookup_url, threat_type);
   if (whitelist_only) {
     return whitelisted;
   } else {
-    return whitelisted || site_list->ContainsPending(lookup_url);
+    return whitelisted || site_list->ContainsPending(lookup_url, threat_type);
   }
 }
 

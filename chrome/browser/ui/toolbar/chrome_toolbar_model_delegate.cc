@@ -98,7 +98,8 @@ bool ChromeToolbarModelDelegate::FailsMalwareCheck() const {
   security_state::SecurityStateModel::SecurityInfo security_info;
   ChromeSecurityStateModelClient::FromWebContents(web_contents)
       ->GetSecurityInfo(&security_info);
-  return security_info.fails_malware_check;
+  return security_info.malicious_content_status !=
+         security_state::SecurityStateModel::MALICIOUS_CONTENT_STATUS_NONE;
 }
 
 content::NavigationController*

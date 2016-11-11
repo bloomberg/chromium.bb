@@ -87,7 +87,7 @@ class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
     ui_manager_->AddToWhitelistUrlSet(
         SafeBrowsingUIManager::GetMainFrameWhitelistUrlForResourceForTesting(
             resource),
-        web_contents(), false);
+        web_contents(), false, resource.threat_type);
   }
 
   SafeBrowsingUIManager::UnsafeResource MakeUnsafeResource(
@@ -146,6 +146,21 @@ TEST_F(SafeBrowsingUIManagerTest, WhitelistIgnoresSitesNotAdded) {
   SafeBrowsingUIManager::UnsafeResource resource =
       MakeUnsafeResourceAndStartNavigation(kGoodURL);
   EXPECT_FALSE(IsWhitelisted(resource));
+}
+
+TEST_F(SafeBrowsingUIManagerTest, WhitelistRemembersThreatType) {
+  SafeBrowsingUIManager::UnsafeResource resource =
+      MakeUnsafeResourceAndStartNavigation(kBadURL);
+  AddToWhitelist(resource);
+  EXPECT_TRUE(IsWhitelisted(resource));
+  SBThreatType threat_type;
+  content::NavigationEntry* entry =
+      web_contents()->GetController().GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_TRUE(ui_manager()->IsUrlWhitelistedOrPendingForWebContents(
+      resource.url, resource.is_subresource, entry,
+      resource.web_contents_getter.Run(), true, &threat_type));
+  EXPECT_EQ(resource.threat_type, threat_type);
 }
 
 TEST_F(SafeBrowsingUIManagerTest, WhitelistIgnoresPath) {
