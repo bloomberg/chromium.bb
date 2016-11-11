@@ -28,16 +28,15 @@
 #include "ui/gl/scoped_binders.h"
 #include "ui/gl/scoped_make_current.h"
 
-// If !|ptr|, log a message, post an error to |state_provider_|, and
+// If !|ptr|, log a message, notify |state_provider_| of the error, and
 // return an optional value.
-#define RETURN_IF_NULL(ptr, ...)                                         \
-  do {                                                                   \
-    if (!(ptr)) {                                                        \
-      DLOG(ERROR) << "Got null for " << #ptr;                            \
-      state_provider_->PostError(FROM_HERE,                              \
-                                 VideoDecodeAccelerator::ILLEGAL_STATE); \
-      return __VA_ARGS__;                                                \
-    }                                                                    \
+#define RETURN_IF_NULL(ptr, ...)                                           \
+  do {                                                                     \
+    if (!(ptr)) {                                                          \
+      DLOG(ERROR) << "Got null for " << #ptr;                              \
+      state_provider_->NotifyError(VideoDecodeAccelerator::ILLEGAL_STATE); \
+      return __VA_ARGS__;                                                  \
+    }                                                                      \
   } while (0)
 
 namespace media {

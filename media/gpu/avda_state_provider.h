@@ -26,11 +26,9 @@ class AVDAStateProvider {
   virtual const gfx::Size& GetSize() const = 0;
   virtual base::WeakPtr<gpu::gles2::GLES2Decoder> GetGlDecoder() const = 0;
 
-  // Helper function to report an error condition and stop decoding.
-  // This will post NotifyError(), and transition to the error state.
-  // It is meant to be called from the RETURN_ON_FAILURE macro.
-  virtual void PostError(const ::tracked_objects::Location& from_here,
-                         VideoDecodeAccelerator::Error error) = 0;
+  // Report a fatal error. This will post NotifyError(), and transition to the
+  // error state.
+  virtual void NotifyError(VideoDecodeAccelerator::Error error) = 0;
 
  protected:
   ~AVDAStateProvider() = default;
