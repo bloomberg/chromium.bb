@@ -14,7 +14,7 @@ RenderViewObserver::RenderViewObserver(RenderView* render_view)
   // |render_view_| can be null on unit testing or if Observe() is used.
   if (render_view_) {
     routing_id_ = render_view_->GetRoutingID();
-    // TODO(jam): bring this back DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
+    // TODO(jam/nick): bring this back DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
     render_view_->AddObserver(this);
   }
 }
