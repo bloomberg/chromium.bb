@@ -72,12 +72,15 @@ public class ChromeFullscreenManager
     private long mMinShowNotificationMs = MINIMUM_SHOW_DURATION_MS;
     private long mMaxAnimationDurationMs = MAX_ANIMATION_DURATION_MS;
 
-    private float mBrowserControlOffset = Float.NaN;
+    // The shown ratio for the browser controls animated by this class as opposed to what is
+    // computed by the renderer.
+    private float mBrowserControlShownRatio = Float.NaN;
+
     private float mRendererTopControlOffset = Float.NaN;
     private float mRendererBottomControlOffset = Float.NaN;
     private float mRendererTopContentOffset;
     private float mPreviousContentOffset = Float.NaN;
-    private float mControlOffset;
+    private float mControlOffsetRatio;
     private float mPreviousControlOffset;
     private boolean mIsEnteringPersistentModeState;
 
@@ -125,20 +128,20 @@ public class ChromeFullscreenManager
 
     private class ControlsOffsetProperty extends Property<ChromeFullscreenManager, Float> {
         public ControlsOffsetProperty() {
-            super(Float.class, "controlsOffset");
+            super(Float.class, "controlsOffsetRatio");
         }
 
         @Override
         public Float get(ChromeFullscreenManager object) {
-            return getControlOffset();
+            return getBrowserControlHiddenRatio();
         }
 
         @Override
-        public void set(ChromeFullscreenManager manager, Float offset) {
+        public void set(ChromeFullscreenManager manager, Float ratio) {
             if (mDisableBrowserOverride) return;
-            float browserOffset = offset.floatValue();
-            if (Float.compare(mBrowserControlOffset, browserOffset) == 0) return;
-            mBrowserControlOffset = browserOffset;
+            float browserRatio = ratio.floatValue();
+            if (Float.compare(mBrowserControlShownRatio, browserRatio) == 0) return;
+            mBrowserControlShownRatio = browserRatio;
             manager.updateControlOffset();
             manager.updateVisuals();
         }
@@ -182,6 +185,14 @@ public class ChromeFullscreenManager
                     break;
             }
         }
+    }
+
+    /**
+     * @return The ratio that the browser controls are off screen; this will be a number [0,1]
+     *         where 1 is completely hidden and 0 is completely shown.
+     */
+    private float getBrowserControlHiddenRatio() {
+        return mControlOffsetRatio;
     }
 
     /**
@@ -321,7 +332,7 @@ public class ChromeFullscreenManager
             mControlAnimation.cancel();
             mControlAnimation = null;
         }
-        mBrowserControlOffset = Float.NaN;
+        mBrowserControlShownRatio = Float.NaN;
         updateVisuals();
     }
 
@@ -386,7 +397,7 @@ public class ChromeFullscreenManager
      * @return Whether the browser controls should be drawn as a texture.
      */
     public boolean drawControlsAsTexture() {
-        return getControlOffset() > -mControlContainerHeight;
+        return getBrowserControlHiddenRatio() > 0;
     }
 
     @Override
@@ -405,7 +416,9 @@ public class ChromeFullscreenManager
      */
     public float getControlOffset() {
         if (mBrowserControlsPermanentlyHidden) return -getBrowserControlsHeight();
-        return mControlOffset;
+        // This is to avoid a problem with -0f in tests.
+        if (mControlOffsetRatio == 0f) return 0f;
+        return mControlOffsetRatio * -getBrowserControlsHeight();
     }
 
     /**
@@ -415,19 +428,20 @@ public class ChromeFullscreenManager
         return mControlContainer;
     }
 
-    @SuppressWarnings("SelfEquality")
     private void updateControlOffset() {
-        float offset = 0;
+        float topOffsetRatio = 0;
+
         // Inline Float.isNan with "x != x":
-        final boolean isNaNBrowserControlOffset = mBrowserControlOffset != mBrowserControlOffset;
-        final float rendererControlOffset = rendererControlOffset();
-        final boolean isNaNRendererControlOffset = rendererControlOffset != rendererControlOffset;
+        final boolean isNaNBrowserControlOffset = Float.isNaN(mBrowserControlShownRatio);
+        final float rendererControlOffset =
+                Math.abs(rendererControlOffset() / controlContainerHeight());
+        final boolean isNaNRendererControlOffset = Float.isNaN(rendererControlOffset);
         if (!isNaNBrowserControlOffset || !isNaNRendererControlOffset) {
-            offset = Math.max(
-                    isNaNBrowserControlOffset ? -mControlContainerHeight : mBrowserControlOffset,
-                    isNaNRendererControlOffset ? -mControlContainerHeight : rendererControlOffset);
+            topOffsetRatio = Math.min(
+                    isNaNBrowserControlOffset ? 1 : mBrowserControlShownRatio,
+                    isNaNRendererControlOffset ? 1 : rendererControlOffset);
         }
-        mControlOffset = offset;
+        mControlOffsetRatio = topOffsetRatio;
     }
 
     @Override
@@ -444,7 +458,7 @@ public class ChromeFullscreenManager
      */
     @VisibleForTesting
     public boolean hasBrowserControlOffsetOverride() {
-        return !Float.isNaN(mBrowserControlOffset) || mControlAnimation != null
+        return !Float.isNaN(mBrowserControlShownRatio) || mControlAnimation != null
                 || !mPersistentControlTokens.isEmpty();
     }
 
@@ -578,7 +592,7 @@ public class ChromeFullscreenManager
     private boolean shouldShowAndroidControls() {
         if (mBrowserControlsAndroidViewHidden) return false;
 
-        boolean showControls = getControlOffset() == 0;
+        boolean showControls = !drawControlsAsTexture();
         ContentViewCore contentViewCore = getActiveContentViewCore();
         if (contentViewCore == null) return showControls;
         ViewGroup contentView = contentViewCore.getContainerView();
@@ -747,9 +761,9 @@ public class ChromeFullscreenManager
             }
         }
 
-        float destination = show ? 0 : -mControlContainerHeight;
+        float destination = show ? 0 : 1;
         long duration = (long) (mMaxAnimationDurationMs
-                * Math.abs((destination - getControlOffset()) / mControlContainerHeight));
+                * Math.abs(destination - getBrowserControlHiddenRatio()));
         mControlAnimation = ObjectAnimator.ofFloat(this, new ControlsOffsetProperty(), destination);
         mControlAnimation.addListener(new AnimatorListenerAdapter() {
             private boolean mCanceled = false;
@@ -761,7 +775,7 @@ public class ChromeFullscreenManager
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                if (!show && !mCanceled) mBrowserControlOffset = Float.NaN;
+                if (!show && !mCanceled) mBrowserControlShownRatio = Float.NaN;
                 mControlAnimation = null;
             }
         });
