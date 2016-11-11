@@ -503,7 +503,6 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(
   LayoutPoint previousLocation = paintInvalidator.previousLocationInBacking();
   PaintInvalidationReason reason =
       invalidatePaintIfNeeded(newPaintInvalidationState);
-  clearPaintInvalidationFlags();
 
   if (previousLocation != paintInvalidator.previousLocationInBacking()) {
     newPaintInvalidationState
@@ -535,6 +534,8 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(
 
   newPaintInvalidationState.updateForChildren(reason);
   invalidatePaintOfSubtreesIfNeeded(newPaintInvalidationState);
+
+  clearPaintInvalidationFlags();
 }
 
 void LayoutBoxModelObject::addOutlineRectsForNormalChildren(

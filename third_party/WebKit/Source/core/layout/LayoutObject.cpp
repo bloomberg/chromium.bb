@@ -1149,16 +1149,17 @@ void LayoutObject::invalidateTreeIfNeeded(
   PaintInvalidationState newPaintInvalidationState(paintInvalidationState,
                                                    *this);
 
-  if (mayNeedPaintInvalidationSubtree())
+  if (mayNeedPaintInvalidationSubtree()) {
     newPaintInvalidationState
         .setForceSubtreeInvalidationCheckingWithinContainer();
+  }
 
   PaintInvalidationReason reason =
       invalidatePaintIfNeeded(newPaintInvalidationState);
-  clearPaintInvalidationFlags();
-
   newPaintInvalidationState.updateForChildren(reason);
   invalidatePaintOfSubtreesIfNeeded(newPaintInvalidationState);
+
+  clearPaintInvalidationFlags();
 }
 
 DISABLE_CFI_PERF

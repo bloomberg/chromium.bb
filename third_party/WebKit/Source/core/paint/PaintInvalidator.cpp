@@ -451,8 +451,6 @@ void PaintInvalidator::invalidatePaintIfNeeded(
       !toLayoutBox(object).usesCompositedScrolling())
     context.forcedSubtreeInvalidationFlags |=
         PaintInvalidatorContext::ForcedSubtreeInvalidationRectUpdate;
-
-  object.getMutableForPainting().clearPaintInvalidationFlags();
 }
 
 void PaintInvalidator::processPendingDelayedPaintInvalidations() {

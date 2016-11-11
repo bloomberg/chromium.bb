@@ -44,17 +44,14 @@ void PrePaintTreeWalk::walk(FrameView& frameView,
   m_propertyTreeBuilder.updateFramePropertiesAndContext(
       frameView, localContext.treeBuilderContext);
 
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
-    m_paintInvalidator.invalidatePaintIfNeeded(
-        frameView, localContext.paintInvalidatorContext);
-  }
+  m_paintInvalidator.invalidatePaintIfNeeded(
+      frameView, localContext.paintInvalidatorContext);
 
   if (LayoutView* layoutView = frameView.layoutView())
     walk(*layoutView, localContext);
 
 #if DCHECK_IS_ON()
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
-    frameView.layoutView()->assertSubtreeClearedPaintInvalidationFlags();
+  frameView.layoutView()->assertSubtreeClearedPaintInvalidationFlags();
 #endif
 }
 
@@ -68,18 +65,17 @@ void PrePaintTreeWalk::walk(const LayoutObject& object,
     // positioned descendants if their containers are between the multi-column
     // container and the spanner. See PaintPropertyTreeBuilder for details.
     localContext.treeBuilderContext.isUnderMultiColumnSpanner = true;
-    object.getMutableForPainting().clearPaintInvalidationFlags();
     walk(*toLayoutMultiColumnSpannerPlaceholder(object)
               .layoutObjectInFlowThread(),
          localContext);
+    object.getMutableForPainting().clearPaintInvalidationFlags();
     return;
   }
 
   m_propertyTreeBuilder.updatePropertiesAndContextForSelf(
       object, localContext.treeBuilderContext);
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
-    m_paintInvalidator.invalidatePaintIfNeeded(
-        object, localContext.paintInvalidatorContext);
+  m_paintInvalidator.invalidatePaintIfNeeded(
+      object, localContext.paintInvalidatorContext);
   m_propertyTreeBuilder.updatePropertiesAndContextForChildren(
       object, localContext.treeBuilderContext);
 
@@ -104,6 +100,7 @@ void PrePaintTreeWalk::walk(const LayoutObject& object,
     }
     // TODO(pdr): Investigate RemoteFrameView (crbug.com/579281).
   }
+  object.getMutableForPainting().clearPaintInvalidationFlags();
 }
 
 }  // namespace blink
