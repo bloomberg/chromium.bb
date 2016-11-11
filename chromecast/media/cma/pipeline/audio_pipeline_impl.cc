@@ -74,7 +74,9 @@ void AudioPipelineImpl::UpdateStatistics() {
   if (client().statistics_cb.is_null())
     return;
 
-  MediaPipelineBackend::AudioDecoder::Statistics audio_stats;
+  // TODO(mbjorge): Give Statistics a default constructor when the
+  // next system update happens. b/32802298
+  MediaPipelineBackend::AudioDecoder::Statistics audio_stats = {};
   audio_decoder_->GetStatistics(&audio_stats);
 
   ::media::PipelineStatistics current_stats;

@@ -107,7 +107,9 @@ void VideoPipelineImpl::UpdateStatistics() {
   if (client().statistics_cb.is_null())
     return;
 
-  MediaPipelineBackend::VideoDecoder::Statistics video_stats;
+  // TODO(mbjorge): Give Statistics a default constructor when the
+  // next system update happens. b/32802298
+  MediaPipelineBackend::VideoDecoder::Statistics video_stats = {};
   video_decoder_->GetStatistics(&video_stats);
 
   ::media::PipelineStatistics current_stats;
