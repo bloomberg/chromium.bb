@@ -2,7 +2,7 @@ This is a testharness.js-based test.
 FAIL Basic sanity-checking assert_equals: Need to run the top-level test from domain {{host}} expected "{{host}}" but got ""
 FAIL Only whitelisted properties are accessible cross-origin assert_throws: Should throw when accessing speechSynthesis on Window function "function () { C[prop]; }" did not throw
 FAIL [[GetPrototypeOf]] should return null assert_true: cross-origin Window proto is null expected true got false
-FAIL [[SetPrototypeOf]] should throw assert_throws: proto set on cross-origin Window function "function () { C.__proto__ = new Object(); }" did not throw
+FAIL [[SetPrototypeOf]] should throw assert_throws: proto set on cross-origin Location function "function () { C.location.__proto__ = new Object(); }" did not throw
 PASS [[IsExtensible]] should return true for cross-origin objects 
 FAIL [[PreventExtensions]] should throw for cross-origin objects assert_throws: preventExtensions on cross-origin Window should throw function "function () { Object.preventExtensions(C) }" did not throw
 PASS [[GetOwnProperty]] - Properties on cross-origin objects should be reported |own| 
