@@ -474,6 +474,7 @@ void WindowTypeLauncher::RemoveWindow(views::Widget* window) {
 }
 
 void WindowTypeLauncher::OnStart(service_manager::ServiceContext* context) {
+  context_ = context;
   aura_init_ = base::MakeUnique<views::AuraInit>(
       context->connector(), context->identity(), "views_mus_resources.pak",
       std::string(), nullptr, views::AuraInit::Mode::AURA_MUS);
