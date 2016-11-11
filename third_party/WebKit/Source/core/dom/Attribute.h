@@ -53,6 +53,7 @@ class Attribute {
 
   bool isEmpty() const { return m_value.isEmpty(); }
   bool matches(const QualifiedName&) const;
+  bool matchesCaseInsensitive(const QualifiedName&) const;
 
   void setValue(const AtomicString& value) { m_value = value; }
 
@@ -77,6 +78,13 @@ inline bool Attribute::matches(const QualifiedName& qualifiedName) const {
     return false;
   return qualifiedName.prefix() == starAtom ||
          qualifiedName.namespaceURI() == namespaceURI();
+}
+
+inline bool Attribute::matchesCaseInsensitive(
+    const QualifiedName& qualifiedName) const {
+  return qualifiedName.localNameUpper() == m_name.localNameUpper() &&
+         (qualifiedName.prefix() == starAtom ||
+          qualifiedName.namespaceURI() == namespaceURI());
 }
 
 }  // namespace blink
