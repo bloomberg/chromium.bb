@@ -6428,10 +6428,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Data Reduction Proxy -->
-      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_NAME" desc="An about::flags experiment title to enable/disable Data Saver Lo-Fi" translateable="false">
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_NAME" desc="An about:flags experiment title to enable/disable Data Saver Lo-Fi" translateable="false">
          Data Saver Lo-Fi mode
       </message>
-      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_DESCRIPTION" desc="Describes an about::flags experiment to enable/disable Data Saver Lo-Fi" translateable="false">
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_DESCRIPTION" desc="Describes an about:flags experiment to enable/disable Data Saver Lo-Fi" translateable="false">
          Forces Data Saver Lo-Fi mode to be always enabled, enabled only on cellular connections, or disabled. Data Saver must be enabled for Lo-Fi mode to be used.
       </message>
       <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_ALWAYS_ON" desc="Option for IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_NAME to enable Lo-Fi always on" translateable="false">
@@ -6446,29 +6446,35 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_SLOW_CONNECTIONS_ONLY" desc="Option for IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LO_FI_NAME to enable Lo-Fi only on slow connections" translateable="false">
          Slow connections only
       </message>
-      <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LITE_PAGE_NAME" desc="An about::flags experiment title to enable Data Saver lite pages" translateable="false">
+      <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LITE_PAGE_NAME" desc="An about:flags experiment title to enable Data Saver lite pages" translateable="false">
          Lite pages for Data Saver Lo-Fi mode
       </message>
-      <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LITE_PAGE_DESCRIPTION" desc="Describes an about::flags experiment to enable Data Saver lite pages" translateable="false">
+      <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LITE_PAGE_DESCRIPTION" desc="Describes an about:flags experiment to enable Data Saver lite pages" translateable="false">
          Enable lite pages in Data Saver Lo-Fi mode. Previews of pages will be shown instead of image placeholders when Lo-Fi is on. Data Saver and Lo-Fi must be enabled for lite pages to be shown.
       </message>
-      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_RESET_SAVINGS_NAME" desc="Title in about::flags to clear data savings obtained with data reduction proxy when Chrome restarts" translateable="false">
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_RESET_SAVINGS_NAME" desc="Title in about:flags to clear data savings obtained with data reduction proxy when Chrome restarts" translateable="false">
          Clear data savings on startup
       </message>
-      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_RESET_SAVINGS_DESCRIPTION" desc="Description in about::flags to clear data savings obtained with data reduction proxy when Chrome restarts" translateable="false">
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_RESET_SAVINGS_DESCRIPTION" desc="Description in about:flags to clear data savings obtained with data reduction proxy when Chrome restarts" translateable="false">
          Clears data savings obtained by using data reduction proxy when chrome starts.
       </message>
-      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_CARRIER_TEST_NAME" desc="An about::flags experiment title to enable using the carrier test data reduction proxy" translateable="false">
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_CARRIER_TEST_NAME" desc="An about:flags experiment title to enable using the carrier test data reduction proxy" translateable="false">
         Enable a carrier-specific Data Reduction Proxy for testing.
       </message>
       <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_CARRIER_TEST_DESCRIPTION" desc="Describes an about:flags experiment to enable using the carrier test data reduction proxy" translateable="false">
         Use a carrier-specific Data Reduction Proxy for testing.
       </message>
-      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_CONFIG_CLIENT_NAME" desc="Title in about::flags to use the Data Reduction Proxy configuration service" translateable="false">
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_CONFIG_CLIENT_NAME" desc="Title in about:flags to use the Data Reduction Proxy configuration service" translateable="false">
          Enable Data Reduction Proxy configuration service client.
       </message>
-      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_CONFIG_CLIENT_DESCRIPTION" desc="Description in about::flags to use the Data Reduction Proxy configuration service" translateable="false">
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_CONFIG_CLIENT_DESCRIPTION" desc="Description in about:flags to use the Data Reduction Proxy configuration service" translateable="false">
          Uses the Data Reduction Proxy configuration service for authentication and proxy configuration.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_SAVINGS_PROMO_NAME" desc="An about:flags experiment title to enable a Data Saver snackbar promo for 1 MB of savings" translateable="false">
+        Data Saver 1 MB Savings Promo
+      </message>
+      <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_SAVINGS_PROMO_DESCRIPTION" desc="Describes an about:flags experiment to enable a Data Saver snackbar promo for 1 MB of savings" translateable="false">
+        Enable a Data Saver promo for 1 MB of savings. If Data Saver has already saved 1 MB of data, then the promo will not be shown. Data Saver must be enabled for the promo to be shown.
       </message>
 
       <!-- Preview InfoBar -->

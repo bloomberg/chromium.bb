@@ -28,6 +28,8 @@ public class DataReductionPromoSnackbarController implements SnackbarManager.Sna
 
     public static final String FROM_PROMO = "FromPromo";
     public static final String PROMO_FIELD_TRIAL_NAME = "DataCompressionProxyPromoVisibility";
+    private static final String ENABLE_DATA_REDUCTION_PROXY_SAVINGS_PROMO_SWITCH =
+            "enable-data-reduction-proxy-savings-promo";
     private static final String CLEAR_DATA_REDUCTION_PROXY_DATA_SAVINGS_SWITCH =
             "clear-data-reduction-proxy-data-savings";
     private static final long BYTES_PER_MEGABYTE = 1024 * 1024;
@@ -51,11 +53,24 @@ public class DataReductionPromoSnackbarController implements SnackbarManager.Sna
                 .getVariationParamValue(PROMO_FIELD_TRIAL_NAME, PROMO_PARAM_NAME);
 
         if (variationParamValue.isEmpty()) {
-            mPromoDataSavingsMB = new int[0];
+            if (CommandLine.getInstance()
+                    .hasSwitch(ENABLE_DATA_REDUCTION_PROXY_SAVINGS_PROMO_SWITCH)) {
+                mPromoDataSavingsMB = new int[1];
+                mPromoDataSavingsMB[0] = 1;
+            } else {
+                mPromoDataSavingsMB = new int[0];
+            }
         } else {
             variationParamValue = variationParamValue.replace(" ", "");
             String[] promoDataSavingStrings = variationParamValue.split(";");
-            mPromoDataSavingsMB = new int[promoDataSavingStrings.length];
+
+            if (CommandLine.getInstance()
+                    .hasSwitch(ENABLE_DATA_REDUCTION_PROXY_SAVINGS_PROMO_SWITCH)) {
+                mPromoDataSavingsMB = new int[promoDataSavingStrings.length + 1];
+                mPromoDataSavingsMB[promoDataSavingStrings.length] = 1;
+            } else {
+                mPromoDataSavingsMB = new int[promoDataSavingStrings.length];
+            }
 
             for (int i = 0; i < promoDataSavingStrings.length; i++) {
                 try {

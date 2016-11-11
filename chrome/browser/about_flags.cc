@@ -1510,6 +1510,13 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_DATA_REDUCTION_PROXY_RESET_SAVINGS_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(
          data_reduction_proxy::switches::kClearDataReductionProxyDataSavings)},
+#if defined(OS_ANDROID)
+    {"enable-data-reduction-proxy-savings-promo",
+     IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_SAVINGS_PROMO_NAME,
+     IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_SAVINGS_PROMO_DESCRIPTION,
+     kOsAndroid, SINGLE_VALUE_TYPE(data_reduction_proxy::switches::
+                                       kEnableDataReductionProxySavingsPromo)},
+#endif  // OS_ANDROID
     {"allow-insecure-localhost", IDS_ALLOW_INSECURE_LOCALHOST,
      IDS_ALLOW_INSECURE_LOCALHOST_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kAllowInsecureLocalhost)},
