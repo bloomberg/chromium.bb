@@ -39,7 +39,7 @@ function test()
         for (var event of events) {
             if (event.name === WebInspector.TimelineModel.RecordType.Paint) {
                 paintEvents.push(event);
-                if (!event.picture)
+                if (!WebInspector.TimelineData.forEvent(event).picture)
                     InspectorTest.addResult("Event without picture at " + paintEvents.length);
             }
         }

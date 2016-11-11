@@ -223,7 +223,7 @@ InspectorTest.printTimelineRecordsWithDetails = function(typeName)
             return;
         var event = record.traceEvent();
         InspectorTest.addResult("Text details for " + record.type() + ": " + InspectorTest.detailsTextForTraceEvent(event));
-        if (event.warning)
+        if (WebInspector.TimelineData.forEvent(event).warning)
             InspectorTest.addResult(record.type() + " has a warning");
     }
 
@@ -339,7 +339,7 @@ InspectorTest.printTraceEventProperties = function(traceEvent)
         data: traceEvent.args["data"] || traceEvent.args,
         endTime: traceEvent.endTime || traceEvent.startTime,
         frameId: frameId,
-        stackTrace: traceEvent.stackTrace,
+        stackTrace: WebInspector.TimelineData.forEvent(traceEvent).stackTrace,
         startTime: traceEvent.startTime,
         type: traceEvent.name,
     };
@@ -402,6 +402,12 @@ InspectorTest.dumpFrame = function(frame)
         return result;
     }
     InspectorTest.addObject(formatFields(frame));
+}
+
+InspectorTest.dumpInvalidations = function(recordType, index, comment)
+{
+    var record = InspectorTest.findTimelineRecord(recordType, index || 0);
+    InspectorTest.addArray(WebInspector.InvalidationTracker.invalidationEventsFor(record._event), InspectorTest.InvalidationFormatters, "", comment);
 }
 
 InspectorTest.FakeFileReader.prototype = {

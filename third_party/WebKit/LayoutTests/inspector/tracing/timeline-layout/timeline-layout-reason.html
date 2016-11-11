@@ -31,8 +31,10 @@ function test()
     function onTimelineRecorded()
     {
         var layoutRecord = InspectorTest.findFirstTimelineRecord("Layout");
-        InspectorTest.addResult("layout invalidated: " + layoutRecord.traceEvent().initiator.stackTrace[0].functionName);
-        InspectorTest.addResult("layout forced: " + layoutRecord.traceEvent().stackTrace[0].functionName);
+        var event = layoutRecord.traceEvent();
+        var initiator = WebInspector.TimelineData.forEvent(event).initiator();
+        InspectorTest.addResult("layout invalidated: " + WebInspector.TimelineData.forEvent(initiator).stackTrace[0].functionName);
+        InspectorTest.addResult("layout forced: " + WebInspector.TimelineData.forEvent(event).stackTrace[0].functionName);
         InspectorTest.completeTest();
     }
 }

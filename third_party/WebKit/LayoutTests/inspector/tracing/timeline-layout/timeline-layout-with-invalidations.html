@@ -30,12 +30,8 @@ function test()
         function testLocalFrame(next)
         {
             InspectorTest.invokeAsyncWithTimeline("display", function() {
-                var firstLayoutRecord = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.Layout);
-                InspectorTest.addArray(firstLayoutRecord._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "first layout invalidations");
-
-                var secondLayoutRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.Layout, 1);
-                InspectorTest.addArray(secondLayoutRecord._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "second layout invalidations");
-
+                InspectorTest.dumpInvalidations(WebInspector.TimelineModel.RecordType.Layout, 0, "first layout invalidations");
+                InspectorTest.dumpInvalidations(WebInspector.TimelineModel.RecordType.Layout, 1, "second layout invalidations");
                 next();
             });
         },
@@ -43,12 +39,8 @@ function test()
         function testSubframe(next)
         {
             InspectorTest.invokeAsyncWithTimeline("updateSubframeAndDisplay", function() {
-                var firstLayoutRecord = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.Layout);
-                InspectorTest.addArray(firstLayoutRecord._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "first layout invalidations");
-
-                var secondLayoutRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.Layout, 1);
-                InspectorTest.addArray(secondLayoutRecord._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "second layout invalidations");
-
+                InspectorTest.dumpInvalidations(WebInspector.TimelineModel.RecordType.Layout, 0, "first layout invalidations");
+                InspectorTest.dumpInvalidations(WebInspector.TimelineModel.RecordType.Layout, 1, "second layout invalidations");
                 next();
             });
         }

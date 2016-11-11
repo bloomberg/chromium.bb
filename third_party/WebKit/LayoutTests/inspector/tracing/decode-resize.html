@@ -86,20 +86,24 @@ function test()
         }
         function compareImageURLs(a, b)
         {
-            var urlA = InspectorTest.formatters.formatAsURL(a.url || "<missing>");
-            var urlB = InspectorTest.formatters.formatAsURL(b.url || "<missing>");
+            var urlA = WebInspector.TimelineData.forEvent(a).url;
+            var urlB = WebInspector.TimelineData.forEvent(b).url;
+            urlA = InspectorTest.formatters.formatAsURL(urlA || "<missing>");
+            urlB = InspectorTest.formatters.formatAsURL(urlB || "<missing>");
             return urlA.localeCompare(urlB);
         }
         var events = InspectorTest.timelineModel().inspectedTargetEvents();
         var sortedDecodeEvents = events.filter(isDecodeImageEvent).sort(compareImageURLs);
         for (var i = 0; i < sortedDecodeEvents.length; ++i) {
             var event = sortedDecodeEvents[i];
+            var timlelineData = WebInspector.TimelineData.forEvent(event);
+            var url = timlelineData.url;
             // Skip duplicate events, as long as they have the imageURL
-            if (i && event.url && event.url === sortedDecodeEvents[i - 1].url)
+            if (i && url && url === WebInspector.TimelineData.forEvent(sortedDecodeEvents[i - 1]).url)
                 continue;
             InspectorTest.addResult("event: " + event.name);
-            InspectorTest.addResult("imageURL: " + InspectorTest.formatters.formatAsURL(event.url));
-            InspectorTest.addResult("backendNodeId: " + (event.backendNodeId > 0 ? "present" : "absent"));
+            InspectorTest.addResult("imageURL: " + InspectorTest.formatters.formatAsURL(url));
+            InspectorTest.addResult("backendNodeId: " + (timlelineData.backendNodeId > 0 ? "present" : "absent"));
         }
         InspectorTest.completeTest();
     }

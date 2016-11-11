@@ -55,8 +55,7 @@ function test()
         function testLocalFrame(next)
         {
             InspectorTest.invokeAsyncWithTimeline("changeStylesAndDisplay", function() {
-                var record = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.UpdateLayoutTree);
-                InspectorTest.addArray(record._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "first recalculate styles");
+                InspectorTest.dumpInvalidations(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 0, "first recalculate styles");
                 next();
             });
         },
@@ -64,14 +63,9 @@ function test()
         function multipleStyleRecalcs(next)
         {
             InspectorTest.invokeAsyncWithTimeline("changeMultipleStylesAndDisplay", function() {
-                var firstRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 0);
-                InspectorTest.addArray(firstRecord._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "first recalculate styles");
-
-                var secondRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 1);
-                InspectorTest.addArray(secondRecord._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "second recalculate styles");
-
-                var thirdRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 2);
-                InspectorTest.addArray(thirdRecord._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "third recalculate styles");
+                InspectorTest.dumpInvalidations(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 0, "first recalculate styles");
+                InspectorTest.dumpInvalidations(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 1, "second recalculate styles");
+                InspectorTest.dumpInvalidations(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 2, "third recalculate styles");
                 next();
             });
         },
@@ -79,14 +73,9 @@ function test()
         function testSubframe(next)
         {
             InspectorTest.invokeAsyncWithTimeline("changeMultipleSubframeStylesAndDisplay", function() {
-                var firstRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 0);
-                InspectorTest.addArray(firstRecord._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "first recalculate styles");
-
-                var secondRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 1);
-                InspectorTest.addArray(secondRecord._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "second recalculate styles");
-
-                var thirdRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 2);
-                InspectorTest.addArray(thirdRecord._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "third recalculate styles");
+                InspectorTest.dumpInvalidations(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 0, "first recalculate styles");
+                InspectorTest.dumpInvalidations(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 1, "second recalculate styles");
+                InspectorTest.dumpInvalidations(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 2, "third recalculate styles");
                 next();
             });
         }

@@ -26,7 +26,7 @@ function test()
 
     InspectorTest.invokeAsyncWithTimeline("display", function() {
         var record = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.Paint);
-        InspectorTest.addArray(record._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "paint invalidations");
+        InspectorTest.addArray(WebInspector.InvalidationTracker.invalidationEventsFor(record._event), InspectorTest.InvalidationFormatters, "", "paint invalidations");
 
         var linkifier = new WebInspector.Linkifier();
         var event = record.traceEvent();

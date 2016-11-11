@@ -63,8 +63,7 @@ function test()
         function testClassName(next)
         {
             InspectorTest.invokeAsyncWithTimeline("changeClassNameAndDisplay", function() {
-                var record = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.UpdateLayoutTree);
-                InspectorTest.addArray(record._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters);
+                InspectorTest.dumpInvalidations(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 0);
                 next();
             });
         },
@@ -81,8 +80,7 @@ function test()
         function testId(next)
         {
             InspectorTest.invokeAsyncWithTimeline("changeIdAndDisplay", function() {
-                var record = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.UpdateLayoutTree);
-                InspectorTest.addArray(record._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters);
+                InspectorTest.dumpInvalidations(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 0);
                 next();
             });
         },
@@ -90,8 +88,7 @@ function test()
         function testStyleAttributeChange(next)
         {
             InspectorTest.invokeAsyncWithTimeline("changeStyleAttributeAndDisplay", function() {
-                var record = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.UpdateLayoutTree);
-                InspectorTest.addArray(record._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters);
+                InspectorTest.dumpInvalidations(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 0);
                 next();
             });
         },
@@ -99,8 +96,7 @@ function test()
         function testAttributeChange(next)
         {
             InspectorTest.invokeAsyncWithTimeline("changeAttributeAndDisplay", function() {
-                var record = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.UpdateLayoutTree);
-                InspectorTest.addArray(record._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters);
+                InspectorTest.dumpInvalidations(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 0);
                 next();
             });
         },
@@ -108,8 +104,7 @@ function test()
         function testPseudoChange(next)
         {
             InspectorTest.invokeAsyncWithTimeline("changePseudoAndDisplay", function() {
-                var record = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.UpdateLayoutTree);
-                InspectorTest.addArray(record._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters);
+                InspectorTest.dumpInvalidations(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 0);
                 next();
             });
         }
