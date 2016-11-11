@@ -31,6 +31,7 @@
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_associated_data.h"
+#include "grit/components_strings.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -38,6 +39,7 @@
 #include "net/url_request/url_fetcher.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
 #include "third_party/icu/source/common/unicode/utypes.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using net::URLFetcher;
 using net::URLRequestContextGetter;
@@ -259,8 +261,37 @@ int GetMinuteOfTheDay(bool local_time, bool reduced_resolution) {
 
 }  // namespace
 
-NTPSnippetsFetcher::FetchedCategory::FetchedCategory(Category c)
-    : category(c) {}
+CategoryInfo BuildArticleCategoryInfo(
+    const base::Optional<base::string16>& title) {
+  return CategoryInfo(
+      title.has_value() ? title.value()
+                        : l10n_util::GetStringUTF16(
+                              IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_HEADER),
+      ContentSuggestionsCardLayout::FULL_CARD,
+      base::FeatureList::IsEnabled(kFetchMoreFeature),
+      /*has_reload_action=*/true,
+      /*has_view_all_action=*/false,
+      /*show_if_empty=*/true,
+      l10n_util::GetStringUTF16(IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_EMPTY));
+}
+
+CategoryInfo BuildRemoteCategoryInfo(const base::string16& title,
+                                     bool allow_fetching_more_results) {
+  return CategoryInfo(
+      title, ContentSuggestionsCardLayout::FULL_CARD,
+      /*has_more_action=*/allow_fetching_more_results,
+      /*has_reload_action=*/false,
+      /*has_view_all_action=*/false,
+      /*show_if_empty=*/false,
+      // TODO(tschumann): The message for no-articles is likely wrong
+      // and needs to be added to the stubby protocol if we want to
+      // support it.
+      l10n_util::GetStringUTF16(IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_EMPTY));
+}
+
+NTPSnippetsFetcher::FetchedCategory::FetchedCategory(Category c,
+                                                     CategoryInfo&& info)
+    : category(c), info(info) {}
 
 NTPSnippetsFetcher::FetchedCategory::FetchedCategory(FetchedCategory&&) =
     default;
@@ -688,7 +719,9 @@ bool NTPSnippetsFetcher::JsonToSnippets(const base::Value& parsed,
     case CHROME_READER_API: {
       const int kUnusedRemoteCategoryId = -1;
       categories->push_back(FetchedCategory(
-          category_factory_->FromKnownCategory(KnownCategories::ARTICLES)));
+          category_factory_->FromKnownCategory(KnownCategories::ARTICLES),
+          BuildArticleCategoryInfo(base::nullopt)));
+
       const base::ListValue* recos = nullptr;
       return top_dict->GetList("recos", &recos) &&
              AddSnippetsFromListValue(/*content_suggestions_api=*/false,
@@ -713,21 +746,34 @@ bool NTPSnippetsFetcher::JsonToSnippets(const base::Value& parsed,
           return false;
         }
 
-        categories->push_back(FetchedCategory(
-            category_factory_->FromRemoteCategory(remote_category_id)));
-        categories->back().localized_title = base::UTF8ToUTF16(utf8_title);
-
+        NTPSnippet::PtrVector snippets;
         const base::ListValue* suggestions = nullptr;
-        if (!category_value->GetList("suggestions", &suggestions)) {
-          // Absence of a list of suggestions is treated as an empty list, which
-          // is permissible.
-          continue;
-        }
-        if (!AddSnippetsFromListValue(
-                /*content_suggestions_api=*/true, remote_category_id,
-                *suggestions, &categories->back().snippets)) {
+        // Absence of a list of suggestions is treated as an empty list, which
+        // is permissible.
+        if (category_value->GetList("suggestions", &suggestions)) {
+          if (!AddSnippetsFromListValue(
+              /*content_suggestions_api=*/true, remote_category_id,
+              *suggestions, &snippets)) {
           return false;
+          }
         }
+        Category category =
+            category_factory_->FromRemoteCategory(remote_category_id);
+        if (category.IsKnownCategory(KnownCategories::ARTICLES)) {
+          categories->push_back(FetchedCategory(
+              category,
+              BuildArticleCategoryInfo(base::UTF8ToUTF16(utf8_title))));
+        } else {
+          // TODO(tschumann): Right now, the backend does not yet populate this
+          // field. Make it mandatory once the backends provide it.
+          bool allow_fetching_more_results = false;
+          category_value->GetBoolean("allowFetchingMoreResults",
+                                     &allow_fetching_more_results);
+          categories->push_back(FetchedCategory(
+              category, BuildRemoteCategoryInfo(base::UTF8ToUTF16(utf8_title),
+                                                allow_fetching_more_results)));
+        }
+        categories->back().snippets = std::move(snippets);
       }
       return true;
     }

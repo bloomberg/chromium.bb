@@ -26,6 +26,7 @@
 #include "components/image_fetcher/image_fetcher.h"
 #include "components/image_fetcher/image_fetcher_delegate.h"
 #include "components/ntp_snippets/category_factory.h"
+#include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/remote/ntp_snippet.h"
 #include "components/ntp_snippets/remote/ntp_snippets_database.h"
@@ -54,6 +55,7 @@ using testing::IsEmpty;
 using testing::Mock;
 using testing::MockFunction;
 using testing::NiceMock;
+using testing::Not;
 using testing::SaveArg;
 using testing::SizeIs;
 using testing::StartsWith;
@@ -128,10 +130,6 @@ std::string GetTestJson(const std::vector<std::string>& snippets,
 
 std::string GetTestJson(const std::vector<std::string>& snippets) {
   return GetTestJson(snippets, kTestJsonDefaultCategoryTitle);
-}
-
-std::string GetTestJsonWithoutTitle(const std::vector<std::string>& snippets) {
-  return GetTestJson(snippets, std::string());
 }
 
 // TODO(tschumann): Remove the default parameter other_id. It makes the tests
@@ -474,14 +472,14 @@ class NTPSnippetsServiceTest : public ::testing::Test {
                                                    utils_.pref_service()));
   }
 
-  void WaitForSnippetsServiceInitialization(bool set_empty_response = true) {
+  void WaitForSnippetsServiceInitialization(bool set_empty_response) {
     EXPECT_TRUE(observer_);
     EXPECT_FALSE(observer_->Loaded());
 
     // Add an initial fetch response, as the service tries to fetch when there
     // is nothing in the DB.
     if (set_empty_response)
-      SetUpFetchResponse(GetTestJsonWithoutTitle(std::vector<std::string>()));
+      SetUpFetchResponse(GetTestJson(std::vector<std::string>()));
 
     base::RunLoop().RunUntilIdle();
     observer_->WaitForLoad();
@@ -624,7 +622,7 @@ TEST_F(NTPSnippetsServiceTest, IgnoreRescheduleBeforeInit) {
   EXPECT_CALL(mock_scheduler(), Unschedule()).Times(0);
   auto service = MakeSnippetsServiceWithoutInitialization();
   service->RescheduleFetching(false);
-  WaitForSnippetsServiceInitialization();
+  WaitForSnippetsServiceInitialization(/*set_empty_response=*/true);
 }
 
 TEST_F(NTPSnippetsServiceTest, HandleForcedRescheduleBeforeInit) {
@@ -640,7 +638,7 @@ TEST_F(NTPSnippetsServiceTest, HandleForcedRescheduleBeforeInit) {
   }
   auto service = MakeSnippetsServiceWithoutInitialization();
   service->RescheduleFetching(true);
-  WaitForSnippetsServiceInitialization();
+  WaitForSnippetsServiceInitialization(/*set_empty_response=*/true);
 }
 
 TEST_F(NTPSnippetsServiceTest, RescheduleOnStateChange) {
@@ -701,27 +699,21 @@ TEST_F(NTPSnippetsServiceTest, Full) {
 }
 
 TEST_F(NTPSnippetsServiceTest, CategoryTitle) {
-  const base::string16 response_title =
+  const base::string16 test_default_title =
       base::UTF8ToUTF16(kTestJsonDefaultCategoryTitle);
 
-  auto service = MakeSnippetsService();
+  // Don't send an initial response -- we want to test what happens without any
+  // server status.
+  auto service = MakeSnippetsService(/*set_empty_response=*/false);
 
   // The articles category should be there by default, and have a title.
   CategoryInfo info_before = service->GetCategoryInfo(articles_category());
-  ASSERT_FALSE(info_before.title().empty());
-  ASSERT_NE(info_before.title(), response_title);
-
-  std::string json_str_no_title(GetTestJsonWithoutTitle({GetSnippet()}));
-  LoadFromJSONString(service.get(), json_str_no_title);
-
-  ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
-              SizeIs(1));
-  ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
-
-  // The response didn't contain a category title. Make sure we didn't touch
-  // the existing one.
-  CategoryInfo info_no_title = service->GetCategoryInfo(articles_category());
-  EXPECT_EQ(info_before.title(), info_no_title.title());
+  ASSERT_THAT(info_before.title(), Not(IsEmpty()));
+  ASSERT_THAT(info_before.title(), Not(Eq(test_default_title)));
+  EXPECT_THAT(info_before.has_more_action(), Eq(true));
+  EXPECT_THAT(info_before.has_reload_action(), Eq(true));
+  EXPECT_THAT(info_before.has_view_all_action(), Eq(false));
+  EXPECT_THAT(info_before.show_if_empty(), Eq(true));
 
   std::string json_str_with_title(GetTestJson({GetSnippet()}));
   LoadFromJSONString(service.get(), json_str_with_title);
@@ -730,11 +722,15 @@ TEST_F(NTPSnippetsServiceTest, CategoryTitle) {
               SizeIs(1));
   ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
 
-  // This time, the response contained a title, |kTestJsonDefaultCategoryTitle|.
+  // The response contained a title, |kTestJsonDefaultCategoryTitle|.
   // Make sure we updated the title in the CategoryInfo.
   CategoryInfo info_with_title = service->GetCategoryInfo(articles_category());
-  EXPECT_NE(info_before.title(), info_with_title.title());
-  EXPECT_EQ(response_title, info_with_title.title());
+  EXPECT_THAT(info_before.title(), Not(Eq(info_with_title.title())));
+  EXPECT_THAT(test_default_title, Eq(info_with_title.title()));
+  EXPECT_THAT(info_before.has_more_action(), Eq(true));
+  EXPECT_THAT(info_before.has_reload_action(), Eq(true));
+  EXPECT_THAT(info_before.has_view_all_action(), Eq(false));
+  EXPECT_THAT(info_before.show_if_empty(), Eq(true));
 }
 
 TEST_F(NTPSnippetsServiceTest, MultipleCategories) {

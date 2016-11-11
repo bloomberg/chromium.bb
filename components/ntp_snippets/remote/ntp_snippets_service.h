@@ -137,13 +137,13 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
   // Available snippets, only for unit tests.
   // TODO(treib): Get rid of this. Tests should use a fake observer instead.
   const NTPSnippet::PtrVector& GetSnippetsForTesting(Category category) const {
-    return categories_.find(category)->second.snippets;
+    return category_contents_.find(category)->second.snippets;
   }
 
   // Dismissed snippets, only for unit tests.
   const NTPSnippet::PtrVector& GetDismissedSnippetsForTesting(
       Category category) const {
-    return categories_.find(category)->second.dismissed;
+    return category_contents_.find(category)->second.dismissed;
   }
 
  private:
@@ -193,6 +193,42 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
     ERROR_OCCURRED
   };
 
+  struct CategoryContent {
+    // The current status of the category.
+    CategoryStatus status = CategoryStatus::INITIALIZING;
+
+    // The additional information about a category.
+    CategoryInfo info;
+
+    // True iff the server returned results in this category in the last fetch.
+    // We never remove categories that the server still provides, but if the
+    // server stops providing a category, we won't yet report it as NOT_PROVIDED
+    // while we still have non-expired snippets in it.
+    bool included_in_last_server_response = true;
+
+    // All currently active suggestions (excl. the dismissed ones).
+    NTPSnippet::PtrVector snippets;
+
+    // All previous suggestions that we keep around in memory because they can
+    // be on some open NTP. We do not persist this list so that on a new start
+    // of Chrome, this is empty.
+    // |archived| is a FIFO buffer with a maximum length.
+    std::deque<std::unique_ptr<NTPSnippet>> archived;
+
+    // Suggestions that the user dismissed. We keep these around until they
+    // expire so we won't re-add them to |snippets| on the next fetch.
+    NTPSnippet::PtrVector dismissed;
+
+    // Returns a non-dismissed snippet with the given |id_within_category|, or
+    // null if none exist.
+    const NTPSnippet* FindSnippet(const std::string& id_within_category) const;
+
+    explicit CategoryContent(const CategoryInfo& info);
+    CategoryContent(CategoryContent&&);
+    ~CategoryContent();
+    CategoryContent& operator=(CategoryContent&&);
+  };
+
   // Returns the URL of the image of a snippet if it is among the current or
   // among the archived snippets in the matching category. Returns an empty URL
   // otherwise.
@@ -215,19 +251,20 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
   void OnFetchFinished(
       NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories);
 
-  // Moves all snippets from |to_archive| into the archive of the |category|.
+  // Moves all snippets from |to_archive| into the archive of the |content|.
   // Clears |to_archive|. As the archive is a FIFO buffer of limited size, this
   // function will also delete images from the database in case the associated
   // snippet gets evicted from the archive.
-  void ArchiveSnippets(Category category, NTPSnippet::PtrVector* to_archive);
+  void ArchiveSnippets(CategoryContent* content,
+                       NTPSnippet::PtrVector* to_archive);
 
-  // Sanitizes new fetched snippets -- e.g. adding missing dates and filtering
-  // out incomplete results.
-  void SanitizeFetchedCategory(
-      NTPSnippetsFetcher::FetchedCategory* fetched_category);
+  // Sanitizes newly fetched snippets -- e.g. adding missing dates and filtering
+  // out incomplete results or dismissed snippets (indicated by |dismissed|).
+  void SanitizeReceivedSnippets(const NTPSnippet::PtrVector& dismissed,
+                                NTPSnippet::PtrVector* snippets);
 
-  // Adds newly available suggestions in |category| to the available ones.
-  void IntegrateSnippets(const Category& category,
+  // Adds newly available suggestions to |content|.
+  void IntegrateSnippets(CategoryContent* content,
                          NTPSnippet::PtrVector new_snippets);
 
   // Removes expired dismissed snippets from the service and the database.
@@ -284,19 +321,19 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
 
   // Converts the cached snippets in the given |category| to content suggestions
   // and notifies the observer.
-  void NotifyNewSuggestions(Category category);
-
-  // Converts the cached snippets in the given |category| to content suggestions
-  // and passes them to the |callback|.
-  // TODO(tschumann): Make |callback| required.
-  void NotifyMoreSuggestions(Category category,
-                             base::Optional<FetchDoneCallback> callback);
+  void NotifyNewSuggestions(Category category, const CategoryContent& content);
 
   // Updates the internal status for |category| to |category_status_| and
   // notifies the content suggestions observer if it changed.
   void UpdateCategoryStatus(Category category, CategoryStatus status);
   // Calls UpdateCategoryStatus() for all provided categories.
   void UpdateAllCategoryStatus(CategoryStatus status);
+
+  // Updates the category info for |category|. If a corresponding
+  // CategoryContent object does not exist, it will be created.
+  // Returns the existing or newly created object.
+  CategoryContent* UpdateCategoryInfo(Category category,
+                                      const CategoryInfo& info);
 
   void RestoreCategoriesFromPrefs();
   void StoreCategoriesToPrefs();
@@ -312,43 +349,7 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
 
   const Category articles_category_;
 
-  // TODO(sfiera): Reduce duplication of CategoryContent with CategoryInfo.
-  struct CategoryContent {
-    CategoryStatus status = CategoryStatus::INITIALIZING;
-
-    // The title of the section, localized to the running UI language.
-    base::string16 localized_title;
-
-    // True iff the server returned results in this category in the last fetch.
-    // We never remove categories that the server still provides, but if the
-    // server stops providing a category, we won't yet report it as NOT_PROVIDED
-    // while we still have non-expired snippets in it.
-    bool provided_by_server = true;
-
-    // All currently active suggestions (excl. the dismissed ones).
-    NTPSnippet::PtrVector snippets;
-
-    // All previous suggestions that we keep around in memory because they can
-    // be on some open NTP. We do not persist this list so that on a new start
-    // of Chrome, this is empty.
-    // |archived| is a FIFO buffer with a maximum length.
-    std::deque<std::unique_ptr<NTPSnippet>> archived;
-
-    // Suggestions that the user dismissed. We keep these around until they
-    // expire so we won't re-add them to |snippets| on the next fetch.
-    NTPSnippet::PtrVector dismissed;
-
-    // Returns a non-dismissed snippet with the given |id_within_category|, or
-    // null if none exist.
-    const NTPSnippet* FindSnippet(const std::string& id_within_category) const;
-
-    CategoryContent();
-    CategoryContent(CategoryContent&&);
-    ~CategoryContent();
-    CategoryContent& operator=(CategoryContent&&);
-  };
-
-  std::map<Category, CategoryContent, Category::CompareByID> categories_;
+  std::map<Category, CategoryContent, Category::CompareByID> category_contents_;
 
   // The ISO 639-1 code of the language used by the application.
   const std::string application_language_code_;

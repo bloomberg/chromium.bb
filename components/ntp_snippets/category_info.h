@@ -30,8 +30,11 @@ class CategoryInfo {
                bool has_view_all_action,
                bool show_if_empty,
                const base::string16& no_suggestions_message);
+  CategoryInfo() = delete;
   CategoryInfo(CategoryInfo&&);
+  CategoryInfo(const CategoryInfo&);
   CategoryInfo& operator=(CategoryInfo&&);
+  CategoryInfo& operator=(const CategoryInfo&);
   ~CategoryInfo();
 
   // Localized title of the category.
@@ -74,8 +77,6 @@ class CategoryInfo {
   // Whether to show the category if a fetch returns no suggestions.
   bool show_if_empty_;
   base::string16 no_suggestions_message_;
-
-  DISALLOW_COPY_AND_ASSIGN(CategoryInfo);
 };
 
 }  // namespace ntp_snippets

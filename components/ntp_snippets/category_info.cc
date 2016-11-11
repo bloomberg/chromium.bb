@@ -22,8 +22,10 @@ CategoryInfo::CategoryInfo(const base::string16& title,
       no_suggestions_message_(no_suggestions_message) {}
 
 CategoryInfo::CategoryInfo(CategoryInfo&&) = default;
+CategoryInfo::CategoryInfo(const CategoryInfo&) = default;
 
 CategoryInfo& CategoryInfo::operator=(CategoryInfo&&) = default;
+CategoryInfo& CategoryInfo::operator=(const CategoryInfo&) = default;
 
 CategoryInfo::~CategoryInfo() = default;
 

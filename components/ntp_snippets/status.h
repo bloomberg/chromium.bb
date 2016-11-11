@@ -20,6 +20,8 @@ enum class StatusCode {
 // describing the status (esp. failures) in detail.
 struct Status {
   Status(StatusCode status, const std::string& message);
+  // TODO(tschumann): Change this into a a Success() factory method. Error
+  // states should always have a message.
   explicit Status(StatusCode status);
   ~Status();
 
