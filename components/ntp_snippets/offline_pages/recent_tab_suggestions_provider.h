@@ -18,7 +18,7 @@
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
-#include "components/ntp_snippets/offline_pages/offline_page_proxy.h"
+#include "components/offline_pages/offline_page_model.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -31,13 +31,14 @@ namespace ntp_snippets {
 
 // Provides recent tabs content suggestions from the offline pages model
 // obtaining the data through OfflinePageProxy.
-class RecentTabSuggestionsProvider : public ContentSuggestionsProvider,
-                                     public OfflinePageProxy::Observer {
+class RecentTabSuggestionsProvider
+    : public ContentSuggestionsProvider,
+      public offline_pages::OfflinePageModel::Observer {
  public:
   RecentTabSuggestionsProvider(
       ContentSuggestionsProvider::Observer* observer,
       CategoryFactory* category_factory,
-      scoped_refptr<OfflinePageProxy> offline_page_proxy,
+      offline_pages::OfflinePageModel* offline_page_model,
       PrefService* pref_service);
   ~RecentTabSuggestionsProvider() override;
 
@@ -65,16 +66,18 @@ class RecentTabSuggestionsProvider : public ContentSuggestionsProvider,
  private:
   friend class RecentTabSuggestionsProviderTest;
 
-  void GetAllPagesCallbackForGetDismissedSuggestions(
+  void GetPagesMatchingQueryCallbackForGetDismissedSuggestions(
       const DismissedSuggestionsCallback& callback,
       const std::vector<offline_pages::OfflinePageItem>& offline_pages) const;
 
-  // OfflinePageProxy::Observer implementation.
-  void OfflinePageModelChanged(
-      const std::vector<offline_pages::OfflinePageItem>& offline_pages)
-      override;
+  // OfflinePageModel::Observer implementation.
+  void OfflinePageModelLoaded(offline_pages::OfflinePageModel* model) override;
+  void OfflinePageModelChanged(offline_pages::OfflinePageModel* model) override;
   void OfflinePageDeleted(int64_t offline_id,
                           const offline_pages::ClientId& client_id) override;
+
+  void GetPagesMatchingQueryCallbackForFetchRecentTabs(
+      const std::vector<offline_pages::OfflinePageItem>& offline_pages);
 
   // Updates the |category_status_| of the |provided_category_| and notifies the
   // |observer_|, if necessary.
@@ -108,7 +111,7 @@ class RecentTabSuggestionsProvider : public ContentSuggestionsProvider,
 
   CategoryStatus category_status_;
   const Category provided_category_;
-  scoped_refptr<OfflinePageProxy> offline_page_proxy_;
+  offline_pages::OfflinePageModel* offline_page_model_;
 
   PrefService* pref_service_;
 

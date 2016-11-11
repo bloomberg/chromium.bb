@@ -439,9 +439,10 @@ void OfflinePageModelImpl::DeletePagesByClientIds(
       .AllowExpiredPages(true);
   auto delete_pages = base::Bind(&OfflinePageModelImpl::DeletePages,
                                  weak_ptr_factory_.GetWeakPtr(), callback);
-  RunWhenLoaded(base::Bind(
-      &OfflinePageModelImpl::ExecuteQuery, weak_ptr_factory_.GetWeakPtr(),
-      base::Passed(builder.Build(GetPolicyController())), delete_pages));
+  RunWhenLoaded(base::Bind(&OfflinePageModelImpl::GetPagesMatchingQuery,
+                           weak_ptr_factory_.GetWeakPtr(),
+                           base::Passed(builder.Build(GetPolicyController())),
+                           delete_pages));
 }
 
 void OfflinePageModelImpl::DeletePages(
@@ -462,9 +463,10 @@ void OfflinePageModelImpl::GetPagesByClientIds(
   OfflinePageModelQueryBuilder builder;
   builder.SetClientIds(OfflinePageModelQuery::Requirement::INCLUDE_MATCHING,
                        client_ids);
-  RunWhenLoaded(base::Bind(
-      &OfflinePageModelImpl::ExecuteQuery, weak_ptr_factory_.GetWeakPtr(),
-      base::Passed(builder.Build(GetPolicyController())), callback));
+  RunWhenLoaded(base::Bind(&OfflinePageModelImpl::GetPagesMatchingQuery,
+                           weak_ptr_factory_.GetWeakPtr(),
+                           base::Passed(builder.Build(GetPolicyController())),
+                           callback));
 }
 
 void OfflinePageModelImpl::DeleteCachedPagesByURLPredicate(
@@ -508,12 +510,13 @@ void OfflinePageModelImpl::CheckPagesExistOffline(
         callback.Run(result);
       },
       callback);
-  RunWhenLoaded(base::Bind(
-      &OfflinePageModelImpl::ExecuteQuery, weak_ptr_factory_.GetWeakPtr(),
-      base::Passed(builder.Build(GetPolicyController())), pages_to_urls));
+  RunWhenLoaded(base::Bind(&OfflinePageModelImpl::GetPagesMatchingQuery,
+                           weak_ptr_factory_.GetWeakPtr(),
+                           base::Passed(builder.Build(GetPolicyController())),
+                           pages_to_urls));
 }
 
-void OfflinePageModelImpl::ExecuteQuery(
+void OfflinePageModelImpl::GetPagesMatchingQuery(
     std::unique_ptr<OfflinePageModelQuery> query,
     const MultipleOfflinePageItemCallback& callback) {
   DCHECK(query);
@@ -531,9 +534,10 @@ void OfflinePageModelImpl::ExecuteQuery(
 void OfflinePageModelImpl::GetAllPages(
     const MultipleOfflinePageItemCallback& callback) {
   OfflinePageModelQueryBuilder builder;
-  RunWhenLoaded(base::Bind(
-      &OfflinePageModelImpl::ExecuteQuery, weak_ptr_factory_.GetWeakPtr(),
-      base::Passed(builder.Build(GetPolicyController())), callback));
+  RunWhenLoaded(base::Bind(&OfflinePageModelImpl::GetPagesMatchingQuery,
+                           weak_ptr_factory_.GetWeakPtr(),
+                           base::Passed(builder.Build(GetPolicyController())),
+                           callback));
 }
 
 void OfflinePageModelImpl::GetAllPagesWithExpired(
@@ -541,9 +545,10 @@ void OfflinePageModelImpl::GetAllPagesWithExpired(
   OfflinePageModelQueryBuilder builder;
   builder.AllowExpiredPages(true);
 
-  RunWhenLoaded(base::Bind(
-      &OfflinePageModelImpl::ExecuteQuery, weak_ptr_factory_.GetWeakPtr(),
-      base::Passed(builder.Build(GetPolicyController())), callback));
+  RunWhenLoaded(base::Bind(&OfflinePageModelImpl::GetPagesMatchingQuery,
+                           weak_ptr_factory_.GetWeakPtr(),
+                           base::Passed(builder.Build(GetPolicyController())),
+                           callback));
 }
 
 void OfflinePageModelImpl::GetOfflineIdsForClientId(
@@ -598,9 +603,10 @@ void OfflinePageModelImpl::GetPageByOfflineId(
       },
       callback);
 
-  RunWhenLoaded(base::Bind(
-      &OfflinePageModelImpl::ExecuteQuery, weak_ptr_factory_.GetWeakPtr(),
-      base::Passed(builder.Build(GetPolicyController())), multiple_callback));
+  RunWhenLoaded(base::Bind(&OfflinePageModelImpl::GetPagesMatchingQuery,
+                           weak_ptr_factory_.GetWeakPtr(),
+                           base::Passed(builder.Build(GetPolicyController())),
+                           multiple_callback));
 }
 
 void OfflinePageModelImpl::GetPagesByOnlineURL(

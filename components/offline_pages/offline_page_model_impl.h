@@ -76,6 +76,11 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
                               const DeletePageCallback& callback) override;
   void DeletePagesByClientIds(const std::vector<ClientId>& client_ids,
                               const DeletePageCallback& callback) override;
+
+  void GetPagesMatchingQuery(
+      std::unique_ptr<OfflinePageModelQuery> query,
+      const MultipleOfflinePageItemCallback& callback) override;
+
   void GetPagesByClientIds(
       const std::vector<ClientId>& client_ids,
       const MultipleOfflinePageItemCallback& callback) override;
@@ -122,9 +127,6 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
   FRIEND_TEST_ALL_PREFIXES(OfflinePageModelImplTest, MarkPageForDeletion);
 
   typedef ScopedVector<OfflinePageArchiver> PendingArchivers;
-
-  void ExecuteQuery(std::unique_ptr<OfflinePageModelQuery> query,
-                    const MultipleOfflinePageItemCallback& callback);
 
   // Callback for ensuring archive directory is created.
   void OnEnsureArchivesDirCreatedDone(const base::TimeTicks& start_time);

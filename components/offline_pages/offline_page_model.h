@@ -15,6 +15,7 @@
 #include "base/supports_user_data.h"
 #include "components/offline_pages/offline_event_logger.h"
 #include "components/offline_pages/offline_page_archiver.h"
+#include "components/offline_pages/offline_page_model_query.h"
 #include "components/offline_pages/offline_page_storage_manager.h"
 #include "components/offline_pages/offline_page_types.h"
 
@@ -106,6 +107,10 @@ class OfflinePageModel : public base::SupportsUserData {
   // Deletes all pages associated with any of |client_ids|.
   virtual void DeletePagesByClientIds(const std::vector<ClientId>& client_ids,
                                       const DeletePageCallback& callback) = 0;
+
+  virtual void GetPagesMatchingQuery(
+      std::unique_ptr<OfflinePageModelQuery> query,
+      const MultipleOfflinePageItemCallback& callback) = 0;
 
   // Retrieves all pages associated with any of |client_ids|.
   virtual void GetPagesByClientIds(

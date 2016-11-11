@@ -27,7 +27,6 @@ using ntp_snippets::CategoryFactory;
 using ntp_snippets::ContentSuggestion;
 using ntp_snippets::ContentSuggestionsProvider;
 using ntp_snippets::MockContentSuggestionsProviderObserver;
-using ntp_snippets::OfflinePageProxy;
 using ntp_snippets::test::CaptureDismissedSuggestions;
 using ntp_snippets::test::FakeOfflinePageModel;
 using ntp_snippets::CategoryStatus;
@@ -138,6 +137,7 @@ std::vector<OfflinePageItem> CreateDummyOfflinePages(
   std::vector<OfflinePageItem> result;
   for (int id : ids)
     result.push_back(CreateDummyOfflinePage(id));
+
   return result;
 }
 
@@ -250,11 +250,9 @@ class DownloadSuggestionsProviderTest : public testing::Test {
 
   DownloadSuggestionsProvider* CreateProvider() {
     DCHECK(!provider_);
-    scoped_refptr<OfflinePageProxy> proxy(
-        new OfflinePageProxy(&offline_pages_model_));
     provider_ = base::MakeUnique<DownloadSuggestionsProvider>(
-        &observer_, &category_factory_, proxy, &downloads_manager_,
-        pref_service(),
+        &observer_, &category_factory_, &offline_pages_model_,
+        &downloads_manager_, pref_service(),
         /*download_manager_ui_enabled=*/false);
     return provider_.get();
   }
@@ -266,9 +264,9 @@ class DownloadSuggestionsProviderTest : public testing::Test {
         ntp_snippets::KnownCategories::DOWNLOADS);
   }
 
-  void FireOfflinePageModelChanged(const std::vector<OfflinePageItem>& items) {
+  void FireOfflinePageModelChanged() {
     DCHECK(provider_);
-    provider_->OfflinePageModelChanged(items);
+    provider_->OfflinePageModelChanged(&offline_pages_model_);
   }
 
   void FireOfflinePageDeleted(const OfflinePageItem& item) {
@@ -515,7 +513,7 @@ TEST_F(DownloadSuggestionsProviderTest,
       OnNewSuggestions(_, downloads_category(),
                        UnorderedElementsAre(HasUrl("http://dummy.com/2"),
                                             HasUrl("http://download.com/2"))));
-  FireOfflinePageModelChanged(offline_pages_model()->items());
+  FireOfflinePageModelChanged();
 }
 
 TEST_F(DownloadSuggestionsProviderTest, ShouldReturnDismissedSuggestions) {
@@ -608,7 +606,7 @@ TEST_F(DownloadSuggestionsProviderTest,
                        UnorderedElementsAre(HasUrl("http://dummy.com/2"),
                                             HasUrl("http://download.com/1"),
                                             HasUrl("http://download.com/2"))));
-  FireOfflinePageModelChanged(offline_pages_model()->items());
+  FireOfflinePageModelChanged();
 }
 
 TEST_F(DownloadSuggestionsProviderTest, ShouldReplaceDismissedItemWithNewData) {
@@ -645,7 +643,7 @@ TEST_F(DownloadSuggestionsProviderTest, ShouldReplaceDismissedItemWithNewData) {
                                             HasUrl("http://download.com/4"),
                                             HasUrl("http://download.com/5"),
                                             HasUrl("http://download.com/6"))));
-  FireOfflinePageModelChanged(offline_pages_model()->items());
+  FireOfflinePageModelChanged();
 }
 
 TEST_F(DownloadSuggestionsProviderTest,
@@ -736,7 +734,7 @@ TEST_F(DownloadSuggestionsProviderTest, ShouldReplaceRemovedItemWithNewData) {
                                             HasUrl("http://download.com/3"),
                                             HasUrl("http://download.com/4"),
                                             HasUrl("http://download.com/5"))));
-  FireOfflinePageModelChanged(offline_pages_model()->items());
+  FireOfflinePageModelChanged();
 }
 
 TEST_F(DownloadSuggestionsProviderTest, ShouldPruneOfflinePagesDismissedIDs) {
@@ -765,7 +763,12 @@ TEST_F(DownloadSuggestionsProviderTest, ShouldPruneOfflinePagesDismissedIDs) {
   // |GetDismissedSuggestions| cannot return it.
   EXPECT_CALL(*observer(),
               OnNewSuggestions(_, downloads_category(), IsEmpty()));
-  FireOfflinePageModelChanged(CreateDummyOfflinePages({2, 3}));
+
+  // TODO(vitaliii): Add the first suggestion back, so that
+  // GetDismissedSuggestions can return it.
+  *(offline_pages_model()->mutable_items()) =
+      CreateDummyOfflinePages({2, 3});
+  FireOfflinePageModelChanged();
   EXPECT_THAT(GetDismissedSuggestions(), SizeIs(2));
 
   // Prune when offline page is deleted.

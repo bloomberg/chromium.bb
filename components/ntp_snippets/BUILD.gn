@@ -36,8 +36,6 @@ static_library("ntp_snippets") {
     "features.h",
     "ntp_snippets_constants.cc",
     "ntp_snippets_constants.h",
-    "offline_pages/offline_page_proxy.cc",
-    "offline_pages/offline_page_proxy.h",
     "offline_pages/recent_tab_suggestions_provider.cc",
     "offline_pages/recent_tab_suggestions_provider.h",
     "physical_web_pages/physical_web_page_suggestions_provider.cc",

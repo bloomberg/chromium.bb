@@ -24,6 +24,9 @@ void StubOfflinePageModel::DeletePagesByOfflineId(
 void StubOfflinePageModel::DeletePagesByClientIds(
     const std::vector<ClientId>& client_ids,
     const DeletePageCallback& callback) {}
+void StubOfflinePageModel::GetPagesMatchingQuery(
+    std::unique_ptr<OfflinePageModelQuery> query,
+    const MultipleOfflinePageItemCallback& callback) {}
 void StubOfflinePageModel::GetPagesByClientIds(
     const std::vector<ClientId>& client_ids,
     const MultipleOfflinePageItemCallback& callback) {}
@@ -51,7 +54,7 @@ void StubOfflinePageModel::ExpirePages(
     const base::Time& expiration_time,
     const base::Callback<void(bool)>& callback) {}
 ClientPolicyController* StubOfflinePageModel::GetPolicyController() {
-  return nullptr;
+  return &policy_controller_;
 }
 bool StubOfflinePageModel::is_loaded() const {
   return true;

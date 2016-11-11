@@ -13,8 +13,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/pref_util.h"
-#include "components/offline_pages/client_namespace_constants.h"
+#include "components/offline_pages/client_policy_controller.h"
 #include "components/offline_pages/offline_page_item.h"
+#include "components/offline_pages/offline_page_model_query.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "grit/components_strings.h"
@@ -23,6 +24,8 @@
 
 using offline_pages::ClientId;
 using offline_pages::OfflinePageItem;
+using offline_pages::OfflinePageModelQuery;
+using offline_pages::OfflinePageModelQueryBuilder;
 
 namespace ntp_snippets {
 
@@ -37,8 +40,12 @@ struct OrderOfflinePagesByMostRecentlyVisitedFirst {
   }
 };
 
-bool IsRecentTab(const ClientId& client_id) {
-  return client_id.name_space == offline_pages::kLastNNamespace;
+std::unique_ptr<OfflinePageModelQuery> BuildRecentTabsQuery(
+    offline_pages::OfflinePageModel* model) {
+  OfflinePageModelQueryBuilder builder;
+  builder.RequireShownAsRecentlyVisitedSite(
+      OfflinePageModelQuery::Requirement::INCLUDE_MATCHING);
+  return builder.Build(model->GetPolicyController());
 }
 
 }  // namespace
@@ -46,22 +53,22 @@ bool IsRecentTab(const ClientId& client_id) {
 RecentTabSuggestionsProvider::RecentTabSuggestionsProvider(
     ContentSuggestionsProvider::Observer* observer,
     CategoryFactory* category_factory,
-    scoped_refptr<OfflinePageProxy> offline_page_proxy,
+    offline_pages::OfflinePageModel* offline_page_model,
     PrefService* pref_service)
     : ContentSuggestionsProvider(observer, category_factory),
       category_status_(CategoryStatus::AVAILABLE_LOADING),
       provided_category_(
           category_factory->FromKnownCategory(KnownCategories::RECENT_TABS)),
-      offline_page_proxy_(std::move(offline_page_proxy)),
+      offline_page_model_(offline_page_model),
       pref_service_(pref_service),
       weak_ptr_factory_(this) {
   observer->OnCategoryStatusChanged(this, provided_category_, category_status_);
-  offline_page_proxy_->AddObserver(this);
+  offline_page_model_->AddObserver(this);
   FetchRecentTabs();
 }
 
 RecentTabSuggestionsProvider::~RecentTabSuggestionsProvider() {
-  offline_page_proxy_->RemoveObserver(this);
+  offline_page_model_->RemoveObserver(this);
 }
 
 CategoryStatus RecentTabSuggestionsProvider::GetCategoryStatus(
@@ -133,9 +140,12 @@ void RecentTabSuggestionsProvider::GetDismissedSuggestionsForDebugging(
     Category category,
     const DismissedSuggestionsCallback& callback) {
   DCHECK_EQ(provided_category_, category);
-  offline_page_proxy_->GetAllPages(
+
+  // TODO(vitaliii): Query all pages instead by using an empty query.
+  offline_page_model_->GetPagesMatchingQuery(
+      BuildRecentTabsQuery(offline_page_model_),
       base::Bind(&RecentTabSuggestionsProvider::
-                     GetAllPagesCallbackForGetDismissedSuggestions,
+                     GetPagesMatchingQueryCallbackForGetDismissedSuggestions,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
@@ -156,32 +166,38 @@ void RecentTabSuggestionsProvider::RegisterProfilePrefs(
 // Private methods
 
 void RecentTabSuggestionsProvider::
-    GetAllPagesCallbackForGetDismissedSuggestions(
+    GetPagesMatchingQueryCallbackForGetDismissedSuggestions(
         const DismissedSuggestionsCallback& callback,
         const std::vector<OfflinePageItem>& offline_pages) const {
   std::set<std::string> dismissed_ids = ReadDismissedIDsFromPrefs();
   std::vector<ContentSuggestion> suggestions;
   for (const OfflinePageItem& item : offline_pages) {
-    if (!IsRecentTab(item.client_id) ||
-        !dismissed_ids.count(base::IntToString(item.offline_id)))
+    if (!dismissed_ids.count(base::IntToString(item.offline_id)))
       continue;
+
     suggestions.push_back(ConvertOfflinePage(item));
   }
   callback.Run(std::move(suggestions));
 }
 
+void RecentTabSuggestionsProvider::OfflinePageModelLoaded(
+    offline_pages::OfflinePageModel* model) {}
+
 void RecentTabSuggestionsProvider::OfflinePageModelChanged(
-    const std::vector<OfflinePageItem>& offline_pages) {
+    offline_pages::OfflinePageModel* model) {
+  DCHECK_EQ(offline_page_model_, model);
+  FetchRecentTabs();
+}
+
+void RecentTabSuggestionsProvider::
+    GetPagesMatchingQueryCallbackForFetchRecentTabs(
+        const std::vector<OfflinePageItem>& offline_pages) {
   NotifyStatusChanged(CategoryStatus::AVAILABLE);
   std::set<std::string> old_dismissed_ids = ReadDismissedIDsFromPrefs();
   std::set<std::string> new_dismissed_ids;
   std::vector<const OfflinePageItem*> recent_tab_items;
   for (const OfflinePageItem& item : offline_pages) {
     std::string offline_page_id = base::IntToString(item.offline_id);
-    if (!IsRecentTab(item.client_id)) {
-      continue;
-    }
-
     if (old_dismissed_ids.count(offline_page_id))
       new_dismissed_ids.insert(offline_page_id);
     else
@@ -201,18 +217,15 @@ void RecentTabSuggestionsProvider::OfflinePageDeleted(
   // Because we never switch to NOT_PROVIDED dynamically, there can be no open
   // UI containing an invalidated suggestion unless the status is something
   // other than NOT_PROVIDED, so only notify invalidation in that case.
-  if (category_status_ != CategoryStatus::NOT_PROVIDED &&
-      IsRecentTab(client_id)) {
+  if (category_status_ != CategoryStatus::NOT_PROVIDED)
     InvalidateSuggestion(offline_id);
-  }
 }
 
 void RecentTabSuggestionsProvider::FetchRecentTabs() {
-  // TODO(vitaliii): When something other than GetAllPages is used here, the
-  // dismissed IDs cleanup in OfflinePageModelChanged needs to be changed to
-  // avoid accidentally undismissing suggestions.
-  offline_page_proxy_->GetAllPages(
-      base::Bind(&RecentTabSuggestionsProvider::OfflinePageModelChanged,
+  offline_page_model_->GetPagesMatchingQuery(
+      BuildRecentTabsQuery(offline_page_model_),
+      base::Bind(&RecentTabSuggestionsProvider::
+                     GetPagesMatchingQueryCallbackForFetchRecentTabs,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 

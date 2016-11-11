@@ -23,6 +23,17 @@ FakeOfflinePageModel::FakeOfflinePageModel() {}
 
 FakeOfflinePageModel::~FakeOfflinePageModel() {}
 
+void FakeOfflinePageModel::GetPagesMatchingQuery(
+    std::unique_ptr<offline_pages::OfflinePageModelQuery> query,
+    const MultipleOfflinePageItemCallback& callback) {
+  MultipleOfflinePageItemResult filtered_result;
+  for (auto& item : items_) {
+    if (query->Matches(item))
+      filtered_result.emplace_back(item);
+  }
+  callback.Run(filtered_result);
+}
+
 void FakeOfflinePageModel::GetAllPages(
     const MultipleOfflinePageItemCallback& callback) {
   callback.Run(items_);
