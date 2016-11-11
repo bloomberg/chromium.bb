@@ -172,7 +172,7 @@ class Handler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     self._WriteTemplate(template)
 
   def _DoNotFound(self):
-    self._WriteHeader('text/html')
+    self._WriteHeader('text/html', status_code=404)
     self.wfile.write('<html><body>%s not found</body></html>' % self.path)
 
   def _DoUnknown(self):
@@ -188,8 +188,8 @@ class Handler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     with codecs.open(path, encoding='utf-8') as fp:
       return fp.read()
 
-  def _WriteHeader(self, content_type='text/plain'):
-    self.send_response(200)
+  def _WriteHeader(self, content_type='text/plain', status_code=200):
+    self.send_response(status_code)
     self.send_header('Content-Type', content_type)
     self.end_headers()
 
