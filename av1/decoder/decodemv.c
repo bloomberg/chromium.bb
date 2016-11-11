@@ -1761,7 +1761,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
 #if CONFIG_EXT_INTER
-  mbmi->use_wedge_interinter = 0;
+  mbmi->interinter_compound = COMPOUND_AVERAGE;
   if (cm->reference_mode != SINGLE_REFERENCE &&
       is_inter_compound_mode(mbmi->mode) &&
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
@@ -1769,11 +1769,11 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
         mbmi->motion_mode != SIMPLE_TRANSLATION) &&
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
       is_interinter_wedge_used(bsize)) {
-    mbmi->use_wedge_interinter =
-        aom_read(r, cm->fc->wedge_interinter_prob[bsize], ACCT_STR);
+    mbmi->interinter_compound = aom_read_tree(
+        r, av1_compound_type_tree, cm->fc->compound_type_prob[bsize], ACCT_STR);
     if (xd->counts)
-      xd->counts->wedge_interinter[bsize][mbmi->use_wedge_interinter]++;
-    if (mbmi->use_wedge_interinter) {
+      xd->counts->compound_interinter[bsize][mbmi->interinter_compound]++;
+    if (mbmi->interinter_compound) {
       mbmi->interinter_wedge_index =
           aom_read_literal(r, get_wedge_bits_lookup(bsize), ACCT_STR);
       mbmi->interinter_wedge_sign = aom_read_bit(r, ACCT_STR);

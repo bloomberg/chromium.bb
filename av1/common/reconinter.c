@@ -632,7 +632,7 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
 
 #if CONFIG_EXT_INTER
           if (ref && is_interinter_wedge_used(mi->mbmi.sb_type) &&
-              mi->mbmi.use_wedge_interinter)
+              mi->mbmi.interinter_compound)
             av1_make_masked_inter_predictor(
                 pre, pre_buf->stride, dst, dst_buf->stride, subpel_x, subpel_y,
                 sf, w, h, mi->mbmi.interp_filter, xs, ys,
@@ -698,7 +698,7 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
 
 #if CONFIG_EXT_INTER
     if (ref && is_interinter_wedge_used(mi->mbmi.sb_type) &&
-        mi->mbmi.use_wedge_interinter)
+        mi->mbmi.interinter_compound)
       av1_make_masked_inter_predictor(pre, pre_buf->stride, dst,
                                       dst_buf->stride, subpel_x, subpel_y, sf,
                                       w, h, mi->mbmi.interp_filter, xs, ys,
@@ -1283,8 +1283,8 @@ void modify_neighbor_predictor_for_obmc(MB_MODE_INFO *mbmi) {
   if (is_interintra_pred(mbmi)) {
     mbmi->ref_frame[1] = NONE;
   } else if (has_second_ref(mbmi) && is_interinter_wedge_used(mbmi->sb_type) &&
-             mbmi->use_wedge_interinter) {
-    mbmi->use_wedge_interinter = 0;
+             mbmi->interinter_compound) {
+    mbmi->interinter_compound = COMPOUND_AVERAGE;
     mbmi->ref_frame[1] = NONE;
   }
   return;
@@ -2048,7 +2048,7 @@ static void build_wedge_inter_predictor_from_buf(
   uint8_t *const dst = dst_buf->buf + dst_buf->stride * y + x;
 
   if (is_compound && is_interinter_wedge_used(mbmi->sb_type) &&
-      mbmi->use_wedge_interinter) {
+      mbmi->interinter_compound) {
 #if CONFIG_AOM_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
       build_masked_compound_wedge_highbd(

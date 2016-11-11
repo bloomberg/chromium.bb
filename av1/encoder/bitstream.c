@@ -111,6 +111,7 @@ static struct av1_token intra_filter_encodings[INTRA_FILTERS];
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_EXT_INTER
 static struct av1_token interintra_mode_encodings[INTERINTRA_MODES];
+static struct av1_token compound_type_encodings[COMPOUND_TYPES];
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 static struct av1_token motion_mode_encodings[MOTION_MODES];
@@ -155,6 +156,7 @@ void av1_encode_token_init(void) {
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_EXT_INTER
   av1_tokens_from_tree(interintra_mode_encodings, av1_interintra_mode_tree);
+  av1_tokens_from_tree(compound_type_encodings, av1_compound_type_tree);
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   av1_tokens_from_tree(motion_mode_encodings, av1_motion_mode_tree);
@@ -1602,9 +1604,10 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
           mbmi->motion_mode != SIMPLE_TRANSLATION) &&
 #endif  // CONFIG_MOTION_VAR
         is_interinter_wedge_used(bsize)) {
-      aom_write(w, mbmi->use_wedge_interinter,
-                cm->fc->wedge_interinter_prob[bsize]);
-      if (mbmi->use_wedge_interinter) {
+      av1_write_token(w, av1_compound_type_tree,
+                      cm->fc->compound_type_prob[bsize],
+                      &compound_type_encodings[mbmi->interinter_compound]);
+      if (mbmi->interinter_compound) {
         aom_write_literal(w, mbmi->interinter_wedge_index,
                           get_wedge_bits_lookup(bsize));
         aom_write_bit(w, mbmi->interinter_wedge_sign);
@@ -4133,8 +4136,9 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
     if (cm->reference_mode != SINGLE_REFERENCE) {
       for (i = 0; i < BLOCK_SIZES; i++)
         if (is_interinter_wedge_used(i))
-          av1_cond_prob_diff_update(header_bc, &fc->wedge_interinter_prob[i],
-                                    cm->counts.wedge_interinter[i], probwt);
+          prob_diff_update(av1_compound_type_tree, fc->compound_type_prob[i],
+                           cm->counts.compound_interinter[i], COMPOUND_TYPES,
+                           probwt, header_bc);
     }
 #endif  // CONFIG_EXT_INTER
 

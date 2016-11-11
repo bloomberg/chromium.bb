@@ -4196,7 +4196,9 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
     if (cm->reference_mode != SINGLE_REFERENCE) {
       for (i = 0; i < BLOCK_SIZES; i++) {
         if (is_interinter_wedge_used(i)) {
-          av1_diff_update_prob(&r, &fc->wedge_interinter_prob[i], ACCT_STR);
+          for (j = 0; j < COMPOUND_TYPES - 1; j++) {
+            av1_diff_update_prob(&r, &fc->compound_type_prob[i][j], ACCT_STR);
+          }
         }
       }
     }
@@ -4289,8 +4291,9 @@ static void debug_check_frame_counts(const AV1_COMMON *const cm) {
                  sizeof(cm->counts.interintra)));
   assert(!memcmp(cm->counts.wedge_interintra, zero_counts.wedge_interintra,
                  sizeof(cm->counts.wedge_interintra)));
-  assert(!memcmp(cm->counts.wedge_interinter, zero_counts.wedge_interinter,
-                 sizeof(cm->counts.wedge_interinter)));
+  assert(!memcmp(cm->counts.compound_interinter,
+                 zero_counts.compound_interinter,
+                 sizeof(cm->counts.compound_interinter)));
 #endif  // CONFIG_EXT_INTER
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   assert(!memcmp(cm->counts.motion_mode, zero_counts.motion_mode,
