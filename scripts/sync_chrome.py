@@ -68,7 +68,7 @@ def main(argv):
     # If we have an error resetting, or syncing, we clobber, and fresh sync.
     logging.warning('Chrome checkout appears corrupt. Clobbering.')
     osutils.RmDir(options.chrome_root, ignore_missing=True, sudo=True)
-    osutils.SafeMakedirs(options.chrome_root)
+    osutils.SafeMakedirsNonRoot(options.chrome_root)
     SyncChrome(gclient_path, options)
 
   return 0
