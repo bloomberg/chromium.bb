@@ -1139,7 +1139,7 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
         updateSceneLayer(viewport, contentViewport, layerTitleCache, tabContentManager,
                 resourceManager, fullscreenManager);
 
-        float offsetPx = fullscreenManager != null ? fullscreenManager.getControlOffset() : 0.f;
+        float offsetPx = fullscreenManager != null ? fullscreenManager.getTopControlOffset() : 0.f;
         float dpToPx = getContext().getResources().getDisplayMetrics().density;
         float offsetDp = offsetPx / dpToPx;
 

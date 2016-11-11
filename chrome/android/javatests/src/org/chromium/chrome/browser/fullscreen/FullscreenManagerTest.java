@@ -152,7 +152,7 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
 
         ChromeFullscreenManager fullscreenManager = getActivity().getFullscreenManager();
         fullscreenManager.setAnimationDurationsForTest(1, 1);
-        int browserControlsHeight = fullscreenManager.getBrowserControlsHeight();
+        int browserControlsHeight = fullscreenManager.getTopControlsHeight();
 
         Tab tab = getActivity().getActivityTab();
         View view = tab.getView();
@@ -182,7 +182,7 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         final ChromeFullscreenManager fullscreenManager = getActivity().getFullscreenManager();
         disableBrowserOverrides();
 
-        assertEquals(fullscreenManager.getControlOffset(), 0f);
+        assertEquals(fullscreenManager.getTopControlOffset(), 0f);
 
         waitForBrowserControlsToBeMoveable(getActivity().getActivityTab());
 
@@ -200,7 +200,7 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         final ChromeFullscreenManager fullscreenManager = getActivity().getFullscreenManager();
         disableBrowserOverrides();
 
-        assertEquals(fullscreenManager.getControlOffset(), 0f);
+        assertEquals(fullscreenManager.getTopControlOffset(), 0f);
 
         // Detect layouts. Note this doesn't actually need to be atomic (just final).
         final AtomicInteger layoutCount = new AtomicInteger();
@@ -251,9 +251,9 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
 
         final ChromeFullscreenManager fullscreenManager = getActivity().getFullscreenManager();
         disableBrowserOverrides();
-        int browserControlsHeight = fullscreenManager.getBrowserControlsHeight();
+        int browserControlsHeight = fullscreenManager.getTopControlsHeight();
 
-        assertEquals(fullscreenManager.getControlOffset(), 0f);
+        assertEquals(fullscreenManager.getTopControlOffset(), 0f);
 
         float dragX = 50f;
         float dragStartY = browserControlsHeight * 2;
@@ -275,7 +275,7 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         ChromeFullscreenManager fullscreenManager = getActivity().getFullscreenManager();
         fullscreenManager.setAnimationDurationsForTest(1, 1);
         waitForNoBrowserBrowserControlsOffset();
-        assertEquals(fullscreenManager.getControlOffset(), 0f);
+        assertEquals(fullscreenManager.getTopControlOffset(), 0f);
 
         scrollBrowserControls(false);
 
@@ -336,11 +336,11 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         startMainActivityWithURL(LONG_HTML_WITH_AUTO_FOCUS_INPUT_TEST_PAGE);
 
         ChromeFullscreenManager fullscreenManager = getActivity().getFullscreenManager();
-        assertEquals(fullscreenManager.getControlOffset(), 0f);
+        assertEquals(fullscreenManager.getTopControlOffset(), 0f);
 
         fullscreenManager.setAnimationDurationsForTest(1, 1);
 
-        int browserControlsHeight = fullscreenManager.getBrowserControlsHeight();
+        int browserControlsHeight = fullscreenManager.getTopControlsHeight();
         float dragX = 50f;
         float dragStartY = browserControlsHeight * 3;
         float dragEndY = dragStartY - browserControlsHeight * 2;
@@ -349,7 +349,7 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         dragTo(dragX, dragX, dragStartY, dragEndY, 100, downTime);
         dragEnd(dragX, dragEndY, downTime);
         waitForNoBrowserBrowserControlsOffset();
-        assertEquals(fullscreenManager.getControlOffset(), 0f);
+        assertEquals(fullscreenManager.getTopControlOffset(), 0f);
 
         Tab tab = getActivity().getActivityTab();
         singleClickView(tab.getView());
@@ -362,7 +362,7 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
 
     private void scrollBrowserControls(boolean show) throws InterruptedException {
         ChromeFullscreenManager fullscreenManager = getActivity().getFullscreenManager();
-        int browserControlsHeight = fullscreenManager.getBrowserControlsHeight();
+        int browserControlsHeight = fullscreenManager.getTopControlsHeight();
 
         waitForPageToBeScrollable(getActivity().getActivityTab());
 
@@ -390,7 +390,7 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         CriteriaHelper.pollUiThread(Criteria.equals(position, new Callable<Float>() {
             @Override
             public Float call() {
-                return fullscreenManager.getControlOffset();
+                return fullscreenManager.getTopControlOffset();
             }
         }));
     }
@@ -428,7 +428,7 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
 
         final CallbackHelper contentMovedCallback = new CallbackHelper();
         final ChromeFullscreenManager fullscreenManager = getActivity().getFullscreenManager();
-        final float initialVisibleContentOffset = fullscreenManager.getVisibleContentOffset();
+        final float initialVisibleContentOffset = fullscreenManager.getTopVisibleContentOffset();
 
         fullscreenManager.addListener(new FullscreenListener() {
             @Override
@@ -452,7 +452,7 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         float dragStartY = tab.getView().getHeight() - 50f;
 
         for (int i = 0; i < 10; i++) {
-            float dragEndY = dragStartY - fullscreenManager.getBrowserControlsHeight();
+            float dragEndY = dragStartY - fullscreenManager.getTopControlsHeight();
 
             long downTime = SystemClock.uptimeMillis();
             dragStart(dragX, dragStartY, downTime);

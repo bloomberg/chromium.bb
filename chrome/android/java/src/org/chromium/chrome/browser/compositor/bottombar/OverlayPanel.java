@@ -292,7 +292,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
      */
     protected float getBrowserControlsOffsetDp() {
         if (mActivity == null || mActivity.getFullscreenManager() == null) return 0.0f;
-        return -mActivity.getFullscreenManager().getControlOffset() * mPxToDp;
+        return -mActivity.getFullscreenManager().getTopControlOffset() * mPxToDp;
     }
 
     /**

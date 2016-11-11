@@ -112,7 +112,7 @@ class MockLayoutHost implements LayoutManagerHost, LayoutRenderHost {
     }
 
     @Override
-    public int getBrowserControlsHeightPixels() {
+    public int getTopControlsHeightPixels() {
         return 0;
     }
 

@@ -75,9 +75,9 @@ public abstract class FullscreenManager {
     public abstract void hideControlsPersistent(int token);
 
     /**
-     * @return The height of the browser controls in pixels.
+     * @return The height of the top controls in pixels.
      */
-    public abstract int getBrowserControlsHeight();
+    public abstract int getTopControlsHeight();
 
     /**
      * @return The offset of the content from the top of the screen.

@@ -54,12 +54,10 @@ void ToolbarSceneLayer::UpdateToolbarLayer(
   toolbar_layer_->layer()->SetHideLayerAndSubtree(!visible);
   if (visible) {
     toolbar_layer_->layer()->SetPosition(gfx::PointF(0, top_offset));
-    // If we're at rest, hide the shadow.  The Android view should be drawing.
-    bool clip_shadow = top_offset >= 0.f && !show_shadow;
     toolbar_layer_->PushResource(toolbar_resource_id, toolbar_background_color,
                                  false, SK_ColorWHITE, url_bar_resource_id,
                                  url_bar_alpha, view_height, false,
-                                 clip_shadow);
+                                 !show_shadow);
   }
 }
 

@@ -1685,7 +1685,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     protected ChromeFullscreenManager createFullscreenManager() {
         return new ChromeFullscreenManager(this,
                 (ToolbarControlContainer) findViewById(R.id.control_container),
-                getTabModelSelector(), getControlContainerHeightResource(), true);
+                getTabModelSelector(), getControlContainerHeightResource(), true,
+                FeatureUtilities.isChromeHomeEnabled());
     }
 
     /**

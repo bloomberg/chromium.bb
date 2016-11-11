@@ -914,7 +914,7 @@ public class CustomTabActivity extends ChromeActivity {
     protected ChromeFullscreenManager createFullscreenManager() {
         return new ChromeFullscreenManager(this,
                 (ToolbarControlContainer) findViewById(R.id.control_container),
-                getTabModelSelector(), getControlContainerHeightResource(), true);
+                getTabModelSelector(), getControlContainerHeightResource(), true, false);
     }
 
     /** Sets the initial background color for the Tab, shown before the page content is ready. */

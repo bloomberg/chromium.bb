@@ -73,9 +73,9 @@ public interface LayoutRenderHost {
     boolean areBrowserControlsPermanentlyHidden();
 
     /**
-     * @return The height of the browser controls in pixels.
+     * @return The height of the top controls in pixels.
      */
-    int getBrowserControlsHeightPixels();
+    int getTopControlsHeightPixels();
 
     /**
      * @return The {@link ResourceManager}.

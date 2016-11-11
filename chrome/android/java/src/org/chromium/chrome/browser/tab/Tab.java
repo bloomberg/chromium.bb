@@ -2759,7 +2759,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                         LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
             }
 
-            lp.topMargin = mFullscreenManager.getBrowserControlsHeight();
+            lp.topMargin = mFullscreenManager.getTopControlsHeight();
             blimpView.setLayoutParams(lp);
         }
     }
