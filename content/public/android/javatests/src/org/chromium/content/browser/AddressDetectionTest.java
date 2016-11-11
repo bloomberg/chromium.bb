@@ -6,12 +6,15 @@ package org.chromium.content.browser;
 
 import android.test.suitebuilder.annotation.MediumTest;
 
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.content.common.ContentSwitches;
 
 /**
  * Test suite for geographical US address detection.
  */
+@CommandLineFlags.Add({ContentSwitches.ENABLE_CONTENT_INTENT_DETECTION})
 public class AddressDetectionTest extends ContentDetectionTestBase {
 
     private static final String GEO_INTENT_PREFIX = "geo:0,0?q=";

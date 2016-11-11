@@ -77,6 +77,9 @@ public abstract class ContentSwitches {
     // Native switch kGPUProcess
     public static final String SWITCH_GPU_PROCESS = "gpu-process";
 
+    // Enable content intent detection in the renderer
+    public static final String ENABLE_CONTENT_INTENT_DETECTION = "enable-content-intent-detection";
+
     // Prevent instantiation.
     private ContentSwitches() {}
 

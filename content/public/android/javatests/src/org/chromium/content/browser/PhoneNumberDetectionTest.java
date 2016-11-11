@@ -15,6 +15,7 @@ import org.chromium.content.common.ContentSwitches;
 /**
  * Test suite for phone number detection.
  */
+@CommandLineFlags.Add({ContentSwitches.ENABLE_CONTENT_INTENT_DETECTION})
 public class PhoneNumberDetectionTest extends ContentDetectionTestBase {
 
     private static final String TELEPHONE_INTENT_PREFIX = "tel:";

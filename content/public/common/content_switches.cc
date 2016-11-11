@@ -947,6 +947,10 @@ const char kDisableScreenOrientationLock[]  = "disable-screen-orientation-lock";
 const char kEnableAdaptiveSelectionHandleOrientation[] =
     "enable-adaptive-selection-handle-orientation";
 
+// Enable content intent detection in the renderer.
+const char kEnableContentIntentDetection[] =
+    "enable-content-intent-detection";
+
 // Enable drag manipulation of longpress-triggered text selections.
 const char kEnableLongpressDragSelection[]  = "enable-longpress-drag-selection";
 

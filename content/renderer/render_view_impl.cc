@@ -2689,6 +2689,12 @@ void RenderViewImpl::pageImportanceSignalsChanged() {
 #if defined(OS_ANDROID)
 WebURL RenderViewImpl::detectContentIntentAt(
     const WebHitTestResult& touch_hit) {
+  // TODO(twellington): Remove content detection entirely. It is
+  // currently only enabled for tests. crbug.com/664307.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableContentIntentDetection)) {
+    return WebURL();
+  }
   DCHECK(touch_hit.node().isTextNode());
 
   // Process the position with all the registered content detectors until
