@@ -295,6 +295,24 @@ class RequestEquals {
 // the server permits more, we will never exceed this limit.
 const size_t kMaxConcurrentStreamLimit = 256;
 
+class SpdyServerPushHelper : public ServerPushDelegate::ServerPushHelper {
+ public:
+  explicit SpdyServerPushHelper(base::WeakPtr<SpdySession> session,
+                                const GURL& url)
+      : session_(session), request_url_(url) {}
+
+  void Cancel() override {
+    if (session_)
+      session_->CancelPush(request_url_);
+  }
+
+  const GURL& GetURL() override { return request_url_; }
+
+ private:
+  base::WeakPtr<SpdySession> session_;
+  const GURL request_url_;
+};
+
 }  // namespace
 
 SpdyProtocolErrorDetails MapFramerErrorToProtocolError(
@@ -644,6 +662,7 @@ SpdySession::SpdySession(const SpdySessionKey& spdy_session_key,
       stream_hi_water_mark_(kFirstStreamId),
       last_accepted_push_stream_id_(0),
       unclaimed_pushed_streams_(this),
+      push_delegate_(nullptr),
       num_pushed_streams_(0u),
       num_active_pushed_streams_(0u),
       bytes_pushed_count_(0u),
@@ -776,6 +795,21 @@ int SpdySession::GetPushStream(const GURL& url,
     streams_pushed_and_claimed_count_++;
   }
   return OK;
+}
+
+void SpdySession::CancelPush(const GURL& url) {
+  UnclaimedPushedStreamContainer::const_iterator unclaimed_it =
+      unclaimed_pushed_streams_.find(url);
+  if (unclaimed_it == unclaimed_pushed_streams_.end())
+    return;
+
+  SpdyStreamId stream_id = unclaimed_it->second.stream_id;
+
+  if (active_streams_.find(stream_id) == active_streams_.end()) {
+    ResetStream(stream_id, RST_STREAM_CANCEL,
+                "Cancelled push stream with url: " + url.spec());
+  }
+  unclaimed_pushed_streams_.erase(unclaimed_it);
 }
 
 // {,Try}CreateStream() can be called with |in_io_loop_| set if a stream is
@@ -2608,25 +2642,16 @@ bool SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
     return false;
   }
 
+  // Notify the push_delegate that a push promise has been received.
+  if (push_delegate_) {
+    push_delegate_->OnPush(base::MakeUnique<SpdyServerPushHelper>(
+        weak_factory_.GetWeakPtr(), gurl));
+  }
+
   active_it->second.stream->OnPushPromiseHeadersReceived(std::move(headers));
   DCHECK(active_it->second.stream->IsReservedRemote());
   num_pushed_streams_++;
   return true;
-}
-
-void SpdySession::CancelPush(const GURL& url) {
-  UnclaimedPushedStreamContainer::const_iterator unclaimed_it =
-      unclaimed_pushed_streams_.find(url);
-  if (unclaimed_it == unclaimed_pushed_streams_.end())
-    return;
-
-  SpdyStreamId stream_id = unclaimed_it->second.stream_id;
-
-  if (active_streams_.find(stream_id) == active_streams_.end()) {
-    ResetStream(stream_id, RST_STREAM_CANCEL,
-                "Cancelled push stream with url: " + url.spec());
-  }
-  unclaimed_pushed_streams_.erase(unclaimed_it);
 }
 
 void SpdySession::OnPushPromise(SpdyStreamId stream_id,

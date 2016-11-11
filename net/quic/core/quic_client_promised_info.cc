@@ -111,6 +111,11 @@ QuicAsyncStatus QuicClientPromisedInfo::HandleClientRequest(
     session_->DeletePromised(this);
     return QUIC_FAILURE;
   }
+
+  if (is_validating()) {
+    return QUIC_FAILURE;
+  }
+
   client_request_delegate_ = delegate;
   client_request_headers_.reset(new SpdyHeaderBlock(request_headers.Clone()));
   if (!response_headers_) {

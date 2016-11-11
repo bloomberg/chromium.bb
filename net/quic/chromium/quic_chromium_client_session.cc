@@ -31,6 +31,7 @@
 #include "net/quic/core/quic_client_promised_info.h"
 #include "net/quic/core/quic_crypto_client_stream_factory.h"
 #include "net/quic/core/spdy_utils.h"
+#include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_session.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -162,6 +163,26 @@ class HpackDecoderDebugVisitor : public QuicHeadersStream::HpackDebugVisitor {
   }
 };
 
+class QuicServerPushHelper : public ServerPushDelegate::ServerPushHelper {
+ public:
+  explicit QuicServerPushHelper(
+      base::WeakPtr<QuicChromiumClientSession> session,
+      const GURL& url)
+      : session_(session), request_url_(url) {}
+
+  void Cancel() override {
+    if (session_) {
+      session_->CancelPush(request_url_);
+    }
+  }
+
+  const GURL& GetURL() override { return request_url_; }
+
+ private:
+  base::WeakPtr<QuicChromiumClientSession> session_;
+  const GURL request_url_;
+};
+
 }  // namespace
 
 QuicChromiumClientSession::StreamRequest::StreamRequest() : stream_(nullptr) {}
@@ -242,6 +263,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       going_away_(false),
       port_migration_detected_(false),
       token_binding_signatures_(kTokenBindingSignatureMapSize),
+      push_delegate_(nullptr),
       streams_pushed_count_(0),
       streams_pushed_and_claimed_count_(0),
       bytes_pushed_count_(0),
@@ -1418,13 +1440,23 @@ bool QuicChromiumClientSession::HasNonMigratableStreams() const {
   return false;
 }
 
-void QuicChromiumClientSession::HandlePromised(QuicStreamId id,
+bool QuicChromiumClientSession::HandlePromised(QuicStreamId id,
                                                QuicStreamId promised_id,
                                                const SpdyHeaderBlock& headers) {
-  QuicClientSessionBase::HandlePromised(id, promised_id, headers);
+  bool result = QuicClientSessionBase::HandlePromised(id, promised_id, headers);
+  if (result) {
+    // The push promise is accepted, notify the push_delegate that a push
+    // promise has been received.
+    GURL pushed_url = GetUrlFromHeaderBlock(headers);
+    if (push_delegate_) {
+      push_delegate_->OnPush(base::MakeUnique<QuicServerPushHelper>(
+          weak_factory_.GetWeakPtr(), pushed_url));
+    }
+  }
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_PUSH_PROMISE_RECEIVED,
                     base::Bind(&NetLogQuicPushPromiseReceivedCallback, &headers,
                                id, promised_id));
+  return result;
 }
 
 void QuicChromiumClientSession::DeletePromised(
@@ -1443,8 +1475,8 @@ void QuicChromiumClientSession::OnPushStreamTimedOut(QuicStreamId stream_id) {
 void QuicChromiumClientSession::CancelPush(const GURL& url) {
   QuicClientPromisedInfo* promised_info =
       QuicClientSessionBase::GetPromisedByUrl(url.spec());
-  if (!promised_info) {
-    // Push stream has already been claimed.
+  if (!promised_info || promised_info->is_validating()) {
+    // Push stream has already been claimed or is pending matched to a request.
     return;
   }
 

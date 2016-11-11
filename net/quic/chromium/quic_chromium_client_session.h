@@ -38,6 +38,7 @@
 #include "net/quic/core/quic_server_id.h"
 #include "net/quic/core/quic_time.h"
 #include "net/socket/socket_performance_watcher.h"
+#include "net/spdy/server_push_delegate.h"
 
 namespace net {
 
@@ -298,13 +299,17 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // Returns true if session has one ore more streams marked as non-migratable.
   bool HasNonMigratableStreams() const;
 
-  void HandlePromised(QuicStreamId associated_id,
+  bool HandlePromised(QuicStreamId associated_id,
                       QuicStreamId promised_id,
                       const SpdyHeaderBlock& headers) override;
 
   void DeletePromised(QuicClientPromisedInfo* promised) override;
 
   void OnPushStreamTimedOut(QuicStreamId stream_id) override;
+
+  void set_push_delegte(ServerPushDelegate* push_delegate) {
+    push_delegate_ = push_delegate;
+  }
 
   // Cancels the push if the push stream for |url| has not been claimed and is
   // still active. Otherwise, no-op.
@@ -388,6 +393,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // True when the session receives a go away from server due to port migration.
   bool port_migration_detected_;
   TokenBindingSignatureMap token_binding_signatures_;
+  // Not owned. |push_delegate_| outlives the session and handles server pushes
+  // received by session.
+  ServerPushDelegate* push_delegate_;
   // UMA histogram counters for streams pushed to this session.
   int streams_pushed_count_;
   int streams_pushed_and_claimed_count_;

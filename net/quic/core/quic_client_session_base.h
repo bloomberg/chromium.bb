@@ -65,8 +65,9 @@ class NET_EXPORT_PRIVATE QuicClientSessionBase
   // Called by |QuicSpdyClientStream| on receipt of PUSH_PROMISE, does
   // some session level validation and creates the
   // |QuicClientPromisedInfo| inserting into maps by (promised) id and
-  // url.
-  virtual void HandlePromised(QuicStreamId associated_id,
+  // url. Returns true if a new push promise is accepted. Reset the promised and
+  // returns false otherwiese.
+  virtual bool HandlePromised(QuicStreamId associated_id,
                               QuicStreamId promised_id,
                               const SpdyHeaderBlock& headers);
 

@@ -12,6 +12,7 @@
 #include "net/quic/test_tools/quic_client_promised_info_peer.h"
 #include "net/test/gtest_util.h"
 #include "net/tools/quic/quic_client_session.h"
+#include "net/tools/quic/test_tools/push_promise_delegate.h"
 
 using std::string;
 using testing::StrictMock;
@@ -83,34 +84,6 @@ class QuicClientPromisedInfoTest : public ::testing::Test {
     void OnClose(QuicSpdyStream* stream) override {
       DVLOG(1) << "stream " << stream->id();
     }
-  };
-
-  class PushPromiseDelegate : public QuicClientPushPromiseIndex::Delegate {
-   public:
-    explicit PushPromiseDelegate(bool match)
-        : match_(match),
-          rendezvous_fired_(false),
-          rendezvous_stream_(nullptr) {}
-
-    bool CheckVary(const SpdyHeaderBlock& client_request,
-                   const SpdyHeaderBlock& promise_request,
-                   const SpdyHeaderBlock& promise_response) override {
-      DVLOG(1) << "match " << match_;
-      return match_;
-    }
-
-    void OnRendezvousResult(QuicSpdyStream* stream) override {
-      rendezvous_fired_ = true;
-      rendezvous_stream_ = stream;
-    }
-
-    QuicSpdyStream* rendezvous_stream() { return rendezvous_stream_; }
-    bool rendezvous_fired() { return rendezvous_fired_; }
-
-   private:
-    bool match_;
-    bool rendezvous_fired_;
-    QuicSpdyStream* rendezvous_stream_;
   };
 
   void ReceivePromise(QuicStreamId id) {
