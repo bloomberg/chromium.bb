@@ -900,6 +900,7 @@ void GraphicsContext::drawTiledImage(Image* image,
   if (contextDisabled() || !image)
     return;
   image->drawTiled(*this, destRect, srcPoint, tileSize, op, repeatSpacing);
+  m_paintController.setImagePainted();
 }
 
 void GraphicsContext::drawTiledImage(Image* image,
@@ -919,6 +920,7 @@ void GraphicsContext::drawTiledImage(Image* image,
   }
 
   image->drawTiled(*this, dest, srcRect, tileScaleFactor, hRule, vRule, op);
+  m_paintController.setImagePainted();
 }
 
 void GraphicsContext::drawOval(const SkRect& oval, const SkPaint& paint) {
