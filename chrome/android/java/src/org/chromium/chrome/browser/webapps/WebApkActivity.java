@@ -162,8 +162,9 @@ public class WebApkActivity extends WebappActivity {
         ChromeApplication chrome = (ChromeApplication) ContextUtils.getApplicationContext();
         ChildProcessCreationParams params = chrome.getChildProcessCreationParams();
         if (isForWebApk) {
+            int extraBindFlag = params == null ? 0 : params.getExtraBindFlags();
             params = new ChildProcessCreationParams(getWebappInfo().webApkPackageName(),
-                    LibraryProcessType.PROCESS_CHILD);
+                    extraBindFlag, LibraryProcessType.PROCESS_CHILD);
         }
         ChildProcessCreationParams.set(params);
     }
