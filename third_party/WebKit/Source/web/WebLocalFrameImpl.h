@@ -182,7 +182,6 @@ class WEB_EXPORT WebLocalFrameImpl final
   bool isCommandEnabled(const WebString&) const override;
   void enableSpellChecking(bool) override;
   bool isSpellCheckingEnabled() const override;
-  void requestTextChecking(const WebElement&) override;
   void replaceMisspelledRange(const WebString&) override;
   void removeSpellingMarkers() override;
   bool hasSelection() const override;

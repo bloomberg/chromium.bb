@@ -312,7 +312,6 @@ class WebLocalFrame : public WebFrame {
   virtual void replaceMisspelledRange(const WebString&) = 0;
   virtual void enableSpellChecking(bool) = 0;
   virtual bool isSpellCheckingEnabled() const = 0;
-  virtual void requestTextChecking(const WebElement&) = 0;
   virtual void removeSpellingMarkers() = 0;
 
   // Content Settings -------------------------------------------------------

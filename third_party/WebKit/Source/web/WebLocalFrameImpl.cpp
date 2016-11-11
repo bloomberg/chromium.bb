@@ -1099,21 +1099,6 @@ bool WebLocalFrameImpl::isSpellCheckingEnabled() const {
   return frame()->spellChecker().isSpellCheckingEnabled();
 }
 
-void WebLocalFrameImpl::requestTextChecking(const WebElement& webElement) {
-  if (webElement.isNull())
-    return;
-
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  see http://crbug.com/590369 for more details.
-  frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
-
-  DocumentLifecycle::DisallowTransitionScope disallowTransition(
-      frame()->document()->lifecycle());
-
-  frame()->spellChecker().requestTextChecking(
-      *webElement.constUnwrap<Element>());
-}
-
 void WebLocalFrameImpl::replaceMisspelledRange(const WebString& text) {
   // If this caret selection has two or more markers, this function replace the
   // range covered by the first marker with the specified word as Microsoft Word
