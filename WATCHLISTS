@@ -1023,6 +1023,11 @@
                   'chrome/test/data/chromeos/virtual_keyboard/'\
                   'chrome/common/extensions/api/virtual_keyboard',
     },
+    'virtual_reality': {
+      'filepath': 'vr_shell/|'\
+                  '/vr/|'\
+                  'third_party/gvr',
+    },
     'webrtc_browser_tests': {
       'filepath': 'chrome/browser/media/.*webrtc.*browsertest|'\
                   'content/browser/media/.*webrtc.*browsertest',
@@ -2030,6 +2035,7 @@
     'views': ['tfarina@chromium.org'],
     'virtual_keyboard': ['dfaden+virtualkb@google.com',
                          'groby+virtualkb@chromium.org'],
+    'virtual_reality': ['feature-vr-reviews@chromium.org'],
     'webrtc_browser_tests': ['phoglund+watch@chromium.org'],
     'website_settings': ['markusheintz@chromium.org',
                          'msramek+watch@chromium.org',
