@@ -107,7 +107,6 @@ int RunAnalyze(const std::vector<std::string>& args) {
   }
 
   Setup* setup = new Setup;
-  setup->build_settings().set_check_for_bad_items(false);
   if (!setup->DoSetup(args[0], false) || !setup->Run())
     return 1;
 

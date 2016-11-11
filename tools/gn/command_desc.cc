@@ -430,7 +430,6 @@ int RunDesc(const std::vector<std::string>& args) {
 
   // Deliberately leaked to avoid expensive process teardown.
   Setup* setup = new Setup;
-  setup->build_settings().set_check_for_bad_items(false);
   if (!setup->DoSetup(args[0], false))
     return 1;
   if (!setup->Run())

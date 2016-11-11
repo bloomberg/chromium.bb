@@ -118,7 +118,6 @@ void PrintArgHelp(const base::StringPiece& name, const Value& value) {
 
 int ListArgs(const std::string& build_dir) {
   Setup* setup = new Setup;
-  setup->build_settings().set_check_for_bad_items(false);
   if (!setup->DoSetup(build_dir, false) || !setup->Run())
     return 1;
 
@@ -231,7 +230,6 @@ int EditArgsFile(const std::string& build_dir) {
     // Scope the setup. We only use it for some basic state. We'll do the
     // "real" build below in the gen command.
     Setup setup;
-    setup.build_settings().set_check_for_bad_items(false);
     // Don't fill build arguments. We're about to edit the file which supplies
     // these in the first place.
     setup.set_fill_arguments(false);

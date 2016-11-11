@@ -330,22 +330,20 @@ void Setup::RunPreMessageLoop() {
 
 bool Setup::RunPostMessageLoop() {
   Err err;
-  if (build_settings_.check_for_bad_items()) {
-    if (!builder_.CheckForBadItems(&err)) {
-      err.PrintToStdout();
-      return false;
-    }
+  if (!builder_.CheckForBadItems(&err)) {
+    err.PrintToStdout();
+    return false;
+  }
 
-    if (!build_settings_.build_args().VerifyAllOverridesUsed(&err)) {
-      // TODO(brettw) implement a system to have a different marker for
-      // warnings. Until we have a better system, print the error but don't
-      // return failure unless requested on the command line.
-      err.PrintToStdout();
-      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kFailOnUnusedArgs))
-        return false;
-      return true;
-    }
+  if (!build_settings_.build_args().VerifyAllOverridesUsed(&err)) {
+    // TODO(brettw) implement a system to have a different marker for
+    // warnings. Until we have a better system, print the error but don't
+    // return failure unless requested on the command line.
+    err.PrintToStdout();
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kFailOnUnusedArgs))
+      return false;
+    return true;
   }
 
   if (check_public_headers_) {

@@ -403,7 +403,6 @@ int RunRefs(const std::vector<std::string>& args) {
   bool all_toolchains = cmdline->HasSwitch(switches::kAllToolchains);
 
   Setup* setup = new Setup;
-  setup->build_settings().set_check_for_bad_items(false);
   if (!setup->DoSetup(args[0], false) || !setup->Run())
     return 1;
 

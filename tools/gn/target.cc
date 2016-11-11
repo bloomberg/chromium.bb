@@ -300,15 +300,13 @@ bool Target::OnResolved(Err* err) {
 
   FillOutputFiles();
 
-  if (settings()->build_settings()->check_for_bad_items()) {
-    if (!CheckVisibility(err))
-      return false;
-    if (!CheckTestonly(err))
-      return false;
-    if (!CheckAssertNoDeps(err))
-      return false;
-    CheckSourcesGenerated();
-  }
+  if (!CheckVisibility(err))
+    return false;
+  if (!CheckTestonly(err))
+    return false;
+  if (!CheckAssertNoDeps(err))
+    return false;
+  CheckSourcesGenerated();
 
   if (!write_runtime_deps_output_.value().empty())
     g_scheduler->AddWriteRuntimeDepsTarget(this);
