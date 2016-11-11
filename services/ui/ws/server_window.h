@@ -16,13 +16,17 @@
 #include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
+#include "services/ui/surfaces/surfaces_context_provider.h"
 #include "services/ui/ws/ids.h"
-#include "services/ui/ws/server_window_compositor_frame_sink.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/transform.h"
 #include "ui/platform_window/text_input_state.h"
+
+namespace gpu {
+class GpuMemoryBufferManager;
+}
 
 namespace ui {
 namespace ws {

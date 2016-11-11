@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/ws/server_window_compositor_frame_sink.h"
+#include "services/ui/ws/gpu_compositor_frame_sink.h"
 
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
@@ -26,7 +26,7 @@
 namespace ui {
 namespace ws {
 
-ServerWindowCompositorFrameSink::ServerWindowCompositorFrameSink(
+GpuCompositorFrameSink::GpuCompositorFrameSink(
     scoped_refptr<DisplayCompositor> display_compositor,
     const cc::FrameSinkId& frame_sink_id,
     gfx::AcceleratedWidget widget,
@@ -48,7 +48,7 @@ ServerWindowCompositorFrameSink::ServerWindowCompositorFrameSink(
     InitDisplay(widget, gpu_memory_buffer_manager, std::move(context_provider));
 }
 
-ServerWindowCompositorFrameSink::~ServerWindowCompositorFrameSink() {
+GpuCompositorFrameSink::~GpuCompositorFrameSink() {
   // SurfaceFactory's destructor will attempt to return resources which will
   // call back into here and access |client_| so we should destroy
   // |surface_factory_|'s resources early on.
@@ -58,14 +58,12 @@ ServerWindowCompositorFrameSink::~ServerWindowCompositorFrameSink() {
   display_compositor_->manager()->InvalidateFrameSinkId(frame_sink_id_);
 }
 
-void ServerWindowCompositorFrameSink::SetNeedsBeginFrame(
-    bool needs_begin_frame) {
+void GpuCompositorFrameSink::SetNeedsBeginFrame(bool needs_begin_frame) {
   needs_begin_frame_ = needs_begin_frame;
   UpdateNeedsBeginFramesInternal();
 }
 
-void ServerWindowCompositorFrameSink::SubmitCompositorFrame(
-    cc::CompositorFrame frame) {
+void GpuCompositorFrameSink::SubmitCompositorFrame(cc::CompositorFrame frame) {
   gfx::Size frame_size = frame.render_pass_list[0]->output_rect.size();
   // If the size of the CompostiorFrame has changed then destroy the existing
   // Surface and create a new one of the appropriate size.
@@ -80,7 +78,7 @@ void ServerWindowCompositorFrameSink::SubmitCompositorFrame(
   ++ack_pending_count_;
   surface_factory_.SubmitCompositorFrame(
       local_frame_id_, std::move(frame),
-      base::Bind(&ServerWindowCompositorFrameSink::DidReceiveCompositorFrameAck,
+      base::Bind(&GpuCompositorFrameSink::DidReceiveCompositorFrameAck,
                  base::Unretained(this)));
   if (display_) {
     display_->SetLocalFrameId(local_frame_id_,
@@ -89,7 +87,7 @@ void ServerWindowCompositorFrameSink::SubmitCompositorFrame(
   last_submitted_frame_size_ = frame_size;
 }
 
-void ServerWindowCompositorFrameSink::DidReceiveCompositorFrameAck() {
+void GpuCompositorFrameSink::DidReceiveCompositorFrameAck() {
   if (!client_)
     return;
   client_->DidReceiveCompositorFrameAck();
@@ -101,21 +99,21 @@ void ServerWindowCompositorFrameSink::DidReceiveCompositorFrameAck() {
   ack_pending_count_--;
 }
 
-void ServerWindowCompositorFrameSink::AddChildFrameSink(
+void GpuCompositorFrameSink::AddChildFrameSink(
     const cc::FrameSinkId& child_frame_sink_id) {
   cc::SurfaceManager* surface_manager = display_compositor_->manager();
   surface_manager->RegisterFrameSinkHierarchy(frame_sink_id_,
                                               child_frame_sink_id);
 }
 
-void ServerWindowCompositorFrameSink::RemoveChildFrameSink(
+void GpuCompositorFrameSink::RemoveChildFrameSink(
     const cc::FrameSinkId& child_frame_sink_id) {
   cc::SurfaceManager* surface_manager = display_compositor_->manager();
   surface_manager->UnregisterFrameSinkHierarchy(frame_sink_id_,
                                                 child_frame_sink_id);
 }
 
-void ServerWindowCompositorFrameSink::InitDisplay(
+void GpuCompositorFrameSink::InitDisplay(
     gfx::AcceleratedWidget widget,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     scoped_refptr<SurfacesContextProvider> context_provider) {
@@ -158,15 +156,15 @@ void ServerWindowCompositorFrameSink::InitDisplay(
   display_->SetVisible(true);
 }
 
-void ServerWindowCompositorFrameSink::DisplayOutputSurfaceLost() {}
+void GpuCompositorFrameSink::DisplayOutputSurfaceLost() {}
 
-void ServerWindowCompositorFrameSink::DisplayWillDrawAndSwap(
+void GpuCompositorFrameSink::DisplayWillDrawAndSwap(
     bool will_draw_and_swap,
     const cc::RenderPassList& render_passes) {}
 
-void ServerWindowCompositorFrameSink::DisplayDidDrawAndSwap() {}
+void GpuCompositorFrameSink::DisplayDidDrawAndSwap() {}
 
-void ServerWindowCompositorFrameSink::ReturnResources(
+void GpuCompositorFrameSink::ReturnResources(
     const cc::ReturnedResourceArray& resources) {
   if (resources.empty())
     return;
@@ -180,7 +178,7 @@ void ServerWindowCompositorFrameSink::ReturnResources(
             std::back_inserter(surface_returned_resources_));
 }
 
-void ServerWindowCompositorFrameSink::SetBeginFrameSource(
+void GpuCompositorFrameSink::SetBeginFrameSource(
     cc::BeginFrameSource* begin_frame_source) {
   // TODO(tansell): Implement this.
   if (begin_frame_source_ && added_frame_observer_) {
@@ -191,23 +189,21 @@ void ServerWindowCompositorFrameSink::SetBeginFrameSource(
   UpdateNeedsBeginFramesInternal();
 }
 
-void ServerWindowCompositorFrameSink::OnBeginFrame(
-    const cc::BeginFrameArgs& args) {
+void GpuCompositorFrameSink::OnBeginFrame(const cc::BeginFrameArgs& args) {
   UpdateNeedsBeginFramesInternal();
   last_begin_frame_args_ = args;
   if (client_)
     client_->OnBeginFrame(args);
 }
 
-const cc::BeginFrameArgs&
-ServerWindowCompositorFrameSink::LastUsedBeginFrameArgs() const {
+const cc::BeginFrameArgs& GpuCompositorFrameSink::LastUsedBeginFrameArgs()
+    const {
   return last_begin_frame_args_;
 }
 
-void ServerWindowCompositorFrameSink::OnBeginFrameSourcePausedChanged(
-    bool paused) {}
+void GpuCompositorFrameSink::OnBeginFrameSourcePausedChanged(bool paused) {}
 
-void ServerWindowCompositorFrameSink::UpdateNeedsBeginFramesInternal() {
+void GpuCompositorFrameSink::UpdateNeedsBeginFramesInternal() {
   if (!begin_frame_source_)
     return;
 

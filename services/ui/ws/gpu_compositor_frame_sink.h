@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_WS_SERVER_WINDOW_COMPOSITOR_FRAME_SINK_H_
-#define SERVICES_UI_WS_SERVER_WINDOW_COMPOSITOR_FRAME_SINK_H_
+#ifndef SERVICES_UI_WS_GPU_COMPOSITOR_FRAME_SINK_H_
+#define SERVICES_UI_WS_GPU_COMPOSITOR_FRAME_SINK_H_
 
 #include <memory>
 #include <set>
@@ -39,17 +39,16 @@ class DisplayCompositor;
 namespace ws {
 
 // Server side representation of a WindowSurface.
-class ServerWindowCompositorFrameSink
-    : public cc::mojom::MojoCompositorFrameSink,
-      public cc::DisplayClient,
-      public cc::mojom::MojoCompositorFrameSinkPrivate,
-      public cc::SurfaceFactoryClient,
-      public cc::BeginFrameObserver {
+class GpuCompositorFrameSink : public cc::mojom::MojoCompositorFrameSink,
+                               public cc::DisplayClient,
+                               public cc::mojom::MojoCompositorFrameSinkPrivate,
+                               public cc::SurfaceFactoryClient,
+                               public cc::BeginFrameObserver {
  public:
   // TODO(fsamuel): DisplayCompositor should own
-  // ServerWindowCompositorFrameSink. ServerWindowCompositorFrameSink should not
-  // refer to ServerWindowCompositorFrameSinkManager.
-  ServerWindowCompositorFrameSink(
+  // GpuCompositorFrameSink. GpuCompositorFrameSink should not
+  // refer to GpuCompositorFrameSinkManager.
+  GpuCompositorFrameSink(
       scoped_refptr<DisplayCompositor> display_compositor,
       const cc::FrameSinkId& frame_sink_id,
       gfx::AcceleratedWidget widget,
@@ -58,7 +57,7 @@ class ServerWindowCompositorFrameSink
       cc::mojom::MojoCompositorFrameSinkRequest request,
       cc::mojom::MojoCompositorFrameSinkClientPtr client);
 
-  ~ServerWindowCompositorFrameSink() override;
+  ~GpuCompositorFrameSink() override;
 
   // cc::mojom::MojoCompositorFrameSink:
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
@@ -98,11 +97,11 @@ class ServerWindowCompositorFrameSink
 
   // TODO(fsamuel): We hold a reference to DisplayCompositor so we can talk to
   // SurfaceManager in the destructor. In the future, DisplayCompositor will own
-  // ServerWindowCompositorFrameSink.
+  // GpuCompositorFrameSink.
   scoped_refptr<DisplayCompositor> display_compositor_;
 
   gfx::Size last_submitted_frame_size_;
-  // ServerWindowCompositorFrameSink holds a cc::Display if it created with
+  // GpuCompositorFrameSink holds a cc::Display if it created with
   // non-null gfx::AcceleratedWidget. In the window server, the display root
   // window's CompositorFrameSink will have a valid gfx::AcceleratedWidget.
   std::unique_ptr<cc::Display> display_;
@@ -130,11 +129,11 @@ class ServerWindowCompositorFrameSink
   cc::mojom::MojoCompositorFrameSinkClientPtr client_;
   mojo::Binding<cc::mojom::MojoCompositorFrameSink> binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServerWindowCompositorFrameSink);
+  DISALLOW_COPY_AND_ASSIGN(GpuCompositorFrameSink);
 };
 
 }  // namespace ws
 
 }  // namespace ui
 
-#endif  // SERVICES_UI_WS_SERVER_WINDOW_COMPOSITOR_FRAME_SINK_H_
+#endif  // SERVICES_UI_WS_GPU_COMPOSITOR_FRAME_SINK_H_

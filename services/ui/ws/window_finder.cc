@@ -6,7 +6,6 @@
 
 #include "base/containers/adapters.h"
 #include "services/ui/ws/server_window.h"
-#include "services/ui/ws/server_window_compositor_frame_sink.h"
 #include "services/ui/ws/server_window_compositor_frame_sink_manager.h"
 #include "services/ui/ws/server_window_delegate.h"
 #include "services/ui/ws/window_coordinate_conversions.h"

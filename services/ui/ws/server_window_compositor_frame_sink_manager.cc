@@ -6,9 +6,9 @@
 
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/ui/surfaces/display_compositor.h"
+#include "services/ui/ws/gpu_compositor_frame_sink.h"
 #include "services/ui/ws/ids.h"
 #include "services/ui/ws/server_window.h"
-#include "services/ui/ws/server_window_compositor_frame_sink.h"
 #include "services/ui/ws/server_window_delegate.h"
 
 namespace ui {
@@ -59,7 +59,7 @@ void ServerWindowCompositorFrameSinkManager::CreateCompositorFrameSink(
   // TODO(fsamuel): Create the CompositorFrameSink through the DisplayCompositor
   // mojo interface.
   mojo::MakeStrongBinding(
-      base::MakeUnique<ServerWindowCompositorFrameSink>(
+      base::MakeUnique<GpuCompositorFrameSink>(
           window_->delegate()->GetDisplayCompositor(), frame_sink_id, widget,
           gpu_memory_buffer_manager, std::move(context_provider),
           std::move(request), std::move(client)),
@@ -132,11 +132,6 @@ void ServerWindowCompositorFrameSinkManager::SetLatestSurfaceInfo(
   CompositorFrameSinkData& data = type_to_compositor_frame_sink_map_[type];
   data.latest_submitted_surface_id = surface_id;
   data.latest_submitted_frame_size = frame_size;
-}
-
-cc::SurfaceManager*
-ServerWindowCompositorFrameSinkManager::GetCompositorFrameSinkManager() {
-  return window()->delegate()->GetDisplayCompositor()->manager();
 }
 
 bool ServerWindowCompositorFrameSinkManager::

@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "cc/ipc/compositor_frame.mojom.h"
 #include "cc/output/context_provider.h"
-#include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
@@ -87,8 +86,6 @@ class ServerWindowCompositorFrameSinkManager {
   void SetLatestSurfaceInfo(mojom::CompositorFrameSinkType type,
                             const cc::SurfaceId& surface_id,
                             const gfx::Size& frame_size);
-
-  cc::SurfaceManager* GetCompositorFrameSinkManager();
 
  private:
   friend class ServerWindowCompositorFrameSinkManagerTestApi;
