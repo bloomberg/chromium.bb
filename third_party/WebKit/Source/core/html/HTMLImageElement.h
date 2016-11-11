@@ -56,19 +56,19 @@ class CORE_EXPORT HTMLImageElement final : public HTMLElement,
                                   HTMLFormElement*,
                                   bool createdByParser);
   static HTMLImageElement* createForJSConstructor(Document&);
-  static HTMLImageElement* createForJSConstructor(Document&, int width);
+  static HTMLImageElement* createForJSConstructor(Document&, unsigned width);
   static HTMLImageElement* createForJSConstructor(Document&,
-                                                  int width,
-                                                  int height);
+                                                  unsigned width,
+                                                  unsigned height);
 
   ~HTMLImageElement() override;
   DECLARE_VIRTUAL_TRACE();
 
-  int width();
-  int height();
+  unsigned width();
+  unsigned height();
 
-  int naturalWidth() const;
-  int naturalHeight() const;
+  unsigned naturalWidth() const;
+  unsigned naturalHeight() const;
   const String& currentSrc() const;
 
   bool isServerMap() const;
@@ -80,12 +80,12 @@ class CORE_EXPORT HTMLImageElement final : public HTMLElement,
 
   void setLoadingImageDocument() { imageLoader().setLoadingImageDocument(); }
 
-  void setHeight(int);
+  void setHeight(unsigned);
 
   KURL src() const;
   void setSrc(const String&);
 
-  void setWidth(int);
+  void setWidth(unsigned);
 
   int x() const;
   int y() const;

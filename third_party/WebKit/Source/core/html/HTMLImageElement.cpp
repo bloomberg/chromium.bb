@@ -141,7 +141,7 @@ HTMLImageElement* HTMLImageElement::createForJSConstructor(Document& document) {
 }
 
 HTMLImageElement* HTMLImageElement::createForJSConstructor(Document& document,
-                                                           int width) {
+                                                           unsigned width) {
   HTMLImageElement* image = new HTMLImageElement(document);
   image->setWidth(width);
   image->m_elementCreatedByParser = false;
@@ -149,8 +149,8 @@ HTMLImageElement* HTMLImageElement::createForJSConstructor(Document& document,
 }
 
 HTMLImageElement* HTMLImageElement::createForJSConstructor(Document& document,
-                                                           int width,
-                                                           int height) {
+                                                           unsigned width,
+                                                           unsigned height) {
   HTMLImageElement* image = new HTMLImageElement(document);
   image->setWidth(width);
   image->setHeight(height);
@@ -426,25 +426,25 @@ void HTMLImageElement::removedFrom(ContainerNode* insertionPoint) {
   HTMLElement::removedFrom(insertionPoint);
 }
 
-int HTMLImageElement::width() {
+unsigned HTMLImageElement::width() {
   if (inActiveDocument())
     document().updateStyleAndLayoutIgnorePendingStylesheets();
 
   if (!layoutObject()) {
     // check the attribute first for an explicit pixel value
-    bool ok;
-    int width = getAttribute(widthAttr).toInt(&ok);
-    if (ok)
+    unsigned width = 0;
+    if (parseHTMLNonNegativeInteger(getAttribute(widthAttr), width))
       return width;
 
     // if the image is available, use its width
-    if (imageLoader().image())
+    if (imageLoader().image()) {
       return imageLoader()
           .image()
           ->imageSize(LayoutObject::shouldRespectImageOrientation(nullptr),
                       1.0f)
           .width()
-          .toInt();
+          .toUnsigned();
+    }
   }
 
   LayoutBox* box = layoutBox();
@@ -453,25 +453,25 @@ int HTMLImageElement::width() {
              : 0;
 }
 
-int HTMLImageElement::height() {
+unsigned HTMLImageElement::height() {
   if (inActiveDocument())
     document().updateStyleAndLayoutIgnorePendingStylesheets();
 
   if (!layoutObject()) {
     // check the attribute first for an explicit pixel value
-    bool ok;
-    int height = getAttribute(heightAttr).toInt(&ok);
-    if (ok)
+    unsigned height = 0;
+    if (parseHTMLNonNegativeInteger(getAttribute(heightAttr), height))
       return height;
 
     // if the image is available, use its height
-    if (imageLoader().image())
+    if (imageLoader().image()) {
       return imageLoader()
           .image()
           ->imageSize(LayoutObject::shouldRespectImageOrientation(nullptr),
                       1.0f)
           .height()
-          .toInt();
+          .toUnsigned();
+    }
   }
 
   LayoutBox* box = layoutBox();
@@ -480,7 +480,7 @@ int HTMLImageElement::height() {
              : 0;
 }
 
-int HTMLImageElement::naturalWidth() const {
+unsigned HTMLImageElement::naturalWidth() const {
   if (!imageLoader().image())
     return 0;
 
@@ -490,10 +490,10 @@ int HTMLImageElement::naturalWidth() const {
                   m_imageDevicePixelRatio,
                   ImageResource::IntrinsicCorrectedToDPR)
       .width()
-      .toInt();
+      .toUnsigned();
 }
 
-int HTMLImageElement::naturalHeight() const {
+unsigned HTMLImageElement::naturalHeight() const {
   if (!imageLoader().image())
     return 0;
 
@@ -503,7 +503,7 @@ int HTMLImageElement::naturalHeight() const {
                   m_imageDevicePixelRatio,
                   ImageResource::IntrinsicCorrectedToDPR)
       .height()
-      .toInt();
+      .toUnsigned();
 }
 
 const String& HTMLImageElement::currentSrc() const {
@@ -544,8 +544,8 @@ bool HTMLImageElement::draggable() const {
   return !equalIgnoringCase(getAttribute(draggableAttr), "false");
 }
 
-void HTMLImageElement::setHeight(int value) {
-  setIntegralAttribute(heightAttr, value);
+void HTMLImageElement::setHeight(unsigned value) {
+  setUnsignedIntegralAttribute(heightAttr, value);
 }
 
 KURL HTMLImageElement::src() const {
@@ -556,8 +556,8 @@ void HTMLImageElement::setSrc(const String& value) {
   setAttribute(srcAttr, AtomicString(value));
 }
 
-void HTMLImageElement::setWidth(int value) {
-  setIntegralAttribute(widthAttr, value);
+void HTMLImageElement::setWidth(unsigned value) {
+  setUnsignedIntegralAttribute(widthAttr, value);
 }
 
 int HTMLImageElement::x() const {

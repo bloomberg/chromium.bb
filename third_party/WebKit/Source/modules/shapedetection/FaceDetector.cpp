@@ -115,8 +115,8 @@ ScriptPromise FaceDetector::detectFacesOnImageElement(
   }
 
   const sk_sp<SkImage> image = blinkImage->imageForCurrentFrame();
-  DCHECK_EQ(img->naturalWidth(), image->width());
-  DCHECK_EQ(img->naturalHeight(), image->height());
+  DCHECK_EQ(img->naturalWidth(), static_cast<unsigned>(image->width()));
+  DCHECK_EQ(img->naturalHeight(), static_cast<unsigned>(image->height()));
 
   if (!image) {
     resolver->reject(DOMException::create(

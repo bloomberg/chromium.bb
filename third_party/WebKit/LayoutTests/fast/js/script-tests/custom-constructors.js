@@ -12,8 +12,8 @@ shouldBe("new Image(0).width", "0");
 shouldBe("new Image(0, 0).height", "0");
 shouldBe("new Image(100).width", "100");
 shouldBe("new Image(100, 200).height", "200");
-shouldBe("new Image(-100).width", "-100");
-shouldBe("new Image(-100, -200).height", "-200");
+shouldBe("new Image(-100).width", "0");
+shouldBe("new Image(-100, -200).height", "0");
 
 shouldBe("new Image().hasAttribute('height')", "false");
 shouldBe("new Image().hasAttribute('width')", "false");

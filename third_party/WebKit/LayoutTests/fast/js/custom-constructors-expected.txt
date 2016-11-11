@@ -11,8 +11,8 @@ PASS new Image(0).width is 0
 PASS new Image(0, 0).height is 0
 PASS new Image(100).width is 100
 PASS new Image(100, 200).height is 200
-PASS new Image(-100).width is -100
-PASS new Image(-100, -200).height is -200
+PASS new Image(-100).width is 0
+PASS new Image(-100, -200).height is 0
 PASS new Image().hasAttribute('height') is false
 PASS new Image().hasAttribute('width') is false
 PASS new Image(0).hasAttribute('height') is false

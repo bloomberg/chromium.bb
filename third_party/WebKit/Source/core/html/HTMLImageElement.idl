@@ -20,11 +20,10 @@
 
 // https://html.spec.whatwg.org/#the-img-element
 
-// TODO(foolip): All long types in this interfaces should be unsigned long.
 [
     ActiveScriptWrappable,
     ConstructorCallWith=Document,
-    NamedConstructor=Image(optional long width, optional long height),
+    NamedConstructor=Image(optional unsigned long width, optional unsigned long height),
 ] interface HTMLImageElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString alt;
     [CEReactions, Reflect, URL] attribute DOMString src;
@@ -33,10 +32,10 @@
     [CEReactions, Reflect, ReflectOnly=("anonymous","use-credentials"), ReflectEmpty="anonymous", ReflectInvalid="anonymous"] attribute DOMString? crossOrigin;
     [CEReactions, Reflect] attribute DOMString useMap;
     [CEReactions, Reflect] attribute boolean isMap;
-    [CEReactions] attribute long width;
-    [CEReactions] attribute long height;
-    readonly attribute long naturalWidth;
-    readonly attribute long naturalHeight;
+    [CEReactions] attribute unsigned long width;
+    [CEReactions] attribute unsigned long height;
+    readonly attribute unsigned long naturalWidth;
+    readonly attribute unsigned long naturalHeight;
     readonly attribute boolean complete;
     readonly attribute DOMString currentSrc;
     [CEReactions, Reflect, ReflectOnly=("","no-referrer","origin","no-referrer-when-downgrade","origin-when-cross-origin","unsafe-url"), ReflectMissing="", ReflectInvalid=""] attribute DOMString referrerPolicy;

@@ -20,12 +20,8 @@ PASS img.srcset: 32 tests
 PASS img.crossOrigin: 52 tests
 PASS img.useMap: 32 tests
 PASS img.isMap: 33 tests
-PASS img.width: 7 tests
-FAIL img.width: IDL set to 2147483648 assert_equals: getAttribute() expected "0" but got "-2147483648"
-FAIL img.width: IDL set to 4294967295 assert_equals: getAttribute() expected "0" but got "-1"
-PASS img.height: 7 tests
-FAIL img.height: IDL set to 2147483648 assert_equals: getAttribute() expected "0" but got "-2147483648"
-FAIL img.height: IDL set to 4294967295 assert_equals: getAttribute() expected "0" but got "-1"
+PASS img.width: 9 tests
+PASS img.height: 9 tests
 PASS img.name: 32 tests
 PASS img.lowsrc: 38 tests
 PASS img.align: 32 tests
