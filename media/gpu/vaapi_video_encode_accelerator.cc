@@ -480,7 +480,7 @@ bool VaapiVideoEncodeAccelerator::SubmitHeadersIfNeeded() {
   if (current_pic_->type != H264SliceHeader::kISlice)
     return true;
 
-  // Submit PPS.
+  // Submit SPS.
   VAEncPackedHeaderParameterBuffer par_buffer;
   memset(&par_buffer, 0, sizeof(par_buffer));
   par_buffer.type = VAEncPackedHeaderSequence;
