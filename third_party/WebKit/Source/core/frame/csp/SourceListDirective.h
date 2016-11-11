@@ -45,6 +45,9 @@ class CORE_EXPORT SourceListDirective final : public CSPDirective {
   bool allowHashedAttributes() const;
   bool isHashOrNoncePresent() const;
   uint8_t hashAlgorithmsUsed() const;
+  // The algorothm is described more extensively here:
+  // https://w3c.github.io/webappsec-csp/embedded/#subsume-source-list
+  bool subsumes(HeapVector<Member<SourceListDirective>>);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SourceListDirectiveTest, GetIntersectCSPSources);

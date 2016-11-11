@@ -445,4 +445,99 @@ TEST_F(CSPSourceTest, IsSimilar) {
   }
 }
 
+TEST_F(CSPSourceTest, FirstSubsumesSecond) {
+  struct Source {
+    const char* scheme;
+    const char* host;
+    const int port;
+    const char* path;
+  };
+  struct TestCase {
+    const Source sourceB;
+    String schemeA;
+    bool expected;
+  } cases[] = {
+      // Subsumed.
+      {{"http", "example.com", 0, "/"}, "http", true},
+      {{"http", "example.com", 0, "/page.html"}, "http", true},
+      {{"http", "second-example.com", 80, "/"}, "http", true},
+      {{"https", "second-example.com", 0, "/"}, "http", true},
+      {{"http", "second-example.com", 0, "/page.html"}, "http", true},
+      {{"https", "second-example.com", 80, "/page.html"}, "http", true},
+      {{"https", "second-example.com", 0, "/"}, "https", true},
+      {{"https", "second-example.com", 0, "/page.html"}, "https", true},
+      {{"http", "example.com", 900, "/"}, "http", true},
+      // NOT subsumed.
+      {{"http", "second-example.com", 0, "/"}, "wss", false},
+      {{"http", "non-example.com", 900, "/"}, "http", false},
+      {{"http", "second-example.com", 0, "/"}, "https", false},
+  };
+
+  CSPSource* noWildcards =
+      new CSPSource(csp.get(), "http", "example.com", 0, "/",
+                    CSPSource::NoWildcard, CSPSource::NoWildcard);
+  CSPSource* hostWildcard =
+      new CSPSource(csp.get(), "http", "third-example.com", 0, "/",
+                    CSPSource::HasWildcard, CSPSource::NoWildcard);
+  CSPSource* portWildcard =
+      new CSPSource(csp.get(), "http", "third-example.com", 0, "/",
+                    CSPSource::NoWildcard, CSPSource::HasWildcard);
+  CSPSource* bothWildcards =
+      new CSPSource(csp.get(), "http", "third-example.com", 0, "/",
+                    CSPSource::HasWildcard, CSPSource::HasWildcard);
+  CSPSource* httpOnly =
+      new CSPSource(csp.get(), "http", "", 0, "", CSPSource::NoWildcard,
+                    CSPSource::NoWildcard);
+  CSPSource* httpsOnly =
+      new CSPSource(csp.get(), "https", "", 0, "", CSPSource::NoWildcard,
+                    CSPSource::NoWildcard);
+
+  for (const auto& test : cases) {
+    // Setup default vectors.
+    HeapVector<Member<CSPSource>> listA;
+    HeapVector<Member<CSPSource>> listB;
+    listB.append(noWildcards);
+    // Empty `listA` implies `none` is allowed.
+    EXPECT_FALSE(CSPSource::firstSubsumesSecond(listA, listB));
+
+    listA.append(noWildcards);
+    // Add CSPSources based on the current test.
+    listB.append(new CSPSource(csp.get(), test.sourceB.scheme,
+                               test.sourceB.host, 0, test.sourceB.path,
+                               CSPSource::NoWildcard, CSPSource::NoWildcard));
+    listA.append(new CSPSource(csp.get(), test.schemeA, "second-example.com", 0,
+                               "/", CSPSource::NoWildcard,
+                               CSPSource::NoWildcard));
+    // listB contains: ["http://example.com/", test.listB]
+    // listA contains: ["http://example.com/",
+    // test.schemeA + "://second-example.com/"]
+    EXPECT_EQ(test.expected, CSPSource::firstSubsumesSecond(listA, listB));
+
+    // If we add another source to `listB` with a host wildcard,
+    // then the result should definitely be false.
+    listB.append(hostWildcard);
+
+    // If we add another source to `listA` with a port wildcard,
+    // it does not make `listB` to be subsumed under `listA`.
+    listB.append(portWildcard);
+    EXPECT_FALSE(CSPSource::firstSubsumesSecond(listA, listB));
+
+    // If however we add another source to `listA` with both wildcards,
+    // that CSPSource is subsumed, so the answer should be as expected
+    // before.
+    listA.append(bothWildcards);
+    EXPECT_EQ(test.expected, CSPSource::firstSubsumesSecond(listA, listB));
+
+    // If we add a scheme-source expression of 'https' to `listB`, then it
+    // should not be subsumed.
+    listB.append(httpsOnly);
+    EXPECT_FALSE(CSPSource::firstSubsumesSecond(listA, listB));
+
+    // If we add a scheme-source expression of 'http' to `listA`, then it should
+    // subsume all current epxression in `listB`.
+    listA.append(httpOnly);
+    EXPECT_TRUE(CSPSource::firstSubsumesSecond(listA, listB));
+  }
+}
+
 }  // namespace blink

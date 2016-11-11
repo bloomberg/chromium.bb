@@ -162,6 +162,27 @@ bool CSPSource::isSchemeOnly() const {
   return m_host.isEmpty();
 }
 
+bool CSPSource::firstSubsumesSecond(HeapVector<Member<CSPSource>> listA,
+                                    HeapVector<Member<CSPSource>> listB) {
+  // Empty vector of CSPSources has an effect of 'none'.
+  if (!listA.size() || !listB.size())
+    return !listB.size();
+
+  // Walk through all the items in |listB|, ensuring that each is subsumed by at
+  // least one item in |listA|. If any item in |listB| is not subsumed, return
+  // false.
+  for (const auto& sourceB : listB) {
+    bool foundMatch = false;
+    for (const auto& sourceA : listA) {
+      if ((foundMatch = sourceA->subsumes(sourceB)))
+        break;
+    }
+    if (!foundMatch)
+      return false;
+  }
+  return true;
+}
+
 DEFINE_TRACE(CSPSource) {
   visitor->trace(m_policy);
 }

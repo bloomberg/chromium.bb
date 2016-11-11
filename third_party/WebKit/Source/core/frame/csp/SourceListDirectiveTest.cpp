@@ -293,4 +293,94 @@ TEST_F(SourceListDirectiveTest, GetIntersectCSPSources) {
   }
 }
 
+TEST_F(SourceListDirectiveTest, Subsumes) {
+  KURL base;
+  String requiredSources =
+      "http://example1.com/foo/ http://*.example2.com/bar/ "
+      "http://*.example3.com:*/bar/";
+  SourceListDirective required("script-src", requiredSources, csp.get());
+
+  struct TestCase {
+    std::vector<String> sourcesVector;
+    bool expected;
+  } cases[] = {
+      // Non-intersecting source lists give an effective policy of 'none', which
+      // is always subsumed.
+      {{"http://example1.com/bar/", "http://*.example3.com:*/bar/"}, true},
+      {{"http://example1.com/bar/",
+        "http://*.example3.com:*/bar/ http://*.example2.com/bar/"},
+       true},
+      // Lists that intersect into one of the required sources are subsumed.
+      {{"http://example1.com/foo/"}, true},
+      {{"http://*.example2.com/bar/"}, true},
+      {{"http://*.example3.com:*/bar/"}, true},
+      {{"https://example1.com/foo/",
+        "http://*.example1.com/foo/ http://*.example2.com/bar/"},
+       true},
+      {{"http://example2.com/bar/",
+        "http://*.example3.com:*/bar/ http://*.example2.com/bar/"},
+       true},
+      {{"http://example3.com:100/bar/",
+        "http://*.example3.com:*/bar/ http://*.example2.com/bar/"},
+       true},
+      // Lists that intersect into two of the required sources are subsumed.
+      {{"http://example1.com/foo/ http://*.example2.com/bar/"}, true},
+      {{"http://example1.com/foo/ http://example2.com/bar/",
+        "http://example2.com/bar/ http://example1.com/foo/"},
+       true},
+      // Ordering should not matter.
+      {{"https://example1.com/foo/ https://example2.com/bar/",
+        "http://example2.com/bar/ http://example1.com/foo/"},
+       true},
+      // Lists that intersect into a policy identical to the required list are
+      // subsumed.
+      {{"http://example1.com/foo/ http://*.example2.com/bar/ "
+        "http://*.example3.com:*/bar/ http://example1.com/foo/"},
+       true},
+      {{"http://example1.com/foo/ http://*.example2.com/bar/ "
+        "http://*.example3.com:*/bar/"},
+       true},
+      {{"http://example1.com/foo/ http://*.example2.com/bar/ "
+        "http://*.example3.com:*/bar/",
+        "http://example1.com/foo/ http://*.example2.com/bar/ "
+        "http://*.example3.com:*/bar/ http://example4.com/foo/"},
+       true},
+      {{"http://example1.com/foo/ http://*.example2.com/bar/ "
+        "http://*.example3.com:*/bar/",
+        "http://example1.com/foo/ http://*.example2.com/bar/ "
+        "http://*.example3.com:*/bar/ http://example1.com/foo/"},
+       true},
+      // Lists that include sources that aren't subsumed by the required list
+      // are not subsumed.
+      {{"http://example1.com/foo/ http://*.example2.com/bar/ "
+        "http://*.example3.com:*/bar/ http://*.example4.com:*/bar/"},
+       false},
+      {{"http://example1.com/foo/ http://example2.com/foo/"}, false},
+      {{"http://*.example1.com/bar/", "http://example1.com/bar/"}, false},
+      {{"http://*.example1.com/foo/"}, false},
+      {{"wss://example2.com/bar/"}, false},
+      {{"http://*.non-example3.com:*/bar/"}, false},
+      {{"http://example3.com/foo/"}, false},
+      {{"http://not-example1.com", "http://not-example1.com"}, false},
+  };
+
+  for (const auto& test : cases) {
+    HeapVector<Member<SourceListDirective>> returned;
+
+    for (const auto& sources : test.sourcesVector) {
+      SourceListDirective* member =
+          new SourceListDirective("script-src", sources, csp.get());
+      returned.append(member);
+    }
+
+    EXPECT_EQ(required.subsumes(returned), test.expected);
+
+    // If required is empty, any returned should be subsumed by it.
+    SourceListDirective requiredIsEmpty("script-src", "", csp.get());
+    EXPECT_TRUE(
+        requiredIsEmpty.subsumes(HeapVector<Member<SourceListDirective>>()));
+    EXPECT_TRUE(requiredIsEmpty.subsumes(returned));
+  }
+}
+
 }  // namespace blink

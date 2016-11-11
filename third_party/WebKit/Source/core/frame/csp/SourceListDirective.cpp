@@ -569,6 +569,20 @@ bool SourceListDirective::hasSourceMatchInList(
   return false;
 }
 
+bool SourceListDirective::subsumes(
+    HeapVector<Member<SourceListDirective>> other) {
+  // TODO(amalika): Handle here special keywords.
+  if (!m_list.size() || !other.size())
+    return !m_list.size();
+
+  HeapVector<Member<CSPSource>> normalizedA = other[0]->m_list;
+  for (size_t i = 1; i < other.size(); i++) {
+    normalizedA = other[i]->getIntersectCSPSources(normalizedA);
+  }
+
+  return CSPSource::firstSubsumesSecond(m_list, normalizedA);
+}
+
 HeapVector<Member<CSPSource>> SourceListDirective::getIntersectCSPSources(
     HeapVector<Member<CSPSource>> otherVector) {
   HeapVector<Member<CSPSource>> normalized;

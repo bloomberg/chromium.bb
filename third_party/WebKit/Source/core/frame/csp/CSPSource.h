@@ -38,6 +38,11 @@ class CORE_EXPORT CSPSource : public GarbageCollectedFinalized<CSPSource> {
   // Retrieve the most restrictive information from the two CSPSources if
   // isSimilar is true for the two. Otherwise, return nullptr.
   CSPSource* intersect(CSPSource*);
+  // Returns true if the first list subsumes the second, as defined by the
+  // algorithm at
+  // https://w3c.github.io/webappsec-csp/embedded/#subsume-source-list
+  static bool firstSubsumesSecond(HeapVector<Member<CSPSource>>,
+                                  HeapVector<Member<CSPSource>>);
 
   DECLARE_TRACE();
 
