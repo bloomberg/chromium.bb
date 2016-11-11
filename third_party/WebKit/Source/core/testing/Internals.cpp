@@ -1796,19 +1796,30 @@ StaticNodeList* Internals::nodesFromRect(Document* document,
   return StaticNodeList::adopt(matches);
 }
 
-bool Internals::hasSpellingMarker(Document* document, int from, int length) {
-  ASSERT(document);
-  if (!document->frame())
+bool Internals::hasSpellingMarker(Document* document,
+                                  int from,
+                                  int length,
+                                  ExceptionState& exceptionState) {
+  if (!document || !document->frame()) {
+    exceptionState.throwDOMException(
+        InvalidAccessError,
+        "No frame can be obtained from the provided document.");
     return false;
+  }
 
   document->updateStyleAndLayoutIgnorePendingStylesheets();
   return document->frame()->spellChecker().selectionStartHasMarkerFor(
       DocumentMarker::Spelling, from, length);
 }
 
-void Internals::setSpellCheckingEnabled(bool enabled) {
-  if (!contextDocument() || !contextDocument()->frame())
+void Internals::setSpellCheckingEnabled(bool enabled,
+                                        ExceptionState& exceptionState) {
+  if (!contextDocument() || !contextDocument()->frame()) {
+    exceptionState.throwDOMException(
+        InvalidAccessError,
+        "No frame can be obtained from the provided document.");
     return;
+  }
 
   if (enabled !=
       contextDocument()->frame()->spellChecker().isSpellCheckingEnabled())
@@ -1852,10 +1863,16 @@ String Internals::dumpRefCountedInstanceCounts() const {
   return WTF::dumpRefCountedInstanceCounts();
 }
 
-bool Internals::hasGrammarMarker(Document* document, int from, int length) {
-  ASSERT(document);
-  if (!document->frame())
+bool Internals::hasGrammarMarker(Document* document,
+                                 int from,
+                                 int length,
+                                 ExceptionState& exceptionState) {
+  if (!document || !document->frame()) {
+    exceptionState.throwDOMException(
+        InvalidAccessError,
+        "No frame can be obtained from the provided document.");
     return false;
+  }
 
   document->updateStyleAndLayoutIgnorePendingStylesheets();
   return document->frame()->spellChecker().selectionStartHasMarkerFor(

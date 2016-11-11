@@ -290,9 +290,9 @@ class Internals final : public GarbageCollectedFinalized<Internals>,
                                 bool allowChildFrameContent,
                                 ExceptionState&) const;
 
-  bool hasSpellingMarker(Document*, int from, int length);
-  bool hasGrammarMarker(Document*, int from, int length);
-  void setSpellCheckingEnabled(bool);
+  bool hasSpellingMarker(Document*, int from, int length, ExceptionState&);
+  bool hasGrammarMarker(Document*, int from, int length, ExceptionState&);
+  void setSpellCheckingEnabled(bool, ExceptionState&);
 
   bool canHyphenate(const AtomicString& locale);
   void setMockHyphenation(const AtomicString& locale);

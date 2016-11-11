@@ -162,9 +162,9 @@
         unsigned long topPadding, unsigned long rightPadding, unsigned long bottomPadding, unsigned long leftPadding,
         boolean ignoreClipping, boolean allowChildFrameContent);
 
-    boolean hasSpellingMarker(Document document, long from, long length);
-    boolean hasGrammarMarker(Document document, long from, long length);
-    void setSpellCheckingEnabled(boolean enabled);
+    [RaisesException] boolean hasSpellingMarker(Document document, long from, long length);
+    [RaisesException] boolean hasGrammarMarker(Document document, long from, long length);
+    [RaisesException] void setSpellCheckingEnabled(boolean enabled);
 
     bool canHyphenate(DOMString locale);
     void setMockHyphenation(DOMString locale);
