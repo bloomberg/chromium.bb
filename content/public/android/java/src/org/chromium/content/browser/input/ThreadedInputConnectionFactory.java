@@ -145,9 +145,9 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
 
         if (!view.hasWindowFocus()) mCheckInvalidator.invalidate();
 
-        if (mProxyView == null) {
-            mProxyView = createProxyView(mHandler, view);
-        }
+        // We cannot reuse the existing proxy view, if any, due to crbug.com/664402.
+        mProxyView = createProxyView(mHandler, view);
+
         mReentrantTriggering = true;
         // This does not affect view focus of the real views.
         mProxyView.requestFocus();
