@@ -30,6 +30,7 @@ class _BrowsingStory(system_health_story.SystemHealthStory):
     item_selector = 'document.querySelectorAll("%s")[%d]' % (
         self.ITEM_SELECTOR, index)
     # Only scrolls if element is not currently in viewport.
+    action_runner.WaitForElement(element_function=item_selector)
     action_runner.ScrollPageToElement(element_function=item_selector)
     self._ClickLink(action_runner, item_selector)
 
