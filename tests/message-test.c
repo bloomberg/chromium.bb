@@ -64,7 +64,8 @@ TEST(message_count_arrays)
 		{ "multiple", "aaiufaasonhaa", NULL },
 		{ "leading_version", "2aaiufaasonhaa", NULL },
 		{ "among_nullables", "iufsa?oa?nah", NULL },
-		{ "all_mixed", "2aiufas?oa?na", NULL },
+		{ "nullable", "?aiufs?a?onh?a", NULL },
+		{ "all_mixed", "2?aiufas?oa?na", NULL },
 	};
 	const struct {
 		const struct wl_message *message;
@@ -80,7 +81,8 @@ TEST(message_count_arrays)
 		{ &fake_messages[5], 6 },
 		{ &fake_messages[6], 6 },
 		{ &fake_messages[7], 3 },
-		{ &fake_messages[8], 4 }
+		{ &fake_messages[8], 3 },
+		{ &fake_messages[9], 4 },
 	};
 
 	for (i = 0; i < ARRAY_LENGTH(messages); ++i) {
