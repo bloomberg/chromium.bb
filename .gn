@@ -82,6 +82,7 @@ check_targets = [
   "//media/gpu/*",
   "//media/midi/*",
   "//media/mojo/*",
+  "//media/remoting/*",
   "//media/test/*",
 
   "mojo/*",
