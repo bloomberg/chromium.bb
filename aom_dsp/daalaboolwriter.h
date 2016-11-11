@@ -12,8 +12,13 @@
 #ifndef AOM_DSP_DAALABOOLWRITER_H_
 #define AOM_DSP_DAALABOOLWRITER_H_
 
+#include <stdio.h>
+
 #include "aom_dsp/entenc.h"
 #include "aom_dsp/prob.h"
+#if CONFIG_BITSTREAM_DEBUG
+#include "aom_util/debug_util.h"
+#endif  // CONFIG_BITSTREAM_DEBUG
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,12 +36,42 @@ void aom_daala_start_encode(daala_writer *w, uint8_t *buffer);
 void aom_daala_stop_encode(daala_writer *w);
 
 static INLINE void aom_daala_write(daala_writer *w, int bit, int prob) {
+  int p = ((prob << 15) + (256 - prob)) >> 8;
+#if CONFIG_BITSTREAM_DEBUG
+  aom_cdf_prob cdf[2] = { (aom_cdf_prob)p, 32767 };
+  /*int queue_r = 0;
+  int frame_idx_r = 0;
+  int queue_w = bitstream_queue_get_write();
+  int frame_idx_w = bitstream_queue_get_frame_write();
+  if (frame_idx_w == frame_idx_r && queue_w == queue_r) {
+    fprintf(stderr, "\n *** bitstream queue at frame_idx_w %d queue_w %d\n",
+    frame_idx_w, queue_w);
+  }*/
+  bitstream_queue_push(bit, cdf, 2);
+#endif
+
   if (prob == 128) {
     od_ec_enc_bits(&w->ec, bit, 1);
   } else {
-    int p = ((prob << 15) + (256 - prob)) >> 8;
     od_ec_encode_bool_q15(&w->ec, bit, p);
   }
+}
+
+static INLINE void daala_write_symbol(daala_writer *w, int symb,
+                                      const aom_cdf_prob *cdf, int nsymbs) {
+#if CONFIG_BITSTREAM_DEBUG
+  /*int queue_r = 0;
+  int frame_idx_r = 0;
+  int queue_w = bitstream_queue_get_write();
+  int frame_idx_w = bitstream_queue_get_frame_write();
+  if (frame_idx_w == frame_idx_r && queue_w == queue_r) {
+    fprintf(stderr, "\n *** bitstream queue at frame_idx_w %d queue_w %d\n",
+    frame_idx_w, queue_w);
+  }*/
+  bitstream_queue_push(symb, cdf, nsymbs);
+#endif
+
+  od_ec_encode_cdf_q15(&w->ec, symb, cdf, nsymbs);
 }
 
 static INLINE void daala_write_tree_bits(daala_writer *w,
@@ -72,15 +107,10 @@ static INLINE void daala_write_tree_bits(daala_writer *w,
       }
     }
     OD_ASSERT(symb != -1);
-    od_ec_encode_cdf_q15(&w->ec, symb, cdf, nsymbs);
+    daala_write_symbol(w, symb, cdf, nsymbs);
     bits &= (1 << (len - dist[symb])) - 1;
     len -= dist[symb];
   } while (len);
-}
-
-static INLINE void daala_write_symbol(daala_writer *w, int symb,
-                                      const aom_cdf_prob *cdf, int nsymbs) {
-  od_ec_encode_cdf_q15(&w->ec, symb, cdf, nsymbs);
 }
 
 #ifdef __cplusplus
