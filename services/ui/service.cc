@@ -193,6 +193,8 @@ void Service::OnStart(service_manager::ServiceContext* context) {
     touch_controller_.reset(
         new ws::TouchController(window_server_->display_manager()));
 
+  platform_screen_->Init(window_server_->display_manager());
+
   ime_server_.Init(context->connector());
 }
 
@@ -252,12 +254,6 @@ bool Service::IsTestConfig() const {
 void Service::UpdateTouchTransforms() {
   if (touch_controller_)
     touch_controller_->UpdateTouchTransforms();
-}
-
-void Service::CreateDefaultDisplays() {
-  // The display manager will create Displays once hardware or virtual displays
-  // are ready.
-  platform_screen_->Init(window_server_->display_manager());
 }
 
 void Service::Create(const service_manager::Identity& remote_identity,

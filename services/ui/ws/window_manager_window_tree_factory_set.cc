@@ -80,15 +80,8 @@ void WindowManagerWindowTreeFactorySet::RemoveObserver(
 
 void WindowManagerWindowTreeFactorySet::OnWindowManagerWindowTreeFactoryReady(
     WindowManagerWindowTreeFactory* factory) {
-  const bool is_first_valid_factory = !got_valid_factory_;
-  got_valid_factory_ = true;
   for (auto& observer : observers_)
     observer.OnWindowManagerWindowTreeFactoryReady(factory);
-
-  // Notify after other observers as WindowServer triggers other
-  // observers being added, which will have already processed the add.
-  if (is_first_valid_factory)
-    window_server_->OnFirstWindowManagerWindowTreeFactoryReady();
 }
 
 void WindowManagerWindowTreeFactorySet::OnUserIdRemoved(const UserId& id) {

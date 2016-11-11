@@ -420,6 +420,14 @@ mojom::WindowTreeClient* TestWindowTreeBinding::CreateClientForShutdown() {
 TestWindowServerDelegate::TestWindowServerDelegate() {}
 TestWindowServerDelegate::~TestWindowServerDelegate() {}
 
+void TestWindowServerDelegate::CreateDisplays(int num_displays) {
+  DCHECK_GT(num_displays, 0);
+  DCHECK(window_server_);
+
+  for (int i = 0; i < num_displays; ++i)
+    AddDisplay();
+}
+
 Display* TestWindowServerDelegate::AddDisplay() {
   // Display manages its own lifetime.
   Display* display = new Display(window_server_, PlatformDisplayInitParams());
@@ -442,14 +450,6 @@ TestWindowServerDelegate::CreateWindowTreeBinding(
       base::MakeUnique<TestWindowTreeBinding>(tree);
   bindings_.push_back(binding.get());
   return std::move(binding);
-}
-
-void TestWindowServerDelegate::CreateDefaultDisplays() {
-  DCHECK(num_displays_to_create_);
-  DCHECK(window_server_);
-
-  for (int i = 0; i < num_displays_to_create_; ++i)
-    AddDisplay();
 }
 
 bool TestWindowServerDelegate::IsTestConfig() const {

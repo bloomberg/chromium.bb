@@ -1357,8 +1357,7 @@ TEST_F(WindowTreeShutdownTest, DontSendMessagesDuringShutdown) {
     WindowServer* window_server = ws_test_helper.window_server();
     window_server->user_id_tracker()->AddUserId(kTestUserId1);
     const int kNumHostsToCreate = 1;
-    ws_test_helper.window_server_delegate()->set_num_displays_to_create(
-        kNumHostsToCreate);
+    ws_test_helper.window_server_delegate()->CreateDisplays(kNumHostsToCreate);
 
     WindowManagerWindowTreeFactorySetTestApi(
         window_server->window_manager_window_tree_factory_set())

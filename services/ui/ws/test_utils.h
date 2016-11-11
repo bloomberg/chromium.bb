@@ -522,10 +522,6 @@ class TestWindowServerDelegate : public WindowServerDelegate {
     window_server_ = window_server;
   }
 
-  void set_num_displays_to_create(int count) {
-    num_displays_to_create_ = count;
-  }
-
   TestWindowTreeClient* last_client() {
     return last_binding() ? last_binding()->client() : nullptr;
   }
@@ -537,6 +533,9 @@ class TestWindowServerDelegate : public WindowServerDelegate {
 
   bool got_on_no_more_displays() const { return got_on_no_more_displays_; }
 
+  // Creates |num_displays| displays.
+  void CreateDisplays(int num_displays);
+
   Display* AddDisplay();
 
   // WindowServerDelegate:
@@ -547,14 +546,10 @@ class TestWindowServerDelegate : public WindowServerDelegate {
       ws::WindowTree* tree,
       mojom::WindowTreeRequest* tree_request,
       mojom::WindowTreeClientPtr* client) override;
-  void CreateDefaultDisplays() override;
   bool IsTestConfig() const override;
   void UpdateTouchTransforms() override {}
 
  private:
-  // If CreateDefaultDisplays() this is the number of Displays that are
-  // created. The default is 0, which results in a DCHECK.
-  int num_displays_to_create_ = 0;
   WindowServer* window_server_ = nullptr;
   bool got_on_no_more_displays_ = false;
   // All TestWindowTreeBinding objects created via CreateWindowTreeBinding.

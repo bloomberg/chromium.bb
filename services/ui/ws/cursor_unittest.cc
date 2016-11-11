@@ -49,7 +49,7 @@ class CursorTest : public testing::Test {
  protected:
   // testing::Test:
   void SetUp() override {
-    window_server_delegate()->set_num_displays_to_create(1);
+    window_server_delegate()->CreateDisplays(1);
 
     // As a side effect, this allocates Displays.
     WindowManagerWindowTreeFactorySetTestApi(

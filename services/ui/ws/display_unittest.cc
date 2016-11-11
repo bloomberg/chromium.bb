@@ -77,7 +77,7 @@ class DisplayTest : public testing::Test {
 
 TEST_F(DisplayTest, CallsCreateDefaultDisplays) {
   const int kNumHostsToCreate = 2;
-  window_server_delegate()->set_num_displays_to_create(kNumHostsToCreate);
+  window_server_delegate()->CreateDisplays(kNumHostsToCreate);
 
   DisplayManager* display_manager = window_server()->display_manager();
   WindowManagerWindowTreeFactorySetTestApi(
@@ -114,7 +114,7 @@ TEST_F(DisplayTest, CallsCreateDefaultDisplays) {
 }
 
 TEST_F(DisplayTest, Destruction) {
-  window_server_delegate()->set_num_displays_to_create(1);
+  window_server_delegate()->CreateDisplays(1);
 
   WindowManagerWindowTreeFactorySetTestApi(
       window_server()->window_manager_window_tree_factory_set())
@@ -150,7 +150,7 @@ TEST_F(DisplayTest, Destruction) {
 }
 
 TEST_F(DisplayTest, EventStateResetOnUserSwitch) {
-  window_server_delegate()->set_num_displays_to_create(1);
+  window_server_delegate()->CreateDisplays(1);
 
   WindowManagerWindowTreeFactorySetTestApi(
       window_server()->window_manager_window_tree_factory_set())
@@ -198,7 +198,7 @@ TEST_F(DisplayTest, EventStateResetOnUserSwitch) {
 
 // Verifies capture fails when wm is inactive and succeeds when wm is active.
 TEST_F(DisplayTest, SetCaptureFromWindowManager) {
-  window_server_delegate()->set_num_displays_to_create(1);
+  window_server_delegate()->CreateDisplays(1);
   WindowManagerWindowTreeFactorySetTestApi(
       window_server()->window_manager_window_tree_factory_set())
       .Add(kTestId1);
@@ -231,7 +231,7 @@ TEST_F(DisplayTest, SetCaptureFromWindowManager) {
 }
 
 TEST_F(DisplayTest, FocusFailsForInactiveUser) {
-  window_server_delegate()->set_num_displays_to_create(1);
+  window_server_delegate()->CreateDisplays(1);
   WindowManagerWindowTreeFactorySetTestApi(
       window_server()->window_manager_window_tree_factory_set())
       .Add(kTestId1);
@@ -271,7 +271,7 @@ TEST_F(DisplayTest, FocusFailsForInactiveUser) {
 
 // Verifies a single tree is used for multiple displays.
 TEST_F(DisplayTest, MultipleDisplays) {
-  window_server_delegate()->set_num_displays_to_create(2);
+  window_server_delegate()->CreateDisplays(2);
   WindowManagerWindowTreeFactorySetTestApi(
       window_server()->window_manager_window_tree_factory_set())
       .Add(kTestId1);
@@ -349,7 +349,7 @@ class ServerWindowDestructionObserver : public ServerWindowObserver {
 
 // Assertions around destroying a secondary display.
 TEST_F(DisplayTest, DestroyingDisplayDoesntDelete) {
-  window_server_delegate()->set_num_displays_to_create(2);
+  window_server_delegate()->CreateDisplays(2);
   WindowManagerWindowTreeFactorySetTestApi(
       window_server()->window_manager_window_tree_factory_set())
       .Add(kTestId1);

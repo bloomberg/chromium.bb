@@ -128,7 +128,7 @@ class UserDisplayManagerTest : public testing::Test {
 };
 
 TEST_F(UserDisplayManagerTest, OnlyNotifyWhenFrameDecorationsSet) {
-  window_server_delegate()->set_num_displays_to_create(1);
+  window_server_delegate()->CreateDisplays(1);
 
   const UserId kUserId1 = "2";
   TestDisplayManagerObserver display_manager_observer1;
@@ -158,7 +158,7 @@ TEST_F(UserDisplayManagerTest, OnlyNotifyWhenFrameDecorationsSet) {
 }
 
 TEST_F(UserDisplayManagerTest, AddObserverAfterFrameDecorationsSet) {
-  window_server_delegate()->set_num_displays_to_create(1);
+  window_server_delegate()->CreateDisplays(1);
 
   const UserId kUserId1 = "2";
   TestDisplayManagerObserver display_manager_observer1;
@@ -184,7 +184,7 @@ TEST_F(UserDisplayManagerTest, AddObserverAfterFrameDecorationsSet) {
 }
 
 TEST_F(UserDisplayManagerTest, AddRemoveDisplay) {
-  window_server_delegate()->set_num_displays_to_create(1);
+  window_server_delegate()->CreateDisplays(1);
 
   const UserId kUserId1 = "2";
   TestDisplayManagerObserver display_manager_observer1;
@@ -223,7 +223,7 @@ TEST_F(UserDisplayManagerTest, AddRemoveDisplay) {
 }
 
 TEST_F(UserDisplayManagerTest, NegativeCoordinates) {
-  window_server_delegate()->set_num_displays_to_create(1);
+  window_server_delegate()->CreateDisplays(1);
 
   const UserId kUserId1 = "2";
   TestDisplayManagerObserver display_manager_observer1;

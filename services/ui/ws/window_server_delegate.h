@@ -36,10 +36,6 @@ class WindowServerDelegate {
     WINDOW_MANAGER,
   };
 
-  // Called if no Displays have been created, but a WindowManagerFactory has
-  // been set.
-  virtual void CreateDefaultDisplays() = 0;
-
   // Called once when the AcceleratedWidget of a Display is available.
   virtual void OnFirstDisplayReady();
 

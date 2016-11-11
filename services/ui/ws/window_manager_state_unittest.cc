@@ -547,7 +547,7 @@ TEST_F(WindowManagerStateTest, PostAcceleratorForgotten) {
 // with no roots.
 TEST(WindowManagerStateShutdownTest, DestroyTreeBeforeDisplay) {
   WindowServerTestHelper ws_test_helper;
-  ws_test_helper.window_server_delegate()->set_num_displays_to_create(1);
+  ws_test_helper.window_server_delegate()->CreateDisplays(1);
   WindowServer* window_server = ws_test_helper.window_server();
   const UserId kUserId1 = "2";
   WindowManagerWindowTreeFactorySetTestApi(

@@ -108,7 +108,6 @@ class Service
   void OnFirstDisplayReady() override;
   void OnNoMoreDisplays() override;
   bool IsTestConfig() const override;
-  void CreateDefaultDisplays() override;
   void UpdateTouchTransforms() override;
 
   // service_manager::InterfaceFactory<mojom::AccessibilityManager>

@@ -132,8 +132,6 @@ class WindowServer : public ServerWindowDelegate,
   }
   const WindowTree* GetTreeWithRoot(const ServerWindow* window) const;
 
-  void OnFirstWindowManagerWindowTreeFactoryReady();
-
   UserActivityMonitor* GetUserActivityMonitorForUser(const UserId& user_id);
 
   WindowManagerWindowTreeFactorySet* window_manager_window_tree_factory_set() {

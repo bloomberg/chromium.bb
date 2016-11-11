@@ -234,16 +234,6 @@ const WindowTree* WindowServer::GetTreeWithRoot(
   return nullptr;
 }
 
-void WindowServer::OnFirstWindowManagerWindowTreeFactoryReady() {
-  if (display_manager_->has_active_or_pending_displays())
-    return;
-
-  // We've been supplied a WindowManagerFactory and no displays have been
-  // created yet. Treat this as a signal to create a Display.
-  // TODO(sky): we need a better way to determine this, most likely a switch.
-  delegate_->CreateDefaultDisplays();
-}
-
 UserActivityMonitor* WindowServer::GetUserActivityMonitorForUser(
     const UserId& user_id) {
   DCHECK_GT(activity_monitor_map_.count(user_id), 0u);
