@@ -7797,7 +7797,7 @@ static int64_t handle_inter_mode(
         for (idy = 0; idy < xd->n8_h; ++idy)
           for (idx = 0; idx < xd->n8_w; ++idx)
             mbmi->inter_tx_size[idy][idx] = mbmi->tx_size;
-        memset(x->blk_skip[0], skippable_y,
+        memset(x->blk_skip[0], rd_stats_y->skip,
                sizeof(uint8_t) * xd->n8_h * xd->n8_w * 4);
       }
 #else
