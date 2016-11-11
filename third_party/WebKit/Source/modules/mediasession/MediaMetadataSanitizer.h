@@ -9,6 +9,7 @@
 
 namespace blink {
 
+class ExecutionContext;
 class MediaMetadata;
 
 class MediaMetadataSanitizer {
@@ -16,7 +17,8 @@ class MediaMetadataSanitizer {
   // Produce the sanitized metadata, which will later be sent to the
   // MediaSession mojo service.
   static blink::mojom::blink::MediaMetadataPtr sanitizeAndConvertToMojo(
-      const MediaMetadata*);
+      const MediaMetadata*,
+      ExecutionContext*);
 };
 
 }  // namespace blink

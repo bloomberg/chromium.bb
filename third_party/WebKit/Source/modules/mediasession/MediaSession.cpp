@@ -83,8 +83,8 @@ void MediaSession::dispose() {
 void MediaSession::setMetadata(MediaMetadata* metadata) {
   if (mojom::blink::MediaSessionService* service =
           getService(m_scriptState.get())) {
-    service->SetMetadata(
-        MediaMetadataSanitizer::sanitizeAndConvertToMojo(metadata));
+    service->SetMetadata(MediaMetadataSanitizer::sanitizeAndConvertToMojo(
+        metadata, getExecutionContext()));
   }
 }
 
