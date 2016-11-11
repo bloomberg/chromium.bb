@@ -13677,11 +13677,24 @@ error::Error GLES2DecoderImpl::DoCompressedTexSubImage(
     return error::kNoError;
   }
 
-  // Note: There is no need to deal with texture cleared tracking here
-  // because the validation above means you can only get here if the level
-  // is already a matching compressed format and in that case
-  // CompressedTexImage{2|3}D already cleared the texture.
-  DCHECK(texture->IsLevelCleared(target, level));
+  if (!texture->IsLevelCleared(target, level)) {
+    // This can only happen if the compressed texture was allocated
+    // using TexStorage{2|3}D.
+    DCHECK(texture->IsImmutable());
+    GLsizei level_width = 0, level_height = 0, level_depth = 0;
+    bool success = texture->GetLevelSize(
+        target, level, &level_width, &level_height, &level_depth);
+    DCHECK(success);
+    if (xoffset == 0 && width == level_width &&
+        yoffset == 0 && height == level_height &&
+        zoffset == 0 && depth == level_depth) {
+      // We can skip the clear if we're uploading the entire level.
+      texture_manager()->SetLevelCleared(texture_ref, target, level, true);
+    } else {
+      texture_manager()->ClearTextureLevel(this, texture_ref, target, level);
+    }
+    DCHECK(texture->IsLevelCleared(target, level));
+  }
 
   const CompressedFormatInfo* format_info =
       GetCompressedFormatInfo(internal_format);
