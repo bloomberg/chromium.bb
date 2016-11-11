@@ -21,6 +21,10 @@ namespace automationInternal {
 
     // The source of this event.
     DOMString eventFrom;
+
+    // The mouse coordinates when this event fired.
+    double mouseX;
+    double mouseY;
   };
 
   // All possible actions that can be performed on automation nodes.

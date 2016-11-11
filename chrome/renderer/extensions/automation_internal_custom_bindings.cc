@@ -1170,6 +1170,10 @@ void AutomationInternalCustomBindings::OnAccessibilityEvent(
                     CreateV8String(isolate, ToString(params.event_type)));
   event_params->Set(CreateV8String(isolate, "eventFrom"),
                     CreateV8String(isolate, ToString(params.event_from)));
+  event_params->Set(CreateV8String(isolate, "mouseX"),
+                    v8::Integer::New(GetIsolate(), params.mouse_location.x()));
+  event_params->Set(CreateV8String(isolate, "mouseY"),
+                    v8::Integer::New(GetIsolate(), params.mouse_location.y()));
   args->Set(0U, event_params);
   context()->DispatchEvent("automationInternal.onAccessibilityEvent", args);
 }

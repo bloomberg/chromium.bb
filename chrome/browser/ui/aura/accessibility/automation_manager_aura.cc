@@ -18,6 +18,7 @@
 #include "content/public/browser/browser_context.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
 #include "ui/views/view.h"
@@ -185,6 +186,7 @@ void AutomationManagerAura::SendEvent(BrowserContext* context,
   params.tree_id = 0;
   params.id = aura_obj->GetID();
   params.event_type = event_type;
+  params.mouse_location = aura::Env::GetInstance()->last_mouse_location();
   AutomationEventRouter* router = AutomationEventRouter::GetInstance();
   router->DispatchAccessibilityEvent(params);
 

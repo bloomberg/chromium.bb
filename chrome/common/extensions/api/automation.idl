@@ -313,6 +313,9 @@
     // The source of this event.
     DOMString eventFrom;
 
+    long mouseX;
+    long mouseY;
+
     // Stops this event from further processing except for any remaining
     // listeners on $(ref:AutomationEvent.target).
     static void stopPropagation();
