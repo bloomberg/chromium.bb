@@ -126,6 +126,8 @@ EGLNativeDisplayType g_native_display = EGL_DEFAULT_DISPLAY;
 
 const char* g_egl_extensions = nullptr;
 bool g_egl_create_context_robustness_supported = false;
+bool g_egl_create_context_bind_generates_resource_supported = false;
+bool g_egl_create_context_webgl_compatability_supported = false;
 bool g_egl_sync_control_supported = false;
 bool g_egl_window_fixed_size_supported = false;
 bool g_egl_surfaceless_context_supported = false;
@@ -478,6 +480,10 @@ bool GLSurfaceEGL::InitializeOneOff(EGLNativeDisplayType native_display) {
   g_egl_extensions = eglQueryString(g_display, EGL_EXTENSIONS);
   g_egl_create_context_robustness_supported =
       HasEGLExtension("EGL_EXT_create_context_robustness");
+  g_egl_create_context_bind_generates_resource_supported =
+      HasEGLExtension("EGL_CHROMIUM_create_context_bind_generates_resource");
+  g_egl_create_context_webgl_compatability_supported =
+      HasEGLExtension("EGL_ANGLE_create_context_webgl_compatibility");
   g_egl_sync_control_supported =
       HasEGLExtension("EGL_CHROMIUM_sync_control");
   g_egl_window_fixed_size_supported =
@@ -509,7 +515,7 @@ bool GLSurfaceEGL::InitializeOneOff(EGLNativeDisplayType native_display) {
     // to query for supported GL extensions.
     scoped_refptr<GLSurface> surface = new SurfacelessEGL(gfx::Size(1, 1));
     scoped_refptr<GLContext> context = InitializeGLContext(
-        new GLContextEGL(nullptr), surface.get(), PreferIntegratedGpu);
+        new GLContextEGL(nullptr), surface.get(), GLContextAttribs());
     if (!context->MakeCurrent(surface.get()))
       g_egl_surfaceless_context_supported = false;
 
@@ -534,6 +540,8 @@ void GLSurfaceEGL::ResetForTesting() {
 
   g_egl_extensions = nullptr;
   g_egl_create_context_robustness_supported = false;
+  g_egl_create_context_bind_generates_resource_supported = false;
+  g_egl_create_context_webgl_compatability_supported = false;
   g_egl_sync_control_supported = false;
   g_egl_window_fixed_size_supported = false;
   g_egl_surface_orientation_supported = false;
@@ -566,6 +574,14 @@ bool GLSurfaceEGL::HasEGLExtension(const char* name) {
 // static
 bool GLSurfaceEGL::IsCreateContextRobustnessSupported() {
   return g_egl_create_context_robustness_supported;
+}
+
+bool GLSurfaceEGL::IsCreateContextBindGeneratesResourceSupported() {
+  return g_egl_create_context_bind_generates_resource_supported;
+}
+
+bool GLSurfaceEGL::IsCreateContextWebGLCompatabilitySupported() {
+  return g_egl_create_context_webgl_compatability_supported;
 }
 
 // static

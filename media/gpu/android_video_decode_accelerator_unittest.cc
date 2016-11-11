@@ -70,7 +70,7 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
     ASSERT_TRUE(gl::init::InitializeGLOneOff());
     surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size(1024, 1024));
     context_ = gl::init::CreateGLContext(nullptr, surface_.get(),
-                                         gl::PreferDiscreteGpu);
+                                         gl::GLContextAttribs());
     context_->MakeCurrent(surface_.get());
 
     // Start a message loop because AVDA starts a timer task.

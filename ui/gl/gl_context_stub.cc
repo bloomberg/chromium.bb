@@ -12,8 +12,8 @@ GLContextStub::GLContextStub() : GLContextReal(nullptr) {}
 GLContextStub::GLContextStub(GLShareGroup* share_group)
     : GLContextReal(share_group) {}
 
-bool GLContextStub::Initialize(
-    GLSurface* compatible_surface, GpuPreference gpu_preference) {
+bool GLContextStub::Initialize(GLSurface* compatible_surface,
+                               const GLContextAttribs& attribs) {
   return true;
 }
 

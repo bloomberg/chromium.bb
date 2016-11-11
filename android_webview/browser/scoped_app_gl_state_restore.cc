@@ -25,7 +25,7 @@ class AppContextSurface {
       : surface(new gl::GLSurfaceStub),
         context(gl::init::CreateGLContext(nullptr,
                                           surface.get(),
-                                          gl::PreferDiscreteGpu)) {}
+                                          gl::GLContextAttribs())) {}
   void MakeCurrent() { context->MakeCurrent(surface.get()); }
 
  private:

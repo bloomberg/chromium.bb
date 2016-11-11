@@ -91,11 +91,17 @@ GLContextCGL::GLContextCGL(GLShareGroup* share_group)
 }
 
 bool GLContextCGL::Initialize(GLSurface* compatible_surface,
-                              GpuPreference gpu_preference) {
+                              const GLContextAttribs& attribs) {
   DCHECK(compatible_surface);
 
-  gpu_preference = ui::GpuSwitchingManager::GetInstance()->AdjustGpuPreference(
-      gpu_preference);
+  // webgl_compatibility_context and disabling bind_generates_resource are not
+  // supported.
+  DCHECK(!attribs.webgl_compatibility_context &&
+         attribs.bind_generates_resource);
+
+  GpuPreference gpu_preference =
+      ui::GpuSwitchingManager::GetInstance()->AdjustGpuPreference(
+          attribs.gpu_preference);
 
   GLContextCGL* share_context = share_group() ?
       static_cast<GLContextCGL*>(share_group()->GetContext()) : nullptr;

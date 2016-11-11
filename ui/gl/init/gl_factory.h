@@ -17,6 +17,7 @@
 namespace gl {
 
 class GLContext;
+struct GLContextAttribs;
 class GLShareGroup;
 class GLSurface;
 
@@ -50,7 +51,7 @@ GL_INIT_EXPORT bool GetGLWindowSystemBindingInfo(
 GL_INIT_EXPORT scoped_refptr<GLContext> CreateGLContext(
     GLShareGroup* share_group,
     GLSurface* compatible_surface,
-    GpuPreference gpu_preference);
+    const GLContextAttribs& attribs);
 
 // Creates a GL surface that renders directly to a view.
 GL_INIT_EXPORT scoped_refptr<GLSurface> CreateViewGLSurface(

@@ -190,7 +190,7 @@ class TextureUploadPerfTest : public testing::Test {
     surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
     gl_context_ =
         gl::init::CreateGLContext(nullptr,  // share_group
-                                  surface_.get(), gl::PreferIntegratedGpu);
+                                  surface_.get(), gl::GLContextAttribs());
     ui::ScopedMakeCurrent smc(gl_context_.get(), surface_.get());
     glGenTextures(1, &color_texture_);
     glBindTexture(GL_TEXTURE_2D, color_texture_);

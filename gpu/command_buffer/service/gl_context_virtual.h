@@ -34,7 +34,7 @@ class GPU_EXPORT GLContextVirtual : public gl::GLContext {
 
   // Implement GLContext.
   bool Initialize(gl::GLSurface* compatible_surface,
-                  gl::GpuPreference gpu_preference) override;
+                  const gl::GLContextAttribs& attribs) override;
   bool MakeCurrent(gl::GLSurface* surface) override;
   void ReleaseCurrent(gl::GLSurface* surface) override;
   bool IsCurrent(gl::GLSurface* surface) override;

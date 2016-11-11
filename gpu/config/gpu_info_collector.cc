@@ -45,7 +45,7 @@ scoped_refptr<gl::GLSurface> InitializeGLSurface() {
 
 scoped_refptr<gl::GLContext> InitializeGLContext(gl::GLSurface* surface) {
   scoped_refptr<gl::GLContext> context(
-      gl::init::CreateGLContext(nullptr, surface, gl::PreferIntegratedGpu));
+      gl::init::CreateGLContext(nullptr, surface, gl::GLContextAttribs()));
   if (!context.get()) {
     LOG(ERROR) << "gl::init::CreateGLContext failed";
     return NULL;

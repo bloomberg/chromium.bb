@@ -273,8 +273,10 @@ bool Context::CreateService(gl::GLSurface* gl_surface) {
 
   decoder->set_engine(command_executor.get());
 
+  gl::GLContextAttribs context_attribs;
+  context_attribs.gpu_preference = gl::PreferDiscreteGpu;
   scoped_refptr<gl::GLContext> gl_context(
-      gl::init::CreateGLContext(nullptr, gl_surface, gl::PreferDiscreteGpu));
+      gl::init::CreateGLContext(nullptr, gl_surface, context_attribs));
   if (!gl_context)
     return false;
 

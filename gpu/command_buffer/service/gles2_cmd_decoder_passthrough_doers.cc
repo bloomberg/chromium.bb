@@ -136,23 +136,13 @@ GLuint GetFramebufferServiceID(GLuint client_id,
 }
 
 GLuint GetTransformFeedbackServiceID(GLuint client_id,
-                                     ClientServiceMap<GLuint, GLuint>* id_map,
-                                     bool create_if_missing) {
-  return GetServiceID(client_id, id_map, create_if_missing, []() {
-    GLuint service_id = 0;
-    glGenTransformFeedbacks(1, &service_id);
-    return service_id;
-  });
+                                     ClientServiceMap<GLuint, GLuint>* id_map) {
+  return id_map->GetServiceIDOrInvalid(client_id);
 }
 
 GLuint GetVertexArrayServiceID(GLuint client_id,
-                               ClientServiceMap<GLuint, GLuint>* id_map,
-                               bool create_if_missing) {
-  return GetServiceID(client_id, id_map, create_if_missing, []() {
-    GLuint service_id = 0;
-    glGenVertexArraysOES(1, &service_id);
-    return service_id;
-  });
+                               ClientServiceMap<GLuint, GLuint>* id_map) {
+  return id_map->GetServiceIDOrInvalid(client_id);
 }
 
 GLuint GetProgramServiceID(GLuint client_id, PassthroughResources* resources) {
@@ -290,8 +280,7 @@ error::Error GLES2DecoderPassthroughImpl::DoBindTransformFeedback(
     GLuint transformfeedback) {
   glBindTransformFeedback(
       target, GetTransformFeedbackServiceID(transformfeedback,
-                                            &transform_feedback_id_map_,
-                                            bind_generates_resource_));
+                                            &transform_feedback_id_map_));
   return error::kNoError;
 }
 
@@ -723,20 +712,9 @@ error::Error GLES2DecoderPassthroughImpl::DoFramebufferRenderbuffer(
     GLenum attachment,
     GLenum renderbuffertarget,
     GLuint renderbuffer) {
-  // TODO(geofflang): Handle this case in ANGLE by adding a WebGL validation
-  // mode.
-  if (attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
-    glFramebufferRenderbufferEXT(
-        target, GL_DEPTH_ATTACHMENT, renderbuffertarget,
-        GetRenderbufferServiceID(renderbuffer, resources_, false));
-    glFramebufferRenderbufferEXT(
-        target, GL_STENCIL_ATTACHMENT, renderbuffertarget,
-        GetRenderbufferServiceID(renderbuffer, resources_, false));
-  } else {
-    glFramebufferRenderbufferEXT(
-        target, attachment, renderbuffertarget,
-        GetRenderbufferServiceID(renderbuffer, resources_, false));
-  }
+  glFramebufferRenderbufferEXT(
+      target, attachment, renderbuffertarget,
+      GetRenderbufferServiceID(renderbuffer, resources_, false));
   return error::kNoError;
 }
 
@@ -1344,7 +1322,7 @@ error::Error GLES2DecoderPassthroughImpl::DoIsTransformFeedback(
     GLuint transformfeedback,
     uint32_t* result) {
   *result = glIsTransformFeedback(GetTransformFeedbackServiceID(
-      transformfeedback, &transform_feedback_id_map_, false));
+      transformfeedback, &transform_feedback_id_map_));
   return error::kNoError;
 }
 
@@ -2209,14 +2187,13 @@ error::Error GLES2DecoderPassthroughImpl::DoDeleteVertexArraysOES(
 
 error::Error GLES2DecoderPassthroughImpl::DoIsVertexArrayOES(GLuint array,
                                                              uint32_t* result) {
-  *result = glIsVertexArrayOES(
-      GetVertexArrayServiceID(array, &vertex_array_id_map_, false));
+  *result =
+      glIsVertexArrayOES(GetVertexArrayServiceID(array, &vertex_array_id_map_));
   return error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoBindVertexArrayOES(GLuint array) {
-  glBindVertexArrayOES(GetVertexArrayServiceID(array, &vertex_array_id_map_,
-                                               bind_generates_resource_));
+  glBindVertexArrayOES(GetVertexArrayServiceID(array, &vertex_array_id_map_));
   return error::kNoError;
 }
 

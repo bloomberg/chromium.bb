@@ -1843,6 +1843,21 @@ const int32_t kContextType = 0x10004;
 
 }  // namespace
 
+bool IsWebGLContextType(ContextType context_type) {
+  // Switch statement to cause a compile-time error if we miss a case.
+  switch (context_type) {
+    case CONTEXT_TYPE_WEBGL1:
+    case CONTEXT_TYPE_WEBGL2:
+      return true;
+    case CONTEXT_TYPE_OPENGLES2:
+    case CONTEXT_TYPE_OPENGLES3:
+      return false;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
 ContextCreationAttribHelper::ContextCreationAttribHelper()
     : gpu_preference(gl::PreferIntegratedGpu),
       alpha_size(-1),

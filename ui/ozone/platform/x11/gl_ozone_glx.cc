@@ -85,9 +85,9 @@ bool GLOzoneGLX::GetGLWindowSystemBindingInfo(
 scoped_refptr<gl::GLContext> GLOzoneGLX::CreateGLContext(
     gl::GLShareGroup* share_group,
     gl::GLSurface* compatible_surface,
-    gl::GpuPreference gpu_preference) {
+    const gl::GLContextAttribs& attribs) {
   return gl::InitializeGLContext(new gl::GLContextGLX(share_group),
-                                 compatible_surface, gpu_preference);
+                                 compatible_surface, attribs);
 }
 
 scoped_refptr<gl::GLSurface> GLOzoneGLX::CreateViewGLSurface(

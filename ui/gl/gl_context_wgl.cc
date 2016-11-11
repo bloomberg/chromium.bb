@@ -19,8 +19,13 @@ GLContextWGL::GLContextWGL(GLShareGroup* share_group)
     : GLContextReal(share_group), context_(nullptr) {
 }
 
-bool GLContextWGL::Initialize(
-    GLSurface* compatible_surface, GpuPreference gpu_preference) {
+bool GLContextWGL::Initialize(GLSurface* compatible_surface,
+                              const GLContextAttribs& attribs) {
+  // webgl_compatibility_context and disabling bind_generates_resource are not
+  // supported.
+  DCHECK(!attribs.webgl_compatibility_context &&
+         attribs.bind_generates_resource);
+
   // Get the handle of another initialized context in the share group _before_
   // setting context_. Otherwise this context will be considered initialized
   // and could potentially be returned by GetHandle.

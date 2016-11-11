@@ -27,6 +27,7 @@
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/query_manager.h"
+#include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "gpu/ipc/common/gpu_messages.h"
@@ -569,8 +570,10 @@ bool GpuCommandBufferStub::Initialize(
   if (use_virtualized_gl_context_ && gl_share_group) {
     context = gl_share_group->GetSharedContext(surface_.get());
     if (!context.get()) {
-      context = gl::init::CreateGLContext(gl_share_group, surface_.get(),
-                                          init_params.attribs.gpu_preference);
+      context = gl::init::CreateGLContext(
+          gl_share_group, surface_.get(),
+          GenerateGLContextAttribs(init_params.attribs,
+                                   context_group_->gpu_preferences()));
       if (!context.get()) {
         DLOG(ERROR) << "Failed to create shared context for virtualization.";
         return false;
@@ -587,8 +590,10 @@ bool GpuCommandBufferStub::Initialize(
            gl::GetGLImplementation() == gl::kGLImplementationMockGL);
     context = new GLContextVirtual(
         gl_share_group, context.get(), decoder_->AsWeakPtr());
-    if (!context->Initialize(surface_.get(),
-                             init_params.attribs.gpu_preference)) {
+    if (!context->Initialize(
+            surface_.get(),
+            GenerateGLContextAttribs(init_params.attribs,
+                                     context_group_->gpu_preferences()))) {
       // The real context created above for the default offscreen surface
       // might not be compatible with this surface.
       context = NULL;
@@ -597,8 +602,10 @@ bool GpuCommandBufferStub::Initialize(
     }
   }
   if (!context.get()) {
-    context = gl::init::CreateGLContext(gl_share_group, surface_.get(),
-                                        init_params.attribs.gpu_preference);
+    context = gl::init::CreateGLContext(
+        gl_share_group, surface_.get(),
+        GenerateGLContextAttribs(init_params.attribs,
+                                 context_group_->gpu_preferences()));
   }
   if (!context.get()) {
     DLOG(ERROR) << "Failed to create context.";

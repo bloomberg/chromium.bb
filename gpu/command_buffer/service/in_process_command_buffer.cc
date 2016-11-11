@@ -37,6 +37,7 @@
 #include "gpu/command_buffer/service/memory_program_cache.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/query_manager.h"
+#include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "ui/gfx/geometry/size.h"
@@ -363,20 +364,28 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
     context_ = gl_share_group_->GetSharedContext(surface_.get());
     if (!context_.get()) {
       context_ = gl::init::CreateGLContext(
-          gl_share_group_.get(), surface_.get(), params.attribs.gpu_preference);
+          gl_share_group_.get(), surface_.get(),
+          GenerateGLContextAttribs(
+              params.attribs, decoder_->GetContextGroup()->gpu_preferences()));
       gl_share_group_->SetSharedContext(surface_.get(), context_.get());
     }
 
     context_ = new GLContextVirtual(
         gl_share_group_.get(), context_.get(), decoder_->AsWeakPtr());
-    if (context_->Initialize(surface_.get(), params.attribs.gpu_preference)) {
+    if (context_->Initialize(
+            surface_.get(),
+            GenerateGLContextAttribs(
+                params.attribs,
+                decoder_->GetContextGroup()->gpu_preferences()))) {
       VLOG(1) << "Created virtual GL context.";
     } else {
       context_ = NULL;
     }
   } else {
-    context_ = gl::init::CreateGLContext(gl_share_group_.get(), surface_.get(),
-                                         params.attribs.gpu_preference);
+    context_ = gl::init::CreateGLContext(
+        gl_share_group_.get(), surface_.get(),
+        GenerateGLContextAttribs(
+            params.attribs, decoder_->GetContextGroup()->gpu_preferences()));
   }
 
   if (!context_.get()) {

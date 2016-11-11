@@ -54,9 +54,9 @@ bool GLOzoneEGL::GetGLWindowSystemBindingInfo(
 scoped_refptr<gl::GLContext> GLOzoneEGL::CreateGLContext(
     gl::GLShareGroup* share_group,
     gl::GLSurface* compatible_surface,
-    gl::GpuPreference gpu_preference) {
+    const gl::GLContextAttribs& attribs) {
   return gl::InitializeGLContext(new gl::GLContextEGL(share_group),
-                                 compatible_surface, gpu_preference);
+                                 compatible_surface, attribs);
 }
 
 scoped_refptr<gl::GLSurface> GLOzoneEGL::CreateSurfacelessViewGLSurface(

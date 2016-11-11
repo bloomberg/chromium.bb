@@ -23,7 +23,7 @@ GLContextVirtual::GLContextVirtual(gl::GLShareGroup* share_group,
       decoder_(decoder) {}
 
 bool GLContextVirtual::Initialize(gl::GLSurface* compatible_surface,
-                                  gl::GpuPreference gpu_preference) {
+                                  const gl::GLContextAttribs& attribs) {
   SetGLStateRestorer(new GLStateRestorerImpl(decoder_));
   return shared_context_->MakeVirtuallyCurrent(this, compatible_surface);
 }

@@ -20,7 +20,12 @@ GLContextOSMesa::GLContextOSMesa(GLShareGroup* share_group)
 }
 
 bool GLContextOSMesa::Initialize(GLSurface* compatible_surface,
-                                 GpuPreference gpu_preference) {
+                                 const GLContextAttribs& attribs) {
+  // webgl_compatibility_context and disabling bind_generates_resource are not
+  // supported.
+  DCHECK(!attribs.webgl_compatibility_context &&
+         attribs.bind_generates_resource);
+
   DCHECK(!context_);
 
   OSMesaContext share_handle = static_cast<OSMesaContext>(

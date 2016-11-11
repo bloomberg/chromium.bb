@@ -189,8 +189,8 @@ void FakeWindow::InitializeOnRT(base::WaitableEvent* sync) {
   surface_ = gl::init::CreateOffscreenGLSurface(surface_size_);
   DCHECK(surface_);
   DCHECK(surface_->GetHandle());
-  context_ =
-      gl::init::CreateGLContext(nullptr, surface_.get(), gl::PreferDiscreteGpu);
+  context_ = gl::init::CreateGLContext(nullptr, surface_.get(),
+                                       gl::GLContextAttribs());
   DCHECK(context_);
   sync->Signal();
 }

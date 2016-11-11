@@ -96,6 +96,8 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool chromium_color_buffer_float_rgba = false;
     bool angle_robust_client_memory = false;
     bool khr_debug = false;
+    bool chromium_bind_generates_resource = false;
+    bool angle_webgl_compatibility = false;
   };
 
   FeatureInfo();

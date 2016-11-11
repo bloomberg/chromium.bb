@@ -70,7 +70,7 @@ bool GetGLWindowSystemBindingInfo(GLWindowSystemBindingInfo* info) {
 
 scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
                                          GLSurface* compatible_surface,
-                                         GpuPreference gpu_preference) {
+                                         const GLContextAttribs& attribs) {
   TRACE_EVENT0("gpu", "gl::init::CreateGLContext");
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL:
@@ -81,10 +81,10 @@ scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
       // always be creating the context with an offscreen surface first.
       DCHECK(compatible_surface->IsOffscreen());
       return InitializeGLContext(new GLContextCGL(share_group),
-                                 compatible_surface, gpu_preference);
+                                 compatible_surface, attribs);
     case kGLImplementationOSMesaGL:
       return InitializeGLContext(new GLContextOSMesa(share_group),
-                                 compatible_surface, gpu_preference);
+                                 compatible_surface, attribs);
     case kGLImplementationMockGL:
       return new GLContextStub(share_group);
     default:

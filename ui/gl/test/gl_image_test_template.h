@@ -165,7 +165,7 @@ class GLImageTest : public testing::Test {
     GLImageTestSupport::InitializeGL();
     surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
     context_ =
-        gl::init::CreateGLContext(nullptr, surface_.get(), PreferIntegratedGpu);
+        gl::init::CreateGLContext(nullptr, surface_.get(), GLContextAttribs());
     context_->MakeCurrent(surface_.get());
   }
   void TearDown() override {

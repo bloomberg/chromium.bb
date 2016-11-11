@@ -34,6 +34,7 @@
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
+#include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -325,16 +326,20 @@ void GLManager::InitializeWithCommandLine(
   if (base_context_) {
     context_ = scoped_refptr<gl::GLContext>(new gpu::GLContextVirtual(
         share_group_.get(), base_context_->get(), decoder_->AsWeakPtr()));
-    ASSERT_TRUE(context_->Initialize(surface_.get(), attribs.gpu_preference));
+    ASSERT_TRUE(context_->Initialize(
+        surface_.get(),
+        GenerateGLContextAttribs(attribs, context_group->gpu_preferences())));
   } else {
     if (real_gl_context) {
       context_ = scoped_refptr<gl::GLContext>(new gpu::GLContextVirtual(
           share_group_.get(), real_gl_context, decoder_->AsWeakPtr()));
-      ASSERT_TRUE(
-          context_->Initialize(surface_.get(), attribs.gpu_preference));
+      ASSERT_TRUE(context_->Initialize(
+          surface_.get(),
+          GenerateGLContextAttribs(attribs, context_group->gpu_preferences())));
     } else {
-      context_ = gl::init::CreateGLContext(share_group_.get(), surface_.get(),
-                                           attribs.gpu_preference);
+      context_ = gl::init::CreateGLContext(
+          share_group_.get(), surface_.get(),
+          GenerateGLContextAttribs(attribs, context_group->gpu_preferences()));
     }
   }
   ASSERT_TRUE(context_.get() != NULL) << "could not create GL context";
@@ -398,9 +403,9 @@ void GLManager::SetupBaseContext() {
     gfx::Size size(4, 4);
     base_surface_ = new scoped_refptr<gl::GLSurface>(
         gl::init::CreateOffscreenGLSurface(size));
-    gl::GpuPreference gpu_preference(gl::PreferDiscreteGpu);
     base_context_ = new scoped_refptr<gl::GLContext>(gl::init::CreateGLContext(
-        base_share_group_->get(), base_surface_->get(), gpu_preference));
+        base_share_group_->get(), base_surface_->get(),
+        gl::GLContextAttribs()));
     #endif
   }
   ++use_count_;

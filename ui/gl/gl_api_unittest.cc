@@ -20,7 +20,7 @@ namespace gl {
 class GLContextFake : public GLContext {
  public:
   bool Initialize(GLSurface* compatible_surface,
-                  GpuPreference gpu_preference) override {
+                  const GLContextAttribs& attribs) override {
     return true;
   }
   bool MakeCurrent(GLSurface* surface) override { return true; }

@@ -15,6 +15,7 @@
 
 namespace gl {
 class GLContext;
+struct GLContextAttribs;
 class GLShareGroup;
 class GLSurface;
 }
@@ -52,7 +53,7 @@ class OZONE_BASE_EXPORT GLOzone {
   virtual scoped_refptr<gl::GLContext> CreateGLContext(
       gl::GLShareGroup* share_group,
       gl::GLSurface* compatible_surface,
-      gl::GpuPreference gpu_preference) = 0;
+      const gl::GLContextAttribs& attribs) = 0;
 
   // Creates a GL surface that renders directly to a view.
   virtual scoped_refptr<gl::GLSurface> CreateViewGLSurface(

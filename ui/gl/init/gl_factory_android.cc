@@ -33,7 +33,7 @@ class GLNonOwnedContext : public GLContextReal {
 
   // Implement GLContext.
   bool Initialize(GLSurface* compatible_surface,
-                  GpuPreference gpu_preference) override;
+                  const GLContextAttribs& attribs) override;
   bool MakeCurrent(GLSurface* surface) override;
   void ReleaseCurrent(GLSurface* surface) override {}
   bool IsCurrent(GLSurface* surface) override { return true; }
@@ -54,7 +54,7 @@ GLNonOwnedContext::GLNonOwnedContext(GLShareGroup* share_group)
     : GLContextReal(share_group), display_(nullptr) {}
 
 bool GLNonOwnedContext::Initialize(GLSurface* compatible_surface,
-                                   GpuPreference gpu_preference) {
+                                   const GLContextAttribs& attribs) {
   display_ = eglGetDisplay(EGL_DEFAULT_DISPLAY);
   return true;
 }
@@ -94,21 +94,21 @@ bool GetGLWindowSystemBindingInfo(GLWindowSystemBindingInfo* info) {
 
 scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
                                          GLSurface* compatible_surface,
-                                         GpuPreference gpu_preference) {
+                                         const GLContextAttribs& attribs) {
   TRACE_EVENT0("gpu", "gl::init::CreateGLContext");
   switch (GetGLImplementation()) {
     case kGLImplementationMockGL:
       return scoped_refptr<GLContext>(new GLContextStub(share_group));
     case kGLImplementationOSMesaGL:
       return InitializeGLContext(new GLContextOSMesa(share_group),
-                                 compatible_surface, gpu_preference);
+                                 compatible_surface, attribs);
     default:
       if (compatible_surface->GetHandle()) {
         return InitializeGLContext(new GLContextEGL(share_group),
-                                   compatible_surface, gpu_preference);
+                                   compatible_surface, attribs);
       } else {
         return InitializeGLContext(new GLNonOwnedContext(share_group),
-                                   compatible_surface, gpu_preference);
+                                   compatible_surface, attribs);
       }
   }
 }

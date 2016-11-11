@@ -44,7 +44,7 @@ TEST_F(GLContextVirtualTest, Reinitialize) {
     share_group->SetSharedContext(GetGLSurface(), base_context.get());
     scoped_refptr<GLContextVirtual> context(new GLContextVirtual(
         share_group, base_context.get(), decoder_->AsWeakPtr()));
-    EXPECT_TRUE(context->Initialize(GetGLSurface(), gl::PreferIntegratedGpu));
+    EXPECT_TRUE(context->Initialize(GetGLSurface(), gl::GLContextAttribs()));
     EXPECT_TRUE(context->MakeCurrent(GetGLSurface()));
   }
   {
@@ -53,7 +53,7 @@ TEST_F(GLContextVirtualTest, Reinitialize) {
     share_group->SetSharedContext(GetGLSurface(), base_context.get());
     scoped_refptr<GLContextVirtual> context(new GLContextVirtual(
         share_group, base_context.get(), decoder_->AsWeakPtr()));
-    EXPECT_TRUE(context->Initialize(GetGLSurface(), gl::PreferIntegratedGpu));
+    EXPECT_TRUE(context->Initialize(GetGLSurface(), gl::GLContextAttribs()));
     EXPECT_TRUE(context->MakeCurrent(GetGLSurface()));
   }
 }

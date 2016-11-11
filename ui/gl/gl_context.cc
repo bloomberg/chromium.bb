@@ -273,8 +273,8 @@ void GLContextReal::SetCurrent(GLSurface* surface) {
 
 scoped_refptr<GLContext> InitializeGLContext(scoped_refptr<GLContext> context,
                                              GLSurface* compatible_surface,
-                                             GpuPreference gpu_preference) {
-  if (!context->Initialize(compatible_surface, gpu_preference))
+                                             const GLContextAttribs& attribs) {
+  if (!context->Initialize(compatible_surface, attribs))
     return nullptr;
   return context;
 }

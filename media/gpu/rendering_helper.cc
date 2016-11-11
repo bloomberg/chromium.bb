@@ -350,7 +350,7 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   screen_size_ = gl_surface_->GetSize();
 
   gl_context_ = gl::init::CreateGLContext(nullptr, gl_surface_.get(),
-                                          gl::PreferIntegratedGpu);
+                                          gl::GLContextAttribs());
   CHECK(gl_context_->MakeCurrent(gl_surface_.get()));
 
   CHECK_GT(params.window_sizes.size(), 0U);

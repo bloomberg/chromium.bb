@@ -1405,6 +1405,11 @@ void FeatureInfo::InitializeFeatures() {
   feature_flags_.khr_debug = gl_version_info_->IsAtLeastGL(4, 3) ||
                              gl_version_info_->IsAtLeastGLES(3, 2) ||
                              extensions.Contains("GL_KHR_debug");
+
+  feature_flags_.chromium_bind_generates_resource =
+      extensions.Contains("GL_CHROMIUM_bind_generates_resource");
+  feature_flags_.angle_webgl_compatibility =
+      extensions.Contains("GL_ANGLE_webgl_compatibility");
 }
 
 bool FeatureInfo::IsES3Capable() const {
@@ -1489,18 +1494,7 @@ void FeatureInfo::EnableES3Validators() {
 }
 
 bool FeatureInfo::IsWebGLContext() const {
-  // Switch statement to cause a compile-time error if we miss a case.
-  switch (context_type_) {
-    case CONTEXT_TYPE_WEBGL1:
-    case CONTEXT_TYPE_WEBGL2:
-      return true;
-    case CONTEXT_TYPE_OPENGLES2:
-    case CONTEXT_TYPE_OPENGLES3:
-      return false;
-  }
-
-  NOTREACHED();
-  return false;
+  return IsWebGLContextType(context_type_);
 }
 
 bool FeatureInfo::IsWebGL1OrES2Context() const {

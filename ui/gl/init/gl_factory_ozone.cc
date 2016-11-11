@@ -80,12 +80,12 @@ bool GetGLWindowSystemBindingInfo(GLWindowSystemBindingInfo* info) {
 
 scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
                                          GLSurface* compatible_surface,
-                                         GpuPreference gpu_preference) {
+                                         const GLContextAttribs& attribs) {
   TRACE_EVENT0("gpu", "gl::init::CreateGLContext");
 
   if (HasGLOzone()) {
     return GetGLOzone()->CreateGLContext(share_group, compatible_surface,
-                                         gpu_preference);
+                                         attribs);
   }
 
   switch (GetGLImplementation()) {
@@ -93,10 +93,10 @@ scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
       return scoped_refptr<GLContext>(new GLContextStub(share_group));
     case kGLImplementationOSMesaGL:
       return InitializeGLContext(new GLContextOSMesa(share_group),
-                                 compatible_surface, gpu_preference);
+                                 compatible_surface, attribs);
     case kGLImplementationEGLGLES2:
       return InitializeGLContext(new GLContextEGL(share_group),
-                                 compatible_surface, gpu_preference);
+                                 compatible_surface, attribs);
     default:
       NOTREACHED();
   }

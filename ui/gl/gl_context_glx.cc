@@ -159,8 +159,13 @@ XDisplay* GLContextGLX::display() {
   return display_;
 }
 
-bool GLContextGLX::Initialize(
-    GLSurface* compatible_surface, GpuPreference gpu_preference) {
+bool GLContextGLX::Initialize(GLSurface* compatible_surface,
+                              const GLContextAttribs& attribs) {
+  // webgl_compatibility_context and disabling bind_generates_resource are not
+  // supported.
+  DCHECK(!attribs.webgl_compatibility_context &&
+         attribs.bind_generates_resource);
+
   display_ = static_cast<XDisplay*>(compatible_surface->GetDisplay());
 
   GLXContext share_handle = static_cast<GLXContext>(
