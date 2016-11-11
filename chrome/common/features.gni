@@ -75,6 +75,9 @@ declare_args() {
   use_vulcanize = true
 }
 
+# Use brlapi from brltty for braille display support.
+use_brlapi = is_chromeos
+
 _enable_printing = enable_basic_printing || enable_print_preview
 
 chrome_grit_defines = [
