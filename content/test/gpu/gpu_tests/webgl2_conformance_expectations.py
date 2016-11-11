@@ -82,12 +82,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Keep a separate set of failures for the R7 240, since it can use a new
     # and updated driver. The older drivers won't ever get fixes from AMD.
-    self.Fail('deqp/functional/gles3/framebufferblit/depth_stencil.html',
-        ['win', ('amd', 0x6613)], bug=638323)
-    self.Fail('deqp/functional/gles3/texturefiltering/2d_array*',
-        ['win', ('amd', 0x6613)], bug=638323)
-    self.Fail('deqp/functional/gles3/texturefiltering/cube*',
-        ['win', ('amd', 0x6613)], bug=638323)
+    # Use ['win', ('amd', 0x6613)] for the R7 240 devices.
+    # We are awesome!
 
     # It's unfortunate that these suppressions need to be so broad, but
     # basically any test that uses readPixels is potentially flaky, and
