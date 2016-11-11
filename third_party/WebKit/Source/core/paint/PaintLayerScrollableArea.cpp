@@ -172,7 +172,7 @@ void PaintLayerScrollableArea::dispose() {
   if (m_resizer)
     m_resizer->destroy();
 
-  clearScrollAnimators();
+  clearScrollableArea();
 
   // Note: it is not safe to call ScrollAnchor::clear if the document is being
   // destroyed, because LayoutObjectChildList::removeChildNode skips the call to
@@ -368,6 +368,7 @@ void PaintLayerScrollableArea::updateScrollOffset(const ScrollOffset& newOffset,
   if (scrollOffset() == newOffset)
     return;
 
+  showOverlayScrollbars();
   ScrollOffset scrollDelta = scrollOffset() - newOffset;
   m_scrollOffset = newOffset;
 
@@ -515,6 +516,10 @@ IntRect PaintLayerScrollableArea::visibleContentRect(
               max(0, layer()->size().height() - horizontalScrollbarHeight)));
 }
 
+void PaintLayerScrollableArea::visibleSizeChanged() {
+  showOverlayScrollbars();
+}
+
 int PaintLayerScrollableArea::visibleHeight() const {
   return layer()->size().height();
 }
@@ -642,6 +647,8 @@ void PaintLayerScrollableArea::updateScrollOrigin() {
 }
 
 void PaintLayerScrollableArea::updateScrollDimensions() {
+  if (m_overflowRect.size() != box().layoutOverflowRect().size())
+    contentsResized();
   m_overflowRect = box().layoutOverflowRect();
   box().flipForWritingMode(m_overflowRect);
   updateScrollOrigin();
@@ -652,22 +659,6 @@ void PaintLayerScrollableArea::setScrollOffsetUnconditionally(
     ScrollType scrollType) {
   cancelScrollAnimation();
   scrollOffsetChanged(offset, scrollType);
-}
-
-void PaintLayerScrollableArea::didChangeScrollbarsHidden() {
-  updateScrollbarsEnabledState();
-}
-
-void PaintLayerScrollableArea::updateScrollbarsEnabledState() {
-  // overflow:scroll should just enable/disable.
-  if (box().style()->overflowX() == OverflowScroll && horizontalScrollbar()) {
-    horizontalScrollbar()->setEnabled(hasHorizontalOverflow() &&
-                                      !scrollbarsHidden());
-  }
-  if (box().style()->overflowY() == OverflowScroll && verticalScrollbar()) {
-    verticalScrollbar()->setEnabled(hasVerticalOverflow() &&
-                                    !scrollbarsHidden());
-  }
 }
 
 void PaintLayerScrollableArea::updateAfterLayout() {
@@ -756,7 +747,11 @@ void PaintLayerScrollableArea::updateAfterLayout() {
     // compositing/overflow/automatically-opt-into-composited-scrolling-after-style-change.html.
     DisableCompositingQueryAsserts disabler;
 
-    updateScrollbarsEnabledState();
+    // overflow:scroll should just enable/disable.
+    if (box().style()->overflowX() == OverflowScroll && horizontalScrollbar())
+      horizontalScrollbar()->setEnabled(hasHorizontalOverflow());
+    if (box().style()->overflowY() == OverflowScroll && verticalScrollbar())
+      verticalScrollbar()->setEnabled(hasVerticalOverflow());
 
     // Set up the range (and page step/line step).
     if (Scrollbar* horizontalScrollbar = this->horizontalScrollbar()) {

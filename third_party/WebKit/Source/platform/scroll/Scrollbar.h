@@ -104,7 +104,7 @@ class PLATFORM_EXPORT Scrollbar : public Widget,
   ScrollbarPart hoveredPart() const override { return m_hoveredPart; }
 
   void styleChanged() override {}
-  void visibilityChanged() override;
+  void setScrollbarsHidden(bool) override;
   bool enabled() const override { return m_enabled; }
   void setEnabled(bool) override;
 

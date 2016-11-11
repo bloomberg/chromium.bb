@@ -168,7 +168,9 @@ void WebScrollbarThemeClientImpl::styleChanged() {
   ASSERT_NOT_REACHED();
 }
 
-void WebScrollbarThemeClientImpl::visibilityChanged() {}
+void WebScrollbarThemeClientImpl::setScrollbarsHidden(bool hidden) {
+  ASSERT_NOT_REACHED();
+}
 
 bool WebScrollbarThemeClientImpl::enabled() const {
   return m_scrollbar.enabled();

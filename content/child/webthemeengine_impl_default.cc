@@ -9,6 +9,7 @@
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/native_theme/overlay_scrollbar_constants_aura.h"
 
 using blink::WebCanvas;
 using blink::WebColor;
@@ -241,6 +242,15 @@ void WebThemeEngineImpl::paint(
   ui::NativeTheme::GetInstanceForWeb()->Paint(
       canvas, NativeThemePart(part), NativeThemeState(state), gfx::Rect(rect),
       native_theme_extra_params);
+}
+
+void WebThemeEngineImpl::getOverlayScrollbarStyle(ScrollbarStyle* style) {
+  style->fadeOutDelaySeconds = ui::kOverlayScrollbarFadeOutDelay.InSecondsF();
+  style->fadeOutDurationSeconds =
+      ui::kOverlayScrollbarFadeOutDuration.InSecondsF();
+  // The other fields in this struct are used only on Android to draw solid
+  // color scrollbars. On other platforms the scrollbars are painted in
+  // NativeTheme so these fields are unused.
 }
 
 #if defined(OS_WIN)

@@ -328,9 +328,9 @@ void FrameView::dispose() {
   // from non-GC'd objects and RootFrameViewport will still have a pointer to
   // this class.
   if (m_viewportScrollableArea)
-    m_viewportScrollableArea->clearScrollAnimators();
+    m_viewportScrollableArea->clearScrollableArea();
 
-  clearScrollAnimators();
+  clearScrollableArea();
 
   // Destroy |m_autoSizeInfo| as early as possible, to avoid dereferencing
   // partially destroyed |this| via |m_autoSizeInfo->m_frameView|.
@@ -1511,6 +1511,7 @@ void FrameView::removeViewportConstrainedObject(LayoutObject* object) {
 void FrameView::viewportSizeChanged(bool widthChanged, bool heightChanged) {
   DCHECK(widthChanged || heightChanged);
 
+  showOverlayScrollbars();
   if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
     // The background must be repainted when the FrameView is resized, even if
     // the initial containing block does not change (so we can't rely on layout
@@ -3652,6 +3653,8 @@ void FrameView::updateScrollOffset(const ScrollOffset& offset,
   if (scrollDelta.isZero())
     return;
 
+  showOverlayScrollbars();
+
   if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
     // Don't scroll the FrameView!
     ASSERT_NOT_REACHED();
@@ -3786,8 +3789,7 @@ void FrameView::updateScrollbarGeometry() {
     if (oldRect != horizontalScrollbar()->frameRect())
       setScrollbarNeedsPaintInvalidation(HorizontalScrollbar);
 
-    horizontalScrollbar()->setEnabled(contentsWidth() > clientWidth &&
-                                      !scrollbarsHidden());
+    horizontalScrollbar()->setEnabled(contentsWidth() > clientWidth);
     horizontalScrollbar()->setProportion(clientWidth, contentsWidth());
     horizontalScrollbar()->offsetDidChange();
   }
@@ -3805,8 +3807,7 @@ void FrameView::updateScrollbarGeometry() {
     if (oldRect != verticalScrollbar()->frameRect())
       setScrollbarNeedsPaintInvalidation(VerticalScrollbar);
 
-    verticalScrollbar()->setEnabled(contentsHeight() > clientHeight &&
-                                    !scrollbarsHidden());
+    verticalScrollbar()->setEnabled(contentsHeight() > clientHeight);
     verticalScrollbar()->setProportion(clientHeight, contentsHeight());
     verticalScrollbar()->offsetDidChange();
   }
@@ -3872,10 +3873,6 @@ void FrameView::updateScrollbarsIfNeeded() {
   if (m_needsScrollbarsUpdate || needsScrollbarReconstruction() ||
       scrollOriginChanged())
     updateScrollbars();
-}
-
-void FrameView::didChangeScrollbarsHidden() {
-  updateScrollbars();
 }
 
 void FrameView::updateScrollbars() {

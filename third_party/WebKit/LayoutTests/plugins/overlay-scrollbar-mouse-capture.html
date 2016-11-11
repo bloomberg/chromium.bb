@@ -17,29 +17,36 @@
     <pre id="console"></pre>
 </body>
 <script>
-    description('This tests whether scrolling still works correctly when an overlay scrollbar is over a plugin. The plugin should still receive mouse down/up events when clicking an overlay scrollbar. Scrolling should still work correctly too. However mouse capture should not be started on the plugin as this would interfere with events going to the scrollbar.');
+    description('This tests whether scrolling still works correctly when an '
+    + 'overlay scrollbar is over a plugin. Clicking on the overlay scrollbar '
+    + 'should cause it to activate and capture input.');
 
     window.jsTestIsAsync = true;
     var startLogging = false;
     var eventHistory = [];
 
     function runTest() {
-        // Mouse down on the scrollbar which is over the plugin.
+        // Mouse down on the scrollbar thumb which is over the plugin.
         eventSender.mouseMoveTo(window.innerWidth - 1,
-                                window.innerHeight - 1);
+                                15);
         eventSender.mouseDown();
-        // Move outside the plugin, it shouldn't receive any events
-        // because there shouldn't be any mouse capture.
-        eventSender.mouseMoveTo(5, 5);
+        // Drag the thumb down but move off the thumb, the plugin shouldn't
+        // receive any events because there shouldn't be any mouse capture.
+        eventSender.mouseMoveTo(window.innerWidth - 20, window.innerHeight - 10);
         // A mouse up will be received because when dragging off a
         // scrollbar and releasing, it dispatches an event to the last
         // element under the mouse.
         eventSender.mouseUp();
 
+        // TODO(bokan): This is wrong, if the scrollbar captures the input the
+        // plugin shouldn't be receiving events. crbug.com/636436.
         shouldBe('eventHistory.length', '2');
         shouldBe('eventHistory[0]', '"plugin.mousedown"');
         shouldBe('eventHistory[1]', '"plugin.mouseup"');
-        shouldBecomeEqual('window.scrollY > 0', 'true', finishJSTest);
+        requestAnimationFrame(function() {
+          shouldBeTrue('window.scrollY > 0');
+          finishJSTest();
+        });
     }
 
     window.onload = function() {
@@ -48,6 +55,10 @@
             return;
         }
 
+        // TODO(bokan): This doesn't really enable overlays since it flips the
+        // RuntimeEnabledFeature after the ScrollbarTheme is initialized. It
+        // makes the non overlay scrollbars think they're overlay so it works
+        // for this test but it should probably be in a unit test.
         internals.settings.setOverlayScrollbarsEnabled(true);
 
         var d = document.getElementById('container');
