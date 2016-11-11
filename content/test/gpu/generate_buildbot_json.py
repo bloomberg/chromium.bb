@@ -179,19 +179,6 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'win',
     },
-    'Win7 Release (ATI)': {
-      'swarming_dimensions': [
-        {
-          # TODO(kbr): add device PCI ID 6613 once deployed
-          # http://crbug.com/639353
-          'gpu': '1002',
-          'os': 'Windows-2008ServerR2-SP1'
-        },
-      ],
-      'build_config': 'Release',
-      'swarming': True,
-      'os_type': 'win',
-    },
     'Win7 Release (AMD)': {
       'swarming_dimensions': [
         {
@@ -200,19 +187,6 @@ FYI_WATERFALL = {
         },
       ],
       'build_config': 'Release',
-      'swarming': True,
-      'os_type': 'win',
-    },
-    'Win7 Debug (ATI)': {
-      'swarming_dimensions': [
-        {
-          # TODO(kbr): add device PCI ID 6613 once deployed
-          # http://crbug.com/639353
-          'gpu': '1002',
-          'os': 'Windows-2008ServerR2-SP1'
-        },
-      ],
-      'build_config': 'Debug',
       'swarming': True,
       'os_type': 'win',
     },
@@ -349,19 +323,6 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'mac',
     },
-    'Mac 10.10 Release (ATI)': {
-      'swarming_dimensions': [
-        {
-          'gpu': '1002:679e',
-          'os': 'Mac-10.10'
-        },
-      ],
-      'build_config': 'Release',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
-      'os_type': 'mac',
-    },
     'Mac 10.10 Release (AMD)': {
       'swarming_dimensions': [
         {
@@ -370,19 +331,6 @@ FYI_WATERFALL = {
         },
       ],
       'build_config': 'Release',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
-      'os_type': 'mac',
-    },
-    'Mac 10.10 Debug (ATI)': {
-      'swarming_dimensions': [
-        {
-          'gpu': '1002:679e',
-          'os': 'Mac-10.10'
-        },
-      ],
-      'build_config': 'Debug',
       # This bot is a one-off and doesn't have similar slaves in the
       # swarming pool.
       'swarming': False,
@@ -494,19 +442,6 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '8086:041a',
-          'os': 'Linux'
-        },
-      ],
-      'build_config': 'Release',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
-      'os_type': 'linux',
-    },
-    'Linux Release (ATI)': {
-      'swarming_dimensions': [
-        {
-          'gpu': '1002:6779',
           'os': 'Linux'
         },
       ],
@@ -689,19 +624,6 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Windows-2008ServerR2-SP1'
-        },
-      ],
-      'build_config': 'Release',
-      'swarming': True,
-      'os_type': 'win',
-    },
-    'Optional Win7 Release (ATI)': {
-      'swarming_dimensions': [
-        {
-          # TODO(kbr): add device PCI ID 6613 once deployed
-          # http://crbug.com/639353
-          'gpu': '1002',
           'os': 'Windows-2008ServerR2-SP1'
         },
       ],
