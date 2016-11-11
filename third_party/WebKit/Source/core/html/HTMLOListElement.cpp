@@ -25,6 +25,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutListItem.h"
 
 namespace blink {
@@ -78,8 +79,8 @@ void HTMLOListElement::parseAttribute(const QualifiedName& name,
                                       const AtomicString& value) {
   if (name == startAttr) {
     int oldStart = start();
-    bool canParse;
-    int parsedStart = value.toInt(&canParse);
+    int parsedStart = 0;
+    bool canParse = parseHTMLInteger(value, parsedStart);
     m_hasExplicitStart = canParse;
     m_start = canParse ? parsedStart : 0xBADBEEF;
     if (oldStart == start())
