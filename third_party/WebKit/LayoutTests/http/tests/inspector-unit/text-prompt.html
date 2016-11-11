@@ -16,6 +16,13 @@ function test() {
     prompt.complete();
     UnitTest.addResult("Text:" + prompt.text());
     UnitTest.addResult("TextWithCurrentSuggestion:" + prompt.textWithCurrentSuggestion());
+
+    UnitTest.addResult("Test with inexact match:");
+    prompt.clearAutocomplete();
+    prompt.setText("inexactmatch");
+    prompt.complete();
+    UnitTest.addResult("Text:" + prompt.text());
+    UnitTest.addResult("TextWithCurrentSuggestion:" + prompt.textWithCurrentSuggestion());
     UnitTest.completeTest();
 }
 </script>
