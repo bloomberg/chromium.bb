@@ -45,7 +45,9 @@ class CORE_EXPORT EventListener
   virtual bool operator==(const EventListener&) const = 0;
   virtual void handleEvent(ExecutionContext*, Event*) = 0;
   virtual const String& code() const { return emptyString(); }
-  virtual bool belongsToTheCurrentWorld() const { return false; }
+  virtual bool belongsToTheCurrentWorld(ExecutionContext*) const {
+    return false;
+  }
 
   bool isAttribute() const { return virtualisAttribute(); }
   ListenerType type() const { return m_type; }

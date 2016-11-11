@@ -413,9 +413,11 @@ EventListener* EventTarget::getAttributeEventListener(
   EventListenerVector* listenerVector = getEventListeners(eventType);
   if (!listenerVector)
     return nullptr;
+
   for (auto& eventListener : *listenerVector) {
     EventListener* listener = eventListener.listener();
-    if (listener->isAttribute() && listener->belongsToTheCurrentWorld())
+    if (listener->isAttribute() &&
+        listener->belongsToTheCurrentWorld(getExecutionContext()))
       return listener;
   }
   return nullptr;

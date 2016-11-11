@@ -105,7 +105,7 @@ class CORE_EXPORT V8AbstractEventListener : public EventListener,
 
   void clearListenerObject();
 
-  bool belongsToTheCurrentWorld() const final;
+  bool belongsToTheCurrentWorld(ExecutionContext*) const final;
   v8::Isolate* isolate() const { return m_isolate; }
   DOMWrapperWorld& world() const { return *m_world; }
 

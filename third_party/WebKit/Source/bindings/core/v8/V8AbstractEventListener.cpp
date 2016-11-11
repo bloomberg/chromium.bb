@@ -35,6 +35,8 @@
 #include "bindings/core/v8/V8EventListenerHelper.h"
 #include "bindings/core/v8/V8EventTarget.h"
 #include "bindings/core/v8/V8HiddenValue.h"
+#include "core/dom/Document.h"
+#include "core/dom/DocumentParser.h"
 #include "core/events/BeforeUnloadEvent.h"
 #include "core/events/Event.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -199,9 +201,19 @@ v8::Local<v8::Object> V8AbstractEventListener::getReceiverObject(
                                     v8::Local<v8::Object>::Cast(value));
 }
 
-bool V8AbstractEventListener::belongsToTheCurrentWorld() const {
-  return ScriptState::hasCurrentScriptState(isolate()) &&
-         &world() == &DOMWrapperWorld::current(isolate());
+bool V8AbstractEventListener::belongsToTheCurrentWorld(
+    ExecutionContext* executionContext) const {
+  if (ScriptState::hasCurrentScriptState(isolate()) &&
+      &world() == &DOMWrapperWorld::current(isolate()))
+    return true;
+  // If currently parsing, the parser could be accessing this listener
+  // outside of any v8 context; check if it belongs to the main world.
+  if (!isolate()->InContext() && executionContext->isDocument()) {
+    Document* document = toDocument(executionContext);
+    if (document->parser() && document->parser()->isParsing())
+      return world().isMainWorld();
+  }
+  return false;
 }
 
 void V8AbstractEventListener::clearListenerObject() {
