@@ -127,10 +127,13 @@ Polymer({
    * @private
    */
   setMetricsReporting_: function(metricsReporting) {
-    if (this.metricsReporting_) {
-      // TODO(dbeam): hide if changed back to the value Chrome started with.
-      var changed = this.metricsReporting_.enabled != metricsReporting.enabled;
-      this.showRestart_ = changed && !this.metricsReporting_.managed;
+    // TODO(dbeam): remember whether metrics reporting was enabled when Chrome
+    // started.
+    if (metricsReporting.managed) {
+      this.showRestart_ = false;
+    } else if (this.metricsReporting_ &&
+               metricsReporting.enabled != this.metricsReporting_.enabled) {
+      this.showRestart_ = true;
     }
     this.metricsReporting_ = metricsReporting;
   },
