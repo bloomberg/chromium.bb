@@ -6,6 +6,7 @@
 #define NGBox_h
 
 #include "core/CoreExport.h"
+#include "core/layout/ng/ng_layout_input_node.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -20,19 +21,15 @@ class NGPhysicalFragment;
 struct MinAndMaxContentSizes;
 
 // Represents a node to be laid out.
-class CORE_EXPORT NGBox final : public GarbageCollectedFinalized<NGBox> {
+class CORE_EXPORT NGBox final : public NGLayoutInputNode {
  public:
   explicit NGBox(LayoutObject*);
 
   // TODO(layout-ng): make it private and declare a friend class to use in tests
   explicit NGBox(ComputedStyle*);
 
-  // Returns true when done; when this function returns false, it has to be
-  // called again. The out parameter will only be set when this function
-  // returns true. The same constraint space has to be passed each time.
-  // TODO(layout-ng): Should we have a StartLayout function to avoid passing
-  // the same space for each Layout iteration?
-  bool Layout(const NGConstraintSpace*, NGFragmentBase**);
+  bool Layout(const NGConstraintSpace*, NGFragmentBase**) override;
+  NGBox* NextSibling() override;
 
   // Computes the value of min-content and max-content for this box.
   // The return value has the same meaning as for Layout.
@@ -48,12 +45,10 @@ class CORE_EXPORT NGBox final : public GarbageCollectedFinalized<NGBox> {
   const ComputedStyle* Style() const;
   ComputedStyle* MutableStyle();
 
-  NGBox* NextSibling();
-
-  NGBox* FirstChild();
+  NGLayoutInputNode* FirstChild();
 
   void SetNextSibling(NGBox*);
-  void SetFirstChild(NGBox*);
+  void SetFirstChild(NGLayoutInputNode*);
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -79,11 +74,17 @@ class CORE_EXPORT NGBox final : public GarbageCollectedFinalized<NGBox> {
   LayoutBox* layout_box_;
   RefPtr<ComputedStyle> style_;
   Member<NGBox> next_sibling_;
-  Member<NGBox> first_child_;
+  Member<NGLayoutInputNode> first_child_;
   Member<NGLayoutAlgorithm> layout_algorithm_;
   Member<NGLayoutAlgorithm> minmax_algorithm_;
   Member<NGPhysicalFragment> fragment_;
 };
+
+DEFINE_TYPE_CASTS(NGBox,
+                  NGLayoutInputNode,
+                  node,
+                  node->Type() == NGLayoutInputNode::LegacyBlock,
+                  node.Type() == NGLayoutInputNode::LegacyBlock);
 
 }  // namespace blink
 

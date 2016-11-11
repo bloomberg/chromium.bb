@@ -22,7 +22,8 @@
 namespace blink {
 
 NGInlineBox::NGInlineBox(LayoutObject* start_inline, ComputedStyle* block_style)
-    : start_inline_(start_inline),
+    : NGLayoutInputNode(NGLayoutInputNodeType::LegacyInline),
+      start_inline_(start_inline),
       last_inline_(nullptr),
       block_style_(block_style) {
   DCHECK(start_inline);
@@ -30,7 +31,10 @@ NGInlineBox::NGInlineBox(LayoutObject* start_inline, ComputedStyle* block_style)
 }
 
 NGInlineBox::NGInlineBox()
-    : start_inline_(nullptr), last_inline_(nullptr), block_style_(nullptr) {}
+    : NGLayoutInputNode(NGLayoutInputNodeType::LegacyInline),
+      start_inline_(nullptr),
+      last_inline_(nullptr),
+      block_style_(nullptr) {}
 
 NGInlineBox::~NGInlineBox() {}
 
@@ -206,6 +210,7 @@ NGInlineBox* NGInlineBox::NextSibling() {
 DEFINE_TRACE(NGInlineBox) {
   visitor->trace(next_sibling_);
   visitor->trace(layout_algorithm_);
+  NGLayoutInputNode::trace(visitor);
 }
 
 }  // namespace blink

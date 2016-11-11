@@ -6,6 +6,7 @@
 #define NGInlineBox_h
 
 #include "core/CoreExport.h"
+#include "core/layout/ng/ng_layout_input_node.h"
 #include "platform/fonts/FontFallbackPriority.h"
 #include "platform/fonts/shaping/ShapeResult.h"
 #include "platform/heap/Handle.h"
@@ -28,25 +29,19 @@ struct MinAndMaxContentSizes;
 
 // Represents an inline node to be laid out.
 // TODO(layout-dev): Make this and NGBox inherit from a common class.
-class CORE_EXPORT NGInlineBox : public GarbageCollectedFinalized<NGInlineBox> {
+class CORE_EXPORT NGInlineBox : public NGLayoutInputNode {
  public:
   using const_iterator = Vector<NGLayoutInlineItem>::const_iterator;
 
   NGInlineBox(LayoutObject* start_inline, ComputedStyle* block_style);
-  virtual ~NGInlineBox();
+  ~NGInlineBox() override;
+
+  bool Layout(const NGConstraintSpace*, NGFragmentBase**) override;
+  NGInlineBox* NextSibling() override;
 
   // Prepare inline and text content for layout. Must be called before
   // calling the Layout method.
   void PrepareLayout();
-
-  // Returns true when done; when this function returns false, it has to be
-  // called again. The out parameter will only be set when this function
-  // returns true. The same constraint space has to be passed each time.
-  // TODO(layout-ng): Should we have a StartLayout function to avoid passing
-  // the same space for each Layout iteration?
-  bool Layout(const NGConstraintSpace*, NGFragmentBase**);
-
-  NGInlineBox* NextSibling();
 
   // Iterator for the individual NGLayoutInlineItem objects that make up the
   // inline children of a NGInlineBox instance.
@@ -118,6 +113,12 @@ class NGLayoutInlineItem {
 
   friend class NGInlineBox;
 };
+
+DEFINE_TYPE_CASTS(NGInlineBox,
+                  NGLayoutInputNode,
+                  node,
+                  node->Type() == NGLayoutInputNode::LegacyInline,
+                  node.Type() == NGLayoutInputNode::LegacyInline);
 
 }  // namespace blink
 
