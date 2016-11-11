@@ -294,14 +294,23 @@ class RequestCoordinator : public KeyedService,
   void OfflinerDoneCallback(const SavePageRequest& request,
                             Offliner::RequestStatus status);
 
+  // Records a completed attempt for the request and update it in the queue
+  // (possibly removing it).
+  void UpdateRequestForCompletedAttempt(const SavePageRequest& request,
+                                        Offliner::RequestStatus status);
+
+  // Returns whether we should try another request based on the outcome
+  // of the previous one.
+  bool ShouldTryNextRequest(Offliner::RequestStatus previous_request_status);
+
   void TryNextRequest();
 
   // If there is an active request in the list, cancel that request.
   bool CancelActiveRequestIfItMatches(const std::vector<int64_t>& request_ids);
 
   // Records an aborted attempt for the request and update it in the queue
-  // (possibly removing it). Returns the updated copy.
-  void AbortRequestAttempt(const SavePageRequest& request);
+  // (possibly removing it).
+  void UpdateRequestForAbortedAttempt(const SavePageRequest& request);
 
   // Remove the attempted request from the queue with status to pass through to
   // any observers and UMA histogram.

@@ -1078,6 +1078,9 @@ TEST_F(RequestCoordinatorTest, WatchdogTimeoutForScheduledProcessing) {
   // Build a request to use with the pre-renderer, and put it on the queue.
   offline_pages::SavePageRequest request(
       kRequestId1, kUrl1, kClientId1, base::Time::Now(), kUserRequested);
+  // Set request to allow one more completed attempt.
+  int max_tries = coordinator()->policy()->GetMaxCompletedTries();
+  request.set_completed_attempt_count(max_tries - 1);
   coordinator()->queue()->AddRequest(
       request,
       base::Bind(&RequestCoordinatorTest::AddRequestDone,
@@ -1114,6 +1117,7 @@ TEST_F(RequestCoordinatorTest, WatchdogTimeoutForScheduledProcessing) {
   PumpLoop();
 
   EXPECT_FALSE(is_starting());
+  EXPECT_FALSE(coordinator()->is_busy());
   EXPECT_TRUE(OfflinerWasCanceled());
 }
 

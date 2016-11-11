@@ -242,13 +242,15 @@ void RequestCoordinator::StopPrerendering(Offliner::RequestStatus stop_status) {
     DCHECK(active_request_.get());
     offliner_->Cancel();
 
-    // If we timed out, let the offliner done callback handle it.
-    if (stop_status == Offliner::RequestStatus::REQUEST_COORDINATOR_TIMED_OUT)
-      return;
-
-    // Otherwise, this attempt never really had a chance to run, mark it
-    // aborted.
-    AbortRequestAttempt(*active_request_.get());
+    if (stop_status == Offliner::RequestStatus::REQUEST_COORDINATOR_TIMED_OUT) {
+      // Consider watchdog timeout a completed attempt.
+      SavePageRequest request(*active_request_.get());
+      UpdateRequestForCompletedAttempt(request,
+                                       Offliner::REQUEST_COORDINATOR_TIMED_OUT);
+    } else {
+      // Otherwise consider this stop an aborted attempt.
+      UpdateRequestForAbortedAttempt(*active_request_.get());
+    }
   }
 
   // Stopping offliner means it will not call callback so set last status.
@@ -303,7 +305,8 @@ bool RequestCoordinator::CancelActiveRequestIfItMatches(
   return false;
 }
 
-void RequestCoordinator::AbortRequestAttempt(const SavePageRequest& request) {
+void RequestCoordinator::UpdateRequestForAbortedAttempt(
+    const SavePageRequest& request) {
   if (request.started_attempt_count() >= policy_->GetMaxStartedTries()) {
     const RequestNotifier::BackgroundSavePageResult result(
         RequestNotifier::BackgroundSavePageResult::START_COUNT_EXCEEDED);
@@ -507,7 +510,10 @@ void RequestCoordinator::StopProcessing(
 }
 
 void RequestCoordinator::HandleWatchdogTimeout() {
-  StopProcessing(Offliner::REQUEST_COORDINATOR_TIMED_OUT);
+  Offliner::RequestStatus watchdog_status =
+      Offliner::REQUEST_COORDINATOR_TIMED_OUT;
+  StopPrerendering(watchdog_status);
+  TryNextRequest();
 }
 
 // Returns true if the caller should expect a callback, false otherwise. For
@@ -748,16 +754,25 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
   RecordOfflinerResultUMA(request.client_id(), request.creation_time(),
                           last_offlining_status_);
   watchdog_timer_.Stop();
-
   is_busy_ = false;
   active_request_.reset(nullptr);
 
+  UpdateRequestForCompletedAttempt(request, status);
+  if (ShouldTryNextRequest(status))
+    TryNextRequest();
+  else
+    scheduler_callback_.Run(true);
+}
+
+void RequestCoordinator::UpdateRequestForCompletedAttempt(
+    const SavePageRequest& request,
+    Offliner::RequestStatus status) {
   if (status == Offliner::RequestStatus::FOREGROUND_CANCELED ||
       status == Offliner::RequestStatus::PRERENDERING_CANCELED) {
     // Update the request for the canceled attempt.
     // TODO(dougarnett): See if we can conclusively identify other attempt
     // aborted cases to treat this way (eg, for Render Process Killed).
-    AbortRequestAttempt(request);
+    UpdateRequestForAbortedAttempt(request);
   } else if (status == Offliner::RequestStatus::SAVED) {
     // Remove the request from the queue if it succeeded.
     RemoveAttemptedRequest(request,
@@ -785,29 +800,27 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
                    weak_ptr_factory_.GetWeakPtr(), request.request_id(),
                    request.client_id()));
   }
+}
 
-  // Determine whether we might try another request in this
-  // processing window based on how the previous request completed.
-  switch (status) {
+bool RequestCoordinator::ShouldTryNextRequest(
+    Offliner::RequestStatus previous_request_status) {
+  switch (previous_request_status) {
     case Offliner::RequestStatus::SAVED:
     case Offliner::RequestStatus::SAVE_FAILED:
     case Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED:
     case Offliner::RequestStatus::REQUEST_COORDINATOR_TIMED_OUT:
     case Offliner::RequestStatus::PRERENDERING_FAILED_NO_RETRY:
-      // Consider processing another request in this service window.
-      TryNextRequest();
-      break;
+      return true;
     case Offliner::RequestStatus::FOREGROUND_CANCELED:
     case Offliner::RequestStatus::PRERENDERING_CANCELED:
     case Offliner::RequestStatus::PRERENDERING_FAILED:
       // No further processing in this service window.
-      // Let the scheduler know we are done processing.
-      scheduler_callback_.Run(true);
-      break;
+      return false;
     default:
       // Make explicit choice about new status codes that actually reach here.
       // Their default is no further processing in this service window.
       NOTREACHED();
+      return false;
   }
 }
 
