@@ -549,7 +549,7 @@ bool HttpServerPropertiesManager::ParseAlternativeServiceDict(
              << server_str;
     return false;
   }
-  AlternateProtocol protocol = AlternateProtocolFromString(protocol_str);
+  NextProto protocol = NextProtoFromString(protocol_str);
   if (!IsAlternateProtocolValid(protocol)) {
     DVLOG(1) << "Invalid alternative service protocol string for server: "
              << server_str;
@@ -1053,7 +1053,7 @@ void HttpServerPropertiesManager::SaveAlternativeServiceToServerPrefs(
       alternative_service_dict->SetString(kHostKey, alternative_service.host);
     }
     alternative_service_dict->SetString(
-        kProtocolKey, AlternateProtocolToString(alternative_service.protocol));
+        kProtocolKey, NextProtoToString(alternative_service.protocol));
     // JSON cannot store int64_t, so expiration is converted to a string.
     alternative_service_dict->SetString(
         kExpirationKey,

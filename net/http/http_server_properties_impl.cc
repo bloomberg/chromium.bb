@@ -225,7 +225,7 @@ bool HttpServerPropertiesImpl::SupportsRequestPriority(
       GetAlternativeServices(server);
   for (const AlternativeService& alternative_service :
        alternative_service_vector) {
-    if (alternative_service.protocol == QUIC) {
+    if (alternative_service.protocol == kProtoQUIC) {
       return true;
     }
   }
@@ -319,7 +319,7 @@ AlternativeServiceVector HttpServerPropertiesImpl::GetAlternativeServices(
       // If the alternative service is equivalent to the origin (same host, same
       // port, and both TCP), skip it.
       if (host_port_pair.Equals(alternative_service.host_port_pair()) &&
-          alternative_service.protocol == NPN_HTTP_2) {
+          alternative_service.protocol == kProtoHTTP2) {
         ++it;
         continue;
       }
@@ -451,7 +451,7 @@ void HttpServerPropertiesImpl::MarkAlternativeServiceBroken(
     const AlternativeService& alternative_service) {
   // Empty host means use host of origin, callers are supposed to substitute.
   DCHECK(!alternative_service.host.empty());
-  if (alternative_service.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL) {
+  if (alternative_service.protocol == kProtoUnknown) {
     LOG(DFATAL) << "Trying to mark unknown alternate protocol broken.";
     return;
   }
@@ -492,7 +492,7 @@ bool HttpServerPropertiesImpl::IsAlternativeServiceBroken(
 
 bool HttpServerPropertiesImpl::WasAlternativeServiceRecentlyBroken(
     const AlternativeService& alternative_service) {
-  if (alternative_service.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL)
+  if (alternative_service.protocol == kProtoUnknown)
     return false;
   return base::ContainsKey(recently_broken_alternative_services_,
                            alternative_service);
@@ -500,7 +500,7 @@ bool HttpServerPropertiesImpl::WasAlternativeServiceRecentlyBroken(
 
 void HttpServerPropertiesImpl::ConfirmAlternativeService(
     const AlternativeService& alternative_service) {
-  if (alternative_service.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL)
+  if (alternative_service.protocol == kProtoUnknown)
     return;
   broken_alternative_services_.erase(alternative_service);
   recently_broken_alternative_services_.erase(alternative_service);

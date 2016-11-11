@@ -126,7 +126,7 @@ std::unique_ptr<base::Value> NetLogSpdyInitializedCallback(
   if (source.IsValid()) {
     source.AddToEventParameters(dict.get());
   }
-  dict->SetString("protocol", SSLClientSocket::NextProtoToString(kProtoHTTP2));
+  dict->SetString("protocol", NextProtoToString(kProtoHTTP2));
   return std::move(dict);
 }
 
@@ -1734,9 +1734,9 @@ std::unique_ptr<base::Value> SpdySession::GetInfoAsValue() const {
 
   dict->SetBoolean("is_secure", is_secure_);
 
-  dict->SetString("negotiated_protocol",
-                  SSLClientSocket::NextProtoToString(
-                      connection_->socket()->GetNegotiatedProtocol()));
+  dict->SetString(
+      "negotiated_protocol",
+      NextProtoToString(connection_->socket()->GetNegotiatedProtocol()));
 
   dict->SetInteger("error", error_on_close_);
   dict->SetInteger("max_concurrent_streams", max_concurrent_streams_);
@@ -2286,9 +2286,8 @@ void SpdySession::OnAltSvc(
   alternative_service_info_vector.reserve(altsvc_vector.size());
   const base::Time now(base::Time::Now());
   for (const SpdyAltSvcWireFormat::AlternativeService& altsvc : altsvc_vector) {
-    const AlternateProtocol protocol =
-        AlternateProtocolFromString(altsvc.protocol_id);
-    if (protocol == UNINITIALIZED_ALTERNATE_PROTOCOL)
+    const NextProto protocol = NextProtoFromString(altsvc.protocol_id);
+    if (protocol == kProtoUnknown)
       continue;
     const AlternativeService alternative_service(protocol, altsvc.host,
                                                  altsvc.port);
