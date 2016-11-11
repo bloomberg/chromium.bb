@@ -24,6 +24,7 @@ class PLATFORM_EXPORT CullRect {
   DISALLOW_NEW();
 
  public:
+  CullRect() {}
   explicit CullRect(const IntRect& rect) : m_rect(rect) {}
   CullRect(const CullRect&, const IntPoint& offset);
   CullRect(const CullRect&, const IntSize& offset);
@@ -41,6 +42,8 @@ class PLATFORM_EXPORT CullRect {
  private:
   IntRect m_rect;
 
+  friend bool operator==(const CullRect&, const CullRect&);
+
   // TODO(chrishtr): temporary while we implement CullRect everywhere.
   friend class FramePainter;
   friend class GridPainter;
@@ -52,6 +55,13 @@ class PLATFORM_EXPORT CullRect {
   friend class ThemePainterMac;
   friend class WebPluginContainerImpl;
 };
+
+inline bool operator==(const CullRect& a, const CullRect& b) {
+  return a.m_rect == b.m_rect;
+}
+inline bool operator!=(const CullRect& a, const CullRect& b) {
+  return !(a == b);
+}
 
 }  // namespace blink
 
