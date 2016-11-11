@@ -19,13 +19,16 @@ DownloadUIItem::DownloadUIItem(const OfflinePageItem& page)
       title(page.title),
       target_path(page.file_path),
       start_time(page.creation_time),
-      total_bytes(page.file_size) {}
+      total_bytes(page.file_size),
+      is_offlining(false) {}
 
 DownloadUIItem::DownloadUIItem(const SavePageRequest& request)
     : guid(request.client_id().id),
       url(request.url()),
       start_time(request.creation_time()),
-      total_bytes(-1L) {}
+      total_bytes(-1L),
+      is_offlining(request.request_state() ==
+          SavePageRequest::RequestState::OFFLINING) {}
 
 DownloadUIItem::DownloadUIItem(const DownloadUIItem& other)
     : guid(other.guid),
@@ -33,7 +36,8 @@ DownloadUIItem::DownloadUIItem(const DownloadUIItem& other)
       title(other.title),
       target_path(other.target_path),
       start_time(other.start_time),
-      total_bytes(other.total_bytes) {}
+      total_bytes(other.total_bytes),
+      is_offlining(other.is_offlining) {}
 
 DownloadUIItem::~DownloadUIItem() {
 }

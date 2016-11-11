@@ -1633,6 +1633,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DOWNLOAD_NOTIFICATION_PAUSED" desc="Download notification to be displayed when a download pauses.">
         Download paused
       </message>
+      <message name="IDS_DOWNLOAD_NOTIFICATION_PENDING" desc="Download notification to be displayed when a download has been scheduled but has not started being fetched from the network.">
+        Download pending...
+      </message>
       <message name="IDS_DOWNLOAD_CANT_OPEN_FILE" desc="Toast that appears when a downloaded file can't be opened.">
         Can't open file
       </message>
@@ -1663,7 +1666,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DOWNLOAD_FAILED_REASON_UNKNOWN_ERROR" desc="Message to explain that the download failed because unkown error.">
         <ph name="FILE_NAME">%1$s<ex>http://abc.com/test.pdf</ex></ph> download failed due to an unknown error.
       </message>
-      <message name="IDS_DOWNLOAD_PENDING" desc="Message in the list of items which have received download requests telling their status. This message states that the download has not yet begun [CHAR LIMIT=30]">
+      <message name="IDS_DOWNLOAD_STARTED" desc="Message to show when download has started [CHAR LIMIT=30]">
         Downloading…
       </message>
       <message name="IDS_DOWNLOAD_SUCCEEDED_MESSAGE" desc="Transient message shown when a file download has succeeded." meaning="Android">

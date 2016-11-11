@@ -160,7 +160,7 @@ public class DownloadUtils {
      * @param context The {@link Context} used to make the toast.
      */
     public static void showDownloadStartToast(Context context) {
-        Toast.makeText(context, R.string.download_pending, Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, R.string.download_started, Toast.LENGTH_SHORT).show();
     }
 
     /**

@@ -68,19 +68,23 @@ public class OfflinePageNotificationBridge {
      * @param url URL of the page to download.
      * @param startTime Time of the request.
      * @param displayName Name to be displayed on notification.
+     * @param isOfflining Whether the page is being offlined.
      */
     @CalledByNative
     public static void notifyDownloadProgress(
-            Context context, String guid, String url, long startTime, String displayName) {
+            Context context, String guid, String url, long startTime, String displayName,
+            boolean isOfflining) {
         DownloadNotifier notifier = getDownloadNotifier(context);
         if (notifier == null) return;
 
+        // TODO(qinmin): get the download percentage from native code,
+        int percentage = isOfflining ? 0 : -1;
         DownloadInfo downloadInfo = new DownloadInfo.Builder()
                                             .setIsOfflinePage(true)
                                             .setDownloadGuid(guid)
                                             .setFileName(displayName)
                                             .setFilePath(url)
-                                            .setPercentCompleted(-1)
+                                            .setPercentCompleted(percentage)
                                             .setIsOffTheRecord(false)
                                             .setIsResumable(true)
                                             .setTimeRemainingInMillis(0)
@@ -146,7 +150,7 @@ public class OfflinePageNotificationBridge {
      */
     @CalledByNative
     public static void showDownloadingToast(Context context) {
-        Toast.makeText(context, R.string.download_pending, Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, R.string.download_started, Toast.LENGTH_SHORT).show();
     }
 
     private static DownloadNotifier getDownloadNotifier(Context context) {
