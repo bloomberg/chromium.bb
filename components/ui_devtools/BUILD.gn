@@ -56,6 +56,7 @@ source_set("ui_devtools") {
     "devtools_base_agent.h",
     "devtools_client.cc",
     "devtools_client.h",
+    "devtools_export.h",
     "devtools_server.cc",
     "devtools_server.h",
     "string_util.cc",
@@ -63,6 +64,8 @@ source_set("ui_devtools") {
     "switches.cc",
     "switches.h",
   ]
+
+  defines = [ "UI_DEVTOOLS_IMPLEMENTATION" ]
 
   cflags = []
   if (is_win) {
