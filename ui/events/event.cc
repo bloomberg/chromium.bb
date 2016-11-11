@@ -1227,11 +1227,7 @@ void KeyEvent::ApplyLayout() const {
 // so this is a synthetic or native keystroke event.
 // Therefore, perform only the fallback action.
 #elif defined(USE_X11)
-  // When a control key is held, prefer ASCII characters to non ASCII
-  // characters in order to use it for shortcut keys.  GetCharacterFromKeyCode
-  // returns 'a' for VKEY_A even if the key is actually bound to 'à' in X11.
-  // GetCharacterFromXEvent returns 'à' in that case.
-  if (!IsControlDown() && native_event()) {
+  if (native_event()) {
     key_ = GetDomKeyFromXEvent(native_event());
     return;
   }

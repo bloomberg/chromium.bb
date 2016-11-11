@@ -904,17 +904,27 @@ uint16_t GetCharacterFromXEvent(const XEvent* xev) {
 
 DomKey GetDomKeyFromXEvent(const XEvent* xev) {
   XEvent xkeyevent = {0};
-  const XKeyEvent* xkey = NULL;
+  XKeyEvent xkey;
   if (xev->type == GenericEvent) {
     // Convert the XI2 key event into a core key event so that we can
     // continue to use XLookupString() until crbug.com/367732 is complete.
     InitXKeyEventFromXIDeviceEvent(*xev, &xkeyevent);
-    xkey = &xkeyevent.xkey;
+    xkey = xkeyevent.xkey;
   } else {
-    xkey = &xev->xkey;
+    xkey = xev->xkey;
   }
+  // There is no good way to check whether a key combination will print a
+  // character on screen.
+  // e.g. On Linux US keyboard with French layout, |XLookupString()|
+  //        * Returns '?' for ctrl-shift-/
+  //        * Returns '§' for shift-/
+  //      According to spec the DomKey for ctrl-shift-/ should also be '§'.
+  // The solution is to take out ctrl modifier directly, as according to XKB map
+  // no keyboard combinations with ctrl key are mapped to printable character.
+  // https://crbug.com/633838
+  xkey.state &= ~ControlMask;
   KeySym keysym = XK_VoidSymbol;
-  XLookupString(const_cast<XKeyEvent*>(xkey), NULL, 0, &keysym, NULL);
+  XLookupString(&xkey, NULL, 0, &keysym, NULL);
   base::char16 ch = GetUnicodeCharacterFromXKeySym(keysym);
   return XKeySymToDomKey(keysym, ch);
 }
