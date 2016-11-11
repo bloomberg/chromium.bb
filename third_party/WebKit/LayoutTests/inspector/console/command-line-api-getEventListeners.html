@@ -38,6 +38,7 @@ document.getElementById("inner").addEventListener("wheel", listener2, {"passive"
 document.getElementById("outer").addEventListener("mousemove", listener1, false);
 document.getElementById("outer").addEventListener("mousedown", listener2, true);
 document.getElementById("outer").addEventListener("keydown", listener2, true);
+document.getElementById("outer").addEventListener("keyup", listener2, {once: true});
 window.addEventListener("popstate", listener1, false);
 
 function dumpObject(object, prefix)

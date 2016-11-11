@@ -414,6 +414,8 @@ void ThreadDebugger::getEventListenersCallback(
                        v8::Boolean::New(isolate, info.useCapture));
     createDataProperty(context, listenerObject, v8String(isolate, "passive"),
                        v8::Boolean::New(isolate, info.passive));
+    createDataProperty(context, listenerObject, v8String(isolate, "once"),
+                       v8::Boolean::New(isolate, info.once));
     createDataProperty(context, listenerObject, v8String(isolate, "type"),
                        v8String(isolate, currentEventType));
     v8::Local<v8::Function> removeFunction;

@@ -12,7 +12,7 @@ function setupEventListeners()
     body.addEventListener("click", f, true);
     var div = frame.contentDocument.createElement("div");
     div.id = "div-in-iframe";
-    div.addEventListener("hover", f, true);
+    div.addEventListener("hover", f, {capture: true, once: true});
     body.appendChild(div);
     body.addEventListener("wheel", f, {"passive": true});
 }

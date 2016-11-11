@@ -17,17 +17,20 @@ class V8EventListenerInfo {
   V8EventListenerInfo(AtomicString eventType,
                       bool useCapture,
                       bool passive,
+                      bool once,
                       v8::Local<v8::Object> handler,
                       v8::MaybeLocal<v8::Function> removeFunction)
       : eventType(eventType),
         useCapture(useCapture),
         passive(passive),
+        once(once),
         handler(handler),
         removeFunction(removeFunction) {}
 
   AtomicString eventType;
   bool useCapture;
   bool passive;
+  bool once;
   v8::Local<v8::Object> handler;
   v8::MaybeLocal<v8::Function> removeFunction;
 };

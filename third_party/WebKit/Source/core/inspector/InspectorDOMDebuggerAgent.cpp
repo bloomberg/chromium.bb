@@ -216,7 +216,8 @@ void InspectorDOMDebuggerAgent::eventListenersInfoForTarget(
         continue;
       bool useCapture = listeners->at(k).capture();
       eventInformation.append(V8EventListenerInfo(
-          type, useCapture, listeners->at(k).passive(), handler,
+          type, useCapture, listeners->at(k).passive(), listeners->at(k).once(),
+          handler,
           createRemoveFunction(context, value, handler, type, useCapture)));
     }
   }
@@ -525,6 +526,7 @@ InspectorDOMDebuggerAgent::buildObjectForEventListener(
           .setType(info.eventType)
           .setUseCapture(info.useCapture)
           .setPassive(info.passive)
+          .setOnce(info.once)
           .setScriptId(scriptId)
           .setLineNumber(lineNumber)
           .setColumnNumber(columnNumber)

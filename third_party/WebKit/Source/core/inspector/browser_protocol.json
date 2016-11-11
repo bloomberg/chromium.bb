@@ -3205,6 +3205,7 @@
                     { "name": "type", "type": "string", "description": "<code>EventListener</code>'s type." },
                     { "name": "useCapture", "type": "boolean", "description": "<code>EventListener</code>'s useCapture." },
                     { "name": "passive", "type": "boolean", "description": "<code>EventListener</code>'s passive flag." },
+                    { "name": "once", "type": "boolean", "description": "<code>EventListener</code>'s once flag." },
                     { "name": "scriptId", "$ref": "Runtime.ScriptId", "description": "Script id of the handler code." },
                     { "name": "lineNumber", "type": "integer", "description": "Line number in the script (0-based)." },
                     { "name": "columnNumber", "type": "integer", "description": "Column number in the script (0-based)." },

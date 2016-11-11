@@ -36,8 +36,8 @@ function setupNormalPath()
     function frameworkEventListeners(node)
     {
         if (node === inspectedNode) {
-            return {eventListeners: [{type: "customFirst", useCapture: true, passive: false, handler: customFirstEventListener},
-                                     {type: "customSecond", useCapture: false, passive: false, handler: customSecondEventListener}],
+            return {eventListeners: [{type: "customFirst", useCapture: true, passive: false, once: false, handler: customFirstEventListener},
+                                     {type: "customSecond", useCapture: false, passive: false, once: false, handler: customSecondEventListener}],
                     internalHandlers: [internalHandler]};
         }
         return {eventListeners: []};
