@@ -1,4 +1,4 @@
-layer at (0,0) size 800x600 scrollWidth 2041 scrollHeight 2386
+layer at (0,0) size 800x600 scrollWidth 2028 scrollHeight 2386
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x2386 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x2386.28
@@ -66,9 +66,9 @@ layer at (0,0) size 800x2386 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (397,45) width 48: "within"
             LayoutText {#text} at (464,45) size 71x15
               text run at (464,45) width 71: " elements"
-            LayoutText {#text} at (554,45) size 1278x30
-              text run at (554,45) width 704: " too. (with comment (no preceeding space) between elements and too)"
-              text run at (1277,45) width 1: " "
+            LayoutText {#text} at (554,45) size 1270x30
+              text run at (554,45) width 696: " too. (with comment (no preceding space) between elements and too)"
+              text run at (1269,45) width 1: " "
               text run at (0,60) width 257: "Word   spacing test "
             LayoutInline {EM} at (0,0) size 24x15
               LayoutText {#text} at (256,60) size 24x15
@@ -205,9 +205,9 @@ layer at (0,0) size 800x2386 backgroundClip at (0,0) size 800x600 clip at (0,0) 
               text run at (397,45) width 48: "within"
           LayoutText {#text} at (464,45) size 71x15
             text run at (464,45) width 71: " elements"
-          LayoutText {#text} at (554,45) size 1278x30
-            text run at (554,45) width 704: " too. (with comment (no preceeding space) between elements and too)"
-            text run at (1277,45) width 1: " "
+          LayoutText {#text} at (554,45) size 1270x30
+            text run at (554,45) width 696: " too. (with comment (no preceding space) between elements and too)"
+            text run at (1269,45) width 1: " "
             text run at (0,60) width 257: "Word   spacing test "
           LayoutInline {EM} at (0,0) size 24x15
             LayoutText {#text} at (256,60) size 24x15
@@ -352,8 +352,8 @@ layer at (0,0) size 800x2386 backgroundClip at (0,0) size 800x600 clip at (0,0) 
               text run at (304,56) width 48: "within"
           LayoutText {#text} at (371,54) size 62x18
             text run at (371,54) width 62: " elements"
-          LayoutText {#text} at (452,54) size 762x36
-            text run at (452,54) width 310: " too. (with comment (no preceeding"
+          LayoutText {#text} at (452,54) size 755x36
+            text run at (452,54) width 303: " too. (with comment (no preceding"
             text run at (0,72) width 296: "space) between elements and too)"
           LayoutBR {BR} at (315,86) size 1x0
           LayoutText {#text} at (0,90) size 179x18
@@ -450,11 +450,11 @@ layer at (0,0) size 800x2386 backgroundClip at (0,0) size 800x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 140x28
           text run at (0,0) width 140: "letter-spacing"
       LayoutBlockFlow (anonymous) at (0,805.97) size 784x193.41
-        LayoutBlockFlow (floating) {PRE} at (0,13) size 1497.78x167.41
-          LayoutBlockFlow {H3} at (0,15.20) size 1497.78x17
+        LayoutBlockFlow (floating) {PRE} at (0,13) size 1484.98x167.41
+          LayoutBlockFlow {H3} at (0,15.20) size 1484.98x17
             LayoutText {#text} at (0,0) size 227x17
               text run at (0,0) width 227: "In a floated pre"
-          LayoutBlockFlow (anonymous) at (0,47.41) size 1497.78x120
+          LayoutBlockFlow (anonymous) at (0,47.41) size 1484.98x120
             LayoutText {#text} at (0,0) size 282x30
               text run at (0,0) width 0: " "
               text run at (0,15) width 282: "Letter   spacing test "
@@ -509,9 +509,9 @@ layer at (0,0) size 800x2386 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (448,45) width 77: "within"
             LayoutText {#text} at (524,45) size 117x15
               text run at (524,45) width 117: " elements"
-            LayoutText {#text} at (640,45) size 1498x30
-              text run at (640,45) width 858: " too. (with comment (no preceeding space) between elements and too)"
-              text run at (1497,45) width 1: " "
+            LayoutText {#text} at (640,45) size 1485x30
+              text run at (640,45) width 845: " too. (with comment (no preceding space) between elements and too)"
+              text run at (1484,45) width 1: " "
               text run at (0,60) width 282: "Letter   spacing test "
             LayoutInline {EM} at (0,0) size 40x15
               LayoutText {#text} at (281,60) size 40x15
@@ -588,7 +588,7 @@ layer at (0,0) size 800x2386 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             LayoutText {#text} at (691,105) size 564x15
               text run at (691,105) width 564: ". (with monospace font from elements to too)"
               text run at (1254,105) width 1: " "
-        LayoutBR {BR} at (1497,0) size 1x18
+        LayoutBR {BR} at (1484,0) size 1x18
       LayoutBlockFlow {PRE} at (0,1014.58) size 784x152.20
         LayoutBlockFlow {H3} at (0,0) size 784x17
           LayoutText {#text} at (0,0) size 283x17
@@ -648,9 +648,9 @@ layer at (0,0) size 800x2386 backgroundClip at (0,0) size 800x600 clip at (0,0) 
               text run at (448,45) width 77: "within"
           LayoutText {#text} at (524,45) size 117x15
             text run at (524,45) width 117: " elements"
-          LayoutText {#text} at (640,45) size 1498x30
-            text run at (640,45) width 858: " too. (with comment (no preceeding space) between elements and too)"
-            text run at (1497,45) width 1: " "
+          LayoutText {#text} at (640,45) size 1485x30
+            text run at (640,45) width 845: " too. (with comment (no preceding space) between elements and too)"
+            text run at (1484,45) width 1: " "
             text run at (0,60) width 282: "Letter   spacing test "
           LayoutInline {EM} at (0,0) size 40x15
             LayoutText {#text} at (281,60) size 40x15
@@ -798,8 +798,8 @@ layer at (0,0) size 800x2386 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             text run at (449,54) width 107: " elements"
           LayoutText {#text} at (555,54) size 780x36
             text run at (555,54) width 225: " too. (with comment"
-            text run at (0,72) width 551: "(no preceeding space) between elements and too)"
-          LayoutBR {BR} at (550,86) size 1x0
+            text run at (0,72) width 539: "(no preceding space) between elements and too)"
+          LayoutBR {BR} at (538,86) size 1x0
           LayoutText {#text} at (0,90) size 222x18
             text run at (0,90) width 78: "Letter "
             text run at (77,90) width 145: "spacing test "
@@ -894,11 +894,11 @@ layer at (0,0) size 800x2386 backgroundClip at (0,0) size 800x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 133x28
           text run at (0,0) width 133: "both-spacing"
       LayoutBlockFlow (anonymous) at (0,1595.03) size 784x193.41
-        LayoutBlockFlow (floating) {PRE} at (0,13) size 1952.98x167.41
-          LayoutBlockFlow {H3} at (0,15.20) size 1952.98x17
+        LayoutBlockFlow (floating) {PRE} at (0,13) size 1947.39x167.41
+          LayoutBlockFlow {H3} at (0,15.20) size 1947.39x17
             LayoutText {#text} at (0,0) size 287x17
               text run at (0,0) width 287: "In a floated pre"
-          LayoutBlockFlow (anonymous) at (0,47.41) size 1952.98x120
+          LayoutBlockFlow (anonymous) at (0,47.41) size 1947.39x120
             LayoutText {#text} at (0,0) size 537x30
               text run at (0,0) width 0: " "
               text run at (0,15) width 537: "Word and letter   spacing test "
@@ -953,9 +953,9 @@ layer at (0,0) size 800x2386 backgroundClip at (0,0) size 800x600 clip at (0,0) 
                 text run at (743,45) width 78: "within"
             LayoutText {#text} at (840,45) size 116x15
               text run at (840,45) width 116: " elements"
-            LayoutText {#text} at (975,45) size 2033x30
-              text run at (975,45) width 1038: " too. (with comment (no preceeding space) between elements and too)"
-              text run at (2032,45) width 1: " "
+            LayoutText {#text} at (975,45) size 2021x30
+              text run at (975,45) width 1026: " too. (with comment (no preceding space) between elements and too)"
+              text run at (2020,45) width 1: " "
               text run at (0,60) width 537: "Word and letter   spacing test "
             LayoutInline {EM} at (0,0) size 40x15
               LayoutText {#text} at (536,60) size 40x15
@@ -1032,7 +1032,7 @@ layer at (0,0) size 800x2386 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             LayoutText {#text} at (1026,105) size 724x15
               text run at (1026,105) width 704: ". (with monospace font from elements to too)"
               text run at (1749,105) width 1: " "
-        LayoutBR {BR} at (1952,0) size 1x18
+        LayoutBR {BR} at (1947,0) size 1x18
       LayoutBlockFlow {PRE} at (0,1803.64) size 784x152.20
         LayoutBlockFlow {H3} at (0,0) size 784x17
           LayoutText {#text} at (0,0) size 343x17
@@ -1092,9 +1092,9 @@ layer at (0,0) size 800x2386 backgroundClip at (0,0) size 800x600 clip at (0,0) 
               text run at (743,45) width 78: "within"
           LayoutText {#text} at (840,45) size 116x15
             text run at (840,45) width 116: " elements"
-          LayoutText {#text} at (975,45) size 2033x30
-            text run at (975,45) width 1038: " too. (with comment (no preceeding space) between elements and too)"
-            text run at (2032,45) width 1: " "
+          LayoutText {#text} at (975,45) size 2021x30
+            text run at (975,45) width 1026: " too. (with comment (no preceding space) between elements and too)"
+            text run at (2020,45) width 1: " "
             text run at (0,60) width 537: "Word and letter   spacing test "
           LayoutInline {EM} at (0,0) size 40x15
             LayoutText {#text} at (536,60) size 40x15
@@ -1239,8 +1239,8 @@ layer at (0,0) size 800x2386 backgroundClip at (0,0) size 800x600 clip at (0,0) 
               text run at (618,74) width 78: "within"
           LayoutText {#text} at (0,90) size 97x18
             text run at (0,90) width 97: "elements"
-          LayoutText {#text} at (116,90) size 696x36
-            text run at (116,90) width 580: " too. (with comment (no preceeding space)"
+          LayoutText {#text} at (116,90) size 684x36
+            text run at (116,90) width 568: " too. (with comment (no preceding space)"
             text run at (0,108) width 357: "between elements and too)"
           LayoutBR {BR} at (376,122) size 1x0
           LayoutText {#text} at (0,126) size 428x18
