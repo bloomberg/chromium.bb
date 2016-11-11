@@ -41,6 +41,42 @@ class LockError(Exception):
 class ClobberNeeded(Exception):
   pass
 
+
+def exponential_backoff_retry(fn, excs=(Exception,), name=None, count=10,
+                              sleep_time=0.25, printerr=None):
+  """Executes |fn| up to |count| times, backing off exponentially.
+
+  Args:
+    fn (callable): The function to execute. If this raises a handled
+        exception, the function will retry with exponential backoff.
+    excs (tuple): A tuple of Exception types to handle. If one of these is
+        raised by |fn|, a retry will be attempted. If |fn| raises an Exception
+        that is not in this list, it will immediately pass through. If |excs|
+        is empty, the Exception base class will be used.
+    name (str): Optional operation name to print in the retry string.
+    count (int): The number of times to try before allowing the exception to
+        pass through.
+    sleep_time (float): The initial number of seconds to sleep in between
+        retries. This will be doubled each retry.
+    printerr (callable): Function that will be called with the error string upon
+        failures. If None, |logging.warning| will be used.
+
+  Returns: The return value of the successful fn.
+  """
+  printerr = printerr or logging.warning
+  for i in xrange(count):
+    try:
+      return fn()
+    except excs as e:
+      if (i+1) >= count:
+        raise
+
+      printerr('Retrying %s in %.2f second(s) (%d / %d attempts): %s' % (
+          (name or 'operation'), sleep_time, (i+1), count, e))
+      time.sleep(sleep_time)
+      sleep_time *= 2
+
+
 class Lockfile(object):
   """Class to represent a cross-platform process-specific lockfile."""
 
@@ -79,13 +115,16 @@ class Lockfile(object):
     """
     if sys.platform == 'win32':
       lockfile = os.path.normcase(self.lockfile)
-      for _ in xrange(3):
+
+      def delete():
         exitcode = subprocess.call(['cmd.exe', '/c',
                                     'del', '/f', '/q', lockfile])
-        if exitcode == 0:
-          return
-        time.sleep(3)
-      raise LockError('Failed to remove lock: %s' % lockfile)
+        if exitcode != 0:
+          raise LockError('Failed to remove lock: %s' % (lockfile,))
+      exponential_backoff_retry(
+          delete,
+          excs=(LockError,),
+          name='del [%s]' % (lockfile,))
     else:
       os.remove(self.lockfile)
 
@@ -181,7 +220,7 @@ class Mirror(object):
     else:
       self.print = print
 
-  def print_without_file(self, message, **kwargs):
+  def print_without_file(self, message, **_kwargs):
     self.print_func(message)
 
   @property
@@ -229,6 +268,16 @@ class Mirror(object):
               'No global cache.cachepath git configuration found.')
         setattr(cls, 'cachepath', cachepath)
       return getattr(cls, 'cachepath')
+
+  def Rename(self, src, dst):
+    # This is somehow racy on Windows.
+    # Catching OSError because WindowsError isn't portable and
+    # pylint complains.
+    exponential_backoff_retry(
+        lambda: os.rename(src, dst),
+        excs=(OSError,),
+        name='rename [%s] => [%s]' % (src, dst),
+        printerr=self.print)
 
   def RunGit(self, cmd, **kwargs):
     """Run git in a subprocess."""
@@ -324,7 +373,15 @@ class Mirror(object):
           retcode = 0
     finally:
       # Clean up the downloaded zipfile.
-      gclient_utils.rm_file_or_tree(tempdir)
+      #
+      # This is somehow racy on Windows.
+      # Catching OSError because WindowsError isn't portable and
+      # pylint complains.
+      exponential_backoff_retry(
+          lambda: gclient_utils.rm_file_or_tree(tempdir),
+          excs=(OSError,),
+          name='rmtree [%s]' % (tempdir,),
+          printerr=self.print)
 
     if retcode:
       self.print(
@@ -441,7 +498,7 @@ class Mirror(object):
       if tempdir:
         if os.path.exists(self.mirror_path):
           gclient_utils.rmtree(self.mirror_path)
-        os.rename(tempdir, self.mirror_path)
+        self.Rename(tempdir, self.mirror_path)
       if not ignore_lock:
         lockfile.unlock()
 
