@@ -19,6 +19,12 @@ h1 {
   margin: 5px 0 25px 0;
 }
 
+#block-page-message {
+  color: rgb(97,97,97);
+  font-size: 0.667em;
+  margin-top: 16px;
+}
+
 .avatar-img {
   -webkit-user-select: none;
   border: 3px solid rgb(251, 251, 251);
@@ -68,7 +74,6 @@ h1 {
   cursor: pointer;
   display: inline;
   font-size: 12px;
-  text-decoration: underline;
 }
 
 #button-container {
@@ -116,15 +121,15 @@ h1 {
     font-weight: bold;
     margin: auto;
     order: 2;
+    padding: 0 15px;
+    text-align: center;
+    width: 100%;
   }
 
   #request-access-button {
     margin-bottom: 30px;
     order: 1;
-    text-align: center
-  }
-
-  .button {
+    text-align: center;
     width: 100%;
   }
 

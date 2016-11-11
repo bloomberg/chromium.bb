@@ -86,6 +86,7 @@ function initialize() {
  */
 function setRequestStatus(isSuccessful) {
   console.log('setRequestStatus(' + isSuccessful +')');
+  $('block-page-header').hidden = true;
   $('block-page-message').hidden = true;
   if (isSuccessful) {
     $('request-failed-message').hidden = true;

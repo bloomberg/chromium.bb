@@ -99,58 +99,40 @@ TEST_P(SupervisedUserErrorPageTest_BuildHtml, BuildHtml) {
   else
 #endif
     EXPECT_THAT(result, testing::HasSubstr("\"showFeedbackLink\":false"));
-  // Messages containing links aren't tested since they get modified before they
-  // are added to the result.
+  // Messages containing parameters aren't tested since they get modified before
+  // they are added to the result.
   if (param.allow_access_requests) {
     if (param.is_child_account) {
-      if (param.has_two_parents) {
-        EXPECT_THAT(result,
-                    testing::Not(testing::HasSubstr(l10n_util::GetStringUTF8(
-                        IDS_CHILD_BLOCK_INTERSTITIAL_MESSAGE_SINGLE_PARENT))));
-        EXPECT_THAT(result,
-                    testing::HasSubstr(l10n_util::GetStringUTF8(
-                        IDS_CHILD_BLOCK_INTERSTITIAL_MESSAGE_MULTI_PARENT)));
-        EXPECT_THAT(result,
-                    testing::Not(testing::HasSubstr(l10n_util::GetStringUTF8(
-                        IDS_BLOCK_INTERSTITIAL_MESSAGE))));
-        EXPECT_THAT(
-            result,
-            testing::Not(testing::HasSubstr(l10n_util::GetStringUTF8(
-                IDS_BLOCK_INTERSTITIAL_MESSAGE_ACCESS_REQUESTS_DISABLED))));
-      } else {
-        EXPECT_THAT(result,
-                    testing::HasSubstr(l10n_util::GetStringUTF8(
-                        IDS_CHILD_BLOCK_INTERSTITIAL_MESSAGE_SINGLE_PARENT)));
-        EXPECT_THAT(result,
-                    testing::Not(testing::HasSubstr(l10n_util::GetStringUTF8(
-                        IDS_CHILD_BLOCK_INTERSTITIAL_MESSAGE_MULTI_PARENT))));
-        EXPECT_THAT(
-            result,
-            testing::Not(testing::HasSubstr(l10n_util::GetStringUTF8(
-                IDS_BLOCK_INTERSTITIAL_MESSAGE_ACCESS_REQUESTS_DISABLED))));
-      }
-    } else {
-      EXPECT_THAT(result,
-                  testing::Not(testing::HasSubstr(l10n_util::GetStringUTF8(
-                      IDS_CHILD_BLOCK_INTERSTITIAL_MESSAGE_SINGLE_PARENT))));
-      EXPECT_THAT(result,
-                  testing::Not(testing::HasSubstr(l10n_util::GetStringUTF8(
-                      IDS_CHILD_BLOCK_INTERSTITIAL_MESSAGE_MULTI_PARENT))));
+      EXPECT_THAT(result, testing::HasSubstr(l10n_util::GetStringUTF8(
+                              IDS_CHILD_BLOCK_INTERSTITIAL_HEADER)));
+      EXPECT_THAT(result, testing::HasSubstr(l10n_util::GetStringUTF8(
+                              IDS_CHILD_BLOCK_INTERSTITIAL_MESSAGE)));
       EXPECT_THAT(
           result,
           testing::Not(testing::HasSubstr(l10n_util::GetStringUTF8(
-              IDS_BLOCK_INTERSTITIAL_MESSAGE_ACCESS_REQUESTS_DISABLED))));
+              IDS_BLOCK_INTERSTITIAL_HEADER_ACCESS_REQUESTS_DISABLED))));
+    } else {
+      EXPECT_THAT(result,
+                  testing::Not(testing::HasSubstr(l10n_util::GetStringUTF8(
+                      IDS_CHILD_BLOCK_INTERSTITIAL_HEADER))));
+      EXPECT_THAT(result,
+                  testing::Not(testing::HasSubstr(l10n_util::GetStringUTF8(
+                      IDS_CHILD_BLOCK_INTERSTITIAL_MESSAGE))));
+      EXPECT_THAT(
+          result,
+          testing::Not(testing::HasSubstr(l10n_util::GetStringUTF8(
+              IDS_BLOCK_INTERSTITIAL_HEADER_ACCESS_REQUESTS_DISABLED))));
     }
   } else {
     EXPECT_THAT(result,
                 testing::Not(testing::HasSubstr(l10n_util::GetStringUTF8(
-                    IDS_CHILD_BLOCK_INTERSTITIAL_MESSAGE_SINGLE_PARENT))));
+                    IDS_CHILD_BLOCK_INTERSTITIAL_HEADER))));
     EXPECT_THAT(result,
                 testing::Not(testing::HasSubstr(l10n_util::GetStringUTF8(
-                    IDS_CHILD_BLOCK_INTERSTITIAL_MESSAGE_MULTI_PARENT))));
+                    IDS_CHILD_BLOCK_INTERSTITIAL_MESSAGE))));
     EXPECT_THAT(result,
                 testing::HasSubstr(l10n_util::GetStringUTF8(
-                    IDS_BLOCK_INTERSTITIAL_MESSAGE_ACCESS_REQUESTS_DISABLED)));
+                    IDS_BLOCK_INTERSTITIAL_HEADER_ACCESS_REQUESTS_DISABLED)));
   }
   if (param.is_child_account) {
     if (param.has_two_parents) {
