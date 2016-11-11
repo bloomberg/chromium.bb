@@ -27,7 +27,6 @@ class UpdateObserver;
 class UserObserver;
 
 #if defined(OS_CHROMEOS)
-class AudioObserver;
 class BluetoothObserver;
 class EnterpriseDomainObserver;
 class LastWindowClosedObserver;
@@ -80,15 +79,6 @@ class ASH_EXPORT SystemTrayNotifier {
   void NotifyUserAddedToSession();
 
 #if defined(OS_CHROMEOS)
-  // Audio.
-  void AddAudioObserver(AudioObserver* observer);
-  void RemoveAudioObserver(AudioObserver* observer);
-  void NotifyAudioOutputVolumeChanged(uint64_t node_id, double volume);
-  void NotifyAudioOutputMuteChanged(bool mute_on, bool system_adjust);
-  void NotifyAudioNodesChanged();
-  void NotifyAudioActiveOutputNodeChanged();
-  void NotifyAudioActiveInputNodeChanged();
-
   // Bluetooth.
   void AddBluetoothObserver(BluetoothObserver* observer);
   void RemoveBluetoothObserver(BluetoothObserver* observer);
@@ -167,7 +157,6 @@ class ASH_EXPORT SystemTrayNotifier {
   base::ObserverList<UserObserver> user_observers_;
 
 #if defined(OS_CHROMEOS)
-  base::ObserverList<AudioObserver> audio_observers_;
   base::ObserverList<BluetoothObserver> bluetooth_observers_;
   base::ObserverList<EnterpriseDomainObserver> enterprise_domain_observers_;
   base::ObserverList<LastWindowClosedObserver> last_window_closed_observers_;

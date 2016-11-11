@@ -224,6 +224,13 @@ void WmRootWindowController::ShowShelf() {
   shelf->shelf_widget()->status_area_widget()->Show();
 }
 
+SystemTray* WmRootWindowController::GetSystemTray() {
+  ShelfWidget* shelf_widget = GetShelf()->shelf_widget();
+  if (!shelf_widget || !shelf_widget->status_area_widget())
+    return nullptr;
+  return shelf_widget->status_area_widget()->system_tray();
+}
+
 WmWindow* WmRootWindowController::GetContainer(int container_id) {
   return root_->GetChildByShellWindowId(container_id);
 }

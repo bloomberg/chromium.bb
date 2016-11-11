@@ -10,9 +10,9 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/common/system/chromeos/audio/audio_observer.h"
 #include "ash/common/system/tray/tray_image_item.h"
 #include "base/macros.h"
+#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "ui/display/display_observer.h"
 
@@ -29,12 +29,19 @@ class VolumeView;
 
 // The system tray item for audio input and output.
 class ASH_EXPORT TrayAudio : public TrayImageItem,
-                             public AudioObserver,
+                             public chromeos::CrasAudioHandler::AudioObserver,
                              public display::DisplayObserver,
                              public chromeos::PowerManagerClient::Observer {
  public:
   explicit TrayAudio(SystemTray* system_tray);
   ~TrayAudio() override;
+
+  // Temporarily shows the pop-up volume slider on all displays. Used by ARC++
+  // when an Android app changes the system volume.
+  static void ShowPopUpVolumeView();
+
+  tray::VolumeView* volume_view_for_testing() { return volume_view_; }
+  bool pop_up_volume_view_for_testing() { return pop_up_volume_view_; }
 
  private:
   // Overridden from display::DisplayObserver.
@@ -54,8 +61,8 @@ class ASH_EXPORT TrayAudio : public TrayImageItem,
   bool ShouldHideArrow() const override;
   bool ShouldShowShelf() const override;
 
-  // Overridden from AudioObserver.
-  void OnOutputNodeVolumeChanged(uint64_t node_id, double volume) override;
+  // Overridden from CrasAudioHandler::AudioObserver.
+  void OnOutputNodeVolumeChanged(uint64_t node_id, int volume) override;
   void OnOutputMuteChanged(bool mute_on, bool system_adjust) override;
   void OnAudioNodesChanged() override;
   void OnActiveOutputNodeChanged() override;

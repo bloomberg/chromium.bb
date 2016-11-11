@@ -4,8 +4,7 @@
 
 #include "components/arc/audio/arc_audio_bridge.h"
 
-#include "ash/common/system/tray/system_tray_notifier.h"
-#include "ash/common/wm_shell.h"
+#include "ash/common/system/chromeos/audio/tray_audio.h"
 #include "base/logging.h"
 #include "chromeos/audio/audio_device.h"
 #include "components/arc/arc_bridge_service.h"
@@ -46,8 +45,7 @@ void ArcAudioBridge::OnInstanceReady() {
 
 void ArcAudioBridge::ShowVolumeControls() {
   VLOG(2) << "ArcAudioBridge::ShowVolumeControls";
-  ash::WmShell::Get()->system_tray_notifier()->NotifyAudioOutputVolumeChanged(
-      0, 0);
+  ash::TrayAudio::ShowPopUpVolumeView();
 }
 
 void ArcAudioBridge::OnAudioNodesChanged() {

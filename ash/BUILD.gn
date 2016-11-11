@@ -191,7 +191,6 @@ component("ash") {
     "common/system/brightness_control_delegate.h",
     "common/system/chromeos/audio/audio_detailed_view.cc",
     "common/system/chromeos/audio/audio_detailed_view.h",
-    "common/system/chromeos/audio/audio_observer.h",
     "common/system/chromeos/audio/tray_audio.cc",
     "common/system/chromeos/audio/tray_audio.h",
     "common/system/chromeos/audio/tray_audio_delegate.h",

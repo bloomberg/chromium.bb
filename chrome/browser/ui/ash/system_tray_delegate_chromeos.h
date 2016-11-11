@@ -27,7 +27,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #include "chrome/browser/ui/browser_list_observer.h"
-#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -59,7 +58,6 @@ class SystemTrayDelegateChromeOS
       public SessionManagerClient::Observer,
       public content::NotificationObserver,
       public input_method::InputMethodManager::Observer,
-      public chromeos::CrasAudioHandler::AudioObserver,
       public device::BluetoothAdapter::Observer,
       public policy::CloudPolicyStore::Observer,
       public ash::SessionStateObserver,
@@ -183,15 +181,6 @@ class SystemTrayDelegateChromeOS
   // Overridden from InputMethodMenuManager::Observer.
   void InputMethodMenuItemChanged(
       ui::ime::InputMethodMenuManager* manager) override;
-
-  // Overridden from CrasAudioHandler::AudioObserver.
-  void OnOutputNodeVolumeChanged(uint64_t node_id, int volume) override;
-  void OnOutputMuteChanged(bool mute_on, bool system_adjust) override;
-  void OnInputNodeGainChanged(uint64_t node_id, int gain) override;
-  void OnInputMuteChanged(bool mute_on) override;
-  void OnAudioNodesChanged() override;
-  void OnActiveOutputNodeChanged() override;
-  void OnActiveInputNodeChanged() override;
 
   // Overridden from BluetoothAdapter::Observer.
   void AdapterPresentChanged(device::BluetoothAdapter* adapter,

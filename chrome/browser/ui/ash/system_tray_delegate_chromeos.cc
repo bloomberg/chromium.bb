@@ -192,9 +192,6 @@ void SystemTrayDelegateChromeOS::Initialize() {
 
   ash::WmShell::Get()->GetSessionStateDelegate()->AddSessionStateObserver(this);
 
-  if (CrasAudioHandler::IsInitialized())
-    CrasAudioHandler::Get()->AddAudioObserver(this);
-
   BrowserList::AddObserver(this);
 }
 
@@ -246,9 +243,6 @@ SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
     bluetooth_adapter_->RemoveObserver(this);
   ash::WmShell::Get()->GetSessionStateDelegate()->RemoveSessionStateObserver(
       this);
-
-  if (CrasAudioHandler::IsInitialized())
-    CrasAudioHandler::Get()->RemoveAudioObserver(this);
 
   BrowserList::RemoveObserver(this);
   StopObservingAppWindowRegistry();
@@ -878,36 +872,6 @@ void SystemTrayDelegateChromeOS::InputMethodChanged(
 void SystemTrayDelegateChromeOS::InputMethodMenuItemChanged(
     ui::ime::InputMethodMenuManager* manager) {
   GetSystemTrayNotifier()->NotifyRefreshIME();
-}
-
-// Overridden from CrasAudioHandler::AudioObserver.
-void SystemTrayDelegateChromeOS::OnOutputNodeVolumeChanged(uint64_t node_id,
-                                                           int volume) {
-  GetSystemTrayNotifier()->NotifyAudioOutputVolumeChanged(node_id, volume);
-}
-
-void SystemTrayDelegateChromeOS::OnOutputMuteChanged(bool mute_on,
-                                                     bool system_adjust) {
-  GetSystemTrayNotifier()->NotifyAudioOutputMuteChanged(mute_on, system_adjust);
-}
-
-void SystemTrayDelegateChromeOS::OnInputNodeGainChanged(uint64_t /* node_id */,
-                                                        int /* gain */) {
-}
-
-void SystemTrayDelegateChromeOS::OnInputMuteChanged(bool /* mute_on */) {
-}
-
-void SystemTrayDelegateChromeOS::OnAudioNodesChanged() {
-  GetSystemTrayNotifier()->NotifyAudioNodesChanged();
-}
-
-void SystemTrayDelegateChromeOS::OnActiveOutputNodeChanged() {
-  GetSystemTrayNotifier()->NotifyAudioActiveOutputNodeChanged();
-}
-
-void SystemTrayDelegateChromeOS::OnActiveInputNodeChanged() {
-  GetSystemTrayNotifier()->NotifyAudioActiveInputNodeChanged();
 }
 
 // Overridden from BluetoothAdapter::Observer.

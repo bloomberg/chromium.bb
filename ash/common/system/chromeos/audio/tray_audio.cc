@@ -7,9 +7,11 @@
 #include "ash/common/system/chromeos/audio/audio_detailed_view.h"
 #include "ash/common/system/chromeos/audio/tray_audio_delegate_chromeos.h"
 #include "ash/common/system/chromeos/audio/volume_view.h"
-#include "ash/common/system/tray/system_tray_notifier.h"
+#include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
+#include "ash/common/wm_window.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "grit/ash_resources.h"
 #include "ui/display/display.h"
@@ -19,6 +21,7 @@
 
 namespace ash {
 
+using chromeos::CrasAudioHandler;
 using chromeos::DBusThreadManager;
 using system::TrayAudioDelegate;
 using system::TrayAudioDelegateChromeOs;
@@ -29,7 +32,8 @@ TrayAudio::TrayAudio(SystemTray* system_tray)
       volume_view_(nullptr),
       pop_up_volume_view_(false),
       audio_detail_view_(nullptr) {
-  WmShell::Get()->system_tray_notifier()->AddAudioObserver(this);
+  if (CrasAudioHandler::IsInitialized())
+    CrasAudioHandler::Get()->AddAudioObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
 }
@@ -37,7 +41,21 @@ TrayAudio::TrayAudio(SystemTray* system_tray)
 TrayAudio::~TrayAudio() {
   DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
-  WmShell::Get()->system_tray_notifier()->RemoveAudioObserver(this);
+  if (CrasAudioHandler::IsInitialized())
+    CrasAudioHandler::Get()->RemoveAudioObserver(this);
+}
+
+// static
+void TrayAudio::ShowPopUpVolumeView() {
+  // Show the popup on all monitors with a system tray.
+  for (WmWindow* root : WmShell::Get()->GetAllRootWindows()) {
+    SystemTray* system_tray = root->GetRootWindowController()->GetSystemTray();
+    if (!system_tray)
+      continue;
+    // Show the popup by simulating a volume change. The provided node id and
+    // volume value are ignored.
+    system_tray->GetTrayAudio()->OnOutputNodeVolumeChanged(0, 0);
+  }
 }
 
 bool TrayAudio::GetInitialVisibility() {
@@ -83,7 +101,7 @@ bool TrayAudio::ShouldShowShelf() const {
 }
 
 void TrayAudio::OnOutputNodeVolumeChanged(uint64_t /* node_id */,
-                                          double /* volume */) {
+                                          int /* volume */) {
   float percent =
       static_cast<float>(audio_delegate_->GetOutputVolumeLevel()) / 100.0f;
   if (tray_view())

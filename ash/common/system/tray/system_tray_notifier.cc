@@ -11,7 +11,6 @@
 #include "ash/common/system/user/user_observer.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/common/system/chromeos/audio/audio_observer.h"
 #include "ash/common/system/chromeos/bluetooth/bluetooth_observer.h"
 #include "ash/common/system/chromeos/enterprise/enterprise_domain_observer.h"
 #include "ash/common/system/chromeos/media_security/media_capture_observer.h"
@@ -128,41 +127,6 @@ void SystemTrayNotifier::NotifyUserAddedToSession() {
 ////////////////////////////////////////////////////////////////////////////////
 
 #if defined(OS_CHROMEOS)
-
-void SystemTrayNotifier::AddAudioObserver(AudioObserver* observer) {
-  audio_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveAudioObserver(AudioObserver* observer) {
-  audio_observers_.RemoveObserver(observer);
-}
-
-void SystemTrayNotifier::NotifyAudioOutputVolumeChanged(uint64_t node_id,
-                                                        double volume) {
-  for (auto& observer : audio_observers_)
-    observer.OnOutputNodeVolumeChanged(node_id, volume);
-}
-
-void SystemTrayNotifier::NotifyAudioOutputMuteChanged(bool mute_on,
-                                                      bool system_adjust) {
-  for (auto& observer : audio_observers_)
-    observer.OnOutputMuteChanged(mute_on, system_adjust);
-}
-
-void SystemTrayNotifier::NotifyAudioNodesChanged() {
-  for (auto& observer : audio_observers_)
-    observer.OnAudioNodesChanged();
-}
-
-void SystemTrayNotifier::NotifyAudioActiveOutputNodeChanged() {
-  for (auto& observer : audio_observers_)
-    observer.OnActiveOutputNodeChanged();
-}
-
-void SystemTrayNotifier::NotifyAudioActiveInputNodeChanged() {
-  for (auto& observer : audio_observers_)
-    observer.OnActiveInputNodeChanged();
-}
 
 void SystemTrayNotifier::AddBluetoothObserver(BluetoothObserver* observer) {
   bluetooth_observers_.AddObserver(observer);
