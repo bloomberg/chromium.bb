@@ -2297,4 +2297,18 @@ const char kOriginTrialDisabledFeatures[] = "origin_trials.disabled_features";
 const char kComponentUpdatesEnabled[] =
     "component_updates.component_updates_enabled";
 
+#if defined(OS_ANDROID)
+// Whether the search geolocation disclosure has been dismissed by the user.
+const char kSearchGeolocationDisclosureDismissed[] =
+    "search_geolocation_disclosure.dismissed";
+
+// How many times the search geolocation disclosure has been shown.
+const char kSearchGeolocationDisclosureShownCount[] =
+    "search_geolocation_disclosure.shown_count";
+
+// When the disclosure was shown last.
+const char kSearchGeolocationDisclosureLastShowDate[] =
+    "search_geolocation_disclosure.last_show_date";
+#endif
+
 }  // namespace prefs

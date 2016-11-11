@@ -12,6 +12,10 @@
 
 class Profile;
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 // Tab helper to show the search geolocation disclosure.
 class SearchGeolocationDisclosureTabHelper
     : public content::WebContentsObserver,
@@ -23,6 +27,8 @@ class SearchGeolocationDisclosureTabHelper
   // content::WebContentsObserver overrides.
   void NavigationEntryCommitted(
       const content::LoadCommittedDetails& load_details) override;
+
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
   explicit SearchGeolocationDisclosureTabHelper(content::WebContents* contents);

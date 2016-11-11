@@ -21,6 +21,8 @@
 #include "ui/gfx/range/range.h"
 #include "url/gurl.h"
 
+class PrefService;
+
 namespace content {
 class WebContents;
 }
@@ -44,9 +46,12 @@ class SearchGeolocationDisclosureInfoBarDelegate
   const GURL& search_url() const { return search_url_; }
 
  private:
-  explicit SearchGeolocationDisclosureInfoBarDelegate(const GURL& search_url);
+  explicit SearchGeolocationDisclosureInfoBarDelegate(
+      content::WebContents* web_contents,
+      const GURL& search_url);
 
   // InfoBarDelegate:
+  void InfoBarDismissed() override;
   Type GetInfoBarType() const override;
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   int GetIconId() const override;
@@ -59,6 +64,9 @@ class SearchGeolocationDisclosureInfoBarDelegate
 
   // The search URL that caused this infobar to be displayed.
   GURL search_url_;
+
+  // The pref service to record prefs in.
+  PrefService* pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchGeolocationDisclosureInfoBarDelegate);
 };

@@ -841,6 +841,12 @@ extern const char kOriginTrialDisabledFeatures[];
 
 extern const char kComponentUpdatesEnabled[];
 
+#if defined(OS_ANDROID)
+extern const char kSearchGeolocationDisclosureDismissed[];
+extern const char kSearchGeolocationDisclosureShownCount[];
+extern const char kSearchGeolocationDisclosureLastShowDate[];
+#endif
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

@@ -7,8 +7,11 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/android/infobars/search_geolocation_disclosure_infobar.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -22,20 +25,28 @@ void SearchGeolocationDisclosureInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents);
   // Add the new delegate.
   infobar_service->AddInfoBar(
-      base::MakeUnique<SearchGeolocationDisclosureInfoBar>(base::WrapUnique(
-          new SearchGeolocationDisclosureInfoBarDelegate(search_url))));
+      base::MakeUnique<SearchGeolocationDisclosureInfoBar>(
+          base::WrapUnique(new SearchGeolocationDisclosureInfoBarDelegate(
+              web_contents, search_url))));
 }
 
 SearchGeolocationDisclosureInfoBarDelegate::
-    SearchGeolocationDisclosureInfoBarDelegate(const GURL& search_url)
-    : infobars::InfoBarDelegate(),
-      search_url_(search_url) {
+    SearchGeolocationDisclosureInfoBarDelegate(
+        content::WebContents* web_contents,
+        const GURL& search_url)
+    : infobars::InfoBarDelegate(), search_url_(search_url) {
+  pref_service_ = Profile::FromBrowserContext(web_contents->GetBrowserContext())
+                      ->GetPrefs();
   base::string16 link = l10n_util::GetStringUTF16(
       IDS_SEARCH_GEOLOCATION_DISCLOSURE_INFOBAR_SETTINGS_LINK_TEXT);
   size_t offset;
   message_text_ = l10n_util::GetStringFUTF16(
       IDS_SEARCH_GEOLOCATION_DISCLOSURE_INFOBAR_TEXT, link, &offset);
   inline_link_range_ = gfx::Range(offset, offset + link.length());
+}
+
+void SearchGeolocationDisclosureInfoBarDelegate::InfoBarDismissed() {
+  pref_service_->SetBoolean(prefs::kSearchGeolocationDisclosureDismissed, true);
 }
 
 infobars::InfoBarDelegate::Type
