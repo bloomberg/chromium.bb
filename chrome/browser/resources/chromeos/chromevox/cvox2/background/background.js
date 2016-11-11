@@ -658,7 +658,7 @@ Background.prototype = {
     actionNode.doDefault();
     if (selectionSpan) {
       var start = text.getSpanStart(selectionSpan);
-      var targetPosition = position - start + selectionSpan.offset;
+      var targetPosition = position - start;
       actionNode.setSelection(targetPosition, targetPosition);
     }
   },

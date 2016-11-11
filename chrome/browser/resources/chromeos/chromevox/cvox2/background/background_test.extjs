@@ -162,7 +162,7 @@ TEST_F('BackgroundTest', 'ForwardBackwardNavigation', function() {
         .expectBraille('foxtraut h2');
     mockFeedback.call(doCmd('nextLine'))
         .expectSpeech('end', 'of test')
-        .expectBraille('end of test');
+        .expectBraille('endof test');
 
     mockFeedback.call(doCmd('jumpToTop'))
         .expectSpeech('start')
@@ -1204,5 +1204,26 @@ TEST_F('BackgroundTest', 'NavigationMovesFocus', function() {
       assertTrue(focus.state.focused);
     });
     doCmd('nextEditText')();
+  });
+});
+
+TEST_F('BackgroundTest', 'BrailleCaretNavigation', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function(root) {/*!
+    <p>This is a<em>test</em> of inline braille<br>with a second line</p>
+  */}, function(root) {
+    var text = 'This is a';
+    mockFeedback.call(doCmd('nextCharacter'))
+        .expectBraille(text, {startIndex: 1, endIndex: 2})  // h
+        .call(doCmd('nextCharacter'))
+        .expectBraille(text, {startIndex: 2, endIndex: 3})  // i
+        .call(doCmd('nextWord'))
+        .expectBraille(text, {startIndex: 5, endIndex: 7})  // is
+        .call(doCmd('previousWord'))
+        .expectBraille(text, {startIndex: 0, endIndex: 4})  // This
+        .call(doCmd('nextLine'))
+        // Ensure nothing is selected when the range covers the entire line.
+        .expectBraille('with a second line', {startIndex: -1, endIndex: -1})
+        .replay();
   });
 });

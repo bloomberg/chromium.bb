@@ -278,7 +278,7 @@ TEST_F('OutputE2ETest', 'Input', function() {
         ['||Spin button',
          [{value: 'name', start: 0, end: 0},
           {value: new Output.EarconAction('LISTBOX'), start: 0, end: 0},
-          {value: {startIndex: 0, endIndex: 0, offset: 0}, start: 1, end: 1},
+          {value: {startIndex: 0, endIndex: 0}, start: 1, end: 1},
           {value: 'value', start: 1, end: 1},
           {value: 'role', start: 2, end: 13}]
         ],
@@ -300,16 +300,16 @@ TEST_F('OutputE2ETest', 'Input', function() {
       // TODO(plundblad): Some of these are wrong, there should be an initial
       // space for the cursor in edit fields.
       var expectedBrailleValues = [
-        ' ed',
-        ' @ed',
-        ' pwded',
-        ' #ed',
-        ' spnbtn',
+        '  ed',
+        '  @ed',
+        '  pwded',
+        '  #ed',
+        '  spnbtn',
         {string_: 'time'},
         {string_: 'date'},
         {string_: 'Choose File No file chosen btn'},
-        ' srched',
-        ' ed'
+        '  srched',
+        '  ed'
       ];
       assertEquals(expectedSpeechValues.length, expectedBrailleValues.length);
 
@@ -333,7 +333,7 @@ TEST_F('OutputE2ETest', 'Input', function() {
         if (typeof expectedValue === 'string') {
           checkBrailleOutput(
               expectedValue,
-              [{value: {startIndex: 0, endIndex: 0, offset: 0},
+              [{value: {startIndex: 0, endIndex: 0},
                 start: 0, end: 0},
                {value: new Output.NodeSpan(el), start: 0,
                 end: expectedValue.length}],
@@ -666,5 +666,28 @@ TEST_F('OutputE2ETest', 'ContainerFocus', function() {
       var r2 = cursors.Range.fromNode(root.lastChild);
       assertEquals('start|Row',
           new Output().withSpeech(r1, r2).speechOutputForTest.string_);
+  });
+});
+
+TEST_F('OutputE2ETest', 'BraileWhitespace', function() {
+  this.runWithLoadedTree(function() {/*!
+    <p>this is a <em>test</em>of emphasized text</p>
+  */},
+  function(root) {
+    var start = root.firstChild.firstChild;
+    var end = root.firstChild.lastChild;
+    var range = new cursors.Range(
+        cursors.Cursor.fromNode(start),
+        cursors.Cursor.fromNode(end)
+        );
+    var o = new Output().withBraille(range, null, 'navigate');
+    checkBrailleOutput(
+        'this is a testof emphasized text',
+        [
+          {value: new Output.NodeSpan(start), start: 0, end: 10},
+          {value: new Output.NodeSpan(start.nextSibling), start: 10, end: 14},
+          {value: new Output.NodeSpan(end), start: 14, end: 32}
+        ],
+        o);
   });
 });
