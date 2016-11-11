@@ -63,6 +63,7 @@ class EmbeddedWorkerInstanceClientImpl
   service_manager::mojom::InterfaceProviderRequest renderer_request_;
 
   base::Optional<int> embedded_worker_id_;
+  // Owned by EmbeddedWorkerDispatcher
   EmbeddedWorkerDispatcher::WorkerWrapper* wrapper_;
 
   StopWorkerCallback stop_callback_;
