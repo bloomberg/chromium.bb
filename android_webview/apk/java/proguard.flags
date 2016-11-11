@@ -43,6 +43,10 @@
   void onHideCustomView();
 }
 
+-keep class org.chromium.android_webview.AwBrowserProcess {
+    java.nio.channels.FileLock sExclusiveFileLock;
+}
+
 # Accessed via reflection but not present in all builds
 -keep class com.android.webview.chromium.PlatformServiceBridgeGoogle {
   void setMetricsSettingListener(...);
