@@ -128,21 +128,13 @@ struct SameSizeAsLayoutObject : DisplayItemClient {
   unsigned m_bitfields2;
   LayoutRect m_visualRect;
   LayoutPoint m_paintOffset;
+  std::unique_ptr<void*> m_paintProperties;
 };
 
 static_assert(sizeof(LayoutObject) == sizeof(SameSizeAsLayoutObject),
               "LayoutObject should stay small");
 
 bool LayoutObject::s_affectsParentBlock = false;
-
-// The pointer to paint properties is implemented as a global hash map
-// temporarily, to avoid memory regression during the transition towards SPv2.
-typedef HashMap<const LayoutObject*, std::unique_ptr<ObjectPaintProperties>>
-    PaintPropertiesMap;
-static PaintPropertiesMap& paintPropertiesMap() {
-  DEFINE_STATIC_LOCAL(PaintPropertiesMap, staticPaintPropertiesMap, ());
-  return staticPaintPropertiesMap;
-}
 
 void* LayoutObject::operator new(size_t sz) {
   ASSERT(isMainThread());
@@ -2578,9 +2570,6 @@ void LayoutObject::willBeDestroyed() {
 
   ObjectPaintInvalidator::objectWillBeDestroyed(*this);
 
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-    paintPropertiesMap().remove(this);
-
   clearLayoutRootIfNeeded();
 
   if (m_style) {
@@ -3498,16 +3487,14 @@ void LayoutObject::setIsBackgroundAttachmentFixedObject(
 
 const ObjectPaintProperties* LayoutObject::paintProperties() const {
   DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
-  return paintPropertiesMap().get(this);
+  return m_paintProperties.get();
 }
 
 ObjectPaintProperties& LayoutObject::ensurePaintProperties() {
   DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
-  auto addResult = paintPropertiesMap().add(this, nullptr);
-  if (addResult.isNewEntry)
-    addResult.storedValue->value = ObjectPaintProperties::create();
-
-  return *addResult.storedValue->value;
+  if (!m_paintProperties)
+    m_paintProperties = ObjectPaintProperties::create();
+  return *m_paintProperties;
 }
 
 LayoutRect LayoutObject::debugRect() const {

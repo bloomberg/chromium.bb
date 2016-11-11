@@ -2380,6 +2380,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // paint offset change for paint invalidation on SPv2, and partial paint
   // property tree update for SlimmingPaintInvalidation on SPv1 and SPv2.
   LayoutPoint m_previousPaintOffset;
+
+  // For SPv2 only. The ObjectPaintProperties structure holds references to the
+  // property tree nodes that are created by the layout object for painting.
+  std::unique_ptr<ObjectPaintProperties> m_paintProperties;
 };
 
 // FIXME: remove this once the layout object lifecycle ASSERTS are no longer
