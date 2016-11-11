@@ -1385,7 +1385,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * @return The content offset provider, may be null.
      */
     public ContentOffsetProvider getContentOffsetProvider() {
-        return mCompositorViewHolder.getContentOffsetProvider();
+        return mCompositorViewHolder;
     }
 
     /**

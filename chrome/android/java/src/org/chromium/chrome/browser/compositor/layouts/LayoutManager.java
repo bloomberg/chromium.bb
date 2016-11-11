@@ -86,6 +86,9 @@ public abstract class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     protected final RectF mLastVisibleViewportDp = new RectF();
     protected final RectF mLastFullscreenViewportDp = new RectF();
 
+    // Used to store the visible viewport and not create a new Rect object every frame.
+    private final Rect mCachedVisibleViewport;
+
     protected float mLastContentWidthDp;
     protected float mLastContentHeightDp;
     protected float mLastHeightMinusBrowserControlsDp;
@@ -114,6 +117,8 @@ public abstract class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         mLastViewportDp.set(0, 0, mLastContentWidthDp, mLastContentHeightDp);
         mLastVisibleViewportDp.set(0, 0, mLastContentWidthDp, mLastContentHeightDp);
         mLastFullscreenViewportDp.set(0, 0, mLastContentWidthDp, mLastContentHeightDp);
+
+        mCachedVisibleViewport = new Rect();
 
         mLastHeightMinusBrowserControlsDp = mLastContentHeightDp;
     }
@@ -273,10 +278,11 @@ public abstract class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     }
 
     @Override
-    public SceneLayer getUpdatedActiveSceneLayer(Rect viewport, Rect contentViewport,
-            LayerTitleCache layerTitleCache, TabContentManager tabContentManager,
-            ResourceManager resourceManager, ChromeFullscreenManager fullscreenManager) {
-        return mActiveLayout.getUpdatedSceneLayer(viewport, contentViewport, layerTitleCache,
+    public SceneLayer getUpdatedActiveSceneLayer(Rect viewport, LayerTitleCache layerTitleCache,
+            TabContentManager tabContentManager, ResourceManager resourceManager,
+            ChromeFullscreenManager fullscreenManager) {
+        getViewportPixel(mCachedVisibleViewport);
+        return mActiveLayout.getUpdatedSceneLayer(viewport, mCachedVisibleViewport, layerTitleCache,
                 tabContentManager, resourceManager, fullscreenManager);
     }
 
@@ -352,12 +358,10 @@ public abstract class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     }
 
     @Override
-    public RectF getViewportDp(RectF rect) {
-        if (rect == null) rect = new RectF();
-
+    public void getViewportDp(RectF rect) {
         if (getActiveLayout() == null) {
             rect.set(mLastViewportDp);
-            return rect;
+            return;
         }
 
         final int flags = getActiveLayout().getSizingFlags();
@@ -368,17 +372,13 @@ public abstract class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         } else {
             rect.set(mLastVisibleViewportDp);
         }
-
-        return rect;
     }
 
     @Override
-    public Rect getViewportPixel(Rect rect) {
-        if (rect == null) rect = new Rect();
-
+    public void getViewportPixel(Rect rect) {
         if (getActiveLayout() == null) {
             rect.set(mLastViewportPx);
-            return rect;
+            return;
         }
 
         final int flags = getActiveLayout().getSizingFlags();
@@ -389,7 +389,6 @@ public abstract class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         } else {
             rect.set(mLastVisibleViewportPx);
         }
-        return rect;
     }
 
     @Override

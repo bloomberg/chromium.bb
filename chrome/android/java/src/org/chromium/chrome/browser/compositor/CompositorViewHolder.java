@@ -73,7 +73,8 @@ import java.util.List;
  * drawn by the UI compositor on the native side.
  */
 public class CompositorViewHolder extends CoordinatorLayout
-        implements LayoutManagerHost, LayoutRenderHost, Invalidator.Host, FullscreenListener {
+        implements ContentOffsetProvider, LayoutManagerHost, LayoutRenderHost, Invalidator.Host,
+                FullscreenListener {
 
     private boolean mIsKeyboardShowing = false;
 
@@ -311,10 +312,6 @@ public class CompositorViewHolder extends CoordinatorLayout
     @Override
     public ResourceManager getResourceManager() {
         return mCompositorView.getResourceManager();
-    }
-
-    public ContentOffsetProvider getContentOffsetProvider() {
-        return mCompositorView;
     }
 
     /**
@@ -642,16 +639,6 @@ public class CompositorViewHolder extends CoordinatorLayout
         propagateViewportToLayouts(getWidth(), getHeight());
     }
 
-    /**
-     * Note that the returned rect is reused for other calls.
-     */
-    @Override
-    public Rect getVisibleViewport(Rect rect) {
-        if (rect == null) rect = new Rect();
-        rect.set(0, (int) mLastVisibleContentOffset, getWidth(), getHeight());
-        return rect;
-    }
-
     @Override
     public int getBrowserControlsBackgroundColor() {
         return mTabVisible == null ? Color.WHITE : mTabVisible.getThemeColor();
@@ -673,6 +660,13 @@ public class CompositorViewHolder extends CoordinatorLayout
     @Override
     public int getBrowserControlsHeightPixels() {
         return mFullscreenManager != null ? mFullscreenManager.getBrowserControlsHeight() : 0;
+    }
+
+    @Override
+    public int getOverlayTranslateY() {
+        return areBrowserControlsPermanentlyHidden()
+                ? getBrowserControlsHeightPixels()
+                : mCacheVisibleViewport.top;
     }
 
     /**

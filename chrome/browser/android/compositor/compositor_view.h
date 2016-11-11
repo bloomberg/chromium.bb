@@ -70,15 +70,8 @@ class CompositorView : public content::CompositorClient,
                          const base::android::JavaParamRef<jobject>& object);
   void FinalizeLayers(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& jobj);
-  void SetLayoutViewport(JNIEnv* env,
-                         const base::android::JavaParamRef<jobject>& object,
-                         jfloat x,
-                         jfloat y,
-                         jfloat width,
-                         jfloat height,
-                         jfloat visible_x_offset,
-                         jfloat visible_y_offset,
-                         jfloat dp_to_pixel);
+  void SetLayoutBounds(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& object);
   void SurfaceCreated(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& object);
   void SurfaceDestroyed(JNIEnv* env,

@@ -162,16 +162,8 @@ void CompositorView::SurfaceChanged(JNIEnv* env,
   root_layer_->SetBounds(gfx::Size(content_width_, content_height_));
 }
 
-void CompositorView::SetLayoutViewport(JNIEnv* env,
-                                       const JavaParamRef<jobject>& object,
-                                       jfloat x,
-                                       jfloat y,
-                                       jfloat width,
-                                       jfloat height,
-                                       jfloat visible_x_offset,
-                                       jfloat visible_y_offset,
-                                       jfloat dp_to_pixel) {
-  compositor_->setDeviceScaleFactor(dp_to_pixel);
+void CompositorView::SetLayoutBounds(JNIEnv* env,
+                                     const JavaParamRef<jobject>& object) {
   root_layer_->SetBounds(gfx::Size(content_width_, content_height_));
 }
 
