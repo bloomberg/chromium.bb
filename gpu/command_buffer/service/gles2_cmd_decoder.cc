@@ -2637,17 +2637,22 @@ bool BackTexture::AllocateStorage(
     DestroyNativeGpuMemoryBuffer(true);
     success = AllocateNativeGpuMemoryBuffer(size, format, zero);
   } else {
-    std::unique_ptr<char[]> zero_data;
-    if (zero) {
-      zero_data.reset(new char[image_size]);
-      memset(zero_data.get(), 0, image_size);
+    {
+      // Add extra scope to destroy zero_data and the object it owns right
+      // after its usage.
+      std::unique_ptr<char[]> zero_data;
+      if (zero) {
+        zero_data.reset(new char[image_size]);
+        memset(zero_data.get(), 0, image_size);
+      }
+
+      glTexImage2D(Target(),
+        0,  // mip level
+        format, size.width(), size.height(),
+        0,  // border
+        format, GL_UNSIGNED_BYTE, zero_data.get());
     }
 
-    glTexImage2D(Target(),
-                 0,  // mip level
-                 format, size.width(), size.height(),
-                 0,  // border
-                 format, GL_UNSIGNED_BYTE, zero_data.get());
     decoder_->texture_manager()->SetLevelInfo(
         texture_ref_.get(), Target(),
         0,  // level
@@ -12260,20 +12265,24 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
     tile_height = height;
   }
 
-  // Assumes the size has already been checked.
-  std::unique_ptr<char[]> zero(new char[size]);
-  memset(zero.get(), 0, size);
-  glBindTexture(texture->target(), texture->service_id());
+  {
+    // Add extra scope to destroy zero and the object it owns right
+    // after its usage.
+    // Assumes the size has already been checked.
+    std::unique_ptr<char[]> zero(new char[size]);
+    memset(zero.get(), 0, size);
+    glBindTexture(texture->target(), texture->service_id());
 
-  GLint y = 0;
-  while (y < height) {
-    GLint h = y + tile_height > height ? height - y : tile_height;
-    glTexSubImage2D(
+    GLint y = 0;
+    while (y < height) {
+      GLint h = y + tile_height > height ? height - y : tile_height;
+      glTexSubImage2D(
         target, level, xoffset, yoffset + y, width, h,
         TextureManager::AdjustTexFormat(feature_info_.get(), format),
         type,
         zero.get());
-    y += tile_height;
+      y += tile_height;
+    }
   }
   TextureRef* bound_texture =
       texture_manager()->GetTextureInfoForTarget(&state_, texture->target());
@@ -12306,11 +12315,15 @@ bool GLES2DecoderImpl::ClearCompressedTextureLevel(Texture* texture,
                "bytes_required", bytes_required);
 
   glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-  std::unique_ptr<char[]> zero(new char[bytes_required]);
-  memset(zero.get(), 0, bytes_required);
-  glBindTexture(texture->target(), texture->service_id());
-  glCompressedTexSubImage2D(
+  {
+    // Add extra scope to destroy zero and the object it owns right
+    // after its usage.
+    std::unique_ptr<char[]> zero(new char[bytes_required]);
+    memset(zero.get(), 0, bytes_required);
+    glBindTexture(texture->target(), texture->service_id());
+    glCompressedTexSubImage2D(
       target, level, 0, 0, width, height, format, bytes_required, zero.get());
+  }
   TextureRef* bound_texture =
       texture_manager()->GetTextureInfoForTarget(&state_, texture->target());
   glBindTexture(texture->target(),
@@ -13895,12 +13908,18 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
 
   if (src.x() != x || src.y() != y ||
       src.width() != width || src.height() != height) {
-    // some part was clipped so clear the rect.
-    std::unique_ptr<char[]> zero(new char[pixels_size]);
-    memset(zero.get(), 0, pixels_size);
-    glTexImage2D(target, level, TextureManager::AdjustTexInternalFormat(
-                                    feature_info_.get(), internal_format),
-                 width, height, border, format, type, zero.get());
+    {
+      // Add extra scope to destroy zero and the object it owns right
+      // after its usage.
+      // some part was clipped so clear the rect.
+
+      std::unique_ptr<char[]> zero(new char[pixels_size]);
+      memset(zero.get(), 0, pixels_size);
+      glTexImage2D(target, level, TextureManager::AdjustTexInternalFormat(
+        feature_info_.get(), internal_format),
+        width, height, border, format, type, zero.get());
+    }
+
     if (!src.IsEmpty()) {
       GLint destX = src.x() - x;
       GLint destY = src.y() - y;
