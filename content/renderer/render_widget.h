@@ -807,6 +807,17 @@ class CONTENT_EXPORT RenderWidget
   void ScreenRectToEmulatedIfNeeded(blink::WebRect* window_rect) const;
   void EmulatedToScreenRectIfNeeded(blink::WebRect* window_rect) const;
 
+  bool CreateWidget(int32_t opener_id,
+                    blink::WebPopupType popup_type,
+                    int32_t* routing_id);
+
+  // A variant of Send but is fatal if it fails. The browser may
+  // be waiting for this IPC Message and if the send fails the browser will
+  // be left in a state waiting for something that never comes. And if it
+  // never comes then it may later determine this is a hung renderer; so
+  // instead fail right away.
+  void SendOrCrash(IPC::Message* msg);
+
   // Indicates whether this widget has focus.
   bool has_focus_;
 

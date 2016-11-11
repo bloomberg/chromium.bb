@@ -525,6 +525,11 @@ bool RenderWidget::Send(IPC::Message* message) {
   return RenderThread::Get()->Send(message);
 }
 
+void RenderWidget::SendOrCrash(IPC::Message* message) {
+  bool result = Send(message);
+  CHECK(closing_ || result) << "Failed to send message";
+}
+
 void RenderWidget::SetWindowRectSynchronously(
     const gfx::Rect& new_window_rect) {
   ResizeParams params;
@@ -858,7 +863,8 @@ void RenderWidget::OnDidOverscroll(const ui::DidOverscrollParams& params) {
 
 void RenderWidget::OnInputEventAck(
     std::unique_ptr<InputEventAck> input_event_ack) {
-  Send(new InputHostMsg_HandleInputEvent_ACK(routing_id_, *input_event_ack));
+  SendOrCrash(
+      new InputHostMsg_HandleInputEvent_ACK(routing_id_, *input_event_ack));
 }
 
 void RenderWidget::NotifyInputEventHandled(
