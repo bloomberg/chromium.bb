@@ -28,11 +28,15 @@ OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(
     uint32_t clientId,
     uint32_t sinkId,
     uint32_t localId,
-    uint64_t nonce,
+    uint64_t nonceHigh,
+    uint64_t nonceLow,
     int width,
     int height)
-    : m_surfaceId(cc::FrameSinkId(clientId, sinkId),
-                  cc::LocalFrameId(localId, nonce)),
+    : m_surfaceId(
+          cc::FrameSinkId(clientId, sinkId),
+          cc::LocalFrameId(
+              localId,
+              base::UnguessableToken::Deserialize(nonceHigh, nonceLow))),
       m_width(width),
       m_height(height),
       m_nextResourceId(1u),

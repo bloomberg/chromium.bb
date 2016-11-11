@@ -1,5 +1,6 @@
 include_rules = [
   "+gpu/ipc/common",
+  "+mojo/common",
   "+mojo/public",
   "+skia/public",
   "+ui/events/ipc",

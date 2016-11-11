@@ -21,8 +21,8 @@ namespace {
 constexpr FrameSinkId kFrameSink1(1, 0);
 constexpr FrameSinkId kFrameSink2(2, 0);
 constexpr FrameSinkId kFrameSink3(3, 0);
-constexpr LocalFrameId kLocalFrame1(1, 0);
-constexpr LocalFrameId kLocalFrame2(2, 0);
+const LocalFrameId kLocalFrame1(1, base::UnguessableToken::Create());
+const LocalFrameId kLocalFrame2(2, base::UnguessableToken::Create());
 
 // Tests for reference tracking in SurfaceManager.
 class SurfaceManagerRefTest : public testing::Test {
@@ -72,7 +72,7 @@ class SurfaceManagerRefTest : public testing::Test {
 
 TEST_F(SurfaceManagerRefTest, AddReference) {
   SurfaceId id1 = CreateSurface(kFrameSink1, kLocalFrame1);
-  manager().AddSurfaceReference(SurfaceManager::kRootSurfaceId, id1);
+  manager().AddSurfaceReference(manager().GetRootSurfaceId(), id1);
 
   EXPECT_EQ(manager().GetSurfaceReferenceCount(id1), 1u);
   EXPECT_EQ(manager().GetReferencedSurfaceCount(id1), 0u);
@@ -81,7 +81,7 @@ TEST_F(SurfaceManagerRefTest, AddReference) {
 TEST_F(SurfaceManagerRefTest, AddRemoveReference) {
   SurfaceId id1 = CreateSurface(kFrameSink1, kLocalFrame1);
   SurfaceId id2 = CreateSurface(kFrameSink2, kLocalFrame1);
-  manager().AddSurfaceReference(SurfaceManager::kRootSurfaceId, id1);
+  manager().AddSurfaceReference(manager().GetRootSurfaceId(), id1);
   manager().AddSurfaceReference(id1, id2);
 
   EXPECT_EQ(manager().GetSurfaceReferenceCount(id1), 1u);
@@ -101,7 +101,7 @@ TEST_F(SurfaceManagerRefTest, AddRemoveReferenceRecursive) {
   SurfaceId id2 = CreateSurface(kFrameSink2, kLocalFrame1);
   SurfaceId id3 = CreateSurface(kFrameSink3, kLocalFrame1);
 
-  manager().AddSurfaceReference(SurfaceManager::kRootSurfaceId, id1);
+  manager().AddSurfaceReference(manager().GetRootSurfaceId(), id1);
   manager().AddSurfaceReference(id1, id2);
   manager().AddSurfaceReference(id2, id3);
   EXPECT_EQ(manager().GetSurfaceReferenceCount(id1), 1u);
@@ -127,7 +127,7 @@ TEST_F(SurfaceManagerRefTest, NewSurfaceFromFrameSink) {
   SurfaceId id2 = CreateSurface(kFrameSink2, kLocalFrame1);
   SurfaceId id3 = CreateSurface(kFrameSink3, kLocalFrame1);
 
-  manager().AddSurfaceReference(SurfaceManager::kRootSurfaceId, id1);
+  manager().AddSurfaceReference(manager().GetRootSurfaceId(), id1);
   manager().AddSurfaceReference(id1, id2);
   manager().AddSurfaceReference(id2, id3);
 
@@ -160,7 +160,7 @@ TEST_F(SurfaceManagerRefTest, CheckGC) {
   SurfaceId id1 = CreateSurface(kFrameSink1, kLocalFrame1);
   SurfaceId id2 = CreateSurface(kFrameSink2, kLocalFrame1);
 
-  manager().AddSurfaceReference(SurfaceManager::kRootSurfaceId, id1);
+  manager().AddSurfaceReference(manager().GetRootSurfaceId(), id1);
   manager().AddSurfaceReference(id1, id2);
 
   EXPECT_NE(manager().GetSurfaceForId(id1), nullptr);
@@ -178,7 +178,7 @@ TEST_F(SurfaceManagerRefTest, CheckGC) {
   EXPECT_EQ(manager().GetSurfaceForId(id2), nullptr);
 
   // Should delete |id1| when the only reference to it is removed.
-  manager().RemoveSurfaceReference(SurfaceManager::kRootSurfaceId, id1);
+  manager().RemoveSurfaceReference(manager().GetRootSurfaceId(), id1);
   EXPECT_EQ(manager().GetSurfaceForId(id1), nullptr);
 }
 
@@ -187,7 +187,7 @@ TEST_F(SurfaceManagerRefTest, CheckGCRecusiveFull) {
   SurfaceId id2 = CreateSurface(kFrameSink2, kLocalFrame1);
   SurfaceId id3 = CreateSurface(kFrameSink3, kLocalFrame1);
 
-  manager().AddSurfaceReference(SurfaceManager::kRootSurfaceId, id1);
+  manager().AddSurfaceReference(manager().GetRootSurfaceId(), id1);
   manager().AddSurfaceReference(id1, id2);
   manager().AddSurfaceReference(id2, id3);
 
@@ -201,7 +201,7 @@ TEST_F(SurfaceManagerRefTest, CheckGCRecusiveFull) {
   EXPECT_NE(manager().GetSurfaceForId(id2), nullptr);
   EXPECT_NE(manager().GetSurfaceForId(id1), nullptr);
 
-  manager().RemoveSurfaceReference(SurfaceManager::kRootSurfaceId, id1);
+  manager().RemoveSurfaceReference(manager().GetRootSurfaceId(), id1);
 
   // Removing the reference from the root to id1 should allow all three surfaces
   // to be deleted during GC.
@@ -214,7 +214,7 @@ TEST_F(SurfaceManagerRefTest, CheckGCWithSequences) {
   SurfaceId id1 = CreateSurface(kFrameSink1, kLocalFrame1);
   SurfaceId id2 = CreateSurface(kFrameSink2, kLocalFrame1);
 
-  manager().AddSurfaceReference(SurfaceManager::kRootSurfaceId, id1);
+  manager().AddSurfaceReference(manager().GetRootSurfaceId(), id1);
   manager().AddSurfaceReference(id1, id2);
 
   SurfaceId id3 = CreateSurface(kFrameSink3, kLocalFrame1);
@@ -247,11 +247,12 @@ TEST_F(SurfaceManagerRefTest, CheckGCWithSequences) {
 
 TEST_F(SurfaceManagerRefTest, TryAddReferenceToBadSurface) {
   // Not creating an accompanying Surface and SurfaceFactory.
-  SurfaceId id(FrameSinkId(100u, 200u), LocalFrameId(1u, 123123u));
+  SurfaceId id(FrameSinkId(100u, 200u),
+               LocalFrameId(1u, base::UnguessableToken::Create()));
 
   // Adding reference from root to the Surface should do nothing because
   // SurfaceManager doesn't know Surface for |id| exists.
-  manager().AddSurfaceReference(SurfaceManager::kRootSurfaceId, id);
+  manager().AddSurfaceReference(manager().GetRootSurfaceId(), id);
   EXPECT_EQ(manager().GetSurfaceReferenceCount(id), 0u);
 }
 
@@ -259,7 +260,7 @@ TEST_F(SurfaceManagerRefTest, TryDoubleAddReference) {
   SurfaceId id1 = CreateSurface(kFrameSink1, kLocalFrame1);
   SurfaceId id2 = CreateSurface(kFrameSink2, kLocalFrame1);
 
-  manager().AddSurfaceReference(SurfaceManager::kRootSurfaceId, id1);
+  manager().AddSurfaceReference(manager().GetRootSurfaceId(), id1);
   manager().AddSurfaceReference(id1, id2);
   EXPECT_EQ(manager().GetSurfaceReferenceCount(id2), 1u);
   EXPECT_EQ(manager().GetReferencedSurfaceCount(id1), 1u);

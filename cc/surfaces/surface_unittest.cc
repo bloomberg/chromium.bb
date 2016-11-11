@@ -38,7 +38,7 @@ TEST(SurfaceTest, SurfaceLifetime) {
   SurfaceFactory factory(kArbitraryFrameSinkId, &manager,
                          &surface_factory_client);
 
-  LocalFrameId local_frame_id(6, 0);
+  LocalFrameId local_frame_id(6, base::UnguessableToken::Create());
   SurfaceId surface_id(kArbitraryFrameSinkId, local_frame_id);
   {
     factory.Create(local_frame_id);

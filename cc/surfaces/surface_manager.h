@@ -30,10 +30,6 @@ class SurfaceFactoryClient;
 
 class CC_SURFACES_EXPORT SurfaceManager {
  public:
-  // Root SurfaceId that references display root surfaces. There is no Surface
-  // with this id, it's for bookkeeping purposes only.
-  static const SurfaceId kRootSurfaceId;
-
   SurfaceManager();
   ~SurfaceManager();
 
@@ -122,6 +118,8 @@ class CC_SURFACES_EXPORT SurfaceManager {
   void UnregisterFrameSinkHierarchy(const FrameSinkId& parent_frame_sink_id,
                                     const FrameSinkId& child_frame_sink_id);
 
+  const SurfaceId& GetRootSurfaceId() { return kRootSurfaceId; }
+
  private:
   void RecursivelyAttachBeginFrameSource(const FrameSinkId& frame_sink_id,
                                          BeginFrameSource* source);
@@ -190,6 +188,10 @@ class CC_SURFACES_EXPORT SurfaceManager {
   // that is implicitly using this namespace must be reachable by the
   // parent in the dag.
   std::unordered_map<BeginFrameSource*, FrameSinkId> registered_sources_;
+
+  // Root SurfaceId that references display root surfaces. There is no Surface
+  // with this id, it's for bookkeeping purposes only.
+  const SurfaceId kRootSurfaceId;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceManager);
 };

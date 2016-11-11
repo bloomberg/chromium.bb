@@ -70,16 +70,19 @@ class CORE_EXPORT OffscreenCanvas final
   void setSurfaceId(uint32_t clientId,
                     uint32_t sinkId,
                     uint32_t localId,
-                    uint64_t nonce) {
+                    uint64_t nonceHigh,
+                    uint64_t nonceLow) {
     m_clientId = clientId;
     m_sinkId = sinkId;
     m_localId = localId;
-    m_nonce = nonce;
+    m_nonceHigh = nonceHigh;
+    m_nonceLow = nonceLow;
   }
   uint32_t clientId() const { return m_clientId; }
   uint32_t sinkId() const { return m_sinkId; }
   uint32_t localId() const { return m_localId; }
-  uint64_t nonce() const { return m_nonce; }
+  uint64_t nonceHigh() const { return m_nonceHigh; }
+  uint64_t nonceLow() const { return m_nonceLow; }
 
   // CanvasImageSource implementation
   PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*,
@@ -127,7 +130,8 @@ class CORE_EXPORT OffscreenCanvas final
   uint32_t m_clientId = 0;
   uint32_t m_sinkId = 0;
   uint32_t m_localId = 0;
-  uint64_t m_nonce = 0;
+  uint64_t m_nonceHigh = 0;
+  uint64_t m_nonceLow = 0;
 };
 
 }  // namespace blink

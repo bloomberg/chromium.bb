@@ -16,9 +16,6 @@
 
 namespace cc {
 
-const SurfaceId SurfaceManager::kRootSurfaceId(FrameSinkId(0u, 0u),
-                                               LocalFrameId(0u, 0u));
-
 SurfaceManager::FrameSinkSourceMapping::FrameSinkSourceMapping()
     : client(nullptr), source(nullptr) {}
 
@@ -30,7 +27,9 @@ SurfaceManager::FrameSinkSourceMapping::~FrameSinkSourceMapping() {
                      << ", children: " << children.size();
 }
 
-SurfaceManager::SurfaceManager() {
+SurfaceManager::SurfaceManager()
+    : kRootSurfaceId(FrameSinkId(0u, 0u),
+                     LocalFrameId(0u, base::UnguessableToken::Create())) {
   thread_checker_.DetachFromThread();
 }
 

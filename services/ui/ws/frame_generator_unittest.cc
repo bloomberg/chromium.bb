@@ -24,6 +24,7 @@ namespace {
 
 // Typical id for the display root ServerWindow.
 constexpr WindowId kRootDisplayId(0, 2);
+const base::UnguessableToken kArbitraryToken = base::UnguessableToken::Create();
 
 // Makes the window visible and creates the default surface for it.
 void InitWindow(ServerWindow* window) {
@@ -36,7 +37,7 @@ void InitWindow(ServerWindow* window) {
           cc::FrameSinkId(
               WindowIdToTransportId(window->id()),
               static_cast<uint32_t>(mojom::CompositorFrameSinkType::DEFAULT)),
-          cc::LocalFrameId(1u, 1u)),
+          cc::LocalFrameId(1u, kArbitraryToken)),
       gfx::Size(100, 100));
 }
 
@@ -125,7 +126,7 @@ TEST_F(FrameGeneratorTest, DrawWindowTree) {
           cc::FrameSinkId(
               WindowIdToTransportId(child_window.id()),
               static_cast<uint32_t>(mojom::CompositorFrameSinkType::UNDERLAY)),
-          cc::LocalFrameId(1u, 1u)),
+          cc::LocalFrameId(1u, kArbitraryToken)),
       gfx::Size(100, 100));
 
   render_pass = cc::RenderPass::Create();
