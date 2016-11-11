@@ -201,6 +201,10 @@ static_library("content_shell_lib") {
     "//build/config/compiler:no_size_t_to_int_warning",
   ]
 
+  if (enable_mojo_media) {
+    configs += [ "//media/mojo/services:mojo_media_config" ]
+  }
+
   defines = [ "CONTENT_SHELL_VERSION=\"$content_shell_version\"" ]
 
   public_deps = [

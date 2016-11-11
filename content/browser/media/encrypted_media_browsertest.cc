@@ -10,34 +10,43 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "media/base/media.h"
+#include "media/base/media_switches.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
-#include "media/base/media.h"
-#include "media/base/media_switches.h"
 #endif
 
-#if defined(ENABLE_MOJO_RENDERER)
-// TODO(xhwang): Enable tests by running AesDecryptor in remote mojo CDM and
-// using ExternalClearKey instead of ClearKey: crbug.com/641559
-#define DISABLE_ENCRYPTED_MEDIA_PLAYBACK_TESTS 1
+// MojoCdm supports Clear Key, but currently MojoRenderer cannot use it.
+// See http://crbug.com/441957 for details.
+#if !(defined(ENABLE_MOJO_CDM) && defined(ENABLE_MOJO_RENDERER))
+#define SUPPORTS_CLEAR_KEY_IN_CONTENT_SHELL
+#endif
+
+#if defined(ENABLE_MOJO_CDM)
+// When mojo CDM is enabled, External Clear Key is supported in //content/shell/
+// by using mojo CDM with AesDecryptor running in the remote (e.g. GPU or
+// Browser) process.
+// Note that External Clear Key is also supported in chrome/ when pepper CDM is
+// used, which is tested in browser_tests.
+#define SUPPORTS_EXTERNAL_CLEAR_KEY_IN_CONTENT_SHELL
 #endif
 
 // Available key systems.
+#if defined(SUPPORTS_CLEAR_KEY_IN_CONTENT_SHELL)
 const char kClearKeyKeySystem[] = "org.w3.clearkey";
+#endif
 
-#if defined(OS_ANDROID)
+#if defined(SUPPORTS_EXTERNAL_CLEAR_KEY_IN_CONTENT_SHELL)
 const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
 #endif
 
 // Supported media types.
 const char kWebMVorbisAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
-#if !defined(DISABLE_ENCRYPTED_MEDIA_PLAYBACK_TESTS)
 const char kWebMOpusAudioOnly[] = "audio/webm; codecs=\"opus\"";
 const char kWebMVP8VideoOnly[] = "video/webm; codecs=\"vp8\"";
 const char kWebMVP9VideoOnly[] = "video/webm; codecs=\"vp9\"";
 const char kWebMOpusAudioVP9Video[] = "video/webm; codecs=\"opus, vp9\"";
-#endif
 const char kWebMVorbisAudioVP8Video[] = "video/webm; codecs=\"vorbis, vp8\"";
 
 // EME-specific test results and errors.
@@ -130,7 +139,7 @@ class EncryptedMediaTest : public content::MediaBrowserTest,
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(
         switches::kDisableGestureRequirementForMediaPlayback);
-#if defined(OS_ANDROID)
+#if defined(SUPPORTS_EXTERNAL_CLEAR_KEY_IN_CONTENT_SHELL)
     command_line->AppendSwitchASCII(switches::kEnableFeatures,
                                     media::kExternalClearKeyForTesting.name);
 #endif
@@ -140,13 +149,26 @@ class EncryptedMediaTest : public content::MediaBrowserTest,
 using ::testing::Combine;
 using ::testing::Values;
 
+#if defined(SUPPORTS_CLEAR_KEY_IN_CONTENT_SHELL)
 INSTANTIATE_TEST_CASE_P(SRC_ClearKey, EncryptedMediaTest,
                         Combine(Values(kClearKeyKeySystem), Values(SRC)));
 
 INSTANTIATE_TEST_CASE_P(MSE_ClearKey, EncryptedMediaTest,
                         Combine(Values(kClearKeyKeySystem), Values(MSE)));
+#endif
 
-#if !defined(DISABLE_ENCRYPTED_MEDIA_PLAYBACK_TESTS)
+#if defined(SUPPORTS_EXTERNAL_CLEAR_KEY_IN_CONTENT_SHELL)
+INSTANTIATE_TEST_CASE_P(SRC_ExternalClearKey,
+                        EncryptedMediaTest,
+                        Combine(Values(kExternalClearKeyKeySystem),
+                                Values(SRC)));
+
+INSTANTIATE_TEST_CASE_P(MSE_ExternalClearKey,
+                        EncryptedMediaTest,
+                        Combine(Values(kExternalClearKeyKeySystem),
+                                Values(MSE)));
+#endif
+
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_WebM) {
   TestSimplePlayback("bear-a_enc-a.webm", kWebMVorbisAudioOnly);
 }
@@ -209,24 +231,11 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, ConfigChangeVideo) {
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameSizeChangeVideo) {
   TestFrameSizeChange();
 }
-#endif  // !defined(DISABLE_ENCRYPTED_MEDIA_PLAYBACK_TESTS)
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, UnknownKeySystemThrowsException) {
   RunEncryptedMediaTest(kDefaultEmePlayer, "bear-a_enc-a.webm",
                         kWebMVorbisAudioOnly, "com.example.foo", MSE,
                         kEmeNotSupportedError);
 }
-
-#if defined(OS_ANDROID)
-// On Android, External Clear Key is supported in //content/shell/ by using mojo
-// CDM with AesDecryptor running in the GPU process.
-// On other platforms, External Clear Key is supported in chrome/, so it is
-// tested in browser_tests.
-IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, ExternalClearKeyPlayback) {
-  RunSimpleEncryptedMediaTest("bear-320x240-av_enc-av.webm",
-                              kWebMVorbisAudioVP8Video,
-                              kExternalClearKeyKeySystem, MSE);
-}
-#endif
 
 }  // namespace content

@@ -37,7 +37,7 @@ class ShellContentRendererClient : public ContentRendererClient {
   void ExposeInterfacesToBrowser(
       service_manager::InterfaceRegistry* interface_registry) override;
 
-#if defined(OS_ANDROID)
+#if defined(ENABLE_MOJO_CDM)
   void AddSupportedKeySystems(
       std::vector<std::unique_ptr<media::KeySystemProperties>>* key_systems)
       override;

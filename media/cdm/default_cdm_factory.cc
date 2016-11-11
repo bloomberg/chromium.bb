@@ -9,7 +9,9 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "media/base/key_system_names.h"
 #include "media/base/key_systems.h"
+#include "media/base/media_switches.h"
 #include "media/cdm/aes_decryptor.h"
 #include "url/gurl.h"
 
@@ -19,6 +21,16 @@ DefaultCdmFactory::DefaultCdmFactory() {
 }
 
 DefaultCdmFactory::~DefaultCdmFactory() {
+}
+
+static bool ShouldCreateAesDecryptor(const std::string& key_system) {
+  if (CanUseAesDecryptor(key_system))
+    return true;
+
+  // Should create AesDecryptor to support External Clear Key key system.
+  // This is used for testing.
+  return base::FeatureList::IsEnabled(media::kExternalClearKeyForTesting) &&
+         IsExternalClearKey(key_system);
 }
 
 void DefaultCdmFactory::Create(
@@ -35,7 +47,8 @@ void DefaultCdmFactory::Create(
         FROM_HERE, base::Bind(cdm_created_cb, nullptr, "Invalid origin."));
     return;
   }
-  if (!CanUseAesDecryptor(key_system)) {
+
+  if (!ShouldCreateAesDecryptor(key_system)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(cdm_created_cb, nullptr, "Unsupported key system."));

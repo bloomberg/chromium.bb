@@ -26,7 +26,7 @@
 #include "ppapi/shared_impl/ppapi_switches.h"
 #endif
 
-#if defined(OS_ANDROID)
+#if defined(ENABLE_MOJO_CDM)
 #include "base/feature_list.h"
 #include "media/base/media_switches.h"
 #endif
@@ -140,7 +140,7 @@ void ShellContentRendererClient::ExposeInterfacesToBrowser(
       base::Bind(&CreateTestService));
 }
 
-#if defined(OS_ANDROID)
+#if defined(ENABLE_MOJO_CDM)
 void ShellContentRendererClient::AddSupportedKeySystems(
     std::vector<std::unique_ptr<media::KeySystemProperties>>* key_systems) {
   if (!base::FeatureList::IsEnabled(media::kExternalClearKeyForTesting))
