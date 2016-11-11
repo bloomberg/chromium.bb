@@ -74,13 +74,13 @@ bool GLContextEGL::Initialize(GLSurface* compatible_surface,
 
   if (GLSurfaceEGL::IsCreateContextRobustnessSupported()) {
     DVLOG(1) << "EGL_EXT_create_context_robustness supported.";
+    context_attributes.push_back(
+        EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY_EXT);
+    context_attributes.push_back(EGL_LOSE_CONTEXT_ON_RESET_EXT);
   } else {
     // At some point we should require the presence of the robustness
     // extension and remove this code path.
     DVLOG(1) << "EGL_EXT_create_context_robustness NOT supported.";
-    context_attributes.push_back(
-        EGL_CONTEXT_OPENGL_RESET_NOTIFICATION_STRATEGY_EXT);
-    context_attributes.push_back(EGL_LOSE_CONTEXT_ON_RESET_EXT);
   }
 
   if (!eglBindAPI(EGL_OPENGL_ES_API)) {
