@@ -5,6 +5,8 @@
 #ifndef GPU_IPC_SERVICE_CHILD_WINDOW_SURFACE_WIN_H_
 #define GPU_IPC_SERVICE_CHILD_WINDOW_SURFACE_WIN_H_
 
+#include "base/memory/weak_ptr.h"
+#include "gpu/ipc/service/image_transport_surface_delegate.h"
 #include "ui/gl/gl_surface_egl.h"
 
 #include <windows.h>
@@ -16,7 +18,8 @@ struct SharedData;
 
 class ChildWindowSurfaceWin : public gl::NativeViewGLSurfaceEGL {
  public:
-  ChildWindowSurfaceWin(GpuChannelManager* manager, HWND parent_window);
+  ChildWindowSurfaceWin(base::WeakPtr<ImageTransportSurfaceDelegate> delegate,
+                        HWND parent_window);
 
   // GLSurface implementation.
   EGLConfig GetConfig() override;
@@ -41,7 +44,7 @@ class ChildWindowSurfaceWin : public gl::NativeViewGLSurfaceEGL {
   // The window is initially created with this parent window. We need to keep it
   // around so that we can destroy it at the end.
   HWND initial_parent_window_;
-  GpuChannelManager* manager_;
+  base::WeakPtr<ImageTransportSurfaceDelegate> delegate_;
   bool alpha_;
   bool first_swap_;
 

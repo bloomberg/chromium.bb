@@ -19,7 +19,6 @@ namespace gpu {
 
 // static
 scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
-    GpuChannelManager* manager,
     base::WeakPtr<ImageTransportSurfaceDelegate> delegate,
     SurfaceHandle surface_handle,
     gl::GLSurface::Format format) {
@@ -29,7 +28,7 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
   if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2 &&
       gl::GLSurfaceEGL::IsDirectCompositionSupported()) {
     scoped_refptr<ChildWindowSurfaceWin> egl_surface(
-        new ChildWindowSurfaceWin(manager, surface_handle));
+        new ChildWindowSurfaceWin(delegate, surface_handle));
     surface = egl_surface;
 
     // TODO(stanisc): http://crbug.com/659844:

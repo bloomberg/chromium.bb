@@ -156,11 +156,12 @@ void DestroyWindowsOnThread(HWND child_window, HWND hidden_popup_window) {
 
 }  // namespace
 
-ChildWindowSurfaceWin::ChildWindowSurfaceWin(GpuChannelManager* manager,
-                                             HWND parent_window)
+ChildWindowSurfaceWin::ChildWindowSurfaceWin(
+    base::WeakPtr<ImageTransportSurfaceDelegate> delegate,
+    HWND parent_window)
     : gl::NativeViewGLSurfaceEGL(0),
       parent_window_(parent_window),
-      manager_(manager),
+      delegate_(delegate),
       alpha_(true),
       first_swap_(true) {
   // Don't use EGL_ANGLE_window_fixed_size so that we can avoid recreating the
@@ -219,8 +220,7 @@ bool ChildWindowSurfaceWin::InitializeNativeWindow() {
                  shared_data_.get(), &window_, &initial_parent_window_));
   event.Wait();
 
-  manager_->delegate()->SendAcceleratedSurfaceCreatedChildWindow(parent_window_,
-                                                                 window_);
+  delegate_->DidCreateAcceleratedSurfaceChildWindow(parent_window_, window_);
   return true;
 }
 

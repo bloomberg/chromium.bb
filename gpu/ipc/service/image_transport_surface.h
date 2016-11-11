@@ -34,7 +34,6 @@ class ImageTransportSurface {
   // This will be implemented separately by each platform. On failure, a null
   // scoped_refptr should be returned.
   static scoped_refptr<gl::GLSurface> CreateNativeSurface(
-      GpuChannelManager* manager,
       base::WeakPtr<ImageTransportSurfaceDelegate> stub,
       SurfaceHandle surface_handle,
       gl::GLSurface::Format format);

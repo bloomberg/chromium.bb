@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "gpu/gpu_export.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/swap_result.h"
 
@@ -49,7 +50,15 @@ struct GPU_EXPORT SwapBuffersCompleteParams {
 
 class GPU_EXPORT ImageTransportSurfaceDelegate {
  public:
-  // Tells the delete that SwapBuffers returned and passes latency info.
+#if defined(OS_WIN)
+  // Tells the delegate that a child window was created with the provided
+  // SurfaceHandle.
+  virtual void DidCreateAcceleratedSurfaceChildWindow(
+      SurfaceHandle parent_window,
+      SurfaceHandle child_window) = 0;
+#endif
+
+  // Tells the delegate that SwapBuffers returned and passes latency info.
   virtual void DidSwapBuffersComplete(SwapBuffersCompleteParams params) = 0;
 
   // Returns the features available for the ContextGroup.

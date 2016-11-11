@@ -90,7 +90,12 @@ class GPU_EXPORT GpuCommandBufferStub
   // IPC::Sender implementation:
   bool Send(IPC::Message* msg) override;
 
-  // PassThroughImageTransportSuraceDelegate implementation:
+// ImageTransportSurfaceDelegate implementation:
+#if defined(OS_WIN)
+  void DidCreateAcceleratedSurfaceChildWindow(
+      SurfaceHandle parent_window,
+      SurfaceHandle child_window) override;
+#endif
   void DidSwapBuffersComplete(SwapBuffersCompleteParams params) override;
   const gles2::FeatureInfo* GetFeatureInfo() const override;
   void SetLatencyInfoCallback(const LatencyInfoCallback& callback) override;

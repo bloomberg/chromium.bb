@@ -276,6 +276,16 @@ bool GpuCommandBufferStub::Send(IPC::Message* message) {
   return channel_->Send(message);
 }
 
+#if defined(OS_WIN)
+void GpuCommandBufferStub::DidCreateAcceleratedSurfaceChildWindow(
+    SurfaceHandle parent_window,
+    SurfaceHandle child_window) {
+  GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
+  gpu_channel_manager->delegate()->SendAcceleratedSurfaceCreatedChildWindow(
+      parent_window, child_window);
+}
+#endif
+
 void GpuCommandBufferStub::DidSwapBuffersComplete(
     SwapBuffersCompleteParams params) {
   GpuCommandBufferMsg_SwapBuffersCompleted_Params send_params;
@@ -557,7 +567,7 @@ bool GpuCommandBufferStub::Initialize(
     surface_ = default_surface;
   } else {
     surface_ = ImageTransportSurface::CreateNativeSurface(
-        manager, AsWeakPtr(), surface_handle_, surface_format);
+        AsWeakPtr(), surface_handle_, surface_format);
     if (!surface_ || !surface_->Initialize(surface_format)) {
       surface_ = nullptr;
       DLOG(ERROR) << "Failed to create surface.";

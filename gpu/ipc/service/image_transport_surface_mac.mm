@@ -41,7 +41,6 @@ bool g_allow_os_mesa = false;
 
 // static
 scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
-    GpuChannelManager* manager,
     base::WeakPtr<ImageTransportSurfaceDelegate> delegate,
     SurfaceHandle surface_handle,
     gl::GLSurface::Format format) {
