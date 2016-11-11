@@ -2,64 +2,42 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/system/audio/tray_audio.h"
+#include "ash/common/system/chromeos/audio/tray_audio.h"
 
-#include <cmath>
-#include <utility>
-
-#include "ash/common/ash_constants.h"
-#include "ash/common/system/audio/tray_audio_delegate.h"
-#include "ash/common/system/audio/volume_view.h"
-#include "ash/common/system/tray/actionable_view.h"
-#include "ash/common/system/tray/fixed_sized_scroll_view.h"
-#include "ash/common/system/tray/hover_highlight_view.h"
-#include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/chromeos/audio/audio_detailed_view.h"
+#include "ash/common/system/chromeos/audio/tray_audio_delegate_chromeos.h"
+#include "ash/common/system/chromeos/audio/volume_view.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/wm_shell.h"
-#include "base/strings/utf_string_conversions.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "grit/ash_resources.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkPaint.h"
-#include "third_party/skia/include/core/SkRect.h"
-#include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/font_list.h"
-#include "ui/gfx/image/image.h"
-#include "ui/gfx/image/image_skia_operations.h"
-#include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/image_view.h"
-#include "ui/views/controls/label.h"
-#include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 
 namespace ash {
 
-TrayAudio::TrayAudio(SystemTray* system_tray,
-                     std::unique_ptr<system::TrayAudioDelegate> audio_delegate)
+using chromeos::DBusThreadManager;
+using system::TrayAudioDelegate;
+using system::TrayAudioDelegateChromeOs;
+
+TrayAudio::TrayAudio(SystemTray* system_tray)
     : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_VOLUME_MUTE, UMA_AUDIO),
-      audio_delegate_(std::move(audio_delegate)),
-      volume_view_(NULL),
-      pop_up_volume_view_(false) {
+      audio_delegate_(new TrayAudioDelegateChromeOs()),
+      volume_view_(nullptr),
+      pop_up_volume_view_(false),
+      audio_detail_view_(nullptr) {
   WmShell::Get()->system_tray_notifier()->AddAudioObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
+  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
 }
 
 TrayAudio::~TrayAudio() {
+  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
   WmShell::Get()->system_tray_notifier()->RemoveAudioObserver(this);
-}
-
-// static
-bool TrayAudio::ShowAudioDeviceMenu() {
-#if defined(OS_CHROMEOS)
-  return true;
-#else
-  return false;
-#endif
 }
 
 bool TrayAudio::GetInitialVisibility() {
@@ -72,8 +50,15 @@ views::View* TrayAudio::CreateDefaultView(LoginStatus status) {
 }
 
 views::View* TrayAudio::CreateDetailedView(LoginStatus status) {
-  volume_view_ = new tray::VolumeView(this, audio_delegate_.get(), false);
-  return volume_view_;
+  if (pop_up_volume_view_) {
+    volume_view_ = new tray::VolumeView(this, audio_delegate_.get(), false);
+    return volume_view_;
+  } else {
+    WmShell::Get()->RecordUserMetricsAction(
+        UMA_STATUS_AREA_DETAILED_AUDIO_VIEW);
+    audio_detail_view_ = new tray::AudioDetailedView(this);
+    return audio_detail_view_;
+  }
 }
 
 void TrayAudio::DestroyDefaultView() {
@@ -81,8 +66,10 @@ void TrayAudio::DestroyDefaultView() {
 }
 
 void TrayAudio::DestroyDetailedView() {
-  if (volume_view_) {
-    volume_view_ = NULL;
+  if (audio_detail_view_) {
+    audio_detail_view_ = nullptr;
+  } else if (volume_view_) {
+    volume_view_ = nullptr;
     pop_up_volume_view_ = false;
   }
 }
@@ -92,7 +79,7 @@ bool TrayAudio::ShouldHideArrow() const {
 }
 
 bool TrayAudio::ShouldShowShelf() const {
-  return TrayAudio::ShowAudioDeviceMenu() && !pop_up_volume_view_;
+  return !pop_up_volume_view_;
 }
 
 void TrayAudio::OnOutputNodeVolumeChanged(uint64_t /* node_id */,
@@ -154,12 +141,22 @@ void TrayAudio::OnDisplayAdded(const display::Display& new_display) {
   if (!new_display.IsInternal())
     return;
   ChangeInternalSpeakerChannelMode();
+
+  // This event will be triggered when the lid of the device is opened to exit
+  // the docked mode, we should always start or re-start HDMI re-discovering
+  // grace period right after this event.
+  audio_delegate_->SetActiveHDMIOutoutRediscoveringIfNecessary(true);
 }
 
 void TrayAudio::OnDisplayRemoved(const display::Display& old_display) {
   if (!old_display.IsInternal())
     return;
   ChangeInternalSpeakerChannelMode();
+
+  // This event will be triggered when the lid of the device is closed to enter
+  // the docked mode, we should always start or re-start HDMI re-discovering
+  // grace period right after this event.
+  audio_delegate_->SetActiveHDMIOutoutRediscoveringIfNecessary(true);
 }
 
 void TrayAudio::OnDisplayMetricsChanged(const display::Display& display,
@@ -169,6 +166,18 @@ void TrayAudio::OnDisplayMetricsChanged(const display::Display& display,
 
   if (changed_metrics & display::DisplayObserver::DISPLAY_METRIC_ROTATION)
     ChangeInternalSpeakerChannelMode();
+
+  // The event could be triggered multiple times during the HDMI display
+  // transition, we don't need to restart HDMI re-discovering grace period
+  // it is already started earlier.
+  audio_delegate_->SetActiveHDMIOutoutRediscoveringIfNecessary(false);
+}
+
+void TrayAudio::SuspendDone(const base::TimeDelta& sleep_duration) {
+  // This event is triggered when the device resumes after earlier suspension,
+  // we should always start or re-start HDMI re-discovering
+  // grace period right after this event.
+  audio_delegate_->SetActiveHDMIOutoutRediscoveringIfNecessary(true);
 }
 
 void TrayAudio::Update() {
@@ -179,6 +188,9 @@ void TrayAudio::Update() {
         static_cast<float>(audio_delegate_->GetOutputVolumeLevel()) / 100.0f);
     volume_view_->Update();
   }
+
+  if (audio_detail_view_)
+    audio_detail_view_->Update();
 }
 
 }  // namespace ash

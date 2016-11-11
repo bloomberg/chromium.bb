@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <algorithm>
+#include "ash/common/system/chromeos/audio/volume_view.h"
 
-#include "ash/common/system/audio/volume_view.h"
+#include <algorithm>
 
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/metrics/user_metrics_action.h"
-#include "ash/common/system/audio/tray_audio.h"
-#include "ash/common/system/audio/tray_audio_delegate.h"
+#include "ash/common/system/chromeos/audio/tray_audio_delegate.h"
 #include "ash/common/system/tray/actionable_view.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -243,8 +242,7 @@ void VolumeView::SetVolumeLevel(float percent) {
 }
 
 void VolumeView::UpdateDeviceTypeAndMore() {
-  bool show_more = is_default_view_ && TrayAudio::ShowAudioDeviceMenu() &&
-                   audio_delegate_->HasAlternativeSources();
+  bool show_more = is_default_view_ && audio_delegate_->HasAlternativeSources();
 
   if (!show_more)
     return;

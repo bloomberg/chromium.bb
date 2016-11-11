@@ -49,7 +49,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/common/system/chromeos/audio/tray_audio_chromeos.h"
+#include "ash/common/system/chromeos/audio/tray_audio.h"
 #include "ash/common/system/chromeos/bluetooth/tray_bluetooth.h"
 #include "ash/common/system/chromeos/brightness/tray_brightness.h"
 #include "ash/common/system/chromeos/cast/tray_cast.h"
@@ -296,7 +296,7 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   screen_share_tray_item_ = new ScreenShareTrayItem(this);
   AddTrayItem(screen_share_tray_item_);
   AddTrayItem(new MultiProfileMediaTrayItem(this));
-  tray_audio_ = new TrayAudioChromeOs(this);
+  tray_audio_ = new TrayAudio(this);
   AddTrayItem(tray_audio_);
   AddTrayItem(new TrayBrightness(this));
   AddTrayItem(new TrayCapsLock(this));

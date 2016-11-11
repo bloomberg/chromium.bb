@@ -7,7 +7,6 @@
 #include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/session/session_state_delegate.h"
-#include "ash/common/system/audio/tray_audio.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
@@ -22,6 +21,7 @@
 #include "ui/wm/core/compound_event_filter.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/common/system/chromeos/audio/tray_audio.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #endif
@@ -82,6 +82,8 @@ void PowerButtonController::OnPowerButtonEvent(
   if (brightness_is_zero_ && !internal_display_off_and_external_display_on_)
     return;
 
+#if defined(OS_CHROMEOS)
+  // Take screenshot on power button down plus volume down when in touch view.
   if (volume_down_pressed_ && down &&
       WmShell::Get()
           ->maximize_mode_controller()
@@ -93,16 +95,15 @@ void PowerButtonController::OnPowerButtonEvent(
     WmShell::Get()->accelerator_controller()->PerformActionIfEnabled(
         TAKE_SCREENSHOT);
 
-#if defined(OS_CHROMEOS)
     // Restore volume.
     chromeos::CrasAudioHandler* audio_handler =
         chromeos::CrasAudioHandler::Get();
     audio_handler->SetOutputVolumePercentWithoutNotifyingObservers(
         volume_percent_before_screenshot_,
         chromeos::CrasAudioHandler::VOLUME_CHANGE_MAXIMIZE_MODE_SCREENSHOT);
-#endif
     return;
   }
+#endif  // defined(OS_CHROMEOS)
 
   const SessionStateDelegate* session_state_delegate =
       WmShell::Get()->GetSessionStateDelegate();

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_COMMON_SYSTEM_AUDIO_VOLUME_VIEW_H_
-#define ASH_COMMON_SYSTEM_AUDIO_VOLUME_VIEW_H_
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_AUDIO_VOLUME_VIEW_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_AUDIO_VOLUME_VIEW_H_
 
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
@@ -80,4 +80,4 @@ class VolumeView : public views::View,
 }  // namespace tray
 }  // namespace ash
 
-#endif  // ASH_COMMON_SYSTEM_AUDIO_VOLUME_VIEW_H_
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_AUDIO_VOLUME_VIEW_H_

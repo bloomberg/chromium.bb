@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_COMMON_SYSTEM_AUDIO_TRAY_AUDIO_H_
-#define ASH_COMMON_SYSTEM_AUDIO_TRAY_AUDIO_H_
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_AUDIO_TRAY_AUDIO_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_AUDIO_TRAY_AUDIO_H_
 
 #include <stdint.h>
 
 #include <memory>
 
-#include "ash/common/system/audio/audio_observer.h"
+#include "ash/ash_export.h"
+#include "ash/common/system/chromeos/audio/audio_observer.h"
 #include "ash/common/system/tray/tray_image_item.h"
 #include "base/macros.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "ui/display/display_observer.h"
 
 namespace ash {
@@ -21,36 +23,26 @@ class TrayAudioDelegate;
 }
 
 namespace tray {
+class AudioDetailedView;
 class VolumeView;
 }
 
-class TrayAudio : public TrayImageItem,
-                  public AudioObserver,
-                  public display::DisplayObserver {
+// The system tray item for audio input and output.
+class ASH_EXPORT TrayAudio : public TrayImageItem,
+                             public AudioObserver,
+                             public display::DisplayObserver,
+                             public chromeos::PowerManagerClient::Observer {
  public:
-  TrayAudio(SystemTray* system_tray,
-            std::unique_ptr<system::TrayAudioDelegate> audio_delegate);
+  explicit TrayAudio(SystemTray* system_tray);
   ~TrayAudio() override;
 
-  static bool ShowAudioDeviceMenu();
-
- protected:
+ private:
   // Overridden from display::DisplayObserver.
   void OnDisplayAdded(const display::Display& new_display) override;
   void OnDisplayRemoved(const display::Display& old_display) override;
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 
-  virtual void Update();
-
-  std::unique_ptr<system::TrayAudioDelegate> audio_delegate_;
-  tray::VolumeView* volume_view_;
-
-  // True if VolumeView should be created for accelerator pop up;
-  // Otherwise, it should be created for detailed view in ash tray bubble.
-  bool pop_up_volume_view_;
-
- private:
   // Overridden from TrayImageItem.
   bool GetInitialVisibility() override;
 
@@ -69,11 +61,28 @@ class TrayAudio : public TrayImageItem,
   void OnActiveOutputNodeChanged() override;
   void OnActiveInputNodeChanged() override;
 
+  // Overridden from chromeos::PowerManagerClient::Observer.
+  void SuspendDone(const base::TimeDelta& sleep_duration) override;
+
+  // Swaps the left and right channels on yoga devices based on orientation.
   void ChangeInternalSpeakerChannelMode();
+
+  // Updates the UI views.
+  void Update();
+
+  // TODO(jamescook): Remove this delegate and inline all the code.
+  std::unique_ptr<system::TrayAudioDelegate> audio_delegate_;
+  tray::VolumeView* volume_view_;
+
+  // True if VolumeView should be created for accelerator pop up;
+  // Otherwise, it should be created for detailed view in ash tray bubble.
+  bool pop_up_volume_view_;
+
+  tray::AudioDetailedView* audio_detail_view_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayAudio);
 };
 
 }  // namespace ash
 
-#endif  // ASH_COMMON_SYSTEM_AUDIO_TRAY_AUDIO_H_
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_AUDIO_TRAY_AUDIO_H_
