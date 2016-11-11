@@ -85,10 +85,10 @@ struct LayoutParameters {
 struct TabStripLayout {
   // The frame of the tab strip in window coordinates.
   NSRect frame;
-  // The left indent for the controls of the TabStripController.
-  CGFloat leftIndent;
-  // The right indent for the controls of the TabStripController.
-  CGFloat rightIndent;
+  // The leading indent for the controls of the TabStripController.
+  CGFloat leadingIndent;
+  // The trailing indent for the controls of the TabStripController.
+  CGFloat trailingIndent;
   // Whether the TabStripController needs to add custom traffic light buttons.
   BOOL addCustomWindowControls;
   // The frame of the avatar in window coordinates.

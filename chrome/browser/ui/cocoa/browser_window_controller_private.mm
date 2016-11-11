@@ -130,7 +130,7 @@ void RecordFullscreenStyle(FullscreenStyle style) {
   // This ensures the fullscreen button is appropriately positioned. It must
   // be done before calling layoutSubviews because the new avatar button's
   // position depends on the fullscreen button's position, as well as
-  // TabStripController's rightIndentForControls.
+  // TabStripController's trailingIndentForControls.
   // The fullscreen button's position may depend on the old avatar button's
   // width, but that does not require calling layoutSubviews first.
   NSWindow* window = [self window];
@@ -292,15 +292,16 @@ willPositionSheet:(NSWindow*)sheet
   BOOL requiresRelayout =
       !NSEqualRects([[self tabStripView] frame], layout.frame);
 
-  // Check if the left indent has changed.
-  if (layout.leftIndent != [tabStripController_ leftIndentForControls]) {
-    [tabStripController_ setLeftIndentForControls:layout.leftIndent];
+  // Check if the leading indent has changed.
+  if (layout.leadingIndent != [tabStripController_ leadingIndentForControls]) {
+    [tabStripController_ setLeadingIndentForControls:layout.leadingIndent];
     requiresRelayout = YES;
   }
 
-  // Check if the right indent has changed.
-  if (layout.rightIndent != [tabStripController_ rightIndentForControls]) {
-    [tabStripController_ setRightIndentForControls:layout.rightIndent];
+  // Check if the trailing indent has changed.
+  if (layout.trailingIndent !=
+      [tabStripController_ trailingIndentForControls]) {
+    [tabStripController_ setTrailingIndentForControls:layout.trailingIndent];
     requiresRelayout = YES;
   }
 

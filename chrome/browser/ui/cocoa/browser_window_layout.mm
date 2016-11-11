@@ -210,7 +210,7 @@ const CGFloat kLocationBarRightOffset = 35;
 
   // Set left indentation based on fullscreen mode status.
   if (!parameters_.inAnyFullscreen || layout.addCustomWindowControls)
-    layout.leftIndent = [TabStripController defaultLeftIndentForControls];
+    layout.leadingIndent = [TabStripController defaultLeadingIndentForControls];
 
   // Lay out the icognito/avatar badge because calculating the indentation on
   // the right depends on it.
@@ -257,10 +257,9 @@ const CGFloat kLocationBarRightOffset = 35;
   if (parameters_.shouldShowAvatar) {
     maxX = std::min(maxX, NSMinX(layout.avatarFrame));
   }
-  layout.rightIndent = width - maxX;
+  layout.trailingIndent = width - maxX;
 
   if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
-    std::swap(layout.leftIndent, layout.rightIndent);
     layout.avatarFrame.origin.x =
         width - parameters_.avatarSize.width - layout.avatarFrame.origin.x;
   }

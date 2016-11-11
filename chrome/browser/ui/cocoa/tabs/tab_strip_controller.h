@@ -143,8 +143,8 @@ class WebContents;
 
   // The amount by which to indent the tabs on the sides (to make room for the
   // red/yellow/green and incognito/fullscreen buttons).
-  CGFloat leftIndentForControls_;
-  CGFloat rightIndentForControls_;
+  CGFloat leadingIndentForControls_;
+  CGFloat trailingIndentForControls_;
 
   // Is the mouse currently inside the strip;
   BOOL mouseInside_;
@@ -158,8 +158,8 @@ class WebContents;
   base::scoped_nsobject<CrTrackingArea> customWindowControlsTrackingArea_;
 }
 
-@property(nonatomic) CGFloat leftIndentForControls;
-@property(nonatomic) CGFloat rightIndentForControls;
+@property(nonatomic) CGFloat leadingIndentForControls;
+@property(nonatomic) CGFloat trailingIndentForControls;
 
 @property(assign, nonatomic) TabView* hoveredTab;
 
@@ -265,8 +265,8 @@ class WebContents;
 // Default height for tabs.
 + (CGFloat)defaultTabHeight;
 
-// Default indentation for tabs (see |leftIndentForControls_|).
-+ (CGFloat)defaultLeftIndentForControls;
+// Default indentation for tabs (see |leadingIndentForControls_|).
++ (CGFloat)defaultLeadingIndentForControls;
 
 // Returns the amount by which tabs overlap.
 + (CGFloat)tabOverlap;

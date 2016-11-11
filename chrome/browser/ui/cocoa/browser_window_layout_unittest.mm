@@ -60,8 +60,8 @@ TEST_F(BrowserWindowLayoutTest, TestAllViews) {
 
   EXPECT_NSEQ(NSMakeRect(0, 585, 600, 37), output.tabStripLayout.frame);
   EXPECT_NSEQ(NSMakeRect(502, 589, 63, 28), output.tabStripLayout.avatarFrame);
-  EXPECT_EQ(70, output.tabStripLayout.leftIndent);
-  EXPECT_EQ(98, output.tabStripLayout.rightIndent);
+  EXPECT_EQ(70, output.tabStripLayout.leadingIndent);
+  EXPECT_EQ(98, output.tabStripLayout.trailingIndent);
   EXPECT_NSEQ(NSMakeRect(0, 553, 600, 32), output.toolbarFrame);
   EXPECT_NSEQ(NSMakeRect(0, 527, 600, 26), output.bookmarkFrame);
   EXPECT_NSEQ(NSZeroRect, output.fullscreenBackingBarFrame);
@@ -78,9 +78,9 @@ TEST_F(BrowserWindowLayoutTest, TestAllViewsFullscreen) {
 
   EXPECT_NSEQ(NSMakeRect(0, 585, 600, 37), output.tabStripLayout.frame);
   EXPECT_NSEQ(NSMakeRect(533, 589, 63, 28), output.tabStripLayout.avatarFrame);
-  EXPECT_EQ(0, output.tabStripLayout.leftIndent);
+  EXPECT_EQ(0, output.tabStripLayout.leadingIndent);
   EXPECT_FALSE(output.tabStripLayout.addCustomWindowControls);
-  EXPECT_EQ(67, output.tabStripLayout.rightIndent);
+  EXPECT_EQ(67, output.tabStripLayout.trailingIndent);
   EXPECT_NSEQ(NSMakeRect(0, 553, 600, 32), output.toolbarFrame);
   EXPECT_NSEQ(NSMakeRect(0, 527, 600, 26), output.bookmarkFrame);
   EXPECT_NSEQ(NSMakeRect(0, 527, 600, 95), output.fullscreenBackingBarFrame);
@@ -98,7 +98,7 @@ TEST_F(BrowserWindowLayoutTest, TestYosemiteFullscreenTrafficLights) {
 
   chrome::LayoutOutput output = [layout computeLayout];
 
-  EXPECT_EQ(70, output.tabStripLayout.leftIndent);
+  EXPECT_EQ(70, output.tabStripLayout.leadingIndent);
   EXPECT_TRUE(output.tabStripLayout.addCustomWindowControls);
 }
 
@@ -110,9 +110,9 @@ TEST_F(BrowserWindowLayoutTest, TestAllViewsFullscreenMenuBarShowing) {
 
   EXPECT_NSEQ(NSMakeRect(0, 575, 600, 37), output.tabStripLayout.frame);
   EXPECT_NSEQ(NSMakeRect(533, 579, 63, 28), output.tabStripLayout.avatarFrame);
-  EXPECT_EQ(0, output.tabStripLayout.leftIndent);
+  EXPECT_EQ(0, output.tabStripLayout.leadingIndent);
   EXPECT_FALSE(output.tabStripLayout.addCustomWindowControls);
-  EXPECT_EQ(67, output.tabStripLayout.rightIndent);
+  EXPECT_EQ(67, output.tabStripLayout.trailingIndent);
   EXPECT_NSEQ(NSMakeRect(0, 543, 600, 32), output.toolbarFrame);
   EXPECT_NSEQ(NSMakeRect(0, 517, 600, 26), output.bookmarkFrame);
   EXPECT_NSEQ(NSMakeRect(0, 517, 600, 95), output.fullscreenBackingBarFrame);
@@ -133,8 +133,8 @@ TEST_F(BrowserWindowLayoutTest, TestPopupWindow) {
 
   EXPECT_NSEQ(NSZeroRect, output.tabStripLayout.frame);
   EXPECT_NSEQ(NSZeroRect, output.tabStripLayout.avatarFrame);
-  EXPECT_EQ(0, output.tabStripLayout.leftIndent);
-  EXPECT_EQ(0, output.tabStripLayout.rightIndent);
+  EXPECT_EQ(0, output.tabStripLayout.leadingIndent);
+  EXPECT_EQ(0, output.tabStripLayout.trailingIndent);
   EXPECT_NSEQ(NSMakeRect(1, 568, 598, 32), output.toolbarFrame);
   EXPECT_NSEQ(NSZeroRect, output.bookmarkFrame);
   EXPECT_NSEQ(NSZeroRect, output.fullscreenBackingBarFrame);
@@ -156,7 +156,7 @@ TEST_F(BrowserWindowLayoutTest, TestOldStyleAvatarButton) {
 
   EXPECT_LE(NSMaxX(fullscreenButtonFrame), NSMinX(tabStripLayout.avatarFrame));
   EXPECT_EQ(NSWidth(tabStripLayout.frame) - NSMinX(fullscreenButtonFrame),
-            tabStripLayout.rightIndent);
+            tabStripLayout.trailingIndent);
 }
 
 // New style avatar button is on the left of the fullscreen button.
@@ -170,7 +170,7 @@ TEST_F(BrowserWindowLayoutTest, TestNewStyleAvatarButton) {
 
   EXPECT_LE(NSMaxX(tabStripLayout.avatarFrame), NSMinX(fullscreenButtonFrame));
   EXPECT_EQ(NSWidth(tabStripLayout.frame) - NSMinX(tabStripLayout.avatarFrame),
-            tabStripLayout.rightIndent);
+            tabStripLayout.trailingIndent);
 }
 
 // There is no fullscreen button when in fullscreen mode.
@@ -183,12 +183,12 @@ TEST_F(BrowserWindowLayoutTest, TestAvatarButtonFullscreen) {
   [layout setShouldUseNewAvatar:YES];
   chrome::TabStripLayout tabStripLayout = [layout computeLayout].tabStripLayout;
   EXPECT_EQ(NSWidth(tabStripLayout.frame) - NSMinX(tabStripLayout.avatarFrame),
-            tabStripLayout.rightIndent);
+            tabStripLayout.trailingIndent);
 
   [layout setShouldUseNewAvatar:NO];
   tabStripLayout = [layout computeLayout].tabStripLayout;
   EXPECT_EQ(NSWidth(tabStripLayout.frame) - NSMinX(tabStripLayout.avatarFrame),
-            tabStripLayout.rightIndent);
+            tabStripLayout.trailingIndent);
 }
 
 TEST_F(BrowserWindowLayoutTest, TestInfobarLayoutWithoutToolbarOrLocationBar) {
