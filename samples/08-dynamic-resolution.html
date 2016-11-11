@@ -232,10 +232,11 @@ found in the LICENSE file.
       // target size.
       var resolutionMultiplier = 1.0;
       var eyeWidth, eyeHeight;
-      var lastAdjustment = 0;
+      var lastAdjustment = Date.now()-1000;
 
-      function adjustResolution(t) {
-        // Update the resolution every quarter second
+      function adjustResolution() {
+        var t = Date.now();
+        // Update the resolution every tenth of a second
         if (t - lastAdjustment < 100)
           return;
         lastAdjustment = t;
@@ -264,12 +265,13 @@ found in the LICENSE file.
           rightBounds: [boundsWidth, 0.0, boundsWidth, boundsHeight],
         }]);
 
-        // To ensure our mirrored content also shows up correctly we'll scale
-        // the canvas display size to be scaled appropriately such that it
-        // continues to only show one eye.
-        webglCanvas.style.width = (1.0/resolutionMultiplier) * 200 + "%";
-        webglCanvas.style.height = (1.0/resolutionMultiplier) * 100 + "%";
-        //webglCanvas.style.marginTop = ((eyeHeight - webglCanvas.height)* resolutionMultiplier) + "px";
+        if (vrDisplay.capabilities.hasExternalDisplay) {
+          // To ensure our mirrored content also shows up correctly we'll scale
+          // the canvas display size to be scaled appropriately such that it
+          // continues to only show one eye.
+          webglCanvas.style.width = (1.0/resolutionMultiplier) * 200 + "%";
+          webglCanvas.style.height = (1.0/resolutionMultiplier) * 100 + "%";
+        }
       }
 
       function onAnimationFrame (t) {
@@ -283,7 +285,7 @@ found in the LICENSE file.
           vrDisplay.getFrameData(frameData);
 
           if (vrDisplay.isPresenting) {
-            adjustResolution(t);
+            adjustResolution();
 
             // Note that the viewports use the eyeWidth/height rather than the
             // canvas width and height.
