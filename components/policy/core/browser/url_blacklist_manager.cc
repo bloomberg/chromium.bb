@@ -89,8 +89,8 @@ void ProcessQueryToConditions(
   // there is any occurrence of the key value pair. It should be white-listed
   // only if every occurrence of the key is followed by the value. This avoids
   // situations such as a user appending a white-listed video parameter in the
-  // end of the query and watching a video of his choice (the last parameter is
-  // ignored by some web servers like youtube's).
+  // end of the query and watching a video of their choice (the last parameter
+  // is ignored by some web servers like youtube's).
   URLQueryElementMatcherCondition::Type match_type =
       allow ? URLQueryElementMatcherCondition::MATCH_ALL
             : URLQueryElementMatcherCondition::MATCH_ANY;
