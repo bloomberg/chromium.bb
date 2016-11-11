@@ -29,7 +29,6 @@
 #include "platform/fonts/Font.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/shaping/CachingWordShapeIterator.h"
-#include "platform/fonts/shaping/HarfBuzzShaper.h"
 #include "platform/fonts/shaping/ShapeCache.h"
 #include "platform/fonts/shaping/ShapeResultSpacing.h"
 #include "wtf/Allocator.h"
@@ -37,7 +36,7 @@
 
 namespace blink {
 
-class CachingWordShapeIterator final {
+class PLATFORM_EXPORT CachingWordShapeIterator final {
   STACK_ALLOCATED();
   WTF_MAKE_NONCOPYABLE(CachingWordShapeIterator);
 
@@ -75,22 +74,8 @@ class CachingWordShapeIterator final {
   }
 
  private:
-  PassRefPtr<const ShapeResult> shapeWordWithoutSpacing(const TextRun& wordRun,
-                                                        const Font* font) {
-    ShapeCacheEntry* cacheEntry = m_shapeCache->add(wordRun, ShapeCacheEntry());
-    if (cacheEntry && cacheEntry->m_shapeResult)
-      return cacheEntry->m_shapeResult;
-
-    HarfBuzzShaper shaper(font, wordRun);
-    RefPtr<const ShapeResult> shapeResult = shaper.shapeResult();
-    if (!shapeResult)
-      return nullptr;
-
-    if (cacheEntry)
-      cacheEntry->m_shapeResult = shapeResult;
-
-    return shapeResult.release();
-  }
+  PassRefPtr<const ShapeResult> shapeWordWithoutSpacing(const TextRun&,
+                                                        const Font*);
 
   PassRefPtr<const ShapeResult> shapeWord(const TextRun& wordRun,
                                           const Font* font) {
