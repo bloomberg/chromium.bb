@@ -1651,7 +1651,7 @@
     </request>
    </interface>
 
-  <interface name="wl_seat" version="5">
+  <interface name="wl_seat" version="6">
     <description summary="group of input devices">
       A seat is a group of keyboards, pointer and touch devices. This
       object is published as a global during start up, or when such a
@@ -1760,7 +1760,7 @@
 
   </interface>
 
-  <interface name="wl_pointer" version="5">
+  <interface name="wl_pointer" version="6">
     <description summary="pointer input device">
       The wl_pointer interface represents one or more input devices,
       such as mice, which control the pointer location and pointer_focus
@@ -2069,7 +2069,7 @@
     </event>
   </interface>
 
-  <interface name="wl_keyboard" version="5">
+  <interface name="wl_keyboard" version="6">
     <description summary="keyboard input device">
       The wl_keyboard interface represents one or more keyboards
       associated with a seat.
@@ -2180,7 +2180,7 @@
     </event>
   </interface>
 
-  <interface name="wl_touch" version="5">
+  <interface name="wl_touch" version="6">
     <description summary="touchscreen input device">
       The wl_touch interface represents a touchscreen
       associated with a seat.
@@ -2230,7 +2230,14 @@
 
     <event name="frame">
       <description summary="end of touch frame event">
-	Indicates the end of a contact point list.
+	Indicates the end of a set of events that logically belong together.
+	A client is expected to accumulate the data in all events within the
+	frame before proceeding.
+
+	A wl_touch.frame terminates at least one event but otherwise no
+	guarantee is provided about the set of events within a frame. A client
+	must assume that any state not updated in a frame is unchanged from the
+	previously known state.
       </description>
     </event>
 
@@ -2250,6 +2257,71 @@
     <request name="release" type="destructor" since="3">
       <description summary="release the touch object"/>
     </request>
+
+    <!-- Version 6 additions -->
+
+    <event name="shape" since="6">
+      <description summary="update shape of touch point">
+	Sent when a touchpoint has changed its shape.
+
+	This event does not occur on its own. It is sent before a
+	wl_touch.frame event and carries the new shape information for
+	any previously reported, or new touch points of that frame.
+
+	Other events describing the touch point such as wl_touch.down,
+	wl_touch.motion or wl_touch.orientation may be sent within the
+	same wl_touch.frame. A client should treat these events as a single
+	logical touch point update. The order of wl_touch.shape,
+	wl_touch.orientation and wl_touch.motion is not guaranteed.
+	A wl_touch.down event is guaranteed to occur before the first
+	wl_touch.shape event for this touch ID but both events may occur within
+	the same wl_touch.frame.
+
+	A touchpoint shape is approximated by an ellipse through the major and
+	minor axis length. The major axis length describes the longer diameter
+	of the ellipse, while the minor axis length describes the shorter
+	diameter. Major and minor are orthogonal and both are specified in
+	surface-local coordinates. The center of the ellipse is always at the
+	touchpoint location as reported by wl_touch.down or wl_touch.move.
+
+	This event is only sent by the compositor if the touch device supports
+	shape reports. The client has to make reasonable assumptions about the
+	shape if it did not receive this event.
+      </description>
+      <arg name="id" type="int" summary="the unique ID of this touch point"/>
+      <arg name="major" type="fixed" summary="length of the major axis in surface-local coordinates"/>
+      <arg name="minor" type="fixed" summary="length of the minor axis in surface-local coordinates"/>
+    </event>
+
+    <event name="orientation" since="6">
+      <description summary="update orientation of touch point">
+	Sent when a touchpoint has changed its orientation.
+
+	This event does not occur on its own. It is sent before a
+	wl_touch.frame event and carries the new shape information for
+	any previously reported, or new touch points of that frame.
+
+	Other events describing the touch point such as wl_touch.down,
+	wl_touch.motion or wl_touch.shape may be sent within the
+	same wl_touch.frame. A client should treat these events as a single
+	logical touch point update. The order of wl_touch.shape,
+	wl_touch.orientation and wl_touch.motion is not guaranteed.
+	A wl_touch.down event is guaranteed to occur before the first
+	wl_touch.orientation event for this touch ID but both events may occur
+	within the same wl_touch.frame.
+
+	The orientation describes the clockwise angle of a touchpoint's major
+	axis to the positive surface y-axis and is normalized to the -180 to
+	+180 degree range. The granularity of orientation depends on the touch
+	device, some devices only support binary rotation values between 0 and
+	90 degrees.
+
+	This event is only sent by the compositor if the touch device supports
+	orientation reports.
+      </description>
+      <arg name="id" type="int" summary="the unique ID of this touch point"/>
+      <arg name="orientation" type="fixed" summary="angle between major axis and positive surface y-axis in degrees"/>
+    </event>
   </interface>
 
   <interface name="wl_output" version="3">
