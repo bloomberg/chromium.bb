@@ -5,10 +5,30 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_async_file_util.h"
 
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
+#include "chrome/browser/chromeos/arc/fileapi/intent_helper_util.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 
 namespace arc {
+
+namespace {
+
+void OnGetFileSize(const storage::AsyncFileUtil::GetFileInfoCallback& callback,
+                   int64_t size) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  base::File::Info info;
+  base::File::Error error = base::File::FILE_OK;
+  if (size == -1) {
+    error = base::File::FILE_ERROR_FAILED;
+  } else {
+    info.size = size;
+  }
+  callback.Run(error, info);
+}
+
+}  // namespace
 
 ArcContentFileSystemAsyncFileUtil::ArcContentFileSystemAsyncFileUtil() =
     default;
@@ -52,10 +72,9 @@ void ArcContentFileSystemAsyncFileUtil::GetFileInfo(
     const storage::FileSystemURL& url,
     int fields,
     const GetFileInfoCallback& callback) {
-  NOTIMPLEMENTED();
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, base::File::FILE_ERROR_FAILED, base::File::Info()));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  intent_helper_util::GetFileSizeOnIOThread(
+      FileSystemUrlToArcUrl(url), base::Bind(&OnGetFileSize, callback));
 }
 
 void ArcContentFileSystemAsyncFileUtil::ReadDirectory(
