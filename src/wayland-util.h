@@ -511,8 +511,23 @@ wl_array_copy(struct wl_array *array, struct wl_array *source);
 	     (const char *) pos < ((const char *) (array)->data + (array)->size); \
 	     (pos)++)
 
+/**
+ * Fixed-point number
+ *
+ * A `wl_fixed_t` is a 24.8 signed fixed-point number with a sign bit, 23 bits
+ * of integer precision and 8 bits of decimal precision. Consider `wl_fixed_t`
+ * as an opaque struct with methods that facilitate conversion to and from
+ * `double` and `int` types.
+ */
 typedef int32_t wl_fixed_t;
 
+/**
+ * Converts a fixed-point number to a floating-point number.
+ *
+ * \param f Fixed-point number to convert
+ *
+ * \return Floating-point representation of the fixed-point argument
+ */
 static inline double
 wl_fixed_to_double(wl_fixed_t f)
 {
@@ -526,6 +541,13 @@ wl_fixed_to_double(wl_fixed_t f)
 	return u.d - (3LL << 43);
 }
 
+/**
+ * Converts a floating-point number to a fixed-point number.
+ *
+ * \param d Floating-point number to convert
+ *
+ * \return Fixed-point representation of the floating-point argument
+ */
 static inline wl_fixed_t
 wl_fixed_from_double(double d)
 {
@@ -539,12 +561,26 @@ wl_fixed_from_double(double d)
 	return u.i;
 }
 
+/**
+ * Converts a fixed-point number to an integer.
+ *
+ * \param f Fixed-point number to convert
+ *
+ * \return Integer component of the fixed-point argument
+ */
 static inline int
 wl_fixed_to_int(wl_fixed_t f)
 {
 	return f / 256;
 }
 
+/**
+ * Converts an integer to a fixed-point number.
+ *
+ * \param i Integer to convert
+ *
+ * \return Fixed-point representation of the integer argument
+ */
 static inline wl_fixed_t
 wl_fixed_from_int(int i)
 {
