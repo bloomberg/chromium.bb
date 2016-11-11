@@ -23,6 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://dvcs.w3.org/hg/speech-api/raw-file/tip/webspeechapi.html#speechreco-section
+
 [
     ActiveScriptWrappable,
     Constructor,
@@ -30,17 +32,22 @@
     DependentLifetime,
     NoInterfaceObject,
 ] interface SpeechRecognition : EventTarget {
-    [LegacyInterfaceTypeChecking] attribute SpeechGrammarList grammars;
+    // recognition parameters
+    attribute SpeechGrammarList grammars;
     attribute DOMString lang;
     attribute boolean continuous;
     attribute boolean interimResults;
     attribute unsigned long maxAlternatives;
-    [RuntimeEnabled=MediaStreamSpeech, LegacyInterfaceTypeChecking] attribute MediaStreamTrack audioTrack;
 
+    // Speech Recognition with WebRTC. https://crbug.com/408940
+    [RuntimeEnabled=MediaStreamSpeech] attribute MediaStreamTrack? audioTrack;
+
+    // methods to drive the speech interaction
     [RaisesException] void start();
     [ImplementedAs=stopFunction] void stop();
     void abort();
 
+    // event methods
     attribute EventHandler onaudiostart;
     attribute EventHandler onsoundstart;
     attribute EventHandler onspeechstart;

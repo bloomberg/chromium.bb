@@ -81,20 +81,6 @@ function noMatchTest() {
     r.onend = function() {
         debug('onend');
         shouldBe('count', '8');
-        ++count;
-        handleEmptyGrammarTest();
-    }
-
-    r.start();
-}
-
-// See crbug.com/545855 for details.
-function handleEmptyGrammarTest() {
-    debug('\nhandleEmptyGrammarTest():');
-    var r = new webkitSpeechRecognition("");
-    r.grammars = "";
-    r.onend = function() {
-        debug('onend');
         finishJSTest();
     }
 

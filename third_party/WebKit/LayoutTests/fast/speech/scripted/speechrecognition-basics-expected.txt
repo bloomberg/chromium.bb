@@ -55,9 +55,6 @@ onaudioend
 PASS count is 7
 onend
 PASS count is 8
-
-handleEmptyGrammarTest():
-onend
 PASS successfullyParsed is true
 
 TEST COMPLETE

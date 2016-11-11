@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<title>SpeechRecognition audioTrack attribute</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script>
+test(() => {
+  const sr = new webkitSpeechRecognition();
+  assert_equals(sr.audioTrack, null);
+}, 'initial state');
+
+test(() => {
+  const sr = new webkitSpeechRecognition();
+  sr.audioTrack = null;
+  assert_equals(sr.audioTrack, null);
+  sr.audioTrack = undefined;
+  assert_equals(sr.audioTrack, null);
+}, 'setting to null/undefined');
+
+test(() => {
+  const sr = new webkitSpeechRecognition();
+  for (const value of [{}, "", window]) {
+    assert_throws(new TypeError, () => { sr.audioTrack = value; } );
+    assert_equals(sr.audioTrack, null);
+  }
+}, 'setting to non-MediaStreamTrack values');
+
+promise_test(() => {
+  return navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(stream => {
+        const audioTrack = stream.getAudioTracks()[0];
+        assert_equals(audioTrack.kind, "audio");
+        const sr = new webkitSpeechRecognition();
+        sr.audioTrack = audioTrack;
+        assert_equals(sr.audioTrack, audioTrack);
+      });
+}, 'setting to MediaStreamTrack with kind "audio"');
+
+// TODO(burnik): Should assigning a video track throw instead?
+promise_test(() => {
+  return navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        const videoTrack = stream.getVideoTracks()[0];
+        assert_equals(videoTrack.kind, "video");
+        const sr = new webkitSpeechRecognition();
+        sr.videoTrack = videoTrack;
+        assert_equals(sr.videoTrack, videoTrack);
+      });
+}, 'setting to MediaStreamTrack with kind "video"');
+</script>
