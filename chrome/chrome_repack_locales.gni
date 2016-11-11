@@ -56,7 +56,6 @@ template("chrome_repack_locales") {
     }
     if (!is_ios) {
       source_patterns += [
-        "${root_gen_dir}/blimp/client/support/resources/blimp_strings_",
         "${root_gen_dir}/content/app/strings/content_strings_",
         "${root_gen_dir}/device/bluetooth/strings/bluetooth_strings_",
         "${root_gen_dir}/third_party/libaddressinput/address_input_strings_",
@@ -64,12 +63,21 @@ template("chrome_repack_locales") {
         "${root_gen_dir}/ui/strings/ui_strings_",
       ]
       deps += [
-        "//blimp/client/support/resources:strings",
         "//content/app/strings",
         "//device/bluetooth/strings",
         "//third_party/libaddressinput:strings",
         "//ui/strings:app_locale_settings",
         "//ui/strings:ui_strings",
+      ]
+    }
+    if (is_android) {
+      source_patterns += [
+        "${root_gen_dir}/blimp/client/public/resources/blimp_strings_",
+        "${root_gen_dir}/blimp/client/support/resources/blimp_strings_",
+      ]
+      deps += [
+        "//blimp/client/public/resources",
+        "//blimp/client/support/resources:strings",
       ]
     }
     if (enable_extensions) {

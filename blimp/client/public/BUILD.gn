@@ -38,6 +38,7 @@ source_set("public_headers") {
     "contents/blimp_contents_observer.h",
     "contents/blimp_contents_view.h",
     "contents/blimp_navigation_controller.h",
+    "resources/blimp_strings.h",
     "session/assignment.cc",
     "session/assignment.h",
   ]

@@ -17,6 +17,7 @@ include_rules = [
   "+ui/android",
   "+ui/base/ime/text_input_type.h",
   "+ui/base/l10n",
+  "+ui/base/resource",
   "+ui/events",
   "+ui/events/android",
   "+ui/events/blink",

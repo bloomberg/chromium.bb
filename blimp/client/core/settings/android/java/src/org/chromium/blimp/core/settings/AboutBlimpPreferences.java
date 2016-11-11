@@ -20,7 +20,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.blimp.R;
+import org.chromium.blimp.core.R;
 import org.chromium.blimp.core.common.PreferencesUtil;
 import org.chromium.components.signin.ChromeSigninController;
 

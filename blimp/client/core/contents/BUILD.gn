@@ -169,7 +169,7 @@ if (is_android) {
 
     deps = [
       "//base:base_java",
-      "//blimp/client/app:blimp_java_resources",
+      "//blimp/client/core/resources:java_resources",
       "//blimp/client/public:public_headers_java",
       "//third_party/android_tools:android_support_v7_appcompat_java",
       "//ui/android:ui_java",

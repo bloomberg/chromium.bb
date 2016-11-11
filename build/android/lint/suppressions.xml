@@ -178,6 +178,7 @@ Still reading?
   </issue>
   <issue id="MissingTranslation">
     <ignore regexp="blimp/client/app/android/java/res/values/arrays.xml"/>
+    <ignore regexp="blimp/client/core/resources/android/java/res/values/arrays.xml" />
     <!-- http://crbug.com/450548 -->
     <ignore regexp="chromecast/internal"/>
     <ignore regexp="restriction_values.xml.*"/>
@@ -314,6 +315,7 @@ Still reading?
     <ignore regexp="blimp/client/app/android/java/res/values/dimens.xml"/>
     <ignore regexp="blimp/client/app/android/java/res/xml/about_blimp_preferences.xml"/>
     <ignore regexp="blimp/client/app/android/java/res/xml/blimp_preferences.xml"/>
+    <ignore regexp="blimp/client/core/resources/android/java/res/*" />    
     <!-- TODO(crbug.com/635567): Fix this properly. -->
     <ignore regexp="chrome/android/java/res/drawable-hdpi/*"/>
     <ignore regexp="chrome/android/java/res/drawable-hdpi/amex_card.png"/>
@@ -364,6 +366,7 @@ Still reading?
     <ignore regexp="gen/android_webview/locale_paks.resources.zip/*"/>
     <ignore regexp="gen/android_webview/strings_grd.resources.zip/values/android_webview_strings.xml"/>
     <ignore regexp="gen/blimp/client/app/blimp_strings_grd.resources.zip/values/android_blimp_strings.xml" />
+    <ignore regexp="gen/blimp/client/core/resources/strings_grd.resources.zip/values/blimp_strings.xml" />
     <ignore regexp="gen/components/strings/components_strings_grd.resources.zip/values.*/components_strings.xml"/>
     <ignore regexp="gen/remoting/resources/strings_java.resources.zip/values/remoting_strings.xml"/>
     <ignore regexp="remoting/android/java/res/drawable-hdpi/ic_backspace.png"/>

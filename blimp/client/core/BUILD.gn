@@ -41,6 +41,7 @@ group("core") {
     "//blimp/client/core/feedback",
     "//blimp/client/core/geolocation",
     "//blimp/client/core/render_widget",
+    "//blimp/client/core/resources",
     "//blimp/client/core/session",
     "//blimp/client/core/settings",
     "//blimp/client/core/switches",
@@ -52,6 +53,7 @@ group("dummy_core") {
 
   deps = [
     "//blimp/client/core/context:dummy",
+    "//blimp/client/core/resources:dummy",
   ]
 }
 

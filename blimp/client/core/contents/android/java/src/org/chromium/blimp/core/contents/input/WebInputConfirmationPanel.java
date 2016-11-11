@@ -15,7 +15,7 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
-import org.chromium.blimp.R;
+import org.chromium.blimp.core.R;
 
 /**
  * A layout containing OK, Cancel buttons and a progress spinner which can be included at the bottom

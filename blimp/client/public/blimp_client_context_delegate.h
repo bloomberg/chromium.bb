@@ -40,7 +40,7 @@ class BlimpClientContextDelegate {
   // Propagate authentication error to the embedder.
   virtual void OnAuthenticationError(const GoogleServiceAuthError& error) = 0;
 
-  // Called when the client connected to the engine.
+  // Called when the client is connected to the engine.
   virtual void OnConnected() = 0;
 
   // Called when the client is disconnected from the engine.

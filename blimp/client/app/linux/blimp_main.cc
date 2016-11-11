@@ -49,6 +49,7 @@ int main(int argc, const char**argv) {
 
   blimp::client::InitializeLogging();
   blimp::client::InitializeMainMessageLoop();
+  blimp::client::InitializeResourceBundle();
 
   base::Thread io_thread("BlimpIOThread");
   base::Thread::Options options;

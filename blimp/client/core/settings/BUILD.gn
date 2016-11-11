@@ -94,8 +94,8 @@ if (is_android) {
     # TODO(xingliu): Clean resources files in the future. http://crbug.com/630687.
     deps = [
       "//base:base_java",
-      "//blimp/client/app:blimp_java_resources",
       "//blimp/client/core/common:common_java",
+      "//blimp/client/core/resources:java_resources",
       "//blimp/client/public:public_headers_java",
       "//components/signin/core/browser/android:java",
       "//components/sync/android:sync_java",

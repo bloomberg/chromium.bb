@@ -10,6 +10,7 @@
 #include "blimp/client/public/blimp_client_context.h"
 #include "blimp/client/public/blimp_client_context_delegate.h"
 #include "blimp/client/public/contents/blimp_contents.h"
+#include "blimp/client/public/resources/blimp_strings.h"
 #include "blimp/client/support/resources/blimp_strings.h"
 #include "chrome/browser/android/blimp/blimp_client_context_factory.h"
 #include "chrome/browser/android/blimp/blimp_contents_profile_attachment.h"
@@ -43,13 +44,8 @@ void ChromeBlimpClientContextDelegate::OnAssignmentConnectionAttempted(
     const blimp::client::Assignment& assignment) {
   if (result == blimp::client::ASSIGNMENT_REQUEST_RESULT_OK)
     return;
-
-  // TODO(xingliu): All strings shown in the UI should be accessed through grd
-  // files. https://crbug.com/630687
-  std::stringstream ss;
-  ss << "Assignment failed, reason: " << result << ".";
-  base::string16 message =
-      blimp::string::BlimpPrefix(base::UTF8ToUTF16(ss.str()));
+  base::string16 message = blimp::string::BlimpPrefix(
+      blimp::string::AssignmentResultErrorToString(result));
   ShowMessage(message, false);
 }
 
@@ -76,7 +72,7 @@ void ChromeBlimpClientContextDelegate::OnConnected() {
 }
 
 void ChromeBlimpClientContextDelegate::OnEngineDisconnected(int result) {
-  OnDisconnected(base::UTF8ToUTF16(base::IntToString(result)));
+  OnDisconnected(blimp::string::EndConnectionMessageToString(result));
 }
 
 void ChromeBlimpClientContextDelegate::OnNetworkDisconnected(int result) {

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
+import("//tools/grit/repack.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
@@ -51,6 +52,7 @@ source_set("app") {
     "//gpu/skia_bindings",
     "//net",
     "//third_party/libwebp",
+    "//ui/base:base",
     "//ui/gfx/geometry",
     "//ui/gl",
     "//ui/gl/init",
@@ -140,8 +142,10 @@ if (is_linux && !is_chromeos && use_x11) {
 
     deps = [
       ":app",
+      ":shell_strings",
       "//base",
       "//blimp/client/core/compositor",
+      "//blimp/client/core/resources",
       "//blimp/client/core/session",
       "//blimp/client/core/settings:settings",
       "//blimp/net",
@@ -164,6 +168,19 @@ if (is_linux && !is_chromeos && use_x11) {
       "//ui/events/platform/x11",
     ]
   }
+}
+
+# Resources file for linux shell.
+repack("shell_strings") {
+  sources = [
+    "$root_gen_dir/blimp/client/core/resources/blimp_strings_en-US.pak",
+  ]
+
+  deps = [
+    "//blimp/client/public/resources:shell_strings",
+  ]
+
+  output = "$root_out_dir/blimp_shell.pak"
 }
 
 if (is_android) {

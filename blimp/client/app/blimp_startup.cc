@@ -15,6 +15,7 @@
 #include "blimp/client/app/blimp_discardable_memory_allocator.h"
 #include "blimp/client/core/compositor/decoding_image_generator.h"
 #include "third_party/skia/include/core/SkGraphics.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gl/init/gl_factory.h"
 
 class SkImageGenerator;
@@ -79,6 +80,15 @@ bool InitializeMainMessageLoop() {
   SkGraphics::SetImageGeneratorFromEncodedFactory(CreateImageGenerator);
   g_main_message_loop.Get().reset(new base::MessageLoopForUI);
   return true;
+}
+
+void InitializeResourceBundle() {
+  // Load the pak file for the shell.
+  base::FilePath pak_file;
+  bool pak_file_valid = base::PathService::Get(base::DIR_MODULE, &pak_file);
+  CHECK(pak_file_valid);
+  pak_file = pak_file.Append(FILE_PATH_LITERAL("blimp_shell.pak"));
+  ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);
 }
 
 }  // namespace client
