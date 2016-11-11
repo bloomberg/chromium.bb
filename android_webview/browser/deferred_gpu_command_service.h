@@ -16,7 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_local.h"
 #include "base/time/time.h"
-#include "gpu/command_buffer/service/in_process_command_buffer.h"
+#include "gpu/ipc/in_process_command_buffer.h"
 
 namespace gpu {
 class SyncPointManager;

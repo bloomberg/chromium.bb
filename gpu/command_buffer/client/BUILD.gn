@@ -185,26 +185,6 @@ component("gles2_implementation_no_check") {
   ]
 }
 
-component("gl_in_process_context") {
-  sources = [
-    "gl_in_process_context.cc",
-    "gl_in_process_context.h",
-    "gl_in_process_context_export.h",
-  ]
-
-  defines = [ "GL_IN_PROCESS_CONTEXT_IMPLEMENTATION" ]
-
-  deps = [
-    ":gles2_implementation",
-    "//base",
-    "//base/third_party/dynamic_annotations",
-    "//gpu",
-    "//gpu/command_buffer/common:gles2_utils",
-    "//ui/gfx/geometry",
-    "//ui/gl",
-  ]
-}
-
 component("gles2_c_lib") {
   sources = gles2_c_lib_source_files
   defines = [ "GLES2_C_LIB_IMPLEMENTATION" ]

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/command_buffer/service/in_process_command_buffer.h"
+#include "gpu/ipc/in_process_command_buffer.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -155,8 +155,7 @@ InProcessCommandBuffer::Service::Service(const GpuPreferences& gpu_preferences)
 
 InProcessCommandBuffer::Service::~Service() {}
 
-const gpu::GpuPreferences&
-InProcessCommandBuffer::Service::gpu_preferences() {
+const gpu::GpuPreferences& InProcessCommandBuffer::Service::gpu_preferences() {
   return gpu_preferences_;
 }
 
@@ -315,9 +314,8 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   command_buffer->SetParseErrorCallback(base::Bind(
       &InProcessCommandBuffer::OnContextLostOnGpuThread, gpu_thread_weak_ptr_));
 
-  gl_share_group_ = params.context_group
-                        ? params.context_group->gl_share_group_
-                        : service_->share_group();
+  gl_share_group_ = params.context_group ? params.context_group->gl_share_group_
+                                         : service_->share_group();
 
   bool bind_generates_resource = false;
   scoped_refptr<gles2::FeatureInfo> feature_info =
@@ -370,8 +368,8 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
       gl_share_group_->SetSharedContext(surface_.get(), context_.get());
     }
 
-    context_ = new GLContextVirtual(
-        gl_share_group_.get(), context_.get(), decoder_->AsWeakPtr());
+    context_ = new GLContextVirtual(gl_share_group_.get(), context_.get(),
+                                    decoder_->AsWeakPtr());
     if (context_->Initialize(
             surface_.get(),
             GenerateGLContextAttribs(
@@ -410,11 +408,8 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
 
   gles2::DisallowedFeatures disallowed_features;
   disallowed_features.gpu_memory_manager = true;
-  if (!decoder_->Initialize(surface_,
-                            context_,
-                            params.is_offscreen,
-                            disallowed_features,
-                            params.attribs)) {
+  if (!decoder_->Initialize(surface_, context_, params.is_offscreen,
+                            disallowed_features, params.attribs)) {
     LOG(ERROR) << "Could not initialize decoder.";
     DestroyOnGpuThread();
     return false;
@@ -588,9 +583,7 @@ void InProcessCommandBuffer::Flush(int32_t put_offset) {
       sync_point_order_data_->GenerateUnprocessedOrderNumber(sync_manager);
   last_put_offset_ = put_offset;
   base::Closure task = base::Bind(&InProcessCommandBuffer::FlushOnGpuThread,
-                                  gpu_thread_weak_ptr_,
-                                  put_offset,
-                                  order_num);
+                                  gpu_thread_weak_ptr_, put_offset, order_num);
   QueueTask(task);
 
   flushed_fence_sync_release_ = next_fence_sync_release_ - 1;
@@ -660,8 +653,7 @@ void InProcessCommandBuffer::DestroyTransferBuffer(int32_t id) {
   CheckSequencedThread();
   base::Closure task =
       base::Bind(&InProcessCommandBuffer::DestroyTransferBufferOnGpuThread,
-                 base::Unretained(this),
-                 id);
+                 base::Unretained(this), id);
 
   QueueTask(task);
 }
@@ -701,9 +693,8 @@ int32_t InProcessCommandBuffer::CreateImage(ClientBuffer buffer,
   // will leak. In otherwords, do not early out on error between here and the
   // queuing of the CreateImage task below.
   bool requires_sync_point = false;
-  gfx::GpuMemoryBufferHandle handle =
-      ShareGpuMemoryBufferToGpuThread(gpu_memory_buffer->GetHandle(),
-                                      &requires_sync_point);
+  gfx::GpuMemoryBufferHandle handle = ShareGpuMemoryBufferToGpuThread(
+      gpu_memory_buffer->GetHandle(), &requires_sync_point);
 
   SyncPointManager* sync_manager = service_->sync_point_manager();
   const uint32_t order_num =
@@ -717,10 +708,12 @@ int32_t InProcessCommandBuffer::CreateImage(ClientBuffer buffer,
     DCHECK_EQ(fence_sync - 1, flushed_fence_sync_release_);
   }
 
-  QueueTask(base::Bind(&InProcessCommandBuffer::CreateImageOnGpuThread,
-                       base::Unretained(this), new_id, handle,
-                       gfx::Size(width, height), gpu_memory_buffer->GetFormat(),
-                       internalformat, order_num, fence_sync));
+  QueueTask(base::Bind(
+      &InProcessCommandBuffer::CreateImageOnGpuThread, base::Unretained(this),
+      new_id, handle, gfx::Size(base::checked_cast<int>(width),
+                                base::checked_cast<int>(height)),
+      gpu_memory_buffer->GetFormat(),
+      base::checked_cast<uint32_t>(internalformat), order_num, fence_sync));
 
   if (fence_sync) {
     flushed_fence_sync_release_ = fence_sync;
@@ -803,8 +796,7 @@ void InProcessCommandBuffer::DestroyImage(int32_t id) {
   CheckSequencedThread();
 
   QueueTask(base::Bind(&InProcessCommandBuffer::DestroyImageOnGpuThread,
-                       base::Unretained(this),
-                       id));
+                       base::Unretained(this), id));
 }
 
 void InProcessCommandBuffer::DestroyImageOnGpuThread(int32_t id) {
@@ -831,7 +823,8 @@ int32_t InProcessCommandBuffer::CreateGpuMemoryBufferImage(
   DCHECK(gpu_memory_buffer_manager_);
   std::unique_ptr<gfx::GpuMemoryBuffer> buffer(
       gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
-          gfx::Size(width, height),
+          gfx::Size(base::checked_cast<int>(width),
+                    base::checked_cast<int>(height)),
           gpu::DefaultBufferFormatForImageFormat(internalformat),
           gfx::BufferUsage::SCANOUT, gpu::kNullSurfaceHandle));
   if (!buffer)
@@ -892,7 +885,8 @@ void InProcessCommandBuffer::RescheduleAfterFinishedOnGpuThread() {
 }
 
 void InProcessCommandBuffer::SignalSyncTokenOnGpuThread(
-    const SyncToken& sync_token, const base::Closure& callback) {
+    const SyncToken& sync_token,
+    const base::Closure& callback) {
   gpu::SyncPointManager* sync_point_manager = service_->sync_point_manager();
   DCHECK(sync_point_manager);
 
@@ -913,8 +907,7 @@ void InProcessCommandBuffer::SignalQuery(unsigned query_id,
                                          const base::Closure& callback) {
   CheckSequencedThread();
   QueueTask(base::Bind(&InProcessCommandBuffer::SignalQueryOnGpuThread,
-                       base::Unretained(this),
-                       query_id,
+                       base::Unretained(this), query_id,
                        WrapCallback(callback)));
 }
 
@@ -972,8 +965,7 @@ void InProcessCommandBuffer::SignalSyncToken(const SyncToken& sync_token,
                                              const base::Closure& callback) {
   CheckSequencedThread();
   QueueTask(base::Bind(&InProcessCommandBuffer::SignalSyncTokenOnGpuThread,
-                       base::Unretained(this),
-                       sync_token,
+                       base::Unretained(this), sync_token,
                        WrapCallback(callback)));
 }
 

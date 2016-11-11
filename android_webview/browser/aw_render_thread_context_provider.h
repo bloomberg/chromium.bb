@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "cc/output/context_provider.h"
-#include "gpu/command_buffer/service/in_process_command_buffer.h"
+#include "gpu/ipc/in_process_command_buffer.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 

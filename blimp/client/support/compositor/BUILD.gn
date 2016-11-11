@@ -25,9 +25,9 @@ source_set("compositor") {
     "//base",
     "//cc",
     "//gpu/command_buffer/client",
-    "//gpu/command_buffer/client:gl_in_process_context",
     "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_implementation",
+    "//gpu/ipc:gl_in_process_context",
     "//ui/gl",
   ]
 

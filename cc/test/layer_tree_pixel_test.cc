@@ -23,8 +23,8 @@
 #include "cc/test/test_compositor_frame_sink.h"
 #include "cc/test/test_in_process_context_provider.h"
 #include "cc/trees/layer_tree_impl.h"
-#include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/ipc/gl_in_process_context.h"
 
 using gpu::gles2::GLES2Interface;
 

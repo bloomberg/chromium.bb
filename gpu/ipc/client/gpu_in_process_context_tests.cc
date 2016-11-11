@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "base/threading/thread_task_runner_handle.h"
-#include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
+#include "gpu/ipc/gl_in_process_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_surface.h"
 

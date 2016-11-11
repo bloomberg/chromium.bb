@@ -6,6 +6,7 @@ include_rules = [
   "+gpu/command_buffer/client/shared_memory_limits.h",
   "+gpu/command_buffer/common/gles2_cmd_utils.h",
   "+gpu/command_buffer/service/image_factory.h",
+  "+gpu/ipc",
   "+gpu/skia_bindings/grcontext_for_gles2_interface.h",
 ]
 

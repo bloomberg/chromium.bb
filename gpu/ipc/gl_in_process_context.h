@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_COMMAND_BUFFER_CLIENT_GL_IN_PROCESS_CONTEXT_H_
-#define GPU_COMMAND_BUFFER_CLIENT_GL_IN_PROCESS_CONTEXT_H_
+#ifndef GPU_IPC_GL_IN_PROCESS_CONTEXT_H_
+#define GPU_IPC_GL_IN_PROCESS_CONTEXT_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "gl_in_process_context_export.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
-#include "gpu/command_buffer/service/in_process_command_buffer.h"
+#include "gpu/ipc/in_process_command_buffer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_preference.h"
@@ -67,4 +67,4 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
 
 }  // namespace gpu
 
-#endif  // GPU_COMMAND_BUFFER_CLIENT_GL_IN_PROCESS_CONTEXT_H_
+#endif  // GPU_IPC_GL_IN_PROCESS_CONTEXT_H_

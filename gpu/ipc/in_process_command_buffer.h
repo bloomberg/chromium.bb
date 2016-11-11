@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_COMMAND_BUFFER_SERVICE_IN_PROCESS_COMMAND_BUFFER_H_
-#define GPU_COMMAND_BUFFER_SERVICE_IN_PROCESS_COMMAND_BUFFER_H_
+#ifndef GPU_IPC_IN_PROCESS_COMMAND_BUFFER_H_
+#define GPU_IPC_IN_PROCESS_COMMAND_BUFFER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -149,7 +149,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
 
     virtual bool UseVirtualizedGLContexts() = 0;
     virtual scoped_refptr<gles2::ShaderTranslatorCache>
-        shader_translator_cache() = 0;
+    shader_translator_cache() = 0;
     virtual scoped_refptr<gles2::FramebufferCompletenessCache>
     framebuffer_completeness_cache() = 0;
     virtual SyncPointManager* sync_point_manager() = 0;
@@ -312,4 +312,4 @@ class GPU_EXPORT GpuInProcessThread
 
 }  // namespace gpu
 
-#endif  // GPU_COMMAND_BUFFER_SERVICE_IN_PROCESS_COMMAND_BUFFER_H_
+#endif  // GPU_IPC_IN_PROCESS_COMMAND_BUFFER_H_
