@@ -258,13 +258,14 @@ class ScrollBorder : public views::Border {
 
 TrayDetailsView::TrayDetailsView(SystemTrayItem* owner)
     : owner_(owner),
+      box_layout_(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0)),
       title_row_(nullptr),
       scroller_(nullptr),
       scroll_content_(nullptr),
       progress_bar_(nullptr),
       scroll_border_(nullptr),
       back_button_(nullptr) {
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+  SetLayoutManager(box_layout_);
   set_background(views::Background::CreateSolidBackground(kBackgroundColor));
 }
 
@@ -323,10 +324,15 @@ void TrayDetailsView::CreateScrollableList() {
   scroller_->SetContentsView(scroll_content_);
 
   // Note: |scroller_| takes ownership of |scroll_border_|.
-  scroll_border_ = new ScrollBorder;
-  scroller_->SetBorder(std::unique_ptr<views::Border>(scroll_border_));
+  if (!UseMd()) {
+    // In MD, the scroller is always the last thing, so this border is
+    // unnecessary and reserves extra space we don't want.
+    scroll_border_ = new ScrollBorder;
+    scroller_->SetBorder(std::unique_ptr<views::Border>(scroll_border_));
+  }
 
   AddChildView(scroller_);
+  box_layout_->SetFlexForView(scroller_, 1);
 }
 
 void TrayDetailsView::AddScrollSeparator() {
@@ -389,39 +395,48 @@ void TrayDetailsView::TransitionToDefaultView() {
 }
 
 void TrayDetailsView::Layout() {
-  if (bounds().IsEmpty()) {
+  if (UseMd()) {
+    views::View::Layout();
+    if (scroller_ && !scroller_->is_bounded())
+      scroller_->ClipHeightTo(0, scroller_->height());
+  }
+
+  if (UseMd() || bounds().IsEmpty()) {
     views::View::Layout();
     return;
   }
 
   if (scroller_) {
-    if (UseMd()) {
-      gfx::Size scroller_size = scroller()->GetPreferredSize();
-      gfx::Size pref_size = GetPreferredSize();
-      scroller()->ClipHeightTo(
-          0, scroller_size.height() - (pref_size.height() - height()));
-    } else {
-      scroller_->set_fixed_size(gfx::Size());
-      gfx::Size size = GetPreferredSize();
+    scroller_->set_fixed_size(gfx::Size());
+    gfx::Size size = GetPreferredSize();
 
-      // Set the scroller to fill the space above the bottom row, so that the
-      // bottom row of the detailed view will always stay just above the title
-      // row.
-      gfx::Size scroller_size = scroll_content_->GetPreferredSize();
-      scroller_->set_fixed_size(
-          gfx::Size(width() + scroller_->GetScrollBarWidth(),
-                    scroller_size.height() - (size.height() - height())));
-    }
+    // Set the scroller to fill the space above the bottom row, so that the
+    // bottom row of the detailed view will always stay just above the title
+    // row.
+    gfx::Size scroller_size = scroll_content_->GetPreferredSize();
+    scroller_->set_fixed_size(
+        gfx::Size(width() + scroller_->GetScrollBarWidth(),
+                  scroller_size.height() - (size.height() - height())));
   }
 
   views::View::Layout();
 
-  if (title_row_ && !UseMd()) {
+  if (title_row_) {
     // Always make sure the title row is bottom-aligned in non-MD.
     gfx::Rect fbounds = title_row_->bounds();
     fbounds.set_y(height() - title_row_->height());
     title_row_->SetBoundsRect(fbounds);
   }
+}
+
+int TrayDetailsView::GetHeightForWidth(int width) const {
+  if (!UseMd() || bounds().IsEmpty())
+    return views::View::GetHeightForWidth(width);
+
+  // The height of the bubble that contains this detailed view is set to
+  // the preferred height of the default view, and that determines the
+  // initial height of |this|. Always request to stay the same height.
+  return height();
 }
 
 void TrayDetailsView::OnPaintBorder(gfx::Canvas* canvas) {

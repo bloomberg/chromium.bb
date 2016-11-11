@@ -13,6 +13,7 @@
 #include "ui/views/view.h"
 
 namespace views {
+class BoxLayout;
 class ScrollView;
 class ProgressBar;
 }  // namespace views
@@ -49,6 +50,7 @@ class ASH_EXPORT TrayDetailsView : public views::View,
  protected:
   // views::View:
   void Layout() override;
+  int GetHeightForWidth(int width) const override;
   void OnPaintBorder(gfx::Canvas* canvas) override;
 
   // Creates the row containing the back button and title. For material design
@@ -90,6 +92,7 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   void TransitionToDefaultView();
 
   SystemTrayItem* owner_;
+  views::BoxLayout* box_layout_;
   SpecialPopupRow* title_row_;
   FixedSizedScrollView* scroller_;
   views::View* scroll_content_;
