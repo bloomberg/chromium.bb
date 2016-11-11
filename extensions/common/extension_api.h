@@ -101,9 +101,6 @@ class ExtensionAPI {
                                       Feature::Context context,
                                       const GURL& url);
 
-  // Returns true if |name| is available to WebUI contexts on |url|.
-  bool IsAvailableToWebUI(const std::string& name, const GURL& url);
-
   // Gets the StringPiece for the schema specified by |api_name|.
   base::StringPiece GetSchemaStringPiece(const std::string& api_name);
 

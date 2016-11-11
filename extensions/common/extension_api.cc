@@ -204,11 +204,6 @@ Feature::Availability ExtensionAPI::IsAvailable(const std::string& full_name,
   return feature->IsAvailableToContext(extension, context, url);
 }
 
-bool ExtensionAPI::IsAvailableToWebUI(const std::string& name,
-                                      const GURL& url) {
-  return IsAvailable(name, NULL, Feature::WEBUI_CONTEXT, url).is_available();
-}
-
 base::StringPiece ExtensionAPI::GetSchemaStringPiece(
     const std::string& api_name) {
   DCHECK_EQ(api_name, GetAPINameFromFullName(api_name, nullptr));
