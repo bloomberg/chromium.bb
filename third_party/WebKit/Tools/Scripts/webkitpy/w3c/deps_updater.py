@@ -199,7 +199,7 @@ class DepsUpdater(object):
         import_path = self.path_from_webkit_base('Tools', 'Scripts', 'import-w3c-tests')
         self.run([self.host.executable, import_path, '-d', 'imported', src_repo])
 
-        self.run(['git', 'add', '--all', 'LayoutTests/imported/%s', dest_dir_name])
+        self.run(['git', 'add', '--all', 'LayoutTests/imported/%s' % dest_dir_name])
 
         _log.info('Deleting any orphaned baselines.')
         previous_baselines = self.fs.files_under(dest_path, file_filter=self.is_baseline)
