@@ -277,6 +277,8 @@ without changes to the corresponding grd file. -->
                  file="html/cr/ui.html" type="chrome_html" />
       <structure name="IDR_WEBUI_HTML_CR_UI_ALERT_OVERLAY"
                  file="html/cr/ui/alert_overlay.html" type="chrome_html" />
+      <structure name="IDR_WEBUI_HTML_CR_UI_ARRAY_DATA_MODEL"
+                 file="html/cr/ui/array_data_model.html" type="chrome_html" />
       <structure name="IDR_WEBUI_HTML_CR_UI_COMMAND"
                  file="html/cr/ui/command.html" type="chrome_html" />
       <structure name="IDR_WEBUI_HTML_CR_UI_CONTEXT_MENU_BUTTON"

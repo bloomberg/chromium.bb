@@ -16,6 +16,8 @@ BluetoothInternalsUI::BluetoothInternalsUI(content::WebUI* web_ui)
       content::WebUIDataSource::Create(chrome::kChromeUIBluetoothInternalsHost);
 
   // Add required resources.
+  html_source->AddResourcePath("adapter_broker.js",
+                               IDR_BLUETOOTH_INTERNALS_ADAPTER_BROKER_JS);
   html_source->AddResourcePath("bluetooth_internals.css",
                                IDR_BLUETOOTH_INTERNALS_CSS);
   html_source->AddResourcePath("bluetooth_internals.js",
@@ -26,8 +28,7 @@ BluetoothInternalsUI::BluetoothInternalsUI(content::WebUI* web_ui)
                                IDR_BLUETOOTH_INTERNALS_DEVICE_TABLE_JS);
   html_source->AddResourcePath("interfaces.js",
                                IDR_BLUETOOTH_INTERNALS_INTERFACES_JS);
-  html_source->AddResourcePath("adapter_broker.js",
-                               IDR_BLUETOOTH_INTERNALS_ADAPTER_BROKER_JS);
+
   html_source->AddResourcePath(
       "device/bluetooth/public/interfaces/adapter.mojom",
       IDR_BLUETOOTH_ADAPTER_MOJO_JS);

@@ -3,13 +3,10 @@
 // found in the LICENSE file.
 
 /**
- * Javascript for DeviceTable UI, served from
- *     chrome://bluetooth-internals/.
+ * Javascript for DeviceTable UI, served from chrome://bluetooth-internals/.
  */
 
 cr.define('device_table', function() {
-  var REMOVED_CSS = 'removed';
-
   /**
    * A table that lists the devices and responds to changes in the given
    *     DeviceCollection.
@@ -17,7 +14,7 @@ cr.define('device_table', function() {
    * @extends {HTMLTableElement}
    */
   var DeviceTable = cr.ui.define(function() {
-    // @type {Array<device_collection.Device>}
+    /** @private {?Array<device_collection.Device>} */
     this.devices_ = null;
 
     return document.importNode($('table-template').content.children[0],
@@ -32,7 +29,9 @@ cr.define('device_table', function() {
      *    table body and headers.
      */
     decorate: function() {
+      /** @private */
       this.body_ = this.tBodies[0];
+      /** @private */
       this.headers_ = this.tHead.rows[0].cells;
     },
 
@@ -117,11 +116,7 @@ cr.define('device_table', function() {
       assert(this.body_.rows[index], 'Row ' + index + ' is not in the table.');
       var row = this.body_.rows[index];
 
-      if (device.removed) {
-        row.classList.add(REMOVED_CSS);
-      } else {
-        row.classList.remove(REMOVED_CSS);
-      }
+      row.classList.toggle('removed', device.removed);
 
       // Update the properties based on the header field path.
       for (var i = 0; i < this.headers_.length; i++) {

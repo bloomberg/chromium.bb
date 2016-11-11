@@ -9,10 +9,10 @@
 
 cr.define('interfaces', function() {
   /**
-   * Imports Mojo interfaces and adds them to window.interfaces.
+   * Sets up Mojo interfaces and adds them to window.interfaces.
    * @return {Promise}
    */
-  function importInterfaces() {
+  function setupInterfaces() {
     return importModules([
       'content/public/renderer/frame_interfaces',
       'device/bluetooth/public/interfaces/adapter.mojom',
@@ -20,20 +20,14 @@ cr.define('interfaces', function() {
       'mojo/public/js/connection',
     ]).then(function([frameInterfaces, bluetoothAdapter, bluetoothDevice,
         connection]) {
-      Object.assign(interfaces, {
-        BluetoothAdapter: bluetoothAdapter,
-        BluetoothDevice: bluetoothDevice,
-        Connection: connection,
-        FrameInterfaces: frameInterfaces,
-      });
+      interfaces.BluetoothAdapter = bluetoothAdapter;
+      interfaces.BluetoothDevice = bluetoothDevice;
+      interfaces.Connection = connection;
+      interfaces.FrameInterfaces = frameInterfaces;
     });
   }
 
   return {
-    BluetoothAdapter: {},
-    BluetoothDevice: {},
-    Connection: {},
-    FrameInterfaces: {},
-    importInterfaces: importInterfaces,
+    setupInterfaces: setupInterfaces,
   };
 });
