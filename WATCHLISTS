@@ -433,6 +433,10 @@
     'extension': {
       'filepath': 'extension',
     },
+    'feature_policy': {
+      'filepath': 'third_party/WebKit/Source/platform/feature_policy/|' \
+                  'third_party/WebKit/Source/bindings/core/v8/ConditionalFeatures',
+    },
     'feedback_ui': {
       'filepath': 'chrome/browser/resources/(md_)?feedback/'
     },
@@ -1809,6 +1813,8 @@
     'events': ['tdresser+watch@chromium.org'],
     'extension': ['chromium-apps-reviews@chromium.org',
                   'extensions-reviews@chromium.org'],
+    'feature_policy': ['lunalu@chromium.org',
+                       'iclelland@chromium.org'],
     'feedback_ui': ['apacible+watch@chromium.org'],
     'fileapi': ['kinuko+fileapi@chromium.org',
                 'nhiroki@chromium.org',
