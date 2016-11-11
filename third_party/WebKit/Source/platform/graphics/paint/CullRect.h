@@ -10,6 +10,7 @@
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"
+#include "wtf/text/WTFString.h"
 
 #include <limits>
 
@@ -34,6 +35,8 @@ class PLATFORM_EXPORT CullRect {
   bool intersectsCullRect(const LayoutRect&) const;
   bool intersectsHorizontalRange(LayoutUnit lo, LayoutUnit hi) const;
   bool intersectsVerticalRange(LayoutUnit lo, LayoutUnit hi) const;
+
+  String toString() const { return m_rect.toString(); }
 
  private:
   IntRect m_rect;
