@@ -21,6 +21,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -443,9 +444,20 @@ public class ExternalNavigationHandler {
             }
         }
 
-        boolean shouldProxyForInstantApps = isExternalProtocol
-                && SUPERVISOR_PKG.equals(intent.getPackage())
+        boolean isDirectInstantAppsIntent = isExternalProtocol
+                && SUPERVISOR_PKG.equals(intent.getPackage());
+        boolean shouldProxyForInstantApps = isDirectInstantAppsIntent
                 && mDelegate.isSerpReferrer(params.getReferrerUrl(), params.getTab());
+        if (shouldProxyForInstantApps) {
+            intent.putExtra(InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER, true);
+        } else if (isDirectInstantAppsIntent) {
+            // For security reasons, we disable all intent:// URLs to Instant Apps that are
+            // not coming from SERP.
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        } else {
+            // Make sure this extra is not sent unless we've done the verification.
+            intent.removeExtra(InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER);
+        }
 
         try {
             if (params.isIncognito() && !mDelegate.willChromeHandleIntent(intent)) {

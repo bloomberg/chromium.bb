@@ -52,6 +52,9 @@ public class InstantAppsHandler {
     protected static final String TRUSTED_REFERRER_PKG_EXTRA =
             "com.google.android.gms.instantapps.TRUSTED_REFERRER_PKG";
 
+    public static final String IS_GOOGLE_SEARCH_REFERRER =
+            "com.google.android.gms.instantapps.IS_GOOGLE_SEARCH_REFERRER";
+
     /** Finch experiment name. */
     private static final String INSTANT_APPS_EXPERIMENT_NAME = "InstantApps";
 
@@ -90,7 +93,7 @@ public class InstantAppsHandler {
      * @param context The application context.
      * @return Whether the feature is enabled.
      */
-    private boolean isEnabled(Context context) {
+    protected boolean isEnabled(Context context) {
         // Will go away once the feature is enabled for everyone by default.
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
