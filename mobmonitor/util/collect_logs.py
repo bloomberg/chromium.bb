@@ -35,6 +35,7 @@ def remove_old_tarballs():
 
 def collect_logs():
   remove_old_tarballs()
+  osutils.SafeMakedirs(TMPDIR)
   tempdir = tempfile.mkdtemp(prefix=TMPDIR_PREFIX, dir=TMPDIR)
   os.chmod(tempdir, 0o777)
 
