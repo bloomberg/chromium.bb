@@ -132,11 +132,9 @@ std::unique_ptr<base::Value> NetLogSpdyInitializedCallback(
 
 std::unique_ptr<base::Value> NetLogSpdySettingsCallback(
     const HostPortPair& host_port_pair,
-    bool clear_persisted,
     NetLogCaptureMode /* capture_mode */) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("host", host_port_pair.ToString());
-  dict->SetBoolean("clear_persisted", clear_persisted);
   return std::move(dict);
 }
 
@@ -2074,16 +2072,13 @@ void SpdySession::OnStreamPadding(SpdyStreamId stream_id, size_t len) {
   it->second.stream->OnPaddingConsumed(len);
 }
 
-void SpdySession::OnSettings(bool clear_persisted) {
+void SpdySession::OnSettings() {
   CHECK(in_io_loop_);
 
-  if (clear_persisted)
-    http_server_properties_->ClearSpdySettings(GetServer());
-
   if (net_log_.IsCapturing()) {
-    net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_RECV_SETTINGS,
-                      base::Bind(&NetLogSpdySettingsCallback, host_port_pair(),
-                                 clear_persisted));
+    net_log_.AddEvent(
+        NetLogEventType::HTTP2_SESSION_RECV_SETTINGS,
+        base::Bind(&NetLogSpdySettingsCallback, host_port_pair()));
   }
 
   // Send an acknowledgment of the setting.
@@ -2099,8 +2094,6 @@ void SpdySession::OnSetting(SpdySettingsIds id, uint8_t flags, uint32_t value) {
   CHECK(in_io_loop_);
 
   HandleSetting(id, value);
-  http_server_properties_->SetSpdySetting(
-      GetServer(), id, static_cast<SpdySettingsFlags>(flags), value);
 
   // Log the setting.
   net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_RECV_SETTING,

@@ -1847,11 +1847,11 @@ TEST_F(SpdySessionTest, OnSettings) {
   EXPECT_TRUE(data.AllReadDataConsumed());
 }
 
-// Start with max concurrent streams set to 1.  Request two streams.
-// When the first completes, have the callback close its stream, which
-// should trigger the second stream creation.  Then cancel that one
-// immediately.  Don't crash.  This is a regression test for
-// http://crbug.com/63532 .
+// Create one more stream than maximum number of concurrent streams,
+// so that one of them is pending.  Cancel one stream, which should trigger the
+// creation of the pending stream.  Then cancel that one immediately as well,
+// and make sure this does not lead to a crash.
+// This is a regression test for https://crbug.com/63532.
 TEST_F(SpdySessionTest, CancelPendingCreateStream) {
   session_deps_.host_resolver->set_synchronous_mode(true);
 
@@ -1865,12 +1865,6 @@ TEST_F(SpdySessionTest, CancelPendingCreateStream) {
   AddSSLSocketData();
 
   CreateNetworkSession();
-
-  // Initialize the SpdySetting with 1 max concurrent streams.
-  spdy_session_pool_->http_server_properties()->SetSpdySetting(
-      test_server_, SETTINGS_MAX_CONCURRENT_STREAMS,
-      SETTINGS_FLAG_PLEASE_PERSIST, 1);
-
   CreateSecureSpdySession();
 
   // Leave room for only one more stream to be created.
@@ -1887,15 +1881,15 @@ TEST_F(SpdySessionTest, CancelPendingCreateStream) {
                                 MEDIUM, NetLogWithSource());
   ASSERT_TRUE(spdy_stream1);
 
-  // Use scoped_ptr to let us invalidate the memory when we want to, to trigger
+  // Use unique_ptr to let us invalidate the memory when we want to, to trigger
   // a valgrind error if the callback is invoked when it's not supposed to be.
   std::unique_ptr<TestCompletionCallback> callback(new TestCompletionCallback);
 
   SpdyStreamRequest request;
-  ASSERT_EQ(
-      ERR_IO_PENDING,
+  ASSERT_THAT(
       request.StartRequest(SPDY_BIDIRECTIONAL_STREAM, session_, test_url_,
-                           MEDIUM, NetLogWithSource(), callback->callback()));
+                           MEDIUM, NetLogWithSource(), callback->callback()),
+      IsError(ERR_IO_PENDING));
 
   // Release the first one, this will allow the second to be created.
   spdy_stream1->Cancel();
@@ -1934,11 +1928,6 @@ TEST_F(SpdySessionTest, SendInitialDataOnNewSession) {
 
   CreateNetworkSession();
 
-  const uint32_t initial_max_concurrent_streams = 1;
-  spdy_session_pool_->http_server_properties()->SetSpdySetting(
-      test_server_, SETTINGS_MAX_CONCURRENT_STREAMS,
-      SETTINGS_FLAG_PLEASE_PERSIST, initial_max_concurrent_streams);
-
   SpdySessionPoolPeer pool_peer(spdy_session_pool_);
   pool_peer.SetEnableSendingInitialData(true);
 
@@ -1946,22 +1935,6 @@ TEST_F(SpdySessionTest, SendInitialDataOnNewSession) {
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(data.AllWriteDataConsumed());
-}
-
-TEST_F(SpdySessionTest, ClearSettingsStorageOnIPAddressChanged) {
-  CreateNetworkSession();
-
-  HttpServerProperties* test_http_server_properties =
-      spdy_session_pool_->http_server_properties();
-  SettingsFlagsAndValue flags_and_value1(SETTINGS_FLAG_PLEASE_PERSIST, 2);
-  test_http_server_properties->SetSpdySetting(test_server_,
-                                              SETTINGS_MAX_CONCURRENT_STREAMS,
-                                              SETTINGS_FLAG_PLEASE_PERSIST, 2);
-  EXPECT_NE(0u,
-            test_http_server_properties->GetSpdySettings(test_server_).size());
-  spdy_session_pool_->OnIPAddressChanged();
-  EXPECT_EQ(0u,
-            test_http_server_properties->GetSpdySettings(test_server_).size());
 }
 
 TEST_F(SpdySessionTest, Initialize) {

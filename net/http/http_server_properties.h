@@ -192,7 +192,6 @@ typedef std::vector<AlternativeService> AlternativeServiceVector;
 typedef std::vector<AlternativeServiceInfo> AlternativeServiceInfoVector;
 typedef base::MRUCache<url::SchemeHostPort, AlternativeServiceInfoVector>
     AlternativeServiceMap;
-typedef base::MRUCache<url::SchemeHostPort, SettingsMap> SpdySettingsMap;
 typedef base::MRUCache<url::SchemeHostPort, ServerNetworkStats>
     ServerNetworkStatsMap;
 typedef base::MRUCache<QuicServerId, std::string> QuicServerInfoMap;
@@ -305,27 +304,6 @@ class NET_EXPORT HttpServerProperties {
   // Empty alternative service hostnames will be printed as such.
   virtual std::unique_ptr<base::Value> GetAlternativeServiceInfoAsValue()
       const = 0;
-
-  // Gets a reference to the SettingsMap stored for a host.
-  // If no settings are stored, returns an empty SettingsMap.
-  virtual const SettingsMap& GetSpdySettings(
-      const url::SchemeHostPort& server) = 0;
-
-  // Saves an individual SPDY setting for a host. Returns true if SPDY setting
-  // is to be persisted.
-  virtual bool SetSpdySetting(const url::SchemeHostPort& server,
-                              SpdySettingsIds id,
-                              SpdySettingsFlags flags,
-                              uint32_t value) = 0;
-
-  // Clears all SPDY settings for a host.
-  virtual void ClearSpdySettings(const url::SchemeHostPort& server) = 0;
-
-  // Clears all SPDY settings for all hosts.
-  virtual void ClearAllSpdySettings() = 0;
-
-  // Returns all persistent SPDY settings.
-  virtual const SpdySettingsMap& spdy_settings_map() const = 0;
 
   virtual bool GetSupportsQuic(IPAddress* last_address) const = 0;
 
