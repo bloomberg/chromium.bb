@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_ANIMATION_MUTABLE_PROPERTIES_H_
-#define CC_ANIMATION_MUTABLE_PROPERTIES_H_
+#ifndef CC_TREES_MUTABLE_PROPERTIES_H_
+#define CC_TREES_MUTABLE_PROPERTIES_H_
 
 #include <stdint.h>
 
@@ -22,4 +22,4 @@ struct MutableProperty {
 
 }  // namespace cc
 
-#endif  // CC_ANIMATION_MUTABLE_PROPERTIES_H_
+#endif  // CC_TREES_MUTABLE_PROPERTIES_H_
