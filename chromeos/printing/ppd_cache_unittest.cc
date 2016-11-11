@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -152,22 +154,23 @@ TEST_F(PpdCacheTest, StoreAndRetrieveAvailablePrinters) {
   auto cache = CreateTestCache();
 
   // Nothing stored, so should miss in the cache.
-  base::Optional<PpdProvider::AvailablePrintersMap> result =
+  const PpdProvider::AvailablePrintersMap* result =
       cache->FindAvailablePrinters();
-  EXPECT_FALSE(result);
+  EXPECT_EQ(nullptr, result);
 
   // Create something to store.
-  PpdProvider::AvailablePrintersMap a;
-  a["foo"] = {"bar", "baz", "sna"};
-  a["bar"] = {"c", "d", "e"};
-  a["baz"] = {"f", "g", "h"};
+  auto a = base::MakeUnique<PpdProvider::AvailablePrintersMap>();
+  (*a)["foo"] = {"bar", "baz", "sna"};
+  (*a)["bar"] = {"c", "d", "e"};
+  (*a)["baz"] = {"f", "g", "h"};
+  PpdProvider::AvailablePrintersMap original = *a;
 
   // Store it, get it back.
-  cache->StoreAvailablePrinters(a);
+  cache->StoreAvailablePrinters(std::move(a));
   result = cache->FindAvailablePrinters();
-  ASSERT_TRUE(result);
+  ASSERT_NE(nullptr, result);
 
-  EXPECT_EQ(a, result.value());
+  EXPECT_EQ(original, *result);
 }
 
 // When an entry is too old, we shouldn't return it.
@@ -178,10 +181,11 @@ TEST_F(PpdCacheTest, ExpireStaleAvailablePrinters) {
   auto cache = CreateTestCache(options);
 
   // Store an empty map.  (Contents don't really matter for this test).
-  cache->StoreAvailablePrinters(PpdProvider::AvailablePrintersMap());
+  cache->StoreAvailablePrinters(
+      base::MakeUnique<PpdProvider::AvailablePrintersMap>());
 
   // Should *miss* in the cache because the entry is already expired.
-  EXPECT_FALSE(cache->FindAvailablePrinters());
+  EXPECT_EQ(nullptr, cache->FindAvailablePrinters());
 }
 
 }  // namespace

@@ -90,23 +90,31 @@ class PpdCacheImpl : public PpdCache {
     return ret;
   }
 
-  base::Optional<PpdProvider::AvailablePrintersMap> FindAvailablePrinters()
-      override {
+  const PpdProvider::AvailablePrintersMap* FindAvailablePrinters() override {
+    if (available_printers_ != nullptr &&
+        base::Time::Now() - available_printers_timestamp_ <
+            options_.max_available_list_staleness) {
+      // Satisfy from memory cache.
+      return available_printers_.get();
+    }
     std::string buf;
     if (!MaybeReadAvailablePrintersCache(&buf)) {
-      return base::nullopt;
+      // Disk cache miss.
+      return nullptr;
     }
     auto dict = base::DictionaryValue::From(base::JSONReader::Read(buf));
     if (dict == nullptr) {
       LOG(ERROR) << "Failed to deserialize available printers cache";
-      return base::nullopt;
+      return nullptr;
     }
-    PpdProvider::AvailablePrintersMap ret;
+    // Note if we got here, we've already set available_printers_timestamp_ to
+    // the mtime of the file we read from.
+    available_printers_ = base::MakeUnique<PpdProvider::AvailablePrintersMap>();
     const base::ListValue* models;
     std::string model;
     for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd();
          it.Advance()) {
-      auto& out = ret[it.key()];
+      auto& out = (*available_printers_)[it.key()];
       if (!it.value().GetAsList(&models)) {
         LOG(ERROR) << "Skipping malformed printer make: " << it.key();
         continue;
@@ -121,18 +129,20 @@ class PpdCacheImpl : public PpdCache {
         }
       }
     }
-    return ret;
+    return available_printers_.get();
   }
 
   // Note we throw up our hands and fail (gracefully) to store if we encounter
   // non-unicode things in the strings of |available_printers|.  Since these
   // strings come from a source we control, being less paranoid about these
   // values seems reasonable.
-  void StoreAvailablePrinters(
-      const PpdProvider::AvailablePrintersMap& available_printers) override {
+  void StoreAvailablePrinters(std::unique_ptr<PpdProvider::AvailablePrintersMap>
+                                  available_printers) override {
+    available_printers_ = std::move(available_printers);
+    available_printers_timestamp_ = base::Time::Now();
     // Convert the map to Values, in preparation for jsonification.
     base::DictionaryValue top_level;
-    for (const auto& entry : available_printers) {
+    for (const auto& entry : *available_printers_) {
       auto printers = base::MakeUnique<base::ListValue>();
       printers->AppendStrings(entry.second);
       top_level.Set(entry.first, std::move(printers));
@@ -223,6 +233,7 @@ class PpdCacheImpl : public PpdCache {
         buf->clear();
         return false;
       }
+      available_printers_timestamp_ = info.last_modified;
       return true;
     }
     // Either we don't have an openable file, or it's too old.
@@ -237,6 +248,14 @@ class PpdCacheImpl : public PpdCache {
     }
     return false;
   }
+
+  // In-memory copy of the available printers map, null if we don't have an
+  // in-memory copy yet.  Filled in the first time the map is fetched from
+  // disk or stored.
+  std::unique_ptr<PpdProvider::AvailablePrintersMap> available_printers_;
+  // Timestamp for the in-memory copy of the cache.  (The on-disk version uses
+  // the file mtime).
+  base::Time available_printers_timestamp_;
 
   const base::FilePath cache_base_dir_;
   const base::FilePath available_printers_file_;

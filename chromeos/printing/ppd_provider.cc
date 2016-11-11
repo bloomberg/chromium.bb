@@ -127,12 +127,12 @@ class PpdProviderImpl : public PpdProvider {
     CHECK(query_fetcher_ == nullptr)
         << "Can't have concurrent PpdProvider QueryAvailable() calls";
 
-    base::Optional<PpdProvider::AvailablePrintersMap> result =
+    const PpdProvider::AvailablePrintersMap* result =
         cache_->FindAvailablePrinters();
-    if (result) {
+    if (result != nullptr) {
       // Satisfy from cache.
       base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(cb, PpdProvider::SUCCESS, result.value()));
+          FROM_HERE, base::Bind(cb, PpdProvider::SUCCESS, *result));
       return;
     }
     // Not in the cache, ask QuirksServer.
@@ -258,7 +258,7 @@ class PpdProviderImpl : public PpdProvider {
       return;
     }
 
-    PpdProvider::AvailablePrintersMap result;
+    auto result = base::MakeUnique<PpdProvider::AvailablePrintersMap>();
     for (const std::unique_ptr<base::Value>& entry : *top_list) {
       base::DictionaryValue* dict;
       std::string manufacturer;
@@ -272,7 +272,7 @@ class PpdProviderImpl : public PpdProvider {
         continue;
       }
 
-      std::vector<std::string>& dest = result[manufacturer];
+      std::vector<std::string>& dest = (*result)[manufacturer];
       for (const std::unique_ptr<base::Value>& model_value : *model_list) {
         if (model_value->GetAsString(&model)) {
           dest.push_back(model);
@@ -282,8 +282,9 @@ class PpdProviderImpl : public PpdProvider {
         }
       }
     }
-    if (!result.empty()) {
-      cache_->StoreAvailablePrinters(result);
+    query_done_callback_.Run(PpdProvider::SUCCESS, *result);
+    if (!result->empty()) {
+      cache_->StoreAvailablePrinters(std::move(result));
     } else {
       // An empty map means something is probably wrong; if we cache this map,
       // we'll have an empty map until the cache expires.  So complain and
@@ -291,7 +292,6 @@ class PpdProviderImpl : public PpdProvider {
       LOG(ERROR) << "Available printers map is unexpectedly empty.  Refusing "
                     "to cache this.";
     }
-    query_done_callback_.Run(PpdProvider::SUCCESS, result);
   }
 
   // Generate a url to look up a manufacturer/model from the quirks server
