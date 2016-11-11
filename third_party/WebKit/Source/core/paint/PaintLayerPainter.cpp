@@ -232,6 +232,30 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(
     const PaintLayerPaintingInfo& paintingInfoArg,
     PaintLayerFlags paintFlags,
     FragmentPolicy fragmentPolicy) {
+  Optional<ScopedPaintChunkProperties> scopedPaintChunkProperties;
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
+      RuntimeEnabledFeatures::rootLayerScrollingEnabled() &&
+      m_paintLayer.layoutObject() &&
+      m_paintLayer.layoutObject()->isLayoutView()) {
+    const auto* objectPaintProperties =
+        m_paintLayer.layoutObject()->paintProperties();
+    DCHECK(objectPaintProperties &&
+           objectPaintProperties->localBorderBoxProperties());
+    PaintChunkProperties properties(
+        context.getPaintController().currentPaintChunkProperties());
+    auto& localBorderBoxProperties =
+        *objectPaintProperties->localBorderBoxProperties();
+    properties.transform =
+        localBorderBoxProperties.propertyTreeState.transform();
+    properties.scroll = localBorderBoxProperties.propertyTreeState.scroll();
+    properties.clip = localBorderBoxProperties.propertyTreeState.clip();
+    properties.effect = localBorderBoxProperties.propertyTreeState.effect();
+    properties.backfaceHidden =
+        m_paintLayer.layoutObject()->hasHiddenBackface();
+    scopedPaintChunkProperties.emplace(context.getPaintController(),
+                                       m_paintLayer, properties);
+  }
+
   DCHECK(m_paintLayer.isSelfPaintingLayer() ||
          m_paintLayer.hasSelfPaintingLayerDescendant());
   DCHECK(!(paintFlags & PaintLayerAppliedTransform));
@@ -417,8 +441,15 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(
                                     : layerFragments[0].backgroundRect,
                                 localPaintingInfo, paintFlags);
 
-    Optional<ScopedPaintChunkProperties> scopedPaintChunkProperties;
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    Optional<ScopedPaintChunkProperties> contentScopedPaintChunkProperties;
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
+        !scopedPaintChunkProperties.has_value()) {
+      // If layoutObject() is a LayoutView and root layer scrolling is enabled,
+      // the LayoutView's paint properties will already have been applied at
+      // the top of this method, in scopedPaintChunkProperties.
+      DCHECK(!(RuntimeEnabledFeatures::rootLayerScrollingEnabled() &&
+               m_paintLayer.layoutObject() &&
+               m_paintLayer.layoutObject()->isLayoutView()));
       const auto* objectPaintProperties =
           m_paintLayer.layoutObject()->paintProperties();
       DCHECK(objectPaintProperties &&
@@ -434,8 +465,8 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(
       properties.effect = localBorderBoxProperties.propertyTreeState.effect();
       properties.backfaceHidden =
           m_paintLayer.layoutObject()->hasHiddenBackface();
-      scopedPaintChunkProperties.emplace(context.getPaintController(),
-                                         m_paintLayer, properties);
+      contentScopedPaintChunkProperties.emplace(context.getPaintController(),
+                                                m_paintLayer, properties);
     }
 
     bool isPaintingRootLayer = (&m_paintLayer) == paintingInfo.rootLayer;

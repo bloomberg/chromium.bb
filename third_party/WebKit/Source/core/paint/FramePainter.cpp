@@ -36,6 +36,8 @@ void FramePainter::paint(GraphicsContext& context,
   IntRect visibleAreaWithoutScrollbars(frameView().location(),
                                        frameView().visibleContentRect().size());
   documentDirtyRect.intersect(visibleAreaWithoutScrollbars);
+  documentDirtyRect.moveBy(-frameView().location() +
+                           frameView().scrollOffsetInt());
 
   bool shouldPaintContents = !documentDirtyRect.isEmpty();
   bool shouldPaintScrollbars =
@@ -49,7 +51,8 @@ void FramePainter::paint(GraphicsContext& context,
     // settings()->rootLayerScrolls() is enabled.
     // TODO(pdr): Make this conditional on the rootLayerScrolls setting.
     Optional<ScopedPaintChunkProperties> scopedPaintChunkProperties;
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
+        !RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
       if (const PropertyTreeState* contentsState =
               m_frameView->totalPropertyTreeStateForContents()) {
         PaintChunkProperties properties(
@@ -69,16 +72,19 @@ void FramePainter::paint(GraphicsContext& context,
         AffineTransform::translation(frameView().x() - frameView().scrollX(),
                                      frameView().y() - frameView().scrollY()));
 
-    ClipRecorder recorder(context, *frameView().layoutView(),
-                          DisplayItem::kClipFrameToVisibleContentRect,
-                          frameView().visibleContentRect());
+    if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+      paintContents(context, globalPaintFlags, documentDirtyRect);
+    } else {
+      ClipRecorder clipRecorder(context, *frameView().layoutView(),
+                                DisplayItem::kClipFrameToVisibleContentRect,
+                                frameView().visibleContentRect());
 
-    documentDirtyRect.moveBy(-frameView().location() +
-                             frameView().scrollOffsetInt());
-    paintContents(context, globalPaintFlags, documentDirtyRect);
+      paintContents(context, globalPaintFlags, documentDirtyRect);
+    }
   }
 
   if (shouldPaintScrollbars) {
+    DCHECK(!RuntimeEnabledFeatures::rootLayerScrollingEnabled());
     IntRect scrollViewDirtyRect = rect.m_rect;
     IntRect visibleAreaWithScrollbars(
         frameView().location(),

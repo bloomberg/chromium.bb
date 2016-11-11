@@ -15,6 +15,7 @@
 #include "core/paint/TransformRecorder.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/ScopedPaintChunkProperties.h"
 
 namespace blink {
@@ -117,7 +118,6 @@ void ScrollableAreaPainter::paintOverflowControls(
     adjustedPaintOffset = getScrollableArea().cachedOverlayScrollbarOffset();
 
   CullRect adjustedCullRect(cullRect, -adjustedPaintOffset);
-
   // Overlay scrollbars paint in a second pass through the layer tree so that
   // they will paint on top of everything else. If this is the normal painting
   // pass, paintingOverlayControls will be false, and we should just tell the
@@ -152,6 +152,11 @@ void ScrollableAreaPainter::paintOverflowControls(
   // This check is required to avoid painting custom CSS scrollbars twice.
   if (paintingOverlayControls && !getScrollableArea().hasOverlayScrollbars())
     return;
+
+  IntRect clipRect(adjustedPaintOffset,
+                   getScrollableArea().visibleContentRect().size());
+  ClipRecorder clipRecorder(context, getScrollableArea().box(),
+                            DisplayItem::kClipLayerOverflowControls, clipRect);
 
   {
     Optional<ScopedPaintChunkProperties> scopedTransformProperty;

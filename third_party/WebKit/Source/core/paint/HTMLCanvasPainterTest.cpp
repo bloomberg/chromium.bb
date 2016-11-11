@@ -24,10 +24,12 @@
 
 namespace blink {
 
-class HTMLCanvasPainterTestForSPv2 : public ::testing::Test {
+class HTMLCanvasPainterTestForSPv2 : public ::testing::Test,
+                                     public testing::WithParamInterface<bool> {
  protected:
   void SetUp() override {
     RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
+    RuntimeEnabledFeatures::setRootLayerScrollingEnabled(GetParam());
     m_chromeClient = new StubChromeClientForSPv2();
     Page::PageClients clients;
     fillWithEmptyClients(clients);
@@ -63,7 +65,9 @@ class HTMLCanvasPainterTestForSPv2 : public ::testing::Test {
   std::unique_ptr<DummyPageHolder> m_pageHolder;
 };
 
-TEST_F(HTMLCanvasPainterTestForSPv2, Canvas2DLayerAppearsInLayerTree) {
+INSTANTIATE_TEST_CASE_P(All, HTMLCanvasPainterTestForSPv2, ::testing::Bool());
+
+TEST_P(HTMLCanvasPainterTestForSPv2, Canvas2DLayerAppearsInLayerTree) {
   // Insert a <canvas> and force it into accelerated mode.
   document().body()->setInnerHTML("<canvas width=300 height=200>",
                                   ASSERT_NO_EXCEPTION);
