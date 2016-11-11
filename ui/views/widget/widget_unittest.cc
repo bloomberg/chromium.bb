@@ -312,14 +312,15 @@ TEST_F(WidgetTest, ChildStackedRelativeToParent) {
 
   // NOTE: for aura-mus-client stacking of top-levels is not maintained in the
   // client, so z-order of top-levels can't be determined.
-  if (!IsAuraMusClient())
+  const bool check_toplevel_z_order = !IsAuraMusClient();
+  if (check_toplevel_z_order)
     EXPECT_TRUE(IsWindowStackedAbove(popover.get(), child));
   EXPECT_TRUE(IsWindowStackedAbove(child, parent.get()));
 
   // Showing the parent again should raise it and its child above the popover.
   parent->Show();
   EXPECT_TRUE(IsWindowStackedAbove(child, parent.get()));
-  if (!IsAuraMusClient())
+  if (check_toplevel_z_order)
     EXPECT_TRUE(IsWindowStackedAbove(parent.get(), popover.get()));
 
   // Test grandchildren.
@@ -328,17 +329,17 @@ TEST_F(WidgetTest, ChildStackedRelativeToParent) {
   grandchild->ShowInactive();
   EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
   EXPECT_TRUE(IsWindowStackedAbove(child, parent.get()));
-  if (!IsAuraMusClient())
+  if (check_toplevel_z_order)
     EXPECT_TRUE(IsWindowStackedAbove(parent.get(), popover.get()));
 
   popover->Show();
-  if (!IsAuraMusClient())
+  if (check_toplevel_z_order)
     EXPECT_TRUE(IsWindowStackedAbove(popover.get(), grandchild));
   EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
 
   parent->Show();
   EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
-  if (!IsAuraMusClient())
+  if (check_toplevel_z_order)
     EXPECT_TRUE(IsWindowStackedAbove(child, popover.get()));
 
   // Test hiding and reshowing.
@@ -348,7 +349,7 @@ TEST_F(WidgetTest, ChildStackedRelativeToParent) {
 
   EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
   EXPECT_TRUE(IsWindowStackedAbove(child, parent.get()));
-  if (!IsAuraMusClient())
+  if (check_toplevel_z_order)
     EXPECT_TRUE(IsWindowStackedAbove(parent.get(), popover.get()));
 
   grandchild->Hide();
@@ -357,7 +358,7 @@ TEST_F(WidgetTest, ChildStackedRelativeToParent) {
 
   EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
   EXPECT_TRUE(IsWindowStackedAbove(child, parent.get()));
-  if (!IsAuraMusClient())
+  if (check_toplevel_z_order)
     EXPECT_TRUE(IsWindowStackedAbove(parent.get(), popover.get()));
 }
 
