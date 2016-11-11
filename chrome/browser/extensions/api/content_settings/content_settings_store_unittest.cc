@@ -327,21 +327,6 @@ TEST_F(ContentSettingsStoreTest, SetFromList) {
                                        CONTENT_SETTINGS_TYPE_COOKIES,
                                        std::string(),
                                        false));
-  // The fullscreen and mouselock settings should have been ignored.
-  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            GetContentSettingFromStore(store(),
-                                       url,
-                                       url,
-                                       CONTENT_SETTINGS_TYPE_FULLSCREEN,
-                                       std::string(),
-                                       false));
-  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            GetContentSettingFromStore(store(),
-                                       url,
-                                       url,
-                                       CONTENT_SETTINGS_TYPE_MOUSELOCK,
-                                       std::string(),
-                                       false));
 
   store()->RemoveObserver(&observer);
 }

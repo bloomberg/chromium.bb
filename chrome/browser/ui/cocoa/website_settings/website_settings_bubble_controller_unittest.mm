@@ -62,33 +62,26 @@ enum PermissionMenuIndices {
 };
 
 const ContentSettingsType kTestPermissionTypes[] = {
-  // NOTE: FULLSCREEN does not support "Always block", so it must appear as
-  // one of the first three permissions.
-  CONTENT_SETTINGS_TYPE_FULLSCREEN,
   CONTENT_SETTINGS_TYPE_IMAGES,
   CONTENT_SETTINGS_TYPE_JAVASCRIPT,
   CONTENT_SETTINGS_TYPE_PLUGINS,
   CONTENT_SETTINGS_TYPE_POPUPS,
   CONTENT_SETTINGS_TYPE_GEOLOCATION,
   CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-  CONTENT_SETTINGS_TYPE_MOUSELOCK,
   CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
 };
 
 const ContentSetting kTestSettings[] = {
   CONTENT_SETTING_DEFAULT,
   CONTENT_SETTING_DEFAULT,
-  CONTENT_SETTING_DEFAULT,
   CONTENT_SETTING_ALLOW,
   CONTENT_SETTING_BLOCK,
   CONTENT_SETTING_ALLOW,
   CONTENT_SETTING_BLOCK,
-  CONTENT_SETTING_ALLOW,
   CONTENT_SETTING_BLOCK
 };
 
 const ContentSetting kTestDefaultSettings[] = {
-  CONTENT_SETTING_ALLOW,
   CONTENT_SETTING_BLOCK,
   CONTENT_SETTING_ASK
 };
@@ -98,10 +91,8 @@ const content_settings::SettingSource kTestSettingSources[] = {
   content_settings::SETTING_SOURCE_USER,
   content_settings::SETTING_SOURCE_USER,
   content_settings::SETTING_SOURCE_USER,
-  content_settings::SETTING_SOURCE_USER,
   content_settings::SETTING_SOURCE_POLICY,
   content_settings::SETTING_SOURCE_POLICY,
-  content_settings::SETTING_SOURCE_EXTENSION,
   content_settings::SETTING_SOURCE_EXTENSION
 };
 
@@ -288,9 +279,9 @@ TEST_F(WebsiteSettingsBubbleControllerTest, SetPermissionInfo) {
   }
   EXPECT_EQ(arraysize(kTestPermissionTypes), [labels count]);
 
-  // 4 of the buttons should be disabled -- the ones that have a setting source
+  // 3 of the buttons should be disabled -- the ones that have a setting source
   // of SETTING_SOURCE_POLICY or SETTING_SOURCE_EXTENSION.
-  EXPECT_EQ(4, disabled_count);
+  EXPECT_EQ(3, disabled_count);
 }
 
 TEST_F(WebsiteSettingsBubbleControllerTest, WindowWidth) {

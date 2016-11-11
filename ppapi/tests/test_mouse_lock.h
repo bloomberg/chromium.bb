@@ -27,7 +27,6 @@ class TestMouseLock: public TestCase, public pp::MouseLock {
 
  private:
   std::string TestSucceedWhenAllowed();
-  std::string TestFailWhenBlocked();
 
   void SimulateUserGesture();
 

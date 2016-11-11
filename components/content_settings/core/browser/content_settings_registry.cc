@@ -188,24 +188,6 @@ void ContentSettingsRegistry::Init() {
            // implements additional incognito exceptions.
            ContentSettingsInfo::INHERIT_IN_INCOGNITO_EXCEPT_ALLOW);
 
-  Register(CONTENT_SETTINGS_TYPE_FULLSCREEN, "fullscreen", CONTENT_SETTING_ASK,
-           WebsiteSettingsInfo::SYNCABLE,
-           WhitelistedSchemes(kChromeUIScheme, kChromeDevToolsScheme),
-           ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_ASK),
-           WebsiteSettingsInfo::REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE,
-           WebsiteSettingsRegistry::DESKTOP |
-               WebsiteSettingsRegistry::PLATFORM_ANDROID,
-           ContentSettingsInfo::INHERIT_IN_INCOGNITO);
-
-  Register(CONTENT_SETTINGS_TYPE_MOUSELOCK, "mouselock", CONTENT_SETTING_ASK,
-           WebsiteSettingsInfo::SYNCABLE,
-           WhitelistedSchemes(kChromeUIScheme, kChromeDevToolsScheme),
-           ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
-                         CONTENT_SETTING_ASK),
-           WebsiteSettingsInfo::TOP_LEVEL_ORIGIN_ONLY_SCOPE,
-           WebsiteSettingsRegistry::DESKTOP,
-           ContentSettingsInfo::INHERIT_IN_INCOGNITO);
-
   Register(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, "media-stream-mic",
            CONTENT_SETTING_ASK, WebsiteSettingsInfo::UNSYNCABLE,
            WhitelistedSchemes(kChromeUIScheme, kChromeDevToolsScheme),

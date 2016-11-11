@@ -71,29 +71,6 @@ TEST_F(PermissionMenuModelTest, TestAllowBlock) {
   EXPECT_EQ(2, model.GetItemCount());
 }
 
-TEST_F(PermissionMenuModelTest, TestFullscreenMouseLockFileUrl) {
-  TestCallback callback;
-  WebsiteSettingsUI::PermissionInfo permission;
-  permission.type = CONTENT_SETTINGS_TYPE_FULLSCREEN;
-  permission.setting = CONTENT_SETTING_ASK;
-  permission.default_setting = CONTENT_SETTING_ASK;
-  permission.is_incognito = false;
-  PermissionMenuModel fullscreen_model(profile(), GURL("file:///test.html"),
-                                       permission, callback.callback());
-  EXPECT_EQ(1, fullscreen_model.GetItemCount());
-  EXPECT_EQ(
-      l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_ASK),
-      fullscreen_model.GetLabelAt(0));
-
-  permission.type = CONTENT_SETTINGS_TYPE_MOUSELOCK;
-  PermissionMenuModel mouselock_model(profile(), GURL("file:///test.html"),
-                                      permission, callback.callback());
-  EXPECT_EQ(1, mouselock_model.GetItemCount());
-  EXPECT_EQ(
-      l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_ASK),
-      fullscreen_model.GetLabelAt(0));
-}
-
 TEST_F(PermissionMenuModelTest, TestIncognitoNotifications) {
   TestCallback callback;
   WebsiteSettingsUI::PermissionInfo permission;

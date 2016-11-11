@@ -25,7 +25,6 @@ bool TestMouseLock::Init() {
 
 void TestMouseLock::RunTests(const std::string& filter) {
   RUN_TEST(SucceedWhenAllowed, filter);
-  RUN_TEST(FailWhenBlocked, filter);
 }
 
 void TestMouseLock::DidChangeView(const pp::View& view) {
@@ -47,17 +46,6 @@ std::string TestMouseLock::TestSucceedWhenAllowed() {
   UnlockMouse();
   // Wait for the MouseLockLost() call.
   nested_event_.Wait();
-
-  PASS();
-}
-
-std::string TestMouseLock::TestFailWhenBlocked() {
-  // Content settings are configured to block mouse lock for any site.
-  // Please see chrome/test/ppapi/ppapi_interactive_browsertest.cc.
-  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
-  SimulateUserGesture();
-  callback.WaitForResult(LockMouse(callback.GetCallback()));
-  ASSERT_NE(PP_OK, callback.result());
 
   PASS();
 }

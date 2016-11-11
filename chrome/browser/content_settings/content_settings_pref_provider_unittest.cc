@@ -164,24 +164,13 @@ TEST_F(PrefProviderTest, DiscardObsoletePreferences) {
   PrefProvider provider(prefs, false);
   provider.ShutdownOnUIThread();
 
-  // Check that fullscreen and mouselock have been reset back to defaults.
-  // TODO(mgiuca): These should be fully deleted, except that they keep being
-  // recreated due to the content settings enum still existing. Delete the enum,
-  // then update this test to expect full deletion. https://crbug.com/591896.
-  // EXPECT_FALSE(prefs->HasPrefPath(kFullscreenPrefPath));
-  // EXPECT_FALSE(prefs->HasPrefPath(kMouselockPrefPath));
-  GURL primary_url("http://example.com/");
-  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            TestUtils::GetContentSetting(&provider, primary_url, primary_url,
-                                         CONTENT_SETTINGS_TYPE_FULLSCREEN,
-                                         std::string(), false));
+  // Check that fullscreen and mouselock have been deleted.
+  EXPECT_FALSE(prefs->HasPrefPath(kFullscreenPrefPath));
 #if !defined(OS_ANDROID)
-  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            TestUtils::GetContentSetting(&provider, primary_url, primary_url,
-                                         CONTENT_SETTINGS_TYPE_MOUSELOCK,
-                                         std::string(), false));
+  EXPECT_FALSE(prefs->HasPrefPath(kMouselockPrefPath));
 #endif
   EXPECT_TRUE(prefs->HasPrefPath(kGeolocationPrefPath));
+  GURL primary_url("http://example.com/");
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             TestUtils::GetContentSetting(&provider, primary_url, primary_url,
                                          CONTENT_SETTINGS_TYPE_GEOLOCATION,

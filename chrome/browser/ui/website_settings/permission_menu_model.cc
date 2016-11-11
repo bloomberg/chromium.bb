@@ -62,15 +62,6 @@ PermissionMenuModel::PermissionMenuModel(
   }
   AddCheckItem(CONTENT_SETTING_DEFAULT, label);
 
-  // CONTENT_SETTING_ALLOW and CONTENT_SETTING_BLOCK are not allowed for
-  // fullscreen or mouse lock on file:// URLs, because there wouldn't be
-  // a reasonable origin with which to associate the preference.
-  // TODO(estark): Revisit this when crbug.com/455882 is fixed.
-  bool is_exclusive_access_on_file =
-      (permission_.type == CONTENT_SETTINGS_TYPE_FULLSCREEN ||
-       permission_.type == CONTENT_SETTINGS_TYPE_MOUSELOCK) &&
-      url.SchemeIsFile();
-
   // Notifications does not support CONTENT_SETTING_ALLOW in incognito.
   bool allow_disabled_for_notifications =
       permission_.is_incognito &&
@@ -80,8 +71,7 @@ PermissionMenuModel::PermissionMenuModel(
       permission_.type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
       permission_.type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
   if (!allow_disabled_for_notifications &&
-      (!is_media_permission || content::IsOriginSecure(url)) &&
-      !is_exclusive_access_on_file) {
+      (!is_media_permission || content::IsOriginSecure(url))) {
     label = l10n_util::GetStringUTF16(
         IDS_WEBSITE_SETTINGS_MENU_ITEM_ALLOW);
     AddCheckItem(CONTENT_SETTING_ALLOW, label);
@@ -97,12 +87,8 @@ PermissionMenuModel::PermissionMenuModel(
     AddCheckItem(CONTENT_SETTING_DETECT_IMPORTANT_CONTENT, label);
   }
 
-  if (permission_.type != CONTENT_SETTINGS_TYPE_FULLSCREEN &&
-      !is_exclusive_access_on_file) {
-    label = l10n_util::GetStringUTF16(
-        IDS_WEBSITE_SETTINGS_MENU_ITEM_BLOCK);
-    AddCheckItem(CONTENT_SETTING_BLOCK, label);
-  }
+  label = l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_MENU_ITEM_BLOCK);
+  AddCheckItem(CONTENT_SETTING_BLOCK, label);
 }
 
 PermissionMenuModel::PermissionMenuModel(Profile* profile,

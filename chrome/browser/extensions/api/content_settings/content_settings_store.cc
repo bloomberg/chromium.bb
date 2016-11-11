@@ -319,15 +319,18 @@ void ContentSettingsStore::SetExtensionContentSettingFromList(
     dict->GetString(keys::kContentSettingsTypeKey, &content_settings_type_str);
     ContentSettingsType content_settings_type =
         helpers::StringToContentSettingsType(content_settings_type_str);
-    if (content_settings_type == CONTENT_SETTINGS_TYPE_FULLSCREEN ||
-        content_settings_type == CONTENT_SETTINGS_TYPE_MOUSELOCK) {
-      // Fullscreen and mouselock are deprecated. Skip over settings of these
-      // types, effectively deleting them from the in-memory model. This will
-      // implicitly delete these old settings from the pref store when it is
-      // written back.
+    if (content_settings_type == CONTENT_SETTINGS_TYPE_DEFAULT) {
+      // We'll end up with DEFAULT here if the type string isn't recognised.
+      // This could be if it's a string from an old settings type that has been
+      // deleted. DCHECK to make sure this is the case (not some random string).
+      DCHECK(content_settings_type_str == "fullscreen" ||
+             content_settings_type_str == "mouselock");
+
+      // In this case, we just skip over that setting, effectively deleting it
+      // from the in-memory model. This will implicitly delete these old
+      // settings from the pref store when it is written back.
       continue;
     }
-    DCHECK_NE(CONTENT_SETTINGS_TYPE_DEFAULT, content_settings_type);
 
     std::string resource_identifier;
     dict->GetString(keys::kResourceIdentifierKey, &resource_identifier);

@@ -110,10 +110,6 @@ ContentSettingsType kPermissionType[] = {
     CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC,
     CONTENT_SETTINGS_TYPE_KEYGEN,
     CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
-#if !defined(OS_ANDROID)
-    CONTENT_SETTINGS_TYPE_MOUSELOCK,
-#endif
-    CONTENT_SETTINGS_TYPE_FULLSCREEN,
     CONTENT_SETTINGS_TYPE_AUTOPLAY,
     CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
 };
@@ -121,17 +117,10 @@ ContentSettingsType kPermissionType[] = {
 // Determines whether to show permission |type| in the Website Settings UI. Only
 // applies to permissions listed in |kPermissionType|.
 bool ShouldShowPermission(ContentSettingsType type) {
-  // TODO(mgiuca): When simplified-fullscreen-ui is enabled permanently on
-  // Android, remove these from kPermissionType, rather than having this check
-  // (http://crbug.com/577396).
 #if !defined(OS_ANDROID)
-  // Fullscreen and mouselock settings are no longer shown (always allow).
   // Autoplay is Android-only at the moment.
-  if (type == CONTENT_SETTINGS_TYPE_AUTOPLAY ||
-      type == CONTENT_SETTINGS_TYPE_FULLSCREEN ||
-      type == CONTENT_SETTINGS_TYPE_MOUSELOCK) {
+  if (type == CONTENT_SETTINGS_TYPE_AUTOPLAY)
     return false;
-  }
 #endif
 
   return true;

@@ -140,8 +140,7 @@ Polymer({
     settings.SiteSettingsPrefsBrowserProxyImpl.getInstance()
         .getDefaultValueForContentType(
             this.category).then(function(setting) {
-              this.categoryEnabled =
-                  this.computeIsSettingEnabled(this.category, setting);
+              this.categoryEnabled = this.computeIsSettingEnabled(setting);
 
               // Flash only shows ALLOW or BLOCK descriptions on the slider.
               var sliderSetting = setting;

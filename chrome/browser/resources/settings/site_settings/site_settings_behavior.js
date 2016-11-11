@@ -186,7 +186,7 @@ var SiteSettingsBehaviorImpl = {
    * @protected
    */
   computeCategoryDesc: function(category, setting, showRecommendation) {
-    var categoryEnabled = this.computeIsSettingEnabled(category, setting);
+    var categoryEnabled = this.computeIsSettingEnabled(setting);
     switch (category) {
       case settings.ContentSettingsTypes.JAVASCRIPT:
         // "Allowed (recommended)" vs "Blocked".
@@ -397,16 +397,12 @@ var SiteSettingsBehaviorImpl = {
 
   /**
    * Returns true if the passed content setting is considered 'enabled'.
-   * @param {string} category
    * @param {string} setting
    * @return {boolean}
    * @private
    */
-  computeIsSettingEnabled: function(category, setting) {
-    // FullScreen is Allow vs. Ask.
-    return category == settings.ContentSettingsTypes.FULLSCREEN ?
-        setting != settings.PermissionValues.ASK :
-        setting != settings.PermissionValues.BLOCK;
+  computeIsSettingEnabled: function(setting) {
+    return setting != settings.PermissionValues.BLOCK;
   },
 
   /**

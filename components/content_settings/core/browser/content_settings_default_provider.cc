@@ -29,8 +29,6 @@ namespace content_settings {
 namespace {
 
 // These settings are no longer used, and should be deleted on profile startup.
-// NOTE: Do not use the CONTENT_SETTINGS_TYPE_* constants, as these will soon be
-// deleted.
 #if !defined(OS_IOS)
 const char kObsoleteFullscreenDefaultPref[] =
     "profile.default_content_setting_values.fullscreen";
@@ -93,6 +91,21 @@ void DefaultProvider::RegisterProfilePrefs(
                                   GetDefaultValue(info),
                                   info->GetPrefRegistrationFlags());
   }
+
+  // Obsolete prefs -------------------------------------------------------
+
+  // These prefs have been removed, but need to be registered so they can
+  // be deleted on startup.
+#if !defined(OS_IOS)
+  registry->RegisterIntegerPref(
+      kObsoleteFullscreenDefaultPref, 0,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+#if !defined(OS_ANDROID)
+  registry->RegisterIntegerPref(
+      kObsoleteMouseLockDefaultPref, 0,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+#endif  // !defined(OS_ANDROID)
+#endif  // !defined(OS_IOS)
 }
 
 DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)
@@ -127,11 +140,6 @@ DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)
       "ContentSettings.DefaultPluginsSetting",
       IntToContentSetting(prefs_->GetInteger(
           GetPrefName(CONTENT_SETTINGS_TYPE_PLUGINS))),
-      CONTENT_SETTING_NUM_SETTINGS);
-  UMA_HISTOGRAM_ENUMERATION(
-      "ContentSettings.DefaultMouseCursorSetting",
-      IntToContentSetting(prefs_->GetInteger(
-          GetPrefName(CONTENT_SETTINGS_TYPE_MOUSELOCK))),
       CONTENT_SETTING_NUM_SETTINGS);
 #endif
 
@@ -360,8 +368,8 @@ std::unique_ptr<base::Value> DefaultProvider::ReadFromPref(
 }
 
 void DefaultProvider::DiscardObsoletePreferences() {
-  // These prefs aren't registered on iOS/Android so they can't (and don't need
-  // to) be deleted.
+  // These prefs were never stored on iOS/Android so they don't need to be
+  // deleted.
 #if !defined(OS_IOS)
   prefs_->ClearPref(kObsoleteFullscreenDefaultPref);
 #if !defined(OS_ANDROID)
