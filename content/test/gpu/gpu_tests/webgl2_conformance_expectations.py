@@ -499,6 +499,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/fbomultisample.8_samples.html',
         ['linux', 'intel'], bug=635528)
 
+    # Fails on Intel Mesa GL 3.3, passes on Intel Mesa GL 4.5.
+    self.Fail('conformance2/misc/views-with-offsets.html',
+        ['linux', 'intel'], bug=664180)
+
     # Linux Intel with ANGLE only
     self.Fail('deqp/functional/gles3/framebufferblit/' +
         'default_framebuffer_00.html',
