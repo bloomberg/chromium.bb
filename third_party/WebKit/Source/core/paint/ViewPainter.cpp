@@ -167,6 +167,12 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo) {
       shouldDrawBackgroundInSeparateBuffer
           ? rootBackgroundColor
           : baseBackgroundColor.blend(rootBackgroundColor);
+  if (combinedBackgroundColor != frameView.baseBackgroundColor() &&
+      !context.getPaintController().nonDefaultBackgroundColorPainted()) {
+    TRACE_EVENT_INSTANT0("blink.user_timing", "paintNonDefaultBackgroundColor",
+                         TRACE_EVENT_SCOPE_GLOBAL);
+    context.getPaintController().setNonDefaultBackgroundColorPainted();
+  }
   if (combinedBackgroundColor.alpha()) {
     if (!combinedBackgroundColor.hasAlpha() &&
         RuntimeEnabledFeatures::slimmingPaintV2Enabled())
