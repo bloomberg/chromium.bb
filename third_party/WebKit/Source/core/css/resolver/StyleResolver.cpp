@@ -1541,7 +1541,7 @@ void StyleResolver::applyProperties(
     if (!CSSPropertyPriorityData<priority>::propertyHasPriority(property))
       continue;
 
-    StyleBuilder::applyProperty(current.id(), state, current.value());
+    StyleBuilder::applyProperty(property, state, current.value());
   }
 }
 
