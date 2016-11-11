@@ -70,6 +70,8 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
 
   const device::mojom::blink::SensorConfiguration* defaultConfig() const;
 
+  double maximumFrequency() const { return m_maximumFrequency; }
+
   // Updates sensor reading from shared buffer.
   void updateSensorReading();
 
@@ -113,6 +115,7 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
   bool m_suspended;
   Member<SensorReading> m_reading;
   std::unique_ptr<SensorReadingFactory> m_readingFactory;
+  double m_maximumFrequency;
 
   using ReadingBuffer = device::SensorReadingSharedBuffer;
   static_assert(

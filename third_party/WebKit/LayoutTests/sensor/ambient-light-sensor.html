@@ -104,6 +104,34 @@ sensor_test(sensor => {
 }, 'Test that frequency is capped to 60.0 Hz.');
 
 sensor_test(sensor => {
+  let maxSupportedFrequency = 15;
+  sensor.mockSensorProvider.setMaximumSupportedFrequency(maxSupportedFrequency);
+  let ambientLightSensor = new AmbientLightSensor({frequency: 50});
+  ambientLightSensor.start();
+
+  let testPromise = sensor.mockSensorProvider.getCreatedSensor()
+      .then(mockSensor => { return mockSensor.addConfigurationCalled(); })
+      .then(mockSensor => {
+         return new Promise((resolve, reject) => {
+          ambientLightSensor.onstatechange = event => {
+            if (ambientLightSensor.state === 'idle') {
+              resolve(mockSensor);
+            }
+
+            if (ambientLightSensor.state === 'active') {
+              let configuration = mockSensor.active_sensor_configurations_[0];
+              assert_equals(configuration.frequency, maxSupportedFrequency);
+              ambientLightSensor.stop();
+            }
+          };
+        });
+      })
+      .then(mockSensor => { return mockSensor.removeConfigurationCalled(); });
+
+  return testPromise;
+}, 'Test that frequency is capped to the maximum supported from frequency.');
+
+sensor_test(sensor => {
   let ambientLightSensor = new AmbientLightSensor({frequency: 60});
   ambientLightSensor.start();
   let testPromise = sensor.mockSensorProvider.getCreatedSensor()

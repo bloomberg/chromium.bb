@@ -27,6 +27,7 @@ class PlatformSensorAndroid : public PlatformSensor {
 
   mojom::ReportingMode GetReportingMode() override;
   PlatformSensorConfiguration GetDefaultConfiguration() override;
+  double GetMaximumSupportedFrequency() override;
 
   void NotifyPlatformSensorError(JNIEnv*,
                                  const base::android::JavaRef<jobject>& caller);

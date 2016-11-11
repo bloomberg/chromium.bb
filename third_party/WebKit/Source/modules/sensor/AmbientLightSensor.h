@@ -28,9 +28,6 @@ class AmbientLightSensor final : public Sensor {
   AmbientLightSensor(ScriptState*, const SensorOptions&, ExceptionState&);
   // Sensor overrides.
   std::unique_ptr<SensorReadingFactory> createSensorReadingFactory() override;
-  SensorConfigurationPtr createSensorConfig(
-      const SensorOptions&,
-      const SensorConfiguration& defaultConfig) override;
 };
 
 }  // namespace blink

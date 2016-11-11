@@ -217,6 +217,7 @@ function sensor_mocks(mojo) {
         this.get_sensor_should_fail_ = false;
         this.resolve_func_ = null;
         this.is_continuous_ = false;
+        this.max_frequency_ = 60;
       }
 
       // Returns initialized Sensor proxy to the client.
@@ -253,7 +254,8 @@ function sensor_mocks(mojo) {
                 { memory: rv.handle,
                   buffer_offset: offset,
                   mode: reporting_mode,
-                  default_configuration: default_config });
+                  default_configuration: default_config,
+                  maximum_frequency: this.max_frequency_});
 
         if (this.resolve_func_ !== null) {
           this.resolve_func_(this.active_sensor_);
@@ -262,7 +264,6 @@ function sensor_mocks(mojo) {
         var client_handle = connection.bindProxy(proxy => {
           this.active_sensor_.client_ = proxy;
           }, sensor.SensorClient);
-
         return getSensorResponse(init_params, client_handle);
       }
 
@@ -284,6 +285,7 @@ function sensor_mocks(mojo) {
 
         this.get_sensor_should_fail_ = false;
         this.resolve_func_ = null;
+        this.max_frequency_ = 60;
       }
 
       // Sets flag that forces mock SensorProvider to fail when getSensor() is
@@ -306,6 +308,11 @@ function sensor_mocks(mojo) {
       // Forces sensor to use |reporting_mode| as an update mode.
       setContinuousReportingMode(reporting_mode) {
           this.is_continuous_ = reporting_mode;
+      }
+
+      // Sets the maximum frequency for a concrete sensor.
+      setMaximumSupportedFrequency(frequency) {
+          this.max_frequency_ = frequency;
       }
     }
 

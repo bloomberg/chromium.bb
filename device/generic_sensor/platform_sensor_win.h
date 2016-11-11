@@ -34,6 +34,7 @@ class PlatformSensorWin final : public PlatformSensor,
 
   PlatformSensorConfiguration GetDefaultConfiguration() override;
   mojom::ReportingMode GetReportingMode() override;
+  double GetMaximumSupportedFrequency() override;
 
   // PlatformSensorReaderWin::Client interface implementation.
   void OnReadingUpdated(const SensorReading& reading) override;

@@ -486,4 +486,22 @@ TEST_F(PlatformSensorAndProviderTestWin, SensorStateChangedToReady) {
   base::RunLoop().RunUntilIdle();
 }
 
+// Tests that GetMaximumSupportedFrequency provides correct value.
+TEST_F(PlatformSensorAndProviderTestWin, GetMaximumSupportedFrequency) {
+  SetSupportedReportingFrequency(20);
+  SetSupportedSensor(SENSOR_TYPE_AMBIENT_LIGHT);
+  auto sensor = CreateSensor(SensorType::AMBIENT_LIGHT);
+  EXPECT_TRUE(sensor);
+  EXPECT_THAT(sensor->GetMaximumSupportedFrequency(), 20);
+}
+
+// Tests that GetMaximumSupportedFrequency returns fallback value.
+TEST_F(PlatformSensorAndProviderTestWin, GetMaximumSupportedFrequencyFallback) {
+  SetSupportedReportingFrequency(0);
+  SetSupportedSensor(SENSOR_TYPE_AMBIENT_LIGHT);
+  auto sensor = CreateSensor(SensorType::AMBIENT_LIGHT);
+  EXPECT_TRUE(sensor);
+  EXPECT_THAT(sensor->GetMaximumSupportedFrequency(), 5);
+}
+
 }  // namespace device

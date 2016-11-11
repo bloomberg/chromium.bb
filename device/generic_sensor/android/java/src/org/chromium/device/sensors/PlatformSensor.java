@@ -22,6 +22,7 @@ import java.util.List;
 @JNINamespace("device")
 public class PlatformSensor implements SensorEventListener {
     private static final double MICROSECONDS_IN_SECOND = 1000000;
+    private static final double SECONDS_IN_MICROSECOND = 0.000001d;
     private static final double SECONDS_IN_NANOSECOND = 0.000000001d;
 
     /**
@@ -121,6 +122,17 @@ public class PlatformSensor implements SensorEventListener {
     @CalledByNative
     protected double getDefaultConfiguration() {
         return SENSOR_FREQUENCY_NORMAL;
+    }
+
+    /**
+     * Returns maximum sampling frequency supported by the sensor.
+     *
+     * @return double frequency in Hz.
+     */
+    @CalledByNative
+    protected double getMaximumSupportedFrequency() {
+        if (mMinDelayUsec == 0) return getDefaultConfiguration();
+        return 1 / (mMinDelayUsec * SECONDS_IN_MICROSECOND);
     }
 
     /**

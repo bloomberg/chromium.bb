@@ -40,15 +40,6 @@ AmbientLightSensor::createSensorReadingFactory() {
       new SensorReadingFactoryImpl<AmbientLightSensorReading>());
 }
 
-auto AmbientLightSensor::createSensorConfig(
-    const SensorOptions& options,
-    const SensorConfiguration& defaultConfig) -> SensorConfigurationPtr {
-  auto result = device::mojom::blink::SensorConfiguration::New();
-  result->frequency =
-      options.hasFrequency() ? options.frequency() : defaultConfig.frequency;
-  return result;
-}
-
 DEFINE_TRACE(AmbientLightSensor) {
   Sensor::trace(visitor);
 }

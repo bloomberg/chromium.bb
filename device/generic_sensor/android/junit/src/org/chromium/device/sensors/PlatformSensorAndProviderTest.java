@@ -257,6 +257,22 @@ public class PlatformSensorAndProviderTest {
     }
 
     /**
+     * Test that PlatformSensor correctly returns its maximum supported frequency.
+     */
+    @Test
+    @Feature({"PlatformSensor"})
+    public void testSensorMaximumSupportedFrequency() {
+        PlatformSensor sensor = createPlatformSensor(50000, Sensor.TYPE_LIGHT,
+                SensorType.AMBIENT_LIGHT, Sensor.REPORTING_MODE_ON_CHANGE);
+        assertEquals(20, sensor.getMaximumSupportedFrequency(), 0.001);
+
+        sensor = createPlatformSensor(
+                0, Sensor.TYPE_LIGHT, SensorType.AMBIENT_LIGHT, Sensor.REPORTING_MODE_ON_CHANGE);
+        assertEquals(
+                sensor.getDefaultConfiguration(), sensor.getMaximumSupportedFrequency(), 0.001);
+    }
+
+    /**
      * Test that shared buffer is correctly populated from SensorEvent.
      */
     @Test

@@ -23,7 +23,8 @@ SensorProxy::SensorProxy(SensorType sensorType,
       m_clientBinding(this),
       m_state(SensorProxy::Uninitialized),
       m_suspended(false),
-      m_readingFactory(std::move(readingFactory)) {}
+      m_readingFactory(std::move(readingFactory)),
+      m_maximumFrequency(0.0) {}
 
 SensorProxy::~SensorProxy() {}
 
@@ -179,6 +180,9 @@ void SensorProxy::onSensorCreated(SensorInitParamsPtr params,
     handleSensorError();
     return;
   }
+
+  m_maximumFrequency = params->maximum_frequency;
+  DCHECK(m_maximumFrequency <= SensorConfiguration::kMaxAllowedFrequency);
 
   auto errorCallback =
       WTF::bind(&SensorProxy::handleSensorError, wrapWeakPersistent(this),

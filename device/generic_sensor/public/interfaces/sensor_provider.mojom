@@ -19,6 +19,11 @@ struct SensorInitParams {
   // Default sensor configuration.
   SensorConfiguration default_configuration;
 
+  // Maximum sampling frequency for the sensor: it considers both
+  // |SensorConfiguration::kMaxAllowedFrequency| and actual sensor
+  // capabilities.
+  double maximum_frequency;
+
   // Each sensor's read buffer contains 4 tightly packed 64-bit floating
   // point fields (please see sensor_reading.h) and a seqlock, so its size is
   // 5 * 8 = 40 bytes.

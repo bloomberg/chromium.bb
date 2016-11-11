@@ -41,6 +41,13 @@ class DEVICE_GENERIC_SENSOR_EXPORT PlatformSensor
   virtual mojom::ReportingMode GetReportingMode() = 0;
   virtual PlatformSensorConfiguration GetDefaultConfiguration() = 0;
 
+  // Can be overriden to return the sensor maximum sampling frequency
+  // value obtained from the platform if it is available. If platfrom
+  // does not provide maximum sampling frequency this method must
+  // return default frequency.
+  // The default implementation returns default frequency.
+  virtual double GetMaximumSupportedFrequency();
+
   mojom::SensorType GetType() const;
 
   bool StartListening(Client* client,

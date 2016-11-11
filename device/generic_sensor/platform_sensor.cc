@@ -29,6 +29,10 @@ mojom::SensorType PlatformSensor::GetType() const {
   return type_;
 }
 
+double PlatformSensor::GetMaximumSupportedFrequency() {
+  return GetDefaultConfiguration().frequency();
+}
+
 bool PlatformSensor::StartListening(Client* client,
                                     const PlatformSensorConfiguration& config) {
   DCHECK(clients_.HasObserver(client));

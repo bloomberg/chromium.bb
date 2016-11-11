@@ -71,9 +71,11 @@ class Sensor : public EventTargetWithInlineData,
 
   using SensorConfigurationPtr = device::mojom::blink::SensorConfigurationPtr;
   using SensorConfiguration = device::mojom::blink::SensorConfiguration;
-  virtual SensorConfigurationPtr createSensorConfig(
-      const SensorOptions&,
-      const SensorConfiguration& defaultConfiguration) = 0;
+
+  // The default implementation will init frequency configuration parameter,
+  // concrete sensor implementations can override this method to handle other
+  // parameters if needed.
+  virtual SensorConfigurationPtr createSensorConfig();
 
  private:
   void initSensorProxyIfNeeded();

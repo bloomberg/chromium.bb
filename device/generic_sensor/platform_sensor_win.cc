@@ -32,6 +32,14 @@ mojom::ReportingMode PlatformSensorWin::GetReportingMode() {
   return sensor_reader_->GetReportingMode();
 }
 
+double PlatformSensorWin::GetMaximumSupportedFrequency() {
+  double minimal_reporting_interval_ms =
+      sensor_reader_->GetMinimalReportingIntervalMs();
+  if (!minimal_reporting_interval_ms)
+    return kDefaultSensorReportingFrequency;
+  return base::Time::kMillisecondsPerSecond / minimal_reporting_interval_ms;
+}
+
 void PlatformSensorWin::OnReadingUpdated(const SensorReading& reading) {
   UpdateSensorReading(reading,
                       GetReportingMode() == mojom::ReportingMode::ON_CHANGE);
@@ -61,9 +69,9 @@ bool PlatformSensorWin::CheckSensorConfiguration(
       sensor_reader_->GetMinimalReportingIntervalMs();
   if (minimal_reporting_interval_ms == 0)
     return true;
-  double min_frequency =
+  double max_frequency =
       base::Time::kMillisecondsPerSecond / minimal_reporting_interval_ms;
-  return configuration.frequency() <= min_frequency;
+  return configuration.frequency() <= max_frequency;
 }
 
 PlatformSensorWin::~PlatformSensorWin() {

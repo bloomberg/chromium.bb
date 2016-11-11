@@ -138,6 +138,23 @@ bool Sensor::hasPendingActivity() const {
   return hasEventListeners();
 }
 
+auto Sensor::createSensorConfig() -> SensorConfigurationPtr {
+  auto result = SensorConfiguration::New();
+
+  double defaultFrequency = m_sensorProxy->defaultConfig()->frequency;
+  double maximumFrequency = m_sensorProxy->maximumFrequency();
+
+  double frequency = m_sensorOptions.hasFrequency()
+                         ? m_sensorOptions.frequency()
+                         : defaultFrequency;
+
+  if (frequency > maximumFrequency)
+    frequency = maximumFrequency;
+
+  result->frequency = frequency;
+  return result;
+}
+
 void Sensor::initSensorProxyIfNeeded() {
   if (m_sensorProxy)
     return;
@@ -235,9 +252,10 @@ void Sensor::startListening() {
   }
 
   if (!m_configuration) {
-    m_configuration =
-        createSensorConfig(m_sensorOptions, *m_sensorProxy->defaultConfig());
+    m_configuration = createSensorConfig();
     DCHECK(m_configuration);
+    DCHECK(m_configuration->frequency > 0 &&
+           m_configuration->frequency <= m_sensorProxy->maximumFrequency());
   }
 
   auto startCallback =

@@ -48,6 +48,11 @@ PlatformSensorConfiguration PlatformSensorAndroid::GetDefaultConfiguration() {
   return PlatformSensorConfiguration(frequency);
 }
 
+double PlatformSensorAndroid::GetMaximumSupportedFrequency() {
+  JNIEnv* env = AttachCurrentThread();
+  return Java_PlatformSensor_getMaximumSupportedFrequency(env, j_object_.obj());
+}
+
 bool PlatformSensorAndroid::StartSensor(
     const PlatformSensorConfiguration& configuration) {
   JNIEnv* env = AttachCurrentThread();
