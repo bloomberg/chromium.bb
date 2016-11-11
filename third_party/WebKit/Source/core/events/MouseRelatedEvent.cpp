@@ -138,8 +138,8 @@ static float pageZoomFactor(const UIEvent* event) {
 
 void MouseRelatedEvent::computePageLocation() {
   float scaleFactor = pageZoomFactor(this);
-  setAbsoluteLocation(roundedLayoutPoint(
-      FloatPoint(pageX() * scaleFactor, pageY() * scaleFactor)));
+  setAbsoluteLocation(
+      LayoutPoint(FloatPoint(pageX() * scaleFactor, pageY() * scaleFactor)));
 }
 
 void MouseRelatedEvent::receivedTarget() {
@@ -187,7 +187,7 @@ void MouseRelatedEvent::computeRelativePosition() {
       localPos.move(-layoutBox->borderLeft(), -layoutBox->borderTop());
     }
 
-    m_offsetLocation = roundedLayoutPoint(localPos);
+    m_offsetLocation = LayoutPoint(localPos);
     float scaleFactor = 1 / pageZoomFactor(this);
     if (scaleFactor != 1.0f)
       m_offsetLocation.scale(scaleFactor, scaleFactor);

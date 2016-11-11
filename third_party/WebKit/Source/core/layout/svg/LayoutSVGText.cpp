@@ -311,7 +311,7 @@ bool LayoutSVGText::nodeAtFloatPoint(HitTestResult& result,
       // Consider the bounding box if requested.
       if (hitRules.canHitBoundingBox &&
           objectBoundingBox().contains(localPoint)) {
-        const LayoutPoint& localLayoutPoint = roundedLayoutPoint(localPoint);
+        const LayoutPoint& localLayoutPoint = LayoutPoint(localPoint);
         updateHitTestResult(result, localLayoutPoint);
         if (result.addNodeToListBasedTestResult(node(), localLayoutPoint) ==
             StopHitTesting)

@@ -287,7 +287,7 @@ void TouchEventManager::updateTargetAndRegionMapsForTouchStarts(
           (!touchInfo.touchNode ||
            &touchInfo.touchNode->document() != m_touchSequenceDocument)) {
         if (m_touchSequenceDocument->frame()) {
-          LayoutPoint framePoint = roundedLayoutPoint(
+          LayoutPoint framePoint = LayoutPoint(
               m_touchSequenceDocument->frame()->view()->rootFrameToContents(
                   touchInfo.point.pos()));
           result = EventHandlingUtil::hitTestResultInFrame(

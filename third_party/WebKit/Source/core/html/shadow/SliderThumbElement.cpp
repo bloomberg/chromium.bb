@@ -108,7 +108,7 @@ void SliderThumbElement::setPositionFromPoint(const LayoutPoint& point) {
   if (!input->layoutObject() || !layoutBox() || !trackElement->layoutBox())
     return;
 
-  LayoutPoint offset = roundedLayoutPoint(
+  LayoutPoint offset = LayoutPoint(
       input->layoutObject()->absoluteToLocal(FloatPoint(point), UseTransforms));
   bool isVertical = hasVerticalAppearance(input);
   bool isLeftToRightDirection = layoutBox()->style()->isLeftToRightDirection();
@@ -122,7 +122,7 @@ void SliderThumbElement::setPositionFromPoint(const LayoutPoint& point) {
   LayoutPoint absoluteThumbOrigin =
       layoutBox()->absoluteBoundingBoxRectIgnoringTransforms().location();
   LayoutPoint absoluteSliderContentOrigin =
-      roundedLayoutPoint(input->layoutObject()->localToAbsolute());
+      LayoutPoint(input->layoutObject()->localToAbsolute());
   IntRect trackBoundingBox =
       trackElement->layoutObject()->absoluteBoundingBoxRectIgnoringTransforms();
   IntRect inputBoundingBox =

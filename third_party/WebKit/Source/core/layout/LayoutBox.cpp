@@ -2053,9 +2053,6 @@ void LayoutBox::positionLineBox(InlineBox* box) {
     box->remove(DontMarkLineBoxes);
     box->destroy();
   } else if (isAtomicInlineLevel()) {
-    // FIXME: the call to roundedLayoutPoint() below is temporary and should be
-    // removed once the transition to LayoutUnit-based types is complete
-    // (crbug.com/321237).
     setLocationAndUpdateOverflowControlsIfNeeded(box->topLeft());
     setInlineBoxWrapper(box);
   }

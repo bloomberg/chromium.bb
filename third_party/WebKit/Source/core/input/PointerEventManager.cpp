@@ -350,7 +350,7 @@ void PointerEventManager::computeTouchTargets(
       HitTestRequest::HitTestRequestType hitType = HitTestRequest::TouchEvent |
                                                    HitTestRequest::ReadOnly |
                                                    HitTestRequest::Active;
-      LayoutPoint pagePoint = roundedLayoutPoint(
+      LayoutPoint pagePoint = LayoutPoint(
           m_frame->view()->rootFrameToContents(touchInfo.point.pos()));
       HitTestResult hitTestTesult =
           m_frame->eventHandler().hitTestResultAtPoint(pagePoint, hitType);

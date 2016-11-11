@@ -266,7 +266,7 @@ bool LayoutSVGShape::nodeAtFloatPoint(HitTestResult& result,
                                  result.hitTestRequest(),
                                  style()->pointerEvents());
   if (nodeAtFloatPointInternal(result.hitTestRequest(), localPoint, hitRules)) {
-    const LayoutPoint& localLayoutPoint = roundedLayoutPoint(localPoint);
+    const LayoutPoint& localLayoutPoint = LayoutPoint(localPoint);
     updateHitTestResult(result, localLayoutPoint);
     if (result.addNodeToListBasedTestResult(element(), localLayoutPoint) ==
         StopHitTesting)

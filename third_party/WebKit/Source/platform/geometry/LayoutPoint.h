@@ -205,10 +205,6 @@ inline IntSize pixelSnappedIntSize(const LayoutSize& s, const LayoutPoint& p) {
                  snapSizeToPixel(s.height(), p.y()));
 }
 
-inline LayoutPoint roundedLayoutPoint(const FloatPoint& p) {
-  return LayoutPoint(p);
-}
-
 inline IntSize roundedIntSize(const LayoutPoint& p) {
   return IntSize(p.x().round(), p.y().round());
 }

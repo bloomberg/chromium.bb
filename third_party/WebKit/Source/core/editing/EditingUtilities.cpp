@@ -1696,7 +1696,7 @@ PositionWithAffinity positionRespectingEditingBoundary(
 
     FloatPoint absolutePoint = targetNode->layoutObject()->localToAbsolute(
         FloatPoint(selectionEndPoint));
-    selectionEndPoint = roundedLayoutPoint(
+    selectionEndPoint = LayoutPoint(
         editableElement->layoutObject()->absoluteToLocal(absolutePoint));
     targetNode = editableElement;
   }

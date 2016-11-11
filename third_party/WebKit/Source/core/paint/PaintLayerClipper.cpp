@@ -412,7 +412,7 @@ void PaintLayerClipper::calculateClipRects(const ClipRectsContext& context,
     // the PaintLayerCompositor overlapMap, where clipRects are needed in view
     // space.
     applyClipRects(context, layoutObject,
-                   roundedLayoutPoint(layoutObject.localToAncestorPoint(
+                   LayoutPoint(layoutObject.localToAncestorPoint(
                        FloatPoint(), context.rootLayer->layoutObject())),
                    clipRects);
   }

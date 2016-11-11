@@ -194,7 +194,7 @@ bool LayoutSVGContainer::nodeAtFloatPoint(HitTestResult& result,
   for (LayoutObject* child = lastChild(); child;
        child = child->previousSibling()) {
     if (child->nodeAtFloatPoint(result, localPoint, hitTestAction)) {
-      const LayoutPoint& localLayoutPoint = roundedLayoutPoint(localPoint);
+      const LayoutPoint& localLayoutPoint = LayoutPoint(localPoint);
       updateHitTestResult(result, localLayoutPoint);
       if (result.addNodeToListBasedTestResult(
               child->node(), localLayoutPoint) == StopHitTesting)
@@ -209,7 +209,7 @@ bool LayoutSVGContainer::nodeAtFloatPoint(HitTestResult& result,
     // containers.
     if (isObjectBoundingBoxValid() &&
         objectBoundingBox().contains(localPoint)) {
-      const LayoutPoint& localLayoutPoint = roundedLayoutPoint(localPoint);
+      const LayoutPoint& localLayoutPoint = LayoutPoint(localPoint);
       updateHitTestResult(result, localLayoutPoint);
       if (result.addNodeToListBasedTestResult(element(), localLayoutPoint) ==
           StopHitTesting)

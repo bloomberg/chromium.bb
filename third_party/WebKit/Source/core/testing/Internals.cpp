@@ -1765,9 +1765,9 @@ StaticNodeList* Internals::nodesFromRect(Document* document,
     return nullptr;
 
   float zoomFactor = frame->pageZoomFactor();
-  LayoutPoint point = roundedLayoutPoint(
-      FloatPoint(centerX * zoomFactor + frameView->scrollX(),
-                 centerY * zoomFactor + frameView->scrollY()));
+  LayoutPoint point =
+      LayoutPoint(FloatPoint(centerX * zoomFactor + frameView->scrollX(),
+                             centerY * zoomFactor + frameView->scrollY()));
 
   HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly |
                                                HitTestRequest::Active |
