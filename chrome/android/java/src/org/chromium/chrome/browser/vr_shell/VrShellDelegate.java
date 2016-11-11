@@ -52,10 +52,12 @@ public class VrShellDelegate {
     private boolean mInVr;
     private int mRestoreSystemUiVisibilityFlag = -1;
     private int mRestoreOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
-    private String mVrExtra;
     private long mNativeVrShellDelegate;
     private Tab mTab;
 
+    // TODO(bshe): This should be replaced by string provided by NDK. Currently, it only available
+    // in SDK and we don't want add dependency to SDK just to get this string. So hard code it here.
+    private static final String DAYDREAM_VR_EXTRA = "android.intent.extra.VR_LAUNCH";
     private static final String DAYDREAM_DON_AUTO_TRANSITION =
             "org.chromium.chrome.browser.vr_shell.DAYDREAM_DON_AUTO_TRANSITION";
 
@@ -63,16 +65,7 @@ public class VrShellDelegate {
         mActivity = activity;
 
         mVrAvailable = maybeFindVrClasses();
-        if (mVrAvailable) {
-            try {
-                mVrExtra = (String) mVrShellClass.getField("VR_EXTRA").get(null);
-            } catch (IllegalAccessException | IllegalArgumentException | NoSuchFieldException e) {
-                Log.e(TAG, "Unable to read VR_EXTRA field", e);
-                mVrAvailable = false;
-            }
-            createVrDaydreamApi();
-        }
-
+        createVrDaydreamApi();
         mTabObserver = new EmptyTabObserver() {
             @Override
             public void onContentChanged(Tab tab) {
@@ -406,7 +399,7 @@ public class VrShellDelegate {
     public boolean isVrIntent(Intent intent) {
         if (intent == null) return false;
         return intent.getBooleanExtra(DAYDREAM_DON_AUTO_TRANSITION, false)
-                || intent.getBooleanExtra(mVrExtra, false);
+                || intent.getBooleanExtra(DAYDREAM_VR_EXTRA, false);
     }
 
     /**

@@ -266,10 +266,7 @@ android_library("chrome_java") {
 
   if (enable_vr_shell || enable_webvr) {
     java_files += chrome_vr_java_sources
-    deps += [
-      "//third_party/gvr-android-sdk:gvr_base_java",
-      "//third_party/gvr-android-sdk:gvr_common_java",
-    ]
+    deps += [ "//third_party/gvr-android-sdk:gvr_common_java" ]
   }
 }
 
@@ -461,10 +458,7 @@ android_library("chrome_test_java") {
 
   if (enable_vr_shell) {
     java_files += [ "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellTest.java" ]
-    deps += [
-      "//third_party/gvr-android-sdk:gvr_base_java",
-      "//third_party/gvr-android-sdk:gvr_common_java",
-    ]
+    deps += [ "//third_party/gvr-android-sdk:gvr_common_java" ]
   }
 }
 

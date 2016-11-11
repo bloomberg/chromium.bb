@@ -54,7 +54,7 @@ public class VrShellImpl extends GvrLayout implements GLSurfaceView.Renderer, Vr
     private static final String TAG = "VrShellImpl";
 
     @UsedByReflection("VrShellDelegate.java")
-    public static final String VR_EXTRA = com.google.vr.sdk.base.Constants.EXTRA_VR_LAUNCH;
+    public static final String VR_EXTRA = "android.intent.extra.VR_LAUNCH";
 
     private Activity mActivity;
 
