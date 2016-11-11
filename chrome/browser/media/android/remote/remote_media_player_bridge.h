@@ -64,7 +64,7 @@ class RemoteMediaPlayerBridge : public media::MediaPlayerAndroid {
   void OnRouteAvailabilityChanged(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      jboolean available);
+      int availability);
   base::android::ScopedJavaLocalRef<jstring> GetTitle(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);

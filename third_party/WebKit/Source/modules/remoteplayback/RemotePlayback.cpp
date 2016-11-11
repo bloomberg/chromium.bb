@@ -49,7 +49,7 @@ RemotePlayback::RemotePlayback(HTMLMediaElement& element)
       m_state(element.isPlayingRemotely()
                   ? WebRemotePlaybackState::Connected
                   : WebRemotePlaybackState::Disconnected),
-      m_availability(element.hasRemoteRoutes()),
+      m_availability(WebRemotePlaybackAvailability::Unknown),
       m_mediaElement(&element) {}
 
 const AtomicString& RemotePlayback::interfaceName() const {
@@ -141,8 +141,6 @@ ScriptPromise RemotePlayback::cancelWatchAvailability(
 }
 
 ScriptPromise RemotePlayback::prompt(ScriptState* scriptState) {
-  // TODO(avayvod): implement steps 5, 8, 9 of the algorithm.
-  // https://crbug.com/647441
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
@@ -162,6 +160,22 @@ ScriptPromise RemotePlayback::prompt(ScriptState* scriptState) {
   if (!UserGestureIndicator::utilizeUserGesture()) {
     resolver->reject(DOMException::create(
         InvalidAccessError, "RemotePlayback::prompt() requires user gesture."));
+    return promise;
+  }
+
+  // TODO(avayvod): don't do this check on low-end devices - merge with
+  // https://codereview.chromium.org/2475293003
+  if (m_availability == WebRemotePlaybackAvailability::DeviceNotAvailable) {
+    resolver->reject(DOMException::create(NotFoundError,
+                                          "No remote playback devices found."));
+    return promise;
+  }
+
+  if (m_availability == WebRemotePlaybackAvailability::SourceNotSupported ||
+      m_availability == WebRemotePlaybackAvailability::SourceNotCompatible) {
+    resolver->reject(DOMException::create(
+        NotSupportedError,
+        "The currentSrc is not compatible with remote playback"));
     return promise;
   }
 
@@ -191,7 +205,7 @@ void RemotePlayback::notifyInitialAvailability(int callbackId) {
   if (iter == m_availabilityCallbacks.end())
     return;
 
-  iter->value->call(this, m_availability);
+  iter->value->call(this, remotePlaybackAvailable());
 }
 
 void RemotePlayback::stateChanged(WebRemotePlaybackState state) {
@@ -231,13 +245,19 @@ void RemotePlayback::stateChanged(WebRemotePlaybackState state) {
   }
 }
 
-void RemotePlayback::availabilityChanged(bool available) {
-  if (m_availability == available)
+void RemotePlayback::availabilityChanged(
+    WebRemotePlaybackAvailability availability) {
+  if (m_availability == availability)
     return;
 
-  m_availability = available;
+  bool oldAvailability = remotePlaybackAvailable();
+  m_availability = availability;
+  bool newAvailability = remotePlaybackAvailable();
+  if (newAvailability == oldAvailability)
+    return;
+
   for (auto& callback : m_availabilityCallbacks.values())
-    callback->call(this, m_availability);
+    callback->call(this, newAvailability);
 }
 
 void RemotePlayback::promptCancelled() {
@@ -247,6 +267,10 @@ void RemotePlayback::promptCancelled() {
   m_promptPromiseResolver->reject(
       DOMException::create(NotAllowedError, "The prompt was dismissed."));
   m_promptPromiseResolver = nullptr;
+}
+
+bool RemotePlayback::remotePlaybackAvailable() const {
+  return m_availability == WebRemotePlaybackAvailability::DeviceAvailable;
 }
 
 void RemotePlayback::remotePlaybackDisabled() {

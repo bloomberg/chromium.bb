@@ -15,6 +15,10 @@
 #include "media/blink/renderer_media_player_interface.h"
 #include "url/gurl.h"
 
+namespace blink {
+enum class WebRemotePlaybackAvailability;
+}
+
 namespace content {
 class WebMediaPlayerAndroid;
 
@@ -114,7 +118,8 @@ class RendererMediaPlayerManager :
   void OnDidEnterFullscreen(int player_id);
   void OnPlayerPlay(int player_id);
   void OnPlayerPause(int player_id);
-  void OnRemoteRouteAvailabilityChanged(int player_id, bool routes_available);
+  void OnRemoteRouteAvailabilityChanged(
+      int player_id, blink::WebRemotePlaybackAvailability availability);
 
   // Info for all available WebMediaPlayerAndroid on a page; kept so that
   // we can enumerate them to send updates about tab focus and visibility.

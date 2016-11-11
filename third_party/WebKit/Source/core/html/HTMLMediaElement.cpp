@@ -89,6 +89,7 @@
 #include "public/platform/WebInbandTextTrack.h"
 #include "public/platform/WebMediaPlayerSource.h"
 #include "public/platform/WebMediaStream.h"
+#include "public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackClient.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackState.h"
 #include "wtf/CurrentTime.h"
@@ -444,7 +445,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName,
       m_shouldPerformAutomaticTrackSelection(true),
       m_tracksAreReady(true),
       m_processingPreferenceChange(false),
-      m_remoteRoutesAvailable(false),
       m_playingRemotely(false),
       m_inOverlayFullscreenVideo(false),
       m_audioTracks(this, AudioTrackList::create(*this)),
@@ -3168,12 +3168,17 @@ void HTMLMediaElement::requestSeek(double time) {
   setCurrentTime(time);
 }
 
-void HTMLMediaElement::remoteRouteAvailabilityChanged(bool routesAvailable) {
-  m_remoteRoutesAvailable = routesAvailable;
+void HTMLMediaElement::remoteRouteAvailabilityChanged(
+    WebRemotePlaybackAvailability availability) {
+  if (remotePlaybackClient())
+    remotePlaybackClient()->availabilityChanged(availability);
   if (mediaControls())
     mediaControls()->refreshCastButtonVisibility();
-  if (remotePlaybackClient())
-    remotePlaybackClient()->availabilityChanged(routesAvailable);
+}
+
+bool HTMLMediaElement::hasRemoteRoutes() const {
+  return remotePlaybackClient() &&
+         remotePlaybackClient()->remotePlaybackAvailable();
 }
 
 void HTMLMediaElement::connectedToRemoteDevice() {
@@ -3403,10 +3408,8 @@ void HTMLMediaElement::clearMediaPlayer() {
   m_loadState = WaitingForSource;
 
   // We can't cast if we don't have a media player.
-  m_remoteRoutesAvailable = false;
   m_playingRemotely = false;
-  if (mediaControls())
-    mediaControls()->refreshCastButtonVisibilityWithoutUpdate();
+  remoteRouteAvailabilityChanged(WebRemotePlaybackAvailability::Unknown);
 
   if (layoutObject())
     layoutObject()->setShouldDoFullPaintInvalidation();
@@ -3764,8 +3767,8 @@ void HTMLMediaElement::resetMediaPlayerAndMediaSource() {
   }
 
   // We haven't yet found out if any remote routes are available.
-  m_remoteRoutesAvailable = false;
   m_playingRemotely = false;
+  remoteRouteAvailabilityChanged(WebRemotePlaybackAvailability::Unknown);
 
   if (m_audioSourceNode)
     getAudioSourceProvider().setClient(m_audioSourceNode);

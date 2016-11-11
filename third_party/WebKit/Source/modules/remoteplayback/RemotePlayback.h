@@ -11,6 +11,7 @@
 #include "core/events/EventTarget.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackClient.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackState.h"
 #include "wtf/Compiler.h"
@@ -84,8 +85,9 @@ class MODULES_EXPORT RemotePlayback final
 
   // WebRemotePlaybackClient implementation.
   void stateChanged(WebRemotePlaybackState) override;
-  void availabilityChanged(bool available) override;
+  void availabilityChanged(WebRemotePlaybackAvailability) override;
   void promptCancelled() override;
+  bool remotePlaybackAvailable() const override;
 
   // Prevent v8 from garbage collecting the availability callbacks.
   // TODO(avayvod): remove when crbug.com/468240 is fixed and the references
@@ -94,7 +96,7 @@ class MODULES_EXPORT RemotePlayback final
                                    const v8::Persistent<v8::Object>& wrapper);
 
   WebRemotePlaybackState m_state;
-  bool m_availability;
+  WebRemotePlaybackAvailability m_availability;
   HeapHashMap<int, TraceWrapperMember<RemotePlaybackAvailabilityCallback>>
       m_availabilityCallbacks;
   Member<HTMLMediaElement> m_mediaElement;

@@ -332,9 +332,9 @@ void WebMediaPlayerCast::OnMediaPlayerPause() {
 }
 
 void WebMediaPlayerCast::OnRemoteRouteAvailabilityChanged(
-    bool routes_available) {
+    blink::WebRemotePlaybackAvailability availability) {
   DVLOG(1) << __FUNCTION__;
-  client_->remoteRouteAvailabilityChanged(routes_available);
+  client_->remoteRouteAvailabilityChanged(availability);
 }
 
 void WebMediaPlayerCast::SuspendAndReleaseResources() {}

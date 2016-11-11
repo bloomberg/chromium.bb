@@ -55,10 +55,6 @@ class RemotePlaybackTest : public ::testing::Test {
   void setState(RemotePlayback* remotePlayback, WebRemotePlaybackState state) {
     remotePlayback->stateChanged(state);
   }
-
-  void setAvailability(RemotePlayback* remotePlayback, bool available) {
-    remotePlayback->availabilityChanged(available);
-  }
 };
 
 TEST_F(RemotePlaybackTest, PromptCancelledRejectsWithNotAllowedError) {
@@ -258,7 +254,6 @@ TEST_F(RemotePlaybackTest, DisableRemotePlaybackCancelsAvailabilityCallbacks) {
 
   HTMLMediaElementRemotePlayback::setBooleanAttribute(
       HTMLNames::disableremoteplaybackAttr, *element, true);
-  setAvailability(remotePlayback, true);
 
   // Runs pending promises.
   v8::MicrotasksScope::PerformCheckpoint(scope.isolate());

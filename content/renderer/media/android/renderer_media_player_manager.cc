@@ -10,9 +10,12 @@
 #include "content/renderer/media/android/webmediaplayer_android.h"
 #include "content/renderer/render_view_impl.h"
 #include "media/base/media_switches.h"
+#include "third_party/WebKit/public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace content {
+
+using ::blink::WebRemotePlaybackAvailability;
 
 RendererMediaPlayerManager::RendererMediaPlayerManager(
     RenderFrame* render_frame)
@@ -244,10 +247,10 @@ void RendererMediaPlayerManager::OnPlayerPause(int player_id) {
 
 void RendererMediaPlayerManager::OnRemoteRouteAvailabilityChanged(
     int player_id,
-    bool routes_available) {
+    blink::WebRemotePlaybackAvailability availability) {
   media::RendererMediaPlayerInterface* player = GetMediaPlayer(player_id);
   if (player)
-    player->OnRemoteRouteAvailabilityChanged(routes_available);
+    player->OnRemoteRouteAvailabilityChanged(availability);
 }
 
 void RendererMediaPlayerManager::EnterFullscreen(int player_id) {

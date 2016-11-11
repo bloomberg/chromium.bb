@@ -422,7 +422,8 @@ class WebMediaPlayerMSTest
   void removeTextTrack(blink::WebInbandTextTrack*) override {}
   void mediaSourceOpened(blink::WebMediaSource*) override {}
   void requestSeek(double) override {}
-  void remoteRouteAvailabilityChanged(bool) override {}
+  void remoteRouteAvailabilityChanged(
+      blink::WebRemotePlaybackAvailability) override {}
   void connectedToRemoteDevice() override {}
   void disconnectedFromRemoteDevice() override {}
   void cancelledRemotePlaybackRequest() override {}

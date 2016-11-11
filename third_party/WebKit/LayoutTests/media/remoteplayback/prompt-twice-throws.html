@@ -23,6 +23,8 @@
                 v.src = findMediaFile('video', 'content/test');
                 document.body.appendChild(v);
 
+                internals.mediaPlayerRemoteRouteAvailabilityChanged(v, true);
+
                 var btn = document.getElementById('button');
                 btn.onclick = function() {
                     v.remote.prompt();

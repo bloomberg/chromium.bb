@@ -17,6 +17,7 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/WebMediaPlayer.h"
 #include "public/platform/WebSize.h"
+#include "public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <memory>
@@ -62,6 +63,23 @@ class MockVideoWebMediaPlayer : public WebMediaPlayer {
   void paint(WebCanvas*, const WebRect&, SkPaint&) override{};
 };
 
+class MockWebRemotePlaybackClient : public WebRemotePlaybackClient {
+ public:
+  void stateChanged(WebRemotePlaybackState) override {}
+  void availabilityChanged(
+      WebRemotePlaybackAvailability availability) override {
+    m_availability = availability;
+  }
+  void promptCancelled() override {}
+  bool remotePlaybackAvailable() const override {
+    return m_availability == WebRemotePlaybackAvailability::DeviceAvailable;
+  }
+
+ private:
+  WebRemotePlaybackAvailability m_availability =
+      WebRemotePlaybackAvailability::Unknown;
+};
+
 class StubFrameLoaderClient : public EmptyFrameLoaderClient {
  public:
   static StubFrameLoaderClient* create() { return new StubFrameLoaderClient; }
@@ -72,6 +90,17 @@ class StubFrameLoaderClient : public EmptyFrameLoaderClient {
       WebMediaPlayerClient*) override {
     return wrapUnique(new MockVideoWebMediaPlayer);
   }
+
+  WebRemotePlaybackClient* createWebRemotePlaybackClient(
+      HTMLMediaElement&) override {
+    if (!m_remotePlaybackClient) {
+      m_remotePlaybackClient = wrapUnique(new MockWebRemotePlaybackClient);
+    }
+    return m_remotePlaybackClient.get();
+  }
+
+ private:
+  std::unique_ptr<MockWebRemotePlaybackClient> m_remotePlaybackClient;
 };
 
 Element* getElementByShadowPseudoId(Node& rootNode,
@@ -125,7 +154,8 @@ class MediaControlsTest : public ::testing::Test {
   }
 
   void simulateRouteAvailabe() {
-    m_mediaControls->mediaElement().remoteRouteAvailabilityChanged(true);
+    m_mediaControls->mediaElement().remoteRouteAvailabilityChanged(
+        WebRemotePlaybackAvailability::DeviceAvailable);
   }
 
   void ensureLayout() {

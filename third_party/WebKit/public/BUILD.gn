@@ -80,6 +80,7 @@ if (is_android) {
       "./platform/WebDisplayMode.h",
       "./platform/WebInputEvent.h",
       "./platform/WebTextInputType.h",
+      "./platform/modules/remoteplayback/WebRemotePlaybackAvailability.h",
     ]
   }
 
@@ -367,6 +368,7 @@ source_set("blink_headers") {
     "platform/modules/push_messaging/WebPushProvider.h",
     "platform/modules/push_messaging/WebPushSubscription.h",
     "platform/modules/push_messaging/WebPushSubscriptionOptions.h",
+    "platform/modules/remoteplayback/WebRemotePlaybackAvailability.h",
     "platform/modules/remoteplayback/WebRemotePlaybackClient.h",
     "platform/modules/remoteplayback/WebRemotePlaybackState.h",
     "platform/modules/screen_orientation/WebLockOrientationCallback.h",

@@ -918,8 +918,8 @@ void WebMediaPlayerAndroid::OnMediaPlayerPause() {
 }
 
 void WebMediaPlayerAndroid::OnRemoteRouteAvailabilityChanged(
-    bool routes_available) {
-  client_->remoteRouteAvailabilityChanged(routes_available);
+    blink::WebRemotePlaybackAvailability availability) {
+  client_->remoteRouteAvailabilityChanged(availability);
 }
 
 void WebMediaPlayerAndroid::UpdateNetworkState(

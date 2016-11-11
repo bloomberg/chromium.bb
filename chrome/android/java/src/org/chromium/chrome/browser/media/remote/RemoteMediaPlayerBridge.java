@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.blink_public.platform.modules.remoteplayback.WebRemotePlaybackAvailability;
 import org.chromium.chrome.browser.media.remote.RemoteVideoInfo.PlayerState;
 
 /**
@@ -318,9 +319,19 @@ public class RemoteMediaPlayerBridge {
     }
 
     private void onRouteAvailabilityChange() {
+        Log.d(TAG, "onRouteAvailabilityChange: " + mRouteIsAvailable + ", " + mIsPlayable);
         if (mNativeRemoteMediaPlayerBridge == 0) return;
-        boolean usable = mRouteIsAvailable && mIsPlayable;
-        nativeOnRouteAvailabilityChanged(mNativeRemoteMediaPlayerBridge, usable);
+
+        int availability = WebRemotePlaybackAvailability.DeviceNotAvailable;
+        if (!mRouteIsAvailable && !mIsPlayable) {
+            availability = WebRemotePlaybackAvailability.SourceNotSupported;
+        } else if (mRouteIsAvailable && mIsPlayable) {
+            availability = WebRemotePlaybackAvailability.DeviceAvailable;
+        } else if (mRouteIsAvailable) {
+            // mIsPlayable is false here.
+            availability = WebRemotePlaybackAvailability.SourceNotCompatible;
+        }
+        nativeOnRouteAvailabilityChanged(mNativeRemoteMediaPlayerBridge, availability);
     }
 
     @CalledByNative
@@ -354,8 +365,8 @@ public class RemoteMediaPlayerBridge {
     private native void nativeOnPaused(long nativeRemoteMediaPlayerBridge);
     private native void nativeOnRouteUnselected(long nativeRemoteMediaPlayerBridge);
     private native void nativeOnPlaybackFinished(long nativeRemoteMediaPlayerBridge);
-    private native void nativeOnRouteAvailabilityChanged(long nativeRemoteMediaPlayerBridge,
-            boolean available);
+    private native void nativeOnRouteAvailabilityChanged(
+            long nativeRemoteMediaPlayerBridge, int availability);
     private native void nativeOnCancelledRemotePlaybackRequest(long nativeRemoteMediaPlayerBridge);
     private native String nativeGetTitle(long nativeRemoteMediaPlayerBridge);
     private native void nativePauseLocal(long nativeRemoteMediaPlayerBridge);

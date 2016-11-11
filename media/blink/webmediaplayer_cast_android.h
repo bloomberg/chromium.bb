@@ -80,7 +80,8 @@ class WebMediaPlayerCast : public RendererMediaPlayerInterface {
   void OnDidExitFullscreen() override;
   void OnMediaPlayerPlay() override;
   void OnMediaPlayerPause() override;
-  void OnRemoteRouteAvailabilityChanged(bool routes_available) override;
+  void OnRemoteRouteAvailabilityChanged(
+      blink::WebRemotePlaybackAvailability availability) override;
 
   // Getters of playback state.
   // bool paused() const override;

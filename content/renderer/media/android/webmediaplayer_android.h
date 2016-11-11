@@ -42,6 +42,7 @@ class WebFrame;
 class WebMediaPlayerClient;
 class WebMediaPlayerEncryptedMediaClient;
 class WebURL;
+enum class WebRemotePlaybackAvailability;
 }
 
 namespace cc_blink {
@@ -202,7 +203,8 @@ class WebMediaPlayerAndroid
   void OnDidExitFullscreen() override;
   void OnMediaPlayerPlay() override;
   void OnMediaPlayerPause() override;
-  void OnRemoteRouteAvailabilityChanged(bool routes_available) override;
+  void OnRemoteRouteAvailabilityChanged(
+      blink::WebRemotePlaybackAvailability availability) override;
 
   // Called when the player is released.
   void OnPlayerReleased() override;

@@ -18,6 +18,7 @@
 #include "media/base/android/media_resource_getter.h"
 #include "media/base/timestamp_constants.h"
 #include "net/base/escape.h"
+#include "third_party/WebKit/public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/android/java_bitmap.h"
 
@@ -252,9 +253,11 @@ void RemoteMediaPlayerBridge::OnPlaybackFinished(
 void RemoteMediaPlayerBridge::OnRouteAvailabilityChanged(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    jboolean available) {
+    int availability) {
   static_cast<RemoteMediaPlayerManager *>(manager())->
-      OnRouteAvailabilityChanged(player_id(), available);
+      OnRouteAvailabilityChanged(
+          player_id(),
+          static_cast<blink::WebRemotePlaybackAvailability>(availability));
 }
 
 // static

@@ -144,6 +144,7 @@
 #include "public/platform/WebConnectionType.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "public/platform/WebLayer.h"
+#include "public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h"
 #include "wtf/InstanceCounter.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/dtoa.h"
@@ -2194,7 +2195,9 @@ void Internals::mediaPlayerRemoteRouteAvailabilityChanged(
     HTMLMediaElement* mediaElement,
     bool available) {
   ASSERT(mediaElement);
-  mediaElement->remoteRouteAvailabilityChanged(available);
+  mediaElement->remoteRouteAvailabilityChanged(
+      available ? WebRemotePlaybackAvailability::DeviceAvailable
+                : WebRemotePlaybackAvailability::SourceNotSupported);
 }
 
 void Internals::mediaPlayerPlayingRemotelyChanged(

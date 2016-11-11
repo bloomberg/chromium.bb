@@ -10,6 +10,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "media/blink/renderer_media_player_interface.h"
 #include "media/gpu/ipc/common/media_param_traits.h"
+#include "third_party/WebKit/public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "url/gurl.h"
 
@@ -19,6 +20,9 @@
 
 IPC_ENUM_TRAITS_MAX_VALUE(MediaPlayerHostMsg_Initialize_Type,
                           MEDIA_PLAYER_TYPE_LAST)
+
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebRemotePlaybackAvailability,
+                          blink::WebRemotePlaybackAvailability::Last)
 
 // Parameters to describe a media player
 IPC_STRUCT_BEGIN(MediaPlayerHostMsg_Initialize_Params)
@@ -131,7 +135,7 @@ IPC_MESSAGE_ROUTED1(MediaPlayerMsg_CancelledRemotePlaybackRequest,
 // The availability of remote devices has changed
 IPC_MESSAGE_ROUTED2(MediaPlayerMsg_RemoteRouteAvailabilityChanged,
                     int /* player_id */,
-                    bool /* routes_available */)
+                    blink::WebRemotePlaybackAvailability /* availability */)
 
 // Messages for controlling the media playback in browser process ----------
 
