@@ -34,6 +34,7 @@ class ChooserController;
   base::scoped_nsobject<NSButton> rescanButton_;
   std::unique_ptr<ChooserController> chooserController_;
   std::unique_ptr<ChooserContentViewController> chooserContentViewController_;
+  CGFloat separatorOriginY_;
 }
 
 // Designated initializer.

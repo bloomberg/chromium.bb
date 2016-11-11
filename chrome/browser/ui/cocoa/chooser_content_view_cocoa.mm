@@ -567,8 +567,9 @@ void ChooserContentViewController::UpdateTableView() {
 
     // Separator.
     CGFloat separatorOriginX = 0.0f;
-    CGFloat separatorOriginY = kMarginY + helpButtonHeight + kVerticalPadding;
-    [separator_ setFrameOrigin:NSMakePoint(separatorOriginX, separatorOriginY)];
+    separatorOriginY_ = kMarginY + helpButtonHeight + kVerticalPadding;
+    [separator_
+        setFrameOrigin:NSMakePoint(separatorOriginX, separatorOriginY_)];
     [self addSubview:separator_];
 
     // Help button.
@@ -876,6 +877,14 @@ void ChooserContentViewController::UpdateTableView() {
   ChooserContentTableRowView* tableRowView =
       [tableView_ viewAtColumn:0 row:row makeIfNecessary:YES];
   return [tableRowView pairedStatus];
+}
+
+- (void)drawRect:(NSRect)rect {
+  [[NSColor colorWithCalibratedWhite:245.0f / 255.0f alpha:1.0f] setFill];
+  NSRect footnoteFrame =
+      NSMakeRect(0.0f, 0.0f, kChooserWidth, separatorOriginY_);
+  NSRectFill(footnoteFrame);
+  [super drawRect:footnoteFrame];
 }
 
 @end

@@ -1193,7 +1193,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
 
       <!-- Bluetooth Picker UI strings -->
       <message name="IDS_BLUETOOTH_DIALOG_TITLE" desc="The header message shown on top of the dialog that lets the user pick a Bluetooth device for the site to pair with. Shown above a list of Bluetooth devices discovered. ">
-        <ph name="SITE">%1$s<ex>https://www.google.com</ex></ph> wants to pair with:</message>
+        <ph name="SITE">%1$s<ex>https://www.google.com</ex></ph> wants to pair</message>
       <message name="IDS_BLUETOOTH_SEARCHING" desc="The message shown in the Bluetooth picker dialog while scanning for devices.">
         <ph name="BEGIN_LINK">&lt;link&gt;</ph>Get help<ph name="END_LINK">&lt;/link&gt;</ph> while scanning for devices…
       </message>
@@ -2528,7 +2528,7 @@ You can control the Physical Web in Chrome Settings.
 
       <!-- WebUsb Picker UI strings -->
       <message name="IDS_USB_CHOOSER_DIALOG_PROMPT" desc="The text that is used to introduce the USB chooser dialog to the user.">
-        <ph name="SITE">%1$s<ex>https://www.google.com</ex></ph> wants to connect to:
+        <ph name="SITE">%1$s<ex>https://www.google.com</ex></ph> wants to connect
       </message>
       <message name="IDS_USB_CHOOSER_DIALOG_NO_DEVICES_FOUND_PROMPT" desc="The text that is used to inform the user that no devices found in the USB chooser dialog.">
         No devices found
@@ -2537,7 +2537,7 @@ You can control the Physical Web in Chrome Settings.
         Connect
       </message>
       <message name="IDS_USB_CHOOSER_DIALOG_FOOTNOTE_TEXT" desc="This text is shown at the bottom of the USB chooser dialog with a link to part of its text.">
-        Not seeing your device? <ph name="BEGIN_LINK">&lt;link&gt;</ph>Get help<ph name="END_LINK">&lt;/link&gt;</ph>
+        <ph name="BEGIN_LINK">&lt;link&gt;</ph>Get help<ph name="END_LINK">&lt;/link&gt;</ph>
       </message>
 
       <!-- Payments -->
