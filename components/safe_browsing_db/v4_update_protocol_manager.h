@@ -88,6 +88,8 @@ class V4UpdateProtocolManager : public net::URLFetcherDelegate,
   FRIEND_TEST_ALL_PREFIXES(V4UpdateProtocolManagerTest,
                            TestBase64EncodingUsesUrlEncoding);
   FRIEND_TEST_ALL_PREFIXES(V4UpdateProtocolManagerTest, TestDisableAutoUpdates);
+  FRIEND_TEST_ALL_PREFIXES(V4UpdateProtocolManagerTest,
+                           TestGetUpdatesHasTimeout);
   friend class V4UpdateProtocolManagerFactoryImpl;
 
   // Fills a FetchThreatListUpdatesRequest protocol buffer for a request.
@@ -111,6 +113,10 @@ class V4UpdateProtocolManager : public net::URLFetcherDelegate,
 
   // Resets the update error counter and multiplier.
   void ResetUpdateErrors();
+
+  // Called when update request times out. Cancels the existing request and
+  // re-sends the update request.
+  void HandleTimeout();
 
   // Updates internal update and backoff state for each update response error,
   // assuming that the current time is |now|.
@@ -172,6 +178,10 @@ class V4UpdateProtocolManager : public net::URLFetcherDelegate,
   base::OneShotTimer update_timer_;
 
   base::Time last_response_time_;
+
+  // Used to interrupt and re-schedule update requests that take too long to
+  // complete.
+  base::OneShotTimer timeout_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(V4UpdateProtocolManager);
 };

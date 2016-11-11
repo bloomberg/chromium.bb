@@ -70,6 +70,9 @@ static const int kV4TimerStartIntervalSecMin = 60;
 // Maximum time, in seconds, from start up before we must issue an update query.
 static const int kV4TimerStartIntervalSecMax = 300;
 
+// Maximum time, in seconds, to wait for a response to an update request.
+static const int kV4TimerUpdateWaitSecMax = 30;
+
 // The default V4UpdateProtocolManagerFactory.
 class V4UpdateProtocolManagerFactoryImpl
     : public V4UpdateProtocolManagerFactory {
@@ -248,7 +251,6 @@ bool V4UpdateProtocolManager::ParseUpdateResponse(
         base::TimeDelta::FromSeconds(minimum_wait_duration_seconds);
   }
 
-  // TODO(vakh): Do something useful with this response.
   for (ListUpdateResponse& list_update_response :
        *response.mutable_list_update_responses()) {
     if (!list_update_response.has_platform_type()) {
@@ -293,7 +295,17 @@ void V4UpdateProtocolManager::IssueUpdateRequest() {
   request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   request_->SetRequestContext(request_context_getter_.get());
   request_->Start();
-  // TODO(vakh): Handle request timeout.
+
+  // Begin the update request timeout.
+  timeout_timer_.Start(FROM_HERE,
+                       TimeDelta::FromSeconds(kV4TimerUpdateWaitSecMax), this,
+                       &V4UpdateProtocolManager::HandleTimeout);
+}
+
+void V4UpdateProtocolManager::HandleTimeout() {
+  UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.V4Update.TimedOut", true);
+  request_.reset();
+  ScheduleNextUpdateWithBackoff(false);
 }
 
 // net::URLFetcherDelegate implementation ----------------------------------
@@ -303,10 +315,13 @@ void V4UpdateProtocolManager::OnURLFetchComplete(
     const net::URLFetcher* source) {
   DCHECK(CalledOnValidThread());
 
+  timeout_timer_.Stop();
+
   int response_code = source->GetResponseCode();
   net::URLRequestStatus status = source->GetStatus();
   V4ProtocolManagerUtil::RecordHttpResponseOrErrorCode(
       "SafeBrowsing.V4Update.Network.Result", status, response_code);
+  UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.V4Update.TimedOut", false);
 
   last_response_time_ = Time::Now();
 

@@ -148,8 +148,6 @@ TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesErrorHandlingNetwork) {
 
   EXPECT_FALSE(pm->IsUpdateScheduled());
 
-  runner->RunPendingTasks();
-
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   DCHECK(fetcher);
   // Failed request status should result in error.
@@ -181,8 +179,6 @@ TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesErrorHandlingResponseCode) {
   pm->IssueUpdateRequest();
 
   EXPECT_FALSE(pm->IsUpdateScheduled());
-
-  runner->RunPendingTasks();
 
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   DCHECK(fetcher);
@@ -218,8 +214,6 @@ TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesNoError) {
 
   EXPECT_FALSE(pm->IsUpdateScheduled());
 
-  runner->RunPendingTasks();
-
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   DCHECK(fetcher);
   fetcher->set_status(net::URLRequestStatus());
@@ -253,8 +247,6 @@ TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesWithOneBackoff) {
 
   EXPECT_FALSE(pm->IsUpdateScheduled());
 
-  runner->RunPendingTasks();
-
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   DCHECK(fetcher);
   fetcher->set_status(net::URLRequestStatus());
@@ -270,6 +262,7 @@ TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesWithOneBackoff) {
 
   // Retry, now no backoff.
   expect_callback_to_be_called_ = true;
+  // Call RunPendingTasks to ensure that the request is sent after backoff.
   runner->RunPendingTasks();
 
   fetcher = factory.GetFetcherByID(1);
@@ -322,6 +315,47 @@ TEST_F(V4UpdateProtocolManagerTest, TestDisableAutoUpdates) {
 
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   DCHECK(!fetcher);
+}
+
+TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesHasTimeout) {
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner());
+  base::ThreadTaskRunnerHandle runner_handler(runner);
+  net::TestURLFetcherFactory factory;
+  std::vector<ListUpdateResponse> expected_lurs;
+  SetupExpectedListUpdateResponse(&expected_lurs);
+  std::unique_ptr<V4UpdateProtocolManager> pm(
+      CreateProtocolManager(expected_lurs));
+  runner->ClearPendingTasks();
+
+  // Initial state. No errors.
+  EXPECT_EQ(0ul, pm->update_error_count_);
+  EXPECT_EQ(1ul, pm->update_back_off_mult_);
+  expect_callback_to_be_called_ = true;
+  pm->store_state_map_ = std::move(store_state_map_);
+  pm->IssueUpdateRequest();
+
+  net::TestURLFetcher* timeout_fetcher = factory.GetFetcherByID(0);
+  DCHECK(timeout_fetcher);
+  // Don't set anything on the fetcher. Let it time out.
+  runner->RunPendingTasks();
+
+  net::TestURLFetcher* fetcher = factory.GetFetcherByID(1);
+  DCHECK(!fetcher);
+  // Now wait for the next request to be scheduled.
+  runner->RunPendingTasks();
+
+  // There should be another fetcher now.
+  fetcher = factory.GetFetcherByID(1);
+  DCHECK(fetcher);
+  fetcher->set_status(net::URLRequestStatus());
+  fetcher->set_response_code(net::HTTP_OK);
+  fetcher->SetResponseString(GetExpectedV4UpdateResponse(expected_lurs));
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+  // No error, back off multiplier is unchanged.
+  EXPECT_EQ(0ul, pm->update_error_count_);
+  EXPECT_EQ(1ul, pm->update_back_off_mult_);
 }
 
 }  // namespace safe_browsing
