@@ -31,7 +31,6 @@ _java_target_whitelist = [
 
   # TODO(agrieve): Rename targets below to match above patterns.
   "*android_webview/glue:glue",
-  "//build/android/pylib/device/commands:chromium_commands",
   "//build/android/rezip:rezip",
   "//chrome/test/android/cast_emulator:cast_emulator",
   "//mojo/public/java:bindings",
