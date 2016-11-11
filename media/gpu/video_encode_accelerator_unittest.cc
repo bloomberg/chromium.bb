@@ -358,7 +358,7 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
     const char* src_ptr = &src_data[0];
     for (size_t i = 0; i < num_planes; i++) {
       // Assert that each plane of frame starts at required byte boundary.
-      ASSERT_EQ(dest_offset & (kPlatformBufferAlignment - 1), 0u)
+      ASSERT_EQ(0u, dest_offset & (kPlatformBufferAlignment - 1))
           << "Planes of frame should be mapped per platform requirements";
       for (size_t j = 0; j < visible_plane_rows[i]; j++) {
         memcpy(&test_stream->aligned_in_file_data[dest_offset], src_ptr,
@@ -1333,7 +1333,7 @@ void VEAClient::RequireBitstreamBuffers(unsigned int input_count,
                                         const gfx::Size& input_coded_size,
                                         size_t output_size) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  ASSERT_EQ(state_, CS_INITIALIZED);
+  ASSERT_EQ(CS_INITIALIZED, state_);
   SetState(CS_ENCODING);
 
   if (quality_validator_)
@@ -1726,7 +1726,7 @@ void VEAClient::VerifyStreamProperties() {
   if (num_encoded_frames_ < next_keyframe_at_ + kMaxKeyframeDelay)
     EXPECT_LE(num_keyframes_requested_, 1UL);
   else
-    EXPECT_EQ(num_keyframes_requested_, 0UL);
+    EXPECT_EQ(0UL, num_keyframes_requested_);
 }
 
 void VEAClient::WriteIvfFileHeader() {
@@ -1976,7 +1976,7 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
   // hard to debug issues there, if there were multiple "ChildThreads".
   for (const auto& state : state_transitions) {
     for (size_t i = 0; i < num_concurrent_encoders; i++)
-      ASSERT_EQ(notes[i]->Wait(), state);
+      ASSERT_EQ(state, notes[i]->Wait());
   }
 
   for (size_t i = 0; i < num_concurrent_encoders; ++i) {
@@ -2063,7 +2063,7 @@ TEST(VEANoInputTest, CheckOutput) {
                                           CS_FINISHED};
 
   for (const auto& state : state_transitions) {
-    ASSERT_EQ(note->Wait(), state);
+    ASSERT_EQ(state, note->Wait());
   }
 
   encoder_thread.task_runner()->PostTask(
