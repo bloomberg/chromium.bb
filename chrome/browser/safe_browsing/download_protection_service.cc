@@ -614,18 +614,6 @@ class DownloadProtectionService::CheckClientDownloadRequest
     DCHECK(item_ == NULL);
   }
 
-  // .zip files that look invalid to Chrome can often be successfully unpacked
-  // by other archive tools, so they may be a real threat.  For that reason,
-  // we send pings for them if !in_incognito && is_extended_reporting.
-  bool CanReportInvalidArchives() {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    Profile* profile = Profile::FromBrowserContext(item_->GetBrowserContext());
-    if (!profile || !IsExtendedReportingEnabled(*profile->GetPrefs()))
-      return false;
-
-    return !item_->GetBrowserContext()->IsOffTheRecord();
-  }
-
   void OnFileFeatureExtractionDone() {
     // This can run in any thread, since it just posts more messages.
 
@@ -731,7 +719,9 @@ class DownloadProtectionService::CheckClientDownloadRequest
     if (!archived_executable_) {
       if (results.has_archive) {
         type_ = ClientDownloadRequest::ZIPPED_ARCHIVE;
-      } else if (!results.success && CanReportInvalidArchives()) {
+      } else if (!results.success) {
+        // .zip files that look invalid to Chrome can often be successfully
+        // unpacked by other archive tools, so they may be a real threat.
         type_ = ClientDownloadRequest::INVALID_ZIP;
       } else {
         // Normal zip w/o EXEs, or invalid zip and not extended-reporting.
