@@ -64,20 +64,24 @@ PasswordCredential* PasswordCredential::create(HTMLFormElement* form,
     if (!result.isUSVString())
       continue;
 
-    AtomicString autocomplete =
-        toHTMLElement(element)->fastGetAttribute(HTMLNames::autocompleteAttr);
-    if (equalIgnoringCase(autocomplete, "current-password") ||
-        equalIgnoringCase(autocomplete, "new-password")) {
-      data.setPassword(result.getAsUSVString());
-      passwordName = element->name();
-    } else if (equalIgnoringCase(autocomplete, "photo")) {
-      data.setIconURL(result.getAsUSVString());
-    } else if (equalIgnoringCase(autocomplete, "name") ||
-               equalIgnoringCase(autocomplete, "nickname")) {
-      data.setName(result.getAsUSVString());
-    } else if (equalIgnoringCase(autocomplete, "username")) {
-      data.setId(result.getAsUSVString());
-      idName = element->name();
+    Vector<String> autofillTokens;
+    toHTMLElement(element)
+        ->fastGetAttribute(HTMLNames::autocompleteAttr)
+        .getString()
+        .lower()  // Lowercase here once to avoid the case-folding logic below.
+        .split(' ', autofillTokens);
+    for (const auto& token : autofillTokens) {
+      if (token == "current-password" || token == "new-password") {
+        data.setPassword(result.getAsUSVString());
+        passwordName = element->name();
+      } else if (token == "photo") {
+        data.setIconURL(result.getAsUSVString());
+      } else if (token == "name" || token == "nickname") {
+        data.setName(result.getAsUSVString());
+      } else if (token == "username") {
+        data.setId(result.getAsUSVString());
+        idName = element->name();
+      }
     }
   }
 
