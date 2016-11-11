@@ -182,6 +182,7 @@
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/runner/common/switches.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend.h"
+#include "third_party/WebKit/public/public_features.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/display/display_switches.h"
@@ -236,7 +237,7 @@
 #include "content/common/media/media_stream_messages.h"
 #endif
 
-#if defined(USE_MINIKIN_HYPHENATION)
+#if BUILDFLAG(USE_MINIKIN_HYPHENATION)
 #include "content/browser/hyphenation/hyphenation_impl.h"
 #endif
 
@@ -1258,7 +1259,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE);
   registry->AddInterface(base::Bind(&MimeRegistryImpl::Create),
                          file_task_runner);
-#if defined(USE_MINIKIN_HYPHENATION)
+#if BUILDFLAG(USE_MINIKIN_HYPHENATION)
   registry->AddInterface(base::Bind(&hyphenation::HyphenationImpl::Create),
                          file_task_runner);
 #endif

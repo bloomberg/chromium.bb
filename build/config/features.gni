@@ -97,9 +97,6 @@ enable_spellcheck = !is_ios
 # Use the operating system's spellchecker rather than hunspell.
 use_browser_spellchecker = is_android || is_mac
 
-# Use Minikin hyphenation engine.
-use_minikin_hyphenation = is_android
-
 # The seccomp-bpf sandbox is only supported on five architectures
 # currently.
 # Do not disable seccomp_bpf anywhere without talking to
@@ -122,9 +119,6 @@ enable_themes = !is_android && !is_ios
 # rlz codes for searches but do not use the library.
 enable_rlz_support = is_win || is_mac || is_ios || is_chromeos
 enable_rlz = is_chrome_branded && enable_rlz_support
-
-# Image loader extension is enabled on ChromeOS only.
-enable_image_loader_extension = is_chromeos
 
 # Chrome OS: whether to also build the upcoming version of
 # ChromeVox, which can then be enabled via a command-line switch.

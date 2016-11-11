@@ -9,3 +9,6 @@ declare_args() {
   # --debug-devtools cmdline switch.
   debug_devtools = false
 }
+
+# Use Minikin hyphenation engine.
+use_minikin_hyphenation = is_android

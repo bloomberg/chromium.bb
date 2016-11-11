@@ -80,6 +80,8 @@ use_brlapi = is_chromeos
 
 _enable_printing = enable_basic_printing || enable_print_preview
 
+# Every grit target in //chrome should apply these defines so that the
+# proper build flags can be set.
 chrome_grit_defines = [
   "enable_app_list=$enable_app_list",
   "enable_background=$enable_background",

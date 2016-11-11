@@ -68,10 +68,13 @@ config("blink_headers_config") {
   configs = [ "//v8:external_config" ]
 }
 
-# Public feature flags usabout outside of Blink.
+# Public feature flags used outside of Blink.
 buildflag_header("features") {
   header = "public_features.h"
-  flags = [ "DEBUG_DEVTOOLS=$debug_devtools" ]
+  flags = [
+    "DEBUG_DEVTOOLS=$debug_devtools",
+    "USE_MINIKIN_HYPHENATION=$use_minikin_hyphenation",
+  ]
 }
 
 if (is_android) {

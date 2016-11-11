@@ -93,7 +93,7 @@ bool IsComponentExtensionWhitelisted(int manifest_resource_id) {
     case IDR_HOTWORD_MANIFEST:
 #endif
     case IDR_IDENTITY_API_SCOPE_APPROVAL_MANIFEST:
-#if defined(IMAGE_LOADER_EXTENSION)
+#if defined(OS_CHROMEOS)
     case IDR_IMAGE_LOADER_MANIFEST:
 #endif
     case IDR_NETWORK_SPEECH_SYNTHESIS_MANIFEST:

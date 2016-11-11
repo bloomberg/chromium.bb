@@ -363,10 +363,10 @@ void ComponentLoader::AddHotwordHelperExtension() {
 }
 
 void ComponentLoader::AddImageLoaderExtension() {
-#if defined(IMAGE_LOADER_EXTENSION)
+#if defined(OS_CHROMEOS)
   Add(IDR_IMAGE_LOADER_MANIFEST,
       base::FilePath(FILE_PATH_LITERAL("image_loader")));
-#endif  // defined(IMAGE_LOADER_EXTENSION)
+#endif  // defined(OS_CHROMEOS)
 }
 
 void ComponentLoader::AddNetworkSpeechSynthesisExtension() {
