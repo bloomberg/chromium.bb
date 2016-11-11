@@ -1314,7 +1314,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, ConsoleMessage) {
   client->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::SecurityStateModel::NONE,
             security_info.security_level);
-  EXPECT_TRUE(security_info.displayed_private_user_data_input_on_http);
+  EXPECT_TRUE(security_info.displayed_password_field_on_http);
 
   // Check that the expected console message is present.
   ASSERT_NO_FATAL_FAILURE(CheckForOneFutureHttpWarningConsoleMessage(delegate));
@@ -1339,7 +1339,27 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, ConsoleMessage) {
   client->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::SecurityStateModel::NONE,
             security_info.security_level);
-  EXPECT_TRUE(security_info.displayed_private_user_data_input_on_http);
+  EXPECT_TRUE(security_info.displayed_password_field_on_http);
+  EXPECT_FALSE(security_info.displayed_credit_card_field_on_http);
+
+  ASSERT_NO_FATAL_FAILURE(CheckForOneFutureHttpWarningConsoleMessage(delegate));
+  delegate->ClearConsoleMessages();
+
+  // Check that a console message is printed for credit card field shown.
+  ui_test_utils::NavigateToURL(delegate, http_url);
+  entry = contents->GetController().GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(http_url, entry->GetURL());
+
+  base::RunLoop third_message;
+  delegate->set_console_message_callback(third_message.QuitClosure());
+  contents->OnCreditCardInputShownOnHttp();
+  third_message.Run();
+
+  client->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::SecurityStateModel::NONE,
+            security_info.security_level);
+  EXPECT_TRUE(security_info.displayed_credit_card_field_on_http);
 
   ASSERT_NO_FATAL_FAILURE(CheckForOneFutureHttpWarningConsoleMessage(delegate));
 }

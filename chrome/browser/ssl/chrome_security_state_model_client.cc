@@ -195,7 +195,8 @@ blink::WebSecurityStyle ChromeSecurityStateModelClient::GetSecurityStyle(
             l10n_util::GetStringUTF8(IDS_PRIVATE_USER_DATA_INPUT_DESCRIPTION)));
   } else if (security_info.security_level ==
                  security_state::SecurityStateModel::NONE &&
-             security_info.displayed_private_user_data_input_on_http) {
+             (security_info.displayed_password_field_on_http ||
+              security_info.displayed_credit_card_field_on_http)) {
     // If the HTTP_SHOW_WARNING field trial isn't in use yet, display an
     // informational note that the omnibox will contain a warning for
     // this site in a future version of Chrome.
@@ -333,8 +334,10 @@ void ChromeSecurityStateModelClient::VisibleSecurityStateChanged() {
 
   security_state::SecurityStateModel::SecurityInfo security_info;
   GetSecurityInfo(&security_info);
-  if (!security_info.displayed_private_user_data_input_on_http)
+  if (!security_info.displayed_password_field_on_http &&
+      !security_info.displayed_credit_card_field_on_http) {
     return;
+  }
 
   std::string warning;
   bool warning_is_user_visible = false;
@@ -360,8 +363,17 @@ void ChromeSecurityStateModelClient::VisibleSecurityStateChanged() {
   logged_http_warning_on_current_navigation_ = true;
   web_contents_->GetMainFrame()->AddMessageToConsole(
       content::CONSOLE_MESSAGE_LEVEL_WARNING, warning);
-  UMA_HISTOGRAM_BOOLEAN("Security.HTTPBad.UserWarnedAboutSensitiveInput",
-                        warning_is_user_visible);
+
+  if (security_info.displayed_credit_card_field_on_http) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "Security.HTTPBad.UserWarnedAboutSensitiveInput.CreditCard",
+        warning_is_user_visible);
+  }
+  if (security_info.displayed_password_field_on_http) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "Security.HTTPBad.UserWarnedAboutSensitiveInput.Password",
+        warning_is_user_visible);
+  }
 }
 
 void ChromeSecurityStateModelClient::DidFinishNavigation(
