@@ -866,7 +866,7 @@ def main(args):
     # Only archive sdk_tools/naclport/pnacl_component on linux.
     if platform == 'linux':
       BuildStepArchiveSDKTools()
-      #BuildStepArchivePNaClComponent(chrome_revision)
+      BuildStepArchivePNaClComponent(chrome_revision)
 
   return 0
 
