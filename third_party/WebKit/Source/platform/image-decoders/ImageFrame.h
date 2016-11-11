@@ -218,6 +218,36 @@ class PLATFORM_EXPORT ImageFrame final {
     *dest = SkPackARGB32NoCheck(a, r, g, b);
   }
 
+  // Blend the RGBA pixel provided by |r|, |g|, |b|, |a| over the pixel in
+  // |dest|, without premultiplication, and overwrite |dest| with the result.
+  static inline void blendRGBARaw(PixelData* dest,
+                                  unsigned r,
+                                  unsigned g,
+                                  unsigned b,
+                                  unsigned a) {
+    blendSrcOverDstRaw(dest, SkPackARGB32NoCheck(a, r, g, b));
+  }
+
+  // Blend the pixel, without premultiplication, in |src| over |dst| and
+  // overwrite |src| with the result.
+  static void blendSrcOverDstRaw(PixelData* src, PixelData dst);
+
+  // Blend the RGBA pixel provided by |r|, |g|, |b|, |a| over the pixel in
+  // |dest| and overwrite |dest| with the result.
+  static inline void blendRGBAPremultiplied(PixelData* dest,
+                                            unsigned r,
+                                            unsigned g,
+                                            unsigned b,
+                                            unsigned a) {
+    blendSrcOverDstPremultiplied(dest, SkPackARGB32NoCheck(a, r, g, b));
+  }
+
+  // Blend the pixel in |src| over |dst| and overwrite |src| with the result.
+  static inline void blendSrcOverDstPremultiplied(PixelData* src,
+                                                  PixelData dst) {
+    *src = SkPMSrcOver(*src, dst);
+  }
+
   // Notifies the SkBitmap if any pixels changed and resets the flag.
   inline void notifyBitmapIfPixelsChanged() {
     if (m_pixelsChanged)
