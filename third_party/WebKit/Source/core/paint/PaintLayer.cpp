@@ -145,7 +145,7 @@ PaintLayer::PaintLayer(LayoutBoxModelObject* layoutObject)
       m_shouldIsolateCompositedDescendants(false),
       m_lostGroupedMapping(false),
       m_needsRepaint(false),
-      m_previousPaintResult(PaintLayerPainter::FullyPainted),
+      m_previousPaintResult(FullyPainted),
       m_needsPaintPhaseDescendantOutlines(false),
       m_previousPaintPhaseDescendantOutlinesWasEmpty(false),
       m_needsPaintPhaseFloat(false),

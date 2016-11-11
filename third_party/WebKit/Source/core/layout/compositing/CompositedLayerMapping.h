@@ -28,6 +28,7 @@
 
 #include "core/layout/compositing/GraphicsLayerUpdater.h"
 #include "core/paint/PaintLayer.h"
+#include "core/paint/PaintLayerPaintingInfo.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/graphics/GraphicsLayer.h"

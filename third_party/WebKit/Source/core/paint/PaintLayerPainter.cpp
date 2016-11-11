@@ -63,7 +63,7 @@ static ShouldRespectOverflowClipType shouldRespectOverflowClip(
              : RespectOverflowClip;
 }
 
-PaintLayerPainter::PaintResult PaintLayerPainter::paintLayer(
+PaintResult PaintLayerPainter::paintLayer(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& paintingInfo,
     PaintLayerFlags paintFlags) {
@@ -110,8 +110,7 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayer(
                                                 paintFlags);
 }
 
-PaintLayerPainter::PaintResult
-PaintLayerPainter::paintLayerContentsCompositingAllPhases(
+PaintResult PaintLayerPainter::paintLayerContentsCompositingAllPhases(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& paintingInfo,
     PaintLayerFlags paintFlags,
@@ -207,8 +206,7 @@ static bool shouldRepaintSubsequence(
 
   // Repaint if previously the layer might be clipped by paintDirtyRect and
   // paintDirtyRect changes.
-  if (paintLayer.previousPaintResult() ==
-          PaintLayerPainter::MayBeClippedByPaintDirtyRect &&
+  if (paintLayer.previousPaintResult() == MayBeClippedByPaintDirtyRect &&
       paintLayer.previousPaintDirtyRect() != paintingInfo.paintDirtyRect) {
     needsRepaint = true;
     shouldClearEmptyPaintPhaseFlags = true;
@@ -227,7 +225,7 @@ static bool shouldRepaintSubsequence(
   return needsRepaint;
 }
 
-PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(
+PaintResult PaintLayerPainter::paintLayerContents(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& paintingInfoArg,
     PaintLayerFlags paintFlags,
@@ -580,7 +578,7 @@ bool PaintLayerPainter::atLeastOneFragmentIntersectsDamageRect(
   return false;
 }
 
-PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerWithTransform(
+PaintResult PaintLayerPainter::paintLayerWithTransform(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& paintingInfo,
     PaintLayerFlags paintFlags) {
@@ -710,8 +708,7 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerWithTransform(
   return result;
 }
 
-PaintLayerPainter::PaintResult
-PaintLayerPainter::paintFragmentByApplyingTransform(
+PaintResult PaintLayerPainter::paintFragmentByApplyingTransform(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& paintingInfo,
     PaintLayerFlags paintFlags,
@@ -752,7 +749,7 @@ PaintLayerPainter::paintFragmentByApplyingTransform(
       context, transformedPaintingInfo, paintFlags, ForceSingleFragment);
 }
 
-PaintLayerPainter::PaintResult PaintLayerPainter::paintChildren(
+PaintResult PaintLayerPainter::paintChildren(
     unsigned childrenToVisit,
     GraphicsContext& context,
     const PaintLayerPaintingInfo& paintingInfo,

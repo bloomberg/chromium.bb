@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/paint/PaintLayerFragment.h"
 #include "core/paint/PaintLayerPaintingInfo.h"
+#include "core/paint/PaintResult.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -26,18 +27,6 @@ class CORE_EXPORT PaintLayerPainter {
 
  public:
   enum FragmentPolicy { AllowMultipleFragments, ForceSingleFragment };
-
-  // When adding new values, must update the number of bits of
-  // PaintLayer::m_previousPaintingResult.
-  enum PaintResult {
-    // The layer is fully painted. This includes cases that nothing needs
-    // painting regardless of the paint rect.
-    FullyPainted,
-    // Some part of the layer is out of the paint rect and may be not fully
-    // painted.  The results cannot be cached because they may change when paint
-    // rect changes.
-    MayBeClippedByPaintDirtyRect
-  };
 
   PaintLayerPainter(PaintLayer& paintLayer) : m_paintLayer(paintLayer) {}
 

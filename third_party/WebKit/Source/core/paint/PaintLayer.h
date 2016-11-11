@@ -51,10 +51,10 @@
 #include "core/paint/PaintLayerClipper.h"
 #include "core/paint/PaintLayerFilterInfo.h"
 #include "core/paint/PaintLayerFragment.h"
-#include "core/paint/PaintLayerPainter.h"
 #include "core/paint/PaintLayerScrollableArea.h"
 #include "core/paint/PaintLayerStackingNode.h"
 #include "core/paint/PaintLayerStackingNodeIterator.h"
+#include "core/paint/PaintResult.h"
 #include "platform/graphics/CompositingReasons.h"
 #include "platform/graphics/SquashingDisallowedReasons.h"
 #include "wtf/Allocator.h"
@@ -907,10 +907,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     m_previousPaintDirtyRect = rect;
   }
 
-  PaintLayerPainter::PaintResult previousPaintResult() const {
-    return static_cast<PaintLayerPainter::PaintResult>(m_previousPaintResult);
+  PaintResult previousPaintResult() const {
+    return static_cast<PaintResult>(m_previousPaintResult);
   }
-  void setPreviousPaintResult(PaintLayerPainter::PaintResult result) {
+  void setPreviousPaintResult(PaintResult result) {
     m_previousPaintResult = static_cast<unsigned>(result);
     DCHECK(m_previousPaintResult == static_cast<unsigned>(result));
   }
@@ -1162,7 +1162,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   unsigned m_lostGroupedMapping : 1;
 
   unsigned m_needsRepaint : 1;
-  unsigned m_previousPaintResult : 1;  // PaintLayerPainter::PaintResult
+  unsigned m_previousPaintResult : 1;  // PaintResult
+  static_assert(MaxPaintResult <= 2,
+                "Should update number of bits of m_previousPaintResult");
 
   unsigned m_needsPaintPhaseDescendantOutlines : 1;
   unsigned m_previousPaintPhaseDescendantOutlinesWasEmpty : 1;
