@@ -62,6 +62,7 @@ class OverscrollControllerAndroid;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
 class SynchronousCompositorHost;
+class SynchronousCompositorClient;
 struct NativeWebKeyboardEvent;
 struct TextInputState;
 
@@ -237,6 +238,12 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   void SynchronousFrameMetadata(cc::CompositorFrameMetadata frame_metadata);
 
+  void SetSynchronousCompositorClient(SynchronousCompositorClient* client);
+
+  SynchronousCompositorClient* synchronous_compositor_client() const {
+    return synchronous_compositor_client_;
+  }
+
   static void OnContextLost();
 
  private:
@@ -350,6 +357,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   const bool using_browser_compositor_;
   std::unique_ptr<SynchronousCompositorHost> sync_compositor_;
+
+  SynchronousCompositorClient* synchronous_compositor_client_;
 
   std::unique_ptr<DelegatedFrameEvictor> frame_evictor_;
 

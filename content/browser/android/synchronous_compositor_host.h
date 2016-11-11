@@ -41,8 +41,7 @@ struct SyncCompositorCommonRendererParams;
 class SynchronousCompositorHost : public SynchronousCompositor {
  public:
   static std::unique_ptr<SynchronousCompositorHost> Create(
-      RenderWidgetHostViewAndroid* rwhva,
-      WebContents* web_contents);
+      RenderWidgetHostViewAndroid* rwhva);
 
   ~SynchronousCompositorHost() override;
 
@@ -82,7 +81,6 @@ class SynchronousCompositorHost : public SynchronousCompositor {
   friend class SynchronousCompositorBase;
 
   SynchronousCompositorHost(RenderWidgetHostViewAndroid* rwhva,
-                            SynchronousCompositorClient* client,
                             bool use_in_proc_software_draw);
   void CompositorFrameSinkCreated();
   bool DemandDrawSwInProc(SkCanvas* canvas);
