@@ -46,7 +46,9 @@ class ScrollContentsView : public views::View,
   ScrollContentsView() {
     SetEventTargeter(base::MakeUnique<views::ViewTargeter>(this));
     SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
+        new views::BoxLayout(views::BoxLayout::kVertical, 0,
+                             UseMd() ? kContentsVerticalSpacingMd : 0,
+                             UseMd() ? 0 : kContentsBetweenChildSpacingNonMd));
   }
   ~ScrollContentsView() override {}
 
@@ -109,6 +111,10 @@ class ScrollContentsView : public views::View,
   const SkColor kSeparatorColor = SkColorSetA(SK_ColorBLACK, 0x1F);
   const int kShadowOffsetY = 2;
   const int kShadowBlur = 2;
+  const int kContentsVerticalSpacingMd = 4;
+  // TODO(fukino): Remove this constant once we stop maintaining pre-MD design.
+  // crbug.com/614453.
+  const int kContentsBetweenChildSpacingNonMd = 1;
 
   // A structure that keeps the original offset of each header between the
   // calls to Layout() to allow keeping track of which view should be sticky.
