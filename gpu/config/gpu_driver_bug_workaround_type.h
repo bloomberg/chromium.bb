@@ -85,6 +85,8 @@
          disable_multisampling_color_mask_usage)             \
   GPU_OP(DISABLE_WEBGL_RGB_MULTISAMPLING_USAGE,              \
          disable_webgl_rgb_multisampling_usage)              \
+  GPU_OP(DONT_REMOVE_INVARIANT_FOR_FRAGMENT_INPUT,           \
+         dont_remove_invariant_for_fragment_input)           \
   GPU_OP(ETC1_POWER_OF_TWO_ONLY,                             \
          etc1_power_of_two_only)                             \
   GPU_OP(EMULATE_ABS_INT_FUNCTION,                           \
@@ -139,8 +141,8 @@
          rebind_transform_feedback_before_resume)            \
   GPU_OP(REGENERATE_STRUCT_NAMES,                            \
          regenerate_struct_names)                            \
-  GPU_OP(DONT_REMOVE_INVARIANT_FOR_FRAGMENT_INPUT,           \
-         dont_remove_invariant_for_fragment_input)           \
+  GPU_OP(REMOVE_INVARIANT_AND_CENTROID_FOR_ESSL3,            \
+         remove_invariant_and_centroid_for_essl3)            \
   GPU_OP(REMOVE_POW_WITH_CONSTANT_EXPONENT,                  \
          remove_pow_with_constant_exponent)                  \
   GPU_OP(RESET_BASE_MIPMAP_LEVEL_BEFORE_TEXSTORAGE,          \

@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "9.15",
+  "version": "9.16",
   "entries": [
     {
       "id": 1,
@@ -2180,6 +2180,33 @@ LONG_STRING_CONST(
       "vendor_id": "0x1002",
       "features": [
         "dont_remove_invariant_for_fragment_input"
+      ]
+    },
+    {
+      "id": 202,
+      "cr_bugs": [639760,641129],
+      "description": "Mac driver GL 4.1 requires invariant and centroid to match between shaders",
+      "os": {
+        "type": "macosx"
+      },
+      "features": [
+        "remove_invariant_and_centroid_for_essl3"
+      ]
+    },
+    {
+      "id": 203,
+      "cr_bugs": [639760,641129],
+      "description": "Mesa driver GL 3.3 requires invariant and centroid to match between shaders",
+      "os": {
+        "type": "linux"
+      },
+      "driver_vendor": "Mesa",
+      "gl_version": {
+        "op": "=",
+        "value": "3.3"
+      },
+      "features": [
+        "remove_invariant_and_centroid_for_essl3"
       ]
     }
   ]

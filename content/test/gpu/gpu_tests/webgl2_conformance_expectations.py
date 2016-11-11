@@ -146,29 +146,20 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/data/gles3/shaders/linkage.html',
         ['mac'], bug=641129)
 
-    # This is due to "centroid out" / "in" mismatch.
-    self.Fail('deqp/data/gles3/shaders/qualification_order.html',
-        ['mac'], bug=483282)
-
     self.Fail('conformance2/renderbuffers/framebuffer-test.html',
         ['mac'], bug=641149)
 
+    # Mac Retina NVIDIA
     self.Fail('deqp/functional/gles3/fbomultisample*',
-        ['mac', 'intel'], bug=641209)
-
-    self.Fail('deqp/functional/gles3/fbomultisample*',
-        ['mac', 'nvidia'], bug=641209)
-
+        ['mac', ('nvidia', 0xfe9)], bug=641209)
     self.Fail('deqp/functional/gles3/framebufferblit/' +
         'default_framebuffer_04.html',
-        ['mac', 'nvidia'], bug=483282)
-
-    # Mac Retina NVIDIA
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Flaky(
-      'conformance/extensions/webgl-compressed-texture-size-limit.html',
-      ['mac', ('nvidia', 0xfe9)], bug=483282)
+        'conformance/extensions/webgl-compressed-texture-size-limit.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('conformance/programs/' +
         'gl-bind-attrib-location-long-names-test.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
@@ -425,6 +416,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('amd', 0x679e)], bug=640506)
 
     # Mac Intel
+    self.Fail('deqp/functional/gles3/fbomultisample*',
+        ['mac', 'intel'], bug=641209)
     self.Fail('deqp/functional/gles3/texturefiltering/2d_combinations_01.html',
         ['mac', 'intel'], bug=606074)
     self.Fail('deqp/functional/gles3/texturefiltering/' +
