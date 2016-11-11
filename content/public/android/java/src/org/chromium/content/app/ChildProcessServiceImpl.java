@@ -42,8 +42,8 @@ import java.util.concurrent.atomic.AtomicReference;
  * This class implements all of the functionality for {@link ChildProcessService} which owns an
  * object of {@link ChildProcessServiceImpl}.
  * It makes possible that WebAPK's ChildProcessService owns a ChildProcessServiceImpl object
- * and uses the same functionalities to create renderer process for WebAPKs when "--enable-webapk"
- * flag is turned on.
+ * and uses the same functionalities to create renderer process for WebAPKs when
+ * "--enable-improved-a2hs" flag is turned on.
  */
 @JNINamespace("content")
 @SuppressWarnings("SynchronizeOnNonFinalField")

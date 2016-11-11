@@ -198,7 +198,7 @@ public abstract class ChromeSwitches {
     /**
      * Enables "Add to Home screen" to mint a WebApk.
      */
-    public static final String ENABLE_WEBAPK = "enable-webapk";
+    public static final String ENABLE_WEBAPK = "enable-improved-a2hs";
 
     /**
      * Forces the WebAPK runtime dex to be extracted each time that Chrome is started.

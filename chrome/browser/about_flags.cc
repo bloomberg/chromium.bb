@@ -2023,7 +2023,7 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableBrowserTaskScheduler,
                                switches::kDisableBrowserTaskScheduler)},
 #if defined(OS_ANDROID)
-    {"enable-webapk", IDS_FLAGS_ENABLE_WEBAPK,
+    {"enable-improved-a2hs", IDS_FLAGS_ENABLE_WEBAPK,
      IDS_FLAGS_ENABLE_WEBAPK_DESCRIPTION, kOsAndroid,
      SINGLE_VALUE_TYPE(switches::kEnableWebApk)},
     {"no-credit-card-abort", IDS_FLAGS_NO_CREDIT_CARD_ABORT,

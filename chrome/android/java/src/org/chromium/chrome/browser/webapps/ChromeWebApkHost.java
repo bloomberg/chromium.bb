@@ -69,7 +69,7 @@ public class ChromeWebApkHost {
     /**
      * Show dialog warning user that "installation from unknown sources" is required by the WebAPK
      * experiment if:
-     * - The user toggled the --enable-webapk command line flag via chrome://flags
+     * - The user toggled the --enable-improved-a2hs command line flag via chrome://flags
      * AND
      * - WebAPKs are not disabled via variations kill switch.
      * Must be run prior to {@link cacheEnabledStateForNextLaunch}.
@@ -112,7 +112,7 @@ public class ChromeWebApkHost {
         }
     }
 
-    /** Returns whether the --enable-webapk command line flag is set */
+    /** Returns whether the --enable-improved-a2hs command line flag is set */
     private static boolean isCommandLineFlagSet() {
         return CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_WEBAPK);
     }
