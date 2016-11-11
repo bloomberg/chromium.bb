@@ -151,11 +151,11 @@ class DevToolsProtocolTest : public ContentBrowserTest,
 
  protected:
   // WebContentsDelegate method:
-  bool AddMessageToConsole(WebContents* source,
-                           int32_t level,
-                           const base::string16& message,
-                           int32_t line_no,
-                           const base::string16& source_id) override {
+  bool DidAddMessageToConsole(WebContents* source,
+                              int32_t level,
+                              const base::string16& message,
+                              int32_t line_no,
+                              const base::string16& source_id) override {
     console_messages_.push_back(base::UTF16ToUTF8(message));
     return true;
   }

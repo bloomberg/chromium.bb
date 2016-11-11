@@ -4654,14 +4654,14 @@ void WebContentsImpl::SetFocusedFrame(FrameTreeNode* node,
     rwh->Focus();
 }
 
-bool WebContentsImpl::AddMessageToConsole(int32_t level,
-                                          const base::string16& message,
-                                          int32_t line_no,
-                                          const base::string16& source_id) {
+bool WebContentsImpl::DidAddMessageToConsole(int32_t level,
+                                             const base::string16& message,
+                                             int32_t line_no,
+                                             const base::string16& source_id) {
   if (!delegate_)
     return false;
-  return delegate_->AddMessageToConsole(this, level, message, line_no,
-                                        source_id);
+  return delegate_->DidAddMessageToConsole(this, level, message, line_no,
+                                           source_id);
 }
 
 void WebContentsImpl::OnUserInteraction(

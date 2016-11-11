@@ -251,7 +251,7 @@ void WebContentsDelegateAndroid::MoveContents(WebContents* source,
   // Do nothing.
 }
 
-bool WebContentsDelegateAndroid::AddMessageToConsole(
+bool WebContentsDelegateAndroid::DidAddMessageToConsole(
     WebContents* source,
     int32_t level,
     const base::string16& message,
@@ -260,8 +260,8 @@ bool WebContentsDelegateAndroid::AddMessageToConsole(
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
-    return WebContentsDelegate::AddMessageToConsole(source, level, message,
-                                                    line_no, source_id);
+    return WebContentsDelegate::DidAddMessageToConsole(source, level, message,
+                                                       line_no, source_id);
   ScopedJavaLocalRef<jstring> jmessage(ConvertUTF16ToJavaString(env, message));
   ScopedJavaLocalRef<jstring> jsource_id(
       ConvertUTF16ToJavaString(env, source_id));

@@ -45,11 +45,12 @@ bool WebContentsDelegate::ShouldPreserveAbortedURLs(WebContents* source) {
   return false;
 }
 
-bool WebContentsDelegate::AddMessageToConsole(WebContents* source,
-                                              int32_t level,
-                                              const base::string16& message,
-                                              int32_t line_no,
-                                              const base::string16& source_id) {
+bool WebContentsDelegate::DidAddMessageToConsole(
+    WebContents* source,
+    int32_t level,
+    const base::string16& message,
+    int32_t line_no,
+    const base::string16& source_id) {
   return false;
 }
 

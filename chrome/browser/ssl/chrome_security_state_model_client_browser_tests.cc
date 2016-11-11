@@ -1156,11 +1156,11 @@ class ConsoleWebContentsDelegate : public Browser {
   void ClearConsoleMessages() { console_messages_.clear(); }
 
   // content::WebContentsDelegate
-  bool AddMessageToConsole(content::WebContents* source,
-                           int32_t level,
-                           const base::string16& message,
-                           int32_t line_no,
-                           const base::string16& source_id) override {
+  bool DidAddMessageToConsole(content::WebContents* source,
+                              int32_t level,
+                              const base::string16& message,
+                              int32_t line_no,
+                              const base::string16& source_id) override {
     console_messages_.push_back(message);
     if (!console_message_callback_.is_null()) {
       console_message_callback_.Run();

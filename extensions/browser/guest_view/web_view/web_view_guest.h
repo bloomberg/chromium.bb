@@ -205,11 +205,11 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
                const content::NotificationDetails& details) final;
 
   // WebContentsDelegate implementation.
-  bool AddMessageToConsole(content::WebContents* source,
-                           int32_t level,
-                           const base::string16& message,
-                           int32_t line_no,
-                           const base::string16& source_id) final;
+  bool DidAddMessageToConsole(content::WebContents* source,
+                              int32_t level,
+                              const base::string16& message,
+                              int32_t line_no,
+                              const base::string16& source_id) final;
   void CloseContents(content::WebContents* source) final;
   bool HandleContextMenu(const content::ContextMenuParams& params) final;
   void HandleKeyboardEvent(content::WebContents* source,

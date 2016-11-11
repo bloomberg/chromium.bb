@@ -35,11 +35,11 @@ class MockWebContentsDelegate : public WebContentsDelegate {
         test_(test) {
   }
 
-  bool AddMessageToConsole(WebContents* source,
-                           int32_t level,
-                           const base::string16& message,
-                           int32_t line_no,
-                           const base::string16& source_id) override;
+  bool DidAddMessageToConsole(WebContents* source,
+                              int32_t level,
+                              const base::string16& message,
+                              int32_t line_no,
+                              const base::string16& source_id) override;
 
  private:
   WebContents* web_contents_;
@@ -113,9 +113,9 @@ class ManifestBrowserTest : public ContentBrowserTest  {
   DISALLOW_COPY_AND_ASSIGN(ManifestBrowserTest);
 };
 
-// The implementation of AddMessageToConsole isn't inlined because it needs
+// The implementation of DidAddMessageToConsole isn't inlined because it needs
 // to know about |test_|.
-bool MockWebContentsDelegate::AddMessageToConsole(
+bool MockWebContentsDelegate::DidAddMessageToConsole(
     WebContents* source,
     int32_t level,
     const base::string16& message,

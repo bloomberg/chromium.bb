@@ -93,11 +93,11 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
   void CloseContents(content::WebContents* source) override;
   void MoveContents(content::WebContents* source,
                     const gfx::Rect& pos) override;
-  bool AddMessageToConsole(content::WebContents* source,
-                           int32_t level,
-                           const base::string16& message,
-                           int32_t line_no,
-                           const base::string16& source_id) override;
+  bool DidAddMessageToConsole(content::WebContents* source,
+                              int32_t level,
+                              const base::string16& message,
+                              int32_t line_no,
+                              const base::string16& source_id) override;
   void UpdateTargetURL(content::WebContents* source, const GURL& url) override;
   void HandleKeyboardEvent(
       content::WebContents* source,

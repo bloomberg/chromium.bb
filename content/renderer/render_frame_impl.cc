@@ -3203,7 +3203,7 @@ void RenderFrameImpl::didAddMessageToConsole(
     }
   }
 
-  Send(new FrameHostMsg_AddMessageToConsole(
+  Send(new FrameHostMsg_DidAddMessageToConsole(
       routing_id_, static_cast<int32_t>(log_severity), message.text,
       static_cast<int32_t>(source_line), source_name));
 }

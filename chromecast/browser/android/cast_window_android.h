@@ -63,11 +63,11 @@ class CastWindowAndroid : public content::WebContentsDelegate,
                       bool* was_blocked) override;
   void CloseContents(content::WebContents* source) override;
   bool CanOverscrollContent() const override;
-  bool AddMessageToConsole(content::WebContents* source,
-                           int32_t level,
-                           const base::string16& message,
-                           int32_t line_no,
-                           const base::string16& source_id) override;
+  bool DidAddMessageToConsole(content::WebContents* source,
+                              int32_t level,
+                              const base::string16& message,
+                              int32_t line_no,
+                              const base::string16& source_id) override;
   void ActivateContents(content::WebContents* contents) override;
   base::android::ScopedJavaLocalRef<jobject>
       GetContentVideoViewEmbedder() override;

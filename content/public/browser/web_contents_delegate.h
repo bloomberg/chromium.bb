@@ -188,14 +188,14 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Defaults to false.
   virtual bool ShouldPreserveAbortedURLs(WebContents* source);
 
-  // Add a message to the console. Returning true indicates that the delegate
-  // handled the message. If false is returned the default logging mechanism
-  // will be used for the message.
-  virtual bool AddMessageToConsole(WebContents* source,
-                                   int32_t level,
-                                   const base::string16& message,
-                                   int32_t line_no,
-                                   const base::string16& source_id);
+  // A message was added to the console of a frame of the page. Returning true
+  // indicates that the delegate handled the message. If false is returned the
+  // default logging mechanism will be used for the message.
+  virtual bool DidAddMessageToConsole(WebContents* source,
+                                      int32_t level,
+                                      const base::string16& message,
+                                      int32_t line_no,
+                                      const base::string16& source_id);
 
   // Tells us that we've finished firing this tab's beforeunload event.
   // The proceed bool tells us whether the user chose to proceed closing the

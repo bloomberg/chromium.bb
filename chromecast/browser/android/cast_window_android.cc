@@ -132,11 +132,12 @@ bool CastWindowAndroid::CanOverscrollContent() const {
   return false;
 }
 
-bool CastWindowAndroid::AddMessageToConsole(content::WebContents* source,
-                                            int32_t level,
-                                            const base::string16& message,
-                                            int32_t line_no,
-                                            const base::string16& source_id) {
+bool CastWindowAndroid::DidAddMessageToConsole(
+    content::WebContents* source,
+    int32_t level,
+    const base::string16& message,
+    int32_t line_no,
+    const base::string16& source_id) {
   return false;
 }
 

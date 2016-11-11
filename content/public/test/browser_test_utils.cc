@@ -1757,7 +1757,7 @@ void ConsoleObserverDelegate::Wait() {
   message_loop_runner_->Run();
 }
 
-bool ConsoleObserverDelegate::AddMessageToConsole(
+bool ConsoleObserverDelegate::DidAddMessageToConsole(
     WebContents* source,
     int32_t level,
     const base::string16& message,

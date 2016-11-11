@@ -460,11 +460,11 @@ std::unique_ptr<BluetoothChooser> Shell::RunBluetoothChooser(
   return nullptr;
 }
 
-bool Shell::AddMessageToConsole(WebContents* source,
-                                int32_t level,
-                                const base::string16& message,
-                                int32_t line_no,
-                                const base::string16& source_id) {
+bool Shell::DidAddMessageToConsole(WebContents* source,
+                                   int32_t level,
+                                   const base::string16& message,
+                                   int32_t line_no,
+                                   const base::string16& source_id) {
   return switches::IsRunLayoutTestSwitchPresent();
 }
 

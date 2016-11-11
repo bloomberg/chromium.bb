@@ -66,10 +66,10 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual const GURL& GetMainFrameLastCommittedURL() const;
 
   // A message was added to to the console.
-  virtual bool AddMessageToConsole(int32_t level,
-                                   const base::string16& message,
-                                   int32_t line_no,
-                                   const base::string16& source_id);
+  virtual bool DidAddMessageToConsole(int32_t level,
+                                      const base::string16& message,
+                                      int32_t line_no,
+                                      const base::string16& source_id);
 
   // Informs the delegate whenever a RenderFrameHost is created.
   virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) {}

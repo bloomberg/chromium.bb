@@ -617,10 +617,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            LoadEventForwardingWhilePendingDeletion);
 
   // IPC Message handlers.
-  void OnAddMessageToConsole(int32_t level,
-                             const base::string16& message,
-                             int32_t line_no,
-                             const base::string16& source_id);
+  void OnDidAddMessageToConsole(int32_t level,
+                                const base::string16& message,
+                                int32_t line_no,
+                                const base::string16& source_id);
   void OnDetach();
   void OnFrameFocused();
   void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);
