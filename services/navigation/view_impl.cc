@@ -115,7 +115,7 @@ void ViewImpl::GetWindowTreeClient(ui::mojom::WindowTreeClientRequest request) {
       base::MakeUnique<ui::WindowTreeClient>(this, nullptr, std::move(request));
 }
 
-void ViewImpl::ShowInterstitial(const mojo::String& html) {
+void ViewImpl::ShowInterstitial(const std::string& html) {
   content::InterstitialPage* interstitial =
       content::InterstitialPage::Create(web_view_->GetWebContents(),
                                         false,

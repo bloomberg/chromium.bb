@@ -103,10 +103,10 @@ class UI : public views::WidgetDelegateView,
   void OpenURL(navigation::mojom::OpenURLParamsPtr params) override {}
   void LoadingStateChanged(bool is_loading) override {}
   void NavigationStateChanged(const GURL& url,
-                              const mojo::String& title,
+                              const std::string& title,
                               bool can_go_back,
                               bool can_go_forward) override {
-    current_title_ = base::UTF8ToUTF16(title.get());
+    current_title_ = base::UTF8ToUTF16(title);
     GetWidget()->UpdateWindowTitle();
   }
   void LoadProgressChanged(double progress) override {}

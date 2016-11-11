@@ -49,7 +49,7 @@ class ViewImpl : public mojom::View,
   void Reload(bool skip_cache) override;
   void Stop() override;
   void GetWindowTreeClient(ui::mojom::WindowTreeClientRequest request) override;
-  void ShowInterstitial(const mojo::String& html) override;
+  void ShowInterstitial(const std::string& html) override;
   void HideInterstitial() override;
 
   // content::WebContentsDelegate:

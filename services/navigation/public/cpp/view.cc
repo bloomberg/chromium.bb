@@ -55,8 +55,8 @@ void View::GetBackMenuItems(std::vector<NavigationListItem>* items) {
   DCHECK(items);
   for (int i = navigation_list_cursor_ - 1, offset = -1; i >= 0;
        --i, --offset) {
-    std::string title = navigation_list_[i]->title;
-    items->push_back(NavigationListItem(base::UTF8ToUTF16(title), offset));
+    items->push_back(NavigationListItem(
+        base::UTF8ToUTF16(navigation_list_[i]->title), offset));
   }
 }
 
@@ -64,8 +64,8 @@ void View::GetForwardMenuItems(std::vector<NavigationListItem>* items) {
   DCHECK(items);
   for (int i = navigation_list_cursor_ + 1, offset = 1;
        i < static_cast<int>(navigation_list_.size()); ++i, ++offset) {
-    std::string title = navigation_list_[i]->title;
-    items->push_back(NavigationListItem(base::UTF8ToUTF16(title), offset));
+    items->push_back(NavigationListItem(
+        base::UTF8ToUTF16(navigation_list_[i]->title), offset));
   }
 }
 
@@ -106,11 +106,11 @@ void View::LoadingStateChanged(bool is_loading) {
 }
 
 void View::NavigationStateChanged(const GURL& url,
-                                  const mojo::String& title,
+                                  const std::string& title,
                                   bool can_go_back,
                                   bool can_go_forward) {
   url_ = url;
-  title_ = base::UTF8ToUTF16(title.get());
+  title_ = base::UTF8ToUTF16(title);
   can_go_back_ = can_go_back;
   can_go_forward_ = can_go_forward;
   for (auto& observer : observers_)

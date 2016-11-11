@@ -44,7 +44,7 @@ class NavigationTest : public service_manager::test::ServiceTest,
       loop_->Quit();
   }
   void NavigationStateChanged(const GURL& url,
-                              const mojo::String& title,
+                              const std::string& title,
                               bool can_go_back,
                               bool can_go_forward) override {}
   void LoadProgressChanged(double progress) override {}
