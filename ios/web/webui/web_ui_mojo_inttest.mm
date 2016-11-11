@@ -49,16 +49,16 @@ class TestUIHandler
 
   // TestUIHandlerMojo overrides.
   void SetClientPage(TestPagePtr page) override { page_ = std::move(page); }
-  void HandleJsMessage(const mojo::String& message) override {
-    if (message.get() == "syn") {
+  void HandleJsMessage(const std::string& message) override {
+    if (message == "syn") {
       // Received "syn" message from WebUI page, send "ack" as reply.
       DCHECK(!syn_received_);
       DCHECK(!fin_received_);
       syn_received_ = true;
       NativeMessageResultMojoPtr result(NativeMessageResultMojo::New());
-      result->message = mojo::String::From("ack");
+      result->message = "ack";
       page_->HandleNativeMessage(std::move(result));
-    } else if (message.get() == "fin") {
+    } else if (message == "fin") {
       // Received "fin" from the WebUI page in response to "ack".
       DCHECK(syn_received_);
       DCHECK(!fin_received_);
