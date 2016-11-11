@@ -19,14 +19,6 @@
 namespace mojo {
 namespace edk {
 
-namespace {
-
-// To prevent abuse, limit the maximum size of shared memory buffers.
-// TODO(rockot): Re-consider this limit, or do something smarter.
-const uint32_t kMaxSharedBufferSize = 16 * 1024 * 1024;
-
-}  // namespace
-
 BrokerHost::BrokerHost(base::ProcessHandle client_process,
                        ScopedPlatformHandle platform_handle)
 #if defined(OS_WIN)
@@ -107,17 +99,13 @@ void BrokerHost::SendNamedChannel(const base::StringPiece16& pipe_name) {
 #endif  // defined(OS_WIN)
 
 void BrokerHost::OnBufferRequest(uint32_t num_bytes) {
-  scoped_refptr<PlatformSharedBuffer> buffer;
   scoped_refptr<PlatformSharedBuffer> read_only_buffer;
-  if (num_bytes <= kMaxSharedBufferSize) {
-    buffer = PlatformSharedBuffer::Create(num_bytes);
-    if (buffer)
-      read_only_buffer = buffer->CreateReadOnlyDuplicate();
-    if (!read_only_buffer)
-      buffer = nullptr;
-  } else {
-    LOG(ERROR) << "Shared buffer request too large: " << num_bytes;
-  }
+  scoped_refptr<PlatformSharedBuffer> buffer =
+      PlatformSharedBuffer::Create(num_bytes);
+  if (buffer)
+    read_only_buffer = buffer->CreateReadOnlyDuplicate();
+  if (!read_only_buffer)
+    buffer = nullptr;
 
   Channel::MessagePtr message = CreateBrokerMessage(
       BrokerMessageType::BUFFER_RESPONSE, buffer ? 2 : 0, nullptr);
