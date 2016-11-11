@@ -139,6 +139,22 @@ struct drm_property_info {
 	struct drm_property_enum_info *enum_values; /**< array of enum values */
 };
 
+/**
+ * Mode for drm_output_state_duplicate.
+ */
+enum drm_output_state_duplicate_mode {
+	DRM_OUTPUT_STATE_CLEAR_PLANES, /**< reset all planes to off */
+	DRM_OUTPUT_STATE_PRESERVE_PLANES, /**< preserve plane state */
+};
+
+/**
+ * Mode for drm_pending_state_apply and co.
+ */
+enum drm_state_apply_mode {
+	DRM_STATE_APPLY_SYNC, /**< state fully processed */
+	DRM_STATE_APPLY_ASYNC, /**< state pending event delivery */
+};
+
 struct drm_backend {
 	struct weston_backend base;
 	struct weston_compositor *compositor;
@@ -235,6 +251,23 @@ struct drm_edid {
  */
 struct drm_pending_state {
 	struct drm_backend *backend;
+	struct wl_list output_list;
+};
+
+/*
+ * Output state holds the dynamic state for one Weston output, i.e. a KMS CRTC,
+ * plus >= 1 each of encoder/connector/plane. Since everything but the planes
+ * is currently statically assigned per-output, we mainly use this to track
+ * plane state.
+ *
+ * pending_state is set when the output state is owned by a pending_state,
+ * i.e. when it is being constructed and has not yet been applied. When the
+ * output state has been applied, the owning pending_state is freed.
+ */
+struct drm_output_state {
+	struct drm_pending_state *pending_state;
+	struct drm_output *output;
+	struct wl_list link;
 };
 
 /**
@@ -327,6 +360,12 @@ struct drm_output {
 	/* Framebuffer we are going to submit to the kernel when the current
 	 * repaint is flushed. */
 	struct drm_fb *fb_pending;
+
+	/* The last state submitted to the kernel for this CRTC. */
+	struct drm_output_state *state_cur;
+	/* The previously-submitted state, where the hardware has not
+	 * yet acknowledged completion of state_cur. */
+	struct drm_output_state *state_last;
 
 	struct drm_fb *dumb[2];
 	pixman_image_t *image[2];
@@ -601,6 +640,9 @@ drm_output_set_cursor(struct drm_output *output);
 
 static void
 drm_output_update_msc(struct drm_output *output, unsigned int seq);
+
+static void
+drm_output_destroy(struct weston_output *output_base);
 
 static int
 drm_plane_crtc_supported(struct drm_output *output, struct drm_plane *plane)
@@ -902,11 +944,69 @@ drm_fb_unref(struct drm_fb *fb)
 	}
 }
 
-static int
-drm_view_transform_supported(struct weston_view *ev)
+/**
+ * Allocate a new, empty drm_output_state. This should not generally be used
+ * in the repaint cycle; see drm_output_state_duplicate.
+ */
+static struct drm_output_state *
+drm_output_state_alloc(struct drm_output *output,
+		       struct drm_pending_state *pending_state)
 {
-	return !ev->transform.enabled ||
-		(ev->transform.matrix.type < WESTON_MATRIX_TRANSFORM_ROTATE);
+	struct drm_output_state *state = zalloc(sizeof(*state));
+
+	assert(state);
+	state->output = output;
+	state->pending_state = pending_state;
+	if (pending_state)
+		wl_list_insert(&pending_state->output_list, &state->link);
+	else
+		wl_list_init(&state->link);
+
+	return state;
+}
+
+/**
+ * Duplicate an existing drm_output_state into a new one. This is generally
+ * used during the repaint cycle, to capture the existing state of an output
+ * and modify it to create a new state to be used.
+ *
+ * The mode determines whether the output will be reset to an a blank state,
+ * or an exact mirror of the current state.
+ */
+static struct drm_output_state *
+drm_output_state_duplicate(struct drm_output_state *src,
+			   struct drm_pending_state *pending_state,
+			   enum drm_output_state_duplicate_mode plane_mode)
+{
+	struct drm_output_state *dst = malloc(sizeof(*dst));
+
+	assert(dst);
+
+	/* Copy the whole structure, then individually modify the
+	 * pending_state, as well as the list link into our pending
+	 * state. */
+	*dst = *src;
+
+	dst->pending_state = pending_state;
+	if (pending_state)
+		wl_list_insert(&pending_state->output_list, &dst->link);
+	else
+		wl_list_init(&dst->link);
+
+	return dst;
+}
+
+/**
+ * Free an unused drm_output_state.
+ */
+static void
+drm_output_state_free(struct drm_output_state *state)
+{
+	if (!state)
+		return;
+
+	wl_list_remove(&state->link);
+	free(state);
 }
 
 /**
@@ -928,6 +1028,7 @@ drm_pending_state_alloc(struct drm_backend *backend)
 		return NULL;
 
 	ret->backend = backend;
+	wl_list_init(&ret->output_list);
 
 	return ret;
 }
@@ -935,17 +1036,120 @@ drm_pending_state_alloc(struct drm_backend *backend)
 /**
  * Free a drm_pending_state structure
  *
- * Frees a pending_state structure.
+ * Frees a pending_state structure, as well as any output_states connected
+ * to this pending state.
  *
  * @param pending_state Pending state structure to free
  */
 static void
 drm_pending_state_free(struct drm_pending_state *pending_state)
 {
+	struct drm_output_state *output_state, *tmp;
+
 	if (!pending_state)
 		return;
 
+	wl_list_for_each_safe(output_state, tmp, &pending_state->output_list,
+			      link) {
+		drm_output_state_free(output_state);
+	}
+
 	free(pending_state);
+}
+
+/**
+ * Find an output state in a pending state
+ *
+ * Given a pending_state structure, find the output_state for a particular
+ * output.
+ *
+ * @param pending_state Pending state structure to search
+ * @param output Output to find state for
+ * @returns Output state if present, or NULL if not
+ */
+static struct drm_output_state *
+drm_pending_state_get_output(struct drm_pending_state *pending_state,
+			     struct drm_output *output)
+{
+	struct drm_output_state *output_state;
+
+	wl_list_for_each(output_state, &pending_state->output_list, link) {
+		if (output_state->output == output)
+			return output_state;
+	}
+
+	return NULL;
+}
+
+/**
+ * Mark a drm_output_state (the output's last state) as complete. This handles
+ * any post-completion actions such as updating the repaint timer, disabling the
+ * output, and finally freeing the state.
+ */
+static void
+drm_output_update_complete(struct drm_output *output, uint32_t flags,
+			   unsigned int sec, unsigned int usec)
+{
+	struct timespec ts;
+
+	/* Stop the pageflip timer instead of rearming it here */
+	if (output->pageflip_timer)
+		wl_event_source_timer_update(output->pageflip_timer, 0);
+
+	drm_output_state_free(output->state_last);
+	output->state_last = NULL;
+
+	if (output->destroy_pending) {
+		drm_output_destroy(&output->base);
+		return;
+	} else if (output->disable_pending) {
+		weston_output_disable(&output->base);
+		output->disable_pending = 0;
+		return;
+	}
+
+	ts.tv_sec = sec;
+	ts.tv_nsec = usec * 1000;
+	weston_output_finish_frame(&output->base, &ts, flags);
+
+	/* We can't call this from frame_notify, because the output's
+	 * repaint needed flag is cleared just after that */
+	if (output->recorder)
+		weston_output_schedule_repaint(&output->base);
+}
+
+/**
+ * Mark an output state as current on the output, i.e. it has been
+ * submitted to the kernel. The mode argument determines whether this
+ * update will be applied synchronously (e.g. when calling drmModeSetCrtc),
+ * or asynchronously (in which case we wait for events to complete).
+ */
+static void
+drm_output_assign_state(struct drm_output_state *state,
+			enum drm_state_apply_mode mode)
+{
+	struct drm_output *output = state->output;
+
+	assert(!output->state_last);
+
+	if (mode == DRM_STATE_APPLY_ASYNC)
+		output->state_last = output->state_cur;
+	else
+		drm_output_state_free(output->state_cur);
+
+	wl_list_remove(&state->link);
+	wl_list_init(&state->link);
+	state->pending_state = NULL;
+
+	output->state_cur = state;
+}
+
+
+static int
+drm_view_transform_supported(struct weston_view *ev)
+{
+	return !ev->transform.enabled ||
+		(ev->transform.matrix.type < WESTON_MATRIX_TRANSFORM_ROTATE);
 }
 
 static uint32_t
@@ -979,9 +1183,10 @@ drm_output_check_scanout_format(struct drm_output *output,
 }
 
 static struct weston_plane *
-drm_output_prepare_scanout_view(struct drm_output *output,
+drm_output_prepare_scanout_view(struct drm_output_state *output_state,
 				struct weston_view *ev)
 {
+	struct drm_output *output = output_state->output;
 	struct drm_backend *b = to_drm_backend(output->base.compositor);
 	struct weston_buffer *buffer = ev->surface->buffer_ref.buffer;
 	struct weston_buffer_viewport *viewport = &ev->surface->buffer_viewport;
@@ -1048,8 +1253,9 @@ drm_output_prepare_scanout_view(struct drm_output *output,
 }
 
 static struct drm_fb *
-drm_output_render_gl(struct drm_output *output, pixman_region32_t *damage)
+drm_output_render_gl(struct drm_output_state *state, pixman_region32_t *damage)
 {
+	struct drm_output *output = state->output;
 	struct drm_backend *b = to_drm_backend(output->base.compositor);
 	struct gbm_bo *bo;
 	struct drm_fb *ret;
@@ -1075,8 +1281,10 @@ drm_output_render_gl(struct drm_output *output, pixman_region32_t *damage)
 }
 
 static struct drm_fb *
-drm_output_render_pixman(struct drm_output *output, pixman_region32_t *damage)
+drm_output_render_pixman(struct drm_output_state *state,
+			 pixman_region32_t *damage)
 {
+	struct drm_output *output = state->output;
 	struct weston_compositor *ec = output->base.compositor;
 	pixman_region32_t total_damage, previous_damage;
 
@@ -1102,8 +1310,9 @@ drm_output_render_pixman(struct drm_output *output, pixman_region32_t *damage)
 }
 
 static void
-drm_output_render(struct drm_output *output, pixman_region32_t *damage)
+drm_output_render(struct drm_output_state *state, pixman_region32_t *damage)
 {
+	struct drm_output *output = state->output;
 	struct weston_compositor *c = output->base.compositor;
 	struct drm_backend *b = to_drm_backend(c);
 	struct drm_fb *fb;
@@ -1114,9 +1323,9 @@ drm_output_render(struct drm_output *output, pixman_region32_t *damage)
 		return;
 
 	if (b->use_pixman)
-		fb = drm_output_render_pixman(output, damage);
+		fb = drm_output_render_pixman(state, damage);
 	else
-		fb = drm_output_render_gl(output, damage);
+		fb = drm_output_render_gl(state, damage);
 
 	if (!fb)
 		return;
@@ -1178,6 +1387,8 @@ drm_output_repaint(struct weston_output *output_base,
 		   pixman_region32_t *damage,
 		   void *repaint_data)
 {
+	struct drm_pending_state *pending_state = repaint_data;
+	struct drm_output_state *state = NULL;
 	struct drm_output *output = to_drm_output(output_base);
 	struct drm_backend *backend =
 		to_drm_backend(output->base.compositor);
@@ -1186,7 +1397,18 @@ drm_output_repaint(struct weston_output *output_base,
 	int ret = 0;
 
 	if (output->disable_pending || output->destroy_pending)
-		return -1;
+		goto err;
+
+	assert(!output->state_last);
+
+	/* If planes have been disabled in the core, we might not have
+	 * hit assign_planes at all, so might not have valid output state
+	 * here. */
+	state = drm_pending_state_get_output(pending_state, output);
+	if (!state)
+		state = drm_output_state_duplicate(output->state_cur,
+						   pending_state,
+						   DRM_OUTPUT_STATE_CLEAR_PLANES);
 
 	assert(!output->fb_last);
 
@@ -1200,9 +1422,9 @@ drm_output_repaint(struct weston_output *output_base,
 		output->cursor_plane.y = INT32_MIN;
 	}
 
-	drm_output_render(output, damage);
+	drm_output_render(state, damage);
 	if (!output->fb_pending)
-		return -1;
+		goto err;
 
 	mode = container_of(output->base.current_mode, struct drm_mode, base);
 	if (output->state_invalid || !output->fb_current ||
@@ -1213,7 +1435,7 @@ drm_output_repaint(struct weston_output *output_base,
 				     &mode->mode_info);
 		if (ret) {
 			weston_log("set mode failed: %m\n");
-			goto err_pageflip;
+			goto err;
 		}
 		output_base->set_dpms(output_base, WESTON_DPMS_ON);
 
@@ -1224,7 +1446,7 @@ drm_output_repaint(struct weston_output *output_base,
 			    output->fb_pending->fb_id,
 			    DRM_MODE_PAGE_FLIP_EVENT, output) < 0) {
 		weston_log("queueing pageflip failed: %m\n");
-		goto err_pageflip;
+		goto err;
 	}
 
 	output->fb_last = output->fb_current;
@@ -1292,12 +1514,13 @@ drm_output_repaint(struct weston_output *output_base,
 
 	return 0;
 
-err_pageflip:
+err:
 	output->cursor_view = NULL;
 	if (output->fb_pending) {
 		drm_fb_unref(output->fb_pending);
 		output->fb_pending = NULL;
 	}
+	drm_output_state_free(state);
 
 	return -1;
 }
@@ -1306,6 +1529,8 @@ static void
 drm_output_start_repaint_loop(struct weston_output *output_base)
 {
 	struct drm_output *output = to_drm_output(output_base);
+	struct drm_pending_state *pending_state = NULL;
+	struct drm_output_state *state;
 	struct drm_backend *backend =
 		to_drm_backend(output_base->compositor);
 	uint32_t fb_id;
@@ -1366,6 +1591,11 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
 
 	assert(!output->page_flip_pending);
 	assert(!output->fb_last);
+	assert(!output->state_last);
+
+	pending_state = drm_pending_state_alloc(backend);
+	state = drm_output_state_duplicate(output->state_cur, pending_state,
+					   DRM_OUTPUT_STATE_PRESERVE_PLANES);
 
 	if (drmModePageFlip(backend->drm.fd, output->crtc_id, fb_id,
 			    DRM_MODE_PAGE_FLIP_EVENT, output) < 0) {
@@ -1380,9 +1610,14 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
 	output->fb_last = drm_fb_ref(output->fb_current);
 	output->page_flip_pending = 1;
 
+	drm_output_assign_state(state, DRM_STATE_APPLY_ASYNC);
+	drm_pending_state_free(pending_state);
+
 	return;
 
 finish_frame:
+	drm_pending_state_free(pending_state);
+
 	/* if we cannot page-flip, immediately finish frame */
 	weston_output_finish_frame(output_base, NULL,
 				   WP_PRESENTATION_FEEDBACK_INVALID);
@@ -1405,7 +1640,6 @@ vblank_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec,
 {
 	struct drm_plane *s = (struct drm_plane *)data;
 	struct drm_output *output = s->output;
-	struct timespec ts;
 	uint32_t flags = WP_PRESENTATION_FEEDBACK_KIND_HW_COMPLETION |
 			 WP_PRESENTATION_FEEDBACK_KIND_HW_CLOCK;
 
@@ -1417,26 +1651,17 @@ vblank_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec,
 	drm_fb_unref(s->fb_last);
 	s->fb_last = NULL;
 
-	if (!output->page_flip_pending && !output->vblank_pending) {
-		/* Stop the pageflip timer instead of rearming it here */
-		if (output->pageflip_timer)
-			wl_event_source_timer_update(output->pageflip_timer, 0);
+	if (output->page_flip_pending || output->vblank_pending)
+		return;
 
-		ts.tv_sec = sec;
-		ts.tv_nsec = usec * 1000;
-		weston_output_finish_frame(&output->base, &ts, flags);
-	}
+	drm_output_update_complete(output, flags, sec, usec);
 }
-
-static void
-drm_output_destroy(struct weston_output *base);
 
 static void
 page_flip_handler(int fd, unsigned int frame,
 		  unsigned int sec, unsigned int usec, void *data)
 {
 	struct drm_output *output = data;
-	struct timespec ts;
 	uint32_t flags = WP_PRESENTATION_FEEDBACK_KIND_VSYNC |
 			 WP_PRESENTATION_FEEDBACK_KIND_HW_COMPLETION |
 			 WP_PRESENTATION_FEEDBACK_KIND_HW_CLOCK;
@@ -1449,30 +1674,18 @@ page_flip_handler(int fd, unsigned int frame,
 	drm_fb_unref(output->fb_last);
 	output->fb_last = NULL;
 
-	if (output->destroy_pending)
-		drm_output_destroy(&output->base);
-	else if (output->disable_pending)
-		weston_output_disable(&output->base);
-	else if (!output->vblank_pending) {
-		/* Stop the pageflip timer instead of rearming it here */
-		if (output->pageflip_timer)
-			wl_event_source_timer_update(output->pageflip_timer, 0);
+	if (output->vblank_pending)
+		return;
 
-		ts.tv_sec = sec;
-		ts.tv_nsec = usec * 1000;
-		weston_output_finish_frame(&output->base, &ts, flags);
-
-		/* We can't call this from frame_notify, because the output's
-		 * repaint needed flag is cleared just after that */
-		if (output->recorder)
-			weston_output_schedule_repaint(&output->base);
-	}
+	drm_output_update_complete(output, flags, sec, usec);
 }
 
 /**
  * Begin a new repaint cycle
  *
- * Called by the core compositor at the beginning of a repaint cycle.
+ * Called by the core compositor at the beginning of a repaint cycle. Creates
+ * a new pending_state structure to own any output state created by individual
+ * output repaint functions until the repaint is flushed or cancelled.
  */
 static void *
 drm_repaint_begin(struct weston_compositor *compositor)
@@ -1490,13 +1703,22 @@ drm_repaint_begin(struct weston_compositor *compositor)
  * Flush a repaint set
  *
  * Called by the core compositor when a repaint cycle has been completed
- * and should be flushed.
+ * and should be flushed. Frees the pending state, transitioning ownership
+ * of the output state from the pending state, to the update itself. When
+ * the update completes (see drm_output_update_complete), the output
+ * state will be freed.
  */
 static void
 drm_repaint_flush(struct weston_compositor *compositor, void *repaint_data)
 {
 	struct drm_backend *b = to_drm_backend(compositor);
 	struct drm_pending_state *pending_state = repaint_data;
+	struct drm_output_state *output_state, *tmp;
+
+	wl_list_for_each_safe(output_state, tmp, &pending_state->output_list,
+			      link) {
+		drm_output_assign_state(output_state, DRM_STATE_APPLY_ASYNC);
+	}
 
 	drm_pending_state_free(pending_state);
 	b->repaint_data = NULL;
@@ -1548,9 +1770,10 @@ drm_output_check_plane_format(struct drm_plane *p,
 }
 
 static struct weston_plane *
-drm_output_prepare_overlay_view(struct drm_output *output,
+drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 				struct weston_view *ev)
 {
+	struct drm_output *output = output_state->output;
 	struct weston_compositor *ec = output->base.compositor;
 	struct drm_backend *b = to_drm_backend(ec);
 	struct weston_buffer_viewport *viewport = &ev->surface->buffer_viewport;
@@ -1734,9 +1957,10 @@ drm_output_prepare_overlay_view(struct drm_output *output,
 }
 
 static struct weston_plane *
-drm_output_prepare_cursor_view(struct drm_output *output,
+drm_output_prepare_cursor_view(struct drm_output_state *output_state,
 			       struct weston_view *ev)
 {
+	struct drm_output *output = output_state->output;
 	struct drm_backend *b = to_drm_backend(output->base.compositor);
 	struct weston_buffer_viewport *viewport = &ev->surface->buffer_viewport;
 	struct wl_shm_buffer *shmbuf;
@@ -1867,11 +2091,18 @@ static void
 drm_assign_planes(struct weston_output *output_base, void *repaint_data)
 {
 	struct drm_backend *b = to_drm_backend(output_base->compositor);
+	struct drm_pending_state *pending_state = repaint_data;
 	struct drm_output *output = to_drm_output(output_base);
+	struct drm_output_state *state;
 	struct weston_view *ev, *next;
 	pixman_region32_t overlap, surface_overlap;
 	struct weston_plane *primary, *next_plane;
 	bool picked_scanout = false;
+
+	assert(!output->state_last);
+	state = drm_output_state_duplicate(output->state_cur,
+					   pending_state,
+					   DRM_OUTPUT_STATE_CLEAR_PLANES);
 
 	/*
 	 * Find a surface for each sprite in the output using some heuristics:
@@ -1921,19 +2152,19 @@ drm_assign_planes(struct weston_output *output_base, void *repaint_data)
 		if (pixman_region32_not_empty(&surface_overlap) || picked_scanout)
 			next_plane = primary;
 		if (next_plane == NULL)
-			next_plane = drm_output_prepare_cursor_view(output, ev);
+			next_plane = drm_output_prepare_cursor_view(state, ev);
 
 		/* If a higher-stacked view already got assigned to scanout, it's incorrect to
 		 * assign a subsequent (lower-stacked) view to scanout.
 		 */
 		if (next_plane == NULL) {
-			next_plane = drm_output_prepare_scanout_view(output, ev);
+			next_plane = drm_output_prepare_scanout_view(state, ev);
 			if (next_plane)
 				picked_scanout = true;
 		}
 
 		if (next_plane == NULL)
-			next_plane = drm_output_prepare_overlay_view(output, ev);
+			next_plane = drm_output_prepare_overlay_view(state, ev);
 
 		if (next_plane == NULL)
 			next_plane = primary;
@@ -3260,7 +3491,7 @@ drm_output_destroy(struct weston_output *base)
 	struct drm_mode *drm_mode, *next;
 	drmModeCrtcPtr origcrtc = output->original_crtc;
 
-	if (output->page_flip_pending) {
+	if (output->page_flip_pending || output->vblank_pending) {
 		output->destroy_pending = 1;
 		weston_log("destroy output while page flip pending\n");
 		return;
@@ -3295,6 +3526,9 @@ drm_output_destroy(struct weston_output *base)
 	if (output->backlight)
 		backlight_destroy(output->backlight);
 
+	assert(!output->state_last);
+	drm_output_state_free(output->state_cur);
+
 	free(output);
 }
 
@@ -3304,7 +3538,7 @@ drm_output_disable(struct weston_output *base)
 	struct drm_output *output = to_drm_output(base);
 	struct drm_backend *b = to_drm_backend(base->compositor);
 
-	if (output->page_flip_pending) {
+	if (output->page_flip_pending || output->vblank_pending) {
 		output->disable_pending = 1;
 		return -1;
 	}
@@ -3312,11 +3546,18 @@ drm_output_disable(struct weston_output *base)
 	if (output->base.enabled)
 		drm_output_deinit(&output->base);
 
+	assert(!output->fb_last);
+	assert(!output->fb_current);
+	assert(!output->fb_pending);
+
 	output->disable_pending = 0;
 
 	weston_log("Disabling output %s\n", output->base.name);
 	drmModeSetCrtc(b->drm.fd, output->crtc_id,
 		       0, 0, 0, 0, 0, NULL);
+
+	drm_output_state_free(output->state_cur);
+	output->state_cur = drm_output_state_alloc(output, NULL);
 
 	return 0;
 }
@@ -3403,6 +3644,8 @@ create_output_for_connector(struct drm_backend *b,
 	if (output->connector->connector_type == DRM_MODE_CONNECTOR_LVDS ||
 	    output->connector->connector_type == DRM_MODE_CONNECTOR_eDP)
 		output->base.connection_internal = true;
+
+	output->state_cur = drm_output_state_alloc(output, NULL);
 
 	output->base.mm_width = output->connector->mmWidth;
 	output->base.mm_height = output->connector->mmHeight;
