@@ -84,17 +84,15 @@ enum KeyModifierMask {
 };
 
 struct KeyEvent {
-  KeyEvent(KeyEventType type,
-           int modifiers,
-           const std::string& modified_text,
-           const std::string& unmodified_text,
-           ui::KeyboardCode key_code);
+  KeyEvent();
+  KeyEvent(const KeyEvent& that);
   ~KeyEvent();
 
   KeyEventType type;
   int modifiers;
   std::string modified_text;
   std::string unmodified_text;
+  std::string key;
   ui::KeyboardCode key_code;
 };
 
@@ -113,6 +111,8 @@ class KeyEventBuilder {
   void Generate(std::list<KeyEvent>* key_events);
 
  private:
+  void UpdateKeyString();
+
   KeyEvent key_event_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyEventBuilder);

@@ -405,8 +405,8 @@ Status WebViewImpl::DispatchKeyEvents(const std::list<KeyEvent>& events) {
     std::string code = ui::KeycodeConverter::DomCodeToCodeString(dom_code);
     if (!code.empty())
       params.SetString("code", code);
-    if (!it->modified_text.empty())
-      params.SetString("key", it->modified_text);
+    if (!it->key.empty())
+      params.SetString("key", it->key);
     Status status = client_->SendCommand("Input.dispatchKeyEvent", params);
     if (status.IsError())
       return status;

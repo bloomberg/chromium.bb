@@ -5,6 +5,9 @@
 #include "chrome/test/chromedriver/chrome/ui_events.h"
 
 #include "base/logging.h"
+#include "ui/events/event_constants.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/events/keycodes/keyboard_code_conversion.h"
 
 MouseEvent::MouseEvent(MouseEventType type,
                        MouseButton button,
@@ -30,25 +33,25 @@ TouchEvent::TouchEvent(TouchEventType type,
 
 TouchEvent::~TouchEvent() {}
 
-KeyEvent::KeyEvent(KeyEventType type,
-                   int modifiers,
-                   const std::string& modified_text,
-                   const std::string& unmodified_text,
-                   ui::KeyboardCode key_code)
-    : type(type),
-      modifiers(modifiers),
-      modified_text(modified_text),
-      unmodified_text(unmodified_text),
-      key_code(key_code) {}
+KeyEvent::KeyEvent()
+    : type(kInvalidEventType),
+      modifiers(0),
+      modified_text(std::string()),
+      unmodified_text(std::string()),
+      key(std::string()),
+      key_code(ui::VKEY_UNKNOWN) {}
+
+KeyEvent::KeyEvent(const KeyEvent& that)
+    : type(that.type),
+      modifiers(that.modifiers),
+      modified_text(that.modified_text),
+      unmodified_text(that.unmodified_text),
+      key(that.key),
+      key_code(that.key_code) {}
 
 KeyEvent::~KeyEvent() {}
 
-KeyEventBuilder::KeyEventBuilder()
-    : key_event_(kInvalidEventType,
-                 0,
-                 std::string(),
-                 std::string(),
-                 ui::VKEY_UNKNOWN) {}
+KeyEventBuilder::KeyEventBuilder() {}
 
 KeyEventBuilder::~KeyEventBuilder() {}
 
@@ -59,11 +62,13 @@ KeyEventBuilder* KeyEventBuilder::SetType(KeyEventType type) {
 
 KeyEventBuilder* KeyEventBuilder::AddModifiers(int modifiers) {
   key_event_.modifiers |= modifiers;
+  UpdateKeyString();
   return this;
 }
 
 KeyEventBuilder* KeyEventBuilder::SetModifiers(int modifiers) {
   key_event_.modifiers = modifiers;
+  UpdateKeyString();
   return this;
 }
 
@@ -76,6 +81,7 @@ KeyEventBuilder* KeyEventBuilder::SetText(const std::string& unmodified_text,
 
 KeyEventBuilder* KeyEventBuilder::SetKeyCode(ui::KeyboardCode key_code) {
   key_event_.key_code = key_code;
+  UpdateKeyString();
   return this;
 }
 
@@ -89,4 +95,25 @@ void KeyEventBuilder::Generate(std::list<KeyEvent>* key_events) {
   if (key_event_.modified_text.length() || key_event_.unmodified_text.length())
     key_events->push_back(SetType(kCharEventType)->Build());
   key_events->push_back(SetType(kKeyUpEventType)->Build());
+}
+
+void KeyEventBuilder::UpdateKeyString() {
+  ui::DomCode dom_code = ui::UsLayoutKeyboardCodeToDomCode(key_event_.key_code);
+  int flags = ui::EventFlags::EF_NONE;
+  if (key_event_.modifiers & kAltKeyModifierMask)
+    flags |= ui::EventFlags::EF_ALT_DOWN;
+  if (key_event_.modifiers & kControlKeyModifierMask)
+    flags |= ui::EventFlags::EF_CONTROL_DOWN;
+  if (key_event_.modifiers & kMetaKeyModifierMask)
+    flags |= ui::EventFlags::EF_COMMAND_DOWN;
+  if (key_event_.modifiers & kShiftKeyModifierMask)
+    flags |= ui::EventFlags::EF_SHIFT_DOWN;
+  if (key_event_.modifiers & kNumLockKeyModifierMask)
+    flags |= ui::EventFlags::EF_NUM_LOCK_ON;
+  ui::DomKey dom_key;
+  ui::KeyboardCode ignored;
+  if (ui::DomCodeToUsLayoutDomKey(dom_code, flags, &dom_key, &ignored))
+    key_event_.key = ui::KeycodeConverter::DomKeyToKeyString(dom_key);
+  else
+    key_event_.key = std::string();
 }
