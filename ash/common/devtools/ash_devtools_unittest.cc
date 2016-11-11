@@ -226,6 +226,30 @@ TEST_F(AshDevToolsTest, WindowDestroyedChildNodeRemoved) {
   ExpectChildNodeRemoved(parent_node->getNodeId(), child_node->getNodeId());
 }
 
+TEST_F(AshDevToolsTest, WindowReorganizedChildNodeRearranged) {
+  // Initialize DOMAgent
+  std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
+  dom_agent()->getDocument(&root);
+
+  WmWindow* root_window = WmShell::Get()->GetPrimaryRootWindow();
+  WmWindow* target_window = root_window->GetChildren()[1];
+  WmWindow* child_window = root_window->GetChildren()[0]->GetChildren()[0];
+
+  DOM::Node* root_node = root->getChildren(nullptr)->get(0);
+  DOM::Node* parent_node = root_node->getChildren(nullptr)->get(0);
+  DOM::Node* target_node = root_node->getChildren(nullptr)->get(1);
+  Array<DOM::Node>* target_node_children = target_node->getChildren(nullptr);
+  DOM::Node* sibling_node =
+      target_node_children->get(target_node_children->length() - 1);
+  DOM::Node* child_node = parent_node->getChildren(nullptr)->get(0);
+
+  Compare(target_window, target_node);
+  Compare(child_window, child_node);
+  target_window->AddChild(child_window);
+  ExpectChildNodeRemoved(parent_node->getNodeId(), child_node->getNodeId());
+  ExpectChildNodeInserted(target_node->getNodeId(), sibling_node->getNodeId());
+}
+
 TEST_F(AshDevToolsTest, WindowReorganizedChildNodeRemovedAndInserted) {
   // Initialize DOMAgent
   std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
@@ -245,6 +269,7 @@ TEST_F(AshDevToolsTest, WindowReorganizedChildNodeRemovedAndInserted) {
 
   Compare(target_window, target_node);
   Compare(child_window, child_node);
+  child_window->GetParent()->RemoveChild(child_window);
   target_window->AddChild(child_window);
   ExpectChildNodeRemoved(parent_node->getNodeId(), child_node->getNodeId());
   ExpectChildNodeInserted(target_node->getNodeId(), sibling_node->getNodeId());
