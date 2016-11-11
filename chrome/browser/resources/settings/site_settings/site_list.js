@@ -44,7 +44,7 @@ Polymer({
     },
 
     /**
-     * The site serving as the model for the currenly open action menu.
+     * The site serving as the model for the currently open action menu.
      * @private {?SiteException}
      */
     actionMenuSite_: Object,
@@ -127,7 +127,7 @@ Polymer({
   },
 
   observers: [
-    'configureWidget_(category, categorySubtype, categoryEnabled, allSites)'
+    'configureWidget_(category, categorySubtype)'
   ],
 
   ready: function() {
@@ -176,6 +176,12 @@ Polymer({
 
     this.setUpActionMenu_();
     this.populateList_();
+
+    // The Session permissions are only for cookies.
+    if (this.categorySubtype == settings.PermissionValues.SESSION_ONLY) {
+      this.$.category.hidden =
+          this.category != settings.ContentSettingsTypes.COOKIES;
+    }
   },
 
   /**
@@ -210,21 +216,13 @@ Polymer({
   },
 
   /**
-   * Makes sure the visibility is correct for this widget.
-   * @private
-   */
-  updateCategoryVisibility_: function() {
-    this.$.category.hidden =
-        !this.showSiteList_(this.sites, this.categoryEnabled);
-  },
-
-  /**
    * A handler for the Add Site button.
    * @private
    */
   onAddSiteTap_: function() {
     var dialog = document.createElement('add-site-dialog');
     dialog.category = this.category;
+    dialog.contentSetting = this.categorySubtype;
     this.shadowRoot.appendChild(dialog);
 
     dialog.open(this.categorySubtype);
@@ -262,7 +260,6 @@ Polymer({
     for (var i = 0; i < data.length; ++i)
       sites = this.appendSiteList_(sites, data[i]);
     this.sites = this.toSiteArray_(sites);
-    this.updateCategoryVisibility_();
   },
 
   /**
@@ -364,7 +361,7 @@ Polymer({
   },
 
   /**
-   * Setup the values to use for the action menu.
+   * Set up the values to use for the action menu.
    * @private
    */
   setUpActionMenu_: function() {
@@ -464,42 +461,6 @@ Polymer({
     if (item.incognito)
       return loadTimeData.getString('incognitoSite');
     return item.embeddingOriginForDisplay;
-  },
-
-  /**
-   * Returns true if this widget is showing the Allow list.
-   * @private
-   */
-  isAllowList_: function() {
-    return this.categorySubtype == settings.PermissionValues.ALLOW;
-  },
-
-  /**
-   * Returns true if this widget is showing the Session Only list.
-   * @private
-   */
-  isSessionOnlyList_: function() {
-    return this.categorySubtype == settings.PermissionValues.SESSION_ONLY;
-  },
-
-  /**
-   * Returns whether to show the site list.
-   * @param {Array} siteList The list of all sites to display for this category
-   *     subtype.
-   * @param {boolean} toggleState The state of the global toggle for this
-   *     category.
-   * @private
-   */
-  showSiteList_: function(siteList, toggleState) {
-    // The Block list is only shown when the category is set to Allow since it
-    // is redundant to also list all the sites that are blocked.
-    if (this.isAllowList_())
-      return true;
-
-    if (this.isSessionOnlyList_())
-      return siteList.length > 0;
-
-    return toggleState;
   },
 
   /**

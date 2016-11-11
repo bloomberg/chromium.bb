@@ -140,6 +140,8 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
       pref = this.prefs_.defaults.mic;
     } else if (contentType == settings.ContentSettingsTypes.NOTIFICATIONS) {
       pref = this.prefs_.defaults.notifications;
+    } else if (contentType == settings.ContentSettingsTypes.PDF_DOCUMENTS) {
+      pref = this.prefs_.defaults.pdf_documents;
     } else if (contentType == settings.ContentSettingsTypes.POPUPS) {
       pref = this.prefs_.defaults.popups;
     } else if (contentType == settings.ContentSettingsTypes.PLUGINS) {
@@ -182,6 +184,8 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
       pref = this.prefs_.exceptions.mic;
     else if (contentType == settings.ContentSettingsTypes.NOTIFICATIONS)
       pref = this.prefs_.exceptions.notifications;
+    else if (contentType == settings.ContentSettingsTypes.PDF_DOCUMENTS)
+      pref = this.prefs_.exceptions.pdf_documents;
     else if (contentType == settings.ContentSettingsTypes.PLUGINS)
       pref = this.prefs_.exceptions.plugins;
     else if (contentType == settings.ContentSettingsTypes.POPUPS)

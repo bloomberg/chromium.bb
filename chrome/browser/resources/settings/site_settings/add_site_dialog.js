@@ -14,15 +14,28 @@ Polymer({
 
   properties: {
     /**
+     * What kind of setting, e.g. Location, Camera, Cookies, and so on.
+     * @type {settings.ContentSettingsTypes}
+     */
+    category: String,
+
+    /**
+     * Whether this is about an Allow, Block, SessionOnly, or other.
+     * @type {settings.PermissionValues}
+     */
+    contentSetting: String,
+
+    /**
      * The site to add an exception for.
      * @private
      */
     site_: String,
+  },
 
-    /**
-     * Whether this is an allow exception this dialog is adding.
-     */
-     allowException: Boolean,
+  /** @override */
+  attached: function() {
+    assert(this.category);
+    assert(this.contentSetting);
   },
 
   /**
@@ -33,7 +46,6 @@ Polymer({
   open: function(type) {
     this.addWebUIListener('onIncognitoStatusChanged',
         this.onIncognitoStatusChanged_.bind(this));
-    this.allowException = type == settings.PermissionValues.ALLOW;
     this.browserProxy.updateIncognitoStatus();
     this.$.dialog.showModal();
   },
@@ -76,8 +88,7 @@ Polymer({
       return;  // Can happen when Enter is pressed.
     var pattern = this.addPatternWildcard(this.site_);
     this.browserProxy.setCategoryPermissionForOrigin(
-        pattern, pattern, this.category, this.allowException ?
-            settings.PermissionValues.ALLOW : settings.PermissionValues.BLOCK,
+        pattern, pattern, this.category, this.contentSetting,
         this.$.incognito.checked);
     this.$.dialog.close();
   },
