@@ -477,7 +477,7 @@ void PolicyUIHandler::RegisterMessages() {
         connector->GetDeviceLocalAccountPolicyService();
     if (local_account_service) {
       user_status_provider_.reset(new DeviceLocalAccountPolicyStatusProvider(
-          user_manager->GetLoggedInUser()->GetAccountId().GetUserEmail(),
+          user_manager->GetActiveUser()->GetAccountId().GetUserEmail(),
           local_account_service));
     }
   } else {

@@ -44,46 +44,37 @@ const user_manager::UserList& MockUserManager::GetUsers() const {
   return user_list_;
 }
 
-const user_manager::User* MockUserManager::GetLoggedInUser() const {
-  return user_list_.empty() ? NULL : user_list_.front();
-}
-
-user_manager::User* MockUserManager::GetLoggedInUser() {
-  return user_list_.empty() ? NULL : user_list_.front();
-}
-
 user_manager::UserList MockUserManager::GetUnlockUsers() const {
   return user_list_;
 }
 
 const AccountId& MockUserManager::GetOwnerAccountId() const {
-  temporary_owner_account_id_ = GetLoggedInUser()->GetAccountId();
-  return temporary_owner_account_id_;
+  return GetActiveUser()->GetAccountId();
 }
 
 const user_manager::User* MockUserManager::GetActiveUser() const {
-  return GetLoggedInUser();
+  return user_list_.empty() ? nullptr : user_list_.front();
 }
 
 user_manager::User* MockUserManager::GetActiveUser() {
-  return GetLoggedInUser();
+  return user_list_.empty() ? nullptr : user_list_.front();
 }
 
 const user_manager::User* MockUserManager::GetPrimaryUser() const {
-  return GetLoggedInUser();
+  return GetActiveUser();
 }
 
 BootstrapManager* MockUserManager::GetBootstrapManager() {
-  return NULL;
+  return nullptr;
 }
 
 MultiProfileUserController* MockUserManager::GetMultiProfileUserController() {
-  return NULL;
+  return nullptr;
 }
 
 UserImageManager* MockUserManager::GetUserImageManager(
     const AccountId& account_id) {
-  return NULL;
+  return nullptr;
 }
 
 SupervisedUserManager* MockUserManager::GetSupervisedUserManager() {

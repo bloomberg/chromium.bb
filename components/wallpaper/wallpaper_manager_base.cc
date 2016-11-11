@@ -327,7 +327,7 @@ void WallpaperManagerBase::EnsureLoggedInUserWallpaperLoaded() {
       return;
   }
   SetUserWallpaperNow(
-      user_manager::UserManager::Get()->GetLoggedInUser()->GetAccountId());
+      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());
 }
 
 void WallpaperManagerBase::ClearDisposableWallpaperCache() {
@@ -368,8 +368,7 @@ bool WallpaperManagerBase::GetLoggedInUserWallpaperInfo(WallpaperInfo* info) {
   }
 
   return GetUserWallpaperInfo(
-      user_manager::UserManager::Get()->GetLoggedInUser()->GetAccountId(),
-      info);
+      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId(), info);
 }
 
 // static
@@ -872,7 +871,7 @@ void WallpaperManagerBase::MoveCustomWallpapersSuccess(
 void WallpaperManagerBase::MoveLoggedInUserCustomWallpaper() {
   DCHECK(thread_checker_.CalledOnValidThread());
   const user_manager::User* logged_in_user =
-      user_manager::UserManager::Get()->GetLoggedInUser();
+      user_manager::UserManager::Get()->GetActiveUser();
   if (logged_in_user) {
     task_runner_->PostTask(
         FROM_HERE,

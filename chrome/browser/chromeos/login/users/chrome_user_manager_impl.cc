@@ -1013,7 +1013,7 @@ bool ChromeUserManagerImpl::UpdateAndCleanUpDeviceLocalAccounts(
   for (user_manager::UserList::iterator it = users_.begin();
        it != users_.end();) {
     if ((*it)->IsDeviceLocalAccount()) {
-      if (*it != GetLoggedInUser())
+      if (*it != GetActiveUser())
         DeleteUser(*it);
       it = users_.erase(it);
     } else {
@@ -1075,7 +1075,7 @@ UserFlow* ChromeUserManagerImpl::GetCurrentUserFlow() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!IsUserLoggedIn())
     return GetDefaultUserFlow();
-  return GetUserFlow(GetLoggedInUser()->GetAccountId());
+  return GetUserFlow(GetActiveUser()->GetAccountId());
 }
 
 UserFlow* ChromeUserManagerImpl::GetUserFlow(

@@ -788,7 +788,7 @@ void UserSessionManager::OnSessionRestoreStateChanged(
   if (!connection_error) {
     // We are in one of "done" states here.
     user_manager::UserManager::Get()->SaveUserOAuthStatus(
-        user_manager::UserManager::Get()->GetLoggedInUser()->GetAccountId(),
+        user_manager::UserManager::Get()->GetActiveUser()->GetAccountId(),
         user_status);
   }
 

@@ -179,14 +179,6 @@ user_manager::User* FakeUserManager::FindUserAndModify(
   return nullptr;
 }
 
-const user_manager::User* FakeUserManager::GetLoggedInUser() const {
-  return nullptr;
-}
-
-user_manager::User* FakeUserManager::GetLoggedInUser() {
-  return nullptr;
-}
-
 const user_manager::User* FakeUserManager::GetPrimaryUser() const {
   return primary_user_;
 }

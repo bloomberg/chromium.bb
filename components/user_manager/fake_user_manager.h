@@ -71,8 +71,6 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
   const user_manager::User* FindUser(
       const AccountId& account_id) const override;
   user_manager::User* FindUserAndModify(const AccountId& account_id) override;
-  const user_manager::User* GetLoggedInUser() const override;
-  user_manager::User* GetLoggedInUser() override;
   const user_manager::User* GetPrimaryUser() const override;
   void SaveUserOAuthStatus(
       const AccountId& account_id,

@@ -223,7 +223,7 @@ void UserImageScreen::PrepareToShow() {
 }
 
 const user_manager::User* UserImageScreen::GetUser() {
-  return user_manager::UserManager::Get()->GetLoggedInUser();
+  return user_manager::UserManager::Get()->GetActiveUser();
 }
 
 UserImageManager* UserImageScreen::GetUserImageManager() {

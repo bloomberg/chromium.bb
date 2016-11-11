@@ -127,7 +127,7 @@ void FakeChromeUserManager::SetUserFlow(const AccountId& account_id,
 UserFlow* FakeChromeUserManager::GetCurrentUserFlow() const {
   if (!IsUserLoggedIn())
     return GetDefaultUserFlow();
-  return GetUserFlow(GetLoggedInUser()->GetAccountId());
+  return GetUserFlow(GetActiveUser()->GetAccountId());
 }
 
 UserFlow* FakeChromeUserManager::GetUserFlow(

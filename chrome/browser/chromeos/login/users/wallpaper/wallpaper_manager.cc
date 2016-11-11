@@ -401,7 +401,7 @@ void WallpaperManager::EnsureLoggedInUserWallpaperLoaded() {
       return;
   }
   SetUserWallpaperNow(
-      user_manager::UserManager::Get()->GetLoggedInUser()->GetAccountId());
+      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId());
 }
 
 void WallpaperManager::InitializeWallpaper() {
@@ -443,7 +443,7 @@ void WallpaperManager::InitializeWallpaper() {
       InitializeRegisteredDeviceWallpaper();
     return;
   }
-  SetUserWallpaperDelayed(user_manager->GetLoggedInUser()->GetAccountId());
+  SetUserWallpaperDelayed(user_manager->GetActiveUser()->GetAccountId());
 }
 
 void WallpaperManager::Open() {

@@ -122,10 +122,8 @@ class MockUserManager : public ChromeUserManager {
   // You can't mock these functions easily because nobody can create
   // User objects but the ChromeUserManager and us.
   const user_manager::UserList& GetUsers() const override;
-  const user_manager::User* GetLoggedInUser() const override;
   user_manager::UserList GetUnlockUsers() const override;
   const AccountId& GetOwnerAccountId() const override;
-  user_manager::User* GetLoggedInUser() override;
   const user_manager::User* GetActiveUser() const override;
   user_manager::User* GetActiveUser() override;
   const user_manager::User* GetPrimaryUser() const override;
@@ -174,10 +172,6 @@ class MockUserManager : public ChromeUserManager {
   std::unique_ptr<MockUserImageManager> user_image_manager_;
   std::unique_ptr<FakeSupervisedUserManager> supervised_user_manager_;
   user_manager::UserList user_list_;
-  // TODO (alemate): remove temporary_owner_account_id_ as soon as
-  // User::GetAccountId will
-  // return constant reference. crbug.com/546863
-  mutable AccountId temporary_owner_account_id_ = EmptyAccountId();
 };
 
 }  // namespace chromeos

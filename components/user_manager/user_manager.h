@@ -195,12 +195,6 @@ class USER_MANAGER_EXPORT UserManager {
   // Same as FindUser but returns non-const pointer to User object.
   virtual User* FindUserAndModify(const AccountId& account_id) = 0;
 
-  // Returns the logged-in user.
-  // TODO(nkostylev): Deprecate this call, move clients to GetActiveUser().
-  // http://crbug.com/230852
-  virtual const User* GetLoggedInUser() const = 0;
-  virtual User* GetLoggedInUser() = 0;
-
   // Returns the logged-in user that is currently active within this session.
   // There could be multiple users logged in at the the same but for now
   // we support only one of them being active.

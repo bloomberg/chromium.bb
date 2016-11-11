@@ -258,7 +258,7 @@ class UserImageManagerTest : public LoginManagerTest,
     run_loop.Run();
 
     const user_manager::User* user =
-        user_manager::UserManager::Get()->GetLoggedInUser();
+        user_manager::UserManager::Get()->GetActiveUser();
     ASSERT_TRUE(user);
     UserImageManagerImpl* uim = reinterpret_cast<UserImageManagerImpl*>(
         ChromeUserManager::Get()->GetUserImageManager(user->GetAccountId()));

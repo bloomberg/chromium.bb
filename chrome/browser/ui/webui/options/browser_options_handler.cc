@@ -1482,7 +1482,7 @@ void BrowserOptionsHandler::ThemesSetNative(const base::ListValue* args) {
 #if defined(OS_CHROMEOS)
 void BrowserOptionsHandler::UpdateAccountPicture() {
   std::string email = user_manager::UserManager::Get()
-                          ->GetLoggedInUser()
+                          ->GetActiveUser()
                           ->GetAccountId()
                           .GetUserEmail();
   if (!email.empty()) {

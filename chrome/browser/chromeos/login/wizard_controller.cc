@@ -477,7 +477,7 @@ void WizardController::ShowUserImageScreen() {
   // logins.
   if (user_manager->IsLoggedInAsPublicAccount() ||
       (user_manager->IsCurrentUserNonCryptohomeDataEphemeral() &&
-       user_manager->GetLoggedInUser()->GetType() !=
+       user_manager->GetActiveUser()->GetType() !=
            user_manager::USER_TYPE_REGULAR)) {
     OnUserImageSkipped();
     return;
