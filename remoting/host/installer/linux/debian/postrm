@@ -12,13 +12,6 @@ fi
 
 APT_CONFIG="`which apt-config 2> /dev/null`"
 
-apt_config_val() {
-  APTVAR="$1"
-  if [ -x "$APT_CONFIG" ]; then
-    "$APT_CONFIG" dump | sed -e "/^$APTVAR /"'!d' -e "s/^$APTVAR \"\(.*\)\".*/\1/"
-  fi
-}
-
 # Only remove the defaults file if it is not empty. An empty file was probably
 # put there by the sysadmin to disable automatic repository configuration, as
 # per the instructions on the package download page.
@@ -31,9 +24,9 @@ if [ -s "$DEFAULTS_FILE" ]; then
   rm "$DEFAULTS_FILE" || exit 1
 fi
 # Remove Google repository added by the package.
-APTDIR=$(apt_config_val Dir)
-APTETC=$(apt_config_val 'Dir::Etc')
-APT_SOURCESDIR="$APTDIR$APTETC$(apt_config_val 'Dir::Etc::sourceparts')"
-rm -f "$APT_SOURCESDIR/chrome-remote-desktop.list"
+if [ -x "$APT_CONFIG" ]; then
+  eval $("$APT_CONFIG" shell APT_SOURCESDIR 'Dir::Etc::sourceparts/d')
+  rm -f "${APT_SOURCESDIR}chrome-remote-desktop.list"
+fi
 
 #DEBHELPER#
