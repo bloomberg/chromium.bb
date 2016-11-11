@@ -408,7 +408,8 @@ void BidiResolver<Iterator, Run, IsolatedRun>::appendRun(
           USHRT_MAX;  // InlineTextBox stores text length as unsigned short.
       if (end - startOffset > limit)
         end = startOffset + limit;
-      runs.addRun(new Run(startOffset, end, context(), m_direction));
+      runs.addRun(new Run(context()->override(), context()->level(),
+                          startOffset, end, m_direction, context()->dir()));
       startOffset = end;
     }
 

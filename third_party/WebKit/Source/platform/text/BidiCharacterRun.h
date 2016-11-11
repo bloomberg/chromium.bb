@@ -28,19 +28,22 @@
 namespace blink {
 
 struct BidiCharacterRun {
-  BidiCharacterRun(int start,
+  BidiCharacterRun(bool override,
+                   unsigned char level,
+                   int start,
                    int stop,
-                   BidiContext* context,
-                   WTF::Unicode::CharDirection dir)
-      : m_override(context->override()),
+                   WTF::Unicode::CharDirection dir,
+                   WTF::Unicode::CharDirection overrideDir)
+      : m_override(override),
+        m_level(level),
         m_next(0),
         m_start(start),
         m_stop(stop) {
     ASSERT(m_start <= m_stop);
     if (dir == WTF::Unicode::OtherNeutral)
-      dir = context->dir();
+      dir = overrideDir;
 
-    m_level = context->level();
+    m_level = level;
 
     // add level of run (cases I1 & I2)
     if (m_level % 2) {

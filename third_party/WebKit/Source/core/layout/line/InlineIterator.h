@@ -588,8 +588,10 @@ inline BidiRun* InlineBidiResolver::addTrailingRun(
     BidiRun* run,
     BidiContext* context,
     TextDirection direction) const {
-  BidiRun* newTrailingRun = new BidiRun(start, stop, run->m_lineLayoutItem,
-                                        context, WTF::Unicode::OtherNeutral);
+  DCHECK(context);
+  BidiRun* newTrailingRun = new BidiRun(
+      context->override(), context->level(), start, stop, run->m_lineLayoutItem,
+      WTF::Unicode::OtherNeutral, context->dir());
   if (direction == LTR)
     runs.addRun(newTrailingRun);
   else
@@ -650,7 +652,8 @@ static inline BidiRun* addPlaceholderRunForIsolatedInline(
     LineLayoutItem root) {
   ASSERT(obj);
   BidiRun* isolatedRun =
-      new BidiRun(pos, pos, obj, resolver.context(), resolver.dir());
+      new BidiRun(resolver.context()->override(), resolver.context()->level(),
+                  pos, pos, obj, resolver.dir(), resolver.context()->dir());
   resolver.runs().addRun(isolatedRun);
   // FIXME: isolatedRuns() could be a hash of object->run and then we could
   // cheaply ASSERT here that we didn't create multiple objects for the same
@@ -664,7 +667,9 @@ static inline BidiRun* createRun(int start,
                                  int end,
                                  LineLayoutItem obj,
                                  InlineBidiResolver& resolver) {
-  return new BidiRun(start, end, obj, resolver.context(), resolver.dir());
+  return new BidiRun(resolver.context()->override(),
+                     resolver.context()->level(), start, end, obj,
+                     resolver.dir(), resolver.context()->dir());
 }
 
 enum AppendRunBehavior { AppendingFakeRun, AppendingRunsForObject };
