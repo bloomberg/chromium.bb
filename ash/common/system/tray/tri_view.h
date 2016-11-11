@@ -70,10 +70,6 @@ class ASH_EXPORT TriView : public views::View {
 
   ~TriView() override;
 
-  // Set the minimum cross axis size, i.e. the minimum height for a horizontal
-  // orientation.
-  void SetMinCrossAxisSize(int min_size);
-
   // Set the minimum size for the given |container|.
   void SetMinSize(Container container, const gfx::Size& size);
 
@@ -126,15 +122,11 @@ class ASH_EXPORT TriView : public views::View {
  private:
   friend class TriViewTest;
 
-  // Creates a default LayoutManager for the given |orientation|.
-  std::unique_ptr<views::LayoutManager> CreateDefaultLayoutManager(
-      Orientation orientation) const;
-
   // Returns the View for the given |container|.
-  views::View* GetContainer(Container container) const;
+  views::View* GetContainer(Container container);
 
   // Returns the layout manager for the given |container|.
-  SizeRangeLayout* GetLayoutManager(Container container) const;
+  SizeRangeLayout* GetLayoutManager(Container container);
 
   // Type spcific layout manager installed on |this|. Responsible for laying out
   // the container Views.

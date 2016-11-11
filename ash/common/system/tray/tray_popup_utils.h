@@ -116,18 +116,7 @@ class TrayPopupUtils {
   static bool CanOpenWebUISettings(LoginStatus status);
 
  private:
-  TrayPopupUtils() = delete;
-  ~TrayPopupUtils() = delete;
-
-  // Configures the default size and flex value for the specified |container|
-  // of the given |tri_view|. Used by CreateDefaultRowView().
-  static void ConfigureDefaultSizeAndFlex(TriView* tri_view,
-                                          TriView::Container container);
-
-  // Returns the default layout manager used by CreateDefaultRowView() and
-  // ConfigureContainer() for the given |container|.
-  static std::unique_ptr<views::LayoutManager> CreateDefaultLayoutManager(
-      TriView::Container container);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(TrayPopupUtils);
 
   // Returns the default border used by CreateDefaultRow() and
   // ConfigureContainer() for the given |container|.

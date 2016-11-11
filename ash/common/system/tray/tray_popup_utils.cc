@@ -32,25 +32,60 @@ namespace {
 // stretched horizontally and centered vertically.
 std::unique_ptr<views::LayoutManager> CreateDefaultCenterLayoutManager() {
   // TODO(bruthig): Use constants instead of magic numbers.
-  views::BoxLayout* box_layout =
-      new views::BoxLayout(views::BoxLayout::kVertical, 4, 8, 4);
+  auto box_layout =
+      base::MakeUnique<views::BoxLayout>(views::BoxLayout::kVertical, 4, 8, 4);
   box_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   box_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
-  return std::unique_ptr<views::LayoutManager>(box_layout);
+  return std::move(box_layout);
 }
 
 // Creates a layout manager that positions Views horizontally. The Views will be
 // centered along the horizontal and vertical axis.
 std::unique_ptr<views::LayoutManager> CreateDefaultEndsLayoutManager() {
-  views::BoxLayout* box_layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
+  auto box_layout = base::MakeUnique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal, 0, 0, 0);
   box_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
   box_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
-  return std::unique_ptr<views::LayoutManager>(box_layout);
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+  return std::move(box_layout);
+}
+
+std::unique_ptr<views::LayoutManager> CreateDefaultLayoutManager(
+    TriView::Container container) {
+  switch (container) {
+    case TriView::Container::START:
+    case TriView::Container::END:
+      return CreateDefaultEndsLayoutManager();
+    case TriView::Container::CENTER:
+      return CreateDefaultCenterLayoutManager();
+  }
+  // Required by some compilers.
+  NOTREACHED();
+  return nullptr;
+}
+
+// Configures the default size and flex value for the specified |container|
+// of the given |tri_view|. Used by CreateDefaultRowView().
+void ConfigureDefaultSizeAndFlex(TriView* tri_view,
+                                 TriView::Container container) {
+  int min_width = 0;
+  switch (container) {
+    case TriView::Container::START:
+      min_width = GetTrayConstant(TRAY_POPUP_ITEM_MIN_START_WIDTH);
+      break;
+    case TriView::Container::CENTER:
+      tri_view->SetFlexForContainer(TriView::Container::CENTER, 1.f);
+      break;
+    case TriView::Container::END:
+      min_width = GetTrayConstant(TRAY_POPUP_ITEM_MIN_END_WIDTH);
+      break;
+  }
+
+  tri_view->SetMinSize(
+      container, gfx::Size(min_width, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT)));
 }
 
 class BorderlessLabelButton : public views::LabelButton {
@@ -128,7 +163,6 @@ TriView* TrayPopupUtils::CreateMultiTargetRowView() {
   tri_view->SetInsets(
       gfx::Insets(0, GetTrayConstant(TRAY_POPUP_ITEM_LEFT_INSET), 0,
                   GetTrayConstant(TRAY_POPUP_ITEM_RIGHT_INSET)));
-  tri_view->SetMinCrossAxisSize(GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
 
   ConfigureDefaultSizeAndFlex(tri_view, TriView::Container::START);
   ConfigureDefaultSizeAndFlex(tri_view, TriView::Container::CENTER);
@@ -197,25 +231,6 @@ void TrayPopupUtils::ConfigureContainer(TriView::Container container,
       CreateDefaultLayoutManager(container).release());
 }
 
-void TrayPopupUtils::ConfigureDefaultSizeAndFlex(TriView* tri_view,
-                                                 TriView::Container container) {
-  switch (container) {
-    case TriView::Container::START:
-      tri_view->SetMinSize(
-          TriView::Container::START,
-          gfx::Size(GetTrayConstant(TRAY_POPUP_ITEM_MIN_START_WIDTH), 0));
-      break;
-    case TriView::Container::CENTER:
-      tri_view->SetFlexForContainer(TriView::Container::CENTER, 1.f);
-      break;
-    case TriView::Container::END:
-      tri_view->SetMinSize(
-          TriView::Container::END,
-          gfx::Size(GetTrayConstant(TRAY_POPUP_ITEM_MIN_END_WIDTH), 0));
-      break;
-  }
-}
-
 views::LabelButton* TrayPopupUtils::CreateTrayPopupBorderlessButton(
     views::ButtonListener* listener,
     const base::string16& text) {
@@ -248,20 +263,6 @@ bool TrayPopupUtils::CanOpenWebUISettings(LoginStatus status) {
   return status != LoginStatus::NOT_LOGGED_IN &&
          status != LoginStatus::LOCKED &&
          !WmShell::Get()->GetSessionStateDelegate()->IsInSecondaryLoginScreen();
-}
-
-std::unique_ptr<views::LayoutManager>
-TrayPopupUtils::CreateDefaultLayoutManager(TriView::Container container) {
-  switch (container) {
-    case TriView::Container::START:
-    case TriView::Container::END:
-      return CreateDefaultEndsLayoutManager();
-    case TriView::Container::CENTER:
-      return CreateDefaultCenterLayoutManager();
-  }
-  // Required by some compilers.
-  NOTREACHED();
-  return nullptr;
 }
 
 std::unique_ptr<views::Border> TrayPopupUtils::CreateDefaultBorder(

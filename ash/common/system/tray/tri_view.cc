@@ -55,13 +55,8 @@ TriView::TriView(Orientation orientation, int padding_between_containers)
   GetContainer(Container::END)
       ->SetLayoutManager(GetLayoutManager(Container::END));
 
-  GetLayoutManager(Container::START)
-      ->SetLayoutManager(CreateDefaultLayoutManager(orientation));
-  GetLayoutManager(Container::CENTER)
-      ->SetLayoutManager(CreateDefaultLayoutManager(orientation));
-  GetLayoutManager(Container::END)
-      ->SetLayoutManager(CreateDefaultLayoutManager(orientation));
-
+  box_layout_->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
   SetLayoutManager(box_layout_);
 
   enable_hierarchy_changed_dcheck_ = true;
@@ -69,10 +64,6 @@ TriView::TriView(Orientation orientation, int padding_between_containers)
 
 TriView::~TriView() {
   enable_hierarchy_changed_dcheck_ = false;
-}
-
-void TriView::SetMinCrossAxisSize(int min_size) {
-  box_layout_->set_minimum_cross_axis_size(min_size);
 }
 
 void TriView::SetMinSize(Container container, const gfx::Size& size) {
@@ -131,22 +122,11 @@ void TriView::ViewHierarchyChanged(
   }
 }
 
-std::unique_ptr<views::LayoutManager> TriView::CreateDefaultLayoutManager(
-    Orientation orientation) const {
-  views::BoxLayout* box_layout =
-      new views::BoxLayout(GetOrientation(orientation), 0, 0, 0);
-  box_layout->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
-  box_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-  return std::unique_ptr<views::LayoutManager>(box_layout);
+views::View* TriView::GetContainer(Container container) {
+  return child_at(static_cast<int>(container));
 }
 
-views::View* TriView::GetContainer(Container container) const {
-  return const_cast<views::View*>(child_at(static_cast<int>(container)));
-}
-
-SizeRangeLayout* TriView::GetLayoutManager(Container container) const {
+SizeRangeLayout* TriView::GetLayoutManager(Container container) {
   switch (container) {
     case Container::START:
       return start_container_layout_manager_;

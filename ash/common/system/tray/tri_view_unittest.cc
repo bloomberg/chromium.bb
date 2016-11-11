@@ -98,14 +98,6 @@ TEST_F(TriViewTest, VerticalOrientation) {
   EXPECT_EQ(kViewWidth * 2, GetBoundsInHost(end_child).y());
 }
 
-TEST_F(TriViewTest, MinCrossAxisSize) {
-  const int kMinCrossAxisSize = 15;
-  EXPECT_EQ(0, tri_view_->GetPreferredSize().height());
-  tri_view_->SetMinCrossAxisSize(kMinCrossAxisSize);
-  EXPECT_EQ(kMinCrossAxisSize, tri_view_->GetPreferredSize().height());
-  EXPECT_EQ(kMinCrossAxisSize, tri_view_->GetHeightForWidth(0));
-}
-
 TEST_F(TriViewTest, MainAxisMinSize) {
   tri_view_->SetBounds(0, 0, 100, 10);
   const gfx::Size kMinSize(15, 10);
