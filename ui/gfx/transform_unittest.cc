@@ -757,9 +757,8 @@ TEST(XFormTest, CanBlend180DegreeRotation) {
   }
 }
 
-#if defined(_WIN64) || defined(ARCH_CPU_ARM_FAMILY)
-// Win: https://crbug.com/406574
-// Arm: https://crbug.com/662558
+#if defined(_WIN64)
+// https://crbug.com/406574
 #define MAYBE_BlendScale DISABLED_BlendScale
 #else
 #define MAYBE_BlendScale BlendScale
@@ -769,11 +768,12 @@ TEST(XFormTest, MAYBE_BlendScale) {
   for (int i = -5; i < 15; ++i) {
     Transform to;
     to.Scale3d(5, 4, 3);
-    double t = i / 9.0;
-    EXPECT_TRUE(to.Blend(from, t));
-    EXPECT_FLOAT_EQ(t * 4 + 1, to.matrix().get(0, 0)) << "i: " << i;
-    EXPECT_FLOAT_EQ(t * 3 + 1, to.matrix().get(1, 1)) << "i: " << i;
-    EXPECT_FLOAT_EQ(t * 2 + 1, to.matrix().get(2, 2)) << "i: " << i;
+    double s1 = i / 9.0;
+    double s2 = 1 - s1;
+    EXPECT_TRUE(to.Blend(from, s1));
+    EXPECT_FLOAT_EQ(5 * s1 + s2, to.matrix().get(0, 0)) << "i: " << i;
+    EXPECT_FLOAT_EQ(4 * s1 + s2, to.matrix().get(1, 1)) << "i: " << i;
+    EXPECT_FLOAT_EQ(3 * s1 + s2, to.matrix().get(2, 2)) << "i: " << i;
   }
 }
 
