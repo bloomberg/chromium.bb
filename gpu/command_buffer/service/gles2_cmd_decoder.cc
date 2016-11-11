@@ -13819,6 +13819,29 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
   GLenum format =
       TextureManager::ExtractFormatFromStorageFormat(internal_format);
   GLenum type = TextureManager::ExtractTypeFromStorageFormat(internal_format);
+  bool internal_format_unsized = internal_format == format;
+  // The picks made by the temporary logic above may not be valid on ES3.
+  // This if-block checks the temporary logic and should be removed with it.
+  if (internal_format_unsized && feature_info_->IsWebGL2OrES3Context()) {
+    // While there are other possible types for unsized formats (cf. OpenGL ES
+    // 3.0.5, section 3.7, table 3.3, page 113), they won't appear here.
+    // ExtractTypeFromStorageFormat will always return UNSIGNED_BYTE for
+    // unsized formats.
+    DCHECK(type == GL_UNSIGNED_BYTE);
+    switch (internal_format) {
+      case GL_RGB:
+      case GL_RGBA:
+      case GL_LUMINANCE_ALPHA:
+      case GL_LUMINANCE:
+      case GL_ALPHA:
+      case GL_BGRA_EXT:
+        break;
+      default:
+        // Other unsized internal_formats are invalid in ES3.
+        format = GL_NONE;
+        break;
+    }
+  }
   if (!format || !type) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
