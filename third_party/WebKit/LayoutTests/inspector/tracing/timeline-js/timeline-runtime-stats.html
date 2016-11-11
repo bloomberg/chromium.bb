@@ -14,6 +14,7 @@ function performActions()
 function test()
 {
     Runtime.experiments.enableForTest("timelineV8RuntimeCallStats");
+    Runtime.experiments.enableForTest("timelineShowAllEvents");
     WebInspector.settingForTest("showNativeFunctionsInJSProfile").set(true);
     var model = WebInspector.panels.timeline._model;
     InspectorTest.evaluateWithTimeline("performActions()", finish);
