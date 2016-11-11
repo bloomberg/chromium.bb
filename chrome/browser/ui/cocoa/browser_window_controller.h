@@ -131,6 +131,7 @@ class Command;
   // Lazily created view which draws the background for the floating set of bars
   // in presentation mode (for window types having a floating bar; it remains
   // nil for those which don't).
+  // TODO(spqchan): Rename this to "fullscreenToolbarBackingView"
   base::scoped_nsobject<NSView> floatingBarBackingView_;
 
   // The borderless window used in fullscreen mode when Cocoa's System

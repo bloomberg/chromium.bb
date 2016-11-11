@@ -60,7 +60,7 @@ const CGFloat kToolbarVerticalOffset = 22;
   DCHECK(!inFullscreenMode_);
   inFullscreenMode_ = YES;
 
-  [self updateToolbarStyle];
+  [self updateToolbarStyleExitingTabFullscreen:NO];
 
   if ([browserController_ isInImmersiveFullscreen]) {
     immersiveFullscreenController_.reset([[ImmersiveFullscreenController alloc]
@@ -104,10 +104,11 @@ const CGFloat kToolbarVerticalOffset = 22;
   animationController_->AnimateToolbarForTabstripChanges();
 }
 
-- (void)updateToolbarStyle {
+- (void)updateToolbarStyleExitingTabFullscreen:(BOOL)isExitingTabFullscreen {
   FullscreenToolbarStyle oldStyle = toolbarStyle_;
 
-  if ([browserController_ isFullscreenForTabContentOrExtension]) {
+  if ([browserController_ isFullscreenForTabContentOrExtension] &&
+      !isExitingTabFullscreen) {
     toolbarStyle_ = FullscreenToolbarStyle::TOOLBAR_NONE;
   } else {
     PrefService* prefs = [browserController_ profile]->GetPrefs();

@@ -108,7 +108,7 @@ enum class FullscreenToolbarStyle {
 
 // Updates the toolbar style. If the style has changed, then the toolbar will
 // relayout.
-- (void)updateToolbarStyle;
+- (void)updateToolbarStyleExitingTabFullscreen:(BOOL)isExitingTabFullscreen;
 
 // Updates the toolbar by updating the layout, menubar and dock.
 - (void)updateToolbar;

@@ -1824,7 +1824,9 @@ willAnimateFromState:(BookmarkBar::State)oldState
 - (void)updateUIForTabFullscreen:
     (ExclusiveAccessContext::TabFullscreenState)state {
   DCHECK([self isInAnyFullscreenMode]);
-  [fullscreenToolbarController_ updateToolbarStyle];
+  [fullscreenToolbarController_
+      updateToolbarStyleExitingTabFullscreen:
+          state == ExclusiveAccessContext::STATE_EXIT_TAB_FULLSCREEN];
 }
 
 - (void)updateFullscreenExitBubble {

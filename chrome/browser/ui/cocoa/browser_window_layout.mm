@@ -279,8 +279,14 @@ const CGFloat kLocationBarRightOffset = 35;
 
   // Lay out the toolbar.
   if (parameters.hasToolbar) {
-    output_.toolbarFrame = NSMakeRect(
-        0, maxY - parameters_.toolbarHeight, width, parameters_.toolbarHeight);
+    CGFloat toolbarY = maxY;
+    if (parameters_.inAnyFullscreen &&
+        parameters_.toolbarStyle == FullscreenToolbarStyle::TOOLBAR_NONE) {
+      toolbarY = parameters_.windowSize.height + fullscreenYOffset_;
+    }
+
+    output_.toolbarFrame = NSMakeRect(0, toolbarY - parameters_.toolbarHeight,
+                                      width, parameters_.toolbarHeight);
     maxY = NSMinY(output_.toolbarFrame);
   } else if (parameters_.hasLocationBar) {
     CGFloat toolbarX = kLocBarLeftRightInset;
