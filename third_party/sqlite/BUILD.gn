@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/libfuzzer/fuzzer_test.gni")
+
 declare_args() {
   # Controls whether the build should uses the version of sqlite3 library
   # shipped with the system (currently only supported on iOS) or the one
@@ -34,7 +36,6 @@ if (!use_system_sqlite) {
   # "sqlite3" can cause conflicts with the system library.
   component("chromium_sqlite3") {
     visibility = [ ":*" ]
-
     sources = [
       "amalgamation/config.h",
       "amalgamation/sqlite3.c",
@@ -127,6 +128,14 @@ if (!use_system_sqlite) {
     # are not available to the build config.
     if (is_linux) {
       defines += [ "_HAVE_SQLITE_CONFIG_H" ]
+    }
+
+    if (using_sanitizer) {
+      # Limit max length of data blobs and queries for fuzzing builds by 128 MB.
+      defines += [
+        "SQLITE_MAX_LENGTH=128000000",
+        "SQLITE_MAX_SQL_LENGTH=128000000",
+      ]
     }
 
     include_dirs = [ "amalgamation" ]
@@ -255,4 +264,14 @@ if (use_system_sqlite) {
       }
     }
   }
+}
+
+fuzzer_test("sqlite3_prepare_v2_fuzzer") {
+  sources = [
+    "fuzz/sqlite3_prepare_v2_fuzzer.cc",
+  ]
+  deps = [
+    ":sqlite",
+  ]
+  dict = "fuzz/sqlite3_prepare_v2_fuzzer.dict"
 }

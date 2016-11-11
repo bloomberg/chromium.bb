@@ -184,16 +184,6 @@ fuzzer_test("zlib_uncompress_fuzzer") {
   ]
 }
 
-fuzzer_test("sqlite3_prepare_v2_fuzzer") {
-  sources = [
-    "sqlite3_prepare_v2_fuzzer.cc",
-  ]
-  deps = [
-    "//third_party/sqlite",
-  ]
-  dict = "dicts/generated/sqlite3_prepare_v2_fuzzer.dict"
-}
-
 fuzzer_test("libxml_xml_read_memory_fuzzer") {
   sources = [
     "libxml_xml_read_memory_fuzzer.cc",
