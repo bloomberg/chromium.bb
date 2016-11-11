@@ -232,7 +232,7 @@ bool ChromeExtensionsClient::IsScriptableURL(
   // TODO(erikkay): This seems like the wrong test.  Shouldn't we we testing
   // against the store app extent?
   GURL store_url(extension_urls::GetWebstoreLaunchURL());
-  if (url.host() == store_url.host()) {
+  if (url.DomainIs(store_url.host())) {
     if (error)
       *error = manifest_errors::kCannotScriptGallery;
     return false;

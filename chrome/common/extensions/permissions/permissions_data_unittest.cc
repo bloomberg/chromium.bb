@@ -769,4 +769,67 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, TabSpecific) {
   EXPECT_TRUE(ScriptAllowedExclusivelyOnTab(extension.get(), no_urls, 2));
 }
 
+// Check that the webstore url is inaccessible.
+TEST(PermissionsDataTest, ChromeWebstoreUrl) {
+  scoped_refptr<const Extension> normal_extension =
+      GetExtensionWithHostPermission("all_hosts_normal_extension",
+                                     kAllHostsPermission, Manifest::INTERNAL);
+  scoped_refptr<const Extension> policy_extension =
+      GetExtensionWithHostPermission("all_hosts_policy_extension",
+                                     kAllHostsPermission,
+                                     Manifest::EXTERNAL_POLICY);
+  scoped_refptr<const Extension> unpacked_extension =
+      GetExtensionWithHostPermission("all_hosts_unpacked_extension",
+                                     kAllHostsPermission, Manifest::UNPACKED);
+  const Extension* extensions[] = {
+      normal_extension.get(), policy_extension.get(), unpacked_extension.get(),
+  };
+  const GURL kWebstoreUrls[] = {
+      GURL("https://chrome.google.com/webstore"),
+      GURL("https://chrome.google.com./webstore"),
+      GURL("https://chrome.google.com/webstore/category/extensions"),
+      GURL("https://chrome.google.com./webstore/category/extensions"),
+      GURL("https://chrome.google.com/webstore/search/foo"),
+      GURL("https://chrome.google.com./webstore/search/foo"),
+      GURL("https://chrome.google.com/webstore/detail/"
+           "empty-new-tab-page/dpjamkmjmigaoobjbekmfgabipmfilij"),
+      GURL("https://chrome.google.com./webstore/detail/"
+           "empty-new-tab-page/dpjamkmjmigaoobjbekmfgabipmfilij"),
+  };
+
+  const int kTabId = 1;
+  std::string error;
+  URLPatternSet tab_hosts;
+  tab_hosts.AddOrigin(UserScript::ValidUserScriptSchemes(),
+                      GURL("https://chrome.google.com/webstore").GetOrigin());
+  tab_hosts.AddOrigin(UserScript::ValidUserScriptSchemes(),
+                      GURL("https://chrome.google.com./webstore").GetOrigin());
+  PermissionSet tab_permissions(APIPermissionSet(), ManifestPermissionSet(),
+                                tab_hosts, tab_hosts);
+  for (const Extension* extension : extensions) {
+    // Give the extension activeTab permissions to run on the webstore - it
+    // shouldn't make a difference.
+    extension->permissions_data()->UpdateTabSpecificPermissions(
+        kTabId, tab_permissions);
+    for (const GURL& url : kWebstoreUrls) {
+      EXPECT_EQ(PermissionsData::ACCESS_DENIED,
+                extension->permissions_data()->GetPageAccess(extension, url, -1,
+                                                             &error))
+          << extension->name() << ": " << url;
+      EXPECT_EQ(PermissionsData::ACCESS_DENIED,
+                extension->permissions_data()->GetContentScriptAccess(
+                    extension, url, -1, &error))
+          << extension->name() << ": " << url;
+      EXPECT_EQ(PermissionsData::ACCESS_DENIED,
+                extension->permissions_data()->GetPageAccess(extension, url,
+                                                             kTabId, &error))
+          << extension->name() << ": " << url;
+      EXPECT_EQ(PermissionsData::ACCESS_DENIED,
+                extension->permissions_data()->GetContentScriptAccess(
+                    extension, url, kTabId, &error))
+          << extension->name() << ": " << url;
+    }
+  }
+}
+
 }  // namespace extensions
