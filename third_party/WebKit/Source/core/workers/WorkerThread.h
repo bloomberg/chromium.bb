@@ -34,6 +34,7 @@
 #include "core/workers/WorkerThreadLifecycleObserver.h"
 #include "platform/LifecycleNotifier.h"
 #include "platform/WaitableEvent.h"
+#include "platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Forward.h"
 #include "wtf/Functional.h"
@@ -195,8 +196,6 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   FRIEND_TEST_ALL_PREFIXES(WorkerThreadTest,
                            Terminate_WhileDebuggerTaskIsRunning);
 
-  class ForceTerminationTask;
-
   enum class TerminationMode {
     // Synchronously terminate the worker execution. Please be careful to
     // use this mode, because after the synchronous termination any V8 APIs
@@ -227,6 +226,13 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   // the thread event loop. This must be called with |m_threadStateMutex|
   // acquired.
   bool shouldScheduleToTerminateExecution(const MutexLocker&);
+
+  // Called as a delayed task to terminate the worker execution from the main
+  // thread. This task is expected to run when the shutdown sequence does not
+  // start in a certain time period because of an inifite loop in the JS
+  // execution context etc. When the shutdown sequence is started before this
+  // task runs, the task is simply cancelled.
+  void mayForciblyTerminateExecution();
 
   // Forcibly terminates the worker execution. This must be called with
   // |m_threadStateMutex| acquired.
@@ -276,7 +282,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   ThreadState m_threadState = ThreadState::NotStarted;
   ExitCode m_exitCode = ExitCode::NotTerminated;
 
-  long long m_forceTerminationDelayInMs;
+  long long m_forcibleTerminationDelayInMs;
 
   std::unique_ptr<InspectorTaskRunner> m_inspectorTaskRunner;
 
@@ -294,9 +300,9 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   // Signaled when the thread completes termination on the worker thread.
   std::unique_ptr<WaitableEvent> m_shutdownEvent;
 
-  // Scheduled when termination starts with TerminationMode::Force, and
-  // cancelled when the worker thread is gracefully shut down.
-  std::unique_ptr<ForceTerminationTask> m_scheduledForceTerminationTask;
+  // Used to cancel a scheduled forcible termination task. See
+  // mayForciblyTerminateExecution() for details.
+  TaskHandle m_forcibleTerminationTaskHandle;
 
   Persistent<WorkerThreadLifecycleContext> m_workerThreadLifecycleContext;
 };
