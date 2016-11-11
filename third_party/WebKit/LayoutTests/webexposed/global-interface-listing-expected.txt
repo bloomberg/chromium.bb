@@ -6147,17 +6147,17 @@ interface Selection
     method toString
 interface Sensor : EventTarget
     attribute @@toStringTag
+    getter onactivate
     getter onchange
     getter onerror
-    getter onstatechange
     getter reading
     getter state
     method constructor
     method start
     method stop
+    setter onactivate
     setter onchange
     setter onerror
-    setter onstatechange
 interface SensorErrorEvent : Event
     attribute @@toStringTag
     getter error

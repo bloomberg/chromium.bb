@@ -25,5 +25,5 @@ enum SensorState {
 
     attribute EventHandler onerror;
     attribute EventHandler onchange;
-    attribute EventHandler onstatechange;
+    attribute EventHandler onactivate;
 };

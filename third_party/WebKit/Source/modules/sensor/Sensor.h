@@ -32,7 +32,7 @@ class Sensor : public EventTargetWithInlineData,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  enum class SensorState { IDLE, ACTIVATING, ACTIVE, ERRORED };
+  enum class SensorState { Idle, Activating, Active, Errored };
 
   ~Sensor() override;
 
@@ -54,7 +54,7 @@ class Sensor : public EventTargetWithInlineData,
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(activate);
 
   // ActiveScriptWrappable overrides.
   bool hasPendingActivity() const override;
@@ -110,7 +110,7 @@ class Sensor : public EventTargetWithInlineData,
   void updatePollingStatus();
 
   void notifySensorReadingChanged();
-  void notifyStateChanged();
+  void notifyOnActivate();
   void notifyError(DOMException* error);
 
  private:
