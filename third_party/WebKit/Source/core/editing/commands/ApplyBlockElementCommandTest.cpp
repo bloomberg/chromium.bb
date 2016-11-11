@@ -12,6 +12,7 @@
 #include "core/editing/SelectionTemplate.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/commands/FormatBlockCommand.h"
+#include "core/editing/commands/IndentOutdentCommand.h"
 #include "core/html/HTMLHeadElement.h"
 
 #include <memory>
@@ -50,6 +51,30 @@ TEST_F(ApplyBlockElementCommandTest, selectionCrossingOverBody) {
   EXPECT_EQ(
       "<body contenteditable=\"false\">\n"
       "<pre><var id=\"va\" class=\"CLASS13\">\nC\n</var></pre><input></body>",
+      document().documentElement()->innerHTML());
+}
+
+// This is a regression test for https://crbug.com/660801
+TEST_F(ApplyBlockElementCommandTest, visibilityChangeDuringCommand) {
+  document().head()->insertAdjacentHTML(
+      "afterbegin", "<style>li:first-child { visibility:visible; }</style>",
+      ASSERT_NO_EXCEPTION);
+  setBodyContent("<ul style='visibility:hidden'><li>xyz</li></ul>");
+  document().setDesignMode("on");
+
+  updateAllLifecyclePhases();
+  selection().setSelection(
+      SelectionInDOMTree::Builder()
+          .collapse(Position(document().querySelector("li"), 0))
+          .build());
+
+  IndentOutdentCommand* command =
+      IndentOutdentCommand::create(document(), IndentOutdentCommand::Indent);
+  command->apply();
+
+  EXPECT_EQ(
+      "<head><style>li:first-child { visibility:visible; }</style></head>"
+      "<body><ul style=\"visibility:hidden\"><ul></ul><li>xyz</li></ul></body>",
       document().documentElement()->innerHTML());
 }
 

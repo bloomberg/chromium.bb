@@ -30,7 +30,7 @@
 
 namespace blink {
 
-class IndentOutdentCommand final : public ApplyBlockElementCommand {
+class CORE_EXPORT IndentOutdentCommand final : public ApplyBlockElementCommand {
  public:
   enum EIndentType { Indent, Outdent };
   static IndentOutdentCommand* create(Document& document, EIndentType type) {
