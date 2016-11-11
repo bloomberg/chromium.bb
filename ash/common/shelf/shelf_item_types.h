@@ -5,6 +5,7 @@
 #ifndef ASH_COMMON_SHELF_SHELF_ITEM_TYPES_H_
 #define ASH_COMMON_SHELF_SHELF_ITEM_TYPES_H_
 
+#include <string>
 #include <vector>
 
 #include "ash/ash_export.h"
@@ -71,6 +72,9 @@ struct ASH_EXPORT ShelfItem {
 
   // Running status.
   ShelfItemStatus status = STATUS_CLOSED;
+
+  // The application id for this shelf item; only populated for some items.
+  std::string app_id;
 };
 
 typedef std::vector<ShelfItem> ShelfItems;

@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "ash/common/ash_switches.h"
+#include "ash/common/shelf/shelf_controller.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_model_observer.h"
 #include "ash/common/test/test_session_state_delegate.h"
@@ -125,12 +126,7 @@ const char kDummyAppId[] = "dummyappid_dummyappid_dummyappid";
 // ShelfModelObserver implementation that tracks what messages are invoked.
 class TestShelfModelObserver : public ash::ShelfModelObserver {
  public:
-  TestShelfModelObserver()
-    : added_(0),
-      removed_(0),
-      changed_(0) {
-  }
-
+  TestShelfModelObserver() {}
   ~TestShelfModelObserver() override {}
 
   // Overridden from ash::ShelfModelObserver:
@@ -169,10 +165,10 @@ class TestShelfModelObserver : public ash::ShelfModelObserver {
   int last_index() const { return last_index_; }
 
  private:
-  int added_;
-  int removed_;
-  int changed_;
-  int last_index_;
+  int added_ = 0;
+  int removed_ = 0;
+  int changed_ = 0;
+  int last_index_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestShelfModelObserver);
 };
@@ -189,11 +185,8 @@ class TestAppIconLoaderImpl : public AppIconLoader {
   bool CanLoadImageForApp(const std::string& id) override {
     return supported_apps_.find(id) != supported_apps_.end();
   }
-
   void FetchImage(const std::string& id) override { ++fetch_count_; }
-
   void ClearImage(const std::string& id) override { ++clear_count_; }
-
   void UpdateImage(const std::string& id) override {}
 
   int fetch_count() const { return fetch_count_; }
@@ -302,9 +295,7 @@ class TestV2AppLauncherItemController : public LauncherItemController {
 class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
  protected:
   ChromeLauncherControllerImplTest()
-      : BrowserWithTestWindowTest(Browser::TYPE_TABBED, false),
-        test_controller_(NULL),
-        extension_service_(NULL) {}
+      : BrowserWithTestWindowTest(Browser::TYPE_TABBED, false) {}
 
   ~ChromeLauncherControllerImplTest() override {}
 
@@ -323,7 +314,7 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
       ASSERT_TRUE(profile_manager_->SetUp());
     }
 
-    model_.reset(new ash::ShelfModel);
+    model_ = ash::WmShell::Get()->shelf_controller()->model();
     model_observer_.reset(new TestShelfModelObserver);
     model_->AddObserver(model_observer_.get());
 
@@ -472,11 +463,6 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
     model_->RemoveObserver(model_observer_.get());
     model_observer_.reset();
     launcher_controller_.reset();
-
-    // |model_| must be deleted after |launch_controller_|, because
-    // |launch_controller_| has a map of pointers to the data held by |model_|.
-    model_.reset();
-
     BrowserWithTestWindowTest::TearDown();
   }
 
@@ -499,9 +485,8 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
   }
 
   void InitLauncherController() {
-    AddAppListLauncherItem();
     launcher_controller_.reset(
-        new ChromeLauncherControllerImpl(profile(), model_.get()));
+        new ChromeLauncherControllerImpl(profile(), model_));
     // TODO(crbug.com/654622): Some tests break with a non-null static instance.
     ChromeLauncherControllerImpl::set_instance_for_test(nullptr);
     launcher_controller_->Init();
@@ -516,10 +501,11 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
   void RecreateChromeLauncher() {
     // Destroy controller first if it exists.
     launcher_controller_.reset();
-    model_.reset(new ash::ShelfModel);
+    while (model_->item_count() > 0)
+      model_->RemoveItemAt(0);
     AddAppListLauncherItem();
     launcher_controller_ =
-        base::MakeUnique<ChromeLauncherControllerImpl>(profile(), model_.get());
+        base::MakeUnique<ChromeLauncherControllerImpl>(profile(), model_);
     launcher_controller_->Init();
   }
 
@@ -917,15 +903,15 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
   bool auto_start_arc_test_ = false;
   std::unique_ptr<ChromeLauncherControllerImpl> launcher_controller_;
   std::unique_ptr<TestShelfModelObserver> model_observer_;
-  std::unique_ptr<ash::ShelfModel> model_;
+  ash::ShelfModel* model_ = nullptr;
   std::unique_ptr<TestingProfileManager> profile_manager_;
 
   // |item_delegate_manager_| owns |test_controller_|.
-  LauncherItemController* test_controller_;
+  LauncherItemController* test_controller_ = nullptr;
 
-  ExtensionService* extension_service_;
+  ExtensionService* extension_service_ = nullptr;
 
-  app_list::AppListSyncableService* app_service_;
+  app_list::AppListSyncableService* app_service_ = nullptr;
 
  private:
   TestBrowserWindow* CreateTestBrowserWindowAura() {
@@ -1020,18 +1006,21 @@ class V1App : public TestBrowserWindow {
   DISALLOW_COPY_AND_ASSIGN(V1App);
 };
 
-// A V2 application which gets created with an |extension| and for a |profile|.
-// Upon destruction it will properly close the application.
+// A V2 application window created with an |extension| and for a |profile|.
+// Upon destruction it will properly close the application; supports panels too.
 class V2App {
  public:
-  V2App(Profile* profile, const extensions::Extension* extension)
+  V2App(Profile* profile,
+        const extensions::Extension* extension,
+        extensions::AppWindow::WindowType window_type =
+            extensions::AppWindow::WINDOW_TYPE_DEFAULT)
       : creator_web_contents_(
             content::WebContentsTester::CreateTestWebContents(profile,
                                                               nullptr)) {
     window_ = new extensions::AppWindow(profile, new ChromeAppDelegate(true),
                                         extension);
-    extensions::AppWindow::CreateParams params =
-        extensions::AppWindow::CreateParams();
+    extensions::AppWindow::CreateParams params;
+    params.window_type = window_type;
     // Note: normally, the creator RFH is the background page of the
     // app/extension
     // calling chrome.app.window.create. For unit testing purposes, just passing
@@ -1188,8 +1177,8 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest
                      app_name);
     SetLauncherControllerHelper(helper);
 
-    NavigateAndCommitActiveTabWithTitle(
-        v1_app->browser(), GURL(url), ASCIIToUTF16(""));
+    NavigateAndCommitActiveTabWithTitle(v1_app->browser(), GURL(url),
+                                        base::string16());
     return v1_app;
   }
 
@@ -3273,55 +3262,43 @@ TEST_F(ChromeLauncherControllerImplTest, V1AppMenuDeletionExecution) {
 
 // Tests that panels create launcher items correctly
 TEST_F(ChromeLauncherControllerImplTest, AppPanels) {
-  InitLauncherControllerWithBrowser();
-  // App list and Browser shortcut ShelfItems are added.
-  EXPECT_EQ(2, model_observer_->added());
-  EXPECT_EQ(1, model_observer_->changed());
-
+  InitLauncherController();
+  model_observer_->clear_counts();
   const std::string app_id = extension1_->id();
+
   // app_icon_loader is owned by ChromeLauncherControllerImpl.
   TestAppIconLoaderImpl* app_icon_loader = new TestAppIconLoaderImpl();
   app_icon_loader->AddSupportedApp(app_id);
   SetAppIconLoader(std::unique_ptr<AppIconLoader>(app_icon_loader));
 
-  // Test adding an app panel
-  AppWindowLauncherItemController* app_panel_controller =
-      new ExtensionAppWindowLauncherItemController(
-          LauncherItemController::TYPE_APP_PANEL, app_id, "id",
-          launcher_controller_.get());
-  ash::ShelfID shelf_id1 = launcher_controller_->CreateAppLauncherItem(
-      app_panel_controller, app_id, ash::STATUS_RUNNING);
+  // Make an app panel; the ShelfItem is added by ash::ShelfWindowWatcher.
+  std::unique_ptr<V2App> app_panel1 = base::MakeUnique<V2App>(
+      profile(), extension1_.get(), extensions::AppWindow::WINDOW_TYPE_PANEL);
+  EXPECT_TRUE(app_panel1->window()->GetNativeWindow()->IsVisible());
   int panel_index = model_observer_->last_index();
-  EXPECT_EQ(3, model_observer_->added());
-  EXPECT_EQ(1, model_observer_->changed());
+  EXPECT_EQ(1, model_observer_->added());
   EXPECT_EQ(1, app_icon_loader->fetch_count());
   model_observer_->clear_counts();
 
   // App panels should have a separate identifier than the app id
   EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(app_id));
 
-  // Setting the app image image should not change the panel if it set its icon
-  app_panel_controller->set_image_set_by_controller(true);
+  // Setting the app image should not change the panel, which has a window icon.
   gfx::ImageSkia image;
   launcher_controller_->OnAppImageUpdated(app_id, image);
   EXPECT_EQ(0, model_observer_->changed());
   model_observer_->clear_counts();
 
-  // Add a second app panel and verify that it get the same index as the first
-  // one had, being added to the left of the existing panel.
-  AppWindowLauncherItemController* app_panel_controller2 =
-      new ExtensionAppWindowLauncherItemController(
-          LauncherItemController::TYPE_APP_PANEL, app_id, "id",
-          launcher_controller_.get());
-
-  ash::ShelfID shelf_id2 = launcher_controller_->CreateAppLauncherItem(
-      app_panel_controller2, app_id, ash::STATUS_RUNNING);
+  // Make a second app panel and verify that it gets the same index as the first
+  // panel, being added to the left of the existing panel.
+  std::unique_ptr<V2App> app_panel2 = base::MakeUnique<V2App>(
+      profile(), extension2_.get(), extensions::AppWindow::WINDOW_TYPE_PANEL);
   EXPECT_EQ(panel_index, model_observer_->last_index());
   EXPECT_EQ(1, model_observer_->added());
   model_observer_->clear_counts();
 
-  launcher_controller_->CloseLauncherItem(shelf_id2);
-  launcher_controller_->CloseLauncherItem(shelf_id1);
+  app_panel1.reset();
+  app_panel2.reset();
   EXPECT_EQ(2, model_observer_->removed());
 }
 
@@ -3419,11 +3396,12 @@ TEST_F(ChromeLauncherControllerImplTest, PersistLauncherItemPositions) {
   EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT, model_->items()[3].type);
 
   launcher_controller_.reset();
-  model_.reset(new ash::ShelfModel);
+  while (!model_->items().empty())
+    model_->RemoveItemAt(0);
 
   AddAppListLauncherItem();
   launcher_controller_ =
-      base::MakeUnique<ChromeLauncherControllerImpl>(profile(), model_.get());
+      base::MakeUnique<ChromeLauncherControllerImpl>(profile(), model_);
   helper = new TestLauncherControllerHelper(profile());
   helper->SetAppID(tab_strip_model->GetWebContentsAt(0), "1");
   helper->SetAppID(tab_strip_model->GetWebContentsAt(1), "2");
@@ -3465,11 +3443,12 @@ TEST_F(ChromeLauncherControllerImplTest, PersistPinned) {
   EXPECT_EQ(initial_size + 1, model_->items().size());
 
   launcher_controller_.reset();
-  model_.reset(new ash::ShelfModel);
+  while (!model_->items().empty())
+    model_->RemoveItemAt(0);
 
   AddAppListLauncherItem();
   launcher_controller_ =
-      base::MakeUnique<ChromeLauncherControllerImpl>(profile(), model_.get());
+      base::MakeUnique<ChromeLauncherControllerImpl>(profile(), model_);
   helper = new TestLauncherControllerHelper(profile());
   helper->SetAppID(tab_strip_model->GetWebContentsAt(0), "1");
   SetLauncherControllerHelper(helper);
@@ -3504,36 +3483,35 @@ TEST_F(ChromeLauncherControllerImplTest, MultipleAppIconLoaders) {
   SetAppIconLoaders(std::unique_ptr<AppIconLoader>(app_icon_loader1),
                     std::unique_ptr<AppIconLoader>(app_icon_loader2));
 
-  AppWindowLauncherItemController* app_panel_controller3 =
+  AppWindowLauncherItemController* app_controller3 =
       new ExtensionAppWindowLauncherItemController(
-          LauncherItemController::TYPE_APP_PANEL, app_id3, "id",
+          LauncherItemController::TYPE_APP, app_id3, "id",
           launcher_controller_.get());
   const ash::ShelfID shelfId3 = launcher_controller_->CreateAppLauncherItem(
-      app_panel_controller3, app_id3, ash::STATUS_RUNNING);
+      app_controller3, app_id3, ash::STATUS_RUNNING);
   EXPECT_EQ(0, app_icon_loader1->fetch_count());
   EXPECT_EQ(0, app_icon_loader1->clear_count());
   EXPECT_EQ(0, app_icon_loader2->fetch_count());
   EXPECT_EQ(0, app_icon_loader2->clear_count());
 
-  AppWindowLauncherItemController* app_panel_controller2 =
+  AppWindowLauncherItemController* app_controller2 =
       new ExtensionAppWindowLauncherItemController(
-          LauncherItemController::TYPE_APP_PANEL, app_id2, "id",
+          LauncherItemController::TYPE_APP, app_id2, "id",
           launcher_controller_.get());
   const ash::ShelfID shelfId2 = launcher_controller_->CreateAppLauncherItem(
-      app_panel_controller2, app_id2, ash::STATUS_RUNNING);
+      app_controller2, app_id2, ash::STATUS_RUNNING);
   EXPECT_EQ(0, app_icon_loader1->fetch_count());
   EXPECT_EQ(0, app_icon_loader1->clear_count());
   EXPECT_EQ(1, app_icon_loader2->fetch_count());
   EXPECT_EQ(0, app_icon_loader2->clear_count());
 
-  // Test adding an app panel
-  AppWindowLauncherItemController* app_panel_controller1 =
+  AppWindowLauncherItemController* app_controller1 =
       new ExtensionAppWindowLauncherItemController(
-          LauncherItemController::TYPE_APP_PANEL, app_id1, "id",
+          LauncherItemController::TYPE_APP, app_id1, "id",
           launcher_controller_.get());
 
   const ash::ShelfID shelfId1 = launcher_controller_->CreateAppLauncherItem(
-      app_panel_controller1, app_id1, ash::STATUS_RUNNING);
+      app_controller1, app_id1, ash::STATUS_RUNNING);
   EXPECT_EQ(1, app_icon_loader1->fetch_count());
   EXPECT_EQ(0, app_icon_loader1->clear_count());
   EXPECT_EQ(1, app_icon_loader2->fetch_count());

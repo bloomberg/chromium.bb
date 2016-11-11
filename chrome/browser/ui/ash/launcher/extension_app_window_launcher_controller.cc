@@ -127,6 +127,20 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
   if (app_window->is_ime_window())
     return;
 
+  // Ash's ShelfWindowWatcher handles app panel windows separately.
+  if (app_window->window_type_is_panel()) {
+    // Load panel app icons now. ShelfWindowWatcher cannot easily trigger this,
+    // and ShelfModel::Set cannot be called in ShelfItemAdded, since ShelfView
+    // may not have added a view for the new shelf item at that point.
+    const std::string& app_id = app_window->extension_id();
+    AppIconLoader* app_icon_loader = owner()->GetAppIconLoaderForApp(app_id);
+    if (app_icon_loader) {
+      app_icon_loader->FetchImage(app_id);
+      app_icon_loader->UpdateImage(app_id);
+    }
+    return;
+  }
+
   aura::Window* window = app_window->GetNativeWindow();
   // Get the app's shelf identifier and add an entry to the map.
   DCHECK(window_to_app_shelf_id_map_.find(window) ==
@@ -151,10 +165,7 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
     shelf_id = controller->shelf_id();
     controller->AddAppWindow(app_window);
   } else {
-    LauncherItemController::Type type =
-        app_window->window_type_is_panel()
-            ? LauncherItemController::TYPE_APP_PANEL
-            : LauncherItemController::TYPE_APP;
+    LauncherItemController::Type type = LauncherItemController::TYPE_APP;
     std::string launch_id = GetLaunchId(app_window);
     ExtensionAppWindowLauncherItemController* controller =
         new ExtensionAppWindowLauncherItemController(type, app_id, launch_id,

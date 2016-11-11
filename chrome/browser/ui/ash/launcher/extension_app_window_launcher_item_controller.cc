@@ -54,15 +54,16 @@ ExtensionAppWindowLauncherItemController::
         const std::string& app_id,
         const std::string& launch_id,
         ChromeLauncherController* controller)
-    : AppWindowLauncherItemController(type, app_id, launch_id, controller) {}
+    : AppWindowLauncherItemController(type, app_id, launch_id, controller) {
+  DCHECK_NE(TYPE_APP_PANEL, type);
+}
 
 ExtensionAppWindowLauncherItemController::
     ~ExtensionAppWindowLauncherItemController() {}
 
 void ExtensionAppWindowLauncherItemController::AddAppWindow(
     extensions::AppWindow* app_window) {
-  if (app_window->window_type_is_panel() && type() != TYPE_APP_PANEL)
-    LOG(ERROR) << "AppWindow of type Panel added to non-panel launcher item";
+  DCHECK(!app_window->window_type_is_panel());
   DCHECK(window_to_app_window_.find(app_window->GetBaseWindow()) ==
          window_to_app_window_.end());
   AddWindow(app_window->GetBaseWindow());
@@ -112,56 +113,11 @@ ash::ShelfItemDelegate::PerformedAction
 ExtensionAppWindowLauncherItemController::ItemSelected(const ui::Event& event) {
   if (windows().empty())
     return kNoAction;
-
-  if (type() == TYPE_APP_PANEL) {
-    DCHECK_EQ(windows().size(), 1u);
-    ui::BaseWindow* panel = windows().front();
-    aura::Window* panel_window = panel->GetNativeWindow();
-    // If the panel is attached on another display, move it to the current
-    // display and activate it.
-    if (ash::wm::GetWindowState(panel_window)->panel_attached() &&
-        ash::wm::MoveWindowToEventRoot(panel_window, event)) {
-      if (!panel->IsActive())
-        return ShowAndActivateOrMinimize(panel);
-    } else {
-      return ShowAndActivateOrMinimize(panel);
-    }
-  } else {
-    return AppWindowLauncherItemController::ItemSelected(event);
-  }
-  return kNoAction;
-}
-
-base::string16 ExtensionAppWindowLauncherItemController::GetTitle() {
-  // For panels return the title of the contents if set.
-  // Otherwise return the title of the app.
-  if (type() == TYPE_APP_PANEL && !windows().empty()) {
-    extensions::AppWindow* app_window =
-        window_to_app_window_[windows().front()];
-    DCHECK(app_window);
-    if (app_window->web_contents()) {
-      base::string16 title = app_window->web_contents()->GetTitle();
-      if (!title.empty())
-        return title;
-    }
-  }
-  return AppWindowLauncherItemController::GetTitle();
+  return AppWindowLauncherItemController::ItemSelected(event);
 }
 
 ash::ShelfMenuModel*
 ExtensionAppWindowLauncherItemController::CreateApplicationMenu(
     int event_flags) {
   return new LauncherApplicationMenuItemModel(GetApplicationList(event_flags));
-}
-
-bool ExtensionAppWindowLauncherItemController::IsDraggable() {
-  if (type() == TYPE_APP_PANEL)
-    return true;
-  return AppWindowLauncherItemController::IsDraggable();
-}
-
-bool ExtensionAppWindowLauncherItemController::ShouldShowTooltip() {
-  if (type() == TYPE_APP_PANEL && IsVisible())
-    return false;
-  return AppWindowLauncherItemController::ShouldShowTooltip();
 }

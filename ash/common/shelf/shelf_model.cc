@@ -71,9 +71,6 @@ int ShelfModel::AddAt(int index, const ShelfItem& item) {
 
 void ShelfModel::RemoveItemAt(int index) {
   DCHECK(index >= 0 && index < item_count());
-  // The app list and browser shortcut can't be removed.
-  DCHECK(items_[index].type != TYPE_APP_LIST &&
-         items_[index].type != TYPE_BROWSER_SHORTCUT);
   ShelfID id = items_[index].id;
   items_.erase(items_.begin() + index);
   RemoveShelfItemDelegate(id);

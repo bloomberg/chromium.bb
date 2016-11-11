@@ -297,12 +297,7 @@ ash::ShelfID ChromeLauncherControllerImpl::CreateAppLauncherItem(
     LauncherItemController* controller,
     const std::string& app_id,
     ash::ShelfItemStatus status) {
-  CHECK(controller);
-  int index = 0;
-  // Panels are inserted on the left so as not to push all existing panels over.
-  if (controller->GetShelfItemType() != ash::TYPE_APP_PANEL)
-    index = model_->item_count();
-  return InsertAppLauncherItem(controller, app_id, status, index,
+  return InsertAppLauncherItem(controller, app_id, status, model_->item_count(),
                                controller->GetShelfItemType());
 }
 
@@ -431,7 +426,7 @@ void ChromeLauncherControllerImpl::LockV1AppWithID(const std::string& app_id) {
     id = GetShelfIDForAppID(app_id);
   }
   CHECK(id);
-  id_to_item_controller_map_[id]->lock();
+  GetLauncherItemController(id)->lock();
 }
 
 void ChromeLauncherControllerImpl::UnlockV1AppWithID(
@@ -439,7 +434,7 @@ void ChromeLauncherControllerImpl::UnlockV1AppWithID(
   ash::ShelfID id = GetShelfIDForAppID(app_id);
   CHECK(id);
   CHECK(IsPinned(id) || IsWindowedAppInLauncher(app_id));
-  LauncherItemController* controller = id_to_item_controller_map_[id];
+  LauncherItemController* controller = GetLauncherItemController(id);
   controller->unlock();
   if (!controller->locked() && !IsPinned(id))
     CloseLauncherItem(id);
@@ -453,10 +448,10 @@ void ChromeLauncherControllerImpl::Launch(ash::ShelfID id, int event_flags) {
 }
 
 void ChromeLauncherControllerImpl::Close(ash::ShelfID id) {
-  LauncherItemController* controller = GetLauncherItemController(id);
-  if (!controller)
+  ash::ShelfItemDelegate* delegate = model_->GetShelfItemDelegate(id);
+  if (!delegate)
     return;  // May happen if menu closed.
-  controller->Close();
+  delegate->Close();
 }
 
 bool ChromeLauncherControllerImpl::IsOpen(ash::ShelfID id) {
@@ -803,7 +798,7 @@ ChromeLauncherControllerImpl::GetBrowserShortcutLauncherItemController() {
 LauncherItemController* ChromeLauncherControllerImpl::GetLauncherItemController(
     const ash::ShelfID id) {
   if (!HasShelfIDToAppIDMapping(id))
-    return NULL;
+    return nullptr;
   return id_to_item_controller_map_[id];
 }
 
@@ -906,7 +901,7 @@ void ChromeLauncherControllerImpl::AttachProfile(Profile* profile_to_attach) {
 ash::ShelfID ChromeLauncherControllerImpl::GetShelfIDForAppID(
     const std::string& app_id) {
   // Get shelf id for app_id and empty launch_id.
-  return GetShelfIDForAppIDAndLaunchID(app_id, "");
+  return GetShelfIDForAppIDAndLaunchID(app_id, std::string());
 }
 
 ash::ShelfID ChromeLauncherControllerImpl::GetShelfIDForAppIDAndLaunchID(
@@ -915,15 +910,12 @@ ash::ShelfID ChromeLauncherControllerImpl::GetShelfIDForAppIDAndLaunchID(
   const std::string shelf_app_id =
       ArcAppWindowLauncherController::GetShelfAppIdFromArcAppId(app_id);
   for (const auto& id_to_item_controller_pair : id_to_item_controller_map_) {
-    if (id_to_item_controller_pair.second->type() ==
-        LauncherItemController::TYPE_APP_PANEL)
-      continue;  // Don't include panels
     if (id_to_item_controller_pair.second->app_id() == shelf_app_id &&
         id_to_item_controller_pair.second->launch_id() == launch_id) {
       return id_to_item_controller_pair.first;
     }
   }
-  return 0;
+  return ash::kInvalidShelfID;
 }
 
 bool ChromeLauncherControllerImpl::HasShelfIDToAppIDMapping(
@@ -935,7 +927,10 @@ bool ChromeLauncherControllerImpl::HasShelfIDToAppIDMapping(
 const std::string& ChromeLauncherControllerImpl::GetAppIDForShelfID(
     ash::ShelfID id) {
   LauncherItemController* controller = GetLauncherItemController(id);
-  return controller ? controller->app_id() : base::EmptyString();
+  if (controller)
+    return controller->app_id();
+  ash::ShelfItems::const_iterator item = model_->ItemByID(id);
+  return item != model_->items().end() ? item->app_id : base::EmptyString();
 }
 
 void ChromeLauncherControllerImpl::PinAppWithID(const std::string& app_id) {
@@ -1026,11 +1021,6 @@ ash::ShelfID ChromeLauncherControllerImpl::CreateAppShortcutLauncherItem(
     int index) {
   return CreateAppShortcutLauncherItemWithType(app_launcher_id, index,
                                                ash::TYPE_APP_SHORTCUT);
-}
-
-const std::string& ChromeLauncherControllerImpl::GetAppIdFromShelfIdForTest(
-    ash::ShelfID id) {
-  return id_to_item_controller_map_[id]->app_id();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1357,6 +1347,8 @@ ash::ShelfID ChromeLauncherControllerImpl::InsertAppLauncherItem(
   ash::ShelfID id = model_->next_id();
   CHECK(!HasShelfIDToAppIDMapping(id));
   CHECK(controller);
+  // Ash's ShelfWindowWatcher handles app panel windows separately.
+  DCHECK_NE(ash::TYPE_APP_PANEL, controller->GetShelfItemType());
   id_to_item_controller_map_[id] = controller;
   controller->set_shelf_id(id);
 
@@ -1369,7 +1361,6 @@ ash::ShelfID ChromeLauncherControllerImpl::InsertAppLauncherItem(
     status = new_state;
 
   item.status = status;
-
   model_->AddAt(index, item);
 
   AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(app_id);
@@ -1392,7 +1383,7 @@ ChromeLauncherControllerImpl::GetV1ApplicationsFromController(
   return app_controller->GetRunningApplications();
 }
 
-ash::ShelfID ChromeLauncherControllerImpl::CreateBrowserShortcutLauncherItem() {
+void ChromeLauncherControllerImpl::CreateBrowserShortcutLauncherItem() {
   ash::ShelfItem browser_shortcut;
   browser_shortcut.type = ash::TYPE_BROWSER_SHORTCUT;
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -1404,7 +1395,6 @@ ash::ShelfID ChromeLauncherControllerImpl::CreateBrowserShortcutLauncherItem() {
   id_to_item_controller_map_[id]->set_shelf_id(id);
   // ShelfModel owns BrowserShortcutLauncherItemController.
   SetShelfItemDelegate(id, id_to_item_controller_map_[id]);
-  return id;
 }
 
 bool ChromeLauncherControllerImpl::IsIncognito(
@@ -1483,8 +1473,7 @@ void ChromeLauncherControllerImpl::ReleaseProfile() {
 ///////////////////////////////////////////////////////////////////////////////
 // ash::ShelfModelObserver:
 
-void ChromeLauncherControllerImpl::ShelfItemAdded(int index) {
-}
+void ChromeLauncherControllerImpl::ShelfItemAdded(int index) {}
 
 void ChromeLauncherControllerImpl::ShelfItemRemoved(int index,
                                                     ash::ShelfID id) {
@@ -1494,8 +1483,7 @@ void ChromeLauncherControllerImpl::ShelfItemRemoved(int index,
   if (iter == id_to_item_controller_map_.end())
     return;
 
-  LOG(ERROR) << "Unexpected change of shelf item id: " << id;
-
+  LOG(ERROR) << "Unexpected removal of shelf item, id: " << id;
   id_to_item_controller_map_.erase(iter);
 }
 
@@ -1521,7 +1509,7 @@ void ChromeLauncherControllerImpl::OnSetShelfItemDelegate(
   IDToItemControllerMap::iterator iter = id_to_item_controller_map_.find(id);
   if (iter == id_to_item_controller_map_.end() || item_delegate == iter->second)
     return;
-  LOG(ERROR) << "Unexpected change of shelf item id: " << id;
+  LOG(ERROR) << "Unexpected change of shelf item delegate, id: " << id;
   id_to_item_controller_map_.erase(iter);
 }
 
@@ -1555,18 +1543,13 @@ void ChromeLauncherControllerImpl::OnAppImageUpdated(
     const std::string& id,
     const gfx::ImageSkia& image) {
   // TODO: need to get this working for shortcuts.
-  for (IDToItemControllerMap::const_iterator i =
-           id_to_item_controller_map_.begin();
-       i != id_to_item_controller_map_.end(); ++i) {
-    LauncherItemController* controller = i->second;
-    if (controller->app_id() != id)
-      continue;
-    if (controller->image_set_by_controller())
-      continue;
-    int index = model_->ItemIndexByID(i->first);
-    if (index == -1)
-      continue;
+  for (int index = 0; index < model_->item_count(); ++index) {
     ash::ShelfItem item = model_->items()[index];
+    if (GetAppIDForShelfID(item.id) != id)
+      continue;
+    LauncherItemController* controller = GetLauncherItemController(item.id);
+    if (!controller || controller->image_set_by_controller())
+      continue;
     item.image = image;
     if (arc_deferred_launcher_)
       arc_deferred_launcher_->MaybeApplySpinningEffect(id, &item.image);

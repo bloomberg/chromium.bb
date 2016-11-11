@@ -167,8 +167,6 @@ class ChromeLauncherControllerImpl
       const ash::launcher::AppLauncherId& app_launcher_id,
       int index);
 
-  const std::string& GetAppIdFromShelfIdForTest(ash::ShelfID id);
-
  private:
   friend class ChromeLauncherControllerImplTest;
   friend class ShelfAppBrowserTest;
@@ -238,7 +236,7 @@ class ChromeLauncherControllerImpl
       LauncherItemController* controller);
 
   // Create ShelfItem for Browser Shortcut.
-  ash::ShelfID CreateBrowserShortcutLauncherItem();
+  void CreateBrowserShortcutLauncherItem();
 
   // Check if the given |web_contents| is in incognito mode.
   bool IsIncognito(const content::WebContents* web_contents) const;

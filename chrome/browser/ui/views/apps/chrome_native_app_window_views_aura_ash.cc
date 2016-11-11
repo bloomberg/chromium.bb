@@ -8,6 +8,7 @@
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/ash_constants.h"
 #include "ash/common/frame/custom_frame_view_ash.h"
+#include "ash/common/shelf/shelf_item_types.h"
 #include "ash/common/wm/panels/panel_frame_view.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/window_state_delegate.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
+#include "chrome/browser/ui/ash/property_util.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
@@ -120,30 +122,32 @@ class NativeAppWindowStateDelegate : public ash::wm::WindowStateDelegate,
 
 }  // namespace
 
-ChromeNativeAppWindowViewsAuraAsh::ChromeNativeAppWindowViewsAuraAsh() {
-}
+ChromeNativeAppWindowViewsAuraAsh::ChromeNativeAppWindowViewsAuraAsh() {}
 
-ChromeNativeAppWindowViewsAuraAsh::~ChromeNativeAppWindowViewsAuraAsh() {
-}
+ChromeNativeAppWindowViewsAuraAsh::~ChromeNativeAppWindowViewsAuraAsh() {}
 
 void ChromeNativeAppWindowViewsAuraAsh::InitializeWindow(
     AppWindow* app_window,
     const AppWindow::CreateParams& create_params) {
   ChromeNativeAppWindowViewsAura::InitializeWindow(app_window, create_params);
+  aura::Window* window = widget()->GetNativeWindow();
   // Restore docked state on ash desktop.
-  if (create_params.state == ui::SHOW_STATE_DOCKED) {
-    widget()->GetNativeWindow()->SetProperty(aura::client::kShowStateKey,
-                                             create_params.state);
-  }
+  if (create_params.state == ui::SHOW_STATE_DOCKED)
+    window->SetProperty(aura::client::kShowStateKey, create_params.state);
+  window->SetProperty(aura::client::kAppIdKey,
+                      new std::string(app_window->extension_id()));
 
-  if (!app_window->window_type_is_panel()) {
+  if (app_window->window_type_is_panel()) {
+    // Ash's ShelfWindowWatcher handles app panel windows once this type is set.
+    property_util::SetIntProperty(window, ash::kShelfItemTypeKey,
+                                  ash::TYPE_APP_PANEL);
+  } else {
     ash::AppType app_type = ash::AppType::CHROME_APP;
     Profile* profile =
         Profile::FromBrowserContext(app_window->browser_context());
     if (profile && chromeos::IsNoteTakingAppWindow(app_window, profile))
       app_type = ash::AppType::DEFAULT_NOTE_TAKING_APP;
-    widget()->GetNativeWindow()->SetProperty(aura::client::kAppType,
-                                             static_cast<int>(app_type));
+    window->SetProperty(aura::client::kAppType, static_cast<int>(app_type));
   }
 }
 
@@ -154,7 +158,7 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
   ChromeNativeAppWindowViewsAura::OnBeforeWidgetInit(create_params, init_params,
                                                      widget);
   if (create_params.is_ime_window) {
-    // Puts ime windows into ime window container.
+    // Puts ime windows into the ime window container.
     init_params->parent =
         ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
                                  ash::kShellWindowId_ImeWindowParentContainer);
@@ -174,6 +178,7 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforePanelWidgetInit(
 
   if (ash::Shell::HasInstance() && use_default_bounds) {
     // Open a new panel on the target root.
+    init_params->context = ash::Shell::GetTargetRootWindow();
     init_params->bounds = ash::ScreenUtil::ConvertRectToScreen(
         ash::Shell::GetTargetRootWindow(), gfx::Rect(GetPreferredSize()));
   }

@@ -19,6 +19,7 @@
 #include "ash/common/wm_window_property.h"
 #include "ash/shell.h"
 #include "ash/test/shelf_view_test_api.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/macros.h"
@@ -215,7 +216,7 @@ class LauncherPlatformAppBrowserTest
   }
 
   LauncherItemController* GetItemController(ash::ShelfID id) {
-    return controller_->id_to_item_controller_map_[id];
+    return controller_->GetLauncherItemController(id);
   }
 
   // Returns the number of menu items, ignoring separators.
@@ -755,6 +756,47 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest,
   EXPECT_FALSE(window1a->GetBaseWindow()->IsActive());
 }
 
+// Confirm that ash::ShelfWindowWatcher correctly handles app panels.
+IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, AppPanel) {
+  // Enable experimental APIs to allow panel creation.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      extensions::switches::kEnableExperimentalExtensionApis);
+  // Launch a platform app and create a panel window for it.
+  const Extension* extension1 = LoadAndLaunchPlatformApp("launch", "Launched");
+  AppWindow::CreateParams params;
+  params.window_type = AppWindow::WINDOW_TYPE_PANEL;
+  params.focused = false;
+  AppWindow* panel =
+      CreateAppWindowFromParams(browser()->profile(), extension1, params);
+  EXPECT_TRUE(panel->GetNativeWindow()->IsVisible());
+  // Panels should not be active by default.
+  EXPECT_FALSE(panel->GetBaseWindow()->IsActive());
+  // Confirm that an item delegate was created and is in the correct state.
+  const ash::ShelfItem& item1 = GetLastLauncherPanelItem();
+  EXPECT_EQ(ash::TYPE_APP_PANEL, item1.type);
+  EXPECT_EQ(ash::STATUS_RUNNING, item1.status);
+  EXPECT_EQ(nullptr, GetItemController(item1.id));
+  ash::ShelfItemDelegate* item1_delegate =
+      shelf_model()->GetShelfItemDelegate(item1.id);
+  EXPECT_EQ(ash::TYPE_APP_PANEL,
+            panel->GetNativeWindow()->GetProperty(ash::kShelfItemTypeKey));
+  // Click the item and confirm that the panel is activated.
+  TestEvent click_event(ui::ET_MOUSE_PRESSED);
+  item1_delegate->ItemSelected(click_event);
+  EXPECT_TRUE(panel->GetBaseWindow()->IsActive());
+  EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
+  // Click the item again and confirm that the panel is minimized.
+  item1_delegate->ItemSelected(click_event);
+  EXPECT_TRUE(panel->GetBaseWindow()->IsMinimized());
+  EXPECT_EQ(ash::STATUS_RUNNING, item1.status);
+  // Click the item again and confirm that the panel is activated.
+  item1_delegate->ItemSelected(click_event);
+  EXPECT_TRUE(panel->GetNativeWindow()->IsVisible());
+  EXPECT_TRUE(panel->GetBaseWindow()->IsActive());
+  EXPECT_FALSE(panel->GetBaseWindow()->IsMinimized());
+  EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
+}
+
 // Confirm that click behavior for app panels is correct.
 IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, AppPanelClickBehavior) {
   // Enable experimental APIs to allow panel creation.
@@ -770,23 +812,26 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, AppPanelClickBehavior) {
   EXPECT_TRUE(panel->GetNativeWindow()->IsVisible());
   // Panels should not be active by default.
   EXPECT_FALSE(panel->GetBaseWindow()->IsActive());
-  // Confirm that a controller item was created and is the correct state.
+  // Confirm that an item delegate was created and is in the correct state.
   const ash::ShelfItem& item1 = GetLastLauncherPanelItem();
-  LauncherItemController* item1_controller = GetItemController(item1.id);
   EXPECT_EQ(ash::TYPE_APP_PANEL, item1.type);
   EXPECT_EQ(ash::STATUS_RUNNING, item1.status);
-  EXPECT_EQ(LauncherItemController::TYPE_APP_PANEL, item1_controller->type());
+  EXPECT_EQ(nullptr, GetItemController(item1.id));
+  ash::ShelfItemDelegate* item1_delegate =
+      shelf_model()->GetShelfItemDelegate(item1.id);
+  EXPECT_EQ(ash::TYPE_APP_PANEL,
+            panel->GetNativeWindow()->GetProperty(ash::kShelfItemTypeKey));
   // Click the item and confirm that the panel is activated.
   TestEvent click_event(ui::ET_MOUSE_PRESSED);
-  item1_controller->ItemSelected(click_event);
+  item1_delegate->ItemSelected(click_event);
   EXPECT_TRUE(panel->GetBaseWindow()->IsActive());
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
   // Click the item again and confirm that the panel is minimized.
-  item1_controller->ItemSelected(click_event);
+  item1_delegate->ItemSelected(click_event);
   EXPECT_TRUE(panel->GetBaseWindow()->IsMinimized());
   EXPECT_EQ(ash::STATUS_RUNNING, item1.status);
   // Click the item again and confirm that the panel is activated.
-  item1_controller->ItemSelected(click_event);
+  item1_delegate->ItemSelected(click_event);
   EXPECT_TRUE(panel->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(panel->GetBaseWindow()->IsActive());
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
@@ -838,14 +883,13 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, SetIcon) {
       shelf_model()->items()[shelf_item_count - 2];
   const ash::ShelfItem& panel_item =
       shelf_model()->items()[shelf_item_count - 1];
-  const LauncherItemController* app_item_controller =
-      GetItemController(app_item.id);
-  const LauncherItemController* panel_item_controller =
-      GetItemController(panel_item.id);
   // Icons for Apps are set by the AppWindowLauncherController, so
   // image_set_by_controller() should be set.
+  const LauncherItemController* app_item_controller =
+      GetItemController(app_item.id);
   EXPECT_TRUE(app_item_controller->image_set_by_controller());
-  EXPECT_TRUE(panel_item_controller->image_set_by_controller());
+  // Panels are handled by ShelfWindowWatcher, not ChromeLauncherController.
+  EXPECT_EQ(nullptr, GetItemController(panel_item.id));
   // Ensure icon heights are correct (see test.js in app_icon/ test directory)
   EXPECT_EQ(ash::GetShelfConstant(ash::SHELF_SIZE), app_item.image.height());
   EXPECT_EQ(64, panel_item.image.height());
@@ -1479,12 +1523,15 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowAttentionStatus) {
   EXPECT_TRUE(panel->GetNativeWindow()->IsVisible());
   // Panels should not be active by default.
   EXPECT_FALSE(panel->GetBaseWindow()->IsActive());
-  // Confirm that a controller item was created and is the correct state.
+  // Confirm that a shelf item was created and is the correct state.
   const ash::ShelfItem& item = GetLastLauncherPanelItem();
-  LauncherItemController* item_controller = GetItemController(item.id);
+  // Panels are handled by ShelfWindowWatcher, not ChromeLauncherController.
+  EXPECT_EQ(nullptr, GetItemController(item.id));
+  ash::ShelfItemDelegate* shelf_item_delegate =
+      shelf_model()->GetShelfItemDelegate(item.id);
+  EXPECT_NE(nullptr, shelf_item_delegate);
   EXPECT_EQ(ash::TYPE_APP_PANEL, item.type);
   EXPECT_EQ(ash::STATUS_RUNNING, item.status);
-  EXPECT_EQ(LauncherItemController::TYPE_APP_PANEL, item_controller->type());
 
   // App windows should go to attention state.
   panel->GetNativeWindow()->SetProperty(aura::client::kDrawAttentionKey, true);
@@ -1492,7 +1539,8 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowAttentionStatus) {
 
   // Click the item and confirm that the panel is activated.
   TestEvent click_event(ui::ET_MOUSE_PRESSED);
-  item_controller->ItemSelected(click_event);
+  EXPECT_EQ(ash::ShelfItemDelegate::kExistingWindowActivated,
+            shelf_item_delegate->ItemSelected(click_event));
   EXPECT_TRUE(panel->GetBaseWindow()->IsActive());
   EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
 

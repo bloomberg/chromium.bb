@@ -7,9 +7,9 @@
 #include "ash/common/wm/panels/panel_frame_view.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/wm/window_properties.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/widget/widget.h"
 
@@ -49,6 +49,8 @@ views::Widget* PanelWindow::CreateWidget() {
 
   widget->Init(params());
   widget->GetNativeView()->SetName(name_);
+  widget->GetNativeWindow()->SetProperty<int>(kShelfItemTypeKey,
+                                              TYPE_APP_PANEL);
   widget->Show();
 
   return widget;

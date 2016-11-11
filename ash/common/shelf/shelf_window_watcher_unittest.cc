@@ -9,6 +9,7 @@
 #include "ash/common/wm/window_resizer.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_lookup.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
@@ -266,6 +267,48 @@ TEST_F(ShelfWindowWatcherTest, DragWindow) {
   // Index and id are not changed after dragging a |window|.
   EXPECT_EQ(index, model_->ItemIndexByID(id));
   EXPECT_EQ(id, model_->items()[index].id);
+}
+
+// Ensure shelf items are added and removed as panels are opened and closed.
+TEST_F(ShelfWindowWatcherTest, PanelWindow) {
+  // ShelfModel only has an APP_LIST item.
+  EXPECT_EQ(1, model_->item_count());
+
+  // Adding windows with valid ShelfItemType properties adds shelf items.
+  std::unique_ptr<views::Widget> widget1 =
+      CreateTestWidget(nullptr, kShellWindowId_PanelContainer, gfx::Rect());
+  WmWindow* window1 = WmLookup::Get()->GetWindowForWidget(widget1.get());
+  window1->SetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE, TYPE_APP_PANEL);
+  EXPECT_EQ(2, model_->item_count());
+  std::unique_ptr<views::Widget> widget2 =
+      CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
+  WmWindow* window2 = WmLookup::Get()->GetWindowForWidget(widget2.get());
+  window2->SetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE, TYPE_APP_PANEL);
+  EXPECT_EQ(3, model_->item_count());
+
+  // Create a panel-type widget to mimic Chrome's app panel windows.
+  views::Widget panel_widget;
+  views::Widget::InitParams panel_params(views::Widget::InitParams::TYPE_PANEL);
+  panel_params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  WmShell::Get()
+      ->GetPrimaryRootWindow()
+      ->GetRootWindowController()
+      ->ConfigureWidgetInitParamsForContainer(
+          &panel_widget, kShellWindowId_PanelContainer, &panel_params);
+  panel_widget.Init(panel_params);
+  panel_widget.Show();
+  WmWindow* panel_window = WmLookup::Get()->GetWindowForWidget(&panel_widget);
+  panel_window->SetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE,
+                               TYPE_APP_PANEL);
+  EXPECT_EQ(4, model_->item_count());
+
+  // Each ShelfItem is removed when the associated window is destroyed.
+  panel_widget.CloseNow();
+  EXPECT_EQ(3, model_->item_count());
+  widget2.reset();
+  EXPECT_EQ(2, model_->item_count());
+  widget1.reset();
+  EXPECT_EQ(1, model_->item_count());
 }
 
 }  // namespace ash

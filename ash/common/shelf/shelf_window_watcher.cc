@@ -19,6 +19,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/resources/grit/ui_resources.h"
 
 namespace ash {
 namespace {
@@ -27,17 +28,25 @@ namespace {
 void UpdateShelfItemForWindow(ShelfItem* item, WmWindow* window) {
   item->type = static_cast<ShelfItemType>(
       window->GetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE));
-  const int icon =
-      window->GetIntProperty(WmWindowProperty::SHELF_ICON_RESOURCE_ID);
-  if (icon != kInvalidImageResourceID)
-    item->image = *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(icon);
-}
 
-// Returns true if |window| has a ShelfItem added by ShelfWindowWatcher.
-bool HasShelfItemForWindow(WmWindow* window) {
-  return window->GetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE) !=
-             TYPE_UNDEFINED &&
-         window->GetIntProperty(WmWindowProperty::SHELF_ID) != kInvalidShelfID;
+  item->status = STATUS_RUNNING;
+  if (window->IsActive())
+    item->status = STATUS_ACTIVE;
+  else if (window->GetBoolProperty(WmWindowProperty::DRAW_ATTENTION))
+    item->status = STATUS_ATTENTION;
+
+  item->app_id = window->GetStringProperty(WmWindowProperty::APP_ID);
+
+  // Prefer app icons over window icons, they're typically larger.
+  gfx::ImageSkia image = window->GetAppIcon();
+  if (image.isNull())
+    image = window->GetWindowIcon();
+  if (image.isNull()) {
+    int icon = window->GetIntProperty(WmWindowProperty::SHELF_ICON_RESOURCE_ID);
+    if (icon != kInvalidImageResourceID)
+      image = *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(icon);
+  }
+  item->image = image;
 }
 
 }  // namespace
@@ -52,9 +61,11 @@ void ShelfWindowWatcher::ContainerWindowObserver::OnWindowTreeChanged(
     WmWindow* window,
     const TreeChangeParams& params) {
   if (!params.old_parent && params.new_parent &&
-      params.new_parent->GetShellWindowId() ==
-          kShellWindowId_DefaultContainer) {
-    // A new window was created in the default container.
+      (params.new_parent->GetShellWindowId() ==
+           kShellWindowId_DefaultContainer ||
+       params.new_parent->GetShellWindowId() ==
+           kShellWindowId_PanelContainer)) {
+    // A new window was created in the default container or the panel container.
     window_watcher_->OnUserWindowAdded(params.target);
   }
 }
@@ -75,8 +86,12 @@ ShelfWindowWatcher::UserWindowObserver::~UserWindowObserver() {}
 void ShelfWindowWatcher::UserWindowObserver::OnWindowPropertyChanged(
     WmWindow* window,
     WmWindowProperty property) {
-  if (property == WmWindowProperty::SHELF_ITEM_TYPE ||
-      property == WmWindowProperty::SHELF_ICON_RESOURCE_ID) {
+  if (property == WmWindowProperty::APP_ICON ||
+      property == WmWindowProperty::APP_ID ||
+      property == WmWindowProperty::DRAW_ATTENTION ||
+      property == WmWindowProperty::SHELF_ITEM_TYPE ||
+      property == WmWindowProperty::SHELF_ICON_RESOURCE_ID ||
+      property == WmWindowProperty::WINDOW_ICON) {
     window_watcher_->OnUserWindowPropertyChanged(window);
   }
 }
@@ -98,6 +113,8 @@ ShelfWindowWatcher::ShelfWindowWatcher(ShelfModel* model)
   for (WmWindow* root : WmShell::Get()->GetAllRootWindows()) {
     observed_container_windows_.Add(
         root->GetChildByShellWindowId(kShellWindowId_DefaultContainer));
+    observed_container_windows_.Add(
+        root->GetChildByShellWindowId(kShellWindowId_PanelContainer));
   }
 
   display::Screen::GetScreen()->AddObserver(this);
@@ -109,18 +126,20 @@ ShelfWindowWatcher::~ShelfWindowWatcher() {
 }
 
 void ShelfWindowWatcher::AddShelfItem(WmWindow* window) {
+  user_windows_with_items_.insert(window);
   ShelfItem item;
   ShelfID id = model_->next_id();
-  item.status = window->IsActive() ? STATUS_ACTIVE : STATUS_RUNNING;
   UpdateShelfItemForWindow(&item, window);
   window->SetIntProperty(WmWindowProperty::SHELF_ID, id);
   std::unique_ptr<ShelfItemDelegate> item_delegate(
-      new ShelfWindowWatcherItemDelegate(window));
+      new ShelfWindowWatcherItemDelegate(id, window));
   model_->SetShelfItemDelegate(id, std::move(item_delegate));
-  model_->Add(item);
+  // Panels are inserted on the left so as not to push all existing panels over.
+  model_->AddAt(item.type == TYPE_APP_PANEL ? 0 : model_->item_count(), item);
 }
 
 void ShelfWindowWatcher::RemoveShelfItem(WmWindow* window) {
+  user_windows_with_items_.erase(window);
   int shelf_id = window->GetIntProperty(WmWindowProperty::SHELF_ID);
   DCHECK_NE(shelf_id, kInvalidShelfID);
   int index = model_->ItemIndexByID(shelf_id);
@@ -133,58 +152,43 @@ void ShelfWindowWatcher::OnContainerWindowDestroying(WmWindow* container) {
   observed_container_windows_.Remove(container);
 }
 
-void ShelfWindowWatcher::UpdateShelfItemStatus(WmWindow* window,
-                                               bool is_active) {
-  int index = GetShelfItemIndexForWindow(window);
-  DCHECK_GE(index, 0);
-
-  ShelfItem item = model_->items()[index];
-  item.status = is_active ? STATUS_ACTIVE : STATUS_RUNNING;
-  model_->Set(index, item);
-}
-
 int ShelfWindowWatcher::GetShelfItemIndexForWindow(WmWindow* window) const {
   return model_->ItemIndexByID(
       window->GetIntProperty(WmWindowProperty::SHELF_ID));
 }
 
 void ShelfWindowWatcher::OnUserWindowAdded(WmWindow* window) {
-  // The window may already be tracked from when it was added to a different
-  // display or because an existing window added its shelf item properties.
+  // The window may already be tracked from a prior display or parent container.
   if (observed_user_windows_.IsObserving(window))
     return;
 
   observed_user_windows_.Add(window);
 
-  // Add a ShelfItem if |window| has a valid ShelfItemType on creation.
-  if (window->GetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE) !=
-          TYPE_UNDEFINED &&
-      window->GetIntProperty(WmWindowProperty::SHELF_ID) == kInvalidShelfID) {
-    AddShelfItem(window);
-  }
+  // Add, update, or remove a ShelfItem for |window|, as needed.
+  OnUserWindowPropertyChanged(window);
 }
 
 void ShelfWindowWatcher::OnUserWindowDestroying(WmWindow* window) {
   if (observed_user_windows_.IsObserving(window))
     observed_user_windows_.Remove(window);
 
-  if (HasShelfItemForWindow(window))
+  if (user_windows_with_items_.count(window) > 0)
     RemoveShelfItem(window);
+  DCHECK_EQ(0u, user_windows_with_items_.count(window));
 }
 
 void ShelfWindowWatcher::OnUserWindowPropertyChanged(WmWindow* window) {
   if (window->GetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE) ==
       TYPE_UNDEFINED) {
-    // Removes ShelfItem for |window| when it has a ShelfItem.
-    if (window->GetIntProperty(WmWindowProperty::SHELF_ID) != kInvalidShelfID)
+    // Remove |window|'s ShelfItem if it was added by this ShelfWindowWatcher.
+    if (user_windows_with_items_.count(window) > 0)
       RemoveShelfItem(window);
     return;
   }
 
   // Update an existing ShelfItem for |window| when a property has changed.
-  if (HasShelfItemForWindow(window)) {
-    int index = GetShelfItemIndexForWindow(window);
-    DCHECK_GE(index, 0);
+  int index = GetShelfItemIndexForWindow(window);
+  if (index > 0) {
     ShelfItem item = model_->items()[index];
     UpdateShelfItemForWindow(&item, window);
     model_->Set(index, item);
@@ -197,10 +201,10 @@ void ShelfWindowWatcher::OnUserWindowPropertyChanged(WmWindow* window) {
 
 void ShelfWindowWatcher::OnWindowActivated(WmWindow* gained_active,
                                            WmWindow* lost_active) {
-  if (gained_active && HasShelfItemForWindow(gained_active))
-    UpdateShelfItemStatus(gained_active, true);
-  if (lost_active && HasShelfItemForWindow(lost_active))
-    UpdateShelfItemStatus(lost_active, false);
+  if (gained_active && user_windows_with_items_.count(gained_active) > 0)
+    OnUserWindowPropertyChanged(gained_active);
+  if (lost_active && user_windows_with_items_.count(lost_active) > 0)
+    OnUserWindowPropertyChanged(lost_active);
 }
 
 void ShelfWindowWatcher::OnDisplayAdded(const display::Display& new_display) {
@@ -208,10 +212,14 @@ void ShelfWindowWatcher::OnDisplayAdded(const display::Display& new_display) {
 
   // When the primary root window's display get removed, the existing root
   // window is taken over by the new display and the observer is already set.
-  WmWindow* container =
+  WmWindow* default_container =
       root->GetChildByShellWindowId(kShellWindowId_DefaultContainer);
-  if (!observed_container_windows_.IsObserving(container))
-    observed_container_windows_.Add(container);
+  if (!observed_container_windows_.IsObserving(default_container))
+    observed_container_windows_.Add(default_container);
+  WmWindow* panel_container =
+      root->GetChildByShellWindowId(kShellWindowId_PanelContainer);
+  if (!observed_container_windows_.IsObserving(panel_container))
+    observed_container_windows_.Add(panel_container);
 }
 
 void ShelfWindowWatcher::OnDisplayRemoved(const display::Display& old_display) {

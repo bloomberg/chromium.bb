@@ -34,10 +34,7 @@ class ExtensionAppWindowLauncherItemController
   ChromeLauncherAppMenuItems GetApplicationList(int event_flags) override;
   ash::ShelfItemDelegate::PerformedAction ItemSelected(
       const ui::Event& event) override;
-  base::string16 GetTitle() override;
   ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
-  bool IsDraggable() override;
-  bool ShouldShowTooltip() override;
 
  protected:
   // AppWindowLauncherItemController:
