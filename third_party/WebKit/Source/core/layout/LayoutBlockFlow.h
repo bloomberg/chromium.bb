@@ -357,6 +357,11 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   // Returns true if and only if it has positioned any floats.
   bool positionNewFloats(LayoutUnit logicalTop, LineWidth* = nullptr);
 
+  // Position and lay out the float, if it needs layout.
+  // |logicalTop| is the minimum logical top offset for the float (margin edge).
+  // The value returned is the minimum logical top offset for subsequent floats.
+  LayoutUnit positionAndLayoutFloat(FloatingObject&, LayoutUnit logicalTop);
+
   LayoutUnit nextFloatLogicalBottomBelow(LayoutUnit) const;
   LayoutUnit nextFloatLogicalBottomBelowForBlock(LayoutUnit) const;
 
