@@ -51,61 +51,23 @@ std::unique_ptr<ImageDecoder> createDecoder() {
                                         ImageDecoder::noDecodedImageByteLimit));
 }
 
-void testRandomFrameDecode(const char* dir, const char* gifFile) {
-  SCOPED_TRACE(gifFile);
-
-  RefPtr<SharedBuffer> fullData = readFile(dir, gifFile);
-  ASSERT_TRUE(fullData.get());
-  Vector<unsigned> baselineHashes;
-  createDecodingBaseline(&createDecoder, fullData.get(), &baselineHashes);
-  size_t frameCount = baselineHashes.size();
-
-  // Random decoding should get the same results as sequential decoding.
+void testRepetitionCount(const char* dir,
+                         const char* file,
+                         int expectedRepetitionCount) {
   std::unique_ptr<ImageDecoder> decoder = createDecoder();
-  decoder->setData(fullData.get(), true);
-  const size_t skippingStep = 5;
-  for (size_t i = 0; i < skippingStep; ++i) {
-    for (size_t j = i; j < frameCount; j += skippingStep) {
-      SCOPED_TRACE(testing::Message() << "Random i:" << i << " j:" << j);
-      ImageFrame* frame = decoder->frameBufferAtIndex(j);
-      EXPECT_EQ(baselineHashes[j], hashBitmap(frame->bitmap()));
-    }
-  }
-
-  // Decoding in reverse order.
-  decoder = createDecoder();
-  decoder->setData(fullData.get(), true);
-  for (size_t i = frameCount; i; --i) {
-    SCOPED_TRACE(testing::Message() << "Reverse i:" << i);
-    ImageFrame* frame = decoder->frameBufferAtIndex(i - 1);
-    EXPECT_EQ(baselineHashes[i - 1], hashBitmap(frame->bitmap()));
-  }
-}
-
-void testRandomDecodeAfterClearFrameBufferCache(const char* dir,
-                                                const char* gifFile) {
-  SCOPED_TRACE(gifFile);
-
-  RefPtr<SharedBuffer> data = readFile(dir, gifFile);
+  RefPtr<SharedBuffer> data = readFile(dir, file);
   ASSERT_TRUE(data.get());
-  Vector<unsigned> baselineHashes;
-  createDecodingBaseline(&createDecoder, data.get(), &baselineHashes);
-  size_t frameCount = baselineHashes.size();
-
-  std::unique_ptr<ImageDecoder> decoder = createDecoder();
   decoder->setData(data.get(), true);
-  for (size_t clearExceptFrame = 0; clearExceptFrame < frameCount;
-       ++clearExceptFrame) {
-    decoder->clearCacheExceptFrame(clearExceptFrame);
-    const size_t skippingStep = 5;
-    for (size_t i = 0; i < skippingStep; ++i) {
-      for (size_t j = 0; j < frameCount; j += skippingStep) {
-        SCOPED_TRACE(testing::Message() << "Random i:" << i << " j:" << j);
-        ImageFrame* frame = decoder->frameBufferAtIndex(j);
-        EXPECT_EQ(baselineHashes[j], hashBitmap(frame->bitmap()));
-      }
-    }
+  EXPECT_EQ(cAnimationLoopOnce,
+            decoder->repetitionCount());  // Default value before decode.
+
+  for (size_t i = 0; i < decoder->frameCount(); ++i) {
+    ImageFrame* frame = decoder->frameBufferAtIndex(i);
+    EXPECT_EQ(ImageFrame::FrameComplete, frame->getStatus());
   }
+
+  EXPECT_EQ(expectedRepetitionCount,
+            decoder->repetitionCount());  // Expected value after decode.
 }
 
 }  // anonymous namespace
@@ -225,53 +187,7 @@ TEST(GIFImageDecoderTest, brokenSecondFrame) {
 }
 
 TEST(GIFImageDecoderTest, progressiveDecode) {
-  RefPtr<SharedBuffer> fullData = readFile(decodersTestingDir, "radient.gif");
-  ASSERT_TRUE(fullData.get());
-  const size_t fullLength = fullData->size();
-
-  std::unique_ptr<ImageDecoder> decoder;
-  ImageFrame* frame;
-
-  Vector<unsigned> truncatedHashes;
-  Vector<unsigned> progressiveHashes;
-
-  // Compute hashes when the file is truncated.
-  const size_t increment = 1;
-  for (size_t i = 1; i <= fullLength; i += increment) {
-    decoder = createDecoder();
-    RefPtr<SharedBuffer> data = SharedBuffer::create(fullData->data(), i);
-    decoder->setData(data.get(), i == fullLength);
-    frame = decoder->frameBufferAtIndex(0);
-    if (!frame) {
-      truncatedHashes.append(0);
-      continue;
-    }
-    truncatedHashes.append(hashBitmap(frame->bitmap()));
-  }
-
-  // Compute hashes when the file is progressively decoded.
-  decoder = createDecoder();
-  EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
-  for (size_t i = 1; i <= fullLength; i += increment) {
-    RefPtr<SharedBuffer> data = SharedBuffer::create(fullData->data(), i);
-    decoder->setData(data.get(), i == fullLength);
-    frame = decoder->frameBufferAtIndex(0);
-    if (!frame) {
-      progressiveHashes.append(0);
-      continue;
-    }
-    progressiveHashes.append(hashBitmap(frame->bitmap()));
-  }
-  EXPECT_EQ(cAnimationNone, decoder->repetitionCount());
-
-  bool match = true;
-  for (size_t i = 0; i < truncatedHashes.size(); ++i) {
-    if (truncatedHashes[i] != progressiveHashes[i]) {
-      match = false;
-      break;
-    }
-  }
-  EXPECT_TRUE(match);
+  testProgressiveDecoding(&createDecoder, decodersTestingDir, "radient.gif");
 }
 
 TEST(GIFImageDecoderTest, allDataReceivedTruncation) {
@@ -389,21 +305,23 @@ TEST(GIFImageDecoderTest, updateRequiredPreviousFrameAfterFirstDecode) {
 
 TEST(GIFImageDecoderTest, randomFrameDecode) {
   // Single frame image.
-  testRandomFrameDecode(decodersTestingDir, "radient.gif");
+  testRandomFrameDecode(&createDecoder, decodersTestingDir, "radient.gif");
   // Multiple frame images.
-  testRandomFrameDecode(layoutTestResourcesDir,
+  testRandomFrameDecode(&createDecoder, layoutTestResourcesDir,
                         "animated-gif-with-offsets.gif");
-  testRandomFrameDecode(layoutTestResourcesDir, "animated-10color.gif");
+  testRandomFrameDecode(&createDecoder, layoutTestResourcesDir,
+                        "animated-10color.gif");
 }
 
 TEST(GIFImageDecoderTest, randomDecodeAfterClearFrameBufferCache) {
   // Single frame image.
-  testRandomDecodeAfterClearFrameBufferCache(decodersTestingDir, "radient.gif");
+  testRandomDecodeAfterClearFrameBufferCache(&createDecoder, decodersTestingDir,
+                                             "radient.gif");
   // Multiple frame images.
-  testRandomDecodeAfterClearFrameBufferCache(layoutTestResourcesDir,
-                                             "animated-gif-with-offsets.gif");
-  testRandomDecodeAfterClearFrameBufferCache(layoutTestResourcesDir,
-                                             "animated-10color.gif");
+  testRandomDecodeAfterClearFrameBufferCache(
+      &createDecoder, layoutTestResourcesDir, "animated-gif-with-offsets.gif");
+  testRandomDecodeAfterClearFrameBufferCache(
+      &createDecoder, layoutTestResourcesDir, "animated-10color.gif");
 }
 
 TEST(GIFImageDecoderTest, resumePartialDecodeAfterClearFrameBufferCache) {
@@ -512,21 +430,8 @@ TEST(GIFImageDecoderTest, firstFrameHasGreaterSizeThanScreenSize) {
 }
 
 TEST(GIFImageDecoderTest, verifyRepetitionCount) {
-  const int expectedRepetitionCount = 2;
-  std::unique_ptr<ImageDecoder> decoder = createDecoder();
-  RefPtr<SharedBuffer> data = readFile(layoutTestResourcesDir, "full2loop.gif");
-  ASSERT_TRUE(data.get());
-  decoder->setData(data.get(), true);
-  EXPECT_EQ(cAnimationLoopOnce,
-            decoder->repetitionCount());  // Default value before decode.
-
-  for (size_t i = 0; i < decoder->frameCount(); ++i) {
-    ImageFrame* frame = decoder->frameBufferAtIndex(i);
-    EXPECT_EQ(ImageFrame::FrameComplete, frame->getStatus());
-  }
-
-  EXPECT_EQ(expectedRepetitionCount,
-            decoder->repetitionCount());  // Expected value after decode.
+  testRepetitionCount(layoutTestResourcesDir, "full2loop.gif", 2);
+  testRepetitionCount(decodersTestingDir, "radient.gif", cAnimationNone);
 }
 
 TEST(GIFImageDecoderTest, bitmapAlphaType) {

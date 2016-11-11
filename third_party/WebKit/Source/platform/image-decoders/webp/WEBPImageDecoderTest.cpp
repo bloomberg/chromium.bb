@@ -56,120 +56,6 @@ std::unique_ptr<ImageDecoder> createDecoder() {
   return createDecoder(ImageDecoder::AlphaNotPremultiplied);
 }
 
-void testRandomFrameDecode(const char* webpFile) {
-  SCOPED_TRACE(webpFile);
-
-  RefPtr<SharedBuffer> fullData = readFile(webpFile);
-  ASSERT_TRUE(fullData.get());
-  Vector<unsigned> baselineHashes;
-  createDecodingBaseline(&createDecoder, fullData.get(), &baselineHashes);
-  size_t frameCount = baselineHashes.size();
-
-  // Random decoding should get the same results as sequential decoding.
-  std::unique_ptr<ImageDecoder> decoder = createDecoder();
-  decoder->setData(fullData.get(), true);
-  const size_t skippingStep = 5;
-  for (size_t i = 0; i < skippingStep; ++i) {
-    for (size_t j = i; j < frameCount; j += skippingStep) {
-      SCOPED_TRACE(testing::Message() << "Random i:" << i << " j:" << j);
-      ImageFrame* frame = decoder->frameBufferAtIndex(j);
-      EXPECT_EQ(baselineHashes[j], hashBitmap(frame->bitmap()));
-    }
-  }
-
-  // Decoding in reverse order.
-  decoder = createDecoder();
-  decoder->setData(fullData.get(), true);
-  for (size_t i = frameCount; i; --i) {
-    SCOPED_TRACE(testing::Message() << "Reverse i:" << i);
-    ImageFrame* frame = decoder->frameBufferAtIndex(i - 1);
-    EXPECT_EQ(baselineHashes[i - 1], hashBitmap(frame->bitmap()));
-  }
-}
-
-void testRandomDecodeAfterClearFrameBufferCache(const char* webpFile) {
-  SCOPED_TRACE(webpFile);
-
-  RefPtr<SharedBuffer> data = readFile(webpFile);
-  ASSERT_TRUE(data.get());
-  Vector<unsigned> baselineHashes;
-  createDecodingBaseline(&createDecoder, data.get(), &baselineHashes);
-  size_t frameCount = baselineHashes.size();
-
-  std::unique_ptr<ImageDecoder> decoder = createDecoder();
-  decoder->setData(data.get(), true);
-  for (size_t clearExceptFrame = 0; clearExceptFrame < frameCount;
-       ++clearExceptFrame) {
-    decoder->clearCacheExceptFrame(clearExceptFrame);
-    const size_t skippingStep = 5;
-    for (size_t i = 0; i < skippingStep; ++i) {
-      for (size_t j = 0; j < frameCount; j += skippingStep) {
-        SCOPED_TRACE(testing::Message() << "Random i:" << i << " j:" << j);
-        ImageFrame* frame = decoder->frameBufferAtIndex(j);
-        EXPECT_EQ(baselineHashes[j], hashBitmap(frame->bitmap()));
-      }
-    }
-  }
-}
-
-void testDecodeAfterReallocatingData(const char* webpFile) {
-  std::unique_ptr<ImageDecoder> decoder = createDecoder();
-  RefPtr<SharedBuffer> data = readFile(webpFile);
-  ASSERT_TRUE(data.get());
-
-  // Parse from 'data'.
-  decoder->setData(data.get(), true);
-  size_t frameCount = decoder->frameCount();
-
-  // ... and then decode frames from 'reallocatedData'.
-  RefPtr<SharedBuffer> reallocatedData = data.get()->copy();
-  ASSERT_TRUE(reallocatedData.get());
-  data.clear();
-  decoder->setData(reallocatedData.get(), true);
-
-  for (size_t i = 0; i < frameCount; ++i) {
-    const ImageFrame* const frame = decoder->frameBufferAtIndex(i);
-    EXPECT_EQ(ImageFrame::FrameComplete, frame->getStatus());
-  }
-}
-
-void testByteByByteSizeAvailable(const char* webpFile,
-                                 size_t frameOffset,
-                                 bool hasColorSpace,
-                                 int expectedRepetitionCount) {
-  std::unique_ptr<ImageDecoder> decoder = createDecoder();
-  RefPtr<SharedBuffer> data = readFile(webpFile);
-  ASSERT_TRUE(data.get());
-  EXPECT_LT(frameOffset, data->size());
-
-  // Send data to the decoder byte-by-byte and use the provided frame offset in
-  // the data to check that isSizeAvailable() changes state only when that
-  // offset is reached. Also check other decoder state.
-  for (size_t length = 1; length <= frameOffset; ++length) {
-    RefPtr<SharedBuffer> tempData = SharedBuffer::create(data->data(), length);
-    decoder->setData(tempData.get(), false);
-
-    if (length < frameOffset) {
-      EXPECT_FALSE(decoder->isSizeAvailable());
-      EXPECT_TRUE(decoder->size().isEmpty());
-      EXPECT_FALSE(decoder->hasEmbeddedColorSpace());
-      EXPECT_EQ(0u, decoder->frameCount());
-      EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
-      EXPECT_FALSE(decoder->frameBufferAtIndex(0));
-    } else {
-      EXPECT_TRUE(decoder->isSizeAvailable());
-      EXPECT_FALSE(decoder->size().isEmpty());
-      EXPECT_EQ(decoder->hasEmbeddedColorSpace(), hasColorSpace);
-      EXPECT_EQ(1u, decoder->frameCount());
-      EXPECT_EQ(expectedRepetitionCount, decoder->repetitionCount());
-    }
-
-    EXPECT_FALSE(decoder->failed());
-    if (decoder->failed())
-      return;
-  }
-}
-
 // If 'parseErrorExpected' is true, error is expected during parse (frameCount()
 // call); else error is expected during decode (frameBufferAtIndex() call).
 void testInvalidImage(const char* webpFile, bool parseErrorExpected) {
@@ -505,52 +391,8 @@ TEST(AnimatedWebPTests, reproCrash) {
 }
 
 TEST(AnimatedWebPTests, progressiveDecode) {
-  RefPtr<SharedBuffer> fullData =
-      readFile("/LayoutTests/fast/images/resources/webp-animated.webp");
-  ASSERT_TRUE(fullData.get());
-  const size_t fullLength = fullData->size();
-
-  std::unique_ptr<ImageDecoder> decoder;
-  ImageFrame* frame;
-
-  Vector<unsigned> truncatedHashes;
-  Vector<unsigned> progressiveHashes;
-
-  // Compute hashes when the file is truncated.
-  const size_t increment = 1;
-  for (size_t i = 1; i <= fullLength; i += increment) {
-    decoder = createDecoder();
-    RefPtr<SharedBuffer> data = SharedBuffer::create(fullData->data(), i);
-    decoder->setData(data.get(), i == fullLength);
-    frame = decoder->frameBufferAtIndex(0);
-    if (!frame) {
-      truncatedHashes.append(0);
-      continue;
-    }
-    truncatedHashes.append(hashBitmap(frame->bitmap()));
-  }
-
-  // Compute hashes when the file is progressively decoded.
-  decoder = createDecoder();
-  for (size_t i = 1; i <= fullLength; i += increment) {
-    RefPtr<SharedBuffer> data = SharedBuffer::create(fullData->data(), i);
-    decoder->setData(data.get(), i == fullLength);
-    frame = decoder->frameBufferAtIndex(0);
-    if (!frame) {
-      progressiveHashes.append(0);
-      continue;
-    }
-    progressiveHashes.append(hashBitmap(frame->bitmap()));
-  }
-
-  bool match = true;
-  for (size_t i = 0; i < truncatedHashes.size(); ++i) {
-    if (truncatedHashes[i] != progressiveHashes[i]) {
-      match = false;
-      break;
-    }
-  }
-  EXPECT_TRUE(match);
+  testProgressiveDecoding(
+      &createDecoder, "/LayoutTests/fast/images/resources/webp-animated.webp");
 }
 
 TEST(AnimatedWebPTests, frameIsCompleteAndDuration) {
@@ -616,23 +458,29 @@ TEST(AnimatedWebPTests, updateRequiredPreviousFrameAfterFirstDecode) {
 
 TEST(AnimatedWebPTests, randomFrameDecode) {
   testRandomFrameDecode(
-      "/LayoutTests/fast/images/resources/webp-animated.webp");
+      &createDecoder, "/LayoutTests/fast/images/resources/webp-animated.webp");
   testRandomFrameDecode(
+      &createDecoder,
       "/LayoutTests/fast/images/resources/webp-animated-opaque.webp");
   testRandomFrameDecode(
+      &createDecoder,
       "/LayoutTests/fast/images/resources/webp-animated-large.webp");
   testRandomFrameDecode(
+      &createDecoder,
       "/LayoutTests/fast/images/resources/webp-animated-icc-xmp.webp");
 }
 
 TEST(AnimatedWebPTests, randomDecodeAfterClearFrameBufferCache) {
   testRandomDecodeAfterClearFrameBufferCache(
-      "/LayoutTests/fast/images/resources/webp-animated.webp");
+      &createDecoder, "/LayoutTests/fast/images/resources/webp-animated.webp");
   testRandomDecodeAfterClearFrameBufferCache(
+      &createDecoder,
       "/LayoutTests/fast/images/resources/webp-animated-opaque.webp");
   testRandomDecodeAfterClearFrameBufferCache(
+      &createDecoder,
       "/LayoutTests/fast/images/resources/webp-animated-large.webp");
   testRandomDecodeAfterClearFrameBufferCache(
+      &createDecoder,
       "/LayoutTests/fast/images/resources/webp-animated-icc-xmp.webp");
 }
 
@@ -673,8 +521,9 @@ TEST(AnimatedWebPTests,
 
 TEST(AnimatedWebPTests, decodeAfterReallocatingData) {
   testDecodeAfterReallocatingData(
-      "/LayoutTests/fast/images/resources/webp-animated.webp");
+      &createDecoder, "/LayoutTests/fast/images/resources/webp-animated.webp");
   testDecodeAfterReallocatingData(
+      &createDecoder,
       "/LayoutTests/fast/images/resources/webp-animated-icc-xmp.webp");
 }
 
@@ -692,10 +541,11 @@ TEST(AnimatedWebPTests, alphaBlending) {
 
 TEST(AnimatedWebPTests, isSizeAvailable) {
   testByteByByteSizeAvailable(
-      "/LayoutTests/fast/images/resources/webp-animated.webp", 142u, false,
-      cAnimationLoopInfinite);
+      &createDecoder, "/LayoutTests/fast/images/resources/webp-animated.webp",
+      142u, false, cAnimationLoopInfinite);
   // FIXME: Add color profile support for animated webp images.
   testByteByByteSizeAvailable(
+      &createDecoder,
       "/LayoutTests/fast/images/resources/webp-animated-icc-xmp.webp", 1404u,
       false, 32000);
 }
@@ -717,9 +567,11 @@ TEST(StaticWebPTests, incrementalDecode) {
 
 TEST(StaticWebPTests, isSizeAvailable) {
   testByteByByteSizeAvailable(
+      &createDecoder,
       "/LayoutTests/fast/images/resources/webp-color-profile-lossy.webp", 520u,
       true, cAnimationNone);
-  testByteByByteSizeAvailable("/LayoutTests/fast/images/resources/test.webp",
+  testByteByByteSizeAvailable(&createDecoder,
+                              "/LayoutTests/fast/images/resources/test.webp",
                               30u, false, cAnimationNone);
 }
 
