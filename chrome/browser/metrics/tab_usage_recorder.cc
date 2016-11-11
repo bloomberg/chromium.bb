@@ -5,9 +5,8 @@
 #include "chrome/browser/metrics/tab_usage_recorder.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "components/bookmarks/browser/bookmark_model.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/page_importance_signals.h"
 
@@ -17,7 +16,7 @@ namespace metrics {
 
 namespace {
 
-// This global is never freed.
+// The recorder is never stopped, thus it is ok to leak.
 TabUsageRecorder* g_tab_usage_recorder = nullptr;
 
 }  // namespace
@@ -39,14 +38,13 @@ class TabUsageRecorder::WebContentsData
 
   explicit WebContentsData(content::WebContents* contents);
 
-  // Returns true if |contents_|'s URL is bookmarked.
-  bool IsBookmarked();
-
   // The WebContents associated to this instance.
   content::WebContents* contents_;
 
   // Indicates if the tab is pinned to the tab strip.
   bool is_pinned_;
+
+  base::TimeTicks last_inactive_time_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsData);
 };
@@ -62,29 +60,33 @@ TabUsageRecorder::WebContentsData::WebContentsData(
     content::WebContents* contents)
     : contents_(contents), is_pinned_(false) {}
 
-bool TabUsageRecorder::WebContentsData::IsBookmarked() {
-  bookmarks::BookmarkModel* bookmark_model =
-      BookmarkModelFactory::GetForBrowserContextIfExists(
-          contents_->GetBrowserContext());
-
-  return bookmark_model &&
-         bookmark_model->IsBookmarked(contents_->GetLastCommittedURL());
-}
-
 void TabUsageRecorder::WebContentsData::RecordTabDeactivation() {
+  last_inactive_time_ = base::TimeTicks::Now();
   UMA_HISTOGRAM_BOOLEAN("Tab.Deactivation.Pinned", is_pinned_);
   UMA_HISTOGRAM_BOOLEAN(
       "Tab.Deactivation.HadFormInteraction",
       contents_->GetPageImportanceSignals().had_form_interaction);
-  UMA_HISTOGRAM_BOOLEAN("Tab.Deactivation.Bookmarked", IsBookmarked());
 }
 
 void TabUsageRecorder::WebContentsData::RecordTabReactivation() {
+  bool had_form_interaction =
+      contents_->GetPageImportanceSignals().had_form_interaction;
+
   UMA_HISTOGRAM_BOOLEAN("Tab.Reactivation.Pinned", is_pinned_);
-  UMA_HISTOGRAM_BOOLEAN(
-      "Tab.Reactivation.HadFormInteraction",
-      contents_->GetPageImportanceSignals().had_form_interaction);
-  UMA_HISTOGRAM_BOOLEAN("Tab.Reactivation.Bookmarked", IsBookmarked());
+  UMA_HISTOGRAM_BOOLEAN("Tab.Reactivation.HadFormInteraction",
+                        had_form_interaction);
+
+  base::TimeDelta time_to_reactivation =
+      base::TimeTicks::Now() - last_inactive_time_;
+  if (is_pinned_ || had_form_interaction) {
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "Tab.TimeToReactivation.Important", time_to_reactivation,
+        base::TimeDelta::FromSeconds(1), base::TimeDelta::FromHours(2), 100);
+  } else {
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "Tab.TimeToReactivation.Normal", time_to_reactivation,
+        base::TimeDelta::FromSeconds(1), base::TimeDelta::FromHours(2), 100);
+  }
 }
 
 // static
@@ -105,7 +107,7 @@ void TabUsageRecorder::TabInsertedAt(TabStripModel* tab_strip_model,
                                      content::WebContents* contents,
                                      int index,
                                      bool foreground) {
-  // Set the initial pinned value.
+  // Set the initial pin state.
   TabPinnedStateChanged(tab_strip_model, contents, index);
 }
 
