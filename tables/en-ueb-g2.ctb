@@ -535,50 +535,38 @@ sufword subbasement 234-136-12-12-1-234-15-56-2345
 sufword subbing 234-136-12-12-346
 
 # be   10.6.1   10.6.2   10.6.3   10.6.4
-match %[^_~]%<* be ati!n 23              beati*
-match %[^_~]%<* be atr 23                bea*
-match %[^_~]%<* be c![hkq] 23            bec*
-match %[^_~]%<* be dra 23                bedr*
-match %[^_~]%<* be de!(%>*%[_~^]) 23     bede*
-match %[^_~]%<* be da 23                 bed*
-match %[^_~]%<* be elz 23                bee*
-match %[^_~]%<* be g![gs] 23             beg*
-match %[^_~]%<* be in 23                 bei*
-match %[^_~]%<* be l[aeiouwy] 23         bel*
-match %[^_~]%<* be neficen 23            beneficen*
-match %[^_~]%<* be net(['’]s)?%>*%[_~^] 23  benet
-match %[^_~]%<* be ne![dft] 23           bene*
-match %[^_~]%<* be n[aiu] 23             ben*
-match %[^_~]%<* be r[a] 23               bere*
-match %[^_~]%<* be re!n 23               ber*
-match %[^_~]%<* be stir 23               besti*
-match %[^_~]%<* be st[or] 23             best*
-match %[^_~]%<* be s![st] 23             bes*
-match %[^_~]%<* be t![chst'’] 23          bet*
-match %[^_~]%<* be [bfhjmopqwxz] 23
-
-#nofor begword beatif 23-1-2345-24-124
-#nofor begword beatit 23-1-2345-24-2345
-#nofor begword beb 23-12
-#nofor begword becal 23-14-1-123
-#nofor begword beco 23-14-135
-#nofor begword beda 23-145-1
-#nofor begword bede 23-145-15
-#nofor begword bedr 23-145-1235
-#nofor begword bef 23-124
-#nofor begword beg 23-1245
-#nofor begword beh 23-125
+empmatchafter match %[^_~]%<* be [Aa][Tt][Ii]![Nn] 23               beati*
+empmatchafter match %[^_~]%<* be [Aa][Tt][Rr] 23                    bea*
+empmatchafter match %[^_~]%<* be [Cc]![HKQhkq] 23                   bec*
+empmatchafter match %[^_~]%<* be [Dd][Rr][Aa] 23                    bedr*
+empmatchafter match %[^_~]%<* be [Dd][Ee]!(%>*%[_~^]) 23            bede*
+empmatchafter match %[^_~]%<* be [Dd][Aa] 23                        bed*
+empmatchafter match %[^_~]%<* be [Ee][Ll][Zz] 23                    bee*
+empmatchafter match %[^_~]%<* be [Gg]![GSgs] 23                     beg*
+empmatchafter match %[^_~]%<* be [Ii][Nn] 23                        bei*
+empmatchafter match %[^_~]%<* be [Ll][AEIOUWYaeiouwy] 23            bel*
+empmatchafter match %[^_~]%<* be [Nn][Ee][Ff][Ii][Cc][Ee][Nn] 23    beneficen*
+empmatchafter match %[^_~]%<* be [Nn][Ee][Tt](['’]s)?%>*%[_~^] 23   benet
+empmatchafter match %[^_~]%<* be [Nn][Ee]![DFTdft] 23               bene*
+empmatchafter match %[^_~]%<* be [Nn][AIUaiu] 23                    ben*
+empmatchafter match %[^_~]%<* be [Rr][Aa] 23                        bere*
+empmatchafter match %[^_~]%<* be [Rr][Ee]![Nn] 23                   ber*
+empmatchafter match %[^_~]%<* be [Ss][Tt][Ii][Rr] 23                besti*
+empmatchafter match %[^_~]%<* be [Ss][Tt][ORor] 23                  best*
+empmatchafter match %[^_~]%<* be [Ss]![STst] 23                     bes*
+empmatchafter match %[^_~]%<* be [Tt]![CHSTchst'’] 23               bet*
+empmatchafter match %[^_~]%<* be [BFHJMOPQWXZbfhjmopqwxz] 23
 
 nofor sufword be 23
 
 #   easier if after "be" cause both are dots 23
 # bb   10.6.5   10.6.6
-match %a bb %a 23
+empmatchbefore empmatchafter match %a bb %a 23
 
 nofor always bb 23
 
 # cc   10.6.5   10.6.6
-match %a cc %a 25
+empmatchbefore empmatchafter match %a cc %a 25
 
 nofor always cc 25
 
@@ -591,30 +579,28 @@ sufword saccharin 234-1-14-16-345-35
 sufword zucchini 1356-136-14-16-35-24
 
 # con   10.6.1   10.6.2   10.6.3   10.6.4
-match %[^_~]%<* con c!h 25
-match %[^_~]%<* con est 25
-match %[^_~]%<* con s%a 25  cons  "mod cons" 10.6.4
-sufword conned 14-135-1345-1345-1246
-#match %[^_~]%<* con n(!e|%>*%[^_~]) 25   conned
-#match %[^_~]%<* con ne!d 25              "
-match %[^_~]%<* con [abdfghijlmnopqrtuvwxyz] 25
+empmatchafter match %[^_~]%<* con [Cc]![Hh] 25
+empmatchafter match %[^_~]%<* con [Ee][Ss][Tt] 25
+empmatchafter match %[^_~]%<* con s%a 25  [Cc][Oo][Nn][Ss]  "mod cons" 10.6.4
+empmatchafter match %[^_~]%<* con [ABDFGHIJLMNOPQRTUVWXYZabdfghijlmnopqrtuvwxyz] 25
 sufword conakry 14-135-1345-1-13-1235-13456
 sufword conan  14-135-1345-1-1345
+sufword conned 14-135-1345-1345-1246
 
 nofor begword con 25
 
 # dis   10.6.1   10.6.2   10.6.3   10.6.4
 word diss 145-24-234-234
-match %[^_~]%<* dis c![s'’] 256
-match %[^_~]%<* dis he![dsv] 256
-match %[^_~]%<* dis h![ceiprtw'’] 256
-match %[^_~]%<* dis p!i 256
-match %[^_~]%<* dis [abdefgijlmnoqrstuvwxyz] 256
+empmatchafter match %[^_~]%<* dis [Cc]![Ss'’] 256
+empmatchafter match %[^_~]%<* dis [Hh][Ee]![DSVdsv] 256
+empmatchafter match %[^_~]%<* dis [Hh]![CEIPRTWceiprtw'’] 256
+empmatchafter match %[^_~]%<* dis [Pp]![Ii] 256
+empmatchafter match %[^_~]%<* dis [ABDEFGIJLMNOQRSTUVWXYZabdefgijlmnoqrstuvwxyz] 256
 
 nofor begword dis 256
 
 # ea   10.6.5   10.6.6   10.6.7
-match %a ea %a 2
+empmatchbefore empmatchafter match %a ea %a 2
 
 #   cheap fix, still fails with ,ea,ea,
 nofor always , 2
@@ -673,7 +659,7 @@ sufword toenail 2345-135-15-1345-1-24-123
 sufword turtleneck 2345-136-1235-2345-123-15-1345-15-14-13
 
 # ff   10.6.5   10.6.6
-match %a ff %a 235
+empmatchbefore empmatchafter match %a ff %a 235
 
 nofor always ff 235
 
@@ -684,7 +670,7 @@ sufword effort 15-124-123456-2345
 sufword stafford 34-1-124-123456-145
 
 # gg   10.6.5   10.6.6
-match %a gg %a 2356
+empmatchbefore empmatchafter match %a gg %a 2356
 
 nofor always gg 2356
 
