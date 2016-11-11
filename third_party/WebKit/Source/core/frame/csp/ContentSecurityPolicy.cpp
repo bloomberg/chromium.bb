@@ -1212,31 +1212,35 @@ void ContentSecurityPolicy::reportViolation(
   reportObject->setObject("csp-report", std::move(cspReport));
   String stringifiedReport = reportObject->toJSONString();
 
-  if (!shouldSendViolationReport(stringifiedReport))
-    return;
-  didSendViolationReport(stringifiedReport);
+  // Only POST unique reports to the external endpoint; repeated reports add no
+  // value on the server side, as they're indistinguishable. Note that we'll
+  // fire the DOM event for every violation, as the page has enough context to
+  // react in some reasonable way to each violation as it occurs.
+  if (shouldSendViolationReport(stringifiedReport)) {
+    didSendViolationReport(stringifiedReport);
 
-  RefPtr<EncodedFormData> report =
-      EncodedFormData::create(stringifiedReport.utf8());
+    RefPtr<EncodedFormData> report =
+        EncodedFormData::create(stringifiedReport.utf8());
 
-  LocalFrame* frame = document->frame();
-  if (!frame)
-    return;
+    LocalFrame* frame = document->frame();
+    if (!frame)
+      return;
 
-  for (const String& endpoint : reportEndpoints) {
-    // If we have a context frame we're dealing with 'frame-ancestors' and we
-    // don't have our own execution context. Use the frame's document to
-    // complete the endpoint URL, overriding its URL with the blocked document's
-    // URL.
-    DCHECK(!contextFrame || !m_executionContext);
-    DCHECK(!contextFrame ||
-           equalIgnoringCase(effectiveDirective, FrameAncestors));
-    KURL url =
-        contextFrame
-            ? frame->document()->completeURLWithOverride(endpoint, blockedURL)
-            : completeURL(endpoint);
-    PingLoader::sendViolationReport(
-        frame, url, report, PingLoader::ContentSecurityPolicyViolationReport);
+    for (const String& endpoint : reportEndpoints) {
+      // If we have a context frame we're dealing with 'frame-ancestors' and we
+      // don't have our own execution context. Use the frame's document to
+      // complete the endpoint URL, overriding its URL with the blocked
+      // document's URL.
+      DCHECK(!contextFrame || !m_executionContext);
+      DCHECK(!contextFrame ||
+             equalIgnoringCase(effectiveDirective, FrameAncestors));
+      KURL url =
+          contextFrame
+              ? frame->document()->completeURLWithOverride(endpoint, blockedURL)
+              : completeURL(endpoint);
+      PingLoader::sendViolationReport(
+          frame, url, report, PingLoader::ContentSecurityPolicyViolationReport);
+    }
   }
 
   document->postTask(

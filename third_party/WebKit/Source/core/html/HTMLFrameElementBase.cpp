@@ -32,6 +32,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/RemoteFrameView.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -84,7 +85,21 @@ void HTMLFrameElementBase::openURL(bool replaceCurrentItem) {
   KURL scriptURL;
   KURL url = document().completeURL(m_URL);
   if (protocolIsJavaScript(m_URL)) {
-    scriptURL = url;
+    // We'll set/execute |scriptURL| iff CSP allows us to execute inline
+    // JavaScript. If CSP blocks inline JavaScript, then exit early if
+    // we're trying to execute script in an existing document. If we're
+    // executing JavaScript to create a new document (e.g.
+    // '<iframe src="javascript:...">' then continue loading 'about:blank'
+    // so that the frame is populated with something reasonable.
+    if (ContentSecurityPolicy::shouldBypassMainWorld(&document()) ||
+        document().contentSecurityPolicy()->allowJavaScriptURLs(
+            this, document().url(), OrdinalNumber::first())) {
+      scriptURL = url;
+    } else {
+      if (contentFrame())
+        return;
+    }
+
     url = blankURL();
   }
 
