@@ -42,9 +42,9 @@ class Init : public service_manager::Service,
               mojom::InitRequest request) override;
 
   // mojom::Init:
-  void StartService(const mojo::String& name,
-                    const mojo::String& user_id) override;
-  void StopServicesForUser(const mojo::String& user_id) override;
+  void StartService(const std::string& name,
+                    const std::string& user_id) override;
+  void StopServicesForUser(const std::string& user_id) override;
 
   void UserServiceQuit(const std::string& user_id);
 

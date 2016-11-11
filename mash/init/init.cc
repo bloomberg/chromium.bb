@@ -32,8 +32,7 @@ bool Init::OnConnect(const service_manager::ServiceInfo& remote_info,
   return true;
 }
 
-void Init::StartService(const mojo::String& name,
-                        const mojo::String& user_id) {
+void Init::StartService(const std::string& name, const std::string& user_id) {
   if (user_services_.find(user_id) == user_services_.end()) {
     service_manager::Connector::ConnectParams params(
         service_manager::Identity(name, user_id));
@@ -45,7 +44,7 @@ void Init::StartService(const mojo::String& name,
   }
 }
 
-void Init::StopServicesForUser(const mojo::String& user_id) {
+void Init::StopServicesForUser(const std::string& user_id) {
   auto it = user_services_.find(user_id);
   if (it != user_services_.end())
     user_services_.erase(it);
