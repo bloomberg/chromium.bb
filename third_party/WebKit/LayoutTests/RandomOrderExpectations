@@ -1,4 +1,3 @@
-bluetooth/notifications/event-after-starting.html [ Pass Failure ]
 compositing/reflections/nested-reflection-anchor-point.html [ Pass Failure ]
 compositing/reflections/nested-reflection-animated.html [ Pass Failure ]
 compositing/reflections/nested-reflection-transition.html [ Pass Failure ]
