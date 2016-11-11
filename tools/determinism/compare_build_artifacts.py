@@ -34,6 +34,9 @@ WHITELIST = {
   # https://crbug.com/330263
   'linux': {
     'flatc',
+    # https://crbug.com/654989
+    'ppapi_nacl_tests_pnacl_newlib_x32_nonsfi.nexe',
+    'ppapi_nacl_tests_pnacl_newlib_x64.nexe',
   },
 
   # https://crbug.com/330262
