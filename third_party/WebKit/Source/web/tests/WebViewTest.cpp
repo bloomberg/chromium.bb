@@ -1739,7 +1739,7 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter) {
   // Exit and, without performing a layout, reenter fullscreen again. We
   // shouldn't try to restore the scroll and scale values when we layout to
   // enter fullscreen.
-  webViewImpl->exitFullscreenForElement(element);
+  webViewImpl->exitFullscreen(element->document().frame());
   webViewImpl->didExitFullscreen();
   webViewImpl->enterFullscreenForElement(element);
   webViewImpl->didEnterFullscreen();
@@ -1753,7 +1753,7 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter) {
                    .height());
 
   // When we exit now, we should restore the original scroll value.
-  webViewImpl->exitFullscreenForElement(element);
+  webViewImpl->exitFullscreen(element->document().frame());
   webViewImpl->didExitFullscreen();
   webViewImpl->updateAllLifecyclePhases();
 
@@ -1796,7 +1796,7 @@ TEST_P(WebViewTest, EnterFullscreenResetScrollAndScaleState) {
   webViewImpl->enterFullscreenForElement(otherElement);
 
   // Confirm that exiting fullscreen restores the parameters.
-  webViewImpl->exitFullscreenForElement(element);
+  webViewImpl->exitFullscreen(element->document().frame());
   webViewImpl->didExitFullscreen();
   webViewImpl->updateAllLifecyclePhases();
 

@@ -246,7 +246,7 @@ class CORE_EXPORT ChromeClient : public HostWindow {
                                                  LocalFrame* localRoot) {}
 
   virtual void enterFullscreenForElement(Element*) {}
-  virtual void exitFullscreenForElement(Element*) {}
+  virtual void exitFullscreen(LocalFrame*) {}
 
   virtual void clearCompositedSelection(LocalFrame*) {}
   virtual void updateCompositedSelection(LocalFrame*,

@@ -2109,8 +2109,8 @@ void WebViewImpl::enterFullscreenForElement(Element* element) {
   m_fullscreenController->enterFullscreenForElement(element);
 }
 
-void WebViewImpl::exitFullscreenForElement(Element* element) {
-  m_fullscreenController->exitFullscreenForElement(element);
+void WebViewImpl::exitFullscreen(LocalFrame* frame) {
+  m_fullscreenController->exitFullscreen(frame);
 }
 
 bool WebViewImpl::hasHorizontalScrollbar() {

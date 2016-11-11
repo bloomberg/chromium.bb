@@ -849,8 +849,8 @@ void ChromeClientImpl::enterFullscreenForElement(Element* element) {
   m_webView->enterFullscreenForElement(element);
 }
 
-void ChromeClientImpl::exitFullscreenForElement(Element* element) {
-  m_webView->exitFullscreenForElement(element);
+void ChromeClientImpl::exitFullscreen(LocalFrame* frame) {
+  m_webView->exitFullscreen(frame);
 }
 
 void ChromeClientImpl::clearCompositedSelection(LocalFrame* frame) {

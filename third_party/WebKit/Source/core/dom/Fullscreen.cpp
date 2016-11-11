@@ -532,16 +532,7 @@ void Fullscreen::exitFullscreen(Document& document) {
   // Only exit out of full screen window mode if there are no remaining elements
   // in the full screen stack.
   if (!newTop) {
-    // FIXME: if the frame exiting fullscreen is not the frame that entered
-    // fullscreen (but a parent frame for example),
-    // m_currentFullScreenElement might be null. We want to pass an element
-    // that is part of the document so we will pass the documentElement in
-    // that case. This should be fix by exiting fullscreen for a frame
-    // instead of an element, see https://crbug.com/441259
-    Element* currentFullScreenElement = currentFullScreenElementFrom(document);
-    host->chromeClient().exitFullscreenForElement(
-        currentFullScreenElement ? currentFullScreenElement
-                                 : document.documentElement());
+    host->chromeClient().exitFullscreen(document.frame());
     return;
   }
 

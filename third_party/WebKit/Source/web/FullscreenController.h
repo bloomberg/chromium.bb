@@ -51,7 +51,7 @@ class FullscreenController final
   void didExitFullscreen();
 
   void enterFullscreenForElement(Element*);
-  void exitFullscreenForElement(Element*);
+  void exitFullscreen(LocalFrame*);
 
   bool isFullscreen() { return m_fullscreenFrame; }
 

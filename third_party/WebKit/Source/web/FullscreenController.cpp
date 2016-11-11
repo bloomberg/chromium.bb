@@ -167,17 +167,16 @@ void FullscreenController::enterFullscreenForElement(Element* element) {
   }
 }
 
-void FullscreenController::exitFullscreenForElement(Element* element) {
-  DCHECK(element);
+void FullscreenController::exitFullscreen(LocalFrame* frame) {
+  DCHECK(frame);
 
   // The client is exiting full screen, so don't send a notification.
   if (m_isCancelingFullscreen)
     return;
 
-  WebLocalFrameImpl* frame =
-      WebLocalFrameImpl::fromFrame(element->document().frame());
-  if (frame && frame->client())
-    frame->client()->exitFullscreen();
+  WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
+  if (webFrame && webFrame->client())
+    webFrame->client()->exitFullscreen();
 }
 
 void FullscreenController::updateSize() {
