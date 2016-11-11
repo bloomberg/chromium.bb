@@ -66,7 +66,6 @@ import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.components.location.LocationUtils;
-import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -286,12 +285,6 @@ public class WebsiteSettingsPopup implements OnClickListener {
     // The security level of the page (a valid ConnectionSecurityLevel).
     private int mSecurityLevel;
 
-    // Whether the security level of the page was downgraded due to SHA-1.
-    private boolean mDeprecatedSHA1Present;
-
-    // Whether the security level of the page was downgraded due to passive mixed content.
-    private boolean mPassiveMixedContentPresent;
-
     // Permissions available to be displayed in mPermissionsList.
     private List<PageInfoPermissionEntry> mDisplayedPermissions;
 
@@ -380,6 +373,45 @@ public class WebsiteSettingsPopup implements OnClickListener {
         // Hide the permissions list for sites with no permissions.
         setVisibilityOfPermissionsList(false);
 
+        // Work out the URL and connection message and status visibility.
+        mFullUrl = mWebContents.getVisibleUrl();
+        if (isShowingOfflinePage()) {
+            mFullUrl = OfflinePageUtils.stripSchemeFromOnlineUrl(mFullUrl);
+        }
+
+        try {
+            mParsedUrl = new URI(mFullUrl);
+            mIsInternalPage = UrlUtilities.isInternalScheme(mParsedUrl);
+        } catch (URISyntaxException e) {
+            mParsedUrl = null;
+            mIsInternalPage = false;
+        }
+        mSecurityLevel = SecurityStateModel.getSecurityLevelForWebContents(mWebContents);
+
+        SpannableStringBuilder urlBuilder = new SpannableStringBuilder(mFullUrl);
+        OmniboxUrlEmphasizer.emphasizeUrl(urlBuilder, mContext.getResources(), mProfile,
+                mSecurityLevel, mIsInternalPage, true, true);
+        mUrlTitle.setText(urlBuilder);
+
+        if (mParsedUrl == null || mParsedUrl.getScheme() == null
+                || !(mParsedUrl.getScheme().equals("http")
+                           || mParsedUrl.getScheme().equals("https"))) {
+            mSiteSettingsButton.setVisibility(View.GONE);
+        }
+
+        if (isShowingOfflinePage()) {
+            boolean isConnected = OfflinePageUtils.isConnected();
+            RecordHistogram.recordBooleanHistogram(
+                    "OfflinePages.WebsiteSettings.OpenOnlineButtonVisible", isConnected);
+            if (!isConnected) mOpenOnlineButton.setVisibility(View.GONE);
+        } else {
+            mOpenOnlineButton.setVisibility(View.GONE);
+        }
+
+        mInstantAppIntent = mIsInternalPage ? null
+                : InstantAppsHandler.getInstance().getInstantAppIntentForUrl(mFullUrl);
+        if (mInstantAppIntent == null) mInstantAppButton.setVisibility(View.GONE);
+
         // Create the dialog.
         mDialog = new Dialog(mContext) {
             private void superDismiss() {
@@ -457,47 +489,6 @@ public class WebsiteSettingsPopup implements OnClickListener {
             }
         });
 
-        // Work out the URL and connection message and status visibility.
-        mFullUrl = mWebContents.getVisibleUrl();
-        if (isShowingOfflinePage()) {
-            mFullUrl = OfflinePageUtils.stripSchemeFromOnlineUrl(mFullUrl);
-        }
-
-        try {
-            mParsedUrl = new URI(mFullUrl);
-            mIsInternalPage = UrlUtilities.isInternalScheme(mParsedUrl);
-        } catch (URISyntaxException e) {
-            mParsedUrl = null;
-            mIsInternalPage = false;
-        }
-        mSecurityLevel = SecurityStateModel.getSecurityLevelForWebContents(mWebContents);
-        mDeprecatedSHA1Present = SecurityStateModel.isDeprecatedSHA1Present(mWebContents);
-        mPassiveMixedContentPresent = SecurityStateModel.isPassiveMixedContentPresent(mWebContents);
-
-        SpannableStringBuilder urlBuilder = new SpannableStringBuilder(mFullUrl);
-        OmniboxUrlEmphasizer.emphasizeUrl(urlBuilder, mContext.getResources(), mProfile,
-                mSecurityLevel, mIsInternalPage, true, true);
-        mUrlTitle.setText(urlBuilder);
-
-        if (mParsedUrl == null || mParsedUrl.getScheme() == null
-                || !(mParsedUrl.getScheme().equals("http")
-                           || mParsedUrl.getScheme().equals("https"))) {
-            mSiteSettingsButton.setVisibility(View.GONE);
-        }
-
-        if (isShowingOfflinePage()) {
-            boolean isConnected = OfflinePageUtils.isConnected();
-            RecordHistogram.recordBooleanHistogram(
-                    "OfflinePages.WebsiteSettings.OpenOnlineButtonVisible", isConnected);
-            if (!isConnected) mOpenOnlineButton.setVisibility(View.GONE);
-        } else {
-            mOpenOnlineButton.setVisibility(View.GONE);
-        }
-
-        mInstantAppIntent = mIsInternalPage ? null
-                : InstantAppsHandler.getInstance().getInstantAppIntentForUrl(mFullUrl);
-        if (mInstantAppIntent == null) mInstantAppButton.setVisibility(View.GONE);
-
         showDialog();
     }
 
@@ -530,11 +521,8 @@ public class WebsiteSettingsPopup implements OnClickListener {
      * HTTPS connections.
      */
     private boolean isConnectionDetailsLinkVisible() {
-        // TODO(tsergeant): If this logic gets any more complicated from additional deprecations,
-        // change it to use something like |SchemeIsCryptographic|.
-        return mContentPublisher == null && !mIsInternalPage
-                && (mSecurityLevel != ConnectionSecurityLevel.NONE || mPassiveMixedContentPresent
-                        || mDeprecatedSHA1Present);
+        return mContentPublisher == null && !isShowingOfflinePage() && mParsedUrl != null
+                && mParsedUrl.getScheme() != null && mParsedUrl.getScheme().equals("https");
     }
 
     private boolean hasAndroidPermission(int contentSettingType) {
