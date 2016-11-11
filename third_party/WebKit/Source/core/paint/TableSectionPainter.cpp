@@ -95,6 +95,7 @@ void TableSectionPainter::paintRepeatingHeaderGroup(
 
 void TableSectionPainter::paint(const PaintInfo& paintInfo,
                                 const LayoutPoint& paintOffset) {
+  ObjectPainter(m_layoutTableSection).checkPaintOffset(paintInfo, paintOffset);
   paintSection(paintInfo, paintOffset);
   LayoutTable* table = m_layoutTableSection.table();
   if (table->header() == m_layoutTableSection)

@@ -16,6 +16,7 @@ namespace blink {
 
 void TableRowPainter::paint(const PaintInfo& paintInfo,
                             const LayoutPoint& paintOffset) {
+  ObjectPainter(m_layoutTableRow).checkPaintOffset(paintInfo, paintOffset);
   DCHECK(m_layoutTableRow.hasSelfPaintingLayer());
 
   // TODO(crbug.com/577282): This painting order is inconsistent with other

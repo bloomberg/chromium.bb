@@ -69,7 +69,7 @@ struct PaintInvalidatorContext {
 
   PaintLayer* paintingLayer = nullptr;
 
-  // Store the new and old visual rects in the paint invalidation backing's
+  // Store the old and new visual rects in the paint invalidation backing's
   // coordinates. The rects do *not* account for composited scrolling.
   // See LayoutObject::adjustVisualRectForCompositedScrolling().
   LayoutRect oldVisualRect;
@@ -82,6 +82,11 @@ struct PaintInvalidatorContext {
   // LayoutObject::adjustVisualRectForCompositedScrolling().
   LayoutPoint oldLocation;
   LayoutPoint newLocation;
+
+  // Stores the old and new offsets to paint this object, relative to the
+  // containing transform node. They are for SPv2 only.
+  LayoutPoint oldPaintOffset;
+  LayoutPoint newPaintOffset;
 };
 
 class PaintInvalidator {

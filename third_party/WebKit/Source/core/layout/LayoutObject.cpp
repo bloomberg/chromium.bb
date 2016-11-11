@@ -126,7 +126,8 @@ struct SameSizeAsLayoutObject : DisplayItemClient {
 #endif
   unsigned m_bitfields;
   unsigned m_bitfields2;
-  LayoutRect m_previousVisualRect;
+  LayoutRect m_visualRect;
+  LayoutPoint m_paintOffset;
 };
 
 static_assert(sizeof(LayoutObject) == sizeof(SameSizeAsLayoutObject),

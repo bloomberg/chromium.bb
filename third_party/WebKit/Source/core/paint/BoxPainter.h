@@ -34,6 +34,7 @@ class BoxPainter {
   BoxPainter(const LayoutBox& layoutBox) : m_layoutBox(layoutBox) {}
   void paint(const PaintInfo&, const LayoutPoint&);
 
+  void paintChildren(const PaintInfo&, const LayoutPoint&);
   void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
   void paintMask(const PaintInfo&, const LayoutPoint&);
   void paintClippingMask(const PaintInfo&, const LayoutPoint&);

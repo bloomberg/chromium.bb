@@ -24,6 +24,7 @@ static bool shouldApplyViewportClip(const LayoutReplaced& layoutReplaced) {
 
 void ReplacedPainter::paint(const PaintInfo& paintInfo,
                             const LayoutPoint& paintOffset) {
+  ObjectPainter(m_layoutReplaced).checkPaintOffset(paintInfo, paintOffset);
   LayoutPoint adjustedPaintOffset = paintOffset + m_layoutReplaced.location();
   if (!shouldPaint(paintInfo, adjustedPaintOffset))
     return;

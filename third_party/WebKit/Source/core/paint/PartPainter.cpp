@@ -44,6 +44,7 @@ bool PartPainter::isSelected() const {
 
 void PartPainter::paint(const PaintInfo& paintInfo,
                         const LayoutPoint& paintOffset) {
+  ObjectPainter(m_layoutPart).checkPaintOffset(paintInfo, paintOffset);
   LayoutPoint adjustedPaintOffset = paintOffset + m_layoutPart.location();
   if (!ReplacedPainter(m_layoutPart)
            .shouldPaint(paintInfo, adjustedPaintOffset))

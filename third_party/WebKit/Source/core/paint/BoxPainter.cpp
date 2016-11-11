@@ -22,6 +22,7 @@
 #include "core/paint/BoxDecorationData.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/NinePieceImagePainter.h"
+#include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/RoundedInnerRectClipper.h"
@@ -51,12 +52,17 @@ bool isPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
 
 void BoxPainter::paint(const PaintInfo& paintInfo,
                        const LayoutPoint& paintOffset) {
-  LayoutPoint adjustedPaintOffset = paintOffset + m_layoutBox.location();
+  ObjectPainter(m_layoutBox).checkPaintOffset(paintInfo, paintOffset);
   // Default implementation. Just pass paint through to the children.
+  paintChildren(paintInfo, paintOffset + m_layoutBox.location());
+}
+
+void BoxPainter::paintChildren(const PaintInfo& paintInfo,
+                               const LayoutPoint& paintOffset) {
   PaintInfo childInfo(paintInfo);
   for (LayoutObject* child = m_layoutBox.slowFirstChild(); child;
        child = child->nextSibling())
-    child->paint(childInfo, adjustedPaintOffset);
+    child->paint(childInfo, paintOffset);
 }
 
 void BoxPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo,

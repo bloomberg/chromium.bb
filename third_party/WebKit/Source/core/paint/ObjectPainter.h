@@ -6,6 +6,7 @@
 #define ObjectPainter_h
 
 #include "core/style/ComputedStyleConstants.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
@@ -60,6 +61,21 @@ class ObjectPainter {
   void paintAllPhasesAtomically(const PaintInfo&,
                                 const LayoutPoint& paintOffset);
 
+  // When SlimmingPaintInvalidation is enabled, we compute paint offsets during
+  // the pre-paint tree walk (PrePaintTreeWalk). This check verifies that the
+  // paint offset computed during pre-paint matches the actual paint offset
+  // during paint.
+  void checkPaintOffset(const PaintInfo& paintInfo,
+                        const LayoutPoint& paintOffset) {
+#if DCHECK_IS_ON()
+    // For now this works for SPv2 (implying SlimmingPaintInvalidation) only,
+    // but not SlimmingPaintInvalidation on SPv1 because of complexities of
+    // paint invalidation containers in SPv1.
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+      doCheckPaintOffset(paintInfo, paintOffset);
+#endif
+  }
+
  private:
   static void drawDashedOrDottedBoxSide(GraphicsContext&,
                                         int x1,
@@ -104,6 +120,10 @@ class ObjectPainter {
                                int adjacentWidth1,
                                int adjacentWidth2,
                                bool antialias);
+
+#if DCHECK_IS_ON()
+  void doCheckPaintOffset(const PaintInfo&, const LayoutPoint& paintOffset);
+#endif
 
   const LayoutObject& m_layoutObject;
 };

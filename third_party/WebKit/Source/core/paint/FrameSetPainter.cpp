@@ -7,6 +7,7 @@
 #include "core/html/HTMLFrameSetElement.h"
 #include "core/layout/LayoutFrameSet.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
+#include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 
 namespace blink {
@@ -150,6 +151,7 @@ void FrameSetPainter::paintChildren(const PaintInfo& paintInfo,
 
 void FrameSetPainter::paint(const PaintInfo& paintInfo,
                             const LayoutPoint& paintOffset) {
+  ObjectPainter(m_layoutFrameSet).checkPaintOffset(paintInfo, paintOffset);
   if (paintInfo.phase != PaintPhaseForeground)
     return;
 

@@ -29,6 +29,7 @@ namespace blink {
 
 void BlockPainter::paint(const PaintInfo& paintInfo,
                          const LayoutPoint& paintOffset) {
+  ObjectPainter(m_layoutBlock).checkPaintOffset(paintInfo, paintOffset);
   LayoutPoint adjustedPaintOffset = paintOffset + m_layoutBlock.location();
   if (!intersectsPaintRect(paintInfo, adjustedPaintOffset))
     return;

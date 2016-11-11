@@ -332,6 +332,8 @@ void PaintInvalidator::updateContext(const LayoutObject& object,
   context.oldLocation = objectPaintInvalidator.previousLocationInBacking();
   context.newVisualRect = computeVisualRectInBacking(object, context);
   context.newLocation = computeLocationInBacking(object, context);
+  context.oldPaintOffset = object.previousPaintOffset();
+  context.newPaintOffset = context.treeBuilderContext.current.paintOffset;
 
   IntSize adjustment = object.scrollAdjustmentForPaintInvalidation(
       *context.paintInvalidationContainer);
@@ -340,6 +342,7 @@ void PaintInvalidator::updateContext(const LayoutObject& object,
 
   object.getMutableForPainting().setPreviousVisualRect(context.newVisualRect);
   objectPaintInvalidator.setPreviousLocationInBacking(context.newLocation);
+  object.getMutableForPainting().setPreviousPaintOffset(context.newPaintOffset);
 }
 
 void PaintInvalidator::invalidatePaintIfNeeded(
@@ -418,9 +421,12 @@ void PaintInvalidator::invalidatePaintIfNeeded(
       break;
   }
 
-  if (context.oldLocation != context.newLocation)
+  if (context.oldLocation != context.newLocation ||
+      (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
+       context.oldPaintOffset != context.newPaintOffset)) {
     context.forcedSubtreeInvalidationFlags |=
         PaintInvalidatorContext::ForcedSubtreeInvalidationChecking;
+  }
 
   // TODO(crbug.com/490725): This is a workaround for the bug, to force
   // descendant to update visual rects on clipping change.

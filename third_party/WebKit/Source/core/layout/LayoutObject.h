@@ -1584,6 +1584,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Called when the previous visual rect(s) is no longer valid.
   virtual void clearPreviousVisualRects();
 
+  const LayoutPoint& previousPaintOffset() const {
+    return m_previousPaintOffset;
+  }
+
   // Only adjusts if the paint invalidation container is not a composited
   // scroller.
   void adjustPreviousPaintInvalidationForScrollIfNeeded(
@@ -1678,6 +1682,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
     void setPreviousVisualRect(const LayoutRect& r) {
       m_layoutObject.setPreviousVisualRect(r);
+    }
+    void setPreviousPaintOffset(const LayoutPoint& p) {
+      DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
+      m_layoutObject.m_previousPaintOffset = p;
     }
     void setHasPreviousLocationInBacking(bool b) {
       m_layoutObject.m_bitfields.setHasPreviousLocationInBacking(b);
@@ -2361,10 +2369,17 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Store state between styleWillChange and styleDidChange
   static bool s_affectsParentBlock;
 
-  // This stores the visual rect from the previous frame. This rect does *not*
-  // account for composited scrolling. See
+  // This stores the visual rect computed by the latest paint invalidation.
+  // This rect does *not* account for composited scrolling. See
   // adjustVisualRectForCompositedScrolling().
   LayoutRect m_previousVisualRect;
+
+  // This stores the paint offset computed by the latest paint property tree
+  // building. It is relative to the containing transform space. It is the same
+  // offset that will be used to paint the object on SPv2. It's used to detect
+  // paint offset change for paint invalidation on SPv2, and partial paint
+  // property tree update for SlimmingPaintInvalidation on SPv1 and SPv2.
+  LayoutPoint m_previousPaintOffset;
 };
 
 // FIXME: remove this once the layout object lifecycle ASSERTS are no longer

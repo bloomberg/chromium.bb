@@ -694,4 +694,21 @@ void ObjectPainter::paintAllPhasesAtomically(const PaintInfo& paintInfo,
   m_layoutObject.paint(info, paintOffset);
 }
 
+#if DCHECK_IS_ON()
+void ObjectPainter::doCheckPaintOffset(const PaintInfo& paintInfo,
+                                       const LayoutPoint& paintOffset) {
+  DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+
+  // TODO(pdr): Let painter and paint property tree builder generate the same
+  // paint offset for LayoutScrollbarPart. crbug.com/664249.
+  if (m_layoutObject.isLayoutScrollbarPart())
+    return;
+
+  LayoutPoint adjustedPaintOffset = paintOffset;
+  if (m_layoutObject.isBox())
+    adjustedPaintOffset += toLayoutBox(m_layoutObject).location();
+  DCHECK(m_layoutObject.previousPaintOffset() == adjustedPaintOffset);
+}
+#endif
+
 }  // namespace blink

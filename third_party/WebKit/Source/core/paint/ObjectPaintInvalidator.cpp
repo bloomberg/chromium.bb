@@ -542,19 +542,27 @@ ObjectPaintInvalidatorWithContext::invalidatePaintIfNeededWithComputedReason(
 
   switch (reason) {
     case PaintInvalidationNone:
-      // TODO(trchen): Currently we don't keep track of paint offset of layout
-      // objects.  There are corner cases that the display items need to be
-      // invalidated for paint offset mutation, but incurs no pixel difference
-      // (i.e. bounds stay the same) so no rect-based invalidation is issued.
-      // See crbug.com/508383 and crbug.com/515977.  This is a workaround to
-      // force display items to update paint offset. Exclude non-root SVG whose
-      // paint offset is always zero.
-      if ((!m_object.isSVG() || m_object.isSVGRoot()) &&
-          (m_context.forcedSubtreeInvalidationFlags &
-           PaintInvalidatorContext::ForcedSubtreeInvalidationChecking)) {
-        reason = PaintInvalidationLocationChange;
-        break;
+      // There are corner cases that the display items need to be invalidated
+      // for paint offset mutation, but incurs no pixel difference (i.e. bounds
+      // stay the same) so no rect-based invalidation is issued. See
+      // crbug.com/508383 and crbug.com/515977.
+      if (m_context.forcedSubtreeInvalidationFlags &
+          PaintInvalidatorContext::ForcedSubtreeInvalidationChecking) {
+        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+          if (m_context.oldPaintOffset != m_context.newPaintOffset) {
+            reason = PaintInvalidationLocationChange;
+            break;
+          }
+        } else {
+          // For SPv1, we conservatively assume the object changed paint offset
+          // except for non-root SVG whose paint offset is always zero.
+          if (!m_object.isSVG() || m_object.isSVGRoot()) {
+            reason = PaintInvalidationLocationChange;
+            break;
+          }
+        }
       }
+
       if (m_object.isSVG() &&
           (m_context.forcedSubtreeInvalidationFlags &
            PaintInvalidatorContext::ForcedSubtreeSVGResourceChange)) {
