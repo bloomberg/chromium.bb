@@ -43,6 +43,7 @@
 
 using net::test::IsError;
 using net::test::IsOk;
+using net::test::TestServerPushDelegate;
 
 namespace net {
 
@@ -76,28 +77,6 @@ class MockRequireCTDelegate : public TransportSecurityState::RequireCTDelegate {
  public:
   MOCK_METHOD1(IsCTRequiredForHost,
                CTRequirementLevel(const std::string& host));
-};
-
-class TestServerPushDelegate : public ServerPushDelegate {
- public:
-  explicit TestServerPushDelegate() {}
-
-  void OnPush(std::unique_ptr<ServerPushHelper> push_helper) override {
-    push_helpers[push_helper->GetURL()] = std::move(push_helper);
-  }
-
-  bool CancelPush(GURL url) {
-    auto itr = push_helpers.find(url);
-    if (itr == push_helpers.end())
-      return false;
-
-    itr->second->Cancel();
-    push_helpers.erase(itr);
-    return true;
-  }
-
- private:
-  std::map<GURL, std::unique_ptr<ServerPushHelper>> push_helpers;
 };
 
 }  // namespace

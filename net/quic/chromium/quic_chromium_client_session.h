@@ -307,7 +307,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
   void OnPushStreamTimedOut(QuicStreamId stream_id) override;
 
-  void set_push_delegte(ServerPushDelegate* push_delegate) {
+  void set_push_delegate(ServerPushDelegate* push_delegate) {
     push_delegate_ = push_delegate;
   }
 

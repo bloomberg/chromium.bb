@@ -168,6 +168,7 @@ class QuicChromiumClientSessionTest
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
   QuicClientPushPromiseIndex push_promise_index_;
   std::unique_ptr<QuicChromiumClientSession> session_;
+  TestServerPushDelegate test_push_delegate_;
   QuicConnectionVisitorInterface* visitor_;
   TestCompletionCallback callback_;
   QuicTestPacketMaker client_maker_;
@@ -324,6 +325,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushWhenPendingValidation) {
   socket_data_.reset(new SequencedSocketData(reads, arraysize(reads), writes,
                                              arraysize(writes)));
   Initialize();
+  session_->set_push_delegate(&test_push_delegate_);
 
   ProofVerifyDetailsChromium details;
   details.cert_verify_result.verified_cert =
@@ -358,7 +360,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushWhenPendingValidation) {
 
   // Cancel the push before receiving the response to the pushed request.
   GURL pushed_url("https://www.example.org/pushed.jpg");
-  session_->CancelPush(pushed_url);
+  test_push_delegate_.CancelPush(pushed_url);
   EXPECT_TRUE(session_->GetPromisedByUrl(pushed_url.spec()));
 
   // Reset the stream now before tear down.
@@ -375,6 +377,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushBeforeReceivingResponse) {
   socket_data_.reset(new SequencedSocketData(reads, arraysize(reads), writes,
                                              arraysize(writes)));
   Initialize();
+  session_->set_push_delegate(&test_push_delegate_);
 
   ProofVerifyDetailsChromium details;
   details.cert_verify_result.verified_cert =
@@ -403,7 +406,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushBeforeReceivingResponse) {
   EXPECT_TRUE(promised);
   // Cancel the push before receiving the response to the pushed request.
   GURL pushed_url("https://www.example.org/pushed.jpg");
-  session_->CancelPush(pushed_url);
+  test_push_delegate_.CancelPush(pushed_url);
 
   EXPECT_FALSE(session_->GetPromisedByUrl(pushed_url.spec()));
   EXPECT_EQ(0u,
@@ -422,6 +425,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushAfterReceivingResponse) {
   socket_data_.reset(new SequencedSocketData(reads, arraysize(reads), writes,
                                              arraysize(writes)));
   Initialize();
+  session_->set_push_delegate(&test_push_delegate_);
 
   ProofVerifyDetailsChromium details;
   details.cert_verify_result.verified_cert =
@@ -455,7 +459,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushAfterReceivingResponse) {
   EXPECT_TRUE(promised);
   // Cancel the push after receiving data on the push stream.
   GURL pushed_url("https://www.example.org/pushed.jpg");
-  session_->CancelPush(pushed_url);
+  test_push_delegate_.CancelPush(pushed_url);
 
   EXPECT_FALSE(session_->GetPromisedByUrl(pushed_url.spec()));
   EXPECT_EQ(2u,
