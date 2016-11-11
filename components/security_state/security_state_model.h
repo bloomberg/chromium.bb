@@ -137,11 +137,9 @@ class SecurityStateModel {
     // True if pinning was bypassed due to a local trust anchor.
     bool pkp_bypassed;
 
-    // True if the page displayed password field on an HTTP page.
-    bool displayed_password_field_on_http;
-
-    // True if the page displayed credit card field on an HTTP page.
-    bool displayed_credit_card_field_on_http;
+    // True if the page displayed sensitive user data inputs (like a
+    // password or credit card) on an HTTP page.
+    bool displayed_private_user_data_input_on_http;
   };
 
   // Contains the security state relevant to computing the SecurityInfo

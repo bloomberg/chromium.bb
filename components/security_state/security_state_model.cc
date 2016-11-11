@@ -242,9 +242,8 @@ void SecurityInfoForRequest(
   security_info->fails_malware_check =
       visible_security_state.fails_malware_check;
 
-  security_info->displayed_password_field_on_http =
-      visible_security_state.displayed_password_field_on_http;
-  security_info->displayed_credit_card_field_on_http =
+  security_info->displayed_private_user_data_input_on_http =
+      visible_security_state.displayed_password_field_on_http ||
       visible_security_state.displayed_credit_card_field_on_http;
 
   security_info->security_level = GetSecurityLevelForRequest(
@@ -275,8 +274,7 @@ SecurityStateModel::SecurityInfo::SecurityInfo()
       key_exchange_group(0),
       obsolete_ssl_status(net::OBSOLETE_SSL_NONE),
       pkp_bypassed(false),
-      displayed_password_field_on_http(false),
-      displayed_credit_card_field_on_http(false) {}
+      displayed_private_user_data_input_on_http(false) {}
 
 SecurityStateModel::SecurityInfo::~SecurityInfo() {}
 

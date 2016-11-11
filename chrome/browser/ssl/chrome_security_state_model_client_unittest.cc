@@ -18,6 +18,9 @@
 
 namespace {
 
+const char kHTTPBadHistogram[] =
+    "Security.HTTPBad.UserWarnedAboutSensitiveInput";
+
 // Tests that SecurityInfo flags for subresources with certificate
 // errors are reflected in the SecurityStyleExplanations produced by
 // ChromeSecurityStateModelClient.
@@ -233,39 +236,21 @@ TEST(ChromeSecurityStateModelClientTest, HTTPWarning) {
 
 // Tests that a security level of NONE when there is a password or
 // credit card field on HTTP produces a content::SecurityStyle of
-// UNAUTHENTICATED, with an info explanation for each.
+// UNAUTHENTICATED, with an info explanation.
 TEST(ChromeSecurityStateModelClientTest, HTTPWarningInFuture) {
   security_state::SecurityStateModel::SecurityInfo security_info;
   content::SecurityStyleExplanations explanations;
   security_info.security_level = security_state::SecurityStateModel::NONE;
-  security_info.displayed_password_field_on_http = true;
+  security_info.displayed_private_user_data_input_on_http = true;
   blink::WebSecurityStyle security_style =
       ChromeSecurityStateModelClient::GetSecurityStyle(security_info,
                                                        &explanations);
   EXPECT_EQ(blink::WebSecurityStyleUnauthenticated, security_style);
   EXPECT_EQ(1u, explanations.info_explanations.size());
-
-  explanations.info_explanations.clear();
-  security_info.displayed_credit_card_field_on_http = true;
-  security_style = ChromeSecurityStateModelClient::GetSecurityStyle(
-      security_info, &explanations);
-  EXPECT_EQ(blink::WebSecurityStyleUnauthenticated, security_style);
-  EXPECT_EQ(1u, explanations.info_explanations.size());
-
-  // Check that when both password and credit card fields get displayed, only
-  // one explanation is added.
-  explanations.info_explanations.clear();
-  security_info.displayed_credit_card_field_on_http = true;
-  security_info.displayed_password_field_on_http = true;
-  security_style = ChromeSecurityStateModelClient::GetSecurityStyle(
-      security_info, &explanations);
-  EXPECT_EQ(blink::WebSecurityStyleUnauthenticated, security_style);
-  EXPECT_EQ(1u, explanations.info_explanations.size());
 }
 
 class ChromeSecurityStateModelClientHistogramTest
-    : public ChromeRenderViewHostTestHarness,
-      public testing::WithParamInterface<bool> {
+    : public ChromeRenderViewHostTestHarness {
  public:
   ChromeSecurityStateModelClientHistogramTest() {}
   ~ChromeSecurityStateModelClientHistogramTest() override {}
@@ -281,19 +266,9 @@ class ChromeSecurityStateModelClientHistogramTest
  protected:
   ChromeSecurityStateModelClient* client() { return client_; }
 
-  void signal_sensitive_input() {
-    if (GetParam())
-      web_contents()->OnPasswordInputShownOnHttp();
-    else
-      web_contents()->OnCreditCardInputShownOnHttp();
+  void signal_password() {
+    web_contents()->OnPasswordInputShownOnHttp();
     client_->VisibleSecurityStateChanged();
-  }
-
-  const std::string histogram_name() {
-    if (GetParam())
-      return "Security.HTTPBad.UserWarnedAboutSensitiveInput.Password";
-    else
-      return "Security.HTTPBad.UserWarnedAboutSensitiveInput.CreditCard";
   }
 
   void navigate_to_http() { NavigateAndCommit(GURL("http://example.test")); }
@@ -309,7 +284,7 @@ class ChromeSecurityStateModelClientHistogramTest
 
 // Tests that UMA logs the omnibox warning when security level is
 // HTTP_SHOW_WARNING.
-TEST_P(ChromeSecurityStateModelClientHistogramTest,
+TEST_F(ChromeSecurityStateModelClientHistogramTest,
        HTTPOmniboxWarningHistogram) {
   // Show Warning Chip.
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
@@ -317,22 +292,22 @@ TEST_P(ChromeSecurityStateModelClientHistogramTest,
       security_state::switches::kMarkHttpWithPasswordsOrCcWithChip);
 
   base::HistogramTester histograms;
-  signal_sensitive_input();
-  histograms.ExpectUniqueSample(histogram_name(), true, 1);
+  signal_password();
+  histograms.ExpectUniqueSample(kHTTPBadHistogram, true, 1);
 
   // Fire again and ensure no sample is recorded.
-  signal_sensitive_input();
-  histograms.ExpectUniqueSample(histogram_name(), true, 1);
+  signal_password();
+  histograms.ExpectUniqueSample(kHTTPBadHistogram, true, 1);
 
   // Navigate to a new page and ensure a sample is recorded.
   navigate_to_different_http_page();
-  histograms.ExpectUniqueSample(histogram_name(), true, 1);
-  signal_sensitive_input();
-  histograms.ExpectUniqueSample(histogram_name(), true, 2);
+  histograms.ExpectUniqueSample(kHTTPBadHistogram, true, 1);
+  signal_password();
+  histograms.ExpectUniqueSample(kHTTPBadHistogram, true, 2);
 }
 
 // Tests that UMA logs the console warning when security level is NONE.
-TEST_P(ChromeSecurityStateModelClientHistogramTest,
+TEST_F(ChromeSecurityStateModelClientHistogramTest,
        HTTPConsoleWarningHistogram) {
   // Show Neutral for HTTP
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
@@ -340,24 +315,18 @@ TEST_P(ChromeSecurityStateModelClientHistogramTest,
       security_state::switches::kMarkHttpAsNeutral);
 
   base::HistogramTester histograms;
-  signal_sensitive_input();
-  histograms.ExpectUniqueSample(histogram_name(), false, 1);
+  signal_password();
+  histograms.ExpectUniqueSample(kHTTPBadHistogram, false, 1);
 
   // Fire again and ensure no sample is recorded.
-  signal_sensitive_input();
-  histograms.ExpectUniqueSample(histogram_name(), false, 1);
+  signal_password();
+  histograms.ExpectUniqueSample(kHTTPBadHistogram, false, 1);
 
   // Navigate to a new page and ensure a sample is recorded.
   navigate_to_different_http_page();
-  histograms.ExpectUniqueSample(histogram_name(), false, 1);
-  signal_sensitive_input();
-  histograms.ExpectUniqueSample(histogram_name(), false, 2);
+  histograms.ExpectUniqueSample(kHTTPBadHistogram, false, 1);
+  signal_password();
+  histograms.ExpectUniqueSample(kHTTPBadHistogram, false, 2);
 }
-
-INSTANTIATE_TEST_CASE_P(ChromeSecurityStateModelClientHistogramTest,
-                        ChromeSecurityStateModelClientHistogramTest,
-                        // Here 'true' to test password field triggered
-                        // histogram and 'false' to test credit card field.
-                        testing::Bool());
 
 }  // namespace
