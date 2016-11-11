@@ -17,6 +17,15 @@ DEFINE_TRACE(ScrollbarManager) {
   visitor->trace(m_vBar);
 }
 
+void ScrollbarManager::setScroller(ScrollableArea* scroller) {
+  DCHECK(m_scrollableArea != scroller);
+  DCHECK(scroller);
+  DCHECK(scroller->isRootFrameViewport() || scroller->isFrameView() ||
+         scroller->isPaintLayerScrollableArea());
+  dispose();
+  m_scrollableArea = scroller;
+}
+
 void ScrollbarManager::dispose() {
   m_hBarIsAttached = m_vBarIsAttached = 0;
   destroyScrollbar(HorizontalScrollbar);

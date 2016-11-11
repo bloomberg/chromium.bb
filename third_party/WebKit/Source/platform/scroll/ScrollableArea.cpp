@@ -389,11 +389,9 @@ void ScrollableArea::contentsResized() {
 }
 
 bool ScrollableArea::hasOverlayScrollbars() const {
-  Scrollbar* vScrollbar = verticalScrollbar();
-  if (vScrollbar && vScrollbar->isOverlayScrollbar())
-    return true;
-  Scrollbar* hScrollbar = horizontalScrollbar();
-  return hScrollbar && hScrollbar->isOverlayScrollbar();
+  return (horizontalScrollbar() &&
+          horizontalScrollbar()->isOverlayScrollbar()) ||
+         (verticalScrollbar() && verticalScrollbar()->isOverlayScrollbar());
 }
 
 void ScrollableArea::setScrollbarOverlayColorTheme(

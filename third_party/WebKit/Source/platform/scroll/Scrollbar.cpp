@@ -253,8 +253,7 @@ void Scrollbar::moveThumb(int pos, bool draggingDocument) {
     if (m_draggingDocument)
       delta = pos - m_documentDragPos;
     m_draggingDocument = true;
-    ScrollOffset currentPosition =
-        m_scrollableArea->scrollAnimator().currentOffset();
+    ScrollOffset currentPosition = m_scrollableArea->scrollOffset();
     float destinationPosition =
         (m_orientation == HorizontalScrollbar ? currentPosition.width()
                                               : currentPosition.height()) +
@@ -605,11 +604,11 @@ float Scrollbar::scrollableAreaTargetPos() const {
     return 0;
 
   if (m_orientation == HorizontalScrollbar) {
-    return m_scrollableArea->scrollAnimator().desiredTargetOffset().width() -
+    return m_scrollableArea->scrollAnimatorDesiredTargetOffset().width() -
            m_scrollableArea->minimumScrollOffset().width();
   }
 
-  return m_scrollableArea->scrollAnimator().desiredTargetOffset().height() -
+  return m_scrollableArea->scrollAnimatorDesiredTargetOffset().height() -
          m_scrollableArea->minimumScrollOffset().height();
 }
 

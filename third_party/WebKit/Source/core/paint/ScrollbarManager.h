@@ -17,6 +17,11 @@ class CORE_EXPORT ScrollbarManager {
  public:
   ScrollbarManager(ScrollableArea&);
 
+  // TODO(crbug.com/661236): The scroller should be the one that owns this
+  // ScrollbarManager and this setter should be removed.
+  // The scroller that this scrollbar it attached to.
+  void setScroller(ScrollableArea*);
+
   void dispose();
 
   Scrollbar* horizontalScrollbar() const {
