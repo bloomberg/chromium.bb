@@ -24,6 +24,8 @@ class HidServiceLinux : public HidService {
   HidServiceLinux(scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   ~HidServiceLinux() override;
 
+  // HidService:
+  void Shutdown() override;
   void Connect(const HidDeviceId& device_id,
                const ConnectCallback& callback) override;
 
@@ -53,7 +55,7 @@ class HidServiceLinux : public HidService {
 
   // The helper lives on the FILE thread and holds a weak reference back to the
   // service that owns it.
-  FileThreadHelper* helper_;
+  std::unique_ptr<FileThreadHelper> helper_;
   base::WeakPtrFactory<HidServiceLinux> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HidServiceLinux);

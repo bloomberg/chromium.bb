@@ -8,7 +8,10 @@ namespace device {
 
 MockHidService::MockHidService() {}
 
-MockHidService::~MockHidService() {}
+MockHidService::~MockHidService() {
+  // Shutdown() must be called before the base class destructor.
+  Shutdown();
+}
 
 void MockHidService::AddDevice(scoped_refptr<HidDeviceInfo> info) {
   HidService::AddDevice(info);

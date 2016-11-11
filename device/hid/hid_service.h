@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind_helpers.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
@@ -52,6 +53,11 @@ class HidService {
 
   virtual ~HidService();
 
+  // Shuts down the HidService. Must be called before destroying the HidService
+  // when tasks can still be posted to the |file_task_runner| provided to
+  // Create().
+  virtual void Shutdown();
+
   // Enumerates available devices. The provided callback will always be posted
   // to the calling thread's task runner.
   virtual void GetDevices(const GetDevicesCallback& callback);
@@ -86,9 +92,13 @@ class HidService {
 
  private:
   DeviceMap devices_;
-  bool enumeration_ready_;
+  bool enumeration_ready_ = false;
   std::vector<GetDevicesCallback> pending_enumerations_;
   base::ObserverList<Observer, true> observer_list_;
+
+#if DCHECK_IS_ON()
+  bool did_shutdown_ = false;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(HidService);
 };

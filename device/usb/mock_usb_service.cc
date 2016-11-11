@@ -14,6 +14,8 @@ namespace device {
 MockUsbService::MockUsbService() : UsbService(nullptr, nullptr) {}
 
 MockUsbService::~MockUsbService() {
+  // Shutdown() must be called before the base class destructor.
+  Shutdown();
 }
 
 void MockUsbService::AddDevice(scoped_refptr<UsbDevice> device) {

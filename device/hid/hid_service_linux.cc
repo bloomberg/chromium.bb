@@ -18,6 +18,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -70,26 +71,25 @@ class HidServiceLinux::FileThreadHelper : public DeviceMonitorLinux::Observer {
  public:
   FileThreadHelper(base::WeakPtr<HidServiceLinux> service,
                    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : observer_(this), service_(service), task_runner_(task_runner) {}
+      : observer_(this), service_(service), task_runner_(task_runner) {
+    thread_checker_.DetachFromThread();
+  }
 
   ~FileThreadHelper() override {
     DCHECK(thread_checker_.CalledOnValidThread());
   }
 
-  static void Start(std::unique_ptr<FileThreadHelper> self) {
+  void Start() {
     base::ThreadRestrictions::AssertIOAllowed();
-    self->thread_checker_.DetachFromThread();
+    DCHECK(thread_checker_.CalledOnValidThread());
 
     DeviceMonitorLinux* monitor = DeviceMonitorLinux::GetInstance();
-    self->observer_.Add(monitor);
-    monitor->Enumerate(base::Bind(&FileThreadHelper::OnDeviceAdded,
-                                  base::Unretained(self.get())));
-    self->task_runner_->PostTask(
+    observer_.Add(monitor);
+    monitor->Enumerate(
+        base::Bind(&FileThreadHelper::OnDeviceAdded, base::Unretained(this)));
+    task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&HidServiceLinux::FirstEnumerationComplete, self->service_));
-
-    // |self| is now owned by the current message loop.
-    ignore_result(self.release());
+        base::Bind(&HidServiceLinux::FirstEnumerationComplete, service_));
   }
 
  private:
@@ -187,11 +187,6 @@ class HidServiceLinux::FileThreadHelper : public DeviceMonitorLinux::Observer {
     }
   }
 
-  void WillDestroyMonitorMessageLoop() override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    delete this;
-  }
-
   base::ThreadChecker thread_checker_;
   ScopedObserver<DeviceMonitorLinux, DeviceMonitorLinux::Observer> observer_;
 
@@ -204,17 +199,24 @@ class HidServiceLinux::FileThreadHelper : public DeviceMonitorLinux::Observer {
 
 HidServiceLinux::HidServiceLinux(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
-    : file_task_runner_(file_task_runner), weak_factory_(this) {
+    : file_task_runner_(std::move(file_task_runner)), weak_factory_(this) {
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
-  std::unique_ptr<FileThreadHelper> helper(
-      new FileThreadHelper(weak_factory_.GetWeakPtr(), task_runner_));
-  helper_ = helper.get();
+  helper_ = base::MakeUnique<FileThreadHelper>(weak_factory_.GetWeakPtr(),
+                                               task_runner_);
   file_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&FileThreadHelper::Start, base::Passed(&helper)));
+      FROM_HERE,
+      base::Bind(&FileThreadHelper::Start, base::Unretained(helper_.get())));
 }
 
 HidServiceLinux::~HidServiceLinux() {
-  file_task_runner_->DeleteSoon(FROM_HERE, helper_);
+  DCHECK(!helper_);
+}
+
+void HidServiceLinux::Shutdown() {
+  const bool did_post_task =
+      file_task_runner_->DeleteSoon(FROM_HERE, helper_.release());
+  DCHECK(did_post_task);
+  HidService::Shutdown();
 }
 
 void HidServiceLinux::Connect(const HidDeviceId& device_id,

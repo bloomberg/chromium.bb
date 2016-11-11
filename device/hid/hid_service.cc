@@ -49,6 +49,13 @@ std::unique_ptr<HidService> HidService::Create(
 #endif
 }
 
+void HidService::Shutdown() {
+#if DCHECK_IS_ON()
+  DCHECK(!did_shutdown_);
+  did_shutdown_ = true;
+#endif
+}
+
 void HidService::GetDevices(const GetDevicesCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (enumeration_ready_) {
@@ -82,11 +89,13 @@ scoped_refptr<HidDeviceInfo> HidService::GetDeviceInfo(
   return it->second;
 }
 
-HidService::HidService() : enumeration_ready_(false) {
-}
+HidService::HidService() = default;
 
 HidService::~HidService() {
   DCHECK(thread_checker_.CalledOnValidThread());
+#if DCHECK_IS_ON()
+  DCHECK(did_shutdown_);
+#endif
 }
 
 void HidService::AddDevice(scoped_refptr<HidDeviceInfo> device_info) {

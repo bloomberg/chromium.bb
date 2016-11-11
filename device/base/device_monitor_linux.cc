@@ -29,7 +29,6 @@ base::LazyInstance<DeviceMonitorLinux>::Leaky g_device_monitor_linux =
 
 DeviceMonitorLinux::DeviceMonitorLinux() : monitor_fd_(-1) {
   base::ThreadRestrictions::AssertIOAllowed();
-  base::MessageLoop::current()->AddDestructionObserver(this);
 
   udev_.reset(udev_new());
   if (!udev_) {
@@ -98,12 +97,6 @@ void DeviceMonitorLinux::Enumerate(const EnumerateCallback& callback) {
     if (device)
       callback.Run(device.get());
   }
-}
-
-void DeviceMonitorLinux::WillDestroyCurrentMessageLoop() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  for (auto& observer : observers_)
-    observer.WillDestroyMonitorMessageLoop();
 }
 
 DeviceMonitorLinux::~DeviceMonitorLinux() {

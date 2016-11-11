@@ -305,11 +305,12 @@ void BrowserProcessImpl::StartTearDown() {
   // so it needs to be shut down before the ProfileManager.
   supervised_user_whitelist_installer_.reset();
 
-#if !defined(OS_ANDROID)
   // Debugger must be cleaned up before ProfileManager.
   remote_debugging_server_.reset();
   devtools_auto_opener_.reset();
-#endif
+
+  // ChromeDeviceClient must be shutdown when the FILE thread is still alive.
+  device_client_->Shutdown();
 
   // Need to clear profiles (download managers) before the io_thread_.
   {

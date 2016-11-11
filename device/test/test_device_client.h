@@ -19,6 +19,8 @@ class UsbService;
 class TestDeviceClient : public DeviceClient {
  public:
   TestDeviceClient(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+  // Must be destroyed when tasks can still be posted to |task_runner|.
   ~TestDeviceClient() override;
 
   HidService* GetHidService() override;

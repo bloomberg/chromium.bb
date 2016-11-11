@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
@@ -54,8 +55,8 @@ class BluetoothHostPairingNoInputTest : public OobeBaseTest {
 
   BluetoothHostPairingNoInputTest() {
     InputServiceProxy::SetThreadIdForTesting(content::BrowserThread::UI);
-    input_service_linux_.reset(new device::FakeInputServiceLinux);
-    device::InputServiceLinux::SetForTesting(input_service_linux_.get());
+    device::InputServiceLinux::SetForTesting(
+        base::MakeUnique<device::FakeInputServiceLinux>());
   }
   ~BluetoothHostPairingNoInputTest() override {}
 
@@ -88,7 +89,7 @@ class BluetoothHostPairingNoInputTest : public OobeBaseTest {
     mouse.subsystem = InputDeviceInfo::SUBSYSTEM_INPUT;
     mouse.type = InputDeviceInfo::TYPE_USB;
     mouse.is_mouse = true;
-    input_service_linux_->AddDeviceForTesting(mouse);
+    AddDeviceForTesting(mouse);
   }
 
   void AddUsbKeyboard() {
@@ -97,7 +98,7 @@ class BluetoothHostPairingNoInputTest : public OobeBaseTest {
     keyboard.subsystem = InputDeviceInfo::SUBSYSTEM_INPUT;
     keyboard.type = InputDeviceInfo::TYPE_USB;
     keyboard.is_keyboard = true;
-    input_service_linux_->AddDeviceForTesting(keyboard);
+    AddDeviceForTesting(keyboard);
   }
 
   void AddBluetoothMouse() {
@@ -106,11 +107,16 @@ class BluetoothHostPairingNoInputTest : public OobeBaseTest {
     mouse.subsystem = InputDeviceInfo::SUBSYSTEM_INPUT;
     mouse.type = InputDeviceInfo::TYPE_BLUETOOTH;
     mouse.is_mouse = true;
-    input_service_linux_->AddDeviceForTesting(mouse);
+    AddDeviceForTesting(mouse);
   }
 
  private:
-  std::unique_ptr<device::FakeInputServiceLinux> input_service_linux_;
+  void AddDeviceForTesting(const InputDeviceInfo& info) {
+    static_cast<device::FakeInputServiceLinux*>(
+        device::InputServiceLinux::GetInstance())
+        ->AddDeviceForTesting(info);
+  }
+
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
   std::unique_ptr<TestDelegate> delegate_;
 

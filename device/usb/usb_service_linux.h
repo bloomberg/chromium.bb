@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <list>
+#include <memory>
 #include <unordered_map>
 
 #include "base/macros.h"
@@ -22,10 +23,11 @@ class UsbDeviceLinux;
 class UsbServiceLinux : public UsbService {
  public:
   explicit UsbServiceLinux(
-      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_in);
   ~UsbServiceLinux() override;
 
   // device::UsbService implementation
+  void Shutdown() override;
   void GetDevices(const GetDevicesCallback& callback) override;
 
  private:
@@ -57,7 +59,7 @@ class UsbServiceLinux : public UsbService {
   uint32_t first_enumeration_countdown_ = 0;
   std::list<GetDevicesCallback> enumeration_callbacks_;
 
-  FileThreadHelper* helper_;
+  std::unique_ptr<FileThreadHelper> helper_;
   DeviceMap devices_by_path_;
 
   base::WeakPtrFactory<UsbServiceLinux> weak_factory_;

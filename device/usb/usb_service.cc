@@ -51,6 +51,9 @@ std::unique_ptr<UsbService> UsbService::Create(
 }
 
 UsbService::~UsbService() {
+#if DCHECK_IS_ON()
+  DCHECK(did_shutdown_);
+#endif
   for (const auto& map_entry : devices_)
     map_entry.second->OnDisconnect();
   for (auto& observer : observer_list_)
@@ -68,6 +71,13 @@ scoped_refptr<UsbDevice> UsbService::GetDevice(const std::string& guid) {
   if (it == devices_.end())
     return nullptr;
   return it->second;
+}
+
+void UsbService::Shutdown() {
+#if DCHECK_IS_ON()
+  DCHECK(!did_shutdown_);
+  did_shutdown_ = true;
+#endif
 }
 
 void UsbService::GetDevices(const GetDevicesCallback& callback) {

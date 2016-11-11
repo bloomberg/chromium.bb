@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/device/input_service_test_helper.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/device/input_service_proxy.h"
 #include "content/public/browser/browser_thread.h"
@@ -20,7 +21,7 @@ namespace chromeos {
 namespace {
 
 void InitInputServiceOnFileThread() {
-  InputServiceLinux::SetForTesting(new FakeInputServiceLinux());
+  InputServiceLinux::SetForTesting(base::MakeUnique<FakeInputServiceLinux>());
 }
 
 void AddDeviceOnFileThread(const InputDeviceInfo& device) {

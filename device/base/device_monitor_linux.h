@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_descriptor_watcher_posix.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "device/base/device_base_export.h"
@@ -22,8 +21,7 @@ namespace device {
 
 // This class listends for notifications from libudev about
 // connected/disconnected devices. This class is *NOT* thread-safe.
-class DEVICE_BASE_EXPORT DeviceMonitorLinux
-    : public base::MessageLoop::DestructionObserver {
+class DEVICE_BASE_EXPORT DeviceMonitorLinux {
  public:
   typedef base::Callback<void(udev_device* device)> EnumerateCallback;
 
@@ -32,7 +30,6 @@ class DEVICE_BASE_EXPORT DeviceMonitorLinux
     virtual ~Observer() {}
     virtual void OnDeviceAdded(udev_device* device) = 0;
     virtual void OnDeviceRemoved(udev_device* device) = 0;
-    virtual void WillDestroyMonitorMessageLoop() = 0;
   };
 
   DeviceMonitorLinux();
@@ -44,13 +41,10 @@ class DEVICE_BASE_EXPORT DeviceMonitorLinux
 
   void Enumerate(const EnumerateCallback& callback);
 
-  // Implements base::MessageLoop::DestructionObserver
-  void WillDestroyCurrentMessageLoop() override;
-
  private:
   friend std::default_delete<DeviceMonitorLinux>;
 
-  ~DeviceMonitorLinux() override;
+  ~DeviceMonitorLinux();
 
   void OnMonitorCanReadWithoutBlocking();
 

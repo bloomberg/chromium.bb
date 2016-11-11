@@ -56,9 +56,19 @@ class InputServiceLinux {
   InputServiceLinux();
   virtual ~InputServiceLinux();
 
+  // Returns the InputServiceLinux instance for the current process. Creates one
+  // if none has been set.
   static InputServiceLinux* GetInstance();
+
+  // Returns true if an InputServiceLinux instance has been set for the current
+  // process. An instance is set on the first call to GetInstance() or
+  // SetForTesting().
   static bool HasInstance();
-  static void SetForTesting(InputServiceLinux* service);
+
+  // Sets the InputServiceLinux instance for the current process. Cannot be
+  // called if GetInstance() or SetForTesting() has already been called in the
+  // current process. |service| will never be deleted.
+  static void SetForTesting(std::unique_ptr<InputServiceLinux> service);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -81,8 +91,6 @@ class InputServiceLinux {
   base::ObserverList<Observer> observers_;
 
  private:
-  friend std::default_delete<InputServiceLinux>;
-
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(InputServiceLinux);
