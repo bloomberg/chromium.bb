@@ -1423,6 +1423,9 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
 static int64_t choose_tx_size_fix_type(const AV1_COMP *const cpi, BLOCK_SIZE bs,
                                        MACROBLOCK *x, RD_STATS *rd_stats,
                                        int64_t ref_best_rd, TX_TYPE tx_type,
+#if CONFIG_PVQ
+                                       od_rollback_buffer buf,
+#endif
                                        int prune) {
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -1513,7 +1516,9 @@ static int64_t choose_tx_size_fix_type(const AV1_COMP *const cpi, BLOCK_SIZE bs,
 #endif  // CONFIG_EXT_TX
 
     rd = txfm_yrd(cpi, x, &this_rd_stats, ref_best_rd, bs, tx_type, n);
-
+#if CONFIG_PVQ
+    od_encode_rollback(&x->daala_enc, &buf);
+#endif
     // Early termination in transform size search.
     if (cpi->sf.tx_size_search_breakout &&
         (rd == INT64_MAX ||
@@ -1757,7 +1762,11 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
     if (mbmi->ref_mv_idx > 0 && tx_type != DCT_DCT) continue;
 #endif
     rd = choose_tx_size_fix_type(cpi, bs, x, &this_rd_stats, ref_best_rd,
-                                 tx_type, prune);
+                                 tx_type,
+#if CONFIG_PVQ
+                                 buf,
+#endif
+                                 prune);
     if (rd < best_rd) {
       best_rd = rd;
       *rd_stats = this_rd_stats;
