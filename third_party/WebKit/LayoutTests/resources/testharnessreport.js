@@ -200,6 +200,11 @@
 
         function done() {
             if (self.testRunner) {
+                // The following DOM operations may show console messages.  We
+                // suppress them because they are not related to the running
+                // test.
+                testRunner.setDumpConsoleMessages(false);
+
                 if (isCSSWGTest() || isJSTest()) {
                     // Anything isn't material to the testrunner output, so
                     // should be hidden from the text dump.
