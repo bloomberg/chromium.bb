@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -35,6 +36,40 @@ bool SameDomainOrHost(const GURL& gurl1, const GURL& gurl2) {
   return net::registry_controlled_domains::SameDomainOrHost(
       gurl1, gurl2,
       net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+}
+
+// TODO(crbug.com/658902): Remove |CheckExpectedPlaceholders| after
+// investigation, including the stringprintf.h #include.
+// Retrieves the string for |string_id| and checks that all expected
+// placeholders are present.
+void CheckExpectedPlaceholders(size_t number_of_placeholders, int string_id) {
+  std::string format_string = l10n_util::GetStringUTF8(string_id);
+  bool success = true;
+
+  for (size_t placeholder = 1; placeholder <= number_of_placeholders;
+       ++placeholder) {
+    std::string placeholder_string = base::StringPrintf("$%zu", placeholder);
+    if (format_string.find(placeholder_string) == std::string::npos) {
+      success = false;
+      LOG(ERROR) << "Expected placeholder " << placeholder_string
+                 << " missing in format_string '" << format_string << "'";
+    }
+  }
+
+  CHECK(success);
+}
+
+// TODO(crbug.com/658902): Remove |CheckReplacementSize| after investigation.
+void CheckReplacementSize(const std::vector<base::string16>& replacements,
+                          size_t expected_size) {
+  if (replacements.size() != expected_size) {
+    LOG(ERROR) << "Expected " << expected_size
+               << " replacements but only found " << replacements.size();
+    // Separated logging from CHECK instead of using CHECK_EQ, because CHECKs in
+    // release builds apparently discard logging (see "CHECK functions discard
+    // their log" in base/logging.h).
+    CHECK(false);
+  }
 }
 
 }  // namespace
@@ -81,9 +116,6 @@ void GetSavePasswordDialogTitleTextAndLinkRange(
     PasswordTitleType dialog_type,
     base::string16* title,
     gfx::Range* title_link_range) {
-  // TODO(crbug.com/658902): Remove these CHECKs after investigation.
-  CHECK(title);
-  CHECK(title_link_range);
   DCHECK(!password_manager::IsValidAndroidFacetURI(form_origin_url.spec()));
   std::vector<size_t> offsets;
   std::vector<base::string16> replacements;
@@ -104,26 +136,32 @@ void GetSavePasswordDialogTitleTextAndLinkRange(
   // the one seen in the omnibox) and the password form post-submit navigation
   // URL differs or not.
   if (!SameDomainOrHost(user_visible_url, form_origin_url)) {
+    DCHECK_NE(PasswordTitleType::SAVE_ACCOUNT, dialog_type)
+        << "Calls to save account should always happen on the same domain.";
     title_id = dialog_type == PasswordTitleType::UPDATE_PASSWORD
                    ? IDS_UPDATE_PASSWORD_DIFFERENT_DOMAINS_TITLE
                    : IDS_SAVE_PASSWORD_DIFFERENT_DOMAINS_TITLE;
-    // TODO(palmer): Look into passing real language prefs here, not "".
-    // crbug.com/498069.
     replacements.push_back(
         url_formatter::FormatUrlForSecurityDisplay(form_origin_url));
   }
 
-  // TODO(crbug.com/658902): Remove this CHECK after investigation. |title_id|
-  // being 0 would likely mean |dialog_type| out of bounds.
-  CHECK(title_id);
   if (is_smartlock_branding_enabled) {
     // "Google Smart Lock" should be a hyperlink.
     base::string16 title_link =
         l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK);
     replacements.insert(replacements.begin(), title_link);
+    // TODO(crbug.com/658902): Remove |number_of_placeholders| after
+    // investigation.
+    size_t number_of_placeholders = 1;
+    if (title_id == IDS_UPDATE_PASSWORD_DIFFERENT_DOMAINS_TITLE ||
+        title_id == IDS_SAVE_PASSWORD_DIFFERENT_DOMAINS_TITLE) {
+      number_of_placeholders = 2;
+    }
+    CheckExpectedPlaceholders(number_of_placeholders, title_id);
+    CheckReplacementSize(replacements, number_of_placeholders);
     *title = l10n_util::GetStringFUTF16(title_id, replacements, &offsets);
     // TODO(crbug.com/658902): Remove this CHECK after investigation.
-    CHECK_LE(1u, offsets.size());
+    CHECK(!offsets.empty());
     *title_link_range =
         gfx::Range(offsets[0], offsets[0] + title_link.length());
   } else {
