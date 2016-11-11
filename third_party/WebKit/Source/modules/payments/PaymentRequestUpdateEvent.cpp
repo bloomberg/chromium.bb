@@ -116,6 +116,7 @@ void PaymentRequestUpdateEvent::updateWith(ScriptState* scriptState,
     return;
   }
 
+  stopPropagation();
   stopImmediatePropagation();
   m_waitForUpdate = true;
   m_abortTimer.stop();
