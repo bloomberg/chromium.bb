@@ -334,12 +334,6 @@ WebRect WebRemoteFrameImpl::selectionBoundsRect() const {
   return WebRect();
 }
 
-bool WebRemoteFrameImpl::selectionStartHasSpellingMarkerFor(int from,
-                                                            int length) const {
-  NOTREACHED();
-  return false;
-}
-
 WebString WebRemoteFrameImpl::layerTreeAsText(bool showDebugInfo) const {
   NOTREACHED();
   return WebString();

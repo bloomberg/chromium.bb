@@ -438,12 +438,6 @@ class WebFrame {
   // empty ((0,0), (0,0)).
   virtual WebRect selectionBoundsRect() const = 0;
 
-  // Only for testing purpose:
-  // Returns true if selection.anchorNode has a marker on range from |from| with
-  // |length|.
-  virtual bool selectionStartHasSpellingMarkerFor(int from,
-                                                  int length) const = 0;
-
   // Dumps the layer tree, used by the accelerated compositor, in
   // text form. This is used only by layout tests.
   virtual WebString layerTreeAsText(bool showDebugInfo = false) const = 0;

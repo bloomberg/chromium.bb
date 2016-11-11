@@ -111,7 +111,6 @@ class WEB_EXPORT WebRemoteFrameImpl final
 
   WebRect selectionBoundsRect() const override;
 
-  bool selectionStartHasSpellingMarkerFor(int from, int length) const override;
   WebString layerTreeAsText(bool showDebugInfo = false) const override;
 
   WebFrameImplBase* toImplBase() { return this; }
