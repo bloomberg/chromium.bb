@@ -424,7 +424,7 @@ bool DesktopWindowTreeHostWin::ShouldWindowContentsBeTransparent() const {
   // is therefore transparent. Note: This is not equivalent to calling
   // IsAeroGlassEnabled, because ShouldUseNativeFrame is overridden in a
   // subclass.
-  return ShouldUseNativeFrame();
+  return ShouldUseNativeFrame() && !IsFullscreen();
 }
 
 void DesktopWindowTreeHostWin::FrameTypeChanged() {
@@ -962,7 +962,7 @@ HWND DesktopWindowTreeHostWin::GetHWND() const {
 }
 
 void DesktopWindowTreeHostWin::SetWindowTransparency() {
-  bool transparent = ShouldUseNativeFrame() && !IsFullscreen();
+  bool transparent = ShouldWindowContentsBeTransparent();
   compositor()->SetHostHasTransparentBackground(transparent);
   window()->SetTransparent(transparent);
   content_window_->SetTransparent(transparent);
