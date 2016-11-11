@@ -159,12 +159,13 @@ public class WebApkActivity extends WebappActivity {
      *                     WebAPK renderer process.
      */
     private void initializeChildProcessCreationParams(boolean isForWebApk) {
+        // TODO(hanxi): crbug.com/664530. WebAPKs shouldn't use a global ChildProcessCreationParams.
         ChromeApplication chrome = (ChromeApplication) ContextUtils.getApplicationContext();
         ChildProcessCreationParams params = chrome.getChildProcessCreationParams();
         if (isForWebApk) {
-            int extraBindFlag = params == null ? 0 : params.getExtraBindFlags();
+            boolean isExternalService = false;
             params = new ChildProcessCreationParams(getWebappInfo().webApkPackageName(),
-                    extraBindFlag, LibraryProcessType.PROCESS_CHILD);
+                    isExternalService, LibraryProcessType.PROCESS_CHILD);
         }
         ChildProcessCreationParams.set(params);
     }

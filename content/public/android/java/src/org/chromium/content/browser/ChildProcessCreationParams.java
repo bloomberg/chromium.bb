@@ -16,7 +16,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
  */
 public class ChildProcessCreationParams {
     private final String mPackageName;
-    private final int mExtraBindFlags;
+    private final boolean mIsExternalService;
     private final int mLibraryProcessType;
     private static final String EXTRA_LIBRARY_PROCESS_TYPE =
             "org.chromium.content.common.child_service_params.library_process_type";
@@ -31,38 +31,28 @@ public class ChildProcessCreationParams {
         return sChildProcessCreationParams;
     }
 
-    public ChildProcessCreationParams(String packageName, int extraBindFlags,
+    public ChildProcessCreationParams(String packageName, boolean isExternalService,
             int libraryProcessType) {
         mPackageName = packageName;
-        mExtraBindFlags = extraBindFlags;
+        mIsExternalService = isExternalService;
         mLibraryProcessType = libraryProcessType;
     }
 
     public ChildProcessCreationParams copy() {
-        return new ChildProcessCreationParams(mPackageName, mExtraBindFlags, mLibraryProcessType);
+        return new ChildProcessCreationParams(mPackageName, mIsExternalService,
+                mLibraryProcessType);
     }
 
     public String getPackageName() {
         return mPackageName;
     }
 
-    public int getExtraBindFlags() {
-        return mExtraBindFlags;
+    public boolean getIsExternalService() {
+        return mIsExternalService;
     }
 
     public int getLibraryProcessType() {
         return mLibraryProcessType;
-    }
-
-    /**
-     * Adds required extra flags to the given child service binding flags and returns them.
-     * Does not modify the state of the ChildProcessCreationParams instance.
-     *
-     * @param bindFlags Source bind flags to modify.
-     * @return Bind flags with extra flags added.
-     */
-    public int addExtraBindFlags(int bindFlags) {
-        return bindFlags | mExtraBindFlags;
     }
 
     public void addIntentExtras(Intent intent) {
