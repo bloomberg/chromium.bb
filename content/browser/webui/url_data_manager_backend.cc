@@ -582,6 +582,13 @@ class ChromeProtocolHandler
       }
     }
 
+    // Check for chrome://dino which is an alias for chrome://network-error/-106
+    if (request->url().SchemeIs(kChromeUIScheme) &&
+        request->url().host() == kChromeUIDinoHost) {
+      return new net::URLRequestErrorJob(request, network_delegate,
+                                         net::Error::ERR_INTERNET_DISCONNECTED);
+    }
+
     // Fall back to using a custom handler
     return new URLRequestChromeJob(
         request, network_delegate,

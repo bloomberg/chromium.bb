@@ -24,6 +24,7 @@ const char kChromeUIIndexedDBInternalsHost[] = "indexeddb-internals";
 const char kChromeUIAccessibilityHost[] = "accessibility";
 const char kChromeUIBlobInternalsHost[] = "blob-internals";
 const char kChromeUIBrowserCrashHost[] = "inducebrowsercrashforrealz";
+const char kChromeUIDinoHost[] = "dino";
 const char kChromeUIGpuHost[] = "gpu";
 const char kChromeUIHistogramHost[] = "histograms";
 const char kChromeUIHistoryHost[] = "history";
