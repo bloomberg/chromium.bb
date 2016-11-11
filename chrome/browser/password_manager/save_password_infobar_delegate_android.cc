@@ -55,10 +55,10 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
       infobar_response_(password_manager::metrics_util::NO_DIRECT_INTERACTION) {
   base::string16 message;
   gfx::Range message_link_range = gfx::Range();
-  PasswordTittleType type =
+  PasswordTitleType type =
       form_to_save_->pending_credentials().federation_origin.unique()
-          ? PasswordTittleType::SAVE_PASSWORD
-          : PasswordTittleType::SAVE_ACCOUNT;
+          ? PasswordTitleType::SAVE_PASSWORD
+          : PasswordTitleType::SAVE_ACCOUNT;
   GetSavePasswordDialogTitleTextAndLinkRange(
       web_contents->GetVisibleURL(), form_to_save_->observed_form().origin,
       is_smartlock_branding_enabled, type,

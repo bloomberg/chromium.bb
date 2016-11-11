@@ -78,7 +78,7 @@ void GetSavePasswordDialogTitleTextAndLinkRange(
     const GURL& user_visible_url,
     const GURL& form_origin_url,
     bool is_smartlock_branding_enabled,
-    PasswordTittleType dialog_type,
+    PasswordTitleType dialog_type,
     base::string16* title,
     gfx::Range* title_link_range) {
   // TODO(crbug.com/658902): Remove these CHECKs after investigation.
@@ -89,13 +89,13 @@ void GetSavePasswordDialogTitleTextAndLinkRange(
   std::vector<base::string16> replacements;
   int title_id = 0;
   switch (dialog_type) {
-    case PasswordTittleType::SAVE_PASSWORD:
+    case PasswordTitleType::SAVE_PASSWORD:
       title_id = IDS_SAVE_PASSWORD;
       break;
-    case PasswordTittleType::SAVE_ACCOUNT:
+    case PasswordTitleType::SAVE_ACCOUNT:
       title_id = IDS_SAVE_ACCOUNT;
       break;
-    case PasswordTittleType::UPDATE_PASSWORD:
+    case PasswordTitleType::UPDATE_PASSWORD:
       title_id = IDS_UPDATE_PASSWORD;
       break;
   }
@@ -104,7 +104,7 @@ void GetSavePasswordDialogTitleTextAndLinkRange(
   // the one seen in the omnibox) and the password form post-submit navigation
   // URL differs or not.
   if (!SameDomainOrHost(user_visible_url, form_origin_url)) {
-    title_id = dialog_type == PasswordTittleType::UPDATE_PASSWORD
+    title_id = dialog_type == PasswordTitleType::UPDATE_PASSWORD
                    ? IDS_UPDATE_PASSWORD_DIFFERENT_DOMAINS_TITLE
                    : IDS_SAVE_PASSWORD_DIFFERENT_DOMAINS_TITLE;
     // TODO(palmer): Look into passing real language prefs here, not "".

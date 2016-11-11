@@ -18,7 +18,7 @@ class Range;
 
 class GURL;
 
-enum class PasswordTittleType {
+enum class PasswordTitleType {
   SAVE_PASSWORD,    // plain password
   SAVE_ACCOUNT,     // login via IDP
   UPDATE_PASSWORD,  // update plain password
@@ -51,7 +51,7 @@ void GetSavePasswordDialogTitleTextAndLinkRange(
     const GURL& user_visible_url,
     const GURL& form_origin_url,
     bool is_smartlock_branding_enabled,
-    PasswordTittleType dialog_type,
+    PasswordTitleType dialog_type,
     base::string16* title,
     gfx::Range* title_link_range);
 
