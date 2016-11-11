@@ -96,6 +96,10 @@ class CORE_EXPORT TouchEventManager
   bool m_touchPressed;
   // The touch event currently being handled or NoType if none.
   PlatformEvent::EventType m_currentEvent;
+
+  // The current touch action, computed on each touch start and is
+  // a union of all touches. Reset when all touches are released.
+  TouchAction m_currentTouchAction;
 };
 
 }  // namespace blink

@@ -92,7 +92,7 @@ Event::Event(const AtomicString& eventType,
       m_wasInitialized(true),
       m_isTrusted(false),
       m_preventDefaultCalledOnUncancelableEvent(false),
-      m_handlingPassive(PassiveMode::NotPassive),
+      m_handlingPassive(PassiveMode::NotPassiveDefault),
       m_eventPhase(0),
       m_currentTarget(nullptr),
       m_platformTimeStamp(platformTimeStamp) {}
@@ -219,7 +219,8 @@ bool Event::isBeforeUnloadEvent() const {
 }
 
 void Event::preventDefault() {
-  if (m_handlingPassive != PassiveMode::NotPassive) {
+  if (m_handlingPassive != PassiveMode::NotPassive &&
+      m_handlingPassive != PassiveMode::NotPassiveDefault) {
     m_preventDefaultCalledDuringPassive = true;
 
     const LocalDOMWindow* window =
@@ -228,9 +229,11 @@ void Event::preventDefault() {
       const char* devToolsMsg = nullptr;
       switch (m_handlingPassive) {
         case PassiveMode::NotPassive:
+        case PassiveMode::NotPassiveDefault:
           NOTREACHED();
           break;
         case PassiveMode::Passive:
+        case PassiveMode::PassiveDefault:
           devToolsMsg =
               "Unable to preventDefault inside passive event listener "
               "invocation.";

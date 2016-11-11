@@ -69,11 +69,16 @@ enum PassiveForcedListenerResultType {
 
 Event::PassiveMode eventPassiveMode(
     const RegisteredEventListener& eventListener) {
-  if (!eventListener.passive())
-    return Event::PassiveMode::NotPassive;
+  if (!eventListener.passive()) {
+    if (eventListener.passiveSpecified())
+      return Event::PassiveMode::NotPassive;
+    return Event::PassiveMode::NotPassiveDefault;
+  }
   if (eventListener.passiveForcedForDocumentTarget())
     return Event::PassiveMode::PassiveForcedDocumentLevel;
-  return Event::PassiveMode::Passive;
+  if (eventListener.passiveSpecified())
+    return Event::PassiveMode::Passive;
+  return Event::PassiveMode::PassiveDefault;
 }
 
 Settings* windowSettings(LocalDOMWindow* executingWindow) {
@@ -192,6 +197,8 @@ inline LocalDOMWindow* EventTarget::executingWindow() {
 void EventTarget::setDefaultAddEventListenerOptions(
     const AtomicString& eventType,
     AddEventListenerOptionsResolved& options) {
+  options.setPassiveSpecified(options.hasPassive());
+
   if (!isScrollBlockingEvent(eventType)) {
     if (!options.hasPassive())
       options.setPassive(false);

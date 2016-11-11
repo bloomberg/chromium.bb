@@ -7,12 +7,13 @@
 namespace blink {
 
 AddEventListenerOptionsResolved::AddEventListenerOptionsResolved()
-    : m_passiveForcedForDocumentTarget(false) {}
+    : m_passiveForcedForDocumentTarget(false), m_passiveSpecified(false) {}
 
 AddEventListenerOptionsResolved::AddEventListenerOptionsResolved(
     const AddEventListenerOptions& options)
     : AddEventListenerOptions(options),
-      m_passiveForcedForDocumentTarget(false) {}
+      m_passiveForcedForDocumentTarget(false),
+      m_passiveSpecified(false) {}
 
 AddEventListenerOptionsResolved::~AddEventListenerOptionsResolved() {}
 

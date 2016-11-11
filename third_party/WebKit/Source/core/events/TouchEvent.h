@@ -53,10 +53,12 @@ class CORE_EXPORT TouchEvent final : public UIEventWithKeyState {
                             bool cancelable,
                             bool causesScrollingIfUncanceled,
                             bool firstTouchMoveOrStart,
-                            double platformTimeStamp) {
+                            double platformTimeStamp,
+                            TouchAction currentTouchAction) {
     return new TouchEvent(touches, targetTouches, changedTouches, type, view,
                           modifiers, cancelable, causesScrollingIfUncanceled,
-                          firstTouchMoveOrStart, platformTimeStamp);
+                          firstTouchMoveOrStart, platformTimeStamp,
+                          currentTouchAction);
   }
 
   static TouchEvent* create(const AtomicString& type,
@@ -103,7 +105,8 @@ class CORE_EXPORT TouchEvent final : public UIEventWithKeyState {
              bool cancelable,
              bool causesScrollingIfUncanceled,
              bool firstTouchMoveOrStart,
-             double platformTimeStamp);
+             double platformTimeStamp,
+             TouchAction currentTouchAction);
   TouchEvent(const AtomicString&, const TouchEventInit&);
 
   Member<TouchList> m_touches;
@@ -112,6 +115,10 @@ class CORE_EXPORT TouchEvent final : public UIEventWithKeyState {
   bool m_causesScrollingIfUncanceled;
   bool m_firstTouchMoveOrStart;
   bool m_defaultPreventedBeforeCurrentTarget;
+
+  // The current effective touch action computed before each
+  // touchstart event is generated. It is used for UMA histograms.
+  TouchAction m_currentTouchAction;
 };
 
 class TouchEventDispatchMediator final : public EventDispatchMediator {

@@ -210,7 +210,8 @@ TouchEvent::TouchEvent(TouchList* touches,
                        bool cancelable,
                        bool causesScrollingIfUncanceled,
                        bool firstTouchMoveOrStart,
-                       double platformTimeStamp)
+                       double platformTimeStamp,
+                       TouchAction currentTouchAction)
     // Pass a sourceCapabilities including the ability to fire touchevents when
     // creating this touchevent, which is always created from input device
     // capabilities from EventHandler.
@@ -228,7 +229,8 @@ TouchEvent::TouchEvent(TouchList* touches,
       m_changedTouches(changedTouches),
       m_causesScrollingIfUncanceled(causesScrollingIfUncanceled),
       m_firstTouchMoveOrStart(firstTouchMoveOrStart),
-      m_defaultPreventedBeforeCurrentTarget(false) {}
+      m_defaultPreventedBeforeCurrentTarget(false),
+      m_currentTouchAction(currentTouchAction) {}
 
 TouchEvent::TouchEvent(const AtomicString& type,
                        const TouchEventInit& initializer)
@@ -264,6 +266,24 @@ void TouchEvent::preventDefault() {
                                    " event with cancelable=false, for example "
                                    "because scrolling is in progress and "
                                    "cannot be interrupted."));
+  }
+
+  if ((type() == EventTypeNames::touchstart ||
+       type() == EventTypeNames::touchmove) &&
+      view() && view()->frame() && m_currentTouchAction == TouchActionAuto) {
+    switch (handlingPassive()) {
+      case PassiveMode::NotPassiveDefault:
+        UseCounter::count(view()->frame(),
+                          UseCounter::TouchEventPreventedNoTouchAction);
+        break;
+      case PassiveMode::PassiveForcedDocumentLevel:
+        UseCounter::count(
+            view()->frame(),
+            UseCounter::TouchEventPreventedForcedDocumentPassiveNoTouchAction);
+        break;
+      default:
+        break;
+    }
   }
 }
 

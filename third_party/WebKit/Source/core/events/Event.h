@@ -84,9 +84,17 @@ class CORE_EXPORT Event : public GarbageCollectedFinalized<Event>,
   };
 
   enum class PassiveMode {
+    // Not passive, default initialized.
+    NotPassiveDefault,
+    // Not passive, explicitly specified.
     NotPassive,
+    // Passive, explicitly specified.
     Passive,
+    // Passive, not explicitly specified and forced due to document level
+    // listener.
     PassiveForcedDocumentLevel,
+    // Passive, default initialized.
+    PassiveDefault,
   };
 
   static Event* create() { return new Event; }

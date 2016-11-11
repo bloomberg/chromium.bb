@@ -29,10 +29,16 @@ class CORE_EXPORT AddEventListenerOptionsResolved
     return m_passiveForcedForDocumentTarget;
   }
 
+  // Set whether passive was specified when the options were
+  // created by callee.
+  void setPassiveSpecified(bool specified) { m_passiveSpecified = specified; }
+  bool passiveSpecified() const { return m_passiveSpecified; }
+
   DECLARE_VIRTUAL_TRACE();
 
  private:
   bool m_passiveForcedForDocumentTarget;
+  bool m_passiveSpecified;
 };
 
 }  // namespace blink

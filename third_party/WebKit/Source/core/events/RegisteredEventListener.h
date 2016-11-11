@@ -40,7 +40,8 @@ class RegisteredEventListener {
         m_passive(false),
         m_once(false),
         m_blockedEventWarningEmitted(false),
-        m_passiveForcedForDocumentTarget(false) {}
+        m_passiveForcedForDocumentTarget(false),
+        m_passiveSpecified(false) {}
 
   RegisteredEventListener(EventListener* listener,
                           const AddEventListenerOptionsResolved& options)
@@ -50,7 +51,8 @@ class RegisteredEventListener {
         m_once(options.once()),
         m_blockedEventWarningEmitted(false),
         m_passiveForcedForDocumentTarget(
-            options.passiveForcedForDocumentTarget()) {}
+            options.passiveForcedForDocumentTarget()),
+        m_passiveSpecified(options.passiveSpecified()) {}
 
   DEFINE_INLINE_TRACE() { visitor->trace(m_listener); }
 
@@ -60,6 +62,7 @@ class RegisteredEventListener {
     result.setPassive(m_passive);
     result.setPassiveForcedForDocumentTarget(m_passiveForcedForDocumentTarget);
     result.setOnce(m_once);
+    result.setPassiveSpecified(m_passiveSpecified);
     return result;
   }
 
@@ -80,6 +83,8 @@ class RegisteredEventListener {
   bool passiveForcedForDocumentTarget() const {
     return m_passiveForcedForDocumentTarget;
   }
+
+  bool passiveSpecified() const { return m_passiveSpecified; }
 
   void setBlockedEventWarningEmitted() { m_blockedEventWarningEmitted = true; }
 
@@ -107,6 +112,7 @@ class RegisteredEventListener {
   unsigned m_once : 1;
   unsigned m_blockedEventWarningEmitted : 1;
   unsigned m_passiveForcedForDocumentTarget : 1;
+  unsigned m_passiveSpecified : 1;
 };
 
 }  // namespace blink

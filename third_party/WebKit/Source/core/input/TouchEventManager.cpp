@@ -94,6 +94,7 @@ void TouchEventManager::clear() {
   m_regionForTouchID.clear();
   m_touchPressed = false;
   m_currentEvent = PlatformEvent::NoType;
+  m_currentTouchAction = TouchActionAuto;
 }
 
 DEFINE_TRACE(TouchEventManager) {
@@ -167,6 +168,7 @@ WebInputEventResult TouchEventManager::dispatchTouchEvents(
 
   if (allTouchesReleased) {
     m_touchSequenceDocument.clear();
+    m_currentTouchAction = TouchActionAuto;
   }
 
   WebInputEventResult eventResult = WebInputEventResult::NotHandled;
@@ -182,13 +184,14 @@ WebInputEventResult TouchEventManager::dispatchTouchEvents(
         static_cast<PlatformTouchPoint::TouchState>(state)));
     for (const auto& eventTarget : changedTouches[state].m_targets) {
       EventTarget* touchEventTarget = eventTarget;
-      TouchEvent* touchEvent = TouchEvent::create(
-          touches, touchesByTarget.get(touchEventTarget),
-          changedTouches[state].m_touches.get(), eventName,
-          touchEventTarget->toNode()->document().domWindow(),
-          event.getModifiers(), event.cancelable(),
-          event.causesScrollingIfUncanceled(),
-          event.touchStartOrFirstTouchMove(), event.timestamp());
+      TouchEvent* touchEvent =
+          TouchEvent::create(touches, touchesByTarget.get(touchEventTarget),
+                             changedTouches[state].m_touches.get(), eventName,
+                             touchEventTarget->toNode()->document().domWindow(),
+                             event.getModifiers(), event.cancelable(),
+                             event.causesScrollingIfUncanceled(),
+                             event.touchStartOrFirstTouchMove(),
+                             event.timestamp(), m_currentTouchAction);
 
       DispatchEventResult domDispatchResult =
           touchEventTarget->dispatchEvent(touchEvent);
@@ -333,8 +336,13 @@ void TouchEventManager::updateTargetAndRegionMapsForTouchStarts(
 
       TouchAction effectiveTouchAction =
           TouchActionUtil::computeEffectiveTouchAction(*touchInfo.touchNode);
-      if (effectiveTouchAction != TouchActionAuto)
+      if (effectiveTouchAction != TouchActionAuto) {
         m_frame->page()->chromeClient().setTouchAction(effectiveTouchAction);
+
+        // Combine the current touch action sequence with the touch action
+        // for the current finger press.
+        m_currentTouchAction &= effectiveTouchAction;
+      }
     }
   }
 }
