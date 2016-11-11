@@ -322,10 +322,6 @@ void FileReader::executePendingRead() {
   m_blobDataHandle = nullptr;
 }
 
-static void delayedAbort(FileReader* reader) {
-  reader->doAbort();
-}
-
 void FileReader::abort() {
   DVLOG(1) << "aborting";
 
@@ -335,20 +331,12 @@ void FileReader::abort() {
   }
   m_loadingState = LoadingStateAborted;
 
-  // Schedule to have the abort done later since abort() might be called from
-  // the event handler and we do not want the resource loading code to be in the
-  // stack.
-  getExecutionContext()->postTask(
-      BLINK_FROM_HERE,
-      createSameThreadTask(&delayedAbort, wrapPersistent(this)));
-}
-
-void FileReader::doAbort() {
   DCHECK_NE(kDone, m_state);
+  m_state = kDone;
+
   AutoReset<bool> firingEvents(&m_stillFiringEvents, true);
 
-  terminate();
-
+  // Setting error implicitly makes |result| return null.
   m_error = FileError::createDOMException(FileError::kAbortErr);
 
   // Unregister the reader.
@@ -361,10 +349,18 @@ void FileReader::doAbort() {
 
   // All possible events have fired and we're done, no more pending activity.
   ThrottlingController::finishReader(getExecutionContext(), this, finalStep);
+
+  // ..but perform the loader cancellation asynchronously as abort() could be
+  // called from the event handler and we do not want the resource loading code
+  // to be on the stack when doing so. The persistent reference keeps the
+  // reader alive until the task has completed.
+  getExecutionContext()->postTask(
+      BLINK_FROM_HERE,
+      createSameThreadTask(&FileReader::terminate, wrapPersistent(this)));
 }
 
 void FileReader::result(StringOrArrayBuffer& resultAttribute) const {
-  if (!m_loader || m_error)
+  if (m_error || !m_loader)
     return;
 
   if (m_readType == FileReaderLoader::ReadAsArrayBuffer)
@@ -445,8 +441,7 @@ void FileReader::didFail(FileError::ErrorCode errorCode) {
   DCHECK_NE(kDone, m_state);
   m_state = kDone;
 
-  m_error = FileError::createDOMException(
-      static_cast<FileError::ErrorCode>(errorCode));
+  m_error = FileError::createDOMException(errorCode);
 
   // Unregister the reader.
   ThrottlingController::FinishReaderType finalStep =

@@ -70,8 +70,6 @@ class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
   void readAsDataURL(Blob*, ExceptionState&);
   void abort();
 
-  void doAbort();
-
   ReadyState getReadyState() const { return m_state; }
   DOMException* error() { return m_error; }
   void result(StringOrArrayBuffer& resultAttribute) const;
