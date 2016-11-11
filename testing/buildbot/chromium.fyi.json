@@ -11885,7 +11885,7 @@
     "gtest_tests": [
       {
         "args": [
-          "--site-per-process"
+          "--isolate-extensions"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -11894,8 +11894,8 @@
       },
       {
         "args": [
-          "--site-per-process",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.browser_tests.filter"
+          "--isolate-extensions",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/isolate-extensions.browser_tests.filter"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -11904,7 +11904,7 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--isolate-extensions"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -11913,7 +11913,7 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--isolate-extensions"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -11922,8 +11922,8 @@
       },
       {
         "args": [
-          "--site-per-process",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.content_browsertests.filter"
+          "--isolate-sites-for-testing=*.is",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/isolate-extensions.content_browsertests.filter"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -11932,7 +11932,7 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--isolate-sites-for-testing=*.is"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -11941,7 +11941,7 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--isolate-sites-for-testing=chrome-extension://*"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -11950,7 +11950,7 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--isolate-sites-for-testing=chrome-extension://*"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -11959,7 +11959,7 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--isolate-extensions"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -11968,7 +11968,7 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--isolate-extensions"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -11977,7 +11977,7 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--isolate-extensions"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -11986,7 +11986,7 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--isolate-extensions"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true
@@ -11995,7 +11995,7 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--isolate-extensions"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true
