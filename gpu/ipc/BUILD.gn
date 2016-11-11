@@ -25,7 +25,7 @@ source_set("command_buffer_sources") {
 
   configs += [ "//gpu:gpu_implementation" ]
 
-  public_deps = [
+  deps = [
     "//base",
     "//gpu/command_buffer/client:client_sources",
     "//gpu/command_buffer/common:common_sources",
@@ -46,7 +46,7 @@ component("gl_in_process_context") {
 
   defines = [ "GL_IN_PROCESS_CONTEXT_IMPLEMENTATION" ]
 
-  public_deps = [
+  deps = [
     ":command_buffer",
     "//base",
     "//base/third_party/dynamic_annotations",
