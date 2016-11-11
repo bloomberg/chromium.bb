@@ -25,40 +25,18 @@ base::FilePath GetManifestPath(const base::FilePath& package_dir,
                                const std::string& name,
                                const std::string& package_name_override) {
   // TODO(beng): think more about how this should be done for exe targets.
-  std::string type = service_manager::GetNameType(name);
   std::string path = service_manager::GetNamePath(name);
-  if (type == service_manager::kNameType_Service) {
-    std::string package_name;
-    if (package_name_override.empty())
-      package_name = path;
-    else
-      package_name = package_name_override;
-    return package_dir.AppendASCII(kPackagesDirName).AppendASCII(
-        package_name + "/manifest.json");
-  }
-  if (type == service_manager::kNameType_Exe)
-    return package_dir.AppendASCII(path + "_manifest.json");
-  return base::FilePath();
+  std::string package_name =
+      package_name_override.empty() ? path : package_name_override;
+  return package_dir.AppendASCII(kPackagesDirName).AppendASCII(
+      package_name + "/manifest.json");
 }
 
 base::FilePath GetExecutablePath(const base::FilePath& package_dir,
                                  const std::string& name) {
-  std::string type = service_manager::GetNameType(name);
-  if (type == service_manager::kNameType_Service) {
-    // It's still a mojo: URL, use the default mapping scheme.
-    const std::string host = service_manager::GetNamePath(name);
-    return package_dir.AppendASCII(host + "/" + host + ".library");
-  }
-  if (type == service_manager::kNameType_Exe) {
-#if defined OS_WIN
-    std::string extension = ".exe";
-#else
-    std::string extension;
-#endif
-    return package_dir.AppendASCII(service_manager::GetNamePath(name) +
-                                   extension);
-  }
-  return base::FilePath();
+  // It's still a mojo: URL, use the default mapping scheme.
+  const std::string host = service_manager::GetNamePath(name);
+  return package_dir.AppendASCII(host + "/" + host + ".library");
 }
 
 std::unique_ptr<Entry> ProcessManifest(

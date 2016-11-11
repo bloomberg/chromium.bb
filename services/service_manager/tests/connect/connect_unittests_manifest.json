@@ -17,7 +17,7 @@
           "connect_unittests:standalone_app",
           "connect_unittests:user_id_test"
         ],
-        "exe:connect_test_driver": [
+        "service:connect_test_driver": [
           "connect_unittests:client_process_test"
         ],
         "service:connect_test_a": [

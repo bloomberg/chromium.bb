@@ -1,5 +1,5 @@
 {
-  "name": "exe:mash_unittests",
+  "name": "service:mash_unittests",
   "display_name": "Mash Unittests",
   "interface_provider_specs": {
     "service_manager:connector": {

@@ -55,7 +55,6 @@ test("mus_ime_unittests") {
 }
 
 service_manifest("test_manifest") {
-  type = "exe"
   name = "mus_ime_unittests"
   source = "test_manifest.json"
 }

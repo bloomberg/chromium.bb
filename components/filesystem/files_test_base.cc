@@ -13,7 +13,7 @@
 namespace filesystem {
 
 FilesTestBase::FilesTestBase()
-    : ServiceTest("exe:filesystem_service_unittests") {
+    : ServiceTest("service:filesystem_service_unittests") {
 }
 
 FilesTestBase::~FilesTestBase() {

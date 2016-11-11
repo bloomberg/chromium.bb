@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/macros.h"
+#include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/test/test_suite.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -20,6 +21,7 @@
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/service_manager/public/interfaces/service_manager.mojom.h"
 #include "services/service_manager/tests/connect/connect_test.mojom.h"
+#include "services/service_manager/tests/util.h"
 
 // Tests that multiple services can be packaged in a single service by
 // implementing ServiceFactory; that these services can be specified by
@@ -35,7 +37,6 @@ const char kTestAppAName[] = "service:connect_test_a";
 const char kTestAppBName[] = "service:connect_test_b";
 const char kTestClassAppName[] = "service:connect_test_class_app";
 const char kTestSingletonAppName[] = "service:connect_test_singleton_app";
-const char kTestDriverName[] = "exe:connect_test_driver";
 
 void ReceiveOneString(std::string* out_string,
                       base::RunLoop* loop,
@@ -345,19 +346,18 @@ TEST_F(ConnectTest, ConnectAsDifferentUser_Blocked) {
 // client
 // process specifications. This is the only one for blocking.
 TEST_F(ConnectTest, ConnectToClientProcess_Blocked) {
-  std::unique_ptr<Connection> connection =
-      connector()->Connect(kTestDriverName);
-  test::mojom::ClientProcessTestPtr client_process_test;
-  connection->GetInterface(&client_process_test);
-  mojom::ConnectResult result;
-  Identity result_identity;
-  {
-    base::RunLoop loop;
-    client_process_test->LaunchAndConnectToProcess(
-        base::Bind(&ReceiveConnectionResult, &result, &result_identity, &loop));
-    loop.Run();
-  }
-  EXPECT_EQ(mojom::ConnectResult::ACCESS_DENIED, result);
+  base::Process process;
+  std::unique_ptr<service_manager::Connection> connection =
+      service_manager::test::LaunchAndConnectToProcess(
+#if defined(OS_WIN)
+          "connect_test_exe.exe",
+#else
+          "connect_test_exe",
+#endif
+          service_manager::Identity("service:connect_test_exe",
+                                    service_manager::mojom::kInheritUserID),
+          connector(), &process);
+  EXPECT_EQ(connection->GetResult(), mojom::ConnectResult::ACCESS_DENIED);
 }
 
 // Verifies that a client with the "all_users" capability class can receive

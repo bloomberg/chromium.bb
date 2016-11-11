@@ -1,5 +1,5 @@
 {
-  "name": "exe:mash_browser_tests",
+  "name": "service:mash_browser_tests",
   "display_name": "Mash Browser Tests",
   "interface_provider_specs": {
     "service_manager:connector": {

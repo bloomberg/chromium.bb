@@ -253,7 +253,7 @@ void Context::RunCommandLineApplication() {
 #else
     std::string possible_app = args[i];
 #endif
-    if (GetNameType(possible_app) == kNameType_Service) {
+    if (IsValidName(possible_app)) {
       Run(possible_app);
       break;
     }

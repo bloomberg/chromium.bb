@@ -15,7 +15,7 @@ namespace demo {
 
 namespace {
 
-const char kTestAppName[] = "exe:mus_demo_unittests";
+const char kTestAppName[] = "service:mus_demo_unittests";
 
 void RunCallback(bool* success, const base::Closure& callback, bool result) {
   *success = result;

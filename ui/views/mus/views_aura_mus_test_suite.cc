@@ -160,13 +160,13 @@ class ServiceManagerConnection {
   }
 
   // Returns the name of the test executable, e.g.
-  // "exe:views_aura_mus_unittests".
+  // "service:views_mus_unittests".
   std::string GetTestName() {
     base::FilePath executable = base::CommandLine::ForCurrentProcess()
                                     ->GetProgram()
                                     .BaseName()
                                     .RemoveExtension();
-    return std::string("exe:") + executable.MaybeAsASCII();
+    return std::string("service:") + executable.MaybeAsASCII();
   }
 
   base::Thread thread_;

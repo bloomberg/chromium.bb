@@ -62,7 +62,6 @@ test("mash_unittests") {
 }
 
 service_manifest("unittests_manifest") {
-  type = "exe"
   name = "mash_unittests"
   source = "unittests_manifest.json"
 }

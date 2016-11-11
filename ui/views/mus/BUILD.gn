@@ -394,19 +394,16 @@ test("views_mus_interactive_ui_tests") {
 }
 
 service_manifest("unittests_manifest") {
-  type = "exe"
   name = "views_mus_unittests"
   source = "unittests_manifest.json"
 }
 
 service_manifest("unittests_aura_manifest") {
-  type = "exe"
   name = "views_aura_mus_unittests"
   source = "unittests_aura_manifest.json"
 }
 
 service_manifest("interactive_ui_tests_manifest") {
-  type = "exe"
   name = "views_mus_interactive_ui_tests"
   source = "interactive_ui_tests_manifest.json"
 }

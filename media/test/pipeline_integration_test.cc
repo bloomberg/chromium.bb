@@ -699,7 +699,7 @@ class PipelineIntegrationTestHost : public service_manager::test::ServiceTest,
  public:
   PipelineIntegrationTestHost()
       : service_manager::test::ServiceTest(
-            "exe:media_pipeline_integration_shelltests") {}
+            "service:media_pipeline_integration_shelltests") {}
 
   void SetUp() override {
     ServiceTest::SetUp();

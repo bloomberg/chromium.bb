@@ -23,7 +23,7 @@ namespace {
 
 const char kTestAppName[] = "service:lifecycle_unittest_app";
 const char kTestParentName[] = "service:lifecycle_unittest_parent";
-const char kTestExeName[] = "exe:lifecycle_unittest_exe";
+const char kTestExeName[] = "service:lifecycle_unittest_exe";
 const char kTestPackageName[] = "service:lifecycle_unittest_package";
 const char kTestPackageAppNameA[] = "service:lifecycle_unittest_package_app_a";
 const char kTestPackageAppNameB[] = "service:lifecycle_unittest_package_app_b";

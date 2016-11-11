@@ -58,14 +58,12 @@ void Instance::CacheReady(EntryCache* cache) {
 ////////////////////////////////////////////////////////////////////////////////
 // Instance, service_manager::mojom::Resolver:
 
-void Instance::ResolveMojoName(const std::string& mojo_name,
+void Instance::ResolveMojoName(const std::string& service_name,
                                const ResolveMojoNameCallback& callback) {
   DCHECK(system_cache_);
 
-  std::string type = service_manager::GetNameType(mojo_name);
-  if (type != service_manager::kNameType_Service &&
-      type != service_manager::kNameType_Exe) {
-    std::unique_ptr<Entry> entry(new Entry(mojo_name));
+  if (!service_manager::IsValidName(service_name)) {
+    std::unique_ptr<Entry> entry(new Entry(service_name));
     service_manager::mojom::ResolveResultPtr result =
         service_manager::mojom::ResolveResult::From(*entry);
     callback.Run(std::move(result));
@@ -73,7 +71,7 @@ void Instance::ResolveMojoName(const std::string& mojo_name,
   }
 
   // TODO(beng): per-user catalogs.
-  auto entry = system_cache_->find(mojo_name);
+  auto entry = system_cache_->find(service_name);
   if (entry != system_cache_->end()) {
     callback.Run(service_manager::mojom::ResolveResult::From(*entry->second));
     return;
@@ -82,9 +80,9 @@ void Instance::ResolveMojoName(const std::string& mojo_name,
   // Manifests for mojo: names should always be in the catalog by this point.
   // DCHECK(type == service_manager::kNameType_Exe);
   system_reader_->CreateEntryForName(
-      mojo_name, system_cache_,
+      service_name, system_cache_,
       base::Bind(&Instance::OnReadManifest, weak_factory_.GetWeakPtr(),
-                 mojo_name, callback));
+                 service_name, callback));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -168,7 +166,7 @@ void Instance::SerializeCatalog() {
 
 // static
 void Instance::OnReadManifest(base::WeakPtr<Instance> instance,
-                              const std::string& mojo_name,
+                              const std::string& service_name,
                               const ResolveMojoNameCallback& callback,
                               service_manager::mojom::ResolveResultPtr result) {
   callback.Run(std::move(result));

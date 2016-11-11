@@ -5036,7 +5036,6 @@ if (is_android) {
 
 if (is_chromeos) {
   service_manifest("mash_browser_tests_manifest") {
-    type = "exe"
     name = "mash_browser_tests"
 
     source = "base/mash_browser_tests_manifest.json"

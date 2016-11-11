@@ -1,5 +1,5 @@
 {
-  "name": "exe:video_capture_unittests",
+  "name": "service:video_capture_unittests",
   "display_name": "Video Capture Unittests",
   "interface_provider_specs": {
     "service_manager:connector": {

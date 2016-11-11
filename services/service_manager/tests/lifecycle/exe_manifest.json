@@ -1,5 +1,5 @@
 {
-  "name": "exe:lifecycle_unittest_exe",
+  "name": "service:lifecycle_unittest_exe",
   "display_name": "Lifecycle Unittest Exe",
   "interface_provider_specs": {
     "service_manager:connector": {

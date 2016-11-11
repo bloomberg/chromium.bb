@@ -9,9 +9,6 @@
 
 namespace service_manager {
 
-const char kNameType_Service[] = "service";
-const char kNameType_Exe[] = "exe";
-
 bool IsValidName(const std::string& name) {
   std::vector<std::string> parts =
       base::SplitString(name, ":", base::KEEP_WHITESPACE,
@@ -19,20 +16,12 @@ bool IsValidName(const std::string& name) {
   if (parts.size() != 2)
     return false;
 
-  if (parts.front().empty())
+  if (parts.front().empty() || parts.front() != "service")
     return false;
 
   const std::string& path = parts.back();
   return !path.empty() &&
       !base::StartsWith(path, "//", base::CompareCase::INSENSITIVE_ASCII);
-}
-
-std::string GetNameType(const std::string& name) {
-  std::vector<std::string> parts =
-      base::SplitString(name, ":", base::KEEP_WHITESPACE,
-                        base::SPLIT_WANT_ALL);
-  DCHECK(2 == parts.size());
-  return parts.front();
 }
 
 std::string GetNamePath(const std::string& name) {

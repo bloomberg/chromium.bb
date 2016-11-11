@@ -168,7 +168,6 @@ service_manifest("media_manifest") {
 
 service_manifest("test_manifest") {
   name = "media_mojo_shell_unittests"
-  type = "exe"
   source = "test_manifest.json"
 }
 
@@ -188,6 +187,5 @@ test("media_pipeline_integration_unittests") {
 
 service_manifest("pipeline_test_manifest") {
   name = "media_pipeline_integration_unittests"
-  type = "exe"
   source = "pipeline_test_manifest.json"
 }

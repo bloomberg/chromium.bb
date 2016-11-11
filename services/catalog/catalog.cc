@@ -40,23 +40,15 @@ bool IsPathNameValid(const std::string& name) {
 }
 
 base::FilePath GetPathForApplicationName(const std::string& application_name) {
+  static const char kServicePrefix[] = "service:";
   std::string path = application_name;
-  const bool is_service =
-      base::StartsWith(path, "service:", base::CompareCase::INSENSITIVE_ASCII);
-  const bool is_exe =
-      !is_service &&
-      base::StartsWith(path, "exe:", base::CompareCase::INSENSITIVE_ASCII);
-  if (!is_service && !is_exe)
+  const bool is_service = base::StartsWith(
+      path, kServicePrefix, base::CompareCase::INSENSITIVE_ASCII);
+  if (!is_service)
     return base::FilePath();
   if (path.find('.') != std::string::npos)
     return base::FilePath();
-  if (is_service) {
-    path.erase(path.begin(),
-               path.begin() + strlen(service_manager::kNameType_Service) + 1);
-  } else {
-    path.erase(path.begin(),
-               path.begin() + strlen(service_manager::kNameType_Exe) + 1);
-  }
+  path.erase(path.begin(), path.begin() + strlen(kServicePrefix));
   base::TrimString(path, "/", &path);
   size_t end_of_name = path.find('/');
   if (end_of_name != std::string::npos)

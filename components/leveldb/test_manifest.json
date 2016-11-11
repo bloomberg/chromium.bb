@@ -1,5 +1,5 @@
 {
-  "name": "exe:leveldb_service_unittests",
+  "name": "service:leveldb_service_unittests",
   "display_name": "LevelDB Service Unittests",
   "interface_provider_specs": {
     "service_manager:connector": {

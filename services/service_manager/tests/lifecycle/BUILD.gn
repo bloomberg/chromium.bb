@@ -158,7 +158,6 @@ executable("lifecycle_unittest_exe") {
 }
 
 service_manifest("lifecycle_unittest_exe_manifest") {
-  type = "exe"
   name = "lifecycle_unittest_exe"
   source = "exe_manifest.json"
 }

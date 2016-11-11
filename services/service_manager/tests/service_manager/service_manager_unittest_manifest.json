@@ -9,16 +9,17 @@
         ]
       },
       "requires": {
-        "service:service_manager": [ "service_manager:service_manager" ],
-        "exe:service_manager_unittest_driver": [
-          "service_manager_unittest:driver"
+        "service:service_manager": [
+          "service_manager:service_manager",
+          "service_manager:client_process"
         ],
-        "exe:service_manager_unittest_embedder": [
+        "service:service_manager_unittest_embedder": [
           "service_manager_unittest:embedder"
         ],
         "service:service_manager_unittest_singleton": [
           "service_manager_unittest:singleton"
-        ]
+        ],
+        "service:service_manager_unittest_target": [ ]
       }
     }
   }

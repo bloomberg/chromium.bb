@@ -1,5 +1,5 @@
 {
-  "name": "exe:mus_demo_unittests",
+  "name": "service:mus_demo_unittests",
   "display_name": "MUS Demo Unittests",
   "interface_provider_specs": {
     "service_manager:connector": {

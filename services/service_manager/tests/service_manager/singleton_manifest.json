@@ -7,7 +7,7 @@
         "service_manager_unittest:singleton": [ ]
       },
       "requires": {
-        "exe:service_manager_unittest_target": [ ],
+        "service:service_manager_unittest_target": [ ],
         "service:service_manager": [ "service_manager:all_users" ]
       }
     }

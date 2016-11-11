@@ -34,7 +34,7 @@ class WindowTreeClientDelegate : public ui::WindowTreeClientDelegate {
 class WindowManagerTest : public service_manager::test::ServiceTest {
  public:
   WindowManagerTest()
-      : service_manager::test::ServiceTest("exe:mash_unittests") {}
+      : service_manager::test::ServiceTest("service:mash_unittests") {}
   ~WindowManagerTest() override {}
 
  private:

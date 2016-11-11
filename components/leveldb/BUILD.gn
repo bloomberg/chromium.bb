@@ -87,7 +87,6 @@ test("leveldb_service_unittests") {
 }
 
 service_manifest("test_manifest") {
-  type = "exe"
   name = "leveldb_service_unittests"
   source = "test_manifest.json"
 }

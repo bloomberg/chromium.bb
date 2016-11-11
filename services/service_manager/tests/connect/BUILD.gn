@@ -19,13 +19,13 @@ source_set("connect") {
     "//services/service_manager/public/cpp:service_test_support",
     "//services/service_manager/public/cpp:sources",
     "//services/service_manager/public/interfaces",
+    "//services/service_manager/tests:util",
   ]
 
   data_deps = [
     ":connect_test_app",
     ":connect_test_class_app",
     ":connect_test_singleton_app",
-    ":connect_test_driver",
     ":connect_test_exe",
     ":connect_test_package",
     ":manifest",
@@ -150,33 +150,6 @@ service_manifest("connect_test_singleton_app_manifest") {
   source = "connect_test_singleton_app_manifest.json"
 }
 
-executable("connect_test_driver") {
-  testonly = true
-
-  sources = [
-    "connect_test_driver.cc",
-  ]
-
-  deps = [
-    ":interfaces",
-    "//base",
-    "//build/win:default_exe_manifest",
-    "//services/service_manager/public/cpp",
-    "//services/service_manager/runner/child:test_native_main",
-    "//services/service_manager/tests:util",
-  ]
-
-  data_deps = [
-    ":connect_test_driver_manifest",
-  ]
-}
-
-service_manifest("connect_test_driver_manifest") {
-  type = "exe"
-  name = "connect_test_driver"
-  source = "connect_test_driver_manifest.json"
-}
-
 executable("connect_test_exe") {
   testonly = true
 
@@ -198,7 +171,6 @@ executable("connect_test_exe") {
 }
 
 service_manifest("connect_test_exe_manifest") {
-  type = "exe"
   name = "connect_test_exe"
   source = "connect_test_exe_manifest.json"
 }

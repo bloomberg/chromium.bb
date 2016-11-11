@@ -100,13 +100,11 @@ test("navigation_unittests") {
 }
 
 service_manifest("manifest") {
-  type = "exe"
   name = "navigation"
   source = "manifest.json"
 }
 
 service_manifest("unittest_manifest") {
-  type = "exe"
   name = "navigation_unittests"
   source = "unittest_manifest.json"
 }

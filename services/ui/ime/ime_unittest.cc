@@ -44,7 +44,7 @@ class TestTextInputClient : public ui::mojom::TextInputClient {
 
 class IMEAppTest : public service_manager::test::ServiceTest {
  public:
-  IMEAppTest() : ServiceTest("exe:mus_ime_unittests") {}
+  IMEAppTest() : ServiceTest("service:mus_ime_unittests") {}
   ~IMEAppTest() override {}
 
   // service_manager::test::ServiceTest:

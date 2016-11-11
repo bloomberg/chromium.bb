@@ -18,7 +18,7 @@ void RunCallback(bool* success, const base::Closure& callback, bool result) {
 
 class AppLaunchTest : public service_manager::test::ServiceTest {
  public:
-  AppLaunchTest() : ServiceTest("exe:mash_unittests") {}
+  AppLaunchTest() : ServiceTest("service:mash_unittests") {}
   ~AppLaunchTest() override {}
 
  private:

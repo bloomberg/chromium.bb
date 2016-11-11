@@ -51,7 +51,6 @@ test("mus_clipboard_unittests") {
 }
 
 service_manifest("test_manifest") {
-  type = "exe"
   name = "mus_clipboard_unittests"
   source = "test_manifest.json"
 }

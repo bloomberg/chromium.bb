@@ -30,7 +30,7 @@
 
 namespace {
 
-const char kTestRunnerName[] = "exe:mash_browser_tests";
+const char kTestRunnerName[] = "service:mash_browser_tests";
 const char kTestName[] = "service:content_browser";
 
 // BackgroundTestState maintains all the state necessary to bind the test to

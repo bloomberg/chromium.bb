@@ -7,7 +7,7 @@
 namespace video_capture {
 
 MockDeviceTest::MockDeviceTest()
-    : service_manager::test::ServiceTest("exe:video_capture_unittests") {}
+    : service_manager::test::ServiceTest("service:video_capture_unittests") {}
 
 MockDeviceTest::~MockDeviceTest() =
     default;

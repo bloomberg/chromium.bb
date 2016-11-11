@@ -88,7 +88,6 @@ test("filesystem_service_unittests") {
 }
 
 service_manifest("test_manifest") {
-  type = "exe"
   name = "filesystem_service_unittests"
   source = "test_manifest.json"
 }

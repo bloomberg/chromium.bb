@@ -10,10 +10,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
+#include "services/service_manager/public/cpp/service_runner.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
 #include "services/service_manager/public/interfaces/service_manager.mojom.h"
 #include "services/service_manager/runner/child/test_native_main.h"
@@ -81,10 +83,7 @@ class Embedder : public service_manager::Service,
 
 }  // namespace
 
-int main(int argc, char** argv) {
-  base::AtExitManager at_exit;
-  base::CommandLine::Init(argc, argv);
-
-  service_manager::InitializeLogging();
-  return service_manager::TestNativeMain(base::MakeUnique<Embedder>());
+MojoResult ServiceMain(MojoHandle service_request_handle) {
+  service_manager::ServiceRunner runner(new Embedder);
+  return runner.Run(service_request_handle);
 }
