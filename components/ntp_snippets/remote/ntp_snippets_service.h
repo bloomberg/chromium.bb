@@ -267,6 +267,13 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
   void IntegrateSnippets(CategoryContent* content,
                          NTPSnippet::PtrVector new_snippets);
 
+  // Dismisses a snippet within a given category content.
+  // Note that this modifies the snippet datastructures of |content|
+  // invalidating iterators.
+  void DismissSuggestionFromCategoryContent(
+      CategoryContent* content,
+      const std::string& id_within_category);
+
   // Removes expired dismissed snippets from the service and the database.
   void ClearExpiredDismissedSnippets();
 

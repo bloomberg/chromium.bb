@@ -438,21 +438,8 @@ void NTPSnippetsService::DismissSuggestion(
   auto content_it = category_contents_.find(suggestion_id.category());
   DCHECK(content_it != category_contents_.end());
   CategoryContent* content = &content_it->second;
-  auto it = std::find_if(
-      content->snippets.begin(), content->snippets.end(),
-      [&suggestion_id](const std::unique_ptr<NTPSnippet>& snippet) {
-        return snippet->id() == suggestion_id.id_within_category();
-      });
-  if (it == content->snippets.end())
-    return;
-
-  (*it)->set_dismissed(true);
-
-  database_->SaveSnippet(**it);
-  database_->DeleteImage(suggestion_id.id_within_category());
-
-  content->dismissed.push_back(std::move(*it));
-  content->snippets.erase(it);
+  DismissSuggestionFromCategoryContent(content,
+                                       suggestion_id.id_within_category());
 }
 
 void NTPSnippetsService::FetchSuggestionImage(
@@ -501,23 +488,8 @@ void NTPSnippetsService::GetDismissedSuggestionsForDebugging(
     const DismissedSuggestionsCallback& callback) {
   auto content_it = category_contents_.find(category);
   DCHECK(content_it != category_contents_.end());
-  const CategoryContent& content = content_it->second;
-  std::vector<ContentSuggestion> result;
-  for (const std::unique_ptr<NTPSnippet>& snippet : content.dismissed) {
-    if (!snippet->is_complete())
-      continue;
-    ContentSuggestion suggestion(category, snippet->id(),
-                                 snippet->best_source().url);
-    suggestion.set_amp_url(snippet->best_source().amp_url);
-    suggestion.set_title(base::UTF8ToUTF16(snippet->title()));
-    suggestion.set_snippet_text(base::UTF8ToUTF16(snippet->snippet()));
-    suggestion.set_publish_date(snippet->publish_date());
-    suggestion.set_publisher_name(
-        base::UTF8ToUTF16(snippet->best_source().publisher_name));
-    suggestion.set_score(snippet->score());
-    result.emplace_back(std::move(suggestion));
-  }
-  callback.Run(std::move(result));
+  callback.Run(
+      ConvertToContentSuggestions(category, content_it->second.dismissed));
 }
 
 void NTPSnippetsService::ClearDismissedSuggestionsForDebugging(
@@ -627,7 +599,7 @@ void NTPSnippetsService::OnDatabaseLoaded(NTPSnippet::PtrVector snippets) {
               });
   }
 
-  // TODO(tschumann): If I move ClearExpiredDismisedSnippets() to the beginning
+  // TODO(tschumann): If I move ClearExpiredDismissedSnippets() to the beginning
   // of the function, it essentially does nothing but tests are still green. Fix
   // this!
   ClearExpiredDismissedSnippets();
@@ -666,11 +638,40 @@ void NTPSnippetsService::OnFetchMoreFinished(
       UpdateCategoryInfo(category, fetched_category.info);
   SanitizeReceivedSnippets(existing_content->dismissed,
                            &fetched_category.snippets);
+  // We compute the result now before modifying |fetched_category.snippets|.
+  // However, we wait with notifying the caller until the end of the method when
+  // all state is updated.
   std::vector<ContentSuggestion> result =
       ConvertToContentSuggestions(category, fetched_category.snippets);
-  // Add the snippets to the archive so that we keep track of the image urls.
-  ArchiveSnippets(existing_content, &fetched_category.snippets);
+
+  // Fill up the newly fetched snippets with existing ones, store them, and
+  // notify observers about new data.
+  while (fetched_category.snippets.size() <
+             static_cast<size_t>(kMaxSnippetCount) &&
+         !existing_content->snippets.empty()) {
+    fetched_category.snippets.emplace(
+        fetched_category.snippets.begin(),
+        std::move(existing_content->snippets.back()));
+    existing_content->snippets.pop_back();
+  }
+  std::vector<std::string> to_dismiss =
+      *GetSnippetIDVector(existing_content->snippets);
+  for (const auto& id : to_dismiss) {
+    DismissSuggestionFromCategoryContent(existing_content, id);
+  }
+  DCHECK(existing_content->snippets.empty());
+
+  IntegrateSnippets(existing_content, std::move(fetched_category.snippets));
+
+  // TODO(tschumann): We should properly honor the existing category state,
+  // e.g. to make sure we don't serve results after the sign-out. Revisit this
+  // once the snippets fetcher supports concurrent requests. We can then see if
+  // Nuke should also cancel outstanding requests or we want to check the
+  // status.
+  UpdateCategoryStatus(category, CategoryStatus::AVAILABLE);
+  // Notify callers and observers.
   fetching_callback.Run(Status(StatusCode::SUCCESS), std::move(result));
+  NotifyNewSuggestions(category, *existing_content);
 }
 
 void NTPSnippetsService::OnFetchFinished(
@@ -782,6 +783,9 @@ void NTPSnippetsService::IntegrateSnippets(CategoryContent* content,
   DCHECK(ready());
 
   // Do not touch the current set of snippets if the newly fetched one is empty.
+  // TODO(tschumann): This should go. If we get empty results we should update
+  // accordingly and remove the old one (only of course if this was not received
+  // through a fetch-more).
   if (new_snippets.empty())
     return;
 
@@ -793,11 +797,34 @@ void NTPSnippetsService::IntegrateSnippets(CategoryContent* content,
   EraseByPrimaryID(&content->snippets, *GetSnippetIDVector(new_snippets));
   // Do not delete the thumbnail images as they are still handy on open NTPs.
   database_->DeleteSnippets(GetSnippetIDVector(content->snippets));
+  // Note, that ArchiveSnippets will clear |content->snippets|.
   ArchiveSnippets(content, &content->snippets);
 
   database_->SaveSnippets(new_snippets);
 
   content->snippets = std::move(new_snippets);
+}
+
+void NTPSnippetsService::DismissSuggestionFromCategoryContent(
+    CategoryContent* content,
+    const std::string& id_within_category) {
+  auto it = std::find_if(
+      content->snippets.begin(), content->snippets.end(),
+      [&id_within_category](const std::unique_ptr<NTPSnippet>& snippet) {
+        return snippet->id() == id_within_category;
+      });
+  if (it == content->snippets.end())
+    return;
+
+  (*it)->set_dismissed(true);
+
+  database_->SaveSnippet(**it);
+  // TODO(tschumann): We should not delete the image yet. Other NTPs might still
+  // reference them.
+  database_->DeleteImage(id_within_category);
+
+  content->dismissed.push_back(std::move(*it));
+  content->snippets.erase(it);
 }
 
 void NTPSnippetsService::ClearExpiredDismissedSnippets() {
@@ -820,6 +847,8 @@ void NTPSnippetsService::ClearExpiredDismissedSnippets() {
     // Delete the removed article suggestions from the DB.
     database_->DeleteSnippets(GetSnippetIDVector(to_delete));
     // The image got already deleted when the suggestion was dismissed.
+    // TODO(tschumann): Delete the image here instead of at the time of
+    // dismissal.
 
     if (content->snippets.empty() && content->dismissed.empty() &&
         category != articles_category_ &&

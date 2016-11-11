@@ -909,6 +909,7 @@ TEST_F(NTPSnippetsServiceTest, LoadsAdditionalSnippets) {
                          /*known_ids=*/std::set<std::string>(),
                          expect_only_second_suggestion_received);
 
+  // Verify we can resolve the image of the new snippets.
   ServeImageCallback cb = base::Bind(&ServeOneByOneImage, service.get());
   EXPECT_CALL(*image_fetcher(), StartOrQueueNetworkRequest(_, _, _))
       .Times(2)
@@ -922,13 +923,145 @@ TEST_F(NTPSnippetsServiceTest, LoadsAdditionalSnippets) {
   EXPECT_FALSE(image.IsEmpty());
   EXPECT_EQ(1, image.Width());
 
-  // Verify that the observer did not get updated about the additional snippets.
-  // Rationale: It's not clear that snippets fetched in one context (i.e. one
-  // potentially old NTP) should be shown in other NTPs as well.
-  // We can revisit this decision, but for now it's easiest to keep them
-  // independent.
+  // Verify that the observer received the update as well. We should see the
+  // newly-fetched items filled up with existing ones.
   EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
-              ElementsAre(IdWithinCategoryEq("http://first")));
+              ElementsAre(IdWithinCategoryEq("http://first"),
+                          IdWithinCategoryEq("http://second")));
+}
+
+// The tests TestMergingFetchedMoreSnippetsFillup and
+// TestMergingFetchedMoreSnippetsReplaceAll simulate the following user story:
+// 1) fetch suggestions in NTP A
+// 2) fetch more suggestions in NTP A.
+// 3) open new NTP B: See the last 10 results visible in step 2).
+// 4) fetch more suggestions in NTP B. Make sure no results from step 1) which
+//    were superseded in step 2) get merged back in again.
+// TODO(tschumann): Test step 4) on a higher level instead of peeking into the
+// internal 'dismissed' data. The proper check is to make sure we tell the
+// backend to exclude these snippets.
+TEST_F(NTPSnippetsServiceTest, TestMergingFetchedMoreSnippetsFillup) {
+  auto service = MakeSnippetsService(/*set_empty_response=*/false);
+  LoadFromJSONString(
+      service.get(),
+      GetTestJson(
+          {GetSnippetWithUrl("http://id-1"), GetSnippetWithUrl("http://id-2"),
+           GetSnippetWithUrl("http://id-3"), GetSnippetWithUrl("http://id-4"),
+           GetSnippetWithUrl("http://id-5"), GetSnippetWithUrl("http://id-6"),
+           GetSnippetWithUrl("http://id-7"), GetSnippetWithUrl("http://id-8"),
+           GetSnippetWithUrl("http://id-9"),
+           GetSnippetWithUrl("http://id-10")}));
+  EXPECT_THAT(
+      observer().SuggestionsForCategory(articles_category()),
+      ElementsAre(
+          IdWithinCategoryEq("http://id-1"), IdWithinCategoryEq("http://id-2"),
+          IdWithinCategoryEq("http://id-3"), IdWithinCategoryEq("http://id-4"),
+          IdWithinCategoryEq("http://id-5"), IdWithinCategoryEq("http://id-6"),
+          IdWithinCategoryEq("http://id-7"), IdWithinCategoryEq("http://id-8"),
+          IdWithinCategoryEq("http://id-9"),
+          IdWithinCategoryEq("http://id-10")));
+
+  auto expect_receiving_two_new_snippets =
+      base::Bind([](Status status, std::vector<ContentSuggestion> suggestions) {
+        ASSERT_THAT(suggestions, SizeIs(2));
+        EXPECT_THAT(suggestions[0], IdWithinCategoryEq("http://more-id-1"));
+        EXPECT_THAT(suggestions[1], IdWithinCategoryEq("http://more-id-2"));
+      });
+  LoadMoreFromJSONString(
+      service.get(), articles_category(),
+      GetTestJson({GetSnippetWithUrl("http://more-id-1"),
+                   GetSnippetWithUrl("http://more-id-2")}),
+      /*known_ids=*/{"http://id-1", "http://id-2", "http://id-3", "http://id-4",
+                     "http://id-5", "http://id-6", "http://id-7", "http://id-8",
+                     "http://id-9", "http://id-10"},
+      expect_receiving_two_new_snippets);
+
+  // Verify that the observer received the update as well. We should see the
+  // newly-fetched items filled up with existing ones. The merging is done
+  // mimicking a scrolling behavior.
+  EXPECT_THAT(
+      observer().SuggestionsForCategory(articles_category()),
+      ElementsAre(
+          IdWithinCategoryEq("http://id-3"), IdWithinCategoryEq("http://id-4"),
+          IdWithinCategoryEq("http://id-5"), IdWithinCategoryEq("http://id-6"),
+          IdWithinCategoryEq("http://id-7"), IdWithinCategoryEq("http://id-8"),
+          IdWithinCategoryEq("http://id-9"), IdWithinCategoryEq("http://id-10"),
+          IdWithinCategoryEq("http://more-id-1"),
+          IdWithinCategoryEq("http://more-id-2")));
+  // Verify the superseded suggestions got marked as dismissed.
+  EXPECT_THAT(service->GetDismissedSnippetsForTesting(articles_category()),
+              ElementsAre(IdEq("http://id-1"), IdEq("http://id-2")));
+}
+
+TEST_F(NTPSnippetsServiceTest, TestMergingFetchedMoreSnippetsReplaceAll) {
+  auto service = MakeSnippetsService(/*set_empty_response=*/false);
+  LoadFromJSONString(
+      service.get(),
+      GetTestJson(
+          {GetSnippetWithUrl("http://id-1"), GetSnippetWithUrl("http://id-2"),
+           GetSnippetWithUrl("http://id-3"), GetSnippetWithUrl("http://id-4"),
+           GetSnippetWithUrl("http://id-5"), GetSnippetWithUrl("http://id-6"),
+           GetSnippetWithUrl("http://id-7"), GetSnippetWithUrl("http://id-8"),
+           GetSnippetWithUrl("http://id-9"),
+           GetSnippetWithUrl("http://id-10")}));
+  EXPECT_THAT(
+      observer().SuggestionsForCategory(articles_category()),
+      ElementsAre(
+          IdWithinCategoryEq("http://id-1"), IdWithinCategoryEq("http://id-2"),
+          IdWithinCategoryEq("http://id-3"), IdWithinCategoryEq("http://id-4"),
+          IdWithinCategoryEq("http://id-5"), IdWithinCategoryEq("http://id-6"),
+          IdWithinCategoryEq("http://id-7"), IdWithinCategoryEq("http://id-8"),
+          IdWithinCategoryEq("http://id-9"),
+          IdWithinCategoryEq("http://id-10")));
+
+  auto expect_receiving_ten_new_snippets =
+      base::Bind([](Status status, std::vector<ContentSuggestion> suggestions) {
+        EXPECT_THAT(suggestions, ElementsAre(
+            IdWithinCategoryEq("http://more-id-1"),
+            IdWithinCategoryEq("http://more-id-2"),
+            IdWithinCategoryEq("http://more-id-3"),
+            IdWithinCategoryEq("http://more-id-4"),
+            IdWithinCategoryEq("http://more-id-5"),
+            IdWithinCategoryEq("http://more-id-6"),
+            IdWithinCategoryEq("http://more-id-7"),
+            IdWithinCategoryEq("http://more-id-8"),
+            IdWithinCategoryEq("http://more-id-9"),
+            IdWithinCategoryEq("http://more-id-10")));
+      });
+  LoadMoreFromJSONString(
+      service.get(), articles_category(),
+      GetTestJson({GetSnippetWithUrl("http://more-id-1"),
+                   GetSnippetWithUrl("http://more-id-2"),
+                   GetSnippetWithUrl("http://more-id-3"),
+                   GetSnippetWithUrl("http://more-id-4"),
+                   GetSnippetWithUrl("http://more-id-5"),
+                   GetSnippetWithUrl("http://more-id-6"),
+                   GetSnippetWithUrl("http://more-id-7"),
+                   GetSnippetWithUrl("http://more-id-8"),
+                   GetSnippetWithUrl("http://more-id-9"),
+                   GetSnippetWithUrl("http://more-id-10")}),
+      /*known_ids=*/{"http://id-1", "http://id-2", "http://id-3", "http://id-4",
+                     "http://id-5", "http://id-6", "http://id-7", "http://id-8",
+                     "http://id-9", "http://id-10"},
+      expect_receiving_ten_new_snippets);
+  EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
+              ElementsAre(IdWithinCategoryEq("http://more-id-1"),
+                          IdWithinCategoryEq("http://more-id-2"),
+                          IdWithinCategoryEq("http://more-id-3"),
+                          IdWithinCategoryEq("http://more-id-4"),
+                          IdWithinCategoryEq("http://more-id-5"),
+                          IdWithinCategoryEq("http://more-id-6"),
+                          IdWithinCategoryEq("http://more-id-7"),
+                          IdWithinCategoryEq("http://more-id-8"),
+                          IdWithinCategoryEq("http://more-id-9"),
+                          IdWithinCategoryEq("http://more-id-10")));
+  // Verify the superseded suggestions got marked as dismissed.
+  EXPECT_THAT(
+      service->GetDismissedSnippetsForTesting(articles_category()),
+      ElementsAre(IdEq("http://id-1"), IdEq("http://id-2"), IdEq("http://id-3"),
+                  IdEq("http://id-4"), IdEq("http://id-5"), IdEq("http://id-6"),
+                  IdEq("http://id-7"), IdEq("http://id-8"), IdEq("http://id-9"),
+                  IdEq("http://id-10")));
 }
 
 // TODO(tschumann): We don't have test making sure the NTPSnippetsFetcher
@@ -947,22 +1080,6 @@ void SuggestionsLoaded(
 }
 
 }  // namespace
-
-TEST_F(NTPSnippetsServiceTest, InvokesOnlyCallbackOnFetchingMore) {
-  auto service = MakeSnippetsService();
-
-  MockFunction<void(Status, const std::vector<ContentSuggestion>&)> loaded;
-  EXPECT_CALL(loaded, Call(HasCode(StatusCode::SUCCESS), SizeIs(1)));
-
-  LoadMoreFromJSONString(service.get(), articles_category(),
-                         GetTestJson({GetSnippetWithUrl("http://some")}),
-                         std::set<std::string>(),
-                         base::Bind(&SuggestionsLoaded, &loaded));
-
-  // The observer shouldn't have been triggered.
-  EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
-              IsEmpty());
-}
 
 TEST_F(NTPSnippetsServiceTest, ReturnFetchRequestEmptyBeforeInit) {
   auto service = MakeSnippetsServiceWithoutInitialization();
