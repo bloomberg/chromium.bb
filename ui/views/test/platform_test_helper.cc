@@ -7,19 +7,14 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "ui/views/widget/widget.h"
+
+#if defined(USE_AURA)
+#include "ui/aura/window.h"
+#endif
 
 namespace views {
 namespace {
-
-class DefaultPlatformTestHelper : public PlatformTestHelper {
- public:
-  DefaultPlatformTestHelper() {}
-
-  ~DefaultPlatformTestHelper() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DefaultPlatformTestHelper);
-};
 
 PlatformTestHelper::Factory test_helper_factory;
 bool is_mus = false;
@@ -36,7 +31,7 @@ void PlatformTestHelper::set_factory(const Factory& factory) {
 std::unique_ptr<PlatformTestHelper> PlatformTestHelper::Create() {
   return !test_helper_factory.is_null()
              ? test_helper_factory.Run()
-             : base::WrapUnique(new DefaultPlatformTestHelper);
+             : base::WrapUnique(new PlatformTestHelper);
 }
 
 // static
@@ -58,5 +53,11 @@ void PlatformTestHelper::SetIsAuraMusClient() {
 bool PlatformTestHelper::IsAuraMusClient() {
   return is_aura_mus_client;
 }
+
+#if defined(USE_AURA)
+void PlatformTestHelper::SimulateNativeDestroy(Widget* widget) {
+  delete widget->GetNativeView();
+}
+#endif
 
 }  // namespace views

@@ -105,6 +105,11 @@ TEST_F(MenuRunnerTest, AsynchronousRun) {
 // Tests that when a menu is run asynchronously, key events are handled properly
 // by testing that Escape key closes the menu.
 TEST_F(MenuRunnerTest, AsynchronousKeyEventHandling) {
+  // TODO: test uses GetContext(), which is not applicable to aura-mus.
+  // http://crbug.com/663809.
+  if (IsAuraMusClient())
+    return;
+
   InitMenuRunner(MenuRunner::ASYNC);
   MenuRunner* runner = menu_runner();
   MenuRunner::RunResult result = runner->RunMenuAt(
@@ -124,6 +129,11 @@ TEST_F(MenuRunnerTest, AsynchronousKeyEventHandling) {
 // Tests that a key press on a US keyboard layout activates the correct menu
 // item.
 TEST_F(MenuRunnerTest, LatinMnemonic) {
+  // TODO: test uses GetContext(), which is not applicable to aura-mus.
+  // http://crbug.com/663809.
+  if (IsAuraMusClient())
+    return;
+
   InitMenuRunner(MenuRunner::ASYNC);
   MenuRunner* runner = menu_runner();
   MenuRunner::RunResult result = runner->RunMenuAt(
@@ -144,6 +154,11 @@ TEST_F(MenuRunnerTest, LatinMnemonic) {
 // Tests that a key press on a non-US keyboard layout activates the correct menu
 // item.
 TEST_F(MenuRunnerTest, NonLatinMnemonic) {
+  // TODO: test uses GetContext(), which is not applicable to aura-mus.
+  // http://crbug.com/663809.
+  if (IsAuraMusClient())
+    return;
+
   InitMenuRunner(MenuRunner::ASYNC);
   MenuRunner* runner = menu_runner();
   MenuRunner::RunResult result = runner->RunMenuAt(
@@ -226,7 +241,7 @@ class MenuRunnerWidgetTest : public MenuRunnerTest {
   std::unique_ptr<ui::test::EventGenerator> EventGeneratorForWidget(
       Widget* widget) {
     return base::MakeUnique<ui::test::EventGenerator>(
-        IsMus() ? widget->GetNativeWindow() : GetContext(),
+        IsMus() || IsAuraMusClient() ? widget->GetNativeWindow() : GetContext(),
         widget->GetNativeWindow());
   }
 

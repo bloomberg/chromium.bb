@@ -310,13 +310,17 @@ TEST_F(WidgetTest, ChildStackedRelativeToParent) {
   popover->SetBounds(gfx::Rect(150, 90, 340, 240));
   popover->Show();
 
-  EXPECT_TRUE(IsWindowStackedAbove(popover.get(), child));
+  // NOTE: for aura-mus-client stacking of top-levels is not maintained in the
+  // client, so z-order of top-levels can't be determined.
+  if (!IsAuraMusClient())
+    EXPECT_TRUE(IsWindowStackedAbove(popover.get(), child));
   EXPECT_TRUE(IsWindowStackedAbove(child, parent.get()));
 
   // Showing the parent again should raise it and its child above the popover.
   parent->Show();
   EXPECT_TRUE(IsWindowStackedAbove(child, parent.get()));
-  EXPECT_TRUE(IsWindowStackedAbove(parent.get(), popover.get()));
+  if (!IsAuraMusClient())
+    EXPECT_TRUE(IsWindowStackedAbove(parent.get(), popover.get()));
 
   // Test grandchildren.
   Widget* grandchild = CreateChildPlatformWidget(child->GetNativeView());
@@ -324,15 +328,18 @@ TEST_F(WidgetTest, ChildStackedRelativeToParent) {
   grandchild->ShowInactive();
   EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
   EXPECT_TRUE(IsWindowStackedAbove(child, parent.get()));
-  EXPECT_TRUE(IsWindowStackedAbove(parent.get(), popover.get()));
+  if (!IsAuraMusClient())
+    EXPECT_TRUE(IsWindowStackedAbove(parent.get(), popover.get()));
 
   popover->Show();
-  EXPECT_TRUE(IsWindowStackedAbove(popover.get(), grandchild));
+  if (!IsAuraMusClient())
+    EXPECT_TRUE(IsWindowStackedAbove(popover.get(), grandchild));
   EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
 
   parent->Show();
   EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
-  EXPECT_TRUE(IsWindowStackedAbove(child, popover.get()));
+  if (!IsAuraMusClient())
+    EXPECT_TRUE(IsWindowStackedAbove(child, popover.get()));
 
   // Test hiding and reshowing.
   parent->Hide();
@@ -341,7 +348,8 @@ TEST_F(WidgetTest, ChildStackedRelativeToParent) {
 
   EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
   EXPECT_TRUE(IsWindowStackedAbove(child, parent.get()));
-  EXPECT_TRUE(IsWindowStackedAbove(parent.get(), popover.get()));
+  if (!IsAuraMusClient())
+    EXPECT_TRUE(IsWindowStackedAbove(parent.get(), popover.get()));
 
   grandchild->Hide();
   EXPECT_FALSE(grandchild->IsVisible());
@@ -349,7 +357,8 @@ TEST_F(WidgetTest, ChildStackedRelativeToParent) {
 
   EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
   EXPECT_TRUE(IsWindowStackedAbove(child, parent.get()));
-  EXPECT_TRUE(IsWindowStackedAbove(parent.get(), popover.get()));
+  if (!IsAuraMusClient())
+    EXPECT_TRUE(IsWindowStackedAbove(parent.get(), popover.get()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -847,6 +856,10 @@ TEST_F(WidgetObserverTest, DISABLED_VisibilityChange) {
 }
 
 TEST_F(WidgetObserverTest, DestroyBubble) {
+  // TODO: reenable once http://crbug.com/663903 is fixed.
+  if (IsAuraMusClient())
+    return;
+
   // This test expect NativeWidgetAura, force its creation.
   ViewsDelegate::GetInstance()->set_native_widget_factory(
       ViewsDelegate::NativeWidgetFactory());
@@ -1275,10 +1288,9 @@ TEST_F(WidgetTest, DISABLED_FocusChangesOnBubble) {
 }
 
 TEST_F(WidgetTest, BubbleControlsResetOnInit) {
-  // This test creates a NativeWidgetAura and then a bubble parented to it. This
-  // means the test needs a NativeWidgetAura for the bubble as well.
-  ViewsDelegate::GetInstance()->set_native_widget_factory(
-      ViewsDelegate::NativeWidgetFactory());
+  // TODO: enable once http://crbug.com/660994 is fixed.
+  if (IsAuraMusClient())
+    return;
 
   WidgetAutoclosePtr anchor(CreateTopLevelPlatformWidget());
   anchor->Show();
@@ -1698,7 +1710,7 @@ TEST_F(WidgetTest, SynthesizeMouseMoveEvent) {
 
   gfx::Point cursor_location(5, 5);
   ui::test::EventGenerator generator(
-      IsMus() ? widget->GetNativeWindow() : GetContext(),
+      IsMus() || IsAuraMusClient() ? widget->GetNativeWindow() : GetContext(),
       widget->GetNativeWindow());
   generator.MoveMouseTo(cursor_location);
 
@@ -1754,12 +1766,11 @@ TEST_F(WidgetTest, MouseEventDispatchWhileTouchIsDown) {
   MousePressEventConsumer consumer;
   event_count_view->AddPostTargetHandler(&consumer);
 
-  std::unique_ptr<ui::test::EventGenerator> generator(
-      new ui::test::EventGenerator(
-          IsMus() ? widget->GetNativeWindow() : GetContext(),
-          widget->GetNativeWindow()));
-  generator->PressTouch();
-  generator->ClickLeftButton();
+  ui::test::EventGenerator generator(
+      IsMus() || IsAuraMusClient() ? widget->GetNativeWindow() : GetContext(),
+      widget->GetNativeWindow());
+  generator.PressTouch();
+  generator.ClickLeftButton();
 
   EXPECT_EQ(1, event_count_view->GetEventCount(ui::ET_MOUSE_PRESSED));
   EXPECT_EQ(1, event_count_view->GetEventCount(ui::ET_MOUSE_RELEASED));
@@ -1787,11 +1798,10 @@ TEST_F(WidgetTest, MousePressCausesCapture) {
 
   MousePressEventConsumer consumer;
   event_count_view->AddPostTargetHandler(&consumer);
-  std::unique_ptr<ui::test::EventGenerator> generator(
-      new ui::test::EventGenerator(
-          IsMus() ? widget->GetNativeWindow() : GetContext(),
-          widget->GetNativeWindow()));
-  generator->PressLeftButton();
+  ui::test::EventGenerator generator(
+      IsMus() || IsAuraMusClient() ? widget->GetNativeWindow() : GetContext(),
+      widget->GetNativeWindow());
+  generator.PressLeftButton();
 
   EXPECT_EQ(1, event_count_view->GetEventCount(ui::ET_MOUSE_PRESSED));
   EXPECT_EQ(
@@ -1851,13 +1861,12 @@ TEST_F(WidgetTest, CaptureDuringMousePressNotOverridden) {
   // Gives explicit capture to |widget2|
   CaptureEventConsumer consumer(widget2);
   event_count_view->AddPostTargetHandler(&consumer);
-  std::unique_ptr<ui::test::EventGenerator> generator(
-      new ui::test::EventGenerator(
-          IsMus() ? widget->GetNativeWindow() : GetContext(),
-          widget->GetNativeWindow()));
+  ui::test::EventGenerator generator(
+      IsMus() || IsAuraMusClient() ? widget->GetNativeWindow() : GetContext(),
+      widget->GetNativeWindow());
   // This event should implicitly give capture to |widget|, except that
   // |consumer| will explicitly set capture on |widget2|.
-  generator->PressLeftButton();
+  generator.PressLeftButton();
 
   EXPECT_EQ(1, event_count_view->GetEventCount(ui::ET_MOUSE_PRESSED));
   EXPECT_NE(
@@ -1946,6 +1955,11 @@ TEST_F(WidgetTest, WidgetDeleted_InOnMousePressed) {
     NOTIMPLEMENTED();
     return;
   }
+  // TODO: test uses GetContext(), which is not applicable to aura-mus.
+  // http://crbug.com/663809.
+  if (IsAuraMusClient())
+    return;
+
   Widget* widget = new Widget;
   Widget::InitParams params =
       CreateParams(views::Widget::InitParams::TYPE_POPUP);
@@ -1971,6 +1985,10 @@ TEST_F(WidgetTest, WidgetDeleted_InOnMousePressed) {
 TEST_F(WidgetTest, WidgetDeleted_InDispatchGestureEvent) {
   // This test doesn't make sense for mus.
   if (IsMus())
+    return;
+  // TODO: test uses GetContext(), which is not applicable to aura-mus.
+  // http://crbug.com/663809.
+  if (IsAuraMusClient())
     return;
 
   Widget* widget = new Widget;
@@ -2199,6 +2217,11 @@ TEST_F(WidgetTest, NoCrashOnWidgetDelete) {
 // Tests that we do not crash when a Widget is destroyed before it finishes
 // processing of pending input events in the message loop.
 TEST_F(WidgetTest, NoCrashOnWidgetDeleteWithPendingEvents) {
+  // TODO: test uses GetContext(), which is not applicable to aura-mus.
+  // http://crbug.com/663809.
+  if (IsAuraMusClient())
+    return;
+
   std::unique_ptr<Widget> widget(new Widget);
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.bounds = gfx::Rect(0, 0, 200, 200);
@@ -3239,6 +3262,11 @@ TEST_F(WidgetTest, IsActiveFromDestroy) {
 // Tests that events propagate through from the dispatcher with the correct
 // event type, and that the different platforms behave the same.
 TEST_F(WidgetTest, MouseEventTypesViaGenerator) {
+  // TODO: test uses GetContext(), which is not applicable to aura-mus.
+  // http://crbug.com/663809.
+  if (IsAuraMusClient())
+    return;
+
   EventCountView* view = new EventCountView;
   view->set_handle_mode(EventCountView::CONSUME_EVENTS);
   view->SetBounds(10, 10, 50, 40);
@@ -3550,6 +3578,11 @@ class ScaleFactorView : public View {
 
 // Ensure scale factor changes are propagated from the native Widget.
 TEST_F(WidgetTest, OnDeviceScaleFactorChanged) {
+  // This relies on the NativeWidget being the WindowDelegate, which is not the
+  // case for aura-mus-client.
+  if (IsAuraMusClient())
+    return;
+
   // Automatically close the widget, but not delete it.
   WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
   ScaleFactorView* view = new ScaleFactorView;
@@ -3643,6 +3676,11 @@ TEST_F(WidgetTest, WidgetRemovalsObserverCalledWhenMovingBetweenWidgets) {
 
 // Test dispatch of ui::ET_MOUSEWHEEL.
 TEST_F(WidgetTest, MouseWheelEvent) {
+  // TODO: test uses GetContext(), which is not applicable to aura-mus.
+  // http://crbug.com/663809.
+  if (IsAuraMusClient())
+    return;
+
   WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
   widget->SetBounds(gfx::Rect(0, 0, 600, 600));
   EventCountView* event_count_view = new EventCountView();

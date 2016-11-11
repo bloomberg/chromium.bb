@@ -49,6 +49,11 @@ using NativeWidgetAuraTest = ViewsInteractiveUITestBase;
 // not be grabbed. And focus will be given/restored the next time the widget is
 // made active. (crbug.com/621791)
 TEST_F(NativeWidgetAuraTest, NonActiveWindowRequestImeFocus) {
+  // TODO: test uses GetContext(), which is not applicable to aura-mus.
+  // http://crbug.com/663809.
+  if (IsAuraMusClient())
+    return;
+
   TestFocusRules* test_focus_rules = new TestFocusRules;
   std::unique_ptr<wm::FocusController> focus_controller =
       base::MakeUnique<wm::FocusController>(test_focus_rules);

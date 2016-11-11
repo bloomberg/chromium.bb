@@ -53,8 +53,8 @@ void CloseWidgetView::OnEvent(ui::Event* event) {
   if (event->type() == event_type_) {
     // Go through NativeWidgetPrivate to simulate what happens if the OS
     // deletes the NativeWindow out from under us.
-    // TODO(tapted): Change this to WidgetTest::SimulateNativeDestroy for a more
-    // authentic test on Mac.
+    // TODO(tapted): Change this to ViewsTestBase::SimulateNativeDestroy for a
+    // more authentic test on Mac.
     GetWidget()->native_widget_private()->CloseNow();
   } else {
     View::OnEvent(event);

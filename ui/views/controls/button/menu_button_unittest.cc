@@ -345,6 +345,13 @@ TEST_F(MenuButtonTest, ButtonStateForMenuButtonsWithPressedLocks) {
   // mouse-move event. https://crbug.com/615033
   if (IsMus())
     return;
+
+  // Similarly for aura-mus-client the location of the cursor is not updated by
+  // EventGenerator so that IsMouseHovered() checks the wrong thing.
+  // https://crbug.com/615033.
+  if (IsAuraMusClient())
+    return;
+
   CreateMenuButtonWithNoListener();
 
   // Move the mouse over the button; the button should be in a hovered state.
@@ -537,6 +544,10 @@ TEST_F(MenuButtonTest, DraggableMenuButtonDoesNotActivateOnDrag) {
   // https://crbug.com/614037.
   if (IsMus())
     return;
+  // TODO: test uses GetContext(), which is not applicable to aura-mus.
+  // http://crbug.com/663809.
+  if (IsAuraMusClient())
+    return;
   TestMenuButtonListener menu_button_listener;
   CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
   TestDragController drag_controller;
@@ -562,6 +573,11 @@ TEST_F(MenuButtonTest, ActivateDropDownOnGestureTap) {
   // Hovered-state is not updated under mus when EventGenerator send a
   // mouse-move event. https://crbug.com/615033
   if (IsMus())
+    return;
+  // Similarly for aura-mus-client the location of the cursor is not updated by
+  // EventGenerator so that IsMouseHovered() checks the wrong thing.
+  // https://crbug.com/615033.
+  if (IsAuraMusClient())
     return;
   TestMenuButtonListener menu_button_listener;
   CreateMenuButtonWithMenuButtonListener(&menu_button_listener);

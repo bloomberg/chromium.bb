@@ -13,6 +13,7 @@
 namespace views {
 
 class ViewsTestHelper;
+class Widget;
 
 class PlatformTestHelper {
  public:
@@ -34,6 +35,9 @@ class PlatformTestHelper {
   // Called once the ViewsTestHelper has been created, but before SetUp() is
   // called.
   virtual void OnTestHelperCreated(ViewsTestHelper* helper) {}
+
+  // Simulate an OS-level destruction of the native window held by |widget|.
+  virtual void SimulateNativeDestroy(Widget* widget);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PlatformTestHelper);

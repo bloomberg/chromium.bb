@@ -51,11 +51,6 @@ bool FindLayersInOrder(const std::vector<ui::Layer*>& children,
 }  // namespace
 
 // static
-void WidgetTest::SimulateNativeDestroy(Widget* widget) {
-  delete widget->GetNativeView();
-}
-
-// static
 void WidgetTest::SimulateNativeActivate(Widget* widget) {
   gfx::NativeView native_view = widget->GetNativeView();
   aura::client::GetFocusClient(native_view)->FocusWindow(native_view);

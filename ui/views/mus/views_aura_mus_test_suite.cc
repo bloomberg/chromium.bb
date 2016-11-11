@@ -19,11 +19,13 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/ui/common/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/views/mus/desktop_window_tree_host_mus.h"
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/mus/test_utils.h"
 #include "ui/views/test/platform_test_helper.h"
 #include "ui/views/test/views_test_helper_aura.h"
 #include "ui/views/views_delegate.h"
+#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 
 namespace views {
 namespace {
@@ -63,6 +65,11 @@ class PlatformTestHelperMus : public PlatformTestHelper {
   void OnTestHelperCreated(ViewsTestHelper* helper) override {
     static_cast<ViewsTestHelperAura*>(helper)->EnableMusWithWindowTreeClient(
         mus_client_->window_tree_client());
+  }
+  void SimulateNativeDestroy(Widget* widget) override {
+    // TODO: this should call through to a WindowTreeClientDelegate
+    // function that destroys the WindowTreeHost. http://crbug.com/663868.
+    widget->CloseNow();
   }
 
  private:
@@ -152,7 +159,8 @@ class ServiceManagerConnection {
     wait->Signal();
   }
 
-  // Returns the name of the test executable, e.g. "exe:views_mus_unittests".
+  // Returns the name of the test executable, e.g.
+  // "exe:views_aura_mus_unittests".
   std::string GetTestName() {
     base::FilePath executable = base::CommandLine::ForCurrentProcess()
                                     ->GetProgram()

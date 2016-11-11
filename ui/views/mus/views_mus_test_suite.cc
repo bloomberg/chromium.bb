@@ -19,6 +19,7 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/ui/common/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/window.h"
 #include "ui/views/mus/window_manager_connection.h"
 #include "ui/views/test/platform_test_helper.h"
 #include "ui/views/views_delegate.h"
@@ -56,6 +57,11 @@ class PlatformTestHelperMus : public PlatformTestHelper {
     connection_ = WindowManagerConnection::Create(connector, identity);
   }
   ~PlatformTestHelperMus() override {}
+
+  // PlatformTestHelper:
+  void SimulateNativeDestroy(Widget* widget) override {
+    delete widget->GetNativeView();
+  }
 
  private:
   std::unique_ptr<WindowManagerConnection> connection_;

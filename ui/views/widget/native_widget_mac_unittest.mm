@@ -1165,9 +1165,8 @@ class ParentCloseMonitor : public WidgetObserver {
     Widget::InitParams init_params(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     init_params.parent = parent->GetNativeView();
     init_params.bounds = gfx::Rect(100, 100, 100, 100);
-    init_params.native_widget =
-        CreatePlatformNativeWidgetImpl(init_params, child, kStubCapture,
-                                       nullptr);
+    init_params.native_widget = CreatePlatformNativeWidgetImpl(
+        init_params, child, kStubCapture, nullptr);
     child->Init(init_params);
     child->Show();
 
@@ -1341,7 +1340,7 @@ TEST_F(NativeWidgetMacTest, DoesHideTitle) {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   Widget* widget = new Widget;
   params.native_widget =
-        CreatePlatformNativeWidgetImpl(params, widget, kStubCapture, nullptr);
+      CreatePlatformNativeWidgetImpl(params, widget, kStubCapture, nullptr);
   CustomTitleWidgetDelegate delegate(widget);
   params.delegate = &delegate;
   params.bounds = gfx::Rect(0, 0, 800, 600);

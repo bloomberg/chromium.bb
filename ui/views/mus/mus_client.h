@@ -62,6 +62,12 @@ class VIEWS_MUS_EXPORT MusClient
 
   static MusClient* Get() { return instance_; }
 
+  // Returns true if a DesktopNativeWidgetAura should be created given the
+  // specified params. If this returns false a NativeWidgetAura should be
+  // created.
+  static bool ShouldCreateDesktopNativeWidgetAura(
+      const Widget::InitParams& init_params);
+
   service_manager::Connector* connector() { return connector_; }
 
   aura::WindowTreeClient* window_tree_client() {

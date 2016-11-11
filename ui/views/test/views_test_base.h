@@ -48,6 +48,9 @@ class ViewsTestBase : public PlatformTest {
 
   bool HasCompositingManager() const;
 
+  // Simulate an OS-level destruction of the native window held by |widget|.
+  void SimulateNativeDestroy(Widget* widget);
+
  protected:
   TestViewsDelegate* views_delegate() const {
     return test_helper_->views_delegate();

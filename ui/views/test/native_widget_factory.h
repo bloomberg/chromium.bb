@@ -12,7 +12,6 @@
 namespace views {
 
 class NativeWidget;
-class Widget;
 
 namespace test {
 

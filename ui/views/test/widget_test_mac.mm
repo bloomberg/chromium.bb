@@ -25,15 +25,6 @@ NSWindow* g_simulated_active_window_ = nil;
 }  // namespace
 
 // static
-void WidgetTest::SimulateNativeDestroy(Widget* widget) {
-  // Retain the window while closing it, otherwise the window may lose its last
-  // owner before -[NSWindow close] completes (this offends AppKit). Usually
-  // this reference will exist on an event delivered to the runloop.
-  base::scoped_nsobject<NSWindow> window([widget->GetNativeWindow() retain]);
-  [window close];
-}
-
-// static
 void WidgetTest::SimulateNativeActivate(Widget* widget) {
   NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
   if (g_simulated_active_window_) {

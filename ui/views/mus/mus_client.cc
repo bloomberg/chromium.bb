@@ -79,14 +79,21 @@ MusClient::~MusClient() {
   instance_ = nullptr;
 }
 
+// static
+bool MusClient::ShouldCreateDesktopNativeWidgetAura(
+    const Widget::InitParams& init_params) {
+  // TYPE_CONTROL and child widgets require a NativeWidgetAura.
+  return init_params.type != Widget::InitParams::TYPE_CONTROL &&
+         !init_params.child;
+}
+
 NativeWidget* MusClient::CreateNativeWidget(
     const Widget::InitParams& init_params,
     internal::NativeWidgetDelegate* delegate) {
-  // TYPE_CONTROL widgets require a NativeWidgetAura. So we let this fall
-  // through, so that the default NativeWidgetPrivate::CreateNativeWidget() is
-  // used instead.
-  if (init_params.type == Widget::InitParams::TYPE_CONTROL)
+  if (!ShouldCreateDesktopNativeWidgetAura(init_params)) {
+    // A null return value results in creating NativeWidgetAura.
     return nullptr;
+  }
 
   DesktopNativeWidgetAura* native_widget =
       new DesktopNativeWidgetAura(delegate);

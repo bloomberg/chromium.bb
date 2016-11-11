@@ -1197,6 +1197,11 @@ TEST_F(WidgetTestInteractive, MAYBE_ExitFullscreenRestoreState) {
 // Testing initial focus is assigned properly for normal top-level widgets,
 // and subclasses that specify a initially focused child view.
 TEST_F(WidgetTestInteractive, InitialFocus) {
+  // TODO: test uses GetContext(), which is not applicable to aura-mus.
+  // http://crbug.com/663809.
+  if (IsAuraMusClient())
+    return;
+
   // By default, there is no initially focused view (even if there is a
   // focusable subview).
   Widget* toplevel(CreateTopLevelPlatformWidget());
@@ -1407,6 +1412,10 @@ TEST_F(WidgetCaptureTest, CaptureDesktopNativeWidget) {
 TEST_F(WidgetCaptureTest, FailedCaptureRequestIsNoop) {
   // Fails on mus. http://crbug.com/611764
   if (IsMus())
+    return;
+  // TODO: test uses GetContext(), which is not applicable to aura-mus.
+  // http://crbug.com/663809.
+  if (IsAuraMusClient())
     return;
 
   Widget widget;

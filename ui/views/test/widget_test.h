@@ -62,9 +62,6 @@ class WidgetTest : public ViewsTestBase {
 
   View* GetGestureHandler(internal::RootView* root_view);
 
-  // Simulate an OS-level destruction of the native window held by |widget|.
-  static void SimulateNativeDestroy(Widget* widget);
-
   // Simulate an activation of the native window held by |widget|, as if it was
   // clicked by the user. This is a synchronous method for use in
   // non-interactive tests that do not spin a RunLoop in the test body (since

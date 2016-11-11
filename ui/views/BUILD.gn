@@ -680,7 +680,6 @@ static_library("test_support_internal") {
     "test/menu_runner_test_api.h",
     "test/menu_test_utils.cc",
     "test/menu_test_utils.h",
-    "test/native_widget_factory.cc",
     "test/native_widget_factory.h",
     "test/scoped_views_test_helper.cc",
     "test/scoped_views_test_helper.h",
@@ -688,6 +687,7 @@ static_library("test_support_internal") {
     "test/slider_test_api.h",
     "test/test_layout_manager.cc",
     "test/test_layout_manager.h",
+    "test/test_platform_native_widget.h",
     "test/test_slider.cc",
     "test/test_slider.h",
     "test/test_views.cc",
@@ -744,6 +744,7 @@ static_library("test_support_internal") {
   sources += [
     "test/platform_test_helper.cc",
     "test/platform_test_helper.h",
+    "test/platform_test_helper_cocoa.mm",
   ]
 
   if (use_aura) {

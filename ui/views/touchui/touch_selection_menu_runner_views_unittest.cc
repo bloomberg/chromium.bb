@@ -32,13 +32,8 @@ class TouchSelectionMenuRunnerViewsTest : public ViewsTestBase,
  protected:
   void SetUp() override {
     ViewsTestBase::SetUp();
-    // These tests expect NativeWidgetAura, force its creation.
-    // TODO(sky): the reason these end up using NativeWidgetAura is because they
-    // create a widget parented to GetContext(). GetContext() currently always
-    // returns an aura::Window in a fake WindowTreeHost. For aura-mus we should
-    // not create a fake WindowTreeHost. http://crbug.com/663561.
-    ViewsDelegate::GetInstance()->set_native_widget_factory(
-        ViewsDelegate::NativeWidgetFactory());
+    // These tests expect NativeWidgetAura and so aren't applicable to
+    // aura-mus-client. http://crbug.com/663561.
   }
 
   void set_no_commmand_available(bool no_command) {
@@ -71,6 +66,10 @@ class TouchSelectionMenuRunnerViewsTest : public ViewsTestBase,
 // Tests that the default touch selection menu runner is installed and opening
 // and closing the menu works properly.
 TEST_F(TouchSelectionMenuRunnerViewsTest, InstalledAndWorksProperly) {
+  // See comment in SetUp().
+  if (IsAuraMusClient())
+    return;
+
   gfx::Rect menu_anchor(0, 0, 10, 10);
   gfx::Size handle_size(10, 10);
 
@@ -98,6 +97,10 @@ TEST_F(TouchSelectionMenuRunnerViewsTest, InstalledAndWorksProperly) {
 // Tests that anchor rect for the quick menu is adjusted correctly based on the
 // distance of handles.
 TEST_F(TouchSelectionMenuRunnerViewsTest, QuickMenuAdjustsAnchorRect) {
+  // See comment in SetUp().
+  if (IsAuraMusClient())
+    return;
+
   gfx::Size handle_size(10, 10);
   TouchSelectionMenuRunnerViews::TestApi test_api(
       static_cast<TouchSelectionMenuRunnerViews*>(
@@ -130,6 +133,10 @@ TEST_F(TouchSelectionMenuRunnerViewsTest, QuickMenuAdjustsAnchorRect) {
 
 // Tests that running one of menu actions closes the menu properly.
 TEST_F(TouchSelectionMenuRunnerViewsTest, RunningActionClosesProperly) {
+  // See comment in SetUp().
+  if (IsAuraMusClient())
+    return;
+
   gfx::Rect menu_anchor(0, 0, 10, 10);
   gfx::Size handle_size(10, 10);
   TouchSelectionMenuRunnerViews::TestApi test_api(
@@ -161,6 +168,10 @@ TEST_F(TouchSelectionMenuRunnerViewsTest, RunningActionClosesProperly) {
 
 // Tests that closing the menu widget cleans up the menu runner state properly.
 TEST_F(TouchSelectionMenuRunnerViewsTest, ClosingWidgetClosesProperly) {
+  // See comment in SetUp().
+  if (IsAuraMusClient())
+    return;
+
   gfx::Rect menu_anchor(0, 0, 10, 10);
   gfx::Size handle_size(10, 10);
   TouchSelectionMenuRunnerViews::TestApi test_api(

@@ -5,9 +5,20 @@
 #include "ui/views/test/native_widget_factory.h"
 
 #include "ui/views/mus/window_manager_connection.h"
+#include "ui/views/test/test_platform_native_widget.h"
+#include "ui/views/widget/native_widget_aura.h"
 
 namespace views {
 namespace test {
+
+NativeWidget* CreatePlatformNativeWidgetImpl(
+    const Widget::InitParams& init_params,
+    Widget* widget,
+    uint32_t type,
+    bool* destroyed) {
+  return new TestPlatformNativeWidget<NativeWidgetAura>(
+      widget, type == kStubCapture, destroyed);
+}
 
 NativeWidget* CreatePlatformDesktopNativeWidgetImpl(
     const Widget::InitParams& init_params,

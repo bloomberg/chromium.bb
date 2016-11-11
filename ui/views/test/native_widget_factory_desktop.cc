@@ -4,11 +4,11 @@
 
 #include "ui/views/test/native_widget_factory.h"
 
+#include "ui/views/test/test_platform_native_widget.h"
+
 #if defined(USE_AURA)
-#include "ui/views/widget/native_widget_aura.h"
-#if !defined(OS_CHROMEOS)
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
-#endif
+#include "ui/views/widget/native_widget_aura.h"
 #elif defined(OS_MACOSX)
 #include "ui/views/widget/native_widget_mac.h"
 #endif
@@ -16,53 +16,38 @@
 namespace views {
 namespace test {
 
-#if !defined(OS_CHROMEOS)
-
+NativeWidget* CreatePlatformNativeWidgetImpl(
+    const Widget::InitParams& init_params,
+    Widget* widget,
+    uint32_t type,
+    bool* destroyed) {
 #if defined(OS_MACOSX)
-using PlatformDesktopNativeWidget = NativeWidgetMac;
+  return new TestPlatformNativeWidget<NativeWidgetMac>(
+      widget, type == kStubCapture, destroyed);
 #else
-using PlatformDesktopNativeWidget = DesktopNativeWidgetAura;
+  return new TestPlatformNativeWidget<NativeWidgetAura>(
+      widget, type == kStubCapture, destroyed);
 #endif
-
-namespace {
-
-class TestPlatformDesktopNativeWidget : public PlatformDesktopNativeWidget {
- public:
-  TestPlatformDesktopNativeWidget(internal::NativeWidgetDelegate* delegate,
-                                  bool* destroyed);
-  ~TestPlatformDesktopNativeWidget() override;
-
- private:
-  bool* destroyed_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestPlatformDesktopNativeWidget);
-};
-
-// A widget that assumes mouse capture always works. It won't in testing, so we
-// mock it.
-TestPlatformDesktopNativeWidget::TestPlatformDesktopNativeWidget(
-    internal::NativeWidgetDelegate* delegate,
-    bool* destroyed)
-    : PlatformDesktopNativeWidget(delegate), destroyed_(destroyed) {}
-
-TestPlatformDesktopNativeWidget::~TestPlatformDesktopNativeWidget() {
-  if (destroyed_)
-    *destroyed_ = true;
 }
-
-}  // namespace
-
-#endif
 
 NativeWidget* CreatePlatformDesktopNativeWidgetImpl(
     const Widget::InitParams& init_params,
     Widget* widget,
     bool* destroyed) {
-#if defined(OS_CHROMEOS)
-  // Chromeos only has one NativeWidgetType.
-  return CreatePlatformNativeWidgetImpl(init_params, widget, 0u, destroyed);
+#if defined(OS_MACOSX)
+  return new TestPlatformNativeWidget<NativeWidgetMac>(widget, false,
+                                                       destroyed);
+#elif defined(OS_CHROMEOS)
+  // Chromeos only has one NativeWidgetType. Chromeos with aura-mus does not
+  // compile this file.
+  return new TestPlatformNativeWidget<NativeWidgetAura>(widget, false,
+                                                        destroyed);
+#elif defined(USE_AURA)
+  return new TestPlatformNativeWidget<DesktopNativeWidgetAura>(widget, false,
+                                                               destroyed);
 #else
-  return new TestPlatformDesktopNativeWidget(widget, destroyed);
+  NOTREACHED();
+  return nullptr;
 #endif
 }
 

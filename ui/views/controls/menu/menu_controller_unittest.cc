@@ -1426,6 +1426,10 @@ TEST_F(MenuControllerTest, RunWithoutWidgetDoesntCrash) {
 // MenuController becomes active, that the exiting of drag does not cause a
 // crash.
 TEST_F(MenuControllerTest, MenuControllerReplacedDuringDrag) {
+  // TODO: this test wedges with aura-mus-client. http://crbug.com/664280.
+  if (IsAuraMusClient())
+    return;
+
   // This test creates two native widgets, but expects the child native widget
   // to be able to reach up and use the parent native widget's aura
   // objects. https://crbug.com/614037
@@ -1445,6 +1449,10 @@ TEST_F(MenuControllerTest, MenuControllerReplacedDuringDrag) {
 // destroy the MenuController. On Windows and Linux this destruction also
 // destroys the Widget used for drag-and-drop, thereby ending the drag.
 TEST_F(MenuControllerTest, CancelAllDuringDrag) {
+  // TODO: this test wedges with aura-mus-client. http://crbug.com/664280.
+  if (IsAuraMusClient())
+    return;
+
   // This test creates two native widgets, but expects the child native widget
   // to be able to reach up and use the parent native widget's aura
   // objects. https://crbug.com/614037
