@@ -1229,10 +1229,11 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   }
 #if !CONFIG_PVQ
   this_rd_stats.rate = rate_block(plane, block, coeff_ctx, tx_size, args);
-#if RD_DEBUG
+#if CONFIG_RD_DEBUG
   av1_update_txb_coeff_cost(&this_rd_stats, plane, tx_size, blk_row, blk_col,
                             this_rd_stats.rate);
 #endif
+
   args->t_above[blk_col] = (x->plane[plane].eobs[block] > 0);
   args->t_left[blk_row] = (x->plane[plane].eobs[block] > 0);
 #else
@@ -3608,10 +3609,6 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
       mbmi->inter_tx_size[idy][idx] = best_tx_size[idy][idx];
   mbmi->tx_size = best_tx;
   mbmi->min_tx_size = best_min_tx_size;
-#if CONFIG_RD_DEBUG
-  // record plane y's transform block coefficient cost
-  mbmi->rd_stats = *rd_stats;
-#endif
   memcpy(x->blk_skip[0], best_blk_skip, sizeof(best_blk_skip[0]) * n4);
 }
 
@@ -7833,10 +7830,6 @@ static int64_t handle_inter_mode(
       is_cost_valid_uv =
           super_block_uvrd(cpi, x, rd_stats_uv, bsize, ref_best_rd - rdcosty);
 #endif  // CONFIG_VAR_TX
-#if CONFIG_RD_DEBUG
-      // record uv planes' transform block coefficient cost
-      if (is_cost_valid_uv) av1_merge_rd_stats(&mbmi->rd_stats, rd_stats_uv);
-#endif
       if (!is_cost_valid_uv) {
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
         continue;
@@ -7847,6 +7840,14 @@ static int64_t handle_inter_mode(
       }
       /* clang-format on */
       av1_merge_rd_stats(rd_stats, rd_stats_uv);
+#if CONFIG_RD_DEBUG
+      // record transform block coefficient cost
+      // TODO(angiebird): So far rd_debug tool only detects descrepancy of
+      // coefficient cost. Therefore, it is fine to copy rd_stats into mbmi
+      // here because we already collect the coefficient cost. Move this part to
+      // other place when we need to compare non-coefficient cost.
+      mbmi->rd_stats = *rd_stats;
+#endif
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
       if (rd_stats->skip) {
         rd_stats->rate -= rd_stats_uv->rate + rd_stats_y->rate;

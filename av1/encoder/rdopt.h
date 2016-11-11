@@ -30,17 +30,23 @@ struct RD_COST;
 static INLINE void av1_update_txb_coeff_cost(RD_STATS *rd_stats, int plane,
                                              TX_SIZE tx_size, int blk_row,
                                              int blk_col, int txb_coeff_cost) {
-  const int txb_h = tx_size_high_unit[tx_size];
-  const int txb_w = tx_size_wide_unit[tx_size];
-  int idx, idy;
-
+  (void)blk_row;
+  (void)blk_col;
+  (void)tx_size;
   rd_stats->txb_coeff_cost[plane] += txb_coeff_cost;
 
-  for (idy = 0; idy < txb_h; ++idy)
-    for (idx = 0; idx < txb_w; ++idx)
-      rd_stats->txb_coeff_cost_map[plane][blk_row + idy][blk_col + idx] = 0;
+#if CONFIG_VAR_TX
+  {
+    const int txb_h = tx_size_high_unit[tx_size];
+    const int txb_w = tx_size_wide_unit[tx_size];
+    int idx, idy;
+    for (idy = 0; idy < txb_h; ++idy)
+      for (idx = 0; idx < txb_w; ++idx)
+        rd_stats->txb_coeff_cost_map[plane][blk_row + idy][blk_col + idx] = 0;
 
-  rd_stats->txb_coeff_cost_map[plane][blk_row][blk_col] = txb_coeff_cost;
+    rd_stats->txb_coeff_cost_map[plane][blk_row][blk_col] = txb_coeff_cost;
+  }
+#endif
 
   assert(blk_row < 16);
   assert(blk_col < 16);
@@ -57,11 +63,15 @@ static INLINE void av1_init_rd_stats(RD_STATS *rd_stats) {
   rd_stats->skip = 1;
 #if CONFIG_RD_DEBUG
   for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
-    int r, c;
     rd_stats->txb_coeff_cost[plane] = 0;
-    for (r = 0; r < TXB_COEFF_COST_MAP_SIZE; ++r)
-      for (c = 0; c < TXB_COEFF_COST_MAP_SIZE; ++c)
-        rd_stats->txb_coeff_cost_map[plane][r][c] = 0;
+#if CONFIG_VAR_TX
+    {
+      int r, c;
+      for (r = 0; r < TXB_COEFF_COST_MAP_SIZE; ++r)
+        for (c = 0; c < TXB_COEFF_COST_MAP_SIZE; ++c)
+          rd_stats->txb_coeff_cost_map[plane][r][c] = 0;
+    }
+#endif
   }
 #endif
 }
@@ -76,11 +86,15 @@ static INLINE void av1_invalid_rd_stats(RD_STATS *rd_stats) {
   rd_stats->skip = 0;
 #if CONFIG_RD_DEBUG
   for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
-    int r, c;
     rd_stats->txb_coeff_cost[plane] = INT_MAX;
-    for (r = 0; r < TXB_COEFF_COST_MAP_SIZE; ++r)
-      for (c = 0; c < TXB_COEFF_COST_MAP_SIZE; ++c)
-        rd_stats->txb_coeff_cost_map[plane][r][c] = INT_MAX;
+#if CONFIG_VAR_TX
+    {
+      int r, c;
+      for (r = 0; r < TXB_COEFF_COST_MAP_SIZE; ++r)
+        for (c = 0; c < TXB_COEFF_COST_MAP_SIZE; ++c)
+          rd_stats->txb_coeff_cost_map[plane][r][c] = INT_MAX;
+    }
+#endif
   }
 #endif
 }
@@ -96,17 +110,21 @@ static INLINE void av1_merge_rd_stats(RD_STATS *rd_stats_dst,
   rd_stats_dst->skip &= rd_stats_src->skip;
 #if CONFIG_RD_DEBUG
   for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
-    int r, c;
-    int ref_txb_coeff_cost = 0;
     rd_stats_dst->txb_coeff_cost[plane] += rd_stats_src->txb_coeff_cost[plane];
-    // TODO(angiebird): optimize this part
-    for (r = 0; r < TXB_COEFF_COST_MAP_SIZE; ++r)
-      for (c = 0; c < TXB_COEFF_COST_MAP_SIZE; ++c) {
-        rd_stats_dst->txb_coeff_cost_map[plane][r][c] +=
-            rd_stats_src->txb_coeff_cost_map[plane][r][c];
-        ref_txb_coeff_cost += rd_stats_dst->txb_coeff_cost_map[plane][r][c];
-      }
-    assert(ref_txb_coeff_cost == rd_stats_dst->txb_coeff_cost[plane]);
+#if CONFIG_VAR_TX
+    {
+      // TODO(angiebird): optimize this part
+      int r, c;
+      int ref_txb_coeff_cost = 0;
+      for (r = 0; r < TXB_COEFF_COST_MAP_SIZE; ++r)
+        for (c = 0; c < TXB_COEFF_COST_MAP_SIZE; ++c) {
+          rd_stats_dst->txb_coeff_cost_map[plane][r][c] +=
+              rd_stats_src->txb_coeff_cost_map[plane][r][c];
+          ref_txb_coeff_cost += rd_stats_dst->txb_coeff_cost_map[plane][r][c];
+        }
+      assert(ref_txb_coeff_cost == rd_stats_dst->txb_coeff_cost[plane]);
+    }
+#endif
   }
 #endif
 }
