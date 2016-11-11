@@ -156,7 +156,7 @@ std::string TestExtensionsClient::GetWebstoreUpdateURL() const {
 }
 
 bool TestExtensionsClient::IsBlacklistUpdateURL(const GURL& url) const {
-  return true;
+  return false;
 }
 
 std::set<base::FilePath> TestExtensionsClient::GetBrowserImagePaths(

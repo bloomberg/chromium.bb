@@ -22,6 +22,9 @@ namespace net {
 class URLRequest;
 }
 
+// Exposed for unit testing.
+bool IsSensitiveURL(const GURL& url);
+
 // This class is used to test whether extensions may modify web requests.
 class WebRequestPermissions {
  public:
