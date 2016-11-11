@@ -78,4 +78,9 @@ OmahaServiceProvider* TestChromeBrowserProvider::GetOmahaServiceProvider()
   return omaha_service_provider_.get();
 }
 
+id<NativeAppWhitelistManager>
+TestChromeBrowserProvider::GetNativeAppWhitelistManager() const {
+  return nil;
+}
+
 }  // namespace ios

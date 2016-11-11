@@ -51,6 +51,7 @@ class PrefRegistrySyncable;
 @protocol InfoBarViewProtocol;
 @protocol LogoVendor;
 @protocol TextFieldStyling;
+@protocol NativeAppWhitelistManager;
 @class UITextField;
 @class UIView;
 @protocol UrlLoader;
@@ -171,6 +172,9 @@ class ChromeBrowserProvider {
   // TODO(rohitrao): This is a temporary method, used to prevent the tree from
   // breaking due to duplicate prefs registration.
   virtual bool ShouldEmbedderRegisterVoiceSearchPrefs() const;
+
+  // Returns the NativeAppWhitelistManager implementation.
+  virtual id<NativeAppWhitelistManager> GetNativeAppWhitelistManager() const;
 };
 
 }  // namespace ios

@@ -144,6 +144,11 @@ OmahaServiceProvider* ChromeBrowserProvider::GetOmahaServiceProvider() const {
   return nil;
 }
 
+id<NativeAppWhitelistManager>
+ChromeBrowserProvider::GetNativeAppWhitelistManager() const {
+  return nil;
+}
+
 bool ChromeBrowserProvider::ShouldEmbedderRegisterVoiceSearchPrefs() const {
   return false;
 }
