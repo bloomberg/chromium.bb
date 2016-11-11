@@ -11,11 +11,6 @@
 
 using base::android::JavaParamRef;
 
-jboolean IsChildAccountDetectionEnabled(JNIEnv* env,
-                                        const JavaParamRef<jclass>& jcaller) {
-  return ChildAccountService::IsChildAccountDetectionEnabled();
-}
-
 jboolean IsChildAccount(JNIEnv* env, const JavaParamRef<jclass>& jcaller) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   return profile_manager->GetLastUsedProfile()->IsChild();

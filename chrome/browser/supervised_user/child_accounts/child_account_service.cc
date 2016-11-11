@@ -38,7 +38,9 @@
 #include "components/user_manager/user_manager.h"
 #endif
 
+#if !defined(OS_ANDROID)
 const char kChildAccountDetectionFieldTrialName[] = "ChildAccountDetection";
+#endif
 
 // Normally, re-check the family info once per day.
 const int kUpdateIntervalSeconds = 60 * 60 * 24;
@@ -80,6 +82,8 @@ ChildAccountService::~ChildAccountService() {}
 
 // static
 bool ChildAccountService::IsChildAccountDetectionEnabled() {
+  // Child account detection is always enabled on Android.
+#if !defined(OS_ANDROID)
   // Note: It's important to query the field trial state first, to ensure that
   // UMA reports the correct group.
   const std::string group_name =
@@ -93,6 +97,8 @@ bool ChildAccountService::IsChildAccountDetectionEnabled() {
 
   if (group_name == "Disabled")
     return false;
+#endif
+
   return true;
 }
 
