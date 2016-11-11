@@ -61,6 +61,7 @@
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/gesture_detection/motion_event.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -954,31 +955,59 @@ jboolean ContentViewCoreImpl::OnTouchEvent(
                            android_meta_state,
                            raw_pos_x - pos_x_0,
                            raw_pos_y - pos_y_0,
-                           pointer0,
-                           pointer1);
+                           &pointer0,
+                           &pointer1);
 
   return is_touch_handle_event ? rwhv->OnTouchHandleEvent(event)
                                : rwhv->OnTouchEvent(event);
 }
 
-jboolean ContentViewCoreImpl::SendMouseMoveEvent(
+jboolean ContentViewCoreImpl::SendMouseEvent(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jlong time_ms,
+    jint android_action,
     jfloat x,
     jfloat y,
-    jint tool_type) {
+    jint pointer_id,
+    jfloat pressure,
+    jfloat orientation,
+    jfloat tilt,
+    jint android_changed_button,
+    jint android_button_state,
+    jint android_meta_state,
+    jint android_tool_type) {
+
   RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
   if (!rwhv)
     return false;
 
-  blink::WebMouseEvent event = WebMouseEventBuilder::Build(
-      WebInputEvent::MouseMove,
-      blink::WebMouseEvent::Button::NoButton,
-      time_ms / 1000.0, x / dpi_scale(), y / dpi_scale(), 0, 1,
-      ui::ToWebPointerType(static_cast<ui::MotionEvent::ToolType>(tool_type)));
+  // Construct a motion_event object minimally, only to convert the raw
+  // parameters to ui::MotionEvent values. Since we used only the cached values
+  // at index=0, it is okay to even pass a null event to the constructor.
+  ui::MotionEventAndroid::Pointer pointer0(
+      pointer_id, x, y, 0.0f /* touch_major */, 0.0f /* touch_minor */,
+      orientation, tilt, android_tool_type);
 
-  rwhv->SendMouseEvent(event);
+  ui::MotionEventAndroid motion_event(1.f / dpi_scale(),
+      env,
+      nullptr /* event */,
+      time_ms,
+      android_action,
+      1 /* pointer_count */,
+      0 /* history_size */,
+      0 /* action_index */,
+      android_button_state,
+      android_meta_state,
+      0 /* raw_offset_x_pixels */,
+      0 /* raw_offset_y_pixels */,
+      &pointer0,
+      nullptr);
+
+  // Note: This relies on identical button enum values in MotionEvent and
+  // MotionEventAndroid.
+  rwhv->SendMouseEvent(motion_event, android_changed_button);
+
   return true;
 }
 

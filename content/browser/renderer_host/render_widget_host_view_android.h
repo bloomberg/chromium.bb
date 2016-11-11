@@ -32,6 +32,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android_observer.h"
+#include "ui/events/android/motion_event_android.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -205,7 +206,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SetContentViewCore(ContentViewCoreImpl* content_view_core);
   SkColor GetCachedBackgroundColor() const;
   void SendKeyEvent(const NativeWebKeyboardEvent& event);
-  void SendMouseEvent(const blink::WebMouseEvent& event);
+  void SendMouseEvent(const ui::MotionEventAndroid&, int changed_button);
   void SendMouseWheelEvent(const blink::WebMouseWheelEvent& event);
   void SendGestureEvent(const blink::WebGestureEvent& event);
 

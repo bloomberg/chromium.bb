@@ -206,8 +206,8 @@ jboolean BlimpView::OnTouchEvent(
                                android_meta_state,
                                raw_pos_x - pos_x_0,
                                raw_pos_y - pos_y_0,
-                               pointer0,
-                               pointer1);
+                               &pointer0,
+                               &pointer1);
 
   return document_manager_->OnTouchEvent(event);
 }

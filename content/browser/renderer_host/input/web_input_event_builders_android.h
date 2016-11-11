@@ -17,13 +17,17 @@ class WebMouseEventBuilder {
  public:
   static blink::WebMouseEvent Build(
       blink::WebInputEvent::Type type,
-      blink::WebMouseEvent::Button button,
       double time_sec,
       int window_x,
       int window_y,
       int modifiers,
       int click_count,
-      blink::WebPointerProperties::PointerType pointer_type);
+      int pointer_id,
+      float pressure,
+      float orientation_rad,
+      float tilt_rad,
+      int changed_button,
+      int tool_type);
 };
 
 class WebMouseWheelEventBuilder {

@@ -178,6 +178,11 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
 
   switch (action) {
     case MotionEvent::ACTION_NONE:
+    case MotionEvent::ACTION_HOVER_ENTER:
+    case MotionEvent::ACTION_HOVER_EXIT:
+    case MotionEvent::ACTION_HOVER_MOVE:
+    case MotionEvent::ACTION_BUTTON_PRESS:
+    case MotionEvent::ACTION_BUTTON_RELEASE:
       NOTREACHED();
       return handled;
 

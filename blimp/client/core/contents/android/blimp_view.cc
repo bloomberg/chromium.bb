@@ -91,7 +91,7 @@ jboolean BlimpView::OnTouchEvent(
       1.f / device_scale_factor_dp_to_px, env, motion_event, time_ms,
       android_action, pointer_count, history_size, action_index,
       android_button_state, android_meta_state, raw_pos_x - pos_x_0,
-      raw_pos_y - pos_y_0, pointer0, pointer1);
+      raw_pos_y - pos_y_0, &pointer0, &pointer1);
   return blimp_contents_view_->OnTouchEvent(event);
 }
 

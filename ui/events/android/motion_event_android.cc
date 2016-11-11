@@ -34,9 +34,18 @@ MotionEventAndroid::Action FromAndroidAction(int android_action) {
       return MotionEventAndroid::ACTION_POINTER_DOWN;
     case ACTION_POINTER_UP:
       return MotionEventAndroid::ACTION_POINTER_UP;
+    case ACTION_HOVER_ENTER:
+      return MotionEventAndroid::ACTION_HOVER_ENTER;
+    case ACTION_HOVER_EXIT:
+      return MotionEventAndroid::ACTION_HOVER_EXIT;
+    case ACTION_HOVER_MOVE:
+      return MotionEventAndroid::ACTION_HOVER_MOVE;
+    case ACTION_BUTTON_PRESS:
+      return MotionEventAndroid::ACTION_BUTTON_PRESS;
+    case ACTION_BUTTON_RELEASE:
+      return MotionEventAndroid::ACTION_BUTTON_RELEASE;
     default:
-      NOTREACHED() << "Invalid Android MotionEvent type for gesture detection: "
-                   << android_action;
+      NOTREACHED() << "Invalid Android MotionEvent action: " << android_action;
   };
   return MotionEventAndroid::ACTION_CANCEL;
 }
@@ -79,8 +88,9 @@ int FromAndroidButtonState(int button_state) {
   return result;
 }
 
-int FromAndroidMetaState(int meta_state) {
+int ToEventFlags(int meta_state, int button_state) {
   int flags = ui::EF_NONE;
+
   if ((meta_state & AMETA_SHIFT_ON) != 0)
     flags |= ui::EF_SHIFT_DOWN;
   if ((meta_state & AMETA_CTRL_ON) != 0)
@@ -91,6 +101,22 @@ int FromAndroidMetaState(int meta_state) {
     flags |= ui::EF_COMMAND_DOWN;
   if ((meta_state & AMETA_CAPS_LOCK_ON) != 0)
     flags |= ui::EF_CAPS_LOCK_ON;
+
+  if ((button_state & BUTTON_BACK) != 0)
+    flags |= ui::EF_BACK_MOUSE_BUTTON;
+  if ((button_state & BUTTON_FORWARD) != 0)
+    flags |= ui::EF_FORWARD_MOUSE_BUTTON;
+  if ((button_state & BUTTON_PRIMARY) != 0)
+    flags |= ui::EF_LEFT_MOUSE_BUTTON;
+  if ((button_state & BUTTON_SECONDARY) != 0)
+    flags |= ui::EF_RIGHT_MOUSE_BUTTON;
+  if ((button_state & BUTTON_TERTIARY) != 0)
+    flags |= ui::EF_MIDDLE_MOUSE_BUTTON;
+  if ((button_state & BUTTON_STYLUS_PRIMARY) != 0)
+    flags |= ui::EF_LEFT_MOUSE_BUTTON;
+  if ((button_state & BUTTON_STYLUS_SECONDARY) != 0)
+    flags |= ui::EF_RIGHT_MOUSE_BUTTON;
+
   return flags;
 }
 
@@ -163,11 +189,11 @@ MotionEventAndroid::MotionEventAndroid(float pix_to_dip,
                                        jint history_size,
                                        jint action_index,
                                        jint android_button_state,
-                                       jint meta_state,
+                                       jint android_meta_state,
                                        jfloat raw_offset_x_pixels,
                                        jfloat raw_offset_y_pixels,
-                                       const Pointer& pointer0,
-                                       const Pointer& pointer1)
+                                       const Pointer* const pointer0,
+                                       const Pointer* const pointer1)
     : pix_to_dip_(pix_to_dip),
       cached_time_(FromAndroidTime(time_ms)),
       cached_action_(FromAndroidAction(android_action)),
@@ -175,18 +201,20 @@ MotionEventAndroid::MotionEventAndroid(float pix_to_dip,
       cached_history_size_(ToValidHistorySize(history_size, cached_action_)),
       cached_action_index_(action_index),
       cached_button_state_(FromAndroidButtonState(android_button_state)),
-      cached_flags_(FromAndroidMetaState(meta_state)),
+      cached_flags_(ToEventFlags(android_meta_state, android_button_state)),
       cached_raw_position_offset_(ToDips(raw_offset_x_pixels),
                                   ToDips(raw_offset_y_pixels)),
       unique_event_id_(ui::GetNextTouchEventId()) {
-  DCHECK_GT(pointer_count, 0);
+  DCHECK_GT(cached_pointer_count_, 0U);
+  DCHECK(cached_pointer_count_ == 1 || pointer1);
 
   event_.Reset(env, event);
   if (cached_pointer_count_ > MAX_POINTERS_TO_CACHE || cached_history_size_ > 0)
     DCHECK(event_.obj());
 
-  cached_pointers_[0] = FromAndroidPointer(pointer0);
-  cached_pointers_[1] = FromAndroidPointer(pointer1);
+  cached_pointers_[0] = FromAndroidPointer(*pointer0);
+  if (cached_pointer_count_ > 1)
+    cached_pointers_[1] = FromAndroidPointer(*pointer1);
 }
 
 MotionEventAndroid::~MotionEventAndroid() {

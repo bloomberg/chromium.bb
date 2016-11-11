@@ -1007,8 +1007,48 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
      * @see View#onTouchEvent(MotionEvent)
      */
     public boolean onTouchEvent(MotionEvent event) {
+        // TODO(mustaq): Should we include MotionEvent.TOOL_TYPE_STYLUS here?
+        // crbug.com/592082
+        if (event.getToolType(0) == MotionEvent.TOOL_TYPE_MOUSE) {
+            // Mouse button info is incomplete on L and below
+            int apiVersion = Build.VERSION.SDK_INT;
+            if (apiVersion >= android.os.Build.VERSION_CODES.M) {
+                return sendMouseEvent(event);
+            }
+        }
+
         final boolean isTouchHandleEvent = false;
-        return onTouchEventImpl(event, isTouchHandleEvent);
+        return sendTouchEvent(event, isTouchHandleEvent);
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    private boolean sendMouseEvent(MotionEvent event) {
+        TraceEvent.begin("sendMouseEvent");
+
+        MotionEvent offsetEvent = createOffsetMotionEvent(event);
+        try {
+            mContainerView.removeCallbacks(mFakeMouseMoveRunnable);
+            if (mNativeContentViewCore == 0) return false;
+
+            int eventAction = event.getActionMasked();
+
+            // For mousedown and mouseup events, we use ACTION_BUTTON_PRESS
+            // and ACTION_BUTTON_RELEASE respectively because they provide
+            // info about the changed-button.
+            if (eventAction == MotionEvent.ACTION_DOWN || eventAction == MotionEvent.ACTION_UP) {
+                return false;
+            }
+
+            nativeSendMouseEvent(mNativeContentViewCore, event.getEventTime(), eventAction,
+                    offsetEvent.getX(), offsetEvent.getY(), event.getPointerId(0),
+                    event.getPressure(0), event.getOrientation(0),
+                    event.getAxisValue(MotionEvent.AXIS_TILT, 0), event.getActionButton(),
+                    event.getButtonState(), event.getMetaState(), event.getToolType(0));
+            return true;
+        } finally {
+            offsetEvent.recycle();
+            TraceEvent.end("sendMouseEvent");
+        }
     }
 
     /**
@@ -1017,11 +1057,11 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
      */
     public boolean onTouchHandleEvent(MotionEvent event) {
         final boolean isTouchHandleEvent = true;
-        return onTouchEventImpl(event, isTouchHandleEvent);
+        return sendTouchEvent(event, isTouchHandleEvent);
     }
 
-    private boolean onTouchEventImpl(MotionEvent event, boolean isTouchHandleEvent) {
-        TraceEvent.begin("onTouchEvent");
+    private boolean sendTouchEvent(MotionEvent event, boolean isTouchHandleEvent) {
+        TraceEvent.begin("sendTouchEvent");
         try {
             int eventAction = event.getActionMasked();
 
@@ -1080,7 +1120,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
             if (offset != null) offset.recycle();
             return consumed;
         } finally {
-            TraceEvent.end("onTouchEvent");
+            TraceEvent.end("sendTouchEvent");
         }
     }
 
@@ -1555,16 +1595,20 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     public boolean onHoverEvent(MotionEvent event) {
         TraceEvent.begin("onHoverEvent");
 
+        int eventAction = event.getActionMasked();
+
+        // Ignore ACTION_HOVER_ENTER & ACTION_HOVER_EXIT: every mouse-down on
+        // Android follows a hover-exit and is followed by a hover-enter. The
+        // MotionEvent spec seems to support this behavior indirectly.
+        if (eventAction == MotionEvent.ACTION_HOVER_ENTER
+                || eventAction == MotionEvent.ACTION_HOVER_EXIT) {
+            return false;
+        }
+
         MotionEvent offset = createOffsetMotionEvent(event);
         try {
             if (mBrowserAccessibilityManager != null && !mIsObscuredByAnotherView) {
                 return mBrowserAccessibilityManager.onHoverEvent(offset);
-            }
-
-            // Work around Android bug where the x, y coordinates of a hover exit
-            // event are incorrect when touch exploration is on.
-            if (mTouchExplorationEnabled && offset.getAction() == MotionEvent.ACTION_HOVER_EXIT) {
-                return true;
             }
 
             // TODO(lanwei): Remove this switch once experimentation is complete -
@@ -1579,8 +1623,11 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
 
             mContainerView.removeCallbacks(mFakeMouseMoveRunnable);
             if (mNativeContentViewCore != 0) {
-                nativeSendMouseMoveEvent(mNativeContentViewCore, offset.getEventTime(),
-                        offset.getX(), offset.getY(), event.getToolType(0));
+                nativeSendMouseEvent(mNativeContentViewCore, event.getEventTime(), eventAction,
+                        offset.getX(), offset.getY(), event.getPointerId(0), event.getPressure(0),
+                        event.getOrientation(0), event.getAxisValue(MotionEvent.AXIS_TILT, 0),
+                        0 /* changedButton */, event.getButtonState(), event.getMetaState(),
+                        event.getToolType(0));
             }
             return true;
         } finally {
@@ -1597,7 +1644,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         if ((event.getSource() & InputDevice.SOURCE_CLASS_POINTER) != 0) {
             mLastFocalEventX = event.getX();
             mLastFocalEventY = event.getY();
-            switch (event.getAction()) {
+            switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_SCROLL:
                     if (mNativeContentViewCore == 0) return false;
 
@@ -1607,6 +1654,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
                             event.getAxisValue(MotionEvent.AXIS_VSCROLL),
                             mRenderCoordinates.getWheelScrollFactor());
 
+                    // TODO(mustaq): Delete mFakeMouseMoveRunnable, see crbug.com/492738
                     mContainerView.removeCallbacks(mFakeMouseMoveRunnable);
                     // Send a delayed onMouseMove event so that we end
                     // up hovering over the right position after the scroll.
@@ -1620,6 +1668,13 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
                     };
                     mContainerView.postDelayed(mFakeMouseMoveRunnable, 250);
                     return true;
+                case MotionEvent.ACTION_BUTTON_PRESS:
+                case MotionEvent.ACTION_BUTTON_RELEASE:
+                    // TODO(mustaq): Should we include MotionEvent.TOOL_TYPE_STYLUS here?
+                    // crbug.com/592082
+                    if (event.getToolType(0) == MotionEvent.TOOL_TYPE_MOUSE) {
+                        return sendMouseEvent(event);
+                    }
             }
         } else if ((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0) {
             if (mJoystickScrollProvider.onMotion(event)) return true;
@@ -2909,8 +2964,9 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
             int androidButtonState, int androidMetaState,
             boolean isTouchHandleEvent);
 
-    private native int nativeSendMouseMoveEvent(
-            long nativeContentViewCoreImpl, long timeMs, float x, float y, int toolType);
+    private native int nativeSendMouseEvent(long nativeContentViewCoreImpl, long timeMs, int action,
+            float x, float y, int pointerId, float pressure, float orientaton, float tilt,
+            int changedButton, int buttonState, int metaState, int toolType);
 
     private native int nativeSendMouseWheelEvent(long nativeContentViewCoreImpl, long timeMs,
             float x, float y, float ticksX, float ticksY, float pixelsPerTick);

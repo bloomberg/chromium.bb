@@ -26,6 +26,11 @@ GestureEventDataPacket::GestureSource ToGestureSource(
     case ui::MotionEvent::ACTION_POINTER_UP:
       return GestureEventDataPacket::TOUCH_END;
     case ui::MotionEvent::ACTION_NONE:
+    case ui::MotionEvent::ACTION_HOVER_ENTER:
+    case ui::MotionEvent::ACTION_HOVER_EXIT:
+    case ui::MotionEvent::ACTION_HOVER_MOVE:
+    case ui::MotionEvent::ACTION_BUTTON_PRESS:
+    case ui::MotionEvent::ACTION_BUTTON_RELEASE:
       NOTREACHED();
       return GestureEventDataPacket::INVALID;
   };

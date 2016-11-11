@@ -1,4 +1,3 @@
-
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -59,8 +58,8 @@ class EVENTS_EXPORT MotionEventAndroid : public MotionEvent {
                      jint meta_state,
                      jfloat raw_offset_x_pixels,
                      jfloat raw_offset_y_pixels,
-                     const Pointer& pointer0,
-                     const Pointer& pointer1);
+                     const Pointer* const pointer0,
+                     const Pointer* const pointer1);
   ~MotionEventAndroid() override;
 
   // ui::MotionEvent methods.

@@ -62,8 +62,16 @@ std::unique_ptr<blink::WebInputEvent> TranslateAndScaleWebInputEvent(
     const gfx::Vector2d& delta,
     float scale);
 
-blink::WebPointerProperties::PointerType ToWebPointerType(
-    MotionEvent::ToolType tool_type);
+blink::WebInputEvent::Type ToWebMouseEventType(MotionEvent::Action action);
+
+void SetWebPointerPropertiesFromMotionEventData(
+    blink::WebPointerProperties& webPointerProperties,
+    int pointer_id,
+    float pressure,
+    float orientation_rad,
+    float tilt_rad,
+    int android_buttons_changed,
+    int tool_type);
 
 int WebEventModifiersToEventFlags(int modifiers);
 

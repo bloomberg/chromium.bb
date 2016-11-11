@@ -112,32 +112,39 @@ WebKeyboardEvent WebKeyboardEventBuilder::Build(
 }
 
 WebMouseEvent WebMouseEventBuilder::Build(
-    WebInputEvent::Type type,
-    WebMouseEvent::Button button,
-    double time_sec,
-    int window_x,
-    int window_y,
-    int modifiers,
-    int click_count,
-    WebPointerProperties::PointerType pointer_type) {
+      WebInputEvent::Type type,
+      double time_sec,
+      int window_x,
+      int window_y,
+      int modifiers,
+      int click_count,
+      int pointer_id,
+      float pressure,
+      float orientation_rad,
+      float tilt_rad,
+      int changed_button,
+      int tool_type) {
 
   DCHECK(WebInputEvent::isMouseEventType(type));
   WebMouseEvent result;
 
   result.type = type;
-  result.pointerType = pointer_type;
   result.x = window_x;
   result.y = window_y;
   result.windowX = window_x;
   result.windowY = window_y;
   result.timeStampSeconds = time_sec;
   result.clickCount = click_count;
-  result.modifiers = modifiers;
+  result.modifiers = ui::EventFlagsToWebEventModifiers(modifiers);
 
-  if (type == WebInputEvent::MouseDown || type == WebInputEvent::MouseUp)
-    result.button = button;
-  else
-    result.button = WebMouseEvent::Button::NoButton;
+  ui::SetWebPointerPropertiesFromMotionEventData(
+      result,
+      pointer_id,
+      pressure,
+      orientation_rad,
+      tilt_rad,
+      changed_button,
+      tool_type);
 
   return result;
 }

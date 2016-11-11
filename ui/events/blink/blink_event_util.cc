@@ -33,7 +33,7 @@ using blink::WebTouchPoint;
 namespace ui {
 namespace {
 
-WebInputEvent::Type ToWebInputEventType(MotionEvent::Action action) {
+WebInputEvent::Type ToWebTouchEventType(MotionEvent::Action action) {
   switch (action) {
     case MotionEvent::ACTION_DOWN:
       return WebInputEvent::TouchStart;
@@ -48,10 +48,14 @@ WebInputEvent::Type ToWebInputEventType(MotionEvent::Action action) {
     case MotionEvent::ACTION_POINTER_UP:
       return WebInputEvent::TouchEnd;
     case MotionEvent::ACTION_NONE:
-      NOTREACHED();
-      return WebInputEvent::Undefined;
+    case MotionEvent::ACTION_HOVER_ENTER:
+    case MotionEvent::ACTION_HOVER_EXIT:
+    case MotionEvent::ACTION_HOVER_MOVE:
+    case MotionEvent::ACTION_BUTTON_PRESS:
+    case MotionEvent::ACTION_BUTTON_RELEASE:
+      break;
   }
-  NOTREACHED() << "Invalid MotionEvent::Action.";
+  NOTREACHED() << "Invalid MotionEvent::Action = " << action;
   return WebInputEvent::Undefined;
 }
 
@@ -78,18 +82,63 @@ WebTouchPoint::State ToWebTouchPointState(const MotionEvent& event,
                  ? WebTouchPoint::StateReleased
                  : WebTouchPoint::StateStationary;
     case MotionEvent::ACTION_NONE:
-      NOTREACHED();
-      return WebTouchPoint::StateUndefined;
+    case MotionEvent::ACTION_HOVER_ENTER:
+    case MotionEvent::ACTION_HOVER_EXIT:
+    case MotionEvent::ACTION_HOVER_MOVE:
+    case MotionEvent::ACTION_BUTTON_PRESS:
+    case MotionEvent::ACTION_BUTTON_RELEASE:
+      break;
   }
   NOTREACHED() << "Invalid MotionEvent::Action.";
   return WebTouchPoint::StateUndefined;
 }
 
+WebPointerProperties::PointerType ToWebPointerType(int tool_type) {
+  switch (static_cast<MotionEvent::ToolType>(tool_type)) {
+    case MotionEvent::TOOL_TYPE_UNKNOWN:
+      return WebPointerProperties::PointerType::Unknown;
+    case MotionEvent::TOOL_TYPE_FINGER:
+      return WebPointerProperties::PointerType::Touch;
+    case MotionEvent::TOOL_TYPE_STYLUS:
+      return WebPointerProperties::PointerType::Pen;
+    case MotionEvent::TOOL_TYPE_MOUSE:
+      return WebPointerProperties::PointerType::Mouse;
+    case MotionEvent::TOOL_TYPE_ERASER:
+      return WebPointerProperties::PointerType::Eraser;
+  }
+  NOTREACHED() << "Invalid MotionEvent::ToolType = " << tool_type;
+  return WebPointerProperties::PointerType::Unknown;
+}
+
+WebPointerProperties::Button ToWebPointerButton(int android_button_state) {
+    if (android_button_state & MotionEvent::BUTTON_PRIMARY)
+        return WebPointerProperties::Button::Left;
+    else if (android_button_state & MotionEvent::BUTTON_SECONDARY)
+        return WebPointerProperties::Button::Right;
+    else if (android_button_state & MotionEvent::BUTTON_TERTIARY)
+        return WebPointerProperties::Button::Middle;
+    else if (android_button_state & MotionEvent::BUTTON_BACK)
+        return WebPointerProperties::Button::X1;
+    else if (android_button_state & MotionEvent::BUTTON_FORWARD)
+        return WebPointerProperties::Button::X2;
+    else if (android_button_state & MotionEvent::BUTTON_STYLUS_PRIMARY)
+        return WebPointerProperties::Button::Left;
+    else if (android_button_state & MotionEvent::BUTTON_STYLUS_SECONDARY)
+        return WebPointerProperties::Button::Right;
+    else
+        return WebPointerProperties::Button::NoButton;
+}
+
 WebTouchPoint CreateWebTouchPoint(const MotionEvent& event,
                                   size_t pointer_index) {
   WebTouchPoint touch;
-  touch.id = event.GetPointerId(pointer_index);
-  touch.pointerType = ToWebPointerType(event.GetToolType(pointer_index));
+
+  SetWebPointerPropertiesFromMotionEventData(
+      touch, event.GetPointerId(pointer_index),
+      event.GetPressure(pointer_index), event.GetOrientation(pointer_index),
+      event.GetTilt(pointer_index), 0 /* no button changed */,
+      event.GetToolType(pointer_index));
+
   touch.state = ToWebTouchPointState(event, pointer_index);
   touch.position.x = event.GetX(pointer_index);
   touch.position.y = event.GetY(pointer_index);
@@ -110,9 +159,8 @@ WebTouchPoint CreateWebTouchPoint(const MotionEvent& event,
 
   float major_radius = event.GetTouchMajor(pointer_index) / 2.f;
   float minor_radius = event.GetTouchMinor(pointer_index) / 2.f;
+  float orientation_deg = event.GetOrientation(pointer_index) * 180.f / M_PI;
 
-  float orientation_rad = event.GetOrientation(pointer_index);
-  float orientation_deg = orientation_rad * 180.f / M_PI;
   DCHECK_GE(major_radius, 0);
   DCHECK_GE(minor_radius, 0);
   DCHECK_GE(major_radius, minor_radius);
@@ -143,20 +191,6 @@ WebTouchPoint CreateWebTouchPoint(const MotionEvent& event,
     touch.rotationAngle = orientation_deg + 90;
   }
 
-  touch.force = event.GetPressure(pointer_index);
-
-  if (event.GetToolType(pointer_index) == MotionEvent::TOOL_TYPE_STYLUS) {
-    // A stylus points to a direction specified by orientation and tilts to
-    // the opposite direction. Coordinate system is left-handed.
-    float tilt_rad = event.GetTilt(pointer_index);
-    float r = sin(tilt_rad);
-    float z = cos(tilt_rad);
-    touch.tiltX = lround(atan2(sin(-orientation_rad) * r, z) * 180.f / M_PI);
-    touch.tiltY = lround(atan2(cos(-orientation_rad) * r, z) * 180.f / M_PI);
-  } else {
-    touch.tiltX = touch.tiltY = 0;
-  }
-
   return touch;
 }
 
@@ -171,13 +205,17 @@ blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
 
   blink::WebTouchEvent result;
 
-  result.type = ToWebInputEventType(event.GetAction());
+  result.type = ToWebTouchEventType(event.GetAction());
   result.dispatchType = result.type == WebInputEvent::TouchCancel
                             ? WebInputEvent::EventNonBlocking
                             : WebInputEvent::Blocking;
   result.timeStampSeconds = ui::EventTimeStampToSeconds(event.GetEventTime());
   result.movedBeyondSlopRegion = moved_beyond_slop_region;
+
   result.modifiers = EventFlagsToWebEventModifiers(event.GetFlags());
+  // TODO(mustaq): MotionEvent flags seems unrelated, should use
+  // metaState instead?
+
   DCHECK_NE(event.GetUniqueEventId(), 0U);
   result.uniqueTouchEventId = event.GetUniqueEventId();
   result.touchesLength =
@@ -480,22 +518,58 @@ std::unique_ptr<blink::WebInputEvent> TranslateAndScaleWebInputEvent(
   return scaled_event;
 }
 
-WebPointerProperties::PointerType ToWebPointerType(
-    MotionEvent::ToolType tool_type) {
-  switch (tool_type) {
-    case MotionEvent::TOOL_TYPE_UNKNOWN:
-      return WebPointerProperties::PointerType::Unknown;
-    case MotionEvent::TOOL_TYPE_FINGER:
-      return WebPointerProperties::PointerType::Touch;
-    case MotionEvent::TOOL_TYPE_STYLUS:
-      return WebPointerProperties::PointerType::Pen;
-    case MotionEvent::TOOL_TYPE_MOUSE:
-      return WebPointerProperties::PointerType::Mouse;
-    case MotionEvent::TOOL_TYPE_ERASER:
-      return WebPointerProperties::PointerType::Eraser;
+WebInputEvent::Type ToWebMouseEventType(MotionEvent::Action action) {
+  switch (action) {
+    case MotionEvent::ACTION_DOWN:
+    case MotionEvent::ACTION_BUTTON_PRESS:
+      return WebInputEvent::MouseDown;
+    case MotionEvent::ACTION_MOVE:
+    case MotionEvent::ACTION_HOVER_MOVE:
+      return WebInputEvent::MouseMove;
+    case MotionEvent::ACTION_HOVER_ENTER:
+      return WebInputEvent::MouseEnter;
+    case MotionEvent::ACTION_HOVER_EXIT:
+      return WebInputEvent::MouseLeave;
+    case MotionEvent::ACTION_UP:
+    case MotionEvent::ACTION_BUTTON_RELEASE:
+      return WebInputEvent::MouseUp;
+    case MotionEvent::ACTION_NONE:
+    case MotionEvent::ACTION_CANCEL:
+    case MotionEvent::ACTION_POINTER_DOWN:
+    case MotionEvent::ACTION_POINTER_UP:
+      break;
   }
-  NOTREACHED() << "Invalid MotionEvent::ToolType = " << tool_type;
-  return WebPointerProperties::PointerType::Unknown;
+  NOTREACHED() << "Invalid MotionEvent::Action = " << action;
+  return WebInputEvent::Undefined;
+}
+
+void SetWebPointerPropertiesFromMotionEventData(
+    WebPointerProperties& webPointerProperties,
+    int pointer_id,
+    float pressure,
+    float orientation_rad,
+    float tilt_rad,
+    int android_buttons_changed,
+    int tool_type) {
+
+  webPointerProperties.id = pointer_id;
+  webPointerProperties.force = pressure;
+
+  if (tool_type == MotionEvent::TOOL_TYPE_STYLUS) {
+    // A stylus points to a direction specified by orientation and tilts to
+    // the opposite direction. Coordinate system is left-handed.
+    float r = sin(tilt_rad);
+    float z = cos(tilt_rad);
+    webPointerProperties.tiltX =
+        lround(atan2(sin(-orientation_rad) * r, z) * 180.f / M_PI);
+    webPointerProperties.tiltY =
+        lround(atan2(cos(-orientation_rad) * r, z) * 180.f / M_PI);
+  } else {
+    webPointerProperties.tiltX = webPointerProperties.tiltY = 0;
+  }
+
+  webPointerProperties.button = ToWebPointerButton(android_buttons_changed);
+  webPointerProperties.pointerType = ToWebPointerType(tool_type);
 }
 
 int WebEventModifiersToEventFlags(int modifiers) {
