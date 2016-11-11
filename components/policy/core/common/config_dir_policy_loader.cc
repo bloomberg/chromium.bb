@@ -142,8 +142,8 @@ void ConfigDirPolicyLoader::LoadFromPath(const base::FilePath& path,
   for (std::set<base::FilePath>::reverse_iterator config_file_iter =
            files.rbegin(); config_file_iter != files.rend();
        ++config_file_iter) {
-    JSONFileValueDeserializer deserializer(*config_file_iter);
-    deserializer.set_allow_trailing_comma(true);
+    JSONFileValueDeserializer deserializer(*config_file_iter,
+                                           base::JSON_ALLOW_TRAILING_COMMAS);
     int error_code = 0;
     std::string error_msg;
     std::unique_ptr<base::Value> value =

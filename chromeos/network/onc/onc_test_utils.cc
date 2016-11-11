@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "chromeos/chromeos_test_utils.h"
@@ -50,8 +51,8 @@ std::unique_ptr<base::DictionaryValue> ReadTestDictionary(
     return dict;
   }
 
-  JSONFileValueDeserializer deserializer(path);
-  deserializer.set_allow_trailing_comma(true);
+  JSONFileValueDeserializer deserializer(path,
+                                         base::JSON_ALLOW_TRAILING_COMMAS);
 
   std::string error_message;
   std::unique_ptr<base::Value> content =

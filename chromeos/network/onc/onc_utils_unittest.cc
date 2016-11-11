@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/json/json_file_value_serializer.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -28,8 +29,8 @@ std::unique_ptr<base::Value> ReadTestJson(const std::string& filename) {
     NOTREACHED() << "Unable to get test file path for: " << filename;
     return result;
   }
-  JSONFileValueDeserializer deserializer(path);
-  deserializer.set_allow_trailing_comma(true);
+  JSONFileValueDeserializer deserializer(path,
+                                         base::JSON_ALLOW_TRAILING_COMMAS);
   std::string error_message;
   result = deserializer.Deserialize(nullptr, &error_message);
   CHECK(result != nullptr) << "Couldn't json-deserialize file: " << filename

@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "chromeos/network/onc/onc_signature.h"
@@ -89,8 +90,8 @@ void PrintHelp() {
 std::unique_ptr<base::DictionaryValue> ReadDictionary(
     const std::string& filename) {
   base::FilePath path(filename);
-  JSONFileValueDeserializer deserializer(path);
-  deserializer.set_allow_trailing_comma(true);
+  JSONFileValueDeserializer deserializer(path,
+                                         base::JSON_ALLOW_TRAILING_COMMAS);
 
   std::string json_error;
   std::unique_ptr<base::Value> value =
