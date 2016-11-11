@@ -353,6 +353,22 @@ by a child template that "extends" this file.
              android:launchMode="singleTask"
              android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
              android:hardwareAccelerated="false">
+            {% set enable_webvr = enable_webvr|default(0) %}
+            {% if enable_vr_shell == "true" or enable_webvr == "true" %}
+            <intent-filter>
+                <!-- Add a dummy action to match intent without any action. -->
+                <action android:name="org.chromium.chrome.browser.dummy.action" />
+                <!--
+                  Daydream api categorizes an activity to three categories: Cardboard only, hybrid
+                  or Daydream. It does so by testing if intents can be resolved by the activity
+                  that requests it.
+                  In Chrome, CTA is the activity that uses Daydream api and we want to be in hybrid
+                  category. So add an intent filter that could pass Daydream tests here.
+                -->
+                <category android:name="com.google.intent.category.DAYDREAM" />
+                <category android:name="com.google.intent.category.CARDBOARD" />
+            </intent-filter>
+            {% endif %}
         </activity>
         <activity android:name="org.chromium.chrome.browser.ChromeTabbedActivity2"
              android:theme="@style/TabbedModeTheme"
