@@ -1220,6 +1220,6 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
                 resourceManager, fullscreenManager);
         assert mSceneLayer != null;
         mSceneLayer.pushLayers(getContext(), viewport, contentViewport, this, layerTitleCache,
-                tabContentManager, resourceManager);
+                tabContentManager, resourceManager, fullscreenManager);
     }
 }

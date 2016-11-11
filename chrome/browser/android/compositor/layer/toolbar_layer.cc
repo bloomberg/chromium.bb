@@ -4,12 +4,10 @@
 
 #include "chrome/browser/android/compositor/layer/toolbar_layer.h"
 
-#include "base/feature_list.h"
 #include "cc/layers/nine_patch_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/ui_resource_layer.h"
 #include "cc/resources/scoped_ui_resource.h"
-#include "chrome/browser/android/chrome_feature_list.h"
 #include "content/public/browser/android/compositor.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/resources/resource_manager.h"
@@ -35,7 +33,8 @@ void ToolbarLayer::PushResource(
     float url_bar_alpha,
     float view_height,
     bool show_debug,
-    bool clip_shadow) {
+    bool clip_shadow,
+    bool browser_controls_at_bottom) {
   ui::ResourceManager::Resource* resource =
       resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_DYNAMIC,
                                      toolbar_resource_id);
@@ -60,7 +59,7 @@ void ToolbarLayer::PushResource(
   toolbar_root_->SetBounds(resource->padding.size());
 
   gfx::PointF background_position(resource->padding.origin());
-  if (is_chrome_home_enabled_) {
+  if (browser_controls_at_bottom) {
     float layer_offset =
         resource->size.height() - resource->padding.size().height();
     layer_->SetPosition(gfx::PointF(0, view_height));
@@ -154,9 +153,7 @@ void ToolbarLayer::UpdateProgressBar(int progress_bar_x,
 }
 
 ToolbarLayer::ToolbarLayer(ui::ResourceManager* resource_manager)
-    : is_chrome_home_enabled_(
-          base::FeatureList::IsEnabled(chrome::android::kChromeHomeFeature)),
-      resource_manager_(resource_manager),
+    : resource_manager_(resource_manager),
       layer_(cc::Layer::Create()),
       toolbar_root_(cc::Layer::Create()),
       toolbar_background_layer_(cc::SolidColorLayer::Create()),
@@ -193,10 +190,6 @@ ToolbarLayer::ToolbarLayer(ui::ResourceManager* resource_manager)
   debug_layer_->SetIsDrawable(true);
   debug_layer_->SetBackgroundColor(SK_ColorGREEN);
   debug_layer_->SetOpacity(0.5f);
-
-
-  is_chrome_home_enabled_ =
-      base::FeatureList::IsEnabled(chrome::android::kChromeHomeFeature);
 }
 
 ToolbarLayer::~ToolbarLayer() {

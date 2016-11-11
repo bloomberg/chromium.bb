@@ -255,6 +255,13 @@ public class ChromeFullscreenManager
         updateControlOffset();
     }
 
+    /**
+     * @return Whether or not the browser controls are attached to the bottom of the screen.
+     */
+    public boolean areBrowserControlsAtBottom() {
+        return mIsBottomControls;
+    }
+
     @Override
     public void onActivityStateChange(Activity activity, int newState) {
         if (newState == ActivityState.STOPPED) {

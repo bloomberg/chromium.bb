@@ -93,6 +93,7 @@ static void PositionPadding(scoped_refptr<cc::SolidColorLayer> padding_layer,
 
 void TabLayer::SetProperties(int id,
                              bool can_use_live_layer,
+                             bool browser_controls_at_bottom,
                              int toolbar_resource_id,
                              int close_button_resource_id,
                              int shadow_resource_id,
@@ -236,7 +237,8 @@ void TabLayer::SetProperties(int id,
                                toolbar_textbox_alpha,
                                view_height,
                                false,
-                               false);
+                               false,
+                               browser_controls_at_bottom);
   toolbar_layer_->UpdateProgressBar(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
   float toolbar_impact_height = 0;

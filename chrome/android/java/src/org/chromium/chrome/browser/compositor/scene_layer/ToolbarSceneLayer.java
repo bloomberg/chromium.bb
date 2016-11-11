@@ -107,7 +107,7 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
         nativeUpdateToolbarLayer(mNativePtr, resourceManager, R.id.control_container,
                 browserControlsBackgroundColor, R.drawable.textbox, browserControlsUrlBarAlpha,
                 fullscreenManager.getTopControlOffset(), mViewport.height(), useTexture,
-                showShadow);
+                showShadow, fullscreenManager.areBrowserControlsAtBottom());
 
         if (mProgressBarDrawingInfo == null) return;
         nativeUpdateProgressBar(mNativePtr,
@@ -252,7 +252,8 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
             float topOffset,
             float viewHeight,
             boolean visible,
-            boolean showShadow);
+            boolean showShadow,
+            boolean browserControlsAtBottom);
     private native void nativeUpdateProgressBar(
             long nativeToolbarSceneLayer,
             int progressBarX,

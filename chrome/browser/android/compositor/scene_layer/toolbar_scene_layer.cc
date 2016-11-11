@@ -41,7 +41,8 @@ void ToolbarSceneLayer::UpdateToolbarLayer(
     jfloat top_offset,
     jfloat view_height,
     bool visible,
-    bool show_shadow) {
+    bool show_shadow,
+    bool browser_controls_at_bottom) {
   // If the toolbar layer has not been created yet, create it.
   if (!toolbar_layer_) {
     ui::ResourceManager* resource_manager =
@@ -57,7 +58,7 @@ void ToolbarSceneLayer::UpdateToolbarLayer(
     toolbar_layer_->PushResource(toolbar_resource_id, toolbar_background_color,
                                  false, SK_ColorWHITE, url_bar_resource_id,
                                  url_bar_alpha, view_height, false,
-                                 !show_shadow);
+                                 !show_shadow, browser_controls_at_bottom);
   }
 }
 

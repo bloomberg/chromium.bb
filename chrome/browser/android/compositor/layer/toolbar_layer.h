@@ -37,7 +37,8 @@ class ToolbarLayer : public Layer {
                     float url_bar_alpha,
                     float view_height,
                     bool show_debug,
-                    bool clip_shadow);
+                    bool clip_shadow,
+                    bool browser_controls_at_bottom);
 
   void UpdateProgressBar(int progress_bar_x,
                          int progress_bar_y,
@@ -55,8 +56,6 @@ class ToolbarLayer : public Layer {
   ~ToolbarLayer() override;
 
  private:
-  bool is_chrome_home_enabled_;
-
   ui::ResourceManager* resource_manager_;
 
   scoped_refptr<cc::Layer> layer_;
