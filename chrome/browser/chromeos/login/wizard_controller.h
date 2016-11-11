@@ -154,6 +154,7 @@ class WizardController : public BaseScreenDelegate,
   static const char kKioskAutolaunchScreenName[];
   static const char kErrorScreenName[];
   static const char kTermsOfServiceScreenName[];
+  static const char kArcTermsOfServiceScreenName[];
   static const char kAutoEnrollmentCheckScreenName[];
   static const char kWrongHWIDScreenName[];
   static const char kSupervisedUserCreationScreenName[];
@@ -178,6 +179,7 @@ class WizardController : public BaseScreenDelegate,
   void ShowEnableDebuggingScreen();
   void ShowKioskEnableScreen();
   void ShowTermsOfServiceScreen();
+  void ShowArcTermsOfServiceScreen();
   void ShowWrongHWIDScreen();
   void ShowAutoEnrollmentCheckScreen();
   void ShowSupervisedUserCreationScreen();
@@ -209,6 +211,7 @@ class WizardController : public BaseScreenDelegate,
   void OnWrongHWIDWarningSkipped();
   void OnTermsOfServiceDeclined();
   void OnTermsOfServiceAccepted();
+  void OnArcTermsOfServiceFinished();
   void OnControllerPairingFinished();
   void OnAutoEnrollmentCheckCompleted();
 

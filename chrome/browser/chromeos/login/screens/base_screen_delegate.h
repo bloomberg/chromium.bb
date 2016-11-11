@@ -53,6 +53,7 @@ class BaseScreenDelegate {
     CONTROLLER_PAIRING_FINISHED = 20,
     ENABLE_DEBUGGING_FINISHED = 21,
     ENABLE_DEBUGGING_CANCELED = 22,
+    ARC_TERMS_OF_SERVICE_FINISHED = 23,
     EXIT_CODES_COUNT  // not a real code, must be the last
   };
 

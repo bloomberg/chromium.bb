@@ -18,6 +18,7 @@
 <include src="oobe_screen_user_image.js">
 
 <include src="screen_app_launch_splash.js">
+<include src="screen_arc_terms_of_service.js">
 <include src="screen_error_message.js">
 <include src="screen_gaia_signin.js">
 <include src="screen_password_changed.js">

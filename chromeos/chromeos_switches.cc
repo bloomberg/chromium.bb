@@ -218,6 +218,9 @@ const char kEnableAd[] = "enable-ad";
 // Enables starting the ARC instance upon session start.
 const char kEnableArc[] = "enable-arc";
 
+// Enables ARC OptIn flow in OOBE.
+const char kEnableArcOOBEOptIn[] = "enable-arc-oobe-optin";
+
 // Enables Data Saver prompt on cellular networks.
 const char kEnableDataSaverPrompt[] = "enable-datasaver-prompt";
 

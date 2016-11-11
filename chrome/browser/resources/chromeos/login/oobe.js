@@ -110,6 +110,7 @@ cr.define('cr.ui.Oobe', function() {
       login.PasswordChangedScreen.register();
       login.SupervisedUserCreationScreen.register();
       login.TermsOfServiceScreen.register();
+      login.ArcTermsOfServiceScreen.register();
       login.AppLaunchSplashScreen.register();
       login.ConfirmPasswordScreen.register();
       login.FatalErrorScreen.register();

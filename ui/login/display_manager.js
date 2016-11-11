@@ -29,6 +29,7 @@
 /** @const */ var SCREEN_FATAL_ERROR = 'fatal-error';
 /** @const */ var SCREEN_KIOSK_ENABLE = 'kiosk-enable';
 /** @const */ var SCREEN_TERMS_OF_SERVICE = 'terms-of-service';
+/** @const */ var SCREEN_ARC_TERMS_OF_SERVICE = 'arc-tos';
 /** @const */ var SCREEN_WRONG_HWID = 'wrong-hwid';
 /** @const */ var SCREEN_DEVICE_DISABLED = 'device-disabled';
 /** @const */ var SCREEN_UNRECOVERABLE_CRYPTOHOME_ERROR =
@@ -133,6 +134,7 @@ cr.define('cr.ui.login', function() {
     SCREEN_TPM_ERROR,
     SCREEN_PASSWORD_CHANGED,
     SCREEN_TERMS_OF_SERVICE,
+    SCREEN_ARC_TERMS_OF_SERVICE,
     SCREEN_WRONG_HWID,
     SCREEN_CONFIRM_PASSWORD,
     SCREEN_FATAL_ERROR

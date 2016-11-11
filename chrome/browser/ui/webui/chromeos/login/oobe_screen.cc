@@ -30,6 +30,7 @@ const char* kScreenNames[] = {
     "password-changed",                // SCREEN_PASSWORD_CHANGED
     "supervised-user-creation",        // SCREEN_CREATE_SUPERVISED_USER_FLOW
     "terms-of-service",                // SCREEN_TERMS_OF_SERVICE
+    "arc-tos",                         // SCREEN_ARC_TERMS_OF_SERVICE
     "wrong-hwid",                      // SCREEN_WRONG_HWID
     "auto-enrollment-check",           // SCREEN_AUTO_ENROLLMENT_CHECK
     "app-launch-splash",               // SCREEN_APP_LAUNCH_SPLASH

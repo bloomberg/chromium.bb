@@ -29,6 +29,7 @@ class DictionaryValue;
 
 namespace chromeos {
 class AppLaunchSplashScreenActor;
+class ArcTermsOfServiceScreenActor;
 class AutoEnrollmentCheckScreenActor;
 class BaseScreenHandler;
 class ControllerPairingScreenActor;
@@ -102,6 +103,7 @@ class OobeUI : public content::WebUIController,
   KioskAutolaunchScreenActor* GetKioskAutolaunchScreenActor();
   KioskEnableScreenActor* GetKioskEnableScreenActor();
   TermsOfServiceScreenActor* GetTermsOfServiceScreenActor();
+  ArcTermsOfServiceScreenActor* GetArcTermsOfServiceScreenActor();
   UserImageView* GetUserImageView();
   ErrorScreen* GetErrorScreen();
   WrongHWIDScreenActor* GetWrongHWIDScreenActor();
@@ -214,6 +216,7 @@ class OobeUI : public content::WebUIController,
   SigninScreenHandler* signin_screen_handler_ = nullptr;
 
   TermsOfServiceScreenActor* terms_of_service_screen_actor_ = nullptr;
+  ArcTermsOfServiceScreenActor* arc_terms_of_service_screen_actor_ = nullptr;
   UserImageView* user_image_view_ = nullptr;
 
   std::vector<BaseScreenHandler*> handlers_;  // Non-owning pointers.

@@ -1223,7 +1223,9 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeResumeTest,
 // TODO(dzhioev): Add tests for controller/host pairing flow.
 // http://crbug.com/375191
 
-static_assert(BaseScreenDelegate::EXIT_CODES_COUNT == 23,
+// TODO(khmel): Add tests for Arc OptIn flow.
+// http://crbug.com/651144
+static_assert(BaseScreenDelegate::EXIT_CODES_COUNT == 24,
               "tests for new control flow are missing");
 
 }  // namespace chromeos

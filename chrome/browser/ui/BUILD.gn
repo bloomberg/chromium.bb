@@ -231,6 +231,8 @@ split_static_library("ui") {
     "webui/chromeos/keyboard_overlay_ui.h",
     "webui/chromeos/login/app_launch_splash_screen_handler.cc",
     "webui/chromeos/login/app_launch_splash_screen_handler.h",
+    "webui/chromeos/login/arc_terms_of_service_screen_handler.cc",
+    "webui/chromeos/login/arc_terms_of_service_screen_handler.h",
     "webui/chromeos/login/authenticated_user_email_retriever.cc",
     "webui/chromeos/login/authenticated_user_email_retriever.h",
     "webui/chromeos/login/auto_enrollment_check_screen_handler.cc",

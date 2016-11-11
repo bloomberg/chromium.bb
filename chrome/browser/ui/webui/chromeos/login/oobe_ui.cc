@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/webui/about_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/auto_enrollment_check_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/controller_pairing_screen_handler.h"
@@ -67,6 +68,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
+#include "chrome/grit/component_extension_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
@@ -113,6 +115,8 @@ const char kCustomElementsPinKeyboardJSPath[] =
 const char kEnrollmentHTMLPath[] = "enrollment.html";
 const char kEnrollmentCSSPath[] = "enrollment.css";
 const char kEnrollmentJSPath[] = "enrollment.js";
+const char kArcPlaystoreCSSPath[] = "playstore.css";
+const char kArcPlaystoreJSPath[] = "playstore.js";
 
 // Creates a WebUIDataSource for chrome://oobe
 content::WebUIDataSource* CreateOobeUIDataSource(
@@ -151,6 +155,11 @@ content::WebUIDataSource* CreateOobeUIDataSource(
     source->AddResourcePath(kCustomElementsUserPodHTMLPath,
                             IDR_CUSTOM_ELEMENTS_USER_POD_HTML);
   }
+
+  // Required for postprocessing of Goolge PlayStore Terms.
+  source->AddResourcePath(kArcPlaystoreCSSPath, IDR_ARC_SUPPORT_PLAYSTORE_CSS);
+  source->AddResourcePath(kArcPlaystoreJSPath, IDR_ARC_SUPPORT_PLAYSTORE_JS);
+
   source->AddResourcePath(kKeyboardUtilsJSPath, IDR_KEYBOARD_UTILS_JS);
   source->OverrideContentSecurityPolicyChildSrc(
       base::StringPrintf(
@@ -284,6 +293,11 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   terms_of_service_screen_actor_ = terms_of_service_screen_handler;
   AddScreenHandler(terms_of_service_screen_handler);
 
+  ArcTermsOfServiceScreenHandler* arc_terms_of_service_screen_handler =
+      new ArcTermsOfServiceScreenHandler();
+  arc_terms_of_service_screen_actor_ = arc_terms_of_service_screen_handler;
+  AddScreenHandler(arc_terms_of_service_screen_handler);
+
   UserImageScreenHandler* user_image_screen_handler =
       new UserImageScreenHandler();
   user_image_view_ = user_image_screen_handler;
@@ -406,6 +420,10 @@ KioskEnableScreenActor* OobeUI::GetKioskEnableScreenActor() {
 
 TermsOfServiceScreenActor* OobeUI::GetTermsOfServiceScreenActor() {
   return terms_of_service_screen_actor_;
+}
+
+ArcTermsOfServiceScreenActor* OobeUI::GetArcTermsOfServiceScreenActor() {
+  return arc_terms_of_service_screen_actor_;
 }
 
 WrongHWIDScreenActor* OobeUI::GetWrongHWIDScreenActor() {

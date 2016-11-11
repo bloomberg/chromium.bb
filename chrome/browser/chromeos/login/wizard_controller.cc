@@ -27,12 +27,14 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
+#include "chrome/browser/chromeos/login/screens/arc_terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/screens/device_disabled_screen.h"
 #include "chrome/browser/chromeos/login/screens/enable_debugging_screen.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
@@ -100,14 +102,14 @@ static int kShowDelayMs = 400;
 const unsigned int kResolveTimeZoneTimeoutSeconds = 60;
 
 // Stores the list of all screens that should be shown when resuming OOBE.
-const char *kResumableScreens[] = {
-  chromeos::WizardController::kNetworkScreenName,
-  chromeos::WizardController::kUpdateScreenName,
-  chromeos::WizardController::kEulaScreenName,
-  chromeos::WizardController::kEnrollmentScreenName,
-  chromeos::WizardController::kTermsOfServiceScreenName,
-  chromeos::WizardController::kAutoEnrollmentCheckScreenName
-};
+const char* kResumableScreens[] = {
+    chromeos::WizardController::kNetworkScreenName,
+    chromeos::WizardController::kUpdateScreenName,
+    chromeos::WizardController::kEulaScreenName,
+    chromeos::WizardController::kEnrollmentScreenName,
+    chromeos::WizardController::kTermsOfServiceScreenName,
+    chromeos::WizardController::kArcTermsOfServiceScreenName,
+    chromeos::WizardController::kAutoEnrollmentCheckScreenName};
 
 // Checks flag for HID-detection screen show.
 bool CanShowHIDDetectionScreen() {
@@ -213,6 +215,7 @@ const char WizardController::kKioskEnableScreenName[] = "kiosk-enable";
 const char WizardController::kKioskAutolaunchScreenName[] = "autolaunch";
 const char WizardController::kErrorScreenName[] = "error-message";
 const char WizardController::kTermsOfServiceScreenName[] = "tos";
+const char WizardController::kArcTermsOfServiceScreenName[] = "arc_tos";
 const char WizardController::kAutoEnrollmentCheckScreenName[] =
   "auto-enrollment-check";
 const char WizardController::kWrongHWIDScreenName[] = "wrong-hwid";
@@ -390,6 +393,9 @@ BaseScreen* WizardController::CreateScreen(const std::string& screen_name) {
   } else if (screen_name == kTermsOfServiceScreenName) {
     return new TermsOfServiceScreen(this,
                                     oobe_ui_->GetTermsOfServiceScreenActor());
+  } else if (screen_name == kArcTermsOfServiceScreenName) {
+    return new ArcTermsOfServiceScreen(
+        this, oobe_ui_->GetArcTermsOfServiceScreenActor());
   } else if (screen_name == kWrongHWIDScreenName) {
     return new WrongHWIDScreen(this, oobe_ui_->GetWrongHWIDScreenActor());
   } else if (screen_name == kSupervisedUserCreationScreenName) {
@@ -533,17 +539,47 @@ void WizardController::ShowEnableDebuggingScreen() {
 void WizardController::ShowTermsOfServiceScreen() {
   // Only show the Terms of Service when logging into a public account and Terms
   // of Service have been specified through policy. In all other cases, advance
-  // to the user image screen immediately.
+  // to the Arc opt-in screen immediately.
   if (!user_manager::UserManager::Get()->IsLoggedInAsPublicAccount() ||
       !ProfileManager::GetActiveUserProfile()->GetPrefs()->IsManagedPreference(
           prefs::kTermsOfServiceURL)) {
-    ShowUserImageScreen();
+    ShowArcTermsOfServiceScreen();
     return;
   }
 
   VLOG(1) << "Showing Terms of Service screen.";
   SetStatusAreaVisible(true);
   SetCurrentScreen(GetScreen(kTermsOfServiceScreenName));
+}
+
+void WizardController::ShowArcTermsOfServiceScreen() {
+  bool show_arc_terms = false;
+  const Profile* profile = ProfileManager::GetActiveUserProfile();
+
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(chromeos::switches::kEnableArcOOBEOptIn)) {
+    VLOG(1) << "Skip Arc Terms of Service screen because Arc OOBE OptIn is "
+            << "disabled.";
+  } else if (!user_manager::UserManager::Get()->IsUserLoggedIn()) {
+    VLOG(1) << "Skip Arc Terms of Service screen because user is not "
+            << "logged in.";
+  } else if (!arc::ArcAuthService::IsAllowedForProfile(profile)) {
+    VLOG(1) << "Skip Arc Terms of Service screen because Arc is not allowed.";
+  } else if (profile->GetPrefs()->IsManagedPreference(prefs::kArcEnabled) &&
+             !profile->GetPrefs()->GetBoolean(prefs::kArcEnabled)) {
+    VLOG(1) << "Skip Arc Terms of Service screen because Arc is disabled.";
+  } else {
+    show_arc_terms = true;
+  }
+
+  if (show_arc_terms) {
+    VLOG(1) << "Showing Arc Terms of Service screen.";
+    SetStatusAreaVisible(true);
+    SetCurrentScreen(GetScreen(kArcTermsOfServiceScreenName));
+  } else {
+    ShowUserImageScreen();
+  }
 }
 
 void WizardController::ShowWrongHWIDScreen() {
@@ -809,7 +845,14 @@ void WizardController::OnTermsOfServiceDeclined() {
 }
 
 void WizardController::OnTermsOfServiceAccepted() {
-  // If the user accepts the Terms of Service, advance to the user image screen.
+  // If the user accepts the Terms of Service, advance to the PlayStore terms
+  // of serice.
+  ShowArcTermsOfServiceScreen();
+}
+
+void WizardController::OnArcTermsOfServiceFinished() {
+  // If the user finished with the PlayStore Terms of Service, advance to the
+  // user image screen.
   ShowUserImageScreen();
 }
 
@@ -996,6 +1039,8 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
     ShowEnrollmentScreen();
   } else if (screen_name == kTermsOfServiceScreenName) {
     ShowTermsOfServiceScreen();
+  } else if (screen_name == kArcTermsOfServiceScreenName) {
+    ShowArcTermsOfServiceScreen();
   } else if (screen_name == kWrongHWIDScreenName) {
     ShowWrongHWIDScreen();
   } else if (screen_name == kAutoEnrollmentCheckScreenName) {
@@ -1106,6 +1151,9 @@ void WizardController::OnExit(BaseScreen& /* screen */,
       break;
     case TERMS_OF_SERVICE_ACCEPTED:
       OnTermsOfServiceAccepted();
+      break;
+    case ARC_TERMS_OF_SERVICE_FINISHED:
+      OnArcTermsOfServiceFinished();
       break;
     case WRONG_HWID_WARNING_SKIPPED:
       OnWrongHWIDWarningSkipped();

@@ -6393,6 +6393,18 @@ All users must sign out to continue.
   <message name="IDS_ARC_OPT_IN_DIALOG_BACKUP_RESTORE" desc="Message in the opt-in dialog for users to enable Backup and Restore for Android apps.">
     Automatically back up and restore Play app data to Google Drive. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-backup-restore"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
+  <message name="IDS_ARC_OOBE_TERMS_DIALOG_METRICS_MANAGED_ENABLED" desc="Message in the Arc Terms OOBE dialog in case metrics are managed on the device and on.">
+    This device currently sends diagnostic and usage data to Google. This setting is enforced by the owner. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
+  <message name="IDS_ARC_OOBE_TERMS_DIALOG_METRICS_MANAGED_DISABLED" desc="Message in the Arc Terms OOBE dialog in case metrics are enabled on the device and off.">
+    The owner may choose to send diagnostic and usage data for this device to Google. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK1">&lt;a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
+  <message name="IDS_ARC_OOBE_TERMS_DIALOG_METRICS_ENABLED" desc="Message in the Arc Terms OOBE dialog in case metrics are already enabled on the device. User has no way to deactivate them using this dialog.">
+    This device currently sends diagnostic and usage data to Google. You can change this at any time in your device settings. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
+  <message name="IDS_ARC_OOBE_TERMS_DIALOG_METRICS_DISABLED" desc="Message in the Arc Terms OOBE dialog in case metrics are disabled on the device. User has an option to active them using this dialog">
+    Automatically send diagnostic and usage data to Google. You can change this at any time in your device settings. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-metrics"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+  </message>
   <message name="IDS_ARC_OPT_IN_LOCATION_SETTING" desc="Message in the opt-in dialog for Android apps for the user to turn on Google location services">
     Let Google’s location service help apps find your location quickly and accurately, which can reduce battery consumption. Anonymous location data will be sent to Google, even when no apps are running. <ph name="BEGIN_LINK1">&lt;a href="#" id="learn-more-link-location-service"&gt;</ph>Learn More<ph name="END_LINK1">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
   </message>
@@ -6464,6 +6476,27 @@ All users must sign out to continue.
   </message>
   <message name="IDS_ARC_CRITICALLY_LOW_DISK_NOTIFICATION_MESSAGE" desc="Notification text warning users that they are critically low on disk space and Android apps can not be launched.">
     Free up disk space to launch Android apps.
+  </message>
+  <message name="IDS_ARC_OOBE_TERMS_HEADING" desc="Heading of the Arc Terms OOBE dialog.">
+    Google Play Terms of Service
+  </message>
+  <message name="IDS_ARC_OOBE_TERMS_LOADING" desc="Loading message of the Arc Terms OOBE dialog.">
+    Loading...
+  </message>
+  <message name="IDS_ARC_OOBE_TERMS_LOAD_ERROR" desc="Load error message of the Arc Terms OOBE dialog.">
+    Google Play Terms of Service cannot be loaded. Please retry.
+  </message>
+  <message name="IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT" desc="Accept button of the Arc Terms OOBE dialog.">
+    Agree
+  </message>
+  <message name="IDS_ARC_OOBE_TERMS_BUTTON_SKIP" desc="Skip button of the Arc Terms OOBE dialog.">
+    Skip
+  </message>
+  <message name="IDS_ARC_OOBE_TERMS_BUTTON_RETRY" desc="Retry button of the Arc Terms OOBE dialog that reloads Play Store terms.">
+    Retry
+  </message>
+  <message name="IDS_ARC_OOBE_TERMS_POPUP_HELP_CLOSE_BUTTON" desc="Close button of the popup local help of Arc Play Store Terms OOBE dialog.">
+    Close
   </message>
   <message name="IDS_FLAGS_ARC_BOOT_COMPLETED" desc="Name of the flag for blocking the ACTION_BOOT_COMPLETED broadcast for third-party apps on ARC.">
     Load Android apps automatically
