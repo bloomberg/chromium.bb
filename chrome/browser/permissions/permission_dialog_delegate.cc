@@ -7,10 +7,12 @@
 #include <utility>
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/android/resource_mapper.h"
+#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/geolocation/geolocation_infobar_delegate_android.h"
 #include "chrome/browser/media/midi_permission_infobar_delegate_android.h"
 #include "chrome/browser/media/protected_media_identifier_infobar_delegate_android.h"
@@ -20,7 +22,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "components/variations/variations_associated_data.h"
-#include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/PermissionDialogController_jni.h"
 #include "jni/PermissionDialogDelegate_jni.h"
@@ -90,13 +91,15 @@ bool PermissionDialogDelegate::RegisterPermissionDialogDelegate(JNIEnv* env) {
 
 ScopedJavaLocalRef<jobject> PermissionDialogDelegate::CreateJavaDelegate(
     JNIEnv* env) {
-  content::ContentViewCore* cvc =
-      content::ContentViewCore::FromWebContents(web_contents());
-  DCHECK(cvc);
+  TabAndroid* tab = TabAndroid::FromWebContents(web_contents());
+  DCHECK(tab);
+
+  std::vector<int> content_settings{infobar_delegate_->content_settings()};
 
   return Java_PermissionDialogDelegate_create(
       env, reinterpret_cast<uintptr_t>(this),
-      cvc->GetWindowAndroid()->GetJavaObject(),
+      tab->GetJavaObject(),
+      base::android::ToJavaIntArray(env, content_settings).obj(),
       ResourceMapper::MapFromChromiumId(infobar_delegate_->GetIconId()),
       ConvertUTF16ToJavaString(env, infobar_delegate_->GetMessageText()),
       ConvertUTF16ToJavaString(env, infobar_delegate_->GetLinkText()),

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.permissions;
 
 import android.app.Activity;
 import android.content.DialogInterface;
+import android.support.annotation.IntDef;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.SwitchCompat;
 import android.text.SpannableStringBuilder;
@@ -21,6 +22,8 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -33,10 +36,22 @@ import java.util.List;
  * visible on the screen at once. Any additional request for a modal permissions dialog is queued,
  * and will be displayed once the user responds to the current dialog.
  */
-public class PermissionDialogController {
+public class PermissionDialogController implements AndroidPermissionRequester.RequestDelegate {
+    private static final int NOT_DECIDED = 0;
+    private static final int ACCEPTED = 1;
+    private static final int CANCELED = 2;
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({NOT_DECIDED, ACCEPTED, CANCELED})
+    private @interface Decision {}
+
     private AlertDialog mDialog;
     private SwitchCompat mSwitchView;
+    private PermissionDialogDelegate mDialogDelegate;
     private List<PermissionDialogDelegate> mRequestQueue;
+
+    /** Whether a decision has been made for the current dialog. */
+    @Decision private int mDecision;
 
     // Static holder to ensure safe initialization of the singleton instance.
     private static class Holder {
@@ -50,6 +65,7 @@ public class PermissionDialogController {
 
     private PermissionDialogController() {
         mRequestQueue = new LinkedList<>();
+        mDecision = NOT_DECIDED;
     }
 
     /**
@@ -83,14 +99,27 @@ public class PermissionDialogController {
         return mDialog;
     }
 
+    @Override
+    public void onAndroidPermissionAccepted() {
+        mDialogDelegate.onAccept(mSwitchView.isChecked());
+        scheduleDisplay();
+    }
+
+    @Override
+    public void onAndroidPermissionCanceled() {
+        mDialogDelegate.onDismiss();
+        scheduleDisplay();
+    }
+
     /**
      * Shows the dialog asking the user for a web API permission.
      */
     public void showDialog() {
         if (mRequestQueue.isEmpty()) return;
 
-        final PermissionDialogDelegate delegate = mRequestQueue.remove(0);
-        Activity activity = delegate.getActivity();
+        mDecision = NOT_DECIDED;
+        mDialogDelegate = mRequestQueue.remove(0);
+        Activity activity = mDialogDelegate.getActivity();
         LayoutInflater inflater = LayoutInflater.from(activity);
         View view = inflater.inflate(R.layout.permission_dialog, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.AlertDialogTheme);
@@ -100,17 +129,18 @@ public class PermissionDialogController {
         mDialog.setCanceledOnTouchOutside(false);
 
         TextView messageTextView = (TextView) view.findViewById(R.id.text);
-        messageTextView.setText(prepareMainMessageString(delegate));
+        messageTextView.setText(prepareMainMessageString(mDialogDelegate));
         messageTextView.setVisibility(View.VISIBLE);
-        messageTextView.announceForAccessibility(delegate.getMessageText());
-        messageTextView.setCompoundDrawablesWithIntrinsicBounds(delegate.getDrawableId(), 0, 0, 0);
+        messageTextView.announceForAccessibility(mDialogDelegate.getMessageText());
+        messageTextView.setCompoundDrawablesWithIntrinsicBounds(
+                mDialogDelegate.getDrawableId(), 0, 0, 0);
         messageTextView.setMovementMethod(LinkMovementMethod.getInstance());
 
         mSwitchView = (SwitchCompat) view.findViewById(R.id.permission_dialog_persist_toggle);
         mSwitchView.setChecked(true);
         TextView toggleTextView =
                 (TextView) view.findViewById(R.id.permission_dialog_persist_message);
-        if (delegate.shouldShowPersistenceToggle()) {
+        if (mDialogDelegate.shouldShowPersistenceToggle()) {
             mSwitchView.setVisibility(View.VISIBLE);
             String toggleMessage =
                     mDialog.getContext().getString(R.string.permission_prompt_persist_text);
@@ -128,20 +158,19 @@ public class PermissionDialogController {
         // Set the buttons to call the appropriate delegate methods. When the dialog is dismissed,
         // the delegate's native pointers are freed, and the next queued dialog (if any) is
         // displayed.
-        mDialog.setButton(DialogInterface.BUTTON_POSITIVE,
-                delegate.getPrimaryButtonText(),
+        mDialog.setButton(DialogInterface.BUTTON_POSITIVE, mDialogDelegate.getPrimaryButtonText(),
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
-                        delegate.onAccept(mSwitchView.isChecked());
+                        mDecision = ACCEPTED;
                     }
                 });
 
-        mDialog.setButton(DialogInterface.BUTTON_NEGATIVE, delegate.getSecondaryButtonText(),
+        mDialog.setButton(DialogInterface.BUTTON_NEGATIVE, mDialogDelegate.getSecondaryButtonText(),
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
-                        delegate.onCancel(mSwitchView.isChecked());
+                        mDecision = CANCELED;
                     }
                 });
 
@@ -151,8 +180,29 @@ public class PermissionDialogController {
             @Override
             public void onDismiss(DialogInterface dialog) {
                 mDialog = null;
-                delegate.onDismiss();
-                scheduleDisplay();
+                if (mDecision == ACCEPTED) {
+                    // Request Android permissions if necessary. This will call back into either
+                    // onAndroidPermissionAccepted or onAndroidPermissionCanceled, which will
+                    // schedule the next permission dialog.
+                    AndroidPermissionRequester requester = new AndroidPermissionRequester(
+                            mDialogDelegate.getWindow(), PermissionDialogController.this,
+                            mDialogDelegate.getContentSettings());
+                    if (requester.shouldSkipPermissionRequest()) {
+                        onAndroidPermissionAccepted();
+                    } else {
+                        requester.requestAndroidPermissions();
+                    }
+                } else {
+                    // Otherwise, run the necessary delegate callback immediately and schedule the
+                    // next dialog.
+                    if (mDecision == CANCELED) {
+                        mDialogDelegate.onCancel(mSwitchView.isChecked());
+                    } else {
+                        mDialogDelegate.onDismiss();
+                    }
+                    mDialogDelegate.destroy();
+                    scheduleDisplay();
+                }
             }
         });
 
@@ -176,6 +226,7 @@ public class PermissionDialogController {
             fullString.setSpan(new ClickableSpan() {
                 @Override
                 public void onClick(View view) {
+                    mDecision = NOT_DECIDED;
                     delegate.onLinkClicked();
                     if (mDialog != null) mDialog.dismiss();
                 }
