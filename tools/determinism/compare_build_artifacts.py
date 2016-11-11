@@ -596,7 +596,7 @@ def compare_deps(first_dir, second_dir, targets):
 
 
 def compare_build_artifacts(first_dir, second_dir, target_platform,
-                            recursive=False):
+                            json_output, recursive=False):
   """Compares the artifacts from two distinct builds."""
   if not os.path.isdir(first_dir):
     print >> sys.stderr, '%s isn\'t a valid directory.' % first_dir
@@ -665,6 +665,17 @@ def compare_build_artifacts(first_dir, second_dir, target_platform,
   diffs_to_investigate = sorted(set(all_diffs).difference(missing_files))
   compare_deps(first_dir, second_dir, diffs_to_investigate)
 
+  if json_output:
+    try:
+      out = {
+          'expected_diffs': expected_diffs,
+          'unexpected_diffs': unexpected_diffs,
+      }
+      with open(json_output) as f:
+        json.dump(out, f)
+    except Exception as e:
+      print('failed to write json output: %s' % e)
+
   return int(bool(unexpected_diffs))
 
 
@@ -676,6 +687,7 @@ def main():
       '-s', '--second-build-dir', help='The second build directory.')
   parser.add_option('-r', '--recursive', action='store_true', default=False,
                     help='Indicates if the comparison should be recursive.')
+  parser.add_option('--json-output', help='JSON file to output differences')
   target = {
       'darwin': 'mac', 'linux2': 'linux', 'win32': 'win'
   }.get(sys.platform, sys.platform)
@@ -693,6 +705,7 @@ def main():
   return compare_build_artifacts(os.path.abspath(options.first_build_dir),
                                  os.path.abspath(options.second_build_dir),
                                  options.target_platform,
+                                 options.json_output,
                                  options.recursive)
 
 
