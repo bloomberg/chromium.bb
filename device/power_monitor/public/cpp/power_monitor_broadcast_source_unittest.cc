@@ -6,15 +6,15 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/power_monitor_test_base.h"
-#include "content/child/power_monitor_broadcast_source.h"
+#include "device/power_monitor/public/cpp/power_monitor_broadcast_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace device {
 
 class PowerMonitorBroadcastSourceTest : public testing::Test {
  protected:
   PowerMonitorBroadcastSourceTest() {
-    power_monitor_source_ = new PowerMonitorBroadcastSource();
+    power_monitor_source_ = new PowerMonitorBroadcastSource(nullptr);
     power_monitor_.reset(new base::PowerMonitor(
         std::unique_ptr<base::PowerMonitorSource>(power_monitor_source_)));
   }
@@ -33,7 +33,6 @@ class PowerMonitorBroadcastSourceTest : public testing::Test {
 };
 
 TEST_F(PowerMonitorBroadcastSourceTest, PowerMessageReceiveBroadcast) {
-
   base::PowerMonitorTestObserver observer;
   monitor()->AddObserver(&observer);
 
@@ -85,4 +84,4 @@ TEST_F(PowerMonitorBroadcastSourceTest, PowerMessageReceiveBroadcast) {
   EXPECT_EQ(observer.power_state_changes(), 2);
 }
 
-}  // namespace base
+}  // namespace device

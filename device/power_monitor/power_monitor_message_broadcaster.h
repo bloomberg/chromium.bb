@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_POWER_MONITOR_MESSAGE_BROADCASTER_H_
-#define CONTENT_BROWSER_POWER_MONITOR_MESSAGE_BROADCASTER_H_
+#ifndef DEVICE_POWER_MONITOR_POWER_MONITOR_MESSAGE_BROADCASTER_H_
+#define DEVICE_POWER_MONITOR_POWER_MONITOR_MESSAGE_BROADCASTER_H_
 
 #include "base/macros.h"
 #include "base/power_monitor/power_observer.h"
-#include "content/common/content_export.h"
+#include "device/power_monitor/power_monitor_export.h"
 #include "device/power_monitor/public/interfaces/power_monitor.mojom.h"
 
-namespace content {
+namespace device {
 
 // A class used to monitor the power state change and communicate it to child
 // processes via IPC.
-class CONTENT_EXPORT PowerMonitorMessageBroadcaster
+class DEVICE_POWER_MONITOR_EXPORT PowerMonitorMessageBroadcaster
     : public base::PowerObserver,
       NON_EXPORTED_BASE(public device::mojom::PowerMonitor) {
  public:
@@ -23,11 +23,11 @@ class CONTENT_EXPORT PowerMonitorMessageBroadcaster
 
   static void Create(device::mojom::PowerMonitorRequest request);
 
-  // Implement device::mojom::PowerMonitor:
+  // device::mojom::PowerMonitor:
   void SetClient(
       device::mojom::PowerMonitorClientPtr power_monitor_client) override;
 
-  // Implement PowerObserver:
+  // base::PowerObserver:
   void OnPowerStateChange(bool on_battery_power) override;
   void OnSuspend() override;
   void OnResume() override;
@@ -38,6 +38,6 @@ class CONTENT_EXPORT PowerMonitorMessageBroadcaster
   DISALLOW_COPY_AND_ASSIGN(PowerMonitorMessageBroadcaster);
 };
 
-}  // namespace content
+}  // namespace device
 
-#endif  // CONTENT_BROWSER_POWER_MONITOR_MESSAGE_BROADCASTER_H_
+#endif  // DEVICE_POWER_MONITOR_POWER_MONITOR_MESSAGE_BROADCASTER_H_

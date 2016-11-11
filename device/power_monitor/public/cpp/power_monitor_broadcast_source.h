@@ -2,24 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_POWER_MONITOR_BROADCAST_SOURCE_H_
-#define CONTENT_CHILD_POWER_MONITOR_BROADCAST_SOURCE_H_
+#ifndef DEVICE_POWER_MONITOR_POWER_MONITOR_BROADCAST_SOURCE_H_
+#define DEVICE_POWER_MONITOR_POWER_MONITOR_BROADCAST_SOURCE_H_
 
 #include "base/macros.h"
 #include "base/power_monitor/power_monitor_source.h"
-#include "content/common/content_export.h"
+#include "device/power_monitor/power_monitor_export.h"
 #include "device/power_monitor/public/interfaces/power_monitor.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
-namespace content {
+namespace device {
 
-// Receives Power Monitor IPC messages sent from the browser process and relays
-// them to the PowerMonitor of the current process.
-class CONTENT_EXPORT PowerMonitorBroadcastSource
+// Receives state changes from Power Monitor through mojo, and relays them to
+// the PowerMonitor of the current process.
+class DEVICE_POWER_MONITOR_EXPORT PowerMonitorBroadcastSource
     : public base::PowerMonitorSource,
       NON_EXPORTED_BASE(public device::mojom::PowerMonitorClient) {
  public:
-  explicit PowerMonitorBroadcastSource();
+  explicit PowerMonitorBroadcastSource(
+      service_manager::InterfaceProvider* interface_provider);
   ~PowerMonitorBroadcastSource() override;
 
   void PowerStateChange(bool on_battery_power) override;
@@ -34,6 +36,6 @@ class CONTENT_EXPORT PowerMonitorBroadcastSource
   DISALLOW_COPY_AND_ASSIGN(PowerMonitorBroadcastSource);
 };
 
-}  // namespace content
+}  // namespace device
 
-#endif  // CONTENT_CHILD_POWER_MONITOR_BROADCAST_SOURCE_H_
+#endif  // DEVICE_POWER_MONITOR_POWER_MONITOR_BROADCAST_SOURCE_H_

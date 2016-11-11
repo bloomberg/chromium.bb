@@ -63,6 +63,8 @@ test("device_unittests") {
     "gamepad/gamepad_provider_unittest.cc",
     "generic_sensor/platform_sensor_and_provider_unittest_win.cc",
     "generic_sensor/platform_sensor_provider_unittest.cc",
+    "power_monitor/power_monitor_message_broadcaster_unittest.cc",
+    "power_monitor/public/cpp/power_monitor_broadcast_source_unittest.cc",
     "test/run_all_unittests.cc",
     "wake_lock/wake_lock_service_context_unittest.cc",
   ]
@@ -80,6 +82,9 @@ test("device_unittests") {
     "//device/generic_sensor",
     "//device/generic_sensor:testing",
     "//device/geolocation:unittests",
+    "//device/power_monitor",
+    "//device/power_monitor/public/cpp",
+    "//device/power_monitor/public/interfaces",
     "//device/power_save_blocker",
     "//device/wake_lock",
     "//mojo/common",

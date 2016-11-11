@@ -42,7 +42,6 @@
 #include "content/child/fileapi/webfilesystem_impl.h"
 #include "content/child/memory/child_memory_message_filter.h"
 #include "content/child/notifications/notification_dispatcher.h"
-#include "content/child/power_monitor_broadcast_source.h"
 #include "content/child/push_messaging/push_dispatcher.h"
 #include "content/child/quota_dispatcher.h"
 #include "content/child/quota_message_filter.h"
@@ -56,6 +55,7 @@
 #include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.h"
+#include "device/power_monitor/public/cpp/power_monitor_broadcast_source.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_platform_file.h"
@@ -538,8 +538,9 @@ void ChildThreadImpl::Init(const Options& options) {
 
   // In single process mode we may already have a power monitor
   if (!base::PowerMonitor::Get()) {
-    std::unique_ptr<PowerMonitorBroadcastSource> power_monitor_source(
-        new PowerMonitorBroadcastSource());
+    std::unique_ptr<device::PowerMonitorBroadcastSource> power_monitor_source(
+        new device::PowerMonitorBroadcastSource(GetRemoteInterfaces()));
+
     power_monitor_.reset(
         new base::PowerMonitor(std::move(power_monitor_source)));
   }

@@ -27,7 +27,6 @@
 #include "content/browser/histogram_message_filter.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/memory/memory_message_filter.h"
-#include "content/browser/power_monitor_message_broadcaster.h"
 #include "content/browser/profiler_message_filter.h"
 #include "content/browser/service_manager/service_manager_context.h"
 #include "content/browser/tracing/trace_message_filter.h"
@@ -46,6 +45,7 @@
 #include "content/public/common/process_type.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/service_manager_connection.h"
+#include "device/power_monitor/power_monitor_message_broadcaster.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 
@@ -96,7 +96,8 @@ class ConnectionFilterImpl : public ConnectionFilter {
   bool OnConnect(const service_manager::Identity& remote_identity,
                  service_manager::InterfaceRegistry* registry,
                  service_manager::Connector* connector) override {
-    registry->AddInterface(base::Bind(&PowerMonitorMessageBroadcaster::Create));
+    registry->AddInterface(
+        base::Bind(&device::PowerMonitorMessageBroadcaster::Create));
     return true;
   }
 

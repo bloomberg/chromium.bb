@@ -2,29 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/power_monitor_broadcast_source.h"
+#include "device/power_monitor/public/cpp/power_monitor_broadcast_source.h"
 
 #include "base/location.h"
 #include "base/macros.h"
-#include "content/child/child_thread_impl.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 
-namespace content {
+namespace device {
 
-PowerMonitorBroadcastSource::PowerMonitorBroadcastSource()
+PowerMonitorBroadcastSource::PowerMonitorBroadcastSource(
+    service_manager::InterfaceProvider* interface_provider)
     : last_reported_battery_power_state_(false), binding_(this) {
-  // May be null during test execution.
-  if (ChildThreadImpl::current()) {
+  if (interface_provider) {
     device::mojom::PowerMonitorPtr power_monitor;
-    ChildThreadImpl::current()->GetRemoteInterfaces()->GetInterface(
-        mojo::GetProxy(&power_monitor));
+    interface_provider->GetInterface(mojo::GetProxy(&power_monitor));
     power_monitor->SetClient(binding_.CreateInterfacePtrAndBind());
   }
 }
 
-PowerMonitorBroadcastSource::~PowerMonitorBroadcastSource() {
-}
+PowerMonitorBroadcastSource::~PowerMonitorBroadcastSource() {}
 
 bool PowerMonitorBroadcastSource::IsOnBatteryPowerImpl() {
   return last_reported_battery_power_state_;
@@ -43,4 +39,4 @@ void PowerMonitorBroadcastSource::Resume() {
   ProcessPowerEvent(PowerMonitorSource::RESUME_EVENT);
 }
 
-}  // namespace content
+}  // namespace device

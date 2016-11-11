@@ -91,7 +91,6 @@
 #include "content/browser/payments/payment_app_manager.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_service_impl.h"
-#include "content/browser/power_monitor_message_broadcaster.h"
 #include "content/browser/profiler_message_filter.h"
 #include "content/browser/push_messaging/push_messaging_message_filter.h"
 #include "content/browser/quota_dispatcher_host.h"
@@ -163,6 +162,7 @@
 #include "content/public/common/service_names.h"
 #include "content/public/common/url_constants.h"
 #include "device/battery/battery_monitor_impl.h"
+#include "device/power_monitor/power_monitor_message_broadcaster.h"
 #include "device/time_zone_monitor/time_zone_monitor.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gpu_switches.h"
@@ -1245,8 +1245,9 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
                  base::Unretained(
                      BrowserMainLoop::GetInstance()->time_zone_monitor())));
 
-  AddUIThreadInterface(registry.get(),
-                       base::Bind(&PowerMonitorMessageBroadcaster::Create));
+  AddUIThreadInterface(
+      registry.get(),
+      base::Bind(&device::PowerMonitorMessageBroadcaster::Create));
 
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE);

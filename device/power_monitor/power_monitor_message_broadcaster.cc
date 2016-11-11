@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/power_monitor_message_broadcaster.h"
+#include "device/power_monitor/power_monitor_message_broadcaster.h"
 
 #include "base/power_monitor/power_monitor.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
-namespace content {
+namespace device {
 
 PowerMonitorMessageBroadcaster::PowerMonitorMessageBroadcaster() {
   base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
@@ -55,4 +55,4 @@ void PowerMonitorMessageBroadcaster::OnResume() {
   }
 }
 
-}  // namespace content
+}  // namespace device
