@@ -417,16 +417,11 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest,
   EXPECT_TRUE(focused_browser->window()->IsActive());
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
-// TODO(erg): http://crbug.com/163931
-#define MAYBE_LocationBarLockFocus DISABLED_LocationBarLockFocus
-#else
-#define MAYBE_LocationBarLockFocus LocationBarLockFocus
-#endif
-
 // Page cannot steal focus when focus is on location bar.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_LocationBarLockFocus) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, LocationBarLockFocus) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  ui_test_utils::BrowserActivationWaiter waiter(browser());
+  waiter.WaitForActivation();
 
   // Open the page that steals focus.
   const GURL url = embedded_test_server()->GetURL(kStealFocusPage);
@@ -565,16 +560,11 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabInitialFocus) {
   EXPECT_TRUE(IsViewFocused(VIEW_ID_OMNIBOX));
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
-// TODO(erg): http://crbug.com/163931
-#define MAYBE_FocusOnReload DISABLED_FocusOnReload
-#else
-#define MAYBE_FocusOnReload FocusOnReload
-#endif
-
 // Tests that focus goes where expected when using reload.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusOnReload) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  ui_test_utils::BrowserActivationWaiter waiter(browser());
+  waiter.WaitForActivation();
 
   // Open the new tab, reload.
   {
@@ -688,18 +678,11 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, NavigateFromOmniboxIntoNewTab) {
   EXPECT_FALSE(IsViewFocused(VIEW_ID_OMNIBOX));
 }
 
-// This functionality is currently broken. http://crbug.com/304865.
-//
-// #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
-// // TODO(erg): http://crbug.com/163931
-// #define MAYBE_FocusOnNavigate DISABLED_FocusOnNavigate
-// #else
-// #define MAYBE_FocusOnNavigate FocusOnNavigate
-// #endif
-
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_FocusOnNavigate) {
-  // Needed on Mac.
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnNavigate) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  ui_test_utils::BrowserActivationWaiter waiter(browser());
+  waiter.WaitForActivation();
+
   // Load the NTP.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   EXPECT_TRUE(IsViewFocused(VIEW_ID_OMNIBOX));
