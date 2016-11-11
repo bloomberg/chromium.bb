@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "net/base/escape.h"
+#include "storage/browser/fileapi/file_system_url.h"
 
 namespace arc {
 
@@ -15,12 +16,22 @@ const char kMountPointName[] = "arc-content";
 const base::FilePath::CharType kMountPointPath[] =
     FILE_PATH_LITERAL("/special/arc-content");
 
+std::string EscapeArcUrl(const GURL& arc_url) {
+  return net::EscapeQueryParamValue(arc_url.spec(), false);
+}
+
+GURL UnescapeArcUrl(const std::string& escaped_arc_url) {
+  return GURL(net::UnescapeURLComponent(
+      escaped_arc_url,
+      net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
+          net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS));
+}
+
 GURL ArcUrlToExternalFileUrl(const GURL& arc_url) {
   // Return "externalfile:arc-content/<|arc_url| escaped>".
   base::FilePath virtual_path =
       base::FilePath::FromUTF8Unsafe(kMountPointName)
-          .Append(base::FilePath::FromUTF8Unsafe(
-              net::EscapeQueryParamValue(arc_url.spec(), false)));
+          .Append(base::FilePath::FromUTF8Unsafe(EscapeArcUrl(arc_url)));
   return chromeos::VirtualPathToExternalFileURL(virtual_path);
 }
 
@@ -32,10 +43,16 @@ GURL ExternalFileUrlToArcUrl(const GURL& external_file_url) {
            .AppendRelativePath(virtual_path, &path_after_root)) {
     return GURL();
   }
-  return GURL(net::UnescapeURLComponent(
-      path_after_root.AsUTF8Unsafe(),
-      net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
-          net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS));
+  return UnescapeArcUrl(path_after_root.AsUTF8Unsafe());
+}
+
+GURL FileSystemUrlToArcUrl(const storage::FileSystemURL& url) {
+  base::FilePath path_after_mount_point;
+  if (!base::FilePath(kMountPointPath)
+           .AppendRelativePath(url.path(), &path_after_mount_point)) {
+    return GURL();
+  }
+  return UnescapeArcUrl(path_after_mount_point.AsUTF8Unsafe());
 }
 
 }  // namespace arc

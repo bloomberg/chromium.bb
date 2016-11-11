@@ -4,13 +4,15 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
+#include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "content/public/common/url_constants.h"
+#include "storage/browser/fileapi/file_system_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace arc {
 
-TEST(ArcContentFileSystemUrlUtilTest, EncodeAndDecode) {
+TEST(ArcContentFileSystemUrlUtilTest, EncodeAndDecodeExternalFileUrl) {
   {
     GURL src("file://foo/bar/baz");
     GURL dest = ArcUrlToExternalFileUrl(src);
@@ -60,6 +62,20 @@ TEST(ArcContentFileSystemUrlUtilTest, EncodeAndDecode) {
     EXPECT_TRUE(result.is_valid());
     EXPECT_EQ(src, result);
   }
+}
+
+TEST(ArcContentFileSystemUrlUtilTest, FileSystemUrlToArcUrl) {
+  GURL arc_url("content://org.chromium.foo/bar/baz");
+
+  base::FilePath path =
+      base::FilePath(kMountPointPath)
+          .Append(base::FilePath::FromUTF8Unsafe(EscapeArcUrl(arc_url)));
+  storage::FileSystemURL file_system_url =
+      storage::FileSystemURL::CreateForTest(GURL(),  // origin
+                                            storage::kFileSystemTypeArcContent,
+                                            path);
+
+  EXPECT_EQ(arc_url, FileSystemUrlToArcUrl(file_system_url));
 }
 
 }  // namespace arc
