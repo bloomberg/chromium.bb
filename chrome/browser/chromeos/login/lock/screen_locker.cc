@@ -51,6 +51,7 @@
 #include "chromeos/login/auth/authenticator.h"
 #include "chromeos/login/auth/extended_authenticator.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
@@ -511,6 +512,9 @@ ScreenLocker::~ScreenLocker() {
   DBusThreadManager::Get()->GetSessionManagerClient()->
       NotifyLockScreenDismissed();
 
+  session_manager::SessionManager::Get()->SetSessionState(
+      session_manager::SessionState::ACTIVE);
+
   if (saved_ime_state_.get()) {
     input_method::InputMethodManager::Get()->SetState(saved_ime_state_);
   }
@@ -538,6 +542,9 @@ void ScreenLocker::ScreenLockReady() {
       content::Details<bool>(&state));
   VLOG(1) << "Calling session manager's HandleLockScreenShown D-Bus method";
   DBusThreadManager::Get()->GetSessionManagerClient()->NotifyLockScreenShown();
+
+  session_manager::SessionManager::Get()->SetSessionState(
+      session_manager::SessionState::LOCKED);
 
   input_method::InputMethodManager::Get()
       ->GetActiveIMEState()

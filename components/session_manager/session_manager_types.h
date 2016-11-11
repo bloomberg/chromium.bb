@@ -31,6 +31,9 @@ enum class SessionState {
   // not blocked.
   ACTIVE,
 
+  // The session screen is locked.
+  LOCKED,
+
   // Same as SESSION_STATE_LOGIN_PRIMARY but for multi-profiles sign in i.e.
   // when there's at least one user already active in the session.
   LOGIN_SECONDARY,

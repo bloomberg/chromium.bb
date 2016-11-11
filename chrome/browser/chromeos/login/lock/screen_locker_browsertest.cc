@@ -27,6 +27,7 @@
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/stub_authenticator.h"
 #include "chromeos/login/auth/user_context.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -150,6 +151,8 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
       content::NotificationService::AllSources());
   if (!tester->IsLocked())
     lock_state_observer.Wait();
+  EXPECT_EQ(session_manager::SessionState::LOCKED,
+            session_manager::SessionManager::Get()->session_state());
 
   // Test to make sure that the widget is actually appearing and is of
   // reasonable size, preventing a regression of
@@ -173,6 +176,8 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
   EXPECT_EQ(
       1,
       fake_session_manager_client_->notify_lock_screen_shown_call_count());
+  EXPECT_EQ(session_manager::SessionState::ACTIVE,
+            session_manager::SessionManager::Get()->session_state());
 
   EXPECT_TRUE(VerifyLockScreenDismissed());
 }
