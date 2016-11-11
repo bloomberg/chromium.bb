@@ -69,6 +69,11 @@ class ReportBadMessageTest : public testing::Test {
     impl_.BindImpl(GetProxy(&proxy_));
   }
 
+  void TearDown() override {
+    mojo::edk::SetDefaultProcessErrorCallback(
+        mojo::edk::ProcessErrorCallback());
+  }
+
   TestBadMessages* proxy() { return proxy_.get(); }
 
   TestBadMessagesImpl* impl() { return &impl_; }
