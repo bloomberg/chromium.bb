@@ -28,8 +28,7 @@ class ASH_EXPORT AshDevToolsDOMAgent
       std::unique_ptr<ui::devtools::protocol::DOM::Node>* out_root) override;
 
   // WindowObserver
-  void OnWindowTreeChanging(WmWindow* window,
-                            const TreeChangeParams& params) override;
+  void OnWindowDestroying(WmWindow* window) override;
   void OnWindowTreeChanged(WmWindow* window,
                            const TreeChangeParams& params) override;
   void OnWindowStackingChanged(WmWindow* window) override;
@@ -39,7 +38,7 @@ class ASH_EXPORT AshDevToolsDOMAgent
       WmWindow* window);
   std::unique_ptr<ui::devtools::protocol::DOM::Node> BuildInitialTree();
   void AddWindowNode(WmWindow* window);
-  void RemoveWindowNode(WmWindow* window);
+  void RemoveWindowNode(WmWindow* window, WmWindow* old_parent);
   void RemoveObserverFromAllWindows();
   void AddRootWindowObservers();
   void Reset();

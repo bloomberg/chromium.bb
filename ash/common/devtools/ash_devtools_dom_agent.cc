@@ -101,34 +101,28 @@ ui::devtools::protocol::Response AshDevToolsDOMAgent::getDocument(
   return ui::devtools::protocol::Response::OK();
 }
 
-// Handles removing windows.
-void AshDevToolsDOMAgent::OnWindowTreeChanging(WmWindow* window,
-                                               const TreeChangeParams& params) {
-  // Only trigger this when window == params.old_parent.
-  // Only removals are handled here. Removing a node can occur as a result of
-  // reorganizing a window or just destroying it. OnWindowTreeChanged
-  // is only called if there is a new_parent. The only case this method isn't
-  // called is when adding a node because old_parent is then null.
-  // Finally, We only trigger this  0 or 1 times as an old_parent will
-  // either exist and only call this callback once, or not at all.
-  if (window == params.old_parent)
-    RemoveWindowNode(params.target);
+// Need to remove node in OnWindowDestroying because the window parent reference
+// is gone in OnWindowDestroyed
+void AshDevToolsDOMAgent::OnWindowDestroying(WmWindow* window) {
+  RemoveWindowNode(window, window->GetParent());
 }
 
-// Handles adding windows.
 void AshDevToolsDOMAgent::OnWindowTreeChanged(WmWindow* window,
                                               const TreeChangeParams& params) {
-  // Only trigger this when window == params.new_parent.
-  // If there is an old_parent + new_parent, then this window's node was
-  // removed in OnWindowTreeChanging and will now be added to the new_parent.
-  // If there is only a new_parent, OnWindowTreeChanging is never called and
-  // the window is only added here.
-  if (window == params.new_parent)
-    AddWindowNode(params.target);
+  // Only trigger this when window == root window.
+  // Removals are handled on OnWindowDestroying.
+  if (window != window->GetRootWindow() || !params.new_parent)
+    return;
+  // If there is an old_parent + new_parent, then this window is being moved
+  // which requires a remove followed by an add. If only new_parent
+  // exists, then a new window is being created so only add is called.
+  if (params.old_parent)
+    RemoveWindowNode(params.target, params.old_parent);
+  AddWindowNode(params.target);
 }
 
 void AshDevToolsDOMAgent::OnWindowStackingChanged(WmWindow* window) {
-  RemoveWindowNode(window);
+  RemoveWindowNode(window, window->GetParent());
   AddWindowNode(window);
 }
 
@@ -160,7 +154,6 @@ AshDevToolsDOMAgent::BuildInitialTree() {
 }
 
 void AshDevToolsDOMAgent::AddWindowNode(WmWindow* window) {
-  DCHECK(window_to_node_id_map_.count(window->GetParent()));
   WmWindow* prev_sibling = FindPreviousSibling(window);
   frontend()->childNodeInserted(
       window_to_node_id_map_[window->GetParent()],
@@ -168,17 +161,15 @@ void AshDevToolsDOMAgent::AddWindowNode(WmWindow* window) {
       BuildTreeForWindow(window));
 }
 
-void AshDevToolsDOMAgent::RemoveWindowNode(WmWindow* window) {
-  WmWindow* parent = window->GetParent();
-  DCHECK(parent);
-  DCHECK(window_to_node_id_map_.count(parent));
+void AshDevToolsDOMAgent::RemoveWindowNode(WmWindow* window,
+                                           WmWindow* old_parent) {
+  window->RemoveObserver(this);
   WindowToNodeIdMap::iterator it = window_to_node_id_map_.find(window);
   DCHECK(it != window_to_node_id_map_.end());
 
   int node_id = it->second;
-  int parent_id = window_to_node_id_map_[parent];
+  int parent_id = old_parent ? window_to_node_id_map_[old_parent] : 0;
 
-  window->RemoveObserver(this);
   window_to_node_id_map_.erase(it);
   frontend()->childNodeRemoved(parent_id, node_id);
 }
