@@ -4257,7 +4257,10 @@ test("unit_tests") {
       "../utility/safe_browsing/mac/read_stream_unittest.cc",
       "../utility/safe_browsing/mac/udif_unittest.cc",
     ]
-    deps += [ ":test_proto" ]
+    deps += [
+      ":test_proto",
+      "//components/safe_browsing_db:v4_test_util",
+    ]
 
     if (is_mac) {
       deps += [ ":mac_safe_browsing_test_data" ]

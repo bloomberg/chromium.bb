@@ -14,8 +14,8 @@
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "components/safe_browsing_db/safebrowsing.pb.h"
-#include "components/safe_browsing_db/testing_util.h"
 #include "components/safe_browsing_db/util.h"
+#include "components/safe_browsing_db/v4_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -25,14 +25,6 @@
 
 using base::Time;
 using base::TimeDelta;
-
-namespace {
-
-const char kClient[] = "unittest";
-const char kAppVer[] = "1.0";
-const char kKeyParam[] = "test_key_param";
-
-}  // namespace
 
 namespace safe_browsing {
 
@@ -76,16 +68,13 @@ class V4GetHashProtocolManagerTest : public PlatformTest {
   }
 
   std::unique_ptr<V4GetHashProtocolManager> CreateProtocolManager() {
-    V4ProtocolConfig config;
-    config.client_name = kClient;
-    config.version = kAppVer;
-    config.key_param = kKeyParam;
     StoresToCheck stores_to_check(
         {GetUrlMalwareId(), GetChromeUrlApiId(),
          ListIdentifier(CHROME_PLATFORM, URL, SOCIAL_ENGINEERING_PUBLIC),
          ListIdentifier(CHROME_PLATFORM, URL,
                         POTENTIALLY_HARMFUL_APPLICATION)});
-    return V4GetHashProtocolManager::Create(NULL, stores_to_check, config);
+    return V4GetHashProtocolManager::Create(NULL, stores_to_check,
+                                            GetTestV4ProtocolConfig());
   }
 
   static void SetupFetcherToReturnOKResponse(

@@ -49,18 +49,24 @@ struct V4ProtocolConfig {
   // The safe browsing client name sent in each request.
   std::string client_name;
 
-  // Current product version sent in each request.
-  std::string version;
+  // Disable auto-updates using a command line switch.
+  bool disable_auto_update;
 
   // The Google API key.
   std::string key_param;
 
-  // Disable auto-updates using a command line switch?
-  bool disable_auto_update;
+  // Current product version sent in each request.
+  std::string version;
 
-  V4ProtocolConfig();
+  V4ProtocolConfig(const std::string& client_name,
+                   bool disable_auto_update,
+                   const std::string& key_param,
+                   const std::string& version);
   V4ProtocolConfig(const V4ProtocolConfig& other);
   ~V4ProtocolConfig();
+
+ private:
+  V4ProtocolConfig();
 };
 
 // Different types of threats that SafeBrowsing protects against. This is the

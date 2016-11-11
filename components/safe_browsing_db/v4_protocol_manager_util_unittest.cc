@@ -9,6 +9,7 @@
 #include "base/base64.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "components/safe_browsing_db/v4_test_util.h"
 #include "net/base/escape.h"
 #include "net/http/http_request_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,10 +18,6 @@ using base::Time;
 using base::TimeDelta;
 
 namespace {
-
-const char kClient[] = "unittest";
-const char kAppVer[] = "1.0";
-const char kKeyParam[] = "test_key_param";
 
 bool VectorContains(const std::vector<std::string>& data,
                     const std::string& str) {
@@ -32,12 +29,6 @@ bool VectorContains(const std::vector<std::string>& data,
 namespace safe_browsing {
 
 class V4ProtocolManagerUtilTest : public testing::Test {
- protected:
-  void PopulateV4ProtocolConfig(V4ProtocolConfig* config) {
-    config->client_name = kClient;
-    config->version = kAppVer;
-    config->key_param = kKeyParam;
-  }
 };
 
 TEST_F(V4ProtocolManagerUtilTest, TestBackOffLogic) {
@@ -115,13 +106,11 @@ TEST_F(V4ProtocolManagerUtilTest, TestBackOffLogic) {
 }
 
 TEST_F(V4ProtocolManagerUtilTest, TestGetRequestUrlAndUpdateHeaders) {
-  V4ProtocolConfig config;
-  PopulateV4ProtocolConfig(&config);
-
   net::HttpRequestHeaders headers;
   GURL gurl;
   V4ProtocolManagerUtil::GetRequestUrlAndHeaders("request_base64", "someMethod",
-                                                 config, &gurl, &headers);
+                                                 GetTestV4ProtocolConfig(),
+                                                 &gurl, &headers);
   std::string expectedUrl =
       "https://safebrowsing.googleapis.com/v4/someMethod?"
       "$req=request_base64&$ct=application/x-protobuf&key=test_key_param";

@@ -20,6 +20,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/safe_browsing_db/test_database_manager.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
+#include "components/safe_browsing_db/v4_test_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "crypto/sha2.h"
@@ -63,7 +64,7 @@ class SafeBrowsingDatabaseManagerTest : public testing::Test {
  protected:
   void SetUp() override {
     db_manager_ = new TestSafeBrowsingDatabaseManager();
-    db_manager_->StartOnIOThread(NULL, V4ProtocolConfig());
+    db_manager_->StartOnIOThread(NULL, GetTestV4ProtocolConfig());
   }
 
   void TearDown() override {

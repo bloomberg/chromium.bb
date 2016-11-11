@@ -9,6 +9,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "components/safe_browsing_db/v4_database.h"
 #include "components/safe_browsing_db/v4_local_database_manager.h"
+#include "components/safe_browsing_db/v4_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/platform_test.h"
@@ -168,7 +169,8 @@ class V4LocalDatabaseManagerTest : public PlatformTest {
   }
 
   void StartLocalDatabaseManager() {
-    v4_local_database_manager_->StartOnIOThread(NULL, V4ProtocolConfig());
+    v4_local_database_manager_->StartOnIOThread(NULL,
+                                                GetTestV4ProtocolConfig());
   }
 
   void StopLocalDatabaseManager() {

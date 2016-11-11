@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "components/safe_browsing_db/safebrowsing.pb.h"
 #include "components/safe_browsing_db/util.h"
+#include "components/safe_browsing_db/v4_test_util.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -24,14 +25,6 @@
 
 using base::Time;
 using base::TimeDelta;
-
-namespace {
-
-const char kClient[] = "unittest";
-const char kAppVer[] = "1.0";
-const char kKeyParam[] = "test_key_param";
-
-}  // namespace
 
 namespace safe_browsing {
 
@@ -65,19 +58,11 @@ class V4UpdateProtocolManagerTest : public PlatformTest {
     }
   }
 
-  V4ProtocolConfig GetProtocolConfig() {
-    V4ProtocolConfig config;
-    config.client_name = kClient;
-    config.version = kAppVer;
-    config.key_param = kKeyParam;
-    config.disable_auto_update = false;
-    return config;
-  }
-
   std::unique_ptr<V4UpdateProtocolManager> CreateProtocolManager(
-      const std::vector<ListUpdateResponse>& expected_lurs) {
+      const std::vector<ListUpdateResponse>& expected_lurs,
+      bool disable_auto_update = false) {
     return V4UpdateProtocolManager::Create(
-        NULL, GetProtocolConfig(),
+        NULL, GetTestV4ProtocolConfig(disable_auto_update),
         base::Bind(&V4UpdateProtocolManagerTest::ValidateGetUpdatesResults,
                    base::Unretained(this), expected_lurs));
   }
@@ -318,6 +303,25 @@ TEST_F(V4UpdateProtocolManagerTest, TestBase64EncodingUsesUrlEncoding) {
 
   // TODO(vakh): Add a similar test for underscore for completeness, although
   // the '-' case is sufficient to prove that we are using URL encoding.
+}
+
+TEST_F(V4UpdateProtocolManagerTest, TestDisableAutoUpdates) {
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner());
+  base::ThreadTaskRunnerHandle runner_handler(runner);
+  net::TestURLFetcherFactory factory;
+  std::unique_ptr<V4UpdateProtocolManager> pm(CreateProtocolManager(
+      std::vector<ListUpdateResponse>(), true /* disable_auto_update */));
+
+  // Initial state. No errors.
+  pm->ScheduleNextUpdate(std::move(store_state_map_));
+  EXPECT_FALSE(pm->IsUpdateScheduled());
+
+  runner->RunPendingTasks();
+  EXPECT_FALSE(pm->IsUpdateScheduled());
+
+  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  DCHECK(!fetcher);
 }
 
 }  // namespace safe_browsing

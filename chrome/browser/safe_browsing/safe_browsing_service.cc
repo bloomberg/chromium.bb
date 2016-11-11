@@ -482,12 +482,11 @@ SafeBrowsingProtocolConfig SafeBrowsingService::GetProtocolConfig() const {
 
 V4ProtocolConfig
 SafeBrowsingService::GetV4ProtocolConfig() const {
-  V4ProtocolConfig config;
-  config.client_name = GetProtocolConfigClientName();
-  config.version = SafeBrowsingProtocolManagerHelper::Version();
-  config.key_param = google_apis::GetAPIKey();;
-
-  return config;
+  base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+  return V4ProtocolConfig(
+      GetProtocolConfigClientName(),
+      cmdline->HasSwitch(switches::kDisableBackgroundNetworking),
+      google_apis::GetAPIKey(), SafeBrowsingProtocolManagerHelper::Version());
 }
 
 std::string SafeBrowsingService::GetProtocolConfigClientName() const {
