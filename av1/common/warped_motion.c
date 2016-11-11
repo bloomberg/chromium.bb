@@ -16,6 +16,8 @@
 
 #include "av1/common/warped_motion.h"
 
+#define ERRORADV_CLAMP  128
+
 static ProjectPointsFunc get_project_points_type(TransformationType type) {
   switch (type) {
     case HOMOGRAPHY: return project_points_homography;
@@ -451,8 +453,10 @@ static double highbd_warp_erroradv(WarpedMotionParams *wm, uint8_t *ref8,
                                        stride, bd);
       no_gm_err = dst[(j - p_col) + (i - p_row) * p_stride] -
                   ref[(j - p_col) + (i - p_row) * stride];
-      gm_sumerr += (int64_t)gm_err * gm_err;
-      no_gm_sumerr += (int64_t)no_gm_err * no_gm_err;
+      gm_err = abs(gm_err);
+      no_gm_err = abs(no_gm_err);
+      gm_sumerr += (int64_t)AOMMIN(gm_err, ERRORADV_CLAMP << (bd - 8));
+      no_gm_sumerr += (int64_t)AOMMIN(no_gm_err, ERRORADV_CLAMP << (bd - 8));
     }
   }
   return (double)gm_sumerr / no_gm_sumerr;
@@ -512,8 +516,10 @@ static double warp_erroradv(WarpedMotionParams *wm, uint8_t *ref, int width,
                warp_interpolate(ref, out[0], out[1], width, height, stride);
       no_gm_err = dst[(j - p_col) + (i - p_row) * p_stride] -
                   ref[(j - p_col) + (i - p_row) * stride];
-      gm_sumerr += abs(gm_err);
-      no_gm_sumerr += abs(no_gm_err);
+      gm_err = abs(gm_err);
+      no_gm_err = abs(no_gm_err);
+      gm_sumerr += AOMMIN(gm_err, ERRORADV_CLAMP);
+      no_gm_sumerr += AOMMIN(no_gm_err, ERRORADV_CLAMP);
     }
   }
   return (double)gm_sumerr / no_gm_sumerr;
