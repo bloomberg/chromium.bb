@@ -248,6 +248,7 @@ class StreamMixerAlsa {
 
   std::unique_ptr<AudioFilterInterface> pre_loopback_filter_;
   std::unique_ptr<AudioFilterInterface> post_loopback_filter_;
+  int silence_frames_filtered_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(StreamMixerAlsa);
 };

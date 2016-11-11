@@ -112,6 +112,9 @@ static int* kAlsaDirDontCare = nullptr;
 const snd_pcm_format_t kPreferredSampleFormats[] = {SND_PCM_FORMAT_S32,
                                                     SND_PCM_FORMAT_S16};
 
+// How many seconds of silence should be passed to the filters to flush them.
+const float kSilenceSecondsToFilter = 1.0f;
+
 const int64_t kNoTimestamp = std::numeric_limits<int64_t>::min();
 
 int64_t TimespecToMicroseconds(struct timespec time) {
@@ -860,8 +863,24 @@ void StreamMixerAlsa::WriteMixedPcm(const ::media::AudioBus& mixed,
 
   mixed.ToInterleaved(frames, BytesPerOutputFormatSample(),
                       interleaved_.data());
+
+  // Ensure that, on onset of silence, at least |kSilenceSecondsToFilter|
+  // second of audio get pushed through the filters to clear any memory.
+  bool filter_frames = true;
+  if (is_silence) {
+    int silence_frames_to_filter =
+        output_samples_per_second_ * kSilenceSecondsToFilter;
+    if (silence_frames_filtered_ < silence_frames_to_filter) {
+      silence_frames_filtered_ += frames;
+    } else {
+      filter_frames = false;
+    }
+  } else {
+    silence_frames_filtered_ = 0;
+  }
+
   // Filter, send to observers, and post filter
-  if (pre_loopback_filter_ && !is_silence) {
+  if (pre_loopback_filter_ && filter_frames) {
     pre_loopback_filter_->ProcessInterleaved(interleaved_.data(), frames);
   }
 
@@ -871,7 +890,7 @@ void StreamMixerAlsa::WriteMixedPcm(const ::media::AudioBus& mixed,
                               interleaved_.data(), interleaved_size);
   }
 
-  if (post_loopback_filter_ && !is_silence) {
+  if (post_loopback_filter_ && filter_frames) {
     post_loopback_filter_->ProcessInterleaved(interleaved_.data(), frames);
   }
 
