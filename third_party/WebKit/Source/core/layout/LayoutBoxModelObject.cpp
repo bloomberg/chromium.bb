@@ -471,18 +471,6 @@ void LayoutBoxModelObject::addLayerHitTestRects(
   }
 }
 
-static bool hasPercentageTransform(const ComputedStyle& style) {
-  if (TransformOperation* translate = style.translate()) {
-    if (translate->dependsOnBoxSize())
-      return true;
-  }
-  return style.transform().dependsOnBoxSize() ||
-         (style.transformOriginX() != Length(50, Percent) &&
-          style.transformOriginX().isPercentOrCalc()) ||
-         (style.transformOriginY() != Length(50, Percent) &&
-          style.transformOriginY().isPercentOrCalc());
-}
-
 DISABLE_CFI_PERF
 void LayoutBoxModelObject::invalidateTreeIfNeeded(
     const PaintInvalidationState& paintInvalidationState) {
@@ -505,16 +493,6 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(
       invalidatePaintIfNeeded(newPaintInvalidationState);
 
   if (previousLocation != paintInvalidator.previousLocationInBacking()) {
-    newPaintInvalidationState
-        .setForceSubtreeInvalidationCheckingWithinContainer();
-  }
-
-  // TODO(wangxianzhu): Combine this function into LayoutObject::
-  // invalidateTreeIfNeeded() when removing the following workarounds.
-
-  // TODO(wangxianzhu): This is a workaround for crbug.com/533277. Will remove
-  // when we enable paint offset caching.
-  if (reason != PaintInvalidationNone && hasPercentageTransform(styleRef())) {
     newPaintInvalidationState
         .setForceSubtreeInvalidationCheckingWithinContainer();
   }

@@ -369,18 +369,6 @@ void PaintInvalidator::invalidatePaintIfNeeded(
   layoutView->sendMediaPositionChangeNotifications(visibleRect);
 }
 
-static bool hasPercentageTransform(const ComputedStyle& style) {
-  if (TransformOperation* translate = style.translate()) {
-    if (translate->dependsOnBoxSize())
-      return true;
-  }
-  return style.transform().dependsOnBoxSize() ||
-         (style.transformOriginX() != Length(50, Percent) &&
-          style.transformOriginX().isPercentOrCalc()) ||
-         (style.transformOriginY() != Length(50, Percent) &&
-          style.transformOriginY().isPercentOrCalc());
-}
-
 void PaintInvalidator::invalidatePaintIfNeeded(
     const LayoutObject& object,
     PaintInvalidatorContext& context) {
@@ -431,13 +419,6 @@ void PaintInvalidator::invalidatePaintIfNeeded(
   }
 
   if (context.oldLocation != context.newLocation)
-    context.forcedSubtreeInvalidationFlags |=
-        PaintInvalidatorContext::ForcedSubtreeInvalidationChecking;
-
-  // TODO(crbug.com/533277): This is a workaround for the bug. Remove when we
-  // detect paint offset change.
-  if (reason != PaintInvalidationNone &&
-      hasPercentageTransform(object.styleRef()))
     context.forcedSubtreeInvalidationFlags |=
         PaintInvalidatorContext::ForcedSubtreeInvalidationChecking;
 
