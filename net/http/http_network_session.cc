@@ -347,17 +347,15 @@ void HttpNetworkSession::CloseIdleConnections() {
   spdy_session_pool_.CloseCurrentIdleSessions();
 }
 
-bool HttpNetworkSession::IsProtocolEnabled(NextProto protocol) const {
+bool HttpNetworkSession::IsProtocolEnabled(AlternateProtocol protocol) const {
   switch (protocol) {
-    case kProtoUnknown:
+    case NPN_HTTP_2:
+      return params_.enable_http2;
+    case QUIC:
+      return params_.enable_quic;
+    case UNINITIALIZED_ALTERNATE_PROTOCOL:
       NOTREACHED();
       return false;
-    case kProtoHTTP11:
-      return true;
-    case kProtoHTTP2:
-      return params_.enable_http2;
-    case kProtoQUIC:
-      return params_.enable_quic;
   }
   NOTREACHED();
   return false;

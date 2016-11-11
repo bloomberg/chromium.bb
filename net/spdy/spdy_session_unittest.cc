@@ -5475,7 +5475,7 @@ TEST_F(AltSvcFrameTest, ProcessAltSvcFrame) {
       spdy_session_pool_->http_server_properties()->GetAlternativeServices(
           url::SchemeHostPort(GURL(origin)));
   ASSERT_EQ(1u, altsvc_vector.size());
-  EXPECT_EQ(kProtoQUIC, altsvc_vector[0].protocol);
+  EXPECT_EQ(QUIC, altsvc_vector[0].protocol);
   EXPECT_EQ("alternative.example.org", altsvc_vector[0].host);
   EXPECT_EQ(443u, altsvc_vector[0].port);
 }
@@ -5600,7 +5600,7 @@ TEST_F(AltSvcFrameTest, ProcessAltSvcFrameOnActiveStream) {
       spdy_session_pool_->http_server_properties()->GetAlternativeServices(
           url::SchemeHostPort(GURL(request_origin)));
   ASSERT_EQ(1u, altsvc_vector.size());
-  EXPECT_EQ(kProtoQUIC, altsvc_vector[0].protocol);
+  EXPECT_EQ(QUIC, altsvc_vector[0].protocol);
   EXPECT_EQ("alternative.example.org", altsvc_vector[0].host);
   EXPECT_EQ(443u, altsvc_vector[0].port);
 }

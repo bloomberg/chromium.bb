@@ -7,9 +7,6 @@
 
 #include <vector>
 
-#include "base/strings/string_piece.h"
-#include "net/base/net_export.h"
-
 namespace net {
 
 // This enum is used in Net.SSLNegotiatedAlpnProtocol histogram.
@@ -24,11 +21,6 @@ enum NextProto {
 
 // List of protocols to use for NPN, used for configuring HttpNetworkSessions.
 typedef std::vector<NextProto> NextProtoVector;
-
-NET_EXPORT_PRIVATE NextProto
-NextProtoFromString(base::StringPiece proto_string);
-
-NET_EXPORT_PRIVATE const char* NextProtoToString(NextProto next_proto);
 
 }  // namespace net
 

@@ -50,6 +50,7 @@ SpdyHttpStream::SpdyHttpStream(const base::WeakPtr<SpdySession>& spdy_session,
       more_read_data_pending_(false),
       direct_(direct),
       was_alpn_negotiated_(false),
+      negotiated_protocol_(kProtoUnknown),
       weak_factory_(this) {
   DCHECK(spdy_session_.get());
 }
@@ -449,6 +450,7 @@ void SpdyHttpStream::InitializeStreamHelper() {
   stream_->SetDelegate(this);
   stream_->GetSSLInfo(&ssl_info_);
   was_alpn_negotiated_ = stream_->WasNpnNegotiated();
+  negotiated_protocol_ = stream_->GetNegotiatedProtocol();
 }
 
 void SpdyHttpStream::ResetStreamInternal() {

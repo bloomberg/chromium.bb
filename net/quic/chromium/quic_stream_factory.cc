@@ -50,7 +50,6 @@
 #include "net/quic/core/quic_crypto_client_stream_factory.h"
 #include "net/quic/core/quic_flags.h"
 #include "net/socket/client_socket_factory.h"
-#include "net/socket/next_proto.h"
 #include "net/socket/socket_performance_watcher.h"
 #include "net/socket/socket_performance_watcher_factory.h"
 #include "net/ssl/token_binding.h"
@@ -1741,7 +1740,7 @@ int64_t QuicStreamFactory::GetServerNetworkStatsSmoothedRttInMicroseconds(
 
 bool QuicStreamFactory::WasQuicRecentlyBroken(
     const QuicServerId& server_id) const {
-  const AlternativeService alternative_service(kProtoQUIC,
+  const AlternativeService alternative_service(QUIC,
                                                server_id.host_port_pair());
   return http_server_properties_->WasAlternativeServiceRecentlyBroken(
       alternative_service);
@@ -1835,7 +1834,7 @@ void QuicStreamFactory::MaybeInitialize() {
     HostPortPair host_port_pair(key_value.first.host(), key_value.first.port());
     for (const AlternativeServiceInfo& alternative_service_info :
          key_value.second) {
-      if (alternative_service_info.alternative_service.protocol == kProtoQUIC) {
+      if (alternative_service_info.alternative_service.protocol == QUIC) {
         quic_supported_servers_at_startup_.insert(host_port_pair);
         break;
       }
@@ -1873,7 +1872,7 @@ void QuicStreamFactory::ProcessGoingAwaySession(
     return;
 
   const QuicConnectionStats& stats = session->connection()->GetStats();
-  const AlternativeService alternative_service(kProtoQUIC,
+  const AlternativeService alternative_service(QUIC,
                                                server_id.host_port_pair());
   if (session->IsCryptoHandshakeConfirmed()) {
     http_server_properties_->ConfirmAlternativeService(alternative_service);

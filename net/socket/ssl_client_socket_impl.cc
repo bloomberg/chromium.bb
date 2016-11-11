@@ -194,8 +194,8 @@ std::unique_ptr<base::Value> NetLogSSLInfoCallback(
   dict->SetInteger("cipher_suite", SSLConnectionStatusToCipherSuite(
                                        ssl_info.connection_status));
 
-  dict->SetString("next_proto",
-                  NextProtoToString(socket->GetNegotiatedProtocol()));
+  dict->SetString("next_proto", SSLClientSocket::NextProtoToString(
+                                    socket->GetNegotiatedProtocol()));
 
   return std::move(dict);
 }

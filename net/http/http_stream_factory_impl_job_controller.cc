@@ -103,9 +103,9 @@ void HttpStreamFactoryImpl::JobController::Preconnect(
   const AlternativeService alternative_service = GetAlternativeServiceFor(
       request_info, nullptr, HttpStreamRequest::HTTP_STREAM);
 
-  if (alternative_service.protocol != kProtoUnknown) {
+  if (alternative_service.protocol != UNINITIALIZED_ALTERNATE_PROTOCOL) {
     if (session_->params().quic_disable_preconnect_if_0rtt &&
-        alternative_service.protocol == kProtoQUIC &&
+        alternative_service.protocol == QUIC &&
         session_->quic_stream_factory()->ZeroRTTEnabledFor(QuicServerId(
             alternative_service.host_port_pair(), request_info.privacy_mode))) {
       MaybeNotifyFactoryOfCompletion();
@@ -644,7 +644,7 @@ void HttpStreamFactoryImpl::JobController::CreateJobs(
   const AlternativeService alternative_service =
       GetAlternativeServiceFor(request_info, delegate, stream_type);
 
-  if (alternative_service.protocol != kProtoUnknown) {
+  if (alternative_service.protocol != UNINITIALIZED_ALTERNATE_PROTOCOL) {
     // Never share connection with other jobs for FTP requests.
     DVLOG(1) << "Selected alternative service (host: "
              << alternative_service.host_port_pair().host()
@@ -787,7 +787,8 @@ void HttpStreamFactoryImpl::JobController::OnAlternativeJobFailed(Job* job) {
 }
 
 void HttpStreamFactoryImpl::JobController::ReportBrokenAlternativeService() {
-  DCHECK(failed_alternative_service_.protocol != kProtoUnknown ||
+  DCHECK(failed_alternative_service_.protocol !=
+             UNINITIALIZED_ALTERNATE_PROTOCOL ||
          failed_alternative_proxy_server_.is_valid());
 
   if (failed_alternative_proxy_server_.is_valid()) {
@@ -848,9 +849,9 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceFor(
   AlternativeService alternative_service =
       GetAlternativeServiceForInternal(request_info, delegate, stream_type);
   AlternativeServiceType type;
-  if (alternative_service.protocol == kProtoUnknown) {
+  if (alternative_service.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL) {
     type = NO_ALTERNATIVE_SERVICE;
-  } else if (alternative_service.protocol == kProtoQUIC) {
+  } else if (alternative_service.protocol == QUIC) {
     if (request_info.url.host() == alternative_service.host) {
       type = QUIC_SAME_DESTINATION;
     } else {
@@ -895,7 +896,7 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceForInternal(
   for (const AlternativeService& alternative_service :
        alternative_service_vector) {
     DCHECK(IsAlternateProtocolValid(alternative_service.protocol));
-    if (!quic_advertised && alternative_service.protocol == kProtoQUIC)
+    if (!quic_advertised && alternative_service.protocol == QUIC)
       quic_advertised = true;
     if (http_server_properties.IsAlternativeServiceBroken(
             alternative_service)) {
@@ -916,7 +917,7 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceForInternal(
          origin.port() < kUnrestrictedPort))
       continue;
 
-    if (alternative_service.protocol == kProtoHTTP2) {
+    if (alternative_service.protocol == NPN_HTTP_2) {
       if (origin.host() != alternative_service.host &&
           !session_->params()
                .enable_http2_alternative_service_with_different_host) {
@@ -924,12 +925,13 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceForInternal(
       }
 
       // Cache this entry if we don't have a non-broken Alt-Svc yet.
-      if (first_alternative_service.protocol == kProtoUnknown)
+      if (first_alternative_service.protocol ==
+          UNINITIALIZED_ALTERNATE_PROTOCOL)
         first_alternative_service = alternative_service;
       continue;
     }
 
-    DCHECK_EQ(kProtoQUIC, alternative_service.protocol);
+    DCHECK_EQ(QUIC, alternative_service.protocol);
     if (origin.host() != alternative_service.host &&
         !session_->params()
              .enable_quic_alternative_service_with_different_host) {
@@ -968,7 +970,7 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceForInternal(
     }
 
     // Cache this entry if we don't have a non-broken Alt-Svc yet.
-    if (first_alternative_service.protocol == kProtoUnknown)
+    if (first_alternative_service.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL)
       first_alternative_service = alternative_service;
   }
 

@@ -9214,7 +9214,8 @@ std::unique_ptr<HttpNetworkSession> SetupSessionForGroupNameTests(
 
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
-  AlternativeService alternative_service(kProtoHTTP2, "", 444);
+  AlternativeService alternative_service(
+      AlternateProtocolFromNextProto(kProtoHTTP2), "", 444);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetAlternativeService(
       url::SchemeHostPort("https", "host.with.alternate", 443),
@@ -10092,7 +10093,8 @@ TEST_F(HttpNetworkTransactionTest, HonorAlternativeServiceHeader) {
   alternative_service_vector =
       http_server_properties->GetAlternativeServices(test_server);
   ASSERT_EQ(1u, alternative_service_vector.size());
-  EXPECT_EQ(kProtoHTTP2, alternative_service_vector[0].protocol);
+  EXPECT_EQ(AlternateProtocolFromNextProto(kProtoHTTP2),
+            alternative_service_vector[0].protocol);
   EXPECT_EQ("mail.example.org", alternative_service_vector[0].host);
   EXPECT_EQ(443, alternative_service_vector[0].port);
 }
@@ -10180,8 +10182,9 @@ TEST_F(HttpNetworkTransactionTest,
 
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
-  AlternativeService alternative_service(kProtoHTTP2, "different.example.org",
-                                         444);
+  AlternativeService alternative_service(
+      AlternateProtocolFromNextProto(kProtoHTTP2), "different.example.org",
+      444);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetAlternativeService(
       url::SchemeHostPort(request.url), alternative_service, expiration);
@@ -10220,7 +10223,8 @@ TEST_F(HttpNetworkTransactionTest,
 
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
-  AlternativeService alternative_service(kProtoHTTP2, "", 444);
+  AlternativeService alternative_service(
+      AlternateProtocolFromNextProto(kProtoHTTP2), "", 444);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetAlternativeService(
       url::SchemeHostPort(request.url), alternative_service, expiration);
@@ -10239,7 +10243,7 @@ TEST_F(HttpNetworkTransactionTest, ClearAlternativeServices) {
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
   url::SchemeHostPort test_server("https", "www.example.org", 443);
-  AlternativeService alternative_service(kProtoQUIC, "", 80);
+  AlternativeService alternative_service(QUIC, "", 80);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetAlternativeService(
       test_server, alternative_service, expiration);
@@ -10338,10 +10342,12 @@ TEST_F(HttpNetworkTransactionTest, HonorMultipleAlternativeServiceHeaders) {
   alternative_service_vector =
       http_server_properties->GetAlternativeServices(test_server);
   ASSERT_EQ(2u, alternative_service_vector.size());
-  EXPECT_EQ(kProtoHTTP2, alternative_service_vector[0].protocol);
+  EXPECT_EQ(AlternateProtocolFromNextProto(kProtoHTTP2),
+            alternative_service_vector[0].protocol);
   EXPECT_EQ("www.example.com", alternative_service_vector[0].host);
   EXPECT_EQ(443, alternative_service_vector[0].port);
-  EXPECT_EQ(kProtoHTTP2, alternative_service_vector[1].protocol);
+  EXPECT_EQ(AlternateProtocolFromNextProto(kProtoHTTP2),
+            alternative_service_vector[1].protocol);
   EXPECT_EQ("www.example.org", alternative_service_vector[1].host);
   EXPECT_EQ(1234, alternative_service_vector[1].port);
 }
@@ -10382,7 +10388,7 @@ TEST_F(HttpNetworkTransactionTest, IdentifyQuicBroken) {
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
-  AlternativeService alternative_service(kProtoQUIC, alternative);
+  AlternativeService alternative_service(QUIC, alternative);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetAlternativeService(server, alternative_service,
                                                 expiration);
@@ -10444,11 +10450,11 @@ TEST_F(HttpNetworkTransactionTest, IdentifyQuicNotBroken) {
   AlternativeServiceInfoVector alternative_service_info_vector;
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
 
-  AlternativeService alternative_service1(kProtoQUIC, alternative1);
+  AlternativeService alternative_service1(QUIC, alternative1);
   AlternativeServiceInfo alternative_service_info1(alternative_service1,
                                                    expiration);
   alternative_service_info_vector.push_back(alternative_service_info1);
-  AlternativeService alternative_service2(kProtoQUIC, alternative2);
+  AlternativeService alternative_service2(QUIC, alternative2);
   AlternativeServiceInfo alternative_service_info2(alternative_service2,
                                                    expiration);
   alternative_service_info_vector.push_back(alternative_service_info2);
@@ -10505,7 +10511,7 @@ TEST_F(HttpNetworkTransactionTest, MarkBrokenAlternateProtocolAndFallback) {
   // Port must be < 1024, or the header will be ignored (since initial port was
   // port 80 (another restricted port).
   const AlternativeService alternative_service(
-      kProtoHTTP2, "www.example.org",
+      AlternateProtocolFromNextProto(kProtoHTTP2), "www.example.org",
       666);  // Port is ignored by MockConnect anyway.
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetAlternativeService(server, alternative_service,
@@ -10567,8 +10573,9 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolPortRestrictedBlocked) {
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
   const int kUnrestrictedAlternatePort = 1024;
-  AlternativeService alternative_service(kProtoHTTP2, "www.example.org",
-                                         kUnrestrictedAlternatePort);
+  AlternativeService alternative_service(
+      AlternateProtocolFromNextProto(kProtoHTTP2), "www.example.org",
+      kUnrestrictedAlternatePort);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetAlternativeService(
       url::SchemeHostPort(restricted_port_request.url), alternative_service,
@@ -10617,8 +10624,9 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolPortRestrictedPermitted) {
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
   const int kUnrestrictedAlternatePort = 1024;
-  AlternativeService alternative_service(kProtoHTTP2, "www.example.org",
-                                         kUnrestrictedAlternatePort);
+  AlternativeService alternative_service(
+      AlternateProtocolFromNextProto(kProtoHTTP2), "www.example.org",
+      kUnrestrictedAlternatePort);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetAlternativeService(
       url::SchemeHostPort(restricted_port_request.url), alternative_service,
@@ -10666,8 +10674,9 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolPortRestrictedAllowed) {
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
   const int kRestrictedAlternatePort = 80;
-  AlternativeService alternative_service(kProtoHTTP2, "www.example.org",
-                                         kRestrictedAlternatePort);
+  AlternativeService alternative_service(
+      AlternateProtocolFromNextProto(kProtoHTTP2), "www.example.org",
+      kRestrictedAlternatePort);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetAlternativeService(
       url::SchemeHostPort(restricted_port_request.url), alternative_service,
@@ -10715,8 +10724,9 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolPortUnrestrictedAllowed1) {
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
   const int kRestrictedAlternatePort = 80;
-  AlternativeService alternative_service(kProtoHTTP2, "www.example.org",
-                                         kRestrictedAlternatePort);
+  AlternativeService alternative_service(
+      AlternateProtocolFromNextProto(kProtoHTTP2), "www.example.org",
+      kRestrictedAlternatePort);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetAlternativeService(
       url::SchemeHostPort(unrestricted_port_request.url), alternative_service,
@@ -10764,8 +10774,9 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolPortUnrestrictedAllowed2) {
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
   const int kUnrestrictedAlternatePort = 1025;
-  AlternativeService alternative_service(kProtoHTTP2, "www.example.org",
-                                         kUnrestrictedAlternatePort);
+  AlternativeService alternative_service(
+      AlternateProtocolFromNextProto(kProtoHTTP2), "www.example.org",
+      kUnrestrictedAlternatePort);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetAlternativeService(
       url::SchemeHostPort(unrestricted_port_request.url), alternative_service,
@@ -10805,8 +10816,9 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolUnsafeBlocked) {
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
   const int kUnsafePort = 7;
-  AlternativeService alternative_service(kProtoHTTP2, "www.example.org",
-                                         kUnsafePort);
+  AlternativeService alternative_service(
+      AlternateProtocolFromNextProto(kProtoHTTP2), "www.example.org",
+      kUnsafePort);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetAlternativeService(
       url::SchemeHostPort(request.url), alternative_service, expiration);
@@ -11164,7 +11176,8 @@ TEST_F(HttpNetworkTransactionTest, UseOriginNotAlternativeForProxy) {
       session->http_server_properties();
   url::SchemeHostPort server("https", "www.example.org", 443);
   HostPortPair alternative("www.example.com", 443);
-  AlternativeService alternative_service(kProtoHTTP2, alternative);
+  AlternativeService alternative_service(
+      AlternateProtocolFromNextProto(kProtoHTTP2), alternative);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetAlternativeService(server, alternative_service,
                                                 expiration);
@@ -13692,7 +13705,8 @@ TEST_F(HttpNetworkTransactionTest, AlternativeServiceNotOnHttp11) {
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
-  AlternativeService alternative_service(kProtoHTTP2, alternative);
+  AlternativeService alternative_service(
+      AlternateProtocolFromNextProto(kProtoHTTP2), alternative);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetAlternativeService(server, alternative_service,
                                                 expiration);
@@ -13759,7 +13773,8 @@ TEST_F(HttpNetworkTransactionTest, FailedAlternativeServiceIsNotUserVisible) {
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
-  AlternativeService alternative_service(kProtoHTTP2, alternative);
+  AlternativeService alternative_service(
+      AlternateProtocolFromNextProto(kProtoHTTP2), alternative);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetAlternativeService(server, alternative_service,
                                                 expiration);
@@ -13866,7 +13881,8 @@ TEST_F(HttpNetworkTransactionTest, AlternativeServiceShouldNotPoolToHttp11) {
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
-  AlternativeService alternative_service(kProtoHTTP2, alternative);
+  AlternativeService alternative_service(
+      AlternateProtocolFromNextProto(kProtoHTTP2), alternative);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetAlternativeService(server, alternative_service,
                                                 expiration);

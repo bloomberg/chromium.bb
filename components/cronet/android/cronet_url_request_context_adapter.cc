@@ -680,7 +680,8 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
 
       url::SchemeHostPort quic_server("https", canon_host, quic_hint.port);
       net::AlternativeService alternative_service(
-          net::kProtoQUIC, "", static_cast<uint16_t>(quic_hint.alternate_port));
+          net::AlternateProtocol::QUIC, "",
+          static_cast<uint16_t>(quic_hint.alternate_port));
       context_->http_server_properties()->SetAlternativeService(
           quic_server, alternative_service, base::Time::Max());
     }

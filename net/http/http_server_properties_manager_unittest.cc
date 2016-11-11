@@ -379,16 +379,16 @@ TEST_P(HttpServerPropertiesManagerTest,
     AlternativeServiceMap::const_iterator map_it = map.begin();
     EXPECT_EQ("mail.google.com", map_it->first.host());
     ASSERT_EQ(1u, map_it->second.size());
-    EXPECT_EQ(kProtoHTTP2, map_it->second[0].alternative_service.protocol);
+    EXPECT_EQ(NPN_HTTP_2, map_it->second[0].alternative_service.protocol);
     EXPECT_TRUE(map_it->second[0].alternative_service.host.empty());
     EXPECT_EQ(444, map_it->second[0].alternative_service.port);
     ++map_it;
     EXPECT_EQ("www.google.com", map_it->first.host());
     ASSERT_EQ(2u, map_it->second.size());
-    EXPECT_EQ(kProtoHTTP2, map_it->second[0].alternative_service.protocol);
+    EXPECT_EQ(NPN_HTTP_2, map_it->second[0].alternative_service.protocol);
     EXPECT_TRUE(map_it->second[0].alternative_service.host.empty());
     EXPECT_EQ(443, map_it->second[0].alternative_service.port);
-    EXPECT_EQ(kProtoQUIC, map_it->second[1].alternative_service.protocol);
+    EXPECT_EQ(QUIC, map_it->second[1].alternative_service.protocol);
     EXPECT_TRUE(map_it->second[1].alternative_service.host.empty());
     EXPECT_EQ(1234, map_it->second[1].alternative_service.port);
   } else {
@@ -398,16 +398,16 @@ TEST_P(HttpServerPropertiesManagerTest,
     AlternativeServiceMap::const_iterator map_it = map.begin();
     EXPECT_EQ("www.google.com", map_it->first.host());
     ASSERT_EQ(2u, map_it->second.size());
-    EXPECT_EQ(kProtoHTTP2, map_it->second[0].alternative_service.protocol);
+    EXPECT_EQ(NPN_HTTP_2, map_it->second[0].alternative_service.protocol);
     EXPECT_TRUE(map_it->second[0].alternative_service.host.empty());
     EXPECT_EQ(443, map_it->second[0].alternative_service.port);
-    EXPECT_EQ(kProtoQUIC, map_it->second[1].alternative_service.protocol);
+    EXPECT_EQ(QUIC, map_it->second[1].alternative_service.protocol);
     EXPECT_TRUE(map_it->second[1].alternative_service.host.empty());
     EXPECT_EQ(1234, map_it->second[1].alternative_service.port);
     ++map_it;
     EXPECT_EQ("mail.google.com", map_it->first.host());
     ASSERT_EQ(1u, map_it->second.size());
-    EXPECT_EQ(kProtoHTTP2, map_it->second[0].alternative_service.protocol);
+    EXPECT_EQ(NPN_HTTP_2, map_it->second[0].alternative_service.protocol);
     EXPECT_TRUE(map_it->second[0].alternative_service.host.empty());
     EXPECT_EQ(444, map_it->second[0].alternative_service.port);
   }
@@ -608,7 +608,7 @@ TEST_P(HttpServerPropertiesManagerTest, GetAlternativeServices) {
 
   url::SchemeHostPort spdy_server_mail("http", "mail.google.com", 80);
   EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
-  const AlternativeService alternative_service(kProtoHTTP2, "mail.google.com",
+  const AlternativeService alternative_service(NPN_HTTP_2, "mail.google.com",
                                                443);
   http_server_props_manager_->SetAlternativeService(
       spdy_server_mail, alternative_service, one_day_from_now_);
@@ -633,12 +633,11 @@ TEST_P(HttpServerPropertiesManagerTest, SetAlternativeServices) {
   url::SchemeHostPort spdy_server_mail("http", "mail.google.com", 80);
   EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
   AlternativeServiceInfoVector alternative_service_info_vector;
-  const AlternativeService alternative_service1(kProtoHTTP2, "mail.google.com",
+  const AlternativeService alternative_service1(NPN_HTTP_2, "mail.google.com",
                                                 443);
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo(alternative_service1, one_day_from_now_));
-  const AlternativeService alternative_service2(kProtoQUIC, "mail.google.com",
-                                                1234);
+  const AlternativeService alternative_service2(QUIC, "mail.google.com", 1234);
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo(alternative_service2, one_day_from_now_));
   http_server_props_manager_->SetAlternativeServices(
@@ -661,7 +660,7 @@ TEST_P(HttpServerPropertiesManagerTest, SetAlternativeServices) {
 TEST_P(HttpServerPropertiesManagerTest, SetAlternativeServicesEmpty) {
   url::SchemeHostPort spdy_server_mail("http", "mail.google.com", 80);
   EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
-  const AlternativeService alternative_service(kProtoHTTP2, "mail.google.com",
+  const AlternativeService alternative_service(NPN_HTTP_2, "mail.google.com",
                                                443);
   http_server_props_manager_->SetAlternativeServices(
       spdy_server_mail, AlternativeServiceInfoVector());
@@ -679,7 +678,7 @@ TEST_P(HttpServerPropertiesManagerTest, ConfirmAlternativeService) {
 
   url::SchemeHostPort spdy_server_mail("http", "mail.google.com", 80);
   EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
-  AlternativeService alternative_service(kProtoHTTP2, "mail.google.com", 443);
+  AlternativeService alternative_service(NPN_HTTP_2, "mail.google.com", 443);
 
   ExpectScheduleUpdatePrefsOnNetworkThread();
   http_server_props_manager_->SetAlternativeService(
@@ -791,7 +790,7 @@ TEST_P(HttpServerPropertiesManagerTest, Clear) {
 
   url::SchemeHostPort spdy_server("https", "mail.google.com", 443);
   http_server_props_manager_->SetSupportsSpdy(spdy_server, true);
-  AlternativeService alternative_service(kProtoHTTP2, "mail.google.com", 1234);
+  AlternativeService alternative_service(NPN_HTTP_2, "mail.google.com", 1234);
   http_server_props_manager_->SetAlternativeService(
       spdy_server, alternative_service, one_day_from_now_);
   IPAddress actual_address(127, 0, 0, 1);
@@ -926,7 +925,7 @@ TEST_P(HttpServerPropertiesManagerTest, BadSupportsQuic) {
     AlternativeServiceVector alternative_service_vector =
         http_server_props_manager_->GetAlternativeServices(server);
     ASSERT_EQ(1u, alternative_service_vector.size());
-    EXPECT_EQ(kProtoQUIC, alternative_service_vector[0].protocol);
+    EXPECT_EQ(QUIC, alternative_service_vector[0].protocol);
     EXPECT_EQ(i, alternative_service_vector[0].port);
   }
 
@@ -944,12 +943,12 @@ TEST_P(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
 
   // Set alternate protocol.
   AlternativeServiceInfoVector alternative_service_info_vector;
-  AlternativeService www_alternative_service1(kProtoHTTP2, "", 443);
+  AlternativeService www_alternative_service1(NPN_HTTP_2, "", 443);
   base::Time expiration1;
   ASSERT_TRUE(base::Time::FromUTCString("2036-12-01 10:00:00", &expiration1));
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo(www_alternative_service1, expiration1));
-  AlternativeService www_alternative_service2(kProtoHTTP2, "www.google.com",
+  AlternativeService www_alternative_service2(NPN_HTTP_2, "www.google.com",
                                               1234);
   base::Time expiration2;
   ASSERT_TRUE(base::Time::FromUTCString("2036-12-31 10:00:00", &expiration2));
@@ -958,7 +957,7 @@ TEST_P(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   http_server_props_manager_->SetAlternativeServices(
       server_www, alternative_service_info_vector);
 
-  AlternativeService mail_alternative_service(kProtoHTTP2, "foo.google.com",
+  AlternativeService mail_alternative_service(NPN_HTTP_2, "foo.google.com",
                                               444);
   base::Time expiration3 = base::Time::Max();
   http_server_props_manager_->SetAlternativeService(
@@ -1032,7 +1031,7 @@ TEST_P(HttpServerPropertiesManagerTest, AddToAlternativeServiceMap) {
   AlternativeServiceInfoVector alternative_service_info_vector = it->second;
   ASSERT_EQ(3u, alternative_service_info_vector.size());
 
-  EXPECT_EQ(kProtoHTTP2,
+  EXPECT_EQ(NPN_HTTP_2,
             alternative_service_info_vector[0].alternative_service.protocol);
   EXPECT_EQ("", alternative_service_info_vector[0].alternative_service.host);
   EXPECT_EQ(443, alternative_service_info_vector[0].alternative_service.port);
@@ -1042,14 +1041,14 @@ TEST_P(HttpServerPropertiesManagerTest, AddToAlternativeServiceMap) {
   EXPECT_LE(now + base::TimeDelta::FromHours(23), expiration);
   EXPECT_GE(now + base::TimeDelta::FromDays(1), expiration);
 
-  EXPECT_EQ(kProtoQUIC,
+  EXPECT_EQ(QUIC,
             alternative_service_info_vector[1].alternative_service.protocol);
   EXPECT_EQ("", alternative_service_info_vector[1].alternative_service.host);
   EXPECT_EQ(123, alternative_service_info_vector[1].alternative_service.port);
   // numeric_limits<int64_t>::max() represents base::Time::Max().
   EXPECT_EQ(base::Time::Max(), alternative_service_info_vector[1].expiration);
 
-  EXPECT_EQ(kProtoHTTP2,
+  EXPECT_EQ(NPN_HTTP_2,
             alternative_service_info_vector[2].alternative_service.protocol);
   EXPECT_EQ("example.org",
             alternative_service_info_vector[2].alternative_service.host);
@@ -1086,7 +1085,7 @@ TEST_P(HttpServerPropertiesManagerTest,
   AlternativeServiceInfoVector alternative_service_info_vector;
 
   const AlternativeService broken_alternative_service(
-      kProtoHTTP2, "broken.example.com", 443);
+      NPN_HTTP_2, "broken.example.com", 443);
   const base::Time time_one_day_later =
       base::Time::Now() + base::TimeDelta::FromDays(1);
   alternative_service_info_vector.push_back(
@@ -1095,13 +1094,13 @@ TEST_P(HttpServerPropertiesManagerTest,
       broken_alternative_service);
 
   const AlternativeService expired_alternative_service(
-      kProtoHTTP2, "expired.example.com", 443);
+      NPN_HTTP_2, "expired.example.com", 443);
   const base::Time time_one_day_ago =
       base::Time::Now() - base::TimeDelta::FromDays(1);
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo(expired_alternative_service, time_one_day_ago));
 
-  const AlternativeService valid_alternative_service(kProtoHTTP2,
+  const AlternativeService valid_alternative_service(NPN_HTTP_2,
                                                      "valid.example.com", 443);
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo(valid_alternative_service, time_one_day_later));
@@ -1180,7 +1179,7 @@ TEST_P(HttpServerPropertiesManagerTest, DoNotLoadExpiredAlternativeService) {
   AlternativeServiceInfoVector alternative_service_info_vector = it->second;
   ASSERT_EQ(1u, alternative_service_info_vector.size());
 
-  EXPECT_EQ(kProtoHTTP2,
+  EXPECT_EQ(NPN_HTTP_2,
             alternative_service_info_vector[0].alternative_service.protocol);
   EXPECT_EQ("valid.example.com",
             alternative_service_info_vector[0].alternative_service.host);

@@ -39,7 +39,7 @@
 #include "net/proxy/proxy_service.h"
 #include "net/quic/core/quic_protocol.h"
 #include "net/quic/core/quic_utils.h"
-#include "net/socket/next_proto.h"
+#include "net/socket/ssl_client_socket.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
@@ -446,7 +446,7 @@ NET_EXPORT std::unique_ptr<base::DictionaryValue> GetNetInfo(
       for (NextProto proto : alpn_protos) {
         if (!next_protos_string.empty())
           next_protos_string.append(",");
-        next_protos_string.append(NextProtoToString(proto));
+        next_protos_string.append(SSLClientSocket::NextProtoToString(proto));
       }
       status_dict->SetString("alpn_protos", next_protos_string);
     }
