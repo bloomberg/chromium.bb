@@ -62,14 +62,11 @@ ui::TextInputType TypeConverter<ui::TextInputType, TextInputType>::Convert(
 ui::TextInputState
 TypeConverter<ui::TextInputState, TextInputStatePtr>::Convert(
     const TextInputStatePtr& input) {
-  return ui::TextInputState(ConvertTo<ui::TextInputType>(input->type),
-                            input->flags,
-                            input->text.To<std::string>(),
-                            input->selection_start,
-                            input->selection_end,
-                            input->composition_start,
-                            input->composition_end,
-                            input->can_compose_inline);
+  return ui::TextInputState(
+      ConvertTo<ui::TextInputType>(input->type), input->flags,
+      input->text.has_value() ? input->text.value() : std::string(),
+      input->selection_start, input->selection_end, input->composition_start,
+      input->composition_end, input->can_compose_inline);
 }
 
 }  // namespace mojo

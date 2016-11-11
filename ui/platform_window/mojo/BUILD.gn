@@ -31,6 +31,4 @@ mojom("interfaces") {
   sources = [
     "text_input_state.mojom",
   ]
-
-  use_new_wrapper_types = false
 }
