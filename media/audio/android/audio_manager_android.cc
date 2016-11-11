@@ -168,7 +168,8 @@ AudioOutputStream* AudioManagerAndroid::MakeAudioOutputStream(
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   AudioOutputStream* stream = AudioManagerBase::MakeAudioOutputStream(
       params, std::string(), AudioManager::LogCallback());
-  streams_.insert(static_cast<OpenSLESOutputStream*>(stream));
+  if (stream)
+    streams_.insert(static_cast<OpenSLESOutputStream*>(stream));
   return stream;
 }
 
