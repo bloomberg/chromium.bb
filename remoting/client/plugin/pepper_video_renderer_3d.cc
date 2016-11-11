@@ -107,7 +107,7 @@ void PepperVideoRenderer3D::OnViewChanged(const pp::View& view) {
                                gl_max_viewport_size_[0]),
                  std::min<int>(ceilf(size.height() * scale),
                                gl_max_viewport_size_[1]));
-  graphics_.ResizeBuffers(view_size_.width(), view_size_.height());
+  graphics_.ResizeBuffers(size.width(), size.height());
 
   force_repaint_ = true;
   PaintIfNeeded();

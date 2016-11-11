@@ -40,9 +40,9 @@
 #include "remoting/protocol/test_event_matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
-#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
 using testing::_;
 using testing::AnyNumber;
@@ -61,7 +61,7 @@ using protocol::test::EqualsTouchEventTypeAndId;
 
 namespace {
 
-class MockScreenCapturerCallback : public webrtc::ScreenCapturer::Callback {
+class MockScreenCapturerCallback : public webrtc::DesktopCapturer::Callback {
  public:
   MockScreenCapturerCallback() {}
   virtual ~MockScreenCapturerCallback() {}

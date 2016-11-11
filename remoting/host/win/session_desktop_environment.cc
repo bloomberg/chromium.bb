@@ -13,7 +13,7 @@
 #include "remoting/host/input_injector.h"
 #include "remoting/host/screen_controls.h"
 #include "remoting/host/win/session_input_injector.h"
-#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
 namespace remoting {
 

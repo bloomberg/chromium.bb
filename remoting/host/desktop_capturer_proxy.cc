@@ -17,9 +17,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "remoting/proto/control.pb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
-#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
 #if defined(OS_CHROMEOS)
 #include "remoting/host/chromeos/aura_desktop_capturer.h"

@@ -23,7 +23,7 @@
 #include "remoting/host/screen_controls.h"
 #include "remoting/protocol/capability_names.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
-#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
 #if defined(OS_POSIX)
 #include <sys/types.h>

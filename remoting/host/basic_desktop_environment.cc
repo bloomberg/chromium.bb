@@ -17,8 +17,8 @@
 #include "remoting/host/screen_controls.h"
 #include "remoting/protocol/capability_names.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
-#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
 #if defined(USE_X11)
 #include "remoting/host/linux/x11_util.h"

@@ -34,7 +34,6 @@
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
-#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
 namespace content {
 

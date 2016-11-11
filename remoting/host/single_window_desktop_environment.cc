@@ -12,7 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/single_window_input_injector.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
-#include "third_party/webrtc/modules/desktop_capture/window_capturer.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
 namespace remoting {
 

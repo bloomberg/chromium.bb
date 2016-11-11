@@ -26,8 +26,7 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/switches.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
-#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
-#include "third_party/webrtc/modules/desktop_capture/window_capturer.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {
