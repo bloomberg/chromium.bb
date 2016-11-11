@@ -37,6 +37,7 @@ include_rules = [
   "+media/cdm/cdm_paths.h",
   "+media/midi",  # For midi switches
   "+media/mojo",  # For mojo media services.
+  "+services/image_decoder/public/cpp",
   "+services/service_manager/public/cpp",
   "+services/ui/public",
   "+ppapi/c",  # For various types.

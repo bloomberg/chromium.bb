@@ -662,14 +662,12 @@ source_set("app_mode_app_support") {
 
 mojom("mojo_bindings") {
   sources = [
-    "image_decoder.mojom",
     "network_diagnostics.mojom",
     "resource_usage_reporter.mojom",
     "shell_handler_win.mojom",
   ]
 
   public_deps = [
-    "//skia/public/interfaces",
     "//url/mojo:url_mojom_gurl",
   ]
 }

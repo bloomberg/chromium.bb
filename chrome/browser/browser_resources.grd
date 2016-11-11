@@ -606,7 +606,7 @@
         <include name="IDR_IME_WINDOW_CLOSE_C" file="resources\input_ime\ime_window_close_click.png" type="BINDATA" />
         <include name="IDR_IME_WINDOW_CLOSE_H" file="resources\input_ime\ime_window_close_hover.png" type="BINDATA" />
       </if>
-      <include name="IDR_CHROME_CONTENT_BROWSER_MANIFEST_OVERLAY" file="chrome_content_browser_manifest_overlay.json" type="BINDATA" />
+      <include name="IDR_CHROME_CONTENT_BROWSER_MANIFEST_OVERLAY" file="${root_gen_dir}\chrome_content_browser_manifest_overlay.json" use_base_dir="false" type="BINDATA" />
       <include name="IDR_CHROME_CONTENT_GPU_MANIFEST_OVERLAY" file="chrome_content_gpu_manifest_overlay.json" type="BINDATA" />
       <include name="IDR_CHROME_CONTENT_PLUGIN_MANIFEST_OVERLAY" file="chrome_content_plugin_manifest_overlay.json" type="BINDATA" />
       <include name="IDR_CHROME_CONTENT_RENDERER_MANIFEST_OVERLAY" file="chrome_content_renderer_manifest_overlay.json" type="BINDATA" />

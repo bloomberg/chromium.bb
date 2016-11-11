@@ -3343,7 +3343,6 @@ test("unit_tests") {
     "../test/base/v8_unit_test.cc",
     "../test/base/v8_unit_test.h",
     "../test/logging/win/mof_data_parser_unittest.cc",
-    "../utility/image_decoder_impl_unittest.cc",
 
     # Duplicate these tests here because PathService has more items in
     # unit_tests than in base_unittests.

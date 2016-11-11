@@ -882,6 +882,7 @@ group("gn_mojo_targets") {
     deps = [
       "//ipc:ipc_tests",
       "//mojo:tests",
+      "//services:service_unittests",
     ]
   }
 }

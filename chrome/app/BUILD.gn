@@ -353,6 +353,14 @@ static_library("test_support") {
   }
 }
 
+service_manifest_overlay("chrome_content_browser_manifest_overlay") {
+  source = "//chrome/browser/chrome_content_browser_manifest_overlay.json"
+  packaged_services = [ "image_decoder" ]
+  deps = [
+    "//services/image_decoder:manifest",
+  ]
+}
+
 if (use_aura) {
   # NOTE: These rules generate compiled versions of the content service
   # manifests with Chrome's overlays applied. These are only used at run-time,
@@ -365,8 +373,9 @@ if (use_aura) {
     output_name = "chrome_content_browser"
     source = "${root_out_dir}/Packages/content_browser/manifest.json"
     overlays =
-        [ "//chrome/browser/chrome_content_browser_manifest_overlay.json" ]
+        [ "${root_gen_dir}/chrome_content_browser_manifest_overlay.json" ]
     deps = [
+      ":chrome_content_browser_manifest_overlay",
       "//content/public/app:browser_manifest",
     ]
   }

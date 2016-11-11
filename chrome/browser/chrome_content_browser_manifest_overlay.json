@@ -33,7 +33,8 @@
         ]
       },
       "requires": {
-        "service:ash": [ "ash" ]
+        "service:ash": [ "ash" ],
+        "service:image_decoder": [ "decode" ]
       }
     },
     "navigation:frame": {

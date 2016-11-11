@@ -2,19 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/utility/image_decoder_impl.h"
-
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
-#include "ipc/ipc_channel.h"
+#include "base/lazy_instance.h"
+#include "base/message_loop/message_loop.h"
+#include "gin/array_buffer.h"
+#include "gin/public/isolate_holder.h"
+#include "services/image_decoder/image_decoder_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/scheduler/utility/webthread_impl_for_utility_thread.h"
+#include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 
-namespace mojom {
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+#include "gin/v8_initializer.h"
+#endif
+
+namespace image_decoder {
 
 namespace {
+
+const int64_t kTestMaxImageSize = 128 * 1024;
 
 bool CreateJPEGImage(int width,
                      int height,
@@ -41,7 +52,7 @@ class Request {
 
   void DecodeImage(const std::vector<unsigned char>& image, bool shrink) {
     decoder_->DecodeImage(
-        image, ImageCodec::DEFAULT, shrink,
+        image, mojom::ImageCodec::DEFAULT, shrink, kTestMaxImageSize,
         base::Bind(&Request::OnRequestDone, base::Unretained(this)));
   }
 
@@ -54,19 +65,53 @@ class Request {
   SkBitmap bitmap_;
 };
 
+// We need to ensure that Blink and V8 are initialized in order to use content's
+// image decoding call.
+class BlinkInitializer : public blink::Platform {
+ public:
+  BlinkInitializer()
+      : main_thread_(new blink::scheduler::WebThreadImplForUtilityThread()) {
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+    gin::V8Initializer::LoadV8Snapshot();
+    gin::V8Initializer::LoadV8Natives();
+#endif
+
+    blink::initialize(this);
+  }
+
+  ~BlinkInitializer() override {}
+
+ private:
+  std::unique_ptr<blink::scheduler::WebThreadImplForUtilityThread> main_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(BlinkInitializer);
+};
+
+base::LazyInstance<BlinkInitializer>::Leaky g_blink_initializer =
+    LAZY_INSTANCE_INITIALIZER;
+
+class ImageDecoderImplTest : public testing::Test {
+ public:
+  ImageDecoderImplTest() : decoder_(nullptr) {}
+  ~ImageDecoderImplTest() override {}
+
+  void SetUp() override { g_blink_initializer.Get(); }
+
+ protected:
+  ImageDecoderImpl* decoder() { return &decoder_; }
+
+ private:
+  base::MessageLoop message_loop_;
+  ImageDecoderImpl decoder_;
+};
+
 }  // namespace
 
 // Test that DecodeImage() doesn't return image message > (max message size)
-TEST(ImageDecoderImplTest, DecodeImageSizeLimit) {
-  // Using actual limit generates 14000 x 9400 images, which causes the test to
-  // timeout.  We test with a smaller limit for efficiency.
-  const size_t kTestMessageSize = IPC::Channel::kMaximumMessageSize / 1024;
-
-  ImageDecoderImpl decoder(kTestMessageSize);
-
-  // Approx max height for 3:2 image that will fit in IPC message;
-  // 1.5 for width/height ratio, 4 for bytes/pixel
-  int max_height_for_msg = sqrt(kTestMessageSize / (1.5 * 4));
+TEST_F(ImageDecoderImplTest, DecodeImageSizeLimit) {
+  // Approx max height for 3:2 image that will fit in the allotted space.
+  // 1.5 for width/height ratio, 4 for bytes/pixel.
+  int max_height_for_msg = sqrt(kTestMaxImageSize / (1.5 * 4));
   int base_msg_size = sizeof(skia::mojom::Bitmap::Data_);
 
   // Sizes which should trigger dimension-halving 0, 1 and 2 times
@@ -78,13 +123,13 @@ TEST(ImageDecoderImplTest, DecodeImageSizeLimit) {
     std::vector<unsigned char> jpg;
     ASSERT_TRUE(CreateJPEGImage(widths[i], heights[i], SK_ColorRED, &jpg));
 
-    Request request(&decoder);
+    Request request(decoder());
     request.DecodeImage(jpg, true);
     ASSERT_FALSE(request.bitmap().isNull());
 
     // Check that image has been shrunk appropriately
     EXPECT_LT(request.bitmap().computeSize64() + base_msg_size,
-              static_cast<int64_t>(kTestMessageSize));
+              kTestMaxImageSize);
 // Android does its own image shrinking for memory conservation deeper in
 // the decode, so more specific tests here won't work.
 #if !defined(OS_ANDROID)
@@ -94,7 +139,7 @@ TEST(ImageDecoderImplTest, DecodeImageSizeLimit) {
     // Check that if resize not requested and image exceeds IPC size limit,
     // an empty image is returned
     if (heights[i] > max_height_for_msg) {
-      Request request(&decoder);
+      Request request(decoder());
       request.DecodeImage(jpg, false);
       EXPECT_TRUE(request.bitmap().isNull());
     }
@@ -102,17 +147,15 @@ TEST(ImageDecoderImplTest, DecodeImageSizeLimit) {
   }
 }
 
-TEST(ImageDecoderImplTest, DecodeImageFailed) {
-  ImageDecoderImpl decoder(IPC::Channel::kMaximumMessageSize);
-
+TEST_F(ImageDecoderImplTest, DecodeImageFailed) {
   // The "jpeg" is just some "random" data;
   const char kRandomData[] = "u gycfy7xdjkhfgui bdui ";
   std::vector<unsigned char> jpg(kRandomData,
                                  kRandomData + sizeof(kRandomData));
 
-  Request request(&decoder);
+  Request request(decoder());
   request.DecodeImage(jpg, false);
   EXPECT_TRUE(request.bitmap().isNull());
 }
 
-}  // namespace mojom
+}  // namespace image_decoder

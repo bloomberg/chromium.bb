@@ -183,6 +183,7 @@
 #include "net/ssl/ssl_cert_request_info.h"
 #include "ppapi/host/ppapi_host.h"
 #include "printing/features/features.h"
+#include "services/image_decoder/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -3012,6 +3013,8 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
   services->insert(std::make_pair("service:media",
                                   base::ASCIIToUTF16("Media Service")));
 #endif
+  services->insert(std::make_pair(image_decoder::kServiceName,
+                                  base::ASCIIToUTF16("Image Decoder Service")));
 }
 
 std::unique_ptr<base::Value>

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/android/jni_android.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/image_decoder.h"
 
 // Kicks off asynchronous pipelines for creating thumbnails for local files.

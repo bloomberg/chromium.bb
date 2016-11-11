@@ -94,6 +94,12 @@ std::unique_ptr<Connector> ConnectorImpl::Clone() {
   return base::MakeUnique<ConnectorImpl>(connector.PassInterface());
 }
 
+void ConnectorImpl::BindRequest(mojom::ConnectorRequest request) {
+  if (!BindIfNecessary())
+    return;
+  connector_->Clone(std::move(request));
+}
+
 bool ConnectorImpl::BindIfNecessary() {
   // Bind this object to the current thread the first time it is used to
   // connect.

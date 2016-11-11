@@ -72,8 +72,11 @@ def main():
   parser.add_argument("--parent")
   parser.add_argument("--output")
   parser.add_argument("--name")
+  parser.add_argument("--pretty", action="store_true")
   parser.add_argument("--overlays", nargs="+", dest="overlays", default=[])
-  args, children = parser.parse_known_args()
+  parser.add_argument("--packaged-services", nargs="+",
+                      dest="packaged_services", default=[])
+  args, _ = parser.parse_known_args()
 
   parent = ParseJSONFile(args.parent)
 
@@ -82,23 +85,26 @@ def main():
     raise ValueError("Service name path component '%s' must not start " \
                      "with //" % service_path)
 
-  if args.name != service_path:
+  if args.name and args.name != service_path:
     raise ValueError("Service name '%s' specified in build file does not " \
                      "match name '%s' specified in manifest." %
                      (args.name, service_path))
 
-  services = []
-  for child in children:
-    services.append(ParseJSONFile(child))
+  packaged_services = []
+  for child_manifest in args.packaged_services:
+    packaged_services.append(ParseJSONFile(child_manifest))
 
-  if len(services) > 0:
-    parent['services'] = services
+  if len(packaged_services) > 0:
+    if 'services' not in parent:
+      parent['services'] = packaged_services
+    else:
+      parent['services'].extend(packaged_services)
 
   for overlay_path in args.overlays:
     MergeManifestOverlay(parent, ParseJSONFile(overlay_path))
 
   with open(args.output, 'w') as output_file:
-    json.dump(parent, output_file)
+    json.dump(parent, output_file, indent=2 if args.pretty else -1)
 
   return 0
 

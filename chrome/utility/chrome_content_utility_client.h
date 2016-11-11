@@ -35,6 +35,7 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   bool OnMessageReceived(const IPC::Message& message) override;
   void ExposeInterfacesToBrowser(
       service_manager::InterfaceRegistry* registry) override;
+  void RegisterServices(StaticServiceMap* services) override;
 
   void AddHandler(std::unique_ptr<UtilityMessageHandler> handler);
 

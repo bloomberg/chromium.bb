@@ -27,6 +27,7 @@ class ConnectorImpl : public Connector {
   std::unique_ptr<Connection> Connect(const std::string& name) override;
   std::unique_ptr<Connection> Connect(ConnectParams* params) override;
   std::unique_ptr<Connector> Clone() override;
+  void BindRequest(mojom::ConnectorRequest request) override;
 
   bool BindIfNecessary();
 

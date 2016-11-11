@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/callback.h"
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "ui/gfx/image/image.h"
 

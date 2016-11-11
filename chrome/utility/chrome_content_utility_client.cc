@@ -16,17 +16,19 @@
 #include "chrome/common/safe_browsing/zip_analyzer.h"
 #include "chrome/common/safe_browsing/zip_analyzer_results.h"
 #include "chrome/utility/chrome_content_utility_ipc_whitelist.h"
-#include "chrome/utility/image_decoder_impl.h"
 #include "chrome/utility/utility_message_handler.h"
 #include "components/safe_json/utility/safe_json_parser_mojo_impl.h"
 #include "content/public/child/image_decoder_utils.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_info.h"
 #include "content/public/utility/utility_thread.h"
 #include "courgette/courgette.h"
 #include "courgette/third_party/bsdiff/bsdiff.h"
 #include "ipc/ipc_channel.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "printing/features/features.h"
+#include "services/image_decoder/image_decoder_service.h"
+#include "services/image_decoder/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "third_party/zlib/google/zip.h"
 #include "ui/gfx/geometry/size.h"
@@ -100,10 +102,9 @@ void CreateResourceUsageReporter(
 }
 #endif  // !defined(OS_ANDROID)
 
-void CreateImageDecoder(mojo::InterfaceRequest<mojom::ImageDecoder> request) {
+std::unique_ptr<service_manager::Service> CreateImageDecoderService() {
   content::UtilityThread::Get()->EnsureBlinkInitialized();
-  mojo::MakeStrongBinding(base::MakeUnique<ImageDecoderImpl>(),
-                          std::move(request));
+  return image_decoder::ImageDecoderService::Create();
 }
 
 }  // namespace
@@ -206,12 +207,18 @@ void ChromeContentUtilityClient::ExposeInterfacesToBrowser(
       base::Bind(CreateProxyResolverFactory));
   registry->AddInterface(base::Bind(CreateResourceUsageReporter));
 #endif
-  registry->AddInterface(base::Bind(&CreateImageDecoder));
   registry->AddInterface(
       base::Bind(&safe_json::SafeJsonParserMojoImpl::Create));
 #if defined(OS_WIN)
   registry->AddInterface(base::Bind(&ShellHandlerImpl::Create));
 #endif
+}
+
+void ChromeContentUtilityClient::RegisterServices(StaticServiceMap* services) {
+  content::ServiceInfo image_decoder_info;
+  image_decoder_info.factory = base::Bind(&CreateImageDecoderService);
+  services->insert(
+      std::make_pair(image_decoder::kServiceName, image_decoder_info));
 }
 
 void ChromeContentUtilityClient::AddHandler(

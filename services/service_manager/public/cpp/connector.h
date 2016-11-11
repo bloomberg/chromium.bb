@@ -109,6 +109,9 @@ class Connector {
   // The returned object may be passed multiple times until Connect() is called,
   // at which point this method must be called again to pass again.
   virtual std::unique_ptr<Connector> Clone() = 0;
+
+  // Binds a Connector request to the other end of this Connector.
+  virtual void BindRequest(mojom::ConnectorRequest request) = 0;
 };
 
 }  // namespace service_manager
