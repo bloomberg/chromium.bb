@@ -10,13 +10,11 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/typed_urls_helper.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sync/base/time.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/test/fake_server/fake_server_verifier.h"
 #include "components/sync/test/fake_server/sessions_hierarchy.h"
 
@@ -37,18 +35,6 @@ class SingleClientSessionsSyncTest : public SyncTest {
  public:
   SingleClientSessionsSyncTest() : SyncTest(SINGLE_CLIENT) {}
   ~SingleClientSessionsSyncTest() override {}
-
-  void SetUpCommandLine(base::CommandLine* cl) override {
-    // This is a hacky override of the switches set in
-    // SyncTest::SetUpCommandLine() to avoid the switch that speeds up nudge
-    // delays. CookieJarMismatch asserts exact histogram counts assuming that
-    // sync is relatively slow, so we preserve that assumption.
-    if (!cl->HasSwitch(switches::kDisableBackgroundNetworking))
-      cl->AppendSwitch(switches::kDisableBackgroundNetworking);
-
-    if (!cl->HasSwitch(switches::kSyncShortInitialRetryOverride))
-      cl->AppendSwitch(switches::kSyncShortInitialRetryOverride);
-  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SingleClientSessionsSyncTest);

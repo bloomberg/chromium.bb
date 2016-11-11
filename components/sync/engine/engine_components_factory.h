@@ -56,11 +56,6 @@ class EngineComponentsFactory {
     FORCE_ENABLE_PRE_COMMIT_UPDATE_AVOIDANCE,
   };
 
-  enum class NudgeDelay {
-    DEFAULT_NUDGE_DELAY,
-    SHORT_NUDGE_DELAY,
-  };
-
   // Configuration options for internal components. This struct is expected
   // to grow and shrink over time with transient features / experiments,
   // roughly following command line flags in chrome. Implementations of
@@ -69,7 +64,6 @@ class EngineComponentsFactory {
   struct Switches {
     EncryptionMethod encryption_method;
     BackoffOverride backoff_override;
-    NudgeDelay nudge_delay;
     PreCommitUpdatesPolicy pre_commit_updates_policy;
   };
 

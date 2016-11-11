@@ -86,11 +86,6 @@ class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
   // Returns true if the client is currently in exponential backoff.
   bool IsBackingOff() const;
 
-  // Changes the default delay between nudge cycles. Model-type specific
-  // overrides will still apply. This is made public so that nudge cycles can be
-  // shortened in integration tests.
-  void SetDefaultNudgeDelay(base::TimeDelta delay_ms);
-
  private:
   enum JobPriority {
     // Non-canary jobs respect exponential backoff.
@@ -143,6 +138,8 @@ class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
   };
 
   static const char* GetModeString(Mode mode);
+
+  void SetDefaultNudgeDelay(base::TimeDelta delay_ms);
 
   // Invoke the syncer to perform a nudge job.
   void DoNudgeSyncCycleJob(JobPriority priority);
