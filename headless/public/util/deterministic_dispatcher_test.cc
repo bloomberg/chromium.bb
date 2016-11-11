@@ -110,4 +110,20 @@ TEST_F(DeterministicDispatcherTest,
                                          "id: 3 err: -123", "id: 4 OK"));
 }
 
+TEST_F(DeterministicDispatcherTest, JobKilled) {
+  std::vector<std::string> notifications;
+  {
+    std::unique_ptr<FakeManagedDispatchURLRequestJob> job(
+        new FakeManagedDispatchURLRequestJob(deterministic_dispatcher_.get(), 1,
+                                             &notifications));
+
+    job->Kill();
+  }
+
+  EXPECT_TRUE(notifications.empty());
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(notifications.empty());
+}
+
 }  // namespace headless

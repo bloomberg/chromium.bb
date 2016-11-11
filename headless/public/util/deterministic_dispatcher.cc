@@ -15,7 +15,8 @@ namespace headless {
 DeterministicDispatcher::DeterministicDispatcher(
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner)
     : io_thread_task_runner_(std::move(io_thread_task_runner)),
-      dispatch_pending_(false) {}
+      dispatch_pending_(false),
+      weak_ptr_factory_(this) {}
 
 DeterministicDispatcher::~DeterministicDispatcher() {}
 
@@ -63,7 +64,7 @@ void DeterministicDispatcher::MaybeDispatchJobLocked() {
   io_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DeterministicDispatcher::MaybeDispatchJobOnIOThreadTask,
-                 base::Unretained(this)));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DeterministicDispatcher::MaybeDispatchJobOnIOThreadTask() {
@@ -72,8 +73,10 @@ void DeterministicDispatcher::MaybeDispatchJobOnIOThreadTask() {
 
   {
     base::AutoLock lock(lock_);
-    CHECK(!pending_requests_.empty());
     dispatch_pending_ = false;
+    // If the job got deleted, |pending_requests_| may be empty.
+    if (pending_requests_.empty())
+      return;
     job = pending_requests_.front();
     StatusMap::const_iterator it = ready_status_map_.find(job);
     // Bail out if the oldest job is not be ready for dispatch yet.

@@ -31,6 +31,8 @@ class FakeManagedDispatchURLRequestJob : public ManagedDispatchURLRequestJob {
   using ManagedDispatchURLRequestJob::DispatchHeadersComplete;
   using ManagedDispatchURLRequestJob::DispatchStartError;
 
+  void Kill() override;
+
   void Start() override {}
 
   void OnHeadersComplete() override;

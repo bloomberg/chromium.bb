@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "headless/public/util/url_request_dispatcher.h"
@@ -53,6 +54,8 @@ class DeterministicDispatcher : public URLRequestDispatcher {
   // Whether or not a MaybeDispatchJobOnIoThreadTask has been posted on the
   // |io_thread_task_runner_|
   bool dispatch_pending_;
+
+  base::WeakPtrFactory<DeterministicDispatcher> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DeterministicDispatcher);
 };

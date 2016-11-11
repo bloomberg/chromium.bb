@@ -4,6 +4,8 @@
 
 #include "headless/public/util/testing/fake_managed_dispatch_url_request_job.h"
 
+#include "headless/public/util/url_request_dispatcher.h"
+
 namespace headless {
 
 void FakeManagedDispatchURLRequestJob::OnHeadersComplete() {
@@ -12,6 +14,10 @@ void FakeManagedDispatchURLRequestJob::OnHeadersComplete() {
 
 void FakeManagedDispatchURLRequestJob::OnStartError(net::Error error) {
   notifications_->push_back(base::StringPrintf("id: %d err: %d", id_, error));
+}
+
+void FakeManagedDispatchURLRequestJob::Kill() {
+  url_request_dispatcher_->JobKilled(this);
 }
 
 }  // namespace headless
