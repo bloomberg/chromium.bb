@@ -21,7 +21,7 @@ class CAPTURE_EXPORT VideoCaptureJpegDecoder {
 
   using DecodeDoneCB = base::Callback<void(
       std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>,
-      const scoped_refptr<media::VideoFrame>&)>;
+      scoped_refptr<media::VideoFrame>)>;
 
   virtual ~VideoCaptureJpegDecoder() {}
 

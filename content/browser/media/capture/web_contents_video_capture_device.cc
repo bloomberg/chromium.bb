@@ -136,7 +136,7 @@ class FrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
       base::WeakPtr<FrameSubscriber> frame_subscriber_,
       const media::ThreadSafeCaptureOracle::CaptureFrameCallback&
           capture_frame_cb,
-      const scoped_refptr<media::VideoFrame>& frame,
+      scoped_refptr<media::VideoFrame> frame,
       base::TimeTicks timestamp,
       const gfx::Rect& region_in_frame,
       bool success);
@@ -358,7 +358,7 @@ void FrameSubscriber::DidCaptureFrame(
     base::WeakPtr<FrameSubscriber> frame_subscriber_,
     const media::ThreadSafeCaptureOracle::CaptureFrameCallback&
         capture_frame_cb,
-    const scoped_refptr<media::VideoFrame>& frame,
+    scoped_refptr<media::VideoFrame> frame,
     base::TimeTicks timestamp,
     const gfx::Rect& region_in_frame,
     bool success) {
@@ -380,7 +380,7 @@ void FrameSubscriber::DidCaptureFrame(
           frame_subscriber_->IsUserInteractingWithContent());
     }
   }
-  capture_frame_cb.Run(frame, timestamp, success);
+  capture_frame_cb.Run(std::move(frame), timestamp, success);
 }
 
 bool FrameSubscriber::IsUserInteractingWithContent() {

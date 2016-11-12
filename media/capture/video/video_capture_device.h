@@ -119,7 +119,7 @@ class CAPTURE_EXPORT VideoCaptureDevice {
         base::TimeDelta timestamp) = 0;
     virtual void OnIncomingCapturedVideoFrame(
         std::unique_ptr<Buffer> buffer,
-        const scoped_refptr<VideoFrame>& frame) = 0;
+        scoped_refptr<VideoFrame> frame) = 0;
 
     // Attempts to reserve the same Buffer provided in the last call to one of
     // the OnIncomingCapturedXXX() methods. This will fail if the content of the

@@ -211,10 +211,10 @@ void AuraWindowCaptureMachine::Capture(base::TimeTicks event_time) {
   if (oracle_proxy_->ObserveEventAndDecideCapture(
           event, gfx::Rect(), event_time, &frame, &capture_frame_cb)) {
     std::unique_ptr<cc::CopyOutputRequest> request =
-        cc::CopyOutputRequest::CreateRequest(base::Bind(
-            &AuraWindowCaptureMachine::DidCopyOutput,
-            weak_factory_.GetWeakPtr(), frame, event_time, start_time,
-            capture_frame_cb));
+        cc::CopyOutputRequest::CreateRequest(
+            base::Bind(&AuraWindowCaptureMachine::DidCopyOutput,
+                       weak_factory_.GetWeakPtr(), std::move(frame), event_time,
+                       start_time, capture_frame_cb));
     gfx::Rect window_rect = gfx::Rect(desktop_window_->bounds().width(),
                                       desktop_window_->bounds().height());
     request->set_area(window_rect);
@@ -260,7 +260,7 @@ void AuraWindowCaptureMachine::DidCopyOutput(
   // If ProcessCopyOutputResponse() failed, it will not run |capture_frame_cb|,
   // so do that now.
   if (!succeeded)
-    capture_frame_cb.Run(video_frame, event_time, false);
+    capture_frame_cb.Run(std::move(video_frame), event_time, false);
 }
 
 bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
@@ -351,7 +351,7 @@ void AuraWindowCaptureMachine::CopyOutputFinishedForVideo(
     base::WeakPtr<AuraWindowCaptureMachine> machine,
     base::TimeTicks event_time,
     const CaptureFrameCallback& capture_frame_cb,
-    const scoped_refptr<media::VideoFrame>& target,
+    scoped_refptr<media::VideoFrame> target,
     std::unique_ptr<cc::SingleReleaseCallback> release_callback,
     bool result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -369,7 +369,7 @@ void AuraWindowCaptureMachine::CopyOutputFinishedForVideo(
     result = false;
   }
 
-  capture_frame_cb.Run(target, event_time, result);
+  capture_frame_cb.Run(std::move(target), event_time, result);
 }
 
 void AuraWindowCaptureMachine::OnWindowBoundsChanged(

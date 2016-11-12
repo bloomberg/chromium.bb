@@ -168,7 +168,7 @@ bool ThreadSafeCaptureOracle::AttemptPassiveRefresh() {
     return false;
   }
 
-  capture_callback.Run(frame, refresh_time, true);
+  capture_callback.Run(std::move(frame), refresh_time, true);
   return true;
 }
 
@@ -201,7 +201,7 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
     std::unique_ptr<VideoCaptureDevice::Client::Buffer> buffer,
     base::TimeTicks capture_begin_time,
     base::TimeDelta estimated_frame_duration,
-    const scoped_refptr<VideoFrame>& frame,
+    scoped_refptr<VideoFrame> frame,
     base::TimeTicks reference_time,
     bool success) {
   TRACE_EVENT_ASYNC_END2("gpu.capture", "Capture", buffer.get(), "success",
@@ -232,7 +232,7 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
         base::Bind(&ThreadSafeCaptureOracle::DidConsumeFrame, this,
                    frame_number, frame->metadata()));
 
-    client_->OnIncomingCapturedVideoFrame(std::move(buffer), frame);
+    client_->OnIncomingCapturedVideoFrame(std::move(buffer), std::move(frame));
   }
 }
 

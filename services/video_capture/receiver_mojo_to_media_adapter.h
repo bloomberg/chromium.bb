@@ -24,7 +24,7 @@ class ReceiverMojoToMediaAdapter : public media::VideoFrameReceiver {
   // media::VideoFrameReceiver:
   void OnIncomingCapturedVideoFrame(
       std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
-      const scoped_refptr<media::VideoFrame>& frame) override;
+      scoped_refptr<media::VideoFrame> frame) override;
   void OnError() override;
   void OnLog(const std::string& message) override;
   void OnBufferDestroyed(int buffer_id_to_drop) override;

@@ -41,10 +41,9 @@ namespace media {
 // implementation to guarantee proper cleanup on destruction on our side.
 class AutoReleaseBuffer : public media::VideoCaptureDevice::Client::Buffer {
  public:
-  AutoReleaseBuffer(const scoped_refptr<VideoCaptureBufferPool>& pool,
-                    int buffer_id)
+  AutoReleaseBuffer(scoped_refptr<VideoCaptureBufferPool> pool, int buffer_id)
       : id_(buffer_id),
-        pool_(pool),
+        pool_(std::move(pool)),
         buffer_handle_(pool_->GetBufferHandle(buffer_id)) {
     DCHECK(pool_.get());
   }
@@ -74,12 +73,12 @@ class AutoReleaseBuffer : public media::VideoCaptureDevice::Client::Buffer {
 
 VideoCaptureDeviceClient::VideoCaptureDeviceClient(
     std::unique_ptr<VideoFrameReceiver> receiver,
-    const scoped_refptr<VideoCaptureBufferPool>& buffer_pool,
+    scoped_refptr<VideoCaptureBufferPool> buffer_pool,
     const VideoCaptureJpegDecoderFactoryCB& jpeg_decoder_factory)
     : receiver_(std::move(receiver)),
       jpeg_decoder_factory_callback_(jpeg_decoder_factory),
       external_jpeg_decoder_initialized_(false),
-      buffer_pool_(buffer_pool),
+      buffer_pool_(std::move(buffer_pool)),
       last_captured_pixel_format_(media::PIXEL_FORMAT_UNKNOWN) {}
 
 VideoCaptureDeviceClient::~VideoCaptureDeviceClient() {
@@ -312,13 +311,13 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
                                frame_format.frame_rate);
   frame->metadata()->SetTimeTicks(media::VideoFrameMetadata::REFERENCE_TIME,
                                   reference_time);
-  OnIncomingCapturedVideoFrame(std::move(buffer), frame);
+  OnIncomingCapturedVideoFrame(std::move(buffer), std::move(frame));
 }
 
 void VideoCaptureDeviceClient::OnIncomingCapturedVideoFrame(
     std::unique_ptr<Buffer> buffer,
-    const scoped_refptr<VideoFrame>& frame) {
-  receiver_->OnIncomingCapturedVideoFrame(std::move(buffer), frame);
+    scoped_refptr<VideoFrame> frame) {
+  receiver_->OnIncomingCapturedVideoFrame(std::move(buffer), std::move(frame));
 }
 
 std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>

@@ -95,11 +95,11 @@ class VideoFrameReceiverOnIOThread : public media::VideoFrameReceiver {
 
   void OnIncomingCapturedVideoFrame(
       std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
-      const scoped_refptr<media::VideoFrame>& frame) override {
+      scoped_refptr<media::VideoFrame> frame) override {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&VideoFrameReceiver::OnIncomingCapturedVideoFrame, receiver_,
-                   base::Passed(&buffer), frame));
+                   base::Passed(&buffer), std::move(frame)));
   }
 
   void OnError() override {
@@ -402,7 +402,7 @@ VideoCaptureController::~VideoCaptureController() {
 
 void VideoCaptureController::OnIncomingCapturedVideoFrame(
     std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
-    const scoped_refptr<VideoFrame>& frame) {
+    scoped_refptr<VideoFrame> frame) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   const int buffer_id = buffer->id();
   DCHECK_NE(buffer_id, media::VideoCaptureBufferPool::kInvalidId);

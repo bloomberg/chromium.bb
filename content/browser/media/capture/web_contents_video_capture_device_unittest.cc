@@ -375,7 +375,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
 
   void OnIncomingCapturedVideoFrame(
       std::unique_ptr<Buffer> buffer,
-      const scoped_refptr<media::VideoFrame>& frame) override {
+      scoped_refptr<media::VideoFrame> frame) override {
     EXPECT_FALSE(frame->visible_rect().IsEmpty());
     EXPECT_EQ(media::PIXEL_FORMAT_I420, frame->format());
     double frame_rate = 0;

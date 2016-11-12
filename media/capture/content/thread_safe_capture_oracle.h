@@ -38,9 +38,10 @@ class CAPTURE_EXPORT ThreadSafeCaptureOracle
   // If |success| is true then |frame| is valid and |timestamp| indicates when
   // the frame was painted.
   // If |success| is false, all other parameters are invalid.
-  typedef base::Callback<void(const scoped_refptr<VideoFrame>& frame,
+  typedef base::Callback<void(scoped_refptr<VideoFrame> frame,
                               base::TimeTicks timestamp,
-                              bool success)> CaptureFrameCallback;
+                              bool success)>
+      CaptureFrameCallback;
 
   // Record a change |event| along with its |damage_rect| and |event_time|, and
   // then make a decision whether to proceed with capture. The decision is based
@@ -100,7 +101,7 @@ class CAPTURE_EXPORT ThreadSafeCaptureOracle
       std::unique_ptr<VideoCaptureDevice::Client::Buffer> buffer,
       base::TimeTicks capture_begin_time,
       base::TimeDelta estimated_frame_duration,
-      const scoped_refptr<VideoFrame>& frame,
+      scoped_refptr<VideoFrame> frame,
       base::TimeTicks reference_time,
       bool success);
 

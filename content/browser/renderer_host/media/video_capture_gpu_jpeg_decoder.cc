@@ -152,7 +152,7 @@ void VideoCaptureGpuJpegDecoder::DecodeCapturedData(
     decode_done_closure_ =
         base::Bind(decode_done_cb_, base::Passed(&out_buffer), out_frame);
   }
-  decoder_->Decode(in_buffer, out_frame);
+  decoder_->Decode(in_buffer, std::move(out_frame));
 #else
   NOTREACHED();
 #endif

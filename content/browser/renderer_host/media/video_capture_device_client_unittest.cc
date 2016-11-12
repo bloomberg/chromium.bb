@@ -44,7 +44,7 @@ class MockVideoCaptureController : public VideoCaptureController {
 
   void OnIncomingCapturedVideoFrame(
       std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
-      const scoped_refptr<media::VideoFrame>& frame) override {
+      scoped_refptr<media::VideoFrame> frame) override {
     MockOnIncomingCapturedVideoFrame(frame->coded_size());
   }
 };

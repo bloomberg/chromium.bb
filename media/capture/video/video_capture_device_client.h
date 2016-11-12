@@ -45,7 +45,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
  public:
   VideoCaptureDeviceClient(
       std::unique_ptr<VideoFrameReceiver> receiver,
-      const scoped_refptr<VideoCaptureBufferPool>& buffer_pool,
+      scoped_refptr<VideoCaptureBufferPool> buffer_pool,
       const VideoCaptureJpegDecoderFactoryCB& jpeg_decoder_factory);
   ~VideoCaptureDeviceClient() override;
 
@@ -66,7 +66,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
                                 base::TimeDelta timestamp) override;
   void OnIncomingCapturedVideoFrame(
       std::unique_ptr<Buffer> buffer,
-      const scoped_refptr<media::VideoFrame>& frame) override;
+      scoped_refptr<media::VideoFrame> frame) override;
   std::unique_ptr<Buffer> ResurrectLastOutputBuffer(
       const gfx::Size& dimensions,
       media::VideoPixelFormat format,

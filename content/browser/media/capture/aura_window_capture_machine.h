@@ -103,7 +103,7 @@ class AuraWindowCaptureMachine
       base::WeakPtr<AuraWindowCaptureMachine> machine,
       base::TimeTicks event_time,
       const CaptureFrameCallback& capture_frame_cb,
-      const scoped_refptr<media::VideoFrame>& target,
+      scoped_refptr<media::VideoFrame> target,
       std::unique_ptr<cc::SingleReleaseCallback> release_callback,
       bool result);
 
