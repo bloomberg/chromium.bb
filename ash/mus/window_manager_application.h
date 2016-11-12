@@ -29,10 +29,6 @@ class ScopedFakeStatisticsProvider;
 }
 }
 
-namespace service_manager {
-class ServiceContext;
-}
-
 namespace views {
 class AuraInit;
 class SurfaceContextFactory;
@@ -76,14 +72,12 @@ class WindowManagerApplication
   void ShutdownComponents();
 
   // service_manager::Service:
-  void OnStart(service_manager::ServiceContext* context) override;
+  void OnStart() override;
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override;
 
   // session::mojom::ScreenlockStateListener:
   void ScreenlockStateChanged(bool locked) override;
-
-  service_manager::ServiceContext* context_ = nullptr;
 
   tracing::Provider tracing_;
 

@@ -27,10 +27,6 @@ class ShutdownClientApp
 
  private:
   // service_manager::Service:
-  void OnStart(ServiceContext* context) override {
-    context_ = context;
-  }
-
   bool OnConnect(const ServiceInfo& remote_info,
                  InterfaceRegistry* registry) override {
     registry->AddInterface<mojom::ShutdownTestClientController>(this);
@@ -46,7 +42,7 @@ class ShutdownClientApp
   // mojom::ShutdownTestClientController:
   void ConnectAndWait(const ConnectAndWaitCallback& callback) override {
     mojom::ShutdownTestServicePtr service;
-    context_->connector()->ConnectToInterface(
+    context()->connector()->ConnectToInterface(
         "service:shutdown_service", &service);
 
     mojo::Binding<mojom::ShutdownTestClient> client_binding(this);
@@ -65,7 +61,6 @@ class ShutdownClientApp
     callback.Run();
   }
 
-  ServiceContext* context_ = nullptr;
   mojo::BindingSet<mojom::ShutdownTestClientController> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ShutdownClientApp);

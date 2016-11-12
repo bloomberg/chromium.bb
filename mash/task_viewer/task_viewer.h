@@ -16,10 +16,6 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/tracing/public/cpp/provider.h"
 
-namespace service_manager {
-class ServiceContext;
-}
-
 namespace views {
 class AuraInit;
 class Widget;
@@ -40,7 +36,7 @@ class TaskViewer : public service_manager::Service,
 
  private:
   // service_manager::Service:
-  void OnStart(service_manager::ServiceContext* context) override;
+  void OnStart() override;
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override;
 
@@ -50,8 +46,6 @@ class TaskViewer : public service_manager::Service,
   // service_manager::InterfaceFactory<mojom::Launchable>:
   void Create(const service_manager::Identity& remote_identity,
               mojom::LaunchableRequest request) override;
-
-  service_manager::ServiceContext* context_ = nullptr;
 
   mojo::BindingSet<mojom::Launchable> bindings_;
   std::vector<views::Widget*> windows_;

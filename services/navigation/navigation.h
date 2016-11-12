@@ -30,7 +30,6 @@ class Navigation : public service_manager::Service, public mojom::ViewFactory {
 
  private:
   // service_manager::Service:
-  void OnStart(service_manager::ServiceContext* context) override;
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override;
 
@@ -42,8 +41,6 @@ class Navigation : public service_manager::Service, public mojom::ViewFactory {
   void ViewFactoryLost();
 
   scoped_refptr<base::SequencedTaskRunner> view_task_runner_;
-
-  service_manager::ServiceContext* context_;
 
   std::string client_user_id_;
 

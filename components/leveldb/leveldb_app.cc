@@ -15,8 +15,8 @@ LevelDBApp::LevelDBApp() {}
 
 LevelDBApp::~LevelDBApp() {}
 
-void LevelDBApp::OnStart(service_manager::ServiceContext* context) {
-  tracing_.Initialize(context->connector(), context->identity().name());
+void LevelDBApp::OnStart() {
+  tracing_.Initialize(context()->connector(), context()->identity().name());
 }
 
 bool LevelDBApp::OnConnect(const service_manager::ServiceInfo& remote_info,

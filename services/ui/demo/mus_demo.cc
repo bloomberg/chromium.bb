@@ -64,10 +64,10 @@ MusDemo::MusDemo() {}
 
 MusDemo::~MusDemo() {}
 
-void MusDemo::OnStart(service_manager::ServiceContext* context) {
-  gpu_service_ = GpuService::Create(context->connector());
+void MusDemo::OnStart() {
+  gpu_service_ = GpuService::Create(context()->connector());
   window_tree_client_ = base::MakeUnique<WindowTreeClient>(this, this);
-  window_tree_client_->ConnectAsWindowManager(context->connector());
+  window_tree_client_->ConnectAsWindowManager(context()->connector());
 }
 
 bool MusDemo::OnConnect(const service_manager::ServiceInfo& remote_info,

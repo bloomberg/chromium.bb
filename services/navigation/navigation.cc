@@ -44,10 +44,6 @@ Navigation::Navigation()
 }
 Navigation::~Navigation() {}
 
-void Navigation::OnStart(service_manager::ServiceContext* context) {
-  context_ = context;
-}
-
 bool Navigation::OnConnect(const service_manager::ServiceInfo& remote_info,
                            service_manager::InterfaceRegistry* registry) {
   std::string remote_user_id = remote_info.identity.user_id();
@@ -66,7 +62,7 @@ bool Navigation::OnConnect(const service_manager::ServiceInfo& remote_info,
 void Navigation::CreateView(mojom::ViewClientPtr client,
                             mojom::ViewRequest request) {
   std::unique_ptr<service_manager::Connector> new_connector =
-      context_->connector()->Clone();
+      context()->connector()->Clone();
   std::unique_ptr<service_manager::ServiceContextRef> context_ref =
       ref_factory_.CreateRef();
   view_task_runner_->PostTask(

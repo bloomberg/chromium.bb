@@ -81,7 +81,9 @@ void ServiceContext::OnStart(const ServiceInfo& info,
   local_info_ = info;
   callback.Run(std::move(pending_connector_request_),
                mojo::GetProxy(&service_control_, binding_.associated_group()));
-  service_->OnStart(this);
+
+  service_->set_context(this);
+  service_->OnStart();
 }
 
 void ServiceContext::OnConnect(

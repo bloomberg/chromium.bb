@@ -89,9 +89,9 @@ FileService::~FileService() {
   leveldb_service_runner_->DeleteSoon(FROM_HERE, leveldb_objects_.release());
 }
 
-void FileService::OnStart(service_manager::ServiceContext* context) {
+void FileService::OnStart() {
   file_system_objects_.reset(new FileService::FileSystemObjects(
-      GetUserDirForUserId(context->identity().user_id())));
+      GetUserDirForUserId(context()->identity().user_id())));
   leveldb_objects_.reset(
       new FileService::LevelDBServiceObjects(leveldb_service_runner_));
 }
