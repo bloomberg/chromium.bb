@@ -723,7 +723,7 @@ void CryptohomeAuthenticator::Resolve() {
                      AuthFailure(AuthFailure::COULD_NOT_MOUNT_CRYPTOHOME)));
       break;
     case FAILED_REMOVE:
-      // In this case, we tried to remove the user's old cryptohome at her
+      // In this case, we tried to remove the user's old cryptohome at their
       // request, and the remove failed.
       remove_user_data_on_failure_ = false;
       task_runner_->PostTask(
@@ -912,7 +912,7 @@ CryptohomeAuthenticator::ResolveCryptohomeFailureState() {
     if (current_state_->cryptohome_code() ==
         cryptohome::MOUNT_ERROR_KEY_FAILURE) {
       // If we tried a mount but they used the wrong key, we may need to
-      // ask the user for her old password.  We'll only know once we've
+      // ask the user for their old password.  We'll only know once we've
       // done the online check.
       return POSSIBLE_PW_CHANGE;
     }

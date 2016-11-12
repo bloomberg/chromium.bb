@@ -239,8 +239,8 @@ class CHROMEOS_EXPORT CryptohomeAuthenticator
   bool ephemeral_mount_attempted_;
   bool check_key_attempted_;
 
-  // When the user has changed her password, but gives us the old one, we will
-  // be able to mount her cryptohome, but online authentication will fail.
+  // When the user has changed their password, but gives us the old one, we will
+  // be able to mount their cryptohome, but online authentication will fail.
   // This allows us to present the same behavior to the caller, regardless
   // of the order in which we receive these results.
   bool already_reported_success_;
