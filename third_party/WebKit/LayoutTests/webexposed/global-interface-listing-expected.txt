@@ -7500,7 +7500,6 @@ interface WebGL2RenderingContext
     method getAttribLocation
     method getBufferParameter
     method getBufferSubData
-    method getBufferSubDataAsync
     method getContextAttributes
     method getError
     method getExtension
