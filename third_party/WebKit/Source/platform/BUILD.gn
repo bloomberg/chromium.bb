@@ -1104,6 +1104,8 @@ component("platform") {
     "network/LinkHeader.h",
     "network/NetworkHints.cpp",
     "network/NetworkHints.h",
+    "network/NetworkInstrumentation.cpp",
+    "network/NetworkInstrumentation.h",
     "network/NetworkLog.h",
     "network/NetworkUtils.cpp",
     "network/NetworkUtils.h",
