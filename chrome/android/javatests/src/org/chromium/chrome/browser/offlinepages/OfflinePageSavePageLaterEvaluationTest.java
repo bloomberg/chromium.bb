@@ -77,6 +77,7 @@ public class OfflinePageSavePageLaterEvaluationTest
     private static final String NEW_LINE = System.getProperty("line.separator");
     private static final String DELIMITER = ";";
     private static final String CONFIG_FILE_PATH = "paquete/test_config";
+    private static final String SAVED_PAGES_EXTERNAL_PATH = "paquete/archives";
     private static final String INPUT_FILE_PATH = "paquete/offline_eval_urls.txt";
     private static final String LOG_OUTPUT_FILE_PATH = "paquete/offline_eval_logs.txt";
     private static final String RESULT_OUTPUT_FILE_PATH = "paquete/offline_eval_results.txt";
@@ -165,6 +166,34 @@ public class OfflinePageSavePageLaterEvaluationTest
     }
 
     /**
+     * Get the directory on external storage for storing saved pages.
+     */
+    private File getExternalArchiveDir() {
+        File externalArchiveDir =
+                new File(Environment.getExternalStorageDirectory(), SAVED_PAGES_EXTERNAL_PATH);
+        try {
+            // Clear the old archive folder.
+            if (externalArchiveDir.exists()) {
+                String[] files = externalArchiveDir.list();
+                if (files != null) {
+                    for (String file : files) {
+                        File currentFile = new File(externalArchiveDir.getPath(), file);
+                        if (!currentFile.delete()) {
+                            logError(file + " cannot be deleted when clearing previous archives.");
+                        }
+                    }
+                }
+            }
+            if (!externalArchiveDir.mkdir()) {
+                logError("Cannot create directory on external storage to store saved pages.");
+            }
+        } catch (SecurityException e) {
+            logError("Failed to delete or create external archive folder!");
+        }
+        return externalArchiveDir;
+    }
+
+    /**
      * Logs error in both console and output file.
      */
     private void logError(String error) {
@@ -172,6 +201,7 @@ public class OfflinePageSavePageLaterEvaluationTest
         if (mLogOutput != null) {
             try {
                 mLogOutput.write(error + NEW_LINE);
+                mLogOutput.flush();
             } catch (Exception e) {
                 Log.e(TAG, e.getMessage(), e);
             }
@@ -404,6 +434,7 @@ public class OfflinePageSavePageLaterEvaluationTest
             if (!completed) {
                 logError("Test terminated before all requests completed.");
             }
+            File externalArchiveDir = getExternalArchiveDir();
             for (int i = 0; i < mRequestMetadata.size(); i++) {
                 RequestMetadata metadata = mRequestMetadata.valueAt(i);
                 long requestId = metadata.mId;
@@ -420,6 +451,12 @@ public class OfflinePageSavePageLaterEvaluationTest
                 output.write(metadata.mUrl + DELIMITER + statusToString(status) + DELIMITER
                         + page.getFileSize() / 1000 + " KB" + DELIMITER
                         + metadata.mTimeDelta.getTimeDelta() + NEW_LINE);
+                // Move the page to external storage if external archive exists.
+                File originalPage = new File(page.getFilePath());
+                File externalPage = new File(externalArchiveDir, originalPage.getName());
+                if (!OfflinePageUtils.copyToShareableLocation(originalPage, externalPage)) {
+                    logError("Saved page for url " + page.getUrl() + " cannot be moved.");
+                }
             }
             output.write(String.format(
                     "Total requested URLs: %d, Completed: %d, Failed: %d, Failure Rate: %.2f%%"

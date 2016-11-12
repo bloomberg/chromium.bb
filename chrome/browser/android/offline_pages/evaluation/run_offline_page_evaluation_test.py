@@ -13,7 +13,7 @@
 # Example Steps:
 # 1. Build chrome_public_test_apk
 # 2. Prepare a list of urls.
-# 3. Run the script
+# 3. Run the script (use -d when you have more than one device connected.)
 #   run_offline_page_evaluation_test.py --output-directory
 #   ~/offline_eval_short_output/ --url-timeout 150 --user-requested=true
 #   --use-test-scheduler=true $CHROME_SRC/out/Default ~/offline_eval_urls.txt
@@ -75,6 +75,12 @@ def main(args):
       dest='verbose',
       action='store_true',
       help='Make test runner verbose.')
+  parser.add_argument(
+      '-d',
+      '--device',
+      type=str,
+      dest='device_id',
+      help='Specify which device to be used. See \'adb devices\'.')
   parser.add_argument('build_output_dir', help='Path to build directory.')
   parser.add_argument(
       'test_urls_file', help='Path to input file with urls to be tested.')
@@ -84,6 +90,11 @@ def main(args):
       user_request=DEFAULT_USER_REQUEST,
       user_test_scheduler=DEFAULT_USE_TEST_SCHEDULER,
       verbose=DEFAULT_VERBOSE)
+
+  def get_adb_command(args):
+    if options.device_id != None:
+      return ['adb', '-s', options.device_id] + args
+    return ['adb'] + args
 
   # Get the arguments and several paths.
   options, extra_args = parser.parse_known_args(args)
@@ -99,7 +110,7 @@ def main(args):
                                   'bin/run_chrome_public_test_apk')
   config_output_path = os.path.join(options.output_dir, CONFIG_FILENAME)
   external_dir = subprocess.check_output(
-      ['adb', 'shell', 'echo', '$EXTERNAL_STORAGE']).strip()
+      get_adb_command(['shell', 'echo', '$EXTERNAL_STORAGE'])).strip()
 
   # Create the output directory for results, and have a copy of test config
   # there.
@@ -114,13 +125,14 @@ def main(args):
             use_test_scheduler=options.use_test_scheduler))
 
   print 'Uploading config file and input file onto the device.'
-  subprocess.call([
-      'adb', 'push', config_output_path, external_dir + '/paquete/test_config'
-  ])
-  subprocess.call([
-      'adb', 'push', options.test_urls_file,
-      '/sdcard/paquete/offline_eval_urls.txt'
-  ])
+  subprocess.call(
+      get_adb_command(
+          ['push', config_output_path, external_dir + '/paquete/test_config']))
+  subprocess.call(
+      get_adb_command([
+          'push', options.test_urls_file,
+          '/sdcard/paquete/offline_eval_urls.txt'
+      ]))
   print 'Start running test...'
 
   # Run test
@@ -136,19 +148,19 @@ def main(args):
   archive_dir = os.path.join(options.output_dir, 'archives/')
   if os.path.exists(archive_dir):
     shutil.rmtree(archive_dir)
-  subprocess.call(['adb', 'root'])
-  subprocess.call([
-      'adb', 'pull', '/data/data/org.chromium.chrome/app_chrome/'
-      'Default/Offline Pages/archives', archive_dir
-  ])
-  subprocess.call([
-      'adb', 'pull', external_dir + '/paquete/offline_eval_results.txt',
-      options.output_dir
-  ])
-  subprocess.call([
-      'adb', 'pull', external_dir + '/paquete/offline_eval_logs.txt',
-      options.output_dir
-  ])
+  subprocess.call(
+      get_adb_command(
+          ['pull', external_dir + '/paquete/archives', archive_dir]))
+  subprocess.call(
+      get_adb_command([
+          'pull', external_dir + '/paquete/offline_eval_results.txt',
+          options.output_dir
+      ]))
+  subprocess.call(
+      get_adb_command([
+          'pull', external_dir + '/paquete/offline_eval_logs.txt',
+          options.output_dir
+      ]))
   print 'Test finished!'
 
 
