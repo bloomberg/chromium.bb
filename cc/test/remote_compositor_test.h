@@ -17,6 +17,7 @@ namespace cc {
 class AnimationHost;
 class CompositorProtoState;
 class FakeLayerTreeHost;
+class FakeRemoteCompositorBridge;
 class LayerTreeHostRemote;
 
 class RemoteCompositorTest : public testing::Test,
@@ -39,6 +40,8 @@ class RemoteCompositorTest : public testing::Test,
                            float page_scale,
                            float top_controls_delta) override;
 
+  bool HasPendingUpdate() const;
+
   void ProcessCompositorStateUpdate(
       std::unique_ptr<CompositorProtoState> compositor_proto_state);
 
@@ -46,6 +49,7 @@ class RemoteCompositorTest : public testing::Test,
   // Engine setup.
   std::unique_ptr<LayerTreeHostRemote> layer_tree_host_remote_;
   StubLayerTreeHostClient layer_tree_host_client_remote_;
+  FakeRemoteCompositorBridge* fake_remote_compositor_bridge_ = nullptr;
 
   // Client setup.
   std::unique_ptr<AnimationHost> animation_host_;

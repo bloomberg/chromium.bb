@@ -29,6 +29,9 @@ class CC_EXPORT PictureLayer : public Layer {
   void ClearClient();
 
   void SetNearestNeighbor(bool nearest_neighbor);
+  bool nearest_neighbor() const {
+    return picture_layer_inputs_.nearest_neighbor;
+  }
 
   // Layer interface.
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
@@ -38,6 +41,9 @@ class CC_EXPORT PictureLayer : public Layer {
   bool Update() override;
   void SetIsMask(bool is_mask) override;
   sk_sp<SkPicture> GetPicture() const override;
+
+  void SetTypeForProtoSerialization(proto::LayerNode* proto) const override;
+  void ToLayerPropertiesProto(proto::LayerProperties* proto) override;
 
   bool IsSuitableForGpuRasterization() const override;
 
@@ -71,11 +77,6 @@ class CC_EXPORT PictureLayer : public Layer {
   ~PictureLayer() override;
 
   bool HasDrawableContent() const override;
-  void SetTypeForProtoSerialization(proto::LayerNode* proto) const override;
-  void LayerSpecificPropertiesToProto(proto::LayerProperties* proto,
-                                      bool inputs_only) override;
-  void FromLayerSpecificPropertiesProto(
-      const proto::LayerProperties& proto) override;
 
   bool is_mask() const { return is_mask_; }
 

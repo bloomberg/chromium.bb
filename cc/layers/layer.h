@@ -358,33 +358,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // construction of the correct layer on the client.
   virtual void ToLayerNodeProto(proto::LayerNode* proto) const;
 
-  // Recursively iterate over this layer and all children and reset the
-  // properties sent with the hierarchical structure in the LayerNode protos.
-  // This must be done before deserializing the new LayerTree from the Layernode
-  // protos.
-  void ClearLayerTreePropertiesForDeserializationAndAddToMap(
-      LayerIdMap* layer_map);
-
-  // Recursively iterate over the given LayerNode proto and read the structure
-  // into this node and its children. The |layer_map| should be used to look
-  // for previously existing Layers, since they should be re-used between each
-  // hierarchy update.
-  virtual void FromLayerNodeProto(const proto::LayerNode& proto,
-                                  const LayerIdMap& layer_map,
-                                  LayerTreeHost* layer_tree_host);
-
   // This method is similar to PushPropertiesTo, but instead of pushing to
   // a LayerImpl, it pushes the properties to proto::LayerProperties. It is
   // called only on layers that have changed properties. The properties
   // themselves are pushed to proto::LayerProperties.
-  virtual void ToLayerPropertiesProto(proto::LayerUpdate* layer_update,
-                                      bool inputs_only);
-
-  // Read all property values from the given LayerProperties object and update
-  // the current layer. The values for |needs_push_properties_| and
-  // |num_dependents_need_push_properties_| are always updated, but the rest
-  // of |proto| is only read if |needs_push_properties_| is set.
-  void FromLayerPropertiesProto(const proto::LayerProperties& proto);
+  virtual void ToLayerPropertiesProto(proto::LayerProperties* proto);
 
   LayerTreeHost* GetLayerTreeHostForTesting() const { return layer_tree_host_; }
   LayerTree* GetLayerTree() const;
@@ -504,6 +482,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   void SetScrollbarsHiddenFromImplSide(bool hidden);
 
+  const gfx::Rect& update_rect() const { return inputs_.update_rect; }
+
  protected:
   friend class LayerImpl;
   friend class TreeSynchronizer;
@@ -544,29 +524,13 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   bool IsPropertyChangeAllowed() const;
 
-  // Serialize all the necessary properties to be able to reconstruct this Layer
-  // into proto::LayerProperties. This method is not marked as const
-  // as some implementations need reset member fields, similarly to
-  // PushPropertiesTo().
-  virtual void LayerSpecificPropertiesToProto(proto::LayerProperties* proto,
-                                              bool inputs_only);
-
-  // Deserialize all the necessary properties from proto::LayerProperties into
-  // this Layer.
-  virtual void FromLayerSpecificPropertiesProto(
-      const proto::LayerProperties& proto);
-
-  gfx::Rect& update_rect() { return inputs_.update_rect; }
-
   // When true, the layer is about to perform an update. Any commit requests
   // will be handled implicitly after the update completes.
   bool ignore_set_needs_commit_;
 
  private:
   friend class base::RefCounted<Layer>;
-  friend class LayerSerializationTest;
   friend class LayerTreeHostCommon;
-  friend class LayerTreeHost;
   friend class LayerTree;
   friend class LayerInternalsForTest;
 

@@ -512,21 +512,19 @@ void LayerTreeHostRemote::SetTaskRunnerProviderForTesting(
 
 void LayerTreeHostRemote::SerializeCurrentState(
     proto::LayerTreeHost* layer_tree_host_proto) {
-  // We need to serialize only the inputs received from the embedder.
-  const bool inputs_only = true;
-
   // Serialize the LayerTree.
-  layer_tree_->ToProtobuf(layer_tree_host_proto->mutable_layer_tree(),
-                          inputs_only);
+  layer_tree_->ToProtobuf(layer_tree_host_proto->mutable_layer_tree());
 
   // Serialize the dirty layers.
   std::unordered_set<Layer*> layers_need_push_properties;
   layers_need_push_properties.swap(
       layer_tree_->LayersThatShouldPushProperties());
 
-  for (auto* layer : layers_need_push_properties)
-    layer->ToLayerPropertiesProto(
-        layer_tree_host_proto->mutable_layer_updates(), inputs_only);
+  for (auto* layer : layers_need_push_properties) {
+    proto::LayerProperties* layer_properties =
+        layer_tree_host_proto->mutable_layer_updates()->add_layers();
+    layer->ToLayerPropertiesProto(layer_properties);
+  }
 
   std::vector<PictureData> pictures =
       engine_picture_cache_->CalculateCacheUpdateAndFlush();

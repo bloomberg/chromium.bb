@@ -24,8 +24,7 @@ class PushPropertiesCountingLayer : public Layer {
   // Layer implementation.
   void PushPropertiesTo(LayerImpl* layer) override;
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
-  void ToLayerPropertiesProto(proto::LayerUpdate* layer_update,
-                              bool inputs_only) override;
+  void ToLayerPropertiesProto(proto::LayerProperties* proto) override;
   void SetTypeForProtoSerialization(proto::LayerNode* proto) const override;
 
   // Something to make this layer push properties, but no other layer.

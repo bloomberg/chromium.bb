@@ -32,9 +32,8 @@ std::unique_ptr<LayerImpl> PushPropertiesCountingLayer::CreateLayerImpl(
 }
 
 void PushPropertiesCountingLayer::ToLayerPropertiesProto(
-    proto::LayerUpdate* layer_update,
-    bool inputs_only) {
-  Layer::ToLayerPropertiesProto(layer_update, inputs_only);
+    proto::LayerProperties* proto) {
+  Layer::ToLayerPropertiesProto(proto);
   AddPushPropertiesCount();
 }
 

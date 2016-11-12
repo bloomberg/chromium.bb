@@ -192,8 +192,7 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
   void PushPropertiesTo(LayerTreeImpl* tree_impl,
                         float unapplied_page_scale_delta);
 
-  void ToProtobuf(proto::LayerTree* proto, bool inputs_only);
-  void FromProtobuf(const proto::LayerTree& proto);
+  void ToProtobuf(proto::LayerTree* proto);
 
   MutatorHost* mutator_host() const { return mutator_host_; }
 
@@ -216,8 +215,6 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
   // ---------------------------------------------------------------------
 
  private:
-  friend class LayerTreeHostSerializationTest;
-
   // MutatorHostClient implementation.
   bool IsElementInList(ElementId element_id,
                        ElementListType list_type) const override;

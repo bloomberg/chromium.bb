@@ -68,6 +68,7 @@ class CC_EXPORT RecordingSource {
       bool can_use_lcd_text) const;
 
   const DisplayItemList* GetDisplayItemList();
+  gfx::Rect recorded_viewport() const { return recorded_viewport_; }
 
  protected:
   gfx::Rect recorded_viewport_;

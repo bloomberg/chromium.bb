@@ -86,25 +86,6 @@ void SolidColorScrollbarLayer::ToLayerNodeProto(proto::LayerNode* proto) const {
       solid_color_scrollbar_layer_inputs_.orientation));
 }
 
-void SolidColorScrollbarLayer::FromLayerNodeProto(
-    const proto::LayerNode& proto,
-    const LayerIdMap& layer_map,
-    LayerTreeHost* layer_tree_host) {
-  Layer::FromLayerNodeProto(proto, layer_map, layer_tree_host);
-
-  const proto::SolidColorScrollbarLayerProperties& scrollbar =
-      proto.solid_scrollbar();
-  solid_color_scrollbar_layer_inputs_.scroll_layer_id =
-      scrollbar.scroll_layer_id();
-  solid_color_scrollbar_layer_inputs_.thumb_thickness =
-      scrollbar.thumb_thickness();
-  solid_color_scrollbar_layer_inputs_.track_start = scrollbar.track_start();
-  solid_color_scrollbar_layer_inputs_.is_left_side_vertical_scrollbar =
-      scrollbar.is_left_side_vertical_scrollbar();
-  solid_color_scrollbar_layer_inputs_.orientation =
-      ScrollbarOrientationFromProto(scrollbar.orientation());
-}
-
 void SolidColorScrollbarLayer::SetOpacity(float opacity) {
   // The opacity of a solid color scrollbar layer is always 0 on main thread.
   DCHECK_EQ(opacity, 0.f);

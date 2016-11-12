@@ -206,12 +206,11 @@ void PictureLayer::SetTypeForProtoSerialization(proto::LayerNode* proto) const {
   proto->set_type(proto::LayerNode::PICTURE_LAYER);
 }
 
-void PictureLayer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto,
-                                                  bool inputs_only) {
+void PictureLayer::ToLayerPropertiesProto(proto::LayerProperties* proto) {
   DCHECK(GetLayerTree());
   DCHECK(GetLayerTree()->engine_picture_cache());
 
-  Layer::LayerSpecificPropertiesToProto(proto, inputs_only);
+  Layer::ToLayerPropertiesProto(proto);
   DropRecordingSourceContentIfInvalid();
   proto::PictureLayerProperties* picture = proto->mutable_picture();
 
@@ -230,59 +229,6 @@ void PictureLayer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto,
       GetLayerTree()->engine_picture_cache()->MarkUsed(picture.get());
     }
   }
-
-  if (inputs_only)
-    return;
-
-  recording_source_->ToProtobuf(picture->mutable_recording_source());
-  RegionToProto(last_updated_invalidation_, picture->mutable_invalidation());
-  picture->set_is_mask(is_mask_);
-  picture->set_update_source_frame_number(update_source_frame_number_);
-  last_updated_invalidation_.Clear();
-}
-
-void PictureLayer::FromLayerSpecificPropertiesProto(
-    const proto::LayerProperties& proto) {
-  Layer::FromLayerSpecificPropertiesProto(proto);
-  const proto::PictureLayerProperties& picture = proto.picture();
-  // If this is a new layer, ensure it has a recording source. During layer
-  // hierarchy deserialization, ::SetLayerTreeHost(...) is not called, but
-  // instead the member is set directly, so it needs to be set here explicitly.
-  if (!recording_source_)
-    recording_source_.reset(new RecordingSource);
-
-  std::vector<uint32_t> used_engine_picture_ids;
-
-  picture_layer_inputs_.recorded_viewport =
-      ProtoToRect(picture.recorded_viewport());
-
-  ClientPictureCache* client_picture_cache =
-      GetLayerTree()->client_picture_cache();
-  DCHECK(client_picture_cache);
-  // This might not exist if the |input_.display_list| of the serialized
-  // RecordingSource was null, which can happen if |Clear()| is
-  // called.
-  if (picture.has_display_list()) {
-    picture_layer_inputs_.display_list = DisplayItemList::CreateFromProto(
-        picture.display_list(), client_picture_cache, &used_engine_picture_ids);
-  } else {
-    picture_layer_inputs_.display_list = nullptr;
-  }
-
-  recording_source_->FromProtobuf(picture.recording_source(),
-                                  picture_layer_inputs_.display_list,
-                                  picture_layer_inputs_.recorded_viewport);
-
-  // Inform picture cache about which SkPictures are now in use.
-  for (uint32_t engine_picture_id : used_engine_picture_ids)
-    GetLayerTree()->client_picture_cache()->MarkUsed(engine_picture_id);
-
-  Region new_invalidation = RegionFromProto(picture.invalidation());
-  last_updated_invalidation_.Swap(&new_invalidation);
-  is_mask_ = picture.is_mask();
-  picture_layer_inputs_.nearest_neighbor = picture.nearest_neighbor();
-
-  update_source_frame_number_ = picture.update_source_frame_number();
 }
 
 void PictureLayer::RunMicroBenchmark(MicroBenchmark* benchmark) {

@@ -29,10 +29,15 @@ class FakeRemoteCompositorBridge : public RemoteCompositorBridge {
   void ProcessCompositorStateUpdate(
       std::unique_ptr<CompositorProtoState> compositor_proto_state) override {}
 
+  bool has_pending_update() const { return has_pending_update_; }
+
  protected:
   void BeginMainFrame();
 
   RemoteCompositorBridgeClient* client_;
+
+ private:
+  bool has_pending_update_ = false;
   base::WeakPtrFactory<FakeRemoteCompositorBridge> weak_factory_;
 };
 

@@ -39,7 +39,7 @@ BlimpCompositorWithFakeHost::CreateFakeUpdate(
   layer_tree->SetRootLayer(root_layer);
   cc::proto::LayerTree* layer_tree_proto =
       message->mutable_layer_tree_host()->mutable_layer_tree();
-  layer_tree->ToProtobuf(layer_tree_proto, true);
+  layer_tree->ToProtobuf(layer_tree_proto);
   return message;
 }
 

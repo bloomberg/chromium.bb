@@ -60,11 +60,13 @@ void RemoteCompositorTest::SetUp() {
   params.client = &layer_tree_host_client_remote_;
   params.main_task_runner = main_task_runner;
   params.mutator_host = animation_host_.get();
-  params.remote_compositor_bridge =
+  std::unique_ptr<RemoteCompositorBridgeForTest> bridge_for_test =
       base::MakeUnique<RemoteCompositorBridgeForTest>(
           main_task_runner,
           base::Bind(&RemoteCompositorTest::ProcessCompositorStateUpdate,
                      base::Unretained(this)));
+  fake_remote_compositor_bridge_ = bridge_for_test.get();
+  params.remote_compositor_bridge = std::move(bridge_for_test);
   params.engine_picture_cache =
       image_serialization_processor_.CreateEnginePictureCache();
   LayerTreeSettings settings;
@@ -89,6 +91,7 @@ void RemoteCompositorTest::SetUp() {
 }
 
 void RemoteCompositorTest::TearDown() {
+  fake_remote_compositor_bridge_ = nullptr;
   layer_tree_host_remote_ = nullptr;
   compositor_state_deserializer_ = nullptr;
   layer_tree_host_in_process_ = nullptr;
@@ -109,6 +112,11 @@ void RemoteCompositorTest::ApplyViewportDeltas(
   compositor_state_deserializer_->ApplyViewportDeltas(
       inner_delta, outer_delta, elastic_overscroll_delta, page_scale,
       top_controls_delta);
+}
+
+bool RemoteCompositorTest::HasPendingUpdate() const {
+  DCHECK(fake_remote_compositor_bridge_);
+  return fake_remote_compositor_bridge_->has_pending_update();
 }
 
 void RemoteCompositorTest::ProcessCompositorStateUpdate(

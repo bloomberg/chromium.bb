@@ -9,8 +9,10 @@
 
 namespace cc {
 class CompositorStateDeserializer;
+class FakePictureLayer;
 class Layer;
 class LayerTree;
+class SolidColorScrollbarLayer;
 
 void VerifySerializedTreesAreIdentical(
     LayerTree* engine_layer_tree,
@@ -19,7 +21,14 @@ void VerifySerializedTreesAreIdentical(
 
 void VerifySerializedLayersAreIdentical(
     Layer* engine_layer,
-    Layer* client_layer,
+    CompositorStateDeserializer* compositor_state_deserializer);
+
+void VerifySerializedScrollbarLayersAreIdentical(
+    SolidColorScrollbarLayer* engine_layer,
+    CompositorStateDeserializer* compositor_state_deserializer);
+
+void VerifySerializedPictureLayersAreIdentical(
+    FakePictureLayer* engine_layer,
     CompositorStateDeserializer* compositor_state_deserializer);
 
 }  // namespace cc

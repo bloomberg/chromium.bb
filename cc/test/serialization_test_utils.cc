@@ -6,6 +6,9 @@
 
 #include "cc/blimp/compositor_state_deserializer.h"
 #include "cc/layers/layer.h"
+#include "cc/layers/solid_color_scrollbar_layer.h"
+#include "cc/test/fake_picture_layer.h"
+#include "cc/test/skia_common.h"
 #include "cc/trees/layer_tree.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,7 +29,7 @@ void VerifySerializedTreesAreIdentical(
       Layer* client_layer = compositor_state_deserializer->GetLayerForEngineId(
           engine_layer->id());
       EXPECT_EQ(client_layer->GetLayerTree(), client_layer_tree);
-      VerifySerializedLayersAreIdentical(engine_layer, client_layer,
+      VerifySerializedLayersAreIdentical(engine_layer,
                                          compositor_state_deserializer);
     }
   } else {
@@ -119,9 +122,13 @@ void VerifySerializedTreesAreIdentical(
 
 void VerifySerializedLayersAreIdentical(
     Layer* engine_layer,
-    Layer* client_layer,
     CompositorStateDeserializer* compositor_state_deserializer) {
-  ASSERT_NE(client_layer, nullptr);
+  Layer* client_layer =
+      compositor_state_deserializer->GetLayerForEngineId(engine_layer->id());
+  if (engine_layer == nullptr) {
+    EXPECT_EQ(client_layer, nullptr);
+    return;
+  }
 
   // Parent.
   if (engine_layer->parent()) {
@@ -161,6 +168,88 @@ void VerifySerializedLayersAreIdentical(
     EXPECT_LAYERS_EQ(scroll_clip_id, client_layer->scroll_clip_layer());
   } else {
     EXPECT_EQ(client_layer->scroll_clip_layer(), nullptr);
+  }
+
+  // Other Layer properties.
+  // Note: The update rect is ignored here since it is cleared during
+  // serialization.
+  EXPECT_EQ(engine_layer->transform_origin(), client_layer->transform_origin());
+  EXPECT_EQ(engine_layer->background_color(), client_layer->background_color());
+  EXPECT_EQ(engine_layer->bounds(), client_layer->bounds());
+  EXPECT_EQ(engine_layer->double_sided(), client_layer->double_sided());
+  EXPECT_EQ(engine_layer->hide_layer_and_subtree(),
+            client_layer->hide_layer_and_subtree());
+  EXPECT_EQ(engine_layer->masks_to_bounds(), client_layer->masks_to_bounds());
+  EXPECT_EQ(engine_layer->main_thread_scrolling_reasons(),
+            client_layer->main_thread_scrolling_reasons());
+  EXPECT_EQ(engine_layer->non_fast_scrollable_region(),
+            client_layer->non_fast_scrollable_region());
+  EXPECT_EQ(engine_layer->touch_event_handler_region(),
+            client_layer->touch_event_handler_region());
+  EXPECT_EQ(engine_layer->contents_opaque(), client_layer->contents_opaque());
+  EXPECT_EQ(engine_layer->opacity(), client_layer->opacity());
+  EXPECT_EQ(engine_layer->blend_mode(), client_layer->blend_mode());
+  EXPECT_EQ(engine_layer->is_root_for_isolated_group(),
+            client_layer->is_root_for_isolated_group());
+  EXPECT_EQ(engine_layer->position(), client_layer->position());
+  EXPECT_EQ(engine_layer->IsContainerForFixedPositionLayers(),
+            client_layer->IsContainerForFixedPositionLayers());
+  EXPECT_EQ(engine_layer->position_constraint(),
+            client_layer->position_constraint());
+  EXPECT_EQ(engine_layer->should_flatten_transform(),
+            client_layer->should_flatten_transform());
+  EXPECT_EQ(engine_layer->use_parent_backface_visibility(),
+            client_layer->use_parent_backface_visibility());
+  EXPECT_EQ(engine_layer->transform(), client_layer->transform());
+  EXPECT_EQ(engine_layer->sorting_context_id(),
+            client_layer->sorting_context_id());
+  EXPECT_EQ(engine_layer->user_scrollable_horizontal(),
+            client_layer->user_scrollable_horizontal());
+  EXPECT_EQ(engine_layer->user_scrollable_vertical(),
+            client_layer->user_scrollable_vertical());
+  EXPECT_EQ(engine_layer->scroll_offset(), client_layer->scroll_offset());
+}
+
+void VerifySerializedScrollbarLayersAreIdentical(
+    SolidColorScrollbarLayer* engine_layer,
+    CompositorStateDeserializer* compositor_state_deserializer) {
+  SolidColorScrollbarLayer* client_layer =
+      static_cast<SolidColorScrollbarLayer*>(
+          compositor_state_deserializer->GetLayerForEngineId(
+              engine_layer->id()));
+
+  if (engine_layer == nullptr) {
+    EXPECT_EQ(client_layer, nullptr);
+    return;
+  }
+
+  EXPECT_LAYERS_EQ(
+      engine_layer->ScrollLayerId(),
+      client_layer->GetLayerTree()->LayerById(client_layer->ScrollLayerId()));
+  EXPECT_EQ(engine_layer->orientation(), client_layer->orientation());
+  EXPECT_EQ(engine_layer->thumb_thickness(), client_layer->thumb_thickness());
+  EXPECT_EQ(engine_layer->track_start(), client_layer->track_start());
+  EXPECT_EQ(engine_layer->is_left_side_vertical_scrollbar(),
+            client_layer->is_left_side_vertical_scrollbar());
+}
+
+void VerifySerializedPictureLayersAreIdentical(
+    FakePictureLayer* engine_layer,
+    CompositorStateDeserializer* compositor_state_deserializer) {
+  FakePictureLayer* client_layer = static_cast<FakePictureLayer*>(
+      compositor_state_deserializer->GetLayerForEngineId(engine_layer->id()));
+  EXPECT_EQ(engine_layer->nearest_neighbor(), client_layer->nearest_neighbor());
+
+  RecordingSource* engine_source = engine_layer->GetRecordingSourceForTesting();
+  RecordingSource* client_source = client_layer->GetRecordingSourceForTesting();
+  EXPECT_EQ(engine_source->recorded_viewport(),
+            client_source->recorded_viewport());
+  if (engine_source->GetDisplayItemList()) {
+    EXPECT_TRUE(AreDisplayListDrawingResultsSame(
+        engine_source->recorded_viewport(), engine_source->GetDisplayItemList(),
+        client_source->GetDisplayItemList()));
+  } else {
+    EXPECT_EQ(client_source->GetDisplayItemList(), nullptr);
   }
 }
 
