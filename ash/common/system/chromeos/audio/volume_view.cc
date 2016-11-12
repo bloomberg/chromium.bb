@@ -182,6 +182,9 @@ VolumeView::VolumeView(SystemTrayItem* owner,
   more_button_->SetFocusBehavior(FocusBehavior::NEVER);
 
   device_type_ = TrayPopupUtils::CreateMoreImageView();
+  more_button_->SetBorder(views::CreateEmptyBorder(
+      0, GetTrayConstant(TRAY_POPUP_ITEM_MORE_REGION_HORIZONTAL_INSET), 0,
+      GetTrayConstant(TRAY_POPUP_ITEM_MORE_REGION_HORIZONTAL_INSET)));
   more_button_->AddChildView(device_type_);
 
   views::ImageView* more_arrow = TrayPopupUtils::CreateMoreImageView();

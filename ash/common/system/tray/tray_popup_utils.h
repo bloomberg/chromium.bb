@@ -117,11 +117,6 @@ class TrayPopupUtils {
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(TrayPopupUtils);
-
-  // Returns the default border used by CreateDefaultRow() and
-  // ConfigureContainer() for the given |container|.
-  static std::unique_ptr<views::Border> CreateDefaultBorder(
-      TriView::Container container);
 };
 
 }  // namespace ash

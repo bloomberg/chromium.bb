@@ -137,12 +137,6 @@ class BorderlessLabelButton : public views::LabelButton {
 
 TriView* TrayPopupUtils::CreateDefaultRowView() {
   TriView* tri_view = CreateMultiTargetRowView();
-  tri_view->SetContainerBorder(TriView::Container::START,
-                               CreateDefaultBorder(TriView::Container::START));
-  tri_view->SetContainerBorder(TriView::Container::CENTER,
-                               CreateDefaultBorder(TriView::Container::CENTER));
-  tri_view->SetContainerBorder(TriView::Container::END,
-                               CreateDefaultBorder(TriView::Container::END));
 
   tri_view->SetContainerLayout(
       TriView::Container::START,
@@ -181,9 +175,6 @@ TriView* TrayPopupUtils::CreateMultiTargetRowView() {
 views::Label* TrayPopupUtils::CreateDefaultLabel() {
   views::Label* label = new views::Label();
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label->SetBorder(views::CreateEmptyBorder(0, kTrayPopupLabelHorizontalPadding,
-                                            0,
-                                            kTrayPopupLabelHorizontalPadding));
 
   // TODO(bruthig): Fix this so that |label| uses the kBackgroundColor to
   // perform subpixel rendering instead of disabling subpixel rendering.
@@ -226,7 +217,6 @@ views::Slider* TrayPopupUtils::CreateSlider(views::SliderListener* listener) {
 
 void TrayPopupUtils::ConfigureContainer(TriView::Container container,
                                         views::View* container_view) {
-  container_view->SetBorder(CreateDefaultBorder(container));
   container_view->SetLayoutManager(
       CreateDefaultLayoutManager(container).release());
 }
@@ -263,28 +253,6 @@ bool TrayPopupUtils::CanOpenWebUISettings(LoginStatus status) {
   return status != LoginStatus::NOT_LOGGED_IN &&
          status != LoginStatus::LOCKED &&
          !WmShell::Get()->GetSessionStateDelegate()->IsInSecondaryLoginScreen();
-}
-
-std::unique_ptr<views::Border> TrayPopupUtils::CreateDefaultBorder(
-    TriView::Container container) {
-  switch (container) {
-    case TriView::Container::START:
-      // TODO(bruthig): Update the 'Main' images to have a fixed size that is
-      // just the painted size and add a border.
-      return nullptr;
-      break;
-    case TriView::Container::CENTER:
-      return nullptr;
-      break;
-    case TriView::Container::END:
-      return views::CreateEmptyBorder(
-          0, GetTrayConstant(TRAY_POPUP_ITEM_MORE_REGION_HORIZONTAL_INSET), 0,
-          GetTrayConstant(TRAY_POPUP_ITEM_MORE_REGION_HORIZONTAL_INSET));
-      break;
-  }
-  // Required by some compilers.
-  NOTREACHED();
-  return nullptr;
 }
 
 }  // namespace ash
