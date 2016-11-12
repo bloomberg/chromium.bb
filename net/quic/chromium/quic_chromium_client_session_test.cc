@@ -44,7 +44,6 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
-#include "net/tools/quic/test_tools/push_promise_delegate.h"
 #include "net/udp/datagram_client_socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -355,7 +354,7 @@ TEST_P(QuicChromiumClientSessionTest, CancelPushWhenPendingValidation) {
 
   // Initiate rendezvous.
   SpdyHeaderBlock client_request = promise_headers.Clone();
-  PushPromiseDelegate delegate(/*match=*/true);
+  TestPushPromiseDelegate delegate(/*match=*/true);
   promised->HandleClientRequest(client_request, &delegate);
 
   // Cancel the push before receiving the response to the pushed request.

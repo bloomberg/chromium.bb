@@ -670,6 +670,25 @@ class TestQuicSpdyServerSession : public QuicServerSessionBase {
   DISALLOW_COPY_AND_ASSIGN(TestQuicSpdyServerSession);
 };
 
+class TestPushPromiseDelegate : public QuicClientPushPromiseIndex::Delegate {
+ public:
+  explicit TestPushPromiseDelegate(bool match);
+
+  bool CheckVary(const SpdyHeaderBlock& client_request,
+                 const SpdyHeaderBlock& promise_request,
+                 const SpdyHeaderBlock& promise_response) override;
+
+  void OnRendezvousResult(QuicSpdyStream* stream) override;
+
+  QuicSpdyStream* rendezvous_stream() { return rendezvous_stream_; }
+  bool rendezvous_fired() { return rendezvous_fired_; }
+
+ private:
+  bool match_;
+  bool rendezvous_fired_;
+  QuicSpdyStream* rendezvous_stream_;
+};
+
 class TestQuicSpdyClientSession : public QuicClientSessionBase {
  public:
   TestQuicSpdyClientSession(QuicConnection* connection,

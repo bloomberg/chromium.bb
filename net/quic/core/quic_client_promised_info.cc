@@ -113,6 +113,10 @@ QuicAsyncStatus QuicClientPromisedInfo::HandleClientRequest(
   }
 
   if (is_validating()) {
+    // The push promise has already been matched to another request though
+    // pending for validation. Returns QUIC_FAILURE to the caller as it couldn't
+    // match a new request any more. This will not affect the validation of the
+    // other request.
     return QUIC_FAILURE;
   }
 

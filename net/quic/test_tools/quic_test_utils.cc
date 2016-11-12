@@ -443,6 +443,22 @@ QuicCryptoServerStream* TestQuicSpdyServerSession::GetCryptoStream() {
       QuicServerSessionBase::GetCryptoStream());
 }
 
+TestPushPromiseDelegate::TestPushPromiseDelegate(bool match)
+    : match_(match), rendezvous_fired_(false), rendezvous_stream_(nullptr) {}
+
+bool TestPushPromiseDelegate::CheckVary(
+    const SpdyHeaderBlock& client_request,
+    const SpdyHeaderBlock& promise_request,
+    const SpdyHeaderBlock& promise_response) {
+  DVLOG(1) << "match " << match_;
+  return match_;
+}
+
+void TestPushPromiseDelegate::OnRendezvousResult(QuicSpdyStream* stream) {
+  rendezvous_fired_ = true;
+  rendezvous_stream_ = stream;
+}
+
 TestQuicSpdyClientSession::TestQuicSpdyClientSession(
     QuicConnection* connection,
     const QuicConfig& config,
