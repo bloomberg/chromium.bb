@@ -182,6 +182,9 @@
 #if defined(ENABLE_VR_SHELL) || defined(ENABLE_WEBVR)
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "chrome/browser/android/vr_shell/vr_shell_delegate.h"
+#include "third_party/gvr-android-sdk/display_synchronizer_jni.h"
+#include "third_party/gvr-android-sdk/gvr_api_jni.h"
+#include "third_party/gvr-android-sdk/native_callbacks_jni.h"
 #endif
 
 #if !defined(OFFICIAL_BUILD)
@@ -399,6 +402,11 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
 #if defined(ENABLE_VR_SHELL) || defined(ENABLE_WEBVR)
     {"VrShell", vr_shell::RegisterVrShell},
     {"VrShellDelegate", vr_shell::RegisterVrShellDelegate},
+    {"DisplaySynchronizer",
+     DisplaySynchronizer::RegisterDisplaySynchronizerNatives},
+    {"GvrApi", GvrApi::RegisterGvrApiNatives},
+    {"NativeCallbacks",
+     NativeCallbacks::RegisterNativeCallbacksNatives},
 #endif
     {"WarmupManager", RegisterWarmupManager},
     {"WebApkInstaller", WebApkInstaller::Register},

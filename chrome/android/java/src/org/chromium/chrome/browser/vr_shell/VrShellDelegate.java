@@ -46,9 +46,11 @@ public class VrShellDelegate {
     private Class<? extends VrShell> mVrShellClass;
     private Class<? extends NonPresentingGvrContext> mNonPresentingGvrContextClass;
     private Class<? extends VrDaydreamApi> mVrDaydreamApiClass;
+    private Class<? extends VrCoreVersionChecker> mVrCoreVersionCheckerClass;
     private VrShell mVrShell;
     private NonPresentingGvrContext mNonPresentingGvrContext;
     private VrDaydreamApi mVrDaydreamApi;
+    private VrCoreVersionChecker mVrCoreVersionChecker;
     private boolean mInVr;
     private int mRestoreSystemUiVisibilityFlag = -1;
     private int mRestoreOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
@@ -63,8 +65,7 @@ public class VrShellDelegate {
 
     public VrShellDelegate(ChromeTabbedActivity activity) {
         mActivity = activity;
-
-        mVrAvailable = maybeFindVrClasses();
+        mVrAvailable = maybeFindVrClasses() && isVrCoreCompatible();
         createVrDaydreamApi();
         mTabObserver = new EmptyTabObserver() {
             @Override
@@ -104,11 +105,14 @@ public class VrShellDelegate {
                             "org.chromium.chrome.browser.vr_shell.NonPresentingGvrContextImpl");
             mVrDaydreamApiClass = (Class<? extends VrDaydreamApi>) Class.forName(
                     "org.chromium.chrome.browser.vr_shell.VrDaydreamApiImpl");
+            mVrCoreVersionCheckerClass = (Class<? extends VrCoreVersionChecker>) Class.forName(
+                    "org.chromium.chrome.browser.vr_shell.VrCoreVersionCheckerImpl");
             return true;
         } catch (ClassNotFoundException e) {
             mVrShellClass = null;
             mNonPresentingGvrContextClass = null;
             mVrDaydreamApiClass = null;
+            mVrCoreVersionCheckerClass = null;
             return false;
         }
     }
@@ -314,6 +318,28 @@ public class VrShellDelegate {
         mTab.removeObserver(mTabObserver);
         mTab.updateFullscreenEnabledState();
         mTab.updateBrowserControlsState(BrowserControlsState.SHOWN, true);
+    }
+
+    private boolean isVrCoreCompatible() {
+        if (mVrCoreVersionChecker != null) {
+            return mVrCoreVersionChecker.isVrCoreCompatible();
+        }
+
+        if (mVrCoreVersionCheckerClass == null) {
+            return false;
+        }
+
+        try {
+            Constructor<?> mVrCoreVersionCheckerConstructor =
+                    mVrCoreVersionCheckerClass.getConstructor();
+            mVrCoreVersionChecker =
+                    (VrCoreVersionChecker) mVrCoreVersionCheckerConstructor.newInstance();
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException | NoSuchMethodException e) {
+            Log.e(TAG, "Unable to instantiate VrCoreVersionChecker", e);
+            return false;
+        }
+        return mVrCoreVersionChecker.isVrCoreCompatible();
     }
 
     private boolean createVrDaydreamApi() {

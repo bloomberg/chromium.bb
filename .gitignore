@@ -350,6 +350,9 @@ vs-chromium-project.txt
 /third_party/google_appengine_cloudstorage
 /third_party/google_toolbox_for_mac/src
 /third_party/googlemac
+/third_party/gvr-android-sdk/common_library.aar
+/third_party/gvr-android-sdk/libgvr_shim_static_arm.a
+/third_party/gvr-android-sdk/libgvr_shim_static_arm64.a
 /third_party/gvr-android-sdk/src
 /third_party/gperf
 /third_party/grpc

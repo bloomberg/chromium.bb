@@ -81,12 +81,10 @@ declare_args() {
 
   # Enable WebVR support by default on Android
   # Still requires command line flag to access API
-  # TODO(bshe): Remove is_component_build once we can statically link gvr
-  # library. Currently gvr library only has a prebuild so file which causes
-  # linking issue for non component build.
+  # TODO(bshe): Enable for other architecture too. Currently we only support arm
+  # and arm64.
   enable_webvr = is_android && is_component_build &&
-                 (current_cpu == "x86" || current_cpu == "x64" ||
-                  current_cpu == "arm" || current_cpu == "arm64")
+                 (current_cpu == "arm" || current_cpu == "arm64")
 }
 
 # Additional dependent variables -----------------------------------------------

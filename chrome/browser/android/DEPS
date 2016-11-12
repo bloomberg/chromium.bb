@@ -11,6 +11,7 @@ include_rules = [
   "+components/toolbar",
   "+components/web_contents_delegate_android",
   "+sandbox/linux/seccomp-bpf/sandbox_bpf.h",
+  "+third_party/gvr-android-sdk",
 ]
 
 specific_include_rules = {
