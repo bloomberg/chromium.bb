@@ -65,7 +65,8 @@ TEST(ExperimentLabelsTest, ExtractNonVariationLabels) {
        "gcapi_brand=123|Tue, 21 Jan 2014 15:30:21 GMT"},
       // Semis
       {";;;;", ""},
-      // Three no Variation, preserving order
+      // Three non-Variation labels
+      // Testing that the order is preserved.
       {"experiment1=456|Tue, 21 Jan 2014 15:30:21 GMT;"
        "experiment2=789|Tue, 21 Jan 2014 15:30:21 GMT;"
        "experiment3=123|Tue, 21 Jan 2014 15:30:21 GMT",
