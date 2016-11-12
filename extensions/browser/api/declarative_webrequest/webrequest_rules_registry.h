@@ -24,6 +24,7 @@
 #include "extensions/browser/api/declarative_webrequest/webrequest_action.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_condition.h"
 #include "extensions/browser/info_map.h"
+#include "extensions/common/extension_id.h"
 
 class WebRequestPermissions;
 
@@ -182,7 +183,7 @@ class WebRequestRulesRegistry : public RulesRegistry {
   // separately.
   std::set<const WebRequestRule*> rules_with_untriggered_conditions_;
 
-  std::map<WebRequestRule::ExtensionId, RulesMap> webrequest_rules_;
+  std::map<ExtensionId, RulesMap> webrequest_rules_;
 
   url_matcher::URLMatcher url_matcher_;
 

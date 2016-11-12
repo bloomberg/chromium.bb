@@ -19,6 +19,7 @@
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/api/alarms.h"
+#include "extensions/common/extension_id.h"
 
 namespace base {
 class Clock;
@@ -135,7 +136,6 @@ class AlarmManager : public BrowserContextKeyedAPI,
                            PollFrequencyFromStoredAlarm);
   friend class BrowserContextKeyedAPIFactory<AlarmManager>;
 
-  typedef std::string ExtensionId;
   typedef std::map<ExtensionId, AlarmList> AlarmMap;
 
   typedef base::Callback<void(const std::string&)> ReadyAction;

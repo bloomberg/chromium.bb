@@ -19,6 +19,7 @@
 #include "extensions/browser/api/messaging/native_message_host.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/common/api/messaging/message.h"
+#include "extensions/common/extension_id.h"
 
 class GURL;
 class Profile;
@@ -195,9 +196,8 @@ class MessageService : public BrowserContextKeyedAPI {
 
   // A map of channel ID to information about the extension that is waiting
   // for that channel to open. Used for lazy background pages.
-  using ExtensionID = std::string;
   using PendingLazyBackgroundPageChannel =
-      std::pair<content::BrowserContext*, ExtensionID>;
+      std::pair<content::BrowserContext*, ExtensionId>;
   using PendingLazyBackgroundPageChannelMap =
       std::map<int, PendingLazyBackgroundPageChannel>;
 

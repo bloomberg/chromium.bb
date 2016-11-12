@@ -99,7 +99,6 @@ std::list<LinkedPtrEventResponseDelta> WebRequestRulesRegistry::CreateDeltas(
   // for rules of that extension. Initially, this priority is -infinite and
   // will be increased when the rules are processed and raise the bar via
   // WebRequestIgnoreRulesActions.
-  typedef std::string ExtensionId;
   typedef std::map<ExtensionId, WebRequestRule::Priority> MinPriorities;
   typedef std::map<ExtensionId, std::set<std::string> > IgnoreTags;
   MinPriorities min_priorities;
@@ -289,8 +288,8 @@ bool WebRequestRulesRegistry::IsEmpty() const {
     return false;
 
   // Now all the registered rules for each extensions.
-  for (const std::pair<WebRequestRule::ExtensionId, RulesMap>&
-           extension_id_rules_map_pair : webrequest_rules_) {
+  for (const std::pair<ExtensionId, RulesMap>& extension_id_rules_map_pair :
+       webrequest_rules_) {
     if (!extension_id_rules_map_pair.second.empty())
       return false;
   }

@@ -18,6 +18,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/common/extension_id.h"
 
 namespace content {
 class BrowserContext;
@@ -72,8 +73,7 @@ class LazyBackgroundTaskQueue : public KeyedService,
 
   // A map between a BrowserContext/extension_id pair and the queue of tasks
   // pending the load of its background page.
-  typedef std::string ExtensionID;
-  typedef std::pair<content::BrowserContext*, ExtensionID> PendingTasksKey;
+  typedef std::pair<content::BrowserContext*, ExtensionId> PendingTasksKey;
   typedef std::vector<PendingTask> PendingTasksList;
   using PendingTasksMap =
       std::map<PendingTasksKey, std::unique_ptr<PendingTasksList>>;

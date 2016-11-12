@@ -28,6 +28,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
+#include "extensions/common/extension_id.h"
 
 class ExtensionFunction;
 
@@ -73,7 +74,6 @@ class QuotaService : public base::NonThreadSafe {
   };
 
  private:
-  using ExtensionId = std::string;
   using FunctionName = std::string;
   // All QuotaLimitHeuristic instances in this map are owned by us.
   using FunctionHeuristicsMap = std::map<FunctionName, QuotaLimitHeuristics>;

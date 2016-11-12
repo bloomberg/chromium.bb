@@ -25,6 +25,7 @@
 #include "components/url_matcher/url_matcher.h"
 #include "extensions/common/api/events.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 
 namespace base {
 class Time;
@@ -199,7 +200,6 @@ class DeclarativeActionSet {
 template<typename ConditionT, typename ActionT>
 class DeclarativeRule {
  public:
-  typedef std::string ExtensionId;
   typedef std::string RuleId;
   typedef std::pair<ExtensionId, RuleId> GlobalRuleId;
   typedef int Priority;

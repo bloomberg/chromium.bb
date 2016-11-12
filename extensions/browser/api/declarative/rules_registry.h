@@ -22,6 +22,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/common/api/events.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/one_shot_event.h"
 
 namespace content {
@@ -156,7 +157,6 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   friend class base::RefCountedThreadSafe<RulesRegistry>;
   friend class RulesCacheDelegate;
 
-  typedef std::string ExtensionId;
   typedef std::string RuleId;
   typedef std::pair<ExtensionId, RuleId> RulesDictionaryKey;
   typedef std::map<RulesDictionaryKey, linked_ptr<api::events::Rule>>
