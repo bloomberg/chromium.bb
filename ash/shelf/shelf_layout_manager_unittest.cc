@@ -1957,6 +1957,12 @@ class ShelfLayoutManagerKeyboardTest : public test::AshTestBase {
     keyboard::SetAccessibilityKeyboardEnabled(true);
   }
 
+  // test::AshTestBase:
+  void TearDown() override {
+    keyboard::SetAccessibilityKeyboardEnabled(false);
+    test::AshTestBase::TearDown();
+  }
+
   void InitKeyboardBounds() {
     gfx::Rect work_area(
         display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
