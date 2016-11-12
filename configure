@@ -296,6 +296,7 @@ EXPERIMENT_LIST="
     simp_mv_pred
     rd_debug
     reference_buffer
+    coef_interleave
 "
 CONFIG_LIST="
     dependency_tracking

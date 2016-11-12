@@ -833,6 +833,17 @@ void av1_foreach_transformed_block(const MACROBLOCKD *const xd,
                                    foreach_transformed_block_visitor visit,
                                    void *arg);
 
+#if CONFIG_COEF_INTERLEAVE
+static INLINE int get_max_4x4_size(int num_4x4, int mb_to_edge,
+                                   int subsampling) {
+  return num_4x4 + (mb_to_edge >= 0 ? 0 : mb_to_edge >> (5 + subsampling));
+}
+
+void av1_foreach_transformed_block_interleave(
+    const MACROBLOCKD *const xd, BLOCK_SIZE bsize,
+    foreach_transformed_block_visitor visit, void *arg);
+#endif
+
 void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
                       TX_SIZE tx_size, int has_eob, int aoff, int loff);
 

@@ -1435,6 +1435,127 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   if (mbmi->skip) {
     dec_reset_skip_context(xd);
   }
+#if CONFIG_COEF_INTERLEAVE
+  {
+    const struct macroblockd_plane *const pd_y = &xd->plane[0];
+    const struct macroblockd_plane *const pd_c = &xd->plane[1];
+    const TX_SIZE tx_log2_y = mbmi->tx_size;
+    const TX_SIZE tx_log2_c = get_uv_tx_size(mbmi, pd_c);
+    const int tx_sz_y = (1 << tx_log2_y);
+    const int tx_sz_c = (1 << tx_log2_c);
+    const int num_4x4_w_y = pd_y->n4_w;
+    const int num_4x4_h_y = pd_y->n4_h;
+    const int num_4x4_w_c = pd_c->n4_w;
+    const int num_4x4_h_c = pd_c->n4_h;
+    const int max_4x4_w_y = get_max_4x4_size(num_4x4_w_y, xd->mb_to_right_edge,
+                                             pd_y->subsampling_x);
+    const int max_4x4_h_y = get_max_4x4_size(num_4x4_h_y, xd->mb_to_bottom_edge,
+                                             pd_y->subsampling_y);
+    const int max_4x4_w_c = get_max_4x4_size(num_4x4_w_c, xd->mb_to_right_edge,
+                                             pd_c->subsampling_x);
+    const int max_4x4_h_c = get_max_4x4_size(num_4x4_h_c, xd->mb_to_bottom_edge,
+                                             pd_c->subsampling_y);
+
+    // The max_4x4_w/h may be smaller than tx_sz under some corner cases,
+    // i.e. when the SB is splitted by tile boundaries.
+    const int tu_num_w_y = (max_4x4_w_y + tx_sz_y - 1) / tx_sz_y;
+    const int tu_num_h_y = (max_4x4_h_y + tx_sz_y - 1) / tx_sz_y;
+    const int tu_num_w_c = (max_4x4_w_c + tx_sz_c - 1) / tx_sz_c;
+    const int tu_num_h_c = (max_4x4_h_c + tx_sz_c - 1) / tx_sz_c;
+    const int tu_num_y = tu_num_w_y * tu_num_h_y;
+    const int tu_num_c = tu_num_w_c * tu_num_h_c;
+
+    if (!is_inter_block(mbmi)) {
+      int tu_idx_c = 0;
+      int row_y, col_y, row_c, col_c;
+      int plane;
+
+#if CONFIG_PALETTE
+      for (plane = 0; plane <= 1; ++plane) {
+        if (mbmi->palette_mode_info.palette_size[plane])
+          av1_decode_palette_tokens(xd, plane, r);
+      }
+#endif
+
+      for (row_y = 0; row_y < tu_num_h_y; row_y++) {
+        for (col_y = 0; col_y < tu_num_w_y; col_y++) {
+          // luma
+          predict_and_reconstruct_intra_block(
+              cm, xd, r, mbmi, 0, row_y * tx_sz_y, col_y * tx_sz_y, tx_log2_y);
+          // chroma
+          if (tu_idx_c < tu_num_c) {
+            row_c = (tu_idx_c / tu_num_w_c) * tx_sz_c;
+            col_c = (tu_idx_c % tu_num_w_c) * tx_sz_c;
+            predict_and_reconstruct_intra_block(cm, xd, r, mbmi, 1, row_c,
+                                                col_c, tx_log2_c);
+            predict_and_reconstruct_intra_block(cm, xd, r, mbmi, 2, row_c,
+                                                col_c, tx_log2_c);
+            tu_idx_c++;
+          }
+        }
+      }
+
+      // In 422 case, it's possilbe that Chroma has more TUs than Luma
+      while (tu_idx_c < tu_num_c) {
+        row_c = (tu_idx_c / tu_num_w_c) * tx_sz_c;
+        col_c = (tu_idx_c % tu_num_w_c) * tx_sz_c;
+        predict_and_reconstruct_intra_block(cm, xd, r, mbmi, 1, row_c, col_c,
+                                            tx_log2_c);
+        predict_and_reconstruct_intra_block(cm, xd, r, mbmi, 2, row_c, col_c,
+                                            tx_log2_c);
+        tu_idx_c++;
+      }
+    } else {
+      // Prediction
+      av1_build_inter_predictors_sb(xd, mi_row, mi_col,
+                                    AOMMAX(bsize, BLOCK_8X8));
+
+      // Reconstruction
+      if (!mbmi->skip) {
+        int eobtotal = 0;
+        int tu_idx_c = 0;
+        int row_y, col_y, row_c, col_c;
+
+        for (row_y = 0; row_y < tu_num_h_y; row_y++) {
+          for (col_y = 0; col_y < tu_num_w_y; col_y++) {
+            // luma
+            eobtotal += reconstruct_inter_block(cm, xd, r, mbmi->segment_id, 0,
+                                                row_y * tx_sz_y,
+                                                col_y * tx_sz_y, tx_log2_y);
+            // chroma
+            if (tu_idx_c < tu_num_c) {
+              row_c = (tu_idx_c / tu_num_w_c) * tx_sz_c;
+              col_c = (tu_idx_c % tu_num_w_c) * tx_sz_c;
+              eobtotal += reconstruct_inter_block(cm, xd, r, mbmi->segment_id,
+                                                  1, row_c, col_c, tx_log2_c);
+              eobtotal += reconstruct_inter_block(cm, xd, r, mbmi->segment_id,
+                                                  2, row_c, col_c, tx_log2_c);
+              tu_idx_c++;
+            }
+          }
+        }
+
+        // In 422 case, it's possilbe that Chroma has more TUs than Luma
+        while (tu_idx_c < tu_num_c) {
+          row_c = (tu_idx_c / tu_num_w_c) * tx_sz_c;
+          col_c = (tu_idx_c % tu_num_w_c) * tx_sz_c;
+          eobtotal += reconstruct_inter_block(cm, xd, r, mbmi->segment_id, 1,
+                                              row_c, col_c, tx_log2_c);
+          eobtotal += reconstruct_inter_block(cm, xd, r, mbmi->segment_id, 2,
+                                              row_c, col_c, tx_log2_c);
+          tu_idx_c++;
+        }
+
+        if (bsize >= BLOCK_8X8 && eobtotal == 0)
+#if CONFIG_MISC_FIXES
+          mbmi->has_no_coeffs = 1;
+#else
+          mbmi->skip = 1;
+#endif
+      }
+    }
+  }
+#else
   if (!is_inter_block(mbmi)) {
     int plane;
 #if CONFIG_PALETTE
@@ -1545,6 +1666,7 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
       }
     }
   }
+#endif
 
   xd->corrupted |= aom_reader_has_error(r);
 }
