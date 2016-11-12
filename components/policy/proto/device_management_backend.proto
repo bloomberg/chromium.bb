@@ -240,24 +240,6 @@ message PolicyFetchRequest {
   optional string verification_key_hash = 9;
 }
 
-// This message contains the information which is signed by the verification
-// key during policy key rotation.  It is included in serialized form in
-// PolicyFetchResponse below.  A signature of the serialized form is included
-// in the new_public_key_verification_data_signature field. For backward
-// compatibility reasons, a signature over just {new_public_key, domain} fields
-// is included in new_public_key_verification_signature_DEPRECATED field.
-message PublicKeyVerificationData {
-  // The new public policy key after a key rotation.
-  optional bytes new_public_key = 1;
-
-  // The domain of the device/user.
-  optional string domain = 2;
-
-  // The version number of the new_public_key. This must be monotonically
-  // increasing (within a domain).
-  optional int32 new_public_key_version = 3;
-}
-
 // This message customizes how the device behaves when it is disabled by its
 // owner. The message will be sent as part of the DeviceState fetched during
 // normal operation and as part of the DeviceStateRetrievalResponse fetched when
@@ -432,10 +414,9 @@ message PolicyData {
 }
 
 message PolicyFetchResponse {
-  // Since a single policy request may ask for multiple policies, we
-  // provide separate error code for each individual policy fetch.
-
-  // We will use standard HTTP Status Code as error code.
+  // Since a single policy request may ask for multiple policies, DM server
+  // provides separate error codes (making use of standard HTTP Status Codes)
+  // for each individual policy fetch.
   optional int32 error_code = 1;
 
   // Human readable error message for customer support purpose.
@@ -458,15 +439,14 @@ message PolicyFetchResponse {
 
   // DEPRECATED: Exists only to support older clients. This signature is similar
   // to new_public_key_verification_data_signature, but is computed over
-  // PublicKeyVerificationData proto with version field unset.
-  // In other words, DMServer sets the new public key value, and domain value
-  // and then produces this signature.
+  // DEPRECATEDPolicyPublicKeyAndDomain (which is equivalent to
+  // PublicKeyVerificationData proto with version field unset).
   optional bytes new_public_key_verification_signature_deprecated = 7
       [deprecated = true];
 
-  // This is a serialized |PublicKeyVerificationData| protobuf
-  // (defined above). See comments for |new_public_key_verification_signature|
-  // field for details on how this data is signed.
+  // This is a serialized |PublicKeyVerificationData| protobuf (defined
+  // below). See comments for |new_public_key_verification_data_signature| field
+  // for details on how this data is signed.
   // Please note that |new_public_key| is also included inside this data
   // field. Thus we have new public key signed with old version of private key
   // (if client indicated to us that it has old key version), and
@@ -508,9 +488,25 @@ message DEPRECATEDPolicyPublicKeyAndDomain {
   // PolicyFetchResponse).
   optional bytes new_public_key = 1;
 
-  // The domain associated with this key (should match the domain portion of
-  // the username field of the policy).
+  // The domain associated with this key (should match the domain portion of the
+  // username field of the policy).
   optional string domain = 2;
+}
+
+// This message contains the information which is signed by the verification key
+// during policy key rotation. It is included in serialized form in
+// PolicyFetchResponse above. A signature of the serialized form is included in
+// the new_public_key_verification_data_signature field.
+message PublicKeyVerificationData {
+  // The new public policy key after a key rotation.
+  optional bytes new_public_key = 1;
+
+  // The domain of the device/user.
+  optional string domain = 2;
+
+  // The version number of the new_public_key. This must be monotonically
+  // increasing (within a domain).
+  optional int32 new_public_key_version = 3;
 }
 
 // Request from device to server for reading policies.
