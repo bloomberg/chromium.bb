@@ -17,12 +17,6 @@
 #include "base/android/build_info.h"
 #endif
 
-// MojoCdm supports Clear Key, but currently MojoRenderer cannot use it.
-// See http://crbug.com/441957 for details.
-#if !(defined(ENABLE_MOJO_CDM) && defined(ENABLE_MOJO_RENDERER))
-#define SUPPORTS_CLEAR_KEY_IN_CONTENT_SHELL
-#endif
-
 #if defined(ENABLE_MOJO_CDM)
 // When mojo CDM is enabled, External Clear Key is supported in //content/shell/
 // by using mojo CDM with AesDecryptor running in the remote (e.g. GPU or
@@ -33,9 +27,7 @@
 #endif
 
 // Available key systems.
-#if defined(SUPPORTS_CLEAR_KEY_IN_CONTENT_SHELL)
 const char kClearKeyKeySystem[] = "org.w3.clearkey";
-#endif
 
 #if defined(SUPPORTS_EXTERNAL_CLEAR_KEY_IN_CONTENT_SHELL)
 const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
@@ -149,13 +141,11 @@ class EncryptedMediaTest : public content::MediaBrowserTest,
 using ::testing::Combine;
 using ::testing::Values;
 
-#if defined(SUPPORTS_CLEAR_KEY_IN_CONTENT_SHELL)
 INSTANTIATE_TEST_CASE_P(SRC_ClearKey, EncryptedMediaTest,
                         Combine(Values(kClearKeyKeySystem), Values(SRC)));
 
 INSTANTIATE_TEST_CASE_P(MSE_ClearKey, EncryptedMediaTest,
                         Combine(Values(kClearKeyKeySystem), Values(MSE)));
-#endif
 
 #if defined(SUPPORTS_EXTERNAL_CLEAR_KEY_IN_CONTENT_SHELL)
 INSTANTIATE_TEST_CASE_P(SRC_ExternalClearKey,

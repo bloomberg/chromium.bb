@@ -41,6 +41,12 @@ void MojoCdmFactory::Create(
     return;
   }
 
+// When MojoRenderer is used, the real Renderer is running in a remote process,
+// which cannot use an AesDecryptor running locally. In this case, always
+// create the MojoCdm, giving the remote CDM a chance to handle |key_system|.
+// Note: We should not run AesDecryptor in the browser process except for
+// testing. See http://crbug.com/441957
+#if !defined(ENABLE_MOJO_RENDERER)
   if (CanUseAesDecryptor(key_system)) {
     scoped_refptr<MediaKeys> cdm(
         new AesDecryptor(security_origin, session_message_cb, session_closed_cb,
@@ -49,6 +55,7 @@ void MojoCdmFactory::Create(
         FROM_HERE, base::Bind(cdm_created_cb, cdm, ""));
     return;
   }
+#endif
 
   mojom::ContentDecryptionModulePtr cdm_ptr;
   service_manager::GetInterface<mojom::ContentDecryptionModule>(
