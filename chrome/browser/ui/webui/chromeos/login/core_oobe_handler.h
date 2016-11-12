@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/demo_mode_detector.h"
 #include "ui/events/event_source.h"
+#include "ui/keyboard/scoped_keyboard_disabler.h"
 
 namespace base {
 class ListValue;
@@ -131,6 +132,7 @@ class CoreOobeHandler : public BaseScreenHandler,
   void HandleEnableLargeCursor(bool enabled);
   void HandleEnableHighContrast(bool enabled);
   void HandleEnableVirtualKeyboard(bool enabled);
+  void HandleSetForceDisableVirtualKeyboard(bool disable);
   void HandleEnableScreenMagnifier(bool enabled);
   void HandleEnableSpokenFeedback(bool /* enabled */);
   void HandleInitialized();
@@ -195,6 +197,8 @@ class CoreOobeHandler : public BaseScreenHandler,
   std::unique_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
 
   DemoModeDetector demo_mode_detector_;
+
+  keyboard::ScopedKeyboardDisabler scoped_keyboard_disabler_;
 
   DISALLOW_COPY_AND_ASSIGN(CoreOobeHandler);
 };

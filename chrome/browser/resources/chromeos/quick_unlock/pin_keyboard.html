@@ -165,16 +165,14 @@
       }
     </style>
 
-    <div id="root" on-keypress="onKeyPress_" on-keydown="onKeyDown_">
+    <div id="root">
       <div id="container-constrained-width">
         <div class="row first-row">
-          <input id="pin-input" type="[[getInputType_(enablePassword)]]"
+          <input id="pin-input" type="password"
                  is-input-rtl$="[[isInputRtl_(value)]]"
                  has-content$="[[hasInput_(value)]]"
                  placeholder="[[getInputPlaceholder_(enablePassword)]]"
-                 value="{{value::input}}"
-                 on-keydown="onInputKeyDown_"
-                 hidden=[[hideInput]]>
+                 on-keydown="onInputKeyDown_">
           </input>
         </div>
         <hr>
