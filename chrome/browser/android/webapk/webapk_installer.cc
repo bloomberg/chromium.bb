@@ -397,7 +397,8 @@ void WebApkInstaller::OnCreatedSubDirAndSetPermissions(
     return;
   }
 
-  DownloadWebApk(output_dir.AppendASCII(webapk_package_), download_url, true);
+  DownloadWebApk(output_dir.AppendASCII(webapk_package_ + ".apk"),
+                 download_url, true);
 }
 
 void WebApkInstaller::DownloadWebApk(const base::FilePath& output_path,
