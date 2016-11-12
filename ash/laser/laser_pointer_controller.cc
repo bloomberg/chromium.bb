@@ -41,7 +41,9 @@ LaserPointerController::LaserPointerController()
           base::TimeDelta::FromMilliseconds(kAddStationaryPointsDelayMs),
           base::Bind(&LaserPointerController::AddStationaryPoint,
                      base::Unretained(this)),
-          true /* is_repeating */)) {}
+          true /* is_repeating */)) {
+  Shell::GetInstance()->AddPreTargetHandler(this);
+}
 
 LaserPointerController::~LaserPointerController() {
   Shell::GetInstance()->RemovePreTargetHandler(this);
@@ -52,12 +54,8 @@ void LaserPointerController::SetEnabled(bool enabled) {
     return;
 
   enabled_ = enabled;
-  if (enabled_) {
-    Shell::GetInstance()->AddPreTargetHandler(this);
-  } else {
+  if (!enabled_)
     laser_pointer_view_.reset();
-    Shell::GetInstance()->RemovePreTargetHandler(this);
-  }
 }
 
 void LaserPointerController::OnMouseEvent(ui::MouseEvent* event) {
