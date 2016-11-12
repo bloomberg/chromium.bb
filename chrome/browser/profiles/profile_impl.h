@@ -23,6 +23,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/host_zoom_map.h"
+#include "extensions/features/features.h"
 
 class PrefService;
 
@@ -226,7 +227,7 @@ class ProfileImpl : public Profile {
   std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs_;
   std::unique_ptr<sync_preferences::PrefServiceSyncable> otr_prefs_;
   ProfileImplIOData::Handle io_data_;
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   scoped_refptr<ExtensionSpecialStoragePolicy>
       extension_special_storage_policy_;
 #endif

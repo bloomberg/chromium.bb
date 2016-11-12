@@ -11,6 +11,7 @@ import("//chrome/common/features.gni")
 import("//chrome/chrome_repack_locales.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//components/os_crypt/features.gni")
+import("//extensions/features/features.gni")
 import("//ppapi/features/features.gni")
 import("//remoting/remoting_enable.gni")
 import("//services/service_manager/public/service_manifest.gni")
@@ -121,6 +122,7 @@ static_library("test_support") {
     "//components/zoom:test_support",
     "//content/public/app:both",
     "//content/test:test_support",
+    "//extensions/features",
     "//net",
     "//net:test_support",
     "//printing/features",
@@ -487,6 +489,7 @@ if (!is_android) {
       "//content/test:test_support",
       "//crypto:platform",
       "//crypto:test_support",
+      "//extensions/features",
       "//google_apis:test_support",
       "//net",
       "//net:net_resources",
@@ -1226,6 +1229,7 @@ test("browser_tests") {
     ":test_support",
     "//base",
     "//components/sync:test_support_model",
+    "//extensions/features",
     "//printing/features",
     "//third_party/WebKit/public:features",
   ]
@@ -3351,19 +3355,6 @@ test("unit_tests") {
     "../../third_party/zlib/google/compression_utils_unittest.cc",
     "../../third_party/zlib/google/zip_reader_unittest.cc",
     "../../third_party/zlib/google/zip_unittest.cc",
-    "../../tools/json_schema_compiler/test/additional_properties_unittest.cc",
-    "../../tools/json_schema_compiler/test/any_unittest.cc",
-    "../../tools/json_schema_compiler/test/arrays_unittest.cc",
-    "../../tools/json_schema_compiler/test/callbacks_unittest.cc",
-    "../../tools/json_schema_compiler/test/choices_unittest.cc",
-    "../../tools/json_schema_compiler/test/crossref_unittest.cc",
-    "../../tools/json_schema_compiler/test/enums_unittest.cc",
-    "../../tools/json_schema_compiler/test/error_generation_unittest.cc",
-    "../../tools/json_schema_compiler/test/functions_as_parameters_unittest.cc",
-    "../../tools/json_schema_compiler/test/functions_on_types_unittest.cc",
-    "../../tools/json_schema_compiler/test/idl_schemas_unittest.cc",
-    "../../tools/json_schema_compiler/test/objects_unittest.cc",
-    "../../tools/json_schema_compiler/test/simple_api_unittest.cc",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]
@@ -3434,6 +3425,7 @@ test("unit_tests") {
     "//components/subresource_filter/core/browser:test_support",
     "//components/version_info:generate_version_info",
     "//courgette:courgette_lib",
+    "//extensions/features",
     "//google_apis",
     "//ppapi/features",
     "//skia",
@@ -3471,7 +3463,6 @@ test("unit_tests") {
       "//third_party/libjingle",
       "//third_party/libphonenumber",
       "//third_party/webrtc/modules/desktop_capture",
-      "//tools/json_schema_compiler/test:schema_test",
       "//ui/gl",
       "//v8",
     ]
@@ -4022,7 +4013,10 @@ test("unit_tests") {
       "//extensions:extensions_resources",
       "//extensions/strings",
       "//media/cast:test_support",
-      "//tools/json_schema_compiler/test:features_generation_test",
+
+      # This will add all of the unit tests for the schema compiler to this
+      # target.
+      "//tools/json_schema_compiler/test:unit_tests",
     ]
     if (enable_service_discovery) {
       sources += [
@@ -4974,6 +4968,7 @@ if (!is_android && !is_ios && !is_chromecast) {
       "//components/about_handler",
       "//components/autofill/content/renderer:test_support",
       "//content/test:test_support",
+      "//extensions/features",
       "//media/cast:test_support",
       "//testing/gmock",
       "//testing/gtest",

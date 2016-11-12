@@ -6,6 +6,7 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build/json_schema_api.gni")
 import("//chrome/common/features.gni")
+import("//extensions/features/features.gni")
 import("//tools/json_schema_compiler/json_features.gni")
 
 assert(enable_extensions)

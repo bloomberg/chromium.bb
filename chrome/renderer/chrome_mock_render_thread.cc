@@ -5,9 +5,10 @@
 #include "chrome/renderer/chrome_mock_render_thread.h"
 
 #include "base/single_thread_task_runner.h"
+#include "extensions/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/extension_messages.h"
 #endif
 
@@ -32,7 +33,7 @@ bool ChromeMockRenderThread::OnMessageReceived(const IPC::Message& msg) {
     return true;
 
   // Some messages we do special handling.
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeMockRenderThread, msg)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToExtension,
@@ -45,7 +46,7 @@ bool ChromeMockRenderThread::OnMessageReceived(const IPC::Message& msg) {
 #endif
 }
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 void ChromeMockRenderThread::OnOpenChannelToExtension(
     int routing_id,
     const ExtensionMsg_ExternalConnectionInfo& info,

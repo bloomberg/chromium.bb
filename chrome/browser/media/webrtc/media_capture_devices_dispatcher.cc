@@ -31,13 +31,14 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/media_stream_request.h"
 #include "extensions/common/constants.h"
+#include "extensions/features/features.h"
 #include "media/base/media_switches.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/shell.h"
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/media/extension_media_access_handler.h"
 #include "chrome/browser/media/webrtc/desktop_capture_access_handler.h"
 #include "chrome/browser/media/webrtc/tab_capture_access_handler.h"
@@ -65,7 +66,7 @@ const content::MediaStreamDevice* FindDeviceWithId(
   return NULL;
 }
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 inline CaptureAccessHandlerBase* ToCaptureAccessHandlerBase(
     MediaAccessHandler* handler) {
   return static_cast<CaptureAccessHandlerBase*>(handler);
@@ -82,7 +83,7 @@ MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
       media_stream_capture_indicator_(new MediaStreamCaptureIndicator()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   media_access_handlers_.push_back(new ExtensionMediaAccessHandler());
   media_access_handlers_.push_back(new DesktopCaptureAccessHandler());
   media_access_handlers_.push_back(new TabCaptureAccessHandler());
@@ -376,7 +377,7 @@ bool MediaCaptureDevicesDispatcher::IsInsecureCapturingInProgress(
     int render_process_id,
     int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   for (MediaAccessHandler* handler : media_access_handlers_) {
     if (handler->SupportsStreamType(content::MEDIA_DESKTOP_VIDEO_CAPTURE,
                                     nullptr) ||
@@ -430,7 +431,7 @@ void MediaCaptureDevicesDispatcher::UpdateCapturingLinkSecured(
       stream_type != content::MEDIA_DESKTOP_VIDEO_CAPTURE)
     return;
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   for (MediaAccessHandler* handler : media_access_handlers_) {
     if (handler->SupportsStreamType(stream_type, nullptr)) {
       ToCaptureAccessHandlerBase(handler)->UpdateCapturingLinkSecured(

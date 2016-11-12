@@ -72,6 +72,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/features/features.h"
 #include "printing/features/features.h"
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
@@ -83,7 +84,7 @@
 #include "chrome/browser/service_process/service_process_control.h"
 #endif
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/metrics/extensions_metrics_provider.h"
 #endif
 
@@ -553,7 +554,7 @@ void ChromeMetricsServiceClient::Initialize() {
           new SubprocessMetricsProvider()));
 
   // Register metrics providers.
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(
           new ExtensionsMetricsProvider(metrics_state_manager_)));

@@ -7,8 +7,9 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
 #include "components/toolbar/toolbar_model.h"
+#include "extensions/features/features.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/ui/extensions/settings_api_bubble_helpers.h"
 #endif
 
@@ -28,7 +29,7 @@ void ChromeOmniboxEditController::OnAutocompleteAccept(
   if (command_updater_)
     command_updater_->ExecuteCommand(IDC_OPEN_CURRENT_URL);
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::MaybeShowExtensionControlledSearchNotification(
       GetWebContents(), match_type);
 #endif

@@ -5,6 +5,7 @@
 import("//build/config/chrome_build.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//extensions/features/features.gni")
 import("//tools/grit/repack.gni")
 
 # Wraps repack_locales(), setting the source_patterns and deps required for

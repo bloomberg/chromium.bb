@@ -27,11 +27,12 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
+#include "extensions/features/features.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #endif
 
@@ -55,7 +56,7 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
 #if !defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_WebUIJavaScript, OnWebUIJavaScript)
 #endif
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetVisuallyDeemphasized,
                         OnSetVisuallyDeemphasized)
 #endif
@@ -142,7 +143,7 @@ void ChromeRenderViewObserver::Navigate(const GURL& url) {
     web_cache_impl_->ExecutePendingClearCache();
 }
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 void ChromeRenderViewObserver::OnSetVisuallyDeemphasized(bool deemphasized) {
   if (webview_visually_deemphasized_ == deemphasized)
     return;

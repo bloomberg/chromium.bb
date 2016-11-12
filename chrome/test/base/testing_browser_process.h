@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "extensions/features/features.h"
 #include "printing/features/features.h"
 
 class BackgroundModeManager;
@@ -195,7 +196,7 @@ class TestingBrowserProcess : public BrowserProcess {
 
   std::unique_ptr<BrowserProcessPlatformPart> platform_part_;
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   std::unique_ptr<MediaFileSystemRegistry> media_file_system_registry_;
 
   std::unique_ptr<extensions::ExtensionsBrowserClient>

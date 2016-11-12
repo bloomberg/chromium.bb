@@ -4,12 +4,13 @@
 
 #include "chrome/browser/printing/print_view_manager_common.h"
 
+#include "extensions/features/features.h"
 #include "printing/features/features.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
-#endif  // defined(ENABLE_EXTENSIONS)
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/print_view_manager.h"
@@ -19,7 +20,7 @@
 
 namespace printing {
 namespace {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 // Stores |guest_contents| in |result| and returns true if |guest_contents| is a
 // full page MimeHandlerViewGuest plugin. Otherwise, returns false.
 bool StoreFullPagePlugin(content::WebContents** result,
@@ -32,12 +33,12 @@ bool StoreFullPagePlugin(content::WebContents** result,
   }
   return false;
 }
-#endif  // defined(ENABLE_EXTENSIONS)
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 // If we have a single full-page embedded mime handler view guest, print the
 // guest's WebContents instead.
 content::WebContents* GetWebContentsToUse(content::WebContents* contents) {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   guest_view::GuestViewManager* guest_view_manager =
       guest_view::GuestViewManager::FromBrowserContext(
           contents->GetBrowserContext());
@@ -46,7 +47,7 @@ content::WebContents* GetWebContentsToUse(content::WebContents* contents) {
         contents,
         base::Bind(&StoreFullPagePlugin, &contents));
   }
-#endif  // defined(ENABLE_EXTENSIONS)
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   return contents;
 }
 

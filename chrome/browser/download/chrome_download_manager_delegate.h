@@ -22,6 +22,7 @@
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/features/features.h"
 
 class DownloadPrefs;
 class Profile;
@@ -165,7 +166,7 @@ class ChromeDownloadManagerDelegate
   IdCallbackVector id_callbacks_;
   std::unique_ptr<DownloadPrefs> download_prefs_;
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // Maps from pending extension installations to DownloadItem IDs.
   typedef base::hash_map<extensions::CrxInstaller*,
       content::DownloadOpenDelayedCallback> CrxInstallerMap;

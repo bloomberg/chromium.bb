@@ -22,8 +22,9 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "extensions/features/features.h"
 
-#if defined (ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #endif  // (ENABLE_EXTENSIONS)
@@ -86,7 +87,7 @@ bool FastUnloadController::ShouldRunUnloadEventsHelper(
 
 bool FastUnloadController::RunUnloadEventsHelper(
     content::WebContents* contents) {
-#if defined (ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // Don't run for extensions that are disabled or uninstalled; the tabs will
   // be killed if they make any network requests, and the extension shouldn't
   // be doing any work if it's removed.

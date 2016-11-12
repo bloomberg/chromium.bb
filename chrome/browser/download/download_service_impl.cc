@@ -15,8 +15,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/history/core/browser/history_service.h"
 #include "content/public/browser/download_manager.h"
+#include "extensions/features/features.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/downloads/downloads_api.h"
 #endif
 
@@ -49,7 +50,7 @@ DownloadServiceImpl::GetDownloadManagerDelegate() {
 
   manager_delegate_->SetDownloadManager(manager);
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   extension_event_router_.reset(
       new extensions::ExtensionDownloadsEventRouter(profile_, manager));
 #endif
@@ -84,7 +85,7 @@ DownloadHistory* DownloadServiceImpl::GetDownloadHistory() {
   return download_history_.get();
 }
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 extensions::ExtensionDownloadsEventRouter*
 DownloadServiceImpl::GetExtensionEventRouter() {
   return extension_event_router_.get();
@@ -144,7 +145,7 @@ void DownloadServiceImpl::Shutdown() {
     // manually earlier. See http://crbug.com/131692
     BrowserContext::GetDownloadManager(profile_)->Shutdown();
   }
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   extension_event_router_.reset();
 #endif
   manager_delegate_.reset();

@@ -42,6 +42,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
+#include "extensions/features/features.h"
 #include "media/base/media_resources.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/net_errors.h"
@@ -53,7 +54,7 @@
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/renderer/extensions/extension_localization_peer.h"
 #endif
 
@@ -99,7 +100,7 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
       std::unique_ptr<content::RequestPeer> current_peer,
       const std::string& mime_type,
       const GURL& url) override {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
     return ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
         std::move(current_peer), RenderThread::Get(), mime_type, url);
 #else

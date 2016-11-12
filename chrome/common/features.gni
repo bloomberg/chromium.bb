@@ -6,6 +6,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/features.gni")
+import("//extensions/features/features.gni")
 import("//net/features.gni")
 import("//printing/features/features.gni")
 
@@ -85,6 +86,7 @@ _enable_printing = enable_basic_printing || enable_print_preview
 chrome_grit_defines = [
   "enable_app_list=$enable_app_list",
   "enable_background=$enable_background",
+  "enable_extensions=$enable_extensions",
   "enable_google_now=$enable_google_now",
   "enable_hangout_services_extension=$enable_hangout_services_extension",
   "enable_hotwording=$enable_hotwording",

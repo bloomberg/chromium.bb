@@ -24,6 +24,7 @@
 #include "content/public/utility/utility_thread.h"
 #include "courgette/courgette.h"
 #include "courgette/third_party/bsdiff/bsdiff.h"
+#include "extensions/features/features.h"
 #include "ipc/ipc_channel.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "printing/features/features.h"
@@ -46,7 +47,7 @@
 #include "chrome/utility/shell_handler_impl_win.h"
 #endif
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/utility/extensions/extensions_handler.h"
 #include "chrome/utility/image_writer/image_writer_handler.h"
 #endif
@@ -115,7 +116,7 @@ ChromeContentUtilityClient::ChromeContentUtilityClient()
   handlers_.push_back(new ProfileImportHandler());
 #endif
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   handlers_.push_back(new extensions::ExtensionsHandler(this));
   handlers_.push_back(new image_writer::ImageWriterHandler());
 #endif
@@ -134,7 +135,7 @@ ChromeContentUtilityClient::~ChromeContentUtilityClient() {
 }
 
 void ChromeContentUtilityClient::UtilityThreadStarted() {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::UtilityHandler::UtilityThreadStarted();
 #endif
 
@@ -228,7 +229,7 @@ void ChromeContentUtilityClient::AddHandler(
 
 // static
 void ChromeContentUtilityClient::PreSandboxStartup() {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::ExtensionsHandler::PreSandboxStartup();
 #endif
 }

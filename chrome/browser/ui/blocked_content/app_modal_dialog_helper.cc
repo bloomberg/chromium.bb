@@ -10,15 +10,16 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "extensions/features/features.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "components/guest_view/browser/guest_view_base.h"
 #endif
 
 AppModalDialogHelper::AppModalDialogHelper(content::WebContents* dialog_host)
     : popup_(nullptr) {
   content::WebContents* actual_host = dialog_host;
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // If the dialog was triggered via an PDF, get the actual web contents that
   // embedds the PDF.
   guest_view::GuestViewBase* guest =

@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/features/features.h"
 
 namespace syncer {
 class ExtensionsActivity;
@@ -32,7 +33,7 @@ class ExtensionsActivityMonitor : public content::NotificationObserver {
  private:
   scoped_refptr<syncer::ExtensionsActivity> extensions_activity_;
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // Used only on UI loop.
   content::NotificationRegistrar registrar_;
 #endif

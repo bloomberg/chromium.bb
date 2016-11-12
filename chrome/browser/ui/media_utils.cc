@@ -7,15 +7,16 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/features/features.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #endif
 
 namespace {
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 const extensions::Extension* GetExtensionForOrigin(Profile* profile,
                                              const GURL& security_origin) {
   if (!security_origin.SchemeIs(extensions::kExtensionScheme))
@@ -37,7 +38,7 @@ void RequestMediaAccessPermission(
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
   const extensions::Extension* extension = NULL;
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   extension = GetExtensionForOrigin(profile, request.security_origin);
 #endif
   MediaCaptureDevicesDispatcher::GetInstance()->ProcessMediaAccessRequest(
@@ -47,7 +48,7 @@ void RequestMediaAccessPermission(
 bool CheckMediaAccessPermission(content::WebContents* web_contents,
                                 const GURL& security_origin,
                                 content::MediaStreamType type) {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   const extensions::Extension* extension =

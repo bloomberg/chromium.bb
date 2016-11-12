@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "chrome/browser/download/download_service.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "extensions/features/features.h"
 
 class ChromeDownloadManagerDelegate;
 class DownloadHistory;
@@ -35,7 +36,7 @@ class DownloadServiceImpl : public DownloadService {
   // DownloadService
   ChromeDownloadManagerDelegate* GetDownloadManagerDelegate() override;
   DownloadHistory* GetDownloadHistory() override;
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::ExtensionDownloadsEventRouter* GetExtensionEventRouter() override;
 #endif
   bool HasCreatedDownloadManager() override;
@@ -70,7 +71,7 @@ class DownloadServiceImpl : public DownloadService {
 // Once we have extensions on android, we probably need the EventRouter
 // in ContentViewDownloadDelegate which knows about both GET and POST
 // downloads.
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // The ExtensionDownloadsEventRouter dispatches download creation, change, and
   // erase events to extensions. Like ChromeDownloadManagerDelegate, it's a
   // chrome-level concept and its lifetime should match DownloadManager. There

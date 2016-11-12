@@ -21,13 +21,14 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/power/origin_power_map_factory.h"
 #include "content/public/browser/browser_context.h"
+#include "extensions/features/features.h"
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/precache/precache_manager_factory.h"
 #endif
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #endif
@@ -70,7 +71,7 @@ BrowsingDataRemoverFactory::BrowsingDataRemoverFactory()
   DependsOn(precache::PrecacheManagerFactory::GetInstance());
 #endif
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   DependsOn(extensions::ActivityLog::GetFactoryInstance());
   DependsOn(extensions::ExtensionPrefsFactory::GetInstance());
 #endif

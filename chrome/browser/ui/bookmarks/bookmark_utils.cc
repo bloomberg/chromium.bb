@@ -21,10 +21,11 @@
 #include "components/url_formatter/url_formatter.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/features/features.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drop_target_event.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_set.h"
@@ -59,7 +60,7 @@ enum BookmarkShortcutDisposition {
 // Indicates how the bookmark shortcut has been changed by extensions associated
 // with |profile|, if at all.
 BookmarkShortcutDisposition GetBookmarkShortcutDisposition(Profile* profile) {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::CommandService* command_service =
       extensions::CommandService::Get(profile);
 
@@ -168,7 +169,7 @@ bool ShouldRemoveBookmarkThisPageUI(Profile* profile) {
 }
 
 bool ShouldRemoveBookmarkOpenPagesUI(Profile* profile) {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile);
   if (!registry)

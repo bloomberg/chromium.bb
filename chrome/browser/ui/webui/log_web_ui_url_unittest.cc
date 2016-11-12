@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/log_web_ui_url.h"
 
+#include "extensions/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -17,7 +18,7 @@ TEST(LogWebUIUrlTest, ValidUrls) {
   // Developer tools scheme.
   EXPECT_TRUE(webui::LogWebUIUrl(GURL("chrome-devtools://devtools")));
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // Bookmarks Manager (the only currently allowed extension).
   EXPECT_TRUE(webui::LogWebUIUrl(GURL(
       "chrome-extension://eemcgdkfndhakfknompkggombfjjjeno")));

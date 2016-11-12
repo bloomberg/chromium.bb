@@ -9,6 +9,7 @@ import("//build/config/ui.gni")
 import("//build/split_static_library.gni")
 import("//chrome/common/features.gni")
 import("//components/os_crypt/features.gni")
+import("//extensions/features/features.gni")
 import("//media/media_options.gni")
 import("//net/features.gni")
 import("//ppapi/features/features.gni")
@@ -1430,6 +1431,7 @@ split_static_library("browser") {
     "//device/power_save_blocker",
     "//device/usb/mojo",
     "//device/usb/public/interfaces",
+    "//extensions/features",
     "//google_apis",
     "//gpu/config",
     "//media",

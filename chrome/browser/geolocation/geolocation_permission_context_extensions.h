@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "extensions/features/features.h"
 
 namespace content {
 class WebContents;
@@ -40,7 +41,7 @@ class GeolocationPermissionContextExtensions {
                                int bridge_id);
 
  private:
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   Profile* profile_;
 #endif
 

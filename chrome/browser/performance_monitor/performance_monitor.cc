@@ -17,8 +17,9 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_constants.h"
+#include "extensions/features/features.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -39,7 +40,7 @@ base::LazyInstance<PerformanceMonitor> g_monitor = LAZY_INSTANCE_INITIALIZER;
 void GatherMetricsForRenderProcess(content::RenderProcessHost* host,
                                    ProcessMetricsMetadata* data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   content::BrowserContext* browser_context = host->GetBrowserContext();
   extensions::ProcessMap* extension_process_map =
       extensions::ProcessMap::Get(browser_context);

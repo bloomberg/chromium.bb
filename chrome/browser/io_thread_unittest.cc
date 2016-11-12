@@ -24,6 +24,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/features/features.h"
 #include "net/cert_net/nss_ocsp.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/http/http_auth_scheme.h"
@@ -33,7 +34,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #endif
 
@@ -106,7 +107,7 @@ class IOThreadTestWithIOThreadObject : public testing::Test {
   IOThreadTestWithIOThreadObject()
       : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD |
                        content::TestBrowserThreadBundle::DONT_START_THREADS) {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
     event_router_forwarder_ = new extensions::EventRouterForwarder;
 #endif
     PrefRegistrySimple* pref_registry = pref_service_.registry();
@@ -128,7 +129,7 @@ class IOThreadTestWithIOThreadObject : public testing::Test {
     // The IOThread constructor registers the IOThread object with as the
     // BrowserThreadDelegate for the io thread.
     io_thread_.reset(new IOThread(&pref_service_, &policy_service_, nullptr,
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
                                   event_router_forwarder_.get()
 #else
                                   nullptr
@@ -163,7 +164,7 @@ class IOThreadTestWithIOThreadObject : public testing::Test {
  private:
   base::ShadowingAtExitManager at_exit_manager_;
   TestingPrefServiceSimple pref_service_;
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   scoped_refptr<extensions::EventRouterForwarder> event_router_forwarder_;
 #endif
   policy::PolicyMap policy_map_;

@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "components/url_formatter/url_fixer.h"
+#include "extensions/features/features.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/md_history_ui.h"
@@ -61,7 +62,7 @@ bool WillHandleBrowserAboutURL(GURL* url,
   } else if (host == chrome::kChromeUISyncHost) {
     host = chrome::kChromeUISyncInternalsHost;
   // Redirect chrome://extensions.
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   } else if (host == chrome::kChromeUIExtensionsHost) {
     // If the material design extensions page is enabled, it gets its own host.
     // Otherwise, it's handled by the uber settings page.
@@ -77,7 +78,7 @@ bool WillHandleBrowserAboutURL(GURL* url,
       url->path() == std::string("/") + chrome::kExtensionsSubPage) {
     host = chrome::kChromeUIUberHost;
     path = chrome::kChromeUIExtensionsHost;
-#endif  // defined(ENABLE_EXTENSIONS)
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   // Redirect chrome://history.
   } else if (host == chrome::kChromeUIHistoryHost) {
 #if defined(OS_ANDROID)

@@ -17,9 +17,10 @@
 #include "components/omnibox/browser/shortcuts_constants.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/features/features.h"
 
 namespace {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 const char kShortcutsExtensionsManagerKey[] = "ShortcutsExtensionsManager";
 #endif
 }
@@ -79,7 +80,7 @@ bool ShortcutsBackendFactory::ServiceIsNULLWhileTesting() const {
 
 void ShortcutsBackendFactory::BrowserContextShutdown(
     content::BrowserContext* context) {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   context->RemoveUserData(kShortcutsExtensionsManagerKey);
 #endif
 
@@ -98,7 +99,7 @@ scoped_refptr<ShortcutsBackend> ShortcutsBackendFactory::CreateShortcutsBackend(
       content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::DB),
       profile->GetPath().Append(kShortcutsDatabaseName), suppress_db));
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   ShortcutsExtensionsManager* extensions_manager =
       new ShortcutsExtensionsManager(profile);
   profile->SetUserData(kShortcutsExtensionsManagerKey, extensions_manager);

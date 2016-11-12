@@ -21,6 +21,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/features/features.h"
 #include "ui/base/theme_provider.h"
 
 class CustomThemeSupplier;
@@ -320,7 +321,7 @@ class ThemeService : public base::NonThreadSafe,
 
   std::unique_ptr<ThemeSyncableService> theme_syncable_service_;
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   class ThemeObserver;
   std::unique_ptr<ThemeObserver> theme_observer_;
 #endif

@@ -5,6 +5,7 @@
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/sysroot.gni")
+import("//extensions/features/features.gni")
 import("//printing/features/features.gni")
 
 static_library("utility") {
@@ -47,6 +48,7 @@ static_library("utility") {
     "//content/public/common",
     "//content/public/utility",
     "//courgette:courgette_lib",
+    "//extensions/features",
     "//media",
     "//net:net_with_v8",
     "//printing/features",

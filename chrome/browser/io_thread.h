@@ -28,6 +28,7 @@
 #include "components/ssl_config/ssl_config_service_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browser_thread_delegate.h"
+#include "extensions/features/features.h"
 #include "net/base/network_change_notifier.h"
 #include "net/http/http_network_session.h"
 
@@ -183,7 +184,7 @@ class IOThread : public content::BrowserThreadDelegate {
     // |system_cookie_store| and |system_channel_id_service| are shared
     // between |proxy_script_fetcher_context| and |system_request_context|.
     std::unique_ptr<net::CookieStore> system_cookie_store;
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
     scoped_refptr<extensions::EventRouterForwarder>
         extension_event_router_forwarder;
 #endif
@@ -295,7 +296,7 @@ class IOThread : public content::BrowserThreadDelegate {
   void UpdateNegotiateEnablePort();
 
   extensions::EventRouterForwarder* extension_event_router_forwarder() {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
     return extension_event_router_forwarder_;
 #else
     return NULL;
@@ -326,7 +327,7 @@ class IOThread : public content::BrowserThreadDelegate {
   // threads during shutdown, but is used most frequently on the IOThread.
   net_log::ChromeNetLog* net_log_;
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // The extensions::EventRouterForwarder allows for sending events to
   // extensions from the IOThread.
   extensions::EventRouterForwarder* extension_event_router_forwarder_;

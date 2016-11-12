@@ -26,13 +26,14 @@
 #include "components/url_formatter/url_fixer.h"
 #include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/features/features.h"
 #include "net/base/escape.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/extension_urls.h"
 #endif
 
@@ -92,7 +93,7 @@ const char* kFilteredSchemes[] = {
   "wss"
 };
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 const char* kCrxDownloadUrls[] = {
     "https://clients2.googleusercontent.com/crx/blobs/",
     "https://chrome.google.com/webstore/download/"
@@ -349,7 +350,7 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
   if (!HasFilteredScheme(effective_url))
     return ALLOW;
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // Allow webstore crx downloads. This applies to both extension installation
   // and updates.
   if (extension_urls::GetWebstoreUpdateUrl() == Normalize(effective_url))

@@ -18,6 +18,7 @@
 #include "base/strings/string16.h"
 #include "components/rappor/public/interfaces/rappor_recorder.mojom.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "extensions/features/features.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "printing/features/features.h"
 #include "v8/include/v8.h"
@@ -199,7 +200,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       const ChromeViewHostMsg_GetPluginInfo_Output& output);
 #endif
 
-#if defined(ENABLE_PLUGINS) && defined(ENABLE_EXTENSIONS)
+#if defined(ENABLE_PLUGINS) && BUILDFLAG(ENABLE_EXTENSIONS)
   static bool IsExtensionOrSharedModuleWhitelisted(
       const GURL& url, const std::set<std::string>& whitelist);
 #endif

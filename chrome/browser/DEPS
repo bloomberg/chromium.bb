@@ -24,6 +24,7 @@ include_rules = [
   "+extensions/browser",
   "+extensions/common",
   "+extensions/components/javascript_dialog_extensions_client",
+  "+extensions/features",
   "+extensions/grit",
   "+extensions/test",
   "+gin",

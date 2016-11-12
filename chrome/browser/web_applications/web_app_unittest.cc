@@ -13,6 +13,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/test/test_renderer_host.h"
+#include "extensions/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(TOOLKIT_VIEWS)
@@ -56,7 +57,7 @@ TEST_F(WebApplicationTest, GetShortcutInfoForTab) {
 }
 #endif
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 TEST_F(WebApplicationTest, AppDirWithId) {
   base::FilePath profile_path(FILE_PATH_LITERAL("profile"));
   base::FilePath result(

@@ -11,8 +11,9 @@
 #include "chrome/common/url_constants.h"
 #include "components/sessions/content/content_live_tab.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/features/features.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_metrics.h"
@@ -30,7 +31,7 @@
 namespace {
 
 void RecordAppLaunch(Profile* profile, const GURL& url) {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(profile)
           ->enabled_extensions()
@@ -40,7 +41,7 @@ void RecordAppLaunch(Profile* profile, const GURL& url) {
 
   extensions::RecordAppLaunchType(
       extension_misc::APP_LAUNCH_NTP_RECENTLY_CLOSED, extension->GetType());
-#endif  // defined(ENABLE_EXTENSIONS)
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 }
 
 }  // namespace
@@ -91,7 +92,7 @@ std::string ChromeTabRestoreServiceClient::GetExtensionAppIDForTab(
     sessions::LiveTab* tab) {
   std::string extension_app_id;
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::TabHelper* extensions_tab_helper =
       extensions::TabHelper::FromWebContents(
           static_cast<sessions::ContentLiveTab*>(tab)->web_contents());

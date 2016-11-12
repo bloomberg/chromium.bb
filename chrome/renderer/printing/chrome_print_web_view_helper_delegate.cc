@@ -14,16 +14,17 @@
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
+#include "extensions/features/features.h"
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/common/extensions/extension_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container.h"
-#endif  // defined(ENABLE_EXTENSIONS)
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 ChromePrintWebViewHelperDelegate::~ChromePrintWebViewHelperDelegate(){
 }
@@ -41,7 +42,7 @@ bool ChromePrintWebViewHelperDelegate::CancelPrerender(
 // Return the PDF object element if |frame| is the out of process PDF extension.
 blink::WebElement ChromePrintWebViewHelperDelegate::GetPdfElement(
         blink::WebLocalFrame* frame) {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   GURL url = frame->document().url();
   bool inside_print_preview = url.GetOrigin() == chrome::kChromeUIPrintURL;
   bool inside_pdf_extension = url.SchemeIs(extensions::kExtensionScheme) &&
@@ -55,7 +56,7 @@ blink::WebElement ChromePrintWebViewHelperDelegate::GetPdfElement(
     }
     NOTREACHED();
   }
-#endif  // defined(ENABLE_EXTENSIONS)
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   return blink::WebElement();
 }
 
@@ -66,7 +67,7 @@ bool ChromePrintWebViewHelperDelegate::IsPrintPreviewEnabled() {
 
 bool ChromePrintWebViewHelperDelegate::OverridePrint(
     blink::WebLocalFrame* frame) {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   if (!frame->document().isPluginDocument())
     return false;
 
@@ -83,6 +84,6 @@ bool ChromePrintWebViewHelperDelegate::OverridePrint(
     mime_handlers.front()->PostMessageFromValue(message);
     return true;
   }
-#endif  // defined(ENABLE_EXTENSIONS)
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   return false;
 }

@@ -27,11 +27,12 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "extensions/features/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/common/extensions/extension_constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -42,7 +43,7 @@ using content::WebContents;
 
 namespace {
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 const extensions::Extension* GetExtension(WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -69,7 +70,7 @@ bool IsWhitelistedExtension(const extensions::Extension* extension) {
 
   return false;
 }
-#endif  // defined(ENABLE_EXTENSIONS)
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 base::string16 GetTitle(WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -77,7 +78,7 @@ base::string16 GetTitle(WebContents* web_contents) {
   if (!web_contents)
     return base::string16();
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   const extensions::Extension* const extension = GetExtension(web_contents);
   if (extension)
     return base::UTF8ToUTF16(extension->name());
@@ -406,7 +407,7 @@ void MediaStreamCaptureIndicator::UpdateNotificationUserInterface() {
     // The audio/video icon is shown only for non-whitelisted extensions or on
     // Android. For regular tabs on desktop, we show an indicator in the tab
     // icon.
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
     const extensions::Extension* extension = GetExtension(web_contents);
     if (!extension || IsWhitelistedExtension(extension))
       continue;

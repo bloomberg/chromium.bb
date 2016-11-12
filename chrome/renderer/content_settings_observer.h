@@ -16,6 +16,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
+#include "extensions/features/features.h"
 #include "third_party/WebKit/public/web/WebContentSettingsClient.h"
 #include "url/gurl.h"
 
@@ -111,7 +112,7 @@ class ContentSettingsObserver
   // Whether the observed RenderFrame is for a platform app.
   bool IsPlatformApp();
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // If |origin| corresponds to an installed extension, returns that extension.
   // Otherwise returns NULL.
   const extensions::Extension* GetExtension(
@@ -126,7 +127,7 @@ class ContentSettingsObserver
       const blink::WebSecurityOrigin& origin,
       const GURL& document_url);
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // Owned by ChromeContentRendererClient and outlive us.
   extensions::Dispatcher* const extension_dispatcher_;
 #endif

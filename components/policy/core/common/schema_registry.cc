@@ -5,6 +5,7 @@
 #include "components/policy/core/common/schema_registry.h"
 
 #include "base/logging.h"
+#include "extensions/features/features.h"
 
 namespace policy {
 
@@ -15,7 +16,7 @@ SchemaRegistry::InternalObserver::~InternalObserver() {}
 SchemaRegistry::SchemaRegistry() : schema_map_(new SchemaMap) {
   for (int i = 0; i < POLICY_DOMAIN_SIZE; ++i)
     domains_ready_[i] = false;
-#if !defined(ENABLE_EXTENSIONS)
+#if !BUILDFLAG(ENABLE_EXTENSIONS)
   SetExtensionsDomainsReady();
 #endif
 }

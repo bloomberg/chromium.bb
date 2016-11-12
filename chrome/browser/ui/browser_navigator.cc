@@ -37,6 +37,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/features/features.h"
 
 #if defined(USE_ASH)
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
@@ -47,7 +48,7 @@
 #include "ui/aura/window.h"
 #endif
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "extensions/browser/extension_registry.h"
@@ -156,7 +157,7 @@ Browser* GetBrowserForDisposition(chrome::NavigateParams* params) {
       // Make a new popup window.
       // Coerce app-style if |source| represents an app.
       std::string app_name;
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
       if (!params->extension_app_id.empty()) {
         app_name = web_app::GenerateApplicationNameFromExtensionId(
             params->extension_app_id);
@@ -376,7 +377,7 @@ content::WebContents* CreateTargetContents(const chrome::NavigateParams& params,
   // tab helpers, so the entire set of tab helpers needs to be set up
   // immediately.
   BrowserNavigatorWebContentsAdoption::AttachTabHelpers(target_contents);
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::TabHelper::FromWebContents(target_contents)->
       SetExtensionAppById(params.extension_app_id);
 #endif
@@ -415,7 +416,7 @@ void Navigate(NavigateParams* params) {
   if (!AdjustNavigateParamsForURL(params))
     return;
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   const extensions::Extension* extension =
     extensions::ExtensionRegistry::Get(params->initiating_profile)->
         enabled_extensions().GetExtensionOrAppByURL(params->url);

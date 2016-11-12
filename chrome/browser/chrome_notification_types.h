@@ -6,14 +6,15 @@
 #define CHROME_BROWSER_CHROME_NOTIFICATION_TYPES_H_
 
 #include "build/build_config.h"
+#include "extensions/features/features.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/notification_types.h"
 #else
 #include "content/public/browser/notification_types.h"
 #endif
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #define PREVIOUS_END extensions::NOTIFICATION_EXTENSIONS_END
 #else
 #define PREVIOUS_END content::NOTIFICATION_CONTENT_END
@@ -127,7 +128,7 @@ enum NotificationType {
   // Details<InfoBar::RemovedDetails>.
   NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // This notification is sent when extensions::TabHelper::SetExtensionApp is
   // invoked. The source is the extensions::TabHelper SetExtensionApp was
   // invoked on.
@@ -313,7 +314,7 @@ enum NotificationType {
 
   // Cookies -----------------------------------------------------------------
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // Sent when a cookie changes, for consumption by extensions. The source is a
   // Profile object, the details are a ChromeCookieDetails object.
   NOTIFICATION_COOKIE_CHANGED_FOR_EXTENSIONS,

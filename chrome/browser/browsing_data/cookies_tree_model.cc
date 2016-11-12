@@ -23,6 +23,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/features/features.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/url_request/url_request_context.h"
@@ -33,7 +34,7 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "extensions/common/extension_set.h"
 #endif
@@ -128,7 +129,7 @@ std::string CanonicalizeHost(const GURL& url) {
   return retval;
 }
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 bool TypeIsProtected(CookieTreeNode::DetailedInfo::NodeType type) {
   switch (type) {
     // Fall through each below cases to return true.
@@ -1027,7 +1028,7 @@ CookiesTreeModel::CookiesTreeModel(
     ExtensionSpecialStoragePolicy* special_storage_policy)
     : ui::TreeNodeModel<CookieTreeNode>(
           base::MakeUnique<CookieTreeRootNode>(this)),
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
       special_storage_policy_(special_storage_policy),
 #endif
       data_container_(data_container) {
@@ -1136,7 +1137,7 @@ void CookiesTreeModel::UpdateSearchResults(const base::string16& filter) {
   PopulateCacheStorageUsageInfoWithFilter(data_container(), &notifier, filter);
 }
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 const extensions::ExtensionSet* CookiesTreeModel::ExtensionsProtectingNode(
     const CookieTreeNode& cookie_node) {
   if (!special_storage_policy_.get())

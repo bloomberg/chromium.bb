@@ -51,6 +51,7 @@ static_library("browser") {
     "//components/pref_registry:pref_registry",
     "//components/prefs",
     "//components/url_formatter",
+    "//extensions/features",
     "//net",
     "//url",
   ]
@@ -85,6 +86,7 @@ source_set("unit_tests") {
     "//components/content_settings/core/test:test_support",
     "//components/pref_registry:test_support",
     "//components/prefs",
+    "//extensions/features",
     "//testing/gtest",
     "//url",
   ]

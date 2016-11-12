@@ -7,12 +7,13 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "content/public/browser/navigation_handle.h"
+#include "extensions/features/features.h"
 
 ChromeNavigationUIData::ChromeNavigationUIData() {}
 
 ChromeNavigationUIData::ChromeNavigationUIData(
     content::NavigationHandle* navigation_handle) {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   SessionTabHelper* session_tab_helper =
       SessionTabHelper::FromWebContents(navigation_handle->GetWebContents());
   int tab_id = session_tab_helper ? session_tab_helper->session_id().id() : -1;
@@ -30,7 +31,7 @@ std::unique_ptr<content::NavigationUIData> ChromeNavigationUIData::Clone()
   std::unique_ptr<ChromeNavigationUIData> copy =
       base::MakeUnique<ChromeNavigationUIData>();
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   if (extension_data_)
     copy->SetExtensionNavigationUIData(extension_data_->DeepCopy());
 #endif
@@ -38,7 +39,7 @@ std::unique_ptr<content::NavigationUIData> ChromeNavigationUIData::Clone()
   return std::move(copy);
 }
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 void ChromeNavigationUIData::SetExtensionNavigationUIData(
     std::unique_ptr<extensions::ExtensionNavigationUIData> extension_data) {
   extension_data_ = std::move(extension_data);

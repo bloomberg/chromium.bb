@@ -21,8 +21,9 @@
 #include "components/history/core/browser/download_row.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/download_manager.h"
+#include "extensions/features/features.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/extension.h"
 #endif
 
@@ -78,7 +79,7 @@ class DownloadsCounterTest : public InProcessBrowserTest,
         true);
   }
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   std::string AddExtensionDownload() {
     // Extension downloads are not expected to be persisted. We don't need to
     // wait for a callback from them, so we don't add them to |guids_to_add_|.
@@ -331,7 +332,7 @@ IN_PROC_BROWSER_TEST_F(DownloadsCounterTest, NotPersisted) {
 
   // Extension and user scripts download are not persisted.
   AddDownload();
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   AddUserScriptDownload();
   AddExtensionDownload();
 #endif

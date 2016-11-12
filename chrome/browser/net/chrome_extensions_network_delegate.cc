@@ -7,9 +7,10 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "extensions/features/features.h"
 #include "net/base/net_errors.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/strings/string_util.h"
@@ -313,12 +314,12 @@ ChromeExtensionsNetworkDelegateImpl::OnAuthRequired(
 
 }  // namespace
 
-#endif  // defined(ENABLE_EXTENSIONS)
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 // static
 ChromeExtensionsNetworkDelegate* ChromeExtensionsNetworkDelegate::Create(
     extensions::EventRouterForwarder* event_router) {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   return new ChromeExtensionsNetworkDelegateImpl(event_router);
 #else
   return new ChromeExtensionsNetworkDelegate();
@@ -333,7 +334,7 @@ ChromeExtensionsNetworkDelegate::~ChromeExtensionsNetworkDelegate() {}
 
 void ChromeExtensionsNetworkDelegate::set_extension_info_map(
     extensions::InfoMap* extension_info_map) {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   extension_info_map_ = extension_info_map;
 #endif
 }

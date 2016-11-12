@@ -22,9 +22,10 @@
 #include "content/public/common/process_type.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/process_map.h"
 #endif
 
@@ -131,7 +132,7 @@ TEST_F(ChromeStabilityMetricsProviderTest, NotificationObserver) {
   EXPECT_EQ(1, system_profile.stability().renderer_failed_launch_count());
   EXPECT_EQ(0, system_profile.stability().extension_renderer_crash_count());
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   provider.ClearSavedStabilityMetrics();
 
   // Owned by rph_factory.

@@ -14,8 +14,9 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "extensions/features/features.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/process_map.h"
 #endif
 
@@ -81,7 +82,7 @@ void ChromeStabilityMetricsProvider::Observe(
           content::Details<content::RenderProcessHost::RendererClosedDetails>(
               details).ptr();
       bool was_extension_process = false;
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
       content::RenderProcessHost* host =
           content::Source<content::RenderProcessHost>(source).ptr();
       if (extensions::ProcessMap::Get(host->GetBrowserContext())
@@ -100,7 +101,7 @@ void ChromeStabilityMetricsProvider::Observe(
 
     case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
       bool was_extension_process = false;
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
       content::RenderProcessHost* host =
           content::Source<content::RenderProcessHost>(source).ptr();
       if (extensions::ProcessMap::Get(host->GetBrowserContext())

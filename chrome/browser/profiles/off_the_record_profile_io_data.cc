@@ -30,6 +30,7 @@
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/resource_context.h"
 #include "extensions/common/constants.h"
+#include "extensions/features/features.h"
 #include "net/base/sdch_manager.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
@@ -41,7 +42,7 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "storage/browser/database/database_tracker.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/extension.h"
 #endif
 
@@ -259,7 +260,7 @@ void OffTheRecordProfileIOData::InitializeInternal(
   sdch_policy_.reset(
       new net::SdchOwner(main_context->sdch_manager(), main_context));
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   InitializeExtensionsRequestContext(profile_params);
 #endif
 }

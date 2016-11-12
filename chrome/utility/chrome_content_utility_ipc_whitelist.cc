@@ -6,12 +6,13 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "extensions/features/features.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
 #endif
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 const uint32_t kMessageWhitelist[] = {
 #if defined(OS_WIN)
     ChromeUtilityHostMsg_GetWiFiCredentials::ID,
@@ -24,4 +25,4 @@ const size_t kMessageWhitelistSize = arraysize(kMessageWhitelist);
 // Note: Zero-size arrays are not valid C++.
 const uint32_t kMessageWhitelist[] = {0};
 const size_t kMessageWhitelistSize = 0;
-#endif  // defined(ENABLE_EXTENSIONS)
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)

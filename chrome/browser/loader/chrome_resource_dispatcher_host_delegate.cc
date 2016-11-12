@@ -66,6 +66,7 @@
 #include "content/public/browser/stream_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/resource_response.h"
+#include "extensions/features/features.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/request_priority.h"
@@ -77,7 +78,7 @@
 #include "chrome/browser/component_updater/pnacl_component_installer.h"
 #endif
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/apps/app_url_redirector.h"
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
 #include "chrome/browser/extensions/user_script_listener.h"
@@ -117,7 +118,7 @@ using content::ResourceDispatcherHostLoginDelegate;
 using content::ResourceRequestInfo;
 using content::ResourceType;
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 using extensions::Extension;
 using extensions::StreamsPrivateAPI;
 #endif
@@ -172,7 +173,7 @@ void UpdatePrerenderNetworkBytesCallback(content::WebContents* web_contents,
     prerender_manager->AddProfileNetworkBytesIfEnabled(bytes);
 }
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 void SendExecuteMimeTypeHandlerEvent(
     std::unique_ptr<content::StreamInfo> stream,
     int64_t expected_content_size,
@@ -214,7 +215,7 @@ void SendExecuteMimeTypeHandlerEvent(
       extension_id, std::move(stream), view_id, expected_content_size, embedded,
       frame_tree_node_id, render_process_id, render_frame_id);
 }
-#endif  // !defined(ENABLE_EXTENSIONS)
+#endif  // !BUILDFLAG(ENABLE_EXTENSIONS)
 
 void LaunchURL(
     const GURL& url,
@@ -377,7 +378,7 @@ void NotifyUIThreadOfRequestComplete(
 ChromeResourceDispatcherHostDelegate::ChromeResourceDispatcherHostDelegate()
     : download_request_limiter_(g_browser_process->download_request_limiter()),
       safe_browsing_(g_browser_process->safe_browsing_service())
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
       , user_script_listener_(new extensions::UserScriptListener())
 #endif
       {
@@ -388,7 +389,7 @@ ChromeResourceDispatcherHostDelegate::ChromeResourceDispatcherHostDelegate()
 }
 
 ChromeResourceDispatcherHostDelegate::~ChromeResourceDispatcherHostDelegate() {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   CHECK(stream_target_info_.empty());
 #endif
 }
@@ -561,7 +562,7 @@ bool ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
     return false;
   }
   int child_id = info->GetChildID();
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // External protocols are disabled for guests. An exception is made for the
   // "mailto" protocol, so that pages that utilize it work properly in a
   // WebView.
@@ -573,7 +574,7 @@ bool ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
       !url.SchemeIs(url::kMailToScheme)) {
     return false;
   }
-#endif  // defined(ENABLE_EXTENSIONS)
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if defined(OS_ANDROID)
   // Main frame external protocols are handled by
@@ -626,7 +627,7 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
         io_data->supervised_user_url_filter()));
 #endif
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   content::ResourceThrottle* wait_for_extensions_init_throttle =
       user_script_listener_->CreateResourceThrottle(request->url(),
                                                     resource_type);
@@ -656,7 +657,7 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
 
 bool ChromeResourceDispatcherHostDelegate::ShouldForceDownloadResource(
     const GURL& url, const std::string& mime_type) {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // Special-case user scripts to get downloaded instead of viewed.
   return extensions::UserScript::IsURLUserScript(url, mime_type);
 #else
@@ -670,7 +671,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
     const std::string& mime_type,
     GURL* origin,
     std::string* payload) {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   ProfileIOData* io_data =
       ProfileIOData::FromResourceContext(info->GetContext());
@@ -724,7 +725,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
 void ChromeResourceDispatcherHostDelegate::OnStreamCreated(
     net::URLRequest* request,
     std::unique_ptr<content::StreamInfo> stream) {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   std::map<net::URLRequest*, StreamTargetInfo>::iterator ix =
       stream_target_info_.find(request);
@@ -755,7 +756,7 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
                                               info->GetRouteID());
 
   // Built-in additional protection for the chrome web store origin.
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   GURL webstore_url(extension_urls::GetWebstoreLaunchURL());
   if (request->url().SchemeIsHTTPOrHTTPS() &&
       request->url().DomainIs(webstore_url.host().c_str())) {

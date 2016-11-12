@@ -18,6 +18,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/prefs/pref_member.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "extensions/features/features.h"
 #include "ppapi/features/features.h"
 
 struct ChromeViewHostMsg_GetPluginInfo_Output;
@@ -82,7 +83,7 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
    private:
     int render_process_id_;
     content::ResourceContext* resource_context_;
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
     extensions::ExtensionRegistry* extension_registry_;
 #endif
     const HostContentSettingsMap* host_content_settings_map_;

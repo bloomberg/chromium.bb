@@ -93,13 +93,14 @@
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/constants.h"
+#include "extensions/features/features.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
@@ -330,7 +331,7 @@ TestingProfile::TestingProfile(const base::FilePath& path, Delegate* delegate)
 TestingProfile::TestingProfile(
     const base::FilePath& path,
     Delegate* delegate,
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
     scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy,
 #endif
     std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs,
@@ -348,7 +349,7 @@ TestingProfile::TestingProfile(
       guest_session_(guest_session),
       supervised_user_id_(supervised_user_id),
       last_session_exited_cleanly_(true),
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
       extension_special_storage_policy_(extension_policy),
 #endif
       profile_path_(path),
@@ -473,7 +474,7 @@ void TestingProfile::Init() {
 
   extensions_path_ = profile_path_.AppendASCII("Extensions");
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // Note that the GetPrefs() creates a TestingPrefService, therefore
   // the extension controlled pref values set in ExtensionPrefs
   // are not reflected in the pref service. One would need to
@@ -752,7 +753,7 @@ bool TestingProfile::IsLegacySupervised() const {
   return IsSupervised() && !IsChild();
 }
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 void TestingProfile::SetExtensionSpecialStoragePolicy(
     ExtensionSpecialStoragePolicy* extension_special_storage_policy) {
   extension_special_storage_policy_ = extension_special_storage_policy;
@@ -761,7 +762,7 @@ void TestingProfile::SetExtensionSpecialStoragePolicy(
 
 ExtensionSpecialStoragePolicy*
 TestingProfile::GetExtensionSpecialStoragePolicy() {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   if (!extension_special_storage_policy_.get())
     extension_special_storage_policy_ = new ExtensionSpecialStoragePolicy(NULL);
   return extension_special_storage_policy_.get();
@@ -874,7 +875,7 @@ content::ResourceContext* TestingProfile::GetResourceContext() {
 }
 
 content::BrowserPluginGuestManager* TestingProfile::GetGuestManager() {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   return guest_view::GuestViewManager::FromBrowserContext(this);
 #else
   return NULL;
@@ -954,7 +955,7 @@ PrefService* TestingProfile::GetOffTheRecordPrefs() {
 }
 
 storage::SpecialStoragePolicy* TestingProfile::GetSpecialStoragePolicy() {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   return GetExtensionSpecialStoragePolicy();
 #else
   return NULL;
@@ -1032,7 +1033,7 @@ void TestingProfile::Builder::SetDelegate(Delegate* delegate) {
   delegate_ = delegate;
 }
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 void TestingProfile::Builder::SetExtensionSpecialStoragePolicy(
     scoped_refptr<ExtensionSpecialStoragePolicy> policy) {
   extension_policy_ = policy;
@@ -1074,7 +1075,7 @@ std::unique_ptr<TestingProfile> TestingProfile::Builder::Build() {
 
   return std::unique_ptr<TestingProfile>(new TestingProfile(
       path_, delegate_,
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
       extension_policy_,
 #endif
       std::move(pref_service_), NULL, guest_session_, supervised_user_id_,
@@ -1089,7 +1090,7 @@ TestingProfile* TestingProfile::Builder::BuildIncognito(
 
   // Note: Owned by |original_profile|.
   return new TestingProfile(path_, delegate_,
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
                             extension_policy_,
 #endif
                             std::move(pref_service_), original_profile,

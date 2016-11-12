@@ -14,10 +14,11 @@
 #include "components/browser_sync/signin_confirmation_helper.h"
 #include "components/history/core/browser/history_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/features/features.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "extensions/browser/extension_registry.h"
@@ -60,7 +61,7 @@ bool HasBeenShutdown(Profile* profile) {
 }
 
 bool HasSyncedExtensions(Profile* profile) {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile);
   if (registry) {

@@ -27,11 +27,12 @@
 #include "content/public/common/notification_resources.h"
 #include "content/public/common/platform_notification_data.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/features/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "base/command_line.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -43,7 +44,7 @@
 #include "extensions/common/value_builder.h"
 #endif
 
-#if defined(ENABLE_EXTENSIONS) && defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_EXTENSIONS) && defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -316,7 +317,7 @@ TEST_F(PlatformNotificationServiceTest, NotificationPermissionLastUsage) {
   EXPECT_GT(after_persistent_notification, after_page_notification);
 }
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 
 TEST_F(PlatformNotificationServiceTest, DisplayNameForContextMessage) {
   base::string16 display_name = service()->DisplayNameForContextMessage(
@@ -441,4 +442,4 @@ TEST_F(PlatformNotificationServiceTest, CreateNotificationFromData) {
             base::UTF16ToUTF8(notification.context_message()));
 }
 
-#endif  // defined(ENABLE_EXTENSIONS)
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)

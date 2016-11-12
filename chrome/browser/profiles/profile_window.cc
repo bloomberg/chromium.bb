@@ -49,15 +49,16 @@
 #include "components/signin/core/common/signin_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
+#include "extensions/features/features.h"
 #include "net/base/escape.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_service.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_factory.h"
 #include "extensions/browser/extension_system.h"
-#endif  // defined(ENABLE_EXTENSIONS)
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/browser_finder.h"
@@ -72,7 +73,7 @@ using content::BrowserThread;
 
 namespace {
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 void BlockExtensions(Profile* profile) {
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
@@ -84,7 +85,7 @@ void UnblockExtensions(Profile* profile) {
       extensions::ExtensionSystem::Get(profile)->extension_service();
   extension_service->UnblockAllExtensions();
 }
-#endif  // defined(ENABLE_EXTENSIONS)
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 // Handles running a callback when a new Browser for the given profile
 // has been completely created.
@@ -248,7 +249,7 @@ void OpenBrowserWindowForProfile(
     is_first_run = chrome::startup::IS_FIRST_RUN;
   }
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // The signin bit will still be set if the profile is being unlocked and the
   // browser window for it is opening. As part of this unlock process, unblock
   // all the extensions.
@@ -260,7 +261,7 @@ void OpenBrowserWindowForProfile(
       UnblockExtensions(profile);
     }
   }
-#endif  // defined(ENABLE_EXTENSIONS)
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
   // If |always_create| is false, and we have a |callback| to run, check
   // whether a browser already exists so that we can run the callback. We don't
@@ -384,10 +385,10 @@ void LockBrowserCloseSuccess(const base::FilePath& profile_path) {
   DCHECK(has_entry);
   entry->SetIsSigninRequired(true);
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // Profile guaranteed to exist for it to have been locked.
   BlockExtensions(profile_manager->GetProfileByPath(profile_path));
-#endif  // defined(ENABLE_EXTENSIONS)
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
   chrome::HideTaskManager();
   UserManager::Show(profile_path,

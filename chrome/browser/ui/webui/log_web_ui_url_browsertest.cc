@@ -22,6 +22,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/features/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -64,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(LogWebUIUrlTest, TestHistoryFrame) {
   EXPECT_THAT(GetSamples(), ElementsAre(Bucket(history_frame_url_hash, 2)));
 }
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 IN_PROC_BROWSER_TEST_F(LogWebUIUrlTest, TestUberPage) {
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();

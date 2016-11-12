@@ -43,6 +43,7 @@ include_rules = [
   "+content/public/common",
   "+content/public/renderer",
   "+extensions/common",
+  "+extensions/features",
   "+extensions/renderer",
   "+gin",
   "+media/base",

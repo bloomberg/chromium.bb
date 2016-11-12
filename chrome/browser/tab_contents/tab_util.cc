@@ -11,9 +11,10 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/features/features.h"
 #include "url/gurl.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_registry.h"
 #endif
 
@@ -49,7 +50,7 @@ scoped_refptr<SiteInstance> GetSiteInstanceForNewTab(Profile* profile,
   if (ChromeWebUIControllerFactory::GetInstance()->UseWebUIForURL(profile, url))
     return SiteInstance::CreateForURL(profile, url);
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
    if (extensions::ExtensionRegistry::Get(
        profile)->enabled_extensions().GetHostedAppByURL(url))
      return SiteInstance::CreateForURL(profile, url);

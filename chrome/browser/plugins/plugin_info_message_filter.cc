@@ -41,13 +41,14 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/plugin_service_filter.h"
 #include "content/public/common/content_constants.h"
+#include "extensions/features/features.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ppapi/features/features.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "components/guest_view/browser/guest_view_base.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
@@ -118,7 +119,7 @@ void ReportMetrics(const std::string& mime_type,
   }
 }
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 // Returns whether a request from a plugin to load |resource| from a renderer
 // with process id |process_id| is a request for an internal resource by an app
 // listed in |accessible_resources| in its manifest.
@@ -148,7 +149,7 @@ bool IsPluginLoadingAccessibleResourceInWebView(
   return renderer_state->GetOwnerInfo(process_id, nullptr, &owner_extension) &&
          owner_extension == extension_id;
 }
-#endif  // defined(ENABLE_EXTENSIONS)
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 }  // namespace
 
@@ -156,7 +157,7 @@ PluginInfoMessageFilter::Context::Context(int render_process_id,
                                           Profile* profile)
     : render_process_id_(render_process_id),
       resource_context_(profile->GetResourceContext()),
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
       extension_registry_(extensions::ExtensionRegistry::Get(profile)),
 #endif
       host_content_settings_map_(HostContentSettingsMapFactory::GetForProfile(
@@ -355,7 +356,7 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
     return;
   }
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // If an app has explicitly made internal resources available by listing them
   // in |accessible_resources| in the manifest, then allow them to be loaded by
   // plugins inside a guest-view.
@@ -365,7 +366,7 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
           extension_registry_, render_process_id_, params.url)) {
     plugin_setting = CONTENT_SETTING_ALLOW;
   }
-#endif  // defined(ENABLE_EXTENSIONS)
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
   if (plugin_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT ||
       (plugin_setting == CONTENT_SETTING_ALLOW &&
@@ -380,7 +381,7 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
                   : ChromeViewHostMsg_GetPluginInfo_Status::kBlocked;
   }
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // Allow an embedder of <webview> to block a plugin from being loaded inside
   // the guest. In order to do this, set the status to 'Unauthorized' here,
   // and update the status as appropriate depending on the response from the

@@ -16,8 +16,9 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/features/features.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/tab_helper.h"
 #include "extensions/common/extension.h"
 #endif
@@ -63,7 +64,7 @@ bool TabContentsSyncedTabDelegate::IsBeingDestroyed() const {
 }
 
 std::string TabContentsSyncedTabDelegate::GetExtensionAppId() const {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   const scoped_refptr<const extensions::Extension> extension_app(
       extensions::TabHelper::FromWebContents(web_contents_)->extension_app());
   if (extension_app.get())

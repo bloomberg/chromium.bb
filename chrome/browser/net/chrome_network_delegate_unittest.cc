@@ -35,6 +35,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/features/features.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_request_headers.h"
 #include "net/socket/socket_test_util.h"
@@ -43,7 +44,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #endif
 
@@ -144,7 +145,7 @@ class ChromeNetworkDelegateTest : public testing::Test {
   ChromeNetworkDelegateTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         context_(new net::TestURLRequestContext(true)) {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
     forwarder_ = new extensions::EventRouterForwarder();
 #endif
   }
@@ -176,7 +177,7 @@ class ChromeNetworkDelegateTest : public testing::Test {
   }
 
   extensions::EventRouterForwarder* forwarder() {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
     return forwarder_.get();
 #else
     return nullptr;
@@ -186,7 +187,7 @@ class ChromeNetworkDelegateTest : public testing::Test {
  private:
   std::unique_ptr<TestingProfileManager> profile_manager_;
   content::TestBrowserThreadBundle thread_bundle_;
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   scoped_refptr<extensions::EventRouterForwarder> forwarder_;
 #endif
   TestingProfile profile_;
@@ -365,7 +366,7 @@ class ChromeNetworkDelegatePolicyTest : public testing::Test {
  public:
   ChromeNetworkDelegatePolicyTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
     forwarder_ = new extensions::EventRouterForwarder();
 #endif
   }
@@ -376,7 +377,7 @@ class ChromeNetworkDelegatePolicyTest : public testing::Test {
    }
 
   extensions::EventRouterForwarder* forwarder() {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
     return forwarder_.get();
 #else
     return nullptr;
@@ -384,7 +385,7 @@ class ChromeNetworkDelegatePolicyTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   scoped_refptr<extensions::EventRouterForwarder> forwarder_;
 #endif
   TestingProfile profile_;
@@ -558,7 +559,7 @@ class ChromeNetworkDelegatePrivacyModeTest : public testing::Test {
  public:
   ChromeNetworkDelegatePrivacyModeTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
         forwarder_(new extensions::EventRouterForwarder()),
 #endif
         cookie_settings_(CookieSettingsFactory::GetForProfile(&profile_).get()),
@@ -590,7 +591,7 @@ class ChromeNetworkDelegatePrivacyModeTest : public testing::Test {
 
  protected:
   extensions::EventRouterForwarder* forwarder() {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
     return forwarder_.get();
 #else
     return NULL;
@@ -598,7 +599,7 @@ class ChromeNetworkDelegatePrivacyModeTest : public testing::Test {
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   scoped_refptr<extensions::EventRouterForwarder> forwarder_;
 #endif
   TestingProfile profile_;

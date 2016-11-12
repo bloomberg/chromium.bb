@@ -9,8 +9,9 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/common/features.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/features/features.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/extension_messages.h"
 #endif
 
@@ -26,7 +27,7 @@ SessionTabHelper::~SessionTabHelper() {
 void SessionTabHelper::SetWindowID(const SessionID& id) {
   window_id_ = id;
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // Extension code in the renderer holds the ID of the window that hosts it.
   // Notify it that the window ID changed.
   web_contents()->SendToAllFrames(

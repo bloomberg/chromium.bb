@@ -8,6 +8,7 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/pref_registry/testing_pref_service_syncable.h"
+#include "extensions/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -55,7 +56,7 @@ TEST_F(CookieSettingsTest, TestWhitelistedScheme) {
   EXPECT_FALSE(cookie_settings_->IsReadingCookieAllowed(kHttpSite, kChromeURL));
   EXPECT_TRUE(cookie_settings_->IsReadingCookieAllowed(kHttpsSite, kChromeURL));
   EXPECT_TRUE(cookie_settings_->IsReadingCookieAllowed(kChromeURL, kHttpSite));
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   EXPECT_TRUE(
       cookie_settings_->IsReadingCookieAllowed(kExtensionURL, kExtensionURL));
 #else
@@ -212,7 +213,7 @@ TEST_F(CookieSettingsTest, ExtensionsRegularSettings) {
 TEST_F(CookieSettingsTest, ExtensionsOwnCookies) {
   cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // Extensions can always use cookies (and site data) in their own origin.
   EXPECT_TRUE(
       cookie_settings_->IsReadingCookieAllowed(kExtensionURL, kExtensionURL));

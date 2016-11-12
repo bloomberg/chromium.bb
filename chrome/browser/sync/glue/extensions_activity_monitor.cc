@@ -6,8 +6,9 @@
 
 #include "components/sync/base/extensions_activity.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/features/features.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmarks_api.h"
 #include "content/public/browser/notification_service.h"
@@ -26,7 +27,7 @@ ExtensionsActivityMonitor::ExtensionsActivityMonitor()
   // the fly so there is no reliable object to point to (same problem if we
   // wanted to use the string name).  Thus, we use all sources and filter in
   // Observe.
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
                  content::NotificationService::AllSources());
@@ -41,7 +42,7 @@ void ExtensionsActivityMonitor::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED, type);
   const extensions::Extension* extension =

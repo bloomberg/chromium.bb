@@ -15,10 +15,11 @@
 #include "components/browsing_data/core/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "extensions/features/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browsing_data/hosted_apps_counter.h"
@@ -97,7 +98,7 @@ base::string16 GetChromeCounterTextFromResult(
         IDS_DEL_MEDIA_LICENSES_COUNTER_GENERAL_COMMENT);
   }
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   if (pref_name == browsing_data::prefs::kDeleteHostedAppsData) {
     // Hosted apps counter.
     const HostedAppsCounter::HostedAppsResult* hosted_apps_result =

@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "content/public/test/mock_render_thread.h"
+#include "extensions/features/features.h"
 
 struct ExtensionMsg_ExternalConnectionInfo;
 
@@ -33,7 +34,7 @@ class ChromeMockRenderThread : public content::MockRenderThread {
   bool OnMessageReceived(const IPC::Message& msg) override;
 
  private:
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // The callee expects to be returned a valid channel_id.
   void OnOpenChannelToExtension(int routing_id,
                                 const ExtensionMsg_ExternalConnectionInfo& info,

@@ -10,8 +10,9 @@
 #include "components/omnibox/browser/shortcuts_backend.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/features/features.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #endif
@@ -19,7 +20,7 @@
 ShortcutsExtensionsManager::ShortcutsExtensionsManager(Profile* profile)
     : profile_(profile) {
   DCHECK(profile_);
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   notification_registrar_.Add(
       this, extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
       content::Source<Profile>(profile_));
@@ -32,7 +33,7 @@ void ShortcutsExtensionsManager::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED, type);
   scoped_refptr<ShortcutsBackend> shortcuts_backend =
       ShortcutsBackendFactory::GetForProfileIfExists(profile_);

@@ -30,9 +30,10 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "components/sync/driver/sync_type_preference_provider.h"
+#include "extensions/features/features.h"
 #include "net/url_request/url_request_context_getter.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/management_policy.h"
 #endif
@@ -73,7 +74,7 @@ class PrefRegistrySyncable;
 // (e.g. the installed content packs, the default URL filtering behavior, or
 // manual whitelist/blacklist overrides).
 class SupervisedUserService : public KeyedService,
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
                               public extensions::ExtensionRegistryObserver,
                               public extensions::ManagementPolicy::Provider,
 #endif
@@ -306,7 +307,7 @@ class SupervisedUserService : public KeyedService,
 
   void OnCustodianInfoChanged();
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // extensions::ManagementPolicy::Provider implementation:
   std::string GetDebugPolicyProviderName() const override;
   bool UserMayLoad(const extensions::Extension* extension,
@@ -462,7 +463,7 @@ class SupervisedUserService : public KeyedService,
   // Used to report inappropriate URLs to SafeSarch API.
   std::unique_ptr<SafeSearchURLReporter> url_reporter_;
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
       registry_observer_;

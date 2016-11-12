@@ -30,13 +30,14 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
+#include "extensions/features/features.h"
 #include "net/url_request/url_request_context_getter.h"
 
 #if defined(OS_WIN)
 #include "chrome/installer/util/wmi.h"
 #endif
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_service.h"
 #include "extensions/browser/view_type_utils.h"
 #endif
@@ -333,7 +334,7 @@ void ChromeSpeechRecognitionManagerDelegate::CheckRenderViewType(
     return;
   }
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   WebContents* web_contents = WebContents::FromRenderViewHost(render_view_host);
   extensions::ViewType view_type = extensions::GetViewType(web_contents);
 

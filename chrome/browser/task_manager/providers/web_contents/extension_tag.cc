@@ -5,8 +5,9 @@
 #include "chrome/browser/task_manager/providers/web_contents/extension_tag.h"
 
 #include "content/public/browser/web_contents.h"
+#include "extensions/features/features.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/process_manager.h"
 #endif
 

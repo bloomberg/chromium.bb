@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/domain_reliability/clear_mode.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "extensions/features/features.h"
 
 class BrowserContextDependencyManager;
 class ExtensionSpecialStoragePolicy;
@@ -88,7 +89,7 @@ class TestingProfile : public Profile {
         BrowserContextKeyedServiceFactory* service_factory,
         BrowserContextKeyedServiceFactory::TestingFactoryFunction callback);
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
     // Sets the ExtensionSpecialStoragePolicy to be returned by
     // GetExtensionSpecialStoragePolicy().
     void SetExtensionSpecialStoragePolicy(
@@ -130,7 +131,7 @@ class TestingProfile : public Profile {
 
     // Various staging variables where values are held until Build() is invoked.
     std::unique_ptr<sync_preferences::PrefServiceSyncable> pref_service_;
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
     scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy_;
 #endif
     base::FilePath path_;
@@ -161,7 +162,7 @@ class TestingProfile : public Profile {
   // Callers should use Builder::Build() instead of invoking this constructor.
   TestingProfile(const base::FilePath& path,
                  Delegate* delegate,
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
                  scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy,
 #endif
                  std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs,
@@ -274,7 +275,7 @@ class TestingProfile : public Profile {
   bool IsSupervised() const override;
   bool IsChild() const override;
   bool IsLegacySupervised() const override;
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   void SetExtensionSpecialStoragePolicy(
       ExtensionSpecialStoragePolicy* extension_special_storage_policy);
 #endif
@@ -385,7 +386,7 @@ class TestingProfile : public Profile {
 
   base::FilePath last_selected_directory_;
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   scoped_refptr<ExtensionSpecialStoragePolicy>
       extension_special_storage_policy_;
 #endif

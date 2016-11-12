@@ -25,6 +25,7 @@
 #include "chrome/browser/lifetime/keep_alive_state_observer.h"
 #include "chrome/common/features.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "extensions/features/features.h"
 #include "printing/features/features.h"
 
 class ChromeChildProcessWatcher;
@@ -218,7 +219,7 @@ class BrowserProcessImpl : public BrowserProcess,
 
   std::unique_ptr<GpuModeManager> gpu_mode_manager_;
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   std::unique_ptr<extensions::ExtensionsBrowserClient>
       extensions_browser_client_;
 

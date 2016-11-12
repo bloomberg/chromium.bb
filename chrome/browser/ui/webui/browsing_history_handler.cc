@@ -58,10 +58,11 @@
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui.h"
+#include "extensions/features/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #endif
 
@@ -628,7 +629,7 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const base::ListValue* args) {
                    weak_factory_.GetWeakPtr()));
   }
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // If the profile has activity logging enabled also clean up any URLs from
   // the extension activity log. The extension activity log contains URLS
   // which websites an extension has activity on so it will indirectly

@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//chrome/common/features.gni")
+import("//extensions/features/features.gni")
 import("//tools/grit/grit_rule.gni")
 
 grit("resources") {
@@ -115,6 +116,7 @@ static_library("renderer") {
     "//content/app/strings",
     "//content/public/common",
     "//content/public/renderer",
+    "//extensions/features",
     "//media",
     "//media/capture",
     "//net",
@@ -370,6 +372,7 @@ static_library("test_support") {
   deps = [
     ":renderer",
     "//content/test:test_support",
+    "//extensions/features",
     "//testing/gmock",
     "//testing/gtest",
   ]

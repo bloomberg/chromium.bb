@@ -8,9 +8,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "extensions/features/features.h"
 #include "url/origin.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -40,7 +41,7 @@ bool ShouldIsolate(BrowserContext* browser_context,
       // extensions are isolated as well.
       return !site.SchemeIs(url::kHttpScheme);
     case ISOLATE_EXTENSIONS: {
-#if !defined(ENABLE_EXTENSIONS)
+#if !BUILDFLAG(ENABLE_EXTENSIONS)
       return false;
 #else
       if (!site.SchemeIs(extensions::kExtensionScheme))

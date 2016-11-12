@@ -18,6 +18,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class TestingDownloadService : public DownloadService {
@@ -46,7 +47,7 @@ class TestingDownloadService : public DownloadService {
     return nullptr;
   }
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::ExtensionDownloadsEventRouter* GetExtensionEventRouter()
       override {
     ADD_FAILURE();

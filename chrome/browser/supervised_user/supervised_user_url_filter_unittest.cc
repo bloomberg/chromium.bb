@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/supervised_user/supervised_user_site_list.h"
+#include "extensions/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -519,7 +520,7 @@ TEST_F(SupervisedUserURLFilterTest, WhitelistsHostnameHashes) {
   ASSERT_EQ(expected_whitelists, actual_whitelists);
 }
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 TEST_F(SupervisedUserURLFilterTest, ChromeWebstoreDownloadsAreAlwaysAllowed) {
   // When installing an extension from Chrome Webstore, it tries to download the
   // crx file from "https://clients2.google.com/service/update2/", which

@@ -160,6 +160,7 @@
 #include "content/public/common/main_function_params.h"
 #include "device/geolocation/geolocation_delegate.h"
 #include "device/geolocation/geolocation_provider.h"
+#include "extensions/features/features.h"
 #include "media/base/media_resources.h"
 #include "net/base/net_module.h"
 #include "net/cookies/cookie_monster.h"
@@ -237,12 +238,12 @@
 #include "chrome/browser/background/background_mode_manager.h"
 #endif  // BUILDFLAG(ENABLE_BACKGROUND)
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/startup_helper.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/components/javascript_dialog_extensions_client/javascript_dialog_extension_client_impl.h"
-#endif  // defined(ENABLE_EXTENSIONS)
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OFFICIAL_BUILD)
 #include "printing/printed_document.h"
@@ -1305,9 +1306,9 @@ void ChromeBrowserMainParts::PreProfileInit() {
   g_browser_process->profile_manager()->CleanUpEphemeralProfiles();
 #endif  // !defined(OS_ANDROID)
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   javascript_dialog_extensions_client::InstallClient();
-#endif  // defined(ENABLE_EXTENSIONS)
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
   InstallChromeJavaScriptNativeDialogFactory();
 }
@@ -1450,7 +1451,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   IncognitoModePrefs::InitializePlatformParentalControls();
 #endif
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   if (!variations::GetVariationParamValue(
       "LightSpeed", "EarlyInitStartup").empty()) {
     // Try to compute this early on another thread so that we don't spend time

@@ -25,8 +25,9 @@
 #include "components/browsing_data/core/pref_names.h"
 #include "components/history/core/browser/web_history_service.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "extensions/features/features.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/browsing_data/hosted_apps_counter.h"
 #endif
 
@@ -75,7 +76,7 @@ BrowsingDataCounterFactory::GetForProfileAndPref(Profile* profile,
   if (pref_name == browsing_data::prefs::kDeleteMediaLicenses)
     return base::MakeUnique<MediaLicensesCounter>(profile);
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   if (pref_name == browsing_data::prefs::kDeleteHostedAppsData)
     return base::MakeUnique<HostedAppsCounter>(profile);
 #endif

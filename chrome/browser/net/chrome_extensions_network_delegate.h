@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "extensions/features/features.h"
 #include "net/base/network_delegate_impl.h"
 
 namespace extensions {
@@ -77,7 +78,7 @@ class ChromeExtensionsNetworkDelegate : public net::NetworkDelegateImpl {
 
   void* profile_;
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   scoped_refptr<extensions::InfoMap> extension_info_map_;
 #endif
 

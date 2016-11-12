@@ -8,6 +8,7 @@
 
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/schema.h"
+#include "extensions/features/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -114,7 +115,7 @@ TEST(SchemaRegistryTest, IsReady) {
   registry.AddObserver(&observer);
 
   EXPECT_FALSE(registry.IsReady());
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   EXPECT_CALL(observer, OnSchemaRegistryReady()).Times(0);
   registry.SetExtensionsDomainsReady();
   Mock::VerifyAndClearExpectations(&observer);

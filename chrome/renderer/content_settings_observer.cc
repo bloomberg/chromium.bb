@@ -10,6 +10,7 @@
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
+#include "extensions/features/features.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebContentSettingCallbacks.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
@@ -22,7 +23,7 @@
 #include "url/origin.h"
 #include "url/url_constants.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/api_permission.h"
@@ -88,7 +89,7 @@ ContentSettingsObserver::ContentSettingsObserver(
     : content::RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<ContentSettingsObserver>(
           render_frame),
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
       extension_dispatcher_(extension_dispatcher),
 #endif
       allow_running_insecure_content_(false),
@@ -348,7 +349,7 @@ bool ContentSettingsObserver::allowStorage(bool local) {
 
 bool ContentSettingsObserver::allowReadFromClipboard(bool default_value) {
   bool allowed = default_value;
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::ScriptContext* current_context =
       extension_dispatcher_->script_context_set().GetCurrent();
   if (current_context) {
@@ -361,7 +362,7 @@ bool ContentSettingsObserver::allowReadFromClipboard(bool default_value) {
 
 bool ContentSettingsObserver::allowWriteToClipboard(bool default_value) {
   bool allowed = default_value;
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // All blessed extension pages could historically write to the clipboard, so
   // preserve that for compatibility.
   extensions::ScriptContext* current_context =
@@ -471,7 +472,7 @@ void ContentSettingsObserver::ClearBlockedContentSettings() {
 }
 
 bool ContentSettingsObserver::IsPlatformApp() {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   WebFrame* frame = render_frame()->GetWebFrame();
   WebSecurityOrigin origin = frame->document().getSecurityOrigin();
   const extensions::Extension* extension = GetExtension(origin);
@@ -481,7 +482,7 @@ bool ContentSettingsObserver::IsPlatformApp() {
 #endif
 }
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 const extensions::Extension* ContentSettingsObserver::GetExtension(
     const WebSecurityOrigin& origin) const {
   if (!base::EqualsASCII(base::StringPiece16(origin.protocol()),
@@ -526,7 +527,7 @@ bool ContentSettingsObserver::IsWhitelistedForContentSettings(
   if (base::EqualsASCII(protocol, content::kChromeDevToolsScheme))
     return true;  // DevTools UI elements should still work.
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   if (base::EqualsASCII(protocol, extensions::kExtensionScheme))
     return true;
 #endif

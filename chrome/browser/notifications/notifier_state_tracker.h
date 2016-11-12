@@ -11,8 +11,9 @@
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_member.h"
+#include "extensions/features/features.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "base/scoped_observer.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -30,7 +31,7 @@ class PrefRegistrySyncable;
 
 // Tracks whether a given NotifierId can send notifications.
 class NotifierStateTracker : public KeyedService
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
                            , public extensions::ExtensionRegistryObserver
 #endif
                                {
@@ -53,7 +54,7 @@ class NotifierStateTracker : public KeyedService
   void OnStringListPrefChanged(
       const char* pref_name, std::set<std::string>* ids_field);
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // Fires a permission-level change event when an extension notifier has had
   // their notification permission changed.
   void FirePermissionLevelChangedEvent(
@@ -81,7 +82,7 @@ class NotifierStateTracker : public KeyedService
   // On-memory data for the availability of system_component.
   std::set<std::string> disabled_system_component_ids_;
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // An observer to listen when extension is uninstalled.
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>

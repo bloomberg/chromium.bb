@@ -19,8 +19,9 @@
 #include "components/omnibox/browser/keyword_provider.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/features/features.h"
 
-#if !defined(ENABLE_EXTENSIONS)
+#if !BUILDFLAG(ENABLE_EXTENSIONS)
 #error "Should not be included when extensions are disabled"
 #endif
 

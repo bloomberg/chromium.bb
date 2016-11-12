@@ -25,9 +25,10 @@
 #include "components/omnibox/browser/shortcuts_provider_test_util.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -92,7 +93,7 @@ void ShortcutsProviderExtensionTest::TearDown() {
 
 // Actual tests ---------------------------------------------------------------
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 TEST_F(ShortcutsProviderExtensionTest, Extension) {
   // Try an input string that matches an extension URL.
   base::string16 text(base::ASCIIToUTF16("echo"));

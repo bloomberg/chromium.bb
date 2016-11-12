@@ -15,9 +15,10 @@
 #include "chrome/common/tts_messages.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/common_param_traits_macros.h"
+#include "extensions/features/features.h"
 #include "printing/features/features.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/common/cast_messages.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"

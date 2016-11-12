@@ -41,6 +41,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/user_agent.h"
 #include "extensions/common/constants.h"
+#include "extensions/features/features.h"
 #include "gpu/config/gpu_info.h"
 #include "net/http/http_util.h"
 #include "ppapi/features/features.h"
@@ -65,7 +66,7 @@
 #include "components/nacl/common/nacl_sandbox_type.h"
 #endif
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/common/extensions/extension_process_policy.h"
 #include "extensions/common/features/feature_util.h"
 #endif
@@ -657,7 +658,7 @@ void ChromeContentClient::AddSecureSchemesAndOrigins(
 
 void ChromeContentClient::AddServiceWorkerSchemes(
     std::set<std::string>* schemes) {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   if (extensions::feature_util::ExtensionServiceWorkersEnabled())
     schemes->insert(extensions::kExtensionScheme);
 #endif
@@ -665,7 +666,7 @@ void ChromeContentClient::AddServiceWorkerSchemes(
 
 bool ChromeContentClient::AllowScriptExtensionForServiceWorker(
     const GURL& script_url) {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   return script_url.SchemeIs(extensions::kExtensionScheme) ||
          script_url.SchemeIs(extensions::kExtensionResourceScheme);
 #else
@@ -674,7 +675,7 @@ bool ChromeContentClient::AllowScriptExtensionForServiceWorker(
 }
 
 bool ChromeContentClient::IsSupplementarySiteIsolationModeEnabled() {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   return extensions::IsIsolateExtensionsEnabled();
 #else
   return false;

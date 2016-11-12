@@ -23,10 +23,11 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/common/referrer.h"
+#include "extensions/features/features.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "components/guest_view/browser/guest_view_base.h"
 #endif
 
@@ -169,7 +170,7 @@ void PrerenderLinkManager::OnAddPrerender(int launcher_child_id,
             FindByLauncherChildIdAndPrerenderId(launcher_child_id,
                                                 prerender_id));
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   content::RenderViewHost* rvh =
       content::RenderViewHost::FromID(launcher_child_id, render_view_route_id);
   content::WebContents* web_contents =

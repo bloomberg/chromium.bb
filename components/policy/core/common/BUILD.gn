@@ -147,6 +147,7 @@ source_set("internal") {
       "//components/data_use_measurement/core",
       "//components/json_schema",
       "//components/prefs",
+      "//extensions/features",
       "//google_apis",
       "//net",
       "//third_party/re2",
@@ -290,6 +291,7 @@ if (enable_configuration_policy) {
   source_set("unit_tests") {
     testonly = true
     sources = [
+      "//extensions/features",
       "cloud/cloud_policy_client_unittest.cc",
       "cloud/cloud_policy_core_unittest.cc",
       "cloud/cloud_policy_manager_unittest.cc",
@@ -356,6 +358,7 @@ if (enable_configuration_policy) {
       "//base/test:test_support",
       "//components/policy:generated",
       "//components/prefs:test_support",
+      "//extensions/features",
       "//google_apis",
       "//net:test_support",
       "//testing/gmock",

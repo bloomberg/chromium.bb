@@ -47,6 +47,7 @@
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/features/features.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
@@ -64,7 +65,7 @@
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #endif
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
@@ -427,7 +428,7 @@ PolicyUIHandler::~PolicyUIHandler() {
           Profile::FromWebUI(web_ui())->GetOriginalProfile())->registry();
   registry->RemoveObserver(this);
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))
       ->RemoveObserver(this);
 #endif
@@ -511,7 +512,7 @@ void PolicyUIHandler::RegisterMessages() {
   GetPolicyService()->AddObserver(policy::POLICY_DOMAIN_CHROME, this);
   GetPolicyService()->AddObserver(policy::POLICY_DOMAIN_EXTENSIONS, this);
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))
       ->AddObserver(this);
 #endif
@@ -529,7 +530,7 @@ void PolicyUIHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 void PolicyUIHandler::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension) {
@@ -584,7 +585,7 @@ void PolicyUIHandler::SendPolicyNames() const {
   }
   names.Set("chromePolicyNames", chrome_policy_names);
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // Add extension policy names.
   base::DictionaryValue* extension_policy_names = new base::DictionaryValue;
 
@@ -612,7 +613,7 @@ void PolicyUIHandler::SendPolicyNames() const {
     extension_policy_names->Set(extension->id(), extension_value);
   }
   names.Set("extensionPolicyNames", extension_policy_names);
-#endif  // defined(ENABLE_EXTENSIONS)
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
   web_ui()->CallJavascriptFunctionUnsafe("policy.Page.setPolicyNames", names);
 }
@@ -625,7 +626,7 @@ void PolicyUIHandler::SendPolicyValues() const {
   GetChromePolicyValues(chrome_policies);
   all_policies.Set("chromePolicies", chrome_policies);
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // Add extension policy values.
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()));

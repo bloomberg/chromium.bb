@@ -4,6 +4,8 @@
 
 #include "chrome/common/chrome_features.h"
 
+#include "extensions/features/features.h"
+
 namespace features {
 
 // All features in alphabetical order.
@@ -107,7 +109,7 @@ const base::Feature kLinuxObsoleteSystemIsEndOfTheLine{
 const base::Feature kMaterialDesignBookmarks{"MaterialDesignBookmarks",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 // Enabled or disabled the Material Design version of chrome://extensions.
 const base::Feature kMaterialDesignExtensions{
     "MaterialDesignExtensions", base::FEATURE_DISABLED_BY_DEFAULT};

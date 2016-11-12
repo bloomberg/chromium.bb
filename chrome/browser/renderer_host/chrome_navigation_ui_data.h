@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
+#include "extensions/features/features.h"
 
 namespace content {
 class NavigationHandle;
@@ -31,7 +32,7 @@ class ChromeNavigationUIData : public content::NavigationUIData {
   // reflected in the clone.  |extension_data_| is deep copied.
   std::unique_ptr<content::NavigationUIData> Clone() const override;
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   void SetExtensionNavigationUIData(
       std::unique_ptr<extensions::ExtensionNavigationUIData> extension_data);
 
@@ -41,7 +42,7 @@ class ChromeNavigationUIData : public content::NavigationUIData {
 #endif
 
  private:
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // Manages the lifetime of optional ExtensionNavigationUIData information.
   std::unique_ptr<extensions::ExtensionNavigationUIData> extension_data_;
 #endif

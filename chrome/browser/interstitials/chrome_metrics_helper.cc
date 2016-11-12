@@ -11,8 +11,9 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/rappor/rappor_service.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/features/features.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/experience_sampling_private/experience_sampling.h"
 #endif
 
@@ -34,7 +35,7 @@ ChromeMetricsHelper::ChromeMetricsHelper(
           g_browser_process->rappor_service()
               ? g_browser_process->rappor_service()->AsWeakPtr()
               : base::WeakPtr<rappor::RapporService>()),
-#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION) || defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION) || BUILDFLAG(ENABLE_EXTENSIONS)
       web_contents_(web_contents),
 #endif
       request_url_(request_url),
@@ -62,7 +63,7 @@ void ChromeMetricsHelper::RecordExtraShutdownMetrics() {
 
 void ChromeMetricsHelper::RecordExtraUserDecisionMetrics(
     security_interstitials::MetricsHelper::Decision decision) {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   if (!sampling_event_.get()) {
     sampling_event_.reset(new extensions::ExperienceSamplingEvent(
         sampling_event_name_, request_url_,
@@ -88,7 +89,7 @@ void ChromeMetricsHelper::RecordExtraUserDecisionMetrics(
 
 void ChromeMetricsHelper::RecordExtraUserInteractionMetrics(
     security_interstitials::MetricsHelper::Interaction interaction) {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   if (!sampling_event_.get()) {
     sampling_event_.reset(new extensions::ExperienceSamplingEvent(
         sampling_event_name_, request_url_,

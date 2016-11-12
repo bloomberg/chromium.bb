@@ -11,9 +11,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/features/features.h"
 #include "url/gurl.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/common/extensions/extension_constants.h"
 #include "extensions/common/constants.h"
 #endif
@@ -26,7 +27,7 @@ bool LogWebUIUrl(const GURL& web_ui_url) {
   bool should_log = web_ui_url.SchemeIs(content::kChromeUIScheme) ||
                     web_ui_url.SchemeIs(content::kChromeDevToolsScheme);
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   if (web_ui_url.SchemeIs(extensions::kExtensionScheme))
     should_log = web_ui_url.host() == extension_misc::kBookmarkManagerId;
 #endif

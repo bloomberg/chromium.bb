@@ -17,9 +17,10 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/permission_type.h"
+#include "extensions/features/features.h"
 #include "ui/message_center/notifier_settings.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/common/extensions/api/notifications.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/event_router.h"
@@ -40,7 +41,7 @@ void NotifierStateTracker::RegisterProfilePrefs(
 
 NotifierStateTracker::NotifierStateTracker(Profile* profile)
     : profile_(profile)
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
       ,
       extension_registry_observer_(this)
 #endif
@@ -69,7 +70,7 @@ NotifierStateTracker::NotifierStateTracker(Profile* profile)
           base::Unretained(prefs::kMessageCenterDisabledSystemComponentIds),
           base::Unretained(&disabled_system_component_ids_)));
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   extension_registry_observer_.Add(
       extensions::ExtensionRegistry::Get(profile_));
 #endif
@@ -126,7 +127,7 @@ void NotifierStateTracker::SetNotifierEnabled(
       pref_name = prefs::kMessageCenterDisabledExtensionIds;
       add_new_item = !enabled;
       id.reset(new base::StringValue(notifier_id.id));
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
       FirePermissionLevelChangedEvent(notifier_id, enabled);
 #endif
       break;
@@ -169,7 +170,7 @@ void NotifierStateTracker::OnStringListPrefChanged(
   }
 }
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 void NotifierStateTracker::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,

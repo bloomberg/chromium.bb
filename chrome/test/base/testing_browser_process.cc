@@ -24,6 +24,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/subresource_filter/core/browser/ruleset_service.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/features/features.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "printing/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,7 +34,7 @@
 #include "chrome/browser/background/background_mode_manager.h"
 #endif
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/chrome_extensions_browser_client.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/ui/apps/chrome_app_window_client.h"
@@ -74,7 +75,7 @@ TestingBrowserProcess::TestingBrowserProcess()
       system_request_context_(nullptr),
       rappor_service_(nullptr),
       platform_part_(new TestingBrowserProcessPlatformPart()) {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions_browser_client_.reset(
       new extensions::ChromeExtensionsBrowserClient);
   extensions::AppWindowClient::Set(ChromeAppWindowClient::GetInstance());
@@ -85,7 +86,7 @@ TestingBrowserProcess::TestingBrowserProcess()
 TestingBrowserProcess::~TestingBrowserProcess() {
   EXPECT_FALSE(local_state_);
   ShutdownBrowserPolicyConnector();
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::ExtensionsBrowserClient::Set(nullptr);
 #endif
 

@@ -40,6 +40,7 @@
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/features/features.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
@@ -47,7 +48,7 @@
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_registry_observer.h"
 #endif
 
@@ -156,7 +157,7 @@ base::RefCountedMemory* ThemeService::BrowserThemeProvider::GetRawData(
 
 // ThemeService::ThemeObserver ------------------------------------------------
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 class ThemeService::ThemeObserver
     : public extensions::ExtensionRegistryObserver {
  public:
@@ -205,7 +206,7 @@ class ThemeService::ThemeObserver
 
   ThemeService* theme_service_;
 };
-#endif  // defined(ENABLE_EXTENSIONS)
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 
 // ThemeService ---------------------------------------------------------------
@@ -242,7 +243,7 @@ void ThemeService::Init(Profile* profile) {
 }
 
 void ThemeService::Shutdown() {
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   theme_observer_.reset();
 #endif
 }
@@ -796,7 +797,7 @@ void ThemeService::OnExtensionServiceReady() {
     NotifyThemeChanged();
   }
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   theme_observer_.reset(new ThemeObserver(this));
 #endif
 

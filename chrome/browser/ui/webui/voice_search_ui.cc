@@ -47,6 +47,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
+#include "extensions/features/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "v8/include/v8.h"
 
@@ -260,7 +261,7 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
     // platforms. ENABLE_EXTENSIONS covers those platforms and hey would not
     // allow Hotwording anyways since it is an extension.
     std::string nacl_enabled = "not available";
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
     nacl_enabled = "No";
     // Determine if NaCl is available.
     base::FilePath path;

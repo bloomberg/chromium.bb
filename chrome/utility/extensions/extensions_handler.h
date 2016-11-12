@@ -13,9 +13,10 @@
 #include "build/build_config.h"
 #include "chrome/common/media_galleries/picasa_types.h"
 #include "chrome/utility/utility_message_handler.h"
+#include "extensions/features/features.h"
 #include "extensions/utility/utility_handler.h"
 
-#if !defined(ENABLE_EXTENSIONS)
+#if !BUILDFLAG(ENABLE_EXTENSIONS)
 #error "Extensions must be enabled"
 #endif
 

@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
+#include "extensions/features/features.h"
 
 class ChromeContentBrowserClientParts;
 
@@ -326,7 +327,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       base::Callback<void(bool)> callback,
       bool allow);
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   void GuestPermissionRequestHelper(
       const GURL& url,
       const std::vector<std::pair<int, int> >& render_frames,

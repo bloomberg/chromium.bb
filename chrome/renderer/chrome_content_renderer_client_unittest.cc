@@ -17,12 +17,13 @@
 #include "chrome/renderer/searchbox/search_bouncer.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "content/public/common/webplugininfo.h"
+#include "extensions/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "url/gurl.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest_constants.h"
@@ -52,7 +53,7 @@ const bool kExtensionNotFromWebStore = false;
 const bool kExtensionFromWebStore = true;
 #endif
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 const bool kNotHostedApp = false;
 const bool kHostedApp = true;
 #endif
@@ -103,7 +104,7 @@ void AddContentTypeHandler(content::WebPluginInfo* info,
 typedef testing::Test ChromeContentRendererClientTest;
 
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 scoped_refptr<const extensions::Extension> CreateTestExtension(
     extensions::Manifest::Location location, bool is_from_webstore,
     bool is_hosted_app, const std::string& app_url) {
@@ -146,7 +147,7 @@ scoped_refptr<const extensions::Extension> CreateHostedApp(
                              kHostedApp,
                              app_url);
 }
-#endif  // defined(ENABLE_EXTENSIONS)
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 TEST_F(ChromeContentRendererClientTest, NaClRestriction) {
   // Unknown content types have no NaCl module.

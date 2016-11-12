@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/common/features.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/features/features.h"
 #include "printing/features/features.h"
 #include "url/url_util.h"
 
@@ -715,7 +716,7 @@ const char* const kChromeHostURLs[] = {
 #if !defined(DISABLE_NACL)
     kChromeUINaClHost,
 #endif
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
     kChromeUIExtensionsHost,
 #endif
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)

@@ -5,6 +5,7 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
+import("//extensions/features/features.gni")
 
 assert(enable_extensions)
 
@@ -887,6 +888,7 @@ static_library("extensions") {
     "//extensions/browser",
     "//extensions/browser/api:api_registration",
     "//extensions/common/api",
+    "//extensions/features",
     "//extensions/strings",
     "//net",
     "//printing/features",

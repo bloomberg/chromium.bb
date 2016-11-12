@@ -4,6 +4,7 @@
 
 import("//build/config/locales.gni")
 import("//chrome/common/features.gni")
+import("//extensions/features/features.gni")
 import("//ui/base/ui_features.gni")
 import("chrome_repack_locales.gni")
 

@@ -29,6 +29,7 @@
 #include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
 #include "chrome/browser/browsing_data/local_data_container.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "extensions/features/features.h"
 #include "net/ssl/channel_id_store.h"
 #include "ui/base/models/tree_node_model.h"
 
@@ -793,7 +794,7 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   // Filter the origins to only display matched results.
   void UpdateSearchResults(const base::string16& filter);
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // Returns the set of extensions which protect the data item represented by
   // this node from deletion.
   // Returns nullptr if the node doesn't represent a protected data item or the
@@ -904,7 +905,7 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
                                           ScopedBatchUpdateNotifier* notifier,
                                           const base::string16& filter);
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   // The extension special storage policy; see ExtensionsProtectingNode() above.
   scoped_refptr<ExtensionSpecialStoragePolicy> special_storage_policy_;
 #endif

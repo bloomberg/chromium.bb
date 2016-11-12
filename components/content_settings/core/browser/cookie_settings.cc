@@ -12,6 +12,7 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "extensions/features/features.h"
 #include "net/base/net_errors.h"
 #include "net/base/static_cookie_policy.h"
 #include "url/gurl.h"
@@ -129,7 +130,7 @@ ContentSetting CookieSettings::GetCookieSetting(const GURL& url,
   if (url.SchemeIsCryptographic() && first_party_url.SchemeIs(kChromeUIScheme))
     return CONTENT_SETTING_ALLOW;
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   if (url.SchemeIs(kExtensionScheme) &&
       first_party_url.SchemeIs(kExtensionScheme)) {
     return CONTENT_SETTING_ALLOW;

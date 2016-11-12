@@ -10,9 +10,10 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
+#include "extensions/features/features.h"
 #include "url/gurl.h"
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #endif
 
@@ -60,7 +61,7 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
   // Returns the command id of the menu item with the specified |path|.
   int GetCommandIDByProfilePath(const base::FilePath& path);
 
-#if defined(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::ContextMenuMatcher& extension_items() { return extension_items_; }
 #endif
 
