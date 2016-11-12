@@ -53,14 +53,14 @@
 
 namespace {
 
-const char kRefreshToken[] = "fake-refresh-token";
+constexpr char kRefreshToken[] = "fake-refresh-token";
 // Set managed auth token for Android managed accounts.
-const char kManagedAuthToken[] = "managed-auth-token";
+constexpr char kManagedAuthToken[] = "managed-auth-token";
 // Set unmanaged auth token for other Android unmanaged accounts.
-const char kUnmanagedAuthToken[] = "unmanaged-auth-token";
-const char kWellKnownConsumerName[] = "test@gmail.com";
-const char kFakeUserName[] = "test@example.com";
-const char kFakeAuthCode[] = "fake-auth-code";
+constexpr char kUnmanagedAuthToken[] = "unmanaged-auth-token";
+constexpr char kWellKnownConsumerName[] = "test@gmail.com";
+constexpr char kFakeUserName[] = "test@example.com";
+constexpr char kFakeAuthCode[] = "fake-auth-code";
 
 // JobCallback for the interceptor.
 net::URLRequestJob* ResponseJob(net::URLRequest* request,
@@ -349,7 +349,7 @@ IN_PROC_BROWSER_TEST_F(KioskArcAuthServiceTest, RequestAccountInfoSuccess) {
 
   auth_instance_.callback =
       base::Bind([](const mojom::AccountInfoPtr& account_info) {
-        EXPECT_EQ(kFakeAuthCode, account_info->auth_code);
+        EXPECT_EQ(kFakeAuthCode, account_info->auth_code.value());
         EXPECT_EQ(mojom::ChromeAccountType::ROBOT_ACCOUNT,
                   account_info->account_type);
         EXPECT_FALSE(account_info->is_managed);

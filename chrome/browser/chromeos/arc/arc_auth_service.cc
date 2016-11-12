@@ -164,7 +164,7 @@ class ArcAuthService::AccountInfoNotifier {
         DCHECK(!account_info_callback_.is_null());
         mojom::AccountInfoPtr account_info = mojom::AccountInfo::New();
         if (!is_enforced) {
-          account_info->auth_code = nullptr;
+          account_info->auth_code = base::nullopt;
         } else {
           account_info->auth_code = auth_code;
         }

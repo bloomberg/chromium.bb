@@ -10,9 +10,7 @@
 #include <iterator>
 #include <map>
 #include <memory>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/files/file_enumerator.h"
@@ -186,7 +184,7 @@ bool HasAndroidSupportedMediaExtension(const base::FilePath& path) {
 // Downloads directory.
 class ArcDownloadsWatcherService::DownloadsWatcher {
  public:
-  using Callback = base::Callback<void(mojo::Array<mojo::String> paths)>;
+  using Callback = base::Callback<void(const std::vector<std::string>& paths)>;
 
   explicit DownloadsWatcher(const Callback& callback);
   ~DownloadsWatcher();
@@ -296,13 +294,13 @@ void ArcDownloadsWatcherService::DownloadsWatcher::OnBuildTimestampMap(
 
   last_timestamp_map_ = std::move(current_timestamp_map);
 
-  mojo::Array<mojo::String> mojo_paths(changed_paths.size());
+  std::vector<std::string> string_paths(changed_paths.size());
   for (size_t i = 0; i < changed_paths.size(); ++i) {
-    mojo_paths[i] = changed_paths[i].value();
+    string_paths[i] = changed_paths[i].value();
   }
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(callback_, base::Passed(std::move(mojo_paths))));
+      base::Bind(callback_, base::Passed(std::move(string_paths))));
   if (last_notify_time_ > snapshot_time) {
     base::PostTaskAndReplyWithResult(
         BrowserThread::GetBlockingPool(), FROM_HERE,
@@ -359,14 +357,14 @@ void ArcDownloadsWatcherService::StopWatchingDownloads() {
 }
 
 void ArcDownloadsWatcherService::OnDownloadsChanged(
-    mojo::Array<mojo::String> paths) {
+    const std::vector<std::string>& paths) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   auto* instance = arc_bridge_service()->file_system()->GetInstanceForMethod(
       "RequestMediaScan");
   if (!instance)
     return;
-  instance->RequestMediaScan(std::move(paths));
+  instance->RequestMediaScan(paths);
 }
 
 }  // namespace arc

@@ -12,18 +12,6 @@
 #include "ui/base/clipboard/clipboard_types.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 
-namespace {
-
-static base::string16 ConvertMojoStringToString16(const mojo::String& input) {
-  return base::UTF8ToUTF16(input.get());
-}
-
-static mojo::String ConvertString16ToMojoString(const base::string16& input) {
-  return mojo::String(base::UTF16ToUTF8(input));
-}
-
-}  // namespace
-
 namespace arc {
 
 ArcClipboardBridge::ArcClipboardBridge(ArcBridgeService* bridge_service)
@@ -43,10 +31,10 @@ void ArcClipboardBridge::OnInstanceReady() {
   clipboard_instance->Init(binding_.CreateInterfacePtrAndBind());
 }
 
-void ArcClipboardBridge::SetTextContent(const mojo::String& text) {
+void ArcClipboardBridge::SetTextContent(const std::string& text) {
   DCHECK(CalledOnValidThread());
   ui::ScopedClipboardWriter writer(ui::CLIPBOARD_TYPE_COPY_PASTE);
-  writer.WriteText(ConvertMojoStringToString16(text));
+  writer.WriteText(base::UTF8ToUTF16(text));
 }
 
 void ArcClipboardBridge::GetTextContent() {
@@ -61,7 +49,7 @@ void ArcClipboardBridge::GetTextContent() {
           "OnGetTextContent");
   if (!clipboard_instance)
     return;
-  clipboard_instance->OnGetTextContent(ConvertString16ToMojoString(text));
+  clipboard_instance->OnGetTextContent(base::UTF16ToUTF8(text));
 }
 
 bool ArcClipboardBridge::CalledOnValidThread() {

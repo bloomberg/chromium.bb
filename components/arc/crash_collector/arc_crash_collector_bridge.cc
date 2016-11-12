@@ -70,7 +70,7 @@ void ArcCrashCollectorBridge::OnInstanceReady() {
   instance->Init(std::move(host_ptr));
 }
 
-void ArcCrashCollectorBridge::DumpCrash(const mojo::String& type,
+void ArcCrashCollectorBridge::DumpCrash(const std::string& type,
                                         mojo::ScopedHandle pipe) {
   mojo::edk::ScopedPlatformHandle pipe_handle;
   mojo::edk::PassWrappedPlatformHandle(pipe.release().value(), &pipe_handle);
@@ -80,12 +80,12 @@ void ArcCrashCollectorBridge::DumpCrash(const mojo::String& type,
                             base::Passed(std::move(pipe_handle))));
 }
 
-void ArcCrashCollectorBridge::SetBuildProperties(const mojo::String& device,
-                                                 const mojo::String& board,
-                                                 const mojo::String& cpu_abi) {
-  device_ = device.get();
-  board_ = board.get();
-  cpu_abi_ = cpu_abi.get();
+void ArcCrashCollectorBridge::SetBuildProperties(const std::string& device,
+                                                 const std::string& board,
+                                                 const std::string& cpu_abi) {
+  device_ = device;
+  board_ = board;
+  cpu_abi_ = cpu_abi;
 }
 
 }  // namespace arc

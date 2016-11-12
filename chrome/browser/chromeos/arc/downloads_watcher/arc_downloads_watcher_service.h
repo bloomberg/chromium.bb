@@ -6,14 +6,14 @@
 #define CHROME_BROWSER_CHROMEOS_ARC_DOWNLOADS_WATCHER_ARC_DOWNLOADS_WATCHER_SERVICE_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/file_system.mojom.h"
 #include "components/arc/instance_holder.h"
-#include "mojo/public/cpp/bindings/array.h"
-#include "mojo/public/cpp/bindings/string.h"
 
 namespace base {
 class FilePath;
@@ -45,7 +45,7 @@ class ArcDownloadsWatcherService
   void StartWatchingDownloads();
   void StopWatchingDownloads();
 
-  void OnDownloadsChanged(mojo::Array<mojo::String> paths);
+  void OnDownloadsChanged(const std::vector<std::string>& paths);
 
   std::unique_ptr<DownloadsWatcher> watcher_;
 
