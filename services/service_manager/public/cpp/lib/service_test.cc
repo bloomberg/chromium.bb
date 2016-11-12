@@ -18,9 +18,9 @@ ServiceTestClient::ServiceTestClient(ServiceTest* test) : test_(test) {}
 
 ServiceTestClient::~ServiceTestClient() {}
 
-void ServiceTestClient::OnStart(ServiceContext* context) {
-  test_->OnStartCalled(context->connector(), context->identity().name(),
-                       context->identity().user_id());
+void ServiceTestClient::OnStart() {
+  test_->OnStartCalled(context()->connector(), context()->identity().name(),
+                       context()->identity().user_id());
 }
 
 bool ServiceTestClient::OnConnect(const ServiceInfo& remote_info,

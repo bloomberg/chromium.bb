@@ -35,7 +35,7 @@ class ServiceTestClient : public Service {
   ~ServiceTestClient() override;
 
  protected:
-  void OnStart(ServiceContext* context) override;
+  void OnStart() override;
   bool OnConnect(const ServiceInfo& remote_info,
                  InterfaceRegistry* registry) override;
 

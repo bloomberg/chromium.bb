@@ -42,8 +42,8 @@ FileSystemApp::FileSystemApp() : lock_table_(new LockTable) {}
 
 FileSystemApp::~FileSystemApp() {}
 
-void FileSystemApp::OnStart(service_manager::ServiceContext* context) {
-  tracing_.Initialize(context->connector(), context->identity().name());
+void FileSystemApp::OnStart() {
+  tracing_.Initialize(context()->connector(), context()->identity().name());
 }
 
 bool FileSystemApp::OnConnect(const service_manager::ServiceInfo& remote_info,

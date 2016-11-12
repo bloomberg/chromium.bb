@@ -40,10 +40,6 @@ class PackagedApp
 
  private:
   // service_manager::Service:
-  void OnStart(service_manager::ServiceContext* context) override {
-    context_ = context;
-  }
-
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override {
     registry->AddInterface<service_manager::test::mojom::LifecycleControl>(
@@ -78,7 +74,7 @@ class PackagedApp
 
   void CloseServiceManagerConnection() override {
     service_manager_connection_closed_callback_.Run();
-    context_->QuitNow();
+    context()->QuitNow();
     // This only closed our relationship with the service manager, existing
     // |bindings_|
     // remain active.
@@ -91,7 +87,6 @@ class PackagedApp
     }
   }
 
-  service_manager::ServiceContext* context_;
   mojo::BindingSet<service_manager::test::mojom::LifecycleControl> bindings_;
 
   // Run when this object's connection to the service manager is closed.
@@ -112,9 +107,7 @@ class Package : public service_manager::Service,
 
  private:
   // service_manager::Service:
-  void OnStart(service_manager::ServiceContext* context) override {
-    app_client_.OnStart(context);
-  }
+  void OnStart() override { app_client_.OnStart(); }
 
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override {
