@@ -192,7 +192,7 @@ ReducedReferrerGranularity
 ReloadwithoutSubResourceCacheRevalidation
 RemotePlayback status=experimental
 RenderingPipelineThrottling status=stable
-RenderingPipelineThrottlingLoadingIframes status=experimental
+RenderingPipelineThrottlingLoadingIframes status=stable
 RenderUnicodeControlCharacters status=stable
 ResizeObserver status=experimental
 // Handles frame scrolling via the root PaintLayer instead of the FrameView.
