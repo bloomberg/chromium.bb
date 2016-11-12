@@ -53,7 +53,7 @@ HardwareRenderer::~HardwareRenderer() {
   // Reset draw constraints.
   render_thread_manager_->PostExternalDrawConstraintsToChildCompositorOnRT(
       ParentCompositorDrawConstraints());
-  for (auto& child_frame : child_frames_) {
+  for (auto& child_frame : child_frame_queue_) {
     child_frame->WaitOnFutureIfNeeded();
     ReturnChildFrame(std::move(child_frame));
   }
@@ -70,29 +70,28 @@ void HardwareRenderer::CommitFrame() {
     return;
   // Insert all except last, ie current frame.
   while (child_frames.size() > 1u) {
-    child_frames_.emplace_back(std::move(child_frames.front()));
+    child_frame_queue_.emplace_back(std::move(child_frames.front()));
     child_frames.pop_front();
   }
-  for (auto& pruned_frame : WaitAndPruneFrameQueue(&child_frames_))
+  for (auto& pruned_frame : WaitAndPruneFrameQueue(&child_frame_queue_))
     ReturnChildFrame(std::move(pruned_frame));
-  DCHECK_LE(child_frames_.size(), 1u);
-  child_frames_.emplace_back(std::move(child_frames.front()));
+  DCHECK_LE(child_frame_queue_.size(), 1u);
+  child_frame_queue_.emplace_back(std::move(child_frames.front()));
 }
 
 void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   TRACE_EVENT0("android_webview", "HardwareRenderer::DrawGL");
 
-  for (auto& pruned_frame : WaitAndPruneFrameQueue(&child_frames_))
+  for (auto& pruned_frame : WaitAndPruneFrameQueue(&child_frame_queue_))
     ReturnChildFrame(std::move(pruned_frame));
-  DCHECK_LE(child_frames_.size(), 1u);
-  std::unique_ptr<ChildFrame> child_frame;
-  if (!child_frames_.empty()) {
-    child_frame = std::move(child_frames_.front());
-    child_frames_.clear();
+  DCHECK_LE(child_frame_queue_.size(), 1u);
+  if (!child_frame_queue_.empty()) {
+    child_frame_ = std::move(child_frame_queue_.front());
+    child_frame_queue_.clear();
   }
-  if (child_frame) {
+  if (child_frame_) {
     last_committed_compositor_frame_sink_id_ =
-        child_frame->compositor_frame_sink_id;
+        child_frame_->compositor_frame_sink_id;
   }
 
   // We need to watch if the current Android context has changed and enforce
@@ -108,22 +107,22 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   // during "kModeSync" stage (which does not allow GL) might result in extra
   // kModeProcess. Instead, submit the frame in "kModeDraw" stage to avoid
   // unnecessary kModeProcess.
-  if (child_frame.get() && child_frame->frame.get()) {
-    if (!compositor_id_.Equals(child_frame->compositor_id) ||
+  if (child_frame_.get() && child_frame_->frame.get()) {
+    if (!compositor_id_.Equals(child_frame_->compositor_id) ||
         last_submitted_compositor_frame_sink_id_ !=
-            child_frame->compositor_frame_sink_id) {
+            child_frame_->compositor_frame_sink_id) {
       if (child_id_.is_valid())
         DestroySurface();
 
       // This will return all the resources to the previous compositor.
       surface_factory_->Reset();
-      compositor_id_ = child_frame->compositor_id;
+      compositor_id_ = child_frame_->compositor_id;
       last_submitted_compositor_frame_sink_id_ =
-          child_frame->compositor_frame_sink_id;
+          child_frame_->compositor_frame_sink_id;
     }
 
     std::unique_ptr<cc::CompositorFrame> child_compositor_frame =
-        std::move(child_frame->frame);
+        std::move(child_frame_->frame);
 
     gfx::Size frame_size =
         child_compositor_frame->render_pass_list.back()->output_rect.size();
@@ -150,7 +149,7 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   // compositor might not have the tiles rasterized as the animation goes on.
   ParentCompositorDrawConstraints draw_constraints(
       draw_info->is_layer, transform, viewport.IsEmpty());
-  if (!child_frame.get() || draw_constraints.NeedUpdate(*child_frame)) {
+  if (!child_frame_.get() || draw_constraints.NeedUpdate(*child_frame_)) {
     render_thread_manager_->PostExternalDrawConstraintsToChildCompositorOnRT(
         draw_constraints);
   }

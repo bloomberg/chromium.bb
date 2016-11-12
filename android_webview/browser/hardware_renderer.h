@@ -74,10 +74,12 @@ class HardwareRenderer : public cc::SurfaceFactoryClient {
   // Infromation from UI on last commit.
   gfx::Vector2d scroll_offset_;
 
+  ChildFrameQueue child_frame_queue_;
+
   // This holds the last ChildFrame received. Contains the frame info of the
-  // last frame. The |frame| member may be null if it's already submitted to
-  // SurfaceFactory.
-  ChildFrameQueue child_frames_;
+  // last frame. The |frame| member is always null since frame has already
+  // been submitted.
+  std::unique_ptr<ChildFrame> child_frame_;
 
   const scoped_refptr<SurfacesInstance> surfaces_;
   cc::FrameSinkId frame_sink_id_;
