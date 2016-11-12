@@ -3970,7 +3970,14 @@ static void write_global_motion_params(WarpedMotionParams *params,
   av1_write_token(w, av1_global_motion_types_tree, probs,
                   &global_motion_types_encodings[type]);
   switch (type) {
-    case IDENTITY: break;
+    case HOMOGRAPHY:
+        aom_write_primitive_symmetric(
+            w, (params->wmmat[6] >> GM_ROW3HOMO_PREC_DIFF),
+            GM_ABS_ROW3HOMO_BITS);
+        aom_write_primitive_symmetric(
+            w, (params->wmmat[7] >> GM_ROW3HOMO_PREC_DIFF),
+            GM_ABS_ROW3HOMO_BITS);
+    // fallthrough intended
     case AFFINE:
     case ROTZOOM:
       aom_write_primitive_symmetric(
@@ -3979,7 +3986,7 @@ static void write_global_motion_params(WarpedMotionParams *params,
           GM_ABS_ALPHA_BITS);
       aom_write_primitive_symmetric(w, (params->wmmat[3] >> GM_ALPHA_PREC_DIFF),
                                     GM_ABS_ALPHA_BITS);
-      if (type == AFFINE) {
+      if (type == AFFINE || type == HOMOGRAPHY) {
         aom_write_primitive_symmetric(
             w, (params->wmmat[4] >> GM_ALPHA_PREC_DIFF), GM_ABS_ALPHA_BITS);
         aom_write_primitive_symmetric(w,
@@ -3994,6 +4001,7 @@ static void write_global_motion_params(WarpedMotionParams *params,
       aom_write_primitive_symmetric(w, (params->wmmat[1] >> GM_TRANS_PREC_DIFF),
                                     GM_ABS_TRANS_BITS);
       break;
+    case IDENTITY: break;
     default: assert(0);
   }
 }

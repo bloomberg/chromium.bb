@@ -4337,6 +4337,10 @@ static int get_gmbitcost(const WarpedMotionParams *gm, const aom_prob *probs) {
   TransformationType type = gm->wmtype;
   av1_cost_tokens(gmtype_cost, probs, av1_global_motion_types_tree);
   switch (type) {
+    case HOMOGRAPHY:
+      bits = (GM_ABS_TRANS_BITS + 1) * 2 + (GM_ABS_ALPHA_BITS + 1) * 4 +
+             (GM_ABS_ROW3HOMO_BITS + 1) * 2;
+      break;
     case AFFINE:
       bits = (GM_ABS_TRANS_BITS + 1) * 2 + (GM_ABS_ALPHA_BITS + 1) * 4;
       break;

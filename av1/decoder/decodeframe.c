@@ -4027,17 +4027,21 @@ static void read_global_motion_params(WarpedMotionParams *params,
   set_default_gmparams(params);
   params->wmtype = type;
   switch (type) {
-    case IDENTITY: break;
+    case HOMOGRAPHY:
+      params->wmmat[6] = aom_read_primitive_symmetric(r, GM_ABS_ROW3HOMO_BITS) *
+          GM_ROW3HOMO_DECODE_FACTOR;
+      params->wmmat[7] = aom_read_primitive_symmetric(r, GM_ABS_ROW3HOMO_BITS) *
+          GM_ROW3HOMO_DECODE_FACTOR;
     case AFFINE:
     case ROTZOOM:
-      params->wmmat[2] = (aom_read_primitive_symmetric(r, GM_ABS_ALPHA_BITS) *
-                          GM_ALPHA_DECODE_FACTOR) +
+      params->wmmat[2] = aom_read_primitive_symmetric(r, GM_ABS_ALPHA_BITS) *
+                          GM_ALPHA_DECODE_FACTOR +
                          (1 << WARPEDMODEL_PREC_BITS);
       params->wmmat[3] = aom_read_primitive_symmetric(r, GM_ABS_ALPHA_BITS) *
                          GM_ALPHA_DECODE_FACTOR;
-      if (type == AFFINE) {
-        params->wmmat[4] = (aom_read_primitive_symmetric(r, GM_ABS_ALPHA_BITS) *
-                            GM_ALPHA_DECODE_FACTOR);
+      if (type == AFFINE || type == HOMOGRAPHY) {
+        params->wmmat[4] = aom_read_primitive_symmetric(r, GM_ABS_ALPHA_BITS) *
+                            GM_ALPHA_DECODE_FACTOR;
         params->wmmat[5] = aom_read_primitive_symmetric(r, GM_ABS_ALPHA_BITS) *
                                GM_ALPHA_DECODE_FACTOR +
                            (1 << WARPEDMODEL_PREC_BITS);
@@ -4052,6 +4056,7 @@ static void read_global_motion_params(WarpedMotionParams *params,
       params->wmmat[1] = aom_read_primitive_symmetric(r, GM_ABS_TRANS_BITS) *
                          GM_TRANS_DECODE_FACTOR;
       break;
+    case IDENTITY: break;
     default: assert(0);
   }
 }

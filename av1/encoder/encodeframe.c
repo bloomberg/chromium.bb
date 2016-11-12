@@ -4614,7 +4614,6 @@ static int input_fpmb_stats(FIRSTPASS_MB_STATS *firstpass_mb_stats,
 #if CONFIG_GLOBAL_MOTION
 #define MIN_TRANS_THRESH (1 * GM_TRANS_DECODE_FACTOR)
 #define GLOBAL_MOTION_ADVANTAGE_THRESH 0.75
-#define GLOBAL_MOTION_MODEL ROTZOOM
 
 // Adds some offset to a global motion parameter and handles
 // all of the necessary precision shifts, clamping, and
@@ -4798,7 +4797,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
       ref_buf = get_ref_frame_buffer(cpi, frame);
       if (ref_buf) {
-        if (compute_global_motion_feature_based(GLOBAL_MOTION_MODEL,
+        if (compute_global_motion_feature_based(GLOBAL_TRANS_TYPES - 1,
                                                 cpi->Source, ref_buf, params)) {
           convert_model_to_params(params, &cm->global_motion[frame]);
           if (cm->global_motion[frame].wmtype != IDENTITY) {

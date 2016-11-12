@@ -128,7 +128,15 @@ static const uint8_t log_in_base_2[] = {
 };
 
 #if CONFIG_GLOBAL_MOTION
-#if GLOBAL_TRANS_TYPES == 4
+#if GLOBAL_TRANS_TYPES == 5
+const aom_tree_index av1_global_motion_types_tree[TREE_SIZE(
+    GLOBAL_TRANS_TYPES)] = { -IDENTITY, 2, -TRANSLATION, 4, -ROTZOOM, 6,
+    -AFFINE, -HOMOGRAPHY };
+
+static const aom_prob default_global_motion_types_prob[GLOBAL_TRANS_TYPES - 1] =
+    { 224, 128, 192, 192 };
+
+#elif GLOBAL_TRANS_TYPES == 4
 const aom_tree_index av1_global_motion_types_tree[TREE_SIZE(
     GLOBAL_TRANS_TYPES)] = { -IDENTITY, 2, -TRANSLATION, 4, -ROTZOOM, -AFFINE };
 
