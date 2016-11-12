@@ -142,7 +142,6 @@ void TabLayer::SetProperties(int id,
                              float toolbar_alpha,
                              float toolbar_y_offset,
                              float side_border_scale,
-                             bool attach_content,
                              bool inset_border) {
   if (alpha <= 0) {
     layer_->SetHideLayerAndSubtree(true);
@@ -524,7 +523,7 @@ void TabLayer::SetProperties(int id,
     close_button_->SetOpacity(close_alpha * close_alpha * border_alpha);
   }
 
-  if (content_visible && attach_content) {
+  if (content_visible) {
     {
       // content_ and back_logo_ Transforms
       gfx::Transform transform;

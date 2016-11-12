@@ -99,7 +99,7 @@ public class TabListSceneLayer extends SceneLayer {
                     defaultThemeColor, t.getToolbarBackgroundColor(), closeButtonColor,
                     t.anonymizeToolbar(), R.drawable.textbox, t.getTextBoxBackgroundColor(),
                     t.getTextBoxAlpha(), t.getToolbarAlpha(), t.getToolbarYOffset() * dpToPx,
-                    t.getSideBorderScale(), true, t.insetBorderVertical());
+                    t.getSideBorderScale(), t.insetBorderVertical());
         }
         nativeFinishBuildingFrame(mNativePtr);
     }
@@ -151,5 +151,5 @@ public class TabListSceneLayer extends SceneLayer {
             int toolbarBackgroundColor, int closeButtonColor, boolean anonymizeToolbar,
             int toolbarTextBoxResource, int toolbarTextBoxBackgroundColor,
             float toolbarTextBoxAlpha, float toolbarAlpha, float toolbarYOffset,
-            float sideBorderScale, boolean attachContent, boolean insetVerticalBorder);
+            float sideBorderScale, boolean insetVerticalBorder);
 }

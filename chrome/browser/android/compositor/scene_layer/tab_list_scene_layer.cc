@@ -140,7 +140,6 @@ void TabListSceneLayer::PutTabLayer(
     jfloat toolbar_alpha,
     jfloat toolbar_y_offset,
     jfloat side_border_scale,
-    jboolean attach_content,
     jboolean inset_border) {
   scoped_refptr<TabLayer> layer;
   auto iter = tab_map_.find(id);
@@ -175,15 +174,13 @@ void TabListSceneLayer::PutTabLayer(
         default_theme_color, toolbar_background_color,
         close_button_color, anonymize_toolbar, toolbar_textbox_resource_id,
         toolbar_textbox_background_color, toolbar_textbox_alpha, toolbar_alpha,
-        toolbar_y_offset, side_border_scale, attach_content, inset_border);
+        toolbar_y_offset, side_border_scale, inset_border);
   }
 
-  if (attach_content) {
-    gfx::RectF self(own_tree_->position(), gfx::SizeF(own_tree_->bounds()));
-    gfx::RectF content(x, y, width, height);
+  gfx::RectF self(own_tree_->position(), gfx::SizeF(own_tree_->bounds()));
+  gfx::RectF content(x, y, width, height);
 
-    content_obscures_self_ |= content.Contains(self);
-  }
+  content_obscures_self_ |= content.Contains(self);
 }
 
 base::android::ScopedJavaLocalRef<jobject> TabListSceneLayer::GetJavaObject(
