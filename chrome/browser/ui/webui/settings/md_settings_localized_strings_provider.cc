@@ -1745,40 +1745,13 @@ void AddCrNetworkStrings(content::WebUIDataSource* html_source) {
 
 void AddLocalizedStrings(content::WebUIDataSource* html_source,
                          Profile* profile) {
-  AddCommonStrings(html_source, profile);
-
   AddA11yStrings(html_source);
   AddAboutStrings(html_source);
-#if defined(OS_CHROMEOS)
-  AddAccountUITweaksStrings(html_source, profile);
-#endif
   AddAppearanceStrings(html_source, profile);
-#if defined(OS_CHROMEOS)
-  AddBluetoothStrings(html_source);
-#endif
-#if defined(USE_NSS_CERTS)
-  AddCertificateManagerStrings(html_source);
-#endif
   AddClearBrowsingDataStrings(html_source);
-#if !defined(OS_CHROMEOS)
-  AddDefaultBrowserStrings(html_source);
-#endif
-#if defined(OS_CHROMEOS)
-  AddDateTimeStrings(html_source);
-  AddDeviceStrings(html_source);
-#endif
+  AddCommonStrings(html_source, profile);
   AddDownloadsStrings(html_source);
-
-#if defined(OS_CHROMEOS)
-  AddEasyUnlockStrings(html_source);
-  AddImportDataStrings(html_source);
-  AddInternetStrings(html_source);
-  AddCrNetworkStrings(html_source);
-#endif
   AddLanguagesStrings(html_source);
-#if defined(OS_CHROMEOS)
-  AddMultiProfilesStrings(html_source, profile);
-#endif
   AddOnStartupStrings(html_source);
   AddPasswordsAndFormsStrings(html_source);
   AddPeopleStrings(html_source);
@@ -1789,11 +1762,27 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddSearchInSettingsStrings(html_source);
   AddSearchStrings(html_source);
   AddSiteSettingsStrings(html_source, profile);
-#if !defined(OS_CHROMEOS)
-  AddSystemStrings(html_source);
-#endif
   AddUsersStrings(html_source);
   AddWebContentStrings(html_source);
+
+#if defined(OS_CHROMEOS)
+  AddAccountUITweaksStrings(html_source, profile);
+  AddBluetoothStrings(html_source);
+  AddCrNetworkStrings(html_source);
+  AddDateTimeStrings(html_source);
+  AddDeviceStrings(html_source);
+  AddEasyUnlockStrings(html_source);
+  AddImportDataStrings(html_source);
+  AddInternetStrings(html_source);
+  AddMultiProfilesStrings(html_source, profile);
+#else
+  AddSystemStrings(html_source);
+  AddDefaultBrowserStrings(html_source);
+#endif
+
+#if defined(USE_NSS_CERTS)
+  AddCertificateManagerStrings(html_source);
+#endif
 
   policy_indicator::AddLocalizedStrings(html_source);
 
