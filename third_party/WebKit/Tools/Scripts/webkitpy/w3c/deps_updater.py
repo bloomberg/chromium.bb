@@ -25,8 +25,6 @@ CSS_DEST_NAME = 'csswg-test'
 WPT_REPO_URL = 'https://chromium.googlesource.com/external/w3c/web-platform-tests.git'
 CSS_REPO_URL = 'https://chromium.googlesource.com/external/w3c/csswg-test.git'
 
-POLL_DELAY_SECONDS = 900
-
 
 _log = logging.getLogger(__file__)
 

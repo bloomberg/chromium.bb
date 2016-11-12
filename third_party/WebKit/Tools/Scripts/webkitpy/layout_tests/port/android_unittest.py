@@ -54,13 +54,6 @@ _MOCK_ROOT = os.path.join(
 sys.path.append(_MOCK_ROOT)
 import mock
 
-# Type of tombstone test which the mocked Android Debug Bridge should execute.
-VALID_TOMBSTONE_TEST_TYPE = 0
-NO_FILES_TOMBSTONE_TEST_TYPE = 1
-NO_PERMISSION_TOMBSTONE_TEST_TYPE = 2
-INVALID_ENTRY_TOMBSTONE_TEST_TYPE = 3
-INVALID_ENTRIES_TOMBSTONE_TEST_TYPE = 4
-
 
 def mock_devices():
     serials = ['123456789ABCDEF0', '123456789ABCDEF1', '123456789ABCDEF2',

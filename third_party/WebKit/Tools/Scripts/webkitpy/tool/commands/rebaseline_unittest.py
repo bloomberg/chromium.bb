@@ -19,7 +19,6 @@ from webkitpy.tool.mock_tool import MockWebKitPatch
 
 # pylint: disable=protected-access
 class BaseTestCase(unittest.TestCase):
-    MOCK_WEB_RESULT = 'MOCK Web result, convert 404 to None=True'
     WEB_PREFIX = 'https://storage.googleapis.com/chromium-layout-test-archives/MOCK_Mac10_11/results/layout-test-results'
 
     command_constructor = None

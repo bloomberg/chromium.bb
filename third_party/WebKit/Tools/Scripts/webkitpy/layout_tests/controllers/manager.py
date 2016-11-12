@@ -56,9 +56,6 @@ from webkitpy.tool import grammar
 
 _log = logging.getLogger(__name__)
 
-# Builder base URL where we have the archived test results.
-BUILDER_BASE_URL = "http://build.chromium.org/buildbot/layout_test_results/"
-
 TestExpectations = test_expectations.TestExpectations
 
 
