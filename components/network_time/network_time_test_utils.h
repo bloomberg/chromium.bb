@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "components/network_time/network_time_tracker.h"
 
 namespace base {
 namespace test {
@@ -52,12 +53,6 @@ std::unique_ptr<net::test_server::HttpResponse> GoodTimeResponseHandler(
 // Allows tests to configure the network time queries field trial.
 class FieldTrialTest {
  public:
-  enum FetchBehavior {
-    FETCHES_IN_BACKGROUND_ONLY,
-    FETCHES_ON_DEMAND_ONLY,
-    FETCHES_IN_BACKGROUND_AND_ON_DEMAND,
-  };
-
   virtual ~FieldTrialTest();
 
   // A FieldTrialList exists as a global singleton. Use
@@ -67,9 +62,10 @@ class FieldTrialTest {
   static FieldTrialTest* CreateForUnitTest();
   static FieldTrialTest* CreateForBrowserTest();
 
-  void SetNetworkQueriesWithVariationsService(bool enable,
-                                              float query_probability,
-                                              FetchBehavior fetch_behavior);
+  void SetNetworkQueriesWithVariationsService(
+      bool enable,
+      float query_probability,
+      NetworkTimeTracker::FetchBehavior fetch_behavior);
 
  private:
   FieldTrialTest();

@@ -3045,7 +3045,7 @@ class SSLNetworkTimeBrowserTest : public SSLUITest {
 
   void SetUpNetworkTimeServer() {
     field_trial_test()->SetNetworkQueriesWithVariationsService(
-        true, 0.0, network_time::FieldTrialTest::FETCHES_ON_DEMAND_ONLY);
+        true, 0.0, network_time::NetworkTimeTracker::FETCHES_ON_DEMAND_ONLY);
 
     // Install the URL interceptor that serves delayed network time
     // responses.

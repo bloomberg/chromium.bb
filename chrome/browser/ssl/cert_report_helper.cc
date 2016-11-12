@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/common/pref_names.h"
@@ -107,6 +108,8 @@ void CertReportHelper::FinishCertCollection(
 
   std::string serialized_report;
   certificate_reporting::ErrorReport report(request_url_.host(), ssl_info_);
+
+  report.AddNetworkTimeInfo(g_browser_process->network_time_tracker());
 
   report.SetInterstitialInfo(
       interstitial_reason_, user_proceeded,

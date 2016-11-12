@@ -358,7 +358,7 @@ TEST_F(SSLErrorClassificationTest, NetworkClockStateHistogram) {
   network_time_tracker.SetTimeServerURLForTesting(test_server.GetURL("/"));
   field_trial_test()->SetNetworkQueriesWithVariationsService(
       true, 0.0,
-      network_time::FieldTrialTest::FETCHES_IN_BACKGROUND_AND_ON_DEMAND);
+      network_time::NetworkTimeTracker::FETCHES_IN_BACKGROUND_AND_ON_DEMAND);
 
   // No sync attempt.
   EXPECT_EQ(

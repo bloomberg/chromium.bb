@@ -57,7 +57,7 @@ class NetworkTimeTrackerTest : public ::testing::Test {
 
     field_trial_test_->SetNetworkQueriesWithVariationsService(
         true, 0.0 /* query probability */,
-        FieldTrialTest::FETCHES_IN_BACKGROUND_AND_ON_DEMAND);
+        NetworkTimeTracker::FETCHES_IN_BACKGROUND_AND_ON_DEMAND);
 
     tracker_.reset(new NetworkTimeTracker(
         std::unique_ptr<base::Clock>(clock_),
@@ -555,7 +555,7 @@ TEST_F(NetworkTimeTrackerTest, StartTimeFetchWhileSynced) {
 // is not configured to allow on-demand time fetches.
 TEST_F(NetworkTimeTrackerTest, StartTimeFetchWithoutVariationsParam) {
   field_trial_test_->SetNetworkQueriesWithVariationsService(
-      true, 0.0, FieldTrialTest::FETCHES_IN_BACKGROUND_ONLY);
+      true, 0.0, NetworkTimeTracker::FETCHES_IN_BACKGROUND_ONLY);
   test_server_->RegisterRequestHandler(base::Bind(&GoodTimeResponseHandler));
   EXPECT_TRUE(test_server_->Start());
   tracker_->SetTimeServerURLForTesting(test_server_->GetURL("/"));
@@ -574,7 +574,7 @@ TEST_F(NetworkTimeTrackerTest, NoNetworkQueryWhileSynced) {
   tracker_->SetTimeServerURLForTesting(test_server_->GetURL("/"));
 
   field_trial_test_->SetNetworkQueriesWithVariationsService(
-      true, 0.0, FieldTrialTest::FETCHES_IN_BACKGROUND_AND_ON_DEMAND);
+      true, 0.0, NetworkTimeTracker::FETCHES_IN_BACKGROUND_AND_ON_DEMAND);
   base::Time in_network_time = clock_->Now();
   UpdateNetworkTime(in_network_time, resolution_, latency_,
                     tick_clock_->NowTicks());
@@ -586,7 +586,7 @@ TEST_F(NetworkTimeTrackerTest, NoNetworkQueryWhileSynced) {
             tracker_->GetTimerDelayForTesting());
 
   field_trial_test_->SetNetworkQueriesWithVariationsService(
-      true, 1.0, FieldTrialTest::FETCHES_IN_BACKGROUND_AND_ON_DEMAND);
+      true, 1.0, NetworkTimeTracker::FETCHES_IN_BACKGROUND_AND_ON_DEMAND);
   EXPECT_TRUE(tracker_->QueryTimeServiceForTesting());
   tracker_->WaitForFetchForTesting(123123123);
   EXPECT_EQ(base::TimeDelta::FromMinutes(60),
@@ -596,7 +596,7 @@ TEST_F(NetworkTimeTrackerTest, NoNetworkQueryWhileSynced) {
 TEST_F(NetworkTimeTrackerTest, NoNetworkQueryWhileFeatureDisabled) {
   // Disable network time queries and check that a query is not sent.
   field_trial_test_->SetNetworkQueriesWithVariationsService(
-      false, 0.0, FieldTrialTest::FETCHES_IN_BACKGROUND_AND_ON_DEMAND);
+      false, 0.0, NetworkTimeTracker::FETCHES_IN_BACKGROUND_AND_ON_DEMAND);
   EXPECT_FALSE(tracker_->QueryTimeServiceForTesting());
   // The timer is not started when the feature is disabled.
   EXPECT_EQ(base::TimeDelta::FromMinutes(0),
@@ -604,7 +604,7 @@ TEST_F(NetworkTimeTrackerTest, NoNetworkQueryWhileFeatureDisabled) {
 
   // Enable time queries and check that a query is sent.
   field_trial_test_->SetNetworkQueriesWithVariationsService(
-      true, 0.0, FieldTrialTest::FETCHES_IN_BACKGROUND_AND_ON_DEMAND);
+      true, 0.0, NetworkTimeTracker::FETCHES_IN_BACKGROUND_AND_ON_DEMAND);
   EXPECT_TRUE(tracker_->QueryTimeServiceForTesting());
   tracker_->WaitForFetchForTesting(123123123);
 }

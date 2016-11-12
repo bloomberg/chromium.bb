@@ -8,6 +8,9 @@
 #include <memory>
 #include <string>
 
+namespace network_time {
+class NetworkTimeTracker;
+}  // namespace network_time
 
 namespace net {
 class SSLInfo;
@@ -60,6 +63,9 @@ class ErrorReport {
   void SetInterstitialInfo(const InterstitialReason& interstitial_reason,
                            const ProceedDecision& proceed_decision,
                            const Overridable& overridable);
+
+  void AddNetworkTimeInfo(
+      const network_time::NetworkTimeTracker* network_time_tracker);
 
   // Gets the hostname to which this report corresponds.
   const std::string& hostname() const;

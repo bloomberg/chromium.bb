@@ -48,6 +48,7 @@ source_set("network_time_test_support") {
   ]
 
   deps = [
+    ":network_time",
     "//base",
     "//base/test:test_support",
     "//components/variations",

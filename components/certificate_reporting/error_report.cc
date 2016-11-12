@@ -10,9 +10,12 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "components/certificate_reporting/cert_logger.pb.h"
+#include "components/network_time/network_time_tracker.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_info.h"
+
+using network_time::NetworkTimeTracker;
 
 namespace certificate_reporting {
 
@@ -118,6 +121,40 @@ void ErrorReport::SetInterstitialInfo(
 
   interstitial_info->set_user_proceeded(proceed_decision == USER_PROCEEDED);
   interstitial_info->set_overridable(overridable == INTERSTITIAL_OVERRIDABLE);
+}
+
+void ErrorReport::AddNetworkTimeInfo(
+    const NetworkTimeTracker* network_time_tracker) {
+  CertLoggerFeaturesInfo* features_info = cert_report_->mutable_features_info();
+  CertLoggerFeaturesInfo::NetworkTimeQueryingInfo* network_time_info =
+      features_info->mutable_network_time_querying_info();
+  network_time_info->set_network_time_queries_enabled(
+      network_time_tracker->AreTimeFetchesEnabled());
+  NetworkTimeTracker::FetchBehavior behavior =
+      network_time_tracker->GetFetchBehavior();
+  CertLoggerFeaturesInfo::NetworkTimeQueryingInfo::NetworkTimeFetchBehavior
+      report_behavior = CertLoggerFeaturesInfo::NetworkTimeQueryingInfo::
+          NETWORK_TIME_FETCHES_UNKNOWN;
+
+  switch (behavior) {
+    case NetworkTimeTracker::FETCH_BEHAVIOR_UNKNOWN:
+      report_behavior = CertLoggerFeaturesInfo::NetworkTimeQueryingInfo::
+          NETWORK_TIME_FETCHES_UNKNOWN;
+      break;
+    case NetworkTimeTracker::FETCHES_IN_BACKGROUND_ONLY:
+      report_behavior = CertLoggerFeaturesInfo::NetworkTimeQueryingInfo::
+          NETWORK_TIME_FETCHES_BACKGROUND_ONLY;
+      break;
+    case NetworkTimeTracker::FETCHES_ON_DEMAND_ONLY:
+      report_behavior = CertLoggerFeaturesInfo::NetworkTimeQueryingInfo::
+          NETWORK_TIME_FETCHES_ON_DEMAND_ONLY;
+      break;
+    case NetworkTimeTracker::FETCHES_IN_BACKGROUND_AND_ON_DEMAND:
+      report_behavior = CertLoggerFeaturesInfo::NetworkTimeQueryingInfo::
+          NETWORK_TIME_FETCHES_IN_BACKGROUND_AND_ON_DEMAND;
+      break;
+  }
+  network_time_info->set_network_time_query_behavior(report_behavior);
 }
 
 const std::string& ErrorReport::hostname() const {

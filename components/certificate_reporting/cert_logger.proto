@@ -44,6 +44,28 @@ message CertLoggerInterstitialInfo {
   optional bool overridable = 3;
 }
 
+// Contains information about features that are enabled/disabled that
+// might affect certificate validation.
+message CertLoggerFeaturesInfo {
+  message NetworkTimeQueryingInfo {
+    // True if the network time querying feature is enabled.
+    optional bool network_time_queries_enabled = 1;
+
+    // The experimental parameter controlling the behavior of network time
+    // queries (whether they happen on-demand when a certificate date error is
+    // encountered, in the background, or both).
+    enum NetworkTimeFetchBehavior {
+      NETWORK_TIME_FETCHES_UNKNOWN = 0;
+      NETWORK_TIME_FETCHES_BACKGROUND_ONLY = 1;
+      NETWORK_TIME_FETCHES_ON_DEMAND_ONLY = 2;
+      NETWORK_TIME_FETCHES_IN_BACKGROUND_AND_ON_DEMAND = 3;
+    }
+    optional NetworkTimeFetchBehavior network_time_query_behavior = 2;
+  }
+
+  optional NetworkTimeQueryingInfo network_time_querying_info = 1;
+}
+
 message CertLoggerRequest {
   // The hostname being accessed (required as the cert could be valid for
   // multiple hosts, e.g. a wildcard or a SubjectAltName.
@@ -98,4 +120,8 @@ message CertLoggerRequest {
   // validation library built a trusted chain (i.e. the Chrome net stack set the
   // error, not the library).
   optional bool is_issued_by_known_root = 9;
+
+  // Information about features that were enabled or disabled for the
+  // user that might affect certificate validation.
+  optional CertLoggerFeaturesInfo features_info = 10;
 };

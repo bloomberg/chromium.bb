@@ -66,7 +66,7 @@ FieldTrialTest* FieldTrialTest::CreateForBrowserTest() {
 void FieldTrialTest::SetNetworkQueriesWithVariationsService(
     bool enable,
     float query_probability,
-    FetchBehavior fetch_behavior) {
+    NetworkTimeTracker::FetchBehavior fetch_behavior) {
   const std::string kTrialName = "Trial";
   const std::string kGroupName = "group";
   const base::Feature kFeature{"NetworkTimeServiceQuerying",
@@ -80,13 +80,17 @@ void FieldTrialTest::SetNetworkQueriesWithVariationsService(
   params["CheckTimeIntervalSeconds"] = base::Int64ToString(360);
   std::string fetch_behavior_param;
   switch (fetch_behavior) {
-    case FETCHES_IN_BACKGROUND_ONLY:
+    case NetworkTimeTracker::FETCH_BEHAVIOR_UNKNOWN:
+      NOTREACHED();
+      fetch_behavior_param = "unknown";
+      break;
+    case NetworkTimeTracker::FETCHES_IN_BACKGROUND_ONLY:
       fetch_behavior_param = "background-only";
       break;
-    case FETCHES_ON_DEMAND_ONLY:
+    case NetworkTimeTracker::FETCHES_ON_DEMAND_ONLY:
       fetch_behavior_param = "on-demand-only";
       break;
-    case FETCHES_IN_BACKGROUND_AND_ON_DEMAND:
+    case NetworkTimeTracker::FETCHES_IN_BACKGROUND_AND_ON_DEMAND:
       fetch_behavior_param = "background-and-on-demand";
       break;
   }
