@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/test_browser_window.h"
@@ -14,6 +16,7 @@
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/public/test/web_contents_tester.h"
+#include "extensions/browser/api_test_utils.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/test_util.h"
 
@@ -214,6 +217,56 @@ TEST_F(TabsApiUnitTest, QueryWithHostPermission) {
     ASSERT_TRUE(third_tab_info->GetInteger("id", &third_tab_id));
     EXPECT_TRUE(base::ContainsValue(expected_tabs_ids, third_tab_id));
   }
+}
+
+// Test that using the PDF extension for tab updates is treated as a
+// renderer-initiated navigation. crbug.com/660498
+TEST_F(TabsApiUnitTest, PDFExtensionNavigation) {
+  DictionaryBuilder manifest;
+  manifest.Set("name", "pdfext")
+      .Set("description", "desc")
+      .Set("version", "0.1")
+      .Set("manifest_version", 2)
+      .Set("permissions", ListBuilder().Append("tabs").Build());
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder()
+          .SetManifest(manifest.Build())
+          .SetID(extension_misc::kPdfExtensionId)
+          .Build();
+  ASSERT_TRUE(extension);
+
+  content::WebContents* web_contents =
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
+  ASSERT_TRUE(web_contents);
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents);
+  const GURL kGoogle("http://www.google.com");
+  web_contents_tester->NavigateAndCommit(kGoogle);
+  EXPECT_EQ(kGoogle, web_contents->GetLastCommittedURL());
+  EXPECT_EQ(kGoogle, web_contents->GetVisibleURL());
+
+  SessionTabHelper::CreateForWebContents(web_contents);
+  int tab_id = SessionTabHelper::IdForTab(web_contents);
+  browser()->tab_strip_model()->AppendWebContents(web_contents, true);
+
+  scoped_refptr<TabsUpdateFunction> function = new TabsUpdateFunction();
+  function->set_extension(extension.get());
+  function->set_browser_context(profile());
+  std::unique_ptr<base::ListValue> args(
+      extension_function_test_utils::ParseList(base::StringPrintf(
+          "[%d, {\"url\":\"http://example.com\"}]", tab_id)));
+  function->SetArgs(args.get());
+  api_test_utils::SendResponseHelper response_helper(function.get());
+  function->RunWithValidation()->Execute();
+
+  EXPECT_EQ(kGoogle, web_contents->GetLastCommittedURL());
+  EXPECT_EQ(kGoogle, web_contents->GetVisibleURL());
+
+  // Clean up.
+  response_helper.WaitForResponse();
+  while (!browser()->tab_strip_model()->empty())
+    browser()->tab_strip_model()->CloseWebContentsAt(0, 0);
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace extensions
