@@ -30,9 +30,6 @@ struct CC_EXPORT ManagedMemoryPolicy {
   bool operator==(const ManagedMemoryPolicy&) const;
   bool operator!=(const ManagedMemoryPolicy&) const;
 
-  void ToProtobuf(proto::ManagedMemoryPolicy* proto) const;
-  void FromProtobuf(const proto::ManagedMemoryPolicy& proto);
-
   size_t bytes_limit_when_visible;
   gpu::MemoryAllocation::PriorityCutoff priority_cutoff_when_visible;
   size_t num_resources_limit;

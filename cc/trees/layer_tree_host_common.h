@@ -26,12 +26,6 @@
 
 namespace cc {
 
-namespace proto {
-class ScrollUpdateInfo;
-class ScrollbarsUpdateInfo;
-class ScrollAndScaleSet;
-}
-
 class LayerImpl;
 class Layer;
 class SwapPromise;
@@ -149,9 +143,6 @@ class CC_EXPORT LayerTreeHostCommon {
     ScrollUpdateInfo();
 
     bool operator==(const ScrollUpdateInfo& other) const;
-
-    void ToProtobuf(proto::ScrollUpdateInfo* proto) const;
-    void FromProtobuf(const proto::ScrollUpdateInfo& proto);
   };
 
   // Used to communicate scrollbar visibility from Impl thread to Blink.
@@ -167,9 +158,6 @@ class CC_EXPORT LayerTreeHostCommon {
     ScrollbarsUpdateInfo(int layer_id, bool hidden);
 
     bool operator==(const ScrollbarsUpdateInfo& other) const;
-
-    void ToProtobuf(proto::ScrollbarsUpdateInfo* proto) const;
-    void FromProtobuf(const proto::ScrollbarsUpdateInfo& proto);
   };
 };
 
@@ -204,10 +192,6 @@ struct CC_EXPORT ScrollAndScaleSet {
   float top_controls_delta;
   std::vector<LayerTreeHostCommon::ScrollbarsUpdateInfo> scrollbars;
   std::vector<std::unique_ptr<SwapPromise>> swap_promises;
-
-  bool EqualsForTesting(const ScrollAndScaleSet& other) const;
-  void ToProtobuf(proto::ScrollAndScaleSet* proto) const;
-  void FromProtobuf(const proto::ScrollAndScaleSet& proto);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScrollAndScaleSet);

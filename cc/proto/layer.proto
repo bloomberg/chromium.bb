@@ -9,9 +9,8 @@ import "layer_position_constraint.proto";
 import "layer_sticky_position_constraint.proto";
 import "point3f.proto";
 import "pointf.proto";
-import "recording_source.proto";
-import "region.proto";
 import "rect.proto";
+import "region.proto";
 import "scroll_offset.proto";
 import "size.proto";
 import "skxfermode.proto";
@@ -30,7 +29,6 @@ message LayerNode {
     UNKNOWN = 0;
     LAYER = 1;
     PICTURE_LAYER = 2;
-    HEADS_UP_DISPLAY_LAYER = 3;
     SOLID_COLOR_SCROLLBAR_LAYER = 4;
 
     // Layer Types for testing only.
@@ -76,7 +74,7 @@ message LayerProperties {
 
 // NEXT ID: 59
 message BaseLayerProperties {
-  // The following fields mirror the data stored in Layer::Inputs ----------
+  // The following fields mirror the data stored in Layer::Inputs.
   optional Rect update_rect = 46;
   optional Size bounds = 3;
   optional bool masks_to_bounds = 14;
@@ -123,48 +121,14 @@ message BaseLayerProperties {
   // TODO(nyquist): Add support for FilterOperation. See crbug.com/541321.
   // repeated FilterOperation filters = 12;
   // repeated FilterOperation background_filters = 13;
-
-  // -----------------------------------------------------------------------
-
-  // TODO(khushalsagar): Remove these when crbug.com/648442
-  optional uint32 safe_opaque_background_color = 53;
-  optional int64 transform_free_index = 4;
-  optional int64 effect_tree_index = 5;
-  optional int64 clip_tree_index = 6;
-  optional int64 scroll_tree_index = 50;
-  optional Vector2dF offset_to_transform_parent = 7;
-  optional bool draws_content = 9;
-  optional bool may_contain_video = 55;
-  optional bool subtree_property_changed = 47;
-  optional bool have_scroll_event_handlers = 17;
-  optional bool should_flatten_transform_from_property_tree = 29;
-  optional int32 num_layer_or_descendants_with_copy_request = 30;
-  optional SkXfermode.Mode draw_blend_mode = 31;
-  optional bool use_local_transform_for_backface_visibility = 51;
-  optional bool should_check_backface_visibility = 52;
-  optional bool transform_is_invertible = 34;
-  optional int32 num_descendants_that_draw_content = 36;
-  repeated int32 scroll_children_ids = 41;
-  repeated int32 clip_children_ids = 43;
-
-  // TODO(nyquist): Figure out what to do with LayerAnimationController.
-  // optional LayerAnimationController layer_animation_controller = ???;
 }
 
 message PictureLayerProperties {
   // The following fields mirror the data stored in
-  // PictureLayer::PictureLayerInputs.------------------------
+  // PictureLayer::PictureLayerInputs.
   optional bool nearest_neighbor = 5;
   optional Rect recorded_viewport = 7;
   optional DisplayItemList display_list = 8;
-  // --------------------------------------------------------
-
-  // TODO(khushalsagar): Remove these when crbug.com/648442
-  optional RecordingSource recording_source = 1;
-  optional Region invalidation = 2;
-  optional Rect last_updated_visible_layer_rect = 3;
-  optional bool is_mask = 4;
-  optional int64 update_source_frame_number = 6;
 }
 
 message SolidColorScrollbarLayerProperties {

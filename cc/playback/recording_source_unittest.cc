@@ -7,7 +7,6 @@
 #include "base/memory/ptr_util.h"
 #include "cc/base/region.h"
 #include "cc/playback/raster_source.h"
-#include "cc/proto/recording_source.pb.h"
 #include "cc/test/fake_client_picture_cache.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_engine_picture_cache.h"
@@ -34,65 +33,6 @@ scoped_refptr<RasterSource> CreateRasterSource(
   bool can_use_lcd_text = true;
   return RasterSource::CreateFromRecordingSource(recording_source,
                                                  can_use_lcd_text);
-}
-
-void ValidateRecordingSourceSerialization(FakeRecordingSource* source) {
-  proto::RecordingSource proto;
-  source->ToProtobuf(&proto);
-
-  FakeRecordingSource new_source;
-  new_source.FromProtobuf(proto, nullptr, gfx::Rect());
-
-  EXPECT_TRUE(source->EqualsTo(new_source));
-}
-
-TEST(RecordingSourceTest, TestNullDisplayListSerialization) {
-  gfx::Rect recorded_viewport(0, 0, 256, 256);
-
-  std::unique_ptr<FakeRecordingSource> recording_source =
-      CreateRecordingSource(recorded_viewport);
-  recording_source->SetDisplayListUsesCachedPicture(false);
-  recording_source->SetGenerateDiscardableImagesMetadata(true);
-  recording_source->Rerecord();
-  recording_source->SetEmptyBounds();
-
-  ValidateRecordingSourceSerialization(recording_source.get());
-}
-
-TEST(RecordingSourceTest, TestEmptySerializationDeserialization) {
-  gfx::Rect recorded_viewport(0, 0, 256, 256);
-
-  std::unique_ptr<FakeRecordingSource> recording_source =
-      CreateRecordingSource(recorded_viewport);
-  recording_source->SetDisplayListUsesCachedPicture(false);
-  recording_source->SetGenerateDiscardableImagesMetadata(true);
-  recording_source->Rerecord();
-
-  ValidateRecordingSourceSerialization(recording_source.get());
-}
-
-TEST(RecordingSourceTest, TestPopulatedSerializationDeserialization) {
-  gfx::Rect recorded_viewport(0, 0, 256, 256);
-
-  std::unique_ptr<FakeRecordingSource> recording_source =
-      CreateRecordingSource(recorded_viewport);
-  recording_source->SetDisplayListUsesCachedPicture(false);
-
-  SkPaint simple_paint;
-  simple_paint.setColor(SkColorSetARGB(255, 12, 23, 34));
-  recording_source->add_draw_rect_with_paint(gfx::Rect(0, 0, 256, 256),
-                                             simple_paint);
-  recording_source->add_draw_rect_with_paint(gfx::Rect(128, 128, 512, 512),
-                                             simple_paint);
-  recording_source->add_draw_rect_with_paint(gfx::Rect(512, 0, 256, 256),
-                                             simple_paint);
-  recording_source->add_draw_rect_with_paint(gfx::Rect(0, 512, 256, 256),
-                                             simple_paint);
-
-  recording_source->SetGenerateDiscardableImagesMetadata(true);
-  recording_source->Rerecord();
-
-  ValidateRecordingSourceSerialization(recording_source.get());
 }
 
 TEST(RecordingSourceTest, DiscardableImagesWithTransform) {

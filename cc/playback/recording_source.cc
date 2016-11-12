@@ -14,7 +14,6 @@
 #include "cc/playback/display_item_list.h"
 #include "cc/playback/raster_source.h"
 #include "cc/proto/gfx_conversions.h"
-#include "cc/proto/recording_source.pb.h"
 #include "skia/ext/analysis_canvas.h"
 
 namespace {
@@ -39,40 +38,6 @@ RecordingSource::RecordingSource()
       background_color_(SK_ColorTRANSPARENT) {}
 
 RecordingSource::~RecordingSource() {}
-
-void RecordingSource::ToProtobuf(proto::RecordingSource* proto) const {
-  SizeToProto(size_, proto->mutable_size());
-  proto->set_slow_down_raster_scale_factor_for_debug(
-      slow_down_raster_scale_factor_for_debug_);
-  proto->set_generate_discardable_images_metadata(
-      generate_discardable_images_metadata_);
-  proto->set_requires_clear(requires_clear_);
-  proto->set_is_solid_color(is_solid_color_);
-  proto->set_clear_canvas_with_debug_color(clear_canvas_with_debug_color_);
-  proto->set_solid_color(static_cast<uint64_t>(solid_color_));
-  proto->set_background_color(static_cast<uint64_t>(background_color_));
-}
-
-void RecordingSource::FromProtobuf(
-    const proto::RecordingSource& proto,
-    const scoped_refptr<DisplayItemList>& display_list,
-    const gfx::Rect& recorded_viewport) {
-  size_ = ProtoToSize(proto.size());
-  slow_down_raster_scale_factor_for_debug_ =
-      proto.slow_down_raster_scale_factor_for_debug();
-  generate_discardable_images_metadata_ =
-      proto.generate_discardable_images_metadata();
-  requires_clear_ = proto.requires_clear();
-  is_solid_color_ = proto.is_solid_color();
-  clear_canvas_with_debug_color_ = proto.clear_canvas_with_debug_color();
-  solid_color_ = static_cast<SkColor>(proto.solid_color());
-  background_color_ = static_cast<SkColor>(proto.background_color());
-
-  display_list_ = display_list;
-  recorded_viewport_ = recorded_viewport;
-  if (display_list_)
-    FinishDisplayItemListUpdate();
-}
 
 void RecordingSource::UpdateInvalidationForNewViewport(
     const gfx::Rect& old_recorded_viewport,

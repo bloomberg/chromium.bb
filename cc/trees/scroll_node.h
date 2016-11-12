@@ -17,10 +17,6 @@ class TracedValue;
 
 namespace cc {
 
-namespace proto {
-class TreeNode;
-}  // namespace proto
-
 struct CC_EXPORT ScrollNode {
   ScrollNode();
   ScrollNode(const ScrollNode& other);
@@ -65,9 +61,6 @@ struct CC_EXPORT ScrollNode {
   int num_drawn_descendants;
 
   bool operator==(const ScrollNode& other) const;
-
-  void ToProtobuf(proto::TreeNode* proto) const;
-  void FromProtobuf(const proto::TreeNode& proto);
   void AsValueInto(base::trace_event::TracedValue* value) const;
 };
 

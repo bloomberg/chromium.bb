@@ -8,7 +8,6 @@
 
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
-#include "cc/proto/layer.pb.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
 
@@ -60,11 +59,6 @@ bool HeadsUpDisplayLayer::HasDrawableContent() const {
 std::unique_ptr<LayerImpl> HeadsUpDisplayLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return HeadsUpDisplayLayerImpl::Create(tree_impl, id());
-}
-
-void HeadsUpDisplayLayer::SetTypeForProtoSerialization(
-    proto::LayerNode* proto) const {
-  proto->set_type(proto::LayerNode::HEADS_UP_DISPLAY_LAYER);
 }
 
 void HeadsUpDisplayLayer::PushPropertiesTo(LayerImpl* layer) {

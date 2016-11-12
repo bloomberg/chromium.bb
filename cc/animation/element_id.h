@@ -24,14 +24,6 @@ class TracedValue;
 
 namespace cc {
 
-namespace proto {
-class ElementId;
-}  // namespace proto
-
-// ------------------------------*IMPORTANT*---------------------------------
-// ElementId has a corresponding proto defined in cc/proto/element_id.proto.
-// When making any changes here, but sure to update the proto.
-
 // An "element" is really an animation target. It retains the name element to be
 // symmetric with ElementAnimations and blink::ElementAnimations, but is not
 // in fact tied to the notion of a blink element. It is also not associated with
@@ -56,9 +48,6 @@ struct CC_EXPORT ElementId {
 
   void AddToTracedValue(base::trace_event::TracedValue* res) const;
   std::unique_ptr<base::Value> AsValue() const;
-
-  void ToProtobuf(proto::ElementId* proto) const;
-  void FromProtobuf(const proto::ElementId& proto);
 
   // The compositor treats this as an opaque handle and should not know how to
   // interpret these bits. Non-blink cc clients typically operate in terms of

@@ -29,8 +29,6 @@ class CC_EXPORT HeadsUpDisplayLayer : public Layer {
 
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
-  void SetTypeForProtoSerialization(proto::LayerNode* proto) const override;
-
   // Layer overrides.
   void PushPropertiesTo(LayerImpl* layer) override;
 

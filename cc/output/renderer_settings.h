@@ -13,10 +13,6 @@
 
 namespace cc {
 
-namespace proto {
-class RendererSettings;
-}  // namespace proto
-
 class CC_EXPORT RendererSettings {
  public:
   RendererSettings();
@@ -39,9 +35,6 @@ class CC_EXPORT RendererSettings {
   bool use_gpu_memory_buffer_resources;
   ResourceFormat preferred_tile_format;
   BufferToTextureTargetMap buffer_to_texture_target_map;
-
-  void ToProtobuf(proto::RendererSettings* proto) const;
-  void FromProtobuf(const proto::RendererSettings& proto);
 
   bool operator==(const RendererSettings& other) const;
 };

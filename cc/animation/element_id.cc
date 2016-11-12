@@ -9,7 +9,6 @@
 
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
-#include "cc/proto/element_id.pb.h"
 
 namespace cc {
 
@@ -44,16 +43,6 @@ std::unique_ptr<base::Value> ElementId::AsValue() const {
   res->SetInteger("primaryId", primaryId);
   res->SetInteger("secondaryId", secondaryId);
   return std::move(res);
-}
-
-void ElementId::ToProtobuf(proto::ElementId* proto) const {
-  proto->set_primary_id(primaryId);
-  proto->set_secondary_id(secondaryId);
-}
-
-void ElementId::FromProtobuf(const proto::ElementId& proto) {
-  primaryId = proto.primary_id();
-  secondaryId = proto.secondary_id();
 }
 
 size_t ElementIdHash::operator()(ElementId key) const {

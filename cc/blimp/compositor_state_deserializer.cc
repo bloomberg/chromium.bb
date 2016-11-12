@@ -502,10 +502,6 @@ scoped_refptr<Layer> CompositorStateDeserializer::GetLayerAndAddToNewMap(
           layer_node.id(), orientation, thumb_thickness, track_start,
           is_left_side_vertical_scrollbar, Layer::LayerIdLabels::INVALID_ID);
     } break;
-    case proto::LayerNode::HEADS_UP_DISPLAY_LAYER:
-      // TODO(khushalsagar): Remove this from proto.
-      NOTREACHED();
-      break;
     case proto::LayerNode::PUSH_PROPERTIES_COUNTING_LAYER:
       // PUSH_PROPERTIES_COUNTING_LAYER is for testing only.
       layer_data.layer =

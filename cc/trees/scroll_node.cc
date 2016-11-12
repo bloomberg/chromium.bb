@@ -7,7 +7,6 @@
 #include "cc/base/math_util.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/proto/gfx_conversions.h"
-#include "cc/proto/property_tree.pb.h"
 #include "cc/trees/scroll_node.h"
 
 namespace cc {
@@ -50,60 +49,6 @@ bool ScrollNode::operator==(const ScrollNode& other) const {
          user_scrollable_horizontal == other.user_scrollable_horizontal &&
          user_scrollable_vertical == other.user_scrollable_vertical &&
          element_id == other.element_id && transform_id == other.transform_id;
-}
-
-void ScrollNode::ToProtobuf(proto::TreeNode* proto) const {
-  proto->set_id(id);
-  proto->set_parent_id(parent_id);
-  proto->set_owner_id(owner_id);
-
-  DCHECK(!proto->has_scroll_node_data());
-  proto::ScrollNodeData* data = proto->mutable_scroll_node_data();
-  data->set_scrollable(scrollable);
-  data->set_main_thread_scrolling_reasons(main_thread_scrolling_reasons);
-  data->set_contains_non_fast_scrollable_region(
-      contains_non_fast_scrollable_region);
-  SizeToProto(scroll_clip_layer_bounds,
-              data->mutable_scroll_clip_layer_bounds());
-  SizeToProto(bounds, data->mutable_bounds());
-  data->set_max_scroll_offset_affected_by_page_scale(
-      max_scroll_offset_affected_by_page_scale);
-  data->set_is_inner_viewport_scroll_layer(is_inner_viewport_scroll_layer);
-  data->set_is_outer_viewport_scroll_layer(is_outer_viewport_scroll_layer);
-  Vector2dFToProto(offset_to_transform_parent,
-                   data->mutable_offset_to_transform_parent());
-  data->set_should_flatten(should_flatten);
-  data->set_user_scrollable_horizontal(user_scrollable_horizontal);
-  data->set_user_scrollable_vertical(user_scrollable_vertical);
-  element_id.ToProtobuf(data->mutable_element_id());
-  data->set_transform_id(transform_id);
-}
-
-void ScrollNode::FromProtobuf(const proto::TreeNode& proto) {
-  id = proto.id();
-  parent_id = proto.parent_id();
-  owner_id = proto.owner_id();
-
-  DCHECK(proto.has_scroll_node_data());
-  const proto::ScrollNodeData& data = proto.scroll_node_data();
-
-  scrollable = data.scrollable();
-  main_thread_scrolling_reasons = data.main_thread_scrolling_reasons();
-  contains_non_fast_scrollable_region =
-      data.contains_non_fast_scrollable_region();
-  scroll_clip_layer_bounds = ProtoToSize(data.scroll_clip_layer_bounds());
-  bounds = ProtoToSize(data.bounds());
-  max_scroll_offset_affected_by_page_scale =
-      data.max_scroll_offset_affected_by_page_scale();
-  is_inner_viewport_scroll_layer = data.is_inner_viewport_scroll_layer();
-  is_outer_viewport_scroll_layer = data.is_outer_viewport_scroll_layer();
-  offset_to_transform_parent =
-      ProtoToVector2dF(data.offset_to_transform_parent());
-  should_flatten = data.should_flatten();
-  user_scrollable_horizontal = data.user_scrollable_horizontal();
-  user_scrollable_vertical = data.user_scrollable_vertical();
-  element_id.FromProtobuf(data.element_id());
-  transform_id = data.transform_id();
 }
 
 void ScrollNode::AsValueInto(base::trace_event::TracedValue* value) const {

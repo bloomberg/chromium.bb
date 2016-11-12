@@ -21,10 +21,6 @@ namespace cc {
 
 class RenderSurfaceImpl;
 
-namespace proto {
-class TreeNode;
-}  // namespace proto
-
 struct CC_EXPORT EffectNode {
   EffectNode();
   EffectNode(const EffectNode& other);
@@ -72,8 +68,6 @@ struct CC_EXPORT EffectNode {
 
   bool operator==(const EffectNode& other) const;
 
-  void ToProtobuf(proto::TreeNode* proto) const;
-  void FromProtobuf(const proto::TreeNode& proto);
   void AsValueInto(base::trace_event::TracedValue* value) const;
 };
 

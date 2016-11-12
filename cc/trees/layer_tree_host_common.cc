@@ -15,8 +15,6 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/layer_iterator.h"
-#include "cc/proto/begin_main_frame_and_commit_state.pb.h"
-#include "cc/proto/gfx_conversions.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host.h"
@@ -172,18 +170,6 @@ bool LayerTreeHostCommon::ScrollUpdateInfo::operator==(
   return layer_id == other.layer_id && scroll_delta == other.scroll_delta;
 }
 
-void LayerTreeHostCommon::ScrollUpdateInfo::ToProtobuf(
-    proto::ScrollUpdateInfo* proto) const {
-  proto->set_layer_id(layer_id);
-  Vector2dToProto(scroll_delta, proto->mutable_scroll_delta());
-}
-
-void LayerTreeHostCommon::ScrollUpdateInfo::FromProtobuf(
-    const proto::ScrollUpdateInfo& proto) {
-  layer_id = proto.layer_id();
-  scroll_delta = ProtoToVector2d(proto.scroll_delta());
-}
-
 LayerTreeHostCommon::ScrollbarsUpdateInfo::ScrollbarsUpdateInfo()
     : layer_id(Layer::INVALID_ID), hidden(true) {}
 
@@ -196,18 +182,6 @@ bool LayerTreeHostCommon::ScrollbarsUpdateInfo::operator==(
   return layer_id == other.layer_id && hidden == other.hidden;
 }
 
-void LayerTreeHostCommon::ScrollbarsUpdateInfo::ToProtobuf(
-    proto::ScrollbarsUpdateInfo* proto) const {
-  proto->set_layer_id(layer_id);
-  proto->set_hidden(hidden);
-}
-
-void LayerTreeHostCommon::ScrollbarsUpdateInfo::FromProtobuf(
-    const proto::ScrollbarsUpdateInfo& proto) {
-  layer_id = proto.layer_id();
-  hidden = proto.hidden();
-}
-
 ReflectedMainFrameState::ReflectedMainFrameState() : page_scale_delta(1.0f) {}
 
 ReflectedMainFrameState::~ReflectedMainFrameState() = default;
@@ -217,33 +191,6 @@ ScrollAndScaleSet::ScrollAndScaleSet()
 }
 
 ScrollAndScaleSet::~ScrollAndScaleSet() {}
-
-bool ScrollAndScaleSet::EqualsForTesting(const ScrollAndScaleSet& other) const {
-  return scrolls == other.scrolls &&
-         page_scale_delta == other.page_scale_delta &&
-         elastic_overscroll_delta == other.elastic_overscroll_delta &&
-         top_controls_delta == other.top_controls_delta;
-}
-
-void ScrollAndScaleSet::ToProtobuf(proto::ScrollAndScaleSet* proto) const {
-  for (const auto& scroll : scrolls)
-    scroll.ToProtobuf(proto->add_scrolls());
-  proto->set_page_scale_delta(page_scale_delta);
-  Vector2dFToProto(elastic_overscroll_delta,
-                   proto->mutable_elastic_overscroll_delta());
-  proto->set_top_controls_delta(top_controls_delta);
-}
-
-void ScrollAndScaleSet::FromProtobuf(const proto::ScrollAndScaleSet& proto) {
-  DCHECK_EQ(scrolls.size(), 0u);
-  for (int i = 0; i < proto.scrolls_size(); ++i) {
-    scrolls.push_back(LayerTreeHostCommon::ScrollUpdateInfo());
-    scrolls[i].FromProtobuf(proto.scrolls(i));
-  }
-  page_scale_delta = proto.page_scale_delta();
-  elastic_overscroll_delta = ProtoToVector2dF(proto.elastic_overscroll_delta());
-  top_controls_delta = proto.top_controls_delta();
-}
 
 static inline void SetMaskLayersAreDrawnRenderSurfaceLayerListMembers(
     RenderSurfaceImpl* surface,

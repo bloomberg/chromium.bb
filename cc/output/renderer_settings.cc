@@ -7,7 +7,6 @@
 #include <limits>
 
 #include "base/logging.h"
-#include "cc/proto/renderer_settings.pb.h"
 #include "cc/resources/platform_color.h"
 
 namespace cc {
@@ -31,61 +30,6 @@ RendererSettings::RendererSettings()
 RendererSettings::RendererSettings(const RendererSettings& other) = default;
 
 RendererSettings::~RendererSettings() {
-}
-
-void RendererSettings::ToProtobuf(proto::RendererSettings* proto) const {
-  proto->set_allow_antialiasing(allow_antialiasing);
-  proto->set_force_antialiasing(force_antialiasing);
-  proto->set_force_blending_with_shaders(force_blending_with_shaders);
-  proto->set_partial_swap_enabled(partial_swap_enabled);
-  proto->set_finish_rendering_on_resize(finish_rendering_on_resize);
-  proto->set_should_clear_root_render_pass(should_clear_root_render_pass);
-  proto->set_disable_display_vsync(disable_display_vsync);
-  proto->set_release_overlay_resources_after_gpu_query(
-      release_overlay_resources_after_gpu_query);
-  proto->set_refresh_rate(refresh_rate);
-  proto->set_highp_threshold_min(highp_threshold_min);
-  proto->set_texture_id_allocation_chunk_size(texture_id_allocation_chunk_size);
-  proto->set_use_gpu_memory_buffer_resources(use_gpu_memory_buffer_resources);
-  proto->set_preferred_tile_format(preferred_tile_format);
-
-  for (const auto& target : buffer_to_texture_target_map) {
-    auto* proto_target = proto->add_buffer_to_texture_target();
-    proto_target->set_buffer_usage(static_cast<uint32_t>(target.first.first));
-    proto_target->set_buffer_format(static_cast<uint32_t>(target.first.second));
-    proto_target->set_texture_target(target.second);
-  }
-}
-
-void RendererSettings::FromProtobuf(const proto::RendererSettings& proto) {
-  allow_antialiasing = proto.allow_antialiasing();
-  force_antialiasing = proto.force_antialiasing();
-  force_blending_with_shaders = proto.force_blending_with_shaders();
-  partial_swap_enabled = proto.partial_swap_enabled();
-  finish_rendering_on_resize = proto.finish_rendering_on_resize();
-  should_clear_root_render_pass = proto.should_clear_root_render_pass();
-  disable_display_vsync = proto.disable_display_vsync();
-  release_overlay_resources_after_gpu_query =
-      proto.release_overlay_resources_after_gpu_query();
-  refresh_rate = proto.refresh_rate();
-  highp_threshold_min = proto.highp_threshold_min();
-  texture_id_allocation_chunk_size = proto.texture_id_allocation_chunk_size();
-  use_gpu_memory_buffer_resources = proto.use_gpu_memory_buffer_resources();
-
-  DCHECK_LE(proto.preferred_tile_format(),
-            static_cast<uint32_t>(RESOURCE_FORMAT_MAX));
-  preferred_tile_format =
-      static_cast<ResourceFormat>(proto.preferred_tile_format());
-
-  // |buffer_to_texture_target_map| may contain existing values, so clear first.
-  buffer_to_texture_target_map.clear();
-  for (const auto& proto_target : proto.buffer_to_texture_target()) {
-    buffer_to_texture_target_map.insert(BufferToTextureTargetMap::value_type(
-        BufferToTextureTargetKey(
-            static_cast<gfx::BufferUsage>(proto_target.buffer_usage()),
-            static_cast<gfx::BufferFormat>(proto_target.buffer_format())),
-        proto_target.texture_target()));
-  }
 }
 
 bool RendererSettings::operator==(const RendererSettings& other) const {

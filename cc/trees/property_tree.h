@@ -28,14 +28,6 @@ class TracedValue;
 
 namespace cc {
 
-namespace proto {
-class PropertyTree;
-class PropertyTrees;
-class ScrollNodeData;
-class StickyPositionNodeData;
-class TreeNode;
-}  // namespace proto
-
 class CopyOutputRequest;
 class LayerTreeImpl;
 class ScrollState;
@@ -45,13 +37,6 @@ struct ScrollAndScaleSet;
 struct ScrollNode;
 struct TransformNode;
 struct TransformCachedNodeData;
-
-// ------------------------------*IMPORTANT*---------------------------------
-// Each class declared here has a corresponding proto defined in
-// cc/proto/property_tree.proto. When making any changes to a class structure
-// including addition/deletion/updation of a field, please also make the
-// change to its proto and the ToProtobuf and FromProtobuf methods for that
-// class.
 
 typedef SyncedProperty<AdditionGroup<gfx::ScrollOffset>> SyncedScrollOffset;
 
@@ -106,10 +91,6 @@ class CC_EXPORT PropertyTree {
 
   int next_available_id() const { return static_cast<int>(size()); }
 
-  void ToProtobuf(proto::PropertyTree* proto) const;
-  void FromProtobuf(const proto::PropertyTree& proto,
-                    std::unordered_map<int, int>* node_id_to_index_map);
-
   void SetPropertyTrees(PropertyTrees* property_trees) {
     property_trees_ = property_trees;
   }
@@ -135,8 +116,6 @@ struct StickyPositionNodeData {
   gfx::Vector2dF main_thread_offset;
 
   StickyPositionNodeData() : scroll_ancestor(-1) {}
-  void ToProtobuf(proto::StickyPositionNodeData* proto) const;
-  void FromProtobuf(const proto::StickyPositionNodeData& proto);
 };
 
 class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
@@ -256,10 +235,6 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
 
   StickyPositionNodeData* StickyPositionData(int node_id);
 
-  void ToProtobuf(proto::PropertyTree* proto) const;
-  void FromProtobuf(const proto::PropertyTree& proto,
-                    std::unordered_map<int, int>* node_id_to_index_map);
-
   // Computes the combined transform between |source_id| and |dest_id|. These
   // two nodes must be on the same ancestor chain.
   void CombineTransformsBetween(int source_id,
@@ -312,10 +287,6 @@ class CC_EXPORT ClipTree final : public PropertyTree<ClipNode> {
 
   void SetViewportClip(gfx::RectF viewport_rect);
   gfx::RectF ViewportClip() const;
-
-  void ToProtobuf(proto::PropertyTree* proto) const;
-  void FromProtobuf(const proto::PropertyTree& proto,
-                    std::unordered_map<int, int>* node_id_to_index_map);
 };
 
 class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
@@ -360,10 +331,6 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
 
   void ResetChangeTracking();
 
-  void ToProtobuf(proto::PropertyTree* proto) const;
-  void FromProtobuf(const proto::PropertyTree& proto,
-                    std::unordered_map<int, int>* node_id_to_index_map);
-
  private:
   void UpdateOpacities(EffectNode* node, EffectNode* parent_node);
   void UpdateIsDrawn(EffectNode* node, EffectNode* parent_node);
@@ -384,10 +351,6 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
 
   ScrollTree& operator=(const ScrollTree& from);
   bool operator==(const ScrollTree& other) const;
-
-  void ToProtobuf(proto::PropertyTree* proto) const;
-  void FromProtobuf(const proto::PropertyTree& proto,
-                    std::unordered_map<int, int>* node_id_to_index_map);
 
   void clear();
 
@@ -554,9 +517,6 @@ class CC_EXPORT PropertyTrees final {
 
   bool operator==(const PropertyTrees& other) const;
   PropertyTrees& operator=(const PropertyTrees& from);
-
-  void ToProtobuf(proto::PropertyTrees* proto) const;
-  void FromProtobuf(const proto::PropertyTrees& proto);
 
   std::unordered_map<int, int> transform_id_to_index_map;
   std::unordered_map<int, int> effect_id_to_index_map;

@@ -7,8 +7,6 @@ syntax = "proto2";
 option optimize_for = LITE_RUNTIME;
 
 import "client_state_update.proto";
-import "compositor_message_to_impl.proto";
-import "compositor_message_to_main.proto";
 import "layer_tree_host.proto";
 
 package cc.proto;
@@ -39,8 +37,4 @@ message CompositorMessage {
   // state on the engine, the ack will always be bundled with the resulting
   // frame update.
   optional bool client_state_update_ack = 6;
-
-  // One of these is set based on where the message is going to.
-  optional CompositorMessageToMain to_main = 1;
-  optional CompositorMessageToImpl to_impl = 2;
 }

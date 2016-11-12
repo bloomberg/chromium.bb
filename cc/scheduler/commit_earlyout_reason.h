@@ -10,24 +10,12 @@
 
 namespace cc {
 
-namespace proto {
-class CommitEarlyOutReason;
-}
-
 enum class CommitEarlyOutReason {
   ABORTED_COMPOSITOR_FRAME_SINK_LOST,
   ABORTED_NOT_VISIBLE,
   ABORTED_DEFERRED_COMMIT,
   FINISHED_NO_UPDATES,
 };
-
-// Please update the To/From Protobuf methods for any updates made to
-// CommitEarlyOutReason enum.
-CC_EXPORT CommitEarlyOutReason
-CommitEarlyOutReasonFromProtobuf(const proto::CommitEarlyOutReason& proto);
-CC_EXPORT void CommitEarlyOutReasonToProtobuf(
-    CommitEarlyOutReason reason,
-    proto::CommitEarlyOutReason* proto);
 
 inline const char* CommitEarlyOutReasonToString(CommitEarlyOutReason reason) {
   switch (reason) {

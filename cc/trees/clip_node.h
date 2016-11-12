@@ -16,10 +16,6 @@ class TracedValue;
 
 namespace cc {
 
-namespace proto {
-class TreeNode;
-}  // namespace proto
-
 struct CC_EXPORT ClipNode {
   ClipNode();
   ClipNode(const ClipNode& other);
@@ -82,8 +78,6 @@ struct CC_EXPORT ClipNode {
 
   bool operator==(const ClipNode& other) const;
 
-  void ToProtobuf(proto::TreeNode* proto) const;
-  void FromProtobuf(const proto::TreeNode& proto);
   void AsValueInto(base::trace_event::TracedValue* value) const;
 };
 

@@ -8,14 +8,12 @@ package cc.proto;
 
 import "layer.proto";
 import "layer_selection_bound.proto";
-import "property_tree.proto";
 import "size.proto";
 import "vector2df.proto";
 
 option optimize_for = LITE_RUNTIME;
 
 message LayerTree {
-  // LayerTree::Inputs ----------------------------------------
   optional LayerNode root_layer = 27;
   optional int32 overscroll_elasticity_layer_id = 3;
   optional int32 page_scale_layer_id = 4;
@@ -43,15 +41,4 @@ message LayerTree {
   optional uint32 touch_start_or_move_event_listener_properties = 24;
   optional uint32 wheel_event_listener_properties = 25;
   optional uint32 touch_end_or_cancel_event_listener_properties = 26;
-
-  // ------------------------------------------------------------
-
-  // TODO(khushalsagar): Remove these when crbug.com/648442
-  repeated int32 layers_that_should_push_properties = 1;
-  optional bool in_paint_layer_contents = 2;
-  optional bool needs_full_tree_sync = 7;
-  optional bool needs_meta_info_recomputation = 8;
-  optional int32 hud_layer_id = 9;
-  optional PropertyTrees property_trees = 30;
-  optional Vector2dF elastic_overscroll = 31;
 }

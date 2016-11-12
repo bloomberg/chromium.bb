@@ -13,8 +13,6 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/proto/gfx_conversions.h"
-#include "cc/proto/property_tree.pb.h"
-#include "cc/proto/synced_property_conversions.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host_common.h"
@@ -86,37 +84,6 @@ bool PropertyTree<T>::operator==(const PropertyTree<T>& other) const {
 }
 
 template <typename T>
-void PropertyTree<T>::ToProtobuf(proto::PropertyTree* proto) const {
-  DCHECK_EQ(0, proto->nodes_size());
-  for (const auto& node : nodes_)
-    node.ToProtobuf(proto->add_nodes());
-  proto->set_needs_update(needs_update_);
-}
-
-template <typename T>
-void PropertyTree<T>::FromProtobuf(
-    const proto::PropertyTree& proto,
-    std::unordered_map<int, int>* node_id_to_index_map) {
-  // Verify that the property tree is empty.
-  DCHECK_EQ(static_cast<int>(nodes_.size()), 1);
-  DCHECK_EQ(back()->id, kRootNodeId);
-  DCHECK_EQ(back()->parent_id, kInvalidNodeId);
-
-  // Add the first node.
-  DCHECK_GT(proto.nodes_size(), 0);
-  nodes_.back().FromProtobuf(proto.nodes(0));
-
-  DCHECK(!node_id_to_index_map || (*node_id_to_index_map).empty());
-  for (int i = 1; i < proto.nodes_size(); ++i) {
-    nodes_.push_back(T());
-    nodes_.back().FromProtobuf(proto.nodes(i));
-    (*node_id_to_index_map)[nodes_.back().owner_id] = nodes_.back().id;
-  }
-
-  needs_update_ = proto.needs_update();
-}
-
-template <typename T>
 void PropertyTree<T>::AsValueInto(base::trace_event::TracedValue* value) const {
   value->BeginArray("nodes");
   for (const auto& node : nodes_) {
@@ -131,20 +98,6 @@ template class PropertyTree<TransformNode>;
 template class PropertyTree<ClipNode>;
 template class PropertyTree<EffectNode>;
 template class PropertyTree<ScrollNode>;
-
-void StickyPositionNodeData::ToProtobuf(
-    proto::StickyPositionNodeData* proto) const {
-  proto->set_scroll_ancestor(scroll_ancestor);
-  constraints.ToProtobuf(proto->mutable_constraints());
-  Vector2dFToProto(main_thread_offset, proto->mutable_main_thread_offset());
-}
-
-void StickyPositionNodeData::FromProtobuf(
-    const proto::StickyPositionNodeData& proto) {
-  scroll_ancestor = proto.scroll_ancestor();
-  constraints.FromProtobuf(proto.constraints());
-  main_thread_offset = ProtoToVector2dF(proto.main_thread_offset());
-}
 
 int TransformTree::Insert(const TransformNode& tree_node, int parent_id) {
   int node_id = PropertyTree<TransformNode>::Insert(tree_node, parent_id);
@@ -793,73 +746,6 @@ StickyPositionNodeData* TransformTree::StickyPositionData(int node_id) {
   return &sticky_position_data_[node->sticky_position_constraint_id];
 }
 
-void TransformTree::ToProtobuf(proto::PropertyTree* proto) const {
-  DCHECK(!proto->has_property_type());
-  proto->set_property_type(proto::PropertyTree::Transform);
-
-  PropertyTree::ToProtobuf(proto);
-  proto::TransformTreeData* data = proto->mutable_transform_tree_data();
-
-  data->set_source_to_parent_updates_allowed(source_to_parent_updates_allowed_);
-  data->set_page_scale_factor(page_scale_factor_);
-  data->set_device_scale_factor(device_scale_factor_);
-  data->set_device_transform_scale_factor(device_transform_scale_factor_);
-
-  for (auto i : nodes_affected_by_inner_viewport_bounds_delta_)
-    data->add_nodes_affected_by_inner_viewport_bounds_delta(i);
-
-  for (auto i : nodes_affected_by_outer_viewport_bounds_delta_)
-    data->add_nodes_affected_by_outer_viewport_bounds_delta(i);
-
-  for (int i = 0; i < static_cast<int>(cached_data_.size()); ++i)
-    cached_data_[i].ToProtobuf(data->add_cached_data());
-
-  for (int i = 0; i < static_cast<int>(sticky_position_data_.size()); ++i)
-    sticky_position_data_[i].ToProtobuf(data->add_sticky_position_data());
-}
-
-void TransformTree::FromProtobuf(
-    const proto::PropertyTree& proto,
-    std::unordered_map<int, int>* node_id_to_index_map) {
-  DCHECK(proto.has_property_type());
-  DCHECK_EQ(proto.property_type(), proto::PropertyTree::Transform);
-
-  PropertyTree::FromProtobuf(proto, node_id_to_index_map);
-  const proto::TransformTreeData& data = proto.transform_tree_data();
-
-  source_to_parent_updates_allowed_ = data.source_to_parent_updates_allowed();
-  page_scale_factor_ = data.page_scale_factor();
-  device_scale_factor_ = data.device_scale_factor();
-  device_transform_scale_factor_ = data.device_transform_scale_factor();
-
-  DCHECK(nodes_affected_by_inner_viewport_bounds_delta_.empty());
-  for (int i = 0; i < data.nodes_affected_by_inner_viewport_bounds_delta_size();
-       ++i) {
-    nodes_affected_by_inner_viewport_bounds_delta_.push_back(
-        data.nodes_affected_by_inner_viewport_bounds_delta(i));
-  }
-
-  DCHECK(nodes_affected_by_outer_viewport_bounds_delta_.empty());
-  for (int i = 0; i < data.nodes_affected_by_outer_viewport_bounds_delta_size();
-       ++i) {
-    nodes_affected_by_outer_viewport_bounds_delta_.push_back(
-        data.nodes_affected_by_outer_viewport_bounds_delta(i));
-  }
-
-  DCHECK_EQ(static_cast<int>(cached_data_.size()), 1);
-  cached_data_.back().FromProtobuf(data.cached_data(0));
-  for (int i = 1; i < data.cached_data_size(); ++i) {
-    cached_data_.push_back(TransformCachedNodeData());
-    cached_data_.back().FromProtobuf(data.cached_data(i));
-  }
-
-  DCHECK(static_cast<int>(sticky_position_data_.empty()));
-  for (int i = 0; i < data.sticky_position_data_size(); ++i) {
-    sticky_position_data_.push_back(StickyPositionNodeData());
-    sticky_position_data_.back().FromProtobuf(data.sticky_position_data(i));
-  }
-}
-
 EffectTree::EffectTree() {}
 
 EffectTree::~EffectTree() {}
@@ -1133,22 +1019,6 @@ bool ClipTree::operator==(const ClipTree& other) const {
   return PropertyTree::operator==(other);
 }
 
-void ClipTree::ToProtobuf(proto::PropertyTree* proto) const {
-  DCHECK(!proto->has_property_type());
-  proto->set_property_type(proto::PropertyTree::Clip);
-
-  PropertyTree::ToProtobuf(proto);
-}
-
-void ClipTree::FromProtobuf(
-    const proto::PropertyTree& proto,
-    std::unordered_map<int, int>* node_id_to_index_map) {
-  DCHECK(proto.has_property_type());
-  DCHECK_EQ(proto.property_type(), proto::PropertyTree::Clip);
-
-  PropertyTree::FromProtobuf(proto, node_id_to_index_map);
-}
-
 EffectTree& EffectTree::operator=(const EffectTree& from) {
   PropertyTree::operator=(from);
   mask_layer_ids_ = from.mask_layer_ids_;
@@ -1160,32 +1030,6 @@ EffectTree& EffectTree::operator=(const EffectTree& from) {
 bool EffectTree::operator==(const EffectTree& other) const {
   return PropertyTree::operator==(other) &&
          mask_layer_ids_ == other.mask_layer_ids_;
-}
-
-void EffectTree::ToProtobuf(proto::PropertyTree* proto) const {
-  DCHECK(!proto->has_property_type());
-  proto->set_property_type(proto::PropertyTree::Effect);
-
-  PropertyTree::ToProtobuf(proto);
-  proto::EffectTreeData* data = proto->mutable_effect_tree_data();
-
-  for (auto i : mask_layer_ids_)
-    data->add_mask_layer_ids(i);
-}
-
-void EffectTree::FromProtobuf(
-    const proto::PropertyTree& proto,
-    std::unordered_map<int, int>* node_id_to_index_map) {
-  DCHECK(proto.has_property_type());
-  DCHECK_EQ(proto.property_type(), proto::PropertyTree::Effect);
-
-  PropertyTree::FromProtobuf(proto, node_id_to_index_map);
-  const proto::EffectTreeData& data = proto.effect_tree_data();
-
-  DCHECK(mask_layer_ids_.empty());
-  for (int i = 0; i < data.mask_layer_ids_size(); ++i) {
-    mask_layer_ids_.push_back(data.mask_layer_ids(i));
-  }
 }
 
 ScrollTree::ScrollTree()
@@ -1224,48 +1068,6 @@ bool ScrollTree::operator==(const ScrollTree& other) const {
       currently_scrolling_node_id_ == other.currently_scrolling_node_id_;
 
   return PropertyTree::operator==(other) && is_currently_scrolling_node_equal;
-}
-
-void ScrollTree::ToProtobuf(proto::PropertyTree* proto) const {
-  DCHECK(!proto->has_property_type());
-  proto->set_property_type(proto::PropertyTree::Scroll);
-
-  PropertyTree::ToProtobuf(proto);
-  proto::ScrollTreeData* data = proto->mutable_scroll_tree_data();
-
-  data->set_currently_scrolling_node_id(currently_scrolling_node_id_);
-  for (auto i : layer_id_to_scroll_offset_map_) {
-    data->add_layer_id_to_scroll_offset_map();
-    proto::ScrollOffsetMapEntry* entry =
-        data->mutable_layer_id_to_scroll_offset_map(
-            data->layer_id_to_scroll_offset_map_size() - 1);
-    entry->set_layer_id(i.first);
-    SyncedScrollOffsetToProto(*i.second.get(), entry->mutable_scroll_offset());
-  }
-}
-
-void ScrollTree::FromProtobuf(
-    const proto::PropertyTree& proto,
-    std::unordered_map<int, int>* node_id_to_index_map) {
-  DCHECK(proto.has_property_type());
-  DCHECK_EQ(proto.property_type(), proto::PropertyTree::Scroll);
-
-  PropertyTree::FromProtobuf(proto, node_id_to_index_map);
-  const proto::ScrollTreeData& data = proto.scroll_tree_data();
-
-  currently_scrolling_node_id_ = data.currently_scrolling_node_id();
-
-  // TODO(khushalsagar): This should probably be removed if the copy constructor
-  // for ScrollTree copies the |layer_id_to_scroll_offset_map_| as well.
-  layer_id_to_scroll_offset_map_.clear();
-  for (int i = 0; i < data.layer_id_to_scroll_offset_map_size(); ++i) {
-    const proto::ScrollOffsetMapEntry entry =
-        data.layer_id_to_scroll_offset_map(i);
-    layer_id_to_scroll_offset_map_[entry.layer_id()] = new SyncedScrollOffset();
-    ProtoToSyncedScrollOffset(
-        entry.scroll_offset(),
-        layer_id_to_scroll_offset_map_[entry.layer_id()].get());
-  }
 }
 
 void ScrollTree::clear() {
@@ -1701,52 +1503,6 @@ PropertyTrees& PropertyTrees::operator=(const PropertyTrees& from) {
   scroll_tree.SetPropertyTrees(this);
   ResetCachedData();
   return *this;
-}
-
-void PropertyTrees::ToProtobuf(proto::PropertyTrees* proto) const {
-  // TODO(khushalsagar): Add support for sending diffs when serializaing
-  // property trees. See crbug/555370.
-  transform_tree.ToProtobuf(proto->mutable_transform_tree());
-  effect_tree.ToProtobuf(proto->mutable_effect_tree());
-  clip_tree.ToProtobuf(proto->mutable_clip_tree());
-  scroll_tree.ToProtobuf(proto->mutable_scroll_tree());
-  proto->set_needs_rebuild(needs_rebuild);
-  proto->set_changed(changed);
-  proto->set_full_tree_damaged(full_tree_damaged);
-  proto->set_non_root_surfaces_enabled(non_root_surfaces_enabled);
-  proto->set_is_main_thread(is_main_thread);
-  proto->set_is_active(is_active);
-
-  // TODO(khushalsagar): Consider using the sequence number to decide if
-  // property trees need to be serialized again for a commit. See crbug/555370.
-  proto->set_sequence_number(sequence_number);
-
-  for (auto i : always_use_active_tree_opacity_effect_ids)
-    proto->add_always_use_active_tree_opacity_effect_ids(i);
-}
-
-// static
-void PropertyTrees::FromProtobuf(const proto::PropertyTrees& proto) {
-  transform_tree.FromProtobuf(proto.transform_tree(),
-                              &transform_id_to_index_map);
-  effect_tree.FromProtobuf(proto.effect_tree(), &effect_id_to_index_map);
-  clip_tree.FromProtobuf(proto.clip_tree(), &clip_id_to_index_map);
-  scroll_tree.FromProtobuf(proto.scroll_tree(), &scroll_id_to_index_map);
-
-  needs_rebuild = proto.needs_rebuild();
-  changed = proto.changed();
-  full_tree_damaged = proto.full_tree_damaged();
-  non_root_surfaces_enabled = proto.non_root_surfaces_enabled();
-  sequence_number = proto.sequence_number();
-  is_main_thread = proto.is_main_thread();
-  is_active = proto.is_active();
-
-  transform_tree.SetPropertyTrees(this);
-  effect_tree.SetPropertyTrees(this);
-  clip_tree.SetPropertyTrees(this);
-  scroll_tree.SetPropertyTrees(this);
-  for (auto i : proto.always_use_active_tree_opacity_effect_ids())
-    always_use_active_tree_opacity_effect_ids.push_back(i);
 }
 
 void PropertyTrees::clear() {

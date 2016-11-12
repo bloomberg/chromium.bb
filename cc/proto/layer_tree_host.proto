@@ -7,7 +7,6 @@ syntax = "proto2";
 import "display_item.proto";
 import "layer.proto";
 import "layer_tree.proto";
-import "layer_tree_debug_state.proto";
 
 package cc.proto;
 
@@ -29,15 +28,4 @@ message LayerTreeHost {
   optional LayerTree layer_tree = 36;
   optional LayerUpdate layer_updates = 28;
   optional SkPictures pictures = 38;
-
-  // TODO(khushalsagar): Remove these when crbug.com/648442.
-  optional int32 source_frame_number = 3;
-  optional int32 meta_information_sequence_number = 4;
-  optional LayerTreeDebugState debug_state = 8;
-  optional bool has_gpu_rasterization_trigger = 19;
-  optional bool content_is_suitable_for_gpu_rasterization = 20;
-  optional int32 id = 23;
-  optional bool next_commit_forces_redraw = 24;
-  optional uint32 surface_client_id = 31;
-  optional uint32 next_surface_sequence = 32;
 }

@@ -7,8 +7,6 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "cc/proto/gpu_conversions.h"
-#include "cc/proto/managed_memory_policy.pb.h"
 
 namespace cc {
 
@@ -43,21 +41,6 @@ bool ManagedMemoryPolicy::operator==(const ManagedMemoryPolicy& other) const {
 
 bool ManagedMemoryPolicy::operator!=(const ManagedMemoryPolicy& other) const {
   return !(*this == other);
-}
-
-void ManagedMemoryPolicy::ToProtobuf(proto::ManagedMemoryPolicy* proto) const {
-  proto->set_bytes_limit_when_visible(bytes_limit_when_visible);
-  proto->set_priority_cutoff_when_visible(
-      MemoryAllocationPriorityCutoffToProto(priority_cutoff_when_visible));
-  proto->set_num_resources_limit(num_resources_limit);
-}
-
-void ManagedMemoryPolicy::FromProtobuf(
-    const proto::ManagedMemoryPolicy& proto) {
-  bytes_limit_when_visible = proto.bytes_limit_when_visible();
-  priority_cutoff_when_visible = MemoryAllocationPriorityCutoffFromProto(
-      proto.priority_cutoff_when_visible());
-  num_resources_limit = proto.num_resources_limit();
 }
 
 // static
