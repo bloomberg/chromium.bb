@@ -191,8 +191,8 @@ def _Start(args, json_file_path, device):
   else:
     try:
       port_pairs = [(port_number, port_number)]
-      forwarder.Forwarder.Map(port_pairs, device)
       SetCommandFlag(device, args.engine_ip, port_number)
+      forwarder.Forwarder.Map(port_pairs, device)
       print "Blimp engine started"
       return engine_process
 
