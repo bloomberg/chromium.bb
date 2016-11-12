@@ -36,14 +36,14 @@ public class ChromeActionModeCallback implements ActionMode.Callback {
 
     @Override
     public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-        mTab.notifyContextualActionBarVisibilityChanged(true);
+        notifyContextualActionBarVisibilityChanged(true);
         mHelper.onCreateActionMode(mode, menu);
         return true;
     }
 
     @Override
     public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-        mTab.notifyContextualActionBarVisibilityChanged(true);
+        notifyContextualActionBarVisibilityChanged(true);
         return mHelper.onPrepareActionMode(mode, menu);
     }
 
@@ -63,7 +63,13 @@ public class ChromeActionModeCallback implements ActionMode.Callback {
     @Override
     public void onDestroyActionMode(ActionMode mode) {
         mHelper.onDestroyActionMode();
-        mTab.notifyContextualActionBarVisibilityChanged(false);
+        notifyContextualActionBarVisibilityChanged(false);
+    }
+
+    private void notifyContextualActionBarVisibilityChanged(boolean show) {
+        if (!mHelper.supportsFloatingActionMode()) {
+            mTab.notifyContextualActionBarVisibilityChanged(show);
+        }
     }
 
     private void search() {
