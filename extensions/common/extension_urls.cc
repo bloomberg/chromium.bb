@@ -68,7 +68,7 @@ GURL GetWebstoreSearchPageUrl(const std::string& query) {
 GURL GetWebstoreUpdateUrl() {
   extensions::ExtensionsClient* client = extensions::ExtensionsClient::Get();
   if (client)
-    return GURL(client->GetWebstoreUpdateURL());
+    return client->GetWebstoreUpdateURL();
   return GURL(kChromeWebstoreUpdateURL);
 }
 

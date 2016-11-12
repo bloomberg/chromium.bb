@@ -17,7 +17,7 @@ namespace extension_urls {
 
 // This returns the compile-time constant webstore update url specific to
 // Chrome. Usually you should prefer using GetWebstoreUpdateUrl.
-GURL GetDefaultWebstoreUpdateUrl();
+const char* GetDefaultWebstoreUpdateUrl();
 
 // Field to use with webstore URL for tracking launch source.
 extern const char kWebstoreSourceField[];

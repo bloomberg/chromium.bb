@@ -14,6 +14,7 @@
 #include "chrome/common/extensions/permissions/chrome_permission_message_provider.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/permissions/extensions_api_permissions.h"
+#include "url/gurl.h"
 
 namespace extensions {
 
@@ -47,7 +48,7 @@ class ChromeExtensionsClient : public ExtensionsClient {
   bool ShouldSuppressFatalErrors() const override;
   void RecordDidSuppressFatalError() override;
   std::string GetWebstoreBaseURL() const override;
-  std::string GetWebstoreUpdateURL() const override;
+  const GURL& GetWebstoreUpdateURL() const override;
   bool IsBlacklistUpdateURL(const GURL& url) const override;
   std::set<base::FilePath> GetBrowserImagePaths(
       const Extension* extension) override;
@@ -66,6 +67,9 @@ class ChromeExtensionsClient : public ExtensionsClient {
   // Note: Component extensions have this right implicitly and do not need to be
   // added to this list.
   ScriptingWhitelist scripting_whitelist_;
+
+  // Mutable to allow caching in a const method.
+  mutable GURL webstore_update_url_;
 
   friend struct base::DefaultLazyInstanceTraits<ChromeExtensionsClient>;
 

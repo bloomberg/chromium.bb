@@ -15,8 +15,8 @@ const char kGalleryUpdateHttpsUrl[] =
 
 }  // namespace
 
-GURL GetDefaultWebstoreUpdateUrl() {
-  return GURL(kGalleryUpdateHttpsUrl);
+const char* GetDefaultWebstoreUpdateUrl() {
+  return kGalleryUpdateHttpsUrl;
 }
 
 const char kWebstoreSourceField[] = "utm_source";
