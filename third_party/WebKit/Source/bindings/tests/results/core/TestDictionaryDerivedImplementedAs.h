@@ -9,7 +9,6 @@
 #ifndef TestDictionaryDerivedImplementedAs_h
 #define TestDictionaryDerivedImplementedAs_h
 
-#include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/StringOrDouble.h"
 #include "bindings/tests/idls/core/TestDictionary.h"
 #include "core/CoreExport.h"
@@ -25,21 +24,21 @@ class CORE_EXPORT TestDictionaryDerivedImplementedAs : public TestDictionary {
   TestDictionaryDerivedImplementedAs();
   virtual ~TestDictionaryDerivedImplementedAs();
 
-  bool hasDerivedStringMember() const { return !m_derivedStringMember.isNull(); }
-  String derivedStringMember() const { return m_derivedStringMember; }
-  void setDerivedStringMember(String value) { m_derivedStringMember = value; }
+  bool hasDerivedStringMember() const;
+  String derivedStringMember() const;
+  void setDerivedStringMember(String);
 
-  bool hasDerivedStringMemberWithDefault() const { return !m_derivedStringMemberWithDefault.isNull(); }
-  String derivedStringMemberWithDefault() const { return m_derivedStringMemberWithDefault; }
-  void setDerivedStringMemberWithDefault(String value) { m_derivedStringMemberWithDefault = value; }
+  bool hasDerivedStringMemberWithDefault() const;
+  String derivedStringMemberWithDefault() const;
+  void setDerivedStringMemberWithDefault(String);
 
-  bool hasRequiredLongMember() const { return !m_requiredLongMember.isNull(); }
-  int requiredLongMember() const { return m_requiredLongMember.get(); }
-  void setRequiredLongMember(int value) { m_requiredLongMember = value; }
+  bool hasRequiredLongMember() const;
+  int requiredLongMember() const;
+  void setRequiredLongMember(int);
 
-  bool hasStringOrDoubleSequenceMember() const { return !m_stringOrDoubleSequenceMember.isNull(); }
-  const HeapVector<StringOrDouble>& stringOrDoubleSequenceMember() const { return m_stringOrDoubleSequenceMember.get(); }
-  void setStringOrDoubleSequenceMember(const HeapVector<StringOrDouble>& value) { m_stringOrDoubleSequenceMember = value; }
+  bool hasStringOrDoubleSequenceMember() const;
+  const HeapVector<StringOrDouble>& stringOrDoubleSequenceMember() const;
+  void setStringOrDoubleSequenceMember(const HeapVector<StringOrDouble>&);
 
   v8::Local<v8::Value> toV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
   DECLARE_VIRTUAL_TRACE();
@@ -47,8 +46,10 @@ class CORE_EXPORT TestDictionaryDerivedImplementedAs : public TestDictionary {
  private:
   String m_derivedStringMember;
   String m_derivedStringMemberWithDefault;
-  Nullable<int> m_requiredLongMember;
-  Nullable<HeapVector<StringOrDouble>> m_stringOrDoubleSequenceMember;
+  bool m_hasRequiredLongMember = false;
+  int m_requiredLongMember;
+  bool m_hasStringOrDoubleSequenceMember = false;
+  HeapVector<StringOrDouble> m_stringOrDoubleSequenceMember;
 
   friend class V8TestDictionaryDerivedImplementedAs;
 };

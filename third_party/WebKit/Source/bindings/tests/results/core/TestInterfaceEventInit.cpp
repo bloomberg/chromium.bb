@@ -15,6 +15,16 @@ TestInterfaceEventInit::TestInterfaceEventInit() {
 
 TestInterfaceEventInit::~TestInterfaceEventInit() {}
 
+bool TestInterfaceEventInit::hasStringMember() const {
+  return !m_stringMember.isNull();
+}
+String TestInterfaceEventInit::stringMember() const {
+  return m_stringMember;
+}
+void TestInterfaceEventInit::setStringMember(String value) {
+  m_stringMember = value;
+}
+
 DEFINE_TRACE(TestInterfaceEventInit) {
   EventInit::trace(visitor);
 }

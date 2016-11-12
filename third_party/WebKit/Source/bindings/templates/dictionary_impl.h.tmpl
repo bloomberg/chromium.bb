@@ -18,11 +18,11 @@ class {{exported}}{{cpp_class}}{% if parent_cpp_class %} : public {{parent_cpp_c
   virtual ~{{cpp_class}}();
 
   {% for member in members %}
-  bool {{member.has_method_name}}() const { return {{member.has_method_expression}}; }
-  {{member.rvalue_cpp_type}} {{member.cpp_name}}() const { return {{member.getter_expression}}; }
-  void {{member.setter_name}}({{member.rvalue_cpp_type}} value) { m_{{member.cpp_name}} = value; }
+  bool {{member.has_method_name}}() const;
+  {{member.rvalue_cpp_type}} {{member.cpp_name}}() const;
+  void {{member.setter_name}}({{member.rvalue_cpp_type}});
   {% if member.null_setter_name %}
-  void {{member.null_setter_name}}() { m_{{member.cpp_name}} = {{member.member_cpp_type}}(); }
+  void {{member.null_setter_name}}();
   {% endif %}
 
   {% endfor %}
@@ -31,6 +31,9 @@ class {{exported}}{{cpp_class}}{% if parent_cpp_class %} : public {{parent_cpp_c
 
  private:
   {% for member in members %}
+  {% if member.nullable_indicator_name %}
+  bool {{member.nullable_indicator_name}} = false;
+  {% endif %}
   {{member.member_cpp_type}} m_{{member.cpp_name}};
   {% endfor %}
 

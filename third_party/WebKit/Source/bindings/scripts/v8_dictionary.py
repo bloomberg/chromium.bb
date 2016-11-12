@@ -188,13 +188,14 @@ def member_impl_context(member, interfaces_info, header_includes):
     idl_type = unwrap_nullable_if_needed(member.idl_type)
     cpp_name = v8_utilities.cpp_name(member)
 
-    def getter_expression():
-        if idl_type.impl_should_use_nullable_container:
-            return 'm_%s.get()' % cpp_name
-        return 'm_%s' % cpp_name
+    nullable_indicator_name = None
+    if not idl_type.cpp_type_has_null_value:
+        nullable_indicator_name = 'm_has' + cpp_name[0].upper() + cpp_name[1:]
 
     def has_method_expression():
-        if idl_type.impl_should_use_nullable_container or idl_type.is_enum or idl_type.is_string_type or idl_type.is_union_type:
+        if nullable_indicator_name:
+            return nullable_indicator_name
+        elif idl_type.is_enum or idl_type.is_string_type or idl_type.is_union_type:
             return '!m_%s.isNull()' % cpp_name
         elif idl_type.name in ['Any', 'Object']:
             return '!(m_{0}.isEmpty() || m_{0}.isNull() || m_{0}.isUndefined())'.format(cpp_name)
@@ -202,12 +203,6 @@ def member_impl_context(member, interfaces_info, header_includes):
             return '!m_%s.isUndefinedOrNull()' % cpp_name
         else:
             return 'm_%s' % cpp_name
-
-    def member_cpp_type():
-        member_cpp_type = idl_type.cpp_type_args(used_in_cpp_sequence=True)
-        if idl_type.impl_should_use_nullable_container:
-            return v8_types.cpp_template_type('Nullable', member_cpp_type)
-        return member_cpp_type
 
     cpp_default_value = None
     if member.default_value and not member.default_value.is_null:
@@ -217,13 +212,14 @@ def member_impl_context(member, interfaces_info, header_includes):
     return {
         'cpp_default_value': cpp_default_value,
         'cpp_name': cpp_name,
-        'getter_expression': getter_expression(),
+        'getter_expression': 'm_' + cpp_name,
         'has_method_expression': has_method_expression(),
         'has_method_name': has_method_name_for_dictionary_member(member),
         'is_nullable': idl_type.is_nullable,
         'is_traceable': idl_type.is_traceable,
-        'member_cpp_type': member_cpp_type(),
+        'member_cpp_type': idl_type.cpp_type_args(used_in_cpp_sequence=True),
         'null_setter_name': null_setter_name_for_dictionary_member(member),
+        'nullable_indicator_name': nullable_indicator_name,
         'rvalue_cpp_type': idl_type.cpp_type_args(used_as_rvalue_type=True),
         'setter_name': setter_name_for_dictionary_member(member),
     }

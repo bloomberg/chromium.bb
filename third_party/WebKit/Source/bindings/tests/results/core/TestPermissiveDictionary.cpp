@@ -15,6 +15,18 @@ TestPermissiveDictionary::TestPermissiveDictionary() {
 
 TestPermissiveDictionary::~TestPermissiveDictionary() {}
 
+bool TestPermissiveDictionary::hasBooleanMember() const {
+  return m_hasBooleanMember;
+}
+bool TestPermissiveDictionary::booleanMember() const {
+  DCHECK(m_hasBooleanMember);
+  return m_booleanMember;
+}
+void TestPermissiveDictionary::setBooleanMember(bool value) {
+  m_booleanMember = value;
+  m_hasBooleanMember = true;
+}
+
 DEFINE_TRACE(TestPermissiveDictionary) {
   IDLDictionaryBase::trace(visitor);
 }

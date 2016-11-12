@@ -22,9 +22,9 @@ class CORE_EXPORT TestInterfaceEventInit : public EventInit {
   TestInterfaceEventInit();
   virtual ~TestInterfaceEventInit();
 
-  bool hasStringMember() const { return !m_stringMember.isNull(); }
-  String stringMember() const { return m_stringMember; }
-  void setStringMember(String value) { m_stringMember = value; }
+  bool hasStringMember() const;
+  String stringMember() const;
+  void setStringMember(String);
 
   v8::Local<v8::Value> toV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
   DECLARE_VIRTUAL_TRACE();

@@ -422,17 +422,8 @@ def add_includes_for_interface(interface_name):
     includes.update(includes_for_interface(interface_name))
 
 
-def impl_should_use_nullable_container(idl_type):
-    return not(idl_type.cpp_type_has_null_value)
-
-IdlTypeBase.impl_should_use_nullable_container = property(
-    impl_should_use_nullable_container)
-
-
 def impl_includes_for_type(idl_type, interfaces_info):
     includes_for_type = set()
-    if idl_type.impl_should_use_nullable_container:
-        includes_for_type.add('bindings/core/v8/Nullable.h')
 
     idl_type = idl_type.preprocessed_type
     native_array_element_type = idl_type.native_array_element_type
