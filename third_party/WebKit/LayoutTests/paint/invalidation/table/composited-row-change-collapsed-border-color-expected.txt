@@ -8,12 +8,20 @@
       "paintInvalidations": [
         {
           "object": "LayoutTable TABLE",
-          "rect": [8, 8, 113, 104],
+          "rect": [8, 82, 112, 112],
           "reason": "invalidate paint rectangle"
-        },
+        }
+      ]
+    },
+    {
+      "name": "LayoutTableRow TR id='a'",
+      "position": [10, 84],
+      "bounds": [107, 107],
+      "drawsContent": true,
+      "paintInvalidations": [
         {
-          "object": "LayoutTableCol COL id='col'",
-          "rect": [8, 8, 113, 104],
+          "object": "LayoutTableRow TR id='a'",
+          "rect": [0, 0, 107, 107],
           "reason": "style change"
         }
       ]
@@ -25,7 +33,7 @@
       "reason": "invalidate paint rectangle"
     },
     {
-      "object": "LayoutTableCol COL id='col'",
+      "object": "LayoutTableRow TR id='a'",
       "reason": "style change"
     }
   ]

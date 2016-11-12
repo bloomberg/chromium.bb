@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<p style="height: 50px">Passes if green borders are visible surrounding A's cell and no red.
+<table style="border-collapse: collapse;">
+  <thead id="a" style="border: 5px solid red; will-change: transform">
+    <tr>
+      <td style="width: 100px; height: 100px">A</td>
+    </tr>
+  </head>
+</table>
+<script src="../resources/text-based-repaint.js"></script>
+<script>
+function repaintTest() {
+  a.style.borderColor = 'green';
+}
+onload = runRepaintAndPixelTest;
+</script>

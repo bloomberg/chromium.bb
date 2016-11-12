@@ -752,7 +752,7 @@ void LayoutTable::layout() {
 }
 
 void LayoutTable::invalidateCollapsedBorders() {
-  m_collapsedBorders.clear();
+  m_collapsedBordersInfo = nullptr;
   if (!collapseBorders())
     return;
 
@@ -765,10 +765,15 @@ void LayoutTable::invalidateCollapsedBorders() {
 // cache of its containing section, and invalidates itself if any border
 // changes. This method doesn't affect layout.
 void LayoutTable::recalcCollapsedBordersIfNeeded() {
-  if (m_collapsedBordersValid || !collapseBorders())
+  if (m_collapsedBordersValid)
     return;
   m_collapsedBordersValid = true;
-  m_collapsedBorders.clear();
+  m_collapsedBordersInfo = nullptr;
+  if (!collapseBorders())
+    return;
+
+  LayoutRect boundsOfChangedCells;
+  Vector<CollapsedBorderValue> values;
   for (LayoutObject* section = firstChild(); section;
        section = section->nextSibling()) {
     if (!section->isTableSection())
@@ -777,12 +782,23 @@ void LayoutTable::recalcCollapsedBordersIfNeeded() {
          row = row->nextRow()) {
       for (LayoutTableCell* cell = row->firstCell(); cell;
            cell = cell->nextCell()) {
-        ASSERT(cell->table() == this);
-        cell->collectBorderValues(m_collapsedBorders);
+        DCHECK(cell->table() == this);
+        if (cell->collectBorderValues(values) &&
+            !shouldDoFullPaintInvalidation()) {
+          LayoutRect cellRect = cell->localVisualRect();
+          cell->mapToVisualRectInAncestorSpace(this, cellRect);
+          boundsOfChangedCells.unite(cellRect);
+        }
       }
     }
   }
-  LayoutTableCell::sortBorderValues(m_collapsedBorders);
+  if (!values.isEmpty()) {
+    LayoutTableCell::sortBorderValues(values);
+    m_collapsedBordersInfo =
+        wrapUnique(new CollapsedBordersInfo(std::move(values)));
+  }
+
+  invalidatePaintRectangle(boundsOfChangedCells);
 }
 
 void LayoutTable::addOverflowFromChildren() {
@@ -1662,10 +1678,10 @@ void LayoutTable::ensureIsReadyForPaintInvalidation() {
 
 PaintInvalidationReason LayoutTable::invalidatePaintIfNeeded(
     const PaintInvalidationState& paintInvalidationState) {
-  if (collapseBorders() && !m_collapsedBorders.isEmpty())
+  if (hasCollapsedBorders()) {
     paintInvalidationState.paintingLayer()
         .setNeedsPaintPhaseDescendantBlockBackgrounds();
-
+  }
   return LayoutBlock::invalidatePaintIfNeeded(paintInvalidationState);
 }
 

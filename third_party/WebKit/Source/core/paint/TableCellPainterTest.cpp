@@ -170,11 +170,12 @@ TEST_F(TableCellPainterTest, CollapsedBorderAndOverflow) {
       "100px solid yellow; background: green; }"
       "  table { margin: 100px; border-collapse: collapse; }"
       "</style>"
-      "<table>"
+      "<table id='table'>"
       "  <tr><td id='cell'></td></tr>"
       "</table>");
 
   LayoutView& layoutView = *document().layoutView();
+  LayoutObject& table = *getLayoutObjectByElementId("table");
   LayoutObject& cell = *getLayoutObjectByElementId("cell");
 
   rootPaintController().invalidateAll();
@@ -188,7 +189,7 @@ TEST_F(TableCellPainterTest, CollapsedBorderAndOverflow) {
       rootPaintController().getDisplayItemList(), 4,
       TestDisplayItem(layoutView, DisplayItem::kDocumentBackground),
       TestDisplayItem(cell, DisplayItem::kBoxDecorationBackground),
-      TestDisplayItem(cell, DisplayItem::kTableCollapsedBorderLast),
+      TestDisplayItem(table, DisplayItem::kTableCollapsedBorders),
       TestDisplayItem(cell, DisplayItem::paintPhaseToDrawingType(
                                 PaintPhaseSelfOutlineOnly)));
 }

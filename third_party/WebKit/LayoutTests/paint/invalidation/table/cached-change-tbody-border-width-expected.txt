@@ -8,6 +8,11 @@
       "paintInvalidations": [
         {
           "object": "LayoutTable TABLE",
+          "rect": [8, 8, 114, 153],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutTable TABLE",
           "rect": [8, 159, 114, 2],
           "reason": "incremental"
         },
@@ -81,28 +86,8 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
+      "object": "LayoutTable TABLE",
+      "reason": "invalidate paint rectangle"
     },
     {
       "object": "LayoutTable TABLE",

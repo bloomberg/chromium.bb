@@ -24,6 +24,8 @@ class TablePainter {
   void paintMask(const PaintInfo&, const LayoutPoint&);
 
  private:
+  void paintCollapsedBorders(const PaintInfo&, const LayoutPoint&);
+
   const LayoutTable& m_layoutTable;
 };
 
