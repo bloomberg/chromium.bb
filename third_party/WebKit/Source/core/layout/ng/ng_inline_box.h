@@ -31,8 +31,6 @@ struct MinAndMaxContentSizes;
 // TODO(layout-dev): Make this and NGBox inherit from a common class.
 class CORE_EXPORT NGInlineBox : public NGLayoutInputNode {
  public:
-  using const_iterator = Vector<NGLayoutInlineItem>::const_iterator;
-
   NGInlineBox(LayoutObject* start_inline, ComputedStyle* block_style);
   ~NGInlineBox() override;
 
@@ -43,10 +41,6 @@ class CORE_EXPORT NGInlineBox : public NGLayoutInputNode {
   // calling the Layout method.
   void PrepareLayout();
 
-  // Iterator for the individual NGLayoutInlineItem objects that make up the
-  // inline children of a NGInlineBox instance.
-  const_iterator begin() const { return items_.begin(); }
-  const_iterator end() const { return items_.end(); }
   String Text(unsigned start_offset, unsigned end_offset) const {
     return text_content_.substring(start_offset, end_offset);
   }
@@ -81,11 +75,14 @@ class CORE_EXPORT NGInlineBox : public NGLayoutInputNode {
 // element where possible.
 class NGLayoutInlineItem {
  public:
-  NGLayoutInlineItem(unsigned start, unsigned end)
+  NGLayoutInlineItem(unsigned start, unsigned end, const ComputedStyle* style)
       : start_offset_(start),
         end_offset_(end),
         bidi_level_(UBIDI_LTR),
-        script_(USCRIPT_INVALID_CODE) {
+        script_(USCRIPT_INVALID_CODE),
+        fallback_priority_(FontFallbackPriority::Invalid),
+        rotate_sideways_(false),
+        style_(style) {
     DCHECK(end >= start);
   }
 
@@ -93,6 +90,7 @@ class NGLayoutInlineItem {
   unsigned EndOffset() const { return end_offset_; }
   TextDirection Direction() const { return bidi_level_ & 1 ? RTL : LTR; }
   UScriptCode Script() const { return script_; }
+  const ComputedStyle* Style() const { return style_; }
 
   static void Split(Vector<NGLayoutInlineItem>&,
                     unsigned index,
@@ -107,9 +105,10 @@ class NGLayoutInlineItem {
   unsigned end_offset_;
   UBiDiLevel bidi_level_;
   UScriptCode script_;
-  // FontFallbackPriority fallback_priority_;
-  // bool rotate_sideways_;
-  RefPtr<ShapeResult> shape_result_;
+  FontFallbackPriority fallback_priority_;
+  bool rotate_sideways_;
+  const ComputedStyle* style_;
+  Vector<RefPtr<const ShapeResult>> shape_results_;
 
   friend class NGInlineBox;
 };

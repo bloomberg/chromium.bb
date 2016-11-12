@@ -52,6 +52,7 @@ class FontFallbackIterator;
 class FontData;
 class FontSelector;
 class GlyphBuffer;
+class ShapeCache;
 class TextRun;
 struct TextRunPaintInfo;
 
@@ -155,6 +156,8 @@ class PLATFORM_EXPORT Font {
   // when, for whatever reason, the last resort font cannot be loaded.
   const SimpleFontData* primaryFont() const;
   const FontData* fontDataAt(unsigned) const;
+
+  ShapeCache* shapeCache() const;
 
   // Whether the font supports shaping word by word instead of shaping the
   // full run in one go. Allows better caching for fonts where space cannot

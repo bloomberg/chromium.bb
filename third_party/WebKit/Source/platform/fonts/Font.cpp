@@ -493,6 +493,10 @@ int Font::offsetForPosition(const TextRun& run,
   return shaper.offsetForPosition(this, run, xFloat, includePartialGlyphs);
 }
 
+ShapeCache* Font::shapeCache() const {
+  return m_fontFallbackList->shapeCache(m_fontDescription);
+}
+
 bool Font::canShapeWordByWord() const {
   if (!m_shapeWordByWordComputed) {
     m_canShapeWordByWord = computeCanShapeWordByWord();

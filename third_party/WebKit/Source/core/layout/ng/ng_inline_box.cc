@@ -11,12 +11,14 @@
 #include "core/layout/ng/ng_text_layout_algorithm.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_constraint_space.h"
-#include "platform/text/TextDirection.h"
 #include "core/layout/ng/ng_physical_text_fragment.h"
 #include "core/layout/ng/ng_text_fragment.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_writing_mode.h"
+#include "platform/text/TextDirection.h"
+#include "platform/fonts/shaping/CachingWordShaper.h"
+#include "platform/fonts/shaping/CachingWordShapeIterator.h"
 #include "wtf/text/CharacterNames.h"
 
 namespace blink {
@@ -73,7 +75,7 @@ void NGInlineBox::CollectNode(LayoutObject* node, unsigned* offset) {
   if (length) {
     unsigned start_offset = *offset;
     *offset = *offset + length;
-    items_.append(NGLayoutInlineItem(start_offset, *offset));
+    items_.append(NGLayoutInlineItem(start_offset, *offset, node->style()));
   }
 }
 
@@ -165,7 +167,23 @@ void NGLayoutInlineItem::Split(Vector<NGLayoutInlineItem>& items,
   items[index + 1].start_offset_ = offset;
 }
 
-void NGInlineBox::ShapeText() {}
+void NGInlineBox::ShapeText() {
+  // TODO(layout-dev): Should pass the entire range to the shaper as context
+  // and then shape each item based on the relevant font.
+  for (auto& item : items_) {
+    String item_text = text_content_.substring(
+        item.start_offset_, item.end_offset_ - item.start_offset_);
+    const Font& item_font = item.style_->font();
+    ShapeCache* shape_cache = item_font.shapeCache();
+
+    TextRun item_run(item_text);
+    CachingWordShapeIterator iterator(shape_cache, item_run, &item_font);
+    RefPtr<const ShapeResult> word_result;
+    while (iterator.next(&word_result)) {
+      item.shape_results_.append(word_result.get());
+    };
+  }
+}
 
 bool NGInlineBox::Layout(const NGConstraintSpace* constraint_space,
                          NGFragmentBase** out) {
