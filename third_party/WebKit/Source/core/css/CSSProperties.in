@@ -117,6 +117,20 @@
 
 // Properties with StyleBuilder handling
 
+// Animation Priority properties
+animation-delay custom_all
+animation-direction custom_all
+animation-duration custom_all
+animation-fill-mode custom_all
+animation-iteration-count keywords=[infinite], supports_multiple, custom_all
+animation-name custom_all
+animation-play-state custom_all
+animation-timing-function custom_all
+transition-delay custom_all
+transition-duration custom_all
+transition-property custom_all
+transition-timing-function custom_all
+
 // High Priority and all other font properties.
 // Other properties can depend upon high priority properties (e.g. font-size / ems)
 color interpolable, inherited, custom_all
@@ -145,14 +159,6 @@ align-content initial=initialContentAlignment, converter=convertContentAlignment
 align-items initial=initialDefaultAlignment, converter=convertSelfOrDefaultAlignmentData
 alignment-baseline svg
 align-self initial=initialSelfAlignment, converter=convertSelfOrDefaultAlignmentData
-animation-delay custom_all
-animation-direction custom_all
-animation-duration custom_all
-animation-fill-mode custom_all
-animation-iteration-count keywords=[infinite], supports_multiple, custom_all
-animation-name custom_all
-animation-play-state custom_all
-animation-timing-function custom_all
 backdrop-filter interpolable, converter=convertFilterOperations, runtime_flag=CSSBackdropFilter
 backface-visibility
 background-attachment custom_all
@@ -356,10 +362,6 @@ transform-style name_for_methods=TransformStyle3D
 translate runtime_flag=CSSIndependentTransformProperties, converter=convertTranslate, interpolable
 rotate runtime_flag=CSSIndependentTransformProperties, converter=convertRotate, interpolable
 scale runtime_flag=CSSIndependentTransformProperties, converter=convertScale, interpolable
-transition-delay custom_all
-transition-duration custom_all
-transition-property custom_all
-transition-timing-function custom_all
 unicode-bidi
 vector-effect svg
 vertical-align interpolable, custom_inherit, custom_value

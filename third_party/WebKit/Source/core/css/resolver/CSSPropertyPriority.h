@@ -16,6 +16,7 @@ namespace blink {
 
 enum CSSPropertyPriority {
   ResolveVariables = 0,
+  AnimationPropertyPriority,
   HighPropertyPriority,
   LowPropertyPriority,
   PropertyPriorityCount,
@@ -47,8 +48,31 @@ inline CSSPropertyID CSSPropertyPriorityData<ResolveVariables>::last() {
 }
 
 template <>
+inline CSSPropertyID
+CSSPropertyPriorityData<AnimationPropertyPriority>::first() {
+  static_assert(CSSPropertyAnimationDelay == firstCSSProperty,
+                "CSSPropertyAnimationDelay should be the first animation "
+                "priority property");
+  return CSSPropertyAnimationDelay;
+}
+
+template <>
+inline CSSPropertyID
+CSSPropertyPriorityData<AnimationPropertyPriority>::last() {
+  static_assert(
+      CSSPropertyTransitionTimingFunction == CSSPropertyAnimationDelay + 11,
+      "CSSPropertyTransitionTimingFunction should be the end of the high "
+      "priority property range");
+  static_assert(
+      CSSPropertyColor == CSSPropertyTransitionTimingFunction + 1,
+      "CSSPropertyTransitionTimingFunction should be immediately before "
+      "CSSPropertyColor");
+  return CSSPropertyTransitionTimingFunction;
+}
+
+template <>
 inline CSSPropertyID CSSPropertyPriorityData<HighPropertyPriority>::first() {
-  static_assert(CSSPropertyColor == firstCSSProperty,
+  static_assert(CSSPropertyColor == CSSPropertyTransitionTimingFunction + 1,
                 "CSSPropertyColor should be the first high priority property");
   return CSSPropertyColor;
 }
@@ -85,6 +109,10 @@ inline CSSPropertyPriority priorityForProperty(CSSPropertyID property) {
   if (CSSPropertyPriorityData<HighPropertyPriority>::propertyHasPriority(
           property)) {
     return HighPropertyPriority;
+  }
+  if (CSSPropertyPriorityData<AnimationPropertyPriority>::propertyHasPriority(
+          property)) {
+    return AnimationPropertyPriority;
   }
   DCHECK(
       CSSPropertyPriorityData<ResolveVariables>::propertyHasPriority(property));
