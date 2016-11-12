@@ -322,6 +322,12 @@ void TrayDetailsView::CreateScrollableList() {
   scroll_content_ = new ScrollContentsView();
   scroller_ = new FixedSizedScrollView;
   scroller_->SetContentsView(scroll_content_);
+  // Make the |scroller_| have a layer to clip |scroll_content_|'s children.
+  // TODO(varkha): Make the sticky rows work with EnableViewPortLayer().
+  scroller_->SetPaintToLayer(true);
+  scroller_->set_background(
+      views::Background::CreateSolidBackground(kBackgroundColor));
+  scroller_->layer()->SetMasksToBounds(true);
 
   // Note: |scroller_| takes ownership of |scroll_border_|.
   if (!UseMd()) {
