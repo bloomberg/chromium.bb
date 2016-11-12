@@ -24,11 +24,14 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
   DCHECK(style_);
 }
 
-bool NGInlineLayoutAlgorithm::Layout(NGPhysicalFragmentBase** out) {
+NGLayoutStatus NGInlineLayoutAlgorithm::Layout(
+    NGFragmentBase*,
+    NGPhysicalFragmentBase** fragment_out,
+    NGLayoutAlgorithm**) {
   NGFragmentBuilder builder(NGPhysicalFragmentBase::FragmentBox);
 
-  *out = builder.ToFragment();
-  return true;
+  *fragment_out = builder.ToFragment();
+  return NewFragment;
 }
 
 DEFINE_TRACE(NGInlineLayoutAlgorithm) {

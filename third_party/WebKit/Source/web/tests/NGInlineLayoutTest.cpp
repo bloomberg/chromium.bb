@@ -58,7 +58,7 @@ TEST_F(NGInlineLayoutTest, BlockWithSingleTextNode) {
   EXPECT_EQ(expectedText, inlineBox->Text(0, 12));
 
   NGPhysicalFragmentBase* fragment;
-  layoutAlgorithm->Layout(&fragment);
+  layoutAlgorithm->Layout(nullptr, &fragment, nullptr);
 }
 
 TEST_F(NGInlineLayoutTest, BlockWithTextAndAtomicInline) {
@@ -87,7 +87,7 @@ TEST_F(NGInlineLayoutTest, BlockWithTextAndAtomicInline) {
   EXPECT_EQ(expectedText, inlineBox->Text(0, 8));
 
   NGPhysicalFragmentBase* fragment;
-  layoutAlgorithm->Layout(&fragment);
+  layoutAlgorithm->Layout(nullptr, &fragment, nullptr);
 }
 
 }  // namespace blink

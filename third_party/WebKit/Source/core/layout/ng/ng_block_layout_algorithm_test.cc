@@ -35,7 +35,7 @@ class NGBlockLayoutAlgorithmTest : public ::testing::Test {
                                               NGBox* first_child) {
     NGBlockLayoutAlgorithm algorithm(style_, first_child, space);
     NGPhysicalFragmentBase* frag;
-    while (!algorithm.Layout(&frag))
+    while (!algorithm.Layout(nullptr, &frag, nullptr))
       continue;
     return toNGPhysicalFragment(frag);
   }

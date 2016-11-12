@@ -60,7 +60,7 @@ bool NGBox::Layout(const NGConstraintSpace* constraint_space,
     }
 
     NGPhysicalFragmentBase* fragment = nullptr;
-    if (!layout_algorithm_->Layout(&fragment))
+    if (!layout_algorithm_->Layout(nullptr, &fragment, nullptr))
       return false;
     fragment_ = toNGPhysicalFragment(fragment);
 
@@ -128,7 +128,7 @@ bool NGBox::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
 
   // Have to synthesize this value.
   NGPhysicalFragmentBase* physical_fragment;
-  while (!minmax_algorithm_->Layout(&physical_fragment))
+  while (!minmax_algorithm_->Layout(nullptr, &physical_fragment, nullptr))
     continue;
   NGFragment* fragment = new NGFragment(
       FromPlatformWritingMode(Style()->getWritingMode()), Style()->direction(),
@@ -148,7 +148,7 @@ bool NGBox::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
 
   minmax_algorithm_ = new NGBlockLayoutAlgorithm(Style(), toNGBox(FirstChild()),
                                                  constraint_space);
-  while (!minmax_algorithm_->Layout(&physical_fragment))
+  while (!minmax_algorithm_->Layout(nullptr, &physical_fragment, nullptr))
     continue;
 
   fragment = new NGFragment(FromPlatformWritingMode(Style()->getWritingMode()),
