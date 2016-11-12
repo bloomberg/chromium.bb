@@ -19,10 +19,6 @@ class WindowManagerWindowTreeFactorySet;
 class WindowServer;
 class WindowTree;
 
-namespace test {
-class WindowManagerWindowTreeFactorySetTestApi;
-}
-
 // Implementation of mojom::WindowManagerWindowTreeFactory.
 class WindowManagerWindowTreeFactory
     : public mojom::WindowManagerWindowTreeFactory {
@@ -42,8 +38,6 @@ class WindowManagerWindowTreeFactory
                         mojom::WindowTreeClientPtr window_tree_client) override;
 
  private:
-  friend class test::WindowManagerWindowTreeFactorySetTestApi;
-
   // Used by tests.
   WindowManagerWindowTreeFactory(WindowManagerWindowTreeFactorySet* registry,
                                  const UserId& user_id);

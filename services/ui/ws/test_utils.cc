@@ -88,24 +88,6 @@ ClientWindowId NextUnusedClientWindowId(WindowTree* tree) {
 
 }  // namespace
 
-// WindowManagerWindowTreeFactorySetTestApi ------------------------------------
-
-WindowManagerWindowTreeFactorySetTestApi::
-    WindowManagerWindowTreeFactorySetTestApi(
-        WindowManagerWindowTreeFactorySet*
-            window_manager_window_tree_factory_set)
-    : window_manager_window_tree_factory_set_(
-          window_manager_window_tree_factory_set) {}
-
-WindowManagerWindowTreeFactorySetTestApi::
-    ~WindowManagerWindowTreeFactorySetTestApi() {}
-
-void WindowManagerWindowTreeFactorySetTestApi::Add(const UserId& user_id) {
-  WindowManagerWindowTreeFactory* factory =
-      window_manager_window_tree_factory_set_->Add(user_id, nullptr);
-  factory->CreateWindowTree(nullptr, nullptr);
-}
-
 // TestPlatformDisplayFactory  -------------------------------------------------
 
 const int64_t TestPlatformDisplayFactory::kFirstDisplayId = 1;
@@ -548,6 +530,12 @@ void WindowEventTargetingHelper::SetTaskRunner(
 }
 
 // ----------------------------------------------------------------------------
+
+void AddWindowManager(WindowServer* window_server, const UserId& user_id) {
+  window_server->window_manager_window_tree_factory_set()
+      ->Add(user_id, nullptr)
+      ->CreateWindowTree(nullptr, nullptr);
+}
 
 ServerWindow* FirstRoot(WindowTree* tree) {
   return tree->roots().size() == 1u

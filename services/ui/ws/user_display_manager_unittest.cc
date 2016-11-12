@@ -133,9 +133,7 @@ TEST_F(UserDisplayManagerTest, OnlyNotifyWhenFrameDecorationsSet) {
   const UserId kUserId1 = "2";
   TestDisplayManagerObserver display_manager_observer1;
   DisplayManager* display_manager = window_server()->display_manager();
-  WindowManagerWindowTreeFactorySetTestApi(
-      window_server()->window_manager_window_tree_factory_set())
-      .Add(kUserId1);
+  AddWindowManager(window_server(), kUserId1);
   UserDisplayManager* user_display_manager1 =
       display_manager->GetUserDisplayManager(kUserId1);
   ASSERT_TRUE(user_display_manager1);
@@ -163,9 +161,7 @@ TEST_F(UserDisplayManagerTest, AddObserverAfterFrameDecorationsSet) {
   const UserId kUserId1 = "2";
   TestDisplayManagerObserver display_manager_observer1;
   DisplayManager* display_manager = window_server()->display_manager();
-  WindowManagerWindowTreeFactorySetTestApi(
-      window_server()->window_manager_window_tree_factory_set())
-      .Add(kUserId1);
+  AddWindowManager(window_server(), kUserId1);
   UserDisplayManager* user_display_manager1 =
       display_manager->GetUserDisplayManager(kUserId1);
   ASSERT_TRUE(user_display_manager1);
@@ -189,9 +185,7 @@ TEST_F(UserDisplayManagerTest, AddRemoveDisplay) {
   const UserId kUserId1 = "2";
   TestDisplayManagerObserver display_manager_observer1;
   DisplayManager* display_manager = window_server()->display_manager();
-  WindowManagerWindowTreeFactorySetTestApi(
-      window_server()->window_manager_window_tree_factory_set())
-      .Add(kUserId1);
+  AddWindowManager(window_server(), kUserId1);
   UserDisplayManager* user_display_manager1 =
       display_manager->GetUserDisplayManager(kUserId1);
   ASSERT_TRUE(user_display_manager1);
@@ -228,9 +222,7 @@ TEST_F(UserDisplayManagerTest, NegativeCoordinates) {
   const UserId kUserId1 = "2";
   TestDisplayManagerObserver display_manager_observer1;
   DisplayManager* display_manager = window_server()->display_manager();
-  WindowManagerWindowTreeFactorySetTestApi(
-      window_server()->window_manager_window_tree_factory_set())
-      .Add(kUserId1);
+  AddWindowManager(window_server(), kUserId1);
   UserDisplayManager* user_display_manager1 =
       display_manager->GetUserDisplayManager(kUserId1);
   ASSERT_TRUE(user_display_manager1);

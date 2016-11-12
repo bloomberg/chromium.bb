@@ -1359,9 +1359,7 @@ TEST_F(WindowTreeShutdownTest, DontSendMessagesDuringShutdown) {
     const int kNumHostsToCreate = 1;
     ws_test_helper.window_server_delegate()->CreateDisplays(kNumHostsToCreate);
 
-    WindowManagerWindowTreeFactorySetTestApi(
-        window_server->window_manager_window_tree_factory_set())
-        .Add(kTestUserId1);
+    AddWindowManager(window_server, kTestUserId1);
     window_server->user_id_tracker()->SetActiveUserId(kTestUserId1);
     TestWindowTreeBinding* test_binding =
         ws_test_helper.window_server_delegate()->last_binding();

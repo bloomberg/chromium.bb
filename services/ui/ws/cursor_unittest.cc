@@ -52,9 +52,7 @@ class CursorTest : public testing::Test {
     window_server_delegate()->CreateDisplays(1);
 
     // As a side effect, this allocates Displays.
-    WindowManagerWindowTreeFactorySetTestApi(
-        window_server()->window_manager_window_tree_factory_set())
-        .Add(kTestId1);
+    AddWindowManager(window_server(), kTestId1);
     window_server()->user_id_tracker()->AddUserId(kTestId1);
     window_server()->user_id_tracker()->SetActiveUserId(kTestId1);
   }

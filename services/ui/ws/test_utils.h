@@ -36,23 +36,6 @@ namespace test {
 
 // Collection of utilities useful in creating mus tests.
 
-class WindowManagerWindowTreeFactorySetTestApi {
- public:
-  explicit WindowManagerWindowTreeFactorySetTestApi(
-      WindowManagerWindowTreeFactorySet*
-          window_manager_window_tree_factory_set);
-  ~WindowManagerWindowTreeFactorySetTestApi();
-
-  void Add(const UserId& user_id);
-
- private:
-  WindowManagerWindowTreeFactorySet* window_manager_window_tree_factory_set_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowManagerWindowTreeFactorySetTestApi);
-};
-
-// -----------------------------------------------------------------------------
-
 class UserDisplayManagerTestApi {
  public:
   explicit UserDisplayManagerTestApi(UserDisplayManager* udm) : udm_(udm) {}
@@ -637,6 +620,10 @@ class WindowEventTargetingHelper {
 };
 
 // -----------------------------------------------------------------------------
+
+// Adds a new WM to |window_server| for |user_id|. Creates
+// WindowManagerWindowTreeFactory and associated WindowTree for the WM.
+void AddWindowManager(WindowServer* window_server, const UserId& user_id);
 
 // Returns the first and only root of |tree|. If |tree| has zero or more than
 // one root returns null.

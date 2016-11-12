@@ -550,9 +550,7 @@ TEST(WindowManagerStateShutdownTest, DestroyTreeBeforeDisplay) {
   ws_test_helper.window_server_delegate()->CreateDisplays(1);
   WindowServer* window_server = ws_test_helper.window_server();
   const UserId kUserId1 = "2";
-  WindowManagerWindowTreeFactorySetTestApi(
-      window_server->window_manager_window_tree_factory_set())
-      .Add(kUserId1);
+  AddWindowManager(window_server, kUserId1);
   ASSERT_EQ(1u, window_server->display_manager()->displays().size());
   Display* display = *(window_server->display_manager()->displays().begin());
   WindowManagerDisplayRoot* window_manager_display_root =
