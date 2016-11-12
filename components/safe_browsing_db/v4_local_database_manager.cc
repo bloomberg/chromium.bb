@@ -33,6 +33,8 @@ ListInfos GetListInfos() {
   return ListInfos(
       {ListInfo(true, "UrlMalware.store", GetUrlMalwareId(),
                 SB_THREAT_TYPE_URL_MALWARE),
+       ListInfo(true, "UrlMalBin.store", GetUrlMalBinId(),
+                SB_THREAT_TYPE_BINARY_MALWARE_URL),
        ListInfo(true, "UrlSoceng.store", GetUrlSocEngId(),
                 SB_THREAT_TYPE_URL_PHISHING),
        ListInfo(false, "", GetChromeUrlApiId(), SB_THREAT_TYPE_API_ABUSE),
