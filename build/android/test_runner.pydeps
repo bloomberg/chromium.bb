@@ -93,6 +93,7 @@ pylib/instrumentation/instrumentation_parser.py
 pylib/instrumentation/instrumentation_test_instance.py
 pylib/instrumentation/test_result.py
 pylib/junit/__init__.py
+pylib/junit/junit_test_instance.py
 pylib/junit/setup.py
 pylib/junit/test_dispatcher.py
 pylib/junit/test_runner.py
@@ -108,6 +109,9 @@ pylib/local/device/local_device_instrumentation_test_run.py
 pylib/local/device/local_device_perf_test_run.py
 pylib/local/device/local_device_test_run.py
 pylib/local/local_test_server_spawner.py
+pylib/local/machine/__init__.py
+pylib/local/machine/local_machine_environment.py
+pylib/local/machine/local_machine_junit_test_run.py
 pylib/monkey/__init__.py
 pylib/monkey/setup.py
 pylib/monkey/test_options.py

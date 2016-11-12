@@ -62,6 +62,7 @@ class LocalDeviceInstrumentationTestRun(
   def TestPackage(self):
     return self._test_instance.suite
 
+  #override
   def SetUp(self):
     def substitute_device_root(d, device_root):
       if not d:
@@ -153,6 +154,7 @@ class LocalDeviceInstrumentationTestRun(
         individual_device_set_up,
         self._test_instance.GetDataDependencies())
 
+  #override
   def TearDown(self):
     @local_device_environment.handle_shard_failures_with(
         self._env.BlacklistDevice)

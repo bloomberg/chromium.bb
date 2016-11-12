@@ -4,12 +4,14 @@
 
 from pylib import constants
 from pylib.local.device import local_device_environment
+from pylib.local.machine import local_machine_environment
 
 def CreateEnvironment(args, error_func):
 
   if args.environment == 'local':
     if args.command not in constants.LOCAL_MACHINE_TESTS:
       return local_device_environment.LocalDeviceEnvironment(args, error_func)
-    # TODO(jbudorick) Add local machine environment.
+    else:
+      return local_machine_environment.LocalMachineEnvironment(args, error_func)
 
   error_func('Unable to create %s environment.' % args.environment)

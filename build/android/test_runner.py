@@ -400,12 +400,18 @@ def AddJUnitTestOptions(parser):
   group.add_argument(
       '--package-filter', dest='package_filter',
       help='Filters tests by package.')
+  # TODO(mikecase): Add --repeat and --break-on-failure to common options.
+  # These options are required for platform-mode support.
+  group.add_argument(
+      '--repeat', dest='repeat', type=int, default=0,
+      help='Number of times to repeat the specified set of tests.')
+  group.add_argument(
+      '--break-on-failure', '--break_on_failure',
+      dest='break_on_failure', action='store_true',
+      help='Whether to break on failure.')
   group.add_argument(
       '--runner-filter', dest='runner_filter',
       help='Filters tests by runner class. Must be fully qualified.')
-  group.add_argument(
-      '--sdk-version', dest='sdk_version', type=int,
-      help='The Android SDK version.')
   group.add_argument(
       '--coverage-dir', dest='coverage_dir', type=os.path.realpath,
       help='Directory to store coverage info.')
@@ -721,6 +727,7 @@ _SUPPORTED_IN_PLATFORM_MODE = [
   # TODO(jbudorick): Add support for more test types.
   'gtest',
   'instrumentation',
+  'junit',
   'perf',
 ]
 

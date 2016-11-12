@@ -335,11 +335,13 @@ class LocalDevicePerfTestRun(local_device_test_run.LocalDeviceTestRun):
     self._test_instance = test_instance
     self._timeout = None if test_instance.no_timeout else self._DEFAULT_TIMEOUT
 
+  #override
   def SetUp(self):
     if os.path.exists(constants.PERF_OUTPUT_DIR):
       shutil.rmtree(constants.PERF_OUTPUT_DIR)
     os.makedirs(constants.PERF_OUTPUT_DIR)
 
+  #override
   def TearDown(self):
     pass
 
