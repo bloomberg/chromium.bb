@@ -22,6 +22,7 @@ include Makefile.sources
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
+AM_MAKEFLAGS = -s
 AM_DISTCHECK_CONFIGURE_FLAGS = \
 	--enable-udev \
 	--enable-libkms \
