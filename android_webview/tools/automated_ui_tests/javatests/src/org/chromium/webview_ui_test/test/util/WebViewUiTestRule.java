@@ -57,6 +57,15 @@ public class WebViewUiTestRule extends ActivityTestRule<WebViewUiTestActivity> {
         return launchActivity(new Intent());
     }
 
+    public void loadDataSync(
+            String data, String mimeType, String encoding, boolean confirmByJavaScript) {
+        try {
+            mSyncWrapper.loadDataSync(data, mimeType, encoding, confirmByJavaScript);
+        } catch (InterruptedException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
     public void loadJavaScriptSync(String js, boolean appendConfirmationJavascript) {
         try {
             mSyncWrapper.loadJavaScriptSync(js, appendConfirmationJavascript);

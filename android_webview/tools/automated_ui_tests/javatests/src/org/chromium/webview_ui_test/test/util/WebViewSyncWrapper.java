@@ -117,6 +117,27 @@ public class WebViewSyncWrapper {
         });
     }
 
+    public void loadDataSync(final String data, final String mimeType, final String encoding,
+            boolean confirmByJavaScript) throws InterruptedException {
+        mErrorMessageList.clear();
+        int currentPageCount = mPageCallback.getCallCount();
+        int currentJsCount = mJsCallback.getCallCount();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mWebView.loadData(data, mimeType, encoding);
+            }
+        });
+        try {
+            if (confirmByJavaScript) {
+                mJsCallback.waitForCallback(currentJsCount);
+            }
+            mPageCallback.waitForCallback(currentPageCount);
+        } catch (TimeoutException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
     public void loadFileSync(final String html, boolean confirmByJavaScript)
             throws InterruptedException {
         mErrorMessageList.clear();
