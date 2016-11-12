@@ -1556,6 +1556,8 @@ int SSLClientSocketImpl::VerifyCT() {
 
   if (ct_verify_result_.cert_policy_compliance !=
           ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS &&
+      ct_verify_result_.cert_policy_compliance !=
+          ct::CertPolicyCompliance::CERT_POLICY_BUILD_NOT_TIMELY &&
       transport_security_state_->ShouldRequireCT(
           host_and_port_.host(), server_cert_verify_result_.verified_cert.get(),
           server_cert_verify_result_.public_key_hashes)) {

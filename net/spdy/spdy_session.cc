@@ -633,6 +633,8 @@ bool SpdySession::CanPool(TransportSecurityState* transport_security_state,
 
   if (ssl_info.ct_cert_policy_compliance !=
           ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS &&
+      ssl_info.ct_cert_policy_compliance !=
+          ct::CertPolicyCompliance::CERT_POLICY_BUILD_NOT_TIMELY &&
       transport_security_state->ShouldRequireCT(
           new_hostname, ssl_info.cert.get(), ssl_info.public_key_hashes)) {
     return false;
