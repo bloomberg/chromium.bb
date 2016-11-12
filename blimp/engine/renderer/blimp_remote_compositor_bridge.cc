@@ -13,7 +13,7 @@ namespace blimp {
 namespace engine {
 
 BlimpRemoteCompositorBridge::BlimpRemoteCompositorBridge(
-    cc::RemoteProtoChannel* remote_proto_channel,
+    content::RemoteProtoChannel* remote_proto_channel,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_main_task_runner)
     : RemoteCompositorBridge(std::move(compositor_main_task_runner)),
       remote_proto_channel_(remote_proto_channel),

@@ -44,7 +44,6 @@
 #include "cc/trees/latency_info_swap_promise_monitor.h"
 #include "cc/trees/layer_tree_host_in_process.h"
 #include "cc/trees/layer_tree_mutator.h"
-#include "cc/trees/remote_proto_channel.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/layer_tree_settings_factory.h"

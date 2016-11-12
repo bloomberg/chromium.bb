@@ -21,6 +21,8 @@
 #include "cc/test/fake_proxy.h"
 #include "cc/test/fake_remote_compositor_bridge.h"
 #include "cc/test/remote_client_layer_factory.h"
+#include "cc/test/remote_compositor_test.h"
+#include "cc/test/serialization_test_utils.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/stub_layer_tree_host_client.h"
 #include "cc/test/test_task_graph_runner.h"
@@ -30,16 +32,6 @@
 
 namespace cc {
 namespace {
-
-#define EXPECT_LAYERS_EQ(engine_layer_id, client_layer)                     \
-  EXPECT_EQ(                                                                \
-      compositor_state_deserializer_->GetLayerForEngineId(engine_layer_id), \
-      client_layer);
-
-class ProxyForCommitRequest : public FakeProxy {
- public:
-  bool CommitRequested() const override { return true; }
-};
 
 class FakeContentLayerClient : public ContentLayerClient {
  public:
@@ -63,229 +55,14 @@ class FakeContentLayerClient : public ContentLayerClient {
   gfx::Rect recorded_viewport_;
 };
 
-class RemoteCompositorBridgeForTest : public FakeRemoteCompositorBridge {
+class CompositorStateDeserializerTest : public RemoteCompositorTest {
  public:
-  using ProtoFrameCallback = base::Callback<void(
-      std::unique_ptr<CompositorProtoState> compositor_proto_state)>;
-
-  RemoteCompositorBridgeForTest(
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      ProtoFrameCallback proto_frame_callback)
-      : FakeRemoteCompositorBridge(main_task_runner),
-        proto_frame_callback_(proto_frame_callback) {}
-
-  ~RemoteCompositorBridgeForTest() override = default;
-
-  void ProcessCompositorStateUpdate(
-      std::unique_ptr<CompositorProtoState> compositor_proto_state) override {
-    proto_frame_callback_.Run(std::move(compositor_proto_state));
-  }
-
- private:
-  ProtoFrameCallback proto_frame_callback_;
-};
-
-class CompositorStateDeserializerTest
-    : public testing::Test,
-      public CompositorStateDeserializerClient,
-      public FakeLayerTreeHostClient {
- public:
-  void SetUp() override {
-    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner =
-        base::ThreadTaskRunnerHandle::Get();
-
-    animation_host_ = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
-
-    // Engine side setup.
-    LayerTreeHostRemote::InitParams params;
-    params.client = &layer_tree_host_client_remote_;
-    params.main_task_runner = main_task_runner;
-    params.mutator_host = animation_host_.get();
-    params.remote_compositor_bridge =
-        base::MakeUnique<RemoteCompositorBridgeForTest>(
-            main_task_runner,
-            base::Bind(
-                &CompositorStateDeserializerTest::ProcessCompositorStateUpdate,
-                base::Unretained(this)));
-    params.engine_picture_cache =
-        image_serialization_processor_.CreateEnginePictureCache();
-    LayerTreeSettings settings;
-    params.settings = &settings;
-
-    layer_tree_host_remote_ = base::MakeUnique<LayerTreeHostRemote>(&params);
-
-    // Client side setup.
-    layer_tree_host_in_process_ = FakeLayerTreeHost::Create(
-        this, &task_graph_runner_, animation_host_.get(), settings,
-        CompositorMode::THREADED);
-    layer_tree_host_in_process_->InitializeForTesting(
-        TaskRunnerProvider::Create(base::ThreadTaskRunnerHandle::Get(),
-                                   base::ThreadTaskRunnerHandle::Get()),
-        base::MakeUnique<ProxyForCommitRequest>());
-    std::unique_ptr<ClientPictureCache> client_picture_cache =
-        image_serialization_processor_.CreateClientPictureCache();
-    compositor_state_deserializer_ =
-        base::MakeUnique<CompositorStateDeserializer>(
-            layer_tree_host_in_process_.get(), std::move(client_picture_cache),
-            this);
-  }
-
-  void TearDown() override {
-    layer_tree_host_remote_ = nullptr;
-    compositor_state_deserializer_ = nullptr;
-    layer_tree_host_in_process_ = nullptr;
-    animation_host_ = nullptr;
-  }
-
-  void ProcessCompositorStateUpdate(
-      std::unique_ptr<CompositorProtoState> compositor_proto_state) {
-    // Immediately deserialize the state update.
-    compositor_state_deserializer_->DeserializeCompositorUpdate(
-        compositor_proto_state->compositor_message->layer_tree_host());
-  }
-
-  // CompositorStateDeserializer implementation.
-  void DidUpdateLocalState() override { client_state_dirty_ = true; }
-
-  void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
-                           const gfx::Vector2dF& outer_delta,
-                           const gfx::Vector2dF& elastic_overscroll_delta,
-                           float page_scale,
-                           float top_controls_delta) override {
-    compositor_state_deserializer_->ApplyViewportDeltas(
-        inner_delta, outer_delta, elastic_overscroll_delta, page_scale,
-        top_controls_delta);
-  }
-
   void VerifyTreesAreIdentical() {
-    LayerTree* engine_layer_tree = layer_tree_host_remote_->GetLayerTree();
-    LayerTree* client_layer_tree = layer_tree_host_in_process_->GetLayerTree();
-
-    if (engine_layer_tree->root_layer()) {
-      LayerTreeHostCommon::CallFunctionForEveryLayer(
-          engine_layer_tree, [this](Layer* engine_layer) {
-            VerifyLayersAreIdentical(
-                engine_layer,
-                compositor_state_deserializer_->GetLayerForEngineId(
-                    engine_layer->id()));
-          });
-    } else {
-      EXPECT_EQ(layer_tree_host_in_process_->GetLayerTree()->root_layer(),
-                nullptr);
-    }
-
-    // Viewport layers.
-    // Overscroll Elasticty Layer.
-    Layer* client_overscroll_elasticity_layer =
-        client_layer_tree->overscroll_elasticity_layer();
-    if (engine_layer_tree->overscroll_elasticity_layer()) {
-      int engine_overscroll_elasticity_layer_id =
-          engine_layer_tree->overscroll_elasticity_layer()->id();
-
-      EXPECT_LAYERS_EQ(engine_overscroll_elasticity_layer_id,
-                       client_overscroll_elasticity_layer);
-    } else {
-      EXPECT_EQ(client_overscroll_elasticity_layer, nullptr);
-    }
-
-    // PageScale Layer.
-    Layer* client_page_scale_layer = client_layer_tree->page_scale_layer();
-    if (engine_layer_tree->page_scale_layer()) {
-      int engine_page_scale_layer_id =
-          engine_layer_tree->page_scale_layer()->id();
-
-      EXPECT_LAYERS_EQ(engine_page_scale_layer_id, client_page_scale_layer);
-    } else {
-      EXPECT_EQ(client_page_scale_layer, nullptr);
-    }
-
-    // InnerViewportScroll Layer.
-    Layer* client_inner_viewport_layer =
-        client_layer_tree->inner_viewport_scroll_layer();
-    if (engine_layer_tree->inner_viewport_scroll_layer()) {
-      int engine_inner_viewport_layer_id =
-          engine_layer_tree->inner_viewport_scroll_layer()->id();
-
-      EXPECT_LAYERS_EQ(engine_inner_viewport_layer_id,
-                       client_inner_viewport_layer);
-    } else {
-      EXPECT_EQ(client_inner_viewport_layer, nullptr);
-    }
-
-    // OuterViewportScroll Layer.
-    Layer* client_outer_viewport_layer =
-        client_layer_tree->outer_viewport_scroll_layer();
-    if (engine_layer_tree->outer_viewport_scroll_layer()) {
-      int engine_outer_viewport_layer_id =
-          engine_layer_tree->outer_viewport_scroll_layer()->id();
-
-      EXPECT_LAYERS_EQ(engine_outer_viewport_layer_id,
-                       client_outer_viewport_layer);
-    } else {
-      EXPECT_EQ(client_outer_viewport_layer, nullptr);
-    }
+    VerifySerializedTreesAreIdentical(
+        layer_tree_host_remote_->GetLayerTree(),
+        layer_tree_host_in_process_->GetLayerTree(),
+        compositor_state_deserializer_.get());
   }
-
-  void VerifyLayersAreIdentical(Layer* engine_layer, Layer* client_layer) {
-    ASSERT_NE(client_layer, nullptr);
-
-    LayerTree* client_layer_tree = layer_tree_host_in_process_->GetLayerTree();
-    EXPECT_EQ(client_layer_tree, client_layer->GetLayerTree());
-
-    // Parent.
-    if (engine_layer->parent()) {
-      int engine_parent_id = engine_layer->parent()->id();
-      EXPECT_LAYERS_EQ(engine_parent_id, client_layer->parent());
-    } else {
-      EXPECT_EQ(client_layer->parent(), nullptr);
-    }
-
-    // Mask Layers.
-    if (engine_layer->mask_layer()) {
-      int engine_mask_layer_id = engine_layer->mask_layer()->id();
-      EXPECT_LAYERS_EQ(engine_mask_layer_id, client_layer->mask_layer());
-    } else {
-      EXPECT_EQ(client_layer->mask_layer(), nullptr);
-    }
-
-    // Scroll parent.
-    if (engine_layer->scroll_parent()) {
-      int engine_scroll_parent_id = engine_layer->scroll_parent()->id();
-      EXPECT_LAYERS_EQ(engine_scroll_parent_id, client_layer->scroll_parent());
-    } else {
-      EXPECT_EQ(client_layer->scroll_parent(), nullptr);
-    }
-
-    // Clip parent.
-    if (engine_layer->clip_parent()) {
-      int engine_clip_parent_id = engine_layer->clip_parent()->id();
-      EXPECT_LAYERS_EQ(engine_clip_parent_id, client_layer->clip_parent());
-    } else {
-      EXPECT_EQ(client_layer->clip_parent(), nullptr);
-    }
-
-    // Scroll-clip layer.
-    if (engine_layer->scroll_clip_layer()) {
-      int scroll_clip_id = engine_layer->scroll_clip_layer()->id();
-      EXPECT_LAYERS_EQ(scroll_clip_id, client_layer->scroll_clip_layer());
-    } else {
-      EXPECT_EQ(client_layer->scroll_clip_layer(), nullptr);
-    }
-  }
-
-  // Engine setup.
-  std::unique_ptr<LayerTreeHostRemote> layer_tree_host_remote_;
-  StubLayerTreeHostClient layer_tree_host_client_remote_;
-
-  // Client setup.
-  std::unique_ptr<AnimationHost> animation_host_;
-  std::unique_ptr<FakeLayerTreeHost> layer_tree_host_in_process_;
-  std::unique_ptr<CompositorStateDeserializer> compositor_state_deserializer_;
-  TestTaskGraphRunner task_graph_runner_;
-
-  FakeImageSerializationProcessor image_serialization_processor_;
-
-  bool client_state_dirty_ = false;
 };
 
 TEST_F(CompositorStateDeserializerTest, BasicSync) {

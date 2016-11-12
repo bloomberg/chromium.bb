@@ -31,7 +31,7 @@ BlimpContentRendererClient::GetImageSerializationProcessor() {
 
 std::unique_ptr<cc::RemoteCompositorBridge>
 BlimpContentRendererClient::CreateRemoteCompositorBridge(
-    cc::RemoteProtoChannel* remote_proto_channel,
+    content::RemoteProtoChannel* remote_proto_channel,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_main_task_runner) {
   return base::MakeUnique<BlimpRemoteCompositorBridge>(
       remote_proto_channel, std::move(compositor_main_task_runner));

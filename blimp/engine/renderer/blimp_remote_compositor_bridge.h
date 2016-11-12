@@ -9,21 +9,21 @@
 #include "base/memory/weak_ptr.h"
 #include "blimp/engine/renderer/frame_scheduler.h"
 #include "cc/blimp/remote_compositor_bridge.h"
-#include "cc/trees/remote_proto_channel.h"
+#include "content/public/renderer/remote_proto_channel.h"
 
 namespace blimp {
 namespace engine {
 
 class BlimpRemoteCompositorBridge
     : public cc::RemoteCompositorBridge,
-      public cc::RemoteProtoChannel::ProtoReceiver,
+      public content::RemoteProtoChannel::ProtoReceiver,
       public FrameSchedulerClient {
  public:
   // TODO(khushalsagar): Stop using the RemoteProtoChannel. See
   // crbug.com/653697.
   // |remote_proto_channel| should outlive the BlimpRemoteCompositorBridge.
   BlimpRemoteCompositorBridge(
-      cc::RemoteProtoChannel* remote_proto_channel,
+      content::RemoteProtoChannel* remote_proto_channel,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_main_task_runner);
   ~BlimpRemoteCompositorBridge() override;
 
@@ -36,14 +36,14 @@ class BlimpRemoteCompositorBridge
   FrameScheduler* scheduler_for_testing() { return &scheduler_; }
 
  private:
-  // cc::RemoteProtoChannel::ProtoReceiver implementation.
+  // content::RemoteProtoChannel::ProtoReceiver implementation.
   void OnProtoReceived(
       std::unique_ptr<cc::proto::CompositorMessage> proto) override;
 
   // FrameSchedulerClient implementation.
   void StartFrameUpdate() override;
 
-  cc::RemoteProtoChannel* remote_proto_channel_;
+  content::RemoteProtoChannel* remote_proto_channel_;
   cc::RemoteCompositorBridgeClient* client_ = nullptr;
 
   bool client_state_update_ack_pending_ = false;

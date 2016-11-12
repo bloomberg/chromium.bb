@@ -41,11 +41,7 @@
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_iterator.h"
-#include "cc/layers/layer_proto_converter.h"
 #include "cc/layers/painted_scrollbar_layer.h"
-#include "cc/proto/gfx_conversions.h"
-#include "cc/proto/layer_tree.pb.h"
-#include "cc/proto/layer_tree_host.pb.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/layer_tree_host_client.h"
@@ -55,7 +51,6 @@
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/property_tree_builder.h"
 #include "cc/trees/proxy_main.h"
-#include "cc/trees/remote_channel_impl.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/swap_promise_manager.h"
 #include "cc/trees/tree_synchronizer.h"
@@ -67,60 +62,6 @@ static base::StaticAtomicSequenceNumber s_layer_tree_host_sequence_number;
 }
 
 namespace cc {
-namespace {
-
-std::unique_ptr<base::trace_event::TracedValue>
-ComputeLayerTreeHostProtoSizeSplitAsValue(proto::LayerTreeHost* proto) {
-  std::unique_ptr<base::trace_event::TracedValue> value(
-      new base::trace_event::TracedValue());
-  base::CheckedNumeric<int> base_layer_properties_size = 0;
-  base::CheckedNumeric<int> picture_layer_properties_size = 0;
-  base::CheckedNumeric<int> display_item_list_size = 0;
-  base::CheckedNumeric<int> drawing_display_items_size = 0;
-
-  const proto::LayerUpdate& layer_update_proto = proto->layer_updates();
-  for (int i = 0; i < layer_update_proto.layers_size(); ++i) {
-    const proto::LayerProperties layer_properties_proto =
-        layer_update_proto.layers(i);
-    base_layer_properties_size += layer_properties_proto.base().ByteSize();
-
-    if (layer_properties_proto.has_picture()) {
-      const proto::PictureLayerProperties& picture_proto =
-          layer_properties_proto.picture();
-      picture_layer_properties_size += picture_proto.ByteSize();
-
-      const proto::DisplayItemList& display_list_proto =
-          picture_proto.display_list();
-      display_item_list_size += display_list_proto.ByteSize();
-
-      for (int j = 0; j < display_list_proto.items_size(); ++j) {
-        const proto::DisplayItem& display_item = display_list_proto.items(j);
-        if (display_item.type() == proto::DisplayItem::Type_Drawing)
-          drawing_display_items_size += display_item.ByteSize();
-      }
-    }
-  }
-
-  value->SetInteger("TotalLayerTreeHostProtoSize", proto->ByteSize());
-  value->SetInteger("LayerTreeHierarchySize",
-                    proto->layer_tree().root_layer().ByteSize());
-  value->SetInteger("LayerUpdatesSize", proto->layer_updates().ByteSize());
-  value->SetInteger("PropertyTreesSize",
-                    proto->layer_tree().property_trees().ByteSize());
-
-  // LayerUpdate size breakdown.
-  value->SetInteger("TotalBasePropertiesSize",
-                    base_layer_properties_size.ValueOrDefault(-1));
-  value->SetInteger("PictureLayerPropertiesSize",
-                    picture_layer_properties_size.ValueOrDefault(-1));
-  value->SetInteger("DisplayItemListSize",
-                    display_item_list_size.ValueOrDefault(-1));
-  value->SetInteger("DrawingDisplayItemsSize",
-                    drawing_display_items_size.ValueOrDefault(-1));
-  return value;
-}
-
-}  // namespace
 
 LayerTreeHostInProcess::InitParams::InitParams() {}
 
@@ -148,41 +89,6 @@ LayerTreeHostInProcess::CreateSingleThreaded(
       new LayerTreeHostInProcess(params, CompositorMode::SINGLE_THREADED));
   layer_tree_host->InitializeSingleThreaded(single_thread_client,
                                             params->main_task_runner);
-  return layer_tree_host;
-}
-
-std::unique_ptr<LayerTreeHostInProcess>
-LayerTreeHostInProcess::CreateRemoteServer(
-    RemoteProtoChannel* remote_proto_channel,
-    InitParams* params) {
-  DCHECK(params->main_task_runner.get());
-  DCHECK(params->settings);
-  DCHECK(remote_proto_channel);
-  TRACE_EVENT0("cc.remote", "LayerTreeHostInProcess::CreateRemoteServer");
-
-  DCHECK(params->image_serialization_processor);
-
-  std::unique_ptr<LayerTreeHostInProcess> layer_tree_host(
-      new LayerTreeHostInProcess(params, CompositorMode::REMOTE));
-  layer_tree_host->InitializeRemoteServer(remote_proto_channel,
-                                          params->main_task_runner);
-  return layer_tree_host;
-}
-
-std::unique_ptr<LayerTreeHostInProcess>
-LayerTreeHostInProcess::CreateRemoteClient(
-    RemoteProtoChannel* remote_proto_channel,
-    scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
-    InitParams* params) {
-  DCHECK(params->main_task_runner.get());
-  DCHECK(params->settings);
-  DCHECK(remote_proto_channel);
-  DCHECK(params->image_serialization_processor);
-
-  std::unique_ptr<LayerTreeHostInProcess> layer_tree_host(
-      new LayerTreeHostInProcess(params, CompositorMode::REMOTE));
-  layer_tree_host->InitializeRemoteClient(
-      remote_proto_channel, params->main_task_runner, impl_task_runner);
   return layer_tree_host;
 }
 
@@ -216,6 +122,7 @@ LayerTreeHostInProcess::LayerTreeHostInProcess(
       image_serialization_processor_(params->image_serialization_processor) {
   DCHECK(task_graph_runner_);
   DCHECK(layer_tree_);
+  DCHECK_NE(compositor_mode_, CompositorMode::REMOTE);
 
   rendering_stats_instrumentation_->set_record_rendering_stats(
       debug_state_.RecordRenderingStats());
@@ -237,43 +144,6 @@ void LayerTreeHostInProcess::InitializeSingleThreaded(
   task_runner_provider_ = TaskRunnerProvider::Create(main_task_runner, nullptr);
   InitializeProxy(SingleThreadProxy::Create(this, single_thread_client,
                                             task_runner_provider_.get()));
-}
-
-void LayerTreeHostInProcess::InitializeRemoteServer(
-    RemoteProtoChannel* remote_proto_channel,
-    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner) {
-  task_runner_provider_ = TaskRunnerProvider::Create(main_task_runner, nullptr);
-
-  if (image_serialization_processor_) {
-    engine_picture_cache_ =
-        image_serialization_processor_->CreateEnginePictureCache();
-    layer_tree_->set_engine_picture_cache(engine_picture_cache_.get());
-  }
-  InitializeProxy(ProxyMain::CreateRemote(remote_proto_channel, this,
-                                          task_runner_provider_.get()));
-}
-
-void LayerTreeHostInProcess::InitializeRemoteClient(
-    RemoteProtoChannel* remote_proto_channel,
-    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
-  task_runner_provider_ =
-      TaskRunnerProvider::Create(main_task_runner, impl_task_runner);
-
-  if (image_serialization_processor_) {
-    client_picture_cache_ =
-        image_serialization_processor_->CreateClientPictureCache();
-    layer_tree_->set_client_picture_cache(client_picture_cache_.get());
-  }
-
-  // For the remote mode, the RemoteChannelImpl implements the Proxy, which is
-  // owned by the LayerTreeHostInProcess. The RemoteChannelImpl pipes requests
-  // which need to handled locally, for instance the Output Surface creation to
-  // the LayerTreeHostInProcess on the client, while the other requests are sent
-  // to the RemoteChannelMain on the server which directs them to ProxyMain and
-  // the remote server LayerTreeHostInProcess.
-  InitializeProxy(base::MakeUnique<RemoteChannelImpl>(
-      this, remote_proto_channel, task_runner_provider_.get()));
 }
 
 void LayerTreeHostInProcess::InitializeForTesting(
@@ -420,7 +290,6 @@ void LayerTreeHostInProcess::RequestMainFrameUpdate() {
 // will run after the commit, but on the main thread.
 void LayerTreeHostInProcess::FinishCommitOnImplThread(
     LayerTreeHostImpl* host_impl) {
-  DCHECK(!IsRemoteServer());
   DCHECK(task_runner_provider_->IsImplThread());
 
   bool is_new_trace;
@@ -564,7 +433,6 @@ void LayerTreeHostInProcess::DidFailToInitializeCompositorFrameSink() {
 std::unique_ptr<LayerTreeHostImpl>
 LayerTreeHostInProcess::CreateLayerTreeHostImpl(
     LayerTreeHostImplClient* client) {
-  DCHECK(!IsRemoteServer());
   DCHECK(task_runner_provider_->IsImplThread());
 
   const bool supports_impl_scrolling = task_runner_provider_->HasImplThread();
@@ -912,8 +780,8 @@ void LayerTreeHostInProcess::UpdateBrowserControlsState(
     BrowserControlsState constraints,
     BrowserControlsState current,
     bool animate) {
-  // Browser controls are only used in threaded or remote mode.
-  DCHECK(IsThreaded() || IsRemoteServer());
+  // Browser controls are only used in threaded mode.
+  DCHECK(IsThreaded());
   proxy_->UpdateBrowserControlsState(constraints, current, animate);
 }
 
@@ -957,103 +825,6 @@ bool LayerTreeHostInProcess::IsThreaded() const {
   DCHECK(compositor_mode_ != CompositorMode::THREADED ||
          task_runner_provider_->HasImplThread());
   return compositor_mode_ == CompositorMode::THREADED;
-}
-
-bool LayerTreeHostInProcess::IsRemoteServer() const {
-  // The LayerTreeHostInProcess on the server does not have an impl task runner.
-  return compositor_mode_ == CompositorMode::REMOTE &&
-         !task_runner_provider_->HasImplThread();
-}
-
-bool LayerTreeHostInProcess::IsRemoteClient() const {
-  return compositor_mode_ == CompositorMode::REMOTE &&
-         task_runner_provider_->HasImplThread();
-}
-
-void LayerTreeHostInProcess::ToProtobufForCommit(
-    proto::LayerTreeHost* proto,
-    std::vector<std::unique_ptr<SwapPromise>>* swap_promises) {
-  DCHECK(engine_picture_cache_);
-  // Not all fields are serialized, as they are either not needed for a commit,
-  // or implementation isn't ready yet.
-  // Unsupported items:
-  // - animations
-  // - UI resources
-  // - instrumentation of stats
-  // - histograms
-  // Skipped items:
-  // - SwapPromise as they are mostly used for perf measurements.
-  // - The bitmap and GPU memory related items.
-  // Other notes:
-  // - The output surfaces are only valid on the client-side so they are
-  //   therefore not serialized.
-  // - LayerTreeSettings are needed only during construction of the
-  //   LayerTreeHostInProcess, so they are serialized outside of the
-  //   LayerTreeHostInProcess
-  //   serialization.
-  // - The |visible_| flag will be controlled from the client separately and
-  //   will need special handling outside of the serialization of the
-  //   LayerTreeHostInProcess.
-  // TODO(nyquist): Figure out how to support animations. See crbug.com/570376.
-  TRACE_EVENT0("cc.remote", "LayerTreeHostInProcess::ToProtobufForCommit");
-  *swap_promises = swap_promise_manager_.TakeSwapPromises();
-
-  proto->set_source_frame_number(source_frame_number_);
-
-  // Serialize the LayerTree before serializing the properties. During layer
-  // property serialization, we clear the list |layer_that_should_properties_|
-  // from the LayerTree.
-  // The serialization code here need to serialize the complete state, including
-  // the result of the main frame update.
-  const bool inputs_only = false;
-  layer_tree_->ToProtobuf(proto->mutable_layer_tree(), inputs_only);
-
-  LayerProtoConverter::SerializeLayerProperties(this,
-                                                proto->mutable_layer_updates());
-
-  std::vector<PictureData> pictures =
-      engine_picture_cache_->CalculateCacheUpdateAndFlush();
-  proto::PictureDataVectorToSkPicturesProto(pictures,
-                                            proto->mutable_pictures());
-
-  debug_state_.ToProtobuf(proto->mutable_debug_state());
-  proto->set_has_gpu_rasterization_trigger(has_gpu_rasterization_trigger_);
-  proto->set_content_is_suitable_for_gpu_rasterization(
-      content_is_suitable_for_gpu_rasterization_);
-  proto->set_id(id_);
-  proto->set_next_commit_forces_redraw(next_commit_forces_redraw_);
-
-  TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
-      "cc.remote", "LayerTreeHostProto", source_frame_number_,
-      ComputeLayerTreeHostProtoSizeSplitAsValue(proto));
-}
-
-void LayerTreeHostInProcess::FromProtobufForCommit(
-    const proto::LayerTreeHost& proto) {
-  DCHECK(client_picture_cache_);
-  source_frame_number_ = proto.source_frame_number();
-
-  layer_tree_->FromProtobuf(proto.layer_tree());
-
-  // Ensure ClientPictureCache contains all the necessary SkPictures before
-  // deserializing the properties.
-  proto::SkPictures proto_pictures = proto.pictures();
-  std::vector<PictureData> pictures =
-      SkPicturesProtoToPictureDataVector(proto_pictures);
-  client_picture_cache_->ApplyCacheUpdate(pictures);
-
-  LayerProtoConverter::DeserializeLayerProperties(layer_tree_->root_layer(),
-                                                  proto.layer_updates());
-
-  // The deserialization is finished, so now clear the cache.
-  client_picture_cache_->Flush();
-
-  debug_state_.FromProtobuf(proto.debug_state());
-  has_gpu_rasterization_trigger_ = proto.has_gpu_rasterization_trigger();
-  content_is_suitable_for_gpu_rasterization_ =
-      proto.content_is_suitable_for_gpu_rasterization();
-  id_ = proto.id();
-  next_commit_forces_redraw_ = proto.next_commit_forces_redraw();
 }
 
 }  // namespace cc

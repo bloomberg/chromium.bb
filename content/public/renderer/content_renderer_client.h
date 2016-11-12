@@ -58,7 +58,6 @@ struct WebURLError;
 namespace cc {
 class ImageSerializationProcessor;
 class RemoteCompositorBridge;
-class RemoteProtoChannel;
 }
 
 namespace gfx {
@@ -77,6 +76,7 @@ class InterfaceRegistry;
 namespace content {
 class BrowserPluginDelegate;
 class MediaStreamRendererFactory;
+class RemoteProtoChannel;
 class RenderFrame;
 class RenderView;
 
@@ -276,7 +276,7 @@ class CONTENT_EXPORT ContentRendererClient {
   // The |remote_proto_channel| outlives the RemoteCompositorBridge.
   virtual std::unique_ptr<cc::RemoteCompositorBridge>
   CreateRemoteCompositorBridge(
-      cc::RemoteProtoChannel* remote_proto_channel,
+      RemoteProtoChannel* remote_proto_channel,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_main_task_runner);
 
   // Allows an embedder to provide a default image decode color space.

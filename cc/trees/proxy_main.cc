@@ -18,7 +18,6 @@
 #include "cc/trees/blocking_task_runner.h"
 #include "cc/trees/layer_tree_host_in_process.h"
 #include "cc/trees/mutator_host.h"
-#include "cc/trees/remote_channel_main.h"
 #include "cc/trees/scoped_abort_remaining_swap_promises.h"
 #include "cc/trees/threaded_channel.h"
 
@@ -31,17 +30,6 @@ std::unique_ptr<ProxyMain> ProxyMain::CreateThreaded(
       new ProxyMain(layer_tree_host, task_runner_provider));
   proxy_main->SetChannel(
       ThreadedChannel::Create(proxy_main.get(), task_runner_provider));
-  return proxy_main;
-}
-
-std::unique_ptr<ProxyMain> ProxyMain::CreateRemote(
-    RemoteProtoChannel* remote_proto_channel,
-    LayerTreeHostInProcess* layer_tree_host,
-    TaskRunnerProvider* task_runner_provider) {
-  std::unique_ptr<ProxyMain> proxy_main(
-      new ProxyMain(layer_tree_host, task_runner_provider));
-  proxy_main->SetChannel(RemoteChannelMain::Create(
-      remote_proto_channel, proxy_main.get(), task_runner_provider));
   return proxy_main;
 }
 
@@ -351,7 +339,7 @@ void ProxyMain::MainThreadHasStoppedFlinging() {
 
 void ProxyMain::Start() {
   DCHECK(IsMainThread());
-  DCHECK(layer_tree_host_->IsThreaded() || layer_tree_host_->IsRemoteServer());
+  DCHECK(layer_tree_host_->IsThreaded());
   DCHECK(channel_main_);
 
   // Create LayerTreeHostImpl.

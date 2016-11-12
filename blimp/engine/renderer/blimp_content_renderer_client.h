@@ -26,7 +26,7 @@ class BlimpContentRendererClient : public content::ContentRendererClient {
   void RenderThreadStarted() override;
   cc::ImageSerializationProcessor* GetImageSerializationProcessor() override;
   std::unique_ptr<cc::RemoteCompositorBridge> CreateRemoteCompositorBridge(
-      cc::RemoteProtoChannel* remote_proto_channel,
+      content::RemoteProtoChannel* remote_proto_channel,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_main_task_runner)
       override;
 

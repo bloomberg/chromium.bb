@@ -5,6 +5,7 @@
 #ifndef BLIMP_CLIENT_CORE_COMPOSITOR_BLIMP_COMPOSITOR_H_
 #define BLIMP_CLIENT_CORE_COMPOSITOR_BLIMP_COMPOSITOR_H_
 
+#include <content/public/renderer/remote_proto_channel.h>
 #include <memory>
 #include <vector>
 
@@ -18,7 +19,6 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_settings.h"
-#include "cc/trees/remote_proto_channel.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 

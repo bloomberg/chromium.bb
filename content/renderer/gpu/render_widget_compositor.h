@@ -17,9 +17,9 @@
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "cc/trees/layer_tree_settings.h"
-#include "cc/trees/remote_proto_channel.h"
 #include "cc/trees/swap_promise_monitor.h"
 #include "content/common/content_export.h"
+#include "content/public/renderer/remote_proto_channel.h"
 #include "content/renderer/gpu/compositor_dependencies.h"
 #include "third_party/WebKit/public/platform/WebLayerTreeView.h"
 #include "ui/gfx/geometry/rect.h"
@@ -55,7 +55,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
     : NON_EXPORTED_BASE(public blink::WebLayerTreeView),
       NON_EXPORTED_BASE(public cc::LayerTreeHostClient),
       NON_EXPORTED_BASE(public cc::LayerTreeHostSingleThreadClient),
-      NON_EXPORTED_BASE(public cc::RemoteProtoChannel) {
+      public RemoteProtoChannel {
  public:
   // Attempt to construct and initialize a compositor instance for the widget
   // with the given settings. Returns NULL if initialization fails.
@@ -197,7 +197,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void DidSubmitCompositorFrame() override;
   void DidLoseCompositorFrameSink() override;
 
-  // cc::RemoteProtoChannel implementation.
+  // RemoteProtoChannel implementation.
   void SetProtoReceiver(ProtoReceiver* receiver) override;
   void SendCompositorProto(const cc::proto::CompositorMessage& proto) override;
 
@@ -231,7 +231,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
 
   blink::WebLayoutAndPaintAsyncCallback* layout_and_paint_async_callback_;
 
-  cc::RemoteProtoChannel::ProtoReceiver* remote_proto_channel_receiver_;
+  RemoteProtoChannel::ProtoReceiver* remote_proto_channel_receiver_;
 
   base::WeakPtrFactory<RenderWidgetCompositor> weak_factory_;
 };

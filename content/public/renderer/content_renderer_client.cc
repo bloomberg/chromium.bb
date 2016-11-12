@@ -185,7 +185,7 @@ ContentRendererClient::GetImageSerializationProcessor() {
 
 std::unique_ptr<cc::RemoteCompositorBridge>
 ContentRendererClient::CreateRemoteCompositorBridge(
-    cc::RemoteProtoChannel* remote_proto_channel,
+    RemoteProtoChannel* remote_proto_channel,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_main_task_runner) {
   return nullptr;
 }

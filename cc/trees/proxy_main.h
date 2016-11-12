@@ -11,7 +11,6 @@
 #include "cc/trees/channel_main.h"
 #include "cc/trees/proxy.h"
 #include "cc/trees/proxy_common.h"
-#include "cc/trees/remote_proto_channel.h"
 
 namespace cc {
 
@@ -28,11 +27,6 @@ class LayerTreeMutator;
 class CC_EXPORT ProxyMain : public Proxy {
  public:
   static std::unique_ptr<ProxyMain> CreateThreaded(
-      LayerTreeHostInProcess* layer_tree_host,
-      TaskRunnerProvider* task_runner_provider);
-
-  static std::unique_ptr<ProxyMain> CreateRemote(
-      RemoteProtoChannel* remote_proto_channel,
       LayerTreeHostInProcess* layer_tree_host,
       TaskRunnerProvider* task_runner_provider);
 

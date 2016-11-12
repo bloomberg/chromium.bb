@@ -18,7 +18,7 @@ namespace {
 
 class BlimpRemoteCompositorBridgeTest : public testing::Test,
                                         public cc::RemoteCompositorBridgeClient,
-                                        public cc::RemoteProtoChannel {
+                                        public content::RemoteProtoChannel {
  public:
   BlimpRemoteCompositorBridgeTest() = default;
   ~BlimpRemoteCompositorBridgeTest() override = default;
@@ -95,7 +95,7 @@ class BlimpRemoteCompositorBridgeTest : public testing::Test,
  protected:
   base::MessageLoop loop_;
   std::unique_ptr<BlimpRemoteCompositorBridge> remote_compositor_bridge_;
-  cc::RemoteProtoChannel::ProtoReceiver* proto_receiver_ = nullptr;
+  content::RemoteProtoChannel::ProtoReceiver* proto_receiver_ = nullptr;
 
  private:
   int num_of_frames_sent_ = 0;

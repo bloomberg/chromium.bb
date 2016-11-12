@@ -75,6 +75,7 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
   }
 
   void RegisterSelection(const LayerSelection& selection);
+  const LayerSelection& selection() const { return inputs_.selection; }
 
   void SetHaveScrollEventHandlers(bool have_event_handlers);
   bool have_scroll_event_handlers() const {
@@ -110,6 +111,9 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
   void set_has_transparent_background(bool transparent) {
     inputs_.has_transparent_background = transparent;
   }
+  bool has_transparent_background() const {
+    return inputs_.has_transparent_background;
+  }
 
   void StartPageScaleAnimation(const gfx::Vector2d& target_offset,
                                bool use_anchor,
@@ -121,6 +125,9 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
   float device_scale_factor() const { return inputs_.device_scale_factor; }
 
   void SetPaintedDeviceScaleFactor(float painted_device_scale_factor);
+  float painted_device_scale_factor() const {
+    return inputs_.painted_device_scale_factor;
+  }
 
   void SetDeviceColorSpace(const gfx::ColorSpace& device_color_space);
   const gfx::ColorSpace& device_color_space() const {

@@ -88,6 +88,7 @@ class FakeLayerTreeHost : public LayerTreeHostInProcess {
   }
 
   bool needs_commit() { return needs_commit_; }
+  void reset_needs_commit() { needs_commit_ = false; }
 
   FakeLayerTreeHost(FakeLayerTreeHostClient* client,
                     LayerTreeHostInProcess::InitParams* params,
