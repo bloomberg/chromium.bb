@@ -18,7 +18,6 @@ class LocatedEvent;
 namespace views {
 
 class MenuController;
-class Widget;
 
 // Interface used by MenuController to run a nested message loop while
 // showing a menu, allowing for platform specific implementations.

@@ -14,14 +14,9 @@
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/view.h"
 
-namespace views {
-class ImageButton;
-}  // namespace views
-
 namespace app_list {
 
 class AppListFolderItem;
-class AppListFolderView;
 class FolderHeaderViewDelegate;
 
 namespace test {

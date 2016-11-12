@@ -17,10 +17,6 @@
 #include "ui/gfx/transform.h"
 #include "ui/views/views_export.h"
 
-namespace gfx {
-class Rect;
-}
-
 namespace ui {
 class Layer;
 class CallbackLayerAnimationObserver;

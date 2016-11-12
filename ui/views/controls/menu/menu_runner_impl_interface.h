@@ -12,8 +12,6 @@
 
 namespace views {
 
-class MenuItemView;
-
 namespace internal {
 
 // An abstract interface for menu runner implementations.

@@ -10,20 +10,13 @@
 #include "ui/aura/window_tree_host_platform.h"
 #include "ui/views/mus/mus_export.h"
 
-class SkBitmap;
-
 namespace ui {
 class Window;
-}
-
-namespace service_manager {
-class Connector;
 }
 
 namespace views {
 
 class NativeWidgetMus;
-class PlatformWindowMus;
 
 class VIEWS_MUS_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
  public:

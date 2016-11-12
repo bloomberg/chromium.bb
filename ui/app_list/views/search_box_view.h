@@ -16,7 +16,6 @@
 #include "ui/views/view.h"
 
 namespace views {
-class ImageView;
 class Textfield;
 }  // namespace views
 

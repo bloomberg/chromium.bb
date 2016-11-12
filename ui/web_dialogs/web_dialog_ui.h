@@ -19,12 +19,6 @@
 
 namespace content {
 class WebContents;
-class WebUIMessageHandler;
-struct ContextMenuParams;
-}
-
-namespace gfx {
-class Size;
 }
 
 namespace ui {

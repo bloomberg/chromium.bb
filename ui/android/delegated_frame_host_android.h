@@ -17,9 +17,7 @@
 namespace cc {
 
 class CompositorFrame;
-class CopyOutputResult;
 class Layer;
-class SurfaceId;
 class SurfaceManager;
 class SurfaceLayer;
 class SurfaceIdAllocator;

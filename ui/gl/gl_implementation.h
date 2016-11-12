@@ -16,8 +16,6 @@
 
 namespace gl {
 
-class GLContext;
-
 // The GL implementation currently in use.
 enum GLImplementation {
   kGLImplementationNone,

@@ -77,7 +77,6 @@
 namespace ui {
 class AcceleratorManager;
 class AcceleratorTarget;
-class EventHandler;
 class KeyEvent;
 }
 

@@ -31,16 +31,10 @@ class Point;
 class Rect;
 }
 
-namespace service_manager {
-class Connection;
-}
-
 namespace ui {
 
 class DrmDeviceManager;
 class DrmGpuDisplayManager;
-class DrmWindow;
-class DrmWindowProxy;
 class GbmBuffer;
 class ScanoutBufferGenerator;
 class ScreenManager;

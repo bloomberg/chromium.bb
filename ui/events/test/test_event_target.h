@@ -17,10 +17,6 @@
 
 typedef std::vector<std::string> HandlerSequenceRecorder;
 
-namespace gfx {
-class Point;
-}
-
 namespace ui {
 namespace test {
 

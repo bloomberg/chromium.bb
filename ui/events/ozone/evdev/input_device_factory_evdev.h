@@ -25,7 +25,6 @@ namespace ui {
 
 class CursorDelegateEvdev;
 class DeviceEventDispatcherEvdev;
-class InputDeviceFactoryEvdevProxy;
 
 #if !defined(USE_EVDEV)
 #error Missing dependency on ui/events/ozone:events_ozone_evdev

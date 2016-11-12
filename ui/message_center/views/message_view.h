@@ -19,10 +19,6 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/slide_out_view.h"
 
-namespace ui {
-class MenuModel;
-}
-
 namespace views {
 class ImageButton;
 class ImageView;

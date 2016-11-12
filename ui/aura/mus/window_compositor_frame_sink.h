@@ -12,10 +12,6 @@
 #include "cc/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-namespace gpu {
-class GpuChannelHost;
-}
-
 namespace aura {
 
 class WindowCompositorFrameSinkBinding;

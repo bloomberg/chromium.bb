@@ -31,7 +31,6 @@ class GpuService;
 
 namespace views {
 class NativeWidget;
-class PointerWatcher;
 class PointerWatcherEventRouter;
 class ScreenMus;
 class SurfaceContextFactory;

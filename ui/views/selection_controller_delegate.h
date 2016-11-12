@@ -7,10 +7,6 @@
 
 #include "ui/views/views_export.h"
 
-namespace ui {
-class MouseEvent;
-}
-
 namespace views {
 
 // An interface implemented/managed by a view which uses the

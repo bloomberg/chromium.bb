@@ -12,10 +12,6 @@ namespace gfx {
 class Point;
 }
 
-namespace ui {
-class LocatedEvent;
-}
-
 namespace app_list {
 
 class AppListItemView;

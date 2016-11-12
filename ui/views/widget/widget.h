@@ -43,7 +43,6 @@ class TimeDelta;
 }
 
 namespace gfx {
-class Canvas;
 class Point;
 class Rect;
 }

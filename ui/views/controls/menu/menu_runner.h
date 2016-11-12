@@ -32,7 +32,6 @@ namespace views {
 
 class MenuButton;
 class MenuItemView;
-class MenuModelAdapter;
 class MenuRunnerHandler;
 class Widget;
 

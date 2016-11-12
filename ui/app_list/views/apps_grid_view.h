@@ -32,7 +32,6 @@
 
 namespace views {
 class ButtonListener;
-class DragImageView;
 }
 
 namespace app_list {

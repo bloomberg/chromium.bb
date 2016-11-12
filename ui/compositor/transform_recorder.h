@@ -9,7 +9,6 @@
 #include "ui/compositor/compositor_export.h"
 
 namespace cc {
-class DisplayItem;
 class DisplayItemList;
 }
 

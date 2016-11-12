@@ -22,7 +22,6 @@ namespace ui {
 class SelectFileDialogFactory;
 class SelectFilePolicy;
 struct SelectedFileInfo;
-class ShellDialogsDelegate;
 
 // Shows a dialog box for selecting a file or a folder.
 class SHELL_DIALOGS_EXPORT SelectFileDialog

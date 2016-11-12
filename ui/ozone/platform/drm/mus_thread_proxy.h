@@ -22,7 +22,6 @@ class SingleThreadTaskRunner;
 
 namespace ui {
 
-class DrmCursor;
 class DrmDisplayHostManager;
 class DrmOverlayManager;
 class DrmThread;

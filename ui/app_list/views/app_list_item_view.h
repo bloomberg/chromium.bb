@@ -18,8 +18,6 @@
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/custom_button.h"
 
-class SkBitmap;
-
 namespace views {
 class ImageView;
 class Label;

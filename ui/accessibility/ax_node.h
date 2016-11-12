@@ -11,10 +11,6 @@
 
 #include "ui/accessibility/ax_node_data.h"
 
-namespace gfx {
-class Rect;
-}
-
 namespace ui {
 
 // One node in an AXTree.

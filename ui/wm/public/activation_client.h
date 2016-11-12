@@ -7,10 +7,6 @@
 
 #include "ui/aura/aura_export.h"
 
-namespace ui {
-class Event;
-}
-
 namespace aura {
 class Window;
 

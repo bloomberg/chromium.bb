@@ -9,7 +9,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace gfx {
-class Point;
 class Rect;
 }
 

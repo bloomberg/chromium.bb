@@ -12,8 +12,6 @@
 
 namespace views {
 
-class MenuItemView;
-
 class MenuSeparator : public View {
  public:
   explicit MenuSeparator(ui::MenuSeparatorType type) : type_(type) {}

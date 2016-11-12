@@ -9,7 +9,6 @@
 
 namespace aura {
 
-class Window;
 class WindowTreeClient;
 
 class AURA_EXPORT WindowTreeClientObserver {

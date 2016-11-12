@@ -29,12 +29,10 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace gfx {
-class Point;
 class Size;
 }
 
 namespace ui {
-struct DisplayConfigureRequest;
 struct GammaRampRGBEntry;
 class DisplayLayoutManager;
 class DisplayMode;

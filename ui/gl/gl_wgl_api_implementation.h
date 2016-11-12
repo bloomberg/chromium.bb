@@ -16,7 +16,6 @@ class CommandLine;
 }
 namespace gl {
 
-class GLContext;
 struct GLWindowSystemBindingInfo;
 
 GL_EXPORT void InitializeStaticGLBindingsWGL();

@@ -16,7 +16,6 @@
 
 namespace gfx {
 class Rect;
-class Vector2d;
 }
 
 namespace ui {

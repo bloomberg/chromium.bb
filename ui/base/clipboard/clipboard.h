@@ -29,18 +29,6 @@
 #include <objidl.h>
 #endif
 
-namespace base {
-class FilePath;
-
-namespace win {
-class MessageWindow;
-}  // namespace win
-}  // namespace base
-
-namespace gfx {
-class Size;
-}
-
 class SkBitmap;
 
 #ifdef __OBJC__
@@ -50,8 +38,6 @@ class NSString;
 #endif
 
 namespace ui {
-template <typename T>
-class ClipboardTest;
 class TestClipboard;
 class ScopedClipboardWriter;
 

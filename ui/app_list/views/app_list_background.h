@@ -15,8 +15,6 @@ class View;
 
 namespace app_list {
 
-class AppListMainView;
-
 // A class to paint bubble background.
 class AppListBackground : public views::Background {
  public:

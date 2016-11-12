@@ -15,7 +15,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace aura {
-class Env;
 class GpuService;
 class PropertyConverter;
 class MusContextFactory;

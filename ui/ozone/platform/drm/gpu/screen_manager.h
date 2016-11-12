@@ -19,7 +19,6 @@ typedef struct _drmModeModeInfo drmModeModeInfo;
 namespace gfx {
 class Point;
 class Rect;
-class Size;
 }  // namespace gfx
 
 namespace ui {

@@ -20,9 +20,6 @@ class MenuModel;
 namespace message_center {
 
 class MessageCenter;
-class MessageBubbleBase;
-class MessagePopupBubble;
-class QuietModeBubble;
 
 // Implementation found with each supported platform's implementation of
 // MessageCenterTrayDelegate.

@@ -12,10 +12,6 @@
 #include "base/macros.h"
 #include "ui/views/controls/menu/menu_message_loop.h"
 
-namespace ui {
-class ScopedEventDispatcher;
-}
-
 namespace views {
 
 class MenuMessageLoopAura : public MenuMessageLoop {

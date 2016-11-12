@@ -19,6 +19,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/param_traits_macros.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/ipc/url_param_traits.h"
 
 // Singly-included section for types and/or struct declarations.

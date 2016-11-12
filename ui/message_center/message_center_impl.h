@@ -23,7 +23,6 @@
 #include "ui/message_center/popup_timers_controller.h"
 
 namespace message_center {
-class NotificationDelegate;
 class MessageCenterImpl;
 
 namespace internal {

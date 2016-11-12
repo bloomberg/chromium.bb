@@ -21,7 +21,6 @@
 namespace ui {
 
 class DrmThreadProxy;
-class GbmDevice;
 class GbmSurfaceless;
 
 class GbmSurfaceFactory : public SurfaceFactoryOzone {

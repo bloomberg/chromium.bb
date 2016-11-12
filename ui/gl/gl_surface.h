@@ -22,7 +22,6 @@
 #include "ui/gl/gl_implementation.h"
 
 namespace gfx {
-class Transform;
 class VSyncProvider;
 }
 

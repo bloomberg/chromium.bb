@@ -14,7 +14,6 @@
 
 namespace views {
 
-class NativeWidget;
 class SubmenuView;
 class View;
 class Widget;

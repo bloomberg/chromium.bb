@@ -9,7 +9,6 @@
 
 namespace ui {
 class Accelerator;
-class AcceleratorTarget;
 }
 
 namespace views {

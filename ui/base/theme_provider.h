@@ -22,8 +22,6 @@ class NSImage;
 #endif  // __OBJC__
 #endif  // OS_*
 
-class SkBitmap;
-
 namespace base {
 class RefCountedMemory;
 }

@@ -14,7 +14,6 @@ class Rect;
 namespace views {
 
 class Widget;
-class View;
 
 // Observers can listen to various events on the Widgets.
 class VIEWS_EXPORT WidgetObserver {

@@ -18,7 +18,6 @@ class MessageLoopForUI;
 
 namespace ui {
 class ContextFactory;
-class InputMethod;
 class ScopedAnimationDurationScaleMode;
 }
 

@@ -28,7 +28,6 @@ class Rect;
 namespace ui {
 
 class DrmBuffer;
-class DrmDevice;
 class DrmDeviceManager;
 class DrmOverlayValidator;
 class HardwareDisplayController;

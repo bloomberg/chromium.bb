@@ -18,7 +18,6 @@
 
 namespace base {
 class DictionaryValue;
-class SequencedTaskRunner;
 }
 
 namespace app_list {

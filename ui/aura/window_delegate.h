@@ -13,7 +13,6 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
-class Canvas;
 class Path;
 class Point;
 class Rect;
@@ -21,14 +20,7 @@ class Size;
 }
 
 namespace ui {
-class GestureEvent;
-class KeyEvent;
-class Layer;
-class MouseEvent;
 class PaintContext;
-class TextInputClient;
-class Texture;
-class TouchEvent;
 }
 
 namespace aura {

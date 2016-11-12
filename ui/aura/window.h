@@ -37,14 +37,10 @@ class Display;
 
 namespace gfx {
 class Transform;
-class Vector2d;
 }
 
 namespace ui {
-class EventHandler;
 class Layer;
-class TextInputClient;
-class Texture;
 }
 
 namespace aura {

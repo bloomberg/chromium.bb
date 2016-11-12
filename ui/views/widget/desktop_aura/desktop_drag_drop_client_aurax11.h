@@ -37,7 +37,6 @@ class Point;
 }
 
 namespace ui {
-class DragSource;
 class DropTargetEvent;
 class OSExchangeData;
 class OSExchangeDataProviderAuraX11;

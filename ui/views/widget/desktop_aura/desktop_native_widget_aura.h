@@ -24,7 +24,6 @@ class WindowEventDispatcher;
 class WindowTreeHost;
 namespace client {
 class DragDropClient;
-class FocusClient;
 class ScreenPositionClient;
 class WindowParentingClient;
 }

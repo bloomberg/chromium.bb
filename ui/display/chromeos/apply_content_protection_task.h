@@ -18,7 +18,6 @@
 namespace ui {
 
 class DisplayLayoutManager;
-class DisplaySnapshot;
 class NativeDisplayDelegate;
 
 // In order to apply content protection the task executes in the following

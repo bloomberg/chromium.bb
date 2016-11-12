@@ -14,6 +14,10 @@ namespace aura {
 class Window;
 }
 
+namespace ui {
+class EventTarget;
+}
+
 // JavascriptAppModalEventBlockerX11 blocks events to all browser windows except
 // the browser window which hosts |app_modal_window| for the duration of its
 // lifetime. JavascriptAppModalEventBlockerX11 should not outlive

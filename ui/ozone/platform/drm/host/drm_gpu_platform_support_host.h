@@ -15,8 +15,6 @@
 #include "ui/ozone/platform/drm/host/gpu_thread_adapter.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 
-class SkBitmap;
-
 namespace gfx {
 class Point;
 }

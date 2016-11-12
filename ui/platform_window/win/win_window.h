@@ -13,6 +13,8 @@
 
 namespace ui {
 
+class PlatformWindowDelegate;
+
 class WIN_WINDOW_EXPORT WinWindow : public NON_EXPORTED_BASE(PlatformWindow),
                                     public gfx::WindowImpl {
  public:

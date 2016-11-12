@@ -12,6 +12,8 @@
 
 namespace ui {
 
+class PlatformWindowDelegate;
+
 class PlatformWindowCast : public PlatformWindow {
  public:
   PlatformWindowCast(PlatformWindowDelegate* delegate, const gfx::Rect& bounds);

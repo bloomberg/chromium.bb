@@ -26,7 +26,6 @@ class AppListFolderItem;
 class AppListFolderView;
 class AppListMainView;
 class AppListModel;
-class ContentsView;
 class FolderBackgroundView;
 
 // AppsContainerView contains a root level AppsGridView to render the root level

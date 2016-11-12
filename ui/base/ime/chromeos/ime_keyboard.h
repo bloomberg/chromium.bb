@@ -33,8 +33,6 @@ enum ModifierKey {
   kNumModifierKeys,
 };
 
-class InputMethodUtil;
-
 class UI_BASE_IME_EXPORT ImeKeyboard {
  public:
   class Observer {

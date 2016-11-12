@@ -22,6 +22,10 @@
 
 class GURL;
 
+namespace gfx {
+class Size;
+}
+
 namespace ui {
 class ScopedClipboardWriter;
 }  // namespace ui

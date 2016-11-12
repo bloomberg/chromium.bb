@@ -13,8 +13,6 @@ namespace gfx {
 class Rect;
 }
 
-class SkRegion;
-
 namespace ui {
 
 // Provides an interface to perform actions on windows, and query window

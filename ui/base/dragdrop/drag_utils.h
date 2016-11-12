@@ -10,12 +10,9 @@
 #include "base/files/file_path.h"
 #include "ui/base/ui_base_export.h"
 
-class GURL;
-
 namespace gfx {
 class Canvas;
 class ImageSkia;
-class Size;
 class Vector2d;
 }
 

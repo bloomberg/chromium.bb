@@ -11,7 +11,6 @@
 
 namespace app_list {
 
-class AppListItemList;
 class ContentsView;
 
 // A tile item for the "All apps" button on the start page.

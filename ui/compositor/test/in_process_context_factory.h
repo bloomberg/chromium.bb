@@ -16,10 +16,6 @@
 #include "cc/test/test_task_graph_runner.h"
 #include "ui/compositor/compositor.h"
 
-namespace base {
-class Thread;
-}
-
 namespace cc {
 class SurfaceManager;
 }

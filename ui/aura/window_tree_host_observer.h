@@ -12,7 +12,6 @@ class Point;
 }
 
 namespace aura {
-class Window;
 class WindowTreeHost;
 
 class AURA_EXPORT WindowTreeHostObserver {

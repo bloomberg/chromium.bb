@@ -23,7 +23,6 @@ class Window;
 namespace ui {
 
 class Event;
-class EventHandler;
 class GestureEvent;
 class GestureProviderAura;
 class TouchEvent;

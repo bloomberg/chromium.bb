@@ -27,24 +27,16 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace gfx {
-class Size;
-class Transform;
-}
-
 namespace ui {
 class GestureEvent;
 class GestureRecognizer;
-class KeyEvent;
 class MouseEvent;
-class ScrollEvent;
 class TouchEvent;
 }
 
 namespace aura {
 class TestScreen;
 class EnvInputStateController;
-class WindowTargeter;
 class WindowTreeHost;
 
 namespace test {

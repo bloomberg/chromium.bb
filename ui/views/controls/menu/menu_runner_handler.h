@@ -10,7 +10,6 @@
 namespace views {
 
 class MenuButton;
-class MenuItemView;
 class Widget;
 
 // Used internally by MenuRunner to show the menu. Can be set in tests (see

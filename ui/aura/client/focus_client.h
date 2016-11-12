@@ -9,7 +9,6 @@
 #include "ui/aura/window.h"
 
 namespace aura {
-class Window;
 namespace client {
 class FocusChangeObserver;
 

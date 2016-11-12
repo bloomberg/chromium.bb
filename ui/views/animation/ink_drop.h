@@ -16,9 +16,6 @@
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/views_export.h"
 
-namespace ui {
-class Layer;
-}
 namespace views {
 
 // Pure virtual base class that manages the lifetime and state of an ink drop

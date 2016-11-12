@@ -8,7 +8,6 @@
 #include "ui/compositor/compositor_export.h"
 
 namespace gfx {
-class Canvas;
 class Rect;
 }
 

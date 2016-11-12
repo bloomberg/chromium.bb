@@ -17,8 +17,6 @@
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/text_constants.h"
 
-class GURL;
-
 namespace base {
 class FilePath;
 }

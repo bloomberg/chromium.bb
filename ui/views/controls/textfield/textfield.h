@@ -37,7 +37,6 @@
 namespace views {
 
 class MenuRunner;
-class Painter;
 class TextfieldController;
 
 // A views/skia textfield implementation. No platform-specific code is used.

@@ -25,7 +25,6 @@ class Point;
 
 namespace views {
 class DesktopWindowTreeHost;
-class NativeWidgetAura;
 
 // An EventFilter that sets properties on X11 windows.
 class VIEWS_EXPORT X11WindowEventFilter : public ui::EventHandler {

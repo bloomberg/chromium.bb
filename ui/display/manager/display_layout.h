@@ -15,11 +15,6 @@
 #include "base/strings/string_piece.h"
 #include "ui/display/display_export.h"
 
-namespace base {
-class Value;
-template <typename T> class JSONValueConverter;
-}
-
 namespace display {
 class Display;
 

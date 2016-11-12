@@ -12,7 +12,6 @@
 
 namespace gfx {
 class Canvas;
-class Path;
 class Size;
 }
 

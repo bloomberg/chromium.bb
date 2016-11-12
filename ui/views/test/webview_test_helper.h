@@ -9,10 +9,6 @@
 
 #include "base/macros.h"
 
-namespace base {
-class MessageLoopForUI;
-}
-
 namespace content {
 class TestContentClientInitializer;
 }  // namespace content

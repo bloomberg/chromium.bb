@@ -20,10 +20,6 @@ namespace base {
 class FilePath;
 }
 
-namespace views {
-class ImageView;
-}
-
 namespace app_list {
 class ApplicationDragAndDropHost;
 class AppListMainView;

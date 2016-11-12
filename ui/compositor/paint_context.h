@@ -16,10 +16,6 @@ namespace cc {
 class DisplayItemList;
 }
 
-namespace gfx {
-class Canvas;
-}
-
 class SkPictureRecorder;
 
 namespace ui {

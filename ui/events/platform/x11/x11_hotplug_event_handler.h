@@ -11,8 +11,6 @@
 
 namespace ui {
 
-class DeviceHotplugEventObserver;
-
 // Parses X11 native devices and propagates the list of active devices to an
 // observer.
 class X11HotplugEventHandler {

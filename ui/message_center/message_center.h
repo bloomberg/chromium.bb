@@ -18,10 +18,6 @@
 class DownloadNotification;
 class DownloadNotificationTestBase;
 
-namespace base {
-class DictionaryValue;
-}
-
 // Interface to manage the NotificationList. The client (e.g. Chrome) calls
 // [Add|Remove|Update]Notification to create and update notifications in the
 // list. It also sends those changes to its observers when a notification

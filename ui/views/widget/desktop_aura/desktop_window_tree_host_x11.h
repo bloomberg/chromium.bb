@@ -40,7 +40,6 @@ namespace views {
 class DesktopDragDropClientAuraX11;
 class DesktopWindowTreeHostObserverX11;
 class X11DesktopWindowMoveClient;
-class X11WindowEventFilter;
 
 class VIEWS_EXPORT DesktopWindowTreeHostX11
     : public DesktopWindowTreeHost,

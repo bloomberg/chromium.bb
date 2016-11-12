@@ -9,10 +9,6 @@
 #include "ui/views/mus/mus_export.h"
 #include "ui/views/widget/widget.h"
 
-namespace ui {
-class Window;
-}
-
 namespace mojo {
 
 template <>

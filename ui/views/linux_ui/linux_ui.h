@@ -40,7 +40,6 @@ namespace views {
 class Border;
 class LabelButton;
 class LabelButtonBorder;
-class View;
 class WindowButtonOrderObserver;
 
 // Adapter class with targets to render like different toolkits. Set by any

@@ -14,8 +14,6 @@ class TextInputClient;
 
 namespace views {
 
-class InputMethodMus;
-
 // TextInputClientImpl receieves updates from IME drivers over Mojo IPC, and
 // notifies the underlying ui::TextInputClient accordingly.
 class TextInputClientImpl : public ui::mojom::TextInputClient {

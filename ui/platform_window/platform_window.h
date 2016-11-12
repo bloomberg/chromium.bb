@@ -17,7 +17,6 @@ class Rect;
 namespace ui {
 
 class PlatformImeController;
-class PlatformWindowDelegate;
 
 // Platform window.
 //

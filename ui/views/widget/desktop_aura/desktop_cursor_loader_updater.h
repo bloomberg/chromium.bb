@@ -9,10 +9,6 @@
 
 #include "ui/views/views_export.h"
 
-namespace aura {
-class RootWindow;
-}
-
 namespace display {
 class Display;
 }

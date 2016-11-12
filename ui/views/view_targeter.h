@@ -21,10 +21,6 @@ class ScrollEvent;
 
 namespace views {
 
-namespace internal {
-class RootView;
-}  // namespace internal
-
 class View;
 class ViewTargeterDelegate;
 

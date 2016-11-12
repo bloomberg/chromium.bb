@@ -14,8 +14,6 @@
 #include "ui/native_theme/native_theme.h"
 
 namespace gfx {
-class Canvas;
-class ImageSkia;
 class Rect;
 class Size;
 }

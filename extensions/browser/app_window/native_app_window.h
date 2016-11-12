@@ -13,6 +13,8 @@
 #include "ui/base/base_window.h"
 #include "ui/gfx/geometry/insets.h"
 
+class SkRegion;
+
 namespace content {
 struct NativeWebKeyboardEvent;
 }

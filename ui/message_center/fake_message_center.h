@@ -13,8 +13,6 @@
 
 namespace message_center {
 
-class NotificationDelegate;
-
 // MessageCenter implementation of doing nothing. Useful for tests.
 class FakeMessageCenter : public MessageCenter {
  public:

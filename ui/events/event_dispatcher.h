@@ -16,7 +16,6 @@ namespace ui {
 
 class EventDispatcher;
 class EventTarget;
-class EventTargeter;
 
 struct EventDispatchDetails {
   EventDispatchDetails()

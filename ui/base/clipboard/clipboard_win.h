@@ -13,6 +13,16 @@
 #include "base/macros.h"
 #include "ui/base/clipboard/clipboard.h"
 
+namespace base {
+namespace win {
+class MessageWindow;
+}
+}
+
+namespace gfx {
+class Size;
+}
+
 namespace ui {
 
 class ClipboardWin : public Clipboard {

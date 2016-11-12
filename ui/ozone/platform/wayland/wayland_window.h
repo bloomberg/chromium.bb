@@ -13,6 +13,7 @@
 
 namespace ui {
 
+class PlatformWindowDelegate;
 class WaylandConnection;
 
 class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {

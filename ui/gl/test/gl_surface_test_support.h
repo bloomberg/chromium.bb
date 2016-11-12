@@ -9,8 +9,6 @@
 
 namespace gl {
 
-class GLContext;
-
 class GLSurfaceTestSupport {
  public:
   static void InitializeOneOff();

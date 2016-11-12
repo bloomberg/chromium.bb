@@ -13,15 +13,9 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/wm/wm_export.h"
 
-namespace aura {
-class CursorManager;
-class RootWindow;
-}
-
 namespace ui {
 class GestureEvent;
 class KeyEvent;
-class LocatedEvent;
 class MouseEvent;
 class TouchEvent;
 }

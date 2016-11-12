@@ -13,10 +13,6 @@
 #include "base/macros.h"
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 
-namespace gfx {
-class Rect;
-}
-
 namespace ui {
 
 class DrmDevice;

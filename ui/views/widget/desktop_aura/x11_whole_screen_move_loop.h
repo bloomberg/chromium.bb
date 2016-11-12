@@ -32,8 +32,6 @@ class XScopedEventSelector;
 
 namespace views {
 
-class Widget;
-
 // Runs a nested message loop and grabs the mouse. This is used to implement
 // dragging.
 class X11WholeScreenMoveLoop : public X11MoveLoop,

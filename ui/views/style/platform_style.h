@@ -16,7 +16,6 @@
 namespace views {
 
 class Border;
-class FocusableBorder;
 class Label;
 class LabelButton;
 class ScrollBar;

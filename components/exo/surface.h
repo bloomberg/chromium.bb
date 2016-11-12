@@ -32,6 +32,7 @@ class TracedValue;
 
 namespace cc {
 class SurfaceFactory;
+class SurfaceIdAllocator;
 }
 
 namespace gfx {

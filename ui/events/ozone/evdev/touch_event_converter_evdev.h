@@ -21,17 +21,11 @@
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/events/ozone/evdev/touch_evdev_debug_buffer.h"
 
-namespace gfx {
-class PointF;
-}
-
 namespace ui {
 
 class DeviceEventDispatcherEvdev;
-class TouchEvent;
 class TouchNoiseFinder;
 struct InProgressTouchEvdev;
-struct PointerDetails;
 
 class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
     : public EventConverterEvdev {

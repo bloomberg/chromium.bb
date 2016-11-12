@@ -14,15 +14,10 @@
 namespace base {
 class CommandLine;
 }
-namespace gpu {
-namespace gles2 {
-class GLES2Decoder;
-}
-}
+
 namespace gl {
 
 class GLContext;
-class GLSurface;
 struct GLVersionInfo;
 
 GL_EXPORT void InitializeStaticGLBindingsGL();

@@ -10,9 +10,7 @@
 
 namespace ui {
 
-class DrmDevice;
 class DrmWindow;
-class HardwareDisplayController;
 class ScanoutBufferGenerator;
 struct OverlayCheck_Params;
 

@@ -9,10 +9,6 @@
 
 #include "ui/app_list/presenter/app_list_presenter_export.h"
 
-namespace aura {
-class Window;
-}
-
 namespace app_list {
 
 // Interface for showing and hiding the app list.

@@ -21,7 +21,6 @@ class ScopedTooltipDisabler;
 }
 
 namespace views {
-class DesktopCursorClient;
 class DesktopDragDropClientWin;
 class HWNDMessageHandler;
 

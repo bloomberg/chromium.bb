@@ -14,7 +14,6 @@ class Window;
 }
 
 namespace ui {
-class LocatedEvent;
 class OSExchangeData;
 class Window;
 }

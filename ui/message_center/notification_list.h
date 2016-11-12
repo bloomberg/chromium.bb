@@ -18,7 +18,6 @@
 #include "ui/message_center/notification_types.h"
 
 namespace base {
-class DictionaryValue;
 class TimeDelta;
 }
 

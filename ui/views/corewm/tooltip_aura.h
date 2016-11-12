@@ -12,7 +12,6 @@
 #include "ui/views/widget/widget_observer.h"
 
 namespace gfx {
-class FontList;
 class Size;
 }  // namespace gfx
 

@@ -23,7 +23,6 @@ class Label;
 namespace app_list {
 
 class AppListViewDelegate;
-class SpeechCardView;
 
 // SpeechView provides the card-like UI for the search-by-speech.
 class APP_LIST_EXPORT SpeechView : public views::View,

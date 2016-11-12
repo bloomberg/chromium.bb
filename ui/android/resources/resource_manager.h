@@ -20,8 +20,6 @@
 
 namespace ui {
 
-class UIResourceProvider;
-
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.ui.resources
 enum AndroidResourceType {

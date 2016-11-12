@@ -16,7 +16,6 @@
 namespace ui {
 
 class ImplicitAnimationObserver;
-class LayerAnimationObserver;
 
 // Scoped settings allow you to temporarily change the animator's settings and
 // these changes are reverted when the object is destroyed. NOTE: when the

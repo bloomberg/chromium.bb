@@ -39,7 +39,6 @@
 // 'views'.
 
 #if defined(USE_AURA)
-class SkRegion;
 namespace aura {
 class Window;
 }

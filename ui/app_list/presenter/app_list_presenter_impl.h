@@ -27,7 +27,6 @@ namespace test {
 class AppListPresenterImplTestApi;
 }
 
-class AppListPresenterImplTest;
 class AppListViewDelegate;
 
 // Manages app list UI. Creates AppListView and schedules showing/hiding

@@ -10,7 +10,6 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
-class DisplayItem;
 class DisplayItemList;
 }
 

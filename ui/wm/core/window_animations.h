@@ -17,14 +17,6 @@ class Window;
 namespace base {
 class TimeDelta;
 }
-namespace gfx {
-class Rect;
-}
-namespace ui {
-class ImplicitAnimationObserver;
-class Layer;
-class LayerAnimationSequence;
-}
 
 namespace wm {
 

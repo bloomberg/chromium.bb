@@ -16,7 +16,6 @@
 #include "ui/gfx/platform_font.h"
 
 class SkTypeface;
-class SkPaint;
 
 namespace gfx {
 

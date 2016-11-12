@@ -21,11 +21,11 @@ namespace ui {
 
 class DrmDisplayHostManager;
 class DrmCursor;
-class DrmGpuWindow;
 class DrmOverlayManager;
 class DrmWindowHostManager;
 class EventFactoryEvdev;
 class GpuThreadAdapter;
+class PlatformWindowDelegate;
 
 // Implementation of the platform window. This object and its handle |widget_|
 // uniquely identify a window. Since the DRI/GBM platform is split into 2

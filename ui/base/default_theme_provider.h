@@ -14,10 +14,6 @@
 #include "ui/base/ui_base_export.h"
 
 namespace ui {
-class ResourceBundle;
-}
-
-namespace ui {
 
 class UI_BASE_EXPORT DefaultThemeProvider : public ThemeProvider {
  public:

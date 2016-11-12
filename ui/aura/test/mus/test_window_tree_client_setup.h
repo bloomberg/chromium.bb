@@ -9,10 +9,6 @@
 
 #include "base/macros.h"
 
-namespace display {
-class Display;
-}
-
 namespace aura {
 
 class TestWindowTree;

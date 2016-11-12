@@ -17,14 +17,7 @@
 #include "ui/display/types/display_constants.h"
 
 namespace gfx {
-class Point;
 class Size;
-}
-
-namespace ui {
-namespace test {
-class EventGenerator;
-}
 }
 
 namespace display {

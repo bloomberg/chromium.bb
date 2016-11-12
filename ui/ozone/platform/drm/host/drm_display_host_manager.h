@@ -28,7 +28,6 @@ class DeviceManager;
 class DrmDeviceHandle;
 class DrmDisplayHost;
 class DrmDisplayHostManager;
-class DrmGpuPlatformSupportHost;
 class DrmNativeDisplayDelegate;
 class GpuThreadAdapter;
 

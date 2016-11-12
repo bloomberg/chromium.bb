@@ -18,9 +18,7 @@ class Label;
 
 namespace message_center {
 
-class ButtonBarSettingsLabel;
 class MessageCenter;
-class MessageCenterTray;
 class MessageCenterView;
 class NotificationCenterButton;
 class NotifierSettingsProvider;

@@ -18,10 +18,6 @@
 #include "ui/app_list/views/search_result_list_view_delegate.h"
 #include "ui/views/view.h"
 
-namespace views {
-class Widget;
-}
-
 namespace app_list {
 
 class AppListItem;

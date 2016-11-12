@@ -23,7 +23,6 @@ class InkDropImplTestApi;
 class InkDropRipple;
 class InkDropHost;
 class InkDropHighlight;
-class InkDropFactoryTest;
 
 // A functional implementation of an InkDrop.
 class VIEWS_EXPORT InkDropImpl : public InkDrop,

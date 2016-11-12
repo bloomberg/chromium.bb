@@ -25,7 +25,6 @@ class Rect;
 namespace views {
 
 class PrefixSelector;
-class ScrollView;
 class Textfield;
 class TreeViewController;
 

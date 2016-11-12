@@ -16,9 +16,6 @@
 
 namespace app_list {
 
-class AppListMainView;
-class AppListViewDelegate;
-
 // The search results page for the app list.
 class APP_LIST_EXPORT SearchResultPageView
     : public AppListPage,

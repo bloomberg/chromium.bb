@@ -22,7 +22,6 @@ class EventProcessor;
 
 namespace views {
 
-class NativeWidget;
 class Widget;
 
 namespace internal {

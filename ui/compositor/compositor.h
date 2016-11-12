@@ -33,7 +33,6 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace base {
-class RunLoop;
 class SingleThreadTaskRunner;
 }
 
@@ -45,7 +44,6 @@ class Layer;
 class LayerTreeDebugState;
 class LayerTreeHost;
 class RendererSettings;
-class SurfaceIdAllocator;
 class SurfaceManager;
 class TaskGraphRunner;
 }
@@ -67,7 +65,6 @@ class CompositorVSyncManager;
 class LatencyInfo;
 class Layer;
 class Reflector;
-class Texture;
 
 #if defined(USE_AURA)
 class Window;

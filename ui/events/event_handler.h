@@ -17,7 +17,6 @@ namespace ui {
 class CancelModeEvent;
 class Event;
 class EventDispatcher;
-class EventTarget;
 class GestureEvent;
 class KeyEvent;
 class MouseEvent;

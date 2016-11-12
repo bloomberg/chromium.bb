@@ -17,7 +17,6 @@
 
 namespace ui {
 class DropTargetEvent;
-class LocatedEvent;
 class OSExchangeData;
 
 namespace mojom {

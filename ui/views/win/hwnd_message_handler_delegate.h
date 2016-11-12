@@ -8,7 +8,6 @@
 #include "ui/views/views_export.h"
 
 namespace gfx {
-class Canvas;
 class Insets;
 class Path;
 class Point;
@@ -29,8 +28,6 @@ enum class FrameMode {
   SYSTEM_DRAWN_NO_CONTROLS,  // "glass" frame but with custom window controls
   CUSTOM_DRAWN               // "opaque" frame
 };
-
-class InputMethod;
 
 // Implemented by the object that uses the HWNDMessageHandler to handle
 // notifications from the underlying HWND and service requests for data.

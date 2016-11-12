@@ -13,7 +13,6 @@
 namespace cc {
 class ContextProvider;
 class VulkanContextProvider;
-class SharedBitmapManager;
 class SurfaceManager;
 }
 

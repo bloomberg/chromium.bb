@@ -18,7 +18,6 @@ class PointF;
 }  // namespace gfx
 
 namespace ui {
-class Event;
 
 // Interface for converting input into ui::Events and injecting them to the
 // Ozone platform.

@@ -19,7 +19,6 @@ class FilePath;
 }
 
 namespace gfx {
-class ImageSkia;
 class Size;
 }
 

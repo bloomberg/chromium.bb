@@ -33,14 +33,10 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/transform.h"
 
-class SkCanvas;
-
 namespace cc {
-class ContentLayer;
 class CopyOutputRequest;
 class Layer;
 class NinePatchLayer;
-class ResourceUpdateQueue;
 class SolidColorLayer;
 class SurfaceLayer;
 class TextureLayer;

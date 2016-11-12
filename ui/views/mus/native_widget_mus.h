@@ -27,7 +27,6 @@
 
 namespace aura {
 namespace client {
-class DefaultCaptureClient;
 class DragDropClient;
 class ScreenPositionClient;
 class WindowParentingClient;
@@ -61,7 +60,6 @@ class DropHelper;
 class DropTargetMus;
 class InputMethodMus;
 class TooltipManagerAura;
-class WidgetDelegate;
 
 // An implementation of NativeWidget that binds to a ui::Window. Because Aura
 // is used extensively within Views code, this code uses aura and binds to the

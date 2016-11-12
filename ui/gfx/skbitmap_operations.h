@@ -10,11 +10,6 @@
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/shadow_value.h"
 
-namespace gfx {
-class Point;
-class Size;
-}
-
 class SkBitmap;
 
 class GFX_EXPORT SkBitmapOperations {

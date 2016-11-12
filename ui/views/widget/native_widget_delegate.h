@@ -11,7 +11,6 @@
 #include "ui/views/views_export.h"
 
 namespace gfx {
-class Canvas;
 class Path;
 class Point;
 class Size;
@@ -24,7 +23,6 @@ class Layer;
 class MouseEvent;
 class PaintContext;
 class ScrollEvent;
-class TouchEvent;
 }
 
 namespace views {

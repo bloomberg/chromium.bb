@@ -26,7 +26,6 @@ namespace cc {
 class Animation;
 class AnimationPlayer;
 class AnimationTimeline;
-class ElementAnimations;
 class Layer;
 }
 

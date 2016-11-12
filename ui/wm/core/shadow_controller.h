@@ -19,9 +19,6 @@ namespace client {
 class ActivationClient;
 }
 }
-namespace gfx {
-class Rect;
-}
 
 namespace wm {
 

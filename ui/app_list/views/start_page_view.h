@@ -15,7 +15,6 @@
 
 namespace app_list {
 
-class AllAppsTileItemView;
 class AppListMainView;
 class AppListViewDelegate;
 class CustomLauncherPageBackgroundView;

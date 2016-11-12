@@ -60,8 +60,6 @@ class InputMethod;
 class Layer;
 class NativeTheme;
 class PaintContext;
-class TextInputClient;
-class Texture;
 class ThemeProvider;
 }
 

@@ -15,7 +15,6 @@
 #include "ui/aura/window_observer.h"
 
 namespace aura {
-class RootWindow;
 class Window;
 
 namespace client {

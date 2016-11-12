@@ -12,7 +12,6 @@
 
 namespace ui {
 
-class Event;
 class CursorDelegateEvdev;
 class DeviceEventDispatcherEvdev;
 

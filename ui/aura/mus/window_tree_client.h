@@ -53,17 +53,12 @@ class InFlightPropertyChange;
 class InFlightVisibleChange;
 class WindowMus;
 class WindowPortMus;
-struct WindowPortInitData;
 struct WindowPortPropertyData;
 class WindowTreeClientDelegate;
 class WindowTreeClientPrivate;
 class WindowTreeClientObserver;
 class WindowTreeHost;
 class WindowTreeHostMus;
-
-namespace client {
-class FocusClient;
-}
 
 using EventResultCallback = base::Callback<void(ui::mojom::EventResult)>;
 

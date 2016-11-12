@@ -18,10 +18,6 @@
 #include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/view.h"
 
-namespace gfx {
-class Canvas;
-}
-
 namespace ui {
 class Layer;
 }

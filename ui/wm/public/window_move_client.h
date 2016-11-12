@@ -8,10 +8,6 @@
 #include "ui/aura/aura_export.h"
 #include "ui/gfx/geometry/vector2d.h"
 
-namespace gfx {
-class Point;
-}
-
 namespace aura {
 class Window;
 namespace client {

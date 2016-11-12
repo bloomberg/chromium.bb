@@ -11,8 +11,6 @@
 #include "ui/views/views_export.h"
 
 namespace gfx {
-class Canvas;
-class ImageSkia;
 class Point;
 }
 

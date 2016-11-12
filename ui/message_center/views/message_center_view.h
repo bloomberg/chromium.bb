@@ -28,7 +28,6 @@ class MessageCenterTray;
 class MessageView;
 class MessageViewContextMenuController;
 class MessageListView;
-class NotificationView;
 class NotifierSettingsView;
 
 // Container for all the top-level views in the notification center, such as the

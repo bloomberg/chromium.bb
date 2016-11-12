@@ -27,7 +27,6 @@
 
 namespace ui {
 class OSExchangeData;
-class ScopedEventDispatcher;
 }
 namespace views {
 

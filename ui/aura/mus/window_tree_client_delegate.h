@@ -12,10 +12,6 @@
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "ui/aura/aura_export.h"
 
-namespace ui {
-class Event;
-}
-
 namespace aura {
 
 class PropertyConverter;

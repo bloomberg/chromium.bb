@@ -11,10 +11,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/examples/views_examples_export.h"
 
-namespace aura {
-class Window;
-}
-
 namespace views {
 namespace examples {
 

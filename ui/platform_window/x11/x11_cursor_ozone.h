@@ -16,6 +16,10 @@
 
 class SkBitmap;
 
+namespace gfx {
+class Point;
+}
+
 namespace ui {
 
 // Ref counted class to hold an X11 cursor resource. Handles creating X11 cursor

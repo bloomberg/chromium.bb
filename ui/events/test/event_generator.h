@@ -27,13 +27,9 @@ class PointF;
 
 namespace ui {
 class Event;
-class EventProcessor;
 class EventSource;
 class EventTarget;
 class KeyEvent;
-class MouseEvent;
-class ScrollEvent;
-class TouchEvent;
 
 namespace test {
 

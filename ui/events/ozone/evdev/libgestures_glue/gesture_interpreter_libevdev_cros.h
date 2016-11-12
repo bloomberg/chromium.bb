@@ -22,7 +22,6 @@
 namespace ui {
 
 class DeviceEventDispatcherEvdev;
-class EventDeviceInfo;
 class CursorDelegateEvdev;
 struct GestureDeviceProperties;
 class GesturePropertyProvider;

@@ -12,16 +12,9 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace cc {
-class DisplayItemList;
-}
-
 namespace gfx {
 class Canvas;
 }
-
-class SkCanvas;
-class SkPictureRecorder;
 
 namespace ui {
 class PaintCache;

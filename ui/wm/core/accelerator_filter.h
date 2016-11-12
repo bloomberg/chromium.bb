@@ -12,7 +12,6 @@
 #include "ui/wm/wm_export.h"
 
 namespace ui {
-class Accelerator;
 class AcceleratorHistory;
 }
 

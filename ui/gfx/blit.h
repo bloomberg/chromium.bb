@@ -12,7 +12,6 @@ class SkCanvas;
 
 namespace gfx {
 
-class Point;
 class Rect;
 class Vector2d;
 

@@ -10,10 +10,6 @@
 #include "base/callback_forward.h"
 #include "ui/app_list/app_list_export.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace app_list {
 
 class AppListItem;

@@ -15,12 +15,7 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
-class LayerTreeHost;
 typedef int UIResourceId;
-}
-
-namespace gfx {
-class JavaBitmap;
 }
 
 namespace ui {

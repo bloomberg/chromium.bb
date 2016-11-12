@@ -8,11 +8,6 @@
 #include "build/build_config.h"
 #include "ui/base/ui_base_export.h"
 
-namespace gfx {
-class Point;
-class Size;
-}
-
 #if defined(OS_WIN)
 typedef struct HINSTANCE__* HINSTANCE;
 typedef struct HICON__* HICON;

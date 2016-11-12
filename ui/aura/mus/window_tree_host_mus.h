@@ -12,14 +12,8 @@
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window_tree_host_platform.h"
 
-class SkBitmap;
-
 namespace display {
 class Display;
-}
-
-namespace service_manager {
-class Connector;
 }
 
 namespace aura {

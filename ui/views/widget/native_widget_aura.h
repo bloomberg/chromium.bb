@@ -23,9 +23,6 @@
 namespace aura {
 class Window;
 }
-namespace gfx {
-class FontList;
-}
 
 namespace views {
 

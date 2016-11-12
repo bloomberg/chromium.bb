@@ -19,7 +19,6 @@
 
 namespace ui {
 
-class Event;
 class PlatformEventDispatcher;
 class PlatformEventObserver;
 class ScopedEventDispatcher;

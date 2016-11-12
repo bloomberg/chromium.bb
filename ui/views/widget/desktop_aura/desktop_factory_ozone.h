@@ -11,10 +11,6 @@ namespace display {
 class Screen;
 }
 
-namespace gfx {
-class Rect;
-}
-
 namespace views {
 class DesktopNativeWidgetAura;
 class DesktopWindowTreeHost;

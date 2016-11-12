@@ -23,10 +23,6 @@ class Accelerator;
 class IMEEngineHandlerInterface;
 }  // namespace ui
 
-namespace user_manager {
-class User;
-}  // namespace user_manager
-
 namespace chromeos {
 class ComponentExtensionIMEManager;
 namespace input_method {

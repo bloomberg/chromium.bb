@@ -13,8 +13,6 @@
 #include "ui/message_center/views/message_view.h"
 #include "ui/views/view_targeter_delegate.h"
 
-class GURL;
-
 namespace views {
 class ProgressBar;
 }
@@ -22,9 +20,7 @@ class ProgressBar;
 namespace message_center {
 
 class BoundedLabel;
-class MessageCenter;
 class NotificationButton;
-class PaddedButton;
 class ProportionalImageView;
 
 // View that displays all current types of notification (web, basic, image, and

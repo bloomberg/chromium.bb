@@ -11,10 +11,6 @@
 
 class SkCanvas;
 
-namespace gfx {
-class Canvas;
-}
-
 namespace ui {
 
 // Drawing code that is common for all platforms.

@@ -23,7 +23,6 @@ typedef unsigned long XID;
 typedef XID Window;
 
 namespace ui {
-class MouseEvent;
 class XScopedEventSelector;
 }
 

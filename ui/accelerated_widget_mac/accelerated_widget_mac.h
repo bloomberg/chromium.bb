@@ -19,12 +19,6 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 
-class SkCanvas;
-
-namespace cc {
-class SoftwareFrameData;
-}
-
 namespace ui {
 
 class FullscreenLowPowerCoordinator;

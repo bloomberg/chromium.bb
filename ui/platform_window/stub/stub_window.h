@@ -13,6 +13,8 @@
 
 namespace ui {
 
+class PlatformWindowDelegate;
+
 class STUB_WINDOW_EXPORT StubWindow : NON_EXPORTED_BASE(public PlatformWindow) {
  public:
   StubWindow(PlatformWindowDelegate* delegate,

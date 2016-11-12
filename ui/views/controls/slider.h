@@ -13,7 +13,6 @@
 typedef unsigned int SkColor;
 
 namespace gfx {
-class ImageSkia;
 class SlideAnimation;
 }
 

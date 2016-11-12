@@ -26,10 +26,6 @@ typedef struct _drmModeModeInfo drmModeModeInfo;
 
 struct SkImageInfo;
 
-namespace base {
-class SingleThreadTaskRunner;
-}  // namespace base
-
 namespace ui {
 
 class HardwareDisplayPlaneManager;

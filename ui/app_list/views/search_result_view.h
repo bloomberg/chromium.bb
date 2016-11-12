@@ -24,7 +24,6 @@ class RenderText;
 }
 
 namespace views {
-class ImageButton;
 class ImageView;
 class MenuRunner;
 class ProgressBar;
@@ -37,7 +36,6 @@ class SearchResultListViewTest;
 
 class SearchResult;
 class SearchResultListView;
-class SearchResultViewDelegate;
 class SearchResultActionsView;
 
 // SearchResultView displays a SearchResult.

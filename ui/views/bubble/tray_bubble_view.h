@@ -12,10 +12,6 @@
 #include "ui/views/mouse_watcher.h"
 #include "ui/views/views_export.h"
 
-namespace ui {
-class LocatedEvent;
-}
-
 namespace views {
 class View;
 class Widget;

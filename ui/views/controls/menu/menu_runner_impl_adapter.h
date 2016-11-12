@@ -12,6 +12,9 @@
 #include "ui/views/views_export.h"
 
 namespace views {
+
+class MenuModelAdapter;
+
 namespace internal {
 
 class MenuRunnerImpl;
