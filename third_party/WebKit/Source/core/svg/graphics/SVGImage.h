@@ -38,6 +38,7 @@ namespace blink {
 
 class Document;
 class Page;
+class PaintController;
 class LayoutReplaced;
 class SVGImageChromeClient;
 class SVGImageForContainer;
@@ -158,6 +159,7 @@ class CORE_EXPORT SVGImage final : public Image {
 
   Persistent<SVGImageChromeClient> m_chromeClient;
   Persistent<Page> m_page;
+  std::unique_ptr<PaintController> m_paintController;
 
   // When an SVG image has no intrinsic size, the size depends on the default
   // object size, which in turn depends on the container. One SVGImage may

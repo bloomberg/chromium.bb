@@ -62,7 +62,9 @@
 namespace blink {
 
 SVGImage::SVGImage(ImageObserver* observer)
-    : Image(observer), m_hasPendingTimelineRewind(false) {}
+    : Image(observer),
+      m_paintController(PaintController::create()),
+      m_hasPendingTimelineRewind(false) {}
 
 SVGImage::~SVGImage() {
   if (m_page) {
@@ -369,8 +371,8 @@ void SVGImage::drawInternal(SkCanvas* canvas,
   // time=0.) The reason we do this here and not in resetAnimation() is to
   // avoid setting timers from the latter.
   flushPendingTimelineRewind();
-
-  SkPictureBuilder imagePicture(dstRect);
+  SkPictureBuilder imagePicture(dstRect, nullptr, nullptr,
+                                m_paintController.get());
   {
     ClipRecorder clipRecorder(imagePicture.context(), imagePicture,
                               DisplayItem::kClipNodeImage,

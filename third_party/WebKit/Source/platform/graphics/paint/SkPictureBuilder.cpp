@@ -13,14 +13,19 @@ namespace blink {
 
 SkPictureBuilder::SkPictureBuilder(const FloatRect& bounds,
                                    SkMetaData* metaData,
-                                   GraphicsContext* containingContext)
-    : m_bounds(bounds) {
+                                   GraphicsContext* containingContext,
+                                   PaintController* paintController)
+    : m_paintController(nullptr), m_bounds(bounds) {
   GraphicsContext::DisabledMode disabledMode = GraphicsContext::NothingDisabled;
   if (containingContext && containingContext->contextDisabled())
     disabledMode = GraphicsContext::FullyDisabled;
 
-  m_paintController = PaintController::create();
-  m_paintController->beginSkippingCache();
+  if (paintController) {
+    m_paintController = paintController;
+  } else {
+    m_paintControllerPtr = PaintController::create();
+    m_paintController = m_paintControllerPtr.get();
+  }
   m_context = wrapUnique(
       new GraphicsContext(*m_paintController, disabledMode, metaData));
 
@@ -34,7 +39,6 @@ SkPictureBuilder::~SkPictureBuilder() {}
 
 sk_sp<SkPicture> SkPictureBuilder::endRecording() {
   m_context->beginRecording(m_bounds);
-  m_paintController->endSkippingCache();
   m_paintController->commitNewDisplayItems();
   m_paintController->paintArtifact().replay(*m_context);
   return m_context->endRecording();

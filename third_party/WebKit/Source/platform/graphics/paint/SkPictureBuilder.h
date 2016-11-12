@@ -31,9 +31,14 @@ class PLATFORM_EXPORT SkPictureBuilder final : public DisplayItemClient {
   // builder's internal canvas. If |containingContext| is specified, the device
   // scale factor, printing, and disabled state are propagated to the builder's
   // internal context.
+  // If a PaintController is passed, it is used as the PaintController for
+  // painting the picture (and hence we can use its cache). Otherwise, a new
+  // PaintController is used for the duration of the picture building, which
+  // therefore has no caching.
   SkPictureBuilder(const FloatRect& bounds,
                    SkMetaData* = nullptr,
-                   GraphicsContext* containingContext = nullptr);
+                   GraphicsContext* containingContext = nullptr,
+                   PaintController* = nullptr);
   ~SkPictureBuilder();
 
   GraphicsContext& context() { return *m_context; }
@@ -47,7 +52,8 @@ class PLATFORM_EXPORT SkPictureBuilder final : public DisplayItemClient {
   LayoutRect visualRect() const final { return LayoutRect(); }
 
  private:
-  std::unique_ptr<PaintController> m_paintController;
+  PaintController* m_paintController;
+  std::unique_ptr<PaintController> m_paintControllerPtr;
   std::unique_ptr<GraphicsContext> m_context;
   FloatRect m_bounds;
 };
