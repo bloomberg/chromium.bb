@@ -25,6 +25,7 @@
 #include "content/common/drag_event_source_info.h"
 #include "content/common/edit_command.h"
 #include "content/common/input/synthetic_gesture_params.h"
+#include "content/public/common/drop_data.h"
 #include "content/public/common/screen_info.h"
 #include "content/renderer/devtools/render_widget_screen_metrics_emulator_delegate.h"
 #include "content/renderer/gpu/render_widget_compositor_delegate.h"
@@ -413,6 +414,9 @@ class CONTENT_EXPORT RenderWidget
   // When emulated, this returns original device scale factor.
   float GetOriginalDeviceScaleFactor() const;
 
+  // Helper to convert |point| using ConvertWindowToViewport().
+  gfx::Point ConvertWindowPointToViewport(const gfx::Point& point);
+
  protected:
   // Friend RefCounted so that the dtor can be non-public. Using this class
   // without ref-counting is an error.
@@ -512,6 +516,22 @@ class CONTENT_EXPORT RenderWidget
                            const gfx::Rect& window_screen_rect);
   void OnUpdateWindowScreenRect(const gfx::Rect& window_screen_rect);
   void OnHandleCompositorProto(const std::vector<uint8_t>& proto);
+  // Real data that is dragged is not included at DragEnter time.
+  void OnDragTargetDragEnter(
+      const std::vector<DropData::Metadata>& drop_meta_data,
+      const gfx::Point& client_pt,
+      const gfx::Point& screen_pt,
+      blink::WebDragOperationsMask operations_allowed,
+      int key_modifiers);
+  void OnDragTargetDragOver(const gfx::Point& client_pt,
+                            const gfx::Point& screen_pt,
+                            blink::WebDragOperationsMask operations_allowed,
+                            int key_modifiers);
+  void OnDragTargetDragLeave();
+  void OnDragTargetDrop(const DropData& drop_data,
+                        const gfx::Point& client_pt,
+                        const gfx::Point& screen_pt,
+                        int key_modifiers);
 
 #if defined(OS_ANDROID)
   // Called when we send IME event that expects an ACK.

@@ -130,7 +130,9 @@ int GetModifierFlags() {
   dropData.reset(new DropData());
   [self populateDropData:dropData.get()
              fromPasteboard:[info draggingPasteboard]];
-  currentRVH_->FilterDropData(dropData.get());
+  // TODO(paulmeyer): This will need to target the correct specific
+  // RenderWidgetHost to work with OOPIFs. See crbug.com/647249.
+  currentRVH_->GetWidget()->FilterDropData(dropData.get());
 
   NSDragOperation mask = [info draggingSourceOperationMask];
 
@@ -160,7 +162,9 @@ int GetModifierFlags() {
   NSPoint windowPoint = [info draggingLocation];
   NSPoint viewPoint = [self flipWindowPointToView:windowPoint view:view];
   NSPoint screenPoint = [self flipWindowPointToScreen:windowPoint view:view];
-  webContents_->GetRenderViewHost()->DragTargetDragEnter(
+  // TODO(paulmeyer): This will need to target the correct specific
+  // RenderWidgetHost to work with OOPIFs. See crbug.com/647249.
+  webContents_->GetRenderViewHost()->GetWidget()->DragTargetDragEnter(
       *dropData_,
       gfx::Point(viewPoint.x, viewPoint.y),
       gfx::Point(screenPoint.x, screenPoint.y),
@@ -187,7 +191,9 @@ int GetModifierFlags() {
   if (delegate_)
     delegate_->OnDragLeave();
 
-  webContents_->GetRenderViewHost()->DragTargetDragLeave();
+  // TODO(paulmeyer): This will need to target the correct specific
+  // RenderWidgetHost to work with OOPIFs. See crbug.com/647249.
+  webContents_->GetRenderViewHost()->GetWidget()->DragTargetDragLeave();
   dropData_.reset();
 }
 
@@ -212,7 +218,9 @@ int GetModifierFlags() {
   NSPoint viewPoint = [self flipWindowPointToView:windowPoint view:view];
   NSPoint screenPoint = [self flipWindowPointToScreen:windowPoint view:view];
   NSDragOperation mask = [info draggingSourceOperationMask];
-  webContents_->GetRenderViewHost()->DragTargetDragOver(
+  // TODO(paulmeyer): This will need to target the correct specific
+  // RenderWidgetHost to work with OOPIFs. See crbug.com/647249.
+  webContents_->GetRenderViewHost()->GetWidget()->DragTargetDragOver(
       gfx::Point(viewPoint.x, viewPoint.y),
       gfx::Point(screenPoint.x, screenPoint.y),
       static_cast<WebDragOperationsMask>(mask),
@@ -254,7 +262,9 @@ int GetModifierFlags() {
   NSPoint windowPoint = [info draggingLocation];
   NSPoint viewPoint = [self flipWindowPointToView:windowPoint view:view];
   NSPoint screenPoint = [self flipWindowPointToScreen:windowPoint view:view];
-  webContents_->GetRenderViewHost()->DragTargetDrop(
+  // TODO(paulmeyer): This will need to target the correct specific
+  // RenderWidgetHost to work with OOPIFs. See crbug.com/647249.
+  webContents_->GetRenderViewHost()->GetWidget()->DragTargetDrop(
       *dropData_, gfx::Point(viewPoint.x, viewPoint.y),
       gfx::Point(screenPoint.x, screenPoint.y), GetModifierFlags());
 

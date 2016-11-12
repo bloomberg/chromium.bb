@@ -1150,13 +1150,10 @@ void DragController::doSystemDrag(DragImage* image,
                                   DataTransfer* dataTransfer,
                                   LocalFrame* frame,
                                   bool forLink) {
-  // TODO(dcheng): Drag and drop is not yet supported for OOPI.
-  if (m_page->mainFrame()->isRemoteFrame())
-    return;
   m_didInitiateDrag = true;
   m_dragInitiator = frame->document();
 
-  LocalFrame* mainFrame = m_page->deprecatedLocalMainFrame();
+  LocalFrame* mainFrame = frame->localFrameRoot();
   FrameView* mainFrameView = mainFrame->view();
   IntPoint adjustedDragLocation = mainFrameView->rootFrameToContents(
       frame->view()->contentsToRootFrame(dragLocation));

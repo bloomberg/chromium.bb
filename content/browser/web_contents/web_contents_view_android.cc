@@ -304,6 +304,10 @@ void WebContentsViewAndroid::UpdateDragCursor(blink::WebDragOperation op) {
   // Intentional no-op because Android does not have cursor.
 }
 
+// TODO(paulmeyer): The drag-and-drop calls on GetRenderViewHost()->GetWidget()
+// in the following functions will need to be targeted to specific
+// RenderWidgetHosts in order to work with OOPIFs. See crbug.com/647249.
+
 void WebContentsViewAndroid::OnDragEntered(
     const std::vector<DropData::Metadata>& metadata,
     const gfx::Point& location,
@@ -311,8 +315,9 @@ void WebContentsViewAndroid::OnDragEntered(
   blink::WebDragOperationsMask allowed_ops =
       static_cast<blink::WebDragOperationsMask>(blink::WebDragOperationCopy |
                                                 blink::WebDragOperationMove);
-  web_contents_->GetRenderViewHost()->DragTargetDragEnterWithMetaData(
-      metadata, location, screen_location, allowed_ops, 0);
+  web_contents_->GetRenderViewHost()->GetWidget()->
+      DragTargetDragEnterWithMetaData(metadata, location, screen_location,
+                                      allowed_ops, 0);
 }
 
 void WebContentsViewAndroid::OnDragUpdated(const gfx::Point& location,
@@ -320,20 +325,20 @@ void WebContentsViewAndroid::OnDragUpdated(const gfx::Point& location,
   blink::WebDragOperationsMask allowed_ops =
       static_cast<blink::WebDragOperationsMask>(blink::WebDragOperationCopy |
                                                 blink::WebDragOperationMove);
-  web_contents_->GetRenderViewHost()->DragTargetDragOver(
+  web_contents_->GetRenderViewHost()->GetWidget()->DragTargetDragOver(
       location, screen_location, allowed_ops, 0);
 }
 
 void WebContentsViewAndroid::OnDragExited() {
-  web_contents_->GetRenderViewHost()->DragTargetDragLeave();
+  web_contents_->GetRenderViewHost()->GetWidget()->DragTargetDragLeave();
 }
 
 void WebContentsViewAndroid::OnPerformDrop(DropData* drop_data,
                                            const gfx::Point& location,
                                            const gfx::Point& screen_location) {
-  web_contents_->GetRenderViewHost()->FilterDropData(drop_data);
-  web_contents_->GetRenderViewHost()->DragTargetDrop(*drop_data, location,
-                                                     screen_location, 0);
+  web_contents_->GetRenderViewHost()->GetWidget()->FilterDropData(drop_data);
+  web_contents_->GetRenderViewHost()->GetWidget()->DragTargetDrop(
+      *drop_data, location, screen_location, 0);
 }
 
 void WebContentsViewAndroid::OnDragEnded() {

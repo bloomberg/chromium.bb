@@ -31,6 +31,7 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
+#include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPagePopup.h"
@@ -1363,7 +1364,7 @@ void EventSender::DoDragDrop(const WebDragData& drag_data,
   WebPoint screen_point(event->globalX, event->globalY);
   current_drag_data_ = drag_data;
   current_drag_effects_allowed_ = mask;
-  current_drag_effect_ = view()->dragTargetDragEnter(
+  current_drag_effect_ = mainFrameWidget()->dragTargetDragEnter(
       drag_data, client_point, screen_point, current_drag_effects_allowed_,
       modifiersWithButtons(
           current_pointer_state_[kRawMousePointerId].modifiers_,
@@ -2037,7 +2038,7 @@ void EventSender::BeginDragWithFiles(const std::vector<std::string>& files) {
   WebPoint scaled_last_pos(last_pos.x * scale, last_pos.y * scale);
 
   // Provide a drag source.
-  view()->dragTargetDragEnter(
+  mainFrameWidget()->dragTargetDragEnter(
       current_drag_data_, scaled_last_pos, scaled_last_pos,
       current_drag_effects_allowed_, 0);
   // |is_drag_mode_| saves events and then replays them later. We don't
@@ -2691,10 +2692,10 @@ void EventSender::FinishDragAndDrop(const WebMouseEvent& raw_event,
   if (current_drag_effect_) {
     // Specifically pass any keyboard modifiers to the drop method. This allows
     // tests to control the drop type (i.e. copy or move).
-    view()->dragTargetDrop(current_drag_data_, client_point, screen_point,
-                           event->modifiers);
+    mainFrameWidget()->dragTargetDrop(current_drag_data_, client_point,
+                                      screen_point, event->modifiers);
   } else {
-    view()->dragTargetDragLeave();
+    mainFrameWidget()->dragTargetDragLeave();
   }
   current_drag_data_.reset();
   view()->dragSourceEndedAt(client_point, screen_point, current_drag_effect_);
@@ -2717,7 +2718,7 @@ void EventSender::DoDragAfterMouseUp(const WebMouseEvent& raw_event) {
 
   WebPoint client_point(event->x, event->y);
   WebPoint screen_point(event->globalX, event->globalY);
-  blink::WebDragOperation drag_effect = view()->dragTargetDragOver(
+  blink::WebDragOperation drag_effect = mainFrameWidget()->dragTargetDragOver(
       client_point, screen_point, current_drag_effects_allowed_,
       event->modifiers);
 
@@ -2743,7 +2744,7 @@ void EventSender::DoDragAfterMouseMove(const WebMouseEvent& raw_event) {
 
   WebPoint client_point(event->x, event->y);
   WebPoint screen_point(event->globalX, event->globalY);
-  current_drag_effect_ = view()->dragTargetDragOver(
+  current_drag_effect_ = mainFrameWidget()->dragTargetDragOver(
       client_point, screen_point, current_drag_effects_allowed_,
       event->modifiers);
 }
@@ -2894,6 +2895,10 @@ blink::WebView* EventSender::view() {
 
 blink::WebWidget* EventSender::widget() {
   return web_widget_test_proxy_base_->web_widget();
+}
+
+blink::WebFrameWidget* EventSender::mainFrameWidget() {
+  return view()->mainFrame()->toWebLocalFrame()->frameWidget();
 }
 
 std::unique_ptr<WebInputEvent> EventSender::TransformScreenToWidgetCoordinates(

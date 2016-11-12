@@ -32,11 +32,13 @@
 #define WebFrameWidget_h
 
 #include "../platform/WebCommon.h"
+#include "../platform/WebDragOperation.h"
 #include "../platform/WebPageVisibilityState.h"
 #include "public/web/WebWidget.h"
 
 namespace blink {
 
+class WebDragData;
 class WebLocalFrame;
 class WebInputMethodController;
 class WebView;
@@ -74,7 +76,7 @@ class WebFrameWidget : public WebWidget {
   virtual void setBaseBackgroundColor(WebColor) = 0;
 
   // Returns the local root of this WebFrameWidget.
-  virtual WebLocalFrame* localRoot() = 0;
+  virtual WebLocalFrame* localRoot() const = 0;
 
   // WebWidget implementation.
   bool isWebFrameWidget() const final { return true; }
@@ -85,6 +87,25 @@ class WebFrameWidget : public WebWidget {
   // frames or possibly when the WebFrameWidget does not accept IME events.
   virtual WebInputMethodController* getActiveWebInputMethodController()
       const = 0;
+
+  // Callback methods when a drag-and-drop operation is trying to drop something
+  // on the WebWidget.
+  virtual WebDragOperation dragTargetDragEnter(
+      const WebDragData&,
+      const WebPoint& pointInViewport,
+      const WebPoint& screenPoint,
+      WebDragOperationsMask operationsAllowed,
+      int modifiers) = 0;
+  virtual WebDragOperation dragTargetDragOver(
+      const WebPoint& pointInViewport,
+      const WebPoint& screenPoint,
+      WebDragOperationsMask operationsAllowed,
+      int modifiers) = 0;
+  virtual void dragTargetDragLeave() = 0;
+  virtual void dragTargetDrop(const WebDragData&,
+                              const WebPoint& pointInViewport,
+                              const WebPoint& screenPoint,
+                              int modifiers) = 0;
 };
 
 }  // namespace blink

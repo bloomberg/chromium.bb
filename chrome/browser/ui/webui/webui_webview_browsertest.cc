@@ -16,6 +16,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/base/web_ui_browser_test.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/drop_data.h"
@@ -323,16 +324,20 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, DISABLED_DragAndDropToInput) {
 
   // Drag url into input in webview.
 
+  // TODO(paulmeyer): The following drag-and-drop calls on
+  // render_view_host->GetWidget() will need to be targeted to specific
+  // RenderWidgetHosts in order to work with OOPIFs. See crbug.com/647249.
+
   {
     EXPECT_TRUE(content::ExecuteScript(embedder_web_contents,
                                        "console.log('step1: Drag Enter')"));
 
     WebUIMessageListener listener(embedder_web_contents->GetWebUI(),
                                   "Step1: destNode gets dragenter");
-    render_view_host->FilterDropData(&dropdata);
-    render_view_host->DragTargetDragEnter(dropdata, client_pt, screen_pt,
-                                          drag_operation_mask,
-                                          blink::WebInputEvent::LeftButtonDown);
+    render_view_host->GetWidget()->FilterDropData(&dropdata);
+    render_view_host->GetWidget()->DragTargetDragEnter(
+        dropdata,client_pt, screen_pt, drag_operation_mask,
+        blink::WebInputEvent::LeftButtonDown);
     ASSERT_TRUE(listener.Wait());
   }
 
@@ -342,9 +347,9 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, DISABLED_DragAndDropToInput) {
 
     WebUIMessageListener listener(embedder_web_contents->GetWebUI(),
                                   "Step2: destNode gets dragover");
-    render_view_host->DragTargetDragOver(client_pt, screen_pt,
-                                         drag_operation_mask,
-                                         blink::WebInputEvent::LeftButtonDown);
+    render_view_host->GetWidget()->DragTargetDragOver(
+        client_pt, screen_pt, drag_operation_mask,
+        blink::WebInputEvent::LeftButtonDown);
     ASSERT_TRUE(listener.Wait());
   }
 
@@ -355,7 +360,8 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest, DISABLED_DragAndDropToInput) {
     DNDToInputNavigationObserver observer(embedder_web_contents);
     WebUIMessageListener listener(embedder_web_contents->GetWebUI(),
                                   "Step3: destNode gets drop");
-    render_view_host->DragTargetDrop(dropdata, client_pt, screen_pt, 0);
+    render_view_host->GetWidget()->DragTargetDrop(
+        dropdata, client_pt, screen_pt, 0);
     ASSERT_TRUE(listener.Wait());
     // Confirm no navigation
     EXPECT_FALSE(observer.Navigated());

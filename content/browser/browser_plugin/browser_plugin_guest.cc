@@ -821,28 +821,31 @@ void BrowserPluginGuest::OnDragStatusUpdate(int browser_plugin_instance_id,
   RenderViewHost* host = GetWebContents()->GetRenderViewHost();
   auto* embedder = owner_web_contents_->GetBrowserPluginEmbedder();
   DropData filtered_data(drop_data);
-  host->FilterDropData(&filtered_data);
+  // TODO(paulmeyer): This will need to target the correct specific
+  // RenderWidgetHost to work with OOPIFs. See crbug.com/647249.
+  RenderWidgetHost* widget = host->GetWidget();
+  widget->FilterDropData(&filtered_data);
   switch (drag_status) {
     case blink::WebDragStatusEnter:
-      host->DragTargetDragEnter(filtered_data, location, location, mask,
-                                drop_data.key_modifiers);
+      widget->DragTargetDragEnter(filtered_data, location, location, mask,
+                                  drop_data.key_modifiers);
       // Only track the URL being dragged over the guest if the link isn't
       // coming from the guest.
       if (!embedder->DragEnteredGuest(this))
         ignore_dragged_url_ = false;
       break;
     case blink::WebDragStatusOver:
-      host->DragTargetDragOver(location, location, mask,
-                               drop_data.key_modifiers);
+      widget->DragTargetDragOver(location, location, mask,
+                                 drop_data.key_modifiers);
       break;
     case blink::WebDragStatusLeave:
       embedder->DragLeftGuest(this);
-      host->DragTargetDragLeave();
+      widget->DragTargetDragLeave();
       ignore_dragged_url_ = true;
       break;
     case blink::WebDragStatusDrop:
-      host->DragTargetDrop(filtered_data, location, location,
-                           drop_data.key_modifiers);
+      widget->DragTargetDrop(filtered_data, location, location,
+                             drop_data.key_modifiers);
 
       if (!ignore_dragged_url_ && filtered_data.url.is_valid())
         delegate_->DidDropLink(filtered_data.url);

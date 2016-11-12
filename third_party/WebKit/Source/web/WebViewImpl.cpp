@@ -241,6 +241,8 @@ pageLoadDeferrerStack() {
 
 // Ensure that the WebDragOperation enum values stay in sync with the original
 // DragOperation constants.
+// TODO(paulmeyer): Move this into WebFrameWidgetBase once all drag-and-drop
+// functions are out of WebViewImpl. See crbug.com/647249.
 #define STATIC_ASSERT_ENUM(a, b)                            \
   static_assert(static_cast<int>(a) == static_cast<int>(b), \
                 "mismatching enum : " #a)
@@ -256,34 +258,6 @@ STATIC_ASSERT_ENUM(DragOperationEvery, WebDragOperationEvery);
 static bool shouldUseExternalPopupMenus = false;
 
 namespace {
-
-class UserGestureNotifier {
- public:
-  // If a UserGestureIndicator is created for a user gesture since the last
-  // page load and *userGestureObserved is false, the UserGestureNotifier
-  // will notify the client and set *userGestureObserved to true.
-  UserGestureNotifier(WebLocalFrameImpl*, bool* userGestureObserved);
-  ~UserGestureNotifier();
-
- private:
-  Persistent<WebLocalFrameImpl> m_frame;
-  bool* const m_userGestureObserved;
-};
-
-UserGestureNotifier::UserGestureNotifier(WebLocalFrameImpl* frame,
-                                         bool* userGestureObserved)
-    : m_frame(frame), m_userGestureObserved(userGestureObserved) {
-  DCHECK(m_userGestureObserved);
-}
-
-UserGestureNotifier::~UserGestureNotifier() {
-  if (!*m_userGestureObserved &&
-      m_frame->frame()->document()->hasReceivedUserGesture()) {
-    *m_userGestureObserved = true;
-    if (m_frame && m_frame->autofillClient())
-      m_frame->autofillClient()->firstUserGestureObserved();
-  }
-}
 
 class EmptyEventListener final : public EventListener {
  public:
@@ -410,8 +384,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       m_compositorDeviceScaleFactorOverride(0),
       m_suppressNextKeypressEvent(false),
       m_imeAcceptEvents(true),
-      m_operationsAllowed(WebDragOperationNone),
-      m_dragOperation(WebDragOperationNone),
       m_devToolsEmulator(nullptr),
       m_isTransparent(false),
       m_tabsToLinks(false),
@@ -481,6 +453,21 @@ WebViewImpl::~WebViewImpl() {
   // in destructor. m_linkHighlightsTimeline might be destroyed earlier
   // than m_linkHighlights.
   DCHECK(m_linkHighlights.isEmpty());
+}
+
+WebViewImpl::UserGestureNotifier::UserGestureNotifier(WebViewImpl* view)
+    : m_frame(view->mainFrameImpl()),
+      m_userGestureObserved(&view->m_userGestureObserved) {
+  DCHECK(m_userGestureObserved);
+}
+
+WebViewImpl::UserGestureNotifier::~UserGestureNotifier() {
+  if (!*m_userGestureObserved &&
+      m_frame->frame()->document()->hasReceivedUserGesture()) {
+    *m_userGestureObserved = true;
+    if (m_frame && m_frame->autofillClient())
+      m_frame->autofillClient()->firstUserGestureObserved();
+  }
 }
 
 WebDevToolsAgentImpl* WebViewImpl::mainFrameDevToolsAgentImpl() {
@@ -2138,7 +2125,7 @@ WebInputEventResult WebViewImpl::handleInputEvent(
     return WebInputEventResult::NotHandled;
 
   WebAutofillClient* autofillClient = mainFrameImpl()->autofillClient();
-  UserGestureNotifier notifier(mainFrameImpl(), &m_userGestureObserved);
+  UserGestureNotifier notifier(this);
   // On the first input event since page load, |notifier| instructs the
   // autofill client to unblock values of password input fields of any forms
   // on the page. There is a single input event, GestureTap, which can both
@@ -3437,81 +3424,6 @@ void WebViewImpl::dragSourceSystemDragEnded() {
   }
 }
 
-WebDragOperation WebViewImpl::dragTargetDragEnter(
-    const WebDragData& webDragData,
-    const WebPoint& pointInViewport,
-    const WebPoint& screenPoint,
-    WebDragOperationsMask operationsAllowed,
-    int modifiers) {
-  DCHECK(!m_currentDragData);
-
-  m_currentDragData = DataObject::create(webDragData);
-  m_operationsAllowed = operationsAllowed;
-
-  return dragTargetDragEnterOrOver(pointInViewport, screenPoint, DragEnter,
-                                   modifiers);
-}
-
-WebDragOperation WebViewImpl::dragTargetDragOver(
-    const WebPoint& pointInViewport,
-    const WebPoint& screenPoint,
-    WebDragOperationsMask operationsAllowed,
-    int modifiers) {
-  m_operationsAllowed = operationsAllowed;
-
-  return dragTargetDragEnterOrOver(pointInViewport, screenPoint, DragOver,
-                                   modifiers);
-}
-
-void WebViewImpl::dragTargetDragLeave() {
-  DCHECK(m_currentDragData);
-
-  DragData dragData(m_currentDragData.get(), IntPoint(), IntPoint(),
-                    static_cast<DragOperation>(m_operationsAllowed));
-
-  m_page->dragController().dragExited(&dragData);
-
-  // FIXME: why is the drag scroll timer not stopped here?
-
-  m_dragOperation = WebDragOperationNone;
-  m_currentDragData = nullptr;
-}
-
-void WebViewImpl::dragTargetDrop(const WebDragData& webDragData,
-                                 const WebPoint& pointInViewport,
-                                 const WebPoint& screenPoint,
-                                 int modifiers) {
-  WebPoint pointInRootFrame(
-      page()->frameHost().visualViewport().viewportToRootFrame(
-          pointInViewport));
-
-  DCHECK(m_currentDragData);
-  m_currentDragData = DataObject::create(webDragData);
-  UserGestureNotifier notifier(mainFrameImpl(), &m_userGestureObserved);
-
-  // If this webview transitions from the "drop accepting" state to the "not
-  // accepting" state, then our IPC message reply indicating that may be in-
-  // flight, or else delayed by javascript processing in this webview.  If a
-  // drop happens before our IPC reply has reached the browser process, then
-  // the browser forwards the drop to this webview.  So only allow a drop to
-  // proceed if our webview m_dragOperation state is not DragOperationNone.
-
-  if (m_dragOperation ==
-      WebDragOperationNone) {  // IPC RACE CONDITION: do not allow this drop.
-    dragTargetDragLeave();
-    return;
-  }
-
-  m_currentDragData->setModifiers(modifiers);
-  DragData dragData(m_currentDragData.get(), pointInRootFrame, screenPoint,
-                    static_cast<DragOperation>(m_operationsAllowed));
-
-  m_page->dragController().performDrag(&dragData);
-
-  m_dragOperation = WebDragOperationNone;
-  m_currentDragData = nullptr;
-}
-
 void WebViewImpl::spellingMarkers(WebVector<uint32_t>* markers) {
   Vector<uint32_t> result;
   for (Frame* frame = m_page->mainFrame(); frame;
@@ -3536,36 +3448,6 @@ void WebViewImpl::removeSpellingMarkersUnderWords(
     if (frame->isLocalFrame())
       toLocalFrame(frame)->removeSpellingMarkersUnderWords(convertedWords);
   }
-}
-
-WebDragOperation WebViewImpl::dragTargetDragEnterOrOver(
-    const WebPoint& pointInViewport,
-    const WebPoint& screenPoint,
-    DragAction dragAction,
-    int modifiers) {
-  DCHECK(m_currentDragData);
-
-  WebPoint pointInRootFrame(
-      page()->frameHost().visualViewport().viewportToRootFrame(
-          pointInViewport));
-
-  m_currentDragData->setModifiers(modifiers);
-  DragData dragData(m_currentDragData.get(), pointInRootFrame, screenPoint,
-                    static_cast<DragOperation>(m_operationsAllowed));
-
-  DragSession dragSession;
-  dragSession = m_page->dragController().dragEnteredOrUpdated(&dragData);
-
-  DragOperation dropEffect = dragSession.operation;
-
-  // Mask the drop effect operation against the drag source's allowed
-  // operations.
-  if (!(dropEffect & dragData.draggingSourceOperationMask()))
-    dropEffect = DragOperationNone;
-
-  m_dragOperation = static_cast<WebDragOperation>(dropEffect);
-
-  return m_dragOperation;
 }
 
 void WebViewImpl::sendResizeEventAndRepaint() {

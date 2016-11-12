@@ -115,31 +115,6 @@ class CONTENT_EXPORT RenderViewHost : public IPC::Sender {
   // This allows the renderer to reset some state.
   virtual void DragSourceSystemDragEnded() = 0;
 
-  // D&d drop target messages that get sent to WebKit.
-  virtual void DragTargetDragEnter(
-      const DropData& drop_data,
-      const gfx::Point& client_pt,
-      const gfx::Point& screen_pt,
-      blink::WebDragOperationsMask operations_allowed,
-      int key_modifiers) = 0;
-  virtual void DragTargetDragEnterWithMetaData(
-      const std::vector<DropData::Metadata>& metadata,
-      const gfx::Point& client_pt,
-      const gfx::Point& screen_pt,
-      blink::WebDragOperationsMask operations_allowed,
-      int key_modifiers) = 0;
-  virtual void DragTargetDragOver(
-      const gfx::Point& client_pt,
-      const gfx::Point& screen_pt,
-      blink::WebDragOperationsMask operations_allowed,
-      int key_modifiers) = 0;
-  virtual void DragTargetDragLeave() = 0;
-  virtual void DragTargetDrop(const DropData& drop_data,
-                              const gfx::Point& client_pt,
-                              const gfx::Point& screen_pt,
-                              int key_modifiers) = 0;
-  virtual void FilterDropData(DropData* drop_data) = 0;
-
   // Instructs the RenderView to automatically resize and send back updates
   // for the new size.
   virtual void EnableAutoResize(const gfx::Size& min_size,

@@ -92,7 +92,7 @@ class WebViewFrameWidget : public WebFrameWidgetBase {
   bool isTransparent() const override;
   void setIsTransparent(bool) override;
   void setBaseBackgroundColor(WebColor) override;
-  WebLocalFrameImpl* localRoot() override;
+  WebLocalFrameImpl* localRoot() const override;
   WebInputMethodControllerImpl* getActiveWebInputMethodController()
       const override;
 

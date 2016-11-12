@@ -259,6 +259,33 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
 
   // Sends a compositor proto to the render widget.
   virtual void HandleCompositorProto(const std::vector<uint8_t>& proto) = 0;
+
+  // Drag-and-drop drop target messages that get sent to Blink.
+  virtual void DragTargetDragEnter(
+      const DropData& drop_data,
+      const gfx::Point& client_pt,
+      const gfx::Point& screen_pt,
+      blink::WebDragOperationsMask operations_allowed,
+      int key_modifiers) {}
+  virtual void DragTargetDragEnterWithMetaData(
+      const std::vector<DropData::Metadata>& metadata,
+      const gfx::Point& client_pt,
+      const gfx::Point& screen_pt,
+      blink::WebDragOperationsMask operations_allowed,
+      int key_modifiers) {};
+  virtual void DragTargetDragOver(
+      const gfx::Point& client_pt,
+      const gfx::Point& screen_pt,
+      blink::WebDragOperationsMask operations_allowed,
+      int key_modifiers) {}
+  virtual void DragTargetDragLeave() {}
+  virtual void DragTargetDrop(const DropData& drop_data,
+                              const gfx::Point& client_pt,
+                              const gfx::Point& screen_pt,
+                              int key_modifiers) {}
+
+  // Filters drop data before it is passed to RenderWidgetHost.
+  virtual void FilterDropData(DropData* drop_data) {}
 };
 
 }  // namespace content

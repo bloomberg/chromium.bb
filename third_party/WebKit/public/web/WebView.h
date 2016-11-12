@@ -376,25 +376,6 @@ class WebView : protected WebWidget {
   // Notfies the WebView that the system drag and drop operation has ended.
   virtual void dragSourceSystemDragEnded() = 0;
 
-  // Callback methods when a drag-and-drop operation is trying to drop
-  // something on the WebView.
-  virtual WebDragOperation dragTargetDragEnter(
-      const WebDragData&,
-      const WebPoint& pointInViewport,
-      const WebPoint& screenPoint,
-      WebDragOperationsMask operationsAllowed,
-      int modifiers) = 0;
-  virtual WebDragOperation dragTargetDragOver(
-      const WebPoint& pointInViewport,
-      const WebPoint& screenPoint,
-      WebDragOperationsMask operationsAllowed,
-      int modifiers) = 0;
-  virtual void dragTargetDragLeave() = 0;
-  virtual void dragTargetDrop(const WebDragData&,
-                              const WebPoint& pointInViewport,
-                              const WebPoint& screenPoint,
-                              int modifiers) = 0;
-
   // Retrieves a list of spelling markers.
   virtual void spellingMarkers(WebVector<uint32_t>* markers) = 0;
   virtual void removeSpellingMarkersUnderWords(

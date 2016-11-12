@@ -118,7 +118,7 @@ class WebFrameWidgetImpl final
   void applyReplacementRange(const WebRange&) override;
 
   // WebFrameWidget implementation.
-  WebLocalFrameImpl* localRoot() override { return m_localRoot; }
+  WebLocalFrameImpl* localRoot() const override { return m_localRoot; }
   void setVisibilityState(WebPageVisibilityState) override;
   bool isTransparent() const override;
   void setIsTransparent(bool) override;
@@ -150,10 +150,6 @@ class WebFrameWidgetImpl final
   void updateMainFrameLayoutSize();
 
   void setIgnoreInputEvents(bool newValue);
-
-  // Returns the page object associated with this widget. This may be null when
-  // the page is shutting down, but will be valid at all other times.
-  Page* page() const { return view()->page(); }
 
   // Event related methods:
   void mouseContextMenu(const WebMouseEvent&);
@@ -190,7 +186,6 @@ class WebFrameWidgetImpl final
   WebInputEventResult handleKeyEvent(const WebKeyboardEvent&) override;
   WebInputEventResult handleCharEvent(const WebKeyboardEvent&) override;
 
-  WebViewImpl* view() const { return m_localRoot->viewImpl(); }
   InspectorOverlay* inspectorOverlay();
 
   // This method returns the focused frame belonging to this WebWidget, that

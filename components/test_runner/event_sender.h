@@ -24,6 +24,7 @@
 #include "third_party/WebKit/public/platform/WebTouchPoint.h"
 
 namespace blink {
+class WebFrameWidget;
 class WebLocalFrame;
 class WebView;
 class WebWidget;
@@ -265,6 +266,7 @@ class EventSender {
   const blink::WebView* view() const;
   blink::WebView* view();
   blink::WebWidget* widget();
+  blink::WebFrameWidget* mainFrameWidget();
 
   bool force_layout_on_events_;
 

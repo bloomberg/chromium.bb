@@ -210,7 +210,7 @@ void WebViewFrameWidget::setBaseBackgroundColor(WebColor color) {
   m_webView->setBaseBackgroundColor(color);
 }
 
-WebLocalFrameImpl* WebViewFrameWidget::localRoot() {
+WebLocalFrameImpl* WebViewFrameWidget::localRoot() const {
   return m_webView->mainFrameImpl();
 }
 

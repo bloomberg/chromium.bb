@@ -107,6 +107,20 @@ class WEB_EXPORT WebViewImpl final
   static WebViewImpl* create(WebViewClient*, WebPageVisibilityState);
   static HashSet<WebViewImpl*>& allInstances();
 
+  class UserGestureNotifier {
+   public:
+    // If a UserGestureIndicator is created for a user gesture since the last
+    // page load and the WebViewImpl's |m_userGestureObserved| is false, the
+    // UserGestureNotifier will notify the client and set
+    // |m_userGestureObserved| to true.
+    UserGestureNotifier(WebViewImpl*);
+    ~UserGestureNotifier();
+
+   private:
+    Persistent<WebLocalFrameImpl> m_frame;
+    bool* const m_userGestureObserved;
+  };
+
   // WebWidget methods:
   void close() override;
   WebSize size() override;
@@ -229,20 +243,6 @@ class WEB_EXPORT WebViewImpl final
                          const WebPoint& screenPoint,
                          WebDragOperation) override;
   void dragSourceSystemDragEnded() override;
-  WebDragOperation dragTargetDragEnter(const WebDragData&,
-                                       const WebPoint& pointInViewport,
-                                       const WebPoint& screenPoint,
-                                       WebDragOperationsMask operationsAllowed,
-                                       int modifiers) override;
-  WebDragOperation dragTargetDragOver(const WebPoint& pointInViewport,
-                                      const WebPoint& screenPoint,
-                                      WebDragOperationsMask operationsAllowed,
-                                      int modifiers) override;
-  void dragTargetDragLeave() override;
-  void dragTargetDrop(const WebDragData&,
-                      const WebPoint& pointInViewport,
-                      const WebPoint& screenPoint,
-                      int modifiers) override;
   void spellingMarkers(WebVector<uint32_t>* markers) override;
   void removeSpellingMarkersUnderWords(
       const WebVector<WebString>& words) override;
@@ -545,8 +545,6 @@ class WEB_EXPORT WebViewImpl final
   friend class WTF::RefCounted<WebViewImpl>;
   friend void setCurrentInputEventForTest(const WebInputEvent*);
 
-  enum DragAction { DragEnter, DragOver };
-
   explicit WebViewImpl(WebViewClient*, WebPageVisibilityState);
   ~WebViewImpl() override;
 
@@ -554,14 +552,6 @@ class WEB_EXPORT WebViewImpl final
 
   HitTestResult hitTestResultForRootFramePos(const IntPoint&);
   HitTestResult hitTestResultForViewportPos(const IntPoint&);
-
-  // Consolidate some common code between starting a drag over a target and
-  // updating a drag over a target. If we're starting a drag, |isEntering|
-  // should be true.
-  WebDragOperation dragTargetDragEnterOrOver(const WebPoint& pointInViewport,
-                                             const WebPoint& screenPoint,
-                                             DragAction,
-                                             int modifiers);
 
   void configureAutoResizeMode();
 
@@ -641,9 +631,6 @@ class WEB_EXPORT WebViewImpl final
   // is called.
   std::unique_ptr<WebSettingsImpl> m_webSettings;
 
-  // A copy of the web drop data object we received from the browser.
-  Persistent<DataObject> m_currentDragData;
-
   // Keeps track of the current zoom level. 0 means no zoom, positive numbers
   // mean zoom in, negative numbers mean zoom out.
   double m_zoomLevel;
@@ -687,14 +674,6 @@ class WEB_EXPORT WebViewImpl final
 
   // Represents whether or not this object should process incoming IME events.
   bool m_imeAcceptEvents;
-
-  // The available drag operations (copy, move link...) allowed by the source.
-  WebDragOperation m_operationsAllowed;
-
-  // The current drag operation as negotiated by the source and destination.
-  // When not equal to DragOperationNone, the drag data can be dropped onto the
-  // current drop target in this WebView (the drop target can accept the drop).
-  WebDragOperation m_dragOperation;
 
   // The popup associated with an input/select element.
   RefPtr<WebPagePopupImpl> m_pagePopup;
