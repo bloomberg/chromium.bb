@@ -246,12 +246,12 @@ found in the LICENSE file.
         // Oscillates between 1.0 to 0.5.
         resolutionMultiplier = (Math.sin(t / 1000) * 0.25) + 0.75;
 
-        eyeWidth = webglCanvas.width * 0.5 * resolutionMultiplier;
-        eyeHeight = webglCanvas.height * resolutionMultiplier;
+        eyeWidth = Math.floor(webglCanvas.width * 0.5 * resolutionMultiplier);
+        eyeHeight = Math.floor(webglCanvas.height * resolutionMultiplier);
 
         // Layer bounds are described in UV space, so 0.0 to 1.0
-        var boundsWidth = 0.5 * resolutionMultiplier;
-        var boundsHeight = resolutionMultiplier;
+        var boundsWidth = eyeWidth / webglCanvas.width;
+        var boundsHeight = eyeHeight / webglCanvas.height;
 
         // Tell the presenting display about the new texture bounds. This
         // ensures it only picks up the parts of the texture we're going to be
