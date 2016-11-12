@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/test.gni")
+
 source_set("net") {
   sources = [
     "connectivity_checker.cc",
@@ -30,5 +32,39 @@ source_set("net") {
     "//chromecast/base/metrics",
     "//chromecast/public",
     "//net",
+  ]
+}
+
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "fake_stream_socket.cc",
+    "fake_stream_socket.h",
+    "mock_stream_socket.cc",
+    "mock_stream_socket.h",
+  ]
+
+  public_deps = [
+    "//testing/gmock",
+  ]
+
+  deps = [
+    "//base",
+    "//net",
+  ]
+}
+
+test("cast_net_unittests") {
+  sources = [
+    "fake_stream_socket_unittest.cc",
+  ]
+
+  deps = [
+    ":test_support",
+    "//base",
+    "//base/test:run_all_unittests",
+    "//net",
+    "//testing/gtest",
   ]
 }
