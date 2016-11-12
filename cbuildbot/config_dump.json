@@ -7494,9 +7494,13 @@
     },
     "eve-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "eve"
-        ]
+        ],
+        "buildslave_type": "gce_beefy",
+        "chrome_sdk_build_chrome": false,
+        "vm_tests": []
     },
     "eve-release-afdo": {
         "_template": "release_afdo_generate",

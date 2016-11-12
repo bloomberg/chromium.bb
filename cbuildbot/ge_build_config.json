@@ -302,6 +302,18 @@
       ]
     },
     {
+      "name": "eve",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "poppy",
+          "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "expresso",
       "configs": [
         {
