@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -32,13 +33,15 @@
 
 namespace media {
 
+namespace {
+
 const char kCloseSessionUMAName[] = "CloseSession";
 const char kGenerateRequestUMAName[] = "GenerateRequest";
 const char kLoadSessionUMAName[] = "LoadSession";
 const char kRemoveSessionUMAName[] = "RemoveSession";
 const char kUpdateSessionUMAName[] = "UpdateSession";
 
-static blink::WebContentDecryptionModuleSession::Client::MessageType
+blink::WebContentDecryptionModuleSession::Client::MessageType
 convertMessageType(MediaKeys::MessageType message_type) {
   switch (message_type) {
     case media::MediaKeys::LICENSE_REQUEST:
@@ -57,7 +60,7 @@ convertMessageType(MediaKeys::MessageType message_type) {
       LicenseRequest;
 }
 
-static blink::WebEncryptedMediaKeyInformation::KeyStatus convertStatus(
+blink::WebEncryptedMediaKeyInformation::KeyStatus convertStatus(
     media::CdmKeyInformation::KeyStatus status) {
   switch (status) {
     case media::CdmKeyInformation::USABLE:
@@ -82,7 +85,7 @@ static blink::WebEncryptedMediaKeyInformation::KeyStatus convertStatus(
   return blink::WebEncryptedMediaKeyInformation::KeyStatus::InternalError;
 }
 
-static MediaKeys::SessionType convertSessionType(
+MediaKeys::SessionType convertSessionType(
     blink::WebEncryptedMediaSessionType session_type) {
   switch (session_type) {
     case blink::WebEncryptedMediaSessionType::Temporary:
@@ -99,11 +102,11 @@ static MediaKeys::SessionType convertSessionType(
   return MediaKeys::TEMPORARY_SESSION;
 }
 
-static bool SanitizeInitData(EmeInitDataType init_data_type,
-                             const unsigned char* init_data,
-                             size_t init_data_length,
-                             std::vector<uint8_t>* sanitized_init_data,
-                             std::string* error_message) {
+bool SanitizeInitData(EmeInitDataType init_data_type,
+                      const unsigned char* init_data,
+                      size_t init_data_length,
+                      std::vector<uint8_t>* sanitized_init_data,
+                      std::string* error_message) {
   DCHECK_GT(init_data_length, 0u);
   if (init_data_length > limits::kMaxInitDataLength) {
     error_message->assign("Initialization data too long.");
@@ -163,8 +166,8 @@ static bool SanitizeInitData(EmeInitDataType init_data_type,
   return false;
 }
 
-static bool SanitizeSessionId(const blink::WebString& session_id,
-                              std::string* sanitized_session_id) {
+bool SanitizeSessionId(const blink::WebString& session_id,
+                       std::string* sanitized_session_id) {
   // The user agent should thoroughly validate the sessionId value before
   // passing it to the CDM. At a minimum, this should include checking that
   // the length and value (e.g. alphanumeric) are reasonable.
@@ -183,10 +186,10 @@ static bool SanitizeSessionId(const blink::WebString& session_id,
   return true;
 }
 
-static bool SanitizeResponse(const std::string& key_system,
-                             const uint8_t* response,
-                             size_t response_length,
-                             std::vector<uint8_t>* sanitized_response) {
+bool SanitizeResponse(const std::string& key_system,
+                      const uint8_t* response,
+                      size_t response_length,
+                      std::vector<uint8_t>* sanitized_response) {
   // The user agent should thoroughly validate the response before passing it
   // to the CDM. This may include verifying values are within reasonable limits,
   // stripping irrelevant data or fields, pre-parsing it, sanitizing it,
@@ -224,16 +227,55 @@ static bool SanitizeResponse(const std::string& key_system,
   return true;
 }
 
+// If we need to close the session while destroying this object, we need a
+// dummy promise that won't call back into this object (or try to pass
+// something back to blink).
+class IgnoreResponsePromise : public SimpleCdmPromise {
+ public:
+  IgnoreResponsePromise() {}
+  ~IgnoreResponsePromise() override {}
+
+  // SimpleCdmPromise implementation.
+  void resolve() final { MarkPromiseSettled(); }
+  void reject(CdmPromise::Exception exception_code,
+              uint32_t system_code,
+              const std::string& error_message) final {
+    MarkPromiseSettled();
+  }
+};
+
+}  // namespace
+
 WebContentDecryptionModuleSessionImpl::WebContentDecryptionModuleSessionImpl(
     const scoped_refptr<CdmSessionAdapter>& adapter)
-    : adapter_(adapter), is_closed_(false), weak_ptr_factory_(this) {
-}
+    : adapter_(adapter),
+      has_close_been_called_(false),
+      is_closed_(false),
+      weak_ptr_factory_(this) {}
 
 WebContentDecryptionModuleSessionImpl::
     ~WebContentDecryptionModuleSessionImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!session_id_.empty())
+
+  if (!session_id_.empty()) {
     adapter_->UnregisterSession(session_id_);
+
+    // From http://w3c.github.io/encrypted-media/#mediakeysession-interface
+    // "If a MediaKeySession object is not closed when it becomes inaccessible
+    // to the page, the CDM shall close the key session associated with the
+    // object."
+    //
+    // This object is destroyed when the corresponding blink object is no
+    // longer needed (which may be due to it becoming inaccessible to the
+    // page), so if the session is not closed and CloseSession() has not yet
+    // been called, call CloseSession() now. Since this object is being
+    // destroyed, there is no need for the promise to do anything as this
+    // session will be gone.
+    if (!is_closed_ && !has_close_been_called_) {
+      adapter_->CloseSession(session_id_,
+                             base::MakeUnique<IgnoreResponsePromise>());
+    }
+  }
 }
 
 void WebContentDecryptionModuleSessionImpl::setClientInterface(Client* client) {
@@ -392,8 +434,16 @@ void WebContentDecryptionModuleSessionImpl::update(
 
 void WebContentDecryptionModuleSessionImpl::close(
     blink::WebContentDecryptionModuleResult result) {
+  // close() shouldn't be called if the session is already closed. blink
+  // prevents a second call to close(), but since the operation is
+  // asynchronous, there is a window where close() was called just before
+  // the closed event arrives. The CDM should handle the case where
+  // close() is called after it has already closed the session.
   DCHECK(!session_id_.empty());
+  DCHECK(!has_close_been_called_);
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  has_close_been_called_ = true;
   adapter_->CloseSession(
       session_id_,
       std::unique_ptr<SimpleCdmPromise>(new CdmResultPromise<>(
@@ -445,6 +495,8 @@ void WebContentDecryptionModuleSessionImpl::OnSessionExpirationUpdate(
 
 void WebContentDecryptionModuleSessionImpl::OnSessionClosed() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Only send one closed event to blink.
   if (is_closed_)
     return;
 

@@ -75,9 +75,14 @@ class WebContentDecryptionModuleSessionImpl
   // promise.
   std::string session_id_;
 
-  // Don't pass more than 1 close() event to blink::
-  // TODO(jrummell): Remove this once blink tests handle close() promise and
-  // closed() event.
+  // Keep track of whether the session has been closed or not. The session
+  // may be closed as a result of an application calling close(), or the CDM
+  // may close the session at any point.
+  // https://w3c.github.io/encrypted-media/#session-closed
+  // |has_close_been_called_| is used to keep track of whether close() has
+  // been called or not. |is_closed_| is used to keep track of whether the
+  // close event has been received or not.
+  bool has_close_been_called_;
   bool is_closed_;
 
   base::ThreadChecker thread_checker_;
