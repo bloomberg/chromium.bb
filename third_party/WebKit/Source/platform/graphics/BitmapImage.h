@@ -122,8 +122,8 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
 
   sk_sp<SkImage> frameAtIndex(size_t);
 
-  bool frameIsCompleteAtIndex(size_t);
-  float frameDurationAtIndex(size_t);
+  bool frameIsCompleteAtIndex(size_t) const;
+  float frameDurationAtIndex(size_t) const;
   bool frameHasAlphaAtIndex(size_t);
   ImageOrientation frameOrientationAtIndex(size_t);
 
