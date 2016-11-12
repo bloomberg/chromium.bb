@@ -22,8 +22,8 @@ function test()
         var searchResults = sourceFrame._searchResults;
         for (var i = 0; i < searchResults.length; ++i) {
             var range = searchResults[i];
-            var prefixRange = new WebInspector.TextRange(range.startLine, 0, range.startLine, range.startColumn);
-            var postfixRange = new WebInspector.TextRange(range.endLine, range.endColumn, range.endLine, sourceFrame._textEditor.line(range.endLine).length);
+            var prefixRange = new Common.TextRange(range.startLine, 0, range.startLine, range.startColumn);
+            var postfixRange = new Common.TextRange(range.endLine, range.endColumn, range.endLine, sourceFrame._textEditor.line(range.endLine).length);
             var prefix = sourceFrame._textEditor.text(prefixRange);
             var result = sourceFrame._textEditor.text(range);
             var postfix = sourceFrame._textEditor.text(postfixRange);
@@ -31,7 +31,7 @@ function test()
         }
     }
 
-    WebInspector.viewManager.showView("sources");
+    UI.viewManager.showView("sources");
     InspectorTest.showScriptSource("search.js", didShowScriptSource);
 
     function didShowScriptSource(sourceFrame)
@@ -40,7 +40,7 @@ function test()
             function testSearch(next)
             {
                 var query = "searchTestUniqueString";
-                var searchConfig = new WebInspector.SearchableView.SearchConfig(query, false, false);
+                var searchConfig = new UI.SearchableView.SearchConfig(query, false, false);
                 dumpSearchResultsForConfig(sourceFrame, searchConfig);
                 next();
             },
@@ -48,7 +48,7 @@ function test()
             function testSearchCaseSensitive(next)
             {
                 var query = "SEARCHTestUniqueString";
-                var searchConfig = new WebInspector.SearchableView.SearchConfig(query, true, false);
+                var searchConfig = new UI.SearchableView.SearchConfig(query, true, false);
                 dumpSearchResultsForConfig(sourceFrame, searchConfig);
                 next();
             },
@@ -56,7 +56,7 @@ function test()
             function testSearchRegex(next)
             {
                 var query = "searchTestUnique.*";
-                var searchConfig = new WebInspector.SearchableView.SearchConfig(query, false, true);
+                var searchConfig = new UI.SearchableView.SearchConfig(query, false, true);
                 dumpSearchResultsForConfig(sourceFrame, searchConfig);
                 next();
             },
@@ -64,7 +64,7 @@ function test()
             function testSearchCaseSensitiveRegex(next)
             {
                 var query = "searchTestUnique.*";
-                var searchConfig = new WebInspector.SearchableView.SearchConfig(query, true, true);
+                var searchConfig = new UI.SearchableView.SearchConfig(query, true, true);
                 dumpSearchResultsForConfig(sourceFrame, searchConfig);
                 next();
             },
@@ -72,7 +72,7 @@ function test()
             function testSearchConsequent(next)
             {
                 var query = "AAAAA";
-                var searchConfig = new WebInspector.SearchableView.SearchConfig(query, false, false);
+                var searchConfig = new UI.SearchableView.SearchConfig(query, false, false);
                 dumpSearchResultsForConfig(sourceFrame, searchConfig);
                 next();
             }

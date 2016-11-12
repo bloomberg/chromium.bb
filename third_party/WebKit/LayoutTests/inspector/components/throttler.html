@@ -53,7 +53,7 @@ function test()
         },
     }
 
-    var throttler = new WebInspector.Throttler(1989);
+    var throttler = new Common.Throttler(1989);
     var timeoutMock = new InspectorTest.TimeoutMock();
     throttler._setTimeout = timeoutMock.setTimeout;
     throttler._clearTimeout = timeoutMock.clearTimeout;
@@ -197,7 +197,7 @@ function test()
     {
         var promiseResolve;
         var hasFinished;
-        InspectorTest.addSniffer(WebInspector.Throttler.prototype, "_processCompletedForTests", onFinished);
+        InspectorTest.addSniffer(Common.Throttler.prototype, "_processCompletedForTests", onFinished);
         function onFinished()
         {
             hasFinished = true;

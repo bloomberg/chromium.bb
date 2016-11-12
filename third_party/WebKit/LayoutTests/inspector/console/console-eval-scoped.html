@@ -49,7 +49,7 @@ function test()
     {
         InspectorTest.deprecatedRunAfterPendingDispatches(function() {
             InspectorTest.dumpConsoleMessages();
-            WebInspector.ConsoleView.clearConsole();
+            Console.ConsoleView.clearConsole();
             InspectorTest.deprecatedRunAfterPendingDispatches(next);
         });
     }

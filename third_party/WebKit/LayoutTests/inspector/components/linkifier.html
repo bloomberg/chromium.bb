@@ -16,7 +16,7 @@ function test()
 
     function debuggerTest()
     {
-        var target = WebInspector.targetManager.mainTarget();
+        var target = SDK.targetManager.mainTarget();
         var url = target.inspectedURL();
         var scripts = InspectorTest.debuggerModel.scripts;
         for (var scriptId in scripts) {
@@ -29,7 +29,7 @@ function test()
 
         dumpLiveLocationsCount();
 
-        var linkifier = new WebInspector.Linkifier();
+        var linkifier = new Components.Linkifier();
         InspectorTest.addResult("Created linkifier");
         dumpLiveLocationsCount();
 
@@ -54,15 +54,15 @@ function test()
         dumpLiveLocationsCount();
 
         // Ensures urls with lots of slashes does not bog down the regex.
-        WebInspector.linkifyStringAsFragment("/".repeat(1000));
-        WebInspector.linkifyStringAsFragment("/a/".repeat(1000));
+        Components.linkifyStringAsFragment("/".repeat(1000));
+        Components.linkifyStringAsFragment("/a/".repeat(1000));
 
         InspectorTest.completeTest();
     }
 
     function dumpLiveLocationsCount()
     {
-        InspectorTest.addResult("Live locations count: " + WebInspector.debuggerWorkspaceBinding._ensureInfoForScript(script)._locations.size);
+        InspectorTest.addResult("Live locations count: " + Bindings.debuggerWorkspaceBinding._ensureInfoForScript(script)._locations.size);
         InspectorTest.addResult("");
     }
 }

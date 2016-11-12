@@ -13,10 +13,10 @@ function test()
 
     function addMessageWithFixedTimestamp(messageText, timestamp)
     {
-        var message = new WebInspector.ConsoleMessage(
+        var message = new SDK.ConsoleMessage(
             InspectorTest.consoleModel.target(),
-            WebInspector.ConsoleMessage.MessageSource.Other, // source
-            WebInspector.ConsoleMessage.MessageLevel.Log, // level
+            SDK.ConsoleMessage.MessageSource.Other, // source
+            SDK.ConsoleMessage.MessageLevel.Log, // level
             messageText,
             undefined, // type
             undefined, // url
@@ -37,14 +37,14 @@ function test()
     InspectorTest.dumpConsoleMessages();
 
     InspectorTest.addResult("Console messages with timestamps enabled:");
-    WebInspector.settingForTest("consoleTimestampsEnabled").set(true);
+    Common.settingForTest("consoleTimestampsEnabled").set(true);
 
     addMessageWithFixedTimestamp("<After>", baseTimestamp + 1000);
     addMessageWithFixedTimestamp("<After>", baseTimestamp + 1000);
     addMessageWithFixedTimestamp("<After>", baseTimestamp + 1456);
 
-    WebInspector.settingForTest("consoleTimestampsEnabled").set(false);
-    WebInspector.settingForTest("consoleTimestampsEnabled").set(true);
+    Common.settingForTest("consoleTimestampsEnabled").set(false);
+    Common.settingForTest("consoleTimestampsEnabled").set(true);
 
     InspectorTest.dumpConsoleMessages();
     InspectorTest.completeTest();

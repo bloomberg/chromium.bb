@@ -36,7 +36,7 @@ function test()
     InspectorTest.runHeapSnapshotTestSuite([
         function testStatistics(next)
         {
-            InspectorTest.addSniffer(WebInspector.HeapSnapshotView.prototype, "_gotStatistics", step1, true);
+            InspectorTest.addSniffer(Profiler.HeapSnapshotView.prototype, "_gotStatistics", step1, true);
             InspectorTest.takeAndOpenSnapshot(createHeapSnapshot, function() {});
 
             function step1(statistics)

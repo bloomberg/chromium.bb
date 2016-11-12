@@ -48,7 +48,7 @@ var test = function()
 
     function getValueElements()
     {
-        var messageElement = WebInspector.ConsoleView.instance()._visibleViewMessages[1].element();
+        var messageElement = Console.ConsoleView.instance()._visibleViewMessages[1].element();
         return messageElement.querySelectorAll("::shadow .value");
     }
 
@@ -60,7 +60,7 @@ var test = function()
 
         InspectorTest.addResult("Node was hidden after dblclick: " + node.classList.contains("hidden"));
 
-        var messageElement = WebInspector.ConsoleView.instance()._visibleViewMessages[1].element();
+        var messageElement = Console.ConsoleView.instance()._visibleViewMessages[1].element();
         var editPrompt = messageElement.querySelector("::shadow .text-prompt");
         editPrompt.textContent = text;
         editPrompt.dispatchEvent(InspectorTest.createKeyEvent("Enter"));

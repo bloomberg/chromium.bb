@@ -15,10 +15,10 @@ function test()
         // Reset resourceTreeModel.
         InspectorTest.resourceTreeModel.mainFrame._remove();
 
-        for (var eventName in WebInspector.ResourceTreeModel.Events)
-            InspectorTest.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.Events[eventName], eventHandler.bind(this, eventName));
-        for (var eventName in WebInspector.SecurityOriginManager.Events)
-            InspectorTest.securityOriginManager.addEventListener(WebInspector.SecurityOriginManager.Events[eventName], eventHandler.bind(this, eventName));
+        for (var eventName in SDK.ResourceTreeModel.Events)
+            InspectorTest.resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events[eventName], eventHandler.bind(this, eventName));
+        for (var eventName in SDK.SecurityOriginManager.Events)
+            InspectorTest.securityOriginManager.addEventListener(SDK.SecurityOriginManager.Events[eventName], eventHandler.bind(this, eventName));
 
         function eventHandler(eventName, event)
         {

@@ -36,7 +36,7 @@ function test()
 
             function step2(error, result, exceptionDetails)
             {
-                name = WebInspector.RemoteObject.toCallArgument(InspectorTest.runtimeModel.createRemoteObject(result));
+                name = SDK.RemoteObject.toCallArgument(InspectorTest.runtimeModel.createRemoteObject(result));
                 next();
             }
         },

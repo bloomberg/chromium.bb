@@ -25,7 +25,7 @@ function test()
 
     function step1()
     {
-        InspectorTest.addSniffer(WebInspector.ScopeChainSidebarPane.prototype, "_sidebarPaneUpdatedForTest", onSidebarRendered, true);
+        InspectorTest.addSniffer(Sources.ScopeChainSidebarPane.prototype, "_sidebarPaneUpdatedForTest", onSidebarRendered, true);
         InspectorTest.runTestFunctionAndWaitUntilPaused(() => {});
     }
 

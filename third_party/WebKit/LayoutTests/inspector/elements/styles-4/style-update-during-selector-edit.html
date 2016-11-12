@@ -25,14 +25,14 @@ function test()
 
     function rebuildUpdate()
     {
-        if (WebInspector.panels.elements._stylesWidget.node === treeOutline.selectedDOMNode())
+        if (UI.panels.elements._stylesWidget.node === treeOutline.selectedDOMNode())
             seenRebuildUpdate = true;
     }
 
     function step1()
     {
-        InspectorTest.addSniffer(WebInspector.StylesSidebarPane.prototype, "doUpdate", rebuildUpdate);
-        InspectorTest.domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, attributeChanged, this);
+        InspectorTest.addSniffer(Elements.StylesSidebarPane.prototype, "doUpdate", rebuildUpdate);
+        InspectorTest.domModel.addEventListener(SDK.DOMModel.Events.AttrModified, attributeChanged, this);
         // Click "Add new rule".
         document.querySelector(".styles-pane-toolbar").shadowRoot.querySelector(".largeicon-add").click();
         InspectorTest.evaluateInPage("addStyleClass()", step2);

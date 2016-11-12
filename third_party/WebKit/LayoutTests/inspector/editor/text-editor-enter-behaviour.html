@@ -32,7 +32,7 @@ function testFunction()
         {
             textEditor.setText(testFunction.toString());
             var line = textEditor.line(2);
-            textEditor.setSelection(WebInspector.TextRange.createFromLocation(2, line.length));
+            textEditor.setSelection(Common.TextRange.createFromLocation(2, line.length));
             hitEnterDumpTextAndNext(next);
         },
 
@@ -40,7 +40,7 @@ function testFunction()
         {
             textEditor.setText(testFunction.toString());
             var line = textEditor.line(1);
-            textEditor.setSelection(WebInspector.TextRange.createFromLocation(1, line.length));
+            textEditor.setSelection(Common.TextRange.createFromLocation(1, line.length));
             hitEnterDumpTextAndNext(next);
         },
 
@@ -48,49 +48,49 @@ function testFunction()
         {
             textEditor.setText(testFunction.toString());
             var line = textEditor.line(2);
-            textEditor.setSelection(WebInspector.TextRange.createFromLocation(2, line.length / 2));
+            textEditor.setSelection(Common.TextRange.createFromLocation(2, line.length / 2));
             hitEnterDumpTextAndNext(next);
         },
 
         function testEnterInTheBeginningOfTheLine(next)
         {
             textEditor.setText(testFunction.toString());
-            textEditor.setSelection(WebInspector.TextRange.createFromLocation(2, 0));
+            textEditor.setSelection(Common.TextRange.createFromLocation(2, 0));
             hitEnterDumpTextAndNext(next);
         },
 
         function testEnterWithTheSelection(next)
         {
             textEditor.setText(testFunction.toString());
-            textEditor.setSelection(new WebInspector.TextRange(2, 2, 2, 4));
+            textEditor.setSelection(new Common.TextRange(2, 2, 2, 4));
             hitEnterDumpTextAndNext(next);
         },
 
         function testEnterWithReversedSelection(next)
         {
             textEditor.setText(testFunction.toString());
-            textEditor.setSelection(new WebInspector.TextRange(2, 4, 2, 2));
+            textEditor.setSelection(new Common.TextRange(2, 4, 2, 2));
             hitEnterDumpTextAndNext(next);
         },
 
         function testEnterWithTheMultiLineSelection(next)
         {
             textEditor.setText(testFunction.toString());
-            textEditor.setSelection(new WebInspector.TextRange(2, 0, 8, 4));
+            textEditor.setSelection(new Common.TextRange(2, 0, 8, 4));
             hitEnterDumpTextAndNext(next);
         },
 
         function testEnterWithFullLineSelection(next)
         {
             textEditor.setText(testFunction.toString());
-            textEditor.setSelection(new WebInspector.TextRange(2, 0, 3, 0));
+            textEditor.setSelection(new Common.TextRange(2, 0, 3, 0));
             hitEnterDumpTextAndNext(next);
         },
 
         function testEnterBeforeOpenBrace(next)
         {
             textEditor.setText(testFunction.toString());
-            textEditor.setSelection(new WebInspector.TextRange(8, 0, 8, 0));
+            textEditor.setSelection(new Common.TextRange(8, 0, 8, 0));
             hitEnterDumpTextAndNext(next);
         },
 

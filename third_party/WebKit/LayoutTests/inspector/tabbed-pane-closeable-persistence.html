@@ -4,11 +4,11 @@
 <script type="text/javascript">
 var test = function()
 {
-    var tabbedLocation = WebInspector.viewManager.createTabbedLocation();
+    var tabbedLocation = UI.viewManager.createTabbedLocation();
     logPersistenceSetting();
 
     // Show a closeable tab.
-    var sensors = new WebInspector.SimpleView("sensors");
+    var sensors = new UI.SimpleView("sensors");
     sensors.isCloseable = function() { return true; }
     tabbedLocation.showView(sensors);
     logPersistenceSetting();
@@ -18,12 +18,12 @@ var test = function()
     logPersistenceSetting();
 
     // Show a permanent tab.
-    var console = new WebInspector.SimpleView("console");
+    var console = new UI.SimpleView("console");
     tabbedLocation.showView(console);
     logPersistenceSetting();
 
     // Show transient tab.
-    var history = new WebInspector.SimpleView("history");
+    var history = new UI.SimpleView("history");
     history.isTransient = function() { return true; }
     tabbedLocation.showView(history);
     logPersistenceSetting();

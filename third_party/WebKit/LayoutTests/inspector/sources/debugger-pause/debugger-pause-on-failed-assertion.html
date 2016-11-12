@@ -20,7 +20,7 @@ var test = function()
 
     function step1()
     {
-        InspectorTest.DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
+        InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
         InspectorTest.showScriptSource("debugger-pause-on-failed-assertion.html", step2);
     }
 

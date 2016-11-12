@@ -65,7 +65,7 @@ function test()
             ]
         }]
     }]};
-    var commands = WebInspector.InspectorBackendHostedMode.generateCommands(inspectorJson);
+    var commands = SDK.InspectorBackendHostedMode.generateCommands(inspectorJson);
     eval(commands);
 
     var sendMessageToBackendOriginal = InspectorFrontendHost.sendMessageToBackend;
@@ -75,7 +75,7 @@ function test()
         return Array.prototype.slice.call(arguments);
     }
 
-    var agent = WebInspector.targetManager.mainTarget().profilerAgent();
+    var agent = SDK.targetManager.mainTarget().profilerAgent();
     Promise.resolve()
         .then(function() { return processResult("commandError", agent.commandError({"message": "this is the error message"}, defaultHandler)); }) // Error: error in the protocol response
         .then(function() { return processResult("commandArgs0", agent.commandArgs0(defaultHandler)); })

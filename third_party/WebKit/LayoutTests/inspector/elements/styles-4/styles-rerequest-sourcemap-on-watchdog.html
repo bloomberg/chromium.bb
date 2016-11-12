@@ -13,19 +13,19 @@ function addStyleSheet()
 
 function test()
 {
-    InspectorTest.cssModel.addEventListener(WebInspector.CSSModel.Events.SourceMapAttached, onInitialSourceMap);
+    InspectorTest.cssModel.addEventListener(SDK.CSSModel.Events.SourceMapAttached, onInitialSourceMap);
 
     InspectorTest.evaluateInPagePromise("addStyleSheet()");
 
     function onInitialSourceMap()
     {
-        InspectorTest.cssModel.removeEventListener(WebInspector.CSSModel.Events.SourceMapAttached, onInitialSourceMap);
+        InspectorTest.cssModel.removeEventListener(SDK.CSSModel.Events.SourceMapAttached, onInitialSourceMap);
         InspectorTest.waitForScriptSource("styles-rerequest-sourcemap-on-watchdog.css", onCSSFile);
     }
 
     function onCSSFile(uiSourceCode)
     {
-        InspectorTest.addSniffer(WebInspector.CSSModel.prototype, "_sourceMapLoadedForTest", onSourceMapRerequested);
+        InspectorTest.addSniffer(SDK.CSSModel.prototype, "_sourceMapLoadedForTest", onSourceMapRerequested);
         uiSourceCode.addRevision("div { color: blue; } /*# sourceMappingURL=styles-rerequest-sourcemap-on-watchdog.css.map */");
     }
 

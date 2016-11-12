@@ -7,7 +7,7 @@ function test()
     InspectorTest.runTestSuite([
         function testFileSystemClashDirectOrder(next)
         {
-            var fileSystemMapping = new WebInspector.FileSystemMapping();
+            var fileSystemMapping = new Workspace.FileSystemMapping();
             fileSystemMapping.addFileSystem("file:///Source/devtools");
 
             fileSystemMapping.addNonConfigurableFileMapping("file:///Source/devtools", "chrome-devtools://devtools/bundled/wrong_url", "/");
@@ -19,7 +19,7 @@ function test()
 
         function testFileSystemClashReversedOrder(next)
         {
-            var fileSystemMapping = new WebInspector.FileSystemMapping();
+            var fileSystemMapping = new Workspace.FileSystemMapping();
             fileSystemMapping.addFileSystem("file:///Source/devtools");
 
             fileSystemMapping.addFileMapping("file:///Source/devtools", "http://localhost:1234/right_url", "/");
@@ -31,7 +31,7 @@ function test()
 
         function testNetworkClashDirectOrder(next)
         {
-            var fileSystemMapping = new WebInspector.FileSystemMapping();
+            var fileSystemMapping = new Workspace.FileSystemMapping();
             fileSystemMapping.addFileSystem("file:///Source/devtools");
 
             fileSystemMapping.addNonConfigurableFileMapping("file:///Source/devtools", "http://localhost:1234/front_end", "/wrong");
@@ -43,7 +43,7 @@ function test()
 
         function testNetworkClashReversedOrder(next)
         {
-            var fileSystemMapping = new WebInspector.FileSystemMapping();
+            var fileSystemMapping = new Workspace.FileSystemMapping();
             fileSystemMapping.addFileSystem("file:///Source/devtools");
 
             fileSystemMapping.addFileMapping("file:///Source/devtools", "http://localhost:1234/front_end", "/right");

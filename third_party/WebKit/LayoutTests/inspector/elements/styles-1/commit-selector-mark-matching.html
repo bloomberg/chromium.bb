@@ -21,7 +21,7 @@ function test()
             function nodeCallback(node)
             {
                 nodeId = node.id;
-                stylesPane = WebInspector.panels.elements._stylesWidget;
+                stylesPane = UI.panels.elements._stylesWidget;
                 InspectorTest.addNewRule("foo, #inspected, .bar, #inspected", callback);
             }
 

@@ -42,10 +42,10 @@ function test()
 
     function runQuery(paths, query, expected)
     {
-        var scorer = new WebInspector.FilePathScoreFunction(query);
+        var scorer = new Sources.FilePathScoreFunction(query);
         var bestScore = -1;
         var bestIndex = -1;
-        var filter = WebInspector.FilteredListWidget.filterRegex(query);
+        var filter = UI.FilteredListWidget.filterRegex(query);
         for(var i = 0; i < paths.length; ++i) {
             if (!filter.test(paths[i]))
                 continue;

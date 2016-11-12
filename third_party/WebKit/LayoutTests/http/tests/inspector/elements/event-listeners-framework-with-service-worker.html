@@ -7,18 +7,18 @@
 <script>
 function test()
 {
-    WebInspector.settingForTest("showEventListenersForAncestors").set(false);
+    Common.settingForTest("showEventListenersForAncestors").set(false);
     var scriptURL = "http://127.0.0.1:8000/inspector/service-workers/resources/service-worker-empty.js";
     var scope = "http://127.0.0.1:8000/inspector/service-workers/resources/scope1/";
 
     InspectorTest.waitForServiceWorker(step1);
     InspectorTest.registerServiceWorker(scriptURL, scope);
 
-    var objectEventListenersPane = self.runtime.sharedInstance(WebInspector.ObjectEventListenersSidebarPane);
+    var objectEventListenersPane = self.runtime.sharedInstance(Sources.ObjectEventListenersSidebarPane);
 
     function isDedicatedWorker()
     {
-        var target = WebInspector.context.flavor(WebInspector.ExecutionContext).target();
+        var target = UI.context.flavor(SDK.ExecutionContext).target();
         return InspectorTest.isDedicatedWorker(target);
     }
 
@@ -33,7 +33,7 @@ function test()
         InspectorTest.selectThread(executionContext.target());
         InspectorTest.addResult("Context is dedicated worker: " + isDedicatedWorker());
         InspectorTest.addResult("Dumping listeners");
-        WebInspector.viewManager.showView("sources.globalListeners").then(() => {
+        UI.viewManager.showView("sources.globalListeners").then(() => {
             objectEventListenersPane.update();
             InspectorTest.expandAndDumpEventListeners(objectEventListenersPane._eventListenersView, step3);
         });
@@ -42,7 +42,7 @@ function test()
     function step3()
     {
         InspectorTest.addResult("Selecting main thread");
-        InspectorTest.selectThread(WebInspector.targetManager.mainTarget());
+        InspectorTest.selectThread(SDK.targetManager.mainTarget());
         InspectorTest.addResult("Context is dedicated worker: " + isDedicatedWorker());
         InspectorTest.addResult("Dumping listeners");
         InspectorTest.expandAndDumpEventListeners(objectEventListenersPane._eventListenersView, step4);

@@ -47,14 +47,14 @@ function test()
 
     function removeElementAsUser(element, callback)
     {
-        InspectorTest.addSniffer(WebInspector.ElementsTreeOutline.prototype, "_updateModifiedNodes", callback);
+        InspectorTest.addSniffer(Elements.ElementsTreeOutline.prototype, "_updateModifiedNodes", callback);
         element.remove();
     }
 
     function removeElementExternally(element, callback)
     {
         var node = element.node();
-        InspectorTest.addSniffer(WebInspector.ElementsTreeOutline.prototype, "_updateChildren", callback);
+        InspectorTest.addSniffer(Elements.ElementsTreeOutline.prototype, "_updateChildren", callback);
         node.removeNode();
     }
 
@@ -113,7 +113,7 @@ function test()
         function testExternalDelete(next)
         {
             // We should wait for container node to be updated since it is already populated.
-            InspectorTest.addSniffer(WebInspector.ElementsTreeOutline.prototype, "_updateModifiedNodes", step2);
+            InspectorTest.addSniffer(Elements.ElementsTreeOutline.prototype, "_updateModifiedNodes", step2);
             prepareTestTree();
 
             function step2()

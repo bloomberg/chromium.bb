@@ -8,9 +8,9 @@ function test()
     var settingIndex = 0;
     function createAndShowSplitWidget(isVertical, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight, shouldSaveShowMode)
     {
-        var splitWidget = new WebInspector.SplitWidget(isVertical, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight);
-        splitWidget.setMainWidget(new WebInspector.Widget());
-        splitWidget.setSidebarWidget(new WebInspector.Widget());
+        var splitWidget = new UI.SplitWidget(isVertical, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight);
+        splitWidget.setMainWidget(new UI.Widget());
+        splitWidget.setSidebarWidget(new UI.Widget());
         if (shouldSaveShowMode)
             splitWidget.enableShowModeSaving();
         splitWidget.element.style.position = "absolute";
@@ -28,7 +28,7 @@ function test()
         var sidebarSize = splitWidget.isVertical() ? splitWidget.sidebarWidget().element.offsetWidth : splitWidget.sidebarWidget().element.offsetHeight;
         var orientation = splitWidget.isVertical() ? "vertical" : "horizontal";
         InspectorTest.addResult("    Sidebar size = " + sidebarSize + ", showMode = " + splitWidget.showMode() + ", " + orientation);
-        InspectorTest.addResult("    Setting value: " + JSON.stringify(WebInspector.settings.settingForTest(splitWidget._setting._name).get()));
+        InspectorTest.addResult("    Setting value: " + JSON.stringify(Common.settings.settingForTest(splitWidget._setting._name).get()));
     }
 
     function testSplitWidgetSizes(useFraction, shouldSaveShowMode)

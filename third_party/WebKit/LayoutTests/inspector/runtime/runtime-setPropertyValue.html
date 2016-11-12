@@ -29,7 +29,7 @@ function checkNegativeZero()
 function test()
 {
     var obj1, obj2;
-    var nameFoo = WebInspector.RemoteObject.toCallArgument("foo");
+    var nameFoo = SDK.RemoteObject.toCallArgument("foo");
 
     InspectorTest.runTestSuite([
         function testSetUp(next)
@@ -131,12 +131,12 @@ function test()
 
             function step1(error)
             {
-                obj1.setPropertyValue(WebInspector.RemoteObject.toCallArgument("foo1"), "Infinity", step2);
+                obj1.setPropertyValue(SDK.RemoteObject.toCallArgument("foo1"), "Infinity", step2);
             }
 
             function step2(error)
             {
-                obj1.setPropertyValue(WebInspector.RemoteObject.toCallArgument("foo2"), "-Infinity", step3);
+                obj1.setPropertyValue(SDK.RemoteObject.toCallArgument("foo2"), "-Infinity", step3);
             }
 
             function step3(error)

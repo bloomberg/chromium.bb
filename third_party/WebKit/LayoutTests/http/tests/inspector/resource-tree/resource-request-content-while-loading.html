@@ -14,7 +14,7 @@ function loadStylesheet()
 
 function test()
 {
-    InspectorTest.addSniffer(WebInspector.ResourceTreeFrame.prototype, "_addRequest", requestAdded, true);
+    InspectorTest.addSniffer(SDK.ResourceTreeFrame.prototype, "_addRequest", requestAdded, true);
     InspectorTest.addSniffer(InspectorTest.PageAgent, "getResourceContent", pageAgentGetResourceContentCalled, true);
     InspectorTest.evaluateInPage("loadStylesheet()");
     var contentWasRequested = false;

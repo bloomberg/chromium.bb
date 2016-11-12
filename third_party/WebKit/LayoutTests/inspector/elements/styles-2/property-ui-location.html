@@ -35,15 +35,15 @@ function test()
     {
         var styles = matchedResult.nodeStyles();
         for (var style of styles) {
-            if (style.type !== WebInspector.CSSStyleDeclaration.Type.Regular)
+            if (style.type !== SDK.CSSStyleDeclaration.Type.Regular)
                 continue;
             var properties = style.allProperties;
             for (var property of properties) {
                 if (!property.range)
                     continue;
-                var uiLocation = WebInspector.cssWorkspaceBinding.propertyUILocation(property, true);
+                var uiLocation = Bindings.cssWorkspaceBinding.propertyUILocation(property, true);
                 InspectorTest.addResult(String.sprintf("%s -> %s:%d:%d", property.name, uiLocation.uiSourceCode.name(), uiLocation.lineNumber, uiLocation.columnNumber));
-                var uiLocation = WebInspector.cssWorkspaceBinding.propertyUILocation(property, false);
+                var uiLocation = Bindings.cssWorkspaceBinding.propertyUILocation(property, false);
                 InspectorTest.addResult(String.sprintf("%s -> %s:%d:%d", property.value, uiLocation.uiSourceCode.name(), uiLocation.lineNumber, uiLocation.columnNumber));
             }
         }
@@ -53,7 +53,7 @@ function test()
 </script>
 </head>
 <body onload="runTest()">
-<p>Verifies WebInspector.cssWorkspaceBinding.propertyUILocation functionality</p>
+<p>Verifies Bindings.cssWorkspaceBinding.propertyUILocation functionality</p>
 <div id="inspected"></div>
 </body>
 </html>

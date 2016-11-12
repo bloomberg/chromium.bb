@@ -11,7 +11,7 @@ function onload()
 
 function test()
 {
-    InspectorTest.addSniffer(WebInspector.RuntimeModel.prototype, "_inspectRequested", sniffInspect, true);
+    InspectorTest.addSniffer(SDK.RuntimeModel.prototype, "_inspectRequested", sniffInspect, true);
 
     function sniffInspect(objectId, hints)
     {
@@ -34,19 +34,19 @@ function test()
     InspectorTest.runTestSuite([
         function testRevealElement(next)
         {
-            InspectorTest.addSniffer(WebInspector.Revealer, "revealPromise", step2, true);
+            InspectorTest.addSniffer(Common.Revealer, "revealPromise", step2, true);
             evalAndDump("inspect($('#p1'))");
 
             function step2(node, revealPromise)
             {
-                if (!(node instanceof WebInspector.RemoteObject))
+                if (!(node instanceof SDK.RemoteObject))
                     return;
                 revealPromise.then(step3);
             }
 
             function step3()
             {
-                InspectorTest.addResult("Selected node id: '" + WebInspector.panels.elements.selectedDOMNode().getAttribute("id") + "'.");
+                InspectorTest.addResult("Selected node id: '" + UI.panels.elements.selectedDOMNode().getAttribute("id") + "'.");
                 next();
             }
         }

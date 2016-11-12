@@ -29,7 +29,7 @@ function test() {
         if (request.name() !== "empty.html?xhr")
             return;
         xhrRequestFinished = true;
-        WebInspector.panels.network._networkLogView._refresh();
+        UI.panels.network._networkLogView._refresh();
         checkComplete();
     }
 
@@ -44,8 +44,8 @@ function test() {
     }
 
     InspectorTest.recordNetwork();
-    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.Events.RequestFinished, onRequestFinished);
-    InspectorTest.addSniffer(WebInspector.panels.network._networkLogView._dataGrid, "insertChild", onNodeInserted, true);
+    InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequestFinished);
+    InspectorTest.addSniffer(UI.panels.network._networkLogView._dataGrid, "insertChild", onNodeInserted, true);
     InspectorTest.NetworkAgent.setCacheDisabled(true, InspectorTest.evaluateInPage.bind(null, "sendXHRRequest()"));
 }
 </script>

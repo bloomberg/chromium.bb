@@ -79,7 +79,7 @@ function test()
         {
             var inlineStyle;
             InspectorTest.cssModel.inlineStylesPromise(nodeId).then(stylesCallback);
-            InspectorTest.cssModel.addEventListener(WebInspector.CSSModel.Events.StyleSheetChanged, onStyleSheetChanged);
+            InspectorTest.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetChanged, onStyleSheetChanged);
             function onStyleSheetChanged(event)
             {
                 if (event.data && event.data.edit)

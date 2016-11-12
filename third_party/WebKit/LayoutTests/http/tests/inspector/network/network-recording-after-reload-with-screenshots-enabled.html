@@ -6,16 +6,16 @@
 
 function test()
 {
-    WebInspector.panels.network._networkRecordFilmStripSetting.set(true);
+    UI.panels.network._networkRecordFilmStripSetting.set(true);
     
-    WebInspector.NetworkPanel._displayScreenshotDelay = 0;
+    Network.NetworkPanel._displayScreenshotDelay = 0;
 
     InspectorTest.resourceTreeModel.reloadPage();
     InspectorTest.runWhenPageLoads(() => setTimeout(checkRecording, 50));
 
     function checkRecording() 
     {
-        InspectorTest.addResult(WebInspector.panels.network._networkLogView._recording ? "Still recording" : "Not recording");
+        InspectorTest.addResult(UI.panels.network._networkLogView._recording ? "Still recording" : "Not recording");
 
         InspectorTest.completeTest();
     }

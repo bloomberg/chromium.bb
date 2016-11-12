@@ -13,17 +13,17 @@ function test()
 
         function testCreateElementsPanel(next)
         {
-            WebInspector.inspectorView.panel("elements").then(InspectorTest.dumpLoadedModules.bind(InspectorTest, self.runtime.loadModulePromise("animation").then(next)));
+            UI.inspectorView.panel("elements").then(InspectorTest.dumpLoadedModules.bind(InspectorTest, self.runtime.loadModulePromise("animation").then(next)));
         },
 
         function testCreateNetworkPanel(next)
         {
-            WebInspector.inspectorView.panel("network").then(InspectorTest.dumpLoadedModules.bind(InspectorTest, next));
+            UI.inspectorView.panel("network").then(InspectorTest.dumpLoadedModules.bind(InspectorTest, next));
         },
 
         function testShowSourcesPanel(next)
         {
-            WebInspector.inspectorView.panel("sources").then(InspectorTest.dumpLoadedModules.bind(InspectorTest, next));
+            UI.inspectorView.panel("sources").then(InspectorTest.dumpLoadedModules.bind(InspectorTest, next));
         },
 
         function testOpenUISourceCode(next)
@@ -35,8 +35,8 @@ function test()
                     return true;
                 }
             });
-            var uiLocation = WebInspector.workspace.uiSourceCodeForURL(resource.url).uiLocation(2, 1);
-            WebInspector.Revealer.reveal(uiLocation);
+            var uiLocation = Workspace.workspace.uiSourceCodeForURL(resource.url).uiLocation(2, 1);
+            Common.Revealer.reveal(uiLocation);
             InspectorTest.dumpLoadedModules(next);
         }
     ]);

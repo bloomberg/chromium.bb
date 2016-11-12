@@ -935,7 +935,7 @@ function test()
     profile.timeDeltas = [0, ...new Array(profile.samples.length - 1).fill(samplingInterval)];
     profileAndExpectations.target = () => {};
     profileAndExpectations.weakTarget = () => new WeakReference(null);
-    var cpuProfileView = new WebInspector.CPUProfileView(profileAndExpectations);
+    var cpuProfileView = new Profiler.CPUProfileView(profileAndExpectations);
     cpuProfileView.viewSelectComboBox.setSelectedIndex(0);
     cpuProfileView._changeView();
     var overviewPane = cpuProfileView._flameChart._overviewPane;

@@ -5,15 +5,15 @@
 
 function test()
 {
-    var uiSourceCodes = WebInspector.workspace.uiSourceCodes();
+    var uiSourceCodes = Workspace.workspace.uiSourceCodes();
 
     for (var i = 0; i < uiSourceCodes.length; ++i) {
         var uiSourceCode = uiSourceCodes[i];
         if (!/.php$/.test(uiSourceCode.url()))
             continue;
-        if (uiSourceCode.project().type() !== WebInspector.projectTypes.Network)
+        if (uiSourceCode.project().type() !== Workspace.projectTypes.Network)
             continue;
-        InspectorTest.addResult("Highlight mimeType: " + WebInspector.NetworkProject.uiSourceCodeMimeType(uiSourceCode));
+        InspectorTest.addResult("Highlight mimeType: " + Bindings.NetworkProject.uiSourceCodeMimeType(uiSourceCode));
         InspectorTest.completeTest();
         return;
     }

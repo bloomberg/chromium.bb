@@ -7,7 +7,7 @@
 
 function test()
 {
-    WebInspector.settingForTest("showUAShadowDOM").set(true);
+    Common.settingForTest("showUAShadowDOM").set(true);
     InspectorTest.selectNodeWithId("shadow", step1);
 
     function step1()
@@ -22,7 +22,7 @@ function test()
 
     function step4(node)
     {
-        WebInspector.panels.elements.revealAndSelectNode(node.shadowRoots()[0]);
+        UI.panels.elements.revealAndSelectNode(node.shadowRoots()[0]);
         InspectorTest.evaluateInConsoleAndDump("'User agent shadow host: ' + $0.id", step5);
     }
 

@@ -31,7 +31,7 @@ var initialize_ApplicationCacheTest = function() {
 
 InspectorTest.createAndNavigateIFrame = function(url, callback)
 {
-    InspectorTest.addSniffer(WebInspector.ResourceTreeModel.prototype, "_frameNavigated", frameNavigated);
+    InspectorTest.addSniffer(SDK.ResourceTreeModel.prototype, "_frameNavigated", frameNavigated);
     InspectorTest.evaluateInPage("createAndNavigateIFrame(unescape('" + escape(url) + "'))");
 
     function frameNavigated(frame)
@@ -44,7 +44,7 @@ InspectorTest.navigateIFrame = function(frameId, url, callback)
 {
     var frame = InspectorTest.resourceTreeModel.frameForId(frameId)
     InspectorTest.evaluateInPage("navigateIFrame(unescape('" + escape(frame.name) +"'), unescape('" + escape(url) + "'))");
-    InspectorTest.addSniffer(WebInspector.ResourceTreeModel.prototype, "_frameNavigated", frameNavigated);
+    InspectorTest.addSniffer(SDK.ResourceTreeModel.prototype, "_frameNavigated", frameNavigated);
 
     function frameNavigated(frame)
     {
@@ -56,7 +56,7 @@ InspectorTest.removeIFrame = function(frameId, callback)
 {
     var frame = InspectorTest.resourceTreeModel.frameForId(frameId)
     InspectorTest.evaluateInPage("removeIFrame(unescape('" + escape(frame.name) +"'))");
-    InspectorTest.addSniffer(WebInspector.ResourceTreeModel.prototype, "_frameDetached", frameDetached);
+    InspectorTest.addSniffer(SDK.ResourceTreeModel.prototype, "_frameDetached", frameDetached);
 
     function frameDetached(frame)
     {
@@ -81,7 +81,7 @@ InspectorTest.dumpApplicationCache = function()
 InspectorTest.dumpApplicationCacheTree = function()
 {
     InspectorTest.addResult("Dumping application cache tree:");
-    var applicationCacheTreeElement = WebInspector.panels.resources.applicationCacheListTreeElement;
+    var applicationCacheTreeElement = UI.panels.resources.applicationCacheListTreeElement;
     if (!applicationCacheTreeElement.childCount()) {
         InspectorTest.addResult("    (empty)");
         return;
@@ -127,7 +127,7 @@ InspectorTest.applicationCacheStatusToString = function(status)
 InspectorTest.dumpApplicationCacheModel = function()
 {
     InspectorTest.addResult("Dumping application cache model:");
-    var model = WebInspector.panels.resources._applicationCacheModel;
+    var model = UI.panels.resources._applicationCacheModel;
 
     var frameIds = [];
     for (var frameId in model._manifestURLsByFrame)
@@ -154,15 +154,15 @@ InspectorTest.dumpApplicationCacheModel = function()
 
 InspectorTest.waitForFrameManifestURLAndStatus = function(frameId, manifestURL, status, callback)
 {
-    var frameManifestStatus = WebInspector.panels.resources._applicationCacheModel.frameManifestStatus(frameId);
-    var frameManifestURL = WebInspector.panels.resources._applicationCacheModel.frameManifestURL(frameId);
+    var frameManifestStatus = UI.panels.resources._applicationCacheModel.frameManifestStatus(frameId);
+    var frameManifestURL = UI.panels.resources._applicationCacheModel.frameManifestURL(frameId);
     if (frameManifestStatus === status && frameManifestURL.indexOf(manifestURL) !== -1) {
         callback();
         return;
     }
 
     var handler = InspectorTest.waitForFrameManifestURLAndStatus.bind(this, frameId, manifestURL, status, callback);
-    InspectorTest.addSniffer(WebInspector.ApplicationCacheModel.prototype, "_frameManifestUpdated", handler);
+    InspectorTest.addSniffer(SDK.ApplicationCacheModel.prototype, "_frameManifestUpdated", handler);
 }
 
 InspectorTest.startApplicationCacheStatusesRecording = function()
@@ -188,7 +188,7 @@ InspectorTest.startApplicationCacheStatusesRecording = function()
         }
     }
 
-    InspectorTest.addSniffer(WebInspector.ApplicationCacheModel.prototype, "_frameManifestUpdated", addRecord, true);
+    InspectorTest.addSniffer(SDK.ApplicationCacheModel.prototype, "_frameManifestUpdated", addRecord, true);
 }
 
 InspectorTest.ensureFrameStatusEventsReceived = function(frameId, count, callback)

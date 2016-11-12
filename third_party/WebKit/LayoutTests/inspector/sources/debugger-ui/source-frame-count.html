@@ -22,7 +22,7 @@ function test()
     InspectorTest.runDebuggerTestSuite([
         function testSourceFramesCount(next)
         {
-            var panel = WebInspector.panels.sources;
+            var panel = UI.panels.sources;
 
             InspectorTest.showScriptSource("source-frame-count.html", function() {});
             InspectorTest.showScriptSource("script1.js", function() {});
@@ -39,7 +39,7 @@ function test()
                 {
                     framesOpened++;
                 }
-                InspectorTest.addSniffer(WebInspector.SourceFrame.prototype, "wasShown", didCreateSourceFrame, true);
+                InspectorTest.addSniffer(SourceFrame.SourceFrame.prototype, "wasShown", didCreateSourceFrame, true);
 
             }
 

@@ -12,13 +12,13 @@ function test() {
         items[i].style.height = (heights[i] = (i % 4) ? 50 : 28) + "px";
         items[i].textContent = i;
     }
-    var viewport = new WebInspector.StaticViewportControl({
+    var viewport = new UI.StaticViewportControl({
         fastItemHeight: i => heights[i],
         itemCount: _ => items.length,
         itemElement: i => items[i]
     });
     viewport.element.style.height = "300px";
-    WebInspector.inspectorView.element.appendChild(viewport.element);
+    UI.inspectorView.element.appendChild(viewport.element);
 
     viewport.refresh();
     dumpViewport();

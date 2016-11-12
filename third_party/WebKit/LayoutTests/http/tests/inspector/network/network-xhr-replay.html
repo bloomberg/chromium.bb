@@ -39,7 +39,7 @@ function test()
             originalRequest = lastRequest();
             dumpRequest(originalRequest);
             InspectorTest.NetworkAgent.replayXHR(originalRequest.requestId);
-            InspectorTest.addSniffer(WebInspector.NetworkLogView.prototype, "_appendRequest", step3);
+            InspectorTest.addSniffer(Network.NetworkLogView.prototype, "_appendRequest", step3);
         }
 
         function step3()

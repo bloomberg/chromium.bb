@@ -36,7 +36,7 @@ var test = function()
     function step3(callFrames, result)
     {
         InspectorTest.addResult("Evaluated script on the top frame: " + result);
-        var pane = self.runtime.sharedInstance(WebInspector.CallStackSidebarPane);
+        var pane = self.runtime.sharedInstance(Sources.CallStackSidebarPane);
         pane._callFrameSelected(pane.callFrames[1]);
         InspectorTest.deprecatedRunAfterPendingDispatches(step4);
     }

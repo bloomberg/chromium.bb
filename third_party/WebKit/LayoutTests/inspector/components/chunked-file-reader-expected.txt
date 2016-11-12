@@ -1,7 +1,7 @@
 This tests that ChunkedFileReader properly re-assembles chunks, especially in case these contain multibyte characters.
 
-WebInspector.OutputStreamDelegate.onTransferStarted() called
+Bindings.OutputStreamDelegate.onTransferStarted() called
 Chunks transferred: 40
-WebInspector.OutputStreamDelegate.onTransferFinished() called
+Bindings.OutputStreamDelegate.onTransferFinished() called
 DONE
 

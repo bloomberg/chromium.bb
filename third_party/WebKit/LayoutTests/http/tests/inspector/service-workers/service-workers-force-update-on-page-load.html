@@ -23,7 +23,7 @@ function test()
 
     function waitForWorkerActivated(scope) {
         return new Promise(function(resolve) {
-            InspectorTest.addSniffer(WebInspector.ServiceWorkersView.prototype, "_updateRegistration", updateRegistration, false);
+            InspectorTest.addSniffer(Resources.ServiceWorkersView.prototype, "_updateRegistration", updateRegistration, false);
             function updateRegistration(registration)
             {
                 if (registration.scopeURL == scope) {
@@ -34,12 +34,12 @@ function test()
                         }
                     }
                 }
-                InspectorTest.addSniffer(WebInspector.ServiceWorkersView.prototype, "_updateRegistration", updateRegistration, false);
+                InspectorTest.addSniffer(Resources.ServiceWorkersView.prototype, "_updateRegistration", updateRegistration, false);
             }});
     }
     function installNewWorkerDetector(scope) {
         var workerIdSet = {};
-        InspectorTest.addSniffer(WebInspector.ServiceWorkersView.prototype, "_updateRegistration", updateRegistration, true);
+        InspectorTest.addSniffer(Resources.ServiceWorkersView.prototype, "_updateRegistration", updateRegistration, true);
         function updateRegistration(registration)
         {
             if (registration.scopeURL == scope) {
@@ -53,7 +53,7 @@ function test()
         }
     }
     installNewWorkerDetector(scope);
-    WebInspector.inspectorView.showPanel("sources")
+    UI.inspectorView.showPanel("sources")
         .then(() => waitForWorkerActivated(scope))
         .then(function(){
             InspectorTest.addResult("The first ServiceWorker is activated.");
@@ -66,7 +66,7 @@ function test()
         .then(function() {
             InspectorTest.addResult("The second frame loaded.");
             InspectorTest.addResult("Check \"Force update on page load\" check box");
-            WebInspector.settings.settingForTest("serviceWorkerUpdateOnReload").set(true);
+            Common.settings.settingForTest("serviceWorkerUpdateOnReload").set(true);
             return InspectorTest.callFunctionInPageAsync("loadIframe", [ scope ]);
         })
         .then(function() {
@@ -76,7 +76,7 @@ function test()
         .then(function() {
             InspectorTest.addResult("The fourth frame loaded.  The third worker must be activated before here.");
             InspectorTest.addResult("Uncheck \"Force update on page load\" check box");
-            WebInspector.settings.settingForTest("serviceWorkerUpdateOnReload").set(false);
+            Common.settings.settingForTest("serviceWorkerUpdateOnReload").set(false);
             return InspectorTest.callFunctionInPageAsync("loadIframe", [ scope ]);
         })
         .then(function() {
@@ -90,7 +90,7 @@ function test()
             InspectorTest.deleteServiceWorkerRegistration(scope);
             InspectorTest.completeTest();
         });
-    WebInspector.panels.resources.serviceWorkersTreeElement.select();
+    UI.panels.resources.serviceWorkersTreeElement.select();
     InspectorTest.registerServiceWorker(scriptURL, scope);
 }
 

@@ -26,7 +26,7 @@ function initialize_extensionsSidebarTest()
 
     InspectorTest._extensionSidebar = function(panelName)
     {
-        var sidebarPanes = WebInspector.extensionServer.sidebarPanes();
+        var sidebarPanes = Extensions.extensionServer.sidebarPanes();
         var result;
         for (var i = 0; i < sidebarPanes.length; ++i) {
             if (sidebarPanes[i].panelName() === panelName)

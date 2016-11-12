@@ -8,7 +8,7 @@
 
 function test()
 {
-    var panel = WebInspector.panels.sources;
+    var panel = UI.panels.sources;
 
     InspectorTest.showScriptSource("edit-me.js", step1);
 
@@ -22,9 +22,9 @@ function test()
     {
         panel.searchableView().showSearchField();
         InspectorTest.addResult("Search controller: '" + panel.searchableView()._searchInputElement.value + "'");
-        var action = new WebInspector.AdvancedSearchView.ActionDelegate();
+        var action = new Sources.AdvancedSearchView.ActionDelegate();
         action._showSearch();
-        var searchView = /** @type {!WebInspector.AdvancedSearchView} */ (self.runtime.sharedInstance(WebInspector.AdvancedSearchView));
+        var searchView = /** @type {!Sources.AdvancedSearchView} */ (self.runtime.sharedInstance(Sources.AdvancedSearchView));
         InspectorTest.addResult("Advanced search controller: '" + searchView._search.value + "'");
         InspectorTest.completeTest();
     }
@@ -36,7 +36,7 @@ function test()
             var column = line.indexOf(string);
             if (column === -1)
                 continue;
-            return new WebInspector.TextRange(i, column, i, column + string.length);
+            return new Common.TextRange(i, column, i, column + string.length);
         }
     }
 }

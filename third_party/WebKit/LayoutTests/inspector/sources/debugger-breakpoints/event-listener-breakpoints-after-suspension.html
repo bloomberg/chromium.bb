@@ -22,7 +22,7 @@ function test()
 
     function start()
     {
-        var pane = self.runtime.sharedInstance(WebInspector.EventListenerBreakpointsSidebarPane);
+        var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
         pane._setBreakpoint("listener:click");
         InspectorTest.waitUntilPaused(paused);
         InspectorTest.evaluateInPageWithTimeout("addListenerAndClick()");
@@ -37,14 +37,14 @@ function test()
     function suspendAll()
     {
         InspectorTest.addResult("Suspend all targets");
-        WebInspector.targetManager.suspendAllTargets();
+        SDK.targetManager.suspendAllTargets();
         InspectorTest.deprecatedRunAfterPendingDispatches(resumeAll);
     }
 
     function resumeAll()
     {
         InspectorTest.addResult("Resume all targets");
-        WebInspector.targetManager.resumeAllTargets();
+        SDK.targetManager.resumeAllTargets();
         InspectorTest.waitUntilPaused(finish);
         InspectorTest.evaluateInPageWithTimeout("addListenerAndClick()");
     }

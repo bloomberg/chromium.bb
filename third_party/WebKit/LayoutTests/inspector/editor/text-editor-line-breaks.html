@@ -27,7 +27,7 @@ function test()
         {
             var textEditor = InspectorTest.createTestEditor();
             textEditor.setText("1\n2\n3\n");
-            textEditor.editRange(new WebInspector.TextRange(1, 0, 1, 0), "foo\r\nbar");
+            textEditor.editRange(new Common.TextRange(1, 0, 1, 0), "foo\r\nbar");
             InspectorTest.addResult(encodeURI(textEditor.text()));
             next();
         },
@@ -36,7 +36,7 @@ function test()
         {
             var textEditor = InspectorTest.createTestEditor();
             textEditor.setText("1\r\n2\r\n3\r\n");
-            textEditor.editRange(new WebInspector.TextRange(1, 0, 1, 0), "foo\r\nbar");
+            textEditor.editRange(new Common.TextRange(1, 0, 1, 0), "foo\r\nbar");
             InspectorTest.addResult(encodeURI(textEditor.text()));
             next();
         }

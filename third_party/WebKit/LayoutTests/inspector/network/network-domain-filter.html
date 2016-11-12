@@ -8,12 +8,12 @@ function test() {
     {
         InspectorTest.addResult("");
         InspectorTest.addResult("Domain: " + domain);
-        InspectorTest.addResult("Subdomains: " + JSON.stringify(WebInspector.NetworkLogView._subdomains(domain)));
+        InspectorTest.addResult("Subdomains: " + JSON.stringify(Network.NetworkLogView._subdomains(domain)));
     }
 
     function checkFilter(value, domains)
     {
-        var filter = WebInspector.NetworkLogView._createRequestDomainFilter(value);
+        var filter = Network.NetworkLogView._createRequestDomainFilter(value);
         InspectorTest.addResult("");
         InspectorTest.addResult("Filter: " + value);
         for (var i = 0; i < domains.length; ++i)

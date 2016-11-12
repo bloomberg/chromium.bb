@@ -8,20 +8,20 @@
 function test()
 {
     InspectorTest.evaluateInPage("foo()", step1);
-    WebInspector.inspectorView._tabbedPane.addEventListener(WebInspector.TabbedPane.Events.TabSelected, panelChanged);
+    UI.inspectorView._tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, panelChanged);
 
     function panelChanged()
     {
-        InspectorTest.addResult("Panel " + WebInspector.inspectorView._tabbedPane._currentTab.id + " was opened.");
+        InspectorTest.addResult("Panel " + UI.inspectorView._tabbedPane._currentTab.id + " was opened.");
         InspectorTest.completeTest();
     }
 
     var clickTarget;
     function step1()
     {
-        var firstMessageEl = WebInspector.ConsoleView.instance()._visibleViewMessages[0].element();
+        var firstMessageEl = Console.ConsoleView.instance()._visibleViewMessages[0].element();
         clickTarget = firstMessageEl.querySelectorAll(".console-message-text a")[1];
-        WebInspector.inspectorView.showPanel("console").then(testClickTarget);
+        UI.inspectorView.showPanel("console").then(testClickTarget);
     }
 
     function testClickTarget()

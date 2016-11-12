@@ -10,13 +10,13 @@ function test()
 
     function dumpRequests()
     {
-        var logView = WebInspector.panels.network._networkLogView;
+        var logView = UI.panels.network._networkLogView;
         logView._refresh();
         var dataGrid = logView.element.querySelector("table.data");
         var urls = document.evaluate("//tbody/tr/td[position()=1]/@title", dataGrid, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
         var outputStrings = [];
 
-        for (var request of WebInspector.NetworkLog.fromTarget(WebInspector.targetManager.mainTarget())._requests) {
+        for (var request of SDK.NetworkLog.fromTarget(SDK.targetManager.mainTarget())._requests) {
             var line = request.displayName + ":" + request.statusCode + " " + request.statusText
             if (request.failed)
                 line += "(failed)";
@@ -35,7 +35,7 @@ function test()
             setTimeout(dumpRequests);
     }
 
-    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.Events.RequestFinished, onRequestFinished);
+    InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequestFinished);
     InspectorTest.recordNetwork();
     InspectorTest.evaluateInPage("loadResources()");
 }

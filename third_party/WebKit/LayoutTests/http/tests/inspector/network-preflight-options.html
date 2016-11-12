@@ -77,7 +77,7 @@ var test = function()
             InspectorTest.completeTest();
         }
     }
-    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.Events.RequestFinished, onRequest);
+    InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequest);
     InspectorTest.evaluateInPage("doCrossOriginXHR();");
 }
 </script>

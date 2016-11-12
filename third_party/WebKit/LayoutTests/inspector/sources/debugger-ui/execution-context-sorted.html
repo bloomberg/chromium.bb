@@ -7,7 +7,7 @@ function test()
 {
     var contexts = InspectorTest.runtimeModel.executionContexts();
     for (var c of contexts)
-        InspectorTest.addResult(WebInspector.ResourceTreeModel.fromTarget(c.target()).frameForId(c.frameId).displayName());
+        InspectorTest.addResult(SDK.ResourceTreeModel.fromTarget(c.target()).frameForId(c.frameId).displayName());
     InspectorTest.completeTest();
 }
 

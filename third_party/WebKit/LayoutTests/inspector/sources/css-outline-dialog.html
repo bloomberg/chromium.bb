@@ -14,13 +14,13 @@ function test()
     function onSourceShown(sourceFrame)
     {
         textEditor = sourceFrame.textEditor;
-        InspectorTest.addSniffer(WebInspector.StyleSheetOutlineDialog.prototype, "refresh", onDialogFulfilled);
-        WebInspector.panels.sources._sourcesView._showOutlineDialog();
+        InspectorTest.addSniffer(Sources.StyleSheetOutlineDialog.prototype, "refresh", onDialogFulfilled);
+        UI.panels.sources._sourcesView._showOutlineDialog();
     }
 
     function onDialogFulfilled()
     {
-        WebInspector.StyleSheetOutlineDialog._instanceForTests.selectItem(1, "");
+        Sources.StyleSheetOutlineDialog._instanceForTests.selectItem(1, "");
         var selection = textEditor.selection();
         if (!selection.isEmpty()) {
             InspectorTest.addResult("ERROR: selection is not empty.");

@@ -8,12 +8,12 @@ function test()
     /** @type {!Protocol.Security.InsecureContentStatus} */
     var insecureContentStatus = { ranMixedContent: false, displayedMixedContent: false, ranContentWithCertErrors: false, displayedContentWithCertErrors: true, ranInsecureContentStyle: Protocol.Security.SecurityState.Insecure, displayedInsecureContentStyle: Protocol.Security.SecurityState.Neutral };
 
-    InspectorTest.mainTarget.model(WebInspector.SecurityModel).dispatchEventToListeners(WebInspector.SecurityModel.Events.SecurityStateChanged, new WebInspector.PageSecurityState(Protocol.Security.SecurityState.None, [], insecureContentStatus, true));
+    InspectorTest.mainTarget.model(Security.SecurityModel).dispatchEventToListeners(Security.SecurityModel.Events.SecurityStateChanged, new Security.PageSecurityState(Protocol.Security.SecurityState.None, [], insecureContentStatus, true));
 
-    var request = new WebInspector.NetworkRequest(InspectorTest.mainTarget, 0, "http://foo.test", "https://foo.test", 0, 0, null);
+    var request = new SDK.NetworkRequest(InspectorTest.mainTarget, 0, "http://foo.test", "https://foo.test", 0, 0, null);
     InspectorTest.dispatchRequestFinished(request);
 
-    var explanations = WebInspector.SecurityPanel._instance()._mainView.contentElement.getElementsByClassName("security-explanation");
+    var explanations = Security.SecurityPanel._instance()._mainView.contentElement.getElementsByClassName("security-explanation");
     for (var i = 0; i < explanations.length; i++)
         InspectorTest.dumpDeepInnerHTML(explanations[i]);
     InspectorTest.completeTest();

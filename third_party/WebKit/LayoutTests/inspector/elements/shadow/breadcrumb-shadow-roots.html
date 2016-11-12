@@ -17,7 +17,7 @@ function loaded()
 
 function test()
 {
-    WebInspector.settingForTest("showUAShadowDOM").set(true);
+    Common.settingForTest("showUAShadowDOM").set(true);
     InspectorTest.expandElementsTree(step0);
 
     function step0()
@@ -48,23 +48,23 @@ function test()
         InspectorTest.findNode(matchFunction, callback);
         function callback(node)
         {
-            WebInspector.Revealer.revealPromise(node).then(next);
+            Common.Revealer.revealPromise(node).then(next);
         }
     }
 
     function matchUserAgentShadowRoot(node)
     {
-        return node.shadowRootType() === WebInspector.DOMNode.ShadowRootTypes.UserAgent;
+        return node.shadowRootType() === SDK.DOMNode.ShadowRootTypes.UserAgent;
     }
 
     function matchOpenShadowRoot(node)
     {
-        return node.shadowRootType() === WebInspector.DOMNode.ShadowRootTypes.Open;
+        return node.shadowRootType() === SDK.DOMNode.ShadowRootTypes.Open;
     }
 
     function matchClosedShadowRoot(node)
     {
-        return node.shadowRootType() === WebInspector.DOMNode.ShadowRootTypes.Closed;
+        return node.shadowRootType() === SDK.DOMNode.ShadowRootTypes.Closed;
     }
 }
 

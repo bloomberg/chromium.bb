@@ -134,7 +134,7 @@ function test()
 
         function testAppendChildWhenHidden(next)
         {
-            WebInspector.viewManager.showView("console");
+            UI.viewManager.showView("console");
             runAndDumpHighlights("appendChild('childTest', 'child1')", childTestNode, next);
         }
     ]);

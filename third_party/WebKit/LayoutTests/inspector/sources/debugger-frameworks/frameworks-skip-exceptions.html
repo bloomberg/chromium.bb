@@ -17,14 +17,14 @@ function testFunction()
 function test()
 {
     var frameworkRegexString = "/framework\\.js$";
-    WebInspector.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
+    Common.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
 
     InspectorTest.setQuiet(true);
     InspectorTest.startDebuggerTest(step1);
 
     function step1()
     {
-        InspectorTest.DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions);
+        InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions);
         InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
     }
 
@@ -36,7 +36,7 @@ function test()
 
     function completeTest()
     {
-        InspectorTest.DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
+        InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
         InspectorTest.completeDebuggerTest();
     }
 }

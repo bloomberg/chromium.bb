@@ -13,8 +13,8 @@ function test()
     {
         InspectorTest.createWorkspace();
         var target = InspectorTest.createMockTarget(InspectorTest._mockTargetId++);
-        InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
-        InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, uiSourceCodeRemoved);
+        InspectorTest.testWorkspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
+        InspectorTest.testWorkspace.addEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, uiSourceCodeRemoved);
         userCallback(target);
     }
 
@@ -85,7 +85,7 @@ function test()
                 "mappings":"AAASA,QAAAA,IAAG,CAACC,CAAD,CAAaC,CAAb,CACZ,CACI,MAAOD,EAAP,CAAoBC,CADxB,CAIA,IAAIC,OAAS;A",
                 "sources":["example.js"]
             };
-            var mapping = new WebInspector.TextSourceMap("compiled.js", "source-map.json", mappingPayload);
+            var mapping = new SDK.TextSourceMap("compiled.js", "source-map.json", mappingPayload);
 
             checkMapping(0, 9, "example.js", 0, 9, mapping);
             checkMapping(0, 13, "example.js", 0, 13, mapping);
@@ -110,7 +110,7 @@ function test()
                 "mappings":"AAAA,C,CAAE;",
                 "sources":["example.js"]
             };
-            var mapping = new WebInspector.TextSourceMap("compiled.js", "source-map.json", mappingPayload);
+            var mapping = new SDK.TextSourceMap("compiled.js", "source-map.json", mappingPayload);
             checkMapping(0, 0, "example.js", 0, 0, mapping);
             var entry = mapping.findEntry(0, 1);
             InspectorTest.assertTrue(!entry.sourceURL);
@@ -124,7 +124,7 @@ function test()
                 "mappings":"AAAA;;;CACA",
                 "sources":["example.js"]
             };
-            var mapping = new WebInspector.TextSourceMap("compiled.js", "source-map.json", mappingPayload);
+            var mapping = new SDK.TextSourceMap("compiled.js", "source-map.json", mappingPayload);
             checkMapping(0, 0, "example.js", 0, 0, mapping);
             checkReverseMapping(3, 1, "example.js", 1, mapping);
             next();
@@ -147,7 +147,7 @@ function test()
                     }
                 }
             ]};
-            var mapping = new WebInspector.TextSourceMap("compiled.js", "source-map.json", mappingPayload);
+            var mapping = new SDK.TextSourceMap("compiled.js", "source-map.json", mappingPayload);
             InspectorTest.assertEquals(2, mapping.sourceURLs().length);
             checkMapping(0, 0, "source1.js", 0, 0, mapping);
             checkMapping(0, 1, "source1.js", 2, 1, mapping);
@@ -158,13 +158,13 @@ function test()
 
         function testResolveSourceMapURL(next)
         {
-            var func = WebInspector.ParsedURL.completeURL;
+            var func = Common.ParsedURL.completeURL;
             InspectorTest.addResult("http://example.com/map.json === " + func("http://example.com/script.js", "http://example.com/map.json"));
             InspectorTest.addResult("http://example.com/map.json === " + func("http://example.com/script.js", "/map.json"));
             InspectorTest.addResult("http://example.com/maps/map.json === " + func("http://example.com/scripts/script.js", "../maps/map.json"));
             function testCompleteURL(base, lhs, rhs)
             {
-                var actual =  WebInspector.ParsedURL.completeURL(base, lhs);
+                var actual =  Common.ParsedURL.completeURL(base, lhs);
                 InspectorTest.addResult(lhs + " resolves to " + actual + "===" + rhs + " passes: " + (actual === rhs));
             }
 
@@ -240,12 +240,12 @@ function test()
             function originalUISourceCodeAdded(uiSourceCode)
             {
                 InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(originalResourceUISourceCodeAdded);
-                InspectorTest.addMockUISourceCodeToWorkspace("compiled.js", WebInspector.resourceTypes.Script, "");
+                InspectorTest.addMockUISourceCodeToWorkspace("compiled.js", Common.resourceTypes.Script, "");
             }
 
             function originalResourceUISourceCodeAdded(uiSourceCode)
             {
-                InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(stubUISourceCodeAdded, 1, WebInspector.projectTypes.Service);
+                InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(stubUISourceCodeAdded, 1, Workspace.projectTypes.Service);
                 originalUISourceCode = uiSourceCode;
             }
 
@@ -311,7 +311,7 @@ function test()
                 });
                 InspectorTest.testDebuggerWorkspaceBinding._targetToData.get(target)._parsedScriptSource({ data: script });
                 InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(originalResourceUISourceCodeAdded);
-                InspectorTest.addMockUISourceCodeToWorkspace("compiled.js", WebInspector.resourceTypes.Script, "");
+                InspectorTest.addMockUISourceCodeToWorkspace("compiled.js", Common.resourceTypes.Script, "");
                 InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(firstUISourceCodeAdded);
             }
 
@@ -445,7 +445,7 @@ function test()
                 "sources":["example.js"],
                 "sourceRoot":"/"
             };
-            var mapping = new WebInspector.TextSourceMap("compiled.js", "source-map.json", mappingPayload);
+            var mapping = new SDK.TextSourceMap("compiled.js", "source-map.json", mappingPayload);
             checkMapping(0, 9, "/example.js", 0, 9, mapping);
             checkReverseMapping(0, 0, "/example.js", 0, mapping);
             next();
@@ -458,7 +458,7 @@ function test()
                 "sources":["example.js"],
                 "sourcesContent":["var i = 0;"]
             };
-            var mapping = new WebInspector.TextSourceMap("example.js", "source-map.json",mappingPayload);
+            var mapping = new SDK.TextSourceMap("example.js", "source-map.json",mappingPayload);
             checkMapping(0, 9, "example.js", 0, 9, mapping);
             checkReverseMapping(0, 0, "example.js", 0, mapping);
             next();
@@ -500,7 +500,7 @@ function test()
                 "mappings": ";AAAA;;AAGA,kBAAA,dAAMA;AAAN,AACE,IAAAC,uBAAA;AAAA,AAAA",
                 "names": ["name1", "generated31465"]
             };
-            var mapping = new WebInspector.TextSourceMap("chrome_issue_611738.js", "chrome_issue_611738.js.map", mappingPayload);
+            var mapping = new SDK.TextSourceMap("chrome_issue_611738.js", "chrome_issue_611738.js.map", mappingPayload);
             mapping.mappings().forEach(function(entry) {
                 const name = entry.name ? "'" + entry.name + "'" : "[no name assigned]";
                 InspectorTest.addResult(entry.lineNumber + ":" + entry.columnNumber + " > " + name);

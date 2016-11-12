@@ -26,14 +26,14 @@ function test()
     }
 
     InspectorTest.addResult("Creating simple hierarchy");
-    var splitWidget = new WebInspector.SplitWidget(true, true, "splitWidgetStateSettingName.splitWidget", 250, 250);
+    var splitWidget = new UI.SplitWidget(true, true, "splitWidgetStateSettingName.splitWidget", 250, 250);
     showRootSplitWidget(splitWidget);
 
-    var mainWidget = new WebInspector.Widget();
+    var mainWidget = new UI.Widget();
     mainWidget.setMinimumSize(100, 80);
     splitWidget.setMainWidget(mainWidget);
 
-    var firstSidebarWidget = new WebInspector.Widget();
+    var firstSidebarWidget = new UI.Widget();
     firstSidebarWidget.setMinimumSize(40, 70);
     splitWidget.setSidebarWidget(firstSidebarWidget);
 
@@ -62,7 +62,7 @@ function test()
     dumpBoundingBoxes(widgets);
 
     InspectorTest.addResult("Wrapping main widget to a split widget");
-    var childsplitWidget = new WebInspector.SplitWidget(false, true, "splitWidgetStateSettingName.childsplitWidget", 100, 100);
+    var childsplitWidget = new UI.SplitWidget(false, true, "splitWidgetStateSettingName.childsplitWidget", 100, 100);
     childsplitWidget.hideSidebar();
     childsplitWidget.setMainWidget(mainWidget);
     splitWidget.setMainWidget(childsplitWidget);
@@ -70,7 +70,7 @@ function test()
     dumpBoundingBoxes(widgets);
 
     InspectorTest.addResult("Adding invisble sidebar");
-    var secondSidebarWidget = new WebInspector.Widget();
+    var secondSidebarWidget = new UI.Widget();
     secondSidebarWidget.setMinimumSize(60, 60);
     childsplitWidget.setSidebarWidget(secondSidebarWidget);
     widgets["secondSidebarWidget"] = secondSidebarWidget;
@@ -86,7 +86,7 @@ function test()
     dumpBoundingBoxes(widgets);
 
     InspectorTest.addResult("Attaching another sidebar");
-    var thirdSidebarWidget = new WebInspector.Widget();
+    var thirdSidebarWidget = new UI.Widget();
     thirdSidebarWidget.setMinimumSize(80, 80);
     childsplitWidget.setSidebarWidget(thirdSidebarWidget);
     widgets["thirdSidebarWidget"] = thirdSidebarWidget;

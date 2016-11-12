@@ -43,11 +43,11 @@ function onload()
 
 function test()
 {
-    var messages = WebInspector.ConsoleView.instance()._visibleViewMessages;
+    var messages = Console.ConsoleView.instance()._visibleViewMessages;
 
     function dumpVisibleMessages()
     {
-        var messages = WebInspector.ConsoleView.instance()._visibleViewMessages;
+        var messages = Console.ConsoleView.instance()._visibleViewMessages;
         for (var i = 0; i < messages.length; ++i) {
             var viewMessage = messages[i];
             var delimeter = viewMessage.consoleMessage().isGroupStartMessage() ? ">" : "";
@@ -70,43 +70,43 @@ function test()
         },
         function addURL1Filter(next)
         {
-            WebInspector.ConsoleView.instance()._filter.addMessageURLFilter(url1);
+            Console.ConsoleView.instance()._filter.addMessageURLFilter(url1);
             dumpVisibleMessages();
             next();
         },
         function addURL2Filter(next)
         {
-            WebInspector.ConsoleView.instance()._filter.addMessageURLFilter(url2);
+            Console.ConsoleView.instance()._filter.addMessageURLFilter(url2);
             dumpVisibleMessages();
             next();
         },
         function removeURL1Filter(next)
         {
-            WebInspector.ConsoleView.instance()._filter.removeMessageURLFilter(url1);
+            Console.ConsoleView.instance()._filter.removeMessageURLFilter(url1);
             dumpVisibleMessages();
             next();
         },
         function restoreURL1Filter(next)
         {
-            WebInspector.ConsoleView.instance()._filter.addMessageURLFilter(url1);
+            Console.ConsoleView.instance()._filter.addMessageURLFilter(url1);
             dumpVisibleMessages();
             next();
         },
         function removeAllFilters(next)
         {
-            WebInspector.ConsoleView.instance()._filter.removeMessageURLFilter();
+            Console.ConsoleView.instance()._filter.removeMessageURLFilter();
             dumpVisibleMessages();
             next();
         },
         function checkTextFilter(next)
         {
-            WebInspector.ConsoleView.instance()._filter._textFilterUI.setValue("outer");
+            Console.ConsoleView.instance()._filter._textFilterUI.setValue("outer");
             dumpVisibleMessages();
             next();
         },
         function checkResetFilter(next)
         {
-            WebInspector.ConsoleView.instance()._filter.reset();
+            Console.ConsoleView.instance()._filter.reset();
             dumpVisibleMessages();
             next();
         }

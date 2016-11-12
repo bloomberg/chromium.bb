@@ -44,7 +44,7 @@ function test()
                 return builder.generateSnapshot();
             }
 
-            InspectorTest.addSniffer(WebInspector.HeapSnapshotView.prototype, "_gotStatistics", checkStatistics, true);
+            InspectorTest.addSniffer(Profiler.HeapSnapshotView.prototype, "_gotStatistics", checkStatistics, true);
             InspectorTest.takeAndOpenSnapshot(createHeapSnapshot, step1);
 
             function checkStatistics(statistics)

@@ -27,8 +27,8 @@ function test()
 
     function clickValueLink(record, row)
     {
-        var panel = WebInspector.panels.timeline;
-        WebInspector.TimelineUIUtils.buildTraceEventDetails(record.traceEvent(), panel._model, new WebInspector.Linkifier(), true, onDetailsContentReady);
+        var panel = UI.panels.timeline;
+        Timeline.TimelineUIUtils.buildTraceEventDetails(record.traceEvent(), panel._model, new Components.Linkifier(), true, onDetailsContentReady);
 
         function onDetailsContentReady(element)
         {
@@ -45,17 +45,17 @@ function test()
     function onTimelineRecorded(records)
     {
         var layoutRecord = InspectorTest.findFirstTimelineRecord("Layout");
-        WebInspector.context.addFlavorChangeListener(WebInspector.DOMNode, onSelectedNodeChanged);
+        UI.context.addFlavorChangeListener(SDK.DOMNode, onSelectedNodeChanged);
         clickValueLink(layoutRecord, "Layout root");
     }
 
     function onSelectedNodeChanged()
     {
-        var node = WebInspector.panels.elements.selectedDOMNode();
+        var node = UI.panels.elements.selectedDOMNode();
         // We may first get an old selected node while switching to the Elements panel.
         if (node.nodeName() === "BODY")
             return;
-        WebInspector.context.removeFlavorChangeListener(WebInspector.DOMNode, onSelectedNodeChanged);
+        UI.context.removeFlavorChangeListener(SDK.DOMNode, onSelectedNodeChanged);
         InspectorTest.addResult("Layout root node id: " + node.getAttribute("id"));
         InspectorTest.completeTest();
     }

@@ -68,7 +68,7 @@ var test = function()
 
         function didReceive(message)
         {
-            if (message.type === WebInspector.ConsoleMessage.MessageType.Result) {
+            if (message.type === SDK.ConsoleMessage.MessageType.Result) {
                 InspectorTest.waitUntilMessageReceived(didReceive);
                 return;
             }

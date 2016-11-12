@@ -12,13 +12,13 @@ function submit()
 function test()
 {
     InspectorTest.evaluateInPage("submit()");
-    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.Events.RequestFinished, onRequestFinished);
+    InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequestFinished);
 
     function onRequestFinished(event)
     {
         var request = event.data;
         InspectorTest.addResult(request.url);
-        InspectorTest.addObject(new WebInspector.HAREntry(request).build(), InspectorTest.HARPropertyFormatters);
+        InspectorTest.addObject(new SDK.HAREntry(request).build(), InspectorTest.HARPropertyFormatters);
         InspectorTest.completeTest();
     }
 }

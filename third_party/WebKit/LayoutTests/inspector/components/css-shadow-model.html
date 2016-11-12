@@ -88,7 +88,7 @@ function test()
 
     function dumpCSSLength(lengthText)
     {
-        var length = WebInspector.CSSLength.parse(lengthText);
+        var length = Common.CSSLength.parse(lengthText);
         var statusText = length !== null ? "Succeeded: " + length.asCSSText() : "Failed";
         InspectorTest.addResult("\"" + lengthText  + "\", Parsing " + statusText);
     }
@@ -105,7 +105,7 @@ function test()
 
     function dumpShadow(shadowText, isBoxShadow)
     {
-        var shadows = isBoxShadow ? WebInspector.CSSShadowModel.parseBoxShadow(shadowText) : WebInspector.CSSShadowModel.parseTextShadow(shadowText);
+        var shadows = isBoxShadow ? Common.CSSShadowModel.parseBoxShadow(shadowText) : Common.CSSShadowModel.parseTextShadow(shadowText);
         var output = [];
         for (var i = 0; i < shadows.length; i++)
             output.push(shadows[i].asCSSText());

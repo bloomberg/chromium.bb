@@ -8,7 +8,7 @@ function test()
     {
         function testAutoSize(widths, minPercent, maxPercent) {
             InspectorTest.addResult("Auto sizing " + JSON.stringify(widths) + ", minPercent=" + minPercent + ", maxPercent=" + maxPercent);
-            var result = WebInspector.DataGrid.prototype._autoSizeWidths(widths, minPercent, maxPercent);
+            var result = UI.DataGrid.prototype._autoSizeWidths(widths, minPercent, maxPercent);
             InspectorTest.addResult("    " + JSON.stringify(result));
         }
 

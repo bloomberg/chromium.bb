@@ -9,15 +9,15 @@
 function test()
 {
 
-    WebInspector.viewManager.showView("sources");
+    UI.viewManager.showView("sources");
     InspectorTest.showScriptSource("search.js", didShowScriptSource);
 
     function didShowScriptSource(sourceFrame)
     {
-        var searchConfig = new WebInspector.SearchableView.SearchConfig("(replac)eMe[38]", false, true);
+        var searchConfig = new UI.SearchableView.SearchConfig("(replac)eMe[38]", false, true);
         InspectorTest.replaceAndDumpChange(sourceFrame, searchConfig, "$1d", false);
 
-        var searchConfig = new WebInspector.SearchableView.SearchConfig("(replace)Me[45]", false, true);
+        var searchConfig = new UI.SearchableView.SearchConfig("(replace)Me[45]", false, true);
         InspectorTest.replaceAndDumpChange(sourceFrame, searchConfig, "$1d", true);
 
         InspectorTest.completeTest();

@@ -11,9 +11,9 @@ function test()
     InspectorFrontendHost.recordEnumeratedHistogram = function(name, code)
     {
         if (name === "DevTools.ActionTaken")
-            InspectorTest.addResult("Action taken: " + nameOf(WebInspector.UserMetrics.Action, code));
+            InspectorTest.addResult("Action taken: " + nameOf(Host.UserMetrics.Action, code));
         else if (name === "DevTools.PanelShown")
-            InspectorTest.addResult("Panel shown: " + nameOf(WebInspector.UserMetrics._PanelCodes, code));
+            InspectorTest.addResult("Panel shown: " + nameOf(Host.UserMetrics._PanelCodes, code));
     }
 
     function nameOf(object, code)
@@ -26,15 +26,15 @@ function test()
     }
 
     InspectorTest.addResult("recordActionTaken:");
-    InspectorTest.dump(WebInspector.UserMetrics.Action);
-    WebInspector.userMetrics.actionTaken(WebInspector.UserMetrics.Action.WindowDocked);
-    WebInspector.userMetrics.actionTaken(WebInspector.UserMetrics.Action.WindowUndocked);
+    InspectorTest.dump(Host.UserMetrics.Action);
+    Host.userMetrics.actionTaken(Host.UserMetrics.Action.WindowDocked);
+    Host.userMetrics.actionTaken(Host.UserMetrics.Action.WindowUndocked);
 
     InspectorTest.addResult("\nrecordPanelShown:");
-    InspectorTest.dump(WebInspector.UserMetrics._PanelCodes);
-    WebInspector.viewManager.showView("profiles");
-    WebInspector.viewManager.showView("timeline");
-    WebInspector.viewManager.showView("audits");
+    InspectorTest.dump(Host.UserMetrics._PanelCodes);
+    UI.viewManager.showView("profiles");
+    UI.viewManager.showView("timeline");
+    UI.viewManager.showView("audits");
 
     InspectorTest.completeTest();
 }

@@ -24,8 +24,8 @@ var initialize_Animations = function() {
 
 function test()
 {
-    WebInspector.viewManager.showView("animations");
-    var timeline = self.runtime.sharedInstance(WebInspector.AnimationTimeline);
+    UI.viewManager.showView("animations");
+    var timeline = self.runtime.sharedInstance(Animation.AnimationTimeline);
     InspectorTest.evaluateInPage("startAnimationWithKeyframeEffect()");
     InspectorTest.waitForAnimationAdded(step2);
 

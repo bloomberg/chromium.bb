@@ -48,7 +48,7 @@ var test = function()
         {"name": "b", "ts": 4000000, "ph": "E", "tid": mainThread, "pid": pid, "cat":"disabled-by-default.devtools.timeline", "args": {}}
     ];
 
-    var model = new WebInspector.TimelineModel(new WebInspector.TimelineModel.Filter());
+    var model = new TimelineModel.TimelineModel(new TimelineModel.TimelineModel.Filter());
     InspectorTest.setTraceEvents(model, InspectorTest.createTracingModel(), testData);
 
     InspectorTest.addResult("DFS preorder:");

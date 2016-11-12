@@ -29,7 +29,7 @@ function test()
 
         function testEditSelector(next)
         {
-            var section = WebInspector.panels.elements._stylesWidget._sectionBlocks[0].sections[3];
+            var section = UI.panels.elements._stylesWidget._sectionBlocks[0].sections[3];
             section.startEditingSelector();
             section._selectorElement.textContent = ".should-change, .INSERTED-OTHER-SELECTOR";
             InspectorTest.waitForSelectorCommitted(onSelectorEdited);

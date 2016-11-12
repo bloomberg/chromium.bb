@@ -10,12 +10,12 @@ function test()
      */
     function createNetworkRequestForURLAndDumpNameAndPath(url, targetUrl)
     {
-        var mainTarget = WebInspector.targetManager.mainTarget();
+        var mainTarget = SDK.targetManager.mainTarget();
         var currentTargetURL = mainTarget.inspectedURL();
         if (targetUrl)
             mainTarget.setInspectedURL(targetUrl);
         InspectorTest.addResult("Dumping request name and path for url: " + url);
-        var request = new WebInspector.NetworkRequest(mainTarget, 0, url);
+        var request = new SDK.NetworkRequest(mainTarget, 0, url);
         InspectorTest.addResult("    name = " + request.name());
         InspectorTest.addResult("    path = " + request.path());
         InspectorTest.addResult("    targetUrl = " + (targetUrl ? targetUrl : currentTargetURL));
@@ -24,7 +24,7 @@ function test()
     }
 
     // Save the target URL to ensure test works well with other tests.
-    var mainTarget = WebInspector.targetManager.mainTarget();
+    var mainTarget = SDK.targetManager.mainTarget();
     var originalTargetURL = mainTarget.inspectedURL();
     mainTarget.setInspectedURL("http://127.0.0.1/aFolder/aTest.html");
 

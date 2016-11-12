@@ -21,11 +21,11 @@ function test()
     function processEvent(event)
     {
         var metadataEvents = [
-            WebInspector.TimelineModel.RecordType.SetLayerTreeId,
-            WebInspector.TimelineModel.RecordType.TracingStartedInPage
+            TimelineModel.TimelineModel.RecordType.SetLayerTreeId,
+            TimelineModel.TimelineModel.RecordType.TracingStartedInPage
         ];
 
-        if (!event.hasCategory(WebInspector.TracingModel.DevToolsMetadataEventCategory) || metadataEvents.indexOf(event.name) < 0)
+        if (!event.hasCategory(SDK.TracingModel.DevToolsMetadataEventCategory) || metadataEvents.indexOf(event.name) < 0)
             return;
 
         InspectorTest.assertEquals(InspectorTest.timelineModel().sessionId(), event.args["data"]["sessionId"]);

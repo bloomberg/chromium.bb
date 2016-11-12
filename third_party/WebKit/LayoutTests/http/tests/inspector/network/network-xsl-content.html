@@ -17,7 +17,7 @@ function test()
     var resultsOutput = [];
     InspectorTest.recordNetwork();
     InspectorTest.evaluateInPage("loadIframe()");
-    InspectorTest.addSniffer(WebInspector.NetworkDispatcher.prototype, "loadingFinished", loadingFinished, true);
+    InspectorTest.addSniffer(SDK.NetworkDispatcher.prototype, "loadingFinished", loadingFinished, true);
 
     function loadingFinished(requestId)
     {

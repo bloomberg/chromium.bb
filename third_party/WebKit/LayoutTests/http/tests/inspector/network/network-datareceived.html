@@ -12,10 +12,10 @@ function loadIFrame()
 
 function test()
 {
-    InspectorTest.addSniffer(WebInspector.NetworkDispatcher.prototype, "responseReceived", responseReceived);
-    InspectorTest.addSniffer(WebInspector.NetworkDispatcher.prototype, "loadingFailed", loadingFailed);
-    InspectorTest.addSniffer(WebInspector.NetworkDispatcher.prototype, "loadingFinished", loadingFinished);
-    InspectorTest.addSniffer(WebInspector.NetworkDispatcher.prototype, "dataReceived", dataReceived);
+    InspectorTest.addSniffer(SDK.NetworkDispatcher.prototype, "responseReceived", responseReceived);
+    InspectorTest.addSniffer(SDK.NetworkDispatcher.prototype, "loadingFailed", loadingFailed);
+    InspectorTest.addSniffer(SDK.NetworkDispatcher.prototype, "loadingFinished", loadingFinished);
+    InspectorTest.addSniffer(SDK.NetworkDispatcher.prototype, "dataReceived", dataReceived);
     InspectorTest.evaluateInPage("loadIFrame()");
 
     var encodedBytesReceived = 0;
@@ -49,7 +49,7 @@ function test()
 
     function dataReceived(requestId, time, dataLength, encodedDataLength)
     {
-        InspectorTest.addSniffer(WebInspector.NetworkDispatcher.prototype, "dataReceived", dataReceived);
+        InspectorTest.addSniffer(SDK.NetworkDispatcher.prototype, "dataReceived", dataReceived);
         var request = InspectorTest.networkLog.requestForId(requestId);
         if (/resource\.php/.exec(request.url))
             encodedBytesReceived += encodedDataLength;

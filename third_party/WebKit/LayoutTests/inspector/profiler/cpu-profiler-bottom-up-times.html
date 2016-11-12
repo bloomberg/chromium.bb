@@ -9,7 +9,7 @@ function test()
     var profileAndExpectations = {
         "title": "profile1",
         "target": function() {
-          return WebInspector.targetManager.targets()[0];
+          return SDK.targetManager.targets()[0];
         },
         "_profile": {
             "nodes": [
@@ -113,7 +113,7 @@ function test()
             "endTime": 1e6
         }
     };
-    var view = new WebInspector.CPUProfileView(profileAndExpectations);
+    var view = new Profiler.CPUProfileView(profileAndExpectations);
     view.viewSelectComboBox.setSelectedIndex(1);
     view._changeView();
     var tree = view.profileDataGridTree;

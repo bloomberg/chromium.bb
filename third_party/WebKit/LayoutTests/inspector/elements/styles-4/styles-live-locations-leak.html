@@ -64,7 +64,7 @@ function test()
     function countLiveLocations()
     {
         var locationsCount = 0;
-        var targetInfos = WebInspector.cssWorkspaceBinding._modelToTargetInfo.valuesArray();
+        var targetInfos = Bindings.cssWorkspaceBinding._modelToTargetInfo.valuesArray();
         for (var targetInfo of targetInfos)
             locationsCount += targetInfo._locations.valuesArray().length;
         return locationsCount;

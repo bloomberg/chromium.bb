@@ -10,7 +10,7 @@ function test() {
     UnitTest.runTests([
         function testAddWord()
         {
-            var trie = new WebInspector.Trie();
+            var trie = new Common.Trie();
             addWord(trie, "hello");
             hasWord(trie, "he");
             hasWord(trie, "hello");
@@ -19,7 +19,7 @@ function test() {
 
         function testAddWords()
         {
-            var trie = new WebInspector.Trie();
+            var trie = new Common.Trie();
             addWord(trie, "foo");
             addWord(trie, "bar");
             addWord(trie, "bazz");
@@ -32,7 +32,7 @@ function test() {
 
         function testRemoveWord()
         {
-            var trie = new WebInspector.Trie();
+            var trie = new Common.Trie();
             addWord(trie, "foo");
             removeWord(trie, "f");
             removeWord(trie, "fo");
@@ -44,7 +44,7 @@ function test() {
 
         function testAddAfterRemove()
         {
-            var trie = new WebInspector.Trie();
+            var trie = new Common.Trie();
             addWord(trie, "foo");
             removeWord(trie, "foo");
             addWord(trie, "bar");
@@ -54,7 +54,7 @@ function test() {
 
         function testWordOverwrite()
         {
-            var trie = new WebInspector.Trie();
+            var trie = new Common.Trie();
             addWord(trie, "foo");
             addWord(trie, "foo");
             removeWord(trie, "foo");
@@ -63,7 +63,7 @@ function test() {
 
         function testRemoveNonExisting()
         {
-            var trie = new WebInspector.Trie();
+            var trie = new Common.Trie();
             addWord(trie, "foo");
             removeWord(trie, "bar");
             removeWord(trie, "baz");
@@ -72,7 +72,7 @@ function test() {
 
         function testEmptyWord()
         {
-            var trie = new WebInspector.Trie();
+            var trie = new Common.Trie();
             addWord(trie, "");
             hasWord(trie, "");
             removeWord(trie, "");
@@ -81,7 +81,7 @@ function test() {
 
         function testAllWords()
         {
-            var trie = new WebInspector.Trie();
+            var trie = new Common.Trie();
             addWord(trie, "foo");
             addWord(trie, "bar");
             addWord(trie, "bazzz");
@@ -97,7 +97,7 @@ function test() {
 
         function testOneCharWords()
         {
-            var trie = new WebInspector.Trie();
+            var trie = new Common.Trie();
             addWord(trie, "a");
             addWord(trie, "b");
             addWord(trie, "c");
@@ -106,7 +106,7 @@ function test() {
 
         function testChainWords()
         {
-            var trie = new WebInspector.Trie();
+            var trie = new Common.Trie();
             addWord(trie, "f");
             addWord(trie, "fo");
             addWord(trie, "foo");
@@ -116,7 +116,7 @@ function test() {
 
         function testClearTrie()
         {
-            var trie = new WebInspector.Trie();
+            var trie = new Common.Trie();
             addWord(trie, "foo");
             addWord(trie, "bar");
             words(trie);
@@ -126,7 +126,7 @@ function test() {
 
         function testLongestPrefix()
         {
-            var trie = new WebInspector.Trie();
+            var trie = new Common.Trie();
             addWord(trie, "fo");
             addWord(trie, "food");
             longestPrefix(trie, "fear", false);

@@ -13,7 +13,7 @@ function test()
         time: new Date("December 1, 1989")
     };
 
-    var automappingTest = new InspectorTest.AutomappingTest(new WebInspector.Workspace());
+    var automappingTest = new InspectorTest.AutomappingTest(new Workspace.Workspace());
     var fs = new InspectorTest.TestFileSystem("file:///var/www");
     fs.reportCreated(onFileSystemCreated);
 

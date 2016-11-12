@@ -19,7 +19,7 @@ function test()
 {
     var viewportHeight = 200;
     InspectorTest.fixConsoleViewportDimensions(600, viewportHeight);
-    var consoleView = WebInspector.ConsoleView.instance();
+    var consoleView = Console.ConsoleView.instance();
     var viewport = consoleView._viewport;
     const minimumViewportMessagesCount = 10;
     const messagesCount = 150;
@@ -61,7 +61,7 @@ function test()
 
         function testSmoothScrollDoesNotStickToBottom(next)
         {
-            InspectorTest.addSniffer(WebInspector.ConsoleView.prototype, "_updateViewportStickinessForTest", onUpdateTimeout);
+            InspectorTest.addSniffer(Console.ConsoleView.prototype, "_updateViewportStickinessForTest", onUpdateTimeout);
             sendPageUp();
 
             function onUpdateTimeout()
@@ -104,7 +104,7 @@ function test()
             consoleView._updateStickToBottomOnMouseDown();
             viewport.element.scrollTop -= 10;
 
-            InspectorTest.addSniffer(WebInspector.ConsoleView.prototype, "_scheduleViewportRefreshForTest", onMessageAdded);
+            InspectorTest.addSniffer(Console.ConsoleView.prototype, "_scheduleViewportRefreshForTest", onMessageAdded);
             InspectorTest.evaluateInConsole("1 + 1");
 
             /**
@@ -113,8 +113,8 @@ function test()
             function onMessageAdded(muted)
             {
                 InspectorTest.addResult("New messages were muted: " + muted);
-                InspectorTest.addSniffer(WebInspector.ConsoleView.prototype, "_scheduleViewportRefreshForTest", onMouseUpScheduledRefresh);
-                InspectorTest.addSniffer(WebInspector.ConsoleView.prototype, "_updateViewportStickinessForTest", onUpdateStickiness);
+                InspectorTest.addSniffer(Console.ConsoleView.prototype, "_scheduleViewportRefreshForTest", onMouseUpScheduledRefresh);
+                InspectorTest.addSniffer(Console.ConsoleView.prototype, "_updateViewportStickinessForTest", onUpdateStickiness);
                 consoleView._updateStickToBottomOnMouseUp();
             }
 
@@ -137,7 +137,7 @@ function test()
             var text = "Foo";
             for (var i = 0; i < viewportHeight; i++)
                 text += "\n";
-            WebInspector.ConsoleView.clearConsole();
+            Console.ConsoleView.clearConsole();
             consoleView._prompt.setText(text);
             viewport.element.scrollTop -= 10;
 

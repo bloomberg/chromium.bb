@@ -44,9 +44,9 @@ function test()
 
     function startTransition()
     {
-        var model = WebInspector.AnimationModel.fromTarget(InspectorTest.mainTarget);
+        var model = Animation.AnimationModel.fromTarget(InspectorTest.mainTarget);
         model.ensureEnabled();
-        model.addEventListener(WebInspector.AnimationModel.Events.AnimationGroupStarted, groupStarted);
+        model.addEventListener(Animation.AnimationModel.Events.AnimationGroupStarted, groupStarted);
         InspectorTest.evaluateInPage("startCSSTransition()");
     }
 

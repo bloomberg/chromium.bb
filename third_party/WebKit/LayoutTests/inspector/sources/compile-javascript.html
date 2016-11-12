@@ -12,8 +12,8 @@ function test()
 
     function onSourceFrame(sourceFrame)
     {
-        InspectorTest.addSniffer(WebInspector.JavaScriptCompiler.prototype, "_compilationFinishedForTest", onCompilationFinished.bind(null, sourceFrame));
-        sourceFrame.textEditor.setSelection(WebInspector.TextRange.createFromLocation(0, 0));
+        InspectorTest.addSniffer(Sources.JavaScriptCompiler.prototype, "_compilationFinishedForTest", onCompilationFinished.bind(null, sourceFrame));
+        sourceFrame.textEditor.setSelection(Common.TextRange.createFromLocation(0, 0));
         InspectorTest.typeIn(sourceFrame.textEditor, "test!");
     }
 

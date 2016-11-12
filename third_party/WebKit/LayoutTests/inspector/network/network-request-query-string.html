@@ -6,7 +6,7 @@
 function test() {
     function checkURL(url)
     {
-        var request = new WebInspector.NetworkRequest(WebInspector.targetManager.mainTarget(), url, url, "", "", "");
+        var request = new SDK.NetworkRequest(SDK.targetManager.mainTarget(), url, url, "", "", "");
         InspectorTest.addResult("URL: " + url);
         InspectorTest.addResult("Query: " + request.queryString());
         InspectorTest.addResult("");

@@ -4,7 +4,6 @@ TEST COMPLETE
 onopen
 Tests that WebSocket handshake information is passed to Web Inspector.
 
-log: 
 log: requestMethod: GET
 log: requestHeaders
 log:     Accept-Encoding: gzip, deflate

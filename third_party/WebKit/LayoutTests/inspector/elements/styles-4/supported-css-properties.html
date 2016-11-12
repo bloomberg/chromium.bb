@@ -4,7 +4,7 @@
 <script>
 function test()
 {
-    var marginLonghands = WebInspector.cssMetadata().longhands("margin");
+    var marginLonghands = SDK.cssMetadata().longhands("margin");
     marginLonghands.sort();
     InspectorTest.addResult("Margin longhands: " + marginLonghands.join(", "));
     InspectorTest.completeTest();

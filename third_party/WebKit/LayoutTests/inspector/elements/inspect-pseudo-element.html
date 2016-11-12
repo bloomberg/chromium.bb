@@ -20,7 +20,7 @@ function test()
 
     function inspectModeEnabled()
     {
-        WebInspector.context.addFlavorChangeListener(WebInspector.DOMNode, selectedNodeChanged);
+        UI.context.addFlavorChangeListener(SDK.DOMNode, selectedNodeChanged);
         InspectorTest.evaluateInPage("clickPseudo()");
     }
 
@@ -31,7 +31,7 @@ function test()
             InspectorTest.addResult("<no selected node>");
         else
             InspectorTest.addResult("Selected node pseudo type: " + selectedNode.pseudoType());
-        WebInspector.context.removeFlavorChangeListener(WebInspector.DOMNode, selectedNodeChanged);
+        UI.context.removeFlavorChangeListener(SDK.DOMNode, selectedNodeChanged);
         InspectorTest.completeTest();
     }
 }

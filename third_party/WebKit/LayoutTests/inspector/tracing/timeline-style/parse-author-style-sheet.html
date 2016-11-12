@@ -21,7 +21,7 @@ function test()
 
     function processTracingEvents()
     {
-        var record = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.ParseAuthorStyleSheet);
+        var record = InspectorTest.findFirstTimelineRecord(TimelineModel.TimelineModel.RecordType.ParseAuthorStyleSheet);
         if (record)
             InspectorTest.addResult("SUCCESS: found ParseAuthorStyleSheet record");
         else

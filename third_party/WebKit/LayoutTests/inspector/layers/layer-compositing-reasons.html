@@ -27,7 +27,7 @@ function test()
         layer.requestCompositingReasons(function(reasons)
         {
             var node = layer.nodeForSelfOrAncestor();
-            var label = WebInspector.DOMPresentationUtils.fullQualifiedSelector(node, false);
+            var label = Components.DOMPresentationUtils.fullQualifiedSelector(node, false);
             InspectorTest.addResult("Compositing reasons for " + label + ": " + reasons.sort().join(","));
             if (callback)
                 callback();

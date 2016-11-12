@@ -33,7 +33,7 @@ function test()
     {
         InspectorTest.addResult("=========== Loaded 5 children ===========");
         dumpElementsTree();
-        InspectorTest.addSniffer(WebInspector.ElementsTreeOutline.prototype, "_updateModifiedNodes", step3);
+        InspectorTest.addSniffer(Elements.ElementsTreeOutline.prototype, "_updateModifiedNodes", step3);
         InspectorTest.evaluateInPage("insertNode()");
     }
 

@@ -31,7 +31,7 @@ var test = function()
     function step2()
     {
         InspectorFrontendHost.copyText = InspectorTest.addResult.bind(InspectorTest);
-        self.runtime.sharedInstance(WebInspector.CallStackSidebarPane)._copyStackTrace();
+        self.runtime.sharedInstance(Sources.CallStackSidebarPane)._copyStackTrace();
         InspectorTest.completeDebuggerTest();
     }
 }

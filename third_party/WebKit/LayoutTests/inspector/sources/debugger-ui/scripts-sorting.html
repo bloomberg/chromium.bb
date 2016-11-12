@@ -11,18 +11,18 @@ function test()
     {
         var navigatorView = new constructor();
         navigatorView._resetWorkspace(InspectorTest.testWorkspace);
-        navigatorView.show(WebInspector.inspectorView.element);
+        navigatorView.show(UI.inspectorView.element);
         return navigatorView;
     }
 
     InspectorTest.createWorkspaceWithTarget(true);
-    sourcesNavigatorView = createNavigatorView(WebInspector.SourcesNavigatorView);
-    contentScriptsNavigatorView = createNavigatorView(WebInspector.ContentScriptsNavigatorView);
+    sourcesNavigatorView = createNavigatorView(Sources.SourcesNavigatorView);
+    contentScriptsNavigatorView = createNavigatorView(Sources.ContentScriptsNavigatorView);
 
     var uiSourceCodes = [];
     function addUISourceCode(url, isContentScript)
     {
-        var contentProvider = WebInspector.StaticContentProvider.fromString(url, WebInspector.resourceTypes.Script, "");
+        var contentProvider = Common.StaticContentProvider.fromString(url, Common.resourceTypes.Script, "");
         var uiSourceCode = InspectorTest.testNetworkProject.addFile(contentProvider, InspectorTest.mainFrame(), isContentScript);
         uiSourceCodes.push(uiSourceCode);
     }

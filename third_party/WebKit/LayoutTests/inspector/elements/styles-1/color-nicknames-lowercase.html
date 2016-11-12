@@ -6,7 +6,7 @@
 function test()
 {
     var badNames = [];
-    for (var nickname in WebInspector.Color.Nicknames) {
+    for (var nickname in Common.Color.Nicknames) {
         if (nickname.toLowerCase() !== nickname)
             badNames.push(nickname);
     }

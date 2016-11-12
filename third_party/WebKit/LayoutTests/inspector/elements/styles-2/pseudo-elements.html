@@ -88,32 +88,32 @@ function test()
 
         function removeAfter(next)
         {
-            executeAndDumpTree("removeLastRule()", WebInspector.DOMModel.Events.NodeRemoved, next);
+            executeAndDumpTree("removeLastRule()", SDK.DOMModel.Events.NodeRemoved, next);
         },
 
         function removeBefore(next)
         {
-            executeAndDumpTree("removeLastRule()", WebInspector.DOMModel.Events.NodeRemoved, next);
+            executeAndDumpTree("removeLastRule()", SDK.DOMModel.Events.NodeRemoved, next);
         },
 
         function addAfter(next)
         {
-            executeAndDumpTree("addAfterRule()", WebInspector.DOMModel.Events.NodeInserted, expandAndDumpTree.bind(this, next));
+            executeAndDumpTree("addAfterRule()", SDK.DOMModel.Events.NodeInserted, expandAndDumpTree.bind(this, next));
         },
 
         function addBefore(next)
         {
-            executeAndDumpTree("addBeforeRule()", WebInspector.DOMModel.Events.NodeInserted, next);
+            executeAndDumpTree("addBeforeRule()", SDK.DOMModel.Events.NodeInserted, next);
         },
 
         function modifyTextContent(next)
         {
-            executeAndDumpTree("modifyTextContent()", WebInspector.DOMModel.Events.NodeInserted, next);
+            executeAndDumpTree("modifyTextContent()", SDK.DOMModel.Events.NodeInserted, next);
         },
 
         function clearTextContent(next)
         {
-            executeAndDumpTree("clearTextContent()", WebInspector.DOMModel.Events.NodeRemoved, next);
+            executeAndDumpTree("clearTextContent()", SDK.DOMModel.Events.NodeRemoved, next);
         },
 
         function removeNodeAndCheckPseudoElementsUnbound(next)
@@ -121,7 +121,7 @@ function test()
             var inspectedBefore = inspectedNode.beforePseudoElement();
             var inspectedAfter = inspectedNode.afterPseudoElement();
 
-            executeAndDumpTree("removeNode()", WebInspector.DOMModel.Events.NodeRemoved, callback);
+            executeAndDumpTree("removeNode()", SDK.DOMModel.Events.NodeRemoved, callback);
             function callback()
             {
                 InspectorTest.addResult("inspected:before DOMNode in DOMAgent: " + !!(InspectorTest.domModel.nodeForId(inspectedBefore.id)));
@@ -139,12 +139,12 @@ function test()
         function domCallback()
         {
             InspectorTest.domModel.removeEventListener(eventName, domCallback, this);
-            InspectorTest.firstElementsTreeOutline().addEventListener(WebInspector.ElementsTreeOutline.Events.ElementsTreeUpdated, treeCallback, this);
+            InspectorTest.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.ElementsTreeUpdated, treeCallback, this);
         }
 
         function treeCallback()
         {
-            InspectorTest.firstElementsTreeOutline().removeEventListener(WebInspector.ElementsTreeOutline.Events.ElementsTreeUpdated, treeCallback, this);
+            InspectorTest.firstElementsTreeOutline().removeEventListener(Elements.ElementsTreeOutline.Events.ElementsTreeUpdated, treeCallback, this);
             InspectorTest.dumpElementsTree(containerNode);
             next();
         }

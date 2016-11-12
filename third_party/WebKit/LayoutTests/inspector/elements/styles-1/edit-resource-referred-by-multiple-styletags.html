@@ -23,7 +23,7 @@ function test()
 
     function onEditorOpened(sourceFrame)
     {
-        InspectorTest.addSniffer(WebInspector.CSSModel.prototype, "_fireStyleSheetChanged", didEditStyleSheet);
+        InspectorTest.addSniffer(SDK.CSSModel.prototype, "_fireStyleSheetChanged", didEditStyleSheet);
         InspectorTest.replaceInSource(sourceFrame, "100px", "2em");
     }
 

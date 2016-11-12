@@ -63,7 +63,7 @@ function test()
         InspectorTest.setBreakpoint(sourceFrame, 12, "", true);
         InspectorTest.addResult("Set up to pause on all exceptions.");
         // FIXME: Test is flaky with PauseOnAllExceptions due to races in debugger.
-        InspectorTest.DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
+        InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
         InspectorTest.nodeWithId("element", didResolveNode);
         testRunner.logToStderr("didShowScriptSource");
     }
@@ -71,18 +71,18 @@ function test()
     function didResolveNode(node)
     {
         testRunner.logToStderr("didResolveNode");
-        var pane = WebInspector.domBreakpointsSidebarPane;
+        var pane = Components.domBreakpointsSidebarPane;
         InspectorTest.addResult("Set up DOM breakpoints.");
-        pane._setBreakpoint(node, WebInspector.DOMBreakpointsSidebarPane.BreakpointTypes.SubtreeModified, true);
-        pane._setBreakpoint(node, WebInspector.DOMBreakpointsSidebarPane.BreakpointTypes.AttributeModified, true);
-        pane._setBreakpoint(node, WebInspector.DOMBreakpointsSidebarPane.BreakpointTypes.NodeRemoved, true);
+        pane._setBreakpoint(node, Components.DOMBreakpointsSidebarPane.BreakpointTypes.SubtreeModified, true);
+        pane._setBreakpoint(node, Components.DOMBreakpointsSidebarPane.BreakpointTypes.AttributeModified, true);
+        pane._setBreakpoint(node, Components.DOMBreakpointsSidebarPane.BreakpointTypes.NodeRemoved, true);
         setUpEventBreakpoints();
     }
 
     function setUpEventBreakpoints()
     {
         testRunner.logToStderr("setUpEventBreakpoints");
-        var pane = self.runtime.sharedInstance(WebInspector.EventListenerBreakpointsSidebarPane);
+        var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
         InspectorTest.addResult("Set up Event breakpoints.");
         pane._setBreakpoint("listener:click");
         InspectorTest.deprecatedRunAfterPendingDispatches(didSetUp);
@@ -136,7 +136,7 @@ function test()
     function completeTest()
     {
         testRunner.logToStderr("completeTest");
-        var pane = self.runtime.sharedInstance(WebInspector.EventListenerBreakpointsSidebarPane);
+        var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
         pane._removeBreakpoint("listener:click");
         InspectorTest.completeDebuggerTest();
     }

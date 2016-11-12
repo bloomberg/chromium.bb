@@ -26,7 +26,7 @@ var iterClosed = forward(gen(), 4);
 
 function test()
 {
-    var panel = WebInspector.panels.sources;
+    var panel = UI.panels.sources;
 
     function performStandardTestCase(pageExpression, next)
     {
@@ -47,7 +47,7 @@ function test()
                     break;
                 }
             }
-            WebInspector.Revealer.reveal(remote.debuggerModel().createRawLocationByScriptId(loc.scriptId, loc.lineNumber, loc.columnNumber));
+            Common.Revealer.reveal(remote.debuggerModel().createRawLocationByScriptId(loc.scriptId, loc.lineNumber, loc.columnNumber));
         }
 
         function showUISourceCodeHook(uiSourceCode, lineNumber, columnNumber, forceShowInPanel)

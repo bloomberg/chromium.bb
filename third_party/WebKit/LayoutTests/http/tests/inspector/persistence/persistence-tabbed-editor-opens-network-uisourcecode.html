@@ -21,14 +21,14 @@ function test()
         InspectorTest.addResult("Binding created: " + binding);
         dumpEditorTabs("Opened tabs before opening any UISourceCodes:");
         InspectorTest.addResult("request open uiSourceCode: " + binding.fileSystem.url());
-        WebInspector.panels.sources.showUISourceCode(binding.fileSystem, 0, 0);
+        UI.panels.sources.showUISourceCode(binding.fileSystem, 0, 0);
         dumpEditorTabs("Opened tabs after opening UISourceCode:");
         InspectorTest.completeTest();
     }
 
     function dumpEditorTabs(title)
     {
-        var editorContainer = WebInspector.panels.sources._sourcesView._editorContainer;
+        var editorContainer = UI.panels.sources._sourcesView._editorContainer;
         var openedUISourceCodes = editorContainer._tabIds.keysArray();
         openedUISourceCodes.sort((a, b) => a.url().compareTo(b.url()));
         InspectorTest.addResult(title);

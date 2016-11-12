@@ -37,12 +37,12 @@ function test()
         {
             function callback()
             {
-                InspectorTest.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, callback);
+                InspectorTest.domModel.removeEventListener(SDK.DOMModel.Events.AttrModified, callback);
                 InspectorTest.addResult("===== On attribute set =====");
                 InspectorTest.dumpElementsTree(targetNode);
                 next();
             }
-            InspectorTest.domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, callback);
+            InspectorTest.domModel.addEventListener(SDK.DOMModel.Events.AttrModified, callback);
             InspectorTest.evaluateInPage("setAttribute('name', 'value')");
         },
 
@@ -52,10 +52,10 @@ function test()
             {
                 InspectorTest.addResult("===== On attribute modified (should be 'newValue') =====");
                 InspectorTest.dumpElementsTree(targetNode);
-                InspectorTest.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, callback);
+                InspectorTest.domModel.removeEventListener(SDK.DOMModel.Events.AttrModified, callback);
                 next();
             }
-            InspectorTest.domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, callback);
+            InspectorTest.domModel.addEventListener(SDK.DOMModel.Events.AttrModified, callback);
             // Setting the same property value should not result in the AttrModified event.
             InspectorTest.evaluateInPage("setAttribute('name', 'value')");
             InspectorTest.evaluateInPage("setAttribute('name', 'value')");
@@ -66,12 +66,12 @@ function test()
         {
             function callback()
             {
-                InspectorTest.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrRemoved, callback);
+                InspectorTest.domModel.removeEventListener(SDK.DOMModel.Events.AttrRemoved, callback);
                 InspectorTest.addResult("=== On attribute removed ===");
                 InspectorTest.dumpElementsTree(targetNode);
                 next();
             }
-            InspectorTest.domModel.addEventListener(WebInspector.DOMModel.Events.AttrRemoved, callback);
+            InspectorTest.domModel.addEventListener(SDK.DOMModel.Events.AttrRemoved, callback);
             InspectorTest.evaluateInPage("removeAttribute('name')");
         },
 
@@ -79,12 +79,12 @@ function test()
         {
             function callback()
             {
-                InspectorTest.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, callback);
+                InspectorTest.domModel.removeEventListener(SDK.DOMModel.Events.AttrModified, callback);
                 InspectorTest.addResult("=== Set attribute value ===");
                 InspectorTest.dumpElementsTree(targetNode);
                 next();
             }
-            InspectorTest.domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, callback);
+            InspectorTest.domModel.addEventListener(SDK.DOMModel.Events.AttrModified, callback);
             targetNode.setAttributeValue("foo", "bar");
         },
 
@@ -92,12 +92,12 @@ function test()
         {
             function callback()
             {
-                InspectorTest.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrRemoved, callback);
+                InspectorTest.domModel.removeEventListener(SDK.DOMModel.Events.AttrRemoved, callback);
                 InspectorTest.addResult("=== Set attribute as text ===");
                 InspectorTest.dumpElementsTree(targetNode);
                 next();
             }
-            InspectorTest.domModel.addEventListener(WebInspector.DOMModel.Events.AttrRemoved, callback);
+            InspectorTest.domModel.addEventListener(SDK.DOMModel.Events.AttrRemoved, callback);
             targetNode.setAttribute("foo", "foo2='baz2' foo3='baz3'");
         },
 
@@ -105,12 +105,12 @@ function test()
         {
             function callback()
             {
-                InspectorTest.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrRemoved, callback);
+                InspectorTest.domModel.removeEventListener(SDK.DOMModel.Events.AttrRemoved, callback);
                 InspectorTest.addResult("=== Remove attribute as text ===");
                 InspectorTest.dumpElementsTree(targetNode);
                 next();
             }
-            InspectorTest.domModel.addEventListener(WebInspector.DOMModel.Events.AttrRemoved, callback);
+            InspectorTest.domModel.addEventListener(SDK.DOMModel.Events.AttrRemoved, callback);
             targetNode.setAttribute("foo3", "");
         },
 
@@ -119,7 +119,7 @@ function test()
             function callback(error)
             {
                 InspectorTest.addResult("Error: " + error);
-                InspectorTest.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, callback);
+                InspectorTest.domModel.removeEventListener(SDK.DOMModel.Events.AttrModified, callback);
                 InspectorTest.addResult("=== Set malformed attribute as text ===");
                 InspectorTest.dumpElementsTree(targetNode);
                 next();

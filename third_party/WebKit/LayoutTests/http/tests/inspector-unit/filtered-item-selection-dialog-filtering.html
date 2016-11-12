@@ -11,7 +11,7 @@ function test()
     var overrideShowMatchingItems = true;
     var history = [];
 
-    var StubDelegate = class extends WebInspector.FilteredListWidget.Delegate {
+    var StubDelegate = class extends UI.FilteredListWidget.Delegate {
         constructor()
         {
             super(history);
@@ -36,7 +36,7 @@ function test()
 
         UnitTest.addResult("Input:" + JSON.stringify(input));
 
-        var filteredSelectionDialog = new WebInspector.FilteredListWidget(delegate);
+        var filteredSelectionDialog = new UI.FilteredListWidget(delegate);
         filteredSelectionDialog.showAsDialog();
         var promise = UnitTest.addSniffer(filteredSelectionDialog, "_itemsFilteredForTest").then(accept);
         filteredSelectionDialog.setQuery(query);

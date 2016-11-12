@@ -14,12 +14,12 @@ function test()
     ];
 
     for (var i = 0; i < cases.length; i++) {
-        var result = WebInspector.MultitargetNetworkManager.patchUserAgentWithChromeVersion(cases[i]);
+        var result = SDK.MultitargetNetworkManager.patchUserAgentWithChromeVersion(cases[i]);
         InspectorTest.addResult(result);
     }
 
     InspectorTest.addResult("\nManually setting custom user agent");
-    WebInspector.multitargetNetworkManager.setCustomUserAgentOverride("foobar with %s inside");
+    SDK.multitargetNetworkManager.setCustomUserAgentOverride("foobar with %s inside");
 
     InspectorTest.evaluateInPage("navigator.userAgent", step2);
 

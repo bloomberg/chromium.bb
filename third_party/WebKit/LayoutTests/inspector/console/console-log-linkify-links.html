@@ -15,7 +15,7 @@ function test()
     InspectorTest.dumpConsoleMessages(false, true);
 
     InspectorTest.addResult("Dump urls in messages");
-    var consoleView = WebInspector.ConsoleView.instance();
+    var consoleView = Console.ConsoleView.instance();
     var viewMessages = consoleView._visibleViewMessages;
     for (var i = 0; i < viewMessages.length; ++i) {
         var uiMessage = viewMessages[i];

@@ -19,7 +19,7 @@ function test()
 
     function validate()
     {
-        var gcRecord = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.MajorGC) || InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.MinorGC)
+        var gcRecord = InspectorTest.findFirstTimelineRecord(TimelineModel.TimelineModel.RecordType.MajorGC) || InspectorTest.findFirstTimelineRecord(TimelineModel.TimelineModel.RecordType.MinorGC)
         if (gcRecord)
             InspectorTest.addResult("SUCCESS: Found expected GC event record");
         else

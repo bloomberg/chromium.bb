@@ -15,7 +15,7 @@ function setupEventListeners()
 
 function test()
 {
-    WebInspector.settingForTest("showEventListenersForAncestors").set(true);
+    Common.settingForTest("showEventListenersForAncestors").set(true);
     InspectorTest.selectNodeWithId("node", step1);
 
     function step1()

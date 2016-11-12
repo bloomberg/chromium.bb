@@ -4,6 +4,11 @@
 
 if (!window.WebInspector)
     window.WebInspector = {};
+
+self['Common'] = {};
+self['Profiler'] = {};
+self['HeapSnapshotWorker'] = {};
+
 InspectorTest.importScript("../../../../../Source/devtools/front_end/platform/utilities.js");
 InspectorTest.importScript("../../../../../Source/devtools/front_end/common/UIString.js");
 InspectorTest.importScript("../../../../../Source/devtools/front_end/profiler/HeapSnapshotCommon.js");
@@ -20,7 +25,7 @@ InspectorTest.fail = function(message)
 
 InspectorTest._takeHeapSnapshotInternal = function(command, callback)
 {
-    var loader = new WebInspector.HeapSnapshotLoader();
+    var loader = new HeapSnapshotWorker.HeapSnapshotLoader();
     InspectorTest.eventHandler["HeapProfiler.addHeapSnapshotChunk"] = function(messageObject)
     {
         loader.write(messageObject["params"]["chunk"]);

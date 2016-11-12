@@ -32,7 +32,7 @@ function test()
                 foundStyleSheetHeader.requestContent().then(callback);
             }
             if (!foundStyleSheetHeader)
-                InspectorTest.cssModel.addEventListener(WebInspector.CSSModel.Events.StyleSheetAdded, styleSheetAdded);
+                InspectorTest.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, styleSheetAdded);
         }
 
         function callback(content)
@@ -43,7 +43,7 @@ function test()
 
         function styleSheetAdded()
         {
-            InspectorTest.cssModel.removeEventListener(WebInspector.CSSModel.Events.StyleSheetAdded, styleSheetAdded);
+            InspectorTest.cssModel.removeEventListener(SDK.CSSModel.Events.StyleSheetAdded, styleSheetAdded);
             findStyleSheet();
         }
     }
@@ -60,7 +60,7 @@ function test()
 
         InspectorTest.addResult("=== Original stylesheet text: ===");
         InspectorTest.addResult(foundStyleSheetText);
-        InspectorTest.cssModel.addEventListener(WebInspector.CSSModel.Events.StyleSheetChanged, next, this);
+        InspectorTest.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetChanged, next, this);
         InspectorTest.cssModel.setStyleSheetText(foundStyleSheetHeader.id, "h1 { COLOR: Red; }", true).then(callback);
     }
 

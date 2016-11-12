@@ -37,7 +37,7 @@ function test()
 
     function onFileSystemCreated()
     {
-        var automappingTest = new InspectorTest.AutomappingTest(WebInspector.workspace);
+        var automappingTest = new InspectorTest.AutomappingTest(Workspace.workspace);
         automappingTest.waitUntilMappingIsStabilized(InspectorTest.completeTest.bind(InspectorTest));
     }
 

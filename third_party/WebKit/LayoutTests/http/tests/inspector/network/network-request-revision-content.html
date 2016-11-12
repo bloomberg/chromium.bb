@@ -15,7 +15,7 @@ function loadStylesheet()
 function test()
 {
     InspectorTest.recordNetwork();
-    WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, step2);
+    Workspace.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, step2);
     InspectorTest.evaluateInPage("loadStylesheet()");
 
     var resource;
@@ -25,7 +25,7 @@ function test()
         if (eventUISourceCode.url().indexOf("style.css") == -1)
             return;
         var request = InspectorTest.networkRequests().pop();
-        uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(request.url);
+        uiSourceCode = Workspace.workspace.uiSourceCodeForURL(request.url);
         if (!uiSourceCode)
             return;
         uiSourceCode.addRevision("");

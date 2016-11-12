@@ -41,8 +41,8 @@ function test()
 
             function fileSystemCreated()
             {
-                var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
-                uiSourceCode = WebInspector.workspace.uiSourceCode(fileSystemProjectId, "file:///var/www/foo.css");
+                var fileSystemProjectId = Bindings.FileSystemWorkspaceBinding.projectId(fileSystemPath);
+                uiSourceCode = Workspace.workspace.uiSourceCode(fileSystemProjectId, "file:///var/www/foo.css");
                 InspectorTest.showUISourceCode(uiSourceCode, didShowScriptSource);
             }
 
@@ -50,7 +50,7 @@ function test()
             {
                 dumpUISourceCodeContents();
                 InspectorTest.addResult("Loading stylesheet with sourceURL:");
-                InspectorTest.cssModel.addEventListener(WebInspector.CSSModel.Events.StyleSheetAdded, stylesheetLoaded);
+                InspectorTest.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, stylesheetLoaded);
                 InspectorTest.evaluateInPage("loadStylesheet()");
             }
   
@@ -58,7 +58,7 @@ function test()
             {
                 if (!event.data.sourceURL.includes("foo.css"))
                     return;
-                InspectorTest.cssModel.removeEventListener(WebInspector.CSSModel.Events.StyleSheetAdded, stylesheetLoaded);
+                InspectorTest.cssModel.removeEventListener(SDK.CSSModel.Events.StyleSheetAdded, stylesheetLoaded);
                 InspectorTest.addResult("Stylesheet loaded.");
                 InspectorTest.selectNodeAndWaitForStyles("inspected", nodeSelected);
             }
@@ -77,7 +77,7 @@ function test()
                 treeElement.valueElement.textContent = "green";
                 treeElement.valueElement.firstChild.select();
                 treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-                uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, stylesEdited, this);
+                uiSourceCode.addEventListener(Workspace.UISourceCode.Events.WorkingCopyCommitted, stylesEdited, this);
             }
 
             function stylesEdited()

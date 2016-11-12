@@ -19,7 +19,7 @@ function test()
                 cssResource = resource;
         }
         InspectorTest.addResult(cssResource.url);
-        InspectorTest.assertEquals(cssResource.resourceType(), WebInspector.resourceTypes.Stylesheet, "Resource type should be Stylesheet.");
+        InspectorTest.assertEquals(cssResource.resourceType(), Common.resourceTypes.Stylesheet, "Resource type should be Stylesheet.");
         InspectorTest.assertTrue(!cssResource.failed, "Resource loading failed.");
         cssResource.requestContent().then(step2);
     }

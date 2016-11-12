@@ -81,14 +81,14 @@ function test()
         function dumpName(event, level)
         {
             if (namesToDump.has(event.name))
-                InspectorTest.addResult("----".repeat(level) + "> " + WebInspector.TimelineUIUtils.eventTitle(event));
+                InspectorTest.addResult("----".repeat(level) + "> " + Timeline.TimelineUIUtils.eventTitle(event));
         }
         function callback()
         {
             InspectorTest.walkTimelineEventTree(dumpName);
             next();
         }
-        WebInspector.panels.timeline._captureJSProfileSetting.set(false);
+        UI.panels.timeline._captureJSProfileSetting.set(false);
         InspectorTest.evaluateWithTimeline(actions, InspectorTest.safeWrap(callback), true);
     }
 }

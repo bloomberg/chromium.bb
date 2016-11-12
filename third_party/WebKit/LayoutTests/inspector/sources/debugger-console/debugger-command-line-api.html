@@ -12,19 +12,19 @@ function testFunction()
 
 var test = function()
 {
-    InspectorTest.addSniffer(WebInspector.RuntimeModel.prototype, "_inspectRequested", inspect);
-    InspectorTest.addSniffer(WebInspector.Revealer, "revealPromise", oneRevealPromise, true);
+    InspectorTest.addSniffer(SDK.RuntimeModel.prototype, "_inspectRequested", inspect);
+    InspectorTest.addSniffer(Common.Revealer, "revealPromise", oneRevealPromise, true);
 
     function oneRevealPromise(node, revealPromise)
     {
-        if (!(node instanceof WebInspector.RemoteObject))
+        if (!(node instanceof SDK.RemoteObject))
             return;
         revealPromise.then(updateFocusedNode);
     }
 
     function updateFocusedNode()
     {
-        InspectorTest.addResult("Selected node id: '" + WebInspector.panels.elements.selectedDOMNode().getAttribute("id") + "'.");
+        InspectorTest.addResult("Selected node id: '" + UI.panels.elements.selectedDOMNode().getAttribute("id") + "'.");
         InspectorTest.completeDebuggerTest();
     }
 

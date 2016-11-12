@@ -40,11 +40,11 @@ function test()
     {
         var changes = [];
         InspectorTest.addResult("--------- Running test: ----------");
-        WebInspector.highlightRangesWithStyleClass(element, ranges, "highlighted", changes);
+        UI.highlightRangesWithStyleClass(element, ranges, "highlighted", changes);
         InspectorTest.addResult("After highlight: " + dumpTextNodesAsString(element));
-        WebInspector.revertDomChanges(changes);
+        UI.revertDomChanges(changes);
         InspectorTest.addResult("After revert: " + dumpTextNodesAsString(element));
-        WebInspector.applyDomChanges(changes);
+        UI.applyDomChanges(changes);
         InspectorTest.addResult("After apply: " + dumpTextNodesAsString(element));
     }
 
@@ -61,7 +61,7 @@ function test()
 
     function range(offset, length)
     {
-        return new WebInspector.SourceRange(offset, length);
+        return new Common.SourceRange(offset, length);
     }
 
     performTestForElement(textElement(["function"]), [range(0, 8)]); // Highlight whole text node.

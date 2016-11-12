@@ -12,7 +12,7 @@ function test()
     function step1()
     {
         InspectorTest.queryScripts(function(script) { step2({ data: script }) });
-        InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, step2);
+        InspectorTest.debuggerModel.addEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, step2);
     }
 
     function step2(event)

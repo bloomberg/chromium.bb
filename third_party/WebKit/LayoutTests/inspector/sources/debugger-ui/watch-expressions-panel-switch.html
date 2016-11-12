@@ -19,13 +19,13 @@ function test()
     InspectorTest.startDebuggerTest(step1);
     var updateCount = 8;
 
-    WebInspector.settings.createLocalSetting("watchExpressions", []).set(["x", "y.foo"]);
+    Common.settings.createLocalSetting("watchExpressions", []).set(["x", "y.foo"]);
 
     function step1()
     {
-        watchExpressionsPane = self.runtime.sharedInstance(WebInspector.WatchExpressionsSidebarPane);
-        WebInspector.panels.sources._sidebarPaneStack.showView(WebInspector.panels.sources._watchSidebarPane).then(() => {
-            InspectorTest.addSniffer(WebInspector.WatchExpression.prototype, "_createWatchExpression", watchExpressionsUpdated, true);
+        watchExpressionsPane = self.runtime.sharedInstance(Sources.WatchExpressionsSidebarPane);
+        UI.panels.sources._sidebarPaneStack.showView(UI.panels.sources._watchSidebarPane).then(() => {
+            InspectorTest.addSniffer(Sources.WatchExpression.prototype, "_createWatchExpression", watchExpressionsUpdated, true);
             InspectorTest.evaluateInPage("testFunction()");
         });
     }

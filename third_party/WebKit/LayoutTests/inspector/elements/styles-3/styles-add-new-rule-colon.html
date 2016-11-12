@@ -7,7 +7,7 @@
 function test()
 {
     InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
-    InspectorTest.addSniffer(WebInspector.UISourceCode.prototype, "addRevision", onRevisionAdded);
+    InspectorTest.addSniffer(Workspace.UISourceCode.prototype, "addRevision", onRevisionAdded);
 
     var treeElement;
     var hasResourceChanged;

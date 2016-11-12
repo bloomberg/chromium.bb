@@ -12,10 +12,10 @@ function test()
     InspectorTest.selectNodeAndWaitForStyles("inspected", selectCallback);
     function selectCallback()
     {
-        InspectorTest.addSniffer(WebInspector.StylesSidebarPane.prototype, "_innerRebuildUpdate", sniffRebuild, true);
-        var stylesPane = WebInspector.panels.elements._stylesWidget;
+        InspectorTest.addSniffer(Elements.StylesSidebarPane.prototype, "_innerRebuildUpdate", sniffRebuild, true);
+        var stylesPane = UI.panels.elements._stylesWidget;
         for (var i = 0; i < UPDATE_COUNT; ++i)
-            WebInspector.context.setFlavor(WebInspector.DOMNode, stylesPane.node());
+            UI.context.setFlavor(SDK.DOMNode, stylesPane.node());
 
         InspectorTest.deprecatedRunAfterPendingDispatches(completeCallback);
     }

@@ -43,13 +43,13 @@ function test()
     }
 
     var columns = [{id: "id"}];
-    var dataGrid = new WebInspector.DataGrid(columns);
-    var a = new WebInspector.DataGridNode({id: "a"});
-    var aa = new WebInspector.DataGridNode({id: "aa"});
-    var aaa = new WebInspector.DataGridNode({id: "aaa"});
-    var aab = new WebInspector.DataGridNode({id: "aab"});
-    var ab = new WebInspector.DataGridNode({id: "ab"});
-    var b = new WebInspector.DataGridNode({id: "b"});
+    var dataGrid = new UI.DataGrid(columns);
+    var a = new UI.DataGridNode({id: "a"});
+    var aa = new UI.DataGridNode({id: "aa"});
+    var aaa = new UI.DataGridNode({id: "aaa"});
+    var aab = new UI.DataGridNode({id: "aab"});
+    var ab = new UI.DataGridNode({id: "ab"});
+    var b = new UI.DataGridNode({id: "b"});
 
     var root = dataGrid.rootNode();
 
@@ -83,7 +83,7 @@ function test()
     dumpNodes();
     attach(aa, aaa);
     attach(aa, aab);
-    var aac = new WebInspector.DataGridNode({id: "aac"});
+    var aac = new UI.DataGridNode({id: "aac"});
     attach(aa, aac);
     dumpNodes();
     attach(aa, aac, 0);
@@ -108,9 +108,9 @@ function test()
     dumpNodes();
 
     var columns = [{id: "id"}];
-    var dataGrid = new WebInspector.DataGrid(columns);
-    var a = new WebInspector.DataGridNode({id: "a", secondCol: "a foo"});
-    var b = new WebInspector.DataGridNode({id: "b", secondCol: "b foo"});
+    var dataGrid = new UI.DataGrid(columns);
+    var a = new UI.DataGridNode({id: "a", secondCol: "a foo"});
+    var b = new UI.DataGridNode({id: "b", secondCol: "b foo"});
     var root = dataGrid.rootNode();
     attach(root, a);
     dumpNodes();

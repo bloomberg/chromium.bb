@@ -23,8 +23,8 @@ function test()
         return Promise.resolve();
     }
 
-    WebInspector.breakpointManager._storage._breakpoints = {};
-    var panel = WebInspector.panels.sources;
+    Bindings.breakpointManager._storage._breakpoints = {};
+    var panel = UI.panels.sources;
     var scriptFormatter;
     var formattedSourceFrame;
 

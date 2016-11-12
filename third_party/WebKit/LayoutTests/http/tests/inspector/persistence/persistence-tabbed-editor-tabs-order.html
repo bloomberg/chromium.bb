@@ -33,9 +33,9 @@ function test()
         function openNetworkFiles(next)
         {
             Promise.all([
-                InspectorTest.waitForUISourceCode("foo.js", WebInspector.projectTypes.Network),
-                InspectorTest.waitForUISourceCode("bar.js", WebInspector.projectTypes.Network),
-                InspectorTest.waitForUISourceCode("baz.js", WebInspector.projectTypes.Network)
+                InspectorTest.waitForUISourceCode("foo.js", Workspace.projectTypes.Network),
+                InspectorTest.waitForUISourceCode("bar.js", Workspace.projectTypes.Network),
+                InspectorTest.waitForUISourceCode("baz.js", Workspace.projectTypes.Network)
             ]).then(onUISourceCodes);
 
             function onUISourceCodes(uiSourceCodes)
@@ -70,7 +70,7 @@ function test()
 
     function dumpTabs(title)
     {
-        var tabbedPane = WebInspector.panels.sources._sourcesView._editorContainer._tabbedPane;
+        var tabbedPane = UI.panels.sources._sourcesView._editorContainer._tabbedPane;
         var tabs = tabbedPane._tabs;
         InspectorTest.addResult(title);
         for (var i = 0; i < tabs.length; ++i) {

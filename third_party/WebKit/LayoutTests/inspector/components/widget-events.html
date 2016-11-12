@@ -5,7 +5,7 @@
 
 function test()
 {
-    var TestWidget = class extends WebInspector.Widget {
+    var TestWidget = class extends UI.Widget {
         constructor(widgetName)
         {
             super();
@@ -77,7 +77,7 @@ function test()
         function testShowWidget(next)
         {
             var widget = new TestWidget("Widget");
-            widget.show(WebInspector.inspectorView.element);
+            widget.show(UI.inspectorView.element);
             widget.detach();
             next();
         },
@@ -165,13 +165,13 @@ function test()
             var parentWidget = new TestWidget("Parent");
             var childWidget = new TestWidget("Child");
             childWidget.setHideOnDetach();
-            parentWidget.show(WebInspector.inspectorView.element);
+            parentWidget.show(UI.inspectorView.element);
 
             parentWidget.doResize();
             childWidget.show(parentWidget.element);
             parentWidget.doResize();
             parentWidget.detach();
-            parentWidget.show(WebInspector.inspectorView.element);
+            parentWidget.show(UI.inspectorView.element);
             childWidget.detach();
             parentWidget.detach();
             next();
@@ -180,7 +180,7 @@ function test()
         function testWidgetCounter(next)
         {
             var parentWidget = new TestWidget("Parent");
-            parentWidget.show(WebInspector.inspectorView.element);
+            parentWidget.show(UI.inspectorView.element);
 
             var childWidget = new TestWidget("Child");
             childWidget.show(parentWidget.element);
@@ -202,7 +202,7 @@ function test()
         function testRemoveChild(next)
         {
             var parentWidget = new TestWidget("Parent");
-            parentWidget.show(WebInspector.inspectorView.element);
+            parentWidget.show(UI.inspectorView.element);
 
             var childWidget = new TestWidget("Child");
             childWidget.show(parentWidget.element);
@@ -266,7 +266,7 @@ function test()
         {
             var parentWidget = new TestWidget("Parent");
             parentWidget.showOnWasShown = new TestWidget("Child");
-            parentWidget.show(WebInspector.inspectorView.element);
+            parentWidget.show(UI.inspectorView.element);
             parentWidget.detach();
             next();
         },
@@ -279,7 +279,7 @@ function test()
             middleWidget.show(topWidget.element);
             topWidget.showOnWasShown = bottomWidget;
             topWidget.showRoot = middleWidget.element;
-            topWidget.show(WebInspector.inspectorView.element);
+            topWidget.show(UI.inspectorView.element);
             topWidget.detach();
             next();
         },
@@ -290,7 +290,7 @@ function test()
             var childWidget = new TestWidget("Child");
             childWidget.show(parentWidget.element);
             parentWidget.detachOnWasShown = childWidget;
-            parentWidget.show(WebInspector.inspectorView.element);
+            parentWidget.show(UI.inspectorView.element);
             parentWidget.detach();
             next();
         },
@@ -299,7 +299,7 @@ function test()
         {
             var parentWidget = new TestWidget("Parent");
             var childWidget = new TestWidget("Child");
-            parentWidget.show(WebInspector.inspectorView.element);
+            parentWidget.show(UI.inspectorView.element);
             childWidget.show(parentWidget.element);
             parentWidget.showOnWillHide = childWidget;
             parentWidget.detach();
@@ -310,7 +310,7 @@ function test()
         {
             var parentWidget = new TestWidget("Parent");
             var childWidget = new TestWidget("Child");
-            parentWidget.show(WebInspector.inspectorView.element);
+            parentWidget.show(UI.inspectorView.element);
             childWidget.show(parentWidget.element);
             parentWidget.detachOnWillHide = childWidget;
             parentWidget.detach();
@@ -322,8 +322,8 @@ function test()
             var parentWidget1 = new TestWidget("Parent1");
             var parentWidget2 = new TestWidget("Parent2");
             var childWidget = new TestWidget("Child");
-            parentWidget1.show(WebInspector.inspectorView.element);
-            parentWidget2.show(WebInspector.inspectorView.element);
+            parentWidget1.show(UI.inspectorView.element);
+            parentWidget2.show(UI.inspectorView.element);
             childWidget.show(parentWidget1.element);
             childWidget.show(parentWidget2.element);
             next();
@@ -335,7 +335,7 @@ function test()
             var childWidget = new TestWidget("Child");
             childWidget.show(parentWidget.element);
             parentWidget.resizeOnWasShown = childWidget;
-            parentWidget.show(WebInspector.inspectorView.element);
+            parentWidget.show(UI.inspectorView.element);
             parentWidget.detach();
             next();
         },
@@ -357,7 +357,7 @@ function test()
         function testReparentWithinWidget(next)
         {
             var parentWidget = new TestWidget("Parent");
-            parentWidget.show(WebInspector.inspectorView.element);
+            parentWidget.show(UI.inspectorView.element);
             var childWidget = new TestWidget("Child");
             var container1 = parentWidget.element.createChild("div");
             var container2 = parentWidget.element.createChild("div");

@@ -28,7 +28,7 @@ function test()
 
     function onParsed()
     {
-        var diff = WebInspector.SASSSupport.diffModels(ast1, ast2);
+        var diff = Sass.SASSSupport.diffModels(ast1, ast2);
         InspectorTest.dumpASTDiff(diff);
     }
 

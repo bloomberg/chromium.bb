@@ -17,8 +17,8 @@ function testSetSameValue()
 function test()
 {
     // Save time on style updates.
-    WebInspector.StylesSidebarPane.prototype.update = function() {};
-    WebInspector.MetricsSidebarPane.prototype.update = function() {};
+    Elements.StylesSidebarPane.prototype.update = function() {};
+    Elements.MetricsSidebarPane.prototype.update = function() {};
 
     InspectorTest.runTestSuite([
         function testSetUp(next)
@@ -30,11 +30,11 @@ function test()
         {
             InspectorTest.evaluateInPage("testSetNewValue()");
 
-            InspectorTest.domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, listener);
+            InspectorTest.domModel.addEventListener(SDK.DOMModel.Events.AttrModified, listener);
             function listener(event)
             {
-                InspectorTest.addResult("WebInspector.DOMModel.Events.AttrModified should be issued");
-                InspectorTest.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, listener);
+                InspectorTest.addResult("SDK.DOMModel.Events.AttrModified should be issued");
+                InspectorTest.domModel.removeEventListener(SDK.DOMModel.Events.AttrModified, listener);
                 next();
             }
         },
@@ -43,11 +43,11 @@ function test()
         {
             InspectorTest.evaluateInPage("testSetSameValue()", next);
 
-            InspectorTest.domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, listener);
+            InspectorTest.domModel.addEventListener(SDK.DOMModel.Events.AttrModified, listener);
             function listener(event)
             {
-                InspectorTest.addResult("WebInspector.DOMModel.Events.AttrModified should not be issued");
-                InspectorTest.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, listener);
+                InspectorTest.addResult("SDK.DOMModel.Events.AttrModified should not be issued");
+                InspectorTest.domModel.removeEventListener(SDK.DOMModel.Events.AttrModified, listener);
             }
         }
     ]);

@@ -36,7 +36,7 @@ function test()
     for (var testCase of Object.keys(testCases)) {
         var model = InspectorTest.createTracingModel();
         model.setEventsForTest(testCases[testCase]);
-        var browserMain = WebInspector.TracingModel.browserMainThread(model);
+        var browserMain = SDK.TracingModel.browserMainThread(model);
         if (!browserMain) {
             InspectorTest.addResult(`${testCase} failed, no browser main thread found`);
             continue;

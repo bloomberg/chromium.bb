@@ -5,7 +5,7 @@
 <script>
 function test()
 {
-    var prompt = WebInspector.ConsoleView.instance()._prompt;
+    var prompt = Console.ConsoleView.instance()._prompt;
     InspectorTest.waitUntilConsoleEditorLoaded().then(step1);
 
     function step1()
@@ -58,7 +58,7 @@ function test()
     {
         var fulfill;
         var promise = new Promise(x => fulfill = x);
-        InspectorTest.addSniffer(WebInspector.ConsolePrompt.prototype, "_enterProcessedForTest", enterProcessed);
+        InspectorTest.addSniffer(Console.ConsolePrompt.prototype, "_enterProcessedForTest", enterProcessed);
 
         prompt.setText(text);
         prompt.moveCaretToEndOfPrompt();

@@ -19,7 +19,7 @@ function test()
     {
         InspectorTest.evaluateInPage("installWorker()");
         InspectorTest.waitUntilPaused(paused);
-        InspectorTest.addSniffer(WebInspector.CompilerScriptMapping.prototype, "_sourceMapLoaded", sourceMapLoaded);
+        InspectorTest.addSniffer(Bindings.CompilerScriptMapping.prototype, "_sourceMapLoaded", sourceMapLoaded);
     }
 
     var callFrames;

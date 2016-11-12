@@ -6,7 +6,7 @@
 
 function test()
 {
-    InspectorTest.addSniffer(WebInspector.ConsoleViewMessage.prototype, "_formattedParameterAsNodeForTest", formattedParameter, true);
+    InspectorTest.addSniffer(Console.ConsoleViewMessage.prototype, "_formattedParameterAsNodeForTest", formattedParameter, true);
     InspectorTest.addConsoleViewSniffer(messageSniffer, true);
 
     InspectorTest.evaluateInConsole("$x('42')"); // number

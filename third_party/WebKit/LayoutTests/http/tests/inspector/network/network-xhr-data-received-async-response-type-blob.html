@@ -6,7 +6,7 @@
 
 function test()
 {
-    InspectorTest.addSniffer(WebInspector.NetworkDispatcher.prototype, "dataReceived", dataReceived);
+    InspectorTest.addSniffer(SDK.NetworkDispatcher.prototype, "dataReceived", dataReceived);
 
     InspectorTest.recordNetwork();
     InspectorTest.makeXHR("GET", "resources/resource.php", true, undefined, undefined, [], false, undefined, "blob", function () { });

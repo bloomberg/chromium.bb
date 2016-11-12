@@ -5,7 +5,7 @@
 
 function test()
 {
-    WebInspector.settingForTest("enableAsyncStackTraces").set(true);
+    Common.settingForTest("enableAsyncStackTraces").set(true);
     var messages = [];
     function collectMessages(message)
     {
@@ -13,11 +13,11 @@ function test()
     }
     Protocol.TargetBase.prototype._dumpProtocolMessage = collectMessages;
     InspectorBackendClass.Options.dumpInspectorProtocolMessages = 1;
-    messages.push("--> WebInspector.targetManager.suspendAllTargets();");
-    WebInspector.targetManager.suspendAllTargets();
+    messages.push("--> SDK.targetManager.suspendAllTargets();");
+    SDK.targetManager.suspendAllTargets();
     messages.push("");
-    messages.push("--> WebInspector.targetManager.resumeAllTargets();");
-    WebInspector.targetManager.resumeAllTargets();
+    messages.push("--> SDK.targetManager.resumeAllTargets();");
+    SDK.targetManager.resumeAllTargets();
     messages.push("");
     messages.push("--> done");
     InspectorBackendClass.Options.dumpInspectorProtocolMessages = 0;
@@ -26,7 +26,7 @@ function test()
         message = message.replace(/"id":\d+,/, '"id":<number>,');
         InspectorTest.addResult(message);
     }
-    WebInspector.settingForTest("enableAsyncStackTraces").set(false);
+    Common.settingForTest("enableAsyncStackTraces").set(false);
     InspectorTest.completeTest();
 }
 

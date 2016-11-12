@@ -87,9 +87,9 @@ function test()
                 ".green {",
                 "   display"
             ].join("\n"));
-            textEditor.setSelection(WebInspector.TextRange.createFromLocation(1, 10));
+            textEditor.setSelection(Common.TextRange.createFromLocation(1, 10));
             InspectorTest.dumpTextWithSelection(textEditor);
-            InspectorTest.addSniffer(WebInspector.TextEditorAutocompleteController.prototype, "_onSuggestionsShownForTest", suggestionsShown);
+            InspectorTest.addSniffer(TextEditor.TextEditorAutocompleteController.prototype, "_onSuggestionsShownForTest", suggestionsShown);
             InspectorTest.typeIn(textEditor, ":");
 
             function suggestionsShown(words)

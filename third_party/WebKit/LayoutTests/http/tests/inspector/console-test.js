@@ -8,7 +8,7 @@ InspectorTest.selectMainExecutionContext = function()
     var executionContexts = InspectorTest.mainTarget.runtimeModel.executionContexts();
     for (var context of executionContexts) {
         if (context.isDefault) {
-            WebInspector.context.setFlavor(WebInspector.ExecutionContext, context);
+            UI.context.setFlavor(SDK.ExecutionContext, context);
             return;
         }
     }
@@ -20,7 +20,7 @@ InspectorTest.evaluateInConsole = function(code, callback, dontForceMainContext)
         InspectorTest.selectMainExecutionContext();
     callback = InspectorTest.safeWrap(callback);
 
-    var consoleView = WebInspector.ConsoleView.instance();
+    var consoleView = Console.ConsoleView.instance();
     consoleView._prompt._appendCommand(code, true);
     InspectorTest.addConsoleViewSniffer(function(commandResult) {
         callback(commandResult.toMessageElement().deepTextContent());
@@ -33,7 +33,7 @@ InspectorTest.addConsoleViewSniffer = function(override, opt_sticky)
         override(viewMessage);
     };
 
-    InspectorTest.addSniffer(WebInspector.ConsoleView.prototype, "_consoleMessageAddedForTest", sniffer, opt_sticky);
+    InspectorTest.addSniffer(Console.ConsoleView.prototype, "_consoleMessageAddedForTest", sniffer, opt_sticky);
 }
 
 InspectorTest.evaluateInConsoleAndDump = function(code, callback, dontForceMainContext)
@@ -73,7 +73,7 @@ InspectorTest.disableConsoleViewport = function()
 
 InspectorTest.fixConsoleViewportDimensions = function(width, height)
 {
-    var viewport = WebInspector.ConsoleView.instance()._viewport;
+    var viewport = Console.ConsoleView.instance()._viewport;
     viewport.element.style.width = width + "px";
     viewport.element.style.height = height + "px";
     viewport.element.style.position = "absolute";
@@ -82,7 +82,7 @@ InspectorTest.fixConsoleViewportDimensions = function(width, height)
 
 InspectorTest.consoleMessagesCount = function()
 {
-    var consoleView = WebInspector.ConsoleView.instance();
+    var consoleView = Console.ConsoleView.instance();
     return consoleView._consoleMessages.length;
 }
 
@@ -96,7 +96,7 @@ InspectorTest.dumpConsoleMessagesIntoArray = function(printOriginatingCommand, d
     formatter = formatter || InspectorTest.prepareConsoleMessageText;
     var result = [];
     InspectorTest.disableConsoleViewport();
-    var consoleView = WebInspector.ConsoleView.instance();
+    var consoleView = Console.ConsoleView.instance();
     if (consoleView._needsFullUpdate)
         consoleView._updateMessageList();
     var viewMessages = consoleView._visibleViewMessages;
@@ -160,7 +160,7 @@ InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames = function(printOriginat
 InspectorTest.dumpConsoleTableMessage = function(viewMessage, forceInvalidate, results)
 {
     if (forceInvalidate)
-        WebInspector.ConsoleView.instance()._viewport.invalidate();
+        Console.ConsoleView.instance()._viewport.invalidate();
     var table = viewMessage.element();
     var headers = table.querySelectorAll("th > div:first-child");
     if (!headers.length)
@@ -199,7 +199,7 @@ InspectorTest.dumpConsoleTableMessage = function(viewMessage, forceInvalidate, r
 InspectorTest.dumpConsoleMessagesWithStyles = function(sortMessages)
 {
     var result = [];
-    var messageViews = WebInspector.ConsoleView.instance()._visibleViewMessages;
+    var messageViews = Console.ConsoleView.instance()._visibleViewMessages;
     for (var i = 0; i < messageViews.length; ++i) {
         var element = messageViews[i].element();
         var messageText = InspectorTest.prepareConsoleMessageText(element);
@@ -212,7 +212,7 @@ InspectorTest.dumpConsoleMessagesWithStyles = function(sortMessages)
 
 InspectorTest.dumpConsoleMessagesWithClasses = function(sortMessages) {
     var result = [];
-    var messageViews = WebInspector.ConsoleView.instance()._visibleViewMessages;
+    var messageViews = Console.ConsoleView.instance()._visibleViewMessages;
     for (var i = 0; i < messageViews.length; ++i) {
         var element = messageViews[i].element();
         var contentElement = messageViews[i].contentElement();
@@ -227,14 +227,14 @@ InspectorTest.dumpConsoleMessagesWithClasses = function(sortMessages) {
 
 InspectorTest.dumpConsoleClassesBrief = function()
 {
-    var messageViews = WebInspector.ConsoleView.instance()._visibleViewMessages;
+    var messageViews = Console.ConsoleView.instance()._visibleViewMessages;
     for (var i = 0; i < messageViews.length; ++i)
         InspectorTest.addResult(messageViews[i].toMessageElement().className);
 }
 
 InspectorTest.dumpConsoleCounters = function()
 {
-    var counter = WebInspector.Main.WarningErrorCounter._instanceForTest;
+    var counter = Main.Main.WarningErrorCounter._instanceForTest;
     for (var index = 0; index < counter._titles.length; ++index)
         InspectorTest.addResult(counter._titles[index]);
     InspectorTest.dumpConsoleClassesBrief();
@@ -242,8 +242,8 @@ InspectorTest.dumpConsoleCounters = function()
 
 InspectorTest.expandConsoleMessages = function(callback, deepFilter, sectionFilter)
 {
-    WebInspector.ConsoleView.instance()._viewportThrottler.flush();
-    var messageViews = WebInspector.ConsoleView.instance()._visibleViewMessages;
+    Console.ConsoleView.instance()._viewportThrottler.flush();
+    var messageViews = Console.ConsoleView.instance()._visibleViewMessages;
 
     // Initiate round-trips to fetch necessary data for further rendering.
     for (var i = 0; i < messageViews.length; ++i)
@@ -283,10 +283,10 @@ InspectorTest.expandConsoleMessages = function(callback, deepFilter, sectionFilt
 
 InspectorTest.expandGettersInConsoleMessages = function(callback)
 {
-    var messageViews = WebInspector.ConsoleView.instance()._visibleViewMessages;
+    var messageViews = Console.ConsoleView.instance()._visibleViewMessages;
     var properties = [];
     var propertiesCount  = 0;
-    InspectorTest.addSniffer(WebInspector.ObjectPropertyTreeElement.prototype, "_updateExpandable", propertyExpandableUpdated);
+    InspectorTest.addSniffer(Components.ObjectPropertyTreeElement.prototype, "_updateExpandable", propertyExpandableUpdated);
     for (var i = 0; i < messageViews.length; ++i) {
         var element = messageViews[i].element();
         for (var node = element; node; node = node.traverseNextNode(element)) {
@@ -306,14 +306,14 @@ InspectorTest.expandGettersInConsoleMessages = function(callback)
                 properties[i].click();
             InspectorTest.deprecatedRunAfterPendingDispatches(callback);
         } else {
-            InspectorTest.addSniffer(WebInspector.ObjectPropertyTreeElement.prototype, "_updateExpandable", propertyExpandableUpdated);
+            InspectorTest.addSniffer(Components.ObjectPropertyTreeElement.prototype, "_updateExpandable", propertyExpandableUpdated);
         }
     }
 }
 
 InspectorTest.expandConsoleMessagesErrorParameters = function(callback)
 {
-    var messageViews = WebInspector.ConsoleView.instance()._visibleViewMessages;
+    var messageViews = Console.ConsoleView.instance()._visibleViewMessages;
     // Initiate round-trips to fetch necessary data for further rendering.
     for (var i = 0; i < messageViews.length; ++i)
         messageViews[i].element();
@@ -322,7 +322,7 @@ InspectorTest.expandConsoleMessagesErrorParameters = function(callback)
 
 InspectorTest.waitForRemoteObjectsConsoleMessages = function(callback)
 {
-    var messages = WebInspector.ConsoleView.instance()._visibleViewMessages;
+    var messages = Console.ConsoleView.instance()._visibleViewMessages;
     for (var i = 0; i < messages.length; ++i)
         messages[i].toMessageElement();
     InspectorTest.deprecatedRunAfterPendingDispatches(callback);
@@ -330,11 +330,11 @@ InspectorTest.waitForRemoteObjectsConsoleMessages = function(callback)
 
 InspectorTest.checkConsoleMessagesDontHaveParameters = function()
 {
-    var messageViews = WebInspector.ConsoleView.instance()._visibleViewMessages;
+    var messageViews = Console.ConsoleView.instance()._visibleViewMessages;
     for (var i = 0; i < messageViews.length; ++i) {
         var m = messageViews[i].consoleMessage();
         InspectorTest.addResult("Message[" + i + "]:");
-        InspectorTest.addResult("Message: " + WebInspector.displayNameForURL(m.url) + ":" + m.line + " " + m.message);
+        InspectorTest.addResult("Message: " + Bindings.displayNameForURL(m.url) + ":" + m.line + " " + m.message);
         if ("_parameters" in m) {
             if (m._parameters)
                 InspectorTest.addResult("FAILED: message parameters list is not empty: " + m.parameters);
@@ -350,11 +350,11 @@ InspectorTest.waitUntilConsoleEditorLoaded = function()
 {
     var fulfill;
     var promise = new Promise(x => fulfill = x);
-    var editor = WebInspector.ConsoleView.instance()._prompt._editor;
+    var editor = Console.ConsoleView.instance()._prompt._editor;
     if (editor)
         fulfill(editor);
     else
-        InspectorTest.addSniffer(WebInspector.ConsolePrompt.prototype, "_editorSetForTest", _ => fulfill(editor))
+        InspectorTest.addSniffer(Console.ConsolePrompt.prototype, "_editorSetForTest", _ => fulfill(editor))
     return promise;
 }
 
@@ -393,7 +393,7 @@ InspectorTest.waitUntilNthMessageReceivedPromise = function(count)
 
 InspectorTest.changeExecutionContext = function(namePrefix)
 {
-    var selector = WebInspector.ConsoleView.instance()._consoleContextSelector._selectElement;
+    var selector = Console.ConsoleView.instance()._consoleContextSelector._selectElement;
     var option = selector.firstChild;
     while (option) {
         if (option.textContent && option.textContent.startsWith(namePrefix))
@@ -405,12 +405,12 @@ InspectorTest.changeExecutionContext = function(namePrefix)
         return;
     }
     option.selected = true;
-    WebInspector.ConsoleView.instance()._consoleContextSelector._executionContextChanged();
+    Console.ConsoleView.instance()._consoleContextSelector._executionContextChanged();
 }
 
 InspectorTest.waitForConsoleMessages = function(expectedCount, callback)
 {
-    var consoleView = WebInspector.ConsoleView.instance();
+    var consoleView = Console.ConsoleView.instance();
     checkAndReturn();
 
     function checkAndReturn()

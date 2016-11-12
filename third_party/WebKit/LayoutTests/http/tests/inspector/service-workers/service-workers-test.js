@@ -22,7 +22,7 @@ InspectorTest.waitForServiceWorker = function(callback)
         return InspectorTest.isDedicatedWorker(target) && InspectorTest.isServiceWorker(target.parentTarget());
     }
 
-    WebInspector.targetManager.observeTargets({
+    SDK.targetManager.observeTargets({
         targetAdded: function(target)
         {
             if (isRightTarget(target) && callback) {
@@ -36,7 +36,7 @@ InspectorTest.waitForServiceWorker = function(callback)
 
 InspectorTest.dumpServiceWorkersView = function()
 {
-    var swView = WebInspector.panels.resources.visibleView;
+    var swView = UI.panels.resources.visibleView;
     return swView._reportView._sectionList.childTextNodes().map(function(node) { return node.textContent.replace(/Received.*/, "Received").replace(/#\d+/, "#N"); }).join("\n");
 }
 

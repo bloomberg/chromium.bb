@@ -25,7 +25,7 @@ function test()
 
         function onNode(node)
         {
-            if (!(node instanceof WebInspector.SASSSupport.TextNode))
+            if (!(node instanceof Sass.SASSSupport.TextNode))
                 return;
             var startOffset = text.offsetFromPosition(node.range.startLine, node.range.startColumn);
             var endOffset = text.offsetFromPosition(node.range.endLine, node.range.endColumn);
@@ -33,7 +33,7 @@ function test()
                 offsetToNode.set(i, node);
         }
 
-        var cursor = new WebInspector.TextCursor(text.lineEndings());
+        var cursor = new Common.TextCursor(text.lineEndings());
         for (var i = 0; i < text.value().length; ++i) {
             var canonical = offsetToNode.get(i) || null;
             cursor.advance(i);

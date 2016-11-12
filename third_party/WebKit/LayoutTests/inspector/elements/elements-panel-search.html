@@ -20,7 +20,7 @@ function test()
     {
         if (resultCount == 0) {
             InspectorTest.addResult("Nothing found");
-            WebInspector.DOMModel.cancelSearch();
+            SDK.DOMModel.cancelSearch();
             next();
         }
 
@@ -38,7 +38,7 @@ function test()
                 markupVa_lue = markupVa_lue.substr(0, markupVa_lue.indexOf(">") + 1);
             InspectorTest.addResult(markupVa_lue.split("").join(" "));
             if (isLastItem) {
-                WebInspector.DOMModel.cancelSearch();
+                SDK.DOMModel.cancelSearch();
                 next();
             }
         }

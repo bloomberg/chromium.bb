@@ -12,10 +12,10 @@ InspectorTest.startDebuggerTest = function(callback, quiet)
     console.assert(InspectorTest.debuggerModel.debuggerEnabled(), "Debugger has to be enabled");
     if (quiet !== undefined)
         InspectorTest._quiet = quiet;
-    WebInspector.viewManager.showView("sources");
+    UI.viewManager.showView("sources");
 
-    InspectorTest.addSniffer(WebInspector.DebuggerModel.prototype, "_pausedScript", InspectorTest._pausedScript, true);
-    InspectorTest.addSniffer(WebInspector.DebuggerModel.prototype, "_resumedScript", InspectorTest._resumedScript, true);
+    InspectorTest.addSniffer(SDK.DebuggerModel.prototype, "_pausedScript", InspectorTest._pausedScript, true);
+    InspectorTest.addSniffer(SDK.DebuggerModel.prototype, "_resumedScript", InspectorTest._resumedScript, true);
     InspectorTest.safeWrap(callback)();
 };
 
@@ -29,7 +29,7 @@ InspectorTest.startDebuggerTestPromise = function(quiet)
 
 InspectorTest.completeDebuggerTest = function()
 {
-    WebInspector.breakpointManager.setBreakpointsActive(true);
+    Bindings.breakpointManager.setBreakpointsActive(true);
     InspectorTest.resumeExecution(InspectorTest.completeTest.bind(InspectorTest));
 };
 
@@ -166,15 +166,15 @@ InspectorTest.waitUntilResumed = function(callback)
 
 InspectorTest.resumeExecution = function(callback)
 {
-    if (WebInspector.panels.sources.paused())
-        WebInspector.panels.sources._togglePause();
+    if (UI.panels.sources.paused())
+        UI.panels.sources._togglePause();
     InspectorTest.waitUntilResumed(callback);
 };
 
 InspectorTest.waitUntilPausedAndDumpStackAndResume = function(callback, options)
 {
     InspectorTest.waitUntilPaused(paused);
-    InspectorTest.addSniffer(WebInspector.SourcesPanel.prototype, "_updateDebuggerButtonsAndStatus", setStatus);
+    InspectorTest.addSniffer(Sources.SourcesPanel.prototype, "_updateDebuggerButtonsAndStatus", setStatus);
 
     var caption;
     var callFrames;
@@ -211,22 +211,22 @@ InspectorTest.waitUntilPausedAndDumpStackAndResume = function(callback, options)
 
 InspectorTest.stepOver = function()
 {
-    Promise.resolve().then(function(){WebInspector.panels.sources._stepOver()});
+    Promise.resolve().then(function(){UI.panels.sources._stepOver()});
 };
 
 InspectorTest.stepInto = function()
 {
-    Promise.resolve().then(function(){WebInspector.panels.sources._stepInto()});
+    Promise.resolve().then(function(){UI.panels.sources._stepInto()});
 };
 
 InspectorTest.stepOut = function()
 {
-    Promise.resolve().then(function(){WebInspector.panels.sources._stepOut()});
+    Promise.resolve().then(function(){UI.panels.sources._stepOut()});
 };
 
 InspectorTest.togglePause = function()
 {
-    Promise.resolve().then(function(){WebInspector.panels.sources._togglePause()});
+    Promise.resolve().then(function(){UI.panels.sources._togglePause()});
 };
 
 InspectorTest.waitUntilPausedAndPerformSteppingActions = function(actions, callback)
@@ -290,17 +290,17 @@ InspectorTest.captureStackTraceIntoString = function(callFrames, asyncStackTrace
             var frame = callFrames[i];
             var location = locationFunction.call(frame);
             var script = location.script();
-            var uiLocation = WebInspector.debuggerWorkspaceBinding.rawLocationToUILocation(location);
-            var isFramework = WebInspector.blackboxManager.isBlackboxedRawLocation(location);
+            var uiLocation = Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(location);
+            var isFramework = Bindings.blackboxManager.isBlackboxedRawLocation(location);
             if (options.dropFrameworkCallFrames && isFramework)
                 continue;
             var url;
             var lineNumber;
-            if (uiLocation && uiLocation.uiSourceCode.project().type() !== WebInspector.projectTypes.Debugger) {
+            if (uiLocation && uiLocation.uiSourceCode.project().type() !== Workspace.projectTypes.Debugger) {
                 url = uiLocation.uiSourceCode.name();
                 lineNumber = uiLocation.lineNumber + 1;
             } else {
-                url = WebInspector.displayNameForURL(script.sourceURL);
+                url = Bindings.displayNameForURL(script.sourceURL);
                 lineNumber = location.lineNumber + 1;
             }
             var s = (isFramework ? "  * " : "    ") + (printed++) + ") " + frame.functionName + " (" + url + (options.dropLineNumbers ? "" : ":" + lineNumber) + ")";
@@ -319,14 +319,14 @@ InspectorTest.captureStackTraceIntoString = function(callFrames, asyncStackTrace
 
     function runtimeCallFramePosition()
     {
-        return new WebInspector.DebuggerModel.Location(debuggerModel, this.scriptId, this.lineNumber, this.columnNumber);
+        return new SDK.DebuggerModel.Location(debuggerModel, this.scriptId, this.lineNumber, this.columnNumber);
     }
 
     results.push("Call stack:");
-    printCallFrames(callFrames, WebInspector.DebuggerModel.CallFrame.prototype.location, WebInspector.DebuggerModel.CallFrame.prototype.returnValue);
+    printCallFrames(callFrames, SDK.DebuggerModel.CallFrame.prototype.location, SDK.DebuggerModel.CallFrame.prototype.returnValue);
     while (asyncStackTrace) {
         results.push("    [" + (asyncStackTrace.description || "Async Call") + "]");
-        var debuggerModel = WebInspector.DebuggerModel.fromTarget(WebInspector.targetManager.mainTarget());
+        var debuggerModel = SDK.DebuggerModel.fromTarget(SDK.targetManager.mainTarget());
         var printed = printCallFrames(asyncStackTrace.callFrames, runtimeCallFramePosition);
         if (!printed)
             results.pop();
@@ -348,8 +348,8 @@ InspectorTest._pausedScript = function(callFrames, reason, auxData, breakpointId
 {
     if (!InspectorTest._quiet)
         InspectorTest.addResult("Script execution paused.");
-    var debuggerModel = WebInspector.DebuggerModel.fromTarget(this.target());
-    InspectorTest._pausedScriptArguments = [WebInspector.DebuggerModel.CallFrame.fromPayloadArray(debuggerModel, callFrames), reason, breakpointIds, asyncStackTrace, auxData];
+    var debuggerModel = SDK.DebuggerModel.fromTarget(this.target());
+    InspectorTest._pausedScriptArguments = [SDK.DebuggerModel.CallFrame.fromPayloadArray(debuggerModel, callFrames), reason, breakpointIds, asyncStackTrace, auxData];
     if (InspectorTest._waitUntilPausedCallback) {
         var callback = InspectorTest._waitUntilPausedCallback;
         delete InspectorTest._waitUntilPausedCallback;
@@ -371,7 +371,7 @@ InspectorTest._resumedScript = function()
 
 InspectorTest.showUISourceCode = function(uiSourceCode, callback)
 {
-    var panel = WebInspector.panels.sources;
+    var panel = UI.panels.sources;
     panel.showUISourceCode(uiSourceCode);
     var sourceFrame = panel.visibleView;
     if (sourceFrame.loaded)
@@ -400,10 +400,10 @@ InspectorTest.showScriptSource = function(scriptName, callback)
 
 InspectorTest.waitForScriptSource = function(scriptName, callback)
 {
-    var panel = WebInspector.panels.sources;
+    var panel = UI.panels.sources;
     var uiSourceCodes = panel._workspace.uiSourceCodes();
     for (var i = 0; i < uiSourceCodes.length; ++i) {
-        if (uiSourceCodes[i].project().type() === WebInspector.projectTypes.Service)
+        if (uiSourceCodes[i].project().type() === Workspace.projectTypes.Service)
             continue;
         if (uiSourceCodes[i].name() === scriptName) {
             callback(uiSourceCodes[i]);
@@ -411,7 +411,7 @@ InspectorTest.waitForScriptSource = function(scriptName, callback)
         }
     }
 
-    InspectorTest.addSniffer(WebInspector.SourcesView.prototype, "_addUISourceCode", InspectorTest.waitForScriptSource.bind(InspectorTest, scriptName, callback));
+    InspectorTest.addSniffer(Sources.SourcesView.prototype, "_addUISourceCode", InspectorTest.waitForScriptSource.bind(InspectorTest, scriptName, callback));
 };
 
 InspectorTest.setBreakpoint = function(sourceFrame, lineNumber, condition, enabled)
@@ -427,7 +427,7 @@ InspectorTest.removeBreakpoint = function(sourceFrame, lineNumber)
 
 InspectorTest.dumpBreakpointSidebarPane = function(title)
 {
-    var paneElement = self.runtime.sharedInstance(WebInspector.JavaScriptBreakpointsSidebarPane).element;
+    var paneElement = self.runtime.sharedInstance(Sources.JavaScriptBreakpointsSidebarPane).element;
     InspectorTest.addResult("Breakpoint sidebar pane " + (title || ""));
     InspectorTest.addResult(InspectorTest.textContentWithLineBreaks(paneElement));
 };
@@ -448,7 +448,7 @@ InspectorTest.dumpScopeVariablesSidebarPane = function()
 
 InspectorTest.scopeChainSections = function()
 {
-    var children = self.runtime.sharedInstance(WebInspector.ScopeChainSidebarPane).contentElement.children;
+    var children = self.runtime.sharedInstance(Sources.ScopeChainSidebarPane).contentElement.children;
     var sections = [];
     for (var i = 0; i < children.length; ++i)
         sections.push(children[i]._section);
@@ -528,17 +528,17 @@ InspectorTest.queryScripts = function(filter)
 
 InspectorTest.createScriptMock = function(url, startLine, startColumn, isContentScript, source, target, preRegisterCallback)
 {
-    target = target || WebInspector.targetManager.mainTarget();
-    var debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
+    target = target || SDK.targetManager.mainTarget();
+    var debuggerModel = SDK.DebuggerModel.fromTarget(target);
     var scriptId = ++InspectorTest._lastScriptId + "";
     var lineCount = source.computeLineEndings().length;
     var endLine = startLine + lineCount - 1;
     var endColumn = lineCount === 1 ? startColumn + source.length : source.length - source.computeLineEndings()[lineCount - 2];
     var hasSourceURL = !!source.match(/\/\/#\ssourceURL=\s*(\S*?)\s*$/m) || !!source.match(/\/\/@\ssourceURL=\s*(\S*?)\s*$/m);
-    var script = new WebInspector.Script(debuggerModel, scriptId, url, startLine, startColumn, endLine, endColumn, 0, "", isContentScript, false, undefined, hasSourceURL);
+    var script = new SDK.Script(debuggerModel, scriptId, url, startLine, startColumn, endLine, endColumn, 0, "", isContentScript, false, undefined, hasSourceURL);
     script.requestContent = function()
     {
-        var trimmedSource = WebInspector.Script._trimSourceURLComment(source);
+        var trimmedSource = SDK.Script._trimSourceURLComment(source);
         return Promise.resolve(trimmedSource);
     };
     if (preRegisterCallback)
@@ -566,9 +566,9 @@ InspectorTest.checkUILocation = function(uiSourceCode, lineNumber, columnNumber,
 
 InspectorTest.scriptFormatter = function()
 {
-    return self.runtime.allInstances(WebInspector.SourcesView.EditorAction).then(function(editorActions) {
+    return self.runtime.allInstances(Sources.SourcesView.EditorAction).then(function(editorActions) {
         for (var i = 0; i < editorActions.length; ++i) {
-            if (editorActions[i] instanceof WebInspector.ScriptFormatterEditorAction)
+            if (editorActions[i] instanceof Sources.ScriptFormatterEditorAction)
                 return editorActions[i];
         }
         return null;
@@ -581,18 +581,18 @@ InspectorTest.waitForExecutionContextInTarget = function(target, callback)
         callback(target.runtimeModel.executionContexts()[0]);
         return;
     }
-    target.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.ExecutionContextCreated, contextCreated);
+    target.runtimeModel.addEventListener(SDK.RuntimeModel.Events.ExecutionContextCreated, contextCreated);
 
     function contextCreated()
     {
-        target.runtimeModel.removeEventListener(WebInspector.RuntimeModel.Events.ExecutionContextCreated, contextCreated);
+        target.runtimeModel.removeEventListener(SDK.RuntimeModel.Events.ExecutionContextCreated, contextCreated);
         callback(target.runtimeModel.executionContexts()[0]);
     }
 }
 
 InspectorTest.selectThread = function(target)
 {
-    var threadsPane = self.runtime.sharedInstance(WebInspector.ThreadsSidebarPane);
+    var threadsPane = self.runtime.sharedInstance(Sources.ThreadsSidebarPane);
     var listItem = threadsPane._listItemForTarget(target);
     threadsPane._onListItemClick(listItem);
 }

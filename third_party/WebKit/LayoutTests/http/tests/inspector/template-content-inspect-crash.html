@@ -9,7 +9,7 @@ function test()
 {
     InspectorTest.expandElementsTree(function() {
         var contentNode = InspectorTest.expandedNodeWithId("tpl").templateContent();
-        WebInspector.panels.elements.selectDOMNode(contentNode, true);
+        UI.panels.elements.selectDOMNode(contentNode, true);
         InspectorTest.evaluateInConsole("$0", callback);
     });
 

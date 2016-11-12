@@ -19,7 +19,7 @@ function testFunction2()
 var test = function()
 {
     InspectorTest.startDebuggerTest(step1);
-    var panel = WebInspector.panels.sources;
+    var panel = UI.panels.sources;
     var sourceFrame;
 
     function step1()
@@ -44,7 +44,7 @@ var test = function()
 
     function step4()
     {
-        InspectorTest.assertEquals("testFunction", WebInspector.context.flavor(WebInspector.DebuggerModel.CallFrame).functionName);
+        InspectorTest.assertEquals("testFunction", UI.context.flavor(SDK.DebuggerModel.CallFrame).functionName);
         sourceFrame._toggleFormatSource(step5);
     }
 

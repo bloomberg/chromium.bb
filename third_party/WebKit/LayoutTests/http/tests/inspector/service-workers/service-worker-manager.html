@@ -10,12 +10,12 @@ function test()
     var scope = "http://127.0.0.1:8000/inspector/service-workers/resources/scope1/";
     InspectorTest.registerServiceWorker(scriptURL, scope);
 
-    WebInspector.targetManager.observeTargets({
+    SDK.targetManager.observeTargets({
         targetAdded: function(target)
         {
             InspectorTest.addResult("Target added: " + target.name() + "; type: " + InspectorTest.describeTargetType(target));
             if (InspectorTest.isDedicatedWorker(target)) {
-                var serviceWorkerManager = WebInspector.targetManager.mainTarget().serviceWorkerManager;
+                var serviceWorkerManager = SDK.targetManager.mainTarget().serviceWorkerManager;
                 // Allow agents to do rountrips.
                 InspectorTest.deprecatedRunAfterPendingDispatches(function() {
                     for (var registration of serviceWorkerManager.registrations().valuesArray()) {

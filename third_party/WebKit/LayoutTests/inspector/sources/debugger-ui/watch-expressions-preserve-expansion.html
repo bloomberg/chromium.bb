@@ -26,8 +26,8 @@ for (var i = 0; i < 300; ++i)
 
 var test = function()
 {
-    var watchExpressionsPane = self.runtime.sharedInstance(WebInspector.WatchExpressionsSidebarPane);
-    WebInspector.panels.sources._sidebarPaneStack.showView(WebInspector.panels.sources._watchSidebarPane).then(() => {
+    var watchExpressionsPane = self.runtime.sharedInstance(Sources.WatchExpressionsSidebarPane);
+    UI.panels.sources._sidebarPaneStack.showView(UI.panels.sources._watchSidebarPane).then(() => {
         watchExpressionsPane.doUpdate();
         watchExpressionsPane._createWatchExpression("globalObject");
         watchExpressionsPane._createWatchExpression("windowAlias");
@@ -61,7 +61,7 @@ var test = function()
 
     function dumpWatchExpressions()
     {
-        var pane = self.runtime.sharedInstance(WebInspector.WatchExpressionsSidebarPane);
+        var pane = self.runtime.sharedInstance(Sources.WatchExpressionsSidebarPane);
 
         for (var i = 0; i < pane._watchExpressions.length; i++) {
             var watch = pane._watchExpressions[i];
@@ -108,7 +108,7 @@ var test = function()
 
     function expandWatchExpression(path, callback)
     {
-        var pane = self.runtime.sharedInstance(WebInspector.WatchExpressionsSidebarPane);
+        var pane = self.runtime.sharedInstance(Sources.WatchExpressionsSidebarPane);
         var expression = path.shift();
         for (var i = 0; i < pane._watchExpressions.length; i++) {
             var watch = pane._watchExpressions[i];

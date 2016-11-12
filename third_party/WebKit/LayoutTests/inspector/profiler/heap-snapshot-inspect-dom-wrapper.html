@@ -13,8 +13,8 @@ function handleLoad()
 
 function test()
 {
-    var heapProfileType =  WebInspector.ProfileTypeRegistry.instance.heapSnapshotProfileType;
-    heapProfileType.addEventListener(WebInspector.HeapSnapshotProfileType.SnapshotReceived, finishHeapSnapshot);
+    var heapProfileType =  Profiler.ProfileTypeRegistry.instance.heapSnapshotProfileType;
+    heapProfileType.addEventListener(Profiler.HeapSnapshotProfileType.SnapshotReceived, finishHeapSnapshot);
     InspectorTest.addSniffer(heapProfileType, "_snapshotReceived", snapshotReceived);
     heapProfileType._takeHeapSnapshot(function() {});
 
@@ -30,7 +30,7 @@ function test()
             return clear("FAILED: wrong number of recorded profiles was found. profiles.length = " + profiles.length);
 
         var profile = profiles[profiles.length - 1];
-        WebInspector.panels.profiles.showProfile(profile);
+        UI.panels.profiles.showProfile(profile);
     }
 
     function snapshotReceived(profile)
@@ -88,7 +88,7 @@ function test()
         if (errorMessage)
             InspectorTest.addResult(errorMessage);
         setTimeout(done, 0);
-        WebInspector.panels.profiles._reset();
+        UI.panels.profiles._reset();
         return !errorMessage;
     }
 

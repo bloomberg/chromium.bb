@@ -22,7 +22,7 @@ function test()
 
             function didSelectElement()
             {
-                InspectorTest.addSniffer(WebInspector.StylesSidebarPane.prototype, "update", InspectorTest.addResult.bind(InspectorTest, "Requested StyleSidebarPane update"), true);
+                InspectorTest.addSniffer(Elements.StylesSidebarPane.prototype, "update", InspectorTest.addResult.bind(InspectorTest, "Requested StyleSidebarPane update"), true);
                 next();
             }
         },

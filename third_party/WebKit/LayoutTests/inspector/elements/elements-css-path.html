@@ -28,7 +28,7 @@ function test()
             InspectorTest.completeTest();
             return;
         }
-        var cssPath = WebInspector.DOMPresentationUtils.cssPath(entry.node, true);
+        var cssPath = Components.DOMPresentationUtils.cssPath(entry.node, true);
         var result = entry.prefix + cssPath;
         InspectorTest.addResult(result.replace(/\n/g, "\\n"));
         var escapedPath = cssPath.replace(/\\/g, "\\\\");

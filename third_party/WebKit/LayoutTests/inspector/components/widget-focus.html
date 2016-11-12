@@ -6,19 +6,19 @@
 function test()
 {
     var outerInput = document.createElement("input");
-    WebInspector.inspectorView.element.appendChild(outerInput);
+    UI.inspectorView.element.appendChild(outerInput);
 
-    var mainWidget = new WebInspector.Widget();
-    mainWidget.show(WebInspector.inspectorView.element);
+    var mainWidget = new UI.Widget();
+    mainWidget.show(UI.inspectorView.element);
 
-    var widget1 = new WebInspector.Widget();
+    var widget1 = new UI.Widget();
     widget1.show(mainWidget.element);
     var input1 = document.createElement("input");
     input1.id = "input1";
     widget1.element.appendChild(input1);
     widget1.setDefaultFocusedElement(input1);
 
-    var widget2 = new WebInspector.Widget();
+    var widget2 = new UI.Widget();
     widget2.show(mainWidget.element);
     var input2 = document.createElement("input");
     input2.id = "input2";
@@ -47,15 +47,15 @@ function test()
     mainWidget.focus();
     dumpFocus();
 
-    var splitWidget = new WebInspector.SplitWidget();
+    var splitWidget = new UI.SplitWidget();
     splitWidget.show(mainWidget.element);
-    var widget3 = new WebInspector.Widget();
+    var widget3 = new UI.Widget();
     var input3 = document.createElement("input");
     input1.id = "input3";
     widget3.element.appendChild(input3);
     widget3.setDefaultFocusedElement(input3);
     splitWidget.setSidebarWidget(widget3);
-    var widget4 = new WebInspector.Widget();
+    var widget4 = new UI.Widget();
     var input4 = document.createElement("input");
     input4.id = "input4";
     widget4.element.appendChild(input4);

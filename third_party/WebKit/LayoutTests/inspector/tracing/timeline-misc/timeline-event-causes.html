@@ -27,12 +27,12 @@ function test()
             InspectorTest.invokeAsyncWithTimeline("setTimeoutFunction", finishAndRunNextTest);
             function finishAndRunNextTest()
             {
-                var linkifier = new WebInspector.Linkifier();
+                var linkifier = new Components.Linkifier();
                 var record = InspectorTest.findFirstTimelineRecord("TimerFire");
                 InspectorTest.check(record, "Should receive a TimerFire record.");
                 var event = record.traceEvent();
-                var contentHelper = new WebInspector.TimelineDetailsContentHelper(InspectorTest.timelineModel().targetByEvent(event), linkifier, true);
-                WebInspector.TimelineUIUtils._generateCauses(event, InspectorTest.timelineModel().targetByEvent(event), null, contentHelper);
+                var contentHelper = new Timeline.TimelineDetailsContentHelper(InspectorTest.timelineModel().targetByEvent(event), linkifier, true);
+                Timeline.TimelineUIUtils._generateCauses(event, InspectorTest.timelineModel().targetByEvent(event), null, contentHelper);
                 var causes = contentHelper.element.deepTextContent();
                 InspectorTest.check(causes, "Should generate causes");
                 checkStringContains(causes, "Timer Installed\nPromise @ setTimeoutFunction.js:");
@@ -54,12 +54,12 @@ function test()
             InspectorTest.invokeAsyncWithTimeline("requestAnimationFrameFunction", finishAndRunNextTest);
             function finishAndRunNextTest()
             {
-                var linkifier = new WebInspector.Linkifier();
+                var linkifier = new Components.Linkifier();
                 var record = InspectorTest.findFirstTimelineRecord("FireAnimationFrame");
                 InspectorTest.check(record, "Should receive a FireAnimationFrame record.");
                 var event = record.traceEvent();
-                var contentHelper = new WebInspector.TimelineDetailsContentHelper(InspectorTest.timelineModel().targetByEvent(event), linkifier, true);
-                WebInspector.TimelineUIUtils._generateCauses(event, InspectorTest.timelineModel().targetByEvent(event), null, contentHelper);
+                var contentHelper = new Timeline.TimelineDetailsContentHelper(InspectorTest.timelineModel().targetByEvent(event), linkifier, true);
+                Timeline.TimelineUIUtils._generateCauses(event, InspectorTest.timelineModel().targetByEvent(event), null, contentHelper);
                 var causes = contentHelper.element.deepTextContent();
                 InspectorTest.check(causes, "Should generate causes");
                 checkStringContains(causes, "Animation Frame Requested\nPromise @ requestAnimationFrameFunction.js:");
@@ -83,12 +83,12 @@ function test()
             InspectorTest.evaluateWithTimeline("styleRecalcFunction()", finishAndRunNextTest);
             function finishAndRunNextTest()
             {
-                var linkifier = new WebInspector.Linkifier();
+                var linkifier = new Components.Linkifier();
                 var record = InspectorTest.findFirstTimelineRecord("UpdateLayoutTree");
                 InspectorTest.check(record, "Should receive a UpdateLayoutTree record.");
                 var event = record.traceEvent();
-                var contentHelper = new WebInspector.TimelineDetailsContentHelper(InspectorTest.timelineModel().targetByEvent(event), linkifier, true);
-                WebInspector.TimelineUIUtils._generateCauses(event, InspectorTest.timelineModel().targetByEvent(event), null, contentHelper);
+                var contentHelper = new Timeline.TimelineDetailsContentHelper(InspectorTest.timelineModel().targetByEvent(event), linkifier, true);
+                Timeline.TimelineUIUtils._generateCauses(event, InspectorTest.timelineModel().targetByEvent(event), null, contentHelper);
                 var causes = contentHelper.element.deepTextContent();
                 InspectorTest.check(causes, "Should generate causes");
                 checkStringContains(causes, "First Invalidated\nstyleRecalcFunction @ styleRecalcFunction.js:");
@@ -112,12 +112,12 @@ function test()
             InspectorTest.evaluateWithTimeline("layoutFunction()", finishAndRunNextTest);
             function finishAndRunNextTest()
             {
-                var linkifier = new WebInspector.Linkifier();
+                var linkifier = new Components.Linkifier();
                 var record = InspectorTest.findFirstTimelineRecord("Layout");
                 InspectorTest.check(record, "Should receive a Layout record.");
                 var event = record.traceEvent();
-                var contentHelper = new WebInspector.TimelineDetailsContentHelper(InspectorTest.timelineModel().targetByEvent(event), linkifier, true);
-                WebInspector.TimelineUIUtils._generateCauses(event, InspectorTest.timelineModel().targetByEvent(event), null, contentHelper);
+                var contentHelper = new Timeline.TimelineDetailsContentHelper(InspectorTest.timelineModel().targetByEvent(event), linkifier, true);
+                Timeline.TimelineUIUtils._generateCauses(event, InspectorTest.timelineModel().targetByEvent(event), null, contentHelper);
                 var causes = contentHelper.element.deepTextContent();
                 InspectorTest.check(causes, "Should generate causes");
                 checkStringContains(causes, "Layout Forced\nlayoutFunction @ layoutFunction.js:");

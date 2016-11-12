@@ -13,8 +13,8 @@ function throwAnException()
 
 var test = function()
 {
-    var panel = WebInspector.panels.sources;
-    InspectorTest.DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
+    var panel = UI.panels.sources;
+    InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
 
     InspectorTest.runDebuggerTestSuite([
         function testRevealAfterPausedOnException(next)
@@ -27,7 +27,7 @@ var test = function()
                 InspectorTest.addResult("Script source was shown for '" + panel.visibleView._uiSourceCode.name() + "'.");
                 InspectorTest.addResult("Throwing exception...");
                 InspectorTest.evaluateInPage("setTimeout(throwAnException, 0)");
-                InspectorTest.addSniffer(WebInspector.TabbedEditorContainer.prototype, "showFile", step3);
+                InspectorTest.addSniffer(Sources.TabbedEditorContainer.prototype, "showFile", step3);
             }
 
             function step3()
@@ -48,7 +48,7 @@ var test = function()
                 InspectorTest.addResult("Script source was shown for '" + panel.visibleView._uiSourceCode.name() + "'.");
                 InspectorTest.addResult("Throwing exception...");
                 InspectorTest.evaluateInPage("setTimeout(throwAnException, 0)");
-                InspectorTest.addSniffer(WebInspector.TabbedEditorContainer.prototype, "showFile", step6);
+                InspectorTest.addSniffer(Sources.TabbedEditorContainer.prototype, "showFile", step6);
             }
 
             function step6()
@@ -73,7 +73,7 @@ var test = function()
                 InspectorTest.addResult("Script source was shown for '" + panel.visibleView._uiSourceCode.name() + "'.");
                 InspectorTest.addResult("Formatting...");
                 InspectorTest.scriptFormatter().then(function(scriptFormatter) {
-                    InspectorTest.addSniffer(WebInspector.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
+                    InspectorTest.addSniffer(Sources.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
                     scriptFormatter._toggleFormatScriptSource();
                 });
             }

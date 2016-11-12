@@ -15,7 +15,7 @@ function test()
             function runVersionControllerTest(oldVersion, currentVersion)
             {
                 InspectorTest.addResult("Testing methods to run to upgrade from " + oldVersion + " to " + currentVersion + ".");
-                var versionController = new WebInspector.VersionController();
+                var versionController = new Common.VersionController();
                 var methodsToRun = versionController._methodsToRunToUpdateVersion(oldVersion, currentVersion);
                 InspectorTest.addResult("Methods to run: " + JSON.stringify(methodsToRun));
                 InspectorTest.addResult("");
@@ -38,7 +38,7 @@ function test()
             function runClearBreakpointsTest(breakpointsCount, maxBreakpointsCount)
             {
                 InspectorTest.addResult("Starting test with " + breakpointsCount + " breakpoints and " + maxBreakpointsCount + " allowed at max.");
-                var versionController = new WebInspector.VersionController();
+                var versionController = new Common.VersionController();
                 var serializedBreakpoints = [];
                 for (var i = 0; i < breakpointsCount; ++i)
                     serializedBreakpoints.push(createBreakpoint("file" + i + ".js", i % 10, "", true));

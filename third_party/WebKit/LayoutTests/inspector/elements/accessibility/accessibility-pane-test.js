@@ -2,7 +2,7 @@ var initialize_AccessibilityTest = function() {
 
 InspectorTest.accessibilitySidebarPane = function()
 {
-    return self.runtime.sharedInstance(WebInspector.AccessibilitySidebarView);
+    return self.runtime.sharedInstance(Accessibility.AccessibilitySidebarView);
 }
 
 /**
@@ -13,7 +13,7 @@ InspectorTest.selectNodeAndWaitForAccessibility = function(idValue)
 {
     return new Promise((resolve) => {
         InspectorTest.selectNodeWithId(idValue, function() {
-            self.runtime.sharedInstance(WebInspector.AccessibilitySidebarView).doUpdate().then(resolve);
+            self.runtime.sharedInstance(Accessibility.AccessibilitySidebarView).doUpdate().then(resolve);
         });
     });
 }
@@ -31,7 +31,7 @@ InspectorTest.dumpSelectedElementAccessibilityNode = function()
 }
 
 /**
- * @param {!WebInspector.AccessibilityNode} accessibilityNode
+ * @param {!Accessibility.AccessibilityNode} accessibilityNode
  */
 InspectorTest.dumpAccessibilityNode = function(accessibilityNode)
 {
@@ -56,7 +56,7 @@ InspectorTest.dumpAccessibilityNode = function(accessibilityNode)
 
 /**
  * @param {string} attribute
- * @return {?WebInspector.ARIAAttributesTreeElement}
+ * @return {?Accessibility.ARIAAttributesTreeElement}
  */
 InspectorTest.findARIAAttributeTreeElement = function(attribute)
 {

@@ -13,7 +13,7 @@ function test()
         var container = InspectorTest.expandedNodeWithId("container");
         var children = container.children();
         for (var i = 0; i < children.length; ++i)
-            InspectorTest.addResult(WebInspector.DOMPresentationUtils.simpleSelector(children[i]));
+            InspectorTest.addResult(Components.DOMPresentationUtils.simpleSelector(children[i]));
         InspectorTest.completeTest();
     }
 }

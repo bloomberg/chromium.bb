@@ -9,7 +9,7 @@
 function test()
 {
     var cssSourceFrame;
-    WebInspector.StylesSourceMapping.MinorChangeUpdateTimeoutMs = 10;
+    Bindings.StylesSourceMapping.MinorChangeUpdateTimeoutMs = 10;
 
     InspectorTest.runTestSuite([
         function selectContainer(next)
@@ -22,8 +22,8 @@ function test()
             var headers = InspectorTest.cssModel.styleSheetHeaders();
             for (var i = 0; i < headers.length; ++i) {
                 if (headers[i].sourceURL.endsWith(".css")) {
-                    var cssLocation = new WebInspector.CSSLocation(headers[i], 0);
-                    InspectorTest.showUISourceCode(WebInspector.cssWorkspaceBinding.rawLocationToUILocation(cssLocation).uiSourceCode, callback);
+                    var cssLocation = new SDK.CSSLocation(headers[i], 0);
+                    InspectorTest.showUISourceCode(Bindings.cssWorkspaceBinding.rawLocationToUILocation(cssLocation).uiSourceCode, callback);
                     break;
                 }
             }
@@ -63,7 +63,7 @@ function test()
 
     function toggleProperty(value, next)
     {
-        InspectorTest.addSniffer(WebInspector.UISourceCode.prototype, "addRevision", callback);
+        InspectorTest.addSniffer(Workspace.UISourceCode.prototype, "addRevision", callback);
         InspectorTest.waitForStyles("inspected", callback);
         InspectorTest.toggleMatchedStyleProperty("font-weight", value);
 

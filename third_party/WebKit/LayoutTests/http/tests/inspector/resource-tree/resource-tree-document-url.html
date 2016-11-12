@@ -14,12 +14,12 @@ function loadIframe()
 
 function test()
 {
-    InspectorTest.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.Events.FrameNavigated, waitForResources);
+    InspectorTest.resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.FrameNavigated, waitForResources);
     InspectorTest.evaluateInPage("loadIframe()");
 
     function waitForResources()
     {
-        InspectorTest.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.Events.FrameNavigated, waitForResources);
+        InspectorTest.resourceTreeModel.removeEventListener(SDK.ResourceTreeModel.Events.FrameNavigated, waitForResources);
         InspectorTest.runAfterResourcesAreFinished(["dummy-iframe.html", "inspector-test.js", "resources-test.js", "resource-tree-test.js"], dump);
     }
 

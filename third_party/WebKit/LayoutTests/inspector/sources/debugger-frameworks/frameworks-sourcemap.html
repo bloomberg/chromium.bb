@@ -18,9 +18,9 @@ function callback(i)
 
 function test()
 {
-    InspectorTest.addSniffer(WebInspector.BlackboxManager.prototype, "_patternChangeFinishedForTests", step1);
+    InspectorTest.addSniffer(Bindings.BlackboxManager.prototype, "_patternChangeFinishedForTests", step1);
     var frameworkRegexString = "/framework\\.js$";
-    WebInspector.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
+    Common.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
 
     function step1()
     {

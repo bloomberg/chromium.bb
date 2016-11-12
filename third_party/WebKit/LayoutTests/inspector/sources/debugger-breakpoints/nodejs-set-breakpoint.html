@@ -6,7 +6,7 @@
 <script>
 function test()
 {
-    WebInspector.targetManager.mainTarget().setIsNodeJSForTest();
+    SDK.targetManager.mainTarget().setIsNodeJSForTest();
     InspectorTest.startDebuggerTest();
 
     var functionText = "function foobar() { \nconsole.log('foobar execute!');\n}";
@@ -17,7 +17,7 @@ function test()
     function didShowScriptSource(sourceFrame)
     {
         InspectorTest.addResult("Setting breakpoint:");
-        InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_addResolvedLocation", breakpointResolved);
+        InspectorTest.addSniffer(Bindings.BreakpointManager.TargetBreakpoint.prototype, "_addResolvedLocation", breakpointResolved);
         InspectorTest.setBreakpoint(sourceFrame, 1, "", true);
     }
 

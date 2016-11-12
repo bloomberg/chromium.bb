@@ -11,7 +11,7 @@ function test()
 
     function step2()
     {
-        resource = WebInspector.resourceForURL("http://127.0.0.1:8000/inspector/search/resources/search.js");
+        resource = Bindings.resourceForURL("http://127.0.0.1:8000/inspector/search/resources/search.js");
         InspectorTest.addResult(resource.url);
 
         // This file should not match search query.

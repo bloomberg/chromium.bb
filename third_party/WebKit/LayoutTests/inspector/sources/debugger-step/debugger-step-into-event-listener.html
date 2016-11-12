@@ -40,7 +40,7 @@ var test = function()
             InspectorTest.addResult("SUCCESS: Did step into event listener(" + expectedName + ").");
         else
             InspectorTest.addResult("FAIL: Unexpected top function: expected " + expectedName + ", found " + topFunctionName);
-        InspectorTest.assertEquals(WebInspector.DebuggerModel.BreakReason.Other, reason, "FAIL: wrong pause reason: " + reason);
+        InspectorTest.assertEquals(SDK.DebuggerModel.BreakReason.Other, reason, "FAIL: wrong pause reason: " + reason);
     }
 
     var stepCount = 0;

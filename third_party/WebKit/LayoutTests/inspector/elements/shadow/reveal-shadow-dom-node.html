@@ -6,7 +6,7 @@
 
 function test()
 {
-    InspectorTest.firstElementsTreeOutline().addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged);
+    InspectorTest.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged);
 
     var nodeChangesRemaining = 2;
     function selectedNodeChanged(event)
@@ -33,10 +33,10 @@ function test()
         {
             var shadowDiv = children[0];
             InspectorTest.addResult("User-agent shadow DOM hidden:");
-            WebInspector.panels.elements.revealAndSelectNode(shadowDiv).then(() => {
-                WebInspector.settingForTest("showUAShadowDOM").set(true);
+            UI.panels.elements.revealAndSelectNode(shadowDiv).then(() => {
+                Common.settingForTest("showUAShadowDOM").set(true);
                 InspectorTest.addResult("User-agent shadow DOM shown:");
-                WebInspector.panels.elements.revealAndSelectNode(shadowDiv);
+                UI.panels.elements.revealAndSelectNode(shadowDiv);
             });
         }
     });

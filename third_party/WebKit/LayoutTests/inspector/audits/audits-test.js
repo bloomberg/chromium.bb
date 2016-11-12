@@ -5,8 +5,8 @@ InspectorTest.preloadPanel("audits");
 
 InspectorTest.collectAuditResults = function(callback)
 {
-    WebInspector.panels.audits.showResults(WebInspector.panels.audits._auditResultsTreeElement.firstChild().results);
-    var trees = WebInspector.panels.audits.visibleView.element.querySelectorAll(".audit-result-tree");
+    UI.panels.audits.showResults(UI.panels.audits._auditResultsTreeElement.firstChild().results);
+    var trees = UI.panels.audits.visibleView.element.querySelectorAll(".audit-result-tree");
     for (var i = 0; i < trees.length; ++i) {
         var liElements = trees[i].shadowRoot.querySelectorAll("li");
         for (var j = 0; j < liElements.length; ++j) {
@@ -15,15 +15,15 @@ InspectorTest.collectAuditResults = function(callback)
         }
     }
     InspectorTest.deprecatedRunAfterPendingDispatches(function() {
-        InspectorTest.collectTextContent(WebInspector.panels.audits.visibleView.element, "");
+        InspectorTest.collectTextContent(UI.panels.audits.visibleView.element, "");
         callback();
     });
 }
 
 InspectorTest.launchAllAudits = function(shouldReload, callback)
 {
-    InspectorTest.addSniffer(WebInspector.AuditController.prototype, "_auditFinishedCallback", callback);
-    var launcherView = WebInspector.panels.audits._launcherView;
+    InspectorTest.addSniffer(Audits.AuditController.prototype, "_auditFinishedCallback", callback);
+    var launcherView = UI.panels.audits._launcherView;
     launcherView._selectAllClicked(true);
     launcherView._auditPresentStateElement.checked = !shouldReload;
     launcherView._launchButtonClicked();

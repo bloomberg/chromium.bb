@@ -15,7 +15,7 @@ function test()
             InspectorTest.addResult("Initial state: clean=" + textEditor.isClean());
             textEditor.markClean();
             InspectorTest.addResult("After marking clean: clean=" + textEditor.isClean());
-            textEditor.editRange(WebInspector.TextRange.createFromLocation(0, 0), "newText");
+            textEditor.editRange(Common.TextRange.createFromLocation(0, 0), "newText");
             InspectorTest.addResult("EDIT; clean=" + textEditor.isClean());
             textEditor.undo();
             InspectorTest.addResult("UNDO; clean=" + textEditor.isClean());
@@ -23,7 +23,7 @@ function test()
             InspectorTest.addResult("REDO; clean=" + textEditor.isClean());
             textEditor.undo();
             InspectorTest.addResult("UNDO; clean=" + textEditor.isClean());
-            textEditor.editRange(WebInspector.TextRange.createFromLocation(1, 0), "newText2");
+            textEditor.editRange(Common.TextRange.createFromLocation(1, 0), "newText2");
             InspectorTest.addResult("EDIT; clean=" + textEditor.isClean());
             textEditor.undo();
             InspectorTest.addResult("UNDO; clean=" + textEditor.isClean());
@@ -34,12 +34,12 @@ function test()
         {
             InspectorTest.addResult("Initial state: clean=" + textEditor.isClean());
             for(var i = 0; i < 3; ++i) {
-                textEditor.editRange(WebInspector.TextRange.createFromLocation(i, 0), "newText" + i);
+                textEditor.editRange(Common.TextRange.createFromLocation(i, 0), "newText" + i);
                 InspectorTest.addResult("EDIT; clean=" + textEditor.isClean());
             }
             textEditor.markClean();
             InspectorTest.addResult("After marking clean: clean=" + textEditor.isClean());
-            textEditor.editRange(WebInspector.TextRange.createFromLocation(3, 0), "newText" + 3);
+            textEditor.editRange(Common.TextRange.createFromLocation(3, 0), "newText" + 3);
             InspectorTest.addResult("EDIT; clean=" + textEditor.isClean());
             for(var i = 0; i < 4; ++i) {
                 textEditor.undo();
@@ -53,7 +53,7 @@ function test()
                 textEditor.undo();
                 InspectorTest.addResult("UNDO; clean=" + textEditor.isClean());
             }
-            textEditor.editRange(WebInspector.TextRange.createFromLocation(1, 0), "foo");
+            textEditor.editRange(Common.TextRange.createFromLocation(1, 0), "foo");
             InspectorTest.addResult("EDIT; clean=" + textEditor.isClean());
             textEditor.undo();
             InspectorTest.addResult("UNDO; clean=" + textEditor.isClean());

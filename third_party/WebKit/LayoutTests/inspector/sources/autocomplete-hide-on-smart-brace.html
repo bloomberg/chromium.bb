@@ -21,10 +21,10 @@ function test()
     var testSuite = [
         function testSummonSuggestBox(next)
         {
-            InspectorTest.addSniffer(WebInspector.TextEditorAutocompleteController.prototype, "_onSuggestionsShownForTest", onSuggestionsShown);
+            InspectorTest.addSniffer(TextEditor.TextEditorAutocompleteController.prototype, "_onSuggestionsShownForTest", onSuggestionsShown);
 
             textEditor.setText("one\n()");
-            textEditor.setSelection(WebInspector.TextRange.createFromLocation(1,1));
+            textEditor.setSelection(Common.TextRange.createFromLocation(1,1));
             InspectorTest.typeIn(textEditor, "o", function() { });
 
             function onSuggestionsShown()
@@ -36,7 +36,7 @@ function test()
 
         function testTypeSmartBrace(next)
         {
-            InspectorTest.addSniffer(WebInspector.TextEditorAutocompleteController.prototype, "_onSuggestionsHiddenForTest", onSuggestionsHidden);
+            InspectorTest.addSniffer(TextEditor.TextEditorAutocompleteController.prototype, "_onSuggestionsHiddenForTest", onSuggestionsHidden);
             InspectorTest.typeIn(textEditor, ")", function() { });
 
             function onSuggestionsHidden()

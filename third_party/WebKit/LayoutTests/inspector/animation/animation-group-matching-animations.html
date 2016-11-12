@@ -62,9 +62,9 @@ function test()
     var groupIds = [];
     var i = 0;
     var stepNumber = 0;
-    var model = WebInspector.AnimationModel.fromTarget(InspectorTest.mainTarget);
+    var model = Animation.AnimationModel.fromTarget(InspectorTest.mainTarget);
     model.ensureEnabled();
-    model.addEventListener(WebInspector.AnimationModel.Events.AnimationGroupStarted, groupStarted);
+    model.addEventListener(Animation.AnimationModel.Events.AnimationGroupStarted, groupStarted);
     // Each step triggers a new animation group.
     var steps = [
         "restartAnimation('node1', 'expandWidth')",

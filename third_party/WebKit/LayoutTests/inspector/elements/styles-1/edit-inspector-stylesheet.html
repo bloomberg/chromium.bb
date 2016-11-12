@@ -11,13 +11,13 @@ function test()
 
     function onStylesSelected(node)
     {
-        WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.WorkingCopyCommitted, onWorkingCopyCommitted);
+        Workspace.workspace.addEventListener(Workspace.Workspace.Events.WorkingCopyCommitted, onWorkingCopyCommitted);
         InspectorTest.addNewRule("#inspected", new Function());
     }
 
     function onWorkingCopyCommitted(event)
     {
-        WebInspector.workspace.removeEventListener(WebInspector.Workspace.Events.WorkingCopyCommitted, onWorkingCopyCommitted);
+        Workspace.workspace.removeEventListener(Workspace.Workspace.Events.WorkingCopyCommitted, onWorkingCopyCommitted);
         var uiSourceCode = event.data.uiSourceCode;
         InspectorTest.addResult("Inspector stylesheet URL: " + uiSourceCode.displayName());
         uiSourceCode.requestContent().then(printContent(onContent))

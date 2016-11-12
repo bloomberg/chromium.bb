@@ -11,7 +11,7 @@ function test()
     var databaseName = "testDatabase";
     var objectStoreName = "testObjectStore";
     var indexName = "testIndexName";
-    var databaseId = new WebInspector.IndexedDBModel.DatabaseId(securityOrigin, databaseName);
+    var databaseId = new Resources.IndexedDBModel.DatabaseId(securityOrigin, databaseName);
 
     function addIDBValues(count, callback)
     {
@@ -71,7 +71,7 @@ function test()
         }
     }
 
-    InspectorTest.addSniffer(WebInspector.IndexedDBModel.prototype, "_updateOriginDatabaseNames", fillDatabase, false);
+    InspectorTest.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", fillDatabase, false);
 
     function fillDatabase()
     {
@@ -95,19 +95,19 @@ function test()
 
     function refreshDatabaseNames()
     {
-        InspectorTest.addSniffer(WebInspector.IndexedDBModel.prototype, "_updateOriginDatabaseNames", refreshDatabase, false);
+        InspectorTest.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", refreshDatabase, false);
         indexedDBModel.refreshDatabaseNames();
     }
 
     function refreshDatabase()
     {
-        indexedDBModel.addEventListener(WebInspector.IndexedDBModel.Events.DatabaseLoaded, runObjectStoreTests);
+        indexedDBModel.addEventListener(Resources.IndexedDBModel.Events.DatabaseLoaded, runObjectStoreTests);
         indexedDBModel.refreshDatabase(databaseId);
     }
 
     function runObjectStoreTests()
     {
-        indexedDBModel.removeEventListener(WebInspector.IndexedDBModel.Events.DatabaseLoaded, runObjectStoreTests);
+        indexedDBModel.removeEventListener(Resources.IndexedDBModel.Events.DatabaseLoaded, runObjectStoreTests);
         loadValuesAndDump(false, null, 0, 2, step2)
 
         function step2()
@@ -187,11 +187,11 @@ function test()
         InspectorTest.addResult("Cleared data from objectStore");
 
         function step1() {
-            indexedDBModel.addEventListener(WebInspector.IndexedDBModel.Events.DatabaseLoaded, step2);
+            indexedDBModel.addEventListener(Resources.IndexedDBModel.Events.DatabaseLoaded, step2);
             indexedDBModel.refreshDatabase(databaseId);
         }
         function step2() {
-            indexedDBModel.removeEventListener(WebInspector.IndexedDBModel.Events.DatabaseLoaded, step2);
+            indexedDBModel.removeEventListener(Resources.IndexedDBModel.Events.DatabaseLoaded, step2);
             loadValuesAndDump(false, null, 0, 10, step3);
         }
 

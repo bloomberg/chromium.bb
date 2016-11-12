@@ -25,13 +25,13 @@ function test()
         function testDragAndDrop(next)
         {
             var treeOutline = InspectorTest.firstElementsTreeOutline();
-            treeOutline.addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, selectionChanged);
+            treeOutline.addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, selectionChanged);
 
             function selectionChanged()
             {
                 InspectorTest.addResult("===== Moved child2 =====");
                 InspectorTest.dumpElementsTree(containerNode);
-                InspectorTest.addResult("Selection: " + WebInspector.DOMPresentationUtils.fullQualifiedSelector(treeOutline.selectedDOMNode()));
+                InspectorTest.addResult("Selection: " + Components.DOMPresentationUtils.fullQualifiedSelector(treeOutline.selectedDOMNode()));
                 next();
             }
 

@@ -16,7 +16,7 @@ var test = function()
 
     function step2(sourceFrame)
     {
-        InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_addResolvedLocation", didSetBreakpointInDebugger, true);
+        InspectorTest.addSniffer(Bindings.BreakpointManager.TargetBreakpoint.prototype, "_addResolvedLocation", didSetBreakpointInDebugger, true);
 
         InspectorTest.setBreakpoint(sourceFrame, 14, "", true);
         InspectorTest.setBreakpoint(sourceFrame, 15, "", true);
@@ -29,7 +29,7 @@ var test = function()
             if (counter)
                 return;
             //Both breakpoints are resolved before reload
-            InspectorTest.addSniffer(WebInspector.JavaScriptBreakpointsSidebarPane.prototype, "didReceiveBreakpointLineForTest", onBreakpointsReady);
+            InspectorTest.addSniffer(Sources.JavaScriptBreakpointsSidebarPane.prototype, "didReceiveBreakpointLineForTest", onBreakpointsReady);
         }
 
         function onBreakpointsReady()
@@ -42,10 +42,10 @@ var test = function()
         function waitForBreakpoints()
         {
             var expectedBreakpointLocations = [[14, 0], [16, 4]];
-            var jsBreakpoints = self.runtime.sharedInstance(WebInspector.JavaScriptBreakpointsSidebarPane);
+            var jsBreakpoints = self.runtime.sharedInstance(Sources.JavaScriptBreakpointsSidebarPane);
             jsBreakpoints.didReceiveBreakpointLineForTest = function(uiSourceCode, line, column)
             {
-                if (WebInspector.CompilerScriptMapping.StubProjectID === uiSourceCode.project().id())
+                if (Bindings.CompilerScriptMapping.StubProjectID === uiSourceCode.project().id())
                     return;
                 if (!uiSourceCode.url().endsWith("source1.js"))
                     return;

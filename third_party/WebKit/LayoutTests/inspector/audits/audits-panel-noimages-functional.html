@@ -22,14 +22,14 @@ JSON = {};
 var test = function()
 {
     InspectorTest.reloadPage();
-    InspectorTest.addSniffer(WebInspector.CSSModel.prototype, "_styleSheetAdded", onStyleSheetAdded, true);
+    InspectorTest.addSniffer(SDK.CSSModel.prototype, "_styleSheetAdded", onStyleSheetAdded, true);
 
     var pendingStyleSheetsCount = 5;
     function onStyleSheetAdded()
     {
         if (--pendingStyleSheetsCount)
             return;
-        WebInspector.AuditRuleResult.resourceDomain = function() {
+        Audits.AuditRuleResult.resourceDomain = function() {
             return "[domain]";
         };
 

@@ -38,27 +38,27 @@ function test()
             // Commit editing.
             treeElement.valueElement.textContent = "green";
             treeElement.valueElement.firstChild.select();
-            InspectorTest.addSniffer(WebInspector.StylePropertiesSection.prototype, "_afterUpdateFinishedForTest", next);
+            InspectorTest.addSniffer(Elements.StylePropertiesSection.prototype, "_afterUpdateFinishedForTest", next);
             treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
         },
 
         function testNewPropertyEditorIsCreated(next)
         {
             var blankTreeElement = treeOutline.rootElement().childAt(1);
-            if (!WebInspector.isBeingEdited(blankTreeElement.nameElement)) {
+            if (!UI.isBeingEdited(blankTreeElement.nameElement)) {
                 InspectorTest.addResult("No new property editor active!");
                 InspectorTest.completeTest();
                 return;
             }
 
             // Test Styles pane editor looping.
-            InspectorTest.addSniffer(WebInspector.StylePropertiesSection.prototype, "_afterUpdateFinishedForTest", next);
+            InspectorTest.addSniffer(Elements.StylePropertiesSection.prototype, "_afterUpdateFinishedForTest", next);
             blankTreeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
         },
 
         function testCycleThroughPropertyEditing(next)
         {
-            if (!WebInspector.isBeingEdited(treeOutline.firstChild().nameElement)) {
+            if (!UI.isBeingEdited(treeOutline.firstChild().nameElement)) {
                 InspectorTest.addResult("Original property name editor not active!");
                 InspectorTest.completeTest();
                 return;

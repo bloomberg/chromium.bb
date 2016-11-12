@@ -9,9 +9,9 @@ function test()
             function testVectorLength(next)
             {
                 var testVectors = [
-                    new WebInspector.Geometry.Vector(3, 4, 5),
-                    new WebInspector.Geometry.Vector(-1, 0, -1),
-                    new WebInspector.Geometry.Vector(6, -2, 3)
+                    new Common.Geometry.Vector(3, 4, 5),
+                    new Common.Geometry.Vector(-1, 0, -1),
+                    new Common.Geometry.Vector(6, -2, 3)
                 ];
                 InspectorTest.addResult("Testing vector length");
                 for (var i = 0; i < testVectors.length; ++i)
@@ -23,9 +23,9 @@ function test()
             function testVectorNormalize(next)
             {
                 var testVectors = [
-                    new WebInspector.Geometry.Vector(3, 4, 5),
-                    new WebInspector.Geometry.Vector(-1, 0, -1),
-                    new WebInspector.Geometry.Vector(6, -2, 3)
+                    new Common.Geometry.Vector(3, 4, 5),
+                    new Common.Geometry.Vector(-1, 0, -1),
+                    new Common.Geometry.Vector(6, -2, 3)
                 ];
 
                 var eps = 1e-05;
@@ -34,7 +34,7 @@ function test()
                     InspectorTest.assertTrue(Math.abs(testVectors[i].length() - 1) <= eps, "Length of normalized vector is not 1")
                 }
 
-                var zeroVector = new WebInspector.Geometry.Vector(0, 0, 0);
+                var zeroVector = new Common.Geometry.Vector(0, 0, 0);
                 zeroVector.normalize();
                 InspectorTest.assertTrue(zeroVector.length() <= eps, "Zero vector after normalization isn't zero vector");
                 next();
@@ -43,19 +43,19 @@ function test()
             function testScalarProduct(next)
             {
                 var vectorsU = [
-                    new WebInspector.Geometry.Vector(3, 4, 5),
-                    new WebInspector.Geometry.Vector(-1, 0, -1),
-                    new WebInspector.Geometry.Vector(6, -2, 3)
+                    new Common.Geometry.Vector(3, 4, 5),
+                    new Common.Geometry.Vector(-1, 0, -1),
+                    new Common.Geometry.Vector(6, -2, 3)
                 ];
 
                 var vectorsV = [
-                    new WebInspector.Geometry.Vector(1, 10, -5),
-                    new WebInspector.Geometry.Vector(2, 3, 4),
-                    new WebInspector.Geometry.Vector(0, 0, 0)
+                    new Common.Geometry.Vector(1, 10, -5),
+                    new Common.Geometry.Vector(2, 3, 4),
+                    new Common.Geometry.Vector(0, 0, 0)
                 ];
 
                 for (var i = 0; i < vectorsU.length; ++i)
-                    InspectorTest.addResult("Scalar Product:" + WebInspector.Geometry.scalarProduct(vectorsU[i], vectorsV[i]))
+                    InspectorTest.addResult("Scalar Product:" + Common.Geometry.scalarProduct(vectorsU[i], vectorsV[i]))
 
                 next();
             },
@@ -63,19 +63,19 @@ function test()
             function testCrossProduct(next)
             {
                 var vectorsU = [
-                    new WebInspector.Geometry.Vector(3, 4, 5),
-                    new WebInspector.Geometry.Vector(-1, 0, -1),
-                    new WebInspector.Geometry.Vector(6, -2, 3)
+                    new Common.Geometry.Vector(3, 4, 5),
+                    new Common.Geometry.Vector(-1, 0, -1),
+                    new Common.Geometry.Vector(6, -2, 3)
                 ];
 
                 var vectorsV = [
-                    new WebInspector.Geometry.Vector(1, 10, -5),
-                    new WebInspector.Geometry.Vector(2, 3, 4),
-                    new WebInspector.Geometry.Vector(0, 0, 0)
+                    new Common.Geometry.Vector(1, 10, -5),
+                    new Common.Geometry.Vector(2, 3, 4),
+                    new Common.Geometry.Vector(0, 0, 0)
                 ];
 
                 for (var i = 0; i < vectorsU.length; ++i) {
-                    var result = WebInspector.Geometry.crossProduct(vectorsU[i], vectorsV[i]);
+                    var result = Common.Geometry.crossProduct(vectorsU[i], vectorsV[i]);
                     InspectorTest.addResult(String.sprintf("Cross Product: [%.4f, %.4f, %.4f]", result.x, result.y, result.z));
                 }
 
@@ -85,21 +85,21 @@ function test()
             function testCalculateAngle(next)
             {
                 var vectorsU = [
-                    new WebInspector.Geometry.Vector(3, 4, 5),
-                    new WebInspector.Geometry.Vector(-1, 0, -1),
-                    new WebInspector.Geometry.Vector(1, 1, 0),
-                    new WebInspector.Geometry.Vector(6, -2, 3),
+                    new Common.Geometry.Vector(3, 4, 5),
+                    new Common.Geometry.Vector(-1, 0, -1),
+                    new Common.Geometry.Vector(1, 1, 0),
+                    new Common.Geometry.Vector(6, -2, 3),
                 ];
 
                 var vectorsV = [
-                    new WebInspector.Geometry.Vector(-3, -4, -5),
-                    new WebInspector.Geometry.Vector(2, 3, 4),
-                    new WebInspector.Geometry.Vector(-1, 1, 0),
-                    new WebInspector.Geometry.Vector(0, 0, 0),
+                    new Common.Geometry.Vector(-3, -4, -5),
+                    new Common.Geometry.Vector(2, 3, 4),
+                    new Common.Geometry.Vector(-1, 1, 0),
+                    new Common.Geometry.Vector(0, 0, 0),
                 ];
 
                 for (var i = 0; i < vectorsU.length; ++i)
-                    InspectorTest.addResult(String.sprintf("Calculate angle: %.4f", WebInspector.Geometry.calculateAngle(vectorsU[i], vectorsV[i])));
+                    InspectorTest.addResult(String.sprintf("Calculate angle: %.4f", Common.Geometry.calculateAngle(vectorsU[i], vectorsV[i])));
 
                 next();
             },
@@ -108,7 +108,7 @@ function test()
             {
                 var angles = [Math.PI, Math.PI / 4, Math.PI / 6];
                 for (var i = 0; i < angles.length; ++i)
-                    InspectorTest.addResult(String.sprintf("deg: %.4f", WebInspector.Geometry.radiansToDegrees(angles[i])));
+                    InspectorTest.addResult(String.sprintf("deg: %.4f", Common.Geometry.radiansToDegrees(angles[i])));
 
                 next();
             },
@@ -117,7 +117,7 @@ function test()
             {
                 var angles = [-30, 0, 30, 90, 180];
                 for (var i = 0; i < angles.length; ++i)
-                    InspectorTest.addResult(String.sprintf("rad: %.4f", WebInspector.Geometry.degreesToRadians(angles[i])));
+                    InspectorTest.addResult(String.sprintf("rad: %.4f", Common.Geometry.degreesToRadians(angles[i])));
 
                 next();
             },
@@ -133,7 +133,7 @@ function test()
                 ];
 
                 for (var i = 0; i < rotationMatrices.length; ++i) {
-                    var angles = WebInspector.Geometry.EulerAngles.fromRotationMatrix(new WebKitCSSMatrix(rotationMatrices[i]));
+                    var angles = Common.Geometry.EulerAngles.fromRotationMatrix(new WebKitCSSMatrix(rotationMatrices[i]));
                     InspectorTest.addResult(String.sprintf("Euler angles: %.4f %.4f %.4f", angles.alpha, angles.beta, angles.gamma));
                 }
                 next();
@@ -142,13 +142,13 @@ function test()
             function testEulerAnglesToRotate3DString(next)
             {
                 var angles = [
-                    new WebInspector.Geometry.EulerAngles(0, 0, 0),
-                    new WebInspector.Geometry.EulerAngles(1, 2, 3),
-                    new WebInspector.Geometry.EulerAngles(-1, -2, 3),
-                    new WebInspector.Geometry.EulerAngles(-1, 2, -3),
-                    new WebInspector.Geometry.EulerAngles(0, 1, 2),
-                    new WebInspector.Geometry.EulerAngles(1, 0, 2),
-                    new WebInspector.Geometry.EulerAngles(1, 2, 0)
+                    new Common.Geometry.EulerAngles(0, 0, 0),
+                    new Common.Geometry.EulerAngles(1, 2, 3),
+                    new Common.Geometry.EulerAngles(-1, -2, 3),
+                    new Common.Geometry.EulerAngles(-1, 2, -3),
+                    new Common.Geometry.EulerAngles(0, 1, 2),
+                    new Common.Geometry.EulerAngles(1, 0, 2),
+                    new Common.Geometry.EulerAngles(1, 2, 0)
                 ];
 
                 for (var i = 0; i < angles.length; ++i) {

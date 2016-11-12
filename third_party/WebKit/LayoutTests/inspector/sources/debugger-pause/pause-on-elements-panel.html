@@ -16,7 +16,7 @@ function test()
 
     function step1()
     {
-        WebInspector.inspectorView.showPanel("sources").then(step2);
+        UI.inspectorView.showPanel("sources").then(step2);
     }
 
     function step2()
@@ -32,7 +32,7 @@ function test()
 
     function step4(node)
     {
-        InspectorTest.assertTrue(!WebInspector.panels.sources.paused());
+        InspectorTest.assertTrue(!UI.panels.sources.paused());
         InspectorTest.togglePause();
 
         // This used to skip the pause request (the test used to timeout).

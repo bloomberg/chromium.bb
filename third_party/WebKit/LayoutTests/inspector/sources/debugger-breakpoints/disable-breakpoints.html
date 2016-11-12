@@ -46,7 +46,7 @@ var test = function()
                 InspectorTest.addResult("Test function finished.");
 
                 InspectorTest.addResult("Disabling breakpoints...");
-                WebInspector.breakpointManager.setBreakpointsActive(false);
+                Bindings.breakpointManager.setBreakpointsActive(false);
 
                 InspectorTest.addResult("Running test function again...");
                 InspectorTest.addConsoleSniffer(testFunctionFinishedForTheSecondTime);
@@ -68,7 +68,7 @@ var test = function()
             {
                 currentSourceFrame = sourceFrame;
                 InspectorTest.addResult("Enabling breakpoints...");
-                WebInspector.breakpointManager.setBreakpointsActive(true);
+                Bindings.breakpointManager.setBreakpointsActive(true);
 
                 InspectorTest.addResult("Running test function...");
                 InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);

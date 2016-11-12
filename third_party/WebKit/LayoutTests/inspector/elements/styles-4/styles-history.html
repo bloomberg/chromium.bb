@@ -27,12 +27,12 @@ function test()
                     uiSourceCode = currentUISourceCode;
                     next();
                 }
-                WebInspector.workspace.uiSourceCodes().forEach(visitUISourceCodes);
+                Workspace.workspace.uiSourceCodes().forEach(visitUISourceCodes);
             },
 
             function testSetResourceContentMinor(next)
             {
-                InspectorTest.addSniffer(WebInspector.StyleFile.prototype, "_styleContentSet", styleUpdatedMinor);
+                InspectorTest.addSniffer(Bindings.StyleFile.prototype, "_styleContentSet", styleUpdatedMinor);
                 uiSourceCode.setWorkingCopy("body {\n  margin: 15px;\n  padding: 10px;\n}");
 
                 function styleUpdatedMinor()
@@ -43,12 +43,12 @@ function test()
 
             function testSetResourceContentMajor(next)
             {
-                InspectorTest.addSniffer(WebInspector.StyleFile.prototype, "_styleContentSet", styleUpdatedMinor);
+                InspectorTest.addSniffer(Bindings.StyleFile.prototype, "_styleContentSet", styleUpdatedMinor);
                 uiSourceCode.setWorkingCopy("body {\n  margin: 20px;\n  padding: 10px;\n}");
 
                 function styleUpdatedMinor()
                 {
-                    InspectorTest.addSniffer(WebInspector.StyleFile.prototype, "_styleContentSet", styleUpdatedMajor);
+                    InspectorTest.addSniffer(Bindings.StyleFile.prototype, "_styleContentSet", styleUpdatedMajor);
                     uiSourceCode.commitWorkingCopy(function() { });
 
                     function styleUpdatedMajor()
@@ -76,7 +76,7 @@ function test()
                 function step1(style)
                 {
                     var property = getLiveProperty(style, "margin");
-                    InspectorTest.addSniffer(WebInspector.UISourceCode.prototype, "addRevision", dumpHistory(next));
+                    InspectorTest.addSniffer(Workspace.UISourceCode.prototype, "addRevision", dumpHistory(next));
                     property.setText("margin:30px;", true, true);
                 }
             }
@@ -103,7 +103,7 @@ function test()
                 var rule = matchedStyles[i].rule;
                 if (rule.origin !== "regular")
                     continue;
-                callback(new WebInspector.CSSStyleDeclaration(InspectorTest.cssModel, null, rule.style));
+                callback(new SDK.CSSStyleDeclaration(InspectorTest.cssModel, null, rule.style));
                 return;
             }
             InspectorTest.addResult("error: did not find any regular rule");

@@ -131,25 +131,25 @@ var UnitTest = {};
         if (description)
             UnitTest.addResult(description);
 
-        WebInspector.settings = new WebInspector.Settings(new WebInspector.SettingsStorage(
+        Common.settings = new Common.Settings(new Common.SettingsStorage(
             {},
             InspectorFrontendHost.setPreference,
             InspectorFrontendHost.removePreference,
             InspectorFrontendHost.clearPreferences));
 
 
-        WebInspector.viewManager = new WebInspector.ViewManager();
-        WebInspector.initializeUIUtils(document, WebInspector.settings.createSetting("uiTheme", "default"));
-        WebInspector.installComponentRootStyles(document.body);
+        UI.viewManager = new UI.ViewManager();
+        UI.initializeUIUtils(document, Common.settings.createSetting("uiTheme", "default"));
+        UI.installComponentRootStyles(document.body);
 
-        WebInspector.zoomManager = new WebInspector.ZoomManager(window, InspectorFrontendHost);
-        WebInspector.inspectorView = WebInspector.InspectorView.instance();
-        WebInspector.ContextMenu.initialize();
-        WebInspector.ContextMenu.installHandler(document);
-        WebInspector.Tooltip.installHandler(document);
+        UI.zoomManager = new UI.ZoomManager(window, InspectorFrontendHost);
+        UI.inspectorView = UI.InspectorView.instance();
+        UI.ContextMenu.initialize();
+        UI.ContextMenu.installHandler(document);
+        UI.Tooltip.installHandler(document);
 
-        var rootView = new WebInspector.RootView();
-        WebInspector.inspectorView.show(rootView.element);
+        var rootView = new UI.RootView();
+        UI.inspectorView.show(rootView.element);
         rootView.attachToDocument(document);
         Promise.all(lazyModules.map(lazyModule => window.runtime.loadModulePromise(lazyModule))).then(test);
     }

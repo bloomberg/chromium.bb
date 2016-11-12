@@ -59,9 +59,9 @@ function onload()
 
 function test()
 {
-    WebInspector.ArrayGroupingTreeElement._bucketThreshold = 20;
+    Components.ArrayGroupingTreeElement._bucketThreshold = 20;
 
-    var messages = WebInspector.ConsoleView.instance()._visibleViewMessages;
+    var messages = Console.ConsoleView.instance()._visibleViewMessages;
     var sections = [];
     for (var i = 0; i < messages.length; ++i) {
         var consoleMessage = messages[i].consoleMessage();
@@ -76,7 +76,7 @@ function test()
         }
     }
 
-    InspectorTest.addSniffer(WebInspector.ArrayGroupingTreeElement.prototype, "onpopulate", populateCalled, true);
+    InspectorTest.addSniffer(Components.ArrayGroupingTreeElement.prototype, "onpopulate", populateCalled, true);
     var populated = false;
     function populateCalled()
     {

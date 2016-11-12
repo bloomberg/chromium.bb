@@ -82,12 +82,12 @@ function test()
     {
         function isDecodeImageEvent(event)
         {
-            return event.name === WebInspector.TimelineModel.RecordType.DecodeImage;
+            return event.name === TimelineModel.TimelineModel.RecordType.DecodeImage;
         }
         function compareImageURLs(a, b)
         {
-            var urlA = WebInspector.TimelineData.forEvent(a).url;
-            var urlB = WebInspector.TimelineData.forEvent(b).url;
+            var urlA = TimelineModel.TimelineData.forEvent(a).url;
+            var urlB = TimelineModel.TimelineData.forEvent(b).url;
             urlA = InspectorTest.formatters.formatAsURL(urlA || "<missing>");
             urlB = InspectorTest.formatters.formatAsURL(urlB || "<missing>");
             return urlA.localeCompare(urlB);
@@ -96,10 +96,10 @@ function test()
         var sortedDecodeEvents = events.filter(isDecodeImageEvent).sort(compareImageURLs);
         for (var i = 0; i < sortedDecodeEvents.length; ++i) {
             var event = sortedDecodeEvents[i];
-            var timlelineData = WebInspector.TimelineData.forEvent(event);
+            var timlelineData = TimelineModel.TimelineData.forEvent(event);
             var url = timlelineData.url;
             // Skip duplicate events, as long as they have the imageURL
-            if (i && url && url === WebInspector.TimelineData.forEvent(sortedDecodeEvents[i - 1]).url)
+            if (i && url && url === TimelineModel.TimelineData.forEvent(sortedDecodeEvents[i - 1]).url)
                 continue;
             InspectorTest.addResult("event: " + event.name);
             InspectorTest.addResult("imageURL: " + InspectorTest.formatters.formatAsURL(url));

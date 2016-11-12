@@ -25,7 +25,7 @@ function test()
 
     function runTestFunction()
     {
-        InspectorTest.addSniffer(WebInspector.JavaScriptSourceFrame.prototype, "setExecutionLocation", onSetExecutionLocation);
+        InspectorTest.addSniffer(Sources.JavaScriptSourceFrame.prototype, "setExecutionLocation", onSetExecutionLocation);
         InspectorTest.evaluateInPage("setTimeout(testFunction, 0)");
     }
 
@@ -46,7 +46,7 @@ function test()
             InspectorTest.addResult(output.join(" "));
         }
 
-        InspectorTest.addSniffer(WebInspector.JavaScriptSourceFrame.prototype, "setExecutionLocation", onSetExecutionLocation);
+        InspectorTest.addSniffer(Sources.JavaScriptSourceFrame.prototype, "setExecutionLocation", onSetExecutionLocation);
         if (++stepCount < 10)
             InspectorTest.stepOver();
         else

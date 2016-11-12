@@ -37,7 +37,7 @@ function setupEventListeners()
 
 function test()
 {
-    WebInspector.settingForTest("showEventListenersForAncestors").set(true);
+    Common.settingForTest("showEventListenersForAncestors").set(true);
     InspectorTest.selectNodeWithId("node", step1);
 
     function step1()
@@ -52,7 +52,7 @@ function test()
 
     function step3()
     {
-        WebInspector.settingForTest("showEventListenersForAncestors").set(false);
+        Common.settingForTest("showEventListenersForAncestors").set(false);
         InspectorTest.addResult("Listeners for selected node only(should be no listeners):");
         InspectorTest.expandAndDumpSelectedElementEventListeners(step4);
     }

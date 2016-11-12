@@ -9,12 +9,12 @@ function test()
     {
         InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
 
-        InspectorTest.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, afterCleared);
-        WebInspector.ConsoleView.clearConsole();
+        InspectorTest.consoleModel.addEventListener(SDK.ConsoleModel.Events.ConsoleCleared, afterCleared);
+        Console.ConsoleView.clearConsole();
 
         function afterCleared()
         {
-            InspectorTest.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, afterCleared);
+            InspectorTest.consoleModel.removeEventListener(SDK.ConsoleModel.Events.ConsoleCleared, afterCleared);
             next();
         }
     }

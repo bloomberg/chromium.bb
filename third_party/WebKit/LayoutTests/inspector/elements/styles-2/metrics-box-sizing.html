@@ -81,7 +81,7 @@ function test()
 
         function testBorderBoxInit2(next)
         {
-            section = WebInspector.panels.elements._metricsWidget;
+            section = UI.panels.elements._metricsWidget;
             section.expand();
             InspectorTest.addSniffer(section._updateController._updateThrottler, "_processCompletedForTests", next);
         },
@@ -113,7 +113,7 @@ function test()
 
         function testContentBoxInit2(next)
         {
-            section = WebInspector.panels.elements._metricsWidget;
+            section = UI.panels.elements._metricsWidget;
             section.expand();
             InspectorTest.addSniffer(section._updateController._updateThrottler, "_processCompletedForTests", next);
         },

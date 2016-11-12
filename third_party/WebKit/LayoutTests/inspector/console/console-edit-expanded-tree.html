@@ -20,7 +20,7 @@ function test()
 
     function onConsoleMessageExpanded()
     {
-        var messages = WebInspector.ConsoleView.instance()._visibleViewMessages;
+        var messages = Console.ConsoleView.instance()._visibleViewMessages;
         for (var i = 0; i < messages.length; ++i) {
             var message = messages[i];
             var node = message.contentElement();
@@ -36,7 +36,7 @@ function test()
     function onTreeElement(treeElement)
     {
         treeElement._startEditing();
-        WebInspector.ConsoleView.instance()._viewport.refresh();
+        Console.ConsoleView.instance()._viewport.refresh();
         InspectorTest.addResult("After viewport refresh tree element remains in editing mode: " + !!treeElement._prompt);
         InspectorTest.completeTest();
     }

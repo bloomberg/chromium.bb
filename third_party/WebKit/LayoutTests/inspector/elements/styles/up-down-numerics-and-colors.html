@@ -29,7 +29,7 @@ function test()
             // PageUp should change to 'FF3'
             colorTreeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("PageUp"));
             // Ctrl/Meta + Shift Down should change to 'EE3'
-            if (WebInspector.isMac())
+            if (Host.isMac())
                 colorTreeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("ArrowDown", /*Ctrl*/ false, /*Alt*/ false, /*Shift*/ true, /*Meta*/ true));
             else
                 colorTreeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("ArrowDown", /*Ctrl*/ true, /*Alt*/ false, /*Shift*/ true, /*Meta*/ false));

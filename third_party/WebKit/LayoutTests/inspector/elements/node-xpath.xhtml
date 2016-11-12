@@ -39,7 +39,7 @@ function test()
 
     function dumpNodeData(node, prefix)
     {
-        var result = prefix + "'" + node.nodeName() + "':'" + node.nodeValue() + "' - '" + WebInspector.DOMPresentationUtils.xPath(node, true) + "'";
+        var result = prefix + "'" + node.nodeName() + "':'" + node.nodeValue() + "' - '" + Components.DOMPresentationUtils.xPath(node, true) + "'";
         InspectorTest.addResult(result.replace(/\r?\n/g, "\\n"));
     }
 }

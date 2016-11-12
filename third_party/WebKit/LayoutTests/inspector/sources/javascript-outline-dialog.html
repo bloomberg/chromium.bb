@@ -12,8 +12,8 @@ function test()
     InspectorTest.showScriptSource("javascript-outline-dialog.js", onSourceShown);
     function onSourceShown(sourceFrame)
     {
-        InspectorTest.addSniffer(WebInspector.JavaScriptOutlineDialog.prototype, "refresh", onDialogFulfilled);
-        WebInspector.panels.sources._sourcesView._showOutlineDialog();
+        InspectorTest.addSniffer(Sources.JavaScriptOutlineDialog.prototype, "refresh", onDialogFulfilled);
+        UI.panels.sources._sourcesView._showOutlineDialog();
     }
 
     function onDialogFulfilled()
@@ -28,7 +28,7 @@ function test()
     function dumpScores(query)
     {
         InspectorTest.addResult(`Scores for query="${query}"`);
-        var dialog = WebInspector.JavaScriptOutlineDialog._instanceForTests;
+        var dialog = Sources.JavaScriptOutlineDialog._instanceForTests;
         var keys = [];
         for (var i = 0; i < dialog.itemCount(); ++i) {
             keys.push({

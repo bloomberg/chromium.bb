@@ -12,13 +12,13 @@ function jumpToMe()
 
 function test()
 {
-    var panel = WebInspector.panels.sources;
+    var panel = UI.panels.sources;
 
     InspectorTest.runTestSuite([
         function testRevealFunctionDefinition(next)
         {
             InspectorTest.addSniffer(panel, "showUISourceCode", showUISourceCodeHook);
-            WebInspector.context.flavor(WebInspector.ExecutionContext).evaluate("jumpToMe", "", false, true, false, false, false, didGetFunction);
+            UI.context.flavor(SDK.ExecutionContext).evaluate("jumpToMe", "", false, true, false, false, false, didGetFunction);
 
             function didGetFunction(funcObject, exceptionDetails)
             {
@@ -39,15 +39,15 @@ function test()
 
         function testDumpFunctionDefinition(next)
         {
-            InspectorTest.addSniffer(WebInspector.ObjectPropertiesSection, "formatObjectAsFunction", onConsoleMessagesReceived);
-            WebInspector.ConsoleModel.evaluateCommandInConsole(WebInspector.context.flavor(WebInspector.ExecutionContext), "jumpToMe");
+            InspectorTest.addSniffer(Components.ObjectPropertiesSection, "formatObjectAsFunction", onConsoleMessagesReceived);
+            SDK.ConsoleModel.evaluateCommandInConsole(UI.context.flavor(SDK.ExecutionContext), "jumpToMe");
 
             function onConsoleMessagesReceived()
             {
                 InspectorTest.deprecatedRunAfterPendingDispatches(function() {
                     var messages = [];
                     InspectorTest.disableConsoleViewport();
-                    var viewMessages = WebInspector.ConsoleView.instance()._visibleViewMessages;
+                    var viewMessages = Console.ConsoleView.instance()._visibleViewMessages;
                     for (var i = 0; i < viewMessages.length; ++i) {
                         var uiMessage = viewMessages[i];
                         var element = uiMessage.contentElement();

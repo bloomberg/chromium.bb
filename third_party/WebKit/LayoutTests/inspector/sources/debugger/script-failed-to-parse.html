@@ -16,7 +16,7 @@ function test()
     InspectorTest.runDebuggerTestSuite([
         function testScriptParsedEvent(next)
         {
-            InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.FailedToParseScriptSource, scriptFailedToParse);
+            InspectorTest.debuggerModel.addEventListener(SDK.DebuggerModel.Events.FailedToParseScriptSource, scriptFailedToParse);
             InspectorTest.evaluateInPage("addScript('resources/script-failed-to-parse.js')");
 
             function scriptFailedToParse(event)
@@ -24,7 +24,7 @@ function test()
                 var script = event.data;
                 if (script.sourceURL.indexOf("script-failed-to-parse.js") !== -1) {
                     InspectorTest.addResult("Event with script-failed-to-parse.js received");
-                    InspectorTest.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.FailedToParseScriptSource, scriptFailedToParse);
+                    InspectorTest.debuggerModel.removeEventListener(SDK.DebuggerModel.Events.FailedToParseScriptSource, scriptFailedToParse);
                     next();
                 }
             }

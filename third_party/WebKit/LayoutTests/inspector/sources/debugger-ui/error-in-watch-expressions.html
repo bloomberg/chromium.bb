@@ -7,8 +7,8 @@ var foo = 123
 
 var test = function()
 {
-    var watchExpressionsPane = self.runtime.sharedInstance(WebInspector.WatchExpressionsSidebarPane);
-    WebInspector.panels.sources._sidebarPaneStack.showView(WebInspector.panels.sources._watchSidebarPane).then(() => {
+    var watchExpressionsPane = self.runtime.sharedInstance(Sources.WatchExpressionsSidebarPane);
+    UI.panels.sources._sidebarPaneStack.showView(UI.panels.sources._watchSidebarPane).then(() => {
         watchExpressionsPane.doUpdate();
         watchExpressionsPane._createWatchExpression("#$%");
         watchExpressionsPane._saveExpressions();

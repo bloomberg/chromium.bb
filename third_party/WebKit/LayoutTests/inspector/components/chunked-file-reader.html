@@ -16,18 +16,18 @@ InspectorTest.TestOutputStreamDelegate = function(doneCallback)
 InspectorTest.TestOutputStreamDelegate.prototype = {
     onTransferStarted: function()
     {
-        InspectorTest.addResult("WebInspector.OutputStreamDelegate.onTransferStarted() called");
+        InspectorTest.addResult("Bindings.OutputStreamDelegate.onTransferStarted() called");
     },
 
     onTransferFinished: function()
     {
         InspectorTest.addResult("Chunks transferred: " + this._chunkCount);
-        InspectorTest.addResult("WebInspector.OutputStreamDelegate.onTransferFinished() called");
+        InspectorTest.addResult("Bindings.OutputStreamDelegate.onTransferFinished() called");
         this._doneCallback();
     },
 
     /**
-     * @param {!WebInspector.ChunkedReader} reader
+     * @param {!Bindings.ChunkedReader} reader
      */
     onChunkTransferred: function(reader)
     {
@@ -35,12 +35,12 @@ InspectorTest.TestOutputStreamDelegate.prototype = {
     },
 
     /**
-     * @param {!WebInspector.ChunkedReader} reader
+     * @param {!Bindings.ChunkedReader} reader
      * @param {!Event} event
      */
     onError: function(reader, event)
     {
-        InspectorTest.addResult("WebInspector.OutputStreamDelegate.onError() called");
+        InspectorTest.addResult("Bindings.OutputStreamDelegate.onError() called");
         this._doneCallback();
     }
 };
@@ -58,8 +58,8 @@ function test()
     // Most of the characters above will be encoded as 2 bytes, so make sure we use odd
     // chunk size to cause chunk boundaries sometimes to happen between chaacter bytes.
     var chunkSize = 5;
-    var reader = new WebInspector.ChunkedFileReader(blob, chunkSize, new InspectorTest.TestOutputStreamDelegate(onTransferFinished));
-    var output = new WebInspector.StringOutputStream();
+    var reader = new Bindings.ChunkedFileReader(blob, chunkSize, new InspectorTest.TestOutputStreamDelegate(onTransferFinished));
+    var output = new Common.StringOutputStream();
     reader.start(output);
     function onTransferFinished()
     {

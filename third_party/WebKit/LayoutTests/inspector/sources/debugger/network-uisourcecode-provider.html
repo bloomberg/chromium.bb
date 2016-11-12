@@ -34,20 +34,20 @@ function test()
         var loaderId = "loader-id";
         var mimeType;
         switch (type) {
-        case WebInspector.resourceTypes.Document:
+        case Common.resourceTypes.Document:
             mimeType = "text/html";
             break;
-        case WebInspector.resourceTypes.Script:
+        case Common.resourceTypes.Script:
             mimeType = "text/javascript";
             break;
-        case WebInspector.resourceTypes.Stylesheet:
+        case Common.resourceTypes.Stylesheet:
             mimeType = "text/css";
             break;
         }
 
-        var resource = new WebInspector.Resource(target, null, url, documentURL, frameId, loaderId, type, mimeType);
+        var resource = new SDK.Resource(target, null, url, documentURL, frameId, loaderId, type, mimeType);
         resource._content = content;
-        target.resourceTreeModel.dispatchEventToListeners(WebInspector.ResourceTreeModel.Events.ResourceAdded, resource);
+        target.resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.ResourceAdded, resource);
 
         return resource;
     }
@@ -58,13 +58,13 @@ function test()
         var resourceId = ++lastResourceId + "";
         var url = documentURL + "/" + resourceId;
         var script = InspectorTest.createScriptMock(url, 0, 0, false, content, target);
-        target.debuggerModel.dispatchEventToListeners(WebInspector.DebuggerModel.Events.ParsedScriptSource, script);
+        target.debuggerModel.dispatchEventToListeners(SDK.DebuggerModel.Events.ParsedScriptSource, script);
     }
 
     function finishResource(resource)
     {
         resource.request.finished = true;
-        resource.request.dispatchEventToListeners(WebInspector.NetworkRequest.Events.FinishedLoading, resource.request);
+        resource.request.dispatchEventToListeners(SDK.NetworkRequest.Events.FinishedLoading, resource.request);
     }
 
     function createNetworkUISourceCodeProvider()
@@ -78,7 +78,7 @@ function test()
             createNetworkUISourceCodeProvider();
             InspectorTest.addResult("Creating resource.");
             InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded);
-            createResourceMock(WebInspector.resourceTypes.Document, "<document resource content>");
+            createResourceMock(Common.resourceTypes.Document, "<document resource content>");
 
             function uiSourceCodeAdded(uiSourceCode)
             {
@@ -92,7 +92,7 @@ function test()
             createNetworkUISourceCodeProvider();
             InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded);
             InspectorTest.addResult("Creating script resource.");
-            createResourceMock(WebInspector.resourceTypes.Script, "<script resource content>");
+            createResourceMock(Common.resourceTypes.Script, "<script resource content>");
             InspectorTest.addResult("Creating script.");
             createScriptMock("<script content>");
 
@@ -120,15 +120,15 @@ function test()
         createNetworkUISourceCodeProvider();
         InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded);
         InspectorTest.addResult("Creating stylesheet resource.");
-        createResourceMock(WebInspector.resourceTypes.Stylesheet, "<stylesheet resource content>");
+        createResourceMock(Common.resourceTypes.Stylesheet, "<stylesheet resource content>");
 
-        WebInspector.CSSModel.fromTarget(target)._styleSheetAdded(mockStyleSheetHeader);
+        SDK.CSSModel.fromTarget(target)._styleSheetAdded(mockStyleSheetHeader);
 
         function uiSourceCodeAdded(uiSourceCode)
         {
             InspectorTest.addResult("Added uiSourceCode: " + InspectorTest.uiSourceCodeURL(uiSourceCode));
             InspectorTest.waitForWorkspaceUISourceCodeRemovedEvent(uiSourceCodeRemoved);
-            WebInspector.CSSModel.fromTarget(target)._styleSheetRemoved(mockStyleSheetHeader.styleSheetId);
+            SDK.CSSModel.fromTarget(target)._styleSheetRemoved(mockStyleSheetHeader.styleSheetId);
         }
 
         function uiSourceCodeRemoved(uiSourceCode)

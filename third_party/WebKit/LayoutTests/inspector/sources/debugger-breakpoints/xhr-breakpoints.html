@@ -13,7 +13,7 @@ function sendRequest(url)
 
 function test()
 {
-    var pane = self.runtime.sharedInstance(WebInspector.XHRBreakpointsSidebarPane);
+    var pane = self.runtime.sharedInstance(Sources.XHRBreakpointsSidebarPane);
     InspectorTest.runDebuggerTestSuite([
         function testXHRBreakpoint(next)
         {

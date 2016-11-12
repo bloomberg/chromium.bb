@@ -105,7 +105,7 @@ function test()
 
     function waitForModifiedNodesUpdate(title, next)
     {
-        InspectorTest.addSniffer(WebInspector.ElementsTreeOutline.prototype, "_updateModifiedNodes", callback);
+        InspectorTest.addSniffer(Elements.ElementsTreeOutline.prototype, "_updateModifiedNodes", callback);
 
         function callback()
         {

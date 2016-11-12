@@ -9,9 +9,9 @@ function test()
     for (var i = 1000; i < 1256; ++i)
         d.push(i);
     var object = {a: "b", c: d};
-    var localObject = WebInspector.RemoteObject.fromLocalObject(object);
+    var localObject = SDK.RemoteObject.fromLocalObject(object);
 
-    var propertiesSection = new WebInspector.ObjectPropertiesSection(localObject, "local object");
+    var propertiesSection = new Components.ObjectPropertiesSection(localObject, "local object");
     propertiesSection.expand();
     propertiesSection.objectTreeElement().childAt(1).expand();
 

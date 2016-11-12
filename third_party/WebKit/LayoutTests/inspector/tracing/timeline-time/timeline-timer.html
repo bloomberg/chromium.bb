@@ -24,7 +24,7 @@ function performActions()
 
 function test()
 {
-    WebInspector.panels.timeline._captureJSProfileSetting.set(false);
+    UI.panels.timeline._captureJSProfileSetting.set(false);
     InspectorTest.invokeAsyncWithTimeline("performActions", finish);
 
     function finish()

@@ -27,8 +27,8 @@ function testMyCamelMove(foo, bar)
     textEditor.element.focus();
 
     InspectorTest.addResult(textEditor.text());
-    const wordJumpModifier = WebInspector.isMac() ? "altKey" : "ctrlKey";
-    const camelJumpModifier = WebInspector.isMac() ? "ctrlKey" : "altKey";
+    const wordJumpModifier = Host.isMac() ? "altKey" : "ctrlKey";
+    const camelJumpModifier = Host.isMac() ? "ctrlKey" : "altKey";
 
     function dumpEditorSelection()
     {
@@ -44,14 +44,14 @@ function testMyCamelMove(foo, bar)
 
     function setCursorAtBeginning()
     {
-        textEditor.setSelection(WebInspector.TextRange.createFromLocation(0, 0));
+        textEditor.setSelection(Common.TextRange.createFromLocation(0, 0));
     }
 
     function setCursorAtEnd()
     {
         var lastLine = textEditor.linesCount - 1;
         var lastColumn = textEditor.line(lastLine).length;
-        textEditor.setSelection(WebInspector.TextRange.createFromLocation(lastLine, lastColumn));
+        textEditor.setSelection(Common.TextRange.createFromLocation(lastLine, lastColumn));
     }
 
     function fireEventWhileSelectionChanges(eventType, modifiers, callback)

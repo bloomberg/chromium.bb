@@ -136,7 +136,7 @@ function test()
 
     function expandVariablesInConsole()
     {
-        var consoleView = WebInspector.ConsoleView.instance();
+        var consoleView = Console.ConsoleView.instance();
         if (consoleView._needsFullUpdate)
             consoleView._updateMessageList();
         var viewMessages = consoleView._visibleViewMessages;

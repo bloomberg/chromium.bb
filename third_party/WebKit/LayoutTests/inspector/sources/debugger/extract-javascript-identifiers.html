@@ -56,7 +56,7 @@ function test()
     {
         InspectorTest.addResult("Text:");
         InspectorTest.addResult("    " + text + "\n");
-        WebInspector.formatterWorkerPool.runTask("javaScriptIdentifiers", {content: text})
+        Common.formatterWorkerPool.runTask("javaScriptIdentifiers", {content: text})
             .then(onIdentifiers)
             .then(next);
     }

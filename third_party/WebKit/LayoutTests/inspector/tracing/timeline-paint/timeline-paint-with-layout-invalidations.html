@@ -27,7 +27,7 @@ function test()
         function testLocalFrame(next)
         {
             InspectorTest.invokeAsyncWithTimeline("display", function() {
-                InspectorTest.dumpInvalidations(WebInspector.TimelineModel.RecordType.Paint, 0, "paint invalidations");
+                InspectorTest.dumpInvalidations(TimelineModel.TimelineModel.RecordType.Paint, 0, "paint invalidations");
                 next();
             });
         },
@@ -36,12 +36,12 @@ function test()
         {
             InspectorTest.invokeAsyncWithTimeline("updateSubframeAndDisplay", function() {
                 // The first paint corresponds to the local frame and should have no invalidations.
-                var firstPaintRecord = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.Paint);
-                var firstInvalidations = WebInspector.InvalidationTracker.invalidationEventsFor(firstPaintRecord._event);
+                var firstPaintRecord = InspectorTest.findFirstTimelineRecord(TimelineModel.TimelineModel.RecordType.Paint);
+                var firstInvalidations = TimelineModel.InvalidationTracker.invalidationEventsFor(firstPaintRecord._event);
                 InspectorTest.assertEquals(firstInvalidations, null);
 
                 // The second paint corresponds to the subframe and should have our layout/style invalidations.
-                InspectorTest.dumpInvalidations(WebInspector.TimelineModel.RecordType.Paint, 1, "second paint invalidations");
+                InspectorTest.dumpInvalidations(TimelineModel.TimelineModel.RecordType.Paint, 1, "second paint invalidations");
                 next();
             });
         }

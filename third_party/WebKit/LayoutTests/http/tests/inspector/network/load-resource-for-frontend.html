@@ -15,7 +15,7 @@ function test()
     function testLoadForURL(url, headers, next)
     {
         InspectorTest.addResult("Loading resource from " + url);
-        WebInspector.ResourceLoader.load(url, headers, callback);
+        Host.ResourceLoader.load(url, headers, callback);
 
         function callback(statusCode, headers, content)
         {

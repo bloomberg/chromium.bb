@@ -63,7 +63,7 @@ function test()
         function testClassName(next)
         {
             InspectorTest.invokeAsyncWithTimeline("changeClassNameAndDisplay", function() {
-                InspectorTest.dumpInvalidations(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 0);
+                InspectorTest.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0);
                 next();
             });
         },
@@ -71,7 +71,7 @@ function test()
         function testIdWithoutStyleChange(next)
         {
             InspectorTest.invokeAsyncWithTimeline("changeIdWithoutStyleChangeAndDisplay", function() {
-                var record = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.UpdateLayoutTree);
+                var record = InspectorTest.findFirstTimelineRecord(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree);
                 InspectorTest.assertTrue(record === undefined, "There should be no style recalculation for an id change without style changes.");
                 next();
             });
@@ -80,7 +80,7 @@ function test()
         function testId(next)
         {
             InspectorTest.invokeAsyncWithTimeline("changeIdAndDisplay", function() {
-                InspectorTest.dumpInvalidations(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 0);
+                InspectorTest.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0);
                 next();
             });
         },
@@ -88,7 +88,7 @@ function test()
         function testStyleAttributeChange(next)
         {
             InspectorTest.invokeAsyncWithTimeline("changeStyleAttributeAndDisplay", function() {
-                InspectorTest.dumpInvalidations(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 0);
+                InspectorTest.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0);
                 next();
             });
         },
@@ -96,7 +96,7 @@ function test()
         function testAttributeChange(next)
         {
             InspectorTest.invokeAsyncWithTimeline("changeAttributeAndDisplay", function() {
-                InspectorTest.dumpInvalidations(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 0);
+                InspectorTest.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0);
                 next();
             });
         },
@@ -104,7 +104,7 @@ function test()
         function testPseudoChange(next)
         {
             InspectorTest.invokeAsyncWithTimeline("changePseudoAndDisplay", function() {
-                InspectorTest.dumpInvalidations(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 0);
+                InspectorTest.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0);
                 next();
             });
         }

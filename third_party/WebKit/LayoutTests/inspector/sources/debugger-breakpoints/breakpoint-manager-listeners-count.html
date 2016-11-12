@@ -10,7 +10,7 @@ function test()
     InspectorTest.runDebuggerTestSuite([
         function testSourceFramesCount(next)
         {
-            var panel = WebInspector.panels.sources;
+            var panel = UI.panels.sources;
             var sourceFrameCount = 0;
 
             InspectorTest.showScriptSource("script1.js", didShowScriptSources);
@@ -27,7 +27,7 @@ function test()
 
             function didShowScriptSourceAgain()
             {
-                var listeners = WebInspector.breakpointManager._listeners.get(WebInspector.BreakpointManager.Events.BreakpointAdded);
+                var listeners = Bindings.breakpointManager._listeners.get(Bindings.BreakpointManager.Events.BreakpointAdded);
                 // There should be 3 breakpoint-added event listeners:
                 //  - BreakpointsSidebarPane
                 //  - 2 shown tabs
@@ -35,7 +35,7 @@ function test()
 
                 function dumpListener(listener)
                 {
-                    if (!(listener.thisObject instanceof WebInspector.SourceFrame))
+                    if (!(listener.thisObject instanceof SourceFrame.SourceFrame))
                         return;
                     var sourceFrame = listener.thisObject;
                     InspectorTest.addResult("    " + sourceFrame._uiSourceCode.name());

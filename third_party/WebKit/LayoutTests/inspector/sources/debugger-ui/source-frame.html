@@ -18,7 +18,7 @@ function methodForBreakpoint()
 
 function test()
 {
-    WebInspector.viewManager.showView("resources");
+    UI.viewManager.showView("resources");
     InspectorTest.runDebuggerTestSuite([
         function testSetBreakpoint(next)
         {
@@ -27,7 +27,7 @@ function test()
             function didShowScriptSource(sourceFrame)
             {
                 InspectorTest.addResult("Script source was shown.");
-                InspectorTest.addSniffer(WebInspector.JavaScriptSourceFrame.prototype, "_addBreakpointDecoration", didAddBreakpoint);
+                InspectorTest.addSniffer(Sources.JavaScriptSourceFrame.prototype, "_addBreakpointDecoration", didAddBreakpoint);
                 InspectorTest.setBreakpoint(sourceFrame, 14, "", true);
             }
 
@@ -47,8 +47,8 @@ function test()
             {
                 InspectorTest.addResult("Script source was shown.");
                 shownSourceFrame = sourceFrame;
-                InspectorTest.addSniffer(WebInspector.UISourceCodeFrame.prototype, "_addMessageToSource", didAddMessage);
-                InspectorTest.addSniffer(WebInspector.UISourceCodeFrame.prototype, "_removeMessageFromSource", didRemoveMessage);
+                InspectorTest.addSniffer(Sources.UISourceCodeFrame.prototype, "_addMessageToSource", didAddMessage);
+                InspectorTest.addSniffer(Sources.UISourceCodeFrame.prototype, "_removeMessageFromSource", didRemoveMessage);
                 InspectorTest.evaluateInPage("addErrorToConsole()");
             }
 
@@ -57,7 +57,7 @@ function test()
                 if (this !== shownSourceFrame)
                     return;
                 InspectorTest.addResult("Message added to source frame: " + message.text());
-                setImmediate(function() { WebInspector.ConsoleView.clearConsole(); });
+                setImmediate(function() { Console.ConsoleView.clearConsole(); });
             }
 
             function didRemoveMessage(message)
@@ -71,14 +71,14 @@ function test()
 
         function testShowResource(next)
         {
-            WebInspector.viewManager.showView("network");
-            InspectorTest.addSniffer(WebInspector.SourceFrame.prototype, "show", didShowSourceFrame);
+            UI.viewManager.showView("network");
+            InspectorTest.addSniffer(SourceFrame.SourceFrame.prototype, "show", didShowSourceFrame);
 
             InspectorTest.resourceTreeModel.forAllResources(visit);
             function visit(resource)
             {
                 if (resource.url.indexOf("debugger-test.js") !== -1) {
-                    WebInspector.panels.resources.showResource(resource, 1);
+                    UI.panels.resources.showResource(resource, 1);
                     return true;
                 }
             }

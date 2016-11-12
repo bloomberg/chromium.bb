@@ -15,8 +15,8 @@ function test()
 
     function childCallback(childObject)
     {
-        InspectorTest.firstElementsTreeOutline().addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged);
-        WebInspector.Revealer.reveal(childObject);
+        InspectorTest.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged);
+        Common.Revealer.reveal(childObject);
     }
 
     function selectedNodeChanged(event) {

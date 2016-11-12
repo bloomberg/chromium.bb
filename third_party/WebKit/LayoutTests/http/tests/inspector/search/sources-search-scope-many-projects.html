@@ -9,7 +9,7 @@
 <script>
 function test()
 {
-    var scope = new WebInspector.SourcesSearchScope();
+    var scope = new Sources.SourcesSearchScope();
     var fs = new InspectorTest.TestFileSystem("file:///var/www");
     var names = ["search.html", "search.js", "search.css"];
     var resources = {};
@@ -39,7 +39,7 @@ function test()
 
     function fileSystemCreated()
     {
-        WebInspector.viewManager.showView("sources.search");
+        UI.viewManager.showView("sources.search");
 
         var uiSourceCodes = InspectorTest.fileSystemUISourceCodes();
         for (var i = 0; i < uiSourceCodes.length; ++i) {
@@ -65,8 +65,8 @@ function test()
 
     function addNetworkUISourceCode(url, content)
     {
-        var contentProvider = WebInspector.StaticContentProvider.fromString(url, WebInspector.resourceTypes.Script, content);
-        var networkProject = WebInspector.NetworkProject.forTarget(WebInspector.targetManager.mainTarget());
+        var contentProvider = Common.StaticContentProvider.fromString(url, Common.resourceTypes.Script, content);
+        var networkProject = Bindings.NetworkProject.forTarget(SDK.targetManager.mainTarget());
         var uiSourceCode = networkProject.addFile(contentProvider, InspectorTest.mainFrame(), false);
         return uiSourceCode;
     }
@@ -80,7 +80,7 @@ function test()
             var paths = [];
             for (var i = 0; i < names.length; ++i)
                 paths.push("/var/www/" + names[i]);
-            WebInspector.isolatedFileSystemManager._onSearchCompleted({data: {requestId: requestId, fileSystemPath: path, files: paths}});
+            Workspace.isolatedFileSystemManager._onSearchCompleted({data: {requestId: requestId, fileSystemPath: path, files: paths}});
         }
     }
 
@@ -88,7 +88,7 @@ function test()
         function testSearch(next)
         {
             var query = "searchTest" + "UniqueString";
-            var searchConfig = new WebInspector.SearchConfig(query, true, false);
+            var searchConfig = new Workspace.SearchConfig(query, true, false);
             InspectorTest.runSearchAndDumpResults(scope, searchConfig, false, next);
         },
 
@@ -98,7 +98,7 @@ function test()
             jsNetworkUISourceCode.setWorkingCopy("FOO " + "searchTest" + "UniqueString" + " BAR");
 
             var query = "searchTest" + "UniqueString";
-            var searchConfig = new WebInspector.SearchConfig(query, true, false);
+            var searchConfig = new Workspace.SearchConfig(query, true, false);
             InspectorTest.runSearchAndDumpResults(scope, searchConfig, false, next);
         }
     ];

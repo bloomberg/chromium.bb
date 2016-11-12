@@ -37,12 +37,12 @@ function test()
         {
             function callback()
             {
-                InspectorTest.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, callback);
+                InspectorTest.domModel.removeEventListener(SDK.DOMModel.Events.AttrModified, callback);
                 InspectorTest.addResult("===== On attribute set =====");
                 InspectorTest.dumpElementsTree(targetNode);
                 next();
             }
-            InspectorTest.domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, callback);
+            InspectorTest.domModel.addEventListener(SDK.DOMModel.Events.AttrModified, callback);
             InspectorTest.evaluateInPage("setAttribute('http://www.w3.org/1999/xlink', 'xlink:href', 'changed-url')");
         },
 
@@ -50,12 +50,12 @@ function test()
         {
             function callback()
             {
-                InspectorTest.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrRemoved, callback);
+                InspectorTest.domModel.removeEventListener(SDK.DOMModel.Events.AttrRemoved, callback);
                 InspectorTest.addResult("=== On attribute removed ===");
                 InspectorTest.dumpElementsTree(targetNode);
                 next();
             }
-            InspectorTest.domModel.addEventListener(WebInspector.DOMModel.Events.AttrRemoved, callback);
+            InspectorTest.domModel.addEventListener(SDK.DOMModel.Events.AttrRemoved, callback);
             InspectorTest.evaluateInPage("removeAttribute('xlink:href')");
         },
     ]);

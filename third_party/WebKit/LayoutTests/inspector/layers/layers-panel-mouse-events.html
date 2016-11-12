@@ -19,8 +19,8 @@ function initialize_LayersPanelnMouseEvents()
 
 InspectorTest.findLayerTreeElement = function(layer)
 {
-    var layerTree = WebInspector.panels.layers._layerTreeOutline._treeOutline;
-    var element = layer[WebInspector.LayerTreeElement._symbol];
+    var layerTree = UI.panels.layers._layerTreeOutline._treeOutline;
+    var element = layer[LayerViewer.LayerTreeElement._symbol];
     element.reveal();
     return element.listItemElement;
 }
@@ -49,7 +49,7 @@ function test()
 {
     function step1()
     {
-        WebInspector.panels.layers._update();
+        UI.panels.layers._update();
         var layerB1 = InspectorTest.findLayerByNodeIdAttribute("b1");
         var treeElementB1 = InspectorTest.findLayerTreeElement(layerB1);
 
@@ -58,7 +58,7 @@ function test()
 
         function dumpElementSelectionState()
         {
-            WebInspector.panels.layers._update();
+            UI.panels.layers._update();
             InspectorTest.dumpSelectedStyles("Layer b1 in tree", treeElementB1);
             InspectorTest.dumpSelectedStyles("Layer b3 in tree", treeElementB3);
         }

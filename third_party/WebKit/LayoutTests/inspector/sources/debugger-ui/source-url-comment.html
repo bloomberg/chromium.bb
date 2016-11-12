@@ -68,7 +68,7 @@ function test()
 
             function didShowScriptSource(sourceFrame)
             {
-                var panel = WebInspector.panels.sources;
+                var panel = UI.panels.sources;
                 var uiSourceCodes = panel._workspace.uiSourceCodes();
                 var ignored = true;
                 for (var i = 0; i < uiSourceCodes.length && ignored; ++i) {
@@ -101,7 +101,7 @@ function test()
 
             function didShowScriptSource(sourceFrame)
             {
-                var panel = WebInspector.panels.sources;
+                var panel = UI.panels.sources;
                 var uiSourceCodes = panel._workspace.uiSourceCodes();
                 for (var i = 0; i < uiSourceCodes.length; ++i) {
                     if (uiSourceCodes[i].url().indexOf("scriptWithPoorSourceURL.js") !== -1)

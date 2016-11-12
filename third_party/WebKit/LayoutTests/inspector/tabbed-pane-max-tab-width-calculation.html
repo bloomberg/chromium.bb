@@ -6,7 +6,7 @@ var test = function()
 {
     function calculateAndDumpMaxWidth(measuredWidths, totalWidth)
     {
-        var maxWidth = WebInspector.TabbedPane.prototype._calculateMaxWidth(measuredWidths, totalWidth);
+        var maxWidth = UI.TabbedPane.prototype._calculateMaxWidth(measuredWidths, totalWidth);
         InspectorTest.addResult("measuredWidths = [" + String(measuredWidths) + "], totalWidth = " + totalWidth + ", maxWidth = " + maxWidth + ".");
     }
 

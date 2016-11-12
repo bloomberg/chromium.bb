@@ -20,7 +20,7 @@ function test()
     var requestId;
     var scriptUrl = "timeline-network-resource.js";
 
-    var model = WebInspector.panels.timeline._model;
+    var model = UI.panels.timeline._model;
 
     InspectorTest.invokeAsyncWithTimeline("performActions", finish);
 
@@ -29,11 +29,11 @@ function test()
         var lastRecordStartTime;
         function format(record)
         {
-            if (record.type() === WebInspector.TimelineModel.RecordType.ResourceSendRequest)
+            if (record.type() === TimelineModel.TimelineModel.RecordType.ResourceSendRequest)
                 printSend(record);
-            else if (record.type() === WebInspector.TimelineModel.RecordType.ResourceReceiveResponse)
+            else if (record.type() === TimelineModel.TimelineModel.RecordType.ResourceReceiveResponse)
                 printReceive(record);
-            else if (record.type() === WebInspector.TimelineModel.RecordType.ResourceFinish)
+            else if (record.type() === TimelineModel.TimelineModel.RecordType.ResourceFinish)
                 printFinish(record);
        }
         model.forAllRecords(format);
@@ -44,7 +44,7 @@ function test()
     {
         InspectorTest.addResult("");
         InspectorTest.printTimelineRecordProperties(record);
-        InspectorTest.addResult("Text details for " + record.type() + ": " + WebInspector.TimelineUIUtils.buildDetailsTextForTraceEvent(record.traceEvent()));
+        InspectorTest.addResult("Text details for " + record.type() + ": " + Timeline.TimelineUIUtils.buildDetailsTextForTraceEvent(record.traceEvent()));
     }
 
     function printSend(record)

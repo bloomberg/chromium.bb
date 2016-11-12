@@ -6,20 +6,20 @@ InspectorTest.createWorkspace = function(ignoreEvents)
         InspectorTest.testFileSystemWorkspaceBinding.dispose();
     if (InspectorTest.testNetworkMapping)
         InspectorTest.testNetworkMapping.dispose();
-    WebInspector.fileSystemMapping.resetForTesting();
+    Workspace.fileSystemMapping.resetForTesting();
 
-    InspectorTest.testTargetManager = new WebInspector.TargetManager();
-    InspectorTest.testWorkspace = new WebInspector.Workspace();
-    InspectorTest.testFileSystemWorkspaceBinding = new WebInspector.FileSystemWorkspaceBinding(WebInspector.isolatedFileSystemManager, InspectorTest.testWorkspace);
-    InspectorTest.testNetworkMapping = new WebInspector.NetworkMapping(InspectorTest.testTargetManager, InspectorTest.testWorkspace, InspectorTest.testFileSystemWorkspaceBinding, WebInspector.fileSystemMapping);
-    InspectorTest.testNetworkProjectManager = new WebInspector.NetworkProjectManager(InspectorTest.testTargetManager, InspectorTest.testWorkspace);
-    InspectorTest.testDebuggerWorkspaceBinding = new WebInspector.DebuggerWorkspaceBinding(InspectorTest.testTargetManager, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping);
-    InspectorTest.testCSSWorkspaceBinding = new WebInspector.CSSWorkspaceBinding(InspectorTest.testTargetManager, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping);
+    InspectorTest.testTargetManager = new SDK.TargetManager();
+    InspectorTest.testWorkspace = new Workspace.Workspace();
+    InspectorTest.testFileSystemWorkspaceBinding = new Bindings.FileSystemWorkspaceBinding(Workspace.isolatedFileSystemManager, InspectorTest.testWorkspace);
+    InspectorTest.testNetworkMapping = new Bindings.NetworkMapping(InspectorTest.testTargetManager, InspectorTest.testWorkspace, InspectorTest.testFileSystemWorkspaceBinding, Workspace.fileSystemMapping);
+    InspectorTest.testNetworkProjectManager = new Bindings.NetworkProjectManager(InspectorTest.testTargetManager, InspectorTest.testWorkspace);
+    InspectorTest.testDebuggerWorkspaceBinding = new Bindings.DebuggerWorkspaceBinding(InspectorTest.testTargetManager, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping);
+    InspectorTest.testCSSWorkspaceBinding = new Bindings.CSSWorkspaceBinding(InspectorTest.testTargetManager, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping);
 
     InspectorTest.testTargetManager.observeTargets({
         targetAdded: function(target)
         {
-            InspectorTest.testNetworkProject = WebInspector.NetworkProject.forTarget(target);
+            InspectorTest.testNetworkProject = Bindings.NetworkProject.forTarget(target);
         },
 
         targetRemoved: function(target)
@@ -29,34 +29,34 @@ InspectorTest.createWorkspace = function(ignoreEvents)
 
     if (ignoreEvents)
         return;
-    InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, InspectorTest._defaultWorkspaceEventHandler);
-    InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, InspectorTest._defaultWorkspaceEventHandler);
+    InspectorTest.testWorkspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, InspectorTest._defaultWorkspaceEventHandler);
+    InspectorTest.testWorkspace.addEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, InspectorTest._defaultWorkspaceEventHandler);
 }
 
 InspectorTest._mockTargetId = 1;
 InspectorTest._pageCapabilities =
-    WebInspector.Target.Capability.Browser | WebInspector.Target.Capability.DOM |
-    WebInspector.Target.Capability.JS | WebInspector.Target.Capability.Log |
-    WebInspector.Target.Capability.Network | WebInspector.Target.Capability.Worker;
+    SDK.Target.Capability.Browser | SDK.Target.Capability.DOM |
+    SDK.Target.Capability.JS | SDK.Target.Capability.Log |
+    SDK.Target.Capability.Network | SDK.Target.Capability.Worker;
 
 InspectorTest.createMockTarget = function(id, debuggerModelConstructor, capabilities)
 {
     capabilities = capabilities || InspectorTest._pageCapabilities;
-    var MockTarget = class extends WebInspector.Target {
+    var MockTarget = class extends SDK.Target {
         constructor(name, connectionFactory, callback) {
             super(InspectorTest.testTargetManager, name, capabilities, connectionFactory, null, callback);
             this._inspectedURL = InspectorTest.mainTarget.inspectedURL();
-            this.consoleModel = new WebInspector.ConsoleModel(this);
-            this.networkManager = new WebInspector.NetworkManager(this);
-            this.runtimeModel = new WebInspector.RuntimeModel(this);
-            this.securityOriginManager = WebInspector.SecurityOriginManager.fromTarget(this);
-            this.resourceTreeModel = new WebInspector.ResourceTreeModel(this, this.networkManager, this.securityOriginManager);
+            this.consoleModel = new SDK.ConsoleModel(this);
+            this.networkManager = new SDK.NetworkManager(this);
+            this.runtimeModel = new SDK.RuntimeModel(this);
+            this.securityOriginManager = SDK.SecurityOriginManager.fromTarget(this);
+            this.resourceTreeModel = new SDK.ResourceTreeModel(this, this.networkManager, this.securityOriginManager);
             this.resourceTreeModel._cachedResourcesProcessed = true;
             this.resourceTreeModel._frameAttached("42", 0);
-            this.debuggerModel = debuggerModelConstructor ? new debuggerModelConstructor(this) : new WebInspector.DebuggerModel(this);
-            this._modelByConstructor.set(WebInspector.DebuggerModel, this.debuggerModel);
-            this.domModel = new WebInspector.DOMModel(this);
-            this.cssModel = new WebInspector.CSSModel(this, this.domModel);
+            this.debuggerModel = debuggerModelConstructor ? new debuggerModelConstructor(this) : new SDK.DebuggerModel(this);
+            this._modelByConstructor.set(SDK.DebuggerModel, this.debuggerModel);
+            this.domModel = new SDK.DOMModel(this);
+            this.cssModel = new SDK.CSSModel(this, this.domModel);
         }
 
         _loadedWithCapabilities()
@@ -64,7 +64,7 @@ InspectorTest.createMockTarget = function(id, debuggerModelConstructor, capabili
         }
     };
 
-    var target = new MockTarget("mock-target-" + id, (params) => new WebInspector.StubConnection(params));
+    var target = new MockTarget("mock-target-" + id, (params) => new SDK.StubConnection(params));
     InspectorTest.testTargetManager.addTarget(target);
     return target;
 }
@@ -79,18 +79,18 @@ InspectorTest.createWorkspaceWithTarget = function(ignoreEvents)
 InspectorTest.waitForWorkspaceUISourceCodeAddedEvent = function(callback, count, projectType)
 {
     InspectorTest.uiSourceCodeAddedEventsLeft = count || 1;
-    InspectorTest.testWorkspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, InspectorTest._defaultWorkspaceEventHandler);
-    InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
+    InspectorTest.testWorkspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeAdded, InspectorTest._defaultWorkspaceEventHandler);
+    InspectorTest.testWorkspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
 
     function uiSourceCodeAdded(event)
     {
         if (projectType && event.data.project().type() !== projectType)
             return;
-        if (!projectType && event.data.project().type() === WebInspector.projectTypes.Service)
+        if (!projectType && event.data.project().type() === Workspace.projectTypes.Service)
             return;
         if (!(--InspectorTest.uiSourceCodeAddedEventsLeft)) {
-            InspectorTest.testWorkspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
-            InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, InspectorTest._defaultWorkspaceEventHandler);
+            InspectorTest.testWorkspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
+            InspectorTest.testWorkspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, InspectorTest._defaultWorkspaceEventHandler);
         }
         callback(event.data);
     }
@@ -99,16 +99,16 @@ InspectorTest.waitForWorkspaceUISourceCodeAddedEvent = function(callback, count,
 InspectorTest.waitForWorkspaceUISourceCodeRemovedEvent = function(callback, count)
 {
     InspectorTest.uiSourceCodeRemovedEventsLeft = count || 1;
-    InspectorTest.testWorkspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, InspectorTest._defaultWorkspaceEventHandler);
-    InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, uiSourceCodeRemoved);
+    InspectorTest.testWorkspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, InspectorTest._defaultWorkspaceEventHandler);
+    InspectorTest.testWorkspace.addEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, uiSourceCodeRemoved);
 
     function uiSourceCodeRemoved(event)
     {
-        if (event.data.project().type() === WebInspector.projectTypes.Service)
+        if (event.data.project().type() === Workspace.projectTypes.Service)
             return;
         if (!(--InspectorTest.uiSourceCodeRemovedEventsLeft)) {
-            InspectorTest.testWorkspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, uiSourceCodeRemoved);
-            InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, InspectorTest._defaultWorkspaceEventHandler);
+            InspectorTest.testWorkspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, uiSourceCodeRemoved);
+            InspectorTest.testWorkspace.addEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, InspectorTest._defaultWorkspaceEventHandler);
         }
         callback(event.data);
     }
@@ -116,20 +116,20 @@ InspectorTest.waitForWorkspaceUISourceCodeRemovedEvent = function(callback, coun
 
 InspectorTest.addMockUISourceCodeToWorkspace = function(url, type, content)
 {
-    var mockContentProvider = WebInspector.StaticContentProvider.fromString(url, type, content);
+    var mockContentProvider = Common.StaticContentProvider.fromString(url, type, content);
     InspectorTest.testNetworkProject.addFile(mockContentProvider, null, false);
 }
 
 InspectorTest.addMockUISourceCodeViaNetwork = function(url, type, content, target)
 {
-    var mockContentProvider = WebInspector.StaticContentProvider.fromString(url, type, content);
+    var mockContentProvider = Common.StaticContentProvider.fromString(url, type, content);
     InspectorTest.testNetworkProject.addFile(mockContentProvider, target.resourceTreeModel.mainFrame, false);
 }
 
 InspectorTest._defaultWorkspaceEventHandler = function(event)
 {
     var uiSourceCode = event.data;
-    if (uiSourceCode.project().type() === WebInspector.projectTypes.Service)
+    if (uiSourceCode.project().type() === Workspace.projectTypes.Service)
         return;
     InspectorTest.addResult(`Workspace event: ${event.type.toString()}: ${uiSourceCode.url()}.`);
 }
@@ -142,13 +142,13 @@ InspectorTest.uiSourceCodeURL = function(uiSourceCode)
 InspectorTest.dumpUISourceCode = function(uiSourceCode, callback)
 {
     InspectorTest.addResult("UISourceCode: " + InspectorTest.uiSourceCodeURL(uiSourceCode));
-    if (uiSourceCode.contentType() === WebInspector.resourceTypes.Script || uiSourceCode.contentType() === WebInspector.resourceTypes.Document)
-        InspectorTest.addResult("UISourceCode is content script: " + (uiSourceCode.project().type() === WebInspector.projectTypes.ContentScripts));
+    if (uiSourceCode.contentType() === Common.resourceTypes.Script || uiSourceCode.contentType() === Common.resourceTypes.Document)
+        InspectorTest.addResult("UISourceCode is content script: " + (uiSourceCode.project().type() === Workspace.projectTypes.ContentScripts));
     uiSourceCode.requestContent().then(didRequestContent);
 
     function didRequestContent(content, contentEncoded)
     {
-        InspectorTest.addResult("Highlighter type: " + WebInspector.NetworkProject.uiSourceCodeMimeType(uiSourceCode));
+        InspectorTest.addResult("Highlighter type: " + Bindings.NetworkProject.uiSourceCodeMimeType(uiSourceCode));
         InspectorTest.addResult("UISourceCode content: " + content);
         callback();
     }
@@ -157,7 +157,7 @@ InspectorTest.dumpUISourceCode = function(uiSourceCode, callback)
 InspectorTest.fileSystemUISourceCodes = function()
 {
     var uiSourceCodes = [];
-    var fileSystemProjects = WebInspector.workspace.projectsForType(WebInspector.projectTypes.FileSystem);
+    var fileSystemProjects = Workspace.workspace.projectsForType(Workspace.projectTypes.FileSystem);
     for (var project of fileSystemProjects)
         uiSourceCodes = uiSourceCodes.concat(project.uiSourceCodes());
     return uiSourceCodes;
@@ -166,7 +166,7 @@ InspectorTest.fileSystemUISourceCodes = function()
 InspectorTest.refreshFileSystemProjects = function(callback)
 {
     var barrier = new CallbackBarrier();
-    var projects = WebInspector.workspace.projects();
+    var projects = Workspace.workspace.projects();
     for (var i = 0; i < projects.length; ++i)
         projects[i].refresh("/", barrier.createCallback());
     barrier.callWhenDone(callback);
@@ -174,19 +174,19 @@ InspectorTest.refreshFileSystemProjects = function(callback)
 
 InspectorTest.waitForGivenUISourceCode = function(name, callback)
 {
-    var uiSourceCodes = WebInspector.workspace.uiSourceCodes();
+    var uiSourceCodes = Workspace.workspace.uiSourceCodes();
     for (var i = 0; i < uiSourceCodes.length; ++i) {
         if (uiSourceCodes[i].name() === name) {
             setImmediate(callback);
             return;
         }
     }
-    WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
+    Workspace.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
 
     function uiSourceCodeAdded(event)
     {
         if (event.data.name() === name) {
-            WebInspector.workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
+            Workspace.workspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
             setImmediate(callback);
         }
     }

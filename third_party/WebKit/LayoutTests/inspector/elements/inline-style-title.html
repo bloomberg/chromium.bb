@@ -15,8 +15,8 @@ function updateStyleText()
 function test()
 {
     // Save time on style updates.
-    WebInspector.StylesSidebarPane.prototype.update = function() {};
-    WebInspector.MetricsSidebarPane.prototype.update = function() {};
+    Elements.StylesSidebarPane.prototype.update = function() {};
+    Elements.MetricsSidebarPane.prototype.update = function() {};
 
     InspectorTest.nodeWithId("inline-style", onInlineStyleQueried);
 

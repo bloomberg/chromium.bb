@@ -8,7 +8,7 @@ var initialize_ExtensionsAuditsTest = function()
 {
     InspectorTest.startExtensionAudits = function(callback)
     {
-        const launcherView = WebInspector.panels.audits._launcherView;
+        const launcherView = UI.panels.audits._launcherView;
         launcherView._selectAllClicked(false);
         launcherView._auditPresentStateElement.checked = true;
 
@@ -23,7 +23,7 @@ var initialize_ExtensionsAuditsTest = function()
         {
             InspectorTest.collectAuditResults(callback);
         }
-        InspectorTest.addSniffer(WebInspector.panels.audits, "auditFinishedCallback", onAuditsDone, true);
+        InspectorTest.addSniffer(UI.panels.audits, "auditFinishedCallback", onAuditsDone, true);
 
         launcherView._launchButtonClicked();
     }

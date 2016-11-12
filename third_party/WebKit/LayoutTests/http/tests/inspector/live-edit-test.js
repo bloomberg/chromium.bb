@@ -8,7 +8,7 @@ InspectorTest.replaceInSource = function(sourceFrame, string, replacement)
         var column = line.indexOf(string);
         if (column === -1)
             continue;
-        range = new WebInspector.TextRange(i, column, i, column + string.length);
+        range = new Common.TextRange(i, column, i, column + string.length);
         var newRange = sourceFrame._textEditor.editRange(range, replacement);
         break;
     }

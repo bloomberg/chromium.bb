@@ -10,7 +10,7 @@ function test()
 {
     var timestamp = new Date("December 1, 1989");
     var index_html = {
-        contentType: WebInspector.resourceTypes.Document,
+        contentType: Common.resourceTypes.Document,
         content: "<body>this is main resource</body>",
         time: timestamp
     };
@@ -19,7 +19,7 @@ function test()
         time: null
     };
     var bar_css = {
-        contentType: WebInspector.resourceTypes.Stylesheet,
+        contentType: Common.resourceTypes.Stylesheet,
         content: "* { box-sizing: border-box }",
         time: timestamp
     };
@@ -27,7 +27,7 @@ function test()
     var sources_module_json = { content: "module descriptor 2" };
     var bazContent = "alert(1);";
 
-    var automappingTest = new InspectorTest.AutomappingTest(new WebInspector.Workspace());
+    var automappingTest = new InspectorTest.AutomappingTest(new Workspace.Workspace());
     automappingTest.addNetworkResources({
         // Make sure main resource gets mapped.
         "http://example.com": index_html,

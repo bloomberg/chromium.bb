@@ -13,15 +13,15 @@ function test()
 {
     var fs = new InspectorTest.TestFileSystem("file:///var/www");
     var fsEntry = InspectorTest.addFooJSFile(fs);
-    var scope = new WebInspector.SourcesSearchScope();
+    var scope = new Sources.SourcesSearchScope();
     fs.reportCreated(function() { });
 
     InspectorTest.runTestSuite([
         function waitForUISourceCodes(next)
         {
             Promise.all([
-                InspectorTest.waitForUISourceCode("foo.js", WebInspector.projectTypes.Network),
-                InspectorTest.waitForUISourceCode("foo.js", WebInspector.projectTypes.FileSystem)
+                InspectorTest.waitForUISourceCode("foo.js", Workspace.projectTypes.Network),
+                InspectorTest.waitForUISourceCode("foo.js", Workspace.projectTypes.FileSystem)
             ]).then(next);
         },
 
@@ -29,7 +29,7 @@ function test()
 
         function addFileMapping(next)
         {
-            WebInspector.fileSystemMapping.addFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
+            Workspace.fileSystemMapping.addFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
             InspectorTest.waitForBinding("foo.js").then(next);
         },
 
@@ -38,7 +38,7 @@ function test()
 
     function dumpSearchResults(next)
     {
-        var searchConfig = new WebInspector.SearchConfig("window.foo f:foo", true, false);
+        var searchConfig = new Workspace.SearchConfig("window.foo f:foo", true, false);
         InspectorTest.runSearchAndDumpResults(scope, searchConfig, true, next);
     }
 
@@ -49,7 +49,7 @@ function test()
         function reply()
         {
             var paths = ["/var/www" + fsEntry.fullPath];
-            WebInspector.isolatedFileSystemManager._onSearchCompleted({data: {requestId: requestId, fileSystemPath: path, files: paths}});
+            Workspace.isolatedFileSystemManager._onSearchCompleted({data: {requestId: requestId, fileSystemPath: path, files: paths}});
         }
     }
 };

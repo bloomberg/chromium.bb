@@ -6,7 +6,7 @@
 
 function test()
 {
-    var prompt = new WebInspector.StylesSidebarPane.CSSPropertyPrompt(WebInspector.cssMetadata().allProperties(), null, true);
+    var prompt = new Elements.StylesSidebarPane.CSSPropertyPrompt(SDK.cssMetadata().allProperties(), null, true);
 
     InspectorTest.runTestSuite([
         function testForUpperCase(next)

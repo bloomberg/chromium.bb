@@ -14,7 +14,7 @@ InspectorTest.overrideNetworkModificationTime = function(urlToTime)
 {
     if (!timeOverrides) {
         timeOverrides = new Map();
-        originalRequestMetadata = InspectorTest.override(WebInspector.ContentProviderBasedProject.prototype, "requestMetadata", overrideTime, true);
+        originalRequestMetadata = InspectorTest.override(Bindings.ContentProviderBasedProject.prototype, "requestMetadata", overrideTime, true);
     }
     for (var url in urlToTime)
         timeOverrides.set(url, urlToTime[url]);
@@ -31,18 +31,18 @@ InspectorTest.overrideNetworkModificationTime = function(urlToTime)
     {
         if (!timeOverride && !metadata)
             return null;
-        return new WebInspector.UISourceCodeMetadata(timeOverride, metadata ? metadata.contentSize : null);
+        return new Workspace.UISourceCodeMetadata(timeOverride, metadata ? metadata.contentSize : null);
     }
 }
 
 InspectorTest.AutomappingTest = function(workspace)
 {
     this._workspace = workspace;
-    this._networkProject = new WebInspector.ContentProviderBasedProject(this._workspace, "AUTOMAPPING", WebInspector.projectTypes.Network, "simple website");
-    if (workspace !== WebInspector.workspace)
-        new WebInspector.FileSystemWorkspaceBinding(WebInspector.isolatedFileSystemManager, this._workspace);
+    this._networkProject = new Bindings.ContentProviderBasedProject(this._workspace, "AUTOMAPPING", Workspace.projectTypes.Network, "simple website");
+    if (workspace !== Workspace.workspace)
+        new Bindings.FileSystemWorkspaceBinding(Workspace.isolatedFileSystemManager, this._workspace);
     this._failedBindingsCount = 0;
-    this._automapping = new WebInspector.Automapping(this._workspace, this._onBindingAdded.bind(this), this._onBindingRemoved.bind(this));
+    this._automapping = new Persistence.Automapping(this._workspace, this._onBindingAdded.bind(this), this._onBindingRemoved.bind(this));
     InspectorTest.addSniffer(this._automapping, "_onBindingFailedForTest", this._onBindingFailed.bind(this), true);
     InspectorTest.addSniffer(this._automapping, "_onSweepHappenedForTest", this._onSweepHappened.bind(this), true);
 }
@@ -58,9 +58,9 @@ InspectorTest.AutomappingTest.prototype = {
     {
         for (var url in assets) {
             var asset = assets[url];
-            var contentType = asset.contentType || WebInspector.resourceTypes.Script;
-            var contentProvider = new WebInspector.StaticContentProvider(url, contentType, Promise.resolve(asset.content));
-            var metadata = typeof asset.content === "string" || asset.time ? new WebInspector.UISourceCodeMetadata(asset.time, asset.content.length) : null;
+            var contentType = asset.contentType || Common.resourceTypes.Script;
+            var contentProvider = new Common.StaticContentProvider(url, contentType, Promise.resolve(asset.content));
+            var metadata = typeof asset.content === "string" || asset.time ? new Workspace.UISourceCodeMetadata(asset.time, asset.content.length) : null;
             var uiSourceCode = this._networkProject.createUISourceCode(url, contentType);
             this._networkProject.addUISourceCodeWithProvider(uiSourceCode, contentProvider, metadata);
         }
@@ -100,7 +100,7 @@ InspectorTest.AutomappingTest.prototype = {
     {
         if (!this._stabilizedCallback || this._automapping._sweepThrottler._process)
             return;
-        var networkUISourceCodes = this._workspace.uiSourceCodesForProjectType(WebInspector.projectTypes.Network);
+        var networkUISourceCodes = this._workspace.uiSourceCodesForProjectType(Workspace.projectTypes.Network);
         var stabilized = this._failedBindingsCount + this._automapping._bindings.size === networkUISourceCodes.length;
         if (stabilized) {
             InspectorTest.addResult("Mapping has stabilized.");

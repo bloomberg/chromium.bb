@@ -59,8 +59,7 @@ function test() {
             InspectorTest.completeTest();
         }
     }
-    console.log(WebInspector.Network);
-    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.Events.RequestUpdated, onRequest);
+    InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestUpdated, onRequest);
     InspectorTest.evaluateInPage('sendMessages()');
 }
 </script>

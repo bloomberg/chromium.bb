@@ -8,7 +8,7 @@ function test()
     function createNetworkRequest(mimeType, content, statusCode)
     {
         InspectorTest.addResult("Creating a NetworkRequest with mimeType: " + mimeType);
-        var request = new WebInspector.NetworkRequest(WebInspector.targetManager.mainTarget(), 0, 'http://localhost');
+        var request = new SDK.NetworkRequest(SDK.targetManager.mainTarget(), 0, 'http://localhost');
         InspectorTest.addResult("Content: " + content.replace(/\0/g, "**NULL**"));
         request.mimeType = mimeType;
         request._content = content;
@@ -21,14 +21,14 @@ function test()
     {
         if (!previewer)
             return "** NONE **";
-        if (previewer instanceof WebInspector.SearchableView)
+        if (previewer instanceof UI.SearchableView)
             return "SearchableView > " + getViewName(previewer._searchProvider);
         return previewer.contentElement.className;
     }
 
     function testPreviewer(request, callback)
     {
-        var previewView = new WebInspector.RequestPreviewView(request, new WebInspector.RequestResponseView(request));
+        var previewView = new Network.RequestPreviewView(request, new Network.RequestResponseView(request));
 
         previewView._createPreviewView(function(previewer) {
             InspectorTest.addResult("Its previewer type: " + getViewName(previewer));

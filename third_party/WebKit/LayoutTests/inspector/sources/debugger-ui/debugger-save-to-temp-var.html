@@ -84,11 +84,11 @@ function test()
         function didEvaluate(result, exceptionDetails)
         {
             InspectorTest.assertTrue(!exceptionDetails, "FAIL: was thrown. Expression: " + expression);
-            WebInspector.panels.sources._saveToTempVariable(result);
+            UI.panels.sources._saveToTempVariable(result);
             InspectorTest.waitUntilNthMessageReceived(2, evaluateNext);
         }
 
-        WebInspector.context.flavor(WebInspector.ExecutionContext).evaluate(expression, "console", true, undefined, undefined, undefined, undefined, didEvaluate);
+        UI.context.flavor(SDK.ExecutionContext).evaluate(expression, "console", true, undefined, undefined, undefined, undefined, didEvaluate);
     }
 
     function tearDown()

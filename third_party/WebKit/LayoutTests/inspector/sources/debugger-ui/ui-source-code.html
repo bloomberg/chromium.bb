@@ -13,24 +13,24 @@ function test()
         setTimeout(callback.bind(null, "var x = 0;"), 0);
     }
     MockProject.prototype.isServiceProject = function() { return false; };
-    MockProject.prototype.type = function() { return WebInspector.projectTypes.Debugger; }
+    MockProject.prototype.type = function() { return Workspace.projectTypes.Debugger; }
     MockProject.prototype.url = function() { return "mock://debugger-ui/"; }
 
     InspectorTest.runTestSuite([
         function testUISourceCode(next)
         {
-            var uiSourceCode = new WebInspector.UISourceCode(new MockProject(), "url", WebInspector.resourceTypes.Script);
+            var uiSourceCode = new Workspace.UISourceCode(new MockProject(), "url", Common.resourceTypes.Script);
             function didRequestContent(callNumber, content)
             {
                 InspectorTest.addResult("Callback " + callNumber + " is invoked.");
-                InspectorTest.assertEquals("text/javascript", WebInspector.NetworkProject.uiSourceCodeMimeType(uiSourceCode));
+                InspectorTest.assertEquals("text/javascript", Bindings.NetworkProject.uiSourceCodeMimeType(uiSourceCode));
                 InspectorTest.assertEquals("var x = 0;", content);
 
                 if (callNumber === 3) {
                     // Check that sourceCodeProvider.requestContent won't be called anymore.
                     uiSourceCode.requestContent().then(function(content)
                     {
-                        InspectorTest.assertEquals("text/javascript", WebInspector.NetworkProject.uiSourceCodeMimeType(uiSourceCode));
+                        InspectorTest.assertEquals("text/javascript", Bindings.NetworkProject.uiSourceCodeMimeType(uiSourceCode));
                         InspectorTest.assertEquals("var x = 0;", content);
                         next();
                     });

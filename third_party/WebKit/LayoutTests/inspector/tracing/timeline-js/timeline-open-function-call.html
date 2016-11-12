@@ -62,7 +62,7 @@ function test()
     }];
 
     var model = InspectorTest.createTimelineModelWithEvents(rawTraceEvents);
-    var event = model.mainThreadEvents().find(e => e.name === WebInspector.TimelineModel.RecordType.FunctionCall);
+    var event = model.mainThreadEvents().find(e => e.name === TimelineModel.TimelineModel.RecordType.FunctionCall);
     InspectorTest.addResult(`${event.startTime} ${event.endTime}`);
     InspectorTest.completeTest();
 }

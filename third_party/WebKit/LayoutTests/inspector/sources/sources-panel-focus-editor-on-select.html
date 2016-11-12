@@ -9,8 +9,8 @@ function test()
     function onSourceFrame(sourceFrame)
     {
         InspectorTest.addResult("initial: focused = " + sourceFrame.hasFocus());
-        WebInspector.inspectorView.showPanel("elements")
-            .then(() => WebInspector.inspectorView.showPanel("sources"))
+        UI.inspectorView.showPanel("elements")
+            .then(() => UI.inspectorView.showPanel("sources"))
             .then(onPanelReselected.bind(null, sourceFrame));
     }
 

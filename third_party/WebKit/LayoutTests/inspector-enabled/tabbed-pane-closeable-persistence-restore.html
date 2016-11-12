@@ -11,7 +11,7 @@ function onload()
 
 function test()
 {
-    var drawer = WebInspector.inspectorView._drawerTabbedLocation.tabbedPane();
+    var drawer = UI.inspectorView._drawerTabbedLocation.tabbedPane();
     InspectorTest.addResult("Has sensors tab: " + drawer.hasTab("sensors"));
     InspectorTest.addResult("Has rendering tab: " + drawer.hasTab("rendering"));
     InspectorTest.completeTest();

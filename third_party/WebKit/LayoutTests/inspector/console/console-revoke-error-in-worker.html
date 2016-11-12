@@ -18,8 +18,8 @@ function handlePromiseRejection()
 
 function test()
 {
-    WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, InspectorTest.wrapListener(messageAdded));
-    WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageUpdated, InspectorTest.wrapListener(messageUpdated));
+    SDK.multitargetConsoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, InspectorTest.wrapListener(messageAdded));
+    SDK.multitargetConsoleModel.addEventListener(SDK.ConsoleModel.Events.MessageUpdated, InspectorTest.wrapListener(messageUpdated));
 
     InspectorTest.addResult("Creating worker with promise");
     InspectorTest.evaluateInPageWithTimeout("createPromise()");
@@ -29,7 +29,7 @@ function test()
         InspectorTest.addResult("");
         InspectorTest.addResult("Message added: " + event.data.level + " " + event.data.type);
 
-        if (event.data.level === WebInspector.ConsoleMessage.MessageLevel.Error) {
+        if (event.data.level === SDK.ConsoleMessage.MessageLevel.Error) {
             InspectorTest.dumpConsoleCounters();
             InspectorTest.addResult("");
             InspectorTest.addResult("Handling promise");

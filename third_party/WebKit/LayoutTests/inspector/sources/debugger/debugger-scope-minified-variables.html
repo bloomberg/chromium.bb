@@ -12,7 +12,7 @@ function test()
     function onSourceMapLoaded()
     {
         InspectorTest.startDebuggerTest(() => InspectorTest.runTestFunctionAndWaitUntilPaused());
-        InspectorTest.addSniffer(WebInspector.SourceMapNamesResolver, "_scopeResolvedForTest", onScopeResolved, true);
+        InspectorTest.addSniffer(Sources.SourceMapNamesResolver, "_scopeResolvedForTest", onScopeResolved, true);
     }
 
     var resolvedScopes = 0;

@@ -7,10 +7,10 @@
 function test()
 {
     InspectorTest.createWorkspace(true);
-    var context = new WebInspector.Context();
-    context.addFlavorChangeListener(WebInspector.ExecutionContext, executionContextChanged, this);
-    context.addFlavorChangeListener(WebInspector.Target, targetChanged, this);
-    new WebInspector.ExecutionContextSelector(InspectorTest.testTargetManager, context);
+    var context = new UI.Context();
+    context.addFlavorChangeListener(SDK.ExecutionContext, executionContextChanged, this);
+    context.addFlavorChangeListener(SDK.Target, targetChanged, this);
+    new Components.ExecutionContextSelector(InspectorTest.testTargetManager, context);
 
     function executionContextChanged(event)
     {
@@ -33,7 +33,7 @@ function test()
 
     InspectorTest.addResult("");
     InspectorTest.addResult("Adding sw target");
-    var swTarget = InspectorTest.createMockTarget("sw-target", null, WebInspector.Target.Capability.Network | WebInspector.Target.Capability.Worker);
+    var swTarget = InspectorTest.createMockTarget("sw-target", null, SDK.Target.Capability.Network | SDK.Target.Capability.Worker);
     swTarget.runtimeModel._executionContextCreated({id: "sw1", auxData: { isDefault: true, frameId: "" }, origin: "origin", name: "swContext1Name"});
 
     InspectorTest.addResult("");
@@ -46,39 +46,39 @@ function test()
 
     InspectorTest.addResult("");
     InspectorTest.addResult("Switching to sw target");
-    context.setFlavor(WebInspector.Target, swTarget);
+    context.setFlavor(SDK.Target, swTarget);
 
     InspectorTest.addResult("");
     InspectorTest.addResult("Switching to page target");
-    context.setFlavor(WebInspector.Target, pageTarget);
+    context.setFlavor(SDK.Target, pageTarget);
 
     InspectorTest.addResult("");
     InspectorTest.addResult("User selected content script");
-    context.setFlavor(WebInspector.ExecutionContext, pageTarget.runtimeModel.executionContexts()[2]);
+    context.setFlavor(SDK.ExecutionContext, pageTarget.runtimeModel.executionContexts()[2]);
 
     InspectorTest.addResult("");
     InspectorTest.addResult("Switching to sw target");
-    context.setFlavor(WebInspector.Target, swTarget);
+    context.setFlavor(SDK.Target, swTarget);
 
     InspectorTest.addResult("");
     InspectorTest.addResult("Switching to page target");
-    context.setFlavor(WebInspector.Target, pageTarget);
+    context.setFlavor(SDK.Target, pageTarget);
 
     InspectorTest.addResult("");
     InspectorTest.addResult("User selected iframe1");
-    context.setFlavor(WebInspector.ExecutionContext, pageTarget.runtimeModel.executionContexts()[0]);
+    context.setFlavor(SDK.ExecutionContext, pageTarget.runtimeModel.executionContexts()[0]);
 
     InspectorTest.addResult("");
     InspectorTest.addResult("Switching to sw target");
-    context.setFlavor(WebInspector.Target, swTarget);
+    context.setFlavor(SDK.Target, swTarget);
 
     InspectorTest.addResult("");
     InspectorTest.addResult("Switching to page target");
-    context.setFlavor(WebInspector.Target, pageTarget);
+    context.setFlavor(SDK.Target, pageTarget);
 
     InspectorTest.addResult("");
     InspectorTest.addResult("Switching to sw target");
-    context.setFlavor(WebInspector.Target, swTarget);
+    context.setFlavor(SDK.Target, swTarget);
 
     InspectorTest.addResult("");
     InspectorTest.addResult("Removing page main frame");

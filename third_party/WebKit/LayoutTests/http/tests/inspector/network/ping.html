@@ -20,7 +20,7 @@ function navigateLink()
 
 function test()
 {
-    InspectorTest.addSniffer(WebInspector.NetworkDispatcher.prototype, "requestWillBeSent", step2);
+    InspectorTest.addSniffer(SDK.NetworkDispatcher.prototype, "requestWillBeSent", step2);
     InspectorTest.evaluateInPage("navigateLink()");
 
     function step2()

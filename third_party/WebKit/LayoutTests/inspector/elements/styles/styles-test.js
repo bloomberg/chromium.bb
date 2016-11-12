@@ -15,12 +15,12 @@ InspectorTest.waitForStylesheetsOnFrontend = function(styleSheetsCount, callback
         if (styleSheets.length < styleSheetsCount)
             return;
 
-        InspectorTest.cssModel.removeEventListener(WebInspector.CSSModel.Events.StyleSheetAdded, onStyleSheetAdded, this);
+        InspectorTest.cssModel.removeEventListener(SDK.CSSModel.Events.StyleSheetAdded, onStyleSheetAdded, this);
         styleSheets.sort(styleSheetComparator);
         callback(null, styleSheets);
     }
 
-    InspectorTest.cssModel.addEventListener(WebInspector.CSSModel.Events.StyleSheetAdded, onStyleSheetAdded, this);
+    InspectorTest.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, onStyleSheetAdded, this);
 }
 
 }

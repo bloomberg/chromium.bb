@@ -29,7 +29,7 @@ InspectorTest.dumpSearchMatches = function(searchMatches)
 InspectorTest.runSearchAndDumpResults = function(scope, searchConfig, sortByURI, callback)
 {
     var searchResults = [];
-    var progress = new WebInspector.Progress();
+    var progress = new Common.Progress();
     scope.performSearch(searchConfig, progress, searchResultCallback, searchFinishedCallback);
 
     function searchResultCallback(searchResult)
@@ -81,7 +81,7 @@ InspectorTest.replaceAndDumpChange = function(sourceFrame, searchConfig, replace
     var oldLines = [];
     for (var i = 0; i < editor.linesCount; ++i)
         oldLines.push(editor.line(i));
-    var searchableView = WebInspector.panels.sources.sourcesView().searchableView();
+    var searchableView = UI.panels.sources.sourcesView().searchableView();
     searchableView.showSearchField();
 
     searchableView._caseSensitiveButton.setToggled(searchConfig.caseSensitive);

@@ -36,8 +36,8 @@ function test()
     ];
 
     var model = InspectorTest.createTimelineModelWithEvents(testData);
-    var view = new WebInspector.EventsTimelineTreeView(model, WebInspector.panels.timeline._filters, null);
-    view.updateContents(WebInspector.TimelineSelection.fromRange(model.minimumRecordTime(), model.maximumRecordTime()));
+    var view = new Timeline.EventsTimelineTreeView(model, UI.panels.timeline._filters, null);
+    view.updateContents(Timeline.TimelineSelection.fromRange(model.minimumRecordTime(), model.maximumRecordTime()));
     var filtersControl = view._filtersControl;
 
     InspectorTest.addResult("Original records");
@@ -45,12 +45,12 @@ function test()
     dumpVisibleRecords();
 
     InspectorTest.addResult("Visible records when 'loading' is disabled");
-    WebInspector.TimelineUIUtils.categories().loading.hidden = true;
+    Timeline.TimelineUIUtils.categories().loading.hidden = true;
     filtersControl._notifyFiltersChanged();
     dumpVisibleRecords();
 
     InspectorTest.addResult("Visible records when 'scripting' is disabled");
-    WebInspector.TimelineUIUtils.categories().scripting.hidden = true;
+    Timeline.TimelineUIUtils.categories().scripting.hidden = true;
     filtersControl._notifyFiltersChanged();
     dumpVisibleRecords();
 

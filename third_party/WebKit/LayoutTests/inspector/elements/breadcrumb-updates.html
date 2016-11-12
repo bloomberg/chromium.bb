@@ -27,14 +27,14 @@ function test()
     function step1()
     {
         InspectorTest.dumpBreadcrumb("Original breadcrumb");
-        InspectorTest.addSniffer(WebInspector.ElementsBreadcrumbs.prototype, "update", step2);
+        InspectorTest.addSniffer(Elements.ElementsBreadcrumbs.prototype, "update", step2);
         InspectorTest.evaluateInPage("changeClass()");
     }
 
     function step2()
     {
         InspectorTest.dumpBreadcrumb("After class change");
-        InspectorTest.addSniffer(WebInspector.ElementsBreadcrumbs.prototype, "update", step3);
+        InspectorTest.addSniffer(Elements.ElementsBreadcrumbs.prototype, "update", step3);
         InspectorTest.evaluateInPage("deleteClass()");
     }
 

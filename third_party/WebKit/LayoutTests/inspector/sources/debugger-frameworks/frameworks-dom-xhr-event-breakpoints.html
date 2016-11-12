@@ -73,7 +73,7 @@ function addFewBlackboxedListenersAndClick(addNonBlackboxedListener)
 function test()
 {
     var frameworkRegexString = "/framework\\.js$";
-    WebInspector.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
+    Common.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
 
     InspectorTest.setQuiet(true);
 
@@ -84,8 +84,8 @@ function test()
 
             function step1(node)
             {
-                var pane = WebInspector.domBreakpointsSidebarPane;
-                pane._setBreakpoint(node, WebInspector.DOMBreakpointsSidebarPane.BreakpointTypes.SubtreeModified, true);
+                var pane = Components.domBreakpointsSidebarPane;
+                pane._setBreakpoint(node, Components.DOMBreakpointsSidebarPane.BreakpointTypes.SubtreeModified, true);
                 InspectorTest.evaluateInPageWithTimeout("appendElement('rootElement', 'childElement')");
                 InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
             }
@@ -93,7 +93,7 @@ function test()
 
         function testXHRBreakpoint(next)
         {
-            var pane = self.runtime.sharedInstance(WebInspector.XHRBreakpointsSidebarPane);
+            var pane = self.runtime.sharedInstance(Sources.XHRBreakpointsSidebarPane);
             pane._setBreakpoint("foo", true);
             InspectorTest.evaluateInPageWithTimeout("sendXHR('file:///foo?a=b')");
             InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
@@ -101,7 +101,7 @@ function test()
 
         function testEventListenerBreakpoint(next)
         {
-            var pane = self.runtime.sharedInstance(WebInspector.EventListenerBreakpointsSidebarPane);
+            var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
             pane._setBreakpoint("listener:click");
             InspectorTest.evaluateInPageWithTimeout("addListenerAndClick(false)");
             InspectorTest.waitUntilPausedAndPerformSteppingActions([
@@ -112,7 +112,7 @@ function test()
 
         function testSteppingThroughEventListenerBreakpoint(next)
         {
-            var pane = self.runtime.sharedInstance(WebInspector.EventListenerBreakpointsSidebarPane);
+            var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
             pane._setBreakpoint("listener:click");
             InspectorTest.evaluateInPageWithTimeout("addListenerAndClick(true)");
             InspectorTest.waitUntilPausedAndPerformSteppingActions([
@@ -127,7 +127,7 @@ function test()
 
         function testSteppingOutOnEventListenerBreakpoint(next)
         {
-            var pane = self.runtime.sharedInstance(WebInspector.EventListenerBreakpointsSidebarPane);
+            var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
             pane._setBreakpoint("listener:click");
             InspectorTest.evaluateInPageWithTimeout("addListenerAndClick(true)");
             InspectorTest.waitUntilPausedAndPerformSteppingActions([
@@ -140,7 +140,7 @@ function test()
 
         function testSteppingOutOnEventListenerBreakpointAllBlackboxed(next)
         {
-            var pane = self.runtime.sharedInstance(WebInspector.EventListenerBreakpointsSidebarPane);
+            var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
             pane._setBreakpoint("listener:click");
             InspectorTest.evaluateInPageWithTimeout("addFewBlackboxedListenersAndClick(false)");
             InspectorTest.waitUntilPausedAndPerformSteppingActions([
@@ -151,7 +151,7 @@ function test()
 
         function testSteppingOutOnEventListenerBreakpointAllBlackboxedButOne(next)
         {
-            var pane = self.runtime.sharedInstance(WebInspector.EventListenerBreakpointsSidebarPane);
+            var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
             pane._setBreakpoint("listener:click");
             InspectorTest.evaluateInPageWithTimeout("addFewBlackboxedListenersAndClick(true)");
             InspectorTest.waitUntilPausedAndPerformSteppingActions([
@@ -164,8 +164,8 @@ function test()
 
         function tearDown(next)
         {
-            self.runtime.sharedInstance(WebInspector.XHRBreakpointsSidebarPane)._removeBreakpoint("foo");
-            self.runtime.sharedInstance(WebInspector.EventListenerBreakpointsSidebarPane)._removeBreakpoint("listener:click");
+            self.runtime.sharedInstance(Sources.XHRBreakpointsSidebarPane)._removeBreakpoint("foo");
+            self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane)._removeBreakpoint("listener:click");
             next();
         }
     ]);

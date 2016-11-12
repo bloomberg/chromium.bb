@@ -61,7 +61,7 @@ function test()
             {
                 var snapshot = InspectorTest.createJSHeapSnapshotMockObject();
                 var nodeRoot = snapshot.createNode(snapshot._rootNodeIndex);
-                var iterator = new WebInspector.HeapSnapshotNodeIterator(nodeRoot);
+                var iterator = new HeapSnapshotWorker.HeapSnapshotNodeIterator(nodeRoot);
                 var names = [];
                 for (; iterator.hasNext(); iterator.next())
                     names.push(iterator.item().name());
@@ -72,7 +72,7 @@ function test()
             {
                 var snapshot = InspectorTest.createJSHeapSnapshotMockObject();
                 var nodeRoot = snapshot.createNode(snapshot._rootNodeIndex);
-                var edgeIterator = new WebInspector.HeapSnapshotEdgeIterator(nodeRoot);
+                var edgeIterator = new HeapSnapshotWorker.HeapSnapshotEdgeIterator(nodeRoot);
                 InspectorTest.assertEquals(true, edgeIterator.hasNext(), "has edges");
                 var edge = edgeIterator.item();
                 InspectorTest.assertEquals("shortcut", edge.type(), "edge type");
@@ -118,21 +118,21 @@ function test()
 
                 // Now check against a real HeapSnapshot instance.
                 names = [];
-                var snapshot = new WebInspector.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new WebInspector.HeapSnapshotProgress());
+                var snapshot = new HeapSnapshotWorker.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
                 depthFirstTraversal(snapshot.rootNode());
                 InspectorTest.assertEquals(reference, names.join(","), "snapshot traversal");
             },
 
             function heapSnapshotSimpleTest()
             {
-                var snapshot = new WebInspector.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new WebInspector.HeapSnapshotProgress());
+                var snapshot = new HeapSnapshotWorker.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
                 InspectorTest.assertEquals(6, snapshot.nodeCount, "node count");
                 InspectorTest.assertEquals(20, snapshot.totalSize, "total size");
             },
 
             function heapSnapshotContainmentEdgeIndexesTest()
             {
-                var snapshot = new WebInspector.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new WebInspector.HeapSnapshotProgress());
+                var snapshot = new HeapSnapshotWorker.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
                 var actual = snapshot._firstEdgeIndexes;
                 var expected = [0, 6, 12, 18, 21, 21, 21];
                 InspectorTest.assertEquals(expected.length, actual.length, "Edge indexes size");
@@ -142,7 +142,7 @@ function test()
 
             function heapSnapshotPostOrderIndexTest()
             {
-                var snapshot = new WebInspector.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new WebInspector.HeapSnapshotProgress());
+                var snapshot = new HeapSnapshotWorker.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
                 var postOrderIndex2NodeOrdinal = snapshot._buildPostOrderIndex().postOrderIndex2NodeOrdinal;
                 var expected = [5,3,4,2,1,0];
                 for (var i = 0; i < expected.length; ++i)
@@ -151,7 +151,7 @@ function test()
 
             function heapSnapshotDominatorsTreeTest()
             {
-                var snapshot = new WebInspector.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new WebInspector.HeapSnapshotProgress());
+                var snapshot = new HeapSnapshotWorker.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
                 var result = snapshot._buildPostOrderIndex();
                 var dominatorsTree = snapshot._buildDominatorTree(result.postOrderIndex2NodeOrdinal, result.nodeOrdinal2PostOrderIndex);
                 var expected = [0, 0, 0, 0, 2, 3];
@@ -161,7 +161,7 @@ function test()
 
             function heapSnapshotRetainedSizeTest()
             {
-                var snapshot = new WebInspector.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new WebInspector.HeapSnapshotProgress());
+                var snapshot = new HeapSnapshotWorker.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
                 var actualRetainedSizes = new Array(snapshot.nodeCount);
                 for (var nodeOrdinal = 0; nodeOrdinal < snapshot.nodeCount; ++nodeOrdinal)
                     actualRetainedSizes[nodeOrdinal] = snapshot._retainedSizes[nodeOrdinal];
@@ -190,7 +190,7 @@ function test()
 
             function heapSnapshotDominatedNodesTest()
             {
-                var snapshot = new WebInspector.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new WebInspector.HeapSnapshotProgress());
+                var snapshot = new HeapSnapshotWorker.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
 
                 var expectedDominatedNodes = [21, 14, 7, 28, 35];
                 var actualDominatedNodes = snapshot._dominatedNodes;
@@ -238,7 +238,7 @@ function test()
 
             function heapSnapshotRetainersTest()
             {
-                var snapshot = new WebInspector.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new WebInspector.HeapSnapshotProgress());
+                var snapshot = new HeapSnapshotWorker.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
                 var expectedRetainers = {
                     "": [],
                     "A": [""],
@@ -257,7 +257,7 @@ function test()
 
             function heapSnapshotAggregatesTest()
             {
-                var snapshot = new WebInspector.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new WebInspector.HeapSnapshotProgress());
+                var snapshot = new HeapSnapshotWorker.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
                 var expectedAggregates = {
                     "A": { count: 1, self: 2, maxRet: 2, type: "object", name: "A" },
                     "B": { count: 1, self: 3, maxRet: 8, type: "object", name: "B" },
@@ -290,7 +290,7 @@ function test()
 
             function heapSnapshotFlagsTest()
             {
-                var snapshot = new WebInspector.JSHeapSnapshot(InspectorTest.createHeapSnapshotMockWithDOM(), new WebInspector.HeapSnapshotProgress());
+                var snapshot = new HeapSnapshotWorker.JSHeapSnapshot(InspectorTest.createHeapSnapshotMockWithDOM(), new HeapSnapshotWorker.HeapSnapshotProgress());
                 var expectedCanBeQueried = {
                     "": false,
                    "A": true,
@@ -313,7 +313,7 @@ function test()
 
             function heapSnapshotNodesProviderTest()
             {
-                var snapshot = new WebInspector.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new WebInspector.HeapSnapshotProgress());
+                var snapshot = new HeapSnapshotWorker.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
 
                 function nodeFilter(node)
                 {
@@ -323,7 +323,7 @@ function test()
                 var allNodeIndexes = [];
                 for (var i = 0; i < snapshot.nodes.length; i += snapshot._nodeFieldCount)
                     allNodeIndexes.push(i);
-                var provider = new WebInspector.HeapSnapshotNodesProvider(snapshot, nodeFilter, allNodeIndexes);
+                var provider = new HeapSnapshotWorker.HeapSnapshotNodesProvider(snapshot, nodeFilter, allNodeIndexes);
                 // Sort by names in reverse order.
                 provider.sortAndRewind({fieldName1: "name", ascending1: false, fieldName2: "id", ascending2: false});
                 var range = provider.serializeItemsRange(0, 3);
@@ -339,7 +339,7 @@ function test()
 
             function heapSnapshotEdgesProviderTest()
             {
-                var snapshot = new WebInspector.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new WebInspector.HeapSnapshotProgress());
+                var snapshot = new HeapSnapshotWorker.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
 
                 function edgeFilter(edge)
                 {
@@ -365,7 +365,7 @@ function test()
                 var sourceStringified = JSON.stringify(source);
                 var partSize = sourceStringified.length >> 3;
 
-                var loader = new WebInspector.HeapSnapshotLoader();
+                var loader = new HeapSnapshotWorker.HeapSnapshotLoader();
                 for (var i = 0, l = sourceStringified.length; i < l; i += partSize)
                     loader.write(sourceStringified.slice(i, i + partSize));
                 loader.close();
@@ -376,7 +376,7 @@ function test()
                 {
                     InspectorTest.assertEquals(JSON.stringify(reference), JSON.stringify(actual));
                 }
-                assertSnapshotEquals(new WebInspector.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new WebInspector.HeapSnapshotProgress(), false), result);
+                assertSnapshotEquals(new HeapSnapshotWorker.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress(), false), result);
             },
         ];
 
@@ -394,7 +394,7 @@ function test()
         return result.join("\n");
     }
 
-    var proxy = new WebInspector.HeapSnapshotWorkerProxy(function(eventName, arg)
+    var proxy = new Profiler.HeapSnapshotWorkerProxy(function(eventName, arg)
     {
         InspectorTest.addResult("Unexpected event from worker: " + eventName);
     });

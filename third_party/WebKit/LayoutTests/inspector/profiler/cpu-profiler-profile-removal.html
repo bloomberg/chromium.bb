@@ -17,8 +17,8 @@ function test()
 {
     InspectorTest.startProfilerTest(function() {
         function viewLoaded() {
-            var profiles = WebInspector.panels.profiles;
-            var type = WebInspector.ProfileTypeRegistry.instance.cpuProfileType;
+            var profiles = UI.panels.profiles;
+            var type = Profiler.ProfileTypeRegistry.instance.cpuProfileType;
             while (type.getProfiles().length !== 0)
                 type.removeProfile(type.getProfiles()[0]);
             InspectorTest.addResult("Profile groups after removal:");

@@ -4,10 +4,10 @@
 <script src="../../http/tests/inspector/network-test.js"></script>
 <script>
 function test() {
-    var worker = new WebInspector.Worker("formatter_worker");
+    var worker = new Common.Worker("formatter_worker");
     function check(jsonText)
     {
-        var resultData = WebInspector.JSONView._extractJSON(jsonText);
+        var resultData = Network.JSONView._extractJSON(jsonText);
         if (!resultData) {
             failure();
             return;

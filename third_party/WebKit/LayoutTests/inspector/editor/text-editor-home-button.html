@@ -21,8 +21,8 @@ function foo()
 
     function homeButton(shift, callback)
     {
-        var key = WebInspector.isMac() ? "ArrowLeft" : "Home";
-        var modifiers = WebInspector.isMac() ? ["metaKey"] : [];
+        var key = Host.isMac() ? "ArrowLeft" : "Home";
+        var modifiers = Host.isMac() ? ["metaKey"] : [];
         if (shift)
             modifiers.push("shiftKey");
         InspectorTest.fakeKeyEvent(textEditor, key, modifiers, callback);
@@ -46,7 +46,7 @@ function foo()
     InspectorTest.runTestSuite([
         function testFirstNonBlankCharacter(next)
         {
-            var selection = WebInspector.TextRange.createFromLocation(2, 8);
+            var selection = Common.TextRange.createFromLocation(2, 8);
             textEditor.setSelection(selection);
             InspectorTest.dumpTextWithSelection(textEditor);
             hitHomeButton(false, 1, next);
@@ -54,7 +54,7 @@ function foo()
 
         function testFirstNonBlankCharacterFromWhitespace(next)
         {
-            var selection = WebInspector.TextRange.createFromLocation(2, 2);
+            var selection = Common.TextRange.createFromLocation(2, 2);
             textEditor.setSelection(selection);
             InspectorTest.dumpTextWithSelection(textEditor);
             hitHomeButton(false, 1, next);
@@ -62,7 +62,7 @@ function foo()
 
         function testHomeButtonToggling(next)
         {
-            var selection = WebInspector.TextRange.createFromLocation(2, 2);
+            var selection = Common.TextRange.createFromLocation(2, 2);
             textEditor.setSelection(selection);
             InspectorTest.dumpTextWithSelection(textEditor);
             hitHomeButton(false, 3, next);
@@ -70,7 +70,7 @@ function foo()
 
         function testHomeButtonDoesNotChangeCursor(next)
         {
-            var selection = WebInspector.TextRange.createFromLocation(0, 2);
+            var selection = Common.TextRange.createFromLocation(0, 2);
             textEditor.setSelection(selection);
             InspectorTest.dumpTextWithSelection(textEditor);
             hitHomeButton(false, 2, next);
@@ -78,7 +78,7 @@ function foo()
 
         function testHomeButtonWithShift(next)
         {
-            var selection = new WebInspector.TextRange(0, 0, 2, 8);
+            var selection = new Common.TextRange(0, 0, 2, 8);
             textEditor.setSelection(selection);
             InspectorTest.dumpTextWithSelection(textEditor);
             hitHomeButton(true, 3, next);
@@ -86,7 +86,7 @@ function foo()
 
         function testHomeButtonWithShiftInversed(next)
         {
-            var selection = new WebInspector.TextRange(3, 1, 2, 8);
+            var selection = new Common.TextRange(3, 1, 2, 8);
             textEditor.setSelection(selection);
             InspectorTest.dumpTextWithSelection(textEditor);
             hitHomeButton(true, 3, next);

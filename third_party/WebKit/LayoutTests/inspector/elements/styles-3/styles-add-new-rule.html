@@ -19,7 +19,7 @@ function test()
     var testFinished = false;
     var displayName = null;
 
-    InspectorTest.addSniffer(WebInspector.UISourceCode.prototype, "addRevision", onRevisionAdded);
+    InspectorTest.addSniffer(Workspace.UISourceCode.prototype, "addRevision", onRevisionAdded);
 
     function step1()
     {
@@ -66,7 +66,7 @@ function test()
         InspectorTest.nodeWithClass("my-class", onNodeFound);
         function onNodeFound(node)
         {
-            WebInspector.Revealer.reveal(node);
+            Common.Revealer.reveal(node);
         }
 
         function onStylesReceived()
@@ -83,7 +83,7 @@ function test()
         InspectorTest.nodeWithClass("class-1", onNodeFound);
         function onNodeFound(node)
         {
-            WebInspector.Revealer.reveal(node);
+            Common.Revealer.reveal(node);
         }
 
         function onStylesReceived()

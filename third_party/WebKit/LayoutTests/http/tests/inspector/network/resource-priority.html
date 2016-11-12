@@ -63,7 +63,7 @@ function test()
         "sendStyleRequest",
         "createIFrame"
     ];
-    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.Events.RequestStarted, onRequestStarted);
+    InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestStarted, onRequestStarted);
 
     var nextAction = 0;
     performNextRequest();
@@ -71,7 +71,7 @@ function test()
     function performNextRequest()
     {
         if (nextAction >= actions.length) {
-            InspectorTest.networkManager.removeEventListener(WebInspector.NetworkManager.Events.RequestStarted, onRequestStarted);
+            InspectorTest.networkManager.removeEventListener(SDK.NetworkManager.Events.RequestStarted, onRequestStarted);
             InspectorTest.completeTest();
             return;
         }

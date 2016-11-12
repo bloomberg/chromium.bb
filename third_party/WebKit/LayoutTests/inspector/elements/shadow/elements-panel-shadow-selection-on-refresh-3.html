@@ -10,7 +10,7 @@ function test()
     InspectorTest.runTestSuite([
         function setup(next)
         {
-            WebInspector.settingForTest("showUAShadowDOM").set(true);
+            Common.settingForTest("showUAShadowDOM").set(true);
             InspectorTest.expandElementsTree(next);
         },
 
@@ -27,12 +27,12 @@ function test()
 
     function isClosedShadowRoot(node)
     {
-        return node && node.shadowRootType() === WebInspector.DOMNode.ShadowRootTypes.Closed;
+        return node && node.shadowRootType() === SDK.DOMNode.ShadowRootTypes.Closed;
     }
 
     function isUserAgentShadowRoot(node)
     {
-        return node && node.shadowRootType() === WebInspector.DOMNode.ShadowRootTypes.UserAgent;
+        return node && node.shadowRootType() === SDK.DOMNode.ShadowRootTypes.UserAgent;
     }
 
     function isClosedShadowRootChild(node)

@@ -24,8 +24,8 @@ function onload()
 
 var test = function()
 {
-    WebInspector.breakpointManager._storage._breakpoints = {};
-    var panel = WebInspector.panels.sources;
+    Bindings.breakpointManager._storage._breakpoints = {};
+    var panel = UI.panels.sources;
     var scriptFormatter;
     var sourceFrame;
 
@@ -58,7 +58,7 @@ var test = function()
 
             function resumed()
             {
-                InspectorTest.addSniffer(WebInspector.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
+                InspectorTest.addSniffer(Sources.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
                 scriptFormatter._toggleFormatScriptSource();
             }
 
@@ -73,7 +73,7 @@ var test = function()
             {
                 InspectorTest.dumpBreakpointSidebarPane("while paused in pretty printed");
                 scriptFormatter._discardFormattedUISourceCodeScript(panel.visibleView.uiSourceCode());
-                InspectorTest.addSniffer(WebInspector.JavaScriptBreakpointsSidebarPane.prototype, "didReceiveBreakpointLineForTest", onBreakpointsUpdated);
+                InspectorTest.addSniffer(Sources.JavaScriptBreakpointsSidebarPane.prototype, "didReceiveBreakpointLineForTest", onBreakpointsUpdated);
             }
 
             function onBreakpointsUpdated()

@@ -593,18 +593,18 @@ function test()
     }
     ];
 
-    var timeline = WebInspector.panels.timeline;
+    var timeline = UI.panels.timeline;
     InspectorTest.setTraceEvents(InspectorTest.timelineModel(), InspectorTest.tracingModel(), rawTraceEvents);
 
     timeline.requestWindowTimes(0, Infinity);
-    var groupByEnum = WebInspector.AggregatedTimelineTreeView.GroupBy;
+    var groupByEnum = Timeline.AggregatedTimelineTreeView.GroupBy;
     for (var grouping in groupByEnum) {
         var groupingValue = groupByEnum[grouping];
-        testEventTree(WebInspector.TimelinePanel.DetailsTab.CallTree, groupingValue);
-        testEventTree(WebInspector.TimelinePanel.DetailsTab.BottomUp, groupingValue);
+        testEventTree(Timeline.TimelinePanel.DetailsTab.CallTree, groupingValue);
+        testEventTree(Timeline.TimelinePanel.DetailsTab.BottomUp, groupingValue);
     }
 
-    testEventTree(WebInspector.TimelinePanel.DetailsTab.Events);
+    testEventTree(Timeline.TimelinePanel.DetailsTab.Events);
     InspectorTest.completeTest();
 
     function testEventTree(type, grouping)
@@ -630,9 +630,9 @@ function test()
         if (node.isGroupNode()) {
            name = treeView._displayInfoForGroupNode(node).name;
         } else {
-           name = node.event.name === WebInspector.TimelineModel.RecordType.JSFrame
-                      ? WebInspector.beautifyFunctionName(node.event.args["data"]["functionName"])
-                      : WebInspector.TimelineUIUtils.eventTitle(node.event);
+           name = node.event.name === TimelineModel.TimelineModel.RecordType.JSFrame
+                      ? UI.beautifyFunctionName(node.event.args["data"]["functionName"])
+                      : Timeline.TimelineUIUtils.eventTitle(node.event);
         }
         InspectorTest.addResult("  ".repeat(padding) + `${name}: ${node.selfTime.toFixed(3)}  ${node.totalTime.toFixed(3)}`);
         (node.children || new Map()).forEach(printEventTree.bind(null, padding + 1));

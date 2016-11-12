@@ -10,7 +10,7 @@
 function test()
 {
     // Pretend we are running under V8 front-end.
-    WebInspector.targetManager.mainTarget().setIsNodeJSForTest();
+    SDK.targetManager.mainTarget().setIsNodeJSForTest();
 
     var content = [
         '',
@@ -18,8 +18,8 @@ function test()
         '//TODO'
     ].join("\n");
 
-    var fsContent = WebInspector.Persistence._NodeShebang + content;
-    var nodeContent = WebInspector.Persistence._NodePrefix + content + WebInspector.Persistence._NodeSuffix;
+    var fsContent = Persistence.Persistence._NodeShebang + content;
+    var nodeContent = Persistence.Persistence._NodePrefix + content + Persistence.Persistence._NodeSuffix;
 
     InspectorTest.addResult("Initial fileSystem content:");
     InspectorTest.addResult(indent(fsContent));
@@ -27,10 +27,10 @@ function test()
     InspectorTest.addResult(indent(nodeContent));
 
     // Add network UISourceCode.
-    var networkProject = WebInspector.NetworkProject.forTarget(WebInspector.targetManager.mainTarget());
-    var resourceTreeModel = WebInspector.ResourceTreeModel.fromTarget(WebInspector.targetManager.mainTarget());
+    var networkProject = Bindings.NetworkProject.forTarget(SDK.targetManager.mainTarget());
+    var resourceTreeModel = SDK.ResourceTreeModel.fromTarget(SDK.targetManager.mainTarget());
     var mainFrame = resourceTreeModel.mainFrame;
-    var contentProvider = new WebInspector.StaticContentProvider("http://127.0.0.1:8000/nodejs.js", WebInspector.resourceTypes.Script, () => Promise.resolve(nodeContent));
+    var contentProvider = new Common.StaticContentProvider("http://127.0.0.1:8000/nodejs.js", Common.resourceTypes.Script, () => Promise.resolve(nodeContent));
     networkProject.addFile(contentProvider, mainFrame, false);
 
     // Add filesystem UISourceCode and mapping.
@@ -51,7 +51,7 @@ function test()
     {
         InspectorTest.addResult("\nRunning: Edit network uiSourceCode");
         nodeContent = nodeContent.replace("//TODO", "network();\n//TODO");
-        InspectorTest.addSniffer(WebInspector.Persistence.prototype, "_contentSyncedForTest", onSynced);
+        InspectorTest.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", onSynced);
         binding.network.addRevision(nodeContent);
 
         function onSynced()
@@ -65,7 +65,7 @@ function test()
     {
         InspectorTest.addResult("\nRunning: Edit fileSystem uiSourceCode");
         fsContent = fsContent.replace("//TODO", "filesystem();\n//TODO");
-        InspectorTest.addSniffer(WebInspector.Persistence.prototype, "_contentSyncedForTest", onSynced);
+        InspectorTest.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", onSynced);
         fsEntry.setContent(fsContent);
 
         function onSynced()

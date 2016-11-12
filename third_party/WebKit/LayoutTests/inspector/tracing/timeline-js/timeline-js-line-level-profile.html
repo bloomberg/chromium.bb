@@ -52,7 +52,7 @@ function test()
         ]
     };
 
-    InspectorTest.addSniffer(WebInspector.SourcesTextEditor.prototype, "setGutterDecoration", decorationAdded, true);
+    InspectorTest.addSniffer(SourceFrame.SourcesTextEditor.prototype, "setGutterDecoration", decorationAdded, true);
     InspectorTest.showScriptSource("timeline-data.js", frameRevealed);
 
     function decorationAdded(line, type, element)
@@ -65,8 +65,8 @@ function test()
         var url = frame.uiSourceCode().url();
         InspectorTest.addResult(InspectorTest.formatters.formatAsURL(url));
         cpuProfile.nodes.forEach(n => n.callFrame.url = url);
-        var lineProfile = WebInspector.LineLevelProfile.instance();
-        lineProfile.appendCPUProfile(new WebInspector.CPUProfileDataModel(cpuProfile));
+        var lineProfile = Components.LineLevelProfile.instance();
+        lineProfile.appendCPUProfile(new SDK.CPUProfileDataModel(cpuProfile));
         setTimeout(() => InspectorTest.completeTest(), 0);
     }
 }

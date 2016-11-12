@@ -22,7 +22,7 @@ function test()
 
     function onBefore(beforeFrame)
     {
-        InspectorTest.addSniffer(WebInspector.SourceCodeDiff.prototype, "_decorationsSetForTest", decorationsSet);
+        InspectorTest.addSniffer(Sources.SourceCodeDiff.prototype, "_decorationsSetForTest", decorationsSet);
         beforeFrame.setContent(textAfter);
     }
 
@@ -35,11 +35,11 @@ function test()
         {
             var type = decoration[1].type;
             var name = "Unknown";
-            if (type === WebInspector.SourceCodeDiff.GutterDecorationType.Insert)
+            if (type === Sources.SourceCodeDiff.GutterDecorationType.Insert)
                 name = "Insert";
-            else if (type === WebInspector.SourceCodeDiff.GutterDecorationType.Delete)
+            else if (type === Sources.SourceCodeDiff.GutterDecorationType.Delete)
                 name = "Delete";
-            else if (type === WebInspector.SourceCodeDiff.GutterDecorationType.Modify)
+            else if (type === Sources.SourceCodeDiff.GutterDecorationType.Modify)
                 name = "Modify";
 
             InspectorTest.addResult(decoration[0] + ":" + name)

@@ -14,10 +14,10 @@ function test()
     InspectorTest.makeFetch("resources/cyrillic.html", {}, ensureAllResources);
     var filterArray = [
         {
-            filterType: WebInspector.NetworkLogView.FilterType.Domain,
+            filterType: Network.NetworkLogView.FilterType.Domain,
             filterValue: "127.0.0.1"
         } ,{
-            filterType: WebInspector.NetworkLogView.FilterType.Scheme,
+            filterType: Network.NetworkLogView.FilterType.Scheme,
             filterValue: "http"
         }
     ];
@@ -38,12 +38,12 @@ function test()
         }
         InspectorTest.addResult("");
 
-        WebInspector.NetworkPanel.revealAndFilter(filterArray);
+        Network.NetworkPanel.revealAndFilter(filterArray);
 
-        var nodes = WebInspector.panels.network._networkLogView._nodesByRequestId.valuesArray();
+        var nodes = UI.panels.network._networkLogView._nodesByRequestId.valuesArray();
         var foundNodesCount = 0;
         for (var i = 0; i < nodes.length; i++) {
-            if (!nodes[i][WebInspector.NetworkLogView._isFilteredOutSymbol])
+            if (!nodes[i][Network.NetworkLogView._isFilteredOutSymbol])
                 foundNodesCount++;
         }
 

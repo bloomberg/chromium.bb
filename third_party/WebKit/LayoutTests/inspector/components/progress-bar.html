@@ -11,7 +11,7 @@ InspectorTest.MockProgressIndicator = function()
 }
 
 InspectorTest.MockProgressIndicator.prototype = {
-    // Implementation of WebInspector.Progress interface.
+    // Implementation of Common.Progress interface.
     isCanceled: function()
     {
         return this._isCanceled;
@@ -69,7 +69,7 @@ var test = function()
         function testOneSubProgress(next)
         {
             var indicator = new InspectorTest.MockProgressIndicator();
-            var composite = new WebInspector.CompositeProgress(indicator);
+            var composite = new Common.CompositeProgress(indicator);
             var subProgress = composite.createSubProgress();
 
             InspectorTest.addResult("Testing CompositeProgress with a single subprogress:");
@@ -89,7 +89,7 @@ var test = function()
         function testMultipleSubProgresses(next)
         {
             var indicator = new InspectorTest.MockProgressIndicator();
-            var composite = new WebInspector.CompositeProgress(indicator);
+            var composite = new Common.CompositeProgress(indicator);
             var subProgress1 = composite.createSubProgress();
             var subProgress2 = composite.createSubProgress(3);
 
@@ -123,7 +123,7 @@ var test = function()
         function testCancel(next)
         {
             var indicator = new InspectorTest.MockProgressIndicator();
-            var composite = new WebInspector.CompositeProgress(indicator);
+            var composite = new Common.CompositeProgress(indicator);
             var subProgress = composite.createSubProgress();
 
             InspectorTest.addResult("Testing isCanceled:");
@@ -136,9 +136,9 @@ var test = function()
         function testNested(next)
         {
             var indicator = new InspectorTest.MockProgressIndicator();
-            var composite0 = new WebInspector.CompositeProgress(indicator);
+            var composite0 = new Common.CompositeProgress(indicator);
             var subProgress01 = composite0.createSubProgress();
-            var composite1 = new WebInspector.CompositeProgress(subProgress01);
+            var composite1 = new Common.CompositeProgress(subProgress01);
             var subProgress11 = composite1.createSubProgress(10); // Weight should have no effect.
 
             InspectorTest.addResult("Testing nested subprogresses:");

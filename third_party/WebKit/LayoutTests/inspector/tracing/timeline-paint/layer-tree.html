@@ -21,7 +21,7 @@ function doActions()
 
 function test()
 {
-    WebInspector.panels.timeline._captureLayersAndPicturesSetting.set(true);
+    UI.panels.timeline._captureLayersAndPicturesSetting.set(true);
 
     InspectorTest.invokeAsyncWithTimeline("doActions", step1);
     function step1()

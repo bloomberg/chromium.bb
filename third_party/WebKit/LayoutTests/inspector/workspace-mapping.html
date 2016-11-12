@@ -6,18 +6,18 @@
 function test()
 {
     var projects = {};
-    var workspace = new WebInspector.Workspace();
+    var workspace = new Workspace.Workspace();
 
     function createUISourceCode(projectId, relativePath)
     {
         var project = projects[projectId];
         if (!projects[projectId]) {
-            var projectType = projectId.startsWith("file") ? WebInspector.projectTypes.FileSystem : WebInspector.projectTypes.Network;
-            project = new WebInspector.ProjectStore(workspace, projectId, projectType, "");
+            var projectType = projectId.startsWith("file") ? Workspace.projectTypes.FileSystem : Workspace.projectTypes.Network;
+            project = new Workspace.ProjectStore(workspace, projectId, projectType, "");
             workspace.addProject(project);
             projects[projectId] = project;
         }
-        var uiSourceCode = project.createUISourceCode(projectId +"/" + relativePath, WebInspector.resourceTypes.Script);
+        var uiSourceCode = project.createUISourceCode(projectId +"/" + relativePath, Common.resourceTypes.Script);
         project.addUISourceCode(uiSourceCode);
     }
 

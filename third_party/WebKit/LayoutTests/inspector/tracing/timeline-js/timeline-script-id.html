@@ -33,7 +33,7 @@ function test()
         InspectorTest.invokeAsyncWithTimeline("performActions", finish);
     }
 
-    var linkifier = new WebInspector.Linkifier();
+    var linkifier = new Components.Linkifier();
 
     var recordTypes = new Set(["TimerInstall", "TimerRemove", "FunctionCall"]);
     function formatter(event)
@@ -41,10 +41,10 @@ function test()
         if (!recordTypes.has(event.name))
             return;
 
-        var detailsText = WebInspector.TimelineUIUtils.buildDetailsTextForTraceEvent(event, InspectorTest.timelineModel().targetByEvent(event));
+        var detailsText = Timeline.TimelineUIUtils.buildDetailsTextForTraceEvent(event, InspectorTest.timelineModel().targetByEvent(event));
         InspectorTest.addResult("detailsTextContent for " + event.name + " event: '" + detailsText + "'");
 
-        var details = WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent(event, InspectorTest.timelineModel().targetByEvent(event), linkifier);
+        var details = Timeline.TimelineUIUtils.buildDetailsNodeForTraceEvent(event, InspectorTest.timelineModel().targetByEvent(event), linkifier);
         if (!details)
             return;
         InspectorTest.addResult("details.textContent for " + event.name + " event: '" + details.textContent.replace(/VM[\d]+/, "VM") + "'");

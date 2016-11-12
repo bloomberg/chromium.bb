@@ -14,22 +14,22 @@ function test()
 
         function editKeywordAsOriginal(next)
         {
-            startEditingAndDumpValue(WebInspector.Color.Format.Original, "border", next);
+            startEditingAndDumpValue(Common.Color.Format.Original, "border", next);
         },
 
         function editKeywordAsHex(next)
         {
-            startEditingAndDumpValue(WebInspector.Color.Format.HEX, "border", next);
+            startEditingAndDumpValue(Common.Color.Format.HEX, "border", next);
         },
 
         function editKeywordAsHSL(next)
         {
-            startEditingAndDumpValue(WebInspector.Color.Format.HSL, "border", next);
+            startEditingAndDumpValue(Common.Color.Format.HSL, "border", next);
         },
 
         function editKeywordAsRGB(next)
         {
-            startEditingAndDumpValue(WebInspector.Color.Format.RGB, "border", onValueDumped);
+            startEditingAndDumpValue(Common.Color.Format.RGB, "border", onValueDumped);
             function onValueDumped()
             {
                 InspectorTest.selectNodeAndWaitForStyles("inspected2", next);
@@ -38,22 +38,22 @@ function test()
 
         function editHexAsOriginal(next)
         {
-            startEditingAndDumpValue(WebInspector.Color.Format.Original, "color", next);
+            startEditingAndDumpValue(Common.Color.Format.Original, "color", next);
         },
 
         function editHexAsHex(next)
         {
-            startEditingAndDumpValue(WebInspector.Color.Format.HEX, "color", next);
+            startEditingAndDumpValue(Common.Color.Format.HEX, "color", next);
         },
 
         function editHexAsHSL(next)
         {
-            startEditingAndDumpValue(WebInspector.Color.Format.HSL, "color", next);
+            startEditingAndDumpValue(Common.Color.Format.HSL, "color", next);
         },
 
         function editHexAsRGB(next)
         {
-            startEditingAndDumpValue(WebInspector.Color.Format.RGB, "color", next);
+            startEditingAndDumpValue(Common.Color.Format.RGB, "color", next);
         },
 
         function editNewProperty(next)
@@ -80,8 +80,8 @@ function test()
 
     function setFormat(newFormat, callback)
     {
-        WebInspector.settingForTest("colorFormat").set(newFormat);
-        WebInspector.panels.elements._stylesWidget.doUpdate().then(callback);
+        Common.settingForTest("colorFormat").set(newFormat);
+        UI.panels.elements._stylesWidget.doUpdate().then(callback);
     }
 
     function startEditingAndDumpValue(format, propertyName, next)

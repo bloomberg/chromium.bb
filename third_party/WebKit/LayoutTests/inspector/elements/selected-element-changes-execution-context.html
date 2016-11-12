@@ -14,7 +14,7 @@ function test()
 
             function onExpanded()
             {
-                mainContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
+                mainContext = UI.context.flavor(SDK.ExecutionContext);
                 dumpContextAndNext(next);
             }
         },
@@ -36,7 +36,7 @@ function test()
 
         function selectIframeImmediateChild(next)
         {
-            var iframe = WebInspector.context.flavor(WebInspector.DOMNode);
+            var iframe = UI.context.flavor(SDK.DOMNode);
             var child = iframe.firstChild;
             InspectorTest.selectNode(child).then(dumpContextAndNext.bind(null, next));
         },
@@ -44,8 +44,8 @@ function test()
 
     function dumpContextAndNext(next)
     {
-        var context = WebInspector.context.flavor(WebInspector.ExecutionContext);
-        var node = WebInspector.context.flavor(WebInspector.DOMNode);
+        var context = UI.context.flavor(SDK.ExecutionContext);
+        var node = UI.context.flavor(SDK.DOMNode);
         var contextName = context === mainContext ? "main" : "iframe";
         var matchesNode = context.frameId === node.frameId();
         InspectorTest.addResult("Execution Context: " + contextName);

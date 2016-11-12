@@ -34,7 +34,7 @@ var test = function()
 
     function step1()
     {
-        InspectorTest.DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
+        InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
         InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
     }
 
@@ -57,7 +57,7 @@ var test = function()
 
     function completeTest()
     {
-        InspectorTest.DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
+        InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
         InspectorTest.completeDebuggerTest();
     }
 }

@@ -14,8 +14,8 @@
 
 function test()
 {
-    InspectorTest.cssModel.addEventListener(WebInspector.CSSModel.Events.StyleSheetAdded, styleSheetAdded, this);
-    InspectorTest.cssModel.addEventListener(WebInspector.CSSModel.Events.StyleSheetRemoved, styleSheetRemoved, this);
+    InspectorTest.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, styleSheetAdded, this);
+    InspectorTest.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetRemoved, styleSheetRemoved, this);
     InspectorTest.nodeWithId("inspected", nodeFound);
 
     function nodeFound(node)

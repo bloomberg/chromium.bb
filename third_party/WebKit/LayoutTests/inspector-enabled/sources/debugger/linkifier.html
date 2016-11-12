@@ -52,29 +52,29 @@ function test()
             }
         }
 
-        uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(InspectorTest.mainTarget.inspectedURL());
+        uiSourceCode = Workspace.workspace.uiSourceCodeForURL(InspectorTest.mainTarget.inspectedURL());
         var linkifyMe = "at triggerError (http://localhost/show/:22:11)";
-        var fragment = WebInspector.linkifyStringAsFragment(linkifyMe);
+        var fragment = Components.linkifyStringAsFragment(linkifyMe);
         var anchor = fragment.querySelector('a');
         InspectorTest.addResult("The string \"" + linkifyMe + " \" linkifies to url: " + anchor.href);
         InspectorTest.addResult("The lineNumber is " + anchor.lineNumber + " with type " + (typeof anchor.lineNumber));
         InspectorTest.addResult("The columnNumber is " + anchor.columnNumber + " with type " + (typeof anchor.columnNumber));
 
-        linkifier = new WebInspector.Linkifier();
+        linkifier = new Components.Linkifier();
         var count1 = liveLocationsCount();
-        link = linkifier.linkifyScriptLocation(WebInspector.targetManager.mainTarget(), null, InspectorTest.mainTarget.inspectedURL(), 8, 0, "dummy-class");
+        link = linkifier.linkifyScriptLocation(SDK.targetManager.mainTarget(), null, InspectorTest.mainTarget.inspectedURL(), 8, 0, "dummy-class");
         var count2 = liveLocationsCount();
 
         InspectorTest.addResult("listeners added on raw source code: " + (count2 - count1));
         InspectorTest.addResult("original location: " + link.textContent);
-        InspectorTest.addSniffer(WebInspector.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
+        InspectorTest.addSniffer(Sources.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
         scriptFormatter._toggleFormatScriptSource();
     }
 
     function uiSourceCodeScriptFormatted()
     {
         InspectorTest.addResult("pretty printed location: " + link.textContent);
-        scriptFormatter._discardFormattedUISourceCodeScript(WebInspector.panels.sources.visibleView.uiSourceCode());
+        scriptFormatter._discardFormattedUISourceCodeScript(UI.panels.sources.visibleView.uiSourceCode());
         InspectorTest.addResult("reverted location: " + link.textContent);
 
         var count1 = liveLocationsCount();
@@ -88,7 +88,7 @@ function test()
 
     function liveLocationsCount()
     {
-        return WebInspector.debuggerWorkspaceBinding._ensureInfoForScript(script)._locations.size;
+        return Bindings.debuggerWorkspaceBinding._ensureInfoForScript(script)._locations.size;
     }
 }
 

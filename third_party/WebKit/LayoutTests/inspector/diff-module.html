@@ -10,12 +10,12 @@ function initialize_DiffTest()
 
 function test()
 {
-    print(WebInspector.Diff.charDiff("test this sentence.", "test that sentence"));
-    print(WebInspector.Diff.lineDiff(["test this sentence."], ["test that sentence"]));
-    print(WebInspector.Diff.lineDiff(["a", "b", "c"], ["a", "c"]));
-    print(WebInspector.Diff.lineDiff(["a", "b", "c"], ["b", "a", "c"]));
-    print(WebInspector.Diff.lineDiff(["a", "c"], ["a", "b", "c"]));
-    print(WebInspector.Diff.lineDiff(
+    print(Diff.Diff.charDiff("test this sentence.", "test that sentence"));
+    print(Diff.Diff.lineDiff(["test this sentence."], ["test that sentence"]));
+    print(Diff.Diff.lineDiff(["a", "b", "c"], ["a", "c"]));
+    print(Diff.Diff.lineDiff(["a", "b", "c"], ["b", "a", "c"]));
+    print(Diff.Diff.lineDiff(["a", "c"], ["a", "b", "c"]));
+    print(Diff.Diff.lineDiff(
         [
             "for (var i = 0; i < 100; i++) {",
             "    willBeLeftAlone()",
@@ -42,13 +42,13 @@ function test()
         for (var i = 0; i < results.length; i++) {
             var result = results[i];
             var type = "Unknown";
-            if (result[0] === WebInspector.Diff.Operation.Equal)
+            if (result[0] === Diff.Diff.Operation.Equal)
                 type = "=";
-            else if (result[0] === WebInspector.Diff.Operation.Insert)
+            else if (result[0] === Diff.Diff.Operation.Insert)
                 type = "+";
-            else if (result[0] === WebInspector.Diff.Operation.Delete)
+            else if (result[0] === Diff.Diff.Operation.Delete)
                 type = "-";
-            else if (result[0] === WebInspector.Diff.Operation.Edit)
+            else if (result[0] === Diff.Diff.Operation.Edit)
                 type = "E";
             InspectorTest.addResult(type + ": " + JSON.stringify(result[1], null, 4));
         }

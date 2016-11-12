@@ -23,20 +23,20 @@ function performActions()
 
 function test()
 {
-    WebInspector.viewManager.showView("timeline");
-    WebInspector.panels.timeline._model._currentTarget = WebInspector.targetManager.mainTarget();
-    WebInspector.panels.timeline._captureJSProfileSetting.set(false);
+    UI.viewManager.showView("timeline");
+    UI.panels.timeline._model._currentTarget = SDK.targetManager.mainTarget();
+    UI.panels.timeline._captureJSProfileSetting.set(false);
     InspectorTest.invokeAsyncWithTimeline("performActions", finish);
 
     function finish()
     {
-        var recordTypes = WebInspector.TimelineModel.RecordType;
+        var recordTypes = TimelineModel.TimelineModel.RecordType;
         var typesToDump = new Set([recordTypes.ResourceSendRequest, recordTypes.ResourceReceiveResponse, recordTypes.ResourceReceivedData, recordTypes.ResourceFinish,
             recordTypes.EventDispatch, recordTypes.FunctionCall]);
         function dumpEvent(traceEvent, level)
         {
             // Ignore stray paint & rendering events for better stability.
-            var categoryName = WebInspector.TimelineUIUtils.eventStyle(traceEvent).category.name;
+            var categoryName = Timeline.TimelineUIUtils.eventStyle(traceEvent).category.name;
             if (categoryName !== "loading" && categoryName !== "scripting")
                 return;
             // Here and below: pretend coalesced record are just not there, as coalescation is time dependent and, hence, not stable.

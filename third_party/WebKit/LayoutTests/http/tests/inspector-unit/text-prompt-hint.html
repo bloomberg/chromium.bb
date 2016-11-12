@@ -13,10 +13,10 @@ function test()
         console.error("completionsDone called too early!");
         UnitTest.completeTest();
     }
-    var prompt = new WebInspector.TextPrompt();
+    var prompt = new UI.TextPrompt();
     prompt.initialize(completions);
     var element = createElement("div");
-    WebInspector.inspectorView.element.appendChild(element);
+    UI.inspectorView.element.appendChild(element);
     var proxy = prompt.attachAndStartEditing(element);
     prompt.setText("testT");
     prompt.complete();
@@ -113,6 +113,6 @@ function test()
 </script>
 </head>
 <body>
-<p>Tests that the hint displays properly on a WebInspector.TextPrompt with autocomplete.</p>
+<p>Tests that the hint displays properly on a UI.TextPrompt with autocomplete.</p>
 </body>
 </html>

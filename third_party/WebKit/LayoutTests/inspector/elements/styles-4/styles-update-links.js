@@ -98,7 +98,7 @@ var initialize_StylesUpdateLinks = function() {
     InspectorTest.getMatchedRules = function()
     {
         var rules = [];
-        for (var block of WebInspector.panels.elements._stylesWidget._sectionBlocks) {
+        for (var block of UI.panels.elements._stylesWidget._sectionBlocks) {
             for (var section of block.sections) {
                 var rule = section.style().parentRule;
                 if (rule)

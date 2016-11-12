@@ -53,7 +53,7 @@ var test = function()
 {
     InspectorTest.reloadPage(onPageReloaded);
     var pendingStyleSheetsCount = 4;
-    InspectorTest.addSniffer(WebInspector.CSSModel.prototype, "_styleSheetAdded", maybeStylesheetsLoaded, true);
+    InspectorTest.addSniffer(SDK.CSSModel.prototype, "_styleSheetAdded", maybeStylesheetsLoaded, true);
 
     var pageReloaded = false;
     function onPageReloaded()
@@ -68,7 +68,7 @@ var test = function()
             return;
         if (InspectorTest.cssModel.styleSheetHeaders().length !== pendingStyleSheetsCount)
             return;
-        WebInspector.AuditRuleResult.resourceDomain = function() {
+        Audits.AuditRuleResult.resourceDomain = function() {
             return "[domain]";
         };
 

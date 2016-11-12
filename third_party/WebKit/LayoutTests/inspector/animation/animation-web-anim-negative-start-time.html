@@ -22,13 +22,13 @@ var initialize_Animations = function() {
 function test()
 {
     // Override timeline width for testing
-    WebInspector.AnimationTimeline.prototype.width = function() { return 50; }
+    Animation.AnimationTimeline.prototype.width = function() { return 50; }
     // Override animation color for testing
     // FIXME: Set animation name of Web Animation instead; not supported yet
-    WebInspector.AnimationUI.Color = function() { return "black"; }
+    Animation.AnimationUI.Color = function() { return "black"; }
 
-    WebInspector.viewManager.showView("animations");
-    var timeline = self.runtime.sharedInstance(WebInspector.AnimationTimeline);
+    UI.viewManager.showView("animations");
+    var timeline = self.runtime.sharedInstance(Animation.AnimationTimeline);
     InspectorTest.evaluateInPage("startAnimation()");
     InspectorTest.waitForAnimationAdded(step2);
 

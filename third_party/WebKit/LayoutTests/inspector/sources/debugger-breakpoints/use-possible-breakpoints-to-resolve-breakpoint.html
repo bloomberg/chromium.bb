@@ -31,7 +31,7 @@ function test()
     function didShowScriptSource(sourceFrame)
     {
         var uiSourceCode = sourceFrame._uiSourceCode;
-        var breakpointManager = WebInspector.breakpointManager;
+        var breakpointManager = Bindings.breakpointManager;
         setBreakpoint(breakpointManager, sourceFrame, 3, false)
             .then(() => setBreakpoint(breakpointManager, sourceFrame, 4, false))
             .then(() => setBreakpoint(breakpointManager, sourceFrame, 5, false))

@@ -34,7 +34,7 @@ function test()
     ];
 
     InspectorTest.setTraceEvents(InspectorTest.timelineModel(), InspectorTest.tracingModel(), traceEvents);
-    var overview = WebInspector.panels.timeline._overviewPane;
+    var overview = UI.panels.timeline._overviewPane;
     var startTime = overview._windowStartTime;
     var endTime = overview._windowEndTime;
     InspectorTest.assertGreaterOrEqual(startTime, 1010);

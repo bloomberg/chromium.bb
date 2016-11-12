@@ -54,12 +54,12 @@ InspectorTest.preloadPanel("network");
 
 InspectorTest.recordNetwork = function()
 {
-    WebInspector.panels.network._networkLogView.setRecording(true);
+    UI.panels.network._networkLogView.setRecording(true);
 }
 
 InspectorTest.networkRequests = function()
 {
-    return WebInspector.NetworkLog.requests();
+    return SDK.NetworkLog.requests();
 }
 
 InspectorTest.dumpNetworkRequests = function()

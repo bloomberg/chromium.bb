@@ -20,19 +20,19 @@ function test()
     function didShowScriptSource(sourceFrame)
     {
         var uiSourceCode = sourceFrame._uiSourceCode;
-        var breakpointManager = WebInspector.breakpointManager;
+        var breakpointManager = Bindings.breakpointManager;
 
         InspectorTest.addResult("Locations for first line");
-        breakpointManager.possibleBreakpoints(uiSourceCode, new WebInspector.TextRange(0, 0, 1, 0))
+        breakpointManager.possibleBreakpoints(uiSourceCode, new Common.TextRange(0, 0, 1, 0))
             .then(dumpLocations)
             .then(() => InspectorTest.addResult("All locations"))
-            .then(() => breakpointManager.possibleBreakpoints(uiSourceCode, new WebInspector.TextRange(0, 0, 6, 0)))
+            .then(() => breakpointManager.possibleBreakpoints(uiSourceCode, new Common.TextRange(0, 0, 6, 0)))
             .then(dumpLocations)
             .then(() => InspectorTest.addResult("Existing location by position"))
-            .then(() => breakpointManager.possibleBreakpoints(uiSourceCode, new WebInspector.TextRange(2, 31, 2, 32)))
+            .then(() => breakpointManager.possibleBreakpoints(uiSourceCode, new Common.TextRange(2, 31, 2, 32)))
             .then(dumpLocations)
             .then(() => InspectorTest.addResult("Not existing location by position"))
-            .then(() => breakpointManager.possibleBreakpoints(uiSourceCode, new WebInspector.TextRange(2, 32, 2, 33)))
+            .then(() => breakpointManager.possibleBreakpoints(uiSourceCode, new Common.TextRange(2, 32, 2, 33)))
             .then(dumpLocations)
             .then(() => InspectorTest.completeDebuggerTest());
     }

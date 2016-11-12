@@ -1,4 +1,4 @@
-Test WebInspector.TextUtils.BalancedJSONTokenizer.
+Test Common.TextUtils.BalancedJSONTokenizer.
 
 Running: testMatchQuotes
 

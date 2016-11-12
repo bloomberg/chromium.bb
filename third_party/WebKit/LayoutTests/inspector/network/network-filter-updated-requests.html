@@ -4,25 +4,25 @@
 <script src="../../http/tests/inspector/network-test.js"></script>
 <script>
 function test() {
-    var target = WebInspector.panels.network._networkLogView;
-    var types = WebInspector.resourceTypes;
+    var target = UI.panels.network._networkLogView;
+    var types = Common.resourceTypes;
 
     var categoryName = types.XHR.category().title;
     target._resourceCategoryFilterUI._toggleTypeFilter(categoryName, false);
     InspectorTest.addResult("Clicked '" + categoryName + "' button.");
 
-    var requestFoo = new WebInspector.NetworkRequest(WebInspector.targetManager.mainTarget(), "", "", "", "", "");
+    var requestFoo = new SDK.NetworkRequest(SDK.targetManager.mainTarget(), "", "", "", "", "");
     requestFoo.setResourceType(types.Script);
     requestFoo.requestId = "foo";
     target._appendRequest(requestFoo);
-    var requestBar = new WebInspector.NetworkRequest(WebInspector.targetManager.mainTarget(), "", "", "", "", "");
+    var requestBar = new SDK.NetworkRequest(SDK.targetManager.mainTarget(), "", "", "", "", "");
     requestBar.setResourceType(types.Script);
     requestBar.requestId = "bar";
     target._appendRequest(requestBar);
     target._refresh();
 
     function isFilteredOut(request) {
-        return !!target._nodesByRequestId.get(request.requestId)[WebInspector.NetworkLogView._isFilteredOutSymbol];
+        return !!target._nodesByRequestId.get(request.requestId)[Network.NetworkLogView._isFilteredOutSymbol];
     }
 
     InspectorTest.addResult("");

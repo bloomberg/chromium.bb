@@ -22,13 +22,13 @@ function test()
                 var treeOutline = InspectorTest.firstElementsTreeOutline();
                 var treeElement = treeOutline.findTreeElement(node);
                 treeElement.toggleEditAsHTML();
-                InspectorTest.addSniffer(WebInspector.ElementsTreeOutline.prototype, "setMultilineEditing", next);
+                InspectorTest.addSniffer(Elements.ElementsTreeOutline.prototype, "setMultilineEditing", next);
             }
         },
 
         function switchPanels(next)
         {
-            WebInspector.inspectorView.showPanel("sources")
+            UI.inspectorView.showPanel("sources")
                 .then(next)
                 .catch(onError);
 

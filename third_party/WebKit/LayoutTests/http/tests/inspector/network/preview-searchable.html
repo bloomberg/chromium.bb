@@ -25,13 +25,13 @@ function test()
 
     function previewViewHandled(searches, callback, view)
     {
-        var isSearchable = (view instanceof WebInspector.SearchableView);
+        var isSearchable = (view instanceof UI.SearchableView);
         var compontentView = view;
         var typeName = "unknown";
         if (isSearchable)
             compontentView = view._searchProvider;
 
-        if (compontentView instanceof WebInspector.ResourceSourceFrame) {
+        if (compontentView instanceof SourceFrame.ResourceSourceFrame) {
             typeName = "ResourceSourceFrame";
             compontentView._ensureContentLoaded();
             if (!compontentView.loaded) {
@@ -39,15 +39,15 @@ function test()
                 InspectorTest.addSniffer(compontentView, "onTextEditorContentSet", previewViewHandled.bind(this, searches, callback, view));
                 return;
             }
-        } else if (compontentView instanceof WebInspector.XMLView) {
+        } else if (compontentView instanceof Network.XMLView) {
             typeName = "XMLView";
-        } else if(compontentView instanceof WebInspector.JSONView) {
+        } else if(compontentView instanceof Network.JSONView) {
             typeName = "JSONView";
-        } else if(compontentView instanceof WebInspector.RequestHTMLView) {
+        } else if(compontentView instanceof Network.RequestHTMLView) {
             typeName = "RequestHTMLView";
-        } else if(compontentView instanceof WebInspector.EmptyWidget) {
+        } else if(compontentView instanceof UI.EmptyWidget) {
             typeName = "EmptyWidget";
-        } else if(compontentView instanceof WebInspector.RequestHTMLView) {
+        } else if(compontentView instanceof Network.RequestHTMLView) {
             typeName = "RequestHTMLView";
         }
 
@@ -62,8 +62,8 @@ function test()
 
     function trySearches(request, searches, callback)
     {
-        InspectorTest.addSniffer(WebInspector.RequestPreviewView.prototype, "_previewViewHandledForTest", previewViewHandled.bind(this, searches, callback));
-        var networkPanel = WebInspector.panels.network;
+        InspectorTest.addSniffer(Network.RequestPreviewView.prototype, "_previewViewHandledForTest", previewViewHandled.bind(this, searches, callback));
+        var networkPanel = UI.panels.network;
         networkPanel._showRequest(request);
         var itemView = networkPanel._networkItemView;
         itemView._selectTab("preview");
@@ -74,7 +74,7 @@ function test()
         var url = "data:" + contentType + "," + encodeURIComponent(content);
         InspectorTest.makeSimpleXHR("GET", url, true, function() {
             var request = InspectorTest.findRequestsByURLPattern(new RegExp(url.escapeForRegExp()))[0];
-            request._resourceType = WebInspector.resourceTypes.Document;
+            request._resourceType = Common.resourceTypes.Document;
             trySearches(request, searches, callback);
         });
     }

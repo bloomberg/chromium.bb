@@ -66,8 +66,8 @@ function test()
 
             InspectorTest.assertTrue(!!storage, "Local storage not found.");
 
-            WebInspector.panels.resources._showDOMStorage(storage);
-            view = WebInspector.panels.resources._domStorageViews.get(storage);
+            UI.panels.resources._showDOMStorage(storage);
+            view = UI.panels.resources._domStorageViews.get(storage);
             InspectorTest.addSniffer(view, "_dataGridForDOMStorageItems", viewUpdated);
         },
 

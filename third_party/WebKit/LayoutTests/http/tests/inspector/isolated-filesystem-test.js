@@ -23,14 +23,14 @@ InspectorTest.TestFileSystem.prototype = {
                           fileSystemName: this.fileSystemPath }
         });
 
-        WebInspector.isolatedFileSystemManager.addEventListener(WebInspector.IsolatedFileSystemManager.Events.FileSystemAdded, created);
+        Workspace.isolatedFileSystemManager.addEventListener(Workspace.IsolatedFileSystemManager.Events.FileSystemAdded, created);
 
         function created(event)
         {
             var fileSystem = event.data;
             if (fileSystem.path() !== fileSystemPath)
                 return;
-            WebInspector.isolatedFileSystemManager.removeEventListener(WebInspector.IsolatedFileSystemManager.Events.FileSystemAdded, created);
+            Workspace.isolatedFileSystemManager.removeEventListener(Workspace.IsolatedFileSystemManager.Events.FileSystemAdded, created);
             callback(fileSystem);
         }
     },
@@ -43,10 +43,10 @@ InspectorTest.TestFileSystem.prototype = {
 
     addFileMapping: function(urlPrefix, pathPrefix)
     {
-        var fileSystemMapping = new WebInspector.FileSystemMapping();
+        var fileSystemMapping = new Workspace.FileSystemMapping();
         fileSystemMapping.addFileSystem(this.fileSystemPath);
         fileSystemMapping.addFileMapping(this.fileSystemPath, urlPrefix, pathPrefix);
-        WebInspector.fileSystemMapping._loadFromSettings();
+        Workspace.fileSystemMapping._loadFromSettings();
     },
 
     /**

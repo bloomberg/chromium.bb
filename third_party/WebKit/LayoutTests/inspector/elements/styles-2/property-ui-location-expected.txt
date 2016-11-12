@@ -1,4 +1,4 @@
-Verifies WebInspector.cssWorkspaceBinding.propertyUILocation functionality
+Verifies Bindings.cssWorkspaceBinding.propertyUILocation functionality
 
 font-family -> source-url.css:2:4
 arial -> source-url.css:2:17

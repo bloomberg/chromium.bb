@@ -18,8 +18,8 @@ function test()
 
     function onNodeSelected()
     {
-        InspectorTest.firstElementsTreeOutline().addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, onSelectionChangedEvent);
-        InspectorTest.addSniffer(WebInspector.ElementsTreeOutline.prototype, "_updateChildren", onNodeAppended);
+        InspectorTest.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, onSelectionChangedEvent);
+        InspectorTest.addSniffer(Elements.ElementsTreeOutline.prototype, "_updateChildren", onNodeAppended);
         InspectorTest.evaluateInPage("appendNewNode()");
     }
 

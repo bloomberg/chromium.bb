@@ -19,15 +19,15 @@ function test()
         function waitForUISourceCodes(next)
         {
             Promise.all([
-                InspectorTest.waitForUISourceCode("foo.js", WebInspector.projectTypes.Network)
+                InspectorTest.waitForUISourceCode("foo.js", Workspace.projectTypes.Network)
                     .then(uiSourceCode => uiSourceCode.setWorkingCopy("dirty.")),
-                InspectorTest.waitForUISourceCode("foo.js", WebInspector.projectTypes.FileSystem)
+                InspectorTest.waitForUISourceCode("foo.js", Workspace.projectTypes.FileSystem)
             ]).then(next);
         },
 
         function addFileSystemMapping(next)
         {
-            WebInspector.fileSystemMapping.addFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
+            Workspace.fileSystemMapping.addFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
             next();
         },
 

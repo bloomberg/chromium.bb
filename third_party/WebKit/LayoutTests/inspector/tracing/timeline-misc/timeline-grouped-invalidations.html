@@ -25,14 +25,14 @@ function test()
     Runtime.experiments.enableForTest("timelineInvalidationTracking");
 
     InspectorTest.invokeAsyncWithTimeline("display", function() {
-        var record = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.Paint);
-        InspectorTest.addArray(WebInspector.InvalidationTracker.invalidationEventsFor(record._event), InspectorTest.InvalidationFormatters, "", "paint invalidations");
+        var record = InspectorTest.findFirstTimelineRecord(TimelineModel.TimelineModel.RecordType.Paint);
+        InspectorTest.addArray(TimelineModel.InvalidationTracker.invalidationEventsFor(record._event), InspectorTest.InvalidationFormatters, "", "paint invalidations");
 
-        var linkifier = new WebInspector.Linkifier();
+        var linkifier = new Components.Linkifier();
         var event = record.traceEvent();
         var target = InspectorTest.timelineModel().targetByEvent(event);
-        var contentHelper = new WebInspector.TimelineDetailsContentHelper(target, linkifier, true);
-        WebInspector.TimelineUIUtils._generateCauses(event, target, null, contentHelper);
+        var contentHelper = new Timeline.TimelineDetailsContentHelper(target, linkifier, true);
+        Timeline.TimelineUIUtils._generateCauses(event, target, null, contentHelper);
         var invalidationsTree = contentHelper.element.getElementsByClassName("invalidations-tree")[0];
         var invalidations = invalidationsTree.shadowRoot.textContent;
         checkStringContains(invalidations, "Inline CSS style declaration was mutated for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous) @ timeline-grouped-invalidations.html:14");

@@ -14,9 +14,9 @@ var test = function()
 
     function step2()
     {
-        var writer = new WebInspector.HARWriter();
+        var writer = new Network.HARWriter();
         var stream = new InspectorTest.StringOutputStream(onSaved);
-        writer.write(stream, InspectorTest.networkRequests(), new WebInspector.Progress());
+        writer.write(stream, InspectorTest.networkRequests(), new Common.Progress());
     }
 
     function dumpContent(content)

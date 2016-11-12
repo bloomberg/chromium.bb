@@ -4,7 +4,7 @@ Tests that style modification generates attribute updated event only when attrib
 Running: testSetUp
 
 Running: testSetNewValue
-WebInspector.DOMModel.Events.AttrModified should be issued
+SDK.DOMModel.Events.AttrModified should be issued
 
 Running: testSetSameValue
 

@@ -27,7 +27,7 @@ function performActions()
 
 function test()
 {
-    WebInspector.context.setFlavor(WebInspector.TimelinePanel, WebInspector.panels.timeline);
+    UI.context.setFlavor(Timeline.TimelinePanel, UI.panels.timeline);
     InspectorTest.evaluateWithTimeline("performActions()", callback);
 
     function callback()

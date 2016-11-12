@@ -276,13 +276,13 @@ function test()
         ],
     };
 
-    var frameModel = new WebInspector.TimelineFrameModel(event => WebInspector.TimelineUIUtils.eventStyle(event).category.name);
+    var frameModel = new TimelineModel.TimelineFrameModel(event => Timeline.TimelineUIUtils.eventStyle(event).category.name);
 
     function loadEvents(events)
     {
         var tracingTimelineModel = InspectorTest.createTimelineModelWithEvents(events);
         frameModel.reset();
-        frameModel.addTraceEvents(WebInspector.targetManager.mainTarget(), tracingTimelineModel.inspectedTargetEvents(), sessionId);
+        frameModel.addTraceEvents(SDK.targetManager.mainTarget(), tracingTimelineModel.inspectedTargetEvents(), sessionId);
     }
 
     for (var testName in testData) {

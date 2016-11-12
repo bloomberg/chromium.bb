@@ -6,8 +6,8 @@
 <script>
 function test()
 {
-    var contentScriptsNavigatorView = new WebInspector.ContentScriptsNavigatorView();
-    contentScriptsNavigatorView.show(WebInspector.inspectorView.element);
+    var contentScriptsNavigatorView = new Sources.ContentScriptsNavigatorView();
+    contentScriptsNavigatorView.show(UI.inspectorView.element);
 
     var mockExecutionContext = {
         id: 1234567,
@@ -21,8 +21,8 @@ function test()
         function testAddExecutionContextBeforeFile(next)
         {
             InspectorTest.runtimeModel._executionContextCreated(mockExecutionContext);
-            var contentProvider = WebInspector.StaticContentProvider.fromString(mockContentScriptURL, WebInspector.resourceTypes.Script, "");
-            WebInspector.NetworkProject.forTarget(InspectorTest.mainTarget).addFile(contentProvider, InspectorTest.mainFrame(), true);
+            var contentProvider = Common.StaticContentProvider.fromString(mockContentScriptURL, Common.resourceTypes.Script, "");
+            Bindings.NetworkProject.forTarget(InspectorTest.mainTarget).addFile(contentProvider, InspectorTest.mainFrame(), true);
             InspectorTest.dumpNavigatorView(contentScriptsNavigatorView);
             next();
         },

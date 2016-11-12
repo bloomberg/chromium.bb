@@ -13,7 +13,7 @@ function test()
     function clearEditor()
     {
         textEditor.setText("");
-        textEditor.setSelection(WebInspector.TextRange.createFromLocation(0, 0));
+        textEditor.setSelection(Common.TextRange.createFromLocation(0, 0));
     }
 
     InspectorTest.runTestSuite([
@@ -42,7 +42,7 @@ function test()
         function testQuotesToCloseStringLiterals(next)
         {
             textEditor.setText("'Hello");
-            textEditor.setSelection(WebInspector.TextRange.createFromLocation(0, 6));
+            textEditor.setSelection(Common.TextRange.createFromLocation(0, 6));
             InspectorTest.typeIn(textEditor, "\"'", onTypedIn);
             function onTypedIn()
             {
@@ -54,7 +54,7 @@ function test()
         function testQuotesToCloseStringLiteralInsideLine(next)
         {
             textEditor.setText("console.log(\"information\");");
-            textEditor.setSelection(WebInspector.TextRange.createFromLocation(0, 24));
+            textEditor.setSelection(Common.TextRange.createFromLocation(0, 24));
             InspectorTest.typeIn(textEditor, "\"", onTypedIn);
             function onTypedIn()
             {

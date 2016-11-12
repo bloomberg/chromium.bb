@@ -119,7 +119,7 @@ var test = function()
     function setBreakpointAndWaitUntilPaused(sourceFrame, lineNumber, pausedCallback)
     {
         var expectedBreakpointId;
-        InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_didSetBreakpointInDebugger", didSetBreakpointInDebugger);
+        InspectorTest.addSniffer(Bindings.BreakpointManager.TargetBreakpoint.prototype, "_didSetBreakpointInDebugger", didSetBreakpointInDebugger);
         InspectorTest.setBreakpoint(sourceFrame, lineNumber, "", true);
 
         function didSetBreakpointInDebugger(callback, breakpointId)

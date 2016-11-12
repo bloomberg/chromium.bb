@@ -24,7 +24,7 @@ function test()
         function addFileMapping(next)
         {
             InspectorTest.waitForBinding("foo.js").then(onBindingCreated);
-            WebInspector.fileSystemMapping.addFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
+            Workspace.fileSystemMapping.addFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
 
             function onBindingCreated(binding)
             {
@@ -37,7 +37,7 @@ function test()
 
         function changeFileSystem(next)
         {
-            InspectorTest.addSniffer(WebInspector.Persistence.prototype, "_contentSyncedForTest", onSynced);
+            InspectorTest.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", onSynced);
             fsEntry.setContent("window.foo3 = 3;");
 
             function onSynced()
@@ -50,7 +50,7 @@ function test()
 
         function changeNetworkUISourceCode(next)
         {
-            InspectorTest.addSniffer(WebInspector.Persistence.prototype, "_contentSyncedForTest", onSynced);
+            InspectorTest.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", onSynced);
             networkCode.addRevision("window.foo2 = 2;");
 
             function onSynced()

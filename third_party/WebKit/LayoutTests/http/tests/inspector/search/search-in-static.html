@@ -12,13 +12,13 @@ function test()
 
     function step2()
     {
-        resource = WebInspector.resourceForURL("http://127.0.0.1:8000/inspector/search/resources/search.js");
+        resource = Bindings.resourceForURL("http://127.0.0.1:8000/inspector/search/resources/search.js");
         resource.requestContent().then(step3);
     }
 
     function step3()
     {
-        staticContentProvider = WebInspector.StaticContentProvider.fromString("", WebInspector.resourceTypes.Script, resource.content);
+        staticContentProvider = Common.StaticContentProvider.fromString("", Common.resourceTypes.Script, resource.content);
         InspectorTest.addResult(resource.url);
 
         var text = "searchTestUniqueString";

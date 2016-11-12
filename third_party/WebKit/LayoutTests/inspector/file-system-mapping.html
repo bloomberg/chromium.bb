@@ -87,7 +87,7 @@ function test()
     }
 
     // At first create file system mapping and clear it.
-    var fileSystemMapping = new WebInspector.FileSystemMapping();
+    var fileSystemMapping = new Workspace.FileSystemMapping();
     var fileSystemPaths = Object.keys(fileSystemMapping._fileSystemMappings);
     for (var i = 0; i < fileSystemPaths.length; ++i)
         fileSystemMapping.removeFileSystem(fileSystemPaths[i]);
@@ -130,7 +130,7 @@ function test()
 
     // Then create another file mapping to make sure it is correctly restored from the settings.
     InspectorTest.addResult("Creating another file system mapping.");
-    var fileSystemMapping = new WebInspector.FileSystemMapping();
+    var fileSystemMapping = new Workspace.FileSystemMapping();
     checkAndDumpFileSystemMapping(fileSystemMapping);
 
     // Now remove file mappings.

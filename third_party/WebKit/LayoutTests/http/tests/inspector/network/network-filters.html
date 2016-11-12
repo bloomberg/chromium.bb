@@ -62,10 +62,10 @@ function test()
 
             setNetworkLogFilter(filterObj.filterText, filterObj.isRegex);
 
-            var nodes = WebInspector.panels.network._networkLogView._nodesByRequestId.valuesArray();
+            var nodes = UI.panels.network._networkLogView._nodesByRequestId.valuesArray();
             var foundNodesCount = 0;
             for (var i = 0; i < nodes.length; i++) {
-                if (!nodes[i][WebInspector.NetworkLogView._isFilteredOutSymbol])
+                if (!nodes[i][Network.NetworkLogView._isFilteredOutSymbol])
                     foundNodesCount++;
             }
 
@@ -81,10 +81,10 @@ function test()
      */
     function setNetworkLogFilter(value, isRegex)
     {
-        WebInspector.panels.network._networkLogView._textFilterUI._filterInputElement.value = value;
-        WebInspector.panels.network._networkLogView._textFilterUI._regexCheckBox.checked = isRegex;
-        WebInspector.panels.network._networkLogView._textFilterUI._valueChanged();
-        WebInspector.panels.network._networkLogView._filterChanged(null); // event not used in this method, so passing null
+        UI.panels.network._networkLogView._textFilterUI._filterInputElement.value = value;
+        UI.panels.network._networkLogView._textFilterUI._regexCheckBox.checked = isRegex;
+        UI.panels.network._networkLogView._textFilterUI._valueChanged();
+        UI.panels.network._networkLogView._filterChanged(null); // event not used in this method, so passing null
     }
 }
 </script>

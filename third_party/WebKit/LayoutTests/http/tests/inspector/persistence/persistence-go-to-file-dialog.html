@@ -18,8 +18,8 @@ function test()
         function waitForUISourceCodes(next)
         {
             Promise.all([
-                InspectorTest.waitForUISourceCode("foo.js", WebInspector.projectTypes.Network),
-                InspectorTest.waitForUISourceCode("foo.js", WebInspector.projectTypes.FileSystem)
+                InspectorTest.waitForUISourceCode("foo.js", Workspace.projectTypes.Network),
+                InspectorTest.waitForUISourceCode("foo.js", Workspace.projectTypes.FileSystem)
             ]).then(next);
         },
 
@@ -31,7 +31,7 @@ function test()
 
         function addFileSystemMapping(next)
         {
-            WebInspector.fileSystemMapping.addFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
+            Workspace.fileSystemMapping.addFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
             InspectorTest.waitForBinding("foo.js").then(next);
         },
 
@@ -44,14 +44,14 @@ function test()
 
     function dumpGoToSourceDialog()
     {
-        WebInspector.panels.sources._sourcesView.showOpenResourceDialog();
-        var dialog = WebInspector.OpenResourceDialog._instanceForTest;
+        UI.panels.sources._sourcesView.showOpenResourceDialog();
+        var dialog = Sources.OpenResourceDialog._instanceForTest;
         var keys = [];
         for (var i = 0; i < dialog.itemCount(); ++i)
             keys.push(dialog.itemKeyAt(i));
         keys.sort();
         InspectorTest.addResult(keys.join("\n"));
-        WebInspector.Dialog._instance.detach();
+        UI.Dialog._instance.detach();
     }
 };
 </script>

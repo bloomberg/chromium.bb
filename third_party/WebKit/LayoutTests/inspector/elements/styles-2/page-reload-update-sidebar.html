@@ -11,7 +11,7 @@ function removeInspectedNode()
 
 function test()
 {
-    var stylesSidebarPane = WebInspector.panels.elements._stylesWidget;
+    var stylesSidebarPane = UI.panels.elements._stylesWidget;
     InspectorTest.runTestSuite([
         function selectInspectedNode(next)
         {
@@ -25,7 +25,7 @@ function test()
             treeElement.startEditing(treeElement.valueElement);
             var nodeRebuiltHappened = false;
             var pageReloadHappened = false;
-            InspectorTest.addSniffer(WebInspector.StylesSidebarPane.prototype, "_nodeStylesUpdatedForTest", onNodeRebuilt);
+            InspectorTest.addSniffer(Elements.StylesSidebarPane.prototype, "_nodeStylesUpdatedForTest", onNodeRebuilt);
             InspectorTest.reloadPage(reloadedCallback);
 
             function onNodeRebuilt(node, rebuild)

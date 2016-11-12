@@ -22,13 +22,13 @@ function test()
 
     function clickAtInspected()
     {
-        InspectorTest.firstElementsTreeOutline().addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, dumpAndFinish);
+        InspectorTest.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, dumpAndFinish);
         InspectorTest.evaluateInPage("click()");
     }
 
     function dumpAndFinish()
     {
-        InspectorTest.firstElementsTreeOutline().removeEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, dumpAndFinish);
+        InspectorTest.firstElementsTreeOutline().removeEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, dumpAndFinish);
         var selectedElement = InspectorTest.firstElementsTreeOutline().selectedTreeElement;
         InspectorTest.addResult("Node selected: " + selectedElement.node().getAttribute("id"));
         InspectorTest.completeTest();

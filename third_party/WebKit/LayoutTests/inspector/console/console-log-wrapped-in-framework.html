@@ -14,7 +14,7 @@ function runLogs()
 function test()
 {
     var frameworkRegexString = "/framework\\.js$";
-    WebInspector.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
+    Common.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
 
     InspectorTest.evaluateInPage("runLogs()");
     InspectorTest.deprecatedRunAfterPendingDispatches(callback);

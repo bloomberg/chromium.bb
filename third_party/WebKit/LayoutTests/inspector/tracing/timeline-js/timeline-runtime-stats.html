@@ -15,14 +15,14 @@ function test()
 {
     Runtime.experiments.enableForTest("timelineV8RuntimeCallStats");
     Runtime.experiments.enableForTest("timelineShowAllEvents");
-    WebInspector.settingForTest("showNativeFunctionsInJSProfile").set(true);
-    var model = WebInspector.panels.timeline._model;
+    Common.settingForTest("showNativeFunctionsInJSProfile").set(true);
+    var model = UI.panels.timeline._model;
     InspectorTest.evaluateWithTimeline("performActions()", finish);
 
     function finish()
     {
         var frame = model.mainThreadEvents()
-            .filter(e => e.name === WebInspector.TimelineModel.RecordType.JSFrame)
+            .filter(e => e.name === TimelineModel.TimelineModel.RecordType.JSFrame)
             .map(e => e.args["data"]["callFrame"])
             .find(frame => frame.functionName === "FunctionCallback" && frame.url === "native V8Runtime");
         InspectorTest.assertTrue(!!frame, "FunctionCallback frame not found");

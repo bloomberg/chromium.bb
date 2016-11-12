@@ -54,7 +54,7 @@ var test = function()
 
     function step1()
     {
-        InspectorTest.DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
+        InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
         InspectorTest.showScriptSource("debugger-pause-on-promise-rejection.html", step2);
     }
 
@@ -67,7 +67,7 @@ var test = function()
 
     function step3()
     {
-        InspectorTest.DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions);
+        InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions);
         InspectorTest.addResult("\n=== Pausing on all exceptions ===");
         InspectorTest.runTestFunction();
         waitUntilPausedNTimes(2, step4);
@@ -75,7 +75,7 @@ var test = function()
 
     function step4()
     {
-        InspectorTest.DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
+        InspectorTest.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
         InspectorTest.completeDebuggerTest();
     }
 }

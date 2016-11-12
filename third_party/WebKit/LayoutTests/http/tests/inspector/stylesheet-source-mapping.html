@@ -10,21 +10,21 @@ function test()
     var contentReceived;
     var finalMappedLocation;
     var target = InspectorTest.createWorkspaceWithTarget();
-    var cssModel = WebInspector.CSSModel.fromTarget(target);
-    WebInspector.cssWorkspaceBinding = InspectorTest.testCSSWorkspaceBinding;
+    var cssModel = SDK.CSSModel.fromTarget(target);
+    Bindings.cssWorkspaceBinding = InspectorTest.testCSSWorkspaceBinding;
 
     InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(cssUISourceCodeAdded);
     const styleSheetURL = "http://localhost:8000/inspector/resources/example.css";
     const sourceMapURL = "example.css.map";
     const styleSheetId = "1";
 
-    InspectorTest.addSniffer(WebInspector.CSSWorkspaceBinding.TargetInfo.prototype, "_updateLocations", locationsUpdated, true);
+    InspectorTest.addSniffer(Bindings.CSSWorkspaceBinding.TargetInfo.prototype, "_updateLocations", locationsUpdated, true);
     cssModel._styleSheetAdded(createMockStyleSheetHeader(styleSheetURL, sourceMapURL));
 
     function locationsUpdated()
     {
         var header = cssModel.styleSheetHeaderForId(styleSheetId);
-        var uiLocation = InspectorTest.testCSSWorkspaceBinding.rawLocationToUILocation(new WebInspector.CSSLocation(header, 2, 3));
+        var uiLocation = InspectorTest.testCSSWorkspaceBinding.rawLocationToUILocation(new SDK.CSSLocation(header, 2, 3));
         if (uiLocation.uiSourceCode.url().indexOf(".scss") === -1)
             return;
         finalMappedLocation = uiLocation.uiSourceCode.url() + ":" + uiLocation.lineNumber + ":" + uiLocation.columnNumber;
@@ -49,7 +49,7 @@ function test()
     {
         const documentURL = "http://localhost:8000/inspector/stylesheet-source-mapping.html";
         const frame = InspectorTest.resourceTreeModel.mainFrame;
-        var resource = new WebInspector.Resource(target, null, url, documentURL, frame.id, frame.loaderId, WebInspector.resourceTypes.Stylesheet, mimeType);
+        var resource = new SDK.Resource(target, null, url, documentURL, frame.id, frame.loaderId, Common.resourceTypes.Stylesheet, mimeType);
         resource.requestContent = function()
         {
             return Promise.resolve(content);
@@ -67,7 +67,7 @@ function test()
     function rawLocationToUILocation(line, column)
     {
         var header = cssModel.styleSheetHeaderForId(styleSheetId);
-        return InspectorTest.testCSSWorkspaceBinding.rawLocationToUILocation(new WebInspector.CSSLocation(header, line, column));
+        return InspectorTest.testCSSWorkspaceBinding.rawLocationToUILocation(new SDK.CSSLocation(header, line, column));
     }
 
     function scssUISourceCodeAdded(uiSourceCode)

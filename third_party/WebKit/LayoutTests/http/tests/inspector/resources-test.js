@@ -11,7 +11,7 @@ InspectorTest.requestURLComparer = function(r1, r2)
 InspectorTest.runAfterCachedResourcesProcessed = function(callback)
 {
     if (!InspectorTest.resourceTreeModel._cachedResourcesProcessed)
-        InspectorTest.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.Events.CachedResourcesLoaded, callback);
+        InspectorTest.resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.CachedResourcesLoaded, callback);
     else
         callback();
 }
@@ -28,13 +28,13 @@ InspectorTest.runAfterResourcesAreFinished = function(resourceURLs, callback)
                 resourceURLsMap.delete(url);
         }
         if (!resourceURLsMap.size) {
-            InspectorTest.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.Events.ResourceAdded, checkResources);
+            InspectorTest.resourceTreeModel.removeEventListener(SDK.ResourceTreeModel.Events.ResourceAdded, checkResources);
             callback();
         }
     }
     checkResources();
     if (resourceURLsMap.size)
-        InspectorTest.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.Events.ResourceAdded, checkResources);
+        InspectorTest.resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.ResourceAdded, checkResources);
 }
 
 InspectorTest.showResource = function(resourceURL, callback)
@@ -53,8 +53,8 @@ InspectorTest.showResource = function(resourceURL, callback)
         var resource = InspectorTest.resourceMatchingURL(resourceURL);
         if (!resource)
             return;
-        WebInspector.panels.resources.showResource(resource, 1);
-        var sourceFrame = WebInspector.panels.resources._resourceViewForResource(resource);
+        UI.panels.resources.showResource(resource, 1);
+        var sourceFrame = UI.panels.resources._resourceViewForResource(resource);
         if (sourceFrame.loaded)
             callbackWrapper(sourceFrame);
         else
@@ -79,17 +79,17 @@ InspectorTest.resourceMatchingURL = function(resourceURL)
 
 InspectorTest.databaseModel = function()
 {
-    return WebInspector.DatabaseModel.fromTarget(InspectorTest.mainTarget);
+    return Resources.DatabaseModel.fromTarget(InspectorTest.mainTarget);
 }
 
 InspectorTest.domStorageModel = function()
 {
-    return WebInspector.DOMStorageModel.fromTarget(InspectorTest.mainTarget);
+    return Resources.DOMStorageModel.fromTarget(InspectorTest.mainTarget);
 }
 
 InspectorTest.indexedDBModel = function()
 {
-    return WebInspector.IndexedDBModel.fromTarget(InspectorTest.mainTarget);
+    return Resources.IndexedDBModel.fromTarget(InspectorTest.mainTarget);
 }
 
 }

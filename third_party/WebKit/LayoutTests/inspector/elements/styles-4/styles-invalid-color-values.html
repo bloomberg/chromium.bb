@@ -69,7 +69,7 @@ function test()
 
     function dumpErrorsForInvalidColor(colorString) 
     {
-        var color = WebInspector.Color.parse(colorString);
+        var color = Common.Color.parse(colorString);
         if (!color) {
             InspectorTest.addResult("");
             InspectorTest.addResult("SUCCESS: parsed invalid color " + colorString + " to null");
@@ -81,14 +81,14 @@ function test()
 
     function dumpColorRepresentationsForColor(colorString)
     {
-        var color = WebInspector.Color.parse(colorString);
+        var color = Common.Color.parse(colorString);
         if (!color)
             return;
 
         InspectorTest.addResult("");
         InspectorTest.addResult("color: " + colorString);
         InspectorTest.addResult("  simple: " + !color.hasAlpha());
-        var cf = WebInspector.Color.Format;
+        var cf = Common.Color.Format;
         for (var colorFormatKey in cf) {
             var colorFormat = cf[colorFormatKey];
             // Simple colors do not have RGBA and HSLA representations.

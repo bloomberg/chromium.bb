@@ -11,7 +11,7 @@ function newWorld()
 
 function test()
 {
-    InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, step2);
+    InspectorTest.debuggerModel.addEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, step2);
     InspectorTest.evaluateInPage("newWorld()\n//# sourceURL=foo.js");
 
     var expectedScriptParsed = 2;

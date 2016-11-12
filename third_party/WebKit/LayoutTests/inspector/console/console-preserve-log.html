@@ -5,11 +5,11 @@
 <script>
 function test()
 {
-    InspectorTest.consoleModel.addMessage(new WebInspector.ConsoleMessage(InspectorTest.consoleModel.target(), WebInspector.ConsoleMessage.MessageSource.Other, WebInspector.ConsoleMessage.MessageLevel.Log, "PASS"));
-    WebInspector.settingForTest("preserveConsoleLog").set(true);
+    InspectorTest.consoleModel.addMessage(new SDK.ConsoleMessage(InspectorTest.consoleModel.target(), SDK.ConsoleMessage.MessageSource.Other, SDK.ConsoleMessage.MessageLevel.Log, "PASS"));
+    Common.settingForTest("preserveConsoleLog").set(true);
     InspectorTest.reloadPage(function() {
         InspectorTest.dumpConsoleMessages();
-        WebInspector.settingForTest("preserveConsoleLog").set(false);
+        Common.settingForTest("preserveConsoleLog").set(false);
         InspectorTest.completeTest();
     });
 }

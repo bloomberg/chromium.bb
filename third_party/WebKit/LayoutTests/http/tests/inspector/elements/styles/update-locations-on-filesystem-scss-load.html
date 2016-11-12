@@ -18,13 +18,13 @@ function test()
     InspectorTest.addResult("Creating filesystem with the SCSS file...");
     var fs = new InspectorTest.TestFileSystem("file:///var/www");
     fs.root.addFile("update-locations-on-filesystem-scss-load.scss", ["a {", "  foo: bar;", "/* COMMENT */", "  font-size: 12px;", "}"].join("\n"));
-    fs.addFileMapping(WebInspector.ParsedURL.completeURL(InspectorTest.mainTarget.inspectedURL(), "resources/source/"), "/");
+    fs.addFileMapping(Common.ParsedURL.completeURL(InspectorTest.mainTarget.inspectedURL(), "resources/source/"), "/");
     fs.reportCreated(fileSystemCreated);
 
     function fileSystemCreated()
     {
         InspectorTest.addResult("Loading raw css with mapping...");
-        InspectorTest.cssModel.addEventListener(WebInspector.CSSModel.Events.StyleSheetAdded, styleSheetAdded);
+        InspectorTest.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, styleSheetAdded);
         InspectorTest.evaluateInPage("loadCSS()");
     }
 
@@ -34,9 +34,9 @@ function test()
     {
         InspectorTest.addResult("Stylesheet was added, dumping location:");
         var header = event.data;
-        var cssLocation = new WebInspector.CSSLocation(header, 0, 1);
-        liveLocation = WebInspector.cssWorkspaceBinding.createLiveLocation(cssLocation, function() {}, new WebInspector.LiveLocationPool());
-        InspectorTest.cssModel.addEventListener(WebInspector.CSSModel.Events.SourceMapAttached, afterBind);
+        var cssLocation = new SDK.CSSLocation(header, 0, 1);
+        liveLocation = Bindings.cssWorkspaceBinding.createLiveLocation(cssLocation, function() {}, new Bindings.LiveLocationPool());
+        InspectorTest.cssModel.addEventListener(SDK.CSSModel.Events.SourceMapAttached, afterBind);
         dumpLiveLocation();
     }
 

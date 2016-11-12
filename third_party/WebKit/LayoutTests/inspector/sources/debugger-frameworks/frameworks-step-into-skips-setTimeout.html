@@ -28,7 +28,7 @@ function stop()
 function test()
 {
     var frameworkRegexString = "/framework\\.js$";
-    WebInspector.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
+    Common.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
 
     InspectorTest.startDebuggerTest(step1, true);
 

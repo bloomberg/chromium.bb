@@ -7,7 +7,7 @@
 
 function test()
 {
-    var domModel = WebInspector.DOMModel.fromTarget(WebInspector.targetManager.mainTarget());
+    var domModel = SDK.DOMModel.fromTarget(SDK.targetManager.mainTarget());
     var node;
 
     InspectorTest.runTestSuite([
@@ -30,7 +30,7 @@ function test()
 
         function firstReloadWithoutNodeInDOM(next)
         {
-            InspectorTest.addSniffer(WebInspector.ElementsPanel.prototype, "_lastSelectedNodeSelectedForTest", onNodeRestored);
+            InspectorTest.addSniffer(Elements.ElementsPanel.prototype, "_lastSelectedNodeSelectedForTest", onNodeRestored);
             // Do a reload and pretend page's DOM doesn't have a node to restore.
             overridePushNodeForPath(node.path());
             InspectorTest.reloadPage(function() { });
@@ -46,7 +46,7 @@ function test()
         {
             var pageReloaded = false;
             var nodeRestored = false;
-            InspectorTest.addSniffer(WebInspector.ElementsPanel.prototype, "_lastSelectedNodeSelectedForTest", onNodeRestored);
+            InspectorTest.addSniffer(Elements.ElementsPanel.prototype, "_lastSelectedNodeSelectedForTest", onNodeRestored);
             InspectorTest.reloadPage(onPageReloaded);
 
             function onPageReloaded()
@@ -84,7 +84,7 @@ function test()
      */
     function overridePushNodeForPath(pathToIgnore)
     {
-        var original = InspectorTest.override(WebInspector.DOMModel.prototype, "pushNodeByPathToFrontend", override);
+        var original = InspectorTest.override(SDK.DOMModel.prototype, "pushNodeByPathToFrontend", override);
 
         function override(nodePath, callback)
         {

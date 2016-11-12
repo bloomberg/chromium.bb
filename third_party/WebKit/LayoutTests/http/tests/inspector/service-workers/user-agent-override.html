@@ -15,7 +15,7 @@ function test()
                 {
                     if (InspectorTest.isServiceWorker(target)) {
                         resolve();
-                        WebInspector.targetManager.unobserveTargets(sniffer);
+                        SDK.targetManager.unobserveTargets(sniffer);
                     }
                 },
 
@@ -23,20 +23,20 @@ function test()
                 {
                 }
             };
-            WebInspector.targetManager.observeTargets(sniffer);
+            SDK.targetManager.observeTargets(sniffer);
         });
     }
 
     function waitForConsoleMessage(regex)
     {
         return new Promise(function(resolve) {
-            WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, sniff);
+            SDK.multitargetConsoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, sniff);
 
             function sniff(e)
             {
                 if (e.data && regex.test(e.data.messageText)) {
                     resolve(e.data);
-                    WebInspector.multitargetConsoleModel.removeEventListener(WebInspector.ConsoleModel.Events.MessageAdded, sniff);
+                    SDK.multitargetConsoleModel.removeEventListener(SDK.ConsoleModel.Events.MessageAdded, sniff);
                 }
             }
         });
@@ -48,7 +48,7 @@ function test()
     var originalUserAgent = navigator.userAgent;
 
     InspectorTest.addResult("Enable emulation and set User-Agent override");
-    WebInspector.multitargetNetworkManager.setUserAgentOverride(userAgentString);
+    SDK.multitargetNetworkManager.setUserAgentOverride(userAgentString);
 
     InspectorTest.registerServiceWorker(scriptURL, scope)
         .then(waitForTarget)
@@ -57,7 +57,7 @@ function test()
         .then(function(msg) {
             InspectorTest.addResult("Overriden user agent: " + msg.messageText);
             InspectorTest.addResult("Disable emulation");
-                WebInspector.multitargetNetworkManager.setUserAgentOverride("");
+                SDK.multitargetNetworkManager.setUserAgentOverride("");
             return InspectorTest.unregisterServiceWorker(scope);
         })
         .then(function() {

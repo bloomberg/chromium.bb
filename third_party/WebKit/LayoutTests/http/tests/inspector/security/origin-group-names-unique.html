@@ -5,11 +5,11 @@
 <script>
 function test()
 {
-    var originGroupNameSize = Object.keys(WebInspector.SecurityPanelSidebarTree.OriginGroupName).length;
+    var originGroupNameSize = Object.keys(Security.SecurityPanelSidebarTree.OriginGroupName).length;
 
     var deduplicatedNames = new Set();
-    for (var key in WebInspector.SecurityPanelSidebarTree.OriginGroupName) {
-        var name = WebInspector.SecurityPanelSidebarTree.OriginGroupName[key];
+    for (var key in Security.SecurityPanelSidebarTree.OriginGroupName) {
+        var name = Security.SecurityPanelSidebarTree.OriginGroupName[key];
         deduplicatedNames.add(name);
     }
 

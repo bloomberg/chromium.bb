@@ -49,7 +49,7 @@ function test()
             dumpRule(animationsPayload[i]);
 
         InspectorTest.addResult("\n>> Modifying keyframe rule");
-        var style = new WebInspector.CSSStyleDeclaration(InspectorTest.cssModel, null, animationsPayload[1].keyframes[0].style, WebInspector.CSSStyleDeclaration.Type.Regular);
+        var style = new SDK.CSSStyleDeclaration(InspectorTest.cssModel, null, animationsPayload[1].keyframes[0].style, SDK.CSSStyleDeclaration.Type.Regular);
         style.setText("width: 123px").then(onStyleEdited);
 
         function onStyleEdited()

@@ -28,7 +28,7 @@ function test()
 
     function getPropertiesCallback(properties)
     {
-        properties.sort(WebInspector.ObjectPropertiesSection.CompareProperties);
+        properties.sort(Components.ObjectPropertiesSection.CompareProperties);
         var golden = { "window": 1, "document": 1, "eval": 1, "console": 1, "frames": 1, "Array": 1, "doit": 1 }; 
         var result = {};
         for (var i = 0; i < properties.length; ++i) {

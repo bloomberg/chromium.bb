@@ -21,7 +21,7 @@ function test()
             InspectorTest.completeTest();
     }
 
-    var targets = WebInspector.targetManager.targets();
+    var targets = SDK.targetManager.targets();
     targets.forEach(function(target) {
         var agentNames = Object.keys(target._agents).filter(function(agentName) {
             var agent = target._agents[agentName];

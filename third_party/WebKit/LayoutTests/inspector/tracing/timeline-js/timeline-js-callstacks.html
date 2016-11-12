@@ -551,8 +551,8 @@ function test()
     ];
 
     var tracingTimelineModel = InspectorTest.createTimelineModelWithEvents(rawTraceEvents);
-    var events = WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents(tracingTimelineModel.mainThreadEvents());
-    events = events.mergeOrdered(tracingTimelineModel.mainThreadEvents(), WebInspector.TracingModel.Event.orderedCompareStartTime);
+    var events = TimelineModel.TimelineJSProfileProcessor.generateJSFrameEvents(tracingTimelineModel.mainThreadEvents());
+    events = events.mergeOrdered(tracingTimelineModel.mainThreadEvents(), SDK.TracingModel.Event.orderedCompareStartTime);
     events.filter(function(e) { return e.duration; }).forEach(function(e) {
         InspectorTest.addResult(e.name + ": " + e.startTime.toFixed(3) + " / " + (e.duration.toFixed(3) || 0) + " " + (e.args.data && e.args.data.functionName || ""));
     });

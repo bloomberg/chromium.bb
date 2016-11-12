@@ -85,7 +85,7 @@ function test()
 
         for (var i = 0; i < events.length; ++i) {
             var event = events[i];
-            if (event.phase === WebInspector.TracingModel.Phase.Complete)
+            if (event.phase === SDK.TracingModel.Phase.Complete)
                 ++phaseComplete;
             if (event.name in knownEvents)
                 ++knownEvents[event.name];

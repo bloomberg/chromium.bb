@@ -13,11 +13,11 @@ function loadScript()
 
 function test()
 {
-    var mainTarget = WebInspector.targetManager.mainTarget();
-    var debuggerModel = WebInspector.DebuggerModel.fromTarget(mainTarget);
-    var message = new WebInspector.ConsoleMessage(mainTarget, WebInspector.ConsoleMessage.MessageSource.JS, WebInspector.ConsoleMessage.MessageLevel.Log, "hello?", null, " http://127.0.0.1:8000/inspector/resources/source2.js");
+    var mainTarget = SDK.targetManager.mainTarget();
+    var debuggerModel = SDK.DebuggerModel.fromTarget(mainTarget);
+    var message = new SDK.ConsoleMessage(mainTarget, SDK.ConsoleMessage.MessageSource.JS, SDK.ConsoleMessage.MessageLevel.Log, "hello?", null, " http://127.0.0.1:8000/inspector/resources/source2.js");
     mainTarget.consoleModel.addMessage(message);
-    debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, onScriptAdded);
+    debuggerModel.addEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, onScriptAdded);
 
     InspectorTest.dumpConsoleMessages();
     InspectorTest.evaluateInPage("loadScript()");
@@ -28,7 +28,7 @@ function test()
             return;
 
         InspectorTest.addResult("script was added");
-        var message = WebInspector.ConsoleView.instance()._visibleViewMessages[0];
+        var message = Console.ConsoleView.instance()._visibleViewMessages[0];
         var anchorElement = message.element().querySelector(".console-message-url");
         anchorElement.click();
     }
@@ -39,11 +39,11 @@ function test()
         InspectorTest.completeTest();
     };
 
-    WebInspector.inspectorView._tabbedPane.addEventListener(WebInspector.TabbedPane.Events.TabSelected, panelChanged);
+    UI.inspectorView._tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, panelChanged);
 
     function panelChanged()
     {
-        InspectorTest.addResult("Panel " + WebInspector.inspectorView._tabbedPane._currentTab.id + " was opened");
+        InspectorTest.addResult("Panel " + UI.inspectorView._tabbedPane._currentTab.id + " was opened");
         InspectorTest.completeTest();
     }
 

@@ -20,7 +20,7 @@ function test()
     {
         var count = InspectorTest.consoleMessagesCount();
         if (count === 2)
-            WebInspector.console.showPromise().then(expand);
+            Common.console.showPromise().then(expand);
     }
 
     function expand()

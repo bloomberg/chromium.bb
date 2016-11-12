@@ -321,7 +321,7 @@ InspectorTest.dumpObjectPropertyTreeElement = function(treeElement)
 
 InspectorTest.expandAndDumpEventListeners = function(eventListenersView, callback)
 {
-    InspectorTest.addSniffer(WebInspector.EventListenersView.prototype, "_eventListenersArrivedForTest", listenersArrived);
+    InspectorTest.addSniffer(Components.EventListenersView.prototype, "_eventListenersArrivedForTest", listenersArrived);
 
     function listenersArrived()
     {
@@ -365,7 +365,7 @@ InspectorTest.dumpNavigatorView = function(navigatorView)
             titleText = treeElement.title.firstChild.textContent + " [mapped]";
         else
             titleText = treeElement.title;
-        if (treeElement._nodeType === WebInspector.NavigatorView.Types.FileSystem || treeElement._nodeType === WebInspector.NavigatorView.Types.FileSystemFolder) {
+        if (treeElement._nodeType === Sources.NavigatorView.Types.FileSystem || treeElement._nodeType === Sources.NavigatorView.Types.FileSystemFolder) {
             var hasMappedFiles = treeElement.listItemElement.classList.contains("has-mapped-files");
             if (!hasMappedFiles)
                 titleText += " [dimmed]";
@@ -392,7 +392,7 @@ InspectorTest.dumpNavigatorViewInAllModes = function(view)
 
 InspectorTest.dumpNavigatorViewInMode = function(view, mode)
 {
-    InspectorTest.addResult(view instanceof WebInspector.SourcesNavigatorView ? "Sources:" : "Content Scripts:");
+    InspectorTest.addResult(view instanceof Sources.SourcesNavigatorView ? "Sources:" : "Content Scripts:");
     view._groupByFrame = mode.includes("frame");
     view._groupByDomain = mode.includes("domain");
     view._groupByFolder = mode.includes("folder");
@@ -427,8 +427,8 @@ InspectorTest._innerReloadPage = function(hardReload, callback, scriptToEvaluate
 {
     InspectorTest._pageLoadedCallback = InspectorTest.safeWrap(callback);
 
-    if (WebInspector.panels.network)
-        WebInspector.panels.network._networkLogView.reset();
+    if (UI.panels.network)
+        UI.panels.network._networkLogView.reset();
     InspectorTest.PageAgent.reload(hardReload, scriptToEvaluateOnLoad, scriptPreprocessor);
 }
 
@@ -457,7 +457,7 @@ InspectorTest.runWhenPageLoads = function(callback)
 InspectorTest.deprecatedRunAfterPendingDispatches = function(callback)
 {
     var barrier = new CallbackBarrier();
-    var targets = WebInspector.targetManager.targets();
+    var targets = SDK.targetManager.targets();
     for (var i = 0; i < targets.length; ++i)
         targets[i]._deprecatedRunAfterPendingDispatches(barrier.createCallback());
     barrier.callWhenDone(InspectorTest.safeWrap(callback));
@@ -596,7 +596,7 @@ InspectorTest.addSnifferPromise = function(receiver, methodName)
 
 InspectorTest.addConsoleSniffer = function(override, opt_sticky)
 {
-    InspectorTest.addSniffer(WebInspector.ConsoleModel.prototype, "addMessage", override, opt_sticky);
+    InspectorTest.addSniffer(SDK.ConsoleModel.prototype, "addMessage", override, opt_sticky);
 }
 
 InspectorTest.override = function(receiver, methodName, override, opt_sticky)
@@ -681,12 +681,12 @@ InspectorTest.clearSpecificInfoFromStackFrames = function(text)
 
 InspectorTest.hideInspectorView = function()
 {
-    WebInspector.inspectorView.element.setAttribute("style", "display:none !important");
+    UI.inspectorView.element.setAttribute("style", "display:none !important");
 }
 
 InspectorTest.mainFrame = function()
 {
-    return WebInspector.ResourceTreeModel.fromTarget(InspectorTest.mainTarget).mainFrame;
+    return SDK.ResourceTreeModel.fromTarget(InspectorTest.mainTarget).mainFrame;
 }
 
 InspectorTest.StringOutputStream = function(callback)
@@ -734,7 +734,7 @@ InspectorTest.MockSetting.prototype = {
  * @constructor
  * @param {!string} dirPath
  * @param {!string} name
- * @param {!function(?WebInspector.TempFile)} callback
+ * @param {!function(?Bindings.TempFile)} callback
  */
 InspectorTest.TempFileMock = function(dirPath, name)
 {
@@ -785,8 +785,8 @@ InspectorTest.TempFileMock.prototype = {
     },
 
     /**
-     * @param {!WebInspector.OutputStream} outputStream
-     * @param {!WebInspector.OutputStreamDelegate} delegate
+     * @param {!Common.OutputStream} outputStream
+     * @param {!Bindings.OutputStreamDelegate} delegate
      */
     copyToOutputStream: function(outputStream, delegate)
     {
@@ -880,7 +880,7 @@ InspectorTest.TimeoutMock.prototype = {
     }
 }
 
-WebInspector.targetManager.observeTargets({
+SDK.targetManager.observeTargets({
     targetAdded: function(target)
     {
         if (InspectorTest.CSSAgent)
@@ -900,14 +900,14 @@ WebInspector.targetManager.observeTargets({
         InspectorTest.TargetAgent = target.targetAgent();
 
         InspectorTest.consoleModel = target.consoleModel;
-        InspectorTest.networkManager = WebInspector.NetworkManager.fromTarget(target);
-        InspectorTest.securityOriginManager = WebInspector.SecurityOriginManager.fromTarget(target);
-        InspectorTest.resourceTreeModel = WebInspector.ResourceTreeModel.fromTarget(target);
-        InspectorTest.networkLog = WebInspector.NetworkLog.fromTarget(target);
-        InspectorTest.debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
+        InspectorTest.networkManager = SDK.NetworkManager.fromTarget(target);
+        InspectorTest.securityOriginManager = SDK.SecurityOriginManager.fromTarget(target);
+        InspectorTest.resourceTreeModel = SDK.ResourceTreeModel.fromTarget(target);
+        InspectorTest.networkLog = SDK.NetworkLog.fromTarget(target);
+        InspectorTest.debuggerModel = SDK.DebuggerModel.fromTarget(target);
         InspectorTest.runtimeModel = target.runtimeModel;
-        InspectorTest.domModel = WebInspector.DOMModel.fromTarget(target);
-        InspectorTest.cssModel = WebInspector.CSSModel.fromTarget(target);
+        InspectorTest.domModel = SDK.DOMModel.fromTarget(target);
+        InspectorTest.cssModel = SDK.CSSModel.fromTarget(target);
         InspectorTest.powerProfiler = target.powerProfiler;
         InspectorTest.cpuProfilerModel = target.cpuProfilerModel;
         InspectorTest.heapProfilerModel = target.heapProfilerModel;
@@ -1043,10 +1043,10 @@ function runTest(enableWatchDogWhileDebugging)
 
         for (var i = 0; i < InspectorTest._panelsToPreload.length; ++i) {
             lastLoadedPanel = InspectorTest._panelsToPreload[i];
-            promises.push(WebInspector.inspectorView.panel(lastLoadedPanel));
+            promises.push(UI.inspectorView.panel(lastLoadedPanel));
         }
 
-        var testPath = WebInspector.settings.createSetting("testPath", "").get();
+        var testPath = Common.settings.createSetting("testPath", "").get();
 
         // 2. Show initial panel based on test path.
         var initialPanelByFolder = {
@@ -1070,7 +1070,7 @@ function runTest(enableWatchDogWhileDebugging)
         for (var folder in initialPanelByFolder) {
             if (testPath.indexOf(folder + "/") !== -1) {
                 lastLoadedPanel = initialPanelByFolder[folder];
-                promises.push(WebInspector.inspectorView.panel(lastLoadedPanel));
+                promises.push(UI.inspectorView.panel(lastLoadedPanel));
                 break;
             }
         }
@@ -1078,7 +1078,7 @@ function runTest(enableWatchDogWhileDebugging)
         // 3. Run test function.
         Promise.all(promises).then(() => {
             if (lastLoadedPanel)
-                WebInspector.inspectorView.showPanel(lastLoadedPanel).then(testFunction);
+                UI.inspectorView.showPanel(lastLoadedPanel).then(testFunction);
             else
                 testFunction();
         }).catch(function(e) {

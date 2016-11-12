@@ -7,7 +7,7 @@ function test()
 {
     function parseAndDumpURL(url)
     {
-        var parsedURL = new WebInspector.ParsedURL(url);
+        var parsedURL = new Common.ParsedURL(url);
 
         InspectorTest.addResult("Parsing url: " + url);
         InspectorTest.addResult("  isValid: " + parsedURL.isValid);

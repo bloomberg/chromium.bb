@@ -48,8 +48,8 @@ function test()
             }
             function saveProfileToFile(profile)
             {
-                WebInspector.FileOutputStream = function() { }
-                WebInspector.FileOutputStream.prototype = {
+                Bindings.FileOutputStream = function() { }
+                Bindings.FileOutputStream.prototype = {
                     open: function(fileName, callback)
                     {
                         file.name = fileName;
@@ -102,16 +102,16 @@ function test()
                 }
                 next();
             }
-            var profilesPanel = WebInspector.panels.profiles;
+            var profilesPanel = UI.panels.profiles;
             var profileName = file.name.substr(0, file.name.length - ".cpuprofile".length);
             InspectorTest.waitUntilProfileViewIsShown(profileName, checkLoadedContent);
             profilesPanel._loadFromFile(file);
-            var onTransferFinished = WebInspector.CPUProfileHeader.prototype.onTransferFinished;
-            WebInspector.CPUProfileHeader.prototype.onTransferFinished = function()
+            var onTransferFinished = Profiler.CPUProfileHeader.prototype.onTransferFinished;
+            Profiler.CPUProfileHeader.prototype.onTransferFinished = function()
             {
                 loadedProfileData = this._jsonifiedProfile;
                 onTransferFinished.call(this);
-                WebInspector.panels.profiles.showProfile(this);
+                UI.panels.profiles.showProfile(this);
             }
         }
 

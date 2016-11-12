@@ -13,13 +13,13 @@ var test = function()
         return { width: function() { return width; }, title: title, toString: toString };
     }
 
-    var tabbedPane = new WebInspector.TabbedPane();
+    var tabbedPane = new UI.TabbedPane();
     tabbedPane.setAllowTabReorder(true, true);
 
     var dropDownButtonMeasuredWidth = 10;
     function getTabsToShowAndDumpResults(tabsOrdered, tabsHistory, totalWidth)
     {
-        var tabsToShowIndexes = WebInspector.TabbedPane.prototype._tabsToShowIndexes.call(tabbedPane, tabsOrdered, tabsHistory, totalWidth, dropDownButtonMeasuredWidth);
+        var tabsToShowIndexes = UI.TabbedPane.prototype._tabsToShowIndexes.call(tabbedPane, tabsOrdered, tabsHistory, totalWidth, dropDownButtonMeasuredWidth);
         InspectorTest.addResult("    tabsToShowIndexes = [" + String(tabsToShowIndexes) + "]");
     }
 

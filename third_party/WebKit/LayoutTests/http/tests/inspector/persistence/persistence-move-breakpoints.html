@@ -21,7 +21,7 @@ function test()
 
         function setBreakpointInFileSystemUISourceCode(next)
         {
-            InspectorTest.waitForUISourceCode("foo.js", WebInspector.projectTypes.FileSystem)
+            InspectorTest.waitForUISourceCode("foo.js", Workspace.projectTypes.FileSystem)
                 .then(code => InspectorTest.showUISourceCodePromise(code))
                 .then(onSourceFrame);
 
@@ -36,7 +36,7 @@ function test()
         function addFileMapping(next)
         {
             InspectorTest.waitForBinding("foo.js").then(onBindingCreated);
-            WebInspector.fileSystemMapping.addFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
+            Workspace.fileSystemMapping.addFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
 
             function onBindingCreated(binding)
             {
@@ -47,15 +47,15 @@ function test()
 
         function removeFileMapping(next)
         {
-            WebInspector.persistence.addEventListener(WebInspector.Persistence.Events.BindingRemoved, onBindingRemoved);
-            WebInspector.fileSystemMapping.removeFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
+            Persistence.persistence.addEventListener(Persistence.Persistence.Events.BindingRemoved, onBindingRemoved);
+            Workspace.fileSystemMapping.removeFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
 
             function onBindingRemoved(event)
             {
                 var binding = event.data;
                 if (binding.network.name() !== "foo.js")
                     return
-                WebInspector.persistence.removeEventListener(WebInspector.Persistence.Events.BindingRemoved, onBindingRemoved);
+                Persistence.persistence.removeEventListener(Persistence.Persistence.Events.BindingRemoved, onBindingRemoved);
                 dumpBreakpointSidebarPane();
                 next();
             }
@@ -64,7 +64,7 @@ function test()
 
     function dumpBreakpointSidebarPane()
     {
-        var sidebarPane = self.runtime.sharedInstance(WebInspector.JavaScriptBreakpointsSidebarPane)
+        var sidebarPane = self.runtime.sharedInstance(Sources.JavaScriptBreakpointsSidebarPane)
         var breakpoints = sidebarPane._items.keysArray();
         for (var breakpoint of breakpoints)
             InspectorTest.addResult("    " + breakpoint.uiSourceCode().url() +":" + breakpoint.lineNumber());

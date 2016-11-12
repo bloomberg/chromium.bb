@@ -35,7 +35,7 @@ var test = function()
 
     function dumpCallStackSidebarPane()
     {
-        var callFrameList = self.runtime.sharedInstance(WebInspector.CallStackSidebarPane).callFrameList;
+        var callFrameList = self.runtime.sharedInstance(Sources.CallStackSidebarPane).callFrameList;
         for (var item of callFrameList._items)
             InspectorTest.addResult(item.element.textContent.replace(/VM\d+/g, "VM"));
     }

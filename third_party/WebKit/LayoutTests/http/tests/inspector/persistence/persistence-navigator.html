@@ -11,8 +11,8 @@
 function test()
 {
     Runtime.experiments.enableForTest("persistence2");
-    var sourcesNavigator = new WebInspector.SourcesNavigatorView();
-    sourcesNavigator.show(WebInspector.inspectorView.element);
+    var sourcesNavigator = new Sources.SourcesNavigatorView();
+    sourcesNavigator.show(UI.inspectorView.element);
     var fs = new InspectorTest.TestFileSystem("file:///var/www");
     var fsEntry = InspectorTest.addFooJSFile(fs);
 
@@ -25,8 +25,8 @@ function test()
         function waitForUISourceCodes(next)
         {
             var promises = [
-                InspectorTest.waitForUISourceCode("foo.js", WebInspector.projectTypes.Network),
-                InspectorTest.waitForUISourceCode("foo.js", WebInspector.projectTypes.FileSystem)
+                InspectorTest.waitForUISourceCode("foo.js", Workspace.projectTypes.Network),
+                InspectorTest.waitForUISourceCode("foo.js", Workspace.projectTypes.FileSystem)
             ];
             Promise.all(promises).then(onUISourceCodesAdded);
 
@@ -40,7 +40,7 @@ function test()
         function addFileMapping(next)
         {
             InspectorTest.waitForBinding("foo.js").then(onBindingCreated);
-            WebInspector.fileSystemMapping.addFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
+            Workspace.fileSystemMapping.addFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
 
             function onBindingCreated(binding)
             {
@@ -51,15 +51,15 @@ function test()
 
         function removeFileMapping(next)
         {
-            WebInspector.persistence.addEventListener(WebInspector.Persistence.Events.BindingRemoved, onBindingRemoved);
-            WebInspector.fileSystemMapping.removeFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
+            Persistence.persistence.addEventListener(Persistence.Persistence.Events.BindingRemoved, onBindingRemoved);
+            Workspace.fileSystemMapping.removeFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
 
             function onBindingRemoved(event)
             {
                 var binding = event.data;
                 if (binding.network.name() !== "foo.js")
                     return
-                WebInspector.persistence.removeEventListener(WebInspector.Persistence.Events.BindingRemoved, onBindingRemoved);
+                Persistence.persistence.removeEventListener(Persistence.Persistence.Events.BindingRemoved, onBindingRemoved);
                 InspectorTest.dumpNavigatorView(sourcesNavigator);
                 next();
             }

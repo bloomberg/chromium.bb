@@ -47,7 +47,7 @@ function test() {
         nextStep();
     }
 
-    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.Events.RequestStarted, onRequest);
+    InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestStarted, onRequest);
 
     var requestName = "empty-script.js";
     var nextStep = step1;

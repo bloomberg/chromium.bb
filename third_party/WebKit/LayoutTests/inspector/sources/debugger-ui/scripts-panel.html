@@ -14,17 +14,17 @@ function test()
 
     function createNavigatorView()
     {
-        var workspace = WebInspector.workspace;
-        WebInspector.workspace = InspectorTest.testWorkspace;
-        var navigatorView = new WebInspector.SourcesNavigatorView();
-        WebInspector.workspace = workspace;
-        navigatorView.show(WebInspector.inspectorView.element);
+        var workspace = Workspace.workspace;
+        Workspace.workspace = InspectorTest.testWorkspace;
+        var navigatorView = new Sources.SourcesNavigatorView();
+        Workspace.workspace = workspace;
+        navigatorView.show(UI.inspectorView.element);
         return navigatorView;
     }
 
     function createContentProvider(url)
     {
-        var contentProvider = WebInspector.StaticContentProvider.fromString(url, WebInspector.resourceTypes.Script, "");
+        var contentProvider = Common.StaticContentProvider.fromString(url, Common.resourceTypes.Script, "");
         contentProvider.requestContent = function()
         {
             InspectorTest.addResult("Source requested for " + url);
@@ -36,7 +36,7 @@ function test()
     function createMockWorkspace()
     {
         InspectorTest.createWorkspaceWithTarget(true);
-        InspectorTest.testDebuggerProject = new WebInspector.ContentProviderBasedProject(InspectorTest.testWorkspace, "", WebInspector.projectTypes.Debugger, "");
+        InspectorTest.testDebuggerProject = new Bindings.ContentProviderBasedProject(InspectorTest.testWorkspace, "", Workspace.projectTypes.Debugger, "");
         return InspectorTest.testWorkspace;
     }
 
@@ -47,7 +47,7 @@ function test()
 
     function addDebuggerFile(workspace, url)
     {
-        var uiSourceCode = InspectorTest.testDebuggerProject.createUISourceCode(url, WebInspector.resourceTypes.Script);
+        var uiSourceCode = InspectorTest.testDebuggerProject.createUISourceCode(url, Common.resourceTypes.Script);
         InspectorTest.testDebuggerProject.addUISourceCodeWithProvider(uiSourceCode, createContentProvider(url));
         return uiSourceCode;
     }

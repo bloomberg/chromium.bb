@@ -20,16 +20,16 @@ function performActions()
 
 function test()
 {
-    var model = WebInspector.panels.timeline._model;
+    var model = UI.panels.timeline._model;
 
     InspectorTest.invokeAsyncWithTimeline("performActions", finish);
 
     function finish()
     {
-        var linkifier = new WebInspector.Linkifier();
+        var linkifier = new Components.Linkifier();
         function printRequestDetails(request)
         {
-            return WebInspector.TimelineUIUtils.buildNetworkRequestDetails(request, model, linkifier).then(printElement);
+            return Timeline.TimelineUIUtils.buildNetworkRequestDetails(request, model, linkifier).then(printElement);
         }
         function printElement(element)
         {

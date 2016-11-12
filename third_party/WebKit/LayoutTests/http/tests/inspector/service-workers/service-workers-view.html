@@ -11,9 +11,9 @@ function test()
     var scope1 = "http://127.0.0.1:8000/inspector/service-workers/resources/scope1/";
     var scope2 = "http://127.0.0.1:8000/inspector/service-workers/resources/scope2/";
     var step = 0;
-    WebInspector.ServiceWorkersView._noThrottle = true;
+    Resources.ServiceWorkersView._noThrottle = true;
 
-    InspectorTest.addSniffer(WebInspector.ServiceWorkersView.prototype, "_updateRegistration", updateRegistration, true);
+    InspectorTest.addSniffer(Resources.ServiceWorkersView.prototype, "_updateRegistration", updateRegistration, true);
     function updateRegistration(registration)
     {
         for (var version of registration.versions.values()) {
@@ -42,7 +42,7 @@ function test()
     }
 
     InspectorTest.addResult("Select ServiceWorkers tree element.");
-    WebInspector.panels.resources.serviceWorkersTreeElement.select();
+    UI.panels.resources.serviceWorkersTreeElement.select();
     InspectorTest.addResult("Register ServiceWorker for scope1");
     InspectorTest.registerServiceWorker(scriptURL, scope1);
 }

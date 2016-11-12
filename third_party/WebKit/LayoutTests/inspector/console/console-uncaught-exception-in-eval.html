@@ -42,7 +42,7 @@ function test()
 
     function step3()
     {
-        if (WebInspector.ConsoleView.instance()._visibleViewMessages.length < 2)
+        if (Console.ConsoleView.instance()._visibleViewMessages.length < 2)
             InspectorTest.addConsoleSniffer(step3);
         else
             step4();

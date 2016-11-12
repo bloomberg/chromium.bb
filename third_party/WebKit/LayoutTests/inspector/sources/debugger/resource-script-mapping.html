@@ -14,7 +14,7 @@ function test()
         InspectorTest.createWorkspace();
         InspectorTest.testTargetManager.addTarget(target);
         defaultScriptMapping = InspectorTest.testDebuggerWorkspaceBinding._targetToData.get(target)._defaultMapping;
-        var resourceScriptMapping = new WebInspector.ResourceScriptMapping(InspectorTest.debuggerModel, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping, InspectorTest.testDebuggerWorkspaceBinding);
+        var resourceScriptMapping = new Bindings.ResourceScriptMapping(InspectorTest.debuggerModel, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping, InspectorTest.testDebuggerWorkspaceBinding);
         return resourceScriptMapping;
     }
 
@@ -63,7 +63,7 @@ function test()
             {
                 InspectorTest.addResult("Adding uiSourceCode for finished resource.");
                 InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded);
-                InspectorTest.addMockUISourceCodeToWorkspace(url, WebInspector.resourceTypes.Script, "<content script resource content>");
+                InspectorTest.addMockUISourceCodeToWorkspace(url, Common.resourceTypes.Script, "<content script resource content>");
 
                 function uiSourceCodeAdded(uiSourceCode)
                 {
@@ -87,7 +87,7 @@ function test()
             {
                 InspectorTest.addResult("Adding uiSourceCode for finished resource.");
                 InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeForResourceAdded);
-                InspectorTest.addMockUISourceCodeToWorkspace(url, WebInspector.resourceTypes.Script, "<script resource content>");
+                InspectorTest.addMockUISourceCodeToWorkspace(url, Common.resourceTypes.Script, "<script resource content>");
             }
 
             function uiSourceCodeForResourceAdded(uiSourceCode)
@@ -159,7 +159,7 @@ function test()
             {
                 InspectorTest.addResult("Adding uiSourceCode for finished resource.");
                 InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded);
-                InspectorTest.addMockUISourceCodeToWorkspace(url, WebInspector.resourceTypes.Document, "<resource content>");
+                InspectorTest.addMockUISourceCodeToWorkspace(url, Common.resourceTypes.Document, "<resource content>");
 
                 function uiSourceCodeAdded(uiSourceCode)
                 {
@@ -184,7 +184,7 @@ function test()
             {
                 InspectorTest.addResult("Adding uiSourceCode for finished resource.");
                 InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeForResourceAdded);
-                InspectorTest.addMockUISourceCodeToWorkspace(url, WebInspector.resourceTypes.Document, "<resource content>");
+                InspectorTest.addMockUISourceCodeToWorkspace(url, Common.resourceTypes.Document, "<resource content>");
             }
 
             function uiSourceCodeForResourceAdded(uiSourceCode)

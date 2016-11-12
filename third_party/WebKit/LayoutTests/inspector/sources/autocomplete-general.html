@@ -23,8 +23,8 @@ function test()
         function testCompletionsShowUpOnKeyPress(next)
         {
             textEditor.setText("name1 name2 name3 name4\nna");
-            textEditor.setSelection(WebInspector.TextRange.createFromLocation(1, 2));
-            InspectorTest.addSniffer(WebInspector.TextEditorAutocompleteController.prototype, "_onSuggestionsShownForTest", onAutocompletionSuggestBox);
+            textEditor.setSelection(Common.TextRange.createFromLocation(1, 2));
+            InspectorTest.addSniffer(TextEditor.TextEditorAutocompleteController.prototype, "_onSuggestionsShownForTest", onAutocompletionSuggestBox);
             InspectorTest.typeIn(textEditor, "m");
             function onAutocompletionSuggestBox()
             {
@@ -48,7 +48,7 @@ function test()
         function testRemoveDuplicate(next)
         {
             textEditor.setText("one\none");
-            textEditor.setSelection(new WebInspector.TextRange(0, 0, 0, 3));
+            textEditor.setSelection(new Common.TextRange(0, 0, 0, 3));
             InspectorTest.typeIn(textEditor, "\b", dumpDictionary.bind(null, next));
         },
 
@@ -60,13 +60,13 @@ function test()
 
         function testSimpleEdit(next)
         {
-            textEditor.setSelection(WebInspector.TextRange.createFromLocation(0, 3));
+            textEditor.setSelection(Common.TextRange.createFromLocation(0, 3));
             InspectorTest.typeIn(textEditor, "\b", dumpDictionary.bind(null, next));
         },
 
         function testDeleteOneDogAndOneCat(next)
         {
-            textEditor.setSelection(WebInspector.TextRange.createFromLocation(0, 6));
+            textEditor.setSelection(Common.TextRange.createFromLocation(0, 6));
             InspectorTest.typeIn(textEditor, "\b\b\b\b\b\b", dumpDictionary.bind(null, next));
         }
     ];

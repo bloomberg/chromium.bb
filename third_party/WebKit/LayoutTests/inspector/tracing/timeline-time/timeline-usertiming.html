@@ -91,7 +91,7 @@ function test()
 
         asyncEvents.forEach(function(eventGroup) {
             eventGroup.forEach(function(event) {
-                if (event.hasCategory(WebInspector.TimelineModel.Category.UserTiming))
+                if (event.hasCategory(TimelineModel.TimelineModel.Category.UserTiming))
                     InspectorTest.addResult(event.name);
             });
         })

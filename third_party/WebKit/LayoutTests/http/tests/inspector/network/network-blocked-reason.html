@@ -22,7 +22,7 @@ function test()
 {
     var requestName;
     var nextStep;
-    var blockedSetting = WebInspector.settingForTest("blockedURLs");
+    var blockedSetting = Common.settingForTest("blockedURLs");
 
     function onRequest(event)
     {
@@ -34,7 +34,7 @@ function test()
         nextStep();
     }
 
-    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.Events.RequestFinished, onRequest);
+    InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequest);
 
     function testBlockedURL(patterns, url, next)
     {

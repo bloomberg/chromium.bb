@@ -26,25 +26,25 @@ function test()
     {
         dumpConsoleMessageURLs();
 
-        InspectorTest.addSniffer(WebInspector.BlackboxManager.prototype, "_patternChangeFinishedForTests", step2);
+        InspectorTest.addSniffer(Bindings.BlackboxManager.prototype, "_patternChangeFinishedForTests", step2);
         var frameworkRegexString = "foo\\.js";
-        WebInspector.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
+        Common.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
     }
 
     function step2()
     {
         dumpConsoleMessageURLs();
-        InspectorTest.addSniffer(WebInspector.BlackboxManager.prototype, "_patternChangeFinishedForTests", step3);
+        InspectorTest.addSniffer(Bindings.BlackboxManager.prototype, "_patternChangeFinishedForTests", step3);
         var frameworkRegexString = "foo\\.js|boo\\.js";
-        WebInspector.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
+        Common.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
     }
 
     function step3()
     {
         dumpConsoleMessageURLs();
-        InspectorTest.addSniffer(WebInspector.BlackboxManager.prototype, "_patternChangeFinishedForTests", step4);
+        InspectorTest.addSniffer(Bindings.BlackboxManager.prototype, "_patternChangeFinishedForTests", step4);
         var frameworkRegexString = "";
-        WebInspector.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
+        Common.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
     }
 
     function step4()
@@ -55,7 +55,7 @@ function test()
 
     function dumpConsoleMessageURLs()
     {
-        var messages = WebInspector.ConsoleView.instance()._visibleViewMessages;
+        var messages = Console.ConsoleView.instance()._visibleViewMessages;
         for (var i = 0; i < messages.length; ++i) {
             var element = messages[i].toMessageElement();
             var anchor = element.querySelector(".console-message-url");

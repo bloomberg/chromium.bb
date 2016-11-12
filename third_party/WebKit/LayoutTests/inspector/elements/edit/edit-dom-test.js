@@ -17,10 +17,10 @@ InspectorTest.doAddAttribute = function(testName, dataNodeId, attributeText, nex
 
         function testContinuation()
         {
-            var editorElement = WebInspector.panels.elements._treeOutlines[0]._shadowRoot.getSelection().anchorNode.parentElement;
+            var editorElement = UI.panels.elements._treeOutlines[0]._shadowRoot.getSelection().anchorNode.parentElement;
             editorElement.textContent = attributeText;
             editorElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-            InspectorTest.addSniffer(WebInspector.ElementsTreeOutline.prototype, "_updateModifiedNodes", done);
+            InspectorTest.addSniffer(Elements.ElementsTreeOutline.prototype, "_updateModifiedNodes", done);
         }
     }
 }
@@ -76,7 +76,7 @@ InspectorTest.editNodePartAndRun = function(node, className, newValue, step2, us
     editorElement.textContent = newValue;
     editorElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
     if (useSniffer)
-        InspectorTest.addSniffer(WebInspector.ElementsTreeOutline.prototype, "_updateModifiedNodes", step2);
+        InspectorTest.addSniffer(Elements.ElementsTreeOutline.prototype, "_updateModifiedNodes", step2);
     else
         InspectorTest.deprecatedRunAfterPendingDispatches(step2);
 }

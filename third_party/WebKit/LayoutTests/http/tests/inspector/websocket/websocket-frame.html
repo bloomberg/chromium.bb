@@ -28,7 +28,7 @@ function test() {
         for (var i = 0; i < websocketFrames.length; i++) {
             var frame = websocketFrames[i];
             frames[i] = String.sprintf("%d-%s: %s", (i + 1), frame.type, frame.text);
-            if (frame.type !== WebInspector.NetworkRequest.WebSocketFrameType.Send && frame.text === "exit")
+            if (frame.type !== SDK.NetworkRequest.WebSocketFrameType.Send && frame.text === "exit")
                 done = true;
         }
         if (JSON.stringify(frames) === JSON.stringify(previous_frames)) {
@@ -40,7 +40,7 @@ function test() {
         if (done)
             InspectorTest.completeTest();
     }
-    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.Events.RequestUpdated, onRequest);
+    InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestUpdated, onRequest);
     InspectorTest.evaluateInPage("sendMessages()");
 }
 </script>

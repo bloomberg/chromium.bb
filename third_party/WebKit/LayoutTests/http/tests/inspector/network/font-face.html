@@ -18,8 +18,8 @@ function test() {
         }
         InspectorTest.addResult(event.type.toString() + ": " + request.name());
     }
-    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.Events.RequestStarted, onRequest);
-    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.Events.RequestFinished, onRequest);
+    InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestStarted, onRequest);
+    InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequest);
 
     InspectorTest.evaluateInPage("createIFrame()");
 }

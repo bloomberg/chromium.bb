@@ -6,12 +6,12 @@
 
 function test()
 {
-    WebInspector.TestTimelineLifecycleDelegate = function()
+    TestTimelineLifecycleDelegate = function()
     {
         this._hadLoadingProgress = false;
     }
 
-    WebInspector.TestTimelineLifecycleDelegate.prototype = {
+    TestTimelineLifecycleDelegate.prototype = {
         recordingStarted: function()
         {
             InspectorTest.addResult("TimelineLifecycleDelegate.recordingStarted");
@@ -45,10 +45,10 @@ function test()
             InspectorTest.completeTest();
         },
 
-        __proto__: WebInspector.TimelineLifecycleDelegate
+        __proto__: Timeline.TimelineLifecycleDelegate
     };
 
-    var controller = new WebInspector.TimelineController(WebInspector.targetManager.mainTarget(), new WebInspector.TestTimelineLifecycleDelegate(), InspectorTest.createTracingModel());
+    var controller = new Timeline.TimelineController(SDK.targetManager.mainTarget(), new TestTimelineLifecycleDelegate(), InspectorTest.createTracingModel());
     controller.startRecording();
 }
 

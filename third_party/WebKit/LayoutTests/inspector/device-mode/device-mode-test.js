@@ -27,6 +27,6 @@ var initialize_DeviceMode = function()
             ]
         };
         var json = Object.assign(StandardPhoneJSON, overrides || {});
-        return WebInspector.EmulatedDevice.fromJSONV1(json);
+        return Emulation.EmulatedDevice.fromJSONV1(json);
     }
 }

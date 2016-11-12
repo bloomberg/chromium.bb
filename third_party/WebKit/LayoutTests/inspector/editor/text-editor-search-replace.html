@@ -9,12 +9,12 @@
 function test()
 {
     var textEditor;
-    var panel = WebInspector.panels.sources;
+    var panel = UI.panels.sources;
     InspectorTest.showScriptSource("edit-me.js", didShowScriptSource);
 
     function showReplaceField()
     {
-        var searchableView = WebInspector.panels.sources.searchableView();
+        var searchableView = UI.panels.sources.searchableView();
         searchableView.showSearchField();
         searchableView._replaceCheckboxElement.click();
     }

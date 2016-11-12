@@ -7,7 +7,7 @@
 
 function test()
 {
-    WebInspector.viewManager.showView("accessibility.view")
+    UI.viewManager.showView("accessibility.view")
         .then(() => InspectorTest.selectNodeAndWaitForAccessibility("inspected"))
         .then(runTests);
 

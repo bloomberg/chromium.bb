@@ -27,7 +27,7 @@ var test = function()
         }
     }
 
-    var contextId = WebInspector.context.flavor(WebInspector.ExecutionContext).id;
+    var contextId = UI.context.flavor(SDK.ExecutionContext).id;
     InspectorTest.runDebuggerTestSuite([
         function testSuccessfulCompileAndRun(next)
         {

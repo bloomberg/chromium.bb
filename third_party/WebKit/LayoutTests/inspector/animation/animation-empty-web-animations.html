@@ -15,10 +15,10 @@ var initialize_Animations = function() {
 
 function test()
 {
-    WebInspector.viewManager.showView("animations");
-    var timeline = self.runtime.sharedInstance(WebInspector.AnimationTimeline);
+    UI.viewManager.showView("animations");
+    var timeline = self.runtime.sharedInstance(Animation.AnimationTimeline);
     InspectorTest.evaluateInPage("startAnimation()");
-    InspectorTest.addSniffer(WebInspector.AnimationModel.prototype, "animationStarted", animationStarted);
+    InspectorTest.addSniffer(Animation.AnimationModel.prototype, "animationStarted", animationStarted);
 
     function animationStarted()
     {

@@ -9,7 +9,7 @@ function test()
 {
     var formattedStyle;
 
-    InspectorTest.cssModel.addEventListener(WebInspector.CSSModel.Events.StyleSheetChanged, onStyleSheetChanged, this);
+    InspectorTest.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetChanged, onStyleSheetChanged, this);
 
     function onStyleSheetChanged(event)
     {

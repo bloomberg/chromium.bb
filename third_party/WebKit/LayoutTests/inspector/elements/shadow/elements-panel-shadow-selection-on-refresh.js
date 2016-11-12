@@ -9,7 +9,7 @@ InspectorTest.selectReloadAndDump = function(next, node)
     function onSelected()
     {
         InspectorTest.reloadPage(onReloaded);
-        InspectorTest.addSniffer(WebInspector.ElementsPanel.prototype, "_lastSelectedNodeSelectedForTest", onReSelected);
+        InspectorTest.addSniffer(Elements.ElementsPanel.prototype, "_lastSelectedNodeSelectedForTest", onReSelected);
     }
 
     function onReloaded()

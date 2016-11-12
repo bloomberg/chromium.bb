@@ -20,7 +20,7 @@ function test()
     {
         InspectorTest.addResult("HTML comments shown:");
         InspectorTest.dumpElementsTree();
-        WebInspector.settingForTest("showHTMLComments").set(false);
+        Common.settingForTest("showHTMLComments").set(false);
         InspectorTest.addResult("\nHTML comments hidden:");
         InspectorTest.dumpElementsTree();
         InspectorTest.completeTest();

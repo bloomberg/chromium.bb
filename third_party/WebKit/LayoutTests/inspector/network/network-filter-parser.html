@@ -6,7 +6,7 @@
 function test() {
     function checkQuery(keys, query)
     {
-        var suggestionBuilder = new WebInspector.FilterSuggestionBuilder(keys);
+        var suggestionBuilder = new Network.FilterSuggestionBuilder(keys);
         var result = suggestionBuilder.parseQuery(query);
         InspectorTest.addResult("");
         InspectorTest.addResult("Keys: " + JSON.stringify(keys));

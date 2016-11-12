@@ -10,12 +10,12 @@ function test()
         InspectorTest.addResult("Test case: " + testName);
         InspectorTest.addResult("Input Segments: " + JSON.stringify(data));
 
-        var forwardRange = new WebInspector.SegmentedRange(merge);
-        data.map(entry => new WebInspector.Segment(entry[0], entry[1], entry[2])).forEach(forwardRange.append, forwardRange);
+        var forwardRange = new Common.SegmentedRange(merge);
+        data.map(entry => new Common.Segment(entry[0], entry[1], entry[2])).forEach(forwardRange.append, forwardRange);
         var forward = forwardRange.segments();
 
-        var backwardRange = new WebInspector.SegmentedRange(merge);
-        data.reverse().map(entry => new WebInspector.Segment(entry[0], entry[1], entry[2])).forEach(backwardRange.append, backwardRange);
+        var backwardRange = new Common.SegmentedRange(merge);
+        data.reverse().map(entry => new Common.Segment(entry[0], entry[1], entry[2])).forEach(backwardRange.append, backwardRange);
         var backward = backwardRange.segments();
 
         // Only do reverse if we merge, otherwise result is order-dependent.

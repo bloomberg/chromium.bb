@@ -22,7 +22,7 @@ function test()
             fs.root.mkdir("html").addFile("edit-me.js", "function f()\n{\n    return 0;\n}\n");
             fs.root.addFile("bar.js", "<bar content>");
             InspectorTest.addResult("Adding file system.");
-            fs.addFileMapping(WebInspector.ParsedURL.completeURL(InspectorTest.mainTarget.inspectedURL(), "resources/"), "/html/");
+            fs.addFileMapping(Common.ParsedURL.completeURL(InspectorTest.mainTarget.inspectedURL(), "resources/"), "/html/");
             fs.reportCreated(fileSystemCreated);
 
             function fileSystemCreated()
@@ -38,7 +38,7 @@ function test()
             function didShowScriptSource(sourceFrame)
             {
                 InspectorTest.addResult("Editing filesystem resource: " + sourceFrame.uiSourceCode().url());
-                InspectorTest.addSniffer(WebInspector.DebuggerModel.prototype, "_didEditScriptSource", didEditScriptSource);
+                InspectorTest.addSniffer(SDK.DebuggerModel.prototype, "_didEditScriptSource", didEditScriptSource);
                 InspectorTest.replaceInSource(sourceFrame, "return 0;", "return \"live-edited string\";");
                 InspectorTest.commitSource(sourceFrame);
             }

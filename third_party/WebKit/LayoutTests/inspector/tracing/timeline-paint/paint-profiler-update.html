@@ -26,7 +26,7 @@ function performActions()
 
 function test()
 {
-    var panel = WebInspector.panels.timeline;
+    var panel = UI.panels.timeline;
 
     panel._captureLayersAndPicturesSetting.set(true);
     panel._onModeChanged();
@@ -37,9 +37,9 @@ function test()
     {
         var events = InspectorTest.timelineModel()._mainThreadEvents;
         for (var event of events) {
-            if (event.name === WebInspector.TimelineModel.RecordType.Paint) {
+            if (event.name === TimelineModel.TimelineModel.RecordType.Paint) {
                 paintEvents.push(event);
-                if (!WebInspector.TimelineData.forEvent(event).picture)
+                if (!TimelineModel.TimelineData.forEvent(event).picture)
                     InspectorTest.addResult("Event without picture at " + paintEvents.length);
             }
         }
@@ -48,7 +48,7 @@ function test()
              throw new Error("FAIL: Expect at least two paint events");
 
         InspectorTest.addSniffer(panel, "_appendDetailsTabsForTraceEventAndShowDetails", onRecordDetailsReady, false);
-        panel.select(WebInspector.TimelineSelection.fromTraceEvent(paintEvents[0]), WebInspector.TimelinePanel.DetailsTab.PaintProfiler);
+        panel.select(Timeline.TimelineSelection.fromTraceEvent(paintEvents[0]), Timeline.TimelinePanel.DetailsTab.PaintProfiler);
     }
 
     function onRecordDetailsReady()
@@ -67,7 +67,7 @@ function test()
             if (updateCount++)
                 InspectorTest.completeTest();
             else
-                panel.select(WebInspector.TimelineSelection.fromTraceEvent(paintEvents[1]), WebInspector.TimelinePanel.DetailsTab.PaintProfiler);
+                panel.select(Timeline.TimelineSelection.fromTraceEvent(paintEvents[1]), Timeline.TimelinePanel.DetailsTab.PaintProfiler);
         }
    }
 

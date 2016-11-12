@@ -23,7 +23,7 @@ function onload()
 
 var test = function()
 {
-    var panel = WebInspector.panels.sources;
+    var panel = UI.panels.sources;
     var sourceFrame;
     var scriptFormatter;
 
@@ -69,7 +69,7 @@ var test = function()
 
     function dumpConsoleMessageURLs()
     {
-        var messages = WebInspector.ConsoleView.instance()._visibleViewMessages;
+        var messages = Console.ConsoleView.instance()._visibleViewMessages;
         for (var i = 0; i < messages.length; ++i) {
             var element = messages[i].toMessageElement();
             var anchor = element.querySelector(".console-message-url");

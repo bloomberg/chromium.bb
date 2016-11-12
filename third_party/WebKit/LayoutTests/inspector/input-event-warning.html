@@ -62,7 +62,7 @@ function dispatchEvents()
 
 function test()
 {
-    WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, InspectorTest.safeWrap(onConsoleMessage));
+    SDK.multitargetConsoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, InspectorTest.safeWrap(onConsoleMessage));
     step1();
 
     function step1()

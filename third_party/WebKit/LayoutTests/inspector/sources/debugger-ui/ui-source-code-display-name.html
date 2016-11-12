@@ -7,7 +7,7 @@ function test()
 
     function createContentProvider(url)
     {
-        var contentProvider = WebInspector.StaticContentProvider.fromString(url, WebInspector.resourceTypes.Script, "");
+        var contentProvider = Common.StaticContentProvider.fromString(url, Common.resourceTypes.Script, "");
         contentProvider.requestContent = function()
         {
             InspectorTest.addResult("Source requested for " + url);
@@ -16,8 +16,8 @@ function test()
         return contentProvider;
     }
 
-    var workspace = new WebInspector.Workspace();
-    workspace.networkProject = new WebInspector.NetworkProject(InspectorTest.mainTarget, workspace);
+    var workspace = new Workspace.Workspace();
+    workspace.networkProject = new Bindings.NetworkProject(InspectorTest.mainTarget, workspace);
 
     function addNetworkFile(url)
     {
@@ -27,7 +27,7 @@ function test()
     function dumpUISourceCodeDisplayName(url)
     {
         var uiSourceCode = addNetworkFile(url);
-        InspectorTest.addResult("UISourceCode display name for url \"" + url + "\" is \"" + WebInspector.TabbedEditorContainer.prototype._titleForFile(uiSourceCode) + "\".");
+        InspectorTest.addResult("UISourceCode display name for url \"" + url + "\" is \"" + Sources.TabbedEditorContainer.prototype._titleForFile(uiSourceCode) + "\".");
     }
 
     const baseURL = "http://localhost:8080/folder/";

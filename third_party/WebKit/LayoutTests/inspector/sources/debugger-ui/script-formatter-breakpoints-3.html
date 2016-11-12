@@ -6,8 +6,8 @@
 <script>
 var test = function()
 {
-    WebInspector.breakpointManager._storage._breakpoints = {};
-    var panel = WebInspector.panels.sources;
+    Bindings.breakpointManager._storage._breakpoints = {};
+    var panel = UI.panels.sources;
     var scriptFormatter;
 
     InspectorTest.runDebuggerTestSuite([
@@ -25,7 +25,7 @@ var test = function()
 
             function didShowScriptSource(frame)
             {
-                InspectorTest.addSniffer(WebInspector.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
+                InspectorTest.addSniffer(Sources.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
                 scriptFormatter._toggleFormatScriptSource();
             }
                 

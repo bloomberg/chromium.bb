@@ -8,7 +8,7 @@ function test()
     function createNetworkRequestWithJSONMIMEType(type)
     {
         InspectorTest.addResult("Creating a NetworkRequest with type: " + type);
-        var request = new WebInspector.NetworkRequest(WebInspector.targetManager.mainTarget(), 0, 'http://localhost');
+        var request = new SDK.NetworkRequest(SDK.targetManager.mainTarget(), 0, 'http://localhost');
         request.mimeType = type;
         request._content = '{"number": 42}';
         return request;
@@ -17,11 +17,11 @@ function test()
     function testPreviewer(request)
     {
         return new Promise(function(done) {
-            var previewView = new WebInspector.RequestPreviewView(request, null);
+            var previewView = new Network.RequestPreviewView(request, null);
 
             previewView._createPreviewView(function(previewer) {
-                InspectorTest.addResult("Its previewer is searchable: " + (previewer && previewer instanceof WebInspector.SearchableView));
-                InspectorTest.addResult("Its previewer is the JSON previewer: " + (previewer && previewer._searchProvider && previewer._searchProvider instanceof WebInspector.JSONView));
+                InspectorTest.addResult("Its previewer is searchable: " + (previewer && previewer instanceof UI.SearchableView));
+                InspectorTest.addResult("Its previewer is the JSON previewer: " + (previewer && previewer._searchProvider && previewer._searchProvider instanceof Network.JSONView));
                 done();
             });
         });

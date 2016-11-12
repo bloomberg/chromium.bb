@@ -17,7 +17,7 @@ function test()
 
             function didShowResource(sourceFrame)
             {
-                InspectorTest.addSniffer(WebInspector.CSSModel.prototype, "_fireStyleSheetChanged", didEditResource);
+                InspectorTest.addSniffer(SDK.CSSModel.prototype, "_fireStyleSheetChanged", didEditResource);
                 InspectorTest.replaceInSource(sourceFrame, "font-size: 12px;", "font-size: 20px;");
             }
 

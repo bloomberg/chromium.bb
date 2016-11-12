@@ -12,7 +12,7 @@ function test()
 {
     Runtime.experiments.enableForTest("timelineRuleUsageRecording");
 
-    var panel = WebInspector.panels.timeline;
+    var panel = UI.panels.timeline;
     panel._markUnusedCSS.set(true);
 
     InspectorTest.runTestSuite([
@@ -27,7 +27,7 @@ function test()
 
             function printResults()
             {
-                WebInspector.inspectorView.showPanel("sources").then(showSource);
+                UI.inspectorView.showPanel("sources").then(showSource);
             }
         
             function showSource()
@@ -37,7 +37,7 @@ function test()
 
             function waitForDecorations()
             {
-                InspectorTest.addSniffer(WebInspector.CoverageProfile.LineDecorator.prototype, "decorate", didShowDecorations);
+                InspectorTest.addSniffer(Components.CoverageProfile.LineDecorator.prototype, "decorate", didShowDecorations);
             }
 
             function didShowDecorations(sourceFrame)

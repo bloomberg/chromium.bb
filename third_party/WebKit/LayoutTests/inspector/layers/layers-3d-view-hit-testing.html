@@ -21,7 +21,7 @@ function test()
 
     function initSizes()
     {
-        canvas = WebInspector.panels.layers._layers3DView._canvasElement;
+        canvas = UI.panels.layers._layers3DView._canvasElement;
         var canvasWidth = canvas.offsetWidth;
         var canvasHeight = canvas.offsetHeight;
         var rootWidth = contentRoot.width();
@@ -49,11 +49,11 @@ function test()
     function dumpStateForOutlineType(type)
     {
         var outlined = "none";
-        WebInspector.panels.layers._update();
+        UI.panels.layers._update();
 
         function checkLayer(layerInfo)
         {
-            var l3dview = WebInspector.panels.layers._layers3DView;
+            var l3dview = UI.panels.layers._layers3DView;
             if (l3dview._lastSelection[type] && layerInfo.layer.id() === l3dview._lastSelection[type].layer().id())
                 outlined = layerInfo.name;
         }
@@ -65,8 +65,8 @@ function test()
     function dumpOutlinedStateForLayers()
     {
         InspectorTest.addResult("State of layers:");
-        dumpStateForOutlineType(WebInspector.Layers3DView.OutlineType.Hovered);
-        dumpStateForOutlineType(WebInspector.Layers3DView.OutlineType.Selected);
+        dumpStateForOutlineType(LayerViewer.Layers3DView.OutlineType.Hovered);
+        dumpStateForOutlineType(LayerViewer.Layers3DView.OutlineType.Selected);
     }
 
     function onGotLayers()

@@ -17,8 +17,8 @@ foobar();
 <script>
 function test()
 {
-    WebInspector.breakpointManager._storage._breakpoints = {};
-    var panel = WebInspector.panels.sources;
+    Bindings.breakpointManager._storage._breakpoints = {};
+    var panel = UI.panels.sources;
 
     InspectorTest.startDebuggerTest();
 
@@ -31,7 +31,7 @@ function test()
 
     function dumpBreakpointStorage()
     {
-        var breakpointManager = WebInspector.breakpointManager;
+        var breakpointManager = Bindings.breakpointManager;
         var breakpoints = breakpointManager._storage._setting.get();
         InspectorTest.addResult("    Dumping breakpoint storage");
         for (var i = 0; i < breakpoints.length; ++i)
@@ -41,7 +41,7 @@ function test()
     function didShowScriptSource(sourceFrame)
     {
         InspectorTest.addResult("Setting breakpoint:");
-        InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_addResolvedLocation", breakpointResolved);
+        InspectorTest.addSniffer(Bindings.BreakpointManager.TargetBreakpoint.prototype, "_addResolvedLocation", breakpointResolved);
         InspectorTest.setBreakpoint(sourceFrame, 11, "", true);
     }
 

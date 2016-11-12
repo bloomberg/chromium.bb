@@ -17,7 +17,7 @@ function test()
     function testCompletions(text, expected, force)
     {
         consoleEditor.setText(text);
-        consoleEditor.setSelection(WebInspector.TextRange.createFromLocation(Infinity, Infinity));
+        consoleEditor.setSelection(Common.TextRange.createFromLocation(Infinity, Infinity));
         consoleEditor._autocompleteController.autocomplete(force);
         return InspectorTest.addSnifferPromise(consoleEditor._autocompleteController, "_onSuggestionsShownForTest").then(checkExpected);
 

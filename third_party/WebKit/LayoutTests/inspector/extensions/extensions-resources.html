@@ -26,10 +26,10 @@ function initialize_ExtensionResourceTests()
 
 InspectorTest.clickOnURL = function()
 {
-    WebInspector.viewManager.showView("console").then(() => {
-        WebInspector.ConsoleView.instance()._updateMessageList();
+    UI.viewManager.showView("console").then(() => {
+        Console.ConsoleView.instance()._updateMessageList();
         var xpathResult = document.evaluate("//a[starts-with(., 'test-script.js')]",
-                                            WebInspector.ConsoleView.instance().element, null, XPathResult.ANY_UNORDERED_NODE_TYPE, null);
+                                            Console.ConsoleView.instance().element, null, XPathResult.ANY_UNORDERED_NODE_TYPE, null);
 
         var click = document.createEvent("MouseEvent");
         click.initMouseEvent("click", true, true);
@@ -39,13 +39,13 @@ InspectorTest.clickOnURL = function()
 
 InspectorTest.waitForStyleSheetChangedEvent = function(reply)
 {
-    var originalSetTimeout = WebInspector.Throttler.prototype._setTimeout;
-    WebInspector.Throttler.prototype._setTimeout = innerSetTimeout;
-    InspectorTest.addSniffer(WebInspector.CSSModel.prototype, "_fireStyleSheetChanged", onStyleSheetChanged);
+    var originalSetTimeout = Common.Throttler.prototype._setTimeout;
+    Common.Throttler.prototype._setTimeout = innerSetTimeout;
+    InspectorTest.addSniffer(SDK.CSSModel.prototype, "_fireStyleSheetChanged", onStyleSheetChanged);
 
     function onStyleSheetChanged()
     {
-        WebInspector.Throttler.prototype._setTimeout = originalSetTimeout;
+        Common.Throttler.prototype._setTimeout = originalSetTimeout;
         reply();
     }
 
@@ -196,7 +196,7 @@ function extension_testOpenResourceHandler(nextTest)
     webInspector.panels.setOpenResourceHandler(handleOpenResource);
     webInspector.inspectedWindow.eval("logMessage()", function() {
         evaluateOnFrontend("InspectorTest.clickOnURL();");
-        evaluateOnFrontend("WebInspector.openAnchorLocationRegistry.activeHandler = 'test extension'; InspectorTest.clickOnURL();");
+        evaluateOnFrontend("Components.openAnchorLocationRegistry.activeHandler = 'test extension'; InspectorTest.clickOnURL();");
     });
 }
 

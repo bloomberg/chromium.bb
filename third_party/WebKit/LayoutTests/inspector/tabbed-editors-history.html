@@ -35,7 +35,7 @@ var test = function()
         return "url_" + index;
     }
 
-    var history = new WebInspector.TabbedEditorContainer.History([]);
+    var history = new Sources.TabbedEditorContainer.History([]);
 
     dumpHistory(history);
     // Emulate opening of several tabs.
@@ -52,7 +52,7 @@ var test = function()
     // ... and switching between them.
     updateAndDump(history, [url(12), url(13), url(11)]);
     updateAndDump(history, [url(11), url(12), url(13)]);
-    updateScrollAndSelectionAndDump(history, url(11), 10, new WebInspector.TextRange(15, 5, 15, 10));
+    updateScrollAndSelectionAndDump(history, url(11), 10, new Common.TextRange(15, 5, 15, 10));
     // Now close some tabs.
     removeAndDump(history, url(11));
     removeAndDump(history, url(13));

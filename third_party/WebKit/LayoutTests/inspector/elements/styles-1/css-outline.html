@@ -69,7 +69,7 @@ function test()
 
     function onStyleFetched(result)
     {
-        var parser = new WebInspector.CSSParser();
+        var parser = new SDK.CSSParser();
         parser.parse(result.value, onStyleSheetParsed);
     }
 

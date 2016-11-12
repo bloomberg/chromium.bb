@@ -6,7 +6,7 @@ function test()
 {
     function dumpParsedSearchQuery(query, isRegex)
     {
-        var searchConfig = new WebInspector.SearchConfig(query, true, isRegex);
+        var searchConfig = new Workspace.SearchConfig(query, true, isRegex);
         InspectorTest.addResult("Dumping parsed search query [" + query + "]:");
         InspectorTest.addResult(JSON.stringify(searchConfig.queries()));
     }

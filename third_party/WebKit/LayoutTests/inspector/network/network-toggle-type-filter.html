@@ -5,8 +5,8 @@
 <script>
 function test() {
     InspectorTest.recordNetwork();
-    var target = WebInspector.panels.network._networkLogView;
-    var types = WebInspector.resourceTypes;
+    var target = UI.panels.network._networkLogView;
+    var types = Common.resourceTypes;
 
     function toggleAndDump(buttonName, toggle)
     {
@@ -14,9 +14,9 @@ function test() {
         InspectorTest.addResult((toggle ? "Toggled '" : "Clicked '") + buttonName + "' button.");
         target._resourceCategoryFilterUI._toggleTypeFilter(buttonName, toggle);
         var results = [];
-        var request = new WebInspector.NetworkRequest(WebInspector.targetManager.mainTarget(), "", "", "", "", "");
+        var request = new SDK.NetworkRequest(SDK.targetManager.mainTarget(), "", "", "", "", "");
         for (var typeId in types) {
-            var type = WebInspector.resourceTypes[typeId];
+            var type = Common.resourceTypes[typeId];
             results.push(type.name() + ": " + target._resourceCategoryFilterUI.accept(type.category().title));
         }
         InspectorTest.addResult("Filter: " + results.join(", "));

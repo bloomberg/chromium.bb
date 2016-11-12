@@ -19,7 +19,7 @@ function setupEventListeners()
 
 function test()
 {
-    WebInspector.settingForTest("showEventListenersForAncestors").set(true);
+    Common.settingForTest("showEventListenersForAncestors").set(true);
     InspectorTest.evaluateInPage("setupEventListeners()", step1);
 
     function step1()

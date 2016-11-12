@@ -7,12 +7,12 @@ var test = function()
 {
     function dumpColor(colorText)
     {
-        var color = WebInspector.Color.parse(colorText);
+        var color = Common.Color.parse(colorText);
         InspectorTest.addResult("Dumping '" + colorText + "' in different formats:");
-        InspectorTest.addResult(" - " + color.asString(WebInspector.Color.Format.RGB));
-        InspectorTest.addResult(" - " + color.asString(WebInspector.Color.Format.RGBA));
-        InspectorTest.addResult(" - " + color.asString(WebInspector.Color.Format.HSL));
-        InspectorTest.addResult(" - " + color.asString(WebInspector.Color.Format.HSLA));
+        InspectorTest.addResult(" - " + color.asString(Common.Color.Format.RGB));
+        InspectorTest.addResult(" - " + color.asString(Common.Color.Format.RGBA));
+        InspectorTest.addResult(" - " + color.asString(Common.Color.Format.HSL));
+        InspectorTest.addResult(" - " + color.asString(Common.Color.Format.HSLA));
 
         var hsv = color.hsva();
         var hsvString = String.sprintf("hsv(%d, %d%, %d%)", Math.round(hsv[0] * 360), Math.round(hsv[1] * 100), Math.round(hsv[2] * 100));
@@ -21,9 +21,9 @@ var test = function()
         var hsvaString = String.sprintf("hsva(%d, %d%, %d%, %f)", Math.round(hsva[0] * 360), Math.round(hsva[1] * 100), Math.round(hsva[2] * 100), hsva[3]);
         InspectorTest.addResult(" - " + hsvaString);
 
-        InspectorTest.addResult(" - " + color.asString(WebInspector.Color.Format.HEX));
-        InspectorTest.addResult(" - " + color.asString(WebInspector.Color.Format.ShortHEX));
-        InspectorTest.addResult(" - " + color.asString(WebInspector.Color.Format.Nickname));
+        InspectorTest.addResult(" - " + color.asString(Common.Color.Format.HEX));
+        InspectorTest.addResult(" - " + color.asString(Common.Color.Format.ShortHEX));
+        InspectorTest.addResult(" - " + color.asString(Common.Color.Format.Nickname));
         InspectorTest.addResult(" - default: " + color.asString());
 
         InspectorTest.addResult(" - inverse color: " + color.invert().asString());
@@ -53,6 +53,6 @@ var test = function()
 </script>
 </head>
 <body onload="runTest()">
-<p>Tests WebInspector.Color</p>
+<p>Tests Common.Color</p>
 </body>
 </html>

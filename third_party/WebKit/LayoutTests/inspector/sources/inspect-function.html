@@ -6,7 +6,7 @@
 function test()
 {
     var revealed = 0;
-    InspectorTest.addSniffer(WebInspector.SourcesView.prototype, "showSourceLocation", didReveal, true);
+    InspectorTest.addSniffer(Sources.SourcesView.prototype, "showSourceLocation", didReveal, true);
     InspectorTest.evaluateInConsole("function foo() { }; inspect(foo.bind());inspect(foo);");
 
     function didReveal(uiSourceCode, lineNumber, columnNumber)

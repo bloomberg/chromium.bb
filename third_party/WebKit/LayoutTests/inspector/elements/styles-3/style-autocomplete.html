@@ -6,12 +6,12 @@
 
 function test()
 {
-    var namePrompt = new WebInspector.StylesSidebarPane.CSSPropertyPrompt(WebInspector.cssMetadata().allProperties(), null, true);
+    var namePrompt = new Elements.StylesSidebarPane.CSSPropertyPrompt(SDK.cssMetadata().allProperties(), null, true);
     var valuePrompt = valuePromptFor("color");
 
     function valuePromptFor(name)
     {
-        return new WebInspector.StylesSidebarPane.CSSPropertyPrompt(WebInspector.cssMetadata().propertyValues(name), null, false);
+        return new Elements.StylesSidebarPane.CSSPropertyPrompt(SDK.cssMetadata().propertyValues(name), null, false);
     }
 
     InspectorTest.runTestSuite([

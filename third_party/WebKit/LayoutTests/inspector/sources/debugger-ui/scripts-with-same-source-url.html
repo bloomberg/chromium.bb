@@ -13,8 +13,8 @@ function test()
     InspectorTest.evaluateInPage("injectScript(1);");
     InspectorTest.evaluateInPage("injectScript(2);");
 
-    WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, reportAdded);
-    WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, reportRemoved);
+    Workspace.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, reportAdded);
+    Workspace.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, reportRemoved);
 
     var iteration = 0;
 

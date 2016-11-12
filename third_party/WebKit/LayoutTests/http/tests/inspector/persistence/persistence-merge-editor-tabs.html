@@ -22,7 +22,7 @@ function test()
 
         function openNetworkTab(next)
         {
-            InspectorTest.waitForUISourceCode("foo.js", WebInspector.projectTypes.Network)
+            InspectorTest.waitForUISourceCode("foo.js", Workspace.projectTypes.Network)
                 .then(code => InspectorTest.showUISourceCodePromise(code))
                 .then(onNetworkTab);
 
@@ -36,7 +36,7 @@ function test()
 
         function openFileSystemTab(next)
         {
-            InspectorTest.waitForUISourceCode("foo.js", WebInspector.projectTypes.FileSystem)
+            InspectorTest.waitForUISourceCode("foo.js", Workspace.projectTypes.FileSystem)
                 .then(onFileSystemSourceCode)
                 .then(onFileSystemTab);
 
@@ -49,7 +49,7 @@ function test()
             function onFileSystemTab(sourceFrame)
             {
                 fileSystemSourceFrame = sourceFrame;
-                fileSystemSourceFrame.setSelection(new WebInspector.TextRange(2, 0, 2, 5));
+                fileSystemSourceFrame.setSelection(new Common.TextRange(2, 0, 2, 5));
                 fileSystemSourceFrame.scrollToLine(2);
                 dumpSourceFrame(fileSystemSourceFrame);
                 dumpEditorTabs();
@@ -60,7 +60,7 @@ function test()
         function addFileMapping(next)
         {
             InspectorTest.waitForBinding("foo.js").then(onBindingCreated);
-            WebInspector.fileSystemMapping.addFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
+            Workspace.fileSystemMapping.addFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
 
             function onBindingCreated()
             {
@@ -72,15 +72,15 @@ function test()
 
         function removeFileMapping(next)
         {
-            WebInspector.persistence.addEventListener(WebInspector.Persistence.Events.BindingRemoved, onBindingRemoved);
-            WebInspector.fileSystemMapping.removeFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
+            Persistence.persistence.addEventListener(Persistence.Persistence.Events.BindingRemoved, onBindingRemoved);
+            Workspace.fileSystemMapping.removeFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
 
             function onBindingRemoved(event)
             {
                 var binding = event.data;
                 if (binding.network.name() !== "foo.js")
                     return
-                WebInspector.persistence.removeEventListener(WebInspector.Persistence.Events.BindingRemoved, onBindingRemoved);
+                Persistence.persistence.removeEventListener(Persistence.Persistence.Events.BindingRemoved, onBindingRemoved);
                 dumpEditorTabs();
                 dumpSourceFrame(fileSystemSourceFrame);
                 next();
@@ -90,7 +90,7 @@ function test()
 
     function dumpEditorTabs()
     {
-        var editorContainer = WebInspector.panels.sources._sourcesView._editorContainer;
+        var editorContainer = UI.panels.sources._sourcesView._editorContainer;
         var openedUISourceCodes = editorContainer._tabIds.keysArray();
         openedUISourceCodes.sort((a, b) => a.url().compareTo(b.url()));
         InspectorTest.addResult("Opened tabs: ");

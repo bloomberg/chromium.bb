@@ -15,7 +15,7 @@ function test()
     fs.addFileMapping("http://127.0.0.1:8000", "/");
     fs.reportCreated(function () { });
     InspectorTest.waitForBinding("foo.js").then(onBindingCreated);
-    WebInspector.persistence.addEventListener(WebInspector.Persistence.Events.BindingRemoved, onBindingRemoved);
+    Persistence.persistence.addEventListener(Persistence.Persistence.Events.BindingRemoved, onBindingRemoved);
 
     function onBindingCreated(binding)
     {

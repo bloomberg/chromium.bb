@@ -81,7 +81,7 @@ function test()
         function testShowAll(next)
         {
             // Make sure all nodes are visible.
-            WebInspector.HeapSnapshotDiffDataGrid.prototype.defaultPopulateCount = function() { return 100; };
+            Profiler.HeapSnapshotDiffDataGrid.prototype.defaultPopulateCount = function() { return 100; };
 
             InspectorTest.takeAndOpenSnapshot(createHeapSnapshotA, createSnapshotB);
             function createSnapshotB() {

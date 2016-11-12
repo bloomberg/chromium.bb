@@ -24,8 +24,8 @@ function onload()
 
 var test = function()
 {
-    WebInspector.breakpointManager._storage._breakpoints = {};
-    var panel = WebInspector.panels.sources;
+    Bindings.breakpointManager._storage._breakpoints = {};
+    var panel = UI.panels.sources;
     var scriptFormatter;
 
     InspectorTest.runDebuggerTestSuite([
@@ -44,14 +44,14 @@ var test = function()
             function didShowScriptSource(sourceFrame)
             {
                 InspectorTest.addResult("Adding breakpoint.");
-                InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_addResolvedLocation", breakpointResolved);
+                InspectorTest.addSniffer(Bindings.BreakpointManager.TargetBreakpoint.prototype, "_addResolvedLocation", breakpointResolved);
                 InspectorTest.setBreakpoint(sourceFrame, 11, "", true);
             }
 
             function breakpointResolved()
             {
                 InspectorTest.addResult("Formatting.");
-                InspectorTest.addSniffer(WebInspector.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
+                InspectorTest.addSniffer(Sources.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
                 scriptFormatter._toggleFormatScriptSource();
             }
 
@@ -62,7 +62,7 @@ var test = function()
                 InspectorTest.removeBreakpoint(formattedSourceFrame, 13);
                 InspectorTest.addResult("Unformatting.");
                 scriptFormatter._discardFormattedUISourceCodeScript(panel.visibleView.uiSourceCode());
-                var breakpoints = WebInspector.breakpointManager._storage._setting.get();
+                var breakpoints = Bindings.breakpointManager._storage._setting.get();
                 InspectorTest.assertEquals(breakpoints.length, 0, "There should not be any breakpoints in the storage.");
                 next();
             }

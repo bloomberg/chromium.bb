@@ -28,7 +28,7 @@ function test()
             ]
         }]
     }]};
-    var commands = WebInspector.InspectorBackendHostedMode.generateCommands(inspectorJson);
+    var commands = SDK.InspectorBackendHostedMode.generateCommands(inspectorJson);
     InspectorTest.addResult(commands);
     InspectorTest.completeTest();
 }

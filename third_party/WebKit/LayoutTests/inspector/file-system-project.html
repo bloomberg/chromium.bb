@@ -71,14 +71,14 @@ function test()
             fs1.reportCreated(function() {});
             fs2.reportCreated(function() {});
 
-            WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, onUISourceCode);
+            Workspace.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, onUISourceCode);
 
             var count = 3;
             function onUISourceCode()
             {
                 if (--count)
                     return;
-                WebInspector.workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, onUISourceCode);
+                Workspace.workspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeAdded, onUISourceCode);
                 onUISourceCodesLoaded();
             }
 
@@ -93,7 +93,7 @@ function test()
             function uiSourceCodesDumped()
             {
                 dumpUISourceCodeLocations(uiSourceCodes, 5);
-                WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.WorkingCopyCommitted, contentCommitted, this);
+                Workspace.workspace.addEventListener(Workspace.Workspace.Events.WorkingCopyCommitted, contentCommitted, this);
                 uiSourceCodes[0].addRevision("<Modified UISourceCode content>");
             }
 
@@ -127,7 +127,7 @@ function test()
 
         function testExcludesSettings(next)
         {
-            WebInspector.settings.createLocalSetting("workspaceExcludedFolders", {}).set({"file:///var/www2":["/html/"]});
+            Common.settings.createLocalSetting("workspaceExcludedFolders", {}).set({"file:///var/www2":["/html/"]});
             createFileSystem("file:///var/www2", dumpExcludes);
 
             function dumpExcludes(fs)
@@ -212,7 +212,7 @@ function test()
 
             function dumpGitFolders()
             {
-                var isolatedFileSystem = WebInspector.isolatedFileSystemManager.fileSystem("file:///var/www3");
+                var isolatedFileSystem = Workspace.isolatedFileSystemManager.fileSystem("file:///var/www3");
                 var folders = isolatedFileSystem.gitFolders();
                 folders.sort();
                 for (var gitFolder of folders)

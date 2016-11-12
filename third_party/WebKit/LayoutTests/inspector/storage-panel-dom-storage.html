@@ -44,7 +44,7 @@ function test()
         if (storages) {
             for (var i = 0; i < storages.length; i++) {
                 var storage = storages[i];
-                WebInspector.panels.resources._showDOMStorage(storage);
+                UI.panels.resources._showDOMStorage(storage);
                 InspectorTest.addResult("Did show: " + name(storage));
             }
         } else
@@ -55,7 +55,7 @@ function test()
             for (var i = 0; i < storages.length; i++) {
                 var storage = storages[i];
                 InspectorTest.addResult(name(storage) + " content: ");
-                var view = WebInspector.panels.resources._domStorageViews.get(storage);
+                var view = UI.panels.resources._domStorageViews.get(storage);
                 dumpDataGridContent(view._dataGrid);
             }
             InspectorTest.addResult("DONE");

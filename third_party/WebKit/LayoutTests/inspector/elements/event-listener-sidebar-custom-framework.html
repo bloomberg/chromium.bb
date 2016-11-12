@@ -92,7 +92,7 @@ function setupReturnIncorrectResult()
 
 function test()
 {
-    WebInspector.settingForTest("showEventListenersForAncestors").set(false);
+    Common.settingForTest("showEventListenersForAncestors").set(false);
     InspectorTest.selectNodeWithId("inspectedNode", step1);
 
     function step1()

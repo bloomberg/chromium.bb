@@ -46,31 +46,31 @@ function test()
     }
 
     // Start with non-resources panel.
-    WebInspector.viewManager.showView("console");
+    UI.viewManager.showView("console");
 
-    InspectorTest.addSniffer(WebInspector.IndexedDBTreeElement.prototype, "_indexedDBAdded", indexedDBAdded, true);
+    InspectorTest.addSniffer(Resources.IndexedDBTreeElement.prototype, "_indexedDBAdded", indexedDBAdded, true);
     function indexedDBAdded()
     {
         InspectorTest.addResult("Database added.");
     }
 
-    InspectorTest.addSniffer(WebInspector.IndexedDBTreeElement.prototype, "_indexedDBRemoved", indexedDBRemoved, true);
+    InspectorTest.addSniffer(Resources.IndexedDBTreeElement.prototype, "_indexedDBRemoved", indexedDBRemoved, true);
     function indexedDBRemoved()
     {
         InspectorTest.addResult("Database removed.");
     }
 
-    InspectorTest.addSniffer(WebInspector.IndexedDBTreeElement.prototype, "_indexedDBLoaded", indexedDBLoaded, true);
+    InspectorTest.addSniffer(Resources.IndexedDBTreeElement.prototype, "_indexedDBLoaded", indexedDBLoaded, true);
     function indexedDBLoaded()
     {
         InspectorTest.addResult("Database loaded.");
     }
 
     // Switch to resources panel.
-    WebInspector.viewManager.showView("resources");
+    UI.viewManager.showView("resources");
 
     InspectorTest.addResult("Expanded IndexedDB tree element.");
-    WebInspector.panels.resources.indexedDBListTreeElement.expand();
+    UI.panels.resources.indexedDBListTreeElement.expand();
     InspectorTest.dumpIndexedDBTree();
     InspectorTest.addResult("Created database.");
     createDatabase(databaseCreated);
@@ -78,13 +78,13 @@ function test()
     function databaseCreated()
     {
         indexedDBModel = InspectorTest.indexedDBModel();
-        indexedDBModel.addEventListener(WebInspector.IndexedDBModel.Events.DatabaseLoaded, databaseLoaded);
-        WebInspector.panels.resources.indexedDBListTreeElement.refreshIndexedDB();
+        indexedDBModel.addEventListener(Resources.IndexedDBModel.Events.DatabaseLoaded, databaseLoaded);
+        UI.panels.resources.indexedDBListTreeElement.refreshIndexedDB();
     }
 
     function databaseLoaded()
     {
-        indexedDBModel.removeEventListener(WebInspector.IndexedDBModel.Events.DatabaseLoaded, databaseLoaded);
+        indexedDBModel.removeEventListener(Resources.IndexedDBModel.Events.DatabaseLoaded, databaseLoaded);
         InspectorTest.dumpIndexedDBTree();
         InspectorTest.addResult("Navigated to another security origin.");
         InspectorTest.navigate(withoutIndexedDBURL, navigatedAway);
@@ -106,14 +106,14 @@ function test()
 
     function databaseDeleted()
     {
-        WebInspector.panels.resources.indexedDBListTreeElement.refreshIndexedDB();
-        InspectorTest.addSniffer(WebInspector.IndexedDBModel.prototype, "_updateOriginDatabaseNames", databaseNamesLoadedAfterDeleting, false);
+        UI.panels.resources.indexedDBListTreeElement.refreshIndexedDB();
+        InspectorTest.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", databaseNamesLoadedAfterDeleting, false);
     }
 
     function databaseNamesLoadedAfterDeleting()
     {
         InspectorTest.dumpIndexedDBTree();
-        WebInspector.panels.resources.indexedDBListTreeElement.collapse();
+        UI.panels.resources.indexedDBListTreeElement.collapse();
         InspectorTest.completeTest();
     }
 }

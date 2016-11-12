@@ -21,7 +21,7 @@ function test()
 {
     Runtime.experiments.enableForTest("liveSASS");
     InspectorTest.evaluateInPage("simulateBrowserSync()", function() { });
-    InspectorTest.cssModel.addEventListener(WebInspector.CSSModel.Events.SourceMapAttached, onSourceMapAttached);
+    InspectorTest.cssModel.addEventListener(SDK.CSSModel.Events.SourceMapAttached, onSourceMapAttached);
 
     function onSourceMapAttached(event)
     {

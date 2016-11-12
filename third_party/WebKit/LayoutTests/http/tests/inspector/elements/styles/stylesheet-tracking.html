@@ -69,8 +69,8 @@ function test()
 {
     var inspectedNode;
 
-    InspectorTest.cssModel.addEventListener(WebInspector.CSSModel.Events.StyleSheetAdded, styleSheetAdded, null);
-    InspectorTest.cssModel.addEventListener(WebInspector.CSSModel.Events.StyleSheetRemoved, styleSheetRemoved, null);
+    InspectorTest.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, styleSheetAdded, null);
+    InspectorTest.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetRemoved, styleSheetRemoved, null);
     var headers = InspectorTest.cssModel.styleSheetHeaders();
     InspectorTest.addResult(headers.length + " headers known:");
     sortAndDumpData(headers);

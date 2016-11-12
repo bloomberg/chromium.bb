@@ -7,11 +7,11 @@ InspectorTest.preloadPanel("resources");
 
 InspectorTest.dumpCacheTree = function()
 {
-    WebInspector.panels.resources.cacheStorageListTreeElement.expand();
+    UI.panels.resources.cacheStorageListTreeElement.expand();
     InspectorTest.addResult("Dumping CacheStorage tree:");
-    var cachesTreeElement = WebInspector.panels.resources.cacheStorageListTreeElement;
+    var cachesTreeElement = UI.panels.resources.cacheStorageListTreeElement;
     var promise = new Promise(function(resolve, reject) {
-        InspectorTest.addSnifferPromise(WebInspector.ServiceWorkerCacheModel.prototype, "_updateCacheNames").then(crawlCacheTree).catch(reject);
+        InspectorTest.addSnifferPromise(SDK.ServiceWorkerCacheModel.prototype, "_updateCacheNames").then(crawlCacheTree).catch(reject);
 
         function crawlCacheTree()
         {
@@ -27,7 +27,7 @@ InspectorTest.dumpCacheTree = function()
                 var cacheTreeElement = cachesTreeElement.childAt(i);
                 InspectorTest.addResult("    cache: " + cacheTreeElement.title);
                 var view = cacheTreeElement._view;
-                InspectorTest.addSniffer(WebInspector.ServiceWorkerCacheView.prototype, "_updateDataCallback", addDataResult, false);
+                InspectorTest.addSniffer(Resources.ServiceWorkerCacheView.prototype, "_updateDataCallback", addDataResult, false);
                 if (!view)
                     cacheTreeElement.onselect(false);
                 else
@@ -65,22 +65,22 @@ InspectorTest.dumpCacheTree = function()
             }
         }
     });
-    WebInspector.panels.resources.cacheStorageListTreeElement._refreshCaches();
+    UI.panels.resources.cacheStorageListTreeElement._refreshCaches();
     return promise;
 }
 
 // If optionalEntry is not specified, then the whole cache is deleted.
 InspectorTest.deleteCacheFromInspector = function(cacheName, optionalEntry)
 {
-    WebInspector.panels.resources.cacheStorageListTreeElement.expand();
+    UI.panels.resources.cacheStorageListTreeElement.expand();
     if (optionalEntry) {
         InspectorTest.addResult("Deleting CacheStorage entry " + optionalEntry + " in cache " + cacheName);
     } else {
         InspectorTest.addResult("Deleting CacheStorage cache " + cacheName);
     }
-    var cachesTreeElement = WebInspector.panels.resources.cacheStorageListTreeElement;
+    var cachesTreeElement = UI.panels.resources.cacheStorageListTreeElement;
     var promise = new Promise(function(resolve, reject) {
-        InspectorTest.addSnifferPromise(WebInspector.ServiceWorkerCacheModel.prototype, "_updateCacheNames")
+        InspectorTest.addSnifferPromise(SDK.ServiceWorkerCacheModel.prototype, "_updateCacheNames")
             .then(function() {
                 if (!cachesTreeElement.childCount()) {
                     reject("Error: Could not find CacheStorage cache " + cacheName);
@@ -94,14 +94,14 @@ InspectorTest.deleteCacheFromInspector = function(cacheName, optionalEntry)
                         continue;
                     if (!optionalEntry) {
                         // Here we're deleting the whole cache.
-                        InspectorTest.addSniffer(WebInspector.ServiceWorkerCacheModel.prototype, "_cacheRemoved", resolve)
+                        InspectorTest.addSniffer(SDK.ServiceWorkerCacheModel.prototype, "_cacheRemoved", resolve)
                         cacheTreeElement._clearCache();
                         return;
                     }
 
                     // Here we're deleting only the entry.  We verify that it is present in the table.
                     var view = cacheTreeElement._view;
-                    InspectorTest.addSniffer(WebInspector.ServiceWorkerCacheView.prototype, "_updateDataCallback", deleteEntryOrReject, false);
+                    InspectorTest.addSniffer(Resources.ServiceWorkerCacheView.prototype, "_updateDataCallback", deleteEntryOrReject, false);
                     if (!view)
                         cacheTreeElement.onselect(false);
                     else
@@ -124,13 +124,13 @@ InspectorTest.deleteCacheFromInspector = function(cacheName, optionalEntry)
                 reject("Error: Could not find CacheStorage cache " + cacheName);
             }).catch(reject);
     });
-    WebInspector.panels.resources.cacheStorageListTreeElement._refreshCaches();
+    UI.panels.resources.cacheStorageListTreeElement._refreshCaches();
     return promise;
 }
 
 InspectorTest.waitForCacheRefresh = function(callback)
 {
-    InspectorTest.addSniffer(WebInspector.ServiceWorkerCacheModel.prototype, "_updateCacheNames", callback, false);
+    InspectorTest.addSniffer(SDK.ServiceWorkerCacheModel.prototype, "_updateCacheNames", callback, false);
 }
 
 InspectorTest.createCache = function(cacheName)

@@ -14,8 +14,8 @@ function addStylesheet()
 
 function test()
 {
-    WebInspector.settingForTest("cssSourceMapsEnabled").set(true);
-    InspectorTest.addSniffer(WebInspector.CSSWorkspaceBinding.prototype, "updateLocations", step1);
+    Common.settingForTest("cssSourceMapsEnabled").set(true);
+    InspectorTest.addSniffer(Bindings.CSSWorkspaceBinding.prototype, "updateLocations", step1);
     InspectorTest.evaluateInPage("addStylesheet()");
 
     function step1()

@@ -54,7 +54,7 @@ function test() {
     for (var i = 0; i < cookies.length; ++i) {
         var cookieResult = [];
         for (var j = 0; j < resourceURLs.length; ++j) {
-            if (WebInspector.Cookies.cookieMatchesResourceURL(cookies[i], resourceURLs[j]))
+            if (SDK.Cookies.cookieMatchesResourceURL(cookies[i], resourceURLs[j]))
                 cookieResult.push(j);
         }
         InspectorTest.addResult("[" + cookieResult + "]");
@@ -75,7 +75,7 @@ function test() {
             secure: secure,
             session: true
         };
-        return WebInspector.Cookies._parseProtocolCookie(WebInspector.targetManager.mainTarget(), protocolCookie);
+        return SDK.Cookies._parseProtocolCookie(SDK.targetManager.mainTarget(), protocolCookie);
     }
 }
 </script>

@@ -10,7 +10,7 @@ function test()
     var securityOrigin = "http://127.0.0.1:8000";
     var databaseName = "testDatabase - " + self.location;
     var objectStoreName = "testObjectStore";
-    var databaseId = new WebInspector.IndexedDBModel.DatabaseId(securityOrigin, databaseName);
+    var databaseId = new Resources.IndexedDBModel.DatabaseId(securityOrigin, databaseName);
 
     function onConsoleError(callback) {
         var old = console.error;
@@ -50,7 +50,7 @@ function test()
         }
     }
 
-    InspectorTest.addSniffer(WebInspector.IndexedDBModel.prototype, "_updateOriginDatabaseNames", fillDatabase, false);
+    InspectorTest.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", fillDatabase, false);
 
     function fillDatabase()
     {
@@ -113,7 +113,7 @@ function test()
 
     function checkDatabaseDoesExist(callback)
     {
-        InspectorTest.addSniffer(WebInspector.IndexedDBModel.prototype, "_updateOriginDatabaseNames", step2, false);
+        InspectorTest.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", step2, false);
         indexedDBModel.refreshDatabaseNames();
 
         function step2()
@@ -126,7 +126,7 @@ function test()
 
     function checkDatabaseDoesNotExist(callback)
     {
-        InspectorTest.addSniffer(WebInspector.IndexedDBModel.prototype, "_updateOriginDatabaseNames", step2, false);
+        InspectorTest.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", step2, false);
         indexedDBModel.refreshDatabaseNames();
 
         function step2()

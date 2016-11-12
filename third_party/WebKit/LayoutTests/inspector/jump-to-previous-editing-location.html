@@ -9,7 +9,7 @@
 <script>
 function test()
 {
-    var panel = WebInspector.panels.sources;
+    var panel = UI.panels.sources;
     var sourcesView = panel._sourcesView;
     var historyManager = sourcesView._historyManager;
     var editorContainer = sourcesView._editorContainer;
@@ -53,7 +53,7 @@ function test()
             var lineNumber = lines[i];
             var columnNumber = columns[i];
             var originSelection = editor.selection();
-            editor.setSelection(WebInspector.TextRange.createFromLocation(lineNumber, columnNumber));
+            editor.setSelection(Common.TextRange.createFromLocation(lineNumber, columnNumber));
             editor._reportJump(originSelection, editor.selection());
             dumpSelection("Mouse click (" + lineNumber + ", " + columnNumber + ")");
         }
@@ -114,7 +114,7 @@ function test()
         function testDeletePreviousJumpLocations(next)
         {
             var editor = panel.visibleView.textEditor;
-            editor.editRange(new WebInspector.TextRange(9, 0, 15, 0), "");
+            editor.editRange(new Common.TextRange(9, 0, 15, 0), "");
             dumpSelection("Removed lines from 9 to 15");
             rollback();
             dumpSelection("Rolled back");
@@ -132,7 +132,7 @@ function test()
             for (var i = 0; i < jumpsToDo; ++i)
                 rollback();
             dumpSelection("Rolled back 4 times");
-            editor.editRange(new WebInspector.TextRange(9, 0, 11, 0), "");
+            editor.editRange(new Common.TextRange(9, 0, 11, 0), "");
             dumpSelection("Removed lines from 9 to 11");
             rollover();
             dumpSelection("Rolled over");
@@ -179,7 +179,7 @@ function test()
         {
             var lines = [];
             var columns = [];
-            const jumpsAmount = WebInspector.EditingLocationHistoryManager.HistoryDepth;
+            const jumpsAmount = Sources.EditingLocationHistoryManager.HistoryDepth;
             for(var i = 0; i < jumpsAmount; ++i) {
                 lines.push(i + 10);
                 columns.push(7);
@@ -220,10 +220,10 @@ function test()
             InspectorTest.waitForScriptSource("workspace-test.js", onScriptSource);
             function onScriptSource(uiSourceCode)
             {
-                var linkifier = new WebInspector.Linkifier();
+                var linkifier = new Components.Linkifier();
                 var anchorURI = uiSourceCode.url();
-                var anchor = linkifier.linkifyScriptLocation(WebInspector.targetManager.mainTarget(), null, anchorURI, 10, 1);
-                WebInspector.Revealer.revealPromise(anchor[WebInspector.Linkifier._uiLocationSymbol]).then(function() {
+                var anchor = linkifier.linkifyScriptLocation(SDK.targetManager.mainTarget(), null, anchorURI, 10, 1);
+                Common.Revealer.revealPromise(anchor[Components.Linkifier._uiLocationSymbol]).then(function() {
                     InspectorTest.addResult("Selection: " + panel.visibleView.textEditor.selection().toString());
                     dumpSelection("Showed anchor in " + anchorURI.split("/").pop() + " with line 333 column 3");
                     rollback();

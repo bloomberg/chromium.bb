@@ -14,30 +14,30 @@ function test()
     var networkProject1 = InspectorTest.testNetworkProject;
 
     var subframe = target.resourceTreeModel.frameForId(239);
-    WebInspector.targetManager = InspectorTest.testTargetManager;
-    WebInspector.networkMapping = InspectorTest.testNetworkMapping;
+    SDK.targetManager = InspectorTest.testTargetManager;
+    Bindings.networkMapping = InspectorTest.testNetworkMapping;
 
     target2 = InspectorTest.createMockTarget(100);
     var networkProject2 = InspectorTest.testNetworkProject;
 
-    var sourcesNavigatorView = new WebInspector.SourcesNavigatorView();
+    var sourcesNavigatorView = new Sources.SourcesNavigatorView();
     sourcesNavigatorView._resetWorkspace(InspectorTest.testWorkspace);
-    sourcesNavigatorView.show(WebInspector.inspectorView.element);
-    var contentScriptsNavigatorView = new WebInspector.ContentScriptsNavigatorView();
+    sourcesNavigatorView.show(UI.inspectorView.element);
+    var contentScriptsNavigatorView = new Sources.ContentScriptsNavigatorView();
     contentScriptsNavigatorView._resetWorkspace(InspectorTest.testWorkspace);
-    contentScriptsNavigatorView.show(WebInspector.inspectorView.element);
+    contentScriptsNavigatorView.show(UI.inspectorView.element);
 
     var uiSourceCodes = [];
     function addUISourceCode(url, isContentScript, frame)
     {
-        var contentProvider = WebInspector.StaticContentProvider.fromString(url, WebInspector.resourceTypes.Script, "");
+        var contentProvider = Common.StaticContentProvider.fromString(url, Common.resourceTypes.Script, "");
         var uiSourceCode = networkProject1.addFile(contentProvider, frame || mainFrame);
         uiSourceCodes.push(uiSourceCode);
     }
 
     function addUISourceCode2(url, isContentScript)
     {
-        var contentProvider = WebInspector.StaticContentProvider.fromString(url, WebInspector.resourceTypes.Script, "");
+        var contentProvider = Common.StaticContentProvider.fromString(url, Common.resourceTypes.Script, "");
         var uiSourceCode = networkProject2.addFile(contentProvider, target2.resourceTreeModel.mainFrame);
         uiSourceCodes.push(uiSourceCode);
     }

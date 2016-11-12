@@ -30,8 +30,8 @@ function test()
         function testLocalFrame(next)
         {
             InspectorTest.invokeAsyncWithTimeline("display", function() {
-                InspectorTest.dumpInvalidations(WebInspector.TimelineModel.RecordType.Layout, 0, "first layout invalidations");
-                InspectorTest.dumpInvalidations(WebInspector.TimelineModel.RecordType.Layout, 1, "second layout invalidations");
+                InspectorTest.dumpInvalidations(TimelineModel.TimelineModel.RecordType.Layout, 0, "first layout invalidations");
+                InspectorTest.dumpInvalidations(TimelineModel.TimelineModel.RecordType.Layout, 1, "second layout invalidations");
                 next();
             });
         },
@@ -39,8 +39,8 @@ function test()
         function testSubframe(next)
         {
             InspectorTest.invokeAsyncWithTimeline("updateSubframeAndDisplay", function() {
-                InspectorTest.dumpInvalidations(WebInspector.TimelineModel.RecordType.Layout, 0, "first layout invalidations");
-                InspectorTest.dumpInvalidations(WebInspector.TimelineModel.RecordType.Layout, 1, "second layout invalidations");
+                InspectorTest.dumpInvalidations(TimelineModel.TimelineModel.RecordType.Layout, 0, "first layout invalidations");
+                InspectorTest.dumpInvalidations(TimelineModel.TimelineModel.RecordType.Layout, 1, "second layout invalidations");
                 next();
             });
         }

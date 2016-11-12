@@ -13,7 +13,7 @@ function performActions()
 
 function test() 
 {
-    WebInspector.panels.timeline._captureJSProfileSetting.set(false);
+    UI.panels.timeline._captureJSProfileSetting.set(false);
     InspectorTest.startTimeline(step1);
     function step1()
     {
@@ -30,7 +30,7 @@ function test()
     {
         function format(record)
         {
-            if (record.type() === WebInspector.TimelineModel.RecordType.EvaluateScript) {
+            if (record.type() === TimelineModel.TimelineModel.RecordType.EvaluateScript) {
                 InspectorTest.dumpTimelineRecord(record, undefined, undefined, [
                     "TimeStamp",
                 ]);

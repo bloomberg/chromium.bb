@@ -9,7 +9,7 @@ var test = function()
     function setColor(inputColor, format)
     {
         InspectorTest.addResult("Testing: " + inputColor);
-        var color = WebInspector.Color.parse(inputColor);
+        var color = Common.Color.parse(inputColor);
         spectrum.setColor(color, format);
     }
     
@@ -23,7 +23,7 @@ var test = function()
     {
         setColor(inputColor, format)
         spectrum._hsv[3] = 0;
-        spectrum._innerSetColor(spectrum._hsv, undefined, undefined, WebInspector.Spectrum._ChangeSource.Other);
+        spectrum._innerSetColor(spectrum._hsv, undefined, undefined, Components.Spectrum._ChangeSource.Other);
         InspectorTest.addResult(spectrum.colorString());
     }
 
@@ -36,8 +36,8 @@ var test = function()
         InspectorTest.addResult(spectrum._colorFormat);
     }
 
-    var spectrum = new WebInspector.Spectrum();
-    var cf = WebInspector.Color.Format;
+    var spectrum = new Components.Spectrum();
+    var cf = Common.Color.Format;
     var inputColors = [
         { string: "red", format: cf.Nickname },
         { string: "#ABC", format: cf.ShortHEX },
@@ -65,6 +65,6 @@ var test = function()
 </script>
 </head>
 <body onload="runTest()">
-<p>Tests WebInspector.Spectrum</p>
+<p>Tests Components.Spectrum</p>
 </body>
 </html>

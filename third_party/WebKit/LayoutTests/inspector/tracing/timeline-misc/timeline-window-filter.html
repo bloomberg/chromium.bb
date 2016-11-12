@@ -7,7 +7,7 @@
 
 function test()
 {
-    var timeline = WebInspector.panels.timeline;
+    var timeline = UI.panels.timeline;
     var overviewPane = timeline._overviewPane;
 
     InspectorTest.loadTimeline(InspectorTest.timelineData());
@@ -33,7 +33,7 @@ function test()
 
     function dumpDividers(calculator)
     {
-        var dividers = WebInspector.TimelineGrid.calculateDividerOffsets(calculator).offsets;
+        var dividers = UI.TimelineGrid.calculateDividerOffsets(calculator).offsets;
         for (var i = 0; i < dividers.length; ++i)
             dividers[i] -= calculator.zeroTime();
         InspectorTest.addResult("divider offsets: [" + dividers.join(", ") + "]. We are expecting round numbers.");

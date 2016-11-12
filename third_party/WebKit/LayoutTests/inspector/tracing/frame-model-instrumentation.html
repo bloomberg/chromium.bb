@@ -12,7 +12,7 @@ function doActions()
 
 function test()
 {
-    WebInspector.panels.timeline._captureLayersAndPicturesSetting.set(true);
+    UI.panels.timeline._captureLayersAndPicturesSetting.set(true);
     InspectorTest.invokeAsyncWithTimeline("doActions", InspectorTest.safeWrap(dumpLastFrame));
     function dumpLastFrame()
     {

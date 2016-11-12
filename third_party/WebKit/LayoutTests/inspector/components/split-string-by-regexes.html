@@ -9,7 +9,7 @@ function test()
         function testSimple(next)
         {
             var regexes = [/hello/g, /[0-9]+/g];
-            var results = WebInspector.TextUtils.splitStringByRegexes("hello123hello123", regexes);
+            var results = Common.TextUtils.splitStringByRegexes("hello123hello123", regexes);
             dumpResults(results);
             next();
         },
@@ -17,7 +17,7 @@ function test()
         function testMatchAtStart(next)
         {
             var regexes = [/yes/g];
-            var results = WebInspector.TextUtils.splitStringByRegexes("yes thank you", regexes);
+            var results = Common.TextUtils.splitStringByRegexes("yes thank you", regexes);
             dumpResults(results);
             next();
         },
@@ -25,7 +25,7 @@ function test()
         function testMatchAtEnd(next)
         {
             var regexes = [/you/g];
-            var results = WebInspector.TextUtils.splitStringByRegexes("yes thank you", regexes);
+            var results = Common.TextUtils.splitStringByRegexes("yes thank you", regexes);
             dumpResults(results);
             next();
         },
@@ -33,7 +33,7 @@ function test()
         function testAvoidInnerMatch(next)
         {
             var regexes = [/url\("red\.com"\)/g, /red/g];
-            var results = WebInspector.TextUtils.splitStringByRegexes("image: url(\"red.com\")", regexes);
+            var results = Common.TextUtils.splitStringByRegexes("image: url(\"red.com\")", regexes);
             dumpResults(results);
             next();
         },
@@ -41,7 +41,7 @@ function test()
         function testNoMatch(next)
         {
             var regexes = [/something/g];
-            var results = WebInspector.TextUtils.splitStringByRegexes("nothing", regexes);
+            var results = Common.TextUtils.splitStringByRegexes("nothing", regexes);
             dumpResults(results);
             next();
         },
@@ -49,7 +49,7 @@ function test()
         function testNoMatches(next)
         {
             var regexes = [/something/g, /123/g, /abc/g];
-            var results = WebInspector.TextUtils.splitStringByRegexes("nothing", regexes);
+            var results = Common.TextUtils.splitStringByRegexes("nothing", regexes);
             dumpResults(results);
             next();
         },
@@ -57,7 +57,7 @@ function test()
         function testComplex(next)
         {
             var regexes = [/\(([^)]+)\)/g, /okay/g, /ka/g];
-            var results = WebInspector.TextUtils.splitStringByRegexes("Start. (okay) kit-kat okay (kale) ka( ) okay. End", regexes);
+            var results = Common.TextUtils.splitStringByRegexes("Start. (okay) kit-kat okay (kale) ka( ) okay. End", regexes);
             dumpResults(results);
             next();
         }
@@ -76,7 +76,7 @@ function test()
 
 <body onload="runTest()">
 <p>
-Tests WebInspector.TextUtils.splitStringByRegexes.
+Tests Common.TextUtils.splitStringByRegexes.
 </p>
 </body>
 </html>

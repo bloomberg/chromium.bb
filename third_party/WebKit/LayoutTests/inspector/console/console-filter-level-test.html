@@ -29,7 +29,7 @@ function test()
 {
     function dumpVisibleMessages()
     {
-        var messages = WebInspector.ConsoleView.instance()._visibleViewMessages;
+        var messages = Console.ConsoleView.instance()._visibleViewMessages;
 
         for (var i = 0; i < messages.length; i++)
             InspectorTest.addResult(">" + messages[i].toMessageElement().deepTextContent());
@@ -45,45 +45,45 @@ function test()
         
         function onlyWarning(next)
         {
-            WebInspector.ConsoleView.instance()._filter._levelFilterUI._toggleTypeFilter("warning");
+            Console.ConsoleView.instance()._filter._levelFilterUI._toggleTypeFilter("warning");
             dumpVisibleMessages();
             next();
         },
         
         function onlyLog(next)
         {
-            WebInspector.ConsoleView.instance()._filter._levelFilterUI._toggleTypeFilter("log");
+            Console.ConsoleView.instance()._filter._levelFilterUI._toggleTypeFilter("log");
             dumpVisibleMessages();
             next();
         },
         
         function onlyErrorDebug(next)
         {
-            WebInspector.ConsoleView.instance()._filter._levelFilterUI._toggleTypeFilter("error");
-            WebInspector.ConsoleView.instance()._filter._levelFilterUI._toggleTypeFilter("debug", true);
+            Console.ConsoleView.instance()._filter._levelFilterUI._toggleTypeFilter("error");
+            Console.ConsoleView.instance()._filter._levelFilterUI._toggleTypeFilter("debug", true);
             dumpVisibleMessages();
             next();
         },
         
         function onlyAbcMessagePlain(next)
         {
-            WebInspector.ConsoleView.instance()._filter._levelFilterUI._toggleTypeFilter(WebInspector.NamedBitSetFilterUI.ALL_TYPES);
-            WebInspector.ConsoleView.instance()._filter._textFilterUI.setValue("abc");
+            Console.ConsoleView.instance()._filter._levelFilterUI._toggleTypeFilter(UI.NamedBitSetFilterUI.ALL_TYPES);
+            Console.ConsoleView.instance()._filter._textFilterUI.setValue("abc");
             dumpVisibleMessages();
             next();
         },
         
         function onlyAbcMessageRegex(next)
         {
-            WebInspector.ConsoleView.instance()._filter._textFilterUI._regexCheckBox.checked = "checked";
-            WebInspector.ConsoleView.instance()._filter._textFilterUI.setValue("ab[a-z]");
+            Console.ConsoleView.instance()._filter._textFilterUI._regexCheckBox.checked = "checked";
+            Console.ConsoleView.instance()._filter._textFilterUI.setValue("ab[a-z]");
             dumpVisibleMessages();
             next();
         },
         
         function onlyAbcMessageRegexWarning(next)
         {
-            WebInspector.ConsoleView.instance()._filter._levelFilterUI._toggleTypeFilter("warning", false);
+            Console.ConsoleView.instance()._filter._levelFilterUI._toggleTypeFilter("warning", false);
             dumpVisibleMessages();
             next();
         }

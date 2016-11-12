@@ -19,14 +19,14 @@ var test = function()
 
     function step2(uiSourceCode)
     {
-        InspectorTest.addSnifferPromise(WebInspector.ResourceScriptFile.prototype, "_mappingCheckedForTest").then(() => step3(uiSourceCode));
+        InspectorTest.addSnifferPromise(Bindings.ResourceScriptFile.prototype, "_mappingCheckedForTest").then(() => step3(uiSourceCode));
         InspectorTest.showScriptSource("test.js");
     }
 
     function step3(uiSourceCode)
     {
-        var mainTarget = WebInspector.targetManager.mainTarget();
-        var scriptFile = WebInspector.debuggerWorkspaceBinding.scriptFile(uiSourceCode, mainTarget);
+        var mainTarget = SDK.targetManager.mainTarget();
+        var scriptFile = Bindings.debuggerWorkspaceBinding.scriptFile(uiSourceCode, mainTarget);
         if (!scriptFile) {
             InspectorTest.addResult("[FAIL]: no script file for test.js");
             InspectorTest.completeDebuggerTest();
@@ -38,8 +38,8 @@ var test = function()
             return;
         }
 
-        InspectorTest.addSnifferPromise(WebInspector.JavaScriptSourceFrame.prototype, "_didDivergeFromVM").then(dumpDivergeFromVM);
-        InspectorTest.addSnifferPromise(WebInspector.ResourceScriptFile.prototype, "_mappingCheckedForTest").then(() => InspectorTest.completeDebuggerTest());
+        InspectorTest.addSnifferPromise(Sources.JavaScriptSourceFrame.prototype, "_didDivergeFromVM").then(dumpDivergeFromVM);
+        InspectorTest.addSnifferPromise(Bindings.ResourceScriptFile.prototype, "_mappingCheckedForTest").then(() => InspectorTest.completeDebuggerTest());
         InspectorTest.evaluateInPage(changedScriptSource);
     }
 

@@ -92,7 +92,7 @@ var test = function()
     function setBreakpoint(sourceFrame, lineNumber, condition, callback)
     {
         var expectedBreakpointId;
-        InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_didSetBreakpointInDebugger", didSetBreakpointInDebugger);
+        InspectorTest.addSniffer(Bindings.BreakpointManager.TargetBreakpoint.prototype, "_didSetBreakpointInDebugger", didSetBreakpointInDebugger);
         InspectorTest.setBreakpoint(sourceFrame, lineNumber, condition, true);
 
         function didSetBreakpointInDebugger(breakpointManagerCallback, breakpointId)

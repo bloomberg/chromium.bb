@@ -12,10 +12,10 @@ function test()
 
     function injectMockProfile(callback) {
         var dispatcher = InspectorTest.mainTarget._dispatchers["HeapProfiler"]._dispatcher;
-        var panel = WebInspector.panels.profiles;
+        var panel = UI.panels.profiles;
         panel._reset();
 
-        var profileType =  WebInspector.ProfileTypeRegistry.instance.heapSnapshotProfileType;
+        var profileType =  Profiler.ProfileTypeRegistry.instance.heapSnapshotProfileType;
 
         InspectorTest.override(InspectorTest.HeapProfilerAgent, "takeHeapSnapshot", takeHeapSnapshotMock);
         function takeHeapSnapshotMock(reportProgress, callback) {
@@ -32,11 +32,11 @@ function test()
         {
             callback(this);
         }
-        InspectorTest.addSniffer(WebInspector.HeapProfileHeader.prototype, "_didWriteToTempFile", tempFileReady);
+        InspectorTest.addSniffer(Profiler.HeapProfileHeader.prototype, "_didWriteToTempFile", tempFileReady);
         profileType._takeHeapSnapshot(function() {});
     }
 
-    WebInspector.console.log = function(message) {
+    Common.console.log = function(message) {
         InspectorTest.addResult("InspectorTest.consoleModel.log: " + message);
     }
 
@@ -49,7 +49,7 @@ function test()
                 function saveMock(url, data)
                 {
                     savedSnapshotData = data;
-                    WebInspector.fileManager._savedURL({data: url});
+                    Workspace.fileManager._savedURL({data: url});
                 }
                 InspectorTest.override(InspectorFrontendHost, "save", saveMock);
 
@@ -57,7 +57,7 @@ function test()
                 InspectorFrontendHost.append = function appendMock(url, data)
                 {
                     savedSnapshotData += data;
-                    WebInspector.fileManager._appendedToURL({data: url});
+                    Workspace.fileManager._appendedToURL({data: url});
                 }
                 function closeMock(url)
                 {
@@ -65,7 +65,7 @@ function test()
                     InspectorFrontendHost.append = oldAppend;
                     next();
                 }
-                InspectorTest.override(WebInspector.FileManager.prototype, "close", closeMock);
+                InspectorTest.override(Workspace.FileManager.prototype, "close", closeMock);
                 profileHeader.saveToFile();
             }
 
@@ -74,14 +74,14 @@ function test()
 
         function heapSnapshotLoadFromFileTest(next)
         {
-            var panel = WebInspector.panels.profiles;
+            var panel = UI.panels.profiles;
 
             var fileMock = {
                 name: "mock.heapsnapshot",
                 size: sourceStringified.length
             };
 
-            InspectorTest.override(WebInspector.HeapProfileHeader.prototype, '_createFileReader', function(fileMock, delegate) {
+            InspectorTest.override(Profiler.HeapProfileHeader.prototype, '_createFileReader', function(fileMock, delegate) {
                 return {
                     start: function(receiver) {
                         delegate.onTransferStarted(this);
@@ -107,7 +107,7 @@ function test()
                     }
                 };
             });
-            InspectorTest.addSniffer(WebInspector.HeapProfileHeader.prototype, "_snapshotReceived", function() { next(); });
+            InspectorTest.addSniffer(Profiler.HeapProfileHeader.prototype, "_snapshotReceived", function() { next(); });
             panel._loadFromFile(fileMock);
         },
 
@@ -118,7 +118,7 @@ function test()
                 if (profileHeader.canSaveToFile())
                     next();
                 else
-                    profileHeader.addEventListener(WebInspector.ProfileHeader.Events.ProfileReceived, onCanSaveProfile, this);
+                    profileHeader.addEventListener(Profiler.ProfileHeader.Events.ProfileReceived, onCanSaveProfile, this);
                 function onCanSaveProfile()
                 {
                     InspectorTest.assertTrue(profileHeader.canSaveToFile());

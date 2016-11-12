@@ -49,7 +49,7 @@ var test = function()
             function didPause1(callFrames, reason)
             {
                 InspectorTest.addResult("Script execution paused.");
-                InspectorTest.addResult("Reason for pause: " + (reason == WebInspector.DebuggerModel.BreakReason.DebugCommand ? "debug command" : "debugger statement") + ".");
+                InspectorTest.addResult("Reason for pause: " + (reason == SDK.DebuggerModel.BreakReason.DebugCommand ? "debug command" : "debugger statement") + ".");
                 next();
             }
         }
@@ -70,7 +70,7 @@ var test = function()
             InspectorTest.captureStackTrace(callFrames);
             InspectorTest.evaluateInConsole("undebug(" + functionName + ")");
             InspectorTest.addResult("Breakpoint removed.");
-            InspectorTest.assertEquals(reason, WebInspector.DebuggerModel.BreakReason.DebugCommand);
+            InspectorTest.assertEquals(reason, SDK.DebuggerModel.BreakReason.DebugCommand);
             InspectorTest.resumeExecution(didResume);
         }
 
