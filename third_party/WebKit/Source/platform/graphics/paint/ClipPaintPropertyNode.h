@@ -54,6 +54,23 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
   const ClipPaintPropertyNode* parent() const { return m_parent.get(); }
   bool isRoot() const { return !m_parent; }
 
+#if DCHECK_IS_ON()
+  // The clone function is used by FindPropertiesNeedingUpdate.h for recording
+  // a clip node before it has been updated, to later detect changes.
+  PassRefPtr<ClipPaintPropertyNode> clone() const {
+    return adoptRef(
+        new ClipPaintPropertyNode(m_parent, m_localTransformSpace, m_clipRect));
+  }
+
+  // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
+  // if a clip node has changed.
+  bool operator==(const ClipPaintPropertyNode& o) const {
+    return m_parent == o.m_parent &&
+           m_localTransformSpace == o.m_localTransformSpace &&
+           m_clipRect == o.m_clipRect;
+  }
+#endif
+
  private:
   ClipPaintPropertyNode(
       PassRefPtr<const ClipPaintPropertyNode> parent,

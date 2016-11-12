@@ -40,6 +40,11 @@ class PLATFORM_EXPORT CompositorFilterOperations {
   void clear();
   bool isEmpty() const;
 
+  bool operator==(const CompositorFilterOperations&) const;
+  bool operator!=(const CompositorFilterOperations& o) const {
+    return !(*this == o);
+  }
+
  private:
   cc::FilterOperations m_filterOperations;
 };

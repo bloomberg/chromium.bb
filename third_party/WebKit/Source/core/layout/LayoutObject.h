@@ -1702,6 +1702,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     void clearPreviousVisualRects() {
       m_layoutObject.clearPreviousVisualRects();
     }
+    void setNeedsPaintPropertyUpdate() {
+      m_layoutObject.setNeedsPaintPropertyUpdate();
+    }
+    void clearNeedsPaintPropertyUpdate() {
+      m_layoutObject.clearNeedsPaintPropertyUpdate();
+    }
+
    protected:
     friend class PaintPropertyTreeBuilder;
     // The following two functions can be called from PaintPropertyTreeBuilder
@@ -1722,6 +1729,23 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   };
   MutableForPainting getMutableForPainting() const {
     return MutableForPainting(*this);
+  }
+
+  // Paint properties (see: |ObjectPaintProperties|) are built from an object's
+  // state (location, transform, etc) as well as properties from ancestors.
+  // When these inputs change, setNeedsPaintPropertyUpdate will cause a property
+  // tree update during the next document lifecycle update.
+  // TODO(pdr): Add additional granularity such as the ability to signal that
+  // only a local paint property update is needed.
+  void setNeedsPaintPropertyUpdate() {
+    m_bitfields.setNeedsPaintPropertyUpdate(true);
+  }
+  void clearNeedsPaintPropertyUpdate() {
+    DCHECK_EQ(document().lifecycle().state(), DocumentLifecycle::InPrePaint);
+    m_bitfields.setNeedsPaintPropertyUpdate(false);
+  }
+  bool needsPaintPropertyUpdate() const {
+    return m_bitfields.needsPaintPropertyUpdate();
   }
 
   void setIsScrollAnchorObject() { m_bitfields.setIsScrollAnchorObject(true); }
@@ -2110,6 +2134,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           m_hasPreviousLocationInBacking(false),
           m_hasPreviousSelectionVisualRect(false),
           m_hasPreviousBoxGeometries(false),
+          m_needsPaintPropertyUpdate(true),
           m_positionedState(IsStaticallyPositioned),
           m_selectionState(SelectionNone),
           m_backgroundObscurationState(BackgroundObscurationStatusInvalid),
@@ -2278,9 +2303,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                          HasPreviousSelectionVisualRect);
     ADD_BOOLEAN_BITFIELD(hasPreviousBoxGeometries, HasPreviousBoxGeometries);
 
+    // Whether the paint properties need to be updated. For more details, see
+    // LayoutObject::needsPaintPropertyUpdate().
+    ADD_BOOLEAN_BITFIELD(needsPaintPropertyUpdate, NeedsPaintPropertyUpdate);
+
    protected:
     // Use protected to avoid warning about unused variable.
-    unsigned m_unusedBits : 10;
+    unsigned m_unusedBits : 9;
 
    private:
     // This is the cached 'position' value of this object

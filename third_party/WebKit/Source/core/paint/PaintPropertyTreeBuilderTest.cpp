@@ -2626,8 +2626,11 @@ TEST_P(PaintPropertyTreeBuilderTest,
                       MainThreadScrollingReason::kThreadedScrollingDisabled));
 }
 
-TEST_P(PaintPropertyTreeBuilderTest,
-       BackgroundAttachmentFixedMainThreadScrollReasonsWithNestedScrollers) {
+// Disabled due to missing main thread scrolling property invalidation support.
+// See: https://crbug.com/664672
+TEST_P(
+    PaintPropertyTreeBuilderTest,
+    DISABLED_BackgroundAttachmentFixedMainThreadScrollReasonsWithNestedScrollers) {
   setBodyInnerHTML(
       "<style>"
       "  #overflowA {"
@@ -2712,8 +2715,11 @@ TEST_P(PaintPropertyTreeBuilderTest,
               MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
 }
 
-TEST_P(PaintPropertyTreeBuilderTest,
-       BackgroundAttachmentFixedMainThreadScrollReasonsWithFixedScroller) {
+// Disabled due to missing main thread scrolling property invalidation support.
+// See: https://crbug.com/664672
+TEST_P(
+    PaintPropertyTreeBuilderTest,
+    DISABLED_BackgroundAttachmentFixedMainThreadScrollReasonsWithFixedScroller) {
   setBodyInnerHTML(
       "<style>"
       "  #overflowA {"

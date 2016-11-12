@@ -1469,6 +1469,11 @@ StyleDifference LayoutObject::adjustStyleDifference(
       // for changed paint property or paint order. Raster invalidation will be
       // issued if needed during paint.
       ObjectPaintInvalidator(*this).slowSetPaintingLayerNeedsRepaint();
+
+      // When transform, opacity, etc. change, paint properties will also change
+      // so we need to mark this object as needing an update.
+      // TODO(pdr): Also update in the non-spv2 codepath?
+      getMutableForPainting().setNeedsPaintPropertyUpdate();
     }
   } else {
     // If transform changed, and the layer does not paint into its own separate

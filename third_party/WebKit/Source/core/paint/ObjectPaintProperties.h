@@ -207,6 +207,48 @@ class CORE_EXPORT ObjectPaintProperties {
     updateProperty(m_overflowClip, std::forward<Args>(args)...);
   }
 
+#if DCHECK_IS_ON()
+  // Used by FindPropertiesNeedingUpdate.h for recording the current properties.
+  std::unique_ptr<ObjectPaintProperties> clone() const {
+    std::unique_ptr<ObjectPaintProperties> cloned = create();
+    if (m_paintOffsetTranslation)
+      cloned->m_paintOffsetTranslation = m_paintOffsetTranslation->clone();
+    if (m_transform)
+      cloned->m_transform = m_transform->clone();
+    if (m_effect)
+      cloned->m_effect = m_effect->clone();
+    if (m_cssClip)
+      cloned->m_cssClip = m_cssClip->clone();
+    if (m_cssClipFixedPosition)
+      cloned->m_cssClipFixedPosition = m_cssClipFixedPosition->clone();
+    if (m_innerBorderRadiusClip)
+      cloned->m_innerBorderRadiusClip = m_innerBorderRadiusClip->clone();
+    if (m_overflowClip)
+      cloned->m_overflowClip = m_overflowClip->clone();
+    if (m_perspective)
+      cloned->m_perspective = m_perspective->clone();
+    if (m_svgLocalToBorderBoxTransform) {
+      cloned->m_svgLocalToBorderBoxTransform =
+          m_svgLocalToBorderBoxTransform->clone();
+    }
+    if (m_scrollTranslation)
+      cloned->m_scrollTranslation = m_scrollTranslation->clone();
+    if (m_scrollbarPaintOffset)
+      cloned->m_scrollbarPaintOffset = m_scrollbarPaintOffset->clone();
+    if (m_scroll)
+      cloned->m_scroll = m_scroll->clone();
+    if (m_localBorderBoxProperties) {
+      auto& state = m_localBorderBoxProperties->propertyTreeState;
+      cloned->m_localBorderBoxProperties =
+          wrapUnique(new PropertyTreeStateWithOffset(
+              m_localBorderBoxProperties->paintOffset,
+              PropertyTreeState(state.transform(), state.clip(), state.effect(),
+                                state.scroll())));
+    }
+    return cloned;
+  }
+#endif
+
  private:
   ObjectPaintProperties() {}
 

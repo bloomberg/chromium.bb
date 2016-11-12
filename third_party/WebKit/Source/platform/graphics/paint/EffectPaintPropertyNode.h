@@ -64,6 +64,24 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   const EffectPaintPropertyNode* parent() const { return m_parent.get(); }
   bool isRoot() const { return !m_parent; }
 
+#if DCHECK_IS_ON()
+  // The clone function is used by FindPropertiesNeedingUpdate.h for recording
+  // an effect node before it has been updated, to later detect changes.
+  PassRefPtr<EffectPaintPropertyNode> clone() const {
+    return adoptRef(new EffectPaintPropertyNode(
+        m_parent, m_localTransformSpace, m_outputClip, m_filter, m_opacity));
+  }
+
+  // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
+  // if an effect node has changed.
+  bool operator==(const EffectPaintPropertyNode& o) const {
+    return m_parent == o.m_parent &&
+           m_localTransformSpace == o.m_localTransformSpace &&
+           m_outputClip == o.m_outputClip && m_filter == o.m_filter &&
+           m_opacity == o.m_opacity;
+  }
+#endif
+
  private:
   EffectPaintPropertyNode(
       PassRefPtr<const EffectPaintPropertyNode> parent,

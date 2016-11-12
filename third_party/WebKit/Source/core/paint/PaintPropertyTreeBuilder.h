@@ -84,17 +84,16 @@ class PaintPropertyTreeBuilder {
   PaintPropertyTreeBuilderContext setupInitialContext();
   // Update the paint properties for a frame and ensure the context is up to
   // date.
-  void updateFramePropertiesAndContext(FrameView&,
-                                       PaintPropertyTreeBuilderContext&);
+  void updateProperties(FrameView&, PaintPropertyTreeBuilderContext&);
 
   // Update the paint properties that affect this object (e.g., properties like
   // paint offset translation) and ensure the context is up to date.
-  void updatePropertiesAndContextForSelf(const LayoutObject&,
-                                         PaintPropertyTreeBuilderContext&);
+  void updatePropertiesForSelf(const LayoutObject&,
+                               PaintPropertyTreeBuilderContext&);
   // Update the paint properties that affect children of this object (e.g.,
   // scroll offset transform) and ensure the context is up to date.
-  void updatePropertiesAndContextForChildren(const LayoutObject&,
-                                             PaintPropertyTreeBuilderContext&);
+  void updatePropertiesForChildren(const LayoutObject&,
+                                   PaintPropertyTreeBuilderContext&);
 
  private:
   static void updatePaintOffsetTranslation(const LayoutObject&,

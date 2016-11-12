@@ -91,6 +91,32 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   }
   void clearMainThreadScrollingReasons() { m_mainThreadScrollingReasons = 0; }
 
+#if DCHECK_IS_ON()
+  // The clone function is used by FindPropertiesNeedingUpdate.h for recording
+  // a scroll node before it has been updated, to later detect changes.
+  PassRefPtr<ScrollPaintPropertyNode> clone() const {
+    RefPtr<ScrollPaintPropertyNode> cloned =
+        adoptRef(new ScrollPaintPropertyNode(
+            m_parent, m_scrollOffsetTranslation, m_clip, m_bounds,
+            m_userScrollableHorizontal, m_userScrollableVertical));
+    cloned->addMainThreadScrollingReasons(m_mainThreadScrollingReasons);
+    return cloned;
+  }
+
+  // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
+  // if a scroll node has changed.
+  bool operator==(const ScrollPaintPropertyNode& o) const {
+    // TODO(pdr): Check main thread scrolling reason equality as well. We do
+    // not yet mark nodes as needing a paint property update on main thread
+    // scrolling reason changes. See: See: https://crbug.com/664672.
+    return m_parent == o.m_parent &&
+           m_scrollOffsetTranslation == o.m_scrollOffsetTranslation &&
+           m_clip == o.m_clip && m_bounds == o.m_bounds &&
+           m_userScrollableHorizontal == o.m_userScrollableHorizontal &&
+           m_userScrollableVertical == o.m_userScrollableVertical;
+  }
+#endif
+
  private:
   ScrollPaintPropertyNode(
       PassRefPtr<ScrollPaintPropertyNode> parent,

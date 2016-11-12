@@ -71,6 +71,25 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   unsigned renderingContextID() const { return m_renderingContextID; }
   bool hasRenderingContext() const { return m_renderingContextID; }
 
+#if DCHECK_IS_ON()
+  // The clone function is used by FindPropertiesNeedingUpdate.h for recording
+  // a transform node before it has been updated, to later detect changes.
+  PassRefPtr<TransformPaintPropertyNode> clone() const {
+    return adoptRef(new TransformPaintPropertyNode(m_matrix, m_origin, m_parent,
+                                                   m_flattensInheritedTransform,
+                                                   m_renderingContextID));
+  }
+
+  // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
+  // if a transform node has changed.
+  bool operator==(const TransformPaintPropertyNode& o) const {
+    return m_matrix == o.m_matrix && m_origin == o.m_origin &&
+           m_parent == o.m_parent &&
+           m_flattensInheritedTransform == o.m_flattensInheritedTransform &&
+           m_renderingContextID == o.m_renderingContextID;
+  }
+#endif
+
  private:
   TransformPaintPropertyNode(
       const TransformationMatrix& matrix,

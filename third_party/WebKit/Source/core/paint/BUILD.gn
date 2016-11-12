@@ -47,6 +47,7 @@ blink_core_sources("paint") {
     "FilterEffectBuilder.h",
     "FilterPainter.cpp",
     "FilterPainter.h",
+    "FindPropertiesNeedingUpdate.h",
     "FirstMeaningfulPaintDetector.cpp",
     "FirstMeaningfulPaintDetector.h",
     "FloatClipRecorder.cpp",

@@ -726,6 +726,18 @@ class CORE_EXPORT FrameView final
     return m_totalPropertyTreeStateForContents.get();
   }
 
+  // Paint properties (e.g., m_preTranslation, etc.) are built from the
+  // FrameView's state (e.g., x(), y(), etc.) as well as inherited context.
+  // When these inputs change, setNeedsPaintPropertyUpdate will cause a property
+  // tree update during the next document lifecycle update.
+  // TODO(pdr): Add additional granularity such as the ability to signal that
+  // only a local paint property update is needed.
+  void setNeedsPaintPropertyUpdate() { m_needsPaintPropertyUpdate = true; }
+  void clearNeedsPaintPropertyUpdate() {
+    DCHECK_EQ(lifecycle().state(), DocumentLifecycle::InPrePaint);
+    m_needsPaintPropertyUpdate = false;
+  }
+  bool needsPaintPropertyUpdate() const { return m_needsPaintPropertyUpdate; }
   // TODO(ojan): Merge this with IntersectionObserver once it lands.
   IntRect computeVisibleArea();
 
@@ -1070,6 +1082,9 @@ class CORE_EXPORT FrameView final
   // properties are either created by this FrameView or are inherited from
   // an ancestor.
   std::unique_ptr<PropertyTreeState> m_totalPropertyTreeStateForContents;
+  // Whether the paint properties need to be updated. For more details, see
+  // FrameView::needsPaintPropertyUpdate().
+  bool m_needsPaintPropertyUpdate;
 
   // This is set on the local root frame view only.
   DocumentLifecycle::LifecycleState m_currentUpdateLifecyclePhasesTargetState;

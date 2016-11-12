@@ -182,6 +182,7 @@ FrameView::FrameView(LocalFrame* frame)
       m_hiddenForThrottling(false),
       m_subtreeThrottled(false),
       m_lifecycleUpdatesThrottled(false),
+      m_needsPaintPropertyUpdate(true),
       m_currentUpdateLifecyclePhasesTargetState(
           DocumentLifecycle::Uninitialized),
       m_scrollAnchor(this),
@@ -695,6 +696,12 @@ void FrameView::setContentsSize(const IntSize& size) {
 
   page->chromeClient().contentsSizeChanged(m_frame.get(), size);
   frame().loader().restoreScrollPositionAndViewState();
+
+  if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+    // The presence of overflow depends on the contents size. The scroll
+    // properties can change depending on whether overflow scrolling occurs.
+    setNeedsPaintPropertyUpdate();
+  }
 }
 
 void FrameView::adjustViewSize() {
@@ -3762,6 +3769,11 @@ void FrameView::didChangeScrollOffset() {
   frame().loader().client()->didChangeScrollOffset();
   if (frame().isMainFrame())
     frame().host()->chromeClient().mainFrameScrollOffsetChanged();
+
+  if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+    // The scroll translation paint property depends on scroll offset.
+    setNeedsPaintPropertyUpdate();
+  }
 }
 
 void FrameView::clearScrollAnchor() {

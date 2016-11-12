@@ -92,4 +92,9 @@ bool CompositorFilterOperations::isEmpty() const {
   return m_filterOperations.IsEmpty();
 }
 
+bool CompositorFilterOperations::operator==(
+    const CompositorFilterOperations& o) const {
+  return m_filterOperations == o.m_filterOperations;
+}
+
 }  // namespace blink
