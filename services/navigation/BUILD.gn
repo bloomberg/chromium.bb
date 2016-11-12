@@ -15,42 +15,7 @@ group("all") {
   ]
 }
 
-executable("navigation") {
-  testonly = true
-  sources = [
-    "main.cc",
-  ]
-
-  deps = [
-    ":lib",
-    ":pak",
-    "//base",
-    "//build/win:default_exe_manifest",
-    "//content",
-    "//content/public/app:both",
-    "//mojo/public/cpp/bindings",
-    "//services/navigation/content_client",
-    "//services/service_manager/runner:init",
-    "//services/service_manager/runner/common",
-    "//services/ui/public/cpp",
-    "//ui/views",
-    "//ui/views/controls/webview",
-    "//ui/views/mus",
-  ]
-
-  data_deps = [
-    ":manifest",
-    "//services/ui/test_wm",
-  ]
-
-  if (is_win) {
-    configs -= [ "//build/config/win:console" ]
-    configs += [ "//build/config/win:windowed" ]
-    deps += [ "//sandbox" ]
-  }
-}
-
-static_library("lib") {
+source_set("navigation") {
   sources = [
     "navigation.cc",
     "navigation.h",
@@ -93,8 +58,8 @@ test("navigation_unittests") {
   ]
 
   data_deps = [
-    ":navigation",
     ":unittest_manifest",
+    "//content/shell:content_shell",
     "//services/ui/test_wm",
   ]
 }
@@ -107,40 +72,4 @@ service_manifest("manifest") {
 service_manifest("unittest_manifest") {
   name = "navigation_unittests"
   source = "unittest_manifest.json"
-}
-
-repack("pak") {
-  sources = [
-    "$root_gen_dir/blink/devtools_resources.pak",
-    "$root_gen_dir/blink/public/resources/blink_image_resources_100_percent.pak",
-    "$root_gen_dir/blink/public/resources/blink_resources.pak",
-    "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
-    "$root_gen_dir/content/app/strings/content_strings_en-US.pak",
-    "$root_gen_dir/content/browser/tracing/tracing_resources.pak",
-    "$root_gen_dir/content/content_resources.pak",
-    "$root_gen_dir/content/shell/shell_resources.pak",
-    "$root_gen_dir/net/net_resources.pak",
-    "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
-    "$root_gen_dir/ui/resources/webui_resources.pak",
-    "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
-    "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
-    "$root_gen_dir/ui/views/resources/views_resources_100_percent.pak",
-  ]
-
-  deps = [
-    "//content:resources",
-    "//content/app/resources",
-    "//content/app/strings",
-    "//content/browser/devtools:resources",
-    "//content/browser/tracing:resources",
-    "//content/shell:resources",
-    "//net:net_resources",
-    "//third_party/WebKit/public:image_resources",
-    "//third_party/WebKit/public:resources",
-    "//ui/resources",
-    "//ui/strings",
-    "//ui/views/resources",
-  ]
-
-  output = "$root_out_dir/navigation.pak"
 }

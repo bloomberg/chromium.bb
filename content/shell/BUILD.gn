@@ -324,6 +324,7 @@ static_library("content_shell_lib") {
 
   if (use_aura) {
     deps += [
+      "//services/navigation",
       "//ui/aura",
       "//ui/aura:test_support",
       "//ui/events",

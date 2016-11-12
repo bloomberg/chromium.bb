@@ -66,6 +66,10 @@
 #include "media/mojo/services/media_service_factory.h"  // nogncheck
 #endif
 
+#if defined(USE_AURA)
+#include "services/navigation/navigation.h"
+#endif
+
 namespace content {
 
 namespace {
@@ -193,9 +197,18 @@ bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
 void ShellContentBrowserClient::RegisterInProcessServices(
     StaticServiceMap* services) {
 #if (ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-  content::ServiceInfo info;
-  info.factory = base::Bind(&media::CreateMediaServiceForTesting);
-  services->insert(std::make_pair("service:media", info));
+  {
+    content::ServiceInfo info;
+    info.factory = base::Bind(&media::CreateMediaServiceForTesting);
+    services->insert(std::make_pair("service:media", info));
+  }
+#endif
+#if defined(USE_AURA)
+  {
+    content::ServiceInfo info;
+    info.factory = base::Bind(&navigation::CreateNavigationService);
+    services->insert(std::make_pair("service:navigation", info));
+  }
 #endif
 }
 

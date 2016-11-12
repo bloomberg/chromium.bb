@@ -21,16 +21,18 @@ class BrowserContext;
 
 namespace navigation {
 
-class Navigation : public content::ConnectionFilter, public mojom::ViewFactory {
+std::unique_ptr<service_manager::Service> CreateNavigationService();
+
+class Navigation : public service_manager::Service, public mojom::ViewFactory {
  public:
   Navigation();
   ~Navigation() override;
 
  private:
-  // content::ConnectionFilter:
-  bool OnConnect(const service_manager::Identity& remote_identity,
-                 service_manager::InterfaceRegistry* registry,
-                 service_manager::Connector* connector) override;
+  // service_manager::Service:
+  void OnStart(service_manager::ServiceContext* context) override;
+  bool OnConnect(const service_manager::ServiceInfo& remote_info,
+                 service_manager::InterfaceRegistry* registry) override;
 
   // mojom::ViewFactory:
   void CreateView(mojom::ViewClientPtr client,
@@ -41,7 +43,8 @@ class Navigation : public content::ConnectionFilter, public mojom::ViewFactory {
 
   scoped_refptr<base::SequencedTaskRunner> view_task_runner_;
 
-  service_manager::Connector* connector_ = nullptr;
+  service_manager::ServiceContext* context_;
+
   std::string client_user_id_;
 
   service_manager::ServiceContextRefFactory ref_factory_;

@@ -1,5 +1,5 @@
 {
-  "name": "exe:navigation",
+  "name": "service:navigation",
   "display_name": "Navigation",
   "interface_provider_specs": {
     "service_manager:connector": {
