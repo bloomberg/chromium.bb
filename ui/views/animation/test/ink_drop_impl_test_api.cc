@@ -102,6 +102,11 @@ void InkDropImplTestApi::SetShouldHighlight(bool should_highlight) {
   DCHECK_EQ(should_highlight, ink_drop_->ShouldHighlight());
 }
 
+void InkDropImplTestApi::SetHighlightState(
+    std::unique_ptr<InkDropImpl::HighlightState> highlight_state) {
+  ink_drop_->highlight_state_ = std::move(highlight_state);
+}
+
 const InkDropHighlight* InkDropImplTestApi::highlight() const {
   return ink_drop_->highlight_.get();
 }

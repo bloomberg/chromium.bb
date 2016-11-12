@@ -109,7 +109,9 @@ class VIEWS_EXPORT InkDropImpl : public InkDrop,
     // but is required before exiting |this| state (e.g. releasing resources).
     //
     // Subclass implementations should NOT do any work that may trigger another
-    // state change since a state change is already in progress.
+    // state change since a state change is already in progress. They must also
+    // avoid triggering any animations since Exit() will be called during
+    // InkDropImpl destruction.
     virtual void Exit() {}
 
     // Input state change handlers.
@@ -178,6 +180,8 @@ class VIEWS_EXPORT InkDropImpl : public InkDrop,
 
     DISALLOW_COPY_AND_ASSIGN(HighlightStateFactory);
   };
+
+  class DestroyingHighlightState;
 
   // AutoHighlightMode::NONE
   class NoAutoHighlightHiddenState;
@@ -304,6 +308,9 @@ class VIEWS_EXPORT InkDropImpl : public InkDrop,
   // Used to ensure highlight state transitions are not triggered when exiting
   // the current state.
   bool exiting_highlight_state_;
+
+  // Used to fail DCHECKS to catch unexpected behavior during tear down.
+  bool destroying_;
 
   DISALLOW_COPY_AND_ASSIGN(InkDropImpl);
 };

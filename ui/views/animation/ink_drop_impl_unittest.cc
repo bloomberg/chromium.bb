@@ -238,6 +238,10 @@ TEST_F(InkDropImplTest, SettingHighlightStateDuringStateExitIsntAllowed) {
           test_api()->state_factory()),
       ".*HighlightStates should not be changed within a call to "
       "HighlightState::Exit\\(\\)\\..*");
+  // Need to set the |highlight_state_| directly because the
+  // SetStateOnExitHighlightState will recursively try to set it during tear
+  // down and cause a stack overflow.
+  test_api()->SetHighlightState(nullptr);
 }
 #endif
 

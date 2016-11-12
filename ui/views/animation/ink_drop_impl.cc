@@ -62,6 +62,27 @@ InkDropImpl* InkDropImpl::HighlightState::GetInkDrop() {
   return state_factory_->ink_drop();
 }
 
+// A HighlightState to be used during InkDropImpl destruction. All event
+// handlers are no-ops so as to avoid triggering animations during tear down.
+class InkDropImpl::DestroyingHighlightState
+    : public InkDropImpl::HighlightState {
+ public:
+  DestroyingHighlightState() : HighlightState(nullptr) {}
+
+  // InkDropImpl::HighlightState:
+  void Enter() override {}
+  void ShowOnHoverChanged() override {}
+  void OnHoverChanged() override {}
+  void ShowOnFocusChanged() override {}
+  void OnFocusChanged() override {}
+  void AnimationStarted(InkDropState ink_drop_state) override {}
+  void AnimationEnded(InkDropState ink_drop_state,
+                      InkDropAnimationEndedReason reason) override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DestroyingHighlightState);
+};
+
 //
 // AutoHighlightMode::NONE states
 //
@@ -562,12 +583,18 @@ InkDropImpl::InkDropImpl(InkDropHost* ink_drop_host)
       show_highlight_on_focus_(false),
       is_hovered_(false),
       is_focused_(false),
-      exiting_highlight_state_(false) {
+      exiting_highlight_state_(false),
+      destroying_(false) {
   SetAutoHighlightMode(AutoHighlightMode::NONE);
   root_layer_->set_name("InkDropImpl:RootLayer");
 }
 
 InkDropImpl::~InkDropImpl() {
+  destroying_ = true;
+  // Setting a no-op state prevents animations from being triggered on a null
+  // |ink_drop_ripple_| as a side effect of the tear down.
+  SetHighlightState(base::MakeUnique<DestroyingHighlightState>());
+
   // Explicitly destroy the InkDropRipple so that this still exists if
   // views::InkDropRippleObserver methods are called on this.
   DestroyInkDropRipple();
@@ -638,6 +665,8 @@ void InkDropImpl::DestroyHiddenTargetedAnimations() {
 }
 
 void InkDropImpl::CreateInkDropRipple() {
+  DCHECK(!destroying_);
+
   DestroyInkDropRipple();
   ink_drop_ripple_ = ink_drop_host_->CreateInkDropRipple();
   ink_drop_ripple_->set_observer(this);
@@ -654,6 +683,8 @@ void InkDropImpl::DestroyInkDropRipple() {
 }
 
 void InkDropImpl::CreateInkDropHighlight() {
+  DCHECK(!destroying_);
+
   DestroyInkDropHighlight();
 
   highlight_ = ink_drop_host_->CreateInkDropHighlight();

@@ -88,6 +88,9 @@ class InkDropImplTestApi
     return ink_drop_->highlight_state_factory_.get();
   }
 
+  void SetHighlightState(
+      std::unique_ptr<InkDropImpl::HighlightState> highlight_state);
+
   const InkDropHighlight* highlight() const;
   bool IsHighlightFadingInOrVisible() const;
   bool ShouldHighlight() const;
