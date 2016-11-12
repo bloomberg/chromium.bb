@@ -8,6 +8,10 @@
 
 namespace blink {
 
+LayoutUnit MinAndMaxContentSizes::ShrinkToFit(LayoutUnit available_size) const {
+  return std::min(max_content, std::max(min_content, available_size));
+}
+
 NGPhysicalSize NGLogicalSize::ConvertToPhysical(NGWritingMode mode) const {
   return mode == HorizontalTopBottom ? NGPhysicalSize(inline_size, block_size)
                                      : NGPhysicalSize(block_size, inline_size);
@@ -137,6 +141,31 @@ bool NGBoxStrut::operator==(const NGBoxStrut& other) const {
   return std::tie(other.inline_start, other.inline_end, other.block_start,
                   other.block_end) ==
          std::tie(inline_start, inline_end, block_start, block_end);
+}
+
+// Converts physical dimensions to logical ones per
+// https://drafts.csswg.org/css-writing-modes-3/#logical-to-physical
+NGBoxStrut NGPhysicalBoxStrut::ConvertToLogical(NGWritingMode writing_mode,
+                                                TextDirection direction) const {
+  NGBoxStrut strut;
+  switch (writing_mode) {
+    case HorizontalTopBottom:
+      strut = {left, right, top, bottom};
+      break;
+    case VerticalRightLeft:
+    case SidewaysRightLeft:
+      strut = {top, bottom, right, left};
+      break;
+    case VerticalLeftRight:
+      strut = {top, bottom, left, right};
+      break;
+    case SidewaysLeftRight:
+      strut = {bottom, top, left, right};
+      break;
+  }
+  if (direction == RTL)
+    std::swap(strut.inline_start, strut.inline_end);
+  return strut;
 }
 
 LayoutUnit NGMarginStrut::BlockEndSum() const {

@@ -16,47 +16,6 @@ namespace blink {
 // - positioned and/or replaced calculations
 // - Take scrollbars into account
 
-namespace {
-
-// Converts physical dimensions to logical ones per
-// https://drafts.csswg.org/css-writing-modes-3/#logical-to-physical
-// For now it's only used to calculate abstract values for margins.
-NGBoxStrut ToLogicalDimensions(const NGPhysicalBoxStrut& physical_dim,
-                               const NGWritingMode writing_mode,
-                               const TextDirection direction) {
-  bool is_ltr = direction == LTR;
-  NGBoxStrut logical_dim;
-  switch (writing_mode) {
-    case VerticalRightLeft:
-    case SidewaysRightLeft:
-      logical_dim = {is_ltr ? physical_dim.top : physical_dim.bottom,
-                     is_ltr ? physical_dim.bottom : physical_dim.top,
-                     physical_dim.right, physical_dim.left};
-      break;
-    case VerticalLeftRight:
-      logical_dim = {is_ltr ? physical_dim.top : physical_dim.bottom,
-                     is_ltr ? physical_dim.bottom : physical_dim.top,
-                     physical_dim.left, physical_dim.right};
-      break;
-    case SidewaysLeftRight:
-      logical_dim = {is_ltr ? physical_dim.bottom : physical_dim.top,
-                     is_ltr ? physical_dim.top : physical_dim.bottom,
-                     physical_dim.left, physical_dim.right};
-      break;
-    default:
-      NOTREACHED();
-    /* FALLTHROUGH */
-    case HorizontalTopBottom:
-      logical_dim = {is_ltr ? physical_dim.left : physical_dim.right,
-                     is_ltr ? physical_dim.right : physical_dim.left,
-                     physical_dim.top, physical_dim.bottom};
-      break;
-  }
-  return logical_dim;
-}
-
-}  // namespace
-
 bool NeedMinAndMaxContentSizes(const ComputedStyle& style) {
   // TODO(layout-ng): In the future we may pass a shrink-to-fit flag through the
   // constraint space; if so, this function needs to take a constraint space
@@ -134,8 +93,7 @@ LayoutUnit ResolveInlineLength(
         LayoutUnit fill_available =
             std::max(LayoutUnit(), available_size - margins.InlineSum() -
                                        border_and_padding.InlineSum());
-        value = std::min(min_and_max->max_content,
-                         std::max(min_and_max->min_content, fill_available));
+        value = min_and_max->ShrinkToFit(fill_available);
       }
       return value + border_and_padding.InlineSum();
     }
@@ -291,7 +249,7 @@ NGBoxStrut ComputeMargins(const NGConstraintSpace& constraintSpace,
   physical_dim.bottom = ResolveInlineLength(
       constraintSpace, style, empty_sizes, style.marginBottom(),
       LengthResolveType::MarginBorderPaddingSize);
-  return ToLogicalDimensions(physical_dim, writing_mode, direction);
+  return physical_dim.ConvertToLogical(writing_mode, direction);
 }
 
 NGBoxStrut ComputeBorders(const ComputedStyle& style) {

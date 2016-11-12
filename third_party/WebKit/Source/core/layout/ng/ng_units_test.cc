@@ -69,6 +69,37 @@ TEST(NGUnitsTest, ConvertLogicalOffsetToPhysicalOffset) {
   EXPECT_EQ(LayoutUnit(20), offset.top);
 }
 
+// Ideally, this would be tested by NGBoxStrut::ConvertToPhysical, but
+// this has not been implemented yet.
+TEST(NGUnitsTest, ConvertPhysicalStrutToLogical) {
+  LayoutUnit left{5}, right{10}, top{15}, bottom{20};
+  NGPhysicalBoxStrut physical{left, right, top, bottom};
+
+  NGBoxStrut logical = physical.ConvertToLogical(HorizontalTopBottom, LTR);
+  EXPECT_EQ(left, logical.inline_start);
+  EXPECT_EQ(top, logical.block_start);
+
+  logical = physical.ConvertToLogical(HorizontalTopBottom, RTL);
+  EXPECT_EQ(right, logical.inline_start);
+  EXPECT_EQ(top, logical.block_start);
+
+  logical = physical.ConvertToLogical(VerticalLeftRight, LTR);
+  EXPECT_EQ(top, logical.inline_start);
+  EXPECT_EQ(left, logical.block_start);
+
+  logical = physical.ConvertToLogical(VerticalLeftRight, RTL);
+  EXPECT_EQ(bottom, logical.inline_start);
+  EXPECT_EQ(left, logical.block_start);
+
+  logical = physical.ConvertToLogical(VerticalRightLeft, LTR);
+  EXPECT_EQ(top, logical.inline_start);
+  EXPECT_EQ(right, logical.block_start);
+
+  logical = physical.ConvertToLogical(VerticalRightLeft, RTL);
+  EXPECT_EQ(bottom, logical.inline_start);
+  EXPECT_EQ(right, logical.block_start);
+}
+
 }  // namespace
 
 }  // namespace blink
