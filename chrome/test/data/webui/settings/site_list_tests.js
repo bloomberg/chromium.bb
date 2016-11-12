@@ -721,12 +721,19 @@ cr.define('site_list', function() {
 
                 assertFalse(testElement.$.category.hidden);
                 // Validate that the sites gets populated from pre-canned prefs.
-                assertEquals(1, testElement.sites.length,
-                    'If this fails with 2 instead of the expected 1, then ' +
-                    'the de-duping of sites is not working for site_list');
-                assertEquals(
-                    prefsMixedOriginAndPattern.exceptions.geolocation[0].origin,
-                    testElement.sites[0].originForDisplay);
+                // TODO(dschuyler): de-duping of sites is under discussion, so
+                // it is currently disabled. It should be enabled again or this
+                // code should be removed.
+                assertEquals(2, testElement.sites.length,
+                    'If this fails with 1 instead of the expected 2, then ' +
+                    'the de-duping of sites has been enabled for site_list.');
+                if (testElement.sites.length == 1) {
+                  assertEquals(
+                      prefsMixedOriginAndPattern.exceptions.
+                                                 geolocation[0].
+                                                 origin,
+                      testElement.sites[0].originForDisplay);
+                }
 
                 assertEquals(undefined, testElement.selectedOrigin);
                 // Validate that the sites are shown in UI and can be selected.
@@ -734,9 +741,13 @@ cr.define('site_list', function() {
                 var clickable = firstItem.querySelector('.middle');
                 assertNotEquals(undefined, clickable);
                 MockInteractions.tap(clickable);
-                assertEquals(
-                    prefsMixedOriginAndPattern.exceptions.geolocation[0].origin,
-                    testElement.selectedSite.originForDisplay);
+                if (testElement.sites.length == 1) {
+                  assertEquals(
+                      prefsMixedOriginAndPattern.exceptions.
+                                                 geolocation[0].
+                                                 origin,
+                      testElement.selectedSite.originForDisplay);
+                }
               });
             });
       });

@@ -433,8 +433,10 @@ var SiteSettingsBehaviorImpl = {
    */
   expandSiteException: function(exception) {
     var origin = exception.origin;
-    var url = this.toUrl(origin);
-    var originForDisplay = url ? this.sanitizePort(url.origin) : origin;
+    // TODO(dschuyler): If orginForDisplay becomes different from origin in the
+    // site settings, that filtering would happen here. If that doesn't happen
+    // then originForDisplay should be removed (it's redundant with origin).
+    // e.g. var originForDisplay = someFilter(origin);
 
     var embeddingOrigin = exception.embeddingOrigin;
     var embeddingOriginForDisplay = '';
@@ -445,7 +447,7 @@ var SiteSettingsBehaviorImpl = {
 
     return {
       origin: origin,
-      originForDisplay: originForDisplay,
+      originForDisplay: origin,
       embeddingOrigin: embeddingOrigin,
       embeddingOriginForDisplay: embeddingOriginForDisplay,
       incognito: exception.incognito,
