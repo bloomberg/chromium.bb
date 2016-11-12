@@ -90,19 +90,14 @@ IpcDesktopEnvironmentFactory::IpcDesktopEnvironmentFactory(
 IpcDesktopEnvironmentFactory::~IpcDesktopEnvironmentFactory() {}
 
 std::unique_ptr<DesktopEnvironment> IpcDesktopEnvironmentFactory::Create(
-    base::WeakPtr<ClientSessionControl> client_session_control) {
+    base::WeakPtr<ClientSessionControl> client_session_control,
+    const DesktopEnvironmentOptions& options) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   return base::MakeUnique<IpcDesktopEnvironment>(
       audio_task_runner_, caller_task_runner_, io_task_runner_,
       client_session_control, connector_factory_.GetWeakPtr(),
-      curtain_enabled_);
-}
-
-void IpcDesktopEnvironmentFactory::SetEnableCurtaining(bool enable) {
-  DCHECK(caller_task_runner_->BelongsToCurrentThread());
-
-  curtain_enabled_ = enable;
+      options.enable_curtaining());
 }
 
 bool IpcDesktopEnvironmentFactory::SupportsAudioCapture() const {

@@ -32,19 +32,19 @@ It2MeDesktopEnvironment::It2MeDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control,
-    bool enable_user_interface)
+    const DesktopEnvironmentOptions& options)
     : BasicDesktopEnvironment(caller_task_runner,
                               video_capture_task_runner,
                               input_task_runner,
-                              ui_task_runner) {
+                              ui_task_runner,
+                              options) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
 
   // Create the local input monitor.
-  local_input_monitor_ = LocalInputMonitor::Create(caller_task_runner,
-                                                   input_task_runner,
-                                                   ui_task_runner,
-                                                   client_session_control);
-
+  local_input_monitor_ = LocalInputMonitor::Create(
+      caller_task_runner, input_task_runner, ui_task_runner,
+      client_session_control);
+  bool enable_user_interface = options.enable_user_interface();
   // The host UI should be created on the UI thread.
 #if defined(OS_MACOSX)
   // Don't try to display any UI on top of the system's login screen as this
@@ -84,12 +84,13 @@ It2MeDesktopEnvironmentFactory::It2MeDesktopEnvironmentFactory(
 It2MeDesktopEnvironmentFactory::~It2MeDesktopEnvironmentFactory() {}
 
 std::unique_ptr<DesktopEnvironment> It2MeDesktopEnvironmentFactory::Create(
-    base::WeakPtr<ClientSessionControl> client_session_control) {
+    base::WeakPtr<ClientSessionControl> client_session_control,
+    const DesktopEnvironmentOptions& options) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   return base::WrapUnique(new It2MeDesktopEnvironment(
       caller_task_runner(), video_capture_task_runner(), input_task_runner(),
-      ui_task_runner(), client_session_control, enable_user_interface_));
+      ui_task_runner(), client_session_control, options));
 }
 
 }  // namespace remoting

@@ -19,6 +19,7 @@
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "remoting/host/client_session_control.h"
+#include "remoting/host/desktop_environment_options.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
@@ -70,7 +71,8 @@ class DesktopSessionAgent
       scoped_refptr<AutoThreadTaskRunner> audio_capture_task_runner,
       scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
       scoped_refptr<AutoThreadTaskRunner> input_task_runner,
-      scoped_refptr<AutoThreadTaskRunner> io_task_runner);
+      scoped_refptr<AutoThreadTaskRunner> io_task_runner,
+      const DesktopEnvironmentOptions& options);
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -189,6 +191,8 @@ class DesktopSessionAgent
   // Keep reference to the last frame sent to make sure shared buffer is alive
   // before it's received.
   std::unique_ptr<webrtc::DesktopFrame> last_frame_;
+
+  DesktopEnvironmentOptions desktop_environment_options_;
 
   // Used to disable callbacks to |this|.
   base::WeakPtrFactory<DesktopSessionAgent> weak_factory_;

@@ -103,6 +103,8 @@ class ChromotingHost : public base::NonThreadSafe,
 
   // Enables/disables curtaining when one or more clients are connected.
   // Takes immediate effect if clients are already connected.
+  // TODO(zijiehe): Replace this function with
+  // SetDesktopEnvironmentOptions(const DesktopEnvironmentOptions&).
   void SetEnableCurtaining(bool enable);
 
   // Sets the maximum duration of any session. By default, a session has no

@@ -54,7 +54,6 @@ It2MeStandaloneHost::It2MeStandaloneHost()
     config_(protocol::SessionConfig::ForTestWithAudio()),
 #endif
     event_logger_(&connection_) {
-  factory_.set_enable_user_interface(false);
   EXPECT_CALL(*static_cast<MockSession*>(connection_.session()), jid())
       .WillRepeatedly(testing::ReturnRef(session_jid_));
   EXPECT_CALL(*static_cast<MockSession*>(connection_.session()), config())
@@ -82,9 +81,13 @@ void It2MeStandaloneHost::StartOutputTimer() {
 }
 
 void It2MeStandaloneHost::Connect() {
+  DesktopEnvironmentOptions options =
+      DesktopEnvironmentOptions::CreateDefault();
+  options.set_enable_user_interface(false);
   session_.reset(new ClientSession(
       &handler_, std::unique_ptr<protocol::ConnectionToClient>(&connection_),
-      &factory_, base::TimeDelta(), scoped_refptr<protocol::PairingRegistry>(),
+      &factory_, options, base::TimeDelta(),
+      scoped_refptr<protocol::PairingRegistry>(),
       std::vector<HostExtension*>()));
   session_->OnConnectionAuthenticated();
   session_->OnConnectionChannelsConnected();

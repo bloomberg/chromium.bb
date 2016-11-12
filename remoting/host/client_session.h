@@ -18,6 +18,7 @@
 #include "base/timer/timer.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/client_session_details.h"
+#include "remoting/host/desktop_environment_options.h"
 #include "remoting/host/host_extension_session_manager.h"
 #include "remoting/host/remote_input_filter.h"
 #include "remoting/protocol/clipboard_echo_filter.h"
@@ -95,6 +96,7 @@ class ClientSession : public base::NonThreadSafe,
   ClientSession(EventHandler* event_handler,
                 std::unique_ptr<protocol::ConnectionToClient> connection,
                 DesktopEnvironmentFactory* desktop_environment_factory,
+                const DesktopEnvironmentOptions& desktop_environment_options,
                 const base::TimeDelta& max_duration,
                 scoped_refptr<protocol::PairingRegistry> pairing_registry,
                 const std::vector<HostExtension*>& extensions);
@@ -162,6 +164,9 @@ class ClientSession : public base::NonThreadSafe,
 
   // Used to create a DesktopEnvironment instance for this session.
   DesktopEnvironmentFactory* desktop_environment_factory_;
+
+  // The DesktopEnvironmentOptions used to initialize DesktopEnvironment.
+  DesktopEnvironmentOptions desktop_environment_options_;
 
   // The DesktopEnvironment instance for this session.
   std::unique_ptr<DesktopEnvironment> desktop_environment_;

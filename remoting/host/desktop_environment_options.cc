@@ -4,9 +4,18 @@
 
 #include "remoting/host/desktop_environment_options.h"
 
+#include <utility>
+
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 
 namespace remoting {
+
+// static
+DesktopEnvironmentOptions DesktopEnvironmentOptions::CreateDefault() {
+  DesktopCaptureOptionsPtr capture_options =
+      webrtc::DesktopCaptureOptions::CreateDefault();
+  return DesktopEnvironmentOptions(std::move(capture_options));
+}
 
 DesktopEnvironmentOptions::DesktopEnvironmentOptions() = default;
 DesktopEnvironmentOptions::DesktopEnvironmentOptions(
@@ -21,10 +30,19 @@ DesktopEnvironmentOptions&
 DesktopEnvironmentOptions::operator=(
     const DesktopEnvironmentOptions& other) = default;
 
+DesktopEnvironmentOptions::DesktopEnvironmentOptions(
+    DesktopCaptureOptionsPtr&& desktop_capture_options)
+    : desktop_capture_options_(std::move(desktop_capture_options)) {}
+
 DesktopEnvironmentOptions::
 DesktopCaptureOptionsPtr::DesktopCaptureOptionsPtr()
-    : desktop_capture_options(new webrtc::DesktopCaptureOptions(
-          webrtc::DesktopCaptureOptions::CreateDefault())) {
+    : DesktopCaptureOptionsPtr(webrtc::DesktopCaptureOptions()) {}
+
+DesktopEnvironmentOptions::
+DesktopCaptureOptionsPtr::DesktopCaptureOptionsPtr(
+    webrtc::DesktopCaptureOptions&& option)
+    : desktop_capture_options(
+        new webrtc::DesktopCaptureOptions(std::move(option))) {
   desktop_capture_options->set_detect_updated_region(true);
 }
 
@@ -36,7 +54,7 @@ DesktopEnvironmentOptions::
 DesktopCaptureOptionsPtr::DesktopCaptureOptionsPtr(
     const DesktopCaptureOptionsPtr& other) {
   desktop_capture_options.reset(new webrtc::DesktopCaptureOptions(
-        *other.desktop_capture_options));
+      *other.desktop_capture_options));
 }
 
 DesktopEnvironmentOptions::
@@ -52,6 +70,11 @@ DesktopEnvironmentOptions::DesktopCaptureOptionsPtr::operator=(
   desktop_capture_options.reset(new webrtc::DesktopCaptureOptions(
         *other.desktop_capture_options));
   return *this;
+}
+
+const webrtc::DesktopCaptureOptions*
+DesktopEnvironmentOptions::desktop_capture_options() const {
+  return desktop_capture_options_.desktop_capture_options.get();
 }
 
 webrtc::DesktopCaptureOptions*

@@ -26,7 +26,8 @@ class SingleWindowDesktopEnvironmentFactory
 
   // DesktopEnvironmentFactory interface.
   std::unique_ptr<DesktopEnvironment> Create(
-      base::WeakPtr<ClientSessionControl> client_session_control) override;
+      base::WeakPtr<ClientSessionControl> client_session_control,
+      const DesktopEnvironmentOptions& options) override;
 
  private:
   webrtc::WindowId window_id_;

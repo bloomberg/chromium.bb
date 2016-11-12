@@ -52,7 +52,7 @@ BasicDesktopEnvironment::CreateScreenControls() {
 std::unique_ptr<webrtc::MouseCursorMonitor>
 BasicDesktopEnvironment::CreateMouseCursorMonitor() {
   return base::MakeUnique<MouseCursorMonitorProxy>(video_capture_task_runner_,
-                                                   *desktop_capture_options_);
+                                                   desktop_capture_options());
 }
 
 std::string BasicDesktopEnvironment::GetCapabilities() const {
@@ -72,7 +72,7 @@ BasicDesktopEnvironment::CreateVideoCapturer() {
 
   std::unique_ptr<DesktopCapturerProxy> result(
       new DesktopCapturerProxy(video_capture_task_runner_));
-  result->CreateCapturer(*desktop_capture_options_);
+  result->CreateCapturer(desktop_capture_options());
   return std::move(result);
 }
 
@@ -80,17 +80,16 @@ BasicDesktopEnvironment::BasicDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    const DesktopEnvironmentOptions& options)
     : caller_task_runner_(caller_task_runner),
       video_capture_task_runner_(video_capture_task_runner),
       input_task_runner_(input_task_runner),
       ui_task_runner_(ui_task_runner),
-      desktop_capture_options_(new webrtc::DesktopCaptureOptions(
-          webrtc::DesktopCaptureOptions::CreateDefault())) {
+      options_(options) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-  desktop_capture_options_->set_detect_updated_region(true);
 #if defined(USE_X11)
-  IgnoreXServerGrabs(desktop_capture_options_->x_display()->display(), true);
+  IgnoreXServerGrabs(desktop_capture_options().x_display()->display(), true);
 #endif
 }
 

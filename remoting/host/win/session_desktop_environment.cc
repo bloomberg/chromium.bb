@@ -35,11 +35,13 @@ SessionDesktopEnvironment::SessionDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     const base::Closure& inject_sas,
-    const base::Closure& lock_workstation)
+    const base::Closure& lock_workstation,
+    const DesktopEnvironmentOptions& options)
     : Me2MeDesktopEnvironment(caller_task_runner,
                               video_capture_task_runner,
                               input_task_runner,
-                              ui_task_runner),
+                              ui_task_runner,
+                              options),
       inject_sas_(inject_sas),
       lock_workstation_(lock_workstation) {}
 
@@ -62,16 +64,17 @@ SessionDesktopEnvironmentFactory::SessionDesktopEnvironmentFactory(
 SessionDesktopEnvironmentFactory::~SessionDesktopEnvironmentFactory() {}
 
 std::unique_ptr<DesktopEnvironment> SessionDesktopEnvironmentFactory::Create(
-    base::WeakPtr<ClientSessionControl> client_session_control) {
+    base::WeakPtr<ClientSessionControl> client_session_control,
+    const DesktopEnvironmentOptions& options) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   std::unique_ptr<SessionDesktopEnvironment> desktop_environment(
       new SessionDesktopEnvironment(caller_task_runner(),
                                     video_capture_task_runner(),
                                     input_task_runner(), ui_task_runner(),
-                                    inject_sas_, lock_workstation_));
-  if (!desktop_environment->InitializeSecurity(client_session_control,
-                                               curtain_enabled())) {
+                                    inject_sas_, lock_workstation_,
+                                    options));
+  if (!desktop_environment->InitializeSecurity(client_session_control)) {
     return nullptr;
   }
 

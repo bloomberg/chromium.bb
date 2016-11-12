@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "base/memory/weak_ptr.h"
+
 namespace webrtc {
 class DesktopCaptureOptions;
 }  // namespace webrtc
@@ -17,6 +19,11 @@ namespace remoting {
 // control the behavior.
 class DesktopEnvironmentOptions final {
  public:
+  // Returns instance of DesktopEnvironmentOptions with default parameters, and
+  // initializes DesktopCaptureOptions by using
+  // DesktopCaptureOptions::CreateDefault().
+  static DesktopEnvironmentOptions CreateDefault();
+
   DesktopEnvironmentOptions();
   DesktopEnvironmentOptions(DesktopEnvironmentOptions&& other);
   DesktopEnvironmentOptions(const DesktopEnvironmentOptions& other);
@@ -31,6 +38,7 @@ class DesktopEnvironmentOptions final {
   bool enable_user_interface() const;
   void set_enable_user_interface(bool enabled);
 
+  const webrtc::DesktopCaptureOptions* desktop_capture_options() const;
   webrtc::DesktopCaptureOptions* desktop_capture_options();
 
  private:
@@ -40,6 +48,7 @@ class DesktopEnvironmentOptions final {
   // break build.
   struct DesktopCaptureOptionsPtr final {
     DesktopCaptureOptionsPtr();
+    DesktopCaptureOptionsPtr(webrtc::DesktopCaptureOptions&& option);
     DesktopCaptureOptionsPtr(DesktopCaptureOptionsPtr&& other);
     DesktopCaptureOptionsPtr(const DesktopCaptureOptionsPtr& other);
     ~DesktopCaptureOptionsPtr();
@@ -49,6 +58,8 @@ class DesktopEnvironmentOptions final {
 
     std::unique_ptr<webrtc::DesktopCaptureOptions> desktop_capture_options;
   };
+
+  DesktopEnvironmentOptions(DesktopCaptureOptionsPtr&& desktop_capture_options);
 
   // True if the curtain mode should be enabled by the DesktopEnvironment
   // instances. Note, not all DesktopEnvironments support curtain mode.

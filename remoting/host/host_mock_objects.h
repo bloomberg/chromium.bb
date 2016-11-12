@@ -112,7 +112,8 @@ class MockDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
   MOCK_CONST_METHOD0(SupportsAudioCapture, bool());
 
   std::unique_ptr<DesktopEnvironment> Create(
-      base::WeakPtr<ClientSessionControl> client_session_control) override;
+      base::WeakPtr<ClientSessionControl> client_session_control,
+      const DesktopEnvironmentOptions& options) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDesktopEnvironmentFactory);

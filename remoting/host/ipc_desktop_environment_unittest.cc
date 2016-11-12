@@ -310,7 +310,8 @@ void IpcDesktopEnvironmentTest::SetUp() {
   desktop_environment_factory_.reset(new IpcDesktopEnvironmentFactory(
       task_runner_, task_runner_, io_task_runner_, &daemon_channel_));
   desktop_environment_ = desktop_environment_factory_->Create(
-      client_session_control_factory_.GetWeakPtr());
+      client_session_control_factory_.GetWeakPtr(),
+      DesktopEnvironmentOptions());
 
   screen_controls_ = desktop_environment_->CreateScreenControls();
 
@@ -482,7 +483,8 @@ TEST_F(IpcDesktopEnvironmentTest, Basic) {
 TEST_F(IpcDesktopEnvironmentTest, TouchEventsCapabilities) {
   // Create an environment with multi touch enabled.
   desktop_environment_ = desktop_environment_factory_->Create(
-      client_session_control_factory_.GetWeakPtr());
+      client_session_control_factory_.GetWeakPtr(),
+      DesktopEnvironmentOptions());
 
   std::unique_ptr<protocol::MockClipboardStub> clipboard_stub(
       new protocol::MockClipboardStub());

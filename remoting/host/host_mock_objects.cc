@@ -51,7 +51,8 @@ MockDesktopEnvironmentFactory::MockDesktopEnvironmentFactory() {}
 MockDesktopEnvironmentFactory::~MockDesktopEnvironmentFactory() {}
 
 std::unique_ptr<DesktopEnvironment> MockDesktopEnvironmentFactory::Create(
-    base::WeakPtr<ClientSessionControl> client_session_control) {
+    base::WeakPtr<ClientSessionControl> client_session_control,
+    const DesktopEnvironmentOptions& options) {
   return base::WrapUnique(CreatePtr());
 }
 

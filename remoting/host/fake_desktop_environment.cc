@@ -111,15 +111,14 @@ FakeDesktopEnvironmentFactory::~FakeDesktopEnvironmentFactory() = default;
 
 // DesktopEnvironmentFactory implementation.
 std::unique_ptr<DesktopEnvironment> FakeDesktopEnvironmentFactory::Create(
-    base::WeakPtr<ClientSessionControl> client_session_control) {
+    base::WeakPtr<ClientSessionControl> client_session_control,
+    const DesktopEnvironmentOptions& options) {
   std::unique_ptr<FakeDesktopEnvironment> result(
       new FakeDesktopEnvironment(capture_thread_));
   result->set_frame_generator(frame_generator_);
   last_desktop_environment_ = result->AsWeakPtr();
   return std::move(result);
 }
-
-void FakeDesktopEnvironmentFactory::SetEnableCurtaining(bool enable) {}
 
 bool FakeDesktopEnvironmentFactory::SupportsAudioCapture() const {
   return false;

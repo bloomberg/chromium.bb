@@ -188,8 +188,9 @@ void ClientSessionTest::CreateClientSession() {
 
   client_session_.reset(
       new ClientSession(&session_event_handler_, std::move(connection),
-                        desktop_environment_factory_.get(), base::TimeDelta(),
-                        nullptr, extensions_));
+                        desktop_environment_factory_.get(),
+                        DesktopEnvironmentOptions::CreateDefault(),
+                        base::TimeDelta(), nullptr, extensions_));
 }
 
 void ClientSessionTest::ConnectClientSession() {

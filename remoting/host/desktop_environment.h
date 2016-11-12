@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "remoting/host/desktop_environment_options.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -70,10 +71,8 @@ class DesktopEnvironmentFactory {
   // failed to active for instance). |client_session_control| must outlive
   // the created desktop environment.
   virtual std::unique_ptr<DesktopEnvironment> Create(
-      base::WeakPtr<ClientSessionControl> client_session_control) = 0;
-
-  // Enables or disables the curtain mode.
-  virtual void SetEnableCurtaining(bool enable) {}
+      base::WeakPtr<ClientSessionControl> client_session_control,
+      const DesktopEnvironmentOptions& options) = 0;
 
   // Returns |true| if created |DesktopEnvironment| instances support audio
   // capture.

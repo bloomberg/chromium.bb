@@ -140,7 +140,6 @@ void ChromotingHost::SetEnableCurtaining(bool enable) {
     return;
 
   enable_curtaining_ = enable;
-  desktop_environment_factory_->SetEnableCurtaining(enable_curtaining_);
 
   // Disconnect all existing clients because they might be running not
   // curtained.
@@ -273,9 +272,12 @@ void ChromotingHost::OnIncomingSession(
         video_encode_task_runner_, audio_task_runner_));
   }
 
+  DesktopEnvironmentOptions options =
+      DesktopEnvironmentOptions::CreateDefault();
+  options.set_enable_curtaining(enable_curtaining_);
   // Create a ClientSession object.
   clients_.push_back(base::MakeUnique<ClientSession>(
-      this, std::move(connection), desktop_environment_factory_,
+      this, std::move(connection), desktop_environment_factory_, options,
       max_session_duration_, pairing_registry_, extensions_.get()));
 }
 

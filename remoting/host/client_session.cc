@@ -46,6 +46,7 @@ ClientSession::ClientSession(
     EventHandler* event_handler,
     std::unique_ptr<protocol::ConnectionToClient> connection,
     DesktopEnvironmentFactory* desktop_environment_factory,
+    const DesktopEnvironmentOptions& desktop_environment_options,
     const base::TimeDelta& max_duration,
     scoped_refptr<protocol::PairingRegistry> pairing_registry,
     const std::vector<HostExtension*>& extensions)
@@ -53,6 +54,7 @@ ClientSession::ClientSession(
       connection_(std::move(connection)),
       client_jid_(connection_->session()->jid()),
       desktop_environment_factory_(desktop_environment_factory),
+      desktop_environment_options_(desktop_environment_options),
       input_tracker_(&host_input_filter_),
       remote_input_filter_(&input_tracker_),
       mouse_clamping_filter_(&remote_input_filter_),
@@ -241,8 +243,8 @@ void ClientSession::OnConnectionAuthenticated() {
 
   // Create the desktop environment. Drop the connection if it could not be
   // created for any reason (for instance the curtain could not initialize).
-  desktop_environment_ =
-      desktop_environment_factory_->Create(weak_factory_.GetWeakPtr());
+  desktop_environment_ = desktop_environment_factory_->Create(
+      weak_factory_.GetWeakPtr(), desktop_environment_options_);
   if (!desktop_environment_) {
     DisconnectSession(protocol::HOST_CONFIGURATION_ERROR);
     return;

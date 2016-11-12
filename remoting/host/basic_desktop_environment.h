@@ -46,7 +46,8 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+      const DesktopEnvironmentOptions& options);
 
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner() const {
     return caller_task_runner_;
@@ -65,8 +66,16 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
     return ui_task_runner_;
   }
 
-  webrtc::DesktopCaptureOptions* desktop_capture_options() {
-    return desktop_capture_options_.get();
+  webrtc::DesktopCaptureOptions* mutable_desktop_capture_options() {
+    return options_.desktop_capture_options();
+  }
+
+  const webrtc::DesktopCaptureOptions& desktop_capture_options() const {
+    return *options_.desktop_capture_options();
+  }
+
+  const DesktopEnvironmentOptions& desktop_environment_options() const {
+    return options_;
   }
 
  private:
@@ -83,12 +92,7 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
   // Used to run UI code.
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
-  // Options shared between |DesktopCapturer| and |MouseCursorMonitor|. It
-  // might contain expensive resources, thus justifying the sharing.
-  // Also: it's dynamically allocated to avoid having to bring in
-  // desktop_capture_options.h which brings in X11 headers which causes hard to
-  // find build errors.
-  std::unique_ptr<webrtc::DesktopCaptureOptions> desktop_capture_options_;
+  DesktopEnvironmentOptions options_;
 
   DISALLOW_COPY_AND_ASSIGN(BasicDesktopEnvironment);
 };

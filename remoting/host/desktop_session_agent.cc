@@ -159,11 +159,13 @@ DesktopSessionAgent::DesktopSessionAgent(
     scoped_refptr<AutoThreadTaskRunner> audio_capture_task_runner,
     scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
     scoped_refptr<AutoThreadTaskRunner> input_task_runner,
-    scoped_refptr<AutoThreadTaskRunner> io_task_runner)
+    scoped_refptr<AutoThreadTaskRunner> io_task_runner,
+    const DesktopEnvironmentOptions& desktop_environment_options)
     : audio_capture_task_runner_(audio_capture_task_runner),
       caller_task_runner_(caller_task_runner),
       input_task_runner_(input_task_runner),
       io_task_runner_(io_task_runner),
+      desktop_environment_options_(desktop_environment_options),
       weak_factory_(this) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 }
@@ -265,13 +267,13 @@ void DesktopSessionAgent::OnStartSessionAgent(
   started_ = true;
   client_jid_ = authenticated_jid;
 
+  DesktopEnvironmentOptions options = desktop_environment_options_;
   // Enable the curtain mode.
-  delegate_->desktop_environment_factory().SetEnableCurtaining(
-      virtual_terminal);
+  options.set_enable_curtaining(virtual_terminal);
 
   // Create a desktop environment for the new session.
   desktop_environment_ = delegate_->desktop_environment_factory().Create(
-      weak_factory_.GetWeakPtr());
+      weak_factory_.GetWeakPtr(), options);
 
   // Create the session controller and set the initial screen resolution.
   screen_controls_ = desktop_environment_->CreateScreenControls();

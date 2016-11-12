@@ -33,7 +33,9 @@ class SingleWindowDesktopEnvironment : public BasicDesktopEnvironment {
       scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      webrtc::DesktopCapturer::SourceId window_id);
+      webrtc::DesktopCapturer::SourceId window_id,
+      base::WeakPtr<ClientSessionControl> client_session_control,
+      const DesktopEnvironmentOptions& options);
 
  private:
   webrtc::DesktopCapturer::SourceId window_id_;
@@ -73,11 +75,14 @@ SingleWindowDesktopEnvironment::SingleWindowDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> video_capture_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    webrtc::WindowId window_id)
+    webrtc::WindowId window_id,
+    base::WeakPtr<ClientSessionControl> client_session_control,
+    const DesktopEnvironmentOptions& options)
     : BasicDesktopEnvironment(caller_task_runner,
                               video_capture_task_runner,
                               input_task_runner,
-                              ui_task_runner),
+                              ui_task_runner,
+                              options),
       window_id_(window_id) {}
 
 SingleWindowDesktopEnvironmentFactory::SingleWindowDesktopEnvironmentFactory(
@@ -98,12 +103,13 @@ SingleWindowDesktopEnvironmentFactory::
 
 std::unique_ptr<DesktopEnvironment>
 SingleWindowDesktopEnvironmentFactory::Create(
-    base::WeakPtr<ClientSessionControl> client_session_control) {
+    base::WeakPtr<ClientSessionControl> client_session_control,
+    const DesktopEnvironmentOptions& options) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
   return base::WrapUnique(new SingleWindowDesktopEnvironment(
       caller_task_runner(), video_capture_task_runner(), input_task_runner(),
-      ui_task_runner(), window_id_));
+      ui_task_runner(), window_id_, client_session_control, options));
 }
 
 }  // namespace remoting
