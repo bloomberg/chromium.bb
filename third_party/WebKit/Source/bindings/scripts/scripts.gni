@@ -41,6 +41,7 @@ idl_compiler_files = get_path_info([
                                      # V8 code generator
                                      "code_generator.py",
                                      "code_generator_v8.py",
+                                     "code_generator_web_module.py",
                                      "v8_attributes.py",
                                      "v8_callback_function.py",
                                      "v8_callback_interface.py",

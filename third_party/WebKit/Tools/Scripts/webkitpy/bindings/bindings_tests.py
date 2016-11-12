@@ -44,6 +44,7 @@ from code_generator_v8 import CodeGeneratorDictionaryImpl
 from code_generator_v8 import CodeGeneratorV8
 from code_generator_v8 import CodeGeneratorUnionType
 from code_generator_v8 import CodeGeneratorCallbackFunction
+from code_generator_web_module import CodeGeneratorWebModule
 from compute_interfaces_info_individual import InterfaceInfoCollector
 from compute_interfaces_info_overall import (compute_interfaces_info_overall,
                                              interfaces_info)
@@ -329,25 +330,31 @@ def bindings_tests(output_directory, verbose):
                                 'dependencies_other_component_full_paths']:
                             partial_interface_filenames.append(idl_path)
 
+            info_provider = component_info_providers[component]
+            partial_interface_info_provider = component_info_providers['modules']
+
             generate_union_type_containers(CodeGeneratorUnionType,
-                                           component_info_providers[component],
-                                           options)
+                                           info_provider, options)
             generate_callback_function_impl(CodeGeneratorCallbackFunction,
-                                            component_info_providers[component],
-                                            options)
+                                            info_provider, options)
             generate_bindings(
                 CodeGeneratorV8,
-                component_info_providers[component],
+                info_provider,
+                options,
+                idl_filenames)
+            generate_bindings(
+                CodeGeneratorWebModule,
+                info_provider,
                 options,
                 idl_filenames)
             generate_bindings(
                 CodeGeneratorV8,
-                component_info_providers['modules'],
+                partial_interface_info_provider,
                 partial_interface_options,
                 partial_interface_filenames)
             generate_dictionary_impl(
                 CodeGeneratorDictionaryImpl,
-                component_info_providers[component],
+                info_provider,
                 options,
                 dictionary_impl_filenames)
 

@@ -115,6 +115,11 @@ class IdlCompiler(object):
         target_definitions = definitions[self.target_component]
         output_code_list = self.code_generator.generate_code(
             target_definitions, interface_name)
+
+        # Generator may choose to omit the file.
+        if output_code_list is None:
+            return
+
         for output_path, output_code in output_code_list:
             write_file(output_code, output_path)
 

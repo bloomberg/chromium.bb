@@ -24,5 +24,6 @@ code_generator_template_files = get_path_info([
                                                 "partial_interface.h.tmpl",
                                                 "union_container.cpp.tmpl",
                                                 "union_container.h.tmpl",
+                                                "web_module_interface.cpp.tmpl",
                                               ],
                                               "abspath")

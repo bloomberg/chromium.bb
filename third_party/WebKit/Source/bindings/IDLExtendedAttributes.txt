@@ -103,3 +103,4 @@ TreatNullAs=NullString|EmptyString
 URL
 Unforgeable
 Unscopable
+WebModuleAPI
