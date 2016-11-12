@@ -13,6 +13,13 @@
       [first] {
         border-top: none;
       }
+
+      .secondary,
+      .start {
+        -webkit-user-select: text;
+        max-width: 100%;
+        word-wrap: break-word;
+      }
     </style>
     <template is="dom-repeat" items="[[entries_]]">
       <div class="settings-box" first$="[[!index]]">
