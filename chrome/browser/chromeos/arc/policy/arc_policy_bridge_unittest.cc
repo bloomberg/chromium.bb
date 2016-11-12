@@ -23,7 +23,7 @@
 
 namespace {
 
-char kFakeONC[] =
+constexpr char kFakeONC[] =
     "{\"NetworkConfigurations\":["
     "{\"GUID\":\"{485d6076-dd44-6b6d-69787465725f5040}\","
     "\"Type\":\"WiFi\","
@@ -68,17 +68,16 @@ class CheckedBoolean {
 };
 
 void ExpectPolicyString(std::unique_ptr<CheckedBoolean> was_run,
-                        mojo::String expected,
-                        mojo::String policies) {
+                        const std::string& expected,
+                        const std::string& policies) {
   EXPECT_EQ(expected, policies);
   was_run->set_value(true);
 }
 
 arc::ArcPolicyBridge::GetPoliciesCallback PolicyStringCallback(
-    mojo::String expected) {
-  std::unique_ptr<CheckedBoolean> was_run(new CheckedBoolean);
-  return base::Bind(&ExpectPolicyString, base::Passed(&was_run),
-                    base::Passed(&expected));
+    const std::string& expected) {
+  std::unique_ptr<CheckedBoolean> was_run(new CheckedBoolean());
+  return base::Bind(&ExpectPolicyString, base::Passed(&was_run), expected);
 }
 
 }  // namespace

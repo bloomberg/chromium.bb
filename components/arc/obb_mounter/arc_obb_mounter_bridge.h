@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_ARC_OBB_MOUNTER_ARC_OBB_MOUNTER_BRIDGE_H_
 #define COMPONENTS_ARC_OBB_MOUNTER_ARC_OBB_MOUNTER_BRIDGE_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/obb_mounter.mojom.h"
@@ -28,11 +30,11 @@ class ArcObbMounterBridge
   void OnInstanceReady() override;
 
   // mojom::ObbMounterHost overrides:
-  void MountObb(const mojo::String& obb_file,
-                const mojo::String& target_path,
+  void MountObb(const std::string& obb_file,
+                const std::string& target_path,
                 int32_t owner_gid,
                 const MountObbCallback& callback) override;
-  void UnmountObb(const mojo::String& target_path,
+  void UnmountObb(const std::string& target_path,
                   const UnmountObbCallback& callback) override;
 
  private:

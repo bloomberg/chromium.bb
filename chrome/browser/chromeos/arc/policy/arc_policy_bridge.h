@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_POLICY_ARC_POLICY_BRIDGE_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_POLICY_ARC_POLICY_BRIDGE_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/policy.mojom.h"
@@ -47,7 +49,7 @@ class ArcPolicyBridge : public ArcService,
 
   // PolicyHost overrides.
   void GetPolicies(const GetPoliciesCallback& callback) override;
-  void ReportCompliance(const mojo::String& request,
+  void ReportCompliance(const std::string& request,
                         const ReportComplianceCallback& callback) override;
 
   // PolicyService::Observer overrides.

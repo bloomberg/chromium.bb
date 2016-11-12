@@ -37,19 +37,18 @@ void ArcObbMounterBridge::OnInstanceReady() {
   obb_mounter_instance->Init(binding_.CreateInterfacePtrAndBind());
 }
 
-void ArcObbMounterBridge::MountObb(const mojo::String& obb_file,
-                                   const mojo::String& target_path,
+void ArcObbMounterBridge::MountObb(const std::string& obb_file,
+                                   const std::string& target_path,
                                    int32_t owner_gid,
                                    const MountObbCallback& callback) {
   chromeos::DBusThreadManager::Get()->GetArcObbMounterClient()->MountObb(
-      obb_file.get(), target_path.get(), owner_gid,
-      base::Bind(&RunObbCallback, callback));
+      obb_file, target_path, owner_gid, base::Bind(&RunObbCallback, callback));
 }
 
-void ArcObbMounterBridge::UnmountObb(const mojo::String& target_path,
+void ArcObbMounterBridge::UnmountObb(const std::string& target_path,
                                      const UnmountObbCallback& callback) {
   chromeos::DBusThreadManager::Get()->GetArcObbMounterClient()->UnmountObb(
-      target_path.get(), base::Bind(&RunObbCallback, callback));
+      target_path, base::Bind(&RunObbCallback, callback));
 }
 
 }  // namespace arc

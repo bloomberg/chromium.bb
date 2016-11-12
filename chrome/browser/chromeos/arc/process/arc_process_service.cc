@@ -141,7 +141,7 @@ void UpdateNspidToPidMap(
 
 std::vector<ArcProcess> FilterProcessList(
     const ArcProcessService::NSPidToPidMap& pid_map,
-    mojo::Array<mojom::RunningAppProcessInfoPtr> processes) {
+    std::vector<mojom::RunningAppProcessInfoPtr> processes) {
   std::vector<ArcProcess> ret_processes;
   for (const auto& entry : processes) {
     const auto it = pid_map.find(entry->pid);
@@ -157,8 +157,8 @@ std::vector<ArcProcess> FilterProcessList(
                            entry->is_focused, entry->last_activity_time);
     // |entry->packages| is provided only when process.mojom's verion is >=4.
     if (entry->packages) {
-      for (const auto& package : entry->packages) {
-        arc_process.packages().push_back(package.get());
+      for (const auto& package : *entry->packages) {
+        arc_process.packages().push_back(package);
       }
     }
     ret_processes.push_back(std::move(arc_process));
@@ -168,7 +168,7 @@ std::vector<ArcProcess> FilterProcessList(
 
 std::vector<ArcProcess> UpdateAndReturnProcessList(
     scoped_refptr<ArcProcessService::NSPidToPidMap> nspid_map,
-    mojo::Array<mojom::RunningAppProcessInfoPtr> processes) {
+    std::vector<mojom::RunningAppProcessInfoPtr> processes) {
   ArcProcessService::NSPidToPidMap& pid_map = *nspid_map;
   // Cleanup dead pids in the cache |pid_map|.
   std::unordered_set<ProcessId> nspid_to_remove;
@@ -259,7 +259,7 @@ bool ArcProcessService::RequestAppProcessList(
 
 void ArcProcessService::OnReceiveProcessList(
     const RequestProcessListCallback& callback,
-    mojo::Array<mojom::RunningAppProcessInfoPtr> instance_processes) {
+    std::vector<mojom::RunningAppProcessInfoPtr> instance_processes) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::PostTaskAndReplyWithResult(

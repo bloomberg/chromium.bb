@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_TTS_ARC_TTS_SERVICE_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_TTS_ARC_TTS_SERVICE_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/tts.mojom.h"
@@ -31,7 +33,7 @@ class ArcTtsService : public ArcService,
   void OnTtsEvent(uint32_t id,
                   mojom::TtsEventType event_type,
                   uint32_t char_index,
-                  const mojo::String& error_msg) override;
+                  const std::string& error_msg) override;
 
  private:
   mojo::Binding<mojom::TtsHost> binding_;

@@ -87,10 +87,10 @@ void ArcMetricsService::RequestProcessList() {
 }
 
 void ArcMetricsService::ParseProcessList(
-    mojo::Array<mojom::RunningAppProcessInfoPtr> processes) {
+    std::vector<mojom::RunningAppProcessInfoPtr> processes) {
   int running_app_count = 0;
   for (const auto& process : processes) {
-    const mojo::String& process_name = process->process_name;
+    const std::string& process_name = process->process_name;
     const mojom::ProcessState& process_state = process->process_state;
 
     // Processes like the ARC launcher and intent helper are always running
@@ -98,9 +98,9 @@ void ArcMetricsService::ParseProcessList(
     // GMS (Google Play Services) and its related processes are skipped as
     // well. The process_state check below filters out system processes,
     // services, apps that are cached because they've run before.
-    if (base::StartsWith(process_name.get(), kArcProcessNamePrefix,
+    if (base::StartsWith(process_name, kArcProcessNamePrefix,
                          base::CompareCase::SENSITIVE) ||
-        base::StartsWith(process_name.get(), kGmsProcessNamePrefix,
+        base::StartsWith(process_name, kGmsProcessNamePrefix,
                          base::CompareCase::SENSITIVE) ||
         process_state != mojom::ProcessState::TOP) {
       VLOG(2) << "Skipped " << process_name << " " << process_state;
@@ -138,14 +138,14 @@ void ArcMetricsService::OnArcStartTimeRetrieved(
 }
 
 void ArcMetricsService::ReportBootProgress(
-    mojo::Array<mojom::BootProgressEventPtr> events) {
+    std::vector<mojom::BootProgressEventPtr> events) {
   DCHECK(CalledOnValidThread());
   int64_t arc_start_time_in_ms =
       (arc_start_time_ - base::TimeTicks()).InMilliseconds();
   for (const auto& event : events) {
     VLOG(2) << "Report boot progress event:" << event->event << "@"
             << event->uptimeMillis;
-    std::string title = "Arc." + event->event.get();
+    std::string title = "Arc." + event->event;
     base::TimeDelta elapsed_time = base::TimeDelta::FromMilliseconds(
         event->uptimeMillis - arc_start_time_in_ms);
     // Note: This leaks memory, which is expected behavior.
@@ -154,7 +154,7 @@ void ArcMetricsService::ReportBootProgress(
         base::TimeDelta::FromSeconds(30), 50,
         base::HistogramBase::kUmaTargetedHistogramFlag);
     histogram->AddTime(elapsed_time);
-    if (event->event.get().compare(kBootProgressEnableScreen) == 0)
+    if (event->event.compare(kBootProgressEnableScreen) == 0)
       UMA_HISTOGRAM_CUSTOM_TIMES("Arc.AndroidBootTime", elapsed_time,
                                  base::TimeDelta::FromMilliseconds(1),
                                  base::TimeDelta::FromSeconds(30), 50);

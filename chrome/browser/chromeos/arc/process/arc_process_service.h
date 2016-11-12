@@ -19,7 +19,6 @@
 #include "components/arc/arc_service.h"
 #include "components/arc/common/process.mojom.h"
 #include "components/arc/instance_holder.h"
-#include "mojo/public/cpp/bindings/array.h"
 
 namespace arc {
 
@@ -100,7 +99,7 @@ class ArcProcessService
  private:
   void OnReceiveProcessList(
       const RequestProcessListCallback& callback,
-      const mojo::Array<mojom::RunningAppProcessInfoPtr> instance_processes);
+      std::vector<mojom::RunningAppProcessInfoPtr> instance_processes);
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner();
 

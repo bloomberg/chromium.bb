@@ -129,23 +129,12 @@ mojom("arc_bindings_old_types") {
     "common/bitmap.mojom",
     "common/bluetooth.mojom",
     "common/enterprise_reporting.mojom",
-    "common/ime.mojom",
     "common/intent_helper.mojom",
-    "common/metrics.mojom",
     "common/net.mojom",
     "common/notifications.mojom",
-    "common/obb_mounter.mojom",
-    "common/policy.mojom",
-    "common/power.mojom",
-    "common/print.mojom",
-    "common/process.mojom",
     "common/scale_factor.mojom",
     "common/screen_rect.mojom",
-    "common/storage_manager.mojom",
-    "common/tts.mojom",
-    "common/video.mojom",
     "common/video_accelerator.mojom",
-    "common/wallpaper.mojom",
   ]
 
   public_deps = [
@@ -165,6 +154,17 @@ mojom("arc_bindings") {
     "common/clipboard.mojom",
     "common/crash_collector.mojom",
     "common/file_system.mojom",
+    "common/ime.mojom",
+    "common/metrics.mojom",
+    "common/obb_mounter.mojom",
+    "common/policy.mojom",
+    "common/power.mojom",
+    "common/print.mojom",
+    "common/process.mojom",
+    "common/storage_manager.mojom",
+    "common/tts.mojom",
+    "common/video.mojom",
+    "common/wallpaper.mojom",
   ]
 
   public_deps = [

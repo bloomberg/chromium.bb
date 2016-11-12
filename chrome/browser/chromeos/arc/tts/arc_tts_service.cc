@@ -29,7 +29,7 @@ void ArcTtsService::OnInstanceReady() {
 void ArcTtsService::OnTtsEvent(uint32_t id,
                                mojom::TtsEventType event_type,
                                uint32_t char_index,
-                               const mojo::String& error_msg) {
+                               const std::string& error_msg) {
   if (!TtsController::GetInstance())
     return;
 

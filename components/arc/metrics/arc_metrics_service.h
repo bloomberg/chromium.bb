@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_ARC_METRICS_ARC_METRICS_SERVICE_H_
 #define COMPONENTS_ARC_METRICS_ARC_METRICS_SERVICE_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -39,12 +41,12 @@ class ArcMetricsService
 
   // MetricsHost overrides.
   void ReportBootProgress(
-      mojo::Array<mojom::BootProgressEventPtr> events) override;
+      std::vector<mojom::BootProgressEventPtr> events) override;
 
  private:
   bool CalledOnValidThread();
   void RequestProcessList();
-  void ParseProcessList(mojo::Array<mojom::RunningAppProcessInfoPtr> processes);
+  void ParseProcessList(std::vector<mojom::RunningAppProcessInfoPtr> processes);
 
   // DBus callbacks.
   void OnArcStartTimeRetrieved(bool success, base::TimeTicks arc_start_time);

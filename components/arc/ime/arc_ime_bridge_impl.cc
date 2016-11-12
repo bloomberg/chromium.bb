@@ -5,6 +5,7 @@
 #include "components/arc/ime/arc_ime_bridge_impl.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
@@ -56,10 +57,9 @@ ui::TextInputType ConvertTextInputType(mojom::TextInputType ipc_type) {
   }
 }
 
-mojo::Array<mojom::CompositionSegmentPtr> ConvertSegments(
+std::vector<mojom::CompositionSegmentPtr> ConvertSegments(
     const ui::CompositionText& composition) {
-  mojo::Array<mojom::CompositionSegmentPtr> segments =
-      mojo::Array<mojom::CompositionSegmentPtr>::New(0);
+  std::vector<mojom::CompositionSegmentPtr> segments;
   for (const ui::CompositionUnderline& underline : composition.underlines) {
     mojom::CompositionSegmentPtr segment = mojom::CompositionSegment::New();
     segment->start_offset = underline.start_offset;

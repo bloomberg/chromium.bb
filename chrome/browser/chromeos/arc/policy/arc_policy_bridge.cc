@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
 
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "base/json/json_reader.h"
@@ -284,15 +283,14 @@ void ArcPolicyBridge::OnInstanceClosed() {
 void ArcPolicyBridge::GetPolicies(const GetPoliciesCallback& callback) {
   VLOG(1) << "ArcPolicyBridge::GetPolicies";
   if (!is_managed_) {
-    callback.Run(mojo::String(""));
+    callback.Run(std::string());
     return;
   }
   const policy::PolicyNamespace policy_namespace(policy::POLICY_DOMAIN_CHROME,
                                                  std::string());
   const policy::PolicyMap& policy_map =
       policy_service_->GetPolicies(policy_namespace);
-  const std::string json_policies = GetFilteredJSONPolicies(policy_map);
-  callback.Run(mojo::String(json_policies));
+  callback.Run(GetFilteredJSONPolicies(policy_map));
 }
 
 void OnReportComplianceParseSuccess(
@@ -301,17 +299,17 @@ void OnReportComplianceParseSuccess(
   // TODO(poromov@): Track the report and start ARC++ kiosk app when the report
   // is empty, that means that CloudDpc applied all policies.
   // Currently do nothing with the report, return 'true' if JSON is parsed.
-  callback.Run(mojo::String("{ \"policyCompliant\": true }"));
+  callback.Run("{ \"policyCompliant\": true }");
 }
 
 void OnReportComplianceParseFailure(
     const ArcPolicyBridge::ReportComplianceCallback& callback,
     const std::string& error) {
-  callback.Run(mojo::String("{ \"policyCompliant\": false }"));
+  callback.Run("{ \"policyCompliant\": false }");
 }
 
 void ArcPolicyBridge::ReportCompliance(
-    const mojo::String& request,
+    const std::string& request,
     const ReportComplianceCallback& callback) {
   VLOG(1) << "ArcPolicyBridge::ReportCompliance";
   safe_json::SafeJsonParser::Parse(
