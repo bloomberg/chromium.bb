@@ -80,6 +80,10 @@ class MediaRouterDialogDelegate : public WebDialogDelegate {
 
   void GetDialogSize(gfx::Size* size) const override {
     DCHECK(size);
+    // We set the dialog width if it's not set, so that the dialog is
+    // center-aligned horizontally when it appears.
+    if (size->width() != kWidth)
+      size->set_width(kWidth);
     // GetDialogSize() is called when the browser window resizes. We may want to
     // update the maximum height of the dialog and scale the WebUI to the new
     // height. |size| is not set because the dialog is auto-resizeable.
