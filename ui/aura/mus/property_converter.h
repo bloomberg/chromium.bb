@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "ui/aura/aura_export.h"
 
 namespace aura {
@@ -22,9 +23,10 @@ class Window;
 // mapped to the other using this class. Not all Window properties need to map
 // to server properties, and similarly not all transport properties need map to
 // Window properties.
-class PropertyConverter {
+class AURA_EXPORT PropertyConverter {
  public:
-  virtual ~PropertyConverter() {}
+  PropertyConverter();
+  virtual ~PropertyConverter();
 
   // Maps a property on the Window to a property pushed to the server. Return
   // true if the property should be sent to the server, false if the property
@@ -33,10 +35,10 @@ class PropertyConverter {
       Window* window,
       const void* key,
       std::string* transport_name,
-      std::unique_ptr<std::vector<uint8_t>>* transport_value) = 0;
+      std::unique_ptr<std::vector<uint8_t>>* transport_value);
 
   // Returns the transport name for a Window property.
-  virtual std::string GetTransportNameForPropertyKey(const void* key) = 0;
+  virtual std::string GetTransportNameForPropertyKey(const void* key);
 
   // Applies a value from the server to |window|. |transport_name| is the
   // name of the property and |transport_data| the value. |transport_data| may
@@ -44,7 +46,10 @@ class PropertyConverter {
   virtual void SetPropertyFromTransportValue(
       Window* window,
       const std::string& transport_name,
-      const std::vector<uint8_t>* transport_data) = 0;
+      const std::vector<uint8_t>* transport_data);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PropertyConverter);
 };
 
 }  // namespace aura

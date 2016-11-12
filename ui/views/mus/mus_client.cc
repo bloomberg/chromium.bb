@@ -28,36 +28,6 @@
 #include "ui/wm/core/wm_state.h"
 
 namespace views {
-namespace {
-
-// TODO: property converter should likely live in aura as it needs to be used
-// by both ash and views. http://crbug.com/663522.
-class PropertyConverterImpl : public aura::PropertyConverter {
- public:
-  PropertyConverterImpl() {}
-  ~PropertyConverterImpl() override {}
-
-  // aura::PropertyConverter:
-  bool ConvertPropertyForTransport(
-      aura::Window* window,
-      const void* key,
-      std::string* transport_name,
-      std::unique_ptr<std::vector<uint8_t>>* transport_value) override {
-    return false;
-  }
-  std::string GetTransportNameForPropertyKey(const void* key) override {
-    return std::string();
-  }
-  void SetPropertyFromTransportValue(
-      aura::Window* window,
-      const std::string& transport_name,
-      const std::vector<uint8_t>* transport_data) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PropertyConverterImpl);
-};
-
-}  // namespace
 
 // static
 MusClient* MusClient::instance_ = nullptr;
@@ -113,7 +83,8 @@ MusClient::MusClient(service_manager::Connector* connector,
     : connector_(connector), identity_(identity) {
   DCHECK(!instance_);
   instance_ = this;
-  property_converter_ = base::MakeUnique<PropertyConverterImpl>();
+  // TODO(msw): Avoid this... use some default value? Allow clients to extend?
+  property_converter_ = base::MakeUnique<aura::PropertyConverter>();
 
   wm_state_ = base::MakeUnique<wm::WMState>();
 

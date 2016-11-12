@@ -20,36 +20,6 @@
 
 namespace aura {
 namespace test {
-namespace {
-
-class TestPropertyConverter : public PropertyConverter {
- public:
-  TestPropertyConverter() {}
-  ~TestPropertyConverter() override {}
-
-  // PropertyConverter:
-  bool ConvertPropertyForTransport(
-      Window* window,
-      const void* key,
-      std::string* server_property_name,
-      std::unique_ptr<std::vector<uint8_t>>* server_property_value) override {
-    return false;
-  }
-
-  std::string GetTransportNameForPropertyKey(const void* key) override {
-    return std::string();
-  }
-
-  void SetPropertyFromTransportValue(
-      Window* window,
-      const std::string& server_property_name,
-      const std::vector<uint8_t>* data) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestPropertyConverter);
-};
-
-}  // namespace
 
 AuraTestBase::AuraTestBase()
     : window_manager_delegate_(this), window_tree_client_delegate_(this) {}
@@ -65,7 +35,7 @@ void AuraTestBase::SetUp() {
   setup_called_ = true;
   testing::Test::SetUp();
   if (!property_converter_)
-    property_converter_ = base::MakeUnique<TestPropertyConverter>();
+    property_converter_ = base::MakeUnique<PropertyConverter>();
   // ContentTestSuiteBase might have already initialized
   // MaterialDesignController in unit_tests suite.
   ui::test::MaterialDesignControllerTestAPI::Uninitialize();

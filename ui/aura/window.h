@@ -347,6 +347,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
  private:
   friend class LayoutManager;
+  friend class PropertyConverter;
   friend class WindowPort;
   friend class WindowTargeter;
   friend class subtle::PropertyHelper;

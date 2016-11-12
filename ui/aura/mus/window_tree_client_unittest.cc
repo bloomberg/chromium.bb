@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "mojo/common/common_type_converters.h"
+#include "services/ui/public/cpp/property_type_converters.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
@@ -60,7 +61,6 @@ bool IsWindowHostVisible(Window* window) {
   return window->GetRootWindow()->GetHost()->compositor()->IsVisible();
 }
 
-const char kAlwaysOnTopServerKey[] = "always-on-top-server";
 const char kTestPropertyServerKey1[] = "test-property-server1";
 const char kTestPropertyServerKey2[] = "test-property-server2";
 
@@ -75,13 +75,6 @@ class TestPropertyConverter : public PropertyConverter {
       const void* key,
       std::string* server_property_name,
       std::unique_ptr<std::vector<uint8_t>>* server_property_value) override {
-    if (key == client::kAlwaysOnTopKey) {
-      *server_property_name = kAlwaysOnTopServerKey;
-      *server_property_value = base::MakeUnique<std::vector<uint8_t>>(1);
-      (*server_property_value->get())[0] =
-          window->GetProperty(client::kAlwaysOnTopKey);
-      return true;
-    }
     if (key == kTestPropertyKey1) {
       *server_property_name = kTestPropertyServerKey1;
       *server_property_value = base::MakeUnique<std::vector<uint8_t>>(1);
@@ -96,30 +89,29 @@ class TestPropertyConverter : public PropertyConverter {
           window->GetProperty(kTestPropertyKey2);
       return true;
     }
-    return false;
+    return PropertyConverter::ConvertPropertyForTransport(
+        window, key, server_property_name, server_property_value);
   }
 
   std::string GetTransportNameForPropertyKey(const void* key) override {
-    if (key == client::kAlwaysOnTopKey)
-      return kAlwaysOnTopServerKey;
     if (key == kTestPropertyKey1)
       return kTestPropertyServerKey1;
     if (key == kTestPropertyKey2)
       return kTestPropertyServerKey2;
-    return std::string();
+    return PropertyConverter::GetTransportNameForPropertyKey(key);
   }
 
   void SetPropertyFromTransportValue(
       Window* window,
       const std::string& server_property_name,
       const std::vector<uint8_t>* data) override {
-    if (server_property_name == kAlwaysOnTopServerKey) {
-      window->SetProperty(client::kAlwaysOnTopKey,
-                          static_cast<bool>((*data)[0]));
-    } else if (server_property_name == kTestPropertyServerKey1) {
+    if (server_property_name == kTestPropertyServerKey1) {
       window->SetProperty(kTestPropertyKey1, (*data)[0]);
     } else if (server_property_name == kTestPropertyServerKey2) {
       window->SetProperty(kTestPropertyKey2, (*data)[0]);
+    } else {
+      PropertyConverter::SetPropertyFromTransportValue(
+          window, server_property_name, data);
     }
   }
 
@@ -307,17 +299,34 @@ TEST_F(WindowTreeClientWmTest, TwoInFlightBoundsChangesBothCanceled) {
   EXPECT_EQ(original_bounds, root_window()->bounds());
 }
 
-// Verifies properties are reverted if the server replied that the change
-// failed.
-TEST_F(WindowTreeClientWmTest, SetPropertyFailed) {
-  SetPropertyConverter(base::MakeUnique<TestPropertyConverter>());
+// Verifies properties are set if the server replied that the change succeeded.
+TEST_F(WindowTreeClientWmTest, SetPropertySucceeded) {
   ASSERT_FALSE(root_window()->GetProperty(client::kAlwaysOnTopKey));
   root_window()->SetProperty(client::kAlwaysOnTopKey, true);
   EXPECT_TRUE(root_window()->GetProperty(client::kAlwaysOnTopKey));
-  mojo::Array<uint8_t> transport_value = window_tree()->GetLastPropertyValue();
-  ASSERT_FALSE(transport_value.is_null());
-  ASSERT_EQ(1u, transport_value.size());
-  EXPECT_EQ(1, transport_value[0]);
+  mojo::Array<uint8_t> value = window_tree()->GetLastPropertyValue();
+  ASSERT_FALSE(value.is_null());
+  // PropertyConverter uses int64_t values, even for smaller types, like bool.
+  ASSERT_EQ(8u, value.size());
+  std::vector<uint8_t> array = mojo::ConvertTo<std::vector<uint8_t>>(value);
+  EXPECT_EQ(1, mojo::ConvertTo<int64_t>(array));
+  ASSERT_TRUE(window_tree()->AckSingleChangeOfType(
+      WindowTreeChangeType::PROPERTY, true));
+  EXPECT_TRUE(root_window()->GetProperty(client::kAlwaysOnTopKey));
+}
+
+// Verifies properties are reverted if the server replied that the change
+// failed.
+TEST_F(WindowTreeClientWmTest, SetPropertyFailed) {
+  ASSERT_FALSE(root_window()->GetProperty(client::kAlwaysOnTopKey));
+  root_window()->SetProperty(client::kAlwaysOnTopKey, true);
+  EXPECT_TRUE(root_window()->GetProperty(client::kAlwaysOnTopKey));
+  mojo::Array<uint8_t> value = window_tree()->GetLastPropertyValue();
+  ASSERT_FALSE(value.is_null());
+  // PropertyConverter uses int64_t values, even for smaller types, like bool.
+  ASSERT_EQ(8u, value.size());
+  std::vector<uint8_t> array = mojo::ConvertTo<std::vector<uint8_t>>(value);
+  EXPECT_EQ(1, mojo::ConvertTo<int64_t>(array));
   ASSERT_TRUE(window_tree()->AckSingleChangeOfType(
       WindowTreeChangeType::PROPERTY, false));
   EXPECT_FALSE(root_window()->GetProperty(client::kAlwaysOnTopKey));
