@@ -41,11 +41,6 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   const ResourceRequestCompletionStatus& completion_status() const {
     return completion_status_;
   }
-  // Creates an AssociatedPtrInfo which is a proxy for |*this| and returns it.
-  // The returned PtrInfo is marked as local, i.e., expected to be bound
-  // locally.
-  mojom::URLLoaderClientAssociatedPtrInfo CreateLocalAssociatedPtrInfo();
-
   int64_t download_data_length() const { return download_data_length_; }
   int64_t encoded_download_data_length() const {
     return encoded_download_data_length_;
