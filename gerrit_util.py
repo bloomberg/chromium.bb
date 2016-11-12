@@ -266,10 +266,10 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
   else:
     LOGGER.debug('No authorization found for %s.' % bare_host)
 
-  if 'Authorization' in headers and not path.startswith('a/'):
-    url = '/a/%s' % path
+  if 'Authorization' in headers and not path.startswith('/a/'):
+    url = '/a%s' % path
   else:
-    url = '/%s' % path
+    url = '%s' % path
 
   if body:
     body = json.JSONEncoder().encode(body)
