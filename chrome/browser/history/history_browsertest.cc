@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/history/history_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -39,33 +40,6 @@ namespace {
 
 const base::FilePath::CharType kDocRoot[] =
     FILE_PATH_LITERAL("chrome/test/data");
-
-// Note: WaitableEvent is not used for synchronization between the main thread
-// and history backend thread because the history subsystem posts tasks back
-// to the main thread. Had we tried to Signal an event in such a task
-// and Wait for it on the main thread, the task would not run at all because
-// the main thread would be blocked on the Wait call, resulting in a deadlock.
-
-// A task to be scheduled on the history backend thread.
-// Notifies the main thread after all history backend thread tasks have run.
-class WaitForHistoryTask : public history::HistoryDBTask {
- public:
-  WaitForHistoryTask() {}
-
-  bool RunOnDBThread(history::HistoryBackend* backend,
-                     history::HistoryDatabase* db) override {
-    return true;
-  }
-
-  void DoneRunOnMainThread() override {
-    base::MessageLoop::current()->QuitWhenIdle();
-  }
-
- private:
-  ~WaitForHistoryTask() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(WaitForHistoryTask);
-};
 
 }  // namespace
 
@@ -97,15 +71,6 @@ class HistoryBrowserTest : public InProcessBrowserTest {
     return ui_test_utils::GetTestUrl(
         base::FilePath(base::FilePath::kCurrentDirectory),
         base::FilePath(FILE_PATH_LITERAL("title2.html")));
-  }
-
-  void WaitForHistoryBackendToRun() {
-    base::CancelableTaskTracker task_tracker;
-    std::unique_ptr<history::HistoryDBTask> task(new WaitForHistoryTask());
-    history::HistoryService* history = HistoryServiceFactory::GetForProfile(
-        GetProfile(), ServiceAccessType::EXPLICIT_ACCESS);
-    history->ScheduleDBTask(std::move(task), &task_tracker);
-    content::RunMessageLoop();
   }
 
   void ExpectEmptyHistory() {
@@ -144,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, SavingHistoryEnabled) {
   ExpectEmptyHistory();
 
   ui_test_utils::NavigateToURL(browser(), GetTestUrl());
-  WaitForHistoryBackendToRun();
+  WaitForHistoryBackendToRun(GetProfile());
 
   {
     std::vector<GURL> urls(GetHistoryContents());
@@ -167,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, SavingHistoryDisabled) {
   ExpectEmptyHistory();
 
   ui_test_utils::NavigateToURL(browser(), GetTestUrl());
-  WaitForHistoryBackendToRun();
+  WaitForHistoryBackendToRun(GetProfile());
   ExpectEmptyHistory();
 }
 
@@ -180,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, SavingHistoryEnabledThenDisabled) {
       browser()->profile(), ServiceAccessType::EXPLICIT_ACCESS));
 
   ui_test_utils::NavigateToURL(browser(), GetTestUrl());
-  WaitForHistoryBackendToRun();
+  WaitForHistoryBackendToRun(GetProfile());
 
   {
     std::vector<GURL> urls(GetHistoryContents());
@@ -191,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, SavingHistoryEnabledThenDisabled) {
   GetPrefs()->SetBoolean(prefs::kSavingBrowserHistoryDisabled, true);
 
   ui_test_utils::NavigateToURL(browser(), GetTestUrl());
-  WaitForHistoryBackendToRun();
+  WaitForHistoryBackendToRun(GetProfile());
 
   {
     // No additional entries should be present in the history.
@@ -211,13 +176,13 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, SavingHistoryDisabledThenEnabled) {
   ExpectEmptyHistory();
 
   ui_test_utils::NavigateToURL(browser(), GetTestUrl());
-  WaitForHistoryBackendToRun();
+  WaitForHistoryBackendToRun(GetProfile());
   ExpectEmptyHistory();
 
   GetPrefs()->SetBoolean(prefs::kSavingBrowserHistoryDisabled, false);
 
   ui_test_utils::NavigateToURL(browser(), GetTestUrl());
-  WaitForHistoryBackendToRun();
+  WaitForHistoryBackendToRun(GetProfile());
 
   {
     std::vector<GURL> urls(GetHistoryContents());

@@ -15,6 +15,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/history/history_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
@@ -337,16 +338,8 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
 }
 
 // Verify that when you unblock popup, the popup shows in history and omnibox.
-// TODO(crbug.com/663333) Flaky on Linux.
-#if defined(OS_LINUX)
-#define MAYBE_UnblockedPopupShowsInHistoryAndOmnibox \
-  DISABLED_UnblockedPopupShowsInHistoryAndOmnibox
-#else
-#define MAYBE_UnblockedPopupShowsInHistoryAndOmnibox \
-  UnblockedPopupShowsInHistoryAndOmnibox
-#endif
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
-                       MAYBE_UnblockedPopupShowsInHistoryAndOmnibox) {
+                       UnblockedPopupShowsInHistoryAndOmnibox) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
   GURL url(embedded_test_server()->GetURL(
@@ -357,6 +350,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
       "data:text/html,<title>Popup Success!</title>you should not see this "
       "message if popup blocker is enabled";
 
+  WaitForHistoryBackendToRun(browser()->profile());
   ui_test_utils::HistoryEnumerator history(browser()->profile());
   std::vector<GURL>& history_urls = history.urls();
   ASSERT_EQ(2u, history_urls.size());
