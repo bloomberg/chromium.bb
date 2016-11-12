@@ -75,23 +75,23 @@ class ScreenlockView : public views::WidgetDelegateView,
 Screenlock::Screenlock() {}
 Screenlock::~Screenlock() {}
 
-void Screenlock::OnStart() {
-  tracing_.Initialize(context()->connector(), context()->identity().name());
+void Screenlock::OnStart(service_manager::ServiceContext* context) {
+  tracing_.Initialize(context->connector(), context->identity().name());
 
   mash::session::mojom::SessionPtr session;
-  context()->connector()->ConnectToInterface("service:mash_session", &session);
+  context->connector()->ConnectToInterface("service:mash_session", &session);
   session->AddScreenlockStateListener(
       bindings_.CreateInterfacePtrAndBind(this));
 
   aura_init_ = base::MakeUnique<views::AuraInit>(
-      context()->connector(), context()->identity(), "views_mus_resources.pak");
+      context->connector(), context->identity(), "views_mus_resources.pak");
   window_manager_connection_ = views::WindowManagerConnection::Create(
-      context()->connector(), context()->identity());
+      context->connector(), context->identity());
 
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.delegate = new ScreenlockView(context()->connector());
+  params.delegate = new ScreenlockView(context->connector());
 
   std::map<std::string, std::vector<uint8_t>> properties;
   properties[ui::mojom::WindowManager::kInitialContainerId_Property] =

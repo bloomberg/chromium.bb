@@ -50,8 +50,8 @@ FontServiceApp::FontServiceApp() {}
 
 FontServiceApp::~FontServiceApp() {}
 
-void FontServiceApp::OnStart() {
-  tracing_.Initialize(context()->connector(), context()->identity().name());
+void FontServiceApp::OnStart(service_manager::ServiceContext* context) {
+  tracing_.Initialize(context->connector(), context->identity().name());
 }
 
 bool FontServiceApp::OnConnect(const service_manager::ServiceInfo& remote_info,

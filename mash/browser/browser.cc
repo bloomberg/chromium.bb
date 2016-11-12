@@ -865,17 +865,18 @@ void Browser::RemoveWindow(views::Widget* window) {
 
 std::unique_ptr<navigation::View> Browser::CreateView() {
   navigation::mojom::ViewFactoryPtr factory;
-  context()->connector()->ConnectToInterface("exe:navigation", &factory);
+  context_->connector()->ConnectToInterface("exe:navigation", &factory);
   return base::MakeUnique<navigation::View>(std::move(factory));
 }
 
-void Browser::OnStart() {
-  tracing_.Initialize(context()->connector(), context()->identity().name());
+void Browser::OnStart(service_manager::ServiceContext* context) {
+  context_ = context;
+  tracing_.Initialize(context->connector(), context->identity().name());
 
   aura_init_ = base::MakeUnique<views::AuraInit>(
-      context()->connector(), context()->identity(), "views_mus_resources.pak");
+      context->connector(), context->identity(), "views_mus_resources.pak");
   window_manager_connection_ = views::WindowManagerConnection::Create(
-      context()->connector(), context()->identity());
+      context->connector(), context->identity());
 }
 
 bool Browser::OnConnect(const service_manager::ServiceInfo& remote_info,

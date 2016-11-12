@@ -31,6 +31,10 @@ class Target : public service_manager::Service,
 
  private:
   // service_manager::Service:
+  void OnStart(service_manager::ServiceContext* context) override {
+    identity_ = context->identity();
+  }
+
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override {
     registry->AddInterface<ConnectTestService>(this);
@@ -48,9 +52,10 @@ class Target : public service_manager::Service,
     callback.Run("connect_test_exe");
   }
   void GetInstance(const GetInstanceCallback& callback) override {
-    callback.Run(context()->identity().instance());
+    callback.Run(identity_.instance());
   }
 
+  service_manager::Identity identity_;
   mojo::BindingSet<ConnectTestService> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(Target);

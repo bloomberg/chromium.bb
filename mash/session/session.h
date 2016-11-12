@@ -18,6 +18,7 @@
 
 namespace service_manager {
 class Connection;
+class ServiceContext;
 }
 
 namespace mash {
@@ -32,7 +33,7 @@ class Session : public service_manager::Service,
 
  private:
   // service_manager::Service:
-  void OnStart() override;
+  void OnStart(service_manager::ServiceContext* context) override;
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override;
 
@@ -58,6 +59,8 @@ class Session : public service_manager::Service,
   // connection to the application is closed.
   void StartRestartableService(const std::string& url,
                                const base::Closure& restart_callback);
+
+  service_manager::ServiceContext* context_ = nullptr;
 
   std::map<std::string, std::unique_ptr<service_manager::Connection>>
       connections_;

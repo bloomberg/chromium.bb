@@ -37,13 +37,12 @@ class ViewsExamples
 
  private:
   // service_manager::Service:
-  void OnStart() override {
-    tracing_.Initialize(context()->connector(), context()->identity().name());
+  void OnStart(service_manager::ServiceContext* context) override {
+    tracing_.Initialize(context->connector(), context->identity().name());
     aura_init_ = base::MakeUnique<views::AuraInit>(
-        context()->connector(), context()->identity(),
-        "views_mus_resources.pak");
+        context->connector(), context->identity(), "views_mus_resources.pak");
     window_manager_connection_ = views::WindowManagerConnection::Create(
-        context()->connector(), context()->identity());
+        context->connector(), context->identity());
   }
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override {

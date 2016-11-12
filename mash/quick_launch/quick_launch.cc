@@ -166,13 +166,14 @@ void QuickLaunch::RemoveWindow(views::Widget* window) {
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void QuickLaunch::OnStart() {
-  tracing_.Initialize(context()->connector(), context()->identity().name());
+void QuickLaunch::OnStart(service_manager::ServiceContext* context) {
+  context_ = context;
+  tracing_.Initialize(context->connector(), context->identity().name());
 
   aura_init_ = base::MakeUnique<views::AuraInit>(
-      context()->connector(), context()->identity(), "views_mus_resources.pak");
+      context->connector(), context->identity(), "views_mus_resources.pak");
   window_manager_connection_ = views::WindowManagerConnection::Create(
-      context()->connector(), context()->identity());
+      context->connector(), context->identity());
 
   Launch(mojom::kWindow, mojom::LaunchMode::MAKE_NEW);
 }
@@ -191,10 +192,10 @@ void QuickLaunch::Launch(uint32_t what, mojom::LaunchMode how) {
     return;
   }
   catalog::mojom::CatalogPtr catalog;
-  context()->connector()->ConnectToInterface("service:catalog", &catalog);
+  context_->connector()->ConnectToInterface("service:catalog", &catalog);
 
   views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
-      new QuickLaunchUI(this, context()->connector(), std::move(catalog)),
+      new QuickLaunchUI(this, context_->connector(), std::move(catalog)),
       nullptr, gfx::Rect(10, 640, 0, 0));
   window->Show();
   windows_.push_back(window);

@@ -217,13 +217,14 @@ void CatalogViewer::RemoveWindow(views::Widget* window) {
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void CatalogViewer::OnStart() {
-  tracing_.Initialize(context()->connector(), context()->identity().name());
+void CatalogViewer::OnStart(service_manager::ServiceContext* context) {
+  context_ = context;
+  tracing_.Initialize(context->connector(), context->identity().name());
 
   aura_init_ = base::MakeUnique<views::AuraInit>(
-      context()->connector(), context()->identity(), "views_mus_resources.pak");
+      context->connector(), context->identity(), "views_mus_resources.pak");
   window_manager_connection_ = views::WindowManagerConnection::Create(
-      context()->connector(), context()->identity());
+      context->connector(), context->identity());
 }
 
 bool CatalogViewer::OnConnect(const service_manager::ServiceInfo& remote_info,
@@ -240,7 +241,7 @@ void CatalogViewer::Launch(uint32_t what, mojom::LaunchMode how) {
     return;
   }
   catalog::mojom::CatalogPtr catalog;
-  context()->connector()->ConnectToInterface("service:catalog", &catalog);
+  context_->connector()->ConnectToInterface("service:catalog", &catalog);
 
   views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
       new CatalogViewerContents(this, std::move(catalog)), nullptr,

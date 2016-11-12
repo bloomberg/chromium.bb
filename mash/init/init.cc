@@ -19,8 +19,9 @@ namespace init {
 Init::Init() {}
 Init::~Init() {}
 
-void Init::OnStart() {
-  context()->connector()->Connect("service:ui");
+void Init::OnStart(service_manager::ServiceContext* context) {
+  context_ = context;
+  context->connector()->Connect("service:ui");
   StartTracing();
   StartLogin();
 }
@@ -36,7 +37,7 @@ void Init::StartService(const std::string& name, const std::string& user_id) {
     service_manager::Connector::ConnectParams params(
         service_manager::Identity(name, user_id));
     std::unique_ptr<service_manager::Connection> connection =
-        context()->connector()->Connect(&params);
+        context_->connector()->Connect(&params);
     connection->SetConnectionLostClosure(
         base::Bind(&Init::UserServiceQuit, base::Unretained(this), user_id));
     user_services_[user_id] = std::move(connection);
@@ -61,11 +62,11 @@ void Init::UserServiceQuit(const std::string& user_id) {
 }
 
 void Init::StartTracing() {
-  context()->connector()->Connect("service:tracing");
+  context_->connector()->Connect("service:tracing");
 }
 
 void Init::StartLogin() {
-  login_connection_ = context()->connector()->Connect("service:login");
+  login_connection_ = context_->connector()->Connect("service:login");
   mash::login::mojom::LoginPtr login;
   login_connection_->GetInterface(&login);
   login->ShowLoginUI();

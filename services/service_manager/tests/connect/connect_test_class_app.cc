@@ -33,6 +33,10 @@ class ConnectTestClassApp
 
  private:
   // service_manager::Service:
+  void OnStart(ServiceContext* context) override {
+    context_ = context;
+  }
+
   bool OnConnect(const ServiceInfo& remote_info,
                  InterfaceRegistry* registry) override {
     registry->AddInterface<test::mojom::ConnectTestService>(this);
@@ -61,7 +65,7 @@ class ConnectTestClassApp
     callback.Run("CLASS APP");
   }
   void GetInstance(const GetInstanceCallback& callback) override {
-    callback.Run(context()->identity().instance());
+    callback.Run(context_->identity().instance());
   }
 
   // test::mojom::ClassInterface:
@@ -74,9 +78,10 @@ class ConnectTestClassApp
     DCHECK(it != inbound_connections_.end());
     inbound_connections_.erase(it);
     if (inbound_connections_.empty())
-      context()->QuitNow();
+      context_->QuitNow();
   }
 
+  ServiceContext* context_ = nullptr;
   std::set<InterfaceRegistry*> inbound_connections_;
   mojo::BindingSet<test::mojom::ConnectTestService> bindings_;
   mojo::BindingSet<test::mojom::ClassInterface> class_interface_bindings_;

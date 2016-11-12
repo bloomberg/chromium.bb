@@ -117,25 +117,27 @@ void WindowManagerApplication::ShutdownComponents() {
   message_center::MessageCenter::Shutdown();
 }
 
-void WindowManagerApplication::OnStart() {
+void WindowManagerApplication::OnStart(
+    service_manager::ServiceContext* context) {
+  context_ = context;
   aura_init_ = base::MakeUnique<views::AuraInit>(
-      context()->connector(), context()->identity(), "ash_mus_resources.pak",
+      context->connector(), context->identity(), "ash_mus_resources.pak",
       "ash_mus_resources_200.pak");
-  gpu_service_ = ui::GpuService::Create(context()->connector());
+  gpu_service_ = ui::GpuService::Create(context->connector());
   compositor_context_factory_.reset(
       new views::SurfaceContextFactory(gpu_service_.get()));
   aura::Env::GetInstance()->set_context_factory(
       compositor_context_factory_.get());
-  window_manager_.reset(new WindowManager(context()->connector()));
+  window_manager_.reset(new WindowManager(context->connector()));
 
   MaterialDesignController::Initialize();
 
-  tracing_.Initialize(context()->connector(), context()->identity().name());
+  tracing_.Initialize(context->connector(), context->identity().name());
 
   std::unique_ptr<ui::WindowTreeClient> window_tree_client =
       base::MakeUnique<ui::WindowTreeClient>(window_manager_.get(),
                                              window_manager_.get());
-  window_tree_client->ConnectAsWindowManager(context()->connector());
+  window_tree_client->ConnectAsWindowManager(context->connector());
 
   const size_t kMaxNumberThreads = 3u;  // Matches that of content.
   const char kThreadNamePrefix[] = "MashBlocking";
@@ -152,7 +154,7 @@ bool WindowManagerApplication::OnConnect(
       registry, base::ThreadTaskRunnerHandle::Get());
 
   if (remote_info.identity.name() == "service:mash_session") {
-    context()->connector()->ConnectToInterface(remote_info.identity, &session_);
+    context_->connector()->ConnectToInterface(remote_info.identity, &session_);
     session_->AddScreenlockStateListener(
         screenlock_state_listener_binding_.CreateInterfacePtrAndBind());
   }

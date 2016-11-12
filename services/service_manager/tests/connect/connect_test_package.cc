@@ -54,8 +54,33 @@ class ProvidedService
   }
 
  private:
+  class ForwardingServiceImpl : public Service {
+   public:
+    explicit ForwardingServiceImpl(Service* service)
+        : service_(service) {}
+    ~ForwardingServiceImpl() override {}
+
+    // Service:
+    void OnStart(ServiceContext* context) override {
+      service_->OnStart(context);
+    }
+
+    bool OnConnect(const ServiceInfo& remote_info,
+                   InterfaceRegistry* registry) override {
+      return service_->OnConnect(remote_info, registry);
+    }
+
+    bool OnStop() override { return service_->OnStop(); }
+
+   private:
+    Service* const service_;
+
+    DISALLOW_COPY_AND_ASSIGN(ForwardingServiceImpl);
+  };
+
   // service_manager::Service:
-  void OnStart() override {
+  void OnStart(ServiceContext* context) override {
+    context_ = context;
     bindings_.set_connection_error_handler(
         base::Bind(&ProvidedService::OnConnectionError,
                    base::Unretained(this)));
@@ -70,10 +95,10 @@ class ProvidedService
     test::mojom::ConnectionStatePtr state(test::mojom::ConnectionState::New());
     state->connection_remote_name = remote_info.identity.name();
     state->connection_remote_userid = remote_info.identity.user_id();
-    state->initialize_local_name = context()->identity().name();
-    state->initialize_userid = context()->identity().user_id();
+    state->initialize_local_name = context_->identity().name();
+    state->initialize_userid = context_->identity().user_id();
 
-    context()->connector()->ConnectToInterface(remote_info.identity, &caller_);
+    context_->connector()->ConnectToInterface(remote_info.identity, &caller_);
     caller_->ConnectionAccepted(std::move(state));
 
     return true;
@@ -103,7 +128,7 @@ class ProvidedService
   }
 
   void GetInstance(const GetInstanceCallback& callback) override {
-    callback.Run(context()->identity().instance());
+    callback.Run(context_->identity().instance());
   }
 
   // test::mojom::BlockedInterface:
@@ -117,7 +142,7 @@ class ProvidedService
       const ConnectToClassAppAsDifferentUserCallback& callback) override {
     Connector::ConnectParams params(target);
     std::unique_ptr<Connection> connection =
-        context()->connector()->Connect(&params);
+        context_->connector()->Connect(&params);
     {
       base::RunLoop loop;
       connection->AddConnectionCompletedClosure(loop.QuitClosure());
@@ -131,7 +156,7 @@ class ProvidedService
 
   // base::SimpleThread:
   void Run() override {
-    ServiceRunner(new ForwardingService(this)).Run(
+    ServiceRunner(new ForwardingServiceImpl(this)).Run(
         request_.PassMessagePipe().release().value(), false);
     caller_.reset();
     bindings_.CloseAllBindings();
@@ -144,6 +169,7 @@ class ProvidedService
       base::MessageLoop::current()->QuitWhenIdle();
   }
 
+  ServiceContext* context_ = nullptr;
   const std::string title_;
   mojom::ServiceRequest request_;
   test::mojom::ExposedInterfacePtr caller_;
@@ -166,7 +192,9 @@ class ConnectTestService
 
  private:
   // service_manager::Service:
-  void OnStart() override {
+  void OnStart(ServiceContext* context) override {
+    context_ = context;
+
     base::Closure error_handler =
         base::Bind(&ConnectTestService::OnConnectionError,
                    base::Unretained(this));
@@ -216,14 +244,15 @@ class ConnectTestService
   }
 
   void GetInstance(const GetInstanceCallback& callback) override {
-    callback.Run(context()->identity().instance());
+    callback.Run(context_->identity().instance());
   }
 
   void OnConnectionError() {
     if (bindings_.empty() && service_factory_bindings_.empty())
-      context()->RequestQuit();
+      context_->RequestQuit();
   }
 
+  ServiceContext* context_ = nullptr;
   std::vector<std::unique_ptr<Service>> delegates_;
   mojo::BindingSet<mojom::ServiceFactory> service_factory_bindings_;
   mojo::BindingSet<test::mojom::ConnectTestService> bindings_;

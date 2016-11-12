@@ -25,10 +25,10 @@ MediaService::MediaService(std::unique_ptr<MojoMediaClient> mojo_media_client)
 
 MediaService::~MediaService() {}
 
-void MediaService::OnStart() {
+void MediaService::OnStart(service_manager::ServiceContext* context) {
   ref_factory_.reset(new service_manager::ServiceContextRefFactory(
       base::Bind(&service_manager::ServiceContext::RequestQuit,
-                 base::Unretained(context()))));
+                 base::Unretained(context))));
   mojo_media_client_->Initialize();
 }
 

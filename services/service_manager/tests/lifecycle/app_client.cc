@@ -15,6 +15,10 @@ AppClient::AppClient() {}
 
 AppClient::~AppClient() {}
 
+void AppClient::OnStart(ServiceContext* context) {
+  context_ = context;
+}
+
 bool AppClient::OnConnect(const ServiceInfo& remote_info,
                           InterfaceRegistry* registry) {
   registry->AddInterface<mojom::LifecycleControl>(this);
@@ -36,7 +40,7 @@ void AppClient::Ping(const PingCallback& callback) {
 }
 
 void AppClient::GracefulQuit() {
-  context()->RequestQuit();
+  context_->RequestQuit();
 }
 
 void AppClient::Crash() {
@@ -47,7 +51,7 @@ void AppClient::Crash() {
 }
 
 void AppClient::CloseServiceManagerConnection() {
-  context()->DisconnectFromServiceManager();
+  context_->DisconnectFromServiceManager();
   bindings_.set_connection_error_handler(
       base::Bind(&AppClient::BindingLost, base::Unretained(this)));
 }

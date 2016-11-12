@@ -144,22 +144,22 @@ class Login : public service_manager::Service,
   void LoginAs(const std::string& user_id) {
     user_access_manager_->SetActiveUser(user_id);
     mash::init::mojom::InitPtr init;
-    context()->connector()->ConnectToInterface("service:mash_init", &init);
+    context_->connector()->ConnectToInterface("service:mash_init", &init);
     init->StartService("service:mash_session", user_id);
   }
 
  private:
   // service_manager::Service:
-  void OnStart() override {
-    tracing_.Initialize(context()->connector(), context()->identity().name());
+  void OnStart(service_manager::ServiceContext* context) override {
+    context_ = context;
+    tracing_.Initialize(context->connector(), context->identity().name());
 
     aura_init_ = base::MakeUnique<views::AuraInit>(
-        context()->connector(), context()->identity(),
-        "views_mus_resources.pak");
+        context->connector(), context->identity(), "views_mus_resources.pak");
 
-    context()->connector()->ConnectToInterface(
+    context->connector()->ConnectToInterface(
         "service:ui", &user_access_manager_);
-    user_access_manager_->SetActiveUser(context()->identity().user_id());
+    user_access_manager_->SetActiveUser(context->identity().user_id());
   }
 
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
@@ -176,13 +176,15 @@ class Login : public service_manager::Service,
 
   // mojom::Login:
   void ShowLoginUI() override {
-    UI::Show(context()->connector(), context()->identity(), this);
+    UI::Show(context_->connector(), context_->identity(), this);
   }
   void SwitchUser() override {
-    UI::Show(context()->connector(), context()->identity(), this);
+    UI::Show(context_->connector(), context_->identity(), this);
   }
 
   void StartWindowManager();
+
+  service_manager::ServiceContext* context_ = nullptr;
 
   tracing::Provider tracing_;
   std::unique_ptr<views::AuraInit> aura_init_;

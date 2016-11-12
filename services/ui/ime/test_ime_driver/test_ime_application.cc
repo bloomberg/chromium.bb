@@ -17,13 +17,13 @@ TestIMEApplication::TestIMEApplication() {}
 
 TestIMEApplication::~TestIMEApplication() {}
 
-void TestIMEApplication::OnStart() {
+void TestIMEApplication::OnStart(service_manager::ServiceContext* context) {
   mojom::IMEDriverPtr ime_driver_ptr;
   mojo::MakeStrongBinding(base::MakeUnique<TestIMEDriver>(),
                           GetProxy(&ime_driver_ptr));
 
   ui::mojom::IMERegistrarPtr ime_registrar;
-  context()->connector()->ConnectToInterface("service:ui", &ime_registrar);
+  context->connector()->ConnectToInterface("service:ui", &ime_registrar);
   ime_registrar->RegisterDriver(std::move(ime_driver_ptr));
 }
 

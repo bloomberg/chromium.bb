@@ -39,10 +39,10 @@ std::unique_ptr<service_manager::Service> ImageDecoderService::Create() {
   return base::MakeUnique<ImageDecoderService>();
 }
 
-void ImageDecoderService::OnStart() {
+void ImageDecoderService::OnStart(service_manager::ServiceContext* context) {
   ref_factory_.reset(new service_manager::ServiceContextRefFactory(
       base::Bind(&service_manager::ServiceContext::RequestQuit,
-                 base::Unretained(context()))));
+                 base::Unretained(context))));
 }
 
 bool ImageDecoderService::OnConnect(

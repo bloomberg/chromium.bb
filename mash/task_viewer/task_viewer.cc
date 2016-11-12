@@ -289,13 +289,15 @@ void TaskViewer::RemoveWindow(views::Widget* widget) {
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void TaskViewer::OnStart() {
-  tracing_.Initialize(context()->connector(), context()->identity().name());
+void TaskViewer::OnStart(service_manager::ServiceContext* context) {
+  context_ = context;
+
+  tracing_.Initialize(context->connector(), context->identity().name());
 
   aura_init_ = base::MakeUnique<views::AuraInit>(
-      context()->connector(), context()->identity(), "views_mus_resources.pak");
+      context->connector(), context->identity(), "views_mus_resources.pak");
   window_manager_connection_ = views::WindowManagerConnection::Create(
-      context()->connector(), context()->identity());
+      context->connector(), context->identity());
 }
 
 bool TaskViewer::OnConnect(const service_manager::ServiceInfo& remote_info,
@@ -313,7 +315,7 @@ void TaskViewer::Launch(uint32_t what, mojom::LaunchMode how) {
   }
 
   service_manager::mojom::ServiceManagerPtr service_manager;
-  context()->connector()->ConnectToInterface(
+  context_->connector()->ConnectToInterface(
       "service:service_manager", &service_manager);
 
   service_manager::mojom::ServiceManagerListenerPtr listener;
@@ -322,7 +324,7 @@ void TaskViewer::Launch(uint32_t what, mojom::LaunchMode how) {
   service_manager->AddListener(std::move(listener));
 
   catalog::mojom::CatalogPtr catalog;
-  context()->connector()->ConnectToInterface("service:catalog", &catalog);
+  context_->connector()->ConnectToInterface("service:catalog", &catalog);
 
   TaskViewerContents* task_viewer = new TaskViewerContents(
       this, std::move(request), std::move(catalog));

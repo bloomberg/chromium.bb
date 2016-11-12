@@ -13,6 +13,10 @@
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 
+namespace service_manager {
+class ServiceContext;
+}
+
 namespace views {
 class AuraInit;
 class Widget;
@@ -30,7 +34,7 @@ class WindowTypeLauncher
 
  private:
   // service_manager::Service:
-  void OnStart() override;
+  void OnStart(service_manager::ServiceContext* context) override;
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override;
 
@@ -40,6 +44,8 @@ class WindowTypeLauncher
   // service_manager::InterfaceFactory<mash::mojom::Launchable>:
   void Create(const service_manager::Identity& remote_identity,
               mash::mojom::LaunchableRequest request) override;
+
+  service_manager::ServiceContext* context_ = nullptr;
 
   mojo::BindingSet<mash::mojom::Launchable> bindings_;
   std::vector<views::Widget*> windows_;

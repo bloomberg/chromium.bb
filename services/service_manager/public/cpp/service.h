@@ -12,26 +12,33 @@ class ServiceContext;
 struct ServiceInfo;
 
 // The primary contract between a Service and the Service Manager, receiving
-// lifecycle notifications and connection requests.
+// lifecycle notifications and connection requests. Every Service must minimally
+// implement OnConnect().
 class Service {
  public:
-  Service();
   virtual ~Service();
 
-  // Called exactly once, when a bidirectional connection with the Service
-  // Manager has been established. No calls to OnConnect() will be received
-  // before this.
-  virtual void OnStart();
+  // Called once a bidirectional connection with the Service Manager has been
+  // established.
+  //
+  // |context| is the ServiceContext for this instance of the service. It's
+  // guaranteed to outlive the Service instance and therefore may be retained by
+  // it.
+  //
+  // Use the context to retrieve information about the service instance, make
+  // outgoing service connections, and issue other requests to the Service
+  // Manager on behalf of this instance.
+  //
+  // Called exactly once before any calls to OnConnect().
+  virtual void OnStart(ServiceContext* context);
 
   // Called each time a connection to this service is brokered by the Service
   // Manager. Implement this to expose interfaces to other services.
   //
   // Return true if the connection should succeed or false if the connection
   // should be rejected.
-  //
-  // The default implementation returns false.
   virtual bool OnConnect(const ServiceInfo& remote_info,
-                         InterfaceRegistry* registry);
+                         InterfaceRegistry* registry) = 0;
 
   // Called when the Service Manager has stopped tracking this instance. The
   // service should use this as a signal to shut down, and in fact its process
@@ -49,40 +56,6 @@ class Service {
   // OnConnect() is invoked, neither will be invoked at any point after this
   // OnStop().
   virtual bool OnStop();
-
- protected:
-  // Access the ServiceContext associated with this Service. Note that this is
-  // only valid to call during or after OnStart(), but never before! As such,
-  // it's always safe to call in OnStart() and OnConnect(), but should generally
-  // be avoided in OnStop().
-  ServiceContext* context() const;
-
- private:
-  friend class ForwardingService;
-  friend class ServiceContext;
-
-  // NOTE: This is guaranteed to be called before OnStart().
-  void set_context(ServiceContext* context) { service_context_ = context; }
-
-  ServiceContext* service_context_ = nullptr;
-};
-
-// TODO(rockot): Remove this. It's here to satisfy a few remaining use cases
-// where a Service impl is owned by something other than its ServiceContext.
-class ForwardingService : public Service {
- public:
-  // |target| must outlive this object.
-  explicit ForwardingService(Service* target);
-  ~ForwardingService() override;
-
- private:
-  // Service:
-  void OnStart() override;
-  bool OnConnect(const ServiceInfo& remote_info,
-                 InterfaceRegistry* registry) override;
-  bool OnStop() override;
-
-  Service* const target_ = nullptr;
 };
 
 }  // namespace service_manager

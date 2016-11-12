@@ -77,11 +77,11 @@ AutoclickApplication::AutoclickApplication()
 
 AutoclickApplication::~AutoclickApplication() {}
 
-void AutoclickApplication::OnStart() {
+void AutoclickApplication::OnStart(service_manager::ServiceContext* context) {
   aura_init_ = base::MakeUnique<views::AuraInit>(
-      context()->connector(), context()->identity(), "views_mus_resources.pak");
+      context->connector(), context->identity(), "views_mus_resources.pak");
   window_manager_connection_ = views::WindowManagerConnection::Create(
-      context()->connector(), context()->identity());
+      context->connector(), context->identity());
   autoclick_controller_common_.reset(new AutoclickControllerCommon(
       base::TimeDelta::FromMilliseconds(kDefaultAutoclickDelayMs), this));
 }

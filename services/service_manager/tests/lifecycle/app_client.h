@@ -28,7 +28,8 @@ class AppClient : public Service,
 
   void set_runner(ServiceRunner* runner) { runner_ = runner; }
 
-  // Service:
+  // Serivce:
+  void OnStart(ServiceContext* context) override;
   bool OnConnect(const ServiceInfo& remote_info,
                  InterfaceRegistry* registry) override;
   bool OnStop() override;
@@ -48,6 +49,7 @@ class AppClient : public Service,
 
   void BindingLost();
 
+  ServiceContext* context_;
   ServiceRunner* runner_ = nullptr;
   mojo::BindingSet<mojom::LifecycleControl> bindings_;
 

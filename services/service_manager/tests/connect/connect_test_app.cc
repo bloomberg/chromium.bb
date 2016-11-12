@@ -54,7 +54,8 @@ class ConnectTestApp : public Service,
 
  private:
   // service_manager::Service:
-  void OnStart() override {
+  void OnStart(ServiceContext* context) override {
+    context_ = context;
     bindings_.set_connection_error_handler(
         base::Bind(&ConnectTestApp::OnConnectionError,
                    base::Unretained(this)));
@@ -62,7 +63,6 @@ class ConnectTestApp : public Service,
         base::Bind(&ConnectTestApp::OnConnectionError,
                    base::Unretained(this)));
   }
-
   bool OnConnect(const ServiceInfo& remote_info,
                  InterfaceRegistry* registry) override {
     registry->AddInterface<test::mojom::ConnectTestService>(this);
@@ -73,10 +73,10 @@ class ConnectTestApp : public Service,
     test::mojom::ConnectionStatePtr state(test::mojom::ConnectionState::New());
     state->connection_remote_name = remote_info.identity.name();
     state->connection_remote_userid = remote_info.identity.user_id();
-    state->initialize_local_name = context()->identity().name();
-    state->initialize_userid = context()->identity().user_id();
+    state->initialize_local_name = context_->identity().name();
+    state->initialize_userid = context_->identity().user_id();
 
-    context()->connector()->ConnectToInterface(remote_info.identity, &caller_);
+    context_->connector()->ConnectToInterface(remote_info.identity, &caller_);
     caller_->ConnectionAccepted(std::move(state));
 
     return true;
@@ -111,7 +111,7 @@ class ConnectTestApp : public Service,
     callback.Run("APP");
   }
   void GetInstance(const GetInstanceCallback& callback) override {
-    callback.Run(context()->identity().instance());
+    callback.Run(context_->identity().instance());
   }
 
   // test::mojom::StandaloneApp:
@@ -119,7 +119,7 @@ class ConnectTestApp : public Service,
       const ConnectToAllowedAppInBlockedPackageCallback& callback) override {
     base::RunLoop run_loop;
     std::unique_ptr<Connection> connection =
-        context()->connector()->Connect("service:connect_test_a");
+        context_->connector()->Connect("service:connect_test_a");
     connection->SetConnectionLostClosure(
         base::Bind(&ConnectTestApp::OnConnectionBlocked,
                    base::Unretained(this), callback, &run_loop));
@@ -139,7 +139,7 @@ class ConnectTestApp : public Service,
   void ConnectToClassInterface(
       const ConnectToClassInterfaceCallback& callback) override {
     std::unique_ptr<Connection> connection =
-        context()->connector()->Connect("service:connect_test_class_app");
+        context_->connector()->Connect("service:connect_test_class_app");
     test::mojom::ClassInterfacePtr class_interface;
     connection->GetInterface(&class_interface);
     std::string ping_response;
@@ -174,7 +174,7 @@ class ConnectTestApp : public Service,
       const ConnectToClassAppAsDifferentUserCallback& callback) override {
     Connector::ConnectParams params(target);
     std::unique_ptr<Connection> connection =
-        context()->connector()->Connect(&params);
+        context_->connector()->Connect(&params);
     {
       base::RunLoop loop;
       connection->AddConnectionCompletedClosure(base::Bind(&QuitLoop, &loop));
@@ -206,6 +206,7 @@ class ConnectTestApp : public Service,
       base::MessageLoop::current()->QuitWhenIdle();
   }
 
+  ServiceContext* context_ = nullptr;
   mojo::BindingSet<test::mojom::ConnectTestService> bindings_;
   mojo::BindingSet<test::mojom::StandaloneApp> standalone_bindings_;
   mojo::BindingSet<test::mojom::BlockedInterface> blocked_bindings_;

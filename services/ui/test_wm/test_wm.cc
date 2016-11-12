@@ -29,9 +29,9 @@ class TestWM : public service_manager::Service,
 
  private:
   // service_manager::Service:
-  void OnStart() override {
+  void OnStart(service_manager::ServiceContext* context) override {
     window_tree_client_.reset(new ui::WindowTreeClient(this, this));
-    window_tree_client_->ConnectAsWindowManager(context()->connector());
+    window_tree_client_->ConnectAsWindowManager(context->connector());
   }
 
   bool OnConnect(const service_manager::ServiceInfo& remote_info,

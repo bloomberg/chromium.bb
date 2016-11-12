@@ -18,6 +18,7 @@
 
 namespace service_manager {
 class Connection;
+class ServiceContext;
 }
 
 namespace mash {
@@ -32,7 +33,7 @@ class Init : public service_manager::Service,
 
  private:
   // service_manager::Service:
-  void OnStart() override;
+  void OnStart(service_manager::ServiceContext* context) override;
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override;
 
@@ -49,6 +50,8 @@ class Init : public service_manager::Service,
 
   void StartTracing();
   void StartLogin();
+
+  service_manager::ServiceContext* context_ = nullptr;
 
   std::unique_ptr<service_manager::Connection> login_connection_;
   mojo::BindingSet<mojom::Init> init_bindings_;

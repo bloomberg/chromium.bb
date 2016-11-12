@@ -36,6 +36,10 @@ class Parent : public service_manager::Service,
 
  private:
   // Service:
+  void OnStart(service_manager::ServiceContext* context) override {
+    context_ = context;
+  }
+
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override {
     registry->AddInterface<service_manager::test::mojom::Parent>(this);
@@ -51,7 +55,7 @@ class Parent : public service_manager::Service,
   // service_manager::test::mojom::Parent:
   void ConnectToChild(const ConnectToChildCallback& callback) override {
     child_connection_ =
-        context()->connector()->Connect("service:lifecycle_unittest_app");
+        context_->connector()->Connect("service:lifecycle_unittest_app");
     service_manager::test::mojom::LifecycleControlPtr lifecycle;
     child_connection_->GetInterface(&lifecycle);
     {
@@ -67,6 +71,7 @@ class Parent : public service_manager::Service,
     base::MessageLoop::current()->QuitWhenIdle();
   }
 
+  service_manager::ServiceContext* context_ = nullptr;
   std::unique_ptr<service_manager::Connection> child_connection_;
   mojo::BindingSet<service_manager::test::mojom::Parent> parent_bindings_;
 

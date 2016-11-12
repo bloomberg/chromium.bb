@@ -25,11 +25,11 @@ class Target : public service_manager::Service {
 
  private:
   // service_manager::Service:
-  void OnStart() override {
+  void OnStart(service_manager::ServiceContext* context) override {
     CreateInstanceTestPtr service;
-    context()->connector()->ConnectToInterface(
+    context->connector()->ConnectToInterface(
         "service:service_manager_unittest", &service);
-    service->SetTargetIdentity(context()->identity());
+    service->SetTargetIdentity(context->identity());
   }
 
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
