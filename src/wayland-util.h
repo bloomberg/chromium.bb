@@ -640,22 +640,25 @@ wl_fixed_from_int(int i)
 }
 
 /**
- * \brief A union representing all of the basic data types that can be passed
- * along the wayland wire format.
+ * Protocol message argument data types
  *
- * This union represents all of the basic data types that can be passed in the
- * wayland wire format.  It is used by dispatchers and runtime-friendly
- * versions of the event and request marshaling functions.
+ * This union represents all of the argument types in the Wayland protocol wire
+ * format. The protocol implementation uses wl_argument within its marshalling
+ * machinery for dispatching messages between a client and a compositor.
+ *
+ * \sa wl_message
+ * \sa wl_interface
+ * \sa <a href="https://wayland.freedesktop.org/docs/html/ch04.html#sect-Protocol-wire-Format">Wire Format</a>
  */
 union wl_argument {
-	int32_t i; /**< signed integer */
-	uint32_t u; /**< unsigned integer */
-	wl_fixed_t f; /**< fixed point */
-	const char *s; /**< string */
-	struct wl_object *o; /**< object */
-	uint32_t n; /**< new_id */
-	struct wl_array *a; /**< array */
-	int32_t h; /**< file descriptor */
+	int32_t i;           /**< `int`    */
+	uint32_t u;          /**< `uint`   */
+	wl_fixed_t f;        /**< `fixed`  */
+	const char *s;       /**< `string` */
+	struct wl_object *o; /**< `object` */
+	uint32_t n;          /**< `new_id` */
+	struct wl_array *a;  /**< `array`  */
+	int32_t h;           /**< `fd`     */
 };
 
 /**
