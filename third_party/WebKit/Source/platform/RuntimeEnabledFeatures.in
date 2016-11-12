@@ -122,7 +122,7 @@ InputMultipleFieldsUI status=stable
 InstalledApp status=experimental
 IntersectionObserver status=stable
 LangAttributeAwareFormControlUI
-LayoutNG depends_on=LayoutNGInline
+LayoutNG
 LayoutNGInline
 LinkServiceWorker status=experimental, origin_trial_feature_name=ForeignFetch
 LongTaskObserver status=experimental, origin_trial_feature_name=LongTaskObserver
