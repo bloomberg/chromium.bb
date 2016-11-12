@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -20,6 +21,10 @@
 
 namespace em = enterprise_management;
 
+namespace {
+const char kDMTokenCheckHistogram[] = "Enterprise.EnrolledPolicyHasDMToken";
+}
+
 namespace policy {
 
 DeviceCloudPolicyStoreChromeOS::DeviceCloudPolicyStoreChromeOS(
@@ -29,7 +34,6 @@ DeviceCloudPolicyStoreChromeOS::DeviceCloudPolicyStoreChromeOS(
     : device_settings_service_(device_settings_service),
       install_attributes_(install_attributes),
       background_task_runner_(background_task_runner),
-      enrollment_validation_done_(false),
       weak_factory_(this) {
   device_settings_service_->AddObserver(this);
 }
@@ -136,87 +140,95 @@ void DeviceCloudPolicyStoreChromeOS::OnPolicyStored() {
 }
 
 void DeviceCloudPolicyStoreChromeOS::UpdateFromService() {
-  const em::PolicyData* policy_data = device_settings_service_->policy_data();
-  const chromeos::DeviceSettingsService::Status status =
-      device_settings_service_->status();
-
   if (!install_attributes_->IsEnterpriseDevice()) {
     status_ = STATUS_BAD_STATE;
     NotifyStoreError();
     return;
   }
 
-  // For enterprise devices, once per session, validate internal consistency of
-  // enrollment state (DM token must be present on enrolled devices) and in case
-  // of failure set flag to indicate that recovery is required.
-  switch (status) {
-    case chromeos::DeviceSettingsService::STORE_SUCCESS:
-    case chromeos::DeviceSettingsService::STORE_KEY_UNAVAILABLE:
-    case chromeos::DeviceSettingsService::STORE_NO_POLICY:
-    case chromeos::DeviceSettingsService::STORE_INVALID_POLICY:
-    case chromeos::DeviceSettingsService::STORE_VALIDATION_ERROR: {
-      if (!enrollment_validation_done_) {
-        enrollment_validation_done_ = true;
-        const bool has_dm_token =
-            status == chromeos::DeviceSettingsService::STORE_SUCCESS &&
-            policy_data &&
-            policy_data->has_request_token();
+  CheckDMToken();
+  UpdateStatusFromService();
 
-        // At the time LoginDisplayHostImpl decides whether enrollment flow is
-        // to be started, policy hasn't been read yet.  To work around this,
-        // once the need for recovery is detected upon policy load, a flag is
-        // stored in prefs which is accessed by LoginDisplayHostImpl early
-        // during (next) boot.
-        if (!has_dm_token) {
-          LOG(ERROR) << "Device policy read on enrolled device yields "
-                     << "no DM token! Status: " << status << ".";
-          chromeos::StartupUtils::MarkEnrollmentRecoveryRequired();
-        }
-        UMA_HISTOGRAM_BOOLEAN("Enterprise.EnrolledPolicyHasDMToken",
-                              has_dm_token);
-      }
-      break;
+  const chromeos::DeviceSettingsService::Status service_status =
+      device_settings_service_->status();
+  if (service_status == chromeos::DeviceSettingsService::STORE_SUCCESS) {
+    policy_ = base::MakeUnique<em::PolicyData>();
+    const em::PolicyData* policy_data = device_settings_service_->policy_data();
+    if (policy_data)
+      policy_->MergeFrom(*policy_data);
+
+    PolicyMap new_policy_map;
+    if (is_managed()) {
+      DecodeDevicePolicy(*device_settings_service_->device_settings(),
+                         &new_policy_map);
     }
-    case chromeos::DeviceSettingsService::STORE_POLICY_ERROR:
-    case chromeos::DeviceSettingsService::STORE_OPERATION_FAILED:
-    case chromeos::DeviceSettingsService::STORE_TEMP_VALIDATION_ERROR:
-      // Do nothing for write errors or transient read errors.
-      break;
+    policy_map_.Swap(&new_policy_map);
+
+    NotifyStoreLoaded();
+    return;
   }
+  NotifyStoreError();
+}
 
-  switch (status) {
-    case chromeos::DeviceSettingsService::STORE_SUCCESS: {
+void DeviceCloudPolicyStoreChromeOS::UpdateStatusFromService() {
+  switch (device_settings_service_->status()) {
+    case chromeos::DeviceSettingsService::STORE_SUCCESS:
       status_ = STATUS_OK;
-      policy_.reset(new em::PolicyData());
-      if (policy_data)
-        policy_->MergeFrom(*policy_data);
-
-      PolicyMap new_policy_map;
-      if (is_managed()) {
-        DecodeDevicePolicy(*device_settings_service_->device_settings(),
-                           &new_policy_map);
-      }
-      policy_map_.Swap(&new_policy_map);
-
-      NotifyStoreLoaded();
       return;
-    }
     case chromeos::DeviceSettingsService::STORE_KEY_UNAVAILABLE:
       status_ = STATUS_BAD_STATE;
-      break;
+      return;
     case chromeos::DeviceSettingsService::STORE_POLICY_ERROR:
     case chromeos::DeviceSettingsService::STORE_OPERATION_FAILED:
       status_ = STATUS_STORE_ERROR;
-      break;
+      return;
     case chromeos::DeviceSettingsService::STORE_NO_POLICY:
     case chromeos::DeviceSettingsService::STORE_INVALID_POLICY:
     case chromeos::DeviceSettingsService::STORE_VALIDATION_ERROR:
     case chromeos::DeviceSettingsService::STORE_TEMP_VALIDATION_ERROR:
       status_ = STATUS_LOAD_ERROR;
+      return;
+  }
+  NOTREACHED();
+}
+
+void DeviceCloudPolicyStoreChromeOS::CheckDMToken() {
+  const chromeos::DeviceSettingsService::Status service_status =
+      device_settings_service_->status();
+  switch (service_status) {
+    case chromeos::DeviceSettingsService::STORE_SUCCESS:
+    case chromeos::DeviceSettingsService::STORE_KEY_UNAVAILABLE:
+    case chromeos::DeviceSettingsService::STORE_NO_POLICY:
+    case chromeos::DeviceSettingsService::STORE_INVALID_POLICY:
+    case chromeos::DeviceSettingsService::STORE_VALIDATION_ERROR:
+      // Continue with the check below.
       break;
+    case chromeos::DeviceSettingsService::STORE_POLICY_ERROR:
+    case chromeos::DeviceSettingsService::STORE_OPERATION_FAILED:
+    case chromeos::DeviceSettingsService::STORE_TEMP_VALIDATION_ERROR:
+      // Don't check for write errors or transient read errors.
+      return;
   }
 
-  NotifyStoreError();
+  if (dm_token_checked_) {
+    return;
+  }
+  dm_token_checked_ = true;
+
+  // At the time LoginDisplayHostImpl decides whether enrollment flow is to be
+  // started, policy hasn't been read yet.  To work around this, once the need
+  // for recovery is detected upon policy load, a flag is stored in prefs which
+  // is accessed by LoginDisplayHostImpl early during (next) boot.
+  const em::PolicyData* policy_data = device_settings_service_->policy_data();
+  if (service_status == chromeos::DeviceSettingsService::STORE_SUCCESS &&
+      policy_data && policy_data->has_request_token()) {
+    UMA_HISTOGRAM_BOOLEAN(kDMTokenCheckHistogram, true);
+  } else {
+    LOG(ERROR) << "Device policy read on enrolled device yields "
+               << "no DM token! Status: " << service_status << ".";
+    chromeos::StartupUtils::MarkEnrollmentRecoveryRequired();
+    UMA_HISTOGRAM_BOOLEAN(kDMTokenCheckHistogram, false);
+  }
 }
 
 }  // namespace policy
