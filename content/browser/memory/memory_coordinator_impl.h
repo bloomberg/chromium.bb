@@ -81,6 +81,11 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public MemoryCoordinator,
   // Notifies a state change to child processes.
   void NotifyStateToChildren();
 
+  // Records metrics. This is called when the global state is changed.
+  void RecordStateChange(MemoryState prev_state,
+                         MemoryState next_state,
+                         base::TimeDelta duration);
+
   // Schedules a task to update the global state. The task will be executed
   // after |delay| has passed.
   void ScheduleUpdateState(base::TimeDelta delay);

@@ -5,6 +5,7 @@
 #include "content/browser/memory/memory_coordinator_impl.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/process/process_metrics.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/memory/memory_monitor.h"
@@ -50,6 +51,62 @@ mojom::MemoryState ToMojomMemoryState(base::MemoryState state) {
       NOTREACHED();
       return mojom::MemoryState::UNKNOWN;
   }
+}
+
+void RecordMetricsOnStateChange(base::MemoryState prev_state,
+                                base::MemoryState next_state,
+                                base::TimeDelta duration,
+                                size_t total_private_mb) {
+#define RECORD_METRICS(transition)                                             \
+  UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Coordinator.TotalPrivate." transition, \
+                                total_private_mb);                             \
+  UMA_HISTOGRAM_CUSTOM_TIMES("Memory.Coordinator.StateDuration." transition,   \
+                             duration, base::TimeDelta::FromSeconds(30),       \
+                             base::TimeDelta::FromHours(24), 50);
+
+  if (prev_state == base::MemoryState::NORMAL) {
+    switch (next_state) {
+      case base::MemoryState::THROTTLED:
+        RECORD_METRICS("NormalToThrottled");
+        break;
+      case base::MemoryState::SUSPENDED:
+        RECORD_METRICS("NormalToSuspended");
+        break;
+      case base::MemoryState::UNKNOWN:
+      case base::MemoryState::NORMAL:
+        NOTREACHED();
+        break;
+    }
+  } else if (prev_state == base::MemoryState::THROTTLED) {
+    switch (next_state) {
+      case base::MemoryState::NORMAL:
+        RECORD_METRICS("ThrottledToNormal");
+        break;
+      case base::MemoryState::SUSPENDED:
+        RECORD_METRICS("ThrottledToSuspended");
+        break;
+      case base::MemoryState::UNKNOWN:
+      case base::MemoryState::THROTTLED:
+        NOTREACHED();
+        break;
+    }
+  } else if (prev_state == base::MemoryState::SUSPENDED) {
+    switch (next_state) {
+      case base::MemoryState::NORMAL:
+        RECORD_METRICS("SuspendedToNormal");
+        break;
+      case base::MemoryState::THROTTLED:
+        RECORD_METRICS("SuspendedToThrottled");
+        break;
+      case base::MemoryState::UNKNOWN:
+      case base::MemoryState::SUSPENDED:
+        NOTREACHED();
+        break;
+    }
+  } else {
+    NOTREACHED();
+  }
+#undef RECORD_METRICS
 }
 
 }  // namespace
@@ -194,6 +251,7 @@ base::MemoryState MemoryCoordinatorImpl::CalculateNextState() {
 }
 
 void MemoryCoordinatorImpl::UpdateState() {
+  base::TimeTicks prev_last_state_change = last_state_change_;
   base::TimeTicks now = base::TimeTicks::Now();
   MemoryState prev_state = current_state_;
   MemoryState next_state = CalculateNextState();
@@ -208,6 +266,7 @@ void MemoryCoordinatorImpl::UpdateState() {
                  "prev", MemoryStateToString(prev_state),
                  "next", MemoryStateToString(next_state));
 
+    RecordStateChange(prev_state, next_state, now - prev_last_state_change);
     NotifyStateToClients();
     NotifyStateToChildren();
     ScheduleUpdateState(minimum_transition_period_);
@@ -227,6 +286,34 @@ void MemoryCoordinatorImpl::NotifyStateToChildren() {
   // whether this state transition is valid.
   for (auto& iter : children())
     SetChildMemoryState(iter.first, mojo_state);
+}
+
+void MemoryCoordinatorImpl::RecordStateChange(MemoryState prev_state,
+                                              MemoryState next_state,
+                                              base::TimeDelta duration) {
+  size_t total_private_kb = 0;
+
+  // TODO(bashi): On MacOS we can't get process metrics for child processes and
+  // therefore can't calculate the total private memory.
+#if !defined(OS_MACOSX)
+  auto browser_metrics = base::ProcessMetrics::CreateCurrentProcessMetrics();
+  base::WorkingSetKBytes working_set;
+  browser_metrics->GetWorkingSetKBytes(&working_set);
+  total_private_kb += working_set.priv;
+
+  for (auto& iter : children()) {
+    auto* render_process_host = RenderProcessHost::FromID(iter.first);
+    DCHECK(render_process_host);
+    DCHECK(render_process_host->GetHandle() != base::kNullProcessHandle);
+    auto metrics = base::ProcessMetrics::CreateProcessMetrics(
+        render_process_host->GetHandle());
+    metrics->GetWorkingSetKBytes(&working_set);
+    total_private_kb += working_set.priv;
+  }
+#endif
+
+  RecordMetricsOnStateChange(prev_state, next_state, duration,
+                             total_private_kb / 1024);
 }
 
 void MemoryCoordinatorImpl::ScheduleUpdateState(base::TimeDelta delta) {
