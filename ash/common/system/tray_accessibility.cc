@@ -111,7 +111,7 @@ class DefaultAccessibilityView : public TrayItemMore {
 
     std::unique_ptr<TrayPopupItemStyle> style = CreateStyle();
     SetImage(gfx::CreateVectorIcon(kSystemMenuAccessibilityIcon,
-                                   style->GetForegroundColor()));
+                                   style->GetIconColor()));
   }
 
  private:

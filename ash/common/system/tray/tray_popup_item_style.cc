@@ -13,10 +13,23 @@
 namespace ash {
 namespace {
 
-// TODO(bruthig): Consider adding an 'inactive' color to the NativeTheme
-// and allow Label to use it directly. This would require changing the
-// View::enabled_ flag to a tri-state enum.
-const SkColor kInactiveTextColor = SkColorSetRGB(0x64, 0x64, 0x64);
+// TODO(bruthig|tdanderson): Figure out why the theme providers aren't providing
+// the desired colors. See http://crbug.com/614453.
+
+// The base color used to compute the effective text colors.
+const SkColor kBaseTextColor = SK_ColorBLACK;
+
+const int kActiveTextAlpha = 0xDE;
+const int kInactiveTextAlpha = 0x8A;
+const int kDisabledTextAlpha = 0x61;
+
+// The base color used to compute the effective icon colors.
+const SkColor kBaseIconColor = SkColorSetRGB(0x5a, 0x5a, 0x5a);
+
+const int kActiveIconAlpha = 0xFF;
+const int kInactiveIconAlpha = 0x8A;
+const int kDisabledIconAlpha = 0x61;
+
 }  // namespace
 
 TrayPopupItemStyle::TrayPopupItemStyle(const ui::NativeTheme* theme,
@@ -27,16 +40,28 @@ TrayPopupItemStyle::TrayPopupItemStyle(const ui::NativeTheme* theme,
 
 TrayPopupItemStyle::~TrayPopupItemStyle() {}
 
-SkColor TrayPopupItemStyle::GetForegroundColor() const {
+SkColor TrayPopupItemStyle::GetTextColor() const {
   switch (color_style_) {
     case ColorStyle::ACTIVE:
-      return theme_->GetSystemColor(
-          ui::NativeTheme::kColorId_LabelEnabledColor);
+      return SkColorSetA(kBaseTextColor, kActiveTextAlpha);
     case ColorStyle::INACTIVE:
-      return kInactiveTextColor;
+      return SkColorSetA(kBaseTextColor, kInactiveTextAlpha);
     case ColorStyle::DISABLED:
-      return theme_->GetSystemColor(
-          ui::NativeTheme::kColorId_LabelDisabledColor);
+      return SkColorSetA(kBaseTextColor, kDisabledTextAlpha);
+  }
+  NOTREACHED();
+  // Use a noticeable color to help notice unhandled cases.
+  return SK_ColorMAGENTA;
+}
+
+SkColor TrayPopupItemStyle::GetIconColor() const {
+  switch (color_style_) {
+    case ColorStyle::ACTIVE:
+      return SkColorSetA(kBaseIconColor, kActiveIconAlpha);
+    case ColorStyle::INACTIVE:
+      return SkColorSetA(kBaseIconColor, kInactiveIconAlpha);
+    case ColorStyle::DISABLED:
+      return SkColorSetA(kBaseIconColor, kDisabledIconAlpha);
   }
   NOTREACHED();
   // Use a noticeable color to help notice unhandled cases.
@@ -44,7 +69,7 @@ SkColor TrayPopupItemStyle::GetForegroundColor() const {
 }
 
 void TrayPopupItemStyle::SetupLabel(views::Label* label) const {
-  label->SetEnabledColor(GetForegroundColor());
+  label->SetEnabledColor(GetTextColor());
 
   const gfx::FontList& base_font_list = views::Label::GetDefaultFontList();
   switch (font_style_) {

@@ -71,7 +71,7 @@ class DefaultTracingView : public ActionableView {
     // TODO(tdanderson): Update the icon used for tracing or remove it from
     // the system menu. See crbug.com/625691.
     image_->SetImage(CreateVectorIcon(gfx::VectorIconId::CODE, kMenuIconSize,
-                                      style.GetForegroundColor()));
+                                      style.GetIconColor()));
   }
 
   bool PerformAction(const ui::Event& event) override {

@@ -167,7 +167,7 @@ class BluetoothDefaultView : public TrayItemMore {
     SetImage(gfx::CreateVectorIcon(delegate->GetBluetoothEnabled()
                                        ? kSystemMenuBluetoothIcon
                                        : kSystemMenuBluetoothDisabledIcon,
-                                   style->GetForegroundColor()));
+                                   style->GetIconColor()));
   }
 
  private:

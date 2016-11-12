@@ -84,7 +84,9 @@ class TrayPopupItemStyle {
 
   void set_font_style(FontStyle font_style) { font_style_ = font_style; }
 
-  SkColor GetForegroundColor() const;
+  SkColor GetTextColor() const;
+
+  SkColor GetIconColor() const;
 
   // Configures a Label as per the style (e.g. color, font).
   void SetupLabel(views::Label* label) const;

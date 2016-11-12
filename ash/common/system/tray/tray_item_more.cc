@@ -87,7 +87,7 @@ void TrayItemMore::UpdateStyle() {
 
   if (more_) {
     more_->SetImage(gfx::CreateVectorIcon(kSystemMenuArrowRightIcon,
-                                          style->GetForegroundColor()));
+                                          style->GetIconColor()));
   }
 }
 

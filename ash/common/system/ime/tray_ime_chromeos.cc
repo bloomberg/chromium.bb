@@ -100,8 +100,8 @@ class IMEDefaultView : public TrayItemMore {
       return;
 
     std::unique_ptr<TrayPopupItemStyle> style = CreateStyle();
-    SetImage(gfx::CreateVectorIcon(kSystemMenuKeyboardIcon,
-                                   style->GetForegroundColor()));
+    SetImage(
+        gfx::CreateVectorIcon(kSystemMenuKeyboardIcon, style->GetIconColor()));
   }
 
  private:

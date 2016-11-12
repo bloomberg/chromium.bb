@@ -94,7 +94,7 @@ void RotationLockDefaultView::UpdateImage() {
     SetImage(gfx::CreateVectorIcon(rotation_locked
                                        ? kSystemMenuRotationLockLockedIcon
                                        : kSystemMenuRotationLockAutoIcon,
-                                   kMenuIconSize, style->GetForegroundColor()));
+                                   kMenuIconSize, style->GetIconColor()));
   } else {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     const int resource_id = rotation_locked
