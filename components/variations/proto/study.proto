@@ -198,7 +198,7 @@ message Study {
   // Filtering criteria specifying whether this study is applicable to a given
   // Chrome instance.
   //
-  // Next tag: 12
+  // Next tag: 13
   message Filter {
     // The start date of the study in Unix time format. (Seconds since midnight
     // January 1, 1970 UTC). See: http://en.wikipedia.org/wiki/Unix_time
@@ -230,9 +230,16 @@ message Study {
     repeated Platform platform = 5;
 
     // List of locales that will receive this study. If omitted, the study
-    // applies to all locales.
+    // applies to all locales, unless |exclude_locale| is specified. Mutually
+    // exclusive with |exclude_locale|.
     // Ex: ["en-US", "en-CA"]
     repeated string locale = 6;
+
+    // List of locales that will be excluded from this study. If omitted, the
+    // study applies to all locales unless |locale| is specified. Mutually
+    // exclusive with |locale|.
+    // Ex: ["en-US", "en-CA"]
+    repeated string exclude_locale = 12;
 
     // List of form factors that will receive this study. If omitted, the study
     // applies to all form factors.
@@ -265,7 +272,7 @@ message Study {
     repeated string country = 10;
 
     // List of lowercase ISO 3166-1 alpha-2 country codes that will be excluded
-    // in this study. If omitted, the study applies to all countries unless
+    // from this study. If omitted, the study applies to all countries unless
     // |country| is specified. Mutually exclusive with |country|.
     // Ex: ["in", "us"]
     repeated string exclude_country = 11;
