@@ -97,7 +97,6 @@ class CnnStory(_NewsBrowsingStory):
   ITEMS_TO_VISIT = 2
 
 
-@decorators.Disabled('android')  # crbug.com/664518
 class FacebookMobileStory(_NewsBrowsingStory):
   NAME = 'browse:social:facebook'
   URL = 'https://www.facebook.com/rihanna'
@@ -259,7 +258,6 @@ class _MediaBrowsingStory(_BrowsingStory):
     action_runner.Wait(self.ITEM_VIEW_TIME_IN_SECONDS)
 
 
-@decorators.Disabled('android')  # crbug.com/664518
 class ImgurMobileStory(_MediaBrowsingStory):
   NAME = 'browse:media:imgur'
   URL = 'http://imgur.com/gallery/5UlBN'
