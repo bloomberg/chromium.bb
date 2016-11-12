@@ -49,7 +49,8 @@ class _CommonSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
   def Name(cls):
     return 'system_health.common_%s' % cls.PLATFORM
 
-
+@benchmark.Disabled('win10') # crbug.com/657665, crbug.com/653893
+@benchmark.Disabled('mac') # crbug.com/664661
 class DesktopCommonSystemHealth(_CommonSystemHealthBenchmark):
   """Desktop Chrome Energy System Health Benchmark."""
   PLATFORM = 'desktop'
