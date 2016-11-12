@@ -4375,6 +4375,15 @@
                     { "name": "networkRequestId", "$ref": "Network.RequestId", "optional": true, "description": "Identifier of the network request associated with this entry." },
                     { "name": "workerId", "type": "string", "optional": true, "description": "Identifier of the worker associated with this entry." }
                 ]
+            },
+            {
+                "id": "ViolationSetting",
+                "type": "object",
+                "description": "Violation configuration setting.",
+                "properties": [
+                    { "name": "name", "type": "string", "enum": ["longTask", "longLayout", "blockedEvent"], "description": "Violation type." },
+                    { "name": "threshold", "type": "number", "description": "Time threshold to trigger upon." }
+                ]
             }
         ],
         "commands": [
@@ -4391,11 +4400,15 @@
                 "description": "Clears the log."
             },
             {
-                "name": "setReportViolationsEnabled",
+                "name": "startViolationsReport",
                 "parameters": [
-                    { "name": "enabled", "type": "boolean", "description": "Pass true to enable." }
+                    { "name": "config", "type": "array", "items": { "$ref": "ViolationSetting" }, "description": "Configuration for violations." }
                 ],
-                "description": "Reports runtime audit violations as log entries."
+                "description": "start violation reporting."
+            },
+            {
+                "name": "stopViolationsReport",
+                "description": "Stop violation reporting."
             }
         ],
         "events": [

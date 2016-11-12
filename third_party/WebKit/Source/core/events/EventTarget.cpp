@@ -59,8 +59,6 @@ using namespace WTF;
 namespace blink {
 namespace {
 
-static const double kBlockedWarningThresholdMillis = 100.0;
-
 enum PassiveForcedListenerResultType {
   PreventDefaultNotCalled,
   DocumentLevelTouchPreventDefaultCalled,
@@ -101,15 +99,14 @@ bool isScrollBlockingEvent(const AtomicString& eventType) {
          eventType == EventTypeNames::wheel;
 }
 
-double blockedEventsWarningThreshold(ExecutionContext* context, Event* event) {
+double blockedEventsWarningThreshold(ExecutionContext* context,
+                                     const Event* event) {
   if (!event->cancelable())
     return 0.0;
   if (!isScrollBlockingEvent(event->type()))
     return 0.0;
-
-  return PerformanceMonitor::enabled(context)
-             ? kBlockedWarningThresholdMillis / 1000
-             : 0;
+  return PerformanceMonitor::threshold(context,
+                                       PerformanceMonitor::kBlockedEvent);
 }
 
 void reportBlockedEvent(ExecutionContext* context,
@@ -140,8 +137,10 @@ void reportBlockedEvent(ExecutionContext* context,
       eventListenerEffectiveFunction(v8Listener->isolate(), handler);
   std::unique_ptr<SourceLocation> location =
       SourceLocation::fromFunction(function);
-  PerformanceMonitor::logViolation(WarningMessageLevel, context, messageText,
-                                   std::move(location));
+
+  PerformanceMonitor::reportGenericViolation(
+      context, PerformanceMonitor::kBlockedEvent, messageText, delayedSeconds,
+      location.get());
   registeredListener->setBlockedEventWarningEmitted();
 }
 

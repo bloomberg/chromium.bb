@@ -46,11 +46,6 @@ class PerformanceMonitorTest : public ::testing::Test {
   String frameContextURL();
   int numUniqueFrameContextsSeen();
 
-  String sanitizedLongTaskName(HeapHashSet<Member<Frame>> frameContexts,
-                               Frame* observerFrame) {
-    return m_monitor->sanitizedAttribution(frameContexts, observerFrame).first;
-  }
-
   Persistent<PerformanceMonitor> m_monitor;
   std::unique_ptr<DummyPageHolder> m_pageHolder;
   std::unique_ptr<DummyPageHolder> m_anotherPageHolder;
@@ -130,31 +125,6 @@ TEST_F(PerformanceMonitorTest, NoScriptInLongTask) {
   ReportTaskTime(nullptr, 3719349.445172, 3719349.5561923);  // Long task
   // Without presence of Script, FrameContext URL is not available
   EXPECT_EQ(0, numUniqueFrameContextsSeen());
-}
-
-TEST_F(PerformanceMonitorTest, SanitizedLongTaskName) {
-  HeapHashSet<Member<Frame>> frameContexts;
-  // Unable to attribute, when no execution contents are available.
-  EXPECT_EQ("unknown", sanitizedLongTaskName(frameContexts, frame()));
-
-  // Attribute for same context (and same origin).
-  frameContexts.add(frame());
-  EXPECT_EQ("same-origin", sanitizedLongTaskName(frameContexts, frame()));
-
-  // Unable to attribute, when multiple script execution contents are involved.
-  frameContexts.add(anotherFrame());
-  EXPECT_EQ("multiple-contexts", sanitizedLongTaskName(frameContexts, frame()));
-}
-
-TEST_F(PerformanceMonitorTest, SanitizedLongTaskName_CrossOrigin) {
-  HeapHashSet<Member<Frame>> frameContexts;
-  // Unable to attribute, when no execution contents are available.
-  EXPECT_EQ("unknown", sanitizedLongTaskName(frameContexts, frame()));
-
-  // Attribute for same context (and same origin).
-  frameContexts.add(anotherFrame());
-  EXPECT_EQ("cross-origin-unreachable",
-            sanitizedLongTaskName(frameContexts, frame()));
 }
 
 }  // namespace blink
