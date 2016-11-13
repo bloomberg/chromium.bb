@@ -6,7 +6,7 @@ import unittest
 
 from webkitpy.w3c.deps_updater import DepsUpdater
 from webkitpy.common.host_mock import MockHost
-from webkitpy.common.system.filesystem_mock import MockFileSystem
+from webkitpy.common.system.executive_mock import MockExecutive2
 
 
 class DepsUpdaterTest(unittest.TestCase):
@@ -59,3 +59,31 @@ class DepsUpdaterTest(unittest.TestCase):
             host.filesystem.read_text_file('/mock-checkout/third_party/WebKit/LayoutTests/TestExpectations'),
             ('Bug(test) new/a.html [ Failure ]\n'
              'Bug(test) new/c.html [ Failure ]\n'))
+
+    # Tests for protected methods - pylint: disable=protected-access
+
+    def test_cl_description_with_empty_environ(self):
+        host = MockHost()
+        host.executive = MockExecutive2(output='Last commit message\n')
+        updater = DepsUpdater(host)
+        description = updater._cl_description()
+        self.assertEqual(
+            description,
+            ('Last commit message\n'
+             'TBR=qyearsley@chromium.org'))
+        self.assertEqual(host.executive.calls, [['git', 'log', '-1', '--format=%B']])
+
+    def test_cl_description_with_environ_variables(self):
+        host = MockHost()
+        host.executive = MockExecutive2(output='Last commit message\n')
+        updater = DepsUpdater(host)
+        updater.host.environ['BUILDBOT_MASTERNAME'] = 'my.master'
+        updater.host.environ['BUILDBOT_BUILDERNAME'] = 'b'
+        updater.host.environ['BUILDBOT_BUILDNUMBER'] = '123'
+        description = updater._cl_description()
+        self.assertEqual(
+            description,
+            ('Last commit message\n'
+             'Build: https://build.chromium.org/p/my.master/builders/b/builds/123\n\n'
+             'TBR=qyearsley@chromium.org'))
+        self.assertEqual(host.executive.calls, [['git', 'log', '-1', '--format=%B']])

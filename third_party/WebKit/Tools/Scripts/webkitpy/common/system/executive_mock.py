@@ -53,9 +53,11 @@ class MockProcess(object):
             return None
         return self.returncode
 
-# FIXME: This should be unified with MockExecutive2
+    def communicate(self, *_):
+        return (self.stdout.getvalue(), self.stderr.getvalue())
 
 
+# FIXME: This should be unified with MockExecutive2 (http://crbug.com/626115).
 class MockExecutive(object):
     PIPE = "MOCK PIPE"
     STDOUT = "MOCK STDOUT"
@@ -72,8 +74,9 @@ class MockExecutive(object):
         self._should_return_zero_when_run = should_return_zero_when_run or set()
         # FIXME: Once executive wraps os.getpid() we can just use a static pid for "this" process.
         self._running_pids = {'test-webkitpy': os.getpid()}
-        self._proc = None
         self.calls = []
+        self._output = "MOCK output of child process"
+        self._proc = None
 
     def check_running_pid(self, pid):
         return pid in self._running_pids.values()
@@ -116,18 +119,17 @@ class MockExecutive(object):
             if input:
                 input_string = ", input=%s" % input
             _log.info("MOCK run_command: %s, cwd=%s%s%s", args, cwd, env_string, input_string)
-        output = "MOCK output of child process"
 
         if self._should_throw_when_run.intersection(args):
             raise ScriptError("Exception for %s" % args, output="MOCK command output")
 
         if self._should_throw:
-            raise ScriptError("MOCK ScriptError", output=output)
+            raise ScriptError("MOCK ScriptError", output=self._output)
 
         if return_exit_code and self._should_return_zero_when_run.intersection(args):
             return 0
 
-        return output
+        return self._output
 
     def cpu_count(self):
         return 2
@@ -150,7 +152,7 @@ class MockExecutive(object):
                 env_string = ", env=%s" % env
             _log.info("MOCK popen: %s%s%s", args, cwd_string, env_string)
         if not self._proc:
-            self._proc = MockProcess()
+            self._proc = MockProcess(self._output)
         return self._proc
 
     def call(self, args, **kwargs):
@@ -183,12 +185,12 @@ class MockExecutive2(MockExecutive):
     """MockExecutive2 is like MockExecutive except it doesn't log anything."""
 
     def __init__(self, output='', exit_code=0, exception=None, run_command_fn=None, stderr=''):
+        super(MockExecutive2, self).__init__()
         self._output = output
         self._stderr = stderr
         self._exit_code = exit_code
         self._exception = exception
         self._run_command_fn = run_command_fn
-        self.calls = []
 
     def run_command(self,
                     args,

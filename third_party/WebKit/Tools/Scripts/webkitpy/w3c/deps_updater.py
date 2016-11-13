@@ -326,15 +326,31 @@ class DepsUpdater(object):
     def _upload_cl(self):
         _log.info('Uploading change list.')
         cc_list = self.get_directory_owners_to_cc()
-        last_commit_message = self.check_run(['git', 'log', '-1', '--format=%B'])
-        commit_message = last_commit_message + 'TBR=qyearsley@chromium.org'
+        description = self._cl_description()
         self.git_cl.run([
             'upload',
             '-f',
             '--rietveld',
             '-m',
-            commit_message,
+            description,
         ] + ['--cc=' + email for email in cc_list])
+
+    def _cl_description(self):
+        description = self.check_run(['git', 'log', '-1', '--format=%B'])
+        build_link = self._build_link()
+        if build_link:
+            description += 'Build: %s\n\n' % build_link
+        description += 'TBR=qyearsley@chromium.org'
+        return description
+
+    def _build_link(self):
+        """Returns a link to a job, if running on buildbot."""
+        master_name = self.host.environ.get('BUILDBOT_MASTERNAME')
+        builder_name = self.host.environ.get('BUILDBOT_BUILDERNAME')
+        build_number = self.host.environ.get('BUILDBOT_BUILDNUMBER')
+        if not (master_name and builder_name and build_number):
+            return None
+        return 'https://build.chromium.org/p/%s/builders/%s/builds/%s' % (master_name, builder_name, build_number)
 
     def get_directory_owners_to_cc(self):
         """Returns a list of email addresses to CC for the current import."""
