@@ -139,8 +139,11 @@ enum TrayConstant {
   // Padding between the edge of shelf and the item in status tray area.
   TRAY_PADDING_FROM_EDGE_OF_SHELF,
 
-  // The height of the rows in the system tray menu.
-  TRAY_POPUP_ITEM_HEIGHT,
+  // The minimum height of the rows in the system tray menu.
+  TRAY_POPUP_ITEM_MIN_HEIGHT,
+
+  // The maximum height of the rows in the system tray menu.
+  TRAY_POPUP_ITEM_MAX_HEIGHT,
 
   // The width used for the main image of the row. This applies to all rows
   // in the system menu that have a main image (e.g. default and detailed).

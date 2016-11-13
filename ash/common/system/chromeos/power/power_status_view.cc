@@ -10,6 +10,7 @@
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_item_style.h"
+#include "ash/common/system/tray/tray_popup_utils.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
@@ -92,8 +93,7 @@ void PowerStatusView::LayoutView() {
   SetLayoutManager(layout);
 
   if (!material_design) {
-    icon_ = new ash::FixedSizedImageView(
-        0, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
+    icon_ = TrayPopupUtils::CreateMainImageView();
     AddChildView(icon_);
   }
 
@@ -157,11 +157,11 @@ void PowerStatusView::ChildPreferredSizeChanged(views::View* child) {
 
 gfx::Size PowerStatusView::GetPreferredSize() const {
   gfx::Size size = views::View::GetPreferredSize();
-  return gfx::Size(size.width(), GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
+  return gfx::Size(size.width(), GetTrayConstant(TRAY_POPUP_ITEM_MIN_HEIGHT));
 }
 
 int PowerStatusView::GetHeightForWidth(int width) const {
-  return GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT);
+  return GetTrayConstant(TRAY_POPUP_ITEM_MIN_HEIGHT);
 }
 
 void PowerStatusView::Layout() {

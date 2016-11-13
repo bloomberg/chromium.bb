@@ -36,8 +36,7 @@ class DefaultTracingView : public ActionableView {
                                           kTrayPopupPaddingBetweenItems));
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    image_ =
-        new FixedSizedImageView(0, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
+    image_ = TrayPopupUtils::CreateMainImageView();
     if (!MaterialDesignController::UseMaterialDesignSystemIcons()) {
       // The icon doesn't change in non-md.
       image_->SetImage(

@@ -6,7 +6,6 @@
 
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/actionable_view.h"
-#include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_utils.h"
@@ -48,8 +47,7 @@ class CapsLockDefaultView : public ActionableView {
                                           kTrayPopupPaddingHorizontal, 0,
                                           kTrayPopupPaddingBetweenItems));
 
-    FixedSizedImageView* image =
-        new FixedSizedImageView(0, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
+    views::ImageView* image = TrayPopupUtils::CreateMainImageView();
     if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
       image->SetImage(
           gfx::CreateVectorIcon(kSystemMenuCapsLockIcon, kMenuIconColor));

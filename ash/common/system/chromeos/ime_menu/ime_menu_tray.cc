@@ -51,7 +51,7 @@ namespace {
 gfx::Range GetImeListViewRange() {
   const int max_items = 5;
   const int min_items = 2;
-  const int tray_item_height = GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT);
+  const int tray_item_height = GetTrayConstant(TRAY_POPUP_ITEM_MIN_HEIGHT);
   return gfx::Range(tray_item_height * min_items, tray_item_height * max_items);
 }
 
@@ -111,7 +111,7 @@ class ImeTitleView : public views::View, public views::ButtonListener {
     auto* box_layout =
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
     box_layout->set_minimum_cross_axis_size(
-        GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
+        GetTrayConstant(TRAY_POPUP_ITEM_MIN_HEIGHT));
     SetLayoutManager(box_layout);
     title_label_ =
         new views::Label(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME));

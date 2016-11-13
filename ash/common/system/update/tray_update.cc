@@ -89,8 +89,7 @@ class UpdateView : public ActionableView {
                                           kTrayPopupPaddingBetweenItems));
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    views::ImageView* image =
-        new FixedSizedImageView(0, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
+    views::ImageView* image = TrayPopupUtils::CreateMainImageView();
     if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
       image->SetImage(gfx::CreateVectorIcon(
           kSystemMenuUpdateIcon,

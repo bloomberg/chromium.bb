@@ -86,7 +86,7 @@ void ScreenStatusView::CreateItems() {
       0, kTrayPopupPaddingHorizontal, 0,
       use_md ? kTrayPopupButtonEndMargin : kStopButtonRightPadding));
 
-  icon_ = new FixedSizedImageView(0, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
+  icon_ = TrayPopupUtils::CreateMainImageView();
   if (use_md) {
     icon_->SetImage(
         gfx::CreateVectorIcon(kSystemMenuScreenShareIcon, kMenuIconColor));

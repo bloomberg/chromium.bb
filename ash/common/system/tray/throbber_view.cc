@@ -48,7 +48,7 @@ ThrobberView::ThrobberView() {
 ThrobberView::~ThrobberView() {}
 
 gfx::Size ThrobberView::GetPreferredSize() const {
-  int size = GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT);
+  int size = GetTrayConstant(TRAY_POPUP_ITEM_MIN_HEIGHT);
   return gfx::Size(size, size);
 }
 

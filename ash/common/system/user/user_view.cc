@@ -310,7 +310,7 @@ gfx::Size UserView::GetPreferredSize() const {
   if (!user_index_) {
     size.set_height(std::max(
         size.height(),
-        GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT) + GetInsets().height()));
+        GetTrayConstant(TRAY_POPUP_ITEM_MIN_HEIGHT) + GetInsets().height()));
   }
   return size;
 }

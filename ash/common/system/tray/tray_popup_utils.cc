@@ -8,6 +8,7 @@
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
+#include "ash/common/system/tray/size_range_layout.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
 #include "ash/common/system/tray/tray_popup_label_button_border.h"
@@ -85,7 +86,11 @@ void ConfigureDefaultSizeAndFlex(TriView* tri_view,
   }
 
   tri_view->SetMinSize(
-      container, gfx::Size(min_width, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT)));
+      container,
+      gfx::Size(min_width, GetTrayConstant(TRAY_POPUP_ITEM_MIN_HEIGHT)));
+  tri_view->SetMaxSize(container,
+                       gfx::Size(SizeRangeLayout::kAbsoluteMaxSize,
+                                 GetTrayConstant(TRAY_POPUP_ITEM_MAX_HEIGHT)));
 }
 
 class BorderlessLabelButton : public views::LabelButton {
@@ -190,7 +195,7 @@ views::Label* TrayPopupUtils::CreateDefaultLabel() {
 views::ImageView* TrayPopupUtils::CreateMainImageView() {
   return new FixedSizedImageView(
       GetTrayConstant(TRAY_POPUP_ITEM_MAIN_IMAGE_CONTAINER_WIDTH),
-      GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
+      GetTrayConstant(TRAY_POPUP_ITEM_MIN_HEIGHT));
 }
 
 views::ImageView* TrayPopupUtils::CreateMoreImageView() {
