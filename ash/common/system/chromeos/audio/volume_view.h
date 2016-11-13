@@ -46,8 +46,8 @@ class VolumeView : public views::View,
  private:
   // Updates device_type_ icon and more_ button.
   void UpdateDeviceTypeAndMore();
-  void HandleVolumeUp(float percent);
-  void HandleVolumeDown(float percent);
+  void HandleVolumeUp(int percent);
+  void HandleVolumeDown(int percent);
 
   // SliderListener:
   void SliderValueChanged(views::Slider* sender,

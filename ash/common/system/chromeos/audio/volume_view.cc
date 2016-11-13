@@ -230,6 +230,9 @@ void VolumeView::Update() {
 }
 
 void VolumeView::SetVolumeLevel(float percent) {
+  // Update volume level to the current audio level.
+  Update();
+
   // Slider's value is in finer granularity than audio volume level(0.01),
   // there will be a small discrepancy between slider's value and volume level
   // on audio side. To avoid the jittering in slider UI, do not set change
@@ -271,7 +274,7 @@ void VolumeView::UpdateDeviceTypeAndMore() {
   }
 }
 
-void VolumeView::HandleVolumeUp(float level) {
+void VolumeView::HandleVolumeUp(int level) {
   audio_delegate_->SetOutputVolumeLevel(level);
   if (audio_delegate_->IsOutputAudioMuted() &&
       level > audio_delegate_->GetOutputDefaultVolumeMuteLevel()) {
@@ -279,7 +282,7 @@ void VolumeView::HandleVolumeUp(float level) {
   }
 }
 
-void VolumeView::HandleVolumeDown(float level) {
+void VolumeView::HandleVolumeDown(int level) {
   audio_delegate_->SetOutputVolumeLevel(level);
   if (!audio_delegate_->IsOutputAudioMuted() &&
       level <= audio_delegate_->GetOutputDefaultVolumeMuteLevel()) {
@@ -309,11 +312,9 @@ void VolumeView::SliderValueChanged(views::Slider* sender,
                                     float old_value,
                                     views::SliderChangeReason reason) {
   if (reason == views::VALUE_CHANGED_BY_USER) {
-    float new_volume = value * 100.0f;
-    float current_volume = audio_delegate_->GetOutputVolumeLevel();
-    // Do not call change audio volume if the difference is less than
-    // 1%, which is beyond cras audio api's granularity for output volume.
-    if (std::abs(new_volume - current_volume) < 1.0f)
+    int new_volume = static_cast<int>(value * 100);
+    int current_volume = audio_delegate_->GetOutputVolumeLevel();
+    if (new_volume == current_volume)
       return;
     WmShell::Get()->RecordUserMetricsAction(
         is_default_view_ ? UMA_STATUS_AREA_CHANGED_VOLUME_MENU
