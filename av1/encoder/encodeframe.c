@@ -4613,114 +4613,17 @@ static int input_fpmb_stats(FIRSTPASS_MB_STATS *firstpass_mb_stats,
 
 #if CONFIG_GLOBAL_MOTION
 #define MIN_TRANS_THRESH (1 * GM_TRANS_DECODE_FACTOR)
-#define GLOBAL_MOTION_ADVANTAGE_THRESH 0.75
 
-// Adds some offset to a global motion parameter and handles
-// all of the necessary precision shifts, clamping, and
-// zero-centering.
-static int32_t add_param_offset(int param_index, int32_t param_value,
-                                int32_t offset) {
-  const int scale_vals[3] = { GM_TRANS_PREC_DIFF, GM_ALPHA_PREC_DIFF,
-                              GM_ROW3HOMO_PREC_DIFF };
-  const int clamp_vals[3] = { GM_TRANS_MAX, GM_ALPHA_MAX, GM_ROW3HOMO_MAX };
-  // type of param: 0 - translation, 1 - affine, 2 - homography
-  const int param_type = (param_index < 2 ? 0 : (param_index < 6 ? 1 : 2));
-  const int is_one_centered = (param_index == 2 || param_index == 5);
+// Border over which to compute the global motion
+#define ERRORADV_BORDER 0
 
-  // Make parameter zero-centered and offset the shift that was done to make
-  // it compatible with the warped model
-  param_value = (param_value - (is_one_centered << WARPEDMODEL_PREC_BITS)) >>
-                scale_vals[param_type];
-  // Add desired offset to the rescaled/zero-centered parameter
-  param_value += offset;
-  // Clamp the parameter so it does not overflow the number of bits allotted
-  // to it in the bitstream
-  param_value = (int32_t)clamp(param_value, -clamp_vals[param_type],
-                               clamp_vals[param_type]);
-  // Rescale the parameter to WARPEDMODEL_PRECISION_BITS so it is compatible
-  // with the warped motion library
-  param_value *= (1 << scale_vals[param_type]);
-
-  // Undo the zero-centering step if necessary
-  return param_value + (is_one_centered << WARPEDMODEL_PREC_BITS);
-}
-
-static void refine_integerized_param(WarpedMotionParams *wm,
-#if CONFIG_AOM_HIGHBITDEPTH
-                                     int use_hbd, int bd,
-#endif  // CONFIG_AOM_HIGHBITDEPTH
-                                     uint8_t *ref, int r_width, int r_height,
-                                     int r_stride, uint8_t *dst, int d_width,
-                                     int d_height, int d_stride,
-                                     int n_refinements) {
-  int i = 0, p;
-  int n_params = n_trans_model_params[wm->wmtype];
-  int32_t *param_mat = wm->wmmat;
-  double step_error;
-  int32_t step;
-  int32_t *param;
-  int32_t curr_param;
-  int32_t best_param;
-
-  double best_error =
-      av1_warp_erroradv(wm,
-#if CONFIG_AOM_HIGHBITDEPTH
-                        use_hbd, bd,
-#endif  // CONFIG_AOM_HIGHBITDEPTH
-                        ref, r_width, r_height, r_stride, dst, 0, 0, d_width,
-                        d_height, d_stride, 0, 0, 16, 16);
-  for (p = 0; p < n_params; ++p) {
-    param = param_mat + p;
-    step = 1 << (n_refinements + 1);
-    curr_param = *param;
-    best_param = curr_param;
-    for (i = 0; i < n_refinements; i++) {
-      // look to the left
-      *param = add_param_offset(p, curr_param, -step);
-      step_error =
-          av1_warp_erroradv(wm,
-#if CONFIG_AOM_HIGHBITDEPTH
-                            use_hbd, bd,
-#endif  // CONFIG_AOM_HIGHBITDEPTH
-                            ref, r_width, r_height, r_stride, dst, 0, 0,
-                            d_width, d_height, d_stride, 0, 0, 16, 16);
-      if (step_error < best_error) {
-        step >>= 1;
-        best_error = step_error;
-        best_param = *param;
-        curr_param = best_param;
-        continue;
-      }
-
-      // look to the right
-      *param = add_param_offset(p, curr_param, step);
-      step_error =
-          av1_warp_erroradv(wm,
-#if CONFIG_AOM_HIGHBITDEPTH
-                            use_hbd, bd,
-#endif  // CONFIG_AOM_HIGHBITDEPTH
-                            ref, r_width, r_height, r_stride, dst, 0, 0,
-                            d_width, d_height, d_stride, 0, 0, 16, 16);
-      if (step_error < best_error) {
-        step >>= 1;
-        best_error = step_error;
-        best_param = *param;
-        curr_param = best_param;
-        continue;
-      }
-
-      // no improvement found-> means we're either already at a minimum or
-      // step is too wide
-      step >>= 1;
-    }
-    *param = best_param;
-  }
-  // For rotzoom model enforce the constraints on mat[4] and mat[5]
-  if (wm->wmtype == ROTZOOM) {
-    param_mat[5] = param_mat[2];
-    param_mat[4] = -param_mat[3];
-  }
-}
+static const double gm_advantage_thresh[TRANS_TYPES] = {
+  1.00,  // Identity (not used)
+  0.85,  // Translation
+  0.75,  // Rot zoom
+  0.65,  // Affine
+  0.50,  // Homography
+};
 
 static void convert_to_params(const double *params, int32_t *model) {
   int i;
@@ -4759,6 +4662,132 @@ static void convert_model_to_params(const double *params,
                                     WarpedMotionParams *model) {
   convert_to_params(params, model->wmmat);
   model->wmtype = get_gmtype(model);
+}
+
+// Adds some offset to a global motion parameter and handles
+// all of the necessary precision shifts, clamping, and
+// zero-centering.
+static int32_t add_param_offset(int param_index, int32_t param_value,
+                                int32_t offset) {
+  const int scale_vals[3] = { GM_TRANS_PREC_DIFF, GM_ALPHA_PREC_DIFF,
+                              GM_ROW3HOMO_PREC_DIFF };
+  const int clamp_vals[3] = { GM_TRANS_MAX, GM_ALPHA_MAX, GM_ROW3HOMO_MAX };
+  // type of param: 0 - translation, 1 - affine, 2 - homography
+  const int param_type = (param_index < 2 ? 0 : (param_index < 6 ? 1 : 2));
+  const int is_one_centered = (param_index == 2 || param_index == 5);
+
+  // Make parameter zero-centered and offset the shift that was done to make
+  // it compatible with the warped model
+  param_value = (param_value - (is_one_centered << WARPEDMODEL_PREC_BITS)) >>
+                scale_vals[param_type];
+  // Add desired offset to the rescaled/zero-centered parameter
+  param_value += offset;
+  // Clamp the parameter so it does not overflow the number of bits allotted
+  // to it in the bitstream
+  param_value = (int32_t)clamp(param_value, -clamp_vals[param_type],
+                               clamp_vals[param_type]);
+  // Rescale the parameter to WARPEDMODEL_PRECISION_BITS so it is compatible
+  // with the warped motion library
+  param_value *= (1 << scale_vals[param_type]);
+
+  // Undo the zero-centering step if necessary
+  return param_value + (is_one_centered << WARPEDMODEL_PREC_BITS);
+}
+
+static void force_wmtype(WarpedMotionParams *wm, TransformationType wmtype) {
+  switch (wmtype) {
+    case IDENTITY: wm->wmmat[0] = 0; wm->wmmat[1] = 0;
+    case TRANSLATION:
+      wm->wmmat[2] = 1 << WARPEDMODEL_PREC_BITS;
+      wm->wmmat[3] = 0;
+    case ROTZOOM: wm->wmmat[4] = -wm->wmmat[3]; wm->wmmat[5] = wm->wmmat[2];
+    case AFFINE: wm->wmmat[6] = wm->wmmat[7] = 0;
+    case HOMOGRAPHY: break;
+    default: assert(0);
+  }
+  wm->wmtype = wmtype;
+}
+
+static double refine_integerized_param(WarpedMotionParams *wm,
+                                       TransformationType wmtype,
+#if CONFIG_AOM_HIGHBITDEPTH
+                                       int use_hbd, int bd,
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+                                       uint8_t *ref, int r_width, int r_height,
+                                       int r_stride, uint8_t *dst, int d_width,
+                                       int d_height, int d_stride,
+                                       int n_refinements) {
+  const int border = ERRORADV_BORDER;
+  int i = 0, p;
+  int n_params = n_trans_model_params[wmtype];
+  int32_t *param_mat = wm->wmmat;
+  double step_error;
+  int32_t step;
+  int32_t *param;
+  int32_t curr_param;
+  int32_t best_param;
+  double best_error;
+
+  force_wmtype(wm, wmtype);
+  best_error = av1_warp_erroradv(wm,
+#if CONFIG_AOM_HIGHBITDEPTH
+                                 use_hbd, bd,
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+                                 ref, r_width, r_height, r_stride,
+                                 dst + border * d_stride + border, border,
+                                 border, d_width - 2 * border,
+                                 d_height - 2 * border, d_stride, 0, 0, 16, 16);
+  for (p = 0; p < n_params; ++p) {
+    param = param_mat + p;
+    step = 1 << (n_refinements + 1);
+    curr_param = *param;
+    best_param = curr_param;
+    for (i = 0; i < n_refinements; i++) {
+      // look to the left
+      *param = add_param_offset(p, curr_param, -step);
+      step_error = av1_warp_erroradv(
+          wm,
+#if CONFIG_AOM_HIGHBITDEPTH
+          use_hbd, bd,
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+          ref, r_width, r_height, r_stride, dst + border * d_stride + border,
+          border, border, d_width - 2 * border, d_height - 2 * border, d_stride,
+          0, 0, 16, 16);
+      if (step_error < best_error) {
+        step >>= 1;
+        best_error = step_error;
+        best_param = *param;
+        curr_param = best_param;
+        continue;
+      }
+
+      // look to the right
+      *param = add_param_offset(p, curr_param, step);
+      step_error = av1_warp_erroradv(
+          wm,
+#if CONFIG_AOM_HIGHBITDEPTH
+          use_hbd, bd,
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+          ref, r_width, r_height, r_stride, dst + border * d_stride + border,
+          border, border, d_width - 2 * border, d_height - 2 * border, d_stride,
+          0, 0, 16, 16);
+      if (step_error < best_error) {
+        step >>= 1;
+        best_error = step_error;
+        best_param = *param;
+        curr_param = best_param;
+        continue;
+      }
+
+      // no improvement found-> means we're either already at a minimum or
+      // step is too wide
+      step >>= 1;
+    }
+    *param = best_param;
+  }
+  force_wmtype(wm, wmtype);
+  wm->wmtype = get_gmtype(wm);
+  return best_error;
 }
 #endif  // CONFIG_GLOBAL_MOTION
 
@@ -4803,27 +4832,18 @@ static void encode_frame_internal(AV1_COMP *cpi) {
                                                 params)) {
           convert_model_to_params(params, &cm->global_motion[frame]);
           if (cm->global_motion[frame].wmtype != IDENTITY) {
-            refine_integerized_param(
-                &cm->global_motion[frame],
+            erroradvantage = refine_integerized_param(
+                &cm->global_motion[frame], cm->global_motion[frame].wmtype,
 #if CONFIG_AOM_HIGHBITDEPTH
                 xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
 #endif  // CONFIG_AOM_HIGHBITDEPTH
                 ref_buf->y_buffer, ref_buf->y_width, ref_buf->y_height,
                 ref_buf->y_stride, cpi->Source->y_buffer, cpi->Source->y_width,
                 cpi->Source->y_height, cpi->Source->y_stride, 3);
-            // compute the advantage of using gm parameters over 0 motion
-            erroradvantage = av1_warp_erroradv(
-                &cm->global_motion[frame],
-#if CONFIG_AOM_HIGHBITDEPTH
-                xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
-#endif  // CONFIG_AOM_HIGHBITDEPTH
-                ref_buf->y_buffer, ref_buf->y_width, ref_buf->y_height,
-                ref_buf->y_stride, cpi->Source->y_buffer, 0, 0,
-                cpi->Source->y_width, cpi->Source->y_height,
-                cpi->Source->y_stride, 0, 0, 16, 16);
-            if (erroradvantage > GLOBAL_MOTION_ADVANTAGE_THRESH)
-              // Not enough advantage in using a global model. Make identity.
+            if (erroradvantage >
+                gm_advantage_thresh[cm->global_motion[frame].wmtype]) {
               set_default_gmparams(&cm->global_motion[frame]);
+            }
           }
         }
         aom_clear_system_state();

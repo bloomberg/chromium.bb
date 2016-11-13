@@ -558,7 +558,7 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
   for (ref = 0; ref < 1 + is_compound; ++ref) {
     gm[ref] = &xd->global_motion[mi->mbmi.ref_frame[ref]];
     is_global[ref] =
-        (get_y_mode(mi, block) == ZEROMV && gm[ref]->wmtype != IDENTITY);
+        (get_y_mode(mi, block) == ZEROMV && gm[ref]->wmtype > TRANSLATION);
   }
   // TODO(sarahparker) remove these once gm works with all experiments
   (void)gm;

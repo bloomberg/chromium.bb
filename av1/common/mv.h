@@ -152,12 +152,12 @@ static INLINE TransformationType get_gmtype(const WarpedMotionParams *gm) {
     return AFFINE;
 }
 
-static INLINE void set_default_gmparams(WarpedMotionParams *gm) {
-  static const int32_t default_gm_params[8] = {
+static INLINE void set_default_gmparams(WarpedMotionParams *wm) {
+  static const int32_t default_wm_mat[8] = {
     0, 0, (1 << WARPEDMODEL_PREC_BITS), 0, 0, (1 << WARPEDMODEL_PREC_BITS), 0, 0
   };
-  memcpy(gm->wmmat, default_gm_params, sizeof(gm->wmmat));
-  gm->wmtype = IDENTITY;
+  memcpy(wm->wmmat, default_wm_mat, sizeof(wm->wmmat));
+  wm->wmtype = IDENTITY;
 }
 #endif  // CONFIG_GLOBAL_MOTION
 
