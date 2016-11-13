@@ -93,6 +93,8 @@ struct etna_device {
 	void *handle_table, *name_table;
 
 	struct etna_bo_cache bo_cache;
+
+	int closefd;        /* call close(fd) upon destruction */
 };
 
 drm_private void etna_bo_cache_init(struct etna_bo_cache *cache);

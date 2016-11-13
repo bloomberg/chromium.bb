@@ -11,6 +11,7 @@ _end
 _fini
 _init
 etna_device_new
+etna_device_new_dup
 etna_device_ref
 etna_device_del
 etna_device_fd

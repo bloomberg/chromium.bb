@@ -61,6 +61,21 @@ struct etna_device *etna_device_new(int fd)
 	return dev;
 }
 
+/* like etna_device_new() but creates it's own private dup() of the fd
+ * which is close()d when the device is finalized. */
+struct etna_device *etna_device_new_dup(int fd)
+{
+	int dup_fd = dup(fd);
+	struct etna_device *dev = etna_device_new(dup_fd);
+
+	if (dev)
+		dev->closefd = 1;
+	else
+		close(dup_fd);
+
+	return dev;
+}
+
 struct etna_device *etna_device_ref(struct etna_device *dev)
 {
 	atomic_inc(&dev->refcnt);
@@ -73,6 +88,9 @@ static void etna_device_del_impl(struct etna_device *dev)
 	etna_bo_cache_cleanup(&dev->bo_cache, 0);
 	drmHashDestroy(dev->handle_table);
 	drmHashDestroy(dev->name_table);
+
+	if (dev->closefd)
+		close(dev->fd);
 
 	free(dev);
 }
