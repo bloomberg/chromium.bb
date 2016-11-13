@@ -3680,6 +3680,212 @@
         "overlays": "both",
         "vm_tests": []
     },
+    "bob-chrome-pfq": {
+        "_template": "chrome_pfq",
+        "boards": [
+            "bob"
+        ],
+        "important": false,
+        "manifest": "official.xml",
+        "vm_tests": []
+    },
+    "bob-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "bob"
+        ],
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "bob-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "bob"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "bob-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "bob"
+        ],
+        "manifest": "official.xml"
+    },
+    "bob-full": {
+        "_template": "full",
+        "boards": [
+            "bob"
+        ],
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "bob-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "bob"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "bob-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "bob"
+        ],
+        "description": "Commit Queue (internal)",
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "bob-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "bob"
+        ]
+    },
+    "bob-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "bob"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "bob-release": {
+        "_template": "release",
+        "boards": [
+            "bob"
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "bob-release-afdo": {
+        "_template": "release_afdo_generate",
+        "boards": [
+            "bob"
+        ],
+        "child_configs": [
+            {
+                "_template": "release_afdo_generate",
+                "boards": [
+                    "bob"
+                ],
+                "grouped": true,
+                "name": "bob-release-afdo-generate",
+                "vm_tests": [],
+                "vm_tests_override": null
+            },
+            {
+                "_template": "release_afdo_use",
+                "boards": [
+                    "bob"
+                ],
+                "grouped": true,
+                "name": "bob-release-afdo-use",
+                "vm_tests": [],
+                "vm_tests_override": null
+            }
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "bob-release-afdo-generate": {
+        "_template": "release_afdo_generate",
+        "boards": [
+            "bob"
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "bob-release-afdo-use": {
+        "_template": "release_afdo_use",
+        "boards": [
+            "bob"
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "bob-tot-chrome-pfq-informational": {
+        "_template": "chrome_pfq_informational",
+        "boards": [
+            "bob"
+        ],
+        "manifest": "official.xml",
+        "vm_tests": []
+    },
+    "bob-tot-chrome-pfq-informational-gn": {
+        "_template": "chrome_pfq_informational_gn",
+        "boards": [
+            "bob"
+        ],
+        "manifest": "official.xml",
+        "vm_tests": []
+    },
+    "bob-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "bob"
+        ],
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "bob-tot-chromium-pfq-informational-gn": {
+        "_template": "chromium_pfq_informational_gn",
+        "boards": [
+            "bob"
+        ],
+        "useflags": [
+            "-chrome_internal",
+            "gn"
+        ],
+        "vm_tests": []
+    },
+    "bob-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "bob"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
     "branch-util": {
         "active_waterfall": "chromiumos.tryserver",
         "boards": [],
