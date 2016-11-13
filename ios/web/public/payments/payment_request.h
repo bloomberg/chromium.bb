@@ -88,6 +88,10 @@ class PaymentMethodData {
   bool operator==(const PaymentMethodData& other) const;
   bool operator!=(const PaymentMethodData& other) const;
 
+  // Populates the properties of this PaymentMethodData from |value|. Returns
+  // true if the required values are present.
+  bool FromDictionaryValue(const base::DictionaryValue& value);
+
   // Payment method identifiers for payment methods that the merchant web site
   // accepts.
   std::vector<base::string16> supported_methods;
@@ -105,6 +109,10 @@ class PaymentCurrencyAmount {
 
   bool operator==(const PaymentCurrencyAmount& other) const;
   bool operator!=(const PaymentCurrencyAmount& other) const;
+
+  // Populates the properties of this PaymentCurrencyAmount from |value|.
+  // Returns true if the required values are present.
+  bool FromDictionaryValue(const base::DictionaryValue& value);
 
   // A currency identifier. The most common identifiers are three-letter
   // alphabetic codes as defined by ISO 4217 (for example, "USD" for US Dollars)
@@ -125,11 +133,20 @@ class PaymentItem {
   bool operator==(const PaymentItem& other) const;
   bool operator!=(const PaymentItem& other) const;
 
+  // Populates the properties of this PaymentItem from |value|. Returns true if
+  // the required values are present.
+  bool FromDictionaryValue(const base::DictionaryValue& value);
+
   // A human-readable description of the item.
   base::string16 label;
 
   // The monetary amount for the item.
   PaymentCurrencyAmount amount;
+
+  // When set to true this flag means that the amount field is not final. This
+  // is commonly used to show items such as shipping or tax amounts that depend
+  // upon selection of shipping address or shipping option.
+  bool pending;
 };
 
 // Information describing a shipping option.
@@ -198,6 +215,10 @@ class PaymentDetails {
   bool operator==(const PaymentDetails& other) const;
   bool operator!=(const PaymentDetails& other) const;
 
+  // Populates the properties of this PaymentDetails from |value|. Returns true
+  // if the required values are present.
+  bool FromDictionaryValue(const base::DictionaryValue& value);
+
   // The total amount of the payment request.
   PaymentItem total;
 
@@ -252,7 +273,8 @@ class PaymentRequest {
   bool operator==(const PaymentRequest& other) const;
   bool operator!=(const PaymentRequest& other) const;
 
-  // Populates the properties of this PaymentRequest from |value|.
+  // Populates the properties of this PaymentRequest from |value|. Returns true
+  // if the required values are present.
   bool FromDictionaryValue(const base::DictionaryValue& value);
 
   // Properties set in order to communicate user choices back to the page.

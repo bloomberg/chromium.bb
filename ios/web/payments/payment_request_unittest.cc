@@ -14,14 +14,125 @@ namespace web {
 
 // PaymentRequest parsing tests.
 
-// Tests that parsing an empty value fails.
+// Tests the success case when populating a PaymentMethodData from a dictionary.
+TEST(PaymentRequestTest, PaymentMethodDataFromDictionaryValueSuccess) {
+  PaymentMethodData expected;
+  std::vector<base::string16> supported_methods;
+  supported_methods.push_back(base::ASCIIToUTF16("Visa"));
+  supported_methods.push_back(base::ASCIIToUTF16("Bitcoin"));
+  expected.supported_methods = supported_methods;
+  expected.data = base::ASCIIToUTF16("{merchantId: 'af22fke9'}");
+
+  base::DictionaryValue method_data_dict;
+  std::unique_ptr<base::ListValue> supported_methods_list(new base::ListValue);
+  supported_methods_list->AppendString("Visa");
+  supported_methods_list->AppendString("Bitcoin");
+  method_data_dict.Set("supportedMethods", std::move(supported_methods_list));
+  method_data_dict.SetString("data", "{merchantId: 'af22fke9'}");
+
+  PaymentMethodData actual;
+  EXPECT_TRUE(actual.FromDictionaryValue(method_data_dict));
+
+  EXPECT_EQ(expected, actual);
+}
+
+// Tests the failure case when populating a PaymentMethodData from a dictionary.
+TEST(PaymentRequestTest, PaymentMethodDataFromDictionaryValueFailure) {
+  // At least one supported method is required.
+  PaymentMethodData actual;
+  base::DictionaryValue method_data_dict;
+  EXPECT_FALSE(actual.FromDictionaryValue(method_data_dict));
+
+  // The value in the supported methods list must be a string.
+  std::unique_ptr<base::ListValue> supported_methods_list(new base::ListValue);
+  supported_methods_list->AppendInteger(13);
+  method_data_dict.Set("supportedMethods", std::move(supported_methods_list));
+  EXPECT_FALSE(actual.FromDictionaryValue(method_data_dict));
+}
+
+// Tests the success case when populating a PaymentCurrencyAmount from a
+// dictionary.
+TEST(PaymentRequestTest, PaymentCurrencyAmountFromDictionaryValueSuccess) {
+  PaymentCurrencyAmount expected;
+  expected.currency = base::ASCIIToUTF16("AUD");
+  expected.value = base::ASCIIToUTF16("-438.23");
+
+  base::DictionaryValue amount_dict;
+  amount_dict.SetString("currency", "AUD");
+  amount_dict.SetString("value", "-438.23");
+
+  PaymentCurrencyAmount actual;
+  EXPECT_TRUE(actual.FromDictionaryValue(amount_dict));
+
+  EXPECT_EQ(expected, actual);
+}
+
+// Tests the failure case when populating a PaymentCurrencyAmount from a
+// dictionary.
+TEST(PaymentRequestTest, PaymentCurrencyAmountFromDictionaryValueFailure) {
+  // Both a currency and a value are required.
+  PaymentCurrencyAmount actual;
+  base::DictionaryValue amount_dict;
+  EXPECT_FALSE(actual.FromDictionaryValue(amount_dict));
+
+  // Both values must be strings.
+  amount_dict.SetInteger("currency", 842);
+  amount_dict.SetString("value", "-438.23");
+  EXPECT_FALSE(actual.FromDictionaryValue(amount_dict));
+
+  amount_dict.SetString("currency", "NZD");
+  amount_dict.SetDouble("value", -438.23);
+  EXPECT_FALSE(actual.FromDictionaryValue(amount_dict));
+}
+
+// Tests the success case when populating a PaymentItem from a dictionary.
+TEST(PaymentRequestTest, PaymentItemFromDictionaryValueSuccess) {
+  PaymentItem expected;
+  expected.label = base::ASCIIToUTF16("Payment Total");
+  expected.amount.currency = base::ASCIIToUTF16("NZD");
+  expected.amount.value = base::ASCIIToUTF16("2,242,093.00");
+
+  base::DictionaryValue item_dict;
+  item_dict.SetString("label", "Payment Total");
+  std::unique_ptr<base::DictionaryValue> amount_dict(new base::DictionaryValue);
+  amount_dict->SetString("currency", "NZD");
+  amount_dict->SetString("value", "2,242,093.00");
+  item_dict.Set("amount", std::move(amount_dict));
+
+  PaymentItem actual;
+  EXPECT_TRUE(actual.FromDictionaryValue(item_dict));
+
+  EXPECT_EQ(expected, actual);
+}
+
+// Tests the failure case when populating a PaymentItem from a dictionary.
+TEST(PaymentRequestTest, PaymentItemFromDictionaryValueFailure) {
+  // Both a label and an amount are required.
+  PaymentItem actual;
+  base::DictionaryValue item_dict;
+  EXPECT_FALSE(actual.FromDictionaryValue(item_dict));
+
+  item_dict.SetString("label", "Payment Total");
+  EXPECT_FALSE(actual.FromDictionaryValue(item_dict));
+
+  // Even with both present, the label must be a string.
+  std::unique_ptr<base::DictionaryValue> amount_dict(new base::DictionaryValue);
+  amount_dict->SetString("currency", "NZD");
+  amount_dict->SetString("value", "2,242,093.00");
+  item_dict.Set("amount", std::move(amount_dict));
+  item_dict.SetInteger("label", 42);
+  EXPECT_FALSE(actual.FromDictionaryValue(item_dict));
+}
+
+// Tests that populating a PaymentRequest from an empty dictionary fails.
 TEST(PaymentRequestTest, ParsingEmptyRequestDictionaryFails) {
   PaymentRequest output_request;
   base::DictionaryValue request_dict;
   EXPECT_FALSE(output_request.FromDictionaryValue(request_dict));
 }
 
-// Tests that parsing a dictionary without all requirement values fails.
+// Tests that populating a PaymentRequest from a dictionary without all
+// required values fails.
 TEST(PaymentRequestTest, ParsingPartiallyPopulatedRequestDictionaryFails) {
   PaymentRequest expected_request;
   PaymentRequest output_request;
@@ -53,8 +164,8 @@ TEST(PaymentRequestTest, ParsingPartiallyPopulatedRequestDictionaryFails) {
   EXPECT_EQ(expected_request, output_request);
 }
 
-// Tests that parsing a dictionary with all required elements succeeds and
-// produces the expected result.
+// Tests that populating a PaymentRequest from a dictionary with all required
+// elements succeeds and produces the expected result.
 TEST(PaymentRequestTest, ParsingFullyPopulatedRequestDictionarySucceeds) {
   PaymentRequest expected_request;
   PaymentRequest output_request;
@@ -82,12 +193,14 @@ TEST(PaymentRequestTest, ParsingFullyPopulatedRequestDictionarySucceeds) {
   EXPECT_EQ(expected_request, output_request);
 
   // If payment details are present, parse those as well.
+  expected_request.details.total.label = base::ASCIIToUTF16("TOTAL");
   expected_request.details.total.amount.currency = base::ASCIIToUTF16("GBP");
   expected_request.details.total.amount.value = base::ASCIIToUTF16("6.66");
 
   std::unique_ptr<base::DictionaryValue> details_dict(
       new base::DictionaryValue);
   std::unique_ptr<base::DictionaryValue> total_dict(new base::DictionaryValue);
+  total_dict->SetString("label", "TOTAL");
   std::unique_ptr<base::DictionaryValue> amount_dict(new base::DictionaryValue);
   amount_dict->SetString("currency", "GBP");
   amount_dict->SetString("value", "6.66");
@@ -310,6 +423,11 @@ TEST(PaymentRequestTest, PaymentItemEquality) {
   item2.amount.value = base::ASCIIToUTF16("104");
   EXPECT_NE(item1, item2);
   item2.amount.value = base::ASCIIToUTF16("104.34");
+  EXPECT_EQ(item1, item2);
+
+  item1.pending = true;
+  EXPECT_NE(item1, item2);
+  item2.pending = true;
   EXPECT_EQ(item1, item2);
 }
 

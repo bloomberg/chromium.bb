@@ -23,13 +23,16 @@ static const char kAddressOrganization[] = "organization";
 static const char kAddressRecipient[] = "recipient";
 static const char kAddressPhone[] = "phone";
 static const char kMethodData[] = "methodData";
+static const char kMethodDataData[] = "data";
+static const char kPaymentCurrencyAmountCurrency[] = "currency";
+static const char kPaymentCurrencyAmountValue[] = "value";
+static const char kPaymentItemLabel[] = "label";
+static const char kPaymentItemAmount[] = "amount";
+static const char kPaymentItemPending[] = "pending";
 static const char kSupportedMethods[] = "supportedMethods";
-static const char kData[] = "data";
 static const char kPaymentDetails[] = "details";
 static const char kPaymentDetailsTotal[] = "total";
-static const char kPaymentDetailsTotalAmount[] = "amount";
-static const char kPaymentDetailsTotalAmountCurrency[] = "currency";
-static const char kPaymentDetailsTotalAmountValue[] = "value";
+static const char kPaymentDetailsDisplayItems[] = "displayItems";
 static const char kMethodName[] = "methodName";
 static const char kCardCardholderName[] = "cardholderName";
 static const char kCardCardNumber[] = "cardNumber";
@@ -113,6 +116,30 @@ bool PaymentMethodData::operator!=(const PaymentMethodData& other) const {
   return !(*this == other);
 }
 
+bool PaymentMethodData::FromDictionaryValue(
+    const base::DictionaryValue& value) {
+  this->supported_methods.clear();
+
+  const base::ListValue* supported_methods_list = nullptr;
+  // At least one supported method is required.
+  if (!value.GetList(kSupportedMethods, &supported_methods_list) ||
+      supported_methods_list->GetSize() == 0) {
+    return false;
+  }
+  for (size_t i = 0; i < supported_methods_list->GetSize(); ++i) {
+    base::string16 supported_method;
+    if (!supported_methods_list->GetString(i, &supported_method)) {
+      return false;
+    }
+    this->supported_methods.push_back(supported_method);
+  }
+
+  // Data is optional.
+  value.GetString(kMethodDataData, &this->data);
+
+  return true;
+}
+
 PaymentCurrencyAmount::PaymentCurrencyAmount() {}
 PaymentCurrencyAmount::~PaymentCurrencyAmount() = default;
 
@@ -126,15 +153,41 @@ bool PaymentCurrencyAmount::operator!=(
   return !(*this == other);
 }
 
-PaymentItem::PaymentItem() {}
+bool PaymentCurrencyAmount::FromDictionaryValue(
+    const base::DictionaryValue& value) {
+  return value.GetString(kPaymentCurrencyAmountCurrency, &this->currency) &&
+         value.GetString(kPaymentCurrencyAmountValue, &this->value);
+}
+
+PaymentItem::PaymentItem() : pending(false) {}
 PaymentItem::~PaymentItem() = default;
 
 bool PaymentItem::operator==(const PaymentItem& other) const {
-  return this->label == other.label && this->amount == other.amount;
+  return this->label == other.label && this->amount == other.amount &&
+         this->pending == other.pending;
 }
 
 bool PaymentItem::operator!=(const PaymentItem& other) const {
   return !(*this == other);
+}
+
+bool PaymentItem::FromDictionaryValue(const base::DictionaryValue& value) {
+  if (!value.GetString(kPaymentItemLabel, &this->label)) {
+    return false;
+  }
+
+  const base::DictionaryValue* amount_dict = nullptr;
+  if (!value.GetDictionary(kPaymentItemAmount, &amount_dict)) {
+    return false;
+  }
+  if (!this->amount.FromDictionaryValue(*amount_dict)) {
+    return false;
+  }
+
+  // Pending is optional.
+  value.GetBoolean(kPaymentItemPending, &this->pending);
+
+  return true;
 }
 
 PaymentShippingOption::PaymentShippingOption() : selected(false) {}
@@ -185,6 +238,37 @@ bool PaymentDetails::operator!=(const PaymentDetails& other) const {
   return !(*this == other);
 }
 
+bool PaymentDetails::FromDictionaryValue(const base::DictionaryValue& value) {
+  this->display_items.clear();
+  this->shipping_options.clear();
+  this->modifiers.clear();
+
+  const base::DictionaryValue* total_dict = nullptr;
+  if (!value.GetDictionary(kPaymentDetailsTotal, &total_dict)) {
+    return false;
+  }
+  if (!this->total.FromDictionaryValue(*total_dict)) {
+    return false;
+  }
+
+  const base::ListValue* display_items_list = nullptr;
+  if (value.GetList(kPaymentDetailsDisplayItems, &display_items_list)) {
+    for (size_t i = 0; i < display_items_list->GetSize(); ++i) {
+      const base::DictionaryValue* payment_item_dict;
+      if (!display_items_list->GetDictionary(i, &payment_item_dict)) {
+        return false;
+      }
+      PaymentItem payment_item;
+      if (!payment_item.FromDictionaryValue(*payment_item_dict)) {
+        return false;
+      }
+      this->display_items.push_back(payment_item);
+    }
+  }
+
+  return true;
+}
+
 PaymentOptions::PaymentOptions()
     : request_payer_email(false),
       request_payer_phone(false),
@@ -228,43 +312,20 @@ bool PaymentRequest::FromDictionaryValue(const base::DictionaryValue& value) {
   }
   for (size_t i = 0; i < method_data_list->GetSize(); ++i) {
     const base::DictionaryValue* method_data_dict;
-    // Method data is required.
     if (!method_data_list->GetDictionary(i, &method_data_dict))
       return false;
 
     PaymentMethodData method_data;
-    const base::ListValue* supported_methods_list = nullptr;
-    // At least one supported method is required.
-    if (!method_data_dict->GetList(kSupportedMethods,
-                                   &supported_methods_list) ||
-        supported_methods_list->GetSize() == 0) {
+    if (!method_data.FromDictionaryValue(*method_data_dict))
       return false;
-    }
-    for (size_t i = 0; i < supported_methods_list->GetSize(); ++i) {
-      base::string16 supported_method;
-      supported_methods_list->GetString(i, &supported_method);
-      method_data.supported_methods.push_back(supported_method);
-    }
-    method_data_dict->GetString(kData, &method_data.data);
-
     this->method_data.push_back(method_data);
   }
 
   // Parse the payment details.
   const base::DictionaryValue* payment_details_dict = nullptr;
-  if (value.GetDictionary(kPaymentDetails, &payment_details_dict)) {
-    const base::DictionaryValue* total_dict = nullptr;
-    if (payment_details_dict->GetDictionary(kPaymentDetailsTotal,
-                                            &total_dict)) {
-      const base::DictionaryValue* amount_dict = nullptr;
-      if (total_dict->GetDictionary(kPaymentDetailsTotalAmount, &amount_dict)) {
-        amount_dict->GetString(kPaymentDetailsTotalAmountCurrency,
-                               &this->details.total.amount.currency);
-        amount_dict->GetString(kPaymentDetailsTotalAmountValue,
-                               &this->details.total.amount.value);
-      }
-    }
-  }
+  if (value.GetDictionary(kPaymentDetails, &payment_details_dict))
+    if (!this->details.FromDictionaryValue(*payment_details_dict))
+      return false;
 
   // TODO(crbug.com/602666): Parse the remaining elements.
 
