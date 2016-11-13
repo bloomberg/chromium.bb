@@ -16,11 +16,14 @@ namespace views {
 
 // Color of slider at the active and the disabled state, respectively.
 const SkColor kActiveColor = SkColorSetARGB(0xFF, 0x42, 0x85, 0xF4);
-const SkColor kDisabledColor = SkColorSetARGB(0x42, 0x00, 0x00, 0x00);
+const SkColor kDisabledColor = SkColorSetARGB(0xFF, 0xBD, 0xBD, 0xBD);
 const uint8_t kHighlightColorAlpha = 0x4D;
 
 // The thickness of the slider.
 const int kLineThickness = 2;
+
+// The radius used to draw rounded slider ends.
+const float kSliderRoundedRadius = 2.f;
 
 // The radius of the thumb and the highlighted thumb of the slider,
 // respectively.
@@ -52,10 +55,20 @@ void MdSlider::OnPaint(gfx::Canvas* canvas) {
   const int x = content.x() + full + kThumbRadius;
   const SkColor current_thumb_color =
       is_active_ ? kActiveColor : kDisabledColor;
-  canvas->FillRect(gfx::Rect(content.x(), y, full, kLineThickness),
-                   current_thumb_color);
-  canvas->FillRect(gfx::Rect(x + kThumbRadius, y, empty, kLineThickness),
-                   kDisabledColor);
+
+  // Extra space used to hide slider ends behind the thumb.
+  const int extra_padding = 1;
+
+  SkPaint slider_paint;
+  slider_paint.setFlags(SkPaint::kAntiAlias_Flag);
+  slider_paint.setColor(current_thumb_color);
+  canvas->DrawRoundRect(
+      gfx::Rect(content.x(), y, full + extra_padding, kLineThickness),
+      kSliderRoundedRadius, slider_paint);
+  slider_paint.setColor(kDisabledColor);
+  canvas->DrawRoundRect(gfx::Rect(x + kThumbRadius - extra_padding, y,
+                                  empty + extra_padding, kLineThickness),
+                        kSliderRoundedRadius, slider_paint);
 
   gfx::Point thumb_center(x, content.height() / 2);
 
