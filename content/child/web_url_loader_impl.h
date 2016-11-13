@@ -50,11 +50,10 @@ class CONTENT_EXPORT WebURLLoaderImpl
                                   const ResourceResponseInfo& info,
                                   blink::WebURLResponse* response,
                                   bool report_security_info);
-  static void PopulateURLRequestForRedirect(
+  static blink::WebURLRequest PopulateURLRequestForRedirect(
       const blink::WebURLRequest& request,
       const net::RedirectInfo& redirect_info,
-      blink::WebURLRequest::SkipServiceWorker skip_service_worker,
-      blink::WebURLRequest* new_request);
+      blink::WebURLRequest::SkipServiceWorker skip_service_worker);
 
   // WebURLLoader methods:
   void loadSynchronously(const blink::WebURLRequest& request,

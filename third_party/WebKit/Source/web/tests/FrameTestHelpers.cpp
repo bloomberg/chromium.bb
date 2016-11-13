@@ -35,7 +35,6 @@
 #include "platform/testing/WebLayerTreeViewImplForTesting.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
-#include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
@@ -116,9 +115,7 @@ String nameToUniqueName(const String& name) {
 }  // namespace
 
 void loadFrame(WebFrame* frame, const std::string& url) {
-  WebURLRequest urlRequest;
-  urlRequest.setURL(URLTestHelpers::toKURL(url));
-  urlRequest.setRequestorOrigin(WebSecurityOrigin::createUnique());
+  WebURLRequest urlRequest(URLTestHelpers::toKURL(url));
   frame->loadRequest(urlRequest);
   pumpPendingRequestsForFrameToLoad(frame);
 }

@@ -4162,9 +4162,7 @@ TEST_P(ParameterizedWebFrameTest, ReloadWhileProvisional) {
 
   FrameTestHelpers::WebViewHelper webViewHelper;
   webViewHelper.initialize();
-  WebURLRequest request;
-  request.setURL(toKURL(m_baseURL + "fixed_layout.html"));
-  request.setRequestorOrigin(WebSecurityOrigin::createUnique());
+  WebURLRequest request(toKURL(m_baseURL + "fixed_layout.html"));
   webViewHelper.webView()->mainFrame()->loadRequest(request);
   // start reload before first request is delivered.
   FrameTestHelpers::reloadFrameIgnoringCache(
@@ -7401,9 +7399,7 @@ TEST_P(ParameterizedWebFrameTest, CurrentHistoryItem) {
   WebFrame* frame = webViewHelper.webView()->mainFrame();
   const FrameLoader& mainFrameLoader =
       webViewHelper.webView()->mainFrameImpl()->frame()->loader();
-  WebURLRequest request;
-  request.setURL(toKURL(url));
-  request.setRequestorOrigin(WebSecurityOrigin::createUnique());
+  WebURLRequest request(toKURL(url));
   frame->loadRequest(request);
 
   // Before commit, there is no history item.
@@ -10221,11 +10217,9 @@ TEST_F(WebFrameTest, LoadJavascriptURLInNewFrame) {
   FrameTestHelpers::WebViewHelper helper;
   helper.initialize(true);
 
-  WebURLRequest request;
   std::string redirectURL = m_baseURL + "foo.html";
   URLTestHelpers::registerMockedURLLoad(toKURL(redirectURL), "foo.html");
-  request.setURL(toKURL("javascript:location='" + redirectURL + "'"));
-  request.setRequestorOrigin(WebSecurityOrigin::createUnique());
+  WebURLRequest request(toKURL("javascript:location='" + redirectURL + "'"));
   helper.webView()->mainFrameImpl()->loadRequest(request);
 
   // Normally, the result of the JS url replaces the existing contents on the

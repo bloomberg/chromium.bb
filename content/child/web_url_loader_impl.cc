@@ -663,13 +663,11 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
   PopulateURLResponse(request_.url(), info, &response,
                       request_.reportRawHeaders());
 
-  WebURLRequest new_request;
-  PopulateURLRequestForRedirect(
+  WebURLRequest new_request = PopulateURLRequestForRedirect(
       request_, redirect_info,
       info.was_fetched_via_service_worker
           ? blink::WebURLRequest::SkipServiceWorker::None
-          : blink::WebURLRequest::SkipServiceWorker::All,
-      &new_request);
+          : blink::WebURLRequest::SkipServiceWorker::All);
 
   bool follow = client_->willFollowRedirect(loader_, new_request, response);
   if (!follow) {
@@ -1170,34 +1168,34 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
   }
 }
 
-void WebURLLoaderImpl::PopulateURLRequestForRedirect(
+WebURLRequest WebURLLoaderImpl::PopulateURLRequestForRedirect(
     const blink::WebURLRequest& request,
     const net::RedirectInfo& redirect_info,
-    blink::WebURLRequest::SkipServiceWorker skip_service_worker,
-    blink::WebURLRequest* new_request) {
+    blink::WebURLRequest::SkipServiceWorker skip_service_worker) {
   // TODO(darin): We lack sufficient information to construct the actual
   // request that resulted from the redirect.
-  new_request->setURL(redirect_info.new_url);
-  new_request->setFirstPartyForCookies(
+  WebURLRequest new_request(redirect_info.new_url);
+  new_request.setFirstPartyForCookies(
       redirect_info.new_first_party_for_cookies);
-  new_request->setDownloadToFile(request.downloadToFile());
-  new_request->setUseStreamOnResponse(request.useStreamOnResponse());
-  new_request->setRequestContext(request.getRequestContext());
-  new_request->setFrameType(request.getFrameType());
-  new_request->setSkipServiceWorker(skip_service_worker);
-  new_request->setShouldResetAppCache(request.shouldResetAppCache());
-  new_request->setFetchRequestMode(request.getFetchRequestMode());
-  new_request->setFetchCredentialsMode(request.getFetchCredentialsMode());
+  new_request.setDownloadToFile(request.downloadToFile());
+  new_request.setUseStreamOnResponse(request.useStreamOnResponse());
+  new_request.setRequestContext(request.getRequestContext());
+  new_request.setFrameType(request.getFrameType());
+  new_request.setSkipServiceWorker(skip_service_worker);
+  new_request.setShouldResetAppCache(request.shouldResetAppCache());
+  new_request.setFetchRequestMode(request.getFetchRequestMode());
+  new_request.setFetchCredentialsMode(request.getFetchCredentialsMode());
 
-  new_request->setHTTPReferrer(WebString::fromUTF8(redirect_info.new_referrer),
+  new_request.setHTTPReferrer(WebString::fromUTF8(redirect_info.new_referrer),
                                NetReferrerPolicyToBlinkReferrerPolicy(
                                    redirect_info.new_referrer_policy));
-  new_request->setPriority(request.getPriority());
+  new_request.setPriority(request.getPriority());
 
   std::string old_method = request.httpMethod().utf8();
-  new_request->setHTTPMethod(WebString::fromUTF8(redirect_info.new_method));
+  new_request.setHTTPMethod(WebString::fromUTF8(redirect_info.new_method));
   if (redirect_info.new_method == old_method)
-    new_request->setHTTPBody(request.httpBody());
+    new_request.setHTTPBody(request.httpBody());
+  return new_request;
 }
 
 void WebURLLoaderImpl::loadSynchronously(const WebURLRequest& request,

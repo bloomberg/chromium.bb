@@ -66,8 +66,7 @@ WebURLRequest WebURLLoaderMock::ServeRedirect(
   KURL redirectURL(
       ParsedURLString, redirectResponse.httpHeaderField("Location"));
 
-  WebURLRequest newRequest;
-  newRequest.setURL(redirectURL);
+  WebURLRequest newRequest(redirectURL);
   newRequest.setFirstPartyForCookies(redirectURL);
   newRequest.setDownloadToFile(request.downloadToFile());
   newRequest.setUseStreamOnResponse(request.useStreamOnResponse());

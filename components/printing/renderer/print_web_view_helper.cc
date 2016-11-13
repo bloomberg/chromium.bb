@@ -34,7 +34,6 @@
 #include "printing/pdf_metafile_skia.h"
 #include "printing/units.h"
 #include "third_party/WebKit/public/platform/WebDoubleSize.h"
-#include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
@@ -811,7 +810,6 @@ void PrepareFrameAndViewForPrint::CopySelection(
   // When loading is done this will call didStopLoading() and that will do the
   // actual printing.
   blink::WebURLRequest request = blink::WebURLRequest(GURL(url_str));
-  request.setRequestorOrigin(blink::WebSecurityOrigin::createUnique());
   frame()->loadRequest(request);
 }
 

@@ -166,8 +166,7 @@ class WebAssociatedURLLoaderTest : public ::testing::Test,
   void didFail(const WebURLError& error) override { m_didFail = true; }
 
   void CheckMethodFails(const char* unsafeMethod) {
-    WebURLRequest request;
-    request.setURL(toKURL("http://www.test.com/success.html"));
+    WebURLRequest request(toKURL("http://www.test.com/success.html"));
     request.setHTTPMethod(WebString::fromUTF8(unsafeMethod));
     WebAssociatedURLLoaderOptions options;
     options.untrustedHTTP = true;
@@ -179,8 +178,7 @@ class WebAssociatedURLLoaderTest : public ::testing::Test,
   }
 
   void CheckHeaderFails(const char* headerField, const char* headerValue) {
-    WebURLRequest request;
-    request.setURL(toKURL("http://www.test.com/success.html"));
+    WebURLRequest request(toKURL("http://www.test.com/success.html"));
     if (equalIgnoringASCIICase(WebString::fromUTF8(headerField), "referer")) {
       request.setHTTPReferrer(WebString::fromUTF8(headerValue),
                               WebReferrerPolicyDefault);
@@ -216,8 +214,7 @@ class WebAssociatedURLLoaderTest : public ::testing::Test,
     id.append(".html");
 
     KURL url = toKURL(id);
-    WebURLRequest request;
-    request.setURL(url);
+    WebURLRequest request(url);
 
     WebString headerNameString(WebString::fromUTF8(headerName));
     m_expectedResponse = WebURLResponse();
@@ -271,8 +268,7 @@ class WebAssociatedURLLoaderTest : public ::testing::Test,
 // Test a successful same-origin URL load.
 TEST_F(WebAssociatedURLLoaderTest, SameOriginSuccess) {
   KURL url = toKURL("http://www.test.com/SameOriginSuccess.html");
-  WebURLRequest request;
-  request.setURL(url);
+  WebURLRequest request(url);
 
   m_expectedResponse = WebURLResponse();
   m_expectedResponse.setMIMEType("text/html");
@@ -293,8 +289,7 @@ TEST_F(WebAssociatedURLLoaderTest, SameOriginSuccess) {
 TEST_F(WebAssociatedURLLoaderTest, SameOriginRestriction) {
   // This is cross-origin since the frame was loaded from www.test.com.
   KURL url = toKURL("http://www.other.com/SameOriginRestriction.html");
-  WebURLRequest request;
-  request.setURL(url);
+  WebURLRequest request(url);
   CheckFails(request);
 }
 
@@ -302,8 +297,7 @@ TEST_F(WebAssociatedURLLoaderTest, SameOriginRestriction) {
 TEST_F(WebAssociatedURLLoaderTest, CrossOriginSuccess) {
   // This is cross-origin since the frame was loaded from www.test.com.
   KURL url = toKURL("http://www.other.com/CrossOriginSuccess");
-  WebURLRequest request;
-  request.setURL(url);
+  WebURLRequest request(url);
   // No-CORS requests (CrossOriginRequestPolicyAllow) aren't allowed for the
   // default context. So we set the context as Script here.
   request.setRequestContext(WebURLRequest::RequestContextScript);
@@ -331,8 +325,7 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginWithAccessControlSuccess) {
   // This is cross-origin since the frame was loaded from www.test.com.
   KURL url =
       toKURL("http://www.other.com/CrossOriginWithAccessControlSuccess.html");
-  WebURLRequest request;
-  request.setURL(url);
+  WebURLRequest request(url);
 
   m_expectedResponse = WebURLResponse();
   m_expectedResponse.setMIMEType("text/html");
@@ -358,8 +351,7 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginWithAccessControlFailure) {
   // This is cross-origin since the frame was loaded from www.test.com.
   KURL url =
       toKURL("http://www.other.com/CrossOriginWithAccessControlFailure.html");
-  WebURLRequest request;
-  request.setURL(url);
+  WebURLRequest request(url);
 
   m_expectedResponse = WebURLResponse();
   m_expectedResponse.setMIMEType("text/html");
@@ -393,8 +385,7 @@ TEST_F(WebAssociatedURLLoaderTest,
   // This is cross-origin since the frame was loaded from www.test.com.
   KURL url =
       toKURL("http://www.other.com/CrossOriginWithAccessControlFailure.html");
-  WebURLRequest request;
-  request.setURL(url);
+  WebURLRequest request(url);
 
   m_expectedResponse = WebURLResponse();
   m_expectedResponse.setMIMEType("text/html");
@@ -424,8 +415,7 @@ TEST_F(WebAssociatedURLLoaderTest, RedirectSuccess) {
   char redirect[] = "http://www.test.com/RedirectSuccess2.html";  // Same-origin
   KURL redirectURL = toKURL(redirect);
 
-  WebURLRequest request;
-  request.setURL(url);
+  WebURLRequest request(url);
 
   m_expectedRedirectResponse = WebURLResponse();
   m_expectedRedirectResponse.setMIMEType("text/html");
@@ -434,8 +424,7 @@ TEST_F(WebAssociatedURLLoaderTest, RedirectSuccess) {
   Platform::current()->getURLLoaderMockFactory()->registerURL(
       url, m_expectedRedirectResponse, m_frameFilePath);
 
-  m_expectedNewRequest = WebURLRequest();
-  m_expectedNewRequest.setURL(redirectURL);
+  m_expectedNewRequest = WebURLRequest(redirectURL);
 
   m_expectedResponse = WebURLResponse();
   m_expectedResponse.setMIMEType("text/html");
@@ -460,8 +449,7 @@ TEST_F(WebAssociatedURLLoaderTest, RedirectCrossOriginFailure) {
       "http://www.other.com/RedirectCrossOriginFailure.html";  // Cross-origin
   KURL redirectURL = toKURL(redirect);
 
-  WebURLRequest request;
-  request.setURL(url);
+  WebURLRequest request(url);
 
   m_expectedRedirectResponse = WebURLResponse();
   m_expectedRedirectResponse.setMIMEType("text/html");
@@ -470,8 +458,7 @@ TEST_F(WebAssociatedURLLoaderTest, RedirectCrossOriginFailure) {
   Platform::current()->getURLLoaderMockFactory()->registerURL(
       url, m_expectedRedirectResponse, m_frameFilePath);
 
-  m_expectedNewRequest = WebURLRequest();
-  m_expectedNewRequest.setURL(redirectURL);
+  m_expectedNewRequest = WebURLRequest(redirectURL);
 
   m_expectedResponse = WebURLResponse();
   m_expectedResponse.setMIMEType("text/html");
@@ -500,8 +487,7 @@ TEST_F(WebAssociatedURLLoaderTest,
       "RedirectCrossOriginWithAccessControlFailure.html";  // Cross-origin
   KURL redirectURL = toKURL(redirect);
 
-  WebURLRequest request;
-  request.setURL(url);
+  WebURLRequest request(url);
 
   m_expectedRedirectResponse = WebURLResponse();
   m_expectedRedirectResponse.setMIMEType("text/html");
@@ -510,8 +496,7 @@ TEST_F(WebAssociatedURLLoaderTest,
   Platform::current()->getURLLoaderMockFactory()->registerURL(
       url, m_expectedRedirectResponse, m_frameFilePath);
 
-  m_expectedNewRequest = WebURLRequest();
-  m_expectedNewRequest.setURL(redirectURL);
+  m_expectedNewRequest = WebURLRequest(redirectURL);
 
   m_expectedResponse = WebURLResponse();
   m_expectedResponse.setMIMEType("text/html");
@@ -545,8 +530,7 @@ TEST_F(WebAssociatedURLLoaderTest,
       "RedirectCrossOriginWithAccessControlSuccess.html";  // Cross-origin
   KURL redirectURL = toKURL(redirect);
 
-  WebURLRequest request;
-  request.setURL(url);
+  WebURLRequest request(url);
   // Add a CORS simple header.
   request.setHTTPHeaderField("accept", "application/json");
 
@@ -561,8 +545,7 @@ TEST_F(WebAssociatedURLLoaderTest,
   Platform::current()->getURLLoaderMockFactory()->registerURL(
       url, m_expectedRedirectResponse, m_frameFilePath);
 
-  m_expectedNewRequest = WebURLRequest();
-  m_expectedNewRequest.setURL(redirectURL);
+  m_expectedNewRequest = WebURLRequest(redirectURL);
   m_expectedNewRequest.setHTTPHeaderField("accept", "application/json");
 
   m_expectedResponse = WebURLResponse();
@@ -671,10 +654,9 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginHeaderWhitelisting) {
 // Test that the loader can allow non-whitelisted response headers for trusted
 // CORS loads.
 TEST_F(WebAssociatedURLLoaderTest, CrossOriginHeaderAllowResponseHeaders) {
-  WebURLRequest request;
   KURL url =
       toKURL("http://www.other.com/CrossOriginHeaderAllowResponseHeaders.html");
-  request.setURL(url);
+  WebURLRequest request(url);
 
   WebString headerNameString(WebString::fromUTF8("non-whitelisted"));
   m_expectedResponse = WebURLResponse();

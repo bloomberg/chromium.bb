@@ -609,9 +609,7 @@ TEST_F(FrameFetchContextTest, PopulateRequestData) {
 
     ResourceRequest request("http://example.test/");
     request.setFrameType(test.frameType);
-    if (strlen(test.requestorOrigin) == 0) {
-      request.setRequestorOrigin(SecurityOrigin::createUnique());
-    } else {
+    if (strlen(test.requestorOrigin) > 0) {
       request.setRequestorOrigin(
           SecurityOrigin::create(KURL(ParsedURLString, test.requestorOrigin)));
     }

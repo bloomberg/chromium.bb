@@ -323,7 +323,6 @@ void NetErrorHelper::LoadPageFromCache(const GURL& page_url) {
 
   blink::WebURLRequest request(page_url);
   request.setCachePolicy(blink::WebCachePolicy::ReturnCacheDataDontLoad);
-  request.setRequestorOrigin(blink::WebSecurityOrigin::createUnique());
   web_frame->loadRequest(request);
 }
 

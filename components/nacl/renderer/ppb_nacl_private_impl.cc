@@ -337,8 +337,7 @@ blink::WebAssociatedURLLoader* CreateAssociatedURLLoader(
 
 blink::WebURLRequest CreateWebURLRequest(const blink::WebDocument& document,
                                          const GURL& gurl) {
-  blink::WebURLRequest request;
-  request.setURL(gurl);
+  blink::WebURLRequest request(gurl);
   request.setFirstPartyForCookies(document.firstPartyForCookies());
   return request;
 }
