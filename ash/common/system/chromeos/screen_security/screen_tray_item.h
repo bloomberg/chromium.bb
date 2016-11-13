@@ -56,6 +56,9 @@ class ScreenStatusView : public views::View, public views::ButtonListener {
   views::ImageView* icon() { return icon_; }
   views::Label* label() { return label_; }
 
+  // Overridden from views::View:
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+
  private:
   // The controller for this view. May be null.
   ScreenTrayItem* screen_tray_item_;

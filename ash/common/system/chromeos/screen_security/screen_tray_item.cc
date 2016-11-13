@@ -8,6 +8,7 @@
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "grit/ash_resources.h"
@@ -115,6 +116,18 @@ void ScreenStatusView::UpdateFromScreenTrayItem() {
   // Hide the notification bubble when the ash tray bubble opens.
   screen_tray_item_->HideNotificationView();
   SetVisible(screen_tray_item_->is_started());
+}
+
+void ScreenStatusView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  if (!MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    views::View::OnNativeThemeChanged(theme);
+    return;
+  }
+  if (theme) {
+    TrayPopupItemStyle style(theme,
+                             TrayPopupItemStyle::FontStyle::DEFAULT_VIEW_LABEL);
+    style.SetupLabel(label_);
+  }
 }
 
 ScreenNotificationDelegate::ScreenNotificationDelegate(
