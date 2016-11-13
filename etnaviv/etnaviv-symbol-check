@@ -13,6 +13,7 @@ _init
 etna_device_new
 etna_device_ref
 etna_device_del
+etna_device_fd
 etna_gpu_new
 etna_gpu_del
 etna_gpu_get_param

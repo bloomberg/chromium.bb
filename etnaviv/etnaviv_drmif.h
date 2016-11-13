@@ -86,6 +86,7 @@ enum etna_param_id {
 struct etna_device *etna_device_new(int fd);
 struct etna_device *etna_device_ref(struct etna_device *dev);
 void etna_device_del(struct etna_device *dev);
+int etna_device_fd(struct etna_device *dev);
 
 /* gpu functions:
  */

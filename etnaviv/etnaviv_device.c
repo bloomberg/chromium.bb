@@ -94,3 +94,8 @@ void etna_device_del(struct etna_device *dev)
 	etna_device_del_impl(dev);
 	pthread_mutex_unlock(&table_lock);
 }
+
+int etna_device_fd(struct etna_device *dev)
+{
+   return dev->fd;
+}
