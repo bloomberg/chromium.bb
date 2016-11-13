@@ -17,12 +17,6 @@ static_library("renderer") {
       "loadable_plugin_placeholder.h",
     ]
   }
-  if (is_android) {
-    sources += [
-      "mobile_youtube_plugin.cc",
-      "mobile_youtube_plugin.h",
-    ]
-  }
 
   deps = [
     "//content/public/child",

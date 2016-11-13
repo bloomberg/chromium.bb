@@ -14,9 +14,6 @@
       <structure type="chrome_scaled_image" name="IDR_SAD_PLUGIN" file="common\sadplugin.png" />
     </structures>
     <includes>
-      <if expr="is_android">
-        <include name="IDR_MOBILE_YOUTUBE_PLUGIN_HTML" file="plugins/mobile_youtube_plugin.html" flattenhtml="true" type="BINDATA" />
-      </if>
       <include name="IDR_BLOCKED_PLUGIN_HTML" file="plugins/blocked_plugin.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_DISABLED_PLUGIN_HTML" file="plugins/disabled_plugin.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_PREFER_HTML_PLUGIN_HTML" file="plugins/prefer_html_plugin.html" flattenhtml="true" type="BINDATA" />

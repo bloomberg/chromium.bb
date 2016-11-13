@@ -75,7 +75,6 @@
 #include "components/network_hints/renderer/prescient_networking_dispatcher.h"
 #include "components/password_manager/content/renderer/credential_manager_client.h"
 #include "components/pdf/renderer/pepper_pdf_host.h"
-#include "components/plugins/renderer/mobile_youtube_plugin.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/startup_metric_utils/common/startup_metric.mojom.h"
 #include "components/subresource_filter/content/renderer/ruleset_dealer.h"
@@ -138,6 +137,8 @@
 #include "chrome/common/plugin_utils.h"
 #include "chrome/renderer/plugins/chrome_plugin_placeholder.h"
 #include "chrome/renderer/plugins/power_saver_info.h"
+#else
+#include "components/plugins/renderer/plugin_placeholder.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
@@ -572,18 +573,6 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
       orig_mime_type, &output));
   *plugin = CreatePlugin(render_frame, frame, params, output);
 #else  // !defined(ENABLE_PLUGINS)
-
-#if defined(OS_ANDROID)
-  if (plugins::MobileYouTubePlugin::IsYouTubeURL(url, orig_mime_type)) {
-    base::StringPiece template_html(
-        ResourceBundle::GetSharedInstance().GetRawDataResource(
-            IDR_MOBILE_YOUTUBE_PLUGIN_HTML));
-    *plugin = (new plugins::MobileYouTubePlugin(render_frame, frame, params,
-                                                template_html))->plugin();
-    return true;
-  }
-#endif  // defined(OS_ANDROID)
-
   PluginUMAReporter::GetInstance()->ReportPluginMissing(orig_mime_type, url);
   *plugin = NonLoadablePluginPlaceholder::CreateNotSupportedPlugin(
                 render_frame, frame, params)->plugin();
