@@ -440,55 +440,6 @@ void FrameView::ScrollbarManager::destroyScrollbar(
   scrollbar = nullptr;
 }
 
-ScrollableArea* FrameView::ScrollbarManager::scrollableArea() const {
-  return m_scrollableArea.get();
-}
-
-void FrameView::ScrollbarManager::updateScrollbarGeometry(IntSize viewSize) {
-  if (!hasHorizontalScrollbar() && !hasVerticalScrollbar())
-    return;
-
-  bool scrollbarOnLeft = m_scrollableArea->shouldPlaceVerticalScrollbarOnLeft();
-
-  if (hasHorizontalScrollbar()) {
-    int thickness = m_hBar->scrollbarThickness();
-    IntRect oldRect(m_hBar->frameRect());
-    IntRect hBarRect(
-        (scrollbarOnLeft && hasVerticalScrollbar()) ? m_vBar->width() : 0,
-        viewSize.height() - thickness,
-        viewSize.width() - (hasVerticalScrollbar() ? m_vBar->width() : 0),
-        thickness);
-    m_hBar->setFrameRect(hBarRect);
-    if (oldRect != m_hBar->frameRect())
-      m_scrollableArea->setScrollbarNeedsPaintInvalidation(HorizontalScrollbar);
-
-    int visibleWidth = m_scrollableArea->visibleWidth();
-    int contentsWidth = m_scrollableArea->contentsSize().width();
-    m_hBar->setEnabled(contentsWidth > visibleWidth &&
-                       !m_scrollableArea->scrollbarsHidden());
-    m_hBar->setProportion(visibleWidth, contentsWidth);
-    m_hBar->offsetDidChange();
-  }
-
-  if (hasVerticalScrollbar()) {
-    int thickness = m_vBar->scrollbarThickness();
-    IntRect oldRect(m_vBar->frameRect());
-    IntRect vBarRect(
-        scrollbarOnLeft ? 0 : (viewSize.width() - thickness), 0, thickness,
-        viewSize.height() - (hasHorizontalScrollbar() ? m_hBar->height() : 0));
-    m_vBar->setFrameRect(vBarRect);
-    if (oldRect != m_vBar->frameRect())
-      m_scrollableArea->setScrollbarNeedsPaintInvalidation(VerticalScrollbar);
-
-    int clientHeight = m_scrollableArea->visibleHeight();
-    int contentsHeight = m_scrollableArea->contentsSize().height();
-    m_vBar->setEnabled(contentsHeight > clientHeight &&
-                       !m_scrollableArea->scrollbarsHidden());
-    m_vBar->setProportion(clientHeight, contentsHeight);
-    m_vBar->offsetDidChange();
-  }
-}
-
 void FrameView::recalculateCustomScrollbarStyle() {
   bool didStyleChange = false;
   if (horizontalScrollbar() && horizontalScrollbar()->isCustomScrollbar()) {
@@ -500,7 +451,7 @@ void FrameView::recalculateCustomScrollbarStyle() {
     didStyleChange = true;
   }
   if (didStyleChange) {
-    m_scrollbarManager.updateScrollbarGeometry(size());
+    updateScrollbarGeometry();
     updateScrollCorner();
     positionScrollbarLayers();
   }
@@ -853,7 +804,7 @@ void FrameView::recalcOverflowAfterStyleChange() {
   }
 
   adjustViewSize();
-  m_scrollbarManager.updateScrollbarGeometry(size());
+  updateScrollbarGeometry();
 
   if (scrollOriginChanged())
     setNeedsLayout();
@@ -2469,7 +2420,7 @@ bool FrameView::isActive() const {
 }
 
 void FrameView::invalidatePaintForTickmarks() {
-  if (Scrollbar* scrollbar = getScrollableArea()->verticalScrollbar())
+  if (Scrollbar* scrollbar = verticalScrollbar())
     scrollbar->setNeedsPaintInvalidation(
         static_cast<ScrollbarPart>(~ThumbPart));
 }
@@ -2636,13 +2587,6 @@ void FrameView::didAttachDocument() {
     RootFrameViewport* rootFrameViewport =
         RootFrameViewport::create(visualViewport, *layoutViewport);
     m_viewportScrollableArea = rootFrameViewport;
-
-    // TODO(crbug.com/661236): Currently for the main frame, the scroller that
-    // the scrollbar manager works with is RootFrameViewport which is needed so
-    // that the visual viewport is taken into account when determining scrollbar
-    // extent and existence. Eventually, each scroller should have its own
-    // scrollbar manager and we shouldn't set the scroller here.
-    m_scrollbarManager.setScroller(rootFrameViewport);
 
     frameHost->globalRootScrollerController().initializeViewportScrollCallback(
         *rootFrameViewport);
@@ -3782,6 +3726,12 @@ void FrameView::clearScrollAnchor() {
   m_scrollAnchor.clear();
 }
 
+bool FrameView::hasOverlayScrollbars() const {
+  return (horizontalScrollbar() &&
+          horizontalScrollbar()->isOverlayScrollbar()) ||
+         (verticalScrollbar() && verticalScrollbar()->isOverlayScrollbar());
+}
+
 void FrameView::computeScrollbarExistence(
     bool& newHasHorizontalScrollbar,
     bool& newHasVerticalScrollbar,
@@ -3814,17 +3764,15 @@ void FrameView::computeScrollbarExistence(
       (hScroll != ScrollbarAuto && vScroll != ScrollbarAuto))
     return;
 
-  ScrollableArea* scroller = m_scrollbarManager.scrollableArea();
   if (hScroll == ScrollbarAuto)
-    newHasHorizontalScrollbar = docSize.width() > scroller->visibleWidth();
+    newHasHorizontalScrollbar = docSize.width() > visibleWidth();
   if (vScroll == ScrollbarAuto)
-    newHasVerticalScrollbar = docSize.height() > scroller->visibleHeight();
+    newHasVerticalScrollbar = docSize.height() > visibleHeight();
 
   if (hasOverlayScrollbars())
     return;
 
-  IntSize fullVisibleSize =
-      scroller->visibleContentRect(IncludeScrollbars).size();
+  IntSize fullVisibleSize = visibleContentRect(IncludeScrollbars).size();
 
   bool attemptToRemoveScrollbars =
       (option == FirstPass && docSize.width() <= fullVisibleSize.width() &&
@@ -3834,6 +3782,46 @@ void FrameView::computeScrollbarExistence(
       newHasHorizontalScrollbar = false;
     if (vScroll == ScrollbarAuto)
       newHasVerticalScrollbar = false;
+  }
+}
+
+void FrameView::updateScrollbarGeometry() {
+  if (horizontalScrollbar()) {
+    int thickness = horizontalScrollbar()->scrollbarThickness();
+    int clientWidth = visibleWidth();
+    IntRect oldRect(horizontalScrollbar()->frameRect());
+    IntRect hBarRect(
+        (shouldPlaceVerticalScrollbarOnLeft() && verticalScrollbar())
+            ? verticalScrollbar()->width()
+            : 0,
+        height() - thickness,
+        width() - (verticalScrollbar() ? verticalScrollbar()->width() : 0),
+        thickness);
+    horizontalScrollbar()->setFrameRect(hBarRect);
+    if (oldRect != horizontalScrollbar()->frameRect())
+      setScrollbarNeedsPaintInvalidation(HorizontalScrollbar);
+
+    horizontalScrollbar()->setEnabled(contentsWidth() > clientWidth);
+    horizontalScrollbar()->setProportion(clientWidth, contentsWidth());
+    horizontalScrollbar()->offsetDidChange();
+  }
+
+  if (verticalScrollbar()) {
+    int thickness = verticalScrollbar()->scrollbarThickness();
+    int clientHeight = visibleHeight();
+    IntRect oldRect(verticalScrollbar()->frameRect());
+    IntRect vBarRect(
+        shouldPlaceVerticalScrollbarOnLeft() ? 0 : (width() - thickness), 0,
+        thickness,
+        height() -
+            (horizontalScrollbar() ? horizontalScrollbar()->height() : 0));
+    verticalScrollbar()->setFrameRect(vBarRect);
+    if (oldRect != verticalScrollbar()->frameRect())
+      setScrollbarNeedsPaintInvalidation(VerticalScrollbar);
+
+    verticalScrollbar()->setEnabled(contentsHeight() > clientHeight);
+    verticalScrollbar()->setProportion(clientHeight, contentsHeight());
+    verticalScrollbar()->offsetDidChange();
   }
 }
 
@@ -3935,7 +3923,7 @@ void FrameView::updateScrollbars() {
     scrollbarExistenceChanged = true;
   }
 
-  m_scrollbarManager.updateScrollbarGeometry(size());
+  updateScrollbarGeometry();
 
   if (scrollbarExistenceChanged) {
     // FIXME: Is frameRectsChanged really necessary here? Have any frame rects

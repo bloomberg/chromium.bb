@@ -1758,16 +1758,6 @@ PaintLayerScrollableArea::compositorAnimationTimeline() const {
   return nullptr;
 }
 
-void PaintLayerScrollableArea::getTickmarks(Vector<IntRect>& tickmarks) const {
-  if (!layer()->isRootLayer())
-    return;
-
-  // TODO(crbug.com/417782): Verify that tickmarks work with root layer
-  // scrolling.
-  if (LocalFrame* frame = box().frame())
-    frame->view()->getTickmarks(tickmarks);
-}
-
 PaintLayerScrollableArea*
 PaintLayerScrollableArea::ScrollbarManager::scrollableArea() {
   return toPaintLayerScrollableArea(m_scrollableArea.get());

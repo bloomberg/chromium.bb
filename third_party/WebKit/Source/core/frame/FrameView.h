@@ -465,8 +465,6 @@ class CORE_EXPORT FrameView final
   }
   LayoutScrollbarPart* scrollCorner() const override { return m_scrollCorner; }
 
-  void updateScrollbars() override;
-
   void positionScrollbarLayers();
 
   // Functions for setting and retrieving the scrolling mode in each axis
@@ -774,7 +772,11 @@ class CORE_EXPORT FrameView final
       bool& newHasVerticalScrollbar,
       const IntSize& docSize,
       ComputeScrollbarExistenceOption = FirstPass) const;
+  void updateScrollbarGeometry();
 
+  // Called to update the scrollbars to accurately reflect the state of the
+  // view.
+  void updateScrollbars();
   void updateScrollbarsIfNeeded();
 
   class InUpdateScrollbarsScope {
@@ -806,11 +808,6 @@ class CORE_EXPORT FrameView final
     // TODO(ymalik): This should be hidden and all calls should go through
     // setHas*Scrollbar functions above.
     Scrollbar* createScrollbar(ScrollbarOrientation) override;
-
-    // Updates the scrollbar geometry given the size of the frame view rect.
-    void updateScrollbarGeometry(IntSize viewSize);
-
-    ScrollableArea* scrollableArea() const;
 
    protected:
     void destroyScrollbar(ScrollbarOrientation) override;
@@ -890,6 +887,10 @@ class CORE_EXPORT FrameView final
 
   static bool computeCompositedSelection(LocalFrame&, CompositedSelection&);
   void updateCompositedSelectionIfNeeded();
+
+  // Returns true if the FrameView's own scrollbars overlay its content when
+  // visible.
+  bool hasOverlayScrollbars() const;
 
   // Returns true if the frame should use custom scrollbars. If true, one of
   // either |customScrollbarElement| or |customScrollbarFrame| will be set to

@@ -13,13 +13,9 @@
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
-#include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/native_theme/native_theme_switches.h"
-
-using blink::WebRuntimeFeatures;
 
 namespace autofill {
 
@@ -51,9 +47,6 @@ class PageClickTrackerTest : public ChromeRenderViewTest {
  protected:
   void SetUp() override {
     ChromeRenderViewTest::SetUp();
-
-    WebRuntimeFeatures::enableOverlayScrollbars(
-        ui::IsOverlayScrollbarEnabled());
 
     // RenderView creates PageClickTracker but it doesn't keep it around.
     // Rather than make it do so for the test, we create a new object.

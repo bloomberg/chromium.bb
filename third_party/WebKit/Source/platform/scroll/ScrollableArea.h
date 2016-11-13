@@ -109,11 +109,10 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   void mouseEnteredContentArea() const;
   void mouseExitedContentArea() const;
   void mouseMovedInContentArea() const;
-  virtual void mouseEnteredScrollbar(Scrollbar&);
-  virtual void mouseExitedScrollbar(Scrollbar&);
+  void mouseEnteredScrollbar(Scrollbar&);
+  void mouseExitedScrollbar(Scrollbar&);
   void mouseCapturedScrollbar();
   void mouseReleasedScrollbar();
-
   void contentAreaDidShow() const;
   void contentAreaDidHide() const;
 
@@ -124,10 +123,10 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   virtual void contentsResized();
 
-  virtual bool hasOverlayScrollbars() const;
+  bool hasOverlayScrollbars() const;
   void setScrollbarOverlayColorTheme(ScrollbarOverlayColorTheme);
   void recalculateScrollbarOverlayColorTheme(Color);
-  virtual ScrollbarOverlayColorTheme getScrollbarOverlayColorTheme() const {
+  ScrollbarOverlayColorTheme getScrollbarOverlayColorTheme() const {
     return static_cast<ScrollbarOverlayColorTheme>(
         m_scrollbarOverlayColorTheme);
   }
@@ -168,10 +167,10 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   virtual bool isActive() const = 0;
   virtual int scrollSize(ScrollbarOrientation) const = 0;
-  virtual void setScrollbarNeedsPaintInvalidation(ScrollbarOrientation);
+  void setScrollbarNeedsPaintInvalidation(ScrollbarOrientation);
   virtual bool isScrollCornerVisible() const = 0;
   virtual IntRect scrollCornerRect() const = 0;
-  virtual void setScrollCornerNeedsPaintInvalidation();
+  void setScrollCornerNeedsPaintInvalidation();
   virtual void getTickmarks(Vector<IntRect>&) const {}
 
   // Convert points and rects between the scrollbar and its containing Widget.
@@ -201,12 +200,6 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual Scrollbar* horizontalScrollbar() const { return nullptr; }
   virtual Scrollbar* verticalScrollbar() const { return nullptr; }
 
-  // TODO(crbug.com/661236): This method should be moved to ScrollbarManager
-  // which will update the scrollbars directly for all subclasses.
-  // Called to update the scrollbars to accurately reflect the state of the
-  // view.
-  virtual void updateScrollbars(){};
-
   // scrollPosition is the location of the top/left of the scroll viewport in
   // the coordinate system defined by the top/left of the overflow rect.
   // scrollOffset is the offset of the scroll viewport from its position when
@@ -228,9 +221,6 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual ScrollOffset maximumScrollOffset() const {
     return ScrollOffset(maximumScrollOffsetInt());
   }
-  virtual ScrollOffset scrollAnimatorDesiredTargetOffset() const {
-    return scrollAnimator().desiredTargetOffset();
-  }
 
   virtual IntRect visibleContentRect(
       IncludeScrollbarsInRect = ExcludeScrollbars) const;
@@ -241,11 +231,6 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   virtual bool shouldSuspendScrollAnimations() const { return true; }
   virtual void scrollbarStyleChanged() {}
-  // Called when scrollbar hides/shows for overlay scrollbars. This callback
-  // shouldn't do any significant work as it can be called unexpectadly often
-  // on Mac. This happens because painting code has to set alpha to 1, paint,
-  // then reset to alpha, causing spurrious "visibilityChanged" calls.
-  virtual void scrollbarVisibilityChanged() {}
   virtual bool scrollbarsCanBeActive() const = 0;
 
   // Returns the bounding box of this scrollable area, in the coordinate system
@@ -406,6 +391,12 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
     m_scrollCornerNeedsPaintInvalidation = false;
   }
   void showOverlayScrollbars();
+
+  // Called when scrollbar hides/shows for overlay scrollbars. This callback
+  // shouldn't do any significant work as it can be called unexpectadly often
+  // on Mac. This happens because painting code has to set alpha to 1, paint,
+  // then reset to alpha, causing spurrious "visibilityChanged" calls.
+  virtual void scrollbarVisibilityChanged() {}
 
  private:
   void programmaticScrollHelper(const ScrollOffset&, ScrollBehavior);

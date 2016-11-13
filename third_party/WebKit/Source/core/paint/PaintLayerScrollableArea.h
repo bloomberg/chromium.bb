@@ -293,7 +293,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   int pageStep(ScrollbarOrientation) const override;
   ScrollBehavior scrollBehaviorStyle() const override;
   CompositorAnimationTimeline* compositorAnimationTimeline() const override;
-  void getTickmarks(Vector<IntRect>& rects) const override;
 
   void visibleSizeChanged();
 

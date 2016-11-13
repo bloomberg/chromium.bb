@@ -95,8 +95,6 @@ void RootFrameViewport::didUpdateVisualViewport() {
     if (ScrollAnchor* anchor = layoutViewport().scrollAnchor())
       anchor->clear();
   }
-
-  layoutViewport().updateScrollbars();
 }
 
 LayoutBox* RootFrameViewport::layoutBox() const {
@@ -202,89 +200,6 @@ void RootFrameViewport::setScrollOffset(const ScrollOffset& offset,
 
 ScrollBehavior RootFrameViewport::scrollBehaviorStyle() const {
   return layoutViewport().scrollBehaviorStyle();
-}
-
-Scrollbar* RootFrameViewport::horizontalScrollbar() const {
-  return layoutViewport().horizontalScrollbar();
-}
-
-Scrollbar* RootFrameViewport::verticalScrollbar() const {
-  return layoutViewport().verticalScrollbar();
-}
-
-bool RootFrameViewport::hasOverlayScrollbars() const {
-  return layoutViewport().hasOverlayScrollbars();
-}
-
-void RootFrameViewport::setScrollbarNeedsPaintInvalidation(
-    ScrollbarOrientation orientation) {
-  return layoutViewport().setScrollbarNeedsPaintInvalidation(orientation);
-}
-
-LayoutRect RootFrameViewport::visualRectForScrollbarParts() const {
-  return layoutViewport().visualRectForScrollbarParts();
-}
-
-ScrollbarOverlayColorTheme RootFrameViewport::getScrollbarOverlayColorTheme()
-    const {
-  return layoutViewport().getScrollbarOverlayColorTheme();
-}
-
-void RootFrameViewport::getTickmarks(Vector<IntRect>& tickmarks) const {
-  layoutViewport().getTickmarks(tickmarks);
-}
-
-void RootFrameViewport::mouseEnteredScrollbar(Scrollbar& scrollbar) {
-  layoutViewport().mouseEnteredScrollbar(scrollbar);
-}
-
-void RootFrameViewport::mouseExitedScrollbar(Scrollbar& scrollbar) {
-  layoutViewport().mouseExitedScrollbar(scrollbar);
-}
-
-void RootFrameViewport::scrollbarVisibilityChanged() {
-  layoutViewport().scrollbarVisibilityChanged();
-}
-
-bool RootFrameViewport::scrollbarsHidden() const {
-  return layoutViewport().scrollbarsHidden();
-}
-
-IntRect RootFrameViewport::convertFromScrollbarToContainingWidget(
-    const Scrollbar& scrollbar,
-    const IntRect& localRect) const {
-  return layoutViewport().convertFromScrollbarToContainingWidget(scrollbar,
-                                                                 localRect);
-}
-
-IntRect RootFrameViewport::convertFromContainingWidgetToScrollbar(
-    const Scrollbar& scrollbar,
-    const IntRect& parentRect) const {
-  return layoutViewport().convertFromContainingWidgetToScrollbar(scrollbar,
-                                                                 parentRect);
-}
-
-IntPoint RootFrameViewport::convertFromScrollbarToContainingWidget(
-    const Scrollbar& scrollbar,
-    const IntPoint& localPoint) const {
-  return layoutViewport().convertFromScrollbarToContainingWidget(scrollbar,
-                                                                 localPoint);
-}
-
-IntPoint RootFrameViewport::convertFromContainingWidgetToScrollbar(
-    const Scrollbar& scrollbar,
-    const IntPoint& parentPoint) const {
-  return layoutViewport().convertFromContainingWidgetToScrollbar(scrollbar,
-                                                                 parentPoint);
-}
-
-ScrollOffset RootFrameViewport::scrollAnimatorDesiredTargetOffset() const {
-  return layoutViewport().scrollAnimatorDesiredTargetOffset() +
-         visualViewport().scrollAnimatorDesiredTargetOffset();
-}
-
-void RootFrameViewport::setScrollCornerNeedsPaintInvalidation() {
-  return layoutViewport().setScrollCornerNeedsPaintInvalidation();
 }
 
 LayoutRect RootFrameViewport::scrollIntoView(const LayoutRect& rectInContent,

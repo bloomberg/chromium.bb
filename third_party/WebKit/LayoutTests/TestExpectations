@@ -99,8 +99,6 @@ crbug.com/636271 [ Win ] paint/invalidation/resize-iframe-text.html [ Pass Failu
 
 crbug.com/639147 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
 
-crbug.com/664206 [ Linux Win ] svg/custom/masking-clipping-hidpi.svg [ Failure ]
-
 crbug.com/644433 virtual/gpu/fast/canvas/OffscreenCanvas-2d-pattern-in-worker.html [ Failure ]
 crbug.com/645389 [ Win ] virtual/gpu/fast/canvas/canvas-hit-regions-fallback-element-test.html [ Timeout ]
 crbug.com/645389 [ Win ] virtual/gpu/fast/canvas/canvas-hit-regions-event-test.html [ Timeout ]
@@ -894,6 +892,8 @@ crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-s
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-visibility-hidden-child.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-zero-size-and-border.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame.html [ Failure ]
+crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-styled.html [ Failure ]
+crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-styled-after-onload.html [ Failure ]
 
 crbug.com/651343 fast/text/international/inline-plaintext-relayout-with-leading-neutrals.html [ Pass Failure ]
 
