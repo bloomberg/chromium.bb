@@ -1085,9 +1085,6 @@ crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reft
 # We paint in an incorrect order when layers are present
 crbug.com/370604 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-paint-ordering-002.xhtml [ Failure ]
 
-crbug.com/553838 [ Mac ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001a.xhtml [ Failure ]
-crbug.com/553838 [ Mac ] imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001b.xhtml [ Failure ]
-
 crbug.com/658311 virtual/threaded/fast/compositorworker/basic-plumbing-main-to-worker.html [ Failure Pass ]
 
 crbug.com/582836 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-15.html [ Failure ]
@@ -1417,6 +1414,11 @@ crbug.com/660580 [ Precise ] virtual/scalefactor200withzoom/fast/hidpi/static/dr
 crbug.com/660580 [ Precise ] virtual/threaded/printing/fixed-positioned-headers-and-footers.html [ Skip ]
 
 # Tests added from W3C auto import bot
+crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001a.xhtml [ Failure ]
+crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001b.xhtml [ Failure ]
+crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-006.xhtml [ Failure ]
+crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-007.xhtml [ Failure ]
+crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/writing-modes-3/logical-physical-mapping-001.html [ Failure ]
 crbug.com/626703 imported/wpt/imagebitmap-renderingcontext/bitmaprenderer-as-imagesource.html [ Crash Timeout ]
 crbug.com/626703 imported/wpt/dom/events/EventTarget-dispatchEvent.html [ Failure ]
 crbug.com/626703 imported/wpt/html/browsers/history/the-history-interface/non-automated/traverse_the_history_unload_prompt_1-manual.html [ Failure ]
