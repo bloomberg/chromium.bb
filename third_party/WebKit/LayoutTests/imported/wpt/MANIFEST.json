@@ -125,34 +125,22 @@
             "url": "/fullscreen/model/remove-single-manual.html"
           }
         ],
-        "html/browsers/history/the-location-interface/non-automated/manual_click_assign_during_load-manual.html": [
+        "html/browsers/history/the-history-interface/non-automated/traverse_the_history_unload_prompt_1-manual.html": [
           {
-            "path": "html/browsers/history/the-location-interface/non-automated/manual_click_assign_during_load-manual.html",
-            "url": "/html/browsers/history/the-location-interface/non-automated/manual_click_assign_during_load-manual.html"
+            "path": "html/browsers/history/the-history-interface/non-automated/traverse_the_history_unload_prompt_1-manual.html",
+            "url": "/html/browsers/history/the-history-interface/non-automated/traverse_the_history_unload_prompt_1-manual.html"
           }
         ],
-        "html/browsers/history/the-location-interface/non-automated/manual_click_location_replace_during_load-manual.html": [
+        "html/browsers/history/the-history-interface/non-automated/traverse_the_history_unload_prompt_2-manual.html": [
           {
-            "path": "html/browsers/history/the-location-interface/non-automated/manual_click_location_replace_during_load-manual.html",
-            "url": "/html/browsers/history/the-location-interface/non-automated/manual_click_location_replace_during_load-manual.html"
+            "path": "html/browsers/history/the-history-interface/non-automated/traverse_the_history_unload_prompt_2-manual.html",
+            "url": "/html/browsers/history/the-history-interface/non-automated/traverse_the_history_unload_prompt_2-manual.html"
           }
         ],
-        "html/browsers/history/the-location-interface/non-automated/manual_click_replace_during_load-manual.html": [
+        "html/browsers/history/the-history-interface/non-automated/traverse_the_session_history_unload_prompt_1-manual.html": [
           {
-            "path": "html/browsers/history/the-location-interface/non-automated/manual_click_replace_during_load-manual.html",
-            "url": "/html/browsers/history/the-location-interface/non-automated/manual_click_replace_during_load-manual.html"
-          }
-        ],
-        "html/browsers/history/the-location-interface/non-automated/manual_form_submit_assign_during_load-manual.html": [
-          {
-            "path": "html/browsers/history/the-location-interface/non-automated/manual_form_submit_assign_during_load-manual.html",
-            "url": "/html/browsers/history/the-location-interface/non-automated/manual_form_submit_assign_during_load-manual.html"
-          }
-        ],
-        "html/browsers/history/the-location-interface/non-automated/reload_in_resize-manual.html": [
-          {
-            "path": "html/browsers/history/the-location-interface/non-automated/reload_in_resize-manual.html",
-            "url": "/html/browsers/history/the-location-interface/non-automated/reload_in_resize-manual.html"
+            "path": "html/browsers/history/the-history-interface/non-automated/traverse_the_session_history_unload_prompt_1-manual.html",
+            "url": "/html/browsers/history/the-history-interface/non-automated/traverse_the_session_history_unload_prompt_1-manual.html"
           }
         ],
         "html/browsers/the-window-object/the-windowproxy-object/test-window-proxy-locationbar-manual.html": [
@@ -2549,6 +2537,126 @@
               ]
             ],
             "url": "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-002.html"
+          }
+        ],
+        "html/semantics/grouping-content/the-li-element/grouping-li-reftest-display-list-item.html": [
+          {
+            "path": "html/semantics/grouping-content/the-li-element/grouping-li-reftest-display-list-item.html",
+            "references": [
+              [
+                "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-display-list-item-ref.html",
+                "=="
+              ]
+            ],
+            "url": "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-display-list-item.html"
+          }
+        ],
+        "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-menu.html": [
+          {
+            "path": "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-menu.html",
+            "references": [
+              [
+                "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-menu-ref.html",
+                "=="
+              ]
+            ],
+            "url": "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-menu.html"
+          }
+        ],
+        "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-mixed.html": [
+          {
+            "path": "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-mixed.html",
+            "references": [
+              [
+                "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-mixed-ref.html",
+                "=="
+              ]
+            ],
+            "url": "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-mixed.html"
+          }
+        ],
+        "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-not-dir.html": [
+          {
+            "path": "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-not-dir.html",
+            "references": [
+              [
+                "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-not-dir-ref.html",
+                "=="
+              ]
+            ],
+            "url": "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-not-dir.html"
+          }
+        ],
+        "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-ol.html": [
+          {
+            "path": "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-ol.html",
+            "references": [
+              [
+                "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-ol-ref.html",
+                "=="
+              ]
+            ],
+            "url": "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-ol.html"
+          }
+        ],
+        "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-parent.html": [
+          {
+            "path": "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-parent.html",
+            "references": [
+              [
+                "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-parent-ref.html",
+                "=="
+              ]
+            ],
+            "url": "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-parent.html"
+          }
+        ],
+        "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-skip-no-boxes.html": [
+          {
+            "path": "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-skip-no-boxes.html",
+            "references": [
+              [
+                "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-skip-no-boxes-ref.html",
+                "=="
+              ]
+            ],
+            "url": "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-skip-no-boxes.html"
+          }
+        ],
+        "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-ul.html": [
+          {
+            "path": "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-ul.html",
+            "references": [
+              [
+                "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-ul-ref.html",
+                "=="
+              ]
+            ],
+            "url": "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-ul.html"
+          }
+        ],
+        "html/semantics/grouping-content/the-li-element/grouping-li-reftest-no-list-owner.html": [
+          {
+            "path": "html/semantics/grouping-content/the-li-element/grouping-li-reftest-no-list-owner.html",
+            "references": [
+              [
+                "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-no-list-owner-ref.html",
+                "=="
+              ]
+            ],
+            "url": "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-no-list-owner.html"
+          }
+        ],
+        "html/semantics/grouping-content/the-li-element/grouping-li-reftest-not-being-rendered.html": [
+          {
+            "path": "html/semantics/grouping-content/the-li-element/grouping-li-reftest-not-being-rendered.html",
+            "references": [
+              [
+                "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-not-being-rendered-ref.html",
+                "=="
+              ]
+            ],
+            "url": "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-not-being-rendered.html"
           }
         ],
         "html/semantics/grouping-content/the-ol-element/grouping-ol-rev-reftest-001.html": [
@@ -5362,11 +5470,11 @@
         "console/console-is-a-namespace.any.js": [
           {
             "path": "console/console-is-a-namespace.any.js",
-            "url": "/console/console-is-a-namespace.any.worker.html"
+            "url": "/console/console-is-a-namespace.any.html"
           },
           {
             "path": "console/console-is-a-namespace.any.js",
-            "url": "/console/console-is-a-namespace.any.html"
+            "url": "/console/console-is-a-namespace.any.worker.html"
           }
         ],
         "custom-elements/CustomElementRegistry.html": [
@@ -8300,6 +8408,12 @@
           {
             "path": "html/browsers/history/the-history-interface/history_go_plus.html",
             "url": "/html/browsers/history/the-history-interface/history_go_plus.html"
+          }
+        ],
+        "html/browsers/history/the-history-interface/history_go_to_uri.html": [
+          {
+            "path": "html/browsers/history/the-history-interface/history_go_to_uri.html",
+            "url": "/html/browsers/history/the-history-interface/history_go_to_uri.html"
           }
         ],
         "html/browsers/history/the-history-interface/history_go_undefined.html": [
@@ -13458,10 +13572,10 @@
             "url": "/html/webappapis/scripting/events/invalid-uncompiled-raw-handler-compiled-once.html"
           }
         ],
-        "html/webappapis/scripting/events/messageevent-constructor.html": [
+        "html/webappapis/scripting/events/messageevent-constructor.https.html": [
           {
-            "path": "html/webappapis/scripting/events/messageevent-constructor.html",
-            "url": "/html/webappapis/scripting/events/messageevent-constructor.html"
+            "path": "html/webappapis/scripting/events/messageevent-constructor.https.html",
+            "url": "/html/webappapis/scripting/events/messageevent-constructor.https.html"
           }
         ],
         "html/webappapis/scripting/events/onerroreventhandler.html": [
@@ -13774,6 +13888,42 @@
           {
             "path": "html/webappapis/timers/evil-spec-example.html",
             "url": "/html/webappapis/timers/evil-spec-example.html"
+          }
+        ],
+        "imagebitmap-renderingcontext/bitmaprenderer-as-imagesource.html": [
+          {
+            "path": "imagebitmap-renderingcontext/bitmaprenderer-as-imagesource.html",
+            "url": "/imagebitmap-renderingcontext/bitmaprenderer-as-imagesource.html"
+          }
+        ],
+        "imagebitmap-renderingcontext/context-creation-with-alpha.html": [
+          {
+            "path": "imagebitmap-renderingcontext/context-creation-with-alpha.html",
+            "url": "/imagebitmap-renderingcontext/context-creation-with-alpha.html"
+          }
+        ],
+        "imagebitmap-renderingcontext/context-creation.html": [
+          {
+            "path": "imagebitmap-renderingcontext/context-creation.html",
+            "url": "/imagebitmap-renderingcontext/context-creation.html"
+          }
+        ],
+        "imagebitmap-renderingcontext/context-preserves-canvas.html": [
+          {
+            "path": "imagebitmap-renderingcontext/context-preserves-canvas.html",
+            "url": "/imagebitmap-renderingcontext/context-preserves-canvas.html"
+          }
+        ],
+        "imagebitmap-renderingcontext/tranferFromImageBitmap-null.html": [
+          {
+            "path": "imagebitmap-renderingcontext/tranferFromImageBitmap-null.html",
+            "url": "/imagebitmap-renderingcontext/tranferFromImageBitmap-null.html"
+          }
+        ],
+        "imagebitmap-renderingcontext/transferFromImageBitmap-detached.html": [
+          {
+            "path": "imagebitmap-renderingcontext/transferFromImageBitmap-detached.html",
+            "url": "/imagebitmap-renderingcontext/transferFromImageBitmap-detached.html"
           }
         ],
         "mediacapture-record/BlobEvent-constructor.html": [
@@ -14474,6 +14624,12 @@
             "url": "/service-workers/service-worker/service-worker-csp-script.https.html"
           }
         ],
+        "service-workers/service-worker/serviceworker-message-event-historical.https.html": [
+          {
+            "path": "service-workers/service-worker/serviceworker-message-event-historical.https.html",
+            "url": "/service-workers/service-worker/serviceworker-message-event-historical.https.html"
+          }
+        ],
         "service-workers/service-worker/serviceworkerobject-scripturl.https.html": [
           {
             "path": "service-workers/service-worker/serviceworkerobject-scripturl.https.html",
@@ -15084,6 +15240,84 @@
           {
             "path": "shadow-dom/untriaged/user-interaction/ranges-and-selections/test-002.html",
             "url": "/shadow-dom/untriaged/user-interaction/ranges-and-selections/test-002.html"
+          }
+        ],
+        "streams/byte-length-queuing-strategy.https.html": [
+          {
+            "path": "streams/byte-length-queuing-strategy.https.html",
+            "url": "/streams/byte-length-queuing-strategy.https.html"
+          }
+        ],
+        "streams/count-queuing-strategy.https.html": [
+          {
+            "path": "streams/count-queuing-strategy.https.html",
+            "url": "/streams/count-queuing-strategy.https.html"
+          }
+        ],
+        "streams/readable-streams/bad-strategies.https.html": [
+          {
+            "path": "streams/readable-streams/bad-strategies.https.html",
+            "url": "/streams/readable-streams/bad-strategies.https.html"
+          }
+        ],
+        "streams/readable-streams/bad-underlying-sources.https.html": [
+          {
+            "path": "streams/readable-streams/bad-underlying-sources.https.html",
+            "url": "/streams/readable-streams/bad-underlying-sources.https.html"
+          }
+        ],
+        "streams/readable-streams/brand-checks.https.html": [
+          {
+            "path": "streams/readable-streams/brand-checks.https.html",
+            "url": "/streams/readable-streams/brand-checks.https.html"
+          }
+        ],
+        "streams/readable-streams/cancel.https.html": [
+          {
+            "path": "streams/readable-streams/cancel.https.html",
+            "url": "/streams/readable-streams/cancel.https.html"
+          }
+        ],
+        "streams/readable-streams/count-queuing-strategy-integration.https.html": [
+          {
+            "path": "streams/readable-streams/count-queuing-strategy-integration.https.html",
+            "url": "/streams/readable-streams/count-queuing-strategy-integration.https.html"
+          }
+        ],
+        "streams/readable-streams/garbage-collection.https.html": [
+          {
+            "path": "streams/readable-streams/garbage-collection.https.html",
+            "url": "/streams/readable-streams/garbage-collection.https.html"
+          }
+        ],
+        "streams/readable-streams/general.https.html": [
+          {
+            "path": "streams/readable-streams/general.https.html",
+            "url": "/streams/readable-streams/general.https.html"
+          }
+        ],
+        "streams/readable-streams/pipe-through.https.html": [
+          {
+            "path": "streams/readable-streams/pipe-through.https.html",
+            "url": "/streams/readable-streams/pipe-through.https.html"
+          }
+        ],
+        "streams/readable-streams/readable-stream-reader.https.html": [
+          {
+            "path": "streams/readable-streams/readable-stream-reader.https.html",
+            "url": "/streams/readable-streams/readable-stream-reader.https.html"
+          }
+        ],
+        "streams/readable-streams/tee.https.html": [
+          {
+            "path": "streams/readable-streams/tee.https.html",
+            "url": "/streams/readable-streams/tee.https.html"
+          }
+        ],
+        "streams/readable-streams/templated.https.html": [
+          {
+            "path": "streams/readable-streams/templated.https.html",
+            "url": "/streams/readable-streams/templated.https.html"
           }
         ],
         "svg/historical.html": [
@@ -18867,6 +19101,126 @@
             ]
           ],
           "url": "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-002.html"
+        }
+      ],
+      "html/semantics/grouping-content/the-li-element/grouping-li-reftest-display-list-item.html": [
+        {
+          "path": "html/semantics/grouping-content/the-li-element/grouping-li-reftest-display-list-item.html",
+          "references": [
+            [
+              "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-display-list-item-ref.html",
+              "=="
+            ]
+          ],
+          "url": "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-display-list-item.html"
+        }
+      ],
+      "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-menu.html": [
+        {
+          "path": "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-menu.html",
+          "references": [
+            [
+              "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-menu-ref.html",
+              "=="
+            ]
+          ],
+          "url": "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-menu.html"
+        }
+      ],
+      "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-mixed.html": [
+        {
+          "path": "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-mixed.html",
+          "references": [
+            [
+              "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-mixed-ref.html",
+              "=="
+            ]
+          ],
+          "url": "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-mixed.html"
+        }
+      ],
+      "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-not-dir.html": [
+        {
+          "path": "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-not-dir.html",
+          "references": [
+            [
+              "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-not-dir-ref.html",
+              "=="
+            ]
+          ],
+          "url": "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-not-dir.html"
+        }
+      ],
+      "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-ol.html": [
+        {
+          "path": "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-ol.html",
+          "references": [
+            [
+              "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-ol-ref.html",
+              "=="
+            ]
+          ],
+          "url": "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-ol.html"
+        }
+      ],
+      "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-parent.html": [
+        {
+          "path": "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-parent.html",
+          "references": [
+            [
+              "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-parent-ref.html",
+              "=="
+            ]
+          ],
+          "url": "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-parent.html"
+        }
+      ],
+      "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-skip-no-boxes.html": [
+        {
+          "path": "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-skip-no-boxes.html",
+          "references": [
+            [
+              "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-skip-no-boxes-ref.html",
+              "=="
+            ]
+          ],
+          "url": "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-skip-no-boxes.html"
+        }
+      ],
+      "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-ul.html": [
+        {
+          "path": "html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-ul.html",
+          "references": [
+            [
+              "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-ul-ref.html",
+              "=="
+            ]
+          ],
+          "url": "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-ul.html"
+        }
+      ],
+      "html/semantics/grouping-content/the-li-element/grouping-li-reftest-no-list-owner.html": [
+        {
+          "path": "html/semantics/grouping-content/the-li-element/grouping-li-reftest-no-list-owner.html",
+          "references": [
+            [
+              "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-no-list-owner-ref.html",
+              "=="
+            ]
+          ],
+          "url": "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-no-list-owner.html"
+        }
+      ],
+      "html/semantics/grouping-content/the-li-element/grouping-li-reftest-not-being-rendered.html": [
+        {
+          "path": "html/semantics/grouping-content/the-li-element/grouping-li-reftest-not-being-rendered.html",
+          "references": [
+            [
+              "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-not-being-rendered-ref.html",
+              "=="
+            ]
+          ],
+          "url": "/html/semantics/grouping-content/the-li-element/grouping-li-reftest-not-being-rendered.html"
         }
       ],
       "html/semantics/grouping-content/the-ol-element/grouping-ol-rev-reftest-001.html": [

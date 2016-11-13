@@ -31,6 +31,7 @@ FAIL SVGGraphicsElement.prototype.requiredFeatures must be removed assert_false:
 FAIL SVGSVGElement.prototype.currentView must be removed assert_false: expected false got true
 FAIL SVGSVGElement.prototype.useCurrentView must be removed assert_false: expected false got true
 PASS SVGSVGElement.prototype.viewport must be removed 
+FAIL SVGViewElement.prototype.viewTarget must be removed assert_false: expected false got true
 PASS SVGPathElement.prototype.getPointAtLength must be moved to SVGGeometryElement.prototype 
 PASS SVGPathElement.prototype.getTotalLength must be moved to SVGGeometryElement.prototype 
 FAIL SVGPathElement.prototype.pathLength must be moved to SVGGeometryElement.prototype assert_false: expected false got true

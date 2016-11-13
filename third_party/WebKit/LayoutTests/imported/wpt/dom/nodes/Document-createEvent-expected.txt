@@ -163,18 +163,6 @@ FAIL svgevents should be an alias for Event. Failed to execute 'createEvent' on 
 FAIL createEvent('svgevents') should be initialized correctly. Cannot read property 'type' of undefined
 FAIL SVGEVENTS should be an alias for Event. Failed to execute 'createEvent' on 'Document': The provided event type ('SVGEVENTS') is invalid.
 FAIL createEvent('SVGEVENTS') should be initialized correctly. Cannot read property 'type' of undefined
-FAIL SVGZoomEvent should be an alias for SVGZoomEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('SVGZoomEvent') is invalid.
-FAIL createEvent('SVGZoomEvent') should be initialized correctly. Cannot read property 'type' of undefined
-FAIL svgzoomevent should be an alias for SVGZoomEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('svgzoomevent') is invalid.
-FAIL createEvent('svgzoomevent') should be initialized correctly. Cannot read property 'type' of undefined
-FAIL SVGZOOMEVENT should be an alias for SVGZoomEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('SVGZOOMEVENT') is invalid.
-FAIL createEvent('SVGZOOMEVENT') should be initialized correctly. Cannot read property 'type' of undefined
-FAIL SVGZoomEvents should be an alias for SVGZoomEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('SVGZoomEvents') is invalid.
-FAIL createEvent('SVGZoomEvents') should be initialized correctly. Cannot read property 'type' of undefined
-FAIL svgzoomevents should be an alias for SVGZoomEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('svgzoomevents') is invalid.
-FAIL createEvent('svgzoomevents') should be initialized correctly. Cannot read property 'type' of undefined
-FAIL SVGZOOMEVENTS should be an alias for SVGZoomEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('SVGZOOMEVENTS') is invalid.
-FAIL createEvent('SVGZOOMEVENTS') should be initialized correctly. Cannot read property 'type' of undefined
 FAIL TextEvent should be an alias for CompositionEvent. assert_equals: expected object "[object CompositionEvent]" but got object "[object TextEvent]"
 PASS createEvent('TextEvent') should be initialized correctly. 
 FAIL textevent should be an alias for CompositionEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('textevent') is invalid.
@@ -325,6 +313,8 @@ PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "R
 PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "ResourceProgressEvent" 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "ResourceProgressEvents" 
 PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "SVGEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "SVGZoomEvent" 
+PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "SVGZoomEvents" 
 PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "ScrollAreaEvent" 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized non-legacy event interface "ScrollAreaEvents" 
 PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "SecurityPolicyViolationEvent" 

@@ -1,0 +1,7 @@
+CONSOLE ERROR: Uncaught (in promise) Error: assert_array_equals: property 1, expected 127 but got 255
+This is a testharness.js-based test.
+FAIL Test that an ImageBitmapRenderingContext with alpha disabled makes the canvas opaque assert_not_equals: got disallowed value undefined
+FAIL Test that an ImageBitmapRenderingContext with alpha enabled preserves the alpha assert_not_equals: got disallowed value undefined
+FAIL Test that the 'alpha' context creation attribute is true by default assert_not_equals: got disallowed value undefined
+Harness: the test ran to completion.
+
