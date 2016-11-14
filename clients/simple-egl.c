@@ -457,7 +457,8 @@ destroy_surface(struct window *window)
 	eglMakeCurrent(window->display->egl.dpy, EGL_NO_SURFACE, EGL_NO_SURFACE,
 		       EGL_NO_CONTEXT);
 
-	eglDestroySurface(window->display->egl.dpy, window->egl_surface);
+	weston_platform_destroy_egl_surface(window->display->egl.dpy,
+					    window->egl_surface);
 	wl_egl_window_destroy(window->native);
 
 	if (window->xdg_toplevel)
