@@ -81,6 +81,7 @@
 #include <cmath>
 #include <limits>
 
+#include "base/debug/alias.h"
 #include "base/logging.h"
 #include "build/build_config.h"
 
@@ -239,6 +240,10 @@ void SincResampler::Resample(int frames, float* destination) {
     buffer_primed_ = true;
   }
 
+  // TODO(dalecurtis): Temporary debugging for http://crbug.com/663814
+  const double starting_idx = virtual_source_idx_;
+  CHECK(!std::isnan(virtual_source_idx_));
+
   // Step (2) -- Resample!  const what we can outside of the loop for speed.  It
   // actually has an impact on ARM performance.  See inner loop comment below.
   const double current_io_ratio = io_sample_rate_ratio_;
@@ -247,6 +252,8 @@ void SincResampler::Resample(int frames, float* destination) {
     // Note: The loop construct here can severely impact performance on ARM
     // or when built with clang.  See https://codereview.chromium.org/18566009/
     int source_idx = static_cast<int>(virtual_source_idx_);
+    // TODO(dalecurtis): Temporary debugging for http://crbug.com/663814
+    CHECK_GE(source_idx, 0);
     while (source_idx < block_size_) {
       // |virtual_source_idx_| lies in between two kernel offsets so figure out
       // what they are.
@@ -279,6 +286,10 @@ void SincResampler::Resample(int frames, float* destination) {
       virtual_source_idx_ += current_io_ratio;
       source_idx = static_cast<int>(virtual_source_idx_);
 
+      // TODO(dalecurtis): Temporary debugging for http://crbug.com/663814
+      base::debug::Alias(&starting_idx);
+      CHECK(!std::isnan(virtual_source_idx_));
+      CHECK_GE(source_idx, 0);
       if (!--remaining_frames)
         return;
     }
@@ -286,6 +297,10 @@ void SincResampler::Resample(int frames, float* destination) {
     // Wrap back around to the start.
     DCHECK_GE(virtual_source_idx_, block_size_);
     virtual_source_idx_ -= block_size_;
+
+    // TODO(dalecurtis): Temporary debugging for http://crbug.com/663814
+    base::debug::Alias(&starting_idx);
+    CHECK(!std::isnan(virtual_source_idx_));
 
     // Step (3) -- Copy r3_, r4_ to r1_, r2_.
     // This wraps the last input frames back to the start of the buffer.
