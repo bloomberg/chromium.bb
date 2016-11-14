@@ -11,9 +11,9 @@ description("Updating value of replaced attribute node");
 var element = document.getElementById("test");
 var attr = document.createAttribute("STYLE");
 // This aligns with Trident rather than Gecko.
-shouldBeEqualToString("replaced = element.setAttributeNode(attr); replaced.name", "STYLE");
+shouldBeEqualToString("replaced = element.setAttributeNode(attr); replaced.name", "style");
 shouldBeEqualToString("replaced.value", "background-color: red");
-shouldBeEqualToString("attr.name", "STYLE");
+shouldBeEqualToString("attr.name", "style");
 shouldBeEqualToString("attr.value", "");
 shouldBeEqualToString("element.getAttribute('style')", "");
 shouldBeEqualToString("element.getAttribute('StyLE')", "");

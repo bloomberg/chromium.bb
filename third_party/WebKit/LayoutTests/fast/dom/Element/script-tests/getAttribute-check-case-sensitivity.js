@@ -61,7 +61,7 @@ function testAttribNodeNamePreservesCase()
     return result.join(",");
 }
 
-shouldBe("testAttribNodeNamePreservesCase()", '"A,A"');
+shouldBe("testAttribNodeNamePreservesCase()", '"a,a"');
 
     
 function testAttribNodeNamePreservesCaseGetNode()
@@ -82,7 +82,7 @@ function testAttribNodeNamePreservesCaseGetNode()
     return result.join(",");
 }
 
-shouldBe("testAttribNodeNamePreservesCaseGetNode()", '"A,A"');
+shouldBe("testAttribNodeNamePreservesCaseGetNode()", '"a,a"');
 
 function testAttribNodeNamePreservesCaseGetNode2()
 {
@@ -109,7 +109,7 @@ function testAttribNodeNamePreservesCaseGetNode2()
     return result.join(",");
 }
 
-shouldBe("testAttribNodeNamePreservesCaseGetNode2()", '"B,B"');
+shouldBe("testAttribNodeNamePreservesCaseGetNode2()", '"b,b"');
 
 function testAttribNodeNameGetMutate()
 {
@@ -135,7 +135,7 @@ var attrib = document.createAttribute("myAttrib");
 attrib.value = "XXX";
 node.setAttributeNode(attrib);
 
-shouldBe("(new XMLSerializer).serializeToString(node)", '"<div xmlns=\\"http://www.w3.org/1999/xhtml\\" myAttrib=\\"XXX\\"></div>"');
-shouldBe("node.getAttributeNode('myAttrib').name", '"myAttrib"');
-shouldBe("node.getAttributeNode('myattrib').name", '"myAttrib"');
-shouldBe("attrib.name", '"myAttrib"');
+shouldBe("(new XMLSerializer).serializeToString(node)", '"<div xmlns=\\"http://www.w3.org/1999/xhtml\\" myattrib=\\"XXX\\"></div>"');
+shouldBe("node.getAttributeNode('myAttrib').name", '"myattrib"');
+shouldBe("node.getAttributeNode('myattrib').name", '"myattrib"');
+shouldBe("attrib.name", '"myattrib"');

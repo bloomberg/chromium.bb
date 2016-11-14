@@ -5014,10 +5014,8 @@ Document* Document::contextDocument() {
 
 Attr* Document::createAttribute(const AtomicString& name,
                                 ExceptionState& exceptionState) {
-  if (isHTMLDocument() && name != name.lower())
-    UseCounter::count(*this,
-                      UseCounter::HTMLDocumentCreateAttributeNameNotLowercase);
-  return createAttributeNS(nullAtom, name, exceptionState, true);
+  return createAttributeNS(nullAtom, convertLocalName(name), exceptionState,
+                           true);
 }
 
 Attr* Document::createAttributeNS(const AtomicString& namespaceURI,

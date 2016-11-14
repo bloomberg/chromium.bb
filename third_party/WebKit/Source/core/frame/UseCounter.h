@@ -637,7 +637,6 @@ class CORE_EXPORT UseCounter {
     FormDataAppendBlob = 841,
     FormDataAppendBlobWithFilename = 842,
     FormDataAppendNull = 843,
-    HTMLDocumentCreateAttributeNameNotLowercase = 844,
     NonHTMLElementSetAttributeNodeFromHTMLDocumentNameNotLowercase = 845,
     DOMStringList_Item_AttributeGetter_IndexedDB = 846,
     DOMStringList_Item_AttributeGetter_Location = 847,
