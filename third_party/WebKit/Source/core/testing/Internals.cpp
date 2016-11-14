@@ -2764,8 +2764,9 @@ DEFINE_TRACE(Internals) {
   ContextLifecycleObserver::trace(visitor);
 }
 
-void Internals::setValueForUser(Element* element, const String& value) {
-  toHTMLInputElement(element)->setValueForUser(value);
+void Internals::setValueForUser(HTMLInputElement* element,
+                                const String& value) {
+  element->setValueForUser(value);
 }
 
 String Internals::textSurroundingNode(Node* node,

@@ -293,7 +293,7 @@
     [CallWith=ScriptState] Promise promiseCheckOverload(Document arg1);
     [CallWith=ScriptState] Promise promiseCheckOverload(Location arg1, long arg2, long arg3);
 
-    void setValueForUser(Element element, DOMString value);
+    void setValueForUser(HTMLInputElement element, DOMString value);
 
     DOMString textSurroundingNode(Node node, long x, long y, unsigned long maxLength);
 

@@ -55,8 +55,9 @@ class DocumentMarker;
 class Element;
 class ExceptionState;
 class GCObservation;
-class HTMLSelectElement;
+class HTMLInputElement;
 class HTMLMediaElement;
+class HTMLSelectElement;
 class InternalRuntimeFlags;
 class InternalSettings;
 class LayerRectList;
@@ -448,7 +449,7 @@ class Internals final : public GarbageCollectedFinalized<Internals>,
 
   DECLARE_TRACE();
 
-  void setValueForUser(Element*, const String&);
+  void setValueForUser(HTMLInputElement*, const String&);
 
   String textSurroundingNode(Node*, int x, int y, unsigned long maxLength);
 
