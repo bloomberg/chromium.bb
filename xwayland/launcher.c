@@ -166,6 +166,9 @@ create_lockfile(int display, char *lockfile, size_t lsize)
 			return -1;
 		}
 
+		/* Trim the newline, ensure terminated string. */
+		pid[10] = '\0';
+
 		if (!safe_strtoint(pid, &other)) {
 			weston_log("can't parse lock file %s\n",
 				lockfile);
