@@ -220,7 +220,7 @@ SystemTray::SystemTray(WmShelf* wm_shelf)
       tray_update_(nullptr),
       screen_capture_tray_item_(nullptr),
       screen_share_tray_item_(nullptr) {
-  SetContentsBackground();
+  SetContentsBackground(true);
 }
 
 SystemTray::~SystemTray() {
@@ -658,7 +658,7 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
   // When we show the system menu in our alternate shelf layout, we need to
   // tint the background.
   if (full_system_tray_menu_)
-    SetDrawBackgroundAsActive(true);
+    SetIsActive(true);
 }
 
 void SystemTray::UpdateNotificationBubble() {
@@ -928,7 +928,7 @@ void SystemTray::CloseSystemBubbleAndDeactivateSystemTray() {
   // When closing a system bubble with the alternate shelf layout, we need to
   // turn off the active tinting of the shelf.
   if (full_system_tray_menu_) {
-    SetDrawBackgroundAsActive(false);
+    SetIsActive(false);
     full_system_tray_menu_ = false;
   }
 }

@@ -42,6 +42,7 @@ class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
   // ShellObserver:
   void OnMaximizeModeStarted() override;
   void OnMaximizeModeEnded() override;
+  void OnOverviewModeStarting() override;
   void OnOverviewModeEnded() override;
 
   // TrayBackgroundView:

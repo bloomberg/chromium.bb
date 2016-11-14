@@ -39,14 +39,15 @@ namespace ash {
 
 OverviewButtonTray::OverviewButtonTray(WmShelf* wm_shelf)
     : TrayBackgroundView(wm_shelf), icon_(nullptr) {
-  SetContentsBackground();
-
   icon_ = new views::ImageView();
   if (MaterialDesignController::IsShelfMaterial()) {
+    SetInkDropMode(InkDropMode::ON);
+    SetContentsBackground(false);
     gfx::ImageSkia image_md =
         CreateVectorIcon(gfx::VectorIconId::SHELF_OVERVIEW, kShelfIconColor);
     icon_->SetImage(image_md);
   } else {
+    SetContentsBackground(true);
     gfx::ImageSkia* image_non_md =
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_AURA_UBER_TRAY_OVERVIEW_MODE);
@@ -71,10 +72,10 @@ void OverviewButtonTray::UpdateAfterLoginStatusChange(LoginStatus status) {
 bool OverviewButtonTray::PerformAction(const ui::Event& event) {
   WindowSelectorController* controller =
       WmShell::Get()->window_selector_controller();
-  controller->ToggleOverview();
-  SetDrawBackgroundAsActive(controller->IsSelecting());
+  // Toggling overview mode will fail if there is no window to show.
+  bool performed = controller->ToggleOverview();
   WmShell::Get()->RecordUserMetricsAction(UMA_TRAY_OVERVIEW);
-  return true;
+  return performed;
 }
 
 void OverviewButtonTray::SessionStateChanged(
@@ -90,8 +91,12 @@ void OverviewButtonTray::OnMaximizeModeEnded() {
   UpdateIconVisibility();
 }
 
+void OverviewButtonTray::OnOverviewModeStarting() {
+  SetIsActive(true);
+}
+
 void OverviewButtonTray::OnOverviewModeEnded() {
-  SetDrawBackgroundAsActive(false);
+  SetIsActive(false);
 }
 
 void OverviewButtonTray::ClickedOutsideBubble() {}

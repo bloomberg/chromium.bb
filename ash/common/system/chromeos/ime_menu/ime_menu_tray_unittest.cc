@@ -40,9 +40,7 @@ class ImeMenuTrayTest : public test::AshTestBase {
   const base::string16& GetTrayText() { return GetTray()->label_->text(); }
 
   // Returns true if the background color of the tray is active.
-  bool IsTrayBackgroundActive() {
-    return GetTray()->draw_background_as_active();
-  }
+  bool IsTrayBackgroundActive() { return GetTray()->is_active(); }
 
   // Returns true if the IME menu bubble has been shown.
   bool IsBubbleShown() { return GetTray()->IsImeMenuBubbleShown(); }

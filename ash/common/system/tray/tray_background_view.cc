@@ -33,6 +33,8 @@
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
+#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/wm/core/window_animations.h"
@@ -53,6 +55,20 @@ const int kShowAnimationDelayMs = 100;
 // and overview button dark background.
 const int kBackgroundAdjustPadding = 3;
 
+const gfx::Rect GetBackgroundBounds(const gfx::Rect& local_bounds,
+                                    ash::ShelfAlignment shelf_alignment) {
+  if (IsHorizontalAlignment(shelf_alignment)) {
+    return gfx::Rect(local_bounds.x() + ash::kHitRegionPadding,
+                     local_bounds.y(),
+                     local_bounds.width() - ash::kHitRegionPadding -
+                         ash::kHitRegionPadding - ash::kSeparatorWidth,
+                     local_bounds.height());
+  }
+  return gfx::Rect(local_bounds.x(), local_bounds.y() + ash::kHitRegionPadding,
+                   local_bounds.width(),
+                   local_bounds.height() - ash::kHitRegionPadding -
+                       ash::kHitRegionPadding - ash::kSeparatorWidth);
+}
 }  // namespace
 
 using views::TrayBubbleView;
@@ -94,8 +110,10 @@ class TrayBackground : public views::Background {
   const static int kImageVertical = 1;
   const static int kNumOrientations = 2;
 
-  explicit TrayBackground(TrayBackgroundView* tray_background_view)
-      : tray_background_view_(tray_background_view), alpha_(0) {}
+  TrayBackground(TrayBackgroundView* tray_background_view, bool draws_active)
+      : tray_background_view_(tray_background_view),
+        draws_active_(draws_active),
+        alpha_(0) {}
 
   ~TrayBackground() override {}
 
@@ -108,26 +126,12 @@ class TrayBackground : public views::Background {
     SkPaint background_paint;
     background_paint.setFlags(SkPaint::kAntiAlias_Flag);
     background_paint.setColor(SkColorSetA(kShelfBaseColor, alpha_));
-    gfx::Rect bounds;
     gfx::Rect local_bounds = view->GetLocalBounds();
-
-    // The hit region are padded to the |view| as insets, so they are included
-    // in the local bounds. Remove these regions from view because hit region is
-    // invisible.
-    if (IsHorizontalAlignment(GetShelf()->GetAlignment())) {
-      bounds = gfx::Rect(local_bounds.x() + kHitRegionPadding, local_bounds.y(),
-                         local_bounds.width() - kHitRegionPadding -
-                             kHitRegionPadding - kSeparatorWidth,
-                         local_bounds.height());
-    } else {
-      bounds = gfx::Rect(local_bounds.x(), local_bounds.y() + kHitRegionPadding,
-                         local_bounds.width(),
-                         local_bounds.height() - kHitRegionPadding -
-                             kHitRegionPadding - kSeparatorWidth);
-    }
+    gfx::Rect bounds =
+        GetBackgroundBounds(local_bounds, GetShelf()->GetAlignment());
     canvas->DrawRoundRect(bounds, kTrayRoundedBorderRadius, background_paint);
 
-    if (tray_background_view_->draw_background_as_active()) {
+    if (draws_active_ && tray_background_view_->is_active()) {
       SkPaint highlight_paint;
       highlight_paint.setFlags(SkPaint::kAntiAlias_Flag);
       highlight_paint.setColor(kShelfButtonActivatedHighlightColor);
@@ -157,7 +161,7 @@ class TrayBackground : public views::Background {
                                 : kImageVertical;
 
     int state = kImageTypeDefault;
-    if (tray_background_view_->draw_background_as_active())
+    if (draws_active_ && tray_background_view_->is_active())
       state = kImageTypePressed;
     else if (shelf->IsDimmed())
       state = kImageTypeOnBlack;
@@ -178,6 +182,13 @@ class TrayBackground : public views::Background {
 
   // Reference to the TrayBackgroundView for which this is a background.
   TrayBackgroundView* tray_background_view_;
+
+  // Determines whether we should draw an active background for the view when it
+  // is active. This is used in non-MD mode. In material design mode, an active
+  // ink drop ripple would indicate if the view is active or not.
+  // TODO(mohsen): This is used only in non-MD version. Remove when non-MD code
+  // is removed (see https://crbug.com/614453).
+  bool draws_active_;
 
   int alpha_;
 
@@ -256,11 +267,13 @@ TrayBackgroundView::TrayBackgroundView(WmShelf* wm_shelf)
       tray_container_(NULL),
       shelf_alignment_(SHELF_ALIGNMENT_BOTTOM),
       background_(NULL),
-      draw_background_as_active_(false),
+      is_active_(false),
       is_separator_visible_(false),
       widget_observer_(new TrayWidgetObserver(this)) {
   DCHECK(wm_shelf_);
   set_notify_enter_exit_on_child(true);
+  set_ink_drop_base_color(kShelfInkDropBaseColor);
+  set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
 
   tray_container_ = new TrayContainer(shelf_alignment_);
   SetContents(tray_container_);
@@ -364,23 +377,36 @@ void TrayBackgroundView::AboutToRequestFocusFromTabTraversal(bool reverse) {
     v->AboutToRequestFocusFromTabTraversal(reverse);
 }
 
-bool TrayBackgroundView::PerformAction(const ui::Event& event) {
-  return false;
+std::unique_ptr<views::InkDropRipple> TrayBackgroundView::CreateInkDropRipple()
+    const {
+  return base::MakeUnique<views::FloodFillInkDropRipple>(
+      GetBackgroundBounds(GetContentsBounds(), shelf_alignment_),
+      GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
+      ink_drop_visible_opacity());
 }
 
-gfx::Rect TrayBackgroundView::GetFocusBounds() {
-  // The tray itself expands to the right and bottom edge of the screen to make
-  // sure clicking on the edges brings up the popup. However, the focus border
-  // should be only around the container.
-  return GetContentsBounds();
+std::unique_ptr<views::InkDropHighlight>
+TrayBackgroundView::CreateInkDropHighlight() const {
+  gfx::Rect bounds = GetBackgroundBounds(GetContentsBounds(), shelf_alignment_);
+  std::unique_ptr<views::InkDropHighlight> highlight(
+      new views::InkDropHighlight(bounds.size(), 0,
+                                  gfx::RectF(bounds).CenterPoint(),
+                                  GetInkDropBaseColor()));
+  highlight->set_visible_opacity(kTrayPopupInkDropHighlightOpacity);
+  return highlight;
 }
 
 void TrayBackgroundView::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
-    SetDrawBackgroundAsActive(true);
-  } else if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN ||
-             event->type() == ui::ET_GESTURE_TAP_CANCEL) {
-    SetDrawBackgroundAsActive(false);
+  // If there is no ink drop, show "touch feedback".
+  // TODO(mohsen): This is used only in non-MD version. Remove when non-MD code
+  // is removed (see https://crbug.com/614453).
+  if (ink_drop_mode() == InkDropMode::OFF) {
+    if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
+      SetIsActive(true);
+    } else if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN ||
+               event->type() == ui::ET_GESTURE_TAP_CANCEL) {
+      SetIsActive(false);
+    }
   }
   ActionableView::OnGestureEvent(event);
 }
@@ -389,8 +415,8 @@ void TrayBackgroundView::SetContents(views::View* contents) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   AddChildView(contents);
 }
-void TrayBackgroundView::SetContentsBackground() {
-  background_ = new TrayBackground(this);
+void TrayBackgroundView::SetContentsBackground(bool draws_active) {
+  background_ = new TrayBackground(this, draws_active);
   tray_container_->set_background(background_);
 }
 
@@ -515,12 +541,17 @@ TrayBubbleView::AnchorAlignment TrayBackgroundView::GetAnchorAlignment() const {
   return TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM;
 }
 
-void TrayBackgroundView::SetDrawBackgroundAsActive(bool visible) {
-  if (draw_background_as_active_ == visible)
+void TrayBackgroundView::SetIsActive(bool is_active) {
+  if (is_active_ == is_active)
     return;
-  draw_background_as_active_ = visible;
+  is_active_ = is_active;
+  AnimateInkDrop(is_active_ ? views::InkDropState::ACTIVATED
+                            : views::InkDropState::DEACTIVATED,
+                 nullptr);
   if (!background_)
     return;
+  // TODO(mohsen): This is needed for non-MD version. Remove when non-MD code is
+  // removed (see https://crbug.com/614453).
   SchedulePaint();
 }
 
@@ -539,6 +570,32 @@ void TrayBackgroundView::UpdateShelfItemBackground(int alpha) {
 void TrayBackgroundView::SetSeparatorVisibility(bool is_shown) {
   is_separator_visible_ = is_shown;
   SchedulePaint();
+}
+
+bool TrayBackgroundView::ShouldEnterPushedState(const ui::Event& event) {
+  if (is_active_)
+    return false;
+
+  return ActionableView::ShouldEnterPushedState(event);
+}
+
+bool TrayBackgroundView::PerformAction(const ui::Event& event) {
+  return false;
+}
+
+void TrayBackgroundView::HandlePerformActionResult(bool action_performed,
+                                                   const ui::Event& event) {
+  // When an action is performed, ink drop ripple is handled in SetIsActive().
+  if (action_performed)
+    return;
+  ActionableView::HandlePerformActionResult(action_performed, event);
+}
+
+gfx::Rect TrayBackgroundView::GetFocusBounds() {
+  // The tray itself expands to the right and bottom edge of the screen to make
+  // sure clicking on the edges brings up the popup. However, the focus border
+  // should be only around the container.
+  return GetContentsBounds();
 }
 
 void TrayBackgroundView::OnPaint(gfx::Canvas* canvas) {

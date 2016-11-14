@@ -322,7 +322,7 @@ WebNotificationTray::WebNotificationTray(WmShelf* shelf,
   counter_.reset(new WebNotificationLabel(animation_container_.get(), this));
   tray_container()->AddChildView(counter_.get());
 
-  SetContentsBackground();
+  SetContentsBackground(true);
   message_center_tray_.reset(new message_center::MessageCenterTray(
       this, message_center::MessageCenter::Get()));
   popup_alignment_delegate_.reset(new AshPopupAlignmentDelegate(shelf));
@@ -380,7 +380,7 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
 
   system_tray_->SetHideNotifications(true);
   shelf()->UpdateAutoHideState();
-  SetDrawBackgroundAsActive(true);
+  SetIsActive(true);
   return true;
 }
 
@@ -391,7 +391,7 @@ bool WebNotificationTray::ShowMessageCenter() {
 void WebNotificationTray::HideMessageCenter() {
   if (!message_center_bubble())
     return;
-  SetDrawBackgroundAsActive(false);
+  SetIsActive(false);
   message_center_bubble_.reset();
   should_block_shelf_auto_hide_ = false;
   show_message_center_on_unlock_ = false;

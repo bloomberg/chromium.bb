@@ -41,7 +41,7 @@ VirtualKeyboardTray::VirtualKeyboardTray(WmShelf* wm_shelf)
 
   SetIconBorderForShelfAlignment();
   tray_container()->AddChildView(icon_);
-  SetContentsBackground();
+  SetContentsBackground(true);
   // The Shell may not exist in some unit tests.
   if (WmShell::HasInstance())
     WmShell::Get()->keyboard_ui()->AddObserver(this);
@@ -94,7 +94,7 @@ void VirtualKeyboardTray::OnKeyboardEnabledStateChanged(bool new_enabled) {
 
 void VirtualKeyboardTray::OnKeyboardBoundsChanging(
     const gfx::Rect& new_bounds) {
-  SetDrawBackgroundAsActive(!new_bounds.IsEmpty());
+  SetIsActive(!new_bounds.IsEmpty());
 }
 
 void VirtualKeyboardTray::OnKeyboardClosed() {}

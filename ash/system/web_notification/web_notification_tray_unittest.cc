@@ -482,14 +482,14 @@ TEST_P(WebNotificationTrayTest, TouchFeedback) {
   generator.set_current_location(center_point);
 
   generator.PressTouch();
-  EXPECT_TRUE(tray->draw_background_as_active());
+  EXPECT_TRUE(tray->is_active());
 
   generator.ReleaseTouch();
-  EXPECT_TRUE(tray->draw_background_as_active());
+  EXPECT_TRUE(tray->is_active());
   EXPECT_TRUE(tray->IsMessageCenterBubbleVisible());
 
   generator.GestureTapAt(center_point);
-  EXPECT_FALSE(tray->draw_background_as_active());
+  EXPECT_FALSE(tray->is_active());
   EXPECT_FALSE(tray->IsMessageCenterBubbleVisible());
 }
 
@@ -507,14 +507,14 @@ TEST_P(WebNotificationTrayTest, TouchFeedbackCancellation) {
   generator.set_current_location(center_point);
 
   generator.PressTouch();
-  EXPECT_TRUE(tray->draw_background_as_active());
+  EXPECT_TRUE(tray->is_active());
 
   gfx::Point out_of_bounds(bounds.x() - 1, center_point.y());
   generator.MoveTouch(out_of_bounds);
-  EXPECT_FALSE(tray->draw_background_as_active());
+  EXPECT_FALSE(tray->is_active());
 
   generator.ReleaseTouch();
-  EXPECT_FALSE(tray->draw_background_as_active());
+  EXPECT_FALSE(tray->is_active());
   EXPECT_FALSE(tray->IsMessageCenterBubbleVisible());
 }
 

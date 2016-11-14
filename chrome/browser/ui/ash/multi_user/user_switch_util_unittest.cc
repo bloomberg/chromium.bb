@@ -90,7 +90,9 @@ class TrySwitchingUserTest : public ash::test::AshTestBase {
         const_cast<const TrySwitchingUserTest*>(this)
             ->window_selector_controller());
   }
-  void ToggleOverview() { window_selector_controller()->ToggleOverview(); }
+  bool ToggleOverview() {
+    return window_selector_controller()->ToggleOverview();
+  }
   bool IsSelecting() const {
     return window_selector_controller()->IsSelecting();
   }
@@ -242,7 +244,7 @@ TEST_F(TrySwitchingUserTest, OverviewModeDismissed) {
   EXPECT_EQ(0, switch_callback_hit_count());
   gfx::Rect bounds(0, 0, 100, 100);
   std::unique_ptr<aura::Window> w(CreateTestWindowInShellWithBounds(bounds));
-  ToggleOverview();
+  ASSERT_TRUE(ToggleOverview());
   ASSERT_TRUE(IsSelecting());
   SwitchUser(TrySwitchingUserTest::NO_DIALOG);
   ASSERT_FALSE(IsSelecting());

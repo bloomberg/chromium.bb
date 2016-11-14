@@ -24,6 +24,8 @@ const char ActionableView::kViewClassName[] = "tray/ActionableView";
 ActionableView::ActionableView(SystemTrayItem* owner)
     : views::CustomButton(this), destroyed_(nullptr), owner_(owner) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
+  set_ink_drop_base_color(kTrayPopupInkDropBaseColor);
+  set_ink_drop_visible_opacity(kTrayPopupInkDropRippleOpacity);
   set_has_ink_drop_action_on_click(false);
   set_notify_enter_exit_on_child(true);
 }
@@ -41,6 +43,13 @@ void ActionableView::OnPaintFocus(gfx::Canvas* canvas) {
 
 gfx::Rect ActionableView::GetFocusBounds() {
   return GetLocalBounds();
+}
+
+void ActionableView::HandlePerformActionResult(bool action_performed,
+                                               const ui::Event& event) {
+  AnimateInkDrop(action_performed ? views::InkDropState::ACTION_TRIGGERED
+                                  : views::InkDropState::HIDDEN,
+                 ui::LocatedEvent::FromIfValid(&event));
 }
 
 const char* ActionableView::GetClassName() const {
@@ -93,7 +102,7 @@ std::unique_ptr<views::InkDropRipple> ActionableView::CreateInkDropRipple()
     const {
   return base::MakeUnique<views::FloodFillInkDropRipple>(
       GetLocalBounds(), GetInkDropCenterBasedOnLastEvent(),
-      kTrayPopupInkDropBaseColor, kTrayPopupInkDropRippleOpacity);
+      GetInkDropBaseColor(), ink_drop_visible_opacity());
 }
 
 std::unique_ptr<views::InkDropHighlight>
@@ -101,7 +110,7 @@ ActionableView::CreateInkDropHighlight() const {
   std::unique_ptr<views::InkDropHighlight> highlight(
       new views::InkDropHighlight(size(), 0,
                                   gfx::RectF(GetLocalBounds()).CenterPoint(),
-                                  kTrayPopupInkDropBaseColor));
+                                  GetInkDropBaseColor()));
   highlight->set_visible_opacity(kTrayPopupInkDropHighlightOpacity);
   return highlight;
 }
@@ -119,13 +128,7 @@ void ActionableView::ButtonPressed(Button* sender, const ui::Event& event) {
     return;
   destroyed_ = nullptr;
 
-  if (action_performed) {
-    AnimateInkDrop(views::InkDropState::ACTION_TRIGGERED,
-                   ui::LocatedEvent::FromIfValid(&event));
-  } else {
-    AnimateInkDrop(views::InkDropState::HIDDEN,
-                   ui::LocatedEvent::FromIfValid(&event));
-  }
+  HandlePerformActionResult(action_performed, event);
 }
 
 ButtonListenerActionableView::ButtonListenerActionableView(

@@ -162,7 +162,7 @@ PaletteTray::PaletteTray(WmShelf* wm_shelf)
 
   PaletteTool::RegisterToolInstances(palette_tool_manager_.get());
 
-  SetContentsBackground();
+  SetContentsBackground(true);
 
   SetLayoutManager(new views::FillLayout());
   icon_ = new views::ImageView();
@@ -259,7 +259,7 @@ bool PaletteTray::ShowPalette() {
 
   // Show the bubble.
   bubble_.reset(new ash::TrayBubbleWrapper(this, bubble_view));
-  SetDrawBackgroundAsActive(true);
+  SetIsActive(true);
   return true;
 }
 
@@ -300,7 +300,7 @@ void PaletteTray::HideBubbleWithView(const views::TrayBubbleView* bubble_view) {
 
 void PaletteTray::BubbleViewDestroyed() {
   palette_tool_manager_->NotifyViewsDestroyed();
-  SetDrawBackgroundAsActive(false);
+  SetIsActive(false);
 }
 
 void PaletteTray::OnMouseEnteredView() {}

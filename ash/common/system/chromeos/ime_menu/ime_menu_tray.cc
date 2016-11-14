@@ -304,7 +304,7 @@ ImeMenuTray::ImeMenuTray(WmShelf* wm_shelf)
       should_block_shelf_auto_hide_(false) {
   SetupLabelForTray(label_);
   tray_container()->AddChildView(label_);
-  SetContentsBackground();
+  SetContentsBackground(true);
   WmShell::Get()->system_tray_notifier()->AddIMEObserver(this);
 }
 
@@ -372,13 +372,13 @@ void ImeMenuTray::ShowImeMenuBubble() {
   }
 
   bubble_.reset(new TrayBubbleWrapper(this, bubble_view));
-  SetDrawBackgroundAsActive(true);
+  SetIsActive(true);
 }
 
 void ImeMenuTray::HideImeMenuBubble() {
   bubble_.reset();
   ime_list_view_ = nullptr;
-  SetDrawBackgroundAsActive(false);
+  SetIsActive(false);
   should_block_shelf_auto_hide_ = false;
   shelf()->UpdateAutoHideState();
 }

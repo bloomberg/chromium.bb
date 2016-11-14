@@ -1272,13 +1272,13 @@ TEST_F(MaximizeModeWindowManagerTest, ExitsOverview) {
 
   WindowSelectorController* window_selector_controller =
       WmShell::Get()->window_selector_controller();
-  window_selector_controller->ToggleOverview();
+  ASSERT_TRUE(window_selector_controller->ToggleOverview());
   ASSERT_TRUE(window_selector_controller->IsSelecting());
   MaximizeModeWindowManager* manager = CreateMaximizeModeWindowManager();
   ASSERT_TRUE(manager);
   EXPECT_FALSE(window_selector_controller->IsSelecting());
 
-  window_selector_controller->ToggleOverview();
+  ASSERT_TRUE(window_selector_controller->ToggleOverview());
   ASSERT_TRUE(window_selector_controller->IsSelecting());
   // Destroy the manager again and check that the windows return to their
   // previous state.

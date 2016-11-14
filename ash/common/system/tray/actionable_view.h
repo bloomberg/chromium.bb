@@ -52,6 +52,14 @@ class ASH_EXPORT ActionableView : public views::ButtonListener,
   // been handled and an action was performed. Returns false otherwise.
   virtual bool PerformAction(const ui::Event& event) = 0;
 
+  // Called after PerformAction() to act upon its result, including showing
+  // appropriate ink drop ripple. This will not get called if the view is
+  // destroyed during PerformAction(). Default implementation shows triggered
+  // ripple if action is performed or hides existing ripple if no action is
+  // performed. Subclasses can override to change the default behavior.
+  virtual void HandlePerformActionResult(bool action_performed,
+                                         const ui::Event& event);
+
   // Overridden from views::CustomButton.
   const char* GetClassName() const override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;

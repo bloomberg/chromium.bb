@@ -477,7 +477,7 @@ TEST_F(MaximizeModeControllerTest, DisplayDisconnectionDuringOverview) {
   ASSERT_NE(w1->GetRootWindow(), w2->GetRootWindow());
 
   maximize_mode_controller()->EnableMaximizeModeWindowManager(true);
-  WmShell::Get()->window_selector_controller()->ToggleOverview();
+  EXPECT_TRUE(WmShell::Get()->window_selector_controller()->ToggleOverview());
 
   UpdateDisplay("800x600");
   EXPECT_FALSE(WmShell::Get()->window_selector_controller()->IsSelecting());

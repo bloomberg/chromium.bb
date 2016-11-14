@@ -42,13 +42,13 @@ bool WindowSelectorController::CanSelect() {
              LoginStatus::KIOSK_APP;
 }
 
-void WindowSelectorController::ToggleOverview() {
+bool WindowSelectorController::ToggleOverview() {
   if (IsSelecting()) {
     OnSelectionEnded();
   } else {
     // Don't start overview if window selection is not allowed.
     if (!CanSelect())
-      return;
+      return false;
 
     std::vector<WmWindow*> windows =
         WmShell::Get()->mru_window_tracker()->BuildMruWindowList();
@@ -59,13 +59,14 @@ void WindowSelectorController::ToggleOverview() {
 
     // Don't enter overview mode with no windows.
     if (windows.empty())
-      return;
+      return false;
 
     WmShell::Get()->OnOverviewModeStarting();
     window_selector_.reset(new WindowSelector(this));
     window_selector_->Init(windows);
     OnSelectionStarted();
   }
+  return true;
 }
 
 bool WindowSelectorController::IsSelecting() const {

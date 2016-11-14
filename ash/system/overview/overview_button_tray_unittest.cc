@@ -195,20 +195,19 @@ TEST_F(OverviewButtonTrayTest, VisibilityChangesForLoginStatus) {
 // dismissal of overview mode clears the active state.
 TEST_F(OverviewButtonTrayTest, ActiveStateOnlyDuringOverviewMode) {
   ASSERT_FALSE(WmShell::Get()->window_selector_controller()->IsSelecting());
-  ASSERT_FALSE(GetTray()->draw_background_as_active());
+  ASSERT_FALSE(GetTray()->is_active());
 
   // Overview Mode only works when there is a window
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-  ui::GestureEvent tap(0, 0, 0, base::TimeTicks(),
-                       ui::GestureEventDetails(ui::ET_GESTURE_TAP));
-  GetTray()->PerformAction(tap);
-  EXPECT_TRUE(WmShell::Get()->window_selector_controller()->IsSelecting());
-  EXPECT_TRUE(GetTray()->draw_background_as_active());
 
-  WmShell::Get()->window_selector_controller()->OnSelectionEnded();
+  EXPECT_TRUE(WmShell::Get()->window_selector_controller()->ToggleOverview());
+  EXPECT_TRUE(WmShell::Get()->window_selector_controller()->IsSelecting());
+  EXPECT_TRUE(GetTray()->is_active());
+
+  EXPECT_TRUE(WmShell::Get()->window_selector_controller()->ToggleOverview());
   EXPECT_FALSE(WmShell::Get()->window_selector_controller()->IsSelecting());
-  EXPECT_FALSE(GetTray()->draw_background_as_active());
+  EXPECT_FALSE(GetTray()->is_active());
 }
 
 // Test that when a hide animation is aborted via deletion, that the

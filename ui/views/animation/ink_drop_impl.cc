@@ -738,6 +738,9 @@ void InkDropImpl::AnimationEnded(InkDropState ink_drop_state,
   highlight_state_->AnimationEnded(ink_drop_state, reason);
   if (reason != InkDropAnimationEndedReason::SUCCESS)
     return;
+  // |ink_drop_ripple_| might be null during destruction.
+  if (!ink_drop_ripple_)
+    return;
   if (ShouldAnimateToHidden(ink_drop_state)) {
     ink_drop_ripple_->AnimateToState(views::InkDropState::HIDDEN);
   } else if (ink_drop_state == views::InkDropState::HIDDEN) {
