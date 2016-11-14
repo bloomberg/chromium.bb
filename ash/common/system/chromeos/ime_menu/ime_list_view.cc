@@ -4,7 +4,6 @@
 
 #include "ash/common/system/chromeos/ime_menu/ime_list_view.h"
 
-#include "ash/common/ash_view_ids.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/ime_info.h"
@@ -203,8 +202,8 @@ class MaterialKeyboardStatusRowView : public views::View {
 
  private:
   void Init() {
+    TrayPopupUtils::ConfigureAsStickyHeader(this);
     SetLayoutManager(new views::FillLayout);
-    set_background(views::Background::CreateSolidBackground(kBackgroundColor));
 
     TriView* tri_view = TrayPopupUtils::CreateDefaultRowView();
     AddChildView(tri_view);
@@ -229,8 +228,6 @@ class MaterialKeyboardStatusRowView : public views::View {
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
             IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD));
     tri_view->AddView(TriView::Container::END, toggle_);
-
-    set_id(VIEW_ID_STICKY_HEADER);
   }
 
   // Updates the style of |label_| based on the current native theme.

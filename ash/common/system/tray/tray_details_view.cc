@@ -43,12 +43,14 @@ const int kTitleRowSeparatorIndex = 1;
 class ScrollContentsView : public views::View,
                            public views::ViewTargeterDelegate {
  public:
-  ScrollContentsView() {
+  ScrollContentsView()
+      : box_layout_(new views::BoxLayout(
+            views::BoxLayout::kVertical,
+            0,
+            0,
+            UseMd() ? 0 : kContentsBetweenChildSpacingNonMd)) {
     SetEventTargeter(base::MakeUnique<views::ViewTargeter>(this));
-    SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kVertical, 0,
-                             UseMd() ? kContentsVerticalSpacingMd : 0,
-                             UseMd() ? 0 : kContentsBetweenChildSpacingNonMd));
+    SetLayoutManager(box_layout_);
   }
   ~ScrollContentsView() override {}
 
@@ -90,6 +92,18 @@ class ScrollContentsView : public views::View,
                                       return header.view == details.child;
                                     }),
                      headers_.end());
+    } else if (details.is_add && details.parent == this &&
+               details.child == child_at(0)) {
+      // We always want padding on the bottom of the scroll contents.
+      // We only want padding on the top of the scroll contents if the first
+      // child is not a header (in that case, the padding is built into the
+      // header).
+      DCHECK_EQ(box_layout_, GetLayoutManager());
+      box_layout_->set_inside_border_insets(
+          gfx::Insets(details.child->id() == VIEW_ID_STICKY_HEADER
+                          ? 0
+                          : kMenuSeparatorVerticalPadding,
+                      0, kMenuSeparatorVerticalPadding, 0));
     }
   }
 
@@ -111,7 +125,6 @@ class ScrollContentsView : public views::View,
   const SkColor kSeparatorColor = SkColorSetA(SK_ColorBLACK, 0x1F);
   const int kShadowOffsetY = 2;
   const int kShadowBlur = 2;
-  const int kContentsVerticalSpacingMd = 4;
   // TODO(fukino): Remove this constant once we stop maintaining pre-MD design.
   // crbug.com/614453.
   const int kContentsBetweenChildSpacingNonMd = 1;
@@ -196,6 +209,8 @@ class ScrollContentsView : public views::View,
     canvas->ClipRect(rect, SkRegion::kDifference_Op);
     canvas->DrawRect(rect, paint);
   }
+
+  views::BoxLayout* box_layout_;
 
   // Header child views that stick to the top of visible viewport when scrolled.
   std::vector<Header> headers_;

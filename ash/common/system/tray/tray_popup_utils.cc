@@ -5,6 +5,7 @@
 #include "ash/common/system/tray/tray_popup_utils.h"
 
 #include "ash/common/ash_constants.h"
+#include "ash/common/ash_view_ids.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
@@ -14,6 +15,7 @@
 #include "ash/common/system/tray/tray_popup_label_button_border.h"
 #include "ash/common/wm_shell.h"
 #include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -218,6 +220,14 @@ views::Slider* TrayPopupUtils::CreateSlider(views::SliderListener* listener) {
         views::CreateEmptyBorder(0, 0, 0, kTrayPopupPaddingBetweenItems));
   }
   return slider;
+}
+
+void TrayPopupUtils::ConfigureAsStickyHeader(views::View* view) {
+  view->set_id(VIEW_ID_STICKY_HEADER);
+  view->set_background(
+      views::Background::CreateSolidBackground(kBackgroundColor));
+  view->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(kMenuSeparatorVerticalPadding, 0)));
 }
 
 void TrayPopupUtils::ConfigureContainer(TriView::Container container,

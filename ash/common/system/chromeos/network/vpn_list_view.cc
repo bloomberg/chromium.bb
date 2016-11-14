@@ -296,8 +296,10 @@ void VPNListView::Update() {
   provider_view_key_map_.clear();
   network_view_service_path_map_.clear();
   list_empty_ = true;
-  container()->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+  if (!UseMd()) {
+    container()->SetLayoutManager(
+        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+  }
 
   // Get the list of available VPN networks, in shill's priority order.
   chromeos::NetworkStateHandler::NetworkStateList networks;

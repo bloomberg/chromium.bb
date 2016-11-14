@@ -6,12 +6,12 @@
 
 #include <stddef.h>
 
-#include "ash/common/ash_view_ids.h"
 #include "ash/common/system/chromeos/network/network_icon.h"
 #include "ash/common/system/chromeos/network/network_icon_animation.h"
 #include "ash/common/system/chromeos/network/network_list_delegate.h"
 #include "ash/common/system/tray/system_menu_button.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/system/tray/tray_popup_utils.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
@@ -29,7 +29,6 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
-#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/controls/label.h"
@@ -136,8 +135,7 @@ class NetworkListViewMd::SectionHeaderRowView : public views::View,
     // TODO(mohsen): Consider using TriView class and adding a utility function
     // to TrayPopupUtils to simplify creation of the following layout. See
     // https://crbug.com/614453.
-    set_id(VIEW_ID_STICKY_HEADER);
-    set_background(views::Background::CreateSolidBackground(kBackgroundColor));
+    TrayPopupUtils::ConfigureAsStickyHeader(this);
     container_ = new views::View;
     container_->SetBorder(views::CreateEmptyBorder(
         0, kSectionHeaderRowLeftInset, 0, kSectionHeaderRowRightInset));

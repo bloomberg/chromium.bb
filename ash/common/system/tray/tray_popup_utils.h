@@ -85,6 +85,9 @@ class TrayPopupUtils {
   // with a FillLayout.
   static views::Slider* CreateSlider(views::SliderListener* listener);
 
+  // Sets up |view| to be a sticky header in a tray detail scroll view.
+  static void ConfigureAsStickyHeader(views::View* view);
+
   // Configures |container_view| just like CreateDefaultRowView() would
   // configure |container| on its returned TriView. To be used when mutliple
   // targetable areas are required within a single row.
