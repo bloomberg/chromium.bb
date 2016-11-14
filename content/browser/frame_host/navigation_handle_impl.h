@@ -128,6 +128,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       const std::string& raw_response_header) override;
   void CallDidCommitNavigationForTesting(const GURL& url) override;
   bool WasStartedFromContextMenu() const override;
+  const GURL& GetSearchableFormURL() override;
+  const std::string& GetSearchableFormEncoding() override;
 
   NavigationData* GetNavigationData() override;
 
@@ -281,6 +283,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     return navigation_ui_data_.get();
   }
 
+  void set_searchable_form_url(const GURL& url) { searchable_form_url_ = url; }
+  void set_searchable_form_encoding(const std::string& encoding) {
+    searchable_form_encoding_ = encoding;
+  }
+
  private:
   friend class NavigationHandleImplTest;
 
@@ -423,6 +430,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // False by default unless the navigation started within a context menu.
   bool started_from_context_menu_;
+
+  GURL searchable_form_url_;
+  std::string searchable_form_encoding_;
 
   base::WeakPtrFactory<NavigationHandleImpl> weak_factory_;
 

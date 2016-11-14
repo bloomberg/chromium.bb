@@ -119,7 +119,8 @@ class CORE_EXPORT FrameLoaderClient : public FrameClient {
       NavigationType,
       NavigationPolicy,
       bool shouldReplaceCurrentEntry,
-      bool isClientRedirect) = 0;
+      bool isClientRedirect,
+      HTMLFormElement*) = 0;
 
   virtual void dispatchWillSendSubmitEvent(HTMLFormElement*) = 0;
   virtual void dispatchWillSubmitForm(HTMLFormElement*) = 0;

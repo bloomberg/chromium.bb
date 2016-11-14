@@ -163,6 +163,10 @@ struct CONTENT_EXPORT BeginNavigationParams {
 
   // Indicates the request context type.
   RequestContextType request_context_type;
+
+  // See WebSearchableFormData for a description of these.
+  GURL searchable_form_url;
+  std::string searchable_form_encoding;
 };
 
 // Provided by the browser -----------------------------------------------------

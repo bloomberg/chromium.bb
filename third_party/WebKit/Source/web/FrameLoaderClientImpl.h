@@ -112,7 +112,8 @@ class FrameLoaderClientImpl final : public FrameLoaderClient {
                                              NavigationType,
                                              NavigationPolicy,
                                              bool shouldReplaceCurrentEntry,
-                                             bool isClientRedirect) override;
+                                             bool isClientRedirect,
+                                             HTMLFormElement*) override;
   void dispatchWillSendSubmitEvent(HTMLFormElement*) override;
   void dispatchWillSubmitForm(HTMLFormElement*) override;
   void didStartLoading(LoadStartType) override;

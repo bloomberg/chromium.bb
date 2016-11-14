@@ -520,7 +520,8 @@ NavigationPolicy FrameLoaderClientImpl::decidePolicyForNavigation(
     NavigationType type,
     NavigationPolicy policy,
     bool replacesCurrentHistoryItem,
-    bool isClientRedirect) {
+    bool isClientRedirect,
+    HTMLFormElement* form) {
   if (!m_webFrame->client())
     return NavigationPolicyIgnore;
 
@@ -556,6 +557,8 @@ NavigationPolicy FrameLoaderClientImpl::decidePolicyForNavigation(
   navigationInfo.isHistoryNavigationInNewChildFrame =
       isHistoryNavigationInNewChildFrame;
   navigationInfo.isClientRedirect = isClientRedirect;
+  if (form)
+    navigationInfo.form = WebFormElement(form);
 
   WebNavigationPolicy webPolicy =
       m_webFrame->client()->decidePolicyForNavigation(navigationInfo);

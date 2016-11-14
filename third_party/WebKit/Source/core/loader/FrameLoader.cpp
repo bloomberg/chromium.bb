@@ -1619,7 +1619,7 @@ bool FrameLoader::shouldContinueForNavigationPolicy(
 
   policy = client()->decidePolicyForNavigation(request, loader, type, policy,
                                                replacesCurrentHistoryItem,
-                                               isClientRedirect);
+                                               isClientRedirect, form);
   if (policy == NavigationPolicyCurrentTab)
     return true;
   if (policy == NavigationPolicyIgnore)

@@ -370,6 +370,18 @@ void NavigationHandleImpl::CallDidCommitNavigationForTesting(const GURL& url) {
   DidCommitNavigation(params, false, render_frame_host_);
 }
 
+bool NavigationHandleImpl::WasStartedFromContextMenu() const {
+  return started_from_context_menu_;
+}
+
+const GURL& NavigationHandleImpl::GetSearchableFormURL() {
+  return searchable_form_url_;
+}
+
+const std::string& NavigationHandleImpl::GetSearchableFormEncoding() {
+  return searchable_form_encoding_;
+}
+
 NavigationData* NavigationHandleImpl::GetNavigationData() {
   return navigation_data_.get();
 }
@@ -759,10 +771,6 @@ void NavigationHandleImpl::RegisterNavigationThrottles() {
                       throttles_to_register.end());
     throttles_to_register.weak_clear();
   }
-}
-
-bool NavigationHandleImpl::WasStartedFromContextMenu() const {
-  return started_from_context_menu_;
 }
 
 }  // namespace content

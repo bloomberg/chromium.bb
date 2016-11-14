@@ -274,7 +274,8 @@ class CORE_EXPORT EmptyFrameLoaderClient : public FrameLoaderClient {
                                              NavigationType,
                                              NavigationPolicy,
                                              bool,
-                                             bool) override;
+                                             bool,
+                                             HTMLFormElement*) override;
 
   void dispatchWillSendSubmitEvent(HTMLFormElement*) override;
   void dispatchWillSubmitForm(HTMLFormElement*) override;

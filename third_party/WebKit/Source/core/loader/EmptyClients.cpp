@@ -132,7 +132,8 @@ NavigationPolicy EmptyFrameLoaderClient::decidePolicyForNavigation(
     NavigationType,
     NavigationPolicy,
     bool,
-    bool) {
+    bool,
+    HTMLFormElement*) {
   return NavigationPolicyIgnore;
 }
 

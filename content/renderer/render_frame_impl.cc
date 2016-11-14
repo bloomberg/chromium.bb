@@ -6105,15 +6105,24 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
          GetRequestContextFrameTypeForWebURLRequest(info.urlRequest) ==
              REQUEST_CONTEXT_FRAME_TYPE_NESTED);
 
+  BeginNavigationParams begin_navigation_params(
+      GetWebURLRequestHeaders(info.urlRequest),
+      GetLoadFlagsForWebURLRequest(info.urlRequest),
+      info.urlRequest.hasUserGesture(),
+      info.urlRequest.skipServiceWorker() !=
+          blink::WebURLRequest::SkipServiceWorker::None,
+      GetRequestContextTypeForWebURLRequest(info.urlRequest));
+
+  if (!info.form.isNull()) {
+    WebSearchableFormData web_searchable_form_data(info.form);
+    begin_navigation_params.searchable_form_url =
+        web_searchable_form_data.url();
+    begin_navigation_params.searchable_form_encoding =
+        web_searchable_form_data.encoding().utf8();
+  }
+
   Send(new FrameHostMsg_BeginNavigation(
-      routing_id_, MakeCommonNavigationParams(info),
-      BeginNavigationParams(
-          GetWebURLRequestHeaders(info.urlRequest),
-          GetLoadFlagsForWebURLRequest(info.urlRequest),
-          info.urlRequest.hasUserGesture(),
-          info.urlRequest.skipServiceWorker() !=
-              blink::WebURLRequest::SkipServiceWorker::None,
-          GetRequestContextTypeForWebURLRequest(info.urlRequest))));
+      routing_id_, MakeCommonNavigationParams(info), begin_navigation_params));
 }
 
 void RenderFrameImpl::LoadDataURL(

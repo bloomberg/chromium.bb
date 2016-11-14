@@ -94,6 +94,11 @@ class CONTENT_EXPORT NavigationHandle {
   // Whether or not the navigation was started within a context menu.
   virtual bool WasStartedFromContextMenu() const = 0;
 
+  // Returns the URL and encoding of an INPUT field that corresponds to a
+  // searchable form request.
+  virtual const GURL& GetSearchableFormURL() = 0;
+  virtual const std::string& GetSearchableFormEncoding() = 0;
+
   // Parameters available at network request start time ------------------------
   //
   // The following parameters are only available when the network request is

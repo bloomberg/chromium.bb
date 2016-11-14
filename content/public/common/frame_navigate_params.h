@@ -75,10 +75,6 @@ struct CONTENT_EXPORT FrameNavigateParams : public IPC::NoParams {
   // the browser history.  E.g., on unreachable urls.
   bool should_update_history;
 
-  // See SearchableFormData for a description of these.
-  GURL searchable_form_url;
-  std::string searchable_form_encoding;
-
   // Contents MIME type of main frame.
   std::string contents_mime_type;
 

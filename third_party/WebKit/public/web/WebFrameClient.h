@@ -36,6 +36,7 @@
 #include "WebDOMMessageEvent.h"
 #include "WebDataSource.h"
 #include "WebFileChooserParams.h"
+#include "WebFormElement.h"
 #include "WebFrame.h"
 #include "WebFrameOwnerProperties.h"
 #include "WebHistoryCommitType.h"
@@ -81,7 +82,6 @@ class WebEncryptedMediaClient;
 class WebExternalPopupMenu;
 class WebExternalPopupMenuClient;
 class WebFileChooserCompletion;
-class WebFormElement;
 class WebInstalledAppClient;
 class WebLocalFrame;
 class WebMediaPlayer;
@@ -289,6 +289,7 @@ class BLINK_EXPORT WebFrameClient {
     bool replacesCurrentHistoryItem;
     bool isHistoryNavigationInNewChildFrame;
     bool isClientRedirect;
+    WebFormElement form;
 
     NavigationPolicyInfo(WebURLRequest& urlRequest)
         : extraData(nullptr),

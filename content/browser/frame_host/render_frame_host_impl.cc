@@ -1225,6 +1225,23 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
       TakeNavigationHandleForCommit(validated_params);
   DCHECK(navigation_handle);
 
+  // PlzNavigate sends searchable form data in the BeginNavigation message
+  // while non-PlzNavigate sends it in the DidCommitProvisionalLoad message.
+  // Update |navigation_handle| if necessary.
+  if (!IsBrowserSideNavigationEnabled() &&
+      !validated_params.searchable_form_url.is_empty()) {
+    navigation_handle->set_searchable_form_url(
+        validated_params.searchable_form_url);
+    navigation_handle->set_searchable_form_encoding(
+        validated_params.searchable_form_encoding);
+
+    // Reset them so that they are consistent in both the PlzNavigate and
+    // non-PlzNavigate case. Users should use those values from
+    // NavigationHandle.
+    validated_params.searchable_form_url = GURL();
+    validated_params.searchable_form_encoding = std::string();
+  }
+
   accessibility_reset_count_ = 0;
   frame_tree_node()->navigator()->DidNavigate(this, validated_params,
                                               std::move(navigation_handle));
@@ -1787,14 +1804,17 @@ void RenderFrameHostImpl::OnBeginNavigation(
   CommonNavigationParams validated_params = common_params;
   GetProcess()->FilterURL(false, &validated_params.url);
 
+  BeginNavigationParams validated_begin_params = begin_params;
+  GetProcess()->FilterURL(true, &validated_begin_params.searchable_form_url);
+
   if (waiting_for_init_) {
-    pendinging_navigate_ =
-        base::MakeUnique<PendingNavigation>(validated_params, begin_params);
+    pendinging_navigate_ = base::MakeUnique<PendingNavigation>(
+        validated_params, validated_begin_params);
     return;
   }
 
   frame_tree_node()->navigator()->OnBeginNavigation(
-      frame_tree_node(), validated_params, begin_params);
+      frame_tree_node(), validated_params, validated_begin_params);
 }
 
 void RenderFrameHostImpl::OnDispatchLoad() {
