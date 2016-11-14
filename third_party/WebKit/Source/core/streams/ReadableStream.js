@@ -837,10 +837,7 @@
     }
 
     highWaterMark = Number(highWaterMark);
-    if (Number_isNaN(highWaterMark)) {
-      throw new TypeError(errInvalidHWM);
-    }
-    if (highWaterMark < 0) {
+    if (Number_isNaN(highWaterMark) || highWaterMark < 0) {
       throw new RangeError(errInvalidHWM);
     }
 

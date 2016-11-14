@@ -126,14 +126,14 @@ test(() => {
   }
 
   for (const highWaterMark of [NaN, 'foo', {}]) {
-    assert_throws(new TypeError(), () => {
+    assert_throws(new RangeError(), () => {
       new ReadableStream({}, {
         size() {
           return 1;
         },
         highWaterMark
       });
-    }, 'construction should throw a TypeError for ' + highWaterMark);
+    }, 'construction should throw a RangeError for ' + highWaterMark);
   }
 
 }, 'Readable stream: invalid strategy.highWaterMark');
