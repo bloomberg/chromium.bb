@@ -408,7 +408,8 @@ void ContentSettingSubresourceFilterImageModel::UpdateFromWebContents(
   set_icon_by_vector_id(gfx::VectorIconId::SUBRESOURCE_FILTER_ACTIVE,
                         gfx::VectorIconId::BLOCKED_BADGE);
   set_explanatory_string_id(IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_TITLE);
-  // TODO(melandory): Set tooltip text.
+  set_tooltip(
+      l10n_util::GetStringUTF16(IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_TITLE));
   set_visible(true);
 }
 

@@ -147,8 +147,7 @@ TEST_F(ContentSettingImageModelTest, SubresourceFilter) {
 
   EXPECT_TRUE(content_setting_image_model->is_visible());
   EXPECT_TRUE(HasIcon(*content_setting_image_model));
-  // The anchor doesn't have tooltip text for now.
-  EXPECT_TRUE(content_setting_image_model->get_tooltip().empty());
+  EXPECT_FALSE(content_setting_image_model->get_tooltip().empty());
 }
 
 }  // namespace
