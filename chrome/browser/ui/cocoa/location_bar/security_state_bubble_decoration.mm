@@ -227,19 +227,21 @@ void SecurityStateBubbleDecoration::DrawInFrame(NSRect frame,
     [text drawInRect:text_rect];
 
     // Draw the divider.
-    NSBezierPath* line = [NSBezierPath bezierPath];
-    [line setLineWidth:line_width];
-    [line moveToPoint:NSMakePoint(NSMaxX(decoration_frame) - DividerPadding(),
-                                  NSMinY(decoration_frame))];
-    [line lineToPoint:NSMakePoint(NSMaxX(decoration_frame) - DividerPadding(),
-                                  NSMaxY(decoration_frame))];
+    if (state() == LocationBarDecorationState::NORMAL) {
+      NSBezierPath* line = [NSBezierPath bezierPath];
+      [line setLineWidth:line_width];
+      [line moveToPoint:NSMakePoint(NSMaxX(decoration_frame) - DividerPadding(),
+                                    NSMinY(decoration_frame))];
+      [line lineToPoint:NSMakePoint(NSMaxX(decoration_frame) - DividerPadding(),
+                                    NSMaxY(decoration_frame))];
 
-    NSColor* divider_color = GetDividerColor(in_dark_mode);
-    CGFloat divider_alpha =
-        [divider_color alphaComponent] * GetAnimationProgress();
-    divider_color = [divider_color colorWithAlphaComponent:divider_alpha];
-    [divider_color set];
-    [line stroke];
+      NSColor* divider_color = GetDividerColor(in_dark_mode);
+      CGFloat divider_alpha =
+          [divider_color alphaComponent] * GetAnimationProgress();
+      divider_color = [divider_color colorWithAlphaComponent:divider_alpha];
+      [divider_color set];
+      [line stroke];
+    }
   }
 }
 

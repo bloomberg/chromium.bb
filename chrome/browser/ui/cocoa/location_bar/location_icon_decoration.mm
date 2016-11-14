@@ -18,6 +18,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "skia/ext/skia_utils_mac.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/image/image.h"
@@ -29,6 +30,10 @@ using content::WebContents;
 // The info-bubble point should look like it points to the bottom of the lock
 // icon. Determined with Pixie.app.
 const CGFloat kBubblePointYOffset = 2.0;
+
+// Insets for the background frame.
+const CGFloat kBackgroundFrameXInset = 1.0;
+const CGFloat kBackgroundFrameYInset = 2.0;
 
 LocationIconDecoration::LocationIconDecoration(LocationBarViewMac* owner)
     : drag_frame_(NSZeroRect), owner_(owner) {
@@ -97,8 +102,17 @@ NSPoint LocationIconDecoration::GetBubblePointInFrame(NSRect frame) {
                      NSMaxY(draw_frame) - kBubblePointYOffset);
 }
 
+NSRect LocationIconDecoration::GetBackgroundFrame(NSRect frame) {
+  return NSInsetRect(frame, kBackgroundFrameXInset, kBackgroundFrameYInset);
+}
+
 bool LocationIconDecoration::AcceptsMousePress() {
   return true;
+}
+
+bool LocationIconDecoration::HasHoverAndPressEffect() {
+  // The search icon should not show a hover/pressed background.
+  return !owner_->GetOmniboxView()->IsEditingOrEmpty();
 }
 
 bool LocationIconDecoration::OnMousePressed(NSRect frame, NSPoint location) {

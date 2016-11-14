@@ -18,6 +18,7 @@
 #import "extensions/common/feature_switch.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #import "ui/base/cocoa/appkit_utils.h"
+#import "ui/base/cocoa/tracking_area.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/cocoa/scoped_cg_context_smooth_fonts.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -182,9 +183,17 @@ size_t CalculatePositionsInFrame(
   return 17;
 }
 
+- (void)clearTrackingArea {
+  for (auto& decoration : mouseTrackingDecorations_)
+    decoration->RemoveTrackingArea();
+
+  mouseTrackingDecorations_.clear();
+}
+
 - (void)clearDecorations {
   leftDecorations_.clear();
   rightDecorations_.clear();
+  [self clearTrackingArea];
 }
 
 - (void)addLeftDecoration:(LocationBarDecoration*)decoration {
@@ -458,6 +467,8 @@ size_t CalculatePositionsInFrame(
   if (!decoration || !decoration->AcceptsMousePress())
     return NO;
 
+  decoration->OnMouseDown();
+
   NSRect decorationRect =
       [self frameForDecoration:decoration inFrame:cellFrame];
 
@@ -515,6 +526,15 @@ size_t CalculatePositionsInFrame(
   return decoration->OnMousePressed(
       decorationRect, NSMakePoint(point.x - decorationRect.origin.x,
                                   point.y - decorationRect.origin.y));
+}
+
+- (void)mouseUp:(NSEvent*)theEvent
+         inRect:(NSRect)cellFrame
+         ofView:(AutocompleteTextField*)controlView {
+  LocationBarDecoration* decoration =
+      [self decorationForEvent:theEvent inRect:cellFrame ofView:controlView];
+  if (decoration)
+    decoration->OnMouseUp();
 }
 
 // Returns the file path for file |name| if saved at NSURL |base|.
@@ -623,15 +643,22 @@ static NSString* UnusedLegalNameForNewDropFile(NSURL* saveLocation,
   return NSDragOperationCopy;
 }
 
-- (void)updateToolTipsInRect:(NSRect)cellFrame
-                      ofView:(AutocompleteTextField*)controlView {
+- (void)updateMouseTrackingAndToolTipsInRect:(NSRect)cellFrame
+                                      ofView:
+                                          (AutocompleteTextField*)controlView {
   std::vector<LocationBarDecoration*> decorations;
   std::vector<NSRect> decorationFrames;
   NSRect textFrame;
   CalculatePositionsInFrame(cellFrame, leftDecorations_, rightDecorations_,
                             &decorations, &decorationFrames, &textFrame);
+  [self clearTrackingArea];
 
   for (size_t i = 0; i < decorations.size(); ++i) {
+    CrTrackingArea* trackingArea =
+        decorations[i]->SetupTrackingArea(decorationFrames[i], controlView);
+    if (trackingArea)
+      mouseTrackingDecorations_.push_back(decorations[i]);
+
     NSString* tooltip = decorations[i]->GetToolTip();
     if ([tooltip length] > 0)
       [controlView addToolTip:tooltip forRect:decorationFrames[i]];
@@ -663,6 +690,14 @@ static NSString* UnusedLegalNameForNewDropFile(NSURL* saveLocation,
     const bool controlDown = ([event modifierFlags] & NSControlKeyMask) != 0;
     [controlView observer]->OnSetFocus(controlDown);
   }
+}
+
+@end
+
+@implementation AutocompleteTextFieldCell (TestingAPI)
+
+- (const std::vector<LocationBarDecoration*>&)mouseTrackingDecorations {
+  return mouseTrackingDecorations_;
 }
 
 @end

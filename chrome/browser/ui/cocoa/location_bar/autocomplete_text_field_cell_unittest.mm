@@ -264,7 +264,8 @@ TEST_F(AutocompleteTextFieldCellTest, RightDecorationFrame) {
   EXPECT_LT(NSMinX(textFrame), NSMinX(decoration1Rect));
 }
 
-// Verify -[AutocompleteTextFieldCell updateToolTipsInRect:ofView:].
+// Verify -[AutocompleteTextFieldCell
+// updateMouseTrackingAndToolTipsInRect:ofView:].
 TEST_F(AutocompleteTextFieldCellTest, UpdateToolTips) {
   NSString* tooltip = @"tooltip";
 
@@ -292,7 +293,7 @@ TEST_F(AutocompleteTextFieldCellTest, UpdateToolTips) {
   id controlView = [OCMockObject mockForClass:[AutocompleteTextField class]];
   [[controlView expect] addToolTip:tooltip forRect:leftDecorationRect];
 
-  [cell updateToolTipsInRect:bounds ofView:controlView];
+  [cell updateMouseTrackingAndToolTipsInRect:bounds ofView:controlView];
 
   EXPECT_OCMOCK_VERIFY(controlView);
 }

@@ -196,6 +196,12 @@ const CGFloat kAnimationDuration = 0.2;
   [editor mouseDown:theEvent];
 }
 
+- (void)mouseUp:(NSEvent*)theEvent {
+  const NSRect bounds([self bounds]);
+  AutocompleteTextFieldCell* cell = [self cell];
+  [cell mouseUp:theEvent inRect:bounds ofView:self];
+}
+
 - (void)rightMouseDown:(NSEvent*)event {
   if (observer_)
     observer_->OnMouseDown([event buttonNumber]);
@@ -316,7 +322,7 @@ const CGFloat kAnimationDuration = 0.2;
 
   // Reload the decoration tooltips.
   [currentToolTips_ removeAllObjects];
-  [[self cell] updateToolTipsInRect:[self bounds] ofView:self];
+  [[self cell] updateMouseTrackingAndToolTipsInRect:[self bounds] ofView:self];
 }
 
 // NOTE(shess): http://crbug.com/19116 describes a weird bug which

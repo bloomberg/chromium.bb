@@ -31,6 +31,12 @@ const CGFloat kIconLabelPadding = 4.0;
 // Inset for the image frame.
 const CGFloat kImageFrameYInset = 4.0;
 
+// Inset for the background frame.
+const CGFloat kBackgroundFrameYInset = 2.0;
+
+// Left margin for the background frame.
+const CGFloat kBackgroundFrameLeftMargin = 1.0;
+
 }  // namespace
 
 BubbleDecoration::BubbleDecoration() : retina_baseline_offset_(0) {
@@ -91,6 +97,13 @@ CGFloat BubbleDecoration::GetWidthForSpace(CGFloat width) {
     return image_width;
 
   return kOmittedWidth;
+}
+
+NSRect BubbleDecoration::GetBackgroundFrame(NSRect frame) {
+  NSRect background_frame = NSInsetRect(frame, 0.0, kBackgroundFrameYInset);
+  background_frame.origin.x += kBackgroundFrameLeftMargin;
+  background_frame.size.width -= kDividerPadding;
+  return background_frame;
 }
 
 void BubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {

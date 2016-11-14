@@ -24,6 +24,9 @@ class LocationBarDecoration;
   std::vector<LocationBarDecoration*> leftDecorations_;
   std::vector<LocationBarDecoration*> rightDecorations_;
 
+  // Decorations with tracking areas attached to the AutocompleteTextField.
+  std::vector<LocationBarDecoration*> mouseTrackingDecorations_;
+
   // If YES then the text field will not draw a focus ring or show the insertion
   // pointer.
   BOOL hideFocusState_;
@@ -43,6 +46,9 @@ class LocationBarDecoration;
 
 // Line height used for text in this cell.
 - (CGFloat)lineHeight;
+
+// Remove all of the tracking areas.
+- (void)clearTrackingArea;
 
 // Clear |leftDecorations_| and |rightDecorations_|.
 - (void)clearDecorations;
@@ -95,15 +101,22 @@ class LocationBarDecoration;
            inRect:(NSRect)cellFrame
            ofView:(AutocompleteTextField*)controlView;
 
+// Called by |AutocompleteTextField| to pass the mouse up event to the omnibox
+// decorations.
+- (void)mouseUp:(NSEvent*)theEvent
+         inRect:(NSRect)cellFrame
+         ofView:(AutocompleteTextField*)controlView;
+
 // Overridden from StyledTextFieldCell to include decorations adjacent
 // to the text area which don't handle mouse clicks themselves.
 // Keyword-search bubble, for instance.
 - (NSRect)textCursorFrameForFrame:(NSRect)cellFrame;
 
-// Setup decoration tooltips on |controlView| by calling
-// |-addToolTip:forRect:|.
-- (void)updateToolTipsInRect:(NSRect)cellFrame
-                      ofView:(AutocompleteTextField*)controlView;
+// Setup decoration tooltips and mouse tracking on |controlView| by calling
+// |-addToolTip:forRect:| and |SetupTrackingArea()|.
+- (void)updateMouseTrackingAndToolTipsInRect:(NSRect)cellFrame
+                                      ofView:
+                                          (AutocompleteTextField*)controlView;
 
 // Gets and sets |hideFocusState|. This allows the text field to have focus but
 // to appear unfocused.
@@ -114,4 +127,12 @@ class LocationBarDecoration;
 // Handles the |event| that caused |controlView| to become firstResponder.
 - (void)handleFocusEvent:(NSEvent*)event
                   ofView:(AutocompleteTextField*)controlView;
+@end
+
+// Methods which are either only for testing, or only public for testing.
+@interface AutocompleteTextFieldCell (TestingAPI)
+
+// Returns |mouseTrackingDecorations_|.
+- (const std::vector<LocationBarDecoration*>&)mouseTrackingDecorations;
+
 @end

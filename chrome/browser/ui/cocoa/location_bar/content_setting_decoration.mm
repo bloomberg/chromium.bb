@@ -59,15 +59,14 @@ const double kInMotionMultiplier = 1.0 / kInMotionInterval;
 
 // Padding for the animated text with respect to the image.
 const CGFloat kTextMarginPadding = 4;
-const CGFloat kIconMarginPadding = 2;
+const CGFloat kIconMarginPadding = 4;
 const CGFloat kBorderPadding = 3;
 
-// Padding between the divider between the omnibox text and the divider. The
-// desired value for each side is 8px. We get 5px on the left side by
-// subtracting kBorderPadding from 8px.
-const CGFloat kRightDividerPadding = 8.0;
-const CGFloat kLeftDividerPadding = 5.0;
-const CGFloat kDividerPadding = kLeftDividerPadding + kRightDividerPadding;
+// Padding between the divider and the decoration on the right.
+const CGFloat kDividerPadding = 1;
+
+// Padding between the divider and the text.
+const CGFloat kTextDividerPadding = 2;
 
 // Color of the vector graphic icons. Used when the location is not dark.
 // SkColorSetARGB(0xCC, 0xFF, 0xFF 0xFF);
@@ -383,17 +382,20 @@ void ContentSettingDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
     NSRect remainder = frame;
     remainder.origin.x = NSMaxX(icon_rect) + kTextMarginPadding;
     remainder.size.width =
-        NSMaxX(background_rect) - NSMinX(remainder) - kLeftDividerPadding;
+        NSMaxX(background_rect) - NSMinX(remainder) - kTextDividerPadding;
     DrawAttributedString(animated_text_, remainder);
 
-    NSBezierPath* line = [NSBezierPath bezierPath];
-    [line setLineWidth:1];
-    [line moveToPoint:NSMakePoint(NSMaxX(background_rect) - kLeftDividerPadding,
-                                  NSMinY(background_rect))];
-    [line lineToPoint:NSMakePoint(NSMaxX(background_rect) - kLeftDividerPadding,
-                                  NSMaxY(background_rect))];
-    [GetDividerColor(owner_->IsLocationBarDark()) set];
-    [line stroke];
+    // Draw the divider if available.
+    if (state() == LocationBarDecorationState::NORMAL) {
+      NSBezierPath* line = [NSBezierPath bezierPath];
+      [line setLineWidth:1];
+      [line moveToPoint:NSMakePoint(NSMaxX(background_rect) - kDividerPadding,
+                                    NSMinY(background_rect))];
+      [line lineToPoint:NSMakePoint(NSMaxX(background_rect) - kDividerPadding,
+                                    NSMaxY(background_rect))];
+      [GetDividerColor(owner_->IsLocationBarDark()) set];
+      [line stroke];
+    }
   } else {
     // No animation, draw the image as normal.
     ImageDecoration::DrawInFrame(frame, control_view);

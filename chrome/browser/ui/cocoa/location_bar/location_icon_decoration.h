@@ -29,8 +29,10 @@ class LocationIconDecoration : public ImageDecoration {
   // Show the page info panel on click.
   bool OnMousePressed(NSRect frame, NSPoint location) override;
   bool AcceptsMousePress() override;
+  bool HasHoverAndPressEffect() override;
   NSString* GetToolTip() override;
   NSPoint GetBubblePointInFrame(NSRect frame) override;
+  NSRect GetBackgroundFrame(NSRect frame) override;
 
  private:
   NSRect drag_frame_;
