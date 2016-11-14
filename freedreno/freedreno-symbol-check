@@ -49,6 +49,7 @@ fd_ringbuffer_timestamp
 fd_ringmarker_del
 fd_ringmarker_dwords
 fd_ringmarker_flush
+fd_ringbuffer_flush2
 fd_ringmarker_mark
 fd_ringmarker_new
 EOF
