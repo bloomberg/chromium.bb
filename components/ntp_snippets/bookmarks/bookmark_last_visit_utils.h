@@ -22,10 +22,12 @@ namespace ntp_snippets {
 
 // If there is a bookmark for |url|, this function updates its last visit date
 // to now. If there are multiple bookmarks for a given URL, it updates all of
-// them.
+// them. The last visit dates are kept separate for mobile and desktop,
+// according to |is_mobile_platform|.
 void UpdateBookmarkOnURLVisitedInMainFrame(
     bookmarks::BookmarkModel* bookmark_model,
-    const GURL& url);
+    const GURL& url,
+    bool is_mobile_platform);
 
 // Gets the last visit date for a given bookmark |node|. The visit when the
 // bookmark is created also counts. If no info about last visit date is present

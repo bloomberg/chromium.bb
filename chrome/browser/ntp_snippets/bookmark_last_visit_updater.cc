@@ -4,14 +4,30 @@
 
 #include "chrome/browser/ntp_snippets/bookmark_last_visit_updater.h"
 
+#include "chrome/common/features.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/ntp_snippets/bookmarks/bookmark_last_visit_utils.h"
 #include "content/public/browser/navigation_handle.h"
 
+namespace {
+
+bool IsMobilePlatform() {
+#if BUILDFLAG(ANDROID_JAVA_UI)  // There are no tab helpers on iOS.
+  return true;
+#else
+  return false;
+#endif
+}
+
+}  // namespace
+
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(BookmarkLastVisitUpdater);
 
 BookmarkLastVisitUpdater::~BookmarkLastVisitUpdater() {
+  // In unit-tests on desktop, the bookmark_model is null.
+  if (!bookmark_model_)
+    return;
   bookmark_model_->RemoveObserver(this);
 }
 
@@ -29,6 +45,9 @@ BookmarkLastVisitUpdater::BookmarkLastVisitUpdater(
     : content::WebContentsObserver(web_contents),
       bookmark_model_(bookmark_model),
       web_contents_(web_contents) {
+  // In unit-tests on desktop, the bookmark_model is null.
+  if (!bookmark_model_)
+    return;
   bookmark_model->AddObserver(this);
 }
 
@@ -47,11 +66,14 @@ void BookmarkLastVisitUpdater::DidRedirectNavigation(
 
 void BookmarkLastVisitUpdater::NewURLVisited(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() || navigation_handle->IsErrorPage())
+  // In unit-tests on desktop, the bookmark_model is null.
+  if (!navigation_handle->IsInMainFrame() || navigation_handle->IsErrorPage() ||
+      !bookmark_model_) {
     return;
+  }
 
   ntp_snippets::UpdateBookmarkOnURLVisitedInMainFrame(
-      bookmark_model_, navigation_handle->GetURL());
+      bookmark_model_, navigation_handle->GetURL(), IsMobilePlatform());
 }
 
 void BookmarkLastVisitUpdater::BookmarkNodeAdded(
@@ -64,6 +86,6 @@ void BookmarkLastVisitUpdater::BookmarkNodeAdded(
     // Consider in this TabHelper only bookmarks created from this tab (and not
     // the ones created from other tabs or created through bookmark sync).
     ntp_snippets::UpdateBookmarkOnURLVisitedInMainFrame(
-        bookmark_model_, new_bookmark_url);
+        bookmark_model_, new_bookmark_url, IsMobilePlatform());
   }
 }

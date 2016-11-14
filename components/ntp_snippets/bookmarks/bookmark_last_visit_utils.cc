@@ -65,7 +65,8 @@ bool IsBlacklisted(const GURL& url) {
 }  // namespace
 
 void UpdateBookmarkOnURLVisitedInMainFrame(BookmarkModel* bookmark_model,
-                                           const GURL& url) {
+                                           const GURL& url,
+                                           bool is_mobile_platform) {
   // Skip URLs that are blacklisted.
   if (IsBlacklisted(url))
     return;
@@ -79,8 +80,10 @@ void UpdateBookmarkOnURLVisitedInMainFrame(BookmarkModel* bookmark_model,
   // If there are bookmarks for |url|, set their last visit date to now.
   std::string now = FormatLastVisitDate(base::Time::Now());
   for (const BookmarkNode* node : bookmarks_for_url) {
-    bookmark_model->SetNodeMetaInfo(node, kBookmarkLastVisitDateOnMobileKey,
-                                    now);
+    bookmark_model->SetNodeMetaInfo(
+        node, is_mobile_platform ? kBookmarkLastVisitDateOnMobileKey
+                                 : kBookmarkLastVisitDateOnDesktopKey,
+        now);
     // If the bookmark has been dismissed from NTP before, a new visit overrides
     // such a dismissal.
     bookmark_model->DeleteNodeMetaInfo(node, kBookmarkDismissedFromNTP);
