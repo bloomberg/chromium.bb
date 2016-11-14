@@ -875,6 +875,9 @@ TEST_P(MultiprocessMessagePipeTestWithPeerSupport,
   CloseHandle(echo_proxy_c);
 }
 
+#if !defined(OS_ANDROID)
+// This test is suspected to be flaky on android https://crbug.com/663998
+// and thus disabled on android.
 TEST_P(MultiprocessMessagePipeTestWithPeerSupport,
        ChannelPipesWithMultipleChildren) {
   RUN_CHILD_ON_PIPE(ChannelEchoClient, a)
@@ -887,6 +890,7 @@ TEST_P(MultiprocessMessagePipeTestWithPeerSupport,
     END_CHILD()
   END_CHILD()
 }
+#endif
 
 // Reads and turns a pipe handle some number of times to create lots of
 // transient proxies.
