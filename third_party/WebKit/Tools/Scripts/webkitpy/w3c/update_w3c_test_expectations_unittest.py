@@ -13,7 +13,7 @@ from webkitpy.common.net.web_mock import MockWeb
 from webkitpy.common.system.logtesting import LoggingTestCase
 from webkitpy.common.system.executive_mock import MockExecutive2
 from webkitpy.layout_tests.builder_list import BuilderList
-from webkitpy.w3c.update_w3c_test_expectations import W3CExpectationsLineAdder
+from webkitpy.w3c.update_w3c_test_expectations import W3CExpectationsLineAdder, MARKER_COMMENT
 
 
 class UpdateW3CTestExpectationsTest(LoggingTestCase):
@@ -176,14 +176,14 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
 
     def test_write_to_test_expectations_with_marker_comment(self):
         expectations_path = '/mock-checkout/third_party/WebKit/LayoutTests/TestExpectations'
-        self.host.filesystem.files[expectations_path] = '# Tests added from W3C auto import bot\n'
+        self.host.filesystem.files[expectations_path] = MARKER_COMMENT + '\n'
         line_adder = W3CExpectationsLineAdder(self.host)
         line_list = ['crbug.com/123 [ FakePlatform ] fake/file/path.html [ Pass ]']
         line_adder.write_to_test_expectations(line_list)
         value = line_adder.host.filesystem.read_text_file(expectations_path)
         self.assertMultiLineEqual(
             value,
-            ('# Tests added from W3C auto import bot\n'
+            (MARKER_COMMENT + '\n'
              'crbug.com/123 [ FakePlatform ] fake/file/path.html [ Pass ]\n'))
 
     def test_write_to_test_expectations_with_no_marker_comment(self):
@@ -196,8 +196,7 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
         self.assertMultiLineEqual(
             value,
             ('crbug.com/111 [ FakePlatform ]\n'
-             '\n'
-             '# Tests added from W3C auto import bot\n'
+             '\n' + MARKER_COMMENT + '\n'
              'crbug.com/123 [ FakePlatform ] fake/file/path.html [ Pass ]'))
 
     def test_write_to_test_expectations_skips_existing_lines(self):
@@ -213,21 +212,20 @@ class UpdateW3CTestExpectationsTest(LoggingTestCase):
         self.assertEqual(
             value,
             ('crbug.com/111 dont/copy/me.html [ Failure ]\n'
-             '\n'
-             '# Tests added from W3C auto import bot\n'
+             '\n' + MARKER_COMMENT + '\n'
              'crbug.com/222 do/copy/me.html [ Failure ]'))
 
     def test_write_to_test_expectations_with_marker_and_no_lines(self):
         expectations_path = '/mock-checkout/third_party/WebKit/LayoutTests/TestExpectations'
         self.host.filesystem.files[expectations_path] = (
-            '# Tests added from W3C auto import bot\n'
+            MARKER_COMMENT + '\n'
             'crbug.com/123 [ FakePlatform ] fake/file/path.html [ Pass ]\n')
         line_adder = W3CExpectationsLineAdder(self.host)
         line_adder.write_to_test_expectations([])
         value = line_adder.host.filesystem.read_text_file(expectations_path)
         self.assertMultiLineEqual(
             value,
-            ('# Tests added from W3C auto import bot\n'
+            (MARKER_COMMENT + '\n'
              'crbug.com/123 [ FakePlatform ] fake/file/path.html [ Pass ]\n'))
 
     def test_is_js_test_true(self):

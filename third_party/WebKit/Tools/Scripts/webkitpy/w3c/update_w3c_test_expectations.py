@@ -23,6 +23,8 @@ from webkitpy.w3c.test_parser import TestParser
 
 _log = logging.getLogger(__name__)
 
+MARKER_COMMENT = '# ====== New tests from w3c-test-autoroller added here ======'
+
 
 class W3CExpectationsLineAdder(object):
 
@@ -267,14 +269,13 @@ class W3CExpectationsLineAdder(object):
         _log.debug('Lines to write to TestExpectations: %r', line_list)
         port = self.host.port_factory.get()
         expectations_file_path = port.path_to_generic_test_expectations_file()
-        marker_comment = '# Tests added from W3C auto import bot'
         file_contents = self.host.filesystem.read_text_file(expectations_file_path)
-        marker_comment_index = file_contents.find(marker_comment)
+        marker_comment_index = file_contents.find(MARKER_COMMENT)
         line_list = [line for line in line_list if self._test_name_from_expectation_string(line) not in file_contents]
         if not line_list:
             return
         if marker_comment_index == -1:
-            file_contents += '\n%s\n' % marker_comment
+            file_contents += '\n%s\n' % MARKER_COMMENT
             file_contents += '\n'.join(line_list)
         else:
             end_of_marker_line = (file_contents[marker_comment_index:].find('\n')) + marker_comment_index

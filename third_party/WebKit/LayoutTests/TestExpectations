@@ -1414,7 +1414,7 @@ crbug.com/660580 [ Precise ] virtual/scalefactor200/fast/hidpi/static/drag-image
 crbug.com/660580 [ Precise ] virtual/scalefactor200withzoom/fast/hidpi/static/drag-image.html [ Skip ]
 crbug.com/660580 [ Precise ] virtual/threaded/printing/fixed-positioned-headers-and-footers.html [ Skip ]
 
-# Tests added from W3C auto import bot
+# ====== New tests from w3c-test-autoroller added here ======
 crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001a.xhtml [ Failure ]
 crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001b.xhtml [ Failure ]
 crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-006.xhtml [ Failure ]
