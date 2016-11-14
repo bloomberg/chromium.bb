@@ -1219,7 +1219,6 @@ component("base") {
     deps += [
       "//base/trace_event/etw_manifest:chrome_events_win",
       "//base/win:base_win_features",
-      "//base/win:eventlog_messages",
     ]
 
     if (is_component_build) {

@@ -460,17 +460,6 @@ if (is_win) {
       "$root_out_dir/First Run",
     ]
   }
-  shared_library("eventlog_provider") {
-    sources = [
-      "$root_gen_dir/base/win/eventlog_messages.rc",
-    ]
-
-    ldflags = [ "-noentry" ]
-
-    deps = [
-      "//base/win:eventlog_messages",
-    ]
-  }
 } else if (is_mac) {
   chrome_helper_name = chrome_product_full_name + " Helper"
   chrome_framework_name = chrome_product_full_name + " Framework"
