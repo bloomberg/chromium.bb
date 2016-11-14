@@ -10,7 +10,7 @@ Check state transition for close on closed state.
 PASS port.connection is "closed"
 - check callback arguments.
 PASS callback is called with port [object MIDIInput].
-PASS callbackport.id is "MockInputID"
+PASS callbackport.id is "MockInputID-0"
 PASS callbackport.connection is "closed"
 - check final state.
 PASS port.connection is "closed"
@@ -19,15 +19,15 @@ Check state transition for open on closed state.
 PASS port.connection is "closed"
 - check port handler.
 PASS handler is called with port [object MIDIInput].
-PASS eventport.id is "MockInputID"
+PASS eventport.id is "MockInputID-0"
 PASS eventport.connection is "open"
 - check access handler.
 PASS handler is called with port [object MIDIInput].
-PASS eventport.id is "MockInputID"
+PASS eventport.id is "MockInputID-0"
 PASS eventport.connection is "open"
 - check callback arguments.
 PASS callback is called with port [object MIDIInput].
-PASS callbackport.id is "MockInputID"
+PASS callbackport.id is "MockInputID-0"
 PASS callbackport.connection is "open"
 - check final state.
 PASS port.connection is "open"
@@ -36,7 +36,7 @@ Check state transition for open on open state.
 PASS port.connection is "open"
 - check callback arguments.
 PASS callback is called with port [object MIDIInput].
-PASS callbackport.id is "MockInputID"
+PASS callbackport.id is "MockInputID-0"
 PASS callbackport.connection is "open"
 - check final state.
 PASS port.connection is "open"
@@ -45,15 +45,15 @@ Check state transition for close on open state.
 PASS port.connection is "open"
 - check port handler.
 PASS handler is called with port [object MIDIInput].
-PASS eventport.id is "MockInputID"
+PASS eventport.id is "MockInputID-0"
 PASS eventport.connection is "closed"
 - check access handler.
 PASS handler is called with port [object MIDIInput].
-PASS eventport.id is "MockInputID"
+PASS eventport.id is "MockInputID-0"
 PASS eventport.connection is "closed"
 - check callback arguments.
 PASS callback is called with port [object MIDIInput].
-PASS callbackport.id is "MockInputID"
+PASS callbackport.id is "MockInputID-0"
 PASS callbackport.connection is "closed"
 - check final state.
 PASS port.connection is "closed"

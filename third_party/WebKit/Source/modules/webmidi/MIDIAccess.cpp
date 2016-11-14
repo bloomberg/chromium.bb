@@ -75,11 +75,12 @@ MIDIAccess::MIDIAccess(
     const MIDIAccessInitializer::PortDescriptor& port = ports[i];
     if (port.type == MIDIPort::TypeInput) {
       m_inputs.append(MIDIInput::create(this, port.id, port.manufacturer,
-                                        port.name, port.version, port.state));
+                                        port.name, port.version,
+                                        ToDeviceState(port.state)));
     } else {
-      m_outputs.append(MIDIOutput::create(this, m_outputs.size(), port.id,
-                                          port.manufacturer, port.name,
-                                          port.version, port.state));
+      m_outputs.append(MIDIOutput::create(
+          this, m_outputs.size(), port.id, port.manufacturer, port.name,
+          port.version, ToDeviceState(port.state)));
     }
   }
 }
