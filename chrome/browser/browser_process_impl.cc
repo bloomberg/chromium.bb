@@ -100,7 +100,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_json/safe_json_parser.h"
 #include "components/signin/core/common/profile_management_switches.h"
-#include "components/subresource_filter/content/browser/content_ruleset_distributor.h"
+#include "components/subresource_filter/content/browser/content_ruleset_service_delegate.h"
 #include "components/subresource_filter/core/browser/ruleset_service.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
@@ -1212,9 +1212,9 @@ void BrowserProcessImpl::CreateSubresourceFilterRulesetService() {
           .Append(subresource_filter::kIndexedRulesetBaseDirectoryName);
   subresource_filter_ruleset_service_.reset(
       new subresource_filter::RulesetService(
-          local_state(), blocking_task_runner, indexed_ruleset_base_dir));
-  subresource_filter_ruleset_service_->RegisterDistributor(
-      base::WrapUnique(new subresource_filter::ContentRulesetDistributor));
+          local_state(), blocking_task_runner,
+          base::MakeUnique<subresource_filter::ContentRulesetServiceDelegate>(),
+          indexed_ruleset_base_dir));
 }
 
 void BrowserProcessImpl::CreateGCMDriver() {

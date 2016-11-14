@@ -7,7 +7,6 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/browser_process.h"
@@ -16,7 +15,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/subresource_filter/core/browser/ruleset_distributor.h"
+#include "components/subresource_filter/content/browser/content_ruleset_service_delegate.h"
 #include "components/subresource_filter/core/browser/ruleset_service.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
@@ -32,32 +31,29 @@ namespace subresource_filter {
 
 namespace {
 
-void CloseFile(base::File) {}
-
-class RulesetDistributionListener : public RulesetDistributor {
+class RulesetDistributionListener {
  public:
-  RulesetDistributionListener() {}
-  ~RulesetDistributionListener() override {}
-
-  void AwaitDistribution() {
-    base::RunLoop run_loop;
-    quit_closure_ = run_loop.QuitClosure();
-    run_loop.Run();
+  RulesetDistributionListener()
+      : delegate_(static_cast<ContentRulesetServiceDelegate*>(
+            g_browser_process->subresource_filter_ruleset_service()
+                ->delegate())) {
+    delegate_->SetRulesetPublishedCallbackForTesting(run_loop_.QuitClosure());
   }
+
+  ~RulesetDistributionListener() {
+    delegate_->SetRulesetPublishedCallbackForTesting(base::Closure());
+  }
+
+  void AwaitDistribution() { run_loop_.Run(); }
 
  private:
-  void PublishNewVersion(base::File file) override {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::FILE, FROM_HERE,
-        base::Bind(&CloseFile, base::Passed(&file)));
-    if (!quit_closure_.is_null())
-      quit_closure_.Run();
-  }
-
-  base::Closure quit_closure_;
+  ContentRulesetServiceDelegate* delegate_;
+  base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(RulesetDistributionListener);
 };
+
+void CloseFile(base::File) {}
 
 }  // namespace
 
@@ -140,15 +136,13 @@ class SubresourceFilterBrowserTest : public InProcessBrowserTest {
     ASSERT_NO_FATAL_FAILURE(
         ruleset_creator_.CreateRulesetToDisallowURLsWithPathSuffix(
             suffix, &test_ruleset_pair));
-    RulesetDistributionListener* listener = new RulesetDistributionListener();
-    g_browser_process->subresource_filter_ruleset_service()
-        ->RegisterDistributor(base::WrapUnique(listener));
     subresource_filter::UnindexedRulesetInfo unindexed_ruleset_info;
     unindexed_ruleset_info.content_version = test_ruleset_content_version;
     unindexed_ruleset_info.ruleset_path = test_ruleset_pair.unindexed.path;
+    RulesetDistributionListener distribution_listener;
     g_browser_process->subresource_filter_ruleset_service()
         ->IndexAndStoreAndPublishRulesetIfNeeded(unindexed_ruleset_info);
-    listener->AwaitDistribution();
+    distribution_listener.AwaitDistribution();
   }
 
  private:

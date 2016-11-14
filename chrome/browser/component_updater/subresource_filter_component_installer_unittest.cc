@@ -17,10 +17,10 @@
 #include "base/strings/string_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/version.h"
-#include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/component_updater/mock_component_updater_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/subresource_filter/content/browser/content_ruleset_service_delegate.h"
 #include "components/subresource_filter/core/browser/ruleset_service.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
@@ -37,8 +37,12 @@ class TestRulesetService : public subresource_filter::RulesetService {
   TestRulesetService(PrefService* local_state,
                      scoped_refptr<base::SequencedTaskRunner> task_runner,
                      const base::FilePath& base_dir)
-      : subresource_filter::RulesetService(local_state, task_runner, base_dir) {
-  }
+      : subresource_filter::RulesetService(
+            local_state,
+            task_runner,
+            base::MakeUnique<
+                subresource_filter::ContentRulesetServiceDelegate>(),
+            base_dir) {}
 
   ~TestRulesetService() override {}
 
@@ -102,10 +106,7 @@ class SubresourceFilterComponentInstallerTest : public PlatformTest {
 
     TestingBrowserProcess::GetGlobal()->SetRulesetService(std::move(service));
     traits_.reset(new SubresourceFilterComponentInstallerTraits());
-    AfterStartupTaskUtils::SetBrowserStartupIsCompleteForTesting();
   }
-
-  void TearDown() override { AfterStartupTaskUtils::UnsafeResetForTesting(); }
 
   TestRulesetService* service() {
     return static_cast<TestRulesetService*>(

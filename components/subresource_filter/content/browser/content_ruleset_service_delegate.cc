@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/subresource_filter/content/browser/content_ruleset_distributor.h"
+#include "components/subresource_filter/content/browser/content_ruleset_service_delegate.h"
 
 #include <utility>
 
@@ -42,7 +42,7 @@ void CloseFileOnFileThread(base::File* file) {
 
 }  // namespace
 
-ContentRulesetDistributor::ContentRulesetDistributor() {
+ContentRulesetServiceDelegate::ContentRulesetServiceDelegate() {
   // Must rely on notifications as RenderProcessHostObserver::RenderProcessReady
   // would only be called after queued IPC messages (potentially triggering a
   // navigation) had already been sent to the new renderer.
@@ -51,11 +51,24 @@ ContentRulesetDistributor::ContentRulesetDistributor() {
       content::NotificationService::AllBrowserContextsAndSources());
 }
 
-ContentRulesetDistributor::~ContentRulesetDistributor() {
+ContentRulesetServiceDelegate::~ContentRulesetServiceDelegate() {
   CloseFileOnFileThread(&ruleset_data_);
 }
 
-void ContentRulesetDistributor::PublishNewVersion(base::File ruleset_data) {
+void ContentRulesetServiceDelegate::SetRulesetPublishedCallbackForTesting(
+    base::Closure callback) {
+  ruleset_published_callback_ = callback;
+}
+
+void ContentRulesetServiceDelegate::PostAfterStartupTask(base::Closure task) {
+  content::BrowserThread::PostAfterStartupTask(
+      FROM_HERE, content::BrowserThread::GetTaskRunnerForThread(
+                     content::BrowserThread::UI),
+      task);
+}
+
+void ContentRulesetServiceDelegate::PublishNewRulesetVersion(
+    base::File ruleset_data) {
   DCHECK(ruleset_data.IsValid());
   CloseFileOnFileThread(&ruleset_data_);
   ruleset_data_ = std::move(ruleset_data);
@@ -63,9 +76,12 @@ void ContentRulesetDistributor::PublishNewVersion(base::File ruleset_data) {
        it.Advance()) {
     SendRulesetToRenderProcess(&ruleset_data_, it.GetCurrentValue());
   }
+
+  if (!ruleset_published_callback_.is_null())
+    ruleset_published_callback_.Run();
 }
 
-void ContentRulesetDistributor::Observe(
+void ContentRulesetServiceDelegate::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {

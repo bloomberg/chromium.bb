@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
@@ -16,23 +15,8 @@
 #include "components/subresource_filter/core/browser/ruleset_service.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
-#include "content/public/browser/browser_thread.h"
 
 using component_updater::ComponentUpdateService;
-
-namespace {
-
-void IndexAndStoreAndPublishRulesetIfNeeded(
-    const subresource_filter::UnindexedRulesetInfo& unindexed_ruleset_info) {
-  subresource_filter::RulesetService* ruleset_service =
-      g_browser_process->subresource_filter_ruleset_service();
-  if (ruleset_service) {
-    ruleset_service->IndexAndStoreAndPublishRulesetIfNeeded(
-        unindexed_ruleset_info);
-  }
-}
-
-}  // namespace
 
 namespace component_updater {
 
@@ -103,10 +87,10 @@ void SubresourceFilterComponentInstallerTraits::ComponentReady(
   ruleset_info.content_version = version.GetString();
   ruleset_info.ruleset_path = install_dir.Append(kRulesetDataFileName);
   ruleset_info.license_path = install_dir.Append(kLicenseFileName);
-  content::BrowserThread::PostAfterStartupTask(
-      FROM_HERE, content::BrowserThread::GetTaskRunnerForThread(
-                     content::BrowserThread::UI),
-      base::Bind(&IndexAndStoreAndPublishRulesetIfNeeded, ruleset_info));
+  subresource_filter::RulesetService* ruleset_service =
+      g_browser_process->subresource_filter_ruleset_service();
+  if (ruleset_service)
+    ruleset_service->IndexAndStoreAndPublishRulesetIfNeeded(ruleset_info);
 }
 
 // Called during startup and installation before ComponentReady().

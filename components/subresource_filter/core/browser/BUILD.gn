@@ -4,9 +4,9 @@
 
 static_library("browser") {
   sources = [
-    "ruleset_distributor.h",
     "ruleset_service.cc",
     "ruleset_service.h",
+    "ruleset_service_delegate.h",
     "subresource_filter_client.h",
     "subresource_filter_constants.cc",
     "subresource_filter_constants.h",

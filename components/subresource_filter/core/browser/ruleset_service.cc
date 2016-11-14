@@ -22,7 +22,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/subresource_filter/core/browser/ruleset_distributor.h"
+#include "components/subresource_filter/core/browser/ruleset_service_delegate.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/subresource_filter/core/common/copying_file_stream.h"
 #include "components/subresource_filter/core/common/indexed_ruleset.h"
@@ -51,7 +51,7 @@ void RecordIndexAndWriteRulesetResult(
 }
 
 // Implements operations on a `sentinel file`, which is used as a safeguard to
-// prevent crash-looping if ruleset indexing crashes on start-up.
+// prevent crash-looping if ruleset indexing crashes right after start-up.
 //
 // The sentinel file is placed in the ruleset version directory just before
 // indexing commences, and removed afterwards. Therefore, if a sentinel file is
@@ -146,23 +146,34 @@ decltype(&base::ReplaceFile) RulesetService::g_replace_file_func =
 RulesetService::RulesetService(
     PrefService* local_state,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
+    std::unique_ptr<RulesetServiceDelegate> delegate,
     const base::FilePath& indexed_ruleset_base_dir)
     : local_state_(local_state),
       blocking_task_runner_(blocking_task_runner),
+      delegate_(std::move(delegate)),
+      is_after_startup_(false),
       indexed_ruleset_base_dir_(indexed_ruleset_base_dir) {
+  DCHECK(delegate_);
   DCHECK_NE(local_state_->GetInitializationStatus(),
             PrefService::INITIALIZATION_STATUS_WAITING);
+  delegate_->PostAfterStartupTask(
+      base::Bind(&RulesetService::InitializeAfterStartup, AsWeakPtr()));
+
   IndexedRulesetVersion most_recently_indexed_version;
   most_recently_indexed_version.ReadFromPrefs(local_state_);
   if (most_recently_indexed_version.IsValid() &&
-      most_recently_indexed_version.IsCurrentFormatVersion())
+      most_recently_indexed_version.IsCurrentFormatVersion()) {
     OpenAndPublishRuleset(most_recently_indexed_version);
+  }
 }
 
 RulesetService::~RulesetService() {}
 
 void RulesetService::IndexAndStoreAndPublishRulesetIfNeeded(
     const UnindexedRulesetInfo& unindexed_ruleset_info) {
+  if (unindexed_ruleset_info.content_version.empty())
+    return;
+
   // Trying to store a ruleset with the same version for a second time would not
   // only be futile, but would fail on Windows due to "File System Tunneling" as
   // long as the previously stored copy of the rules is still in use.
@@ -170,19 +181,20 @@ void RulesetService::IndexAndStoreAndPublishRulesetIfNeeded(
   most_recently_indexed_version.ReadFromPrefs(local_state_);
   if (most_recently_indexed_version.IsCurrentFormatVersion() &&
       most_recently_indexed_version.content_version ==
-          unindexed_ruleset_info.content_version)
+          unindexed_ruleset_info.content_version) {
     return;
+  }
+
+  // During start-up, retain information about the most recently supplied
+  // unindexed ruleset, to be processed after start-up is complete.
+  if (!is_after_startup_) {
+    queued_unindexed_ruleset_info_ = unindexed_ruleset_info;
+    return;
+  }
 
   IndexAndStoreRuleset(
       unindexed_ruleset_info,
       base::Bind(&RulesetService::OpenAndPublishRuleset, AsWeakPtr()));
-}
-
-void RulesetService::RegisterDistributor(
-    std::unique_ptr<RulesetDistributor> distributor) {
-  if (ruleset_data_ && ruleset_data_->IsValid())
-    distributor->PublishNewVersion(ruleset_data_->DuplicateFile());
-  distributors_.push_back(std::move(distributor));
 }
 
 // static
@@ -356,11 +368,20 @@ RulesetService::IndexAndWriteRulesetResult RulesetService::WriteRuleset(
   return IndexAndWriteRulesetResult::SUCCESS;
 }
 
+void RulesetService::InitializeAfterStartup() {
+  is_after_startup_ = true;
+  if (!queued_unindexed_ruleset_info_.content_version.empty()) {
+    IndexAndStoreRuleset(
+        queued_unindexed_ruleset_info_,
+        base::Bind(&RulesetService::OpenAndPublishRuleset, AsWeakPtr()));
+    queued_unindexed_ruleset_info_ = UnindexedRulesetInfo();
+  }
+}
+
 void RulesetService::IndexAndStoreRuleset(
     const UnindexedRulesetInfo& unindexed_ruleset_info,
     const WriteRulesetCallback& success_callback) {
-  if (unindexed_ruleset_info.content_version.empty())
-    return;
+  DCHECK(!unindexed_ruleset_info.content_version.empty());
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
       base::Bind(&RulesetService::IndexAndWriteRuleset,
@@ -411,8 +432,7 @@ void RulesetService::OnOpenedRuleset(base::File::Error error) {
     return;
 
   DCHECK_EQ(error, base::File::Error::FILE_OK);
-  for (auto& distributor : distributors_)
-    distributor->PublishNewVersion(ruleset_data_->DuplicateFile());
+  delegate_->PublishNewRulesetVersion(ruleset_data_->DuplicateFile());
 }
 
 }  // namespace subresource_filter
