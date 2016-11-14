@@ -17,7 +17,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/pref_util.h"
 #include "components/offline_pages/offline_page_model_query.h"
@@ -40,11 +42,20 @@ using offline_pages::OfflinePageModelQueryBuilder;
 
 namespace {
 
-// TODO(vitaliii): Make this configurable via a variation param. See
-// crbug.com/654800.
-const int kMaxSuggestionsCount = 5;
+const int kDefaultMaxSuggestionsCount = 5;
 const char kAssetDownloadsPrefix = 'D';
 const char kOfflinePageDownloadsPrefix = 'O';
+
+const char* kMaxSuggestionsCountParamName = "downloads_max_count";
+
+int GetMaxSuggestionsCount() {
+  bool assets_enabled =
+      base::FeatureList::IsEnabled(features::kAssetDownloadSuggestionsFeature);
+  return ntp_snippets::GetParamAsInt(
+      assets_enabled ? features::kAssetDownloadSuggestionsFeature
+                     : features::kOfflinePageDownloadSuggestionsFeature,
+      kMaxSuggestionsCountParamName, kDefaultMaxSuggestionsCount);
+}
 
 std::string GetOfflinePagePerCategoryID(int64_t raw_offline_page_id) {
   // Raw ID is prefixed in order to avoid conflicts with asset downloads.
@@ -399,17 +410,19 @@ void DownloadSuggestionsProvider::FetchAssetsDownloads() {
   if (old_dismissed_ids.size() != retained_dismissed_ids.size())
     StoreAssetDismissedIDsToPrefs(retained_dismissed_ids);
 
-  if (static_cast<int>(cached_asset_downloads_.size()) > kMaxSuggestionsCount) {
+  const int max_suggestions_count = GetMaxSuggestionsCount();
+  if (static_cast<int>(cached_asset_downloads_.size()) >
+      max_suggestions_count) {
     // Partially sorts |downloads| such that:
-    // 1) The element at the index |kMaxSuggestionsCount| is changed to the
+    // 1) The element at the index |max_suggestions_count| is changed to the
     //    element which would occur on this position if |downloads| was sorted;
-    // 2) All of the elements before index |kMaxSuggestionsCount| are less than
+    // 2) All of the elements before index |max_suggestions_count| are less than
     //    or equal to the elements after it.
     std::nth_element(cached_asset_downloads_.begin(),
-                     cached_asset_downloads_.begin() + kMaxSuggestionsCount,
+                     cached_asset_downloads_.begin() + max_suggestions_count,
                      cached_asset_downloads_.end(),
                      OrderDownloadsMostRecentlyDownloadedFirst());
-    cached_asset_downloads_.resize(kMaxSuggestionsCount);
+    cached_asset_downloads_.resize(max_suggestions_count);
   }
 }
 
@@ -436,7 +449,8 @@ void DownloadSuggestionsProvider::SubmitContentSuggestions() {
 
   // TODO(vitaliii): Use resize() here. In order to do so, mark
   // ContentSuggestion move constructor noexcept.
-  while (suggestions.size() > kMaxSuggestionsCount)
+  const int max_suggestions_count = GetMaxSuggestionsCount();
+  while (suggestions.size() > static_cast<size_t>(max_suggestions_count))
     suggestions.pop_back();
 
   observer()->OnNewSuggestions(this, provided_category_,
@@ -497,8 +511,9 @@ bool DownloadSuggestionsProvider::CacheAssetDownloadIfNeeded(
     return false;
 
   DCHECK_LE(static_cast<int>(cached_asset_downloads_.size()),
-            kMaxSuggestionsCount);
-  if (cached_asset_downloads_.size() == kMaxSuggestionsCount) {
+            GetMaxSuggestionsCount());
+  if (static_cast<int>(cached_asset_downloads_.size()) ==
+      GetMaxSuggestionsCount()) {
     auto oldest = std::max_element(cached_asset_downloads_.begin(),
                                    cached_asset_downloads_.end(),
                                    OrderDownloadsMostRecentlyDownloadedFirst());
@@ -554,9 +569,10 @@ void DownloadSuggestionsProvider::
     return;
 
   if (CorrespondsToOfflinePage(suggestion_id)) {
-    if (cached_offline_page_downloads_.size() == kMaxSuggestionsCount - 1) {
-      // Previously there were |kMaxSuggestionsCount| cached suggestion,
-      // therefore, overall there may be more than |kMaxSuggestionsCount|
+    if (static_cast<int>(cached_offline_page_downloads_.size()) ==
+        GetMaxSuggestionsCount() - 1) {
+      // Previously there were |GetMaxSuggestionsCount()| cached suggestion,
+      // therefore, overall there may be more than |GetMaxSuggestionsCount()|
       // suggestions in the model and now one of them may be cached instead of
       // the removed one. Even though, the suggestions are not immediately
       // used the cache has to be kept up to date, because it may be used when
@@ -564,7 +580,8 @@ void DownloadSuggestionsProvider::
       AsynchronouslyFetchOfflinePagesDownloads(/*notify=*/false);
     }
   } else {
-    if (cached_asset_downloads_.size() == kMaxSuggestionsCount - 1) {
+    if (static_cast<int>(cached_asset_downloads_.size()) ==
+        GetMaxSuggestionsCount() - 1) {
       // The same as the case above.
       FetchAssetsDownloads();
     }
@@ -589,18 +606,19 @@ void DownloadSuggestionsProvider::UpdateOfflinePagesCache(
       retained_dismissed_ids.insert(id_within_category);
   }
 
-  if (static_cast<int>(items.size()) > kMaxSuggestionsCount) {
+  const int max_suggestions_count = GetMaxSuggestionsCount();
+  if (static_cast<int>(items.size()) > max_suggestions_count) {
     // Partially sorts |items| such that:
-    // 1) The element at the index |kMaxSuggestionsCount| is changed to the
+    // 1) The element at the index |max_suggestions_count| is changed to the
     //    element which would occur on this position if |items| was sorted;
-    // 2) All of the elements before index |kMaxSuggestionsCount| are less than
+    // 2) All of the elements before index |max_suggestions_count| are less than
     //    or equal to the elements after it.
     std::nth_element(
-        items.begin(), items.begin() + kMaxSuggestionsCount, items.end(),
+        items.begin(), items.begin() + max_suggestions_count, items.end(),
         [](const OfflinePageItem* left, const OfflinePageItem* right) {
           return left->creation_time > right->creation_time;
         });
-    items.resize(kMaxSuggestionsCount);
+    items.resize(max_suggestions_count);
   }
 
   cached_offline_page_downloads_.clear();
