@@ -50,6 +50,9 @@ bool IsPathHomePageBase(base::StringPiece path) {
 bool IsValidHostName(base::StringPiece host,
                      base::StringPiece domain_in_lower_case,
                      SubdomainPermission subdomain_permission) {
+  // Fast path to avoid searching the registry set.
+  if (host.find(domain_in_lower_case) == base::StringPiece::npos)
+    return false;
   size_t tld_length =
       net::registry_controlled_domains::GetCanonicalHostRegistryLength(
           host, net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
