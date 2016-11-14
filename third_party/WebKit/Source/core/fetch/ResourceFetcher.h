@@ -107,7 +107,7 @@ class CORE_EXPORT ResourceFetcher
   int countPreloads() const { return m_preloads ? m_preloads->size() : 0; }
   void clearPreloads(ClearPreloadsPolicy = ClearAllPreloads);
   void preloadStarted(Resource*);
-  void logPreloadStats();
+  void logPreloadStats(ClearPreloadsPolicy);
   void warnUnusedPreloads();
 
   MHTMLArchive* archive() const { return m_archive.get(); }

@@ -1080,7 +1080,7 @@ void ResourceFetcher::clearPreloads(ClearPreloadsPolicy policy) {
   if (!m_preloads)
     return;
 
-  logPreloadStats();
+  logPreloadStats(policy);
 
   for (const auto& resource : *m_preloads) {
     if (policy == ClearAllPreloads || !resource->isLinkPreload()) {
@@ -1455,7 +1455,7 @@ void ResourceFetcher::reloadLoFiImages() {
   }
 }
 
-void ResourceFetcher::logPreloadStats() {
+void ResourceFetcher::logPreloadStats(ClearPreloadsPolicy policy) {
   if (!m_preloads)
     return;
   unsigned scripts = 0;
@@ -1475,6 +1475,11 @@ void ResourceFetcher::logPreloadStats() {
   unsigned raws = 0;
   unsigned rawMisses = 0;
   for (const auto& resource : *m_preloads) {
+    // Do not double count link rel preloads. These do not get cleared if the
+    // ClearPreloadsPolicy is only clearing speculative markup preloads.
+    if (resource->isLinkPreload() && policy == ClearSpeculativeMarkupPreloads) {
+      continue;
+    }
     int missCount =
         resource->getPreloadResult() == Resource::PreloadNotReferenced ? 1 : 0;
     switch (resource->getType()) {
@@ -1514,9 +1519,6 @@ void ResourceFetcher::logPreloadStats() {
         NOTREACHED();
     }
   }
-  // TODO(csharrison): These can falsely attribute link rel="preload" requests
-  // as misses if they are referenced after parsing completes. Migrate this
-  // logic to the memory cache / individual resources to prevent this.
   DEFINE_STATIC_LOCAL(CustomCountHistogram, imagePreloads,
                       ("PreloadScanner.Counts2.Image", 0, 100, 25));
   DEFINE_STATIC_LOCAL(CustomCountHistogram, imagePreloadMisses,
