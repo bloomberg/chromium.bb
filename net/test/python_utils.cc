@@ -24,6 +24,11 @@
 
 const char kPythonPathEnv[] = "PYTHONPATH";
 
+void ClearPythonPath() {
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  env->UnSetVar(kPythonPathEnv);
+}
+
 void AppendToPythonPath(const base::FilePath& dir) {
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   std::string old_path;
