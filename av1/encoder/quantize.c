@@ -15,6 +15,7 @@
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 
+#include "av1/common/idct.h"
 #include "av1/common/quant_common.h"
 #include "av1/common/scan.h"
 #include "av1/common/seg_common.h"
