@@ -1,0 +1,10 @@
+include_rules = [
+  "+google/protobuf",
+  "+remoting/codec",
+  "+remoting/client/ios",
+  "+remoting/client/ios/bridge",
+  "+remoting/signaling",
+  "+third_party/libjingle",
+  "+third_party/webrtc",
+  "+third_party/protobuf/src",
+]
