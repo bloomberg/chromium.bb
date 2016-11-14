@@ -1,6 +1,3 @@
-ALERT: 
-CONFIRM: 
-PROMPT: , default text: 
 This is a testharness.js-based test.
 PASS Window Security testing 
 FAIL A SecurityError exception must be thrown when window.applicationCache is accessed from a different origin. assert_throws: A SecurityError exception should be thrown. function "function () {

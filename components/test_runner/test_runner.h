@@ -173,6 +173,7 @@ class TestRunner : public WebTestRunner {
   void DidCloseChooser();
 
   bool ShouldDumpConsoleMessages() const;
+  bool ShouldDumpJavaScriptDialogs() const;
 
   blink::WebEffectiveConnectionType effective_connection_type() const {
     return effective_connection_type_;
@@ -471,6 +472,10 @@ class TestRunner : public WebTestRunner {
   // Controls whether console messages produced by the page are dumped
   // to test output.
   void SetDumpConsoleMessages(bool value);
+
+  // Controls whether JavaScript dialogs such as alert() are dumped to test
+  // output.
+  void SetDumpJavaScriptDialogs(bool value);
 
   // Overrides the NetworkQualityEstimator's estimated network type. If |type|
   // is TypeUnknown the NQE's value is used. Be sure to call this with

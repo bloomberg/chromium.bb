@@ -179,6 +179,10 @@ class TEST_RUNNER_EXPORT LayoutTestRuntimeFlags {
   // execution.
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_spell_check_callbacks)
 
+  // If true, content_shell will output text for alert(), confirm(), prompt(),
+  // etc.
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_javascript_dialogs)
+
 #undef DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG
 #undef DEFINE_STRING_LAYOUT_TEST_RUNTIME_FLAG
 

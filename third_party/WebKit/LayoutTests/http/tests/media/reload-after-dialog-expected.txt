@@ -1,5 +1,0 @@
-CONFIRM: I hope the movie continues to play!
-This is a testharness.js-based test.
-PASS Test that video is not reloaded on showing a dialog. 
-Harness: the test ran to completion.
-

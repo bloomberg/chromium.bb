@@ -211,6 +211,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetDomainRelaxationForbiddenForURLScheme(bool forbidden,
                                                 const std::string& scheme);
   void SetDumpConsoleMessages(bool value);
+  void SetDumpJavaScriptDialogs(bool value);
   void SetEffectiveConnectionType(const std::string& connection_type);
   void SetMockSpellCheckerEnabled(bool enabled);
   void SetImagesAllowed(bool allowed);
@@ -517,6 +518,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetDomainRelaxationForbiddenForURLScheme)
       .SetMethod("setDumpConsoleMessages",
                  &TestRunnerBindings::SetDumpConsoleMessages)
+      .SetMethod("setDumpJavaScriptDialogs",
+                 &TestRunnerBindings::SetDumpJavaScriptDialogs)
       .SetMethod("setEffectiveConnectionType",
                  &TestRunnerBindings::SetEffectiveConnectionType)
       .SetMethod("setMockSpellCheckerEnabled",
@@ -712,6 +715,11 @@ void TestRunnerBindings::SetDomainRelaxationForbiddenForURLScheme(
 void TestRunnerBindings::SetDumpConsoleMessages(bool enabled) {
   if (runner_)
     runner_->SetDumpConsoleMessages(enabled);
+}
+
+void TestRunnerBindings::SetDumpJavaScriptDialogs(bool enabled) {
+  if (runner_)
+    runner_->SetDumpJavaScriptDialogs(enabled);
 }
 
 void TestRunnerBindings::SetEffectiveConnectionType(
@@ -2617,6 +2625,11 @@ void TestRunner::SetDumpConsoleMessages(bool value) {
   OnLayoutTestRuntimeFlagsChanged();
 }
 
+void TestRunner::SetDumpJavaScriptDialogs(bool value) {
+  layout_test_runtime_flags_.set_dump_javascript_dialogs(value);
+  OnLayoutTestRuntimeFlagsChanged();
+}
+
 void TestRunner::SetEffectiveConnectionType(
     blink::WebEffectiveConnectionType connection_type) {
   effective_connection_type_ = connection_type;
@@ -2628,6 +2641,10 @@ void TestRunner::SetMockSpellCheckerEnabled(bool enabled) {
 
 bool TestRunner::ShouldDumpConsoleMessages() const {
   return layout_test_runtime_flags_.dump_console_messages();
+}
+
+bool TestRunner::ShouldDumpJavaScriptDialogs() const {
+  return layout_test_runtime_flags_.dump_javascript_dialogs();
 }
 
 void TestRunner::CloseWebInspector() {

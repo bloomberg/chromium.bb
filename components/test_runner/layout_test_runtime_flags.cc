@@ -63,6 +63,7 @@ void LayoutTestRuntimeFlags::Reset() {
   set_dump_create_view(false);
   set_dump_window_status_changes(false);
   set_dump_spell_check_callbacks(false);
+  set_dump_javascript_dialogs(true);
 
   // No need to report the initial state - only the future delta is important.
   tracked_dictionary().ResetChangeTracking();

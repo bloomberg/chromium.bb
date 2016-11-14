@@ -1,6 +1,4 @@
 CONSOLE WARNING: line 10: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/.
-ALERT: http://localhost:8000/cookies/resources/cookie-utility.php?queryfunction=setFooCookie
-ALERT: XHR response - Set the foo cookie
 This is a testharness.js-based test.
 FAIL Preflight request must not contain any cookie header assert_equals: expected "awesomevalue" but got ""
 Harness: the test ran to completion.

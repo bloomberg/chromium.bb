@@ -20,6 +20,7 @@
         testRunner.waitUntilDone();
         testRunner.setCanOpenWindows();
         testRunner.setCloseRemainingWindowsWhenComplete(true);
+        testRunner.setDumpJavaScriptDialogs(false);
     }
 
     // Disable the default output of testharness.js.  The default output formats
