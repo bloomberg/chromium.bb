@@ -222,18 +222,20 @@ const SuddenMotionSensor::SensorDescriptor
   // Tested by avi on a 13" MacBook Pro.
 
   // Note:
-  // - MacBookPro10,1 (15" MacBook Pro with Retina display)
+  // - MacBookPro10,1 (15" MacBook Pro Retina, mid 2012)
   // has no accelerometer sensors.
 
   // MacBookPro10,2 handled by the generic case below.
   // Tested by avi on a 13" MacBook Pro with Retina display.
 
   // Note:
-  // - MacBookPro11,1 (13" MacBook Pro with Retina display)
-  // - MacBookPro11,2 (15" MacBook Pro with Retina display)
-  // - MacBookPro11,3 (15" MacBook Pro with Retina display)
-  // - MacBookPro11,4 (15" MacBook Pro with Retina display)
-  // - MacBookPro12,1 (13" MacBook Pro with Retina display)
+  // - MacBookPro11,1 (13" MacBook Pro, late 2013 - mid 2014)
+  // - MacBookPro11,2 (15" MacBook Pro, late 2013 - mid 2014)
+  // - MacBookPro11,3 (15" MacBook Pro, late 2013 - mid 2014)
+  // - MacBookPro11,4 (15" MacBook Pro, mid 2015)
+  // - MacBookPro11,5 (15" MacBook Pro, mid 2015)
+  // - MacBookPro12,1 (13" MacBook Pro, early 2015)
+  // - MacBookPro13,1 (13" MacBook Pro, late 2016)
   // have no accelerometer sensors.
 
   // Generic MacBook accelerometer sensor data, to be used for future models
