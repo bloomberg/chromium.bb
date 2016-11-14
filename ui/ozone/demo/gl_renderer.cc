@@ -24,7 +24,7 @@ GlRenderer::~GlRenderer() {
 
 bool GlRenderer::Initialize() {
   context_ = gl::init::CreateGLContext(nullptr, surface_.get(),
-                                       gl::PreferIntegratedGpu);
+                                       gl::GLContextAttribs());
   if (!context_.get()) {
     LOG(ERROR) << "Failed to create GL context";
     return false;
