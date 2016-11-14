@@ -303,6 +303,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, ConflictResolution) {
 
   // Write conflicting entities.
   model0->WriteItem(kKey1, kValue1);
+  // Wait for the server to see the first commit to avoid a race condition where
+  // both clients commit without seeing each other's update.
+  ASSERT_TRUE(ServerCountMatchStatusChecker(syncer::PREFERENCES, 1).Wait());
   model1->WriteItem(kKey1, kValue2);
 
   // Wait for them to be resolved to kResolutionValue by the custom conflict

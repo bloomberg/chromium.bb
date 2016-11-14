@@ -307,6 +307,9 @@ void SyncTest::AddTestSwitches(base::CommandLine* cl) {
 
   if (!cl->HasSwitch(switches::kSyncShortInitialRetryOverride))
     cl->AppendSwitch(switches::kSyncShortInitialRetryOverride);
+
+  if (!cl->HasSwitch(switches::kSyncShortNudgeDelayForTest))
+    cl->AppendSwitch(switches::kSyncShortNudgeDelayForTest);
 }
 
 void SyncTest::AddOptionalTypesToCommandLine(base::CommandLine* cl) {}
