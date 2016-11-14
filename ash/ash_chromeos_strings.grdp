@@ -613,4 +613,10 @@ Press Shift + Alt to switch.
            desc="Notification message to tell users about the deprecation of Shift+Alt shortcut to switch to the next input method.">
     The shortcut to switch to the next input method has changed. Please use <ph name="NEW_SHORTCUT">$1<ex>Ctrl+Shift+Space</ex></ph> instead of <ph name="OLD_SHORTCUT">$2<ex>Shift+Alt</ex></ph>.
   </message>
+
+  <!-- Notification that an accelerator was pressed, so the user knows how to toggle it back -->
+  <message name="IDS_HIGH_CONTRAST_ACCEL_MSG"
+	   desc="Notification message to tell users that they just pressed the Search+Shift+H shortcut to toggle High Contrast Mode, and that pressing it again will toggle it off.">
+    High Contrast Mode enabled. Press Search+Shift+H again to toggle it off.
+  </message>
 </grit-part>

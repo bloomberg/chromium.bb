@@ -47,12 +47,18 @@
 #include "ash/common/system/chromeos/palette/palette_tray.h"
 #include "ash/common/system/chromeos/palette/palette_utils.h"
 #include "ash/common/system/status_area_widget.h"
+#include "ash/common/system/system_notifier.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_window.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "grit/ash_strings.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/message_center/message_center.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace ash {
@@ -339,6 +345,13 @@ void HandlePositionCenter() {
 }
 
 #if defined(OS_CHROMEOS)
+
+using message_center::Notification;
+
+// Identifier for the high contrast toggle accelerator notification.
+const char kHighContrastToggleAccelNotificationId[] =
+    "chrome://settings/accessibility/highcontrast";
+
 void HandleShowImeMenuBubble() {
   base::RecordAction(UserMetricsAction("Accel_Show_Ime_Menu_Bubble"));
 
@@ -464,6 +477,27 @@ void HandleToggleCapsLock() {
       chromeos::input_method::InputMethodManager::Get();
   chromeos::input_method::ImeKeyboard* keyboard = ime->GetImeKeyboard();
   keyboard->SetCapsLockEnabled(!keyboard->CapsLockIsEnabled());
+}
+
+void HandleToggleHighContrast() {
+  base::RecordAction(UserMetricsAction("Accel_Toggle_High_Contrast"));
+
+  // Show a notification so the user knows that this accelerator toggled
+  // high contrast mode, and that they can press it again to toggle back.
+  // The message center automatically only shows this once per session.
+  std::unique_ptr<Notification> notification(new Notification(
+      message_center::NOTIFICATION_TYPE_SIMPLE,
+      kHighContrastToggleAccelNotificationId, base::string16() /* title */,
+      l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_ACCEL_MSG),
+      gfx::Image(CreateVectorIcon(kSystemMenuAccessibilityIcon, SK_ColorBLACK)),
+      base::string16() /* display source */, GURL(),
+      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+                                 system_notifier::kNotifierAccessibility),
+      message_center::RichNotificationData(), nullptr));
+  message_center::MessageCenter::Get()->AddNotification(
+      std::move(notification));
+
+  WmShell::Get()->accessibility_delegate()->ToggleHighContrast();
 }
 
 void HandleToggleSpokenFeedback() {
@@ -832,6 +866,7 @@ bool AcceleratorController::CanPerformAction(
     case OPEN_GET_HELP:
     case SHOW_IME_MENU_BUBBLE:
     case SUSPEND:
+    case TOGGLE_HIGH_CONTRAST:
     case TOGGLE_SPOKEN_FEEDBACK:
     case TOGGLE_WIFI:
     case VOLUME_DOWN:
@@ -1048,6 +1083,9 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       break;
     case TOGGLE_CAPS_LOCK:
       HandleToggleCapsLock();
+      break;
+    case TOGGLE_HIGH_CONTRAST:
+      HandleToggleHighContrast();
       break;
     case TOGGLE_SPOKEN_FEEDBACK:
       HandleToggleSpokenFeedback();
