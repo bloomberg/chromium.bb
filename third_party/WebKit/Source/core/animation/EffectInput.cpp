@@ -31,6 +31,7 @@
 #include "core/animation/EffectInput.h"
 
 #include "bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/DictionaryHelperForBindings.h"
 #include "bindings/core/v8/DictionarySequenceOrDictionary.h"
 #include "core/animation/AnimationInputHelpers.h"
 #include "core/animation/CompositorAnimations.h"
@@ -54,14 +55,10 @@ bool compareKeyframes(const RefPtr<StringKeyframe>& a,
   return a->offset() < b->offset();
 }
 
-// Gets offset value from keyframeDictionary and returns false if this value was
-// invalid.
-bool getAndCheckOffset(const Dictionary& keyframeDictionary,
-                       double& offset,
-                       double lastOffset,
-                       ExceptionState& exceptionState) {
-  DictionaryHelper::get(keyframeDictionary, "offset", offset);
-
+// Validates the value of |offset| and throws an exception if out of range.
+bool checkOffset(double offset,
+                 double lastOffset,
+                 ExceptionState& exceptionState) {
   // Keyframes with offsets outside the range [0.0, 1.0] are an error.
   if (std::isnan(offset)) {
     exceptionState.throwTypeError("Non numeric offset provided");
@@ -201,18 +198,14 @@ EffectModel* EffectInput::convertArrayForm(
   for (const Dictionary& keyframeDictionary : keyframeDictionaries) {
     RefPtr<StringKeyframe> keyframe = StringKeyframe::create();
 
-    ScriptValue scriptValue;
-    bool frameHasOffset =
-        DictionaryHelper::get(keyframeDictionary, "offset", scriptValue) &&
-        !scriptValue.isNull();
-
-    double offset = 0.0;
-    if (frameHasOffset) {
-      if (!getAndCheckOffset(keyframeDictionary, offset, lastOffset,
-                             exceptionState))
+    Nullable<double> offset;
+    if (DictionaryHelper::get(keyframeDictionary, "offset", offset) &&
+        !offset.isNull()) {
+      if (!checkOffset(offset.get(), lastOffset, exceptionState))
         return nullptr;
-      lastOffset = offset;
-      keyframe->setOffset(offset);
+
+      lastOffset = offset.get();
+      keyframe->setOffset(offset.get());
     }
 
     String compositeString;
@@ -320,14 +313,12 @@ EffectModel* EffectInput::convertObjectForm(
       return nullptr;
   }
 
-  ScriptValue scriptValue;
-  bool frameHasOffset =
-      DictionaryHelper::get(keyframeDictionary, "offset", scriptValue) &&
-      !scriptValue.isNull();
-  double offset = 0.0;
-  if (frameHasOffset &&
-      !getAndCheckOffset(keyframeDictionary, offset, 0.0, exceptionState))
-    return nullptr;
+  Nullable<double> offset;
+  if (DictionaryHelper::get(keyframeDictionary, "offset", offset) &&
+      !offset.isNull()) {
+    if (!checkOffset(offset.get(), 0.0, exceptionState))
+      return nullptr;
+  }
 
   String compositeString;
   DictionaryHelper::get(keyframeDictionary, "composite", compositeString);
@@ -350,8 +341,8 @@ EffectModel* EffectInput::convertObjectForm(
     for (size_t i = 0; i < numKeyframes; ++i) {
       RefPtr<StringKeyframe> keyframe = StringKeyframe::create();
 
-      if (frameHasOffset)
-        keyframe->setOffset(offset);
+      if (!offset.isNull())
+        keyframe->setOffset(offset.get());
       else if (numKeyframes == 1)
         keyframe->setOffset(1.0);
       else

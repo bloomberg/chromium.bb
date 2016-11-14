@@ -27,6 +27,7 @@
 #define DictionaryHelperForBindings_h
 
 #include "bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/V8Binding.h"
 
 namespace blink {
@@ -41,6 +42,28 @@ bool DictionaryHelper::get(const Dictionary& dictionary,
 
   value = V8TypeOf<T>::Type::toImplWithTypeCheck(dictionary.isolate(), v8Value);
   return true;
+}
+
+template <typename T>
+bool DictionaryHelper::get(const Dictionary& dictionary,
+                           const StringView& key,
+                           Nullable<T>& value) {
+  v8::Local<v8::Value> v8Value;
+  if (!dictionary.get(key, v8Value))
+    return false;
+
+  if (v8Value->IsNull()) {
+    value.set(nullptr);
+    return true;
+  }
+
+  T innerValue;
+  if (DictionaryHelper::get(dictionary, key, innerValue)) {
+    value.set(innerValue);
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace blink

@@ -128,6 +128,8 @@ struct DictionaryHelper {
   static bool get(const Dictionary&,
                   const StringView& key,
                   PointerType<T>& value);
+  template <typename T>
+  static bool get(const Dictionary&, const StringView& key, Nullable<T>& value);
 };
 
 }  // namespace blink
