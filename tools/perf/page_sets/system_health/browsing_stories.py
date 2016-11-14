@@ -134,6 +134,7 @@ class FlipboardDesktopStory(_NewsBrowsingStory):
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
+@decorators.Disabled('win') # crbug.com/657665
 class HackerNewsStory(_NewsBrowsingStory):
   NAME = 'browse:news:hackernews'
   URL = 'https://news.ycombinator.com'
