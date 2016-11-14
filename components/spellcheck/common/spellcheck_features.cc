@@ -5,10 +5,11 @@
 #include "components/spellcheck/common/spellcheck_features.h"
 
 #include "base/sys_info.h"
+#include "components/spellcheck/spellcheck_build_features.h"
 
 namespace spellcheck {
 
-#if defined(ENABLE_SPELLCHECK) && defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_SPELLCHECK) && defined(OS_ANDROID)
 
 // Enables/disables Android spellchecker.
 const base::Feature kAndroidSpellChecker{
@@ -32,6 +33,6 @@ bool IsAndroidSpellCheckFeatureEnabled() {
   return false;
 }
 
-#endif  // defined(ENABLE_SPELLCHECK) && defined(OS_ANDROID)
+#endif  // BUILDFLAG(ENABLE_SPELLCHECK) && defined(OS_ANDROID)
 
 }  // namespace spellcheck

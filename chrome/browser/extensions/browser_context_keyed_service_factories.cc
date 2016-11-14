@@ -53,6 +53,7 @@
 #include "chrome/browser/speech/extension_api/tts_extension_api.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
 #include "chrome/common/features.h"
+#include "components/spellcheck/spellcheck_build_features.h"
 #include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_api.h"
 
 #if defined(OS_CHROMEOS)
@@ -70,7 +71,7 @@
 #include "chrome/browser/extensions/api/mdns/mdns_api.h"
 #endif
 
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "chrome/browser/extensions/api/spellcheck/spellcheck_api.h"
 #endif
 
@@ -135,7 +136,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::SettingsPrivateEventRouterFactory::GetInstance();
   extensions::SettingsOverridesAPI::GetFactoryInstance();
   extensions::SignedInDevicesManager::GetFactoryInstance();
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
   extensions::SpellcheckAPI::GetFactoryInstance();
 #endif
   extensions::StreamsPrivateAPI::GetFactoryInstance();

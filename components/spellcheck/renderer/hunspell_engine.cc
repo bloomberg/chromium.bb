@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "components/spellcheck/common/spellcheck_common.h"
 #include "components/spellcheck/common/spellcheck_messages.h"
+#include "components/spellcheck/spellcheck_build_features.h"
 #include "content/public/renderer/render_thread.h"
 #include "third_party/hunspell/src/hunspell/hunspell.hxx"
 
@@ -33,7 +34,7 @@ namespace {
                 "MaxSuggestLen too long");
 }  // namespace
 
-#if !defined(USE_BROWSER_SPELLCHECKER)
+#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 SpellingEngine* CreateNativeSpellingEngine() {
   return new HunspellEngine();
 }

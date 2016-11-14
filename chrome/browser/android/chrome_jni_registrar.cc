@@ -169,6 +169,7 @@
 #include "components/safe_json/android/component_jni_registrar.h"
 #include "components/signin/core/browser/android/component_jni_registrar.h"
 #include "components/spellcheck/browser/android/component_jni_registrar.h"
+#include "components/spellcheck/spellcheck_build_features.h"
 #include "components/sync/android/sync_jni_registrar.h"
 #include "components/url_formatter/android/component_jni_registrar.h"
 #include "components/variations/android/component_jni_registrar.h"
@@ -369,7 +370,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"SigninInvestigator", SigninInvestigatorAndroid::Register},
     {"SigninManager", SigninManagerAndroid::Register},
     {"SingleTabModel", RegisterSingleTabModel},
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
     {"SpellCheckerSessionBridge", spellcheck::android::RegisterSpellcheckJni},
 #endif
     {"SqliteCursor", SQLiteCursor::RegisterSqliteCursor},

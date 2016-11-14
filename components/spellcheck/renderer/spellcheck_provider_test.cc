@@ -8,6 +8,7 @@
 #include "components/spellcheck/common/spellcheck_marker.h"
 #include "components/spellcheck/common/spellcheck_messages.h"
 #include "components/spellcheck/renderer/spellcheck.h"
+#include "components/spellcheck/spellcheck_build_features.h"
 #include "ipc/ipc_message_macros.h"
 
 class MockSpellcheck: public SpellCheck {
@@ -46,7 +47,7 @@ TestingSpellCheckProvider::~TestingSpellCheckProvider() {
 }
 
 bool TestingSpellCheckProvider::Send(IPC::Message* message)  {
-#if !defined(USE_BROWSER_SPELLCHECKER)
+#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   // Call our mock message handlers.
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TestingSpellCheckProvider, *message)
@@ -69,7 +70,7 @@ void TestingSpellCheckProvider::OnCallSpellingService(int route_id,
                            int identifier,
                            const base::string16& text,
                            const std::vector<SpellCheckMarker>& markers) {
-#if defined (USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   NOTREACHED();
 #else
   ++spelling_service_call_count_;

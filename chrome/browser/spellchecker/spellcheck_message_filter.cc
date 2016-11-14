@@ -17,6 +17,7 @@
 #include "components/spellcheck/browser/spelling_service_client.h"
 #include "components/spellcheck/common/spellcheck_marker.h"
 #include "components/spellcheck/common/spellcheck_messages.h"
+#include "components/spellcheck/spellcheck_build_features.h"
 #include "content/public/browser/render_process_host.h"
 #include "net/url_request/url_fetcher.h"
 
@@ -37,7 +38,7 @@ void SpellCheckMessageFilter::OverrideThreadForMessage(
       message.type() == SpellCheckHostMsg_NotifyChecked::ID ||
       message.type() == SpellCheckHostMsg_RespondDocumentMarkers::ID)
     *thread = BrowserThread::UI;
-#if !defined(USE_BROWSER_SPELLCHECKER)
+#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   if (message.type() == SpellCheckHostMsg_CallSpellingService::ID)
     *thread = BrowserThread::UI;
 #endif
@@ -52,7 +53,7 @@ bool SpellCheckMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnNotifyChecked)
     IPC_MESSAGE_HANDLER(SpellCheckHostMsg_RespondDocumentMarkers,
                         OnRespondDocumentMarkers)
-#if !defined(USE_BROWSER_SPELLCHECKER)
+#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
     IPC_MESSAGE_HANDLER(SpellCheckHostMsg_CallSpellingService,
                         OnCallSpellingService)
 #endif
@@ -106,7 +107,7 @@ void SpellCheckMessageFilter::OnRespondDocumentMarkers(
       render_process_id_, markers);
 }
 
-#if !defined(USE_BROWSER_SPELLCHECKER)
+#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 void SpellCheckMessageFilter::OnCallSpellingService(
     int route_id,
     int identifier,

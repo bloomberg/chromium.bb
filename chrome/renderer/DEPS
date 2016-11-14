@@ -26,8 +26,8 @@ include_rules = [
   "+components/printing/renderer",
   "+components/rappor/public/interfaces",
   "+components/signin/core/common",
-  "+components/spellcheck/common",
-  "+components/spellcheck/renderer",
+  "+components/spellcheck",
+  "-components/spellcheck/browser",  # Allow all spellcheck but browser.
   "+components/startup_metric_utils/common",
   "+components/strings/grit",
   "+components/subresource_filter/content/renderer",

@@ -54,6 +54,7 @@
 #include "components/password_manager/sync/browser/password_model_worker.h"
 #include "components/search_engines/search_engine_data_type_controller.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/spellcheck/spellcheck_build_features.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/driver/glue/browser_thread_model_worker.h"
 #include "components/sync/driver/glue/ui_model_worker.h"
@@ -93,7 +94,7 @@
 #include "chrome/browser/supervised_user/supervised_user_whitelist_service.h"
 #endif
 
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #endif
@@ -365,7 +366,7 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
         return base::WeakPtr<history::TypedUrlSyncableService>();
       return history->GetTypedUrlSyncableService()->AsWeakPtr();
     }
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
     case syncer::DICTIONARY:
       return SpellcheckServiceFactory::GetForContext(profile_)->
           GetCustomDictionary()->AsWeakPtr();

@@ -11,10 +11,11 @@
 #include "android_webview/renderer/aw_render_thread_observer.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "components/spellcheck/spellcheck_build_features.h"
 #include "components/web_restrictions/interfaces/web_restrictions.mojom.h"
 #include "content/public/renderer/content_renderer_client.h"
 
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
 class SpellCheck;
 class SpellCheckProvider;
 #endif
@@ -62,7 +63,7 @@ class AwContentRendererClient : public content::ContentRendererClient {
   std::unique_ptr<visitedlink::VisitedLinkSlave> visited_link_slave_;
   web_restrictions::mojom::WebRestrictionsPtr web_restrictions_service_;
 
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
   std::unique_ptr<SpellCheck> spellcheck_;
 #endif
 

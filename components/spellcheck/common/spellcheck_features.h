@@ -6,15 +6,16 @@
 #define COMPONENTS_SPELLCHECK_COMMON_SPELLCHECK_FEATURES_H_
 
 #include "base/feature_list.h"
+#include "components/spellcheck/spellcheck_build_features.h"
 
 namespace spellcheck {
 
-#if defined(ENABLE_SPELLCHECK) && defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_SPELLCHECK) && defined(OS_ANDROID)
 extern const base::Feature kAndroidSpellChecker;
 extern const base::Feature kAndroidSpellCheckerNonLowEnd;
 
 bool IsAndroidSpellCheckFeatureEnabled();
-#endif  // defined(ENABLE_SPELLCHECK) && defined(OS_ANDROID)
+#endif  // BUILDFLAG(ENABLE_SPELLCHECK) && defined(OS_ANDROID)
 
 }  // namespace spellcheck
 

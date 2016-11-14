@@ -20,6 +20,7 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/spellcheck/browser/spellcheck_platform.h"
 #include "components/spellcheck/common/spellcheck_common.h"
+#include "components/spellcheck/spellcheck_build_features.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "net/base/load_flags.h"
@@ -116,7 +117,7 @@ SpellcheckHunspellDictionary::~SpellcheckHunspellDictionary() {
 void SpellcheckHunspellDictionary::Load() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-#if defined(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   if (spellcheck_platform::SpellCheckerAvailable() &&
       spellcheck_platform::PlatformSupportsLanguage(language_)) {
     use_browser_spellchecker_ = true;

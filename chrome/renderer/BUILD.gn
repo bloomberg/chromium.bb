@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//chrome/common/features.gni")
+import("//components/spellcheck/spellcheck_build_features.gni")
 import("//extensions/features/features.gni")
 import("//tools/grit/grit_rule.gni")
 
@@ -105,6 +106,7 @@ static_library("renderer") {
     "//components/printing/renderer",
     "//components/rappor/public/interfaces",
     "//components/resources:components_resources",
+    "//components/spellcheck:build_features",
     "//components/startup_metric_utils/common:interfaces",
     "//components/subresource_filter/content/renderer",
     "//components/translate/content/renderer",

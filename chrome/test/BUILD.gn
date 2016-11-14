@@ -11,6 +11,7 @@ import("//chrome/common/features.gni")
 import("//chrome/chrome_repack_locales.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//components/os_crypt/features.gni")
+import("//components/spellcheck/spellcheck_build_features.gni")
 import("//extensions/features/features.gni")
 import("//ppapi/features/features.gni")
 import("//remoting/remoting_enable.gni")
@@ -1228,6 +1229,7 @@ test("browser_tests") {
     ":repack_pseudo_locales",
     ":test_support",
     "//base",
+    "//components/spellcheck:build_features",
     "//components/sync:test_support_model",
     "//extensions/features",
     "//printing/features",
@@ -3447,6 +3449,7 @@ test("unit_tests") {
     "//chrome:strings",
     "//components/component_updater:test_support",
     "//components/safe_browsing_db:test_database_manager",
+    "//components/spellcheck:build_features",
     "//components/subresource_filter/core/browser:test_support",
     "//components/version_info:generate_version_info",
     "//courgette:courgette_lib",
@@ -4994,6 +4997,7 @@ if (!is_android && !is_ios && !is_chromecast) {
       "//chrome/renderer",
       "//components/about_handler",
       "//components/autofill/content/renderer:test_support",
+      "//components/spellcheck:build_features",
       "//content/test:test_support",
       "//extensions/features",
       "//media/cast:test_support",

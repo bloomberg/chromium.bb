@@ -10,6 +10,9 @@ include_rules = [
   "+components/metrics",
   "+components/prefs",
   "+components/version_info",
+  # Only allow this header in spellchecking since allowing all of spellchecking
+  # would include both browser and renderer components.
+  "+components/spellcheck/spellcheck_build_features.h",
   "+components/supervised_user_error_page",
   "+components/web_restrictions",
   "+content/public/common",

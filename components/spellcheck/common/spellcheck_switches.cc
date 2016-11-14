@@ -4,11 +4,12 @@
 
 #include "build/build_config.h"
 #include "components/spellcheck/common/spellcheck_switches.h"
+#include "components/spellcheck/spellcheck_build_features.h"
 
 namespace spellcheck {
 namespace switches {
 
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
 // Enables participation in the field trial for user feedback to spelling
 // service.
 const char kEnableSpellingFeedbackFieldTrial[] =
@@ -27,7 +28,7 @@ const char kSpellingServiceFeedbackIntervalSeconds[] =
 // TODO(rouslan): Remove this flag when feedback testing is complete. Revisit by
 // August 2013.
 const char kSpellingServiceFeedbackUrl[] = "spelling-service-feedback-url";
-#endif  // defined(ENABLE_SPELLCHECK)
+#endif  // BUILDFLAG(ENABLE_SPELLCHECK)
 
 }  // namespace switches
 }  // namespace spellcheck

@@ -4,6 +4,8 @@
 
 // Multiply-included file, hence no include guard.
 
-#if defined(ENABLE_SPELLCHECK)
+#include "components/spellcheck/spellcheck_build_features.h"
+
+#if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "components/spellcheck/common/spellcheck_messages.h"
 #endif

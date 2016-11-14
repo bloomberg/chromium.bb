@@ -36,6 +36,7 @@ source_set("browser") {
 
   public_deps = [
     "//base",
+    "//components/spellcheck:build_features",
     "//components/spellcheck/common",
   ]
   deps = [

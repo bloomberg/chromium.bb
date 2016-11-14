@@ -17,6 +17,7 @@
 #include "components/autofill/content/renderer/test_password_autofill_agent.h"
 #include "components/autofill/content/renderer/test_password_generation_agent.h"
 #include "components/spellcheck/renderer/spellcheck.h"
+#include "components/spellcheck/spellcheck_build_features.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/renderer/render_view.h"
@@ -172,7 +173,7 @@ void ChromeRenderViewTest::InitChromeContentRendererClient(
       base::MakeUnique<extensions::Dispatcher>(
           extension_dispatcher_delegate_.get()));
 #endif
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
   client->SetSpellcheck(new SpellCheck());
 #endif
 }

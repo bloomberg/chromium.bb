@@ -11,6 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "components/spellcheck/browser/spelling_service_client.h"
+#include "components/spellcheck/spellcheck_build_features.h"
 #include "content/public/browser/browser_message_filter.h"
 
 class SpellCheckMarker;
@@ -36,7 +37,7 @@ class SpellCheckMessageFilter : public content::BrowserMessageFilter {
   void OnSpellCheckerRequestDictionary();
   void OnNotifyChecked(const base::string16& word, bool misspelled);
   void OnRespondDocumentMarkers(const std::vector<uint32_t>& markers);
-#if !defined(USE_BROWSER_SPELLCHECKER)
+#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   void OnCallSpellingService(int route_id,
                              int identifier,
                              const base::string16& text,

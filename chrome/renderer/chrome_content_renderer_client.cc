@@ -76,6 +76,7 @@
 #include "components/password_manager/content/renderer/credential_manager_client.h"
 #include "components/pdf/renderer/pepper_pdf_host.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "components/spellcheck/spellcheck_build_features.h"
 #include "components/startup_metric_utils/common/startup_metric.mojom.h"
 #include "components/subresource_filter/content/renderer/ruleset_dealer.h"
 #include "components/subresource_filter/content/renderer/subresource_filter_agent.h"
@@ -152,7 +153,7 @@
 #include "chrome/renderer/pepper/chrome_pdf_print_client.h"
 #endif
 
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "components/spellcheck/renderer/spellcheck.h"
 #include "components/spellcheck/renderer/spellcheck_provider.h"
 #endif
@@ -242,7 +243,7 @@ void AppendParams(const std::vector<base::string16>& additional_names,
 }
 #endif  // defined(ENABLE_PLUGINS)
 
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
 class SpellCheckReplacer : public content::RenderViewVisitor {
  public:
   explicit SpellCheckReplacer(SpellCheck* spellcheck)
@@ -335,7 +336,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 
   prescient_networking_dispatcher_.reset(
       new network_hints::PrescientNetworkingDispatcher());
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
   // ChromeRenderViewTest::SetUp() creates a Spellcheck and injects it using
   // SetSpellcheck(). Don't overwrite it.
   if (!spellcheck_) {
@@ -527,7 +528,7 @@ void ChromeContentRendererClient::RenderViewCreated(
       render_view, std::unique_ptr<printing::PrintWebViewHelper::Delegate>(
                        new ChromePrintWebViewHelperDelegate()));
 #endif
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
   new SpellCheckProvider(render_view, spellcheck_.get());
 #endif
   new prerender::PrerendererClient(render_view);
@@ -1177,7 +1178,7 @@ bool ChromeContentRendererClient::ShouldOverridePageVisibilityState(
   return true;
 }
 
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
 void ChromeContentRendererClient::SetSpellcheck(SpellCheck* spellcheck) {
   RenderThread* thread = RenderThread::Get();
   if (spellcheck_.get() && thread)

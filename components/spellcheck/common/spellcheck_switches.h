@@ -6,15 +6,16 @@
 #define COMPONENTS_SPELLCHECK_COMMON_SPELLCHECK_SWITCHES_H_
 
 #include "build/build_config.h"
+#include "components/spellcheck/spellcheck_build_features.h"
 
 namespace spellcheck {
 namespace switches {
 
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
 extern const char kEnableSpellingFeedbackFieldTrial[];
 extern const char kSpellingServiceFeedbackIntervalSeconds[];
 extern const char kSpellingServiceFeedbackUrl[];
-#endif  // defined(ENABLE_SPELLCHECK)
+#endif  // BUILDFLAG(ENABLE_SPELLCHECK)
 
 }  // namespace switches
 }  // namespace spellcheck

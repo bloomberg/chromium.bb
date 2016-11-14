@@ -24,6 +24,7 @@
 #include "components/spellcheck/common/spellcheck_bdict_language.h"
 #include "components/spellcheck/common/spellcheck_common.h"
 #include "components/spellcheck/common/spellcheck_messages.h"
+#include "components/spellcheck/spellcheck_build_features.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -53,7 +54,7 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
   dictionaries_pref.Init(spellcheck::prefs::kSpellCheckDictionaries, prefs);
   std::string first_of_dictionaries;
 
-#if defined(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   // Ensure that the renderer always knows the platform spellchecking language.
   // This language is used for initialization of the text iterator. If the
   // iterator is not initialized, then the context menu does not show spellcheck
@@ -80,7 +81,7 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
   }
 
   single_dictionary_pref.SetValue("");
-#endif  // defined(USE_BROWSER_SPELLCHECKER)
+#endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
   std::string language_code;
   std::string country_code;

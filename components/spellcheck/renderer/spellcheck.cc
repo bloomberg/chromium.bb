@@ -25,6 +25,7 @@
 #include "components/spellcheck/common/spellcheck_switches.h"
 #include "components/spellcheck/renderer/spellcheck_language.h"
 #include "components/spellcheck/renderer/spellcheck_provider.h"
+#include "components/spellcheck/spellcheck_build_features.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
@@ -230,7 +231,7 @@ void SpellCheck::OnInit(
   }
 
   custom_dictionary_.Init(custom_words);
-#if !defined(USE_BROWSER_SPELLCHECKER)
+#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   PostDelayedSpellCheckTask(pending_request_param_.release());
 #endif
 }
@@ -370,7 +371,7 @@ bool SpellCheck::SpellCheckWord(
 bool SpellCheck::SpellCheckParagraph(
     const base::string16& text,
     WebVector<WebTextCheckingResult>* results) {
-#if !defined(USE_BROWSER_SPELLCHECKER)
+#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   // Mac and Android have their own spell checkers,so this method won't be used
   DCHECK(results);
   std::vector<WebTextCheckingResult> textcheck_results;
@@ -418,7 +419,7 @@ bool SpellCheck::SpellCheckParagraph(
 }
 
 // OSX and Android use their own spell checkers
-#if !defined(USE_BROWSER_SPELLCHECKER)
+#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 void SpellCheck::RequestTextChecking(
     const base::string16& text,
     blink::WebTextCheckingCompletion* completion) {
@@ -448,7 +449,7 @@ bool SpellCheck::InitializeIfNeeded() {
 }
 
 // OSX and Android don't have |pending_request_param_|
-#if !defined(USE_BROWSER_SPELLCHECKER)
+#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 void SpellCheck::PostDelayedSpellCheckTask(SpellcheckRequest* request) {
   if (!request)
     return;
@@ -460,7 +461,7 @@ void SpellCheck::PostDelayedSpellCheckTask(SpellcheckRequest* request) {
 #endif
 
 // Mac and Android use their platform engines instead.
-#if !defined(USE_BROWSER_SPELLCHECKER)
+#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 void SpellCheck::PerformSpellCheck(SpellcheckRequest* param) {
   DCHECK(param);
 

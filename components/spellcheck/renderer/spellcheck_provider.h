@@ -12,6 +12,7 @@
 
 #include "base/id_map.h"
 #include "base/macros.h"
+#include "components/spellcheck/spellcheck_build_features.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
 #include "third_party/WebKit/public/web/WebSpellCheckClient.h"
@@ -93,7 +94,7 @@ class SpellCheckProvider
   void updateSpellingUIWithMisspelledWord(
       const blink::WebString& word) override;
 
-#if !defined(USE_BROWSER_SPELLCHECKER)
+#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   void OnRespondSpellingService(
       int identifier,
       bool succeeded,
@@ -105,7 +106,7 @@ class SpellCheckProvider
   // needs to check this text.
   bool HasWordCharacters(const base::string16& text, int index) const;
 
-#if defined(USE_BROWSER_SPELLCHECKER)
+#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   void OnAdvanceToNextMisspelling();
   void OnRespondTextCheck(
       int identifier,

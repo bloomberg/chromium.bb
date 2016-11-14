@@ -36,6 +36,7 @@
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/crash/content/browser/crash_micro_dump_manager_android.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
+#include "components/spellcheck/spellcheck_build_features.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -59,7 +60,7 @@
 #include "ui/base/resource/resource_bundle_android.h"
 #include "ui/resources/grit/ui_resources.h"
 
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "components/spellcheck/browser/spellcheck_message_filter_platform.h"
 #include "components/spellcheck/common/spellcheck_switches.h"
 #endif
@@ -219,7 +220,7 @@ void AwContentBrowserClient::RenderProcessWillLaunch(
   host->AddFilter(new cdm::CdmMessageFilterAndroid());
   host->AddFilter(new AwPrintingMessageFilter(host->GetID()));
 
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
   host->AddFilter(new SpellCheckMessageFilterPlatform(host->GetID()));
 #endif
 }

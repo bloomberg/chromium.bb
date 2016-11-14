@@ -70,6 +70,7 @@
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/features.h"
+#include "components/spellcheck/spellcheck_build_features.h"
 #include "extensions/features/features.h"
 #include "printing/features/features.h"
 
@@ -133,7 +134,7 @@
 #include "chrome/browser/profile_resetter/triggered_profile_resetter_factory.h"
 #endif
 
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #endif
 
@@ -326,7 +327,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   if (SiteEngagementService::IsEnabled())
     SiteEngagementServiceFactory::GetInstance();
 
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
   SpellcheckServiceFactory::GetInstance();
 #endif
   suggestions::SuggestionsServiceFactory::GetInstance();

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/features.gni")
+import("//components/spellcheck/spellcheck_build_features.gni")
 
 source_set("renderer") {
   sources = [
@@ -37,6 +37,9 @@ source_set("renderer") {
     ]
   }
 
+  public_deps = [
+    "//components/spellcheck:build_features",
+  ]
   deps = [
     "//base:i18n",
     "//components/spellcheck/common",

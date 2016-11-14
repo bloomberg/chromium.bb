@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "components/spellcheck/renderer/custom_dictionary_engine.h"
+#include "components/spellcheck/spellcheck_build_features.h"
 #include "content/public/renderer/render_thread_observer.h"
 
 struct SpellCheckBDictLanguage;
@@ -89,7 +90,7 @@ class SpellCheck : public content::RenderThreadObserver,
 
   // Requests to spellcheck the specified text in the background. This function
   // posts a background task and calls SpellCheckParagraph() in the task.
-#if !defined (USE_BROWSER_SPELLCHECKER)
+#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   void RequestTextChecking(const base::string16& text,
                            blink::WebTextCheckingCompletion* completion);
 #endif
@@ -132,7 +133,7 @@ class SpellCheck : public content::RenderThreadObserver,
   void OnEnableSpellCheck(bool enable);
   void OnRequestDocumentMarkers();
 
-#if !defined (USE_BROWSER_SPELLCHECKER)
+#if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   // Posts delayed spellcheck task and clear it if any.
   // Takes ownership of |request|.
   void PostDelayedSpellCheckTask(SpellcheckRequest* request);

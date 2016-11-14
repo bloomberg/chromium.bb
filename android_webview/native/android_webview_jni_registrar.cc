@@ -25,8 +25,9 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/trace_event/trace_event.h"
+#include "components/spellcheck/spellcheck_build_features.h"
 
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "components/spellcheck/browser/android/component_jni_registrar.h"
 #endif
 
@@ -52,7 +53,7 @@ static base::android::RegistrationMethod kWebViewRegisteredMethods[] = {
   { "AwWebContentsDelegate", RegisterAwWebContentsDelegate },
   { "CookieManager", RegisterCookieManager },
   { "AwGLFunctor", RegisterAwGLFunctor },
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
   {"SpellCheckerSessionBridge", spellcheck::android::RegisterSpellcheckJni},
 #endif
 };

@@ -26,6 +26,7 @@
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/printing/renderer/print_web_view_helper.h"
+#include "components/spellcheck/spellcheck_build_features.h"
 #include "components/supervised_user_error_page/gin_wrapper.h"
 #include "components/supervised_user_error_page/supervised_user_error_page_android.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
@@ -52,7 +53,7 @@
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "components/spellcheck/renderer/spellcheck.h"
 #include "components/spellcheck/renderer/spellcheck_provider.h"
 #endif
@@ -81,7 +82,7 @@ void AwContentRendererClient::RenderThreadStarted() {
       base::ASCIIToUTF16(android_webview::kAndroidWebViewVideoPosterScheme));
   blink::WebSecurityPolicy::registerURLSchemeAsSecure(aw_scheme);
 
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
   if (!spellcheck_) {
     spellcheck_ = base::MakeUnique<SpellCheck>();
     thread->AddObserver(spellcheck_.get());
@@ -176,7 +177,7 @@ void AwContentRendererClient::RenderViewCreated(
       render_view, std::unique_ptr<printing::PrintWebViewHelper::Delegate>(
                        new AwPrintWebViewHelperDelegate()));
 
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
   new SpellCheckProvider(render_view, spellcheck_.get());
 #endif
 }

@@ -18,6 +18,9 @@ source_set("common") {
     "spellcheck_switches.h",
   ]
 
+  public_deps = [
+    "//components/spellcheck:build_features",
+  ]
   deps = [
     "//base:i18n",
     "//ipc",

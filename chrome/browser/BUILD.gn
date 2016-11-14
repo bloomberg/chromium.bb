@@ -9,6 +9,7 @@ import("//build/config/ui.gni")
 import("//build/split_static_library.gni")
 import("//chrome/common/features.gni")
 import("//components/os_crypt/features.gni")
+import("//components/spellcheck/spellcheck_build_features.gni")
 import("//extensions/features/features.gni")
 import("//media/media_options.gni")
 import("//net/features.gni")
@@ -1381,6 +1382,7 @@ split_static_library("browser") {
     "//components/security_state",
     "//components/sessions",
     "//components/signin/core/browser",
+    "//components/spellcheck:build_features",
     "//components/ssl_config",
     "//components/ssl_errors",
     "//components/startup_metric_utils/browser:host",

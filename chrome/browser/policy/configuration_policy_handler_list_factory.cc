@@ -45,6 +45,7 @@
 #include "components/prefs/pref_value_map.h"
 #include "components/search_engines/default_search_policy_handler.h"
 #include "components/signin/core/common/signin_pref_names.h"
+#include "components/spellcheck/spellcheck_build_features.h"
 #include "components/ssl_config/ssl_config_prefs.h"
 #include "components/sync/driver/sync_policy_handler.h"
 #include "components/translate/core/common/translate_pref_names.h"
@@ -83,7 +84,7 @@
 #include "chrome/browser/plugins/plugin_policy_handler.h"
 #endif
 
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "components/spellcheck/browser/pref_names.h"
 #endif
 
@@ -365,11 +366,11 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kComponentUpdatesEnabled,
     base::Value::TYPE_BOOLEAN },
 
-#if defined(ENABLE_SPELLCHECK)
+#if BUILDFLAG(ENABLE_SPELLCHECK)
   { key::kSpellCheckServiceEnabled,
     spellcheck::prefs::kSpellCheckUseSpellingService,
     base::Value::TYPE_BOOLEAN },
-#endif  // defined(ENABLE_SPELLCHECK)
+#endif  // BUILDFLAG(ENABLE_SPELLCHECK)
 
   { key::kDisableScreenshots,
     prefs::kDisableScreenshots,
