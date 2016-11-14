@@ -157,6 +157,8 @@ class PLATFORM_EXPORT Font {
   const SimpleFontData* primaryFont() const;
   const FontData* fontDataAt(unsigned) const;
 
+  // Access the shape cache associated with this particular font object.
+  // Should *not* be retained across layout calls as it may become invalid.
   ShapeCache* shapeCache() const;
 
   // Whether the font supports shaping word by word instead of shaping the
