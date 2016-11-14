@@ -268,6 +268,31 @@ struct drm_output_state {
 	struct drm_pending_state *pending_state;
 	struct drm_output *output;
 	struct wl_list link;
+	struct wl_list plane_list;
+};
+
+/**
+ * Plane state holds the dynamic state for a plane: where it is positioned,
+ * and which buffer it is currently displaying.
+ *
+ * The plane state is owned by an output state, except when setting an initial
+ * state. See drm_output_state for notes on state object lifetime.
+ */
+struct drm_plane_state {
+	struct drm_plane *plane;
+	struct drm_output *output;
+	struct drm_output_state *output_state;
+
+	struct drm_fb *fb;
+
+	int32_t src_x, src_y;
+	uint32_t src_w, src_h;
+	int32_t dest_x, dest_y;
+	uint32_t dest_w, dest_h;
+
+	bool complete;
+
+	struct wl_list link; /* drm_output_state::plane_list */
 };
 
 /**
@@ -286,11 +311,8 @@ struct drm_output_state {
  * are referred to as 'sprites'.
  */
 struct drm_plane {
-	struct wl_list link;
-
 	struct weston_plane base;
 
-	struct drm_output *output;
 	struct drm_backend *backend;
 
 	enum wdrm_plane_type type;
@@ -301,19 +323,10 @@ struct drm_plane {
 
 	struct drm_property_info props[WDRM_PLANE__COUNT];
 
-	/* The last framebuffer submitted to the kernel for this plane. */
-	struct drm_fb *fb_current;
-	/* The previously-submitted framebuffer, where the hardware has not
-	 * yet acknowledged display of fb_current. */
-	struct drm_fb *fb_last;
-	/* Framebuffer we are going to submit to the kernel when the current
-	 * repaint is flushed. */
-	struct drm_fb *fb_pending;
+	/* The last state submitted to the kernel for this plane. */
+	struct drm_plane_state *state_cur;
 
-	int32_t src_x, src_y;
-	uint32_t src_w, src_h;
-	uint32_t dest_x, dest_y;
-	uint32_t dest_w, dest_h;
+	struct wl_list link;
 
 	uint32_t formats[];
 };
@@ -945,6 +958,141 @@ drm_fb_unref(struct drm_fb *fb)
 }
 
 /**
+ * Allocate a new, empty, plane state.
+ */
+static struct drm_plane_state *
+drm_plane_state_alloc(struct drm_output_state *state_output,
+		      struct drm_plane *plane)
+{
+	struct drm_plane_state *state = zalloc(sizeof(*state));
+
+	assert(state);
+	state->output_state = state_output;
+	state->plane = plane;
+
+	/* Here we only add the plane state to the desired link, and not
+	 * set the member. Having an output pointer set means that the
+	 * plane will be displayed on the output; this won't be the case
+	 * when we go to disable a plane. In this case, it must be part of
+	 * the commit (and thus the output state), but the member must be
+	 * NULL, as it will not be on any output when the state takes
+	 * effect.
+	 */
+	if (state_output)
+		wl_list_insert(&state_output->plane_list, &state->link);
+	else
+		wl_list_init(&state->link);
+
+	return state;
+}
+
+/**
+ * Free an existing plane state. As a special case, the state will not
+ * normally be freed if it is the current state; see drm_plane_set_state.
+ */
+static void
+drm_plane_state_free(struct drm_plane_state *state, bool force)
+{
+	if (!state)
+		return;
+
+	wl_list_remove(&state->link);
+	wl_list_init(&state->link);
+	state->output_state = NULL;
+
+	if (force || state != state->plane->state_cur) {
+		drm_fb_unref(state->fb);
+		free(state);
+	}
+}
+
+/**
+ * Duplicate an existing plane state into a new plane state, storing it within
+ * the given output state. If the output state already contains a plane state
+ * for the drm_plane referenced by 'src', that plane state is freed first.
+ */
+static struct drm_plane_state *
+drm_plane_state_duplicate(struct drm_output_state *state_output,
+			  struct drm_plane_state *src)
+{
+	struct drm_plane_state *dst = malloc(sizeof(*dst));
+	struct drm_plane_state *old, *tmp;
+
+	assert(src);
+	assert(dst);
+	*dst = *src;
+	wl_list_init(&dst->link);
+
+	wl_list_for_each_safe(old, tmp, &state_output->plane_list, link) {
+		/* Duplicating a plane state into the same output state, so
+		 * it can replace itself with an identical copy of itself,
+		 * makes no sense. */
+		assert(old != src);
+		if (old->plane == dst->plane)
+			drm_plane_state_free(old, false);
+	}
+
+	wl_list_insert(&state_output->plane_list, &dst->link);
+	if (src->fb)
+		dst->fb = drm_fb_ref(src->fb);
+	dst->output_state = state_output;
+	dst->complete = false;
+
+	return dst;
+}
+
+/**
+ * Remove a plane state from an output state; if the plane was previously
+ * enabled, then replace it with a disabling state. This ensures that the
+ * output state was untouched from it was before the plane state was
+ * modified by the caller of this function.
+ *
+ * This is required as drm_output_state_get_plane may either allocate a
+ * new plane state, in which case this function will just perform a matching
+ * drm_plane_state_free, or it may instead repurpose an existing disabling
+ * state (if the plane was previously active), in which case this function
+ * will reset it.
+ */
+static void
+drm_plane_state_put_back(struct drm_plane_state *state)
+{
+	struct drm_output_state *state_output;
+	struct drm_plane *plane;
+
+	if (!state)
+		return;
+
+	state_output = state->output_state;
+	plane = state->plane;
+	drm_plane_state_free(state, false);
+
+	/* Plane was previously disabled; no need to keep this temporary
+	 * state around. */
+	if (!plane->state_cur->fb)
+		return;
+
+	(void) drm_plane_state_alloc(state_output, plane);
+}
+
+/**
+ * Return a plane state from a drm_output_state, either existing or
+ * freshly allocated.
+ */
+static struct drm_plane_state *
+drm_output_state_get_plane(struct drm_output_state *state_output,
+			   struct drm_plane *plane)
+{
+	struct drm_plane_state *ps;
+
+	wl_list_for_each(ps, &state_output->plane_list, link) {
+		if (ps->plane == plane)
+			return ps;
+	}
+
+	return drm_plane_state_alloc(state_output, plane);
+}
+
+/**
  * Allocate a new, empty drm_output_state. This should not generally be used
  * in the repaint cycle; see drm_output_state_duplicate.
  */
@@ -961,6 +1109,8 @@ drm_output_state_alloc(struct drm_output *output,
 		wl_list_insert(&pending_state->output_list, &state->link);
 	else
 		wl_list_init(&state->link);
+
+	wl_list_init(&state->plane_list);
 
 	return state;
 }
@@ -979,6 +1129,7 @@ drm_output_state_duplicate(struct drm_output_state *src,
 			   enum drm_output_state_duplicate_mode plane_mode)
 {
 	struct drm_output_state *dst = malloc(sizeof(*dst));
+	struct drm_plane_state *ps;
 
 	assert(dst);
 
@@ -993,6 +1144,20 @@ drm_output_state_duplicate(struct drm_output_state *src,
 	else
 		wl_list_init(&dst->link);
 
+	wl_list_init(&dst->plane_list);
+
+	wl_list_for_each(ps, &src->plane_list, link) {
+		/* Don't carry planes which are now disabled; these should be
+		 * free for other outputs to reuse. */
+		if (!ps->output)
+			continue;
+
+		if (plane_mode == DRM_OUTPUT_STATE_CLEAR_PLANES)
+			(void) drm_plane_state_alloc(dst, ps->plane);
+		else
+			(void) drm_plane_state_duplicate(dst, ps);
+	}
+
 	return dst;
 }
 
@@ -1002,10 +1167,16 @@ drm_output_state_duplicate(struct drm_output_state *src,
 static void
 drm_output_state_free(struct drm_output_state *state)
 {
+	struct drm_plane_state *ps, *next;
+
 	if (!state)
 		return;
 
+	wl_list_for_each_safe(ps, next, &state->plane_list, link)
+		drm_plane_state_free(ps, false);
+
 	wl_list_remove(&state->link);
+
 	free(state);
 }
 
@@ -1090,11 +1261,15 @@ static void
 drm_output_update_complete(struct drm_output *output, uint32_t flags,
 			   unsigned int sec, unsigned int usec)
 {
+	struct drm_plane_state *ps;
 	struct timespec ts;
 
 	/* Stop the pageflip timer instead of rearming it here */
 	if (output->pageflip_timer)
 		wl_event_source_timer_update(output->pageflip_timer, 0);
+
+	wl_list_for_each(ps, &output->state_cur->plane_list, link)
+		ps->complete = true;
 
 	drm_output_state_free(output->state_last);
 	output->state_last = NULL;
@@ -1129,6 +1304,7 @@ drm_output_assign_state(struct drm_output_state *state,
 			enum drm_state_apply_mode mode)
 {
 	struct drm_output *output = state->output;
+	struct drm_plane_state *plane_state;
 
 	assert(!output->state_last);
 
@@ -1142,6 +1318,26 @@ drm_output_assign_state(struct drm_output_state *state,
 	state->pending_state = NULL;
 
 	output->state_cur = state;
+
+	/* Replace state_cur on each affected plane with the new state, being
+	 * careful to dispose of orphaned (but only orphaned) previous state.
+	 * If the previous state is not orphaned (still has an output_state
+	 * attached), it will be disposed of by freeing the output_state. */
+	wl_list_for_each(plane_state, &state->plane_list, link) {
+		struct drm_plane *plane = plane_state->plane;
+
+		if (plane->state_cur && !plane->state_cur->output_state)
+			drm_plane_state_free(plane->state_cur, true);
+		plane->state_cur = plane_state;
+
+		if (mode != DRM_STATE_APPLY_ASYNC) {
+			plane_state->complete = true;
+			continue;
+		}
+
+		if (plane->type == WDRM_PLANE_TYPE_OVERLAY)
+			output->vblank_pending++;
+	}
 }
 
 
@@ -1392,6 +1588,7 @@ drm_output_repaint(struct weston_output *output_base,
 	struct drm_output *output = to_drm_output(output_base);
 	struct drm_backend *backend =
 		to_drm_backend(output->base.compositor);
+	struct drm_plane_state *ps;
 	struct drm_plane *p;
 	struct drm_mode *mode;
 	int ret = 0;
@@ -1465,29 +1662,33 @@ drm_output_repaint(struct weston_output *output_base,
 	/*
 	 * Now, update all the sprite surfaces
 	 */
-	wl_list_for_each(p, &backend->plane_list, link) {
+	wl_list_for_each(ps, &state->plane_list, link) {
 		uint32_t flags = 0, fb_id = 0;
 		drmVBlank vbl = {
 			.request.type = DRM_VBLANK_RELATIVE | DRM_VBLANK_EVENT,
 			.request.sequence = 1,
 		};
 
+		p = ps->plane;
 		if (p->type != WDRM_PLANE_TYPE_OVERLAY)
 			continue;
 
-		if ((!p->fb_current && !p->fb_pending) ||
-		    !drm_plane_crtc_supported(output, p))
-			continue;
+		assert(p->state_cur->complete);
+		assert(!!p->state_cur->output == !!p->state_cur->fb);
+		assert(!p->state_cur->output || p->state_cur->output == output);
+		assert(!ps->complete);
+		assert(!ps->output || ps->output == output);
+		assert(!!ps->output == !!ps->fb);
 
-		if (p->fb_pending && !backend->sprites_hidden)
-			fb_id = p->fb_pending->fb_id;
+		if (ps->fb && !backend->sprites_hidden)
+			fb_id = ps->fb->fb_id;
 
 		ret = drmModeSetPlane(backend->drm.fd, p->plane_id,
 				      output->crtc_id, fb_id, flags,
-				      p->dest_x, p->dest_y,
-				      p->dest_w, p->dest_h,
-				      p->src_x, p->src_y,
-				      p->src_w, p->src_h);
+				      ps->dest_x, ps->dest_y,
+				      ps->dest_w, ps->dest_h,
+				      ps->src_x, ps->src_y,
+				      ps->src_w, ps->src_h);
 		if (ret)
 			weston_log("setplane failed: %d: %s\n",
 				ret, strerror(errno));
@@ -1498,18 +1699,12 @@ drm_output_repaint(struct weston_output *output_base,
 		 * Queue a vblank signal so we know when the surface
 		 * becomes active on the display or has been replaced.
 		 */
-		vbl.request.signal = (unsigned long) p;
+		vbl.request.signal = (unsigned long) ps;
 		ret = drmWaitVBlank(backend->drm.fd, &vbl);
 		if (ret) {
 			weston_log("vblank event request failed: %d: %s\n",
 				ret, strerror(errno));
 		}
-
-		p->output = output;
-		p->fb_last = p->fb_current;
-		p->fb_current = p->fb_pending;
-		p->fb_pending = NULL;
-		output->vblank_pending++;
 	}
 
 	return 0;
@@ -1531,6 +1726,7 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
 	struct drm_output *output = to_drm_output(output_base);
 	struct drm_pending_state *pending_state = NULL;
 	struct drm_output_state *state;
+	struct drm_plane_state *plane_state;
 	struct drm_backend *backend =
 		to_drm_backend(output_base->compositor);
 	uint32_t fb_id;
@@ -1610,6 +1806,17 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
 	output->fb_last = drm_fb_ref(output->fb_current);
 	output->page_flip_pending = 1;
 
+	wl_list_for_each(plane_state, &state->plane_list, link) {
+		if (plane_state->plane->type != WDRM_PLANE_TYPE_OVERLAY)
+			continue;
+
+		vbl.request.type = DRM_VBLANK_RELATIVE | DRM_VBLANK_EVENT;
+		vbl.request.type |= drm_waitvblank_pipe(output);
+		vbl.request.sequence = 1;
+		vbl.request.signal = (unsigned long) plane_state;
+		drmWaitVBlank(backend->drm.fd, &vbl);
+	}
+
 	drm_output_assign_state(state, DRM_STATE_APPLY_ASYNC);
 	drm_pending_state_free(pending_state);
 
@@ -1638,8 +1845,9 @@ static void
 vblank_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec,
 	       void *data)
 {
-	struct drm_plane *s = (struct drm_plane *)data;
-	struct drm_output *output = s->output;
+	struct drm_plane_state *ps = (struct drm_plane_state *) data;
+	struct drm_output_state *os = ps->output_state;
+	struct drm_output *output = os->output;
 	uint32_t flags = WP_PRESENTATION_FEEDBACK_KIND_HW_COMPLETION |
 			 WP_PRESENTATION_FEEDBACK_KIND_HW_CLOCK;
 
@@ -1647,9 +1855,7 @@ vblank_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec,
 	output->vblank_pending--;
 	assert(output->vblank_pending >= 0);
 
-	assert(s->fb_last || s->fb_current);
-	drm_fb_unref(s->fb_last);
-	s->fb_last = NULL;
+	assert(ps->fb);
 
 	if (output->page_flip_pending || output->vblank_pending)
 		return;
@@ -1779,8 +1985,8 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 	struct weston_buffer_viewport *viewport = &ev->surface->buffer_viewport;
 	struct wl_resource *buffer_resource;
 	struct drm_plane *p;
+	struct drm_plane_state *state = NULL;
 	struct linux_dmabuf_buffer *dmabuf;
-	int found = 0;
 	struct gbm_bo *bo;
 	pixman_region32_t dest_rect, src_rect;
 	pixman_box32_t *box, tbox;
@@ -1821,14 +2027,22 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 		if (!drm_plane_crtc_supported(output, p))
 			continue;
 
-		if (!p->fb_pending) {
-			found = 1;
-			break;
+		if (!p->state_cur->complete)
+			continue;
+		if (p->state_cur->output && p->state_cur->output != output)
+			continue;
+
+		state = drm_output_state_get_plane(output_state, p);
+		if (state->fb) {
+			state = NULL;
+			continue;
 		}
+
+		break;
 	}
 
 	/* No sprites available */
-	if (!found)
+	if (!state)
 		return NULL;
 
 	if ((dmabuf = linux_dmabuf_buffer_get(buffer_resource))) {
@@ -1865,28 +2079,26 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 		bo = gbm_bo_import(b->gbm, GBM_BO_IMPORT_FD, &gbm_dmabuf,
 				   GBM_BO_USE_SCANOUT);
 #else
-		return NULL;
+		goto err;
 #endif
 	} else {
 		bo = gbm_bo_import(b->gbm, GBM_BO_IMPORT_WL_BUFFER,
 				   buffer_resource, GBM_BO_USE_SCANOUT);
 	}
 	if (!bo)
-		return NULL;
+		goto err;
 
 	format = drm_output_check_plane_format(p, ev, bo);
-	if (format == 0) {
-		gbm_bo_destroy(bo);
-		return NULL;
-	}
+	if (format == 0)
+		goto err;
 
-	p->fb_pending = drm_fb_get_from_bo(bo, b, format, BUFFER_CLIENT);
-	if (!p->fb_pending) {
-		gbm_bo_destroy(bo);
-		return NULL;
-	}
+	state->fb = drm_fb_get_from_bo(bo, b, format, BUFFER_CLIENT);
+	if (!state->fb)
+		goto err;
 
-	drm_fb_set_buffer(p->fb_pending, ev->surface->buffer_ref.buffer);
+	drm_fb_set_buffer(state->fb, ev->surface->buffer_ref.buffer);
+
+	state->output = output;
 
 	box = pixman_region32_extents(&ev->transform.boundingbox);
 	p->base.x = box->x1;
@@ -1907,10 +2119,10 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 				       output->base.transform,
 				       output->base.current_scale,
 				       *box);
-	p->dest_x = tbox.x1;
-	p->dest_y = tbox.y1;
-	p->dest_w = tbox.x2 - tbox.x1;
-	p->dest_h = tbox.y2 - tbox.y1;
+	state->dest_x = tbox.x1;
+	state->dest_y = tbox.y1;
+	state->dest_w = tbox.x2 - tbox.x1;
+	state->dest_h = tbox.y2 - tbox.y1;
 	pixman_region32_fini(&dest_rect);
 
 	pixman_region32_init(&src_rect);
@@ -1947,13 +2159,19 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 				       viewport->buffer.scale,
 				       tbox);
 
-	p->src_x = tbox.x1 << 8;
-	p->src_y = tbox.y1 << 8;
-	p->src_w = (tbox.x2 - tbox.x1) << 8;
-	p->src_h = (tbox.y2 - tbox.y1) << 8;
+	state->src_x = tbox.x1 << 8;
+	state->src_y = tbox.y1 << 8;
+	state->src_w = (tbox.x2 - tbox.x1) << 8;
+	state->src_h = (tbox.y2 - tbox.y1) << 8;
 	pixman_region32_fini(&src_rect);
 
 	return &p->base;
+
+err:
+	drm_plane_state_put_back(state);
+	if (bo)
+		gbm_bo_destroy(bo);
+	return NULL;
 }
 
 static struct weston_plane *
@@ -2500,6 +2718,8 @@ drm_plane_create(struct drm_backend *b, const drmModePlane *kplane)
 	plane->possible_crtcs = kplane->possible_crtcs;
 	plane->plane_id = kplane->plane_id;
 	plane->count_formats = kplane->count_formats;
+	plane->state_cur = drm_plane_state_alloc(NULL, plane);
+	plane->state_cur->complete = true;
 	memcpy(plane->formats, kplane->formats,
 	       kplane->count_formats * sizeof(kplane->formats[0]));
 
@@ -2537,10 +2757,8 @@ drm_plane_destroy(struct drm_plane *plane)
 {
 	drmModeSetPlane(plane->backend->drm.fd, plane->plane_id, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0, 0);
-	assert(!plane->fb_last);
-	assert(!plane->fb_pending);
+	drm_plane_state_free(plane->state_cur, true);
 	drm_property_info_free(plane->props, WDRM_PLANE__COUNT);
-	drm_fb_unref(plane->fb_current);
 	weston_plane_release(&plane->base);
 	wl_list_remove(&plane->link);
 	free(plane);
