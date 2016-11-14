@@ -89,4 +89,6 @@ interface VRDisplay {
 interface VRDisplayClient {
   OnDisplayChanged(VRDisplayInfo display);
   OnExitPresent();
+  OnDisplayBlur();
+  OnDisplayFocus();
 };

@@ -19,7 +19,6 @@ class BaseWindow;
 
 namespace device {
 
-class VRDeviceProvider;
 class VRDisplayImpl;
 class VRServiceImpl;
 
@@ -27,10 +26,9 @@ const unsigned int VR_DEVICE_LAST_ID = 0xFFFFFFFF;
 
 class DEVICE_VR_EXPORT VRDevice {
  public:
-  explicit VRDevice(VRDeviceProvider* provider);
+  VRDevice();
   virtual ~VRDevice();
 
-  VRDeviceProvider* provider() const { return provider_; }
   unsigned int id() const { return id_; }
 
   virtual mojom::VRDisplayInfoPtr GetVRDevice() = 0;
@@ -54,6 +52,8 @@ class DEVICE_VR_EXPORT VRDevice {
 
   virtual void OnDisplayChanged();
   virtual void OnExitPresent(VRServiceImpl* service);
+  virtual void OnDisplayBlur();
+  virtual void OnDisplayFocus();
 
  protected:
   // Each Service have one VRDisplay with one VRDevice.
@@ -67,7 +67,6 @@ class DEVICE_VR_EXPORT VRDevice {
   VRServiceImpl* presenting_service_;
 
  private:
-  VRDeviceProvider* provider_;
   unsigned int id_;
 
   static unsigned int next_id_;

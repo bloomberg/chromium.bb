@@ -4,6 +4,7 @@
 
 #include "device/vr/vr_service_impl.h"
 
+#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "device/vr/test/fake_vr_device.h"
@@ -69,9 +70,8 @@ class VRServiceImplTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    std::unique_ptr<FakeVRDeviceProvider> provider(new FakeVRDeviceProvider());
-    provider_ = provider.get();
-    device_manager_.reset(new VRDeviceManager(std::move(provider)));
+    provider_ = new FakeVRDeviceProvider();
+    device_manager_.reset(new VRDeviceManager(base::WrapUnique(provider_)));
   }
 
   void TearDown() override { base::RunLoop().RunUntilIdle(); }
@@ -85,7 +85,7 @@ class VRServiceImplTest : public testing::Test {
   size_t ServiceCount() { return device_manager_->services_.size(); }
 
   base::MessageLoop message_loop_;
-  FakeVRDeviceProvider* provider_;
+  FakeVRDeviceProvider* provider_ = nullptr;
   std::unique_ptr<VRDeviceManager> device_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(VRServiceImplTest);

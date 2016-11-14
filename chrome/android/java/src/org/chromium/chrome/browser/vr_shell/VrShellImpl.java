@@ -279,6 +279,7 @@ public class VrShellImpl extends GvrLayout implements GLSurfaceView.Renderer, Vr
     @Override
     public void onResume() {
         super.onResume();
+        mGlSurfaceView.onResume();
         if (mNativeVrShell != 0) {
             // Refreshing the viewer profile accesses disk, so we need to temporarily allow disk
             // reads. The GVR team promises this will be fixed when they launch.
@@ -294,6 +295,7 @@ public class VrShellImpl extends GvrLayout implements GLSurfaceView.Renderer, Vr
     @Override
     public void onPause() {
         super.onPause();
+        mGlSurfaceView.onPause();
         if (mNativeVrShell != 0) {
             nativeOnPause(mNativeVrShell);
         }
@@ -303,6 +305,8 @@ public class VrShellImpl extends GvrLayout implements GLSurfaceView.Renderer, Vr
     public void shutdown() {
         super.shutdown();
         if (mNativeVrShell != 0) {
+            // Ensure our GL thread is stopped before we destroy the native VR Shell.
+            mGlSurfaceView.onPause();
             nativeDestroy(mNativeVrShell);
             mNativeVrShell = 0;
         }

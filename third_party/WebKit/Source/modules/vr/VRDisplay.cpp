@@ -70,6 +70,7 @@ VRDisplay::VRDisplay(NavigatorVR* navigatorVR,
       m_depthNear(0.01),
       m_depthFar(10000.0),
       m_fullscreenCheckTimer(this, &VRDisplay::onFullscreenCheck),
+      m_contextGL(nullptr),
       m_animationCallbackRequested(false),
       m_inAnimationFrame(false),
       m_display(std::move(display)),
@@ -115,6 +116,9 @@ void VRDisplay::disconnected() {
 bool VRDisplay::getFrameData(VRFrameData* frameData) {
   updatePose();
 
+  if (!m_framePose)
+    return false;
+
   if (!frameData)
     return false;
 
@@ -137,6 +141,11 @@ VRPose* VRDisplay::getPose() {
 }
 
 void VRDisplay::updatePose() {
+  if (m_displayBlurred) {
+    // WebVR spec says to return a null pose when the display is blurred.
+    m_framePose = nullptr;
+    return;
+  }
   if (m_canUpdateFramePose) {
     if (!m_display)
       return;
@@ -186,11 +195,39 @@ void VRDisplay::cancelAnimationFrame(int id) {
   m_scriptedAnimationController->cancelCallback(id);
 }
 
+void VRDisplay::OnDisplayBlur() {
+  m_displayBlurred = true;
+  m_navigatorVR->fireVrDisplayOnBlur(this);
+}
+
+void VRDisplay::OnDisplayFocus() {
+  m_displayBlurred = false;
+  // Restart our internal doc requestAnimationFrame callback, if it fired while
+  // the display was blurred.
+  // TODO(bajones): Don't use doc->requestAnimationFrame() at all. Animation
+  // frames should be tied to the presenting VR display (e.g. should be serviced
+  // by GVR library callbacks on Android), and not the doc frame rate.
+  if (!m_animationCallbackRequested) {
+    Document* doc = m_navigatorVR->document();
+    if (!doc)
+      return;
+    doc->requestAnimationFrame(new VRDisplayFrameRequestCallback(this));
+  }
+  m_navigatorVR->fireVrDisplayOnFocus(this);
+}
+
 void VRDisplay::serviceScriptedAnimations(double monotonicAnimationStartTime) {
   if (!m_scriptedAnimationController)
     return;
   AutoReset<bool> animating(&m_inAnimationFrame, true);
   m_animationCallbackRequested = false;
+
+  // We use an internal rAF callback to run the animation loop at the display
+  // speed, and run the user's callback after our internal callback fires.
+  // However, when the display is blurred, we want to pause the animation loop,
+  // so we don't fire the user's callback until the display is focused.
+  if (m_displayBlurred)
+    return;
   m_scriptedAnimationController->serviceScriptedAnimations(
       monotonicAnimationStartTime);
 }

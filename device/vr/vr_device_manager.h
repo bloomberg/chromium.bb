@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "device/vr/vr_device.h"
@@ -60,7 +60,7 @@ class VRDeviceManager {
   void PollEvents();
   void StopSchedulingPollEvents();
 
-  using ProviderList = std::vector<linked_ptr<VRDeviceProvider>>;
+  using ProviderList = std::vector<std::unique_ptr<VRDeviceProvider>>;
   ProviderList providers_;
 
   // Devices are owned by their providers.

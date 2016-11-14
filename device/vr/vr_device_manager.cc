@@ -27,14 +27,12 @@ VRDeviceManager::VRDeviceManager()
       has_scheduled_poll_(false) {
 // Register VRDeviceProviders for the current platform
 #if defined(OS_ANDROID)
-  RegisterProvider(base::WrapUnique(new GvrDeviceProvider()));
+  RegisterProvider(base::MakeUnique<GvrDeviceProvider>());
 #endif
 }
 
 VRDeviceManager::VRDeviceManager(std::unique_ptr<VRDeviceProvider> provider)
-    : vr_initialized_(false),
-      keep_alive_(true),
-      has_scheduled_poll_(false) {
+    : vr_initialized_(false), keep_alive_(true), has_scheduled_poll_(false) {
   thread_checker_.DetachFromThread();
   RegisterProvider(std::move(provider));
   SetInstance(this);
@@ -55,7 +53,7 @@ VRDeviceManager* VRDeviceManager::GetInstance() {
 void VRDeviceManager::SetInstance(VRDeviceManager* instance) {
   // Unit tests can create multiple instances but only one should exist at any
   // given time so g_vr_device_manager should only go from nullptr to
-  // non-nullptr and vica versa.
+  // non-nullptr and vice versa.
   CHECK_NE(!!instance, !!g_vr_device_manager);
   g_vr_device_manager = instance;
 }
@@ -147,7 +145,7 @@ void VRDeviceManager::InitializeProviders() {
 
 void VRDeviceManager::RegisterProvider(
     std::unique_ptr<VRDeviceProvider> provider) {
-  providers_.push_back(make_linked_ptr(provider.release()));
+  providers_.push_back(std::move(provider));
 }
 
 void VRDeviceManager::SchedulePollEvents() {

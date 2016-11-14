@@ -255,6 +255,8 @@ vrdisplayconnect
 vrdisplaydisconnect
 vrdisplayactivate
 vrdisplaydeactivate
+vrdisplayblur
+vrdisplayfocus
 vrdisplaypresentchange
 waiting
 waitingforkey

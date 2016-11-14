@@ -39,6 +39,8 @@ class MODULES_EXPORT NavigatorVR final
   VRController* controller();
   Document* document();
 
+  void fireVrDisplayOnBlur(VRDisplay*);
+  void fireVrDisplayOnFocus(VRDisplay*);
   void fireVREvent(VRDisplayEvent*);
 
   DECLARE_VIRTUAL_TRACE();

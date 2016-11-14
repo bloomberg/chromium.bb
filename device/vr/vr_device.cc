@@ -10,8 +10,7 @@ namespace device {
 
 unsigned int VRDevice::next_id_ = 1;
 
-VRDevice::VRDevice(VRDeviceProvider* provider)
-    : presenting_service_(nullptr), provider_(provider), id_(next_id_) {
+VRDevice::VRDevice() : presenting_service_(nullptr), id_(next_id_) {
   // Prevent wraparound. Devices with this ID will be treated as invalid.
   if (next_id_ != VR_DEVICE_LAST_ID)
     next_id_++;
@@ -47,20 +46,24 @@ void VRDevice::OnDisplayChanged() {
   if (vr_device_info.is_null())
     return;
 
-  for (const auto& display : displays_) {
-    mojom::VRDisplayClient* client = display.second->client();
-    if (client)
-      client->OnDisplayChanged(vr_device_info.Clone());
-  }
+  for (const auto& display : displays_)
+    display.second->client()->OnDisplayChanged(vr_device_info.Clone());
 }
 
 void VRDevice::OnExitPresent(VRServiceImpl* service) {
   DisplayClientMap::iterator it = displays_.find(service);
-  if (it != displays_.end()) {
-    mojom::VRDisplayClient* client = it->second->client();
-    if (client)
-      client->OnExitPresent();
-  }
+  if (it != displays_.end())
+    it->second->client()->OnExitPresent();
+}
+
+void VRDevice::OnDisplayBlur() {
+  for (const auto& display : displays_)
+    display.second->client()->OnDisplayBlur();
+}
+
+void VRDevice::OnDisplayFocus() {
+  for (const auto& display : displays_)
+    display.second->client()->OnDisplayFocus();
 }
 
 }  // namespace device

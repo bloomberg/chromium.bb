@@ -23,9 +23,7 @@ using base::android::GetApplicationContext;
 
 namespace device {
 
-GvrDeviceProvider::GvrDeviceProvider()
-    : VRDeviceProvider(),
-      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
+GvrDeviceProvider::GvrDeviceProvider() : weak_ptr_factory_(this) {}
 
 GvrDeviceProvider::~GvrDeviceProvider() {
   device::GvrDelegateProvider* delegate_provider =
@@ -62,12 +60,10 @@ bool GvrDeviceProvider::RequestPresent() {
     return false;
 
   // RequestWebVRPresent is async as a render thread may be created.
-  return delegate_provider->RequestWebVRPresent(this);
+  return delegate_provider->RequestWebVRPresent(weak_ptr_factory_.GetWeakPtr());
 }
 
 void GvrDeviceProvider::ExitPresent() {
-  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
-
   if (!vr_device_)
     return;
 
@@ -84,26 +80,29 @@ void GvrDeviceProvider::ExitPresent() {
   delegate_provider->ExitWebVRPresent();
 }
 
-void GvrDeviceProvider::OnGvrDelegateReady(GvrDelegate* delegate) {
-  main_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&GvrDeviceProvider::GvrDelegateReady, base::Unretained(this),
-                 base::Unretained(delegate)));
-}
-
-void GvrDeviceProvider::OnGvrDelegateRemoved() {
-  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+void GvrDeviceProvider::OnGvrDelegateReady(
+    const base::WeakPtr<GvrDelegate>& delegate) {
   if (!vr_device_)
     return;
-  ExitPresent();
-}
-
-void GvrDeviceProvider::GvrDelegateReady(GvrDelegate* delegate) {
-  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
-
   vr_device_->SetDelegate(delegate);
   GamepadDataFetcherManager::GetInstance()->AddFactory(
       new GvrGamepadDataFetcher::Factory(delegate, vr_device_->id()));
+}
+
+void GvrDeviceProvider::OnGvrDelegateRemoved() {
+  ExitPresent();
+}
+
+void GvrDeviceProvider::OnDisplayBlur() {
+  if (!vr_device_)
+    return;
+  vr_device_->OnDisplayBlur();
+}
+
+void GvrDeviceProvider::OnDisplayFocus() {
+  if (!vr_device_)
+    return;
+  vr_device_->OnDisplayFocus();
 }
 
 }  // namespace device

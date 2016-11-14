@@ -6,6 +6,7 @@
 #define DEVICE_VR_TEST_FAKE_VR_DEVICE_H_
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_device_provider.h"
 
@@ -13,7 +14,7 @@ namespace device {
 
 class FakeVRDevice : public VRDevice {
  public:
-  explicit FakeVRDevice(VRDeviceProvider* provider);
+  explicit FakeVRDevice();
   ~FakeVRDevice() override;
 
   void InitBasicDevice();

@@ -6,6 +6,7 @@
 #define DEVICE_VR_ANDROID_GVR_DEVICE_H
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "device/vr/vr_device.h"
 
 namespace gvr {
@@ -19,7 +20,8 @@ class GvrDelegate;
 
 class GvrDevice : public VRDevice {
  public:
-  GvrDevice(GvrDeviceProvider* provider, GvrDelegate* delegate);
+  GvrDevice(GvrDeviceProvider* provider,
+            const base::WeakPtr<GvrDelegate>& delegate);
   ~GvrDevice() override;
 
   // VRDevice
@@ -35,14 +37,14 @@ class GvrDevice : public VRDevice {
                          mojom::VRLayerBoundsPtr leftBounds,
                          mojom::VRLayerBoundsPtr rightBounds) override;
 
-  void SetDelegate(GvrDelegate* delegate);
+  void SetDelegate(const base::WeakPtr<GvrDelegate>& delegate);
 
  private:
   gvr::GvrApi* GetGvrApi();
 
-  GvrDelegate* delegate_;
+  base::WeakPtr<GvrDelegate> delegate_;
   GvrDeviceProvider* gvr_provider_;
-  bool secure_origin_;
+  bool secure_origin_ = false;
   uint32_t pose_index_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(GvrDevice);

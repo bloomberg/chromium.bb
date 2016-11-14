@@ -30,7 +30,7 @@ class VRDeviceManagerTest : public testing::Test {
   }
 
  protected:
-  FakeVRDeviceProvider* provider_;
+  FakeVRDeviceProvider* provider_ = nullptr;
   std::unique_ptr<VRDeviceManager> device_manager_;
   std::unique_ptr<VRServiceImpl> vr_service_;
 
@@ -42,9 +42,8 @@ VRDeviceManagerTest::VRDeviceManagerTest() {}
 VRDeviceManagerTest::~VRDeviceManagerTest() {}
 
 void VRDeviceManagerTest::SetUp() {
-  std::unique_ptr<FakeVRDeviceProvider> provider(new FakeVRDeviceProvider());
-  provider_ = provider.get();
-  device_manager_.reset(new VRDeviceManager(std::move(provider)));
+  provider_ = new FakeVRDeviceProvider();
+  device_manager_.reset(new VRDeviceManager(base::WrapUnique(provider_)));
   vr_service_.reset(new VRServiceImpl());
 }
 
@@ -69,23 +68,21 @@ TEST_F(VRDeviceManagerTest, GetDevicesBasicTest) {
   VRDevice* queried_device = GetDevice(1);
   EXPECT_EQ(nullptr, queried_device);
 
-  std::unique_ptr<FakeVRDevice> device1(new FakeVRDevice(provider_));
-  provider_->AddDevice(device1.get());
+  FakeVRDevice device1;
+  provider_->AddDevice(&device1);
   success = device_manager_->GetVRDevices(vr_service_.get());
   EXPECT_TRUE(success);
   // Should have successfully returned one device.
-  EXPECT_EQ(device1.get(), GetDevice(device1->id()));
+  EXPECT_EQ(&device1, GetDevice(device1.id()));
 
-  std::unique_ptr<FakeVRDevice> device2(new FakeVRDevice(provider_));
-  provider_->AddDevice(device2.get());
+  FakeVRDevice device2;
+  provider_->AddDevice(&device2);
   success = device_manager_->GetVRDevices(vr_service_.get());
   EXPECT_TRUE(success);
 
   // Querying the WebVRDevice index should return the correct device.
-  VRDevice* queried_device1 = GetDevice(device1->id());
-  EXPECT_EQ(device1.get(), queried_device1);
-  VRDevice* queried_device2 = GetDevice(device2->id());
-  EXPECT_EQ(device2.get(), queried_device2);
+  EXPECT_EQ(&device1, GetDevice(device1.id()));
+  EXPECT_EQ(&device2, GetDevice(device2.id()));
 }
 
 }  // namespace device

@@ -12,6 +12,7 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/android/vr_shell/vr_math.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -121,7 +122,8 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   void LoadUIContent();
   void DrawVrShell(const gvr::Mat4f& head_pose, gvr::Frame &frame);
   void DrawUiView(const gvr::Mat4f* head_pose,
-                  const std::vector<const ContentRectangle*>& elements);
+                  const std::vector<const ContentRectangle*>& elements,
+                  bool clear);
   void DrawElements(const gvr::Mat4f& render_matrix,
                     const std::vector<const ContentRectangle*>& elements);
   void DrawCursor(const gvr::Mat4f& render_matrix);
@@ -157,6 +159,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
 
   std::queue<base::Callback<void()>> task_queue_;
   base::Lock task_queue_lock_;
+  base::Lock gvr_init_lock_;
 
   std::unique_ptr<VrCompositor> content_compositor_;
   content::WebContents* main_contents_;
@@ -190,6 +193,8 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   std::unique_ptr<VrController> controller_;
   scoped_refptr<VrInputManager> content_input_manager_;
   scoped_refptr<VrInputManager> ui_input_manager_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   base::WeakPtrFactory<VrShell> weak_ptr_factory_;
 

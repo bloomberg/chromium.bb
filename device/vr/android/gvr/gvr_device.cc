@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
+#include "device/vr/android/gvr/gvr_device_provider.h"
 #include "device/vr/vr_device_manager.h"
 #include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr.h"
 #include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr_types.h"
@@ -24,8 +25,9 @@ static const uint64_t kPredictionTimeWithoutVsyncNanos = 50000000;
 
 }  // namespace
 
-GvrDevice::GvrDevice(GvrDeviceProvider* provider, GvrDelegate* delegate)
-    : VRDevice(provider), delegate_(delegate), gvr_provider_(provider) {}
+GvrDevice::GvrDevice(GvrDeviceProvider* provider,
+                     const base::WeakPtr<GvrDelegate>& delegate)
+    : VRDevice(), delegate_(delegate), gvr_provider_(provider) {}
 
 GvrDevice::~GvrDevice() {}
 
@@ -153,6 +155,9 @@ mojom::VRPosePtr GvrDevice::GetPose(VRServiceImpl* service) {
     return pose;
   }
 
+  if (!delegate_)
+    return nullptr;
+
   gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
   target_time.monotonic_system_time_nanos += kPredictionTimeWithoutVsyncNanos;
 
@@ -245,7 +250,7 @@ void GvrDevice::UpdateLayerBounds(VRServiceImpl* service,
                                       rightBounds->width, rightBounds->height);
 }
 
-void GvrDevice::SetDelegate(GvrDelegate* delegate) {
+void GvrDevice::SetDelegate(const base::WeakPtr<GvrDelegate>& delegate) {
   delegate_ = delegate;
 
   // Notify the clients that this device has changed

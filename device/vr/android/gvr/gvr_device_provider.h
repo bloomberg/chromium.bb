@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_device_provider.h"
@@ -27,21 +28,19 @@ class DEVICE_VR_EXPORT GvrDeviceProvider : public VRDeviceProvider {
   void GetDevices(std::vector<VRDevice*>* devices) override;
   void Initialize() override;
 
-  // Called from GvrDevice
+  // Called from GvrDevice.
   bool RequestPresent();
   void ExitPresent();
 
-  // Called from GvrDelegate
-  void OnGvrDelegateReady(GvrDelegate* delegate);
+  void OnGvrDelegateReady(const base::WeakPtr<GvrDelegate>& delegate);
   void OnGvrDelegateRemoved();
+  void OnDisplayBlur();
+  void OnDisplayFocus();
 
  private:
-  void GvrDelegateReady(GvrDelegate* delegate);
-  void GvrDelegateRemoved();
-
   std::unique_ptr<GvrDevice> vr_device_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+  base::WeakPtrFactory<GvrDeviceProvider> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GvrDeviceProvider);
 };

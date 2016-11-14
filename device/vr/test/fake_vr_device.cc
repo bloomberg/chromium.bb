@@ -6,7 +6,7 @@
 
 namespace device {
 
-FakeVRDevice::FakeVRDevice(VRDeviceProvider* provider) : VRDevice(provider) {
+FakeVRDevice::FakeVRDevice() {
   device_ = mojom::VRDisplayInfo::New();
   pose_ = mojom::VRPose::New();
 

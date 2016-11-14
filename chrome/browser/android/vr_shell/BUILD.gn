@@ -44,6 +44,9 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       "vr_web_contents_observer.h",
     ]
 
+    if (enable_vr_shell) {
+      defines += [ "ENABLE_VR_SHELL" ]
+    }
     if (enable_vr_shell_ui_dev) {
       assert(enable_vr_shell)
       defines += [ "ENABLE_VR_SHELL_UI_DEV" ]

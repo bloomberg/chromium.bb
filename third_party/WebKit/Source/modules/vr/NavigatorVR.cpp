@@ -107,6 +107,16 @@ void NavigatorVR::fireVRDisplayPresentChange(VRDisplay* display) {
   }
 }
 
+void NavigatorVR::fireVrDisplayOnBlur(VRDisplay* display) {
+  fireVREvent(VRDisplayEvent::create(EventTypeNames::vrdisplayblur, true, false,
+                                     display, ""));
+}
+
+void NavigatorVR::fireVrDisplayOnFocus(VRDisplay* display) {
+  fireVREvent(VRDisplayEvent::create(EventTypeNames::vrdisplayfocus, true,
+                                     false, display, ""));
+}
+
 void NavigatorVR::fireVREvent(VRDisplayEvent* event) {
   if (frame() && frame()->localDOMWindow()) {
     frame()->localDOMWindow()->enqueueWindowEvent(event);

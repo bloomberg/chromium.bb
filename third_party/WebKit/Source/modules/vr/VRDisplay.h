@@ -110,6 +110,8 @@ class VRDisplay final : public GarbageCollectedFinalized<VRDisplay>,
   // VRDisplayClient
   void OnDisplayChanged(device::mojom::blink::VRDisplayInfoPtr) override;
   void OnExitPresent() override;
+  void OnDisplayBlur() override;
+  void OnDisplayFocus() override;
 
   ScriptedAnimationController& ensureScriptedAnimationController(Document*);
 
@@ -119,7 +121,6 @@ class VRDisplay final : public GarbageCollectedFinalized<VRDisplay>,
   bool m_isConnected;
   bool m_isPresenting;
   bool m_canUpdateFramePose;
-  unsigned m_compositorHandle;
   Member<VRDisplayCapabilities> m_capabilities;
   Member<VRStageParameters> m_stageParameters;
   Member<VREyeParameters> m_eyeParametersLeft;
@@ -138,6 +139,7 @@ class VRDisplay final : public GarbageCollectedFinalized<VRDisplay>,
   Member<ScriptedAnimationController> m_scriptedAnimationController;
   bool m_animationCallbackRequested;
   bool m_inAnimationFrame;
+  bool m_displayBlurred;
 
   device::mojom::blink::VRDisplayPtr m_display;
 

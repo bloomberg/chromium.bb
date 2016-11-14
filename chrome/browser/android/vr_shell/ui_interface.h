@@ -24,12 +24,14 @@ class UiInterface {
   enum Mode {
     STANDARD,
     WEB_VR,
+    MENU,
   };
 
   UiInterface();
   virtual ~UiInterface();
 
   void SetMode(Mode mode);
+  Mode GetMode() { return mode_; }
   void SetSecureOrigin(bool secure);
   void SetLoading(bool loading);
   void SetURL(const GURL& url);
@@ -41,6 +43,7 @@ class UiInterface {
  private:
   void FlushUpdates();
 
+  Mode mode_;
   UiCommandHandler* handler_;
   bool loaded_ = false;
   base::DictionaryValue updates_;

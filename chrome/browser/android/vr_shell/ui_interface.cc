@@ -16,6 +16,7 @@ UiInterface::UiInterface() {
 UiInterface::~UiInterface() {}
 
 void UiInterface::SetMode(Mode mode) {
+  mode_ = mode;
   updates_.SetInteger("mode", static_cast<int>(mode));
   FlushUpdates();
 }

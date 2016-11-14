@@ -21,6 +21,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
+#include "device/vr/android/gvr/gvr_device_provider.h"
 #include "jni/VrShellImpl_jni.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
@@ -137,6 +138,7 @@ VrShell::VrShell(JNIEnv* env, jobject obj,
     : WebContentsObserver(ui_contents),
       main_contents_(main_contents),
       ui_contents_(ui_contents),
+      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this) {
   DCHECK(g_instance == nullptr);
   g_instance = this;
@@ -177,6 +179,9 @@ bool RegisterVrShell(JNIEnv* env) {
 }
 
 VrShell::~VrShell() {
+  if (delegate_ && delegate_->GetDeviceProvider()) {
+    delegate_->GetDeviceProvider()->OnGvrDelegateRemoved();
+  }
   g_instance = nullptr;
   gl::init::ClearGLBindings();
 }
@@ -184,11 +189,17 @@ VrShell::~VrShell() {
 void VrShell::SetDelegate(JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jobject>& delegate) {
-  delegate_ = VrShellDelegate::getNativeDelegate(env, delegate);
+  base::AutoLock lock(gvr_init_lock_);
+  delegate_ = VrShellDelegate::GetNativeDelegate(env, delegate);
+  if (gvr_api_) {
+    main_thread_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&device::GvrDeviceProvider::OnGvrDelegateReady,
+                              delegate_->GetDeviceProvider(),
+                              weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
-enum class ViewerType
-{
+enum class ViewerType {
   UNKNOWN_TYPE = 0,
   CARDBOARD = 1,
   DAYDREAM = 2,
@@ -198,19 +209,23 @@ enum class ViewerType
 void VrShell::GvrInit(JNIEnv* env,
                       const JavaParamRef<jobject>& obj,
                       jlong native_gvr_api) {
+  base::AutoLock lock(gvr_init_lock_);
   gvr_api_ =
       gvr::GvrApi::WrapNonOwned(reinterpret_cast<gvr_context*>(native_gvr_api));
 
-  if (delegate_)
-    delegate_->OnVrShellReady(this);
+  if (delegate_) {
+    main_thread_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&device::GvrDeviceProvider::OnGvrDelegateReady,
+                              delegate_->GetDeviceProvider(),
+                              weak_ptr_factory_.GetWeakPtr()));
+  }
   controller_.reset(
       new VrController(reinterpret_cast<gvr_context*>(native_gvr_api)));
   content_input_manager_ = new VrInputManager(main_contents_);
   ui_input_manager_ = new VrInputManager(ui_contents_);
 
   ViewerType viewerType;
-  switch (gvr_api_->GetViewerType())
-  {
+  switch (gvr_api_->GetViewerType()) {
     case gvr::ViewerType::GVR_VIEWER_TYPE_DAYDREAM:
       viewerType = ViewerType::DAYDREAM;
       break;
@@ -271,6 +286,37 @@ void VrShell::InitializeGl(JNIEnv* env,
 
 void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
   controller_->UpdateState();
+
+#if defined(ENABLE_VR_SHELL)
+  // Note that button up/down state is transient, so IsButtonUp only returns
+  // true for a single frame (and we're guaranteed not to miss it).
+  if (controller_->IsButtonUp(
+      gvr::ControllerButton::GVR_CONTROLLER_BUTTON_APP)) {
+    if (html_interface_->GetMode() == UiInterface::Mode::MENU) {
+      // Temporary: Hit app button a second time to exit menu mode.
+      if (webvr_mode_) {
+        html_interface_->SetMode(UiInterface::Mode::WEB_VR);
+        main_thread_task_runner_->PostTask(
+            FROM_HERE, base::Bind(&device::GvrDeviceProvider::OnDisplayFocus,
+                                  delegate_->GetDeviceProvider()));
+      } else {
+        html_interface_->SetMode(UiInterface::Mode::STANDARD);
+      }
+    } else {
+      if (html_interface_->GetMode() == UiInterface::Mode::WEB_VR) {
+        main_thread_task_runner_->PostTask(
+            FROM_HERE, base::Bind(&device::GvrDeviceProvider::OnDisplayBlur,
+                                  delegate_->GetDeviceProvider()));
+      }
+      html_interface_->SetMode(UiInterface::Mode::MENU);
+      // TODO(mthiesse): The page is no longer visible here. We should unfocus
+      // or otherwise let it know it's hidden.
+    }
+  }
+#endif
+  if (html_interface_->GetMode() == UiInterface::Mode::WEB_VR) {
+    return;
+  }
 
   gvr::Vec3f ergo_neutral_pose;
   if (!controller_->IsConnected()) {
@@ -429,7 +475,7 @@ uint32_t GetPixelEncodedPoseIndex() {
   // encodes the pose index, and device/vr/android/gvr/gvr_device.cc
   // which tracks poses.
   uint8_t pixels[4];
-  // Assume we're reading from the frambebuffer we just wrote to.
+  // Assume we're reading from the framebuffer we just wrote to.
   // That's true currently, we may need to use glReadBuffer(GL_BACK)
   // or equivalent if the rendering setup changes in the future.
   glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
@@ -467,7 +513,7 @@ void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 
   UpdateController(GetForwardVector(head_pose));
 
-  if (webvr_mode_) {
+  if (html_interface_->GetMode() == UiInterface::Mode::WEB_VR) {
     DrawWebVr();
 
     // When using async reprojection, we need to know which pose was used in
@@ -504,16 +550,16 @@ void VrShell::DrawVrShell(const gvr::Mat4f& head_pose,
     }
   }
 
-  if (!webvr_mode_) {
+  bool not_web_vr = html_interface_->GetMode() != UiInterface::Mode::WEB_VR;
+
+  if (not_web_vr) {
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_SCISSOR_TEST);
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
   }
 
-  if (!world_elements.empty()) {
-    DrawUiView(&head_pose, world_elements);
-  }
+  DrawUiView(&head_pose, world_elements, not_web_vr);
 
   if (!head_locked_elements.empty()) {
     // Switch to head-locked viewports.
@@ -525,14 +571,14 @@ void VrShell::DrawVrShell(const gvr::Mat4f& head_pose,
 
     // Bind the headlocked framebuffer.
     frame.BindBuffer(kFrameHeadlockedBuffer);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    DrawUiView(nullptr, head_locked_elements);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    DrawUiView(nullptr, head_locked_elements, true);
   }
 }
 
 void VrShell::DrawUiView(const gvr::Mat4f* head_pose,
-                         const std::vector<const ContentRectangle*>& elements) {
+                         const std::vector<const ContentRectangle*>& elements,
+                         bool clear) {
   for (auto eye : {GVR_LEFT_EYE, GVR_RIGHT_EYE}) {
     buffer_viewport_list_->GetBufferViewport(eye, buffer_viewport_.get());
 
@@ -550,7 +596,7 @@ void VrShell::DrawUiView(const gvr::Mat4f* head_pose,
               pixel_rect.right - pixel_rect.left,
               pixel_rect.top - pixel_rect.bottom);
 
-    if (!webvr_mode_) {
+    if (clear) {
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
@@ -560,7 +606,8 @@ void VrShell::DrawUiView(const gvr::Mat4f* head_pose,
         view_matrix);
 
     DrawElements(render_matrix, elements);
-    if (head_pose != nullptr) {
+    if (head_pose != nullptr &&
+        html_interface_->GetMode() != UiInterface::Mode::WEB_VR) {
       DrawCursor(render_matrix);
     }
   }
@@ -672,9 +719,6 @@ void VrShell::DrawWebVr() {
   glDisable(GL_SCISSOR_TEST);
   glDisable(GL_BLEND);
   glDisable(GL_POLYGON_OFFSET_FILL);
-
-  // Don't need to clear, since we're drawing over the entire render target.
-  glClear(GL_COLOR_BUFFER_BIT);
 
   glViewport(0, 0, render_size_.width, render_size_.height);
   vr_shell_renderer_->GetWebVrRenderer()->Draw(content_texture_id_);
