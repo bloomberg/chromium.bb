@@ -320,26 +320,6 @@ std::unique_ptr<SchedulerWorkerPoolImpl> SchedulerWorkerPoolImpl::Create(
   return nullptr;
 }
 
-void SchedulerWorkerPoolImpl::WaitForAllWorkersIdleForTesting() {
-  AutoSchedulerLock auto_lock(idle_workers_stack_lock_);
-  while (idle_workers_stack_.Size() < workers_.size())
-    idle_workers_stack_cv_for_testing_->Wait();
-}
-
-void SchedulerWorkerPoolImpl::JoinForTesting() {
-  DCHECK(!CanWorkerDetachForTesting() || suggested_reclaim_time_.is_max()) <<
-      "Workers can detach during join.";
-  for (const auto& worker : workers_)
-    worker->JoinForTesting();
-
-  DCHECK(!join_for_testing_returned_.IsSignaled());
-  join_for_testing_returned_.Signal();
-}
-
-void SchedulerWorkerPoolImpl::DisallowWorkerDetachmentForTesting() {
-  worker_detachment_disallowed_.Set();
-}
-
 scoped_refptr<TaskRunner> SchedulerWorkerPoolImpl::CreateTaskRunnerWithTraits(
     const TaskTraits& traits) {
   return make_scoped_refptr(new SchedulerParallelTaskRunner(traits, this));
@@ -450,6 +430,26 @@ void SchedulerWorkerPoolImpl::GetHistograms(
     std::vector<const HistogramBase*>* histograms) const {
   histograms->push_back(detach_duration_histogram_);
   histograms->push_back(num_tasks_between_waits_histogram_);
+}
+
+void SchedulerWorkerPoolImpl::WaitForAllWorkersIdleForTesting() {
+  AutoSchedulerLock auto_lock(idle_workers_stack_lock_);
+  while (idle_workers_stack_.Size() < workers_.size())
+    idle_workers_stack_cv_for_testing_->Wait();
+}
+
+void SchedulerWorkerPoolImpl::JoinForTesting() {
+  DCHECK(!CanWorkerDetachForTesting() || suggested_reclaim_time_.is_max())
+      << "Workers can detach during join.";
+  for (const auto& worker : workers_)
+    worker->JoinForTesting();
+
+  DCHECK(!join_for_testing_returned_.IsSignaled());
+  join_for_testing_returned_.Signal();
+}
+
+void SchedulerWorkerPoolImpl::DisallowWorkerDetachmentForTesting() {
+  worker_detachment_disallowed_.Set();
 }
 
 SchedulerWorkerPoolImpl::SchedulerSingleThreadTaskRunner::
