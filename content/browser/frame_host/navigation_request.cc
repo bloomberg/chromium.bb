@@ -127,6 +127,11 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
 
   headers->SetHeaderIfMissing(net::HttpRequestHeaders::kUserAgent,
                               GetContentClient()->GetUserAgent());
+
+  // Tack an 'Upgrade-Insecure-Requests' header to outgoing navigational
+  // requests, as described in
+  // https://w3c.github.io/webappsec/specs/upgrade/#feature-detect
+  headers->AddHeaderFromString("Upgrade-Insecure-Requests: 1");
 }
 
 }  // namespace
