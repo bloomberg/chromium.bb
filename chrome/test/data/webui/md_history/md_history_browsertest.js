@@ -28,17 +28,6 @@ MaterialHistoryBrowserTest.prototype = {
 
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     'test_util.js',
-    'browser_service_test.js',
-    'history_drawer_test.js',
-    'history_grouped_list_test.js',
-    'history_item_test.js',
-    'history_list_test.js',
-    'history_metrics_test.js',
-    'history_overflow_menu_test.js',
-    'history_routing_test.js',
-    'history_supervised_user_test.js',
-    'history_synced_tabs_test.js',
-    'history_toolbar_test.js',
   ]),
 
   /** @override */
@@ -66,84 +55,130 @@ MaterialHistoryBrowserTest.prototype = {
   },
 };
 
-TEST_F('MaterialHistoryBrowserTest', 'BrowserServiceTest', function() {
+function MaterialHistoryBrowserServiceTest() {}
+
+MaterialHistoryBrowserServiceTest.prototype = {
+  __proto__: MaterialHistoryBrowserTest.prototype,
+
+  extraLibraries: MaterialHistoryBrowserTest.prototype.extraLibraries.concat([
+    'browser_service_test.js',
+  ]),
+};
+
+TEST_F('MaterialHistoryBrowserServiceTest', 'All', function() {
   md_history.browser_service_test.registerTests();
   mocha.run();
 });
 
-TEST_F('MaterialHistoryBrowserTest', 'DrawerTest', function() {
+function MaterialHistoryDrawerTest() {}
+
+MaterialHistoryDrawerTest.prototype = {
+  __proto__: MaterialHistoryBrowserTest.prototype,
+
+  extraLibraries: MaterialHistoryBrowserTest.prototype.extraLibraries.concat([
+    'history_drawer_test.js',
+  ]),
+};
+
+TEST_F('MaterialHistoryDrawerTest', 'All', function() {
   md_history.history_drawer_test.registerTests();
   mocha.run();
 });
 
-TEST_F('MaterialHistoryBrowserTest', 'HistoryGroupedListTest', function() {
+function MaterialHistoryGroupedListTest() {}
+
+MaterialHistoryGroupedListTest.prototype = {
+  __proto__: MaterialHistoryBrowserTest.prototype,
+
+  extraLibraries: MaterialHistoryBrowserTest.prototype.extraLibraries.concat([
+    'history_grouped_list_test.js',
+  ]),
+};
+
+TEST_F('MaterialHistoryGroupedListTest', 'All', function() {
   md_history.history_grouped_list_test.registerTests();
   mocha.run();
 });
 
-TEST_F('MaterialHistoryBrowserTest', 'HistoryItemTest', function() {
+function MaterialHistoryItemTest() {}
+
+MaterialHistoryItemTest.prototype = {
+  __proto__: MaterialHistoryBrowserTest.prototype,
+
+  extraLibraries: MaterialHistoryBrowserTest.prototype.extraLibraries.concat([
+    'history_item_test.js',
+  ]),
+};
+
+TEST_F('MaterialHistoryItemTest', 'All', function() {
   md_history.history_item_test.registerTests();
   mocha.run();
 });
 
-TEST_F('MaterialHistoryBrowserTest', 'HistoryListTest', function() {
+function MaterialHistoryListTest() {}
+
+MaterialHistoryListTest.prototype = {
+  __proto__: MaterialHistoryBrowserTest.prototype,
+
+  extraLibraries: MaterialHistoryBrowserTest.prototype.extraLibraries.concat([
+    'history_list_test.js',
+  ]),
+};
+
+TEST_F('MaterialHistoryListTest', 'All', function() {
   md_history.history_list_test.registerTests();
   mocha.run();
 });
 
-TEST_F('MaterialHistoryBrowserTest', 'Metrics', function() {
+function MaterialHistoryMetricsTest() {}
+
+MaterialHistoryMetricsTest.prototype = {
+  __proto__: MaterialHistoryBrowserTest.prototype,
+
+  extraLibraries: MaterialHistoryBrowserTest.prototype.extraLibraries.concat([
+    'history_metrics_test.js',
+  ]),
+};
+
+TEST_F('MaterialHistoryMetricsTest', 'All', function() {
   md_history.history_metrics_test.registerTests();
   mocha.run();
 });
 
-TEST_F('MaterialHistoryBrowserTest', 'HistoryToolbarTest', function() {
-  md_history.history_toolbar_test.registerTests();
-  mocha.run();
-});
+function MaterialHistoryOverflowMenuTest() {}
 
-TEST_F('MaterialHistoryBrowserTest', 'HistoryToolbarFocusTest', function() {
-  md_history.history_toolbar_focus_test.registerTests();
-  mocha.run();
-});
+MaterialHistoryOverflowMenuTest.prototype = {
+  __proto__: MaterialHistoryBrowserTest.prototype,
 
-TEST_F('MaterialHistoryBrowserTest', 'HistoryOverflowMenuTest', function() {
+  extraLibraries: MaterialHistoryBrowserTest.prototype.extraLibraries.concat([
+    'history_overflow_menu_test.js',
+  ]),
+};
+
+TEST_F('MaterialHistoryOverflowMenuTest', 'All', function() {
   md_history.history_overflow_menu_test.registerTests();
   mocha.run();
 });
 
-TEST_F('MaterialHistoryBrowserTest', 'RoutingTest', function() {
+function MaterialHistoryRoutingTest() {}
+
+MaterialHistoryRoutingTest.prototype = {
+  __proto__: MaterialHistoryBrowserTest.prototype,
+
+  extraLibraries: MaterialHistoryBrowserTest.prototype.extraLibraries.concat([
+    'history_routing_test.js',
+  ]),
+};
+
+TEST_F('MaterialHistoryRoutingTest', 'All', function() {
   md_history.history_routing_test.registerTests();
   mocha.run();
 });
 
-// Fails on Mac, http://crbug.com/640862
-TEST_F('MaterialHistoryBrowserTest', 'DISABLED_SyncedTabsTest', function() {
-  md_history.history_synced_tabs_test.registerTests();
-  mocha.run();
-});
+function MaterialHistoryRoutingWithQueryParamTest() {}
 
-function MaterialHistoryDeletionDisabledTest() {}
-
-MaterialHistoryDeletionDisabledTest.prototype = {
-  __proto__: MaterialHistoryBrowserTest.prototype,
-
-  typedefCppFixture: 'HistoryUIBrowserTest',
-
-  testGenPreamble: function() {
-    GEN('  SetDeleteAllowed(false);');
-  }
-};
-
-TEST_F('MaterialHistoryDeletionDisabledTest', 'HistorySupervisedUserTest',
-    function() {
-  md_history.history_supervised_user_test.registerTests();
-  mocha.run();
-});
-
-function MaterialHistoryWithQueryParamTest() {}
-
-MaterialHistoryWithQueryParamTest.prototype = {
-  __proto__: MaterialHistoryBrowserTest.prototype,
+MaterialHistoryRoutingWithQueryParamTest.prototype = {
+  __proto__: MaterialHistoryRoutingTest.prototype,
 
   browsePreload: 'chrome://history?q=query',
 
@@ -168,8 +203,64 @@ MaterialHistoryWithQueryParamTest.prototype = {
   },
 };
 
-TEST_F('MaterialHistoryWithQueryParamTest', 'RoutingTestWithQueryParam',
-  function() {
+TEST_F('MaterialHistoryRoutingWithQueryParamTest', 'All', function() {
     md_history.history_routing_test_with_query_param.registerTests();
     mocha.run();
+});
+
+function MaterialHistorySyncedTabsTest() {}
+
+MaterialHistorySyncedTabsTest.prototype = {
+  __proto__: MaterialHistoryBrowserTest.prototype,
+
+  extraLibraries: MaterialHistoryBrowserTest.prototype.extraLibraries.concat([
+    'history_synced_tabs_test.js',
+  ]),
+};
+
+// Fails on Mac, http://crbug.com/640862
+TEST_F('MaterialHistorySyncedTabsTest', 'DISABLED_All', function() {
+  md_history.history_synced_tabs_test.registerTests();
+  mocha.run();
+});
+
+function MaterialHistorySupervisedUserTest() {}
+
+MaterialHistorySupervisedUserTest.prototype = {
+  __proto__: MaterialHistoryBrowserTest.prototype,
+
+  typedefCppFixture: 'HistoryUIBrowserTest',
+
+  testGenPreamble: function() {
+    GEN('  SetDeleteAllowed(false);');
+  },
+
+  extraLibraries: MaterialHistoryBrowserTest.prototype.extraLibraries.concat([
+    'history_supervised_user_test.js',
+  ]),
+};
+
+TEST_F('MaterialHistorySupervisedUserTest', 'All', function() {
+  md_history.history_supervised_user_test.registerTests();
+  mocha.run();
+});
+
+function MaterialHistoryToolbarTest() {}
+
+MaterialHistoryToolbarTest.prototype = {
+  __proto__: MaterialHistoryBrowserTest.prototype,
+
+  extraLibraries: MaterialHistoryBrowserTest.prototype.extraLibraries.concat([
+    'history_toolbar_test.js',
+  ]),
+};
+
+TEST_F('MaterialHistoryToolbarTest', 'Basic', function() {
+  md_history.history_toolbar_test.registerTests();
+  mocha.run();
+});
+
+TEST_F('MaterialHistoryToolbarTest', 'Focus', function() {
+  md_history.history_toolbar_focus_test.registerTests();
+  mocha.run();
 });

@@ -4,7 +4,7 @@
 
 cr.define('md_history.history_list_test', function() {
   function registerTests() {
-    suite('history-list', function() {
+    suite('<history-list>', function() {
       var app;
       var element;
       var toolbar;
@@ -12,10 +12,6 @@ cr.define('md_history.history_list_test', function() {
       var ADDITIONAL_RESULTS;
 
       suiteSetup(function() {
-        app = $('history-app');
-        element = app.$['history'].$['infinite-list'];
-        toolbar = app.$['toolbar'];
-
         TEST_HISTORY_RESULTS = [
           createHistoryEntry('2016-03-15', 'https://www.google.com'),
           createHistoryEntry('2016-03-14 10:00', 'https://www.example.com'),
@@ -33,6 +29,9 @@ cr.define('md_history.history_list_test', function() {
       });
 
       setup(function() {
+        app = replaceApp();
+        element = app.$['history'].$['infinite-list'];
+        toolbar = app.$['toolbar'];
         app.queryState_.incremental = true;
       });
 
@@ -264,6 +263,7 @@ cr.define('md_history.history_list_test', function() {
 
       test('more from this site sends and sets correct data', function(done) {
         app.queryState_.queryingDisabled = false;
+        app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
         PolymerTest.flushTasks().then(function () {
           registerMessageCallback('queryHistory', this, function (info) {
             assertEquals('www.google.com', info[0]);
@@ -513,62 +513,65 @@ cr.define('md_history.history_list_test', function() {
         });
       });
 
-      test('focus and keyboard nav', function() {
+      test('focus and keyboard nav', function(done) {
         app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
-        return PolymerTest.flushTasks().then(function() {
+        PolymerTest.flushTasks().then(function() {
           var items = polymerSelectAll(element, 'history-item');
 
           var focused = items[2].$.checkbox;
           focused.focus();
 
-          MockInteractions.pressAndReleaseKeyOn(focused, 39, [], 'ArrowRight');
-          focused = items[2].$.title;
-          assertEquals(focused, element.lastFocused_);
-          assertTrue(items[2].row_.isActive());
-          assertFalse(items[3].row_.isActive());
+          // Wait for next render to ensure that focus handlers have been
+          // registered (see HistoryItemElement.attached).
+          Polymer.RenderStatus.afterNextRender(this, function() {
+            MockInteractions.pressAndReleaseKeyOn(
+                focused, 39, [], 'ArrowRight');
+            focused = items[2].$.title;
+            assertEquals(focused, element.lastFocused_);
+            assertTrue(items[2].row_.isActive());
+            assertFalse(items[3].row_.isActive());
 
-          MockInteractions.pressAndReleaseKeyOn(focused, 40, [], 'ArrowDown');
-          focused = items[3].$.title;
-          assertEquals(focused, element.lastFocused_);
-          assertFalse(items[2].row_.isActive());
-          assertTrue(items[3].row_.isActive());
+            MockInteractions.pressAndReleaseKeyOn(focused, 40, [], 'ArrowDown');
+            focused = items[3].$.title;
+            assertEquals(focused, element.lastFocused_);
+            assertFalse(items[2].row_.isActive());
+            assertTrue(items[3].row_.isActive());
 
-          MockInteractions.pressAndReleaseKeyOn(focused, 39, [], 'ArrowRight');
-          focused = items[3].$['menu-button'];
-          assertEquals(focused, element.lastFocused_);
-          assertFalse(items[2].row_.isActive());
-          assertTrue(items[3].row_.isActive());
+            MockInteractions.pressAndReleaseKeyOn(
+                focused, 39, [], 'ArrowRight');
+            focused = items[3].$['menu-button'];
+            assertEquals(focused, element.lastFocused_);
+            assertFalse(items[2].row_.isActive());
+            assertTrue(items[3].row_.isActive());
 
-          MockInteractions.pressAndReleaseKeyOn(focused, 38, [], 'ArrowUp');
-          focused = items[2].$['menu-button'];
-          assertEquals(focused, element.lastFocused_);
-          assertTrue(items[2].row_.isActive());
-          assertFalse(items[3].row_.isActive());
+            MockInteractions.pressAndReleaseKeyOn(focused, 38, [], 'ArrowUp');
+            focused = items[2].$['menu-button'];
+            assertEquals(focused, element.lastFocused_);
+            assertTrue(items[2].row_.isActive());
+            assertFalse(items[3].row_.isActive());
 
-          MockInteractions.pressAndReleaseKeyOn(focused, 37, [], 'ArrowLeft');
-          focused = items[2].$$('#bookmark-star');
-          assertEquals(focused, element.lastFocused_);
-          assertTrue(items[2].row_.isActive());
-          assertFalse(items[3].row_.isActive());
+            MockInteractions.pressAndReleaseKeyOn(focused, 37, [], 'ArrowLeft');
+            focused = items[2].$$('#bookmark-star');
+            assertEquals(focused, element.lastFocused_);
+            assertTrue(items[2].row_.isActive());
+            assertFalse(items[3].row_.isActive());
 
-          MockInteractions.pressAndReleaseKeyOn(focused, 40, [], 'ArrowDown');
-          focused = items[3].$.title;
-          assertEquals(focused, element.lastFocused_);
-          assertFalse(items[2].row_.isActive());
-          assertTrue(items[3].row_.isActive());
+            MockInteractions.pressAndReleaseKeyOn(focused, 40, [], 'ArrowDown');
+            focused = items[3].$.title;
+            assertEquals(focused, element.lastFocused_);
+            assertFalse(items[2].row_.isActive());
+            assertTrue(items[3].row_.isActive());
+
+            done();
+          });
         });
       });
 
       teardown(function() {
-        element.historyData_ = [];
         registerMessageCallback('removeVisits', this, undefined);
         registerMessageCallback('queryHistory', this, function() {});
         registerMessageCallback('navigateToUrl', this, undefined);
-        app.queryState_.queryingDisabled = true;
         app.set('queryState_.searchTerm', '');
-        // Unselect all items, clear the list.
-        element.addNewResults([], false);
-        return PolymerTest.flushTasks();
       });
     });
   }
