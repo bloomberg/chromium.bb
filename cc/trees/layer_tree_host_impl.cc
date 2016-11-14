@@ -2974,6 +2974,7 @@ void LayerTreeHostImpl::ApplyScroll(ScrollNode* scroll_node,
                             scroll_state->position_y());
   const gfx::Vector2dF delta(scroll_state->delta_x(), scroll_state->delta_y());
   gfx::Vector2dF applied_delta;
+  gfx::Vector2dF delta_applied_to_content;
   // TODO(tdresser): Use a more rational epsilon. See crbug.com/510550 for
   // details.
   const float kEpsilon = 0.1f;
@@ -2982,16 +2983,21 @@ void LayerTreeHostImpl::ApplyScroll(ScrollNode* scroll_node,
       viewport()->MainScrollLayer() &&
       scroll_node->owner_id == viewport()->MainScrollLayer()->id();
 
-  if (is_viewport_scroll_layer) {
-    bool affect_top_controls = !wheel_scrolling_;
+  // This is needed if the scroll chains up to the viewport without going
+  // through the outer viewport scroll layer. This can happen if we scroll an
+  // element that's not a descendant of the document.rootScroller. In that case
+  // we want to scroll the inner viewport -- to allow panning while zoomed --
+  // but also move browser controls if needed.
+  bool is_inner_viewport_scroll_layer =
+      scroll_node->owner_id == InnerViewportScrollLayer()->id();
+
+  if (is_viewport_scroll_layer || is_inner_viewport_scroll_layer) {
     Viewport::ScrollResult result = viewport()->ScrollBy(
         delta, viewport_point, scroll_state->is_direct_manipulation(),
-        affect_top_controls);
+        !wheel_scrolling_, is_viewport_scroll_layer);
+
     applied_delta = result.consumed_delta;
-    scroll_state->set_caused_scroll(
-        std::abs(result.content_scrolled_delta.x()) > kEpsilon,
-        std::abs(result.content_scrolled_delta.y()) > kEpsilon);
-    scroll_state->ConsumeDelta(applied_delta.x(), applied_delta.y());
+    delta_applied_to_content = result.content_scrolled_delta;
   } else {
     applied_delta = ScrollSingleNode(
         scroll_node, delta, viewport_point,
@@ -3002,8 +3008,16 @@ void LayerTreeHostImpl::ApplyScroll(ScrollNode* scroll_node,
   // If the layer wasn't able to move, try the next one in the hierarchy.
   bool scrolled = std::abs(applied_delta.x()) > kEpsilon;
   scrolled = scrolled || std::abs(applied_delta.y()) > kEpsilon;
+  if (!scrolled) {
+    // TODO(bokan): This preserves existing behavior by not allowing tiny
+    // scrolls to produce overscroll but is inconsistent in how delta gets
+    // chained up. We need to clean this up.
+    if (is_viewport_scroll_layer)
+      scroll_state->ConsumeDelta(applied_delta.x(), applied_delta.y());
+    return;
+  }
 
-  if (scrolled && !is_viewport_scroll_layer) {
+  if (!is_viewport_scroll_layer && !is_inner_viewport_scroll_layer) {
     // If the applied delta is within 45 degrees of the input
     // delta, bail out to make it easier to scroll just one layer
     // in one direction without affecting any of its parents.
@@ -3016,13 +3030,13 @@ void LayerTreeHostImpl::ApplyScroll(ScrollNode* scroll_node,
       // in which the layer moved.
       applied_delta = MathUtil::ProjectVector(delta, applied_delta);
     }
-    scroll_state->set_caused_scroll(std::abs(applied_delta.x()) > kEpsilon,
-                                    std::abs(applied_delta.y()) > kEpsilon);
-    scroll_state->ConsumeDelta(applied_delta.x(), applied_delta.y());
+    delta_applied_to_content = applied_delta;
   }
 
-  if (!scrolled)
-    return;
+  scroll_state->set_caused_scroll(
+      std::abs(delta_applied_to_content.x()) > kEpsilon,
+      std::abs(delta_applied_to_content.y()) > kEpsilon);
+  scroll_state->ConsumeDelta(applied_delta.x(), applied_delta.y());
 
   scroll_state->set_current_native_scrolling_node(scroll_node);
 }
@@ -3417,7 +3431,7 @@ bool LayerTreeHostImpl::AnimateBrowserControls(base::TimeTicks time) {
     return false;
 
   DCHECK(viewport());
-  viewport()->ScrollBy(scroll, gfx::Point(), false, false);
+  viewport()->ScrollBy(scroll, gfx::Point(), false, false, true);
   client_->SetNeedsCommitOnImplThread();
   client_->RenewTreePriority();
   return true;

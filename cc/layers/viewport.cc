@@ -36,13 +36,14 @@ void Viewport::Pan(const gfx::Vector2dF& delta) {
 Viewport::ScrollResult Viewport::ScrollBy(const gfx::Vector2dF& delta,
                                           const gfx::Point& viewport_point,
                                           bool is_direct_manipulation,
-                                          bool affect_top_controls) {
+                                          bool affect_browser_controls,
+                                          bool scroll_outer_viewport) {
   if (!OuterScrollLayer())
     return ScrollResult();
 
   gfx::Vector2dF content_delta = delta;
 
-  if (affect_top_controls && ShouldBrowserControlsConsumeScroll(delta))
+  if (affect_browser_controls && ShouldBrowserControlsConsumeScroll(delta))
     content_delta -= ScrollBrowserControls(delta);
 
   gfx::Vector2dF pending_content_delta = content_delta;
@@ -57,11 +58,14 @@ Viewport::ScrollResult Viewport::ScrollBy(const gfx::Vector2dF& delta,
 
   ScrollResult result;
 
-  ScrollNode* outer_node =
-      scroll_tree.Node(OuterScrollLayer()->scroll_tree_index());
-  pending_content_delta -= host_impl_->ScrollSingleNode(
-      outer_node, pending_content_delta, viewport_point, is_direct_manipulation,
-      &scroll_tree);
+  if (scroll_outer_viewport) {
+    ScrollNode* outer_node =
+        scroll_tree.Node(OuterScrollLayer()->scroll_tree_index());
+    pending_content_delta -= host_impl_->ScrollSingleNode(
+        outer_node, pending_content_delta, viewport_point,
+        is_direct_manipulation, &scroll_tree);
+  }
+
   result.consumed_delta = delta - AdjustOverscroll(pending_content_delta);
 
   result.content_scrolled_delta = content_delta - pending_content_delta;

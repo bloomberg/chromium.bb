@@ -42,11 +42,13 @@ class CC_EXPORT Viewport {
   void Pan(const gfx::Vector2dF& delta);
 
   // Scrolls the viewport, applying the unique bubbling between the inner and
-  // outer viewport. Scrolls can be consumed by browser controls.
+  // outer viewport unless the scroll_outer_viewport bit is off. Scrolls can be
+  // consumed by browser controls.
   ScrollResult ScrollBy(const gfx::Vector2dF& delta,
                         const gfx::Point& viewport_point,
                         bool is_wheel_scroll,
-                        bool affect_top_controls);
+                        bool affect_browser_controls,
+                        bool scroll_outer_viewport);
 
   // Scrolls the viewport. Unlike the above method, scrolls the inner before
   // the outer viewport. Doesn't affect browser controls or return a result
