@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_context.h"
@@ -611,7 +610,19 @@ void ProcessManager::CancelSuspend(const Extension* extension) {
 }
 
 void ProcessManager::CloseBackgroundHosts() {
-  base::STLDeleteElements(&background_hosts_);
+  // Delete from a copy because deletion of the ExtensionHosts will trigger
+  // callbacks to modify the |background_hosts_| set.
+  ExtensionHostSet hosts_copy = background_hosts_;
+  for (auto* host : hosts_copy) {
+    // Deleting the host will cause a NOTIFICATION_EXTENSION_HOST_DESTROYED
+    // which will cause the removal of the host from the |background_hosts_| set
+    // in the Observe() method below.
+    delete host;
+    DCHECK_EQ(0u, background_hosts_.count(host));
+  }
+
+  // At this point there should be nothing left in |background_hosts_|.
+  DCHECK(background_hosts_.empty());
 }
 
 void ProcessManager::SetKeepaliveImpulseCallbackForTesting(
