@@ -966,8 +966,9 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 	if (window->frame_id == XCB_WINDOW_NONE)
 		weston_wm_window_create_frame(window);
 
-	wm_log("XCB_MAP_REQUEST (window %d, %p, frame %d)\n",
-	       window->id, window, window->frame_id);
+	wm_log("XCB_MAP_REQUEST (window %d, %p, frame %d, %dx%d @ %d,%d)\n",
+	       window->id, window, window->frame_id,
+	       window->width, window->height, window->x, window->y);
 
 	weston_wm_window_set_wm_state(window, ICCCM_NORMAL_STATE);
 	weston_wm_window_set_net_wm_state(window);
