@@ -214,8 +214,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     }
 
     inline bool compareEqualNonIndependent(const InheritedData& other) const {
-      return (m_emptyCells == other.m_emptyCells) &&
-             (m_captionSide == other.m_captionSide) &&
+      return (m_captionSide == other.m_captionSide) &&
              (m_listStyleType == other.m_listStyleType) &&
              (m_listStylePosition == other.m_listStylePosition) &&
              (m_textAlign == other.m_textAlign) &&
@@ -232,7 +231,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
              (m_writingMode == other.m_writingMode);
     }
 
-    unsigned m_emptyCells : 1;         // EEmptyCells
     unsigned m_captionSide : 2;        // ECaptionSide
     unsigned m_listStyleType : 7;      // EListStyleType
     unsigned m_listStylePosition : 1;  // EListStylePosition
@@ -364,7 +362,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   void setBitDefaults() {
     ComputedStyleBase::setBitDefaults();
-    m_inheritedData.m_emptyCells = static_cast<unsigned>(initialEmptyCells());
     m_inheritedData.m_captionSide = static_cast<unsigned>(initialCaptionSide());
     m_inheritedData.m_listStyleType = initialListStyleType();
     m_inheritedData.m_listStylePosition =
@@ -2101,15 +2098,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return static_cast<TextDirection>(m_inheritedData.m_direction);
   }
   void setDirection(TextDirection v) { m_inheritedData.m_direction = v; }
-
-  // empty-cells
-  static EEmptyCells initialEmptyCells() { return EEmptyCells::Show; }
-  EEmptyCells emptyCells() const {
-    return static_cast<EEmptyCells>(m_inheritedData.m_emptyCells);
-  }
-  void setEmptyCells(EEmptyCells v) {
-    m_inheritedData.m_emptyCells = static_cast<unsigned>(v);
-  }
 
   // color
   static Color initialColor() { return Color::black; }

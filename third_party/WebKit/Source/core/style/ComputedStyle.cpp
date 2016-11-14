@@ -841,7 +841,7 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(
   if (isDisplayTableType(display())) {
     if (m_inheritedData.m_borderCollapse !=
             other.m_inheritedData.m_borderCollapse ||
-        m_inheritedData.m_emptyCells != other.m_inheritedData.m_emptyCells ||
+        emptyCells() != other.emptyCells() ||
         m_inheritedData.m_captionSide != other.m_inheritedData.m_captionSide ||
         m_nonInheritedData.m_tableLayout !=
             other.m_nonInheritedData.m_tableLayout)

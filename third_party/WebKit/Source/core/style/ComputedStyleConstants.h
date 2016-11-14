@@ -426,8 +426,6 @@ enum EBreak {
                // shorthands.
 };
 
-enum class EEmptyCells : unsigned { Show, Hide };
-
 enum class ECaptionSide : unsigned { Top, Bottom, Left, Right };
 
 enum class EListStylePosition : unsigned { Outside, Inside };
