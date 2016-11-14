@@ -22,7 +22,6 @@
 
 #include "core/svg/SVGAnimateElement.h"
 
-#include "core/CSSPropertyNames.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
@@ -34,7 +33,7 @@ namespace blink {
 
 namespace {
 
-bool isTargetAttributeCSSProperty(SVGElement& targetElement,
+bool isTargetAttributeCSSProperty(const SVGElement& targetElement,
                                   const QualifiedName& attributeName) {
   return SVGElement::isAnimatableCSSProperty(attributeName) ||
          targetElement.isPresentationAttribute(attributeName);
@@ -125,7 +124,7 @@ AnimatedPropertyType SVGAnimateElement::animatedPropertyType() {
   if (!targetElement())
     return AnimatedUnknown;
 
-  m_animator.reset(targetElement());
+  m_animator.reset(*targetElement());
   return m_animator.type();
 }
 
@@ -145,26 +144,20 @@ bool SVGAnimateElement::hasValidAttributeType() {
          !hasInvalidCSSAttributeType();
 }
 
-SVGAnimateElement::ShouldApplyAnimationType
-SVGAnimateElement::shouldApplyAnimation(SVGElement* targetElement,
-                                        const QualifiedName& attributeName) {
-  if (!hasValidTarget() || !targetElement->parentNode())
-    return DontApplyAnimation;
+bool SVGAnimateElement::shouldApplyAnimation(
+    const SVGElement& targetElement,
+    const QualifiedName& attributeName) {
+  if (!hasValidTarget() || !targetElement.parentNode())
+    return false;
 
   // Always animate CSS properties using the ApplyCSSAnimation code path,
   // regardless of the attributeType value.
-  if (isTargetAttributeCSSProperty(*targetElement, attributeName)) {
-    if (targetElement->isPresentationAttributeWithSVGDOM(attributeName))
-      return ApplyXMLandCSSAnimation;
+  if (isTargetAttributeCSSProperty(targetElement, attributeName))
+    return true;
 
-    return ApplyCSSAnimation;
-  }
   // If attributeType="CSS" and attributeName doesn't point to a CSS property,
   // ignore the animation.
-  if (getAttributeType() == AttributeTypeCSS)
-    return DontApplyAnimation;
-
-  return ApplyXMLAnimation;
+  return getAttributeType() != AttributeTypeCSS;
 }
 
 SVGPropertyBase* SVGAnimateElement::adjustForInheritance(
@@ -173,7 +166,7 @@ SVGPropertyBase* SVGAnimateElement::adjustForInheritance(
   if (valueType != InheritValue)
     return propertyValue;
   // TODO(fs): At the moment the computed style gets returned as a String and
-  // needs to get parsed again.  In the future we might want to work with the
+  // needs to get parsed again. In the future we might want to work with the
   // value type directly to avoid the String parsing.
   DCHECK(targetElement());
   Element* parent = targetElement()->parentElement();
@@ -181,8 +174,7 @@ SVGPropertyBase* SVGAnimateElement::adjustForInheritance(
     return propertyValue;
   SVGElement* svgParent = toSVGElement(parent);
   // Replace 'inherit' by its computed property value.
-  String value = computeCSSPropertyValue(
-      svgParent, cssPropertyID(attributeName().localName()));
+  String value = computeCSSPropertyValue(svgParent, m_animator.cssProperty());
   return m_animator.createPropertyForAnimation(value);
 }
 
@@ -216,7 +208,6 @@ void SVGAnimateElement::calculateAnimatedValue(float percentage,
 
   // Target element might have changed.
   SVGElement* targetElement = this->targetElement();
-  m_animator.setContextElement(targetElement);
 
   // Values-animation accumulates using the last values entry corresponding to
   // the end of duration time.
@@ -282,25 +273,24 @@ void SVGAnimateElement::resetAnimatedType() {
   SVGElement* targetElement = this->targetElement();
   const QualifiedName& attributeName = this->attributeName();
 
-  m_animator.reset(targetElement);
+  m_animator.reset(*targetElement);
 
-  ShouldApplyAnimationType shouldApply =
-      shouldApplyAnimation(targetElement, attributeName);
-  if (shouldApply == DontApplyAnimation)
+  if (!shouldApplyAnimation(*targetElement, attributeName))
     return;
-  if (shouldApply == ApplyXMLAnimation ||
-      shouldApply == ApplyXMLandCSSAnimation) {
+  if (m_animator.isAnimatingSVGDom()) {
     // SVG DOM animVal animation code-path.
     m_animatedProperty = m_animator.createAnimatedValue();
     targetElement->setAnimatedAttribute(attributeName, m_animatedProperty);
     return;
   }
-  DCHECK_EQ(shouldApply, ApplyCSSAnimation);
+  DCHECK(m_animator.isAnimatingCSSProperty());
+  // Presentation attributes which has an SVG DOM representation should use the
+  // "SVG DOM" code-path (above.)
+  DCHECK(SVGElement::isAnimatableCSSProperty(attributeName));
 
   // CSS properties animation code-path.
-  DCHECK(isTargetAttributeCSSProperty(*targetElement, attributeName));
-  String baseValue = computeCSSPropertyValue(
-      targetElement, cssPropertyID(attributeName.localName()));
+  String baseValue =
+      computeCSSPropertyValue(targetElement, m_animator.cssProperty());
   m_animatedProperty = m_animator.createPropertyForAnimation(baseValue);
 }
 
@@ -320,24 +310,23 @@ void SVGAnimateElement::clearAnimatedType() {
     return;
   }
 
-  ShouldApplyAnimationType shouldApply =
-      shouldApplyAnimation(targetElement, attributeName());
-  if (shouldApply == ApplyXMLandCSSAnimation ||
-      m_animator.isAnimatingCSSProperty()) {
+  bool shouldApply = shouldApplyAnimation(*targetElement, attributeName());
+  if (m_animator.isAnimatingCSSProperty()) {
     // CSS properties animation code-path.
-    if (shouldApply != DontApplyAnimation) {
-      CSSPropertyID id = cssPropertyID(attributeName().localName());
-      targetElement->ensureAnimatedSMILStyleProperties()->removeProperty(id);
-      targetElement->setNeedsStyleRecalc(
-          LocalStyleChange,
-          StyleChangeReasonForTracing::create(StyleChangeReason::Animation));
+    if (shouldApply) {
+      MutableStylePropertySet* propertySet =
+          targetElement->ensureAnimatedSMILStyleProperties();
+      if (propertySet->removeProperty(m_animator.cssProperty())) {
+        targetElement->setNeedsStyleRecalc(
+            LocalStyleChange,
+            StyleChangeReasonForTracing::create(StyleChangeReason::Animation));
+      }
     }
   }
-  if (shouldApply == ApplyXMLandCSSAnimation ||
-      m_animator.isAnimatingSVGDom()) {
+  if (m_animator.isAnimatingSVGDom()) {
     // SVG DOM animVal animation code-path.
     targetElement->clearAnimatedAttribute(attributeName());
-    if (shouldApply != DontApplyAnimation)
+    if (shouldApply)
       targetElement->invalidateAnimatedAttribute(attributeName());
   }
 
@@ -355,28 +344,26 @@ void SVGAnimateElement::applyResultsToTarget() {
   if (!m_animatedProperty)
     return;
 
+  if (!shouldApplyAnimation(*targetElement(), attributeName()))
+    return;
+
   // We do update the style and the animation property independent of each
   // other.
-  ShouldApplyAnimationType shouldApply =
-      shouldApplyAnimation(targetElement(), attributeName());
-  if (shouldApply == DontApplyAnimation)
-    return;
-  if (shouldApply == ApplyXMLandCSSAnimation ||
-      m_animator.isAnimatingCSSProperty()) {
+  if (m_animator.isAnimatingCSSProperty()) {
     // CSS properties animation code-path.
     // Convert the result of the animation to a String and apply it as CSS
     // property on the target.
-    CSSPropertyID id = cssPropertyID(attributeName().localName());
     MutableStylePropertySet* propertySet =
         targetElement()->ensureAnimatedSMILStyleProperties();
-    if (propertySet->setProperty(id, m_animatedProperty->valueAsString(), false,
-                                 0))
+    if (propertySet->setProperty(m_animator.cssProperty(),
+                                 m_animatedProperty->valueAsString(), false,
+                                 0)) {
       targetElement()->setNeedsStyleRecalc(
           LocalStyleChange,
           StyleChangeReasonForTracing::create(StyleChangeReason::Animation));
+    }
   }
-  if (shouldApply == ApplyXMLandCSSAnimation ||
-      m_animator.isAnimatingSVGDom()) {
+  if (m_animator.isAnimatingSVGDom()) {
     // SVG DOM animVal animation code-path.
     // At this point the SVG DOM values are already changed, unlike for CSS.
     // We only have to trigger update notifications here.

@@ -21,6 +21,7 @@
 #ifndef SVGAnimatedTypeAnimator_h
 #define SVGAnimatedTypeAnimator_h
 
+#include "core/CSSPropertyNames.h"
 #include "core/svg/properties/SVGPropertyInfo.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
@@ -39,18 +40,18 @@ class SVGAnimatedTypeAnimator final {
   SVGAnimatedTypeAnimator(SVGAnimationElement*);
 
   void clear();
-  void reset(SVGElement* contextElement);
+  void reset(const SVGElement&);
 
   SVGPropertyBase* createAnimatedValue() const;
   SVGPropertyBase* createPropertyForAnimation(const String&) const;
 
-  void setContextElement(SVGElement* contextElement) {
-    m_contextElement = contextElement;
-  }
   AnimatedPropertyType type() const { return m_type; }
+  CSSPropertyID cssProperty() const { return m_cssProperty; }
 
   bool isAnimatingSVGDom() const { return m_animatedProperty; }
-  bool isAnimatingCSSProperty() const { return !m_animatedProperty; }
+  bool isAnimatingCSSProperty() const {
+    return m_cssProperty != CSSPropertyInvalid;
+  }
 
   DECLARE_TRACE();
 
@@ -59,9 +60,9 @@ class SVGAnimatedTypeAnimator final {
   SVGPropertyBase* createPropertyForCSSAnimation(const String&) const;
 
   Member<SVGAnimationElement> m_animationElement;
-  Member<SVGElement> m_contextElement;
   Member<SVGAnimatedPropertyBase> m_animatedProperty;
   AnimatedPropertyType m_type;
+  CSSPropertyID m_cssProperty;
 };
 
 }  // namespace blink

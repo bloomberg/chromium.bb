@@ -35,32 +35,37 @@ namespace blink {
 SVGAnimatedTypeAnimator::SVGAnimatedTypeAnimator(
     SVGAnimationElement* animationElement)
     : m_animationElement(animationElement),
-      m_contextElement(nullptr),
-      m_type(AnimatedUnknown) {
+      m_type(AnimatedUnknown),
+      m_cssProperty(CSSPropertyInvalid) {
   DCHECK(m_animationElement);
 }
 
 void SVGAnimatedTypeAnimator::clear() {
-  m_contextElement = nullptr;
   m_animatedProperty = nullptr;
   m_type = AnimatedUnknown;
+  m_cssProperty = CSSPropertyInvalid;
 }
 
-void SVGAnimatedTypeAnimator::reset(SVGElement* contextElement) {
-  DCHECK(contextElement);
-  m_contextElement = contextElement;
-
+void SVGAnimatedTypeAnimator::reset(const SVGElement& contextElement) {
   const QualifiedName& attributeName = m_animationElement->attributeName();
-  m_animatedProperty = m_contextElement->propertyFromAttribute(attributeName);
-  m_type = m_animatedProperty
-               ? m_animatedProperty->type()
-               : SVGElement::animatedPropertyTypeForCSSAttribute(attributeName);
+  m_animatedProperty = contextElement.propertyFromAttribute(attributeName);
+  if (m_animatedProperty) {
+    m_type = m_animatedProperty->type();
+    m_cssProperty = m_animatedProperty->cssPropertyId();
+  } else {
+    m_type = SVGElement::animatedPropertyTypeForCSSAttribute(attributeName);
+    m_cssProperty = m_type != AnimatedUnknown
+                        ? cssPropertyID(attributeName.localName())
+                        : CSSPropertyInvalid;
+  }
 
   // Only <animateTransform> is allowed to animate AnimatedTransformList.
   // http://www.w3.org/TR/SVG/animate.html#AnimationAttributesAndProperties
   if (m_type == AnimatedTransformList &&
-      !isSVGAnimateTransformElement(*m_animationElement))
+      !isSVGAnimateTransformElement(*m_animationElement)) {
     m_type = AnimatedUnknown;
+    m_cssProperty = CSSPropertyInvalid;
+  }
 
   DCHECK(m_type != AnimatedPoint && m_type != AnimatedStringList &&
          m_type != AnimatedTransform);
@@ -140,7 +145,6 @@ SVGPropertyBase* SVGAnimatedTypeAnimator::createPropertyForCSSAnimation(
 
 SVGPropertyBase* SVGAnimatedTypeAnimator::createPropertyForAnimation(
     const String& value) const {
-  DCHECK(m_contextElement);
   if (isAnimatingSVGDom())
     return createPropertyForAttributeAnimation(value);
   DCHECK(isAnimatingCSSProperty());
@@ -156,7 +160,6 @@ SVGPropertyBase* SVGAnimatedTypeAnimator::createAnimatedValue() const {
 
 DEFINE_TRACE(SVGAnimatedTypeAnimator) {
   visitor->trace(m_animationElement);
-  visitor->trace(m_contextElement);
   visitor->trace(m_animatedProperty);
 }
 
