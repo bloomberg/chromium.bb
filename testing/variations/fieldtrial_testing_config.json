@@ -519,6 +519,7 @@
                 {
                     "name": "DocumentWriteScriptBlockGroup",
                     "params": {
+                        "disallowFetchForDocWrittenScriptsInMainFrame": "false",
                         "disallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections": "true"
                     },
                     "disable_features": [
