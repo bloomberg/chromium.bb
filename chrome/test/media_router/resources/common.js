@@ -71,14 +71,18 @@ function checkSession() {
       } else {
         // set the new session
         startedConnection = session;
-        if (startedConnection.state != "connecting") {
-          sendResult(false,
-            'Expect connection state to be "connecting", actual "' +
-            startedConnection.state + '"');
-        }
-        startedConnection.onconnect = () => {
+        console.log('connection state is "' + startedConnection.state + '"');
+        if (startedConnection.state == "connected") {
           sendResult(true, '');
-        };
+        } else if (startedConnection.state == "connecting") {
+          startedConnection.onconnect = () => {
+            sendResult(true, '');
+          };
+        } else {
+          sendResult(false,
+            'Expect connection state to be "connecting" or "connected", ' +
+            'actual "' + startedConnection.state + '"');
+        }
       }
     }).catch(function(e) {
       // terminate old session if exists
