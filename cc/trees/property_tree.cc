@@ -426,7 +426,7 @@ gfx::Vector2dF StickyPositionOffset(TransformTree* tree, TransformNode* node) {
       top_delta = available_space;
     sticky_offset.set_y(sticky_offset.y() + top_delta);
   }
-  return sticky_offset - layer_offset -
+  return sticky_offset - layer_offset - node->source_to_parent -
          constraint.scroll_container_relative_sticky_box_rect
              .OffsetFromOrigin();
 }

@@ -1,0 +1,28 @@
+<script>
+onload = function() {
+  scroller.scrollTop = 100;
+}
+</script>
+<style>
+#scroller {
+  /* Opaque background means scroller is composited. */
+  background: white;
+  height: 200px;
+  overflow: auto;
+  width: 200px;
+}
+.sticky {
+  position: sticky;
+  top: 0;
+  height: 50px;
+  /* Opaque background means sticky element is composited. */
+  background: green;
+}
+.spacer {
+  height: 2000px;
+}
+</style>
+<div id="scroller">
+  <div class="sticky"></div>
+  <div class="spacer"></div>
+</div>
