@@ -58,6 +58,12 @@ class ChromeExtensionMessageFilter : public content::BrowserMessageFilter,
                                 const std::string& channel_name,
                                 bool include_tls_channel_id,
                                 int request_id);
+  void OnOpenChannelToExtensionSync(
+      int routing_id,
+      const ExtensionMsg_ExternalConnectionInfo& info,
+      const std::string& channel_name,
+      bool include_tls_channel_id,
+      int* port_id);
   void OpenChannelToExtensionOnUIThread(
       int source_process_id,
       int source_routing_id,

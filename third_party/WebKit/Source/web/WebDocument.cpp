@@ -206,6 +206,14 @@ void WebDocument::watchCSSSelectors(const WebVector<WebString>& webSelectors) {
   CSSSelectorWatch::from(*document).watchCSSSelectors(selectors);
 }
 
+bool WebDocument::unloadStartedDoNotUse() const {
+  return constUnwrap<Document>()->unloadStarted();
+}
+
+bool WebDocument::processingBeforeUnloadDoNotUse() const {
+  return constUnwrap<Document>()->processingBeforeUnload();
+}
+
 WebReferrerPolicy WebDocument::referrerPolicy() const {
   return static_cast<WebReferrerPolicy>(
       constUnwrap<Document>()->getReferrerPolicy());

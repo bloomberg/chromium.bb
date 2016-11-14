@@ -94,6 +94,9 @@ class ExtensionFrameHelper
                         const base::Callback<void(int)>& callback);
   void RequestNativeAppPortId(const std::string& native_app_name,
                               const base::Callback<void(int)>& callback);
+  int RequestSyncPortId(const ExtensionMsg_ExternalConnectionInfo& info,
+                        const std::string& channel_name,
+                        bool include_tls_channel_id);
 
  private:
   struct PendingPortRequest;

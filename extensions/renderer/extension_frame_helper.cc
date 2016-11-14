@@ -241,6 +241,17 @@ void ExtensionFrameHelper::RequestNativeAppPortId(
   }
 }
 
+int ExtensionFrameHelper::RequestSyncPortId(
+    const ExtensionMsg_ExternalConnectionInfo& info,
+    const std::string& channel_name,
+    bool include_tls_channel_id) {
+  int port_id = 0;
+  render_frame()->Send(new ExtensionHostMsg_OpenChannelToExtensionSync(
+      render_frame()->GetRoutingID(), info, channel_name,
+      include_tls_channel_id, &port_id));
+  return port_id;
+}
+
 void ExtensionFrameHelper::DidMatchCSS(
     const blink::WebVector<blink::WebString>& newly_matching_selectors,
     const blink::WebVector<blink::WebString>& stopped_matching_selectors) {

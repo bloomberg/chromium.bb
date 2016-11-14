@@ -685,6 +685,15 @@ IPC_MESSAGE_CONTROL5(ExtensionHostMsg_OpenChannelToExtension,
                      bool /* include_tls_channel_id */,
                      int /* request_id */)
 
+// Same as ExtensionHostMsg_OpenChannelToExtension, but assigns the port id
+// synchronously.
+IPC_SYNC_MESSAGE_CONTROL4_1(ExtensionHostMsg_OpenChannelToExtensionSync,
+                            int /* frame_routing_id */,
+                            ExtensionMsg_ExternalConnectionInfo,
+                            std::string /* channel_name */,
+                            bool /* include_tls_channel_id */,
+                            int /* port_id */)
+
 // The response to a request to open an extension message port, including the
 // global port id and the request id.
 IPC_MESSAGE_ROUTED2(ExtensionMsg_AssignPortId,

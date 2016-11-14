@@ -269,6 +269,18 @@ MessagingBindings::MessagingBindings(ScriptContext* context)
 
 MessagingBindings::~MessagingBindings() {
   g_messaging_map.Get().erase(context());
+  if (ports_created_normal_ > 0 || ports_created_in_before_unload_ > 0 ||
+      ports_created_in_unload_ > 0) {
+    UMA_HISTOGRAM_COUNTS_1000(
+        "Extensions.Messaging.ExtensionPortsCreated.InBeforeUnload",
+        ports_created_in_before_unload_);
+    UMA_HISTOGRAM_COUNTS_1000(
+        "Extensions.Messaging.ExtensionPortsCreated.InUnload",
+        ports_created_in_unload_);
+    UMA_HISTOGRAM_COUNTS_1000(
+        "Extensions.Messaging.ExtensionPortsCreated.Normal",
+        ports_created_normal_);
+  }
 }
 
 // static
@@ -450,10 +462,30 @@ void MessagingBindings::OpenChannelToExtension(
 
   ExtensionFrameHelper* frame_helper = ExtensionFrameHelper::Get(render_frame);
   DCHECK(frame_helper);
-  frame_helper->RequestPortId(
-      info, channel_name, include_tls_channel_id,
-      base::Bind(&MessagingBindings::SetGlobalPortId,
-                 weak_ptr_factory_.GetWeakPtr(), local_id));
+
+  blink::WebLocalFrame* web_frame = render_frame->GetWebFrame();
+  // If the frame is unloading, we need to assign the port id synchronously to
+  // avoid dropping the message on the floor; see crbug.com/660706.
+  // TODO(devlin): Investigate whether we need to continue supporting this long-
+  // term, and, if so, find an alternative that doesn't require synchronous
+  // IPCs.
+  if (!web_frame->document().isNull() &&
+      (web_frame->document().unloadStartedDoNotUse() ||
+       web_frame->document().processingBeforeUnloadDoNotUse())) {
+    ports_created_in_before_unload_ +=
+        web_frame->document().processingBeforeUnloadDoNotUse() ? 1 : 0;
+    ports_created_in_unload_ +=
+        web_frame->document().unloadStartedDoNotUse() ? 1 : 0;
+    int global_id = frame_helper->RequestSyncPortId(info, channel_name,
+                                                    include_tls_channel_id);
+    ports_[local_id]->SetGlobalId(global_id);
+  } else {
+    ++ports_created_normal_;
+    frame_helper->RequestPortId(
+        info, channel_name, include_tls_channel_id,
+        base::Bind(&MessagingBindings::SetGlobalPortId,
+                   weak_ptr_factory_.GetWeakPtr(), local_id));
+  }
 
   args.GetReturnValue().Set(static_cast<int32_t>(local_id));
 }

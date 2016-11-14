@@ -115,7 +115,17 @@ class MessagingBindings : public ObjectBackedNativeHandler {
   PortMap disconnected_ports_;
 
   // The next available local id for a port.
-  int next_local_id_ = 0;
+  size_t next_local_id_ = 0;
+
+  // The number of ports created in the 'beforeunload' event handler.
+  size_t ports_created_in_before_unload_ = 0;
+
+  // The number of ports created in the 'unload' event handler.
+  size_t ports_created_in_unload_ = 0;
+
+  // The number of ports created during during any time that isn't in the unload
+  // or beforeunload handlers.
+  int ports_created_normal_ = 0;
 
   base::WeakPtrFactory<MessagingBindings> weak_ptr_factory_;
 
