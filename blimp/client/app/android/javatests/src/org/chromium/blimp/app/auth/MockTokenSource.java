@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.blimp.auth;
+package org.chromium.blimp.app.auth;
 
 import android.content.Intent;
 import android.os.Handler;
@@ -62,8 +62,8 @@ public class MockTokenSource extends Handler implements TokenSource {
     public void getToken() {
         Assert.assertFalse("getToken() called after already returning a successful token.",
                 isRetrievingToken());
-        Assert.assertFalse("getToken() called after failing in an unrecoverable way.",
-                mAlreadyFailedHard);
+        Assert.assertFalse(
+                "getToken() called after failing in an unrecoverable way.", mAlreadyFailedHard);
         sendEmptyMessage(MSG_QUERY_TOKEN);
     }
 

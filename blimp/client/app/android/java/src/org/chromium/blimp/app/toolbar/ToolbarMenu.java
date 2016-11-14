@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.blimp.toolbar;
+package org.chromium.blimp.app.toolbar;
 
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -15,11 +15,11 @@ import android.widget.ArrayAdapter;
 import android.widget.ListPopupWindow;
 
 import org.chromium.base.Log;
-import org.chromium.blimp.R;
-import org.chromium.blimp.session.BlimpClientSession;
-import org.chromium.blimp.session.EngineInfo;
-import org.chromium.blimp.settings.AboutBlimpPreferences;
-import org.chromium.blimp.settings.Preferences;
+import org.chromium.blimp.app.R;
+import org.chromium.blimp.app.session.BlimpClientSession;
+import org.chromium.blimp.app.session.EngineInfo;
+import org.chromium.blimp.app.settings.AboutBlimpPreferences;
+import org.chromium.blimp.app.settings.Preferences;
 
 import java.util.ArrayList;
 import java.util.List;

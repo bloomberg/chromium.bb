@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.blimp.preferences;
+package org.chromium.blimp.app.preferences;
 
 import android.content.Context;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.blimp.R;
+import org.chromium.blimp.app.R;
 
 /**
  * Provides helper methods for storing and retrieving values in android shared preferences.
@@ -27,8 +27,8 @@ public class PreferencesUtil {
     public static String findAssignerUrl(Context context) {
         String lastAssigner = getLastUsedAssigner(context);
         if (lastAssigner.isEmpty()) {
-            String[] assignerUrls = context.getResources().getStringArray(
-                    R.array.blimp_assigner_urls);
+            String[] assignerUrls =
+                    context.getResources().getStringArray(R.array.blimp_assigner_urls);
             assert assignerUrls != null && assignerUrls.length > 0;
             lastAssigner = assignerUrls[0];
             setLastUsedAssigner(context, lastAssigner);

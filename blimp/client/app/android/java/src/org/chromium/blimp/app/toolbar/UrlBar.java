@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.blimp.toolbar;
+package org.chromium.blimp.app.toolbar;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -69,7 +69,7 @@ public class UrlBar extends EditText implements OnKeyListener {
     public boolean onKey(View view, int keyCode, KeyEvent event) {
         if (event.getAction() == KeyEvent.ACTION_UP
                 && (event.getKeyCode() == KeyEvent.KEYCODE_ENTER
-                || event.getKeyCode() == KeyEvent.KEYCODE_NUMPAD_ENTER)) {
+                           || event.getKeyCode() == KeyEvent.KEYCODE_NUMPAD_ENTER)) {
             UiUtils.hideKeyboard(view);
             clearFocus();
             for (UrlBarObserver observer : mObservers) {

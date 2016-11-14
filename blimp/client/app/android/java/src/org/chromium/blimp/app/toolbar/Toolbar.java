@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.blimp.toolbar;
+package org.chromium.blimp.app.toolbar;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -15,8 +15,8 @@ import android.widget.ProgressBar;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.blimp.R;
-import org.chromium.blimp.session.BlimpClientSession;
+import org.chromium.blimp.app.R;
+import org.chromium.blimp.app.session.BlimpClientSession;
 
 /**
  * A {@link View} that visually represents the Blimp toolbar, which lets users issue navigation

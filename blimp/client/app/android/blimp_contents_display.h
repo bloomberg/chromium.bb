@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_CLIENT_APP_ANDROID_BLIMP_VIEW_H_
-#define BLIMP_CLIENT_APP_ANDROID_BLIMP_VIEW_H_
+#ifndef BLIMP_CLIENT_APP_ANDROID_BLIMP_CONTENTS_DISPLAY_H_
+#define BLIMP_CLIENT_APP_ANDROID_BLIMP_CONTENTS_DISPLAY_H_
 
 #include <memory>
 
@@ -25,10 +25,10 @@ class RenderWidgetFeature;
 
 namespace app {
 
-// The native component of org.chromium.blimp.BlimpView.  This builds and
-// maintains a BlimpCompositorAndroid and handles notifying the compositor of
-// SurfaceView surface changes (size, creation, destruction, etc.).
-class BlimpView {
+// The native component of org.chromium.blimp.BlimpContentsDisplay. This builds
+// and maintains a BlimpCompositorAndroid and handles notifying the compositor
+// of SurfaceView surface changes (size, creation, destruction, etc.).
+class BlimpContentsDisplay {
  public:
   static bool RegisterJni(JNIEnv* env);
 
@@ -37,12 +37,13 @@ class BlimpView {
   // area not including system decorations (see android.view.Display.getSize()).
   // |dp_to_px| is the scale factor that is required to convert dp (device
   // pixels) to px.
-  BlimpView(JNIEnv* env,
-            const base::android::JavaParamRef<jobject>& jobj,
-            const gfx::Size& real_size,
-            const gfx::Size& size,
-            float dp_to_px,
-            blimp::client::RenderWidgetFeature* render_widget_feature);
+  BlimpContentsDisplay(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jobj,
+      const gfx::Size& real_size,
+      const gfx::Size& size,
+      float dp_to_px,
+      blimp::client::RenderWidgetFeature* render_widget_feature);
 
   // Methods called from Java via JNI.
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& jobj);
@@ -93,7 +94,7 @@ class BlimpView {
       jint android_meta_state);
 
  private:
-  virtual ~BlimpView();
+  virtual ~BlimpContentsDisplay();
 
   void OnSwapBuffersCompleted();
 
@@ -114,13 +115,13 @@ class BlimpView {
 
   gfx::AcceleratedWidget window_;
 
-  base::WeakPtrFactory<BlimpView> weak_ptr_factory_;
+  base::WeakPtrFactory<BlimpContentsDisplay> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(BlimpView);
+  DISALLOW_COPY_AND_ASSIGN(BlimpContentsDisplay);
 };
 
 }  // namespace app
 }  // namespace client
 }  // namespace blimp
 
-#endif  // BLIMP_CLIENT_APP_ANDROID_BLIMP_VIEW_H_
+#endif  // BLIMP_CLIENT_APP_ANDROID_BLIMP_CONTENTS_DISPLAY_H_

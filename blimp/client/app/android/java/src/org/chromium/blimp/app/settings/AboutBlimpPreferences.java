@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.blimp.settings;
+package org.chromium.blimp.app.settings;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -17,12 +16,13 @@ import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 
 import org.chromium.base.Log;
-import org.chromium.blimp.BrowserRestartActivity;
-import org.chromium.blimp.R;
-import org.chromium.blimp.preferences.PreferencesUtil;
+import org.chromium.blimp.app.BrowserRestartActivity;
+import org.chromium.blimp.app.R;
+import org.chromium.blimp.app.preferences.PreferencesUtil;
 
 /**
  * Fragment to display blimp client and engine version related info.

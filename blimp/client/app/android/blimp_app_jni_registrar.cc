@@ -6,8 +6,8 @@
 
 #include "base/android/jni_registrar.h"
 #include "blimp/client/app/android/blimp_client_session_android.h"
+#include "blimp/client/app/android/blimp_contents_display.h"
 #include "blimp/client/app/android/blimp_library_loader.h"
-#include "blimp/client/app/android/blimp_view.h"
 #include "blimp/client/app/android/tab_control_feature_android.h"
 #include "blimp/client/app/android/toolbar.h"
 #include "blimp/client/core/contents/android/ime_helper_dialog.h"
@@ -20,7 +20,7 @@ namespace {
 base::android::RegistrationMethod kBlimpRegistrationMethods[] = {
     {"BlimpClientSessionAndroid", BlimpClientSessionAndroid::RegisterJni},
     {"BlimpLibraryLoader", RegisterBlimpLibraryLoaderJni},
-    {"BlimpView", app::BlimpView::RegisterJni},
+    {"BlimpContentsDisplay", app::BlimpContentsDisplay::RegisterJni},
     {"ImeHelperDialog", ImeHelperDialog::RegisterJni},
     {"SafeJson", safe_json::android::RegisterSafeJsonJni},
     {"TabControlFeatureAndroid", TabControlFeatureAndroid::RegisterJni},

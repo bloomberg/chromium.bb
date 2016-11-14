@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.blimp.session;
+package org.chromium.blimp.app.session;
 
 import android.view.View;
 
@@ -52,8 +52,8 @@ public class TabControlFeature implements View.OnLayoutChangeListener {
 
     // View.OnLayoutChangeListener implementation.
     @Override
-    public void onLayoutChange(View v, int left, int top, int right, int bottom,
-            int oldLeft, int oldTop, int oldRight, int oldBottom) {
+    public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft,
+            int oldTop, int oldRight, int oldBottom) {
         if (mNativeTabControlFeatureAndroidPtr == 0) return;
         nativeOnContentAreaSizeChanged(mNativeTabControlFeatureAndroidPtr, right - left,
                 bottom - top,

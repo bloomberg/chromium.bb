@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.blimp.session;
+package org.chromium.blimp.app.session;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.blimp.R;
+import org.chromium.blimp.app.R;
 import org.chromium.blimp_public.session.AssignmentRequestResult;
 import org.chromium.ui.base.WindowAndroid;
 

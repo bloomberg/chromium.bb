@@ -9,7 +9,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
         <!-- Toolbar -->
-        <org.chromium.blimp.toolbar.Toolbar
+        <org.chromium.blimp.app.toolbar.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="56dp"
@@ -18,7 +18,7 @@
             android:orientation="horizontal"
             android:gravity="center"
             android:background="#f2f2f2">
-            <org.chromium.blimp.toolbar.UrlBar
+            <org.chromium.blimp.app.toolbar.UrlBar
                 android:id="@+id/toolbar_url_bar"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
@@ -53,10 +53,10 @@
                 android:layout_gravity="center"
                 android:background="@null"
                 android:src="@drawable/btn_menu" />
-        </org.chromium.blimp.toolbar.Toolbar>
-        
+        </org.chromium.blimp.app.toolbar.Toolbar>
+
         <!-- Content Area -->
-        <org.chromium.blimp.BlimpView
+        <org.chromium.blimp.app.BlimpContentsDisplay
             android:id="@+id/renderer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

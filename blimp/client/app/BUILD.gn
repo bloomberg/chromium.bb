@@ -216,11 +216,11 @@ if (is_android) {
     visibility = [ ":*" ]
 
     sources = [
-      "android/java/src/org/chromium/blimp/BlimpLibraryLoader.java",
-      "android/java/src/org/chromium/blimp/BlimpView.java",
-      "android/java/src/org/chromium/blimp/session/BlimpClientSession.java",
-      "android/java/src/org/chromium/blimp/session/TabControlFeature.java",
-      "android/java/src/org/chromium/blimp/toolbar/Toolbar.java",
+      "android/java/src/org/chromium/blimp/app/BlimpContentsDisplay.java",
+      "android/java/src/org/chromium/blimp/app/BlimpLibraryLoader.java",
+      "android/java/src/org/chromium/blimp/app/session/BlimpClientSession.java",
+      "android/java/src/org/chromium/blimp/app/session/TabControlFeature.java",
+      "android/java/src/org/chromium/blimp/app/toolbar/Toolbar.java",
     ]
 
     jni_package = "blimp"
@@ -236,7 +236,7 @@ if (is_android) {
     deps = [
       ":blimp_strings_grd",
     ]
-    custom_package = "org.chromium.blimp"
+    custom_package = "org.chromium.blimp.app"
   }
 
   java_strings_grd("blimp_strings_grd") {
@@ -298,6 +298,7 @@ if (is_android) {
       "//blimp/client/core:core_java",
       "//blimp/client/public:public_headers_java",
       "//third_party/android_tools:android_support_annotations_java",
+      "//third_party/android_tools:android_support_v7_appcompat_java",
 
       # TODO(dtrainor): Remove the ui_java target once no more Android Toast
       # notifications are used.
@@ -306,23 +307,23 @@ if (is_android) {
     ]
 
     java_files = [
-      "android/java/src/org/chromium/blimp/auth/RetryingTokenSource.java",
-      "android/java/src/org/chromium/blimp/auth/TokenSource.java",
-      "android/java/src/org/chromium/blimp/auth/TokenSourceImpl.java",
-      "android/java/src/org/chromium/blimp/BlimpApplication.java",
-      "android/java/src/org/chromium/blimp/BlimpLibraryLoader.java",
-      "android/java/src/org/chromium/blimp/BlimpRendererActivity.java",
-      "android/java/src/org/chromium/blimp/BlimpView.java",
-      "android/java/src/org/chromium/blimp/BrowserRestartActivity.java",
-      "android/java/src/org/chromium/blimp/preferences/PreferencesUtil.java",
-      "android/java/src/org/chromium/blimp/session/BlimpClientSession.java",
-      "android/java/src/org/chromium/blimp/session/EngineInfo.java",
-      "android/java/src/org/chromium/blimp/session/TabControlFeature.java",
-      "android/java/src/org/chromium/blimp/settings/AboutBlimpPreferences.java",
-      "android/java/src/org/chromium/blimp/settings/Preferences.java",
-      "android/java/src/org/chromium/blimp/toolbar/Toolbar.java",
-      "android/java/src/org/chromium/blimp/toolbar/ToolbarMenu.java",
-      "android/java/src/org/chromium/blimp/toolbar/UrlBar.java",
+      "android/java/src/org/chromium/blimp/app/auth/RetryingTokenSource.java",
+      "android/java/src/org/chromium/blimp/app/auth/TokenSource.java",
+      "android/java/src/org/chromium/blimp/app/auth/TokenSourceImpl.java",
+      "android/java/src/org/chromium/blimp/app/BlimpApplication.java",
+      "android/java/src/org/chromium/blimp/app/BlimpContentsDisplay.java",
+      "android/java/src/org/chromium/blimp/app/BlimpLibraryLoader.java",
+      "android/java/src/org/chromium/blimp/app/BlimpRendererActivity.java",
+      "android/java/src/org/chromium/blimp/app/BrowserRestartActivity.java",
+      "android/java/src/org/chromium/blimp/app/preferences/PreferencesUtil.java",
+      "android/java/src/org/chromium/blimp/app/session/BlimpClientSession.java",
+      "android/java/src/org/chromium/blimp/app/session/EngineInfo.java",
+      "android/java/src/org/chromium/blimp/app/session/TabControlFeature.java",
+      "android/java/src/org/chromium/blimp/app/settings/AboutBlimpPreferences.java",
+      "android/java/src/org/chromium/blimp/app/settings/Preferences.java",
+      "android/java/src/org/chromium/blimp/app/toolbar/Toolbar.java",
+      "android/java/src/org/chromium/blimp/app/toolbar/ToolbarMenu.java",
+      "android/java/src/org/chromium/blimp/app/toolbar/UrlBar.java",
     ]
   }
 
@@ -347,13 +348,13 @@ if (is_android) {
     ]
 
     java_files = [
-      "android/javatests/src/org/chromium/blimp/auth/MockTokenSource.java",
-      "android/javatests/src/org/chromium/blimp/auth/RetryingTokenSourceTest.java",
+      "android/javatests/src/org/chromium/blimp/app/auth/MockTokenSource.java",
+      "android/javatests/src/org/chromium/blimp/app/auth/RetryingTokenSourceTest.java",
+      "android/javatests/src/org/chromium/blimp/app/BlimpNativeInstrumentationTestCase.java",
       "android/javatests/src/org/chromium/blimp/core/MockBlimpClientContext.java",
       "android/javatests/src/org/chromium/blimp/core/MockBlimpClientContextDelegate.java",
       "android/javatests/src/org/chromium/blimp/core/settings/BlimpPreferencesTest.java",
       "android/javatests/src/org/chromium/blimp/core/settings/MockPreferences.java",
-      "android/javatests/src/org/chromium/blimp/BlimpNativeInstrumentationTestCase.java",
     ]
   }
 
@@ -385,10 +386,10 @@ if (is_android) {
       "android/blimp_app_jni_registrar.h",
       "android/blimp_client_session_android.cc",
       "android/blimp_client_session_android.h",
+      "android/blimp_contents_display.cc",
+      "android/blimp_contents_display.h",
       "android/blimp_library_loader.cc",
       "android/blimp_library_loader.h",
-      "android/blimp_view.cc",
-      "android/blimp_view.h",
       "android/tab_control_feature_android.cc",
       "android/tab_control_feature_android.h",
       "android/toolbar.cc",

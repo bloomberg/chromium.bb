@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.blimp.auth;
+package org.chromium.blimp.app.auth;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -20,7 +20,7 @@ import com.google.android.gms.common.ConnectionResult;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
-import org.chromium.blimp.R;
+import org.chromium.blimp.app.R;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "blimp/client/app/android/blimp_view.h"
+#include "blimp/client/app/android/blimp_contents_display.h"
 
 #include <android/native_window_jni.h>
 
@@ -13,7 +13,7 @@
 #include "blimp/client/core/render_widget/blimp_document_manager.h"
 #include "blimp/client/core/render_widget/render_widget_feature.h"
 #include "blimp/client/support/compositor/compositor_dependencies_impl.h"
-#include "jni/BlimpView_jni.h"
+#include "jni/BlimpContentsDisplay_jni.h"
 #include "ui/events/android/motion_event_android.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -41,22 +41,23 @@ static jlong Init(
   // pass it through to the BlimpCompositor.
   ALLOW_UNUSED_LOCAL(client_session);
 
-  return reinterpret_cast<intptr_t>(new BlimpView(
+  return reinterpret_cast<intptr_t>(new BlimpContentsDisplay(
       env, jobj, gfx::Size(real_width, real_height), gfx::Size(width, height),
       dp_to_px, client_session->GetRenderWidgetFeature()));
 }
 
 // static
-bool BlimpView::RegisterJni(JNIEnv* env) {
+bool BlimpContentsDisplay::RegisterJni(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-BlimpView::BlimpView(JNIEnv* env,
-                     const base::android::JavaParamRef<jobject>& jobj,
-                     const gfx::Size& real_size,
-                     const gfx::Size& size,
-                     float dp_to_px,
-                     blimp::client::RenderWidgetFeature* render_widget_feature)
+BlimpContentsDisplay::BlimpContentsDisplay(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jobj,
+    const gfx::Size& real_size,
+    const gfx::Size& size,
+    float dp_to_px,
+    blimp::client::RenderWidgetFeature* render_widget_feature)
     : device_scale_factor_(dp_to_px),
       current_surface_format_(0),
       window_(gfx::kNullAcceleratedWidget),
@@ -66,8 +67,9 @@ BlimpView::BlimpView(JNIEnv* env,
 
   compositor_ = base::MakeUnique<BrowserCompositor>(
       compositor_dependencies_->GetEmbedderDependencies());
-  compositor_->set_did_complete_swap_buffers_callback(base::Bind(
-      &BlimpView::OnSwapBuffersCompleted, weak_ptr_factory_.GetWeakPtr()));
+  compositor_->set_did_complete_swap_buffers_callback(
+      base::Bind(&BlimpContentsDisplay::OnSwapBuffersCompleted,
+                 weak_ptr_factory_.GetWeakPtr()));
 
   document_manager_ = base::MakeUnique<BlimpDocumentManager>(
       kDummyBlimpContentsId, render_widget_feature,
@@ -77,7 +79,7 @@ BlimpView::BlimpView(JNIEnv* env,
   java_obj_.Reset(env, jobj);
 }
 
-BlimpView::~BlimpView() {
+BlimpContentsDisplay::~BlimpContentsDisplay() {
   SetSurface(nullptr);
 
   // Destroy the BrowserCompositor and the BlimpCompositorManager before the
@@ -87,12 +89,13 @@ BlimpView::~BlimpView() {
   compositor_dependencies_.reset();
 }
 
-void BlimpView::Destroy(JNIEnv* env,
-                        const base::android::JavaParamRef<jobject>& jobj) {
+void BlimpContentsDisplay::Destroy(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jobj) {
   delete this;
 }
 
-void BlimpView::OnContentAreaSizeChanged(
+void BlimpContentsDisplay::OnContentAreaSizeChanged(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jobj,
     jint width,
@@ -101,7 +104,7 @@ void BlimpView::OnContentAreaSizeChanged(
   compositor_->SetSize(gfx::Size(width, height));
 }
 
-void BlimpView::OnSurfaceChanged(
+void BlimpContentsDisplay::OnSurfaceChanged(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jobj,
     jint format,
@@ -118,20 +121,20 @@ void BlimpView::OnSurfaceChanged(
   }
 }
 
-void BlimpView::OnSurfaceCreated(
+void BlimpContentsDisplay::OnSurfaceCreated(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jobj) {
   current_surface_format_ = 0 /** PixelFormat.UNKNOWN */;
 }
 
-void BlimpView::OnSurfaceDestroyed(
+void BlimpContentsDisplay::OnSurfaceDestroyed(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jobj) {
   current_surface_format_ = 0 /** PixelFormat.UNKNOWN */;
   SetSurface(nullptr);
 }
 
-void BlimpView::SetSurface(jobject surface) {
+void BlimpContentsDisplay::SetSurface(jobject surface) {
   JNIEnv* env = base::android::AttachCurrentThread();
   // Release all references to the old surface.
   if (window_ != gfx::kNullAcceleratedWidget) {
@@ -149,7 +152,7 @@ void BlimpView::SetSurface(jobject surface) {
   }
 }
 
-jboolean BlimpView::OnTouchEvent(
+jboolean BlimpContentsDisplay::OnTouchEvent(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jobject>& motion_event,
@@ -178,43 +181,24 @@ jboolean BlimpView::OnTouchEvent(
     jint android_tool_type_1,
     jint android_button_state,
     jint android_meta_state) {
-  ui::MotionEventAndroid::Pointer pointer0(pointer_id_0,
-                                           pos_x_0,
-                                           pos_y_0,
-                                           touch_major_0,
-                                           touch_minor_0,
-                                           orientation_0,
-                                           tilt_0,
-                                           android_tool_type_0);
-  ui::MotionEventAndroid::Pointer pointer1(pointer_id_1,
-                                           pos_x_1,
-                                           pos_y_1,
-                                           touch_major_1,
-                                           touch_minor_1,
-                                           orientation_1,
-                                           tilt_1,
-                                           android_tool_type_1);
-  ui::MotionEventAndroid event(1.f / device_scale_factor_,
-                               env,
-                               motion_event,
-                               time_ms,
-                               android_action,
-                               pointer_count,
-                               history_size,
-                               action_index,
-                               android_button_state,
-                               android_meta_state,
-                               raw_pos_x - pos_x_0,
-                               raw_pos_y - pos_y_0,
-                               &pointer0,
-                               &pointer1);
+  ui::MotionEventAndroid::Pointer pointer0(
+      pointer_id_0, pos_x_0, pos_y_0, touch_major_0, touch_minor_0,
+      orientation_0, tilt_0, android_tool_type_0);
+  ui::MotionEventAndroid::Pointer pointer1(
+      pointer_id_1, pos_x_1, pos_y_1, touch_major_1, touch_minor_1,
+      orientation_1, tilt_1, android_tool_type_1);
+  ui::MotionEventAndroid event(1.f / device_scale_factor_, env, motion_event,
+                               time_ms, android_action, pointer_count,
+                               history_size, action_index, android_button_state,
+                               android_meta_state, raw_pos_x - pos_x_0,
+                               raw_pos_y - pos_y_0, &pointer0, &pointer1);
 
   return document_manager_->OnTouchEvent(event);
 }
 
-void BlimpView::OnSwapBuffersCompleted() {
+void BlimpContentsDisplay::OnSwapBuffersCompleted() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_BlimpView_onSwapBuffersCompleted(env, java_obj_);
+  Java_BlimpContentsDisplay_onSwapBuffersCompleted(env, java_obj_);
 }
 
 }  // namespace app

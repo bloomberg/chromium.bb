@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.blimp.auth;
+package org.chromium.blimp.app.auth;
 
 import android.content.Intent;
 import android.test.InstrumentationTestCase;
@@ -109,11 +109,8 @@ public class RetryingTokenSourceTest extends InstrumentationTestCase {
     }
 
     private AtomicReference<TestRetryingTokenSource> buildAndTriggerTokenSource(
-            final String correctToken,
-            final int transientFailures,
-            final boolean hardFailure,
-            final Semaphore successSemaphore,
-            final Semaphore failureSemaphore,
+            final String correctToken, final int transientFailures, final boolean hardFailure,
+            final Semaphore successSemaphore, final Semaphore failureSemaphore,
             final Semaphore needsAccountSemaphore) {
         final AtomicReference<TestRetryingTokenSource> tokenSource =
                 new AtomicReference<TestRetryingTokenSource>();
@@ -122,8 +119,8 @@ public class RetryingTokenSourceTest extends InstrumentationTestCase {
             public void run() {
                 TokenSource mockTokenSource =
                         new MockTokenSource(correctToken, transientFailures, hardFailure);
-                tokenSource.set(new TestRetryingTokenSource(mockTokenSource,
-                        successSemaphore, failureSemaphore, needsAccountSemaphore));
+                tokenSource.set(new TestRetryingTokenSource(mockTokenSource, successSemaphore,
+                        failureSemaphore, needsAccountSemaphore));
                 tokenSource.get().getToken();
                 assertTrue("RetryingTokenSource is not attempting to get a token.",
                         tokenSource.get().isRetrievingToken());
@@ -133,8 +130,7 @@ public class RetryingTokenSourceTest extends InstrumentationTestCase {
     }
 
     private void validateTokenSourceResults(
-            final AtomicReference<TestRetryingTokenSource> tokenSource,
-            final String expectedToken,
+            final AtomicReference<TestRetryingTokenSource> tokenSource, final String expectedToken,
             final int expectedTransientFailures) {
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
@@ -150,12 +146,11 @@ public class RetryingTokenSourceTest extends InstrumentationTestCase {
                 for (int i = 0; i < delays.size(); i++) {
                     Integer delay = delays.get(i);
                     assertTrue("RetryingTokenSource did not increase delays between attempts "
-                            + "(" + prevDelay + " < " + delay + " failed).",
+                                    + "(" + prevDelay + " < " + delay + " failed).",
                             prevDelay < delay);
-                    assertTrue("RetryingTokenSource used a negative delay.",
-                            delay >= 0);
-                    assertTrue("RetryingTokenSource used no delay for retries.",
-                            delay > 0 || i == 0);
+                    assertTrue("RetryingTokenSource used a negative delay.", delay >= 0);
+                    assertTrue(
+                            "RetryingTokenSource used no delay for retries.", delay > 0 || i == 0);
                     prevDelay = delay;
                 }
             }
@@ -195,9 +190,8 @@ public class RetryingTokenSourceTest extends InstrumentationTestCase {
         Semaphore success = new Semaphore(0);
         Semaphore failure = new Semaphore(0);
         Semaphore needsAccount = new Semaphore(0);
-        AtomicReference<TestRetryingTokenSource> tokenSource =
-                buildAndTriggerTokenSource(TEST_TOKEN, failureCount, false, success, failure,
-                        needsAccount);
+        AtomicReference<TestRetryingTokenSource> tokenSource = buildAndTriggerTokenSource(
+                TEST_TOKEN, failureCount, false, success, failure, needsAccount);
 
         assertTrue("Did not receive a successful token in time.",
                 success.tryAcquire(SEMAPHORE_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -219,9 +213,8 @@ public class RetryingTokenSourceTest extends InstrumentationTestCase {
         Semaphore success = new Semaphore(0);
         Semaphore failure = new Semaphore(0);
         Semaphore needsAccount = new Semaphore(0);
-        AtomicReference<TestRetryingTokenSource> tokenSource =
-                buildAndTriggerTokenSource(TEST_TOKEN, failureCount, true, success, failure,
-                        needsAccount);
+        AtomicReference<TestRetryingTokenSource> tokenSource = buildAndTriggerTokenSource(
+                TEST_TOKEN, failureCount, true, success, failure, needsAccount);
 
         assertTrue("Did not receive a failure in time.",
                 failure.tryAcquire(SEMAPHORE_TIMEOUT_MS, TimeUnit.MILLISECONDS));
@@ -243,9 +236,8 @@ public class RetryingTokenSourceTest extends InstrumentationTestCase {
         Semaphore success = new Semaphore(0);
         Semaphore failure = new Semaphore(0);
         Semaphore needsAccount = new Semaphore(0);
-        AtomicReference<TestRetryingTokenSource> tokenSource =
-                buildAndTriggerTokenSource(TEST_TOKEN, failureCount, false, success, failure,
-                        needsAccount);
+        AtomicReference<TestRetryingTokenSource> tokenSource = buildAndTriggerTokenSource(
+                TEST_TOKEN, failureCount, false, success, failure, needsAccount);
 
         assertTrue("Did not receive a failure in time.",
                 failure.tryAcquire(SEMAPHORE_TIMEOUT_MS, TimeUnit.MILLISECONDS));

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.blimp;
+package org.chromium.blimp.app;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -17,16 +17,16 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.blimp.auth.RetryingTokenSource;
-import org.chromium.blimp.auth.TokenSource;
-import org.chromium.blimp.auth.TokenSourceImpl;
+import org.chromium.blimp.app.auth.RetryingTokenSource;
+import org.chromium.blimp.app.auth.TokenSource;
+import org.chromium.blimp.app.auth.TokenSourceImpl;
+import org.chromium.blimp.app.preferences.PreferencesUtil;
+import org.chromium.blimp.app.session.BlimpClientSession;
+import org.chromium.blimp.app.session.EngineInfo;
+import org.chromium.blimp.app.session.TabControlFeature;
+import org.chromium.blimp.app.toolbar.Toolbar;
+import org.chromium.blimp.app.toolbar.ToolbarMenu;
 import org.chromium.blimp.core.BlimpClientSwitches;
-import org.chromium.blimp.preferences.PreferencesUtil;
-import org.chromium.blimp.session.BlimpClientSession;
-import org.chromium.blimp.session.EngineInfo;
-import org.chromium.blimp.session.TabControlFeature;
-import org.chromium.blimp.toolbar.Toolbar;
-import org.chromium.blimp.toolbar.ToolbarMenu;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.widget.Toast;
 
@@ -39,7 +39,7 @@ public class BlimpRendererActivity
                                     BlimpClientSession.ConnectionObserver,
                                     ToolbarMenu.ToolbarMenuDelegate, Toolbar.ToolbarDelegate {
     private static final int ACCOUNT_CHOOSER_INTENT_REQUEST_CODE = 100;
-    private static final String TAG = "BlimpRendererActivity";
+    private static final String TAG = "BlimpRendActivity";
 
     // Refresh interval for the debug view in milliseconds.
     private static final int DEBUG_VIEW_REFRESH_INTERVAL = 1000;
@@ -50,7 +50,7 @@ public class BlimpRendererActivity
      *  privileges for a chosen Android account. */
     private TokenSource mTokenSource;
 
-    private BlimpView mBlimpView;
+    private BlimpContentsDisplay mBlimpContentsDisplay;
     private Toolbar mToolbar;
     private BlimpClientSession mBlimpClientSession;
     private TabControlFeature mTabControlFeature;
@@ -71,7 +71,7 @@ public class BlimpRendererActivity
     private String mToken = null;
 
     @Override
-    @SuppressFBWarnings("DM_EXIT")  // FindBugs doesn't like System.exit().
+    @SuppressFBWarnings("DM_EXIT") // FindBugs doesn't like System.exit().
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         buildAndTriggerTokenSourceIfNeeded();
@@ -91,9 +91,9 @@ public class BlimpRendererActivity
             mTabControlFeature = null;
         }
 
-        if (mBlimpView != null) {
-            mBlimpView.destroyRenderer();
-            mBlimpView = null;
+        if (mBlimpContentsDisplay != null) {
+            mBlimpContentsDisplay.destroyRenderer();
+            mBlimpContentsDisplay = null;
         }
 
         if (mToolbar != null) {
@@ -157,13 +157,13 @@ public class BlimpRendererActivity
                 new BlimpClientSession(PreferencesUtil.findAssignerUrl(this), mWindowAndroid);
         mBlimpClientSession.addObserver(this);
 
-        mBlimpView = (BlimpView) findViewById(R.id.renderer);
-        mBlimpView.initializeRenderer(mBlimpClientSession);
+        mBlimpContentsDisplay = (BlimpContentsDisplay) findViewById(R.id.renderer);
+        mBlimpContentsDisplay.initializeRenderer(mBlimpClientSession);
 
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         mToolbar.initialize(mBlimpClientSession, this);
 
-        mTabControlFeature = new TabControlFeature(mBlimpClientSession, mBlimpView);
+        mTabControlFeature = new TabControlFeature(mBlimpClientSession, mBlimpContentsDisplay);
 
         handleUrlFromIntent(getIntent());
 
