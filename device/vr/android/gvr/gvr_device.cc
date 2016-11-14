@@ -50,8 +50,8 @@ mojom::VRDisplayInfoPtr GvrDevice::GetVRDevice() {
   left_eye->fieldOfView = mojom::VRFieldOfView::New();
   right_eye->fieldOfView = mojom::VRFieldOfView::New();
 
-  left_eye->offset = mojo::Array<float>::New(3);
-  right_eye->offset = mojo::Array<float>::New(3);
+  left_eye->offset.resize(3);
+  right_eye->offset.resize(3);
 
   // TODO(bajones): GVR has a bug that causes it to return bad render target
   // sizes when the phone is in portait mode. Send arbitrary,
@@ -140,15 +140,15 @@ mojom::VRPosePtr GvrDevice::GetPose(VRServiceImpl* service) {
   // Increment pose frame counter always, even if it's a faked pose.
   pose->poseIndex = ++pose_index_;
 
-  pose->orientation = mojo::Array<float>::New(4);
+  pose->orientation.emplace(4);
 
   gvr::GvrApi* gvr_api = GetGvrApi();
   if (!gvr_api) {
     // If we don't have a GvrApi instance return a static forward orientation.
-    pose->orientation[0] = 0.0;
-    pose->orientation[1] = 0.0;
-    pose->orientation[2] = 0.0;
-    pose->orientation[3] = 1.0;
+    pose->orientation.value()[0] = 0.0;
+    pose->orientation.value()[1] = 0.0;
+    pose->orientation.value()[2] = 0.0;
+    pose->orientation.value()[3] = 1.0;
 
     return pose;
   }
@@ -171,15 +171,15 @@ mojom::VRPosePtr GvrDevice::GetPose(VRServiceImpl* service) {
     gfx::DecomposedTransform decomposed_transform;
     gfx::DecomposeTransform(&decomposed_transform, transform);
 
-    pose->orientation[0] = decomposed_transform.quaternion[0];
-    pose->orientation[1] = decomposed_transform.quaternion[1];
-    pose->orientation[2] = decomposed_transform.quaternion[2];
-    pose->orientation[3] = decomposed_transform.quaternion[3];
+    pose->orientation.value()[0] = decomposed_transform.quaternion[0];
+    pose->orientation.value()[1] = decomposed_transform.quaternion[1];
+    pose->orientation.value()[2] = decomposed_transform.quaternion[2];
+    pose->orientation.value()[3] = decomposed_transform.quaternion[3];
 
-    pose->position = mojo::Array<float>::New(3);
-    pose->position[0] = decomposed_transform.translate[0];
-    pose->position[1] = decomposed_transform.translate[1];
-    pose->position[2] = decomposed_transform.translate[2];
+    pose->position.emplace(3);
+    pose->position.value()[0] = decomposed_transform.translate[0];
+    pose->position.value()[1] = decomposed_transform.translate[1];
+    pose->position.value()[2] = decomposed_transform.translate[2];
   }
 
   // Save the underlying GVR pose for use by rendering. It can't use a

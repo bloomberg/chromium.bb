@@ -39,7 +39,7 @@ mojom::VREyeParametersPtr FakeVRDevice::InitEye(float fov,
   eye->fieldOfView->leftDegrees = fov;
   eye->fieldOfView->rightDegrees = fov;
 
-  eye->offset = mojo::Array<float>::New(3);
+  eye->offset.resize(3);
   eye->offset[0] = offset;
   eye->offset[1] = 0.0f;
   eye->offset[2] = 0.0f;

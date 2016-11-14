@@ -47,14 +47,15 @@ void projectionFromFieldOfView(DOMFloat32Array* outArray,
 }
 
 // Create a matrix from a rotation and translation.
-void matrixfromRotationTranslation(DOMFloat32Array* outArray,
-                                   const mojo::WTFArray<float>& rotation,
-                                   const mojo::WTFArray<float>& translation) {
+void matrixfromRotationTranslation(
+    DOMFloat32Array* outArray,
+    const WTF::Optional<WTF::Vector<float>>& rotation,
+    const WTF::Optional<WTF::Vector<float>>& translation) {
   // Quaternion math
-  float x = rotation.is_null() ? 0.0f : rotation[0];
-  float y = rotation.is_null() ? 0.0f : rotation[1];
-  float z = rotation.is_null() ? 0.0f : rotation[2];
-  float w = rotation.is_null() ? 1.0f : rotation[3];
+  float x = !rotation ? 0.0f : rotation.value()[0];
+  float y = !rotation ? 0.0f : rotation.value()[1];
+  float z = !rotation ? 0.0f : rotation.value()[2];
+  float w = !rotation ? 1.0f : rotation.value()[3];
   float x2 = x + x;
   float y2 = y + y;
   float z2 = z + z;
@@ -82,9 +83,9 @@ void matrixfromRotationTranslation(DOMFloat32Array* outArray,
   out[9] = yz - wx;
   out[10] = 1 - (xx + yy);
   out[11] = 0;
-  out[12] = translation.is_null() ? 0.0f : translation[0];
-  out[13] = translation.is_null() ? 0.0f : translation[1];
-  out[14] = translation.is_null() ? 0.0f : translation[2];
+  out[12] = !translation ? 0.0f : translation.value()[0];
+  out[13] = !translation ? 0.0f : translation.value()[1];
+  out[14] = !translation ? 0.0f : translation.value()[2];
   out[15] = 1;
 }
 
