@@ -111,13 +111,6 @@ void DirectOutputSurfaceOzone::SwapBuffers(cc::OutputSurfaceFrame frame) {
     context_provider_->ContextSupport()->PartialSwapBuffers(
         frame.sub_buffer_rect);
   }
-
-  gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
-  const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
-  gl->ShallowFlushCHROMIUM();
-
-  gpu::SyncToken sync_token;
-  gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
 }
 
 uint32_t DirectOutputSurfaceOzone::GetFramebufferCopyTextureFormat() {
