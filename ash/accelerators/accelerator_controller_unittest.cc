@@ -941,8 +941,8 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   // NOTE: Accelerators that do not work on the lock screen need to be
   // tested before the sequence below is invoked because it causes a side
   // effect of locking the screen.
-  EXPECT_TRUE(ProcessInController(
-      ui::Accelerator(ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
+  EXPECT_TRUE(
+      ProcessInController(ui::Accelerator(ui::VKEY_L, ui::EF_COMMAND_DOWN)));
 #endif
 }
 

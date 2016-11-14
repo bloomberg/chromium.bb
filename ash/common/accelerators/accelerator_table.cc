@@ -214,9 +214,12 @@ const AcceleratorData kDeprecatedAccelerators[] = {
 const size_t kDeprecatedAcceleratorsLength = arraysize(kDeprecatedAccelerators);
 
 const DeprecatedAcceleratorData kDeprecatedAcceleratorsData[] = {
-    {LOCK_SCREEN, "Ash.Accelerators.Deprecated.LockScreen",
-     IDS_DEPRECATED_LOCK_SCREEN_MSG, IDS_SHORTCUT_LOCK_SCREEN_OLD,
-     IDS_SHORTCUT_LOCK_SCREEN_NEW, true},
+    {
+        LOCK_SCREEN, "Ash.Accelerators.Deprecated.LockScreen",
+        IDS_DEPRECATED_LOCK_SCREEN_MSG, IDS_SHORTCUT_LOCK_SCREEN_OLD,
+        IDS_SHORTCUT_LOCK_SCREEN_NEW,
+        false  // Old accelerator was disabled in M56.
+    },
     {SHOW_TASK_MANAGER, "Ash.Accelerators.Deprecated.ShowTaskManager",
      IDS_DEPRECATED_SHOW_TASK_MANAGER_MSG, IDS_SHORTCUT_TASK_MANAGER_OLD,
      IDS_SHORTCUT_TASK_MANAGER_NEW, true},
