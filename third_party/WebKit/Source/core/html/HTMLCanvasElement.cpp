@@ -1124,6 +1124,18 @@ PassRefPtr<Image> HTMLCanvasElement::copiedImage(
   if (!m_context)
     return createTransparentImage(size());
 
+  if (m_context->getContextType() ==
+      CanvasRenderingContext::ContextImageBitmap) {
+    RefPtr<Image> image =
+        m_context->getImage(hint, SnapshotReasonGetCopiedImage);
+    if (image)
+      return m_context->getImage(hint, SnapshotReasonGetCopiedImage);
+    // Special case: transferFromImageBitmap is not yet called.
+    sk_sp<SkSurface> surface =
+        SkSurface::MakeRasterN32Premul(width(), height());
+    return StaticBitmapImage::create(surface->makeImageSnapshot());
+  }
+
   bool needToUpdate = !m_copiedImage;
   // The concept of SourceDrawingBuffer is valid on only WebGL.
   if (m_context->is3d())
@@ -1205,6 +1217,9 @@ PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(
     return createTransparentImage(size());
   }
 
+  if (m_context->getContextType() == CanvasRenderingContext::ContextImageBitmap)
+    return m_context->getImage(hint, reason);
+
   sk_sp<SkImage> skImage;
   if (m_context->is3d()) {
     // Because WebGL sources always require making a copy of the back buffer, we
@@ -1240,6 +1255,15 @@ bool HTMLCanvasElement::wouldTaintOrigin(SecurityOrigin*) const {
 }
 
 FloatSize HTMLCanvasElement::elementSize(const FloatSize&) const {
+  if (m_context &&
+      m_context->getContextType() ==
+          CanvasRenderingContext::ContextImageBitmap) {
+    RefPtr<Image> image =
+        m_context->getImage(PreferNoAcceleration, SnapshotReasonDrawImage);
+    if (image)
+      return FloatSize(image->width(), image->height());
+    return FloatSize(0, 0);
+  }
   return FloatSize(width(), height());
 }
 

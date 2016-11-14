@@ -471,7 +471,7 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas,
   ASSERT(canvas->isPaintable());
   RefPtr<Image> input = canvas->copiedImage(BackBuffer, PreferAcceleration);
   ParsedOptions parsedOptions =
-      parseOptions(options, cropRect, canvas->bitmapSourceSize());
+      parseOptions(options, cropRect, IntSize(input->width(), input->height()));
   if (dstBufferSizeHasOverflow(parsedOptions))
     return;
 
