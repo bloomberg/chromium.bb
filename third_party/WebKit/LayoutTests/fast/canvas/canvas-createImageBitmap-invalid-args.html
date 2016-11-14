@@ -10,22 +10,23 @@ window.jsTestIsAsync = true;
 
 var reason;
 
-function shouldBeRejected(promise, message) {
+function shouldBeRejected(promise, message, isReasonError) {
     return promise.then(function() {
         testFailed('Resolved unexpectedly: ' + message);
     }, function(e) {
         reason = e;
         testPassed('Rejected as expected: ' + message);
-        shouldBeTrue('reason instanceof Error');
+        if (isReasonError)
+            shouldBeTrue('reason instanceof Error');
         debug(e);
     });
 }
 
 function checkInvalidRange(source, message) {
     return Promise.resolve().then(function() {
-        return shouldBeRejected(createImageBitmap(source, 0, 0, 10, 0), message + ' / invalid range');
+        return shouldBeRejected(createImageBitmap(source, 0, 0, 10, 0), message + ' / invalid range', true);
     }).then(function() {
-        return shouldBeRejected(createImageBitmap(source, 0, 0, 0, 10), message + ' / invalid range');
+        return shouldBeRejected(createImageBitmap(source, 0, 0, 0, 10), message + ' / invalid range', true);
     });
 }
 
@@ -82,13 +83,13 @@ function createBlob(url) {
 }
 
 Promise.resolve().then(function() {
-    return shouldBeRejected(createImageBitmap(undefined), 'undefined');
+    return shouldBeRejected(createImageBitmap(undefined), 'undefined', true);
 }).then(function() {
-    return shouldBeRejected(createImageBitmap(null), 'null');
+    return shouldBeRejected(createImageBitmap(null), 'null', true);
 }).then(function() {
-    return shouldBeRejected(createImageBitmap(new Image), 'empty image');
+    return shouldBeRejected(createImageBitmap(new Image), 'empty image', true);
 }).then(function() {
-    return shouldBeRejected(createImageBitmap(document.createElement('video')), 'empty video');
+    return shouldBeRejected(createImageBitmap(document.createElement('video')), 'empty video', true);
 }).then(function() {
     return createImage().then(function(image) {
         return checkInvalidRange(image, 'image');
@@ -118,12 +119,15 @@ Promise.resolve().then(function() {
     });
 }).then(function() {
     return createBlob('resources/shadow-offset.js').then(function(blob) {
-        return shouldBeRejected(createImageBitmap(blob), 'invalid blob');
+        return shouldBeRejected(createImageBitmap(blob), 'invalid blob', true);
     });
 }).then(function() {
     return createInvalidCanvas().then(function(invalidCanvas) {
-        return shouldBeRejected(createImageBitmap(invalidCanvas), 'invalid canvas');
+        return shouldBeRejected(createImageBitmap(invalidCanvas), 'invalid canvas', false);
     });
+}).then(function() {
+    var imageData = new ImageData(10, 10);
+    return shouldBeRejected(createImageBitmap(imageData, 0, 0, 0x10004, 0x10004, {premultiplyAlpha:"none"}), 'cropRect too big', false);
 }).catch(function(e) {
     testFailed('Unexpected rejection: ' + e);
 }).then(finishJSTest, finishJSTest);

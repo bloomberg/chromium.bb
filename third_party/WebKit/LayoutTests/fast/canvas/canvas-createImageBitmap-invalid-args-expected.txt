@@ -55,7 +55,8 @@ PASS Rejected as expected: invalid blob
 PASS reason instanceof Error is true
 InvalidStateError: The source image cannot be decoded.
 PASS Rejected as expected: invalid canvas
-FAIL reason instanceof Error should be true. Was false.
+null
+PASS Rejected as expected: cropRect too big
 null
 PASS successfullyParsed is true
 
