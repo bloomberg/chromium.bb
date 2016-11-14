@@ -131,6 +131,7 @@ struct drm_mode {
 
 struct drm_fb {
 	uint32_t fb_id, stride, handle, size;
+	int width, height;
 	int fd;
 	int is_client_buffer;
 	struct weston_buffer_reference buffer_ref;
@@ -292,6 +293,8 @@ drm_fb_create_dumb(struct drm_backend *b, int width, int height,
 	fb->handle = create_arg.handle;
 	fb->stride = create_arg.pitch;
 	fb->size = create_arg.size;
+	fb->width = width;
+	fb->height = height;
 	fb->fd = b->drm.fd;
 
 	ret = -1;
@@ -371,7 +374,6 @@ drm_fb_get_from_bo(struct gbm_bo *bo,
 		   struct drm_backend *backend, uint32_t format)
 {
 	struct drm_fb *fb = gbm_bo_get_user_data(bo);
-	int width, height;
 	uint32_t handles[4] = { 0 }, pitches[4] = { 0 }, offsets[4] = { 0 };
 	int ret;
 
@@ -384,17 +386,17 @@ drm_fb_get_from_bo(struct gbm_bo *bo,
 
 	fb->bo = bo;
 
-	width = gbm_bo_get_width(bo);
-	height = gbm_bo_get_height(bo);
+	fb->width = gbm_bo_get_width(bo);
+	fb->height = gbm_bo_get_height(bo);
 	fb->stride = gbm_bo_get_stride(bo);
 	fb->handle = gbm_bo_get_handle(bo).u32;
-	fb->size = fb->stride * height;
+	fb->size = fb->stride * fb->height;
 	fb->fd = backend->drm.fd;
 
-	if (backend->min_width > width ||
-	    width > backend->max_width ||
-	    backend->min_height > height ||
-	    height > backend->max_height) {
+	if (backend->min_width > fb->width ||
+	    fb->width > backend->max_width ||
+	    backend->min_height > fb->height ||
+	    fb->height > backend->max_height) {
 		weston_log("bo geometry out of bounds\n");
 		goto err_free;
 	}
@@ -406,7 +408,7 @@ drm_fb_get_from_bo(struct gbm_bo *bo,
 		pitches[0] = fb->stride;
 		offsets[0] = 0;
 
-		ret = drmModeAddFB2(backend->drm.fd, width, height,
+		ret = drmModeAddFB2(backend->drm.fd, fb->width, fb->height,
 				    format, handles, pitches, offsets,
 				    &fb->fb_id, 0);
 		if (ret) {
@@ -417,8 +419,8 @@ drm_fb_get_from_bo(struct gbm_bo *bo,
 	}
 
 	if (ret)
-		ret = drmModeAddFB(backend->drm.fd, width, height, 24, 32,
-				   fb->stride, fb->handle, &fb->fb_id);
+		ret = drmModeAddFB(backend->drm.fd, fb->width, fb->height,
+				   24, 32, fb->stride, fb->handle, &fb->fb_id);
 
 	if (ret) {
 		weston_log("failed to create kms fb: %m\n");
