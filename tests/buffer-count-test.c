@@ -39,6 +39,7 @@
 
 struct test_data {
 	struct client *client;
+	struct wl_egl_window *native_window;
 
 	EGLDisplay egl_dpy;
 	EGLContext egl_ctx;
@@ -49,7 +50,6 @@ struct test_data {
 static int
 init_egl(struct test_data *test_data)
 {
-	struct wl_egl_window *native_window;
 	struct surface *surface = test_data->client->surface;
 	const char *str, *mesa;
 
@@ -94,14 +94,15 @@ init_egl(struct test_data *test_data)
 	if (!test_data->egl_ctx)
 		fail("eglCreateContext");
 
-	native_window =
+	test_data->native_window =
 		wl_egl_window_create(surface->wl_surface,
 				     surface->width,
 				     surface->height);
 	test_data->egl_surface =
 		weston_platform_create_egl_surface(test_data->egl_dpy,
 						   test_data->egl_conf,
-						   native_window, NULL);
+						   test_data->native_window,
+						   NULL);
 
 	ret = eglMakeCurrent(test_data->egl_dpy, test_data->egl_surface,
 			     test_data->egl_surface, test_data->egl_ctx);
@@ -120,6 +121,17 @@ init_egl(struct test_data *test_data)
 		skip("mesa version too old (%s)\n", str);
 
 	return 0;
+}
+
+static void
+fini_egl(struct test_data *test_data)
+{
+	eglMakeCurrent(test_data->egl_dpy, EGL_NO_SURFACE, EGL_NO_SURFACE,
+		       EGL_NO_CONTEXT);
+	weston_platform_destroy_egl_surface(test_data->egl_dpy,
+					    test_data->egl_surface);
+	wl_egl_window_destroy(test_data->native_window);
+	eglTerminate(test_data->egl_dpy);
 }
 
 TEST(test_buffer_count)
@@ -155,4 +167,6 @@ TEST(test_buffer_count)
 	/* The implementation should only end up creating two buffers
 	 * and cycling between them */
 	assert(buffer_count == 2);
+
+	fini_egl(&test_data);
 }
