@@ -48,6 +48,7 @@
 #include "protocol/ivi-application-client-protocol.h"
 #define IVI_SURFACE_ID 9000
 
+#include "shared/helpers.h"
 #include "shared/platform.h"
 #include "weston-egl-ext.h"
 
@@ -125,6 +126,19 @@ static int running = 1;
 static void
 init_egl(struct display *display, struct window *window)
 {
+	static const struct {
+		char *extension, *entrypoint;
+	} swap_damage_ext_to_entrypoint[] = {
+		{
+			.extension = "EGL_EXT_swap_buffers_with_damage",
+			.entrypoint = "eglSwapBuffersWithDamageEXT",
+		},
+		{
+			.extension = "EGL_KHR_swap_buffers_with_damage",
+			.entrypoint = "eglSwapBuffersWithDamageKHR",
+		},
+	};
+
 	static const EGLint context_attribs[] = {
 		EGL_CONTEXT_CLIENT_VERSION, 2,
 		EGL_NONE
@@ -191,14 +205,21 @@ init_egl(struct display *display, struct window *window)
 	display->swap_buffers_with_damage = NULL;
 	extensions = eglQueryString(display->egl.dpy, EGL_EXTENSIONS);
 	if (extensions &&
-	    weston_check_egl_extension(extensions, "EGL_EXT_swap_buffers_with_damage") &&
-	    weston_check_egl_extension(extensions, "EGL_EXT_buffer_age"))
-		display->swap_buffers_with_damage =
-			(PFNEGLSWAPBUFFERSWITHDAMAGEEXTPROC)
-			eglGetProcAddress("eglSwapBuffersWithDamageEXT");
+	    weston_check_egl_extension(extensions, "EGL_EXT_buffer_age")) {
+		for (i = 0; i < (int) ARRAY_LENGTH(swap_damage_ext_to_entrypoint); i++) {
+			if (weston_check_egl_extension(extensions,
+						       swap_damage_ext_to_entrypoint[i].extension)) {
+				/* The EXTPROC is identical to the KHR one */
+				display->swap_buffers_with_damage =
+					(PFNEGLSWAPBUFFERSWITHDAMAGEEXTPROC)
+					eglGetProcAddress(swap_damage_ext_to_entrypoint[i].entrypoint);
+				break;
+			}
+		}
+	}
 
 	if (display->swap_buffers_with_damage)
-		printf("has EGL_EXT_buffer_age and EGL_EXT_swap_buffers_with_damage\n");
+		printf("has EGL_EXT_buffer_age and %s\n", swap_damage_ext_to_entrypoint[i].extension);
 
 }
 
