@@ -140,6 +140,71 @@ test(() => assert_selection(
     '<textarea>01234|56789</textarea>'),
     'caret selection');
 
+// Shadow DOM
+test(() => assert_selection(
+    [
+        '<div id="host">',
+            '<b id="abc">abc</b>',
+            '<b id="def">def</b>',
+        '</div>',
+    ].join(''),
+    selection => {
+      const document = selection.document;
+      const host = document.getElementById('host');
+      const shadowRoot = host.createShadowRoot();
+      shadowRoot.innerHTML = [
+        '<span id="ghi">ghi</span>',
+        '<content select="#def"></content>',
+        '<span id="jkl">jkl</span>',
+        '<content select="#abc"></content>',
+        '<span id="mno">mno</span>',
+      ].join('');
+      selection.collapse(document.getElementById('abc'), 0);
+      selection.extend(document.getElementById('def'), 0);
+    },
+    [
+        '<div id="host">',
+            '<span id="ghi">ghi</span>',
+            '<b id="def">def</b>',
+            '<span id="jkl">jkl</span>',
+            '<b id="abc">^abc|</b>',
+            '<span id="mno">mno</span>',
+        '</div>',
+    ].join(''),
+    {dumpAs: 'flattree'}), 'dump flat tree for shadow DOM V0');
+
+test(() => assert_selection(
+    [
+        '<div id="host">',
+            '<b id="abc" slot="abc">abc</b>',
+            '<b id="def" slot="def">def</b>',
+        '</div>',
+    ].join(''),
+    selection => {
+      const document = selection.document;
+      const host = document.getElementById('host');
+      const shadowRoot = host.attachShadow({mode: 'open'});
+      shadowRoot.innerHTML = [
+        '<span id="ghi">ghi</span>',
+        '<slot name="def"></slot>',
+        '<span id="jkl">jkl</span>',
+        '<slot name="abc"></slot>',
+        '<span id="mno">mno</span>',
+      ].join('');
+      selection.collapse(document.getElementById('abc'), 0);
+      selection.extend(document.getElementById('def'), 0);
+    },
+    [
+        '<div id="host">',
+            '<span id="ghi">ghi</span>',
+            '<b id="def" slot="def">def</b>',
+            '<span id="jkl">jkl</span>',
+            '<b id="abc" slot="abc">^abc|</b>',
+            '<span id="mno">mno</span>',
+        '</div>',
+    ].join(''),
+    {dumpAs: 'flattree'}), 'dump flat tree for shadow DOM V1');
+
 test(() => {
     assert_equals(checked_assert_selection('fo|o', 'noop', 'fo|o'),
         'no exception');

@@ -4,8 +4,8 @@
 
 'use strict';
 
-// This file provides |assert_selection(sample, tester, expectedText)| assertion
-// to W3C test harness to write editing test cases easier.
+// This file provides |assert_selection(sample, tester, expectedText, options)|
+// assertion to W3C test harness to write editing test cases easier.
 //
 // |sample| is an HTML fragment text which is inserted as |innerHTML|. It should
 // have at least one focus boundary point marker "|" and at most one anchor
@@ -17,6 +17,11 @@
 // |expectedText| is an HTML fragment text containing at most one focus marker
 // and anchor marker. If resulting selection is none, you don't need to have
 // anchor and focus markers.
+//
+// |options| is a string as description, undefined, or a dictionary containing:
+//  description: A description
+//  dumpAs: 'domtree' or 'flattree'. Default is 'domtree'.
+//  removeSampleIfSucceeded: A boolean. Default is true.
 //
 // Example:
 //  test(() => {
@@ -48,8 +53,95 @@
 // this file.
 
 (function() {
+/** @enum{string} */
+const DumpAs = {
+  DOM_TREE: 'domtree',
+  FLAT_TREE: 'flattree',
+};
+
 /** @const @type {string} */
 const kTextArea = 'TEXTAREA';
+
+class Traversal {
+  /**
+   * @param {!Node} node
+   * @return {Node}
+   */
+  firstChildOf(node) { throw new Error('You should implement firstChildOf'); }
+
+  /**
+   * @param {!Node} node
+   * @return {!Generator<Node>}
+   */
+  *childNodesOf(node) {
+    for (let child = this.firstChildOf(node); child !== null;
+         child = this.nextSiblingOf(child)) {
+      yield child;
+    }
+  }
+
+  /**
+   * @param {!DOMSelection} selection
+   * @return !SampleSelection
+   */
+  fromDOMSelection(selection) {
+    throw new Error('You should implement fromDOMSelection');
+  }
+
+  /**
+   * @param {!Node} node
+   * @return {Node}
+   */
+  nextSiblingOf(node) { throw new Error('You should implement nextSiblingOf'); }
+}
+
+class DOMTreeTraversal extends Traversal {
+  /**
+   * @override
+   * @param {!Node} node
+   * @return {Node}
+   */
+  firstChildOf(node) { return node.firstChild; }
+
+  /**
+   * @param {!DOMSelection} selection
+   * @return !SampleSelection
+   */
+  fromDOMSelection(selection) {
+    return SampleSelection.fromDOMSelection(selection);
+  }
+
+  /**
+   * @param {!Node} node
+   * @return {Node}
+   */
+  nextSiblingOf(node) { return node.nextSibling; }
+};
+
+class FlatTreeTraversal extends Traversal {
+  /**
+   * @override
+   * @param {!Node} node
+   * @return {Node}
+   */
+  firstChildOf(node) { return internals.firstChildInFlatTree(node); }
+
+  /**
+   * @param {!DOMSelection} selection
+   * @return !SampleSelection
+   */
+  fromDOMSelection(selection) {
+    // TODO(yosin): We should return non-scoped selection rather than selection
+    // scoped in main tree.
+    return SampleSelection.fromDOMSelection(selection);
+  }
+
+  /**
+   * @param {!Node} node
+   * @return {Node}
+   */
+  nextSiblingOf(node) { return internals.nextSiblingInFlatTree(node); }
+}
 
 /**
  * @param {!Node} node
@@ -376,12 +468,15 @@ class Serializer {
   /**
    * @public
    * @param {!SampleSelection} selection
+   * @param {!Traversal} traversal
    */
-  constructor(selection) {
+  constructor(selection, traversal) {
     /** @type {!SampleSelection} */
     this.selection_ = selection;
     /** @type {!Array<strings>} */
     this.strings_ = [];
+    /** @type {!Traversal} */
+    this.traversal_ = traversal;
   }
 
   /**
@@ -483,7 +578,7 @@ class Serializer {
     this.emit('>');
     if (element.nodeName === kTextArea)
       return this.handleTextArea(element);
-    if (element.childNodes.length === 0 &&
+    if (this.traversal_.firstChildOf(element) === null &&
         HTML5_VOID_ELEMENTS.has(tagName)) {
       return;
     }
@@ -538,16 +633,14 @@ class Serializer {
    * @param {!HTMLElement} element
    */
   serializeChildren(element) {
-    /** @type {!Array<!Node>} */
-    const childNodes = Array.from(element.childNodes);
-    if (childNodes.length === 0) {
+    if (this.traversal_.firstChildOf(element) === null) {
       this.handleSelection(element, 0);
       return;
     }
 
     /** @type {number} */
     let childIndex = 0;
-    for (const child of childNodes) {
+    for (let child of this.traversal_.childNodesOf(element)) {
       this.handleSelection(element, childIndex);
       this.serializeInternal(child, childIndex);
       ++childIndex;
@@ -693,13 +786,14 @@ class Sample {
 
   /**
    * @public
+   * @param {!Traversal} traversal
    * @return {string}
    */
-  serialize() {
+  serialize(traversal) {
     /** @type {!SampleSelection} */
-    const selection = SampleSelection.fromDOMSelection(this.selection_);
+    const selection = traversal.fromDOMSelection(this.selection_);
     /** @type {!Serializer} */
-    const serializer = new Serializer(selection);
+    const serializer = new Serializer(selection, traversal);
     return serializer.serialize(this.document_);
   }
 }
@@ -776,6 +870,7 @@ function commonPrefixOf(str1, str2) {
 function assertSelection(
     inputText, tester, expectedText, opt_options = {}) {
   const kDescription = 'description';
+  const kDumpAs = 'dumpAs';
   const kRemoveSampleIfSucceeded = 'removeSampleIfSucceeded';
   /** @type {!Object} */
   const options = typeof(opt_options) === 'string'
@@ -786,6 +881,9 @@ function assertSelection(
   /** @type {boolean} */
   const removeSampleIfSucceeded = kRemoveSampleIfSucceeded in options
       ? !!options[kRemoveSampleIfSucceeded] : true;
+  /** @type {DumpAs} */
+  const dumpAs = options[kDumpAs] || DumpAs.DOM_TREE;
+
   checkExpectedText(expectedText);
   const sample = new Sample(inputText);
   if (typeof(tester) === 'function') {
@@ -796,8 +894,25 @@ function assertSelection(
   } else {
     throw new Error(`Invalid tester: ${tester}`);
   }
+
+  /** @type {!Traversal} */
+  const traversal = (() => {
+    switch (dumpAs) {
+      case DumpAs.DOM_TREE:
+        return new DOMTreeTraversal();
+      case DumpAs.FLAT_TREE:
+        if (!window.internals)
+          throw new Error('This test requires window.internals.');
+        return new FlatTreeTraversal();
+      default:
+        throw `${kDumpAs} must be one of ` +
+              `{${Object.values(DumpAs).join(', ')}}` +
+              ` instead of '${dumpAs}'`;
+    }
+  })();
+
   /** @type {string} */
-  const actualText = sample.serialize();
+  const actualText = sample.serialize(traversal);
   // We keep sample HTML when assertion is false for ease of debugging test
   // case.
   if (actualText === expectedText) {
