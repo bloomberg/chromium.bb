@@ -146,7 +146,7 @@ def RunSteps(api):
     test_spec = api.chromium_tests.read_test_spec(api, test_spec_file)
 
     scripts_compile_targets = \
-        api.chromium_tests.get_compile_targets_for_scripts().json.output
+        api.chromium_tests.get_compile_targets_for_scripts()
 
     builder['tests'] = api.chromium_tests.generate_tests_from_test_spec(
         api, test_spec, builder, buildername, mastername, False, None,
