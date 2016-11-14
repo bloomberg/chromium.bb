@@ -236,10 +236,10 @@ PasswordFormManager::MatchResultMask PasswordFormManager::DoesManage(
   // redirects to HTTPS (as in http://example.org -> https://example.org/auth).
   if (!origins_match && !observed_form_.origin.SchemeIsCryptographic() &&
       form.origin.SchemeIsCryptographic()) {
-    const std::string& old_path = observed_form_.origin.path();
-    const std::string& new_path = form.origin.path();
+    const base::StringPiece& old_path = observed_form_.origin.path_piece();
+    const base::StringPiece& new_path = form.origin.path_piece();
     origins_match =
-        observed_form_.origin.host() == form.origin.host() &&
+        observed_form_.origin.host_piece() == form.origin.host_piece() &&
         observed_form_.origin.port() == form.origin.port() &&
         base::StartsWith(new_path, old_path, base::CompareCase::SENSITIVE);
   }
@@ -1162,7 +1162,8 @@ bool PasswordFormManager::IsBlacklistMatch(
   }
 
   if (observed_form_.scheme == PasswordForm::SCHEME_HTML) {
-    return (blacklisted_form.origin.path() == observed_form_.origin.path()) ||
+    return (blacklisted_form.origin.path_piece() ==
+            observed_form_.origin.path_piece()) ||
            (AreStringsEqualOrEmpty(blacklisted_form.submit_element,
                                    observed_form_.submit_element) &&
             AreStringsEqualOrEmpty(blacklisted_form.password_element,

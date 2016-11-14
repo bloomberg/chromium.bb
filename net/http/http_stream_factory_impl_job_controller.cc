@@ -852,13 +852,13 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceFor(
   if (alternative_service.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL) {
     type = NO_ALTERNATIVE_SERVICE;
   } else if (alternative_service.protocol == QUIC) {
-    if (request_info.url.host() == alternative_service.host) {
+    if (request_info.url.host_piece() == alternative_service.host) {
       type = QUIC_SAME_DESTINATION;
     } else {
       type = QUIC_DIFFERENT_DESTINATION;
     }
   } else {
-    if (request_info.url.host() == alternative_service.host) {
+    if (request_info.url.host_piece() == alternative_service.host) {
       type = NOT_QUIC_SAME_DESTINATION;
     } else {
       type = NOT_QUIC_DIFFERENT_DESTINATION;

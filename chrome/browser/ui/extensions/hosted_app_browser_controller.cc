@@ -26,10 +26,10 @@ namespace {
 
 bool IsSameOriginOrMoreSecure(const GURL& app_url, const GURL& page_url) {
   const std::string www("www.");
-  return (app_url.scheme() == page_url.scheme() ||
-          page_url.scheme() == url::kHttpsScheme) &&
-         (app_url.host() == page_url.host() ||
-          www + app_url.host() == page_url.host()) &&
+  return (app_url.scheme_piece() == page_url.scheme_piece() ||
+          page_url.scheme_piece() == url::kHttpsScheme) &&
+         (app_url.host_piece() == page_url.host_piece() ||
+          www + app_url.host() == page_url.host_piece()) &&
          app_url.port() == page_url.port();
 }
 

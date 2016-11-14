@@ -97,9 +97,9 @@ StartupTabs StartupTabProviderImpl::CheckMasterPrefsTabPolicy(
   if (is_first_run) {
     tabs.reserve(first_run_tabs.size());
     for (GURL url : first_run_tabs) {
-      if (url.host() == kNewTabUrlHost)
+      if (url.host_piece() == kNewTabUrlHost)
         url = GURL(chrome::kChromeUINewTabURL);
-      else if (url.host() == kWelcomePageUrlHost)
+      else if (url.host_piece() == kWelcomePageUrlHost)
         url = GetWelcomePageUrl();
       tabs.emplace_back(url, false);
     }

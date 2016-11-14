@@ -10,6 +10,6 @@
 bool ShouldTrackURLForRestore(const GURL& url) {
   return url.is_valid() &&
          !(url.SchemeIs(content::kChromeUIScheme) &&
-           (url.host() == chrome::kChromeUIQuitHost ||
-            url.host() == chrome::kChromeUIRestartHost));
+           (url.host_piece() == chrome::kChromeUIQuitHost ||
+            url.host_piece() == chrome::kChromeUIRestartHost));
 }

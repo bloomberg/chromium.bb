@@ -441,7 +441,8 @@ TemplateURL* TemplateURLService::GetTemplateURLForHost(
     return provider_map_->GetTemplateURLForHost(host);
   TemplateURL* initial_dsp = initial_default_search_provider_.get();
   return (initial_dsp &&
-          (initial_dsp->GenerateSearchURL(search_terms_data()).host() == host))
+          (initial_dsp->GenerateSearchURL(search_terms_data()).host_piece() ==
+           host))
              ? initial_dsp
              : nullptr;
 }

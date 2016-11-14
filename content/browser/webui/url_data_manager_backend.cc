@@ -560,13 +560,13 @@ class ChromeProtocolHandler
 
     // Next check for chrome://histograms/, which uses its own job type.
     if (request->url().SchemeIs(kChromeUIScheme) &&
-        request->url().host() == kChromeUIHistogramHost) {
+        request->url().host_piece() == kChromeUIHistogramHost) {
       return new HistogramInternalsRequestJob(request, network_delegate);
     }
 
     // Check for chrome://network-error/, which uses its own job type.
     if (request->url().SchemeIs(kChromeUIScheme) &&
-        request->url().host() == kChromeUINetworkErrorHost) {
+        request->url().host_piece() == kChromeUINetworkErrorHost) {
       // Get the error code passed in via the request URL path.
       std::basic_string<char> error_code_string =
           request->url().path().substr(1);

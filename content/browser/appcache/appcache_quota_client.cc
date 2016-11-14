@@ -184,7 +184,7 @@ void AppCacheQuotaClient::GetOriginsHelper(storage::StorageType type,
   std::set<GURL> origins;
   for (AppCacheStorage::UsageMap::const_iterator iter = map->begin();
        iter != map->end(); ++iter) {
-    if (opt_host.empty() || iter->first.host() == opt_host)
+    if (opt_host.empty() || iter->first.host_piece() == opt_host)
       origins.insert(iter->first);
   }
   callback.Run(origins);

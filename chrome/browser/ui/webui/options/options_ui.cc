@@ -511,7 +511,7 @@ void OptionsUI::DidStartProvisionalLoadForFrame(
   load_start_time_ = base::Time::Now();
   if (render_frame_host->GetRenderViewHost() ==
           web_ui()->GetWebContents()->GetRenderViewHost() &&
-      validated_url.host() == chrome::kChromeUISettingsFrameHost) {
+      validated_url.host_piece() == chrome::kChromeUISettingsFrameHost) {
     for (size_t i = 0; i < handlers_.size(); ++i)
       handlers_[i]->PageLoadStarted();
   }

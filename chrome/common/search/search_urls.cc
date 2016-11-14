@@ -11,16 +11,17 @@ namespace search {
 
 namespace {
 bool MatchesOrigin(const GURL& my_url, const GURL& other_url) {
-  return my_url.host() == other_url.host() &&
+  return my_url.host_piece() == other_url.host_piece() &&
          my_url.port() == other_url.port() &&
-         (my_url.scheme() == other_url.scheme() ||
+         (my_url.scheme_piece() == other_url.scheme_piece() ||
           (my_url.SchemeIs(url::kHttpsScheme) &&
            other_url.SchemeIs(url::kHttpScheme)));
 }
 }  // namespace
 
 bool MatchesOriginAndPath(const GURL& my_url, const GURL& other_url) {
-  return MatchesOrigin(my_url, other_url) && my_url.path() == other_url.path();
+  return MatchesOrigin(my_url, other_url) &&
+         my_url.path_piece() == other_url.path_piece();
 }
 
 } // namespace search

@@ -252,7 +252,7 @@ std::string LocalNtpSource::GetMimeType(
 
 bool LocalNtpSource::ShouldServiceRequest(
     const net::URLRequest* request) const {
-  DCHECK(request->url().host() == chrome::kChromeSearchLocalNtpHost);
+  DCHECK(request->url().host_piece() == chrome::kChromeSearchLocalNtpHost);
   if (!InstantIOContext::ShouldServiceRequest(request))
     return false;
 

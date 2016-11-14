@@ -29,17 +29,17 @@ WebUI::TypeID ContentWebUIControllerFactory::GetWebUIType(
   if (!url.SchemeIs(kChromeUIScheme))
     return WebUI::kNoWebUI;
 
-  if (url.host() == kChromeUIWebRTCInternalsHost ||
+  if (url.host_piece() == kChromeUIWebRTCInternalsHost ||
 #if !defined(OS_ANDROID)
-      url.host() == kChromeUITracingHost ||
+      url.host_piece() == kChromeUITracingHost ||
 #endif
-      url.host() == kChromeUIGpuHost ||
-      url.host() == kChromeUIIndexedDBInternalsHost ||
-      url.host() == kChromeUIMediaInternalsHost ||
-      url.host() == kChromeUIServiceWorkerInternalsHost ||
-      url.host() == kChromeUIAccessibilityHost ||
-      url.host() == kChromeUIAppCacheInternalsHost ||
-      url.host() == kChromeUINetworkErrorsListingHost) {
+      url.host_piece() == kChromeUIGpuHost ||
+      url.host_piece() == kChromeUIIndexedDBInternalsHost ||
+      url.host_piece() == kChromeUIMediaInternalsHost ||
+      url.host_piece() == kChromeUIServiceWorkerInternalsHost ||
+      url.host_piece() == kChromeUIAccessibilityHost ||
+      url.host_piece() == kChromeUIAppCacheInternalsHost ||
+      url.host_piece() == kChromeUINetworkErrorsListingHost) {
     return const_cast<ContentWebUIControllerFactory*>(this);
   }
   return WebUI::kNoWebUI;
@@ -60,27 +60,27 @@ WebUIController* ContentWebUIControllerFactory::CreateWebUIControllerForURL(
   if (!url.SchemeIs(kChromeUIScheme))
     return nullptr;
 
-  if (url.host() == kChromeUIAppCacheInternalsHost)
+  if (url.host_piece() == kChromeUIAppCacheInternalsHost)
     return new AppCacheInternalsUI(web_ui);
-  if (url.host() == kChromeUIGpuHost)
+  if (url.host_piece() == kChromeUIGpuHost)
     return new GpuInternalsUI(web_ui);
-  if (url.host() == kChromeUIIndexedDBInternalsHost)
+  if (url.host_piece() == kChromeUIIndexedDBInternalsHost)
     return new IndexedDBInternalsUI(web_ui);
-  if (url.host() == kChromeUIMediaInternalsHost)
+  if (url.host_piece() == kChromeUIMediaInternalsHost)
     return new MediaInternalsUI(web_ui);
-  if (url.host() == kChromeUIAccessibilityHost)
+  if (url.host_piece() == kChromeUIAccessibilityHost)
     return new AccessibilityUI(web_ui);
-  if (url.host() == kChromeUIServiceWorkerInternalsHost)
+  if (url.host_piece() == kChromeUIServiceWorkerInternalsHost)
     return new ServiceWorkerInternalsUI(web_ui);
-  if (url.host() == kChromeUINetworkErrorsListingHost)
+  if (url.host_piece() == kChromeUINetworkErrorsListingHost)
     return new NetworkErrorsListingUI(web_ui);
 #if !defined(OS_ANDROID)
-  if (url.host() == kChromeUITracingHost)
+  if (url.host_piece() == kChromeUITracingHost)
     return new TracingUI(web_ui);
 #endif
 
 #if defined(ENABLE_WEBRTC)
-  if (url.host() == kChromeUIWebRTCInternalsHost)
+  if (url.host_piece() == kChromeUIWebRTCInternalsHost)
     return new WebRTCInternalsUI(web_ui);
 #endif
 

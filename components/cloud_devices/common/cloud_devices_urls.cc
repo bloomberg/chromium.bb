@@ -77,9 +77,9 @@ GURL GetCloudPrintAddAccountURL() {
 }
 
 bool IsCloudPrintURL(const GURL& url) {
-  GURL cloud_print_url = GetCloudPrintURL();
-  return url.host() == cloud_print_url.host() &&
-         url.scheme() == cloud_print_url.scheme() &&
+  const GURL& cloud_print_url = GetCloudPrintURL();
+  return url.host_piece() == cloud_print_url.host_piece() &&
+         url.scheme_piece() == cloud_print_url.scheme_piece() &&
          base::StartsWith(url.path(), cloud_print_url.path(),
                           base::CompareCase::SENSITIVE);
 }

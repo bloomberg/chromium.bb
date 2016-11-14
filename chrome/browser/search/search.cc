@@ -291,8 +291,8 @@ bool IsRenderedInInstantProcess(const content::WebContents* contents,
 
 bool ShouldUseProcessPerSiteForInstantURL(const GURL& url, Profile* profile) {
   return ShouldAssignURLToInstantRenderer(url, profile) &&
-      (url.host() == chrome::kChromeSearchLocalNtpHost ||
-       url.host() == chrome::kChromeSearchRemoteNtpHost);
+         (url.host_piece() == chrome::kChromeSearchLocalNtpHost ||
+          url.host_piece() == chrome::kChromeSearchRemoteNtpHost);
 }
 
 bool IsNTPURL(const GURL& url, Profile* profile) {

@@ -212,7 +212,7 @@ void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
       // be cautious.
       url_index = index;
     } else if (index < url_index) {
-      if (entry->GetURL().host() == request_url.host()) {
+      if (entry->GetURL().host_piece() == request_url.host_piece()) {
         first_host_index = index;
       } else {
         // We have found the possibly phishing url, but we are no longer on the

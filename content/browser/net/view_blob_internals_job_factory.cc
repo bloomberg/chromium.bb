@@ -15,7 +15,7 @@ namespace content {
 // static.
 bool ViewBlobInternalsJobFactory::IsSupportedURL(const GURL& url) {
   return url.SchemeIs(kChromeUIScheme) &&
-         url.host() == kChromeUIBlobInternalsHost;
+         url.host_piece() == kChromeUIBlobInternalsHost;
 }
 
 // static.

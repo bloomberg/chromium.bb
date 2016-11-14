@@ -928,7 +928,7 @@ void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
     }
 
     if (loader->request()->url().SchemeIsCryptographic()) {
-      if (loader->request()->url().host() == "www.google.com") {
+      if (loader->request()->url().host_piece() == "www.google.com") {
         UMA_HISTOGRAM_SPARSE_SLOWLY("Net.ErrorCodesForHTTPSGoogleMainFrame2",
                                     -loader->request()->status().error());
       }

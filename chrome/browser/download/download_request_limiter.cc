@@ -89,7 +89,7 @@ void DownloadRequestLimiter::TabDownloadState::DidStartNavigation(
     // reset the download state if the user is navigating to a different host
     // (or host is empty).
     if (!initial_page_host_.empty() &&
-        navigation_handle->GetURL().host() == initial_page_host_) {
+        navigation_handle->GetURL().host_piece() == initial_page_host_) {
       return;
     }
   }

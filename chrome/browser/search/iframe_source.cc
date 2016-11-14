@@ -40,9 +40,8 @@ bool IframeSource::ShouldServiceRequest(
     const net::URLRequest* request) const {
   const std::string& path = request->url().path();
   return InstantIOContext::ShouldServiceRequest(request) &&
-      request->url().SchemeIs(chrome::kChromeSearchScheme) &&
-      request->url().host() == GetSource() &&
-      ServesPath(path);
+         request->url().SchemeIs(chrome::kChromeSearchScheme) &&
+         request->url().host_piece() == GetSource() && ServesPath(path);
 }
 
 bool IframeSource::ShouldDenyXFrameOptions() const {

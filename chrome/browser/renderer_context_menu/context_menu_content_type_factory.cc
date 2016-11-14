@@ -27,7 +27,7 @@ namespace {
 
 bool CheckInternalResourcesURL(const GURL& url) {
   return url.SchemeIs(content::kChromeUIScheme) &&
-      (url.host() == chrome::kChromeUISyncResourcesHost);
+         (url.host_piece() == chrome::kChromeUISyncResourcesHost);
 }
 
 }  // namespace

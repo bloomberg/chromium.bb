@@ -1550,12 +1550,12 @@ bool Browser::ShouldFocusLocationBarByDefault(WebContents* source) {
   const content::NavigationEntry* entry =
       source->GetController().GetActiveEntry();
   if (entry) {
-    GURL url = entry->GetURL();
-    GURL virtual_url = entry->GetVirtualURL();
+    const GURL& url = entry->GetURL();
+    const GURL& virtual_url = entry->GetVirtualURL();
     if ((url.SchemeIs(content::kChromeUIScheme) &&
-        url.host() == chrome::kChromeUINewTabHost) ||
+         url.host_piece() == chrome::kChromeUINewTabHost) ||
         (virtual_url.SchemeIs(content::kChromeUIScheme) &&
-        virtual_url.host() == chrome::kChromeUINewTabHost)) {
+         virtual_url.host_piece() == chrome::kChromeUINewTabHost)) {
       return true;
     }
   }
@@ -2057,7 +2057,7 @@ void Browser::OnExtensionUnloaded(
       // schemes, e.g. https://mail.google.com if you have the Gmail app
       // installed.
       if ((web_contents->GetURL().SchemeIs(extensions::kExtensionScheme) &&
-           web_contents->GetURL().host() == extension->id()) ||
+           web_contents->GetURL().host_piece() == extension->id()) ||
           (extensions::TabHelper::FromWebContents(web_contents)
                ->extension_app() == extension)) {
         tab_strip_model_->CloseWebContentsAt(i, TabStripModel::CLOSE_NONE);

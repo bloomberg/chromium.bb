@@ -76,7 +76,8 @@ bool NeedPopularSites(const PrefService* prefs, int num_tiles) {
 }
 
 bool AreURLsEquivalent(const GURL& url1, const GURL& url2) {
-  return url1.host() == url2.host() && url1.path() == url2.path();
+  return url1.host_piece() == url2.host_piece() &&
+         url1.path_piece() == url2.path_piece();
 }
 
 }  // namespace

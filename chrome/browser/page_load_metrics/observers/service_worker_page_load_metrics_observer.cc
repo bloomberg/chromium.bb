@@ -49,7 +49,7 @@ bool IsServiceWorkerControlled(
 }
 
 bool IsInboxSite(const GURL& url) {
-  return url.host() == "inbox.google.com";
+  return url.host_piece() == "inbox.google.com";
 }
 
 }  // namespace

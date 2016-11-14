@@ -1228,9 +1228,9 @@ void ChromeContentBrowserClient::OverrideNavigationParams(
   // to a shared library.
   if (site_instance &&
       site_instance->GetSiteURL().SchemeIs(chrome::kChromeSearchScheme) &&
-      (site_instance->GetSiteURL().host() ==
+      (site_instance->GetSiteURL().host_piece() ==
            chrome::kChromeSearchRemoteNtpHost ||
-       site_instance->GetSiteURL().host() ==
+       site_instance->GetSiteURL().host_piece() ==
            chrome::kChromeSearchLocalNtpHost) &&
       ui::PageTransitionCoreTypeIs(*transition, ui::PAGE_TRANSITION_LINK)) {
     // Use AUTO_BOOKMARK for clicks on tiles of the new tab page, consistently

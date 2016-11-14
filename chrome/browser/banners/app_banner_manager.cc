@@ -81,7 +81,8 @@ void AppBannerManager::SetEngagementWeights(double direct_engagement,
 bool AppBannerManager::URLsAreForTheSamePage(const GURL& first,
                                              const GURL& second) {
   return first.GetWithEmptyPath() == second.GetWithEmptyPath() &&
-         first.path() == second.path() && first.query() == second.query();
+         first.path_piece() == second.path_piece() &&
+         first.query_piece() == second.query_piece();
 }
 
 void AppBannerManager::RequestAppBanner(const GURL& validated_url,

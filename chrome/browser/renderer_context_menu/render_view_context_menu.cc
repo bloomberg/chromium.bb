@@ -534,7 +534,7 @@ bool RenderViewContextMenu::IsDevToolsURL(const GURL& url) {
 bool RenderViewContextMenu::IsInternalResourcesURL(const GURL& url) {
   if (!url.SchemeIs(content::kChromeUIScheme))
     return false;
-  return url.host() == chrome::kChromeUISyncResourcesHost;
+  return url.host_piece() == chrome::kChromeUISyncResourcesHost;
 }
 
 // static

@@ -32,8 +32,8 @@ bool HistoryMatch::EqualsGURL(const HistoryMatch& h, const GURL& url) {
 bool HistoryMatch::IsHostOnly() const {
   const GURL& gurl = url_info.url();
   DCHECK(gurl.is_valid());
-  return (!gurl.has_path() || (gurl.path() == "/")) && !gurl.has_query() &&
-      !gurl.has_ref();
+  return (!gurl.has_path() || (gurl.path_piece() == "/")) &&
+         !gurl.has_query() && !gurl.has_ref();
 }
 
 }  // namespace history

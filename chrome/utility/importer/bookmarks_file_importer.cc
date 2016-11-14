@@ -50,8 +50,8 @@ bool CanImportURL(const GURL& url) {
   // that we support.
   if (url.SchemeIs(content::kChromeUIScheme) ||
       url.SchemeIs(url::kAboutScheme)) {
-    if (url.host() == chrome::kChromeUIUberHost ||
-        url.host() == chrome::kChromeUIAboutHost)
+    if (url.host_piece() == chrome::kChromeUIUberHost ||
+        url.host_piece() == chrome::kChromeUIAboutHost)
       return true;
 
     GURL fixed_url(url_formatter::FixupURL(url.spec(), std::string()));

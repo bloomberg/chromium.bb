@@ -21,8 +21,8 @@ const int kObsoleteReferrerPolicyOrigin = 3;
 
 bool IsUberOrUberReplacementURL(const GURL& url) {
   return url.SchemeIs(content::kChromeUIScheme) &&
-         (url.host() == content::kChromeUIHistoryHost ||
-          url.host() == content::kChromeUIUberHost);
+         (url.host_piece() == content::kChromeUIHistoryHost ||
+          url.host_piece() == content::kChromeUIUberHost);
 }
 
 }  // namespace
@@ -131,8 +131,8 @@ void ContentSerializedNavigationDriver::Sanitize(
 #if defined(OS_ANDROID)
   // Rewrite the old new tab and welcome page URLs to the new NTP URL.
   if (navigation->virtual_url_.SchemeIs(content::kChromeUIScheme) &&
-      (navigation->virtual_url_.host() == "welcome" ||
-       navigation->virtual_url_.host() == "newtab")) {
+      (navigation->virtual_url_.host_piece() == "welcome" ||
+       navigation->virtual_url_.host_piece() == "newtab")) {
     navigation->virtual_url_ = GURL("chrome-native://newtab/");
     navigation->original_request_url_ = navigation->virtual_url_;
     navigation->encoded_page_state_ = content::PageState::CreateFromURL(

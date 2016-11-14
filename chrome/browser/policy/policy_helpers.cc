@@ -49,7 +49,7 @@ bool OverrideBlacklistForURL(const GURL& url, bool* block, int* reason) {
   if (url.GetOrigin() != GaiaUrls::GetInstance()->gaia_url().GetOrigin())
     return false;
 
-  return url.path() == kServiceLoginAuth;
+  return url.path_piece() == kServiceLoginAuth;
 #endif
 }
 
