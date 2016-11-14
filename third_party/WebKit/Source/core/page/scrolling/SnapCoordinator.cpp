@@ -30,15 +30,15 @@ static LayoutBox* findSnapContainer(const LayoutBox& snapArea) {
   // "Snap positions must only affect the nearest ancestor (on the element’s
   // containing block chain) scroll container".
   Element* viewportDefiningElement =
-      snapArea.node()->document().viewportDefiningElement();
+      snapArea.document().viewportDefiningElement();
   LayoutBox* box = snapArea.containingBlock();
   while (box && !box->hasOverflowClip() && !box->isLayoutView() &&
          box->node() != viewportDefiningElement)
     box = box->containingBlock();
 
   // If we reach to viewportDefiningElement then we dispatch to viewport
-  if (box->node() == viewportDefiningElement)
-    return snapArea.node()->document().layoutView();
+  if (box && box->node() == viewportDefiningElement)
+    return snapArea.document().layoutView();
 
   return box;
 }
