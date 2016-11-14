@@ -3516,7 +3516,7 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
   uncompressed_hdr_size = aom_wb_bytes_written(wb);
   dst = wb->bit_buffer;
   comp_hdr_size = write_compressed_header(cpi, dst + uncompressed_hdr_size);
-  aom_wb_write_literal(&comp_hdr_len_wb, (int)(comp_hdr_size), 16);
+  aom_wb_overwrite_literal(&comp_hdr_len_wb, (int)(comp_hdr_size), 16);
   hdr_size = uncompressed_hdr_size + comp_hdr_size;
   total_size += hdr_size;
 #endif
@@ -3559,9 +3559,9 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
                   uncompressed_hdr_size * sizeof(uint8_t));
           // Write the number of tiles in the group into the last uncompressed
           // header before the one we've just inserted
-          aom_wb_write_literal(&tg_params_wb, tile_idx - tile_count,
-                               n_log2_tiles);
-          aom_wb_write_literal(&tg_params_wb, tile_count - 2, n_log2_tiles);
+          aom_wb_overwrite_literal(&tg_params_wb, tile_idx - tile_count,
+                                   n_log2_tiles);
+          aom_wb_overwrite_literal(&tg_params_wb, tile_count - 2, n_log2_tiles);
           // Update the pointer to the last TG params
           tg_params_wb.bit_offset = saved_offset + 8 * old_total_size;
           // Copy compressed header
@@ -3578,9 +3578,9 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
                   uncompressed_hdr_size * sizeof(uint8_t));
           // Write the number of tiles in the group into the last uncompressed
           // header
-          aom_wb_write_literal(&tg_params_wb, tile_idx - tile_count,
-                               n_log2_tiles);
-          aom_wb_write_literal(&tg_params_wb, tile_count - 1, n_log2_tiles);
+          aom_wb_overwrite_literal(&tg_params_wb, tile_idx - tile_count,
+                                   n_log2_tiles);
+          aom_wb_overwrite_literal(&tg_params_wb, tile_count - 1, n_log2_tiles);
           tg_params_wb.bit_offset = saved_offset + 8 * total_size;
           // Copy compressed header
           memmove(dst + total_size + uncompressed_hdr_size,

@@ -27,7 +27,12 @@ size_t aom_wb_bytes_written(const struct aom_write_bit_buffer *wb);
 
 void aom_wb_write_bit(struct aom_write_bit_buffer *wb, int bit);
 
+void aom_wb_overwrite_bit(struct aom_write_bit_buffer *wb, int bit);
+
 void aom_wb_write_literal(struct aom_write_bit_buffer *wb, int data, int bits);
+
+void aom_wb_overwrite_literal(struct aom_write_bit_buffer *wb, int data,
+                              int bits);
 
 void aom_wb_write_inv_signed_literal(struct aom_write_bit_buffer *wb, int data,
                                      int bits);
