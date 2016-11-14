@@ -40,7 +40,9 @@ IAppsDataProvider::IAppsDataProvider(const base::FilePath& library_path)
                  weak_factory_.GetWeakPtr()));
 }
 
-IAppsDataProvider::~IAppsDataProvider() {}
+IAppsDataProvider::~IAppsDataProvider() {
+  StopFilePathWatchOnMediaTaskRunner(std::move(library_watcher_));
+}
 
 bool IAppsDataProvider::valid() const {
   return is_valid_;

@@ -58,3 +58,15 @@ void StartFilePathWatchOnMediaTaskRunner(
                                               watch_started_callback,
                                               path_changed_callback));
 }
+
+void StopFilePathWatchOnMediaTaskRunner(
+    std::unique_ptr<base::FilePathWatcher> watcher) {
+  MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
+  if (watcher) {
+    const bool task_posted = content::BrowserThread::DeleteSoon(
+        content::BrowserThread::FILE, FROM_HERE, watcher.release());
+
+    // This will fail if the FILE thread has been stopped.
+    DCHECK(task_posted);
+  }
+}

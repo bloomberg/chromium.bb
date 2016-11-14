@@ -22,4 +22,9 @@ void StartFilePathWatchOnMediaTaskRunner(
     const FileWatchStartedCallback& watch_started_callback,
     const base::FilePathWatcher::Callback& path_changed_callback);
 
+// Stops a file path watch started by StartFilePathWatchOnMediaTaskRunner().
+// Must be called from the MediaTaskRunner.
+void StopFilePathWatchOnMediaTaskRunner(
+    std::unique_ptr<base::FilePathWatcher> watcher);
+
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_FILE_PATH_WATCHER_UTIL_H_

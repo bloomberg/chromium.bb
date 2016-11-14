@@ -51,7 +51,9 @@ PicasaDataProvider::PicasaDataProvider(const base::FilePath& database_path)
                  weak_factory_.GetWeakPtr()));
 }
 
-PicasaDataProvider::~PicasaDataProvider() {}
+PicasaDataProvider::~PicasaDataProvider() {
+  StopFilePathWatchOnMediaTaskRunner(std::move(temp_dir_watcher_));
+}
 
 void PicasaDataProvider::RefreshData(DataType needed_data,
                                      const ReadyCallback& ready_callback) {

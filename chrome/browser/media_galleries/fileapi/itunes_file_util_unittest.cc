@@ -189,6 +189,11 @@ class ItunesFileUtilTest : public testing::Test {
         profile_dir_.GetPath(), content::CreateAllowFileAccessOptions());
   }
 
+  void TearDown() override {
+    MediaFileSystemBackend::MediaTaskRunner()->DeleteSoon(
+        FROM_HERE, itunes_data_provider_.release());
+  }
+
  protected:
   void TestNonexistentFolder(const std::string& path_append) {
     FileSystemOperation::FileEntryList contents;

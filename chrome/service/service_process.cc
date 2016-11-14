@@ -237,6 +237,11 @@ bool ServiceProcess::Teardown() {
 
   mojo_ipc_support_.reset();
   ipc_server_.reset();
+
+  // On POSIX, this must be called before joining |io_thread_| because it posts
+  // a DeleteSoon() task to that thread.
+  service_process_state_->SignalStopped();
+
   // Signal this event before shutting down the service process. That way all
   // background threads can cleanup.
   shutdown_event_.Signal();
@@ -257,7 +262,6 @@ bool ServiceProcess::Teardown() {
   // might use it have been shut down.
   network_change_notifier_.reset();
 
-  service_process_state_->SignalStopped();
   return true;
 }
 

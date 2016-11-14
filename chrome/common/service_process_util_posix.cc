@@ -6,14 +6,12 @@
 
 #include <string.h>
 
-#include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
-#include "build/build_config.h"
 #include "chrome/common/multi_process_lock.h"
 
 namespace {
@@ -89,6 +87,7 @@ ServiceProcessState::StateData::StateData() : set_action(false) {
 
 void ServiceProcessState::StateData::SignalReady(base::WaitableEvent* signal,
                                                  bool* success) {
+  DCHECK(task_runner->BelongsToCurrentThread());
   DCHECK_EQ(g_signal_socket, -1);
   DCHECK(!signal->IsSignaled());
   *success = base::MessageLoopForIO::current()->WatchFileDescriptor(
@@ -137,6 +136,11 @@ void ServiceProcessState::StateData::SignalReady(base::WaitableEvent* signal,
 }
 
 ServiceProcessState::StateData::~StateData() {
+  // StateData is destroyed on the thread that called SignalReady() (if any) to
+  // satisfy the requirement that base::FilePathWatcher is destroyed in sequence
+  // with base::FilePathWatcher::Watch().
+  DCHECK(!task_runner || task_runner->BelongsToCurrentThread());
+
   if (sockets[0] != -1) {
     if (IGNORE_EINTR(close(sockets[0]))) {
       DPLOG(ERROR) << "close";
@@ -157,20 +161,16 @@ ServiceProcessState::StateData::~StateData() {
 
 void ServiceProcessState::CreateState() {
   DCHECK(!state_);
-  state_ = new StateData;
-
-  // Explicitly adding a reference here (and removing it in TearDownState)
-  // because StateData is refcounted on Mac and Linux so that methods can
-  // be called on other threads.
-  // It is not refcounted on Windows at this time.
-  state_->AddRef();
+  state_ = new StateData();
 }
 
-bool ServiceProcessState::SignalReady(base::SingleThreadTaskRunner* task_runner,
-                                      const base::Closure& terminate_task) {
+bool ServiceProcessState::SignalReady(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    const base::Closure& terminate_task) {
+  DCHECK(task_runner);
   DCHECK(state_);
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if !defined(OS_MACOSX)
   state_->running_lock.reset(TakeServiceRunningLock(true));
   if (state_->running_lock.get() == NULL) {
     return false;
@@ -187,16 +187,18 @@ bool ServiceProcessState::SignalReady(base::SingleThreadTaskRunner* task_runner,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   bool success = false;
 
-  task_runner->PostTask(FROM_HERE,
-                        base::Bind(&ServiceProcessState::StateData::SignalReady,
-                                   state_, &signal_ready, &success));
+  state_->task_runner = std::move(task_runner);
+  state_->task_runner->PostTask(
+      FROM_HERE, base::Bind(&ServiceProcessState::StateData::SignalReady,
+                            base::Unretained(state_), &signal_ready, &success));
   signal_ready.Wait();
   return success;
 }
 
 void ServiceProcessState::TearDownState() {
-  if (state_) {
-    state_->Release();
-    state_ = NULL;
-  }
+  if (state_ && state_->task_runner)
+    state_->task_runner->DeleteSoon(FROM_HERE, state_);
+  else
+    delete state_;
+  state_ = nullptr;
 }
