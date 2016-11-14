@@ -147,7 +147,9 @@ module.exports = {
                         return `\\${matched}`;
                     }
                     return matched;
-                })}\``;
+
+                // Unescape any quotes that appear in the original Literal that no longer need to be escaped.
+                }).replace(new RegExp(`\\\\${currentNode.raw[0]}`, "g"), currentNode.raw[0])}\``;
             }
 
             if (currentNode.type === "TemplateLiteral") {
@@ -178,9 +180,7 @@ module.exports = {
 
                 // Otherwise, these nodes should not be combined into a template curly, since there is nowhere to put
                 // the text between them.
-                return getTemplateLiteral(currentNode.left, textBeforeNode, null) +
-                    textBeforePlus + "+" + textAfterPlus +
-                    getTemplateLiteral(currentNode.right, textAfterNode, null);
+                return `${getTemplateLiteral(currentNode.left, textBeforeNode, null)}${textBeforePlus}+${textAfterPlus}${getTemplateLiteral(currentNode.right, textAfterNode, null)}`;
             }
 
             return `\`\${${textBeforeNode || ""}${sourceCode.getText(currentNode)}${textAfterNode || ""}}\``;
