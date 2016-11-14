@@ -2812,6 +2812,18 @@ renderer_setup_egl_client_extensions(struct gl_renderer *gr)
 static int
 gl_renderer_setup_egl_extensions(struct weston_compositor *ec)
 {
+	static const struct {
+		char *extension, *entrypoint;
+	} swap_damage_ext_to_entrypoint[] = {
+		{
+			.extension = "EGL_EXT_swap_buffers_with_damage",
+			.entrypoint = "eglSwapBuffersWithDamageEXT",
+		},
+		{
+			.extension = "EGL_KHR_swap_buffers_with_damage",
+			.entrypoint = "eglSwapBuffersWithDamageKHR",
+		},
+	};
 	struct gl_renderer *gr = get_renderer(ec);
 	const char *extensions;
 	EGLBoolean ret;
@@ -2846,12 +2858,20 @@ gl_renderer_setup_egl_extensions(struct weston_compositor *ec)
 		weston_log("warning: EGL_EXT_buffer_age not supported. "
 			   "Performance could be affected.\n");
 
-	if (weston_check_egl_extension(extensions, "EGL_EXT_swap_buffers_with_damage"))
-		gr->swap_buffers_with_damage =
-			(void *) eglGetProcAddress("eglSwapBuffersWithDamageEXT");
-	else
-		weston_log("warning: EGL_EXT_swap_buffers_with_damage not "
-			   "supported. Performance could be affected.\n");
+	for (unsigned i = 0; i < ARRAY_LENGTH(swap_damage_ext_to_entrypoint); i++) {
+		if (weston_check_egl_extension(extensions,
+				swap_damage_ext_to_entrypoint[i].extension)) {
+			gr->swap_buffers_with_damage =
+				(void *) eglGetProcAddress(
+						swap_damage_ext_to_entrypoint[i].entrypoint);
+			break;
+		}
+	}
+	if (!gr->swap_buffers_with_damage)
+		weston_log("warning: neither %s or %s is supported. "
+			   "Performance could be affected.\n",
+			   swap_damage_ext_to_entrypoint[0].extension,
+			   swap_damage_ext_to_entrypoint[1].extension);
 
 	if (weston_check_egl_extension(extensions, "EGL_KHR_no_config_context") ||
 	    weston_check_egl_extension(extensions, "EGL_MESA_configless_context"))
