@@ -636,8 +636,8 @@
             "overlays": "both",
             "useflags": [
                 "-cros-debug",
-                "-test_platform_SyncCrash",
-                "-test_security_OpenFDs",
+                "-tests_platform_SyncCrash",
+                "-tests_security_OpenFDs",
                 "chrome_internal"
             ],
             "usepkg_build_packages": false,
@@ -693,10 +693,12 @@
             "overlays": "both",
             "profile": "llvm",
             "useflags": [
+                "-cros-debug",
+                "-tests_platform_SyncCrash",
+                "-tests_security_OpenFDs",
+                "chrome_internal",
                 "clang",
-                "llvm-next",
-                "-test_security_OpenFDs",
-                "-test_platform_SyncCrash"
+                "llvm-next"
             ],
             "usepkg_build_packages": false,
             "vm_tests": []
@@ -737,8 +739,8 @@
             "profile": "llvm",
             "useflags": [
                 "-cros-debug",
-                "-test_platform_SyncCrash",
-                "-test_security_OpenFDs",
+                "-tests_platform_SyncCrash",
+                "-tests_security_OpenFDs",
                 "chrome_internal"
             ],
             "usepkg_build_packages": false,
@@ -1115,8 +1117,8 @@
             "overlays": "both",
             "useflags": [
                 "-cros-debug",
-                "-test_platform_SyncCrash",
-                "-test_security_OpenFDs",
+                "-tests_platform_SyncCrash",
+                "-tests_security_OpenFDs",
                 "chrome_internal"
             ],
             "usepkg_build_packages": false,
@@ -5368,13 +5370,6 @@
         "_template": "llvm_next_toolchain",
         "boards": [
             "chell"
-        ],
-        "useflags": [
-            "-test_platform_SyncCrash",
-            "-test_security_OpenFDs",
-            "chrome_internal",
-            "clang",
-            "llvm-next"
         ]
     },
     "chell-llvm-toolchain": {
@@ -6154,13 +6149,6 @@
         "_template": "llvm_next_toolchain",
         "boards": [
             "daisy"
-        ],
-        "useflags": [
-            "-test_platform_SyncCrash",
-            "-test_security_OpenFDs",
-            "chrome_internal",
-            "clang",
-            "llvm-next"
         ]
     },
     "daisy-llvm-toolchain": {
@@ -13237,13 +13225,6 @@
         "_template": "llvm_next_toolchain",
         "boards": [
             "link"
-        ],
-        "useflags": [
-            "-test_platform_SyncCrash",
-            "-test_security_OpenFDs",
-            "chrome_internal",
-            "clang",
-            "llvm-next"
         ]
     },
     "link-llvm-toolchain": {
@@ -13648,13 +13629,6 @@
         "_template": "llvm_next_toolchain",
         "boards": [
             "lulu"
-        ],
-        "useflags": [
-            "-test_platform_SyncCrash",
-            "-test_security_OpenFDs",
-            "chrome_internal",
-            "clang",
-            "llvm-next"
         ]
     },
     "lulu-llvm-toolchain": {
@@ -15198,13 +15172,6 @@
         "_template": "llvm_next_toolchain",
         "boards": [
             "nyan_big"
-        ],
-        "useflags": [
-            "-test_platform_SyncCrash",
-            "-test_security_OpenFDs",
-            "chrome_internal",
-            "clang",
-            "llvm-next"
         ]
     },
     "nyan_big-llvm-toolchain": {
@@ -17235,13 +17202,6 @@
         "_template": "llvm_next_toolchain",
         "boards": [
             "peach_pit"
-        ],
-        "useflags": [
-            "-test_platform_SyncCrash",
-            "-test_security_OpenFDs",
-            "chrome_internal",
-            "clang",
-            "llvm-next"
         ]
     },
     "peach_pit-llvm-toolchain": {
@@ -17472,13 +17432,6 @@
         "_template": "llvm_next_toolchain",
         "boards": [
             "peppy"
-        ],
-        "useflags": [
-            "-test_platform_SyncCrash",
-            "-test_security_OpenFDs",
-            "chrome_internal",
-            "clang",
-            "llvm-next"
         ]
     },
     "peppy-llvm-toolchain": {
@@ -19418,13 +19371,6 @@
         "_template": "llvm_next_toolchain",
         "boards": [
             "sentry"
-        ],
-        "useflags": [
-            "-test_platform_SyncCrash",
-            "-test_security_OpenFDs",
-            "chrome_internal",
-            "clang",
-            "llvm-next"
         ]
     },
     "sentry-llvm-toolchain": {
@@ -20776,13 +20722,6 @@
         "_template": "llvm_next_toolchain",
         "boards": [
             "squawks"
-        ],
-        "useflags": [
-            "-test_platform_SyncCrash",
-            "-test_security_OpenFDs",
-            "chrome_internal",
-            "clang",
-            "llvm-next"
         ]
     },
     "squawks-llvm-toolchain": {
@@ -22218,13 +22157,6 @@
         "_template": "llvm_next_toolchain",
         "boards": [
             "terra"
-        ],
-        "useflags": [
-            "-test_platform_SyncCrash",
-            "-test_security_OpenFDs",
-            "chrome_internal",
-            "clang",
-            "llvm-next"
         ]
     },
     "terra-llvm-toolchain": {
