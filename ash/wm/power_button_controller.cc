@@ -17,11 +17,11 @@
 #include "base/command_line.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/display/types/display_snapshot.h"
-#include "ui/events/event_handler.h"
 #include "ui/wm/core/compound_event_filter.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/common/system/chromeos/audio/tray_audio.h"
+#include "ash/system/chromeos/power/tablet_power_button_controller.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #endif
@@ -40,16 +40,12 @@ PowerButtonController::PowerButtonController(LockStateController* controller)
       has_legacy_power_button_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kAuraLegacyPowerButton)),
-#if defined(OS_CHROMEOS)
-      enable_quick_lock_(base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshEnableTouchView)),
-#else
-      enable_quick_lock_(false),
-#endif
-      controller_(controller) {
+      lock_state_controller_(controller) {
 #if defined(OS_CHROMEOS)
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
+  tablet_controller_.reset(
+      new TabletPowerButtonController(lock_state_controller_));
   Shell::GetInstance()->display_configurator()->AddObserver(this);
 #endif
   Shell::GetInstance()->PrependPreTargetHandler(this);
@@ -59,6 +55,7 @@ PowerButtonController::~PowerButtonController() {
   Shell::GetInstance()->RemovePreTargetHandler(this);
 #if defined(OS_CHROMEOS)
   Shell::GetInstance()->display_configurator()->RemoveObserver(this);
+  tablet_controller_.reset();
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
       this);
 #endif
@@ -73,8 +70,21 @@ void PowerButtonController::OnPowerButtonEvent(
     const base::TimeTicks& timestamp) {
   power_button_down_ = down;
 
-  if (controller_->ShutdownRequested())
+  if (lock_state_controller_->ShutdownRequested())
     return;
+
+#if defined(OS_CHROMEOS)
+  bool should_take_screenshot = down && volume_down_pressed_ &&
+                                WmShell::Get()
+                                    ->maximize_mode_controller()
+                                    ->IsMaximizeModeWindowManagerEnabled();
+
+  if (!has_legacy_power_button_ && !should_take_screenshot &&
+      tablet_controller_->ShouldHandlePowerButtonEvents()) {
+    tablet_controller_->OnPowerButtonEvent(down, timestamp);
+    return;
+  }
+#endif
 
   // Avoid starting the lock/shutdown sequence if the power button is pressed
   // while the screen is off (http://crbug.com/128451), unless an external
@@ -84,10 +94,7 @@ void PowerButtonController::OnPowerButtonEvent(
 
 #if defined(OS_CHROMEOS)
   // Take screenshot on power button down plus volume down when in touch view.
-  if (volume_down_pressed_ && down &&
-      WmShell::Get()
-          ->maximize_mode_controller()
-          ->IsMaximizeModeWindowManagerEnabled()) {
+  if (should_take_screenshot) {
     SystemTray* system_tray = Shell::GetInstance()->GetPrimarySystemTray();
     if (system_tray && system_tray->GetTrayAudio())
       system_tray->GetTrayAudio()->HideDetailedView(false);
@@ -114,35 +121,29 @@ void PowerButtonController::OnPowerButtonEvent(
     if (down) {
       if (session_state_delegate->CanLockScreen() &&
           !session_state_delegate->IsUserSessionBlocked() &&
-          !controller_->LockRequested()) {
-        controller_->StartLockAnimationAndLockImmediately(false);
+          !lock_state_controller_->LockRequested()) {
+        lock_state_controller_->StartLockAnimationAndLockImmediately(false);
       } else {
-        controller_->RequestShutdown();
+        lock_state_controller_->RequestShutdown();
       }
     }
   } else {  // !has_legacy_power_button_
     if (down) {
       // If we already have a pending request to lock the screen, wait.
-      if (controller_->LockRequested())
+      if (lock_state_controller_->LockRequested())
         return;
 
       if (session_state_delegate->CanLockScreen() &&
           !session_state_delegate->IsUserSessionBlocked()) {
-        if (WmShell::Get()
-                ->maximize_mode_controller()
-                ->IsMaximizeModeWindowManagerEnabled() &&
-            enable_quick_lock_)
-          controller_->StartLockAnimationAndLockImmediately(true);
-        else
-          controller_->StartLockAnimation(true);
+        lock_state_controller_->StartLockAnimation(true);
       } else {
-        controller_->StartShutdownAnimation();
+        lock_state_controller_->StartShutdownAnimation();
       }
     } else {  // Button is up.
-      if (controller_->CanCancelLockAnimation())
-        controller_->CancelLockAnimation();
-      else if (controller_->CanCancelShutdownAnimation())
-        controller_->CancelShutdownAnimation();
+      if (lock_state_controller_->CanCancelLockAnimation())
+        lock_state_controller_->CancelLockAnimation();
+      else if (lock_state_controller_->CanCancelShutdownAnimation())
+        lock_state_controller_->CancelShutdownAnimation();
     }
   }
 }
@@ -156,7 +157,8 @@ void PowerButtonController::OnLockButtonEvent(
       WmShell::Get()->GetSessionStateDelegate();
   if (!session_state_delegate->CanLockScreen() ||
       session_state_delegate->IsScreenLocked() ||
-      controller_->LockRequested() || controller_->ShutdownRequested()) {
+      lock_state_controller_->LockRequested() ||
+      lock_state_controller_->ShutdownRequested()) {
     return;
   }
 
@@ -165,9 +167,9 @@ void PowerButtonController::OnLockButtonEvent(
     return;
 
   if (down)
-    controller_->StartLockAnimation(false);
+    lock_state_controller_->StartLockAnimation(false);
   else
-    controller_->CancelLockAnimation();
+    lock_state_controller_->CancelLockAnimation();
 }
 
 void PowerButtonController::OnKeyEvent(ui::KeyEvent* event) {
