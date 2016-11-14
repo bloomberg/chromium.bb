@@ -15,7 +15,9 @@ ColumnBalancer::ColumnBalancer(const LayoutMultiColumnSet& columnSet,
                                LayoutUnit logicalBottomInFlowThread)
     : m_columnSet(columnSet),
       m_logicalTopInFlowThread(logicalTopInFlowThread),
-      m_logicalBottomInFlowThread(logicalBottomInFlowThread) {}
+      m_logicalBottomInFlowThread(logicalBottomInFlowThread) {
+  DCHECK_GE(columnSet.usedColumnCount(), 1U);
+}
 
 void ColumnBalancer::traverse() {
   traverseSubtree(*columnSet().flowThread());
@@ -143,10 +145,28 @@ InitialColumnHeightFinder::InitialColumnHeightFinder(
 }
 
 LayoutUnit InitialColumnHeightFinder::initialMinimalBalancedHeight() const {
+  LayoutUnit rowLogicalTop;
+  if (m_contentRuns.size() > columnSet().usedColumnCount()) {
+    // We have not inserted additional fragmentainer groups yet (because we
+    // aren't able to calculate their constraints yet), but we already know for
+    // sure that there'll be more than one of them, due to the number of forced
+    // breaks in a nested multicol container. We will now attempt to take all
+    // the imaginary rows into account and calculate a minimal balanced logical
+    // height for everything.
+    unsigned stride = columnSet().usedColumnCount();
+    LayoutUnit rowStartOffset = logicalTopInFlowThread();
+    for (unsigned i = 0; i < firstContentRunIndexInLastRow(); i += stride) {
+      LayoutUnit rowEndOffset = m_contentRuns[i + stride - 1].breakOffset();
+      float rowHeight = float(rowEndOffset - rowStartOffset) / float(stride);
+      rowLogicalTop += LayoutUnit::fromFloatCeil(rowHeight);
+      rowStartOffset = rowEndOffset;
+    }
+  }
   unsigned index = contentRunIndexWithTallestColumns();
   LayoutUnit startOffset = index > 0 ? m_contentRuns[index - 1].breakOffset()
                                      : logicalTopInFlowThread();
-  return m_contentRuns[index].columnLogicalHeight(startOffset);
+  LayoutUnit height = m_contentRuns[index].columnLogicalHeight(startOffset);
+  return rowLogicalTop + std::max(height, m_tallestUnbreakableLogicalHeight);
 }
 
 void InitialColumnHeightFinder::examineBoxAfterEntering(
@@ -220,7 +240,6 @@ void InitialColumnHeightFinder::examineLine(const RootInlineBox& line) {
 void InitialColumnHeightFinder::recordStrutBeforeOffset(
     LayoutUnit offsetInFlowThread,
     LayoutUnit strut) {
-  ASSERT(columnSet().usedColumnCount() >= 1);
   unsigned columnCount = columnSet().usedColumnCount();
   ASSERT(m_shortestStruts.size() == columnCount);
   unsigned index = groupAtOffset(offsetInFlowThread)
@@ -255,9 +274,17 @@ void InitialColumnHeightFinder::addContentRun(
       endOffsetInFlowThread <= m_contentRuns.last().breakOffset())
     return;
   // Append another item as long as we haven't exceeded used column count. What
-  // ends up in the overflow area shouldn't affect column balancing.
-  if (m_contentRuns.size() < columnSet().usedColumnCount())
-    m_contentRuns.append(ContentRun(endOffsetInFlowThread));
+  // ends up in the overflow area shouldn't affect column balancing. However, if
+  // we're in a nested fragmentation context, we may still need to record all
+  // runs, since there'll be no overflow area in the inline direction then, but
+  // rather additional rows of columns in multiple outer fragmentainers.
+  if (m_contentRuns.size() >= columnSet().usedColumnCount()) {
+    const auto* flowThread = columnSet().multiColumnFlowThread();
+    if (!flowThread->enclosingFragmentationContext() ||
+        columnSet().newFragmentainerGroupsAllowed())
+      return;
+  }
+  m_contentRuns.append(ContentRun(endOffsetInFlowThread));
 }
 
 unsigned InitialColumnHeightFinder::contentRunIndexWithTallestColumns() const {
@@ -266,7 +293,7 @@ unsigned InitialColumnHeightFinder::contentRunIndexWithTallestColumns() const {
   LayoutUnit previousOffset = logicalTopInFlowThread();
   size_t runCount = m_contentRuns.size();
   ASSERT(runCount);
-  for (size_t i = 0; i < runCount; i++) {
+  for (size_t i = firstContentRunIndexInLastRow(); i < runCount; i++) {
     const ContentRun& run = m_contentRuns[i];
     LayoutUnit height = run.columnLogicalHeight(previousOffset);
     if (largestHeight < height) {
@@ -291,6 +318,18 @@ void InitialColumnHeightFinder::distributeImplicitBreaks() {
   // shrink its columns' height. Repeat until we have the desired total number
   // of breaks. The largest column height among the runs will then be the
   // initial column height for the balancer to use.
+  if (columnCount > columnSet().usedColumnCount()) {
+    // If we exceed used column-count (which we are allowed to do if we're at
+    // the initial balancing pass for a multicol that lives inside another
+    // to-be-balanced outer multicol container), we only care about content that
+    // could end up in the last row. We need to pad up the number of columns, so
+    // that all rows will contain as many columns as used column-count dictates.
+    columnCount %= columnSet().usedColumnCount();
+    // If there are just enough explicit breaks to fill all rows with the right
+    // amount of columns, we won't be needing any implicit breaks.
+    if (!columnCount)
+      return;
+  }
   while (columnCount < columnSet().usedColumnCount()) {
     unsigned index = contentRunIndexWithTallestColumns();
     m_contentRuns[index].assumeAnotherImplicitBreak();

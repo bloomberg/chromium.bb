@@ -591,24 +591,10 @@ LayoutMultiColumnFlowThread::enclosingFragmentationContext() const {
 void LayoutMultiColumnFlowThread::appendNewFragmentainerGroupIfNeeded(
     LayoutUnit offsetInFlowThread,
     PageBoundaryRule pageBoundaryRule) {
-  if (!isPageLogicalHeightKnown()) {
-    // If we have no clue about the height of the multicol container, bail. This
-    // situation occurs initially when an auto-height multicol container is
-    // nested inside another auto-height multicol container. We need at least an
-    // estimated height of the outer multicol container before we can check what
-    // an inner fragmentainer group has room for.
-    // Its height is indefinite for now.
-    return;
-  }
   LayoutMultiColumnSet* columnSet =
       columnSetAtBlockOffset(offsetInFlowThread, pageBoundaryRule);
-  if (columnSet->isInitialHeightCalculated()) {
-    // We only insert additional fragmentainer groups in the initial layout
-    // pass. We only want to balance columns in the last fragmentainer group (if
-    // we need to balance at all), so we want that last fragmentainer group to
-    // be the same one in all layout passes that follow.
+  if (!columnSet->newFragmentainerGroupsAllowed())
     return;
-  }
 
   if (!columnSet->hasFragmentainerGroupForColumnAt(offsetInFlowThread,
                                                    pageBoundaryRule)) {

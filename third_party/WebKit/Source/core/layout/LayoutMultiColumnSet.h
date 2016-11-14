@@ -107,6 +107,11 @@ class CORE_EXPORT LayoutMultiColumnSet : public LayoutBlockFlow {
   LayoutUnit pageRemainingLogicalHeightForOffset(LayoutUnit,
                                                  PageBoundaryRule) const;
   bool isPageLogicalHeightKnown() const;
+
+  // Return true if there's nothing with the current state of column balancing
+  // that prevents us from inserting additional fragmentainer groups, if needed.
+  bool newFragmentainerGroupsAllowed() const;
+
   LayoutUnit tallestUnbreakableLogicalHeight() const {
     return m_tallestUnbreakableLogicalHeight;
   }

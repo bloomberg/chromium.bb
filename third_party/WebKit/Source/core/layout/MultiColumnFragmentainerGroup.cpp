@@ -80,13 +80,9 @@ bool MultiColumnFragmentainerGroup::recalculateColumnHeight(
       // another layout pass with the column height that we just calculated.
       InitialColumnHeightFinder initialHeightFinder(
           columnSet, logicalTopInFlowThread(), logicalBottomInFlowThread());
-      LayoutUnit tallestUnbreakableLogicalHeight =
-          initialHeightFinder.tallestUnbreakableLogicalHeight();
       columnSet.propagateTallestUnbreakableLogicalHeight(
-          tallestUnbreakableLogicalHeight);
-      newColumnHeight =
-          std::max(initialHeightFinder.initialMinimalBalancedHeight(),
-                   tallestUnbreakableLogicalHeight);
+          initialHeightFinder.tallestUnbreakableLogicalHeight());
+      newColumnHeight = initialHeightFinder.initialMinimalBalancedHeight();
     } else {
       // Rebalancing: After having laid out again, we'll need to rebalance if
       // the height wasn't enough and we're allowed to stretch it, and then

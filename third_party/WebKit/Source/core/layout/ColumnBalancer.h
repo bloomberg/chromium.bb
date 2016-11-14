@@ -150,6 +150,23 @@ class InitialColumnHeightFinder final : public ColumnBalancer {
   // in order to calculate an initial column height.
   void addContentRun(LayoutUnit endOffsetInFlowThread);
 
+  // Normally we'll just return 0 here, because in most cases we won't add more
+  // content runs than used column-count. However, if we're at the initial
+  // balancing pass for a multicol that lives inside another to-be-balanced
+  // outer multicol container, and there is a sufficient number of forced column
+  // breaks, we may exceed used column-count. In such cases, we're going to
+  // assume a minimal number of fragmentainer groups (rows) that will eventually
+  // be created, and when distributing implicit column breaks to calculate an
+  // initial balanced height, we'll only focus on content that has any chance at
+  // all to end up in the last row.
+  unsigned firstContentRunIndexInLastRow() const {
+    unsigned columnCount = columnSet().usedColumnCount();
+    if (m_contentRuns.size() <= columnCount)
+      return 0;
+    unsigned lastRunIndex = m_contentRuns.size() - 1;
+    return lastRunIndex / columnCount * columnCount;
+  }
+
   // Return the index of the content run with the currently tallest columns,
   // taking all implicit breaks assumed so far into account.
   unsigned contentRunIndexWithTallestColumns() const;
