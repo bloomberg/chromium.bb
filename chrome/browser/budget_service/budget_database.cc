@@ -26,8 +26,8 @@ namespace {
 const char kDatabaseUMAName[] = "BudgetManager";
 
 // The default amount of time during which a budget will be valid.
-// This is 10 days = 240 hours.
-constexpr double kBudgetDurationInHours = 240;
+// This is 4 days = 96 hours.
+constexpr double kBudgetDurationInHours = 96;
 
 }  // namespace
 

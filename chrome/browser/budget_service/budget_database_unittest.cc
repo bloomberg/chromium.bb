@@ -24,7 +24,7 @@
 
 namespace {
 
-const double kDefaultExpirationInHours = 240;
+const double kDefaultExpirationInHours = 96;
 const double kDefaultEngagement = 30.0;
 
 const char kTestOrigin[] = "https://example.com";
@@ -243,14 +243,15 @@ TEST_F(BudgetDatabaseTest, CheckBackgroundBudgetHistogram) {
   // Set the default site engagement.
   SetSiteEngagementScore(kDefaultEngagement);
 
-  // Initialize the budget with some interesting chunks: 30 budget, 3 budget,
-  // 0 budget, and then after the first two expire, another 30 budget.
+  // Initialize the budget with some interesting chunks: 30 budget (full
+  // engagement), 15 budget (half of the engagement), 0 budget (less than an
+  // hour), and then after the first two expire, another 30 budget.
   GetBudgetDetails();
-  clock->Advance(base::TimeDelta::FromDays(2));
+  clock->Advance(base::TimeDelta::FromHours(kDefaultExpirationInHours / 2));
   GetBudgetDetails();
   clock->Advance(base::TimeDelta::FromMinutes(59));
   GetBudgetDetails();
-  clock->Advance(base::TimeDelta::FromDays(11));
+  clock->Advance(base::TimeDelta::FromHours(kDefaultExpirationInHours + 1));
   GetBudgetDetails();
 
   // The BackgroundBudget UMA is recorded when budget is added to the origin.
@@ -258,11 +259,11 @@ TEST_F(BudgetDatabaseTest, CheckBackgroundBudgetHistogram) {
   std::vector<base::Bucket> buckets =
       GetHistogramTester()->GetAllSamples("PushMessaging.BackgroundBudget");
   ASSERT_EQ(2U, buckets.size());
-  // First bucket is for 30 budget, which should have 2 entries.
-  EXPECT_EQ(30, buckets[0].min);
+  // First bucket is for full engagement, which should have 2 entries.
+  EXPECT_EQ(kDefaultEngagement, buckets[0].min);
   EXPECT_EQ(2, buckets[0].count);
-  // Second bucket is for 36 budget, which should have 1 entry.
-  EXPECT_EQ(36, buckets[1].min);
+  // Second bucket is for 1.5 * engagement, which should have 1 entry.
+  EXPECT_EQ(kDefaultEngagement * 1.5, buckets[1].min);
   EXPECT_EQ(1, buckets[1].count);
 }
 
