@@ -57,7 +57,7 @@ InkDropTest::InkDropTest() : ink_drop_(nullptr) {
       ink_drop_.reset(new InkDropStub());
       break;
     case INK_DROP_IMPL:
-      ink_drop_.reset(new InkDropImpl(&test_ink_drop_host_));
+      ink_drop_.reset(new InkDropImpl(&test_ink_drop_host_, gfx::Size()));
       // The Timer's used by the InkDropImpl class require a
       // base::ThreadTaskRunnerHandle instance.
       scoped_refptr<base::TestMockTimeTaskRunner> task_runner(

@@ -24,6 +24,9 @@ class VIEWS_EXPORT InkDrop {
  public:
   virtual ~InkDrop() {}
 
+  // Called by ink drop hosts when their size is changed.
+  virtual void HostSizeChanged(const gfx::Size& new_size) = 0;
+
   // Gets the target state of the ink drop.
   virtual InkDropState GetTargetInkDropState() const = 0;
 

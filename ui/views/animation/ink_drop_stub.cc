@@ -10,6 +10,8 @@ InkDropStub::InkDropStub() {}
 
 InkDropStub::~InkDropStub() {}
 
+void InkDropStub::HostSizeChanged(const gfx::Size& new_size) {}
+
 InkDropState InkDropStub::GetTargetInkDropState() const {
   return InkDropState::HIDDEN;
 }

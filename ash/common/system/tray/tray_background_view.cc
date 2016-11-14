@@ -35,6 +35,7 @@
 #include "ui/gfx/transform.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/wm/core/window_animations.h"
@@ -570,6 +571,14 @@ void TrayBackgroundView::UpdateShelfItemBackground(int alpha) {
 void TrayBackgroundView::SetSeparatorVisibility(bool is_shown) {
   is_separator_visible_ = is_shown;
   SchedulePaint();
+}
+
+std::unique_ptr<views::InkDropMask> TrayBackgroundView::CreateInkDropMask()
+    const {
+  return base::MakeUnique<views::RoundRectInkDropMask>(
+      GetLocalBounds(),
+      GetBackgroundBounds(GetContentsBounds(), shelf_alignment_),
+      kTrayRoundedBorderRadius);
 }
 
 bool TrayBackgroundView::ShouldEnterPushedState(const ui::Event& event) {

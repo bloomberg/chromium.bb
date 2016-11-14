@@ -139,6 +139,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
 
  protected:
   // ActionableView:
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   bool ShouldEnterPushedState(const ui::Event& event) override;
   bool PerformAction(const ui::Event& event) override;
   void HandlePerformActionResult(bool action_performed,

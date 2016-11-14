@@ -64,7 +64,8 @@ InkDropImplTest::InkDropImplTest()
       thread_task_runner_handle_(
           new base::ThreadTaskRunnerHandle(task_runner_)),
       ink_drop_host_(base::MakeUnique<TestInkDropHost>()),
-      ink_drop_(base::MakeUnique<InkDropImpl>(ink_drop_host_.get())),
+      ink_drop_(
+          base::MakeUnique<InkDropImpl>(ink_drop_host_.get(), gfx::Size())),
       test_api_(base::MakeUnique<test::InkDropImplTestApi>(ink_drop_.get())) {
   ink_drop_host_->set_disable_timers_for_test(true);
 }

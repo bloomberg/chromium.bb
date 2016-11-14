@@ -12,6 +12,7 @@
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_stub.h"
 #include "ui/views/animation/square_ink_drop_ripple.h"
 
@@ -128,6 +129,9 @@ void InkDropHostView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
   old_paint_to_layer_ = layer() != nullptr;
   SetPaintToLayer(true);
   layer()->SetFillsBoundsOpaquely(false);
+  ink_drop_mask_ = CreateInkDropMask();
+  if (ink_drop_mask_)
+    ink_drop_layer->SetMaskLayer(ink_drop_mask_->layer());
   layer()->Add(ink_drop_layer);
   layer()->StackAtBottom(ink_drop_layer);
 }
@@ -139,6 +143,8 @@ void InkDropHostView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   if (destroying_)
     return;
   layer()->Remove(ink_drop_layer);
+  ink_drop_layer->SetMaskLayer(nullptr);
+  ink_drop_mask_.reset();
   SetPaintToLayer(old_paint_to_layer_);
 }
 
@@ -211,6 +217,11 @@ void InkDropHostView::AnimateInkDrop(InkDropState state,
   GetInkDrop()->AnimateToState(state);
 }
 
+void InkDropHostView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  if (ink_drop_)
+    ink_drop_->HostSizeChanged(size());
+}
+
 void InkDropHostView::VisibilityChanged(View* starting_from, bool is_visible) {
   View::VisibilityChanged(starting_from, is_visible);
   if (GetWidget() && !is_visible) {
@@ -251,6 +262,10 @@ SkColor InkDropHostView::GetInkDropBaseColor() const {
   return gfx::kPlaceholderColor;
 }
 
+std::unique_ptr<views::InkDropMask> InkDropHostView::CreateInkDropMask() const {
+  return nullptr;
+}
+
 InkDrop* InkDropHostView::GetInkDrop() {
   if (!ink_drop_) {
     if (ink_drop_mode_ == InkDropMode::OFF)
@@ -262,7 +277,8 @@ InkDrop* InkDropHostView::GetInkDrop() {
 }
 
 std::unique_ptr<InkDropImpl> InkDropHostView::CreateDefaultInkDropImpl() {
-  std::unique_ptr<InkDropImpl> ink_drop = base::MakeUnique<InkDropImpl>(this);
+  std::unique_ptr<InkDropImpl> ink_drop =
+      base::MakeUnique<InkDropImpl>(this, size());
   ink_drop->SetAutoHighlightMode(
       views::InkDropImpl::AutoHighlightMode::HIDE_ON_RIPPLE);
   return ink_drop;

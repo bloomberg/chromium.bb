@@ -147,7 +147,7 @@ class CustomButtonTest : public ViewsTestBase {
     delete button_;
     button_ = new TestCustomButton(false);
     InkDropHostViewTestApi(button_).SetInkDrop(
-        base::MakeUnique<InkDropImpl>(button_));
+        base::MakeUnique<InkDropImpl>(button_, button_->size()));
     widget_->SetContentsView(button_);
   }
 

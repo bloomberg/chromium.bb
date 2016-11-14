@@ -16,6 +16,7 @@
 
 namespace views {
 class InkDropImpl;
+class InkDropMask;
 
 namespace test {
 class InkDropHostViewTestApi;
@@ -87,6 +88,7 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
   void AnimateInkDrop(InkDropState state, const ui::LocatedEvent* event);
 
   // View:
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void VisibilityChanged(View* starting_from, bool is_visible) override;
   void OnFocus() override;
   void OnBlur() override;
@@ -95,6 +97,10 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
   // Overrideable methods to allow views to provide minor tweaks to the default
   // ink drop.
   virtual SkColor GetInkDropBaseColor() const;
+
+  // Subclasses can override to return a mask for the ink drop. By default,
+  // returns nullptr (i.e no mask).
+  virtual std::unique_ptr<views::InkDropMask> CreateInkDropMask() const;
 
   // Provides access to |ink_drop_|. Implements lazy initialization of
   // |ink_drop_| so as to avoid virtual method calls during construction since
@@ -136,6 +142,8 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
   bool old_paint_to_layer_;
 
   bool destroying_;
+
+  std::unique_ptr<views::InkDropMask> ink_drop_mask_;
 
   DISALLOW_COPY_AND_ASSIGN(InkDropHostView);
 };

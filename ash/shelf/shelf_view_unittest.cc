@@ -1986,6 +1986,9 @@ class InkDropSpy : public views::InkDrop {
   }
 
   // views::InkDrop:
+  void HostSizeChanged(const gfx::Size& new_size) override {
+    ink_drop_->HostSizeChanged(new_size);
+  }
   views::InkDropState GetTargetInkDropState() const override {
     return ink_drop_->GetTargetInkDropState();
   }
@@ -2140,8 +2143,9 @@ class ShelfViewInkDropTest : public ShelfViewTest {
   void InitAppListButtonInkDrop() {
     app_list_button_ = shelf_view_->GetAppListButton();
 
-    auto app_list_button_ink_drop = base::MakeUnique<InkDropSpy>(
-        base::MakeUnique<views::InkDropImpl>(app_list_button_));
+    auto app_list_button_ink_drop =
+        base::MakeUnique<InkDropSpy>(base::MakeUnique<views::InkDropImpl>(
+            app_list_button_, app_list_button_->size()));
     app_list_button_ink_drop_ = app_list_button_ink_drop.get();
     views::test::InkDropHostViewTestApi(app_list_button_)
         .SetInkDrop(std::move(app_list_button_ink_drop), false);
@@ -2150,8 +2154,9 @@ class ShelfViewInkDropTest : public ShelfViewTest {
   void InitBrowserButtonInkDrop() {
     browser_button_ = test_api_->GetButton(browser_index_);
 
-    auto browser_button_ink_drop = base::MakeUnique<InkDropSpy>(
-        base::MakeUnique<views::InkDropImpl>(browser_button_));
+    auto browser_button_ink_drop =
+        base::MakeUnique<InkDropSpy>(base::MakeUnique<views::InkDropImpl>(
+            browser_button_, browser_button_->size()));
     browser_button_ink_drop_ = browser_button_ink_drop.get();
     views::test::InkDropHostViewTestApi(browser_button_)
         .SetInkDrop(std::move(browser_button_ink_drop));
@@ -2652,8 +2657,9 @@ class OverflowButtonInkDropTest : public ShelfViewInkDropTest {
 
     overflow_button_ = test_api_->overflow_button();
 
-    auto overflow_button_ink_drop = base::MakeUnique<InkDropSpy>(
-        base::MakeUnique<views::InkDropImpl>(overflow_button_));
+    auto overflow_button_ink_drop =
+        base::MakeUnique<InkDropSpy>(base::MakeUnique<views::InkDropImpl>(
+            overflow_button_, overflow_button_->size()));
     overflow_button_ink_drop_ = overflow_button_ink_drop.get();
     views::test::InkDropHostViewTestApi(overflow_button_)
         .SetInkDrop(std::move(overflow_button_ink_drop));

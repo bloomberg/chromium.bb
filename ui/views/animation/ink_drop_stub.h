@@ -16,6 +16,7 @@ class VIEWS_EXPORT InkDropStub : public InkDrop {
   ~InkDropStub() override;
 
   // InkDrop:
+  void HostSizeChanged(const gfx::Size& new_size) override;
   InkDropState GetTargetInkDropState() const override;
   void AnimateToState(InkDropState state) override;
   void SnapToActivated() override;

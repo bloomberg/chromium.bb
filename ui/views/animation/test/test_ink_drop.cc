@@ -10,6 +10,8 @@ namespace test {
 TestInkDrop::TestInkDrop() : state_(InkDropState::HIDDEN), is_hovered_(false) {}
 TestInkDrop::~TestInkDrop() {}
 
+void TestInkDrop::HostSizeChanged(const gfx::Size& new_size) {}
+
 InkDropState TestInkDrop::GetTargetInkDropState() const {
   return state_;
 }

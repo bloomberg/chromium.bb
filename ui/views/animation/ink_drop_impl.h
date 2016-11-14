@@ -45,11 +45,11 @@ class VIEWS_EXPORT InkDropImpl : public InkDrop,
   };
 
   // Constructs an ink drop that will attach the ink drop to the given
-  // |ink_drop_host|.
+  // |ink_drop_host|. |host_size| is used to set the size of the ink drop layer.
   //
   // By default the highlight will be made visible while |this| is hovered but
   // not focused and the NONE AutoHighlightMode will be used.
-  explicit InkDropImpl(InkDropHost* ink_drop_host);
+  InkDropImpl(InkDropHost* ink_drop_host, const gfx::Size& host_size);
   ~InkDropImpl() override;
 
   void SetShowHighlightOnHover(bool show_highlight_on_hover);
@@ -66,6 +66,7 @@ class VIEWS_EXPORT InkDropImpl : public InkDrop,
   void SetAutoHighlightMode(AutoHighlightMode auto_highlight_mode);
 
   // InkDrop:
+  void HostSizeChanged(const gfx::Size& new_size) override;
   InkDropState GetTargetInkDropState() const override;
   void AnimateToState(InkDropState ink_drop_state) override;
   void SnapToActivated() override;

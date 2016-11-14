@@ -575,7 +575,7 @@ InkDropImpl::HighlightStateFactory::CreateVisibleState(
   return nullptr;
 }
 
-InkDropImpl::InkDropImpl(InkDropHost* ink_drop_host)
+InkDropImpl::InkDropImpl(InkDropHost* ink_drop_host, const gfx::Size& host_size)
     : ink_drop_host_(ink_drop_host),
       root_layer_(new ui::Layer(ui::LAYER_NOT_DRAWN)),
       root_layer_added_to_host_(false),
@@ -585,6 +585,7 @@ InkDropImpl::InkDropImpl(InkDropHost* ink_drop_host)
       is_focused_(false),
       exiting_highlight_state_(false),
       destroying_(false) {
+  root_layer_->SetBounds(gfx::Rect(host_size));
   SetAutoHighlightMode(AutoHighlightMode::NONE);
   root_layer_->set_name("InkDropImpl:RootLayer");
 }
@@ -618,6 +619,13 @@ void InkDropImpl::SetAutoHighlightMode(AutoHighlightMode auto_highlight_mode) {
   highlight_state_factory_ =
       base::MakeUnique<HighlightStateFactory>(auto_highlight_mode, this);
   SetHighlightState(highlight_state_factory_->CreateStartState());
+}
+
+void InkDropImpl::HostSizeChanged(const gfx::Size& new_size) {
+  // |root_layer_| should fill the entire host because it affects the clipping
+  // when a mask layer is applied to it. This will not affect clipping if no
+  // mask layer is set.
+  root_layer_->SetBounds(gfx::Rect(new_size));
 }
 
 InkDropState InkDropImpl::GetTargetInkDropState() const {
