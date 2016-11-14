@@ -447,11 +447,11 @@ void DownloadSuggestionsProvider::SubmitContentSuggestions() {
               return left.publish_date() > right.publish_date();
             });
 
-  // TODO(vitaliii): Use resize() here. In order to do so, mark
-  // ContentSuggestion move constructor noexcept.
   const int max_suggestions_count = GetMaxSuggestionsCount();
-  while (suggestions.size() > static_cast<size_t>(max_suggestions_count))
-    suggestions.pop_back();
+  if (static_cast<int>(suggestions.size()) > max_suggestions_count) {
+    suggestions.erase(suggestions.begin() + max_suggestions_count,
+                      suggestions.end());
+  }
 
   observer()->OnNewSuggestions(this, provided_category_,
                                std::move(suggestions));
