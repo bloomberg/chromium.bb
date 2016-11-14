@@ -34,8 +34,8 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionConstraints) {
       "}"
       "#container { box-sizing: border-box; position: relative; top: 100px; "
       "height: 400px; width: 200px; padding: 10px; border: 5px solid black; }"
-      "#scroller { height: 100px; overflow: auto; position: relative; top: "
-      "200px; }"
+      "#scroller { width: 400px; height: 100px; overflow: auto; "
+      "position: relative; top: 200px; border: 2px solid black; }"
       ".spacer { height: 1000px; }</style>"
       "<div id='scroller'><div id='container'><div "
       "id='sticky'></div></div><div class='spacer'></div></div>");
@@ -62,6 +62,52 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionConstraints) {
   ASSERT_EQ(
       IntRect(15, 115, 100, 100),
       enclosingIntRect(getScrollContainerRelativeStickyBoxRect(constraints)));
+
+  // The sticky constraining rect also doesn't include the border offset.
+  ASSERT_EQ(IntRect(0, 50, 400, 100),
+            enclosingIntRect(sticky->computeStickyConstrainingRect()));
+}
+
+// Verifies that the sticky constraints are correctly computed in right to left.
+TEST_F(LayoutBoxModelObjectTest, StickyPositionVerticalRLConstraints) {
+  setBodyInnerHTML(
+      "<style> html { -webkit-writing-mode: vertical-rl; } "
+      "#sticky { position: sticky; top: 0; width: 100px; height: 100px; "
+      "}"
+      "#container { box-sizing: border-box; position: relative; top: 100px; "
+      "height: 400px; width: 200px; padding: 10px; border: 5px solid black; }"
+      "#scroller { width: 400px; height: 100px; overflow: auto; "
+      "position: relative; top: 200px; border: 2px solid black; }"
+      ".spacer { height: 1000px; }</style>"
+      "<div id='scroller'><div id='container'><div "
+      "id='sticky'></div></div><div class='spacer'></div></div>");
+  LayoutBoxModelObject* scroller =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("scroller"));
+  PaintLayerScrollableArea* scrollableArea = scroller->getScrollableArea();
+  scrollableArea->scrollToAbsolutePosition(
+      FloatPoint(scrollableArea->scrollOffsetInt().width(), 50));
+  ASSERT_EQ(50.0, scrollableArea->scrollPosition().y());
+  LayoutBoxModelObject* sticky =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("sticky"));
+  sticky->updateStickyPositionConstraints();
+  ASSERT_EQ(scroller->layer(), sticky->layer()->ancestorOverflowLayer());
+
+  const StickyPositionScrollingConstraints& constraints =
+      scrollableArea->stickyConstraintsMap().get(sticky->layer());
+  ASSERT_EQ(0.f, constraints.topOffset());
+
+  // The coordinates of the constraint rects should all be with respect to the
+  // unscrolled scroller.
+  ASSERT_EQ(IntRect(215, 115, 170, 370),
+            enclosingIntRect(
+                getScrollContainerRelativeContainingBlockRect(constraints)));
+  ASSERT_EQ(
+      IntRect(285, 115, 100, 100),
+      enclosingIntRect(getScrollContainerRelativeStickyBoxRect(constraints)));
+
+  // The sticky constraining rect also doesn't include the border offset.
+  ASSERT_EQ(IntRect(0, 50, 400, 100),
+            enclosingIntRect(sticky->computeStickyConstrainingRect()));
 }
 
 // Verifies that the sticky constraints are not affected by transforms
@@ -144,7 +190,7 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionContainerIsScroller) {
       "<style>#sticky { position: sticky; top: 0; width: 100px; height: 100px; "
       "}"
       "#scroller { height: 100px; width: 400px; overflow: auto; position: "
-      "relative; top: 200px; }"
+      "relative; top: 200px; border: 2px solid black; }"
       ".spacer { height: 1000px; }</style>"
       "<div id='scroller'><div id='sticky'></div><div "
       "class='spacer'></div></div>");

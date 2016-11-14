@@ -784,9 +784,15 @@ void LayoutBoxModelObject::updateStickyPositionConstraints() const {
   // allowed to move.
   LayoutUnit maxWidth = containingBlock->availableLogicalWidth();
 
-  // Map the containing block to the scroll ancestor without transforms.
+  // Map the containing block to the inner corner of the scroll ancestor without
+  // transforms.
   FloatRect scrollContainerRelativePaddingBoxRect(
       containingBlock->layoutOverflowRect());
+  FloatSize scrollContainerBorderOffset;
+  if (scrollAncestor) {
+    scrollContainerBorderOffset =
+        FloatSize(scrollAncestor->borderLeft(), scrollAncestor->borderTop());
+  }
   if (containingBlock != scrollAncestor) {
     FloatQuad localQuad(FloatRect(containingBlock->paddingBoxRect()));
     TransformState transformState(TransformState::ApplyTransformDirection,
@@ -807,6 +813,8 @@ void LayoutBoxModelObject::updateStickyPositionConstraints() const {
             : FloatSize());
     scrollContainerRelativePaddingBoxRect.move(scrollOffset);
   }
+  // Remove top-left border offset from overflow scroller.
+  scrollContainerRelativePaddingBoxRect.move(-scrollContainerBorderOffset);
 
   LayoutRect scrollContainerRelativeContainingBlockRect(
       scrollContainerRelativePaddingBoxRect);
@@ -842,12 +850,12 @@ void LayoutBoxModelObject::updateStickyPositionConstraints() const {
 
   // The scrollContainerRelativePaddingBoxRect's position is the padding box so
   // we need to remove the border when finding the position of the sticky box
-  // within the scroll ancestor if the container is not our scroll ancestor.
-  if (containingBlock != scrollAncestor) {
-    FloatSize containerBorderOffset(containingBlock->borderLeft(),
-                                    containingBlock->borderTop());
-    stickyLocation -= containerBorderOffset;
-  }
+  // within the scroll ancestor if the container is not our scroll ancestor. If
+  // the container is our scroll ancestor, we also need to remove the border
+  // box because we want the position from within the scroller border.
+  FloatSize containerBorderOffset(containingBlock->borderLeft(),
+                                  containingBlock->borderTop());
+  stickyLocation -= containerBorderOffset;
   constraints.setScrollContainerRelativeStickyBoxRect(
       FloatRect(scrollContainerRelativePaddingBoxRect.location() +
                     toFloatSize(stickyLocation),
@@ -929,8 +937,9 @@ FloatRect LayoutBoxModelObject::computeStickyConstrainingRect() const {
   constrainingRect =
       FloatRect(enclosingClippingBox->overflowClipRect(LayoutPoint(DoublePoint(
           enclosingClippingBox->getScrollableArea()->scrollPosition()))));
-  constrainingRect.move(enclosingClippingBox->paddingLeft(),
-                        enclosingClippingBox->paddingTop());
+  constrainingRect.move(
+      -enclosingClippingBox->borderLeft() + enclosingClippingBox->paddingLeft(),
+      -enclosingClippingBox->borderTop() + enclosingClippingBox->paddingTop());
   constrainingRect.contract(
       FloatSize(enclosingClippingBox->paddingLeft() +
                     enclosingClippingBox->paddingRight(),
