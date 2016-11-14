@@ -192,34 +192,41 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccess) {
       << post_interceptor_->GetRequestsAsString();
 
   // Sanity check the request.
+  const auto request = post_interceptor_->GetRequests()[0];
   EXPECT_NE(string::npos, post_interceptor_->GetRequests()[0].find(
                               "request protocol=\"3.0\" extra=\"params\""));
   // The request must not contain any "dlpref" in the default case.
-  EXPECT_EQ(string::npos,
-            post_interceptor_->GetRequests()[0].find(" dlpref=\""));
+  EXPECT_EQ(string::npos, request.find(" dlpref=\""));
   EXPECT_NE(
       string::npos,
-      post_interceptor_->GetRequests()[0].find(
+      request.find(
           std::string("<app appid=\"") + kUpdateItemId +
           "\" version=\"0.9\" "
           "brand=\"TEST\" ap=\"some_ap\"><updatecheck/><ping rd=\"-2\" "));
   EXPECT_NE(string::npos,
-            post_interceptor_->GetRequests()[0].find(
-                "<packages><package fp=\"fp1\"/></packages></app>"));
+            request.find("<packages><package fp=\"fp1\"/></packages></app>"));
 
-  EXPECT_NE(string::npos,
-            post_interceptor_->GetRequests()[0].find("<hw physmemory="));
+  EXPECT_NE(string::npos, request.find("<hw physmemory="));
 
   // Tests that the progid is injected correctly from the configurator.
-  EXPECT_NE(string::npos,
-            post_interceptor_->GetRequests()[0].find(
-                " version=\"fake_prodid-30.0\" prodversion=\"30.0\" "));
+  EXPECT_NE(
+      string::npos,
+      request.find(" version=\"fake_prodid-30.0\" prodversion=\"30.0\" "));
 
   // Sanity check the arguments of the callback after parsing.
   EXPECT_EQ(0, error_);
   EXPECT_EQ(1ul, results_.list.size());
   EXPECT_STREQ(kUpdateItemId, results_.list[0].extension_id.c_str());
   EXPECT_STREQ("1.0", results_.list[0].manifest.version.c_str());
+
+#if (OS_WIN)
+  EXPECT_NE(string::npos, request.find(" domainjoined="));
+#if defined(GOOGLE_CHROME_BUILD)
+  // Check the Omaha updater state data in the request.
+  EXPECT_NE(string::npos, request.find("<updater "));
+  EXPECT_NE(string::npos, request.find(" name=\"Omaha\" "));
+#endif  // GOOGLE_CHROME_BUILD
+#endif  // OS_WINDOWS
 }
 
 // Tests that an invalid "ap" is not serialized.

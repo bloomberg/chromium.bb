@@ -23,6 +23,7 @@
 #include "components/update_client/persisted_data.h"
 #include "components/update_client/request_sender.h"
 #include "components/update_client/update_client.h"
+#include "components/update_client/updater_state.h"
 #include "components/update_client/utils.h"
 #include "url/gurl.h"
 
@@ -69,11 +70,13 @@ bool IsEncryptionRequired(const IdToCrxUpdateItemMap& items) {
 //        <package fp="abcd"/>
 //      </packages>
 //    </app>
-std::string BuildUpdateCheckRequest(const Configurator& config,
-                                    const IdToCrxUpdateItemMap& items,
-                                    PersistedData* metadata,
-                                    const std::string& additional_attributes,
-                                    bool enabled_component_updates) {
+std::string BuildUpdateCheckRequest(
+    const Configurator& config,
+    const IdToCrxUpdateItemMap& items,
+    PersistedData* metadata,
+    const std::string& additional_attributes,
+    bool enabled_component_updates,
+    const std::unique_ptr<UpdaterState::Attributes>& updater_state_attributes) {
   const std::string brand(SanitizeBrand(config.GetBrand()));
   std::string app_elements;
   for (const auto& item_pair : items) {
@@ -124,10 +127,12 @@ std::string BuildUpdateCheckRequest(const Configurator& config,
     VLOG(1) << "Appending to update request: " << app;
   }
 
+  // Include the updater state in the update check request.
   return BuildProtocolRequest(
       config.GetProdId(), config.GetBrowserVersion().GetString(),
       config.GetChannel(), config.GetLang(), config.GetOSLongName(),
-      config.GetDownloadPreference(), app_elements, additional_attributes);
+      config.GetDownloadPreference(), app_elements, additional_attributes,
+      updater_state_attributes);
 }
 
 class UpdateCheckerImpl : public UpdateChecker {
@@ -144,6 +149,11 @@ class UpdateCheckerImpl : public UpdateChecker {
       const UpdateCheckCallback& update_check_callback) override;
 
  private:
+  void ReadUpdaterStateAttributes();
+  void CheckForUpdatesHelper(const IdToCrxUpdateItemMap& items_to_check,
+                             const std::string& additional_attributes,
+                             bool enabled_component_updates);
+
   void OnRequestSenderComplete(
       std::unique_ptr<std::vector<std::string>> ids_checked,
       int error,
@@ -154,6 +164,7 @@ class UpdateCheckerImpl : public UpdateChecker {
   const scoped_refptr<Configurator> config_;
   PersistedData* metadata_;
   UpdateCheckCallback update_check_callback_;
+  std::unique_ptr<UpdaterState::Attributes> updater_state_attributes_;
   std::unique_ptr<RequestSender> request_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateCheckerImpl);
@@ -174,12 +185,27 @@ bool UpdateCheckerImpl::CheckForUpdates(
     const UpdateCheckCallback& update_check_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (request_sender_.get()) {
-    NOTREACHED();
-    return false;  // Another update check is in progress.
-  }
-
   update_check_callback_ = update_check_callback;
+
+  return config_->GetSequencedTaskRunner()->PostTaskAndReply(
+      FROM_HERE, base::Bind(&UpdateCheckerImpl::ReadUpdaterStateAttributes,
+                            base::Unretained(this)),
+      base::Bind(&UpdateCheckerImpl::CheckForUpdatesHelper,
+                 base::Unretained(this), base::ConstRef(items_to_check),
+                 additional_attributes, enabled_component_updates));
+}
+
+// This function runs on the blocking pool task runner.
+void UpdateCheckerImpl::ReadUpdaterStateAttributes() {
+  const bool is_machine_install = !config_->IsPerUserInstall();
+  updater_state_attributes_ = UpdaterState::GetState(is_machine_install);
+}
+
+void UpdateCheckerImpl::CheckForUpdatesHelper(
+    const IdToCrxUpdateItemMap& items_to_check,
+    const std::string& additional_attributes,
+    bool enabled_component_updates) {
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   auto urls(config_->UpdateUrl());
   if (IsEncryptionRequired(items_to_check))
@@ -193,10 +219,10 @@ bool UpdateCheckerImpl::CheckForUpdates(
   request_sender_->Send(
       config_->EnabledCupSigning(),
       BuildUpdateCheckRequest(*config_, items_to_check, metadata_,
-                              additional_attributes, enabled_component_updates),
+                              additional_attributes, enabled_component_updates,
+                              updater_state_attributes_),
       urls, base::Bind(&UpdateCheckerImpl::OnRequestSenderComplete,
                        base::Unretained(this), base::Passed(&ids_checked)));
-  return true;
 }
 
 void UpdateCheckerImpl::OnRequestSenderComplete(

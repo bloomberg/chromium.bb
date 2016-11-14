@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <map>
 #include <vector>
 
 #include "base/callback.h"
@@ -30,6 +31,7 @@
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_client_errors.h"
 #include "components/update_client/update_query_params.h"
+#include "components/update_client/updater_state.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 #include "net/base/load_flags.h"
@@ -90,14 +92,16 @@ std::string GetServicePack() {
 
 }  // namespace
 
-std::string BuildProtocolRequest(const std::string& prod_id,
-                                 const std::string& browser_version,
-                                 const std::string& channel,
-                                 const std::string& lang,
-                                 const std::string& os_long_name,
-                                 const std::string& download_preference,
-                                 const std::string& request_body,
-                                 const std::string& additional_attributes) {
+std::string BuildProtocolRequest(
+    const std::string& prod_id,
+    const std::string& browser_version,
+    const std::string& channel,
+    const std::string& lang,
+    const std::string& os_long_name,
+    const std::string& download_preference,
+    const std::string& request_body,
+    const std::string& additional_attributes,
+    const std::unique_ptr<UpdaterState::Attributes>& updater_state_attributes) {
   std::string request(
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
       "<request protocol=\"3.0\" ");
@@ -115,7 +119,7 @@ std::string BuildProtocolRequest(const std::string& prod_id,
       browser_version.c_str(),
       browser_version.c_str(),            // "prodversion"
       base::GenerateGUID().c_str(),       // "requestid"
-      lang.c_str(),                       // "lang",
+      lang.c_str(),                       // "lang"
       channel.c_str(),                    // "updaterchannel"
       channel.c_str(),                    // "prodchannel"
       UpdateQueryParams::GetOS(),         // "os"
@@ -130,6 +134,13 @@ std::string BuildProtocolRequest(const std::string& prod_id,
   if (!download_preference.empty())
     base::StringAppendF(&request, " dlpref=\"%s\"",
                         download_preference.c_str());
+  if (updater_state_attributes &&
+      updater_state_attributes->count(UpdaterState::kDomainJoined)) {
+    base::StringAppendF(
+        &request, " %s=\"%s\"",  // domainjoined
+        UpdaterState::kDomainJoined,
+        (*updater_state_attributes)[UpdaterState::kDomainJoined].c_str());
+  }
   base::StringAppendF(&request, ">");
 
   // HW platform information.
@@ -139,7 +150,6 @@ std::string BuildProtocolRequest(const std::string& prod_id,
   // OS version and platform information.
   const std::string os_version = GetOSVersion();
   const std::string os_sp = GetServicePack();
-
   base::StringAppendF(
       &request, "<os platform=\"%s\" arch=\"%s\"",
       os_long_name.c_str(),                                    // "platform"
@@ -149,6 +159,20 @@ std::string BuildProtocolRequest(const std::string& prod_id,
   if (!os_sp.empty())
     base::StringAppendF(&request, " sp=\"%s\"", os_sp.c_str());
   base::StringAppendF(&request, "/>");
+
+#if defined(GOOGLE_CHROME_BUILD)
+  // Updater state.
+  if (updater_state_attributes) {
+    base::StringAppendF(&request, "<updater");
+    for (const auto& attr : *updater_state_attributes) {
+      if (attr.first != UpdaterState::kDomainJoined) {
+        base::StringAppendF(&request, " %s=\"%s\"", attr.first.c_str(),
+                          attr.second.c_str());
+      }
+    }
+    base::StringAppendF(&request, "/>");
+  }
+#endif  // GOOGLE_CHROME_BUILD
 
   // The actual payload of the request.
   base::StringAppendF(&request, "%s</request>", request_body.c_str());

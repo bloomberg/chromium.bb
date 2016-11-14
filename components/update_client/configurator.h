@@ -132,7 +132,8 @@ class Configurator : public base::RefCountedThreadSafe<Configurator> {
   virtual PrefService* GetPrefService() const = 0;
 
   // Returns true if the Chrome is installed for the current user only, or false
-  // if Chrome is installed for all users on the machine.
+  // if Chrome is installed for all users on the machine. This function must be
+  // called only from a blocking pool thread, as it may access the file system.
   virtual bool IsPerUserInstall() const = 0;
 
  protected:

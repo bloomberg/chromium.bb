@@ -24,6 +24,7 @@
 #include "components/update_client/configurator.h"
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/request_sender.h"
+#include "components/update_client/updater_state.h"
 #include "components/update_client/utils.h"
 #include "net/url_request/url_fetcher.h"
 #include "url/gurl.h"
@@ -162,10 +163,11 @@ std::string BuildPing(const Configurator& config, const CrxUpdateItem* item) {
       ping_event.c_str(),                                  // ping event
       BuildDownloadCompleteEventElements(item).c_str()));  // download events
 
+  // The ping request does not include any updater state.
   return BuildProtocolRequest(
       config.GetProdId(), config.GetBrowserVersion().GetString(),
       config.GetChannel(), config.GetLang(), config.GetOSLongName(),
-      config.GetDownloadPreference(), app_element, "");
+      config.GetDownloadPreference(), app_element, "", nullptr);
 }
 
 // Sends a fire and forget ping. The instances of this class have no

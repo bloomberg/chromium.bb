@@ -84,12 +84,6 @@ class CrxUpdateService : public ComponentUpdateService,
                         const base::TimeTicks& start_time,
                         update_client::Error error);
 
-  // Returns the map of installer attributes for the recovery component
-  // installer. This data corresponds to the Omaha updater state and it is
-  // serialized as part of the update check for the recovery component.
-  update_client::InstallerAttributes
-  GetInstallerAttributesForRecoveryComponentInstaller(
-      const CrxComponent& crx_component) const;
   base::ThreadChecker thread_checker_;
 
   scoped_refptr<Configurator> config_;

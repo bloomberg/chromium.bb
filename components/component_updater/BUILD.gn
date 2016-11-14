@@ -21,8 +21,6 @@ static_library("component_updater") {
     "pref_names.h",
     "timer.cc",
     "timer.h",
-    "updater_state_win.cc",
-    "updater_state_win.h",
   ]
 
   deps = [
@@ -55,7 +53,6 @@ source_set("unit_tests") {
     "configurator_impl_unittest.cc",
     "default_component_installer_unittest.cc",
     "timer_unittest.cc",
-    "updater_state_unittest_win.cc",
   ]
 
   deps = [

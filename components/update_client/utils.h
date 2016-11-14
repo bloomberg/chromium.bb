@@ -12,6 +12,7 @@
 
 #include "base/callback_forward.h"
 #include "components/update_client/update_client.h"
+#include "components/update_client/updater_state.h"
 
 class GURL;
 
@@ -58,15 +59,19 @@ using InstallerAttribute = std::pair<std::string, std::string>;
 // affects the list of download URLs returned in the update response.
 // If specified, |additional_attributes| are appended as attributes of the
 // request element. The additional attributes have to be well-formed for
-// insertion in the request element.
-std::string BuildProtocolRequest(const std::string& prod_id,
-                                 const std::string& browser_version,
-                                 const std::string& channel,
-                                 const std::string& lang,
-                                 const std::string& os_long_name,
-                                 const std::string& download_preference,
-                                 const std::string& request_body,
-                                 const std::string& additional_attributes);
+// insertion in the request element. |updater_state_attributes| is an optional
+// parameter specifying that an <updater> element is serialized as part of
+// the request.
+std::string BuildProtocolRequest(
+    const std::string& prod_id,
+    const std::string& browser_version,
+    const std::string& channel,
+    const std::string& lang,
+    const std::string& os_long_name,
+    const std::string& download_preference,
+    const std::string& request_body,
+    const std::string& additional_attributes,
+    const std::unique_ptr<UpdaterState::Attributes>& updater_state_attributes);
 
 // Sends a protocol request to the the service endpoint specified by |url|.
 // The body of the request is provided by |protocol_request| and it is
