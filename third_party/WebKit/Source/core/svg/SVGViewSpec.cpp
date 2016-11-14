@@ -38,7 +38,7 @@ SVGViewSpec::SVGViewSpec(SVGSVGElement* contextElement)
     // AnimatedProperty tearoff -(contextElement)-> SVGSVGElement -(RefPtr)->
     //    SVGViewSpec.
     : SVGFitToViewBox(contextElement, PropertyMapPolicySkip),
-      m_contextElement(this, contextElement),
+      m_contextElement(contextElement),
       m_transform(SVGAnimatedTransformList::create(contextElement,
                                                    SVGNames::transformAttr)) {
   ASSERT(m_contextElement);
@@ -54,10 +54,6 @@ DEFINE_TRACE(SVGViewSpec) {
   visitor->trace(m_contextElement);
   visitor->trace(m_transform);
   SVGFitToViewBox::trace(visitor);
-}
-
-DEFINE_TRACE_WRAPPERS(SVGViewSpec) {
-  visitor->traceWrappers(m_contextElement);
 }
 
 bool SVGViewSpec::parseViewSpec(const String& spec) {
@@ -83,51 +79,6 @@ void SVGViewSpec::reset() {
   preserveAspectRatio()->baseValue()->setMeetOrSlice(
       SVGPreserveAspectRatio::kSvgMeetorsliceMeet);
   m_viewTargetString = emptyString();
-}
-
-void SVGViewSpec::detachContextElement() {
-  m_transform = nullptr;
-  clearViewBox();
-  clearPreserveAspectRatio();
-  m_contextElement = nullptr;
-}
-
-SVGElement* SVGViewSpec::viewTarget() const {
-  if (!m_contextElement)
-    return nullptr;
-  Element* element = m_contextElement->treeScope().getElementById(
-      AtomicString(m_viewTargetString));
-  if (!element || !element->isSVGElement())
-    return nullptr;
-  return toSVGElement(element);
-}
-
-String SVGViewSpec::viewBoxString() const {
-  if (!viewBox())
-    return String();
-
-  return viewBox()->currentValue()->valueAsString();
-}
-
-String SVGViewSpec::preserveAspectRatioString() const {
-  if (!preserveAspectRatio())
-    return String();
-
-  return preserveAspectRatio()->baseValue()->valueAsString();
-}
-
-String SVGViewSpec::transformString() const {
-  if (!m_transform)
-    return String();
-
-  return m_transform->baseValue()->valueAsString();
-}
-
-void SVGViewSpec::setZoomAndPan(unsigned short,
-                                ExceptionState& exceptionState) {
-  // SVGViewSpec and all of its content is read-only.
-  exceptionState.throwDOMException(NoModificationAllowedError,
-                                   ExceptionMessages::readOnly());
 }
 
 namespace {

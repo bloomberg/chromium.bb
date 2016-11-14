@@ -4990,10 +4990,8 @@ interface SVGSVGElement : SVGGraphicsElement
     attribute SVG_ZOOMANDPAN_UNKNOWN
     getter currentScale
     getter currentTranslate
-    getter currentView
     getter height
     getter preserveAspectRatio
-    getter useCurrentView
     getter viewBox
     getter width
     getter x
@@ -5174,22 +5172,6 @@ interface SVGViewElement : SVGElement
     getter preserveAspectRatio
     getter viewBox
     getter viewTarget
-    getter zoomAndPan
-    method constructor
-    setter zoomAndPan
-interface SVGViewSpec
-    attribute @@toStringTag
-    attribute SVG_ZOOMANDPAN_DISABLE
-    attribute SVG_ZOOMANDPAN_MAGNIFY
-    attribute SVG_ZOOMANDPAN_UNKNOWN
-    getter preserveAspectRatio
-    getter preserveAspectRatioString
-    getter transform
-    getter transformString
-    getter viewBox
-    getter viewBoxString
-    getter viewTarget
-    getter viewTargetString
     getter zoomAndPan
     method constructor
     setter zoomAndPan

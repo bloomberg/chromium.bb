@@ -628,8 +628,6 @@ class CORE_EXPORT UseCounter {
     TextInputFired = 830,
     V8TextEvent_Data_AttributeGetter = 831,
     V8TextEvent_InitTextEvent_Method = 832,
-    V8SVGSVGElement_UseCurrentView_AttributeGetter = 833,
-    V8SVGSVGElement_CurrentView_AttributeGetter = 834,
     ClientHintsDPR = 835,
     ClientHintsResourceWidth = 836,
     ClientHintsViewportWidth = 837,

@@ -27,10 +27,6 @@ interface SVGSVGElement : SVGGraphicsElement {
     [MeasureAs=SVG1DOMSVGElement] readonly attribute SVGAnimatedLength y;
     [MeasureAs=SVG1DOMSVGElement] readonly attribute SVGAnimatedLength width;
     [MeasureAs=SVG1DOMSVGElement] readonly attribute SVGAnimatedLength height;
-    // TODO(foolip): useCurrentView and currentView have been removed:
-    // https://github.com/w3c/svgwg/commit/4c26fd36937a65192024208d85c144a21071b057
-    [DeprecateAs=V8SVGSVGElement_UseCurrentView_AttributeGetter] readonly attribute boolean useCurrentView;
-    [DeprecateAs=V8SVGSVGElement_CurrentView_AttributeGetter] readonly attribute SVGViewSpec currentView;
              attribute float currentScale;
     // TODO(foolip): currentTranslate should be a DOMPointReadOnly.
     [ImplementedAs=currentTranslateFromJavascript] readonly attribute SVGPoint currentTranslate;

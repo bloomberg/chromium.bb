@@ -20,7 +20,6 @@
 #ifndef SVGViewSpec_h
 #define SVGViewSpec_h
 
-#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/svg/SVGFitToViewBox.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGZoomAndPan.h"
@@ -29,10 +28,8 @@
 namespace blink {
 
 class SVGViewSpec final : public GarbageCollectedFinalized<SVGViewSpec>,
-                          public ScriptWrappable,
                           public SVGZoomAndPan,
                           public SVGFitToViewBox {
-  DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(SVGViewSpec);
 
  public:
@@ -42,28 +39,14 @@ class SVGViewSpec final : public GarbageCollectedFinalized<SVGViewSpec>,
 
   bool parseViewSpec(const String&);
   void reset();
-  void detachContextElement();
   template <typename T>
   void inheritViewAttributesFromElement(T*);
 
-  // JS API
   SVGTransformList* transform() {
     return m_transform ? m_transform->baseValue() : 0;
   }
-  SVGTransformListTearOff* transformFromJavascript() {
-    return m_transform ? m_transform->baseVal() : 0;
-  }
-  SVGElement* viewTarget() const;
-  String viewBoxString() const;
-  String preserveAspectRatioString() const;
-  String transformString() const;
-  String viewTargetString() const { return m_viewTargetString; }
-  // override SVGZoomAndPan.setZoomAndPan so can throw exception on write
-  void setZoomAndPan(unsigned short value) {}  // read only
-  void setZoomAndPan(unsigned short value, ExceptionState&);
 
   DECLARE_VIRTUAL_TRACE();
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
   SVGSVGElement* contextElement() { return m_contextElement.get(); }
 
@@ -73,7 +56,7 @@ class SVGViewSpec final : public GarbageCollectedFinalized<SVGViewSpec>,
   template <typename CharType>
   bool parseViewSpecInternal(const CharType* ptr, const CharType* end);
 
-  TraceWrapperMember<SVGSVGElement> m_contextElement;
+  Member<SVGSVGElement> m_contextElement;
   Member<SVGAnimatedTransformList> m_transform;
   String m_viewTargetString;
 };

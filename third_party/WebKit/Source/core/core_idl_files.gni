@@ -391,7 +391,6 @@ core_idl_files = get_path_info([
                                  "svg/SVGUnitTypes.idl",
                                  "svg/SVGUseElement.idl",
                                  "svg/SVGViewElement.idl",
-                                 "svg/SVGViewSpec.idl",
                                  "timing/MemoryInfo.idl",
                                  "timing/Performance.idl",
                                  "timing/PerformanceEntry.idl",

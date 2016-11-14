@@ -10,7 +10,7 @@ PASS SVGLocatable interface must be removed
 PASS SVGPaint interface must be removed 
 PASS SVGPathSeg interface must be removed 
 PASS SVGStylable interface must be removed 
-FAIL SVGViewSpec interface must be removed assert_false: expected false got true
+PASS SVGViewSpec interface must be removed 
 PASS SVGZoomEvent interface must be removed 
 PASS GetSVGDocument mixin interface must not be exposed 
 PASS SVGAnimatedPoints mixin interface must not be exposed 
@@ -28,8 +28,8 @@ PASS SVGElement.prototype.xmlspace must be removed
 PASS SVGGraphicsElement.prototype.getTransformToElement must be removed 
 PASS SVGGraphicsElement.prototype.hasExtension must be removed 
 FAIL SVGGraphicsElement.prototype.requiredFeatures must be removed assert_false: expected false got true
-FAIL SVGSVGElement.prototype.currentView must be removed assert_false: expected false got true
-FAIL SVGSVGElement.prototype.useCurrentView must be removed assert_false: expected false got true
+PASS SVGSVGElement.prototype.currentView must be removed 
+PASS SVGSVGElement.prototype.useCurrentView must be removed 
 PASS SVGSVGElement.prototype.viewport must be removed 
 FAIL SVGViewElement.prototype.viewTarget must be removed assert_false: expected false got true
 PASS SVGPathElement.prototype.getPointAtLength must be moved to SVGGeometryElement.prototype 

@@ -28,7 +28,6 @@ shouldBeDefined("SVGStylable");
 shouldBeDefined("SVGLocatable");
 shouldBeDefined("SVGTransformable");
 shouldBeDefined("SVGTests");
-shouldBeDefined("SVGViewSpec");
 shouldBeDefined("SVGURIReference");
 shouldBeDefined("SVGCSSRule");
 shouldBeDefined("SVGSVGElement");

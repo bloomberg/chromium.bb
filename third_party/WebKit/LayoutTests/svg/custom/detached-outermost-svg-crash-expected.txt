@@ -1,3 +1,1 @@
-CONSOLE WARNING: line 10: SVGSVGElement.useCurrentView is deprecated and will be removed in M56, around January 2017. See https://www.chromestatus.com/features/4511711998509056 for more details.
-CONSOLE WARNING: line 10: SVGSVGElement.currentView is deprecated and will be removed in M56, around January 2017. See https://www.chromestatus.com/features/4511711998509056 for more details.
 PASSED -- webkit did not crash in SVGSVGElement::isOutermostSVG(). See https://bugs.webkit.org/show_bug.cgi?id=25105
