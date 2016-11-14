@@ -4,6 +4,6 @@
 
 import("//build/config/android/rules.gni")
 
-android_java_prebuilt("haha") {
+android_java_prebuilt("haha_java") {
   jar_path = "haha-2.0.2.jar"
 }

@@ -1620,7 +1620,8 @@ if (enable_java_templates) {
 
       # Added emma to the target's classpath via its .build_config.
       if (emma_coverage && !_emma_never_instrument) {
-        possible_config_deps += [ "//third_party/android_tools:emma_device" ]
+        possible_config_deps +=
+            [ "//third_party/android_tools:emma_device_java" ]
       }
 
       proguard_enabled = _proguard_enabled
@@ -1785,7 +1786,7 @@ if (enable_java_templates) {
         deps += [ "${invoker.apk_under_test}__java" ]
       }
       if (emma_coverage && !_emma_never_instrument) {
-        deps += [ "//third_party/android_tools:emma_device" ]
+        deps += [ "//third_party/android_tools:emma_device_java" ]
       }
     }
 

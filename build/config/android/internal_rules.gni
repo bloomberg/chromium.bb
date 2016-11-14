@@ -34,22 +34,7 @@ _java_target_whitelist = [
   "//build/android/rezip:rezip",
   "//chrome/test/android/cast_emulator:cast_emulator",
   "//mojo/public/java:bindings",
-  "//third_party/android_tools:emma_device",
-  "//third_party/cardboard-java:cardboard-java",
-  "//third_party/custom_tabs_client:custom_tabs_client_shared_lib",
   "//third_party/custom_tabs_client:custom_tabs_support_lib",
-  "//third_party/errorprone:chromium_errorprone",
-  "//third_party/haha:haha",
-  "//third_party/junit:hamcrest",
-  "//third_party/netty4:netty_all",
-  "//third_party/netty-tcnative:netty-tcnative",
-  "//third_party/robolectric:android-all-4.3_r2-robolectric-0",
-  "//third_party/robolectric:android-all-5.0.0_r2-robolectric-1",
-  "//third_party/robolectric:json-20080701",
-  "//third_party/robolectric:tagsoup-1.2",
-  "//third_party/robolectric:shadows-core-3.0-18",
-  "//third_party/robolectric:shadows-core-3.0-21",
-  "//third_party/robolectric:shadows-multidex-3.0",
 ]
 
 # Targets that match the whitelist but are not actually java targets.
@@ -70,10 +55,12 @@ _java_target_blacklist = [
 # build/android/gyp/util/build_utils.py:ExpandFileArgs
 template("write_build_config") {
   type = invoker.type
+  _is_prebuilt_binary =
+      defined(invoker.is_prebuilt_binary) && invoker.is_prebuilt_binary
 
   # Don't need to enforce naming scheme for these targets since we never
   # consider them in dependency chains.
-  if (type != "android_apk" && type != "java_binary" &&
+  if (!_is_prebuilt_binary && type != "android_apk" && type != "java_binary" &&
       type != "resource_rewriter") {
     set_sources_assignment_filter(_java_target_whitelist)
     _parent_invoker = invoker.invoker
@@ -1773,6 +1760,7 @@ if (enable_java_templates) {
 
     write_build_config(_build_config_target_name) {
       type = "java_prebuilt"
+      is_prebuilt_binary = defined(invoker.main_class)
       forward_variables_from(invoker,
                              [
                                "input_jars_paths",

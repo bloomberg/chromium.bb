@@ -54,7 +54,7 @@ shared_library("netty-tcnative-so") {
 }
 
 # Builds the Java part of netty-tcnative library.
-android_library("netty-tcnative") {
+android_library("netty-tcnative_java") {
   java_files = [
     "src/java/src/org/apache/tomcat/Apr.java",
     "src/java/src/org/apache/tomcat/jni/Address.java",
@@ -101,16 +101,5 @@ android_library("netty-tcnative") {
   run_findbugs_override = false
   deps = [
     "//base:base_java",
-  ]
-}
-
-# Builds both the Java and native parts of netty-tcnative library.
-group("netty-tcnative_all") {
-  deps = [
-    ":netty-tcnative",
-    ":netty-tcnative-so",
-  ]
-  public_deps = [
-    ":netty-tcnative-so",
   ]
 }

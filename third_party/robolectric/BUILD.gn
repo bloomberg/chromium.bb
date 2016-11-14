@@ -7,32 +7,32 @@ import("//build/config/android/rules.gni")
 java_group("robolectric_all_java") {
   testonly = true
   deps = [
-    ":android-all-5.0.0_r2-robolectric-1",
+    ":android-all-5.0.0_r2-robolectric-1_java",
     ":robolectric_annotations_java",
     ":robolectric_java",
     ":robolectric_resources_java",
     ":robolectric_utils_java",
-    ":shadows-core-3.0-21",
-    ":shadows-multidex-3.0",
+    ":shadows-core-3.0-21_java",
+    ":shadows-multidex-3.0_java",
   ]
 }
 
-java_prebuilt("tagsoup-1.2") {
+java_prebuilt("tagsoup-1.2_java") {
   testonly = true
   jar_path = "lib/tagsoup-1.2.jar"
 }
 
-java_prebuilt("json-20080701") {
+java_prebuilt("json-20080701_java") {
   testonly = true
   jar_path = "lib/json-20080701.jar"
 }
 
-java_prebuilt("android-all-4.3_r2-robolectric-0") {
+java_prebuilt("android-all-4.3_r2-robolectric-0_java") {
   testonly = true
   jar_path = "lib/android-all-4.3_r2-robolectric-0.jar"
 }
 
-java_prebuilt("android-all-5.0.0_r2-robolectric-1") {
+java_prebuilt("android-all-5.0.0_r2-robolectric-1_java") {
   testonly = true
   jar_path = "lib/android-all-5.0.0_r2-robolectric-1.jar"
 }
@@ -40,15 +40,15 @@ java_prebuilt("android-all-5.0.0_r2-robolectric-1") {
 java_library("robolectric_java") {
   testonly = true
   deps = [
-    ":android-all-5.0.0_r2-robolectric-1",
-    ":json-20080701",
+    ":android-all-5.0.0_r2-robolectric-1_java",
+    ":json-20080701_java",
     ":robolectric_annotations_java",
     ":robolectric_resources_java",
     ":robolectric_utils_java",
-    ":shadows-core-3.0-18",
-    ":shadows-core-3.0-21",
-    ":shadows-multidex-3.0",
-    ":tagsoup-1.2",
+    ":shadows-core-3.0-18_java",
+    ":shadows-core-3.0-21_java",
+    ":shadows-multidex-3.0_java",
+    ":tagsoup-1.2_java",
     "//third_party/bouncycastle:bouncycastle_java",
     "//third_party/icu4j:icu4j_java",
     "//third_party/intellij:intellij_annotations_java",
@@ -118,7 +118,7 @@ java_library("robolectric_java") {
 java_library("robolectric_annotations_java") {
   testonly = true
   deps = [
-    ":android-all-5.0.0_r2-robolectric-1",
+    ":android-all-5.0.0_r2-robolectric-1_java",
     "//third_party/intellij:intellij_annotations_java",
   ]
   java_files = [
@@ -165,7 +165,7 @@ java_library("robolectric_processor_java") {
 java_library("robolectric_resources_java") {
   testonly = true
   deps = [
-    ":android-all-5.0.0_r2-robolectric-1",
+    ":android-all-5.0.0_r2-robolectric-1_java",
     ":robolectric_annotations_java",
     ":robolectric_utils_java",
     "//third_party/intellij:intellij_annotations_java",
@@ -235,7 +235,7 @@ java_library("robolectric_resources_java") {
 java_library("robolectric_utils_java") {
   testonly = true
   deps = [
-    ":android-all-5.0.0_r2-robolectric-1",
+    ":android-all-5.0.0_r2-robolectric-1_java",
     ":robolectric_annotations_java",
     "//third_party/accessibility_test_framework:accessibility_test_framework_java",
     "//third_party/hamcrest:hamcrest_core_java",
@@ -541,23 +541,19 @@ java_binary("robolectric_template_processor") {
 }
 
 template("shadows_core") {
-  forward_variables_from(invoker,
-                         [
-                           "api_level",
-                           "android_sdk_deps",
-                         ])
   testonly = true
 
   _shadows_core_java_files = invoker.shadows_core_java_files
   _template_files = invoker.template_files
-  _process_templates_target_name = "${target_name}__process_templates"
+  _process_templates_target_name =
+      "shadows_core_${invoker.api_level}__process_templates"
 
   _processed_template_files = []
   _template_file_args = []
   foreach(template_file, _template_files) {
     _gen_dir = get_path_info(template_file, "gen_dir")
     _name = get_path_info(template_file, "name")
-    _output_file = "$_gen_dir/$api_level/$_name"
+    _output_file = "$_gen_dir/${invoker.api_level}/$_name"
     _template_file_args += [
       "--process-file",
       "$template_file",
@@ -571,7 +567,7 @@ template("shadows_core") {
     script = "$root_build_dir/bin/robolectric_template_processor"
     args = [
       "--api-level",
-      "$api_level",
+      "${invoker.api_level}",
       "--base-template-dir",
       _base_template_dir,
     ]
@@ -642,21 +638,21 @@ template("shadows_core") {
       "//third_party/intellij:intellij_annotations_java",
       "//third_party/sqlite4java:sqlite4java_java",
     ]
-    deps += android_sdk_deps
+    deps += invoker.android_sdk_deps
   }
 }
 
-shadows_core("shadows-core-3.0-21") {
+shadows_core("shadows-core-3.0-21_java") {
   api_level = 21
-  android_sdk_deps = [ ":android-all-5.0.0_r2-robolectric-1" ]
+  android_sdk_deps = [ ":android-all-5.0.0_r2-robolectric-1_java" ]
 }
 
-shadows_core("shadows-core-3.0-18") {
+shadows_core("shadows-core-3.0-18_java") {
   api_level = 18
-  android_sdk_deps = [ ":android-all-4.3_r2-robolectric-0" ]
+  android_sdk_deps = [ ":android-all-4.3_r2-robolectric-0_java" ]
 }
 
-java_library("shadows-multidex-3.0") {
+java_library("shadows-multidex-3.0_java") {
   testonly = true
   processors_javac =
       [ "org.robolectric.annotation.processing.RobolectricProcessor" ]
@@ -668,7 +664,7 @@ java_library("shadows-multidex-3.0") {
   ]
 
   deps = [
-    ":android-all-5.0.0_r2-robolectric-1",
+    ":android-all-5.0.0_r2-robolectric-1_java",
     ":robolectric_annotations_java",
     ":robolectric_processor_java",
     ":robolectric_utils_java",

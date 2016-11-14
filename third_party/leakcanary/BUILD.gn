@@ -121,6 +121,6 @@ android_library("leakcanary_impl_java") {
   ]
   deps = [
     ":leakcanary_resources",
-    "//third_party/haha",
+    "//third_party/haha:haha_java",
   ]
 }
