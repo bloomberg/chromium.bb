@@ -103,6 +103,9 @@ class VrController {
   // point, false otherwise.
   bool InSlop(const gvr::Vec2f touch_position);
 
+  // Returns true if the gesture is in horizontal direction.
+  bool IsHorizontalGesture();
+
   void Reset();
 
   // Update gesture parameters,
