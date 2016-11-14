@@ -552,6 +552,7 @@ crbug.com/268729 imported/wpt/html/dom/elements/global-attributes/dir_auto-N-EN-
 # MANIFEST.json contains any *-manual.*. https://github.com/w3c/web-platform-tests/issues/4137
 Bug(github) imported/wpt/uievents/keyboard/key-manual.css [ Skip ]
 Bug(github) imported/wpt/uievents/keyboard/key-manual.js [ Skip ]
+crbug.com/441355 imported/wpt/dom/nodes/MutationObserver-childList.html [ Skip ]
 
 crbug.com/636961 [ Linux Debug ] virtual/threaded/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-vertical-rl-anchors.html [ Pass Failure ]
 

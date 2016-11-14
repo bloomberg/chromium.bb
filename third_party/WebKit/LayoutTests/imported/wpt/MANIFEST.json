@@ -6914,6 +6914,12 @@
             "url": "/dom/nodes/MutationObserver-characterData.html"
           }
         ],
+        "dom/nodes/MutationObserver-childList.html": [
+          {
+            "path": "dom/nodes/MutationObserver-childList.html",
+            "url": "/dom/nodes/MutationObserver-childList.html"
+          }
+        ],
         "dom/nodes/MutationObserver-disconnect.html": [
           {
             "path": "dom/nodes/MutationObserver-disconnect.html",
