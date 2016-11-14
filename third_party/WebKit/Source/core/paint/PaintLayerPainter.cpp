@@ -150,13 +150,17 @@ static bool shouldCreateSubsequence(const PaintLayer& paintLayer,
     return false;
 
   // Create subsequence for only stacking contexts whose painting are atomic.
-  if (!paintLayer.stackingNode()->isStackingContext())
+  // SVG is also painted atomically.
+  if (!paintLayer.stackingNode()->isStackingContext() &&
+      !paintLayer.layoutObject()->isSVGRoot())
     return false;
 
   // The layer doesn't have children. Subsequence caching is not worth because
   // normally the actual painting will be cheap.
+  // SVG is also painted atomically.
   if (!PaintLayerStackingNodeIterator(*paintLayer.stackingNode(), AllChildren)
-           .next())
+           .next() &&
+      !paintLayer.layoutObject()->isSVGRoot())
     return false;
 
   // When in FOUC-avoidance mode, don't cache any subsequences, to avoid having
