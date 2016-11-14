@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+#include <vector>
+
+#include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -68,8 +72,15 @@ class SafeBrowsingPrefsTest : public ::testing::Test {
         << " only_show_scout=" << only_show_scout;
   }
 
- private:
+  void InitPrefs() { InitializeSafeBrowsingPrefs(&prefs_); }
+
+  bool IsScoutGroupSelected() {
+    return prefs_.GetBoolean(prefs::kSafeBrowsingScoutGroupSelected);
+  }
+
   TestingPrefServiceSimple prefs_;
+
+ private:
   std::unique_ptr<base::test::ScopedFeatureList> feature_list_;
 };
 
@@ -138,6 +149,52 @@ TEST_F(SafeBrowsingPrefsTest, GetExtendedReportingPrefName_Exhaustive) {
   TestGetPrefName(true, true, true, false, true, scout);
   TestGetPrefName(true, true, true, true, false, scout);
   TestGetPrefName(true, true, true, true, true, scout);
+}
+
+// Basic test that command-line flags can force the ScoutGroupSelected pref on
+// or off.
+TEST_F(SafeBrowsingPrefsTest, InitPrefs_ForceScoutGroupOnOff) {
+  // By default ScoutGroupSelected is off.
+  EXPECT_FALSE(IsScoutGroupSelected());
+
+  // Command-line flag can force it on during initialization.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      kSwitchForceScoutGroup, "true");
+  InitPrefs();
+  EXPECT_TRUE(IsScoutGroupSelected());
+
+  // ScoutGroup remains on if switches are cleared.
+  base::CommandLine::StringVector empty;
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(empty);
+  InitPrefs();
+  EXPECT_TRUE(IsScoutGroupSelected());
+
+  // Nonsense values are ignored and ScoutGroup is unchanged.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      kSwitchForceScoutGroup, "foo");
+  InitPrefs();
+  EXPECT_TRUE(IsScoutGroupSelected());
+
+  // ScoutGroup can also be forced off during initialization.
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(empty);
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      kSwitchForceScoutGroup, "false");
+  InitPrefs();
+  EXPECT_FALSE(IsScoutGroupSelected());
+}
+
+TEST_F(SafeBrowsingPrefsTest, ChooseOptInText) {
+  const int kSberResource = 100;
+  const int kScoutResource = 500;
+  // By default, SBER opt-in is used
+  EXPECT_EQ(kSberResource,
+            ChooseOptInTextResource(prefs_, kSberResource, kScoutResource));
+
+  // Enabling Scout switches to the Scout opt-in text.
+  ResetExperiments(/*can_show_scout=*/false, /*only_show_scout=*/true);
+  ResetPrefs(/*sber=*/false, /*scout=*/false, /*scout_group=*/true);
+  EXPECT_EQ(kScoutResource,
+            ChooseOptInTextResource(prefs_, kSberResource, kScoutResource));
 }
 
 }  // namespace safe_browsing

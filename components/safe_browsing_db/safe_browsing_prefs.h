@@ -27,13 +27,28 @@ extern const char kSafeBrowsingScoutGroupSelected[];
 
 namespace safe_browsing {
 
+// Command-line switch for changing the scout_group_selected preference. Should
+// be set to either 'true' or 'false'. Primarily for testing purposes.
+// TODO: this is temporary (crbug.com/662944)
+extern const char kSwitchForceScoutGroup[];
+
 // When this feature is enabled, the Scout opt-in text will be displayed as of
 // the next security incident. Until then, the legacy SBER text will appear.
+// TODO: this is temporary (crbug.com/662944)
 extern const base::Feature kCanShowScoutOptIn;
 
 // When this feature is enabled, the Scout opt-in text will immediately be
 // displayed everywhere.
+// TODO: this is temporary (crbug.com/662944)
 extern const base::Feature kOnlyShowScoutOptIn;
+
+// Determines which opt-in text should be used based on the currently active
+// preference. Will return either |extended_reporting_resource| if the legacy
+// Extended Reporting pref is active, or |scout_resource| if the Scout pref is
+// active.
+int ChooseOptInTextResource(const PrefService& prefs,
+                            int extended_reporting_resource,
+                            int scout_resource);
 
 // Returns whether the currently active Safe Browsing Extended Reporting
 // preference exists (eg: has been set before).
@@ -42,6 +57,11 @@ bool ExtendedReportingPrefExists(const PrefService& prefs);
 // Returns the name of the Safe Browsing Extended Reporting pref that is
 // currently in effect. The specific pref in-use may change through experiments.
 const char* GetExtendedReportingPrefName(const PrefService& prefs);
+
+// Initializes Safe Browsing preferences based on data such as experiment state,
+// command line flags, etc.
+// TODO: this is temporary (crbug.com/662944)
+void InitializeSafeBrowsingPrefs(PrefService* prefs);
 
 // Returns whether Safe Browsing Extended Reporting is currently enabled.
 // This should be used to decide if any of the reporting preferences are set,

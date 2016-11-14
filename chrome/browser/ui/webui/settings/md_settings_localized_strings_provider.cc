@@ -26,6 +26,7 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
+#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -1261,7 +1262,8 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
 #endif
 }
 
-void AddPrivacyStrings(content::WebUIDataSource* html_source) {
+void AddPrivacyStrings(content::WebUIDataSource* html_source,
+                       Profile* profile) {
   LocalizedString localized_strings[] = {
       {"privacyPageTitle", IDS_SETTINGS_PRIVACY},
       {"linkDoctorPref", IDS_SETTINGS_LINKDOCTOR_PREF},
@@ -1270,8 +1272,6 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_DESCRIPTION},
       {"safeBrowsingEnableProtection",
        IDS_SETTINGS_SAFEBROWSING_ENABLEPROTECTION},
-      {"safeBrowsingEnableExtendedReporting",
-       IDS_SETTINGS_SAFEBROWSING_ENABLE_EXTENDED_REPORTING},
       {"spellingPref", IDS_SETTINGS_SPELLING_PREF},
       {"spellingDescription", IDS_SETTINGS_SPELLING_DESCRIPTION},
 #if defined(OS_CHROMEOS)
@@ -1296,6 +1296,12 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source) {
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
 
+  html_source->AddLocalizedString(
+      "safeBrowsingEnableExtendedReporting",
+      safe_browsing::ChooseOptInTextResource(
+          *profile->GetPrefs(),
+          IDS_SETTINGS_SAFEBROWSING_ENABLE_EXTENDED_REPORTING,
+          IDS_SETTINGS_SAFEBROWSING_ENABLE_SCOUT_REPORTING));
   html_source->AddString("improveBrowsingExperience",
                          l10n_util::GetStringFUTF16(
                              IDS_SETTINGS_IMPROVE_BROWSING_EXPERIENCE,
@@ -1756,7 +1762,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddPasswordsAndFormsStrings(html_source);
   AddPeopleStrings(html_source);
   AddPrintingStrings(html_source);
-  AddPrivacyStrings(html_source);
+  AddPrivacyStrings(html_source, profile);
   AddResetStrings(html_source);
   AddSearchEnginesStrings(html_source);
   AddSearchInSettingsStrings(html_source);

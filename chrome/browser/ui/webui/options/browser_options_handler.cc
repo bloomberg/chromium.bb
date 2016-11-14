@@ -83,6 +83,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/proximity_auth/switches.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
+#include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -362,8 +363,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       IDS_RESET_PROFILE_SETTINGS_DESCRIPTION },
     { "resetProfileSettingsSectionTitle",
       IDS_RESET_PROFILE_SETTINGS_SECTION_TITLE },
-    { "safeBrowsingEnableExtendedReporting",
-      IDS_OPTIONS_SAFEBROWSING_ENABLE_EXTENDED_REPORTING },
     { "safeBrowsingEnableProtection",
       IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION },
     { "sectionTitleAppearance", IDS_APPEARANCE_GROUP_NAME },
@@ -582,6 +581,13 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   RegisterCloudPrintValues(values);
 #endif
 
+  Profile* profile = Profile::FromWebUI(web_ui());
+  values->SetString(
+      "safeBrowsingEnableExtendedReporting",
+      l10n_util::GetStringUTF16(safe_browsing::ChooseOptInTextResource(
+          *profile->GetPrefs(),
+          IDS_OPTIONS_SAFEBROWSING_ENABLE_EXTENDED_REPORTING,
+          IDS_OPTIONS_SAFEBROWSING_ENABLE_SCOUT_REPORTING)));
   values->SetString("syncLearnMoreURL", chrome::kSyncLearnMoreURL);
   base::string16 omnibox_url = base::ASCIIToUTF16(chrome::kOmniboxLearnMoreURL);
   values->SetString(
@@ -600,7 +606,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
           supervised_user_dashboard));
 
 #if defined(OS_CHROMEOS)
-  Profile* profile = Profile::FromWebUI(web_ui());
   std::string username = profile->GetProfileUserName();
   if (username.empty()) {
     const user_manager::User* user =

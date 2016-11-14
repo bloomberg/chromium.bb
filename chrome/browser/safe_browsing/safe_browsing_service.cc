@@ -639,6 +639,9 @@ void SafeBrowsingService::AddPrefService(PrefService* pref_service) {
   prefs_map_[pref_service] = std::move(registrar);
   RefreshState();
 
+  // Initialize SafeBrowsing prefs on startup.
+  InitializeSafeBrowsingPrefs(pref_service);
+
   // Record the current pref state.
   UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.Pref.General",
                         pref_service->GetBoolean(prefs::kSafeBrowsingEnabled));
