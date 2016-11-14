@@ -13,7 +13,7 @@ Styled text #0: font-style: normal; font-variant: normal; font-weight: normal; f
 console-format-style-whitelist.html:6 And borders and margins and paddings!
 Styled text #0: border: 1px solid red; margin: 20px; padding: 10px;
 console-format-style-whitelist.html:7 text-* is fine by us!
-Styled text #0: text-decoration-line: none; text-decoration-style: initial; text-decoration-color: initial;
+Styled text #0: text-decoration: none;
 console-format-style-whitelist.html:9 Display, on the other hand, is bad news.
 Styled text #0: NO STYLES DEFINED
 console-format-style-whitelist.html:10 And position too.

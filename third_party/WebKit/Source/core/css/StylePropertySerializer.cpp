@@ -337,6 +337,7 @@ static bool allowInitialInShorthand(CSSPropertyID propertyID) {
     case CSSPropertyOffset:
     case CSSPropertyWebkitMarginCollapse:
     case CSSPropertyListStyle:
+    case CSSPropertyTextDecoration:
     case CSSPropertyWebkitTextEmphasis:
     case CSSPropertyWebkitTextStroke:
       return true;
@@ -489,6 +490,8 @@ String StylePropertySerializer::getPropertyValue(
       return getCommonValue(overflowShorthand());
     case CSSPropertyPadding:
       return get4Values(paddingShorthand());
+    case CSSPropertyTextDecoration:
+      return getShorthandValue(textDecorationShorthand());
     case CSSPropertyTransition:
       return getLayeredShorthandValue(transitionShorthand());
     case CSSPropertyListStyle:

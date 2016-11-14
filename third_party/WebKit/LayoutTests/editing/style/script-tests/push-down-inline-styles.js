@@ -31,7 +31,7 @@ testSingleToggle("bold", '<span style="font-weight: bold;"><div id="test">hello<
 testSingleToggle("italic", '<span style="font-style: italic;"><div>hello</div></span>', '<div>hello</div>');
 testSingleToggle("italic", '<span style="font-style: italic;"><div id="test">hello</div><span style="font-style: oblique;">world</span>', '<div id="test">hello</div><span style="font-style: oblique;">world</span>');
 testSingleToggle("italic", '<span style="font-style: italic; font-weight: bold;"><div>hello</div></span>', '<span style="font-weight: bold;"><div>hello</div></span>');
-testSingleToggle("italic", '<span style="font-style: italic; text-decoration: line-through;"><div>hello</div></span>', '<span style="text-decoration-line: line-through; text-decoration-style: initial; text-decoration-color: initial;"><div>hello</div></span>');
+testSingleToggle("italic", '<span style="font-style: italic; text-decoration: line-through;"><div>hello</div></span>', '<span style="text-decoration: line-through;"><div>hello</div></span>');
 testSingleToggle("italic", '<span style="font-style: italic;">hello<div id="test">world</div><blockquote>webkit</blockquote></span>', '<i>hello</i><div id="test">world</div><blockquote style="font-style: italic;">webkit</blockquote>');
 testSingleToggle("italic", '<span style="font-style: italic;">hello <span id="test">world</span> webkit</span>', '<i>hello </i><span id="test">world</span><i> webkit</i>');
 testSingleToggle("underline", '<span style="text-decoration: underline;"><div id="test">hello</div>world</span>', '<div id="test">hello</div><u>world</u>');
