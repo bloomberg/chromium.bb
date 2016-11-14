@@ -24,6 +24,8 @@ source_set("reading_list") {
     "reading_list_model_storage_defaults.mm",
     "reading_list_pref_names.cc",
     "reading_list_pref_names.h",
+    "reading_list_web_state_observer.h",
+    "reading_list_web_state_observer.mm",
     "url_downloader.cc",
     "url_downloader.h",
   ]
