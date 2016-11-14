@@ -8,13 +8,18 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='div'",
-          "rect": [8, 108, 300, 300],
-          "reason": "border box change"
+          "rect": [8, 208, 300, 200],
+          "reason": "incremental"
         },
         {
           "object": "LayoutBlockFlow DIV id='div'",
           "rect": [8, 393, 285, 15],
           "reason": "scroll"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='div'",
+          "rect": [108, 108, 200, 300],
+          "reason": "incremental"
         },
         {
           "object": "LayoutBlockFlow DIV id='div'",
@@ -47,7 +52,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow DIV id='div'",
-      "reason": "border box change"
+      "reason": "incremental"
     },
     {
       "object": "LayoutBlockFlow DIV id='div'",

@@ -182,9 +182,6 @@ PaintInvalidationReason BoxPaintInvalidator::computePaintInvalidationReason() {
 
   DCHECK(borderBoxChanged);
 
-  if (m_box.hasNonCompositedScrollbars())
-    return PaintInvalidationBorderBoxChange;
-
   if (style.hasVisualOverflowingEffect() || style.hasAppearance() ||
       style.hasFilterInducingProperty() || style.resize() != RESIZE_NONE ||
       style.hasMask())

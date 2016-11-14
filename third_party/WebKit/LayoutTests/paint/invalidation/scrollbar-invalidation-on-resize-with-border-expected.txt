@@ -8,13 +8,13 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (positioned) DIV id='scrollable'",
-          "rect": [8, 50, 320, 120],
-          "reason": "border box change"
+          "rect": [18, 145, 285, 15],
+          "reason": "scroll"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='scrollable'",
-          "rect": [18, 145, 285, 15],
-          "reason": "scroll"
+          "rect": [118, 50, 210, 120],
+          "reason": "incremental"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='scrollable'",
@@ -47,7 +47,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV id='scrollable'",
-      "reason": "border box change"
+      "reason": "incremental"
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='scrollable'",
