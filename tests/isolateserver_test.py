@@ -14,6 +14,7 @@ import io
 import os
 import StringIO
 import sys
+import tarfile
 import tempfile
 import unittest
 import urllib
@@ -1030,7 +1031,7 @@ class IsolateServerDownloadTest(TestCase):
         % os.path.join(self.tempdir, 'a'))
     self.checkOutput(expected_stdout, '')
 
-  def test_download_isolated_archive(self):
+  def test_download_isolated_ar_archive(self):
     # Test downloading an isolated tree.
     actual = {}
     def putfile_mock(
@@ -1132,6 +1133,94 @@ class IsolateServerDownloadTest(TestCase):
         % os.path.join(self.tempdir, 'a'))
     self.checkOutput(expected_stdout, '')
 
+  def test_download_isolated_tar_archive(self):
+    # Test downloading an isolated tree.
+    actual = {}
+    def putfile_mock(
+        srcfileobj, dstpath, file_mode=None, size=-1, use_symlink=False):
+      actual[dstpath] = srcfileobj.read(size)
+    self.mock(isolateserver, 'putfile', putfile_mock)
+    self.mock(os, 'makedirs', lambda _: None)
+    server = 'http://example.com'
+
+    files = {
+      os.path.join('a', 'foo'): 'Content',
+      'b': 'More content',
+      'c': 'Even more content!',
+    }
+
+    # Generate a tar archive
+    tf = io.BytesIO()
+    with tarfile.TarFile(mode='w', fileobj=tf) as tar:
+      f1 = tarfile.TarInfo()
+      f1.type = tarfile.REGTYPE
+      f1.name = 'a/foo'
+      f1.size = 7
+      tar.addfile(f1, io.BytesIO('Content'))
+
+      f2 = tarfile.TarInfo()
+      f2.type = tarfile.REGTYPE
+      f2.name = 'b'
+      f2.size = 12
+      tar.addfile(f2, io.BytesIO('More content'))
+    archive = tf.getvalue()
+
+    isolated = {
+      'command': ['Absurb', 'command'],
+      'relative_cwd': 'a',
+      'files': {
+        'archive1': {
+          'h': isolateserver_mock.hash_content(archive),
+          's': len(archive),
+          't': 'tar',
+        },
+        'c': {
+          'h': isolateserver_mock.hash_content(files['c']),
+          's': len(files['c']),
+        },
+      },
+      'version': isolated_format.ISOLATED_FILE_VERSION,
+    }
+    isolated_data = json.dumps(isolated, sort_keys=True, separators=(',',':'))
+    isolated_hash = isolateserver_mock.hash_content(isolated_data)
+    requests = [
+      (isolated['files']['archive1']['h'], archive),
+      (isolated['files']['c']['h'], files['c']),
+    ]
+    requests.append((isolated_hash, isolated_data))
+    requests = [
+      (
+        server + '/api/isolateservice/v1/retrieve',
+        {
+            'data': {
+                'digest': h.encode('utf-8'),
+                'namespace': {
+                    'namespace': 'default-gzip',
+                    'digest_hash': 'sha-1',
+                    'compression': 'flate',
+                },
+                'offset': 0,
+            },
+            'read_timeout': 60,
+        },
+        {'content': base64.b64encode(zlib.compress(v))},
+      ) for h, v in requests
+    ]
+    cmd = [
+      'download',
+      '--isolate-server', server,
+      '--target', self.tempdir,
+      '--isolated', isolated_hash,
+    ]
+    self.expected_requests(requests)
+    self.assertEqual(0, isolateserver.main(cmd))
+    expected = dict(
+        (os.path.join(self.tempdir, k), v) for k, v in files.iteritems())
+    self.assertEqual(expected, actual)
+    expected_stdout = (
+        'To run this test please run from the directory %s:\n  Absurb command\n'
+        % os.path.join(self.tempdir, 'a'))
+    self.checkOutput(expected_stdout, '')
 
 
 def get_storage(_isolate_server, namespace):

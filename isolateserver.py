@@ -5,7 +5,7 @@
 
 """Archives a set of files or directories to an Isolate Server."""
 
-__version__ = '0.6.0'
+__version__ = '0.7.0'
 
 import base64
 import errno
@@ -18,6 +18,7 @@ import re
 import signal
 import stat
 import sys
+import tarfile
 import tempfile
 import threading
 import time
@@ -168,6 +169,11 @@ def fileobj_path(fileobj):
   # decode it.
   if not isinstance(name, unicode):
     name = name.decode(sys.getfilesystemencoding())
+
+  # fs.exists requires an absolute path, otherwise it will fail with an
+  # assertion error.
+  if not os.path.isabs(name):
+      return
 
   if fs.exists(name):
     return name
@@ -2107,11 +2113,33 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks):
                     srcfileobj, fullpath, file_mode,
                     use_symlink=use_symlinks)
 
+              elif filetype == 'tar':
+                basedir = os.path.dirname(fullpath)
+                with tarfile.TarFile(fileobj=srcfileobj) as extractor:
+                  for ti in extractor:
+                    if not ti.isfile():
+                      logging.warning(
+                          'Path(%r) is nonfile (%s), skipped',
+                          ti.name, ti.type)
+                      continue
+                    fp = os.path.normpath(os.path.join(basedir, ti.name))
+                    if not fp.startswith(basedir):
+                      logging.error(
+                          'Path(%r) is outside root directory',
+                          fp)
+                    ifd = extractor.extractfile(ti)
+                    file_path.ensure_tree(os.path.dirname(fp))
+                    putfile(ifd, fp, 0700, ti.size)
+
               elif filetype == 'ar':
                 basedir = os.path.dirname(fullpath)
                 extractor = arfile.ArFileReader(srcfileobj, fullparse=False)
                 for ai, ifd in extractor:
                   fp = os.path.normpath(os.path.join(basedir, ai.name))
+                  if not fp.startswith(basedir):
+                    logging.error(
+                        'Path(%r) is outside root directory',
+                        fp)
                   file_path.ensure_tree(os.path.dirname(fp))
                   putfile(ifd, fp, 0700, ai.size)
 
