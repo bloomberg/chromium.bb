@@ -7,7 +7,10 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
+#include "platform/WebTaskRunner.h"
+#include "platform/graphics/OffscreenCanvasPlaceholder.h"
 #include "platform/graphics/gpu/SharedGpuContext.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
@@ -30,6 +33,7 @@ OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(
     uint32_t localId,
     uint64_t nonceHigh,
     uint64_t nonceLow,
+    int canvasId,
     int width,
     int height)
     : m_surfaceId(
@@ -40,7 +44,8 @@ OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(
       m_width(width),
       m_height(height),
       m_nextResourceId(1u),
-      m_binding(this) {
+      m_binding(this),
+      m_placeholderCanvasId(canvasId) {
   DCHECK(!m_sink.is_bound());
   mojom::blink::OffscreenCanvasCompositorFrameSinkProviderPtr provider;
   Platform::current()->interfaceProvider()->getInterface(
@@ -150,6 +155,25 @@ void OffscreenCanvasFrameDispatcherImpl::
   m_cachedImages.add(m_nextResourceId, std::move(image));
 }
 
+namespace {
+
+void updatePlaceholderImage(WeakPtr<OffscreenCanvasFrameDispatcher> dispatcher,
+                            std::unique_ptr<WebTaskRunner> taskRunner,
+                            int placeholderCanvasId,
+                            RefPtr<blink::Image> image,
+                            unsigned resourceId) {
+  DCHECK(isMainThread());
+  OffscreenCanvasPlaceholder* placeholderCanvas =
+      OffscreenCanvasPlaceholder::getPlaceholderById(placeholderCanvasId);
+  if (placeholderCanvas) {
+    placeholderCanvas->setPlaceholderFrame(std::move(image),
+                                           std::move(dispatcher),
+                                           std::move(taskRunner), resourceId);
+  }
+}
+
+}  // namespace
+
 void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
     RefPtr<StaticBitmapImage> image,
     double commitStartTime,
@@ -215,6 +239,20 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
       setTransferableResourceToSharedBitmap(resource, image);
     }
   }
+
+  // After this point, |image| can only be used on the main thread, until
+  // it is returned.
+  image->transfer();
+  std::unique_ptr<WebTaskRunner> dispatcherTaskRunner =
+      Platform::current()->currentThread()->getWebTaskRunner()->clone();
+
+  Platform::current()->mainThread()->getWebTaskRunner()->postTask(
+      BLINK_FROM_HERE,
+      crossThreadBind(updatePlaceholderImage, this->createWeakPtr(),
+                      passed(std::move(dispatcherTaskRunner)),
+                      m_placeholderCanvasId, std::move(image), resource.id));
+  m_spareResourceLocks.add(m_nextResourceId);
+
   commitTypeHistogram.count(commitType);
 
   m_nextResourceId++;
@@ -242,6 +280,10 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
   frame.render_pass_list.push_back(std::move(pass));
 
   double elapsedTime = WTF::monotonicallyIncreasingTime() - commitStartTime;
+
+  // TODO(crbug.com/663916): The off-main-thread metrics are commented-out
+  // because they cause thread check errors (static variable accessed in many
+  // threads)
   switch (commitType) {
     case CommitGPUCanvasGPUCompositing:
       if (isMainThread()) {
@@ -250,13 +292,13 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
             ("Blink.Canvas.OffscreenCommit.GPUCanvasGPUCompositingMain", 0,
              10000000, 50));
         commitGPUCanvasGPUCompositingMainTimer.count(elapsedTime * 1000000.0);
-      } else {
+      } /* else {
         DEFINE_STATIC_LOCAL(
             CustomCountHistogram, commitGPUCanvasGPUCompositingWorkerTimer,
             ("Blink.Canvas.OffscreenCommit.GPUCanvasGPUCompositingWorker", 0,
              10000000, 50));
         commitGPUCanvasGPUCompositingWorkerTimer.count(elapsedTime * 1000000.0);
-      }
+      } */
       break;
     case CommitGPUCanvasSoftwareCompositing:
       if (isMainThread()) {
@@ -266,14 +308,14 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
              10000000, 50));
         commitGPUCanvasSoftwareCompositingMainTimer.count(elapsedTime *
                                                           1000000.0);
-      } else {
+      } /* else {
         DEFINE_STATIC_LOCAL(
             CustomCountHistogram, commitGPUCanvasSoftwareCompositingWorkerTimer,
             ("Blink.Canvas.OffscreenCommit.GPUCanvasSoftwareCompositingWorker",
              0, 10000000, 50));
         commitGPUCanvasSoftwareCompositingWorkerTimer.count(elapsedTime *
                                                             1000000.0);
-      }
+      } */
       break;
     case CommitSoftwareCanvasGPUCompositing:
       if (isMainThread()) {
@@ -283,14 +325,14 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
              10000000, 50));
         commitSoftwareCanvasGPUCompositingMainTimer.count(elapsedTime *
                                                           1000000.0);
-      } else {
+      } /* else {
         DEFINE_STATIC_LOCAL(
             CustomCountHistogram, commitSoftwareCanvasGPUCompositingWorkerTimer,
             ("Blink.Canvas.OffscreenCommit.SoftwareCanvasGPUCompositingWorker",
              0, 10000000, 50));
         commitSoftwareCanvasGPUCompositingWorkerTimer.count(elapsedTime *
                                                             1000000.0);
-      }
+      } */
       break;
     case CommitSoftwareCanvasSoftwareCompositing:
       if (isMainThread()) {
@@ -301,7 +343,7 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
                              0, 10000000, 50));
         commitSoftwareCanvasSoftwareCompositingMainTimer.count(elapsedTime *
                                                                1000000.0);
-      } else {
+      } /* else {
         DEFINE_STATIC_LOCAL(CustomCountHistogram,
                             commitSoftwareCanvasSoftwareCompositingWorkerTimer,
                             ("Blink.Canvas.OffscreenCommit."
@@ -309,7 +351,7 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
                              0, 10000000, 50));
         commitSoftwareCanvasSoftwareCompositingWorkerTimer.count(elapsedTime *
                                                                  1000000.0);
-      }
+      } */
       break;
     case OffscreenCanvasCommitTypeCount:
       NOTREACHED();
@@ -331,10 +373,24 @@ void OffscreenCanvasFrameDispatcherImpl::ReclaimResources(
     RefPtr<StaticBitmapImage> image = m_cachedImages.get(resource.id);
     if (image)
       image->updateSyncToken(resource.sync_token);
-    m_cachedImages.remove(resource.id);
-    m_sharedBitmaps.remove(resource.id);
-    m_cachedTextureIds.remove(resource.id);
+    reclaimResource(resource.id);
   }
+}
+
+void OffscreenCanvasFrameDispatcherImpl::reclaimResource(unsigned resourceId) {
+  // An image resource needs to be returned by both the
+  // CompositorFrameSink and the HTMLCanvasElement. These
+  // events can happen in any order.  The first of the two
+  // to return a given resource will result in the spare
+  // resource lock being lifted, and the second will delete
+  // the resource for real.
+  if (m_spareResourceLocks.contains(resourceId)) {
+    m_spareResourceLocks.remove(resourceId);
+    return;
+  }
+  m_cachedImages.remove(resourceId);
+  m_sharedBitmaps.remove(resourceId);
+  m_cachedTextureIds.remove(resourceId);
 }
 
 bool OffscreenCanvasFrameDispatcherImpl::verifyImageSize(

@@ -1329,7 +1329,7 @@ ScriptValueSerializer::writeTransferredOffscreenCanvas(
                        next);
   m_writer.writeTransferredOffscreenCanvas(
       offscreenCanvas->width(), offscreenCanvas->height(),
-      offscreenCanvas->getAssociatedCanvasId(), offscreenCanvas->clientId(),
+      offscreenCanvas->placeholderCanvasId(), offscreenCanvas->clientId(),
       offscreenCanvas->sinkId(), offscreenCanvas->localId(),
       offscreenCanvas->nonceHigh(), offscreenCanvas->nonceLow());
   return nullptr;
@@ -2600,7 +2600,7 @@ bool ScriptValueDeserializer::tryGetTransferredOffscreenCanvas(
     uint64_t nonceLow,
     v8::Local<v8::Value>* object) {
   OffscreenCanvas* offscreenCanvas = OffscreenCanvas::create(width, height);
-  offscreenCanvas->setAssociatedCanvasId(canvasId);
+  offscreenCanvas->setPlaceholderCanvasId(canvasId);
   offscreenCanvas->setSurfaceId(clientId, sinkId, localId, nonceHigh, nonceLow);
   *object = toV8(offscreenCanvas, m_reader.getScriptState());
   if ((*object).IsEmpty())

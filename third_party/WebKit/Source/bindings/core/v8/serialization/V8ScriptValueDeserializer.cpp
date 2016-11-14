@@ -243,7 +243,7 @@ ScriptWrappable* V8ScriptValueDeserializer::readDOMObject(
           !readUint64(&nonceHigh) || !readUint64(&nonceLow))
         return nullptr;
       OffscreenCanvas* canvas = OffscreenCanvas::create(width, height);
-      canvas->setAssociatedCanvasId(canvasId);
+      canvas->setPlaceholderCanvasId(canvasId);
       canvas->setSurfaceId(clientId, sinkId, localId, nonceHigh, nonceLow);
       return canvas;
     }

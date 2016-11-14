@@ -278,7 +278,7 @@ bool V8ScriptValueSerializer::writeDOMObject(ScriptWrappable* wrappable,
     writeTag(OffscreenCanvasTransferTag);
     writeUint32(canvas->width());
     writeUint32(canvas->height());
-    writeUint32(canvas->getAssociatedCanvasId());
+    writeUint32(canvas->placeholderCanvasId());
     writeUint32(canvas->clientId());
     writeUint32(canvas->sinkId());
     writeUint32(canvas->localId());

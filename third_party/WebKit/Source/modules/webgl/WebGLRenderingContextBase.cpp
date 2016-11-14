@@ -700,7 +700,7 @@ void WebGLRenderingContextBase::commit(ScriptState* scriptState,
     return;
   }
   // no HTMLCanvas associated, thrown InvalidStateError
-  if (getOffscreenCanvas()->getAssociatedCanvasId() == -1) {
+  if (!getOffscreenCanvas()->hasPlaceholderCanvas()) {
     exceptionState.throwDOMException(InvalidStateError,
                                      "Commit() was called on a context whose "
                                      "OffscreenCanvas is not associated with a "

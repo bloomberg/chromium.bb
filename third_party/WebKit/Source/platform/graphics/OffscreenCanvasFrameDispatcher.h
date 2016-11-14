@@ -7,6 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "wtf/RefPtr.h"
+#include "wtf/WeakPtr.h"
 
 namespace blink {
 
@@ -14,10 +15,19 @@ class StaticBitmapImage;
 
 class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher {
  public:
-  virtual ~OffscreenCanvasFrameDispatcher(){};
+  OffscreenCanvasFrameDispatcher() : m_weakPtrFactory(this) {}
+  virtual ~OffscreenCanvasFrameDispatcher() {}
   virtual void dispatchFrame(RefPtr<StaticBitmapImage>,
                              double commitStartTime,
                              bool isWebGLSoftwareRendering = false) = 0;
+  virtual void reclaimResource(unsigned resourceId) = 0;
+
+  WeakPtr<OffscreenCanvasFrameDispatcher> createWeakPtr() {
+    return m_weakPtrFactory.createWeakPtr();
+  }
+
+ private:
+  WeakPtrFactory<OffscreenCanvasFrameDispatcher> m_weakPtrFactory;
 };
 
 }  // namespace blink

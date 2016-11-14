@@ -49,7 +49,7 @@ OffscreenCanvas* HTMLCanvasElementModuleTest::transferControlToOffscreen(
 TEST_F(HTMLCanvasElementModuleTest, TransferControlToOffscreen) {
   NonThrowableExceptionState exceptionState;
   OffscreenCanvas* offscreenCanvas = transferControlToOffscreen(exceptionState);
-  int canvasId = offscreenCanvas->getAssociatedCanvasId();
+  int canvasId = offscreenCanvas->placeholderCanvasId();
   EXPECT_EQ(canvasId, DOMNodeIds::idForNode(&(canvasElement())));
 }
 

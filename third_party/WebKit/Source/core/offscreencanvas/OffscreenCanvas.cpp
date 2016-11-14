@@ -32,7 +32,7 @@ OffscreenCanvas* OffscreenCanvas::create(unsigned width, unsigned height) {
 void OffscreenCanvas::setWidth(unsigned width, ExceptionState& exceptionState) {
   // If this OffscreenCanvas is transferred control by an html canvas,
   // its size is determined by html canvas's size and cannot be resized.
-  if (m_canvasId >= 0) {
+  if (hasPlaceholderCanvas()) {
     exceptionState.throwDOMException(InvalidStateError,
                                      "Resizing is not allowed on an "
                                      "OffscreenCanvas that has been "
@@ -45,7 +45,7 @@ void OffscreenCanvas::setWidth(unsigned width, ExceptionState& exceptionState) {
 void OffscreenCanvas::setHeight(unsigned height,
                                 ExceptionState& exceptionState) {
   // Same comment as above.
-  if (m_canvasId >= 0) {
+  if (hasPlaceholderCanvas()) {
     exceptionState.throwDOMException(InvalidStateError,
                                      "Resizing is not allowed on an "
                                      "OffscreenCanvas that has been "
@@ -184,8 +184,8 @@ OffscreenCanvasFrameDispatcher* OffscreenCanvas::getOrCreateFrameDispatcher() {
     // (either main or worker) to the browser process and remains unchanged
     // throughout the lifetime of this OffscreenCanvas.
     m_frameDispatcher = wrapUnique(new OffscreenCanvasFrameDispatcherImpl(
-        m_clientId, m_sinkId, m_localId, m_nonceHigh, m_nonceLow, width(),
-        height()));
+        m_clientId, m_sinkId, m_localId, m_nonceHigh, m_nonceLow,
+        m_placeholderCanvasId, width(), height()));
   }
   return m_frameDispatcher.get();
 }

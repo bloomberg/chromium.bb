@@ -38,7 +38,6 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
   // Methods that have a default implementation, and overrided by only one
   // sub-class
   virtual bool hasMailbox() { return false; }
-  virtual void transfer() {}
 
   // Methods overrided by AcceleratedStaticBitmapImage only
   virtual void copyToTexture(WebGraphicsContext3DProvider*,

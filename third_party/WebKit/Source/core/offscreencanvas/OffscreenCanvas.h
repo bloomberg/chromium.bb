@@ -47,8 +47,13 @@ class CORE_EXPORT OffscreenCanvas final
                               ExceptionState&);
 
   IntSize size() const { return m_size; }
-  void setAssociatedCanvasId(int canvasId) { m_canvasId = canvasId; }
-  int getAssociatedCanvasId() const { return m_canvasId; }
+  void setPlaceholderCanvasId(int canvasId) {
+    m_placeholderCanvasId = canvasId;
+  }
+  int placeholderCanvasId() const { return m_placeholderCanvasId; }
+  bool hasPlaceholderCanvas() {
+    return m_placeholderCanvasId != kNoPlaceholderCanvas;
+  }
   bool isNeutered() const { return m_isNeutered; }
   void setNeutered();
   CanvasRenderingContext* getCanvasRenderingContext(
@@ -110,8 +115,12 @@ class CORE_EXPORT OffscreenCanvas final
   static CanvasRenderingContextFactory* getRenderingContextFactory(int);
 
   Member<CanvasRenderingContext> m_context;
-  int m_canvasId = -1;  // DOMNodeIds starts from 0, using -1 to indicate no
-                        // associated canvas element.
+
+  enum {
+    kNoPlaceholderCanvas = -1,  // DOMNodeIds starts from 0, using -1 to
+                                // indicate no associated canvas element.
+  };
+  int m_placeholderCanvasId = kNoPlaceholderCanvas;
 
   IntSize m_size;
   bool m_isNeutered = false;

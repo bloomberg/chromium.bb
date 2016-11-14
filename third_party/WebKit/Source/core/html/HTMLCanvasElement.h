@@ -46,6 +46,7 @@
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/graphics/ImageBufferClient.h"
+#include "platform/graphics/OffscreenCanvasPlaceholder.h"
 #include "platform/heap/Handle.h"
 #include <memory>
 
@@ -77,7 +78,8 @@ class CORE_EXPORT HTMLCanvasElement final : public HTMLElement,
                                             public PageVisibilityObserver,
                                             public CanvasImageSource,
                                             public ImageBufferClient,
-                                            public ImageBitmapSource {
+                                            public ImageBitmapSource,
+                                            public OffscreenCanvasPlaceholder {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(HTMLCanvasElement);
   USING_PRE_FINALIZER(HTMLCanvasElement, dispose);

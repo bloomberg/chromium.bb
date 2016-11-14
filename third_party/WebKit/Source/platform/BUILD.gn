@@ -837,6 +837,8 @@ component("platform") {
     "graphics/OffscreenCanvasFrameDispatcher.h",
     "graphics/OffscreenCanvasFrameDispatcherImpl.cpp",
     "graphics/OffscreenCanvasFrameDispatcherImpl.h",
+    "graphics/OffscreenCanvasPlaceholder.cpp",
+    "graphics/OffscreenCanvasPlaceholder.h",
     "graphics/PaintGeneratedImage.cpp",
     "graphics/PaintGeneratedImage.h",
     "graphics/PaintInvalidationReason.cpp",

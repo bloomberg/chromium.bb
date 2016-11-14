@@ -515,7 +515,7 @@ TEST(V8ScriptValueSerializerTest, TransferOffscreenCanvas) {
   ScopedEnableV8BasedStructuredClone enable;
   V8TestingScope scope;
   OffscreenCanvas* canvas = OffscreenCanvas::create(10, 7);
-  canvas->setAssociatedCanvasId(519);
+  canvas->setPlaceholderCanvasId(519);
   v8::Local<v8::Value> wrapper = toV8(canvas, scope.getScriptState());
   Transferables transferables;
   transferables.offscreenCanvases.append(canvas);
@@ -525,7 +525,7 @@ TEST(V8ScriptValueSerializerTest, TransferOffscreenCanvas) {
   OffscreenCanvas* newCanvas =
       V8OffscreenCanvas::toImpl(result.As<v8::Object>());
   EXPECT_EQ(IntSize(10, 7), newCanvas->size());
-  EXPECT_EQ(519, newCanvas->getAssociatedCanvasId());
+  EXPECT_EQ(519, newCanvas->placeholderCanvasId());
   EXPECT_TRUE(canvas->isNeutered());
   EXPECT_FALSE(newCanvas->isNeutered());
 }

@@ -49,7 +49,7 @@ void OffscreenCanvasRenderingContext2D::commit(ScriptState* scriptState,
                                                ExceptionState& exceptionState) {
   UseCounter::Feature feature = UseCounter::OffscreenCanvasCommit2D;
   UseCounter::count(scriptState->getExecutionContext(), feature);
-  if (getOffscreenCanvas()->getAssociatedCanvasId() < 0) {
+  if (!getOffscreenCanvas()->hasPlaceholderCanvas()) {
     // If an OffscreenCanvas has no associated canvas Id, it indicates that
     // it is not an OffscreenCanvas created by transfering control from html
     // canvas.

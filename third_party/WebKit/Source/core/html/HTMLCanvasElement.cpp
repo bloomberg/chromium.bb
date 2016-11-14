@@ -145,6 +145,8 @@ HTMLCanvasElement::~HTMLCanvasElement() {
 }
 
 void HTMLCanvasElement::dispose() {
+  releasePlaceholderFrame();
+
   if (m_context) {
     m_context->detachCanvas();
     m_context = nullptr;
@@ -470,8 +472,9 @@ void HTMLCanvasElement::reset() {
 }
 
 bool HTMLCanvasElement::paintsIntoCanvasBuffer() const {
+  if (placeholderFrame())
+    return false;
   DCHECK(m_context);
-
   if (!m_context->isAccelerated())
     return true;
   if (layoutBox() && layoutBox()->hasAcceleratedCompositing())
@@ -515,7 +518,7 @@ void HTMLCanvasElement::notifyListenersCanvasChanged() {
 void HTMLCanvasElement::paint(GraphicsContext& context, const LayoutRect& r) {
   // FIXME: crbug.com/438240; there is a bug with the new CSS blending and
   // compositing feature.
-  if (!m_context)
+  if (!m_context && !placeholderFrame())
     return;
 
   const ComputedStyle* style = ensureComputedStyle();
@@ -535,6 +538,12 @@ void HTMLCanvasElement::paint(GraphicsContext& context, const LayoutRect& r) {
 
   if (!paintsIntoCanvasBuffer() && !document().printing())
     return;
+
+  if (placeholderFrame()) {
+    DCHECK(document().printing());
+    context.drawImage(placeholderFrame().get(), pixelSnappedIntRect(r));
+    return;
+  }
 
   // TODO(junov): Paint is currently only implemented by ImageBitmap contexts.
   // We could improve the abstraction by making all context types paint
@@ -619,19 +628,22 @@ ImageData* HTMLCanvasElement::toImageData(SourceDrawingBuffer sourceBuffer,
 
   imageData = ImageData::create(m_size);
 
-  if (!m_context || !imageData)
+  if ((!m_context || !imageData) && !placeholderFrame())
     return imageData;
 
-  DCHECK(m_context->is2d());
+  DCHECK((m_context && m_context->is2d()) || placeholderFrame());
+  sk_sp<SkImage> snapshot;
   if (hasImageBuffer()) {
-    sk_sp<SkImage> snapshot =
-        buffer()->newSkImageSnapshot(PreferNoAcceleration, reason);
-    if (snapshot) {
-      SkImageInfo imageInfo = SkImageInfo::Make(
-          width(), height(), kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
-      snapshot->readPixels(imageInfo, imageData->data()->data(),
-                           imageInfo.minRowBytes(), 0, 0);
-    }
+    snapshot = buffer()->newSkImageSnapshot(PreferNoAcceleration, reason);
+  } else if (placeholderFrame()) {
+    snapshot = placeholderFrame()->imageForCurrentFrame();
+  }
+
+  if (snapshot) {
+    SkImageInfo imageInfo = SkImageInfo::Make(
+        width(), height(), kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
+    snapshot->readPixels(imageInfo, imageData->data()->data(),
+                         imageInfo.minRowBytes(), 0, 0);
   }
 
   return imageData;
@@ -683,13 +695,6 @@ String HTMLCanvasElement::toDataURLInternal(
 String HTMLCanvasElement::toDataURL(const String& mimeType,
                                     const ScriptValue& qualityArgument,
                                     ExceptionState& exceptionState) const {
-  if (surfaceLayerBridge()) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     "canvas.toDataURL is not allowed for a "
-                                     "canvas that has transferred its control "
-                                     "to offscreen.");
-    return String();
-  }
   if (!originClean()) {
     exceptionState.throwSecurityError("Tainted canvases may not be exported.");
     return String();
@@ -709,14 +714,6 @@ void HTMLCanvasElement::toBlob(BlobCallback* callback,
                                const String& mimeType,
                                const ScriptValue& qualityArgument,
                                ExceptionState& exceptionState) {
-  if (surfaceLayerBridge()) {
-    exceptionState.throwDOMException(InvalidStateError,
-                                     "canvas.toBlob is not allowed for a "
-                                     "canvas that has transferred its control "
-                                     "to offscreen.");
-    return;
-  }
-
   if (!originClean()) {
     exceptionState.throwSecurityError("Tainted canvases may not be exported.");
     return;
@@ -1210,6 +1207,11 @@ PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(
   if (!isPaintable()) {
     *status = InvalidSourceImageStatus;
     return nullptr;
+  }
+
+  if (placeholderFrame()) {
+    *status = NormalSourceImageStatus;
+    return placeholderFrame();
   }
 
   if (!m_context) {

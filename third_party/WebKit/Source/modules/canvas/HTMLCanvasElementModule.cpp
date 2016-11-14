@@ -65,7 +65,10 @@ OffscreenCanvas* HTMLCanvasElementModule::transferControlToOffscreenInternal(
   }
   OffscreenCanvas* offscreenCanvas =
       OffscreenCanvas::create(canvas.width(), canvas.height());
-  offscreenCanvas->setAssociatedCanvasId(DOMNodeIds::idForNode(&canvas));
+
+  int canvasId = DOMNodeIds::idForNode(&canvas);
+  offscreenCanvas->setPlaceholderCanvasId(canvasId);
+  canvas.registerPlaceholder(canvasId);
 
   CanvasSurfaceLayerBridge* bridge = canvas.surfaceLayerBridge();
   if (bridge) {
