@@ -11,6 +11,7 @@
 #include <wayland-client-core.h>
 #include <wayland-client-protocol.h>
 
+#include <cmath>
 #include <deque>
 #include <iostream>
 #include <string>
@@ -303,6 +304,7 @@ class MotionEvents {
                size_t num_rects,
                size_t max_frames_pending,
                bool fullscreen,
+               bool show_fps_counter,
                const std::string* use_drm)
       : width_(width),
         height_(height),
@@ -310,6 +312,7 @@ class MotionEvents {
         num_rects_(num_rects),
         max_frames_pending_(max_frames_pending),
         fullscreen_(fullscreen),
+        show_fps_counter_(show_fps_counter),
         use_drm_(use_drm) {}
 
   // Initialize and run client main loop.
@@ -324,6 +327,7 @@ class MotionEvents {
   const size_t num_rects_;
   const size_t max_frames_pending_;
   const bool fullscreen_;
+  const bool show_fps_counter_;
   const std::string* use_drm_;
 
   Globals globals_;
@@ -531,6 +535,12 @@ int MotionEvents::Run() {
       base::TimeDelta::FromSeconds(kBenchmarkInterval);
   base::TimeDelta benchmark_wall_time;
   base::TimeDelta benchmark_cpu_time;
+  std::string fps_counter_text("??");
+
+  SkPaint text_paint;
+  text_paint.setTextSize(32.0f);
+  text_paint.setColor(SK_ColorWHITE);
+  text_paint.setStyle(SkPaint::kFill_Style);
 
   int dispatch_status = 0;
   do {
@@ -558,6 +568,10 @@ int MotionEvents::Run() {
                   << " cpu=" << benchmark_cpu_time.InMillisecondsF() / frames
                   << ")" << std::endl;
 
+        // Set FPS counter text in case it's being shown.
+        fps_counter_text = base::UintToString(
+            std::round(frames / benchmark_interval.InSecondsF()));
+
         frames = 0;
         benchmark_time = wall_time_start;
         benchmark_wall_time = base::TimeDelta();
@@ -567,8 +581,6 @@ int MotionEvents::Run() {
       base::ThreadTicks cpu_time_start = base::ThreadTicks::Now();
 
       SkCanvas* canvas = buffer->sk_surface->getCanvas();
-      canvas->save();
-
       if (event_times.empty()) {
         canvas->clear(SK_ColorBLACK);
       } else {
@@ -584,6 +596,8 @@ int MotionEvents::Run() {
                                        (event_times.back() & 0x00ff00) >> 8,
                                        (event_times.back() & 0xff0000) >> 16));
           canvas->drawIRect(rect, paint);
+          std::string text = base::UintToString(event_times.back());
+          canvas->drawText(text.c_str(), text.length(), 8, y + 32, text_paint);
           event_times.pop_back();
           y += h;
         }
@@ -596,18 +610,25 @@ int MotionEvents::Run() {
                                        -SkScalarHalf(half_height), half_width,
                                        half_height);
       SkScalar rotation = SkScalarMulDiv(frame.time, kRotationSpeed, 1000);
-      SkPaint paint;
+      canvas->save();
       canvas->translate(half_width, half_height);
       for (size_t i = 0; i < num_rects_; ++i) {
         const SkColor kColors[] = {SK_ColorBLUE, SK_ColorGREEN,
                                    SK_ColorRED,  SK_ColorYELLOW,
                                    SK_ColorCYAN, SK_ColorMAGENTA};
+        SkPaint paint;
         paint.setColor(SkColorSetA(kColors[i % arraysize(kColors)], 0xA0));
         canvas->rotate(rotation / num_rects_);
         canvas->drawIRect(rect, paint);
       }
-
       canvas->restore();
+
+      // Draw FPS counter.
+      if (show_fps_counter_) {
+        canvas->drawText(fps_counter_text.c_str(), fps_counter_text.length(),
+                         width_ - 48, 32, text_paint);
+      }
+
       if (gr_context_) {
         gr_context_->flush();
         glFlush();
@@ -760,6 +781,9 @@ const char kMaxFramesPending[] = "max-frames-pending";
 // Specifies if client should be fullscreen.
 const char kFullscreen[] = "fullscreen";
 
+// Specifies if FPS counter should be shown.
+const char kShowFpsCounter[] = "show-fps-counter";
+
 // Use drm buffer instead of shared memory.
 const char kUseDrm[] = "use-drm";
 
@@ -813,6 +837,7 @@ int main(int argc, char* argv[]) {
 
   exo::wayland::clients::MotionEvents client(
       width, height, scale, num_rects, max_frames_pending,
-      command_line->HasSwitch(switches::kFullscreen), use_drm.get());
+      command_line->HasSwitch(switches::kFullscreen),
+      command_line->HasSwitch(switches::kShowFpsCounter), use_drm.get());
   return client.Run();
 }
