@@ -9,6 +9,4 @@ mojom("mojo_bindings") {
   sources = [
     "nfc.mojom",
   ]
-
-  use_new_wrapper_types = false
 }

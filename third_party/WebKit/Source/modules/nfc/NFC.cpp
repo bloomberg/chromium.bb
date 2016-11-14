@@ -131,7 +131,7 @@ struct TypeConverter<NFCRecordPtr, WTF::String> {
     record->record_type = NFCRecordType::TEXT;
     record->media_type = kPlainTextMimeType;
     record->media_type.append(kCharSetUTF8);
-    record->data = mojo::WTFArray<uint8_t>::From(string);
+    record->data = mojo::WTFArray<uint8_t>::From(string).PassStorage();
     return record;
   }
 };
@@ -142,7 +142,7 @@ struct TypeConverter<NFCRecordPtr, blink::DOMArrayBuffer*> {
     NFCRecordPtr record = NFCRecord::New();
     record->record_type = NFCRecordType::OPAQUE_RECORD;
     record->media_type = kOpaqueMimeType;
-    record->data = mojo::WTFArray<uint8_t>::From(buffer);
+    record->data = mojo::WTFArray<uint8_t>::From(buffer).PassStorage();
     return record;
   }
 };
@@ -151,8 +151,7 @@ template <>
 struct TypeConverter<NFCMessagePtr, WTF::String> {
   static NFCMessagePtr Convert(const WTF::String& string) {
     NFCMessagePtr message = NFCMessage::New();
-    message->data = mojo::WTFArray<NFCRecordPtr>::New(1);
-    message->data[0] = NFCRecord::From(string);
+    message->data.append(NFCRecord::From(string));
     return message;
   }
 };
@@ -223,14 +222,14 @@ struct TypeConverter<NFCRecordPtr, blink::NFCRecord> {
         break;
     }
 
-    recordPtr->data = mojo::WTFArray<uint8_t>::From(record.data());
-
+    auto recordData = mojo::WTFArray<uint8_t>::From(record.data());
     // If JS object cannot be converted to uint8_t array, return null,
     // interrupt NFCMessage conversion algorithm and reject promise with
     // SyntaxError exception.
-    if (recordPtr->data.is_null())
+    if (recordData.is_null())
       return nullptr;
 
+    recordPtr->data = recordData.PassStorage();
     return recordPtr;
   }
 };
@@ -248,7 +247,6 @@ struct TypeConverter<NFCMessagePtr, blink::NFCMessage> {
 
       messagePtr->data[i] = std::move(record);
     }
-    messagePtr->data = mojo::WTFArray<NFCRecordPtr>::From(message.data());
     return messagePtr;
   }
 };
@@ -257,8 +255,7 @@ template <>
 struct TypeConverter<NFCMessagePtr, blink::DOMArrayBuffer*> {
   static NFCMessagePtr Convert(blink::DOMArrayBuffer* buffer) {
     NFCMessagePtr message = NFCMessage::New();
-    message->data = mojo::WTFArray<NFCRecordPtr>::New(1);
-    message->data[0] = NFCRecord::From(buffer);
+    message->data.append(NFCRecord::From(buffer));
     return message;
   }
 };
@@ -581,7 +578,7 @@ void NFC::OnConnectionError() {
   m_requests.clear();
 }
 
-void NFC::OnWatch(mojo::WTFArray<uint32_t> ids, mojom::NFCMessagePtr) {
+void NFC::OnWatch(const WTF::Vector<uint32_t>& ids, mojom::NFCMessagePtr) {
   // TODO(shalamov): Not implemented.
 }
 
