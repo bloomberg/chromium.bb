@@ -318,28 +318,16 @@ void GIFImageDecoder::decode(size_t index) {
 
   updateAggressivePurging(index);
 
-  Vector<size_t> framesToDecode;
-  size_t frameToDecode = index;
-  do {
-    framesToDecode.append(frameToDecode);
-    frameToDecode =
-        m_frameBufferCache[frameToDecode].requiredPreviousFrameIndex();
-  } while (frameToDecode != kNotFound &&
-           m_frameBufferCache[frameToDecode].getStatus() !=
-               ImageFrame::FrameComplete);
-
+  Vector<size_t> framesToDecode = findFramesToDecode(index);
   for (auto i = framesToDecode.rbegin(); i != framesToDecode.rend(); ++i) {
     if (!m_reader->decode(*i)) {
       setFailed();
       return;
     }
 
-    // We need more data to continue decoding.
-    if (m_frameBufferCache[*i].getStatus() != ImageFrame::FrameComplete)
+    // If this returns false, we need more data to continue decoding.
+    if (!postDecodeProcessing(*i))
       break;
-
-    if (m_purgeAggressively)
-      clearCacheExceptFrame(*i);
   }
 
   // It is also a fatal error if all data is received and we have decoded all

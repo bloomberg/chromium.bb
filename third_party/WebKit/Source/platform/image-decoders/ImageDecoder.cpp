@@ -223,6 +223,30 @@ void ImageDecoder::clearFrameBuffer(size_t frameIndex) {
   m_frameBufferCache[frameIndex].clearPixelData();
 }
 
+Vector<size_t> ImageDecoder::findFramesToDecode(size_t index) const {
+  DCHECK(index < m_frameBufferCache.size());
+
+  Vector<size_t> framesToDecode;
+  do {
+    framesToDecode.append(index);
+    index = m_frameBufferCache[index].requiredPreviousFrameIndex();
+  } while (index != kNotFound &&
+           m_frameBufferCache[index].getStatus() != ImageFrame::FrameComplete);
+  return framesToDecode;
+}
+
+bool ImageDecoder::postDecodeProcessing(size_t index) {
+  DCHECK(index < m_frameBufferCache.size());
+
+  if (m_frameBufferCache[index].getStatus() != ImageFrame::FrameComplete)
+    return false;
+
+  if (m_purgeAggressively)
+    clearCacheExceptFrame(index);
+
+  return true;
+}
+
 void ImageDecoder::updateAggressivePurging(size_t index) {
   if (m_purgeAggressively)
     return;

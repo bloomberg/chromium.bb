@@ -308,6 +308,19 @@ class PLATFORM_EXPORT ImageDecoder {
   // Decodes the requested frame.
   virtual void decode(size_t) = 0;
 
+  // This method is only required for animated images. It returns a vector with
+  // all frame indices that need to be decoded in order to succesfully decode
+  // the provided frame.  The indices are returned in reverse order, so the
+  // last frame needs to be decoded first.  Before calling this method, the
+  // caller must verify that the frame exists.
+  Vector<size_t> findFramesToDecode(size_t) const;
+
+  // This is called by decode() after decoding a frame in an animated image.
+  // Before calling this method, the caller must verify that the frame exists.
+  // @return true  if the frame was fully decoded,
+  //         false otherwise.
+  bool postDecodeProcessing(size_t);
+
   RefPtr<SegmentReader> m_data;  // The encoded data.
   Vector<ImageFrame, 1> m_frameBufferCache;
   const bool m_premultiplyAlpha;
@@ -326,7 +339,6 @@ class PLATFORM_EXPORT ImageDecoder {
   // If that happens, m_purgeAggressively is set to true. This signals
   // future decodes to purge old frames as it goes.
   void updateAggressivePurging(size_t index);
-  bool m_purgeAggressively;
 
  private:
   enum class SniffResult { JPEG, PNG, GIF, WEBP, ICO, BMP, Invalid };
@@ -340,6 +352,8 @@ class PLATFORM_EXPORT ImageDecoder {
                                     static_cast<unsigned long long>(height);
     return total_size > ((1 << 29) - 1);
   }
+
+  bool m_purgeAggressively;
 
   IntSize m_size;
   bool m_sizeAvailable = false;

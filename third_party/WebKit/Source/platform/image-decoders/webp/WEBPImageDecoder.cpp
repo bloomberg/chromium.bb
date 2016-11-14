@@ -447,15 +447,7 @@ void WEBPImageDecoder::decode(size_t index) {
   if (failed())
     return;
 
-  Vector<size_t> framesToDecode;
-  size_t frameToDecode = index;
-  do {
-    framesToDecode.append(frameToDecode);
-    frameToDecode =
-        m_frameBufferCache[frameToDecode].requiredPreviousFrameIndex();
-  } while (frameToDecode != kNotFound &&
-           m_frameBufferCache[frameToDecode].getStatus() !=
-               ImageFrame::FrameComplete);
+  Vector<size_t> framesToDecode = findFramesToDecode(index);
 
   ASSERT(m_demux);
   for (auto i = framesToDecode.rbegin(); i != framesToDecode.rend(); ++i) {
@@ -471,12 +463,9 @@ void WEBPImageDecoder::decode(size_t index) {
     if (failed())
       return;
 
-    // We need more data to continue decoding.
-    if (m_frameBufferCache[*i].getStatus() != ImageFrame::FrameComplete)
+    // If this returns false, we need more data to continue decoding.
+    if (!postDecodeProcessing(*i))
       break;
-
-    if (m_purgeAggressively)
-      clearCacheExceptFrame(*i);
   }
 
   // It is also a fatal error if all data is received and we have decoded all
