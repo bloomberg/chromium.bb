@@ -2924,6 +2924,14 @@ if (!is_android) {
       ]
     }
 
+    data = [
+      # Needed for isolate script to execute.
+      "//testing/scripts/common.py",
+      "//testing/xvfb.py",
+      "//testing/scripts/run_gtest_perf_test.py",
+      "//tools/perf/generate_legacy_perf_dashboard_json.py",
+    ]
+
     # This target should not require the Chrome executable to run.
     assert_no_deps = [ "//chrome" ]
   }
@@ -2963,6 +2971,23 @@ group("telemetry_perf_tests") {
     "//testing/scripts/common.py",
     "//testing/xvfb.py",
     "//testing/scripts/run_telemetry_benchmark_as_googletest.py",
+  ]
+}
+
+group("angle_perftests") {
+  testonly = true
+  if (is_win) {
+    data_deps = [
+      "//third_party/angle/src/tests:angle_perftests",
+    ]
+  }
+
+  data = [
+    # Needed for isolate script to execute.
+    "//testing/scripts/common.py",
+    "//testing/xvfb.py",
+    "//testing/scripts/run_gtest_perf_test.py",
+    "//tools/perf/generate_legacy_perf_dashboard_json.py",
   ]
 }
 
@@ -4975,6 +5000,14 @@ if (!is_android && !is_ios && !is_chromecast) {
       "//testing/gmock",
       "//testing/gtest",
       "//testing/perf",
+    ]
+
+    data = [
+      # Needed for isolate script to execute.
+      "//testing/scripts/common.py",
+      "//testing/xvfb.py",
+      "//testing/scripts/run_gtest_perf_test.py",
+      "//tools/perf/generate_legacy_perf_dashboard_json.py",
     ]
 
     if (is_win) {

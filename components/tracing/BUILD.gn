@@ -132,6 +132,14 @@ test("tracing_perftests") {
     "//testing/perf",
   ]
 
+  data = [
+    # Needed for isolate script to execute.
+    "//testing/scripts/common.py",
+    "//testing/xvfb.py",
+    "//testing/scripts/run_gtest_perf_test.py",
+    "//tools/perf/generate_legacy_perf_dashboard_json.py",
+  ]
+
   if (is_android) {
     deps += [ "//testing/android/native_test:native_test_native_code" ]
   }

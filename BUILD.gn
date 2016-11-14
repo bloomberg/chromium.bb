@@ -988,7 +988,7 @@ group("chromium_builder_perf") {
     if (is_win) {
       data_deps += [
         "//chrome/installer/mini_installer:mini_installer",
-        "//third_party/angle/src/tests:angle_perftests",
+        "//chrome/test:angle_perftests",
       ]
     } else {
       data_deps += [ "//breakpad:minidump_stackwalk($host_toolchain)" ]

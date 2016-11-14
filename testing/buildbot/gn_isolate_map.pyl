@@ -804,6 +804,56 @@
       "cc_perftests",
     ],
   },
+  "load_library_perf_tests": {
+    "label": "//chrome/test:load_library_perf_tests",
+    "type": "script",
+    "script": "//testing/scripts/run_gtest_perf_test.py",
+    "args": [
+      "load_library_perf_tests",
+      "--test-launcher-print-test-stdio=always"
+    ],
+  },
+  "tracing_perftests": {
+    "label": "//components/tracing:tracing_perftests",
+    "type": "script",
+    "script": "//testing/scripts/run_gtest_perf_test.py",
+    "args": [
+      "tracing_perftests",
+      "--test-launcher-print-test-stdio=always"
+    ],
+  },
+  "gpu_perftests": {
+    "label": "//gpu:gpu_perftests",
+    "type": "script",
+    "script": "//testing/scripts/run_gtest_perf_test.py",
+    "args": [
+      "gpu_perftests",
+      "--adb-path",
+      "src/third_party/catapult/devil/bin/deps/linux2/x86_64/bin/adb"
+    ],
+  },
+  "angle_perftests": {
+    "label": "//chrom/test:angle_perftests",
+    "type": "script",
+    "script": "//testing/scripts/run_gtest_perf_test.py",
+    "args": [
+      "angle_perftests",
+      "--test-launcher-print-test-stdio=always",
+      "--test-launcher-jobs=1"
+    ],
+  },
+  "performance_browser_tests": {
+    "label": "//chrom/test:performance_browser_tests",
+    "type": "script",
+    "script": "//testing/scripts/run_gtest_perf_test.py",
+    "args": [
+      "performance_browser_tests",
+      "--test-launcher-print-test-stdio=always",
+      "--gtest_filter=TabCapturePerformanceTest.*:CastV2PerformanceTest.*",
+      "--test-launcher-jobs=1",
+      "--enable-gpu"
+    ],
+  },
   "mus_ime_unittests": {
     "label": "//services/ui/ime:mus_ime_unittests",
     "type": "windowed_test_launcher",
