@@ -328,6 +328,7 @@ table_files = \
 	te.tbl \
 	text_nabcc.dis \
 	tr.ctb \
+	tr-g2.ctb \
 	tr.tbl \
 	tsn-za-g1.ctb \
 	UEBC-g1.utb \
