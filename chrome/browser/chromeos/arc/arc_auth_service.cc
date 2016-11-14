@@ -1146,10 +1146,12 @@ std::ostream& operator<<(std::ostream& os, const ArcAuthService::State& state) {
       return os << "FETCHING_CODE";
     case ArcAuthService::State::ACTIVE:
       return os << "ACTIVE";
-    default:
-      NOTREACHED();
-      return os;
   }
+
+  // Some compiler reports an error even if all values of an enum-class are
+  // covered indivisually in a switch statement.
+  NOTREACHED();
+  return os;
 }
 
 }  // namespace arc
