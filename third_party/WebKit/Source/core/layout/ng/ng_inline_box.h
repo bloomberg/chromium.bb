@@ -24,6 +24,7 @@ class NGConstraintSpace;
 class NGFragmentBase;
 class NGLayoutAlgorithm;
 class NGLayoutInlineItem;
+class NGLayoutInlineItemsBuilder;
 class NGPhysicalFragment;
 struct MinAndMaxContentSizes;
 
@@ -49,8 +50,10 @@ class CORE_EXPORT NGInlineBox : public NGLayoutInputNode {
 
  protected:
   NGInlineBox();  // This constructor is only for testing.
-  void CollectNode(LayoutObject*, unsigned* offset);
   void CollectInlines(LayoutObject* start, LayoutObject* last);
+  void CollectInlines(LayoutObject* start,
+                      LayoutObject* last,
+                      NGLayoutInlineItemsBuilder*);
   void CollapseWhiteSpace();
   void SegmentText();
   void ShapeText();

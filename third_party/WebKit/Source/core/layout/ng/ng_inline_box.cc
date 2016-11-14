@@ -8,6 +8,7 @@
 #include "core/style/ComputedStyle.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/ng_bidi_paragraph.h"
+#include "core/layout/ng/ng_layout_inline_items_builder.h"
 #include "core/layout/ng/ng_text_layout_algorithm.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_constraint_space.h"
@@ -57,45 +58,54 @@ void NGInlineBox::PrepareLayout() {
 // NGInlineBox object. Collects LayoutText items, merging them up into the
 // parent LayoutInline where possible, and joining all text content in a single
 // string to allow bidi resolution and shaping of the entire block.
-void NGInlineBox::CollectNode(LayoutObject* node, unsigned* offset) {
-  unsigned length = 0;
-  if (node->isText()) {
-    const String& text = toLayoutText(node)->text();
-    length = text.length();
-    text_content_.append(text);
-  }
-
-  // For atomic inlines add a unicode "object replacement character" to signal
-  // the presence of a non-text object to the unicode bidi algorithm.
-  else if (node->isAtomicInlineLevel()) {
-    text_content_.append(objectReplacementCharacter);
-    length = 1;
-  }
-
-  if (length) {
-    unsigned start_offset = *offset;
-    *offset = *offset + length;
-    items_.append(NGLayoutInlineItem(start_offset, *offset, node->style()));
-  }
+void NGInlineBox::CollectInlines(LayoutObject* start, LayoutObject* last) {
+  NGLayoutInlineItemsBuilder builder(&items_);
+  builder.EnterBlock(block_style_.get());
+  CollectInlines(start, last, &builder);
+  builder.ExitBlock();
+  text_content_ = builder.ToString();
 }
 
-void NGInlineBox::CollectInlines(LayoutObject* start, LayoutObject* last) {
-  unsigned text_offset = 0;
+void NGInlineBox::CollectInlines(LayoutObject* start,
+                                 LayoutObject* last,
+                                 NGLayoutInlineItemsBuilder* builder) {
   LayoutObject* node = start;
   while (node) {
-    CollectNode(node, &text_offset);
-    if (node->slowFirstChild()) {
-      node = node->slowFirstChild();
+    if (node->isText()) {
+      builder->Append(toLayoutText(node)->text(), node->style());
+    } else if (node->isFloating() || node->isOutOfFlowPositioned()) {
+      // Skip positioned objects.
+    } else if (!node->isInline()) {
+      // TODO(kojii): Implement when inline has block children.
     } else {
-      while (!node->nextSibling()) {
-        if (node == start || node == start->parent())
-          break;
-        node = node->parent();
+      builder->EnterInline(node);
+
+      // For atomic inlines add a unicode "object replacement character" to
+      // signal the presence of a non-text object to the unicode bidi algorithm.
+      if (node->isAtomicInlineLevel()) {
+        builder->Append(objectReplacementCharacter, nullptr);
       }
-      node = node->nextSibling();
+
+      // Otherwise traverse to children if they exist.
+      else if (LayoutObject* child = node->slowFirstChild()) {
+        node = child;
+        continue;
+      }
+
+      builder->ExitInline(node);
+    }
+
+    while (true) {
+      if (LayoutObject* next = node->nextSibling()) {
+        node = next;
+        break;
+      }
+      node = node->parent();
+      builder->ExitInline(node);
+      if (node == start || node == start->parent())
+        return;
     }
   }
-  DCHECK(text_offset == text_content_.length());
 }
 
 void NGInlineBox::CollapseWhiteSpace() {
@@ -171,8 +181,11 @@ void NGInlineBox::ShapeText() {
   // TODO(layout-dev): Should pass the entire range to the shaper as context
   // and then shape each item based on the relevant font.
   for (auto& item : items_) {
-    String item_text = text_content_.substring(
-        item.start_offset_, item.end_offset_ - item.start_offset_);
+    // Skip object replacement characters and bidi control characters.
+    if (!item.style_)
+      continue;
+    StringView item_text(text_content_, item.start_offset_,
+                         item.end_offset_ - item.start_offset_);
     const Font& item_font = item.style_->font();
     ShapeCache* shape_cache = item_font.shapeCache();
 

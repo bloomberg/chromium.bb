@@ -301,6 +301,8 @@ blink_core_sources("layout") {
     "ng/ng_inline_box.h",
     "ng/ng_inline_layout_algorithm.cc",
     "ng/ng_inline_layout_algorithm.h",
+    "ng/ng_layout_inline_items_builder.cc",
+    "ng/ng_layout_inline_items_builder.h",
     "ng/ng_layout_input_node.h",
     "ng/ng_layout_opportunity_iterator.cc",
     "ng/ng_layout_opportunity_iterator.h",

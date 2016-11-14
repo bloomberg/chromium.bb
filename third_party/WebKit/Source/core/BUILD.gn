@@ -1243,6 +1243,7 @@ source_set("unit_tests") {
     "layout/ng/ng_box_test.cc",
     "layout/ng/ng_constraint_space_test.cc",
     "layout/ng/ng_inline_box_test.cc",
+    "layout/ng/ng_layout_inline_items_builder_test.cc",
     "layout/ng/ng_length_utils_test.cc",
     "layout/ng/ng_units_test.cc",
     "layout/shapes/BoxShapeTest.cpp",
