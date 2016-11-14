@@ -66,7 +66,6 @@ bool Dictionary::get(const StringView& key, v8::Local<v8::Value>& value) const {
 DictionaryIterator Dictionary::getIterator(
     ExecutionContext* executionContext) const {
   v8::Local<v8::Value> iteratorGetter;
-  // TODO(alancutter): Support callable objects as well as functions.
   if (!getInternal(v8::Symbol::GetIterator(m_isolate), iteratorGetter) ||
       !iteratorGetter->IsFunction())
     return nullptr;
@@ -105,6 +104,10 @@ bool Dictionary::getInternal(const v8::Local<v8::Value>& key,
   DCHECK_EQ(m_isolate, v8::Isolate::GetCurrent());
   if (!v8CallBoolean(object->Has(v8Context(), key)))
     return false;
+
+  // Swallow a possible exception in v8::Object::Get().
+  // TODO(bashi,yukishiino): Should rethrow the exception.
+  v8::TryCatch tryCatch(isolate());
   return object->Get(v8Context(), key).ToLocal(&result);
 }
 
@@ -127,6 +130,10 @@ bool Dictionary::getOwnPropertiesAsStringHashMap(
   v8::Local<v8::Array> properties;
   if (!object->GetOwnPropertyNames(v8Context()).ToLocal(&properties))
     return false;
+  // Swallow a possible exception in v8::Object::Get().
+  // TODO(bashi,yukishiino): Should rethrow the exception.
+  // Note that propertyKey() may throw an exception.
+  v8::TryCatch tryCatch(isolate());
   for (uint32_t i = 0; i < properties->Length(); ++i) {
     v8::Local<v8::String> key;
     if (!propertyKey(v8Context(), properties, i, key))
@@ -135,8 +142,10 @@ bool Dictionary::getOwnPropertiesAsStringHashMap(
       continue;
 
     v8::Local<v8::Value> value;
-    if (!object->Get(v8Context(), key).ToLocal(&value))
+    if (!object->Get(v8Context(), key).ToLocal(&value)) {
+      tryCatch.Reset();
       continue;
+    }
     TOSTRING_DEFAULT(V8StringResource<>, stringKey, key, false);
     TOSTRING_DEFAULT(V8StringResource<>, stringValue, value, false);
     if (!static_cast<const String&>(stringKey).isEmpty())

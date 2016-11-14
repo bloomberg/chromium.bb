@@ -28,22 +28,33 @@ bool DictionaryIterator::next(ExecutionContext* executionContext,
                               ExceptionState& exceptionState) {
   DCHECK(!isNull());
 
+  v8::TryCatch tryCatch(m_isolate);
+  v8::Local<v8::Context> context = m_isolate->GetCurrentContext();
+
   v8::Local<v8::Value> next;
-  // TODO(alancutter): Support callable objects as well as functions.
-  if (!v8Call(m_iterator->Get(m_isolate->GetCurrentContext(), m_nextKey),
-              next) ||
-      !next->IsFunction()) {
+  if (!m_iterator->Get(context, m_nextKey).ToLocal(&next)) {
+    CHECK(!tryCatch.Exception().IsEmpty());
+    exceptionState.rethrowV8Exception(tryCatch.Exception());
+    m_done = true;
+    return false;
+  }
+  if (!next->IsFunction()) {
     exceptionState.throwTypeError("Expected next() function on iterator.");
     m_done = true;
     return false;
   }
 
   v8::Local<v8::Value> result;
-  if (!v8Call(V8ScriptRunner::callFunction(v8::Local<v8::Function>::Cast(next),
-                                           executionContext, m_iterator, 0,
-                                           nullptr, m_isolate),
-              result) ||
-      !result->IsObject()) {
+  if (!V8ScriptRunner::callFunction(v8::Local<v8::Function>::Cast(next),
+                                    executionContext, m_iterator, 0, nullptr,
+                                    m_isolate)
+           .ToLocal(&result)) {
+    CHECK(!tryCatch.Exception().IsEmpty());
+    exceptionState.rethrowV8Exception(tryCatch.Exception());
+    m_done = true;
+    return false;
+  }
+  if (!result->IsObject()) {
     exceptionState.throwTypeError(
         "Expected iterator.next() to return an Object.");
     m_done = true;
@@ -51,19 +62,23 @@ bool DictionaryIterator::next(ExecutionContext* executionContext,
   }
   v8::Local<v8::Object> resultObject = v8::Local<v8::Object>::Cast(result);
 
-  m_value = resultObject->Get(m_isolate->GetCurrentContext(), m_valueKey);
+  m_value = resultObject->Get(context, m_valueKey);
+  if (m_value.IsEmpty()) {
+    CHECK(!tryCatch.Exception().IsEmpty());
+    exceptionState.rethrowV8Exception(tryCatch.Exception());
+  }
 
   v8::Local<v8::Value> done;
-  if (v8Call(resultObject->Get(m_isolate->GetCurrentContext(), m_doneKey),
-             done)) {
-    v8::Local<v8::Boolean> doneBoolean;
-    m_done =
-        v8Call(done->ToBoolean(m_isolate->GetCurrentContext()), doneBoolean)
-            ? doneBoolean->Value()
-            : false;
-  } else {
-    m_done = false;
+  v8::Local<v8::Boolean> doneBoolean;
+  if (!resultObject->Get(context, m_doneKey).ToLocal(&done) ||
+      !done->ToBoolean(context).ToLocal(&doneBoolean)) {
+    CHECK(!tryCatch.Exception().IsEmpty());
+    exceptionState.rethrowV8Exception(tryCatch.Exception());
+    m_done = true;
+    return false;
   }
+
+  m_done = doneBoolean->Value();
   return !m_done;
 }
 
