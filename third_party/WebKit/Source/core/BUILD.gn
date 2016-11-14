@@ -1147,6 +1147,7 @@ source_set("unit_tests") {
     "fetch/FetchUtilsTest.cpp",
     "fetch/ImageResourceTest.cpp",
     "fetch/MemoryCacheTest.cpp",
+    "fetch/MockFetchContext.h",
     "fetch/MockResourceClients.cpp",
     "fetch/MultipartImageResourceParserTest.cpp",
     "fetch/RawResourceTest.cpp",

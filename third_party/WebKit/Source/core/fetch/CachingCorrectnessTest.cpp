@@ -31,6 +31,7 @@
 #include "core/fetch/FetchContext.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/MemoryCache.h"
+#include "core/fetch/MockFetchContext.h"
 #include "core/fetch/RawResource.h"
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceFetcher.h"
@@ -49,28 +50,6 @@ const double kOriginalRequestDateAsDouble = 233433000.;
 
 const char kOneDayBeforeOriginalRequest[] = "Wed, 24 May 1977 18:30:00 GMT";
 const char kOneDayAfterOriginalRequest[] = "Fri, 26 May 1977 18:30:00 GMT";
-
-class MockFetchContext : public FetchContext {
- public:
-  static MockFetchContext* create() { return new MockFetchContext; }
-
-  ~MockFetchContext() {}
-
-  bool allowImage(bool imagesEnabled, const KURL&) const override {
-    return true;
-  }
-  bool canRequest(Resource::Type,
-                  const ResourceRequest&,
-                  const KURL&,
-                  const ResourceLoaderOptions&,
-                  bool forPreload,
-                  FetchRequest::OriginRestriction) const override {
-    return true;
-  }
-
- private:
-  MockFetchContext() {}
-};
 
 class CachingCorrectnessTest : public ::testing::Test {
  protected:
@@ -141,7 +120,8 @@ class CachingCorrectnessTest : public ::testing::Test {
     // Save the global memory cache to restore it upon teardown.
     m_globalMemoryCache = replaceMemoryCacheForTesting(MemoryCache::create());
 
-    m_fetcher = ResourceFetcher::create(MockFetchContext::create());
+    m_fetcher = ResourceFetcher::create(
+        MockFetchContext::create(MockFetchContext::kShouldNotLoadNewResource));
 
     s_timeElapsed = 0.0;
     m_originalTimeFunction = setTimeFunctionsForTesting(returnMockTime);
