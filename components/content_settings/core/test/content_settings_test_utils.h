@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 
 namespace content_settings {
 
@@ -45,6 +46,12 @@ class TestUtils {
       const GURL& secondary_url,
       ContentSettingsPattern* primary_pattern,
       ContentSettingsPattern* secondary_pattern);
+
+  // Replace a provider with a different instance for testing purposes
+  static void OverrideProvider(
+      HostContentSettingsMap* map,
+      std::unique_ptr<content_settings::ObservableProvider> provider,
+      HostContentSettingsMap::ProviderType type);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(TestUtils);

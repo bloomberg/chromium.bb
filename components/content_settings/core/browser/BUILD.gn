@@ -65,8 +65,6 @@ static_library("browser") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "content_settings_mock_provider.cc",
-    "content_settings_mock_provider.h",
     "content_settings_registry_unittest.cc",
     "content_settings_rule_unittest.cc",
     "content_settings_utils_unittest.cc",

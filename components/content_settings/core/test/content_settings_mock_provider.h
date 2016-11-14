@@ -40,13 +40,9 @@ class MockProvider : public ObservableProvider {
 
   void ShutdownOnUIThread() override;
 
-  void set_read_only(bool read_only) {
-    read_only_ = read_only;
-  }
+  void set_read_only(bool read_only) { read_only_ = read_only; }
 
-  bool read_only() const {
-    return read_only_;
-  }
+  bool read_only() const { return read_only_; }
 
  private:
   OriginIdentifierValueMap value_map_;

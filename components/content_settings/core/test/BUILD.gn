@@ -5,6 +5,8 @@
 static_library("test_support") {
   testonly = true
   sources = [
+    "content_settings_mock_provider.cc",
+    "content_settings_mock_provider.h",
     "content_settings_test_utils.cc",
     "content_settings_test_utils.h",
   ]

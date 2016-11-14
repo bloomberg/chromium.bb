@@ -4,6 +4,7 @@
 
 #include "components/content_settings/core/test/content_settings_test_utils.h"
 
+#include "components/content_settings/core/browser/content_settings_observable_provider.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 
@@ -46,6 +47,17 @@ std::unique_ptr<base::Value> TestUtils::GetContentSettingValueAndPatterns(
   return HostContentSettingsMap::GetContentSettingValueAndPatterns(
       rule_iterator, primary_url, secondary_url, primary_pattern,
       secondary_pattern);
+}
+
+// static
+void TestUtils::OverrideProvider(
+    HostContentSettingsMap* map,
+    std::unique_ptr<content_settings::ObservableProvider> provider,
+    HostContentSettingsMap::ProviderType type) {
+  if (map->content_settings_providers_[type]) {
+    map->content_settings_providers_[type]->ShutdownOnUIThread();
+  }
+  map->content_settings_providers_[type] = std::move(provider);
 }
 
 }  // namespace content_settings
