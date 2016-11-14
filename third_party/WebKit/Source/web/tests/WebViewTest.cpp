@@ -897,6 +897,38 @@ TEST_P(WebViewTest, SetEditableSelectionOffsetsAndTextInputInfo) {
   EXPECT_EQ(-1, info.compositionEnd);
 }
 
+// Regression test for crbug.com/663645
+TEST_P(WebViewTest, FinishComposingTextDoesNotAssert) {
+  URLTestHelpers::registerMockedURLFromBaseURL(
+      WebString::fromUTF8(m_baseURL.c_str()),
+      WebString::fromUTF8("input_field_default.html"));
+  WebViewImpl* webView =
+      m_webViewHelper.initializeAndLoad(m_baseURL + "input_field_default.html");
+  webView->setInitialFocus(false);
+
+  WebInputMethodController* activeInputMethodController =
+      webView->mainFrameImpl()
+          ->frameWidget()
+          ->getActiveWebInputMethodController();
+
+  // The test requires non-empty composition.
+  std::string compositionText("hello");
+  WebVector<WebCompositionUnderline> emptyUnderlines;
+  activeInputMethodController->setComposition(
+      WebString::fromUTF8(compositionText.c_str()), emptyUnderlines, 5, 5);
+
+  // Do arbitrary change to make layout dirty.
+  Document& document = *webView->mainFrameImpl()->frame()->document();
+  Element* br = document.createElement("br", ASSERT_NO_EXCEPTION);
+  document.body()->appendChild(br);
+
+  // Should not hit assertion when calling
+  // WebInputMethodController::finishComposingText with non-empty composition
+  // and dirty layout.
+  activeInputMethodController->finishComposingText(
+      WebInputMethodController::KeepSelection);
+}
+
 TEST_P(WebViewTest, FinishComposingTextCursorPositionChange) {
   URLTestHelpers::registerMockedURLFromBaseURL(
       WebString::fromUTF8(m_baseURL.c_str()),

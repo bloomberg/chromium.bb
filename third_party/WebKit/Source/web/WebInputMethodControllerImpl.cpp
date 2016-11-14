@@ -104,6 +104,11 @@ bool WebInputMethodControllerImpl::finishComposingText(
 
   if (WebPlugin* plugin = focusedPluginIfInputMethodSupported())
     return plugin->finishComposingText(selectionBehavior);
+
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   return inputMethodController().finishComposingText(
       selectionBehavior == WebInputMethodController::KeepSelection
           ? InputMethodController::KeepSelection
