@@ -50,6 +50,8 @@ _EXTRA_TIMEOUT_SCALE = (
 _PARAMETERIZED_TEST_ANNOTATION = 'ParameterizedTest'
 _PARAMETERIZED_TEST_SET_ANNOTATION = 'ParameterizedTest$Set'
 _NATIVE_CRASH_RE = re.compile('(process|native) crash', re.IGNORECASE)
+_CMDLINE_NAME_SEGMENT_RE = re.compile(
+    r' with(?:out)? \{[^\}]*\}')
 _PICKLE_FORMAT_VERSION = 10
 
 
@@ -220,12 +222,19 @@ def FilterTests(tests, test_filter=None, annotations=None,
   Return:
     A list of filtered tests
   """
-  def gtest_filter(c, m):
+  def gtest_filter(t):
     if not test_filter:
       return True
     # Allow fully-qualified name as well as an omitted package.
-    names = ['%s.%s' % (c['class'], m['method']),
-             '%s.%s' % (c['class'].split('.')[-1], m['method'])]
+    unqualified_class_test = {
+      'class': t['class'].split('.')[-1],
+      'method': t['method']
+    }
+    names = [
+      GetTestName(t, sep='.'),
+      GetTestName(unqualified_class_test, sep='.'),
+      GetUniqueTestName(t, sep='.')
+    ]
     return unittest_util.FilterTestNames(names, test_filter)
 
   def annotation_filter(all_annotations):
@@ -254,33 +263,24 @@ def FilterTests(tests, test_filter=None, annotations=None,
       return filter_av in av
     return filter_av == av
 
-  filtered_classes = []
-  for c in tests:
-    filtered_methods = []
-    for m in c['methods']:
-      # Gtest filtering
-      if not gtest_filter(c, m):
-        continue
+  filtered_tests = []
+  for t in tests:
+    # Gtest filtering
+    if not gtest_filter(t):
+      continue
 
-      all_annotations = dict(c['annotations'])
-      all_annotations.update(m['annotations'])
+    # Enforce that all tests declare their size.
+    if not any(a in _VALID_ANNOTATIONS for a in t['annotations']):
+      raise MissingSizeAnnotationError(GetTestName(t))
 
-      # Enforce that all tests declare their size.
-      if not any(a in _VALID_ANNOTATIONS for a in all_annotations):
-        raise MissingSizeAnnotationError('%s.%s' % (c['class'], m['method']))
+    if (not annotation_filter(t['annotations'])
+        or not excluded_annotation_filter(t['annotations'])):
+      continue
 
-      if (not annotation_filter(all_annotations)
-          or not excluded_annotation_filter(all_annotations)):
-        continue
+    filtered_tests.append(t)
 
-      filtered_methods.append(m)
+  return filtered_tests
 
-    if filtered_methods:
-      filtered_class = dict(c)
-      filtered_class['methods'] = filtered_methods
-      filtered_classes.append(filtered_class)
-
-  return filtered_classes
 
 def GetAllTests(test_jar):
   pickle_path = '%s-proguard.pickle' % test_jar
@@ -359,6 +359,43 @@ class UnmatchedFilterException(test_exception.TestException):
   def __init__(self, test_filter):
     super(UnmatchedFilterException, self).__init__(
         'Test filter "%s" matched no tests.' % test_filter)
+
+
+def GetTestName(test, sep='#'):
+  """Gets the name of the given test.
+
+  Note that this may return the same name for more than one test, e.g. if a
+  test is being run multiple times with different parameters.
+
+  Args:
+    test: the instrumentation test dict.
+    sep: the character(s) that should join the class name and the method name.
+  Returns:
+    The test name as a string.
+  """
+  return '%s%s%s' % (test['class'], sep, test['method'])
+
+
+def GetUniqueTestName(test, sep='#'):
+  """Gets the unique name of the given test.
+
+  This will include text to disambiguate between tests for which GetTestName
+  would return the same name.
+
+  Args:
+    test: the instrumentation test dict.
+    sep: the character(s) that should join the class name and the method name.
+  Returns:
+    The unique test name as a string.
+  """
+  display_name = GetTestName(test, sep=sep)
+  if 'flags' in test:
+    flags = test['flags']
+    if flags.add:
+      display_name = '%s with {%s}' % (display_name, ' '.join(flags.add))
+    if flags.remove:
+      display_name = '%s without {%s}' % (display_name, ' '.join(flags.remove))
+  return display_name
 
 
 class InstrumentationTestInstance(test_instance.TestInstance):
@@ -503,7 +540,8 @@ class InstrumentationTestInstance(test_instance.TestInstance):
 
   def _initializeTestFilterAttributes(self, args):
     if args.test_filter:
-      self._test_filter = args.test_filter.replace('#', '.')
+      self._test_filter = _CMDLINE_NAME_SEGMENT_RE.sub(
+          '', args.test_filter.replace('#', '.'))
 
     def annotation_element(a):
       a = a.split('=', 1)
@@ -661,11 +699,15 @@ class InstrumentationTestInstance(test_instance.TestInstance):
 
   def GetTests(self):
     tests = GetAllTests(self.test_jar)
+    inflated_tests = self._ParametrizeTestsWithFlags(self._InflateTests(tests))
     filtered_tests = FilterTests(
-        tests, self._test_filter, self._annotations, self._excluded_annotations)
+        inflated_tests, self._test_filter, self._annotations,
+        self._excluded_annotations)
     if self._test_filter and not filtered_tests:
+      for t in inflated_tests:
+        logging.debug('  %s', GetUniqueTestName(t))
       raise UnmatchedFilterException(self._test_filter)
-    return self._ParametrizeTestsWithFlags(self._InflateTests(filtered_tests))
+    return filtered_tests
 
   # pylint: disable=no-self-use
   def _InflateTests(self, tests):
