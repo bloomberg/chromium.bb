@@ -518,7 +518,8 @@ static void
 triangle_destroy(struct triangle *tri)
 {
 	if (tri->egl_surface)
-		eglDestroySurface(tri->egl->dpy, tri->egl_surface);
+		weston_platform_destroy_egl_surface(tri->egl->dpy,
+						    tri->egl_surface);
 
 	if (tri->egl_window)
 		wl_egl_window_destroy(tri->egl_window);
