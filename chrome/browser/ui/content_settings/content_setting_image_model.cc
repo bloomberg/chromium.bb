@@ -428,7 +428,8 @@ bool ContentSettingSubresourceFilterImageModel::ShouldRunAnimation(
     return false;
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents);
-  return content_settings && content_settings->IsSubresourceBlockageIndicated();
+  return content_settings &&
+         !content_settings->IsSubresourceBlockageIndicated();
 }
 
 void ContentSettingSubresourceFilterImageModel::SetAnimationHasRun(
