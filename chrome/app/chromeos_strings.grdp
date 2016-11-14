@@ -5545,7 +5545,7 @@ Battery full
     Managed by <ph name="DOMAIN">$1<ex>yourdomain.com</ex></ph>
   </message>
   <message name="IDS_LOGIN_PUBLIC_ACCOUNT_SIGNOUT_REMINDER" desc="Text shown in the public account user pod, reminding the user to log out.">
-    Your information will be removed when you sign out.
+    Your information will be removed from the device when you sign out.
   </message>
   <message name="IDS_LOGIN_PUBLIC_SESSION_LANGUAGE_AND_INPUT" desc="Link in public session pod that shows a section which allows the user to change the UI language and keyboard layout.">
     Language and input
@@ -5555,6 +5555,27 @@ Battery full
   </message>
   <message name="IDS_LOGIN_PUBLIC_ACCOUNT_ENTER_ACCESSIBLE_NAME" desc="Text to be spoken when focus is set to the sign-in button in the public account user pod.">
     Enter public session
+  </message>
+  <message name="IDS_LOGIN_PUBLIC_ACCOUNT_MONITORING_WARNING" desc="Text shown in the public account user pod, warning the user about potential admin monitoring.">
+    The device admin may monitor your browsing activity.
+  </message>
+  <message name="IDS_LOGIN_PUBLIC_ACCOUNT_LEARN_MORE" desc="Link shown in the public account user pod, showing the user more information about the monitoring.">
+    Learn more
+  </message>
+  <message name="IDS_LOGIN_PUBLIC_ACCOUNT_MONITORING_INFO" desc="Text shown in the warning dialog after user clicks on the learn more link, notifying the user of potential security and privacy implications of using the device">
+    The device admin may monitor the following:
+  </message>
+  <message name="IDS_LOGIN_PUBLIC_ACCOUNT_MONITORING_INFO_ITEM_1" desc="Text shown in the warning dialog after user clicks on the learn more link, notifying the user of potential security and privacy implications of using the device">
+    Access your browsing activity
+  </message>
+  <message name="IDS_LOGIN_PUBLIC_ACCOUNT_MONITORING_INFO_ITEM_2" desc="Text shown in the warning dialog after user clicks on the learn more link, notifying the user of potential security and privacy implications of using the device">
+    Manipulate settings that specify whether websites can use features such as geolocation, microphone, camera, etc.
+  </message>
+  <message name="IDS_LOGIN_PUBLIC_ACCOUNT_MONITORING_INFO_ITEM_3" desc="Text shown in the warning dialog after user clicks on the learn more link, notifying the user of potential security and privacy implications of using the device">
+    Manage your apps, extensions, and themes
+  </message>
+  <message name="IDS_LOGIN_PUBLIC_ACCOUNT_MONITORING_INFO_ITEM_4" desc="Text shown in the warning dialog after user clicks on the learn more link, notifying the user of potential security and privacy implications of using the device">
+    Manipulate privacy-related settings
   </message>
   <message name="IDS_LOGIN_CONFIRM_KIOSK_DIAGNOSTIC_FORMAT" desc="Text to be shown on a dialog to confirm launching kiosk app in diagnostic mode.">
     Are you sure you want to launch "<ph name="APP_NAME">$1<ex>Kiosk App</ex></ph>" in diagnostic mode?
