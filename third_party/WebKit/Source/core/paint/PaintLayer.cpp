@@ -3210,7 +3210,7 @@ DisableCompositingQueryAsserts::DisableCompositingQueryAsserts()
 // FIXME: Rename?
 void showLayerTree(const blink::PaintLayer* layer) {
   if (!layer) {
-    fprintf(stderr, "Cannot showLayerTree. Root is (nil)\n");
+    LOG(INFO) << "Cannot showLayerTree. Root is (nil)";
     return;
   }
 
@@ -3224,13 +3224,13 @@ void showLayerTree(const blink::PaintLayer* layer) {
             blink::LayoutAsTextDontUpdateLayout |
             blink::LayoutAsTextShowLayoutState,
         layer);
-    fprintf(stderr, "%s\n", output.utf8().data());
+    LOG(INFO) << output.utf8().data();
   }
 }
 
 void showLayerTree(const blink::LayoutObject* layoutObject) {
   if (!layoutObject) {
-    fprintf(stderr, "Cannot showLayerTree. Root is (nil)\n");
+    LOG(INFO) << "Cannot showLayerTree. Root is (nil)";
     return;
   }
   showLayerTree(layoutObject->enclosingLayer());

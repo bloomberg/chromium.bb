@@ -1307,11 +1307,11 @@ void GraphicsLayer::checkPaintUnderInvalidations(const SkPicture& newPicture) {
 #ifndef NDEBUG
 void showGraphicsLayerTree(const blink::GraphicsLayer* layer) {
   if (!layer) {
-    fprintf(stderr, "Cannot showGraphicsLayerTree for (nil).\n");
+    LOG(INFO) << "Cannot showGraphicsLayerTree for (nil).";
     return;
   }
 
   String output = layer->layerTreeAsText(blink::LayerTreeIncludesDebugInfo);
-  fprintf(stderr, "%s\n", output.utf8().data());
+  LOG(INFO) << output.utf8().data();
 }
 #endif
