@@ -462,8 +462,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/functional/gles3/texturespecification/' +
         'random_teximage2d_2d.html',
         ['linux', 'amd', 'intel'], bug=618447)
-    self.Fail('deqp/data/gles3/shaders/linkage.html',
-        ['linux', 'amd', 'intel'], bug=483282)
 
     # Linux NVIDIA
     # This test is flaky both with and without ANGLE.
@@ -484,60 +482,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Fails on Intel Mesa GL 3.3, passes on Intel Mesa GL 4.5.
     self.Fail('conformance2/misc/views-with-offsets.html',
-        ['linux', 'intel'], bug=664180)
+        ['linux', 'intel', 'no_angle'], bug=664180)
 
     # Linux Intel with ANGLE only
-    self.Fail('deqp/functional/gles3/framebufferblit/' +
-        'default_framebuffer_00.html',
-        ['linux', 'intel', 'opengl'], bug=658832)
-
     self.Fail('conformance2/textures/misc/copy-texture-image-luma-format.html',
         ['linux', 'intel', 'opengl'], bug=1492) # ANGLE bug id
-    self.Fail('conformance2/rendering/blitframebuffer-filter-srgb.html',
-        ['linux', 'intel', 'opengl'], bug=634525)
-    self.Fail('conformance2/rendering/blitframebuffer-filter-outofbounds.html',
-        ['linux', 'intel', 'opengl'], bug=655147)
-    self.Fail('conformance2/rendering/' +
-        'blitframebuffer-multisampled-readbuffer.html',
-        ['linux', 'intel', 'opengl'], bug=658898)
-    self.Fail('conformance2/rendering/blitframebuffer-test.html',
-        ['linux', 'intel', 'opengl'], bug=658898)
-
-    # The Intel Mesa driver only supports sRGB encoding in ES 3.x, see
-    # https://patchwork.freedesktop.org/patch/76903
-    # So these tests fail on core profile.
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_04.html',
-        ['linux', 'intel', 'opengl'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_07.html',
-        ['linux', 'intel', 'opengl'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_08.html',
-        ['linux', 'intel', 'opengl'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_10.html',
-        ['linux', 'intel', 'opengl'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_11.html',
-        ['linux', 'intel', 'opengl'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_12.html',
-        ['linux', 'intel', 'opengl'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_13.html',
-        ['linux', 'intel', 'opengl'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_18.html',
-        ['linux', 'intel', 'opengl'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_25.html',
-        ['linux', 'intel', 'opengl'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_28.html',
-        ['linux', 'intel', 'opengl'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_29.html',
-        ['linux', 'intel', 'opengl'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_30.html',
-        ['linux', 'intel', 'opengl'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_31.html',
-        ['linux', 'intel', 'opengl'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_32.html',
-        ['linux', 'intel', 'opengl'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_33.html',
-        ['linux', 'intel', 'opengl'], bug=598902)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_34.html',
-        ['linux', 'intel', 'opengl'], bug=598902)
 
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
