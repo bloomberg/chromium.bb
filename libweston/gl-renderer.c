@@ -2726,7 +2726,7 @@ gl_renderer_output_window_create(struct weston_output *output,
 
 	ret = gl_renderer_output_create(output, egl_surface);
 	if (ret < 0)
-		eglDestroySurface(gr->egl_display, egl_surface);
+		weston_platform_destroy_egl_surface(gr->egl_display, egl_surface);
 
 	return ret;
 }
@@ -2741,7 +2741,7 @@ gl_renderer_output_destroy(struct weston_output *output)
 	for (i = 0; i < 2; i++)
 		pixman_region32_fini(&go->buffer_damage[i]);
 
-	eglDestroySurface(gr->egl_display, go->egl_surface);
+	weston_platform_destroy_egl_surface(gr->egl_display, go->egl_surface);
 
 	free(go);
 }
@@ -2773,7 +2773,8 @@ gl_renderer_destroy(struct weston_compositor *ec)
 		dmabuf_image_destroy(image);
 
 	if (gr->dummy_surface != EGL_NO_SURFACE)
-		eglDestroySurface(gr->egl_display, gr->dummy_surface);
+		weston_platform_destroy_egl_surface(gr->egl_display,
+						    gr->dummy_surface);
 
 	eglTerminate(gr->egl_display);
 	eglReleaseThread();
@@ -3143,7 +3144,8 @@ gl_renderer_display_create(struct weston_compositor *ec, EGLenum platform,
 
 	if (gl_renderer_setup(ec, gr->dummy_surface) < 0) {
 		if (gr->dummy_surface != EGL_NO_SURFACE)
-			eglDestroySurface(gr->egl_display, gr->dummy_surface);
+			weston_platform_destroy_egl_surface(gr->egl_display,
+							    gr->dummy_surface);
 		goto fail_with_error;
 	}
 
