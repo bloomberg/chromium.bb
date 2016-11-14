@@ -417,10 +417,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
           "Please specify the desired codec(s) as part of the contentType.",
           milestoneString(M56));
 
-    case UseCounter::MIDIMessageEventReceivedTime:
-      return willBeRemoved("MIDIMessageEvent.receivedTime", M56,
-                           "5665772797952000");
-
     case UseCounter::V8SVGSVGElement_UseCurrentView_AttributeGetter:
       return willBeRemoved("SVGSVGElement.useCurrentView", M56,
                            "4511711998509056");

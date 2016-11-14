@@ -3192,7 +3192,6 @@ interface MIDIInputMap
 interface MIDIMessageEvent : Event
     attribute @@toStringTag
     getter data
-    getter receivedTime
     method constructor
 interface MIDIOutput : MIDIPort
     attribute @@toStringTag

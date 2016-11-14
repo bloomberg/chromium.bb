@@ -29,13 +29,8 @@
  */
 
 // http://webaudio.github.io/web-midi-api/#idl-def-MIDIMessageEvent
-
-// TODO(toyoshim): Remove ConstructorCallWith=ExecutionContext and receivedTime.
-// See https://github.com/WebAudio/web-midi-api/issues/145 and crbug.com/599335.
 [
-    Constructor(DOMString type, optional MIDIMessageEventInit eventInitDict),
-    ConstructorCallWith=ExecutionContext,
+    Constructor(DOMString type, optional MIDIMessageEventInit eventInitDict)
 ] interface MIDIMessageEvent : Event {
-    [DeprecateAs=MIDIMessageEventReceivedTime] readonly attribute double receivedTime;
     readonly attribute Uint8Array data;
 };

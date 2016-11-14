@@ -37,23 +37,20 @@
 namespace blink {
 
 class MIDIMessageEventInit;
-class ExecutionContext;
 
 class MIDIMessageEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static MIDIMessageEvent* create(double receivedTime, DOMUint8Array* data) {
-    return new MIDIMessageEvent(receivedTime, data);
+  static MIDIMessageEvent* create(double timeStamp, DOMUint8Array* data) {
+    return new MIDIMessageEvent(timeStamp, data);
   }
 
-  static MIDIMessageEvent* create(ExecutionContext* context,
-                                  const AtomicString& type,
+  static MIDIMessageEvent* create(const AtomicString& type,
                                   const MIDIMessageEventInit& initializer) {
-    return new MIDIMessageEvent(context, type, initializer);
+    return new MIDIMessageEvent(type, initializer);
   }
 
-  double receivedTime() { return m_receivedTime; }
   DOMUint8Array* data() { return m_data; }
 
   const AtomicString& interfaceName() const override {
@@ -66,16 +63,13 @@ class MIDIMessageEvent final : public Event {
   }
 
  private:
-  MIDIMessageEvent(double receivedTime, DOMUint8Array* data)
-      : Event(EventTypeNames::midimessage, true, false),
-        m_receivedTime(receivedTime),
+  MIDIMessageEvent(double timeStamp, DOMUint8Array* data)
+      : Event(EventTypeNames::midimessage, true, false, timeStamp),
         m_data(data) {}
 
-  MIDIMessageEvent(ExecutionContext*,
-                   const AtomicString& type,
+  MIDIMessageEvent(const AtomicString& type,
                    const MIDIMessageEventInit& initializer);
 
-  double m_receivedTime;
   Member<DOMUint8Array> m_data;
 };
 

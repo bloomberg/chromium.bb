@@ -5,7 +5,6 @@
 // http://webaudio.github.io/web-midi-api/#idl-def-MIDIMessageEventInit
 
 dictionary MIDIMessageEventInit : EventInit {
-    double receivedTime;
     // TODO(foolip): |data| should be required and not nullable.
     // https://crbug.com/647693
     // https://github.com/WebAudio/web-midi-api/issues/168

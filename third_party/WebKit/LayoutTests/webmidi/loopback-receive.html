@@ -44,7 +44,6 @@ function verifyData(e) {
     actual = e.data;
     shouldBe("actual", "expected");
     midiMessageEvent = e;
-    shouldBeTrue("midiMessageEvent.receivedTime !== undefined");
     receiveCount++;
     if (receiveCount == testData.length)
         e.target.resolve();

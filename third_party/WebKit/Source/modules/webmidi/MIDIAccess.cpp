@@ -191,21 +191,7 @@ void MIDIAccess::didReceiveMIDIData(unsigned portIndex,
   if (portIndex >= m_inputs.size())
     return;
 
-  // Convert from time in seconds which is based on the time coordinate system
-  // of monotonicallyIncreasingTime() into time in milliseconds (a
-  // DOMHighResTimeStamp) according to the same time coordinate system as
-  // performance.now().  This is how timestamps are defined in the Web MIDI
-  // spec.
-  Document* document = toDocument(getExecutionContext());
-  DCHECK(document);
-
-  double timeStampInMilliseconds =
-      1000 *
-      document->loader()->timing().monotonicTimeToZeroBasedDocumentTime(
-          timeStamp);
-
-  m_inputs[portIndex]->didReceiveMIDIData(portIndex, data, length,
-                                          timeStampInMilliseconds);
+  m_inputs[portIndex]->didReceiveMIDIData(portIndex, data, length, timeStamp);
 }
 
 void MIDIAccess::sendMIDIData(unsigned portIndex,
