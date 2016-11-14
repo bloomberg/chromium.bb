@@ -136,9 +136,6 @@ class Deque : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>,
 
   void clear();
 
-  template <typename Predicate>
-  iterator findIf(Predicate&);
-
   template <typename VisitorDispatcher>
   void trace(VisitorDispatcher);
 
@@ -416,18 +413,6 @@ inline void Deque<T, inlineCapacity, Allocator>::clear() {
   m_end = 0;
   m_buffer.deallocateBuffer(m_buffer.buffer());
   m_buffer.resetBufferPointer();
-}
-
-template <typename T, size_t inlineCapacity, typename Allocator>
-template <typename Predicate>
-inline DequeIterator<T, inlineCapacity, Allocator>
-Deque<T, inlineCapacity, Allocator>::findIf(Predicate& predicate) {
-  iterator endIterator = end();
-  for (iterator it = begin(); it != endIterator; ++it) {
-    if (predicate(*it))
-      return it;
-  }
-  return endIterator;
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
