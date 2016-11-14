@@ -61,7 +61,8 @@ crbug.com/611232 http/tests/security/contentSecurityPolicy/1.1/plugintypes-affec
 crbug.com/615156 http/tests/intersection-observer/iframe-cross-origin.html [ Timeout ]
 
 # https://crbug.com/616626 - allow_universal_access_from_file_urls doesn't work with --site-per-process.
-crbug.com/616626 http/tests/local/drag-over-remote-content.html [ Timeout ]
+# https://crbug.com/665058 - EventSender drag-and-drop simulation doesn't support OOPIFs.
+crbug.com/665058 http/tests/local/drag-over-remote-content.html [ Crash ]
 
 # https://crbug.com/619662 - Expected console output differences.
 crbug.com/619662 http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
