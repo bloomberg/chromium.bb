@@ -164,6 +164,35 @@ void CheckForInsecureContent(
                      ran);
 }
 
+void GetSiteIdentityByMaliciousContentStatus(
+    security_state::SecurityStateModel::MaliciousContentStatus
+        malicious_content_status,
+    WebsiteSettings::SiteIdentityStatus* status,
+    base::string16* details) {
+  switch (malicious_content_status) {
+    case security_state::SecurityStateModel::MALICIOUS_CONTENT_STATUS_NONE:
+      NOTREACHED();
+      break;
+    case security_state::SecurityStateModel::MALICIOUS_CONTENT_STATUS_MALWARE:
+      *status = WebsiteSettings::SITE_IDENTITY_STATUS_MALWARE;
+      *details =
+          l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_MALWARE_DETAILS);
+      break;
+    case security_state::SecurityStateModel::
+        MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING:
+      *status = WebsiteSettings::SITE_IDENTITY_STATUS_SOCIAL_ENGINEERING;
+      *details = l10n_util::GetStringUTF16(
+          IDS_WEBSITE_SETTINGS_SOCIAL_ENGINEERING_DETAILS);
+      break;
+    case security_state::SecurityStateModel::
+        MALICIOUS_CONTENT_STATUS_UNWANTED_SOFTWARE:
+      *status = WebsiteSettings::SITE_IDENTITY_STATUS_UNWANTED_SOFTWARE;
+      *details = l10n_util::GetStringUTF16(
+          IDS_WEBSITE_SETTINGS_UNWANTED_SOFTWARE_DETAILS);
+      break;
+  }
+}
+
 // Returns true if any of the given statuses match |status|.
 bool CertificateTransparencyStatusMatchAny(
     const std::vector<net::ct::SCTVerifyStatus>& sct_verify_statuses,
@@ -443,11 +472,16 @@ void WebsiteSettings::Init(
   // Identity section.
   certificate_ = security_info.certificate;
 
-  // HTTPS with no or minor errors.
-  if (certificate_ &&
-      (!net::IsCertStatusError(security_info.cert_status) ||
-       net::IsCertStatusMinorError(security_info.cert_status))) {
-    // There are no major errors. Check for minor errors.
+  if (security_info.malicious_content_status !=
+      security_state::SecurityStateModel::MALICIOUS_CONTENT_STATUS_NONE) {
+    // The site has been flagged by Safe Browsing as dangerous.
+    GetSiteIdentityByMaliciousContentStatus(
+        security_info.malicious_content_status, &site_identity_status_,
+        &site_identity_details_);
+  } else if (certificate_ &&
+             (!net::IsCertStatusError(security_info.cert_status) ||
+              net::IsCertStatusMinorError(security_info.cert_status))) {
+    // HTTPS with no or minor errors.
     if (security_info.security_level ==
         SecurityStateModel::SECURE_WITH_POLICY_INSTALLED_CERT) {
       site_identity_status_ = SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT;

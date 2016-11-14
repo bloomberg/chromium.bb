@@ -183,6 +183,17 @@ WebsiteSettingsUI::IdentityInfo::GetSecurityDescription() const {
           return CreateSecurityDescription(IDS_WEBSITE_SETTINGS_SECURE_SUMMARY,
                                            IDS_WEBSITE_SETTINGS_SECURE_DETAILS);
       }
+    case WebsiteSettings::SITE_IDENTITY_STATUS_MALWARE:
+      return CreateSecurityDescription(IDS_WEBSITE_SETTINGS_MALWARE_SUMMARY,
+                                       IDS_WEBSITE_SETTINGS_MALWARE_DETAILS);
+    case WebsiteSettings::SITE_IDENTITY_STATUS_SOCIAL_ENGINEERING:
+      return CreateSecurityDescription(
+          IDS_WEBSITE_SETTINGS_SOCIAL_ENGINEERING_SUMMARY,
+          IDS_WEBSITE_SETTINGS_SOCIAL_ENGINEERING_DETAILS);
+    case WebsiteSettings::SITE_IDENTITY_STATUS_UNWANTED_SOFTWARE:
+      return CreateSecurityDescription(
+          IDS_WEBSITE_SETTINGS_UNWANTED_SOFTWARE_SUMMARY,
+          IDS_WEBSITE_SETTINGS_UNWANTED_SOFTWARE_DETAILS);
     case WebsiteSettings::
         SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM_MINOR:
     case WebsiteSettings::

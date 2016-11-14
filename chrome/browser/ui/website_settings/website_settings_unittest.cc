@@ -100,7 +100,7 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    // Setup stub SSLStatus.
+    // Setup stub SecurityInfo.
     security_info_.security_level = SecurityStateModel::NONE;
 
     // Create the certificate.
@@ -303,6 +303,48 @@ TEST_F(WebsiteSettingsTest, OnChosenObjectDeleted) {
 
   EXPECT_FALSE(store->HasDevicePermission(url(), url(), device));
   EXPECT_EQ(0u, last_chosen_object_info().size());
+}
+
+TEST_F(WebsiteSettingsTest, Malware) {
+  security_info_.security_level = SecurityStateModel::DANGEROUS;
+  security_info_.malicious_content_status =
+      SecurityStateModel::MALICIOUS_CONTENT_STATUS_MALWARE;
+  SetDefaultUIExpectations(mock_ui());
+  EXPECT_CALL(*mock_ui(),
+              SetSelectedTab(WebsiteSettingsUI::TAB_ID_PERMISSIONS));
+
+  EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_UNENCRYPTED,
+            website_settings()->site_connection_status());
+  EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_MALWARE,
+            website_settings()->site_identity_status());
+}
+
+TEST_F(WebsiteSettingsTest, SocialEngineering) {
+  security_info_.security_level = SecurityStateModel::DANGEROUS;
+  security_info_.malicious_content_status =
+      SecurityStateModel::MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING;
+  SetDefaultUIExpectations(mock_ui());
+  EXPECT_CALL(*mock_ui(),
+              SetSelectedTab(WebsiteSettingsUI::TAB_ID_PERMISSIONS));
+
+  EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_UNENCRYPTED,
+            website_settings()->site_connection_status());
+  EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_SOCIAL_ENGINEERING,
+            website_settings()->site_identity_status());
+}
+
+TEST_F(WebsiteSettingsTest, UnwantedSoftware) {
+  security_info_.security_level = SecurityStateModel::DANGEROUS;
+  security_info_.malicious_content_status =
+      SecurityStateModel::MALICIOUS_CONTENT_STATUS_UNWANTED_SOFTWARE;
+  SetDefaultUIExpectations(mock_ui());
+  EXPECT_CALL(*mock_ui(),
+              SetSelectedTab(WebsiteSettingsUI::TAB_ID_PERMISSIONS));
+
+  EXPECT_EQ(WebsiteSettings::SITE_CONNECTION_STATUS_UNENCRYPTED,
+            website_settings()->site_connection_status());
+  EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_UNWANTED_SOFTWARE,
+            website_settings()->site_identity_status());
 }
 
 TEST_F(WebsiteSettingsTest, HTTPConnection) {

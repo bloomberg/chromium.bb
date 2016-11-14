@@ -80,6 +80,11 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver,
     // is using a deprecated signature algorithm.
     SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM_MINOR,
     SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM_MAJOR,
+    // The website has been flagged by Safe Browsing as dangerous for
+    // containing malware, social engineering, or unwanted software.
+    SITE_IDENTITY_STATUS_MALWARE,
+    SITE_IDENTITY_STATUS_SOCIAL_ENGINEERING,
+    SITE_IDENTITY_STATUS_UNWANTED_SOFTWARE,
   };
 
   // UMA statistics for WebsiteSettings. Do not reorder or remove existing
