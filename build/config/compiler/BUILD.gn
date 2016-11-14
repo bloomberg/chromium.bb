@@ -1563,14 +1563,7 @@ config("minimal_symbols") {
   if (is_win) {
     # Linker symbols for backtraces only.
     cflags = []
-    if (is_win_fastlink) {
-      # Tell VS 2015+ to create a PDB that references debug
-      # information in .obj and .lib files instead of copying
-      # it all. This flag is incompatible with /PROFILE
-      ldflags = [ "/DEBUG:FASTLINK" ]
-    } else {
-      ldflags = [ "/DEBUG" ]
-    }
+    ldflags = [ "/DEBUG" ]
   } else {
     if (is_android) {
       # Breakpad can't handle DWARF 4 symbols properly yet, so use DWARF 3
