@@ -1244,8 +1244,9 @@ weston_wm_handle_create_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 	xcb_create_notify_event_t *create_notify =
 		(xcb_create_notify_event_t *) event;
 
-	wm_log("XCB_CREATE_NOTIFY (window %d, width %d, height %d%s%s)\n",
+	wm_log("XCB_CREATE_NOTIFY (window %d, at (%d, %d), width %d, height %d%s%s)\n",
 	       create_notify->window,
+	       create_notify->x, create_notify->y,
 	       create_notify->width, create_notify->height,
 	       create_notify->override_redirect ? ", override" : "",
 	       our_resource(wm, create_notify->window) ? ", ours" : "");
