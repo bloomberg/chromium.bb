@@ -141,11 +141,12 @@ Polymer({
   },
 
   /**
-   * Returns true if the PIN is ready to be changed to a new value.
+   * Returns true if the currently entered PIN is the same as the initially
+   * submitted PIN.
    * @private
    * @return {boolean}
    */
-  canSubmit_: function() {
+  isPinConfirmed_: function() {
     return this.isPinLongEnough_(this.pinKeyboardValue_) &&
            this.initialPin_ == this.pinKeyboardValue_;
   },
@@ -157,10 +158,17 @@ Polymer({
    * @param {string} problemClass
    */
   showProblem_: function(messageId, problemClass) {
+    var previousMessage = this.problemMessage_;
+
+    // Update problem info.
     this.problemMessage_ = this.i18n(messageId);
     this.problemClass_ = problemClass;
     this.updateStyles();
-  },
+
+    // If the problem message has changed, fire an alert.
+    if (previousMessage != this.problemMessage_)
+      this.$.problemDiv.setAttribute('role', 'alert');
+   },
 
   /** @private */
   hideProblem_: function() {
@@ -174,8 +182,8 @@ Polymer({
       var isPinLongEnough = this.isPinLongEnough_(this.pinKeyboardValue_);
       var isWeak = isPinLongEnough && this.isPinWeak_(this.pinKeyboardValue_);
 
-      if (!isPinLongEnough && this.pinKeyboardValue_)
-        this.showProblem_('configurePinTooShort', 'error');
+      if (!isPinLongEnough)
+        this.showProblem_('configurePinTooShort', 'warning');
       else if (isWeak)
         this.showProblem_('configurePinWeakPin', 'warning');
       else
@@ -184,14 +192,12 @@ Polymer({
       this.enableSubmit_ = isPinLongEnough;
 
     } else {
-      var canSubmit = this.canSubmit_();
-
-      if (!canSubmit && this.pinKeyboardValue_)
-        this.showProblem_('configurePinMismatched', 'error');
-      else
+      if (this.isPinConfirmed_())
         this.hideProblem_();
+      else
+        this.showProblem_('configurePinMismatched', 'warning');
 
-      this.enableSubmit_ = canSubmit;
+      this.enableSubmit_ = true;
     }
   },
 
@@ -208,8 +214,10 @@ Polymer({
     } else {
       // onPinSubmit_ gets called if the user hits enter on the PIN keyboard.
       // The PIN is not guaranteed to be valid in that case.
-      if (!this.canSubmit_())
+      if (!this.isPinConfirmed_()) {
+        this.showProblem_('configurePinMismatched', 'error');
         return;
+      }
 
       function onSetModesCompleted(didSet) {
         if (!didSet) {

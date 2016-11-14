@@ -200,13 +200,14 @@
         <template is="dom-if" if="[[quickUnlockEnabled_]]">
           <div class="settings-box two-line" actionable
                on-tap="onConfigureLockTap_">
-            <div class="middle">
-              <div>$i18n{lockScreenTitle}</div>
+            <div class="start">
+              $i18n{lockScreenTitle}
               <div class="secondary">
                 [[getPasswordState_(hasPin,
                                     prefs.settings.enable_screen_lock.value)]]
               </div>
             </div>
+            <button class="subpage-arrow" is="paper-icon-button-light"></button>
           </div>
         </template>
 

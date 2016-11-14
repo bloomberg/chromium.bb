@@ -370,46 +370,50 @@ cr.define('settings_people_page_quick_unlock', function() {
         assertFalse(continueButton.disabled);
       });
 
-      // Problem messages are hidden if the PIN is cleared.
-      test('NoProblemShownWithEmptyPin', function() {
+      // Problem message is always shown.
+      test('ProblemShownEvenWithEmptyPin', function() {
         pinKeyboard.value = '11';
         assertTrue(isVisible(problemDiv));
 
         pinKeyboard.value = '';
-        assertFalse(isVisible(problemDiv));
+        assertTrue(isVisible(problemDiv));
       });
 
       // If the PIN is too short an error problem is shown.
-      test('ErrorShownForShortPins', function() {
-        assertFalse(isVisible(problemDiv));
-
+      test('WarningShownForShortPins', function() {
         pinKeyboard.value = '11';
 
         assertTrue(isVisible(problemDiv));
-        assertHasClass(problemDiv, 'error');
+        assertHasClass(problemDiv, 'warning');
         assertTrue(continueButton.disabled);
       });
 
       // If the PIN is weak a warning problem is shown.
       test('WarningShownForWeakPins', function() {
-        assertFalse(isVisible(problemDiv));
-
-        pinKeyboard.value = '1111';
+        pinKeyboard.value = '111111';
 
         assertTrue(isVisible(problemDiv));
         assertHasClass(problemDiv, 'warning');
       });
 
-      // If the confirm PIN does not match the initial PIN an error is shown and
-      // the submit button is disabled.
-      test('ErrorShownForMismatchedPins', function() {
+      // If the confirm PIN does not match the initial PIN a warning is shown.
+      // If the user tries to submit the PIN, the warning changes to an error.
+      test('WarningThenErrorShownForMismatchedPins', function() {
         pinKeyboard.value = '1118';
         MockInteractions.tap(continueButton);
-        pinKeyboard.value = '1119';
 
+        // Entering a mismatched PIN shows a warning.
+        pinKeyboard.value = '1119';
         assertTrue(isVisible(problemDiv));
+        assertHasClass(problemDiv, 'warning');
+
+        // Submitting a mistmatched PIN shows an error.
+        MockInteractions.tap(continueButton);
         assertHasClass(problemDiv, 'error');
-        assertTrue(continueButton.disabled);
+
+        // Changing the PIN changes the error to a warning.
+        pinKeyboard.value = '111';
+        assertHasClass(problemDiv, 'warning');
       });
 
       // Hitting cancel at the setup step dismisses the dialog.

@@ -17,6 +17,11 @@ Polymer({
 
   properties: {
     /**
+     * Alt-text for the dialog close button.
+     */
+    closeText: String,
+
+    /**
      * True if the dialog should remain open on 'popstate' events. This is used
      * for navigable dialogs that have their separate navigation handling code.
      */

@@ -68,7 +68,9 @@ void AddLocalizedStringsBulk(content::WebUIDataSource* html_source,
 void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
   LocalizedString localized_strings[] = {
       {"add", IDS_ADD},
+      {"back", IDS_ACCNAME_BACK},
       {"cancel", IDS_CANCEL},
+      {"close", IDS_CLOSE},
       {"confirm", IDS_CONFIRM},
       {"disable", IDS_DISABLE},
       {"learnMore", IDS_LEARN_MORE},
