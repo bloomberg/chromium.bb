@@ -2215,6 +2215,7 @@ split_static_library("browser") {
       "//services/ui/public/cpp/input_devices",
       "//ui/aura",
       "//ui/compositor",
+      "//ui/snapshot",
       "//ui/views/mus",
     ]
   }
