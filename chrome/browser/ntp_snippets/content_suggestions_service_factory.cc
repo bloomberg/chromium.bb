@@ -36,8 +36,8 @@
 #include "components/ntp_snippets/remote/ntp_snippets_database.h"
 #include "components/ntp_snippets/remote/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/remote/ntp_snippets_scheduler.h"
-#include "components/ntp_snippets/remote/ntp_snippets_service.h"
 #include "components/ntp_snippets/remote/ntp_snippets_status_service.h"
+#include "components/ntp_snippets/remote/remote_suggestions_provider.h"
 #include "components/ntp_snippets/sessions/foreign_sessions_suggestions_provider.h"
 #include "components/ntp_snippets/sessions/tab_delegate_sync_adapter.h"
 #include "components/prefs/pref_service.h"
@@ -75,12 +75,12 @@ using image_fetcher::ImageFetcherImpl;
 using ntp_snippets::BookmarkSuggestionsProvider;
 using ntp_snippets::CategoryFactory;
 using ntp_snippets::ContentSuggestionsService;
+using ntp_snippets::ForeignSessionsSuggestionsProvider;
 using ntp_snippets::NTPSnippetsDatabase;
 using ntp_snippets::NTPSnippetsFetcher;
-using ntp_snippets::NTPSnippetsService;
 using ntp_snippets::NTPSnippetsScheduler;
 using ntp_snippets::NTPSnippetsStatusService;
-using ntp_snippets::ForeignSessionsSuggestionsProvider;
+using ntp_snippets::RemoteSuggestionsProvider;
 using ntp_snippets::TabDelegateSyncAdapter;
 using suggestions::ImageDecoderImpl;
 using syncer::SyncService;
@@ -161,7 +161,7 @@ void RegisterArticleProvider(SigninManagerBase* signin_manager,
               base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
   bool is_stable_channel =
       chrome::GetChannel() == version_info::Channel::STABLE;
-  auto provider = base::MakeUnique<NTPSnippetsService>(
+  auto provider = base::MakeUnique<RemoteSuggestionsProvider>(
       service, service->category_factory(), pref_service,
       g_browser_process->GetApplicationLocale(), service->user_classifier(),
       scheduler, base::MakeUnique<NTPSnippetsFetcher>(

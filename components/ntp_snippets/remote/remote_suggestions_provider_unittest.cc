@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/remote/ntp_snippets_service.h"
+#include "components/ntp_snippets/remote/remote_suggestions_provider.h"
 
 #include <memory>
 #include <utility>
@@ -124,8 +124,7 @@ std::string GetTestJson(const std::vector<std::string>& snippets,
       "    \"suggestions\": [%s]\n"
       "  }]\n"
       "}\n",
-      category_title.c_str(),
-      base::JoinString(snippets, ", ").c_str());
+      category_title.c_str(), base::JoinString(snippets, ", ").c_str());
 }
 
 std::string GetTestJson(const std::vector<std::string>& snippets) {
@@ -263,7 +262,7 @@ void ServeOneByOneImage(
   notify->OnImageDataFetched(id, "1-by-1-image-data");
 }
 
-gfx::Image FetchImage(NTPSnippetsService* service,
+gfx::Image FetchImage(RemoteSuggestionsProvider* service,
                       const ContentSuggestion::ID& suggestion_id) {
   gfx::Image result;
   base::RunLoop run_loop;
@@ -296,7 +295,9 @@ void ParseJson(
 class FailingFakeURLFetcherFactory : public net::URLFetcherFactory {
  public:
   std::unique_ptr<net::URLFetcher> CreateURLFetcher(
-      int id, const GURL& url, net::URLFetcher::RequestType request_type,
+      int id,
+      const GURL& url,
+      net::URLFetcher::RequestType request_type,
       net::URLFetcherDelegate* d) override {
     return base::MakeUnique<net::FakeURLFetcher>(
         url, d, /*response_data=*/std::string(), net::HTTP_NOT_FOUND,
@@ -403,9 +404,9 @@ class FakeImageDecoder : public image_fetcher::ImageDecoder {
 
 }  // namespace
 
-class NTPSnippetsServiceTest : public ::testing::Test {
+class RemoteSuggestionsProviderTest : public ::testing::Test {
  public:
-  NTPSnippetsServiceTest()
+  RemoteSuggestionsProviderTest()
       : params_manager_(ntp_snippets::kStudyName,
                         {{"content_suggestions_backend",
                           kTestContentSuggestionsServerEndpoint}}),
@@ -415,27 +416,28 @@ class NTPSnippetsServiceTest : public ::testing::Test {
         user_classifier_(/*pref_service=*/nullptr),
         image_fetcher_(nullptr),
         image_decoder_(nullptr) {
-    NTPSnippetsService::RegisterProfilePrefs(utils_.pref_service()->registry());
+    RemoteSuggestionsProvider::RegisterProfilePrefs(
+        utils_.pref_service()->registry());
     RequestThrottler::RegisterProfilePrefs(utils_.pref_service()->registry());
 
     EXPECT_TRUE(database_dir_.CreateUniqueTempDir());
   }
 
-  ~NTPSnippetsServiceTest() override {
+  ~RemoteSuggestionsProviderTest() override {
     // We need to run the message loop after deleting the database, because
     // ProtoDatabaseImpl deletes the actual LevelDB asynchronously on the task
     // runner. Without this, we'd get reports of memory leaks.
     base::RunLoop().RunUntilIdle();
   }
 
-  std::unique_ptr<NTPSnippetsService> MakeSnippetsService(
+  std::unique_ptr<RemoteSuggestionsProvider> MakeSnippetsService(
       bool set_empty_response = true) {
     auto service = MakeSnippetsServiceWithoutInitialization();
     WaitForSnippetsServiceInitialization(set_empty_response);
     return service;
   }
 
-  std::unique_ptr<NTPSnippetsService>
+  std::unique_ptr<RemoteSuggestionsProvider>
   MakeSnippetsServiceWithoutInitialization() {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner(
         base::ThreadTaskRunnerHandle::Get());
@@ -462,7 +464,7 @@ class NTPSnippetsServiceTest : public ::testing::Test {
     image_decoder_ = image_decoder.get();
     EXPECT_FALSE(observer_);
     observer_ = base::MakeUnique<FakeContentSuggestionsProviderObserver>();
-    return base::MakeUnique<NTPSnippetsService>(
+    return base::MakeUnique<RemoteSuggestionsProvider>(
         observer_.get(), &category_factory_, utils_.pref_service(), "fr",
         &user_classifier_, &scheduler_, std::move(snippets_fetcher),
         std::move(image_fetcher), std::move(image_decoder),
@@ -485,7 +487,8 @@ class NTPSnippetsServiceTest : public ::testing::Test {
     observer_->WaitForLoad();
   }
 
-  void ResetSnippetsService(std::unique_ptr<NTPSnippetsService>* service) {
+  void ResetSnippetsService(
+      std::unique_ptr<RemoteSuggestionsProvider>* service) {
     service->reset();
     observer_.reset();
     *service = MakeSnippetsService();
@@ -522,14 +525,14 @@ class NTPSnippetsServiceTest : public ::testing::Test {
                                               net::URLRequestStatus::SUCCESS);
   }
 
-  void LoadFromJSONString(NTPSnippetsService* service,
+  void LoadFromJSONString(RemoteSuggestionsProvider* service,
                           const std::string& json) {
     SetUpFetchResponse(json);
     service->FetchSnippets(true);
     base::RunLoop().RunUntilIdle();
   }
 
-  void LoadMoreFromJSONString(NTPSnippetsService* service,
+  void LoadMoreFromJSONString(RemoteSuggestionsProvider* service,
                               const Category& category,
                               const std::string& json,
                               const std::set<std::string>& known_ids,
@@ -557,10 +560,10 @@ class NTPSnippetsServiceTest : public ::testing::Test {
 
   base::ScopedTempDir database_dir_;
 
-  DISALLOW_COPY_AND_ASSIGN(NTPSnippetsServiceTest);
+  DISALLOW_COPY_AND_ASSIGN(RemoteSuggestionsProviderTest);
 };
 
-TEST_F(NTPSnippetsServiceTest, ScheduleOnStart) {
+TEST_F(RemoteSuggestionsProviderTest, ScheduleOnStart) {
   // We should get two |Schedule| calls: The first when initialization
   // completes, the second one after the automatic (since the service doesn't
   // have any data yet) fetch finishes.
@@ -572,7 +575,7 @@ TEST_F(NTPSnippetsServiceTest, ScheduleOnStart) {
   EXPECT_EQ("OK", service->snippets_fetcher()->last_status());
 }
 
-TEST_F(NTPSnippetsServiceTest, DontRescheduleOnStart) {
+TEST_F(RemoteSuggestionsProviderTest, DontRescheduleOnStart) {
   EXPECT_CALL(mock_scheduler(), Schedule(_, _)).Times(2);
   EXPECT_CALL(mock_scheduler(), Unschedule()).Times(0);
   SetUpFetchResponse(GetTestJson({GetSnippet()}));
@@ -588,7 +591,7 @@ TEST_F(NTPSnippetsServiceTest, DontRescheduleOnStart) {
   ResetSnippetsService(&service);
 }
 
-TEST_F(NTPSnippetsServiceTest, RescheduleAfterSuccessfulFetch) {
+TEST_F(RemoteSuggestionsProviderTest, RescheduleAfterSuccessfulFetch) {
   // We should get two |Schedule| calls: The first when initialization
   // completes, the second one after the automatic (since the service doesn't
   // have any data yet) fetch finishes.
@@ -600,7 +603,7 @@ TEST_F(NTPSnippetsServiceTest, RescheduleAfterSuccessfulFetch) {
   LoadFromJSONString(service.get(), GetTestJson({GetSnippet()}));
 }
 
-TEST_F(NTPSnippetsServiceTest, DontRescheduleAfterFailedFetch) {
+TEST_F(RemoteSuggestionsProviderTest, DontRescheduleAfterFailedFetch) {
   // We should get two |Schedule| calls: The first when initialization
   // completes, the second one after the automatic (since the service doesn't
   // have any data yet) fetch finishes.
@@ -612,7 +615,7 @@ TEST_F(NTPSnippetsServiceTest, DontRescheduleAfterFailedFetch) {
   LoadFromJSONString(service.get(), GetTestJson({GetInvalidSnippet()}));
 }
 
-TEST_F(NTPSnippetsServiceTest, IgnoreRescheduleBeforeInit) {
+TEST_F(RemoteSuggestionsProviderTest, IgnoreRescheduleBeforeInit) {
   // We should get two |Schedule| calls: The first when initialization
   // completes, the second one after the automatic (since the service doesn't
   // have any data yet) fetch finishes.
@@ -625,7 +628,7 @@ TEST_F(NTPSnippetsServiceTest, IgnoreRescheduleBeforeInit) {
   WaitForSnippetsServiceInitialization(/*set_empty_response=*/true);
 }
 
-TEST_F(NTPSnippetsServiceTest, HandleForcedRescheduleBeforeInit) {
+TEST_F(RemoteSuggestionsProviderTest, HandleForcedRescheduleBeforeInit) {
   {
     InSequence s;
     // The |RescheduleFetching| call with force=true should result in an
@@ -641,7 +644,7 @@ TEST_F(NTPSnippetsServiceTest, HandleForcedRescheduleBeforeInit) {
   WaitForSnippetsServiceInitialization(/*set_empty_response=*/true);
 }
 
-TEST_F(NTPSnippetsServiceTest, RescheduleOnStateChange) {
+TEST_F(RemoteSuggestionsProviderTest, RescheduleOnStateChange) {
   {
     InSequence s;
     // Initial startup.
@@ -665,7 +668,7 @@ TEST_F(NTPSnippetsServiceTest, RescheduleOnStateChange) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(NTPSnippetsServiceTest, DontUnscheduleOnShutdown) {
+TEST_F(RemoteSuggestionsProviderTest, DontUnscheduleOnShutdown) {
   EXPECT_CALL(mock_scheduler(), Schedule(_, _)).Times(2);
   EXPECT_CALL(mock_scheduler(), Unschedule()).Times(0);
 
@@ -675,7 +678,7 @@ TEST_F(NTPSnippetsServiceTest, DontUnscheduleOnShutdown) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(NTPSnippetsServiceTest, Full) {
+TEST_F(RemoteSuggestionsProviderTest, Full) {
   std::string json_str(GetTestJson({GetSnippet()}));
 
   auto service = MakeSnippetsService();
@@ -698,7 +701,7 @@ TEST_F(NTPSnippetsServiceTest, Full) {
   EXPECT_EQ(GURL(kSnippetAmpUrl), suggestion.amp_url());
 }
 
-TEST_F(NTPSnippetsServiceTest, CategoryTitle) {
+TEST_F(RemoteSuggestionsProviderTest, CategoryTitle) {
   const base::string16 test_default_title =
       base::UTF8ToUTF16(kTestJsonDefaultCategoryTitle);
 
@@ -733,7 +736,7 @@ TEST_F(NTPSnippetsServiceTest, CategoryTitle) {
   EXPECT_THAT(info_before.show_if_empty(), Eq(true));
 }
 
-TEST_F(NTPSnippetsServiceTest, MultipleCategories) {
+TEST_F(RemoteSuggestionsProviderTest, MultipleCategories) {
   std::string json_str(
       GetMultiCategoryJson({GetSnippetN(0)}, {GetSnippetN(1)}));
 
@@ -780,7 +783,7 @@ TEST_F(NTPSnippetsServiceTest, MultipleCategories) {
   }
 }
 
-TEST_F(NTPSnippetsServiceTest, ArticleCategoryInfo) {
+TEST_F(RemoteSuggestionsProviderTest, ArticleCategoryInfo) {
   auto service = MakeSnippetsService();
   CategoryInfo article_info = service->GetCategoryInfo(articles_category());
   EXPECT_THAT(article_info.has_more_action(), Eq(true));
@@ -789,7 +792,7 @@ TEST_F(NTPSnippetsServiceTest, ArticleCategoryInfo) {
   EXPECT_THAT(article_info.show_if_empty(), Eq(true));
 }
 
-TEST_F(NTPSnippetsServiceTest, ExperimentalCategoryInfo) {
+TEST_F(RemoteSuggestionsProviderTest, ExperimentalCategoryInfo) {
   auto service = MakeSnippetsService();
 
   // Load data with multiple categories so that a new experimental category gets
@@ -804,7 +807,7 @@ TEST_F(NTPSnippetsServiceTest, ExperimentalCategoryInfo) {
   EXPECT_THAT(info.show_if_empty(), Eq(false));
 }
 
-TEST_F(NTPSnippetsServiceTest, PersistCategoryInfos) {
+TEST_F(RemoteSuggestionsProviderTest, PersistCategoryInfos) {
   auto service = MakeSnippetsService();
 
   LoadFromJSONString(service.get(),
@@ -844,7 +847,7 @@ TEST_F(NTPSnippetsServiceTest, PersistCategoryInfos) {
   EXPECT_EQ(info_unknown_before.title(), info_unknown_after.title());
 }
 
-TEST_F(NTPSnippetsServiceTest, PersistSuggestions) {
+TEST_F(RemoteSuggestionsProviderTest, PersistSuggestions) {
   auto service = MakeSnippetsService();
 
   LoadFromJSONString(service.get(),
@@ -863,7 +866,7 @@ TEST_F(NTPSnippetsServiceTest, PersistSuggestions) {
   EXPECT_THAT(observer().SuggestionsForCategory(other_category()), SizeIs(1));
 }
 
-TEST_F(NTPSnippetsServiceTest, Clear) {
+TEST_F(RemoteSuggestionsProviderTest, Clear) {
   auto service = MakeSnippetsService();
 
   std::string json_str(GetTestJson({GetSnippet()}));
@@ -875,7 +878,7 @@ TEST_F(NTPSnippetsServiceTest, Clear) {
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
 }
 
-TEST_F(NTPSnippetsServiceTest, ReplaceSnippets) {
+TEST_F(RemoteSuggestionsProviderTest, ReplaceSnippets) {
   auto service = MakeSnippetsService();
 
   std::string first("http://first");
@@ -890,7 +893,7 @@ TEST_F(NTPSnippetsServiceTest, ReplaceSnippets) {
               ElementsAre(IdEq(second)));
 }
 
-TEST_F(NTPSnippetsServiceTest, LoadsAdditionalSnippets) {
+TEST_F(RemoteSuggestionsProviderTest, LoadsAdditionalSnippets) {
   auto service = MakeSnippetsService();
 
   LoadFromJSONString(service.get(),
@@ -898,12 +901,11 @@ TEST_F(NTPSnippetsServiceTest, LoadsAdditionalSnippets) {
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()),
               ElementsAre(IdEq("http://first")));
 
-  auto expect_only_second_suggestion_received =
-      base::Bind([](Status status, std::vector<ContentSuggestion> suggestions) {
-        EXPECT_THAT(suggestions, SizeIs(1));
-        EXPECT_THAT(suggestions[0].id().id_within_category(),
-                    Eq("http://second"));
-      });
+  auto expect_only_second_suggestion_received = base::Bind([](
+      Status status, std::vector<ContentSuggestion> suggestions) {
+    EXPECT_THAT(suggestions, SizeIs(1));
+    EXPECT_THAT(suggestions[0].id().id_within_category(), Eq("http://second"));
+  });
   LoadMoreFromJSONString(service.get(), articles_category(),
                          GetTestJson({GetSnippetWithUrl("http://second")}),
                          /*known_ids=*/std::set<std::string>(),
@@ -940,7 +942,7 @@ TEST_F(NTPSnippetsServiceTest, LoadsAdditionalSnippets) {
 // TODO(tschumann): Test step 4) on a higher level instead of peeking into the
 // internal 'dismissed' data. The proper check is to make sure we tell the
 // backend to exclude these snippets.
-TEST_F(NTPSnippetsServiceTest, TestMergingFetchedMoreSnippetsFillup) {
+TEST_F(RemoteSuggestionsProviderTest, TestMergingFetchedMoreSnippetsFillup) {
   auto service = MakeSnippetsService(/*set_empty_response=*/false);
   LoadFromJSONString(
       service.get(),
@@ -993,7 +995,8 @@ TEST_F(NTPSnippetsServiceTest, TestMergingFetchedMoreSnippetsFillup) {
               ElementsAre(IdEq("http://id-1"), IdEq("http://id-2")));
 }
 
-TEST_F(NTPSnippetsServiceTest, TestMergingFetchedMoreSnippetsReplaceAll) {
+TEST_F(RemoteSuggestionsProviderTest,
+       TestMergingFetchedMoreSnippetsReplaceAll) {
   auto service = MakeSnippetsService(/*set_empty_response=*/false);
   LoadFromJSONString(
       service.get(),
@@ -1081,7 +1084,7 @@ void SuggestionsLoaded(
 
 }  // namespace
 
-TEST_F(NTPSnippetsServiceTest, ReturnFetchRequestEmptyBeforeInit) {
+TEST_F(RemoteSuggestionsProviderTest, ReturnFetchRequestEmptyBeforeInit) {
   auto service = MakeSnippetsServiceWithoutInitialization();
   MockFunction<void(Status, const std::vector<ContentSuggestion>&)> loaded;
   EXPECT_CALL(loaded, Call(HasCode(StatusCode::TEMPORARY_ERROR), SizeIs(0)));
@@ -1090,7 +1093,7 @@ TEST_F(NTPSnippetsServiceTest, ReturnFetchRequestEmptyBeforeInit) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(NTPSnippetsServiceTest, LoadInvalidJson) {
+TEST_F(RemoteSuggestionsProviderTest, LoadInvalidJson) {
   auto service = MakeSnippetsService();
 
   LoadFromJSONString(service.get(), GetTestJson({GetInvalidSnippet()}));
@@ -1099,7 +1102,7 @@ TEST_F(NTPSnippetsServiceTest, LoadInvalidJson) {
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
 }
 
-TEST_F(NTPSnippetsServiceTest, LoadInvalidJsonWithExistingSnippets) {
+TEST_F(RemoteSuggestionsProviderTest, LoadInvalidJsonWithExistingSnippets) {
   auto service = MakeSnippetsService();
 
   LoadFromJSONString(service.get(), GetTestJson({GetSnippet()}));
@@ -1113,7 +1116,7 @@ TEST_F(NTPSnippetsServiceTest, LoadInvalidJsonWithExistingSnippets) {
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
 }
 
-TEST_F(NTPSnippetsServiceTest, LoadIncompleteJson) {
+TEST_F(RemoteSuggestionsProviderTest, LoadIncompleteJson) {
   auto service = MakeSnippetsService();
 
   LoadFromJSONString(service.get(), GetTestJson({GetIncompleteSnippet()}));
@@ -1122,7 +1125,7 @@ TEST_F(NTPSnippetsServiceTest, LoadIncompleteJson) {
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
 }
 
-TEST_F(NTPSnippetsServiceTest, LoadIncompleteJsonWithExistingSnippets) {
+TEST_F(RemoteSuggestionsProviderTest, LoadIncompleteJsonWithExistingSnippets) {
   auto service = MakeSnippetsService();
 
   LoadFromJSONString(service.get(), GetTestJson({GetSnippet()}));
@@ -1135,7 +1138,7 @@ TEST_F(NTPSnippetsServiceTest, LoadIncompleteJsonWithExistingSnippets) {
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
 }
 
-TEST_F(NTPSnippetsServiceTest, Dismiss) {
+TEST_F(RemoteSuggestionsProviderTest, Dismiss) {
   auto service = MakeSnippetsService();
 
   std::string json_str(
@@ -1169,7 +1172,7 @@ TEST_F(NTPSnippetsServiceTest, Dismiss) {
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
 }
 
-TEST_F(NTPSnippetsServiceTest, GetDismissed) {
+TEST_F(RemoteSuggestionsProviderTest, GetDismissed) {
   auto service = MakeSnippetsService();
 
   LoadFromJSONString(service.get(), GetTestJson({GetSnippet()}));
@@ -1179,7 +1182,8 @@ TEST_F(NTPSnippetsServiceTest, GetDismissed) {
   service->GetDismissedSuggestionsForDebugging(
       articles_category(),
       base::Bind(
-          [](NTPSnippetsService* service, NTPSnippetsServiceTest* test,
+          [](RemoteSuggestionsProvider* service,
+             RemoteSuggestionsProviderTest* test,
              std::vector<ContentSuggestion> dismissed_suggestions) {
             EXPECT_EQ(1u, dismissed_suggestions.size());
             for (auto& suggestion : dismissed_suggestions) {
@@ -1194,7 +1198,8 @@ TEST_F(NTPSnippetsServiceTest, GetDismissed) {
   service->GetDismissedSuggestionsForDebugging(
       articles_category(),
       base::Bind(
-          [](NTPSnippetsService* service, NTPSnippetsServiceTest* test,
+          [](RemoteSuggestionsProvider* service,
+             RemoteSuggestionsProviderTest* test,
              std::vector<ContentSuggestion> dismissed_suggestions) {
             EXPECT_EQ(0u, dismissed_suggestions.size());
           },
@@ -1202,7 +1207,7 @@ TEST_F(NTPSnippetsServiceTest, GetDismissed) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(NTPSnippetsServiceTest, CreationTimestampParseFail) {
+TEST_F(RemoteSuggestionsProviderTest, CreationTimestampParseFail) {
   auto service = MakeSnippetsService();
 
   std::string json =
@@ -1215,7 +1220,7 @@ TEST_F(NTPSnippetsServiceTest, CreationTimestampParseFail) {
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
 }
 
-TEST_F(NTPSnippetsServiceTest, RemoveExpiredDismissedContent) {
+TEST_F(RemoteSuggestionsProviderTest, RemoveExpiredDismissedContent) {
   auto service = MakeSnippetsService();
 
   std::string json_str1(GetTestJson({GetExpiredSnippet()}));
@@ -1233,7 +1238,7 @@ TEST_F(NTPSnippetsServiceTest, RemoveExpiredDismissedContent) {
               IsEmpty());
 }
 
-TEST_F(NTPSnippetsServiceTest, ExpiredContentNotRemoved) {
+TEST_F(RemoteSuggestionsProviderTest, ExpiredContentNotRemoved) {
   auto service = MakeSnippetsService();
 
   std::string json_str(GetTestJson({GetExpiredSnippet()}));
@@ -1242,7 +1247,7 @@ TEST_F(NTPSnippetsServiceTest, ExpiredContentNotRemoved) {
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
 }
 
-TEST_F(NTPSnippetsServiceTest, TestSingleSource) {
+TEST_F(RemoteSuggestionsProviderTest, TestSingleSource) {
   auto service = MakeSnippetsService();
 
   std::string json_str(GetTestJson({GetSnippetWithSources(
@@ -1258,7 +1263,7 @@ TEST_F(NTPSnippetsServiceTest, TestSingleSource) {
   EXPECT_EQ(snippet.best_source().amp_url, GURL("http://source1.amp.com"));
 }
 
-TEST_F(NTPSnippetsServiceTest, TestSingleSourceWithMalformedUrl) {
+TEST_F(RemoteSuggestionsProviderTest, TestSingleSourceWithMalformedUrl) {
   auto service = MakeSnippetsService();
 
   std::string json_str(GetTestJson({GetSnippetWithSources(
@@ -1268,7 +1273,7 @@ TEST_F(NTPSnippetsServiceTest, TestSingleSourceWithMalformedUrl) {
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
 }
 
-TEST_F(NTPSnippetsServiceTest, TestSingleSourceWithMissingData) {
+TEST_F(RemoteSuggestionsProviderTest, TestSingleSourceWithMissingData) {
   auto service = MakeSnippetsService();
 
   std::string json_str(
@@ -1278,7 +1283,7 @@ TEST_F(NTPSnippetsServiceTest, TestSingleSourceWithMissingData) {
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
 }
 
-TEST_F(NTPSnippetsServiceTest, LogNumArticlesHistogram) {
+TEST_F(RemoteSuggestionsProviderTest, LogNumArticlesHistogram) {
   auto service = MakeSnippetsService();
 
   base::HistogramTester tester;
@@ -1355,7 +1360,7 @@ TEST_F(NTPSnippetsServiceTest, LogNumArticlesHistogram) {
   tester.ExpectTotalCount("NewTabPage.Snippets.NumArticlesFetched", 6);
 }
 
-TEST_F(NTPSnippetsServiceTest, DismissShouldRespectAllKnownUrls) {
+TEST_F(RemoteSuggestionsProviderTest, DismissShouldRespectAllKnownUrls) {
   auto service = MakeSnippetsService();
 
   const base::Time creation = GetDefaultCreationTime();
@@ -1386,7 +1391,7 @@ TEST_F(NTPSnippetsServiceTest, DismissShouldRespectAllKnownUrls) {
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
 }
 
-TEST_F(NTPSnippetsServiceTest, StatusChanges) {
+TEST_F(RemoteSuggestionsProviderTest, StatusChanges) {
   auto service = MakeSnippetsService();
 
   // Simulate user signed out
@@ -1397,7 +1402,7 @@ TEST_F(NTPSnippetsServiceTest, StatusChanges) {
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(observer().StatusForCategory(articles_category()),
               Eq(CategoryStatus::SIGNED_OUT));
-  EXPECT_THAT(NTPSnippetsService::State::DISABLED, Eq(service->state_));
+  EXPECT_THAT(RemoteSuggestionsProvider::State::DISABLED, Eq(service->state_));
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()),
               IsEmpty());  // No fetch should be made.
 
@@ -1411,11 +1416,11 @@ TEST_F(NTPSnippetsServiceTest, StatusChanges) {
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(observer().StatusForCategory(articles_category()),
               Eq(CategoryStatus::AVAILABLE));
-  EXPECT_THAT(NTPSnippetsService::State::READY, Eq(service->state_));
+  EXPECT_THAT(RemoteSuggestionsProvider::State::READY, Eq(service->state_));
   EXPECT_FALSE(service->GetSnippetsForTesting(articles_category()).empty());
 }
 
-TEST_F(NTPSnippetsServiceTest, ImageReturnedWithTheSameId) {
+TEST_F(RemoteSuggestionsProviderTest, ImageReturnedWithTheSameId) {
   auto service = MakeSnippetsService();
 
   LoadFromJSONString(service.get(), GetTestJson({GetSnippet()}));
@@ -1439,7 +1444,7 @@ TEST_F(NTPSnippetsServiceTest, ImageReturnedWithTheSameId) {
   EXPECT_EQ(1, image.Width());
 }
 
-TEST_F(NTPSnippetsServiceTest, EmptyImageReturnedForNonExistentId) {
+TEST_F(RemoteSuggestionsProviderTest, EmptyImageReturnedForNonExistentId) {
   auto service = MakeSnippetsService();
 
   // Create a non-empty image so that we can test the image gets updated.
@@ -1456,7 +1461,7 @@ TEST_F(NTPSnippetsServiceTest, EmptyImageReturnedForNonExistentId) {
   EXPECT_TRUE(image.IsEmpty());
 }
 
-TEST_F(NTPSnippetsServiceTest, ClearHistoryRemovesAllSuggestions) {
+TEST_F(RemoteSuggestionsProviderTest, ClearHistoryRemovesAllSuggestions) {
   auto service = MakeSnippetsService();
 
   std::string first_snippet = GetSnippetWithUrl("http://url1.com");
@@ -1480,7 +1485,7 @@ TEST_F(NTPSnippetsServiceTest, ClearHistoryRemovesAllSuggestions) {
               IsEmpty());
 }
 
-TEST_F(NTPSnippetsServiceTest, SuggestionsFetchedOnSignInAndSignOut) {
+TEST_F(RemoteSuggestionsProviderTest, SuggestionsFetchedOnSignInAndSignOut) {
   auto service = MakeSnippetsService();
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(0));
 
@@ -1500,7 +1505,7 @@ TEST_F(NTPSnippetsServiceTest, SuggestionsFetchedOnSignInAndSignOut) {
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(2));
 }
 
-TEST_F(NTPSnippetsServiceTest, ShouldClearOrphanedImagesOnRestart) {
+TEST_F(RemoteSuggestionsProviderTest, ShouldClearOrphanedImagesOnRestart) {
   auto service = MakeSnippetsService();
 
   LoadFromJSONString(service.get(), GetTestJson({GetSnippet()}));
@@ -1525,11 +1530,12 @@ TEST_F(NTPSnippetsServiceTest, ShouldClearOrphanedImagesOnRestart) {
   EXPECT_TRUE(FetchImage(service.get(), MakeArticleID(kSnippetUrl)).IsEmpty());
 }
 
-TEST_F(NTPSnippetsServiceTest, ShouldHandleMoreThanMaxSnippetsInResponse) {
+TEST_F(RemoteSuggestionsProviderTest,
+       ShouldHandleMoreThanMaxSnippetsInResponse) {
   auto service = MakeSnippetsService();
 
   std::vector<std::string> suggestions;
-  for (int i = 0 ; i < service->GetMaxSnippetCountForTesting() + 1; ++i) {
+  for (int i = 0; i < service->GetMaxSnippetCountForTesting() + 1; ++i) {
     suggestions.push_back(GetSnippetWithUrl(
         base::StringPrintf("http://localhost/snippet-id-%d", i)));
   }

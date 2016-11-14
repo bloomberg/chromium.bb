@@ -22,7 +22,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_metrics.h"
-#include "components/ntp_snippets/remote/ntp_snippets_service.h"
+#include "components/ntp_snippets/remote/remote_suggestions_provider.h"
 #include "jni/SnippetsBridge_jni.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -119,7 +119,7 @@ static void FetchSnippets(JNIEnv* env,
   if (!content_suggestions_service)
     return;
 
-  ntp_snippets::NTPSnippetsService* service =
+  ntp_snippets::RemoteSuggestionsProvider* service =
       content_suggestions_service->ntp_snippets_service();
 
   // Can be null if the feature has been disabled but the scheduler has not been
@@ -145,7 +145,7 @@ static void RescheduleFetching(JNIEnv* env,
   if (!content_suggestions_service)
     return;
 
-  ntp_snippets::NTPSnippetsService* service =
+  ntp_snippets::RemoteSuggestionsProvider* service =
       content_suggestions_service->ntp_snippets_service();
 
   // Can be null if the feature has been disabled but the scheduler has not been

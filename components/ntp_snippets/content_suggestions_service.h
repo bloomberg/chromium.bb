@@ -30,7 +30,7 @@ class PrefRegistrySimple;
 
 namespace ntp_snippets {
 
-class NTPSnippetsService;
+class RemoteSuggestionsProvider;
 
 // Retrieves suggestions from a number of ContentSuggestionsProviders and serves
 // them grouped into categories. There can be at most one provider per category.
@@ -184,10 +184,14 @@ class ContentSuggestionsService : public KeyedService,
 
   CategoryFactory* category_factory() { return &category_factory_; }
 
-  // The reference to the NTPSnippetsService provider should only be set by the
-  // factory and only be used for scheduling, periodic fetching and debugging.
-  NTPSnippetsService* ntp_snippets_service() { return ntp_snippets_service_; }
-  void set_ntp_snippets_service(NTPSnippetsService* ntp_snippets_service) {
+  // The reference to the RemoteSuggestionsProvider provider should only be set
+  // by the factory and only be used for scheduling, periodic fetching and
+  // debugging.
+  RemoteSuggestionsProvider* ntp_snippets_service() {
+    return ntp_snippets_service_;
+  }
+  void set_ntp_snippets_service(
+      RemoteSuggestionsProvider* ntp_snippets_service) {
     ntp_snippets_service_ = ntp_snippets_service;
   }
 
@@ -286,9 +290,10 @@ class ContentSuggestionsService : public KeyedService,
   const std::vector<ContentSuggestion> no_suggestions_;
 
   // Keep a direct reference to this special provider to redirect scheduling,
-  // background fetching and debugging calls to it. If the NTPSnippetsService is
-  // loaded, it is also present in |providers_|, otherwise this is a nullptr.
-  NTPSnippetsService* ntp_snippets_service_;
+  // background fetching and debugging calls to it. If the
+  // RemoteSuggestionsProvider is loaded, it is also present in |providers_|,
+  // otherwise this is a nullptr.
+  RemoteSuggestionsProvider* ntp_snippets_service_;
 
   PrefService* pref_service_;
 

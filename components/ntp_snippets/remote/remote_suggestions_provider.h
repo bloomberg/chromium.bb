@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_SERVICE_H_
-#define COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_SERVICE_H_
+#ifndef COMPONENTS_NTP_SNIPPETS_REMOTE_REMOTE_SUGGESTIONS_PROVIDER_H_
+#define COMPONENTS_NTP_SNIPPETS_REMOTE_REMOTE_SUGGESTIONS_PROVIDER_H_
 
 #include <cstddef>
 #include <deque>
@@ -51,34 +51,34 @@ class UserClassifier;
 // This class is final because it does things in its constructor which make it
 // unsafe to derive from it.
 // TODO(treib): Introduce two-phase initialization and make the class not final?
-// TODO(pke): Rename this service to ArticleSuggestionsProvider and move to
-// a subdirectory.
 // TODO(jkrcal): this class grows really, really large. The fact that
 // NTPSnippetService also implements ImageFetcherDelegate adds unnecessary
 // complexity (and after all the Service is conceptually not an
 // ImagerFetcherDeletage ;-)). Instead, the cleaner solution would  be to define
 // a CachedImageFetcher class that handles the caching aspects and looks like an
 // image fetcher to the NTPSnippetService.
-class NTPSnippetsService final : public ContentSuggestionsProvider,
-                                 public image_fetcher::ImageFetcherDelegate {
+class RemoteSuggestionsProvider final
+    : public ContentSuggestionsProvider,
+      public image_fetcher::ImageFetcherDelegate {
  public:
   // |application_language_code| should be a ISO 639-1 compliant string, e.g.
   // 'en' or 'en-US'. Note that this code should only specify the language, not
   // the locale, so 'en_US' (English language with US locale) and 'en-GB_US'
   // (British English person in the US) are not language codes.
-  NTPSnippetsService(Observer* observer,
-                     CategoryFactory* category_factory,
-                     PrefService* pref_service,
-                     const std::string& application_language_code,
-                     const UserClassifier* user_classifier,
-                     NTPSnippetsScheduler* scheduler,
-                     std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
-                     std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
-                     std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
-                     std::unique_ptr<NTPSnippetsDatabase> database,
-                     std::unique_ptr<NTPSnippetsStatusService> status_service);
+  RemoteSuggestionsProvider(
+      Observer* observer,
+      CategoryFactory* category_factory,
+      PrefService* pref_service,
+      const std::string& application_language_code,
+      const UserClassifier* user_classifier,
+      NTPSnippetsScheduler* scheduler,
+      std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
+      std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
+      std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
+      std::unique_ptr<NTPSnippetsDatabase> database,
+      std::unique_ptr<NTPSnippetsStatusService> status_service);
 
-  ~NTPSnippetsService() override;
+  ~RemoteSuggestionsProvider() override;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
@@ -147,13 +147,14 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
   }
 
  private:
-  friend class NTPSnippetsServiceTest;
+  friend class RemoteSuggestionsProviderTest;
 
-  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest,
+  FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsProviderTest,
                            RemoveExpiredDismissedContent);
-  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, RescheduleOnStateChange);
-  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, StatusChanges);
-  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest,
+  FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsProviderTest,
+                           RescheduleOnStateChange);
+  FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsProviderTest, StatusChanges);
+  FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsProviderTest,
                            SuggestionsFetchedOnSignInAndSignOut);
 
   // Possible state transitions:
@@ -392,9 +393,9 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
   // Request throttler for limiting requests to thumbnail images.
   RequestThrottler thumbnail_requests_throttler_;
 
-  DISALLOW_COPY_AND_ASSIGN(NTPSnippetsService);
+  DISALLOW_COPY_AND_ASSIGN(RemoteSuggestionsProvider);
 };
 
 }  // namespace ntp_snippets
 
-#endif  // COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_SERVICE_H_
+#endif  // COMPONENTS_NTP_SNIPPETS_REMOTE_REMOTE_SUGGESTIONS_PROVIDER_H_

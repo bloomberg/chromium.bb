@@ -12,7 +12,9 @@
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/network_time/network_time_tracker.h"
-#include "components/ntp_snippets/remote/ntp_snippets_service.h"
+#include "components/ntp_snippets/bookmarks/bookmark_suggestions_provider.h"
+#include "components/ntp_snippets/content_suggestions_service.h"
+#include "components/ntp_snippets/remote/remote_suggestions_provider.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/ntp_tiles/popular_sites.h"
 #include "components/omnibox/browser/zero_suggest_provider.h"
@@ -85,7 +87,9 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   gcm::GCMChannelStatusSyncer::RegisterProfilePrefs(registry);
   HostContentSettingsMap::RegisterProfilePrefs(registry);
   HttpServerPropertiesManagerFactory::RegisterProfilePrefs(registry);
-  ntp_snippets::NTPSnippetsService::RegisterProfilePrefs(registry);
+  ntp_snippets::BookmarkSuggestionsProvider::RegisterProfilePrefs(registry);
+  ntp_snippets::RemoteSuggestionsProvider::RegisterProfilePrefs(registry);
+  ntp_snippets::ContentSuggestionsService::RegisterProfilePrefs(registry);
   ntp_tiles::MostVisitedSites::RegisterProfilePrefs(registry);
   ntp_tiles::PopularSites::RegisterProfilePrefs(registry);
   ios::NotificationPromo::RegisterProfilePrefs(registry);

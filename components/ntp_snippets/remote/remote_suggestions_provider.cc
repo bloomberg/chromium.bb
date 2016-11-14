@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/remote/ntp_snippets_service.h"
+#include "components/ntp_snippets/remote/remote_suggestions_provider.h"
 
 #include <algorithm>
 #include <iterator>
@@ -94,7 +94,7 @@ base::TimeDelta GetFetchingInterval(bool is_wifi,
 
   // The default value can be overridden by a variation parameter.
   std::string param_value_str = variations::GetVariationParamValueByFeature(
-        ntp_snippets::kArticleSuggestionsFeature, param_name);
+      ntp_snippets::kArticleSuggestionsFeature, param_name);
   if (!param_value_str.empty()) {
     double param_value_hours = 0.0;
     if (base::StringToDouble(param_value_str, &param_value_hours))
@@ -118,7 +118,8 @@ std::unique_ptr<std::vector<std::string>> GetSnippetIDVector(
 bool HasIntersection(const std::vector<std::string>& a,
                      const std::set<std::string>& b) {
   for (const std::string& item : a) {
-    if (base::ContainsValue(b, item)) return true;
+    if (base::ContainsValue(b, item))
+      return true;
   }
   return false;
 }
@@ -226,7 +227,7 @@ void CallWithEmptyResults(FetchDoneCallback callback, Status status) {
 
 }  // namespace
 
-NTPSnippetsService::NTPSnippetsService(
+RemoteSuggestionsProvider::RemoteSuggestionsProvider(
     Observer* observer,
     CategoryFactory* category_factory,
     PrefService* pref_service,
@@ -273,20 +274,21 @@ NTPSnippetsService::NTPSnippetsService(
     return;
   }
 
-  database_->SetErrorCallback(base::Bind(&NTPSnippetsService::OnDatabaseError,
-                                         base::Unretained(this)));
+  database_->SetErrorCallback(base::Bind(
+      &RemoteSuggestionsProvider::OnDatabaseError, base::Unretained(this)));
 
   // We transition to other states while finalizing the initialization, when the
   // database is done loading.
   database_load_start_ = base::TimeTicks::Now();
-  database_->LoadSnippets(base::Bind(&NTPSnippetsService::OnDatabaseLoaded,
-                                     base::Unretained(this)));
+  database_->LoadSnippets(base::Bind(
+      &RemoteSuggestionsProvider::OnDatabaseLoaded, base::Unretained(this)));
 }
 
-NTPSnippetsService::~NTPSnippetsService() = default;
+RemoteSuggestionsProvider::~RemoteSuggestionsProvider() = default;
 
 // static
-void NTPSnippetsService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+void RemoteSuggestionsProvider::RegisterProfilePrefs(
+    PrefRegistrySimple* registry) {
   // TODO(treib): Add cleanup logic for prefs::kSnippetHosts, then remove it
   // completely after M56.
   registry->RegisterListPref(prefs::kSnippetHosts);
@@ -298,14 +300,14 @@ void NTPSnippetsService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   NTPSnippetsStatusService::RegisterProfilePrefs(registry);
 }
 
-void NTPSnippetsService::FetchSnippets(bool interactive_request) {
+void RemoteSuggestionsProvider::FetchSnippets(bool interactive_request) {
   if (ready())
     FetchSnippetsFromHosts(std::set<std::string>(), interactive_request);
   else
     fetch_when_ready_ = true;
 }
 
-void NTPSnippetsService::FetchSnippetsFromHosts(
+void RemoteSuggestionsProvider::FetchSnippetsFromHosts(
     const std::set<std::string>& hosts,
     bool interactive_request) {
   // TODO(tschumann): FetchSnippets() and FetchSnippetsFromHost() implement the
@@ -321,17 +323,18 @@ void NTPSnippetsService::FetchSnippetsFromHosts(
   params.hosts = hosts;
   params.interactive_request = interactive_request;
   snippets_fetcher_->FetchSnippets(
-      params, base::BindOnce(&NTPSnippetsService::OnFetchFinished,
+      params, base::BindOnce(&RemoteSuggestionsProvider::OnFetchFinished,
                              base::Unretained(this)));
 }
 
-void NTPSnippetsService::Fetch(
+void RemoteSuggestionsProvider::Fetch(
     const Category& category,
     const std::set<std::string>& known_suggestion_ids,
     const FetchDoneCallback& callback) {
   if (!ready()) {
-    CallWithEmptyResults(callback, Status(StatusCode::TEMPORARY_ERROR,
-                                          "NTPSnippetsService is not ready!"));
+    CallWithEmptyResults(callback,
+                         Status(StatusCode::TEMPORARY_ERROR,
+                                "RemoteSuggestionsProvider is not ready!"));
     return;
   }
   NTPSnippetsFetcher::Params params =
@@ -345,12 +348,12 @@ void NTPSnippetsService::Fetch(
   // yet. If a background fetch happens while we fetch-more data, the callback
   // will never get called.
   snippets_fetcher_->FetchSnippets(
-      params, base::BindOnce(&NTPSnippetsService::OnFetchMoreFinished,
+      params, base::BindOnce(&RemoteSuggestionsProvider::OnFetchMoreFinished,
                              base::Unretained(this), callback));
 }
 
 // Builds default fetcher params.
-NTPSnippetsFetcher::Params NTPSnippetsService::BuildFetchParams(
+NTPSnippetsFetcher::Params RemoteSuggestionsProvider::BuildFetchParams(
     bool exclude_archived_suggestions) const {
   NTPSnippetsFetcher::Params result;
   result.language_code = application_language_code_;
@@ -369,7 +372,7 @@ NTPSnippetsFetcher::Params NTPSnippetsService::BuildFetchParams(
   return result;
 }
 
-void NTPSnippetsService::MarkEmptyCategoriesAsLoading() {
+void RemoteSuggestionsProvider::MarkEmptyCategoriesAsLoading() {
   for (const auto& item : category_contents_) {
     Category category = item.first;
     const CategoryContent& content = item.second;
@@ -378,15 +381,14 @@ void NTPSnippetsService::MarkEmptyCategoriesAsLoading() {
   }
 }
 
-void NTPSnippetsService::RescheduleFetching(bool force) {
+void RemoteSuggestionsProvider::RescheduleFetching(bool force) {
   // The scheduler only exists on Android so far, it's null on other platforms.
   if (!scheduler_)
     return;
 
   if (ready()) {
-    base::TimeDelta old_interval_wifi =
-        base::TimeDelta::FromInternalValue(pref_service_->GetInt64(
-            prefs::kSnippetBackgroundFetchingIntervalWifi));
+    base::TimeDelta old_interval_wifi = base::TimeDelta::FromInternalValue(
+        pref_service_->GetInt64(prefs::kSnippetBackgroundFetchingIntervalWifi));
     base::TimeDelta old_interval_fallback =
         base::TimeDelta::FromInternalValue(pref_service_->GetInt64(
             prefs::kSnippetBackgroundFetchingIntervalFallback));
@@ -400,9 +402,8 @@ void NTPSnippetsService::RescheduleFetching(bool force) {
       scheduler_->Schedule(interval_wifi, interval_fallback);
       pref_service_->SetInt64(prefs::kSnippetBackgroundFetchingIntervalWifi,
                               interval_wifi.ToInternalValue());
-      pref_service_->SetInt64(
-          prefs::kSnippetBackgroundFetchingIntervalFallback,
-          interval_fallback.ToInternalValue());
+      pref_service_->SetInt64(prefs::kSnippetBackgroundFetchingIntervalFallback,
+                              interval_fallback.ToInternalValue());
     }
   } else {
     // If we're NOT_INITED, we don't know whether to schedule or unschedule.
@@ -418,19 +419,19 @@ void NTPSnippetsService::RescheduleFetching(bool force) {
   }
 }
 
-CategoryStatus NTPSnippetsService::GetCategoryStatus(Category category) {
+CategoryStatus RemoteSuggestionsProvider::GetCategoryStatus(Category category) {
   auto content_it = category_contents_.find(category);
   DCHECK(content_it != category_contents_.end());
   return content_it->second.status;
 }
 
-CategoryInfo NTPSnippetsService::GetCategoryInfo(Category category) {
+CategoryInfo RemoteSuggestionsProvider::GetCategoryInfo(Category category) {
   auto content_it = category_contents_.find(category);
   DCHECK(content_it != category_contents_.end());
   return content_it->second.info;
 }
 
-void NTPSnippetsService::DismissSuggestion(
+void RemoteSuggestionsProvider::DismissSuggestion(
     const ContentSuggestion::ID& suggestion_id) {
   if (!ready())
     return;
@@ -442,16 +443,16 @@ void NTPSnippetsService::DismissSuggestion(
                                        suggestion_id.id_within_category());
 }
 
-void NTPSnippetsService::FetchSuggestionImage(
+void RemoteSuggestionsProvider::FetchSuggestionImage(
     const ContentSuggestion::ID& suggestion_id,
     const ImageFetchedCallback& callback) {
   database_->LoadImage(
       suggestion_id.id_within_category(),
-      base::Bind(&NTPSnippetsService::OnSnippetImageFetchedFromDatabase,
+      base::Bind(&RemoteSuggestionsProvider::OnSnippetImageFetchedFromDatabase,
                  base::Unretained(this), callback, suggestion_id));
 }
 
-void NTPSnippetsService::ClearHistory(
+void RemoteSuggestionsProvider::ClearHistory(
     base::Time begin,
     base::Time end,
     const base::Callback<bool(const GURL& url)>& filter) {
@@ -464,7 +465,7 @@ void NTPSnippetsService::ClearHistory(
     NukeAllSnippets();
 }
 
-void NTPSnippetsService::ClearCachedSuggestions(Category category) {
+void RemoteSuggestionsProvider::ClearCachedSuggestions(Category category) {
   if (!initialized())
     return;
 
@@ -483,7 +484,7 @@ void NTPSnippetsService::ClearCachedSuggestions(Category category) {
   NotifyNewSuggestions(category, *content);
 }
 
-void NTPSnippetsService::GetDismissedSuggestionsForDebugging(
+void RemoteSuggestionsProvider::GetDismissedSuggestionsForDebugging(
     Category category,
     const DismissedSuggestionsCallback& callback) {
   auto content_it = category_contents_.find(category);
@@ -492,7 +493,7 @@ void NTPSnippetsService::GetDismissedSuggestionsForDebugging(
       ConvertToContentSuggestions(category, content_it->second.dismissed));
 }
 
-void NTPSnippetsService::ClearDismissedSuggestionsForDebugging(
+void RemoteSuggestionsProvider::ClearDismissedSuggestionsForDebugging(
     Category category) {
   auto content_it = category_contents_.find(category);
   DCHECK(content_it != category_contents_.end());
@@ -511,14 +512,14 @@ void NTPSnippetsService::ClearDismissedSuggestionsForDebugging(
 }
 
 // static
-int NTPSnippetsService::GetMaxSnippetCountForTesting() {
+int RemoteSuggestionsProvider::GetMaxSnippetCountForTesting() {
   return kMaxSnippetCount;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private methods
 
-GURL NTPSnippetsService::FindSnippetImageUrl(
+GURL RemoteSuggestionsProvider::FindSnippetImageUrl(
     const ContentSuggestion::ID& suggestion_id) const {
   DCHECK(base::ContainsKey(category_contents_, suggestion_id.category()));
 
@@ -532,7 +533,7 @@ GURL NTPSnippetsService::FindSnippetImageUrl(
 }
 
 // image_fetcher::ImageFetcherDelegate implementation.
-void NTPSnippetsService::OnImageDataFetched(
+void RemoteSuggestionsProvider::OnImageDataFetched(
     const std::string& id_within_category,
     const std::string& image_data) {
   if (image_data.empty())
@@ -554,7 +555,8 @@ void NTPSnippetsService::OnImageDataFetched(
   database_->SaveImage(id_within_category, image_data);
 }
 
-void NTPSnippetsService::OnDatabaseLoaded(NTPSnippet::PtrVector snippets) {
+void RemoteSuggestionsProvider::OnDatabaseLoaded(
+    NTPSnippet::PtrVector snippets) {
   if (state_ == State::ERROR_OCCURRED)
     return;
   DCHECK(state_ == State::NOT_INITED);
@@ -607,12 +609,12 @@ void NTPSnippetsService::OnDatabaseLoaded(NTPSnippet::PtrVector snippets) {
   FinishInitialization();
 }
 
-void NTPSnippetsService::OnDatabaseError() {
+void RemoteSuggestionsProvider::OnDatabaseError() {
   EnterState(State::ERROR_OCCURRED);
   UpdateAllCategoryStatus(CategoryStatus::LOADING_ERROR);
 }
 
-void NTPSnippetsService::OnFetchMoreFinished(
+void RemoteSuggestionsProvider::OnFetchMoreFinished(
     FetchDoneCallback fetching_callback,
     NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories) {
   if (!fetched_categories) {
@@ -626,10 +628,10 @@ void NTPSnippetsService::OnFetchMoreFinished(
   if (fetched_categories->size() != 1u) {
     LOG(DFATAL) << "Requested one exclusive category but received "
                 << fetched_categories->size() << " categories.";
-    CallWithEmptyResults(
-        fetching_callback,
-        Status(StatusCode::PERMANENT_ERROR,
-               "NTPSnippetsService received more categories than requested."));
+    CallWithEmptyResults(fetching_callback,
+                         Status(StatusCode::PERMANENT_ERROR,
+                                "RemoteSuggestionsProvider received more "
+                                "categories than requested."));
     return;
   }
   auto& fetched_category = (*fetched_categories)[0];
@@ -674,7 +676,7 @@ void NTPSnippetsService::OnFetchMoreFinished(
   NotifyNewSuggestions(category, *existing_content);
 }
 
-void NTPSnippetsService::OnFetchFinished(
+void RemoteSuggestionsProvider::OnFetchFinished(
     NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories) {
   if (!ready()) {
     // TODO(tschumann): What happens if this was a user-triggered, interactive
@@ -749,8 +751,9 @@ void NTPSnippetsService::OnFetchFinished(
     RescheduleFetching(true);
 }
 
-void NTPSnippetsService::ArchiveSnippets(CategoryContent* content,
-                                         NTPSnippet::PtrVector* to_archive) {
+void RemoteSuggestionsProvider::ArchiveSnippets(
+    CategoryContent* content,
+    NTPSnippet::PtrVector* to_archive) {
   // Archive previous snippets - move them at the beginning of the list.
   content->archived.insert(content->archived.begin(),
                            std::make_move_iterator(to_archive->begin()),
@@ -769,7 +772,7 @@ void NTPSnippetsService::ArchiveSnippets(CategoryContent* content,
   }
 }
 
-void NTPSnippetsService::SanitizeReceivedSnippets(
+void RemoteSuggestionsProvider::SanitizeReceivedSnippets(
     const NTPSnippet::PtrVector& dismissed,
     NTPSnippet::PtrVector* snippets) {
   DCHECK(ready());
@@ -778,8 +781,9 @@ void NTPSnippetsService::SanitizeReceivedSnippets(
   RemoveIncompleteSnippets(snippets);
 }
 
-void NTPSnippetsService::IntegrateSnippets(CategoryContent* content,
-                                           NTPSnippet::PtrVector new_snippets) {
+void RemoteSuggestionsProvider::IntegrateSnippets(
+    CategoryContent* content,
+    NTPSnippet::PtrVector new_snippets) {
   DCHECK(ready());
 
   // Do not touch the current set of snippets if the newly fetched one is empty.
@@ -805,7 +809,7 @@ void NTPSnippetsService::IntegrateSnippets(CategoryContent* content,
   content->snippets = std::move(new_snippets);
 }
 
-void NTPSnippetsService::DismissSuggestionFromCategoryContent(
+void RemoteSuggestionsProvider::DismissSuggestionFromCategoryContent(
     CategoryContent* content,
     const std::string& id_within_category) {
   auto it = std::find_if(
@@ -827,7 +831,7 @@ void NTPSnippetsService::DismissSuggestionFromCategoryContent(
   content->snippets.erase(it);
 }
 
-void NTPSnippetsService::ClearExpiredDismissedSnippets() {
+void RemoteSuggestionsProvider::ClearExpiredDismissedSnippets() {
   std::vector<Category> categories_to_erase;
 
   const base::Time now = base::Time::Now();
@@ -865,7 +869,7 @@ void NTPSnippetsService::ClearExpiredDismissedSnippets() {
   StoreCategoriesToPrefs();
 }
 
-void NTPSnippetsService::ClearOrphanedImages() {
+void RemoteSuggestionsProvider::ClearOrphanedImages() {
   auto alive_snippets = base::MakeUnique<std::set<std::string>>();
   for (const auto& entry : category_contents_) {
     const CategoryContent& content = entry.second;
@@ -879,7 +883,7 @@ void NTPSnippetsService::ClearOrphanedImages() {
   database_->GarbageCollectImages(std::move(alive_snippets));
 }
 
-void NTPSnippetsService::NukeAllSnippets() {
+void RemoteSuggestionsProvider::NukeAllSnippets() {
   std::vector<Category> categories_to_erase;
 
   // Empty the ARTICLES category and remove all others, since they may or may
@@ -904,15 +908,16 @@ void NTPSnippetsService::NukeAllSnippets() {
   StoreCategoriesToPrefs();
 }
 
-void NTPSnippetsService::OnSnippetImageFetchedFromDatabase(
+void RemoteSuggestionsProvider::OnSnippetImageFetchedFromDatabase(
     const ImageFetchedCallback& callback,
     const ContentSuggestion::ID& suggestion_id,
     std::string data) {
   // |image_decoder_| is null in tests.
   if (image_decoder_ && !data.empty()) {
     image_decoder_->DecodeImage(
-        data, base::Bind(&NTPSnippetsService::OnSnippetImageDecodedFromDatabase,
-                         base::Unretained(this), callback, suggestion_id));
+        data, base::Bind(
+                  &RemoteSuggestionsProvider::OnSnippetImageDecodedFromDatabase,
+                  base::Unretained(this), callback, suggestion_id));
     return;
   }
 
@@ -920,7 +925,7 @@ void NTPSnippetsService::OnSnippetImageFetchedFromDatabase(
   FetchSnippetImageFromNetwork(suggestion_id, callback);
 }
 
-void NTPSnippetsService::OnSnippetImageDecodedFromDatabase(
+void RemoteSuggestionsProvider::OnSnippetImageDecodedFromDatabase(
     const ImageFetchedCallback& callback,
     const ContentSuggestion::ID& suggestion_id,
     const gfx::Image& image) {
@@ -935,7 +940,7 @@ void NTPSnippetsService::OnSnippetImageDecodedFromDatabase(
   FetchSnippetImageFromNetwork(suggestion_id, callback);
 }
 
-void NTPSnippetsService::FetchSnippetImageFromNetwork(
+void RemoteSuggestionsProvider::FetchSnippetImageFromNetwork(
     const ContentSuggestion::ID& suggestion_id,
     const ImageFetchedCallback& callback) {
   if (!base::ContainsKey(category_contents_, suggestion_id.category())) {
@@ -959,18 +964,18 @@ void NTPSnippetsService::FetchSnippetImageFromNetwork(
 
   image_fetcher_->StartOrQueueNetworkRequest(
       suggestion_id.id_within_category(), image_url,
-      base::Bind(&NTPSnippetsService::OnSnippetImageDecodedFromNetwork,
+      base::Bind(&RemoteSuggestionsProvider::OnSnippetImageDecodedFromNetwork,
                  base::Unretained(this), callback));
 }
 
-void NTPSnippetsService::OnSnippetImageDecodedFromNetwork(
+void RemoteSuggestionsProvider::OnSnippetImageDecodedFromNetwork(
     const ImageFetchedCallback& callback,
     const std::string& id_within_category,
     const gfx::Image& image) {
   callback.Run(image);
 }
 
-void NTPSnippetsService::EnterStateReady() {
+void RemoteSuggestionsProvider::EnterStateReady() {
   if (nuke_when_initialized_) {
     NukeAllSnippets();
     nuke_when_initialized_ = false;
@@ -999,15 +1004,15 @@ void NTPSnippetsService::EnterStateReady() {
   }
 }
 
-void NTPSnippetsService::EnterStateDisabled() {
+void RemoteSuggestionsProvider::EnterStateDisabled() {
   NukeAllSnippets();
 }
 
-void NTPSnippetsService::EnterStateError() {
+void RemoteSuggestionsProvider::EnterStateError() {
   snippets_status_service_.reset();
 }
 
-void NTPSnippetsService::FinishInitialization() {
+void RemoteSuggestionsProvider::FinishInitialization() {
   if (nuke_when_initialized_) {
     // We nuke here in addition to EnterStateReady, so that it happens even if
     // we enter the DISABLED state below.
@@ -1024,8 +1029,9 @@ void NTPSnippetsService::FinishInitialization() {
 
   // Note: Initializing the status service will run the callback right away with
   // the current state.
-  snippets_status_service_->Init(base::Bind(
-      &NTPSnippetsService::OnSnippetsStatusChanged, base::Unretained(this)));
+  snippets_status_service_->Init(
+      base::Bind(&RemoteSuggestionsProvider::OnSnippetsStatusChanged,
+                 base::Unretained(this)));
 
   // Always notify here even if we got nothing from the database, because we
   // don't know how long the fetch will take or if it will even complete.
@@ -1035,7 +1041,7 @@ void NTPSnippetsService::FinishInitialization() {
   }
 }
 
-void NTPSnippetsService::OnSnippetsStatusChanged(
+void RemoteSuggestionsProvider::OnSnippetsStatusChanged(
     SnippetsStatus old_snippets_status,
     SnippetsStatus new_snippets_status) {
   switch (new_snippets_status) {
@@ -1077,7 +1083,7 @@ void NTPSnippetsService::OnSnippetsStatusChanged(
   }
 }
 
-void NTPSnippetsService::EnterState(State state) {
+void RemoteSuggestionsProvider::EnterState(State state) {
   if (state == state_)
     return;
 
@@ -1114,8 +1120,9 @@ void NTPSnippetsService::EnterState(State state) {
   RescheduleFetching(false);
 }
 
-void NTPSnippetsService::NotifyNewSuggestions(Category category,
-                                              const CategoryContent& content) {
+void RemoteSuggestionsProvider::NotifyNewSuggestions(
+    Category category,
+    const CategoryContent& content) {
   DCHECK(IsCategoryStatusAvailable(content.status));
 
   std::vector<ContentSuggestion> result =
@@ -1126,11 +1133,12 @@ void NTPSnippetsService::NotifyNewSuggestions(Category category,
   observer()->OnNewSuggestions(this, category, std::move(result));
 }
 
-void NTPSnippetsService::UpdateCategoryStatus(Category category,
-                                              CategoryStatus status) {
+void RemoteSuggestionsProvider::UpdateCategoryStatus(Category category,
+                                                     CategoryStatus status) {
   auto content_it = category_contents_.find(category);
   DCHECK(content_it != category_contents_.end());
   CategoryContent& content = content_it->second;
+
   if (status == content.status)
     return;
 
@@ -1141,13 +1149,13 @@ void NTPSnippetsService::UpdateCategoryStatus(Category category,
   observer()->OnCategoryStatusChanged(this, category, content.status);
 }
 
-void NTPSnippetsService::UpdateAllCategoryStatus(CategoryStatus status) {
+void RemoteSuggestionsProvider::UpdateAllCategoryStatus(CategoryStatus status) {
   for (const auto& category : category_contents_) {
     UpdateCategoryStatus(category.first, status);
   }
 }
 
-const NTPSnippet* NTPSnippetsService::CategoryContent::FindSnippet(
+const NTPSnippet* RemoteSuggestionsProvider::CategoryContent::FindSnippet(
     const std::string& id_within_category) const {
   // Search for the snippet in current and archived snippets.
   auto it = std::find_if(
@@ -1169,9 +1177,9 @@ const NTPSnippet* NTPSnippetsService::CategoryContent::FindSnippet(
   return nullptr;
 }
 
-NTPSnippetsService::CategoryContent* NTPSnippetsService::UpdateCategoryInfo(
-    Category category,
-    const CategoryInfo& info) {
+RemoteSuggestionsProvider::CategoryContent*
+RemoteSuggestionsProvider::UpdateCategoryInfo(Category category,
+                                              const CategoryInfo& info) {
   auto content_it = category_contents_.find(category);
   if (content_it == category_contents_.end()) {
     content_it = category_contents_
@@ -1183,7 +1191,7 @@ NTPSnippetsService::CategoryContent* NTPSnippetsService::UpdateCategoryInfo(
   return &content_it->second;
 }
 
-void NTPSnippetsService::RestoreCategoriesFromPrefs() {
+void RemoteSuggestionsProvider::RestoreCategoriesFromPrefs() {
   // This must only be called at startup, before there are any categories.
   DCHECK(category_contents_.empty());
 
@@ -1232,7 +1240,7 @@ void NTPSnippetsService::RestoreCategoriesFromPrefs() {
   }
 }
 
-void NTPSnippetsService::StoreCategoriesToPrefs() {
+void RemoteSuggestionsProvider::StoreCategoriesToPrefs() {
   // Collect all the CategoryContents.
   std::vector<std::pair<Category, const CategoryContent*>> to_store;
   for (const auto& entry : category_contents_)
@@ -1254,20 +1262,24 @@ void NTPSnippetsService::StoreCategoriesToPrefs() {
     // TODO(tschumann): Persist other properties of the CategoryInfo.
     dict->SetString(kCategoryContentTitle, content.info.title());
     dict->SetBoolean(kCategoryContentProvidedByServer,
-       content.included_in_last_server_response);
+                     content.included_in_last_server_response);
     list.Append(std::move(dict));
   }
   // Finally, store the result in the pref service.
   pref_service_->Set(prefs::kRemoteSuggestionCategories, list);
 }
 
-NTPSnippetsService::CategoryContent::CategoryContent(const CategoryInfo& info)
-  : info(info) {}
+RemoteSuggestionsProvider::CategoryContent::CategoryContent(
+    const CategoryInfo& info)
+    : info(info) {}
 
-NTPSnippetsService::CategoryContent::CategoryContent(CategoryContent&&) =
+RemoteSuggestionsProvider::CategoryContent::CategoryContent(CategoryContent&&) =
     default;
-NTPSnippetsService::CategoryContent::~CategoryContent() = default;
-NTPSnippetsService::CategoryContent& NTPSnippetsService::CategoryContent::
-operator=(CategoryContent&&) = default;
+
+RemoteSuggestionsProvider::CategoryContent::~CategoryContent() = default;
+
+RemoteSuggestionsProvider::CategoryContent&
+RemoteSuggestionsProvider::CategoryContent::operator=(CategoryContent&&) =
+    default;
 
 }  // namespace ntp_snippets
