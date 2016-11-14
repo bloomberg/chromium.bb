@@ -17,6 +17,7 @@ dictionary TestDictionary {
     DOMString[] stringArrayMember;
     sequence<DOMString> stringSequenceMember = [];
     sequence<TestInterface> testInterfaceSequenceMember = [];
+    sequence<TestObject> testObjectSequenceMember;
     sequence<TestInterfaceGarbageCollected> testInterfaceGarbageCollectedSequenceMember = [];
     TestEnum enumMember = "foo";
     sequence<TestEnum> enumSequenceMember;

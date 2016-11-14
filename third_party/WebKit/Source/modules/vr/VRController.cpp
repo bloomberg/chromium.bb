@@ -4,6 +4,7 @@
 
 #include "modules/vr/VRController.h"
 
+#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"

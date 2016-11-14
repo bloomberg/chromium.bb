@@ -16,6 +16,10 @@ TestDictionaryDerivedImplementedAs::TestDictionaryDerivedImplementedAs() {
 
 TestDictionaryDerivedImplementedAs::~TestDictionaryDerivedImplementedAs() {}
 
+TestDictionaryDerivedImplementedAs::TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplementedAs&) = default;
+
+TestDictionaryDerivedImplementedAs& TestDictionaryDerivedImplementedAs::operator=(const TestDictionaryDerivedImplementedAs&) = default;
+
 bool TestDictionaryDerivedImplementedAs::hasDerivedStringMember() const {
   return !m_derivedStringMember.isNull();
 }

@@ -23,6 +23,8 @@ class CORE_EXPORT TestDictionaryDerivedImplementedAs : public TestDictionary {
  public:
   TestDictionaryDerivedImplementedAs();
   virtual ~TestDictionaryDerivedImplementedAs();
+  TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplementedAs&);
+  TestDictionaryDerivedImplementedAs& operator=(const TestDictionaryDerivedImplementedAs&);
 
   bool hasDerivedStringMember() const;
   String derivedStringMember() const;

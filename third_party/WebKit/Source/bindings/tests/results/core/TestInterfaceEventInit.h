@@ -21,6 +21,8 @@ class CORE_EXPORT TestInterfaceEventInit : public EventInit {
  public:
   TestInterfaceEventInit();
   virtual ~TestInterfaceEventInit();
+  TestInterfaceEventInit(const TestInterfaceEventInit&);
+  TestInterfaceEventInit& operator=(const TestInterfaceEventInit&);
 
   bool hasStringMember() const;
   String stringMember() const;

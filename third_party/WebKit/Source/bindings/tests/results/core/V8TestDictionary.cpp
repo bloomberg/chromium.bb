@@ -20,6 +20,7 @@
 #include "bindings/core/v8/V8TestInterface.h"
 #include "bindings/core/v8/V8TestInterface2.h"
 #include "bindings/core/v8/V8TestInterfaceGarbageCollected.h"
+#include "bindings/core/v8/V8TestObject.h"
 #include "bindings/core/v8/V8Uint8Array.h"
 #include "core/dom/FlexibleArrayBufferView.h"
 #include "core/frame/Deprecation.h"
@@ -514,6 +515,20 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     impl.setTestInterfaceSequenceMember(testInterfaceSequenceMember);
   }
 
+  v8::Local<v8::Value> testObjectSequenceMemberValue;
+  if (!v8Object->Get(isolate->GetCurrentContext(), v8String(isolate, "testObjectSequenceMember")).ToLocal(&testObjectSequenceMemberValue)) {
+    exceptionState.rethrowV8Exception(block.Exception());
+    return;
+  }
+  if (testObjectSequenceMemberValue.IsEmpty() || testObjectSequenceMemberValue->IsUndefined()) {
+    // Do nothing.
+  } else {
+    HeapVector<Member<TestObject>> testObjectSequenceMember = (toMemberNativeArray<TestObject>(testObjectSequenceMemberValue, 0, isolate, exceptionState));
+    if (exceptionState.hadException())
+      return;
+    impl.setTestObjectSequenceMember(testObjectSequenceMember);
+  }
+
   v8::Local<v8::Value> uint8ArrayMemberValue;
   if (!v8Object->Get(isolate->GetCurrentContext(), v8String(isolate, "uint8ArrayMember")).ToLocal(&uint8ArrayMemberValue)) {
     exceptionState.rethrowV8Exception(block.Exception());
@@ -748,6 +763,11 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
       return false;
   } else {
     if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "testInterfaceSequenceMember"), toV8(HeapVector<Member<TestInterfaceImplementation>>(), creationContext, isolate))))
+      return false;
+  }
+
+  if (impl.hasTestObjectSequenceMember()) {
+    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "testObjectSequenceMember"), toV8(impl.testObjectSequenceMember(), creationContext, isolate))))
       return false;
   }
 

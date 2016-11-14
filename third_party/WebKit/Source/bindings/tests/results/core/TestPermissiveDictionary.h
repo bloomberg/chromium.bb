@@ -20,6 +20,8 @@ class CORE_EXPORT TestPermissiveDictionary : public IDLDictionaryBase {
  public:
   TestPermissiveDictionary();
   virtual ~TestPermissiveDictionary();
+  TestPermissiveDictionary(const TestPermissiveDictionary&);
+  TestPermissiveDictionary& operator=(const TestPermissiveDictionary&);
 
   bool hasBooleanMember() const;
   bool booleanMember() const;

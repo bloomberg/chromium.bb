@@ -17,6 +17,7 @@
 #include "modules/canvas2d/CanvasGradient.h"
 #include "modules/canvas2d/CanvasPattern.h"
 #include "modules/canvas2d/HitRegionOptions.h"
+#include "modules/canvas2d/Path2D.h"
 #include "modules/webgl/WebGLRenderingContext.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/StaticBitmapImage.h"

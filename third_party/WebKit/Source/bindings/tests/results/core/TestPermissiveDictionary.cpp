@@ -15,6 +15,10 @@ TestPermissiveDictionary::TestPermissiveDictionary() {
 
 TestPermissiveDictionary::~TestPermissiveDictionary() {}
 
+TestPermissiveDictionary::TestPermissiveDictionary(const TestPermissiveDictionary&) = default;
+
+TestPermissiveDictionary& TestPermissiveDictionary::operator=(const TestPermissiveDictionary&) = default;
+
 bool TestPermissiveDictionary::hasBooleanMember() const {
   return m_hasBooleanMember;
 }

@@ -11,6 +11,7 @@
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8IntersectionObserverCallback.h"
 #include "bindings/core/v8/V8IntersectionObserverInit.h"
+#include "core/dom/Element.h"
 
 namespace blink {
 

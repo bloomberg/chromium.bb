@@ -15,12 +15,8 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/TestInterface2OrUint8Array.h"
 #include "bindings/tests/idls/core/TestInterface2.h"
-#include "bindings/tests/idls/core/TestInterfaceGarbageCollected.h"
-#include "bindings/tests/idls/core/TestInterfaceImplementation.h"
 #include "core/CoreExport.h"
 #include "core/dom/DOMTypedArray.h"
-#include "core/dom/Element.h"
-#include "core/events/EventTarget.h"
 #include "core/testing/InternalDictionary.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
@@ -28,11 +24,19 @@
 
 namespace blink {
 
+class EventTarget;
+class TestInterfaceGarbageCollected;
+class TestObject;
+class TestInterfaceImplementation;
+class Element;
+
 class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:
   TestDictionary();
   virtual ~TestDictionary();
+  TestDictionary(const TestDictionary&);
+  TestDictionary& operator=(const TestDictionary&);
 
   bool hasAnyMember() const;
   ScriptValue anyMember() const;
@@ -156,6 +160,10 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   const HeapVector<Member<TestInterfaceImplementation>>& testInterfaceSequenceMember() const;
   void setTestInterfaceSequenceMember(const HeapVector<Member<TestInterfaceImplementation>>&);
 
+  bool hasTestObjectSequenceMember() const;
+  const HeapVector<Member<TestObject>>& testObjectSequenceMember() const;
+  void setTestObjectSequenceMember(const HeapVector<Member<TestObject>>&);
+
   bool hasUint8ArrayMember() const;
   DOMUint8Array* uint8ArrayMember() const;
   void setUint8ArrayMember(DOMUint8Array*);
@@ -210,6 +218,8 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   Member<TestInterfaceImplementation> m_testInterfaceOrNullMember;
   bool m_hasTestInterfaceSequenceMember = false;
   HeapVector<Member<TestInterfaceImplementation>> m_testInterfaceSequenceMember;
+  bool m_hasTestObjectSequenceMember = false;
+  HeapVector<Member<TestObject>> m_testObjectSequenceMember;
   Member<DOMUint8Array> m_uint8ArrayMember;
   bool m_hasUnrestrictedDoubleMember = false;
   double m_unrestrictedDoubleMember;

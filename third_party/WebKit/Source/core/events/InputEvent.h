@@ -6,6 +6,7 @@
 #define InputEvent_h
 
 #include "core/clipboard/DataTransfer.h"
+#include "core/dom/Range.h"
 #include "core/dom/StaticRange.h"
 #include "core/events/InputEventInit.h"
 #include "core/events/UIEvent.h"

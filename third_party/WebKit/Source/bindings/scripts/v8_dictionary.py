@@ -161,11 +161,14 @@ def dictionary_impl_context(dictionary, interfaces_info):
         return sorted(members_dict.values(), key=lambda member: member['cpp_name'])
 
     includes.clear()
+    header_forward_decls = set()
     header_includes = set(['platform/heap/Handle.h'])
-    members = [member_impl_context(member, interfaces_info, header_includes)
+    members = [member_impl_context(member, interfaces_info,
+                                   header_includes, header_forward_decls)
                for member in dictionary.members]
     members = remove_duplicate_members(members)
     context = {
+        'header_forward_decls': header_forward_decls,
         'header_includes': header_includes,
         'cpp_class': v8_utilities.cpp_name(dictionary),
         'members': members,
@@ -184,7 +187,8 @@ def dictionary_impl_context(dictionary, interfaces_info):
     return context
 
 
-def member_impl_context(member, interfaces_info, header_includes):
+def member_impl_context(member, interfaces_info, header_includes,
+                        header_forward_decls):
     idl_type = unwrap_nullable_if_needed(member.idl_type)
     cpp_name = v8_utilities.cpp_name(member)
 
@@ -208,7 +212,13 @@ def member_impl_context(member, interfaces_info, header_includes):
     if member.default_value and not member.default_value.is_null:
         cpp_default_value = idl_type.literal_cpp_value(member.default_value)
 
-    header_includes.update(idl_type.impl_includes_for_type(interfaces_info))
+    forward_decl_name = idl_type.impl_forward_declaration_name
+    if forward_decl_name:
+        includes.update(idl_type.impl_includes_for_type(interfaces_info))
+        header_forward_decls.add(forward_decl_name)
+    else:
+        header_includes.update(idl_type.impl_includes_for_type(interfaces_info))
+
     return {
         'cpp_default_value': cpp_default_value,
         'cpp_name': cpp_name,

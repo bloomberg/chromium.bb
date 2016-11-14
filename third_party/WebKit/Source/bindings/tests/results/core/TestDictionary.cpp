@@ -10,6 +10,12 @@
 
 #include "bindings/core/v8/DoubleOrString.h"
 #include "bindings/core/v8/TestInterface2OrUint8Array.h"
+#include "bindings/tests/idls/core/TestInterfaceGarbageCollected.h"
+#include "bindings/tests/idls/core/TestInterfaceImplementation.h"
+#include "bindings/tests/idls/core/TestObject.h"
+#include "core/dom/Element.h"
+#include "core/events/EventTarget.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 
@@ -27,6 +33,10 @@ TestDictionary::TestDictionary() {
 }
 
 TestDictionary::~TestDictionary() {}
+
+TestDictionary::TestDictionary(const TestDictionary&) = default;
+
+TestDictionary& TestDictionary::operator=(const TestDictionary&) = default;
 
 bool TestDictionary::hasAnyMember() const {
   return !(m_anyMember.isEmpty() || m_anyMember.isNull() || m_anyMember.isUndefined());
@@ -333,6 +343,17 @@ void TestDictionary::setTestInterfaceSequenceMember(const HeapVector<Member<Test
   m_testInterfaceSequenceMember = value;
   m_hasTestInterfaceSequenceMember = true;
 }
+bool TestDictionary::hasTestObjectSequenceMember() const {
+  return m_hasTestObjectSequenceMember;
+}
+const HeapVector<Member<TestObject>>& TestDictionary::testObjectSequenceMember() const {
+  DCHECK(m_hasTestObjectSequenceMember);
+  return m_testObjectSequenceMember;
+}
+void TestDictionary::setTestObjectSequenceMember(const HeapVector<Member<TestObject>>& value) {
+  m_testObjectSequenceMember = value;
+  m_hasTestObjectSequenceMember = true;
+}
 bool TestDictionary::hasUint8ArrayMember() const {
   return m_uint8ArrayMember;
 }
@@ -368,6 +389,7 @@ DEFINE_TRACE(TestDictionary) {
   visitor->trace(m_testInterfaceMember);
   visitor->trace(m_testInterfaceOrNullMember);
   visitor->trace(m_testInterfaceSequenceMember);
+  visitor->trace(m_testObjectSequenceMember);
   visitor->trace(m_uint8ArrayMember);
   IDLDictionaryBase::trace(visitor);
 }

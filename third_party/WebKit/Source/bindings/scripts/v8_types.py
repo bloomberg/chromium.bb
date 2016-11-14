@@ -456,6 +456,20 @@ IdlTypeBase.impl_includes_for_type = impl_includes_for_type
 IdlUnionType.impl_includes_for_type = impl_includes_for_type_union
 
 
+def impl_forward_declaration_name(idl_type):
+    element_type = idl_type.native_array_element_type
+    if element_type:
+        return element_type.impl_forward_declaration_name
+
+    if idl_type.is_wrapper_type and not idl_type.is_typed_array:
+        return idl_type.implemented_as
+    return None
+
+
+IdlTypeBase.impl_forward_declaration_name = property(
+    impl_forward_declaration_name)
+
+
 component_dir = {}
 
 
