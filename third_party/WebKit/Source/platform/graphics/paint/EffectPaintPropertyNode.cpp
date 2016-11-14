@@ -15,4 +15,11 @@ EffectPaintPropertyNode* EffectPaintPropertyNode::root() {
   return root;
 }
 
+cc::Layer* EffectPaintPropertyNode::ensureDummyLayer() const {
+  if (m_dummyLayer)
+    return m_dummyLayer.get();
+  m_dummyLayer = cc::Layer::Create();
+  return m_dummyLayer.get();
+}
+
 }  // namespace blink

@@ -673,7 +673,7 @@ void PropertyTreeManager::buildEffectNodesRecursively(
   // We currently create dummy layers to host effect nodes and corresponding
   // render surfaces. This should be removed once cc implements better support
   // for freestanding property trees.
-  scoped_refptr<cc::Layer> dummyLayer = cc::Layer::Create();
+  scoped_refptr<cc::Layer> dummyLayer = nextEffect->ensureDummyLayer();
   m_rootLayer->AddChild(dummyLayer);
 
   // Also cc assumes a clip node is always created by a layer that creates

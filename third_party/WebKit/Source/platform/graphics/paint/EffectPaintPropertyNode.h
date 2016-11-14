@@ -5,6 +5,7 @@
 #ifndef EffectPaintPropertyNode_h
 #define EffectPaintPropertyNode_h
 
+#include "cc/layers/layer.h"
 #include "platform/PlatformExport.h"
 #include "platform/graphics/CompositorFilterOperations.h"
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
@@ -64,6 +65,8 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   const EffectPaintPropertyNode* parent() const { return m_parent.get(); }
   bool isRoot() const { return !m_parent; }
 
+  cc::Layer* ensureDummyLayer() const;
+
 #if DCHECK_IS_ON()
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
   // an effect node before it has been updated, to later detect changes.
@@ -112,6 +115,13 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   CompositorFilterOperations m_filter;
   float m_opacity;
   // === End of effects ===
+
+  // TODO(trchen): Remove the dummy layer.
+  // The main purpose of the dummy layer is to maintain a permanent identity
+  // to associate with cc::RenderSurfaceImpl for damage tracking. This shall
+  // be removed in favor of a stable ID once cc::LayerImpl no longer owns
+  // RenderSurfaceImpl.
+  mutable scoped_refptr<cc::Layer> m_dummyLayer;
 };
 
 // Redeclared here to avoid ODR issues.
