@@ -156,6 +156,12 @@ CA
                                     <action selector="commandDispatch:" target="-1" id="695"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="^IDS_MEDIA_ROUTER_MENU_ITEM_TITLE" tag="35011" id="OVr-QF-3s6">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="commandDispatch:" target="-1" id="i0s-9w-Djk"/>
+                                </connections>
+                            </menuItem>
                         </items>
                     </menu>
                 </menuItem>

@@ -8,6 +8,7 @@
 #import "base/mac/foundation_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/app_controller_mac.h"
+#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -160,6 +161,13 @@ Browser* FindBrowserForSender(id sender, NSWindow* window) {
       // window.
       NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item);
       [menuItem setHidden:browser->is_type_tabbed() || browser->is_devtools()];
+      break;
+    }
+    case IDC_ROUTE_MEDIA: {
+      // Hide this menu option if Media Router is disabled.
+      NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item);
+      [menuItem
+          setHidden:!media_router::MediaRouterEnabled(browser->profile())];
       break;
     }
     default:
