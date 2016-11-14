@@ -543,8 +543,9 @@ class BASE_EXPORT FieldTrialList {
   // Expects a mapped piece of shared memory |shm| that was created from the
   // browser process's field_trial_allocator and shared via the command line.
   // This function recreates the allocator, iterates through all the field
-  // trials in it, and creates them via CreateFieldTrial().
-  static void CreateTrialsFromSharedMemory(
+  // trials in it, and creates them via CreateFieldTrial(). Returns true if
+  // successful and false otherwise.
+  static bool CreateTrialsFromSharedMemory(
       std::unique_ptr<base::SharedMemory> shm);
 
   // Instantiate the field trial allocator, add all existing field trials to it,
