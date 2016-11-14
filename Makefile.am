@@ -133,6 +133,7 @@ if HAVE_VMWGFX
 klibdrminclude_HEADERS += $(LIBDRM_INCLUDE_VMWGFX_H_FILES)
 endif
 
+EXTRA_DIST = include/drm/README
 
 copy-headers :
 	cp -r $(kernel_source)/include/uapi/drm/*.h $(top_srcdir)/include/drm/
