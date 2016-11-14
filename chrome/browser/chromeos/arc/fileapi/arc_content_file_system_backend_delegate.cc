@@ -4,8 +4,10 @@
 
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_backend_delegate.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_async_file_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_file_stream_reader.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/fileapi/file_stream_writer.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -34,8 +36,9 @@ ArcContentFileSystemBackendDelegate::CreateFileStreamReader(
     storage::FileSystemContext* context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK_EQ(storage::kFileSystemTypeArcContent, url.type());
-  return std::unique_ptr<storage::FileStreamReader>(
-      new ArcContentFileSystemFileStreamReader(url, offset, max_bytes_to_read));
+  GURL arc_url = FileSystemUrlToArcUrl(url);
+  return base::MakeUnique<ArcContentFileSystemFileStreamReader>(arc_url,
+                                                                offset);
 }
 
 std::unique_ptr<storage::FileStreamWriter>
