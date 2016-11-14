@@ -63,7 +63,9 @@ class EmbeddedWorkerInstanceClientImpl
   service_manager::mojom::InterfaceProviderRequest renderer_request_;
 
   base::Optional<int> embedded_worker_id_;
-  // Owned by EmbeddedWorkerDispatcher
+
+  // Owned by EmbeddedWorkerDispatcher. This can be nullptr while a worker is
+  // not running.
   EmbeddedWorkerDispatcher::WorkerWrapper* wrapper_;
 
   StopWorkerCallback stop_callback_;

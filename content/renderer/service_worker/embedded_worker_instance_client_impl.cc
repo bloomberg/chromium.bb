@@ -52,6 +52,7 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
     service_manager::mojom::InterfaceProviderPtr browser_interfaces,
     service_manager::mojom::InterfaceProviderRequest renderer_request) {
   DCHECK(ChildThreadImpl::current());
+  DCHECK(!wrapper_);
   TRACE_EVENT0("ServiceWorker",
                "EmbeddedWorkerInstanceClientImpl::StartWorker");
   embedded_worker_id_ = params.embedded_worker_id;
@@ -73,11 +74,9 @@ void EmbeddedWorkerInstanceClientImpl::StopWorker(
     const StopWorkerCallback& callback) {
   DCHECK(ChildThreadImpl::current());
   DCHECK(embedded_worker_id_);
-  // StopWorker is possible to be called twice.
-  if (stop_callback_ || !wrapper_) {
-    LOG(WARNING) << "Got StopWorker for stopping worker";
+  // StopWorker is possible to be called twice or before StartWorker().
+  if (stop_callback_ || !wrapper_)
     return;
-  }
   TRACE_EVENT0("ServiceWorker", "EmbeddedWorkerInstanceClientImpl::StopWorker");
   stop_callback_ = std::move(callback);
   dispatcher_->RecordStopWorkerTimer(embedded_worker_id_.value());
@@ -89,7 +88,8 @@ EmbeddedWorkerInstanceClientImpl::EmbeddedWorkerInstanceClientImpl(
     mojo::InterfaceRequest<mojom::EmbeddedWorkerInstanceClient> request)
     : dispatcher_(dispatcher),
       binding_(this, std::move(request)),
-      temporal_self_(std::unique_ptr<EmbeddedWorkerInstanceClientImpl>(this)) {
+      temporal_self_(std::unique_ptr<EmbeddedWorkerInstanceClientImpl>(this)),
+      wrapper_(nullptr) {
   binding_.set_connection_error_handler(base::Bind(
       &EmbeddedWorkerInstanceClientImpl::OnError, base::Unretained(this)));
 }
