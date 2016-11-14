@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/common/physical_web/ios_chrome_physical_web_data_source.h"
+#import "ios/chrome/browser/physical_web/ios_chrome_physical_web_data_source.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/values.h"

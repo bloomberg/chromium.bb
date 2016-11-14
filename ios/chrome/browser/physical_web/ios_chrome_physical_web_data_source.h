@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_COMMON_PHYSICAL_WEB_IOS_CHROME_PHYSICAL_WEB_DATA_SOURCE_H_
-#define IOS_CHROME_COMMON_PHYSICAL_WEB_IOS_CHROME_PHYSICAL_WEB_DATA_SOURCE_H_
+#ifndef IOS_CHROME_BROWSER_PHYSICAL_WEB_IOS_CHROME_PHYSICAL_WEB_DATA_SOURCE_H_
+#define IOS_CHROME_BROWSER_PHYSICAL_WEB_IOS_CHROME_PHYSICAL_WEB_DATA_SOURCE_H_
 
 #include "base/macros.h"
 #import "base/mac/scoped_nsobject.h"

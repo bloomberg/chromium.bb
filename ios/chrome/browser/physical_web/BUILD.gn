@@ -6,6 +6,8 @@ source_set("physical_web") {
   sources = [
     "create_physical_web_data_source.h",
     "create_physical_web_data_source.mm",
+    "ios_chrome_physical_web_data_source.h",
+    "ios_chrome_physical_web_data_source.mm",
     "physical_web_constants.h",
     "start_physical_web_discovery.h",
     "start_physical_web_discovery.mm",
