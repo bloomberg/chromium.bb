@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "device/generic_sensor/generic_sensor_export.h"
+#include "device/generic_sensor/linux/sensor_data_linux.h"
 
 namespace device {
 
@@ -29,11 +30,19 @@ class DEVICE_GENERIC_SENSOR_EXPORT SensorReader {
   bool ReadSensorReading(SensorReading* reading);
 
  private:
-  explicit SensorReader(std::vector<base::FilePath> sensor_paths);
+  SensorReader(std::vector<base::FilePath> sensor_paths,
+               double scaling_value,
+               const SensorDataLinux::ReaderFunctor& apply_scaling_func);
 
   // Contains paths to sensor files that are set when
   // Create() is called.
   const std::vector<base::FilePath> sensor_paths_;
+
+  // Scaling values that are applied to raw data from sensors.
+  const double scaling_value_;
+
+  // Used to apply scalings and invert signs if needed.
+  const SensorDataLinux::ReaderFunctor apply_scaling_func_;
 
   DISALLOW_COPY_AND_ASSIGN(SensorReader);
 };

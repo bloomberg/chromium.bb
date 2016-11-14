@@ -10,11 +10,16 @@
 
 namespace device {
 
+struct SensorReading;
+
 // This structure represents a context that is used to
 // create a type specific SensorReader and a concrete
 // sensor that uses the SensorReader to read sensor
 // data from files specified in the |sensor_file_names|.
 struct DEVICE_GENERIC_SENSOR_EXPORT SensorDataLinux {
+  using ReaderFunctor =
+      base::Callback<void(double scaling, SensorReading& reading)>;
+
   SensorDataLinux();
   ~SensorDataLinux();
   SensorDataLinux(const SensorDataLinux& other);
@@ -24,6 +29,10 @@ struct DEVICE_GENERIC_SENSOR_EXPORT SensorDataLinux {
   // Different sensors might have up to 3 different file name arrays.
   // One file must be found from each array.
   std::vector<std::vector<std::string>> sensor_file_names;
+  // Scaling file to be found.
+  std::string sensor_scale_name;
+  // Used to apply scalings to raw sensor data.
+  ReaderFunctor apply_scaling_func;
   // Reporting mode of a sensor.
   mojom::ReportingMode reporting_mode;
   // Default configuration of a sensor.

@@ -70,6 +70,10 @@ component("generic_sensor") {
     deps += [ "//device/sensors/public/cpp" ]
   }
 
+  if (is_linux) {
+    sources += [ "generic_sensor_consts.h" ]
+  }
+
   if (is_mac) {
     libs = [ "IOKit.framework" ]
   }
