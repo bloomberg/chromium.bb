@@ -22,6 +22,7 @@
 #include "base/values.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_features.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/switches.h"
@@ -273,8 +274,11 @@ void SnippetsInternalsMessageHandler::SendAllContent() {
               base::FeatureList::IsEnabled(
                   ntp_snippets::kRecentOfflineTabSuggestionsFeature));
   SendBoolean(
-      "flag-download-suggestions",
-      base::FeatureList::IsEnabled(ntp_snippets::kDownloadSuggestionsFeature));
+      "flag-asset-download-suggestions",
+      base::FeatureList::IsEnabled(features::kAssetDownloadSuggestionsFeature));
+  SendBoolean("flag-offline-page-download-suggestions",
+              base::FeatureList::IsEnabled(
+                  features::kOfflinePageDownloadSuggestionsFeature));
   SendBoolean(
       "flag-bookmark-suggestions",
       base::FeatureList::IsEnabled(ntp_snippets::kBookmarkSuggestionsFeature));

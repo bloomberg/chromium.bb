@@ -15401,10 +15401,16 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_ENABLE_NTP_OFFLINE_BADGE_DESCRIPTION" desc="Description for the flag to enable offline badges for snippets on the New Tab page." translateable="false">
         If enabled, Snippets that are available offline will have an offline badge.
       </message>
-      <message name="IDS_FLAGS_ENABLE_NTP_DOWNLOAD_SUGGESTIONS_NAME" desc="Name for the flag to enable downloads suggestions on the New Tab page." translateable="false">
-        Show downloads on the New Tab page
+      <message name="IDS_FLAGS_ENABLE_NTP_ASSET_DOWNLOAD_SUGGESTIONS_NAME" desc="Name for the flag to enable asset downloads suggestions (e.g. books, pictures, audio) on the New Tab page." translateable="false">
+        Show asset downloads on the New Tab page
       </message>
-      <message name="IDS_FLAGS_ENABLE_NTP_DOWNLOAD_SUGGESTIONS_DESCRIPTION" desc="Description for the flag to enable downloads suggestions on the New Tab page." translateable="false">
+      <message name="IDS_FLAGS_ENABLE_NTP_ASSET_DOWNLOAD_SUGGESTIONS_DESCRIPTION" desc="Description for the flag to enable asset downloads suggestions (e.g. books, pictures, audio) on the New Tab page." translateable="false">
+        If enabled, the list of content suggestions on the New Tab page (see #enable-ntp-snippets) will contain assets (e.g. books, pictures, audio) that the user downloaded for later use.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_NTP_OFFLINE_PAGE_DOWNLOAD_SUGGESTIONS_NAME" desc="Name for the flag to enable offline page downloads suggestions on the New Tab page." translateable="false">
+        Show offline page downloads on the New Tab page
+      </message>
+      <message name="IDS_FLAGS_ENABLE_NTP_OFFLINE_PAGE_DOWNLOAD_SUGGESTIONS_DESCRIPTION" desc="Description for the flag to enable offline page downloads suggestions on the New Tab page." translateable="false">
         If enabled, the list of content suggestions on the New Tab page (see #enable-ntp-snippets) will contain pages that the user downloaded for later use.
       </message>
       <message name="IDS_FLAGS_ENABLE_NTP_BOOKMARK_SUGGESTIONS_NAME" desc="Name for the flag to enable bookmark suggestions on the New Tab page." translateable="false">

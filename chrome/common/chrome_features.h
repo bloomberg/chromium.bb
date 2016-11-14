@@ -25,6 +25,8 @@ extern const base::Feature kAppleScriptExecuteJavaScript;
 extern const base::Feature kArcMemoryManagement;
 #endif  // defined(OS_CHROMEOS)
 
+extern const base::Feature kAssetDownloadSuggestionsFeature;
+
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 extern const base::Feature kAutoDismissingDialogs;
 #endif
@@ -82,6 +84,8 @@ extern const base::Feature kModalPermissionPrompts;
 #if defined(OS_MACOSX)
 extern const base::Feature kNativeNotifications;
 #endif  // defined(OS_MACOSX)
+
+extern const base::Feature kOfflinePageDownloadSuggestionsFeature;
 
 extern const base::Feature kOverrideYouTubeFlashEmbed;
 

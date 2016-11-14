@@ -20,6 +20,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/translate/language_model_factory.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/chrome_features.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/image_fetcher/image_decoder.h"
@@ -276,9 +277,15 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
                               pref_service);
   }
 
-  if (base::FeatureList::IsEnabled(ntp_snippets::kDownloadSuggestionsFeature)) {
-    RegisterDownloadsProvider(offline_page_model, download_manager, service,
-                              category_factory, pref_service);
+  bool show_asset_downloads =
+      base::FeatureList::IsEnabled(features::kAssetDownloadSuggestionsFeature);
+  bool show_offline_page_downloads = base::FeatureList::IsEnabled(
+      features::kOfflinePageDownloadSuggestionsFeature);
+  if (show_asset_downloads || show_offline_page_downloads) {
+    RegisterDownloadsProvider(
+        show_offline_page_downloads ? offline_page_model : nullptr,
+        show_asset_downloads ? download_manager : nullptr, service,
+        category_factory, pref_service);
   }
 #endif  // OS_ANDROID
 

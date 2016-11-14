@@ -22,6 +22,11 @@ const base::Feature kArcMemoryManagement{
     "ArcMemoryManagement", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS)
 
+// If enabled, the list of content suggestions on the New Tab page will contain
+// assets (e.g. books, pictures, audio) that the user downloaded for later use.
+const base::Feature kAssetDownloadSuggestionsFeature{
+    "NTPAssetDownloadSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
+
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 // Enables auto-dismissing JavaScript dialogs.
 const base::Feature kAutoDismissingDialogs{"AutoDismissingDialogs",
@@ -134,6 +139,11 @@ const base::Feature kModalPermissionPrompts{"ModalPermissionPrompts",
 const base::Feature kNativeNotifications{"NativeNotifications",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
+
+// If enabled, the list of content suggestions on the New Tab page will contain
+// pages that the user downloaded for later use.
+const base::Feature kOfflinePageDownloadSuggestionsFeature{
+    "NTPOfflinePageDownloadSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables YouTube Flash videos to be overridden.
 const base::Feature kOverrideYouTubeFlashEmbed{

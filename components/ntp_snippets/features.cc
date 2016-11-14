@@ -27,9 +27,6 @@ const base::Feature kOfflineBadgeFeature{
 const base::Feature kIncreasedVisibility{
     "NTPSnippetsIncreasedVisibility", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kDownloadSuggestionsFeature{
-    "NTPDownloadSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kPhysicalWebPageSuggestionsFeature{
     "NTPPhysicalWebPageSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 

@@ -121,7 +121,11 @@ DownloadSuggestionsProvider::DownloadSuggestionsProvider(
       download_manager_ui_enabled_(download_manager_ui_enabled),
       weak_ptr_factory_(this) {
   observer->OnCategoryStatusChanged(this, provided_category_, category_status_);
-  offline_page_model_->AddObserver(this);
+
+  DCHECK(offline_page_model_ || download_manager_);
+  if (offline_page_model_)
+    offline_page_model_->AddObserver(this);
+
   if (download_manager_)
     download_manager_->AddObserver(this);
   // No need to explicitly fetch the asset downloads, since for each of them
@@ -130,7 +134,9 @@ DownloadSuggestionsProvider::DownloadSuggestionsProvider(
 }
 
 DownloadSuggestionsProvider::~DownloadSuggestionsProvider() {
-  offline_page_model_->RemoveObserver(this);
+  if (offline_page_model_)
+    offline_page_model_->RemoveObserver(this);
+
   if (download_manager_) {
     download_manager_->RemoveObserver(this);
     UnregisterDownloadItemObservers();
@@ -216,11 +222,16 @@ void DownloadSuggestionsProvider::GetDismissedSuggestionsForDebugging(
   DCHECK_EQ(provided_category_, category);
 
   // TODO(vitaliii): Query all pages instead by using an empty query.
-  offline_page_model_->GetPagesMatchingQuery(
-      BuildOfflinePageDownloadsQuery(offline_page_model_),
-      base::Bind(&DownloadSuggestionsProvider::
-                     GetPagesMatchingQueryCallbackForGetDismissedSuggestions,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+  if (offline_page_model_) {
+    offline_page_model_->GetPagesMatchingQuery(
+        BuildOfflinePageDownloadsQuery(offline_page_model_),
+        base::Bind(&DownloadSuggestionsProvider::
+                       GetPagesMatchingQueryCallbackForGetDismissedSuggestions,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+  } else {
+    GetPagesMatchingQueryCallbackForGetDismissedSuggestions(
+        callback, std::vector<OfflinePageItem>());
+  }
 }
 
 void DownloadSuggestionsProvider::ClearDismissedSuggestionsForDebugging(
@@ -268,7 +279,9 @@ void DownloadSuggestionsProvider::
 }
 
 void DownloadSuggestionsProvider::OfflinePageModelLoaded(
-    offline_pages::OfflinePageModel* model) {}
+    offline_pages::OfflinePageModel* model) {
+  DCHECK_EQ(offline_page_model_, model);
+}
 
 void DownloadSuggestionsProvider::OfflinePageModelChanged(
     offline_pages::OfflinePageModel* model) {
@@ -351,15 +364,19 @@ void DownloadSuggestionsProvider::NotifyStatusChanged(
 
 void DownloadSuggestionsProvider::AsynchronouslyFetchOfflinePagesDownloads(
     bool notify) {
-  offline_page_model_->GetPagesMatchingQuery(
-      BuildOfflinePageDownloadsQuery(offline_page_model_),
-      base::Bind(&DownloadSuggestionsProvider::UpdateOfflinePagesCache,
-                 weak_ptr_factory_.GetWeakPtr(), notify));
+  if (offline_page_model_) {
+    offline_page_model_->GetPagesMatchingQuery(
+        BuildOfflinePageDownloadsQuery(offline_page_model_),
+        base::Bind(&DownloadSuggestionsProvider::UpdateOfflinePagesCache,
+                   weak_ptr_factory_.GetWeakPtr(), notify));
+  } else {
+    UpdateOfflinePagesCache(notify, std::vector<OfflinePageItem>());
+  }
 }
 
 void DownloadSuggestionsProvider::FetchAssetsDownloads() {
   if (!download_manager_) {
-    // The manager has gone down.
+    // The manager has gone down or was explicitly turned off.
     return;
   }
 

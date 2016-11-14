@@ -32,7 +32,8 @@ struct OfflinePageItem;
 // download manager (obtaining the data through DownloadManager and each
 // DownloadItem). Offline page related downloads are referred to as offline page
 // downloads, while the remaining downloads (e.g. images, music, books) are
-// called asset downloads.
+// called asset downloads. In case either of the data sources is |nullptr|, it
+// is ignored.
 class DownloadSuggestionsProvider
     : public ntp_snippets::ContentSuggestionsProvider,
       public offline_pages::OfflinePageModel::Observer,
