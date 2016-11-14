@@ -184,8 +184,6 @@ class PLATFORM_EXPORT HarfBuzzShaper final : public Shaper {
   void splitUntilNextCaseChange(HolesQueueItem& currentQueueItem,
                                 SmallCapsIterator::SmallCapsBehavior&);
   inline bool shapeRange(hb_buffer_t* harfBuzzBuffer,
-                         unsigned startIndex,
-                         unsigned numCharacters,
                          const SimpleFontData* currentFont,
                          PassRefPtr<UnicodeRangeSet> currentFontRangeSet,
                          UScriptCode currentRunScript,

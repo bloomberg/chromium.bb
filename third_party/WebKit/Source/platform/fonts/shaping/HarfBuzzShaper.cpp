@@ -348,8 +348,6 @@ static inline hb_direction_t TextDirectionToHBDirection(
 
 inline bool HarfBuzzShaper::shapeRange(
     hb_buffer_t* harfBuzzBuffer,
-    unsigned startIndex,
-    unsigned numCharacters,
     const SimpleFontData* currentFont,
     PassRefPtr<UnicodeRangeSet> currentFontRangeSet,
     UScriptCode currentRunScript,
@@ -686,9 +684,7 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult() {
       CapsFeatureSettingsScopedOverlay capsOverlay(
           m_features, capsSupport.fontFeatureToUse(smallCapsBehavior));
 
-      if (!shapeRange(harfBuzzBuffer.get(), currentQueueItem.m_startIndex,
-                      currentQueueItem.m_numCharacters,
-                      directionAndSmallCapsAdjustedFont,
+      if (!shapeRange(harfBuzzBuffer.get(), directionAndSmallCapsAdjustedFont,
                       currentFontDataForRangeSet->ranges(), segmentRange.script,
                       language))
         DLOG(ERROR) << "Shaping range failed.";
