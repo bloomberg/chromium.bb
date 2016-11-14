@@ -7,14 +7,9 @@
 -PrerenderBrowserTest.PrerenderCrossProcessServerRedirectNoHang
 # TabManagerTest.TabManagerBasics crashes sometimes
 -TabManagerTest.TabManagerBasics
--TemplateURLScraperTest.ScrapeWithOnSubmit
 -ThreatDOMDetailsTest.Everything
 -WebNavigationApiTest.RequestOpenTab
 -WebNavigationApiTest.UserAction
-
-# Errors related to forms submission.
--PhishingDOMFeatureExtractorTest.SubFrames
--PhishingDOMFeatureExtractorTest.SubframeRemoval
 
 # https://crbug.com/652767: NavigationHandle::GetResponseHeaders sometimes
 # returns null for browser-side navigations
