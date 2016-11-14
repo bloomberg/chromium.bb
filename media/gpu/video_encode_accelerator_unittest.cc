@@ -1813,6 +1813,7 @@ VEANoInputClient::~VEANoInputClient() {
 void VEANoInputClient::CreateEncoder() {
   DCHECK(thread_checker_.CalledOnValidThread());
   LOG_ASSERT(!has_encoder());
+  LOG_ASSERT(g_env->test_streams_.size());
 
   const int kDefaultWidth = 320;
   const int kDefaultHeight = 240;
@@ -1829,7 +1830,8 @@ void VEANoInputClient::CreateEncoder() {
     if (!encoder)
       continue;
     encoder_ = std::move(encoder);
-    if (encoder_->Initialize(kInputFormat, visible_size, VP8PROFILE_ANY,
+    if (encoder_->Initialize(kInputFormat, visible_size,
+                             g_env->test_streams_[0]->requested_profile,
                              kDefaultBitrate, this)) {
       encoder_->RequestEncodingParametersChange(kDefaultBitrate, kDefaultFps);
       SetState(CS_INITIALIZED);
