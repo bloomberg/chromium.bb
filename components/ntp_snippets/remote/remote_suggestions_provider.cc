@@ -71,6 +71,9 @@ const char kCategoryContentId[] = "id";
 const char kCategoryContentTitle[] = "title";
 const char kCategoryContentProvidedByServer[] = "provided_by_server";
 
+// TODO(treib): Remove after M57.
+const char kDeprecatedSnippetHostsPref[] = "ntp_snippets.hosts";
+
 base::TimeDelta GetFetchingInterval(bool is_wifi,
                                     UserClassifier::UserClass user_class) {
   double value_hours = 0.0;
@@ -257,6 +260,8 @@ RemoteSuggestionsProvider::RemoteSuggestionsProvider(
       thumbnail_requests_throttler_(
           pref_service,
           RequestThrottler::RequestType::CONTENT_SUGGESTION_THUMBNAIL) {
+  pref_service_->ClearPref(kDeprecatedSnippetHostsPref);
+
   RestoreCategoriesFromPrefs();
   // The articles category always exists. Add it if we didn't get it from prefs.
   // TODO(treib): Rethink this.
@@ -289,9 +294,8 @@ RemoteSuggestionsProvider::~RemoteSuggestionsProvider() = default;
 // static
 void RemoteSuggestionsProvider::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
-  // TODO(treib): Add cleanup logic for prefs::kSnippetHosts, then remove it
-  // completely after M56.
-  registry->RegisterListPref(prefs::kSnippetHosts);
+  // TODO(treib): Remove after M57.
+  registry->RegisterListPref(kDeprecatedSnippetHostsPref);
   registry->RegisterListPref(prefs::kRemoteSuggestionCategories);
   registry->RegisterInt64Pref(prefs::kSnippetBackgroundFetchingIntervalWifi, 0);
   registry->RegisterInt64Pref(prefs::kSnippetBackgroundFetchingIntervalFallback,

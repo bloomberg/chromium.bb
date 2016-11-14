@@ -12,9 +12,6 @@ namespace prefs {
 // an enterprise policy.
 extern const char kEnableSnippets[];
 
-// TODO(treib): Remove this after M56.
-extern const char kSnippetHosts[];
-
 // The pref name under which remote suggestion categories (including their ID
 // and title) are stored.
 extern const char kRemoteSuggestionCategories[];

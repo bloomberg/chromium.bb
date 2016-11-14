@@ -9,8 +9,6 @@ namespace prefs {
 
 const char kEnableSnippets[] = "ntp_snippets.enable";
 
-const char kSnippetHosts[] = "ntp_snippets.hosts";
-
 const char kRemoteSuggestionCategories[] = "ntp_snippets.remote_categories";
 
 const char kSnippetBackgroundFetchingIntervalWifi[] =
