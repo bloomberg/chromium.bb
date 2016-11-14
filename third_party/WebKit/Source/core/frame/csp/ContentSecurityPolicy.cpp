@@ -145,8 +145,8 @@ bool ContentSecurityPolicy::isNonceableElement(const Element* element) {
   //
   // See http://blog.innerht.ml/csp-2015/#danglingmarkupinjection for an example
   // of the kind of attack this is aimed at mitigating.
-  DEFINE_STATIC_LOCAL(AtomicString, scriptString, ("<script"));
-  DEFINE_STATIC_LOCAL(AtomicString, styleString, ("<style"));
+  static const char scriptString[] = "<script";
+  static const char styleString[] = "<style";
   for (const Attribute& attr : element->attributes()) {
     AtomicString name = attr.localName().lowerASCII();
     AtomicString value = attr.value().lowerASCII();
@@ -1310,23 +1310,21 @@ void ContentSecurityPolicy::reportInvalidDirectiveInMeta(
 }
 
 void ContentSecurityPolicy::reportUnsupportedDirective(const String& name) {
-  DEFINE_STATIC_LOCAL(String, allow, ("allow"));
-  DEFINE_STATIC_LOCAL(String, options, ("options"));
-  DEFINE_STATIC_LOCAL(String, policyURI, ("policy-uri"));
-  DEFINE_STATIC_LOCAL(
-      String, allowMessage,
-      ("The 'allow' directive has been replaced with 'default-src'. Please use "
-       "that directive instead, as 'allow' has no effect."));
-  DEFINE_STATIC_LOCAL(
-      String, optionsMessage,
-      ("The 'options' directive has been replaced with 'unsafe-inline' and "
-       "'unsafe-eval' source expressions for the 'script-src' and 'style-src' "
-       "directives. Please use those directives instead, as 'options' has no "
-       "effect."));
-  DEFINE_STATIC_LOCAL(String, policyURIMessage,
-                      ("The 'policy-uri' directive has been removed from the "
-                       "specification. Please specify a complete policy via "
-                       "the Content-Security-Policy header."));
+  static const char allow[] = "allow";
+  static const char options[] = "options";
+  static const char policyURI[] = "policy-uri";
+  static const char allowMessage[] =
+      "The 'allow' directive has been replaced with 'default-src'. Please use "
+      "that directive instead, as 'allow' has no effect.";
+  static const char optionsMessage[] =
+      "The 'options' directive has been replaced with 'unsafe-inline' and "
+      "'unsafe-eval' source expressions for the 'script-src' and 'style-src' "
+      "directives. Please use those directives instead, as 'options' has no "
+      "effect.";
+  static const char policyURIMessage[] =
+      "The 'policy-uri' directive has been removed from the "
+      "specification. Please specify a complete policy via "
+      "the Content-Security-Policy header.";
 
   String message =
       "Unrecognized Content-Security-Policy directive '" + name + "'.\n";
