@@ -102,8 +102,8 @@ struct drm_backend {
 	 * due to out of bounds dimensions, and then mistakenly set
 	 * sprites_are_broken:
 	 */
-	uint32_t min_width, max_width;
-	uint32_t min_height, max_height;
+	int min_width, max_width;
+	int min_height, max_height;
 	int no_addfb2;
 
 	struct wl_list sprite_list;
@@ -253,7 +253,7 @@ drm_fb_destroy_callback(struct gbm_bo *bo, void *data)
 }
 
 static struct drm_fb *
-drm_fb_create_dumb(struct drm_backend *b, unsigned width, unsigned height,
+drm_fb_create_dumb(struct drm_backend *b, int width, int height,
 		   uint32_t format)
 {
 	struct drm_fb *fb;
@@ -371,7 +371,7 @@ drm_fb_get_from_bo(struct gbm_bo *bo,
 		   struct drm_backend *backend, uint32_t format)
 {
 	struct drm_fb *fb = gbm_bo_get_user_data(bo);
-	uint32_t width, height;
+	int width, height;
 	uint32_t handles[4] = { 0 }, pitches[4] = { 0 }, offsets[4] = { 0 };
 	int ret;
 
@@ -391,7 +391,8 @@ drm_fb_get_from_bo(struct gbm_bo *bo,
 	fb->size = fb->stride * height;
 	fb->fd = backend->drm.fd;
 
-	if (backend->min_width > width || width > backend->max_width ||
+	if (backend->min_width > width ||
+	    width > backend->max_width ||
 	    backend->min_height > height ||
 	    height > backend->max_height) {
 		weston_log("bo geometry out of bounds\n");
