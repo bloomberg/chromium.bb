@@ -327,6 +327,8 @@ void DisableExtensionsExceptBrowserTest::SetUpCommandLine(
   command_line->AppendSwitchASCII(
       switches::kDisableExtensionsExcept,
       fp1.AsUTF8Unsafe() + "," + fp2.AsUTF8Unsafe());
+
+  command_line->AppendSwitch(switches::kNoErrorDialogs);
 }
 
 // Tests disabling all extensions except those listed

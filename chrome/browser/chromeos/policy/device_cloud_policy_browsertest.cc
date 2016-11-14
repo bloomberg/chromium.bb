@@ -14,6 +14,7 @@
 #include "base/test/null_task_runner.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/extensions/signin_screen_policy_provider.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
@@ -232,6 +233,8 @@ class SigninExtensionsDeviceCloudPolicyBrowserTest
   void SetUpInProcessBrowserTestFixture() override {
     SigninExtensionsDeviceCloudPolicyBrowserTestBase::
         SetUpInProcessBrowserTestFixture();
+    signin_policy_provided_disabler_ =
+        chromeos::GetScopedSigninScreenPolicyProviderDisablerForTesting();
     EXPECT_TRUE(PathService::Get(chromeos::DIR_SIGNIN_PROFILE_COMPONENT_POLICY,
                                  &component_policy_cache_dir_));
     PrepareFakeComponentPolicyResponse();
@@ -272,6 +275,7 @@ class SigninExtensionsDeviceCloudPolicyBrowserTest
   net::URLFetcherImplFactory fetcher_impl_factory_;
   net::FakeURLFetcherFactory fetcher_factory_;
   base::FilePath component_policy_cache_dir_;
+  std::unique_ptr<base::AutoReset<bool>> signin_policy_provided_disabler_;
 };
 
 IN_PROC_BROWSER_TEST_F(SigninExtensionsDeviceCloudPolicyBrowserTest,
@@ -297,11 +301,19 @@ class PreinstalledSigninExtensionsDeviceCloudPolicyBrowserTest
   constexpr static const char* kFakeProfileSourceDir =
       "extensions/profiles/signin_screen_managed_storage";
 
- private:
+  std::unique_ptr<base::AutoReset<bool>> signin_policy_provided_disabler_;
+
   bool SetUpUserDataDirectory() override {
     PrefillSigninProfile();
     PrefillComponentPolicyCache();
     return DevicePolicyCrosBrowserTest::SetUpUserDataDirectory();
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    SigninExtensionsDeviceCloudPolicyBrowserTestBase::
+        SetUpInProcessBrowserTestFixture();
+    signin_policy_provided_disabler_ =
+        chromeos::GetScopedSigninScreenPolicyProviderDisablerForTesting();
   }
 
   static void PrefillSigninProfile() {
