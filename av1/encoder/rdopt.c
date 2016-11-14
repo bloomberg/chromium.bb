@@ -1094,8 +1094,15 @@ static void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane, int block,
       } else
 #endif  // CONFIG_AOM_HIGHBITDEPTH
       {
+#if !CONFIG_PVQ
         aom_convolve_copy(dst, dst_stride, recon, MAX_TX_SIZE, NULL, 0, NULL, 0,
                           bsw, bsh);
+#else
+        int i, j;
+
+        for (j = 0; j < bsh; j++)
+          for (i = 0; i < bsw; i++) recon[j * MAX_TX_SIZE + i] = 0;
+#endif
         inv_txfm_add(dqcoeff, recon, MAX_TX_SIZE, &inv_txfm_param);
       }
 
@@ -1216,8 +1223,10 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     AV1_XFORM_QUANT_FP);
 #endif  // CONFIG_NEW_QUANT
+#if !CONFIG_PVQ
     if (x->plane[plane].eobs[block])
       av1_optimize_b(cm, x, plane, block, tx_size, coeff_ctx);
+#endif
     dist_block(args->cpi, x, plane, block, blk_row, blk_col, tx_size,
                &this_rd_stats.dist, &this_rd_stats.sse);
   }
@@ -1238,6 +1247,8 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   args->t_left[blk_row] = (x->plane[plane].eobs[block] > 0);
 #else
   this_rd_stats.rate = x->rate;
+  args->t_above[blk_col] = !x->pvq_skip[plane];
+  args->t_left[blk_row] = !x->pvq_skip[plane];
 #endif
   rd1 = RDCOST(x->rdmult, x->rddiv, this_rd_stats.rate, this_rd_stats.dist);
   rd2 = RDCOST(x->rdmult, x->rddiv, 0, this_rd_stats.sse);
@@ -3129,6 +3140,7 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
                   AV1_XFORM_QUANT_FP);
 #endif  // CONFIG_NEW_QUANT
 
+  // TODO(yushin) : If PVQ is enabled, this should not be called.
   av1_optimize_b(cm, x, plane, block, tx_size, coeff_ctx);
 
 // TODO(any): Use dist_block to compute distortion
@@ -3174,6 +3186,7 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
     inv_txfm_param.tx_size = tx_size;
     inv_txfm_param.eob = p->eobs[block];
     inv_txfm_param.lossless = xd->lossless[xd->mi[0]->mbmi.segment_id];
+// TODO(yushin) : If PVQ is enabled, rec_buffer needs be set as zeros.
 #if CONFIG_AOM_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
       inv_txfm_param.bd = xd->bd;
