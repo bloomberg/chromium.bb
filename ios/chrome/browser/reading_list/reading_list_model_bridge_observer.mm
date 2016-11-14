@@ -105,7 +105,7 @@ void ReadingListModelBridge::ReadingListWillUpdateUnreadEntry(
     const ReadingListModel* model,
     size_t index) {
   if ([observer_ respondsToSelector:@selector(readingListModel:
-                                        willRemoveUnreadEntryAtIndex:)]) {
+                                        willUpdateUnreadEntryAtIndex:)]) {
     [observer_ readingListModel:model willUpdateUnreadEntryAtIndex:index];
   }
 }
@@ -114,7 +114,7 @@ void ReadingListModelBridge::ReadingListWillUpdateReadEntry(
     const ReadingListModel* model,
     size_t index) {
   if ([observer_ respondsToSelector:@selector(readingListModel:
-                                        willRemoveReadEntryAtIndex:)]) {
+                                        willUpdateReadEntryAtIndex:)]) {
     [observer_ readingListModel:model willUpdateReadEntryAtIndex:index];
   }
 }
