@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "net/base/backoff_entry.h"
 #include "url/gurl.h"
@@ -37,9 +38,11 @@ class ReadingListEntry {
   const std::string& Title() const;
   // What state this entry is in.
   DistillationState DistilledState() const;
-  // The local file URL for the distilled version of the page. This should only
+  // The local file path for the distilled version of the page. This should only
   // be called if the state is "PROCESSED".
-  const GURL& DistilledURL() const;
+  const base::FilePath& DistilledPath() const;
+  // The URL to the distilled file.
+  const GURL DistilledURL() const;
   // The time before the next try. This is automatically increased when the
   // state is set to WILL_RETRY or ERROR from a non-error state.
   base::TimeDelta TimeUntilNextTry() const;
@@ -55,14 +58,14 @@ class ReadingListEntry {
   void SetTitle(const std::string& title);
   // Sets the distilled URL and switch the state to PROCESSED and reset the time
   // until the next try.
-  void SetDistilledURL(const GURL& url);
+  void SetDistilledPath(const base::FilePath& path);
   // Sets the state to one of PROCESSING, WILL_RETRY or ERROR.
   void SetDistilledState(DistillationState distilled_state);
 
  private:
   GURL url_;
   std::string title_;
-  GURL distilled_url_;
+  base::FilePath distilled_path_;
   DistillationState distilled_state_;
   std::unique_ptr<net::BackoffEntry> backoff_;
   int failed_download_counter_;

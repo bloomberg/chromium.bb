@@ -234,8 +234,9 @@ void ReadingListModelImpl::SetEntryTitle(const GURL& url,
   }
 }
 
-void ReadingListModelImpl::SetEntryDistilledURL(const GURL& url,
-                                                const GURL& distilled_url) {
+void ReadingListModelImpl::SetEntryDistilledPath(
+    const GURL& url,
+    const base::FilePath& distilled_path) {
   DCHECK(loaded());
   const ReadingListEntry entry(url, std::string());
 
@@ -245,7 +246,7 @@ void ReadingListModelImpl::SetEntryDistilledURL(const GURL& url,
       observer.ReadingListWillUpdateUnreadEntry(
           this, std::distance(unread_.begin(), result));
     }
-    result->SetDistilledURL(distilled_url);
+    result->SetDistilledPath(distilled_path);
     if (storage_layer_ && !IsPerformingBatchUpdates())
       storage_layer_->SavePersistentUnreadList(unread_);
     for (auto& observer : observers_)
@@ -259,7 +260,7 @@ void ReadingListModelImpl::SetEntryDistilledURL(const GURL& url,
       observer.ReadingListWillUpdateReadEntry(
           this, std::distance(read_.begin(), result));
     }
-    result->SetDistilledURL(distilled_url);
+    result->SetDistilledPath(distilled_path);
     if (storage_layer_ && !IsPerformingBatchUpdates())
       storage_layer_->SavePersistentReadList(read_);
     for (auto& observer : observers_)

@@ -47,7 +47,7 @@ class MockURLDownloader : public URLDownloader {
                                  base::Unretained(this))) {}
 
   void RemoveOfflineFilesDirectory() {
-    base::DeleteFile(OfflineDirectoryPath(), true);
+    base::DeleteFile(OfflineRootDirectoryPath(), true);
   }
 
   void ClearCompletionTrackers() {
@@ -56,7 +56,7 @@ class MockURLDownloader : public URLDownloader {
   }
 
   bool CheckExistenceOfOfflineURLPagePath(const GURL& url) {
-    return base::PathExists(OfflineURLPagePath(url));
+    return base::PathExists(OfflinePageAbsolutePath(url));
   }
 
   void FakeWorking() { working_ = true; }
@@ -82,7 +82,7 @@ class MockURLDownloader : public URLDownloader {
 
   void OnEndDownload(const GURL& url,
                      SuccessState success,
-                     const GURL& distilledURL,
+                     const base::FilePath& distilled_path,
                      const std::string& title) {
     downloaded_files_.push_back(url);
   }

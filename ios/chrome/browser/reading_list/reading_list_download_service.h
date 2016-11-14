@@ -80,7 +80,7 @@ class ReadingListDownloadService
   // Callback for entry download.
   void OnDownloadEnd(const GURL& url,
                      URLDownloader::SuccessState success,
-                     const GURL& distilled_url,
+                     const base::FilePath& distilled_path,
                      const std::string& title);
 
   // Callback for entry deletion.

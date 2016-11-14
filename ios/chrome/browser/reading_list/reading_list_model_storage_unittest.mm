@@ -76,7 +76,7 @@ TEST(ReadingListStorage, SaveOneModified) {
       ReadingListEntry(GURL("http://unread.example.com"), "unread title"));
   {
     ReadingListModelStorageDefaults storage(defaults);
-    entries[0].SetDistilledURL(GURL("http://distilled.example.com"));
+    entries[0].SetDistilledPath(base::FilePath("distilled/page.html"));
     storage.SavePersistentUnreadList(entries);
   }
 
@@ -85,7 +85,9 @@ TEST(ReadingListStorage, SaveOneModified) {
       storage.LoadPersistentUnreadList());
   EXPECT_EQ(1ul, restored_entries.size());
   EXPECT_EQ(GURL("http://unread.example.com"), restored_entries[0].URL());
-  EXPECT_EQ(GURL("http://distilled.example.com"),
+  EXPECT_EQ(base::FilePath("distilled/page.html"),
+            restored_entries[0].DistilledPath());
+  EXPECT_EQ(GURL("chrome://offline/distilled/page.html"),
             restored_entries[0].DistilledURL());
   EXPECT_EQ("unread title", restored_entries[0].Title());
 }

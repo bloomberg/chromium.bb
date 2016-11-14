@@ -42,14 +42,15 @@ TEST(ReadingListEntry, MovesAreEquals) {
   EXPECT_EQ(e3.Title(), e2.Title());
 }
 
-TEST(ReadingListEntry, DistilledURL) {
+TEST(ReadingListEntry, DistilledPathAndURL) {
   ReadingListEntry e(GURL("http://example.com"), "bar");
 
   EXPECT_FALSE(e.DistilledURL().is_valid());
 
-  const GURL distilled_url("http://distilled.example.com");
-  e.SetDistilledURL(distilled_url);
-  EXPECT_EQ(distilled_url, e.DistilledURL());
+  const base::FilePath distilled_path("distilled/page.html");
+  e.SetDistilledPath(distilled_path);
+  EXPECT_EQ(distilled_path, e.DistilledPath());
+  EXPECT_EQ(GURL("chrome://offline/distilled/page.html"), e.DistilledURL());
 }
 
 TEST(ReadingListEntry, DistilledState) {
@@ -60,8 +61,8 @@ TEST(ReadingListEntry, DistilledState) {
   e.SetDistilledState(ReadingListEntry::ERROR);
   EXPECT_EQ(ReadingListEntry::ERROR, e.DistilledState());
 
-  const GURL distilled_url("http://distilled.example.com");
-  e.SetDistilledURL(distilled_url);
+  const base::FilePath distilled_path("distilled/page.html");
+  e.SetDistilledPath(distilled_path);
   EXPECT_EQ(ReadingListEntry::PROCESSED, e.DistilledState());
 }
 
@@ -153,7 +154,7 @@ TEST(ReadingListEntry, ResetTimeUntilNextTry) {
               kFirstBackoff * fuzzing);
 
   // Action.
-  e.SetDistilledURL(GURL("http://example.com"));
+  e.SetDistilledPath(base::FilePath("distilled/page.html"));
 
   // Test.
   EXPECT_EQ(0, e.TimeUntilNextTry().InSeconds());

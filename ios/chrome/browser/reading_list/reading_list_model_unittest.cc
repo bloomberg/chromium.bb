@@ -272,15 +272,15 @@ TEST_F(ReadingListModelTest, UpdateEntryState) {
   EXPECT_EQ(ReadingListEntry::PROCESSING, entry.DistilledState());
 }
 
-TEST_F(ReadingListModelTest, UpdateDistilledURL) {
+TEST_F(ReadingListModelTest, UpdateDistilledPath) {
   const GURL gurl("http://example.com");
   const ReadingListEntry& entry = model_->AddEntry(gurl, "sample");
   ClearCounts();
 
-  model_->SetEntryDistilledURL(gurl, gurl);
+  model_->SetEntryDistilledPath(gurl, base::FilePath("distilled/page.html"));
   AssertObserverCount(0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1);
   EXPECT_EQ(ReadingListEntry::PROCESSED, entry.DistilledState());
-  EXPECT_EQ(gurl, entry.DistilledURL());
+  EXPECT_EQ(base::FilePath("distilled/page.html"), entry.DistilledPath());
 }
 
 TEST_F(ReadingListModelTest, UpdateReadEntryTitle) {
@@ -307,17 +307,17 @@ TEST_F(ReadingListModelTest, UpdateReadEntryState) {
   EXPECT_EQ(ReadingListEntry::PROCESSING, entry.DistilledState());
 }
 
-TEST_F(ReadingListModelTest, UpdateReadDistilledURL) {
+TEST_F(ReadingListModelTest, UpdateReadDistilledPath) {
   const GURL gurl("http://example.com");
   model_->AddEntry(gurl, "sample");
   model_->MarkReadByURL(gurl);
   const ReadingListEntry& entry = model_->GetReadEntryAtIndex(0);
   ClearCounts();
 
-  model_->SetEntryDistilledURL(gurl, gurl);
+  model_->SetEntryDistilledPath(gurl, base::FilePath("distilled/page.html"));
   AssertObserverCount(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1);
   EXPECT_EQ(ReadingListEntry::PROCESSED, entry.DistilledState());
-  EXPECT_EQ(gurl, entry.DistilledURL());
+  EXPECT_EQ(GURL("chrome://offline/distilled/page.html"), entry.DistilledURL());
 }
 
 // Tests that the callback is called when the entry is unread.

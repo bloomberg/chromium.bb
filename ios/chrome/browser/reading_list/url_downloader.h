@@ -45,10 +45,14 @@ class URLDownloader {
 
   // A download completion callback that takes, in order, the GURL that was
   // downloaded, a SuccessState indicating the outcome of the download, the
-  // offline GURL for the download, and the title of the url, and returns void.
-  // The offline GURL and title should not be used in case of failure.
-  using DownloadCompletion = base::Callback<
-      void(const GURL&, SuccessState, const GURL&, const std::string&)>;
+  // path to the downloaded page (relative to |OfflineRootDirectoryPath()|, and
+  // the title of the url, and returns void.
+  // The path to downloaded file  and title should not be used in case of
+  // failure.
+  using DownloadCompletion = base::Callback<void(const GURL&,
+                                                 SuccessState,
+                                                 const base::FilePath&,
+                                                 const std::string&)>;
 
   // Create a URL downloader with completion callbacks for downloads and
   // deletions. The completion callbacks will be called with the original url
@@ -83,16 +87,24 @@ class URLDownloader {
   // Callback for completed (or failed) deletion, handles calling
   // deleteCompletion and starting the next task.
   void DeleteCompletionHandler(const GURL& url, bool success);
-  // The path of the directory where offline URLs are saved.
-  base::FilePath OfflineDirectoryPath();
-  // The path of the directory where a specific URL is saved offline. Contains
-  // the page and supporting files (images).
-  base::FilePath OfflineURLDirectoryPath(const GURL& url);
-  // The path of the offline webpage for the URL. The file may not exist.
-  base::FilePath OfflineURLPagePath(const GURL& url);
+  // The absolute path of the directory where offline URLs are saved.
+  base::FilePath OfflineRootDirectoryPath();
+
+  // The absolute path of the directory where a specific URL is saved offline.
+  // Contains the page and supporting files (images).
+  base::FilePath OfflineURLDirectoryAbsolutePath(const GURL& url);
+  // The absolute path of the offline webpage for the URL. The file may not
+  // exist.
+  base::FilePath OfflinePageAbsolutePath(const GURL& url);
+  // The relative path to the distilled page. The result is relative to
+  // |OfflineRootDirectoryPath()|.
+  base::FilePath OfflinePagePath(const GURL& url);
   // Creates the offline directory for |url|. Returns true if successful or if
   // the directory already exists.
   bool CreateOfflineURLDirectory(const GURL& url);
+  // The name of the directory containing offline data for |url|.
+  std::string OfflineURLDirectoryID(const GURL& url);
+
   // Saves the |data| for image at |imageURL| to disk, for main URL |url|;
   // puts path of saved file in |path| and returns whether save was successful.
   bool SaveImage(const GURL& url,

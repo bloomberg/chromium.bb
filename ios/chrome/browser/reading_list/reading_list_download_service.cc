@@ -177,13 +177,13 @@ void ReadingListDownloadService::RemoveDownloadedEntry(
 void ReadingListDownloadService::OnDownloadEnd(
     const GURL& url,
     URLDownloader::SuccessState success,
-    const GURL& distilled_url,
+    const base::FilePath& distilled_path,
     const std::string& title) {
   DCHECK(reading_list_model_->loaded());
   if ((success == URLDownloader::DOWNLOAD_SUCCESS ||
        success == URLDownloader::DOWNLOAD_EXISTS) &&
-      distilled_url.is_valid()) {
-    reading_list_model_->SetEntryDistilledURL(url, distilled_url);
+      !distilled_path.empty()) {
+    reading_list_model_->SetEntryDistilledPath(url, distilled_path);
 
   } else if (success == URLDownloader::ERROR_RETRY) {
     reading_list_model_->SetEntryDistilledState(url,

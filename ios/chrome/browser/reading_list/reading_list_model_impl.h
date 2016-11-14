@@ -58,8 +58,8 @@ class ReadingListModelImpl : public ReadingListModel, public KeyedService {
   void MarkUnreadByURL(const GURL& url) override;
 
   void SetEntryTitle(const GURL& url, const std::string& title) override;
-  void SetEntryDistilledURL(const GURL& url,
-                            const GURL& distilled_url) override;
+  void SetEntryDistilledPath(const GURL& url,
+                             const base::FilePath& distilled_path) override;
   void SetEntryDistilledState(
       const GURL& url,
       ReadingListEntry::DistillationState state) override;

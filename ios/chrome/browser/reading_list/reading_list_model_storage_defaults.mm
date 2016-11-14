@@ -17,7 +17,7 @@ NSString* const kReadingListUnreadElements = @"ReadingListUnreadElements";
 NSString* const kReadingListEntryTitleKey = @"title";
 NSString* const kReadingListEntryURLKey = @"URL";
 NSString* const kReadingListEntryStateKey = @"state";
-NSString* const kReadingListEntryDistilledURLKey = @"distilledURL";
+NSString* const kReadingListEntryDistilledPathKey = @"distilledPath";
 
 ReadingListEntry DecodeReadingListEntry(NSData* data) {
   NSError* error = nil;
@@ -36,12 +36,13 @@ ReadingListEntry DecodeReadingListEntry(NSData* data) {
 
   switch (state) {
     case ReadingListEntry::PROCESSED: {
-      NSURL* distilled_url = base::mac::ObjCCastStrict<NSURL>(
-          [dictionary objectForKey:kReadingListEntryDistilledURLKey]);
-      DCHECK(distilled_url);
-      GURL distilled_gurl(net::GURLWithNSURL(distilled_url));
-      DCHECK(distilled_gurl.is_valid());
-      entry.SetDistilledURL(distilled_gurl);
+      NSString* distilled_path = base::mac::ObjCCastStrict<NSString>(
+          [dictionary objectForKey:kReadingListEntryDistilledPathKey]);
+      if (distilled_path) {
+        base::FilePath path =
+            base::FilePath(base::SysNSStringToUTF8(distilled_path));
+        entry.SetDistilledPath(path);
+      }
       break;
     }
     case ReadingListEntry::PROCESSING:
@@ -65,12 +66,12 @@ NSData* EncodeReadingListEntry(const ReadingListEntry& entry) {
             [NSNumber numberWithInt:entry.DistilledState()]
       }];
 
-  const GURL distilled_gurl(entry.DistilledURL());
-  if (distilled_gurl.is_valid()) {
-    NSURL* distilled_url = net::NSURLWithGURL(distilled_gurl);
-    if (distilled_url)
-      [dictionary setObject:distilled_url
-                     forKey:kReadingListEntryDistilledURLKey];
+  const base::FilePath path(entry.DistilledPath());
+  if (!path.empty()) {
+    NSString* distilled_path = base::SysUTF8ToNSString(path.value());
+    if (distilled_path)
+      [dictionary setObject:distilled_path
+                     forKey:kReadingListEntryDistilledPathKey];
   }
   return [NSKeyedArchiver archivedDataWithRootObject:dictionary];
 }

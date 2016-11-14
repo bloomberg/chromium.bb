@@ -46,7 +46,7 @@ void URLDownloader::OfflineURLExists(const GURL& url,
                                      base::Callback<void(bool)> callback) {
   task_tracker_.PostTaskAndReplyWithResult(
       web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE).get(),
-      FROM_HERE, base::Bind(&base::PathExists, OfflineURLPagePath(url)),
+      FROM_HERE, base::Bind(&base::PathExists, OfflinePageAbsolutePath(url)),
       callback);
 }
 
@@ -75,11 +75,8 @@ void URLDownloader::DownloadCompletionHandler(const GURL& url,
   auto post_delete = base::Bind(
       [](URLDownloader* _this, const GURL& url, const std::string& title,
          SuccessState success) {
-        _this->download_completion_.Run(
-            url, success,
-            GURL(std::string(url::kFileScheme) + url::kStandardSchemeSeparator +
-                 _this->OfflineURLPagePath(url).value()),
-            title);
+        _this->download_completion_.Run(url, success,
+                                        _this->OfflinePagePath(url), title);
         _this->distiller_.reset();
         _this->working_ = false;
         _this->HandleNextTask();
@@ -94,7 +91,7 @@ void URLDownloader::DownloadCompletionHandler(const GURL& url,
                        [](const base::FilePath& offline_directory_path) {
                          base::DeleteFile(offline_directory_path, true);
                        },
-                       OfflineURLDirectoryPath(url)),
+                       OfflineURLDirectoryAbsolutePath(url)),
         post_delete);
   } else {
     post_delete.Run();
@@ -121,8 +118,8 @@ void URLDownloader::HandleNextTask() {
   if (task.first == DELETE) {
     task_tracker_.PostTaskAndReplyWithResult(
         web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE).get(),
-        FROM_HERE,
-        base::Bind(&base::DeleteFile, OfflineURLDirectoryPath(url), true),
+        FROM_HERE, base::Bind(&base::DeleteFile,
+                              OfflineURLDirectoryAbsolutePath(url), true),
         base::Bind(&URLDownloader::DeleteCompletionHandler,
                    base::Unretained(this), url));
   } else if (task.first == DOWNLOAD) {
@@ -178,21 +175,29 @@ URLDownloader::SuccessState URLDownloader::SaveDistilledHTML(
   return ERROR_PERMANENT;
 }
 
-base::FilePath URLDownloader::OfflineDirectoryPath() {
+base::FilePath URLDownloader::OfflineRootDirectoryPath() {
   return base_directory_.Append(FILE_PATH_LITERAL(kOfflineDirectory));
 }
 
-base::FilePath URLDownloader::OfflineURLDirectoryPath(const GURL& url) {
-  std::string hash = base::MD5String(url.spec());
-  return OfflineDirectoryPath().AppendASCII(hash);
+std::string URLDownloader::OfflineURLDirectoryID(const GURL& url) {
+  return base::MD5String(url.spec());
 }
 
-base::FilePath URLDownloader::OfflineURLPagePath(const GURL& url) {
-  return OfflineURLDirectoryPath(url).Append(FILE_PATH_LITERAL("page.html"));
+base::FilePath URLDownloader::OfflinePagePath(const GURL& url) {
+  base::FilePath directory(OfflineURLDirectoryID(url));
+  return directory.Append(FILE_PATH_LITERAL("page.html"));
+}
+
+base::FilePath URLDownloader::OfflineURLDirectoryAbsolutePath(const GURL& url) {
+  return OfflineRootDirectoryPath().Append(OfflineURLDirectoryID(url));
+}
+
+base::FilePath URLDownloader::OfflinePageAbsolutePath(const GURL& url) {
+  return OfflineRootDirectoryPath().Append(OfflinePagePath(url));
 }
 
 bool URLDownloader::CreateOfflineURLDirectory(const GURL& url) {
-  base::FilePath path = OfflineURLDirectoryPath(url);
+  base::FilePath path = OfflineURLDirectoryAbsolutePath(url);
   if (!DirectoryExists(path)) {
     return CreateDirectoryAndGetError(path, nil);
   }
@@ -205,7 +210,7 @@ bool URLDownloader::SaveImage(const GURL& url,
                               std::string* image_name) {
   std::string image_hash = base::MD5String(image_url.spec());
   *image_name = image_hash;
-  base::FilePath path = OfflineURLDirectoryPath(url).Append(image_hash);
+  base::FilePath path = OfflineURLDirectoryAbsolutePath(url).Append(image_hash);
   if (!base::PathExists(path)) {
     return base::WriteFile(path, data.c_str(), data.length()) > 0;
   }
@@ -239,6 +244,6 @@ bool URLDownloader::SaveHTMLForURL(std::string html, const GURL& url) {
   if (html.empty()) {
     return false;
   }
-  base::FilePath path = OfflineURLPagePath(url);
+  base::FilePath path = OfflinePageAbsolutePath(url);
   return base::WriteFile(path, html.c_str(), html.length()) > 0;
 }
