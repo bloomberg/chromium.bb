@@ -78,7 +78,7 @@ bool WebInputElement::isCheckbox() const {
 
 int WebInputElement::maxLength() const {
   int maxLen = constUnwrap<HTMLInputElement>()->maxLength();
-  return maxLen == -1 ? HTMLInputElement::maximumLength : maxLen;
+  return maxLen == -1 ? defaultMaxLength() : maxLen;
 }
 
 void WebInputElement::setActivatedSubmit(bool activated) {
@@ -120,7 +120,7 @@ WebString WebInputElement::localizeValue(const WebString& proposedValue) const {
 }
 
 int WebInputElement::defaultMaxLength() {
-  return HTMLInputElement::maximumLength;
+  return std::numeric_limits<int>::max();
 }
 
 void WebInputElement::setShouldRevealPassword(bool value) {

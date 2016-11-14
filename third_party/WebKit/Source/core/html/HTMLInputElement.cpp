@@ -94,11 +94,6 @@ class ListAttributeTargetObserver : public IdTargetObserver {
   Member<HTMLInputElement> m_element;
 };
 
-// FIXME: According to HTML4, the length attribute's value can be arbitrarily
-// large. However, due to https://bugs.webkit.org/show_bug.cgi?id=14536 things
-// get rather sluggish when a text field has a larger number of characters than
-// this, even when just clicking in the text field.
-const int HTMLInputElement::maximumLength = 524288;
 const int defaultSize = 20;
 
 HTMLInputElement::HTMLInputElement(Document& document,
@@ -106,7 +101,7 @@ HTMLInputElement::HTMLInputElement(Document& document,
                                    bool createdByParser)
     : HTMLTextFormControlElement(inputTag, document, form),
       m_size(defaultSize),
-      m_maxLength(maximumLength),
+      m_maxLength(-1),
       m_minLength(-1),
       m_hasDirtyValue(false),
       m_isChecked(false),
@@ -1395,8 +1390,6 @@ const AtomicString& HTMLInputElement::alt() const {
 }
 
 int HTMLInputElement::maxLength() const {
-  if (!hasAttribute(maxlengthAttr))
-    return -1;
   return m_maxLength;
 }
 
@@ -1424,7 +1417,7 @@ void HTMLInputElement::setMinLength(int minLength,
     exceptionState.throwDOMException(
         IndexSizeError,
         "The value provided (" + String::number(minLength) + ") is negative.");
-  else if (minLength > m_maxLength)
+  else if (m_maxLength >= 0 && minLength > m_maxLength)
     exceptionState.throwDOMException(
         IndexSizeError, ExceptionMessages::indexExceedsMaximumBound(
                             "minLength", minLength, m_maxLength));
@@ -1712,8 +1705,6 @@ void HTMLInputElement::parseMaxLengthAttribute(const AtomicString& value) {
   int maxLength;
   if (!parseHTMLInteger(value, maxLength) || maxLength < 0)
     maxLength = -1;
-  if (maxLength > maximumLength)
-    maxLength = maximumLength;
   m_maxLength = maxLength;
   setNeedsValidityCheck();
 }

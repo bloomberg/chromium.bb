@@ -2,7 +2,7 @@
 <body>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
-<h1>The length of an &lt;input> element's string is implicitly limited to 524288 characters. http://bugs.webkit.org/show_bug.cgi?id=14388</h1>
+<h1>The length of an &lt;input> element's string is NOT implicitly limited to 524288 characters. http://bugs.webkit.org/show_bug.cgi?id=14388 and crbug.com/450544</h1>
 <div id="log"></div>
 <input id="input">
 <script>
@@ -35,10 +35,14 @@ test(function() {
     attempt(524288, 524288);
 }, "Insert 524288 characters, the value length should be 524288.");
 test(function() {
-    attempt(524289, 524288);
-}, "Insert 524289 characters, the value length should be 524288.");
+    attempt(524289, 524289);
+}, "Insert 524289 characters, the value length should be 524289.");
 test(function() {
-    attempt(530000, 524288);
-}, "Insert 530000 characters, the value length should be 524288.");
+    attempt(530000, 530000);
+}, "Insert 530000 characters, the value length should be 530000.");
+
+test(function() {
+    attempt(1000000, 1000000);
+}, "Insert 1000000 characters, the value length should be 1000000.");
 </script>
 </body>

@@ -247,8 +247,6 @@ class CORE_EXPORT HTMLInputElement : public HTMLTextFormControlElement {
 
   String defaultToolTip() const override;
 
-  static const int maximumLength;
-
   unsigned height() const;
   unsigned width() const;
   void setHeight(unsigned);

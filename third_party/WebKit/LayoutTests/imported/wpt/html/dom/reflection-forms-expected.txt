@@ -198,10 +198,7 @@ FAIL input.inputMode: IDL set to "url\0" assert_equals: IDL get expected "" but 
 FAIL input.inputMode: IDL set to "rl" assert_equals: IDL get expected "" but got "rl"
 FAIL input.inputMode: IDL set to "URL" assert_equals: IDL get expected "url" but got "URL"
 PASS input.max: 32 tests
-PASS input.maxLength: 9 tests
-FAIL input.maxLength: setAttribute() to 2147483647 assert_equals: IDL get expected 2147483647 but got 524288
-PASS input.maxLength: 50 tests
-FAIL input.maxLength: IDL set to 2147483647 assert_equals: IDL get expected 2147483647 but got 524288
+PASS input.maxLength: 61 tests
 PASS input.min: 32 tests
 PASS input.multiple: 33 tests
 PASS input.name: 32 tests

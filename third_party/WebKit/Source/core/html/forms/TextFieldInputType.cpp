@@ -399,7 +399,7 @@ static String limitLength(const String& string, unsigned maxLength) {
 
 String TextFieldInputType::sanitizeValue(const String& proposedValue) const {
   return limitLength(proposedValue.removeCharacters(isASCIILineBreak),
-                     HTMLInputElement::maximumLength);
+                     std::numeric_limits<int>::max());
 }
 
 void TextFieldInputType::handleBeforeTextInsertedEvent(
@@ -429,8 +429,11 @@ void TextFieldInputType::handleBeforeTextInsertedEvent(
 
   // Selected characters will be removed by the next text event.
   unsigned baseLength = oldLength - selectionLength;
-  unsigned maxLength = static_cast<unsigned>(
-      this->maxLength());  // maxLength can never be negative.
+  unsigned maxLength;
+  if (this->maxLength() < 0)
+    maxLength = std::numeric_limits<int>::max();
+  else
+    maxLength = static_cast<unsigned>(this->maxLength());
   unsigned appendableLength =
       maxLength > baseLength ? maxLength - baseLength : 0;
 

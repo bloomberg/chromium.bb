@@ -600,7 +600,7 @@ bool InputType::shouldRespectHeightAndWidthAttributes() {
 }
 
 int InputType::maxLength() const {
-  return HTMLInputElement::maximumLength;
+  return -1;
 }
 
 int InputType::minLength() const {
