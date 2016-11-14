@@ -38,7 +38,8 @@ void EXTDisjointTimerQueryWebGL2::queryCounterEXT(WebGLQuery* query,
   if (scoped.isLost())
     return;
 
-  if (!query || query->isDeleted() ||
+  DCHECK(query);
+  if (query->isDeleted() ||
       !query->validate(scoped.context()->contextGroup(), scoped.context())) {
     scoped.context()->synthesizeGLError(GL_INVALID_OPERATION, "queryCounterEXT",
                                         "invalid query");
