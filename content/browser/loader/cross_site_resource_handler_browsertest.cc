@@ -193,8 +193,8 @@ class CrossSiteResourceHandlerTest : public ContentBrowserTest {
             &CrossSiteResourceHandlerTest::InjectResourceDispatcherHostDelegate,
             base::Unretained(this)));
     host_resolver()->AddRule("*", "127.0.0.1");
-    ASSERT_TRUE(embedded_test_server()->Start());
     content::SetupCrossSiteRedirector(embedded_test_server());
+    ASSERT_TRUE(embedded_test_server()->Start());
   }
 
   void TearDownOnMainThread() override {

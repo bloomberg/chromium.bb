@@ -45,13 +45,7 @@ class AsyncRevalidationManagerBrowserTest : public ContentBrowserTest {
 
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(features::kStaleWhileRevalidate);
-
-    ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
     ContentBrowserTest::SetUp();
-  }
-
-  void SetUpOnMainThread() override {
-    embedded_test_server()->StartAcceptingConnections();
   }
 
   base::RunLoop* run_loop() { return &run_loop_; }
@@ -157,11 +151,13 @@ class AsyncRevalidationManagerBrowserTest : public ContentBrowserTest {
 // triggers an async revalidation.
 IN_PROC_BROWSER_TEST_F(AsyncRevalidationManagerBrowserTest,
                        StaleWhileRevalidateIsApplied) {
+  RegisterCountingRequestHandler();
+  ASSERT_TRUE(embedded_test_server()->Start());
+
   // PlzNavigate: Stale while revalidate is disabled.
   // TODO(clamy): Re-enable the test when there is support.
   if (IsBrowserSideNavigationEnabled())
     return;
-  RegisterCountingRequestHandler();
   GURL url(embedded_test_server()->GetURL(kCountedHtmlPath));
 
   EXPECT_TRUE(TitleBecomes(url, "Version 1"));
@@ -184,12 +180,14 @@ IN_PROC_BROWSER_TEST_F(AsyncRevalidationManagerBrowserTest,
 // The fresh cache entry must become visible once the async revalidation request
 // has been sent.
 IN_PROC_BROWSER_TEST_F(AsyncRevalidationManagerBrowserTest, CacheIsUpdated) {
+  RegisterCountingRequestHandler();
+  ASSERT_TRUE(embedded_test_server()->Start());
+
   // PlzNavigate: Stale while revalidate is disabled.
   // TODO(clamy): Re-enable the test when there is support.
   if (IsBrowserSideNavigationEnabled())
     return;
   using base::ASCIIToUTF16;
-  RegisterCountingRequestHandler();
   GURL url(embedded_test_server()->GetURL(kCountedHtmlPath));
 
   EXPECT_TRUE(TitleBecomes(url, "Version 1"));
@@ -216,11 +214,13 @@ IN_PROC_BROWSER_TEST_F(AsyncRevalidationManagerBrowserTest, CacheIsUpdated) {
 // applied immediately.
 IN_PROC_BROWSER_TEST_F(AsyncRevalidationManagerBrowserTest,
                        CookieSetAsynchronously) {
+  RegisterCookieRequestHandler();
+  ASSERT_TRUE(embedded_test_server()->Start());
+
   // PlzNavigate: Stale while revalidate is disabled.
   // TODO(clamy): Re-enable the test when there is support.
   if (IsBrowserSideNavigationEnabled())
     return;
-  RegisterCookieRequestHandler();
   GURL url(embedded_test_server()->GetURL(kCookieHtmlPath));
 
   // Set cookie to version=1

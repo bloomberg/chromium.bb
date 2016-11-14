@@ -297,6 +297,10 @@ std::unique_ptr<net::test_server::HttpResponse> NoContentResponseHandler(
 // If this flakes use http://crbug.com/80596.
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        CrossSiteNoUnloadOn204) {
+  const char kNoContentPath[] = "/nocontent";
+  embedded_test_server()->RegisterRequestHandler(
+      base::Bind(&NoContentResponseHandler, kNoContentPath));
+
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Start with a URL that sets a cookie in its unload handler.
@@ -304,9 +308,6 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
   CheckTitleTest(url, "set cookie on unload");
 
   // Navigate to a cross-site URL that returns a 204 No Content response.
-  const char kNoContentPath[] = "/nocontent";
-  embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&NoContentResponseHandler, kNoContentPath));
   NavigateToURL(shell(), embedded_test_server()->GetURL(kNoContentPath));
 
   // Check that the unload cookie was not set.
@@ -480,9 +481,9 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRedirectRequest(
 // Test that we update the cookie policy URLs correctly when transferring
 // navigations.
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, CookiePolicy) {
-  ASSERT_TRUE(embedded_test_server()->Start());
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&HandleRedirectRequest, "/redirect?"));
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   std::string set_cookie_url(base::StringPrintf(
       "http://localhost:%u/set_cookie.html", embedded_test_server()->port()));
