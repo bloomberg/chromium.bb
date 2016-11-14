@@ -7,12 +7,19 @@
 <script>
 var test = function()
 {
-    function step1()
+    InspectorTest.NetworkAgent.setCacheDisabled(true, sendCSSRequest);
+
+    function sendCSSRequest()
     {
-        InspectorTest.makeSimpleXHR("GET", "resources/binary.data", false, step2);
+        InspectorTest.makeSimpleXHR("GET", "resources/initiator.css", false, sendBinaryRequest);
     }
 
-    function step2()
+    function sendBinaryRequest()
+    {
+        InspectorTest.makeSimpleXHR("GET", "resources/binary.data", false, makeHAR);
+    }
+
+    function makeHAR()
     {
         var writer = new Network.HARWriter();
         var stream = new InspectorTest.StringOutputStream(onSaved);
@@ -59,8 +66,6 @@ var test = function()
         InspectorTest.addResult("FAIL: can't find resource for " + regexp);
         return null;
     }
-
-    InspectorTest.makeSimpleXHR("GET", "resources/initiator.css", false, step1);
 }
 </script>
 
