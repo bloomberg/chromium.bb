@@ -41,6 +41,9 @@ TrayPopupItemStyle::TrayPopupItemStyle(const ui::NativeTheme* theme,
 TrayPopupItemStyle::~TrayPopupItemStyle() {}
 
 SkColor TrayPopupItemStyle::GetTextColor() const {
+  if (font_style_ == FontStyle::SYSTEM_INFO)
+    return SkColorSetA(kBaseTextColor, kInactiveTextAlpha);
+
   switch (color_style_) {
     case ColorStyle::ACTIVE:
       return SkColorSetA(kBaseTextColor, kActiveTextAlpha);
