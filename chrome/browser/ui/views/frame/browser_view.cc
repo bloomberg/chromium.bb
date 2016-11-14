@@ -1906,7 +1906,9 @@ void BrowserView::OnThemeChanged() {
     // the usage of dark or normal hinges on the browser theme), so we have to
     // propagate both kinds of change.
     base::AutoReset<bool> reset(&handling_theme_changed_, true);
+#if defined(USE_AURA)
     ui::NativeThemeDarkAura::instance()->NotifyObservers();
+#endif
 #if defined(OS_WIN)
     ui::NativeThemeWin::instance()->NotifyObservers();
 #elif defined(OS_LINUX)
