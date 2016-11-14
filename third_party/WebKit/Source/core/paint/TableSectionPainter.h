@@ -6,7 +6,6 @@
 #define TableSectionPainter_h
 
 #include "core/paint/PaintPhase.h"
-#include "core/paint/PaintResult.h"
 #include "core/style/ShadowData.h"
 #include "wtf/Allocator.h"
 
@@ -27,10 +26,9 @@ class TableSectionPainter {
       : m_layoutTableSection(layoutTableSection) {}
 
   void paint(const PaintInfo&, const LayoutPoint&);
-
-  PaintResult paintCollapsedBorders(const PaintInfo&,
-                                    const LayoutPoint&,
-                                    const CollapsedBorderValue&);
+  void paintCollapsedBorders(const PaintInfo&,
+                             const LayoutPoint&,
+                             const CollapsedBorderValue&);
 
  private:
   void paintObject(const PaintInfo&, const LayoutPoint&);
@@ -58,9 +56,9 @@ class TableSectionPainter {
                                  const CollapsedBorderValue& currentBorderValue,
                                  ItemToPaint);
   void paintSection(const PaintInfo&, const LayoutPoint&);
-  PaintResult paintCollapsedSectionBorders(const PaintInfo&,
-                                           const LayoutPoint&,
-                                           const CollapsedBorderValue&);
+  void paintCollapsedSectionBorders(const PaintInfo&,
+                                    const LayoutPoint&,
+                                    const CollapsedBorderValue&);
 
   const LayoutTableSection& m_layoutTableSection;
 };

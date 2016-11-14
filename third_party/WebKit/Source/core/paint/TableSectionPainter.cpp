@@ -149,27 +149,24 @@ static inline bool compareCellPositionsWithOverflowingCells(
   return elem1->absoluteColumnIndex() < elem2->absoluteColumnIndex();
 }
 
-PaintResult TableSectionPainter::paintCollapsedBorders(
+void TableSectionPainter::paintCollapsedBorders(
     const PaintInfo& paintInfo,
     const LayoutPoint& paintOffset,
     const CollapsedBorderValue& currentBorderValue) {
-  PaintResult result =
-      paintCollapsedSectionBorders(paintInfo, paintOffset, currentBorderValue);
+  paintCollapsedSectionBorders(paintInfo, paintOffset, currentBorderValue);
   LayoutTable* table = m_layoutTableSection.table();
-  if (table->header() == m_layoutTableSection) {
+  if (table->header() == m_layoutTableSection)
     paintRepeatingHeaderGroup(paintInfo, paintOffset, currentBorderValue,
                               PaintCollapsedBorders);
-  }
-  return result;
 }
 
-PaintResult TableSectionPainter::paintCollapsedSectionBorders(
+void TableSectionPainter::paintCollapsedSectionBorders(
     const PaintInfo& paintInfo,
     const LayoutPoint& paintOffset,
     const CollapsedBorderValue& currentBorderValue) {
   if (!m_layoutTableSection.numRows() ||
       !m_layoutTableSection.table()->effectiveColumns().size())
-    return FullyPainted;
+    return;
 
   LayoutPoint adjustedPaintOffset =
       paintOffset + m_layoutTableSection.location();
@@ -188,7 +185,7 @@ PaintResult TableSectionPainter::paintCollapsedSectionBorders(
       m_layoutTableSection.dirtiedEffectiveColumns(tableAlignedRect);
 
   if (dirtiedColumns.start() >= dirtiedColumns.end())
-    return MayBeClippedByPaintDirtyRect;
+    return;
 
   // Collapsed borders are painted from the bottom right to the top left so that
   // precedence due to cell position is respected.
@@ -210,11 +207,6 @@ PaintResult TableSectionPainter::paintCollapsedSectionBorders(
                                                     currentBorderValue);
     }
   }
-
-  if (dirtiedRows == m_layoutTableSection.fullTableRowSpan() &&
-      dirtiedColumns == m_layoutTableSection.fullTableEffectiveColumnSpan())
-    return FullyPainted;
-  return MayBeClippedByPaintDirtyRect;
 }
 
 void TableSectionPainter::paintObject(const PaintInfo& paintInfo,

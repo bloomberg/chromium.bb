@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutTable TABLE",
-          "rect": [8, 8, 113, 104],
-          "reason": "invalidate paint rectangle"
-        },
-        {
           "object": "LayoutTableCol COL id='col'",
           "rect": [8, 8, 113, 104],
           "reason": "style change"
@@ -21,8 +16,20 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutTable TABLE",
-      "reason": "invalidate paint rectangle"
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
     },
     {
       "object": "LayoutTableCol COL id='col'",

@@ -8,11 +8,6 @@
       "paintInvalidations": [
         {
           "object": "LayoutTable TABLE",
-          "rect": [8, 8, 114, 54],
-          "reason": "invalidate paint rectangle"
-        },
-        {
-          "object": "LayoutTable TABLE",
           "rect": [8, 58, 114, 4],
           "reason": "incremental"
         },
@@ -41,8 +36,12 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutTable TABLE",
-      "reason": "invalidate paint rectangle"
+      "object": "LayoutTableCell TD id='foo'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
     },
     {
       "object": "LayoutTable TABLE",

@@ -29,9 +29,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "core/layout/LayoutBlock.h"
-#include "core/paint/PaintResult.h"
 #include "core/style/CollapsedBorderValue.h"
-#include "platform/graphics/paint/CullRect.h"
 #include "wtf/Vector.h"
 #include <memory>
 
@@ -377,6 +375,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   LayoutTableCell* cellBefore(const LayoutTableCell*) const;
   LayoutTableCell* cellAfter(const LayoutTableCell*) const;
 
+  typedef Vector<CollapsedBorderValue> CollapsedBorderValues;
   void invalidateCollapsedBorders();
 
   bool hasSections() const { return m_head || m_foot || m_firstBody; }
@@ -406,23 +405,9 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
 
   void paintMask(const PaintInfo&, const LayoutPoint&) const final;
 
-  struct CollapsedBordersInfo {
-    explicit CollapsedBordersInfo(const Vector<CollapsedBorderValue>& values)
-        : values(std::move(values)) {}
-
-    PaintResult lastPaintResult = FullyPainted;
-    CullRect lastPaintRect;
-    const Vector<CollapsedBorderValue> values;
-  };
-
-  bool hasCollapsedBorders() const {
-    DCHECK(m_collapsedBordersValid);
-    DCHECK(!m_collapsedBordersInfo || collapseBorders());
-    return !!m_collapsedBordersInfo;
-  }
-  CollapsedBordersInfo& getCollapsedBordersInfo() const {
-    DCHECK(hasCollapsedBorders());
-    return *m_collapsedBordersInfo;
+  const CollapsedBorderValues& collapsedBorders() const {
+    ASSERT(m_collapsedBordersValid);
+    return m_collapsedBorders;
   }
 
   void subtractCaptionRect(LayoutRect&) const;
@@ -565,7 +550,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   // need to compare a cells border against all the adjoining cells, rows,
   // row groups, column, column groups and table. Thus we cache them in this
   // field.
-  std::unique_ptr<CollapsedBordersInfo> m_collapsedBordersInfo;
+  CollapsedBorderValues m_collapsedBorders;
   bool m_collapsedBordersValid : 1;
 
   mutable bool m_hasColElements : 1;

@@ -57,13 +57,6 @@ class CellSpan {
   unsigned m_end;
 };
 
-inline bool operator==(const CellSpan& a, const CellSpan& b) {
-  return a.start() == b.start() && a.end() == b.end();
-}
-inline bool operator!=(const CellSpan& a, const CellSpan& b) {
-  return !(a == b);
-}
-
 class LayoutTableCell;
 class LayoutTableRow;
 
@@ -303,13 +296,8 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   // columnPos vectors.
   LayoutRect logicalRectForWritingModeAndDirection(const LayoutRect&) const;
 
-  CellSpan fullTableRowSpan() const { return CellSpan(0, m_grid.size()); }
-  CellSpan fullTableEffectiveColumnSpan() const {
-    return CellSpan(0, table()->numEffectiveColumns());
-  }
   CellSpan dirtiedRows(const LayoutRect& visualRect) const;
   CellSpan dirtiedEffectiveColumns(const LayoutRect& visualRect) const;
-
   const HashSet<LayoutTableCell*>& overflowingCells() const {
     return m_overflowingCells;
   }
@@ -412,6 +400,11 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   }
 
   void computeOverflowFromCells(unsigned totalRows, unsigned nEffCols);
+
+  CellSpan fullTableRowSpan() const { return CellSpan(0, m_grid.size()); }
+  CellSpan fullTableEffectiveColumnSpan() const {
+    return CellSpan(0, table()->numEffectiveColumns());
+  }
 
   // These two functions take a rectangle as input that has been flipped by
   // logicalRectForWritingModeAndDirection.

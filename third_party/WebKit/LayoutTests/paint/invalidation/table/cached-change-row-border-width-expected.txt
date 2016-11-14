@@ -7,11 +7,6 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutTable TABLE",
-          "rect": [8, 8, 60, 103],
-          "reason": "invalidate paint rectangle"
-        },
-        {
           "object": "LayoutTableCell TD",
           "rect": [8, 8, 60, 54],
           "reason": "forced by layout"
@@ -46,8 +41,12 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutTable TABLE",
-      "reason": "invalidate paint rectangle"
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
     },
     {
       "object": "LayoutTable TABLE",

@@ -1287,7 +1287,6 @@ source_set("unit_tests") {
     "paint/SVGInlineTextBoxPainterTest.cpp",
     "paint/StubChromeClientForSPv2.h",
     "paint/TableCellPainterTest.cpp",
-    "paint/TablePainterTest.cpp",
     "paint/TextPainterTest.cpp",
     "paint/VideoPainterTest.cpp",
     "streams/ReadableStreamOperationsTest.cpp",
