@@ -5470,21 +5470,6 @@ create_menu(struct display *display,
 	return menu;
 }
 
-struct window *
-window_create_menu(struct display *display,
-		   struct input *input, uint32_t time,
-		   menu_func_t func, const char **entries, int count,
-		   void *user_data)
-{
-	struct menu *menu;
-	menu = create_menu(display, input, time, func, entries, count, user_data);
-
-	if (menu == NULL)
-		return NULL;
-
-	return menu->window;
-}
-
 static struct zxdg_positioner_v6 *
 create_simple_positioner(struct display *display,
 			 int x, int y, int w, int h)
