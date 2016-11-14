@@ -311,12 +311,7 @@ static int IndexOf(const MostVisitedURLList& urls, const GURL& url) {
 
 void TopSitesImpl::SyncWithHistory() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (loaded_ && temp_images_.size()) {
-    // If we have temporary thumbnails it means there isn't much data, and most
-    // likely the user is first running Chrome. During this time we throttle
-    // updating from history by 30 seconds. If the user creates a new tab page
-    // during this window of time we force updating from history so that the new
-    // tab page isn't so far out of date.
+  if (loaded_) {
     timer_.Stop();
     StartQueryForMostVisited();
   }
