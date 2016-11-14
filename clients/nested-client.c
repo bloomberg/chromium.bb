@@ -345,6 +345,8 @@ nested_client_destroy(struct nested_client *client)
 	wl_registry_destroy(client->registry);
 	wl_display_flush(client->display);
 	wl_display_disconnect(client->display);
+	eglTerminate(client->egl_display);
+	eglReleaseThread();
 }
 
 int
