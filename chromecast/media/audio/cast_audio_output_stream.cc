@@ -122,6 +122,12 @@ class CastAudioOutputStream::Backend
     decoder_->SetVolume(volume);
   }
 
+  MediaPipelineBackend::AudioDecoder::RenderingDelay GetRenderingDelay() {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(decoder_);
+    return decoder_->GetRenderingDelay();
+  }
+
  private:
   // MediaPipelineBackend::Decoder::Delegate implementation
   void OnPushBufferComplete(BufferStatus status) override {
@@ -270,12 +276,16 @@ void CastAudioOutputStream::PushBuffer() {
     return;
   }
 
-  const base::TimeTicks now = base::TimeTicks::Now();
-  base::TimeDelta queue_delay =
-      std::max(base::TimeDelta(), next_push_time_ - now);
+  MediaPipelineBackend::AudioDecoder::RenderingDelay rendering_delay =
+      backend_->GetRenderingDelay();
+  base::TimeDelta delay =
+      base::TimeDelta::FromMicroseconds(rendering_delay.delay_microseconds);
+  base::TimeTicks delay_timestamp =
+      base::TimeTicks() +
+      base::TimeDelta::FromMicroseconds(rendering_delay.timestamp_microseconds);
   int frame_count =
-      source_callback_->OnMoreData(queue_delay, now, 0, audio_bus_.get());
-  VLOG(3) << "frames_filled=" << frame_count << " with latency=" << queue_delay;
+      source_callback_->OnMoreData(delay, delay_timestamp, 0, audio_bus_.get());
+  VLOG(3) << "frames_filled=" << frame_count << " with latency=" << delay;
 
   DCHECK_EQ(frame_count, audio_bus_->frames());
   DCHECK_EQ(static_cast<int>(decoder_buffer_->data_size()),

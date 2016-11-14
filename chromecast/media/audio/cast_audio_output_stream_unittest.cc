@@ -4,21 +4,38 @@
 
 #include "chromecast/media/audio/cast_audio_output_stream.h"
 
+#include <stdint.h>
+
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/time/time.h"
 #include "chromecast/base/metrics/cast_metrics_test_helper.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/public/media/cast_decoder_buffer.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::Invoke;
+using ::testing::_;
 
 namespace chromecast {
 namespace media {
 namespace {
 const char kDefaultDeviceId[] = "";
+const int64_t kDelayUs = 123;
+const int64_t kDelayTimestampUs = 123456789;
+
+int OnMoreData(base::TimeDelta /* delay */,
+               base::TimeTicks /* delay_timestamp */,
+               int /* prior_frames_skipped */,
+               ::media::AudioBus* dest) {
+  dest->Zero();
+  return dest->frames();
+}
 
 class FakeAudioDecoder : public MediaPipelineBackend::AudioDecoder {
  public:
@@ -73,7 +90,7 @@ class FakeAudioDecoder : public MediaPipelineBackend::AudioDecoder {
     volume_ = volume;
     return true;
   }
-  RenderingDelay GetRenderingDelay() override { return RenderingDelay(); }
+  RenderingDelay GetRenderingDelay() override { return rendering_delay_; }
 
   const AudioConfig& config() const { return config_; }
   float volume() const { return volume_; }
@@ -83,6 +100,9 @@ class FakeAudioDecoder : public MediaPipelineBackend::AudioDecoder {
       delegate_->OnPushBufferComplete(MediaPipelineBackend::kBufferSuccess);
     }
     pipeline_status_ = status;
+  }
+  void set_rendering_delay(RenderingDelay rendering_delay) {
+    rendering_delay_ = rendering_delay;
   }
   unsigned pushed_buffer_count() const { return pushed_buffer_count_; }
   CastDecoderBuffer* last_buffer() { return last_buffer_; }
@@ -96,6 +116,7 @@ class FakeAudioDecoder : public MediaPipelineBackend::AudioDecoder {
   int pushed_buffer_count_;
   CastDecoderBuffer* last_buffer_;
   Delegate* delegate_;
+  RenderingDelay rendering_delay_;
 };
 
 class FakeMediaPipelineBackend : public MediaPipelineBackend {
@@ -147,25 +168,13 @@ class FakeMediaPipelineBackend : public MediaPipelineBackend {
   std::unique_ptr<FakeAudioDecoder> audio_decoder_;
 };
 
-class FakeAudioSourceCallback
+class MockAudioSourceCallback
     : public ::media::AudioOutputStream::AudioSourceCallback {
  public:
-  FakeAudioSourceCallback() : error_(false) {}
-
-  bool error() const { return error_; }
-
   // ::media::AudioOutputStream::AudioSourceCallback overrides.
-  int OnMoreData(base::TimeDelta /* delay */,
-                 base::TimeTicks /* delay_timestamp */,
-                 int /* prior_frames_skipped */,
-                 ::media::AudioBus* dest) override {
-    dest->Zero();
-    return dest->frames();
-  }
-  void OnError(::media::AudioOutputStream* stream) override { error_ = true; }
-
- private:
-  bool error_;
+  MOCK_METHOD4(OnMoreData,
+               int(base::TimeDelta, base::TimeTicks, int, ::media::AudioBus*));
+  MOCK_METHOD1(OnError, void(::media::AudioOutputStream*));
 };
 
 class FakeAudioManager : public CastAudioManager {
@@ -348,8 +357,9 @@ TEST_F(CastAudioOutputStreamTest, DeviceState) {
   ASSERT_TRUE(backend);
   EXPECT_EQ(FakeMediaPipelineBackend::kStateStopped, backend->state());
 
-  std::unique_ptr<FakeAudioSourceCallback> source_callback(
-      new FakeAudioSourceCallback);
+  auto source_callback(base::MakeUnique<MockAudioSourceCallback>());
+  ON_CALL(*source_callback, OnMoreData(_, _, _, _))
+      .WillByDefault(Invoke(OnMoreData));
   stream->Start(source_callback.get());
   EXPECT_EQ(FakeMediaPipelineBackend::kStateRunning, backend->state());
 
@@ -371,8 +381,11 @@ TEST_F(CastAudioOutputStreamTest, PushFrame) {
   EXPECT_EQ(0u, audio_decoder->pushed_buffer_count());
   EXPECT_FALSE(audio_decoder->last_buffer());
 
-  std::unique_ptr<FakeAudioSourceCallback> source_callback(
-      new FakeAudioSourceCallback);
+  auto source_callback(base::MakeUnique<MockAudioSourceCallback>());
+  ON_CALL(*source_callback, OnMoreData(_, _, _, _))
+      .WillByDefault(Invoke(OnMoreData));
+  // No error must be reported to source callback.
+  EXPECT_CALL(*source_callback, OnError(_)).Times(0);
   stream->Start(source_callback.get());
   RunMessageLoopFor(2);
   stream->Stop();
@@ -391,9 +404,6 @@ TEST_F(CastAudioOutputStreamTest, PushFrame) {
   EXPECT_FALSE(buffer->decrypt_config());  // Null because of raw audio.
   EXPECT_FALSE(buffer->end_of_stream());
 
-  // No error must be reported to source callback.
-  EXPECT_FALSE(source_callback->error());
-
   stream->Close();
 }
 
@@ -406,14 +416,15 @@ TEST_F(CastAudioOutputStreamTest, DeviceBusy) {
   ASSERT_TRUE(audio_decoder);
   audio_decoder->set_pipeline_status(FakeAudioDecoder::PIPELINE_STATUS_BUSY);
 
-  std::unique_ptr<FakeAudioSourceCallback> source_callback(
-      new FakeAudioSourceCallback);
+  auto source_callback(base::MakeUnique<MockAudioSourceCallback>());
+  ON_CALL(*source_callback, OnMoreData(_, _, _, _))
+      .WillByDefault(Invoke(OnMoreData));
+  // No error must be reported to source callback.
+  EXPECT_CALL(*source_callback, OnError(_)).Times(0);
   stream->Start(source_callback.get());
   RunMessageLoopFor(5);
   // Make sure that one frame was pushed.
   EXPECT_EQ(1u, audio_decoder->pushed_buffer_count());
-  // No error must be reported to source callback.
-  EXPECT_FALSE(source_callback->error());
 
   // Sleep for a few frames and verify that more frames were not pushed
   // because the backend device was busy.
@@ -424,7 +435,6 @@ TEST_F(CastAudioOutputStreamTest, DeviceBusy) {
   audio_decoder->set_pipeline_status(FakeAudioDecoder::PIPELINE_STATUS_OK);
   RunMessageLoopFor(5);
   EXPECT_LT(1u, audio_decoder->pushed_buffer_count());
-  EXPECT_FALSE(source_callback->error());
 
   stream->Stop();
   stream->Close();
@@ -439,14 +449,15 @@ TEST_F(CastAudioOutputStreamTest, DeviceError) {
   ASSERT_TRUE(audio_decoder);
   audio_decoder->set_pipeline_status(FakeAudioDecoder::PIPELINE_STATUS_ERROR);
 
-  std::unique_ptr<FakeAudioSourceCallback> source_callback(
-      new FakeAudioSourceCallback);
+  auto source_callback(base::MakeUnique<MockAudioSourceCallback>());
+  ON_CALL(*source_callback, OnMoreData(_, _, _, _))
+      .WillByDefault(Invoke(OnMoreData));
+  // AudioOutputStream must report error to source callback.
+  EXPECT_CALL(*source_callback, OnError(_));
   stream->Start(source_callback.get());
   RunMessageLoopFor(2);
   // Make sure that AudioOutputStream attempted to push the initial frame.
   EXPECT_LT(0u, audio_decoder->pushed_buffer_count());
-  // AudioOutputStream must report error to source callback.
-  EXPECT_TRUE(source_callback->error());
 
   stream->Stop();
   stream->Close();
@@ -462,15 +473,16 @@ TEST_F(CastAudioOutputStreamTest, DeviceAsyncError) {
   audio_decoder->set_pipeline_status(
       FakeAudioDecoder::PIPELINE_STATUS_ASYNC_ERROR);
 
-  std::unique_ptr<FakeAudioSourceCallback> source_callback(
-      new FakeAudioSourceCallback);
+  auto source_callback(base::MakeUnique<MockAudioSourceCallback>());
+  ON_CALL(*source_callback, OnMoreData(_, _, _, _))
+      .WillByDefault(Invoke(OnMoreData));
+  // AudioOutputStream must report error to source callback.
+  EXPECT_CALL(*source_callback, OnError(_));
   stream->Start(source_callback.get());
   RunMessageLoopFor(5);
 
   // Make sure that one frame was pushed.
   EXPECT_EQ(1u, audio_decoder->pushed_buffer_count());
-  // AudioOutputStream must report error to source callback.
-  EXPECT_TRUE(source_callback->error());
 
   stream->Stop();
   stream->Close();
@@ -501,8 +513,9 @@ TEST_F(CastAudioOutputStreamTest, StartStopStart) {
   ASSERT_TRUE(stream);
   ASSERT_TRUE(stream->Open());
 
-  std::unique_ptr<FakeAudioSourceCallback> source_callback(
-      new FakeAudioSourceCallback);
+  auto source_callback(base::MakeUnique<MockAudioSourceCallback>());
+  ON_CALL(*source_callback, OnMoreData(_, _, _, _))
+      .WillByDefault(Invoke(OnMoreData));
   stream->Start(source_callback.get());
   RunMessageLoopFor(2);
   stream->Stop();
@@ -520,6 +533,30 @@ TEST_F(CastAudioOutputStreamTest, CloseWithoutStart) {
   ::media::AudioOutputStream* stream = CreateStream();
   ASSERT_TRUE(stream);
   ASSERT_TRUE(stream->Open());
+  stream->Close();
+}
+
+TEST_F(CastAudioOutputStreamTest, AudioDelay) {
+  ::media::AudioOutputStream* stream = CreateStream();
+  ASSERT_TRUE(stream);
+  ASSERT_TRUE(stream->Open());
+
+  FakeAudioDecoder* audio_decoder = GetAudio();
+  ASSERT_TRUE(audio_decoder);
+  audio_decoder->set_rendering_delay(
+      MediaPipelineBackend::AudioDecoder::RenderingDelay(kDelayUs,
+                                                         kDelayTimestampUs));
+
+  auto source_callback(base::MakeUnique<MockAudioSourceCallback>());
+  const base::TimeDelta delay(base::TimeDelta::FromMicroseconds(kDelayUs));
+  const base::TimeTicks delay_timestamp(
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(kDelayTimestampUs));
+  EXPECT_CALL(*source_callback, OnMoreData(delay, delay_timestamp, _, _))
+      .WillRepeatedly(Invoke(OnMoreData));
+
+  stream->Start(source_callback.get());
+  RunMessageLoopFor(2);
+  stream->Stop();
   stream->Close();
 }
 
