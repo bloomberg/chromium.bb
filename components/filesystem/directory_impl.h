@@ -31,41 +31,40 @@ class DirectoryImpl : public mojom::Directory {
 
   // |Directory| implementation:
   void Read(const ReadCallback& callback) override;
-  void OpenFile(const mojo::String& path,
+  void OpenFile(const std::string& path,
                 mojom::FileRequest file,
                 uint32_t open_flags,
                 const OpenFileCallback& callback) override;
-  void OpenFileHandle(const mojo::String& path,
+  void OpenFileHandle(const std::string& path,
                       uint32_t open_flags,
                       const OpenFileHandleCallback& callback) override;
-  void OpenFileHandles(mojo::Array<mojom::FileOpenDetailsPtr> details,
+  void OpenFileHandles(std::vector<mojom::FileOpenDetailsPtr> details,
                        const OpenFileHandlesCallback& callback) override;
-  void OpenDirectory(const mojo::String& path,
+  void OpenDirectory(const std::string& path,
                      mojom::DirectoryRequest directory,
                      uint32_t open_flags,
                      const OpenDirectoryCallback& callback) override;
-  void Rename(const mojo::String& path,
-              const mojo::String& new_path,
+  void Rename(const std::string& path,
+              const std::string& new_path,
               const RenameCallback& callback) override;
-  void Delete(const mojo::String& path,
+  void Delete(const std::string& path,
               uint32_t delete_flags,
               const DeleteCallback& callback) override;
-  void Exists(const mojo::String& path,
-              const ExistsCallback& callback) override;
-  void IsWritable(const mojo::String& path,
+  void Exists(const std::string& path, const ExistsCallback& callback) override;
+  void IsWritable(const std::string& path,
                   const IsWritableCallback& callback) override;
   void Flush(const FlushCallback& callback) override;
-  void StatFile(const mojo::String& path,
+  void StatFile(const std::string& path,
                 const StatFileCallback& callback) override;
   void Clone(mojom::DirectoryRequest directory) override;
-  void ReadEntireFile(const mojo::String& path,
+  void ReadEntireFile(const std::string& path,
                       const ReadEntireFileCallback& callback) override;
-  void WriteFile(const mojo::String& path,
-                 mojo::Array<uint8_t> data,
+  void WriteFile(const std::string& path,
+                 const std::vector<uint8_t>& data,
                  const WriteFileCallback& callback) override;
 
  private:
-  mojo::ScopedHandle OpenFileHandleImpl(const mojo::String& raw_path,
+  mojo::ScopedHandle OpenFileHandleImpl(const std::string& raw_path,
                                         uint32_t open_flags,
                                         mojom::FileError* error);
 

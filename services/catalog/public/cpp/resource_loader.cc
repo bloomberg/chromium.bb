@@ -33,8 +33,7 @@ ResourceLoader::~ResourceLoader() {}
 
 bool ResourceLoader::OpenFiles(filesystem::mojom::DirectoryPtr directory,
                                const std::set<std::string>& paths) {
-  mojo::Array<filesystem::mojom::FileOpenDetailsPtr> details(
-      mojo::Array<filesystem::mojom::FileOpenDetailsPtr>::New(paths.size()));
+  std::vector<filesystem::mojom::FileOpenDetailsPtr> details(paths.size());
   size_t i = 0;
   for (const auto& path : paths) {
     filesystem::mojom::FileOpenDetailsPtr open_details(
@@ -45,8 +44,7 @@ bool ResourceLoader::OpenFiles(filesystem::mojom::DirectoryPtr directory,
     details[i++] = std::move(open_details);
   }
 
-  mojo::Array<filesystem::mojom::FileOpenResultPtr> results(
-      mojo::Array<filesystem::mojom::FileOpenResultPtr>::New(paths.size()));
+  std::vector<filesystem::mojom::FileOpenResultPtr> results;
   if (!directory->OpenFileHandles(std::move(details), &results))
     return false;
 

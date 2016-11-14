@@ -20,10 +20,10 @@ namespace filesystem {
 // |ERROR_OK| if valid, else the standard/recommended error for the validation
 // error):
 
-// Checks if |path|, which must be non-null, is (looks like) a valid (relative)
-// path. (On failure, returns |ERROR_INVALID_ARGUMENT| if |path| is not UTF-8,
-// or |ERROR_PERMISSION_DENIED| if it is not relative.)
-mojom::FileError IsPathValid(const mojo::String& path);
+// Checks if |path| is (looks like) a valid (relative) path. (On failure,
+// returns |ERROR_INVALID_ARGUMENT| if |path| is not UTF-8, or
+// |ERROR_PERMISSION_DENIED| if it is not relative.)
+mojom::FileError IsPathValid(const std::string& path);
 
 // Checks if |whence| is a valid (known) |Whence| value. (On failure, returns
 // |ERROR_UNIMPLEMENTED|.)
@@ -44,7 +44,7 @@ mojom::FileError GetError(const base::File& file);
 mojom::FileInformationPtr MakeFileInformation(const base::File::Info& info);
 
 // Creates an absolute file path and ensures that we don't try to traverse up.
-mojom::FileError ValidatePath(const mojo::String& raw_path,
+mojom::FileError ValidatePath(const std::string& raw_path,
                               const base::FilePath& filesystem_base,
                               base::FilePath* out);
 

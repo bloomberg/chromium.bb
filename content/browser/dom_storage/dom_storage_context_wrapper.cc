@@ -167,11 +167,10 @@ void DOMStorageContextWrapper::MojoState::OpenLocalStorage(
       // We were given a subdirectory to write to. Get it and use a disk backed
       // database.
       file_service_connection_->GetInterface(&file_system_);
-      file_system_->GetSubDirectory(
-          mojo::String::From(subdirectory_.AsUTF8Unsafe()),
-          GetProxy(&directory_),
-          base::Bind(&MojoState::OnDirectoryOpened,
-                     weak_ptr_factory_.GetWeakPtr()));
+      file_system_->GetSubDirectory(subdirectory_.AsUTF8Unsafe(),
+                                    GetProxy(&directory_),
+                                    base::Bind(&MojoState::OnDirectoryOpened,
+                                               weak_ptr_factory_.GetWeakPtr()));
     } else {
       // We were not given a subdirectory. Use a memory backed database.
       file_service_connection_->GetInterface(&leveldb_service_);

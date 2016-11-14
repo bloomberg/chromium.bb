@@ -43,9 +43,8 @@ TEST_F(FileImplTest, CreateWriteCloseRenameOpenRead) {
     bytes_to_write.push_back(static_cast<uint8_t>('o'));
     error = mojom::FileError::FAILED;
     uint32_t num_bytes_written = 0;
-    handled =
-        file->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
-                    mojom::Whence::FROM_CURRENT, &error, &num_bytes_written);
+    handled = file->Write(bytes_to_write, 0, mojom::Whence::FROM_CURRENT,
+                          &error, &num_bytes_written);
     ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);
     EXPECT_EQ(bytes_to_write.size(), num_bytes_written);
@@ -74,15 +73,16 @@ TEST_F(FileImplTest, CreateWriteCloseRenameOpenRead) {
     EXPECT_EQ(mojom::FileError::OK, error);
 
     // Read from it.
-    mojo::Array<uint8_t> bytes_read;
+    base::Optional<std::vector<uint8_t>> bytes_read;
     error = mojom::FileError::FAILED;
     handled = file->Read(3, 1, mojom::Whence::FROM_BEGIN, &error, &bytes_read);
     ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);
-    ASSERT_EQ(3u, bytes_read.size());
-    EXPECT_EQ(static_cast<uint8_t>('e'), bytes_read[0]);
-    EXPECT_EQ(static_cast<uint8_t>('l'), bytes_read[1]);
-    EXPECT_EQ(static_cast<uint8_t>('l'), bytes_read[2]);
+    ASSERT_TRUE(bytes_read.has_value());
+    ASSERT_EQ(3u, bytes_read.value().size());
+    EXPECT_EQ(static_cast<uint8_t>('e'), bytes_read.value()[0]);
+    EXPECT_EQ(static_cast<uint8_t>('l'), bytes_read.value()[1]);
+    EXPECT_EQ(static_cast<uint8_t>('l'), bytes_read.value()[2]);
   }
 
   // TODO(vtl): Test read/write offset options.
@@ -113,9 +113,8 @@ TEST_F(FileImplTest, CantWriteInReadMode) {
     // Write to it.
     error = mojom::FileError::FAILED;
     uint32_t num_bytes_written = 0;
-    handled =
-        file->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
-                    mojom::Whence::FROM_CURRENT, &error, &num_bytes_written);
+    handled = file->Write(bytes_to_write, 0, mojom::Whence::FROM_CURRENT,
+                          &error, &num_bytes_written);
     ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);
     EXPECT_EQ(bytes_to_write.size(), num_bytes_written);
@@ -140,9 +139,8 @@ TEST_F(FileImplTest, CantWriteInReadMode) {
     // Try to write in read mode; it should fail.
     error = mojom::FileError::OK;
     uint32_t num_bytes_written = 0;
-    handled =
-        file->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
-                    mojom::Whence::FROM_CURRENT, &error, &num_bytes_written);
+    handled = file->Write(bytes_to_write, 0, mojom::Whence::FROM_CURRENT,
+                          &error, &num_bytes_written);
 
     ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::FAILED, error);
@@ -180,9 +178,8 @@ TEST_F(FileImplTest, OpenInAppendMode) {
     bytes_to_write.push_back(static_cast<uint8_t>('o'));
     error = mojom::FileError::FAILED;
     uint32_t num_bytes_written = 0;
-    handled =
-        file->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
-                    mojom::Whence::FROM_CURRENT, &error, &num_bytes_written);
+    handled = file->Write(bytes_to_write, 0, mojom::Whence::FROM_CURRENT,
+                          &error, &num_bytes_written);
     ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);
     EXPECT_EQ(bytes_to_write.size(), num_bytes_written);
@@ -215,9 +212,8 @@ TEST_F(FileImplTest, OpenInAppendMode) {
     bytes_to_write.push_back(static_cast<uint8_t>('e'));
     error = mojom::FileError::FAILED;
     uint32_t num_bytes_written = 0;
-    handled =
-        file->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
-                    mojom::Whence::FROM_CURRENT, &error, &num_bytes_written);
+    handled = file->Write(bytes_to_write, 0, mojom::Whence::FROM_CURRENT,
+                          &error, &num_bytes_written);
     ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);
     EXPECT_EQ(bytes_to_write.size(), num_bytes_written);
@@ -240,16 +236,17 @@ TEST_F(FileImplTest, OpenInAppendMode) {
     EXPECT_EQ(mojom::FileError::OK, error);
 
     // Read from it.
-    mojo::Array<uint8_t> bytes_read;
+    base::Optional<std::vector<uint8_t>> bytes_read;
     error = mojom::FileError::FAILED;
     handled = file->Read(12, 0, mojom::Whence::FROM_BEGIN, &error, &bytes_read);
     ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);
-    ASSERT_EQ(12u, bytes_read.size());
-    EXPECT_EQ(static_cast<uint8_t>('l'), bytes_read[3]);
-    EXPECT_EQ(static_cast<uint8_t>('o'), bytes_read[4]);
-    EXPECT_EQ(static_cast<uint8_t>('g'), bytes_read[5]);
-    EXPECT_EQ(static_cast<uint8_t>('o'), bytes_read[6]);
+    ASSERT_TRUE(bytes_read.has_value());
+    ASSERT_EQ(12u, bytes_read.value().size());
+    EXPECT_EQ(static_cast<uint8_t>('l'), bytes_read.value()[3]);
+    EXPECT_EQ(static_cast<uint8_t>('o'), bytes_read.value()[4]);
+    EXPECT_EQ(static_cast<uint8_t>('g'), bytes_read.value()[5]);
+    EXPECT_EQ(static_cast<uint8_t>('o'), bytes_read.value()[6]);
   }
 }
 
@@ -277,9 +274,8 @@ TEST_F(FileImplTest, OpenInTruncateMode) {
     bytes_to_write.push_back(static_cast<uint8_t>('o'));
     error = mojom::FileError::FAILED;
     uint32_t num_bytes_written = 0;
-    handled =
-        file->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
-                    mojom::Whence::FROM_CURRENT, &error, &num_bytes_written);
+    handled = file->Write(bytes_to_write, 0, mojom::Whence::FROM_CURRENT,
+                          &error, &num_bytes_written);
     ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);
     EXPECT_EQ(bytes_to_write.size(), num_bytes_written);
@@ -312,9 +308,8 @@ TEST_F(FileImplTest, OpenInTruncateMode) {
     bytes_to_write.push_back(static_cast<uint8_t>('e'));
     error = mojom::FileError::FAILED;
     uint32_t num_bytes_written = 0;
-    handled =
-        file->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
-                    mojom::Whence::FROM_CURRENT, &error, &num_bytes_written);
+    handled = file->Write(bytes_to_write, 0, mojom::Whence::FROM_CURRENT,
+                          &error, &num_bytes_written);
     ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);
     EXPECT_EQ(bytes_to_write.size(), num_bytes_written);
@@ -337,16 +332,17 @@ TEST_F(FileImplTest, OpenInTruncateMode) {
     EXPECT_EQ(mojom::FileError::OK, error);
 
     // Read from it.
-    mojo::Array<uint8_t> bytes_read;
+    base::Optional<std::vector<uint8_t>> bytes_read;
     error = mojom::FileError::FAILED;
     handled = file->Read(7, 0, mojom::Whence::FROM_BEGIN, &error, &bytes_read);
     ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);
-    ASSERT_EQ(7u, bytes_read.size());
-    EXPECT_EQ(static_cast<uint8_t>('g'), bytes_read[0]);
-    EXPECT_EQ(static_cast<uint8_t>('o'), bytes_read[1]);
-    EXPECT_EQ(static_cast<uint8_t>('o'), bytes_read[2]);
-    EXPECT_EQ(static_cast<uint8_t>('d'), bytes_read[3]);
+    ASSERT_TRUE(bytes_read.has_value());
+    ASSERT_EQ(7u, bytes_read.value().size());
+    EXPECT_EQ(static_cast<uint8_t>('g'), bytes_read.value()[0]);
+    EXPECT_EQ(static_cast<uint8_t>('o'), bytes_read.value()[1]);
+    EXPECT_EQ(static_cast<uint8_t>('o'), bytes_read.value()[2]);
+    EXPECT_EQ(static_cast<uint8_t>('d'), bytes_read.value()[3]);
   }
 }
 
@@ -441,9 +437,8 @@ TEST_F(FileImplTest, TellSeek) {
   std::vector<uint8_t> bytes_to_write(1000, '!');
   error = mojom::FileError::FAILED;
   uint32_t num_bytes_written = 0;
-  handled =
-      file->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
-                  mojom::Whence::FROM_CURRENT, &error, &num_bytes_written);
+  handled = file->Write(bytes_to_write, 0, mojom::Whence::FROM_CURRENT, &error,
+                        &num_bytes_written);
   ASSERT_TRUE(handled);
   EXPECT_EQ(mojom::FileError::OK, error);
   EXPECT_EQ(bytes_to_write.size(), num_bytes_written);
@@ -533,9 +528,8 @@ TEST_F(FileImplTest, Dup) {
   bytes_to_write.push_back(static_cast<uint8_t>('o'));
   error = mojom::FileError::FAILED;
   uint32_t num_bytes_written = 0;
-  handled =
-      file1->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
-                   mojom::Whence::FROM_CURRENT, &error, &num_bytes_written);
+  handled = file1->Write(bytes_to_write, 0, mojom::Whence::FROM_CURRENT, &error,
+                         &num_bytes_written);
   ASSERT_TRUE(handled);
   EXPECT_EQ(mojom::FileError::OK, error);
   EXPECT_EQ(bytes_to_write.size(), num_bytes_written);
@@ -565,9 +559,8 @@ TEST_F(FileImplTest, Dup) {
   more_bytes_to_write.push_back(static_cast<uint8_t>('d'));
   error = mojom::FileError::FAILED;
   num_bytes_written = 0;
-  handled =
-      file2->Write(mojo::Array<uint8_t>::From(more_bytes_to_write), 0,
-                   mojom::Whence::FROM_CURRENT, &error, &num_bytes_written);
+  handled = file2->Write(more_bytes_to_write, 0, mojom::Whence::FROM_CURRENT,
+                         &error, &num_bytes_written);
   ASSERT_TRUE(handled);
   EXPECT_EQ(mojom::FileError::OK, error);
   EXPECT_EQ(more_bytes_to_write.size(), num_bytes_written);
@@ -588,16 +581,17 @@ TEST_F(FileImplTest, Dup) {
   EXPECT_EQ(mojom::FileError::OK, error);
 
   // Read everything using |file2|.
-  mojo::Array<uint8_t> bytes_read;
+  base::Optional<std::vector<uint8_t>> bytes_read;
   error = mojom::FileError::FAILED;
   handled =
       file2->Read(1000, 0, mojom::Whence::FROM_BEGIN, &error, &bytes_read);
   ASSERT_TRUE(handled);
   EXPECT_EQ(mojom::FileError::OK, error);
-  ASSERT_EQ(static_cast<size_t>(end_world_pos), bytes_read.size());
+  ASSERT_TRUE(bytes_read.has_value());
+  ASSERT_EQ(static_cast<size_t>(end_world_pos), bytes_read.value().size());
   // Just check the first and last bytes.
-  EXPECT_EQ(static_cast<uint8_t>('h'), bytes_read[0]);
-  EXPECT_EQ(static_cast<uint8_t>('d'), bytes_read[end_world_pos - 1]);
+  EXPECT_EQ(static_cast<uint8_t>('h'), bytes_read.value()[0]);
+  EXPECT_EQ(static_cast<uint8_t>('d'), bytes_read.value()[end_world_pos - 1]);
 
   // TODO(vtl): Test that |file2| has the same open options as |file1|.
 }
@@ -623,9 +617,8 @@ TEST_F(FileImplTest, Truncate) {
   std::vector<uint8_t> bytes_to_write(kInitialSize, '!');
   error = mojom::FileError::FAILED;
   uint32_t num_bytes_written = 0;
-  handled =
-      file->Write(mojo::Array<uint8_t>::From(bytes_to_write), 0,
-                  mojom::Whence::FROM_CURRENT, &error, &num_bytes_written);
+  handled = file->Write(bytes_to_write, 0, mojom::Whence::FROM_CURRENT, &error,
+                        &num_bytes_written);
   ASSERT_TRUE(handled);
   EXPECT_EQ(mojom::FileError::OK, error);
   EXPECT_EQ(kInitialSize, num_bytes_written);
@@ -700,17 +693,18 @@ TEST_F(FileImplTest, AsHandle) {
     EXPECT_EQ(mojom::FileError::OK, error);
 
     // Verify that we wrote data raw on the file descriptor.
-    mojo::Array<uint8_t> bytes_read;
+    base::Optional<std::vector<uint8_t>> bytes_read;
     error = mojom::FileError::FAILED;
     handled = file2->Read(5, 0, mojom::Whence::FROM_BEGIN, &error, &bytes_read);
     ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);
-    ASSERT_EQ(5u, bytes_read.size());
-    EXPECT_EQ(static_cast<uint8_t>('h'), bytes_read[0]);
-    EXPECT_EQ(static_cast<uint8_t>('e'), bytes_read[1]);
-    EXPECT_EQ(static_cast<uint8_t>('l'), bytes_read[2]);
-    EXPECT_EQ(static_cast<uint8_t>('l'), bytes_read[3]);
-    EXPECT_EQ(static_cast<uint8_t>('o'), bytes_read[4]);
+    ASSERT_TRUE(bytes_read.has_value());
+    ASSERT_EQ(5u, bytes_read.value().size());
+    EXPECT_EQ(static_cast<uint8_t>('h'), bytes_read.value()[0]);
+    EXPECT_EQ(static_cast<uint8_t>('e'), bytes_read.value()[1]);
+    EXPECT_EQ(static_cast<uint8_t>('l'), bytes_read.value()[2]);
+    EXPECT_EQ(static_cast<uint8_t>('l'), bytes_read.value()[3]);
+    EXPECT_EQ(static_cast<uint8_t>('o'), bytes_read.value()[4]);
   }
 }
 

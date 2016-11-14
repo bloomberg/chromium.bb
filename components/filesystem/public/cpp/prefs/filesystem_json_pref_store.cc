@@ -391,7 +391,7 @@ void FilesystemJsonPrefStore::OnPreferencesReadStart() {
 
 void FilesystemJsonPrefStore::OnPreferencesFileRead(
     mojom::FileError err,
-    mojo::Array<uint8_t> contents) {
+    const std::vector<uint8_t>& contents) {
   std::unique_ptr<FilesystemJsonPrefStore::ReadResult> read_result(
       new FilesystemJsonPrefStore::ReadResult);
   // TODO(erg): Needs even better error handling.

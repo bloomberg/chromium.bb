@@ -46,10 +46,11 @@ TEST_F(DirectoryImplTest, Read) {
   EXPECT_EQ(mojom::FileError::OK, error);
 
   error = mojom::FileError::FAILED;
-  mojo::Array<mojom::DirectoryEntryPtr> directory_contents;
+  base::Optional<std::vector<mojom::DirectoryEntryPtr>> directory_contents;
   handled = directory->Read(&error, &directory_contents);
   ASSERT_TRUE(handled);
   EXPECT_EQ(mojom::FileError::OK, error);
+  ASSERT_TRUE(directory_contents.has_value());
 
   // Expected contents of the directory.
   std::map<std::string, mojom::FsFileType> expected_contents;
@@ -59,13 +60,13 @@ TEST_F(DirectoryImplTest, Read) {
   expected_contents["my_dir"] = mojom::FsFileType::DIRECTORY;
   // Note: We don't expose ".." or ".".
 
-  EXPECT_EQ(expected_contents.size(), directory_contents.size());
-  for (size_t i = 0; i < directory_contents.size(); i++) {
-    ASSERT_TRUE(directory_contents[i]);
-    ASSERT_TRUE(directory_contents[i]->name);
-    auto it = expected_contents.find(directory_contents[i]->name.get());
+  EXPECT_EQ(expected_contents.size(), directory_contents->size());
+  for (size_t i = 0; i < directory_contents->size(); i++) {
+    auto& item = directory_contents.value()[i];
+    ASSERT_TRUE(item);
+    auto it = expected_contents.find(item->name);
     ASSERT_TRUE(it != expected_contents.end());
-    EXPECT_EQ(it->second, directory_contents[i]->type);
+    EXPECT_EQ(it->second, item->type);
     expected_contents.erase(it);
   }
 }
@@ -177,12 +178,13 @@ TEST_F(DirectoryImplTest, Clone) {
   }
 
   {
-    mojo::Array<uint8_t> file_contents;
+    std::vector<uint8_t> file_contents;
     bool handled = clone_two->ReadEntireFile("data", &error, &file_contents);
     ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);
 
-    EXPECT_EQ(data, file_contents.To<std::string>());
+    EXPECT_EQ(data,
+              mojo::Array<uint8_t>(std::move(file_contents)).To<std::string>());
   }
 }
 
@@ -200,12 +202,13 @@ TEST_F(DirectoryImplTest, WriteFileReadFile) {
   }
 
   {
-    mojo::Array<uint8_t> file_contents;
+    std::vector<uint8_t> file_contents;
     bool handled = directory->ReadEntireFile("data", &error, &file_contents);
     ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);
 
-    EXPECT_EQ(data, file_contents.To<std::string>());
+    EXPECT_EQ(data,
+              mojo::Array<uint8_t>(std::move(file_contents)).To<std::string>());
   }
 }
 
@@ -215,7 +218,7 @@ TEST_F(DirectoryImplTest, ReadEmptyFileIsNotFoundError) {
   mojom::FileError error;
 
   {
-    mojo::Array<uint8_t> file_contents;
+    std::vector<uint8_t> file_contents;
     bool handled =
         directory->ReadEntireFile("doesnt_exist", &error, &file_contents);
     ASSERT_TRUE(handled);
@@ -241,7 +244,7 @@ TEST_F(DirectoryImplTest, CantReadEntireFileOnADirectory) {
 
   // Try to read it as a file
   {
-    mojo::Array<uint8_t> file_contents;
+    std::vector<uint8_t> file_contents;
     bool handled = directory->ReadEntireFile("my_dir", &error, &file_contents);
     ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::NOT_A_FILE, error);

@@ -148,7 +148,7 @@ class FilesystemJsonPrefStore
   // Asynchronous implementation details of ReadPrefsAsync().
   void OnPreferencesReadStart();
   void OnPreferencesFileRead(mojom::FileError err,
-                             mojo::Array<uint8_t> contents);
+                             const std::vector<uint8_t>& contents);
 
   const std::string path_;
   mojo::Binding<filesystem::mojom::FileSystemClient> binding_;

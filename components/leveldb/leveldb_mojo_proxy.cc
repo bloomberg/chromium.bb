@@ -185,8 +185,8 @@ void LevelDBMojoProxy::OpenFileHandleImpl(OpaqueDir* dir,
                                           base::File* output_file) {
   mojo::ScopedHandle handle;
   filesystem::mojom::FileError error = filesystem::mojom::FileError::FAILED;
-  bool completed = dir->directory->OpenFileHandle(mojo::String::From(name),
-                                                  open_flags, &error, &handle);
+  bool completed =
+      dir->directory->OpenFileHandle(name, open_flags, &error, &handle);
   DCHECK(completed);
 
   if (error != filesystem::mojom::FileError::OK) {
@@ -225,8 +225,7 @@ void LevelDBMojoProxy::FileExistsImpl(OpaqueDir* dir,
                                       std::string name,
                                       bool* exists) {
   filesystem::mojom::FileError error = filesystem::mojom::FileError::FAILED;
-  bool completed =
-      dir->directory->Exists(mojo::String::From(name), &error, exists);
+  bool completed = dir->directory->Exists(name, &error, exists);
   DCHECK(completed);
 }
 
@@ -245,13 +244,14 @@ void LevelDBMojoProxy::GetChildrenImpl(
   if (*out_error != filesystem::mojom::FileError::OK)
     return;
 
-  mojo::Array<filesystem::mojom::DirectoryEntryPtr> directory_contents;
+  base::Optional<std::vector<filesystem::mojom::DirectoryEntryPtr>>
+      directory_contents;
   completed = target->Read(out_error, &directory_contents);
   DCHECK(completed);
 
-  if (!directory_contents.is_null()) {
-    for (size_t i = 0; i < directory_contents.size(); ++i)
-      out_contents->push_back(directory_contents[i]->name.To<std::string>());
+  if (directory_contents.has_value()) {
+    for (size_t i = 0; i < directory_contents->size(); ++i)
+      out_contents->push_back(directory_contents.value()[i]->name);
   }
 }
 
@@ -259,8 +259,7 @@ void LevelDBMojoProxy::DeleteImpl(OpaqueDir* dir,
                                   std::string name,
                                   uint32_t delete_flags,
                                   filesystem::mojom::FileError* out_error) {
-  bool completed =
-      dir->directory->Delete(mojo::String::From(name), delete_flags, out_error);
+  bool completed = dir->directory->Delete(name, delete_flags, out_error);
   DCHECK(completed);
 }
 
@@ -291,8 +290,7 @@ void LevelDBMojoProxy::RenameFileImpl(OpaqueDir* dir,
                                       const std::string& old_path,
                                       const std::string& new_path,
                                       filesystem::mojom::FileError* out_error) {
-  bool completed = dir->directory->Rename(
-      mojo::String::From(old_path), mojo::String::From(new_path), out_error);
+  bool completed = dir->directory->Rename(old_path, new_path, out_error);
   DCHECK(completed);
 }
 
@@ -304,11 +302,11 @@ void LevelDBMojoProxy::LockFileImpl(OpaqueDir* dir,
   // have a persistent file on the other side of the connection.
   filesystem::mojom::FilePtr target;
   filesystem::mojom::FileRequest proxy = GetProxy(&target);
-  bool completed = dir->directory->OpenFile(
-      mojo::String::From(path), std::move(proxy),
-      filesystem::mojom::kFlagOpenAlways | filesystem::mojom::kFlagRead |
-          filesystem::mojom::kFlagWrite,
-      out_error);
+  bool completed = dir->directory->OpenFile(path, std::move(proxy),
+                                            filesystem::mojom::kFlagOpenAlways |
+                                                filesystem::mojom::kFlagRead |
+                                                filesystem::mojom::kFlagWrite,
+                                            out_error);
   DCHECK(completed);
 
   if (*out_error != filesystem::mojom::FileError::OK)

@@ -89,34 +89,34 @@ void FileImpl::Read(uint32_t num_bytes_to_read,
                     mojom::Whence whence,
                     const ReadCallback& callback) {
   if (!file_.IsValid()) {
-    callback.Run(GetError(file_), mojo::Array<uint8_t>());
+    callback.Run(GetError(file_), base::nullopt);
     return;
   }
   if (num_bytes_to_read > kMaxReadSize) {
-    callback.Run(mojom::FileError::INVALID_OPERATION, mojo::Array<uint8_t>());
+    callback.Run(mojom::FileError::INVALID_OPERATION, base::nullopt);
     return;
   }
   mojom::FileError error = IsOffsetValid(offset);
   if (error != mojom::FileError::OK) {
-    callback.Run(error, mojo::Array<uint8_t>());
+    callback.Run(error, base::nullopt);
     return;
   }
   error = IsWhenceValid(whence);
   if (error != mojom::FileError::OK) {
-    callback.Run(error, mojo::Array<uint8_t>());
+    callback.Run(error, base::nullopt);
     return;
   }
 
   if (file_.Seek(static_cast<base::File::Whence>(whence), offset) == -1) {
-    callback.Run(mojom::FileError::FAILED, mojo::Array<uint8_t>());
+    callback.Run(mojom::FileError::FAILED, base::nullopt);
     return;
   }
 
-  mojo::Array<uint8_t> bytes_read(num_bytes_to_read);
+  std::vector<uint8_t> bytes_read(num_bytes_to_read);
   int num_bytes_read = file_.ReadAtCurrentPos(
       reinterpret_cast<char*>(&bytes_read.front()), num_bytes_to_read);
   if (num_bytes_read < 0) {
-    callback.Run(mojom::FileError::FAILED, mojo::Array<uint8_t>());
+    callback.Run(mojom::FileError::FAILED, base::nullopt);
     return;
   }
 
@@ -126,11 +126,10 @@ void FileImpl::Read(uint32_t num_bytes_to_read,
 }
 
 // TODO(vtl): Move the implementation to a thread pool.
-void FileImpl::Write(mojo::Array<uint8_t> bytes_to_write,
+void FileImpl::Write(const std::vector<uint8_t>& bytes_to_write,
                      int64_t offset,
                      mojom::Whence whence,
                      const WriteCallback& callback) {
-  DCHECK(!bytes_to_write.is_null());
   if (!file_.IsValid()) {
     callback.Run(GetError(file_), 0);
     return;
@@ -163,7 +162,7 @@ void FileImpl::Write(mojo::Array<uint8_t> bytes_to_write,
   }
 
   const char* buf = (bytes_to_write.size() > 0)
-                        ? reinterpret_cast<char*>(&bytes_to_write.front())
+                        ? reinterpret_cast<const char*>(&bytes_to_write.front())
                         : nullptr;
   int num_bytes_written = file_.WriteAtCurrentPos(
       buf, static_cast<int>(bytes_to_write.size()));

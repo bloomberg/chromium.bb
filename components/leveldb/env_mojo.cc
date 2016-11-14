@@ -229,8 +229,7 @@ Status MojoEnv::NewSequentialFile(const std::string& fname,
                                   SequentialFile** result) {
   TRACE_EVENT1("leveldb", "MojoEnv::NewSequentialFile", "fname", fname);
   base::File f = thread_->OpenFileHandle(
-      dir_, mojo::String::From(fname),
-      filesystem::mojom::kFlagOpen | filesystem::mojom::kFlagRead);
+      dir_, fname, filesystem::mojom::kFlagOpen | filesystem::mojom::kFlagRead);
   if (!f.IsValid()) {
     *result = nullptr;
     return MakeIOError(fname, "Unable to create sequential file",
@@ -245,8 +244,7 @@ Status MojoEnv::NewRandomAccessFile(const std::string& fname,
                                     RandomAccessFile** result) {
   TRACE_EVENT1("leveldb", "MojoEnv::NewRandomAccessFile", "fname", fname);
   base::File f = thread_->OpenFileHandle(
-      dir_, mojo::String::From(fname),
-      filesystem::mojom::kFlagRead | filesystem::mojom::kFlagOpen);
+      dir_, fname, filesystem::mojom::kFlagRead | filesystem::mojom::kFlagOpen);
   if (!f.IsValid()) {
     *result = nullptr;
     base::File::Error error_code = f.error_details();
@@ -261,9 +259,9 @@ Status MojoEnv::NewRandomAccessFile(const std::string& fname,
 Status MojoEnv::NewWritableFile(const std::string& fname,
                                 WritableFile** result) {
   TRACE_EVENT1("leveldb", "MojoEnv::NewWritableFile", "fname", fname);
-  base::File f = thread_->OpenFileHandle(
-      dir_, mojo::String::From(fname),
-      filesystem::mojom::kCreateAlways | filesystem::mojom::kFlagWrite);
+  base::File f =
+      thread_->OpenFileHandle(dir_, fname, filesystem::mojom::kCreateAlways |
+                                               filesystem::mojom::kFlagWrite);
   if (!f.IsValid()) {
     *result = nullptr;
     return MakeIOError(fname, "Unable to create writable file",
@@ -277,9 +275,9 @@ Status MojoEnv::NewWritableFile(const std::string& fname,
 Status MojoEnv::NewAppendableFile(const std::string& fname,
                                   WritableFile** result) {
   TRACE_EVENT1("leveldb", "MojoEnv::NewAppendableFile", "fname", fname);
-  base::File f = thread_->OpenFileHandle(
-      dir_, mojo::String::From(fname),
-      filesystem::mojom::kFlagOpenAlways | filesystem::mojom::kFlagAppend);
+  base::File f =
+      thread_->OpenFileHandle(dir_, fname, filesystem::mojom::kFlagOpenAlways |
+                                               filesystem::mojom::kFlagAppend);
   if (!f.IsValid()) {
     *result = nullptr;
     return MakeIOError(fname, "Unable to create appendable file",
@@ -338,7 +336,7 @@ Status MojoEnv::LockFile(const std::string& fname, FileLock** lock) {
   TRACE_EVENT1("leveldb", "MojoEnv::LockFile", "fname", fname);
 
   std::pair<filesystem::mojom::FileError, LevelDBMojoProxy::OpaqueLock*> p =
-      thread_->LockFile(dir_, mojo::String::From(fname));
+      thread_->LockFile(dir_, fname);
 
   if (p.second)
     *lock = new MojoFileLock(p.second, fname);
@@ -370,7 +368,7 @@ Status MojoEnv::GetTestDirectory(std::string* path) {
 Status MojoEnv::NewLogger(const std::string& fname, Logger** result) {
   TRACE_EVENT1("leveldb", "MojoEnv::NewLogger", "fname", fname);
   base::File f(thread_->OpenFileHandle(
-      dir_, mojo::String::From(fname),
+      dir_, fname,
       filesystem::mojom::kCreateAlways | filesystem::mojom::kFlagWrite));
   if (!f.IsValid()) {
     *result = NULL;

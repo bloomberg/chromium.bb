@@ -50,7 +50,7 @@ class FileImpl : public mojom::File {
             int64_t offset,
             mojom::Whence whence,
             const ReadCallback& callback) override;
-  void Write(mojo::Array<uint8_t> bytes_to_write,
+  void Write(const std::vector<uint8_t>& bytes_to_write,
              int64_t offset,
              mojom::Whence whence,
              const WriteCallback& callback) override;
