@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/stl_util.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -69,19 +68,20 @@ bool HasVisibleAppWindows(BrowserContext* context,
 }  // namespace
 
 AppFirewallHole::~AppFirewallHole() {
-  manager_->Close(this);
+  if (manager_)
+    manager_->Close(this);
 }
 
-AppFirewallHole::AppFirewallHole(AppFirewallHoleManager* manager,
-                                 PortType type,
-                                 uint16_t port,
-                                 const std::string& extension_id)
+AppFirewallHole::AppFirewallHole(
+    const base::WeakPtr<AppFirewallHoleManager>& manager,
+    PortType type,
+    uint16_t port,
+    const std::string& extension_id)
     : type_(type),
       port_(port),
       extension_id_(extension_id),
       manager_(manager),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 void AppFirewallHole::SetVisible(bool app_visible) {
   app_visible_ = app_visible;
@@ -105,13 +105,11 @@ void AppFirewallHole::OnFirewallHoleOpened(
 }
 
 AppFirewallHoleManager::AppFirewallHoleManager(BrowserContext* context)
-    : context_(context), observer_(this) {
+    : context_(context), observer_(this), weak_factory_(this) {
   observer_.Add(AppWindowRegistry::Get(context));
 }
 
-AppFirewallHoleManager::~AppFirewallHoleManager() {
-  base::STLDeleteValues(&tracked_holes_);
-}
+AppFirewallHoleManager::~AppFirewallHoleManager() {}
 
 AppFirewallHoleManager* AppFirewallHoleManager::Get(BrowserContext* context) {
   return AppFirewallHoleManagerFactory::GetForBrowserContext(context, true);
@@ -121,8 +119,8 @@ std::unique_ptr<AppFirewallHole> AppFirewallHoleManager::Open(
     AppFirewallHole::PortType type,
     uint16_t port,
     const std::string& extension_id) {
-  std::unique_ptr<AppFirewallHole> hole(
-      new AppFirewallHole(this, type, port, extension_id));
+  std::unique_ptr<AppFirewallHole> hole(new AppFirewallHole(
+      weak_factory_.GetWeakPtr(), type, port, extension_id));
   tracked_holes_.insert(std::make_pair(extension_id, hole.get()));
   if (HasVisibleAppWindows(context_, extension_id)) {
     hole->SetVisible(true);
