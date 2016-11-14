@@ -87,7 +87,7 @@ mojo::Array<serial::DeviceInfoPtr> SerialDeviceEnumeratorLinux::GetDevices() {
         info->has_product_id = true;
       }
       if (product_name)
-        info->display_name = product_name;
+        info->display_name.emplace(product_name);
       devices.push_back(std::move(info));
     }
   }

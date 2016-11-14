@@ -89,6 +89,4 @@ mojom("serial_mojo") {
   sources = [
     "serial.mojom",
   ]
-
-  use_new_wrapper_types = false
 }

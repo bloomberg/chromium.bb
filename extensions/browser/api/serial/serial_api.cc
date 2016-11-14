@@ -488,7 +488,7 @@ extensions::api::serial::DeviceInfo TypeConverter<
   if (device->has_product_id)
     info.product_id.reset(new int(static_cast<int>(device->product_id)));
   if (device->display_name)
-    info.display_name.reset(new std::string(device->display_name));
+    info.display_name.reset(new std::string(device->display_name.value()));
   return info;
 }
 

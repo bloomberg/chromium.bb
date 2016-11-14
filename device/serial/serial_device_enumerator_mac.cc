@@ -137,7 +137,7 @@ mojo::Array<serial::DeviceInfoPtr> GetDevicesNew() {
     mojo::String displayName;
     if (GetStringProperty(scoped_device.get(), CFSTR(kUSBProductString),
                           &displayName)) {
-      callout_info->display_name = displayName;
+      callout_info->display_name = displayName.PassStorage();
     }
 
     // Each serial device has two "paths" in /dev/ associated with it: a

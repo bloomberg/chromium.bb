@@ -113,7 +113,7 @@ mojo::Array<serial::DeviceInfoPtr> GetDevicesNew() {
 
     std::string display_name;
     if (GetDisplayName(friendly_name, &display_name))
-      info->display_name = display_name;
+      info->display_name = std::move(display_name);
 
     std::string hardware_id;
     // SPDRP_HARDWAREID looks like "FTDIBUS\COMPORT&VID_0403&PID_6001".
