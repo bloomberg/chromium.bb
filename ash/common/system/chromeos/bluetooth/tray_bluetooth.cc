@@ -107,6 +107,8 @@ const gfx::VectorIcon& GetBluetoothDeviceIcon(
   return ash::kSystemMenuBluetoothIcon;
 }
 
+const int kDisabledPanelLabelBaselineY = 20;
+
 }  // namespace
 
 class BluetoothDefaultView : public TrayItemMore {
@@ -184,7 +186,8 @@ class BluetoothDetailedView : public TrayDetailsView {
         toggle_bluetooth_(nullptr),
         enable_bluetooth_(nullptr),
         toggle_(nullptr),
-        settings_(nullptr) {
+        settings_(nullptr),
+        disabled_panel_(nullptr) {
     CreateItems();
   }
 
@@ -282,11 +285,22 @@ class BluetoothDetailedView : public TrayDetailsView {
 
     SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
     bool bluetooth_enabled = delegate->GetBluetoothEnabled();
-    bool blueooth_available = delegate->GetBluetoothAvailable();
-    if (blueooth_available && !bluetooth_enabled && toggle_bluetooth_) {
+    bool bluetooth_available = delegate->GetBluetoothAvailable();
+    if (bluetooth_available && !bluetooth_enabled && toggle_bluetooth_) {
       enable_bluetooth_ = AddScrollListItem(
           l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ENABLE_BLUETOOTH),
           false /* highlight */, false /* checked */, true /* enabled */);
+    }
+
+    // If Bluetooth is disabled, show a panel which only indicates that it is
+    // disabled, instead of the scroller with Bluetooth devices.
+    if (UseMd()) {
+      if (bluetooth_enabled) {
+        HideDisabledPanel();
+      } else {
+        ShowDisabledPanel();
+        return;
+      }
     }
 
     AppendSameTypeDevicesToScrollList(connected_devices_, true, true,
@@ -302,7 +316,7 @@ class BluetoothDetailedView : public TrayDetailsView {
 
     // Show user Bluetooth state if there is no bluetooth devices in list.
     if (device_map_.size() == 0) {
-      if (blueooth_available && bluetooth_enabled) {
+      if (bluetooth_available && bluetooth_enabled) {
         AddScrollListItem(l10n_util::GetStringUTF16(
                               IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERING),
                           false /* highlight */, false /* checked */,
@@ -532,6 +546,63 @@ class BluetoothDetailedView : public TrayDetailsView {
       ShowProgress(0, false);
   }
 
+  void ShowDisabledPanel() {
+    DCHECK(UseMd());
+    DCHECK(scroller());
+    if (!disabled_panel_) {
+      disabled_panel_ = CreateDisabledPanel();
+      // Insert |disabled_panel_| before the scroller, since the scroller will
+      // have unnecessary bottom border when it is not the last child.
+      AddChildViewAt(disabled_panel_, GetIndexOf(scroller()));
+      // |disabled_panel_| need to fill the remaining space below the title row
+      // so that the inner contents of |disabled_panel_| are placed properly.
+      box_layout()->SetFlexForView(disabled_panel_, 1);
+    }
+    disabled_panel_->SetVisible(true);
+    scroller()->SetVisible(false);
+  }
+
+  void HideDisabledPanel() {
+    DCHECK(UseMd());
+    DCHECK(scroller());
+    if (disabled_panel_)
+      disabled_panel_->SetVisible(false);
+    scroller()->SetVisible(true);
+  }
+
+  views::View* CreateDisabledPanel() {
+    views::View* container = new views::View;
+    views::BoxLayout* box_layout =
+        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
+    box_layout->set_main_axis_alignment(
+        views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
+    container->SetLayoutManager(box_layout);
+
+    TrayPopupItemStyle style(
+        GetNativeTheme(), TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL);
+    style.set_color_style(TrayPopupItemStyle::ColorStyle::DISABLED);
+
+    views::ImageView* image_view = new views::ImageView;
+    image_view->SetImage(gfx::CreateVectorIcon(kSystemMenuBluetoothDisabledIcon,
+                                               style.GetIconColor()));
+    image_view->SetVerticalAlignment(views::ImageView::TRAILING);
+    container->AddChildView(image_view);
+
+    views::Label* label = new views::Label(
+        ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+            IDS_ASH_STATUS_TRAY_BLUETOOTH_DISABLED));
+    style.SetupLabel(label);
+    label->SetBorder(views::CreateEmptyBorder(
+        kDisabledPanelLabelBaselineY - label->GetBaseline(), 0, 0, 0));
+    container->AddChildView(label);
+
+    // Make top padding of the icon equal to the height of the label so that the
+    // icon is vertically aligned to center of the container.
+    image_view->SetBorder(
+        views::CreateEmptyBorder(label->GetPreferredSize().height(), 0, 0, 0));
+    return container;
+  }
+
   LoginStatus login_;
 
   std::map<views::View*, std::string> device_map_;
@@ -556,6 +627,11 @@ class BluetoothDetailedView : public TrayDetailsView {
 
   // Only used in material design.
   views::Button* settings_;
+
+  // Only used in material design.
+  // The container of the message "Bluetooth is disabled" and an icon. It should
+  // be shown instead of Bluetooth device list when Bluetooth is disabled.
+  views::View* disabled_panel_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDetailedView);
 };

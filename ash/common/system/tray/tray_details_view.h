@@ -53,6 +53,9 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   int GetHeightForWidth(int width) const override;
   void OnPaintBorder(gfx::Canvas* canvas) override;
 
+  // Exposes the layout manager of this view to give control to subclasses.
+  views::BoxLayout* box_layout() { return box_layout_; }
+
   // Creates the row containing the back button and title. For material design
   // this appears at the top of the view, for non-material design it appears
   // at the bottom.
