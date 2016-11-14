@@ -88,7 +88,8 @@ exynos_bo_create(struct kms_driver *kms,
 		pitch = (pitch + 512 - 1) & ~(512 - 1);
 		size = pitch * ((height + 4 - 1) & ~(4 - 1));
 	} else {
-		return -EINVAL;
+		ret = -EINVAL;
+		goto err_free;
 	}
 
 	memset(&arg, 0, sizeof(arg));
