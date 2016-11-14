@@ -129,13 +129,11 @@ ChannelNacl::ChannelNacl(const IPC::ChannelHandle& channel_handle,
       mode_(mode),
       waiting_connect_(true),
       pipe_(-1),
-      pipe_name_(channel_handle.name),
       weak_ptr_factory_(this) {
   if (!CreatePipe(channel_handle)) {
     // The pipe may have been closed already.
     const char *modestr = (mode_ & MODE_SERVER_FLAG) ? "server" : "client";
-    LOG(WARNING) << "Unable to create pipe named \"" << channel_handle.name
-                 << "\" in " << modestr << " mode";
+    LOG(WARNING) << "Unable to create pipe in " << modestr << " mode";
   }
 }
 
@@ -148,7 +146,7 @@ bool ChannelNacl::Connect() {
   WillConnect();
 
   if (pipe_ == -1) {
-    DLOG(WARNING) << "Channel creation failed: " << pipe_name_;
+    DLOG(WARNING) << "Channel creation failed";
     return false;
   }
 

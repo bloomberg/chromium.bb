@@ -1324,16 +1324,7 @@ struct FuzzTraits<IPC::ChannelHandle> {
     if (!fuzzer->ShouldGenerate())
       return true;
 
-    // TODO(inferno): Add way to generate real channel handles.
-#if defined(OS_WIN)
-    HANDLE fake_handle = (HANDLE)(RandU64());
-    p->pipe = IPC::ChannelHandle::PipeHandle(fake_handle);
-    return true;
-#elif defined(OS_POSIX)
-    return
-      FuzzParam(&p->name, fuzzer) &&
-      FuzzParam(&p->socket, fuzzer);
-#endif
+    return FuzzParam(&p->mojo_handle, fuzzer);
   }
 };
 

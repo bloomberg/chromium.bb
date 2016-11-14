@@ -21,6 +21,9 @@ class Profile;
 
 namespace base {
 class DictionaryValue;
+#if defined(OS_ANDROID)
+struct FileDescriptor;
+#endif
 }
 
 namespace printing {

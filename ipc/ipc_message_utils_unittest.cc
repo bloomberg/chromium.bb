@@ -150,12 +150,6 @@ TEST(IPCMessageUtilsTest, MojoChannelHandle) {
   base::PickleIterator iter(message);
   IPC::ChannelHandle result_handle;
   EXPECT_TRUE(IPC::ReadParam(&message, &iter, &result_handle));
-  EXPECT_TRUE(result_handle.name.empty());
-#if defined(OS_POSIX)
-  EXPECT_EQ(-1, result_handle.socket.fd);
-#elif defined(OS_WIN)
-  EXPECT_EQ(nullptr, result_handle.pipe.handle);
-#endif
   EXPECT_EQ(channel_handle.mojo_handle, result_handle.mojo_handle);
 }
 

@@ -18,9 +18,8 @@
 #include "ppapi/nacl_irt/plugin_startup.h"
 
 namespace {
-IPC::ChannelHandle MakeIPCHandle(const char* name, int fd) {
-  return IPC::ChannelHandle(name,
-                            base::FileDescriptor(fd, false /* auto_close */));
+IPC::ChannelHandle MakeIPCHandle(int fd) {
+  return IPC::ChannelHandle(base::FileDescriptor(fd, false /* auto_close */));
 }
 }  // namespace
 
@@ -32,10 +31,9 @@ void nacl_irt_start(uint32_t* info) {
 
   // In SFI mode, the FDs of IPC channels are NACL_CHROME_DESC_BASE and its
   // successor, which is set in nacl_listener.cc.
-  ppapi::SetIPCChannelHandles(
-      MakeIPCHandle("NaCl Browser", NACL_CHROME_DESC_BASE),
-      MakeIPCHandle("NaCl Renderer", NACL_CHROME_DESC_BASE + 1),
-      MakeIPCHandle("NaCl Manifest", NACL_CHROME_DESC_BASE + 2));
+  ppapi::SetIPCChannelHandles(MakeIPCHandle(NACL_CHROME_DESC_BASE),
+                              MakeIPCHandle(NACL_CHROME_DESC_BASE + 1),
+                              MakeIPCHandle(NACL_CHROME_DESC_BASE + 2));
   // The Mojo EDK must be initialized before using IPC.
   mojo::edk::Init();
   ppapi::StartUpPlugin();

@@ -245,16 +245,6 @@ class IPC_EXPORT Channel : public Sender {
   static std::string GenerateUniqueRandomChannelID();
 #endif
 
-  // Deprecated: Create a mojo::MessagePipe directly and release() its handles
-  // instead.
-  //
-  // Generates a pair of channel handles that can be used as the client and
-  // server ends of a ChannelMojo. |name_postfix| is ignored.
-  static void GenerateMojoChannelHandlePair(
-      const std::string& name_postfix,
-      IPC::ChannelHandle* handle0,
-      IPC::ChannelHandle* handle1);
-
 #if defined(OS_LINUX)
   // Sandboxed processes live in a PID namespace, so when sending the IPC hello
   // message from client to server we need to send the PID from the global

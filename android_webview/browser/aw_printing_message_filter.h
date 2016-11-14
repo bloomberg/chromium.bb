@@ -8,6 +8,10 @@
 #include "base/macros.h"
 #include "content/public/browser/browser_message_filter.h"
 
+namespace base {
+struct FileDescriptor;
+}
+
 namespace android_webview {
 
 // This class filters out incoming printing related IPC messages for the

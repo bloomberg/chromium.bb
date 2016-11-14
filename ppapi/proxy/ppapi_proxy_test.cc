@@ -547,19 +547,18 @@ void TwoWayTest::SetUp() {
   io_thread_.StartWithOptions(options);
   plugin_thread_.Start();
 
-  IPC::ChannelHandle local_handle, remote_handle;
-  IPC::Channel::GenerateMojoChannelHandlePair("TwoWayTestChannel",
-                                              &local_handle, &remote_handle);
+  mojo::MessagePipe pipe;
   base::WaitableEvent remote_harness_set_up(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   plugin_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&SetUpRemoteHarness, remote_harness_, remote_handle,
-                            base::RetainedRef(io_thread_.task_runner()),
-                            &shutdown_event_, &remote_harness_set_up));
+      FROM_HERE,
+      base::Bind(&SetUpRemoteHarness, remote_harness_, pipe.handle0.release(),
+                 base::RetainedRef(io_thread_.task_runner()), &shutdown_event_,
+                 &remote_harness_set_up));
   remote_harness_set_up.Wait();
   local_harness_->SetUpHarnessWithChannel(
-      local_handle, io_thread_.task_runner().get(), &shutdown_event_,
+      pipe.handle1.release(), io_thread_.task_runner().get(), &shutdown_event_,
       true);  // is_client
 }
 

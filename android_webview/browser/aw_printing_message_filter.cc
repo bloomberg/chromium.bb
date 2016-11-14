@@ -5,6 +5,7 @@
 #include "android_webview/browser/aw_printing_message_filter.h"
 
 #include "android_webview/browser/aw_print_manager.h"
+#include "base/file_descriptor_posix.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"

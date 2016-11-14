@@ -22,6 +22,7 @@
 #include "ipc/ipc_mojo_param_traits.h"
 
 #if defined(OS_POSIX)
+#include "base/file_descriptor_posix.h"
 #include "ipc/ipc_platform_file_attachment_posix.h"
 #endif
 
@@ -1018,45 +1019,40 @@ void ParamTraits<base::UnguessableToken>::Log(const param_type& p,
 
 void ParamTraits<IPC::ChannelHandle>::GetSize(base::PickleSizer* sizer,
                                               const param_type& p) {
-  GetParamSize(sizer, p.name);
-#if defined(OS_POSIX)
+#if defined(OS_NACL_SFI)
   GetParamSize(sizer, p.socket);
-#endif
+#else
   GetParamSize(sizer, p.mojo_handle);
+#endif
 }
 
 void ParamTraits<IPC::ChannelHandle>::Write(base::Pickle* m,
                                             const param_type& p) {
-#if defined(OS_WIN)
-  // On Windows marshalling pipe handle is not supported.
-  DCHECK(p.pipe.handle == NULL);
-#endif  // defined (OS_WIN)
-  WriteParam(m, p.name);
-#if defined(OS_POSIX)
+#if defined(OS_NACL_SFI)
   WriteParam(m, p.socket);
-#endif
+#else
   WriteParam(m, p.mojo_handle);
+#endif
 }
 
 bool ParamTraits<IPC::ChannelHandle>::Read(const base::Pickle* m,
                                            base::PickleIterator* iter,
                                            param_type* r) {
-  return ReadParam(m, iter, &r->name)
-#if defined(OS_POSIX)
-      && ReadParam(m, iter, &r->socket)
+#if defined(OS_NACL_SFI)
+  return ReadParam(m, iter, &r->socket);
+#else
+  return ReadParam(m, iter, &r->mojo_handle);
 #endif
-      && ReadParam(m, iter, &r->mojo_handle);
 }
 
 void ParamTraits<IPC::ChannelHandle>::Log(const param_type& p,
                                           std::string* l) {
-  l->append(base::StringPrintf("ChannelHandle(%s", p.name.c_str()));
-#if defined(OS_POSIX)
-  l->append(", ");
+  l->append("ChannelHandle(");
+#if defined(OS_NACL_SFI)
   ParamTraits<base::FileDescriptor>::Log(p.socket, l);
-#endif
-  l->append(", ");
+#else
   LogParam(p.mojo_handle, l);
+#endif
   l->append(")");
 }
 

@@ -28,6 +28,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "base/file_descriptor_posix.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/printing/print_view_manager_basic.h"
 #endif
