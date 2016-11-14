@@ -94,11 +94,20 @@ void FramePainter::paint(GraphicsContext& context,
 
     Optional<ScopedPaintChunkProperties> scopedPaintChunkProperties;
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-      if (TransformPaintPropertyNode* transform =
-              m_frameView->preTranslation()) {
+      if (const PropertyTreeState* contentsState =
+              m_frameView->totalPropertyTreeStateForContents()) {
+        // The scrollbar's property nodes are similar to the frame view's
+        // contents state but we want to exclude the content-specific
+        // properties. This prevents the scrollbars from scrolling, for example.
         PaintChunkProperties properties(
             context.getPaintController().currentPaintChunkProperties());
-        properties.transform = transform;
+        properties.transform = m_frameView->preTranslation();
+        properties.clip = m_frameView->contentClip()->parent();
+        properties.effect = contentsState->effect();
+        auto* scrollBarScroll = contentsState->scroll();
+        if (m_frameView->scroll())
+          scrollBarScroll = m_frameView->scroll()->parent();
+        properties.scroll = scrollBarScroll;
         scopedPaintChunkProperties.emplace(context.getPaintController(),
                                            *frameView().layoutView(),
                                            properties);

@@ -63,6 +63,14 @@ void CompositingRecorder::endCompositing(GraphicsContext& graphicsContext,
     // Re-record the last two DisplayItems into a new SkPicture.
     SkPictureBuilder pictureBuilder(cullRect, nullptr, &graphicsContext);
     {
+#if DCHECK_IS_ON()
+      // The picture builder creates an internal paint controller that has been
+      // initialized with null paint properties. Painting into this controller
+      // without properties will not cause problems because the display item
+      // from this internal paint controller is immediately reunited with the
+      // correct properties.
+      DisableNullPaintPropertyChecks disabler;
+#endif
       DrawingRecorder newRecorder(pictureBuilder.context(), displayItemClient,
                                   displayItemType, cullRect);
       DCHECK(!DrawingRecorder::useCachedDrawingIfPossible(

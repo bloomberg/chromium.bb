@@ -10,6 +10,7 @@
 #include "platform/graphics/paint/PaintChunk.h"
 #include "platform/graphics/paint/PaintChunkProperties.h"
 #include "wtf/Allocator.h"
+#include "wtf/AutoReset.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
 
@@ -73,6 +74,19 @@ class PLATFORM_EXPORT PaintChunker final {
   Optional<PaintChunk::Id> m_currentChunkId;
   PaintChunkProperties m_currentProperties;
 };
+
+#if DCHECK_IS_ON()
+class DisableNullPaintPropertyChecks {
+  STACK_ALLOCATED();
+  WTF_MAKE_NONCOPYABLE(DisableNullPaintPropertyChecks);
+
+ public:
+  DisableNullPaintPropertyChecks();
+
+ private:
+  AutoReset<bool> m_disabler;
+};
+#endif  // DCHECK_IS_ON()
 
 }  // namespace blink
 

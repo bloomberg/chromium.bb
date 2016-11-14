@@ -734,6 +734,12 @@ TEST_F(WebPluginContainerTest, CompositedPluginSPv2) {
       static_cast<const CompositedPlugin*>(container->plugin());
 
   std::unique_ptr<PaintController> paintController = PaintController::create();
+  PaintChunkProperties properties;
+  properties.transform = TransformPaintPropertyNode::root();
+  properties.clip = ClipPaintPropertyNode::root();
+  properties.effect = EffectPaintPropertyNode::root();
+  properties.scroll = ScrollPaintPropertyNode::root();
+  paintController->updateCurrentPaintChunkProperties(nullptr, properties);
   GraphicsContext graphicsContext(*paintController);
   container->paint(graphicsContext, CullRect(IntRect(10, 10, 400, 300)));
   paintController->commitNewDisplayItems();
