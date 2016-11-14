@@ -6,7 +6,8 @@ LIBDRM_INTEL_FILES := \
 	intel_decode.c \
 	intel_chipset.h \
 	mm.c \
-	mm.h
+	mm.h \
+	uthash.h
 
 LIBDRM_INTEL_H_FILES := \
 	intel_bufmgr.h \
