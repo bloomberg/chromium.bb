@@ -90,7 +90,7 @@ class VrController {
   bool GetButtonLongPressFromButtonInfo();
 
   // Handle the waiting state.
-  void HandleWaitingState();
+  void HandleWaitingState(WebGestureEvent* gesture);
 
   // Handle the detecting state.
   void HandleDetectingState(WebGestureEvent* gesture);

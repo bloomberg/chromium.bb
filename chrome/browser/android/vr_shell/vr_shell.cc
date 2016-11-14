@@ -421,7 +421,8 @@ void VrShell::SendEventsToTarget(VrInputManager* input_target,
   // TODO(asimjour) for now, scroll is sent to the main content.
   if (gesture->type == WebInputEvent::GestureScrollBegin ||
       gesture->type == WebInputEvent::GestureScrollUpdate ||
-      gesture->type == WebInputEvent::GestureScrollEnd) {
+      gesture->type == WebInputEvent::GestureScrollEnd ||
+      gesture->type == WebInputEvent::GestureFlingCancel) {
     content_input_manager_->ProcessUpdatedGesture(*gesture.get());
   }
 

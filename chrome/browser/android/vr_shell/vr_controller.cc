@@ -230,7 +230,7 @@ void VrController::UpdateGestureFromTouchInfo(WebGestureEvent* gesture) {
   switch (state_) {
     // User has not put finger on touch pad.
     case WAITING:
-      HandleWaitingState();
+      HandleWaitingState(gesture);
       break;
     // User has not started a gesture (by moving out of slop).
     case TOUCHING:
@@ -246,7 +246,7 @@ void VrController::UpdateGestureFromTouchInfo(WebGestureEvent* gesture) {
   }
 }
 
-void VrController::HandleWaitingState() {
+void VrController::HandleWaitingState(WebGestureEvent* gesture) {
   // User puts finger on touch pad (or when the touch down for current gesture
   // is missed, initiate gesture from current touch point).
   if (touch_info_->touch_down || touch_info_->is_touching) {
@@ -255,6 +255,9 @@ void VrController::HandleWaitingState() {
     // update current touchpoint
     *cur_touch_point_ = touch_info_->touch_point;
     state_ = TOUCHING;
+
+    gesture->type = WebInputEvent::GestureFlingCancel;
+    gesture->data.flingCancel.preventBoosting = false;
   }
 }
 
