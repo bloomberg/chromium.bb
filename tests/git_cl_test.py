@@ -2037,7 +2037,6 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'branch.feature.gerritserver'],),
          'https://chromium-review.googlesource.com'),
         ((['_GetChangeDetail', []],), {'status': 'OPEN'}),
-        ((['git', 'config', 'branch.feature.gerritpatchset'],), '7'),
         ((['_GetChangeDetail', ['DETAILED_ACCOUNTS']],),
          {'owner': {'email': 'owner@e.mail'}}),
         ((['_GetChangeDetail', ['ALL_REVISIONS']],), {
@@ -2368,8 +2367,10 @@ class TestGitCl(TestCase):
       ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
       ((['git', 'config', 'branch.feature.rietveldissue'],), CERR1),
       ((['git', 'config', 'branch.feature.gerritissue'],), '1'),
+      # TODO(tandrii): Uncomment the below if we decide to support checking
+      # patchsets for Gerrit.
       # Simulate that Gerrit has more patchsets than local.
-      ((['git', 'config', 'branch.feature.gerritpatchset'],), '12'),
+      # ((['git', 'config', 'branch.feature.gerritpatchset'],), '12'),
       ((['git', 'config', 'branch.feature.gerritserver'],),
        'https://x-review.googlesource.com'),
       ((['get_authenticator_for_host', 'x-review.googlesource.com'],),
@@ -2379,18 +2380,21 @@ class TestGitCl(TestCase):
   def test_fetch_try_jobs_none_gerrit(self):
     self._setup_fetch_try_jobs_gerrit({})
     self.assertEqual(0, git_cl.main(['try-results']))
-    self.assertRegexpMatches(
-        sys.stdout.getvalue(),
-        r'Warning: Codereview server has newer patchsets \(13\)')
+    # TODO(tandrii): Uncomment the below if we decide to support checking
+    # patchsets for Gerrit.
+    # self.assertRegexpMatches(
+    #     sys.stdout.getvalue(),
+    #     r'Warning: Codereview server has newer patchsets \(13\)')
     self.assertRegexpMatches(sys.stdout.getvalue(), 'No try jobs')
 
   def test_fetch_try_jobs_some_gerrit(self):
     self._setup_fetch_try_jobs_gerrit({
       'builds': self.BUILDBUCKET_BUILDS_MAP.values(),
     })
-    # Explicit --patchset means actual local patchset doesn't matter.
-    self.calls.remove(
-        ((['git', 'config', 'branch.feature.gerritpatchset'],), '12'))
+    # TODO(tandrii): Uncomment the below if we decide to support checking
+    # patchsets for Gerrit.
+    # self.calls.remove(
+    #     ((['git', 'config', 'branch.feature.gerritpatchset'],), '12'))
     self.assertEqual(0, git_cl.main(['try-results', '--patchset', '5']))
 
     # ... and doesn't result in warning.

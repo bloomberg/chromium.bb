@@ -1595,7 +1595,9 @@ class Changelist(object):
       if not options.reviewers and hook_results.reviewers:
         options.reviewers = hook_results.reviewers.split(',')
 
-    if self.GetIssue():
+    # TODO(tandrii): Checking local patchset against remote patchset is only
+    # supported for Rietveld. Extend it to Gerrit or remove it completely.
+    if self.GetIssue() and not self.IsGerrit():
       latest_patchset = self.GetMostRecentPatchset()
       local_patchset = self.GetPatchset()
       if (latest_patchset and local_patchset and
@@ -4883,7 +4885,9 @@ def CMDtry(parser, args):
       return 1
 
   patchset = cl.GetMostRecentPatchset()
-  if patchset != cl.GetPatchset():
+  # TODO(tandrii): Checking local patchset against remote patchset is only
+  # supported for Rietveld. Extend it to Gerrit or remove it completely.
+  if not cl.IsGerrit() and patchset != cl.GetPatchset():
     print('Warning: Codereview server has newer patchsets (%s) than most '
           'recent upload from local checkout (%s). Did a previous upload '
           'fail?\n'
@@ -4935,7 +4939,9 @@ def CMDtry_results(parser, args):
                    'Either upload first, or pass --patchset explicitely' %
                    cl.GetIssue())
 
-    if patchset != cl.GetPatchset():
+    # TODO(tandrii): Checking local patchset against remote patchset is only
+    # supported for Rietveld. Extend it to Gerrit or remove it completely.
+    if not cl.IsGerrit() and patchset != cl.GetPatchset():
       print('Warning: Codereview server has newer patchsets (%s) than most '
             'recent upload from local checkout (%s). Did a previous upload '
             'fail?\n'
