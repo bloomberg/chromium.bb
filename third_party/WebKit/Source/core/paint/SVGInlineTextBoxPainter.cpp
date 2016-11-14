@@ -407,11 +407,9 @@ bool SVGInlineTextBoxPainter::setupTextPaint(const PaintInfo& paintInfo,
   paint.setAntiAlias(true);
 
   if (hasShadow(paintInfo, style)) {
-    std::unique_ptr<DrawLooperBuilder> drawLooperBuilder =
-        style.textShadow()->createDrawLooper(
-            DrawLooperBuilder::ShadowRespectsAlpha,
-            style.visitedDependentColor(CSSPropertyColor));
-    paint.setLooper(drawLooperBuilder->detachDrawLooper());
+    paint.setLooper(style.textShadow()->createDrawLooper(
+        DrawLooperBuilder::ShadowRespectsAlpha,
+        style.visitedDependentColor(CSSPropertyColor)));
   }
 
   if (resourceMode == ApplyToStrokeMode) {

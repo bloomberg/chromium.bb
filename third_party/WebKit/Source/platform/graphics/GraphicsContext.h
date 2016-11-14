@@ -299,10 +299,7 @@ class PLATFORM_EXPORT GraphicsContext {
                      DrawLooperBuilder::ShadowRespectsAlpha,
                  ShadowMode = DrawShadowAndForeground);
 
-  // It is assumed that this draw looper is used only for shadows
-  // (i.e. a draw looper is set if and only if there is a shadow).
-  // The builder passed into this method will be destroyed.
-  void setDrawLooper(std::unique_ptr<DrawLooperBuilder>);
+  void setDrawLooper(sk_sp<SkDrawLooper>);
 
   void drawFocusRing(const Vector<IntRect>&,
                      float width,

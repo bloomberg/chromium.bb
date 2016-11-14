@@ -339,22 +339,19 @@ void CanvasRenderingContext2DState::clearResolvedFilter() const {
 }
 
 SkDrawLooper* CanvasRenderingContext2DState::emptyDrawLooper() const {
-  if (!m_emptyDrawLooper) {
-    std::unique_ptr<DrawLooperBuilder> drawLooperBuilder =
-        DrawLooperBuilder::create();
-    m_emptyDrawLooper = drawLooperBuilder->detachDrawLooper();
-  }
+  if (!m_emptyDrawLooper)
+    m_emptyDrawLooper = DrawLooperBuilder().detachDrawLooper();
+
   return m_emptyDrawLooper.get();
 }
 
 SkDrawLooper* CanvasRenderingContext2DState::shadowOnlyDrawLooper() const {
   if (!m_shadowOnlyDrawLooper) {
-    std::unique_ptr<DrawLooperBuilder> drawLooperBuilder =
-        DrawLooperBuilder::create();
-    drawLooperBuilder->addShadow(m_shadowOffset, m_shadowBlur, m_shadowColor,
-                                 DrawLooperBuilder::ShadowIgnoresTransforms,
-                                 DrawLooperBuilder::ShadowRespectsAlpha);
-    m_shadowOnlyDrawLooper = drawLooperBuilder->detachDrawLooper();
+    DrawLooperBuilder drawLooperBuilder;
+    drawLooperBuilder.addShadow(m_shadowOffset, m_shadowBlur, m_shadowColor,
+                                DrawLooperBuilder::ShadowIgnoresTransforms,
+                                DrawLooperBuilder::ShadowRespectsAlpha);
+    m_shadowOnlyDrawLooper = drawLooperBuilder.detachDrawLooper();
   }
   return m_shadowOnlyDrawLooper.get();
 }
@@ -362,13 +359,12 @@ SkDrawLooper* CanvasRenderingContext2DState::shadowOnlyDrawLooper() const {
 SkDrawLooper* CanvasRenderingContext2DState::shadowAndForegroundDrawLooper()
     const {
   if (!m_shadowAndForegroundDrawLooper) {
-    std::unique_ptr<DrawLooperBuilder> drawLooperBuilder =
-        DrawLooperBuilder::create();
-    drawLooperBuilder->addShadow(m_shadowOffset, m_shadowBlur, m_shadowColor,
-                                 DrawLooperBuilder::ShadowIgnoresTransforms,
-                                 DrawLooperBuilder::ShadowRespectsAlpha);
-    drawLooperBuilder->addUnmodifiedContent();
-    m_shadowAndForegroundDrawLooper = drawLooperBuilder->detachDrawLooper();
+    DrawLooperBuilder drawLooperBuilder;
+    drawLooperBuilder.addShadow(m_shadowOffset, m_shadowBlur, m_shadowColor,
+                                DrawLooperBuilder::ShadowIgnoresTransforms,
+                                DrawLooperBuilder::ShadowRespectsAlpha);
+    drawLooperBuilder.addUnmodifiedContent();
+    m_shadowAndForegroundDrawLooper = drawLooperBuilder.detachDrawLooper();
   }
   return m_shadowAndForegroundDrawLooper.get();
 }

@@ -72,10 +72,9 @@ class ShadowList : public RefCounted<ShadowList> {
 
   void adjustRectForShadow(FloatRect&) const;
 
-  std::unique_ptr<DrawLooperBuilder> createDrawLooper(
-      DrawLooperBuilder::ShadowAlphaMode,
-      const Color& currentColor,
-      bool isHorizontal = true) const;
+  sk_sp<SkDrawLooper> createDrawLooper(DrawLooperBuilder::ShadowAlphaMode,
+                                       const Color& currentColor,
+                                       bool isHorizontal = true) const;
 
  private:
   ShadowList(ShadowDataVector& shadows) {

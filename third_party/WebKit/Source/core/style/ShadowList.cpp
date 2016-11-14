@@ -83,23 +83,22 @@ PassRefPtr<ShadowList> ShadowList::blend(const ShadowList* from,
   return ShadowList::adopt(shadows);
 }
 
-std::unique_ptr<DrawLooperBuilder> ShadowList::createDrawLooper(
+sk_sp<SkDrawLooper> ShadowList::createDrawLooper(
     DrawLooperBuilder::ShadowAlphaMode alphaMode,
     const Color& currentColor,
     bool isHorizontal) const {
-  std::unique_ptr<DrawLooperBuilder> drawLooperBuilder =
-      DrawLooperBuilder::create();
+  DrawLooperBuilder drawLooperBuilder;
   for (size_t i = shadows().size(); i--;) {
     const ShadowData& shadow = shadows()[i];
     float shadowX = isHorizontal ? shadow.x() : shadow.y();
     float shadowY = isHorizontal ? shadow.y() : -shadow.x();
-    drawLooperBuilder->addShadow(FloatSize(shadowX, shadowY), shadow.blur(),
-                                 shadow.color().resolve(currentColor),
-                                 DrawLooperBuilder::ShadowRespectsTransforms,
-                                 alphaMode);
+    drawLooperBuilder.addShadow(FloatSize(shadowX, shadowY), shadow.blur(),
+                                shadow.color().resolve(currentColor),
+                                DrawLooperBuilder::ShadowRespectsTransforms,
+                                alphaMode);
   }
-  drawLooperBuilder->addUnmodifiedContent();
-  return drawLooperBuilder;
+  drawLooperBuilder.addUnmodifiedContent();
+  return drawLooperBuilder.detachDrawLooper();
 }
 
 }  // namespace blink

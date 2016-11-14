@@ -48,10 +48,6 @@ DrawLooperBuilder::DrawLooperBuilder() {}
 
 DrawLooperBuilder::~DrawLooperBuilder() {}
 
-std::unique_ptr<DrawLooperBuilder> DrawLooperBuilder::create() {
-  return wrapUnique(new DrawLooperBuilder);
-}
-
 sk_sp<SkDrawLooper> DrawLooperBuilder::detachDrawLooper() {
   return m_skDrawLooperBuilder.detach();
 }

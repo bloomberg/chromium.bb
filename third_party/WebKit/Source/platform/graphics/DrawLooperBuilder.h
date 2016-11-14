@@ -49,7 +49,7 @@ class PLATFORM_EXPORT DrawLooperBuilder final {
   // Implementing the copy constructor properly would require writing code to
   // copy the underlying SkLayerDrawLooper::Builder.
   WTF_MAKE_NONCOPYABLE(DrawLooperBuilder);
-  USING_FAST_MALLOC(DrawLooperBuilder);
+  STACK_ALLOCATED();
 
  public:
   enum ShadowTransformMode {
@@ -60,8 +60,6 @@ class PLATFORM_EXPORT DrawLooperBuilder final {
 
   DrawLooperBuilder();
   ~DrawLooperBuilder();
-
-  static std::unique_ptr<DrawLooperBuilder> create();
 
   // Creates the SkDrawLooper and passes ownership to the caller. The builder
   // should not be used any more after calling this method.

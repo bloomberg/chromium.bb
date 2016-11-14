@@ -173,34 +173,30 @@ void GraphicsContext::setShadow(
   if (contextDisabled())
     return;
 
-  std::unique_ptr<DrawLooperBuilder> drawLooperBuilder =
-      DrawLooperBuilder::create();
+  DrawLooperBuilder drawLooperBuilder;
   if (!color.alpha()) {
     // When shadow-only but there is no shadow, we use an empty draw looper
     // to disable rendering of the source primitive.  When not shadow-only, we
     // clear the looper.
-    if (shadowMode != DrawShadowOnly)
-      drawLooperBuilder.reset();
-
-    setDrawLooper(std::move(drawLooperBuilder));
+    setDrawLooper(shadowMode != DrawShadowOnly
+                      ? nullptr
+                      : drawLooperBuilder.detachDrawLooper());
     return;
   }
 
-  drawLooperBuilder->addShadow(offset, blur, color, shadowTransformMode,
-                               shadowAlphaMode);
+  drawLooperBuilder.addShadow(offset, blur, color, shadowTransformMode,
+                              shadowAlphaMode);
   if (shadowMode == DrawShadowAndForeground) {
-    drawLooperBuilder->addUnmodifiedContent();
+    drawLooperBuilder.addUnmodifiedContent();
   }
-  setDrawLooper(std::move(drawLooperBuilder));
+  setDrawLooper(drawLooperBuilder.detachDrawLooper());
 }
 
-void GraphicsContext::setDrawLooper(
-    std::unique_ptr<DrawLooperBuilder> drawLooperBuilder) {
+void GraphicsContext::setDrawLooper(sk_sp<SkDrawLooper> drawLooper) {
   if (contextDisabled())
     return;
 
-  mutableState()->setDrawLooper(
-      drawLooperBuilder ? drawLooperBuilder->detachDrawLooper() : nullptr);
+  mutableState()->setDrawLooper(std::move(drawLooper));
 }
 
 SkColorFilter* GraphicsContext::getColorFilter() const {
@@ -451,12 +447,11 @@ void GraphicsContext::drawInnerShadow(const FloatRoundedRect& rect,
     clip(rect.rect());
   }
 
-  std::unique_ptr<DrawLooperBuilder> drawLooperBuilder =
-      DrawLooperBuilder::create();
-  drawLooperBuilder->addShadow(FloatSize(shadowOffset), shadowBlur, shadowColor,
-                               DrawLooperBuilder::ShadowRespectsTransforms,
-                               DrawLooperBuilder::ShadowIgnoresAlpha);
-  setDrawLooper(std::move(drawLooperBuilder));
+  DrawLooperBuilder drawLooperBuilder;
+  drawLooperBuilder.addShadow(FloatSize(shadowOffset), shadowBlur, shadowColor,
+                              DrawLooperBuilder::ShadowRespectsTransforms,
+                              DrawLooperBuilder::ShadowIgnoresAlpha);
+  setDrawLooper(drawLooperBuilder.detachDrawLooper());
   fillRectWithRoundedHole(outerRect, roundedHole, fillColor);
 }
 
