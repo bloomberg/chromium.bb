@@ -25,24 +25,57 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
                     const std::string& user,
                     int password_fd,
                     const JoinCallback& callback) override {
-    dbus::ObjectPath objectPath(authpolicy::kAuthPolicyServicePath);
-    dbus::ObjectProxy* proxy =
-        bus_->GetObjectProxy(authpolicy::kAuthPolicyServiceName, objectPath);
     dbus::MethodCall method_call(authpolicy::kAuthPolicyInterface,
                                  authpolicy::kAuthPolicyJoinADDomain);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(machine_name);
     writer.AppendString(user);
     writer.AppendFileDescriptor(password_fd);
-    proxy->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                      base::Bind(&AuthPolicyClientImpl::HandleJoinCallback,
-                                 weak_ptr_factory_.GetWeakPtr(), callback));
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::Bind(&AuthPolicyClientImpl::HandleJoinCallback,
+                                  weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
+  void RefreshDevicePolicy(const RefreshPolicyCallback& callback) override {
+    dbus::MethodCall method_call(authpolicy::kAuthPolicyInterface,
+                                 authpolicy::kAuthPolicyRefreshDevicePolicy);
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&AuthPolicyClientImpl::HandleRefreshPolicyCallback,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
+  void RefreshUserPolicy(const std::string& account_id,
+                         const RefreshPolicyCallback& callback) override {
+    dbus::MethodCall method_call(authpolicy::kAuthPolicyInterface,
+                                 authpolicy::kAuthPolicyRefreshUserPolicy);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(account_id);
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&AuthPolicyClientImpl::HandleRefreshPolicyCallback,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
  protected:
-  void Init(dbus::Bus* bus) override { bus_ = bus; }
+  void Init(dbus::Bus* bus) override {
+    bus_ = bus;
+    proxy_ = bus_->GetObjectProxy(
+        authpolicy::kAuthPolicyServiceName,
+        dbus::ObjectPath(authpolicy::kAuthPolicyServicePath));
+  }
 
  private:
+  void HandleRefreshPolicyCallback(const RefreshPolicyCallback& callback,
+                                   dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "RefreshDevicePolicy: failed to call to authpolicy";
+      callback.Run(false);
+      return;
+    }
+    callback.Run(true);
+  }
+
   void HandleJoinCallback(const JoinCallback& callback,
                           dbus::Response* response) {
     if (!response) {
@@ -65,6 +98,7 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
   }
 
   dbus::Bus* bus_ = nullptr;
+  dbus::ObjectProxy* proxy_ = nullptr;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

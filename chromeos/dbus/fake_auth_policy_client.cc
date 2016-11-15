@@ -18,4 +18,15 @@ void FakeAuthPolicyClient::JoinAdDomain(const std::string& machine_name,
   callback.Run(authpolicy::AD_JOIN_ERROR_NONE);
 }
 
+void FakeAuthPolicyClient::RefreshDevicePolicy(
+    const RefreshPolicyCallback& callback) {
+  callback.Run(true);
+};
+
+void FakeAuthPolicyClient::RefreshUserPolicy(
+    const std::string& account_id,
+    const RefreshPolicyCallback& callback) {
+  callback.Run(true);
+};
+
 }  // namespace chromeos
