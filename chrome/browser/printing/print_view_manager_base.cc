@@ -193,16 +193,20 @@ void PrintViewManagerBase::OnDidPrintPage(
 #if defined(OS_WIN)
   print_job_->AppendPrintedPage(params.page_number);
   if (metafile_must_be_valid) {
+    // TODO(thestig): Figure out why rendering text with GDI results in random
+    // missing characters for some users. https://crbug.com/658606
+    bool print_text_with_gdi =
+        document->settings().print_text_with_gdi() &&
+        !document->settings().printer_is_xps() &&
+        switches::GDITextPrintingEnabled();
     scoped_refptr<base::RefCountedBytes> bytes = new base::RefCountedBytes(
         reinterpret_cast<const unsigned char*>(shared_buf->memory()),
         params.data_size);
 
     document->DebugDumpData(bytes.get(), FILE_PATH_LITERAL(".pdf"));
-    // TODO(thestig): Figure out why rendering text with GDI results in random
-    // missing characters for some users. https://crbug.com/658606
     print_job_->StartPdfToEmfConversion(
         bytes, params.page_size, params.content_area,
-        false /* print_text_with_gdi? */);
+        print_text_with_gdi);
   }
 #else
   // Update the rendered document. It will send notifications to the listener.

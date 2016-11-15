@@ -357,6 +357,7 @@ extern const char kMakeChromeDefault[];
 extern const char kDisableGDITextPrinting[];
 extern const char kDisablePerMonitorDpi[];
 extern const char kEnableCloudPrintXps[];
+extern const char kEnableGDITextPrinting[];
 extern const char kEnablePerMonitorDpi[];
 extern const char kEnableProfileShortcutManager[];
 extern const char kHideIcons[];
@@ -394,11 +395,14 @@ bool AboutInSettingsEnabled();
 bool ExtensionsDisabled(const base::CommandLine& command_line);
 bool MdFeedbackEnabled();
 bool MdPolicyPageEnabled();
-bool PdfMaterialUIEnabled();
 bool SettingsWindowEnabled();
 
 #if defined(OS_CHROMEOS)
 bool PowerOverlayEnabled();
+#endif
+
+#if defined(OS_WIN)
+bool GDITextPrintingEnabled();
 #endif
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in
