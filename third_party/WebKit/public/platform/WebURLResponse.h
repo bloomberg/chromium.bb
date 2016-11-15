@@ -288,15 +288,15 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void setRemotePort(unsigned short);
 
   // Original size of the response before decompression.
-  BLINK_PLATFORM_EXPORT long long encodedDataLength() const;
+  BLINK_PLATFORM_EXPORT long long encodedDataLengthForTesting() const;
   BLINK_PLATFORM_EXPORT void addToEncodedDataLength(long long);
 
   // Original size of the response body before decompression.
-  BLINK_PLATFORM_EXPORT long long encodedBodyLength() const;
+  BLINK_PLATFORM_EXPORT long long encodedBodyLengthForTesting() const;
   BLINK_PLATFORM_EXPORT void addToEncodedBodyLength(long long);
 
   // Size of the response body after removing any content encoding.
-  BLINK_PLATFORM_EXPORT long long decodedBodyLength() const;
+  BLINK_PLATFORM_EXPORT long long decodedBodyLengthForTesting() const;
   BLINK_PLATFORM_EXPORT void addToDecodedBodyLength(long long);
 
   // Extra data associated with the underlying resource response. Resource

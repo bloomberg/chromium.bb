@@ -425,7 +425,7 @@ void WebURLResponse::setRemotePort(unsigned short remotePort) {
   m_resourceResponse->setRemotePort(remotePort);
 }
 
-long long WebURLResponse::encodedDataLength() const {
+long long WebURLResponse::encodedDataLengthForTesting() const {
   return m_resourceResponse->encodedDataLength();
 }
 
@@ -433,7 +433,7 @@ void WebURLResponse::addToEncodedDataLength(long long length) {
   m_resourceResponse->addToEncodedDataLength(length);
 }
 
-long long WebURLResponse::encodedBodyLength() const {
+long long WebURLResponse::encodedBodyLengthForTesting() const {
   return m_resourceResponse->encodedBodyLength();
 }
 
@@ -441,7 +441,7 @@ void WebURLResponse::addToEncodedBodyLength(long long length) {
   m_resourceResponse->addToEncodedBodyLength(length);
 }
 
-long long WebURLResponse::decodedBodyLength() const {
+long long WebURLResponse::decodedBodyLengthForTesting() const {
   return m_resourceResponse->decodedBodyLength();
 }
 

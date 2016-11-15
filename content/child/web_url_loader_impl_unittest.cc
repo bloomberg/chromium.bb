@@ -706,10 +706,11 @@ TEST_F(WebURLLoaderImplTest, SyncLengths) {
   client()->loader()->loadSynchronously(request, response, error, data,
                                         encoded_data_length);
 
-  EXPECT_EQ(kEncodedBodyLength, response.encodedBodyLength());
+  EXPECT_EQ(kEncodedBodyLength, response.encodedBodyLengthForTesting());
   EXPECT_EQ(kEncodedDataLength, encoded_data_length);
   int expected_decoded_body_length = strlen(kBodyData);
-  EXPECT_EQ(expected_decoded_body_length, response.decodedBodyLength());
+  EXPECT_EQ(expected_decoded_body_length,
+            response.decodedBodyLengthForTesting());
 }
 
 }  // namespace
