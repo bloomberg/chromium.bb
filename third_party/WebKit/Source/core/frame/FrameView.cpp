@@ -38,6 +38,7 @@
 #include "core/dom/IntersectionObserverCallback.h"
 #include "core/dom/IntersectionObserverController.h"
 #include "core/dom/IntersectionObserverInit.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/RenderedPosition.h"
@@ -149,14 +150,18 @@ static const double resourcePriorityUpdateDelayAfterScroll = 0.250;
 
 static bool s_initialTrackAllPaintInvalidations = false;
 
-FrameView::FrameView(LocalFrame* frame)
+FrameView::FrameView(LocalFrame& frame)
     : m_frame(frame),
       m_displayMode(WebDisplayModeBrowser),
       m_canHaveScrollbars(true),
       m_hasPendingLayout(false),
       m_inSynchronousPostLayout(false),
-      m_postLayoutTasksTimer(this, &FrameView::postLayoutTimerFired),
-      m_updateWidgetsTimer(this, &FrameView::updateWidgetsTimerFired),
+      m_postLayoutTasksTimer(TaskRunnerHelper::get(TaskType::Internal, &frame),
+                             this,
+                             &FrameView::postLayoutTimerFired),
+      m_updateWidgetsTimer(TaskRunnerHelper::get(TaskType::Internal, &frame),
+                           this,
+                           &FrameView::updateWidgetsTimerFired),
       m_isTransparent(false),
       m_baseBackgroundColor(Color::white),
       m_mediaType(MediaTypeNames::screen),
@@ -190,17 +195,16 @@ FrameView::FrameView(LocalFrame* frame)
       m_needsScrollbarsUpdate(false),
       m_suppressAdjustViewSize(false),
       m_allowsLayoutInvalidationAfterLayoutClean(true) {
-  ASSERT(m_frame);
   init();
 }
 
-FrameView* FrameView::create(LocalFrame* frame) {
+FrameView* FrameView::create(LocalFrame& frame) {
   FrameView* view = new FrameView(frame);
   view->show();
   return view;
 }
 
-FrameView* FrameView::create(LocalFrame* frame, const IntSize& initialSize) {
+FrameView* FrameView::create(LocalFrame& frame, const IntSize& initialSize) {
   FrameView* view = new FrameView(frame);
   view->Widget::setFrameRect(IntRect(view->location(), initialSize));
   view->setLayoutSizeInternal(initialSize);
@@ -2294,7 +2298,6 @@ bool FrameView::updateWidgets() {
 
 void FrameView::updateWidgetsTimerFired(TimerBase*) {
   ASSERT(!isInPerformLayout());
-  m_updateWidgetsTimer.stop();
   for (unsigned i = 0; i < maxUpdateWidgetsIterations; ++i) {
     if (updateWidgets())
       return;
@@ -2305,8 +2308,10 @@ void FrameView::flushAnyPendingPostLayoutTasks() {
   ASSERT(!isInPerformLayout());
   if (m_postLayoutTasksTimer.isActive())
     performPostLayoutTasks();
-  if (m_updateWidgetsTimer.isActive())
-    updateWidgetsTimerFired(0);
+  if (m_updateWidgetsTimer.isActive()) {
+    m_updateWidgetsTimer.stop();
+    updateWidgetsTimerFired(nullptr);
+  }
 }
 
 void FrameView::scheduleUpdateWidgetsIfNecessary() {

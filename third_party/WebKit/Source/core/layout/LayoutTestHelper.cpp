@@ -61,7 +61,7 @@ Document& RenderingTest::setupChildIframe(const AtomicString& iframeElementId,
       FrameLoaderClientWithParent::create(document().frame());
   m_subframe = LocalFrame::create(m_childFrameLoaderClient.get(),
                                   document().frame()->host(), &iframe);
-  m_subframe->setView(FrameView::create(m_subframe.get(), IntSize(500, 500)));
+  m_subframe->setView(FrameView::create(*m_subframe, IntSize(500, 500)));
   m_subframe->init();
   m_subframe->view()->setParentVisible(true);
   m_subframe->view()->setSelfVisible(true);

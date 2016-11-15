@@ -290,12 +290,12 @@ void LocalFrame::createView(const IntSize& viewportSize,
 
   FrameView* frameView = nullptr;
   if (isLocalRoot) {
-    frameView = FrameView::create(this, viewportSize);
+    frameView = FrameView::create(*this, viewportSize);
 
     // The layout size is set by WebViewImpl to support @viewport
     frameView->setLayoutSizeFixedToFrameSize(false);
   } else {
-    frameView = FrameView::create(this);
+    frameView = FrameView::create(*this);
   }
 
   frameView->setScrollbarModes(horizontalScrollbarMode, verticalScrollbarMode,

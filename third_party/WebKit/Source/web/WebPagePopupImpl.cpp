@@ -295,7 +295,7 @@ bool WebPagePopupImpl::initializePage() {
   LocalFrame* frame =
       LocalFrame::create(&emptyFrameLoaderClient, &m_page->frameHost(), 0);
   frame->setPagePopupOwner(m_popupClient->ownerElement());
-  frame->setView(FrameView::create(frame));
+  frame->setView(FrameView::create(*frame));
   frame->init();
   frame->view()->setParentVisible(true);
   frame->view()->setSelfVisible(true);

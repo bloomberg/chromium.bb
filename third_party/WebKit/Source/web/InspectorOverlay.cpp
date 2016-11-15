@@ -559,7 +559,7 @@ Page* InspectorOverlay::overlayPage() {
 
   LocalFrame* frame = LocalFrame::create(&dummyFrameLoaderClient,
                                          &m_overlayPage->frameHost(), 0);
-  frame->setView(FrameView::create(frame));
+  frame->setView(FrameView::create(*frame));
   frame->init();
   FrameLoader& loader = frame->loader();
   frame->view()->setCanHaveScrollbars(false);

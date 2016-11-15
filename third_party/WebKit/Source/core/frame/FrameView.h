@@ -100,8 +100,8 @@ class CORE_EXPORT FrameView final
   friend class LayoutPart;  // for invalidateTreeIfNeeded
 
  public:
-  static FrameView* create(LocalFrame*);
-  static FrameView* create(LocalFrame*, const IntSize& initialSize);
+  static FrameView* create(LocalFrame&);
+  static FrameView* create(LocalFrame&, const IntSize& initialSize);
 
   ~FrameView() override;
 
@@ -794,7 +794,7 @@ class CORE_EXPORT FrameView final
   void invalidateTreeIfNeeded(const PaintInvalidationState&);
 
  private:
-  explicit FrameView(LocalFrame*);
+  explicit FrameView(LocalFrame&);
   class ScrollbarManager : public blink::ScrollbarManager {
     DISALLOW_NEW();
 
@@ -977,8 +977,8 @@ class CORE_EXPORT FrameView final
   bool m_inSynchronousPostLayout;
   int m_layoutCount;
   unsigned m_nestedLayoutCount;
-  Timer<FrameView> m_postLayoutTasksTimer;
-  Timer<FrameView> m_updateWidgetsTimer;
+  TaskRunnerTimer<FrameView> m_postLayoutTasksTimer;
+  TaskRunnerTimer<FrameView> m_updateWidgetsTimer;
 
   bool m_firstLayout;
   bool m_isTransparent;
