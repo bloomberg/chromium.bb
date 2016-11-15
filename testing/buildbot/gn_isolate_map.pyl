@@ -841,7 +841,7 @@
     ],
   },
   "angle_perftests": {
-    "label": "//chrom/test:angle_perftests",
+    "label": "//chrome/test:angle_perftests",
     "type": "script",
     "script": "//testing/scripts/run_gtest_perf_test.py",
     "args": [
@@ -851,7 +851,7 @@
     ],
   },
   "performance_browser_tests": {
-    "label": "//chrom/test:performance_browser_tests",
+    "label": "//chrome/test:performance_browser_tests",
     "type": "script",
     "script": "//testing/scripts/run_gtest_perf_test.py",
     "args": [
