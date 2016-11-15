@@ -84,6 +84,9 @@ class AutocompleteTextFieldObserver {
   // Called when -insertText: is invoked on the editor.
   virtual void OnInsertText() = 0;
 
+  // Called before a -drawRect: operation.
+  virtual void OnBeforeDrawRect() = 0;
+
   // Called after the completion of a -drawRect: operation.
   virtual void OnDidDrawRect() = 0;
 

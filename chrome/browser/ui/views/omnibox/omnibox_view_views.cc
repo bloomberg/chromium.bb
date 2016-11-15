@@ -301,7 +301,10 @@ void OmniboxViewViews::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 }
 
 void OmniboxViewViews::OnPaint(gfx::Canvas* canvas) {
-  Textfield::OnPaint(canvas);
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER("Omnibox.PaintTime");
+    Textfield::OnPaint(canvas);
+  }
   if (!insert_char_time_.is_null()) {
     UMA_HISTOGRAM_TIMES("Omnibox.CharTypedToRepaintLatency",
                         base::TimeTicks::Now() - insert_char_time_);

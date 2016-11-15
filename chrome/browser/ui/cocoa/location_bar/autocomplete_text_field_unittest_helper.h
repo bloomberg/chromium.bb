@@ -50,6 +50,7 @@ class MockAutocompleteTextFieldObserver : public AutocompleteTextFieldObserver {
   MOCK_METHOD0(OnDidChange, void());
   MOCK_METHOD0(OnDidEndEditing, void());
   MOCK_METHOD0(OnInsertText, void());
+  MOCK_METHOD0(OnBeforeDrawRect, void());
   MOCK_METHOD0(OnDidDrawRect, void());
   MOCK_METHOD1(OnDoCommandBySelector, bool(SEL cmd));
   MOCK_METHOD1(OnSetFocus, void(bool control_down));

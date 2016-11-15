@@ -772,10 +772,16 @@ void OmniboxViewMac::OnInsertText() {
     insert_char_time_ = base::TimeTicks::Now();
 }
 
+void OmniboxViewMac::OnBeforeDrawRect() {
+  draw_rect_start_time_ = base::TimeTicks::Now();
+}
+
 void OmniboxViewMac::OnDidDrawRect() {
+  base::TimeTicks now = base::TimeTicks::Now();
+  UMA_HISTOGRAM_TIMES("Omnibox.PaintTime", now - draw_rect_start_time_);
   if (!insert_char_time_.is_null()) {
     UMA_HISTOGRAM_TIMES("Omnibox.CharTypedToRepaintLatency",
-                        base::TimeTicks::Now() - insert_char_time_);
+                        now - insert_char_time_);
     insert_char_time_ = base::TimeTicks();
   }
 }

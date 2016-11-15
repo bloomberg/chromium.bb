@@ -589,6 +589,9 @@ BOOL ThePasteboardIsTooDamnBig() {
 }
 
 - (void)drawRect:(NSRect)rect {
+  AutocompleteTextFieldObserver* observer = [self observer];
+  if (observer)
+    observer->OnBeforeDrawRect();
   [super drawRect:rect];
   autocomplete_text_field::DrawGrayTextAutocompletion(
       [self textStorage],
@@ -596,7 +599,6 @@ BOOL ThePasteboardIsTooDamnBig() {
       [[self delegate] suggestColor],
       self,
       [self bounds]);
-  AutocompleteTextFieldObserver* observer = [self observer];
   if (observer)
     observer->OnDidDrawRect();
 }

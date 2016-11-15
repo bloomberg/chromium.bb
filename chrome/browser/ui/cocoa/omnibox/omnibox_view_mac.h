@@ -112,6 +112,7 @@ class OmniboxViewMac : public OmniboxView,
   void OnDidChange() override;
   void OnDidEndEditing() override;
   void OnInsertText() override;
+  void OnBeforeDrawRect() override;
   void OnDidDrawRect() override;
   bool OnDoCommandBySelector(SEL cmd) override;
   void OnSetFocus(bool control_down) override;
@@ -231,6 +232,9 @@ class OmniboxViewMac : public OmniboxView,
   // The time of the first character insert operation that has not yet been
   // painted. Used to measure omnibox responsiveness with a histogram.
   base::TimeTicks insert_char_time_;
+
+  // The time when OnBeforeDrawRect() was called.
+  base::TimeTicks draw_rect_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewMac);
 };
