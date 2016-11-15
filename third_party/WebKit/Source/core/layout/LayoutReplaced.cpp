@@ -190,7 +190,7 @@ FloatSize LayoutReplaced::constrainIntrinsicSizeToMinMax(
       !intrinsicSizingInfo.size.isEmpty() && style()->logicalWidth().isAuto() &&
       style()->logicalHeight().isAuto()) {
     // We can't multiply or divide by 'intrinsicSizingInfo.aspectRatio' here, it
-    // breaks tests, like fast/images/zoomed-img-size.html, which
+    // breaks tests, like images/zoomed-img-size.html, which
     // can only be fixed once subpixel precision is available for things like
     // intrinsicWidth/Height - which include zoom!
     constrainedSize.setWidth(LayoutBox::computeReplacedLogicalHeight() *

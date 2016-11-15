@@ -53,7 +53,7 @@ crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html
 
 crbug.com/504613 crbug.com/524248 paint/images/image-backgrounds-not-antialiased.html [ Skip ]
 
-crbug.com/517449 [ Android ] css3/images/optimize-contrast-image.html [ Failure ]
+crbug.com/517449 [ Android ] images/optimize-contrast-image.html [ Failure ]
 
 crbug.com/531286 virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ Failure ]
 # The failure in the next line is due to virtual/gpu bots using osmesa
@@ -69,19 +69,19 @@ crbug.com/606302 [ Linux Mac Win7 ] transforms/3d/point-mapping/3d-point-mapping
 crbug.com/606302 [ Win7 Debug ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
 
 # Fails consistently on WebKit Mac10.10, WebKit Mac10.11 (retina) and mac10.10_blink_rel tryserver, but not on other Mac bots.
-crbug.com/614910 [ Mac ] virtual/gpu-rasterization/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ Pass Failure ]
+crbug.com/614910 [ Mac ] virtual/gpu-rasterization/images/pixel-crack-image-background-webkit-transform-scale.html [ Pass Failure ]
 
 crbug.com/619103 paint/invalidation/background-resize-width.html [ Failure ]
 crbug.com/619103 paint/selection/text-selection-newline-mixed-ltr-rtl.html [ Failure ]
 
 # TODO(fmalita): re-enable
-# crbug.com/624709 [ Win ] virtual/gpu-rasterization/fast/images/png-with-color-profile.html [ Failure ]
-crbug.com/624709 [ Win ] virtual/gpu-rasterization/fast/images/webp-color-profile-lossy.html [ Failure ]
-crbug.com/587737 [ Mac ] virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Timeout Failure ]
-crbug.com/603728 [ Linux ] virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Failure Timeout Pass ]
-crbug.com/624233 virtual/gpu-rasterization/fast/images/color-profile-background-clip-text.html [ Pass Failure Crash ]
+# crbug.com/624709 [ Win ] virtual/gpu-rasterization/images/png-with-color-profile.html [ Failure ]
+crbug.com/624709 [ Win ] virtual/gpu-rasterization/images/webp-color-profile-lossy.html [ Failure ]
+crbug.com/587737 [ Mac ] virtual/gpu-rasterization/images/color-profile-filter.html [ Timeout Failure ]
+crbug.com/603728 [ Linux ] virtual/gpu-rasterization/images/color-profile-filter.html [ Failure Timeout Pass ]
+crbug.com/624233 virtual/gpu-rasterization/images/color-profile-background-clip-text.html [ Pass Failure Crash ]
 
-crbug.com/657839 fast/images/color-profile-layer.html [ Skip ]
+crbug.com/657839 images/color-profile-layer.html [ Skip ]
 
 crbug.com/626748 paint/invalidation/table/cached-change-row-border-color.html [ Failure ]
 crbug.com/626748 paint/invalidation/table/cached-change-tbody-border-color.html [ Failure ]
@@ -89,9 +89,9 @@ crbug.com/626748 paint/invalidation/table/cached-change-tbody-border-color.html 
 # Very slight rendering changes caused by Skia rect clipping change.
 crbug.com/627844 virtual/gpu/fast/canvas/canvas-createImageBitmap-colorClamping.html [ Pass Failure ]
 
-crbug.com/630615 [ Win7 ] fast/images/color-profile-background-image-space.html [ Skip ]
+crbug.com/630615 [ Win7 ] images/color-profile-background-image-space.html [ Skip ]
 
-crbug.com/632000 [ Win ] fast/images/paint-subrect-grid.html [ Pass Failure ]
+crbug.com/632000 [ Win ] images/paint-subrect-grid.html [ Pass Failure ]
 
 crbug.com/636271 [ Mac ] paint/invalidation/resize-iframe-text.html [ Pass Failure ]
 crbug.com/636271 [ Linux ] paint/invalidation/resize-iframe-text.html [ Pass Failure ]
@@ -112,7 +112,6 @@ crbug.com/646015 paint/invalidation/hover-invalidation-table.html [ Failure ]
 crbug.com/646016 paint/invalidation/selected-replaced.html [ Failure ]
 
 crbug.com/655955 [ Win Linux ] fast/transforms/transform-update-frame-overflow.html [ Pass Failure ]
-
 
 # ====== Paint team owned tests to here ======
 

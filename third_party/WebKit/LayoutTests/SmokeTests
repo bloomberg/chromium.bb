@@ -28,7 +28,6 @@ css3/blending/should-have-compositing-layer.html
 css3/device-adapt/viewport-insert-rule-after.html
 css3/device-adapt/viewport-insert-rule-before.html
 css3/filters/crash-hw-sw-switch.html
-css3/images/optimize-contrast-image.html
 css3/masking/clip-path-reference-of-fake-clipPath.html
 css3/style-zoomed-image.html
 editing/caret/caret-color.html
@@ -82,14 +81,6 @@ fast/html/imports/no-browsing-context.html
 fast/html/process-end-tag-for-inbody-crash.html
 fast/html/tabindex-removal.html
 fast/html/xhtml-serialize.html
-fast/images/link-body-content-imageDimensionChanged-crash.html
-fast/images/paletted-png-with-color-profile.html
-fast/images/percent-height-image.html
-fast/images/png-extra-row-crash.html
-fast/images/script-counter-imageDimensionChanged-crash.html
-fast/images/size-failure.html
-fast/images/style-access-during-imageChanged-crash.html
-fast/images/text-content-crash.html
 fast/inline-block/anonymous-block-crash.html
 fast/inline-block/inline-block-vertical-align-2.html
 fast/inline-block/overflow-clip.html
@@ -174,6 +165,15 @@ fast/xsl/xslt-doc-enc.xml
 fullscreen/full-screen-request-rejected.html
 http/tests/download/inherited-encoding-form-submission-result.html
 http/tests/security/no-javascript-refresh.php
+images/link-body-content-imageDimensionChanged-crash.html
+images/optimize-contrast-image.html
+images/paletted-png-with-color-profile.html
+images/percent-height-image.html
+images/png-extra-row-crash.html
+images/script-counter-imageDimensionChanged-crash.html
+images/size-failure.html
+images/style-access-during-imageChanged-crash.html
+images/text-content-crash.html
 inspector-protocol/input/dispatchMouseEvent.html
 loader/reload-subresource-when-type-changes.html
 media/media-load-event.html
@@ -202,7 +202,7 @@ transforms/no_transform_hit_testing.html
 transitions/transition-transform-translate-calculated-length-crash.html
 userstyles/mixed-case-stylesheet.html
 userstyles/simple-stylesheet.html
-virtual/deferred/fast/images/link-body-content-imageDimensionChanged-crash.html
+virtual/deferred/images/link-body-content-imageDimensionChanged-crash.html
 virtual/prefer_compositing_to_lcd_text/compositing/scrollbars/scrollbar-large-overflow-rectangle.html
 virtual/stable/webexposed/internal-properties-should-not-be-exposed.html
 virtual/media-gpu-accelerated/media/video-autoplay.html

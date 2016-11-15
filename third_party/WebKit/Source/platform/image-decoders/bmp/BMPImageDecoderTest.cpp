@@ -23,8 +23,7 @@ std::unique_ptr<ImageDecoder> createDecoder() {
 }  // anonymous namespace
 
 TEST(BMPImageDecoderTest, isSizeAvailable) {
-  const char* bmpFile =
-      "/LayoutTests/fast/images/resources/lenna.bmp";  // 256x256
+  const char* bmpFile = "/LayoutTests/images/resources/lenna.bmp";  // 256x256
   RefPtr<SharedBuffer> data = readFile(bmpFile);
   ASSERT_TRUE(data.get());
 
@@ -36,8 +35,7 @@ TEST(BMPImageDecoderTest, isSizeAvailable) {
 }
 
 TEST(BMPImageDecoderTest, parseAndDecode) {
-  const char* bmpFile =
-      "/LayoutTests/fast/images/resources/lenna.bmp";  // 256x256
+  const char* bmpFile = "/LayoutTests/images/resources/lenna.bmp";  // 256x256
   RefPtr<SharedBuffer> data = readFile(bmpFile);
   ASSERT_TRUE(data.get());
 
@@ -54,7 +52,7 @@ TEST(BMPImageDecoderTest, parseAndDecode) {
 
 // Test if a BMP decoder returns a proper error while decoding an empty image.
 TEST(BMPImageDecoderTest, emptyImage) {
-  const char* bmpFile = "/LayoutTests/fast/images/resources/0x0.bmp";  // 0x0
+  const char* bmpFile = "/LayoutTests/images/resources/0x0.bmp";  // 0x0
   RefPtr<SharedBuffer> data = readFile(bmpFile);
   ASSERT_TRUE(data.get());
 
@@ -69,7 +67,7 @@ TEST(BMPImageDecoderTest, emptyImage) {
 
 TEST(BMPImageDecoderTest, int32MinHeight) {
   const char* bmpFile =
-      "/LayoutTests/fast/images/resources/1xint32_min.bmp";  // 0xINT32_MIN
+      "/LayoutTests/images/resources/1xint32_min.bmp";  // 0xINT32_MIN
   RefPtr<SharedBuffer> data = readFile(bmpFile);
   std::unique_ptr<ImageDecoder> decoder = createDecoder();
   // Test when not all data is received.
@@ -83,7 +81,7 @@ TEST(BMPImageDecoderTest, int32MinHeight) {
 // size (when BMPImageDecoder stops while it may still have input data to
 // read) and a call to do a full decode.
 TEST(BMPImageDecoderTest, mergeBuffer) {
-  const char* bmpFile = "/LayoutTests/fast/images/resources/lenna.bmp";
+  const char* bmpFile = "/LayoutTests/images/resources/lenna.bmp";
   testMergeBuffer(&createDecoder, bmpFile);
 }
 

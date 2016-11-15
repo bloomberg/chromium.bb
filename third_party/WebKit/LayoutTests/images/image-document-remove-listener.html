@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<title>Test that removing invalid event listeners from image documents doesn't crash.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+async_test(function(t) {
+    if (window.testRunner) {
+        testRunner.setCanOpenWindows();
+    }
+    var newWindow = window.open("resources/dice.png");
+    newWindow.onload =  t.step_func_done(function() {
+        newWindow.addEventListener("resize", function () {;});
+        newWindow.removeEventListener("resize", 2);
+    });
+});
+</script>

@@ -6,7 +6,7 @@
 # AddressSanitizer can not provide additional info.
 #    #0 0x7f62d3d34cf0 in ?? ??:0
 #    #1 0x1fec5c261c15ff
-crbug.com/145940 [ Linux ] fast/images/embed-does-not-propagate-dimensions-to-object-ancestor.html [ Skip ]
+crbug.com/145940 [ Linux ] images/embed-does-not-propagate-dimensions-to-object-ancestor.html [ Skip ]
 crbug.com/145940 [ Linux ] fast/loader/loadInProgress.html [ Skip ]
 crbug.com/145940 [ Linux ] fast/replaced/border-radius-clip.html [ Skip ]
 crbug.com/145940 [ Linux ] plugins/crash-restoring-plugin-page-from-page-cache.html [ Skip ]

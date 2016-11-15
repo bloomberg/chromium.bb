@@ -142,8 +142,7 @@ TEST(JPEGImageDecoderTest, tooBig) {
 // multiples of 8, to ensure we compute the correct decodedSize and pass correct
 // parameters to libjpeg to output the image with the expected size.
 TEST(JPEGImageDecoderTest, downsampleImageSizeMultipleOf8) {
-  const char* jpegFile =
-      "/LayoutTests/fast/images/resources/lenna.jpg";  // 256x256
+  const char* jpegFile = "/LayoutTests/images/resources/lenna.jpg";  // 256x256
   unsigned outputWidth, outputHeight;
 
   // 1/8 downsample.
@@ -186,7 +185,7 @@ TEST(JPEGImageDecoderTest, downsampleImageSizeMultipleOf8) {
 // multiple of 8. Ensures that we round using the same algorithm as libjpeg.
 TEST(JPEGImageDecoderTest, downsampleImageSizeNotMultipleOf8) {
   const char* jpegFile =
-      "/LayoutTests/fast/images/resources/icc-v2-gbr.jpg";  // 275x207
+      "/LayoutTests/images/resources/icc-v2-gbr.jpg";  // 275x207
   unsigned outputWidth, outputHeight;
 
   // 1/8 downsample.
@@ -227,8 +226,7 @@ TEST(JPEGImageDecoderTest, downsampleImageSizeNotMultipleOf8) {
 
 // Tests that upsampling is not allowed.
 TEST(JPEGImageDecoderTest, upsample) {
-  const char* jpegFile =
-      "/LayoutTests/fast/images/resources/lenna.jpg";  // 256x256
+  const char* jpegFile = "/LayoutTests/images/resources/lenna.jpg";  // 256x256
   unsigned outputWidth, outputHeight;
   downsample(LargeEnoughSize, &outputWidth, &outputHeight, jpegFile);
   EXPECT_EQ(256u, outputWidth);
@@ -237,7 +235,7 @@ TEST(JPEGImageDecoderTest, upsample) {
 
 TEST(JPEGImageDecoderTest, yuv) {
   const char* jpegFile =
-      "/LayoutTests/fast/images/resources/lenna.jpg";  // 256x256, YUV 4:2:0
+      "/LayoutTests/images/resources/lenna.jpg";  // 256x256, YUV 4:2:0
   unsigned outputYWidth, outputYHeight, outputUVWidth, outputUVHeight;
   readYUV(LargeEnoughSize, &outputYWidth, &outputYHeight, &outputUVWidth,
           &outputUVHeight, jpegFile);
@@ -247,7 +245,7 @@ TEST(JPEGImageDecoderTest, yuv) {
   EXPECT_EQ(128u, outputUVHeight);
 
   const char* jpegFileImageSizeNotMultipleOf8 =
-      "/LayoutTests/fast/images/resources/cropped_mandrill.jpg";  // 439x154
+      "/LayoutTests/images/resources/cropped_mandrill.jpg";  // 439x154
   readYUV(LargeEnoughSize, &outputYWidth, &outputYHeight, &outputUVWidth,
           &outputUVHeight, jpegFileImageSizeNotMultipleOf8);
   EXPECT_EQ(439u, outputYWidth);
@@ -272,22 +270,22 @@ TEST(JPEGImageDecoderTest, yuv) {
 TEST(JPEGImageDecoderTest,
      byteByByteBaselineJPEGWithColorProfileAndRestartMarkers) {
   testByteByByteDecode(&createDecoder,
-                       "/LayoutTests/fast/images/resources/"
+                       "/LayoutTests/images/resources/"
                        "small-square-with-colorspin-profile.jpg",
                        1u, cAnimationNone);
 }
 
 TEST(JPEGImageDecoderTest, byteByByteProgressiveJPEG) {
   testByteByByteDecode(&createDecoder,
-                       "/LayoutTests/fast/images/resources/bug106024.jpg", 1u,
+                       "/LayoutTests/images/resources/bug106024.jpg", 1u,
                        cAnimationNone);
 }
 
 TEST(JPEGImageDecoderTest, byteByByteRGBJPEGWithAdobeMarkers) {
   testByteByByteDecode(
       &createDecoder,
-      "/LayoutTests/fast/images/resources/rgb-jpeg-with-adobe-marker-only.jpg",
-      1u, cAnimationNone);
+      "/LayoutTests/images/resources/rgb-jpeg-with-adobe-marker-only.jpg", 1u,
+      cAnimationNone);
 }
 
 // This test verifies that calling SharedBuffer::mergeSegmentsIntoBuffer() does
@@ -295,7 +293,7 @@ TEST(JPEGImageDecoderTest, byteByByteRGBJPEGWithAdobeMarkers) {
 // size (when JPEGImageDecoder stops while it may still have input data to
 // read) and a call to do a full decode.
 TEST(JPEGImageDecoderTest, mergeBuffer) {
-  const char* jpegFile = "/LayoutTests/fast/images/resources/lenna.jpg";
+  const char* jpegFile = "/LayoutTests/images/resources/lenna.jpg";
   testMergeBuffer(&createDecoder, jpegFile);
 }
 

@@ -22,20 +22,19 @@ std::unique_ptr<ImageDecoder> createDecoder() {
 
 TEST(ICOImageDecoderTests, parseAndDecodeByteByByte) {
   testByteByByteDecode(&createDecoder,
-                       "/LayoutTests/fast/images/resources/2entries.ico", 2u,
+                       "/LayoutTests/images/resources/2entries.ico", 2u,
                        cAnimationNone);
-  testByteByByteDecode(
-      &createDecoder, "/LayoutTests/fast/images/resources/greenbox-3frames.cur",
-      3u, cAnimationNone);
+  testByteByByteDecode(&createDecoder,
+                       "/LayoutTests/images/resources/greenbox-3frames.cur", 3u,
+                       cAnimationNone);
   testByteByByteDecode(
       &createDecoder,
-      "/LayoutTests/fast/images/resources/icon-without-and-bitmap.ico", 1u,
+      "/LayoutTests/images/resources/icon-without-and-bitmap.ico", 1u,
       cAnimationNone);
+  testByteByByteDecode(&createDecoder, "/LayoutTests/images/resources/1bit.ico",
+                       1u, cAnimationNone);
   testByteByByteDecode(&createDecoder,
-                       "/LayoutTests/fast/images/resources/1bit.ico", 1u,
-                       cAnimationNone);
-  testByteByByteDecode(&createDecoder,
-                       "/LayoutTests/fast/images/resources/bug653075.ico", 2u,
+                       "/LayoutTests/images/resources/bug653075.ico", 2u,
                        cAnimationNone);
 }
 

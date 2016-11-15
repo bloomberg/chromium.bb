@@ -43,7 +43,7 @@ namespace blink {
 
 namespace {
 
-const char layoutTestResourcesDir[] = "LayoutTests/fast/images/resources";
+const char layoutTestResourcesDir[] = "LayoutTests/images/resources";
 
 std::unique_ptr<ImageDecoder> createDecoder() {
   return wrapUnique(new GIFImageDecoder(ImageDecoder::AlphaNotPremultiplied,

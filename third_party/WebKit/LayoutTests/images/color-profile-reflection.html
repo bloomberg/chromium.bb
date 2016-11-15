@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<script src="../resources/run-after-layout-and-paint.js"></script>
+
+<style>
+  .reflection {
+    -webkit-box-reflect: below 5px -webkit-gradient(linear, left top, left bottom,
+        from(transparent), color-stop(0, transparent), to(white));
+    background: url("resources/red-at-12-oclock-with-color-profile.jpg");
+    height: 260px;
+  }
+</style>
+
+<!-- The blue sector of the image should be at 12 o'clock and reflected below. -->
+<div></div>
+
+<script>
+window.onload = function() {
+  document.querySelector('div').classList.add('reflection');
+
+  if (window.testRunner)
+    runAfterLayoutAndPaint(changeColorProfile);
+};
+
+function changeColorProfile() {
+  testRunner.setColorProfile('colorSpin', done);
+}
+
+function done() {
+  setTimeout(function() { testRunner.notifyDone() }, 0);
+}
+
+if (window.testRunner) {
+  testRunner.dumpAsTextWithPixelResults();
+  testRunner.waitUntilDone();
+}
+</script>
+</html>

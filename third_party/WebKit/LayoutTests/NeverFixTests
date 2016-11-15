@@ -168,6 +168,10 @@ crbug.com/381840 virtual/prefer_compositing_to_lcd_text/compositing/overflow/ove
 # Stack overflow crashes on Win
 crbug.com/601669 [ Win ] svg/as-image/svg-nested.html [ WontFix ]
 
+# GPU rasterization antialiases differently. 
+crbug.com/665014 virtual/gpu-rasterization/images/cross-fade-svg-size-diff.html [ WontFix ]
+crbug.com/665014 virtual/gpu-rasterization/images/cross-fade-svg-size.html [ WontFix ]
+
 # Debug rendering difference only on Win Debug
 crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ WontFix ]
 crbug.com/552433 [ Win7 Debug ] svg/W3C-SVG-1.1/coords-units-02-b.svg [ WontFix ]

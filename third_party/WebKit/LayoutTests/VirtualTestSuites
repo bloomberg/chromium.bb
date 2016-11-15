@@ -64,7 +64,7 @@
   },
   {
     "prefix": "gpu-rasterization",
-    "base": "fast/images",
+    "base": "images",
     "args": ["--force-gpu-rasterization"]
   },
   {

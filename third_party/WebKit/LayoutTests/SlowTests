@@ -23,7 +23,6 @@ crbug.com/24182 editing/selection/modify_move/move-by-word-visually-crash-test-5
 crbug.com/24182 fast/dom/SelectorAPI/resig-SelectorsAPI-test.xhtml [ Slow ]
 crbug.com/24182 fast/frames/cached-frame-counter.html [ Slow ]
 crbug.com/24182 fast/frames/frame-limit.html [ Slow ]
-crbug.com/24182 fast/images/png-suite/test.html [ Slow ]
 crbug.com/24182 fast/overflow/lots-of-sibling-inline-boxes.html [ Slow ] # Particularly slow in Debug: >12x slower!
 crbug.com/24182 http/tests/accessibility/slow-document-load.html [ Slow ]
 crbug.com/24182 http/tests/cache/subresource-expiration-1.html [ Slow ]
@@ -37,6 +36,7 @@ crbug.com/24182 http/tests/navigation/slowtimerredirect-basic.html [ Slow ]
 crbug.com/24182 http/tests/storage/callbacks-are-called-in-correct-context.html [ Slow ]
 crbug.com/24182 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-aborted.html [ Slow ]
 crbug.com/24182 http/tests/notifications/close-dispatch-asynchronous.html [ Slow ]
+crbug.com/24182 images/png-suite/test.html [ Slow ]
 crbug.com/24182 jquery/attributes.html [ Slow ]
 crbug.com/24182 jquery/core.html [ Slow ]
 crbug.com/24182 jquery/css.html [ Slow ]
@@ -335,8 +335,8 @@ crbug.com/594189 virtual/spv2/fast/overflow/lots-of-sibling-inline-boxes.html [ 
 
 crbug.com/611442 imported/wpt/quirks-mode/hashless-hex-color.html [ Slow ]
 
-crbug.com/614910 virtual/gpu-rasterization/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ Slow ]
-crbug.com/614910 virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Slow ]
+crbug.com/614910 virtual/gpu-rasterization/images/pixel-crack-image-background-webkit-transform-scale.html [ Slow ]
+crbug.com/614910 virtual/gpu-rasterization/images/color-profile-filter.html [ Slow ]
 
 crbug.com/623798 paint/images/animated-gif-last-frame-crash.html [ Slow ]
 

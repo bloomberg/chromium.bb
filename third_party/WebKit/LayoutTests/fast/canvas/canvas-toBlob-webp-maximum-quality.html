@@ -23,7 +23,7 @@ image.onload = function() {
     };
 
     canvas.toBlob(function(blob) {
-        var errorImage = "../../fast/images/resources/rgb-jpeg-red.jpg";
+        var errorImage = "../../images/resources/rgb-jpeg-red.jpg";
         if (!(blob instanceof Blob)) {
             error.textContent += "FAIL: the blob is not valid.";
             result.src = errorImage;

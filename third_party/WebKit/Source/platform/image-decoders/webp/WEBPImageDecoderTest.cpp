@@ -143,7 +143,7 @@ TEST(AnimatedWebPTests, uniqueGenerationIDs) {
   std::unique_ptr<ImageDecoder> decoder = createDecoder();
 
   RefPtr<SharedBuffer> data =
-      readFile("/LayoutTests/fast/images/resources/webp-animated.webp");
+      readFile("/LayoutTests/images/resources/webp-animated.webp");
   ASSERT_TRUE(data.get());
   decoder->setData(data.get(), true);
 
@@ -160,7 +160,7 @@ TEST(AnimatedWebPTests, verifyAnimationParametersTransparentImage) {
   EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
 
   RefPtr<SharedBuffer> data =
-      readFile("/LayoutTests/fast/images/resources/webp-animated.webp");
+      readFile("/LayoutTests/images/resources/webp-animated.webp");
   ASSERT_TRUE(data.get());
   decoder->setData(data.get(), true);
 
@@ -207,7 +207,7 @@ TEST(AnimatedWebPTests,
   EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
 
   RefPtr<SharedBuffer> data =
-      readFile("/LayoutTests/fast/images/resources/webp-animated-opaque.webp");
+      readFile("/LayoutTests/images/resources/webp-animated-opaque.webp");
   ASSERT_TRUE(data.get());
   decoder->setData(data.get(), true);
 
@@ -254,8 +254,8 @@ TEST(AnimatedWebPTests, verifyAnimationParametersBlendOverwrite) {
   std::unique_ptr<ImageDecoder> decoder = createDecoder();
   EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
 
-  RefPtr<SharedBuffer> data = readFile(
-      "/LayoutTests/fast/images/resources/webp-animated-no-blend.webp");
+  RefPtr<SharedBuffer> data =
+      readFile("/LayoutTests/images/resources/webp-animated-no-blend.webp");
   ASSERT_TRUE(data.get());
   decoder->setData(data.get(), true);
 
@@ -300,28 +300,27 @@ TEST(AnimatedWebPTests, verifyAnimationParametersBlendOverwrite) {
 
 TEST(AnimatedWebPTests, parseAndDecodeByteByByte) {
   testByteByByteDecode(&createDecoder,
-                       "/LayoutTests/fast/images/resources/webp-animated.webp",
-                       3u, cAnimationLoopInfinite);
+                       "/LayoutTests/images/resources/webp-animated.webp", 3u,
+                       cAnimationLoopInfinite);
   testByteByByteDecode(
       &createDecoder,
-      "/LayoutTests/fast/images/resources/webp-animated-icc-xmp.webp", 13u,
-      32000);
+      "/LayoutTests/images/resources/webp-animated-icc-xmp.webp", 13u, 32000);
 }
 
 TEST(AnimatedWebPTests, invalidImages) {
   // ANMF chunk size is smaller than ANMF header size.
-  testInvalidImage(
-      "/LayoutTests/fast/images/resources/invalid-animated-webp.webp", true);
+  testInvalidImage("/LayoutTests/images/resources/invalid-animated-webp.webp",
+                   true);
   // One of the frame rectangles extends outside the image boundary.
-  testInvalidImage(
-      "/LayoutTests/fast/images/resources/invalid-animated-webp3.webp", true);
+  testInvalidImage("/LayoutTests/images/resources/invalid-animated-webp3.webp",
+                   true);
 }
 
 TEST(AnimatedWebPTests, truncatedLastFrame) {
   std::unique_ptr<ImageDecoder> decoder = createDecoder();
 
-  RefPtr<SharedBuffer> data = readFile(
-      "/LayoutTests/fast/images/resources/invalid-animated-webp2.webp");
+  RefPtr<SharedBuffer> data =
+      readFile("/LayoutTests/images/resources/invalid-animated-webp2.webp");
   ASSERT_TRUE(data.get());
   decoder->setData(data.get(), true);
 
@@ -343,8 +342,8 @@ TEST(AnimatedWebPTests, truncatedLastFrame) {
 TEST(AnimatedWebPTests, truncatedInBetweenFrame) {
   std::unique_ptr<ImageDecoder> decoder = createDecoder();
 
-  RefPtr<SharedBuffer> fullData = readFile(
-      "/LayoutTests/fast/images/resources/invalid-animated-webp4.webp");
+  RefPtr<SharedBuffer> fullData =
+      readFile("/LayoutTests/images/resources/invalid-animated-webp4.webp");
   ASSERT_TRUE(fullData.get());
   RefPtr<SharedBuffer> data =
       SharedBuffer::create(fullData->data(), fullData->size() - 1);
@@ -365,7 +364,7 @@ TEST(AnimatedWebPTests, reproCrash) {
   std::unique_ptr<ImageDecoder> decoder = createDecoder();
 
   RefPtr<SharedBuffer> fullData =
-      readFile("/LayoutTests/fast/images/resources/invalid_vp8_vp8x.webp");
+      readFile("/LayoutTests/images/resources/invalid_vp8_vp8x.webp");
   ASSERT_TRUE(fullData.get());
 
   // Parse partial data up to which error in bitstream is not detected.
@@ -391,15 +390,15 @@ TEST(AnimatedWebPTests, reproCrash) {
 }
 
 TEST(AnimatedWebPTests, progressiveDecode) {
-  testProgressiveDecoding(
-      &createDecoder, "/LayoutTests/fast/images/resources/webp-animated.webp");
+  testProgressiveDecoding(&createDecoder,
+                          "/LayoutTests/images/resources/webp-animated.webp");
 }
 
 TEST(AnimatedWebPTests, frameIsCompleteAndDuration) {
   std::unique_ptr<ImageDecoder> decoder = createDecoder();
 
   RefPtr<SharedBuffer> data =
-      readFile("/LayoutTests/fast/images/resources/webp-animated.webp");
+      readFile("/LayoutTests/images/resources/webp-animated.webp");
   ASSERT_TRUE(data.get());
 
   ASSERT_GE(data->size(), 10u);
@@ -428,7 +427,7 @@ TEST(AnimatedWebPTests, updateRequiredPreviousFrameAfterFirstDecode) {
   std::unique_ptr<ImageDecoder> decoder = createDecoder();
 
   RefPtr<SharedBuffer> fullData =
-      readFile("/LayoutTests/fast/images/resources/webp-animated.webp");
+      readFile("/LayoutTests/images/resources/webp-animated.webp");
   ASSERT_TRUE(fullData.get());
 
   // Check the status of requiredPreviousFrameIndex before decoding, by
@@ -457,37 +456,35 @@ TEST(AnimatedWebPTests, updateRequiredPreviousFrameAfterFirstDecode) {
 }
 
 TEST(AnimatedWebPTests, randomFrameDecode) {
-  testRandomFrameDecode(
-      &createDecoder, "/LayoutTests/fast/images/resources/webp-animated.webp");
-  testRandomFrameDecode(
-      &createDecoder,
-      "/LayoutTests/fast/images/resources/webp-animated-opaque.webp");
+  testRandomFrameDecode(&createDecoder,
+                        "/LayoutTests/images/resources/webp-animated.webp");
   testRandomFrameDecode(
       &createDecoder,
-      "/LayoutTests/fast/images/resources/webp-animated-large.webp");
+      "/LayoutTests/images/resources/webp-animated-opaque.webp");
+  testRandomFrameDecode(
+      &createDecoder, "/LayoutTests/images/resources/webp-animated-large.webp");
   testRandomFrameDecode(
       &createDecoder,
-      "/LayoutTests/fast/images/resources/webp-animated-icc-xmp.webp");
+      "/LayoutTests/images/resources/webp-animated-icc-xmp.webp");
 }
 
 TEST(AnimatedWebPTests, randomDecodeAfterClearFrameBufferCache) {
   testRandomDecodeAfterClearFrameBufferCache(
-      &createDecoder, "/LayoutTests/fast/images/resources/webp-animated.webp");
+      &createDecoder, "/LayoutTests/images/resources/webp-animated.webp");
   testRandomDecodeAfterClearFrameBufferCache(
       &createDecoder,
-      "/LayoutTests/fast/images/resources/webp-animated-opaque.webp");
+      "/LayoutTests/images/resources/webp-animated-opaque.webp");
+  testRandomDecodeAfterClearFrameBufferCache(
+      &createDecoder, "/LayoutTests/images/resources/webp-animated-large.webp");
   testRandomDecodeAfterClearFrameBufferCache(
       &createDecoder,
-      "/LayoutTests/fast/images/resources/webp-animated-large.webp");
-  testRandomDecodeAfterClearFrameBufferCache(
-      &createDecoder,
-      "/LayoutTests/fast/images/resources/webp-animated-icc-xmp.webp");
+      "/LayoutTests/images/resources/webp-animated-icc-xmp.webp");
 }
 
 TEST(AnimatedWebPTests,
      DISABLED_resumePartialDecodeAfterClearFrameBufferCache) {
   RefPtr<SharedBuffer> fullData =
-      readFile("/LayoutTests/fast/images/resources/webp-animated-large.webp");
+      readFile("/LayoutTests/images/resources/webp-animated-large.webp");
   ASSERT_TRUE(fullData.get());
   Vector<unsigned> baselineHashes;
   createDecodingBaseline(&createDecoder, fullData.get(), &baselineHashes);
@@ -521,40 +518,40 @@ TEST(AnimatedWebPTests,
 
 TEST(AnimatedWebPTests, decodeAfterReallocatingData) {
   testDecodeAfterReallocatingData(
-      &createDecoder, "/LayoutTests/fast/images/resources/webp-animated.webp");
+      &createDecoder, "/LayoutTests/images/resources/webp-animated.webp");
   testDecodeAfterReallocatingData(
       &createDecoder,
-      "/LayoutTests/fast/images/resources/webp-animated-icc-xmp.webp");
+      "/LayoutTests/images/resources/webp-animated-icc-xmp.webp");
 }
 
 TEST(AnimatedWebPTests, alphaBlending) {
-  testAlphaBlending("/LayoutTests/fast/images/resources/webp-animated.webp");
+  testAlphaBlending("/LayoutTests/images/resources/webp-animated.webp");
   testAlphaBlending(
-      "/LayoutTests/fast/images/resources/webp-animated-semitransparent1.webp");
+      "/LayoutTests/images/resources/webp-animated-semitransparent1.webp");
   testAlphaBlending(
-      "/LayoutTests/fast/images/resources/webp-animated-semitransparent2.webp");
+      "/LayoutTests/images/resources/webp-animated-semitransparent2.webp");
   testAlphaBlending(
-      "/LayoutTests/fast/images/resources/webp-animated-semitransparent3.webp");
+      "/LayoutTests/images/resources/webp-animated-semitransparent3.webp");
   testAlphaBlending(
-      "/LayoutTests/fast/images/resources/webp-animated-semitransparent4.webp");
+      "/LayoutTests/images/resources/webp-animated-semitransparent4.webp");
 }
 
 TEST(AnimatedWebPTests, isSizeAvailable) {
   testByteByByteSizeAvailable(
-      &createDecoder, "/LayoutTests/fast/images/resources/webp-animated.webp",
-      142u, false, cAnimationLoopInfinite);
+      &createDecoder, "/LayoutTests/images/resources/webp-animated.webp", 142u,
+      false, cAnimationLoopInfinite);
   // FIXME: Add color profile support for animated webp images.
   testByteByByteSizeAvailable(
       &createDecoder,
-      "/LayoutTests/fast/images/resources/webp-animated-icc-xmp.webp", 1404u,
-      false, 32000);
+      "/LayoutTests/images/resources/webp-animated-icc-xmp.webp", 1404u, false,
+      32000);
 }
 
 TEST(AnimatedWEBPTests, clearCacheExceptFrameWithAncestors) {
   std::unique_ptr<ImageDecoder> decoder = createDecoder();
 
   RefPtr<SharedBuffer> fullData =
-      readFile("/LayoutTests/fast/images/resources/webp-animated.webp");
+      readFile("/LayoutTests/images/resources/webp-animated.webp");
   ASSERT_TRUE(fullData.get());
   decoder->setData(fullData.get(), true);
 
@@ -627,33 +624,33 @@ TEST(AnimatedWEBPTests, clearCacheExceptFrameWithAncestors) {
 
 TEST(StaticWebPTests, truncatedImage) {
   // VP8 data is truncated.
-  testInvalidImage("/LayoutTests/fast/images/resources/truncated.webp", false);
+  testInvalidImage("/LayoutTests/images/resources/truncated.webp", false);
   // Chunk size in RIFF header doesn't match the file size.
-  testInvalidImage("/LayoutTests/fast/images/resources/truncated2.webp", true);
+  testInvalidImage("/LayoutTests/images/resources/truncated2.webp", true);
 }
 
 // Regression test for a bug where some valid images were failing to decode
 // incrementally.
 TEST(StaticWebPTests, incrementalDecode) {
   testByteByByteDecode(&createDecoder,
-                       "/LayoutTests/fast/images/resources/crbug.364830.webp",
-                       1u, cAnimationNone);
+                       "/LayoutTests/images/resources/crbug.364830.webp", 1u,
+                       cAnimationNone);
 }
 
 TEST(StaticWebPTests, isSizeAvailable) {
   testByteByByteSizeAvailable(
       &createDecoder,
-      "/LayoutTests/fast/images/resources/webp-color-profile-lossy.webp", 520u,
-      true, cAnimationNone);
+      "/LayoutTests/images/resources/webp-color-profile-lossy.webp", 520u, true,
+      cAnimationNone);
   testByteByByteSizeAvailable(&createDecoder,
-                              "/LayoutTests/fast/images/resources/test.webp",
-                              30u, false, cAnimationNone);
+                              "/LayoutTests/images/resources/test.webp", 30u,
+                              false, cAnimationNone);
 }
 
 TEST(StaticWebPTests, notAnimated) {
   std::unique_ptr<ImageDecoder> decoder = createDecoder();
-  RefPtr<SharedBuffer> data = readFile(
-      "/LayoutTests/fast/images/resources/webp-color-profile-lossy.webp");
+  RefPtr<SharedBuffer> data =
+      readFile("/LayoutTests/images/resources/webp-color-profile-lossy.webp");
   ASSERT_TRUE(data.get());
   decoder->setData(data.get(), true);
   EXPECT_EQ(1u, decoder->frameCount());
