@@ -917,8 +917,7 @@ willPositionSheet:(NSWindow*)sheet
   [infoBarContainerController_
       setInfobarArrowX:[self locationBarBridge]->GetPageInfoBubblePoint().x];
 
-  if (!NSIsEmptyRect(output.downloadShelfFrame))
-    [[downloadShelfController_ view] setFrame:output.downloadShelfFrame];
+  [[downloadShelfController_ view] setFrame:output.downloadShelfFrame];
 
   [self layoutTabContentArea:output.contentAreaFrame];
 
