@@ -20,7 +20,7 @@ class ScriptPromiseResolver;
 class SetSinkIdCallbacks final : public WebSetSinkIdCallbacks {
   // FIXME(tasak): When making public/platform classes to use PartitionAlloc,
   // the following macro should be moved to WebCallbacks defined in
-  // public/platformWebCallbacks.h.
+  // public/platform/WebCallbacks.h.
   USING_FAST_MALLOC(SetSinkIdCallbacks);
   WTF_MAKE_NONCOPYABLE(SetSinkIdCallbacks);
 

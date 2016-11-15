@@ -29,7 +29,7 @@ class SyncRegistrationCallbacks final : public WebSyncRegistrationCallbacks {
   WTF_MAKE_NONCOPYABLE(SyncRegistrationCallbacks);
   // FIXME(tasak): When making public/platform classes to use PartitionAlloc,
   // the following macro should be moved to WebCallbacks defined in
-  // public/platformWebCallbacks.h.
+  // public/platform/WebCallbacks.h.
   USING_FAST_MALLOC(SyncRegistrationCallbacks);
 
  public:
@@ -54,7 +54,7 @@ class SyncGetRegistrationsCallbacks final
   WTF_MAKE_NONCOPYABLE(SyncGetRegistrationsCallbacks);
   // FIXME(tasak): When making public/platform classes to use PartitionAlloc,
   // the following macro should be moved to WebCallbacks defined in
-  // public/platformWebCallbacks.h.
+  // public/platform/WebCallbacks.h.
   USING_FAST_MALLOC(SyncGetRegistrationsCallbacks);
 
  public:
