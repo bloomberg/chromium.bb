@@ -82,6 +82,8 @@ config("icu_code") {
   }
   if (is_clang) {
     cflags += [
+      # ICU uses its own deprecated functions.
+      "-Wno-deprecated-declarations",
       # ICU has some code with the pattern:
       #   if (found = uprv_getWindowsTimeZoneInfo(...))
       "-Wno-parentheses",
