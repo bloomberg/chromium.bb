@@ -241,6 +241,39 @@ bool CheckUniqueAndNonNullIds(GLsizei n, const GLuint* client_ids) {
          (unique_ids.find(0) == unique_ids.end());
 }
 
+const char* GetServiceVersionString(const FeatureInfo* feature_info) {
+  if (feature_info->IsWebGL2OrES3Context())
+    return "OpenGL ES 3.0 Chromium";
+  else
+    return "OpenGL ES 2.0 Chromium";
+}
+
+const char* GetServiceShadingLanguageVersionString(
+    const FeatureInfo* feature_info) {
+  if (feature_info->IsWebGL2OrES3Context())
+    return "OpenGL ES GLSL ES 3.0 Chromium";
+  else
+    return "OpenGL ES GLSL ES 1.0 Chromium";
+}
+
+const char* GetServiceRendererString(const FeatureInfo* feature_info) {
+  // Return the unmasked RENDERER string for WebGL contexts.
+  // It is used by WEBGL_debug_renderer_info.
+  if (!feature_info->IsWebGLContext())
+    return "Chromium";
+  else
+    return reinterpret_cast<const char*>(glGetString(GL_RENDERER));
+}
+
+const char* GetServiceVendorString(const FeatureInfo* feature_info) {
+  // Return the unmasked VENDOR string for WebGL contexts.
+  // It is used by WEBGL_debug_renderer_info.
+  if (!feature_info->IsWebGLContext())
+    return "Chromium";
+  else
+    return reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+}
+
 void APIENTRY LogGLDebugMessage(GLenum source,
                                 GLenum type,
                                 GLuint id,

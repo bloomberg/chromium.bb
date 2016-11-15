@@ -239,6 +239,8 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   scoped_refptr<ShaderTranslatorInterface> GetTranslator(GLenum type) override;
 
  private:
+  void BuildExtensionsString();
+
   int commands_to_process_;
 
   DebugMarkerManager debug_marker_manager_;
@@ -300,6 +302,9 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   // State tracking of currently bound 2D textures (client IDs)
   size_t active_texture_unit_;
   std::vector<GLuint> bound_textures_;
+
+  std::vector<std::string> emulated_extensions_;
+  std::string extension_string_;
 
 // Include the prototypes of all the doer functions from a separate header to
 // keep this file clean.

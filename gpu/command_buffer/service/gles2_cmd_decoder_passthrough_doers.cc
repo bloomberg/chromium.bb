@@ -1072,8 +1072,27 @@ error::Error GLES2DecoderPassthroughImpl::DoGetShaderSource(
 
 error::Error GLES2DecoderPassthroughImpl::DoGetString(GLenum name,
                                                       const char** result) {
-  // TODO(geofflang): Append additional CHROMIUM extension strings?
-  *result = reinterpret_cast<const char*>(glGetString(name));
+  switch (name) {
+    case GL_VERSION:
+      *result = GetServiceVersionString(feature_info_.get());
+      break;
+    case GL_SHADING_LANGUAGE_VERSION:
+      *result = GetServiceShadingLanguageVersionString(feature_info_.get());
+      break;
+    case GL_RENDERER:
+      *result = GetServiceRendererString(feature_info_.get());
+      break;
+    case GL_VENDOR:
+      *result = GetServiceVendorString(feature_info_.get());
+      break;
+    case GL_EXTENSIONS:
+      *result = extension_string_.c_str();
+      break;
+    default:
+      *result = reinterpret_cast<const char*>(glGetString(name));
+      break;
+  }
+
   return error::kNoError;
 }
 

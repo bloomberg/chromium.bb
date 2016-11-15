@@ -12083,25 +12083,17 @@ error::Error GLES2DecoderImpl::HandleGetString(uint32_t immediate_data_size,
   std::string extensions;
   switch (name) {
     case GL_VERSION:
-      if (feature_info_->IsWebGL2OrES3Context())
-        str = "OpenGL ES 3.0 Chromium";
-      else
-        str = "OpenGL ES 2.0 Chromium";
+      str = GetServiceVersionString(feature_info_.get());
       break;
     case GL_SHADING_LANGUAGE_VERSION:
-      if (feature_info_->IsWebGL2OrES3Context())
-        str = "OpenGL ES GLSL ES 3.0 Chromium";
-      else
-        str = "OpenGL ES GLSL ES 1.0 Chromium";
+      str = GetServiceShadingLanguageVersionString(feature_info_.get());
       break;
     case GL_RENDERER:
+      str = GetServiceRendererString(feature_info_.get());
+      break;
     case GL_VENDOR:
-      // Return the unmasked VENDOR/RENDERER string for WebGL contexts.
-      // They are used by WEBGL_debug_renderer_info.
-      if (!feature_info_->IsWebGLContext())
-        str = "Chromium";
-      else
-        str = reinterpret_cast<const char*>(glGetString(name));
+      str = GetServiceVendorString(feature_info_.get());
+      break;
       break;
     case GL_EXTENSIONS:
       {

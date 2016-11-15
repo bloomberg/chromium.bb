@@ -186,6 +186,14 @@ bool GLES2DecoderPassthroughImpl::Initialize(
     InitializeGLDebugLogging();
   }
 
+  emulated_extensions_.push_back("GL_CHROMIUM_lose_context");
+  emulated_extensions_.push_back("GL_CHROMIUM_pixel_transfer_buffer_object");
+  emulated_extensions_.push_back("GL_CHROMIUM_resource_safe");
+  emulated_extensions_.push_back("GL_CHROMIUM_strict_attribs");
+  emulated_extensions_.push_back("GL_CHROMIUM_texture_mailbox");
+  emulated_extensions_.push_back("GL_CHROMIUM_trace_marker");
+  BuildExtensionsString();
+
   set_initialized();
   return true;
 }
@@ -529,6 +537,16 @@ const gpu::gles2::ContextState* GLES2DecoderPassthroughImpl::GetContextState() {
 scoped_refptr<ShaderTranslatorInterface>
 GLES2DecoderPassthroughImpl::GetTranslator(GLenum type) {
   return nullptr;
+}
+
+void GLES2DecoderPassthroughImpl::BuildExtensionsString() {
+  std::ostringstream combined_string_stream;
+  combined_string_stream << reinterpret_cast<const char*>(
+                                glGetString(GL_EXTENSIONS))
+                         << " ";
+  std::copy(emulated_extensions_.begin(), emulated_extensions_.end(),
+            std::ostream_iterator<std::string>(combined_string_stream, " "));
+  extension_string_ = combined_string_stream.str();
 }
 
 #define GLES2_CMD_OP(name)                                               \
