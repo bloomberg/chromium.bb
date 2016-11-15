@@ -20,6 +20,7 @@
 
 namespace net {
 class HttpRequestHeaders;
+class IPAddress;
 }  // namespace net
 
 namespace safe_browsing {
@@ -136,6 +137,7 @@ struct ListIdentifier {
 std::ostream& operator<<(std::ostream& os, const ListIdentifier& id);
 
 PlatformType GetCurrentPlatformType();
+const ListIdentifier GetAnyIpMalwareId();
 const ListIdentifier GetChromeUrlApiId();
 const ListIdentifier GetChromeUrlClientIncidentId();
 const ListIdentifier GetChromeUrlMalwareId();
@@ -271,6 +273,16 @@ class V4ProtocolManagerUtil {
 
   static void SetClientInfoFromConfig(ClientInfo* client_info,
                                       const V4ProtocolConfig& config);
+
+  static bool GetIPV6AddressFromString(const std::string& ip_address,
+                                       net::IPAddress* address);
+
+  // Converts a IPV4 or IPV6 address in |ip_address| to the SHA1 hash of the
+  // corresponding packed IPV6 address in |hashed_encoded_ip|, and adds an
+  // extra byte containing the value 128 at the end. This is done to match the
+  // server implementation for calculating the hash prefix of an IP address.
+  static bool IPAddressToEncodedIPV6Hash(const std::string& ip_address,
+                                         FullHash* hashed_encoded_ip);
 
  private:
   V4ProtocolManagerUtil(){};

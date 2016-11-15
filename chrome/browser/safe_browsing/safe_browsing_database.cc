@@ -27,6 +27,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 #include "components/safe_browsing_db/prefix_set.h"
+#include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"
 #include "net/base/ip_address.h"
@@ -958,12 +959,9 @@ bool SafeBrowsingDatabaseNew::ContainsExtensionPrefixes(
 
 bool SafeBrowsingDatabaseNew::ContainsMalwareIP(const std::string& ip_address) {
   net::IPAddress address;
-  if (!address.AssignFromIPLiteral(ip_address))
+  if (!V4ProtocolManagerUtil::GetIPV6AddressFromString(ip_address, &address)) {
     return false;
-  if (address.IsIPv4())
-    address = net::ConvertIPv4ToIPv4MappedIPv6(address);
-  if (!address.IsIPv6())
-    return false;  // better safe than sorry.
+  }
 
   std::unique_ptr<ReadTransaction> txn = state_manager_.BeginReadTransaction();
   const IPBlacklist* ip_blacklist = txn->ip_blacklist();

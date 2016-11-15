@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/safe_browsing_db/v4_feature_list.h"
+#include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -236,9 +237,23 @@ bool V4LocalDatabaseManager::MatchDownloadWhitelistUrl(const GURL& url) {
 }
 
 bool V4LocalDatabaseManager::MatchMalwareIP(const std::string& ip_address) {
-  // TODO(vakh): Implement this skeleton.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return false;
+  if (!enabled_) {
+    return false;
+  }
+  FullHash hashed_encoded_ip;
+  if (!V4ProtocolManagerUtil::IPAddressToEncodedIPV6Hash(ip_address,
+                                                         &hashed_encoded_ip)) {
+    return false;
+  }
+
+  std::set<FullHash> hashed_encoded_ips{hashed_encoded_ip};
+  std::unique_ptr<PendingCheck> check = base::MakeUnique<PendingCheck>(
+      nullptr, ClientCallbackType::CHECK_MALWARE_IP,
+      StoresToCheck({GetAnyIpMalwareId()}), hashed_encoded_ips);
+
+  // HandleCheckSynchronously() tells us whether the resource is safe.
+  return !HandleCheckSynchronously(std::move(check));
 }
 
 bool V4LocalDatabaseManager::MatchModuleWhitelistString(
@@ -371,7 +386,8 @@ bool V4LocalDatabaseManager::GetPrefixMatches(
   const base::TimeTicks before = TimeTicks::Now();
   if (check->client_callback_type == ClientCallbackType::CHECK_BROWSE_URL ||
       check->client_callback_type == ClientCallbackType::CHECK_DOWNLOAD_URLS ||
-      check->client_callback_type == ClientCallbackType::CHECK_EXTENSION_IDS) {
+      check->client_callback_type == ClientCallbackType::CHECK_EXTENSION_IDS ||
+      check->client_callback_type == ClientCallbackType::CHECK_MALWARE_IP) {
     DCHECK(!check->full_hashes.empty());
 
     full_hash_to_store_and_hash_prefixes->clear();
@@ -455,7 +471,18 @@ bool V4LocalDatabaseManager::HandleCheck(std::unique_ptr<PendingCheck> check) {
       base::Bind(&V4LocalDatabaseManager::PerformFullHashCheck, this,
                  base::Passed(std::move(check)),
                  full_hash_to_store_and_hash_prefixes));
+
   return false;
+}
+
+bool V4LocalDatabaseManager::HandleCheckSynchronously(
+    std::unique_ptr<PendingCheck> check) {
+  if (!v4_database_) {
+    return true;
+  }
+
+  FullHashToStoreAndHashPrefixesMap full_hash_to_store_and_hash_prefixes;
+  return !GetPrefixMatches(check, &full_hash_to_store_and_hash_prefixes);
 }
 
 void V4LocalDatabaseManager::OnFullHashResponse(

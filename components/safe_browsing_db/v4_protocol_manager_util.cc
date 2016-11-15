@@ -7,10 +7,12 @@
 #include "base/base64.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
+#include "base/sha1.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "crypto/sha2.h"
 #include "net/base/escape.h"
+#include "net/base/ip_address.h"
 #include "net/http/http_request_headers.h"
 #include "url/url_util.h"
 
@@ -83,6 +85,10 @@ PlatformType GetCurrentPlatformType() {
 // return an error response which will pollute our UMA metrics.
 return LINUX_PLATFORM;
 #endif
+}
+
+const ListIdentifier GetAnyIpMalwareId() {
+  return ListIdentifier(ANY_PLATFORM, IP_RANGE, MALWARE_THREAT);
 }
 
 const ListIdentifier GetChromeUrlApiId() {
@@ -526,6 +532,39 @@ void V4ProtocolManagerUtil::SetClientInfoFromConfig(
   DCHECK(client_info);
   client_info->set_client_id(config.client_name);
   client_info->set_client_version(config.version);
+}
+
+// static
+bool V4ProtocolManagerUtil::GetIPV6AddressFromString(
+    const std::string& ip_address,
+    net::IPAddress* address) {
+  DCHECK(address);
+  if (!address->AssignFromIPLiteral(ip_address))
+    return false;
+  if (address->IsIPv4())
+    *address = net::ConvertIPv4ToIPv4MappedIPv6(*address);
+  return address->IsIPv6();
+}
+
+// static
+bool V4ProtocolManagerUtil::IPAddressToEncodedIPV6Hash(
+    const std::string& ip_address,
+    FullHash* hashed_encoded_ip) {
+  net::IPAddress address;
+  if (!GetIPV6AddressFromString(ip_address, &address)) {
+    return false;
+  }
+  std::string packed_ip = net::IPAddressToPackedString(address);
+  if (packed_ip.empty()) {
+    return false;
+  }
+
+  const std::string hash = base::SHA1HashString(packed_ip);
+  DCHECK_EQ(20u, hash.size());
+  hashed_encoded_ip->resize(hash.size() + 1);
+  hashed_encoded_ip->replace(0, hash.size(), hash);
+  (*hashed_encoded_ip)[hash.size()] = static_cast<unsigned char>(128);
+  return true;
 }
 
 }  // namespace safe_browsing

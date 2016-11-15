@@ -95,9 +95,13 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
     // unsafe resource.
     CHECK_RESOURCE_URL = 2,
 
-    // This represents the case where we're trying to determine if a Chrome
+    // This represents the case when we're trying to determine if a Chrome
     // extension is a unsafe.
-    CHECK_EXTENSION_IDS = 3
+    CHECK_EXTENSION_IDS = 3,
+
+    // This represents the case when we're trying to determing if an IP address
+    // is unsafe due to hosting Malware.
+    CHECK_MALWARE_IP = 4,
   };
 
   // The information we need to process a URL safety reputation request and
@@ -196,6 +200,11 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   // returns true immediately if there's no match. If a match is found, it
   // schedules a task to perform full hash check and returns false.
   bool HandleCheck(std::unique_ptr<PendingCheck> check);
+
+  // Checks the database for prefix matches. Returns true if the database isn't
+  // ready or if there's no match; false otherwise. This is used for lists that
+  // have full hash information in the database.
+  bool HandleCheckSynchronously(std::unique_ptr<PendingCheck> check);
 
   // Called when the |v4_get_hash_protocol_manager_| has the full hash response
   // available for the URL that we requested. It determines the severest

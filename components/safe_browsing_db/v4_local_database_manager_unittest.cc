@@ -37,7 +37,13 @@ class FakeV4Database : public V4Database {
       const FullHash& full_hash,
       const StoresToCheck& stores_to_check,
       StoreAndHashPrefixes* store_and_hash_prefixes) override {
-    *store_and_hash_prefixes = store_and_hash_prefixes_;
+    store_and_hash_prefixes->clear();
+    for (const StoreAndHashPrefix& stored_sahp : store_and_hash_prefixes_) {
+      const PrefixSize& prefix_size = stored_sahp.hash_prefix.size();
+      if (!full_hash.compare(0, prefix_size, stored_sahp.hash_prefix)) {
+        store_and_hash_prefixes->push_back(stored_sahp);
+      }
+    }
   }
 
  private:
@@ -231,7 +237,8 @@ TEST_F(V4LocalDatabaseManagerTest, TestCheckBrowseUrlWithFakeDbReturnsMatch) {
   net::TestURLFetcherFactory factory;
 
   StoreAndHashPrefixes store_and_hash_prefixes;
-  store_and_hash_prefixes.emplace_back(GetUrlMalwareId(), HashPrefix("aaaa"));
+  store_and_hash_prefixes.emplace_back(GetUrlMalwareId(),
+                                       HashPrefix("eW\x1A\xF\xA9"));
   ReplaceV4Database(store_and_hash_prefixes);
 
   // The fake database returns a matched hash prefix.
@@ -318,7 +325,8 @@ TEST_F(V4LocalDatabaseManagerTest, PerformFullHashCheckCalledAsync) {
   net::TestURLFetcherFactory factory;
 
   StoreAndHashPrefixes store_and_hash_prefixes;
-  store_and_hash_prefixes.emplace_back(GetUrlMalwareId(), HashPrefix("aaaa"));
+  store_and_hash_prefixes.emplace_back(GetUrlMalwareId(),
+                                       HashPrefix("eW\x1A\xF\xA9"));
   ReplaceV4Database(store_and_hash_prefixes);
 
   // The fake database returns a matched hash prefix.
@@ -347,7 +355,8 @@ TEST_F(V4LocalDatabaseManagerTest, UsingWeakPtrDropsCallback) {
   net::TestURLFetcherFactory factory;
 
   StoreAndHashPrefixes store_and_hash_prefixes;
-  store_and_hash_prefixes.emplace_back(GetUrlMalwareId(), HashPrefix("aaaa"));
+  store_and_hash_prefixes.emplace_back(GetUrlMalwareId(),
+                                       HashPrefix("eW\x1A\xF\xA9"));
   ReplaceV4Database(store_and_hash_prefixes);
 
   // The fake database returns a matched hash prefix.
@@ -363,6 +372,39 @@ TEST_F(V4LocalDatabaseManagerTest, UsingWeakPtrDropsCallback) {
 
   // Wait for the tasks scheduled by StopOnIOThread to complete.
   WaitForTasksOnTaskRunner();
+}
+
+TEST_F(V4LocalDatabaseManagerTest, TestMatchMalwareIP) {
+  StopLocalDatabaseManager();
+  v4_local_database_manager_ =
+      make_scoped_refptr(new FakeV4LocalDatabaseManager(base_dir_.GetPath()));
+  SetTaskRunnerForTest();
+  StartLocalDatabaseManager();
+  WaitForTasksOnTaskRunner();
+
+  // >>> hashlib.sha1(socket.inet_pton(socket.AF_INET6,
+  // '::ffff:192.168.1.2')).digest() + chr(128)
+  // '\xb3\xe0z\xafAv#h\x9a\xcf<\xf3ee\x94\xda\xf6y\xb1\xad\x80'
+  StoreAndHashPrefixes store_and_hash_prefixes;
+  store_and_hash_prefixes.emplace_back(GetAnyIpMalwareId(),
+                                       FullHash("\xB3\xE0z\xAF"
+                                                "Av#h\x9A\xCF<\xF3"
+                                                "ee\x94\xDA\xF6y\xB1\xAD\x80"));
+  ReplaceV4Database(store_and_hash_prefixes);
+
+  EXPECT_FALSE(v4_local_database_manager_->MatchMalwareIP(""));
+  EXPECT_FALSE(FakeV4LocalDatabaseManager::PerformFullHashCheckCalled(
+      v4_local_database_manager_));
+
+  // The fake database returns no match.
+  EXPECT_FALSE(v4_local_database_manager_->MatchMalwareIP("192.168.1.1"));
+  EXPECT_FALSE(FakeV4LocalDatabaseManager::PerformFullHashCheckCalled(
+      v4_local_database_manager_));
+
+  // The fake database returns a matched hash prefix.
+  EXPECT_TRUE(v4_local_database_manager_->MatchMalwareIP("192.168.1.2"));
+  EXPECT_FALSE(FakeV4LocalDatabaseManager::PerformFullHashCheckCalled(
+      v4_local_database_manager_));
 }
 
 }  // namespace safe_browsing
