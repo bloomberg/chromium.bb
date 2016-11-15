@@ -435,6 +435,19 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/framebufferblit/rect_04.html',
         ['mac', 'intel'], bug=483282)
 
+    self.Fail('conformance2/textures/image_data/' +
+        'tex-2d-rgba8ui-rgba_integer-unsigned_byte.html',
+        ['mac', 'intel'], bug=665197)
+    self.Fail('conformance2/textures/image_data/' +
+        'tex-2d-rgb8ui-rgb_integer-unsigned_byte.html',
+        ['mac', 'intel'], bug=665197)
+    self.Fail('conformance2/textures/image_data/' +
+        'tex-2d-rg8ui-rg_integer-unsigned_byte.html',
+        ['mac', 'intel'], bug=665197)
+    self.Fail('conformance2/textures/image_data/' +
+        'tex-2d-r8ui-red_integer-unsigned_byte.html',
+        ['mac', 'intel'], bug=665197)
+
     # Fixed on OSX 10.11
     self.Fail('deqp/functional/gles3/uniformbuffers/random.html',
         ['mac', 'intel'], bug=618464)
