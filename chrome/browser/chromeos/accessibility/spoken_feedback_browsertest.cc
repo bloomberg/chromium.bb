@@ -535,7 +535,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, MAYBE_ChromeVoxShiftSearch) {
   // Press Search+/ to enter ChromeVox's "find in page".
   SendKeyPressWithSearch(ui::VKEY_OEM_2);
   EXPECT_EQ(", window", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("webView", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ("chrome vox Panel", speech_monitor_.GetNextUtterance());
   EXPECT_EQ("Find in page.", speech_monitor_.GetNextUtterance());
 }
 
