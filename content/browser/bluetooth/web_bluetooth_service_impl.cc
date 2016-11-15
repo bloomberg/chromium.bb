@@ -407,6 +407,14 @@ void WebBluetoothServiceImpl::RemoteServerGetPrimaryServices(
           : UMAWebBluetoothFunction::GET_PRIMARY_SERVICES);
   RecordGetPrimaryServicesServices(quantity, services_uuid);
 
+  if (!allowed_devices_map_.IsOriginAllowedToAccessAtLeastOneService(
+          GetOrigin(), device_id)) {
+    callback.Run(
+        blink::mojom::WebBluetoothResult::NOT_ALLOWED_TO_ACCESS_ANY_SERVICE,
+        nullptr /* service */);
+    return;
+  }
+
   if (services_uuid &&
       !allowed_devices_map_.IsOriginAllowedToAccessService(
           GetOrigin(), device_id, services_uuid.value())) {

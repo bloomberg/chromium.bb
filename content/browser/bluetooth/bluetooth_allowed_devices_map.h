@@ -57,6 +57,12 @@ class CONTENT_EXPORT BluetoothAllowedDevicesMap final {
   const std::string& GetDeviceAddress(const url::Origin& origin,
                                       const WebBluetoothDeviceId& device_id);
 
+  // Returns true if the origin has previously been granted access to at least
+  // one service.
+  bool IsOriginAllowedToAccessAtLeastOneService(
+      const url::Origin& origin,
+      const WebBluetoothDeviceId& device_id) const;
+
   // Returns true if the origin has previously been granted access to
   // the service.
   bool IsOriginAllowedToAccessService(

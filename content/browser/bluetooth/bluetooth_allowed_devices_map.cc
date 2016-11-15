@@ -115,6 +115,22 @@ const std::string& BluetoothAllowedDevicesMap::GetDeviceAddress(
                                                    : id_iter->second;
 }
 
+bool BluetoothAllowedDevicesMap::IsOriginAllowedToAccessAtLeastOneService(
+    const url::Origin& origin,
+    const WebBluetoothDeviceId& device_id) const {
+  auto id_map_iter = origin_to_device_id_to_services_map_.find(origin);
+  if (id_map_iter == origin_to_device_id_to_services_map_.end()) {
+    return false;
+  }
+
+  const auto& device_id_to_services_map = id_map_iter->second;
+
+  auto id_iter = device_id_to_services_map.find(device_id);
+
+  return id_iter == device_id_to_services_map.end() ? false
+                                                    : !id_iter->second.empty();
+}
+
 bool BluetoothAllowedDevicesMap::IsOriginAllowedToAccessService(
     const url::Origin& origin,
     const WebBluetoothDeviceId& device_id,

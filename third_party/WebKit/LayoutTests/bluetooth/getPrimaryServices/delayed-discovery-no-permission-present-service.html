@@ -7,10 +7,11 @@
 promise_test(() => {
   return setBluetoothFakeAdapter('DelayedServicesDiscoveryAdapter')
     .then(() => requestDeviceWithKeyDown({
-      filters: [{name: 'Heart Rate Device'}]}))
+      filters: [{name: 'Heart Rate Device'}],
+      optionalServices: ['battery_service']}))
     .then(device => device.gatt.connect())
     .then(gattServer => assert_promise_rejects_with_message(
         gattServer.getPrimaryServices(),
       new DOMException('No Services found in device.', 'NotFoundError')));
-}, 'Delayed service discovery, request for present service without permission. Reject with NotFoundError.');
+}, 'Delayed service discovery, request for present service without permission for that service. Reject with NotFoundError.');
 </script>

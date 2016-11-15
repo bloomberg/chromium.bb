@@ -121,6 +121,10 @@ DOMException* BluetoothError::take(
       MAP_ERROR(BLACKLISTED_WRITE, SecurityError,
                 "writeValue() called on blacklisted object marked "
                 "exclude-writes. https://goo.gl/4NeimX");
+      MAP_ERROR(NOT_ALLOWED_TO_ACCESS_ANY_SERVICE, SecurityError,
+                "Origin is not allowed to access any service. Tip: Add the "
+                "service UUID to 'optionalServices' in requestDevice() "
+                "options. https://goo.gl/HxfxSQ");
       MAP_ERROR(NOT_ALLOWED_TO_ACCESS_SERVICE, SecurityError,
                 "Origin is not allowed to access the service. Tip: Add the "
                 "service UUID to 'optionalServices' in requestDevice() "
