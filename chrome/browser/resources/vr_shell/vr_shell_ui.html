@@ -19,40 +19,44 @@ found in the LICENSE file.
 </head>
 <body>
   <div id="ui">
-    <div id="webvr-not-secure-permanent" class="webvr-message-box">
+    <div id="webvr-not-secure-permanent" class="webvr-message-box ui-element">
       <div class="webvr-box">
         <img class="webvr-not-secure-icon" width="36" height="36"
              src="../../../../ui/webui/resources/images/i_circle.svg">
         <div class="webvr-string">$i18n{insecureWebVrContentPermanent}</div>
       </div>
     </div>
-    <div id="webvr-not-secure-transient" class="webvr-message-box">
+    <div id="webvr-not-secure-transient" class="webvr-message-box ui-element">
       <div>
         <div>$i18n{insecureWebVrContentTransient}</div>
       </div>
     </div>
-
-    <div id="omni">
-      <img id="connection-security"
-           src="../../../../ui/webui/resources/images/i_circle.svg">
-      <div id="url">
-          <span id="domain"></span><span id="path"></span>
+    <div class="ui-element">
+      <div id="omni" class="idle">
+        <div id="omni-content">
+          <img id="omni-insecure-icon" class="connection-security"
+               src="../../../../ui/webui/resources/images/i_circle.svg">
+          <img id="omni-secure-icon" class="connection-security"
+               src="../../../../ui/webui/resources/images/lock.svg">
+          <div id="url">
+              <span id="domain"></span><span id="path"></span>
+          </div>
+        </div>
       </div>
     </div>
-
-    <div class="round-button" id="back">
+    <div id="back" class="round-button ui-element">
       <div class="button"></div>
       <div class="caption">$i18n{back}</div>
     </div>
-    <div class="round-button" id="reload">
+    <div id="reload" class="round-button ui-element">
       <div class="button"></div>
       <div class="caption">$i18n{reload}</div>
     </div>
-    <div class="round-button" id="forward">
+    <div id="forward" class="round-button ui-element">
       <div class="button"></div>
       <div class="caption">$i18n{forward}</div>
     </div>
-    <div id="reload-ui-button">Reload UI</div>
+    <div id="reload-ui-button" class="ui-element">Reload UI</div>
   </div>
 </body>
 

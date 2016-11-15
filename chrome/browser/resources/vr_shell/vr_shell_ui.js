@@ -44,21 +44,20 @@ var vrShellUi = (function() {
   class DomUiElement {
     constructor(domId) {
       let domElement = document.querySelector(domId);
-      let style = window.getComputedStyle(domElement);
 
-      // Pull copy rectangle from DOM element properties.
-      let pixelX = Math.round(domElement.offsetLeft / scaleFactor);
-      let pixelY = Math.round(domElement.offsetTop / scaleFactor);
-      let pixelWidth = Math.round(
-          parseInt(style.getPropertyValue('width')) / scaleFactor);
-      let pixelHeight = Math.round(
-          parseInt(style.getPropertyValue('height')) / scaleFactor);
+      // Pull copy rectangle from the position of the element.
+      let rect = domElement.getBoundingClientRect();
+      let pixelX = Math.floor(rect.left);
+      let pixelY = Math.floor(rect.top);
+      let pixelWidth = Math.ceil(rect.right) - pixelX;
+      let pixelHeight = Math.ceil(rect.bottom) - pixelY;
 
       let element = new api.UiElement(pixelX, pixelY, pixelWidth, pixelHeight);
       element.setSize(scaleFactor * pixelWidth / 1000,
           scaleFactor * pixelHeight / 1000);
 
       // Pull additional custom properties from CSS.
+      let style = window.getComputedStyle(domElement);
       element.setTranslation(
           getStyleFloat(style, '--tranX'),
           getStyleFloat(style, '--tranY'),
@@ -252,7 +251,7 @@ var vrShellUi = (function() {
 
   class Omnibox {
     constructor(contentQuadId) {
-      this.setSecure(false);
+      this.setSecureOrigin(false);
       this.domUiElement = new DomUiElement('#omni');
       let update = new api.UiElementUpdate();
       update.setVisible(false);
@@ -275,10 +274,11 @@ var vrShellUi = (function() {
       omnibox.querySelector('#path').innerHTML = path;
     }
 
-    setSecure(secure) {
-      let image = secure ? 'lock.svg' : 'i_circle.svg';
-      let path = '../../../../ui/webui/resources/images/' + image;
-      document.querySelector('#connection-security').src = path;
+    setSecureOrigin(secure) {
+      document.querySelector('#omni-secure-icon').style.display =
+          (secure ? 'block' : 'none');
+      document.querySelector('#omni-insecure-icon').style.display =
+          (!secure ? 'block' : 'none');
     }
   };
 
@@ -304,6 +304,7 @@ var vrShellUi = (function() {
 
     setSecureOrigin(secure) {
       this.secureOriginWarnings.setSecureOrigin(secure);
+      this.omnibox.setSecureOrigin(secure);
     }
 
     setReloadUiEnabled(enabled) {
