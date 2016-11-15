@@ -2227,7 +2227,7 @@ for_selectRule ()
 					break;
 			}
 			
-			/*   check before emphasis match   */
+			/*   check after emphasis match   */
 			if(transRule->after & CTC_EmpMatch)
 			{
 				if(   emphasisBuffer[src + transCharslen]

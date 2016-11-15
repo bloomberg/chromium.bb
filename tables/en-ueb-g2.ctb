@@ -559,6 +559,9 @@ empmatchafter match %[^_~]%<* be [BFHJMOPQWXZbfhjmopqwxz] 23
 
 nofor sufword be 23
 
+#   be[cfhlnsty] are handled in 10.9.5
+word beg =
+
 #   easier if after "be" cause both are dots 23
 # bb   10.6.5   10.6.6
 empmatchbefore empmatchafter match %a bb %a 23
