@@ -25,7 +25,6 @@
 
 #include "core/frame/UseCounter.h"
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
-#include "core/svg/SVGElementProxy.h"
 
 namespace blink {
 
@@ -83,7 +82,6 @@ DEFINE_TRACE(SVGFilterElement) {
   visitor->trace(m_height);
   visitor->trace(m_filterUnits);
   visitor->trace(m_primitiveUnits);
-  visitor->trace(m_elementProxySet);
   SVGElement::trace(visitor);
   SVGURIReference::trace(visitor);
 }
@@ -129,12 +127,6 @@ bool SVGFilterElement::selfHasRelativeLengths() const {
          m_y->currentValue()->isRelative() ||
          m_width->currentValue()->isRelative() ||
          m_height->currentValue()->isRelative();
-}
-
-SVGElementProxySet& SVGFilterElement::elementProxySet() {
-  if (!m_elementProxySet)
-    m_elementProxySet = new SVGElementProxySet;
-  return *m_elementProxySet;
 }
 
 }  // namespace blink

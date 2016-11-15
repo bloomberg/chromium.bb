@@ -49,8 +49,8 @@
 #include "core/layout/ClipRectsCache.h"
 #include "core/layout/LayoutBox.h"
 #include "core/paint/PaintLayerClipper.h"
-#include "core/paint/PaintLayerFilterInfo.h"
 #include "core/paint/PaintLayerFragment.h"
+#include "core/paint/PaintLayerResourceInfo.h"
 #include "core/paint/PaintLayerScrollableArea.h"
 #include "core/paint/PaintLayerStackingNode.h"
 #include "core/paint/PaintLayerStackingNodeIterator.h"
@@ -138,7 +138,7 @@ struct PaintLayerRareData {
   // composited or paints into its own backing.
   CompositedLayerMapping* groupedMapping;
 
-  Persistent<PaintLayerFilterInfo> filterInfo;
+  Persistent<PaintLayerResourceInfo> resourceInfo;
 
   // The accumulated subpixel offset of a composited layer's composited bounds
   // compared to absolute coordinates.
@@ -594,14 +594,15 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   bool hasFilterThatMovesPixels() const;
 
-  PaintLayerFilterInfo* filterInfo() const {
-    return m_rareData ? m_rareData->filterInfo.get() : nullptr;
+  PaintLayerResourceInfo* resourceInfo() const {
+    return m_rareData ? m_rareData->resourceInfo.get() : nullptr;
   }
-  PaintLayerFilterInfo& ensureFilterInfo();
-  void removeFilterInfo();
+  PaintLayerResourceInfo& ensureResourceInfo();
 
   void updateFilters(const ComputedStyle* oldStyle,
                      const ComputedStyle& newStyle);
+  void updateClipPath(const ComputedStyle* oldStyle,
+                      const ComputedStyle& newStyle);
 
   Node* enclosingNode() const;
 

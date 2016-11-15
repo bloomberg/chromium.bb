@@ -27,51 +27,57 @@
  * SUCH DAMAGE.
  */
 
-#include "core/paint/PaintLayerFilterInfo.h"
+#include "core/paint/PaintLayerResourceInfo.h"
 
 #include "core/paint/PaintLayer.h"
 #include "platform/graphics/filters/FilterEffect.h"
 
 namespace blink {
 
-PaintLayerFilterInfo::PaintLayerFilterInfo(PaintLayer* layer)
+PaintLayerResourceInfo::PaintLayerResourceInfo(PaintLayer* layer)
     : m_layer(layer) {}
 
-PaintLayerFilterInfo::~PaintLayerFilterInfo() {
+PaintLayerResourceInfo::~PaintLayerResourceInfo() {
   DCHECK(!m_layer);
 }
 
-TreeScope* PaintLayerFilterInfo::treeScope() {
+TreeScope* PaintLayerResourceInfo::treeScope() {
   DCHECK(m_layer);
   Node* node = m_layer->layoutObject()->node();
   return node ? &node->treeScope() : nullptr;
 }
 
-void PaintLayerFilterInfo::resourceContentChanged() {
+void PaintLayerResourceInfo::resourceContentChanged() {
   DCHECK(m_layer);
-  m_layer->layoutObject()->setShouldDoFullPaintInvalidation();
-  invalidateFilterChain();
+  LayoutObject* layoutObject = m_layer->layoutObject();
+  layoutObject->setShouldDoFullPaintInvalidation();
+  const ComputedStyle& style = layoutObject->styleRef();
+  if (style.hasFilter() && style.filter().hasReferenceFilter())
+    invalidateFilterChain();
 }
 
-void PaintLayerFilterInfo::resourceElementChanged() {
+void PaintLayerResourceInfo::resourceElementChanged() {
   DCHECK(m_layer);
-  m_layer->layoutObject()->setShouldDoFullPaintInvalidation();
-  invalidateFilterChain();
+  LayoutObject* layoutObject = m_layer->layoutObject();
+  layoutObject->setShouldDoFullPaintInvalidation();
+  const ComputedStyle& style = layoutObject->styleRef();
+  if (style.hasFilter() && style.filter().hasReferenceFilter())
+    invalidateFilterChain();
 }
 
-void PaintLayerFilterInfo::setLastEffect(FilterEffect* lastEffect) {
+void PaintLayerResourceInfo::setLastEffect(FilterEffect* lastEffect) {
   m_lastEffect = lastEffect;
 }
 
-FilterEffect* PaintLayerFilterInfo::lastEffect() const {
+FilterEffect* PaintLayerResourceInfo::lastEffect() const {
   return m_lastEffect;
 }
 
-void PaintLayerFilterInfo::invalidateFilterChain() {
+void PaintLayerResourceInfo::invalidateFilterChain() {
   m_lastEffect = nullptr;
 }
 
-DEFINE_TRACE(PaintLayerFilterInfo) {
+DEFINE_TRACE(PaintLayerResourceInfo) {
   visitor->trace(m_lastEffect);
   SVGResourceClient::trace(visitor);
 }

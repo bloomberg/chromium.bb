@@ -8,6 +8,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/svg/SVGCursorElement.h"
+#include "core/svg/SVGElementProxy.h"
 
 namespace blink {
 
@@ -42,6 +43,7 @@ ComputedStyle* SVGElementRareData::overrideComputedStyle(
 DEFINE_TRACE(SVGElementRareData) {
   visitor->trace(m_outgoingReferences);
   visitor->trace(m_incomingReferences);
+  visitor->trace(m_elementProxySet);
   visitor->trace(m_animatedSMILStyleProperties);
   visitor->trace(m_elementInstances);
   visitor->trace(m_correspondingElement);
@@ -71,6 +73,12 @@ void SVGElementRareData::processWeakMembers(Visitor* visitor) {
 
 AffineTransform* SVGElementRareData::animateMotionTransform() {
   return &m_animateMotionTransform;
+}
+
+SVGElementProxySet& SVGElementRareData::ensureElementProxySet() {
+  if (!m_elementProxySet)
+    m_elementProxySet = new SVGElementProxySet;
+  return *m_elementProxySet;
 }
 
 }  // namespace blink

@@ -26,10 +26,12 @@ LayoutSVGResourceClipper* resolveElementReference(
         SVGResourcesCache::cachedResourcesForLayoutObject(&layoutObject);
     return resources ? resources->clipper() : nullptr;
   }
-  // TODO(fs): It doesn't work with forward or external SVG references
-  // (https://bugs.webkit.org/show_bug.cgi?id=90405)
-  Element* element = layoutObject.document().getElementById(
-      referenceClipPathOperation.fragment());
+  // TODO(fs): Doesn't work with external SVG references (crbug.com/109212.)
+  Node* targetNode = layoutObject.node();
+  if (!targetNode)
+    return nullptr;
+  SVGElement* element =
+      referenceClipPathOperation.findElement(targetNode->treeScope());
   if (!isSVGClipPathElement(element) || !element->layoutObject())
     return nullptr;
   return toLayoutSVGResourceClipper(

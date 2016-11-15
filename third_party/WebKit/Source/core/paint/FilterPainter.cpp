@@ -36,8 +36,6 @@ FilterPainter::FilterPainter(PaintLayer& layer,
   if (!lastEffect)
     return;
 
-  DCHECK(layer.filterInfo());
-
   sk_sp<SkImageFilter> imageFilter =
       SkiaImageFilterBuilder::build(lastEffect, ColorSpaceDeviceRGB);
   if (!imageFilter)

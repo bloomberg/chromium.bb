@@ -9,7 +9,6 @@
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/svg/SVGElement.h"
-#include "core/svg/SVGFilterElement.h"
 #include "core/svg/SVGResourceClient.h"
 
 namespace blink {
@@ -157,8 +156,12 @@ SVGElement* SVGElementProxy::findElement(TreeScope& treeScope) {
   if (!lookupScope)
     return nullptr;
   if (Element* targetElement = lookupScope->getElementById(m_id)) {
-    if (isSVGFilterElement(*targetElement)) {
-      toSVGFilterElement(*targetElement).elementProxySet().add(*this);
+    SVGElementProxySet* proxySet =
+        targetElement->isSVGElement()
+            ? toSVGElement(targetElement)->elementProxySet()
+            : nullptr;
+    if (proxySet) {
+      proxySet->add(*this);
       return toSVGElement(targetElement);
     }
   }

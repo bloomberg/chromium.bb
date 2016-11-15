@@ -110,6 +110,10 @@ struct SameSizeAsPaintLayer : DisplayItemClient {
 static_assert(sizeof(PaintLayer) == sizeof(SameSizeAsPaintLayer),
               "PaintLayer should stay small");
 
+bool isReferenceClipPath(const ClipPathOperation* clipOperation) {
+  return clipOperation && clipOperation->type() == ClipPathOperation::REFERENCE;
+}
+
 }  // namespace
 
 using namespace HTMLNames;
@@ -179,9 +183,15 @@ PaintLayer::PaintLayer(LayoutBoxModelObject* layoutObject)
 }
 
 PaintLayer::~PaintLayer() {
-  if (m_rareData && m_rareData->filterInfo) {
-    layoutObject()->styleRef().filter().removeClient(m_rareData->filterInfo);
-    m_rareData->filterInfo->clearLayer();
+  if (m_rareData && m_rareData->resourceInfo) {
+    const ComputedStyle& style = layoutObject()->styleRef();
+    if (style.hasFilter())
+      style.filter().removeClient(m_rareData->resourceInfo);
+    if (isReferenceClipPath(style.clipPath())) {
+      toReferenceClipPathOperation(style.clipPath())
+          ->removeClient(m_rareData->resourceInfo);
+    }
+    m_rareData->resourceInfo->clearLayer();
   }
   if (layoutObject()->frame() && layoutObject()->frame()->page()) {
     if (ScrollingCoordinator* scrollingCoordinator =
@@ -2374,10 +2384,13 @@ bool PaintLayer::hitTestClippedOutByClipPath(
     return !clipPath->path(FloatRect(referenceBox)).contains(point);
   }
   DCHECK_EQ(clipPathOperation->type(), ClipPathOperation::REFERENCE);
-  ReferenceClipPathOperation* referenceClipPathOperation =
-      toReferenceClipPathOperation(clipPathOperation);
-  Element* element = layoutObject()->document().getElementById(
-      referenceClipPathOperation->fragment());
+  Node* targetNode = layoutObject()->node();
+  if (!targetNode)
+    return false;
+  const ReferenceClipPathOperation& referenceClipPathOperation =
+      toReferenceClipPathOperation(*clipPathOperation);
+  SVGElement* element =
+      referenceClipPathOperation.findElement(targetNode->treeScope());
   if (!isSVGClipPathElement(element) || !element->layoutObject())
     return false;
   LayoutSVGResourceClipper* clipper = toLayoutSVGResourceClipper(
@@ -2645,8 +2658,8 @@ void PaintLayer::ensureCompositedLayerMapping() {
   m_rareData->compositedLayerMapping->setNeedsGraphicsLayerUpdate(
       GraphicsLayerUpdateSubtree);
 
-  if (PaintLayerFilterInfo* filterInfo = this->filterInfo())
-    filterInfo->invalidateFilterChain();
+  if (PaintLayerResourceInfo* resourceInfo = this->resourceInfo())
+    resourceInfo->invalidateFilterChain();
 }
 
 void PaintLayer::clearCompositedLayerMapping(bool layerBeingDestroyed) {
@@ -2667,8 +2680,8 @@ void PaintLayer::clearCompositedLayerMapping(bool layerBeingDestroyed) {
   if (layerBeingDestroyed)
     return;
 
-  if (PaintLayerFilterInfo* filterInfo = this->filterInfo())
-    filterInfo->invalidateFilterChain();
+  if (PaintLayerResourceInfo* resourceInfo = this->resourceInfo())
+    resourceInfo->invalidateFilterChain();
 }
 
 void PaintLayer::setGroupedMapping(CompositedLayerMapping* groupedMapping,
@@ -2871,17 +2884,31 @@ void PaintLayer::updateFilters(const ComputedStyle* oldStyle,
   if (!newStyle.hasFilterInducingProperty() &&
       (!oldStyle || !oldStyle->hasFilterInducingProperty()))
     return;
-  const bool hadFilterInfo = filterInfo();
+  const bool hadResourceInfo = resourceInfo();
   if (newStyle.hasFilterInducingProperty())
-    newStyle.filter().addClient(&ensureFilterInfo());
-  if (hadFilterInfo && oldStyle)
-    oldStyle->filter().removeClient(filterInfo());
-  if (!newStyle.hasFilterInducingProperty()) {
-    removeFilterInfo();
+    newStyle.filter().addClient(&ensureResourceInfo());
+  if (hadResourceInfo && oldStyle)
+    oldStyle->filter().removeClient(resourceInfo());
+  if (PaintLayerResourceInfo* resourceInfo = this->resourceInfo())
+    resourceInfo->invalidateFilterChain();
+}
+
+void PaintLayer::updateClipPath(const ComputedStyle* oldStyle,
+                                const ComputedStyle& newStyle) {
+  ClipPathOperation* newClipOperation = newStyle.clipPath();
+  ClipPathOperation* oldClipOperation =
+      oldStyle ? oldStyle->clipPath() : nullptr;
+  if (!newClipOperation && !oldClipOperation)
     return;
+  const bool hadResourceInfo = resourceInfo();
+  if (isReferenceClipPath(newClipOperation)) {
+    toReferenceClipPathOperation(newClipOperation)
+        ->addClient(&ensureResourceInfo());
   }
-  if (PaintLayerFilterInfo* filterInfo = this->filterInfo())
-    filterInfo->invalidateFilterChain();
+  if (hadResourceInfo && isReferenceClipPath(oldClipOperation)) {
+    toReferenceClipPathOperation(oldClipOperation)
+        ->removeClient(resourceInfo());
+  }
 }
 
 bool PaintLayer::attemptDirectCompositingUpdate(StyleDifference diff,
@@ -2967,6 +2994,7 @@ void PaintLayer::styleDidChange(StyleDifference diff,
 
   updateTransform(oldStyle, layoutObject()->styleRef());
   updateFilters(oldStyle, layoutObject()->styleRef());
+  updateClipPath(oldStyle, layoutObject()->styleRef());
 
   setNeedsCompositingInputsUpdate();
 }
@@ -3011,18 +3039,11 @@ PaintLayer::createCompositorFilterOperationsForBackdropFilter(
   return builder.buildFilterOperations(style.backdropFilter());
 }
 
-PaintLayerFilterInfo& PaintLayer::ensureFilterInfo() {
+PaintLayerResourceInfo& PaintLayer::ensureResourceInfo() {
   PaintLayerRareData& rareData = ensureRareData();
-  if (!rareData.filterInfo)
-    rareData.filterInfo = new PaintLayerFilterInfo(this);
-  return *rareData.filterInfo;
-}
-
-void PaintLayer::removeFilterInfo() {
-  if (!m_rareData || !m_rareData->filterInfo)
-    return;
-  m_rareData->filterInfo->clearLayer();
-  m_rareData->filterInfo = nullptr;
+  if (!rareData.resourceInfo)
+    rareData.resourceInfo = new PaintLayerResourceInfo(this);
+  return *rareData.resourceInfo;
 }
 
 void PaintLayer::removeAncestorOverflowLayer(const PaintLayer* removedLayer) {
@@ -3051,11 +3072,11 @@ FilterEffect* PaintLayer::lastFilterEffect() const {
   // TODO(chrishtr): ensure (and assert) that compositing is clean here.
   if (!paintsWithFilters())
     return nullptr;
-  PaintLayerFilterInfo* filterInfo = this->filterInfo();
-  DCHECK(filterInfo);
+  PaintLayerResourceInfo* resourceInfo = this->resourceInfo();
+  DCHECK(resourceInfo);
 
-  if (filterInfo->lastEffect())
-    return filterInfo->lastEffect();
+  if (resourceInfo->lastEffect())
+    return resourceInfo->lastEffect();
 
   const ComputedStyle& style = layoutObject()->styleRef();
   FloatRect zoomedReferenceBox;
@@ -3063,9 +3084,9 @@ FilterEffect* PaintLayer::lastFilterEffect() const {
     zoomedReferenceBox = boxForFilter();
   FilterEffectBuilder builder(enclosingNode(), zoomedReferenceBox,
                               style.effectiveZoom());
-  filterInfo->setLastEffect(
+  resourceInfo->setLastEffect(
       builder.buildFilterEffect(addReflectionToFilterOperations(style)));
-  return filterInfo->lastEffect();
+  return resourceInfo->lastEffect();
 }
 
 FloatRect PaintLayer::mapRectForFilter(const FloatRect& rect) const {

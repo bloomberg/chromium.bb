@@ -61,6 +61,10 @@ void LayoutSVGResourceContainer::layout() {
   clearInvalidationMask();
 }
 
+SVGElementProxySet* LayoutSVGResourceContainer::elementProxySet() {
+  return element()->elementProxySet();
+}
+
 void LayoutSVGResourceContainer::notifyContentChanged() {
   if (SVGElementProxySet* proxySet = elementProxySet())
     proxySet->notifyContentChanged(element()->treeScope());

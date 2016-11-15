@@ -297,6 +297,7 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff,
     setHasTransformRelatedProperty(false);
     setHasReflection(false);
     layer()->updateFilters(oldStyle, styleRef());
+    layer()->updateClipPath(oldStyle, styleRef());
     // Calls destroyLayer() which clears m_layer.
     layer()->removeOnlyThisLayerAfterStyleChange();
     if (wasFloatingBeforeStyleChanged && isFloating())

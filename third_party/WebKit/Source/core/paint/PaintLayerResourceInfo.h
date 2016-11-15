@@ -27,8 +27,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef PaintLayerFilterInfo_h
-#define PaintLayerFilterInfo_h
+#ifndef PaintLayerResourceInfo_h
+#define PaintLayerResourceInfo_h
 
 #include "core/svg/SVGResourceClient.h"
 #include "platform/heap/Handle.h"
@@ -39,24 +39,24 @@ namespace blink {
 class FilterEffect;
 class PaintLayer;
 
-// PaintLayerFilterInfo holds the filter information for painting.
-// https://drafts.fxtf.org/filters/
+// PaintLayerResourceInfo holds the filter information for painting
+// https://drafts.fxtf.org/filters/. It also acts as the resource client for
+// change notifications from <clipPath> elements for the clip-path property.
 //
 // Because PaintLayer is not allocated for SVG objects, SVG filters (both
 // software and hardware-accelerated) use a different code path to paint the
 // filters (SVGFilterPainter), but both code paths use the same abstraction for
 // painting non-hardware accelerated filters (FilterEffect). Hardware
 // accelerated CSS filters use CompositorFilterOperations, that is backed by cc.
-//
-class PaintLayerFilterInfo final
-    : public GarbageCollectedFinalized<PaintLayerFilterInfo>,
+class PaintLayerResourceInfo final
+    : public GarbageCollectedFinalized<PaintLayerResourceInfo>,
       public SVGResourceClient {
-  WTF_MAKE_NONCOPYABLE(PaintLayerFilterInfo);
-  USING_GARBAGE_COLLECTED_MIXIN(PaintLayerFilterInfo);
+  WTF_MAKE_NONCOPYABLE(PaintLayerResourceInfo);
+  USING_GARBAGE_COLLECTED_MIXIN(PaintLayerResourceInfo);
 
  public:
-  explicit PaintLayerFilterInfo(PaintLayer*);
-  ~PaintLayerFilterInfo() override;
+  explicit PaintLayerResourceInfo(PaintLayer*);
+  ~PaintLayerResourceInfo() override;
 
   void setLastEffect(FilterEffect*);
   FilterEffect* lastEffect() const;
@@ -79,4 +79,4 @@ class PaintLayerFilterInfo final
 
 }  // namespace blink
 
-#endif  // PaintLayerFilterInfo_h
+#endif  // PaintLayerResourceInfo_h

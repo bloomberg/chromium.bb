@@ -87,7 +87,7 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
   void markClientForInvalidation(LayoutObject*, InvalidationMode);
 
   void notifyContentChanged();
-  virtual SVGElementProxySet* elementProxySet() { return nullptr; }
+  SVGElementProxySet* elementProxySet();
 
   void willBeDestroyed() override;
 

@@ -42,6 +42,7 @@ class SVGAnimatedString;
 class SVGCursorElement;
 class SVGDocumentExtensions;
 class SVGElement;
+class SVGElementProxySet;
 class SVGElementRareData;
 class SVGFitToViewBox;
 class SVGPropertyBase;
@@ -166,6 +167,8 @@ class CORE_EXPORT SVGElement : public Element {
   SVGAnimatedString* className() { return m_className.get(); }
 
   bool inUseShadowTree() const;
+
+  SVGElementProxySet* elementProxySet();
 
   SVGElementSet* setOfIncomingReferences() const;
   void addReferenceTo(SVGElement*);

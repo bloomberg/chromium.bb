@@ -31,6 +31,7 @@ namespace blink {
 
 class CSSCursorImageValue;
 class SVGCursorElement;
+class SVGElementProxySet;
 
 class SVGElementRareData
     : public GarbageCollectedFinalized<SVGElementRareData> {
@@ -55,6 +56,8 @@ class SVGElementRareData
   const SVGElementSet& incomingReferences() const {
     return m_incomingReferences;
   }
+
+  SVGElementProxySet& ensureElementProxySet();
 
   HeapHashSet<WeakMember<SVGElement>>& elementInstances() {
     return m_elementInstances;
@@ -125,6 +128,7 @@ class SVGElementRareData
   HeapHashSet<WeakMember<SVGElement>> m_elementInstances;
   WeakMember<SVGCursorElement> m_cursorElement;
   WeakMember<const CSSCursorImageValue> m_cursorImageValue;
+  Member<SVGElementProxySet> m_elementProxySet;
   Member<SVGElement> m_correspondingElement;
   bool m_instancesUpdatesBlocked : 1;
   bool m_useOverrideComputedStyle : 1;
