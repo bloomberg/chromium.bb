@@ -286,10 +286,10 @@ def FindCompiler(gcc, cros_prefix):
   else:
     prefix = glob.glob('/opt/linaro/gcc-linaro-%s-linux-*/bin/*gcc' % gcc)
     if not prefix:
-      cros_build_lib.Die("""Please install an ARM toolchain for your machine.
+      cros_build_lib.Die("""Please install an %s toolchain for your machine.
 Install a Linaro toolchain from:
 https://launchpad.net/linaro-toolchain-binaries
-or see cros/commands/cros_chrome_sdk.py.""")
+or see cros/commands/cros_chrome_sdk.py.""" % gcc)
     prefix = re.sub('gcc$', '', prefix[0])
   return prefix
 
