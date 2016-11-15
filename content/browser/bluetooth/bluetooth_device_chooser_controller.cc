@@ -25,6 +25,7 @@
 #include "device/bluetooth/bluetooth_discovery_session.h"
 
 using device::BluetoothUUID;
+using UUIDSet = device::BluetoothDevice::UUIDSet;
 
 namespace {
 
@@ -106,25 +107,25 @@ bool HasEmptyOrInvalidFilter(
                                              IsEmptyOrInvalidFilter);
 }
 
-bool MatchesFilter(const device::BluetoothDevice& device,
+bool MatchesFilter(const std::string* device_name,
+                   const UUIDSet& device_uuids,
                    const blink::mojom::WebBluetoothScanFilterPtr& filter) {
   if (!filter->name.is_null()) {
-    if (!device.GetName())
+    if (device_name == nullptr)
       return false;
-    if (filter->name != device.GetName().value())
+    if (filter->name != *device_name)
       return false;
   }
 
   if (!filter->name_prefix.is_null() && filter->name_prefix.size()) {
-    if (!device.GetName())
+    if (device_name == nullptr)
       return false;
-    if (!base::StartsWith(device.GetName().value(), filter->name_prefix.get(),
+    if (!base::StartsWith(*device_name, filter->name_prefix.get(),
                           base::CompareCase::SENSITIVE))
       return false;
   }
 
   if (!filter->services.is_null()) {
-    const device::BluetoothDevice::UUIDSet& device_uuids = device.GetUUIDs();
     for (const base::Optional<BluetoothUUID>& service : filter->services) {
       if (!base::ContainsKey(device_uuids, service.value())) {
         return false;
@@ -136,11 +137,12 @@ bool MatchesFilter(const device::BluetoothDevice& device,
 }
 
 bool MatchesFilters(
-    const device::BluetoothDevice& device,
+    const std::string* device_name,
+    const UUIDSet& device_uuids,
     const mojo::Array<blink::mojom::WebBluetoothScanFilterPtr>& filters) {
   DCHECK(!HasEmptyOrInvalidFilter(filters));
   for (const auto& filter : filters) {
-    if (MatchesFilter(device, filter)) {
+    if (MatchesFilter(device_name, device_uuids, filter)) {
       return true;
     }
   }
@@ -359,7 +361,10 @@ void BluetoothDeviceChooserController::GetDevice(
 
 void BluetoothDeviceChooserController::AddFilteredDevice(
     const device::BluetoothDevice& device) {
-  if (chooser_.get() && MatchesFilters(device, options_->filters)) {
+  base::Optional<std::string> device_name = device.GetName();
+  if (chooser_.get() &&
+      MatchesFilters(device_name ? &device_name.value() : nullptr,
+                     device.GetUUIDs(), options_->filters)) {
     base::Optional<int8_t> rssi = device.GetInquiryRSSI();
     chooser_->AddOrUpdateDevice(
         device.GetAddress(), !!device.GetName() /* should_update_name */,
