@@ -246,7 +246,8 @@ XMLHttpRequest::XMLHttpRequest(
       m_uploadComplete(false),
       m_sameOriginRequest(true),
       m_downloadingToFile(false),
-      m_responseTextOverflow(false) {}
+      m_responseTextOverflow(false),
+      m_sendFlag(false) {}
 
 XMLHttpRequest::~XMLHttpRequest() {}
 
@@ -552,7 +553,7 @@ void XMLHttpRequest::dispatchReadyStateChangeEvent() {
 
 void XMLHttpRequest::setWithCredentials(bool value,
                                         ExceptionState& exceptionState) {
-  if (m_state > kOpened || m_loader) {
+  if (m_state > kOpened || m_sendFlag) {
     exceptionState.throwDOMException(
         InvalidStateError,
         "The value may only be set if the object's state is UNSENT or OPENED.");
@@ -668,6 +669,7 @@ void XMLHttpRequest::open(const AtomicString& method,
   m_async = async;
 
   DCHECK(!m_loader);
+  m_sendFlag = false;
 
   // Check previous state to avoid dispatching readyState event
   // when calling open several times in a row.
@@ -685,7 +687,7 @@ bool XMLHttpRequest::initSend(ExceptionState& exceptionState) {
     return false;
   }
 
-  if (m_state != kOpened || m_loader) {
+  if (m_state != kOpened || m_sendFlag) {
     exceptionState.throwDOMException(InvalidStateError,
                                      "The object's state must be OPENED.");
     return false;
@@ -929,6 +931,7 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody,
   DCHECK(getExecutionContext());
   ExecutionContext& executionContext = *getExecutionContext();
 
+  m_sendFlag = true;
   // The presence of upload event listeners forces us to use preflighting
   // because POSTing to an URL that does not permit cross origin requests should
   // look exactly like POSTing to an URL that does not respond at all.
@@ -1032,6 +1035,7 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody,
       request.setReportUploadProgress(true);
 
     DCHECK(!m_loader);
+    DCHECK(m_sendFlag);
     m_loader = ThreadableLoader::create(executionContext, this, options,
                                         resourceLoaderOptions);
     m_loader->start(request);
@@ -1049,14 +1053,6 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody,
 
 void XMLHttpRequest::abort() {
   NETWORK_DVLOG(1) << this << " abort()";
-
-  // internalAbort() clears |m_loader|. Compute |sendFlag| now.
-  //
-  // |sendFlag| corresponds to "the send() flag" defined in the XHR spec.
-  //
-  // |sendFlag| is only set when we have an active, asynchronous loader.
-  // Don't use it as "the send() flag" when the XHR is in sync mode.
-  bool sendFlag = m_loader.get();
 
   // internalAbort() clears the response. Save the data needed for
   // dispatching ProgressEvents.
@@ -1076,7 +1072,7 @@ void XMLHttpRequest::abort() {
   // becomes true by that. We should implement more reliable treatment for
   // nested method invocations at some point.
   if (m_async) {
-    if ((m_state == kOpened && sendFlag) || m_state == kHeadersReceived ||
+    if ((m_state == kOpened && m_sendFlag) || m_state == kHeadersReceived ||
         m_state == kLoading) {
       DCHECK(!m_loader);
       handleRequestError(0, EventTypeNames::abort, receivedLength,
@@ -1225,6 +1221,7 @@ void XMLHttpRequest::handleRequestError(ExceptionCode exceptionCode,
   InspectorInstrumentation::didFailXHRLoading(getExecutionContext(), this, this,
                                               m_method, m_url);
 
+  m_sendFlag = false;
   if (!m_async) {
     DCHECK(exceptionCode);
     m_state = kDone;
@@ -1271,7 +1268,7 @@ void XMLHttpRequest::overrideMimeType(const AtomicString& mimeType,
 void XMLHttpRequest::setRequestHeader(const AtomicString& name,
                                       const AtomicString& value,
                                       ExceptionState& exceptionState) {
-  if (m_state != kOpened || m_loader) {
+  if (m_state != kOpened || m_sendFlag) {
     exceptionState.throwDOMException(InvalidStateError,
                                      "The object's state must be OPENED.");
     return;
@@ -1609,6 +1606,7 @@ void XMLHttpRequest::endLoading() {
     m_loader = nullptr;
   }
 
+  m_sendFlag = false;
   changeState(kDone);
 
   if (!getExecutionContext() || !getExecutionContext()->isDocument() ||
