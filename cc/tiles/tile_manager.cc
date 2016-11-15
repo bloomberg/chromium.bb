@@ -474,11 +474,8 @@ void TileManager::DidFinishRunningAllTileTasks() {
 
   has_scheduled_tile_tasks_ = false;
 
-  bool memory_usage_above_limit = resource_pool_->memory_usage_bytes() >
-                                  global_state_.soft_memory_limit_in_bytes;
-
   if (all_tiles_that_need_to_be_rasterized_are_scheduled_ &&
-      !memory_usage_above_limit) {
+      !resource_pool_->ResourceUsageTooHigh()) {
     // TODO(ericrk): We should find a better way to safely handle re-entrant
     // notifications than always having to schedule a new task.
     // http://crbug.com/498439

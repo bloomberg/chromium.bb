@@ -687,8 +687,7 @@ class CC_EXPORT LayerTreeHostImpl
                                    const gfx::Vector2dF& scroll_delta,
                                    base::TimeDelta delayed_by);
 
-  void SetCompositorContextVisibility(bool is_visible);
-  void SetWorkerContextVisibility(bool is_visible);
+  void SetContextVisibility(bool is_visible);
 
   using UIResourceMap = std::unordered_map<UIResourceId, UIResourceData>;
   UIResourceMap ui_resource_map_;

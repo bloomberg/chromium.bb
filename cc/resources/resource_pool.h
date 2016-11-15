@@ -71,8 +71,8 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
 
   void SetResourceUsageLimits(size_t max_memory_usage_bytes,
                               size_t max_resource_count);
-
   void ReduceResourceUsage();
+  bool ResourceUsageTooHigh();
 
   // Must be called regularly to move resources from the busy pool to the unused
   // pool.
@@ -103,8 +103,6 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
                base::SingleThreadTaskRunner* task_runner,
                bool use_gpu_memory_buffers,
                const base::TimeDelta& expiration_delay);
-
-  bool ResourceUsageTooHigh();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourcePoolTest, ReuseResource);

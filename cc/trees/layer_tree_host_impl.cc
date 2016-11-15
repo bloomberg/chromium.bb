@@ -1222,10 +1222,10 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
 
   if (global_tile_state_.hard_memory_limit_in_bytes > 0) {
     // If |global_tile_state_.hard_memory_limit_in_bytes| is greater than 0, we
-    // are visible. Notify the worker context here. We handle becoming
-    // invisible in NotifyAllTileTasksComplete to avoid interrupting running
-    // work.
-    SetWorkerContextVisibility(true);
+    // consider our contexts visible. Notify the contexts here. We handle
+    // becoming invisible in NotifyAllTileTasksComplete to avoid interrupting
+    // running work.
+    SetContextVisibility(true);
 
     // If |global_tile_state_.hard_memory_limit_in_bytes| is greater than 0, we
     // allow the image decode controller to retain resources. We handle the
@@ -1311,13 +1311,13 @@ void LayerTreeHostImpl::NotifyAllTileTasksCompleted() {
   // The tile tasks started by the most recent call to PrepareTiles have
   // completed. Now is a good time to free resources if necessary.
   if (global_tile_state_.hard_memory_limit_in_bytes == 0) {
-    // Free image decode controller resources before notifying the worker
-    // context of visibility change. This ensures that the imaged decode
+    // Free image decode controller resources before notifying the
+    // contexts of visibility change. This ensures that the imaged decode
     // controller has released all Skia refs at the time Skia's cleanup
     // executes (within worker context's cleanup).
     if (image_decode_controller_)
       image_decode_controller_->SetShouldAggressivelyFreeResources(true);
-    SetWorkerContextVisibility(false);
+    SetContextVisibility(false);
   }
 }
 
@@ -2040,9 +2040,6 @@ void LayerTreeHostImpl::SetVisible(bool visible) {
     // Call PrepareTiles to evict tiles when we become invisible.
     PrepareTiles();
   }
-
-  // Update visibility for the compositor context provider.
-  SetCompositorContextVisibility(visible);
 }
 
 void LayerTreeHostImpl::SetNeedsOneBeginImplFrame() {
@@ -2265,13 +2262,7 @@ void LayerTreeHostImpl::ReleaseCompositorFrameSink() {
   resource_provider_ = nullptr;
 
   // Release any context visibility before we destroy the CompositorFrameSink.
-  if (visible_)
-    SetCompositorContextVisibility(false);
-  // Worker context visibility is based on both LTHI visibility as well as
-  // memory policy, so we directly check |worker_context_visibility_| here,
-  // rather than just relying on |visibility_|.
-  if (worker_context_visibility_)
-    SetWorkerContextVisibility(false);
+  SetContextVisibility(false);
 
   // Detach from the old CompositorFrameSink and reset |compositor_frame_sink_|
   // pointer as this surface is going to be destroyed independent of if binding
@@ -2316,12 +2307,6 @@ bool LayerTreeHostImpl::InitializeRenderer(
       settings_.renderer_settings.use_gpu_memory_buffer_resources,
       settings_.enable_color_correct_rendering,
       settings_.renderer_settings.buffer_to_texture_target_map);
-
-  // Make sure the main context visibility is restored. Worker context
-  // visibility will be set via the memory policy update in
-  // CreateTileManagerResources below.
-  if (visible_)
-    SetCompositorContextVisibility(true);
 
   // Since the new context may be capable of MSAA, update status here. We don't
   // need to check the return value since we are recreating all resources
@@ -4061,46 +4046,37 @@ bool LayerTreeHostImpl::CommitToActiveTree() const {
   return !task_runner_provider_->HasImplThread();
 }
 
-void LayerTreeHostImpl::SetCompositorContextVisibility(bool is_visible) {
+void LayerTreeHostImpl::SetContextVisibility(bool is_visible) {
   if (!compositor_frame_sink_)
     return;
 
+  // Update the compositor context. If we are already in the correct visibility
+  // state, skip. This can happen if we transition invisible/visible rapidly,
+  // before we get a chance to go invisible in NotifyAllTileTasksComplete.
   auto* compositor_context = compositor_frame_sink_->context_provider();
-  if (!compositor_context)
-    return;
-
-  DCHECK_NE(is_visible, !!compositor_context_visibility_);
-
-  if (is_visible) {
-    compositor_context_visibility_ =
-        compositor_context->CacheController()->ClientBecameVisible();
-  } else {
-    compositor_context->CacheController()->ClientBecameNotVisible(
-        std::move(compositor_context_visibility_));
+  if (compositor_context && is_visible != !!compositor_context_visibility_) {
+    if (is_visible) {
+      compositor_context_visibility_ =
+          compositor_context->CacheController()->ClientBecameVisible();
+    } else {
+      compositor_context->CacheController()->ClientBecameNotVisible(
+          std::move(compositor_context_visibility_));
+    }
   }
-}
 
-void LayerTreeHostImpl::SetWorkerContextVisibility(bool is_visible) {
-  if (!compositor_frame_sink_)
-    return;
-
+  // Update the worker context. If we are already in the correct visibility
+  // state, skip. This can happen if we transition invisible/visible rapidly,
+  // before we get a chance to go invisible in NotifyAllTileTasksComplete.
   auto* worker_context = compositor_frame_sink_->worker_context_provider();
-  if (!worker_context)
-    return;
-
-  // TODO(ericrk): This check is here because worker context visibility is a
-  // bit less controlled, being settable both by memory policy changes as well
-  // as direct visibility changes. We should simplify this. crbug.com/642154
-  if (is_visible == !!worker_context_visibility_)
-    return;
-
-  ContextProvider::ScopedContextLock hold(worker_context);
-  if (is_visible) {
-    worker_context_visibility_ =
-        worker_context->CacheController()->ClientBecameVisible();
-  } else {
-    worker_context->CacheController()->ClientBecameNotVisible(
-        std::move(worker_context_visibility_));
+  if (worker_context && is_visible != !!worker_context_visibility_) {
+    ContextProvider::ScopedContextLock hold(worker_context);
+    if (is_visible) {
+      worker_context_visibility_ =
+          worker_context->CacheController()->ClientBecameVisible();
+    } else {
+      worker_context->CacheController()->ClientBecameNotVisible(
+          std::move(worker_context_visibility_));
+    }
   }
 }
 
