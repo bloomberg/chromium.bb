@@ -68,11 +68,11 @@
 #include "net/http/http_request_headers.h"
 #include "ui/gfx/geometry/rect.h"
 
+using chrome_browser_net::NetworkPredictionStatus;
 using content::BrowserThread;
 using content::RenderViewHost;
 using content::SessionStorageNamespace;
 using content::WebContents;
-using namespace chrome_browser_net;
 
 namespace prerender {
 
@@ -1331,7 +1331,7 @@ bool PrerenderManager::IsPrerenderSilenceExperiment(Origin origin) const {
 
 NetworkPredictionStatus PrerenderManager::GetPredictionStatus() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return CanPrefetchAndPrerenderUI(profile_->GetPrefs());
+  return chrome_browser_net::CanPrefetchAndPrerenderUI(profile_->GetPrefs());
 }
 
 NetworkPredictionStatus PrerenderManager::GetPredictionStatusForOrigin(
@@ -1356,7 +1356,7 @@ NetworkPredictionStatus PrerenderManager::GetPredictionStatusForOrigin(
   // Prerendering forced for cellular networks still prevents navigation with
   // the DISABLED_ALWAYS selected via privacy settings.
   NetworkPredictionStatus prediction_status =
-      CanPrefetchAndPrerenderUI(profile_->GetPrefs());
+      chrome_browser_net::CanPrefetchAndPrerenderUI(profile_->GetPrefs());
   if (origin == ORIGIN_EXTERNAL_REQUEST_FORCED_CELLULAR &&
       prediction_status == NetworkPredictionStatus::DISABLED_DUE_TO_NETWORK) {
     return NetworkPredictionStatus::ENABLED;
