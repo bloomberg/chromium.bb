@@ -33,12 +33,14 @@ class CORE_EXPORT SynchronousMutationObserver
   // TODO(yosin): We will have following member functions:
   //  - dataWillBeChanged(const CharacterData&);
   //  - didMoveTreeToNewDocument(const Node& root);
-  //  - nodeWillBeRemoved(Node&);
   //  - nodeChildrenWillBeRemoved(ContainerNode&)
   //  - didInsertText(Node*, unsigned offset, unsigned length);
   //  - didRemoveText(Node*, unsigned offset, unsigned length);
   //  - didMergeTextNodes(Text& oldNode, unsigned offset);
   //  - didSplitTextNode(Text& oldNode);
+
+  // Called before removing node.
+  virtual void nodeWillBeRemoved(Node&);
 
  protected:
   SynchronousMutationObserver();

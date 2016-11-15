@@ -4106,6 +4106,8 @@ void Document::nodeWillBeRemoved(Node& n) {
   for (Range* range : m_ranges)
     range->nodeWillBeRemoved(n);
 
+  notifyNodeWillBeRemoved(n);
+
   if (LocalFrame* frame = this->frame()) {
     frame->eventHandler().nodeWillBeRemoved(n);
     frame->selection().nodeWillBeRemoved(n);

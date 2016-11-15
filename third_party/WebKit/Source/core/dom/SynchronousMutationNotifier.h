@@ -21,6 +21,7 @@ class CORE_EXPORT SynchronousMutationNotifier
  public:
   // TODO(yosin): We will have |notifyXXX()| functions defined in
   // |SynchronousMutationObserver|.
+  void notifyNodeWillBeRemoved(Node&);
 
  protected:
   SynchronousMutationNotifier();

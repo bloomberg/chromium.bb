@@ -11,4 +11,9 @@ namespace blink {
 
 SynchronousMutationNotifier::SynchronousMutationNotifier() = default;
 
+void SynchronousMutationNotifier::notifyNodeWillBeRemoved(Node& node) {
+  for (SynchronousMutationObserver* observer : m_observers)
+    observer->nodeWillBeRemoved(node);
+}
+
 }  // namespace blink

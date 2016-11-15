@@ -31,6 +31,7 @@
 #include "core/dom/Document.h"
 
 #include "core/dom/SynchronousMutationObserver.h"
+#include "core/dom/Text.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLLinkElement.h"
@@ -85,10 +86,19 @@ class TestSynchronousMutationObserver
     return m_contextDestroyedCalledCounter;
   }
 
+  const HeapVector<Member<Node>>& removedNodes() const {
+    return m_removedNodes;
+  }
+
+  DECLARE_TRACE();
+
  private:
+  // Implement |SynchronousMutationObserver| member functions.
   void contextDestroyed() final;
+  void nodeWillBeRemoved(Node&) final;
 
   int m_contextDestroyedCalledCounter = 0;
+  HeapVector<Member<Node>> m_removedNodes;
 
   DISALLOW_COPY_AND_ASSIGN(TestSynchronousMutationObserver);
 };
@@ -100,6 +110,15 @@ TestSynchronousMutationObserver::TestSynchronousMutationObserver(
 
 void TestSynchronousMutationObserver::contextDestroyed() {
   ++m_contextDestroyedCalledCounter;
+}
+
+void TestSynchronousMutationObserver::nodeWillBeRemoved(Node& node) {
+  m_removedNodes.append(&node);
+}
+
+DEFINE_TRACE(TestSynchronousMutationObserver) {
+  visitor->trace(m_removedNodes);
+  SynchronousMutationObserver::trace(visitor);
 }
 
 }  // anonymous namespace
@@ -337,6 +356,14 @@ TEST_F(DocumentTest, SynchronousMutationNotifier) {
 
   EXPECT_EQ(observer.lifecycleContext(), document());
   EXPECT_EQ(observer.countContextDestroyedCalled(), 0);
+
+  Node* textNode = document().createTextNode("0123456789");
+  document().body()->appendChild(textNode);
+  EXPECT_TRUE(observer.removedNodes().isEmpty());
+
+  textNode->remove();
+  ASSERT_EQ(observer.removedNodes().size(), 1u);
+  EXPECT_EQ(textNode, observer.removedNodes()[0]);
 
   document().shutdown();
   EXPECT_EQ(observer.lifecycleContext(), nullptr);
