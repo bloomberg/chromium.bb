@@ -279,4 +279,9 @@ Polymer({
    * @private
    */
   getSelectedList_: function() { return this.$.content.selectedItem; },
+
+  /** @private */
+  canDeleteHistory_: function() {
+    return loadTimeData.getBoolean('allowDeletingHistory');
+  }
 });

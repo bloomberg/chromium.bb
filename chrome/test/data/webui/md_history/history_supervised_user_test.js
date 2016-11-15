@@ -6,26 +6,26 @@ cr.define('md_history.history_supervised_user_test', function() {
   function registerTests() {
     suite('history-list supervised-user', function() {
       var app;
-      var element;
+      var historyList;
       var toolbar;
       var TEST_HISTORY_RESULTS;
 
       suiteSetup(function() {
-        app = $('history-app');
-        element = app.$['history'].$['infinite-list'];
-        toolbar = app.$['toolbar'];
         TEST_HISTORY_RESULTS =
             [createHistoryEntry('2016-03-15', 'https://www.google.com')];
       });
 
       setup(function() {
+        app = replaceApp();
+        historyList = app.$['history'].$['infinite-list'];
+        toolbar = app.$['toolbar'];
         app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
       });
 
       test('checkboxes disabled for supervised user', function() {
         return PolymerTest.flushTasks().then(function() {
           var items =
-              Polymer.dom(element.root).querySelectorAll('history-item');
+              Polymer.dom(historyList.root).querySelectorAll('history-item');
 
           MockInteractions.tap(items[0].$['checkbox']);
 
@@ -34,19 +34,19 @@ cr.define('md_history.history_supervised_user_test', function() {
       });
 
       test('deletion disabled for supervised user', function() {
-
         // Make sure that removeVisits is not being called.
         registerMessageCallback('removeVisits', this, function (toBeRemoved) {
-          assertTrue(false);
+          assertNotReached();
         });
 
-        element.historyData_[0].selected = true;
+        historyList.historyData_[0].selected = true;
         toolbar.onDeleteTap_();
       });
 
-      teardown(function() {
-        element.historyData_ = [];
-        element.searchedTerm = '';
+      test('remove history menu button disabled', function() {
+        var listContainer = app.$['history'];
+        listContainer.$.sharedMenu.get();
+        assertTrue(listContainer.$$('#menuRemoveButton').disabled);
       });
     });
   }

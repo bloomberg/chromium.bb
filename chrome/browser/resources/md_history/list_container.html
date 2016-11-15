@@ -64,6 +64,7 @@
           $i18n{moreFromSite}
         </paper-item>
         <paper-item id="menuRemoveButton" class="menu-item"
+            disabled="[[!canDeleteHistory_()]]"
             on-tap="onRemoveFromHistoryTap_">
           $i18n{removeFromHistory}
         </paper-item>

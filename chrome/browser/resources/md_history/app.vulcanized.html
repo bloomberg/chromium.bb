@@ -3569,7 +3569,7 @@ dialog .body {
         <paper-item id="menuMoreButton" class="menu-item" on-tap="onMoreFromSiteTap_">
           $i18n{moreFromSite}
         </paper-item>
-        <paper-item id="menuRemoveButton" class="menu-item" on-tap="onRemoveFromHistoryTap_">
+        <paper-item id="menuRemoveButton" class="menu-item" disabled="[[!canDeleteHistory_()]]" on-tap="onRemoveFromHistoryTap_">
           $i18n{removeFromHistory}
         </paper-item>
       </cr-shared-menu>
