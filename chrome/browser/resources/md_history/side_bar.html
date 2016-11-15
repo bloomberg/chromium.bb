@@ -34,7 +34,7 @@
       }
 
       #clear-browsing-data iron-icon {
-        -webkit-margin-end: 24px;
+        -webkit-margin-end: 20px;
         color: var(--paper-grey-400);
         height: 20px;
         margin-bottom: 10px;
@@ -54,6 +54,8 @@
 
       iron-selector > a {
         @apply(--paper-font-subhead);
+        /* Ensure the focus outline appears correctly (crbug.com/655503). */
+        -webkit-margin-end: 4px;
         -webkit-padding-start: 24px;
         align-items: center;
         box-sizing: border-box;
