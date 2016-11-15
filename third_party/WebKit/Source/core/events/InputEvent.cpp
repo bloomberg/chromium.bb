@@ -117,7 +117,7 @@ InputEvent* InputEvent::createBeforeInput(InputType inputType,
   inputEventInit.setIsComposing(isComposing == IsComposing);
   if (ranges)
     inputEventInit.setRanges(*ranges);
-
+  inputEventInit.setComposed(true);
   return InputEvent::create(EventTypeNames::beforeinput, inputEventInit);
 }
 
@@ -136,7 +136,7 @@ InputEvent* InputEvent::createBeforeInput(InputType inputType,
   inputEventInit.setIsComposing(isComposing == IsComposing);
   if (ranges)
     inputEventInit.setRanges(*ranges);
-
+  inputEventInit.setComposed(true);
   return InputEvent::create(EventTypeNames::beforeinput, inputEventInit);
 }
 
@@ -157,7 +157,7 @@ InputEvent* InputEvent::createInput(InputType inputType,
   inputEventInit.setIsComposing(isComposing == IsComposing);
   if (ranges)
     inputEventInit.setRanges(*ranges);
-
+  inputEventInit.setComposed(true);
   return InputEvent::create(EventTypeNames::input, inputEventInit);
 }
 

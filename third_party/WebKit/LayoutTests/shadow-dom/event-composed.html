@@ -60,20 +60,4 @@ test(() => {
 test(() => {
   assertComposed(new FocusEvent('focus', { bubbles: true, composed: true }));
 }, 'A synthetic FocusEvent with composed=true should not be scoped');
-
-function assertUAComposed(eventType, callback) {
-  let nodes = createTestTree(host);
-  let log = dispatchUAEventWithLog(nodes, nodes.target, eventType, callback);
-  let expectedPath = ['target', 'shadowRoot', 'host'];
-  assert_event_path_equals(log,
-                           [['target', 'target', null, expectedPath],
-                            ['shadowRoot', 'target', null, expectedPath],
-                            ['host', 'host', null, expectedPath]]);
-}
-
-test(() => {
-  assertUAComposed('click', (target) => { target.click(); });
-}, 'A UA click event should not be scoped');
-
-// TODO(hayato): Test other UIEvents.
 </script>

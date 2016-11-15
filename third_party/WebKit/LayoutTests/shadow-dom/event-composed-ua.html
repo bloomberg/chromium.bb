@@ -1,93 +1,72 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="resources/shadow-dom.js"></script>
 
-<input id="input"></input>
-<div id="sandbox">
-    <div id = "host">
-        <template>
-            <input id="target" value="test"></div>
-        </template>
-    </div>
-</div>
+<form>
+  <input id="input" type="text">
+  <input id="input2">
+</form>
 
 <script>
-var e;
-test(function() {
-    e = new Event('test');
-    assert_equals(e.composed, false);
-}, 'A new events composed value should be set to false by default.');
-
-test(function() {
-    e = new Event('test', { composed: true });
-    assert_equals(e.composed, true);
-}, 'Users should be able to set a composed value.');
-
-var input = document.getElementById('input');
-async_test(function(t) {
-    input.onselect = function(e) {
-        t.step(function() { assert_false(e.composed); t.done(); });
-    };
-}, 'UA select events composed should be set to false.');
-input.select();
-
-var sandbox = document.getElementById('sandbox');
-convertTemplatesToShadowRootsWithin(sandbox);
-var target = getNodeInComposedTree('host/target');
-var host = getNodeInComposedTree('host');
-
-async_test(function(t) {
-    target.onselect = function(e) {
-        t.step(function() {
-            assert_true(e.composedPath().includes(target));
-            assert_false(e.composedPath().includes(host));
-            t.done();
-        });
-    }
-}, 'Select events should stop if created by UA.');
-
-async_test(function(t) {
-    target.onerror = function(e) {
-        t.step(function() {
-            assert_true(e.composedPath().includes(target));
-            assert_true(e.composedPath().includes(host));
-            t.done();
-        });
-    }
-}, 'Only certain trusted events should stop in bubbling.');
-
-target.select();
-var userError = new Event('error');
-target.dispatchEvent(userError);
-
-function doubleClick(x, y) {
-    eventSender.mouseMoveTo(x, y);
-    eventSender.mouseDown();
-    eventSender.mouseUp();
-    eventSender.mouseDown();
-    eventSender.mouseUp();
-}
+const input = document.querySelector('#input');
+const input2 = document.querySelector('#input2');
 
 function click(x, y) {
-    eventSender.mouseMoveTo(x, y);
-    eventSender.mouseDown();
-    eventSender.mouseUp();
+  window.eventSender.mouseMoveTo(x, y);
+  window.eventSender.mouseDown();
+  window.eventSender.mouseUp();
 }
 
-async_test((test) => {
-  input.addEventListener('dblclick', test.step_func_done((e) => {
-    assert_true(e.composed);
-  }));
-}, 'A dblclick event should be a composed event');
+function doubleClick(x, y) {
+  window.eventSender.mouseMoveTo(x, y);
+  window.eventSender.mouseDown();
+  window.eventSender.mouseUp();
+  window.eventSender.mouseDown();
+  window.eventSender.mouseUp();
+}
 
-doubleClick(input.offsetLeft, input.offsetTop);
+const composedEventTypes = [
+  // UI Events
+  'blur', 'focus', 'focusin', 'focusout',
+  'click', 'dblclick',
+  'mousedown', 'mouseenter', 'mouseleave', 'mousemove', 'mouseout', 'mouseover', 'mouseup',
+  'wheel',
+  'beforeinput', 'input',
+  'keydown', 'keyup',
+  'compositionstart', 'compositionupdate', 'compositionend',
+  // Legacy UI Events
+  'DOMActivate', 'DOMFocusIn', 'DOMFocusOut', 'keypress',
+];
 
-async_test((test) => {
-  input.addEventListener('DOMActivate', test.step_func_done((e) => {
-    assert_true(e.composed);
-  }));
-}, 'A DOMActivate event should be a composed event');
+for (const eventType of composedEventTypes) {
+  async_test((test) => {
+    input.addEventListener(eventType, test.step_func_done((e) => {
+      assert_true(e.composed);
+    }));
+  }, `A ${eventType} event should be a composed event`);
+}
 
 click(input.offsetLeft, input.offsetTop);
+doubleClick(input.offsetLeft, input.offsetTop);
+
+// For mouseenter/mouseleave
+click(input2.offsetLeft, input2.offsetTop);
+
+// For focus/blur
+input.blur();
+input.focus();
+input.blur();
+
+// For keypress
+input.focus();
+window.eventSender.keyDown(' ');
+
+// For wheel
+window.eventSender.mouseMoveTo(input.offsetLeft + 5, input.offsetTop + 5);
+window.eventSender.mouseScrollBy(-1, -2);
+
+// For composition
+input.focus();
+window.textInputController.setMarkedText('1', 0, 1);
+window.textInputController.insertText('1');
 </script>

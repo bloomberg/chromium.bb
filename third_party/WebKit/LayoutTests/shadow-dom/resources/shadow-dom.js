@@ -138,39 +138,6 @@ function dispatchEventWithLog(nodes, target, event) {
   return log;
 }
 
-// TODO(hayato): Merge this into dispatchEventWithLog
-function dispatchUAEventWithLog(nodes, target, eventType, callback) {
-
-  function labelFor(e) {
-    return e.id || e.tagName;
-  }
-
-  let log = [];
-  let attachedNodes = [];
-  for (let label in nodes) {
-    let startingNode = nodes[label];
-    for (let node = startingNode; node; node = node.parentNode) {
-      if (attachedNodes.indexOf(node) >= 0)
-        continue;
-      let id = node.id;
-      if (!id)
-        continue;
-      attachedNodes.push(node);
-      node.addEventListener(eventType, (e) => {
-        // Record [currentTarget, target, relatedTarget, composedPath()]
-        log.push([id,
-                  labelFor(e.target),
-                  e.relatedTarget ? labelFor(e.relatedTarget) : null,
-                  e.composedPath().map((n) => {
-                    return labelFor(n);
-                  })]);
-      });
-    }
-  }
-  callback(target);
-  return log;
-}
-
 function debugEventLog(log) {
   for (let i = 0; i < log.length; i++) {
     console.log('[' + i + '] currentTarget: ' + log[i][0] + ' target: ' + log[i][1] + ' relatedTarget: ' + log[i][2] + ' composedPath(): ' + log[i][3]);
