@@ -282,6 +282,11 @@ public abstract class LayoutManager implements LayoutUpdateHost, LayoutProvider,
             TabContentManager tabContentManager, ResourceManager resourceManager,
             ChromeFullscreenManager fullscreenManager) {
         getViewportPixel(mCachedVisibleViewport);
+        // TODO(mdjones): The concept of visible viewport is pretty confising since |viewport| can
+        // also take the browser controls into consideration; this should be made more clear.
+        // Furthermore, the below adjustments should not be necessary.
+        mCachedVisibleViewport.right = mCachedVisibleViewport.left + mHost.getWidth();
+        mCachedVisibleViewport.bottom = mCachedVisibleViewport.top + mHost.getHeight();
         return mActiveLayout.getUpdatedSceneLayer(viewport, mCachedVisibleViewport, layerTitleCache,
                 tabContentManager, resourceManager, fullscreenManager);
     }
