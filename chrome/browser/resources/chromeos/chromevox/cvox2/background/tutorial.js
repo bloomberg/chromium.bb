@@ -9,6 +9,7 @@
 goog.provide('Tutorial');
 
 goog.require('Msgs');
+goog.require('cvox.AbstractEarcons');
 
 /**
  * @constructor
@@ -23,6 +24,30 @@ Tutorial = function() {
 
   this.page = sessionStorage['tutorial_page_pos'] !== undefined ?
       sessionStorage['tutorial_page_pos'] : 0;
+};
+/**
+ * @param {Node} container
+ * @private
+ */
+Tutorial.buildEarconPage_ = function(container) {
+  for (var earconId in cvox.EarconDescription) {
+    var msgid = cvox.EarconDescription[earconId];
+    var earconElement = document.createElement('p');
+    earconElement.innerText = Msgs.getMsg(msgid);
+    earconElement.setAttribute('tabindex', 0);
+    var prevEarcon;
+    var playEarcon = function(earcon) {
+      if (prevEarcon) {
+        chrome.extension.getBackgroundPage()['cvox']['ChromeVox'][
+            'earcons']['cancelEarcon'](prevEarcon);
+      }
+      chrome.extension.getBackgroundPage()['cvox']['ChromeVox'][
+          'earcons']['playEarcon'](earcon);
+      prevEarcon = earcon;
+    }.bind(this, earconId);
+    earconElement.addEventListener('focus', playEarcon, false);
+    container.appendChild(earconElement);
+  }
 };
 
 /**
@@ -73,6 +98,11 @@ Tutorial.PAGES = [
     { msgid: 'tutorial_chrome_shortcuts_heading', heading: true },
     { msgid: 'tutorial_chrome_shortcuts' },
     { msgid: 'tutorial_chromebook_ctrl_forward', chromebookOnly: true }
+  ],
+  [
+    { msgid: 'tutorial_earcon_page_title', heading: true },
+    { msgid: 'tutorial_earcon_page_body' },
+    { custom: Tutorial.buildEarconPage_ }
   ],
   [
     { msgid: 'tutorial_learn_more_heading', heading: true },
@@ -185,6 +215,9 @@ Tutorial.prototype = {
           chrome.windows.create({url: evt.target.href});
           return false;
         }, false);
+      } else if (pageElement.custom) {
+        element = document.createElement('div');
+        pageElement.custom(element);
       } else {
         element = document.createElement('p');
       }

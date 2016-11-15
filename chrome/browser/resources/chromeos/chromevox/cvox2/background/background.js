@@ -786,11 +786,13 @@ Background.prototype = {
     }
 
     // Next, try to focus the start or end node.
-    if (isFocusableLinkOrControl(start)) {
+    if (!AutomationPredicate.structuralContainer(start) &&
+        start.state.focusable) {
       if (!start.state.focused)
         start.focus();
       return;
-    } else if (isFocusableLinkOrControl(end)) {
+    } else if (!AutomationPredicate.structuralContainer(end) &&
+        end.state.focusable) {
       if (!end.state.focused)
         end.focus();
       return;

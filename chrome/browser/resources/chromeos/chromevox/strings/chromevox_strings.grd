@@ -2627,6 +2627,51 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Brailles for a UI element invoked after pressing enter such as an ok button in a dialog" name="IDS_CHROMEVOX_DEFAULT_STATE_BRL">
         default
       </message>
+      <message desc="Title of the earcon page in the ChromeVox tutorial" name="IDS_CHROMEVOX_TUTORIAL_EARCON_PAGE_TITLE">
+        Sounds
+      </message>
+      <message desc="Body text of the earcon page in the ChromeVox tutorial" name="IDS_CHROMEVOX_TUTORIAL_EARCON_PAGE_BODY">
+        ChromeVox uses sounds to give you essential and additional information. You can use these sounds to navigate more quickly by learning what each sound means. Once you get more comfortable, you can turn off verbose descriptions in speech and rely on them for essential information about the page. Here's a complete list of sounds and what they mean.
+      </message>
+      <message desc="Describes an audio clip that gets played for a specific event or control type. Use the default string as a guide to what the audio clip represents or conveys." name="IDS_CHROMEVOX_ALERT_MODAL_EARCON_DESCRIPTION">
+        A modal alert
+      </message>
+      <message desc="Describes an audio clip that gets played for a specific event or control type. Use the default string as a guide to what the audio clip represents or conveys." name="IDS_CHROMEVOX_ALERT_NONMODAL_EARCON_DESCRIPTION">
+        A non modal alert
+      </message>
+      <message desc="Describes an audio clip that gets played for a specific event or control type. Use the default string as a guide to what the audio clip represents or conveys." name="IDS_CHROMEVOX_BUTTON_EARCON_DESCRIPTION">
+        A button
+      </message>
+      <message desc="Describes an audio clip that gets played for a specific event or control type. Use the default string as a guide to what the audio clip represents or conveys." name="IDS_CHROMEVOX_CHECK_OFF_EARCON_DESCRIPTION">
+        An unchecked checkbox
+      </message>
+      <message desc="Describes an audio clip that gets played for a specific event or control type. Use the default string as a guide to what the audio clip represents or conveys." name="IDS_CHROMEVOX_CHECK_ON_EARCON_DESCRIPTION">
+        A checked checkbox
+      </message>
+      <message desc="Describes an audio clip that gets played for a specific event or control type. Use the default string as a guide to what the audio clip represents or conveys." name="IDS_CHROMEVOX_EDITABLE_TEXT_EARCON_DESCRIPTION">
+        An editable text field
+      </message>
+      <message desc="Describes an audio clip that gets played for a specific event or control type. Use the default string as a guide to what the audio clip represents or conveys." name="IDS_CHROMEVOX_INVALID_KEYPRESS_EARCON_DESCRIPTION">
+        An invalid key press
+      </message>
+      <message desc="Describes an audio clip that gets played for a specific event or control type. Use the default string as a guide to what the audio clip represents or conveys." name="IDS_CHROMEVOX_LINK_EARCON_DESCRIPTION">
+        A link
+      </message>
+      <message desc="Describes an audio clip that gets played for a specific event or control type. Use the default string as a guide to what the audio clip represents or conveys." name="IDS_CHROMEVOX_LISTBOX_EARCON_DESCRIPTION">
+        A listbox or combo box
+      </message>
+      <message desc="Describes an audio clip that gets played for a specific event or control type. Use the default string as a guide to what the audio clip represents or conveys." name="IDS_CHROMEVOX_PAGE_START_LOADING_EARCON_DESCRIPTION">
+        A page load in progress
+      </message>
+      <message desc="Describes an audio clip that gets played for a specific event or control type. Use the default string as a guide to what the audio clip represents or conveys." name="IDS_CHROMEVOX_POP_UP_BUTTON_EARCON_DESCRIPTION">
+        A pop up button
+      </message>
+      <message desc="Describes an audio clip that gets played for a specific event or control type. Use the default string as a guide to what the audio clip represents or conveys." name="IDS_CHROMEVOX_SLIDER_EARCON_DESCRIPTION">
+        A slider
+      </message>
+      <message desc="Describes an audio clip that gets played for a specific event or control type. Use the default string as a guide to what the audio clip represents or conveys." name="IDS_CHROMEVOX_WRAP_EARCON_DESCRIPTION">
+        Wrap from beginning to end or end to beginning inside of a page, dialog, or other container
+      </message>
     </messages>
   </release>
 </grit>
