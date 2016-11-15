@@ -773,7 +773,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnDidContentsPreferredSizeChange)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RouteCloseEvent,
                         OnRouteCloseEvent)
-    IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ClosePage_ACK, OnClosePageACK)
@@ -913,12 +912,6 @@ void RenderViewHostImpl::OnDidContentsPreferredSizeChange(
 void RenderViewHostImpl::OnRouteCloseEvent() {
   // Have the delegate route this to the active RenderViewHost.
   delegate_->RouteCloseEvent(this);
-}
-
-void RenderViewHostImpl::OnUpdateDragCursor(WebDragOperation current_op) {
-  RenderViewHostDelegateView* view = delegate_->GetDelegateView();
-  if (view)
-    view->UpdateDragCursor(current_op);
 }
 
 void RenderViewHostImpl::OnTakeFocus(bool reverse) {

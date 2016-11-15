@@ -637,6 +637,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
                        const SkBitmap& bitmap,
                        const gfx::Vector2d& bitmap_offset_in_dip,
                        const DragEventSourceInfo& event_info);
+  void OnUpdateDragCursor(blink::WebDragOperation current_op);
 
   // Called (either immediately or asynchronously) after we're done with our
   // BackingStore and can send an ACK to the renderer so it can paint onto it

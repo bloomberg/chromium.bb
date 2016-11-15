@@ -2488,6 +2488,12 @@ TextInputManager* WebContentsImpl::GetTextInputManager() {
   return text_input_manager_.get();
 }
 
+bool WebContentsImpl::OnUpdateDragCursor() {
+  if (browser_plugin_embedder_)
+    return browser_plugin_embedder_->OnUpdateDragCursor();
+  return false;
+}
+
 BrowserAccessibilityManager*
     WebContentsImpl::GetRootBrowserAccessibilityManager() {
   RenderFrameHostImpl* rfh = GetMainFrame();

@@ -216,6 +216,9 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // fullscreen, and will return nullptr for those cases.
   virtual RenderWidgetHostImpl* GetFullscreenRenderWidgetHost() const;
 
+  // Allow the delegate to handle the cursor update. Returns true if handled.
+  virtual bool OnUpdateDragCursor();
+
  protected:
   virtual ~RenderWidgetHostDelegate() {}
 };

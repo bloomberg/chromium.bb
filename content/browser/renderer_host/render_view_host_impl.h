@@ -265,7 +265,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   void OnDidContentsPreferredSizeChange(const gfx::Size& new_size);
   void OnPasteFromSelectionClipboard();
   void OnRouteCloseEvent();
-  void OnUpdateDragCursor(blink::WebDragOperation drag_operation);
   void OnTakeFocus(bool reverse);
   void OnFocusedNodeChanged(bool is_editable_node,
                             const gfx::Rect& node_bounds_in_viewport);

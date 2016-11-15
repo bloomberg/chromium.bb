@@ -100,6 +100,7 @@
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
+using blink::WebDragOperation;
 using blink::WebDragOperationsMask;
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
@@ -545,6 +546,7 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnForwardCompositorProto)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetNeedsBeginFrames, OnSetNeedsBeginFrames)
     IPC_MESSAGE_HANDLER(DragHostMsg_StartDragging, OnStartDragging)
+    IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -1512,6 +1514,15 @@ void RenderWidgetHostImpl::OnStartDragging(
   gfx::ImageSkia image(gfx::ImageSkiaRep(bitmap, scale));
   view->StartDragging(filtered_data, drag_operations_mask, image,
                       bitmap_offset_in_dip, event_info);
+}
+
+void RenderWidgetHostImpl::OnUpdateDragCursor(WebDragOperation current_op) {
+  if (delegate_ && delegate_->OnUpdateDragCursor())
+    return;
+
+  RenderViewHostDelegateView* view = delegate_->GetDelegateView();
+  if (view)
+    view->UpdateDragCursor(current_op);
 }
 
 void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,

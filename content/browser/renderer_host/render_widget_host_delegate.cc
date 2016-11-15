@@ -83,4 +83,8 @@ RenderWidgetHostImpl* RenderWidgetHostDelegate::GetFullscreenRenderWidgetHost()
   return nullptr;
 }
 
+bool RenderWidgetHostDelegate::OnUpdateDragCursor() {
+  return false;
+}
+
 }  // namespace content

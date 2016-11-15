@@ -38,7 +38,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   void DidSendScreenRects();
 
   // WebContentsObserver implementation.
-  bool OnMessageReceived(const IPC::Message& message) override;
   bool OnMessageReceived(const IPC::Message& message,
                          RenderFrameHost* render_frame_host) override;
 
@@ -66,6 +65,11 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   // Sends EndSystemDrag message to the guest that initiated the last drag/drop
   // operation, if there's any.
   void SystemDragEnded();
+
+  // The page wants to update the mouse cursor during a drag & drop
+  // operation. This update will be suppressed if the cursor is dragging over a
+  // guest.
+  bool OnUpdateDragCursor();
 
   // Used to handle special keyboard events.
   bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
@@ -117,7 +121,6 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
   void OnAttach(RenderFrameHost* render_frame_host,
                 int instance_id,
                 const BrowserPluginHostMsg_Attach_Params& params);
-  void OnUpdateDragCursor(bool* handled);
 
   // Used to correctly update the cursor when dragging over a guest, and to
   // handle a race condition when dropping onto the guest that started the drag
