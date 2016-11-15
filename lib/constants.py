@@ -254,6 +254,7 @@ MON_CL_FALSE_REJ_COUNT = ('chromeos/cbuildbot/submitted_change/'
 MON_REPO_SYNC_COUNT = 'chromeos/cbuildbot/repo/sync_count'
 MON_REPO_SYNC_RETRY_COUNT = 'chromeos/cbuildbot/repo/sync_retry_count'
 MON_GIT_FETCH_COUNT = 'chromeos/cbuildbot/git/fetch_count'
+MON_GIT_FETCH_RETRY_COUNT = 'chromeos/cbuildbot/git/fetch_retry_count'
 
 # Re-execution API constants.
 # Used by --resume and --bootstrap to decipher which options they
