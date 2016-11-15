@@ -136,6 +136,9 @@ Polymer({
     if (this.queryState.searchTerm != '')
       browserService.recordAction('SearchResultRemove');
     this.$.dialog.get().showModal();
+
+    // TODO(dbeam): remove focus flicker caused by showModal() + focus().
+    this.$$('.action-button').focus();
   },
 
   /**
