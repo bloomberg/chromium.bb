@@ -90,6 +90,8 @@ action("aggregate_vector_icons") {
     "system_menu_arrow_right.icon",
     "system_menu_bluetooth.1x.icon",
     "system_menu_bluetooth.icon",
+    "system_menu_bluetooth_connected.1x.icon",
+    "system_menu_bluetooth_connected.icon",
     "system_menu_bluetooth_disabled.1x.icon",
     "system_menu_bluetooth_disabled.icon",
     "system_menu_brightness.1x.icon",

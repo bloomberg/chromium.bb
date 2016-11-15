@@ -74,9 +74,11 @@ void RemoveObsoleteBluetoothDevicesFromList(
   }
 }
 
-// Returns corresponding device type icons for given Bluetooth device types.
+// Returns corresponding device type icons for given Bluetooth device types and
+// connection states.
 const gfx::VectorIcon& GetBluetoothDeviceIcon(
-    device::BluetoothDeviceType device_type) {
+    device::BluetoothDeviceType device_type,
+    bool connected) {
   switch (device_type) {
     case device::BluetoothDeviceType::COMPUTER:
       return ash::kSystemMenuComputerIcon;
@@ -104,7 +106,8 @@ const gfx::VectorIcon& GetBluetoothDeviceIcon(
       LOG(WARNING) << "Unknown device type icon for Bluetooth was requested.";
       break;
   }
-  return ash::kSystemMenuBluetoothIcon;
+  return connected ? ash::kSystemMenuBluetoothConnectedIcon
+                   : ash::kSystemMenuBluetoothIcon;
 }
 
 const int kDisabledPanelLabelBaselineY = 20;
@@ -335,7 +338,8 @@ class BluetoothDetailedView : public TrayDetailsView {
       HoverHighlightView* container = nullptr;
       if (UseMd()) {
         gfx::ImageSkia icon_image = CreateVectorIcon(
-            GetBluetoothDeviceIcon(list[i].device_type), kMenuIconColor);
+            GetBluetoothDeviceIcon(list[i].device_type, list[i].connected),
+            kMenuIconColor);
         container = AddScrollListItemWithIcon(list[i].display_name, highlight,
                                               checked, enabled, icon_image);
 
