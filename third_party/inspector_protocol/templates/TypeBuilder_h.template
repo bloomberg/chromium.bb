@@ -10,14 +10,14 @@
 {% if config.protocol.export_header %}
 #include {{format_include(config.protocol.export_header)}}
 {% endif %}
-#include "{{config.protocol.package}}/Protocol.h"
+#include {{format_include(config.protocol.package, "Protocol")}}
 // For each imported domain we generate a ValueConversions struct instead of a full domain definition
 // and include Domain::API version from there.
 {% for name in domain.dependencies %}
-#include "{{config.protocol.package}}/{{name}}.h"
+#include {{format_include(config.protocol.package, name)}}
 {% endfor %}
 {% if domain["has_exports"] %}
-#include "{{config.exported.package}}/{{domain.domain}}.h"
+#include {{format_include(config.exported.package, domain.domain)}}
 {% endif %}
 
 {% for namespace in config.protocol.namespace %}
@@ -88,12 +88,12 @@ public:
       {% endif %}
 
       {% if property.optional %}
-    bool has{{property.name | to_title_case}}() { return m_{{property.name}}.isJust(); }
-    {{resolve_type(property).raw_return_type}} get{{property.name | to_title_case}}({{resolve_type(property).raw_pass_type}} defaultValue) { return m_{{property.name}}.isJust() ? m_{{property.name}}.fromJust() : defaultValue; }
+    bool {{"has" | to_method_case}}{{property.name | to_title_case}}() { return m_{{property.name}}.isJust(); }
+    {{resolve_type(property).raw_return_type}} {{"get" | to_method_case}}{{property.name | to_title_case}}({{resolve_type(property).raw_pass_type}} defaultValue) { return m_{{property.name}}.isJust() ? m_{{property.name}}.fromJust() : defaultValue; }
       {% else %}
-    {{resolve_type(property).raw_return_type}} get{{property.name | to_title_case}}() { return {{resolve_type(property).to_raw_type % ("m_" + property.name)}}; }
+    {{resolve_type(property).raw_return_type}} {{"get" | to_method_case}}{{property.name | to_title_case}}() { return {{resolve_type(property).to_raw_type % ("m_" + property.name)}}; }
       {% endif %}
-    void set{{property.name | to_title_case}}({{resolve_type(property).pass_type}} value) { m_{{property.name}} = {{resolve_type(property).to_rvalue % "value"}}; }
+    void {{"set" | to_method_case}}{{property.name | to_title_case}}({{resolve_type(property).pass_type}} value) { m_{{property.name}} = {{resolve_type(property).to_rvalue % "value"}}; }
     {% endfor %}
 
     std::unique_ptr<protocol::DictionaryValue> serialize() const;
@@ -122,22 +122,22 @@ public:
     {% for property in type.properties %}
 
       {% if property.optional %}
-        {{type.id}}Builder<STATE>& set{{property.name | to_title_case}}({{resolve_type(property).pass_type}} value)
+        {{type.id}}Builder<STATE>& {{"set" | to_method_case}}{{property.name | to_title_case}}({{resolve_type(property).pass_type}} value)
         {
-            m_result->set{{property.name | to_title_case}}({{resolve_type(property).to_rvalue % "value"}});
+            m_result->{{"set" | to_method_case}}{{property.name | to_title_case}}({{resolve_type(property).to_rvalue % "value"}});
             return *this;
         }
       {% else %}
-        {{type.id}}Builder<STATE | {{property.name | to_title_case}}Set>& set{{property.name | to_title_case}}({{resolve_type(property).pass_type}} value)
+        {{type.id}}Builder<STATE | {{property.name | to_title_case}}Set>& {{"set" | to_method_case}}{{property.name | to_title_case}}({{resolve_type(property).pass_type}} value)
         {
             static_assert(!(STATE & {{property.name | to_title_case}}Set), "property {{property.name}} should not be set yet");
-            m_result->set{{property.name | to_title_case}}({{resolve_type(property).to_rvalue % "value"}});
+            m_result->{{"set" | to_method_case}}{{property.name | to_title_case}}({{resolve_type(property).to_rvalue % "value"}});
             return castState<{{property.name | to_title_case}}Set>();
         }
       {% endif %}
     {% endfor %}
 
-        std::unique_ptr<{{type.id}}> build()
+        std::unique_ptr<{{type.id}}> {{"build" | to_method_case}}()
         {
             static_assert(STATE == AllFieldsSet, "state should be AllFieldsSet");
             return std::move(m_result);
@@ -155,7 +155,7 @@ public:
         {{type_def.type}} m_result;
     };
 
-    static {{type.id}}Builder<0> create()
+    static {{type.id}}Builder<0> {{"create" | to_method_case}}()
     {
         return {{type.id}}Builder<0>();
     }
@@ -208,9 +208,9 @@ public:
     };
     {% endif %}
     {%- if not is_async_command(domain.domain, command.name) %}
-    virtual DispatchResponse {{command.name}}(
+    virtual DispatchResponse {{command.name | to_method_case}}(
     {%- else %}
-    virtual void {{command.name}}(
+    virtual void {{command.name | to_method_case}}(
     {%- endif %}
     {%- for parameter in command.parameters -%}
       {%- if not loop.first -%}, {% endif -%}
@@ -237,7 +237,7 @@ public:
   {% endfor %}
 
   {% if generate_disable(domain) %}
-    virtual DispatchResponse disable()
+    virtual DispatchResponse {{"disable" | to_method_case}}()
     {
         return DispatchResponse::OK();
     }
@@ -248,10 +248,10 @@ public:
 
 class {{config.protocol.export_macro}} Frontend {
 public:
-    Frontend(FrontendChannel* frontendChannel) : m_frontendChannel(frontendChannel) { }
+    explicit Frontend(FrontendChannel* frontendChannel) : m_frontendChannel(frontendChannel) { }
   {% for event in domain.events %}
     {% if not generate_event(domain.domain, event.name) %}{% continue %}{% endif %}
-    void {{event.name}}(
+    void {{event.name | to_method_case}}(
     {%- for parameter in event.parameters -%}
       {%- if "optional" in parameter -%}
         Maybe<{{resolve_type(parameter).raw_type}}> {{parameter.name}} = Maybe<{{resolve_type(parameter).raw_type}}>()

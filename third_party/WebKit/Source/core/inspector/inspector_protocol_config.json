@@ -58,6 +58,14 @@
                 "include": ["dispatchTouchEvent"]
             },
             {
+                "domain": "IO",
+                "include": []
+            },
+            {
+                "domain": "Security",
+                "include": []
+            },
+            {
                 "domain": "Memory",
                 "include": "getDOMCounters"
             },

@@ -3941,6 +3941,7 @@
     },
     {
         "domain": "Tracing",
+        "dependencies": ["IO"],
         "experimental": true,
         "types": [
             {

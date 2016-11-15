@@ -4,9 +4,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "{{config.protocol.package}}/{{domain.domain}}.h"
+#include {{format_include(config.protocol.package, domain.domain)}}
 
-#include "{{config.protocol.package}}/Protocol.h"
+#include {{format_include(config.protocol.package, "Protocol")}}
 
 {% for namespace in config.protocol.namespace %}
 namespace {{namespace}} {
@@ -147,7 +147,7 @@ const char* {{ literal | to_title_case}} = "{{literal}}";
   {% for event in domain.events %}
     {% if not generate_event(domain.domain, event.name) %}{% continue %}{% endif %}
 
-void Frontend::{{event.name}}(
+void Frontend::{{event.name | to_method_case}}(
     {%- for parameter in event.parameters %}
       {% if "optional" in parameter -%}
         Maybe<{{resolve_type(parameter).raw_type}}>
@@ -298,7 +298,7 @@ DispatchResponse::Status DispatcherImpl::{{command.name}}(int callId, std::uniqu
 
     {% if not is_async_command(domain.domain, command.name) %}
     std::unique_ptr<DispatcherBase::WeakPtr> weak = weakPtr();
-    DispatchResponse response = m_backend->{{command.name}}(
+    DispatchResponse response = m_backend->{{command.name | to_method_case}}(
       {%- for property in command.parameters -%}
         {%- if not loop.first -%}, {% endif -%}
         {%- if "optional" in property -%}
@@ -336,7 +336,7 @@ DispatchResponse::Status DispatcherImpl::{{command.name}}(int callId, std::uniqu
     return response.status();
     {% else %}
     std::unique_ptr<{{command.name | to_title_case}}CallbackImpl> callback(new {{command.name | to_title_case}}CallbackImpl(weakPtr(), callId));
-    m_backend->{{command.name}}(
+    m_backend->{{command.name | to_method_case}}(
       {%- for property in command.parameters -%}
         {%- if not loop.first -%}, {% endif -%}
         {%- if "optional" in property -%}
