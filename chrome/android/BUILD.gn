@@ -8,6 +8,7 @@ import("//build/config/android/rules.gni")
 import("//build/util/process_version.gni")
 import("//build_overrides/v8.gni")
 import("//chrome/android/chrome_public_apk_tmpl.gni")
+import("//chrome/android/monochrome_android_manifest_jinja_variables.gni")
 import("//chrome/chrome_paks.gni")
 import("//chrome/common/features.gni")
 import("//chrome/process_version_rc_template.gni")  # For branding_file_path.
@@ -28,6 +29,8 @@ chrome_modern_public_android_manifest =
     "$target_gen_dir/chrome_modern_public_apk/AndroidManifest.xml"
 chrome_sync_shell_android_manifest =
     "$target_gen_dir/chrome_sync_shell_apk/AndroidManifest.xml"
+monochrome_public_android_manifest =
+    "$target_gen_dir/monochrome_public_apk/AndroidManifest.xml"
 
 chrome_sync_shell_jinja_variables =
     default_chrome_public_jinja_variables +
@@ -56,6 +59,14 @@ jinja_template("chrome_modern_public_android_manifest") {
     "min_sdk_version=21",
     "target_sdk_version=23",
   ]
+}
+
+jinja_template("monochrome_public_android_manifest") {
+  input = "java/AndroidManifest_monochrome.xml"
+  output = monochrome_public_android_manifest
+  variables =
+      chrome_public_jinja_variables +
+      monochrome_android_manifest_jinja_variables + [ "target_sdk_version=24" ]
 }
 
 java_cpp_template("chrome_webapk_signature_srcjar") {
@@ -684,6 +695,18 @@ chrome_public_apk_tmpl_shared("chrome_modern_public_apk") {
 
   # Always enable load_library_from_apk.
   load_library_from_apk = chromium_linker_supported
+}
+
+monochrome_public_apk_tmpl("monochrome_public_apk") {
+  android_manifest = monochrome_public_android_manifest
+  android_manifest_dep = ":monochrome_public_android_manifest"
+  apk_name = "MonochromePublic"
+
+  deps = [
+    "//base:base_java",
+    "//chrome/android:chrome_java",
+    "//chrome/android/java/templates:public_monochrome_java",
+  ]
 }
 
 chrome_public_apk_tmpl_shared("chrome_sync_shell_apk") {

@@ -107,7 +107,12 @@ template("monochrome_public_apk_tmpl") {
     if (!defined(deps)) {
       deps = []
     }
-    deps += [ "//android_webview/glue" ]
+    deps += [
+      "//android_webview:monochrome_webview_assets",
+      "//android_webview/glue",
+      "//chrome/android:chrome_public_non_pak_assets",
+      "//chrome/android:monochrome_pak_assets",
+    ]
 
     if (!is_java_debug) {
       if (!defined(proguard_configs)) {
