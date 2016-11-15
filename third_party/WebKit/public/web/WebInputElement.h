@@ -65,7 +65,7 @@ class WebInputElement final : public WebFormControlElement {
   BLINK_EXPORT bool isRadioButton() const;
   BLINK_EXPORT bool isCheckbox() const;
   // This has different behavior from 'maxLength' IDL attribute, it returns
-  // defaultMaxLengt() when no valid has been set, whereas 'maxLength' IDL
+  // defaultMaxLength() when no valid has been set, whereas 'maxLength' IDL
   // attribute returns -1.
   BLINK_EXPORT int maxLength() const;
   BLINK_EXPORT void setActivatedSubmit(bool);
