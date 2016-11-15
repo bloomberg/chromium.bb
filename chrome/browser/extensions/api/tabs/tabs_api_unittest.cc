@@ -17,6 +17,7 @@
 #include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/api_test_utils.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/test_util.h"
 
