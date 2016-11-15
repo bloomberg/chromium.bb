@@ -170,8 +170,9 @@ void PermissionReporter::SendReport(const PermissionReportInfo& report_info) {
   std::string serialized_report;
   BuildReport(report_info, &serialized_report);
   permission_report_sender_->Send(GURL(kPermissionActionReportingUploadUrl),
-                                  "application/octet-stream",
-                                  serialized_report);
+                                  "application/octet-stream", serialized_report,
+                                  base::Closure(),
+                                  base::Callback<void(const GURL&, int)>());
 }
 
 // static

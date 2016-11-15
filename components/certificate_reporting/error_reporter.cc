@@ -112,14 +112,11 @@ ErrorReporter::ErrorReporter(
     net::URLRequestContext* request_context,
     const GURL& upload_url,
     net::ReportSender::CookiesPreference cookies_preference)
-    : ErrorReporter(
-          upload_url,
-          kServerPublicKey,
-          kServerPublicKeyVersion,
-          base::MakeUnique<net::ReportSender>(request_context,
-                                              cookies_preference,
-                                              base::Bind(RecordUMAOnFailure))) {
-}
+    : ErrorReporter(upload_url,
+                    kServerPublicKey,
+                    kServerPublicKeyVersion,
+                    base::MakeUnique<net::ReportSender>(request_context,
+                                                        cookies_preference)) {}
 
 ErrorReporter::ErrorReporter(
     const GURL& upload_url,
@@ -140,7 +137,8 @@ void ErrorReporter::SendExtendedReportingReport(
     const std::string& serialized_report) {
   if (upload_url_.SchemeIsCryptographic()) {
     certificate_report_sender_->Send(upload_url_, "application/octet-stream",
-                                     serialized_report);
+                                     serialized_report, base::Closure(),
+                                     base::Bind(&RecordUMAOnFailure));
   } else {
     EncryptedCertLoggerRequest encrypted_report;
     if (!EncryptSerializedReport(server_public_key_, server_public_key_version_,
@@ -150,8 +148,9 @@ void ErrorReporter::SendExtendedReportingReport(
     }
     std::string serialized_encrypted_report;
     encrypted_report.SerializeToString(&serialized_encrypted_report);
-    certificate_report_sender_->Send(upload_url_, "application/octet-stream",
-                                     serialized_encrypted_report);
+    certificate_report_sender_->Send(
+        upload_url_, "application/octet-stream", serialized_encrypted_report,
+        base::Closure(), base::Bind(&RecordUMAOnFailure));
   }
 }
 

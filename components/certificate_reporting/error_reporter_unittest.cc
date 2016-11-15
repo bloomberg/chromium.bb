@@ -42,19 +42,24 @@ class MockCertificateReportSender : public net::ReportSender {
       : net::ReportSender(nullptr, DO_NOT_SEND_COOKIES) {}
   ~MockCertificateReportSender() override {}
 
-  void Send(const GURL& report_uri,
-            base::StringPiece content_type,
-            base::StringPiece report) override {
+  void Send(
+      const GURL& report_uri,
+      base::StringPiece content_type,
+      base::StringPiece report,
+      const base::Callback<void()>& success_callback,
+      const base::Callback<void(const GURL&, int)>& error_callback) override {
     latest_report_uri_ = report_uri;
     report.CopyToString(&latest_report_);
     content_type.CopyToString(&latest_content_type_);
   }
 
-  const GURL& latest_report_uri() { return latest_report_uri_; }
+  const GURL& latest_report_uri() const { return latest_report_uri_; }
 
-  const std::string& latest_report() { return latest_report_; }
+  const std::string& latest_report() const { return latest_report_; }
 
-  const std::string& latest_content_type() { return latest_content_type_; }
+  const std::string& latest_content_type() const {
+    return latest_content_type_;
+  }
 
  private:
   GURL latest_report_uri_;

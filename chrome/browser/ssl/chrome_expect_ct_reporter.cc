@@ -116,8 +116,7 @@ ChromeExpectCTReporter::ChromeExpectCTReporter(
     net::URLRequestContext* request_context)
     : report_sender_(
           new net::ReportSender(request_context,
-                                net::ReportSender::DO_NOT_SEND_COOKIES,
-                                base::Bind(RecordUMAOnFailure))) {}
+                                net::ReportSender::DO_NOT_SEND_COOKIES)) {}
 
 ChromeExpectCTReporter::~ChromeExpectCTReporter() {}
 
@@ -177,5 +176,6 @@ void ChromeExpectCTReporter::OnExpectCTFailed(
   UMA_HISTOGRAM_BOOLEAN("SSL.ExpectCTReportSendingAttempt", true);
 
   report_sender_->Send(report_uri, "application/json; charset=utf-8",
-                       serialized_report);
+                       serialized_report, base::Closure(),
+                       base::Bind(RecordUMAOnFailure));
 }

@@ -17,9 +17,12 @@ class MockPermissionReportSender : public net::ReportSender {
 
   ~MockPermissionReportSender() override;
 
-  void Send(const GURL& report_uri,
-            base::StringPiece content_type,
-            base::StringPiece report) override;
+  void Send(
+      const GURL& report_uri,
+      base::StringPiece content_type,
+      base::StringPiece report,
+      const base::Callback<void()>& success_callback,
+      const base::Callback<void(const GURL&, int)>& error_callback) override;
 
   const GURL& latest_report_uri();
 
