@@ -119,7 +119,7 @@ const char kPerfRecordCallgraphCmd[] =
   "perf record -a -e cycles -g -c 4000037";
 
 const char kPerfRecordLBRCmd[] =
-  "perf record -a -e r2c4 -b -c 20011";
+  "perf record -a -e r20c4 -b -c 200011";
 
 const char kPerfRecordInstructionTLBMissesCmd[] =
   "perf record -a -e iTLB-misses -c 2003";
