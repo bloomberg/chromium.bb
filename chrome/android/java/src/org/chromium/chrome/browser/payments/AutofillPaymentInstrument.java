@@ -60,6 +60,7 @@ public class AutofillPaymentInstrument extends PaymentInstrument
         mWebContents = webContents;
         mCard = card;
         mBillingAddress = billingAddress;
+        mIsEditable = true;
         checkAndUpateCardCompleteness();
     }
 

@@ -36,6 +36,7 @@ public class AutofillContact extends PaymentOption {
         super(profile.getGUID(), null, null, null, null);
         mProfile = profile;
         mIsComplete = isComplete;
+        mIsEditable = true;
         setContactInfo(profile.getGUID(), name, phone, email);
     }
 

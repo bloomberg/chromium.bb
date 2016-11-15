@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
  */
 public class PaymentOption implements Completable {
     protected boolean mIsComplete;
+    protected boolean mIsEditable;
     protected String mEditMessage;
     protected String mEditTitle;
     private String mId;
@@ -140,5 +141,10 @@ public class PaymentOption implements Completable {
     /** @return True if this option is valid. */
     public boolean isValid() {
         return mIsValid;
+    }
+
+    /** @return True if this option is editable by users. */
+    public boolean isEditable() {
+        return mIsEditable;
     }
 }

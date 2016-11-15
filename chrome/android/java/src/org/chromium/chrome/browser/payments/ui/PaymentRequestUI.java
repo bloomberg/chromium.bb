@@ -135,7 +135,30 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
          * @param checkedCallback   The callback after an asynchronous check has completed.
          * @return The result of the selection.
          */
-        @SelectionResult int onSectionOptionSelected(@DataType int optionType, PaymentOption option,
+        @SelectionResult
+        int onSectionOptionSelected(@DataType int optionType, PaymentOption option,
+                Callback<PaymentInformation> checkedCallback);
+
+        /**
+         * Called when the user clicks edit icon (pencil icon) on the payment option in a section.
+         *
+         * If this method returns {@link SELECTION_RESULT_ASYNCHRONOUS_VALIDATION}, then:
+         * + The edited option should be asynchronously verified.
+         * + The section should be disabled and a progress spinny should be shown while the option
+         *   is being verified.
+         * + The checkedCallback will be invoked with the results of the check and updated
+         *   information.
+         *
+         * If this method returns {@link SELECTION_RESULT_EDITOR_LAUNCH}, then:
+         * + Interaction with UI should be disabled until updateSection() is called.
+         *
+         * @param optionType      Data being updated.
+         * @param option          The option to be edited.
+         * @param checkedCallback The callback after an asynchronous check has completed.
+         * @return The result of the edit request.
+         */
+        @SelectionResult
+        int onSectionEditOption(@DataType int optionType, PaymentOption option,
                 Callback<PaymentInformation> checkedCallback);
 
         /**
@@ -665,6 +688,31 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         } else if (section == mPaymentMethodSection) {
             mPaymentMethodSectionInformation.setSelectedItem(option);
             result = mClient.onSectionOptionSelected(TYPE_PAYMENT_METHODS, option, null);
+        }
+
+        updateStateFromResult(section, result);
+    }
+
+    @Override
+    public void onEditPaymentOption(final PaymentRequestSection section, PaymentOption option) {
+        @SelectionResult int result = SELECTION_RESULT_NONE;
+
+        assert section != mOrderSummarySection;
+        assert section != mShippingOptionSection;
+        if (section == mShippingAddressSection) {
+            assert mShippingAddressSectionInformation.getSelectedItem() == option;
+            result = mClient.onSectionEditOption(
+                    TYPE_SHIPPING_ADDRESSES, option, mUpdateSectionsCallback);
+        }
+
+        if (section == mContactDetailsSection) {
+            assert mContactDetailsSectionInformation.getSelectedItem() == option;
+            result = mClient.onSectionEditOption(TYPE_CONTACT_DETAILS, option, null);
+        }
+
+        if (section == mPaymentMethodSection) {
+            assert mPaymentMethodSectionInformation.getSelectedItem() == option;
+            result = mClient.onSectionEditOption(TYPE_PAYMENT_METHODS, option, null);
         }
 
         updateStateFromResult(section, result);

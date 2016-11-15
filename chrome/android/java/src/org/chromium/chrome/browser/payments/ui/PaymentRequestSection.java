@@ -80,6 +80,9 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
          */
         void onPaymentOptionChanged(PaymentRequestSection section, PaymentOption option);
 
+        /** Called when the user clicks the edit icon of the selected PaymentOption. */
+        void onEditPaymentOption(PaymentRequestSection section, PaymentOption option);
+
         /** Called when the user requests adding a new PaymentOption to a given section. */
         void onAddPaymentOption(PaymentRequestSection section);
 
@@ -688,9 +691,9 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
      * .................................................................|                | CHEVRON .
      * . Descriptive text that spans all three columns because it can.  |                |    or   .
      * . ! Warning text that displays a big scary warning and icon.     |           LOGO |   ADD   .
-     * . O Option 1                                              ICON 1 |                |    or   .
-     * . O Option 2                                              ICON 2 |                |  SELECT .
-     * . O Option 3                                              ICON 3 |                |         .
+     * . O Option 1                                  ICON 1 | Edit Icon |                |    or   .
+     * . O Option 2                                  ICON 2 | Edit Icon |                |  SELECT .
+     * . O Option 3                                  ICON 3 | Edit Icon |                |         .
      * . + ADD THING                                                    |                |         .
      * .............................................................................................
      */
@@ -708,6 +711,8 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
          *   row type.
          * + The "label" is text describing the row.
          * + The "icon" is a logo representing the option, like a credit card.
+         * + The "edit icon" is a pencil icon with a vertical separator to indicate the option is
+         *   editable, clicking on it brings up corresponding editor.
          */
         public class OptionRow {
             private static final int OPTION_ROW_TYPE_OPTION = 0;
@@ -719,17 +724,21 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
             private final PaymentOption mOption;
             private final View mButton;
             private final TextView mLabel;
-            private final View mIcon;
+            private final View mOptionIcon;
+            private final View mEditIcon;
 
             public OptionRow(GridLayout parent, int rowIndex, int rowType, PaymentOption item,
                     boolean isSelected) {
-                boolean iconExists = item != null && item.getDrawableIcon() != null;
+                boolean optionIconExists = item != null && item.getDrawableIcon() != null;
+                boolean editIconExists = item != null && item.isEditable() && isSelected;
                 boolean isEnabled = item != null && item.isValid();
                 mRowType = rowType;
                 mOption = item;
                 mButton = createButton(parent, rowIndex, isSelected, isEnabled);
-                mLabel = createLabel(parent, rowIndex, iconExists, isEnabled);
-                mIcon = iconExists ? createIcon(parent, rowIndex) : null;
+                mLabel = createLabel(parent, rowIndex, optionIconExists, editIconExists, isEnabled);
+                mOptionIcon = optionIconExists
+                        ? createOptionIcon(parent, rowIndex, editIconExists) : null;
+                mEditIcon = editIconExists ? createEditIcon(parent, rowIndex) : null;
             }
 
             /** Sets the selected state of this item, alerting the delegate if selected. */
@@ -811,17 +820,20 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                 return view;
             }
 
-            private TextView createLabel(
-                    GridLayout parent, int rowIndex, boolean iconExists, boolean isEnabled) {
+            private TextView createLabel(GridLayout parent, int rowIndex, boolean optionIconExists,
+                    boolean editIconExists, boolean isEnabled) {
                 Context context = parent.getContext();
                 Resources resources = context.getResources();
 
                 // By default, the label appears to the right of the "button" in the second column.
-                // + If there is no button and no icon, the label spans the whole row.
-                // + If there is no icon, the label spans two columns.
+                // + If there is no button, no option and edit icon, the label spans the whole row.
+                // + If there is no option and edit icon, the label spans three columns.
+                // + If there is no edit icon or option icon, the label spans two columns.
                 // + Otherwise, the label occupies only its own column.
                 int columnStart = 1;
-                int columnSpan = iconExists ? 1 : 2;
+                int columnSpan = 1;
+                if (!optionIconExists) columnSpan++;
+                if (!editIconExists) columnSpan++;
 
                 TextView labelView = new TextView(context);
                 if (mRowType == OPTION_ROW_TYPE_OPTION) {
@@ -847,47 +859,70 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                 } else if (mRowType == OPTION_ROW_TYPE_DESCRIPTION) {
                     // The description spans all the columns.
                     columnStart = 0;
-                    columnSpan = 3;
+                    columnSpan = 4;
 
                     ApiCompatibilityUtils.setTextAppearance(
                             labelView, R.style.PaymentsUiSectionDescriptiveText);
                 } else if (mRowType == OPTION_ROW_TYPE_WARNING) {
-                    // Warnings use two columns.
-                    columnSpan = 2;
+                    // Warnings use three columns.
+                    columnSpan = 3;
                     ApiCompatibilityUtils.setTextAppearance(
                             labelView, R.style.PaymentsUiSectionWarningText);
                 }
 
-                // The label spans two columns if no icon exists.  Setting the view width to 0
-                // forces it to stretch.
+                // The label spans two columns if no option or edit icon, or spans three columns if
+                // no option and edit icons. Setting the view width to 0 forces it to stretch.
                 GridLayout.LayoutParams labelParams = new GridLayout.LayoutParams(
                         GridLayout.spec(rowIndex, 1, GridLayout.CENTER),
                         GridLayout.spec(columnStart, columnSpan, GridLayout.FILL));
                 labelParams.topMargin = mVerticalMargin;
                 labelParams.width = 0;
+                if (optionIconExists) {
+                    // Margin at the end of the label instead of the start of the option icon to
+                    // allow option icon in the the next row align with the end of label (include
+                    // end margin) when edit icon exits in that row, like below:
+                    // ---Label---------------------[label margin]|---option icon---|
+                    // ---Label---[label margin]|---option icon---|----edit icon----|
+                    ApiCompatibilityUtils.setMarginEnd(labelParams, mLargeSpacing);
+                }
                 parent.addView(labelView, labelParams);
 
                 labelView.setOnClickListener(OptionSection.this);
                 return labelView;
             }
 
-            private View createIcon(GridLayout parent, int rowIndex) {
+            private View createOptionIcon(GridLayout parent, int rowIndex, boolean editIconExists) {
                 // The icon has a pre-defined width.
-                ImageView icon = new ImageView(parent.getContext());
-                icon.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
-                icon.setBackgroundResource(R.drawable.payments_ui_logo_bg);
-                icon.setImageDrawable(mOption.getDrawableIcon());
-                icon.setMaxWidth(mIconMaxWidth);
+                ImageView optionIcon = new ImageView(parent.getContext());
+                optionIcon.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
+                optionIcon.setBackgroundResource(R.drawable.payments_ui_logo_bg);
+                optionIcon.setImageDrawable(mOption.getDrawableIcon());
+                optionIcon.setMaxWidth(mIconMaxWidth);
+
+                // Place option icon at column three if no edit icon.
+                int columnStart = editIconExists ? 2 : 3;
+                GridLayout.LayoutParams iconParams = new GridLayout.LayoutParams(
+                        GridLayout.spec(rowIndex, 1, GridLayout.CENTER),
+                        GridLayout.spec(columnStart, 1));
+                iconParams.topMargin = mVerticalMargin;
+                parent.addView(optionIcon, iconParams);
+
+                optionIcon.setOnClickListener(OptionSection.this);
+                return optionIcon;
+            }
+
+            private View createEditIcon(GridLayout parent, int rowIndex) {
+                View editorIcon = LayoutInflater.from(parent.getContext())
+                                          .inflate(R.layout.payment_option_edit_icon, null);
 
                 // The icon floats to the right of everything.
                 GridLayout.LayoutParams iconParams = new GridLayout.LayoutParams(
-                        GridLayout.spec(rowIndex, 1, GridLayout.CENTER), GridLayout.spec(2, 1));
+                        GridLayout.spec(rowIndex, 1, GridLayout.CENTER), GridLayout.spec(3, 1));
                 iconParams.topMargin = mVerticalMargin;
-                ApiCompatibilityUtils.setMarginStart(iconParams, mLargeSpacing);
-                parent.addView(icon, iconParams);
+                parent.addView(editorIcon, iconParams);
 
-                icon.setOnClickListener(OptionSection.this);
-                return icon;
+                editorIcon.setOnClickListener(OptionSection.this);
+                return editorIcon;
             }
         }
 
@@ -927,12 +962,18 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
 
         @Override
         public void handleClick(View v) {
-            // Handle click on the "ADD THING" button.
             for (int i = 0; i < mOptionRows.size(); i++) {
                 OptionRow row = mOptionRows.get(i);
-                boolean wasClicked = row.mButton == v || row.mLabel == v || row.mIcon == v;
-                if (row.mOption == null && wasClicked) {
+                boolean clickedSelect = row.mButton == v || row.mLabel == v || row.mOptionIcon == v;
+                // Handle click on the "ADD THING" button.
+                if (row.mOption == null && clickedSelect) {
                     mDelegate.onAddPaymentOption(this);
+                    return;
+                }
+
+                // Handle click on the edit icon.
+                if (row.mOption != null && row.mEditIcon == v) {
+                    mDelegate.onEditPaymentOption(this, row.mOption);
                     return;
                 }
             }
@@ -940,8 +981,8 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
             // Update the radio button state: checked/unchecked.
             for (int i = 0; i < mOptionRows.size(); i++) {
                 OptionRow row = mOptionRows.get(i);
-                boolean wasClicked = row.mButton == v || row.mLabel == v || row.mIcon == v;
-                if (row.mOption != null) row.setChecked(wasClicked);
+                boolean clickedSelect = row.mButton == v || row.mLabel == v || row.mOptionIcon == v;
+                if (row.mOption != null) row.setChecked(clickedSelect);
             }
         }
 
@@ -968,7 +1009,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
             mCheckingProgress = createLoadingSpinner();
 
             mOptionLayout = new GridLayout(context);
-            mOptionLayout.setColumnCount(3);
+            mOptionLayout.setColumnCount(4);
             mainSectionLayout.addView(mOptionLayout, new LinearLayout.LayoutParams(
                     LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         }

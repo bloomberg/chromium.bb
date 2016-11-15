@@ -687,9 +687,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     }
 
     @Override
-    @PaymentRequestUI.SelectionResult public int onSectionOptionSelected(
-            @PaymentRequestUI.DataType int optionType, PaymentOption option,
-            Callback<PaymentInformation> callback) {
+    @PaymentRequestUI.SelectionResult
+    public int onSectionOptionSelected(@PaymentRequestUI.DataType int optionType,
+            PaymentOption option, Callback<PaymentInformation> callback) {
         if (optionType == PaymentRequestUI.TYPE_SHIPPING_ADDRESSES) {
             assert option instanceof AutofillAddress;
             // Log the change of shipping address.
@@ -745,7 +745,35 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     }
 
     @Override
-    @PaymentRequestUI.SelectionResult public int onSectionAddOption(
+    @PaymentRequestUI.SelectionResult
+    public int onSectionEditOption(@PaymentRequestUI.DataType int optionType, PaymentOption option,
+            Callback<PaymentInformation> callback) {
+        if (optionType == PaymentRequestUI.TYPE_SHIPPING_ADDRESSES) {
+            assert option instanceof AutofillAddress;
+            editAddress((AutofillAddress) option);
+            mPaymentInformationCallback = callback;
+            return PaymentRequestUI.SELECTION_RESULT_ASYNCHRONOUS_VALIDATION;
+        }
+
+        if (optionType == PaymentRequestUI.TYPE_CONTACT_DETAILS) {
+            assert option instanceof AutofillContact;
+            editContact((AutofillContact) option);
+            return PaymentRequestUI.SELECTION_RESULT_EDITOR_LAUNCH;
+        }
+
+        if (optionType == PaymentRequestUI.TYPE_PAYMENT_METHODS) {
+            assert option instanceof AutofillPaymentInstrument;
+            editCard((AutofillPaymentInstrument) option);
+            return PaymentRequestUI.SELECTION_RESULT_EDITOR_LAUNCH;
+        }
+
+        assert false;
+        return PaymentRequestUI.SELECTION_RESULT_NONE;
+    }
+
+    @Override
+    @PaymentRequestUI.SelectionResult
+    public int onSectionAddOption(
             @PaymentRequestUI.DataType int optionType, Callback<PaymentInformation> callback) {
         if (optionType == PaymentRequestUI.TYPE_SHIPPING_ADDRESSES) {
             editAddress(null);

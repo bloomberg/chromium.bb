@@ -69,6 +69,7 @@ public class AutofillAddress extends PaymentOption {
                 profile.getPhoneNumber(), null);
         mContext = context;
         mProfile = profile;
+        mIsEditable = true;
         checkAndUpdateAddressCompleteness();
     }
 
