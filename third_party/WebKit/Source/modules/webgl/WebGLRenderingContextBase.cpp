@@ -4366,31 +4366,10 @@ void WebGLRenderingContextBase::texImageImpl(
   }
 
   bool selectingSubRectangle = false;
-  if (!validateTexImageSubRectangle(funcName, image, subRect,
+  if (!validateTexImageSubRectangle(funcName, functionID, image, subRect, depth,
+                                    unpackImageHeight,
                                     &selectingSubRectangle)) {
     return;
-  }
-
-  if (functionID == TexImage3D || functionID == TexSubImage3D) {
-    DCHECK_GE(unpackImageHeight, 0);
-
-    // Verify that the image data can cover the required depth.
-    CheckedNumeric<GLint> maxDepthSupported = 1;
-    if (unpackImageHeight) {
-      maxDepthSupported = subRect.height();
-      maxDepthSupported /= unpackImageHeight;
-    }
-
-    if (!maxDepthSupported.IsValid() ||
-        maxDepthSupported.ValueOrDie() < depth) {
-      synthesizeGLError(
-          GL_INVALID_OPERATION, funcName,
-          "Not enough data supplied to upload to a 3D texture with depth > 1");
-      return;
-    }
-  } else {
-    DCHECK_EQ(depth, 1);
-    DCHECK_EQ(unpackImageHeight, 0);
   }
 
   // Adjust the source image rectangle if doing a y-flip.
@@ -4706,7 +4685,8 @@ void WebGLRenderingContextBase::texImageHelperImageData(
     GLint yoffset,
     GLint zoffset,
     ImageData* pixels,
-    const IntRect& sourceImageRect) {
+    const IntRect& sourceImageRect,
+    GLint unpackImageHeight) {
   const char* funcName = getTexImageFunctionName(functionID);
   if (isContextLost())
     return;
@@ -4719,7 +4699,7 @@ void WebGLRenderingContextBase::texImageHelperImageData(
   if (!validateTexImageBinding(funcName, functionID, target))
     return;
   TexImageFunctionType functionType;
-  if (functionID == TexImage2D)
+  if (functionID == TexImage2D || functionID == TexImage3D)
     functionType = TexImage;
   else
     functionType = TexSubImage;
@@ -4729,7 +4709,8 @@ void WebGLRenderingContextBase::texImageHelperImageData(
     return;
 
   bool selectingSubRectangle = false;
-  if (!validateTexImageSubRectangle(funcName, pixels, sourceImageRect,
+  if (!validateTexImageSubRectangle(funcName, functionID, pixels,
+                                    sourceImageRect, depth, unpackImageHeight,
                                     &selectingSubRectangle)) {
     return;
   }
@@ -4763,23 +4744,33 @@ void WebGLRenderingContextBase::texImageHelperImageData(
     }
   }
   resetUnpackParameters();
+  const uint8_t* bytes = needConversion ? data.data() : pixels->data()->data();
   if (functionID == TexImage2D) {
-    texImage2DBase(target, level, internalformat,
-                   adjustedSourceImageRect.width(),
-                   adjustedSourceImageRect.height(), border, format, type,
-                   needConversion ? data.data() : pixels->data()->data());
+    DCHECK_EQ(unpackImageHeight, 0);
+    texImage2DBase(
+        target, level, internalformat, adjustedSourceImageRect.width(),
+        adjustedSourceImageRect.height(), border, format, type, bytes);
   } else if (functionID == TexSubImage2D) {
+    DCHECK_EQ(unpackImageHeight, 0);
     contextGL()->TexSubImage2D(
         target, level, xoffset, yoffset, adjustedSourceImageRect.width(),
-        adjustedSourceImageRect.height(), format, type,
-        needConversion ? data.data() : pixels->data()->data());
+        adjustedSourceImageRect.height(), format, type, bytes);
   } else {
-    DCHECK_EQ(functionID, TexSubImage3D);
-    contextGL()->TexSubImage3D(
-        target, level, xoffset, yoffset, zoffset,
-        adjustedSourceImageRect.width(), adjustedSourceImageRect.height(),
-        depth, format, type,
-        needConversion ? data.data() : pixels->data()->data());
+    GLint uploadHeight = adjustedSourceImageRect.height();
+    if (unpackImageHeight) {
+      // GL_UNPACK_IMAGE_HEIGHT overrides the passed-in height.
+      uploadHeight = unpackImageHeight;
+    }
+    if (functionID == TexImage3D) {
+      contextGL()->TexImage3D(target, level, internalformat,
+                              adjustedSourceImageRect.width(), uploadHeight,
+                              depth, border, format, type, bytes);
+    } else {
+      DCHECK_EQ(functionID, TexSubImage3D);
+      contextGL()->TexSubImage3D(target, level, xoffset, yoffset, zoffset,
+                                 adjustedSourceImageRect.width(), uploadHeight,
+                                 depth, format, type, bytes);
+    }
   }
   restoreUnpackParameters();
 }
@@ -4791,7 +4782,8 @@ void WebGLRenderingContextBase::texImage2D(GLenum target,
                                            GLenum type,
                                            ImageData* pixels) {
   texImageHelperImageData(TexImage2D, target, level, internalformat, 0, format,
-                          type, 1, 0, 0, 0, pixels, getImageDataSize(pixels));
+                          type, 1, 0, 0, 0, pixels, getImageDataSize(pixels),
+                          0);
 }
 
 void WebGLRenderingContextBase::texImageHelperHTMLImageElement(
@@ -5392,8 +5384,8 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target,
                                               GLenum type,
                                               ImageData* pixels) {
   texImageHelperImageData(TexSubImage2D, target, level, 0, 0, format, type, 1,
-                          xoffset, yoffset, 0, pixels,
-                          getImageDataSize(pixels));
+                          xoffset, yoffset, 0, pixels, getImageDataSize(pixels),
+                          0);
 }
 
 void WebGLRenderingContextBase::texSubImage2D(GLenum target,

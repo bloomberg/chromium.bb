@@ -1315,7 +1315,7 @@ void WebGL2RenderingContextBase::texImage2D(GLenum target,
   sourceImageRect.setLocation(IntPoint(m_unpackSkipPixels, m_unpackSkipRows));
   sourceImageRect.setSize(IntSize(width, height));
   texImageHelperImageData(TexImage2D, target, level, internalformat, 0, format,
-                          type, 1, 0, 0, 0, pixels, sourceImageRect);
+                          type, 1, 0, 0, 0, pixels, sourceImageRect, 0);
 }
 
 void WebGL2RenderingContextBase::texImage2D(GLenum target,
@@ -1474,7 +1474,7 @@ void WebGL2RenderingContextBase::texSubImage2D(GLenum target,
   sourceImageRect.setLocation(IntPoint(m_unpackSkipPixels, m_unpackSkipRows));
   sourceImageRect.setSize(IntSize(width, height));
   texImageHelperImageData(TexSubImage2D, target, level, 0, 0, format, type, 1,
-                          xoffset, yoffset, 0, pixels, sourceImageRect);
+                          xoffset, yoffset, 0, pixels, sourceImageRect, 0);
 }
 
 void WebGL2RenderingContextBase::texSubImage2D(GLenum target,
@@ -1696,8 +1696,14 @@ void WebGL2RenderingContextBase::texImage3D(GLenum target,
                                             GLint border,
                                             GLenum format,
                                             GLenum type,
-                                            ImageData* imageData) {
-  // TODO(zmo): To be implemented.
+                                            ImageData* pixels) {
+  DCHECK(pixels);
+  IntRect sourceImageRect;
+  sourceImageRect.setLocation(IntPoint(m_unpackSkipPixels, m_unpackSkipRows));
+  sourceImageRect.setSize(IntSize(width, height));
+  texImageHelperImageData(TexImage3D, target, level, internalformat, 0, format,
+                          type, depth, 0, 0, 0, pixels, sourceImageRect,
+                          m_unpackImageHeight);
 }
 
 void WebGL2RenderingContextBase::texImage3D(GLenum target,
@@ -1824,7 +1830,13 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target,
                                                GLenum format,
                                                GLenum type,
                                                ImageData* pixels) {
-  // TODO(zmo): To be implemented.
+  DCHECK(pixels);
+  IntRect sourceImageRect;
+  sourceImageRect.setLocation(IntPoint(m_unpackSkipPixels, m_unpackSkipRows));
+  sourceImageRect.setSize(IntSize(width, height));
+  texImageHelperImageData(TexSubImage3D, target, level, 0, 0, format, type,
+                          depth, xoffset, yoffset, zoffset, pixels,
+                          sourceImageRect, m_unpackImageHeight);
 }
 
 void WebGL2RenderingContextBase::texSubImage3D(GLenum target,
@@ -1893,19 +1905,6 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target,
                                                ImageBitmap* bitmap,
                                                ExceptionState& exceptionState) {
   // TODO(zmo): To be implemented.
-}
-
-void WebGL2RenderingContextBase::texSubImage3D(GLenum target,
-                                               GLint level,
-                                               GLint xoffset,
-                                               GLint yoffset,
-                                               GLint zoffset,
-                                               GLenum format,
-                                               GLenum type,
-                                               ImageData* pixels) {
-  texImageHelperImageData(TexSubImage3D, target, level, 0, 0, format, type, 1,
-                          xoffset, yoffset, zoffset, pixels,
-                          getImageDataSize(pixels));
 }
 
 void WebGL2RenderingContextBase::texSubImage3D(GLenum target,

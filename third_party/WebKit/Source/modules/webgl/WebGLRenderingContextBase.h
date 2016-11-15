@@ -49,6 +49,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "wtf/CheckedNumeric.h"
 #include "wtf/text/WTFString.h"
 #include <memory>
 #include <set>
@@ -1024,9 +1025,15 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                     GLint unpackImageHeight);
   template <typename T>
   bool validateTexImageSubRectangle(const char* functionName,
+                                    TexImageFunctionID functionID,
                                     T* image,
                                     const IntRect& subRect,
+                                    GLsizei depth,
+                                    GLint unpackImageHeight,
                                     bool* selectingSubRectangle) {
+    DCHECK(functionName);
+    DCHECK(selectingSubRectangle);
+    DCHECK(image);
     *selectingSubRectangle = image &&
                              !(subRect.x() == 0 && subRect.y() == 0 &&
                                subRect.width() == image->width() &&
@@ -1049,6 +1056,28 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                         "source sub-rectangle specified via pixel unpack "
                         "parameters is invalid");
       return false;
+    }
+
+    if (functionID == TexImage3D || functionID == TexSubImage3D) {
+      DCHECK_GE(unpackImageHeight, 0);
+
+      // Verify that the image data can cover the required depth.
+      WTF::CheckedNumeric<GLint> maxDepthSupported = 1;
+      if (unpackImageHeight) {
+        maxDepthSupported = subRect.height();
+        maxDepthSupported /= unpackImageHeight;
+      }
+
+      if (!maxDepthSupported.IsValid() ||
+          maxDepthSupported.ValueOrDie() < depth) {
+        synthesizeGLError(GL_INVALID_OPERATION, functionName,
+                          "Not enough data supplied to upload to a 3D texture "
+                          "with depth > 1");
+        return false;
+      }
+    } else {
+      DCHECK_EQ(depth, 1);
+      DCHECK_EQ(unpackImageHeight, 0);
     }
     return true;
   }
@@ -1511,7 +1540,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                GLint,
                                GLint,
                                ImageData*,
-                               const IntRect&);
+                               const IntRect&,
+                               GLint);
   void texImageHelperHTMLImageElement(TexImageFunctionID,
                                       GLenum,
                                       GLint,
