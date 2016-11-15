@@ -252,6 +252,15 @@ TEST_F(PasswordManagerPresenterTest, Sorting_DifferentPasswords) {
                         PasswordEntryType::SAVED);
 }
 
+TEST_F(PasswordManagerPresenterTest, Sorting_DifferentSchemes) {
+  const SortEntry test_cases[] = {
+      {"https://example.com", "user", "1", nullptr, nullptr, 1},
+      {"https://example.com", "user", "1", nullptr, nullptr, -1},  // Hide it.
+      {"http://example.com", "user", "1", nullptr, nullptr, 0}};
+  SortAndCheckPositions(test_cases, arraysize(test_cases),
+                        PasswordEntryType::SAVED);
+}
+
 TEST_F(PasswordManagerPresenterTest, Sorting_HideDuplicates) {
   const SortEntry test_cases[] = {
       {"http://example.com", "user_a", "pwd", nullptr, nullptr, 0},
@@ -294,9 +303,9 @@ TEST_F(PasswordManagerPresenterTest, Sorting_PasswordExceptions) {
 
 TEST_F(PasswordManagerPresenterTest, Sorting_AndroidCredentials) {
   const SortEntry test_cases[] = {
-      {"https://alpha.com", "user", "secret", nullptr, nullptr, 0},
+      {"https://alpha.com", "user", "secret", nullptr, nullptr, 1},
       {"android://hash@com.alpha", "user", "secret", "https://alpha.com",
-       nullptr, 1},
+       nullptr, 0},
       {"android://hash@com.alpha", "user", "secret", "https://alpha.com",
        nullptr, -1},
       {"android://hash@com.alpha", "user", "secret", nullptr, nullptr, 2},
