@@ -33,7 +33,6 @@ class ShutdownController;
 namespace test {
 class LockStateControllerTest;
 class LockStateControllerTestApi;
-class PowerButtonControllerTest;
 }
 
 // Displays onscreen animations and locks or suspends the system in response to
@@ -148,7 +147,6 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   }
 
  private:
-  friend class test::PowerButtonControllerTest;
   friend class test::LockStateControllerTest;
   friend class test::LockStateControllerTestApi;
 

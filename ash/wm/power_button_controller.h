@@ -5,6 +5,8 @@
 #ifndef ASH_WM_POWER_BUTTON_CONTROLLER_H_
 #define ASH_WM_POWER_BUTTON_CONTROLLER_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -26,11 +28,10 @@ class Layer;
 
 namespace ash {
 
-namespace test {
-class PowerButtonControllerTest;
-}
-
 class LockStateController;
+#if defined(OS_CHROMEOS)
+class TabletPowerButtonController;
+#endif
 
 // Handles power & lock button events which may result in the locking or
 // shutting down of the system as well as taking screen shots while in maximize
@@ -53,10 +54,6 @@ class ASH_EXPORT PowerButtonController
     has_legacy_power_button_ = legacy;
   }
 
-  void set_enable_quick_lock_for_test(bool enable_quick_lock) {
-    enable_quick_lock_ = enable_quick_lock;
-  }
-
   // Called when the current screen brightness changes.
   void OnScreenBrightnessChanged(double percent);
 
@@ -75,11 +72,13 @@ class ASH_EXPORT PowerButtonController
   // Overridden from chromeos::PowerManagerClient::Observer:
   void PowerButtonEventReceived(bool down,
                                 const base::TimeTicks& timestamp) override;
+
+  TabletPowerButtonController* tablet_power_button_controller_for_test() {
+    return tablet_controller_.get();
+  }
 #endif
 
  private:
-  friend class test::PowerButtonControllerTest;
-
   // Are the power or lock buttons currently held?
   bool power_button_down_;
   bool lock_button_down_;
@@ -105,10 +104,12 @@ class ASH_EXPORT PowerButtonController
   // that misreports power button releases?
   bool has_legacy_power_button_;
 
-  // Enables quick, non-cancellable locking of the screen when in maximize mode.
-  bool enable_quick_lock_;
+  LockStateController* lock_state_controller_;  // Not owned.
 
-  LockStateController* controller_;  // Not owned.
+#if defined(OS_CHROMEOS)
+  // Handles events for convertible/tablet devices.
+  std::unique_ptr<TabletPowerButtonController> tablet_controller_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(PowerButtonController);
 };

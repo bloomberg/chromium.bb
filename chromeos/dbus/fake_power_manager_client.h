@@ -79,6 +79,10 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   void SendSuspendDone();
   void SendDarkSuspendImminent();
 
+  // Emulates the power manager announcing that the system is changing
+  // brightness to |level|.
+  void SendBrightnessChanged(int level, bool user_initiated);
+
   // Notifies observers that the power button has been pressed or released.
   void SendPowerButtonEvent(bool down, const base::TimeTicks& timestamp);
 
