@@ -238,7 +238,11 @@ class VideoDecodeAcceleratorTestEnvironment : public ::testing::Environment {
       : rendering_thread_("GLRenderingVDAClientThread") {}
 
   void SetUp() override {
-    rendering_thread_.Start();
+    base::Thread::Options options;
+#if defined(OS_WIN)
+    options.message_loop_type = base::MessageLoop::TYPE_UI;
+#endif
+    rendering_thread_.StartWithOptions(options);
 
     base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
@@ -1715,7 +1719,11 @@ TEST_F(VideoDecodeAcceleratorTest, TestDecodeTimeMedian) {
 
 int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);  // Removes gtest-specific args.
+#if defined(OS_WIN)
+  base::CommandLine::InitUsingArgvForTesting(argc, argv);
+#else
   base::CommandLine::Init(argc, argv);
+#endif
 
   // Needed to enable DVLOG through --vmodule.
   logging::LoggingSettings settings;
@@ -1792,6 +1800,8 @@ int main(int argc, char** argv) {
 
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
   media::VaapiWrapper::PreSandboxInitialization();
+#elif defined(OS_WIN)
+  media::DXVAVideoDecodeAccelerator::PreSandboxInitialization();
 #endif
 
   media::g_env =

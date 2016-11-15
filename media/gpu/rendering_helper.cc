@@ -213,16 +213,7 @@ RenderingHelper::~RenderingHelper() {
 }
 
 void RenderingHelper::Setup() {
-#if defined(OS_WIN)
-  window_ = CreateWindowEx(0,
-                           L"Static",
-                           L"VideoDecodeAcceleratorTest",
-                           WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-                           0, 0,
-                           GetSystemMetrics(SM_CXSCREEN),
-                           GetSystemMetrics(SM_CYSCREEN),
-                           NULL, NULL, NULL, NULL);
-#elif defined(USE_X11)
+#if defined(USE_X11)
   Display* display = gfx::GetXDisplay();
   Screen* screen = DefaultScreenOfDisplay(display);
 
@@ -296,17 +287,13 @@ void RenderingHelper::Setup() {
   // wait for the window to resized and therefore associated with
   // display output to be sure that we will get such events.
   wait_window_resize.RunUntilIdle();
-#else
+#elif !defined(OS_WIN)
 #error unknown platform
 #endif
-  CHECK(window_ != gfx::kNullAcceleratedWidget);
 }
 
 void RenderingHelper::TearDown() {
-#if defined(OS_WIN)
-  if (window_)
-    DestroyWindow(window_);
-#elif defined(USE_X11)
+#if defined(USE_X11)
   // Destroy resources acquired in Initialize, in reverse-acquisition order.
   if (window_) {
     CHECK(XUnmapWindow(gfx::GetXDisplay(), window_));
@@ -324,6 +311,13 @@ void RenderingHelper::TearDown() {
 
 void RenderingHelper::Initialize(const RenderingHelperParams& params,
                                  base::WaitableEvent* done) {
+#if defined(OS_WIN)
+  window_ = CreateWindowEx(
+      0, L"Static", L"VideoDecodeAcceleratorTest",
+      WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, 0, GetSystemMetrics(SM_CXSCREEN),
+      GetSystemMetrics(SM_CYSCREEN), NULL, NULL, NULL, NULL);
+#endif
+  CHECK(window_ != gfx::kNullAcceleratedWidget);
   // Use videos_.size() != 0 as a proxy for the class having already been
   // Initialize()'d, and UnInitialize() before continuing.
   if (videos_.size()) {
@@ -419,7 +413,7 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
                   gl_Position = in_pos;
                 });
 
-#if GL_VARIANT_EGL
+#if GL_VARIANT_EGL && !defined(OS_WIN)
   static const char kFragmentShader[] =
       "#extension GL_OES_EGL_image_external : enable\n"
       "precision mediump float;\n"
@@ -437,11 +431,14 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
       "}\n";
 #else
   static const char kFragmentShader[] =
-      STRINGIZE(varying vec2 interp_tc;
-                uniform sampler2D tex;
-                void main() {
-                  gl_FragColor = texture2D(tex, interp_tc);
-                });
+      "#ifdef GL_ES\n"
+      "precision mediump float;\n"
+      "#endif\n"
+      "varying vec2 interp_tc;\n"
+      "uniform sampler2D tex;\n"
+      "void main() {\n"
+      "  gl_FragColor = texture2D(tex, interp_tc);\n"
+      "}\n";
 #endif
   program_ = glCreateProgram();
   CreateShader(program_, GL_VERTEX_SHADER, kVertexShader,
@@ -554,6 +551,13 @@ void RenderingHelper::UnInitialize(base::WaitableEvent* done) {
   gl_surface_ = NULL;
 
   Clear();
+
+#if defined(OS_WIN)
+  if (window_)
+    DestroyWindow(window_);
+  window_ = gfx::kNullAcceleratedWidget;
+#endif
+
   done->Signal();
 }
 

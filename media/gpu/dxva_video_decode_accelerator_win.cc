@@ -871,7 +871,7 @@ void DXVAVideoDecodeAccelerator::AssignPictureBuffers(
   RETURN_AND_NOTIFY_ON_FAILURE((state != kUninitialized),
                                "Invalid state: " << state, ILLEGAL_STATE, );
   RETURN_AND_NOTIFY_ON_FAILURE(
-      (kNumPictureBuffers >= buffers.size()),
+      (kNumPictureBuffers <= buffers.size()),
       "Failed to provide requested picture buffers. (Got "
           << buffers.size() << ", requested " << kNumPictureBuffers << ")",
       INVALID_ARGUMENT, );
