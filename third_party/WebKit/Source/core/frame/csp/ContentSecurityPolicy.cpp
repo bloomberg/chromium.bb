@@ -831,6 +831,7 @@ bool ContentSecurityPolicy::allowRequest(
     case WebURLRequest::RequestContextEventSource:
     case WebURLRequest::RequestContextFetch:
     case WebURLRequest::RequestContextXMLHttpRequest:
+    case WebURLRequest::RequestContextSubresource:
       return allowConnectToSource(url, redirectStatus, reportingStatus);
     case WebURLRequest::RequestContextEmbed:
     case WebURLRequest::RequestContextObject:
@@ -869,7 +870,6 @@ bool ContentSecurityPolicy::allowRequest(
     case WebURLRequest::RequestContextPing:
     case WebURLRequest::RequestContextPlugin:
     case WebURLRequest::RequestContextPrefetch:
-    case WebURLRequest::RequestContextSubresource:
     case WebURLRequest::RequestContextUnspecified:
       return true;
   }

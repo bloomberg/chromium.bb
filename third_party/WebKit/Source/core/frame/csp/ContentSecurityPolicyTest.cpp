@@ -263,6 +263,37 @@ TEST_F(ContentSecurityPolicyTest, ObjectSrc) {
                                 ContentSecurityPolicy::SuppressReport));
 }
 
+TEST_F(ContentSecurityPolicyTest, ConnectSrc) {
+  KURL url(KURL(), "https://example.test");
+  csp->bindToExecutionContext(document.get());
+  csp->didReceiveHeader("connect-src 'none';",
+                        ContentSecurityPolicyHeaderTypeEnforce,
+                        ContentSecurityPolicyHeaderSourceMeta);
+  EXPECT_FALSE(csp->allowRequest(WebURLRequest::RequestContextSubresource, url,
+                                 String(), IntegrityMetadataSet(),
+                                 ParserInserted,
+                                 ResourceRequest::RedirectStatus::NoRedirect,
+                                 ContentSecurityPolicy::SuppressReport));
+  EXPECT_FALSE(csp->allowRequest(WebURLRequest::RequestContextXMLHttpRequest,
+                                 url, String(), IntegrityMetadataSet(),
+                                 ParserInserted,
+                                 ResourceRequest::RedirectStatus::NoRedirect,
+                                 ContentSecurityPolicy::SuppressReport));
+  EXPECT_FALSE(csp->allowRequest(WebURLRequest::RequestContextBeacon, url,
+                                 String(), IntegrityMetadataSet(),
+                                 ParserInserted,
+                                 ResourceRequest::RedirectStatus::NoRedirect,
+                                 ContentSecurityPolicy::SuppressReport));
+  EXPECT_FALSE(csp->allowRequest(
+      WebURLRequest::RequestContextFetch, url, String(), IntegrityMetadataSet(),
+      ParserInserted, ResourceRequest::RedirectStatus::NoRedirect,
+      ContentSecurityPolicy::SuppressReport));
+  EXPECT_TRUE(csp->allowRequest(WebURLRequest::RequestContextPlugin, url,
+                                String(), IntegrityMetadataSet(),
+                                ParserInserted,
+                                ResourceRequest::RedirectStatus::NoRedirect,
+                                ContentSecurityPolicy::SuppressReport));
+}
 // Tests that requests for scripts and styles are blocked
 // if `require-sri-for` delivered in HTTP header requires integrity be present
 TEST_F(ContentSecurityPolicyTest, RequireSRIForInHeaderMissingIntegrity) {
