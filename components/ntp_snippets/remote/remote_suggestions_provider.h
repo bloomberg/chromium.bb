@@ -191,7 +191,9 @@ class RemoteSuggestionsProvider final
 
     // The service or one of its dependencies encountered an unrecoverable error
     // and the service can't be used anymore.
-    ERROR_OCCURRED
+    ERROR_OCCURRED,
+
+    COUNT
   };
 
   struct CategoryContent {

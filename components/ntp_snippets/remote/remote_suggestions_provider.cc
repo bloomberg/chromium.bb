@@ -1091,6 +1091,10 @@ void RemoteSuggestionsProvider::EnterState(State state) {
   if (state == state_)
     return;
 
+  UMA_HISTOGRAM_ENUMERATION("NewTabPage.Snippets.EnteredState",
+                            static_cast<int>(state),
+                            static_cast<int>(State::COUNT));
+
   switch (state) {
     case State::NOT_INITED:
       // Initial state, it should not be possible to get back there.
@@ -1117,6 +1121,10 @@ void RemoteSuggestionsProvider::EnterState(State state) {
       DVLOG(1) << "Entering state: ERROR_OCCURRED";
       state_ = State::ERROR_OCCURRED;
       EnterStateError();
+      break;
+
+    case State::COUNT:
+      NOTREACHED();
       break;
   }
 
