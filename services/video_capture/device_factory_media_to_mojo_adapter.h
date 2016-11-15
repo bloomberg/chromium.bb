@@ -34,12 +34,11 @@ class DeviceFactoryMediaToMojoAdapter
   void EnumerateDeviceDescriptors(
       const EnumerateDeviceDescriptorsCallback& callback) override;
   void GetSupportedFormats(
-      const media::VideoCaptureDeviceDescriptor& device_descriptor,
+      const std::string& device_id,
       const GetSupportedFormatsCallback& callback) override;
-  void CreateDeviceProxy(
-      const media::VideoCaptureDeviceDescriptor& device_descriptor,
-      mojom::VideoCaptureDeviceProxyRequest proxy_request,
-      const CreateDeviceProxyCallback& callback) override;
+  void CreateDeviceProxy(const std::string& device_id,
+                         mojom::VideoCaptureDeviceProxyRequest proxy_request,
+                         const CreateDeviceProxyCallback& callback) override;
 
  private:
   struct ActiveDeviceEntry {
@@ -55,13 +54,15 @@ class DeviceFactoryMediaToMojoAdapter
     std::unique_ptr<mojo::Binding<mojom::VideoCaptureDeviceProxy>> binding;
   };
 
-  void OnClientConnectionErrorOrClose(
-      const media::VideoCaptureDeviceDescriptor& descriptor);
+  void OnClientConnectionErrorOrClose(const std::string& device_id);
+
+  // Returns false if no descriptor found.
+  bool LookupDescriptorFromId(const std::string& device_id,
+                              media::VideoCaptureDeviceDescriptor* descriptor);
 
   const std::unique_ptr<media::VideoCaptureDeviceFactory> device_factory_;
   const media::VideoCaptureJpegDecoderFactoryCB jpeg_decoder_factory_callback_;
-  std::map<media::VideoCaptureDeviceDescriptor, ActiveDeviceEntry>
-      active_devices_;
+  std::map<std::string, ActiveDeviceEntry> active_devices_by_id_;
 };
 
 }  // namespace video_capture

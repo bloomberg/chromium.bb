@@ -8,10 +8,6 @@
 #include "media/capture/video/video_frame_receiver.h"
 #include "services/video_capture/public/interfaces/video_frame_receiver.mojom.h"
 
-namespace media {
-class MojoSharedBufferVideoFrame;
-}
-
 namespace video_capture {
 
 // Adapter that allows a mojom::VideoFrameReceiver to be used in place of
@@ -31,7 +27,6 @@ class ReceiverMojoToMediaAdapter : public media::VideoFrameReceiver {
 
  private:
   mojom::VideoFrameReceiverPtr receiver_;
-  scoped_refptr<media::MojoSharedBufferVideoFrame> shared_buffer_frame_;
 };
 
 }  // namespace video_capture

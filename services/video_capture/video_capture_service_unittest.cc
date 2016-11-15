@@ -54,9 +54,7 @@ TEST_F(VideoCaptureServiceTest, FakeDeviceFactoryEnumeratesOneDevice) {
 // Tests that VideoCaptureDeviceFactory::CreateDeviceProxy() returns an error
 // code when trying to create a device for an invalid descriptor.
 TEST_F(VideoCaptureServiceTest, ErrorCodeOnCreateDeviceForInvalidDescriptor) {
-  media::VideoCaptureDeviceDescriptor invalid_descriptor;
-  invalid_descriptor.device_id = "invalid";
-  invalid_descriptor.model_id = "invalid";
+  const std::string invalid_device_id = "invalid";
   base::RunLoop wait_loop;
   mojom::VideoCaptureDeviceProxyPtr fake_device_proxy;
   MockCreateDeviceProxyCallback create_device_proxy_callback;
@@ -65,7 +63,7 @@ TEST_F(VideoCaptureServiceTest, ErrorCodeOnCreateDeviceForInvalidDescriptor) {
       .Times(1)
       .WillOnce(InvokeWithoutArgs([&wait_loop]() { wait_loop.Quit(); }));
   factory_->CreateDeviceProxy(
-      std::move(invalid_descriptor), mojo::GetProxy(&fake_device_proxy),
+      invalid_device_id, mojo::GetProxy(&fake_device_proxy),
       base::Bind(&MockCreateDeviceProxyCallback::Run,
                  base::Unretained(&create_device_proxy_callback)));
   wait_loop.Run();

@@ -41,15 +41,17 @@ void DeviceFactoryMediaToMojoAdapter::EnumerateDeviceDescriptors(
     const EnumerateDeviceDescriptorsCallback& callback) {
   media::VideoCaptureDeviceDescriptors descriptors;
   device_factory_->GetDeviceDescriptors(&descriptors);
-  callback.Run(descriptors);
+  callback.Run(std::move(descriptors));
 }
 
 void DeviceFactoryMediaToMojoAdapter::GetSupportedFormats(
-    const media::VideoCaptureDeviceDescriptor& device_descriptor,
+    const std::string& device_id,
     const GetSupportedFormatsCallback& callback) {
+  media::VideoCaptureDeviceDescriptor descriptor;
+  media::VideoCaptureFormats media_formats;
+  if (LookupDescriptorFromId(device_id, &descriptor))
+    device_factory_->GetSupportedFormats(descriptor, &media_formats);
   std::vector<VideoCaptureFormat> result;
-  std::vector<media::VideoCaptureFormat> media_formats;
-  device_factory_->GetSupportedFormats(device_descriptor, &media_formats);
   for (const auto& media_format : media_formats) {
     // The Video Capture Service requires devices to deliver frames either in
     // I420 or MJPEG formats.
@@ -69,31 +71,38 @@ void DeviceFactoryMediaToMojoAdapter::GetSupportedFormats(
 }
 
 void DeviceFactoryMediaToMojoAdapter::CreateDeviceProxy(
-    const media::VideoCaptureDeviceDescriptor& device_descriptor,
+    const std::string& device_id,
     mojom::VideoCaptureDeviceProxyRequest proxy_request,
     const CreateDeviceProxyCallback& callback) {
-  if (active_devices_.find(device_descriptor) != active_devices_.end()) {
+  auto active_device_iter = active_devices_by_id_.find(device_id);
+  if (active_device_iter != active_devices_by_id_.end()) {
     // The requested device is already in use.
     // Revoke the access and close the device, then bind to the new request.
-    ActiveDeviceEntry& device_entry = active_devices_[device_descriptor];
+    ActiveDeviceEntry& device_entry = active_device_iter->second;
     device_entry.binding->Unbind();
     device_entry.device_proxy->Stop();
     device_entry.binding->Bind(std::move(proxy_request));
     device_entry.binding->set_connection_error_handler(base::Bind(
         &DeviceFactoryMediaToMojoAdapter::OnClientConnectionErrorOrClose,
-        base::Unretained(this), device_descriptor));
+        base::Unretained(this), device_id));
     callback.Run(mojom::DeviceAccessResultCode::SUCCESS);
     return;
   }
 
+  // Create device
+  media::VideoCaptureDeviceDescriptor descriptor;
+  if (LookupDescriptorFromId(device_id, &descriptor) == false) {
+    callback.Run(mojom::DeviceAccessResultCode::ERROR_DEVICE_NOT_FOUND);
+    return;
+  }
   std::unique_ptr<media::VideoCaptureDevice> media_device =
-      device_factory_->CreateDevice(device_descriptor);
+      device_factory_->CreateDevice(descriptor);
   if (media_device == nullptr) {
     callback.Run(mojom::DeviceAccessResultCode::ERROR_DEVICE_NOT_FOUND);
     return;
   }
 
-  // Add entry to |active_devices| to keep track of it
+  // Add entry to active_devices to keep track of it
   ActiveDeviceEntry device_entry;
   device_entry.device_proxy = base::MakeUnique<VideoCaptureDeviceProxyImpl>(
       std::move(media_device), jpeg_decoder_factory_callback_);
@@ -102,16 +111,32 @@ void DeviceFactoryMediaToMojoAdapter::CreateDeviceProxy(
           device_entry.device_proxy.get(), std::move(proxy_request));
   device_entry.binding->set_connection_error_handler(base::Bind(
       &DeviceFactoryMediaToMojoAdapter::OnClientConnectionErrorOrClose,
-      base::Unretained(this), device_descriptor));
-  active_devices_[device_descriptor] = std::move(device_entry);
+      base::Unretained(this), device_id));
+  active_devices_by_id_[device_id] = std::move(device_entry);
 
   callback.Run(mojom::DeviceAccessResultCode::SUCCESS);
 }
 
 void DeviceFactoryMediaToMojoAdapter::OnClientConnectionErrorOrClose(
-    const media::VideoCaptureDeviceDescriptor& descriptor) {
-  active_devices_[descriptor].device_proxy->Stop();
-  active_devices_.erase(descriptor);
+    const std::string& device_id) {
+  active_devices_by_id_[device_id].device_proxy->Stop();
+  active_devices_by_id_.erase(device_id);
+}
+
+bool DeviceFactoryMediaToMojoAdapter::LookupDescriptorFromId(
+    const std::string& device_id,
+    media::VideoCaptureDeviceDescriptor* descriptor) {
+  media::VideoCaptureDeviceDescriptors descriptors;
+  device_factory_->GetDeviceDescriptors(&descriptors);
+  auto descriptor_iter = std::find_if(
+      descriptors.begin(), descriptors.end(),
+      [&device_id](const media::VideoCaptureDeviceDescriptor& descriptor) {
+        return descriptor.device_id == device_id;
+      });
+  if (descriptor_iter == descriptors.end())
+    return false;
+  *descriptor = *descriptor_iter;
+  return true;
 }
 
 }  // namespace video_capture

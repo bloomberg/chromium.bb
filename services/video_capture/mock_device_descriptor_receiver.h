@@ -5,7 +5,7 @@
 #ifndef SERVICES_VIDEO_CAPTURE_MOCK_DEVICE_DESCRIPTOR_RECEIVER_H_
 #define SERVICES_VIDEO_CAPTURE_MOCK_DEVICE_DESCRIPTOR_RECEIVER_H_
 
-#include "services/video_capture/public/interfaces/video_capture_device_factory.mojom.h"
+#include "media/capture/video/video_capture_device_descriptor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace video_capture {

@@ -31,14 +31,6 @@ struct FrameInfo {
 namespace video_capture {
 
 TEST_F(FakeDeviceTest, FrameCallbacksArrive) {
-  VideoCaptureSettings arbitrary_requested_settings;
-  arbitrary_requested_settings.format.frame_size.SetSize(640, 480);
-  arbitrary_requested_settings.format.frame_rate = 15;
-  arbitrary_requested_settings.resolution_change_policy =
-      media::RESOLUTION_POLICY_FIXED_RESOLUTION;
-  arbitrary_requested_settings.power_line_frequency =
-      media::PowerLineFrequency::FREQUENCY_DEFAULT;
-
   base::RunLoop wait_loop;
   const int kNumFramesToWaitFor = 3;
   int num_frames_arrived = 0;
@@ -53,7 +45,7 @@ TEST_F(FakeDeviceTest, FrameCallbacksArrive) {
             }
           }));
 
-  fake_device_proxy_->Start(arbitrary_requested_settings,
+  fake_device_proxy_->Start(requestable_settings_,
                             std::move(receiver_proxy));
   wait_loop.Run();
 }

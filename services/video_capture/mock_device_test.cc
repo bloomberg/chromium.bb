@@ -9,8 +9,7 @@ namespace video_capture {
 MockDeviceTest::MockDeviceTest()
     : service_manager::test::ServiceTest("service:video_capture_unittests") {}
 
-MockDeviceTest::~MockDeviceTest() =
-    default;
+MockDeviceTest::~MockDeviceTest() = default;
 
 void MockDeviceTest::SetUp() {
   ServiceTest::SetUp();
@@ -27,7 +26,7 @@ void MockDeviceTest::SetUp() {
 
   // Obtain the mock device from the factory
   factory_->CreateDeviceProxy(
-      mock_descriptor, mojo::GetProxy(&device_proxy_),
+      mock_descriptor.device_id, mojo::GetProxy(&device_proxy_),
       base::Bind([](mojom::DeviceAccessResultCode result_code) {}));
 
   requested_settings_.format.frame_size = gfx::Size(800, 600);

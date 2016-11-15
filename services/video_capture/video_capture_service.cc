@@ -14,6 +14,7 @@
 #include "services/video_capture/mock_device_factory.h"
 
 namespace {
+
 // TODO(chfremer): Replace with an actual decoder factory.
 // https://crbug.com/584797
 std::unique_ptr<media::VideoCaptureJpegDecoder> CreateJpegDecoder() {

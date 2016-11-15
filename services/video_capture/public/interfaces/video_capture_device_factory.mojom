@@ -17,21 +17,20 @@ enum DeviceAccessResultCode {
 
 // Enables access to a set of video capture devices.
 // Typical operation is to first call EnumerateDeviceDescriptors() to obtain
-// information about available devices. The obtained descriptors can then be
-// used to either obtain the supported formats for a device using
-// GetSupportedFormats(), or to create an instance of VideoCaptureDevice for
-// the device using CreateDevice().
-// TODO(chfremer): Consider using a simple string identifier instead of a
-// VideoCaptureDeviceDescriptor.
-// https://crbug.com/637439
+// information about available devices. The |device_id| of the descriptors can
+// subsequently be used to either obtain the supported formats for a device
+// using GetSupportedFormats(), or to create an instance of
+// VideoCaptureDeviceProxy using CreateDeviceProxy().
+// The factory guarantees that no two device descriptors it returns use the
+// same |device_id|.
 interface VideoCaptureDeviceFactory {
   EnumerateDeviceDescriptors()
       => (array<VideoCaptureDeviceDescriptor> descriptors);
 
-  GetSupportedFormats(VideoCaptureDeviceDescriptor device_descriptor)
+  GetSupportedFormats(string device_id)
       => (array<VideoCaptureFormat> supported_formats);
 
-  // Provides exclusive access to the device identified by |device_descriptor|.
+  // Provides exclusive access to the device identified by |device_id|.
   // The access is valid until either the message pipe associated with
   // |proxy_request| is closed by the client, or a subsequent call to
   // CreateDeviceProxy() is made. When a subsequent call is made while the
@@ -42,7 +41,7 @@ interface VideoCaptureDeviceFactory {
   // |proxy_request| has been (asynchronously) discarded a subsequent call to
   // CreateDeviceProxy() would succeed if it were to deny access while still
   // in use.
-  CreateDeviceProxy(VideoCaptureDeviceDescriptor device_descriptor,
+  CreateDeviceProxy(string device_id,
                     VideoCaptureDeviceProxy& proxy_request)
       => (DeviceAccessResultCode result_code);
 };

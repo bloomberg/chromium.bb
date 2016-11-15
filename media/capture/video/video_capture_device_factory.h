@@ -20,6 +20,9 @@ namespace media {
 // used to either obtain the supported formats of a device using
 // GetSupportedFormats(), or to create an instance of VideoCaptureDevice for
 // the device using CreateDevice().
+// TODO(chfremer): Add a layer on top of the platform-specific implementations
+// that uses strings instead of descriptors as keys for accessing devices.
+// crbug.com/665065
 class CAPTURE_EXPORT VideoCaptureDeviceFactory {
  public:
   static std::unique_ptr<VideoCaptureDeviceFactory> CreateFactory(

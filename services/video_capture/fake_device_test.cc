@@ -33,7 +33,7 @@ void FakeDeviceTest::SetUp() {
             wait_loop.Quit();
           }));
   factory_->GetSupportedFormats(
-      fake_device_descriptor_,
+      fake_device_descriptor_.device_id,
       base::Bind(&MockSupportedFormatsReceiver::OnGetSupportedFormatsCallback,
       base::Unretained(&supported_formats_receiver_)));
   wait_loop.Run();
@@ -45,7 +45,8 @@ void FakeDeviceTest::SetUp() {
       media::PowerLineFrequency::FREQUENCY_DEFAULT;
 
   factory_->CreateDeviceProxy(
-      std::move(fake_device_descriptor_), mojo::GetProxy(&fake_device_proxy_),
+      std::move(fake_device_descriptor_.device_id),
+      mojo::GetProxy(&fake_device_proxy_),
       base::Bind([](mojom::DeviceAccessResultCode result_code) {
         ASSERT_EQ(mojom::DeviceAccessResultCode::SUCCESS, result_code);
       }));
