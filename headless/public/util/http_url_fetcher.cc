@@ -6,6 +6,7 @@
 
 #include "net/base/io_buffer.h"
 #include "net/cert/cert_status_flags.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
@@ -165,9 +166,13 @@ void HttpURLFetcher::Delegate::OnResponseCompleted(net::URLRequest* request,
     return;
   }
 
-  result_listener_->OnFetchCompleteExtractHeaders(
-      request->url(), request->GetResponseCode(), bytes_read_so_far_.c_str(),
-      bytes_read_so_far_.size());
+  // TODO(alexclarke) apart from the headers there's a lot of stuff in
+  // |request->response_info()| that we drop here.  Find a way to pipe it
+  // through.
+  result_listener_->OnFetchComplete(
+      request->url(), request->GetResponseCode(),
+      request->response_info().headers,
+      bytes_read_so_far_.c_str(), bytes_read_so_far_.size());
 }
 
 HttpURLFetcher::HttpURLFetcher(
