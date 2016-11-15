@@ -22,7 +22,6 @@ class NaCl(config_util.Config):
         'deps_file'   : 'DEPS',
         'managed'     : False,
         'custom_deps' : {},
-        'safesync_url': '',
     }
     spec = {
       'solutions': [solution],

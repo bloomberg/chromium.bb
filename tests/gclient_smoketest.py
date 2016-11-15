@@ -207,7 +207,6 @@ class GClientSmoke(GClientSmokeBase):
           '    "managed"     : True,\n'
           '    "custom_deps" : {\n'
           '    },\n'
-          '    "safesync_url": "",\n'
           '  },\n'
           ']\n'
           'cache_dir = None\n') % self.git_base)
@@ -220,7 +219,6 @@ class GClientSmoke(GClientSmokeBase):
           '    "managed"     : True,\n'
           '    "custom_deps" : {\n'
           '    },\n'
-          '    "safesync_url": "",\n'
           '  },\n'
           ']\n'
           'cache_dir = None\n') % self.git_base)
@@ -233,7 +231,6 @@ class GClientSmoke(GClientSmokeBase):
           '    "managed"     : True,\n'
          '    "custom_deps" : {\n'
          '    },\n'
-         '    "safesync_url": "faa",\n'
          '  },\n'
          ']\n'
          'cache_dir = None\n')
@@ -246,7 +243,6 @@ class GClientSmoke(GClientSmokeBase):
          '    "managed"     : True,\n'
          '    "custom_deps" : {\n'
          '    },\n'
-          '    "safesync_url": "",\n'
          '  },\n'
          ']\n'
          'cache_dir = None\n')
@@ -255,7 +251,7 @@ class GClientSmoke(GClientSmokeBase):
 
     os.remove(p)
     results = self.gclient(['config', 'foo', 'faa', 'fuu'])
-    err = ('Usage: gclient.py config [options] [url] [safesync url]\n\n'
+    err = ('Usage: gclient.py config [options] [url]\n\n'
            'gclient.py: error: Inconsistent arguments. Use either --spec or one'
            ' or 2 args\n')
     self.check(('', err, 2), results)
@@ -307,7 +303,6 @@ class GClientSmokeGIT(GClientSmokeBase):
   def testSync(self):
     if not self.enabled:
       return
-    # TODO(maruel): safesync.
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     # Test unversioned checkout.
     self.parseGclient(
@@ -387,7 +382,6 @@ class GClientSmokeGIT(GClientSmokeBase):
   def testSyncJobs(self):
     if not self.enabled:
       return
-    # TODO(maruel): safesync.
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     # Test unversioned checkout.
     self.parseGclient(

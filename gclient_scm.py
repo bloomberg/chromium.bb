@@ -777,12 +777,7 @@ class GitWrapper(SCMWrapper):
     sha1 = None
     if not os.path.isdir(self.checkout_path):
       raise NoUsableRevError(
-          ( 'We could not find a valid hash for safesync_url response "%s".\n'
-            'Safesync URLs with a git checkout currently require the repo to\n'
-            'be cloned without a safesync_url before adding the safesync_url.\n'
-            'For more info, see: '
-            'http://code.google.com/p/chromium/wiki/UsingNewGit'
-            '#Initial_checkout' ) % rev)
+          'This is not a git repo, so we cannot get a usable rev.')
 
     if scm.GIT.IsValidRevision(cwd=self.checkout_path, rev=rev):
       sha1 = rev
@@ -795,11 +790,7 @@ class GitWrapper(SCMWrapper):
 
     if not sha1:
       raise NoUsableRevError(
-          ('We could not find a valid hash for safesync_url response "%s".\n'
-           'Please ensure that your safesync_url provides git sha1 hashes.\n'
-           'For more info, see:\n'
-           'http://code.google.com/p/chromium/wiki/UsingNewGit#Initial_checkout'
-          ) % rev)
+          'Hash %s does not appear to be a valid hash in this repo.' % rev)
 
     return sha1
 
