@@ -42,6 +42,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -548,6 +550,22 @@ public class OfflinePageUtils {
     }
 
     /**
+     * A load url parameters to open offline version of the offline page (i.e. to ensure no
+     * automatic redirection based on the connection status).
+     * @param url       The url of the offline page to open.
+     * @param offlineId The ID of the offline page to open.
+     * @return The LoadUrlParams with a special header.
+     */
+    public static LoadUrlParams getLoadUrlParamsForOpeningOfflineVersion(
+            String url, long offlineId) {
+        LoadUrlParams params = new LoadUrlParams(url);
+        Map<String, String> headers = new HashMap<String, String>();
+        headers.put("X-Chrome-offline", "persist=1 reason=download id=" + Long.toString(offlineId));
+        params.setExtraHeaders(headers);
+        return params;
+    }
+
+    /**
      * @return True if an offline preview is being shown.
      * @param tab The current tab.
      */
@@ -567,6 +585,21 @@ public class OfflinePageUtils {
         LoadUrlParams params =
                 new LoadUrlParams(tab.getOriginalUrl(), PageTransition.RELOAD);
         params.setVerbatimHeaders(getOfflinePageHeaderForReload(tab));
+        tab.loadUrl(params);
+    }
+
+    /**
+     * Navigates the given tab to the saved local snapshot of the offline page identified by the URL
+     * and the offline ID. No automatic redirection is happening based on the connection status.
+     * @param url       The URL of the offine page.
+     * @param offlineId The ID of the offline page.
+     * @param tab       The tab to navigate to the page.
+     */
+    public static void openInExistingTab(String url, long offlineId, Tab tab) {
+        LoadUrlParams params =
+                OfflinePageUtils.getLoadUrlParamsForOpeningOfflineVersion(url, offlineId);
+        // Extra headers are not read in loadUrl, but verbatim headers are.
+        params.setVerbatimHeaders(params.getExtraHeadersString());
         tab.loadUrl(params);
     }
 

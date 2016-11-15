@@ -53,6 +53,7 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.MostVisitedSites;
@@ -349,7 +350,7 @@ public class NewTabPage
             mSnippetsBridge.onSuggestionOpened(article, windowOpenDisposition);
             NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_SNIPPET);
 
-            if (article.mIsDownloadedAsset) {
+            if (article.isDownload() && article.mIsDownloadedAsset) {
                 DownloadUtils.openFile(
                         article.getDownloadAssetFile(), article.getDownloadAssetMimeType(), false);
                 return;
@@ -357,6 +358,14 @@ public class NewTabPage
 
             if (article.getOfflinePageDownloadGuid() != null) {
                 OfflinePageDownloadBridge.openDownloadedPage(article.getOfflinePageDownloadGuid());
+                return;
+            }
+
+            if (article.isRecentTab()) {
+                assert windowOpenDisposition == WindowOpenDisposition.CURRENT_TAB;
+                // TODO(vitaliii): Add a debug check that the result is true after crbug.com/662924
+                // is resolved.
+                openRecentTabSnippet(article);
                 return;
             }
 
@@ -373,6 +382,17 @@ public class NewTabPage
             }
 
             openUrl(windowOpenDisposition, loadUrlParams);
+        }
+
+        private boolean openRecentTabSnippet(SnippetArticle recentTabArticle) {
+            TabModel tabModel = mTabModelSelector.getModel(false);
+            int tabId = Integer.parseInt(recentTabArticle.getRecentTabId());
+            int tabIndex = TabModelUtils.getTabIndexById(tabModel, tabId);
+            if (tabIndex == TabModel.INVALID_TAB_INDEX) return false;
+            TabModelUtils.setIndex(tabModel, tabIndex);
+            OfflinePageUtils.openInExistingTab(recentTabArticle.mUrl,
+                    Long.parseLong(recentTabArticle.getRecentTabId()), tabModel.getTabAt(tabIndex));
+            return true;
         }
 
         private void openUrl(int windowOpenDisposition, LoadUrlParams loadUrlParams) {

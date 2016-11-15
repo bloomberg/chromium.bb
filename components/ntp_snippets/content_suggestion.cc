@@ -38,8 +38,14 @@ std::ostream& operator<<(std::ostream& os, const ContentSuggestion::ID& id) {
 
 void ContentSuggestion::set_download_suggestion_extra(
     std::unique_ptr<DownloadSuggestionExtra> download_suggestion_extra) {
-  DCHECK_EQ(id_.category().id(), static_cast<int>(KnownCategories::DOWNLOADS));
+  DCHECK(id_.category().IsKnownCategory(KnownCategories::DOWNLOADS));
   download_suggestion_extra_ = std::move(download_suggestion_extra);
+}
+
+void ContentSuggestion::set_recent_tab_suggestion_extra(
+    std::unique_ptr<RecentTabSuggestionExtra> recent_tab_suggestion_extra) {
+  DCHECK(id_.category().IsKnownCategory(KnownCategories::RECENT_TABS));
+  recent_tab_suggestion_extra_ = std::move(recent_tab_suggestion_extra);
 }
 
 }  // namespace ntp_snippets

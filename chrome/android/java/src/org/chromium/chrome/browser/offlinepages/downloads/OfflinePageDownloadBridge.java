@@ -13,6 +13,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadServiceDelegate;
 import org.chromium.chrome.browser.download.ui.BackendProvider.OfflinePageDelegate;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
@@ -21,9 +22,7 @@ import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Serves as an interface between Download Home UI and offline page related items that are to be
@@ -173,12 +172,8 @@ public class OfflinePageDownloadBridge implements DownloadServiceDelegate, Offli
         OfflinePageDownloadItem item = getItem(guid);
         if (item == null) return;
 
-        LoadUrlParams params = new LoadUrlParams(item.getUrl());
-        Map<String, String> headers = new HashMap<String, String>();
-        headers.put("X-Chrome-offline", "persist=1 reason=download id="
-                        + Long.toString(nativeGetOfflineIdByGuid(
-                                  mNativeOfflinePageDownloadBridge, guid)));
-        params.setExtraHeaders(headers);
+        LoadUrlParams params = OfflinePageUtils.getLoadUrlParamsForOpeningOfflineVersion(
+                item.getUrl(), nativeGetOfflineIdByGuid(mNativeOfflinePageDownloadBridge, guid));
         AsyncTabCreationParams asyncParams = componentName == null
                 ? new AsyncTabCreationParams(params)
                 : new AsyncTabCreationParams(params, componentName);

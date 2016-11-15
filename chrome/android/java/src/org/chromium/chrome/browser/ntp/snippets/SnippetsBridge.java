@@ -213,7 +213,14 @@ public class SnippetsBridge implements SuggestionsSource {
     private static void setDownloadAssetDataForLastSuggestion(
             List<SnippetArticle> suggestions, String filePath, String mimeType) {
         assert suggestions.size() > 0;
-        suggestions.get(suggestions.size() - 1).setDownloadAsset(filePath, mimeType);
+        suggestions.get(suggestions.size() - 1).setDownloadAssetData(filePath, mimeType);
+    }
+
+    @CalledByNative
+    private static void setRecentTabDataForLastSuggestion(
+            List<SnippetArticle> suggestions, String tabId, String offlinePageId) {
+        assert suggestions.size() > 0;
+        suggestions.get(suggestions.size() - 1).setRecentTabData(tabId, offlinePageId);
     }
 
     @CalledByNative

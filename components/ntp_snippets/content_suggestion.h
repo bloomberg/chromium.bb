@@ -28,6 +28,14 @@ struct DownloadSuggestionExtra {
   bool is_download_asset = false;
 };
 
+// Contains additional data which is only available for recent tab suggestions.
+struct RecentTabSuggestionExtra {
+  // Corresponding tab identifier.
+  std::string tab_id;
+  // Underlying offline page identifier.
+  std::string offline_page_id;
+};
+
 // A content suggestion for the new tab page, which can be an article or an
 // offline page, for example.
 class ContentSuggestion {
@@ -115,6 +123,14 @@ class ContentSuggestion {
   void set_download_suggestion_extra(
       std::unique_ptr<DownloadSuggestionExtra> download_suggestion_extra);
 
+  // Extra information for recent tab suggestions. Only available for
+  // KnownCategories::RECENT_TABS suggestions.
+  RecentTabSuggestionExtra* recent_tab_suggestion_extra() const {
+    return recent_tab_suggestion_extra_.get();
+  }
+  void set_recent_tab_suggestion_extra(
+      std::unique_ptr<RecentTabSuggestionExtra> recent_tab_suggestion_extra);
+
  private:
   ID id_;
   GURL url_;
@@ -125,6 +141,7 @@ class ContentSuggestion {
   base::string16 publisher_name_;
   float score_;
   std::unique_ptr<DownloadSuggestionExtra> download_suggestion_extra_;
+  std::unique_ptr<RecentTabSuggestionExtra> recent_tab_suggestion_extra_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSuggestion);
 };

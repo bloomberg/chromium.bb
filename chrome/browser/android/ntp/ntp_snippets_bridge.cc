@@ -79,8 +79,8 @@ ScopedJavaLocalRef<jobject> ToJavaSuggestionList(
         ConvertUTF8ToJavaString(env, suggestion.amp_url().spec()),
         suggestion.publish_date().ToJavaTime(), suggestion.score(),
         static_cast<int>(info->card_layout()));
-    if (suggestion.id().category().id() ==
-            static_cast<int>(KnownCategories::DOWNLOADS) &&
+    if (suggestion.id().category().IsKnownCategory(
+            KnownCategories::DOWNLOADS) &&
         suggestion.download_suggestion_extra() != nullptr &&
         suggestion.download_suggestion_extra()->is_download_asset) {
       Java_SnippetsBridge_setDownloadAssetDataForLastSuggestion(
@@ -90,6 +90,16 @@ ScopedJavaLocalRef<jobject> ToJavaSuggestionList(
               suggestion.download_suggestion_extra()->target_file_path.value()),
           ConvertUTF8ToJavaString(
               env, suggestion.download_suggestion_extra()->mime_type));
+    }
+    if (suggestion.id().category().IsKnownCategory(
+            KnownCategories::RECENT_TABS) &&
+        suggestion.recent_tab_suggestion_extra() != nullptr) {
+      Java_SnippetsBridge_setRecentTabDataForLastSuggestion(
+          env, result,
+          ConvertUTF8ToJavaString(
+              env, suggestion.recent_tab_suggestion_extra()->tab_id),
+          ConvertUTF8ToJavaString(
+              env, suggestion.recent_tab_suggestion_extra()->offline_page_id));
     }
   }
 

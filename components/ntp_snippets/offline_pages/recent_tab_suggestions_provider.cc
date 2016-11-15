@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -254,6 +255,10 @@ ContentSuggestion RecentTabSuggestionsProvider::ConvertOfflinePage(
   }
   suggestion.set_publish_date(offline_page.creation_time);
   suggestion.set_publisher_name(base::UTF8ToUTF16(offline_page.url.host()));
+  auto extra = base::MakeUnique<RecentTabSuggestionExtra>();
+  extra->tab_id = offline_page.client_id.id;
+  extra->offline_page_id = base::Int64ToString(offline_page.offline_id);
+  suggestion.set_recent_tab_suggestion_extra(std::move(extra));
   return suggestion;
 }
 
