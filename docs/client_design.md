@@ -69,8 +69,8 @@ amount of work from a crashed process.
 
 The mechanisms for installing an exception handler vary between operating
 systems. On Windows, it’s a relatively simple matter of making one call to
-register a [top-level exception filter]
-(http://msdn.microsoft.com/library/en-us/debug/base/setunhandledexceptionfilter.asp)
+register a [top-level exception
+filter](http://msdn.microsoft.com/library/en-us/debug/base/setunhandledexceptionfilter.asp)
 callback function. On most Unix-like systems such as Linux, processes are
 informed of exceptions by the delivery of a signal, so an exception handler
 takes the form of a signal handler. The native mechanism to catch exceptions on
@@ -178,9 +178,8 @@ didn’t actually handle an exception. This function may be useful for developer
 who want to test their applications with Breakpad enabled but still retain the
 ability to use traditional debugging techniques. It also allows a
 Breakpad-enabled application to coexist with a platform’s native crash reporting
-system, such as Mac OS X’ [CrashReporter]
-(http://developer.apple.com/technotes/tn2004/tn2123.html) and [Windows Error
-Reporting](http://msdn.microsoft.com/isv/resources/wer/).
+system, such as Mac OS X’ [CrashReporter](http://developer.apple.com/technotes/tn2004/tn2123.html)
+and [Windows Error Reporting](http://msdn.microsoft.com/isv/resources/wer/).
 
 Typically, when Breakpad handles an exception fully and no debuggers are
 involved, the crashed process will terminate.

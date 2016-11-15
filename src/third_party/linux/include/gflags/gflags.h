@@ -514,7 +514,7 @@ bool IsBoolFlag(bool from);
 // great together!
 // The weird 'using' + 'extern' inside the fLS namespace is to work around
 // an unknown compiler bug/issue with the gcc 4.2.1 on SUSE 10.  See
-//    http://code.google.com/p/google-gflags/issues/detail?id=20
+//    https://github.com/gflags/gflags/issues/31
 #define DEFINE_string(name, val, txt)                                     \
   namespace fLS {                                                         \
     static union { void* align; char s[sizeof(std::string)]; } s_##name[2]; \
