@@ -61,13 +61,6 @@ void StringToIds(const std::string& str, std::vector<uint32_t>* list) {
 
 }  // namespace anonymous
 
-void MergeFeatureSets(std::set<int>* dst, const std::set<int>& src) {
-  DCHECK(dst);
-  if (src.empty())
-    return;
-  dst->insert(src.begin(), src.end());
-}
-
 void ApplyGpuDriverBugWorkarounds(const GPUInfo& gpu_info,
                                   base::CommandLine* command_line) {
   std::unique_ptr<GpuDriverBugList> list(GpuDriverBugList::Create());

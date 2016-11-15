@@ -193,6 +193,63 @@ TEST_F(GpuDataManagerImplPrivateTest, GpuSideBlacklisting) {
       gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS));
 }
 
+TEST_F(GpuDataManagerImplPrivateTest, GpuSideBlacklistingWebGL) {
+  // If a feature is allowed in preliminary step (browser side), but
+  // disabled when GPU process launches and collects full GPU info,
+  // it's too late to let renderer know, so we basically block all GPU
+  // access, to be on the safe side.
+  ScopedGpuDataManagerImplPrivate manager;
+  EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
+  std::string reason;
+  EXPECT_TRUE(manager->GpuAccessAllowed(&reason));
+  EXPECT_TRUE(reason.empty());
+
+  const std::string blacklist_json = LONG_STRING_CONST(
+      {
+        "name": "gpu blacklist",
+        "version": "0.1",
+        "entries": [
+          {
+            "id": 1,
+            "features": [
+              "accelerated_2d_canvas"
+            ]
+          },
+          {
+            "id": 2,
+            "gl_renderer": ".*GeForce.*",
+            "features": [
+              "webgl",
+              "webgl2"
+            ]
+          }
+        ]
+      }
+  );
+
+  gpu::GPUInfo gpu_info;
+  gpu_info.gpu.vendor_id = 0x10de;
+  gpu_info.gpu.device_id = 0x0640;
+  manager->InitializeForTesting(blacklist_json, gpu_info);
+
+  EXPECT_TRUE(manager->GpuAccessAllowed(&reason));
+  EXPECT_TRUE(reason.empty());
+  EXPECT_EQ(1u, manager->GetBlacklistedFeatureCount());
+  EXPECT_TRUE(manager->IsFeatureBlacklisted(
+      gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS));
+
+  gpu_info.gl_vendor = "NVIDIA";
+  gpu_info.gl_renderer = "NVIDIA GeForce GT 120";
+  manager->UpdateGpuInfo(gpu_info);
+  EXPECT_TRUE(manager->GpuAccessAllowed(&reason));
+  EXPECT_TRUE(reason.empty());
+  EXPECT_EQ(3u, manager->GetBlacklistedFeatureCount());
+  EXPECT_TRUE(manager->IsFeatureBlacklisted(
+      gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS));
+  EXPECT_TRUE(manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL));
+  EXPECT_TRUE(manager->IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL2));
+}
+
 TEST_F(GpuDataManagerImplPrivateTest, GpuSideExceptions) {
   ScopedGpuDataManagerImplPrivate manager;
   EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());

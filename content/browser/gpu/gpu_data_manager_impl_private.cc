@@ -4,6 +4,8 @@
 
 #include "content/browser/gpu/gpu_data_manager_impl_private.h"
 
+#include <algorithm>
+#include <iterator>
 #include <memory>
 #include <utility>
 
@@ -347,12 +349,23 @@ bool GpuDataManagerImplPrivate::GpuAccessAllowed(
 
   // We only need to block GPU process if more features are disallowed other
   // than those in the preliminary gpu feature flags because the latter work
-  // through renderer commandline switches.
-  std::set<int> features = preliminary_blacklisted_features_;
-  gpu::MergeFeatureSets(&features, blacklisted_features_);
-  if (features.size() > preliminary_blacklisted_features_.size()) {
+  // through renderer commandline switches. WebGL and WebGL2 should not matter
+  // because their context creation can always be rejected on the GPU process
+  // side.
+  std::set<int> feature_diffs;
+  std::set_difference(blacklisted_features_.begin(),
+                      blacklisted_features_.end(),
+                      preliminary_blacklisted_features_.begin(),
+                      preliminary_blacklisted_features_.end(),
+                      std::inserter(feature_diffs, feature_diffs.begin()));
+  if (feature_diffs.size()) {
+    // TODO(zmo): Other features might also be OK to ignore here.
+    feature_diffs.erase(gpu::GPU_FEATURE_TYPE_WEBGL);
+    feature_diffs.erase(gpu::GPU_FEATURE_TYPE_WEBGL2);
+  }
+  if (feature_diffs.size()) {
     if (reason) {
-      *reason = "Features are disabled upon full but not preliminary GPU info.";
+      *reason = "Features are disabled on full but not preliminary GPU info.";
     }
     return false;
   }
