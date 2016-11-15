@@ -26,10 +26,7 @@ void DomTreeExtractor::ExtractDomTree(
   callback_ = std::move(callback);
 
   devtools_client_->GetDOM()->GetDocument(
-      dom::GetDocumentParams::Builder()
-          .SetDepth(-1)
-          .SetTraverseFrames(true)
-          .Build(),
+      dom::GetDocumentParams::Builder().SetDepth(-1).SetPierce(true).Build(),
       base::Bind(&DomTreeExtractor::OnDocumentFetched,
                  weak_factory_.GetWeakPtr()));
 

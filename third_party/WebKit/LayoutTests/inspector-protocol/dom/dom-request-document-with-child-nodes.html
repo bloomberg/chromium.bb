@@ -38,7 +38,7 @@ function test()
 
     function getDocumentPlusIframe()
     {
-        InspectorTest.sendCommand("DOM.getDocument", {"depth": -1, "traverseFrames": true}, function(messageObject) {
+        InspectorTest.sendCommand("DOM.getDocument", {"depth": -1, "pierce": true}, function(messageObject) {
             if (messageObject.hasOwnProperty("error"))
                 InspectorTest.log("Backend error: " + messageObject.error.message + " (" + messageObject.error.code + ")\n");
 
@@ -73,9 +73,10 @@ window.addEventListener("DOMContentLoaded", function () {
 <div id="depth-1">
     <div id="depth-2">
         <div id="depth-3">
-            <iframe src="resources/iframe.html"></iframe>
+            <iframe src="resources/shadow-dom-iframe.html"></iframe>
         </div>
     </div>
+    <div id="targetDiv"></div>
 </div>
 
 </body>

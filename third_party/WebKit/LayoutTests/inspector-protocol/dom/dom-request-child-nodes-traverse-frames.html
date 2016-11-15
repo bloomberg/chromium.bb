@@ -39,7 +39,7 @@ function test()
 
     function getDocumentIncludingIframe()
     {
-        InspectorTest.sendCommand("DOM.getDocument", {"traverseFrames": true}, function(messageObject) {
+        InspectorTest.sendCommand("DOM.getDocument", {"pierce": true}, function(messageObject) {
             if (messageObject.hasOwnProperty("error"))
                 InspectorTest.log("Backend error: " + messageObject.error.message + " (" + messageObject.error.code + ")\n");
 
@@ -63,7 +63,7 @@ function test()
 
     function requestAllChildNodesIncludingIframe(bodyId)
     {
-        InspectorTest.sendCommand("DOM.requestChildNodes", {"nodeId": bodyId, "depth": -1, "traverseFrames": true}, function(messageObject) {
+        InspectorTest.sendCommand("DOM.requestChildNodes", {"nodeId": bodyId, "depth": -1, "pierce": true}, function(messageObject) {
             if (messageObject.hasOwnProperty("error"))
                 InspectorTest.log("Backend error: " + messageObject.error.message + " (" + messageObject.error.code + ")\n");
         });

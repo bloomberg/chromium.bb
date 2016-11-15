@@ -2122,7 +2122,7 @@
                 "name": "getDocument",
                 "parameters": [
                     { "name": "depth", "type": "integer", "optional": true, "description": "The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.", "experimental": true },
-                    { "name": "traverseFrames", "type": "boolean", "optional": true, "description": "Whether or not iframes should be traversed when returning the subtree (default is false).", "experimental": true }
+                    { "name": "pierce", "type": "boolean", "optional": true, "description": "Whether or not iframes and shadow roots should be traversed when returning the subtree (default is false).", "experimental": true }
                 ],
                 "returns": [
                     { "name": "root", "$ref": "Node", "description": "Resulting node." }
@@ -2145,7 +2145,7 @@
                 "parameters": [
                     { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node to get children for." },
                     { "name": "depth", "type": "integer", "optional": true, "description": "The maximum depth at which children should be retrieved, defaults to 1. Use -1 for the entire subtree or provide an integer larger than 0.", "experimental": true },
-                    { "name": "traverseFrames", "type": "boolean", "optional": true, "description": "Whether or not iframes should be traversed when returning the sub-tree (default is false).", "experimental": true }
+                    { "name": "pierce", "type": "boolean", "optional": true, "description": "Whether or not iframes and shadow roots should be traversed when returning the sub-tree (default is false).", "experimental": true }
                 ],
                 "description": "Requests that children of the node with given id are returned to the caller in form of <code>setChildNodes</code> events where not only immediate children are retrieved, but all children down to the specified depth."
             },

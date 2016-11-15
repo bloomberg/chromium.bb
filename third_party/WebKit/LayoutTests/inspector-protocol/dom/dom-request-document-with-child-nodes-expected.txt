@@ -1,6 +1,6 @@
 
 {
-    "nodeId": 19,
+    "nodeId": 20,
     "backendNodeId": "<number>",
     "nodeType": 1,
     "nodeName": "BODY",
@@ -9,16 +9,16 @@
     "childNodeCount": 1,
     "children": [
         {
-            "nodeId": 20,
+            "nodeId": 21,
             "backendNodeId": "<number>",
             "nodeType": 1,
             "nodeName": "DIV",
             "localName": "div",
             "nodeValue": "",
-            "childNodeCount": 1,
+            "childNodeCount": 2,
             "children": [
                 {
-                    "nodeId": 21,
+                    "nodeId": 22,
                     "backendNodeId": "<number>",
                     "nodeType": 1,
                     "nodeName": "DIV",
@@ -27,7 +27,7 @@
                     "childNodeCount": 1,
                     "children": [
                         {
-                            "nodeId": 22,
+                            "nodeId": 23,
                             "backendNodeId": "<number>",
                             "nodeType": 1,
                             "nodeName": "DIV",
@@ -36,7 +36,7 @@
                             "childNodeCount": 1,
                             "children": [
                                 {
-                                    "nodeId": 23,
+                                    "nodeId": 24,
                                     "backendNodeId": "<number>",
                                     "nodeType": 1,
                                     "nodeName": "IFRAME",
@@ -46,11 +46,11 @@
                                     "children": [],
                                     "attributes": [
                                         "src",
-                                        "resources/iframe.html"
+                                        "resources/shadow-dom-iframe.html"
                                     ],
                                     "frameId": "???",
                                     "contentDocument": {
-                                        "nodeId": 24,
+                                        "nodeId": 25,
                                         "backendNodeId": "<number>",
                                         "nodeType": 9,
                                         "nodeName": "#document",
@@ -59,7 +59,7 @@
                                         "childNodeCount": 1,
                                         "children": [
                                             {
-                                                "nodeId": 25,
+                                                "nodeId": 26,
                                                 "backendNodeId": "<number>",
                                                 "nodeType": 1,
                                                 "nodeName": "HTML",
@@ -68,7 +68,7 @@
                                                 "childNodeCount": 2,
                                                 "children": [
                                                     {
-                                                        "nodeId": 26,
+                                                        "nodeId": 27,
                                                         "backendNodeId": "<number>",
                                                         "nodeType": 1,
                                                         "nodeName": "HEAD",
@@ -79,16 +79,16 @@
                                                         "attributes": []
                                                     },
                                                     {
-                                                        "nodeId": 27,
+                                                        "nodeId": 28,
                                                         "backendNodeId": "<number>",
                                                         "nodeType": 1,
                                                         "nodeName": "BODY",
                                                         "localName": "body",
                                                         "nodeValue": "",
-                                                        "childNodeCount": 1,
+                                                        "childNodeCount": 2,
                                                         "children": [
                                                             {
-                                                                "nodeId": 28,
+                                                                "nodeId": 29,
                                                                 "backendNodeId": "<number>",
                                                                 "nodeType": 1,
                                                                 "nodeName": "DIV",
@@ -99,10 +99,82 @@
                                                                 "attributes": [
                                                                     "id",
                                                                     "element_in_an_iframe"
+                                                                ],
+                                                                "shadowRoots": [
+                                                                    {
+                                                                        "nodeId": 30,
+                                                                        "backendNodeId": "<number>",
+                                                                        "nodeType": 11,
+                                                                        "nodeName": "#document-fragment",
+                                                                        "localName": "",
+                                                                        "nodeValue": "",
+                                                                        "childNodeCount": 1,
+                                                                        "children": [
+                                                                            {
+                                                                                "nodeId": 31,
+                                                                                "backendNodeId": "<number>",
+                                                                                "nodeType": 1,
+                                                                                "nodeName": "DIV",
+                                                                                "localName": "div",
+                                                                                "nodeValue": "",
+                                                                                "childNodeCount": 1,
+                                                                                "children": [
+                                                                                    {
+                                                                                        "nodeId": 32,
+                                                                                        "backendNodeId": "<number>",
+                                                                                        "nodeType": 1,
+                                                                                        "nodeName": "H1",
+                                                                                        "localName": "h1",
+                                                                                        "nodeValue": "",
+                                                                                        "childNodeCount": 1,
+                                                                                        "children": [
+                                                                                            {
+                                                                                                "nodeId": 33,
+                                                                                                "backendNodeId": "<number>",
+                                                                                                "nodeType": 3,
+                                                                                                "nodeName": "#text",
+                                                                                                "localName": "",
+                                                                                                "nodeValue": "Hello from the shadow dom!"
+                                                                                            }
+                                                                                        ],
+                                                                                        "attributes": []
+                                                                                    }
+                                                                                ],
+                                                                                "attributes": [
+                                                                                    "style",
+                                                                                    "color: red;"
+                                                                                ]
+                                                                            }
+                                                                        ],
+                                                                        "shadowRootType": "open"
+                                                                    }
                                                                 ]
+                                                            },
+                                                            {
+                                                                "nodeId": 34,
+                                                                "backendNodeId": "<number>",
+                                                                "nodeType": 1,
+                                                                "nodeName": "SCRIPT",
+                                                                "localName": "script",
+                                                                "nodeValue": "",
+                                                                "childNodeCount": 1,
+                                                                "children": [
+                                                                    {
+                                                                        "nodeId": 35,
+                                                                        "backendNodeId": "<number>",
+                                                                        "nodeType": 3,
+                                                                        "nodeName": "#text",
+                                                                        "localName": "",
+                                                                        "nodeValue": "\nfunction addShadowDOM() {\n    var host = document.getElementById(\"element_in_an_iframe\").createShadowRoot();\n    var template = document.querySelector(\"#shadow-template\");\n    host.appendChild(template.content);\n    template.remove();\n}\n"
+                                                                    }
+                                                                ],
+                                                                "attributes": []
                                                             }
                                                         ],
-                                                        "attributes": []
+                                                        "attributes": [
+                                                            "onload",
+                                                            "addShadowDOM()"
+                                                        ]
                                                     }
                                                 ],
                                                 "attributes": [],
@@ -124,6 +196,20 @@
                     "attributes": [
                         "id",
                         "depth-2"
+                    ]
+                },
+                {
+                    "nodeId": 36,
+                    "backendNodeId": "<number>",
+                    "nodeType": 1,
+                    "nodeName": "DIV",
+                    "localName": "div",
+                    "nodeValue": "",
+                    "childNodeCount": 0,
+                    "children": [],
+                    "attributes": [
+                        "id",
+                        "targetDiv"
                     ]
                 }
             ],
