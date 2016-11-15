@@ -496,6 +496,12 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
                                             v8::ReturnValue<v8::Value> result,
                                             TreeCache* cache) {
     result.Set(v8::Number::New(isolate, cache->tree.data().sel_anchor_offset));
+                                         });
+  RouteTreeIDFunction("GetAnchorAffinity", [](v8::Isolate* isolate,
+                                           v8::ReturnValue<v8::Value> result,
+                                           TreeCache* cache) {
+    result.Set(CreateV8String(isolate,
+          ToString(cache->tree.data().sel_anchor_affinity)));
   });
   RouteTreeIDFunction("GetFocusObjectID",
                       [](v8::Isolate* isolate,
@@ -507,6 +513,12 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
                                            v8::ReturnValue<v8::Value> result,
                                            TreeCache* cache) {
     result.Set(v8::Number::New(isolate, cache->tree.data().sel_focus_offset));
+  });
+  RouteTreeIDFunction("GetFocusAffinity", [](v8::Isolate* isolate,
+                                           v8::ReturnValue<v8::Value> result,
+                                           TreeCache* cache) {
+    result.Set(CreateV8String(isolate,
+          ToString(cache->tree.data().sel_focus_affinity)));
   });
 
   // Bindings that take a Tree ID and Node ID and return a property of the node.

@@ -110,6 +110,8 @@ function AutomationEditableText(node) {
   this.multiline = node.state.multiline || false;
   /** @type {!AutomationNode} @private */
   this.node_ = node;
+  /** @type {Array<number>} @private */
+  this.lineBreaks_ = [];
 }
 
 AutomationEditableText.prototype = {
@@ -120,6 +122,10 @@ AutomationEditableText.prototype = {
    */
   onUpdate: function() {
     var newValue = this.node_.value;
+
+    if (this.value != newValue)
+      this.lineBreaks_ = [];
+
     var textChangeEvent = new cvox.TextChangeEvent(
         newValue,
         this.node_.textSelStart,
@@ -133,11 +139,18 @@ AutomationEditableText.prototype = {
   getLineIndex: function(charIndex) {
     if (!this.multiline)
       return 0;
-    var breaks = this.node_.lineStartOffsets || [];
-    var index = 0;
-    while (index < breaks.length && breaks[index] <= charIndex)
-      ++index;
-    return index;
+    var breaks = this.getLineBreaks_();
+
+    var computedIndex = 0;
+    for (var index = 0; index < breaks.length; index++) {
+      if (charIndex >= breaks[index] &&
+          (index == (breaks.length - 1) ||
+              charIndex < breaks[index + 1])) {
+        computedIndex = index + 1;
+        break;
+      }
+    }
+    return computedIndex;
   },
 
   /** @override */
@@ -154,11 +167,7 @@ AutomationEditableText.prototype = {
     var value = this.node_.value;
     if (lineIndex >= breaks.length)
       return value.length;
-    var end = breaks[lineIndex];
-    // A hard newline shouldn't be considered part of the line itself.
-    if (0 < end && value[end - 1] == '\n')
-      return end - 1;
-    return end;
+    return breaks[lineIndex] - 1;
   },
 
   /**
@@ -166,9 +175,38 @@ AutomationEditableText.prototype = {
    * @private
    */
   getLineBreaks_: function() {
-    // node.lineStartOffsets is undefined when the multiline field has no line
-    // breaks.
-    return this.node_.lineStartOffsets || [];
+    if (this.lineBreaks_.length)
+      return this.lineBreaks_;
+
+    // |lineStartOffsets| is sometimes pretty wrong especially when
+    // there's multiple consecutive line breaks.
+
+    // Use Blink's innerText which we plumb through as value.  For
+    // soft line breaks, use line start offsets, but ensure it is
+    // likely to be a soft line wrap.
+
+    var lineStartOffsets = {};
+    this.node_.lineStartOffsets.forEach(function(offset) {
+      lineStartOffsets[offset] = true;
+    });
+    var lineBreaks = [];
+    for (var i = 0; i < this.node_.value.length; i++) {
+      var prev = this.node_.value[i - 1];
+      var next = this.node_.value[i + 1];
+      var cur = this.node_.value[i];
+      if (prev == '\n') {
+        // Hard line break.
+        lineBreaks.push(i);
+      } else if (lineStartOffsets[i]) {
+        // Soft line break.
+        if (prev != '\n' && next != '\n' && cur != '\n')
+          lineBreaks.push(i);
+      }
+    }
+
+    this.lineBreaks_ = lineBreaks;
+
+    return lineBreaks;
   },
 
   /** @private */

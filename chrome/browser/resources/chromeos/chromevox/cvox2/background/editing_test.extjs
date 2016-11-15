@@ -31,6 +31,34 @@ EditingTest.prototype = {
     return mockFeedback;
   },
 
+  assertLineData: function(doc, data) {
+    this.runWithLoadedTree(doc, function(root) {
+      var input = root.find({role: RoleType.textField});
+      input.addEventListener('focus', this.newCallback(function() {
+        var textHandler = ChromeVoxState.desktopAutomationHandler
+            .textEditHandler_.editableText_;
+
+        var offset = 0;
+        for (var i = 0; i < data.length; i++) {
+          var line = data[i];
+          var actualStart = textHandler.getLineStart(i);
+          var actualEnd = textHandler.getLineEnd(i);
+          assertEquals(line.start, actualStart,
+                       'Unexpected start: ' + actualStart);
+          assertEquals(line.end, actualEnd,
+                      'Unexpected end: ' + actualEnd);
+          assertEquals(line.text, textHandler.getLine(i));
+          var offset = textHandler.getLineStart(i);
+          for (var j = 0; j < line.text.length; j++, offset++) {
+            assertEquals(i, textHandler.getLineIndex(offset),
+                'Unexpected Line: ' + line.text + ' at index: ' + offset);
+          }
+        }
+      }), true);
+      input.focus();
+    });
+  },
+
 };
 
 var doc = function() {/*!
@@ -130,4 +158,56 @@ TEST_F('EditingTest', 'TextButNoSelectionChange', function() {
 
       mockFeedback.replay();
     });
+});
+
+TEST_F('EditingTest', 'OneLineBreak', function() {
+  this.assertLineData(function() {/*!
+      <div role="textbox" contenteditable>this is a<br>test</div>
+    */},
+    [
+      {start: 0, end: 9, text: 'this is a'},
+      {start: 10, end: 14, text: 'test'}
+    ]);
+});
+
+TEST_F('EditingTest', 'TwoLineBreaks', function() {
+  this.assertLineData(function() {/*!
+      <div role="textbox" contenteditable>this is a<br><br>
+          test</div>
+    */},
+    [
+      {start: 0, end: 9, text: 'this is a'},
+      {start: 10, end: 10, text: ''},
+      {start: 11, end: 15, text: 'test'},
+    ]);
+});
+
+TEST_F('EditingTest', 'InitialBreaks', function() {
+  this.assertLineData(function() {/*!
+      <div role="textbox" contenteditable><br><br><br>
+        this is a</div>
+    */},
+    [
+      {start: 0, end: 0, text: ''},
+      {start: 1, end: 1, text: ''},
+      {start: 2, end: 2, text: ''},
+      {start: 3, end: 12, text: 'this is a'},
+    ]);
+});
+
+TEST_F('EditingTest', 'SingleCharacterLine', function() {
+  this.assertLineData(function() {/*!
+      <div role="textbox" contenteditable>
+        <div>this</div><br>
+        <div><br>
+            I<br>
+            can test</div></div>
+    */},
+    [
+      {start: 0, end: 4, text: 'this'},
+      {start: 5, end: 5, text: ''},
+      {start: 6, end: 6, text: ''},
+      {start: 7, end: 8, text: 'I'},
+      {start: 9, end: 17, text: 'can test'},
+    ]);
 });

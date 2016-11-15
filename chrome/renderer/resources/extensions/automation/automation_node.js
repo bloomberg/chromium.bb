@@ -54,6 +54,12 @@ var GetAnchorOffset = requireNative('automationInternal').GetAnchorOffset;
 
 /**
  * @param {number} axTreeID The id of the accessibility tree.
+ * @return {?string} The selection anchor affinity.
+ */
+var GetAnchorAffinity = requireNative('automationInternal').GetAnchorAffinity;
+
+/**
+ * @param {number} axTreeID The id of the accessibility tree.
  * @return {?number} The ID of the selection focus object.
  */
 var GetFocusObjectID = requireNative('automationInternal').GetFocusObjectID;
@@ -63,6 +69,12 @@ var GetFocusObjectID = requireNative('automationInternal').GetFocusObjectID;
  * @return {?number} The selection focus offset.
  */
 var GetFocusOffset = requireNative('automationInternal').GetFocusOffset;
+
+/**
+ * @param {number} axTreeID The id of the accessibility tree.
+ * @return {?string} The selection focus affinity.
+ */
+var GetFocusAffinity = requireNative('automationInternal').GetFocusAffinity;
 
 /**
  * @param {number} axTreeID The id of the accessibility tree.
@@ -944,6 +956,12 @@ AutomationRootNodeImpl.prototype = {
       return GetAnchorOffset(this.treeID);
   },
 
+  get anchorAffinity() {
+    var id = GetAnchorObjectID(this.treeID);
+    if (id && id != -1)
+      return GetAnchorAffinity(this.treeID);
+  },
+
   get focusObject() {
     var id = GetFocusObjectID(this.treeID);
     if (id && id != -1)
@@ -956,6 +974,12 @@ AutomationRootNodeImpl.prototype = {
     var id = GetFocusObjectID(this.treeID);
     if (id && id != -1)
       return GetFocusOffset(this.treeID);
+  },
+
+  get focusAffinity() {
+    var id = GetFocusObjectID(this.treeID);
+    if (id && id != -1)
+      return GetFocusAffinity(this.treeID);
   },
 
   get: function(id) {
@@ -1078,8 +1102,10 @@ utils.expose(AutomationRootNode, AutomationRootNodeImpl, {
     'docLoadingProgress',
     'anchorObject',
     'anchorOffset',
+    'anchorAffinity',
     'focusObject',
     'focusOffset',
+    'focusAffinity',
   ],
 });
 
