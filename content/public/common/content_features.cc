@@ -132,7 +132,7 @@ const base::Feature kParseHTMLOnMainThread{"ParseHTMLOnMainThread",
 
 // Whether document level event listeners should default 'passive' to true.
 const base::Feature kPassiveDocumentEventListeners{
-    "PassiveDocumentEventListeners", base::FEATURE_DISABLED_BY_DEFAULT};
+    "PassiveDocumentEventListeners", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Whether we should force a touchstart and first touchmove per scroll event
 // listeners to be 'passive' during fling.

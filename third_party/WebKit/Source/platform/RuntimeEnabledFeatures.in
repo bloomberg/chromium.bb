@@ -166,7 +166,7 @@ ForceOverlayFullscreenVideo
 OverlayScrollbars
 PagePopup status=stable
 PaintUnderInvalidationChecking settable_from_internals=True
-PassiveDocumentEventListeners status=experimental
+PassiveDocumentEventListeners status=stable
 PassiveEventListenersDueToFling status=experimental
 PassPaintVisualRectToCompositor
 PaymentApp status=experimental
