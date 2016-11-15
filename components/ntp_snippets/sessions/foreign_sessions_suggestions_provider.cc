@@ -27,11 +27,14 @@
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
+using base::Time;
 using base::TimeDelta;
 using sessions::SerializedNavigationEntry;
 using sessions::SessionTab;
 using sessions::SessionWindow;
 using sync_sessions::SyncedSession;
+
+using DismissedFilter = base::Callback<bool(const std::string& id)>;
 
 namespace ntp_snippets {
 namespace {
@@ -61,6 +64,80 @@ TimeDelta GetMaxForeignTabAge() {
       ntp_snippets::kForeignSessionsSuggestionsFeature,
       kMaxForeignTabAgeInMinutesParamName, kMaxForeignTabAgeInMinutes));
 }
+
+// This filter does two things. Most importantly it lets through only ids that
+// have not been dismissed. The other responsibility this class has is it tracks
+// all of the ids that fly past it, and it will save the intersection of
+// initially dismissed ids, and seen ids. This will aggressively prune any
+// dismissal that is not currently blocking a recent tab.
+class PrefsPruningDismissedItemFilter {
+ public:
+  explicit PrefsPruningDismissedItemFilter(PrefService* pref_service)
+      : pref_service_(pref_service),
+        initial_dismissed_ids_(prefs::ReadDismissedIDsFromPrefs(
+            *pref_service_,
+            prefs::kDismissedForeignSessionsSuggestions)) {}
+
+  ~PrefsPruningDismissedItemFilter() {
+    prefs::StoreDismissedIDsToPrefs(pref_service_,
+                                    prefs::kDismissedForeignSessionsSuggestions,
+                                    active_dismissed_ids_);
+  }
+
+  // Returns a Callback that can be easily used to filter out ids. Should not be
+  // stored anywhere, the filter should always outlive the returned callback.
+  DismissedFilter ToCallback() {
+    return base::Bind(&PrefsPruningDismissedItemFilter::ShouldInclude,
+                      base::Unretained(this));
+  }
+
+ private:
+  bool ShouldInclude(const std::string& id) {
+    if (initial_dismissed_ids_.find(id) == initial_dismissed_ids_.end()) {
+      return true;
+    }
+    active_dismissed_ids_.insert(id);
+    return false;
+  }
+
+  PrefService* pref_service_;
+
+  // Ids that we know should be filterd out.
+  std::set<std::string> initial_dismissed_ids_;
+
+  // Ids that we have seen and were filtered out. This will be what is saved to
+  // preferences upon our destructor.
+  std::set<std::string> active_dismissed_ids_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrefsPruningDismissedItemFilter);
+};
+
+// This filter only lets through ids that should normally be filtered out. As
+// such, this filter should only be used when purposely trying to view dismissed
+// content.
+class InverseDismissedItemFilter {
+ public:
+  explicit InverseDismissedItemFilter(PrefService* pref_service)
+      : dismissed_ids_(prefs::ReadDismissedIDsFromPrefs(
+            *pref_service,
+            prefs::kDismissedForeignSessionsSuggestions)) {}
+
+  // Returns a Callback that can be easily used to filter out ids. Should not be
+  // stored anywhere, the filter should always outlive the returned callback.
+  DismissedFilter ToCallback() {
+    return base::Bind(&InverseDismissedItemFilter::ShouldInclude,
+                      base::Unretained(this));
+  }
+
+ private:
+  bool ShouldInclude(const std::string& id) {
+    return dismissed_ids_.find(id) != dismissed_ids_.end();
+  }
+
+  std::set<std::string> dismissed_ids_;
+
+  DISALLOW_COPY_AND_ASSIGN(InverseDismissedItemFilter);
+};
 
 }  // namespace
 
@@ -132,10 +209,8 @@ CategoryInfo ForeignSessionsSuggestionsProvider::GetCategoryInfo(
 
 void ForeignSessionsSuggestionsProvider::DismissSuggestion(
     const ContentSuggestion::ID& suggestion_id) {
-  // TODO(skym): Right now this continuously grows, without clearing out old and
-  // irrelevant entries. Could either use a timestamp and expire after a
-  // threshold, or compare with current foreign tabs and remove anything that
-  // isn't actively blockign a foreign_sessions tab.
+  // Assume this suggestion is still valid, and blindly add it to dismissals.
+  // Pruning will happen the next time we are asked to suggest.
   std::set<std::string> dismissed_ids = prefs::ReadDismissedIDsFromPrefs(
       *pref_service_, prefs::kDismissedForeignSessionsSuggestions);
   dismissed_ids.insert(suggestion_id.id_within_category());
@@ -166,8 +241,8 @@ void ForeignSessionsSuggestionsProvider::Fetch(
 }
 
 void ForeignSessionsSuggestionsProvider::ClearHistory(
-    base::Time begin,
-    base::Time end,
+    Time begin,
+    Time end,
     const base::Callback<bool(const GURL& url)>& filter) {
   std::set<std::string> dismissed_ids = prefs::ReadDismissedIDsFromPrefs(
       *pref_service_, prefs::kDismissedForeignSessionsSuggestions);
@@ -193,7 +268,15 @@ void ForeignSessionsSuggestionsProvider::GetDismissedSuggestionsForDebugging(
     Category category,
     const DismissedSuggestionsCallback& callback) {
   DCHECK_EQ(category, provided_category_);
-  callback.Run(std::vector<ContentSuggestion>());
+  InverseDismissedItemFilter filter(pref_service_);
+  // Use GetSuggestionCandidates instead of BuildSuggestions(), to avoid the
+  // size and duplicate filtering. We want to return a complete list of
+  // everything that could potentially be blocked by the not dismissed filter.
+  std::vector<ContentSuggestion> suggestions;
+  for (auto data : GetSuggestionCandidates(filter.ToCallback())) {
+    suggestions.push_back(BuildSuggestion(data));
+  }
+  callback.Run(std::move(suggestions));
 }
 
 void ForeignSessionsSuggestionsProvider::ClearDismissedSuggestionsForDebugging(
@@ -241,7 +324,9 @@ ForeignSessionsSuggestionsProvider::BuildSuggestions() {
   const int max_foreign_tabs_total = GetMaxForeignTabsTotal();
   const int max_foreign_tabs_per_device = GetMaxForeignTabsPerDevice();
 
-  std::vector<SessionData> suggestion_candidates = GetSuggestionCandidates();
+  PrefsPruningDismissedItemFilter filter(pref_service_);
+  std::vector<SessionData> suggestion_candidates =
+      GetSuggestionCandidates(filter.ToCallback());
   // This sorts by recency so that we keep the most recent entries and they
   // appear as suggestions in reverse chronological order.
   std::sort(suggestion_candidates.begin(), suggestion_candidates.end());
@@ -275,19 +360,12 @@ ForeignSessionsSuggestionsProvider::BuildSuggestions() {
 }
 
 std::vector<ForeignSessionsSuggestionsProvider::SessionData>
-ForeignSessionsSuggestionsProvider::GetSuggestionCandidates() {
-  // TODO(skym): If a tab was previously dismissed, but was since updated,
-  // should it be resurrected and removed from the dismissed list? This would
-  // likely require a change to the dismissed ids.
-  // TODO(skym): No sense in keeping around dismissals for urls that no longer
-  // exist on any current foreign devices. Should prune and save the pref back.
+ForeignSessionsSuggestionsProvider::GetSuggestionCandidates(
+    const DismissedFilter& suggestions_filter) {
   const std::vector<const SyncedSession*>& foreign_sessions =
       foreign_sessions_provider_->GetAllForeignSessions();
-  std::set<std::string> dismissed_ids = prefs::ReadDismissedIDsFromPrefs(
-      *pref_service_, prefs::kDismissedForeignSessionsSuggestions);
   const TimeDelta max_foreign_tab_age = GetMaxForeignTabAge();
   std::vector<SessionData> suggestion_candidates;
-
   for (const SyncedSession* session : foreign_sessions) {
     for (const std::pair<const SessionID::id_type,
                          std::unique_ptr<sessions::SessionWindow>>& key_value :
@@ -299,11 +377,13 @@ ForeignSessionsSuggestionsProvider::GetSuggestionCandidates() {
         const SerializedNavigationEntry& navigation = tab->navigations.back();
         const std::string id = navigation.virtual_url().spec();
         // TODO(skym): Filter out internal pages. Tabs that contain only
-        // non-syncable content should never reach the local client, but
-        // sometimes the most recent navigation may be internal while one
-        // of the previous ones was more valid.
-        if (dismissed_ids.find(id) == dismissed_ids.end() &&
-            (base::Time::Now() - tab->timestamp) < max_foreign_tab_age) {
+        // non-syncable content should never reach the local client. However,
+        // sync will let tabs through whose current navigation entry is
+        // internal, as long as a back or forward navigation entry is valid. We
+        // however, are only currently exposing the current entry, and so we
+        // should ideally exclude these.
+        TimeDelta tab_age = Time::Now() - tab->timestamp;
+        if (tab_age < max_foreign_tab_age && suggestions_filter.Run(id)) {
           suggestion_candidates.push_back(
               SessionData{session, tab.get(), &navigation});
         }

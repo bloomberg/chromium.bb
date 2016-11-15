@@ -140,6 +140,8 @@ class ForeignSessionsSuggestionsProviderTest : public Test {
     AddTabToSession(GetOrCreateSession(session_id), window_id, url, age);
   }
 
+  void ClearSessionData() { sessions_map_.clear(); }
+
   void TriggerOnChange() {
     std::vector<const SyncedSession*> sessions;
     for (const auto& kv : sessions_map_) {
@@ -320,6 +322,55 @@ TEST_F(ForeignSessionsSuggestionsProviderTest, DismissedChangingOwnSession) {
   AddTab(0, 0, kUrl4, TimeDelta::FromMinutes(4));
   AddTab(0, 0, kUrl5, TimeDelta::FromMinutes(5));
   AddTab(0, 0, kUrl6, TimeDelta::FromMinutes(6));
+  TriggerOnChange();
+}
+
+TEST_F(ForeignSessionsSuggestionsProviderTest, DismissedPruning) {
+  EXPECT_CALL(*observer(),
+              OnNewSuggestions(
+                  _, category(),
+                  ElementsAre(Property(&ContentSuggestion::url, GURL(kUrl1)),
+                              Property(&ContentSuggestion::url, GURL(kUrl2)),
+                              Property(&ContentSuggestion::url, GURL(kUrl3)))));
+  AddTab(0, 0, kUrl1, TimeDelta::FromMinutes(1));
+  AddTab(0, 0, kUrl2, TimeDelta::FromMinutes(2));
+  AddTab(0, 0, kUrl3, TimeDelta::FromMinutes(3));
+  TriggerOnChange();
+
+  EXPECT_CALL(*observer(),
+              OnNewSuggestions(
+                  _, category(),
+                  ElementsAre(Property(&ContentSuggestion::url, GURL(kUrl1)),
+                              Property(&ContentSuggestion::url, GURL(kUrl3)))));
+  Dismiss(kUrl2);
+  TriggerOnChange();
+
+  // This case is important because it verifies the dismissal of |kUrl2| from
+  // above is still around.
+  EXPECT_CALL(*observer(),
+              OnNewSuggestions(
+                  _, category(),
+                  ElementsAre(Property(&ContentSuggestion::url, GURL(kUrl1)))));
+  Dismiss(kUrl3);
+  TriggerOnChange();
+
+  EXPECT_CALL(*observer(),
+              OnNewSuggestions(
+                  _, category(),
+                  ElementsAre(Property(&ContentSuggestion::url, GURL(kUrl1)))));
+  // kUrl2 is no longer present, which should result in the dismissal being
+  // pruned during the next round of suggestions.
+  ClearSessionData();
+  AddTab(0, 0, kUrl1, TimeDelta::FromMinutes(1));
+  TriggerOnChange();
+
+  // Verify that kUrl2 is now allowed, and the previous dismissal was pruned.
+  EXPECT_CALL(*observer(),
+              OnNewSuggestions(
+                  _, category(),
+                  ElementsAre(Property(&ContentSuggestion::url, GURL(kUrl1)),
+                              Property(&ContentSuggestion::url, GURL(kUrl2)))));
+  AddTab(0, 0, kUrl2, TimeDelta::FromMinutes(2));
   TriggerOnChange();
 }
 

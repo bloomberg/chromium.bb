@@ -72,7 +72,8 @@ class ForeignSessionsSuggestionsProvider : public ContentSuggestionsProvider {
 
   void OnForeignTabChange();
   std::vector<ContentSuggestion> BuildSuggestions();
-  std::vector<SessionData> GetSuggestionCandidates();
+  std::vector<SessionData> GetSuggestionCandidates(
+      const base::Callback<bool(const std::string& id)>& suggestions_filter);
   ContentSuggestion BuildSuggestion(const SessionData& data);
 
   CategoryStatus category_status_;
