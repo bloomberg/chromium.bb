@@ -73,6 +73,10 @@ SigninCreateProfileHandler::~SigninCreateProfileHandler() {
 void SigninCreateProfileHandler::GetLocalizedValues(
     base::DictionaryValue* localized_strings) {
   localized_strings->SetString(
+      "createDesktopShortcutLabel",
+      l10n_util::GetStringUTF16(
+          IDS_PROFILES_CREATE_DESKTOP_SHORTCUT_LABEL));
+  localized_strings->SetString(
       "manageProfilesSupervisedSignedInLabel",
       l10n_util::GetStringUTF16(
           IDS_PROFILES_CREATE_SUPERVISED_MULTI_SIGNED_IN_LABEL));
@@ -354,9 +358,10 @@ void SigninCreateProfileHandler::CreateShortcutAndShowSuccess(
     Profile* custodian_profile,
     Profile* profile) {
   if (create_shortcut) {
+    DCHECK(ProfileShortcutManager::IsFeatureEnabled());
     ProfileShortcutManager* shortcut_manager =
         g_browser_process->profile_manager()->profile_shortcut_manager();
-
+    DCHECK(shortcut_manager);
     if (shortcut_manager)
       shortcut_manager->CreateProfileShortcut(profile->GetPath());
   }

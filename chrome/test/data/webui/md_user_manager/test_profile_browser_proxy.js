@@ -101,11 +101,12 @@ TestProfileBrowserProxy.prototype = {
   },
 
   /** @override */
-  createProfile: function(profileName, profileIconUrl, isSupervised,
-        supervisedUserId, custodianProfilePath) {
+  createProfile: function(profileName, profileIconUrl, createShortcut,
+        isSupervised, supervisedUserId, custodianProfilePath) {
     this.methodCalled('createProfile',
                       {profileName: profileName,
                        profileIconUrl: profileIconUrl,
+                       createShortcut: createShortcut,
                        isSupervised: isSupervised,
                        supervisedUserId: supervisedUserId,
                        custodianProfilePath: custodianProfilePath});

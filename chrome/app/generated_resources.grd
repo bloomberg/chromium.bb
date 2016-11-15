@@ -9932,13 +9932,13 @@ I don't think this site should be blocked!
         <message name="IDS_OPTIONS_EXTENSION_PROXIES_LABEL" desc="The info label for the 'Proxy settings' button when managed by an extension.">
           Your network proxy settings are being managed by an extension.
         </message>
-        
+
         <if expr="chromeos">
           <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_CUPS_PRINT" desc="The title for the section of CUPS Print in Chrome OS advanced settings.">
             Printers
           </message>
           <message name="IDS_OPTIONS_ADVANCED_SECTION_CUPS_PRINT_LABEL" desc="Label for the CUPS Print section in Chrome OS advanced settings.">
-            Set up or manage local printers. 
+            Set up or manage local printers.
           </message>
           <message name="IDS_OPTIONS_ADVANCED_SECTION_CUPS_PRINT_MANAGE_BUTTON" desc="Text on the button to take the user to Chrome settings page of CUPS printers.">
             Manage
@@ -13218,6 +13218,9 @@ Tell us what happened exactly before you got the profile error message:
         <message name="IDS_PROFILES_CREATE_SUPERVISED_SIGNED_IN_LABEL" desc="Label for the 'Supervised user' checkbox in the create-profile dialog when the current user is signed in.">
           Control and view the websites this person visits from <ph name="CUSTODIAN_EMAIL">$1<ex>user@gmail.com</ex></ph>.
         </message>
+        <message name="IDS_PROFILES_CREATE_DESKTOP_SHORTCUT_LABEL" desc="Label for the checkbox that controls whether a desktop shortcut should be created for the new profile.">
+          Create a desktop shortcut for this user
+        </message>
         <message name="IDS_PROFILES_CREATE_SUPERVISED_MULTI_SIGNED_IN_LABEL" desc="Label for the 'Supervised user' checkbox in the create-profile dialog when user can choose from a list of signed in users.">
           Supervise this person to control and view the websites they visit from your Google Account.
         </message>
@@ -14911,7 +14914,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         </message>
         <message name="IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_GET_HELP_BUTTON" desc="Content for the notification button to direct the user to the chrome://setting CUPS printers subpage if the setup process is failed.">
           Get help
-        </message> 
+        </message>
       </if>
 
       <!-- Strings for ARC intent picker -->
@@ -15025,7 +15028,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         Enables badging of offline pages on the New Tab page. Only relevant if offline pages are enabled.
       </message>
       <message name="IDS_FLAGS_OFFLINE_PAGES_ASYNC_DOWNLOAD_NAME" desc="Name for the flag to enable offline pages for async download.">
-        Enables showing "DOWNLOAD PAGE LATER" button in error pages. 
+        Enables showing "DOWNLOAD PAGE LATER" button in error pages.
       </message>
       <message name="IDS_FLAGS_OFFLINE_PAGES_ASYNC_DOWNLOAD_DESCRIPTION" desc="Description for the flag to enable offline pages.">
         Enables showing "DOWNLOAD PAGE LATER" button in error pages such that the user can click on it to download the page later.

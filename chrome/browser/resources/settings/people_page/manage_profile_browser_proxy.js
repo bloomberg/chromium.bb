@@ -23,6 +23,22 @@ cr.define('settings', function() {
      * @param {!string} name The new profile name.
      */
     setProfileIconAndName: function(iconUrl, name) {},
+
+    /**
+     * Returns whether the current profile has a shortcut.
+     * @return {!Promise<boolean>}
+     */
+    getHasProfileShortcut: function() {},
+
+    /**
+     * Adds a shortcut for the current profile.
+     */
+    addProfileShortcut: function() {},
+
+    /**
+     * Removes the shortcut of the current profile.
+     */
+    removeProfileShortcut: function() {},
   };
 
   /**
@@ -43,6 +59,21 @@ cr.define('settings', function() {
     /** @override */
     setProfileIconAndName: function(iconUrl, name) {
       chrome.send('setProfileIconAndName', [iconUrl, name]);
+    },
+
+    /** @override */
+    getHasProfileShortcut: function() {
+      return cr.sendWithPromise('requestHasProfileShortcuts');
+    },
+
+    /** @override */
+    addProfileShortcut: function() {
+      chrome.send('addProfileShortcut');
+    },
+
+    /** @override */
+    removeProfileShortcut: function() {
+      chrome.send('removeProfileShortcut');
     },
   };
 

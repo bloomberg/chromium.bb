@@ -97,6 +97,10 @@
         margin-top: 24px;
       }
 
+      paper-checkbox + paper-checkbox {
+        margin-top: 16px;
+      }
+
       #supervised-user-container {
         -webkit-padding-start: 32px;
       }
@@ -156,7 +160,11 @@
       <cr-profile-avatar-selector avatars="[[availableIcons_]]"
           selected-avatar-url="{{profileIconUrl_}}">
       </cr-profile-avatar-selector>
-      <paper-checkbox checked="{{isSupervised_}}">
+      <paper-checkbox id="createShortcutCheckbox" checked="{{createShortcut_}}"
+          hidden="[[!isProfileShortcutsEnabled_]]">
+        $i18n{createDesktopShortcutLabel}
+      </paper-checkbox>
+      <paper-checkbox id="makeSupervisedCheckbox" checked="{{isSupervised_}}">
         $i18n{manageProfilesSupervisedSignedInLabel}
       </paper-checkbox>
       <div id="supervised-user-container">

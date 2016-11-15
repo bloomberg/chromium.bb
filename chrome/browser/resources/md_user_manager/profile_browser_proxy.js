@@ -67,14 +67,16 @@ cr.define('signin', function() {
      * @param {string} profileName Name of the new profile.
      * @param {string} profileIconUrl URL of the selected icon of the new
      *     profile.
+     * @param {boolean} createShortcut if true a desktop shortcut will be
+     *     created.
      * @param {boolean} isSupervised True if the new profile is supervised.
      * @param {string} supervisedUserId ID of the supervised user to be
      *     imported.
      * @param {string} custodianProfilePath Profile path of the custodian if
      *     the new profile is supervised.
      */
-    createProfile: function(profileName, profileIconUrl, isSupervised,
-        supervisedUserId, custodianProfilePath) {
+    createProfile: function(profileName, profileIconUrl, createShortcut,
+        isSupervised, supervisedUserId, custodianProfilePath) {
       assertNotReached();
     },
 
@@ -175,10 +177,10 @@ cr.define('signin', function() {
     },
 
     /** @override */
-    createProfile: function(profileName, profileIconUrl, isSupervised,
-        supervisedUserId, custodianProfilePath) {
+    createProfile: function(profileName, profileIconUrl, createShortcut,
+        isSupervised, supervisedUserId, custodianProfilePath) {
       chrome.send('createProfile',
-                  [profileName, profileIconUrl, false, isSupervised,
+                  [profileName, profileIconUrl, createShortcut, isSupervised,
                    supervisedUserId, custodianProfilePath]);
     },
 

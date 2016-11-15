@@ -2034,6 +2034,9 @@
     <message name="IDS_SETTINGS_EDIT_PERSON" desc="Title of the edit person subpage. This is a subpage to edit the name and icon of a Chrome Profile.">
       Edit person
     </message>
+    <message name="IDS_SETTINGS_PROFILE_SHORTCUT_TOGGLE_LABEL" desc="Label of the toggle that creates or removes a desktop shortcut for the profile.">
+      Show desktop shortcut
+    </message>
   </if>
 
   <message name="IDS_SETTINGS_SYNC_OVERVIEW" desc="The message that appears in the options dialog when sync has not been set up by the user.">

@@ -174,8 +174,13 @@ void ManageProfileHandler::HandleSetProfileIconAndName(
 
 void ManageProfileHandler::HandleRequestHasProfileShortcuts(
     const base::ListValue* args) {
+  AllowJavascript();
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(ProfileShortcutManager::IsFeatureEnabled());
+
+  CHECK_EQ(1U, args->GetSize());
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
 
   ProfileAttributesStorage& storage =
       g_browser_process->profile_manager()->GetProfileAttributesStorage();
@@ -189,18 +194,18 @@ void ManageProfileHandler::HandleRequestHasProfileShortcuts(
 
   ProfileShortcutManager* shortcut_manager =
       g_browser_process->profile_manager()->profile_shortcut_manager();
+  DCHECK(shortcut_manager);
   shortcut_manager->HasProfileShortcuts(
       profile_->GetPath(),
       base::Bind(&ManageProfileHandler::OnHasProfileShortcuts,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr(), callback_id));
 }
 
-void ManageProfileHandler::OnHasProfileShortcuts(bool has_shortcuts) {
+void ManageProfileHandler::OnHasProfileShortcuts(
+    const base::Value* callback_id, bool has_shortcuts) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  const base::FundamentalValue has_shortcuts_value(has_shortcuts);
-  CallJavascriptFunction("settings.SyncPrivateApi.receiveHasProfileShortcuts",
-                         has_shortcuts_value);
+  ResolveJavascriptCallback(*callback_id,
+                            base::FundamentalValue(has_shortcuts));
 }
 
 void ManageProfileHandler::HandleAddProfileShortcut(
@@ -211,9 +216,6 @@ void ManageProfileHandler::HandleAddProfileShortcut(
   DCHECK(shortcut_manager);
 
   shortcut_manager->CreateProfileShortcut(profile_->GetPath());
-
-  // Update the UI buttons.
-  OnHasProfileShortcuts(true);
 }
 
 void ManageProfileHandler::HandleRemoveProfileShortcut(
@@ -224,9 +226,6 @@ void ManageProfileHandler::HandleRemoveProfileShortcut(
   DCHECK(shortcut_manager);
 
   shortcut_manager->RemoveProfileShortcuts(profile_->GetPath());
-
-  // Update the UI buttons.
-  OnHasProfileShortcuts(false);
 }
 
 }  // namespace settings

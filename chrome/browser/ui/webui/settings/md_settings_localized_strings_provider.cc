@@ -15,6 +15,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/ui/webui/policy_indicator_localized_strings_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -1075,6 +1076,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
 #else   // !defined(OS_CHROMEOS)
     {"domainManagedProfile", IDS_SETTINGS_PEOPLE_DOMAIN_MANAGED_PROFILE},
     {"editPerson", IDS_SETTINGS_EDIT_PERSON},
+    {"showShortcutLabel", IDS_SETTINGS_PROFILE_SHORTCUT_TOGGLE_LABEL},
 #endif  // defined(OS_CHROMEOS)
     {"syncOverview", IDS_SETTINGS_SYNC_OVERVIEW},
     {"syncSignin", IDS_SETTINGS_SYNC_SIGNIN},
@@ -1177,6 +1179,9 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
 
   html_source->AddString("activityControlsUrl",
                          chrome::kGoogleAccountActivityControlsURL);
+
+  html_source->AddBoolean("profileShortcutsEnabled",
+                          ProfileShortcutManager::IsFeatureEnabled());
 }
 
 void AddPrintingStrings(content::WebUIDataSource* html_source) {

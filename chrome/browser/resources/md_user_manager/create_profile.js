@@ -90,6 +90,15 @@ Polymer({
     },
 
     /**
+     * if true, a desktop shortcut will be created for the new profile.
+     * @private {boolean}
+     */
+    createShortcut_: {
+      type: Boolean,
+      value: true
+    },
+
+    /**
      * True if the new profile is a supervised profile.
      * @private {boolean}
      */
@@ -117,7 +126,19 @@ Polymer({
     },
 
     /** @private {!signin.ProfileBrowserProxy} */
-    browserProxy_: Object
+    browserProxy_: Object,
+
+    /**
+     * True if the profile shortcuts feature is enabled.
+     * @private
+     */
+    isProfileShortcutsEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('profileShortcutsEnabled');
+      },
+      readOnly: true
+    }
   },
 
   listeners: {
@@ -354,9 +375,11 @@ Polymer({
     }
     this.hideMessage_();
     this.createInProgress_ = true;
+    var createShortcut = this.isProfileShortcutsEnabled_ &&
+        this.createShortcut_;
     this.browserProxy_.createProfile(
-        this.profileName_, this.profileIconUrl_, this.isSupervised_, '',
-        custodianProfilePath);
+        this.profileName_, this.profileIconUrl_, createShortcut,
+        this.isSupervised_, '', custodianProfilePath);
   },
 
   /**
@@ -371,9 +394,10 @@ Polymer({
     var signedInUser = event.detail.signedInUser;
     this.hideMessage_();
     this.createInProgress_ = true;
+    var createShortcut = this.isProfileShortcutsEnabled_;
     this.browserProxy_.createProfile(
-        supervisedUser.name, supervisedUser.iconURL, true, supervisedUser.id,
-        signedInUser.profilePath);
+        supervisedUser.name, supervisedUser.iconURL, createShortcut,
+        true /* isSupervised */, supervisedUser.id, signedInUser.profilePath);
   },
 
   /**
