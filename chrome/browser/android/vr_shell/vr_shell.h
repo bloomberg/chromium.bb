@@ -92,8 +92,8 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   // device::GvrDelegate implementation
   void SetWebVRSecureOrigin(bool secure_origin) override;
   void SubmitWebVRFrame() override;
-  void UpdateWebVRTextureBounds(
-      int eye, float left, float top, float width, float height) override;
+  void UpdateWebVRTextureBounds(const gvr::Rectf& left_bounds,
+                                const gvr::Rectf& right_bounds) override;
   gvr::GvrApi* gvr_api() override;
   void SetGvrPoseForWebVr(const gvr::Mat4f& pose, uint32_t pose_num) override;
 
@@ -153,6 +153,8 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   std::unique_ptr<gvr::BufferViewport> buffer_viewport_;
   std::unique_ptr<gvr::BufferViewport> headlocked_left_viewport_;
   std::unique_ptr<gvr::BufferViewport> headlocked_right_viewport_;
+  std::unique_ptr<gvr::BufferViewport> webvr_left_viewport_;
+  std::unique_ptr<gvr::BufferViewport> webvr_right_viewport_;
   std::unique_ptr<gvr::SwapChain> swap_chain_;
 
   gvr::Sizei render_size_;

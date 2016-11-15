@@ -218,17 +218,24 @@ void GvrDevice::SubmitFrame(mojom::VRPosePtr pose) {
     delegate_->SubmitWebVRFrame();
 }
 
-void GvrDevice::UpdateLayerBounds(mojom::VRLayerBoundsPtr leftBounds,
-                                  mojom::VRLayerBoundsPtr rightBounds) {
+void GvrDevice::UpdateLayerBounds(mojom::VRLayerBoundsPtr left_bounds,
+                                  mojom::VRLayerBoundsPtr right_bounds) {
   if (!delegate_)
     return;
 
-  delegate_->UpdateWebVRTextureBounds(0,  // Left eye
-                                      leftBounds->left, leftBounds->top,
-                                      leftBounds->width, leftBounds->height);
-  delegate_->UpdateWebVRTextureBounds(1,  // Right eye
-                                      rightBounds->left, rightBounds->top,
-                                      rightBounds->width, rightBounds->height);
+  gvr::Rectf left_gvr_bounds;
+  left_gvr_bounds.left = left_bounds->left;
+  left_gvr_bounds.top = 1.0f - left_bounds->top;
+  left_gvr_bounds.right = left_bounds->left + left_bounds->width;
+  left_gvr_bounds.bottom = 1.0f - (left_bounds->top + left_bounds->height);
+
+  gvr::Rectf right_gvr_bounds;
+  right_gvr_bounds.left = right_bounds->left;
+  right_gvr_bounds.top = 1.0f - right_bounds->top;
+  right_gvr_bounds.right = right_bounds->left + right_bounds->width;
+  right_gvr_bounds.bottom = 1.0f - (right_bounds->top + right_bounds->height);
+
+  delegate_->UpdateWebVRTextureBounds(left_gvr_bounds, right_gvr_bounds);
 }
 
 void GvrDevice::SetDelegate(const base::WeakPtr<GvrDelegate>& delegate) {

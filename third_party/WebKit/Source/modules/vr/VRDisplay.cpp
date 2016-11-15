@@ -282,8 +282,6 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState,
     return promise;
   }
 
-  m_isPresenting = false;
-
   // A valid number of layers must be provided in order to present.
   if (layers.size() == 0 || layers.size() > m_capabilities->maxLayers()) {
     forceExitPresent();
@@ -349,6 +347,7 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState,
   if (firstPresent) {
     bool secureContext = scriptState->getExecutionContext()->isSecureContext();
     if (!m_display) {
+      forceExitPresent();
       DOMException* exception = DOMException::create(
           InvalidStateError, "The service is no longer active.");
       resolver->reject(exception);

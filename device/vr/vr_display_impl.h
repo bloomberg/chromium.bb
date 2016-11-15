@@ -33,8 +33,9 @@ class VRDisplayImpl : public mojom::VRDisplay {
                       const RequestPresentCallback& callback) override;
   void ExitPresent() override;
   void SubmitFrame(mojom::VRPosePtr pose) override;
-  void UpdateLayerBounds(mojom::VRLayerBoundsPtr leftBounds,
-                         mojom::VRLayerBoundsPtr rightBounds) override;
+
+  void UpdateLayerBounds(mojom::VRLayerBoundsPtr left_bounds,
+                         mojom::VRLayerBoundsPtr right_bounds) override;
 
   mojo::Binding<mojom::VRDisplay> binding_;
   mojom::VRDisplayClientPtr client_;

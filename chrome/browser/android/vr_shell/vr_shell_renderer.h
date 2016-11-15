@@ -68,21 +68,13 @@ class WebVrRenderer : public BaseRenderer {
 
   void Draw(int texture_handle);
 
-  void UpdateTextureBounds(int eye, const gvr::Rectf& bounds);
-
  private:
   static constexpr size_t VERTEX_STRIDE = sizeof(float) * 4;
-  static constexpr size_t POSITION_ELEMENTS = 2;
-  static constexpr size_t TEXCOORD_ELEMENTS = 2;
-  static constexpr size_t POSITION_OFFSET = 0;
-  static constexpr size_t TEXCOORD_OFFSET = sizeof(float) * 2;
+  static constexpr size_t VERTEX_ELEMENTS = 4;
+  static constexpr size_t VERTEX_OFFSET = 0;
 
-  GLuint src_rect_uniform_handle_;
   GLuint tex_uniform_handle_;
   GLuint vertex_buffer_;
-
-  gvr::Rectf left_bounds_;
-  gvr::Rectf right_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(WebVrRenderer);
 };

@@ -27,11 +27,8 @@ class GvrNonPresentingDelegate : public device::GvrDelegate {
   // GvrDelegate implementation
   void SetWebVRSecureOrigin(bool secure_origin) override {}
   void SubmitWebVRFrame() override {}
-  void UpdateWebVRTextureBounds(int eye,
-                                float left,
-                                float top,
-                                float width,
-                                float height) override {}
+  void UpdateWebVRTextureBounds(const gvr::Rectf& left_bounds,
+                                const gvr::Rectf& right_bounds) override {}
   void SetGvrPoseForWebVr(const gvr::Mat4f& pose,
                           uint32_t pose_index) override {}
   gvr::GvrApi* gvr_api() override { return gvr_api_.get(); }

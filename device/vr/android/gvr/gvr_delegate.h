@@ -20,11 +20,9 @@ class DEVICE_VR_EXPORT GvrDelegate {
  public:
   virtual void SetWebVRSecureOrigin(bool secure_origin) = 0;
   virtual void SubmitWebVRFrame() = 0;
-  virtual void UpdateWebVRTextureBounds(int eye,
-                                        float left,
-                                        float top,
-                                        float width,
-                                        float height) = 0;
+  virtual void UpdateWebVRTextureBounds(const gvr::Rectf& left_bounds,
+                                        const gvr::Rectf& right_bounds) = 0;
+
   virtual void SetGvrPoseForWebVr(const gvr::Mat4f& pose,
                                   uint32_t pose_index) = 0;
   virtual gvr::GvrApi* gvr_api() = 0;

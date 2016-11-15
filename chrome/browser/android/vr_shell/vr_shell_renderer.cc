@@ -27,18 +27,13 @@ static constexpr float kTexturedQuadTextureCoordinates[12] =
 
 static constexpr int kTextureCoordinateDataSize = 2;
 
-static constexpr float kWebVrVertices[32] = {
+static constexpr float kWebVrVertices[16] = {
   //   x     y    u,   v
-    -1.f,  1.f, 0.f, 0.f, // Left Eye
+    -1.f,  1.f, 0.f, 0.f,
     -1.f, -1.f, 0.f, 1.f,
-     0.f, -1.f, 1.f, 1.f,
-     0.f,  1.f, 1.f, 0.f,
-
-     0.f,  1.f, 0.f, 0.f, // Right Eye
-     0.f, -1.f, 0.f, 1.f,
      1.f, -1.f, 1.f, 1.f,
      1.f,  1.f, 1.f, 0.f };
-static constexpr int kWebVrVerticesSize = sizeof(float) * 32;
+static constexpr int kWebVrVerticesSize = sizeof(float) * 16;
 
 // Reticle constants
 static constexpr float kRingDiameter = 1.0f;
@@ -103,14 +98,13 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
           });
     case vr_shell::ShaderID::WEBVR_VERTEX_SHADER:
       return SHADER(
-          attribute vec2 a_Position;
-          attribute vec2 a_TexCoordinate;
-          uniform vec4 u_SrcRect;
+          attribute vec4 a_Position;
           varying vec2 v_TexCoordinate;
 
           void main() {
-            v_TexCoordinate = u_SrcRect.xy + (a_TexCoordinate * u_SrcRect.zw);
-            gl_Position = vec4(a_Position, 0.0, 1.0);
+            // Pack the texcoord into the position to avoid state changes.
+            v_TexCoordinate = a_Position.zw;
+            gl_Position = vec4(a_Position.xy, 0.0, 1.0);
           });
     case vr_shell::ShaderID::WEBVR_FRAGMENT_SHADER:
       return OEIE_SHADER(
@@ -259,11 +253,7 @@ TexturedQuadRenderer::~TexturedQuadRenderer() = default;
 
 WebVrRenderer::WebVrRenderer() :
     BaseRenderer(WEBVR_VERTEX_SHADER, WEBVR_FRAGMENT_SHADER) {
-  left_bounds_ = { 0.0f, 0.0f, 0.5f, 1.0f };
-  right_bounds_ = { 0.5f, 0.0f, 0.5f, 1.0f };
-
   tex_uniform_handle_ = glGetUniformLocation(program_handle_, "u_Texture");
-  src_rect_uniform_handle_ = glGetUniformLocation(program_handle_, "u_SrcRect");
 
   // TODO(bajones): Figure out why this need to be restored.
   GLint old_buffer;
@@ -289,12 +279,9 @@ void WebVrRenderer::Draw(int texture_handle) {
   glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
 
   glEnableVertexAttribArray(position_handle_);
-  glEnableVertexAttribArray(tex_coord_handle_);
 
-  glVertexAttribPointer(position_handle_, POSITION_ELEMENTS, GL_FLOAT, false,
-      VERTEX_STRIDE, VOID_OFFSET(POSITION_OFFSET));
-  glVertexAttribPointer(tex_coord_handle_, TEXCOORD_ELEMENTS, GL_FLOAT, false,
-      VERTEX_STRIDE, VOID_OFFSET(TEXCOORD_OFFSET));
+  glVertexAttribPointer(position_handle_, VERTEX_ELEMENTS, GL_FLOAT, false,
+      VERTEX_STRIDE, VOID_OFFSET(VERTEX_OFFSET));
 
   // Bind texture. Ideally this should be a 1:1 pixel copy. (Or even more
   // ideally, a zero copy reuse of the texture.) For now, we're using an
@@ -305,31 +292,16 @@ void WebVrRenderer::Draw(int texture_handle) {
   glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_handle);
   glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glUniform1i(tex_uniform_handle_, 0);
 
-  // TODO(bajones): Should be able handle both eyes in a single draw call.
-  // Left eye
-  glUniform4fv(src_rect_uniform_handle_, 1, (float*)(&left_bounds_));
+  // Blit texture to buffer
   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-  // Right eye
-  glUniform4fv(src_rect_uniform_handle_, 1, (float*)(&right_bounds_));
-  glDrawArrays(GL_TRIANGLE_FAN, 4, 4);
-
   glDisableVertexAttribArray(position_handle_);
-  glDisableVertexAttribArray(tex_coord_handle_);
 
   glBindBuffer(GL_ARRAY_BUFFER, old_buffer);
-}
-
-void WebVrRenderer::UpdateTextureBounds(int eye, const gvr::Rectf& bounds) {
-  if (eye == 0) {
-    left_bounds_ = bounds;
-  } else if (eye == 1) {
-    right_bounds_ = bounds;
-  }
 }
 
 // Note that we don't explicitly delete gl objects here, they're deleted

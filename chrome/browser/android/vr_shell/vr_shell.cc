@@ -282,6 +282,18 @@ void VrShell::InitializeGl(JNIEnv* env,
                                            headlocked_right_viewport_.get());
   headlocked_right_viewport_->SetSourceBufferIndex(kFrameHeadlockedBuffer);
   headlocked_right_viewport_->SetReprojection(GVR_REPROJECTION_NONE);
+
+  webvr_left_viewport_.reset(
+      new gvr::BufferViewport(gvr_api_->CreateBufferViewport()));
+  buffer_viewport_list_->GetBufferViewport(GVR_LEFT_EYE,
+                                           webvr_left_viewport_.get());
+  webvr_left_viewport_->SetSourceBufferIndex(kFramePrimaryBuffer);
+
+  webvr_right_viewport_.reset(
+      new gvr::BufferViewport(gvr_api_->CreateBufferViewport()));
+  buffer_viewport_list_->GetBufferViewport(GVR_RIGHT_EYE,
+                                           webvr_right_viewport_.get());
+  webvr_right_viewport_->SetSourceBufferIndex(kFramePrimaryBuffer);
 }
 
 void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
@@ -723,6 +735,9 @@ void VrShell::DrawWebVr() {
 
   glViewport(0, 0, render_size_.width, render_size_.height);
   vr_shell_renderer_->GetWebVrRenderer()->Draw(content_texture_id_);
+
+  buffer_viewport_list_->SetBufferViewport(0, *webvr_left_viewport_);
+  buffer_viewport_list_->SetBufferViewport(1, *webvr_right_viewport_);
 }
 
 void VrShell::OnTriggerEvent(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -779,10 +794,10 @@ void VrShell::SetWebVRSecureOrigin(bool secure_origin) {
 void VrShell::SubmitWebVRFrame() {
 }
 
-void VrShell::UpdateWebVRTextureBounds(
-    int eye, float left, float top, float width, float height) {
-  gvr::Rectf bounds = { left, top, width, height };
-  vr_shell_renderer_->GetWebVrRenderer()->UpdateTextureBounds(eye, bounds);
+void VrShell::UpdateWebVRTextureBounds(const gvr::Rectf& left_bounds,
+                                       const gvr::Rectf& right_bounds) {
+  webvr_left_viewport_->SetSourceUv(left_bounds);
+  webvr_right_viewport_->SetSourceUv(right_bounds);
 }
 
 gvr::GvrApi* VrShell::gvr_api() {
