@@ -39,8 +39,6 @@
 #include "wtf/text/StringToNumber.h"
 #include <algorithm>
 #include <memory>
-#include <unicode/translit.h>
-#include <unicode/unistr.h>
 
 #ifdef STRING_STATS
 #include "wtf/DataLog.h"
@@ -803,7 +801,7 @@ static PassRefPtr<StringImpl> caseConvert(const UChar* source16,
 }
 
 PassRefPtr<StringImpl> StringImpl::lower(const AtomicString& localeIdentifier) {
-  // Use the more-optimized code path most of the time.
+  // Use the more optimized code path most of the time.
   // Only Turkic (tr and az) languages and Lithuanian requires
   // locale-specific lowercasing rules. Even though CLDR has el-Lower,
   // it's identical to the locale-agnostic lowercasing. Context-dependent
@@ -829,15 +827,14 @@ PassRefPtr<StringImpl> StringImpl::lower(const AtomicString& localeIdentifier) {
 
 PassRefPtr<StringImpl> StringImpl::upper(const AtomicString& localeIdentifier) {
   // Use the more-optimized code path most of the time.
-  // Only Turkic (tr and az) languages and Greek require locale-specific
-  // lowercasing rules.
-  icu::UnicodeString transliteratorId;
+  // Only Turkic (tr and az) languages, Greek and Lithuanian require
+  // locale-specific uppercasing rules.
   const char* localeForConversion = 0;
   if (localeIdMatchesLang(localeIdentifier, "tr") ||
       localeIdMatchesLang(localeIdentifier, "az"))
     localeForConversion = "tr";
   else if (localeIdMatchesLang(localeIdentifier, "el"))
-    transliteratorId = UNICODE_STRING_SIMPLE("el-Upper");
+    localeForConversion = "el";
   else if (localeIdMatchesLang(localeIdentifier, "lt"))
     localeForConversion = "lt";
   else
@@ -850,23 +847,7 @@ PassRefPtr<StringImpl> StringImpl::upper(const AtomicString& localeIdentifier) {
   RefPtr<StringImpl> upconverted = upconvertedString();
   const UChar* source16 = upconverted->characters16();
 
-  if (localeForConversion)
-    return caseConvert(source16, length, u_strToUpper, localeForConversion,
-                       this);
-
-  // TODO(jungshik): Cache transliterator if perf penaly warrants it for Greek.
-  UErrorCode status = U_ZERO_ERROR;
-  std::unique_ptr<icu::Transliterator> translit =
-      wrapUnique(icu::Transliterator::createInstance(transliteratorId,
-                                                     UTRANS_FORWARD, status));
-  if (U_FAILURE(status))
-    return upper();
-
-  // target will be copy-on-write.
-  icu::UnicodeString target(false, source16, length);
-  translit->transliterate(target);
-
-  return create(target.getBuffer(), target.length());
+  return caseConvert(source16, length, u_strToUpper, localeForConversion, this);
 }
 
 PassRefPtr<StringImpl> StringImpl::fill(UChar character) {
