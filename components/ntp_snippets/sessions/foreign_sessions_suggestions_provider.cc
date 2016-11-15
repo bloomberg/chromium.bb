@@ -320,14 +320,8 @@ ContentSuggestion ForeignSessionsSuggestionsProvider::BuildSuggestion(
                                data.navigation->virtual_url());
   suggestion.set_title(data.navigation->title());
   suggestion.set_publish_date(data.tab->timestamp);
-  // TODO(skym): It's unclear if this simple approach is sufficient for
-  // right-to-left languages.
-  // This field is sandwiched between the url's favicon, which is on the left,
-  // and the |publish_date|, which is to the right. The domain should always
-  // appear next to the favicon.
   suggestion.set_publisher_name(
-      base::UTF8ToUTF16(data.navigation->virtual_url().host() + " - " +
-                        data.session->session_name));
+      base::UTF8ToUTF16(data.navigation->virtual_url().host()));
   return suggestion;
 }
 
