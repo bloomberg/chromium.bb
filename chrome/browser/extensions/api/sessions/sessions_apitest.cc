@@ -217,10 +217,11 @@ void ExtensionSessionsTest::CreateTestProfileSyncService() {
           ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
               profile, &ExtensionSessionsTest::BuildProfileSyncService));
 
-  syncer::ModelTypeSet preferred_types;
-  preferred_types.Put(syncer::SESSIONS);
+  syncer::ModelTypeSet preferred_types(syncer::SESSIONS, syncer::PROXY_TABS);
   GoogleServiceAuthError no_error(GoogleServiceAuthError::NONE);
   ON_CALL(*service, IsDataTypeControllerRunning(syncer::SESSIONS))
+      .WillByDefault(testing::Return(true));
+  ON_CALL(*service, IsDataTypeControllerRunning(syncer::PROXY_TABS))
       .WillByDefault(testing::Return(true));
   ON_CALL(*service, GetRegisteredDataTypes())
       .WillByDefault(testing::Return(syncer::UserTypes()));

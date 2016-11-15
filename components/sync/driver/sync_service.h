@@ -205,8 +205,8 @@ class SyncService : public DataTypeEncryptionHandler {
   // (such as deciding when to prompt for an encryption passphrase).
   virtual bool IsBackendInitialized() const = 0;
 
-  // Return the active OpenTabsUIDelegate. If sessions is not enabled or not
-  // currently syncing, returns nullptr.
+  // Return the active OpenTabsUIDelegate. If open/proxy tabs is not enabled or
+  // not currently syncing, returns nullptr.
   virtual sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate() = 0;
 
   // Returns true if OnPassphraseRequired has been called for decryption and

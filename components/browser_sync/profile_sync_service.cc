@@ -424,9 +424,11 @@ bool ProfileSyncService::IsDataTypeControllerRunning(
 }
 
 sync_sessions::OpenTabsUIDelegate* ProfileSyncService::GetOpenTabsUIDelegate() {
-  if (!IsDataTypeControllerRunning(syncer::SESSIONS))
-    return nullptr;
-  return sessions_sync_manager_.get();
+  // Although the backing data actually is of type |SESSIONS|, the desire to use
+  // open tabs functionality is tracked by the state of the |PROXY_TABS| type.
+  return IsDataTypeControllerRunning(syncer::PROXY_TABS)
+             ? sessions_sync_manager_.get()
+             : nullptr;
 }
 
 sync_sessions::FaviconCache* ProfileSyncService::GetFaviconCache() {

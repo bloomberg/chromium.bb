@@ -39,7 +39,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using syncer::DataTypeController;
 using syncer::SyncBackendHostMock;
+using syncer::SyncMergeResult;
 using testing::Return;
 
 namespace browser_sync {
@@ -198,6 +200,10 @@ ACTION_P(ReturnNewMockHostCaptureClearServerData, captured_callback) {
   return new SyncBackendHostCaptureClearServerData(base::Bind(
       &OnClearServerDataCalled, base::Unretained(captured_callback)));
 }
+
+void DoNothing(DataTypeController::ConfigureResult ignored1,
+               const SyncMergeResult& ignored2,
+               const SyncMergeResult& ignored3) {}
 
 // A test harness that uses a real ProfileSyncService and in most cases a
 // MockSyncBackendHost.
@@ -950,6 +956,22 @@ TEST_F(ProfileSyncServiceTest, ValidPointersInDTCMap) {
   CreateService(ProfileSyncService::AUTO_START);
   service()->OnSessionRestoreComplete();
   service()->OnSyncCycleCompleted();
+}
+
+// The OpenTabsUIDelegate should only be accessable when PROXY_TABS is enabled.
+TEST_F(ProfileSyncServiceTest, GetOpenTabsUIDelegate) {
+  CreateService(ProfileSyncService::AUTO_START);
+  InitializeForNthSync();
+  EXPECT_EQ(nullptr, service()->GetOpenTabsUIDelegate());
+
+  auto controller =
+      base::MakeUnique<syncer::FakeDataTypeController>(syncer::PROXY_TABS);
+  // Progress the controller to RUNNING first, which is how the service
+  // determines whether a type is enabled.
+  controller->StartAssociating(base::Bind(&DoNothing));
+  controller->FinishStart(DataTypeController::OK_FIRST_RUN);
+  service()->RegisterDataTypeController(std::move(controller));
+  EXPECT_NE(nullptr, service()->GetOpenTabsUIDelegate());
 }
 
 }  // namespace
