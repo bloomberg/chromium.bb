@@ -360,11 +360,16 @@ def SetupBuild(options):
           smdk = fields[3]
           vendor = fields[4]
           family = fields[5]
+          target = fields[6]
         elif board_format in (PRE_KCONFIG, KCONFIG):
           smdk = fields[5]
           vendor = fields[4]
           family = fields[3]
-        break
+          target = fields[0]
+
+        # Make sure this is the right target.
+        if target == uboard:
+          break
   if not arch:
     cros_build_lib.Die("Selected board '%s' not found in boards.cfg." % board)
 
