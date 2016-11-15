@@ -129,7 +129,6 @@ void ScriptLoader::detach() {
   m_pendingScript = nullptr;
 }
 
-// Helper function. Must take a lowercase language as input.
 static bool isLegacySupportedJavaScriptLanguage(const String& language) {
   // Mozilla 1.8 accepts javascript1.0 - javascript1.7, but WinIE 7 accepts only
   // javascript1.1 - javascript1.3.
@@ -141,13 +140,18 @@ static bool isLegacySupportedJavaScriptLanguage(const String& language) {
 
   // FIXME: This function is not HTML5 compliant. These belong in the MIME
   // registry as "text/javascript<version>" entries.
-  DCHECK_EQ(language, language.lower());
-  return language == "javascript" || language == "javascript1.0" ||
-         language == "javascript1.1" || language == "javascript1.2" ||
-         language == "javascript1.3" || language == "javascript1.4" ||
-         language == "javascript1.5" || language == "javascript1.6" ||
-         language == "javascript1.7" || language == "livescript" ||
-         language == "ecmascript" || language == "jscript";
+  return equalIgnoringASCIICase(language, "javascript") ||
+         equalIgnoringASCIICase(language, "javascript1.0") ||
+         equalIgnoringASCIICase(language, "javascript1.1") ||
+         equalIgnoringASCIICase(language, "javascript1.2") ||
+         equalIgnoringASCIICase(language, "javascript1.3") ||
+         equalIgnoringASCIICase(language, "javascript1.4") ||
+         equalIgnoringASCIICase(language, "javascript1.5") ||
+         equalIgnoringASCIICase(language, "javascript1.6") ||
+         equalIgnoringASCIICase(language, "javascript1.7") ||
+         equalIgnoringASCIICase(language, "livescript") ||
+         equalIgnoringASCIICase(language, "ecmascript") ||
+         equalIgnoringASCIICase(language, "jscript");
 }
 
 void ScriptLoader::dispatchErrorEvent() {
@@ -172,18 +176,17 @@ bool ScriptLoader::isValidScriptTypeAndLanguage(
   // - Allowing a different set of languages for language= and type=. language=
   //   supports Javascript 1.1 and 1.4-1.6, but type= does not.
   if (type.isEmpty()) {
-    String lowerLanguage = language.lower();
-    return language.isEmpty()  // assume text/javascript.
-           || MIMETypeRegistry::isSupportedJavaScriptMIMEType("text/" +
-                                                              lowerLanguage) ||
-           isLegacySupportedJavaScriptLanguage(lowerLanguage);
+    return language.isEmpty() ||  // assume text/javascript.
+           MIMETypeRegistry::isSupportedJavaScriptMIMEType("text/" +
+                                                           language) ||
+           isLegacySupportedJavaScriptLanguage(language);
   } else if (RuntimeEnabledFeatures::moduleScriptsEnabled() &&
              type == "module") {
     return true;
   } else if (MIMETypeRegistry::isSupportedJavaScriptMIMEType(
                  type.stripWhiteSpace()) ||
              (supportLegacyTypes == AllowLegacyTypeInTypeAttribute &&
-              isLegacySupportedJavaScriptLanguage(type.lower()))) {
+              isLegacySupportedJavaScriptLanguage(type))) {
     return true;
   }
 
@@ -401,28 +404,28 @@ bool isSVGScriptLoader(Element* element) {
   return isSVGScriptElement(*element);
 }
 
-void ScriptLoader::logScriptMimetype(ScriptResource* resource,
-                                     LocalFrame* frame,
-                                     String mimetype) {
-  String lowerMimetype = mimetype.lower();
-  bool text = lowerMimetype.startsWith("text/");
-  bool application = lowerMimetype.startsWith("application/");
-  bool expectedJs =
-      MIMETypeRegistry::isSupportedJavaScriptMIMEType(lowerMimetype) ||
-      (text && isLegacySupportedJavaScriptLanguage(lowerMimetype.substring(5)));
-  bool sameOrigin =
-      m_element->document().getSecurityOrigin()->canRequest(m_resource->url());
-  if (expectedJs) {
+void ScriptLoader::logScriptMIMEType(LocalFrame* frame,
+                                     ScriptResource* resource,
+                                     const String& mimeType) {
+  if (MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimeType))
     return;
-  }
+  bool isText = mimeType.startsWith("text/", TextCaseASCIIInsensitive);
+  if (isText && isLegacySupportedJavaScriptLanguage(mimeType.substring(5)))
+    return;
+  bool isSameOrigin =
+      m_element->document().getSecurityOrigin()->canRequest(resource->url());
+  bool isApplication =
+      !isText && mimeType.startsWith("application/", TextCaseASCIIInsensitive);
+
   UseCounter::Feature feature =
-      sameOrigin
-          ? (text ? UseCounter::SameOriginTextScript
-                  : application ? UseCounter::SameOriginApplicationScript
-                                : UseCounter::SameOriginOtherScript)
-          : (text ? UseCounter::CrossOriginTextScript
-                  : application ? UseCounter::CrossOriginApplicationScript
-                                : UseCounter::CrossOriginOtherScript);
+      isSameOrigin
+          ? (isText ? UseCounter::SameOriginTextScript
+                    : isApplication ? UseCounter::SameOriginApplicationScript
+                                    : UseCounter::SameOriginOtherScript)
+          : (isText ? UseCounter::CrossOriginTextScript
+                    : isApplication ? UseCounter::CrossOriginApplicationScript
+                                    : UseCounter::CrossOriginOtherScript);
+
   UseCounter::count(frame, feature);
 }
 
@@ -487,26 +490,26 @@ bool ScriptLoader::doExecuteScript(const ScriptSourceCode& sourceCode) {
         return false;
       }
 
-      String mimetype = resource->httpContentType();
-      if (mimetype.startsWith("image/") || mimetype == "text/csv" ||
-          mimetype.startsWith("audio/") || mimetype.startsWith("video/")) {
+      String mimeType = resource->httpContentType();
+      if (mimeType.startsWith("image/") || mimeType == "text/csv" ||
+          mimeType.startsWith("audio/") || mimeType.startsWith("video/")) {
         contextDocument->addConsoleMessage(ConsoleMessage::create(
             SecurityMessageSource, ErrorMessageLevel,
             "Refused to execute script from '" +
                 resource->url().elidedString() + "' because its MIME type ('" +
-                mimetype + "') is not executable."));
-        if (mimetype.startsWith("image/"))
+                mimeType + "') is not executable."));
+        if (mimeType.startsWith("image/"))
           UseCounter::count(frame, UseCounter::BlockedSniffingImageToScript);
-        else if (mimetype.startsWith("audio/"))
+        else if (mimeType.startsWith("audio/"))
           UseCounter::count(frame, UseCounter::BlockedSniffingAudioToScript);
-        else if (mimetype.startsWith("video/"))
+        else if (mimeType.startsWith("video/"))
           UseCounter::count(frame, UseCounter::BlockedSniffingVideoToScript);
-        else if (mimetype == "text/csv")
+        else if (mimeType == "text/csv")
           UseCounter::count(frame, UseCounter::BlockedSniffingCSVToScript);
         return false;
       }
 
-      logScriptMimetype(resource, frame, mimetype);
+      logScriptMIMEType(frame, resource, mimeType);
     }
   }
 

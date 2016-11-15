@@ -34,6 +34,10 @@
 
 namespace blink {
 
+// Note/reminder: MIME type and parameter names are per-RFC case
+// insensitive (https://www.ietf.org/rfc/rfc2045.txt , section 5.1).
+// The MIMETypeRegistry predicates are all case-insensitive.
+
 // TODO(kinuko): Move this file under platform/network/mime.
 class PLATFORM_EXPORT MIMETypeRegistry {
   STATIC_ONLY(MIMETypeRegistry);

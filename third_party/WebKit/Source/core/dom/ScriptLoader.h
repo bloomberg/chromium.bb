@@ -127,7 +127,7 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
  private:
   bool ignoresLoadRequest() const;
   bool isScriptForEventSupported() const;
-  void logScriptMimetype(ScriptResource*, LocalFrame*, String);
+  void logScriptMIMEType(LocalFrame*, ScriptResource*, const String&);
 
   bool fetchScript(const String& sourceUrl, FetchRequest::DeferOption);
   bool doExecuteScript(const ScriptSourceCode&);
