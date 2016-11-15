@@ -23,6 +23,13 @@ void DeleteDatabaseCallbacks(WebIDBDatabaseCallbacks* callbacks,
   delete callbacks;
 }
 
+void BuildErrorAndAbort(WebIDBDatabaseCallbacks* callbacks,
+                        int64_t transaction_id,
+                        int32_t code,
+                        const base::string16& message) {
+  callbacks->onAbort(transaction_id, blink::WebIDBDatabaseError(code, message));
+}
+
 }  // namespace
 
 IndexedDBDatabaseCallbacksImpl::IndexedDBDatabaseCallbacksImpl(
@@ -59,10 +66,11 @@ void IndexedDBDatabaseCallbacksImpl::VersionChange(int64_t old_version,
 void IndexedDBDatabaseCallbacksImpl::Abort(int64_t transaction_id,
                                            int32_t code,
                                            const base::string16& message) {
+  // Indirect through BuildErrorAndAbort because it isn't safe to pass a
+  // WebIDBDatabaseError between threads.
   callback_runner_->PostTask(
-      FROM_HERE, base::Bind(&WebIDBDatabaseCallbacks::onAbort,
-                            base::Unretained(callbacks_), transaction_id,
-                            blink::WebIDBDatabaseError(code, message)));
+      FROM_HERE, base::Bind(&BuildErrorAndAbort, base::Unretained(callbacks_),
+                            transaction_id, code, message));
 }
 
 void IndexedDBDatabaseCallbacksImpl::Complete(int64_t transaction_id) {
