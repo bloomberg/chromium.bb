@@ -34,6 +34,22 @@ TRY_LIMIT = 5
 GERRIT_PROTOCOL = 'https'
 
 
+# Processing comments in "netrc" can trigger a bug in Windows.
+# See crbug.com/664664
+class safeNetrc(netrc.netrc):
+  # pylint: disable=redefined-builtin
+  def __init__(self, file=None):
+    self._orig_parse, self._parse = self._parse, self._safe_parse
+    netrc.netrc.__init__(self, file=file)
+
+  # pylint: disable=redefined-builtin
+  def _safe_parse(self, file, fp, default_netrc):
+    # Buffer the file.
+    sio = StringIO(''.join(l for l in fp
+                           if l.strip() and not l.strip().startswith('#')))
+    return self._orig_parse(file, sio, default_netrc)
+
+
 class GerritError(Exception):
   """Exception class for errors commuicating with the gerrit-on-borg service."""
   def __init__(self, http_status, *args, **kwargs):
@@ -115,13 +131,13 @@ class CookiesAuthenticator(Authenticator):
   def _get_netrc(cls):
     path = cls.get_netrc_path()
     if not os.path.exists(path):
-      return netrc.netrc(os.devnull)
+      return safeNetrc(os.devnull)
 
     try:
-      return netrc.netrc(path)
+      return safeNetrc(path)
     except IOError:
       print >> sys.stderr, 'WARNING: Could not read netrc file %s' % path
-      return netrc.netrc(os.devnull)
+      return safeNetrc(os.devnull)
     except netrc.NetrcParseError:
       st = os.stat(path)
       if st.st_mode & (stat.S_IRWXG | stat.S_IRWXO):
@@ -133,7 +149,7 @@ class CookiesAuthenticator(Authenticator):
         print >> sys.stderr, ('ERROR: Cannot use netrc file %s due to a '
                               'parsing error.' % path)
         raise
-      return netrc.netrc(os.devnull)
+      return safeNetrc(os.devnull)
 
   @classmethod
   def get_gitcookies_path(cls):
