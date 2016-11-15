@@ -1756,8 +1756,9 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   // No placeholder, return the end of the strip.
   if (placeholderTab_ == nil)
     return count;
-
-  double placeholderX = placeholderFrame_.origin.x;
+  BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
+  double placeholderX =
+      isRTL ? NSMaxX(placeholderFrame_) : placeholderFrame_.origin.x;
   int index = 0;
   int location = 0;
   while (index < count) {
@@ -1778,7 +1779,8 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
       index++;
       continue;
     }
-    if (placeholderX <= NSMinX([curr frame]))
+    if (isRTL ? placeholderX >= NSMaxX([curr frame])
+              : placeholderX <= NSMinX([curr frame]))
       break;
     index++;
     location++;
