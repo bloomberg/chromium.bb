@@ -33,7 +33,6 @@ EventLogMessage::~EventLogMessage() {
   }
 
   std::string message(log_message_.str());
-  LPCSTR strings[1] = {message.data()};
   WORD log_type = EVENTLOG_ERROR_TYPE;
   switch (log_message_.severity()) {
     case LOG_INFO:
@@ -51,6 +50,7 @@ EventLogMessage::~EventLogMessage() {
       log_type = EVENTLOG_ERROR_TYPE;
       break;
   }
+  LPCSTR strings[1] = {message.data()};
   // TODO(pastarmovj): Register Chrome's event log resource types to make the
   // entries nicer. 1337 is just a made up event id type.
   if (!ReportEventA(event_log_handle, log_type, 0, 1337, NULL, 1, 0,
