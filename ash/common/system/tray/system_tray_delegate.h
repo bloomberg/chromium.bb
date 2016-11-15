@@ -131,7 +131,10 @@ class ASH_EXPORT SystemTrayDelegate {
   virtual void GetSystemUpdateInfo(UpdateInfo* info) const;
 
   // Returns true if settings menu item should appear.
-  virtual bool ShouldShowSettings();
+  virtual bool ShouldShowSettings() const;
+
+  // Returns true if notification tray should appear.
+  virtual bool ShouldShowNotificationTray() const;
 
   // Shows information about enterprise enrolled devices.
   virtual void ShowEnterpriseInfo();
@@ -158,7 +161,7 @@ class ASH_EXPORT SystemTrayDelegate {
   virtual void ConnectToBluetoothDevice(const std::string& address);
 
   // Returns true if bluetooth adapter is discovering bluetooth devices.
-  virtual bool IsBluetoothDiscovering();
+  virtual bool IsBluetoothDiscovering() const;
 
   // Returns the currently selected IME.
   virtual void GetCurrentIME(IMEInfo* info);

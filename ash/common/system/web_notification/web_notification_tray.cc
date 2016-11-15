@@ -423,7 +423,8 @@ void WebNotificationTray::HidePopups() {
 // Private methods.
 
 bool WebNotificationTray::ShouldShowMessageCenter() {
-  return !system_tray_->HasNotificationBubble();
+  return WmShell::Get()->system_tray_delegate()->ShouldShowNotificationTray() &&
+         !system_tray_->HasNotificationBubble();
 }
 
 bool WebNotificationTray::ShouldBlockShelfAutoHide() const {

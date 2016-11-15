@@ -46,6 +46,10 @@ bool SupervisedUserCreationFlow::ShouldShowSettings() {
   return false;
 }
 
+bool SupervisedUserCreationFlow::ShouldShowNotificationTray() {
+  return false;
+}
+
 bool SupervisedUserCreationFlow::ShouldLaunchBrowser() {
   return false;
 }

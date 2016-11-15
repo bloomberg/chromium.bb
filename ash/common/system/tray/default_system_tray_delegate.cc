@@ -39,7 +39,11 @@ void DefaultSystemTrayDelegate::GetSystemUpdateInfo(UpdateInfo* info) const {
   info->factory_reset_required = false;
 }
 
-bool DefaultSystemTrayDelegate::ShouldShowSettings() {
+bool DefaultSystemTrayDelegate::ShouldShowSettings() const {
+  return true;
+}
+
+bool DefaultSystemTrayDelegate::ShouldShowNotificationTray() const {
   return true;
 }
 
@@ -47,7 +51,7 @@ void DefaultSystemTrayDelegate::ToggleBluetooth() {
   bluetooth_enabled_ = !bluetooth_enabled_;
 }
 
-bool DefaultSystemTrayDelegate::IsBluetoothDiscovering() {
+bool DefaultSystemTrayDelegate::IsBluetoothDiscovering() const {
   return false;
 }
 

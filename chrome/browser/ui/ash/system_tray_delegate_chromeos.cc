@@ -138,6 +138,12 @@ void OnAcceptMultiprofilesIntro(bool no_show_again) {
   UserAddingScreen::Get()->Start();
 }
 
+bool IsSessionInSecondaryLoginScreen() {
+  return ash::WmShell::Get()
+      ->GetSessionStateDelegate()
+      ->IsInSecondaryLoginScreen();
+}
+
 }  // namespace
 
 SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
@@ -317,19 +323,27 @@ void SystemTrayDelegateChromeOS::GetSystemUpdateInfo(
   GetUpdateInfo(UpgradeDetector::GetInstance(), info);
 }
 
-bool SystemTrayDelegateChromeOS::ShouldShowSettings() {
-  ash::WmShell* wm_shell = ash::WmShell::Get();
+bool SystemTrayDelegateChromeOS::ShouldShowSettings() const {
+  // Show setting button only when the user flow allows and it's not in the
+  // multi-profile login screen.
   return ChromeUserManager::Get()->GetCurrentUserFlow()->ShouldShowSettings() &&
-         !wm_shell->GetSessionStateDelegate()->IsInSecondaryLoginScreen();
+         !IsSessionInSecondaryLoginScreen();
+}
+
+bool SystemTrayDelegateChromeOS::ShouldShowNotificationTray() const {
+  // Show notification tray only when the user flow allows and it's not in the
+  // multi-profile login screen.
+  return ChromeUserManager::Get()
+             ->GetCurrentUserFlow()
+             ->ShouldShowNotificationTray() &&
+         !IsSessionInSecondaryLoginScreen();
 }
 
 void SystemTrayDelegateChromeOS::ShowEnterpriseInfo() {
   // TODO(mash): Refactor out SessionStateDelegate and move to SystemTrayClient.
   ash::LoginStatus status = GetUserLoginStatus();
-  ash::WmShell* wm_shell = ash::WmShell::Get();
   if (status == ash::LoginStatus::NOT_LOGGED_IN ||
-      status == ash::LoginStatus::LOCKED ||
-      wm_shell->GetSessionStateDelegate()->IsInSecondaryLoginScreen()) {
+      status == ash::LoginStatus::LOCKED || IsSessionInSecondaryLoginScreen()) {
     scoped_refptr<chromeos::HelpAppLauncher> help_app(
         new chromeos::HelpAppLauncher(nullptr /* parent_window */));
     help_app->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_ENTERPRISE);
@@ -462,7 +476,7 @@ void SystemTrayDelegateChromeOS::ConnectToBluetoothDevice(
   dialog->ShowInContainer(SystemTrayClient::GetDialogParentContainerId());
 }
 
-bool SystemTrayDelegateChromeOS::IsBluetoothDiscovering() {
+bool SystemTrayDelegateChromeOS::IsBluetoothDiscovering() const {
   return bluetooth_adapter_ && bluetooth_adapter_->IsDiscovering();
 }
 

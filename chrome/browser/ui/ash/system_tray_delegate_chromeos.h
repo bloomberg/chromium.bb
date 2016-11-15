@@ -85,7 +85,8 @@ class SystemTrayDelegateChromeOS
   bool IsUserSupervised() const override;
   bool IsUserChild() const override;
   void GetSystemUpdateInfo(ash::UpdateInfo* info) const override;
-  bool ShouldShowSettings() override;
+  bool ShouldShowSettings() const override;
+  bool ShouldShowNotificationTray() const override;
   void ShowEnterpriseInfo() override;
   void ShowUserLogin() override;
   void SignOut() override;
@@ -94,7 +95,7 @@ class SystemTrayDelegateChromeOS
   void BluetoothStartDiscovering() override;
   void BluetoothStopDiscovering() override;
   void ConnectToBluetoothDevice(const std::string& address) override;
-  bool IsBluetoothDiscovering() override;
+  bool IsBluetoothDiscovering() const override;
   void GetCurrentIME(ash::IMEInfo* info) override;
   void GetAvailableIMEList(ash::IMEInfoList* list) override;
   void GetCurrentIMEProperties(ash::IMEPropertyInfoList* list) override;

@@ -34,6 +34,10 @@ bool DefaultUserFlow::ShouldShowSettings() {
   return true;
 }
 
+bool DefaultUserFlow::ShouldShowNotificationTray() {
+  return true;
+}
+
 bool DefaultUserFlow::ShouldLaunchBrowser() {
   return true;
 }
@@ -73,6 +77,10 @@ void ExtendedUserFlow::AppendAdditionalCommandLineSwitches() {
 }
 
 bool ExtendedUserFlow::ShouldShowSettings() {
+  return true;
+}
+
+bool ExtendedUserFlow::ShouldShowNotificationTray() {
   return true;
 }
 
