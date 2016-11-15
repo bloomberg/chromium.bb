@@ -41,17 +41,9 @@ ScriptState::ScriptState(v8::Local<v8::Context> context,
       m_globalObjectDetached(false)
 #endif
 {
-  ASSERT(m_world);
+  DCHECK(m_world);
   m_context.setWeak(this, &weakCallback);
   context->SetAlignedPointerInEmbedderData(v8ContextPerContextDataIndex, this);
-  v8::Local<v8::Object> global = context->Global();
-  // TODO(jochen): Remove this once we correctly set internal fields on the
-  // global proxy.
-  if (global->InternalFieldCount()) {
-    int indicies[] = {v8DOMWrapperTypeIndex, v8DOMWrapperObjectIndex};
-    void* values[] = {nullptr, nullptr};
-    global->SetAlignedPointerInInternalFields(2, indicies, values);
-  }
 }
 
 ScriptState::~ScriptState() {

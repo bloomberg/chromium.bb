@@ -73,6 +73,8 @@ class V8DOMWrapper {
                             v8::Local<v8::Object>,
                             const WrapperTypeInfo*,
                             ScriptWrappable*);
+  static void clearNativeInfo(v8::Isolate*, v8::Local<v8::Object>);
+
   // hasInternalFieldsSet only checks if the value has the internal fields for
   // wrapper obejct and type, and does not check if it's valid or not.  The
   // value may not be a Blink's wrapper object.  In order to make sure of it,
@@ -102,6 +104,14 @@ inline void V8DOMWrapper::setNativeInfo(v8::Isolate* isolate,
         std::make_pair(const_cast<WrapperTypeInfo*>(wrapperTypeInfo),
                        scriptWrappable));
   }
+}
+
+inline void V8DOMWrapper::clearNativeInfo(v8::Isolate* isolate,
+                                          v8::Local<v8::Object> wrapper) {
+  int indices[] = {v8DOMWrapperObjectIndex, v8DOMWrapperTypeIndex};
+  void* values[] = {nullptr, nullptr};
+  wrapper->SetAlignedPointerInInternalFields(WTF_ARRAY_LENGTH(indices), indices,
+                                             values);
 }
 
 inline v8::Local<v8::Object> V8DOMWrapper::associateObjectWithWrapper(

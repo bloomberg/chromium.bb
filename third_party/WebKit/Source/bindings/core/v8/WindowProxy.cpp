@@ -117,8 +117,16 @@ void WindowProxy::disposeContext(GlobalDetachmentBehavior behavior) {
 
   m_document.clear();
 
-  if (behavior == DetachGlobal)
+  if (behavior == DetachGlobal) {
+    // Clean up state on the global proxy, which will be reused.
+    CHECK(m_globalProxy == context->Global());
+    CHECK_EQ(
+        toScriptWrappable(context->Global()),
+        toScriptWrappable(context->Global()->GetPrototype().As<v8::Object>()));
+    V8DOMWrapper::clearNativeInfo(m_isolate, context->Global());
+    m_globalProxy.get().SetWrapperClassId(0);
     m_scriptState->detachGlobalObject();
+  }
 
   m_scriptState->disposePerContextData();
 
@@ -368,25 +376,33 @@ bool WindowProxy::setupWindowPrototypeChain() {
 
   DOMWindow* window = m_frame->domWindow();
   const WrapperTypeInfo* wrapperTypeInfo = window->wrapperTypeInfo();
-
   v8::Local<v8::Context> context = m_scriptState->context();
+
   // The global proxy object.  Note this is not the global object.
   v8::Local<v8::Object> globalProxy = context->Global();
+  CHECK(m_globalProxy == globalProxy);
+  V8DOMWrapper::setNativeInfo(m_isolate, globalProxy, wrapperTypeInfo, window);
+  // Mark the handle to be traced by Oilpan, since the global proxy has a
+  // reference to the DOMWindow.
+  m_globalProxy.get().SetWrapperClassId(wrapperTypeInfo->wrapperClassId);
+
   // The global object, aka window wrapper object.
   v8::Local<v8::Object> windowWrapper =
       globalProxy->GetPrototype().As<v8::Object>();
   windowWrapper = V8DOMWrapper::associateObjectWithWrapper(
       m_isolate, window, wrapperTypeInfo, windowWrapper);
+
   // The prototype object of Window interface.
   v8::Local<v8::Object> windowPrototype =
       windowWrapper->GetPrototype().As<v8::Object>();
-  RELEASE_ASSERT(!windowPrototype.IsEmpty());
+  CHECK(!windowPrototype.IsEmpty());
   V8DOMWrapper::setNativeInfo(m_isolate, windowPrototype, wrapperTypeInfo,
                               window);
+
   // The named properties object of Window interface.
   v8::Local<v8::Object> windowProperties =
       windowPrototype->GetPrototype().As<v8::Object>();
-  RELEASE_ASSERT(!windowProperties.IsEmpty());
+  CHECK(!windowProperties.IsEmpty());
   V8DOMWrapper::setNativeInfo(m_isolate, windowProperties, wrapperTypeInfo,
                               window);
 
