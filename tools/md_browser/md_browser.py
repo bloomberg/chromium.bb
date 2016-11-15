@@ -17,11 +17,12 @@ import sys
 import threading
 import time
 import webbrowser
+from xml.etree import ElementTree
 
 
 THIS_DIR = os.path.realpath(os.path.dirname(__file__))
 SRC_DIR = os.path.dirname(os.path.dirname(THIS_DIR))
-sys.path.append(os.path.join(SRC_DIR, 'third_party', 'Python-Markdown'))
+sys.path.insert(0, os.path.join(SRC_DIR, 'third_party', 'Python-Markdown'))
 import markdown
 
 
@@ -155,10 +156,19 @@ class Handler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     }
 
     contents = self._Read(path[1:])
-    md_fragment = markdown.markdown(contents,
-                                    extensions=extensions,
-                                    extension_configs=extension_configs,
-                                    output_format='html4').encode('utf-8')
+
+    md = markdown.Markdown(extensions=extensions,
+                           extension_configs=extension_configs,
+                           output_format='html4')
+
+    has_a_single_h1 = (len([line for line in contents.splitlines()
+                            if (line.startswith('#') and
+                                not line.startswith('##'))]) == 1)
+
+    md.treeprocessors['adjust_toc'] = _AdjustTOC(has_a_single_h1)
+
+    md_fragment = md.convert(contents).encode('utf-8')
+
     try:
       self._WriteHeader('text/html')
       self._WriteTemplate('header.html')
@@ -197,6 +207,65 @@ class Handler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     contents = self._Read(os.path.join('tools', 'md_browser', template),
                           relative_to=SRC_DIR)
     self.wfile.write(contents.encode('utf-8'))
+
+
+class _AdjustTOC(markdown.treeprocessors.Treeprocessor):
+  def __init__(self, has_a_single_h1):
+    super(_AdjustTOC, self).__init__()
+    self.has_a_single_h1 = has_a_single_h1
+
+  def run(self, tree):
+    # Given
+    #
+    #     # H1
+    #
+    #     [TOC]
+    #
+    #     ## first H2
+    #
+    #     ## second H2
+    #
+    # the markdown.extensions.toc extension generates:
+    #
+    #     <div class='toc'>
+    #       <ul><li><a>H1</a>
+    #               <ul><li>first H2
+    #                   <li>second H2</li></ul></li><ul></div>
+    #
+    # for [TOC]. But, we want the TOC to have its own subheading, so
+    # we rewrite <div class='toc'><ul>...</ul></div> to:
+    #
+    #     <div class='toc'>
+    #        <h2>Contents</h2>
+    #        <div class='toc-aux'>
+    #          <ul>...</ul></div></div>
+    #
+    # In addition, if the document only has a single H1, it is usually the
+    # title, and we don't want the title to be in the TOC. So, we remove it
+    # and shift all of the title's children up a level, leaving:
+    #
+    #     <div class='toc'>
+    #       <h2>Contents</h2>
+    #       <div class='toc-aux'>
+    #       <ul><li>first H2
+    #           <li>second H2</li></ul></div></div>
+
+    for toc_node in tree.findall(".//*[@class='toc']"):
+      toc_ul = toc_node[0]
+      if self.has_a_single_h1:
+        toc_ul_li = toc_ul[0]
+        ul_with_the_desired_toc_entries = toc_ul_li[1]
+      else:
+        ul_with_the_desired_toc_entries = toc_ul
+
+      toc_node.remove(toc_ul)
+      contents = ElementTree.SubElement(toc_node, 'h2')
+      contents.text = 'Contents'
+      contents.tail = '\n'
+      toc_aux = ElementTree.SubElement(toc_node, 'div', {'class': 'toc-aux'})
+      toc_aux.text = '\n'
+      toc_aux.append(ul_with_the_desired_toc_entries)
+      toc_aux.tail = '\n'
 
 
 if __name__ == '__main__':
