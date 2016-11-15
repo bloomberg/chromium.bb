@@ -332,14 +332,16 @@ class LocalDeviceInstrumentationTestRun(
       device.RunShellCommand('rm -f %s' % os.path.join(coverage_directory,
           '*'))
     if self._test_instance.store_tombstones:
+      resolved_tombstones = None
       for result in results:
         if result.GetType() == base_test_result.ResultType.CRASH:
-          resolved_tombstones = tombstones.ResolveTombstones(
-              device,
-              resolve_all_tombstones=True,
-              include_stack_symbols=False,
-              wipe_tombstones=True)
-          result.SetTombstones('\n'.join(resolved_tombstones))
+          if not resolved_tombstones:
+            resolved_tombstones = '\n'.join(tombstones.ResolveTombstones(
+                device,
+                resolve_all_tombstones=True,
+                include_stack_symbols=False,
+                wipe_tombstones=True))
+          result.SetTombstones(resolved_tombstones)
     return results
 
   #override

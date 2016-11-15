@@ -235,10 +235,11 @@ class GtestTestInstance(test_instance.TestInstance):
     # TODO(jbudorick): Support multiple test suites.
     if len(args.suite_name) > 1:
       raise ValueError('Platform mode currently supports only 1 gtest suite')
+    self._exe_dist_dir = None
     self._extract_test_list_from_filter = args.extract_test_list_from_filter
     self._shard_timeout = args.shard_timeout
+    self._store_tombstones = args.store_tombstones
     self._suite = args.suite_name[0]
-    self._exe_dist_dir = None
 
     # GYP:
     if args.executable_dist_dir:
@@ -364,6 +365,10 @@ class GtestTestInstance(test_instance.TestInstance):
   @property
   def shard_timeout(self):
     return self._shard_timeout
+
+  @property
+  def store_tombstones(self):
+    return self._store_tombstones
 
   @property
   def suite(self):

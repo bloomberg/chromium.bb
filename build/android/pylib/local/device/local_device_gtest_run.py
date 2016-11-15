@@ -18,6 +18,7 @@ from pylib.gtest import gtest_test_instance
 from pylib.local import local_test_server_spawner
 from pylib.local.device import local_device_environment
 from pylib.local.device import local_device_test_run
+import tombstones
 
 _MAX_INLINE_FLAGS_LENGTH = 50  # Arbitrarily chosen.
 _EXTRA_COMMAND_LINE_FILE = (
@@ -356,6 +357,8 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
     # Run the test.
     timeout = (self._test_instance.shard_timeout
                * self.GetTool(device).GetTimeoutScale())
+    if self._test_instance.store_tombstones:
+      tombstones.ClearAllTombstones(device)
     with device_temp_file.DeviceTempFile(
         adb=device.adb,
         dir=self._delegate.ResultsDirectory(device),
@@ -392,6 +395,18 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
     # Check whether there are any crashed testcases.
     self._crashes.update(r.GetName() for r in results
                          if r.GetType() == base_test_result.ResultType.CRASH)
+
+    if self._test_instance.store_tombstones:
+      resolved_tombstones = None
+      for result in results:
+        if result.GetType() == base_test_result.ResultType.CRASH:
+          if not resolved_tombstones:
+            resolved_tombstones = '\n'.join(tombstones.ResolveTombstones(
+                device,
+                resolve_all_tombstones=True,
+                include_stack_symbols=False,
+                wipe_tombstones=True))
+          result.SetTombstones(resolved_tombstones)
     return results
 
   #override

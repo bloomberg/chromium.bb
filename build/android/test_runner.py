@@ -230,6 +230,9 @@ def AddGTestOptions(parser):
   group.add_argument('--enable-xml-result-parsing',
                      action='store_true',
                      help=argparse.SUPPRESS)
+  group.add_argument('--store-tombstones', dest='store_tombstones',
+                     action='store_true',
+                     help='Add tombstones in results if crash.')
 
   filter_group = group.add_mutually_exclusive_group()
   filter_group.add_argument('-f', '--gtest_filter', '--gtest-filter',
