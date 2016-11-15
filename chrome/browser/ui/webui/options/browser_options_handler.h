@@ -391,6 +391,15 @@ class BrowserOptionsHandler
   void SetupAccessibilityFeatures();
 #endif
 
+  // Update the Extended Reporting Enabled checkbox based on the current state
+  // of the opt-in.
+  void SetupSafeBrowsingExtendedReporting();
+
+  // Callback for "safeBrowsingExtentedReportingAction" message. This is called
+  // if the user checks or unchecks the Extended Reporting checkbox. |args| is
+  // an array that contains one item, the checked state of the checkbox.
+  void HandleSafeBrowsingExtendedReporting(const base::ListValue* args);
+
   // Returns a newly created dictionary with a number of properties that
   // correspond to the status of sync.
   std::unique_ptr<base::DictionaryValue> GetSyncStateDictionary();

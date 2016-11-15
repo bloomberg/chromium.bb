@@ -12,9 +12,7 @@ Polymer({
 
   behaviors: [
     settings.RouteObserverBehavior,
-<if expr="_google_chrome and not chromeos">
     WebUIListenerBehavior,
-</if>
   ],
 
   properties: {
@@ -40,6 +38,9 @@ Polymer({
 </if>
 
     /** @private */
+    safeBrowsingExtendedReportingEnabled_: Boolean,
+
+    /** @private */
     showClearBrowsingDataDialog_: Boolean,
   },
 
@@ -63,6 +64,12 @@ Polymer({
     var browserProxy = settings.PrivacyPageBrowserProxyImpl.getInstance();
     browserProxy.getMetricsReporting().then(boundSetMetricsReporting);
 </if>
+
+    var boundSetSber = this.setSafeBrowsingExtendedReporting_.bind(this);
+    this.addWebUIListener('safe-browsing-extended-reporting-change',
+                          boundSetSber);
+    settings.PrivacyPageBrowserProxyImpl.getInstance()
+        .getSafeBrowsingExtendedReporting().then(boundSetSber);
   },
 
   /** @protected */
@@ -143,6 +150,20 @@ Polymer({
     settings.LifetimeBrowserProxyImpl.getInstance().restart();
   },
 </if>
+
+  /** @private */
+  onSafeBrowsingExtendedReportingCheckboxTap_: function() {
+    var browserProxy = settings.PrivacyPageBrowserProxyImpl.getInstance();
+    var enabled = this.$.safeBrowsingExtendedReportingCheckbox.checked;
+    browserProxy.setSafeBrowsingExtendedReportingEnabled(enabled);
+  },
+
+  /** @param {boolean} enabled Whether reporting is enabled or not.
+    * @private
+    */
+  setSafeBrowsingExtendedReporting_: function(enabled) {
+    this.safeBrowsingExtendedReportingEnabled_ = enabled;
+  },
 
 <if expr="_google_chrome">
   /** @private */

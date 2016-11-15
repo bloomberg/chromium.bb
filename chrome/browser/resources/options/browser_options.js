@@ -679,6 +679,10 @@ cr.define('options', function() {
         chrome.send('defaultZoomFactorAction',
             [String(event.target.options[event.target.selectedIndex].value)]);
       };
+      $('safeBrowsingExtendedReportingCheckbox').onchange = function(event) {
+        chrome.send('safeBrowsingExtendedReportingAction',
+            [event.target.checked]);
+      };
 
       // Languages section.
       var showLanguageOptions = function(event) {
@@ -1895,6 +1899,15 @@ cr.define('options', function() {
     },
 
     /**
+      * Set the checked state of the Safe Browsing Extended Reporting Enabled
+      * checkbox.
+      * @private
+      */
+    setExtendedReportingEnabledCheckboxState_: function(checked) {
+      $('safeBrowsingExtendedReportingCheckbox').checked = checked;
+    },
+
+    /**
      * Set network prediction checkbox value.
      *
      * @param {{value: number, disabled: boolean}} pref Information about
@@ -2357,27 +2370,28 @@ cr.define('options', function() {
     'removeBluetoothDevice',
     'scrollToSection',
     'setAccountPictureManaged',
-    'setWallpaperManaged',
+    'setAllHotwordSectionsVisible',
+    'setAudioHistorySectionVisible',
     'setAutoOpenFileTypesDisplayed',
     'setCanSetTime',
+    'setExtendedReportingEnabledCheckboxState',
     'setFontSize',
+    'setHighContrastCheckboxState',
     'setHotwordRetrainLinkVisible',
+    'setMetricsReportingCheckboxState',
+    'setMetricsReportingSettingVisibility',
     'setNativeThemeButtonEnabled',
     'setNetworkPredictionValue',
     'setNowSectionVisible',
-    'setHighContrastCheckboxState',
-    'setAllHotwordSectionsVisible',
-    'setMetricsReportingCheckboxState',
-    'setMetricsReportingSettingVisibility',
     'setProfilesInfo',
     'setSpokenFeedbackCheckboxState',
-    'setSystemTimezoneManaged',
     'setSystemTimezoneAutomaticDetectionManaged',
+    'setSystemTimezoneManaged',
     'setThemesResetButtonEnabled',
     'setVirtualKeyboardCheckboxState',
+    'setWallpaperManaged',
     'setupPageZoomSelector',
     'setupProxySettingsButton',
-    'setAudioHistorySectionVisible',
     'showCreateProfileError',
     'showCreateProfileSuccess',
     'showCreateProfileWarning',

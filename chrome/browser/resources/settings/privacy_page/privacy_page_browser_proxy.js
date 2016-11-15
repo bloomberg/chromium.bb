@@ -24,6 +24,12 @@ cr.define('settings', function() {
     /** Invokes the native certificate manager (used by win and mac). */
     showManageSSLCertificates: function() {},
 </if>
+
+    /** @return {!Promise<boolean>} */
+    getSafeBrowsingExtendedReporting: assertNotReached,
+
+    /** @param {boolean} enabled */
+    setSafeBrowsingExtendedReportingEnabled: assertNotReached,
   };
 
   /**
@@ -45,6 +51,16 @@ cr.define('settings', function() {
       chrome.send('setMetricsReportingEnabled', [enabled]);
     },
 </if>
+
+    /** @override */
+    getSafeBrowsingExtendedReporting: function() {
+      return cr.sendWithPromise('getSafeBrowsingExtendedReporting');
+    },
+
+    /** @override */
+    setSafeBrowsingExtendedReportingEnabled: function(enabled) {
+      chrome.send('setSafeBrowsingExtendedReportingEnabled', [enabled]);
+    },
 
 <if expr="is_win or is_macosx">
     /** @override */

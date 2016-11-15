@@ -10,7 +10,9 @@
 function TestPrivacyPageBrowserProxy() {
   settings.TestBrowserProxy.call(this, [
     'getMetricsReporting',
+    'getSafeBrowsingExtendedReporting',
     'setMetricsReportingEnabled',
+    'setSafeBrowsingExtendedReportingEnabled',
     'showManageSSLCertificates',
   ]);
 }
@@ -38,5 +40,16 @@ TestPrivacyPageBrowserProxy.prototype = {
   /** @override */
   showManageSSLCertificates: function() {
     this.methodCalled('showManageSSLCertificates');
+  },
+
+  /** @override */
+  getSafeBrowsingExtendedReporting: function() {
+    this.methodCalled('getSafeBrowsingExtendedReporting');
+    return Promise.resolve(true);
+  },
+
+  /** @override */
+  setSafeBrowsingExtendedReportingEnabled: function(enabled) {
+    this.methodCalled('setSafeBrowsingExtendedReportingEnabled', enabled);
   },
 };

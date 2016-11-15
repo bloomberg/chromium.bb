@@ -1111,6 +1111,8 @@ split_static_library("ui") {
       "webui/settings/protocol_handlers_handler.h",
       "webui/settings/reset_settings_handler.cc",
       "webui/settings/reset_settings_handler.h",
+      "webui/settings/safe_browsing_handler.cc",
+      "webui/settings/safe_browsing_handler.h",
       "webui/settings/search_engines_handler.cc",
       "webui/settings/search_engines_handler.h",
       "webui/settings/settings_clear_browsing_data_handler.cc",

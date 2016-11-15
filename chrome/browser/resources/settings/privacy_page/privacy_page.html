@@ -87,10 +87,11 @@
               label="$i18n{networkPredictionEnabled}"
               hidden="[[!pageVisibility.networkPrediction]]">
           </settings-checkbox>
-          <settings-checkbox
-              pref="{{prefs.safebrowsing.extended_reporting_enabled}}"
-              label="$i18n{safeBrowsingEnableExtendedReporting}">
-          </settings-checkbox>
+          <paper-checkbox id="safeBrowsingExtendedReportingCheckbox"
+              on-tap="onSafeBrowsingExtendedReportingCheckboxTap_"
+              checked="[[safeBrowsingExtendedReportingEnabled_]]">
+            $i18n{safeBrowsingEnableExtendedReporting}
+          </paper-checkbox>
           <settings-checkbox pref="{{prefs.safebrowsing.enabled}}"
               label="$i18n{safeBrowsingEnableProtection}">
           </settings-checkbox>

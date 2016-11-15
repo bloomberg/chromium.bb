@@ -238,6 +238,47 @@ cr.define('settings_privacy_page', function() {
     });
   }
 
+  function registerSafeBrowsingExtendedReportingTests() {
+    suite('SafeBrowsingExtendedReporting', function() {
+      /** @type {settings.TestPrivacyPageBrowserProxy} */
+      var testBrowserProxy;
+
+      /** @type {SettingsPrivacyPageElement} */
+      var page;
+
+      setup(function() {
+        testBrowserProxy = new TestPrivacyPageBrowserProxy();
+        settings.PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
+        PolymerTest.clearBody();
+        page = document.createElement('settings-privacy-page');
+      });
+
+      teardown(function() { page.remove(); });
+
+      test('test whether extended reporting is enabled/managed', function() {
+        return testBrowserProxy.whenCalled(
+            'getSafeBrowsingExtendedReporting').then(function() {
+          Polymer.dom.flush();
+
+          // Checkbox starts checked by default
+          var checkbox = page.$.safeBrowsingExtendedReportingCheckbox;
+          assertEquals(true, checkbox.checked);
+
+          // Notification from browser can uncheck the box
+          cr.webUIListenerCallback('safe-browsing-extended-reporting-change',
+                                   false);
+          Polymer.dom.flush();
+          assertEquals(false, checkbox.checked);
+
+          // Tapping on the box will check it again.
+          MockInteractions.tap(checkbox);
+          return testBrowserProxy.whenCalled('getSafeBrowsingExtendedReporting',
+                                             true);
+        });
+      });
+    });
+  }
+
   return {
     registerTests: function() {
       if (cr.isMac || cr.isWin)
@@ -245,6 +286,7 @@ cr.define('settings_privacy_page', function() {
 
       registerClearBrowsingDataTests();
       registerPrivacyPageTests();
+      registerSafeBrowsingExtendedReportingTests();
     },
   };
 });

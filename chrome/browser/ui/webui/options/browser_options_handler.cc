@@ -914,6 +914,11 @@ void BrowserOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("metricsReportingCheckboxChanged",
       base::Bind(&BrowserOptionsHandler::HandleMetricsReportingChange,
                  base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "safeBrowsingExtendedReportingAction",
+      base::Bind(&BrowserOptionsHandler::HandleSafeBrowsingExtendedReporting,
+                 base::Unretained(this)));
 }
 
 void BrowserOptionsHandler::Uninitialize() {
@@ -1090,6 +1095,15 @@ void BrowserOptionsHandler::InitializeHandler() {
       base::Bind(&BrowserOptionsHandler::SetupProxySettingsSection,
                  base::Unretained(this)));
 #endif  // !defined(OS_CHROMEOS)
+
+  profile_pref_registrar_.Add(
+      prefs::kSafeBrowsingExtendedReportingEnabled,
+      base::Bind(&BrowserOptionsHandler::SetupSafeBrowsingExtendedReporting,
+                 base::Unretained(this)));
+  profile_pref_registrar_.Add(
+      prefs::kSafeBrowsingScoutReportingEnabled,
+      base::Bind(&BrowserOptionsHandler::SetupSafeBrowsingExtendedReporting,
+                 base::Unretained(this)));
 }
 
 void BrowserOptionsHandler::InitializePage() {
@@ -1113,6 +1127,7 @@ void BrowserOptionsHandler::InitializePage() {
   SetupManagingSupervisedUsers();
   SetupEasyUnlock();
   SetupExtensionControlledIndicators();
+  SetupSafeBrowsingExtendedReporting();
 
 #if defined(OS_CHROMEOS)
   SetupAccessibilityFeatures();
@@ -2256,6 +2271,22 @@ void BrowserOptionsHandler::SetMetricsReportingCheckbox(bool checked,
       "BrowserOptions.setMetricsReportingCheckboxState",
       base::FundamentalValue(checked), base::FundamentalValue(policy_managed),
       base::FundamentalValue(owner_managed));
+}
+
+void BrowserOptionsHandler::SetupSafeBrowsingExtendedReporting() {
+  base::FundamentalValue is_enabled(safe_browsing::IsExtendedReportingEnabled(
+      *Profile::FromWebUI(web_ui())->GetPrefs()));
+  web_ui()->CallJavascriptFunctionUnsafe(
+      "BrowserOptions.setExtendedReportingEnabledCheckboxState", is_enabled);
+}
+
+void BrowserOptionsHandler::HandleSafeBrowsingExtendedReporting(
+    const base::ListValue* args) {
+  bool checked;
+  if (args->GetBoolean(0, &checked)) {
+    safe_browsing::SetExtendedReportingPref(
+        Profile::FromWebUI(web_ui())->GetPrefs(), checked);
+  }
 }
 
 void BrowserOptionsHandler::OnPolicyUpdated(const policy::PolicyNamespace& ns,
