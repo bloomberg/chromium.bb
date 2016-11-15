@@ -79,6 +79,7 @@ bool WebHelperPluginImpl::initialize(const String& pluginType,
 }
 
 void WebHelperPluginImpl::reallyDestroy(TimerBase*) {
+  m_pluginContainer->dispose();
   delete this;
 }
 
