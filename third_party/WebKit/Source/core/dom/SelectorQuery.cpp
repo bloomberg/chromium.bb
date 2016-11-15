@@ -629,7 +629,9 @@ SelectorQuery* SelectorQueryCache::add(const AtomicString& selectors,
     return it->value.get();
 
   CSSSelectorList selectorList = CSSParser::parseSelector(
-      CSSParserContext(document, nullptr), nullptr, selectors);
+      CSSParserContext(document, nullptr, KURL(), emptyString(),
+                       CSSParserContext::StaticProfile),
+      nullptr, selectors);
 
   if (!selectorList.first()) {
     exceptionState.throwDOMException(

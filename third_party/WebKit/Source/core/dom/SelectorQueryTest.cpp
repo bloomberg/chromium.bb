@@ -21,7 +21,9 @@ TEST(SelectorQueryTest, NotMatchingPseudoElement) {
       ASSERT_NO_EXCEPTION);
 
   CSSSelectorList selectorList = CSSParser::parseSelector(
-      CSSParserContext(*document, nullptr), nullptr, "span::before");
+      CSSParserContext(*document, nullptr, KURL(), emptyString(),
+                       CSSParserContext::StaticProfile),
+      nullptr, "span::before");
   std::unique_ptr<SelectorQuery> query =
       SelectorQuery::adopt(std::move(selectorList));
   Element* elm = query->queryFirst(*document);

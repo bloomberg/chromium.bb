@@ -47,10 +47,12 @@ CSSParserContext::CSSParserContext(CSSParserMode mode, UseCounter* useCounter)
 CSSParserContext::CSSParserContext(const Document& document,
                                    UseCounter* useCounter,
                                    const KURL& baseURL,
-                                   const String& charset)
+                                   const String& charset,
+                                   SelectorProfile profile)
     : m_baseURL(baseURL.isNull() ? document.baseURL() : baseURL),
       m_charset(charset),
       m_mode(document.inQuirksMode() ? HTMLQuirksMode : HTMLStandardMode),
+      m_profile(profile),
       m_referrer(m_baseURL.strippedForUseAsReferrer(),
                  document.getReferrerPolicy()),
       m_isHTMLDocument(document.isHTMLDocument()),
@@ -79,6 +81,7 @@ CSSParserContext::CSSParserContext(const CSSParserContext& other,
       m_charset(other.m_charset),
       m_mode(other.m_mode),
       m_matchMode(other.m_matchMode),
+      m_profile(other.m_profile),
       m_referrer(other.m_referrer),
       m_isHTMLDocument(other.m_isHTMLDocument),
       m_useLegacyBackgroundSizeShorthandBehavior(
@@ -90,6 +93,7 @@ CSSParserContext::CSSParserContext(const CSSParserContext& other,
 bool CSSParserContext::operator==(const CSSParserContext& other) const {
   return m_baseURL == other.m_baseURL && m_charset == other.m_charset &&
          m_mode == other.m_mode && m_matchMode == other.m_matchMode &&
+         m_profile == other.m_profile &&
          m_isHTMLDocument == other.m_isHTMLDocument &&
          m_useLegacyBackgroundSizeShorthandBehavior ==
              other.m_useLegacyBackgroundSizeShorthandBehavior;
