@@ -15,7 +15,7 @@
 // The URL for when the user clicks "learn more" on the mixed scripting page
 // icon bubble.
 const char kInsecureScriptHelpUrl[] =
-    "https://support.google.com/chrome/answer/1342714";
+    "https://support.google.com/chrome/?p=unauthenticated";
 
 BrowserContentSettingBubbleModelDelegate::
 BrowserContentSettingBubbleModelDelegate(Browser* browser) : browser_(browser) {
