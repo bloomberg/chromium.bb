@@ -224,15 +224,7 @@ TEST_F(EmbedderTest, PipeSetup_LaunchDeath) {
                                      nullptr));
 }
 
-#if defined(OS_ANDROID)
-// This test is suspected to be flaky on android https://crbug.com/663998.
-#define MAYBE_PipeSetup_LaunchFailure \
-    DISABLED_PipeSetup_LaunchFailure
-#else
-#define MAYBE_PipeSetup_LaunchFailure \
-    PipeSetup_LaunchFailure
-#endif
-TEST_F(EmbedderTest, MAYBE_PipeSetup_LaunchFailure) {
+TEST_F(EmbedderTest, PipeSetup_LaunchFailure) {
   PlatformChannelPair pair;
 
   std::string child_token = GenerateRandomToken();
