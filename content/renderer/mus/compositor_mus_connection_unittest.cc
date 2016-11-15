@@ -151,7 +151,8 @@ class TestInputHandlerManagerClient : public InputHandlerManagerClient {
 class TestRenderWidget : public RenderWidget {
  public:
   explicit TestRenderWidget(CompositorDependencies* compositor_deps)
-      : RenderWidget(compositor_deps,
+      : RenderWidget(1,
+                     compositor_deps,
                      blink::WebPopupTypeNone,
                      ScreenInfo(),
                      true,

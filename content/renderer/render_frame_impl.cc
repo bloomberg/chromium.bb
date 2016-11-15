@@ -1342,11 +1342,21 @@ void RenderFrameImpl::PepperSelectionChanged(
 RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
     PepperPluginInstanceImpl* plugin) {
   GURL active_url;
-  if (render_view_->webview())
+  if (render_view()->webview())
     active_url = render_view()->GetURLForGraphicsContext3D();
+
+  // Synchronous IPC to obtain a routing id for the fullscreen widget.
+  int32_t fullscreen_widget_routing_id = MSG_ROUTING_NONE;
+  if (!RenderThreadImpl::current_render_message_filter()
+           ->CreateFullscreenWidget(render_view()->routing_id(),
+                                    &fullscreen_widget_routing_id)) {
+    return nullptr;
+  }
+
   RenderWidgetFullscreenPepper* widget = RenderWidgetFullscreenPepper::Create(
-      render_view()->routing_id(), GetRenderWidget()->compositor_deps(),
-      plugin, active_url, GetRenderWidget()->screen_info());
+      fullscreen_widget_routing_id, render_view()->routing_id(),
+      GetRenderWidget()->compositor_deps(), plugin, active_url,
+      GetRenderWidget()->screen_info());
   widget->show(blink::WebNavigationPolicyIgnore);
   return widget;
 }

@@ -25,9 +25,11 @@ void RenderWidgetFullscreen::show(blink::WebNavigationPolicy) {
 }
 
 RenderWidgetFullscreen::RenderWidgetFullscreen(
+    int32_t widget_routing_id,
     CompositorDependencies* compositor_deps,
     const ScreenInfo& screen_info)
-    : RenderWidget(compositor_deps,
+    : RenderWidget(widget_routing_id,
+                   compositor_deps,
                    blink::WebPopupTypeNone,
                    screen_info,
                    false,
@@ -44,14 +46,6 @@ WebWidget* RenderWidgetFullscreen::CreateWebWidget() {
 bool RenderWidgetFullscreen::Init(int32_t opener_id) {
   DCHECK(!GetWebWidget());
 
-  // Synchronous IPC to obtain a routing id for ourselves.
-  int32_t routing_id = MSG_ROUTING_NONE;
-  if (!RenderThreadImpl::current_render_message_filter()
-           ->CreateFullscreenWidget(opener_id, &routing_id)) {
-    return false;
-  }
-
-  RenderWidget::InitRoutingID(routing_id);
   RenderWidget::Init(opener_id, CreateWebWidget());
   return true;
 }

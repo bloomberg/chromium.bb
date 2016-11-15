@@ -20,7 +20,10 @@ class RenderWidgetFullscreen : public RenderWidget {
   void show(blink::WebNavigationPolicy) override;
 
  protected:
-  RenderWidgetFullscreen(CompositorDependencies* compositor_deps,
+  static int32_t CreateFullscreenWidgetRoutingId(int32_t opener_id);
+
+  RenderWidgetFullscreen(int32_t widget_routing_id,
+                         CompositorDependencies* compositor_deps,
                          const ScreenInfo& screen_info);
   ~RenderWidgetFullscreen() override;
 

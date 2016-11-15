@@ -30,6 +30,7 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
                                      public FullscreenContainer {
  public:
   static RenderWidgetFullscreenPepper* Create(
+      int32_t routing_id,
       int32_t opener_id,
       CompositorDependencies* compositor_deps,
       PepperPluginInstanceImpl* plugin,
@@ -56,7 +57,8 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   }
 
  protected:
-  RenderWidgetFullscreenPepper(CompositorDependencies* compositor_deps,
+  RenderWidgetFullscreenPepper(int32_t routing_id,
+                               CompositorDependencies* compositor_deps,
                                PepperPluginInstanceImpl* plugin,
                                const GURL& active_url,
                                const ScreenInfo& screen_info);

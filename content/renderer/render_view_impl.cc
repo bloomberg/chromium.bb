@@ -532,7 +532,8 @@ class AlwaysDrawSwapPromise : public cc::SwapPromise {
 
 RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
                                const mojom::CreateViewParams& params)
-    : RenderWidget(compositor_deps,
+    : RenderWidget(params.view_id,
+                   compositor_deps,
                    blink::WebPopupTypeNone,
                    params.initial_size.screen_info,
                    params.swapped_out,
@@ -571,8 +572,6 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
 
 void RenderViewImpl::Initialize(const mojom::CreateViewParams& params,
                                 bool was_created_by_renderer) {
-  RenderWidget::InitRoutingID(params.view_id);
-
   int opener_view_routing_id = MSG_ROUTING_NONE;
   WebFrame* opener_frame = RenderFrameImpl::ResolveOpener(
       params.opener_frame_route_id, &opener_view_routing_id);

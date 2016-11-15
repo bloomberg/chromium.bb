@@ -338,13 +338,14 @@ ui::TextInputMode ConvertWebTextInputMode(blink::WebTextInputMode mode) {
 
 // RenderWidget ---------------------------------------------------------------
 
-RenderWidget::RenderWidget(CompositorDependencies* compositor_deps,
+RenderWidget::RenderWidget(int32_t widget_routing_id,
+                           CompositorDependencies* compositor_deps,
                            blink::WebPopupType popup_type,
                            const ScreenInfo& screen_info,
                            bool swapped_out,
                            bool hidden,
                            bool never_visible)
-    : routing_id_(MSG_ROUTING_NONE),
+    : routing_id_(widget_routing_id),
       compositor_deps_(compositor_deps),
       webwidget_internal_(nullptr),
       owner_delegate_(nullptr),
@@ -384,6 +385,7 @@ RenderWidget::RenderWidget(CompositorDependencies* compositor_deps,
       text_input_client_observer_(new TextInputClientObserver(this)),
 #endif
       focused_pepper_plugin_(nullptr) {
+  DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
   if (!swapped_out)
     RenderProcess::current()->AddRefProcess();
   DCHECK(RenderThread::Get());
@@ -432,9 +434,9 @@ RenderWidget* RenderWidget::Create(int32_t opener_id,
     return nullptr;
   }
 
-  scoped_refptr<RenderWidget> widget(new RenderWidget(
-      compositor_deps, popup_type, screen_info, false, false, false));
-  widget->InitRoutingID(routing_id);
+  scoped_refptr<RenderWidget> widget(
+      new RenderWidget(routing_id, compositor_deps, popup_type, screen_info,
+                       false, false, false));
   widget->Init(opener_id, RenderWidget::CreateWebWidget(widget.get()));
   DCHECK(!widget->HasOneRef());  // RenderWidget::Init() adds a reference.
   return widget.get();
@@ -459,14 +461,15 @@ RenderWidget* RenderWidget::CreateForFrame(
   }
   scoped_refptr<RenderWidget> widget(
       g_create_render_widget
-          ? g_create_render_widget(compositor_deps, blink::WebPopupTypeNone,
-                                   screen_info, false, hidden, false)
-          : new RenderWidget(compositor_deps, blink::WebPopupTypeNone,
-                             screen_info, false, hidden, false));
+          ? g_create_render_widget(widget_routing_id, compositor_deps,
+                                   blink::WebPopupTypeNone, screen_info, false,
+                                   hidden, false)
+          : new RenderWidget(widget_routing_id, compositor_deps,
+                             blink::WebPopupTypeNone, screen_info, false,
+                             hidden, false));
   widget->for_oopif_ = true;
   // Init increments the reference count on |widget|, keeping it alive after
   // this function returns.
-  widget->InitRoutingID(widget_routing_id);
   widget->Init(MSG_ROUTING_NONE,
                RenderWidget::CreateWebFrameWidget(widget.get(), frame));
 
@@ -518,16 +521,12 @@ void RenderWidget::SetSwappedOut(bool is_swapped_out) {
     RenderProcess::current()->AddRefProcess();
 }
 
-void RenderWidget::InitRoutingID(int32_t routing_id) {
-  DCHECK_EQ(routing_id_, MSG_ROUTING_NONE);
-  routing_id_ = routing_id;
-  input_handler_.reset(new RenderWidgetInputHandler(
-      GetRenderWidgetInputHandlerDelegate(this), this));
-}
-
 void RenderWidget::Init(int32_t opener_id, WebWidget* web_widget) {
   DCHECK(!webwidget_internal_);
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
+
+  input_handler_.reset(new RenderWidgetInputHandler(
+      GetRenderWidgetInputHandlerDelegate(this), this));
 
   if (opener_id != MSG_ROUTING_NONE)
     opener_id_ = opener_id;

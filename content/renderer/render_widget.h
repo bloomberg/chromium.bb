@@ -143,13 +143,13 @@ class CONTENT_EXPORT RenderWidget
 
   // Used by content_layouttest_support to hook into the creation of
   // RenderWidgets.
-  using CreateRenderWidgetFunction =
-      RenderWidget* (*)(CompositorDependencies*,
-                        blink::WebPopupType,
-                        const ScreenInfo&,
-                        bool,
-                        bool,
-                        bool);
+  using CreateRenderWidgetFunction = RenderWidget* (*)(int32_t,
+                                                       CompositorDependencies*,
+                                                       blink::WebPopupType,
+                                                       const ScreenInfo&,
+                                                       bool,
+                                                       bool,
+                                                       bool);
   using RenderWidgetInitializedCallback = void (*)(RenderWidget*);
   static void InstallCreateHook(
       CreateRenderWidgetFunction create_render_widget,
@@ -160,9 +160,7 @@ class CONTENT_EXPORT RenderWidget
   // https://crbug.com/545684
   virtual void CloseForFrame();
 
-  int32_t routing_id() const {
-    return routing_id_;
-  }
+  int32_t routing_id() const { return routing_id_; }
 
   CompositorDependencies* compositor_deps() const { return compositor_deps_; }
   virtual blink::WebWidget* GetWebWidget() const;
@@ -430,7 +428,8 @@ class CONTENT_EXPORT RenderWidget
     NO_RESIZE_ACK,
   };
 
-  RenderWidget(CompositorDependencies* compositor_deps,
+  RenderWidget(int32_t widget_routing_id,
+               CompositorDependencies* compositor_deps,
                blink::WebPopupType popup_type,
                const ScreenInfo& screen_info,
                bool swapped_out,
@@ -445,10 +444,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Creates a WebWidget based on the popup type.
   static blink::WebWidget* CreateWebWidget(RenderWidget* render_widget);
-
-  // Called by Create() functions and subclasses, after the routing_id is
-  // available. Must be called before Init().
-  void InitRoutingID(int32_t routing_id);
 
   // Called by Create() functions and subclasses to finish initialization.
   void Init(int32_t opener_id, blink::WebWidget* web_widget);
@@ -632,8 +627,8 @@ class CONTENT_EXPORT RenderWidget
   void OnWaitNextFrameForTests(int routing_id);
 
   // Routing ID that allows us to communicate to the parent browser process
-  // RenderWidgetHost. When MSG_ROUTING_NONE, no messages may be sent.
-  int32_t routing_id_;
+  // RenderWidgetHost.
+  const int32_t routing_id_;
 
   // Dependencies for initializing a compositor, including flags for optional
   // features.
