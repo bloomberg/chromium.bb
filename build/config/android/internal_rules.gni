@@ -912,6 +912,11 @@ if (enable_java_templates) {
 
         main_dex_rules = "//build/android/main_dex_classes.flags"
 
+        if (!defined(inputs)) {
+          inputs = []
+        }
+        inputs += [ main_dex_rules ]
+
         outputs = [
           _main_dex_list_path,
         ]
