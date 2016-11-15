@@ -122,7 +122,7 @@ class NET_EXPORT_PRIVATE QuicClientSessionBase
       std::unordered_map<QuicStreamId, std::unique_ptr<QuicClientPromisedInfo>>;
 
   // As per rfc7540, section 10.5: track promise streams in "reserved
-  // (remote)".  The primary key is URL from he promise request
+  // (remote)".  The primary key is URL from the promise request
   // headers.  The promised stream id is a secondary key used to get
   // promise info when the response headers of the promised stream
   // arrive.
