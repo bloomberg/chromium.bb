@@ -51,6 +51,7 @@ class CORE_EXPORT ViewportStyleResolver
 
   void initialViewportChanged();
   void setNeedsCollectRules();
+  bool needsUpdate() const { return m_needsUpdate; }
   void updateViewport(DocumentStyleSheetCollection&);
 
   void collectViewportRulesFromAuthorSheet(const CSSStyleSheet&);

@@ -101,6 +101,7 @@ class CORE_EXPORT StyleEngine final
 
   const HeapVector<Member<CSSStyleSheet>> activeStyleSheetsForInspector() const;
 
+  bool needsActiveStyleUpdate() const;
   void setNeedsActiveStyleUpdate(StyleSheet*, StyleResolverUpdateMode);
   void addStyleSheetCandidateNode(Node&);
   void removeStyleSheetCandidateNode(Node&);
@@ -119,6 +120,7 @@ class CORE_EXPORT StyleEngine final
   void clearMediaQueryRuleSetStyleSheets();
   void updateStyleSheetsInImport(DocumentStyleSheetCollector& parentCollector);
   void updateActiveStyleSheets(StyleResolverUpdateMode);
+  void updateActiveStyle();
 
   enum ActiveSheetsUpdate { DontUpdateActiveSheets, UpdateActiveSheets };
   String preferredStylesheetSetName() const {
@@ -177,10 +179,10 @@ class CORE_EXPORT StyleEngine final
   void setRuleUsageTracker(StyleRuleUsageTracker*);
 
   StyleResolver& ensureResolver() {
+    updateActiveStyle();
     if (!m_resolver) {
       createResolver();
     } else if (m_resolver->hasPendingAuthorStyleSheets()) {
-      viewportRulesChanged();
       m_resolver->appendPendingAuthorStyleSheets();
       finishAppendAuthorStyleSheets();
     } else if (m_globalRuleSet.isDirty()) {
@@ -310,6 +312,9 @@ class CORE_EXPORT StyleEngine final
       Element&,
       const HeapVector<Member<RuleSet>>&);
   void invalidateSlottedElements(HTMLSlotElement&);
+
+  void updateViewport();
+  void updateActiveStyleSheets();
 
   Member<Document> m_document;
   bool m_isMaster;

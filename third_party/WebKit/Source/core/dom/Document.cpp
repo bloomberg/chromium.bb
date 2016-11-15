@@ -606,11 +606,11 @@ void Document::setDoctype(DocumentType* docType) {
   if (m_docType) {
     this->adoptIfNeeded(*m_docType);
     if (m_docType->publicId().startsWith("-//wapforum//dtd xhtml mobile 1.",
-                                         TextCaseInsensitive))
+                                         TextCaseInsensitive)) {
       m_isMobileDocument = true;
+      m_styleEngine->viewportRulesChanged();
+    }
   }
-  // Doctype affects the interpretation of the stylesheets.
-  styleEngine().clearResolver();
 }
 
 DOMImplementation& Document::implementation() {
@@ -1566,6 +1566,8 @@ bool Document::needsLayoutTreeUpdate() const {
 bool Document::needsFullLayoutTreeUpdate() const {
   if (!isActive() || !view())
     return false;
+  if (m_styleEngine->needsActiveStyleUpdate())
+    return true;
   if (!m_useElementsNeedingUpdate.isEmpty())
     return true;
   if (needsStyleRecalc())
@@ -1618,10 +1620,9 @@ bool Document::hasPendingForcedStyleRecalc() const {
 }
 
 void Document::updateStyleInvalidationIfNeeded() {
+  DCHECK(isActive());
   ScriptForbiddenScope forbidScript;
 
-  if (!isActive())
-    return;
   if (!childNeedsStyleInvalidation())
     return;
   TRACE_EVENT0("blink", "Document::updateStyleInvalidationIfNeeded");
@@ -1875,6 +1876,7 @@ void Document::updateStyleAndLayoutTree() {
   evaluateMediaQueryListIfNeeded();
   updateUseShadowTreesIfNeeded();
   updateDistribution();
+  updateActiveStyle();
   updateStyleInvalidationIfNeeded();
 
   // FIXME: We should update style on our ancestor chain before proceeding
@@ -1915,6 +1917,13 @@ void Document::updateStyleAndLayoutTree() {
 #endif
   InspectorInstrumentation::didRecalculateStyle(this);
   PerformanceMonitor::didRecalculateStyle(this);
+}
+
+void Document::updateActiveStyle() {
+  DCHECK(isActive());
+  DCHECK(isMainThread());
+  TRACE_EVENT0("blink", "Document::updateActiveStyle");
+  styleEngine().updateActiveStyle();
 }
 
 void Document::updateStyle() {

@@ -299,21 +299,25 @@ Length ViewportStyleResolver::viewportLengthValue(CSSPropertyID id) {
 void ViewportStyleResolver::initialViewportChanged() {
   if (m_needsUpdate == CollectRules)
     return;
+  if (m_hasViewportUnits)
+    m_needsUpdate = Resolve;
 
   auto& results = m_viewportDependentMediaQueryResults;
   for (unsigned i = 0; i < results.size(); i++) {
     if (m_initialViewportMedium->eval(results[i]->expression()) !=
         results[i]->result()) {
       m_needsUpdate = CollectRules;
-      return;
+      break;
     }
   }
-  if (m_hasViewportUnits)
-    m_needsUpdate = Resolve;
+  if (m_needsUpdate == NoUpdate)
+    return;
+  m_document->scheduleLayoutTreeUpdateIfNeeded();
 }
 
 void ViewportStyleResolver::setNeedsCollectRules() {
   m_needsUpdate = CollectRules;
+  m_document->scheduleLayoutTreeUpdateIfNeeded();
 }
 
 void ViewportStyleResolver::updateViewport(

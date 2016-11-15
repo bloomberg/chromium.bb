@@ -1227,6 +1227,7 @@ class CORE_EXPORT Document : public ContainerNode,
   bool hasViewportUnits() const { return m_hasViewportUnits; }
   void notifyResizeForViewportUnits();
 
+  void updateActiveStyle();
   void updateStyleInvalidationIfNeeded();
 
   DECLARE_VIRTUAL_TRACE();

@@ -119,6 +119,16 @@ TreeScopeStyleSheetCollection* StyleEngine::styleSheetCollectionFor(
 
 const HeapVector<TraceWrapperMember<StyleSheet>>&
 StyleEngine::styleSheetsForStyleSheetList(TreeScope& treeScope) {
+  // TODO(rune@opera.com): we could split styleSheets and active stylesheet
+  // update to have a lighter update while accessing the styleSheets list.
+  DCHECK(master());
+  if (master()->isActive()) {
+    if (isMaster())
+      updateActiveStyle();
+    else
+      master()->styleEngine().updateActiveStyle();
+  }
+
   if (treeScope == m_document)
     return documentStyleSheetCollection().styleSheetsForStyleSheetList();
 
@@ -333,6 +343,25 @@ void StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode) {
   m_documentScopeDirty = false;
 }
 
+void StyleEngine::updateActiveStyleSheets() {
+  // TODO(rune@opera.com): collect ActiveStyleSheets here.
+}
+
+void StyleEngine::updateViewport() {
+  if (m_viewportResolver)
+    m_viewportResolver->updateViewport(documentStyleSheetCollection());
+}
+
+bool StyleEngine::needsActiveStyleUpdate() const {
+  return m_viewportResolver && m_viewportResolver->needsUpdate();
+}
+
+void StyleEngine::updateActiveStyle() {
+  updateViewport();
+  updateActiveStyleSheets();
+  m_globalRuleSet.update(document());
+}
+
 const HeapVector<Member<CSSStyleSheet>>
 StyleEngine::activeStyleSheetsForInspector() const {
   if (m_activeTreeScopes.isEmpty())
@@ -398,8 +427,6 @@ void StyleEngine::finishAppendAuthorStyleSheets() {
 
 void StyleEngine::appendActiveAuthorStyleSheets() {
   DCHECK(isMaster());
-
-  viewportRulesChanged();
 
   m_resolver->appendAuthorStyleSheets(
       documentStyleSheetCollection().activeAuthorStyleSheets());
@@ -536,6 +563,8 @@ void StyleEngine::markTreeScopeDirty(TreeScope& scope) {
 
 void StyleEngine::markDocumentDirty() {
   m_documentScopeDirty = true;
+  if (RuntimeEnabledFeatures::cssViewportEnabled())
+    viewportRulesChanged();
   if (document().importLoader())
     document().importsController()->master()->styleEngine().markDocumentDirty();
 }
@@ -998,26 +1027,13 @@ bool StyleEngine::hasRulesForId(const AtomicString& id) const {
 }
 
 void StyleEngine::initialViewportChanged() {
-  if (!m_viewportResolver)
-    return;
-
-  m_viewportResolver->initialViewportChanged();
-
-  // TODO(rune@opera.com): for async stylesheet update, updateViewport() should
-  // be called as part of the lifecycle update for active style. Synchronous for
-  // now.
-  m_viewportResolver->updateViewport(documentStyleSheetCollection());
+  if (m_viewportResolver)
+    m_viewportResolver->initialViewportChanged();
 }
 
 void StyleEngine::viewportRulesChanged() {
-  if (!m_viewportResolver)
-    return;
-  m_viewportResolver->setNeedsCollectRules();
-
-  // TODO(rune@opera.com): for async stylesheet update, updateViewport() should
-  // be called as part of the lifecycle update for active style. Synchronous for
-  // now.
-  m_viewportResolver->updateViewport(documentStyleSheetCollection());
+  if (m_viewportResolver)
+    m_viewportResolver->setNeedsCollectRules();
 }
 
 PassRefPtr<ComputedStyle> StyleEngine::findSharedStyle(

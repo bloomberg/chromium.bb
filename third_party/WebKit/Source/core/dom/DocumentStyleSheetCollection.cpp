@@ -36,7 +36,6 @@
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/StyleSheetCandidate.h"
-#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 
