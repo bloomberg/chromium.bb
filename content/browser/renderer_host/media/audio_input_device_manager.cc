@@ -142,8 +142,8 @@ void AudioInputDeviceManager::OpenOnDeviceThread(
       "Media.AudioInputDeviceManager.OpenOnDeviceThreadTime");
   DCHECK(IsOnDeviceThread());
 
-  StreamDeviceInfo out(info.device.type, info.device.name, info.device.id,
-                       info.device.group_id, 0, 0, 0);
+  StreamDeviceInfo out(info.device.type, info.device.name, info.device.id, 0, 0,
+                       0);
   out.session_id = session_id;
 
   MediaStreamDevice::AudioDeviceParameters& input_params = out.device.input;

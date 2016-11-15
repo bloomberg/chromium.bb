@@ -176,10 +176,9 @@ TEST_F(MAYBE_AudioInputDeviceManagerTest, OpenNotExistingDevice) {
   MediaStreamType stream_type = MEDIA_DEVICE_AUDIO_CAPTURE;
   std::string device_name("device_doesnt_exist");
   std::string device_id("id_doesnt_exist");
-  std::string group_id("group_doesnt_exist");
   int sample_rate(0);
   int channel_config(0);
-  StreamDeviceInfo dummy_device(stream_type, device_name, device_id, group_id,
+  StreamDeviceInfo dummy_device(stream_type, device_name, device_id,
                                 sample_rate, channel_config, 2048);
 
   int session_id = manager_->Open(dummy_device);

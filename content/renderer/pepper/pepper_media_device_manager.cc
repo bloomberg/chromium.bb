@@ -186,12 +186,6 @@ void PepperMediaDeviceManager::OnDeviceStopped(
     const std::string& label,
     const StreamDeviceInfo& device_info) {}
 
-void PepperMediaDeviceManager::OnDevicesEnumerated(
-    int request_id,
-    const StreamDeviceInfoArray& device_array) {
-  NOTREACHED();
-}
-
 void PepperMediaDeviceManager::OnDeviceOpened(
     int request_id,
     const std::string& label,
@@ -202,8 +196,6 @@ void PepperMediaDeviceManager::OnDeviceOpened(
 void PepperMediaDeviceManager::OnDeviceOpenFailed(int request_id) {
   NotifyDeviceOpened(request_id, false, std::string());
 }
-
-void PepperMediaDeviceManager::OnDevicesChanged() {}
 
 // static
 MediaStreamType PepperMediaDeviceManager::FromPepperDeviceType(

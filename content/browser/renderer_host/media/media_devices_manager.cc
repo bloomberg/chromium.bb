@@ -525,19 +525,6 @@ void MediaDevicesManager::NotifyDeviceChangeSubscribers(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(IsValidMediaDeviceType(type));
 
-  // TODO(guidou): Use device types instead of stream types, and remove the
-  // call to MediaStreamManager once handling of device-change subscriptions
-  // is removed from MediaStreamManager. See http://crbug.com/334244.
-  // |permission_type| is used by MediaStreamManager to decide which permission
-  // to check before forwarding the event to the renderer process. Since there
-  // is no separate permission for audio output devices yet, use
-  // MEDIA_DEVICE_AUDIO_CAPTURE for both audio input and output.
-  MediaStreamType permission_type = type == MEDIA_DEVICE_TYPE_VIDEO_INPUT
-                                        ? MEDIA_DEVICE_VIDEO_CAPTURE
-                                        : MEDIA_DEVICE_AUDIO_CAPTURE;
-  if (media_stream_manager_)
-    media_stream_manager_->NotifyDeviceChangeSubscribers(permission_type);
-
   for (const auto& subscriber : device_change_subscribers_[type]) {
     subscriber->OnDevicesChanged(type, snapshot);
   }

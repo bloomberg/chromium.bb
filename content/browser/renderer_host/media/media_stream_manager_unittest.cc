@@ -132,19 +132,7 @@ class MockAudioManager : public AudioManagerPlatform {
 
 class MockMediaStreamRequester : public MediaStreamRequester {
  public:
-  MockMediaStreamRequester(MediaStreamManager* media_stream_manager,
-                           base::RunLoop* run_loop_enumeration,
-                           size_t num_expected_devices,
-                           base::RunLoop* run_loop_devices_changed)
-      : media_stream_manager_(media_stream_manager),
-        run_loop_enumeration_(run_loop_enumeration),
-        num_expected_devices_(num_expected_devices),
-        run_loop_devices_changed_(run_loop_devices_changed),
-        is_device_change_subscriber_(false) {}
-  virtual ~MockMediaStreamRequester() {
-    if (is_device_change_subscriber_)
-      media_stream_manager_->CancelDeviceChangeNotifications(this);
-  }
+  virtual ~MockMediaStreamRequester() {}
 
   // MediaStreamRequester implementation.
   MOCK_METHOD5(StreamGenerated,
@@ -161,47 +149,13 @@ class MockMediaStreamRequester : public MediaStreamRequester {
                void(int render_frame_id,
                     const std::string& label,
                     const StreamDeviceInfo& device));
-  void DevicesEnumerated(int render_frame_id,
-                         int page_request_id,
-                         const std::string& label,
-                         const StreamDeviceInfoArray& devices) override {
-    MockDevicesEnumerated(render_frame_id, page_request_id, label, devices);
-    EXPECT_EQ(num_expected_devices_, devices.size());
-
-    if (run_loop_enumeration_)
-      run_loop_enumeration_->Quit();
-  }
-  MOCK_METHOD4(MockDevicesEnumerated,
-               void(int render_frame_id,
-                    int page_request_id,
-                    const std::string& label,
-                    const StreamDeviceInfoArray& devices));
   MOCK_METHOD4(DeviceOpened,
                void(int render_frame_id,
                     int page_request_id,
                     const std::string& label,
                     const StreamDeviceInfo& device_info));
-  void DevicesChanged(MediaStreamType type) override {
-    MockDevicesChanged(type);
-    if (run_loop_devices_changed_)
-      run_loop_devices_changed_->Quit();
-  }
-  MOCK_METHOD1(MockDevicesChanged, void(MediaStreamType type));
-
-  void SubscribeToDeviceChangeNotifications() {
-    if (is_device_change_subscriber_)
-      return;
-
-    media_stream_manager_->SubscribeToDeviceChangeNotifications(this);
-    is_device_change_subscriber_ = true;
-  }
 
  private:
-  MediaStreamManager* media_stream_manager_;
-  base::RunLoop* run_loop_enumeration_;
-  size_t num_expected_devices_;
-  base::RunLoop* run_loop_devices_changed_;
-  bool is_device_change_subscriber_;
   DISALLOW_COPY_AND_ASSIGN(MockMediaStreamRequester);
 };
 
@@ -336,87 +290,6 @@ TEST_F(MediaStreamManagerTest, DeviceID) {
   EXPECT_EQ(hashed_other_id.size(), 64U);
   for (const char& c : hashed_other_id)
     EXPECT_TRUE(base::IsAsciiDigit(c) || (c >= 'a' && c <= 'f'));
-}
-
-TEST_F(MediaStreamManagerTest, EnumerationOutputDevices) {
-  for (size_t num_devices = 0; num_devices < 3; num_devices++) {
-    audio_manager_->SetNumAudioOutputDevices(num_devices);
-    base::RunLoop run_loop;
-    MockMediaStreamRequester requester(media_stream_manager_.get(), &run_loop,
-                                       num_devices == 0 ? 0 : num_devices + 1,
-                                       nullptr);
-    const int render_process_id = 1;
-    const int render_frame_id = 1;
-    const int page_request_id = 1;
-    const url::Origin security_origin(GURL("http://localhost"));
-    EXPECT_CALL(requester,
-                MockDevicesEnumerated(render_frame_id, page_request_id, _, _));
-    std::string label = media_stream_manager_->EnumerateDevices(
-        &requester, render_process_id, render_frame_id, kMockSalt,
-        page_request_id, MEDIA_DEVICE_AUDIO_OUTPUT, security_origin);
-    run_loop.Run();
-    // CancelRequest is necessary for enumeration requests.
-    media_stream_manager_->CancelRequest(label);
-  }
-}
-
-TEST_F(MediaStreamManagerTest, NotifyDeviceChanges) {
-  const int render_process_id = 1;
-  const int render_frame_id = 1;
-  const int page_request_id = 1;
-  const url::Origin security_origin(GURL("http://localhost"));
-
-  // Check that device change notifications are received
-  {
-    // First run an enumeration to warm up the cache
-    base::RunLoop run_loop_enumeration;
-    base::RunLoop run_loop_device_change;
-    MockMediaStreamRequester requester(media_stream_manager_.get(),
-                                       &run_loop_enumeration, 3,
-                                       &run_loop_device_change);
-    audio_manager_->SetNumAudioInputDevices(2);
-    requester.SubscribeToDeviceChangeNotifications();
-
-    EXPECT_CALL(requester,
-                MockDevicesEnumerated(render_frame_id, page_request_id, _, _));
-    EXPECT_CALL(requester, MockDevicesChanged(_)).Times(0);
-    std::string label = media_stream_manager_->EnumerateDevices(
-        &requester, render_process_id, render_frame_id, kMockSalt,
-        page_request_id, MEDIA_DEVICE_AUDIO_CAPTURE, security_origin);
-    run_loop_enumeration.Run();
-    media_stream_manager_->CancelRequest(label);
-
-    // Simulate device change
-    EXPECT_CALL(requester, MockDevicesChanged(_));
-    audio_manager_->SetNumAudioInputDevices(3);
-    media_stream_manager_->media_devices_manager()->OnDevicesChanged(
-        base::SystemMonitor::DEVTYPE_AUDIO);
-    run_loop_device_change.Run();
-  }
-
-  // Check that bogus device changes where devices have not changed
-  // do not trigger a notification.
-  {
-    base::RunLoop run_loop;
-    MockMediaStreamRequester requester(media_stream_manager_.get(), &run_loop,
-                                       4, &run_loop);
-    requester.SubscribeToDeviceChangeNotifications();
-
-    // Bogus OnDeviceChange, as devices have not changed. Should not trigger
-    // notification.
-    EXPECT_CALL(requester, MockDevicesChanged(_)).Times(0);
-    media_stream_manager_->media_devices_manager()->OnDevicesChanged(
-        base::SystemMonitor::DEVTYPE_AUDIO);
-
-    // Do enumeration to be able to quit the RunLoop.
-    EXPECT_CALL(requester,
-                MockDevicesEnumerated(render_frame_id, page_request_id, _, _));
-    std::string label = media_stream_manager_->EnumerateDevices(
-        &requester, render_process_id, render_frame_id, kMockSalt,
-        page_request_id, MEDIA_DEVICE_AUDIO_CAPTURE, security_origin);
-    run_loop.Run();
-    media_stream_manager_->CancelRequest(label);
-  }
 }
 
 }  // namespace content

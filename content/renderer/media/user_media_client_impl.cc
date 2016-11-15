@@ -612,14 +612,6 @@ void UserMediaClientImpl::OnCreateNativeTracksCompleted(
   DeleteUserMediaRequestInfo(request);
 }
 
-// TODO(guidou): Remove once this method is removed from the
-// MediaStreamDispatcherEventHandler interface. http://648183.
-void UserMediaClientImpl::OnDevicesEnumerated(
-    int request_id,
-    const StreamDeviceInfoArray& device_array) {
-  NOTREACHED();
-}
-
 void UserMediaClientImpl::OnDeviceOpened(
     int request_id,
     const std::string& label,
@@ -633,12 +625,6 @@ void UserMediaClientImpl::OnDeviceOpenFailed(int request_id) {
   DVLOG(1) << "UserMediaClientImpl::VideoDeviceOpenFailed("
            << request_id << ")";
   NOTIMPLEMENTED();
-}
-
-// TODO(guidou): Remove once this method is removed from the
-// MediaStreamDispatcherEventHandler interface. http://648183.
-void UserMediaClientImpl::OnDevicesChanged() {
-  NOTREACHED();
 }
 
 void UserMediaClientImpl::DevicesChanged(

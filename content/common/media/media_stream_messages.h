@@ -44,7 +44,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::StreamDeviceInfo)
   IPC_STRUCT_TRAITS_MEMBER(device.type)
   IPC_STRUCT_TRAITS_MEMBER(device.name)
   IPC_STRUCT_TRAITS_MEMBER(device.id)
-  IPC_STRUCT_TRAITS_MEMBER(device.group_id)
   IPC_STRUCT_TRAITS_MEMBER(device.video_facing)
   IPC_STRUCT_TRAITS_MEMBER(device.matched_output_device_id)
   IPC_STRUCT_TRAITS_MEMBER(device.input.sample_rate)
@@ -97,9 +96,6 @@ IPC_MESSAGE_ROUTED3(MediaStreamMsg_DeviceOpened,
 IPC_MESSAGE_ROUTED1(MediaStreamMsg_DeviceOpenFailed,
                     int /* request id */)
 
-// The browser has detected a change in the set of media devices.
-IPC_MESSAGE_ROUTED0(MediaStreamMsg_DevicesChanged)
-
 // Messages sent from the renderer to the browser.
 
 // Request a new media stream.
@@ -120,19 +116,6 @@ IPC_MESSAGE_CONTROL2(MediaStreamHostMsg_StopStreamDevice,
                      int /* render frame id */,
                      std::string /*device_id*/)
 
-// Request to enumerate devices.
-// Used by Pepper and WebRTC.
-IPC_MESSAGE_CONTROL4(MediaStreamHostMsg_EnumerateDevices,
-                     int /* render frame id */,
-                     int /* request id */,
-                     content::MediaStreamType /* type */,
-                     url::Origin /* security origin */)
-
-// Request to stop enumerating devices.
-IPC_MESSAGE_CONTROL2(MediaStreamHostMsg_CancelEnumerateDevices,
-                     int /* render frame id */,
-                     int /* request id */)
-
 // Request to open the device.
 IPC_MESSAGE_CONTROL5(MediaStreamHostMsg_OpenDevice,
                      int /* render frame id */,
@@ -145,15 +128,6 @@ IPC_MESSAGE_CONTROL5(MediaStreamHostMsg_OpenDevice,
 IPC_MESSAGE_CONTROL2(MediaStreamHostMsg_CloseDevice,
                      int /* render frame id */,
                      std::string /*label*/)
-
-// Subscribe to notifications about changes in the set of media devices.
-IPC_MESSAGE_CONTROL2(MediaStreamHostMsg_SubscribeToDeviceChangeNotifications,
-                     int /* render frame id */,
-                     url::Origin /* security origin */)
-
-// Cancel notifications about changes in the set of media devices.
-IPC_MESSAGE_CONTROL1(MediaStreamHostMsg_CancelDeviceChangeNotifications,
-                     int /* render frame id */)
 
 // Tell the browser process if the video capture is secure (i.e., all
 // connected video sinks meet the requirement of output protection.).

@@ -100,8 +100,8 @@ class ProcessedLocalAudioSourceTest : public testing::Test {
     ProcessedLocalAudioSource* const source = new ProcessedLocalAudioSource(
         -1 /* consumer_render_frame_id is N/A for non-browser tests */,
         StreamDeviceInfo(MEDIA_DEVICE_AUDIO_CAPTURE, "Mock audio device",
-                         "mock_audio_device_id", "mock_group_id", kSampleRate,
-                         kChannelLayout, kRequestedBufferSize),
+                         "mock_audio_device_id", kSampleRate, kChannelLayout,
+                         kRequestedBufferSize),
         &mock_dependency_factory_);
     source->SetAllowInvalidRenderFrameIdForTesting(true);
     source->SetSourceConstraints(constraints);

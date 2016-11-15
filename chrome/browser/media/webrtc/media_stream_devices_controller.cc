@@ -423,11 +423,6 @@ content::MediaStreamDevices MediaStreamDevicesController::GetDevices(
           profile_, audio_allowed, video_allowed, &devices);
       break;
     }
-    case content::MEDIA_ENUMERATE_DEVICES: {
-      // Do nothing.
-      NOTREACHED();
-      break;
-    }
   }  // switch
 
   if (audio_allowed) {

@@ -11,19 +11,19 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/media_stream_requester.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/resource_context.h"
-#include "url/origin.h"
 
+namespace url {
+class Origin;
+}
 namespace content {
 
 class MediaStreamManager;
-class MediaStreamUIProxy;
 
 // MediaStreamDispatcherHost is a delegate for Media Stream API messages used by
 // MediaStreamImpl.  There is one MediaStreamDispatcherHost per
@@ -33,8 +33,7 @@ class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
  public:
   MediaStreamDispatcherHost(int render_process_id,
                             const std::string& salt,
-                            MediaStreamManager* media_stream_manager,
-                            bool use_fake_ui = false);
+                            MediaStreamManager* media_stream_manager);
 
   // MediaStreamRequester implementation.
   void StreamGenerated(int render_frame_id,
@@ -49,15 +48,10 @@ class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
   void DeviceStopped(int render_frame_id,
                      const std::string& label,
                      const StreamDeviceInfo& device) override;
-  void DevicesEnumerated(int render_frame_id,
-                         int page_request_id,
-                         const std::string& label,
-                         const StreamDeviceInfoArray& devices) override;
   void DeviceOpened(int render_frame_id,
                     int page_request_id,
                     const std::string& label,
                     const StreamDeviceInfo& video_device) override;
-  void DevicesChanged(MediaStreamType type) override;
 
   // BrowserMessageFilter implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -79,14 +73,6 @@ class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
   void OnStopStreamDevice(int render_frame_id,
                           const std::string& device_id);
 
-  void OnEnumerateDevices(int render_frame_id,
-                          int page_request_id,
-                          MediaStreamType type,
-                          const url::Origin& security_origin);
-
-  void OnCancelEnumerateDevices(int render_frame_id,
-                                int page_request_id);
-
   void OnOpenDevice(int render_frame_id,
                     int page_request_id,
                     const std::string& device_id,
@@ -95,12 +81,6 @@ class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
 
   void OnCloseDevice(int render_frame_id,
                      const std::string& label);
-
-  void OnSubscribeToDeviceChangeNotifications(
-      int render_frame_id,
-      const url::Origin& security_origin);
-
-  void OnCancelDeviceChangeNotifications(int render_frame_id);
 
   void StoreRequest(int render_frame_id,
                     int page_request_id,
@@ -111,23 +91,9 @@ class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
                                  content::MediaStreamType type,
                                  bool is_secure);
 
-  std::unique_ptr<MediaStreamUIProxy> CreateMediaStreamUIProxy();
-  void HandleCheckAccessResponse(std::unique_ptr<MediaStreamUIProxy> ui_proxy,
-                                 int render_frame_id,
-                                 bool have_access);
-
   int render_process_id_;
   std::string salt_;
   MediaStreamManager* media_stream_manager_;
-
-  struct DeviceChangeSubscriberInfo {
-    int render_frame_id;
-    url::Origin security_origin;
-  };
-  std::vector<DeviceChangeSubscriberInfo> device_change_subscribers_;
-  bool use_fake_ui_;
-
-  base::WeakPtrFactory<MediaStreamDispatcherHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDispatcherHost);
 };

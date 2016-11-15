@@ -74,13 +74,10 @@ class PepperMediaDeviceManager
       content::MediaStreamRequestResult result) override;
   void OnDeviceStopped(const std::string& label,
                        const StreamDeviceInfo& device_info) override;
-  void OnDevicesEnumerated(int request_id,
-                           const StreamDeviceInfoArray& device_array) override;
   void OnDeviceOpened(int request_id,
                       const std::string& label,
                       const StreamDeviceInfo& device_info) override;
   void OnDeviceOpenFailed(int request_id) override;
-  void OnDevicesChanged() override;
 
   // Stream type conversion.
   static MediaStreamType FromPepperDeviceType(PP_DeviceType_Dev type);

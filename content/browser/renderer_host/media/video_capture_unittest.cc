@@ -22,6 +22,7 @@
 #include "content/browser/renderer_host/media/media_stream_requester.h"
 #include "content/browser/renderer_host/media/video_capture_host.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
+#include "content/common/media/media_devices.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_context.h"
@@ -45,6 +46,23 @@ using ::testing::SaveArg;
 using ::testing::StrictMock;
 
 namespace content {
+
+namespace {
+
+void VideoInputDevicesEnumerated(base::Closure quit_closure,
+                                 const std::string& salt,
+                                 const url::Origin& security_origin,
+                                 MediaDeviceInfoArray* out,
+                                 const MediaDeviceEnumeration& enumeration) {
+  for (const auto& info : enumeration[MEDIA_DEVICE_TYPE_VIDEO_INPUT]) {
+    std::string device_id = MediaStreamManager::GetHMACForMediaDeviceID(
+        salt, security_origin, info.device_id);
+    out->push_back(MediaDeviceInfo(device_id, info.label, std::string()));
+  }
+  quit_closure.Run();
+}
+
+}  // namespace
 
 // Id used to identify the capture session between renderer and
 // video_capture_host. This is an arbitrary value.
@@ -136,42 +154,30 @@ class VideoCaptureTest : public testing::Test,
     ASSERT_TRUE(opened_device_label_.empty());
 
     // Enumerate video devices.
-    StreamDeviceInfoArray devices;
+    MediaDeviceInfoArray video_devices;
     {
       base::RunLoop run_loop;
-      std::string label = media_stream_manager_->EnumerateDevices(
-          &stream_requester_,
-          render_process_id,
-          render_frame_id,
-          browser_context_.GetResourceContext()->GetMediaDeviceIDSalt(),
-          page_request_id,
-          MEDIA_DEVICE_VIDEO_CAPTURE,
-          security_origin);
-      EXPECT_CALL(stream_requester_,
-                  DevicesEnumerated(render_frame_id, page_request_id, label, _))
-          .Times(1)
-          .WillOnce(DoAll(ExitMessageLoop(task_runner_, run_loop.QuitClosure()),
-                          SaveArg<3>(&devices)));
+      MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
+      devices_to_enumerate[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
+      media_stream_manager_->media_devices_manager()->EnumerateDevices(
+          devices_to_enumerate,
+          base::Bind(
+              &VideoInputDevicesEnumerated, run_loop.QuitClosure(),
+              browser_context_.GetResourceContext()->GetMediaDeviceIDSalt(),
+              security_origin, &video_devices));
       run_loop.Run();
-      Mock::VerifyAndClearExpectations(&stream_requester_);
-      media_stream_manager_->CancelRequest(label);
     }
-    ASSERT_FALSE(devices.empty());
-    ASSERT_EQ(StreamDeviceInfo::kNoId, devices[0].session_id);
+    ASSERT_FALSE(video_devices.empty());
 
     // Open the first device.
     {
       base::RunLoop run_loop;
       StreamDeviceInfo opened_device;
       media_stream_manager_->OpenDevice(
-          &stream_requester_,
-          render_process_id,
-          render_frame_id,
+          &stream_requester_, render_process_id, render_frame_id,
           browser_context_.GetResourceContext()->GetMediaDeviceIDSalt(),
-          page_request_id,
-          devices[0].device.id,
-          MEDIA_DEVICE_VIDEO_CAPTURE,
-          security_origin);
+          page_request_id, video_devices[0].device_id,
+          MEDIA_DEVICE_VIDEO_CAPTURE, security_origin);
       EXPECT_CALL(stream_requester_,
                   DeviceOpened(render_frame_id, page_request_id, _, _))
           .Times(1)

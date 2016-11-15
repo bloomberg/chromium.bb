@@ -54,7 +54,7 @@ class WebRtcMediaStreamAdapterTest : public ::testing::Test {
       ProcessedLocalAudioSource* const source = new ProcessedLocalAudioSource(
           -1 /* consumer_render_frame_id is N/A for non-browser tests */,
           StreamDeviceInfo(MEDIA_DEVICE_AUDIO_CAPTURE, "Mock audio device",
-                           "mock_audio_device_id", "mock_group_id",
+                           "mock_audio_device_id",
                            media::AudioParameters::kAudioCDSampleRate,
                            media::CHANNEL_LAYOUT_STEREO,
                            media::AudioParameters::kAudioCDSampleRate / 50),

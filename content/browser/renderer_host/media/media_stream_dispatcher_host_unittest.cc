@@ -81,7 +81,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
       const std::string& salt,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       MediaStreamManager* manager)
-      : MediaStreamDispatcherHost(kProcessId, salt, manager, true),
+      : MediaStreamDispatcherHost(kProcessId, salt, manager),
         task_runner_(task_runner),
         current_ipc_(NULL) {}
 
@@ -122,35 +122,10 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
         render_frame_id, page_request_id, device_id, type, security_origin);
   }
 
-  void OnEnumerateDevices(int render_frame_id,
-                          int page_request_id,
-                          MediaStreamType type,
-                          const url::Origin& security_origin,
-                          const base::Closure& quit_closure) {
-    quit_closures_.push(quit_closure);
-    MediaStreamDispatcherHost::OnEnumerateDevices(
-        render_frame_id, page_request_id, type, security_origin);
-  }
-
-  void OnCancelEnumerateDevices(int render_frame_id, int page_request_id) {
-    MediaStreamDispatcherHost::OnCancelEnumerateDevices(render_frame_id,
-                                                        page_request_id);
-  }
-
-  void OnSubscribeToDeviceChangeNotifications(
-      int render_frame_id,
-      const url::Origin& security_origin,
-      const base::Closure& quit_closure) {
-    quit_closures_.push(quit_closure);
-    MediaStreamDispatcherHost::OnSubscribeToDeviceChangeNotifications(
-        render_frame_id, security_origin);
-  }
-
   std::string label_;
   StreamDeviceInfoArray audio_devices_;
   StreamDeviceInfoArray video_devices_;
   StreamDeviceInfo opened_device_;
-  StreamDeviceInfoArray enumerated_devices_;
 
  private:
   ~MockMediaStreamDispatcherHost() override {}
@@ -172,8 +147,6 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
                           OnStreamGenerationFailedInternal)
       IPC_MESSAGE_HANDLER(MediaStreamMsg_DeviceStopped, OnDeviceStoppedInternal)
       IPC_MESSAGE_HANDLER(MediaStreamMsg_DeviceOpened, OnDeviceOpenedInternal)
-      IPC_MESSAGE_HANDLER(MediaStreamMsg_DevicesEnumerated, OnDevicesEnumerated)
-      IPC_MESSAGE_HANDLER(MediaStreamMsg_DevicesChanged, OnDevicesChanged)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     EXPECT_TRUE(handled);
@@ -232,20 +205,6 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
     task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&quit_closure));
     label_ = label;
     opened_device_ = device;
-  }
-
-  void OnDevicesEnumerated(int request_id,
-                           const StreamDeviceInfoArray& devices) {
-    base::Closure quit_closure = quit_closures_.front();
-    quit_closures_.pop();
-    task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&quit_closure));
-    enumerated_devices_ = devices;
-  }
-
-  void OnDevicesChanged() {
-    base::Closure quit_closure = quit_closures_.front();
-    quit_closures_.pop();
-    task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&quit_closure));
   }
 
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -384,32 +343,6 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     run_loop.Run();
     EXPECT_FALSE(DoesContainRawIds(host_->video_devices_));
     EXPECT_TRUE(DoesEveryDeviceMapToRawId(host_->video_devices_, origin_));
-  }
-
-  void EnumerateDevicesAndWaitForResult(int render_frame_id,
-                                        int page_request_id,
-                                        MediaStreamType type) {
-    base::RunLoop run_loop;
-    host_->OnEnumerateDevices(render_frame_id, page_request_id, type, origin_,
-                              run_loop.QuitClosure());
-    run_loop.Run();
-    ASSERT_FALSE(host_->enumerated_devices_.empty());
-    EXPECT_FALSE(DoesContainRawIds(host_->enumerated_devices_));
-    EXPECT_TRUE(DoesEveryDeviceMapToRawId(host_->enumerated_devices_, origin_));
-    // Enumeration requests must be cancelled manually.
-    host_->OnCancelEnumerateDevices(render_frame_id, page_request_id);
-  }
-
-  void SubscribeToDeviceChangeNotificationsAndWaitForNotification(
-      int render_frame_id) {
-    base::RunLoop run_loop;
-    host_->OnSubscribeToDeviceChangeNotifications(render_frame_id, origin_,
-                                                  run_loop.QuitClosure());
-    // Simulate a change in the set of devices.
-    video_capture_device_factory_->set_number_of_devices(5);
-    media_stream_manager_->media_devices_manager()->OnDevicesChanged(
-        base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE);
-    run_loop.Run();
   }
 
   bool DoesContainRawIds(const StreamDeviceInfoArray& devices) {
@@ -947,44 +880,6 @@ TEST_F(MediaStreamDispatcherHostTest, VideoDeviceUnplugged) {
       base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE);
 
   run_loop.Run();
-}
-
-TEST_F(MediaStreamDispatcherHostTest, EnumerateAudioDevices) {
-  SetupFakeUI(false);
-  EnumerateDevicesAndWaitForResult(kRenderId, kPageRequestId,
-                                   MEDIA_DEVICE_AUDIO_CAPTURE);
-  EXPECT_TRUE(DoesContainLabels(host_->enumerated_devices_));
-}
-
-TEST_F(MediaStreamDispatcherHostTest, EnumerateVideoDevices) {
-  SetupFakeUI(false);
-  EnumerateDevicesAndWaitForResult(kRenderId, kPageRequestId,
-                                   MEDIA_DEVICE_VIDEO_CAPTURE);
-  EXPECT_TRUE(DoesContainLabels(host_->enumerated_devices_));
-}
-
-TEST_F(MediaStreamDispatcherHostTest, EnumerateAudioDevicesNoAccess) {
-  SetupFakeUI(false);
-  stream_ui_->SetMicAccess(false);
-  EnumerateDevicesAndWaitForResult(kRenderId, kPageRequestId,
-                                   MEDIA_DEVICE_AUDIO_CAPTURE);
-  EXPECT_TRUE(DoesNotContainLabels(host_->enumerated_devices_));
-}
-
-TEST_F(MediaStreamDispatcherHostTest, EnumerateVideoDevicesNoAccess) {
-  SetupFakeUI(false);
-  stream_ui_->SetCameraAccess(false);
-  EnumerateDevicesAndWaitForResult(kRenderId, kPageRequestId,
-                                   MEDIA_DEVICE_VIDEO_CAPTURE);
-  EXPECT_TRUE(DoesNotContainLabels(host_->enumerated_devices_));
-}
-
-TEST_F(MediaStreamDispatcherHostTest, DeviceChangeNotification) {
-  SetupFakeUI(false);
-  // warm up the cache
-  EnumerateDevicesAndWaitForResult(kRenderId, kPageRequestId,
-                                   MEDIA_DEVICE_VIDEO_CAPTURE);
-  SubscribeToDeviceChangeNotificationsAndWaitForNotification(kRenderId);
 }
 
 };  // namespace content

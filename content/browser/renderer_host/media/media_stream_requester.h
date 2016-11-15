@@ -34,19 +34,11 @@ class CONTENT_EXPORT MediaStreamRequester {
   virtual void DeviceStopped(int render_frame_id,
                              const std::string& label,
                              const StreamDeviceInfo& device) = 0;
-  // Called as a reply of a successful call to EnumerateDevices.
-  virtual void DevicesEnumerated(int render_frame_id,
-                                 int page_request_id,
-                                 const std::string& label,
-                                 const StreamDeviceInfoArray& devices) = 0;
   // Called as a reply of a successful call to OpenDevice.
   virtual void DeviceOpened(int render_frame_id,
                             int page_request_id,
                             const std::string& label,
                             const StreamDeviceInfo& device_info) = 0;
-  // Called when the set of media devices has changed, provided the
-  // MediaStreamRequester is subscribed and authorized to receive such messages.
-  virtual void DevicesChanged(MediaStreamType type) = 0;
 
  protected:
   virtual ~MediaStreamRequester() {

@@ -35,13 +35,8 @@ MediaStreamDevice::MediaStreamDevice()
 
 MediaStreamDevice::MediaStreamDevice(MediaStreamType type,
                                      const std::string& id,
-                                     const std::string& name,
-                                     const std::string& group_id)
-    : type(type),
-      id(id),
-      video_facing(MEDIA_VIDEO_FACING_NONE),
-      name(name),
-      group_id(group_id) {
+                                     const std::string& name)
+    : type(type), id(id), video_facing(MEDIA_VIDEO_FACING_NONE), name(name) {
 #if defined(OS_ANDROID)
   if (name.find("front") != std::string::npos) {
     video_facing = MEDIA_VIDEO_FACING_USER;
@@ -53,13 +48,7 @@ MediaStreamDevice::MediaStreamDevice(MediaStreamType type,
 
 MediaStreamDevice::MediaStreamDevice(MediaStreamType type,
                                      const std::string& id,
-                                     const std::string& name)
-    : MediaStreamDevice(type, id, name, std::string()) {}
-
-MediaStreamDevice::MediaStreamDevice(MediaStreamType type,
-                                     const std::string& id,
                                      const std::string& name,
-                                     const std::string& group_id,
                                      int sample_rate,
                                      int channel_layout,
                                      int frames_per_buffer)
@@ -67,7 +56,6 @@ MediaStreamDevice::MediaStreamDevice(MediaStreamType type,
       id(id),
       video_facing(MEDIA_VIDEO_FACING_NONE),
       name(name),
-      group_id(group_id),
       input(sample_rate, channel_layout, frames_per_buffer) {}
 
 MediaStreamDevice::MediaStreamDevice(const MediaStreamDevice& other) = default;

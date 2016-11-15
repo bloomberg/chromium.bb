@@ -192,9 +192,9 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
 
 class MockRTCStatsReportCallback : public blink::WebRTCStatsReportCallback {
  public:
-  MockRTCStatsReportCallback(std::unique_ptr<blink::WebRTCStatsReport>* result)
-      : main_thread_(base::ThreadTaskRunnerHandle::Get()),
-        result_(result) {
+  explicit MockRTCStatsReportCallback(
+      std::unique_ptr<blink::WebRTCStatsReport>* result)
+      : main_thread_(base::ThreadTaskRunnerHandle::Get()), result_(result) {
     DCHECK(result_);
   }
 
@@ -291,7 +291,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
         new ProcessedLocalAudioSource(
             -1 /* consumer_render_frame_id is N/A for non-browser tests */,
             StreamDeviceInfo(MEDIA_DEVICE_AUDIO_CAPTURE, "Mock device",
-                             "mock_device_id", "mock_group_id",
+                             "mock_device_id",
                              media::AudioParameters::kAudioCDSampleRate,
                              media::CHANNEL_LAYOUT_STEREO,
                              media::AudioParameters::kAudioCDSampleRate / 100),

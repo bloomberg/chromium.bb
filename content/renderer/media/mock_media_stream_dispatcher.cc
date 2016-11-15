@@ -18,8 +18,6 @@ namespace content {
 MockMediaStreamDispatcher::MockMediaStreamDispatcher()
     : MediaStreamDispatcher(NULL),
       audio_input_request_id_(-1),
-      audio_output_request_id_(-1),
-      video_request_id_(-1),
       request_stream_counter_(0),
       stop_audio_device_counter_(0),
       stop_video_device_counter_(0),
@@ -54,14 +52,6 @@ void MockMediaStreamDispatcher::CancelGenerateStream(
     int request_id,
     const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler) {
   EXPECT_EQ(request_id, audio_input_request_id_);
-}
-
-void MockMediaStreamDispatcher::EnumerateDevices(
-    int request_id,
-    const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
-    MediaStreamType type,
-    const url::Origin& security_origin) {
-  NOTREACHED();
 }
 
 void MockMediaStreamDispatcher::StopStreamDevice(
@@ -102,28 +92,12 @@ void MockMediaStreamDispatcher::AddAudioInputDeviceToArray(
   if (matched_output) {
     audio.device.matched_output_device_id =
         kAudioOutputDeviceIdPrefix + base::IntToString(session_id_);
-    audio.device.group_id =
-        kAudioOutputDeviceIdPrefix + base::IntToString(session_id_);
-  } else {
-    audio.device.group_id = audio.device.id + "groupid";
   }
   audio.session_id = session_id_;
   audio.device.input.sample_rate = media::AudioParameters::kAudioCDSampleRate;
   audio.device.input.channel_layout = media::CHANNEL_LAYOUT_STEREO;
   audio.device.input.frames_per_buffer = audio.device.input.sample_rate / 100;
   audio_input_array_.push_back(audio);
-}
-
-void MockMediaStreamDispatcher::AddAudioOutputDeviceToArray() {
-  StreamDeviceInfo audio;
-  audio.device.id = kAudioOutputDeviceIdPrefix + base::IntToString(session_id_);
-  audio.device.group_id =
-      kAudioOutputDeviceIdPrefix + base::IntToString(session_id_);
-  audio.device.name = "speaker";
-  audio.device.type = MEDIA_DEVICE_AUDIO_OUTPUT;
-  audio.device.video_facing = MEDIA_VIDEO_FACING_NONE;
-  audio.session_id = session_id_;
-  audio_output_array_.push_back(audio);
 }
 
 void MockMediaStreamDispatcher::AddVideoDeviceToArray(bool facing_user) {

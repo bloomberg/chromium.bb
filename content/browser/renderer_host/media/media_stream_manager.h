@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// MediaStreamManager is used to open/enumerate media capture devices (video
-// supported now). Call flow:
+// MediaStreamManager is used to open media capture devices (video supported
+// now). Call flow:
 // 1. GenerateStream is called when a render process wants to use a capture
 //    device.
 // 2. MediaStreamManager will ask MediaStreamUIController for permission to
@@ -140,21 +140,6 @@ class CONTENT_EXPORT MediaStreamManager
                         int render_frame_id,
                         const std::string& device_id);
 
-  // Gets a list of devices of |type|, which must be MEDIA_DEVICE_AUDIO_CAPTURE
-  // or MEDIA_DEVICE_VIDEO_CAPTURE.
-  // The request is identified using the string returned to the caller.
-  // When the |requester| is NULL, MediaStreamManager will enumerate both audio
-  // and video devices and also start monitoring device changes, such as
-  // plug/unplug. The new device lists will be delivered via media observer to
-  // MediaCaptureDevicesDispatcher.
-  virtual std::string EnumerateDevices(MediaStreamRequester* requester,
-                                       int render_process_id,
-                                       int render_frame_id,
-                                       const std::string& salt,
-                                       int page_request_id,
-                                       MediaStreamType type,
-                                       const url::Origin& security_origin);
-
   // Open a device identified by |device_id|.  |type| must be either
   // MEDIA_DEVICE_AUDIO_CAPTURE or MEDIA_DEVICE_VIDEO_CAPTURE.
   // The request is identified using string returned to the caller.
@@ -227,15 +212,6 @@ class CONTENT_EXPORT MediaStreamManager
       const base::Callback<void(const std::string&)>& callback);
   void UnregisterNativeLogCallback(int renderer_host_id);
 
-  // Register and unregister subscribers for device-change notifications.
-  // It is an error to try to subscribe a |subscriber| that is already
-  // subscribed or to cancel the subscription of a |subscriber| that is not
-  // subscribed. Also, subscribers must make sure to invoke
-  // CancelDeviceChangeNotifications() before destruction. Otherwise, dangling
-  // pointers and use-after-destruction problems will occur.
-  void SubscribeToDeviceChangeNotifications(MediaStreamRequester* subscriber);
-  void CancelDeviceChangeNotifications(MediaStreamRequester* subscriber);
-
   // Generates a hash of a device's unique ID usable by one
   // particular security origin.
   static std::string GetHMACForMediaDeviceID(const std::string& salt,
@@ -270,11 +246,6 @@ class CONTENT_EXPORT MediaStreamManager
   // render process is notified.
   void StopRemovedDevice(MediaDeviceType type, const MediaDeviceInfo& device);
 
-  // TODO(guidou): Remove this function once handling for renderer requests for
-  // device-event notifications is moved out of MediaStreamDispatcherHost.
-  // See http://crbug.com/648183.
-  void NotifyDeviceChangeSubscribers(MediaStreamType type);
-
   void SetGenerateStreamCallbackForTesting(
       GenerateStreamTestCallback test_callback);
 
@@ -292,7 +263,6 @@ class CONTENT_EXPORT MediaStreamManager
   // thread and registers this as a listener with the device managers.
   void InitializeDeviceManagersOnIOThread();
 
-
   // |output_parameters| contains real values only if the request requires it.
   void HandleAccessRequestResponse(
       const std::string& label,
@@ -300,11 +270,6 @@ class CONTENT_EXPORT MediaStreamManager
       const MediaStreamDevices& devices,
       content::MediaStreamRequestResult result);
   void StopMediaStreamFromBrowser(const std::string& label);
-
-  void DoEnumerateDevices(const std::string& label);
-
-  void AudioOutputDevicesEnumerated(const std::string& label,
-                                    const MediaDeviceEnumeration& enumeration);
 
   // Helpers.
   // Checks if all devices that was requested in the request identififed by
@@ -371,8 +336,6 @@ class CONTENT_EXPORT MediaStreamManager
   void FinalizeMediaAccessRequest(const std::string& label,
                                   DeviceRequest* request,
                                   const MediaStreamDevices& devices);
-  void FinalizeEnumerateDevices(const std::string& label,
-                                DeviceRequest* request);
   void HandleCheckMediaAccessResponse(const std::string& label,
                                       bool have_access);
 
@@ -415,18 +378,6 @@ class CONTENT_EXPORT MediaStreamManager
                          const std::string& label,
                          const MediaDeviceEnumeration& enumeration);
 
-  // TODO(guidou): Remove once handling of renderer-issued enumeration requests
-  // is moved out of MediaStreamManager. See http://crbug.com/648183.
-  void ProcessEnumerationRequest(const std::string& label,
-                                 DeviceRequest* request,
-                                 MediaStreamType stream_type,
-                                 const MediaDeviceInfoArray& enumeration);
-
-  // TODO(guidou): Remove this function once the concept of open enumeration
-  // requests is eliminated. See http://crbug.com/648183.
-  void ProcessOpenEnumerationRequests(MediaStreamType stream_type,
-                                      const MediaDeviceInfoArray& devices);
-
   // Task runner shared by VideoCaptureManager and AudioInputDeviceManager and
   // used for enumerating audio output devices.
   // Note: Enumeration tasks may take seconds to complete so must never be run
@@ -450,9 +401,6 @@ class CONTENT_EXPORT MediaStreamManager
 
   // Maps render process hosts to log callbacks. Used on the IO thread.
   std::map<int, base::Callback<void(const std::string&)>> log_callbacks_;
-
-  // Objects subscribed to changes in the set of media devices.
-  std::vector<MediaStreamRequester*> device_change_subscribers_;
 
   GenerateStreamTestCallback generate_stream_test_callback_;
 
