@@ -150,6 +150,8 @@ class RemoteSuggestionsProvider final
   friend class RemoteSuggestionsProviderTest;
 
   FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsProviderTest,
+                           DontNotifyIfNotAvailable);
+  FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsProviderTest,
                            RemoveExpiredDismissedContent);
   FRIEND_TEST_ALL_PREFIXES(RemoteSuggestionsProviderTest,
                            RescheduleOnStateChange);

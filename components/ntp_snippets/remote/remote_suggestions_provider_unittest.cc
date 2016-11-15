@@ -28,6 +28,7 @@
 #include "components/ntp_snippets/category_factory.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
+#include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/ntp_snippet.h"
 #include "components/ntp_snippets/remote/ntp_snippets_database.h"
 #include "components/ntp_snippets/remote/ntp_snippets_fetcher.h"
@@ -327,9 +328,7 @@ class MockImageFetcher : public ImageFetcher {
 class FakeContentSuggestionsProviderObserver
     : public ContentSuggestionsProvider::Observer {
  public:
-  FakeContentSuggestionsProviderObserver()
-      : loaded_(base::WaitableEvent::ResetPolicy::MANUAL,
-                base::WaitableEvent::InitialState::NOT_SIGNALED) {}
+  FakeContentSuggestionsProviderObserver() = default;
 
   void OnNewSuggestions(ContentSuggestionsProvider* provider,
                         Category category,
@@ -340,10 +339,6 @@ class FakeContentSuggestionsProviderObserver
   void OnCategoryStatusChanged(ContentSuggestionsProvider* provider,
                                Category category,
                                CategoryStatus new_status) override {
-    if (category.IsKnownCategory(KnownCategories::ARTICLES) &&
-        IsCategoryStatusAvailable(new_status)) {
-      loaded_.Signal();
-    }
     statuses_[category] = new_status;
   }
 
@@ -369,16 +364,7 @@ class FakeContentSuggestionsProviderObserver
     return suggestions_[category];
   }
 
-  void WaitForLoad() { loaded_.Wait(); }
-  bool Loaded() { return loaded_.IsSignaled(); }
-
-  void Reset() {
-    loaded_.Reset();
-    statuses_.clear();
-  }
-
  private:
-  base::WaitableEvent loaded_;
   std::map<Category, CategoryStatus, Category::CompareByID> statuses_;
   std::map<Category, std::vector<ContentSuggestion>, Category::CompareByID>
       suggestions_;
@@ -433,7 +419,7 @@ class RemoteSuggestionsProviderTest : public ::testing::Test {
   std::unique_ptr<RemoteSuggestionsProvider> MakeSnippetsService(
       bool set_empty_response = true) {
     auto service = MakeSnippetsServiceWithoutInitialization();
-    WaitForSnippetsServiceInitialization(set_empty_response);
+    WaitForSnippetsServiceInitialization(service.get(), set_empty_response);
     return service;
   }
 
@@ -474,17 +460,18 @@ class RemoteSuggestionsProviderTest : public ::testing::Test {
                                                    utils_.pref_service()));
   }
 
-  void WaitForSnippetsServiceInitialization(bool set_empty_response) {
-    EXPECT_TRUE(observer_);
-    EXPECT_FALSE(observer_->Loaded());
+  void WaitForSnippetsServiceInitialization(RemoteSuggestionsProvider* service,
+                                            bool set_empty_response) {
+    EXPECT_EQ(RemoteSuggestionsProvider::State::NOT_INITED, service->state_);
 
     // Add an initial fetch response, as the service tries to fetch when there
     // is nothing in the DB.
     if (set_empty_response)
       SetUpFetchResponse(GetTestJson(std::vector<std::string>()));
 
+    // TODO(treib): Find a better way to wait for initialization to finish.
     base::RunLoop().RunUntilIdle();
-    observer_->WaitForLoad();
+    EXPECT_NE(RemoteSuggestionsProvider::State::NOT_INITED, service->state_);
   }
 
   void ResetSnippetsService(
@@ -518,6 +505,7 @@ class RemoteSuggestionsProviderTest : public ::testing::Test {
   MockScheduler& mock_scheduler() { return scheduler_; }
   NiceMock<MockImageFetcher>* image_fetcher() { return image_fetcher_; }
   FakeImageDecoder* image_decoder() { return image_decoder_; }
+  PrefService* pref_service() { return utils_.pref_service(); }
 
   // Provide the json to be returned by the fake fetcher.
   void SetUpFetchResponse(const std::string& json) {
@@ -625,7 +613,8 @@ TEST_F(RemoteSuggestionsProviderTest, IgnoreRescheduleBeforeInit) {
   EXPECT_CALL(mock_scheduler(), Unschedule()).Times(0);
   auto service = MakeSnippetsServiceWithoutInitialization();
   service->RescheduleFetching(false);
-  WaitForSnippetsServiceInitialization(/*set_empty_response=*/true);
+  WaitForSnippetsServiceInitialization(service.get(),
+                                       /*set_empty_response=*/true);
 }
 
 TEST_F(RemoteSuggestionsProviderTest, HandleForcedRescheduleBeforeInit) {
@@ -641,7 +630,8 @@ TEST_F(RemoteSuggestionsProviderTest, HandleForcedRescheduleBeforeInit) {
   }
   auto service = MakeSnippetsServiceWithoutInitialization();
   service->RescheduleFetching(true);
-  WaitForSnippetsServiceInitialization(/*set_empty_response=*/true);
+  WaitForSnippetsServiceInitialization(service.get(),
+                                       /*set_empty_response=*/true);
 }
 
 TEST_F(RemoteSuggestionsProviderTest, RescheduleOnStateChange) {
@@ -864,6 +854,31 @@ TEST_F(RemoteSuggestionsProviderTest, PersistSuggestions) {
   EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
               SizeIs(1));
   EXPECT_THAT(observer().SuggestionsForCategory(other_category()), SizeIs(1));
+}
+
+TEST_F(RemoteSuggestionsProviderTest, DontNotifyIfNotAvailable) {
+  // Get some suggestions into the database.
+  auto service = MakeSnippetsService();
+  LoadFromJSONString(service.get(),
+                     GetMultiCategoryJson({GetSnippetN(0)}, {GetSnippetN(1)}));
+  ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
+              SizeIs(1));
+  ASSERT_THAT(observer().SuggestionsForCategory(other_category()), SizeIs(1));
+
+  service.reset();
+
+  // Set the pref that disables remote suggestions.
+  pref_service()->SetBoolean(prefs::kEnableSnippets, false);
+
+  // Recreate the service to simulate a Chrome start.
+  ResetSnippetsService(&service);
+
+  ASSERT_THAT(RemoteSuggestionsProvider::State::DISABLED, Eq(service->state_));
+
+  // Now the observer should not have received any suggestions.
+  EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
+              IsEmpty());
+  EXPECT_THAT(observer().SuggestionsForCategory(other_category()), IsEmpty());
 }
 
 TEST_F(RemoteSuggestionsProviderTest, Clear) {

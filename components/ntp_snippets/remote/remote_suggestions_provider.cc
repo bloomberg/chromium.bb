@@ -485,7 +485,8 @@ void RemoteSuggestionsProvider::ClearCachedSuggestions(Category category) {
   database_->DeleteImages(GetSnippetIDVector(content->snippets));
   content->snippets.clear();
 
-  NotifyNewSuggestions(category, *content);
+  if (IsCategoryStatusAvailable(content->status))
+    NotifyNewSuggestions(category, *content);
 }
 
 void RemoteSuggestionsProvider::GetDismissedSuggestionsForDebugging(
@@ -1041,7 +1042,11 @@ void RemoteSuggestionsProvider::FinishInitialization() {
   // don't know how long the fetch will take or if it will even complete.
   for (const auto& item : category_contents_) {
     Category category = item.first;
-    NotifyNewSuggestions(category, item.second);
+    const CategoryContent& content = item.second;
+    // Note: We might be in a non-available status here, e.g. DISABLED due to
+    // enterprise policy.
+    if (IsCategoryStatusAvailable(content.status))
+      NotifyNewSuggestions(category, content);
   }
 }
 
