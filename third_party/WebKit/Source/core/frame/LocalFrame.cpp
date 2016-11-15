@@ -491,6 +491,11 @@ void LocalFrame::detachChildren() {
     ChildFrameDisconnector(*document).disconnect();
 }
 
+void LocalFrame::documentAttached() {
+  DCHECK(document());
+  selection().documentAttached(document());
+}
+
 void LocalFrame::setDOMWindow(LocalDOMWindow* domWindow) {
   // TODO(haraken): Update this comment.
   // Oilpan: setDOMWindow() cannot be used when finalizing. Which

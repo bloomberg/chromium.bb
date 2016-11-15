@@ -2287,7 +2287,7 @@ void Document::initialize() {
   if (TextAutosizer* autosizer = textAutosizer())
     autosizer->updatePageInfo();
 
-  m_frame->selection().documentAttached(this);
+  m_frame->documentAttached();
   m_lifecycle.advanceTo(DocumentLifecycle::StyleClean);
 
   if (view())

@@ -125,6 +125,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void setDocumentHasReceivedUserGesture() override;
 
   void detachChildren();
+  void documentAttached();
 
   LocalDOMWindow* localDOMWindow() const;
   void setDOMWindow(LocalDOMWindow*);
