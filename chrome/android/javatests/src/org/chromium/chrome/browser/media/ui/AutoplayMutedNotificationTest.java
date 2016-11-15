@@ -4,10 +4,13 @@
 
 package org.chromium.chrome.browser.media.ui;
 
+import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
+
 import android.content.Context;
 import android.media.AudioManager;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
@@ -83,6 +86,7 @@ public class AutoplayMutedNotificationTest extends ChromeActivityTestCaseBase<Ch
     }
 
     @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testBasic() throws Exception {
         Tab tab = getActivity().getActivityTab();
 
@@ -103,6 +107,7 @@ public class AutoplayMutedNotificationTest extends ChromeActivityTestCaseBase<Ch
     }
 
     @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testDoesNotReactToAudioFocus() throws Exception {
         Tab tab = getActivity().getActivityTab();
 
@@ -125,6 +130,7 @@ public class AutoplayMutedNotificationTest extends ChromeActivityTestCaseBase<Ch
     }
 
     @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testAutoplayMutedThenUnmute() throws Exception {
         Tab tab = getActivity().getActivityTab();
 
