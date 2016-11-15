@@ -119,27 +119,21 @@ class SessionsSyncManager : public syncer::SyncableService,
   void DoGarbageCollection();
 
  private:
-  // Keep all the links to local tab data in one place. A tab_node_id and tab
-  // must be passed at creation. The tab_node_id is not mutable, although
-  // all other fields are.
+  // Track links between a tab id and it's sync tab node id and url. The tab
+  // node id is not mutable, as the entity backing a tab should never change
+  // during runtime. The url can be updated as navigations are performed.
   class TabLink {
    public:
-    TabLink(int tab_node_id, const SyncedTabDelegate* tab)
-        : tab_node_id_(tab_node_id), tab_(tab) {}
+    explicit TabLink(int tab_node_id) : tab_node_id_(tab_node_id) {}
 
-    void set_tab(const SyncedTabDelegate* tab) { tab_ = tab; }
     void set_url(const GURL& url) { url_ = url; }
 
     int tab_node_id() const { return tab_node_id_; }
-    const SyncedTabDelegate* tab() const { return tab_; }
     const GURL& url() const { return url_; }
 
    private:
     // The id for the sync node this tab is stored in.
     const int tab_node_id_;
-
-    // The tab object itself.
-    const SyncedTabDelegate* tab_;
 
     // The currently visible url of the tab (used for syncing favicons).
     GURL url_;
@@ -183,20 +177,16 @@ class SessionsSyncManager : public syncer::SyncableService,
 
   void InitializeCurrentMachineTag();
 
-  // Load and add window or tab data for a foreign session to our internal
+  // Load and add window or tab data from synced specifics to our internal
   // tracking.
-  void UpdateTrackerWithForeignSession(
-      const sync_pb::SessionSpecifics& specifics,
-      const base::Time& modification_time);
+  void UpdateTrackerWithSpecifics(const sync_pb::SessionSpecifics& specifics,
+                                  const base::Time& modification_time);
 
   // Returns true if |sync_data| contained a header node for the current
-  // machine, false otherwise. |restored_tabs| is a filtered tab-only
-  // subset of |sync_data| returned by this function for convenience.
-  // |new_changes| is a link to the SyncChange pipeline that exists in the
-  // caller's context. This function will append necessary changes for
-  // processing later.
+  // machine, false otherwise. |new_changes| is a link to the SyncChange
+  // pipeline that exists in the caller's context. This function will append
+  // necessary changes for processing later.
   bool InitFromSyncModel(const syncer::SyncDataList& sync_data,
-                         syncer::SyncDataList* restored_tabs,
                          syncer::SyncChangeList* new_changes);
 
   // Helper to construct a deletion SyncChange for a *tab node*.
@@ -245,11 +235,6 @@ class SessionsSyncManager : public syncer::SyncableService,
   // RELOAD_TABS will additionally cause a resync of all tabs (same as calling
   // AssociateTabs with a vector of all tabs).
   //
-  // |restored_tabs| is a filtered tab-only subset of initial sync data, if
-  // available (during MergeDataAndStartSyncing). It can be used to obtain
-  // baseline SessionSpecifics for tabs we can't fully associate any other
-  // way because they don't yet have a WebContents.
-  //
   // Returns: false if the local session's sync nodes were deleted and
   // reassociation is necessary, true otherwise.
   //
@@ -258,7 +243,6 @@ class SessionsSyncManager : public syncer::SyncableService,
   // changes for processing later.
   enum ReloadTabsOption { RELOAD_TABS, DONT_RELOAD_TABS };
   void AssociateWindows(ReloadTabsOption option,
-                        const syncer::SyncDataList& restored_tabs,
                         syncer::SyncChangeList* change_output);
 
   // Loads and reassociates the local tabs referenced in |tabs|.
@@ -287,17 +271,10 @@ class SessionsSyncManager : public syncer::SyncableService,
   // as they may have changed after a session was restored.  This method
   // compares new_tab_id and new_window_id against the previously persisted tab
   // ID and window ID (from our TabNodePool) and updates them if either differs.
-  // |restored_tabs| is a filtered tab-only subset of initial sync data, if
-  // available (during MergeDataAndStartSyncing). It can be used to obtain
-  // baseline SessionSpecifics for tabs we can't fully associate any other
-  // way because they don't yet have a WebContents.
-  // TODO(tim): Bug 98892. We should be able to test this for this on android
-  // even though we didn't have tests for old API-based sessions sync.
   void AssociateRestoredPlaceholderTab(
       const SyncedTabDelegate& tab_delegate,
       SessionID::id_type new_tab_id,
       SessionID::id_type new_window_id,
-      const syncer::SyncDataList& restored_tabs,
       syncer::SyncChangeList* change_output);
 
   // Stops and re-starts syncing to rebuild association mappings.

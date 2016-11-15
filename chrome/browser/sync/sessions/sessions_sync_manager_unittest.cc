@@ -549,11 +549,17 @@ class SyncedTabDelegateFake : public SyncedTabDelegate {
   int GetEntryCount() const override { return entries_.size(); }
 
   SessionID::id_type GetWindowId() const override {
-    return SessionID::id_type();
+    return window_id_;
+  }
+  void SetWindowId(SessionID::id_type window_id) {
+    window_id_ = window_id;
   }
 
   SessionID::id_type GetSessionId() const override {
-    return SessionID::id_type();
+    return tab_id_;
+  }
+  void SetSessionId(SessionID::id_type id) {
+    tab_id_ = id;
   }
 
   bool IsBeingDestroyed() const override { return false; }
@@ -594,6 +600,8 @@ class SyncedTabDelegateFake : public SyncedTabDelegate {
   int current_entry_index_;
   bool is_supervised_;
   int sync_id_;
+  SessionID::id_type tab_id_ = 0;
+  SessionID::id_type window_id_ = 0;
   std::vector<std::unique_ptr<const sessions::SerializedNavigationEntry>>
       blocked_navigations_;
   std::vector<std::unique_ptr<content::NavigationEntry>> entries_;
@@ -988,7 +996,9 @@ TEST_F(SessionsSyncManagerTest, SwappedOutOnRestore) {
   ASSERT_EQ(1U, windows.size());
   SyncedTabDelegateFake t1_override, t2_override;
   t1_override.SetSyncId(1);  // No WebContents by default.
+  t1_override.SetSessionId(kNewTabId);
   t2_override.SetSyncId(2);  // No WebContents by default.
+  t2_override.SetSessionId(t2_entity.session().tab().tab_id());
   SyncedWindowDelegateOverride window_override(*windows.begin());
   window_override.OverrideTabAt(1, &t1_override, kNewTabId);
   window_override.OverrideTabAt(2, &t2_override,
@@ -1006,12 +1016,15 @@ TEST_F(SessionsSyncManagerTest, SwappedOutOnRestore) {
           new syncer::SyncErrorFactoryMock()));
 
   // There should be two changes, one for the fully associated tab, and
-  // one for the tab_id update to t1.  t2 shouldn't need to be updated.
-  ASSERT_EQ(2U, FilterOutLocalHeaderChanges(&out)->size());
+  // one each for the tab_id updates to t1 and t2.
+  ASSERT_EQ(3U, FilterOutLocalHeaderChanges(&out)->size());
   EXPECT_EQ(SyncChange::ACTION_UPDATE, out[0].change_type());
   EXPECT_EQ(SyncChange::ACTION_UPDATE, out[1].change_type());
+  EXPECT_EQ(SyncChange::ACTION_UPDATE, out[2].change_type());
   EXPECT_EQ(kNewTabId,
             out[1].sync_data().GetSpecifics().session().tab().tab_id());
+  EXPECT_EQ(t2_entity.session().tab().tab_id(),
+            out[2].sync_data().GetSpecifics().session().tab().tab_id());
 
   // Verify TabLinks.
   SessionsSyncManager::TabLinksMap tab_map = manager()->local_tab_map_;
@@ -1021,10 +1034,6 @@ TEST_F(SessionsSyncManagerTest, SwappedOutOnRestore) {
   EXPECT_EQ(1, tab_map.find(kNewTabId)->second->tab_node_id());
   int t0_tab_id = out[0].sync_data().GetSpecifics().session().tab().tab_id();
   EXPECT_EQ(0, tab_map.find(t0_tab_id)->second->tab_node_id());
-  // TODO(tim): Once bug 337057 is fixed, we can issue an OnLocalTabModified
-  // from here (using an override similar to above) to return a new tab id
-  // and verify that we don't see any node creations in the SyncChangeProcessor
-  // (similar to how SessionsSyncManagerTest.OnLocalTabModified works.)
 }
 
 // Ensure model association updates the window ID for tabs whose window's ID has
@@ -1050,6 +1059,7 @@ TEST_F(SessionsSyncManagerTest, WindowIdUpdatedOnRestore) {
   // SyncedTabDelegateFake is a placeholder (no WebContents) by default.
   SyncedTabDelegateFake t0_override;
   t0_override.SetSyncId(t0_entity.session().tab_node_id());
+  t0_override.SetWindowId(kNewWindowId);
 
   // Set up the window override with the new window ID and placeholder tab.
   const std::set<const SyncedWindowDelegate*>& windows =
@@ -1307,10 +1317,10 @@ TEST_F(SessionsSyncManagerTest, DeleteForeignSession) {
       tag, tab_nums1, &tabs));
 
   // Update associator with the session's meta node, window, and tabs.
-  manager()->UpdateTrackerWithForeignSession(meta, base::Time());
+  manager()->UpdateTrackerWithSpecifics(meta, base::Time());
   for (std::vector<sync_pb::SessionSpecifics>::iterator iter = tabs.begin();
        iter != tabs.end(); ++iter) {
-    manager()->UpdateTrackerWithForeignSession(*iter, base::Time());
+    manager()->UpdateTrackerWithSpecifics(*iter, base::Time());
   }
   ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
   ASSERT_EQ(1U, foreign_sessions.size());
@@ -2070,13 +2080,9 @@ TEST_F(SessionsSyncManagerTest, MergeLocalSessionExistingTabs) {
   // Tabs are ordered by sessionid in tab_map, so should be able to traverse
   // the tree based on order of tabs created
   SessionsSyncManager::TabLinksMap::iterator iter = tab_map.begin();
-  ASSERT_EQ(2, iter->second->tab()->GetEntryCount());
-  EXPECT_EQ(GURL("http://foo1"), iter->second->tab()->GetVirtualURLAtIndex(0));
-  EXPECT_EQ(GURL("http://foo2"), iter->second->tab()->GetVirtualURLAtIndex(1));
+  EXPECT_EQ(GURL("http://foo2"), iter->second->url());
   iter++;
-  ASSERT_EQ(2, iter->second->tab()->GetEntryCount());
-  EXPECT_EQ(GURL("http://bar1"), iter->second->tab()->GetVirtualURLAtIndex(0));
-  EXPECT_EQ(GURL("http://bar2"), iter->second->tab()->GetVirtualURLAtIndex(1));
+  EXPECT_EQ(GURL("http://bar2"), iter->second->url());
 }
 
 TEST_F(SessionsSyncManagerTest, ForeignSessionModifiedTime) {
