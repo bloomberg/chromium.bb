@@ -153,12 +153,12 @@ void Image::drawTiled(GraphicsContext& ctxt,
   // stretch is not set for a particular rule).
   float vPhase = tileScaleFactor.height() * srcRect.y();
   float hPhase = tileScaleFactor.width() * srcRect.x();
-  if (vRule == Image::RepeatTile) {
+  if (vRule == RepeatTile) {
     float scaledTileHeight = tileScaleFactor.height() * srcRect.height();
     vPhase -= (dstRect.height() - scaledTileHeight) / 2;
   }
 
-  if (hRule == Image::RepeatTile) {
+  if (hRule == RepeatTile) {
     float scaledTileWidth = tileScaleFactor.width() * srcRect.width();
     hPhase -= (dstRect.width() - scaledTileWidth) / 2;
   }
@@ -207,7 +207,7 @@ void Image::drawTiled(GraphicsContext& ctxt,
   FloatPoint patternPhase(dstRect.x() - hPhase, dstRect.y() - vPhase);
 
   // TODO(cavalcantii): see crbug.com/662507.
-  if ((hRule == RoundTile || vRule == RoundTile)) {
+  if ((hRule == RoundTile) || (vRule == RoundTile)) {
     InterpolationQuality previousInterpolationQuality =
         ctxt.imageInterpolationQuality();
     ctxt.setImageInterpolationQuality(InterpolationLow);
@@ -290,7 +290,7 @@ void Image::drawPattern(GraphicsContext& context,
   {
     SkPaint paint = context.fillPaint();
     paint.setColor(SK_ColorBLACK);
-    paint.setBlendMode(static_cast<SkBlendMode>(compositeOp));
+    paint.setBlendMode(compositeOp);
     paint.setFilterQuality(
         context.computeFilterQuality(this, destRect, normSrcRect));
     paint.setAntiAlias(context.shouldAntialias());
