@@ -20,6 +20,15 @@
         ],
         "name": "gpu_perftests",
         "script": "gtest_perf_test.py"
+      },
+      {
+        "args": [
+          "tracing_perftests",
+          "--adb-path",
+          "src/third_party/catapult/devil/bin/deps/linux2/x86_64/bin/adb"
+        ],
+        "name": "tracing_perftests",
+        "script": "gtest_perf_test.py"
       }
     ]
   },
@@ -42,6 +51,15 @@
         ],
         "name": "gpu_perftests",
         "script": "gtest_perf_test.py"
+      },
+      {
+        "args": [
+          "tracing_perftests",
+          "--adb-path",
+          "src/third_party/catapult/devil/bin/deps/linux2/x86_64/bin/adb"
+        ],
+        "name": "tracing_perftests",
+        "script": "gtest_perf_test.py"
       }
     ]
   },
@@ -54,6 +72,15 @@
           "src/third_party/catapult/devil/bin/deps/linux2/x86_64/bin/adb"
         ],
         "name": "cc_perftests",
+        "script": "gtest_perf_test.py"
+      },
+      {
+        "args": [
+          "tracing_perftests",
+          "--adb-path",
+          "src/third_party/catapult/devil/bin/deps/linux2/x86_64/bin/adb"
+        ],
+        "name": "tracing_perftests",
         "script": "gtest_perf_test.py"
       }
     ]
@@ -77,6 +104,15 @@
         ],
         "name": "gpu_perftests",
         "script": "gtest_perf_test.py"
+      },
+      {
+        "args": [
+          "tracing_perftests",
+          "--adb-path",
+          "src/third_party/catapult/devil/bin/deps/linux2/x86_64/bin/adb"
+        ],
+        "name": "tracing_perftests",
+        "script": "gtest_perf_test.py"
       }
     ]
   },
@@ -89,6 +125,15 @@
           "src/third_party/catapult/devil/bin/deps/linux2/x86_64/bin/adb"
         ],
         "name": "cc_perftests",
+        "script": "gtest_perf_test.py"
+      },
+      {
+        "args": [
+          "tracing_perftests",
+          "--adb-path",
+          "src/third_party/catapult/devil/bin/deps/linux2/x86_64/bin/adb"
+        ],
+        "name": "tracing_perftests",
         "script": "gtest_perf_test.py"
       }
     ]

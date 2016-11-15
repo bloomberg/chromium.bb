@@ -129,6 +129,39 @@ SCRIPT_TESTS = [
   },
   {
     'args': [
+      'tracing_perftests',
+      '--adb-path',
+      'src/third_party/catapult/devil/bin/deps/linux2/x86_64/bin/adb',
+    ],
+    'name': 'tracing_perftests',
+    'script': 'gtest_perf_test.py',
+    'testers': {
+      'chromium.perf': [
+        {
+          'name': 'Android Galaxy S5 Perf',
+          'shards': [3]
+        },
+        {
+          'name': 'Android Nexus5 Perf',
+          'shards': [2]
+        },
+        {
+          'name': 'Android Nexus6 Perf',
+          'shards': [2]
+        },
+        {
+          'name': 'Android Nexus7v2 Perf',
+          'shards': [2]
+        },
+        {
+          'name': 'Android Nexus9 Perf',
+          'shards': [2]
+        },
+      ]
+    }
+  },
+  {
+    'args': [
       'load_library_perf_tests',
       '--test-launcher-print-test-stdio=always'
     ],
