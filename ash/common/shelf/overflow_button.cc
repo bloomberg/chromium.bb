@@ -84,7 +84,11 @@ void OverflowButton::OnPaint(gfx::Canvas* canvas) {
 }
 
 std::unique_ptr<views::InkDrop> OverflowButton::CreateInkDrop() {
-  return CreateDefaultFloodFillInkDropImpl();
+  std::unique_ptr<views::InkDropImpl> ink_drop =
+      CreateDefaultFloodFillInkDropImpl();
+  ink_drop->SetShowHighlightOnHover(false);
+  ink_drop->SetAutoHighlightMode(views::InkDropImpl::AutoHighlightMode::NONE);
+  return std::move(ink_drop);
 }
 
 std::unique_ptr<views::InkDropRipple> OverflowButton::CreateInkDropRipple()
