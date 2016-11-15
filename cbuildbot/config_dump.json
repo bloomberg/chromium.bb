@@ -636,6 +636,8 @@
             "overlays": "both",
             "useflags": [
                 "-cros-debug",
+                "-tests_network_VPNConnect.l2tpipsec_psk",
+                "-tests_network_VPNConnect.l2tpipsec_xauth",
                 "-tests_platform_SyncCrash",
                 "-tests_security_OpenFDs",
                 "chrome_internal"
@@ -694,6 +696,8 @@
             "profile": "llvm",
             "useflags": [
                 "-cros-debug",
+                "-tests_network_VPNConnect.l2tpipsec_psk",
+                "-tests_network_VPNConnect.l2tpipsec_xauth",
                 "-tests_platform_SyncCrash",
                 "-tests_security_OpenFDs",
                 "chrome_internal",
@@ -739,6 +743,8 @@
             "profile": "llvm",
             "useflags": [
                 "-cros-debug",
+                "-tests_network_VPNConnect.l2tpipsec_psk",
+                "-tests_network_VPNConnect.l2tpipsec_xauth",
                 "-tests_platform_SyncCrash",
                 "-tests_security_OpenFDs",
                 "chrome_internal"
@@ -1117,6 +1123,8 @@
             "overlays": "both",
             "useflags": [
                 "-cros-debug",
+                "-tests_network_VPNConnect.l2tpipsec_psk",
+                "-tests_network_VPNConnect.l2tpipsec_xauth",
                 "-tests_platform_SyncCrash",
                 "-tests_security_OpenFDs",
                 "chrome_internal"

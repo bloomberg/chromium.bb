@@ -1546,9 +1546,16 @@ def ToolchainBuilders(site_config, board_configs, hw_test_list):
       buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
       images=['base', 'test', 'recovery'],
       build_timeout=(15 * 60 + 50) * 60,
-      # Need to re-enable platform_SyncCrash after issue 658864 is fixed.
-      useflags=append_useflags(['-cros-debug', '-tests_security_OpenFDs',
-                                '-tests_platform_SyncCrash']),
+      # Need to re-enable platform_SyncCrash after issue crosbug/658864 is
+      # fixed. Need to re-enable network_VPNConnect.* tests after issue
+      # crosbug/585936 is fixed. According to crosbug/653496 security_OpenFDs
+      # will not work for non-official builds, so we need to leave it
+      # permanently disabled.
+      useflags=append_useflags(['-cros-debug',
+                                '-tests_security_OpenFDs',
+                                '-tests_platform_SyncCrash',
+                                '-tests_network_VPNConnect.l2tpipsec_xauth',
+                                '-tests_network_VPNConnect.l2tpipsec_psk']),
       afdo_use=True,
       manifest=constants.OFFICIAL_MANIFEST,
       manifest_version=True,
