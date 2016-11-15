@@ -13,6 +13,8 @@ source_set("application_delegate") {
     "//ios/chrome/browser/metrics",
   ]
   libs = [ "Foundation.framework" ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("unit_tests") {
