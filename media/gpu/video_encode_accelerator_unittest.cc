@@ -1804,7 +1804,9 @@ class VEANoInputClient : public VideoEncodeAccelerator::Client {
 };
 
 VEANoInputClient::VEANoInputClient(ClientStateNotification<ClientState>* note)
-    : note_(note), next_output_buffer_id_(0) {}
+    : note_(note), next_output_buffer_id_(0) {
+  thread_checker_.DetachFromThread();
+}
 
 VEANoInputClient::~VEANoInputClient() {
   LOG_ASSERT(!has_encoder());
