@@ -283,6 +283,82 @@ void LinkStyle::setCrossOriginStylesheetStatus(CSSStyleSheet* sheet) {
   m_fetchFollowingCORS = false;
 }
 
+// TODO(yoav): move that logic to LinkLoader
+LinkStyle::LoadReturnValue LinkStyle::loadStylesheetIfNeeded(
+    const LinkRequestBuilder& builder,
+    const String& type) {
+  if (m_disabledState == Disabled || !m_owner->relAttribute().isStyleSheet() ||
+      !styleSheetTypeIsSupported(type) || !shouldLoadResource() ||
+      !builder.url().isValid())
+    return NotNeeded;
+
+  if (resource()) {
+    removePendingSheet();
+    clearResource();
+    clearFetchFollowingCORS();
+  }
+
+  if (!m_owner->shouldLoadLink())
+    return Bail;
+
+  m_loading = true;
+
+  String title = m_owner->title();
+  if (!title.isEmpty() && !m_owner->isAlternate() &&
+      m_disabledState != EnabledViaScript && m_owner->isInDocumentTree()) {
+    document().styleEngine().setPreferredStylesheetSetNameIfNotSet(
+        title, StyleEngine::DontUpdateActiveSheets);
+  }
+
+  bool mediaQueryMatches = true;
+  LocalFrame* frame = loadingFrame();
+  if (!m_owner->media().isEmpty() && frame) {
+    MediaQuerySet* media = MediaQuerySet::create(m_owner->media());
+    MediaQueryEvaluator evaluator(frame);
+    mediaQueryMatches = evaluator.eval(media);
+  }
+
+  // Don't hold up layout tree construction and script execution on
+  // stylesheets that are not needed for the layout at the moment.
+  bool blocking = mediaQueryMatches && !m_owner->isAlternate() &&
+                  m_owner->isCreatedByParser();
+  addPendingSheet(blocking ? Blocking : NonBlocking);
+
+  // Load stylesheets that are not needed for the layout immediately with low
+  // priority.  When the link element is created by scripts, load the
+  // stylesheets asynchronously but in high priority.
+  bool lowPriority = !mediaQueryMatches || m_owner->isAlternate();
+  FetchRequest request = builder.build(lowPriority);
+  CrossOriginAttributeValue crossOrigin = crossOriginAttributeValue(
+      m_owner->fastGetAttribute(HTMLNames::crossoriginAttr));
+  if (crossOrigin != CrossOriginAttributeNotSet) {
+    request.setCrossOriginAccessControl(document().getSecurityOrigin(),
+                                        crossOrigin);
+    setFetchFollowingCORS();
+  }
+
+  String integrityAttr = m_owner->fastGetAttribute(HTMLNames::integrityAttr);
+  if (!integrityAttr.isEmpty()) {
+    IntegrityMetadataSet metadataSet;
+    SubresourceIntegrity::parseIntegrityAttribute(integrityAttr, metadataSet);
+    request.setIntegrityMetadata(metadataSet);
+  }
+  setResource(CSSStyleSheetResource::fetch(request, document().fetcher()));
+
+  if (m_loading && !resource()) {
+    // The request may have been denied if (for example) the stylesheet is
+    // local and the document is remote, or if there was a Content Security
+    // Policy Failure.  setCSSStyleSheet() can be called synchronuosly in
+    // setResource() and thus resource() is null and |m_loading| is false in
+    // such cases even if the request succeeds.
+    m_loading = false;
+    removePendingSheet();
+    notifyLoadedSheetAndAllCriticalSubresources(
+        Node::ErrorOccurredLoadingSubresource);
+  }
+  return Loaded;
+}
+
 void LinkStyle::process() {
   DCHECK(m_owner->shouldProcessStyle());
   String type = m_owner->typeValue().lower();
@@ -309,74 +385,7 @@ void LinkStyle::process() {
                          builder.url()))
     return;
 
-  if (m_disabledState != Disabled && m_owner->relAttribute().isStyleSheet() &&
-      styleSheetTypeIsSupported(type) && shouldLoadResource() &&
-      builder.url().isValid()) {
-    if (resource()) {
-      removePendingSheet();
-      clearResource();
-      clearFetchFollowingCORS();
-    }
-
-    if (!m_owner->shouldLoadLink())
-      return;
-
-    m_loading = true;
-
-    String title = m_owner->title();
-    if (!title.isEmpty() && !m_owner->isAlternate() &&
-        m_disabledState != EnabledViaScript && m_owner->isInDocumentTree()) {
-      document().styleEngine().setPreferredStylesheetSetNameIfNotSet(
-          title, StyleEngine::DontUpdateActiveSheets);
-    }
-
-    bool mediaQueryMatches = true;
-    LocalFrame* frame = loadingFrame();
-    if (!m_owner->media().isEmpty() && frame) {
-      MediaQuerySet* media = MediaQuerySet::create(m_owner->media());
-      MediaQueryEvaluator evaluator(frame);
-      mediaQueryMatches = evaluator.eval(media);
-    }
-
-    // Don't hold up layout tree construction and script execution on
-    // stylesheets that are not needed for the layout at the moment.
-    bool blocking = mediaQueryMatches && !m_owner->isAlternate() &&
-                    m_owner->isCreatedByParser();
-    addPendingSheet(blocking ? Blocking : NonBlocking);
-
-    // Load stylesheets that are not needed for the layout immediately with low
-    // priority.  When the link element is created by scripts, load the
-    // stylesheets asynchronously but in high priority.
-    bool lowPriority = !mediaQueryMatches || m_owner->isAlternate();
-    FetchRequest request = builder.build(lowPriority);
-    CrossOriginAttributeValue crossOrigin = crossOriginAttributeValue(
-        m_owner->fastGetAttribute(HTMLNames::crossoriginAttr));
-    if (crossOrigin != CrossOriginAttributeNotSet) {
-      request.setCrossOriginAccessControl(document().getSecurityOrigin(),
-                                          crossOrigin);
-      setFetchFollowingCORS();
-    }
-
-    String integrityAttr = m_owner->fastGetAttribute(HTMLNames::integrityAttr);
-    if (!integrityAttr.isEmpty()) {
-      IntegrityMetadataSet metadataSet;
-      SubresourceIntegrity::parseIntegrityAttribute(integrityAttr, metadataSet);
-      request.setIntegrityMetadata(metadataSet);
-    }
-    setResource(CSSStyleSheetResource::fetch(request, document().fetcher()));
-
-    if (m_loading && !resource()) {
-      // The request may have been denied if (for example) the stylesheet is
-      // local and the document is remote, or if there was a Content Security
-      // Policy Failure.  setCSSStyleSheet() can be called synchronuosly in
-      // setResource() and thus resource() is null and |m_loading| is false in
-      // such cases even if the request succeeds.
-      m_loading = false;
-      removePendingSheet();
-      notifyLoadedSheetAndAllCriticalSubresources(
-          Node::ErrorOccurredLoadingSubresource);
-    }
-  } else if (m_sheet) {
+  if (loadStylesheetIfNeeded(builder, type) == NotNeeded && m_sheet) {
     // we no longer contain a stylesheet, e.g. perhaps rel or type was changed
     StyleSheet* removedSheet = m_sheet.get();
     clearSheet();

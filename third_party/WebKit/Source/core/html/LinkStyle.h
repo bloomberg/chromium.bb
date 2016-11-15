@@ -66,6 +66,9 @@ class LinkStyle final : public LinkResource, ResourceOwner<StyleSheetResource> {
                         const String& charset,
                         const CSSStyleSheetResource*) override;
   String debugName() const override { return "LinkStyle"; }
+  enum LoadReturnValue { Loaded, NotNeeded, Bail };
+  LoadReturnValue loadStylesheetIfNeeded(const LinkRequestBuilder&,
+                                         const String& type);
 
   enum DisabledState { Unset, EnabledViaScript, Disabled };
 
