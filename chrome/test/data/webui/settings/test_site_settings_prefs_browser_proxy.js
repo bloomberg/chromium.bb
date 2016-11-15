@@ -54,11 +54,14 @@ var TestSiteSettingsPrefsBrowserProxy = function() {
     'fetchZoomLevels',
     'getDefaultValueForContentType',
     'getExceptionList',
+    'initializeProtocolHandlerList',
+    'removeProtocolHandler',
     'removeUsbDevice',
     'removeZoomLevel',
     'resetCategoryPermissionForOrigin',
     'setCategoryPermissionForOrigin',
     'setDefaultValueForContentType',
+    'setProtocolDefault'
   ]);
 
   /** @private {!SiteSettingsPref} */
@@ -67,8 +70,11 @@ var TestSiteSettingsPrefsBrowserProxy = function() {
   /** @private {!Array<ZoomLevelEntry>} */
   this.zoomList_ = [];
 
-  /** @private {!Array<UsbDeviceEntry>} */
+  /** @private {!Array<!UsbDeviceEntry>} */
   this.usbDevices_ = [];
+
+  /** @private {!Array<!ProtocolEntry>} */
+  this.protocolHandlers_ = [];
 };
 
 TestSiteSettingsPrefsBrowserProxy.prototype = {
@@ -105,6 +111,15 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
   setUsbDevices: function(list) {
     // Shallow copy of the passed-in array so mutation won't impact the source
     this.usbDevices_ = list.slice();
+  },
+
+  /**
+   * Sets the prefs to use when testing.
+   * @param {!Array<ProtocolEntry>} list The protocol handlers list to set.
+   */
+  setProtocolHandlers: function(list) {
+    // Shallow copy of the passed-in array so mutation won't impact the source
+    this.protocolHandlers_ = list.slice();
   },
 
   /** @override */
@@ -235,5 +250,22 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
   /** @override */
   removeUsbDevice: function() {
     this.methodCalled('removeUsbDevice', arguments);
+  },
+
+  /** @override */
+  initializeProtocolHandlerList: function() {
+    cr.webUIListenerCallback('setHandlersEnabled', true);
+    cr.webUIListenerCallback('setProtocolHandlers', this.protocolHandlers_);
+    this.methodCalled('initializeProtocolHandlerList');
+  },
+
+  /** @override */
+  setProtocolDefault: function() {
+    this.methodCalled('setProtocolDefault', arguments);
+  },
+
+  /** @override */
+  removeProtocolHandler: function() {
+    this.methodCalled('removeProtocolHandler', arguments);
   }
 };

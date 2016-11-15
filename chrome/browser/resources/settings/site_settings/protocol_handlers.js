@@ -51,14 +51,10 @@ Polymer({
     protocols: Array,
 
     /**
-     * The possible menu actions.
-     * @type {MenuActions}
+     * The targetted object for menu operations.
+     * @private {?Object}
      */
-    menuActions_: {
-      type: Object,
-      value: MenuActions,
-      readOnly: true,
-    },
+    actionMenuModel_: Object
   },
 
   ready: function() {
@@ -133,18 +129,50 @@ Polymer({
   },
 
   /**
-   * A handler when an action is selected in the action menu.
-   * @param {!{model: !{item: ProtocolHandlerEntry},
-   *           detail: !{selected: string}}} event
+   * The handler for when "Set Default" is selected in the action menu.
    * @private
    */
-  onActionMenuIronActivate_: function(event) {
-    var protocol = event.model.item.protocol;
-    var url = event.model.item.spec;
-    if (event.detail.selected == MenuActions.SET_DEFAULT) {
-      this.browserProxy.setProtocolDefault(protocol, url);
-    } else if (event.detail.selected == MenuActions.REMOVE) {
-      this.browserProxy.removeProtocolHandler(protocol, url);
-    }
+  onDefaultTap_: function() {
+    var item = this.actionMenuModel_.item;
+
+    this.$$('dialog[is=cr-action-menu]').close();
+    this.actionMenuModel_ = null;
+    this.browserProxy.setProtocolDefault(item.protocol, item.spec);
   },
+
+  /**
+   * The handler for when "Remove" is selected in the action menu.
+   * @private
+   */
+  onRemoveTap_: function() {
+    var item = this.actionMenuModel_.item;
+
+    this.$$('dialog[is=cr-action-menu]').close();
+    this.actionMenuModel_ = null;
+    this.browserProxy.removeProtocolHandler(item.protocol, item.spec);
+  },
+
+  /**
+   * Checks whether or not the selected actionMenuModel is the default handler
+   * for its protocol.
+   * @return {boolean} if actionMenuModel_ is default handler of its protocol.
+   */
+  isModelDefault_: function() {
+    return !!this.actionMenuModel_ && (this.actionMenuModel_.index ==
+        this.actionMenuModel_.protocol.default_handler);
+  },
+
+  /**
+   * A handler to show the action menu next to the clicked menu button.
+   * @param {!{model: !{protocol: HandlerEntry, item: ProtocolEntry,
+   *     index: number}}} event
+   * @private
+   */
+  showMenu_: function(event) {
+    this.actionMenuModel_ = event.model;
+    /** @type {!CrActionMenuElement} */ (
+        this.$$('dialog[is=cr-action-menu]')).showAt(
+            /** @type {!Element} */ (
+                Polymer.dom(/** @type {!Event} */ (event)).localTarget));
+  }
 });

@@ -8,7 +8,7 @@ cr.define('usb_devices', function() {
     suite('UsbDevices', function() {
       /**
        * A dummy usb-devices element created before each test.
-       * @type {UsbDeviceEntry}
+       * @type {UsbDevices}
        */
       var testElement;
 
