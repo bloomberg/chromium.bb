@@ -55,9 +55,12 @@ var CrSearchFieldBehavior = {
    *     firing for this change.
    */
   setValue: function(value, opt_noEvent) {
-    // Use bindValue when setting the input value so that changes propagate
-    // correctly.
-    this.getSearchInput().bindValue = value;
+    var searchInput = this.getSearchInput();
+    searchInput.value = value;
+    // If the input is an iron-input, ensure that the new value propagates as
+    // expected.
+    if (searchInput.bindValue != undefined)
+      searchInput.bindValue = value;
     this.onValueChanged_(value, !!opt_noEvent);
   },
 

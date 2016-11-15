@@ -116,12 +116,12 @@ TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
       toolbar = /** @type {!CrToolbarElement} */ (ui.$$('cr-toolbar'));
       var searchField = /** @type {CrToolbarSearchFieldElement} */ (
           toolbar.getSearchField());
-      assertEquals('', searchField.getSearchInput().bindValue);
+      assertEquals('', searchField.getSearchInput().value);
 
       var query = 'foo';
       settings.navigateTo(
           settings.Route.BASIC, new URLSearchParams(`search=${query}`));
-      assertEquals(query, searchField.getSearchInput().bindValue);
+      assertEquals(query, searchField.getSearchInput().value);
     });
 
     test('search box initiated search propagates to URL', function() {
@@ -131,7 +131,7 @@ TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
       settings.navigateTo(
           settings.Route.BASIC, /* dynamicParams */ null,
           /* removeSearch */ true);
-      assertEquals('', searchField.getSearchInput().bindValue);
+      assertEquals('', searchField.getSearchInput().value);
       assertFalse(settings.getQueryParameters().has('search'));
 
       var value = 'GOOG';

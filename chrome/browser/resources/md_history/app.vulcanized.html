@@ -712,319 +712,6 @@ iron-icon {
     </defs>
   </svg>
 </iron-iconset-svg>
-<dom-module id="iron-a11y-announcer" assetpath="chrome://resources/polymer/v1_0/iron-a11y-announcer/" css-build="shadow">
-  <template>
-    <style scope="iron-a11y-announcer">:host {
-  display: inline-block;
-        position: fixed;
-        clip: rect(0px,0px,0px,0px);
-}
-
-</style>
-    <div aria-live$="[[mode]]">[[_text]]</div>
-  </template>
-
-  </dom-module>
-<style>
-/* Copyright 2015 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file. */
-
-<if expr="not chromeos and not is_android">
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Roboto'), local('Roboto-Regular'),
-      url("chrome://resources/roboto/roboto-regular.woff2") format('woff2');
-}
-
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 500;
-  src: local('Roboto Medium'), local('Roboto-Medium'),
-      url("chrome://resources/roboto/roboto-medium.woff2") format('woff2');
-}
-
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 700;
-  src: local('Roboto Bold'), local('Roboto-Bold'),
-      url("chrome://resources/roboto/roboto-bold.woff2") format('woff2');
-}
-</if>
-
-</style>
-<style is="custom-style" css-build="shadow">html {
-  --paper-font-common-base_-_font-family:  'Roboto', 'Noto', sans-serif; --paper-font-common-base_-_-webkit-font-smoothing:  antialiased;;
-
-    --paper-font-common-code_-_font-family:  'Roboto Mono', 'Consolas', 'Menlo', monospace; --paper-font-common-code_-_-webkit-font-smoothing:  antialiased;;
-
-    --paper-font-common-expensive-kerning_-_text-rendering:  optimizeLegibility;;
-
-    --paper-font-common-nowrap_-_white-space:  nowrap; --paper-font-common-nowrap_-_overflow:  hidden; --paper-font-common-nowrap_-_text-overflow:  ellipsis;;
-
-    
-
-    --paper-font-display4_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-display4_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-display4_-_white-space:  var(--paper-font-common-nowrap_-_white-space); --paper-font-display4_-_overflow:  var(--paper-font-common-nowrap_-_overflow); --paper-font-display4_-_text-overflow:  var(--paper-font-common-nowrap_-_text-overflow); --paper-font-display4_-_font-size:  112px; --paper-font-display4_-_font-weight:  300; --paper-font-display4_-_letter-spacing:  -.044em; --paper-font-display4_-_line-height:  120px;;
-
-    --paper-font-display3_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-display3_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-display3_-_white-space:  var(--paper-font-common-nowrap_-_white-space); --paper-font-display3_-_overflow:  var(--paper-font-common-nowrap_-_overflow); --paper-font-display3_-_text-overflow:  var(--paper-font-common-nowrap_-_text-overflow); --paper-font-display3_-_font-size:  56px; --paper-font-display3_-_font-weight:  400; --paper-font-display3_-_letter-spacing:  -.026em; --paper-font-display3_-_line-height:  60px;;
-
-    --paper-font-display2_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-display2_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-display2_-_font-size:  45px; --paper-font-display2_-_font-weight:  400; --paper-font-display2_-_letter-spacing:  -.018em; --paper-font-display2_-_line-height:  48px;;
-
-    --paper-font-display1_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-display1_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-display1_-_font-size:  34px; --paper-font-display1_-_font-weight:  400; --paper-font-display1_-_letter-spacing:  -.01em; --paper-font-display1_-_line-height:  40px;;
-
-    --paper-font-headline_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-headline_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-headline_-_font-size:  24px; --paper-font-headline_-_font-weight:  400; --paper-font-headline_-_letter-spacing:  -.012em; --paper-font-headline_-_line-height:  32px;;
-
-    --paper-font-title_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-title_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-title_-_white-space:  var(--paper-font-common-nowrap_-_white-space); --paper-font-title_-_overflow:  var(--paper-font-common-nowrap_-_overflow); --paper-font-title_-_text-overflow:  var(--paper-font-common-nowrap_-_text-overflow); --paper-font-title_-_font-size:  20px; --paper-font-title_-_font-weight:  500; --paper-font-title_-_line-height:  28px;;
-
-    --paper-font-subhead_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-subhead_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-subhead_-_font-size:  16px; --paper-font-subhead_-_font-weight:  400; --paper-font-subhead_-_line-height:  24px;;
-
-    --paper-font-body2_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-body2_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-body2_-_font-size:  14px; --paper-font-body2_-_font-weight:  500; --paper-font-body2_-_line-height:  24px;;
-
-    --paper-font-body1_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-body1_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-body1_-_font-size:  14px; --paper-font-body1_-_font-weight:  400; --paper-font-body1_-_line-height:  20px;;
-
-    --paper-font-caption_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-caption_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-caption_-_white-space:  var(--paper-font-common-nowrap_-_white-space); --paper-font-caption_-_overflow:  var(--paper-font-common-nowrap_-_overflow); --paper-font-caption_-_text-overflow:  var(--paper-font-common-nowrap_-_text-overflow); --paper-font-caption_-_font-size:  12px; --paper-font-caption_-_font-weight:  400; --paper-font-caption_-_letter-spacing:  0.011em; --paper-font-caption_-_line-height:  20px;;
-
-    --paper-font-menu_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-menu_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-menu_-_white-space:  var(--paper-font-common-nowrap_-_white-space); --paper-font-menu_-_overflow:  var(--paper-font-common-nowrap_-_overflow); --paper-font-menu_-_text-overflow:  var(--paper-font-common-nowrap_-_text-overflow); --paper-font-menu_-_font-size:  13px; --paper-font-menu_-_font-weight:  500; --paper-font-menu_-_line-height:  24px;;
-
-    --paper-font-button_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-button_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-button_-_white-space:  var(--paper-font-common-nowrap_-_white-space); --paper-font-button_-_overflow:  var(--paper-font-common-nowrap_-_overflow); --paper-font-button_-_text-overflow:  var(--paper-font-common-nowrap_-_text-overflow); --paper-font-button_-_font-size:  14px; --paper-font-button_-_font-weight:  500; --paper-font-button_-_letter-spacing:  0.018em; --paper-font-button_-_line-height:  24px; --paper-font-button_-_text-transform:  uppercase;;
-
-    --paper-font-code2_-_font-family:  var(--paper-font-common-code_-_font-family); --paper-font-code2_-_-webkit-font-smoothing:  var(--paper-font-common-code_-_-webkit-font-smoothing); --paper-font-code2_-_font-size:  14px; --paper-font-code2_-_font-weight:  700; --paper-font-code2_-_line-height:  20px;;
-
-    --paper-font-code1_-_font-family:  var(--paper-font-common-code_-_font-family); --paper-font-code1_-_-webkit-font-smoothing:  var(--paper-font-common-code_-_-webkit-font-smoothing); --paper-font-code1_-_font-size:  14px; --paper-font-code1_-_font-weight:  500; --paper-font-code1_-_line-height:  20px;;
-}
-
-</style>
-
-
-<dom-module id="paper-input-container" assetpath="chrome://resources/polymer/v1_0/paper-input/" css-build="shadow">
-  <template>
-    <style scope="paper-input-container">:host {
-  display: block;
-        padding: 8px 0;
-
-        ;
-}
-
-:host([inline]) {
-  display: inline-block;
-}
-
-:host([disabled]) {
-  pointer-events: none;
-        opacity: 0.33;
-
-        ;
-}
-
-:host([hidden]) {
-  display: none !important;
-}
-
-.floated-label-placeholder {
-  font-family: var(--paper-font-caption_-_font-family); -webkit-font-smoothing: var(--paper-font-caption_-_-webkit-font-smoothing); white-space: var(--paper-font-caption_-_white-space); overflow: var(--paper-font-caption_-_overflow); text-overflow: var(--paper-font-caption_-_text-overflow); font-size: var(--paper-font-caption_-_font-size); font-weight: var(--paper-font-caption_-_font-weight); letter-spacing: var(--paper-font-caption_-_letter-spacing); line-height: var(--paper-font-caption_-_line-height);
-}
-
-.underline {
-  position: relative;
-}
-
-.focused-line {
-  position: var(--layout-fit_-_position); top: var(--layout-fit_-_top); right: var(--layout-fit_-_right); bottom: var(--layout-fit_-_bottom); left: var(--layout-fit_-_left);
-
-        background: var(--paper-input-container-focus-color,var(--primary-color));;
-        height: 2px;
-
-        -webkit-transform-origin: center center;
-        transform-origin: center center;
-        -webkit-transform: scale3d(0,1,1);
-        transform: scale3d(0,1,1);
-
-        display: var(--paper-input-container-underline-focus_-_display);
-}
-
-.underline.is-highlighted .focused-line {
-  -webkit-transform: none;
-        transform: none;
-        -webkit-transition: -webkit-transform 0.25s;
-        transition: transform 0.25s;
-
-        ;
-}
-
-.underline.is-invalid .focused-line {
-  background: var(--paper-input-container-invalid-color,var(--error-color));;
-        -webkit-transform: none;
-        transform: none;
-        -webkit-transition: -webkit-transform 0.25s;
-        transition: transform 0.25s;
-
-        ;
-}
-
-.unfocused-line {
-  position: var(--layout-fit_-_position); top: var(--layout-fit_-_top); right: var(--layout-fit_-_right); bottom: var(--layout-fit_-_bottom); left: var(--layout-fit_-_left);
-
-        background: var(--paper-input-container-color,var(--secondary-text-color));;
-        height: 1px;
-
-        display: var(--paper-input-container-underline_-_display);
-}
-
-:host([disabled]) .unfocused-line {
-  border-bottom: 1px dashed;
-        border-color: var(--paper-input-container-color,var(--secondary-text-color));;
-        background: transparent;
-
-        ;
-}
-
-.label-and-input-container {
-  -ms-flex: var(--layout-flex-auto_-_-ms-flex); -webkit-flex: var(--layout-flex-auto_-_-webkit-flex); flex: var(--layout-flex-auto_-_flex);
-        position: var(--layout-relative_-_position);
-
-        width: 100%;
-        max-width: 100%;
-}
-
-.input-content {
-  display: var(--layout-horizontal_-_display); -ms-flex-direction: var(--layout-horizontal_-_-ms-flex-direction); -webkit-flex-direction: var(--layout-horizontal_-_-webkit-flex-direction); flex-direction: var(--layout-horizontal_-_flex-direction);
-        -ms-flex-align: var(--layout-center_-_-ms-flex-align); -webkit-align-items: var(--layout-center_-_-webkit-align-items); align-items: var(--layout-center_-_align-items);
-
-        position: relative;
-}
-
-.input-content ::content label, .input-content ::content .paper-input-label {
-  position: absolute;
-        top: 0;
-        right: 0;
-        left: 0;
-        width: 100%;
-        font: inherit;
-        color: var(--paper-input-container-color,var(--secondary-text-color));;
-        -webkit-transition: -webkit-transform 0.25s, width 0.25s;
-        transition: transform 0.25s, width 0.25s;
-        -webkit-transform-origin: left top;
-        transform-origin: left top;
-
-        white-space: var(--paper-font-common-nowrap_-_white-space); overflow: var(--paper-font-common-nowrap_-_overflow); text-overflow: var(--paper-font-common-nowrap_-_text-overflow);
-        font-family: var(--paper-font-subhead_-_font-family); -webkit-font-smoothing: var(--paper-font-subhead_-_-webkit-font-smoothing); font-size: var(--paper-font-subhead_-_font-size); font-weight: var(--paper-font-subhead_-_font-weight); line-height: var(--paper-font-subhead_-_line-height);
-        color: var(--paper-input-container-label_-_color, var(--paper-input-container-color,var(--secondary-text-color))); font-size: var(--paper-input-container-label_-_font-size, var(--paper-font-subhead_-_font-size));
-        ;
-}
-
-.input-content.label-is-floating ::content label, .input-content.label-is-floating ::content .paper-input-label {
-  -webkit-transform: translateY(-75%) scale(0.75);
-        transform: translateY(-75%) scale(0.75);
-
-        
-        width: 133%;
-
-        ;
-}
-
-:host-context([dir="rtl"]) .input-content.label-is-floating ::content label, :host-context([dir="rtl"]) .input-content.label-is-floating ::content .paper-input-label {
-  width: 100%;
-        -webkit-transform-origin: right top;
-        transform-origin: right top;
-}
-
-.input-content.label-is-highlighted ::content label, .input-content.label-is-highlighted ::content .paper-input-label {
-  color: var(--paper-input-container-focus-color,var(--primary-color));;
-
-        ;
-}
-
-.input-content.is-invalid ::content label, .input-content.is-invalid ::content .paper-input-label {
-  color: var(--paper-input-container-invalid-color,var(--error-color));;
-}
-
-.input-content.label-is-hidden ::content label, .input-content.label-is-hidden ::content .paper-input-label {
-  visibility: hidden;
-}
-
-.input-content ::content input, .input-content ::content textarea, .input-content ::content iron-autogrow-textarea, .input-content ::content .paper-input-input {
-  position: relative; 
-        outline: none;
-        box-shadow: none;
-        padding: 0;
-        width: 100%;
-        max-width: 100%;
-        background: transparent;
-        border: none;
-        color: var(--paper-input-container-input-color,var(--primary-text-color));;
-        -webkit-appearance: none;
-        text-align: inherit;
-        vertical-align: bottom;
-
-        font-family: var(--paper-font-subhead_-_font-family); -webkit-font-smoothing: var(--paper-font-subhead_-_-webkit-font-smoothing); font-size: var(--paper-font-subhead_-_font-size); font-weight: var(--paper-font-subhead_-_font-weight); line-height: var(--paper-font-subhead_-_line-height);
-        ;
-}
-
-::content [prefix] {
-  font-family: var(--paper-font-subhead_-_font-family); -webkit-font-smoothing: var(--paper-font-subhead_-_-webkit-font-smoothing); font-size: var(--paper-font-subhead_-_font-size); font-weight: var(--paper-font-subhead_-_font-weight); line-height: var(--paper-font-subhead_-_line-height);
-
-        ;
-        -ms-flex: var(--layout-flex-none_-_-ms-flex); -webkit-flex: var(--layout-flex-none_-_-webkit-flex); flex: var(--layout-flex-none_-_flex);
-}
-
-::content [suffix] {
-  font-family: var(--paper-font-subhead_-_font-family); -webkit-font-smoothing: var(--paper-font-subhead_-_-webkit-font-smoothing); font-size: var(--paper-font-subhead_-_font-size); font-weight: var(--paper-font-subhead_-_font-weight); line-height: var(--paper-font-subhead_-_line-height);
-
-        ;
-        -ms-flex: var(--layout-flex-none_-_-ms-flex); -webkit-flex: var(--layout-flex-none_-_-webkit-flex); flex: var(--layout-flex-none_-_flex);
-}
-
-.input-content ::content input {
-  min-width: 0;
-}
-
-.input-content ::content textarea {
-  resize: none;
-}
-
-.add-on-content {
-  position: relative;
-}
-
-.add-on-content.is-invalid ::content * {
-  color: var(--paper-input-container-invalid-color,var(--error-color));;
-}
-
-.add-on-content.is-highlighted ::content * {
-  color: var(--paper-input-container-focus-color,var(--primary-color));;
-}
-
-</style>
-
-    <template is="dom-if" if="[[!noLabelFloat]]">
-      <div class="floated-label-placeholder" aria-hidden="true">&nbsp;</div>
-    </template>
-
-    <div class$="[[_computeInputContentClass(noLabelFloat,alwaysFloatLabel,focused,invalid,_inputHasContent)]]">
-      <content select="[prefix]" id="prefix"></content>
-
-      <div class="label-and-input-container" id="labelAndInputContainer">
-        <content select=":not([add-on]):not([prefix]):not([suffix])"></content>
-      </div>
-
-      <content select="[suffix]"></content>
-    </div>
-
-    <div class$="[[_computeUnderlineClass(focused,invalid)]]">
-      <div class="unfocused-line"></div>
-      <div class="focused-line"></div>
-    </div>
-
-    <div class$="[[_computeAddOnContentClass(focused,invalid)]]">
-      <content id="addOnContent" select="[add-on]"></content>
-    </div>
-  </template>
-</dom-module>
-
 <dom-module id="paper-spinner-styles" assetpath="chrome://resources/polymer/v1_0/paper-spinner/" css-build="shadow">
   <template>
     <style scope="paper-spinner-styles">:host {
@@ -2161,13 +1848,35 @@ paper-spinner-lite[active] {
   transition: opacity 200ms;
 }
 
-paper-input-container {
-  --paper-input-container-input-color: white;
-        --paper-input-container-underline_-_display:  none;;
-        --paper-input-container-underline-focus_-_display:  none;;
-        --paper-input-container-label_-_color: apply-shim-inherit; --paper-input-container-label_-_font-size: apply-shim-inherit;;
-        -webkit-padding-start: 2px;
+#searchTerm {
+  -webkit-margin-start: 2px;
         flex: 1;
+        line-height: 185%;
+        position: relative;
+}
+
+label {
+  bottom: 0;
+        cursor: text;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+}
+
+:host([has-search-text_]) label {
+  visibility: hidden;
+}
+
+input {
+  -webkit-appearance: none;
+        background: transparent;
+        border: none;
+        color: white;
+        font-family: inherit;
+        outline: none;
+        padding: 0;
+        width: 100%;
 }
 
 input[type='search']::-webkit-search-decoration, input[type='search']::-webkit-search-cancel-button, input[type='search']::-webkit-search-results-button {
@@ -2186,7 +1895,7 @@ input[type='search']::-webkit-search-decoration, input[type='search']::-webkit-s
   opacity: 0.6;
 }
 
-:host([narrow]:not([showing-search])) paper-input-container {
+:host([narrow]:not([showing-search])) #searchTerm {
   display: none;
 }
 
@@ -2209,10 +1918,11 @@ input[type='search']::-webkit-search-decoration, input[type='search']::-webkit-s
     </template>
     <paper-icon-button id="icon" icon="cr:search" title="[[label]]" tabindex$="[[computeIconTabIndex_(narrow)]]">
     </paper-icon-button>
-    <paper-input-container id="searchTerm" on-search="onSearchTermSearch" on-keydown="onSearchTermKeydown" no-label-float="">
+    <div id="searchTerm">
       <label id="prompt" for="searchInput">[[label]]</label>
-      <input is="iron-input" id="searchInput" type="search" on-blur="onInputBlur_" incremental="" autofocus="">
-    </paper-input-container>
+      <input id="searchInput" type="search" on-input="onSearchInput_" on-search="onSearchTermSearch" on-keydown="onSearchTermKeydown" on-focus="onInputFocus_" on-blur="onInputBlur_" incremental="" autofocus="">
+      
+    </div>
     <template is="dom-if" if="[[hasSearchText_]]">
       <paper-icon-button icon="cr:cancel" id="clearSearch" title="[[clearLabel]]" on-tap="clearSearch_">
       </paper-icon-button>
@@ -2855,6 +2565,19 @@ paper-tabs {
 </dom-module>
 
 
+<dom-module id="iron-a11y-announcer" assetpath="chrome://resources/polymer/v1_0/iron-a11y-announcer/" css-build="shadow">
+  <template>
+    <style scope="iron-a11y-announcer">:host {
+  display: inline-block;
+        position: fixed;
+        clip: rect(0px,0px,0px,0px);
+}
+
+</style>
+    <div aria-live$="[[mode]]">[[_text]]</div>
+  </template>
+
+  </dom-module>
 <dom-module id="iron-list" assetpath="chrome://resources/polymer/v1_0/iron-list/" css-build="shadow">
   <template>
     <style scope="iron-list">:host {
@@ -3584,6 +3307,79 @@ dialog .body {
     </iron-query-params>
   </template>
   </dom-module>
+<style>
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+<if expr="not chromeos and not is_android">
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Roboto'), local('Roboto-Regular'),
+      url("chrome://resources/roboto/roboto-regular.woff2") format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  src: local('Roboto Medium'), local('Roboto-Medium'),
+      url("chrome://resources/roboto/roboto-medium.woff2") format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Roboto Bold'), local('Roboto-Bold'),
+      url("chrome://resources/roboto/roboto-bold.woff2") format('woff2');
+}
+</if>
+
+</style>
+<style is="custom-style" css-build="shadow">html {
+  --paper-font-common-base_-_font-family:  'Roboto', 'Noto', sans-serif; --paper-font-common-base_-_-webkit-font-smoothing:  antialiased;;
+
+    --paper-font-common-code_-_font-family:  'Roboto Mono', 'Consolas', 'Menlo', monospace; --paper-font-common-code_-_-webkit-font-smoothing:  antialiased;;
+
+    --paper-font-common-expensive-kerning_-_text-rendering:  optimizeLegibility;;
+
+    --paper-font-common-nowrap_-_white-space:  nowrap; --paper-font-common-nowrap_-_overflow:  hidden; --paper-font-common-nowrap_-_text-overflow:  ellipsis;;
+
+    
+
+    --paper-font-display4_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-display4_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-display4_-_white-space:  var(--paper-font-common-nowrap_-_white-space); --paper-font-display4_-_overflow:  var(--paper-font-common-nowrap_-_overflow); --paper-font-display4_-_text-overflow:  var(--paper-font-common-nowrap_-_text-overflow); --paper-font-display4_-_font-size:  112px; --paper-font-display4_-_font-weight:  300; --paper-font-display4_-_letter-spacing:  -.044em; --paper-font-display4_-_line-height:  120px;;
+
+    --paper-font-display3_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-display3_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-display3_-_white-space:  var(--paper-font-common-nowrap_-_white-space); --paper-font-display3_-_overflow:  var(--paper-font-common-nowrap_-_overflow); --paper-font-display3_-_text-overflow:  var(--paper-font-common-nowrap_-_text-overflow); --paper-font-display3_-_font-size:  56px; --paper-font-display3_-_font-weight:  400; --paper-font-display3_-_letter-spacing:  -.026em; --paper-font-display3_-_line-height:  60px;;
+
+    --paper-font-display2_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-display2_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-display2_-_font-size:  45px; --paper-font-display2_-_font-weight:  400; --paper-font-display2_-_letter-spacing:  -.018em; --paper-font-display2_-_line-height:  48px;;
+
+    --paper-font-display1_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-display1_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-display1_-_font-size:  34px; --paper-font-display1_-_font-weight:  400; --paper-font-display1_-_letter-spacing:  -.01em; --paper-font-display1_-_line-height:  40px;;
+
+    --paper-font-headline_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-headline_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-headline_-_font-size:  24px; --paper-font-headline_-_font-weight:  400; --paper-font-headline_-_letter-spacing:  -.012em; --paper-font-headline_-_line-height:  32px;;
+
+    --paper-font-title_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-title_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-title_-_white-space:  var(--paper-font-common-nowrap_-_white-space); --paper-font-title_-_overflow:  var(--paper-font-common-nowrap_-_overflow); --paper-font-title_-_text-overflow:  var(--paper-font-common-nowrap_-_text-overflow); --paper-font-title_-_font-size:  20px; --paper-font-title_-_font-weight:  500; --paper-font-title_-_line-height:  28px;;
+
+    --paper-font-subhead_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-subhead_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-subhead_-_font-size:  16px; --paper-font-subhead_-_font-weight:  400; --paper-font-subhead_-_line-height:  24px;;
+
+    --paper-font-body2_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-body2_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-body2_-_font-size:  14px; --paper-font-body2_-_font-weight:  500; --paper-font-body2_-_line-height:  24px;;
+
+    --paper-font-body1_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-body1_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-body1_-_font-size:  14px; --paper-font-body1_-_font-weight:  400; --paper-font-body1_-_line-height:  20px;;
+
+    --paper-font-caption_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-caption_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-caption_-_white-space:  var(--paper-font-common-nowrap_-_white-space); --paper-font-caption_-_overflow:  var(--paper-font-common-nowrap_-_overflow); --paper-font-caption_-_text-overflow:  var(--paper-font-common-nowrap_-_text-overflow); --paper-font-caption_-_font-size:  12px; --paper-font-caption_-_font-weight:  400; --paper-font-caption_-_letter-spacing:  0.011em; --paper-font-caption_-_line-height:  20px;;
+
+    --paper-font-menu_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-menu_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-menu_-_white-space:  var(--paper-font-common-nowrap_-_white-space); --paper-font-menu_-_overflow:  var(--paper-font-common-nowrap_-_overflow); --paper-font-menu_-_text-overflow:  var(--paper-font-common-nowrap_-_text-overflow); --paper-font-menu_-_font-size:  13px; --paper-font-menu_-_font-weight:  500; --paper-font-menu_-_line-height:  24px;;
+
+    --paper-font-button_-_font-family:  var(--paper-font-common-base_-_font-family); --paper-font-button_-_-webkit-font-smoothing:  var(--paper-font-common-base_-_-webkit-font-smoothing); --paper-font-button_-_white-space:  var(--paper-font-common-nowrap_-_white-space); --paper-font-button_-_overflow:  var(--paper-font-common-nowrap_-_overflow); --paper-font-button_-_text-overflow:  var(--paper-font-common-nowrap_-_text-overflow); --paper-font-button_-_font-size:  14px; --paper-font-button_-_font-weight:  500; --paper-font-button_-_letter-spacing:  0.018em; --paper-font-button_-_line-height:  24px; --paper-font-button_-_text-transform:  uppercase;;
+
+    --paper-font-code2_-_font-family:  var(--paper-font-common-code_-_font-family); --paper-font-code2_-_-webkit-font-smoothing:  var(--paper-font-common-code_-_-webkit-font-smoothing); --paper-font-code2_-_font-size:  14px; --paper-font-code2_-_font-weight:  700; --paper-font-code2_-_line-height:  20px;;
+
+    --paper-font-code1_-_font-family:  var(--paper-font-common-code_-_font-family); --paper-font-code1_-_-webkit-font-smoothing:  var(--paper-font-common-code_-_-webkit-font-smoothing); --paper-font-code1_-_font-size:  14px; --paper-font-code1_-_font-weight:  500; --paper-font-code1_-_line-height:  20px;;
+}
+
+</style>
 <dom-module id="history-side-bar" assetpath="chrome://history/" css-build="shadow">
   <template>
     <style scope="history-side-bar">[hidden] {

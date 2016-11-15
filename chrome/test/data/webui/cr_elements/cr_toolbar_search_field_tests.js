@@ -14,7 +14,8 @@ cr.define('cr_toolbar_search_field', function() {
 
       /** @param {string} term */
       function simulateSearch(term) {
-        field.$.searchInput.bindValue = term;
+        field.$.searchInput.value = term;
+        field.onSearchInput_();
         field.onSearchTermSearch();
       }
 
