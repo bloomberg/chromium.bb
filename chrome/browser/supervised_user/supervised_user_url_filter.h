@@ -83,7 +83,7 @@ class SupervisedUserURLFilter
 
   // For known "cache" URLs (e.g. from the AMP project CDN), this returns the
   // embedded URL. For all other URLs, returns an empty GURL.
-  // TODO(treib): Merge this with Normalize().
+  // TODO(treib): Merge this with Normalize()? See also crbug.com/663678.
   GURL GetEmbeddedURL(const GURL& url) const;
 
   // Returns true if the URL has a standard scheme. Only URLs with standard
