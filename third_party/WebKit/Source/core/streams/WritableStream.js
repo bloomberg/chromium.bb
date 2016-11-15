@@ -499,7 +499,7 @@
       if (!IsWritableStream(stream)) {
         throw new TypeError(errIllegalConstructor);
       }
-      if (stream[_controlledWritableStream] !== undefined) {
+      if (stream[_writableStreamController] !== undefined) {
         throw new TypeError(errIllegalConstructor);
       }
       this[_controlledWritableStream] = stream;
@@ -791,10 +791,7 @@
     }
 
     highWaterMark = Number(highWaterMark);
-    if (Number_isNaN(highWaterMark)) {
-      throw new TypeError(errInvalidHWM);
-    }
-    if (highWaterMark < 0) {
+    if (Number_isNaN(highWaterMark) || highWaterMark < 0) {
       throw new RangeError(errInvalidHWM);
     }
 
