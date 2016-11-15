@@ -557,6 +557,9 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
     return *audio_controller_;
   }
 
+  // Should be used only for logging.
+  bool is_flash_plugin() const { return is_flash_plugin_; }
+
  private:
   friend class base::RefCounted<PepperPluginInstanceImpl>;
   friend class PpapiPluginInstanceTest;
