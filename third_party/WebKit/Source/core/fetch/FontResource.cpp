@@ -175,4 +175,16 @@ void FontResource::checkNotify() {
   Resource::checkNotify();
 }
 
+bool FontResource::isLowPriorityLoadingAllowedForRemoteFont() const {
+  DCHECK(!url().protocolIsData());
+  DCHECK(!isLoaded());
+  ResourceClientWalker<FontResourceClient> walker(clients());
+  while (FontResourceClient* client = walker.next()) {
+    if (!client->isLowPriorityLoadingAllowedForRemoteFont()) {
+      return false;
+    }
+  }
+  return true;
+}
+
 }  // namespace blink

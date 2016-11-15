@@ -67,6 +67,11 @@ class CORE_EXPORT FontResource final : public Resource {
       bool italic,
       FontOrientation = FontOrientation::Horizontal);
 
+  // Returns true if the loading priority of the remote font resource can be
+  // lowered. The loading priority of the font can be lowered only if the
+  // font is not needed for painting the text.
+  bool isLowPriorityLoadingAllowedForRemoteFont() const;
+
  private:
   class FontResourceFactory : public ResourceFactory {
    public:
@@ -112,6 +117,14 @@ class FontResourceClient : public ResourceClient {
   ResourceClientType getResourceClientType() const final { return FontType; }
   virtual void fontLoadShortLimitExceeded(FontResource*) {}
   virtual void fontLoadLongLimitExceeded(FontResource*) {}
+
+  // Returns true if loading priority of remote font resources can be lowered.
+  virtual bool isLowPriorityLoadingAllowedForRemoteFont() const {
+    // Only the RemoteFontFaceSources clients can prevent lowering of loading
+    // priority of the remote fonts.  Set the default to true to prevent
+    // other clients from incorrectly returning false.
+    return true;
+  }
 };
 
 }  // namespace blink

@@ -110,6 +110,7 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
   void switchToSwapPeriod();
   void switchToFailurePeriod();
   bool shouldTriggerWebFontsIntervention();
+  bool isLowPriorityLoadingAllowedForRemoteFont() const override;
 
   Member<FontResource> m_font;
   Member<CSSFontSelector> m_fontSelector;

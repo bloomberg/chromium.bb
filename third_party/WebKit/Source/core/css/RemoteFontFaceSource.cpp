@@ -17,6 +17,7 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/SimpleFontData.h"
+#include "platform/network/ResourceLoadPriority.h"
 #include "public/platform/WebEffectiveConnectionType.h"
 #include "wtf/CurrentTime.h"
 
@@ -200,6 +201,10 @@ bool RemoteFontFaceSource::shouldTriggerWebFontsIntervention() {
   return networkIsSlow && m_display == FontDisplayAuto;
 }
 
+bool RemoteFontFaceSource::isLowPriorityLoadingAllowedForRemoteFont() const {
+  return m_isInterventionTriggered;
+}
+
 PassRefPtr<SimpleFontData> RemoteFontFaceSource::createFontData(
     const FontDescription& fontDescription) {
   if (!isLoaded())
@@ -237,6 +242,13 @@ PassRefPtr<SimpleFontData> RemoteFontFaceSource::createLoadingFallbackFontData(
 
 void RemoteFontFaceSource::beginLoadIfNeeded() {
   if (m_fontSelector->document() && m_font->stillNeedsLoad()) {
+    if (!m_font->url().protocolIsData() && !m_font->isLoaded() &&
+        m_display == FontDisplayAuto &&
+        m_font->isLowPriorityLoadingAllowedForRemoteFont()) {
+      // Set the loading priority to VeryLow since this font is not required
+      // for painting the text.
+      m_font->didChangePriority(ResourceLoadPriorityVeryLow, 0);
+    }
     m_fontSelector->document()->fetcher()->startLoad(m_font);
     if (!m_font->isLoaded())
       m_font->startLoadLimitTimers();
