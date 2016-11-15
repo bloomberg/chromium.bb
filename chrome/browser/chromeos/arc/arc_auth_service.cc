@@ -607,16 +607,6 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
 
   context_.reset(new ArcAuthContext(this, profile_));
 
-  // In case UI is disabled we assume that ARC is opted-in. For ARC Kiosk we
-  // skip ToS because it is very likely that near the device there will be
-  // no one who is eligible to accept them. We skip if Android management check
-  // because there are no managed human users for Kiosk exist.
-  if (IsOptInVerificationDisabled() || IsArcKioskMode()) {
-    auth_code_.clear();
-    StartArc();
-    return;
-  }
-
   if (!g_disable_ui_for_testing ||
       g_enable_check_android_management_for_testing) {
     ArcAndroidManagementChecker::StartClient();
@@ -745,6 +735,20 @@ void ArcAuthService::OnOptInPreferenceChanged() {
     return;
   CloseUI();
   auth_code_.clear();
+
+  // In case UI is disabled we assume that ARC is opted-in. For ARC Kiosk we
+  // skip ToS because it is very likely that near the device there will be
+  // no one who is eligible to accept them. We skip if Android management check
+  // because there are no managed human users for Kiosk exist.
+  if (IsOptInVerificationDisabled() || IsArcKioskMode()) {
+    // Automatically accept terms in kiosk mode. This is not required for
+    // IsOptInVerificationDisabled mode because in last case it may cause
+    // a privacy issue on next run without this flag set.
+    if (IsArcKioskMode())
+      profile_->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
+    StartArc();
+    return;
+  }
 
   if (!profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn)) {
     if (profile_->GetPrefs()->GetBoolean(prefs::kArcTermsAccepted)) {
