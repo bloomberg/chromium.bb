@@ -74,6 +74,7 @@ weston_desktop_xwayland_surface_change_state(struct weston_desktop_xwayland_surf
 	bool to_add = (parent == NULL && state != XWAYLAND);
 
 	assert(state != NONE);
+	assert(!parent || state == TRANSIENT);
 
 	if (to_add && surface->added) {
 		surface->state = state;
