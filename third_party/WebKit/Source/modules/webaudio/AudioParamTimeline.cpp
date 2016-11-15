@@ -663,38 +663,41 @@ float AudioParamTimeline::valuesForFrameRangeImpl(size_t startFrame,
     if (nextEventType == ParamEvent::LinearRampToValue) {
       const float valueDelta = value2 - value1;
 #if CPU(X86) || CPU(X86_64)
-      // Minimize in-loop operations. Calculate starting value and increment.
-      // Next step: value += inc.
-      //  value = value1 +
-      //      (currentFrame/sampleRate - time1) * k * (value2 - value1);
-      //  inc = 4 / sampleRate * k * (value2 - value1);
-      // Resolve recursion by expanding constants to achieve a 4-step loop
-      // unrolling.
-      //  value = value1 +
-      //      ((currentFrame/sampleRate - time1) + i * sampleFrameTimeIncr) * k
-      //      * (value2 -value1), i in 0..3
-      __m128 vValue =
-          _mm_mul_ps(_mm_set_ps1(1 / sampleRate), _mm_set_ps(3, 2, 1, 0));
-      vValue =
-          _mm_add_ps(vValue, _mm_set_ps1(currentFrame / sampleRate - time1));
-      vValue = _mm_mul_ps(vValue, _mm_set_ps1(k * valueDelta));
-      vValue = _mm_add_ps(vValue, _mm_set_ps1(value1));
-      __m128 vInc = _mm_set_ps1(4 / sampleRate * k * valueDelta);
+      if (fillToFrame > writeIndex) {
+        // Minimize in-loop operations. Calculate starting value and increment.
+        // Next step: value += inc.
+        //  value = value1 +
+        //      (currentFrame/sampleRate - time1) * k * (value2 - value1);
+        //  inc = 4 / sampleRate * k * (value2 - value1);
+        // Resolve recursion by expanding constants to achieve a 4-step loop
+        // unrolling.
+        //  value = value1 +
+        //    ((currentFrame/sampleRate - time1) + i * sampleFrameTimeIncr) * k
+        //    * (value2 -value1), i in 0..3
+        __m128 vValue =
+            _mm_mul_ps(_mm_set_ps1(1 / sampleRate), _mm_set_ps(3, 2, 1, 0));
+        vValue =
+            _mm_add_ps(vValue, _mm_set_ps1(currentFrame / sampleRate - time1));
+        vValue = _mm_mul_ps(vValue, _mm_set_ps1(k * valueDelta));
+        vValue = _mm_add_ps(vValue, _mm_set_ps1(value1));
+        __m128 vInc = _mm_set_ps1(4 / sampleRate * k * valueDelta);
 
-      // Truncate loop steps to multiple of 4.
-      unsigned fillToFrameTrunc =
-          writeIndex + ((fillToFrame - writeIndex) / 4) * 4;
-      // Compute final time.
-      currentFrame += fillToFrameTrunc - writeIndex;
+        // Truncate loop steps to multiple of 4.
+        unsigned fillToFrameTrunc =
+            writeIndex + ((fillToFrame - writeIndex) / 4) * 4;
+        // Compute final time.
+        DCHECK_LE(fillToFrameTrunc, numberOfValues);
+        currentFrame += fillToFrameTrunc - writeIndex;
 
-      // Process 4 loop steps.
-      for (; writeIndex < fillToFrameTrunc; writeIndex += 4) {
-        _mm_storeu_ps(values + writeIndex, vValue);
-        vValue = _mm_add_ps(vValue, vInc);
+        // Process 4 loop steps.
+        for (; writeIndex < fillToFrameTrunc; writeIndex += 4) {
+          _mm_storeu_ps(values + writeIndex, vValue);
+          vValue = _mm_add_ps(vValue, vInc);
+        }
       }
-      // Update |value| with the last value computed so that the .value
-      // attribute of the AudioParam gets the correct linear ramp value, in case
-      // the following loop doesn't execute.
+      // Update |value| with the last value computed so that the
+      // .value attribute of the AudioParam gets the correct linear
+      // ramp value, in case the following loop doesn't execute.
       if (writeIndex >= 1)
         value = values[writeIndex - 1];
 #endif
@@ -839,36 +842,41 @@ float AudioParamTimeline::valuesForFrameRangeImpl(size_t startFrame,
               values[writeIndex] = target;
           } else {
 #if CPU(X86) || CPU(X86_64)
-            // Resolve recursion by expanding constants to achieve a 4-step loop
-            // unrolling.
-            // v1 = v0 + (t - v0) * c
-            // v2 = v1 + (t - v1) * c
-            // v2 = v0 + (t - v0) * c + (t - (v0 + (t - v0) * c)) * c
-            // v2 = v0 + (t - v0) * c + (t - v0) * c - (t - v0) * c * c
-            // v2 = v0 + (t - v0) * c * (2 - c)
-            // Thus c0 = c, c1 = c*(2-c). The same logic applies to c2 and c3.
-            const float c0 = discreteTimeConstant;
-            const float c1 = c0 * (2 - c0);
-            const float c2 = c0 * ((c0 - 3) * c0 + 3);
-            const float c3 = c0 * (c0 * ((4 - c0) * c0 - 6) + 4);
+            if (fillToFrame > writeIndex) {
+              // Resolve recursion by expanding constants to achieve a 4-step
+              // loop unrolling.
+              //
+              // v1 = v0 + (t - v0) * c
+              // v2 = v1 + (t - v1) * c
+              // v2 = v0 + (t - v0) * c + (t - (v0 + (t - v0) * c)) * c
+              // v2 = v0 + (t - v0) * c + (t - v0) * c - (t - v0) * c * c
+              // v2 = v0 + (t - v0) * c * (2 - c)
+              // Thus c0 = c, c1 = c*(2-c). The same logic applies to c2 and c3.
+              const float c0 = discreteTimeConstant;
+              const float c1 = c0 * (2 - c0);
+              const float c2 = c0 * ((c0 - 3) * c0 + 3);
+              const float c3 = c0 * (c0 * ((4 - c0) * c0 - 6) + 4);
 
-            float delta;
-            __m128 vC = _mm_set_ps(c2, c1, c0, 0);
-            __m128 vDelta, vValue, vResult;
+              float delta;
+              __m128 vC = _mm_set_ps(c2, c1, c0, 0);
+              __m128 vDelta, vValue, vResult;
 
-            // Process 4 loop steps.
-            unsigned fillToFrameTrunc =
-                writeIndex + ((fillToFrame - writeIndex) / 4) * 4;
-            for (; writeIndex < fillToFrameTrunc; writeIndex += 4) {
-              delta = target - value;
-              vDelta = _mm_set_ps1(delta);
-              vValue = _mm_set_ps1(value);
+              // Process 4 loop steps.
+              unsigned fillToFrameTrunc =
+                  writeIndex + ((fillToFrame - writeIndex) / 4) * 4;
+              DCHECK_LE(fillToFrameTrunc, numberOfValues);
 
-              vResult = _mm_add_ps(vValue, _mm_mul_ps(vDelta, vC));
-              _mm_storeu_ps(values + writeIndex, vResult);
+              for (; writeIndex < fillToFrameTrunc; writeIndex += 4) {
+                delta = target - value;
+                vDelta = _mm_set_ps1(delta);
+                vValue = _mm_set_ps1(value);
 
-              // Update value for next iteration.
-              value += delta * c3;
+                vResult = _mm_add_ps(vValue, _mm_mul_ps(vDelta, vC));
+                _mm_storeu_ps(values + writeIndex, vResult);
+
+                // Update value for next iteration.
+                value += delta * c3;
+              }
             }
 #endif
             // Serially process remaining values
@@ -952,61 +960,66 @@ float AudioParamTimeline::valuesForFrameRangeImpl(size_t startFrame,
           // desired.
           unsigned k = 0;
 #if CPU(X86) || CPU(X86_64)
-          const __m128 vCurveVirtualIndex = _mm_set_ps1(curveVirtualIndex);
-          const __m128 vCurvePointsPerFrame = _mm_set_ps1(curvePointsPerFrame);
-          const __m128 vNumberOfCurvePointsM1 =
-              _mm_set_ps1(numberOfCurvePoints - 1);
-          const __m128 vN1 = _mm_set_ps1(1.0f);
-          const __m128 vN4 = _mm_set_ps1(4.0f);
+          if (fillToFrame > writeIndex) {
+            const __m128 vCurveVirtualIndex = _mm_set_ps1(curveVirtualIndex);
+            const __m128 vCurvePointsPerFrame =
+                _mm_set_ps1(curvePointsPerFrame);
+            const __m128 vNumberOfCurvePointsM1 =
+                _mm_set_ps1(numberOfCurvePoints - 1);
+            const __m128 vN1 = _mm_set_ps1(1.0f);
+            const __m128 vN4 = _mm_set_ps1(4.0f);
 
-          __m128 vK = _mm_set_ps(3, 2, 1, 0);
-          int aCurveIndex0[4];
-          int aCurveIndex1[4];
+            __m128 vK = _mm_set_ps(3, 2, 1, 0);
+            int aCurveIndex0[4];
+            int aCurveIndex1[4];
 
-          // Truncate loop steps to multiple of 4
-          unsigned truncatedSteps = ((fillToFrame - writeIndex) / 4) * 4;
-          unsigned fillToFrameTrunc = writeIndex + truncatedSteps;
-          for (; writeIndex < fillToFrameTrunc; writeIndex += 4) {
-            // Compute current index this way to minimize round-off that would
-            // have occurred by incrementing the index by curvePointsPerFrame.
-            __m128 vCurrentVirtualIndex = _mm_add_ps(
-                vCurveVirtualIndex, _mm_mul_ps(vK, vCurvePointsPerFrame));
-            vK = _mm_add_ps(vK, vN4);
+            // Truncate loop steps to multiple of 4
+            unsigned truncatedSteps = ((fillToFrame - writeIndex) / 4) * 4;
+            unsigned fillToFrameTrunc = writeIndex + truncatedSteps;
+            DCHECK_LE(fillToFrameTrunc, numberOfValues);
 
-            // Clamp index to the last element of the array.
-            __m128i vCurveIndex0 = _mm_cvttps_epi32(
-                _mm_min_ps(vCurrentVirtualIndex, vNumberOfCurvePointsM1));
-            __m128i vCurveIndex1 = _mm_cvttps_epi32(_mm_min_ps(
-                _mm_add_ps(vCurrentVirtualIndex, vN1), vNumberOfCurvePointsM1));
+            for (; writeIndex < fillToFrameTrunc; writeIndex += 4) {
+              // Compute current index this way to minimize round-off that would
+              // have occurred by incrementing the index by curvePointsPerFrame.
+              __m128 vCurrentVirtualIndex = _mm_add_ps(
+                  vCurveVirtualIndex, _mm_mul_ps(vK, vCurvePointsPerFrame));
+              vK = _mm_add_ps(vK, vN4);
 
-            // Linearly interpolate between the two nearest curve points.
-            // |delta| is clamped to 1 because currentVirtualIndex can exceed
-            // curveIndex0 by more than one.  This can happen when we reached
-            // the end of the curve but still need values to fill out the
-            // current rendering quantum.
-            _mm_storeu_si128((__m128i*)aCurveIndex0, vCurveIndex0);
-            _mm_storeu_si128((__m128i*)aCurveIndex1, vCurveIndex1);
-            __m128 vC0 = _mm_set_ps(
-                curveData[aCurveIndex0[3]], curveData[aCurveIndex0[2]],
-                curveData[aCurveIndex0[1]], curveData[aCurveIndex0[0]]);
-            __m128 vC1 = _mm_set_ps(
-                curveData[aCurveIndex1[3]], curveData[aCurveIndex1[2]],
-                curveData[aCurveIndex1[1]], curveData[aCurveIndex1[0]]);
-            __m128 vDelta = _mm_min_ps(
-                _mm_sub_ps(vCurrentVirtualIndex, _mm_cvtepi32_ps(vCurveIndex0)),
-                vN1);
+              // Clamp index to the last element of the array.
+              __m128i vCurveIndex0 = _mm_cvttps_epi32(
+                  _mm_min_ps(vCurrentVirtualIndex, vNumberOfCurvePointsM1));
+              __m128i vCurveIndex1 = _mm_cvttps_epi32(
+                  _mm_min_ps(_mm_add_ps(vCurrentVirtualIndex, vN1),
+                             vNumberOfCurvePointsM1));
 
-            __m128 vValue =
-                _mm_add_ps(vC0, _mm_mul_ps(_mm_sub_ps(vC1, vC0), vDelta));
+              // Linearly interpolate between the two nearest curve points.
+              // |delta| is clamped to 1 because currentVirtualIndex can exceed
+              // curveIndex0 by more than one.  This can happen when we reached
+              // the end of the curve but still need values to fill out the
+              // current rendering quantum.
+              _mm_storeu_si128((__m128i*)aCurveIndex0, vCurveIndex0);
+              _mm_storeu_si128((__m128i*)aCurveIndex1, vCurveIndex1);
+              __m128 vC0 = _mm_set_ps(
+                  curveData[aCurveIndex0[3]], curveData[aCurveIndex0[2]],
+                  curveData[aCurveIndex0[1]], curveData[aCurveIndex0[0]]);
+              __m128 vC1 = _mm_set_ps(
+                  curveData[aCurveIndex1[3]], curveData[aCurveIndex1[2]],
+                  curveData[aCurveIndex1[1]], curveData[aCurveIndex1[0]]);
+              __m128 vDelta =
+                  _mm_min_ps(_mm_sub_ps(vCurrentVirtualIndex,
+                                        _mm_cvtepi32_ps(vCurveIndex0)),
+                             vN1);
 
-            _mm_storeu_ps(values + writeIndex, vValue);
+              __m128 vValue =
+                  _mm_add_ps(vC0, _mm_mul_ps(_mm_sub_ps(vC1, vC0), vDelta));
+
+              _mm_storeu_ps(values + writeIndex, vValue);
+            }
+            // Pass along k to the serial loop.
+            k = truncatedSteps;
           }
-          // Pass along k to the serial loop.
-          k = truncatedSteps;
-          // If the above loop was run, pass along the last computed value.
-          if (truncatedSteps > 0) {
+          if (writeIndex >= 1)
             value = values[writeIndex - 1];
-          }
 #endif
           for (; writeIndex < fillToFrame; ++writeIndex, ++k) {
             // Compute current index this way to minimize round-off that would
