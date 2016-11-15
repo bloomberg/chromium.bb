@@ -5,7 +5,6 @@
 #include "fake_ppapi/fake_pepper_interface_url_loader.h"
 
 #include <string.h>
-#include <strings.h>
 
 #include <algorithm>
 #include <sstream>
@@ -16,38 +15,6 @@
 #include "nacl_io/osinttypes.h"
 
 namespace {
-
-bool GetHeaderValue(const std::string& headers,
-                    const std::string& key,
-                    std::string* out_value) {
-  out_value->clear();
-
-  size_t offset = 0;
-  while (offset != std::string::npos) {
-    // Find the next colon; this separates the key from the value.
-    size_t colon = headers.find(':', offset);
-    if (colon == std::string::npos)
-      return false;
-
-    // Find the newline; this separates the value from the next header.
-    size_t newline = headers.find('\n', offset);
-    if (strncasecmp(key.c_str(), &headers.data()[offset], key.size()) != 0) {
-      // Key doesn't match, skip to next header.
-      offset = newline;
-      continue;
-    }
-
-    // Key matches, extract value. First, skip leading spaces.
-    size_t nonspace = headers.find_first_not_of(' ', colon + 1);
-    if (nonspace == std::string::npos)
-      return false;
-
-    out_value->assign(headers, nonspace, newline - nonspace);
-    return true;
-  }
-
-  return false;
-}
 
 class FakeInstanceResource : public FakeResource {
  public:
@@ -81,26 +48,6 @@ class FakeURLLoaderResource : public FakeResource {
   PP_Resource response;
   off_t read_offset;
   off_t read_end;
-};
-
-class FakeURLRequestInfoResource : public FakeResource {
- public:
-  FakeURLRequestInfoResource() {}
-  static const char* classname() { return "FakeURLRequestInfoResource"; }
-
-  std::string url;
-  std::string method;
-  std::string headers;
-};
-
-class FakeURLResponseInfoResource : public FakeResource {
- public:
-  FakeURLResponseInfoResource() : status_code(0) {}
-  static const char* classname() { return "FakeURLResponseInfoResource"; }
-
-  int status_code;
-  std::string url;
-  std::string headers;
 };
 
 void HandleContentLength(FakeURLLoaderResource* loader,

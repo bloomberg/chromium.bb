@@ -4,6 +4,10 @@
 
 #include "fake_ppapi/fake_util.h"
 
+#include <strings.h>
+
+#include <string>
+
 #include <ppapi/c/pp_completion_callback.h>
 #include <ppapi/c/pp_errors.h>
 
@@ -23,4 +27,36 @@ int32_t RunCompletionCallback(PP_CompletionCallback* callback, int32_t result) {
     return PP_OK_COMPLETIONPENDING;
   }
   return result;
+}
+
+bool GetHeaderValue(const std::string& headers,
+                    const std::string& key,
+                    std::string* out_value) {
+  out_value->clear();
+
+  size_t offset = 0;
+  while (offset != std::string::npos) {
+    // Find the next colon; this separates the key from the value.
+    size_t colon = headers.find(':', offset);
+    if (colon == std::string::npos)
+      return false;
+
+    // Find the newline; this separates the value from the next header.
+    size_t newline = headers.find('\n', offset);
+    if (strncasecmp(key.c_str(), &headers.data()[offset], key.size()) != 0) {
+      // Key doesn't match, skip to next header.
+      offset = newline + 1;
+      continue;
+    }
+
+    // Key matches, extract value. First, skip leading spaces.
+    size_t nonspace = headers.find_first_not_of(' ', colon + 1);
+    if (nonspace == std::string::npos)
+      return false;
+
+    out_value->assign(headers, nonspace, newline - nonspace);
+    return true;
+  }
+
+  return false;
 }

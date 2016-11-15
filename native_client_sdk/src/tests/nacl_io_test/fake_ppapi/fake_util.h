@@ -40,6 +40,29 @@ class FakeHtml5FsResource : public FakeResource {
   FakeFilesystem* filesystem_template;  // Weak reference.
 };
 
+class FakeURLRequestInfoResource : public FakeResource {
+ public:
+  FakeURLRequestInfoResource() {}
+  static const char* classname() { return "FakeURLRequestInfoResource"; }
+
+  std::string url;
+  std::string method;
+  std::string headers;
+};
+
+class FakeURLResponseInfoResource : public FakeResource {
+ public:
+  FakeURLResponseInfoResource() : status_code(0) {}
+  static const char* classname() { return "FakeURLResponseInfoResource"; }
+
+  int status_code;
+  std::string url;
+  std::string headers;
+};
+
 int32_t RunCompletionCallback(PP_CompletionCallback* callback, int32_t result);
+bool GetHeaderValue(const std::string& headers,
+                    const std::string& key,
+                    std::string* out_value);
 
 #endif  // LIBRARIES_NACL_IO_TEST_FAKE_UTIL_H_
