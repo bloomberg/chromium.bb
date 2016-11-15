@@ -14,6 +14,7 @@
 #if !defined(_generic_code_H)
 # define _generic_code_H
 
+# include "aom_dsp/bitwriter.h"
 # include "aom_dsp/entdec.h"
 # include "aom_dsp/entenc.h"
 
@@ -56,7 +57,7 @@ void aom_cdf_init(uint16_t *cdf, int ncdfs, int nsyms, int val, int first);
 
 void aom_cdf_adapt_q15(int val, uint16_t *cdf, int n, int *count, int rate);
 
-void od_encode_cdf_adapt_q15(od_ec_enc *ec, int val, uint16_t *cdf, int n,
+void aom_encode_cdf_adapt_q15(aom_writer *w, int val, uint16_t *cdf, int n,
  int *count, int rate);
 
 void od_encode_cdf_adapt(od_ec_enc *ec, int val, uint16_t *cdf, int n,
