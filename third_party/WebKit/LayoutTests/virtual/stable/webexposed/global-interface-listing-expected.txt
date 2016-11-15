@@ -4009,6 +4009,39 @@ interface RTCCertificate
     attribute @@toStringTag
     getter expires
     method constructor
+interface RTCDataChannel : EventTarget
+    attribute @@toStringTag
+    getter binaryType
+    getter bufferedAmount
+    getter bufferedAmountLowThreshold
+    getter id
+    getter label
+    getter maxRetransmitTime
+    getter maxRetransmits
+    getter negotiated
+    getter onbufferedamountlow
+    getter onclose
+    getter onerror
+    getter onmessage
+    getter onopen
+    getter ordered
+    getter protocol
+    getter readyState
+    getter reliable
+    method close
+    method constructor
+    method send
+    setter binaryType
+    setter bufferedAmountLowThreshold
+    setter onbufferedamountlow
+    setter onclose
+    setter onerror
+    setter onmessage
+    setter onopen
+interface RTCDataChannelEvent : Event
+    attribute @@toStringTag
+    getter channel
+    method constructor
 interface RTCIceCandidate
     attribute @@toStringTag
     getter candidate

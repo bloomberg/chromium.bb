@@ -37,7 +37,6 @@ enum RTCDataChannelState {
 [
     ActiveScriptWrappable,
     DependentLifetime,
-    NoInterfaceObject,
 ] interface RTCDataChannel : EventTarget {
     readonly attribute USVString label;
     readonly attribute boolean ordered;

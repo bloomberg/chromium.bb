@@ -33,11 +33,22 @@ RTCDataChannelEvent* RTCDataChannelEvent::create(const AtomicString& type,
   return new RTCDataChannelEvent(type, canBubble, cancelable, channel);
 }
 
+RTCDataChannelEvent* RTCDataChannelEvent::create(
+    const AtomicString& type,
+    const RTCDataChannelEventInit& initializer) {
+  return new RTCDataChannelEvent(type, initializer);
+}
+
 RTCDataChannelEvent::RTCDataChannelEvent(const AtomicString& type,
                                          bool canBubble,
                                          bool cancelable,
                                          RTCDataChannel* channel)
     : Event(type, canBubble, cancelable), m_channel(channel) {}
+
+RTCDataChannelEvent::RTCDataChannelEvent(
+    const AtomicString& type,
+    const RTCDataChannelEventInit& initializer)
+    : Event(type, initializer), m_channel(initializer.channel()) {}
 
 RTCDataChannelEvent::~RTCDataChannelEvent() {}
 

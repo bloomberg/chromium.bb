@@ -27,6 +27,7 @@
 
 #include "modules/EventModules.h"
 #include "modules/peerconnection/RTCDataChannel.h"
+#include "modules/peerconnection/RTCDataChannelEventInit.h"
 #include "wtf/text/AtomicString.h"
 
 namespace blink {
@@ -42,6 +43,9 @@ class RTCDataChannelEvent final : public Event {
                                      bool cancelable,
                                      RTCDataChannel*);
 
+  static RTCDataChannelEvent* create(const AtomicString& type,
+                                     const RTCDataChannelEventInit&);
+
   RTCDataChannel* channel() const;
 
   const AtomicString& interfaceName() const override;
@@ -54,6 +58,7 @@ class RTCDataChannelEvent final : public Event {
                       bool cancelable,
                       RTCDataChannel*);
 
+  RTCDataChannelEvent(const AtomicString& type, const RTCDataChannelEventInit&);
   Member<RTCDataChannel> m_channel;
 };
 
