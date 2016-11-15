@@ -911,16 +911,31 @@ if (!is_ios) {
     testonly = true
 
     deps = [
-      "//content/shell:content_shell",
+      ":webkit_layout_tests",
       "//third_party/WebKit/public:all_blink",
+    ]
+  }
+
+  # Layout tests runner
+  # third_party/WebKit/Tools/Scripts/run-webkit-tests
+  group("run_webkit_tests") {
+    testonly = true
+    deps = [
+      ":webkit_layout_tests",
+    ]
+  }
+
+  # https://www.chromium.org/developers/testing/webkit-layout-tests
+  group("webkit_layout_tests") {
+    testonly = true
+
+    data_deps = [
+      "//content/shell:content_shell",
       "//tools/imagediff",
     ]
 
-    # NOTE: The following deps are needed to run the layout tests
-    # (run-webkit-tests) but there is no GN target for the layout tests,
-    # so we need to specify the dependencies here instead.
     if (is_android) {
-      deps += [
+      data_deps += [
         "//breakpad:breakpad_unittests",
         "//breakpad:dump_syms",
         "//breakpad:microdump_stackwalk",
@@ -932,24 +947,28 @@ if (!is_ios) {
     }
 
     if (is_win) {
-      deps += [ "//content/shell:content_shell_crash_service" ]
+      data_deps += [ "//content/shell:content_shell_crash_service" ]
     }
 
     if (!is_win && !is_android) {
-      deps += [ "//breakpad:minidump_stackwalk($host_toolchain)" ]
+      data_deps += [ "//breakpad:minidump_stackwalk($host_toolchain)" ]
     }
 
     if (is_mac) {
-      deps += [ "//breakpad:dump_syms($host_toolchain)" ]
+      data_deps += [ "//breakpad:dump_syms($host_toolchain)" ]
     }
 
     if (is_linux) {
-      deps += [ "//breakpad:dump_syms($host_toolchain)" ]
+      data_deps += [ "//breakpad:dump_syms($host_toolchain)" ]
     }
 
     data = [
+      "//testing/scripts/common.py",
+      "//testing/xvfb.py",
+      "//testing/scripts/run_telemetry_as_googletest.py",
       "//third_party/WebKit/LayoutTests/",
       "//third_party/WebKit/Tools/Scripts/",
+      "$root_build_dir/resources/inspector/",
     ]
   }
 }

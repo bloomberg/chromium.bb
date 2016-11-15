@@ -195,6 +195,10 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'voice_engine_unittests',
   'webrtc_nonparallel_tests',
   'xmllite_xmpp_unittests',
+
+  # isolate is currently too slow for this target.
+  # http://crbug.com/524758
+  'webkit_layout_tests',
 }
 
 
