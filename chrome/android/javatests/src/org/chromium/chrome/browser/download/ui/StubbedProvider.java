@@ -196,8 +196,14 @@ public class StubbedProvider implements BackendProvider {
     @Override
     public void destroy() {}
 
-    /** Creates a new DownloadItem with pre-defined values. */
+    /** See {@link #createDownloadItem(int, String, boolean)}. */
     public static DownloadItem createDownloadItem(int which, String date) throws Exception {
+        return createDownloadItem(which, date, false);
+    }
+
+    /** Creates a new DownloadItem with pre-defined values. */
+    public static DownloadItem createDownloadItem(int which, String date, boolean isIncognito)
+            throws Exception {
         DownloadItem item = null;
         if (which == 0) {
             item = new DownloadItem(false, new DownloadInfo.Builder()
@@ -208,6 +214,7 @@ public class StubbedProvider implements BackendProvider {
                     .setDownloadGuid("first_guid")
                     .setMimeType("image/jpeg")
                     .setState(DownloadState.COMPLETE)
+                    .setIsOffTheRecord(isIncognito)
                     .build());
         } else if (which == 1) {
             item = new DownloadItem(false, new DownloadInfo.Builder()
@@ -218,6 +225,7 @@ public class StubbedProvider implements BackendProvider {
                     .setDownloadGuid("second_guid")
                     .setMimeType("image/gif")
                     .setState(DownloadState.COMPLETE)
+                    .setIsOffTheRecord(isIncognito)
                     .build());
         } else if (which == 2) {
             item = new DownloadItem(false, new DownloadInfo.Builder()
@@ -228,6 +236,7 @@ public class StubbedProvider implements BackendProvider {
                     .setDownloadGuid("third_guid")
                     .setMimeType("text/plain")
                     .setState(DownloadState.COMPLETE)
+                    .setIsOffTheRecord(isIncognito)
                     .build());
         } else if (which == 3) {
             item = new DownloadItem(false, new DownloadInfo.Builder()
@@ -238,6 +247,7 @@ public class StubbedProvider implements BackendProvider {
                     .setDownloadGuid("fourth_guid")
                     .setMimeType("video/webm")
                     .setState(DownloadState.COMPLETE)
+                    .setIsOffTheRecord(isIncognito)
                     .build());
         } else if (which == 4) {
             item = new DownloadItem(false, new DownloadInfo.Builder()
@@ -248,6 +258,7 @@ public class StubbedProvider implements BackendProvider {
                     .setDownloadGuid("fifth_guid")
                     .setMimeType("audio/mp3")
                     .setState(DownloadState.COMPLETE)
+                    .setIsOffTheRecord(isIncognito)
                     .build());
         } else if (which == 5) {
             item = new DownloadItem(false, new DownloadInfo.Builder()
@@ -258,6 +269,7 @@ public class StubbedProvider implements BackendProvider {
                     .setDownloadGuid("sixth_guid")
                     .setMimeType("audio/mp3")
                     .setState(DownloadState.COMPLETE)
+                    .setIsOffTheRecord(isIncognito)
                     .build());
         } else if (which == 6) {
             item = new DownloadItem(false, new DownloadInfo.Builder()
@@ -278,6 +290,7 @@ public class StubbedProvider implements BackendProvider {
                     .setDownloadGuid("eighth_guid")
                     .setMimeType("application/pdf")
                     .setState(DownloadState.COMPLETE)
+                    .setIsOffTheRecord(isIncognito)
                     .build());
         } else if (which == 8) {
             // This is a duplicate of item 7 above.
@@ -289,6 +302,7 @@ public class StubbedProvider implements BackendProvider {
                     .setDownloadGuid("ninth_guid")
                     .setMimeType("application/pdf")
                     .setState(DownloadState.COMPLETE)
+                    .setIsOffTheRecord(isIncognito)
                     .build());
         } else {
             return null;

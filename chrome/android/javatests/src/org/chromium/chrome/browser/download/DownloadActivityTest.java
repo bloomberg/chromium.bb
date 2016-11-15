@@ -157,7 +157,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mAdapter.onDownloadItemUpdated(updateItem, false);
+                mAdapter.onDownloadItemUpdated(updateItem);
             }
         });
         mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(callCount);
@@ -170,7 +170,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mAdapter.onDownloadItemUpdated(deletedItem, false);
+                mAdapter.onDownloadItemUpdated(deletedItem);
             }
         });
         mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(callCount);
@@ -286,8 +286,8 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mAdapter.onDownloadItemUpdated(item7, false);
-                mAdapter.onDownloadItemUpdated(item8, false);
+                mAdapter.onDownloadItemUpdated(item7);
+                mAdapter.onDownloadItemUpdated(item8);
             }
         });
         mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(callCount, 2);
@@ -363,8 +363,8 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mAdapter.onDownloadItemUpdated(item7, false);
-                mAdapter.onDownloadItemUpdated(item8, false);
+                mAdapter.onDownloadItemUpdated(item7);
+                mAdapter.onDownloadItemUpdated(item8);
             }
         });
         mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(callCount, 2);

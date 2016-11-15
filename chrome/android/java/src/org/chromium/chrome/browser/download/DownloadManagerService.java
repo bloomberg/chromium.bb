@@ -1581,7 +1581,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
     @CalledByNative
     private void onDownloadItemUpdated(DownloadItem item) {
         for (DownloadHistoryAdapter adapter : mHistoryAdapters) {
-            adapter.onDownloadItemUpdated(item, item.getDownloadInfo().isOffTheRecord());
+            adapter.onDownloadItemUpdated(item);
         }
     }
 
