@@ -14,6 +14,14 @@ NFCHWStatus.ENABLED = 1;
 NFCHWStatus.NOT_SUPPORTED = NFCHWStatus.ENABLED + 1;
 NFCHWStatus.DISABLED = NFCHWStatus.NOT_SUPPORTED + 1;
 
+function assertRejectsWithError(promise, name) {
+  return promise.then(() => {
+    assert_unreached('expected promise to reject with ' + name);
+  }, error => {
+    assert_equals(error.name, name);
+  });
+}
+
 function createMessage(records) {
   if (records !== undefined) {
     let message = {}

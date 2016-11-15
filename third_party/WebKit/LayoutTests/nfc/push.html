@@ -17,7 +17,7 @@ const invalid_messages =
       // NFCRecord must have data.
       createMessage([createTextRecord()]),
 
-      // NFCRecord.mediaType for 'text' record must be text/* .
+      // NFCRecord.mediaType for 'text' record must be 'text/*'.
       createMessage([createRecord('text', 'application/json',
           test_number_data)]),
 
@@ -56,34 +56,29 @@ const invalid_messages =
     ];
 
 nfc_test(nfc => {
-  return promise_test(test => {
-      promise_rejects(test, 'TypeMismatchError', navigator.nfc.push(undefined));
-  }, 'Reject promise with TypeMismatchError if invalid type is provided.');
+  return assertRejectsWithError(navigator.nfc.push(undefined),
+      'TypeMismatchError');
 }, 'Test that passing undefined to nfc.push would raise TypeMismatchError.');
 
 nfc_test(nfc => {
   let promises = [];
   invalid_messages.forEach(message => {
-    promises.push(promise_test(test => {
-      promise_rejects(test, 'SyntaxError', navigator.nfc.push(message));
-      }, 'Promise rejected with SyntaxError.'));
+    promises.push(
+        assertRejectsWithError(navigator.nfc.push(message), 'SyntaxError'));
   });
   return Promise.all(promises)
 }, 'Test that promise is rejected with SyntaxError if NFCMessage is invalid.');
 
-
 nfc_test(nfc => {
   nfc.mockNFC.setHWStatus(NFCHWStatus.DISABLED);
-  return promise_test(test => {
-    promise_rejects(test, 'NotSupportedError', navigator.nfc.push(test_text_data));
-  }, 'Promise rejected with NotSupportedError.');
+  return assertRejectsWithError(navigator.nfc.push(test_text_data),
+                                'NotSupportedError');
 }, 'nfc.push should fail when NFC HW is disabled.')
 
 nfc_test(nfc => {
   nfc.mockNFC.setHWStatus(NFCHWStatus.NOT_SUPPORTED);
-  return promise_test(test => {
-    promise_rejects(test, 'NotSupportedError', navigator.nfc.push(test_text_data));
-  }, 'Promise rejected with NotSupportedError.');
+  return assertRejectsWithError(navigator.nfc.push(test_text_data),
+                                'NotSupportedError');
 }, 'nfc.push should fail when NFC HW is not supported.')
 
 nfc_test(nfc => {
@@ -92,10 +87,9 @@ nfc_test(nfc => {
 
 nfc_test(nfc => {
   nfc.mockNFC.setPendingPushCompleted(false);
-  return promise_test(test => {
-    promise_rejects(test, 'TimeoutError',
-        navigator.nfc.push(test_text_data,{ timeout: 1 }));
-  }, 'Promise rejected with TimeoutError.');
+  return assertRejectsWithError(
+      navigator.nfc.push(test_text_data,{ timeout: 1 }),
+      'TimeoutError');
 }, 'nfc.push should fail with TimeoutError when push operation is not' +
     ' completed before specified timeout value.')
 
@@ -109,8 +103,8 @@ nfc_test(nfc => {
   return navigator.nfc.push(message).then(() => {
     nfc.assertNFCMessagesEqual(message, nfc.mockNFC.pushedMessage());
   });
-}, 'nfc.push NFCMessage containing text, json, opaque and url records with default '
-    + 'NFCPushOptions.');
+}, 'nfc.push NFCMessage containing text, json, opaque and url records with'
+    + ' default NFCPushOptions.');
 
 nfc_test(nfc => {
   return navigator.nfc.push(test_text_data).then(() => {
@@ -151,20 +145,9 @@ nfc_test(nfc => {
 
 nfc_test(nfc => {
   nfc.mockNFC.setPendingPushCompleted(false);
-  return promise_test(test => {
-    promise_rejects(test, 'TimeoutError',
-        navigator.nfc.push(test_text_data,{ timeout: 1 }));
-  }, 'Promise rejected with TimeoutError.');
-}, 'nfc.push should fail with TimeoutError when push operation is not' +
-    ' completed before specified timeout value.')
-
-nfc_test(nfc => {
-  nfc.mockNFC.setPendingPushCompleted(false);
   let promise = navigator.nfc.push(test_text_data, { timeout: 100 });
   navigator.nfc.cancelPush();
-  return promise_test(test => {
-    promise_rejects(test, 'AbortError', promise);
-  }, 'Promise rejected with AbortError.');
+  return assertRejectsWithError(promise, 'AbortError');
 }, 'nfc.cancelPush should reject pending promise with AbortError.')
 
 </script>
