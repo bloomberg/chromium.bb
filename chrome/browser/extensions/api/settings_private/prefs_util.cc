@@ -17,7 +17,6 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
-#include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/spellcheck/browser/pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
@@ -158,6 +157,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
 
   // Site Settings prefs.
   (*s_whitelist)[::prefs::kBlockThirdPartyCookies] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[::prefs::kPluginsAlwaysOpenPdfExternally] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
   // Clear browsing data settings.

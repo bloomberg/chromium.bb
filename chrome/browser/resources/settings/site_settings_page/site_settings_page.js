@@ -78,4 +78,14 @@ Polymer({
     else
       settings.navigateTo(this.computeCategoryRoute(category));
   },
+
+  /**
+   * Navigate to the route specified in the event dataset.
+   * @param {!Event} event The tap event.
+   * @private
+   */
+  onTapNavigate_: function(event) {
+    var dataSet = /** @type {{route: string}} */(event.currentTarget.dataset);
+    settings.navigateTo(settings.Route[dataSet.route]);
+  },
 });

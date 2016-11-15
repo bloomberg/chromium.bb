@@ -754,6 +754,12 @@
       <structure name="IDR_SETTINGS_CLOUD_PRINTING_PAGE_JS"
                  file="printing_page/cloud_printers.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_PDF_DOCUMENTS_HTML"
+                 file="site_settings/pdf_documents.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_PDF_DOCUMENTS_JS"
+                 file="site_settings/pdf_documents.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_PRIVACY_PAGE_HTML"
                  file="privacy_page/privacy_page.html"
                  type="chrome_html"
