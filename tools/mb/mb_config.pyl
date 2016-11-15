@@ -81,6 +81,7 @@
       'Android Builder Goma Canary (dbg)': 'android_debug_bot',
       'Android deterministic': 'android_without_codecs_release_bot_minimal_symbols',
       'Android deterministic (dbg)': 'android_debug_bot',
+      'Android x64 Tests': 'android_shared_release_bot_x64',
       'Blimp Android Client':
         '//build/args/bots/chromium.fyi/blimp_client_rel.gn',
       'Blimp Linux Engine':
@@ -832,6 +833,10 @@
 
     'android_release_bot_minimal_symbols': [
       'android', 'release_bot', 'minimal_symbols',
+    ],
+
+    'android_shared_release_bot_x64': [
+      'android_without_codecs', 'shared_release_bot', 'x64', 'dcheck_always_on',
     ],
 
     'android_release_trybot': [
