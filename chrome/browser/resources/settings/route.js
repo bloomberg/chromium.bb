@@ -184,7 +184,7 @@ cr.define('settings', function() {
   r.EDIT_DICTIONARY = r.LANGUAGES.createChild('/editDictionary');
 </if>
 
-  r.DOWNLOADS = r.ADVANCED.createSection('/downloadsDirectory', 'downloads');
+  r.DOWNLOADS = r.ADVANCED.createSection('/downloads', 'downloads');
 
   r.PRINTING = r.ADVANCED.createSection('/printing', 'printing');
   r.CLOUD_PRINTERS = r.PRINTING.createChild('/cloudPrinters');
