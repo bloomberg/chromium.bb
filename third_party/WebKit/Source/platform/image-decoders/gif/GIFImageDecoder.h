@@ -87,9 +87,6 @@ class PLATFORM_EXPORT GIFImageDecoder final : public ImageDecoder {
   // failure, this will mark the image as failed.
   bool initFrameBuffer(size_t frameIndex);
 
-  // Like clearCacheExceptFrame(), but preserves two frames instead of one.
-  size_t clearCacheExceptTwoFrames(size_t, size_t);
-
   bool m_currentBufferSawAlpha;
   mutable int m_repetitionCount;
   std::unique_ptr<GIFImageReader> m_reader;

@@ -267,19 +267,6 @@ size_t GIFImageDecoder::clearCacheExceptFrame(size_t clearExceptFrame) {
   return clearCacheExceptTwoFrames(clearExceptFrame, clearExceptFrame2);
 }
 
-size_t GIFImageDecoder::clearCacheExceptTwoFrames(size_t clearExceptFrame1,
-                                                  size_t clearExceptFrame2) {
-  size_t frameBytesCleared = 0;
-  for (size_t i = 0; i < m_frameBufferCache.size(); ++i) {
-    if (m_frameBufferCache[i].getStatus() != ImageFrame::FrameEmpty &&
-        i != clearExceptFrame1 && i != clearExceptFrame2) {
-      frameBytesCleared += frameBytesAtIndex(i);
-      clearFrameBuffer(i);
-    }
-  }
-  return frameBytesCleared;
-}
-
 void GIFImageDecoder::clearFrameBuffer(size_t frameIndex) {
   if (m_reader &&
       m_frameBufferCache[frameIndex].getStatus() == ImageFrame::FramePartial) {

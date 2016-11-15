@@ -550,6 +550,81 @@ TEST(AnimatedWebPTests, isSizeAvailable) {
       false, 32000);
 }
 
+TEST(AnimatedWEBPTests, clearCacheExceptFrameWithAncestors) {
+  std::unique_ptr<ImageDecoder> decoder = createDecoder();
+
+  RefPtr<SharedBuffer> fullData =
+      readFile("/LayoutTests/fast/images/resources/webp-animated.webp");
+  ASSERT_TRUE(fullData.get());
+  decoder->setData(fullData.get(), true);
+
+  ASSERT_EQ(3u, decoder->frameCount());
+  // We need to store pointers to the image frames, since calling
+  // frameBufferAtIndex will decode the frame if it is not FrameComplete,
+  // and we want to read the status of the frame without decoding it again.
+  ImageFrame* buffers[3];
+  size_t bufferSizes[3];
+  for (size_t i = 0; i < decoder->frameCount(); i++) {
+    buffers[i] = decoder->frameBufferAtIndex(i);
+    ASSERT_EQ(ImageFrame::FrameComplete, buffers[i]->getStatus());
+    bufferSizes[i] = decoder->frameBytesAtIndex(i);
+  }
+
+  // Explicitly set the required previous frame for the frames, since this test
+  // is designed on this chain. Whether the frames actually depend on each
+  // other is not important for this test - clearCacheExceptFrame just looks at
+  // the frame status and the required previous frame.
+  buffers[1]->setRequiredPreviousFrameIndex(0);
+  buffers[2]->setRequiredPreviousFrameIndex(1);
+
+  // Clear the cache except for a single frame. All other frames should be
+  // cleared to FrameEmpty, since this frame is FrameComplete.
+  EXPECT_EQ(bufferSizes[0] + bufferSizes[2], decoder->clearCacheExceptFrame(1));
+  EXPECT_EQ(ImageFrame::FrameEmpty, buffers[0]->getStatus());
+  EXPECT_EQ(ImageFrame::FrameComplete, buffers[1]->getStatus());
+  EXPECT_EQ(ImageFrame::FrameEmpty, buffers[2]->getStatus());
+
+  // Verify that the required previous frame is also preserved if the provided
+  // frame is not FrameComplete. The simulated situation is:
+  //
+  // Frame 0          <---------    Frame 1         <---------    Frame 2
+  // FrameComplete    depends on    FrameComplete   depends on    FramePartial
+  //
+  // The expected outcome is that frame 1 and frame 2 are preserved, since
+  // frame 1 is necessary to fully decode frame 2.
+  for (size_t i = 0; i < decoder->frameCount(); i++) {
+    ASSERT_EQ(ImageFrame::FrameComplete,
+              decoder->frameBufferAtIndex(i)->getStatus());
+  }
+  buffers[2]->setStatus(ImageFrame::FramePartial);
+  EXPECT_EQ(bufferSizes[0], decoder->clearCacheExceptFrame(2));
+  EXPECT_EQ(ImageFrame::FrameEmpty, buffers[0]->getStatus());
+  EXPECT_EQ(ImageFrame::FrameComplete, buffers[1]->getStatus());
+  EXPECT_EQ(ImageFrame::FramePartial, buffers[2]->getStatus());
+
+  // Verify that the nearest FrameComplete required frame is preserved if
+  // earlier required frames in the ancestor list are not FrameComplete. The
+  // simulated situation is:
+  //
+  // Frame 0          <---------    Frame 1      <---------    Frame 2
+  // FrameComplete    depends on    FrameEmpty   depends on    FramePartial
+  //
+  // The expected outcome is that frame 0 and frame 2 are preserved. Frame 2
+  // should be preserved since it is the frame passed to clearCacheExceptFrame.
+  // Frame 0 should be preserved since it is the nearest FrameComplete ancestor.
+  // Thus, since frame 1 is FrameEmpty, no data is cleared in this case.
+  for (size_t i = 0; i < decoder->frameCount(); i++) {
+    ASSERT_EQ(ImageFrame::FrameComplete,
+              decoder->frameBufferAtIndex(i)->getStatus());
+  }
+  buffers[1]->setStatus(ImageFrame::FrameEmpty);
+  buffers[2]->setStatus(ImageFrame::FramePartial);
+  EXPECT_EQ(0u, decoder->clearCacheExceptFrame(2));
+  EXPECT_EQ(ImageFrame::FrameComplete, buffers[0]->getStatus());
+  EXPECT_EQ(ImageFrame::FrameEmpty, buffers[1]->getStatus());
+  EXPECT_EQ(ImageFrame::FramePartial, buffers[2]->getStatus());
+}
+
 TEST(StaticWebPTests, truncatedImage) {
   // VP8 data is truncated.
   testInvalidImage("/LayoutTests/fast/images/resources/truncated.webp", false);

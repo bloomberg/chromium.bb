@@ -292,6 +292,9 @@ class PLATFORM_EXPORT ImageDecoder {
   // ImageFrame::m_requiredPreviousFrameIndex.
   size_t findRequiredPreviousFrame(size_t frameIndex, bool frameRectIsOpaque);
 
+  // This is called by clearCacheExceptFrame() if that method decides it wants
+  // to preserve another frame, to avoid unnecessary redecoding.
+  size_t clearCacheExceptTwoFrames(size_t, size_t);
   virtual void clearFrameBuffer(size_t frameIndex);
 
   // Decodes the image sufficiently to determine the image size.

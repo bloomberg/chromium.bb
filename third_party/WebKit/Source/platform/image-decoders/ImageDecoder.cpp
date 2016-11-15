@@ -209,9 +209,15 @@ size_t ImageDecoder::clearCacheExceptFrame(size_t clearExceptFrame) {
   if (m_frameBufferCache.size() <= 1)
     return 0;
 
+  return clearCacheExceptTwoFrames(clearExceptFrame, kNotFound);
+}
+
+size_t ImageDecoder::clearCacheExceptTwoFrames(size_t clearExceptFrame1,
+                                               size_t clearExceptFrame2) {
   size_t frameBytesCleared = 0;
   for (size_t i = 0; i < m_frameBufferCache.size(); ++i) {
-    if (i != clearExceptFrame) {
+    if (m_frameBufferCache[i].getStatus() != ImageFrame::FrameEmpty &&
+        i != clearExceptFrame1 && i != clearExceptFrame2) {
       frameBytesCleared += frameBytesAtIndex(i);
       clearFrameBuffer(i);
     }

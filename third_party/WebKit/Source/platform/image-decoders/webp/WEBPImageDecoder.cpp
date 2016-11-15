@@ -285,18 +285,32 @@ bool WEBPImageDecoder::initFrameBuffer(size_t frameIndex) {
 }
 
 size_t WEBPImageDecoder::clearCacheExceptFrame(size_t clearExceptFrame) {
-  // If |clearExceptFrame| has status FrameComplete, we preserve that frame.
-  // Otherwise, we preserve the most recent previous frame with status
-  // FrameComplete whose data will be required to decode |clearExceptFrame|,
-  // either in initFrameBuffer() or ApplyPostProcessing(). All other frames can
-  // be cleared.
-  while ((clearExceptFrame < m_frameBufferCache.size()) &&
-         (m_frameBufferCache[clearExceptFrame].getStatus() !=
-          ImageFrame::FrameComplete))
-    clearExceptFrame =
-        m_frameBufferCache[clearExceptFrame].requiredPreviousFrameIndex();
+  // Don't clear if there are no frames, or only one.
+  if (m_frameBufferCache.size() <= 1)
+    return 0;
 
-  return ImageDecoder::clearCacheExceptFrame(clearExceptFrame);
+  // If |clearExceptFrame| has status FrameComplete, we only preserve that
+  // frame.  Otherwise, we *also* preserve the most recent previous frame with
+  // status FrameComplete whose data will be required to decode
+  // |clearExceptFrame|, either in initFrameBuffer() or ApplyPostProcessing().
+  // This frame index is stored in |clearExceptFrame2|.  All other frames can
+  // be cleared.
+  size_t clearExceptFrame2 = kNotFound;
+  if (clearExceptFrame < m_frameBufferCache.size() &&
+      m_frameBufferCache[clearExceptFrame].getStatus() !=
+          ImageFrame::FrameComplete) {
+    clearExceptFrame2 =
+        m_frameBufferCache[clearExceptFrame].requiredPreviousFrameIndex();
+  }
+
+  while ((clearExceptFrame2 < m_frameBufferCache.size()) &&
+         (m_frameBufferCache[clearExceptFrame2].getStatus() !=
+          ImageFrame::FrameComplete)) {
+    clearExceptFrame2 =
+        m_frameBufferCache[clearExceptFrame2].requiredPreviousFrameIndex();
+  }
+
+  return clearCacheExceptTwoFrames(clearExceptFrame, clearExceptFrame2);
 }
 
 void WEBPImageDecoder::clearFrameBuffer(size_t frameIndex) {
