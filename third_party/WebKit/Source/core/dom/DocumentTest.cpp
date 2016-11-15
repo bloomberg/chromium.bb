@@ -30,6 +30,7 @@
 
 #include "core/dom/Document.h"
 
+#include "core/dom/SynchronousMutationObserver.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLLinkElement.h"
@@ -68,6 +69,40 @@ void DocumentTest::setHtmlInnerHTML(const char* htmlContent) {
                                              ASSERT_NO_EXCEPTION);
   document().view()->updateAllLifecyclePhases();
 }
+
+namespace {
+
+class TestSynchronousMutationObserver
+    : public GarbageCollectedFinalized<TestSynchronousMutationObserver>,
+      public SynchronousMutationObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(TestSynchronousMutationObserver);
+
+ public:
+  TestSynchronousMutationObserver(Document&);
+  virtual ~TestSynchronousMutationObserver() = default;
+
+  int countContextDestroyedCalled() const {
+    return m_contextDestroyedCalledCounter;
+  }
+
+ private:
+  void contextDestroyed() final;
+
+  int m_contextDestroyedCalledCounter = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TestSynchronousMutationObserver);
+};
+
+TestSynchronousMutationObserver::TestSynchronousMutationObserver(
+    Document& document) {
+  setContext(&document);
+}
+
+void TestSynchronousMutationObserver::contextDestroyed() {
+  ++m_contextDestroyedCalledCounter;
+}
+
+}  // anonymous namespace
 
 // This tests that we properly resize and re-layout pages for printing in the
 // presence of media queries effecting elements in a subtree layout boundary
@@ -295,6 +330,17 @@ TEST_F(DocumentTest, EnforceSandboxFlags) {
   document().enforceSandboxFlags(mask);
   EXPECT_TRUE(document().getSecurityOrigin()->isUnique());
   EXPECT_TRUE(document().getSecurityOrigin()->isPotentiallyTrustworthy());
+}
+
+TEST_F(DocumentTest, SynchronousMutationNotifier) {
+  auto& observer = *new TestSynchronousMutationObserver(document());
+
+  EXPECT_EQ(observer.lifecycleContext(), document());
+  EXPECT_EQ(observer.countContextDestroyedCalled(), 0);
+
+  document().shutdown();
+  EXPECT_EQ(observer.lifecycleContext(), nullptr);
+  EXPECT_EQ(observer.countContextDestroyedCalled(), 1);
 }
 
 }  // namespace blink

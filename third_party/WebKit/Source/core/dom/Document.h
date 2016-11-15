@@ -41,6 +41,8 @@
 #include "core/dom/DocumentTiming.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/MutationObserver.h"
+#include "core/dom/SynchronousMutationNotifier.h"
+#include "core/dom/SynchronousMutationObserver.h"
 #include "core/dom/TextLinkColors.h"
 #include "core/dom/TreeScope.h"
 #include "core/dom/UserActionElementSet.h"
@@ -257,6 +259,7 @@ class CORE_EXPORT Document : public ContainerNode,
                              public TreeScope,
                              public SecurityContext,
                              public ExecutionContext,
+                             public SynchronousMutationNotifier,
                              public Supplementable<Document> {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Document);

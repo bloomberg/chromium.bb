@@ -2385,6 +2385,9 @@ void Document::shutdown() {
 
   frameHost()->eventHandlerRegistry().documentDetached(*this);
 
+  // Since |Document| class has multiple |LifecycleNotifier| as base class,
+  // we need to have |static_cast<SynchronousMutationNotifier>| here.
+  static_cast<SynchronousMutationNotifier*>(this)->notifyContextDestroyed();
   m_frame->selection().documentDetached(*this);
   m_frame->eventHandler().selectionController().documentDetached();
   m_frame->inputMethodController().documentDetached();
@@ -6394,6 +6397,7 @@ DEFINE_TRACE(Document) {
   ContainerNode::trace(visitor);
   ExecutionContext::trace(visitor);
   SecurityContext::trace(visitor);
+  SynchronousMutationNotifier::trace(visitor);
 }
 
 void Document::maybeRecordLoadReason(WouldLoadReason reason) {
