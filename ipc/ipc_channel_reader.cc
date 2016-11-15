@@ -192,7 +192,7 @@ bool ChannelReader::HandleTranslatedMessage(Message* translated_message) {
 }
 
 bool ChannelReader::HandleExternalMessage(Message* external_message) {
-  if (!GetNonBrokeredAttachments(external_message))
+  if (!GetAttachments(external_message))
     return false;
 
   DispatchMessage(external_message);

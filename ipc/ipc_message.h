@@ -15,7 +15,6 @@
 #include "base/pickle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "ipc/brokerable_attachment.h"
 #include "ipc/ipc_export.h"
 
 #if !defined(NDEBUG)
@@ -208,10 +207,6 @@ class IPC_EXPORT Message : public base::Pickle {
       scoped_refptr<base::Pickle::Attachment>* attachment) const override;
   // Returns true if there are any attachment in this message.
   bool HasAttachments() const override;
-  // Returns true if there are any MojoHandleAttachments in this message.
-  bool HasMojoHandles() const;
-  // Whether the message has any brokerable attachments.
-  bool HasBrokerableAttachments() const;
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
   // Adds the outgoing time from Time::Now() at the end of the message and sets

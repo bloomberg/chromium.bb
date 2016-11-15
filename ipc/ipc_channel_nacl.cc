@@ -23,6 +23,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message_attachment_set.h"
+#include "ipc/ipc_platform_file_attachment_posix.h"
 #include "native_client/src/public/imc_syscalls.h"
 #include "native_client/src/public/imc_types.h"
 
@@ -223,8 +224,11 @@ void ChannelNacl::DidRecvMsg(std::unique_ptr<MessageContents> contents) {
   data->swap(contents->data);
   read_queue_.push_back(data);
 
-  input_fds_.insert(input_fds_.end(),
-                    contents->fds.begin(), contents->fds.end());
+  input_attachments_.reserve(contents->fds.size());
+  for (int fd : contents->fds) {
+    input_attachments_.push_back(
+        new internal::PlatformFileAttachment(base::ScopedFD(fd)));
+  }
   contents->fds.clear();
 
   // In POSIX, we would be told when there are bytes to read by implementing
@@ -272,16 +276,22 @@ bool ChannelNacl::ProcessOutgoingMessages() {
     linked_ptr<Message> msg = output_queue_.front();
     output_queue_.pop_front();
 
-    int fds[MessageAttachmentSet::kMaxDescriptorsPerMessage];
-    const size_t num_fds =
-        msg->attachment_set()->num_non_brokerable_attachments();
+    const size_t num_fds = msg->attachment_set()->size();
     DCHECK(num_fds <= MessageAttachmentSet::kMaxDescriptorsPerMessage);
-    msg->attachment_set()->PeekDescriptors(fds);
+    std::vector<int> fds;
+    fds.reserve(num_fds);
+    for (size_t i = 0; i < num_fds; i++) {
+      scoped_refptr<MessageAttachment> attachment =
+          msg->attachment_set()->GetAttachmentAt(i);
+      DCHECK_EQ(MessageAttachment::Type::PLATFORM_FILE, attachment->GetType());
+      fds.push_back(static_cast<internal::PlatformFileAttachment&>(*attachment)
+                        .TakePlatformFile());
+    }
 
     NaClAbiNaClImcMsgIoVec iov = {
       const_cast<void*>(msg->data()), msg->size()
     };
-    NaClAbiNaClImcMsgHdr msgh = { &iov, 1, fds, num_fds };
+    NaClAbiNaClImcMsgHdr msgh = {&iov, 1, fds.data(), num_fds};
     ssize_t bytes_written = imc_sendmsg(pipe_, &msgh, 0);
 
     DCHECK(bytes_written);  // The trusted side shouldn't return 0.
@@ -345,23 +355,22 @@ bool ChannelNacl::ShouldDispatchInputMessage(Message* msg) {
   return true;
 }
 
-bool ChannelNacl::GetNonBrokeredAttachments(Message* msg) {
+bool ChannelNacl::GetAttachments(Message* msg) {
   uint16_t header_fds = msg->header()->num_fds;
-  CHECK(header_fds == input_fds_.size());
+  CHECK(header_fds == input_attachments_.size());
   if (header_fds == 0)
     return true;  // Nothing to do.
 
-  // The shenaniganery below with &foo.front() requires input_fds_ to have
-  // contiguous underlying storage (such as a simple array or a std::vector).
-  // This is why the header warns not to make input_fds_ a deque<>.
-  msg->attachment_set()->AddDescriptorsToOwn(&input_fds_.front(), header_fds);
-  input_fds_.clear();
+  for (auto& attachment : input_attachments_) {
+    msg->attachment_set()->AddAttachment(std::move(attachment));
+  }
+  input_attachments_.clear();
   return true;
 }
 
 bool ChannelNacl::DidEmptyInputBuffers() {
-  // When the input data buffer is empty, the fds should be too.
-  return input_fds_.empty();
+  // When the input data buffer is empty, the attachments should be too.
+  return input_attachments_.empty();
 }
 
 void ChannelNacl::HandleInternalMessage(const Message& msg) {

@@ -18,15 +18,8 @@ MojoHandleAttachment::~MojoHandleAttachment() {
 }
 
 MessageAttachment::Type MojoHandleAttachment::GetType() const {
-  return TYPE_MOJO_HANDLE;
+  return Type::MOJO_HANDLE;
 }
-
-#if defined(OS_POSIX)
-base::PlatformFile MojoHandleAttachment::TakePlatformFile() {
-  NOTREACHED();
-  return base::kInvalidPlatformFile;
-}
-#endif  // OS_POSIX
 
 mojo::ScopedHandle MojoHandleAttachment::TakeHandle() {
   return std::move(handle_);

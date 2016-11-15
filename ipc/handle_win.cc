@@ -38,16 +38,10 @@ bool ParamTraits<HandleWin>::Read(const base::Pickle* m,
     return false;
   MessageAttachment* attachment =
       static_cast<MessageAttachment*>(base_attachment.get());
-  if (attachment->GetType() != MessageAttachment::TYPE_BROKERABLE_ATTACHMENT)
+  if (attachment->GetType() != MessageAttachment::Type::WIN_HANDLE)
     return false;
-  BrokerableAttachment* brokerable_attachment =
-      static_cast<BrokerableAttachment*>(attachment);
-  if (brokerable_attachment->GetBrokerableType() !=
-      BrokerableAttachment::WIN_HANDLE) {
-    return false;
-  }
   IPC::internal::HandleAttachmentWin* handle_attachment =
-      static_cast<IPC::internal::HandleAttachmentWin*>(brokerable_attachment);
+      static_cast<IPC::internal::HandleAttachmentWin*>(attachment);
   r->set_handle(handle_attachment->get_handle());
   handle_attachment->reset_handle_ownership();
   return true;

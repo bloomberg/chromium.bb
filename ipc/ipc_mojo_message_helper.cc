@@ -32,7 +32,7 @@ bool MojoMessageHelper::ReadMessagePipeFrom(
 
   MessageAttachment::Type type =
       static_cast<MessageAttachment*>(attachment.get())->GetType();
-  if (type != MessageAttachment::TYPE_MOJO_HANDLE) {
+  if (type != MessageAttachment::Type::MOJO_HANDLE) {
     LOG(ERROR) << "Unxpected attachment type:" << type;
     return false;
   }

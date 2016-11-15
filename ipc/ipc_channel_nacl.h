@@ -62,7 +62,7 @@ class ChannelNacl : public Channel,
                      int buffer_len,
                      int* bytes_read) override;
   bool ShouldDispatchInputMessage(Message* msg) override;
-  bool GetNonBrokeredAttachments(Message* msg) override;
+  bool GetAttachments(Message* msg) override;
   bool DidEmptyInputBuffers() override;
   void HandleInternalMessage(const Message& msg) override;
 
@@ -96,11 +96,8 @@ class ChannelNacl : public Channel,
   //                 2 above in NaCl eventually.
   // When ReadData is called, it pulls the bytes out of this queue in order.
   std::deque<linked_ptr<std::vector<char> > > read_queue_;
-  // Queue of file descriptors extracted from imc_recvmsg messages.
-  // NOTE: The implementation assumes underlying storage here is contiguous, so
-  // don't change to something like std::deque<> without changing the
-  // implementation!
-  std::vector<int> input_fds_;
+  // Queue of file descriptor attachments extracted from imc_recvmsg messages.
+  std::vector<scoped_refptr<MessageAttachment>> input_attachments_;
 
   // This queue is used when a message is sent prior to Connect having been
   // called. Normally after we're connected, the queue is empty.

@@ -34,16 +34,10 @@ bool ParamTraits<MachPortMac>::Read(const base::Pickle* m,
     return false;
   MessageAttachment* attachment =
       static_cast<MessageAttachment*>(base_attachment.get());
-  if (attachment->GetType() != MessageAttachment::TYPE_BROKERABLE_ATTACHMENT)
+  if (attachment->GetType() != MessageAttachment::Type::MACH_PORT)
     return false;
-  BrokerableAttachment* brokerable_attachment =
-      static_cast<BrokerableAttachment*>(attachment);
-  if (brokerable_attachment->GetBrokerableType() !=
-      BrokerableAttachment::MACH_PORT) {
-    return false;
-  }
   IPC::internal::MachPortAttachmentMac* mach_port_attachment =
-      static_cast<IPC::internal::MachPortAttachmentMac*>(brokerable_attachment);
+      static_cast<IPC::internal::MachPortAttachmentMac*>(attachment);
   r->set_mach_port(mach_port_attachment->get_mach_port());
   mach_port_attachment->reset_mach_port_ownership();
   return true;

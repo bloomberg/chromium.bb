@@ -24,10 +24,6 @@ MachPortAttachmentMac::MachPortAttachmentMac(mach_port_t mach_port,
                                              FromWire from_wire)
     : mach_port_(mach_port), owns_mach_port_(true) {}
 
-MachPortAttachmentMac::MachPortAttachmentMac(const WireFormat& wire_format)
-    : mach_port_(static_cast<mach_port_t>(wire_format.mach_port)),
-      owns_mach_port_(true) {}
-
 MachPortAttachmentMac::~MachPortAttachmentMac() {
   if (mach_port_ != MACH_PORT_NULL && owns_mach_port_) {
     kern_return_t kr = mach_port_mod_refs(mach_task_self(), mach_port_,
@@ -37,14 +33,8 @@ MachPortAttachmentMac::~MachPortAttachmentMac() {
   }
 }
 
-MachPortAttachmentMac::BrokerableType MachPortAttachmentMac::GetBrokerableType()
-    const {
-  return MACH_PORT;
-}
-
-MachPortAttachmentMac::WireFormat MachPortAttachmentMac::GetWireFormat(
-    const base::ProcessId& destination) const {
-  return WireFormat(static_cast<uint32_t>(mach_port_), destination);
+MessageAttachment::Type MachPortAttachmentMac::GetType() const {
+  return Type::MACH_PORT;
 }
 
 }  // namespace internal

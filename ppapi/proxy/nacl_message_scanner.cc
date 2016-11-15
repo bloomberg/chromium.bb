@@ -63,7 +63,6 @@ void WriteHandle(int handle_index,
     // Now write the handle itself in POSIX style.
     // See ParamTraits<FileDescriptor>::Read for where these values are read.
     msg->WriteBool(true);  // valid == true
-    msg->WriteBool(false);  // brokerable == false
     msg->WriteInt(handle_index);
   }
 }
