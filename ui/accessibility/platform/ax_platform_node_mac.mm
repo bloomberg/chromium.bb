@@ -382,9 +382,8 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
     return node_->GetDelegate()->CanSetStringValue();
 
   if ([attributeName isEqualToString:NSAccessibilityFocusedAttribute]) {
-    if (ui::AXNodeData::IsFlagSet(node_->GetData().state,
-                                  ui::AX_STATE_FOCUSABLE))
-      return NO;
+    return ui::AXNodeData::IsFlagSet(node_->GetData().state,
+                                     ui::AX_STATE_FOCUSABLE);
   }
 
   // TODO(patricialor): Add callbacks for updating the above attributes except
@@ -393,13 +392,19 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
 }
 
 - (void)accessibilitySetValue:(id)value forAttribute:(NSString*)attribute {
-  if ([attribute isEqualToString:NSAccessibilityValueAttribute] &&
-      [value isKindOfClass:[NSString class]]) {
-    node_->GetDelegate()->SetStringValue(base::SysNSStringToUTF16(value), true);
-  } else if ([attribute isEqualToString:NSAccessibilitySelectedTextAttribute] &&
-             [value isKindOfClass:[NSString class]]) {
-    node_->GetDelegate()->SetStringValue(base::SysNSStringToUTF16(value),
-                                         false);
+  if ([value isKindOfClass:[NSString class]]) {
+    if ([attribute isEqualToString:NSAccessibilityValueAttribute]) {
+      node_->GetDelegate()->SetStringValue(base::SysNSStringToUTF16(value),
+                                           true);
+    } else if ([attribute
+                   isEqualToString:NSAccessibilitySelectedTextAttribute]) {
+      node_->GetDelegate()->SetStringValue(base::SysNSStringToUTF16(value),
+                                           false);
+    }
+  } else if ([value isKindOfClass:[NSNumber class]]) {
+    if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
+      node_->GetDelegate()->SetFocused([value boolValue]);
+    }
   }
 
   // TODO(patricialor): Plumb through all the other writable attributes as

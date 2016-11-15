@@ -116,6 +116,8 @@ class AuraLinuxApplication
 
   bool CanSetStringValue() override { return false; }
 
+  bool SetFocused(bool focused) override { return false; }
+
  private:
   friend struct base::DefaultSingletonTraits<AuraLinuxApplication>;
 

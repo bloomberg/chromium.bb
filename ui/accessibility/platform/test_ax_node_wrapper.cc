@@ -128,6 +128,10 @@ bool TestAXNodeWrapper::CanSetStringValue() {
   return false;
 }
 
+bool TestAXNodeWrapper::SetFocused(bool focused) {
+  return false;
+}
+
 TestAXNodeWrapper::TestAXNodeWrapper(AXTree* tree, AXNode* node)
     : tree_(tree),
       node_(node),

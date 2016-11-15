@@ -94,6 +94,9 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Whether SetStringValue() is callable, i.e. if the string value is not read
   // only and if the callback exists.
   virtual bool CanSetStringValue() = 0;
+
+  // Focus or unfocus a View, checking if the View is focusable first.
+  virtual bool SetFocused(bool focused) = 0;
 };
 
 }  // namespace ui

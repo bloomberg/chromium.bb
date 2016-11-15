@@ -304,11 +304,42 @@ TEST_F(NativeWidgetMacAccessibilityTest, TextfieldEditableAttributes) {
                 NSAccessibilityVisibleCharacterRangeAttribute) rangeValue]));
 }
 
-// Test writing accessibility attributes via an accessibility client.
+// Test writing accessibility attributes via an accessibility client for normal
+// Views.
+TEST_F(NativeWidgetMacAccessibilityTest, ViewWritableAttributes) {
+  FlexibleRoleTestView* view = new FlexibleRoleTestView(ui::AX_ROLE_GROUP);
+  view->SetSize(GetWidgetBounds().size());
+  widget()->GetContentsView()->AddChildView(view);
+
+  // Get the FlexibleRoleTestView accessibility object.
+  NSPoint midpoint = gfx::ScreenPointToNSPoint(GetWidgetBounds().CenterPoint());
+  id ax_node = [widget()->GetNativeWindow() accessibilityHitTest:midpoint];
+  EXPECT_TRUE(ax_node);
+
+  // Make sure it's the correct accessibility object.
+  id value = [ax_node accessibilityAttributeValue:NSAccessibilityRoleAttribute];
+  EXPECT_NSEQ(NSAccessibilityGroupRole, value);
+
+  // Make sure |view| is focusable, then focus/unfocus it.
+  view->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  EXPECT_FALSE(view->HasFocus());
+  EXPECT_FALSE(
+      [AttributeValueAtMidpoint(NSAccessibilityFocusedAttribute) boolValue]);
+  EXPECT_TRUE([ax_node
+      accessibilityIsAttributeSettable:NSAccessibilityFocusedAttribute]);
+  [ax_node accessibilitySetValue:[NSNumber numberWithBool:YES]
+                    forAttribute:NSAccessibilityFocusedAttribute];
+  EXPECT_TRUE(
+      [AttributeValueAtMidpoint(NSAccessibilityFocusedAttribute) boolValue]);
+  EXPECT_TRUE(view->HasFocus());
+}
+
+// Test writing accessibility attributes via an accessibility client for
+// editable controls (in this case, views::Textfields).
 TEST_F(NativeWidgetMacAccessibilityTest, TextfieldWritableAttributes) {
   Textfield* textfield = AddChildTextfield(GetWidgetBounds().size());
 
-  // Get the textfield accessibility object.
+  // Get the Textfield accessibility object.
   NSPoint midpoint = gfx::ScreenPointToNSPoint(GetWidgetBounds().CenterPoint());
   id ax_node = [widget()->GetNativeWindow() accessibilityHitTest:midpoint];
   EXPECT_TRUE(ax_node);

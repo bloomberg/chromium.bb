@@ -217,6 +217,17 @@ bool NativeViewAccessibility::CanSetStringValue() {
   return !ui::AXNodeData::IsFlagSet(GetData().state, ui::AX_STATE_READ_ONLY);
 }
 
+bool NativeViewAccessibility::SetFocused(bool focused) {
+  if (!ui::AXNodeData::IsFlagSet(GetData().state, ui::AX_STATE_FOCUSABLE))
+    return false;
+
+  if (focused)
+    view_->RequestFocus();
+  else if (view_->HasFocus())
+    view_->GetFocusManager()->ClearFocus();
+  return true;
+}
+
 void NativeViewAccessibility::OnWidgetDestroying(Widget* widget) {
   if (parent_widget_ == widget) {
     parent_widget_->RemoveObserver(this);

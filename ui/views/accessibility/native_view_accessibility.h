@@ -59,6 +59,7 @@ class VIEWS_EXPORT NativeViewAccessibility
   bool SetStringValue(const base::string16& new_value,
                       bool clear_first) override;
   bool CanSetStringValue() override;
+  bool SetFocused(bool focused) override;
 
   // WidgetObserver
   void OnWidgetDestroying(Widget* widget) override;
