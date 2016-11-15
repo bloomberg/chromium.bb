@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_device_provider.h"
+#include "device/vr/vr_service_impl.h"
 
 namespace device {
 
@@ -31,6 +32,9 @@ class FakeVRDevice : public VRDevice {
   void SubmitFrame(mojom::VRPosePtr pose) override;
   void UpdateLayerBounds(mojom::VRLayerBoundsPtr leftBounds,
                          mojom::VRLayerBoundsPtr rightBounds) override;
+
+  void AddService(VRServiceImpl* service) override;
+  void RemoveService(VRServiceImpl* service) override;
 
  private:
   mojom::VREyeParametersPtr InitEye(float fov, float offset, uint32_t size);

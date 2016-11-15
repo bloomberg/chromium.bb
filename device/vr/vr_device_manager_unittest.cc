@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/ptr_util.h"
 #include "device/vr/test/fake_vr_device.h"
 #include "device/vr/test/fake_vr_device_provider.h"
 #include "device/vr/vr_device_provider.h"
@@ -68,21 +69,21 @@ TEST_F(VRDeviceManagerTest, GetDevicesBasicTest) {
   VRDevice* queried_device = GetDevice(1);
   EXPECT_EQ(nullptr, queried_device);
 
-  FakeVRDevice device1;
-  provider_->AddDevice(&device1);
+  FakeVRDevice* device1 = new FakeVRDevice();
+  provider_->AddDevice(base::WrapUnique(device1));
   success = device_manager_->GetVRDevices(vr_service_.get());
   EXPECT_TRUE(success);
   // Should have successfully returned one device.
-  EXPECT_EQ(&device1, GetDevice(device1.id()));
+  EXPECT_EQ(device1, GetDevice(device1->id()));
 
-  FakeVRDevice device2;
-  provider_->AddDevice(&device2);
+  FakeVRDevice* device2 = new FakeVRDevice();
+  provider_->AddDevice(base::WrapUnique(device2));
   success = device_manager_->GetVRDevices(vr_service_.get());
   EXPECT_TRUE(success);
 
   // Querying the WebVRDevice index should return the correct device.
-  EXPECT_EQ(&device1, GetDevice(device1.id()));
-  EXPECT_EQ(&device2, GetDevice(device2.id()));
+  EXPECT_EQ(device1, GetDevice(device1->id()));
+  EXPECT_EQ(device2, GetDevice(device2->id()));
 }
 
 }  // namespace device

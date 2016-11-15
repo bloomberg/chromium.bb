@@ -81,4 +81,8 @@ void FakeVRDevice::SubmitFrame(mojom::VRPosePtr pose) {}
 void FakeVRDevice::UpdateLayerBounds(mojom::VRLayerBoundsPtr leftBounds,
                                      mojom::VRLayerBoundsPtr rightBounds) {}
 
+void FakeVRDevice::AddService(VRServiceImpl* service) {}
+
+void FakeVRDevice::RemoveService(VRServiceImpl* service) {}
+
 }  // namespace device

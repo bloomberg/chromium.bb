@@ -13,9 +13,13 @@ namespace device {
 VRDisplayImpl::VRDisplayImpl(device::VRDevice* device, VRServiceImpl* service)
     : binding_(this), device_(device), service_(service) {
   mojom::VRDisplayInfoPtr display_info = device->GetVRDevice();
-  service->client()->OnDisplayConnected(binding_.CreateInterfacePtrAndBind(),
-                                        mojo::GetProxy(&client_),
-                                        std::move(display_info));
+  // Client might be null in unittest.
+  // TODO: setup a mock client in unittest too?
+  if (service->client()) {
+    service->client()->OnDisplayConnected(binding_.CreateInterfacePtrAndBind(),
+                                          mojo::GetProxy(&client_),
+                                          std::move(display_info));
+  }
 }
 
 VRDisplayImpl::~VRDisplayImpl() {}
