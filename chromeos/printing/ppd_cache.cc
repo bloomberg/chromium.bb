@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "crypto/sha2.h"
@@ -48,6 +49,7 @@ class PpdCacheImpl : public PpdCache {
   // Public API functions.
   base::Optional<base::FilePath> Find(
       const Printer::PpdReference& reference) const override {
+    base::ThreadRestrictions::AssertIOAllowed();
     base::Optional<base::FilePath> ret;
 
     // We can't know here if we have a gzipped or un-gzipped version, so just
@@ -91,6 +93,7 @@ class PpdCacheImpl : public PpdCache {
   }
 
   const PpdProvider::AvailablePrintersMap* FindAvailablePrinters() override {
+    base::ThreadRestrictions::AssertIOAllowed();
     if (available_printers_ != nullptr &&
         base::Time::Now() - available_printers_timestamp_ <
             options_.max_available_list_staleness) {
@@ -159,7 +162,8 @@ class PpdCacheImpl : public PpdCache {
     }
     if (base::WriteFile(available_printers_file_, contents.data(),
                         contents.size()) != static_cast<int>(contents.size())) {
-      LOG(ERROR) << "Failed to write available printers cache";
+      LOG(ERROR) << "Failed to write available printers cache to "
+                 << available_printers_file_.MaybeAsASCII();
     }
   }
 
@@ -229,7 +233,8 @@ class PpdCacheImpl : public PpdCache {
       if (!base::ReadFileToStringWithMaxSize(
               available_printers_file_, buf,
               options_.max_available_list_cached_size)) {
-        LOG(ERROR) << "Failed to read printer cache";
+        LOG(ERROR) << "Failed to read printer cache from "
+                   << available_printers_file_.MaybeAsASCII();
         buf->clear();
         return false;
       }

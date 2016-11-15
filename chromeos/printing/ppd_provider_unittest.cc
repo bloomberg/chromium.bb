@@ -74,7 +74,7 @@ class PpdProviderTest : public ::testing::Test {
     auto provider_options = PpdProvider::Options();
     provider_options.quirks_server = kTestQuirksServer;
     ppd_provider_ = PpdProvider::Create(
-        kTestAPIKey, request_context_getter_,
+        kTestAPIKey, request_context_getter_.get(), loop_.task_runner().get(),
         PpdCache::Create(ppd_cache_temp_dir_.GetPath()), provider_options);
   }
 

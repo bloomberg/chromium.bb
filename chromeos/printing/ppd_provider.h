@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/sequenced_task_runner.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/printing/printer_configuration.h"
 
@@ -75,9 +76,13 @@ class CHROMEOS_EXPORT PpdProvider {
   };
 
   // Create and return a new PpdProvider with the given cache and options.
+  // |io_task_runner| is used to run operations that are long latency and should
+  // not be on the UI thread.  References to |url_context_getter| and
+  // |io_task_runner| are taken.
   static std::unique_ptr<PpdProvider> Create(
       const std::string& api_key,
       scoped_refptr<net::URLRequestContextGetter> url_context_getter,
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       std::unique_ptr<PpdCache> cache,
       const Options& options = Options());
 
@@ -90,14 +95,9 @@ class CHROMEOS_EXPORT PpdProvider {
   //
   // |cb| will only be called after the task invoking Resolve() is finished.
   //
-  // Only one Resolve() call should be outstanding at a time.
+  // Only one Resolve() call may be outstanding at a time.
   virtual void Resolve(const Printer::PpdReference& ppd_reference,
                        const ResolveCallback& cb) = 0;
-
-  // Abort any outstanding Resolve() call.  After this returns, it is guaranteed
-  // that no ResolveCallback will be called until the next time Resolve is
-  // called.  It is a nop to call this if no Resolve() is outstanding.
-  virtual void AbortResolve() = 0;
 
   // Get all the printer makes and models we can support.
   //
@@ -107,14 +107,8 @@ class CHROMEOS_EXPORT PpdProvider {
   // |cb| will only be called after the task invoking QueryAvailable() is
   // finished.
   //
-  // Only one QueryAvailable() call should be outstanding at a time.
+  // Only one QueryAvailable() call may be outstanding at a time.
   virtual void QueryAvailable(const QueryAvailableCallback& cb) = 0;
-
-  // Abort any outstanding QueryAvailable() call.  After this returns, it is
-  // guaranteed that no QueryAvailableCallback will be called until the next
-  // time QueryAvailable() is called.  It is a nop to call this if no
-  // QueryAvailable() is outstanding.
-  virtual void AbortQueryAvailable() = 0;
 
   // Most of the time, the cache is just an invisible backend to the Provider,
   // consulted at Resolve time, but in the case of the user doing "Add Printer"
