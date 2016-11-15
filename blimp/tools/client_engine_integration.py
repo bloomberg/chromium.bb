@@ -25,6 +25,12 @@ SRC_PATH = os.path.abspath(
 
 DEVIL_PATH = os.path.join(SRC_PATH, 'third_party', 'catapult',
                           'devil')
+DEVIL_CHROMIUM_PATH = os.path.join(SRC_PATH, 'build', 'android')
+
+if DEVIL_CHROMIUM_PATH not in sys.path:
+  sys.path.append(DEVIL_CHROMIUM_PATH)
+
+import devil_chromium
 
 if DEVIL_PATH not in sys.path:
   sys.path.append(DEVIL_PATH)
@@ -273,6 +279,9 @@ def main():
                       required=True,
                       help='Path to the root linux build directory.'
                            ' Example: "out-linux/Debug"')
+  parser.add_argument('--adb-path',
+                      type=os.path.abspath,
+                      help='Path to the adb binary.')
   subparsers = parser.add_subparsers(dest="subparser_name")
 
   start_parser = subparsers.add_parser('start')
@@ -299,6 +308,7 @@ def main():
   stop_parser.set_defaults(func=_Stop)
 
   args = parser.parse_args()
+  devil_chromium.Initialize(adb_path=args.adb_path)
 
   json_file_path = os.path.join(SRC_PATH, args.output_linux_directory,
                                 ARGS_JSON_FILE)
