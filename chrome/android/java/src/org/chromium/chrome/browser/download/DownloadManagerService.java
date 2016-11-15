@@ -46,8 +46,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -644,25 +644,29 @@ public class DownloadManagerService extends BroadcastReceiver implements
         if (mIsUIUpdateScheduled) return;
 
         mIsUIUpdateScheduled = true;
-        final List<DownloadProgress> progressPendingUpdate = new ArrayList<DownloadProgress>();
-        Iterator<DownloadProgress> iter = mDownloadProgressMap.values().iterator();
+        final List<DownloadProgress> progressToUpdate = new ArrayList<DownloadProgress>();
+        Iterator<Map.Entry<String, DownloadProgress>> iter =
+                mDownloadProgressMap.entrySet().iterator();
         while (iter.hasNext()) {
-            DownloadProgress progress = iter.next();
+            Map.Entry<String, DownloadProgress> entry = iter.next();
+            DownloadProgress progress = entry.getValue();
             if (progress.mIsUpdated) {
-                progressPendingUpdate.add(progress);
+                progressToUpdate.add(new DownloadProgress(progress));
+                progress.mIsUpdated = false;
+            }
+            // Remove progress entry from  mDownloadProgressMap if they are no longer needed.
+            if ((progress.mDownloadStatus != DOWNLOAD_STATUS_IN_PROGRESS
+                    || progress.mDownloadItem.getDownloadInfo().isPaused())
+                    && (progress.mDownloadStatus != DOWNLOAD_STATUS_INTERRUPTED
+                            || !progress.mIsAutoResumable)) {
+                iter.remove();
             }
         }
-        if (progressPendingUpdate.isEmpty()) {
+        if (progressToUpdate.isEmpty()) {
             mIsUIUpdateScheduled = false;
             return;
         }
-        // Make a copy of the |progressUpdated|, so that we can update the notification on another
-        // thread without worrying about concurrent modifications.
-        final List<DownloadProgress> progressToUpdate = new ArrayList<DownloadProgress>();
-        for (int i = 0; i < progressPendingUpdate.size(); ++i) {
-            progressToUpdate.add(new DownloadProgress(progressPendingUpdate.get(i)));
-        }
-        AsyncTask task = new AsyncTask<Void, Void, List<DownloadItem>>() {
+        new AsyncTask<Void, Void, List<DownloadItem>>() {
             @Override
             public List<DownloadItem> doInBackground(Void... params) {
                 return updateAllNotifications(progressToUpdate);
@@ -676,26 +680,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
                             DownloadManager.ERROR_UNKNOWN);
                 }
             }
-        };
-        boolean success = true;
-        try {
-            task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-            for (int i = 0; i < progressPendingUpdate.size(); ++i) {
-                DownloadProgress progress = progressPendingUpdate.get(i);
-                progress.mIsUpdated = false;
-                // Remove progress entry from  mDownloadProgressMap if they are no longer needed.
-                if ((progress.mDownloadStatus != DOWNLOAD_STATUS_IN_PROGRESS
-                        || progress.mDownloadItem.getDownloadInfo().isPaused())
-                        && (progress.mDownloadStatus != DOWNLOAD_STATUS_INTERRUPTED
-                                || !progress.mIsAutoResumable)) {
-                    mDownloadProgressMap.remove(progress.mDownloadItem.getId());
-                }
-            }
-        } catch (RejectedExecutionException e) {
-            // Reaching thread limit, update will be reschduled for the next run.
-            Log.e(TAG, "reaching thread limit, reschedule notification update later.");
-        }
-
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         Runnable scheduleNextUpdateTask = new Runnable(){
             @Override
             public void run() {
