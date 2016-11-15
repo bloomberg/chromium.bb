@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
@@ -59,9 +60,13 @@ ShellBrowserContext::ShellBrowserContext(bool off_the_record,
       net_log_(net_log),
       guest_manager_(NULL) {
   InitWhileIOAllowed();
+  BrowserContextDependencyManager::GetInstance()->
+      CreateBrowserContextServices(this);
 }
 
 ShellBrowserContext::~ShellBrowserContext() {
+  BrowserContextDependencyManager::GetInstance()->
+      DestroyBrowserContextServices(this);
   ShutdownStoragePartitions();
   if (resource_context_) {
     BrowserThread::DeleteSoon(
