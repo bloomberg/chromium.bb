@@ -16,7 +16,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "cc/animation/animation_delegate.h"
-#include "cc/animation/target_property.h"
+#include "cc/trees/target_property.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_threaded_animation_delegate.h"

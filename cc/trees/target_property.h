@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_ANIMATION_TARGET_PROPERTY_H_
-#define CC_ANIMATION_TARGET_PROPERTY_H_
+#ifndef CC_TREES_TARGET_PROPERTY_H_
+#define CC_TREES_TARGET_PROPERTY_H_
 
 #include <bitset>
 
@@ -31,4 +31,4 @@ using TargetProperties = std::bitset<TargetProperty::LAST_TARGET_PROPERTY + 1>;
 
 }  // namespace cc
 
-#endif  // CC_ANIMATION_TARGET_PROPERTY_H_
+#endif  // CC_TREES_TARGET_PROPERTY_H_

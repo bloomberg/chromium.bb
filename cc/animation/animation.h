@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "cc/animation/target_property.h"
 #include "cc/base/cc_export.h"
+#include "cc/trees/target_property.h"
 
 namespace cc {
 

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_ANIMATION_PROPERTY_ANIMATION_STATE_H_
-#define CC_ANIMATION_PROPERTY_ANIMATION_STATE_H_
+#ifndef CC_TREES_PROPERTY_ANIMATION_STATE_H_
+#define CC_TREES_PROPERTY_ANIMATION_STATE_H_
 
-#include "cc/animation/target_property.h"
 #include "cc/base/cc_export.h"
+#include "cc/trees/target_property.h"
 
 namespace cc {
 
@@ -35,4 +35,4 @@ PropertyAnimationState operator^(const PropertyAnimationState& lhs,
 
 }  // namespace cc
 
-#endif  // CC_ANIMATION_PROPERTY_ANIMATION_STATE_H_
+#endif  // CC_TREES_PROPERTY_ANIMATION_STATE_H_

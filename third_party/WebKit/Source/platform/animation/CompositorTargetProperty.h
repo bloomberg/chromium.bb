@@ -5,7 +5,7 @@
 #ifndef CompositorTargetProperty_h
 #define CompositorTargetProperty_h
 
-#include "cc/animation/target_property.h"
+#include "cc/trees/target_property.h"
 
 namespace blink {
 

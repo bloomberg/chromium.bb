@@ -10,8 +10,8 @@
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_timeline.h"
-#include "cc/animation/property_animation_state.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
+#include "cc/trees/property_animation_state.h"
 
 namespace cc {
 

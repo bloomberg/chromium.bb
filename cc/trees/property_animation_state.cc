@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/animation/property_animation_state.h"
+#include "cc/trees/property_animation_state.h"
 
 #include "base/logging.h"
 

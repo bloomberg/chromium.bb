@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/animation/target_property.h"
+#include "cc/trees/target_property.h"
 
 #include "base/macros.h"
 
