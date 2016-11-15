@@ -5,7 +5,7 @@
 #ifndef BLIMP_ENGINE_SESSION_PAGE_LOAD_TRACKER_H_
 #define BLIMP_ENGINE_SESSION_PAGE_LOAD_TRACKER_H_
 
-#include "base/containers/small_map.h"
+#include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -37,39 +37,17 @@ class PageLoadTracker : public content::WebContentsObserver {
   ~PageLoadTracker() override;
 
  private:
-  struct LoadStatus {
-    // Set to true on receiving a notification from the renderer that the load
-    // finished. See WebContentsObserver::DidFinishLoad.
-    bool page_loaded = false;
-
-    // Set to true on receiving a notification from the renderer that the first
-    // paint after a navigation was performed.
-    // See WebContentsObserver::DidFirstPaintAfterLoad.
-    bool did_first_paint = false;
-
-    bool Loaded() const;
-  };
-
-  typedef base::SmallMap<std::map<content::RenderWidgetHost*, LoadStatus>>
-      RenderWidgetLoadStatusMap;
-
   // content::WebContentsObserver implementation.
-  void DidStartProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      bool is_error_page,
-      bool is_iframe_srcdoc) override;
-  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                     const GURL& validated_url) override;
-  void DidFailLoad(content::RenderFrameHost* render_frame_host,
-                   const GURL& validated_url,
-                   int error_code,
-                   const base::string16& error_description,
-                   bool was_ignored_by_handler) override;
-  void DidFirstPaintAfterLoad(
-      content::RenderWidgetHost* render_widget_host) override;
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
-  RenderWidgetLoadStatusMap render_widget_load_status_;
+  // Invoked when the renderer has performed at least one paint after the
+  // navigation was committed.
+  void DidPaintAfterNavigationCommitted(bool result);
+
+  base::CancelableCallback<void(bool)> did_paint_after_navigation_callback_;
 
   PageLoadTrackerClient* client_;
 
