@@ -159,6 +159,7 @@
     {
       'target_name': 'user_list',
       'dependencies': [
+        '../compiled_resources2.gyp:route',
         '<(EXTERNS_GYP):settings_private',
         '<(EXTERNS_GYP):users_private',
       ],

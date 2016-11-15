@@ -66,16 +66,6 @@ Polymer({
    * @private
    * @return {boolean}
    */
-  isOwnerLabelHidden_: function(isOwner, isWhitelistManaged) {
-    return isOwner || isWhitelistManaged;
-  },
-
-  /**
-   * @param {boolean} isOwner
-   * @param {boolean} isWhitelistManaged
-   * @private
-   * @return {boolean}
-   */
   isEditingDisabled_: function(isOwner, isWhitelistManaged) {
     return !isOwner || isWhitelistManaged;
   },

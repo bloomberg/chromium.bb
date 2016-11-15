@@ -1620,6 +1620,7 @@ void AddUsersStrings(content::WebUIDataSource* html_source) {
     {"supervisedUsersLabel", IDS_SETTINGS_USERS_SUPERVISED_USERS_LABEL},
     {"showOnSigninLabel", IDS_SETTINGS_USERS_SHOW_ON_SIGNIN_LABEL},
     {"restrictSigninLabel", IDS_SETTINGS_USERS_RESTRICT_SIGNIN_LABEL},
+    {"deviceOwnerLabel", IDS_SETTINGS_USERS_DEVICE_OWNER_LABEL},
     {"addUsers", IDS_SETTINGS_USERS_ADD_USERS},
     {"addUsersEmail", IDS_SETTINGS_USERS_ADD_USERS_EMAIL},
 #endif

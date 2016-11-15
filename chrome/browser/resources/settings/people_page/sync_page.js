@@ -165,9 +165,6 @@ Polymer({
 
   /** @protected */
   currentRouteChanged: function() {
-    if (!this.isAttached)
-      return;
-
     if (settings.getCurrentRoute() == settings.Route.SYNC)
       this.onNavigateToPage_();
     else
@@ -185,8 +182,6 @@ Polymer({
 
   /** @private */
   onNavigateToPage_: function() {
-    // The element is not ready for C++ interaction until it is attached.
-    assert(this.isAttached);
     assert(settings.getCurrentRoute() == settings.Route.SYNC);
 
     if (this.unloadCallback_)
