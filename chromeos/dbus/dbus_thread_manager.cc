@@ -211,6 +211,10 @@ UpdateEngineClient* DBusThreadManager::GetUpdateEngineClient() {
   return clients_common_->update_engine_client_.get();
 }
 
+UpstartClient* DBusThreadManager::GetUpstartClient() {
+  return clients_browser_ ? clients_browser_->upstart_client_.get() : nullptr;
+}
+
 void DBusThreadManager::InitializeClients() {
   // Some clients call DBusThreadManager::Get() during initialization.
   DCHECK(g_dbus_thread_manager);

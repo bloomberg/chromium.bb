@@ -52,6 +52,7 @@ class ShillServiceClient;
 class ShillThirdPartyVpnDriverClient;
 class SystemClockClient;
 class UpdateEngineClient;
+class UpstartClient;
 
 // DBusThreadManager manages the D-Bus thread, the thread dedicated to
 // handling asynchronous D-Bus operations.
@@ -142,6 +143,7 @@ class CHROMEOS_EXPORT DBusThreadManager {
   SMSClient* GetSMSClient();
   SystemClockClient* GetSystemClockClient();
   UpdateEngineClient* GetUpdateEngineClient();
+  UpstartClient* GetUpstartClient();
 
  private:
   friend class DBusThreadManagerSetter;

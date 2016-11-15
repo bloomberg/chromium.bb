@@ -19,9 +19,11 @@
 #include "chromeos/dbus/fake_image_burner_client.h"
 #include "chromeos/dbus/fake_image_loader_client.h"
 #include "chromeos/dbus/fake_lorgnette_manager_client.h"
+#include "chromeos/dbus/fake_upstart_client.h"
 #include "chromeos/dbus/image_burner_client.h"
 #include "chromeos/dbus/image_loader_client.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
+#include "chromeos/dbus/upstart_client.h"
 
 namespace chromeos {
 
@@ -64,6 +66,11 @@ DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
     lorgnette_manager_client_.reset(LorgnetteManagerClient::Create());
   else
     lorgnette_manager_client_.reset(new FakeLorgnetteManagerClient);
+
+  if (use_real_clients)
+    upstart_client_.reset(UpstartClient::Create());
+  else
+    upstart_client_.reset(new FakeUpstartClient);
 }
 
 DBusClientsBrowser::~DBusClientsBrowser() {}
@@ -79,6 +86,7 @@ void DBusClientsBrowser::Initialize(dbus::Bus* system_bus) {
   image_burner_client_->Init(system_bus);
   image_loader_client_->Init(system_bus);
   lorgnette_manager_client_->Init(system_bus);
+  upstart_client_->Init(system_bus);
 }
 
 }  // namespace chromeos
