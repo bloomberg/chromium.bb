@@ -13896,42 +13896,6 @@
             "url": "/html/webappapis/timers/evil-spec-example.html"
           }
         ],
-        "imagebitmap-renderingcontext/bitmaprenderer-as-imagesource.html": [
-          {
-            "path": "imagebitmap-renderingcontext/bitmaprenderer-as-imagesource.html",
-            "url": "/imagebitmap-renderingcontext/bitmaprenderer-as-imagesource.html"
-          }
-        ],
-        "imagebitmap-renderingcontext/context-creation-with-alpha.html": [
-          {
-            "path": "imagebitmap-renderingcontext/context-creation-with-alpha.html",
-            "url": "/imagebitmap-renderingcontext/context-creation-with-alpha.html"
-          }
-        ],
-        "imagebitmap-renderingcontext/context-creation.html": [
-          {
-            "path": "imagebitmap-renderingcontext/context-creation.html",
-            "url": "/imagebitmap-renderingcontext/context-creation.html"
-          }
-        ],
-        "imagebitmap-renderingcontext/context-preserves-canvas.html": [
-          {
-            "path": "imagebitmap-renderingcontext/context-preserves-canvas.html",
-            "url": "/imagebitmap-renderingcontext/context-preserves-canvas.html"
-          }
-        ],
-        "imagebitmap-renderingcontext/tranferFromImageBitmap-null.html": [
-          {
-            "path": "imagebitmap-renderingcontext/tranferFromImageBitmap-null.html",
-            "url": "/imagebitmap-renderingcontext/tranferFromImageBitmap-null.html"
-          }
-        ],
-        "imagebitmap-renderingcontext/transferFromImageBitmap-detached.html": [
-          {
-            "path": "imagebitmap-renderingcontext/transferFromImageBitmap-detached.html",
-            "url": "/imagebitmap-renderingcontext/transferFromImageBitmap-detached.html"
-          }
-        ],
         "mediacapture-record/BlobEvent-constructor.html": [
           {
             "path": "mediacapture-record/BlobEvent-constructor.html",
