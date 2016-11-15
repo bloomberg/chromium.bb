@@ -71,6 +71,7 @@ weston_desktop_xwayland_surface_change_state(struct weston_desktop_xwayland_surf
 					     struct weston_desktop_surface *parent,
 					     int32_t x, int32_t y)
 {
+	struct weston_surface *wsurface;
 	bool to_add = (parent == NULL && state != XWAYLAND);
 
 	assert(state != NONE);
@@ -81,6 +82,8 @@ weston_desktop_xwayland_surface_change_state(struct weston_desktop_xwayland_surf
 		return;
 	}
 
+	wsurface = weston_desktop_surface_get_surface(surface->surface);
+
 	if (surface->state != state) {
 		if (surface->state == XWAYLAND) {
 			assert(!surface->added);
@@ -88,6 +91,7 @@ weston_desktop_xwayland_surface_change_state(struct weston_desktop_xwayland_surf
 			weston_desktop_surface_unlink_view(surface->view);
 			weston_view_destroy(surface->view);
 			surface->view = NULL;
+			weston_surface_unmap(wsurface);
 		}
 
 		if (to_add) {
@@ -109,6 +113,8 @@ weston_desktop_xwayland_surface_change_state(struct weston_desktop_xwayland_surf
 			weston_layer_entry_insert(&surface->xwayland->layer.view_list,
 						  &surface->view->layer_link);
 			weston_view_set_position(surface->view, x, y);
+			surface->view->is_mapped = true;
+			wsurface->is_mapped = true;
 		}
 
 		surface->state = state;
