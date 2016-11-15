@@ -133,15 +133,6 @@ class SyncedSessionTracker {
                                SessionID::id_type tab_id,
                                int tab_node_id);
 
-  // Reassociated the tab denoted by |old_tab_id| with a new tab id.
-  // This is useful on restart when sync needs to reassociate tabs from a
-  // previous session with newly restored tabs (and can be used in conjunction
-  // with PutTabInWindow).
-  // Returns whether the reassociation succeeded.
-  bool ReassociateTab(const std::string& session_tag,
-                      SessionID::id_type old_tab_id,
-                      SessionID::id_type new_tab_id);
-
   // Fills |tab_node_ids| with the tab node ids (see GetTab) for all the tabs*
   // associated with the session having tag |session_tag|.
   void LookupTabNodeIds(const std::string& session_tag,
@@ -177,12 +168,12 @@ class SyncedSessionTracker {
   // The client of the sync sessions datatype.
   SyncSessionsClient* const sessions_client_;
 
-  // The mapping of tab/window to their SessionTab/SessionWindow objects.
+  // The mapping of tab/window ids to their SessionTab/SessionWindow objects.
   // The SessionTab/SessionWindow objects referred to may be owned either by the
   // session in the |synced_session_map_| or be temporarily unmapped and live in
   // the |unmapped_tabs_|/|unmapped_windows_| collections.
   //
-  // Map: session tag -> (tab/window -> SessionTab*/SessionWindow*)
+  // Map: session tag -> (tab/window id -> SessionTab*/SessionWindow*)
   std::map<std::string, std::map<SessionID::id_type, sessions::SessionTab*>>
       synced_tab_map_;
   std::map<std::string, std::map<SessionID::id_type, sessions::SessionWindow*>>

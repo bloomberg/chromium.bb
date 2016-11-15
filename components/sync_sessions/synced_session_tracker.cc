@@ -339,48 +339,6 @@ sessions::SessionTab* SyncedSessionTracker::GetTabImpl(
   return tab_ptr;
 }
 
-bool SyncedSessionTracker::ReassociateTab(const std::string& session_tag,
-                                          SessionID::id_type old_tab_id,
-                                          SessionID::id_type new_tab_id) {
-  DCHECK_NE(TabNodePool::kInvalidTabID, old_tab_id);
-  DCHECK_NE(TabNodePool::kInvalidTabID, new_tab_id);
-
-  sessions::SessionTab* tab_ptr = nullptr;
-  auto old_tab_iter = synced_tab_map_[session_tag].find(old_tab_id);
-  if (old_tab_iter == synced_tab_map_[session_tag].end())
-    return false;
-
-  // It's possible a placeholder is already in place for the new tab. If that's
-  // the case, reuse the placeholder SessionTab. Otherwise, reuse the old
-  // SessionTab.
-  auto new_tab_iter = synced_tab_map_[session_tag].find(new_tab_id);
-  if (new_tab_iter != synced_tab_map_[session_tag].end()) {
-    tab_ptr = new_tab_iter->second;
-  } else {
-    tab_ptr = old_tab_iter->second;
-  }
-
-  // If the old tab is unmapped, update the tab id under which it is indexed.
-  auto unmapped_tabs_iter = unmapped_tabs_[session_tag].find(old_tab_id);
-  if (unmapped_tabs_iter != unmapped_tabs_[session_tag].end()) {
-    std::unique_ptr<sessions::SessionTab> tab =
-        std::move(unmapped_tabs_iter->second);
-    unmapped_tabs_[session_tag].erase(unmapped_tabs_iter);
-    unmapped_tabs_[session_tag][new_tab_id] = std::move(tab);
-  }
-
-  // Update the tab id.
-  DVLOG(1) << "Remapped tab " << old_tab_id << " to tab " << new_tab_id;
-  tab_ptr->tab_id.set_id(new_tab_id);
-
-  // Remove the tab from the synced tab map under the old id.
-  synced_tab_map_[session_tag].erase(old_tab_iter);
-
-  // Add the tab back into the tab map with the new id.
-  synced_tab_map_[session_tag][new_tab_id] = tab_ptr;
-  return true;
-}
-
 void SyncedSessionTracker::Clear() {
   // Cleanup unmapped tabs and windows.
   unmapped_windows_.clear();
