@@ -36,6 +36,7 @@
 #include "net/http/http_network_layer.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
+#include "net/nqe/network_quality_estimator.h"
 #include "net/proxy/proxy_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/url_request.h"
@@ -91,6 +92,8 @@ class TestURLRequestContext : public URLRequestContext {
   }
 
  private:
+  NetworkQualityEstimator network_quality_estimator_;
+
   bool initialized_ = false;
 
   // Optional parameters to override default values.  Note that values that

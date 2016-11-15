@@ -15,6 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_error_details.h"
@@ -279,6 +280,8 @@ class MockNetworkTransaction
   unsigned int socket_log_id_;
 
   bool done_reading_called_;
+
+  base::TimeTicks start_time_;
 
   base::WeakPtrFactory<MockNetworkTransaction> weak_factory_;
 

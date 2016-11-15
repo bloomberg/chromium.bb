@@ -300,8 +300,8 @@ class TestExpectCTNetworkDelegate : public net::NetworkDelegateImpl {
 class ChromeExpectCTReporterWaitTest : public ::testing::Test {
  public:
   ChromeExpectCTReporterWaitTest()
-      : context_(true),
-        thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+        context_(true) {
     context_.set_network_delegate(&network_delegate_);
     context_.Init();
   }
@@ -327,9 +327,9 @@ class ChromeExpectCTReporterWaitTest : public ::testing::Test {
   }
 
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
   TestExpectCTNetworkDelegate network_delegate_;
   net::TestURLRequestContext context_;
-  content::TestBrowserThreadBundle thread_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeExpectCTReporterWaitTest);
 };
@@ -342,6 +342,8 @@ TEST(ChromeExpectCTReporterTest, FeatureDisabled) {
   histograms.ExpectTotalCount(kSendHistogramName, 0);
 
   TestCertificateReportSender* sender = new TestCertificateReportSender();
+  content::TestBrowserThreadBundle thread_bundle(
+      content::TestBrowserThreadBundle::IO_MAINLOOP);
   net::TestURLRequestContext context;
   ChromeExpectCTReporter reporter(&context);
   reporter.report_sender_.reset(sender);
@@ -373,6 +375,8 @@ TEST(ChromeExpectCTReporterTest, EmptyReportURI) {
   scoped_feature_list.InitAndEnableFeature(features::kExpectCTReporting);
 
   TestCertificateReportSender* sender = new TestCertificateReportSender();
+  content::TestBrowserThreadBundle thread_bundle(
+      content::TestBrowserThreadBundle::IO_MAINLOOP);
   net::TestURLRequestContext context;
   ChromeExpectCTReporter reporter(&context);
   reporter.report_sender_.reset(sender);
@@ -427,6 +431,8 @@ TEST(ChromeExpectCTReporterTest, SendReport) {
   scoped_feature_list.InitAndEnableFeature(features::kExpectCTReporting);
 
   TestCertificateReportSender* sender = new TestCertificateReportSender();
+  content::TestBrowserThreadBundle thread_bundle(
+      content::TestBrowserThreadBundle::IO_MAINLOOP);
   net::TestURLRequestContext context;
   ChromeExpectCTReporter reporter(&context);
   reporter.report_sender_.reset(sender);

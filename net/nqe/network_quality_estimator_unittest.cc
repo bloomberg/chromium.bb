@@ -169,9 +169,13 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
       estimator.GetRecentDownlinkThroughputKbps(base::TimeTicks(), &kbps));
 
   TestDelegate test_delegate;
-  TestURLRequestContext context(true);
+  // These tests expect the URLRequestContext to use the NQE, but not the
+  // HttpNetworkSession.  To do this, have to create the context, with its own
+  // NQE, and then just set the one on the URLRequestContext, not the one used
+  // by the HttpNetworkSession.
+  // TODO(tbansal):  Fix that.
+  TestURLRequestContext context;
   context.set_network_quality_estimator(&estimator);
-  context.Init();
 
   std::unique_ptr<URLRequest> request(context.CreateRequest(
       estimator.GetEchoURL(), DEFAULT_PRIORITY, &test_delegate));
@@ -307,9 +311,13 @@ TEST(NetworkQualityEstimatorTest, Caching) {
       estimator.GetRecentDownlinkThroughputKbps(base::TimeTicks(), &kbps));
 
   TestDelegate test_delegate;
-  TestURLRequestContext context(true);
+  // These tests expect the URLRequestContext to use the NQE, but not the
+  // HttpNetworkSession.  To do this, have to create the context, with its own
+  // NQE, and then just set the one on the URLRequestContext, not the one used
+  // by the HttpNetworkSession.
+  // TODO(tbansal):  Fix that.
+  TestURLRequestContext context;
   context.set_network_quality_estimator(&estimator);
-  context.Init();
 
   // Start two requests so that the network quality is added to cache store at
   // the beginning of the second request from the network traffic observed from
@@ -368,9 +376,13 @@ TEST(NetworkQualityEstimatorTest, StoreObservations) {
       estimator.GetRecentDownlinkThroughputKbps(base::TimeTicks(), &kbps));
 
   TestDelegate test_delegate;
-  TestURLRequestContext context(true);
+  // These tests expect the URLRequestContext to use the NQE, but not the
+  // HttpNetworkSession.  To do this, have to create the context, with its own
+  // NQE, and then just set the one on the URLRequestContext, not the one used
+  // by the HttpNetworkSession.
+  // TODO(tbansal):  Fix that.
+  TestURLRequestContext context;
   context.set_network_quality_estimator(&estimator);
-  context.Init();
 
   // Push more observations than the maximum buffer size.
   const size_t kMaxObservations = 1000;
@@ -413,9 +425,13 @@ TEST(NetworkQualityEstimatorTest, ComputedPercentiles) {
                 base::TimeTicks(), 100));
 
   TestDelegate test_delegate;
-  TestURLRequestContext context(true);
+  // These tests expect the URLRequestContext to use the NQE, but not the
+  // HttpNetworkSession.  To do this, have to create the context, with its own
+  // NQE, and then just set the one on the URLRequestContext, not the one used
+  // by the HttpNetworkSession.
+  // TODO(tbansal):  Fix that.
+  TestURLRequestContext context;
   context.set_network_quality_estimator(&estimator);
-  context.Init();
 
   // Number of observations are more than the maximum buffer size.
   for (size_t i = 0; i < 1000U; ++i) {
@@ -1308,9 +1324,13 @@ TEST(NetworkQualityEstimatorTest, TestExternalEstimateProviderMergeEstimates) {
   EXPECT_EQ(external_estimate_provider_downstream_throughput, kbps);
 
   TestDelegate test_delegate;
-  TestURLRequestContext context(true);
+  // These tests expect the URLRequestContext to use the NQE, but not the
+  // HttpNetworkSession.  To do this, have to create the context, with its own
+  // NQE, and then just set the one on the URLRequestContext, not the one used
+  // by the HttpNetworkSession.
+  // TODO(tbansal):  Fix that.
+  TestURLRequestContext context;
   context.set_network_quality_estimator(&estimator);
-  context.Init();
 
   std::unique_ptr<URLRequest> request(context.CreateRequest(
       estimator.GetEchoURL(), DEFAULT_PRIORITY, &test_delegate));
@@ -1355,9 +1375,13 @@ TEST(NetworkQualityEstimatorTest, TestThroughputNoRequestOverlap) {
         estimator.GetRecentDownlinkThroughputKbps(base::TimeTicks(), &kbps));
 
     TestDelegate test_delegate;
-    TestURLRequestContext context(true);
+    // These tests expect the URLRequestContext to use the NQE, but not the
+    // HttpNetworkSession.  To do this, have to create the context, with its own
+    // NQE, and then just set the one on the URLRequestContext, not the one used
+    // by the HttpNetworkSession.
+    // TODO(tbansal):  Fix that.
+    TestURLRequestContext context;
     context.set_network_quality_estimator(&estimator);
-    context.Init();
 
     std::unique_ptr<URLRequest> request(context.CreateRequest(
         estimator.GetEchoURL(), DEFAULT_PRIORITY, &test_delegate));
@@ -1388,9 +1412,13 @@ TEST(NetworkQualityEstimatorTest, TestEffectiveConnectionTypeObserver) {
   estimator.SetTickClockForTesting(std::move(tick_clock));
 
   TestDelegate test_delegate;
-  TestURLRequestContext context(true);
+  // These tests expect the URLRequestContext to use the NQE, but not the
+  // HttpNetworkSession.  To do this, have to create the context, with its own
+  // NQE, and then just set the one on the URLRequestContext, not the one used
+  // by the HttpNetworkSession.
+  // TODO(tbansal):  Fix that.
+  TestURLRequestContext context;
   context.set_network_quality_estimator(&estimator);
-  context.Init();
 
   EXPECT_EQ(0U, observer.effective_connection_types().size());
 
@@ -1451,9 +1479,13 @@ TEST(NetworkQualityEstimatorTest, TestRTTAndThroughputEstimatesObserver) {
   estimator.SetTickClockForTesting(std::move(tick_clock));
 
   TestDelegate test_delegate;
-  TestURLRequestContext context(true);
+  // These tests expect the URLRequestContext to use the NQE, but not the
+  // HttpNetworkSession.  To do this, have to create the context, with its own
+  // NQE, and then just set the one on the URLRequestContext, not the one used
+  // by the HttpNetworkSession.
+  // TODO(tbansal):  Fix that.
+  TestURLRequestContext context;
   context.set_network_quality_estimator(&estimator);
-  context.Init();
 
   EXPECT_EQ(nqe::internal::InvalidRTT(), observer.http_rtt());
   EXPECT_EQ(nqe::internal::InvalidRTT(), observer.transport_rtt());
@@ -1572,9 +1604,13 @@ TEST(NetworkQualityEstimatorTest,
   estimator.AddEffectiveConnectionTypeObserver(&observer);
 
   TestDelegate test_delegate;
-  TestURLRequestContext context(true);
+  // These tests expect the URLRequestContext to use the NQE, but not the
+  // HttpNetworkSession.  To do this, have to create the context, with its own
+  // NQE, and then just set the one on the URLRequestContext, not the one used
+  // by the HttpNetworkSession.
+  // TODO(tbansal):  Fix that.
+  TestURLRequestContext context;
   context.set_network_quality_estimator(&estimator);
-  context.Init();
 
   EXPECT_EQ(0U, observer.effective_connection_types().size());
 
@@ -1654,9 +1690,13 @@ TEST(NetworkQualityEstimatorTest, TestRttThroughputObservers) {
   estimator.AddThroughputObserver(&throughput_observer);
 
   TestDelegate test_delegate;
-  TestURLRequestContext context(true);
+  // These tests expect the URLRequestContext to use the NQE, but not the
+  // HttpNetworkSession.  To do this, have to create the context, with its own
+  // NQE, and then just set the one on the URLRequestContext, not the one used
+  // by the HttpNetworkSession.
+  // TODO(tbansal):  Fix that.
+  TestURLRequestContext context;
   context.set_network_quality_estimator(&estimator);
-  context.Init();
 
   EXPECT_EQ(0U, rtt_observer.observations().size());
   EXPECT_EQ(0U, throughput_observer.observations().size());
@@ -1745,13 +1785,6 @@ TEST(NetworkQualityEstimatorTest, MAYBE_TestTCPSocketRTT) {
   TestDelegate test_delegate;
   TestURLRequestContext context(true);
   context.set_network_quality_estimator(&estimator);
-
-  std::unique_ptr<HttpNetworkSession::Params> params(
-      new HttpNetworkSession::Params);
-  // |estimator| should be notified of TCP RTT observations.
-  params->socket_performance_watcher_factory =
-      estimator.GetSocketPerformanceWatcherFactory();
-  context.set_http_network_session_params(std::move(params));
   context.Init();
 
   EXPECT_EQ(0U, rtt_observer.observations().size());
@@ -1905,9 +1938,13 @@ TEST(NetworkQualityEstimatorTest, MAYBE_RecordAccuracy) {
       base::HistogramTester histogram_tester;
 
       TestDelegate test_delegate;
-      TestURLRequestContext context(true);
+      // These tests expect the URLRequestContext to use the NQE, but not the
+      // HttpNetworkSession.  To do this, have to create the context, with its
+      // own NQE, and then just set the one on the URLRequestContext, not the
+      // one used by the HttpNetworkSession.
+      // TODO(tbansal):  Fix that.
+      TestURLRequestContext context;
       context.set_network_quality_estimator(&estimator);
-      context.Init();
 
       // Start a main-frame request which should cause network quality estimator
       // to record accuracy UMA.
@@ -2135,9 +2172,13 @@ TEST(NetworkQualityEstimatorTest, CorrelationHistogram) {
     estimator.set_rand_double(test.rand_double);
 
     TestDelegate test_delegate;
-    TestURLRequestContext context(true);
+    // These tests expect the URLRequestContext to use the NQE, but not the
+    // HttpNetworkSession.  To do this, have to create the context, with its own
+    // NQE, and then just set the one on the URLRequestContext, not the one used
+    // by the HttpNetworkSession.
+    // TODO(tbansal):  Fix that.
+    TestURLRequestContext context;
     context.set_network_quality_estimator(&estimator);
-    context.Init();
 
     // Start a main-frame request that should cause network quality estimator to
     // record the network quality at the last main frame request.
@@ -2298,9 +2339,13 @@ TEST(NetworkQualityEstimatorTest,
     estimator.AddEffectiveConnectionTypeObserver(&observer);
 
     TestDelegate test_delegate;
-    TestURLRequestContext context(true);
+    // These tests expect the URLRequestContext to use the NQE, but not the
+    // HttpNetworkSession.  To do this, have to create the context, with its own
+    // NQE, and then just set the one on the URLRequestContext, not the one used
+    // by the HttpNetworkSession.
+    // TODO(tbansal):  Fix that.
+    TestURLRequestContext context;
     context.set_network_quality_estimator(&estimator);
-    context.Init();
 
     EXPECT_EQ(0U, observer.effective_connection_types().size());
 

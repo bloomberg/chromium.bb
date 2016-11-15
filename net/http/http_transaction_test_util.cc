@@ -15,7 +15,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
-#include "base/time/time.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
@@ -246,6 +245,7 @@ int MockNetworkTransaction::Start(const HttpRequestInfo* request,
   if (request_)
     return ERR_FAILED;
 
+  start_time_ = base::TimeTicks::Now();
   request_ = request;
   return StartInternal(request, callback, net_log);
 }
@@ -366,17 +366,17 @@ bool MockNetworkTransaction::GetLoadTimingInfo(
     // gets a new socket.
     load_timing_info->socket_reused = false;
     load_timing_info->socket_log_id = socket_log_id_;
-    load_timing_info->connect_timing.connect_start = base::TimeTicks::Now();
-    load_timing_info->connect_timing.connect_end = base::TimeTicks::Now();
-    load_timing_info->send_start = base::TimeTicks::Now();
-    load_timing_info->send_end = base::TimeTicks::Now();
+    load_timing_info->connect_timing.connect_start = start_time_;
+    load_timing_info->connect_timing.connect_end = start_time_;
+    load_timing_info->send_start = start_time_;
+    load_timing_info->send_end = start_time_;
   } else {
     // If there's no valid socket ID, just use the generic socket reused values.
     // No tests currently depend on this, just should not match the values set
     // by a cache hit.
     load_timing_info->socket_reused = true;
-    load_timing_info->send_start = base::TimeTicks::Now();
-    load_timing_info->send_end = base::TimeTicks::Now();
+    load_timing_info->send_start = start_time_;
+    load_timing_info->send_end = start_time_;
   }
   return true;
 }

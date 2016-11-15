@@ -4,6 +4,8 @@
 
 #include "net/url_request/url_request_test_util.h"
 
+#include <map>
+#include <string>
 #include <utility>
 
 #include "base/compiler_specific.h"
@@ -24,6 +26,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/transport_security_state.h"
+#include "net/nqe/external_estimate_provider.h"
 #include "net/proxy/proxy_retry_info.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
@@ -57,7 +60,9 @@ const int kStageDestruction = 1 << 10;
 TestURLRequestContext::TestURLRequestContext() : TestURLRequestContext(false) {}
 
 TestURLRequestContext::TestURLRequestContext(bool delay_initialization)
-    : context_storage_(this) {
+    : network_quality_estimator_(std::unique_ptr<ExternalEstimateProvider>(),
+                                 std::map<std::string, std::string>()),
+      context_storage_(this) {
   if (!delay_initialization)
     Init();
 }
@@ -112,6 +117,10 @@ void TestURLRequestContext::Init() {
         new DefaultChannelIDStore(nullptr),
         base::WorkerPool::GetTaskRunner(true)));
   }
+
+  if (!network_quality_estimator())
+    set_network_quality_estimator(&network_quality_estimator_);
+
   if (http_transaction_factory()) {
     // Make sure we haven't been passed an object we're not going to use.
     EXPECT_FALSE(client_socket_factory_);
@@ -133,6 +142,8 @@ void TestURLRequestContext::Init() {
     params.http_server_properties = http_server_properties();
     params.net_log = net_log();
     params.channel_id_service = channel_id_service();
+    params.socket_performance_watcher_factory =
+        network_quality_estimator()->GetSocketPerformanceWatcherFactory();
     context_storage_.set_http_network_session(
         base::MakeUnique<HttpNetworkSession>(params));
     context_storage_.set_http_transaction_factory(base::MakeUnique<HttpCache>(
