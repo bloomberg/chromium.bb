@@ -67,10 +67,9 @@ class IPC_EXPORT Logging {
   // received.
   void OnReceivedLoggingMessage(const Message& message);
 
-  void OnSendMessage(Message* message, const std::string& channel_id);
+  void OnSendMessage(Message* message);
   void OnPreDispatchMessage(const Message& message);
-  void OnPostDispatchMessage(const Message& message,
-                             const std::string& channel_id);
+  void OnPostDispatchMessage(const Message& message);
 
   // Like the *MsgLog functions declared for each message class, except this
   // calls the correct one based on the message type automatically.  Defined in

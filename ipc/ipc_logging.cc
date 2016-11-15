@@ -122,7 +122,7 @@ void Logging::OnReceivedLoggingMessage(const Message& message) {
   }
 }
 
-void Logging::OnSendMessage(Message* message, const std::string& channel_id) {
+void Logging::OnSendMessage(Message* message) {
   if (!Enabled())
     return;
 
@@ -134,8 +134,7 @@ void Logging::OnSendMessage(Message* message, const std::string& channel_id) {
     // This is actually the delayed reply to a sync message.  Create a string
     // of the output parameters, add it to the LogData that was earlier stashed
     // with the reply, and log the result.
-    GenerateLogData("", *message, data, true);
-    data->channel = channel_id;
+    GenerateLogData(*message, data, true);
     Log(*data);
     delete data;
     message->set_sync_log_data(NULL);
@@ -151,8 +150,7 @@ void Logging::OnPreDispatchMessage(const Message& message) {
   message.set_received_time(Time::Now().ToInternalValue());
 }
 
-void Logging::OnPostDispatchMessage(const Message& message,
-                                    const std::string& channel_id) {
+void Logging::OnPostDispatchMessage(const Message& message) {
   if (!Enabled() ||
       !message.sent_time() ||
       !message.received_time() ||
@@ -160,7 +158,7 @@ void Logging::OnPostDispatchMessage(const Message& message,
     return;
 
   LogData data;
-  GenerateLogData(channel_id, message, &data, true);
+  GenerateLogData(message, &data, true);
 
   if (main_thread_->BelongsToCurrentThread()) {
     Log(data);
@@ -255,8 +253,7 @@ void Logging::Log(const LogData& data) {
         (Time::FromInternalValue(data.dispatch) -
          Time::FromInternalValue(data.sent)).InSecondsF();
     fprintf(stderr,
-            "ipc %s %d %s %s%s %s%s\n  %18.5f %s%18.5f %s%18.5f%s\n",
-            data.channel.c_str(),
+            "ipc %d %s %s%s %s%s\n  %18.5f %s%18.5f %s%18.5f%s\n",
             data.routing_id,
             data.flags.c_str(),
             ANSIEscape(sender_ ? ANSI_COLOR_BLUE : ANSI_COLOR_CYAN),
@@ -273,8 +270,7 @@ void Logging::Log(const LogData& data) {
   }
 }
 
-void GenerateLogData(const std::string& channel, const Message& message,
-                     LogData* data, bool get_params) {
+void GenerateLogData(const Message& message, LogData* data, bool get_params) {
   if (message.is_reply()) {
     // "data" should already be filled in.
     std::string params;
@@ -301,7 +297,6 @@ void GenerateLogData(const std::string& channel, const Message& message,
     Logging::GetMessageText(message.type(), &message_name, &message,
                             get_params ? &params : NULL);
 
-    data->channel = channel;
     data->routing_id = message.routing_id();
     data->type = message.type();
     data->flags = flags;

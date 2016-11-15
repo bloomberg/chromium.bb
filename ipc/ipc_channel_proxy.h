@@ -250,8 +250,6 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
     base::SingleThreadTaskRunner* ipc_task_runner() const {
       return ipc_task_runner_.get();
     }
-    const std::string& channel_id() const { return channel_id_; }
-
     // Dispatches a message on the listener thread.
     void OnDispatchMessage(const Message& message);
 
@@ -339,7 +337,6 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
     // thread.
     // One exception is the thread-safe send. See the class comment.
     std::unique_ptr<Channel> channel_;
-    std::string channel_id_;
     bool channel_connected_called_;
 
     // Lock for |channel_| value. This is only relevant in the context of

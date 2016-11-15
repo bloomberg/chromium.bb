@@ -28,7 +28,6 @@ class IPC_EXPORT ChannelFactory {
       const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
 
   virtual ~ChannelFactory() { }
-  virtual std::string GetName() const = 0;
   virtual std::unique_ptr<Channel> BuildChannel(Listener* listener) = 0;
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetIPCTaskRunner() = 0;
 };

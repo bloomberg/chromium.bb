@@ -54,8 +54,6 @@ class MojoChannelFactory : public ChannelFactory {
         mode_(mode),
         ipc_task_runner_(ipc_task_runner) {}
 
-  std::string GetName() const override { return ""; }
-
   std::unique_ptr<Channel> BuildChannel(Listener* listener) override {
     return ChannelMojo::Create(
         std::move(handle_), mode_, listener, ipc_task_runner_);

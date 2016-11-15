@@ -73,7 +73,6 @@ void ChannelProxy::Context::CreateChannel(
   base::AutoLock l(channel_lifetime_lock_);
   DCHECK(!channel_);
   DCHECK_EQ(factory->GetIPCTaskRunner(), ipc_task_runner_);
-  channel_id_ = factory->GetName();
   channel_ = factory->BuildChannel(this);
 
   Channel::AssociatedInterfaceSupport* support =
@@ -103,7 +102,7 @@ bool ChannelProxy::Context::TryFilters(const Message& message) {
     }
 #ifdef IPC_MESSAGE_LOG_ENABLED
     if (logger->Enabled())
-      logger->OnPostDispatchMessage(message, channel_id_);
+      logger->OnPostDispatchMessage(message);
 #endif
     return true;
   }
@@ -344,7 +343,7 @@ void ChannelProxy::Context::OnDispatchMessage(const Message& message) {
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
   if (logger->Enabled())
-    logger->OnPostDispatchMessage(message, channel_id_);
+    logger->OnPostDispatchMessage(message);
 #endif
 }
 
@@ -565,7 +564,7 @@ bool ChannelProxy::Send(Message* message) {
 #endif
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
-  Logging::GetInstance()->OnSendMessage(message, context_->channel_id());
+  Logging::GetInstance()->OnSendMessage(message);
 #endif
 
   context_->Send(message);

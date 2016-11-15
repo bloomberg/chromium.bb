@@ -19,8 +19,6 @@ class PlatformChannelFactory : public ChannelFactory {
       const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner)
       : handle_(handle), mode_(mode), ipc_task_runner_(ipc_task_runner) {}
 
-  std::string GetName() const override { return ""; }
-
   std::unique_ptr<Channel> BuildChannel(Listener* listener) override {
 #if defined(OS_NACL_SFI)
     return Channel::Create(handle_, mode_, listener);

@@ -274,7 +274,7 @@ bool ChildProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
   if (logger->Enabled())
-    logger->OnPostDispatchMessage(msg, channel_id_);
+    logger->OnPostDispatchMessage(msg);
 #endif
   return handled;
 }
