@@ -110,6 +110,7 @@ std::unique_ptr<views::InkDrop> ToolbarActionView::CreateInkDrop() {
   std::unique_ptr<views::InkDropImpl> ink_drop =
       CustomButton::CreateDefaultInkDropImpl();
   ink_drop->SetShowHighlightOnHover(!delegate_->ShownInsideMenu());
+  ink_drop->SetShowHighlightOnFocus(true);
   return std::move(ink_drop);
 }
 
