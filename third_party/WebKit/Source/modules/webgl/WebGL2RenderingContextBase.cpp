@@ -2010,6 +2010,7 @@ void WebGL2RenderingContextBase::compressedTexImage2D(
   } else if (srcLengthOverride > data->byteLength() - srcOffset) {
     synthesizeGLError(GL_INVALID_VALUE, "compressedTexImage2D",
                       "srcLengthOverride is out of range");
+    return;
   }
   contextGL()->CompressedTexImage2D(
       target, level, internalformat, width, height, border, srcLengthOverride,
@@ -2056,6 +2057,7 @@ void WebGL2RenderingContextBase::compressedTexSubImage2D(
   } else if (srcLengthOverride > data->byteLength() - srcOffset) {
     synthesizeGLError(GL_INVALID_VALUE, "compressedTexImage2D",
                       "srcLengthOverride is out of range");
+    return;
   }
   contextGL()->CompressedTexSubImage2D(
       target, level, xoffset, yoffset, width, height, format, srcLengthOverride,
@@ -2089,6 +2091,7 @@ void WebGL2RenderingContextBase::compressedTexImage3D(
   } else if (srcLengthOverride > data->byteLength() - srcOffset) {
     synthesizeGLError(GL_INVALID_VALUE, "compressedTexImage3D",
                       "srcLengthOverride is out of range");
+    return;
   }
   contextGL()->CompressedTexImage3D(
       target, level, internalformat, width, height, depth, border,
@@ -2125,6 +2128,7 @@ void WebGL2RenderingContextBase::compressedTexSubImage3D(
   } else if (srcLengthOverride > data->byteLength() - srcOffset) {
     synthesizeGLError(GL_INVALID_VALUE, "compressedTexSubImage3D",
                       "srcLengthOverride is out of range");
+    return;
   }
   contextGL()->CompressedTexSubImage3D(
       target, level, xoffset, yoffset, zoffset, width, height, depth, format,
