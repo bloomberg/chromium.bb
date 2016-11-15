@@ -18,6 +18,7 @@ import("//media/media_options.gni")
 import("//remoting/remoting_enable.gni")
 import("//third_party/openh264/openh264_args.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
+import("//ui/ozone/ozone.gni")
 import("//v8/gni/v8.gni")
 import("//v8/snapshot_toolchain.gni")
 
@@ -373,7 +374,7 @@ group("both_gn_and_gyp") {
     ]
   }
 
-  if (use_x11) {
+  if (use_x11 || ozone_platform_x11) {
     deps += [ "//tools/xdisplaycheck" ]
   }
 
