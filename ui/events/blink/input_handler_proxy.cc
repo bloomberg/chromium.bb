@@ -490,21 +490,21 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
   if (!wheel_event.hasPreciseScrollingDeltas && fling_curve_)
     CancelCurrentFling();
 
-    cc::EventListenerProperties properties =
-        input_handler_->GetEventListenerProperties(
-            cc::EventListenerClass::kMouseWheel);
-    switch (properties) {
-      case cc::EventListenerProperties::kPassive:
-        return DID_HANDLE_NON_BLOCKING;
-      case cc::EventListenerProperties::kBlockingAndPassive:
-      case cc::EventListenerProperties::kBlocking:
-        return DID_NOT_HANDLE;
-      case cc::EventListenerProperties::kNone:
-        return DROP_EVENT;
-      default:
-        NOTREACHED();
-        return DROP_EVENT;
-    }
+  cc::EventListenerProperties properties =
+      input_handler_->GetEventListenerProperties(
+          cc::EventListenerClass::kMouseWheel);
+  switch (properties) {
+    case cc::EventListenerProperties::kPassive:
+      return DID_HANDLE_NON_BLOCKING;
+    case cc::EventListenerProperties::kBlockingAndPassive:
+    case cc::EventListenerProperties::kBlocking:
+      return DID_NOT_HANDLE;
+    case cc::EventListenerProperties::kNone:
+      return DROP_EVENT;
+    default:
+      NOTREACHED();
+      return DROP_EVENT;
+  }
 }
 
 InputHandlerProxy::EventDisposition InputHandlerProxy::ScrollByMouseWheel(
