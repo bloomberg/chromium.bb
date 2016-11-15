@@ -642,11 +642,12 @@ void URLRequest::StartJob(URLRequestJob* job) {
 
   response_info_.was_cached = false;
 
-  if (GURL(referrer_) != URLRequestJob::ComputeReferrerForRedirect(
-                             referrer_policy_, referrer_, url())) {
+  GURL referrer_url(referrer_);
+  if (referrer_url != URLRequestJob::ComputeReferrerForRedirect(
+                          referrer_policy_, referrer_url, url())) {
     if (!network_delegate_ ||
         !network_delegate_->CancelURLRequestWithPolicyViolatingReferrerHeader(
-            *this, url(), GURL(referrer_))) {
+            *this, url(), referrer_url)) {
       referrer_.clear();
     } else {
       // We need to clear the referrer anyway to avoid an infinite recursion
