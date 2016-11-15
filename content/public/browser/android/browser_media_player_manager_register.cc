@@ -10,6 +10,9 @@ namespace content {
 
 void RegisterMediaUrlInterceptor(
     media::MediaUrlInterceptor* media_url_interceptor) {
+  // TODO(tguilbert): Update this filename and the registration method to use
+  // MediaPlayerRenderer::RegisterMediaUrlInterceptor when turning on the
+  // MediaPlayerRenderer by default. See crbug.com/619729.
   content::BrowserMediaPlayerManager::RegisterMediaUrlInterceptor(
       media_url_interceptor);
 }

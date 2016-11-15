@@ -21,6 +21,12 @@ constexpr int kUnusedAndIrrelevantPlayerId = 0;
 
 namespace content {
 
+namespace {
+
+media::MediaUrlInterceptor* g_media_url_interceptor = nullptr;
+
+}  // namespace
+
 MediaPlayerRenderer::MediaPlayerRenderer(RenderFrameHost* render_frame_host)
     : render_frame_host_(render_frame_host),
       has_error_(false),
@@ -163,9 +169,7 @@ media::MediaResourceGetter* MediaPlayerRenderer::GetMediaResourceGetter() {
 }
 
 media::MediaUrlInterceptor* MediaPlayerRenderer::GetMediaUrlInterceptor() {
-  // TODO(tguilbert): Offer a RegisterMediaUrlInterceptor equivalent for use in
-  // webview. See crbug.com/636588.
-  return nullptr;
+  return g_media_url_interceptor;
 }
 
 void MediaPlayerRenderer::OnTimeUpdate(int player_id,
@@ -240,6 +244,12 @@ void MediaPlayerRenderer::OnDecoderResourcesReleased(int player_id) {
 
   // TODO(tguilbert): Throttle requests, via exponential backoff.
   // See crbug.com/636615.
+}
+
+// static
+void MediaPlayerRenderer::RegisterMediaUrlInterceptor(
+    media::MediaUrlInterceptor* media_url_interceptor) {
+  g_media_url_interceptor = media_url_interceptor;
 }
 
 void MediaPlayerRenderer::CancelScopedSurfaceRequest() {

@@ -38,6 +38,10 @@ namespace content {
 class CONTENT_EXPORT MediaPlayerRenderer : public media::Renderer,
                                            public media::MediaPlayerManager {
  public:
+  // Permits embedders to handle custom urls.
+  static void RegisterMediaUrlInterceptor(
+      media::MediaUrlInterceptor* media_url_interceptor);
+
   explicit MediaPlayerRenderer(content::RenderFrameHost* render_frame_host);
 
   ~MediaPlayerRenderer() override;
