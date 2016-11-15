@@ -4351,15 +4351,22 @@ static int get_gmbitcost(const WarpedMotionParams *gm, const aom_prob *probs) {
     case IDENTITY: bits = 0; break;
     default: assert(0); return 0;
   }
+  assert(type < GLOBAL_TRANS_TYPES);
   return bits ? (bits << AV1_PROB_COST_SHIFT) + gmtype_cost[type] : 0;
 }
 
-#define GLOBAL_MOTION_RATE(ref)                            \
-  (cpi->global_motion_used[ref] >= 2                       \
-       ? 0                                                 \
-       : get_gmbitcost(&cm->global_motion[(ref)],          \
-                       cm->fc->global_motion_types_prob) / \
-             2);
+#define GLOBAL_MOTION_COST_AMORTIZATION_BLKS 8
+
+#if GLOBAL_MOTION_COST_AMORTIZATION_BLKS > 0
+#define GLOBAL_MOTION_RATE(ref)                                         \
+  (cpi->global_motion_used[ref] >= GLOBAL_MOTION_COST_AMORTIZATION_BLKS \
+       ? 0                                                              \
+       : get_gmbitcost(&cm->global_motion[(ref)],                       \
+                       cm->fc->global_motion_types_prob) /              \
+             GLOBAL_MOTION_COST_AMORTIZATION_BLKS);
+#else
+#define GLOBAL_MOTION_RATE(ref) 0
+#endif  // GLOBAL_MOTION_COST_AMORTIZATION_BLKS > 0
 #endif  // CONFIG_GLOBAL_MOTION
 
 static int set_and_cost_bmi_mvs(const AV1_COMP *const cpi, MACROBLOCK *x,

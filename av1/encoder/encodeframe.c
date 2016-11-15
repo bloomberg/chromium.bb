@@ -4784,7 +4784,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   av1_zero(rdc->comp_pred_diff);
 
 #if CONFIG_GLOBAL_MOTION
-  aom_clear_system_state();
   av1_zero(cpi->global_motion_used);
   for (i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {
     set_default_gmparams(&cm->global_motion[i]);
@@ -4797,6 +4796,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
       ref_buf = get_ref_frame_buffer(cpi, frame);
       if (ref_buf) {
+        aom_clear_system_state();
         if (compute_global_motion_feature_based(GLOBAL_TRANS_TYPES - 1,
                                                 cpi->Source, ref_buf, params)) {
           convert_model_to_params(params, &cm->global_motion[frame]);
@@ -4824,6 +4824,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
               set_default_gmparams(&cm->global_motion[frame]);
           }
         }
+        aom_clear_system_state();
       }
     }
   }
