@@ -29,6 +29,8 @@ source_set("common") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "block_unittest.mm",
+    "ns_regular_expression_unittest.mm",
     "string_util_unittest.mm",
     "x_callback_url_unittest.cc",
   ]
