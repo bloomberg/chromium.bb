@@ -1498,6 +1498,8 @@ split_static_library("ui") {
       "views/website_settings/chosen_object_row.cc",
       "views/website_settings/chosen_object_row.h",
       "views/website_settings/chosen_object_row_observer.h",
+      "views/website_settings/non_accessible_image_view.cc",
+      "views/website_settings/non_accessible_image_view.h",
       "views/website_settings/permission_prompt_impl.cc",
       "views/website_settings/permission_prompt_impl.h",
       "views/website_settings/permission_selector_row.cc",

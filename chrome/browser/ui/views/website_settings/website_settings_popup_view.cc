@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/collected_cookies_views.h"
 #include "chrome/browser/ui/views/website_settings/chosen_object_row.h"
+#include "chrome/browser/ui/views/website_settings/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_row.h"
 #include "chrome/browser/ui/website_settings/website_settings.h"
 #include "chrome/common/pref_names.h"
@@ -369,7 +370,7 @@ InternalPageInfoPopupView::InternalPageInfoPopupView(
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal, kSpacing,
                                         kSpacing, kSpacing));
   set_margins(gfx::Insets());
-  views::ImageView* icon_view = new views::ImageView();
+  views::ImageView* icon_view = new NonAccessibleImageView();
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   icon_view->SetImage(rb.GetImageSkiaNamed(icon));
   AddChildView(icon_view);
@@ -619,7 +620,7 @@ void WebsiteSettingsPopupView::SetCookieInfo(
     info.is_incognito =
         Profile::FromBrowserContext(web_contents()->GetBrowserContext())
             ->IsOffTheRecord();
-    views::ImageView* icon = new views::ImageView();
+    views::ImageView* icon = new NonAccessibleImageView();
     const gfx::Image& image = WebsiteSettingsUI::GetPermissionIcon(info);
     icon->SetImage(image.ToImageSkia());
     layout->AddView(

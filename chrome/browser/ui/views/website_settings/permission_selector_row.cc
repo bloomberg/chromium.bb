@@ -7,6 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/views/website_settings/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/website_settings/website_settings_popup_view.h"
 #include "chrome/browser/ui/website_settings/permission_menu_model.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
@@ -28,7 +29,7 @@
 namespace {
 // Minimum distance between the label and its corresponding menu.
 const int kMinSeparationBetweenLabelAndMenu = 16;
-}
+}  // namespace
 
 namespace internal {
 
@@ -251,7 +252,7 @@ PermissionSelectorRow::PermissionSelectorRow(
 
   layout->StartRow(1, column_set_id);
   // Create the permission icon.
-  icon_ = new views::ImageView();
+  icon_ = new NonAccessibleImageView();
   const gfx::Image& image = WebsiteSettingsUI::GetPermissionIcon(permission);
   icon_->SetImage(image.ToImageSkia());
   layout->AddView(icon_,
