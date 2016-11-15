@@ -64,7 +64,7 @@ class VisiblePasswordObserver
   void MaybeNotifyAllFieldsInvisible();
 
   content::WebContents* web_contents_;
-  std::set<int> frame_tree_nodes_with_visible_password_fields_;
+  std::set<content::RenderFrameHost*> frames_with_visible_password_fields_;
 
   DISALLOW_COPY_AND_ASSIGN(VisiblePasswordObserver);
 };

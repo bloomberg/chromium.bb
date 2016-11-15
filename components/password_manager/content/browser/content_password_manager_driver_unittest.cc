@@ -14,6 +14,7 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_renderer_host.h"
+#include "content/public/test/web_contents_tester.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -325,6 +326,43 @@ TEST_P(ContentPasswordManagerDriverTest,
   driver->AllPasswordFieldsInInsecureContextInvisible();
   EXPECT_FALSE(!!(entry->GetSSL().content_status &
                   content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP));
+}
+
+// Tests that a cross-process navigation does not remove the password
+// field flag when the RenderFrameHost for the original process goes
+// away. Regression test for https://crbug.com/664674
+TEST_F(ContentPasswordManagerDriverTest,
+       RenderFrameHostDeletionOnCrossProcessNavigation) {
+  NavigateAndCommit(GURL("http://example.test"));
+
+  content::RenderFrameHostTester* old_rfh_tester =
+      content::RenderFrameHostTester::For(web_contents()->GetMainFrame());
+  content::WebContentsTester* tester =
+      content::WebContentsTester::For(web_contents());
+
+  controller().LoadURL(GURL("http://example2.test"), content::Referrer(),
+                       ui::PAGE_TRANSITION_TYPED, std::string());
+  content::RenderFrameHost* pending_rfh = tester->GetPendingMainFrame();
+  ASSERT_TRUE(pending_rfh);
+  int entry_id = controller().GetPendingEntry()->GetUniqueID();
+  tester->TestDidNavigate(pending_rfh, entry_id, true,
+                          GURL("http://example2.test"),
+                          ui::PAGE_TRANSITION_TYPED);
+
+  auto driver = base::MakeUnique<ContentPasswordManagerDriver>(
+      main_rfh(), &password_manager_client_, &autofill_client_);
+  driver->PasswordFieldVisibleInInsecureContext();
+  content::NavigationEntry* entry =
+      web_contents()->GetController().GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_TRUE(!!(entry->GetSSL().content_status &
+                 content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP));
+
+  // After the old RenderFrameHost is deleted, the password flag should still be
+  // set.
+  old_rfh_tester->SimulateSwapOutACK();
+  EXPECT_TRUE(!!(entry->GetSSL().content_status &
+                 content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP));
 }
 
 INSTANTIATE_TEST_CASE_P(,

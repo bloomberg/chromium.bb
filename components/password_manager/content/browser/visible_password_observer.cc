@@ -15,15 +15,13 @@ VisiblePasswordObserver::~VisiblePasswordObserver() {}
 
 void VisiblePasswordObserver::RenderFrameHasVisiblePasswordField(
     content::RenderFrameHost* render_frame_host) {
-  frame_tree_nodes_with_visible_password_fields_.insert(
-      render_frame_host->GetFrameTreeNodeId());
+  frames_with_visible_password_fields_.insert(render_frame_host);
   MaybeNotifyPasswordInputShownOnHttp();
 }
 
 void VisiblePasswordObserver::RenderFrameHasNoVisiblePasswordFields(
     content::RenderFrameHost* render_frame_host) {
-  frame_tree_nodes_with_visible_password_fields_.erase(
-      render_frame_host->GetFrameTreeNodeId());
+  frames_with_visible_password_fields_.erase(render_frame_host);
   MaybeNotifyAllFieldsInvisible();
 }
 
@@ -32,9 +30,8 @@ void VisiblePasswordObserver::RenderFrameDeleted(
   // If a renderer process crashes, it won't send notifications that
   // the password fields have been hidden, so watch for crashing
   // processes and remove them from
-  // |frame_tree_nodes_with_visible_password_fields_|.
-  frame_tree_nodes_with_visible_password_fields_.erase(
-      render_frame_host->GetFrameTreeNodeId());
+  // |frames_with_visible_password_fields_|.
+  frames_with_visible_password_fields_.erase(render_frame_host);
   MaybeNotifyAllFieldsInvisible();
 }
 
@@ -49,7 +46,7 @@ void VisiblePasswordObserver::MaybeNotifyPasswordInputShownOnHttp() {
 }
 
 void VisiblePasswordObserver::MaybeNotifyAllFieldsInvisible() {
-  if (frame_tree_nodes_with_visible_password_fields_.empty() &&
+  if (frames_with_visible_password_fields_.empty() &&
       !content::IsOriginSecure(web_contents_->GetVisibleURL())) {
     web_contents_->OnAllPasswordInputsHiddenOnHttp();
   }
