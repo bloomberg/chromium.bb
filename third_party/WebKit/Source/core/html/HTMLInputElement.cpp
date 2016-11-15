@@ -101,8 +101,6 @@ HTMLInputElement::HTMLInputElement(Document& document,
                                    bool createdByParser)
     : HTMLTextFormControlElement(inputTag, document, form),
       m_size(defaultSize),
-      m_maxLength(-1),
-      m_minLength(-1),
       m_hasDirtyValue(false),
       m_isChecked(false),
       m_dirtyCheckedness(false),
@@ -749,9 +747,9 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name,
     }
     pseudoStateChanged(CSSSelector::PseudoDefault);
   } else if (name == maxlengthAttr) {
-    parseMaxLengthAttribute(value);
+    setNeedsValidityCheck();
   } else if (name == minlengthAttr) {
-    parseMinLengthAttribute(value);
+    setNeedsValidityCheck();
   } else if (name == sizeAttr) {
     int oldSize = m_size;
     m_size = defaultSize;
@@ -1389,42 +1387,6 @@ const AtomicString& HTMLInputElement::alt() const {
   return fastGetAttribute(altAttr);
 }
 
-int HTMLInputElement::maxLength() const {
-  return m_maxLength;
-}
-
-int HTMLInputElement::minLength() const {
-  return m_minLength;
-}
-
-void HTMLInputElement::setMaxLength(int maxLength,
-                                    ExceptionState& exceptionState) {
-  if (maxLength < 0)
-    exceptionState.throwDOMException(
-        IndexSizeError,
-        "The value provided (" + String::number(maxLength) + ") is negative.");
-  else if (maxLength < m_minLength)
-    exceptionState.throwDOMException(
-        IndexSizeError, ExceptionMessages::indexExceedsMinimumBound(
-                            "maxLength", maxLength, m_minLength));
-  else
-    setIntegralAttribute(maxlengthAttr, maxLength);
-}
-
-void HTMLInputElement::setMinLength(int minLength,
-                                    ExceptionState& exceptionState) {
-  if (minLength < 0)
-    exceptionState.throwDOMException(
-        IndexSizeError,
-        "The value provided (" + String::number(minLength) + ") is negative.");
-  else if (m_maxLength >= 0 && minLength > m_maxLength)
-    exceptionState.throwDOMException(
-        IndexSizeError, ExceptionMessages::indexExceedsMaximumBound(
-                            "minLength", minLength, m_maxLength));
-  else
-    setIntegralAttribute(minlengthAttr, minLength);
-}
-
 bool HTMLInputElement::multiple() const {
   return fastHasAttribute(multipleAttr);
 }
@@ -1699,22 +1661,6 @@ bool HTMLInputElement::supportsPlaceholder() const {
 
 void HTMLInputElement::updatePlaceholderText() {
   return m_inputTypeView->updatePlaceholderText();
-}
-
-void HTMLInputElement::parseMaxLengthAttribute(const AtomicString& value) {
-  int maxLength;
-  if (!parseHTMLInteger(value, maxLength) || maxLength < 0)
-    maxLength = -1;
-  m_maxLength = maxLength;
-  setNeedsValidityCheck();
-}
-
-void HTMLInputElement::parseMinLengthAttribute(const AtomicString& value) {
-  int minLength;
-  if (!parseHTMLInteger(value, minLength) || minLength < 0)
-    minLength = -1;
-  m_minLength = minLength;
-  setNeedsValidityCheck();
 }
 
 bool HTMLInputElement::supportsAutocapitalize() const {

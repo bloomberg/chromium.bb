@@ -496,50 +496,6 @@ void HTMLTextAreaElement::setDefaultValue(const String& defaultValue) {
     setNonDirtyValue(value);
 }
 
-int HTMLTextAreaElement::maxLength() const {
-  int value;
-  if (!parseHTMLInteger(getAttribute(maxlengthAttr), value))
-    return -1;
-  return value >= 0 ? value : -1;
-}
-
-int HTMLTextAreaElement::minLength() const {
-  int value;
-  if (!parseHTMLInteger(getAttribute(minlengthAttr), value))
-    return -1;
-  return value >= 0 ? value : -1;
-}
-
-void HTMLTextAreaElement::setMaxLength(int newValue,
-                                       ExceptionState& exceptionState) {
-  int min = minLength();
-  if (newValue < 0)
-    exceptionState.throwDOMException(
-        IndexSizeError, "The value provided (" + String::number(newValue) +
-                            ") is not positive or 0.");
-  else if (min >= 0 && newValue < min)
-    exceptionState.throwDOMException(
-        IndexSizeError, ExceptionMessages::indexExceedsMinimumBound(
-                            "maxLength", newValue, min));
-  else
-    setIntegralAttribute(maxlengthAttr, newValue);
-}
-
-void HTMLTextAreaElement::setMinLength(int newValue,
-                                       ExceptionState& exceptionState) {
-  int max = maxLength();
-  if (newValue < 0)
-    exceptionState.throwDOMException(
-        IndexSizeError, "The value provided (" + String::number(newValue) +
-                            ") is not positive or 0.");
-  else if (max >= 0 && newValue > max)
-    exceptionState.throwDOMException(
-        IndexSizeError, ExceptionMessages::indexExceedsMaximumBound(
-                            "minLength", newValue, max));
-  else
-    setIntegralAttribute(minlengthAttr, newValue);
-}
-
 String HTMLTextAreaElement::suggestedValue() const {
   return m_suggestedValue;
 }

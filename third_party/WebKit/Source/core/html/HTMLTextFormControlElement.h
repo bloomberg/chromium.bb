@@ -103,6 +103,11 @@ class CORE_EXPORT HTMLTextFormControlElement
   const AtomicString& autocapitalize() const;
   void setAutocapitalize(const AtomicString&);
 
+  int maxLength() const;
+  int minLength() const;
+  void setMaxLength(int, ExceptionState&);
+  void setMinLength(int, ExceptionState&);
+
   // Dispatch 'input' event, and update
   // m_wasChangedSinceLastFormControlChangeEvent flag.
   void dispatchFormControlInputEvent();

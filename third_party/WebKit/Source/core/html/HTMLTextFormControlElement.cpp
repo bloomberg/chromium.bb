@@ -43,6 +43,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLBRElement.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutBlockFlow.h"
@@ -634,6 +635,52 @@ const AtomicString& HTMLTextFormControlElement::autocapitalize() const {
 void HTMLTextFormControlElement::setAutocapitalize(
     const AtomicString& autocapitalize) {
   setAttribute(autocapitalizeAttr, autocapitalize);
+}
+
+int HTMLTextFormControlElement::maxLength() const {
+  int value;
+  if (!parseHTMLInteger(fastGetAttribute(maxlengthAttr), value))
+    return -1;
+  return value >= 0 ? value : -1;
+}
+
+int HTMLTextFormControlElement::minLength() const {
+  int value;
+  if (!parseHTMLInteger(fastGetAttribute(minlengthAttr), value))
+    return -1;
+  return value >= 0 ? value : -1;
+}
+
+void HTMLTextFormControlElement::setMaxLength(int newValue,
+                                              ExceptionState& exceptionState) {
+  int min = minLength();
+  if (newValue < 0) {
+    exceptionState.throwDOMException(
+        IndexSizeError, "The value provided (" + String::number(newValue) +
+                            ") is not positive or 0.");
+  } else if (min >= 0 && newValue < min) {
+    exceptionState.throwDOMException(
+        IndexSizeError, ExceptionMessages::indexExceedsMinimumBound(
+                            "maxLength", newValue, min));
+  } else {
+    setIntegralAttribute(maxlengthAttr, newValue);
+  }
+}
+
+void HTMLTextFormControlElement::setMinLength(int newValue,
+                                              ExceptionState& exceptionState) {
+  int max = maxLength();
+  if (newValue < 0) {
+    exceptionState.throwDOMException(
+        IndexSizeError, "The value provided (" + String::number(newValue) +
+                            ") is not positive or 0.");
+  } else if (max >= 0 && newValue > max) {
+    exceptionState.throwDOMException(
+        IndexSizeError, ExceptionMessages::indexExceedsMaximumBound(
+                            "minLength", newValue, max));
+  } else {
+    setIntegralAttribute(minlengthAttr, newValue);
+  }
 }
 
 void HTMLTextFormControlElement::restoreCachedSelection() {

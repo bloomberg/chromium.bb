@@ -193,12 +193,6 @@ class CORE_EXPORT HTMLInputElement : public HTMLTextFormControlElement {
   void setSize(unsigned, ExceptionState&);
 
   KURL src() const;
-
-  int maxLength() const;
-  int minLength() const;
-  void setMaxLength(int, ExceptionState&);
-  void setMinLength(int, ExceptionState&);
-
   bool multiple() const;
 
   FileList* files() const;
@@ -409,8 +403,6 @@ class CORE_EXPORT HTMLInputElement : public HTMLTextFormControlElement {
   String m_nonAttributeValue;
   String m_suggestedValue;
   int m_size;
-  int m_maxLength;
-  int m_minLength;
   // https://html.spec.whatwg.org/multipage/forms.html#concept-input-value-dirty-flag
   unsigned m_hasDirtyValue : 1;
   // https://html.spec.whatwg.org/multipage/forms.html#concept-fe-checked

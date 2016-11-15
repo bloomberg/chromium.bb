@@ -51,10 +51,6 @@ class CORE_EXPORT HTMLTextAreaElement final
   String defaultValue() const;
   void setDefaultValue(const String&);
   int textLength() const { return value().length(); }
-  int maxLength() const;
-  int minLength() const;
-  void setMaxLength(int, ExceptionState&);
-  void setMinLength(int, ExceptionState&);
 
   String suggestedValue() const;
   void setSuggestedValue(const String&);
