@@ -488,6 +488,9 @@ static void messageHandlerInWorker(v8::Local<v8::Message> message,
   perIsolateData->setReportingException(false);
 }
 
+// Stack size for workers is limited to 500KB because default stack size for
+// secondary threads is 512KB on Mac OS X. See GetDefaultThreadStackSize() in
+// base/threading/platform_thread_mac.mm for details.
 static const int kWorkerMaxStackSize = 500 * 1024;
 
 // This function uses a local stack variable to determine the isolate's stack
@@ -502,8 +505,8 @@ void V8Initializer::initializeWorker(v8::Isolate* isolate) {
   isolate->SetFatalErrorHandler(reportFatalErrorInWorker);
 
   uint32_t here;
-  isolate->SetStackLimit(reinterpret_cast<uintptr_t>(
-      &here - kWorkerMaxStackSize / sizeof(uint32_t*)));
+  isolate->SetStackLimit(reinterpret_cast<uintptr_t>(&here) -
+                         kWorkerMaxStackSize);
   isolate->SetPromiseRejectCallback(promiseRejectHandlerInWorker);
 }
 
