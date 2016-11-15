@@ -249,7 +249,7 @@ WebVR origin_trial_feature_name=WebVR
 WebVTTRegions status=experimental
 V8BasedStructuredClone
 V8IdleTasks
-VisibilityChangeOnUnload status=experimental
+VisibilityChangeOnUnload status=stable
 XSLT status=stable
 smil status=stable
 ScrollCustomization
