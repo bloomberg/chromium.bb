@@ -503,6 +503,8 @@ class RemoteSuggestionsProviderTest : public ::testing::Test {
   const GURL& test_url() { return test_url_; }
   FakeContentSuggestionsProviderObserver& observer() { return *observer_; }
   MockScheduler& mock_scheduler() { return scheduler_; }
+  // TODO(tschumann): Make this a strict-mock. We want to avoid unneccesary
+  // network requests.
   NiceMock<MockImageFetcher>* image_fetcher() { return image_fetcher_; }
   FakeImageDecoder* image_decoder() { return image_decoder_; }
   PrefService* pref_service() { return utils_.pref_service(); }
@@ -1162,6 +1164,14 @@ TEST_F(RemoteSuggestionsProviderTest, Dismiss) {
   LoadFromJSONString(service.get(), json_str);
 
   ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
+  // Load the image to store it in the database.
+  ServeImageCallback cb = base::Bind(&ServeOneByOneImage, service.get());
+  EXPECT_CALL(*image_fetcher(), StartOrQueueNetworkRequest(_, _, _))
+      .WillOnce(WithArgs<0, 2>(Invoke(&cb, &ServeImageCallback::Run)));
+  image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
+  gfx::Image image = FetchImage(service.get(), MakeArticleID(kSnippetUrl));
+  EXPECT_FALSE(image.IsEmpty());
+  EXPECT_EQ(1, image.Width());
 
   // Dismissing a non-existent snippet shouldn't do anything.
   service->DismissSuggestion(MakeArticleID("http://othersite.com"));
@@ -1170,6 +1180,14 @@ TEST_F(RemoteSuggestionsProviderTest, Dismiss) {
   // Dismiss the snippet.
   service->DismissSuggestion(MakeArticleID(kSnippetUrl));
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
+
+  // Verify we can still load the image of the discarded snippet (other NTPs
+  // might still reference it). This should come from the database -- no network
+  // fetch necessary.
+  image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
+  image = FetchImage(service.get(), MakeArticleID(kSnippetUrl));
+  EXPECT_FALSE(image.IsEmpty());
+  EXPECT_EQ(1, image.Width());
 
   // Make sure that fetching the same snippet again does not re-add it.
   LoadFromJSONString(service.get(), json_str);
@@ -1241,6 +1259,17 @@ TEST_F(RemoteSuggestionsProviderTest, RemoveExpiredDismissedContent) {
   std::string json_str1(GetTestJson({GetExpiredSnippet()}));
   // Load it.
   LoadFromJSONString(service.get(), json_str1);
+  // Load the image to store it in the database.
+  // TODO(tschumann): Introduce some abstraction to nicely work with image
+  // fetching expectations.
+  ServeImageCallback cb = base::Bind(&ServeOneByOneImage, service.get());
+  EXPECT_CALL(*image_fetcher(), StartOrQueueNetworkRequest(_, _, _))
+      .WillOnce(WithArgs<0, 2>(Invoke(&cb, &ServeImageCallback::Run)));
+  image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
+  gfx::Image image = FetchImage(service.get(), MakeArticleID(kSnippetUrl));
+  EXPECT_FALSE(image.IsEmpty());
+  EXPECT_EQ(1, image.Width());
+
   // Dismiss the suggestion
   service->DismissSuggestion(
       ContentSuggestion::ID(articles_category(), kSnippetUrl));
@@ -1251,6 +1280,9 @@ TEST_F(RemoteSuggestionsProviderTest, RemoveExpiredDismissedContent) {
 
   EXPECT_THAT(service->GetDismissedSnippetsForTesting(articles_category()),
               IsEmpty());
+
+  // Verify the image got removed, too.
+  EXPECT_TRUE(FetchImage(service.get(), MakeArticleID(kSnippetUrl)).IsEmpty());
 }
 
 TEST_F(RemoteSuggestionsProviderTest, ExpiredContentNotRemoved) {

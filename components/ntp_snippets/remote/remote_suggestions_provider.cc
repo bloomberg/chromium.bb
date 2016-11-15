@@ -828,9 +828,6 @@ void RemoteSuggestionsProvider::DismissSuggestionFromCategoryContent(
   (*it)->set_dismissed(true);
 
   database_->SaveSnippet(**it);
-  // TODO(tschumann): We should not delete the image yet. Other NTPs might still
-  // reference them.
-  database_->DeleteImage(id_within_category);
 
   content->dismissed.push_back(std::move(*it));
   content->snippets.erase(it);
@@ -853,11 +850,10 @@ void RemoteSuggestionsProvider::ClearExpiredDismissedSnippets() {
     }
     RemoveNullPointers(&content->dismissed);
 
+    // Delete the images.
+    database_->DeleteImages(GetSnippetIDVector(to_delete));
     // Delete the removed article suggestions from the DB.
     database_->DeleteSnippets(GetSnippetIDVector(to_delete));
-    // The image got already deleted when the suggestion was dismissed.
-    // TODO(tschumann): Delete the image here instead of at the time of
-    // dismissal.
 
     if (content->snippets.empty() && content->dismissed.empty() &&
         category != articles_category_ &&
@@ -1172,25 +1168,36 @@ void RemoteSuggestionsProvider::UpdateAllCategoryStatus(CategoryStatus status) {
   }
 }
 
+namespace {
+
+template <typename T>
+typename T::const_iterator FindSnippetInContainer(
+    const T& container,
+    const std::string& id_within_category) {
+  return std::find_if(
+      container.begin(), container.end(),
+      [&id_within_category](const std::unique_ptr<NTPSnippet>& snippet) {
+        return snippet->id() == id_within_category;
+      });
+}
+
+}  // namespace
+
 const NTPSnippet* RemoteSuggestionsProvider::CategoryContent::FindSnippet(
     const std::string& id_within_category) const {
   // Search for the snippet in current and archived snippets.
-  auto it = std::find_if(
-      snippets.begin(), snippets.end(),
-      [&id_within_category](const std::unique_ptr<NTPSnippet>& snippet) {
-        return snippet->id() == id_within_category;
-      });
-  if (it != snippets.end())
+  auto it = FindSnippetInContainer(snippets, id_within_category);
+  if (it != snippets.end()) {
     return it->get();
-
-  auto archived_it = std::find_if(
-      archived.begin(), archived.end(),
-      [&id_within_category](const std::unique_ptr<NTPSnippet>& snippet) {
-        return snippet->id() == id_within_category;
-      });
-  if (archived_it != archived.end())
+  }
+  auto archived_it = FindSnippetInContainer(archived, id_within_category);
+  if (archived_it != archived.end()) {
     return archived_it->get();
-
+  }
+  auto dismissed_it = FindSnippetInContainer(dismissed, id_within_category);
+  if (dismissed_it != dismissed.end()) {
+    return dismissed_it->get();
+  }
   return nullptr;
 }
 
