@@ -14,6 +14,7 @@
 
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_constants.h"

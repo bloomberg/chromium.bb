@@ -7,7 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "content/browser/renderer_host/input/synthetic_mouse_pointer.h"
 #include "content/browser/renderer_host/input/synthetic_touch_pointer.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebInputEvent.h"
 
 namespace content {
 

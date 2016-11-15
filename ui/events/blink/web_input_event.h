@@ -6,6 +6,7 @@
 #define UI_EVENTS_BLINK_WEB_INPUT_EVENT_H_
 
 #include "base/callback.h"
+#include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 
 namespace gfx {

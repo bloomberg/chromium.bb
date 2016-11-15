@@ -10,7 +10,7 @@
 #include "content/common/input/input_event_ack_source.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/public/browser/native_web_keyboard_event.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebInputEvent.h"
 
 namespace ui {
 class LatencyInfo;

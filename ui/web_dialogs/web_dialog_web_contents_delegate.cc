@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebGestureEvent.h"
 
 using content::BrowserContext;
 using content::OpenURLParams;

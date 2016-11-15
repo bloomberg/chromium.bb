@@ -29,7 +29,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "net/base/url_util.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebGestureEvent.h"
 
 using content::WebContents;
 using guest_view::GuestViewBase;

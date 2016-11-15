@@ -16,7 +16,7 @@
 
 #include "content/common/content_param_traits_macros.h"
 #include "content/common/cursors/webcursor.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebInputEvent.h"
 
 namespace IPC {
 

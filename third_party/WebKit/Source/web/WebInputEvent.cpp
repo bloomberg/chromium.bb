@@ -28,9 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebInputEvent.h"
+#include "public/platform/WebInputEvent.h"
 
 #include "platform/KeyboardCodes.h"
+#include "public/platform/WebGestureEvent.h"
 #include "wtf/ASCIICType.h"
 #include "wtf/Assertions.h"
 #include "wtf/StringExtras.h"

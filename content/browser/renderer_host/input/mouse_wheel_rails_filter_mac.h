@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_MOUSE_WHEEL_RAILS_FILTER_MAC_H_
 
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace content {

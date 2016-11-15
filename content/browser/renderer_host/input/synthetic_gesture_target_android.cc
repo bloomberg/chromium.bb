@@ -7,7 +7,7 @@
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "jni/MotionEventSynthesizer_jni.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/gfx/android/view_configuration.h"
 
 using blink::WebTouchEvent;

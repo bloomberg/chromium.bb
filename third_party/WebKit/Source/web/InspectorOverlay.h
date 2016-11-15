@@ -37,7 +37,7 @@
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/Color.h"
 #include "platform/heap/Handle.h"
-#include "public/web/WebInputEvent.h"
+#include "public/platform/WebInputEvent.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 #include <memory>

@@ -4,6 +4,8 @@
 
 #include "blimp/client/core/render_widget/mock_render_widget_feature.h"
 
+#include "third_party/WebKit/public/platform/WebGestureEvent.h"
+
 namespace blimp {
 namespace client {
 

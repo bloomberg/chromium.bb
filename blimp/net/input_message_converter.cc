@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "blimp/common/proto/input.pb.h"
 #include "third_party/WebKit/public/platform/WebGestureDevice.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebGestureEvent.h"
 
 namespace blimp {
 namespace {

@@ -32,7 +32,7 @@
 #define PageWidgetDelegate_h
 
 #include "public/platform/WebCanvas.h"
-#include "public/web/WebInputEvent.h"
+#include "public/platform/WebInputEvent.h"
 #include "public/web/WebWidget.h"
 #include "web/WebExport.h"
 

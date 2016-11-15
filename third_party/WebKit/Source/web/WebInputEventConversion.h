@@ -35,7 +35,8 @@
 #include "platform/PlatformMouseEvent.h"
 #include "platform/PlatformTouchEvent.h"
 #include "platform/PlatformWheelEvent.h"
-#include "public/web/WebInputEvent.h"
+#include "public/platform/WebGestureEvent.h"
+#include "public/platform/WebInputEvent.h"
 #include "web/WebExport.h"
 #include "wtf/Compiler.h"
 

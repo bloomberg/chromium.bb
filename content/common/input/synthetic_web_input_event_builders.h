@@ -7,7 +7,8 @@
 
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebGestureEvent.h"
+#include "third_party/WebKit/public/platform/WebInputEvent.h"
 
 // Provides sensible creation of default WebInputEvents for testing purposes.
 

@@ -7,7 +7,7 @@
 #include <math.h>
 
 #include "base/logging.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebGestureEvent.h"
 
 using blink::WebInputEvent;
 using blink::WebGestureEvent;

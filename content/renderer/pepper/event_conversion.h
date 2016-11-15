@@ -10,7 +10,7 @@
 
 #include "content/common/content_export.h"
 #include "ppapi/c/ppb_input_event.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebInputEvent.h"
 
 struct PP_InputEvent;
 

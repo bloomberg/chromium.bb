@@ -6,7 +6,8 @@
 #define CHROME_BROWSER_ANDROID_VR_SHELL_VR_INPUT_MANAGER_H_
 
 #include "base/memory/ref_counted.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebGestureEvent.h"
+#include "third_party/WebKit/public/platform/WebInputEvent.h"
 
 namespace content {
 class WebContents;

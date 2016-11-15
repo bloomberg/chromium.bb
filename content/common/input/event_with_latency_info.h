@@ -8,7 +8,8 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebGestureEvent.h"
+#include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/events/blink/scoped_web_input_event.h"
 #include "ui/events/latency_info.h"
 

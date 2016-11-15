@@ -9,7 +9,7 @@
 
 #include "base/android/jni_android.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/events/android/key_event_utils.h"
 #include "ui/events/gesture_detection/motion_event.h"
 #include "ui/events/keycodes/dom/dom_code.h"

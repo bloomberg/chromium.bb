@@ -13,7 +13,7 @@
 #include "blimp/net/input_message_generator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebGestureDevice.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebGestureEvent.h"
 
 namespace blimp {
 namespace {

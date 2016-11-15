@@ -12,7 +12,7 @@
 #include "content/common/content_export.h"
 #include "content/common/input/input_event_ack_source.h"
 #include "content/common/input/input_event_ack_state.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/events/blink/did_overscroll_params.h"
 #include "ui/events/latency_info.h"
 

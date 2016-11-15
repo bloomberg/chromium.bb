@@ -30,8 +30,8 @@
 
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/Page.h"
+#include "public/platform/WebInputEvent.h"
 #include "public/web/WebFrameClient.h"
-#include "public/web/WebInputEvent.h"
 #include "public/web/WebLocalFrame.h"
 #include "public/web/WebView.h"
 #include "public/web/WebViewClient.h"

@@ -11,7 +11,7 @@
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/test/web_contents_tester.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/base/page_transition_types.h"
 
 namespace page_load_metrics {

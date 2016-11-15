@@ -5,7 +5,7 @@
 #include "content/renderer/mouse_lock_dispatcher.h"
 
 #include "base/logging.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebInputEvent.h"
 
 namespace content {
 

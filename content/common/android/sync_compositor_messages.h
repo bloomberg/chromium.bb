@@ -12,7 +12,7 @@
 #include "content/common/content_param_traits.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "ipc/ipc_message_macros.h"
-#include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 
