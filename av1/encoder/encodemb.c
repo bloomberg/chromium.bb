@@ -95,6 +95,7 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
       get_scan(cm, tx_size, tx_type, is_inter_block(&xd->mi[0]->mbmi));
   const int16_t *const scan = scan_order->scan;
   const int16_t *const nb = scan_order->neighbors;
+  int dqv;
 #if CONFIG_AOM_QM
   int seg_id = xd->mi[0]->mbmi.segment_id;
   const qm_val_t *iqmatrix = pd->seg_iqmatrix[seg_id][!ref][tx_size];
@@ -155,10 +156,14 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
     int base_bits, dx;
     int64_t d2;
     const int rc = scan[i];
+    int x = qcoeff[rc];
 #if CONFIG_AOM_QM
     int iwt = iqmatrix[rc];
+    dqv = dequant_ptr[rc != 0];
+    dqv = ((iwt * (int)dqv) + (1 << (AOM_QM_BITS - 1))) >> AOM_QM_BITS;
+#else
+    dqv = dequant_ptr[rc != 0];
 #endif
-    int x = qcoeff[rc];
     next_shortcut = shortcut;
 
     /* Only add a trellis state for non-zero coefficients. */
@@ -210,10 +215,10 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
         shortcut = 0;
       } else {
 #if CONFIG_NEW_QUANT
-        shortcut = ((av1_dequant_abscoeff_nuq(abs(x), dequant_ptr[rc != 0],
+        shortcut = ((av1_dequant_abscoeff_nuq(abs(x), dqv,
                                               dequant_val[band_translate[i]]) >
                      (abs(coeff[rc]) << shift)) &&
-                    (av1_dequant_abscoeff_nuq(abs(x) - 1, dequant_ptr[rc != 0],
+                    (av1_dequant_abscoeff_nuq(abs(x) - 1, dqv,
                                               dequant_val[band_translate[i]]) <
                      (abs(coeff[rc]) << shift)));
 #else  // CONFIG_NEW_QUANT
@@ -291,8 +296,7 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
       }
 
 #if CONFIG_NEW_QUANT
-      dx = av1_dequant_coeff_nuq(x, dequant_ptr[rc != 0],
-                                 dequant_val[band_translate[i]]) -
+      dx = av1_dequant_coeff_nuq(x, dqv, dequant_val[band_translate[i]]) -
            (coeff[rc] << shift);
 #if CONFIG_AOM_HIGHBITDEPTH
       if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
@@ -302,12 +306,12 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
 #else   // CONFIG_NEW_QUANT
 #if CONFIG_AOM_HIGHBITDEPTH
       if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-        dx -= ((dequant_ptr[rc != 0] >> (xd->bd - 8)) + sz) ^ sz;
+        dx -= ((dqv >> (xd->bd - 8)) + sz) ^ sz;
       } else {
-        dx -= (dequant_ptr[rc != 0] + sz) ^ sz;
+        dx -= (dqv + sz) ^ sz;
       }
 #else
-      dx -= (dequant_ptr[rc != 0] + sz) ^ sz;
+      dx -= (dqv + sz) ^ sz;
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 #endif  // CONFIG_NEW_QUANT
       d2 = (int64_t)dx * dx;
@@ -321,17 +325,22 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
       if (x) {
 #if CONFIG_NEW_QUANT
         tokens[i][1].dqc = av1_dequant_abscoeff_nuq(
-            abs(x), dequant_ptr[rc != 0], dequant_val[band_translate[i]]);
+            abs(x), dqv, dequant_val[band_translate[i]]);
         tokens[i][1].dqc = shift ? ROUND_POWER_OF_TWO(tokens[i][1].dqc, shift)
                                  : tokens[i][1].dqc;
         if (sz) tokens[i][1].dqc = -tokens[i][1].dqc;
 #else
-        tran_low_t offset = dq_step[rc != 0];
         // The 32x32 transform coefficient uses half quantization step size.
         // Account for the rounding difference in the dequantized coefficeint
         // value when the quantization index is dropped from an even number
         // to an odd number.
-        if (shift & x) offset += (dequant_ptr[rc != 0] & 0x01);
+
+#if CONFIG_AOM_QM
+        tran_low_t offset = dqv >> shift;
+#else
+        tran_low_t offset = dq_step[rc != 0];
+#endif
+        if (shift & x) offset += (dqv & 0x01);
 
         if (sz == 0)
           tokens[i][1].dqc = dqcoeff[rc] - offset;
