@@ -2261,8 +2261,8 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
     customWindowControls_.reset(
         [[CustomWindowControlsView alloc] initWithFrame:frame]);
     [customWindowControls_
-        setAutoresizingMask:isRTL ? NSViewMaxXMargin | NSViewHeightSizable
-                                  : NSViewMinXMargin | NSViewHeightSizable];
+        setAutoresizingMask:isRTL ? NSViewMinXMargin | NSViewHeightSizable
+                                  : NSViewMaxXMargin | NSViewHeightSizable];
 
     // Add the traffic light buttons. The horizontal layout was determined by
     // manual inspection on Yosemite.
