@@ -407,7 +407,7 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
              "invalid and therefore ignored. Please use camelCase instead.";
 
     case UseCounter::HTMLKeygenElement:
-      return willBeRemoved("The <keygen> element", M56, "5716060992962560");
+      return willBeRemoved("The <keygen> element", M57, "5716060992962560");
 
     case UseCounter::EncryptedMediaAllSelectedContentTypesMissingCodecs:
       return String::format(

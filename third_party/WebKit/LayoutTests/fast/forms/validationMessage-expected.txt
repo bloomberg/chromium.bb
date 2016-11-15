@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 198: The <keygen> element is deprecated and will be removed in M56, around January 2017. See https://www.chromestatus.com/features/5716060992962560 for more details.
+CONSOLE WARNING: line 198: The <keygen> element is deprecated and will be removed in M57, around March 2017. See https://www.chromestatus.com/features/5716060992962560 for more details.
 Test for validationMessage DOM property.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
