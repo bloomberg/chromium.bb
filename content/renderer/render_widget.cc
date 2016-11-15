@@ -631,6 +631,9 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragOver, OnDragTargetDragOver)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragLeave, OnDragTargetDragLeave)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDrop, OnDragTargetDrop)
+    IPC_MESSAGE_HANDLER(DragMsg_SourceEnded, OnDragSourceEnded)
+    IPC_MESSAGE_HANDLER(DragMsg_SourceSystemDragEnded,
+                        OnDragSourceSystemDragEnded)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(InputMsg_ImeEventAck, OnImeEventAck)
     IPC_MESSAGE_HANDLER(InputMsg_RequestTextInputStateUpdate,
@@ -1704,6 +1707,23 @@ void RenderWidget::OnDragTargetDrop(const DropData& drop_data,
       DropDataToWebDragData(drop_data),
       ConvertWindowPointToViewport(client_point),
       screen_point, key_modifiers);
+}
+
+void RenderWidget::OnDragSourceEnded(const gfx::Point& client_point,
+                                     const gfx::Point& screen_point,
+                                     WebDragOperation op) {
+  if (!GetWebWidget())
+    return;
+
+  static_cast<WebFrameWidget*>(GetWebWidget())->dragSourceEndedAt(
+      ConvertWindowPointToViewport(client_point), screen_point, op);
+}
+
+void RenderWidget::OnDragSourceSystemDragEnded() {
+  if (!GetWebWidget())
+    return;
+
+  static_cast<WebFrameWidget*>(GetWebWidget())->dragSourceSystemDragEnded();
 }
 
 void RenderWidget::showImeIfNeeded() {

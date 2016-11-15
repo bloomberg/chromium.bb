@@ -1189,9 +1189,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnScrollFocusedEditableNodeIntoRect)
     IPC_MESSAGE_HANDLER(ViewMsg_SetPageScale, OnSetPageScale)
     IPC_MESSAGE_HANDLER(ViewMsg_Zoom, OnZoom)
-    IPC_MESSAGE_HANDLER(DragMsg_SourceEnded, OnDragSourceEnded)
-    IPC_MESSAGE_HANDLER(DragMsg_SourceSystemDragEnded,
-                        OnDragSourceSystemDragEnded)
     IPC_MESSAGE_HANDLER(ViewMsg_AllowBindings, OnAllowBindings)
     IPC_MESSAGE_HANDLER(ViewMsg_SetInitialFocus, OnSetInitialFocus)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateTargetURL_ACK, OnUpdateTargetURLAck)
@@ -2118,17 +2115,6 @@ void RenderViewImpl::OnAllowBindings(int enabled_bindings_flags) {
 
   if (main_render_frame_)
     main_render_frame_->MaybeEnableMojoBindings();
-}
-
-void RenderViewImpl::OnDragSourceEnded(const gfx::Point& client_point,
-                                       const gfx::Point& screen_point,
-                                       WebDragOperation op) {
-  webview()->dragSourceEndedAt(
-      ConvertWindowPointToViewport(client_point), screen_point, op);
-}
-
-void RenderViewImpl::OnDragSourceSystemDragEnded() {
-  webview()->dragSourceSystemDragEnded();
 }
 
 void RenderViewImpl::OnUpdateWebPreferences(const WebPreferences& prefs) {

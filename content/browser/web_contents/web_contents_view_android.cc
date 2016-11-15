@@ -342,7 +342,7 @@ void WebContentsViewAndroid::OnPerformDrop(DropData* drop_data,
 }
 
 void WebContentsViewAndroid::OnDragEnded() {
-  web_contents_->GetRenderViewHost()->DragSourceSystemDragEnded();
+  web_contents_->GetRenderViewHost()->GetWidget()->DragSourceSystemDragEnded();
 }
 
 void WebContentsViewAndroid::GotFocus() {

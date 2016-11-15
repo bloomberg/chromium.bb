@@ -105,16 +105,6 @@ class CONTENT_EXPORT RenderViewHost : public IPC::Sender {
   // threshold.
   virtual void DisableScrollbarsForThreshold(const gfx::Size& size) = 0;
 
-  // Notifies the renderer that a a drag operation that it started has ended,
-  // either in a drop or by being cancelled.
-  virtual void DragSourceEndedAt(
-      int client_x, int client_y, int screen_x, int screen_y,
-      blink::WebDragOperation operation) = 0;
-
-  // Notifies the renderer that we're done with the drag and drop operation.
-  // This allows the renderer to reset some state.
-  virtual void DragSourceSystemDragEnded() = 0;
-
   // Instructs the RenderView to automatically resize and send back updates
   // for the new size.
   virtual void EnableAutoResize(const gfx::Size& min_size,

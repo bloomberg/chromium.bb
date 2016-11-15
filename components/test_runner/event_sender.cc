@@ -2699,8 +2699,9 @@ void EventSender::FinishDragAndDrop(const WebMouseEvent& raw_event,
     mainFrameWidget()->dragTargetDragLeave();
   }
   current_drag_data_.reset();
-  view()->dragSourceEndedAt(client_point, screen_point, current_drag_effect_);
-  view()->dragSourceSystemDragEnded();
+  mainFrameWidget()->dragSourceEndedAt(client_point, screen_point,
+                                       current_drag_effect_);
+  mainFrameWidget()->dragSourceSystemDragEnded();
 }
 
 void EventSender::DoDragAfterMouseUp(const WebMouseEvent& raw_event) {

@@ -509,10 +509,15 @@ void BrowserPluginGuest::SendMessageToEmbedder(
   owner_web_contents_->Send(msg.release());
 }
 
-void BrowserPluginGuest::DragSourceEndedAt(int client_x, int client_y,
-    int screen_x, int screen_y, blink::WebDragOperation operation) {
-  web_contents()->GetRenderViewHost()->DragSourceEndedAt(client_x, client_y,
-      screen_x, screen_y, operation);
+void BrowserPluginGuest::DragSourceEndedAt(int client_x,
+                                           int client_y,
+                                           int screen_x,
+                                           int screen_y,
+                                           blink::WebDragOperation operation) {
+  // TODO(paulmeyer): This will need to target the correct specific
+  // RenderWidgetHost to work with OOPIFs. See crbug.com/647249.
+  web_contents()->GetRenderViewHost()->GetWidget()->DragSourceEndedAt(
+      client_x, client_y, screen_x, screen_y, operation);
   seen_embedder_drag_source_ended_at_ = true;
   EndSystemDragIfApplicable();
 }
@@ -541,7 +546,7 @@ void BrowserPluginGuest::EndSystemDragIfApplicable() {
       seen_embedder_drag_source_ended_at_ && seen_embedder_system_drag_ended_) {
     RenderViewHostImpl* guest_rvh = static_cast<RenderViewHostImpl*>(
         GetWebContents()->GetRenderViewHost());
-    guest_rvh->DragSourceSystemDragEnded();
+    guest_rvh->GetWidget()->DragSourceSystemDragEnded();
     last_drag_status_ = blink::WebDragStatusUnknown;
     seen_embedder_system_drag_ended_ = false;
     seen_embedder_drag_source_ended_at_ = false;

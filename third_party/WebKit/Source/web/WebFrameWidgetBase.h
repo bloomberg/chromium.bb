@@ -59,6 +59,10 @@ class WebFrameWidgetBase : public WebFrameWidget {
                       const WebPoint& pointInViewport,
                       const WebPoint& screenPoint,
                       int modifiers) override;
+  void dragSourceEndedAt(const WebPoint& pointInViewport,
+                         const WebPoint& screenPoint,
+                         WebDragOperation) override;
+  void dragSourceSystemDragEnded() override;
 
  protected:
   enum DragAction { DragEnter, DragOver };

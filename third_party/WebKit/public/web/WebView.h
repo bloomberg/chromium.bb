@@ -368,14 +368,6 @@ class WebView : protected WebWidget {
   virtual WebHitTestResult hitTestResultForTap(const WebPoint& tapPoint,
                                                const WebSize& tapArea) = 0;
 
-  // Notifies the WebView that a drag has terminated.
-  virtual void dragSourceEndedAt(const WebPoint& pointInViewport,
-                                 const WebPoint& screenPoint,
-                                 WebDragOperation operation) = 0;
-
-  // Notfies the WebView that the system drag and drop operation has ended.
-  virtual void dragSourceSystemDragEnded() = 0;
-
   // Retrieves a list of spelling markers.
   virtual void spellingMarkers(WebVector<uint32_t>* markers) = 0;
   virtual void removeSpellingMarkersUnderWords(

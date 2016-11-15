@@ -89,7 +89,7 @@ class WebFrameWidget : public WebWidget {
       const = 0;
 
   // Callback methods when a drag-and-drop operation is trying to drop something
-  // on the WebWidget.
+  // on the WebFrameWidget.
   virtual WebDragOperation dragTargetDragEnter(
       const WebDragData&,
       const WebPoint& pointInViewport,
@@ -106,6 +106,15 @@ class WebFrameWidget : public WebWidget {
                               const WebPoint& pointInViewport,
                               const WebPoint& screenPoint,
                               int modifiers) = 0;
+
+  // Notifies the WebFrameWidget that a drag has terminated.
+  virtual void dragSourceEndedAt(const WebPoint& pointInViewport,
+                                 const WebPoint& screenPoint,
+                                 WebDragOperation) = 0;
+
+  // Notfies the WebFrameWidget that the system drag and drop operation has
+  // ended.
+  virtual void dragSourceSystemDragEnded() = 0;
 };
 
 }  // namespace blink

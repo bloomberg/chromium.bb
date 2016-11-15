@@ -1378,6 +1378,19 @@ void RenderWidgetHostImpl::DragTargetDrop(const DropData& drop_data,
                               client_pt, screen_pt, key_modifiers));
 }
 
+void RenderWidgetHostImpl::DragSourceEndedAt(
+    int client_x, int client_y, int screen_x, int screen_y,
+    blink::WebDragOperation operation) {
+  Send(new DragMsg_SourceEnded(GetRoutingID(),
+                               gfx::Point(client_x, client_y),
+                               gfx::Point(screen_x, screen_y),
+                               operation));
+}
+
+void RenderWidgetHostImpl::DragSourceSystemDragEnded() {
+  Send(new DragMsg_SourceSystemDragEnded(GetRoutingID()));
+}
+
 void RenderWidgetHostImpl::FilterDropData(DropData* drop_data) {
 #if DCHECK_IS_ON()
   drop_data->view_id = GetRoutingID();
@@ -1473,7 +1486,7 @@ void RenderWidgetHostImpl::OnStartDragging(
   RenderViewHostDelegateView* view = delegate_->GetDelegateView();
   if (!view) {
     // Need to clear drag and drop state in blink.
-    rvh->DragSourceSystemDragEnded();
+    DragSourceSystemDragEnded();
     return;
   }
 

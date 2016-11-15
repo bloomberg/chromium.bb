@@ -101,12 +101,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
       int request_id,
       const std::vector<base::FilePath>& files) override;
   void DisableScrollbarsForThreshold(const gfx::Size& size) override;
-  void DragSourceEndedAt(int client_x,
-                         int client_y,
-                         int screen_x,
-                         int screen_y,
-                         blink::WebDragOperation operation) override;
-  void DragSourceSystemDragEnded() override;
   void EnableAutoResize(const gfx::Size& min_size,
                         const gfx::Size& max_size) override;
   void DisableAutoResize(const gfx::Size& new_size) override;

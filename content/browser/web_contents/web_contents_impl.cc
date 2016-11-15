@@ -2959,14 +2959,19 @@ void WebContentsImpl::Close() {
   Close(GetRenderViewHost());
 }
 
-void WebContentsImpl::DragSourceEndedAt(int client_x, int client_y,
-    int screen_x, int screen_y, blink::WebDragOperation operation) {
+void WebContentsImpl::DragSourceEndedAt(int client_x,
+                                        int client_y,
+                                        int screen_x,
+                                        int screen_y,
+                                        blink::WebDragOperation operation) {
   if (browser_plugin_embedder_.get())
-    browser_plugin_embedder_->DragSourceEndedAt(client_x, client_y,
-        screen_x, screen_y, operation);
+    browser_plugin_embedder_->DragSourceEndedAt(
+        client_x, client_y, screen_x, screen_y, operation);
+  // TODO(paulmeyer): This will need to target the correct specific RWH to work
+  // with OOPIF.
   if (GetRenderViewHost())
-    GetRenderViewHost()->DragSourceEndedAt(client_x, client_y, screen_x,
-                                           screen_y, operation);
+    GetRenderViewHost()->GetWidget()->DragSourceEndedAt(
+        client_x, client_y, screen_x, screen_y, operation);
 }
 
 void WebContentsImpl::LoadStateChanged(
@@ -3018,8 +3023,10 @@ void WebContentsImpl::NotifyWebContentsFocused() {
 }
 
 void WebContentsImpl::SystemDragEnded() {
+  // TODO(paulmeyer): This will need to target the correct specific RWH to work
+  // with OOPIF.
   if (GetRenderViewHost())
-    GetRenderViewHost()->DragSourceSystemDragEnded();
+    GetRenderViewHost()->GetWidget()->DragSourceSystemDragEnded();
   if (browser_plugin_embedder_.get())
     browser_plugin_embedder_->SystemDragEnded();
 }

@@ -199,6 +199,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
                       const gfx::Point& client_pt,
                       const gfx::Point& screen_pt,
                       int key_modifiers) override;
+  void DragSourceEndedAt(int client_x,
+                         int client_y,
+                         int screen_x,
+                         int screen_y,
+                         blink::WebDragOperation operation) override;
+  void DragSourceSystemDragEnded() override;
   void FilterDropData(DropData* drop_data) override;
 
   // Notification that the screen info has changed.

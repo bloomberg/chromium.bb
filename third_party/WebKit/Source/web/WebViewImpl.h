@@ -240,10 +240,6 @@ class WEB_EXPORT WebViewImpl final
   WebHitTestResult hitTestResultAt(const WebPoint&) override;
   WebHitTestResult hitTestResultForTap(const WebPoint&,
                                        const WebSize&) override;
-  void dragSourceEndedAt(const WebPoint& pointInViewport,
-                         const WebPoint& screenPoint,
-                         WebDragOperation) override;
-  void dragSourceSystemDragEnded() override;
   void spellingMarkers(WebVector<uint32_t>* markers) override;
   void removeSpellingMarkersUnderWords(
       const WebVector<WebString>& words) override;
@@ -507,6 +503,7 @@ class WEB_EXPORT WebViewImpl final
   ChromeClientImpl& chromeClient() const { return *m_chromeClientImpl.get(); }
 
   void setDoingDragAndDrop(bool doing) { m_doingDragAndDrop = doing; }
+  bool doingDragAndDrop() { return m_doingDragAndDrop; }
 
   // Returns the currently active WebInputMethodController which the one
   // corresponding to the focused frame. It will return nullptr if there are

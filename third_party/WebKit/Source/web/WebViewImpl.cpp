@@ -3400,30 +3400,6 @@ HitTestResult WebViewImpl::coreHitTestResultAt(
   return hitTestResultForRootFramePos(pointInRootFrame);
 }
 
-void WebViewImpl::dragSourceEndedAt(const WebPoint& pointInViewport,
-                                    const WebPoint& screenPoint,
-                                    WebDragOperation operation) {
-  WebPoint pointInRootFrame(
-      page()->frameHost().visualViewport().viewportToRootFrame(
-          pointInViewport));
-  PlatformMouseEvent pme(
-      pointInRootFrame, screenPoint, WebPointerProperties::Button::Left,
-      PlatformEvent::MouseMoved, 0, PlatformEvent::NoModifiers,
-      PlatformMouseEvent::RealOrIndistinguishable,
-      WTF::monotonicallyIncreasingTime());
-  m_page->deprecatedLocalMainFrame()->eventHandler().dragSourceEndedAt(
-      pme, static_cast<DragOperation>(operation));
-}
-
-void WebViewImpl::dragSourceSystemDragEnded() {
-  // It's possible for us to get this callback while not doing a drag if
-  // it's from a previous page that got unloaded.
-  if (m_doingDragAndDrop) {
-    m_page->dragController().dragEnded();
-    m_doingDragAndDrop = false;
-  }
-}
-
 void WebViewImpl::spellingMarkers(WebVector<uint32_t>* markers) {
   Vector<uint32_t> result;
   for (Frame* frame = m_page->mainFrame(); frame;

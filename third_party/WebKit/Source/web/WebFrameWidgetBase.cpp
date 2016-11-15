@@ -6,6 +6,7 @@
 
 #include "core/frame/FrameHost.h"
 #include "core/frame/VisualViewport.h"
+#include "core/input/EventHandler.h"
 #include "core/page/DragActions.h"
 #include "core/page/DragController.h"
 #include "core/page/DragData.h"
@@ -89,6 +90,30 @@ void WebFrameWidgetBase::dragTargetDrop(const WebDragData& webDragData,
 
   m_dragOperation = WebDragOperationNone;
   m_currentDragData = nullptr;
+}
+
+void WebFrameWidgetBase::dragSourceEndedAt(const WebPoint& pointInViewport,
+                                           const WebPoint& screenPoint,
+                                           WebDragOperation operation) {
+  WebPoint pointInRootFrame(
+      page()->frameHost().visualViewport().viewportToRootFrame(
+          pointInViewport));
+  PlatformMouseEvent pme(
+      pointInRootFrame, screenPoint, WebPointerProperties::Button::Left,
+      PlatformEvent::MouseMoved, 0, PlatformEvent::NoModifiers,
+      PlatformMouseEvent::RealOrIndistinguishable,
+      WTF::monotonicallyIncreasingTime());
+  page()->deprecatedLocalMainFrame()->eventHandler().dragSourceEndedAt(
+      pme, static_cast<DragOperation>(operation));
+}
+
+void WebFrameWidgetBase::dragSourceSystemDragEnded() {
+  // It's possible for us to get this callback while not doing a drag if it's
+  // from a previous page that got unloaded.
+  if (view()->doingDragAndDrop()) {
+    page()->dragController().dragEnded();
+    view()->setDoingDragAndDrop(false);
+  }
 }
 
 WebDragOperation WebFrameWidgetBase::dragTargetDragEnterOrOver(

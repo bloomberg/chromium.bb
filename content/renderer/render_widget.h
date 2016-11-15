@@ -532,6 +532,10 @@ class CONTENT_EXPORT RenderWidget
                         const gfx::Point& client_pt,
                         const gfx::Point& screen_pt,
                         int key_modifiers);
+  void OnDragSourceEnded(const gfx::Point& client_point,
+                         const gfx::Point& screen_point,
+                         blink::WebDragOperation drag_operation);
+  void OnDragSourceSystemDragEnded();
 
 #if defined(OS_ANDROID)
   // Called when we send IME event that expects an ACK.

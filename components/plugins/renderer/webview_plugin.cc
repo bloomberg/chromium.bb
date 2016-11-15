@@ -245,7 +245,9 @@ void WebViewPlugin::startDragging(blink::WebReferrerPolicy,
                                   const WebImage&,
                                   const WebPoint&) {
   // Immediately stop dragging.
-  web_view_->dragSourceSystemDragEnded();
+  DCHECK(web_view_->mainFrame()->isWebLocalFrame());
+  web_view_->mainFrame()->toWebLocalFrame()->frameWidget()->
+      dragSourceSystemDragEnded();
 }
 
 bool WebViewPlugin::allowsBrokenNullLayerTreeView() const {

@@ -46,7 +46,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/content_switches_internal.h"
-#include "content/common/drag_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/inter_process_time_ticks_converter.h"
@@ -103,7 +102,6 @@
 
 using base::TimeDelta;
 using blink::WebConsoleMessage;
-using blink::WebDragOperation;
 using blink::WebInputEvent;
 using blink::WebMediaPlayerAction;
 using blink::WebPluginAction;
@@ -604,19 +602,6 @@ void RenderViewHostImpl::RenderProcessExited(RenderProcessHost* host,
 
   GetWidget()->RendererExited(status, exit_code);
   delegate_->RenderViewTerminated(this, status, exit_code);
-}
-
-void RenderViewHostImpl::DragSourceEndedAt(
-    int client_x, int client_y, int screen_x, int screen_y,
-    WebDragOperation operation) {
-  Send(new DragMsg_SourceEnded(GetRoutingID(),
-                               gfx::Point(client_x, client_y),
-                               gfx::Point(screen_x, screen_y),
-                               operation));
-}
-
-void RenderViewHostImpl::DragSourceSystemDragEnded() {
-  Send(new DragMsg_SourceSystemDragEnded(GetRoutingID()));
 }
 
 bool RenderViewHostImpl::Send(IPC::Message* msg) {
