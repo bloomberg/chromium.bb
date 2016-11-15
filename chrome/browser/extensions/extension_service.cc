@@ -1269,7 +1269,7 @@ void ExtensionService::CheckForUpdatesSoon() {
   if (!updater_.get())
     return;
 
-    updater_->CheckSoon();
+  updater_->CheckSoon();
 }
 
 // Some extensions will autoupdate themselves externally from Chrome.  These
