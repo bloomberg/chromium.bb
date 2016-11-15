@@ -35,6 +35,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
@@ -250,23 +251,29 @@ UserView::UserView(SystemTrayItem* owner, LoginStatus login, UserIndex index)
   // The logout button must be added before the user card so that the user card
   // can correctly calculate the remaining available width.
   // Note that only the current multiprofile user gets a button.
-  if (!user_index_)
+  if (IsActiveUser())
     AddLogoutButton(login);
   AddUserCard(login);
 
   if (UseMd()) {
-    auto layout = new views::BoxLayout(views::BoxLayout::kHorizontal,
-                                       kMenuExtraMarginFromLeftEdge, 0, 0);
+    auto* layout = new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
+    if (IsActiveUser()) {
+      layout->set_inside_border_insets(gfx::Insets(
+          0, kMenuExtraMarginFromLeftEdge, 0, kMenuExtraMarginFromLeftEdge));
+    }
+
     SetLayoutManager(layout);
     layout->set_cross_axis_alignment(
         views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
     layout->SetFlexForView(user_card_view_, 1);
-    int separator_width = user_index_ == 0 ? kSeparatorWidth : 0;
-    SetBorder(views::CreatePaddedBorder(
-        views::CreateSolidSidedBorder(0, 0, separator_width, 0,
-                                      kSeparatorColor),
-        gfx::Insets(kMenuSeparatorVerticalPadding, 0,
-                    kMenuSeparatorVerticalPadding - separator_width, 0)));
+
+    if (IsActiveUser()) {
+      SetBorder(views::CreatePaddedBorder(
+          views::CreateSolidSidedBorder(0, 0, kSeparatorWidth, 0,
+                                        kSeparatorColor),
+          gfx::Insets(kMenuSeparatorVerticalPadding, 0,
+                      kMenuSeparatorVerticalPadding - kSeparatorWidth, 0)));
+    }
   }
 }
 
@@ -297,6 +304,10 @@ gfx::Rect UserView::GetBoundsInScreenOfUserButtonForTest() {
   return user_card_view_->GetBoundsInScreen();
 }
 
+bool UserView::IsActiveUser() const {
+  return user_index_ == 0;
+}
+
 gfx::Size UserView::GetPreferredSize() const {
   // MD uses a layout manager.
   if (UseMd())
@@ -307,7 +318,7 @@ gfx::Size UserView::GetPreferredSize() const {
   if (logout_button_)
     size.SetToMax(logout_button_->GetPreferredSize());
   // Only the active user panel will be forced to a certain height.
-  if (!user_index_) {
+  if (IsActiveUser()) {
     size.set_height(std::max(
         size.height(),
         GetTrayConstant(TRAY_POPUP_ITEM_MIN_HEIGHT) + GetInsets().height()));
@@ -373,7 +384,7 @@ void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
     WmShell::Get()->system_tray_delegate()->SignOut();
   } else if (sender == user_card_view_ &&
              IsMultiProfileSupportedAndUserActive()) {
-    if (!user_index_) {
+    if (IsActiveUser()) {
       ToggleAddUserMenuOption();
     } else {
       RemoveAddUserMenuOption();
@@ -457,7 +468,7 @@ void UserView::AddUserCard(LoginStatus login) {
   if (clickable) {
     // To allow the border to start before the icon, reduce the size before and
     // add an inset to the icon to get the spacing.
-    if (!user_index_) {
+    if (IsActiveUser()) {
       SetBorder(views::CreateEmptyBorder(
           kTrayPopupUserCardVerticalPadding,
           kSidePadding - kTrayUserTileHoverBorderInset,
@@ -467,7 +478,7 @@ void UserView::AddUserCard(LoginStatus login) {
     }
     gfx::Insets insets = gfx::Insets(1, 1, 1, 1);
     views::View* contents_view = user_card_view_;
-    if (user_index_) {
+    if (!IsActiveUser()) {
       // Since the activation border needs to be drawn around the tile, we
       // have to put the tile into another view which fills the menu panel,
       // but keeping the offsets of the content.
@@ -480,8 +491,8 @@ void UserView::AddUserCard(LoginStatus login) {
       contents_view->AddChildView(user_card_view_);
       insets = gfx::Insets(1, 1, 1, 3);
     }
-    bool highlight = !UseMd() && user_index_ == 0;
-    auto* button = new ButtonFromView(contents_view, this, highlight, insets);
+    auto* button =
+        new ButtonFromView(contents_view, this, IsActiveUser(), insets);
     user_card_view_ = button;
     is_user_card_button_ = true;
   }
@@ -502,6 +513,8 @@ void UserView::AddUserCardMd(LoginStatus login) {
     views::View* contents_view = user_card_view_;
     auto* button =
         new ButtonFromView(contents_view, this, false, gfx::Insets());
+    if (IsActiveUser())
+      button->set_ink_drop_insets(gfx::Insets(kTrayPopupInkDropInset));
     user_card_view_ = button;
     is_user_card_button_ = true;
   }
@@ -552,6 +565,8 @@ void UserView::ToggleAddUserMenuOption() {
   ButtonFromView* button = new ButtonFromView(
       add_user_view, add_user_enabled_ ? this : nullptr,
       !UseMd() && add_user_enabled_, gfx::Insets(UseMd() ? 0 : 1));
+  if (UseMd())
+    button->set_ink_drop_insets(gfx::Insets(kTrayPopupInkDropInset));
   button->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT));
   button->ForceBorderVisible(true);

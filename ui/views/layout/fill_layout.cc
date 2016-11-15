@@ -4,7 +4,7 @@
 
 #include "ui/views/layout/fill_layout.h"
 
-#include "base/logging.h"
+#include <algorithm>
 
 namespace views {
 
@@ -16,15 +16,18 @@ void FillLayout::Layout(View* host) {
   if (!host->has_children())
     return;
 
-  View* frame_view = host->child_at(0);
-  frame_view->SetBoundsRect(host->GetContentsBounds());
+  for (int i = 0; i < host->child_count(); ++i)
+    host->child_at(i)->SetBoundsRect(host->GetContentsBounds());
 }
 
 gfx::Size FillLayout::GetPreferredSize(const View* host) const {
   if (!host->has_children())
     return gfx::Size();
-  DCHECK_EQ(1, host->child_count());
-  gfx::Rect rect(host->child_at(0)->GetPreferredSize());
+
+  gfx::Size preferred_size;
+  for (int i = 0; i < host->child_count(); ++i)
+    preferred_size.SetToMax(host->child_at(i)->GetPreferredSize());
+  gfx::Rect rect(preferred_size);
   rect.Inset(-host->GetInsets());
   return rect.size();
 }
@@ -32,10 +35,17 @@ gfx::Size FillLayout::GetPreferredSize(const View* host) const {
 int FillLayout::GetPreferredHeightForWidth(const View* host, int width) const {
   if (!host->has_children())
     return 0;
-  DCHECK_EQ(1, host->child_count());
+
   const gfx::Insets insets = host->GetInsets();
-  return host->child_at(0)->GetHeightForWidth(width - insets.width()) +
-      insets.height();
+  int preferred_height = 0;
+  for (int i = 0; i < host->child_count(); ++i) {
+    int cur_preferred_height = 0;
+    cur_preferred_height =
+        host->child_at(i)->GetHeightForWidth(width - insets.width()) +
+        insets.height();
+    preferred_height = std::max(preferred_height, cur_preferred_height);
+  }
+  return preferred_height;
 }
 
 }  // namespace views

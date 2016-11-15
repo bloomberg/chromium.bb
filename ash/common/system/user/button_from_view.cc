@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "ash/common/system/user/button_from_view.h"
 
 #include "ash/common/ash_constants.h"
@@ -12,12 +14,17 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop.h"
+#include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
 namespace ash {
+namespace tray {
 
 namespace {
 
@@ -25,8 +32,6 @@ namespace {
 const SkColor kBorderColor = 0xffdcdcdc;
 
 }  // namespace
-
-namespace tray {
 
 ButtonFromView::ButtonFromView(views::View* content,
                                views::ButtonListener* listener,
@@ -37,10 +42,15 @@ ButtonFromView::ButtonFromView(views::View* content,
       highlight_on_hover_(highlight_on_hover),
       button_hovered_(false),
       show_border_(false),
-      tab_frame_inset_(tab_frame_inset) {
+      tab_frame_inset_(tab_frame_inset),
+      ink_drop_container_(nullptr) {
+  set_has_ink_drop_action_on_click(true);
   set_notify_enter_exit_on_child(true);
   if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    ink_drop_container_ = new views::InkDropContainerView();
+    AddChildView(ink_drop_container_);
     SetLayoutManager(new views::FillLayout());
+    SetInkDropMode(InkDropHostView::InkDropMode::ON);
   } else {
     SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kHorizontal, 1, 1, 0));
@@ -100,6 +110,45 @@ void ButtonFromView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(base::JoinString(labels, base::ASCIIToUTF16(" ")));
 }
 
+void ButtonFromView::Layout() {
+  CustomButton::Layout();
+  if (ink_drop_container_)
+    ink_drop_container_->SetBoundsRect(GetLocalBounds());
+}
+
+void ButtonFromView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+  ink_drop_container_->AddInkDropLayer(ink_drop_layer);
+}
+
+void ButtonFromView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
+  ink_drop_container_->RemoveInkDropLayer(ink_drop_layer);
+}
+
+std::unique_ptr<views::InkDrop> ButtonFromView::CreateInkDrop() {
+  std::unique_ptr<views::InkDropImpl> ink_drop =
+      CreateDefaultFloodFillInkDropImpl();
+  ink_drop->SetShowHighlightOnHover(false);
+  return std::move(ink_drop);
+}
+
+std::unique_ptr<views::InkDropRipple> ButtonFromView::CreateInkDropRipple()
+    const {
+  return base::MakeUnique<views::FloodFillInkDropRipple>(
+      GetInkDropBounds(), GetInkDropCenterBasedOnLastEvent(),
+      kTrayPopupInkDropBaseColor, kTrayPopupInkDropRippleOpacity);
+}
+
+std::unique_ptr<views::InkDropHighlight>
+ButtonFromView::CreateInkDropHighlight() const {
+  const gfx::Rect bounds = GetInkDropBounds();
+  std::unique_ptr<views::InkDropHighlight> highlight(
+      new views::InkDropHighlight(bounds.size(), 0,
+                                  gfx::RectF(bounds).CenterPoint(),
+                                  kTrayPopupInkDropBaseColor));
+  highlight->set_visible_opacity(kTrayPopupInkDropHighlightOpacity);
+  return highlight;
+}
+
 void ButtonFromView::ShowActive() {
   if (MaterialDesignController::IsSystemTrayMenuMaterial())
     return;
@@ -115,6 +164,12 @@ void ButtonFromView::ShowActive() {
     set_background(views::Background::CreateSolidBackground(background_color));
   }
   SchedulePaint();
+}
+
+gfx::Rect ButtonFromView::GetInkDropBounds() const {
+  gfx::Rect bounds = GetLocalBounds();
+  bounds.Inset(ink_drop_insets_);
+  return bounds;
 }
 
 }  // namespace tray

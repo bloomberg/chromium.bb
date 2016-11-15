@@ -52,6 +52,9 @@ class UserView : public views::View,
   views::View* user_card_view_for_test() const { return user_card_view_; }
 
  private:
+  // Retruns true if |this| view is for the currently active user, i.e. top row.
+  bool IsActiveUser() const;
+
   // Overridden from views::View.
   gfx::Size GetPreferredSize() const override;
   int GetHeightForWidth(int width) const override;

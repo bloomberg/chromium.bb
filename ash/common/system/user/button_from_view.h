@@ -5,9 +5,15 @@
 #ifndef ASH_COMMON_SYSTEM_USER_BUTTON_FROM_VIEW_H_
 #define ASH_COMMON_SYSTEM_USER_BUTTON_FROM_VIEW_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/button/custom_button.h"
+
+namespace views {
+class InkDropContainerView;
+}  // namespace views
 
 namespace ash {
 namespace tray {
@@ -31,20 +37,38 @@ class ButtonFromView : public views::CustomButton {
   // Called when the border should remain even in the non highlighted state.
   void ForceBorderVisible(bool show);
 
-  // Overridden from views::View
+  // views::View:
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   void OnPaint(gfx::Canvas* canvas) override;
   void OnFocus() override;
   void OnBlur() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void Layout() override;
 
   // Check if the item is hovered.
   bool is_hovered_for_test() { return button_hovered_; }
 
+  void set_ink_drop_insets(const gfx::Insets& insets) {
+    ink_drop_insets_ = insets;
+  }
+
+ protected:
+  // views::CustomButton:
+  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
+  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
+  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
+  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
+      const override;
+
  private:
   // Change the hover/active state of the "button" when the status changes.
   void ShowActive();
+
+  // Returns the bounds that the ink drop ripple and highlight should be created
+  // with.
+  gfx::Rect GetInkDropBounds() const;
 
   // Content of button.
   views::View* content_;
@@ -60,6 +84,14 @@ class ButtonFromView : public views::CustomButton {
 
   // The insets which get used for the drawn accessibility (tab) frame.
   gfx::Insets tab_frame_inset_;
+
+  // A separate view is necessary to hold the ink drop layer so that |this| can
+  // host labels with subpixel anti-aliasing enabled. Only used for material
+  // design.
+  views::InkDropContainerView* ink_drop_container_;
+
+  // Used to inset the ink drop.
+  gfx::Insets ink_drop_insets_;
 
   DISALLOW_COPY_AND_ASSIGN(ButtonFromView);
 };

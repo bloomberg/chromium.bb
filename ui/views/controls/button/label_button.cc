@@ -19,6 +19,7 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/square_ink_drop_ripple.h"
@@ -70,21 +71,6 @@ const gfx::FontList& GetDefaultBoldFontList() {
 
   return font_list.Get();
 }
-
-// Ink drop container view that does not capture any events.
-class InkDropContainerView : public views::View {
- public:
-  InkDropContainerView() {}
-
-  // View:
-  bool CanProcessEventsWithinSubtree() const override {
-    // Ensure the container View is found as the EventTarget instead of this.
-    return false;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InkDropContainerView);
-};
 
 }  // namespace
 
@@ -438,14 +424,12 @@ void LabelButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 void LabelButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
   image()->SetPaintToLayer(true);
   image()->layer()->SetFillsBoundsOpaquely(false);
-  ink_drop_container_->SetVisible(true);
-  ink_drop_container_->layer()->Add(ink_drop_layer);
+  ink_drop_container_->AddInkDropLayer(ink_drop_layer);
 }
 
 void LabelButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   image()->SetPaintToLayer(false);
-  ink_drop_container_->layer()->Remove(ink_drop_layer);
-  ink_drop_container_->SetVisible(false);
+  ink_drop_container_->RemoveInkDropLayer(ink_drop_layer);
 }
 
 std::unique_ptr<InkDrop> LabelButton::CreateInkDrop() {

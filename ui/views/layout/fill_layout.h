@@ -15,8 +15,9 @@ namespace views {
 ///////////////////////////////////////////////////////////////////////////////
 //
 // FillLayout
-//  A simple LayoutManager that causes the associated view's one child to be
-//  sized to match the bounds of its parent.
+//  A simple LayoutManager that causes the associated view's children to be
+//  sized to match the bounds of its parent. The preferred size/height is
+//  is calculated as the maximum values across all child views of the host.
 //
 ///////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT FillLayout : public LayoutManager {

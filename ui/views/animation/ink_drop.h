@@ -14,6 +14,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/ink_drop_state.h"
+#include "ui/views/view.h"
 #include "ui/views/views_export.h"
 
 namespace views {
@@ -50,6 +51,24 @@ class VIEWS_EXPORT InkDrop {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InkDrop);
+};
+
+// A View which can be used to parent ink drop layers. Typically this is used
+// as a non-ancestor view to labels so that the labels can paint on an opaque
+// canvas. This is used to avoid ugly text renderings when labels with subpixel
+// rendering enabled are painted onto a non-opaque canvas.
+class VIEWS_EXPORT InkDropContainerView : public views::View {
+ public:
+  InkDropContainerView();
+
+  void AddInkDropLayer(ui::Layer* ink_drop_layer);
+  void RemoveInkDropLayer(ui::Layer* ink_drop_layer);
+
+  // View:
+  bool CanProcessEventsWithinSubtree() const override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InkDropContainerView);
 };
 
 }  // namespace views
