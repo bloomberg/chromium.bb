@@ -34,14 +34,20 @@ void MapperXbox360Gamepad(const blink::WebGamepad& input,
 void MapperXboxOneHidGamepad(const blink::WebGamepad& input,
                              blink::WebGamepad* mapped) {
   *mapped = input;
-  mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = AxisToButton(input.axes[2]);
-  mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = AxisToButton(input.axes[5]);
-  mapped->buttons[BUTTON_INDEX_BACK_SELECT] = input.buttons[6];
-  mapped->buttons[BUTTON_INDEX_START] = input.buttons[7];
-  mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = input.buttons[8];
-  mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = input.buttons[9];
-  mapped->axes[AXIS_INDEX_RIGHT_STICK_X] = input.axes[3];
-  mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[4];
+
+  mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[0];
+  mapped->buttons[BUTTON_INDEX_SECONDARY] = input.buttons[1];
+  mapped->buttons[BUTTON_INDEX_TERTIARY] = input.buttons[3];
+  mapped->buttons[BUTTON_INDEX_QUATERNARY] = input.buttons[4];
+  mapped->buttons[BUTTON_INDEX_LEFT_SHOULDER] = input.buttons[6];
+  mapped->buttons[BUTTON_INDEX_RIGHT_SHOULDER] = input.buttons[7];
+  mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = AxisToButton(input.axes[3]);
+  mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = AxisToButton(input.axes[4]);
+  mapped->buttons[BUTTON_INDEX_BACK_SELECT] = NullButton();
+  mapped->buttons[BUTTON_INDEX_START] = input.buttons[11];
+  mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = input.buttons[13];
+  mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = input.buttons[14];
+  mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[5];
   DpadFromAxis(mapped, input.axes[9]);
 
   mapped->buttonsLength = BUTTON_INDEX_COUNT - 1; /* no meta */
@@ -378,9 +384,9 @@ struct MappingData {
     {"045e", "028f", MapperXbox360Gamepad},      // Xbox 360 Wireless
     {"045e", "02d1", MapperXbox360Gamepad},      // Xbox One Wired
     {"045e", "02dd", MapperXbox360Gamepad},      // Xbox One Wired (2015 FW)
-    {"045e", "02e0", MapperXboxOneHidGamepad},   // Xbox One S (Bluetooth mode)
     {"045e", "02e3", MapperXbox360Gamepad},      // Xbox One Elite Wired
     {"045e", "02ea", MapperXbox360Gamepad},      // Xbox One S (USB)
+    {"045e", "02fd", MapperXboxOneHidGamepad},   // Xbox One S (Bluetooth)
     {"045e", "0719", MapperXbox360Gamepad},      // Xbox 360 Wireless
     {"046d", "c216", MapperDirectInputStyle},    // Logitech F310, D mode
     {"046d", "c218", MapperDirectInputStyle},    // Logitech F510, D mode
