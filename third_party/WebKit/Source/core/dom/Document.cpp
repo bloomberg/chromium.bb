@@ -4088,10 +4088,9 @@ void Document::nodeChildrenWillBeRemoved(ContainerNode& container) {
 
   if (LocalFrame* frame = this->frame()) {
     frame->selection().nodeChildrenWillBeRemoved(container);
-    for (Node& n : NodeTraversal::childrenOf(container)) {
-      frame->eventHandler().nodeWillBeRemoved(n);
+    frame->eventHandler().nodeChildrenWillBeRemoved(container);
+    for (Node& n : NodeTraversal::childrenOf(container))
       frame->page()->dragCaretController().nodeWillBeRemoved(n);
-    }
   }
 
   if (containsV1ShadowTree()) {

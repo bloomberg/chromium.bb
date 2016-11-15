@@ -364,6 +364,14 @@ void MouseEventManager::setNodeUnderMouse(
   sendBoundaryEvents(lastNodeUnderMouse, m_nodeUnderMouse, platformMouseEvent);
 }
 
+void MouseEventManager::nodeChildrenWillBeRemoved(ContainerNode& container) {
+  if (container == m_clickNode)
+    return;
+  if (!container.isShadowIncludingInclusiveAncestorOf(m_clickNode.get()))
+    return;
+  m_clickNode = nullptr;
+}
+
 void MouseEventManager::nodeWillBeRemoved(Node& nodeToBeRemoved) {
   if (nodeToBeRemoved.isShadowIncludingInclusiveAncestorOf(m_clickNode.get())) {
     // We don't dispatch click events if the mousedown node is removed

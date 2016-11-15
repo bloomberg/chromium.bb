@@ -16,6 +16,7 @@
 
 namespace blink {
 
+class ContainerNode;
 class DragState;
 class DataTransfer;
 class Element;
@@ -88,6 +89,7 @@ class CORE_EXPORT MouseEventManager
   WebInputEventResult handleMouseReleaseEvent(
       const MouseEventWithHitTestResults&);
 
+  void nodeChildrenWillBeRemoved(ContainerNode&);
   void nodeWillBeRemoved(Node& nodeToBeRemoved);
 
   static DragState& dragState();
