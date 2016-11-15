@@ -254,7 +254,7 @@ def main(argv):
     for path in options.overlays.split(':'):
       if not os.path.isdir(path):
         cros_build_lib.Die('Cannot find overlay: %s' % path)
-      overlays[path] = []
+      overlays[os.path.realpath(path)] = []
   else:
     logging.warning('Missing --overlays argument')
     overlays = {
