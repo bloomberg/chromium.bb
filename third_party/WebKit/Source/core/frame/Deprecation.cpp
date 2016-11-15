@@ -417,10 +417,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
           "Please specify the desired codec(s) as part of the contentType.",
           milestoneString(M56));
 
-    case UseCounter::V8SVGViewElement_ViewTarget_AttributeGetter:
-      return willBeRemoved("SVGViewElement.viewTarget", M56,
-                           "5665473114931200");
-
     case UseCounter::VRDeprecatedFieldOfView:
       return replacedBy("VREyeParameters.fieldOfView",
                         "projection matrices provided by VRFrameData");

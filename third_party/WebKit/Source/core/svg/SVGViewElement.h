@@ -29,7 +29,6 @@
 namespace blink {
 
 class SVGStaticStringList;
-class SVGStringListTearOff;
 
 class SVGViewElement final : public SVGElement,
                              public SVGFitToViewBox,
@@ -39,9 +38,6 @@ class SVGViewElement final : public SVGElement,
 
  public:
   DECLARE_NODE_FACTORY(SVGViewElement);
-
-  SVGStringListTearOff* viewTarget();
-
   DECLARE_VIRTUAL_TRACE();
 
  private:
@@ -52,8 +48,6 @@ class SVGViewElement final : public SVGElement,
                       const AtomicString&) override;
 
   bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
-
-  Member<SVGStaticStringList> m_viewTarget;
 };
 
 }  // namespace blink

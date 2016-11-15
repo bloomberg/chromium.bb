@@ -26,7 +26,6 @@
 // http://www.w3.org/TR/SVG2/linking.html#InterfaceSVGViewElement
 
 interface SVGViewElement : SVGElement {
-    [DeprecateAs=V8SVGViewElement_ViewTarget_AttributeGetter] readonly attribute SVGStringList viewTarget;
 };
 
 SVGViewElement implements SVGFitToViewBox;

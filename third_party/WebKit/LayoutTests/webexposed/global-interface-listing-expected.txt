@@ -6050,7 +6050,6 @@ interface SVGViewElement : SVGElement
     attribute SVG_ZOOMANDPAN_UNKNOWN
     getter preserveAspectRatio
     getter viewBox
-    getter viewTarget
     getter zoomAndPan
     method constructor
     setter zoomAndPan

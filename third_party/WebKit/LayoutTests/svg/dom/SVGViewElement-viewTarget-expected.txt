@@ -1,5 +1,0 @@
-CONSOLE WARNING: line 10: SVGViewElement.viewTarget is deprecated and will be removed in M56, around January 2017. See https://www.chromestatus.com/features/5665473114931200 for more details.
-This is a testharness.js-based test.
-PASS view.viewTarget should throw deprecation warning 
-Harness: the test ran to completion.
-

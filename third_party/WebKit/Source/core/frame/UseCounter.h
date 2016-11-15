@@ -844,7 +844,6 @@ class CORE_EXPORT UseCounter {
     CrossOriginApplicationScript = 1070,
     CrossOriginOtherScript = 1071,
     SVG1DOMSVGTests = 1072,
-    V8SVGViewElement_ViewTarget_AttributeGetter = 1073,
     DisableRemotePlaybackAttribute = 1074,
     V8SloppyMode = 1075,
     V8StrictMode = 1076,
