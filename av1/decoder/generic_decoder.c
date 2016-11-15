@@ -44,7 +44,7 @@ int od_decode_cdf_adapt_q15_(od_ec_dec *ec, uint16_t *cdf, int n,
     }
   }
   val = od_ec_decode_cdf_q15(ec, cdf, n);
-  od_cdf_adapt_q15(val, cdf, n, count, rate);
+  aom_cdf_adapt_q15(val, cdf, n, count, rate);
   return val;
 }
 

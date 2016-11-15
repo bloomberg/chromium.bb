@@ -28,7 +28,7 @@ void aom_cdf_init(uint16_t *cdf, int ncdfs, int nsyms, int val, int first) {
 }
 
 /** Adapts a Q15 cdf after encoding/decoding a symbol. */
-void od_cdf_adapt_q15(int val, uint16_t *cdf, int n, int *count, int rate) {
+void aom_cdf_adapt_q15(int val, uint16_t *cdf, int n, int *count, int rate) {
   int i;
   *count = OD_MINI(*count + 1, 1 << rate);
   OD_ASSERT(cdf[n - 1] == 32768);

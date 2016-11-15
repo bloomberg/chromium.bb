@@ -54,7 +54,7 @@ void generic_model_init(generic_encoder *model);
 
 void aom_cdf_init(uint16_t *cdf, int ncdfs, int nsyms, int val, int first);
 
-void od_cdf_adapt_q15(int val, uint16_t *cdf, int n, int *count, int rate);
+void aom_cdf_adapt_q15(int val, uint16_t *cdf, int n, int *count, int rate);
 
 void od_encode_cdf_adapt_q15(od_ec_enc *ec, int val, uint16_t *cdf, int n,
  int *count, int rate);
