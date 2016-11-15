@@ -135,6 +135,7 @@ if (!use_system_sqlite) {
       defines += [
         "SQLITE_MAX_LENGTH=128000000",
         "SQLITE_MAX_SQL_LENGTH=128000000",
+        "SQLITE_PRINTF_PRECISION_LIMIT=128000000",
       ]
     }
 
