@@ -154,10 +154,10 @@ int MainDllLoader::Launch(HINSTANCE instance,
     ChromeWatcherMainFunction watcher_main =
         reinterpret_cast<ChromeWatcherMainFunction>(
             ::GetProcAddress(watcher_dll, kChromeWatcherDLLEntrypoint));
-    return watcher_main(
-        chrome::GetBrowserExitCodesRegistryPath().c_str(),
-        parent_process.Take(), main_thread_id, on_initialized_event.Take(),
-        watcher_data_directory.value().c_str(), channel_name.c_str());
+    return watcher_main(chrome::GetBrowserExitCodesRegistryPath().c_str(),
+                        parent_process.Take(), main_thread_id,
+                        on_initialized_event.Take(),
+                        watcher_data_directory.value().c_str());
   }
 
   // Initialize the sandbox services.

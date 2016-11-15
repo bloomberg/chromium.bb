@@ -3,7 +3,16 @@ include_rules = [
   "-base",
   # Nothing from chrome.
   "-chrome",
-  "+chrome/install_static/install_util.h",
+  # Anything from this dir.
+  "+chrome/install_static",
   # All registry access should go through nt_registry.
   "+chrome_elf/nt_registry/nt_registry.h",
+  # For the compile-time PRODUCT_VERSION macro.
+  "+components/version_info/version_info_values.h",
 ]
+
+specific_include_rules = {
+  ".*_unittest\.cc": [
+    "+base",
+  ],
+}

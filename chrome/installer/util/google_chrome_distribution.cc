@@ -22,7 +22,6 @@
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_icon_resources_win.h"
 #include "chrome/common/chrome_paths_internal.h"
-#include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -237,9 +236,17 @@ base::string16 GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
   result.append(ap_value);
 
   // Crash client id.
-  base::string16 crash_dump_location;
-  if (install_static::GetDefaultCrashDumpLocation(&crash_dump_location)) {
-    base::FilePath crash_dir = base::FilePath(crash_dump_location);
+  // While it would be convenient to use the path service to get
+  // chrome::DIR_CRASH_DUMPS, that points to the dump location for the installer
+  // rather than for the browser. For per-user installs they are the same, yet
+  // for system-level installs the installer uses the system temp directory (see
+  // setup/installer_crash_reporting.cc's ConfigureCrashReporting).
+  // TODO(grt): use install_static::GetDefaultCrashDumpLocation (with an option
+  // to suppress creating the directory) once setup.exe uses
+  // install_static::InstallDetails.
+  base::FilePath crash_dir;
+  if (chrome::GetDefaultUserDataDirectory(&crash_dir)) {
+    crash_dir = crash_dir.Append(FILE_PATH_LITERAL("Crashpad"));
     crashpad::UUID client_id;
     std::unique_ptr<crashpad::CrashReportDatabase> database(
         crashpad::CrashReportDatabase::InitializeWithoutCreating(crash_dir));

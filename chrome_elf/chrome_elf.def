@@ -5,9 +5,10 @@
 LIBRARY  "chrome_elf.dll"
 
 EXPORTS
+  AddDllToBlacklist
+  GetBlacklistIndex
+  GetInstallDetailsPayload
   IsBlacklistInitialized
   SignalChromeElf
   SignalInitializeCrashReporting
   SuccessfullyBlocked
-  GetBlacklistIndex
-  AddDllToBlacklist
