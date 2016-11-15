@@ -218,6 +218,8 @@ class GceAuthenticator(Authenticator):
 
   @classmethod
   def is_gce(cls):
+    if os.getenv('SKIP_GCE_AUTH_FOR_GIT'):
+      return False
     if cls._cache_is_gce is None:
       cls._cache_is_gce = cls._test_is_gce()
     return cls._cache_is_gce
