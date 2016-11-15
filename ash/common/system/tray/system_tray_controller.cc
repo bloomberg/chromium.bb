@@ -103,6 +103,16 @@ void SystemTrayController::ShowProxySettings() {
     system_tray_client_->ShowProxySettings();
 }
 
+void SystemTrayController::SignOut() {
+  if (ConnectToSystemTrayClient())
+    system_tray_client_->SignOut();
+}
+
+void SystemTrayController::RequestRestartForUpdate() {
+  if (ConnectToSystemTrayClient())
+    system_tray_client_->RequestRestartForUpdate();
+}
+
 void SystemTrayController::BindRequest(mojom::SystemTrayRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }

@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/set_time_dialog.h"
 #include "chrome/browser/chromeos/system/system_clock.h"
 #include "chrome/browser/chromeos/ui/choose_mobile_network_dialog.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -275,6 +276,15 @@ void SystemTrayClient::ShowProxySettings() {
   CHECK(!login_state->IsUserLoggedIn() ||
         login_state->GetLoggedInUserType() == LoginState::LOGGED_IN_USER_NONE);
   chromeos::LoginDisplayHost::default_host()->OpenProxySettings();
+}
+
+void SystemTrayClient::SignOut() {
+  chrome::AttemptUserExit();
+}
+
+void SystemTrayClient::RequestRestartForUpdate() {
+  // We expect that UpdateEngine is in "Reboot for update" state now.
+  chrome::NotifyAndTerminate(true /* fast_path */);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -142,12 +142,6 @@ class ASH_EXPORT SystemTrayDelegate {
   // Shows login UI to add other users to this session.
   virtual void ShowUserLogin();
 
-  // Attempts to sign out the user.
-  virtual void SignOut();
-
-  // Attempts to restart the system for update.
-  virtual void RequestRestartForUpdate();
-
   // Returns a list of available bluetooth devices.
   virtual void GetAvailableBluetoothDevices(BluetoothDeviceList* devices);
 

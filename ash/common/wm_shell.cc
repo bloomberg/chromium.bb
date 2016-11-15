@@ -355,15 +355,17 @@ void WmShell::SetSystemTrayDelegate(
   system_tray_delegate_ = std::move(delegate);
   system_tray_delegate_->Initialize();
 #if defined(OS_CHROMEOS)
+  // Accesses WmShell in its constructor.
   logout_confirmation_controller_.reset(new LogoutConfirmationController(
-      base::Bind(&SystemTrayDelegate::SignOut,
-                 base::Unretained(system_tray_delegate_.get()))));
+      base::Bind(&SystemTrayController::SignOut,
+                 base::Unretained(system_tray_controller_.get()))));
 #endif
 }
 
 void WmShell::DeleteSystemTrayDelegate() {
   DCHECK(system_tray_delegate_);
 #if defined(OS_CHROMEOS)
+  // Accesses WmShell in its destructor.
   logout_confirmation_controller_.reset();
 #endif
   system_tray_delegate_.reset();

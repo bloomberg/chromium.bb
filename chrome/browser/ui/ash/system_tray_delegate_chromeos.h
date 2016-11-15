@@ -89,8 +89,6 @@ class SystemTrayDelegateChromeOS
   bool ShouldShowNotificationTray() const override;
   void ShowEnterpriseInfo() override;
   void ShowUserLogin() override;
-  void SignOut() override;
-  void RequestRestartForUpdate() override;
   void GetAvailableBluetoothDevices(ash::BluetoothDeviceList* list) override;
   void BluetoothStartDiscovering() override;
   void BluetoothStopDiscovering() override;

@@ -57,6 +57,8 @@ class ASH_EXPORT SystemTrayController
   void ShowNetworkCreate(const std::string& type);
   void ShowNetworkSettings(const std::string& network_id);
   void ShowProxySettings();
+  void SignOut();
+  void RequestRestartForUpdate();
 
   // Binds the mojom::SystemTray interface to this object.
   void BindRequest(mojom::SystemTrayRequest request);

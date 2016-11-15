@@ -84,10 +84,6 @@ void SystemTrayDelegate::ShowEnterpriseInfo() {}
 
 void SystemTrayDelegate::ShowUserLogin() {}
 
-void SystemTrayDelegate::SignOut() {}
-
-void SystemTrayDelegate::RequestRestartForUpdate() {}
-
 void SystemTrayDelegate::GetAvailableBluetoothDevices(
     BluetoothDeviceList* list) {}
 

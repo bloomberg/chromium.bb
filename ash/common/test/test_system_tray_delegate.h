@@ -49,7 +49,6 @@ class TestSystemTrayDelegate : public DefaultSystemTrayDelegate {
   void GetSystemUpdateInfo(UpdateInfo* info) const override;
   bool GetSessionStartTime(base::TimeTicks* session_start_time) override;
   bool GetSessionLengthLimit(base::TimeDelta* session_length_limit) override;
-  void SignOut() override;
   void GetCurrentIME(IMEInfo* info) override;
   void GetAvailableIMEList(IMEInfoList* list) override;
 

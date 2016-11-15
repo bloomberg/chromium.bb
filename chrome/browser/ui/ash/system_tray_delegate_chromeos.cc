@@ -54,7 +54,6 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/profiles/multiprofiles_intro_dialog.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
@@ -399,15 +398,6 @@ void SystemTrayDelegateChromeOS::ShowUserLogin() {
       UserAddingScreen::Get()->Start();
     }
   }
-}
-
-void SystemTrayDelegateChromeOS::SignOut() {
-  chrome::AttemptUserExit();
-}
-
-void SystemTrayDelegateChromeOS::RequestRestartForUpdate() {
-  // We expect that UpdateEngine is in "Reboot for update" state now.
-  chrome::NotifyAndTerminate(true /* fast path */);
 }
 
 void SystemTrayDelegateChromeOS::GetAvailableBluetoothDevices(
