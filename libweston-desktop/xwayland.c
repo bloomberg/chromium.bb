@@ -83,6 +83,8 @@ weston_desktop_xwayland_surface_change_state(struct weston_desktop_xwayland_surf
 
 	if (surface->state != state) {
 		if (surface->state == XWAYLAND) {
+			assert(!surface->added);
+
 			weston_desktop_surface_unlink_view(surface->view);
 			weston_view_destroy(surface->view);
 			surface->view = NULL;
@@ -100,6 +102,8 @@ weston_desktop_xwayland_surface_change_state(struct weston_desktop_xwayland_surf
 		}
 
 		if (state == XWAYLAND) {
+			assert(!surface->added);
+
 			surface->view =
 				weston_desktop_surface_create_view(surface->surface);
 			weston_layer_entry_insert(&surface->xwayland->layer.view_list,
