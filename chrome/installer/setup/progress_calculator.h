@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_INSTALLER_UTIL_PROGRESS_CALCULATOR_H_
-#define CHROME_INSTALLER_UTIL_PROGRESS_CALCULATOR_H_
+#ifndef CHROME_INSTALLER_SETUP_PROGRESS_CALCULATOR_H_
+#define CHROME_INSTALLER_SETUP_PROGRESS_CALCULATOR_H_
 
 #include "base/macros.h"
 #include "chrome/installer/util/util_constants.h"
@@ -23,4 +23,4 @@ class ProgressCalculator {
   DISALLOW_COPY_AND_ASSIGN(ProgressCalculator);
 };
 
-#endif  // CHROME_INSTALLER_UTIL_PROGRESS_CALCULATOR_H_
+#endif  // CHROME_INSTALLER_SETUP_PROGRESS_CALCULATOR_H_

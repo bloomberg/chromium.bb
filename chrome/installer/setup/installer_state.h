@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_INSTALLER_UTIL_INSTALLER_STATE_H_
-#define CHROME_INSTALLER_UTIL_INSTALLER_STATE_H_
+#ifndef CHROME_INSTALLER_SETUP_INSTALLER_STATE_H_
+#define CHROME_INSTALLER_SETUP_INSTALLER_STATE_H_
 
 #include <stdint.h>
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -18,9 +17,9 @@
 #include "base/strings/string16.h"
 #include "base/version.h"
 #include "build/build_config.h"
+#include "chrome/installer/setup/progress_calculator.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/product.h"
-#include "chrome/installer/util/progress_calculator.h"
 #include "chrome/installer/util/util_constants.h"
 
 #if defined(OS_WIN)
@@ -210,7 +209,7 @@ class InstallerState {
   // non-empty, is written to the InstallerSuccessLaunchCmdLine value.
   void WriteInstallerResult(InstallStatus status,
                             int string_resource_id,
-                            const std::wstring* launch_cmd) const;
+                            const base::string16* launch_cmd) const;
 
   // Returns true if this install needs to register an Active Setup command.
   bool RequiresActiveSetup() const;
@@ -278,4 +277,4 @@ class InstallerState {
 
 }  // namespace installer
 
-#endif  // CHROME_INSTALLER_UTIL_INSTALLER_STATE_H_
+#endif  // CHROME_INSTALLER_SETUP_INSTALLER_STATE_H_

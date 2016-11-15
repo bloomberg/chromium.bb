@@ -4,8 +4,11 @@
 
 #include "chrome/installer/util/product.h"
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_reg_util_win.h"
@@ -13,7 +16,6 @@
 #include "chrome/installer/util/chrome_frame_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/installation_state.h"
-#include "chrome/installer/util/installer_state.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,10 +35,11 @@ TEST(ProductTest, ProductInstallBasic) {
   installer::MasterPreferences prefs(cmd_line);
   installer::InstallationState machine_state;
   machine_state.Initialize();
-  installer::InstallerState installer_state;
-  installer_state.Initialize(cmd_line, prefs, machine_state);
 
-  const Product* product = installer_state.products()[0];
+  std::unique_ptr<Product> product = base::MakeUnique<Product>(
+      BrowserDistribution::GetSpecificDistribution(
+          BrowserDistribution::CHROME_BROWSER));
+  product->InitializeFromPreferences(prefs);
   BrowserDistribution* distribution = product->distribution();
   EXPECT_EQ(BrowserDistribution::CHROME_BROWSER, distribution->GetType());
 
@@ -51,7 +54,7 @@ TEST(ProductTest, ProductInstallBasic) {
   EXPECT_EQ(std::wstring::npos,
             user_data_dir.value().find(program_files.value()));
 
-  HKEY root = installer_state.root_key();
+  HKEY root = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   {
     RegistryOverrideManager override_manager;
     override_manager.OverrideRegistry(root);

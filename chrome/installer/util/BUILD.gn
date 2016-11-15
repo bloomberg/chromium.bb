@@ -80,8 +80,6 @@ static_library("with_no_strings") {
       "product.cc",
       "product.h",
       "product_operations.h",
-      "progress_calculator.cc",
-      "progress_calculator.h",
       "registry_entry.cc",
       "registry_entry.h",
       "scoped_user_protocol_entry.cc",
@@ -185,8 +183,6 @@ static_library("with_no_strings") {
       "install_util.h",
       "installation_state.cc",
       "installation_state.h",
-      "installer_state.cc",
-      "installer_state.h",
       "l10n_string_util.cc",
       "l10n_string_util.h",
       "language_selector.cc",
@@ -280,6 +276,18 @@ source_set("strings") {
 }
 
 if (is_win) {
+  source_set("test_support") {
+    testonly = true
+    sources = [
+      "fake_installation_state.h",
+      "fake_product_state.h",
+    ]
+    deps = [
+      ":with_no_strings",
+      "//base",
+    ]
+  }
+
   test("installer_util_unittests") {
     sources = [
       "../setup/compat_checks_unittest.cc",
@@ -297,11 +305,8 @@ if (is_win) {
       "delete_reg_value_work_item_unittest.cc",
       "delete_tree_work_item_unittest.cc",
       "duplicate_tree_detector_unittest.cc",
-      "fake_installation_state.h",
-      "fake_product_state.h",
       "google_update_settings_unittest.cc",
       "install_util_unittest.cc",
-      "installer_state_unittest.cc",
       "installer_util_test_common.cc",
       "installer_util_test_common.h",
       "language_selector_unittest.cc",
@@ -313,7 +318,6 @@ if (is_win) {
       "move_tree_work_item_unittest.cc",
       "product_state_unittest.cc",
       "product_unittest.cc",
-      "progress_calculator_unittest.cc",
       "registry_key_backup_unittest.cc",
       "registry_test_data.cc",
       "registry_test_data.h",
@@ -333,6 +337,7 @@ if (is_win) {
     ]
 
     deps = [
+      ":test_support",
       ":with_rc_strings",
       "//base",
       "//base:i18n",
