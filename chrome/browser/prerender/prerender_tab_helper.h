@@ -16,14 +16,6 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"
 
-namespace autofill {
-struct PasswordForm;
-}
-
-namespace password_manager {
-class PasswordManager;
-}
-
 namespace prerender {
 
 class PrerenderManager;
