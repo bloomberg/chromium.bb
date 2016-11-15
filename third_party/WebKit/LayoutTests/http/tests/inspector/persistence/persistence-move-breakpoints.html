@@ -28,8 +28,7 @@ function test()
             function onSourceFrame(sourceFrame)
             {
                 InspectorTest.setBreakpoint(sourceFrame, 0, "", true);
-                dumpBreakpointSidebarPane();
-                next();
+                InspectorTest.waitBreakpointSidebarPane().then(InspectorTest.dumpBreakpointSidebarPane).then(next);
             }
         },
 
@@ -40,8 +39,7 @@ function test()
 
             function onBindingCreated(binding)
             {
-                dumpBreakpointSidebarPane();
-                next();
+                InspectorTest.waitBreakpointSidebarPane().then(InspectorTest.dumpBreakpointSidebarPane).then(next);
             }
         },
 
@@ -56,18 +54,22 @@ function test()
                 if (binding.network.name() !== "foo.js")
                     return
                 Persistence.persistence.removeEventListener(Persistence.Persistence.Events.BindingRemoved, onBindingRemoved);
-                dumpBreakpointSidebarPane();
-                next();
+                InspectorTest.waitBreakpointSidebarPane().then(dumpBreakpointSidebarPane).then(next);
             }
         },
     ]);
 
     function dumpBreakpointSidebarPane()
     {
-        var sidebarPane = self.runtime.sharedInstance(Sources.JavaScriptBreakpointsSidebarPane)
-        var breakpoints = sidebarPane._items.keysArray();
-        for (var breakpoint of breakpoints)
-            InspectorTest.addResult("    " + breakpoint.uiSourceCode().url() +":" + breakpoint.lineNumber());
+        var paneElement = self.runtime.sharedInstance(Sources.JavaScriptBreakpointsSidebarPane).contentElement;
+        var empty = paneElement.querySelector('.gray-info-message');
+        if (empty)
+            return InspectorTest.textContentWithLineBreaks(empty);
+        var entries = Array.from(paneElement.querySelectorAll('.breakpoint-entry'));
+        for (var entry of entries) {
+            var uiLocation = entry[Sources.JavaScriptBreakpointsSidebarPane._locationSymbol];
+            InspectorTest.addResult("    " + uiLocation.uiSourceCode.url() +":" + uiLocation.lineNumber);
+        }
     }
 };
 </script>

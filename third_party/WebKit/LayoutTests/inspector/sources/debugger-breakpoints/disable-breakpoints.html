@@ -92,7 +92,7 @@ var test = function()
             {
                 InspectorTest.addResult("Test function finished.");
                 InspectorTest.dumpBreakpointSidebarPane();
-                InspectorTest.addSniffer(currentSourceFrame, "_removeBreakpointDecoration", breakpointRemoved);
+                InspectorTest.waitBreakpointSidebarPane().then(breakpointRemoved);
                 InspectorTest.removeBreakpoint(currentSourceFrame, 7);
             }
 

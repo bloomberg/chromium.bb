@@ -41,16 +41,11 @@ function test()
 
     function runScript()
     {
-        InspectorTest.waitUntilPaused(pausedInF2);
+        Promise.all([InspectorTest.waitBreakpointSidebarPane(), new Promise(resolve => InspectorTest.waitUntilPaused(resolve))])
+            .then(() => InspectorTest.dumpBreakpointSidebarPane("while paused"))
+            .then(() => InspectorTest.completeDebuggerTest());
         InspectorTest.evaluateInPageWithTimeout("f2()");
     }
-
-    function pausedInF2(callFrames)
-    {
-        InspectorTest.dumpBreakpointSidebarPane("while paused");
-        InspectorTest.completeDebuggerTest();
-    }
-
 }
 </script>
 </head>

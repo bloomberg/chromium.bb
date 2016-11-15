@@ -16,76 +16,47 @@ var test = function()
 
     function step2(sourceFrame)
     {
-        InspectorTest.addSniffer(Bindings.BreakpointManager.TargetBreakpoint.prototype, "_addResolvedLocation", didSetBreakpointInDebugger, true);
-
+        InspectorTest.waitBreakpointSidebarPane()
+            .then(waitUntilReady)
+            .then(onBreakpointsReady);
         InspectorTest.setBreakpoint(sourceFrame, 14, "", true);
         InspectorTest.setBreakpoint(sourceFrame, 15, "", true);
 
-        var counter = 2;
-
-        function didSetBreakpointInDebugger()
-        {
-            counter--;
-            if (counter)
-                return;
-            //Both breakpoints are resolved before reload
-            InspectorTest.addSniffer(Sources.JavaScriptBreakpointsSidebarPane.prototype, "didReceiveBreakpointLineForTest", onBreakpointsReady);
-        }
-
         function onBreakpointsReady()
         {
-            InspectorTest.dumpBreakpointSidebarPane("Breakpoints before reload:");
-            waitForBreakpoints();
-            InspectorTest.reloadPage(onPageReloaded);
+            InspectorTest.dumpBreakpointSidebarPane("before reload:");
+            Promise.all([InspectorTest.waitBreakpointSidebarPane().then(waitUntilReady), new Promise(resolve => InspectorTest.reloadPage(resolve))])
+                .then(finishIfReady);
         }
 
-        function waitForBreakpoints()
-        {
-            var expectedBreakpointLocations = [[14, 0], [16, 4]];
-            var jsBreakpoints = self.runtime.sharedInstance(Sources.JavaScriptBreakpointsSidebarPane);
-            jsBreakpoints.didReceiveBreakpointLineForTest = function(uiSourceCode, line, column)
-            {
-                if (Bindings.CompilerScriptMapping.StubProjectID === uiSourceCode.project().id())
-                    return;
-                if (!uiSourceCode.url().endsWith("source1.js"))
-                    return;
-
-                expectedBreakpointLocations =
-                    expectedBreakpointLocations.filter((location) => (location[0] != line && location[1] != column));
-                if (expectedBreakpointLocations.length)
-                    return;
-                breakpointSourcesReceived = true;
-                maybeCompleteTest();
-            }
+        function finishIfReady() {
+            InspectorTest.dumpBreakpointSidebarPane("after reload:");
+            InspectorTest.completeDebuggerTest();
         }
-
     }
 
-    var breakpointSourcesReceived = false;
-    var pageReloaded = false;
-
-    function onPageReloaded()
-    {
-        pageReloaded = true;
-        maybeCompleteTest();
-    }
-
-    function maybeCompleteTest()
-    {
-        if (!pageReloaded || !breakpointSourcesReceived)
-            return;
-        InspectorTest.dumpBreakpointSidebarPane("Breakpoints after reload:");
-        InspectorTest.completeDebuggerTest();
+    function waitUntilReady() {
+        var expectedBreakpointLocations = [[14, 0], [16, 4]];
+        var paneElement = self.runtime.sharedInstance(Sources.JavaScriptBreakpointsSidebarPane).contentElement;
+        var entries = Array.from(paneElement.querySelectorAll('.breakpoint-entry'));
+        for (var entry of entries) {
+            var uiLocation = entry[Sources.JavaScriptBreakpointsSidebarPane._locationSymbol];
+            if (Bindings.CompilerScriptMapping.StubProjectID === uiLocation.uiSourceCode.project().id())
+                return InspectorTest.waitBreakpointSidebarPane().then(waitUntilReady);
+            if (!uiLocation.uiSourceCode.url().endsWith("source1.js"))
+                return InspectorTest.waitBreakpointSidebarPane().then(waitUntilReady);
+            expectedBreakpointLocations =
+                expectedBreakpointLocations.filter((location) => (location[0] != uiLocation.lineNumber && location[1] != uiLocation.columnNumber));
+        }
+        if (expectedBreakpointLocations.length)
+            return InspectorTest.waitBreakpointSidebarPane().then(waitUntilReady);
+        return Promise.resolve();
     }
 }
 
 </script>
 </head>
-
 <body onload="runTest()">
-<p>
-    Tests "reload" from within inspector window while on pause.
-</p>
-
+<p>Tests "reload" from within inspector window while on pause.</p>
 </body>
 </html>

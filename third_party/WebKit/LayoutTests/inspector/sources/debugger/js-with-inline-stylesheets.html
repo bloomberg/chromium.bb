@@ -34,7 +34,7 @@ var test = function()
                 InspectorTest.addResult("Script execution paused.");
                 InspectorTest.captureStackTrace(callFrames);
                 InspectorTest.dumpBreakpointSidebarPane();
-                InspectorTest.addSniffer(currentSourceFrame, "_removeBreakpointDecoration", breakpointRemoved);
+                InspectorTest.waitBreakpointSidebarPane().then(breakpointRemoved);
                 InspectorTest.removeBreakpoint(currentSourceFrame, 9);
             }
 

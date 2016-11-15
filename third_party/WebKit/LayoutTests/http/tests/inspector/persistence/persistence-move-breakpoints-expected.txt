@@ -4,12 +4,14 @@ Verify that breakpoints are moved appropriately
 Running: addFileSystem
 
 Running: setBreakpointInFileSystemUISourceCode
-    file:///var/www/inspector/persistence/resources/foo.js:0
+Breakpoint sidebar pane 
+foo.js:1
 
 Running: addFileMapping
-    http://127.0.0.1:8000/inspector/persistence/resources/foo.js:0
+Breakpoint sidebar pane 
+foo.js:1
 
 Running: removeFileMapping
-    http://127.0.0.1:8000/inspector/persistence/resources/foo.js:0
     file:///var/www/inspector/persistence/resources/foo.js:0
+    http://127.0.0.1:8000/inspector/persistence/resources/foo.js:0
 

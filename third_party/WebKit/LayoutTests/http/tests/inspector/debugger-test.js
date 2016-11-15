@@ -425,11 +425,25 @@ InspectorTest.removeBreakpoint = function(sourceFrame, lineNumber)
     sourceFrame._breakpointManager.findBreakpoints(sourceFrame._uiSourceCode, lineNumber)[0].remove();
 };
 
+InspectorTest.waitBreakpointSidebarPane = function()
+{
+    return new Promise(resolve => InspectorTest.addSniffer(Sources.JavaScriptBreakpointsSidebarPane.prototype, "_didUpdateForTest", resolve));
+}
+
+InspectorTest.breakpointsSidebarPaneContent = function()
+{
+    var paneElement = self.runtime.sharedInstance(Sources.JavaScriptBreakpointsSidebarPane).contentElement;
+    var empty = paneElement.querySelector('.gray-info-message');
+    if (empty)
+        return InspectorTest.textContentWithLineBreaks(empty);
+    var entries = Array.from(paneElement.querySelectorAll('.breakpoint-entry'));
+    return entries.map(InspectorTest.textContentWithLineBreaks).join('\n');
+}
+
 InspectorTest.dumpBreakpointSidebarPane = function(title)
 {
-    var paneElement = self.runtime.sharedInstance(Sources.JavaScriptBreakpointsSidebarPane).element;
     InspectorTest.addResult("Breakpoint sidebar pane " + (title || ""));
-    InspectorTest.addResult(InspectorTest.textContentWithLineBreaks(paneElement));
+    InspectorTest.addResult(InspectorTest.breakpointsSidebarPaneContent());
 };
 
 InspectorTest.dumpScopeVariablesSidebarPane = function()

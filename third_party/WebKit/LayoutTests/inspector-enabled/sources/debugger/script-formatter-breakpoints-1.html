@@ -73,7 +73,7 @@ var test = function()
             {
                 InspectorTest.dumpBreakpointSidebarPane("while paused in pretty printed");
                 scriptFormatter._discardFormattedUISourceCodeScript(panel.visibleView.uiSourceCode());
-                InspectorTest.addSniffer(Sources.JavaScriptBreakpointsSidebarPane.prototype, "didReceiveBreakpointLineForTest", onBreakpointsUpdated);
+                InspectorTest.waitBreakpointSidebarPane().then(onBreakpointsUpdated);
             }
 
             function onBreakpointsUpdated()

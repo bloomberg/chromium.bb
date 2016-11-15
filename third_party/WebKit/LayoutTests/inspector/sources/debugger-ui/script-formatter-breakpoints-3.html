@@ -33,17 +33,23 @@ var test = function()
             {
                 var formattedSourceFrame = panel.visibleView;
                 InspectorTest.setBreakpoint(formattedSourceFrame, 3, "", true);
+                InspectorTest.waitBreakpointSidebarPane().then(evaluateF2);
+            }
+
+            function evaluateF2() {
                 InspectorTest.waitUntilPaused(pausedInF2);
                 InspectorTest.evaluateInPageWithTimeout("f2()");
             }
 
+
             function pausedInF2(callFrames)
             {
                 InspectorTest.dumpBreakpointSidebarPane("while paused in pretty printed");
-                scriptFormatter._discardFormattedUISourceCodeScript(panel.visibleView.uiSourceCode());
-                InspectorTest.dumpBreakpointSidebarPane("while paused in raw");
+                InspectorTest.waitBreakpointSidebarPane()
+                    .then(() => InspectorTest.dumpBreakpointSidebarPane("while paused in raw"))
+                    .then(() => InspectorTest.resumeExecution(next));
                 // No need to remove breakpoint since formattedUISourceCode was removed.
-                InspectorTest.resumeExecution(next);
+                scriptFormatter._discardFormattedUISourceCodeScript(panel.visibleView.uiSourceCode());
             }
         }
     ]);
