@@ -186,6 +186,7 @@ imported/csswg-test/.hgsubstate [ Skip ]
 imported/csswg-test/.htaccess [ Skip ]
 
 imported/wpt/2dcontext [ Skip ]
+imported/wpt/DOM-parsing [ Skip ]
 ## Owners: jsbell@chromium.org
 # imported/wpt/FileAPI [ Pass ]
 ## Owners: jsbell@chromium.org
@@ -204,11 +205,13 @@ imported/wpt/annotation-model [ Skip ]
 imported/wpt/annotation-protocol [ Skip ]
 imported/wpt/app-uri [ Skip ]
 imported/wpt/battery-status [ Skip ]
+imported/wpt/bluetooth [ Skip ]
 ## Owners: none; No tests in the directory.
 # imported/wpt/common [ Pass ]
 imported/wpt/compat [ Skip ]
 imported/wpt/config.default.json [ Skip ]
 imported/wpt/conformance-checkers [ Skip ]
+imported/wpt/console [ Skip ]
 imported/wpt/content-security-policy [ Skip ]
 imported/wpt/cookies [ Skip ]
 imported/wpt/cors [ Skip ]
@@ -223,6 +226,8 @@ imported/wpt/docs [ Skip ]
 imported/wpt/dom [ Pass ]
 imported/wpt/domparsing [ Skip ]
 imported/wpt/domxpath [ Skip ]
+imported/wpt/dpub-aam [ Skip ]
+imported/wpt/dpub-aria [ Skip ]
 imported/wpt/editing [ Skip ]
 ## Owners: jsbell@chromium.org
 # imported/wpt/encoding [ Pass ]
@@ -259,6 +264,7 @@ imported/wpt/mathml [ Skip ]
 ## Owners: none; No tests in the directory.
 # imported/wpt/media [ Skip ]
 imported/wpt/media-source [ Skip ]
+imported/wpt/mediacapture-record [ Skip ]
 ## Owners: phoglund@chromium.org
 # imported/wpt/mediacapture-streams [ Pass ]
 imported/wpt/microdata [ Skip ]
@@ -318,6 +324,7 @@ imported/wpt/url [ Skip ]
 ## Owners: jsbell@chromium.org
 # imported/wpt/user-timing [ Pass ]
 imported/wpt/vibration [ Skip ]
+imported/wpt/wai-aria [ Skip ]
 ## Owners: suzyh@chromium.org
 # imported/wpt/web-animations [ Pass ]
 imported/wpt/webaudio [ Skip ]
