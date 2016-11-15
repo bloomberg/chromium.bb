@@ -105,6 +105,7 @@
 
     ClientRect boundingBox(Element element);
 
+    [RaisesException] void setMarker(Document document, Range range, DOMString markerType);
     [RaisesException] unsigned long markerCountForNode(Node node, DOMString markerType);
     unsigned long activeMarkerCountForNode(Node node);
     [RaisesException] Range markerRangeForNode(Node node, DOMString markerType, unsigned long index);
@@ -165,6 +166,7 @@
     [RaisesException] boolean hasSpellingMarker(Document document, long from, long length);
     [RaisesException] boolean hasGrammarMarker(Document document, long from, long length);
     [RaisesException] void setSpellCheckingEnabled(boolean enabled);
+    [RaisesException] void replaceMisspelled(Document document, DOMString replacement);
 
     bool canHyphenate(DOMString locale);
     void setMockHyphenation(DOMString locale);

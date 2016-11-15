@@ -146,6 +146,7 @@
 #include "public/platform/WebLayer.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h"
 #include "wtf/InstanceCounter.h"
+#include "wtf/Optional.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/dtoa.h"
 #include "wtf/text/StringBuffer.h"
@@ -172,20 +173,25 @@ class InternalsIterationSource final
 
 }  // namespace
 
-static bool markerTypesFrom(const String& markerType,
-                            DocumentMarker::MarkerTypes& result) {
-  if (markerType.isEmpty() || equalIgnoringCase(markerType, "all"))
-    result = DocumentMarker::AllMarkers();
-  else if (equalIgnoringCase(markerType, "Spelling"))
-    result = DocumentMarker::Spelling;
-  else if (equalIgnoringCase(markerType, "Grammar"))
-    result = DocumentMarker::Grammar;
-  else if (equalIgnoringCase(markerType, "TextMatch"))
-    result = DocumentMarker::TextMatch;
-  else
-    return false;
+static WTF::Optional<DocumentMarker::MarkerType> markerTypeFrom(
+    const String& markerType) {
+  if (equalIgnoringCase(markerType, "Spelling"))
+    return DocumentMarker::Spelling;
+  if (equalIgnoringCase(markerType, "Grammar"))
+    return DocumentMarker::Grammar;
+  if (equalIgnoringCase(markerType, "TextMatch"))
+    return DocumentMarker::TextMatch;
+  return WTF::nullopt;
+}
 
-  return true;
+static WTF::Optional<DocumentMarker::MarkerTypes> markerTypesFrom(
+    const String& markerType) {
+  if (markerType.isEmpty() || equalIgnoringCase(markerType, "all"))
+    return DocumentMarker::AllMarkers();
+  WTF::Optional<DocumentMarker::MarkerType> type = markerTypeFrom(markerType);
+  if (!type)
+    return WTF::nullopt;
+  return DocumentMarker::MarkerTypes(type.value());
 }
 
 static SpellCheckRequester* spellCheckRequester(Document* document) {
@@ -913,19 +919,45 @@ ClientRect* Internals::boundingBox(Element* element) {
       layoutObject->absoluteBoundingBoxRectIgnoringTransforms());
 }
 
+void Internals::setMarker(Document* document,
+                          const Range* range,
+                          const String& markerType,
+                          ExceptionState& exceptionState) {
+  if (!document) {
+    exceptionState.throwDOMException(InvalidAccessError,
+                                     "No context document is available.");
+    return;
+  }
+
+  WTF::Optional<DocumentMarker::MarkerType> type = markerTypeFrom(markerType);
+  if (!type) {
+    exceptionState.throwDOMException(
+        SyntaxError,
+        "The marker type provided ('" + markerType + "') is invalid.");
+    return;
+  }
+
+  document->markers().addMarker(range->startPosition(), range->endPosition(),
+                                type.value());
+}
+
 unsigned Internals::markerCountForNode(Node* node,
                                        const String& markerType,
                                        ExceptionState& exceptionState) {
   ASSERT(node);
-  DocumentMarker::MarkerTypes markerTypes = 0;
-  if (!markerTypesFrom(markerType, markerTypes)) {
+  WTF::Optional<DocumentMarker::MarkerTypes> markerTypes =
+      markerTypesFrom(markerType);
+  if (!markerTypes) {
     exceptionState.throwDOMException(
         SyntaxError,
         "The marker type provided ('" + markerType + "') is invalid.");
     return 0;
   }
 
-  return node->document().markers().markersFor(node, markerTypes).size();
+  return node->document()
+      .markers()
+      .markersFor(node, markerTypes.value())
+      .size();
 }
 
 unsigned Internals::activeMarkerCountForNode(Node* node) {
@@ -950,8 +982,9 @@ DocumentMarker* Internals::markerAt(Node* node,
                                     unsigned index,
                                     ExceptionState& exceptionState) {
   ASSERT(node);
-  DocumentMarker::MarkerTypes markerTypes = 0;
-  if (!markerTypesFrom(markerType, markerTypes)) {
+  WTF::Optional<DocumentMarker::MarkerTypes> markerTypes =
+      markerTypesFrom(markerType);
+  if (!markerTypes) {
     exceptionState.throwDOMException(
         SyntaxError,
         "The marker type provided ('" + markerType + "') is invalid.");
@@ -959,7 +992,7 @@ DocumentMarker* Internals::markerAt(Node* node,
   }
 
   DocumentMarkerVector markers =
-      node->document().markers().markersFor(node, markerTypes);
+      node->document().markers().markersFor(node, markerTypes.value());
   if (markers.size() <= index)
     return 0;
   return markers[index];
@@ -1824,6 +1857,20 @@ void Internals::setSpellCheckingEnabled(bool enabled,
   if (enabled !=
       contextDocument()->frame()->spellChecker().isSpellCheckingEnabled())
     contextDocument()->frame()->spellChecker().toggleSpellCheckingEnabled();
+}
+
+void Internals::replaceMisspelled(Document* document,
+                                  const String& replacement,
+                                  ExceptionState& exceptionState) {
+  if (!document || !document->frame()) {
+    exceptionState.throwDOMException(
+        InvalidAccessError,
+        "No frame can be obtained from the provided document.");
+    return;
+  }
+
+  document->updateStyleAndLayoutIgnorePendingStylesheets();
+  document->frame()->spellChecker().replaceMisspelledRange(replacement);
 }
 
 bool Internals::canHyphenate(const AtomicString& locale) {

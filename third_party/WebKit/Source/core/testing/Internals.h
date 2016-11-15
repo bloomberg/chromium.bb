@@ -185,6 +185,7 @@ class Internals final : public GarbageCollectedFinalized<Internals>,
 
   ClientRect* boundingBox(Element*);
 
+  void setMarker(Document*, const Range*, const String&, ExceptionState&);
   unsigned markerCountForNode(Node*, const String&, ExceptionState&);
   unsigned activeMarkerCountForNode(Node*);
   Range* markerRangeForNode(Node*,
@@ -294,6 +295,7 @@ class Internals final : public GarbageCollectedFinalized<Internals>,
   bool hasSpellingMarker(Document*, int from, int length, ExceptionState&);
   bool hasGrammarMarker(Document*, int from, int length, ExceptionState&);
   void setSpellCheckingEnabled(bool, ExceptionState&);
+  void replaceMisspelled(Document*, const String&, ExceptionState&);
 
   bool canHyphenate(const AtomicString& locale);
   void setMockHyphenation(const AtomicString& locale);
