@@ -16,7 +16,75 @@
 
 #include "av1/common/warped_motion.h"
 
-#define ERRORADV_CLAMP 128
+/* clang-format off */
+static const int error_measure_lut[512] = {
+  // power 0.6
+  255, 254, 254, 253, 253, 252, 251, 251,
+  250, 250, 249, 248, 248, 247, 247, 246,
+  245, 245, 244, 243, 243, 242, 242, 241,
+  240, 240, 239, 238, 238, 237, 237, 236,
+  235, 235, 234, 233, 233, 232, 231, 231,
+  230, 230, 229, 228, 228, 227, 226, 226,
+  225, 224, 224, 223, 222, 222, 221, 220,
+  220, 219, 218, 218, 217, 216, 216, 215,
+  214, 214, 213, 212, 212, 211, 210, 210,
+  209, 208, 208, 207, 206, 206, 205, 204,
+  203, 203, 202, 201, 201, 200, 199, 199,
+  198, 197, 196, 196, 195, 194, 194, 193,
+  192, 191, 191, 190, 189, 188, 188, 187,
+  186, 185, 185, 184, 183, 182, 182, 181,
+  180, 179, 179, 178, 177, 176, 176, 175,
+  174, 173, 173, 172, 171, 170, 169, 169,
+  168, 167, 166, 165, 165, 164, 163, 162,
+  161, 161, 160, 159, 158, 157, 156, 156,
+  155, 154, 153, 152, 151, 151, 150, 149,
+  148, 147, 146, 145, 145, 144, 143, 142,
+  141, 140, 139, 138, 137, 137, 136, 135,
+  134, 133, 132, 131, 130, 129, 128, 127,
+  126, 125, 124, 123, 122, 121, 120, 119,
+  118, 117, 116, 115, 114, 113, 112, 111,
+  110, 109, 108, 107, 106, 105, 104, 103,
+  102, 100,  99,  98,  97,  96,  95,  94,
+  92, 91, 90, 89, 88, 86, 85, 84,
+  83, 81, 80, 79, 77, 76, 75, 73,
+  72, 71, 69, 68, 66, 65, 63, 62,
+  60, 59, 57, 55, 54, 52, 50, 48,
+  47, 45, 43, 41, 39, 37, 34, 32,
+  29, 27, 24, 21, 18, 14,  9,  0,
+  9, 14, 18, 21, 24, 27, 29, 32,
+  34, 37, 39, 41, 43, 45, 47, 48,
+  50, 52, 54, 55, 57, 59, 60, 62,
+  63, 65, 66, 68, 69, 71, 72, 73,
+  75, 76, 77, 79, 80, 81, 83, 84,
+  85, 86, 88, 89, 90, 91, 92, 94,
+  95,  96,  97,  98,  99, 100, 102, 103,
+  104, 105, 106, 107, 108, 109, 110, 111,
+  112, 113, 114, 115, 116, 117, 118, 119,
+  120, 121, 122, 123, 124, 125, 126, 127,
+  128, 129, 130, 131, 132, 133, 134, 135,
+  136, 137, 137, 138, 139, 140, 141, 142,
+  143, 144, 145, 145, 146, 147, 148, 149,
+  150, 151, 151, 152, 153, 154, 155, 156,
+  156, 157, 158, 159, 160, 161, 161, 162,
+  163, 164, 165, 165, 166, 167, 168, 169,
+  169, 170, 171, 172, 173, 173, 174, 175,
+  176, 176, 177, 178, 179, 179, 180, 181,
+  182, 182, 183, 184, 185, 185, 186, 187,
+  188, 188, 189, 190, 191, 191, 192, 193,
+  194, 194, 195, 196, 196, 197, 198, 199,
+  199, 200, 201, 201, 202, 203, 203, 204,
+  205, 206, 206, 207, 208, 208, 209, 210,
+  210, 211, 212, 212, 213, 214, 214, 215,
+  216, 216, 217, 218, 218, 219, 220, 220,
+  221, 222, 222, 223, 224, 224, 225, 226,
+  226, 227, 228, 228, 229, 230, 230, 231,
+  231, 232, 233, 233, 234, 235, 235, 236,
+  237, 237, 238, 238, 239, 240, 240, 241,
+  242, 242, 243, 243, 244, 245, 245, 246,
+  247, 247, 248, 248, 249, 250, 250, 251,
+  251, 252, 253, 253, 254, 254, 255, 255,
+};
+/* clang-format on */
 
 static ProjectPointsFunc get_project_points_type(TransformationType type) {
   switch (type) {
@@ -428,6 +496,17 @@ static uint16_t highbd_warp_interpolate(uint16_t *ref, int x, int y, int width,
   }
 }
 
+static INLINE int highbd_error_measure(int err, int bd) {
+  const int b = bd - 8;
+  const int bmask = (1 << b) - 1;
+  int e1, e2;
+  err = abs(err);
+  e1 = err >> b;
+  e2 = err & bmask;
+  return error_measure_lut[255 + e1] * (v - e2) +
+         error_measure_lut[256 + e1] * e2;
+}
+
 static double highbd_warp_erroradv(WarpedMotionParams *wm, uint8_t *ref8,
                                    int width, int height, int stride,
                                    uint8_t *dst8, int p_col, int p_row,
@@ -453,10 +532,8 @@ static double highbd_warp_erroradv(WarpedMotionParams *wm, uint8_t *ref8,
                                        stride, bd);
       no_gm_err = dst[(j - p_col) + (i - p_row) * p_stride] -
                   ref[(j - p_col) + (i - p_row) * stride];
-      gm_err = abs(gm_err);
-      no_gm_err = abs(no_gm_err);
-      gm_sumerr += (int64_t)AOMMIN(gm_err, ERRORADV_CLAMP << (bd - 8));
-      no_gm_sumerr += (int64_t)AOMMIN(no_gm_err, ERRORADV_CLAMP << (bd - 8));
+      gm_sumerr += highbd_error_measure(gm_err, bd];
+      no_gm_sumerr += highbd_error_measure(no_gm_err bd);
     }
   }
   return (double)gm_sumerr / no_gm_sumerr;
@@ -495,6 +572,10 @@ static void highbd_warp_plane(WarpedMotionParams *wm, uint8_t *ref8, int width,
 }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
+static INLINE int error_measure(int err) {
+  return error_measure_lut[255 + err];
+}
+
 static double warp_erroradv(WarpedMotionParams *wm, uint8_t *ref, int width,
                             int height, int stride, uint8_t *dst, int p_col,
                             int p_row, int p_width, int p_height, int p_stride,
@@ -516,10 +597,8 @@ static double warp_erroradv(WarpedMotionParams *wm, uint8_t *ref, int width,
                warp_interpolate(ref, out[0], out[1], width, height, stride);
       no_gm_err = dst[(j - p_col) + (i - p_row) * p_stride] -
                   ref[(j - p_col) + (i - p_row) * stride];
-      gm_err = abs(gm_err);
-      no_gm_err = abs(no_gm_err);
-      gm_sumerr += AOMMIN(gm_err, ERRORADV_CLAMP);
-      no_gm_sumerr += AOMMIN(no_gm_err, ERRORADV_CLAMP);
+      gm_sumerr += error_measure(gm_err);
+      no_gm_sumerr += error_measure(no_gm_err);
     }
   }
   return (double)gm_sumerr / no_gm_sumerr;
