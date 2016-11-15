@@ -14,7 +14,6 @@ function test()
     var defaultScriptMapping;
     var persistence;
     var fileSystemProjectId = Bindings.FileSystemWorkspaceBinding.projectId("file:///var/www");
-    Bindings.networkMapping.dispose();
 
     function createWorkspaceWithTarget()
     {
@@ -60,7 +59,9 @@ function test()
                 var uiSourceCode = InspectorTest.testWorkspace.uiSourceCode(fileSystemProjectId, "file:///var/www/html/foo.js");
                 networkUISourceCode = InspectorTest.testWorkspace.uiSourceCode(Bindings.NetworkProject.projectId(target, target.resourceTreeModel.mainFrame, false), "http://localhost/html/foo.js");
                 InspectorTest.addResult("Adding mapping between network and file system resources.");
-                InspectorTest.testNetworkMapping.addMapping(networkUISourceCode, uiSourceCode);
+
+                var fileSystemPath = Bindings.FileSystemWorkspaceBinding.fileSystemPath(uiSourceCode.project().id());
+                Workspace.fileSystemMapping.addMappingForResource(networkUISourceCode.url(), fileSystemPath, uiSourceCode.url());
                 var setting = JSON.stringify(Workspace.fileSystemMapping._fileSystemMappingSetting.get());
 
                 InspectorTest.addResult("Emulate reloading inspector.");
@@ -80,7 +81,7 @@ function test()
 
                 InspectorTest.addResult("Removing mapping between network and file system resources.");
                 var uiSourceCode = InspectorTest.testWorkspace.uiSourceCode(fileSystemProjectId, "file:///var/www/html/foo.js");
-                InspectorTest.testNetworkMapping.removeMapping(uiSourceCode);
+                Workspace.fileSystemMapping.removeMappingForURL(uiSourceCode.url());
 
                 InspectorTest.addResult("Emulate reloading inspector.");
                 fs.reportRemoved();

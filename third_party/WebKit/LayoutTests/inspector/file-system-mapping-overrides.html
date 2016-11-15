@@ -7,49 +7,53 @@ function test()
     InspectorTest.runTestSuite([
         function testFileSystemClashDirectOrder(next)
         {
-            var fileSystemMapping = new Workspace.FileSystemMapping();
+            var fileSystemMapping = new Workspace.FileSystemMapping(Workspace.isolatedFileSystemManager);
             fileSystemMapping.addFileSystem("file:///Source/devtools");
 
             fileSystemMapping.addNonConfigurableFileMapping("file:///Source/devtools", "chrome-devtools://devtools/bundled/wrong_url", "/");
             fileSystemMapping.addFileMapping("file:///Source/devtools", "http://localhost:1234/right_url", "/");
 
             InspectorTest.addResult(fileSystemMapping.networkURLForFileSystemURL("file:///Source/devtools", "file:///Source/devtools/file.txt"));
+            fileSystemMapping.dispose();
             next();
         },
 
         function testFileSystemClashReversedOrder(next)
         {
-            var fileSystemMapping = new Workspace.FileSystemMapping();
+            var fileSystemMapping = new Workspace.FileSystemMapping(Workspace.isolatedFileSystemManager);
             fileSystemMapping.addFileSystem("file:///Source/devtools");
 
             fileSystemMapping.addFileMapping("file:///Source/devtools", "http://localhost:1234/right_url", "/");
             fileSystemMapping.addNonConfigurableFileMapping("file:///Source/devtools", "chrome-devtools://devtools/wrong_url", "/");
 
             InspectorTest.addResult(fileSystemMapping.networkURLForFileSystemURL("file:///Source/devtools", "file:///Source/devtools/file.txt"));
+            fileSystemMapping.dispose();
             next();
         },
 
         function testNetworkClashDirectOrder(next)
         {
-            var fileSystemMapping = new Workspace.FileSystemMapping();
+            var fileSystemMapping = new Workspace.FileSystemMapping(Workspace.isolatedFileSystemManager);
             fileSystemMapping.addFileSystem("file:///Source/devtools");
 
             fileSystemMapping.addNonConfigurableFileMapping("file:///Source/devtools", "http://localhost:1234/front_end", "/wrong");
             fileSystemMapping.addFileMapping("file:///Source/devtools", "http://localhost:1234/front_end", "/right");
 
             InspectorTest.addResult(fileSystemMapping.fileForURL("http://localhost:1234/front_end/file.txt").fileURL);
+            fileSystemMapping.dispose();
             next();
         },
 
         function testNetworkClashReversedOrder(next)
         {
-            var fileSystemMapping = new Workspace.FileSystemMapping();
+            var fileSystemMapping = new Workspace.FileSystemMapping(Workspace.isolatedFileSystemManager);
             fileSystemMapping.addFileSystem("file:///Source/devtools");
 
             fileSystemMapping.addFileMapping("file:///Source/devtools", "http://localhost:1234/front_end", "/right");
             fileSystemMapping.addNonConfigurableFileMapping("file:///Source/devtools", "http://localhost:1234/front_end", "/wrong");
 
             InspectorTest.addResult(fileSystemMapping.fileForURL("http://localhost:1234/front_end/file.txt").fileURL);
+            fileSystemMapping.dispose();
             next();
         },
     ]);
