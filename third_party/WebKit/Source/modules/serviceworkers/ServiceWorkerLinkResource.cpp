@@ -90,15 +90,14 @@ void ServiceWorkerLinkResource::process() {
     document.addConsoleMessage(ConsoleMessage::create(
         JSMessageSource, ErrorMessageLevel,
         "Cannot register service worker with <link> element. " + message));
-    wrapUnique(new RegistrationCallback(m_owner))
-        ->onError(WebServiceWorkerError(
-            WebServiceWorkerError::ErrorTypeSecurity, message));
+    makeUnique<RegistrationCallback>(m_owner)->onError(WebServiceWorkerError(
+        WebServiceWorkerError::ErrorTypeSecurity, message));
     return;
   }
 
   container->registerServiceWorkerImpl(
       &document, scriptURL, scopeURL,
-      wrapUnique(new RegistrationCallback(m_owner)));
+      makeUnique<RegistrationCallback>(m_owner));
 }
 
 bool ServiceWorkerLinkResource::hasLoaded() const {

@@ -1164,7 +1164,7 @@ Response InspectorDOMAgent::highlightConfigFromInspectorObject(
 
   protocol::DOM::HighlightConfig* config = highlightInspectorObject.fromJust();
   std::unique_ptr<InspectorHighlightConfig> highlightConfig =
-      wrapUnique(new InspectorHighlightConfig());
+      makeUnique<InspectorHighlightConfig>();
   highlightConfig->showInfo = config->getShowInfo(false);
   highlightConfig->showRulers = config->getShowRulers(false);
   highlightConfig->showExtensionLines = config->getShowExtensionLines(false);
@@ -1228,7 +1228,7 @@ Response InspectorDOMAgent::highlightQuad(
     std::unique_ptr<protocol::Array<double>> quadArray,
     Maybe<protocol::DOM::RGBA> color,
     Maybe<protocol::DOM::RGBA> outlineColor) {
-  std::unique_ptr<FloatQuad> quad = wrapUnique(new FloatQuad());
+  std::unique_ptr<FloatQuad> quad = makeUnique<FloatQuad>();
   if (!parseQuad(std::move(quadArray), quad.get()))
     return Response::Error("Invalid Quad format");
   innerHighlightQuad(std::move(quad), std::move(color),
@@ -1241,7 +1241,7 @@ void InspectorDOMAgent::innerHighlightQuad(
     Maybe<protocol::DOM::RGBA> color,
     Maybe<protocol::DOM::RGBA> outlineColor) {
   std::unique_ptr<InspectorHighlightConfig> highlightConfig =
-      wrapUnique(new InspectorHighlightConfig());
+      makeUnique<InspectorHighlightConfig>();
   highlightConfig->content = parseColor(color.fromMaybe(nullptr));
   highlightConfig->contentOutline = parseColor(outlineColor.fromMaybe(nullptr));
   if (m_client)
@@ -1308,7 +1308,7 @@ Response InspectorDOMAgent::highlightFrame(
   // FIXME: Inspector doesn't currently work cross process.
   if (frame && frame->deprecatedLocalOwner()) {
     std::unique_ptr<InspectorHighlightConfig> highlightConfig =
-        wrapUnique(new InspectorHighlightConfig());
+        makeUnique<InspectorHighlightConfig>();
     highlightConfig->showInfo = true;  // Always show tooltips for frames.
     highlightConfig->content = parseColor(color.fromMaybe(nullptr));
     highlightConfig->contentOutline =
@@ -2208,7 +2208,7 @@ Response InspectorDOMAgent::setInspectedNode(int nodeId) {
   Response response = assertNode(nodeId, node);
   if (!response.isSuccess())
     return response;
-  m_v8Session->addInspectedObject(wrapUnique(new InspectableNode(node)));
+  m_v8Session->addInspectedObject(makeUnique<InspectableNode>(node));
   if (m_client)
     m_client->setInspectedNode(node);
   return Response::OK();

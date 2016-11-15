@@ -22,7 +22,7 @@ IDBValue::IDBValue(PassRefPtr<SharedBuffer> data,
                    IDBKey* primaryKey,
                    const IDBKeyPath& keyPath)
     : m_data(data),
-      m_blobData(wrapUnique(new Vector<RefPtr<BlobDataHandle>>())),
+      m_blobData(makeUnique<Vector<RefPtr<BlobDataHandle>>>()),
       m_blobInfo(wrapUnique(new Vector<WebBlobInfo>(webBlobInfo.size()))),
       m_primaryKey(primaryKey && primaryKey->isValid() ? primaryKey : nullptr),
       m_keyPath(keyPath) {
@@ -37,7 +37,7 @@ IDBValue::IDBValue(const IDBValue* value,
                    IDBKey* primaryKey,
                    const IDBKeyPath& keyPath)
     : m_data(value->m_data),
-      m_blobData(wrapUnique(new Vector<RefPtr<BlobDataHandle>>())),
+      m_blobData(makeUnique<Vector<RefPtr<BlobDataHandle>>>()),
       m_blobInfo(
           wrapUnique(new Vector<WebBlobInfo>(value->m_blobInfo->size()))),
       m_primaryKey(primaryKey),

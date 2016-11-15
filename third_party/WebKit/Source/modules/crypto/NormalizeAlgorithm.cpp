@@ -531,7 +531,7 @@ bool parseAesKeyGenParams(const Dictionary& raw,
   if (!getUint16(raw, "length", length, context, error))
     return false;
 
-  params = wrapUnique(new WebCryptoAesKeyGenParams(length));
+  params = makeUnique<WebCryptoAesKeyGenParams>(length);
   return true;
 }
 
@@ -573,7 +573,7 @@ bool parseHmacImportParams(const Dictionary& raw,
   if (!getOptionalUint32(raw, "length", hasLength, length, context, error))
     return false;
 
-  params = wrapUnique(new WebCryptoHmacImportParams(hash, hasLength, length));
+  params = makeUnique<WebCryptoHmacImportParams>(hash, hasLength, length);
   return true;
 }
 
@@ -596,7 +596,7 @@ bool parseHmacKeyGenParams(const Dictionary& raw,
   if (!getOptionalUint32(raw, "length", hasLength, length, context, error))
     return false;
 
-  params = wrapUnique(new WebCryptoHmacKeyGenParams(hash, hasLength, length));
+  params = makeUnique<WebCryptoHmacKeyGenParams>(hash, hasLength, length);
   return true;
 }
 
@@ -614,7 +614,7 @@ bool parseRsaHashedImportParams(
   if (!parseHash(raw, hash, context, error))
     return false;
 
-  params = wrapUnique(new WebCryptoRsaHashedImportParams(hash));
+  params = makeUnique<WebCryptoRsaHashedImportParams>(hash);
   return true;
 }
 
@@ -736,7 +736,7 @@ bool parseRsaPssParams(const Dictionary& raw,
   if (!getUint32(raw, "saltLength", saltLengthBytes, context, error))
     return false;
 
-  params = wrapUnique(new WebCryptoRsaPssParams(saltLengthBytes));
+  params = makeUnique<WebCryptoRsaPssParams>(saltLengthBytes);
   return true;
 }
 
@@ -753,7 +753,7 @@ bool parseEcdsaParams(const Dictionary& raw,
   if (!parseHash(raw, hash, context, error))
     return false;
 
-  params = wrapUnique(new WebCryptoEcdsaParams(hash));
+  params = makeUnique<WebCryptoEcdsaParams>(hash);
   return true;
 }
 
@@ -807,7 +807,7 @@ bool parseEcKeyGenParams(const Dictionary& raw,
   if (!parseNamedCurve(raw, namedCurve, context, error))
     return false;
 
-  params = wrapUnique(new WebCryptoEcKeyGenParams(namedCurve));
+  params = makeUnique<WebCryptoEcKeyGenParams>(namedCurve);
   return true;
 }
 
@@ -824,7 +824,7 @@ bool parseEcKeyImportParams(const Dictionary& raw,
   if (!parseNamedCurve(raw, namedCurve, context, error))
     return false;
 
-  params = wrapUnique(new WebCryptoEcKeyImportParams(namedCurve));
+  params = makeUnique<WebCryptoEcKeyImportParams>(namedCurve);
   return true;
 }
 
@@ -895,7 +895,7 @@ bool parseAesDerivedKeyParams(const Dictionary& raw,
   if (!getUint16(raw, "length", length, context, error))
     return false;
 
-  params = wrapUnique(new WebCryptoAesDerivedKeyParams(length));
+  params = makeUnique<WebCryptoAesDerivedKeyParams>(length);
   return true;
 }
 

@@ -38,7 +38,7 @@ std::unique_ptr<WebServiceWorkerResponse> createTestWebServiceWorkerResponse() {
                  {0, 0}};
 
   std::unique_ptr<WebServiceWorkerResponse> webResponse =
-      wrapUnique(new WebServiceWorkerResponse());
+      makeUnique<WebServiceWorkerResponse>();
   webResponse->setURL(url);
   webResponse->setStatus(status);
   webResponse->setStatusText(statusText);

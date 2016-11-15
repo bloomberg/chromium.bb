@@ -68,7 +68,7 @@ class PaintArtifactCompositorTestWithPropertyTrees : public ::testing::Test {
     settings.single_thread_proxy_scheduler = false;
     settings.use_layer_lists = true;
     m_webLayerTreeView =
-        wrapUnique(new WebLayerTreeViewWithCompositorFrameSink(settings));
+        makeUnique<WebLayerTreeViewWithCompositorFrameSink>(settings);
     m_webLayerTreeView->setRootLayer(*m_paintArtifactCompositor->getWebLayer());
   }
 

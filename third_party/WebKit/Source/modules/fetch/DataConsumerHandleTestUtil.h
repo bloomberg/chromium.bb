@@ -219,7 +219,7 @@ class DataConsumerHandleTestUtil {
           : m_name(name.isolatedCopy()), m_context(context) {}
 
       std::unique_ptr<Reader> obtainReader(Client*) {
-        return WTF::wrapUnique(new ReaderImpl(m_name, m_context));
+        return makeUnique<ReaderImpl>(m_name, m_context);
       }
       const char* debugName() const override {
         return "ThreadingTestBase::DataConsumerHandle";
@@ -270,7 +270,7 @@ class DataConsumerHandleTestUtil {
 
     void run(std::unique_ptr<WebDataConsumerHandle> handle) {
       ThreadHolder holder(this);
-      m_waitableEvent = wrapUnique(new WaitableEvent());
+      m_waitableEvent = makeUnique<WaitableEvent>();
       m_handle = std::move(handle);
 
       postTaskToReadingThreadAndWait(
@@ -302,7 +302,7 @@ class DataConsumerHandleTestUtil {
 
     void run(std::unique_ptr<WebDataConsumerHandle> handle) {
       ThreadHolder holder(this);
-      m_waitableEvent = wrapUnique(new WaitableEvent());
+      m_waitableEvent = makeUnique<WaitableEvent>();
       m_handle = std::move(handle);
 
       postTaskToReadingThreadAndWait(
@@ -476,7 +476,7 @@ class DataConsumerHandleTestUtil {
    public:
     explicit HandleReaderRunner(std::unique_ptr<WebDataConsumerHandle> handle)
         : m_thread(wrapUnique(new Thread("reading thread"))),
-          m_event(wrapUnique(new WaitableEvent())),
+          m_event(makeUnique<WaitableEvent>()),
           m_isDone(false) {
       m_thread->thread()->postTask(BLINK_FROM_HERE,
                                    crossThreadBind(&HandleReaderRunner::start,

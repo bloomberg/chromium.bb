@@ -73,7 +73,7 @@ WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createAes(
   if (keyLengthBits != 128 && keyLengthBits != 192 && keyLengthBits != 256)
     return WebCryptoKeyAlgorithm();
   return WebCryptoKeyAlgorithm(
-      id, wrapUnique(new WebCryptoAesKeyAlgorithmParams(keyLengthBits)));
+      id, makeUnique<WebCryptoAesKeyAlgorithmParams>(keyLengthBits));
 }
 
 WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createHmac(
@@ -105,7 +105,7 @@ WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createEc(
     WebCryptoAlgorithmId id,
     WebCryptoNamedCurve namedCurve) {
   return WebCryptoKeyAlgorithm(
-      id, wrapUnique(new WebCryptoEcKeyAlgorithmParams(namedCurve)));
+      id, makeUnique<WebCryptoEcKeyAlgorithmParams>(namedCurve));
 }
 
 WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createWithoutParams(

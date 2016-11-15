@@ -56,7 +56,7 @@ static void microtasksCompletedCallback(v8::Isolate* isolate) {
 }
 
 V8PerIsolateData::V8PerIsolateData()
-    : m_isolateHolder(wrapUnique(new gin::IsolateHolder())),
+    : m_isolateHolder(makeUnique<gin::IsolateHolder>()),
       m_stringCache(wrapUnique(new StringCache(isolate()))),
       m_hiddenValue(V8HiddenValue::create()),
       m_privateProperty(V8PrivateProperty::create()),

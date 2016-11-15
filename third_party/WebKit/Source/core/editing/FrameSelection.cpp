@@ -1315,9 +1315,9 @@ GranularityStrategy* FrameSelection::granularityStrategy() {
     return m_granularityStrategy.get();
 
   if (strategyType == SelectionStrategy::Direction)
-    m_granularityStrategy = wrapUnique(new DirectionGranularityStrategy());
+    m_granularityStrategy = makeUnique<DirectionGranularityStrategy>();
   else
-    m_granularityStrategy = wrapUnique(new CharacterGranularityStrategy());
+    m_granularityStrategy = makeUnique<CharacterGranularityStrategy>();
   return m_granularityStrategy.get();
 }
 

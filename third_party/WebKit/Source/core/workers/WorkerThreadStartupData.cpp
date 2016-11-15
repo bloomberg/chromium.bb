@@ -62,7 +62,7 @@ WorkerThreadStartupData::WorkerThreadStartupData(
       m_addressSpace(addressSpace),
       m_workerSettings(std::move(workerSettings)),
       m_v8CacheOptions(v8CacheOptions) {
-  m_contentSecurityPolicyHeaders = wrapUnique(new Vector<CSPHeaderAndType>());
+  m_contentSecurityPolicyHeaders = makeUnique<Vector<CSPHeaderAndType>>();
   if (contentSecurityPolicyHeaders) {
     for (const auto& header : *contentSecurityPolicyHeaders) {
       CSPHeaderAndType copiedHeader(header.first.isolatedCopy(), header.second);

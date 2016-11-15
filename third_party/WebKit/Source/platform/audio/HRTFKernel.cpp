@@ -95,7 +95,7 @@ HRTFKernel::HRTFKernel(AudioChannel* channel, size_t fftSize, float sampleRate)
     }
   }
 
-  m_fftFrame = wrapUnique(new FFTFrame(fftSize));
+  m_fftFrame = makeUnique<FFTFrame>(fftSize);
   m_fftFrame->doPaddedFFT(impulseResponse, truncatedResponseLength);
 }
 

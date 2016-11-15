@@ -96,7 +96,7 @@ MainThreadDebugger* MainThreadDebugger::s_instance = nullptr;
 
 MainThreadDebugger::MainThreadDebugger(v8::Isolate* isolate)
     : ThreadDebugger(isolate),
-      m_taskRunner(wrapUnique(new InspectorTaskRunner())),
+      m_taskRunner(makeUnique<InspectorTaskRunner>()),
       m_paused(false) {
   MutexLocker locker(creationMutex());
   ASSERT(!s_instance);

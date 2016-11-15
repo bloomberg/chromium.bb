@@ -342,7 +342,7 @@ bool GIFFrameContext::decode(blink::FastSharedBufferReader* reader,
     if (!isDataSizeDefined() || !isHeaderDefined())
       return true;
 
-    m_lzwContext = wrapUnique(new GIFLZWContext(client, this));
+    m_lzwContext = makeUnique<GIFLZWContext>(client, this);
     if (!m_lzwContext->prepareToDecode()) {
       m_lzwContext.reset();
       return false;

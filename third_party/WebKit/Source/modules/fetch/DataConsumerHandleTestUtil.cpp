@@ -42,7 +42,7 @@ DataConsumerHandleTestUtil::Thread::Thread(
     : m_thread(
           WebThreadSupportingGC::create(name, BlinkGC::MainThreadHeapMode)),
       m_initializationPolicy(initializationPolicy),
-      m_waitableEvent(wrapUnique(new WaitableEvent())) {
+      m_waitableEvent(makeUnique<WaitableEvent>()) {
   m_thread->postTask(
       BLINK_FROM_HERE,
       crossThreadBind(&Thread::initialize, crossThreadUnretained(this)));
@@ -58,7 +58,7 @@ DataConsumerHandleTestUtil::Thread::~Thread() {
 
 void DataConsumerHandleTestUtil::Thread::initialize() {
   if (m_initializationPolicy >= ScriptExecution) {
-    m_isolateHolder = wrapUnique(new gin::IsolateHolder());
+    m_isolateHolder = makeUnique<gin::IsolateHolder>();
     isolate()->Enter();
   }
   m_thread->initialize();
@@ -195,7 +195,7 @@ DataConsumerHandleTestUtil::ReplayingHandle::Context::Context()
       m_client(nullptr),
       m_result(ShouldWait),
       m_isHandleAttached(true),
-      m_detached(wrapUnique(new WaitableEvent())) {}
+      m_detached(makeUnique<WaitableEvent>()) {}
 
 const DataConsumerHandleTestUtil::Command&
 DataConsumerHandleTestUtil::ReplayingHandle::Context::top() {
@@ -246,7 +246,7 @@ DataConsumerHandleTestUtil::ReplayingHandle::~ReplayingHandle() {
 
 std::unique_ptr<WebDataConsumerHandle::Reader>
 DataConsumerHandleTestUtil::ReplayingHandle::obtainReader(Client* client) {
-  return WTF::wrapUnique(new ReaderImpl(m_context, client));
+  return makeUnique<ReaderImpl>(m_context, client);
 }
 
 void DataConsumerHandleTestUtil::ReplayingHandle::add(const Command& command) {
@@ -273,7 +273,7 @@ void DataConsumerHandleTestUtil::HandleReader::didGetReadable() {
     m_data.append(buffer, size);
   }
   std::unique_ptr<HandleReadResult> result =
-      wrapUnique(new HandleReadResult(r, m_data));
+      makeUnique<HandleReadResult>(r, m_data);
   m_data.clear();
   Platform::current()->currentThread()->getWebTaskRunner()->postTask(
       BLINK_FROM_HERE,
@@ -313,7 +313,7 @@ void DataConsumerHandleTestUtil::HandleTwoPhaseReader::didGetReadable() {
     m_reader->endRead(readSize);
   }
   std::unique_ptr<HandleReadResult> result =
-      wrapUnique(new HandleReadResult(r, m_data));
+      makeUnique<HandleReadResult>(r, m_data);
   m_data.clear();
   Platform::current()->currentThread()->getWebTaskRunner()->postTask(
       BLINK_FROM_HERE,

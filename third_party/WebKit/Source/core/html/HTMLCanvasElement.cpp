@@ -939,7 +939,7 @@ HTMLCanvasElement::createUnacceleratedImageBufferSurface(
     // here.
   }
 
-  auto surfaceFactory = wrapUnique(new UnacceleratedSurfaceFactory());
+  auto surfaceFactory = makeUnique<UnacceleratedSurfaceFactory>();
   auto surface = surfaceFactory->createSurface(deviceSize, opacityMode,
                                                m_context->skColorSpace(),
                                                m_context->colorType());

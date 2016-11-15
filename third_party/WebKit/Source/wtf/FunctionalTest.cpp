@@ -318,13 +318,13 @@ TEST(FunctionalTest, MemberFunctionPartBind) {
 
 TEST(FunctionalTest, MemberFunctionBindByUniquePtr) {
   std::unique_ptr<Function<int()>> function1 =
-      WTF::bind(&A::f, wrapUnique(new A(10)));
+      WTF::bind(&A::f, makeUnique<A>(10));
   EXPECT_EQ(10, (*function1)());
 }
 
 TEST(FunctionalTest, MemberFunctionBindByPassedUniquePtr) {
   std::unique_ptr<Function<int()>> function1 =
-      WTF::bind(&A::f, passed(wrapUnique(new A(10))));
+      WTF::bind(&A::f, passed(makeUnique<A>(10)));
   EXPECT_EQ(10, (*function1)());
 }
 

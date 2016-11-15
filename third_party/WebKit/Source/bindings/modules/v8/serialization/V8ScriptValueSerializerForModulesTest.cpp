@@ -427,8 +427,8 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyAES) {
 
   // Check that one can decrypt data encrypted with the other.
   Vector<unsigned char> iv(16, 0);
-  WebCryptoAlgorithm encryptAlgorithm(
-      WebCryptoAlgorithmIdAesCbc, wrapUnique(new WebCryptoAesCbcParams(iv)));
+  WebCryptoAlgorithm encryptAlgorithm(WebCryptoAlgorithmIdAesCbc,
+                                      makeUnique<WebCryptoAesCbcParams>(iv));
   Vector<unsigned char> plaintext{1, 2, 3};
   WebVector<uint8_t> ciphertext =
       syncEncrypt(scriptState, encryptAlgorithm, key->key(), plaintext);
@@ -459,8 +459,8 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyAES) {
   Vector<uint8_t> iv(16, 0);
   Vector<uint8_t> ciphertext{0x33, 0x26, 0xe7, 0x64, 0x11, 0x5e, 0xf4, 0x60,
                              0x96, 0x08, 0x11, 0xaf, 0x65, 0x8b, 0x87, 0x04};
-  WebCryptoAlgorithm encryptAlgorithm(
-      WebCryptoAlgorithmIdAesCbc, wrapUnique(new WebCryptoAesCbcParams(iv)));
+  WebCryptoAlgorithm encryptAlgorithm(WebCryptoAlgorithmIdAesCbc,
+                                      makeUnique<WebCryptoAesCbcParams>(iv));
   WebVector<uint8_t> plaintext =
       syncDecrypt(scriptState, encryptAlgorithm, newKey->key(), ciphertext);
   EXPECT_THAT(plaintext, ElementsAre(1, 2, 3));
@@ -577,7 +577,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyRSAHashed) {
   // Check that one can verify a message signed by the other.
   Vector<uint8_t> message{1, 2, 3};
   WebCryptoAlgorithm algorithm(WebCryptoAlgorithmIdRsaPss,
-                               wrapUnique(new WebCryptoRsaPssParams(16)));
+                               makeUnique<WebCryptoRsaPssParams>(16));
   WebVector<uint8_t> signature =
       syncSign(scriptState, algorithm, newPrivateKey->key(), message);
   EXPECT_TRUE(syncVerifySignature(scriptState, algorithm, publicKey->key(),
@@ -629,7 +629,7 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyRSAHashed) {
       0xeb, 0x17, 0x68, 0x1f, 0xbd, 0xfa, 0xf7, 0xd6, 0x1f, 0xa4, 0x7c, 0x9e,
       0x9e, 0xb1, 0x96, 0x8f, 0xe6, 0x5e, 0x89, 0x99};
   WebCryptoAlgorithm algorithm(WebCryptoAlgorithmIdRsaPss,
-                               wrapUnique(new WebCryptoRsaPssParams(16)));
+                               makeUnique<WebCryptoRsaPssParams>(16));
   EXPECT_TRUE(syncVerifySignature(scriptState, algorithm, newPublicKey->key(),
                                   signature, message));
 }
@@ -671,7 +671,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripCryptoKeyEC) {
   WebCryptoAlgorithm hash(WebCryptoAlgorithmIdSha256, nullptr);
   Vector<uint8_t> message{1, 2, 3};
   WebCryptoAlgorithm algorithm(WebCryptoAlgorithmIdEcdsa,
-                               wrapUnique(new WebCryptoEcdsaParams(hash)));
+                               makeUnique<WebCryptoEcdsaParams>(hash));
   WebVector<uint8_t> signature =
       syncSign(scriptState, algorithm, newPrivateKey->key(), message);
   EXPECT_TRUE(syncVerifySignature(scriptState, algorithm, publicKey->key(),
@@ -713,7 +713,7 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyEC) {
       0x83, 0x27, 0x37, 0x69, 0x4d, 0x32, 0x63, 0x1e, 0x82};
   WebCryptoAlgorithm hash(WebCryptoAlgorithmIdSha256, nullptr);
   WebCryptoAlgorithm algorithm(WebCryptoAlgorithmIdEcdsa,
-                               wrapUnique(new WebCryptoEcdsaParams(hash)));
+                               makeUnique<WebCryptoEcdsaParams>(hash));
   EXPECT_TRUE(syncVerifySignature(scriptState, algorithm, newPublicKey->key(),
                                   signature, message));
 }

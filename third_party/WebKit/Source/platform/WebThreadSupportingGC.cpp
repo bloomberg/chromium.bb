@@ -52,7 +52,7 @@ WebThreadSupportingGC::~WebThreadSupportingGC() {
 
 void WebThreadSupportingGC::initialize() {
   ThreadState::attachCurrentThread(m_threadHeapMode);
-  m_gcTaskRunner = wrapUnique(new GCTaskRunner(m_thread));
+  m_gcTaskRunner = makeUnique<GCTaskRunner>(m_thread);
 }
 
 void WebThreadSupportingGC::shutdown() {

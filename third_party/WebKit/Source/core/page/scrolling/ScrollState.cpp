@@ -28,7 +28,7 @@ Element* elementForId(int elementId) {
 
 ScrollState* ScrollState::create(ScrollStateInit init) {
   std::unique_ptr<ScrollStateData> scrollStateData =
-      wrapUnique(new ScrollStateData());
+      makeUnique<ScrollStateData>();
   scrollStateData->delta_x = init.deltaX();
   scrollStateData->delta_y = init.deltaY();
   scrollStateData->position_x = init.positionX();

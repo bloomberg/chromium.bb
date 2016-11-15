@@ -21,14 +21,13 @@ RunSegmenter::RunSegmenter(const UChar* buffer,
       m_candidateRange({0, 0, USCRIPT_INVALID_CODE,
                         OrientationIterator::OrientationKeep,
                         FontFallbackPriority::Text}),
-      m_scriptRunIterator(
-          wrapUnique(new ScriptRunIterator(buffer, bufferSize))),
+      m_scriptRunIterator(makeUnique<ScriptRunIterator>(buffer, bufferSize)),
       m_orientationIterator(
           runOrientation == FontOrientation::VerticalMixed
               ? wrapUnique(
                     new OrientationIterator(buffer, bufferSize, runOrientation))
               : nullptr),
-      m_symbolsIterator(wrapUnique(new SymbolsIterator(buffer, bufferSize))),
+      m_symbolsIterator(makeUnique<SymbolsIterator>(buffer, bufferSize)),
       m_lastSplit(0),
       m_scriptRunIteratorPosition(0),
       m_orientationIteratorPosition(

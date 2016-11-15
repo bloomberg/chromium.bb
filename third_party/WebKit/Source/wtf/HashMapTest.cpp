@@ -249,7 +249,7 @@ TEST(HashMapTest, AddResult) {
   result.storedValue->value = wrapUnique(simple1);
   EXPECT_EQ(simple1, map.get(1));
 
-  IntSimpleMap::AddResult result2 = map.add(1, wrapUnique(new SimpleClass(2)));
+  IntSimpleMap::AddResult result2 = map.add(1, makeUnique<SimpleClass>(2));
   EXPECT_FALSE(result2.isNewEntry);
   EXPECT_EQ(1, result.storedValue->key);
   EXPECT_EQ(1, result.storedValue->value->v());

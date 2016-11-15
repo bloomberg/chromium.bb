@@ -11,7 +11,7 @@ namespace blink {
 OrientationIterator::OrientationIterator(const UChar* buffer,
                                          unsigned bufferSize,
                                          FontOrientation runOrientation)
-    : m_utf16Iterator(wrapUnique(new UTF16TextIterator(buffer, bufferSize))),
+    : m_utf16Iterator(makeUnique<UTF16TextIterator>(buffer, bufferSize)),
       m_bufferSize(bufferSize),
       m_atEnd(bufferSize == 0) {
   // There's not much point in segmenting by isUprightInVertical if the text

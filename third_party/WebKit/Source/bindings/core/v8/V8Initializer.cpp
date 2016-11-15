@@ -407,8 +407,8 @@ void V8Initializer::initializeMainThread() {
 
   if (RuntimeEnabledFeatures::v8IdleTasksEnabled()) {
     WebScheduler* scheduler = Platform::current()->currentThread()->scheduler();
-    V8PerIsolateData::enableIdleTasks(
-        isolate, wrapUnique(new V8IdleTaskRunner(scheduler)));
+    V8PerIsolateData::enableIdleTasks(isolate,
+                                      makeUnique<V8IdleTaskRunner>(scheduler));
   }
 
   isolate->SetPromiseRejectCallback(promiseRejectHandlerInMainThread);
@@ -419,7 +419,7 @@ void V8Initializer::initializeMainThread() {
 
   ASSERT(ThreadState::mainThreadState());
   ThreadState::mainThreadState()->addInterruptor(
-      wrapUnique(new V8IsolateInterruptor(isolate)));
+      makeUnique<V8IsolateInterruptor>(isolate));
   if (RuntimeEnabledFeatures::traceWrappablesEnabled()) {
     ThreadState::mainThreadState()->registerTraceDOMWrappers(
         isolate, V8GCController::traceDOMWrappers,
@@ -431,7 +431,7 @@ void V8Initializer::initializeMainThread() {
   }
 
   V8PerIsolateData::from(isolate)->setThreadDebugger(
-      wrapUnique(new MainThreadDebugger(isolate)));
+      makeUnique<MainThreadDebugger>(isolate));
 }
 
 void V8Initializer::shutdownMainThread() {

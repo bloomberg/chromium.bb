@@ -584,8 +584,8 @@ TEST(ListHashSetTest, WithOwnPtr) {
   deleted2 = false;
   {
     OwnPtrSet set;
-    set.add(wrapUnique(new Dummy(deleted1)));
-    set.add(wrapUnique(new Dummy(deleted2)));
+    set.add(makeUnique<Dummy>(deleted1));
+    set.add(makeUnique<Dummy>(deleted2));
   }
   EXPECT_TRUE(deleted1);
   EXPECT_TRUE(deleted2);

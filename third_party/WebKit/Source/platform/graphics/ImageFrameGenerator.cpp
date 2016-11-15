@@ -182,7 +182,7 @@ bool ImageFrameGenerator::decodeToYUV(SegmentReader* data,
   ASSERT(decoder);
 
   std::unique_ptr<ImagePlanes> imagePlanes =
-      wrapUnique(new ImagePlanes(planes, rowBytes));
+      makeUnique<ImagePlanes>(planes, rowBytes);
   decoder->setImagePlanes(std::move(imagePlanes));
 
   ASSERT(decoder->canDecodeToYUV());

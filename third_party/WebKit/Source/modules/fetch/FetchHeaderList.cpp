@@ -53,7 +53,7 @@ void FetchHeaderList::set(const String& name, const String& value) {
       return;
     }
   }
-  m_headerList.append(wrapUnique(new Header(lowercasedName, value)));
+  m_headerList.append(makeUnique<Header>(lowercasedName, value));
 }
 
 String FetchHeaderList::extractMIMEType() const {

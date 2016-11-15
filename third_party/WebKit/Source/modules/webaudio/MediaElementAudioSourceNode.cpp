@@ -101,7 +101,7 @@ void MediaElementAudioSourceHandler::setFormat(size_t numberOfChannels,
     if (sourceSampleRate != sampleRate()) {
       double scaleFactor = sourceSampleRate / sampleRate();
       m_multiChannelResampler =
-          wrapUnique(new MultiChannelResampler(scaleFactor, numberOfChannels));
+          makeUnique<MultiChannelResampler>(scaleFactor, numberOfChannels);
     } else {
       // Bypass resampling.
       m_multiChannelResampler.reset();

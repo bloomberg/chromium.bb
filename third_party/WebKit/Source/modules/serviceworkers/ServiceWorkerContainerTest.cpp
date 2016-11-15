@@ -173,7 +173,7 @@ class ServiceWorkerContainerTest : public ::testing::Test {
                             const ScriptValueTest& valueTest) {
     // When the registration is rejected, a register call must not reach
     // the provider.
-    provide(wrapUnique(new NotReachedWebServiceWorkerProvider()));
+    provide(makeUnique<NotReachedWebServiceWorkerProvider>());
 
     ServiceWorkerContainer* container =
         ServiceWorkerContainer::create(getExecutionContext());
@@ -187,7 +187,7 @@ class ServiceWorkerContainerTest : public ::testing::Test {
 
   void testGetRegistrationRejected(const String& documentURL,
                                    const ScriptValueTest& valueTest) {
-    provide(wrapUnique(new NotReachedWebServiceWorkerProvider()));
+    provide(makeUnique<NotReachedWebServiceWorkerProvider>());
 
     ServiceWorkerContainer* container =
         ServiceWorkerContainer::create(getExecutionContext());

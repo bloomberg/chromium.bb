@@ -62,7 +62,7 @@ class MockImageDecoder : public ImageDecoder {
  public:
   static std::unique_ptr<MockImageDecoder> create(
       MockImageDecoderClient* client) {
-    return wrapUnique(new MockImageDecoder(client));
+    return makeUnique<MockImageDecoder>(client);
   }
 
   MockImageDecoder(MockImageDecoderClient* client)

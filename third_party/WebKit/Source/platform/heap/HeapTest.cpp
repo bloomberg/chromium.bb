@@ -1291,11 +1291,12 @@ class FinalizationObserverWithHashMap {
   static ObserverMap& observe(Observable& target) {
     ObserverMap& map = observers();
     ObserverMap::AddResult result = map.add(&target, nullptr);
-    if (result.isNewEntry)
+    if (result.isNewEntry) {
       result.storedValue->value =
-          wrapUnique(new FinalizationObserverWithHashMap(target));
-    else
+          makeUnique<FinalizationObserverWithHashMap>(target);
+    } else {
       ASSERT(result.storedValue->value);
+    }
     return map;
   }
 
@@ -6488,7 +6489,7 @@ class WeakPersistentHolder final {
 TEST(HeapTest, WeakPersistent) {
   Persistent<IntWrapper> object = new IntWrapper(20);
   std::unique_ptr<WeakPersistentHolder> holder =
-      wrapUnique(new WeakPersistentHolder(object));
+      makeUnique<WeakPersistentHolder>(object);
   preciselyCollectGarbage();
   EXPECT_TRUE(holder->object());
   object = nullptr;

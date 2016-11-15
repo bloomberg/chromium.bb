@@ -91,7 +91,7 @@ class ImageLoader::Task {
   static std::unique_ptr<Task> create(ImageLoader* loader,
                                       UpdateFromElementBehavior updateBehavior,
                                       ReferrerPolicy referrerPolicy) {
-    return wrapUnique(new Task(loader, updateBehavior, referrerPolicy));
+    return makeUnique<Task>(loader, updateBehavior, referrerPolicy);
   }
 
   Task(ImageLoader* loader,

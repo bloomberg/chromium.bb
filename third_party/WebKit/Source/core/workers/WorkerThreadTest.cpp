@@ -40,8 +40,8 @@ class WorkerThreadTest
   WorkerThreadTest() : m_threadHeapMode(GetParam()) {}
 
   void SetUp() override {
-    m_loaderProxyProvider = wrapUnique(new MockWorkerLoaderProxyProvider());
-    m_reportingProxy = wrapUnique(new MockWorkerReportingProxy());
+    m_loaderProxyProvider = makeUnique<MockWorkerLoaderProxyProvider>();
+    m_reportingProxy = makeUnique<MockWorkerReportingProxy>();
     m_securityOrigin =
         SecurityOrigin::create(KURL(ParsedURLString, "http://fake.url/"));
     m_workerThread = wrapUnique(new WorkerThreadForTest(
@@ -270,7 +270,7 @@ TEST_P(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
   EXPECT_CALL(*m_lifecycleObserver, contextDestroyed()).Times(1);
 
   std::unique_ptr<Vector<CSPHeaderAndType>> headers =
-      wrapUnique(new Vector<CSPHeaderAndType>());
+      makeUnique<Vector<CSPHeaderAndType>>();
   CSPHeaderAndType headerAndType("contentSecurityPolicy",
                                  ContentSecurityPolicyHeaderTypeReport);
   headers->append(headerAndType);

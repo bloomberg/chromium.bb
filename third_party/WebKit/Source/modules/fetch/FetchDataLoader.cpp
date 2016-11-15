@@ -108,7 +108,7 @@ class FetchDataLoaderAsArrayBuffer final : public FetchDataLoader,
     DCHECK(!m_rawData);
     DCHECK(!m_consumer);
     m_client = client;
-    m_rawData = wrapUnique(new ArrayBufferBuilder());
+    m_rawData = makeUnique<ArrayBufferBuilder>();
     m_consumer = consumer;
     m_consumer->setClient(this);
     onStateChange();

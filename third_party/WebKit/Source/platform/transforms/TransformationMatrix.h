@@ -63,11 +63,11 @@ class PLATFORM_EXPORT TransformationMatrix {
 #endif
 
   static std::unique_ptr<TransformationMatrix> create() {
-    return wrapUnique(new TransformationMatrix());
+    return makeUnique<TransformationMatrix>();
   }
   static std::unique_ptr<TransformationMatrix> create(
       const TransformationMatrix& t) {
-    return wrapUnique(new TransformationMatrix(t));
+    return makeUnique<TransformationMatrix>(t);
   }
   static std::unique_ptr<TransformationMatrix> create(double a,
                                                       double b,
@@ -75,7 +75,7 @@ class PLATFORM_EXPORT TransformationMatrix {
                                                       double d,
                                                       double e,
                                                       double f) {
-    return wrapUnique(new TransformationMatrix(a, b, c, d, e, f));
+    return makeUnique<TransformationMatrix>(a, b, c, d, e, f);
   }
   static std::unique_ptr<TransformationMatrix> create(double m11,
                                                       double m12,

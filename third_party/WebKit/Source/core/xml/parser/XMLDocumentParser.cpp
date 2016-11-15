@@ -1065,7 +1065,7 @@ void XMLDocumentParser::endElementNs() {
 
   if (m_parserPaused) {
     m_pendingCallbacks.append(
-        wrapUnique(new PendingEndElementNSCallback(m_scriptStartPosition)));
+        makeUnique<PendingEndElementNSCallback>(m_scriptStartPosition));
     return;
   }
 
@@ -1153,7 +1153,7 @@ void XMLDocumentParser::characters(const xmlChar* chars, int length) {
 
   if (m_parserPaused) {
     m_pendingCallbacks.append(
-        wrapUnique(new PendingCharactersCallback(chars, length)));
+        makeUnique<PendingCharactersCallback>(chars, length));
     return;
   }
 
@@ -1187,7 +1187,7 @@ void XMLDocumentParser::processingInstruction(const String& target,
 
   if (m_parserPaused) {
     m_pendingCallbacks.append(
-        wrapUnique(new PendingProcessingInstructionCallback(target, data)));
+        makeUnique<PendingProcessingInstructionCallback>(target, data));
     return;
   }
 
@@ -1228,7 +1228,7 @@ void XMLDocumentParser::cdataBlock(const String& text) {
     return;
 
   if (m_parserPaused) {
-    m_pendingCallbacks.append(wrapUnique(new PendingCDATABlockCallback(text)));
+    m_pendingCallbacks.append(makeUnique<PendingCDATABlockCallback>(text));
     return;
   }
 
@@ -1244,7 +1244,7 @@ void XMLDocumentParser::comment(const String& text) {
     return;
 
   if (m_parserPaused) {
-    m_pendingCallbacks.append(wrapUnique(new PendingCommentCallback(text)));
+    m_pendingCallbacks.append(makeUnique<PendingCommentCallback>(text));
     return;
   }
 
@@ -1550,7 +1550,7 @@ void XMLDocumentParser::doEnd() {
     xmlDocPtr doc =
         xmlDocPtrForString(document(), m_originalSourceForTransform.toString(),
                            document()->url().getString());
-    document()->setTransformSource(wrapUnique(new TransformSource(doc)));
+    document()->setTransformSource(makeUnique<TransformSource>(doc));
     DocumentParser::stopParsing();
   }
 }

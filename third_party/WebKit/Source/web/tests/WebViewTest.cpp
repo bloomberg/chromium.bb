@@ -2616,7 +2616,7 @@ static void configueCompositingWebView(WebSettings* settings) {
 TEST_P(WebViewTest, ShowPressOnTransformedLink) {
   std::unique_ptr<FrameTestHelpers::TestWebViewClient>
       fakeCompositingWebViewClient =
-          wrapUnique(new FrameTestHelpers::TestWebViewClient());
+          makeUnique<FrameTestHelpers::TestWebViewClient>();
   FrameTestHelpers::WebViewHelper webViewHelper;
   WebViewImpl* webViewImpl = webViewHelper.initialize(
       true, nullptr, fakeCompositingWebViewClient.get(), nullptr,

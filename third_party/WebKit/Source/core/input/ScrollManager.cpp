@@ -224,7 +224,7 @@ WebInputEventResult ScrollManager::handleGestureScrollBegin(
 
   m_currentScrollChain.clear();
   std::unique_ptr<ScrollStateData> scrollStateData =
-      wrapUnique(new ScrollStateData());
+      makeUnique<ScrollStateData>();
   scrollStateData->position_x = gestureEvent.position().x();
   scrollStateData->position_y = gestureEvent.position().y();
   scrollStateData->is_beginning = true;
@@ -270,7 +270,7 @@ WebInputEventResult ScrollManager::handleGestureScrollUpdate(
   }
 
   std::unique_ptr<ScrollStateData> scrollStateData =
-      wrapUnique(new ScrollStateData());
+      makeUnique<ScrollStateData>();
   scrollStateData->delta_x = delta.width();
   scrollStateData->delta_y = delta.height();
   scrollStateData->delta_granularity =
@@ -326,7 +326,7 @@ WebInputEventResult ScrollManager::handleGestureScrollEnd(
   if (node && node->layoutObject()) {
     passScrollGestureEventToWidget(gestureEvent, node->layoutObject());
     std::unique_ptr<ScrollStateData> scrollStateData =
-        wrapUnique(new ScrollStateData());
+        makeUnique<ScrollStateData>();
     scrollStateData->is_ending = true;
     scrollStateData->is_in_inertial_phase =
         gestureEvent.inertialPhase() == ScrollInertialPhaseMomentum;

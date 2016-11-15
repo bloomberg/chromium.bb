@@ -27,7 +27,7 @@ class CachingWordShaperTest : public ::testing::Test {
     font.update(nullptr);
     ASSERT_TRUE(font.canShapeWordByWord());
     fallbackFonts = nullptr;
-    cache = wrapUnique(new ShapeCache());
+    cache = makeUnique<ShapeCache>();
   }
 
   FontCachePurgePreventer fontCachePurgePreventer;
@@ -120,7 +120,7 @@ TEST_F(CachingWordShaperTest, CommonAccentLeftToRightFillGlyphBuffer) {
   GlyphBuffer glyphBuffer;
   shaper.fillGlyphBuffer(&font, textRun, fallbackFonts, &glyphBuffer, 0, 3);
 
-  std::unique_ptr<ShapeCache> referenceCache = wrapUnique(new ShapeCache());
+  std::unique_ptr<ShapeCache> referenceCache = makeUnique<ShapeCache>();
   CachingWordShaper referenceShaper(referenceCache.get());
   GlyphBuffer referenceGlyphBuffer;
   font.setCanShapeWordByWordForTesting(false);
@@ -144,7 +144,7 @@ TEST_F(CachingWordShaperTest, CommonAccentRightToLeftFillGlyphBuffer) {
   GlyphBuffer glyphBuffer;
   shaper.fillGlyphBuffer(&font, textRun, fallbackFonts, &glyphBuffer, 1, 6);
 
-  std::unique_ptr<ShapeCache> referenceCache = wrapUnique(new ShapeCache());
+  std::unique_ptr<ShapeCache> referenceCache = makeUnique<ShapeCache>();
   CachingWordShaper referenceShaper(referenceCache.get());
   GlyphBuffer referenceGlyphBuffer;
   font.setCanShapeWordByWordForTesting(false);

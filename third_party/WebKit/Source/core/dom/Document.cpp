@@ -572,7 +572,7 @@ Document::~Document() {
 
 SelectorQueryCache& Document::selectorQueryCache() {
   if (!m_selectorQueryCache)
-    m_selectorQueryCache = wrapUnique(new SelectorQueryCache());
+    m_selectorQueryCache = makeUnique<SelectorQueryCache>();
   return *m_selectorQueryCache;
 }
 

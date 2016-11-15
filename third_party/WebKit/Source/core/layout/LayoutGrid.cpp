@@ -1009,7 +1009,7 @@ double LayoutGrid::computeFlexFactorUnitSize(
       leftOverSpace -= baseSize;
       flexFactorSum -= flexFactor;
       if (!additionalTracksToTreatAsInflexible)
-        additionalTracksToTreatAsInflexible = wrapUnique(new TrackIndexSet());
+        additionalTracksToTreatAsInflexible = makeUnique<TrackIndexSet>();
       additionalTracksToTreatAsInflexible->add(index);
       validFlexFactorUnit = false;
     }

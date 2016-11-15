@@ -27,7 +27,7 @@ struct PrecomputedDataForAncestor {
   HashMap<const ClipPaintPropertyNode*, FloatRect> toAncestorClipRects;
 
   static std::unique_ptr<PrecomputedDataForAncestor> create() {
-    return wrapUnique(new PrecomputedDataForAncestor());
+    return makeUnique<PrecomputedDataForAncestor>();
   }
 };
 

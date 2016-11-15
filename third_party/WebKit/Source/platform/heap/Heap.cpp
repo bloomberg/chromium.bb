@@ -205,9 +205,9 @@ void ThreadHeapStats::decreaseAllocatedSpace(size_t delta) {
 }
 
 ThreadHeap::ThreadHeap()
-    : m_regionTree(wrapUnique(new RegionTree())),
+    : m_regionTree(makeUnique<RegionTree>()),
       m_heapDoesNotContainCache(wrapUnique(new HeapDoesNotContainCache)),
-      m_safePointBarrier(wrapUnique(new SafePointBarrier())),
+      m_safePointBarrier(makeUnique<SafePointBarrier>()),
       m_freePagePool(wrapUnique(new FreePagePool)),
       m_orphanedPagePool(wrapUnique(new OrphanedPagePool)),
       m_markingStack(CallbackStack::create()),

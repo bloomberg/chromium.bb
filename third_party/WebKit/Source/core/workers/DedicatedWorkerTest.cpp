@@ -67,7 +67,7 @@ class InProcessWorkerMessagingProxyForTest
     workerObjectProxy().m_maxIntervalInSec = kMaxIntervalInSec;
 
     m_mockWorkerLoaderProxyProvider =
-        wrapUnique(new MockWorkerLoaderProxyProvider());
+        makeUnique<MockWorkerLoaderProxyProvider>();
     m_workerThread = wrapUnique(
         new DedicatedWorkerThreadForTest(m_mockWorkerLoaderProxyProvider.get(),
                                          workerObjectProxy(), threadHeapMode));
@@ -172,7 +172,7 @@ class DedicatedWorkerTest
 
   void startWithSourceCode(const String& source) {
     std::unique_ptr<Vector<CSPHeaderAndType>> headers =
-        wrapUnique(new Vector<CSPHeaderAndType>());
+        makeUnique<Vector<CSPHeaderAndType>>();
     CSPHeaderAndType headerAndType("contentSecurityPolicy",
                                    ContentSecurityPolicyHeaderTypeReport);
     headers->append(headerAndType);

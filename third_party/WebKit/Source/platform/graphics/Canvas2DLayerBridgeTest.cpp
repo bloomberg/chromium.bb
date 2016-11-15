@@ -347,7 +347,7 @@ void runCreateBridgeTask(Canvas2DLayerBridgePtr* bridgePtr,
                          Canvas2DLayerBridgeTest* testHost,
                          WaitableEvent* doneEvent) {
   std::unique_ptr<FakeWebGraphicsContext3DProvider> contextProvider =
-      wrapUnique(new FakeWebGraphicsContext3DProvider(gl));
+      makeUnique<FakeWebGraphicsContext3DProvider>(gl);
   *bridgePtr =
       testHost->makeBridge(std::move(contextProvider), IntSize(300, 300),
                            Canvas2DLayerBridge::EnableAcceleration);
@@ -364,7 +364,7 @@ void postAndWaitCreateBridgeTask(const WebTraceLocation& location,
                                  gpu::gles2::GLES2Interface* gl,
                                  Canvas2DLayerBridgeTest* testHost) {
   std::unique_ptr<WaitableEvent> bridgeCreatedEvent =
-      wrapUnique(new WaitableEvent());
+      makeUnique<WaitableEvent>();
   testThread->getWebTaskRunner()->postTask(
       location, crossThreadBind(
                     &runCreateBridgeTask, crossThreadUnretained(bridgePtr),
@@ -392,7 +392,7 @@ void postAndWaitDestroyBridgeTask(const WebTraceLocation& location,
                                   WebThread* testThread,
                                   Canvas2DLayerBridgePtr* bridgePtr) {
   std::unique_ptr<WaitableEvent> bridgeDestroyedEvent =
-      wrapUnique(new WaitableEvent());
+      makeUnique<WaitableEvent>();
   testThread->getWebTaskRunner()->postTask(
       location,
       crossThreadBind(&runDestroyBridgeTask, crossThreadUnretained(bridgePtr),
@@ -423,7 +423,7 @@ void postAndWaitSetIsHiddenTask(const WebTraceLocation& location,
                                 WebThread* testThread,
                                 Canvas2DLayerBridge* bridge,
                                 bool value) {
-  std::unique_ptr<WaitableEvent> doneEvent = wrapUnique(new WaitableEvent());
+  std::unique_ptr<WaitableEvent> doneEvent = makeUnique<WaitableEvent>();
   postSetIsHiddenTask(location, testThread, bridge, value, doneEvent.get());
   doneEvent->wait();
 }
@@ -462,7 +462,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationLifeCycle)
 
   // Test entering hibernation
   std::unique_ptr<WaitableEvent> hibernationStartedEvent =
-      wrapUnique(new WaitableEvent());
+      makeUnique<WaitableEvent>();
   EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(
                                   Canvas2DLayerBridge::HibernationScheduled));
   EXPECT_CALL(*mockLoggerPtr, didStartHibernating())
@@ -514,7 +514,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationReEntry)
 
   // Test entering hibernation
   std::unique_ptr<WaitableEvent> hibernationStartedEvent =
-      wrapUnique(new WaitableEvent());
+      makeUnique<WaitableEvent>();
   EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(
                                   Canvas2DLayerBridge::HibernationScheduled));
   EXPECT_CALL(*mockLoggerPtr, didStartHibernating())
@@ -577,7 +577,7 @@ TEST_F(Canvas2DLayerBridgeTest,
 
   // Test entering hibernation
   std::unique_ptr<WaitableEvent> hibernationStartedEvent =
-      wrapUnique(new WaitableEvent());
+      makeUnique<WaitableEvent>();
   EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(
                                   Canvas2DLayerBridge::HibernationScheduled));
   EXPECT_CALL(*mockLoggerPtr, didStartHibernating())
@@ -620,7 +620,7 @@ void runRenderingTask(Canvas2DLayerBridge* bridge, WaitableEvent* doneEvent) {
 void postAndWaitRenderingTask(const WebTraceLocation& location,
                               WebThread* testThread,
                               Canvas2DLayerBridge* bridge) {
-  std::unique_ptr<WaitableEvent> doneEvent = wrapUnique(new WaitableEvent());
+  std::unique_ptr<WaitableEvent> doneEvent = makeUnique<WaitableEvent>();
   testThread->getWebTaskRunner()->postTask(
       location,
       crossThreadBind(&runRenderingTask, crossThreadUnretained(bridge),
@@ -651,7 +651,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_BackgroundRenderingWhileHibernating)
 
   // Test entering hibernation
   std::unique_ptr<WaitableEvent> hibernationStartedEvent =
-      wrapUnique(new WaitableEvent());
+      makeUnique<WaitableEvent>();
   EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(
                                   Canvas2DLayerBridge::HibernationScheduled));
   EXPECT_CALL(*mockLoggerPtr, didStartHibernating())
@@ -719,7 +719,7 @@ TEST_F(
 
   // Test entering hibernation
   std::unique_ptr<WaitableEvent> hibernationStartedEvent =
-      wrapUnique(new WaitableEvent());
+      makeUnique<WaitableEvent>();
   EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(
                                   Canvas2DLayerBridge::HibernationScheduled));
   EXPECT_CALL(*mockLoggerPtr, didStartHibernating())
@@ -790,7 +790,7 @@ TEST_F(Canvas2DLayerBridgeTest,
 
   // Test entering hibernation
   std::unique_ptr<WaitableEvent> hibernationStartedEvent =
-      wrapUnique(new WaitableEvent());
+      makeUnique<WaitableEvent>();
   EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(
                                   Canvas2DLayerBridge::HibernationScheduled));
   EXPECT_CALL(*mockLoggerPtr, didStartHibernating())
@@ -857,7 +857,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_TeardownWhileHibernating)
 
   // Test entering hibernation
   std::unique_ptr<WaitableEvent> hibernationStartedEvent =
-      wrapUnique(new WaitableEvent());
+      makeUnique<WaitableEvent>();
   EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(
                                   Canvas2DLayerBridge::HibernationScheduled));
   EXPECT_CALL(*mockLoggerPtr, didStartHibernating())
@@ -900,7 +900,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_SnapshotWhileHibernating)
 
   // Test entering hibernation
   std::unique_ptr<WaitableEvent> hibernationStartedEvent =
-      wrapUnique(new WaitableEvent());
+      makeUnique<WaitableEvent>();
   EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(
                                   Canvas2DLayerBridge::HibernationScheduled));
   EXPECT_CALL(*mockLoggerPtr, didStartHibernating())
@@ -926,7 +926,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_SnapshotWhileHibernating)
 
   // End hibernation normally
   std::unique_ptr<WaitableEvent> hibernationEndedEvent =
-      wrapUnique(new WaitableEvent());
+      makeUnique<WaitableEvent>();
   EXPECT_CALL(
       *mockLoggerPtr,
       reportHibernationEvent(Canvas2DLayerBridge::HibernationEndedNormally))
@@ -962,7 +962,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_TeardownWhileHibernationIsPending)
 
   // Test entering hibernation
   std::unique_ptr<WaitableEvent> hibernationScheduledEvent =
-      wrapUnique(new WaitableEvent());
+      makeUnique<WaitableEvent>();
   EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(
                                   Canvas2DLayerBridge::HibernationScheduled));
   postSetIsHiddenTask(BLINK_FROM_HERE, testThread.get(), bridge.get(), true,
@@ -979,7 +979,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_TeardownWhileHibernationIsPending)
   // completion before the thread is destroyed.
   // This test passes by not crashing, which proves that the WeakPtr logic
   // is sound.
-  std::unique_ptr<WaitableEvent> fenceEvent = wrapUnique(new WaitableEvent());
+  std::unique_ptr<WaitableEvent> fenceEvent = makeUnique<WaitableEvent>();
   testThread->getWebTaskRunner()->postTask(
       BLINK_FROM_HERE,
       WTF::bind(&WaitableEvent::signal, unretained(fenceEvent.get())));
@@ -1009,7 +1009,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationAbortedDueToPendingTeardown)
 
   // Test entering hibernation
   std::unique_ptr<WaitableEvent> hibernationAbortedEvent =
-      wrapUnique(new WaitableEvent());
+      makeUnique<WaitableEvent>();
   EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(
                                   Canvas2DLayerBridge::HibernationScheduled));
   EXPECT_CALL(
@@ -1054,7 +1054,7 @@ TEST_F(Canvas2DLayerBridgeTest,
 
   // Test entering hibernation
   std::unique_ptr<WaitableEvent> hibernationAbortedEvent =
-      wrapUnique(new WaitableEvent());
+      makeUnique<WaitableEvent>();
   EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(
                                   Canvas2DLayerBridge::HibernationScheduled));
   EXPECT_CALL(*mockLoggerPtr,
@@ -1099,7 +1099,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationAbortedDueToLostContext)
   gl.setIsContextLost(true);
   // Test entering hibernation
   std::unique_ptr<WaitableEvent> hibernationAbortedEvent =
-      wrapUnique(new WaitableEvent());
+      makeUnique<WaitableEvent>();
   EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(
                                   Canvas2DLayerBridge::HibernationScheduled));
   EXPECT_CALL(*mockLoggerPtr,
@@ -1140,7 +1140,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileHibernating)
 
   // Test entering hibernation
   std::unique_ptr<WaitableEvent> hibernationStartedEvent =
-      wrapUnique(new WaitableEvent());
+      makeUnique<WaitableEvent>();
   EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(
                                   Canvas2DLayerBridge::HibernationScheduled));
   EXPECT_CALL(*mockLoggerPtr, didStartHibernating())
@@ -1188,7 +1188,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileBackgroundRendering)
 
   // Test entering hibernation
   std::unique_ptr<WaitableEvent> hibernationStartedEvent =
-      wrapUnique(new WaitableEvent());
+      makeUnique<WaitableEvent>();
   EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(
                                   Canvas2DLayerBridge::HibernationScheduled));
   EXPECT_CALL(*mockLoggerPtr, didStartHibernating())

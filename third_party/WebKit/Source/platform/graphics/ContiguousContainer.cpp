@@ -170,8 +170,7 @@ ContiguousContainerBase::allocateNewBufferForNextAllocation(
     size_t bufferSize,
     const char* typeName) {
   ASSERT(m_buffers.isEmpty() || m_endIndex == m_buffers.size() - 1);
-  std::unique_ptr<Buffer> newBuffer =
-      wrapUnique(new Buffer(bufferSize, typeName));
+  std::unique_ptr<Buffer> newBuffer = makeUnique<Buffer>(bufferSize, typeName);
   Buffer* bufferToReturn = newBuffer.get();
   m_buffers.append(std::move(newBuffer));
   m_endIndex = m_buffers.size() - 1;

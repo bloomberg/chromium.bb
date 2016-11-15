@@ -375,7 +375,7 @@ void PNGImageDecoder::decode(bool onlySize) {
     return;
 
   if (!m_reader)
-    m_reader = wrapUnique(new PNGImageReader(this, m_offset));
+    m_reader = makeUnique<PNGImageReader>(this, m_offset);
 
   // If we couldn't decode the image but have received all the data, decoding
   // has failed.

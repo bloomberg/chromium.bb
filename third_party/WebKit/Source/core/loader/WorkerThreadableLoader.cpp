@@ -53,8 +53,7 @@ namespace {
 std::unique_ptr<Vector<char>> createVectorFromMemoryRegion(
     const char* data,
     unsigned dataLength) {
-  std::unique_ptr<Vector<char>> buffer =
-      wrapUnique(new Vector<char>(dataLength));
+  std::unique_ptr<Vector<char>> buffer = makeUnique<Vector<char>>(dataLength);
   memcpy(buffer->data(), data, dataLength);
   return buffer;
 }

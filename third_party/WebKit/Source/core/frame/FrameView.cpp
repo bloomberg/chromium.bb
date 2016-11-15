@@ -981,7 +981,7 @@ void FrameView::prepareLayoutAnalyzer() {
     return;
   }
   if (!m_analyzer)
-    m_analyzer = wrapUnique(new LayoutAnalyzer());
+    m_analyzer = makeUnique<LayoutAnalyzer>();
   m_analyzer->reset();
 }
 

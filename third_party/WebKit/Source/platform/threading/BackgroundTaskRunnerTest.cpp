@@ -22,7 +22,7 @@ void PingPongTask(WaitableEvent* doneEvent) {
 class BackgroundTaskRunnerTest : public testing::Test {};
 
 TEST_F(BackgroundTaskRunnerTest, RunShortTaskOnBackgroundThread) {
-  std::unique_ptr<WaitableEvent> doneEvent = wrapUnique(new WaitableEvent());
+  std::unique_ptr<WaitableEvent> doneEvent = makeUnique<WaitableEvent>();
   BackgroundTaskRunner::postOnBackgroundThread(
       BLINK_FROM_HERE,
       crossThreadBind(&PingPongTask, crossThreadUnretained(doneEvent.get())),
@@ -32,7 +32,7 @@ TEST_F(BackgroundTaskRunnerTest, RunShortTaskOnBackgroundThread) {
 }
 
 TEST_F(BackgroundTaskRunnerTest, RunLongTaskOnBackgroundThread) {
-  std::unique_ptr<WaitableEvent> doneEvent = wrapUnique(new WaitableEvent());
+  std::unique_ptr<WaitableEvent> doneEvent = makeUnique<WaitableEvent>();
   BackgroundTaskRunner::postOnBackgroundThread(
       BLINK_FROM_HERE,
       crossThreadBind(&PingPongTask, crossThreadUnretained(doneEvent.get())),

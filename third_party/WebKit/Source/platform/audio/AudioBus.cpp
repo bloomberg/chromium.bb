@@ -524,7 +524,7 @@ void AudioBus::copyWithGainFrom(const AudioBus& sourceBus,
   if (framesToDezipper) {
     if (!m_dezipperGainValues.get() ||
         m_dezipperGainValues->size() < framesToDezipper)
-      m_dezipperGainValues = wrapUnique(new AudioFloatArray(framesToDezipper));
+      m_dezipperGainValues = makeUnique<AudioFloatArray>(framesToDezipper);
 
     float* gainValues = m_dezipperGainValues->data();
     for (unsigned i = 0; i < framesToDezipper; ++i) {

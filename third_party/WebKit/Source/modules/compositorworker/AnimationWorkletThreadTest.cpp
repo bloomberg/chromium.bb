@@ -99,7 +99,7 @@ class AnimationWorkletThreadTest : public ::testing::Test {
 
   // Attempts to run some simple script for |thread|.
   void checkWorkletCanExecuteScript(WorkerThread* thread) {
-    std::unique_ptr<WaitableEvent> waitEvent = wrapUnique(new WaitableEvent());
+    std::unique_ptr<WaitableEvent> waitEvent = makeUnique<WaitableEvent>();
     thread->workerBackingThread().backingThread().postTask(
         BLINK_FROM_HERE,
         crossThreadBind(&AnimationWorkletThreadTest::executeScriptInWorklet,

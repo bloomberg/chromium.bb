@@ -166,7 +166,7 @@ Path HTMLAreaElement::getPath(const LayoutObject* containerObject) const {
     }
 
     // Cache the original path, not depending on containerObject.
-    m_path = wrapUnique(new Path(path));
+    m_path = makeUnique<Path>(path);
   }
 
   // Zoom the path into coordinates of the container object.

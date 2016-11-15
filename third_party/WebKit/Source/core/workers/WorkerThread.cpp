@@ -296,7 +296,7 @@ WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
                            WorkerReportingProxy& workerReportingProxy)
     : m_workerThreadId(getNextWorkerThreadId()),
       m_forcibleTerminationDelayInMs(kForcibleTerminationDelayInMs),
-      m_inspectorTaskRunner(wrapUnique(new InspectorTaskRunner())),
+      m_inspectorTaskRunner(makeUnique<InspectorTaskRunner>()),
       m_workerLoaderProxy(workerLoaderProxy),
       m_workerReportingProxy(workerReportingProxy),
       m_shutdownEvent(wrapUnique(

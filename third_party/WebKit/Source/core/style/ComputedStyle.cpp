@@ -1138,9 +1138,10 @@ void ComputedStyle::updatePropertySpecificDifferences(
 }
 
 void ComputedStyle::addPaintImage(StyleImage* image) {
-  if (!m_rareNonInheritedData.access()->m_paintImages)
+  if (!m_rareNonInheritedData.access()->m_paintImages) {
     m_rareNonInheritedData.access()->m_paintImages =
-        WTF::wrapUnique(new Vector<Persistent<StyleImage>>());
+        makeUnique<Vector<Persistent<StyleImage>>>();
+  }
   m_rareNonInheritedData.access()->m_paintImages->append(image);
 }
 

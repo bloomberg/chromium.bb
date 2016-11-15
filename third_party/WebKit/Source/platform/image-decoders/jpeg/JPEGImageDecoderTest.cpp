@@ -89,7 +89,7 @@ void readYUV(size_t maxDecodedBytes,
 
   // Setting a dummy ImagePlanes object signals to the decoder that we want to
   // do YUV decoding.
-  std::unique_ptr<ImagePlanes> dummyImagePlanes = wrapUnique(new ImagePlanes());
+  std::unique_ptr<ImagePlanes> dummyImagePlanes = makeUnique<ImagePlanes>();
   decoder->setImagePlanes(std::move(dummyImagePlanes));
 
   bool sizeIsAvailable = decoder->isSizeAvailable();
@@ -125,7 +125,7 @@ void readYUV(size_t maxDecodedBytes,
   planes[2] = ((char*)planes[1]) + rowBytes[1] * uSize.height();
 
   std::unique_ptr<ImagePlanes> imagePlanes =
-      wrapUnique(new ImagePlanes(planes, rowBytes));
+      makeUnique<ImagePlanes>(planes, rowBytes);
   decoder->setImagePlanes(std::move(imagePlanes));
 
   ASSERT_TRUE(decoder->decodeToYUV());
@@ -263,7 +263,7 @@ TEST(JPEGImageDecoderTest, yuv) {
   std::unique_ptr<ImageDecoder> decoder = createDecoder(230 * 230 * 4);
   decoder->setData(data.get(), true);
 
-  std::unique_ptr<ImagePlanes> imagePlanes = wrapUnique(new ImagePlanes());
+  std::unique_ptr<ImagePlanes> imagePlanes = makeUnique<ImagePlanes>();
   decoder->setImagePlanes(std::move(imagePlanes));
   ASSERT_TRUE(decoder->isSizeAvailable());
   ASSERT_FALSE(decoder->canDecodeToYUV());

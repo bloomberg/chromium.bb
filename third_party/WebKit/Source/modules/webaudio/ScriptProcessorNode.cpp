@@ -214,7 +214,7 @@ void ScriptProcessorHandler::process(size_t framesToProcess) {
         // If this node is in the offline audio context, use the
         // waitable event to synchronize to the offline rendering thread.
         std::unique_ptr<WaitableEvent> waitableEvent =
-            wrapUnique(new WaitableEvent());
+            makeUnique<WaitableEvent>();
 
         context()->getExecutionContext()->postTask(
             BLINK_FROM_HERE,

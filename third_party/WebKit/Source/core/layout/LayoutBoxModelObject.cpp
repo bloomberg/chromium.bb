@@ -429,7 +429,7 @@ void LayoutBoxModelObject::invalidateStickyConstraints() {
 
 void LayoutBoxModelObject::createLayer() {
   ASSERT(!m_layer);
-  m_layer = wrapUnique(new PaintLayer(this));
+  m_layer = makeUnique<PaintLayer>(this);
   setHasLayer(true);
   m_layer->insertOnlyThisLayerAfterStyleChange();
 }

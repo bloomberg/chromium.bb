@@ -261,9 +261,9 @@ std::unique_ptr<HRTFElevation> HRTFElevation::createForSubject(
     return nullptr;
 
   std::unique_ptr<HRTFKernelList> kernelListL =
-      wrapUnique(new HRTFKernelList(NumberOfTotalAzimuths));
+      makeUnique<HRTFKernelList>(NumberOfTotalAzimuths);
   std::unique_ptr<HRTFKernelList> kernelListR =
-      wrapUnique(new HRTFKernelList(NumberOfTotalAzimuths));
+      makeUnique<HRTFKernelList>(NumberOfTotalAzimuths);
 
   // Load convolution kernels from HRTF files.
   int interpolatedIndex = 0;
@@ -314,9 +314,9 @@ std::unique_ptr<HRTFElevation> HRTFElevation::createByInterpolatingSlices(
   ASSERT(x >= 0.0 && x < 1.0);
 
   std::unique_ptr<HRTFKernelList> kernelListL =
-      wrapUnique(new HRTFKernelList(NumberOfTotalAzimuths));
+      makeUnique<HRTFKernelList>(NumberOfTotalAzimuths);
   std::unique_ptr<HRTFKernelList> kernelListR =
-      wrapUnique(new HRTFKernelList(NumberOfTotalAzimuths));
+      makeUnique<HRTFKernelList>(NumberOfTotalAzimuths);
 
   HRTFKernelList* kernelListL1 = hrtfElevation1->kernelListL();
   HRTFKernelList* kernelListR1 = hrtfElevation1->kernelListR();

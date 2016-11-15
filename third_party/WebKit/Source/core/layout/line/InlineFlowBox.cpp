@@ -1183,7 +1183,7 @@ void InlineFlowBox::setLayoutOverflow(const LayoutRect& rect,
     return;
 
   if (!m_overflow)
-    m_overflow = wrapUnique(new SimpleOverflowModel(frameBox, frameBox));
+    m_overflow = makeUnique<SimpleOverflowModel>(frameBox, frameBox);
 
   m_overflow->setLayoutOverflow(rect);
 }
@@ -1195,7 +1195,7 @@ void InlineFlowBox::setVisualOverflow(const LayoutRect& rect,
     return;
 
   if (!m_overflow)
-    m_overflow = wrapUnique(new SimpleOverflowModel(frameBox, frameBox));
+    m_overflow = makeUnique<SimpleOverflowModel>(frameBox, frameBox);
 
   m_overflow->setVisualOverflow(rect);
 }

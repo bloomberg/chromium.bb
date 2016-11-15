@@ -588,7 +588,7 @@ TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionUnderImageSizeRatioLimit) {
   IntSize sourceSize(
       10, 10 * ExpensiveCanvasHeuristicParameters::ExpensiveImageSizeRatio);
   std::unique_ptr<UnacceleratedImageBufferSurface> sourceSurface =
-      wrapUnique(new UnacceleratedImageBufferSurface(sourceSize, NonOpaque));
+      makeUnique<UnacceleratedImageBufferSurface>(sourceSize, NonOpaque);
   sourceCanvas->createImageBufferUsingSurfaceForTesting(
       std::move(sourceSurface));
 
@@ -624,7 +624,7 @@ TEST_F(CanvasRenderingContext2DTest, LayerPromotionOverImageSizeRatioLimit) {
   IntSize sourceSize(
       10, 10 * ExpensiveCanvasHeuristicParameters::ExpensiveImageSizeRatio + 1);
   std::unique_ptr<UnacceleratedImageBufferSurface> sourceSurface =
-      wrapUnique(new UnacceleratedImageBufferSurface(sourceSize, NonOpaque));
+      makeUnique<UnacceleratedImageBufferSurface>(sourceSize, NonOpaque);
   sourceCanvas->createImageBufferUsingSurfaceForTesting(
       std::move(sourceSurface));
 

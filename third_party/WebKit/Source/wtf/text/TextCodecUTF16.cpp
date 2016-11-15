@@ -53,13 +53,13 @@ void TextCodecUTF16::registerEncodingNames(EncodingNameRegistrar registrar) {
 static std::unique_ptr<TextCodec> newStreamingTextDecoderUTF16LE(
     const TextEncoding&,
     const void*) {
-  return wrapUnique(new TextCodecUTF16(true));
+  return makeUnique<TextCodecUTF16>(true);
 }
 
 static std::unique_ptr<TextCodec> newStreamingTextDecoderUTF16BE(
     const TextEncoding&,
     const void*) {
-  return wrapUnique(new TextCodecUTF16(false));
+  return makeUnique<TextCodecUTF16>(false);
 }
 
 void TextCodecUTF16::registerCodecs(TextCodecRegistrar registrar) {

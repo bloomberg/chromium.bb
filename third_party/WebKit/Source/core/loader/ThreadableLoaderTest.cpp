@@ -176,7 +176,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
       ThreadableLoaderClient* client,
       CrossOriginRequestPolicy crossOriginRequestPolicy) override {
     std::unique_ptr<WaitableEvent> completionEvent =
-        wrapUnique(new WaitableEvent());
+        makeUnique<WaitableEvent>();
     postTaskToWorkerGlobalScope(
         BLINK_FROM_HERE,
         createCrossThreadTask(
@@ -189,7 +189,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
 
   void startLoader(const ResourceRequest& request) override {
     std::unique_ptr<WaitableEvent> completionEvent =
-        wrapUnique(new WaitableEvent());
+        makeUnique<WaitableEvent>();
     postTaskToWorkerGlobalScope(
         BLINK_FROM_HERE,
         createCrossThreadTask(
@@ -226,7 +226,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
     testing::runPendingTasks();
 
     std::unique_ptr<WaitableEvent> completionEvent =
-        wrapUnique(new WaitableEvent());
+        makeUnique<WaitableEvent>();
     postTaskToWorkerGlobalScope(
         BLINK_FROM_HERE,
         createCrossThreadTask(
@@ -237,7 +237,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
   }
 
   void onSetUp() override {
-    m_mockWorkerReportingProxy = wrapUnique(new MockWorkerReportingProxy());
+    m_mockWorkerReportingProxy = makeUnique<MockWorkerReportingProxy>();
     m_securityOrigin = document().getSecurityOrigin();
     m_workerThread = wrapUnique(new WorkerThreadForTest(
         this, *m_mockWorkerReportingProxy, m_threadHeapMode));

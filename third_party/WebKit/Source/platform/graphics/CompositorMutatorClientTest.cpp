@@ -38,7 +38,7 @@ TEST(CompositorMutatorClient, CallbackForNonNullMutationsShouldApply) {
 
   CompositorMutatorClient client(new StubCompositorMutator, &target);
   std::unique_ptr<CompositorMutations> mutations =
-      wrapUnique(new CompositorMutations());
+      makeUnique<CompositorMutations>();
   client.setMutationsForTesting(std::move(mutations));
 
   EXPECT_CALL(target, applyMutations(_));

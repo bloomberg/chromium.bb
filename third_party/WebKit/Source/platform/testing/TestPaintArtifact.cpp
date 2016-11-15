@@ -74,7 +74,7 @@ TestPaintArtifact& TestPaintArtifact::chunk(
 TestPaintArtifact& TestPaintArtifact::rectDrawing(const FloatRect& bounds,
                                                   Color color) {
   std::unique_ptr<DummyRectClient> client =
-      wrapUnique(new DummyRectClient(bounds, color));
+      makeUnique<DummyRectClient>(bounds, color);
   m_displayItemList.allocateAndConstruct<DrawingDisplayItem>(
       *client, DisplayItem::kDrawingFirst, client->makePicture());
   m_dummyClients.append(std::move(client));

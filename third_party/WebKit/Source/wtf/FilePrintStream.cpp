@@ -45,7 +45,7 @@ std::unique_ptr<FilePrintStream> FilePrintStream::open(const char* filename,
   if (!file)
     return std::unique_ptr<FilePrintStream>();
 
-  return wrapUnique(new FilePrintStream(file));
+  return makeUnique<FilePrintStream>(file);
 }
 
 void FilePrintStream::vprintf(const char* format, va_list argList) {

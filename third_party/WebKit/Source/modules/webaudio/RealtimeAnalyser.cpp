@@ -57,7 +57,7 @@ RealtimeAnalyser::RealtimeAnalyser()
       m_minDecibels(DefaultMinDecibels),
       m_maxDecibels(DefaultMaxDecibels),
       m_lastAnalysisTime(-1) {
-  m_analysisFrame = wrapUnique(new FFTFrame(DefaultFFTSize));
+  m_analysisFrame = makeUnique<FFTFrame>(DefaultFFTSize);
 }
 
 bool RealtimeAnalyser::setFftSize(size_t size) {
@@ -71,7 +71,7 @@ bool RealtimeAnalyser::setFftSize(size_t size) {
     return false;
 
   if (m_fftSize != size) {
-    m_analysisFrame = wrapUnique(new FFTFrame(size));
+    m_analysisFrame = makeUnique<FFTFrame>(size);
     // m_magnitudeBuffer has size = fftSize / 2 because it contains floats
     // reduced from complex values in m_analysisFrame.
     m_magnitudeBuffer.allocate(size / 2);

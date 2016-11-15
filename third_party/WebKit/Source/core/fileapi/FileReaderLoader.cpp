@@ -218,7 +218,7 @@ void FileReaderLoader::didReceiveResponse(
     }
 
     if (initialBufferLength < 0)
-      m_rawData = wrapUnique(new ArrayBufferBuilder());
+      m_rawData = makeUnique<ArrayBufferBuilder>();
     else
       m_rawData = wrapUnique(
           new ArrayBufferBuilder(static_cast<unsigned>(initialBufferLength)));

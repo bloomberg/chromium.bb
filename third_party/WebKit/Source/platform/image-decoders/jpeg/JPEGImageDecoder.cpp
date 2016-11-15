@@ -1008,7 +1008,7 @@ void JPEGImageDecoder::decode(bool onlySize) {
     return;
 
   if (!m_reader) {
-    m_reader = wrapUnique(new JPEGImageReader(this));
+    m_reader = makeUnique<JPEGImageReader>(this);
     m_reader->setData(m_data.get());
   }
 

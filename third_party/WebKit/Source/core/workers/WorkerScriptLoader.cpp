@@ -179,7 +179,7 @@ void WorkerScriptLoader::didReceiveData(const char* data, unsigned len) {
 }
 
 void WorkerScriptLoader::didReceiveCachedMetadata(const char* data, int size) {
-  m_cachedMetadata = wrapUnique(new Vector<char>(size));
+  m_cachedMetadata = makeUnique<Vector<char>>(size);
   memcpy(m_cachedMetadata->data(), data, size);
 }
 

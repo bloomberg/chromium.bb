@@ -71,7 +71,7 @@ class TestingPlatformSupport::TestingInterfaceProvider
                     mojo::ScopedMessagePipeHandle handle) override {
     if (std::string(name) == mojom::blink::MimeRegistry::Name_) {
       mojo::MakeStrongBinding(
-          wrapUnique(new MockMimeRegistry()),
+          makeUnique<MockMimeRegistry>(),
           mojo::MakeRequest<mojom::blink::MimeRegistry>(std::move(handle)));
       return;
     }
@@ -330,7 +330,7 @@ ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc,
   m_compositorSupport = wrapUnique(new cc_blink::WebCompositorSupportImpl);
   m_testingPlatformConfig.compositorSupport = m_compositorSupport.get();
   m_testingPlatformSupport =
-      wrapUnique(new TestingPlatformSupport(m_testingPlatformConfig));
+      makeUnique<TestingPlatformSupport>(m_testingPlatformConfig);
 
   ProcessHeap::init();
   ThreadState::attachMainThread();

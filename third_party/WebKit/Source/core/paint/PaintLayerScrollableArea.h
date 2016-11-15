@@ -520,7 +520,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   PaintLayerScrollableAreaRareData& ensureRareData() {
     if (!m_rareData)
-      m_rareData = wrapUnique(new PaintLayerScrollableAreaRareData());
+      m_rareData = makeUnique<PaintLayerScrollableAreaRareData>();
     return *m_rareData.get();
   }
 

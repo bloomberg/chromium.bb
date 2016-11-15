@@ -514,7 +514,7 @@ void ImageBuffer::disableAcceleration() {
 
   // Create and configure a recording (unaccelerated) surface.
   std::unique_ptr<RecordingImageBufferFallbackSurfaceFactory> surfaceFactory =
-      wrapUnique(new UnacceleratedSurfaceFactory());
+      makeUnique<UnacceleratedSurfaceFactory>();
   std::unique_ptr<ImageBufferSurface> surface =
       wrapUnique(new RecordingImageBufferSurface(
           m_surface->size(), std::move(surfaceFactory),

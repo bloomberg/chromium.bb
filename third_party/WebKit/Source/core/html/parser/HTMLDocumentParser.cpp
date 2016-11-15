@@ -1142,7 +1142,7 @@ void HTMLDocumentParser::appendBytes(const char* data, size_t length) {
     if (!m_haveBackgroundParser)
       startBackgroundParser();
 
-    std::unique_ptr<Vector<char>> buffer = wrapUnique(new Vector<char>(length));
+    std::unique_ptr<Vector<char>> buffer = makeUnique<Vector<char>>(length);
     memcpy(buffer->data(), data, length);
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.debug"),
                  "HTMLDocumentParser::appendBytes", "size", (unsigned)length);

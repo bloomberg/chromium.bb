@@ -49,7 +49,7 @@ void VRController::getDisplays(ScriptPromiseResolver* resolver) {
   // Otherwise we're still waiting for the full list of displays to be populated
   // so queue up the promise for resolution when onDisplaysSynced is called.
   m_pendingGetDevicesCallbacks.append(
-      wrapUnique(new VRGetDevicesCallback(resolver)));
+      makeUnique<VRGetDevicesCallback>(resolver));
 }
 
 // Each time a new VRDisplay is connected we'll recieve a VRDisplayPtr for it

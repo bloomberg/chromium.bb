@@ -97,7 +97,7 @@ class RecordingImageBufferSurfaceTest : public Test {
  protected:
   RecordingImageBufferSurfaceTest() {
     std::unique_ptr<MockSurfaceFactory> surfaceFactory =
-        wrapUnique(new MockSurfaceFactory());
+        makeUnique<MockSurfaceFactory>();
     m_surfaceFactory = surfaceFactory.get();
     std::unique_ptr<RecordingImageBufferSurface> testSurface =
         wrapUnique(new RecordingImageBufferSurface(

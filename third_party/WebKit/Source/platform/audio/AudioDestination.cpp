@@ -126,7 +126,7 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
                                         AudioUtilities::kRenderQuantumFrames));
 
   // Input buffering.
-  m_inputFifo = wrapUnique(new AudioFIFO(numberOfInputChannels, fifoSize));
+  m_inputFifo = makeUnique<AudioFIFO>(numberOfInputChannels, fifoSize);
 
   // If the callback size does not match the render size, then we need to
   // buffer some extra silence for the input. Otherwise, we can over-consume

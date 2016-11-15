@@ -322,7 +322,7 @@ void WebView::resetVisitedLinkState(bool invalidateVisitedLinkHashes) {
 }
 
 void WebView::willEnterModalLoop() {
-  pageLoadDeferrerStack().append(wrapUnique(new ScopedPageLoadDeferrer()));
+  pageLoadDeferrerStack().append(makeUnique<ScopedPageLoadDeferrer>());
 }
 
 void WebView::didExitModalLoop() {
@@ -3785,7 +3785,7 @@ void WebViewImpl::setPageOverlayColor(WebColor color) {
     return;
 
   m_pageColorOverlay =
-      PageOverlay::create(mainFrameImpl(), wrapUnique(new ColorOverlay(color)));
+      PageOverlay::create(mainFrameImpl(), makeUnique<ColorOverlay>(color));
   m_pageColorOverlay->update();
 }
 

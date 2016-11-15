@@ -85,7 +85,7 @@ class StubFrameLoaderClient : public EmptyFrameLoaderClient {
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
       WebMediaPlayerClient* client) override {
-    return wrapUnique(new StubWebMediaPlayer(client));
+    return makeUnique<StubWebMediaPlayer>(client);
   }
 };
 

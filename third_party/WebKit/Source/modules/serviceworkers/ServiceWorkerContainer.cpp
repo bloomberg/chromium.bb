@@ -356,7 +356,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
                      ->completeURL(options.scope());
 
   registerServiceWorkerImpl(executionContext, scriptURL, patternURL,
-                            wrapUnique(new RegistrationCallback(resolver)));
+                            makeUnique<RegistrationCallback>(resolver));
 
   return promise;
 }

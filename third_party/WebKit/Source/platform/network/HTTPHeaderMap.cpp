@@ -41,7 +41,7 @@ HTTPHeaderMap::~HTTPHeaderMap() {}
 
 std::unique_ptr<CrossThreadHTTPHeaderMapData> HTTPHeaderMap::copyData() const {
   std::unique_ptr<CrossThreadHTTPHeaderMapData> data =
-      wrapUnique(new CrossThreadHTTPHeaderMapData());
+      makeUnique<CrossThreadHTTPHeaderMapData>();
   data->reserveInitialCapacity(size());
 
   HTTPHeaderMap::const_iterator endIt = end();

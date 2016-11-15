@@ -52,7 +52,7 @@ class GeometryMapperTest : public ::testing::Test {
         1.0);
     rootScrollNode = ScrollPaintPropertyNode::create(
         nullptr, rootTransformNode, IntSize(), IntSize(), false, false);
-    geometryMapper = wrapUnique(new GeometryMapper());
+    geometryMapper = makeUnique<GeometryMapper>();
   }
 
   void TearDown() override { geometryMapper.reset(); }

@@ -17,13 +17,13 @@ std::unique_ptr<Visitor> Visitor::create(ThreadState* state,
   switch (gcType) {
     case BlinkGC::GCWithSweep:
     case BlinkGC::GCWithoutSweep:
-      return wrapUnique(new MarkingVisitor<Visitor::GlobalMarking>(state));
+      return makeUnique<MarkingVisitor<Visitor::GlobalMarking>>(state);
     case BlinkGC::TakeSnapshot:
-      return wrapUnique(new MarkingVisitor<Visitor::SnapshotMarking>(state));
+      return makeUnique<MarkingVisitor<Visitor::SnapshotMarking>>(state);
     case BlinkGC::ThreadTerminationGC:
-      return wrapUnique(new MarkingVisitor<Visitor::ThreadLocalMarking>(state));
+      return makeUnique<MarkingVisitor<Visitor::ThreadLocalMarking>>(state);
     case BlinkGC::ThreadLocalWeakProcessing:
-      return wrapUnique(new MarkingVisitor<Visitor::WeakProcessing>(state));
+      return makeUnique<MarkingVisitor<Visitor::WeakProcessing>>(state);
     default:
       ASSERT_NOT_REACHED();
   }

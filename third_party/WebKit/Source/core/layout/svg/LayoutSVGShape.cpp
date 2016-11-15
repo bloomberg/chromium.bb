@@ -72,7 +72,7 @@ LayoutSVGShape::~LayoutSVGShape() {}
 
 void LayoutSVGShape::createPath() {
   if (!m_path)
-    m_path = wrapUnique(new Path());
+    m_path = makeUnique<Path>();
   *m_path = toSVGGeometryElement(element())->asPath();
   if (m_rareData.get())
     m_rareData->m_cachedNonScalingStrokePath.clear();
@@ -333,7 +333,7 @@ float LayoutSVGShape::strokeWidth() const {
 
 LayoutSVGShapeRareData& LayoutSVGShape::ensureRareData() const {
   if (!m_rareData)
-    m_rareData = wrapUnique(new LayoutSVGShapeRareData());
+    m_rareData = makeUnique<LayoutSVGShapeRareData>();
   return *m_rareData.get();
 }
 

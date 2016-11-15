@@ -3108,7 +3108,7 @@ TEST_F(WebFrameTest, updateOverlayScrollbarLayers)
   int viewHeight = 500;
 
   std::unique_ptr<FakeCompositingWebViewClient> fakeCompositingWebViewClient =
-      wrapUnique(new FakeCompositingWebViewClient());
+      makeUnique<FakeCompositingWebViewClient>();
   FrameTestHelpers::WebViewHelper webViewHelper;
   webViewHelper.initialize(true, nullptr, fakeCompositingWebViewClient.get(),
                            nullptr, &configureCompositingWebView);
@@ -4275,14 +4275,14 @@ class ContextLifetimeTestWebFrameClient
                               int extensionGroup,
                               int worldId) override {
     createNotifications.append(
-        wrapUnique(new Notification(frame, context, worldId)));
+        makeUnique<Notification>(frame, context, worldId));
   }
 
   void willReleaseScriptContext(WebLocalFrame* frame,
                                 v8::Local<v8::Context> context,
                                 int worldId) override {
     releaseNotifications.append(
-        wrapUnique(new Notification(frame, context, worldId)));
+        makeUnique<Notification>(frame, context, worldId));
   }
 };
 
@@ -5462,7 +5462,7 @@ class CompositedSelectionBoundsTestLayerTreeView : public WebLayerTreeView {
   ~CompositedSelectionBoundsTestLayerTreeView() override {}
 
   void registerSelection(const WebSelection& selection) override {
-    m_selection = wrapUnique(new WebSelection(selection));
+    m_selection = makeUnique<WebSelection>(selection);
   }
 
   void clearSelection() override {
@@ -7361,7 +7361,7 @@ TEST_P(ParameterizedWebFrameTest, FirstNonBlankSubframeNavigation) {
 TEST_F(WebFrameTest, overflowHiddenRewrite) {
   registerMockedHttpURLLoad("non-scrollable.html");
   std::unique_ptr<FakeCompositingWebViewClient> fakeCompositingWebViewClient =
-      wrapUnique(new FakeCompositingWebViewClient());
+      makeUnique<FakeCompositingWebViewClient>();
   FrameTestHelpers::WebViewHelper webViewHelper;
   webViewHelper.initialize(true, nullptr, fakeCompositingWebViewClient.get(),
                            nullptr, &configureCompositingWebView);
@@ -10254,7 +10254,7 @@ class TestResourcePriorityWebFrameClient
   }
 
   void addExpectedRequest(const KURL& url, WebURLRequest::Priority priority) {
-    m_expectedRequests.add(url, wrapUnique(new ExpectedRequest(url, priority)));
+    m_expectedRequests.add(url, makeUnique<ExpectedRequest>(url, priority));
   }
 
   void verifyAllRequests() {

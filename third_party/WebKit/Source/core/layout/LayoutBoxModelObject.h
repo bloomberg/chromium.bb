@@ -511,7 +511,7 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
 
   LayoutBoxModelObjectRareData& ensureRareData() {
     if (!m_rareData)
-      m_rareData = wrapUnique(new LayoutBoxModelObjectRareData());
+      m_rareData = makeUnique<LayoutBoxModelObjectRareData>();
     return *m_rareData.get();
   }
 

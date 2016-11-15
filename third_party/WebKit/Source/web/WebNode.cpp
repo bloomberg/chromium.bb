@@ -169,7 +169,7 @@ bool WebNode::isDocumentTypeNode() const {
 
 void WebNode::simulateClick() {
   m_private->getExecutionContext()->postSuspendableTask(
-      wrapUnique(new NodeDispatchSimulatedClickTask(m_private)));
+      makeUnique<NodeDispatchSimulatedClickTask>(m_private));
 }
 
 WebElementCollection WebNode::getElementsByHTMLTagName(

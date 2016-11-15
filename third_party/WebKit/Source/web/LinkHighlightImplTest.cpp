@@ -185,7 +185,7 @@ TEST(LinkHighlightImplTest, resetDuringNodeRemoval) {
 // A lifetime test: delete LayerTreeView while running LinkHighlights.
 TEST(LinkHighlightImplTest, resetLayerTreeView) {
   std::unique_ptr<FakeCompositingWebViewClient> webViewClient =
-      wrapUnique(new FakeCompositingWebViewClient());
+      makeUnique<FakeCompositingWebViewClient>();
 
   const std::string baseURL("http://www.test.com/");
   const std::string fileName("test_touch_link_highlight.html");

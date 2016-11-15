@@ -86,7 +86,7 @@ TEST_F(CSSStyleSheetResourceTest, PruneCanCauseEviction) {
         CSSImageValue::create(String("image"), imageURL),
         CSSPrimitiveValue::create(1.0, CSSPrimitiveValue::UnitType::Number));
     Vector<std::unique_ptr<CSSParserSelector>> selectors;
-    selectors.append(wrapUnique(new CSSParserSelector()));
+    selectors.append(makeUnique<CSSParserSelector>());
     selectors[0]->setMatch(CSSSelector::Id);
     selectors[0]->setValue("foo");
     CSSProperty property(CSSPropertyBackground, *crossfade);

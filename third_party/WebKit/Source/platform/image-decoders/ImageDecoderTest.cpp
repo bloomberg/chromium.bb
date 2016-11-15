@@ -70,7 +70,7 @@ class TestImageDecoder : public ImageDecoder {
 };
 
 TEST(ImageDecoderTest, sizeCalculationMayOverflow) {
-  std::unique_ptr<TestImageDecoder> decoder(wrapUnique(new TestImageDecoder()));
+  std::unique_ptr<TestImageDecoder> decoder(makeUnique<TestImageDecoder>());
   EXPECT_FALSE(decoder->setSize(1 << 29, 1));
   EXPECT_FALSE(decoder->setSize(1, 1 << 29));
   EXPECT_FALSE(decoder->setSize(1 << 15, 1 << 15));
@@ -80,7 +80,7 @@ TEST(ImageDecoderTest, sizeCalculationMayOverflow) {
 }
 
 TEST(ImageDecoderTest, requiredPreviousFrameIndex) {
-  std::unique_ptr<TestImageDecoder> decoder(wrapUnique(new TestImageDecoder()));
+  std::unique_ptr<TestImageDecoder> decoder(makeUnique<TestImageDecoder>());
   decoder->initFrames(6);
   Vector<ImageFrame, 1>& frameBuffers = decoder->frameBufferCache();
 
@@ -104,7 +104,7 @@ TEST(ImageDecoderTest, requiredPreviousFrameIndex) {
 }
 
 TEST(ImageDecoderTest, requiredPreviousFrameIndexDisposeOverwriteBgcolor) {
-  std::unique_ptr<TestImageDecoder> decoder(wrapUnique(new TestImageDecoder()));
+  std::unique_ptr<TestImageDecoder> decoder(makeUnique<TestImageDecoder>());
   decoder->initFrames(3);
   Vector<ImageFrame, 1>& frameBuffers = decoder->frameBufferCache();
 
@@ -122,7 +122,7 @@ TEST(ImageDecoderTest, requiredPreviousFrameIndexDisposeOverwriteBgcolor) {
 }
 
 TEST(ImageDecoderTest, requiredPreviousFrameIndexForFrame1) {
-  std::unique_ptr<TestImageDecoder> decoder(wrapUnique(new TestImageDecoder()));
+  std::unique_ptr<TestImageDecoder> decoder(makeUnique<TestImageDecoder>());
   decoder->initFrames(2);
   Vector<ImageFrame, 1>& frameBuffers = decoder->frameBufferCache();
 
@@ -150,7 +150,7 @@ TEST(ImageDecoderTest, requiredPreviousFrameIndexForFrame1) {
 }
 
 TEST(ImageDecoderTest, requiredPreviousFrameIndexBlendAtopBgcolor) {
-  std::unique_ptr<TestImageDecoder> decoder(wrapUnique(new TestImageDecoder()));
+  std::unique_ptr<TestImageDecoder> decoder(makeUnique<TestImageDecoder>());
   decoder->initFrames(3);
   Vector<ImageFrame, 1>& frameBuffers = decoder->frameBufferCache();
 
@@ -180,7 +180,7 @@ TEST(ImageDecoderTest, requiredPreviousFrameIndexBlendAtopBgcolor) {
 }
 
 TEST(ImageDecoderTest, requiredPreviousFrameIndexKnownOpaque) {
-  std::unique_ptr<TestImageDecoder> decoder(wrapUnique(new TestImageDecoder()));
+  std::unique_ptr<TestImageDecoder> decoder(makeUnique<TestImageDecoder>());
   decoder->initFrames(3);
   Vector<ImageFrame, 1>& frameBuffers = decoder->frameBufferCache();
 
@@ -207,7 +207,7 @@ TEST(ImageDecoderTest, requiredPreviousFrameIndexKnownOpaque) {
 }
 
 TEST(ImageDecoderTest, clearCacheExceptFrameDoNothing) {
-  std::unique_ptr<TestImageDecoder> decoder(wrapUnique(new TestImageDecoder()));
+  std::unique_ptr<TestImageDecoder> decoder(makeUnique<TestImageDecoder>());
   decoder->clearCacheExceptFrame(0);
 
   // This should not crash.
@@ -217,7 +217,7 @@ TEST(ImageDecoderTest, clearCacheExceptFrameDoNothing) {
 
 TEST(ImageDecoderTest, clearCacheExceptFrameAll) {
   const size_t numFrames = 10;
-  std::unique_ptr<TestImageDecoder> decoder(wrapUnique(new TestImageDecoder()));
+  std::unique_ptr<TestImageDecoder> decoder(makeUnique<TestImageDecoder>());
   decoder->initFrames(numFrames);
   Vector<ImageFrame, 1>& frameBuffers = decoder->frameBufferCache();
   for (size_t i = 0; i < numFrames; ++i)
@@ -234,7 +234,7 @@ TEST(ImageDecoderTest, clearCacheExceptFrameAll) {
 
 TEST(ImageDecoderTest, clearCacheExceptFramePreverveClearExceptFrame) {
   const size_t numFrames = 10;
-  std::unique_ptr<TestImageDecoder> decoder(wrapUnique(new TestImageDecoder()));
+  std::unique_ptr<TestImageDecoder> decoder(makeUnique<TestImageDecoder>());
   decoder->initFrames(numFrames);
   Vector<ImageFrame, 1>& frameBuffers = decoder->frameBufferCache();
   for (size_t i = 0; i < numFrames; ++i)

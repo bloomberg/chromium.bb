@@ -329,7 +329,7 @@ void GIFImageDecoder::parse(GIFParseQuery query) {
     return;
 
   if (!m_reader) {
-    m_reader = wrapUnique(new GIFImageReader(this));
+    m_reader = makeUnique<GIFImageReader>(this);
     m_reader->setData(m_data);
   }
 

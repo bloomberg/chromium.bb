@@ -226,7 +226,7 @@ void RejectedPromises::handlerAdded(v8::PromiseRejectMessage data) {
 
 std::unique_ptr<RejectedPromises::MessageQueue>
 RejectedPromises::createMessageQueue() {
-  return wrapUnique(new MessageQueue());
+  return makeUnique<MessageQueue>();
 }
 
 void RejectedPromises::dispose() {

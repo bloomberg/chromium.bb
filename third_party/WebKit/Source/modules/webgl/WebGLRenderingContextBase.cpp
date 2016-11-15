@@ -729,7 +729,7 @@ PassRefPtr<Image> WebGLRenderingContextBase::getImage(
   OpacityMode opacityMode =
       creationAttributes().hasAlpha() ? NonOpaque : Opaque;
   std::unique_ptr<AcceleratedImageBufferSurface> surface =
-      wrapUnique(new AcceleratedImageBufferSurface(size, opacityMode));
+      makeUnique<AcceleratedImageBufferSurface>(size, opacityMode);
   if (!surface->isValid())
     return nullptr;
   std::unique_ptr<ImageBuffer> buffer = ImageBuffer::create(std::move(surface));

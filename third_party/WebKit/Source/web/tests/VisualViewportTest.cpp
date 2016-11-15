@@ -2137,7 +2137,7 @@ TEST_P(VisualViewportTest, ResizeCompositedAndFixedBackground) {
 
   std::unique_ptr<FrameTestHelpers::TestWebViewClient>
       fakeCompositingWebViewClient =
-          wrapUnique(new FrameTestHelpers::TestWebViewClient());
+          makeUnique<FrameTestHelpers::TestWebViewClient>();
   FrameTestHelpers::WebViewHelper webViewHelper;
   WebViewImpl* webViewImpl = webViewHelper.initialize(
       true, nullptr, fakeCompositingWebViewClient.get(), nullptr,
@@ -2327,7 +2327,7 @@ TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
 
   std::unique_ptr<FrameTestHelpers::TestWebViewClient>
       fakeCompositingWebViewClient =
-          wrapUnique(new FrameTestHelpers::TestWebViewClient());
+          makeUnique<FrameTestHelpers::TestWebViewClient>();
   FrameTestHelpers::WebViewHelper webViewHelper;
   WebViewImpl* webViewImpl = webViewHelper.initialize(
       true, nullptr, fakeCompositingWebViewClient.get(), nullptr,
