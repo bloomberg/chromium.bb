@@ -937,6 +937,7 @@ void Internals::setMarker(Document* document,
     return;
   }
 
+  document->updateStyleAndLayoutIgnorePendingStylesheets();
   document->markers().addMarker(range->startPosition(), range->endPosition(),
                                 type.value());
 }
