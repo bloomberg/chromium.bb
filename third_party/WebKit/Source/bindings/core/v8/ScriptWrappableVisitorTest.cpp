@@ -317,9 +317,7 @@ class InterceptingScriptWrappableVisitor
 
   virtual void markWrapper(const v8::PersistentBase<v8::Value>* handle) const {
     *m_markedWrappers += 1;
-    // Do not actually mark this visitor, as this would call into v8, which
-    // would
-    // require executing an actual GC.
+    ScriptWrappableVisitor::markWrapper(handle);
   }
 
   size_t numberOfMarkedWrappers() const { return *m_markedWrappers; }
