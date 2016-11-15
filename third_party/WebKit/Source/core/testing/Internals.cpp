@@ -2198,11 +2198,6 @@ void Internals::setIsCursorVisible(Document* document,
   document->page()->setIsCursorVisible(isVisible);
 }
 
-double Internals::effectiveMediaVolume(HTMLMediaElement* mediaElement) {
-  ASSERT(mediaElement);
-  return mediaElement->effectiveMediaVolume();
-}
-
 String Internals::effectivePreload(HTMLMediaElement* mediaElement) {
   ASSERT(mediaElement);
   return mediaElement->effectivePreload();

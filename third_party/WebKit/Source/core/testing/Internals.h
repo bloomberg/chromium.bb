@@ -367,7 +367,6 @@ class Internals final : public GarbageCollectedFinalized<Internals>,
 
   void setIsCursorVisible(Document*, bool, ExceptionState&);
 
-  double effectiveMediaVolume(HTMLMediaElement*);
   String effectivePreload(HTMLMediaElement*);
 
   void mediaPlayerRemoteRouteAvailabilityChanged(HTMLMediaElement*, bool);

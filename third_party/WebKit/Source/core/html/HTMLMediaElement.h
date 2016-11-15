@@ -195,7 +195,7 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
   bool shouldShowControls(
       const RecordMetricsBehavior = RecordMetricsBehavior::DoNotRecord) const;
   double volume() const;
-  void setVolume(double, ExceptionState&);
+  void setVolume(double, ExceptionState& = ASSERT_NO_EXCEPTION);
   bool muted() const;
   void setMuted(bool);
 

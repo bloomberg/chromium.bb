@@ -837,7 +837,7 @@ void MediaControlVolumeSliderElement::defaultEventHandler(Event* event) {
         UserMetricsAction("Media.Controls.VolumeChangeEnd"));
 
   double volume = value().toDouble();
-  mediaElement().setVolume(volume, ASSERT_NO_EXCEPTION);
+  mediaElement().setVolume(volume);
   mediaElement().setMuted(false);
 }
 
