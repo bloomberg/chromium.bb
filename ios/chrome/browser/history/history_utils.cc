@@ -27,7 +27,7 @@ bool CanAddURLToHistory(const GURL& url) {
 
   // Allow all about: and chrome: URLs except about:blank, since the user may
   // like to see "chrome://version", etc. in their history and autocomplete.
-  if (url == GURL(url::kAboutBlankURL))
+  if (url == url::kAboutBlankURL)
     return false;
 
   return true;

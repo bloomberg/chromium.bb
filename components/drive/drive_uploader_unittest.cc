@@ -170,8 +170,8 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
     EXPECT_EQ(expected_chunk_end, end_position);
 
     // The upload URL returned by InitiateUpload() must be used.
-    EXPECT_TRUE(GURL(kTestUploadNewFileURL) == upload_location ||
-                GURL(kTestUploadExistingFileURL) == upload_location);
+    EXPECT_TRUE(upload_location == kTestUploadNewFileURL ||
+                upload_location == kTestUploadExistingFileURL);
 
     // Other parameters should be the exact values passed to DriveUploader.
     EXPECT_EQ(expected_content_length_, content_length);
@@ -200,8 +200,8 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
                                  const UploadRangeCallback& callback) override {
     EXPECT_EQ(expected_content_length_, content_length);
     // The upload URL returned by InitiateUpload() must be used.
-    EXPECT_TRUE(GURL(kTestUploadNewFileURL) == upload_location ||
-                GURL(kTestUploadExistingFileURL) == upload_location);
+    EXPECT_TRUE(upload_location == kTestUploadNewFileURL ||
+                upload_location == kTestUploadExistingFileURL);
 
     SendUploadRangeResponse(upload_location, callback);
     return CancelCallback();
@@ -215,7 +215,7 @@ class MockDriveServiceWithUploadExpectation : public DummyDriveService {
     std::unique_ptr<FileResource> entry;
     if (received_bytes_ == expected_content_length_) {
       DriveApiErrorCode response_code =
-          upload_location == GURL(kTestUploadNewFileURL) ?
+          upload_location == kTestUploadNewFileURL ?
           HTTP_CREATED : HTTP_SUCCESS;
       response = UploadRangeResponse(response_code, -1, -1);
 

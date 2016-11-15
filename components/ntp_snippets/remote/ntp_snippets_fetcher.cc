@@ -158,12 +158,12 @@ bool IsSendingUserClassEnabled() {
 }
 
 bool UsesChromeContentSuggestionsAPI(const GURL& endpoint) {
-  if (endpoint == GURL(kChromeReaderServer))
+  if (endpoint == kChromeReaderServer)
     return false;
 
-  if (endpoint != GURL(kContentSuggestionsServer) &&
-      endpoint != GURL(kContentSuggestionsStagingServer) &&
-      endpoint != GURL(kContentSuggestionsAlphaServer)) {
+  if (endpoint != kContentSuggestionsServer &&
+      endpoint != kContentSuggestionsStagingServer &&
+      endpoint != kContentSuggestionsAlphaServer) {
     LOG(WARNING) << "Unknown value for " << kContentSuggestionsBackend << ": "
                  << "assuming chromecontentsuggestions-style API";
   }

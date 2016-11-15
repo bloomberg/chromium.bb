@@ -103,7 +103,7 @@ class PrivetNotificationsListenerTest : public testing::Test {
 
   bool SuccessfulResponseToInfo(const std::string& response) {
     net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-    if (!fetcher || GURL(kDeviceInfoURL) != fetcher->GetOriginalURL())
+    if (!fetcher || fetcher->GetOriginalURL() != kDeviceInfoURL)
       return false;
 
     fetcher->SetResponseString(response);

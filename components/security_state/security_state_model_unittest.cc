@@ -22,8 +22,8 @@ namespace security_state {
 
 namespace {
 
-const char kHttpsUrl[] = "https://foo.test";
-const char kHttpUrl[] = "http://foo.test";
+const char kHttpsUrl[] = "https://foo.test/";
+const char kHttpUrl[] = "http://foo.test/";
 
 class TestSecurityStateModelClient : public SecurityStateModelClient {
  public:
@@ -93,7 +93,7 @@ class TestSecurityStateModelClient : public SecurityStateModelClient {
   bool UsedPolicyInstalledCertificate() override { return false; }
 
   bool IsOriginSecure(const GURL& url) override {
-    return url_ == GURL(kHttpsUrl);
+    return url_ == kHttpsUrl;
   }
 
  private:

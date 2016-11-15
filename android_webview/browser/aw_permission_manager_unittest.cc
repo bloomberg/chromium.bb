@@ -28,9 +28,9 @@ int kNoPendingOperation = -1;
 
 int kRenderProcessIDForTesting = 8;
 int kRenderFrameIDForTesting = 19;
-const char kEmbeddingOrigin[] = "https://www.google.com";
-const char kRequestingOrigin1[] = "https://www.google.com";
-const char kRequestingOrigin2[] = "https://www.chromium.org";
+const char kEmbeddingOrigin[] = "https://www.google.com/";
+const char kRequestingOrigin1[] = "https://www.google.com/";
+const char kRequestingOrigin2[] = "https://www.chromium.org/";
 
 class AwBrowserPermissionRequestDelegateForTesting
     : public AwBrowserPermissionRequestDelegate {
@@ -39,7 +39,7 @@ class AwBrowserPermissionRequestDelegateForTesting
                        PermissionType type,
                        bool grant) {
     for (auto it = request_.begin(); it != request_.end(); ++it) {
-      if ((*it)->type != type || (*it)->origin != GURL(origin))
+      if ((*it)->type != type || (*it)->origin != origin)
         continue;
       const base::Callback<void(bool)> callback = (*it)->callback;
       request_.erase(it);

@@ -37,7 +37,7 @@ const char kTestUrl[] = "http://www.test.com/";
 // that results in very ugly syntax, which is why these custom matchers are
 // used instead.
 MATCHER(NavigationParamsUrlIsTest, "") {
-  return arg.url() == GURL(kTestUrl);
+  return arg.url() == kTestUrl;
 }
 
 }  // namespace

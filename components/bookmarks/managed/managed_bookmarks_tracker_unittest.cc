@@ -165,7 +165,7 @@ class ManagedBookmarksTrackerTest : public testing::Test {
       }
     } else if (node->is_url()) {
       std::string url;
-      if (!dict->GetString("url", &url) || node->url() != GURL(url))
+      if (!dict->GetString("url", &url) || node->url() != url)
         return false;
     } else {
       return false;

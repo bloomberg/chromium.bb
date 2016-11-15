@@ -32,8 +32,7 @@ bool WillHandleWebBrowserAboutURL(GURL* url, web::BrowserState* browser_state) {
   *url = url_formatter::FixupURL(url->possibly_invalid_spec(), std::string());
 
   // Check that about: URLs are fixed up to chrome: by url_formatter::FixupURL.
-  DCHECK((*url == GURL(url::kAboutBlankURL)) ||
-         !url->SchemeIs(url::kAboutScheme));
+  DCHECK((*url == url::kAboutBlankURL) || !url->SchemeIs(url::kAboutScheme));
 
   // url_formatter::FixupURL translates about:foo into chrome://foo/.
   if (!url->SchemeIs(kChromeUIScheme))

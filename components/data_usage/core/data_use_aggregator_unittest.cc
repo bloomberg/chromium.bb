@@ -364,7 +364,7 @@ TEST_F(DataUseAggregatorTest, ReportDataUse) {
     // First, the |foo_request| data use should have happened.
     int64_t observed_foo_tx_bytes = 0, observed_foo_rx_bytes = 0;
     while (data_use_it != test_observer()->observed_data_use().end() &&
-           data_use_it->url == GURL("http://foo.com")) {
+           data_use_it->url == "http://foo.com/") {
       EXPECT_EQ(GetRequestStart(*foo_request), data_use_it->request_start);
       EXPECT_EQ(GURL("http://foofirstparty.com"),
                 data_use_it->first_party_for_cookies);

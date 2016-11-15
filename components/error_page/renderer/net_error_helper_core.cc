@@ -620,7 +620,7 @@ void NetErrorHelperCore::OnCommitLoad(FrameType frame_type, const GURL& url) {
     const GURL& error_url = error.unreachableURL;
     if (url == error_url)
       ReportAutoReloadSuccess(error, auto_reload_count_);
-    else if (url != GURL(content::kUnreachableWebDataURL))
+    else if (url != content::kUnreachableWebDataURL)
       ReportAutoReloadFailure(error, auto_reload_count_);
   }
 

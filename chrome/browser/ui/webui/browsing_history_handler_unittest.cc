@@ -72,7 +72,7 @@ bool ResultEquals(
   base::Time correct_time =
       baseline_time + base::TimeDelta::FromHours(correct_result.hour_offset);
 
-  return result.time == correct_time && result.url == GURL(correct_result.url);
+  return result.time == correct_time && result.url == correct_result.url;
 }
 
 void IgnoreBoolAndDoNothing(bool ignored_argument) {}
@@ -189,10 +189,10 @@ TEST_F(BrowsingHistoryHandlerTest, MAYBE_MergeDuplicateResults) {
   {
     // Basic test that duplicates on the same day are removed.
     TestResult test_data[] = {
-      { "http://google.com", 0 },
-      { "http://google.de", 1 },
-      { "http://google.com", 2 },
-      { "http://google.com", 3 }  // Most recent.
+      { "http://google.com/", 0 },
+      { "http://google.de/", 1 },
+      { "http://google.com/", 2 },
+      { "http://google.com/", 3 }  // Most recent.
     };
     std::vector<BrowsingHistoryHandler::HistoryEntry> results;
     AddQueryResults(test_data, arraysize(test_data), &results);
@@ -206,9 +206,9 @@ TEST_F(BrowsingHistoryHandlerTest, MAYBE_MergeDuplicateResults) {
   {
     // Test that a duplicate URL on the next day is not removed.
     TestResult test_data[] = {
-      { "http://google.com", 0 },
-      { "http://google.com", 23 },
-      { "http://google.com", 24 },  // Most recent.
+      { "http://google.com/", 0 },
+      { "http://google.com/", 23 },
+      { "http://google.com/", 24 },  // Most recent.
     };
     std::vector<BrowsingHistoryHandler::HistoryEntry> results;
     AddQueryResults(test_data, arraysize(test_data), &results);
@@ -223,16 +223,16 @@ TEST_F(BrowsingHistoryHandlerTest, MAYBE_MergeDuplicateResults) {
     // Test multiple duplicates across multiple days.
     TestResult test_data[] = {
       // First day.
-      { "http://google.de", 0 },
-      { "http://google.com", 1 },
-      { "http://google.de", 2 },
-      { "http://google.com", 3 },
+      { "http://google.de/", 0 },
+      { "http://google.com/", 1 },
+      { "http://google.de/", 2 },
+      { "http://google.com/", 3 },
 
       // Second day.
-      { "http://google.de", 24 },
-      { "http://google.com", 25 },
-      { "http://google.de", 26 },
-      { "http://google.com", 27 },  // Most recent.
+      { "http://google.de/", 24 },
+      { "http://google.com/", 25 },
+      { "http://google.de/", 26 },
+      { "http://google.com/", 27 },  // Most recent.
     };
     std::vector<BrowsingHistoryHandler::HistoryEntry> results;
     AddQueryResults(test_data, arraysize(test_data), &results);
@@ -248,10 +248,10 @@ TEST_F(BrowsingHistoryHandlerTest, MAYBE_MergeDuplicateResults) {
   {
     // Test that timestamps for duplicates are properly saved.
     TestResult test_data[] = {
-      { "http://google.com", 0 },
-      { "http://google.de", 1 },
-      { "http://google.com", 2 },
-      { "http://google.com", 3 }  // Most recent.
+      { "http://google.com/", 0 },
+      { "http://google.de/", 1 },
+      { "http://google.com/", 2 },
+      { "http://google.com/", 3 }  // Most recent.
     };
     std::vector<BrowsingHistoryHandler::HistoryEntry> results;
     AddQueryResults(test_data, arraysize(test_data), &results);

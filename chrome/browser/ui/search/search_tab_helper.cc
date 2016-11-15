@@ -59,7 +59,7 @@ bool IsCacheableNTP(const content::WebContents* contents) {
   const content::NavigationEntry* entry =
       contents->GetController().GetLastCommittedEntry();
   return search::NavEntryIsInstantNTP(contents, entry) &&
-         entry->GetURL() != GURL(chrome::kChromeSearchLocalNtpUrl);
+         entry->GetURL() != chrome::kChromeSearchLocalNtpUrl;
 }
 
 bool IsNTP(const content::WebContents* contents) {

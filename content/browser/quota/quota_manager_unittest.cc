@@ -1490,8 +1490,7 @@ TEST_F(QuotaManagerTest, EvictOriginDataWithDeletionError) {
   for (iterator itr(origin_info_entries().begin()),
                 end(origin_info_entries().end());
        itr != end; ++itr) {
-    if (itr->type == kTemp &&
-        GURL("http://foo.com/") == itr->origin) {
+    if (itr->type == kTemp && itr->origin == "http://foo.com/") {
       found_origin_in_database = true;
       break;
     }

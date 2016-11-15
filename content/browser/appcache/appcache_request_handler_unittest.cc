@@ -1002,7 +1002,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
     EXPECT_TRUE(handler_->found_manifest_url_.is_empty());
     EXPECT_TRUE(host_->preferred_manifest_url().is_empty());
     EXPECT_TRUE(host_->main_resource_blocked_);
-    EXPECT_TRUE(host_->blocked_manifest_url_ == GURL("http://blah/manifest/"));
+    EXPECT_EQ(host_->blocked_manifest_url_, "http://blah/manifest/");
 
     TestFinished();
   }

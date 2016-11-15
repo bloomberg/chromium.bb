@@ -62,6 +62,6 @@ const char kUnreachableWebDataURL[] = "data:text/html,chromewebdata";
 
 const char kChromeUINetworkViewCacheURL[] = "chrome://view-http-cache/";
 const char kChromeUIResourcesURL[] = "chrome://resources/";
-const char kChromeUIShorthangURL[] = "chrome://shorthang";
+const char kChromeUIShorthangURL[] = "chrome://shorthang/";
 
 }  // namespace content

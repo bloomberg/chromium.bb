@@ -65,7 +65,7 @@ bool NthResultIs(const QueryResults& results,
     return false;
 
   // Now check the URL & title.
-  return result.url() == GURL(test_entries[test_entry_index].url) &&
+  return result.url() == test_entries[test_entry_index].url &&
          result.title() ==
              base::UTF8ToUTF16(test_entries[test_entry_index].title);
 }

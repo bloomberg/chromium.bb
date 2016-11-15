@@ -77,7 +77,7 @@ void FrameNavigationState::StartTrackingDocumentLoad(
   frame_state.error_occurred = is_error_page;
   frame_state.url = url;
   frame_state.is_iframe_srcdoc = is_iframe_srcdoc;
-  DCHECK(!is_iframe_srcdoc || url == GURL(url::kAboutBlankURL));
+  DCHECK(!is_iframe_srcdoc || url == url::kAboutBlankURL);
   if (!is_same_page) {
     frame_state.is_loading = true;
     frame_state.is_parsing = true;

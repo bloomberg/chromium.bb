@@ -12,7 +12,7 @@
 namespace {
 
 bool FilterGoogle(const GURL& url) {
-  return url == GURL("https://www.google.com");
+  return url == "https://www.google.com/";
 }
 
 bool FilterAll(const GURL& url) {

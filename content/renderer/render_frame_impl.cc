@@ -5162,7 +5162,7 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
     if (iter != parent->history_subframe_unique_names_.end()) {
       bool history_item_is_about_blank = iter->second;
       should_ask_browser =
-          !history_item_is_about_blank || url != GURL(url::kAboutBlankURL);
+          !history_item_is_about_blank || url != url::kAboutBlankURL;
       parent->history_subframe_unique_names_.erase(frame_->uniqueName().utf8());
     }
 

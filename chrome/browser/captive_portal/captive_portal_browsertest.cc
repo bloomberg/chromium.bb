@@ -485,8 +485,8 @@ URLRequestMockCaptivePortalJobFactory::Interceptor::MaybeInterceptRequest(
   base::FilePath root_http;
   PathService::Get(chrome::DIR_TEST_DATA, &root_http);
 
-  if (request->url() == GURL(kMockHttpsUrl) ||
-      request->url() == GURL(kMockHttpsUrl2)) {
+  if (request->url() == kMockHttpsUrl ||
+      request->url() == kMockHttpsUrl2) {
     if (behind_captive_portal_)
       return new URLRequestTimeoutOnDemandJob(request, network_delegate);
     // Once logged in to the portal, HTTPS requests return the page that was
@@ -497,7 +497,7 @@ URLRequestMockCaptivePortalJobFactory::Interceptor::MaybeInterceptRequest(
         root_http.Append(FILE_PATH_LITERAL("title2.html")),
         BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
             base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
-  } else if (request->url() == GURL(kMockHttpsQuickTimeoutUrl)) {
+  } else if (request->url() == kMockHttpsQuickTimeoutUrl) {
     if (behind_captive_portal_)
       return new URLRequestFailedJob(
           request, network_delegate, net::ERR_CONNECTION_TIMED_OUT);
@@ -511,13 +511,13 @@ URLRequestMockCaptivePortalJobFactory::Interceptor::MaybeInterceptRequest(
             base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
   } else {
     // The URL should be the captive portal test URL.
-    EXPECT_TRUE(GURL(kMockCaptivePortalTestUrl) == request->url() ||
-                GURL(kMockCaptivePortal511Url) == request->url());
+    EXPECT_TRUE(request->url() == kMockCaptivePortalTestUrl ||
+                request->url() == kMockCaptivePortal511Url);
 
     if (behind_captive_portal_) {
       // Prior to logging in to the portal, the HTTP test URLs are intercepted
       // by the captive portal.
-      if (GURL(kMockCaptivePortal511Url) == request->url()) {
+      if (request->url() == kMockCaptivePortal511Url) {
         return new URLRequestMockHTTPJob(
             request,
             network_delegate,

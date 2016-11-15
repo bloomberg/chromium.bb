@@ -35,7 +35,7 @@ bool KeyIsEven(const disk_cache::Entry* entry) {
 }
 
 bool HasHttpsExampleOrigin(const GURL& url) {
-  return url.GetOrigin() == GURL("https://example.com");
+  return url.GetOrigin() == "https://example.com/";
 }
 
 }  // namespace

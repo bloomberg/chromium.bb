@@ -47,8 +47,8 @@ bool ExtensionViewGuest::NavigateGuest(const std::string& src,
 
   // If the URL is not valid, about:blank, or the same origin as the extension,
   // then navigate to about:blank.
-  bool url_not_allowed = url != GURL(url::kAboutBlankURL) &&
-                         !url::IsSameOriginWith(url, extension_url_);
+  bool url_not_allowed =
+      url != url::kAboutBlankURL && !url::IsSameOriginWith(url, extension_url_);
   if (!url.is_valid() || url_not_allowed)
     return NavigateGuest(url::kAboutBlankURL, true /* force_navigation */);
 

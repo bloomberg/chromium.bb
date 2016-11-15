@@ -106,11 +106,11 @@ struct OriginEnumerationTestRecord {
 };
 
 const OriginEnumerationTestRecord kOriginEnumerationTestRecords[] = {
-  {"http://example.com", false, true},
-  {"http://example1.com", true, false},
-  {"https://example1.com", true, true},
-  {"file://", false, true},
-  {"http://example.com:8000", false, true},
+  {"http://example.com/", false, true},
+  {"http://example1.com/", true, false},
+  {"https://example1.com/", true, true},
+  {"file:///", false, true},
+  {"http://example.com:8000/", false, true},
 };
 
 FileSystemURL FileSystemURLAppend(
@@ -1632,7 +1632,7 @@ TEST_F(ObfuscatedFileUtilTest, TestOriginEnumerator) {
         ++i) {
       const OriginEnumerationTestRecord& record =
           kOriginEnumerationTestRecords[i];
-      if (GURL(record.origin_url) != origin_url)
+      if (origin_url != record.origin_url)
         continue;
       found = true;
       EXPECT_EQ(record.has_temporary,

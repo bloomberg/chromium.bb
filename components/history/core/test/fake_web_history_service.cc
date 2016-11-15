@@ -106,7 +106,7 @@ const std::string& FakeRequest::GetResponseBody() {
   remove_query.ClearQuery();
   GURL base_url = url_.ReplaceComponents(remove_query);
 
-  if (base_url == GURL(kLookupUrl) && client == kChromeClient) {
+  if (base_url == kLookupUrl && client == kChromeClient) {
     // History query.
     int count = service_->GetNumberOfVisitsBetween(begin_, end_);
     if (max_count_ && max_count_ < count)
@@ -117,11 +117,11 @@ const std::string& FakeRequest::GetResponseBody() {
       response_body_ += i ? ", {}" : "{}";
     response_body_ += "] }";
 
-  } else if (base_url == GURL(kDeleteUrl) && client == kChromeClient) {
+  } else if (base_url == kDeleteUrl && client == kChromeClient) {
     // Deletion query.
     response_body_ = "{ \"just needs to be\" : \"a valid JSON.\" }";
 
-  } else if (base_url == GURL(kLookupUrl) && client == kWebAndAppClient) {
+  } else if (base_url == kLookupUrl && client == kWebAndAppClient) {
     // Web and app activity query.
     response_body_ = base::StringPrintf(
         "{ \"history_recording_enabled\": %s }",

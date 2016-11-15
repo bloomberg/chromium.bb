@@ -43,7 +43,7 @@ bool WillHandleBrowserAboutURL(GURL* url,
   FixupBrowserAboutURL(url, browser_context);
 
   // Check that about: URLs are fixed up to chrome: by url_formatter::FixupURL.
-  DCHECK((*url == GURL(url::kAboutBlankURL)) ||
+  DCHECK((*url == url::kAboutBlankURL) ||
          !url->SchemeIs(url::kAboutScheme));
 
   // Only handle chrome://foo/, url_formatter::FixupURL translates about:foo.

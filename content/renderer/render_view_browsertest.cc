@@ -1748,7 +1748,7 @@ class RendererErrorPageTest : public RenderViewImplTest {
    public:
     bool ShouldSuppressErrorPage(RenderFrame* render_frame,
                                  const GURL& url) override {
-      return url == GURL("http://example.com/suppress");
+      return url == "http://example.com/suppress";
     }
 
     void GetNavigationErrorStrings(content::RenderFrame* render_frame,
