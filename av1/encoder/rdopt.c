@@ -4363,7 +4363,7 @@ static int get_gmbitcost(const WarpedMotionParams *gm, const aom_prob *probs) {
        ? 0                                                              \
        : get_gmbitcost(&cm->global_motion[(ref)],                       \
                        cm->fc->global_motion_types_prob) /              \
-             GLOBAL_MOTION_COST_AMORTIZATION_BLKS);
+             GLOBAL_MOTION_COST_AMORTIZATION_BLKS)
 #else
 #define GLOBAL_MOTION_RATE(ref) 0
 #endif  // GLOBAL_MOTION_COST_AMORTIZATION_BLKS > 0
