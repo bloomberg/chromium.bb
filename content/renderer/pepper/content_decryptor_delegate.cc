@@ -206,6 +206,19 @@ PP_DecryptedFrameFormat MediaVideoFormatToPpDecryptedFrameFormat(
   }
 }
 
+media::VideoPixelFormat PpDecryptedFrameFormatToMediaVideoFormat(
+    PP_DecryptedFrameFormat format) {
+  switch (format) {
+    case PP_DECRYPTEDFRAMEFORMAT_YV12:
+      return media::PIXEL_FORMAT_YV12;
+    case PP_DECRYPTEDFRAMEFORMAT_I420:
+      return media::PIXEL_FORMAT_I420;
+    default:
+      NOTREACHED() << "Unknown decrypted frame format: " << format;
+      return media::PIXEL_FORMAT_UNKNOWN;
+  }
+}
+
 Decryptor::Status PpDecryptResultToMediaDecryptorStatus(
     PP_DecryptResult result) {
   switch (result) {
@@ -989,11 +1002,18 @@ void ContentDecryptorDelegate::DeliverFrame(
   }
 
   gfx::Size frame_size(frame_info->width, frame_info->height);
-  DCHECK_EQ(frame_info->format, PP_DECRYPTEDFRAMEFORMAT_YV12);
+
+  media::VideoPixelFormat video_pixel_format =
+      PpDecryptedFrameFormatToMediaVideoFormat(frame_info->format);
+  if (video_pixel_format == media::PIXEL_FORMAT_UNKNOWN) {
+    FreeBuffer(frame_info->tracking_info.buffer_id);
+    video_decode_cb.Run(Decryptor::kError, NULL);
+    return;
+  }
 
   scoped_refptr<media::VideoFrame> decoded_frame =
       media::VideoFrame::WrapExternalYuvData(
-          media::PIXEL_FORMAT_YV12, frame_size, gfx::Rect(frame_size),
+          video_pixel_format, frame_size, gfx::Rect(frame_size),
           natural_size_, frame_info->strides[PP_DECRYPTEDFRAMEPLANES_Y],
           frame_info->strides[PP_DECRYPTEDFRAMEPLANES_U],
           frame_info->strides[PP_DECRYPTEDFRAMEPLANES_V],
