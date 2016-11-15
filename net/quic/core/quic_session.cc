@@ -13,7 +13,6 @@
 #include "net/quic/core/quic_connection.h"
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_flow_controller.h"
-#include "net/ssl/ssl_info.h"
 
 using base::IntToString;
 using base::StringPiece;

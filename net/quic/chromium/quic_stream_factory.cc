@@ -753,6 +753,7 @@ QuicStreamFactory::QuicStreamFactory(
       random_generator_(random_generator),
       clock_(clock),
       max_packet_length_(max_packet_length),
+      clock_skew_detector_(base::TimeTicks::Now(), base::Time::Now()),
       socket_performance_watcher_factory_(socket_performance_watcher_factory),
       config_(InitializeQuicConfig(connection_options,
                                    idle_connection_timeout_seconds)),
@@ -925,6 +926,14 @@ int QuicStreamFactory::Create(const QuicServerId& server_id,
                               base::StringPiece method,
                               const NetLogWithSource& net_log,
                               QuicStreamRequest* request) {
+  if (clock_skew_detector_.ClockSkewDetected(base::TimeTicks::Now(),
+                                             base::Time::Now())) {
+    while (!active_sessions_.empty()) {
+      QuicChromiumClientSession* session = active_sessions_.begin()->second;
+      OnSessionGoingAway(session);
+      // TODO(rch): actually close the session?
+    }
+  }
   DCHECK(server_id.host_port_pair().Equals(HostPortPair::FromURL(url)));
   // Enforce session affinity for promised streams.
   QuicClientPromisedInfo* promised =
