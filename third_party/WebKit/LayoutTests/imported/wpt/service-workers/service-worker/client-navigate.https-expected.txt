@@ -1,8 +1,0 @@
-CONSOLE ERROR: Mixed Content: The page at 'https://web-platform.test:8444/service-workers/service-worker/client-navigate.https.html' was loaded over HTTPS, but requested an insecure resource 'http://example.com/'. This request has been blocked; the content must be served over HTTPS.
-This is a testharness.js-based test.
-Harness Error. harness_status.status = 2 , harness_status.message = null
-PASS Frame location should update on successful navigation 
-PASS Frame location should not be accessible after redirect 
-TIMEOUT Frame location should not update on failed navigation Test timed out
-Harness: the test ran to completion.
-

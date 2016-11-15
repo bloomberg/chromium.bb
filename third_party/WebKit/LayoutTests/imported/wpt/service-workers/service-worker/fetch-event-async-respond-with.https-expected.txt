@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-Harness Error. harness_status.status = 2 , harness_status.message = null
-TIMEOUT Calling respondWith asynchronously throws an exception Test timed out
-Harness: the test ran to completion.
-
