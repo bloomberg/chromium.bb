@@ -124,6 +124,33 @@ TEST(SimpleVersionUpgradeTest, ExperimentBacktoDefault) {
       cache_dir.GetPath(), disk_cache::SimpleExperiment()));
 }
 
+TEST(SimpleVersionUpgradeTest, ExperimentStoredInNewFakeIndex) {
+  base::ScopedTempDir cache_dir;
+  ASSERT_TRUE(cache_dir.CreateUniqueTempDir());
+  const base::FilePath cache_path = cache_dir.GetPath();
+  const base::FilePath file_name = cache_path.AppendASCII(kFakeIndexFileName);
+
+  disk_cache::SimpleExperiment experiment;
+  experiment.type = disk_cache::SimpleExperimentType::SIZE;
+  experiment.param = 100u;
+
+  // There is no index on disk, so the upgrade should write a new one and return
+  // true.
+  EXPECT_TRUE(
+      disk_cache::UpgradeSimpleCacheOnDisk(cache_dir.GetPath(), experiment));
+
+  std::string new_fake_index_contents;
+  ASSERT_TRUE(base::ReadFileToString(cache_path.AppendASCII(kFakeIndexFileName),
+                                     &new_fake_index_contents));
+  const disk_cache::FakeIndexData* fake_index_header;
+  fake_index_header = reinterpret_cast<const disk_cache::FakeIndexData*>(
+      new_fake_index_contents.data());
+
+  EXPECT_EQ(disk_cache::SimpleExperimentType::SIZE,
+            fake_index_header->experiment_type);
+  EXPECT_EQ(100u, fake_index_header->experiment_param);
+}
+
 TEST(SimpleVersionUpgradeTest, FakeIndexVersionGetsUpdated) {
   base::ScopedTempDir cache_dir;
   ASSERT_TRUE(cache_dir.CreateUniqueTempDir());

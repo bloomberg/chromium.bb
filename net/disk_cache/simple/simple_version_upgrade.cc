@@ -149,7 +149,7 @@ bool UpgradeSimpleCacheOnDisk(const base::FilePath& path,
 
   if (!fake_index_file.IsValid()) {
     if (fake_index_file.error_details() == base::File::FILE_ERROR_NOT_FOUND) {
-      return WriteFakeIndexFile(fake_index, SimpleExperiment());
+      return WriteFakeIndexFile(fake_index, experiment);
     }
     return false;
   }
