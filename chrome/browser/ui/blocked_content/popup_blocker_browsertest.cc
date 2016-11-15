@@ -338,8 +338,16 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
 }
 
 // Verify that when you unblock popup, the popup shows in history and omnibox.
+// TODO(crbug.com/663333) Flaky on Linux.
+#if defined(OS_LINUX)
+#define MAYBE_UnblockedPopupShowsInHistoryAndOmnibox \
+  DISABLED_UnblockedPopupShowsInHistoryAndOmnibox
+#else
+#define MAYBE_UnblockedPopupShowsInHistoryAndOmnibox \
+  UnblockedPopupShowsInHistoryAndOmnibox
+#endif
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
-                       UnblockedPopupShowsInHistoryAndOmnibox) {
+                       MAYBE_UnblockedPopupShowsInHistoryAndOmnibox) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
   GURL url(embedded_test_server()->GetURL(
