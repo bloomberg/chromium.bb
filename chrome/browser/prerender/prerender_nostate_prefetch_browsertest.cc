@@ -54,54 +54,12 @@ const char kPrefetchSubresourceRedirectPage[] =
 class NoStatePrefetchBrowserTest
     : public test_utils::PrerenderInProcessBrowserTest {
  public:
-  class BrowserTestTime : public PrerenderManager::TimeOverride {
-   public:
-    BrowserTestTime() {}
-
-    base::Time GetCurrentTime() const override {
-      if (delta_.is_zero()) {
-        return base::Time::Now();
-      }
-      return time_ + delta_;
-    }
-
-    base::TimeTicks GetCurrentTimeTicks() const override {
-      if (delta_.is_zero()) {
-        return base::TimeTicks::Now();
-      }
-      return time_ticks_ + delta_;
-    }
-
-    void AdvanceTime(base::TimeDelta delta) {
-      if (delta_.is_zero()) {
-        time_ = base::Time::Now();
-        time_ticks_ = base::TimeTicks::Now();
-        delta_ = delta;
-      } else {
-        delta_ += delta;
-      }
-    }
-
-   private:
-    base::Time time_;
-    base::TimeTicks time_ticks_;
-    base::TimeDelta delta_;
-  };
-
   NoStatePrefetchBrowserTest() {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PrerenderInProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         switches::kPrerenderMode, switches::kPrerenderModeSwitchValuePrefetch);
-  }
-
-  void SetUpOnMainThread() override {
-    PrerenderInProcessBrowserTest::SetUpOnMainThread();
-    std::unique_ptr<BrowserTestTime> test_time =
-        base::MakeUnique<BrowserTestTime>();
-    browser_test_time_ = test_time.get();
-    GetPrerenderManager()->SetTimeOverride(std::move(test_time));
   }
 
   // Set up a request counter for |path|, which is also the location of the data
@@ -126,8 +84,6 @@ class NoStatePrefetchBrowserTest
                    counter->AsWeakPtr()));
   }
 
-  BrowserTestTime* GetTimeOverride() const { return browser_test_time_; }
-
  protected:
   std::unique_ptr<TestPrerender> PrefetchFromURL(
       const GURL& target_url,
@@ -150,8 +106,6 @@ class NoStatePrefetchBrowserTest
   }
 
  private:
-  BrowserTestTime* browser_test_time_;
-
   DISALLOW_COPY_AND_ASSIGN(NoStatePrefetchBrowserTest);
 };
 

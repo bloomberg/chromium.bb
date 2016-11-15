@@ -68,7 +68,7 @@ void PrerenderTabHelper::DidStopLoading() {
   // page is still prerendering, record the not swapped in page load time
   // instead.
   if (!pplt_load_start_.is_null()) {
-    base::TimeTicks now = base::TimeTicks::Now();
+    base::TimeTicks now = GetTimeTicksFromPrerenderManager();
     if (IsPrerendering()) {
       PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
       if (prerender_manager) {
@@ -110,7 +110,7 @@ void PrerenderTabHelper::DidStartProvisionalLoadForFrame(
     return;
 
   // Record PPLT state for the beginning of a new navigation.
-  pplt_load_start_ = base::TimeTicks::Now();
+  pplt_load_start_ = GetTimeTicksFromPrerenderManager();
   actual_load_start_ = base::TimeTicks();
 
   if (next_load_is_control_prerender_) {
@@ -133,6 +133,18 @@ PrerenderManager* PrerenderTabHelper::MaybeGetPrerenderManager() const {
       web_contents()->GetBrowserContext());
 }
 
+base::TimeTicks PrerenderTabHelper::GetTimeTicksFromPrerenderManager() const {
+  // Prerender browser tests should always have a PrerenderManager when mocking
+  // out tick clock.
+  PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
+  if (prerender_manager)
+    return prerender_manager->GetCurrentTimeTicks();
+
+  // Fall back to returning the same value as PrerenderManager would have
+  // returned in production.
+  return base::TimeTicks::Now();
+}
+
 bool PrerenderTabHelper::IsPrerendering() {
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
   if (!prerender_manager)
@@ -152,7 +164,7 @@ void PrerenderTabHelper::PrerenderSwappedIn() {
     // If we have not finished loading yet, record the actual load start, and
     // rebase the start time to now.
     actual_load_start_ = pplt_load_start_;
-    pplt_load_start_ = base::TimeTicks::Now();
+    pplt_load_start_ = GetTimeTicksFromPrerenderManager();
   }
 }
 

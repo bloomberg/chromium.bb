@@ -23,7 +23,11 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
+#include "base/test/simple_test_clock.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_clock.h"
+#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
@@ -169,6 +173,8 @@ PrerenderManager::PrerenderManager(Profile* profile)
       histograms_(new PrerenderHistograms()),
       profile_network_bytes_(0),
       last_recorded_profile_network_bytes_(0),
+      clock_(new base::DefaultClock()),
+      tick_clock_(new base::DefaultTickClock()),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -1108,21 +1114,21 @@ void PrerenderManager::DeleteOldEntries() {
 }
 
 base::Time PrerenderManager::GetCurrentTime() const {
-  if (time_override_) {
-    return time_override_->GetCurrentTime();
-  }
-  return base::Time::Now();
+  return clock_->Now();
 }
 
 base::TimeTicks PrerenderManager::GetCurrentTimeTicks() const {
-  if (time_override_) {
-    return time_override_->GetCurrentTimeTicks();
-  }
-  return base::TimeTicks::Now();
+  return tick_clock_->NowTicks();
 }
 
-void PrerenderManager::SetTimeOverride(std::unique_ptr<TimeOverride> override) {
-  time_override_ = std::move(override);
+void PrerenderManager::SetClockForTesting(
+    std::unique_ptr<base::SimpleTestClock> clock) {
+  clock_ = std::move(clock);
+}
+
+void PrerenderManager::SetTickClockForTesting(
+    std::unique_ptr<base::SimpleTestTickClock> tick_clock) {
+  tick_clock_ = std::move(tick_clock);
 }
 
 std::unique_ptr<PrerenderContents> PrerenderManager::CreatePrerenderContents(

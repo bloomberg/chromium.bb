@@ -14,6 +14,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
@@ -35,6 +36,9 @@ struct ChromeCookieDetails;
 namespace base {
 class DictionaryValue;
 class ListValue;
+class SimpleTestClock;
+class SimpleTestTickClock;
+class TickClock;
 }
 
 namespace chrome {
@@ -97,13 +101,6 @@ class PrerenderManager : public content::NotificationObserver,
     CLEAR_PRERENDER_CONTENTS = 0x1 << 0,
     CLEAR_PRERENDER_HISTORY = 0x1 << 1,
     CLEAR_MAX = 0x1 << 2
-  };
-
-  // Used to manipulate time for testing.
-  class TimeOverride {
-   public:
-    virtual base::Time GetCurrentTime() const = 0;
-    virtual base::TimeTicks GetCurrentTimeTicks() const = 0;
   };
 
   // Owned by a Profile object for the lifetime of the profile.
@@ -324,13 +321,13 @@ class PrerenderManager : public content::NotificationObserver,
 
   Profile* profile() const { return profile_; }
 
+  // Return current time and ticks with ability to mock the clock out for
+  // testing.
   base::Time GetCurrentTime() const;
   base::TimeTicks GetCurrentTimeTicks() const;
-
-  // For testing.
-  // TODO(mattcary): unify time testing by using base::SimpleTestClock and
-  // SimpleTestTickClock.
-  void SetTimeOverride(std::unique_ptr<TimeOverride> override);
+  void SetClockForTesting(std::unique_ptr<base::SimpleTestClock> clock);
+  void SetTickClockForTesting(
+      std::unique_ptr<base::SimpleTestTickClock> tick_clock);
 
   // Notification that a prerender has completed and its bytes should be
   // recorded.
@@ -610,7 +607,8 @@ class PrerenderManager : public content::NotificationObserver,
   using PrerenderProcessSet = std::set<content::RenderProcessHost*>;
   PrerenderProcessSet prerender_process_hosts_;
 
-  std::unique_ptr<TimeOverride> time_override_;
+  std::unique_ptr<base::Clock> clock_;
+  std::unique_ptr<base::TickClock> tick_clock_;
 
   base::WeakPtrFactory<PrerenderManager> weak_factory_;
 
