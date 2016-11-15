@@ -14,6 +14,7 @@
 #if !defined(_generic_code_H)
 # define _generic_code_H
 
+# include "aom_dsp/bitreader.h"
 # include "aom_dsp/bitwriter.h"
 # include "aom_dsp/entdec.h"
 # include "aom_dsp/entenc.h"
@@ -22,11 +23,13 @@
 
 #if OD_ACCOUNTING
 # define generic_decode(dec, model, max, ex_q16, integration, str) generic_decode_(dec, model, max, ex_q16, integration, str)
-# define od_decode_cdf_adapt_q15(ec, cdf, n, count, rate, str) od_decode_cdf_adapt_q15_(ec, cdf, n, count, rate, str)
+# define aom_decode_cdf_adapt_q15(r, cdf, n, count, rate, str) \
+  aom_decode_cdf_adapt_q15_(r, cdf, n, count, rate, str)
 # define od_decode_cdf_adapt(ec, cdf, n, increment, str) od_decode_cdf_adapt_(ec, cdf, n, increment, str)
 #else
 # define generic_decode(dec, model, max, ex_q16, integration, str) generic_decode_(dec, model, max, ex_q16, integration)
-# define od_decode_cdf_adapt_q15(ec, cdf, n, count, rate, str) od_decode_cdf_adapt_q15_(ec, cdf, n, count, rate)
+# define aom_decode_cdf_adapt_q15(r, cdf, n, count, rate, str) \
+  aom_decode_cdf_adapt_q15_(r, cdf, n, count, rate)
 # define od_decode_cdf_adapt(ec, cdf, n, increment, str) od_decode_cdf_adapt_(ec, cdf, n, increment)
 #endif
 
@@ -73,7 +76,7 @@ double generic_encode_cost(generic_encoder *model, int x, int max,
 
 double od_encode_cdf_cost(int val, uint16_t *cdf, int n);
 
-int od_decode_cdf_adapt_q15_(od_ec_dec *ec, uint16_t *cdf, int n,
+int aom_decode_cdf_adapt_q15_(aom_reader *r, uint16_t *cdf, int n,
  int *count, int rate OD_ACC_STR);
 
 int generic_decode_(od_ec_dec *dec, generic_encoder *model, int max,
