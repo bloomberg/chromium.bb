@@ -27,6 +27,17 @@ namespace {
 // Experimentally chosen value.
 const int kChunkCloseDistance = 10;
 
+// Return true if the HTTP response of |loader| is a successful one and loading
+// should continue. 4xx error indicate subsequent requests will fail too.
+// e.g. resource has been removed from the server while loading it. 301
+// indicates a redirect was returned which won't be successful because we
+// disable following redirects for PDF loading (we assume they are already
+// resolved by the browser.
+bool ResponseStatusSuccess(const URLLoaderWrapper* loader) {
+  int32_t http_code = loader->GetStatusCode();
+  return (http_code < 400 && http_code != 301) || http_code >= 500;
+}
+
 bool IsValidContentType(const std::string& type) {
   return (base::EndsWith(type, "/pdf", base::CompareCase::INSENSITIVE_ASCII) ||
           base::EndsWith(type, ".pdf", base::CompareCase::INSENSITIVE_ASCII) ||
@@ -64,6 +75,10 @@ bool DocumentLoader::Init(std::unique_ptr<URLLoaderWrapper> loader,
                           const std::string& url) {
   DCHECK(url_.empty());
   DCHECK(!loader_);
+
+  // Check that the initial response status is a valid one.
+  if (!ResponseStatusSuccess(loader.get()))
+    return false;
 
   std::string type = loader->GetContentType();
 
@@ -244,13 +259,8 @@ void DocumentLoader::DidOpenPartial(int32_t result) {
     return ReadComplete();
   }
 
-  int32_t http_code = loader_->GetStatusCode();
-  if (http_code >= 400 && http_code < 500) {
-    // Error accessing resource. 4xx error indicate subsequent requests
-    // will fail too.
-    // E.g. resource has been removed from the server while loading it.
+  if (!ResponseStatusSuccess(loader_.get()))
     return ReadComplete();
-  }
 
   // Leave position untouched for multiparted responce for now, when we read the
   // data we'll get it.

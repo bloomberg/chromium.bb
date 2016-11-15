@@ -944,15 +944,8 @@ void OutOfProcessInstance::OnPaint(
 }
 
 void OutOfProcessInstance::DidOpen(int32_t result) {
-  if (result == PP_OK) {
-    if (!engine_->HandleDocumentLoad(embed_loader_)) {
-      document_load_state_ = LOAD_STATE_LOADING;
-      DocumentLoadFailed();
-    }
-  } else if (result != PP_ERROR_ABORTED) {  // Can happen in tests.
-    NOTREACHED();
+  if (result != PP_OK || !engine_->HandleDocumentLoad(embed_loader_))
     DocumentLoadFailed();
-  }
 }
 
 void OutOfProcessInstance::DidOpenPreview(int32_t result) {
@@ -1544,6 +1537,7 @@ void OutOfProcessInstance::LoadUrlInternal(
   pp::URLRequestInfo request(this);
   request.SetURL(url);
   request.SetMethod("GET");
+  request.SetFollowRedirects(false);
 
   *loader = CreateURLLoaderInternal();
   pp::CompletionCallback callback = loader_factory_.NewCallback(method);

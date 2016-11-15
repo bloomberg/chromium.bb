@@ -1235,7 +1235,10 @@ void PDFiumEngine::OnDocumentComplete() {
 }
 
 void PDFiumEngine::OnDocumentCanceled() {
-  OnDocumentComplete();
+  if (visible_pages_.empty())
+    client_->DocumentLoadFailed();
+  else
+    OnDocumentComplete();
 }
 
 void PDFiumEngine::CancelBrowserDownload() {

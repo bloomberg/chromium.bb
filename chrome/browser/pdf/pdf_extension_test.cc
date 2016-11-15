@@ -914,3 +914,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkShiftLeftClick) {
   const GURL& url = active_web_contents->GetURL();
   ASSERT_EQ(std::string("http://www.example.com/"), url.spec());
 }
+
+// Test that if the plugin tries to load a URL that redirects then it will fail
+// to load. This is to avoid the source origin of the document changing during
+// the redirect, which can have security implications. https://crbug.com/653749.
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, RedirectsFailInPlugin) {
+  RunTestsInFile("redirects_fail_test.js", "test.pdf");
+}
