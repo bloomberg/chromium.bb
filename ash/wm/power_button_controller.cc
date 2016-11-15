@@ -44,8 +44,11 @@ PowerButtonController::PowerButtonController(LockStateController* controller)
 #if defined(OS_CHROMEOS)
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
-  tablet_controller_.reset(
-      new TabletPowerButtonController(lock_state_controller_));
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshEnableTabletPowerButton)) {
+    tablet_controller_.reset(
+        new TabletPowerButtonController(lock_state_controller_));
+  }
   Shell::GetInstance()->display_configurator()->AddObserver(this);
 #endif
   Shell::GetInstance()->PrependPreTargetHandler(this);
@@ -80,6 +83,7 @@ void PowerButtonController::OnPowerButtonEvent(
                                     ->IsMaximizeModeWindowManagerEnabled();
 
   if (!has_legacy_power_button_ && !should_take_screenshot &&
+      tablet_controller_ &&
       tablet_controller_->ShouldHandlePowerButtonEvents()) {
     tablet_controller_->OnPowerButtonEvent(down, timestamp);
     return;

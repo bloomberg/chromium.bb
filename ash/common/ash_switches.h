@@ -32,7 +32,7 @@ ASH_EXPORT extern const char kAshEnableFullscreenAppList[];
 ASH_EXPORT extern const char kAshEnableMagnifierKeyScroller[];
 ASH_EXPORT extern const char kAshEnablePalette[];
 ASH_EXPORT extern const char kAshEnablePaletteOnAllDisplays[];
-ASH_EXPORT extern const char kAshEnableUnifiedDesktop[];
+ASH_EXPORT extern const char kAshEnableTabletPowerButton[];
 #endif
 ASH_EXPORT extern const char kAshEnableTouchView[];
 ASH_EXPORT extern const char kAshEnableMirroredScreen[];

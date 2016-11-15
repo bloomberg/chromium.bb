@@ -50,6 +50,8 @@ class TabletPowerButtonControllerTest : public AshTestBase {
     dbus_setter->SetPowerManagerClient(base::WrapUnique(power_manager_client_));
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kAshEnableTouchViewTesting);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kAshEnableTabletPowerButton);
     AshTestBase::SetUp();
 
     lock_state_controller_ = Shell::GetInstance()->lock_state_controller();
