@@ -446,6 +446,8 @@ blink_core_sources("html") {
     "shadow/MediaControlElements.h",
     "shadow/MediaControls.cpp",
     "shadow/MediaControls.h",
+    "shadow/MediaControlsMediaEventListener.cpp",
+    "shadow/MediaControlsMediaEventListener.h",
     "shadow/MediaControlsWindowEventListener.cpp",
     "shadow/MediaControlsWindowEventListener.h",
     "shadow/PickerIndicatorElement.cpp",

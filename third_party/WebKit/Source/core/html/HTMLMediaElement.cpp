@@ -1091,7 +1091,6 @@ void HTMLMediaElement::loadResource(const WebMediaPlayerSource& source,
 
   if (fastHasAttribute(mutedAttr))
     m_muted = true;
-  updateVolume();
 
   DCHECK(!m_mediaSource);
 
@@ -2427,7 +2426,9 @@ void HTMLMediaElement::setVolume(double vol, ExceptionState& exceptionState) {
   }
 
   m_volume = vol;
-  updateVolume();
+
+  if (webMediaPlayer())
+    webMediaPlayer()->setVolume(effectiveMediaVolume());
   scheduleEvent(EventTypeNames::volumechange);
 }
 
@@ -2469,7 +2470,8 @@ void HTMLMediaElement::setMuted(bool muted) {
 
   // This is called after the volumechange event to make sure isAutoplayingMuted
   // returns the right value when webMediaPlayer receives the volume update.
-  updateVolume();
+  if (webMediaPlayer())
+    webMediaPlayer()->setVolume(effectiveMediaVolume());
 
   // If an element was a candidate for autoplay muted but not visible, it will
   // have a visibility observer ready to start its playback.
@@ -2477,14 +2479,6 @@ void HTMLMediaElement::setMuted(bool muted) {
     m_autoplayVisibilityObserver->stop();
     m_autoplayVisibilityObserver = nullptr;
   }
-}
-
-void HTMLMediaElement::updateVolume() {
-  if (webMediaPlayer())
-    webMediaPlayer()->setVolume(effectiveMediaVolume());
-
-  if (mediaControls())
-    mediaControls()->updateVolume();
 }
 
 double HTMLMediaElement::effectiveMediaVolume() const {
@@ -3345,7 +3339,7 @@ void HTMLMediaElement::updatePlayState() {
       // media engine was setup.  The media engine should just stash the rate
       // and muted values since it isn't already playing.
       webMediaPlayer()->setRate(playbackRate());
-      updateVolume();
+      webMediaPlayer()->setVolume(effectiveMediaVolume());
       webMediaPlayer()->play();
       m_autoplayHelper->playbackStarted();
     }
@@ -3815,14 +3809,6 @@ void HTMLMediaElement::mediaSourceOpened(WebMediaSource* webMediaSource) {
 
 bool HTMLMediaElement::isInteractiveContent() const {
   return fastHasAttribute(controlsAttr);
-}
-
-void HTMLMediaElement::defaultEventHandler(Event* event) {
-  if (event->type() == EventTypeNames::focusin) {
-    if (mediaControls())
-      mediaControls()->mediaElementFocused();
-  }
-  HTMLElement::defaultEventHandler(event);
 }
 
 DEFINE_TRACE(HTMLMediaElement) {

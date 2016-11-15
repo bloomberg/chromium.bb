@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<title>This tests that controls are properly updated when muted content attribute is changed.</title>
+<script src="../media-file.js"></script>
+<audio controls></audio>
+<video controls></video>
+<script>
+  var audio = document.querySelector('audio');
+  // TODO(mlamouri): per spec, this should do nothing but Blink will mute the
+  // media in this case, see https://crbug.com/350303
+  audio.setAttribute('muted', true);
+  audio.src = findMediaFile('audio', '../content/test');
+
+  var video = document.querySelector('video');
+  video.setAttribute('muted', true);
+  video.src = findMediaFile('video', '../content/test');
+</script>
+</html>

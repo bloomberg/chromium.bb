@@ -32,6 +32,7 @@
 #include "core/events/MouseEvent.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/html/shadow/MediaControlsMediaEventListener.h"
 #include "core/html/shadow/MediaControlsWindowEventListener.h"
 #include "core/html/track/TextTrackContainer.h"
 #include "core/html/track/TextTrackList.h"
@@ -122,6 +123,7 @@ MediaControls::MediaControls(HTMLMediaElement& mediaElement)
       m_castButton(nullptr),
       m_fullscreenButton(nullptr),
       m_downloadButton(nullptr),
+      m_mediaEventListener(new MediaControlsMediaEventListener(this)),
       m_windowEventListener(MediaControlsWindowEventListener::create(
           this,
           WTF::bind(&MediaControls::hideAllMenus, wrapWeakPersistent(this)))),
@@ -336,7 +338,7 @@ void MediaControls::reset() {
   m_timeline->setDuration(duration);
   m_timeline->setPosition(mediaElement().currentTime());
 
-  updateVolume();
+  onVolumeChange();
 
   refreshClosedCaptionsButtonVisibility();
 
@@ -358,13 +360,6 @@ void MediaControls::show() {
   m_panel->setIsDisplayed(true);
   if (m_overlayPlayButton)
     m_overlayPlayButton->updateDisplayType();
-}
-
-void MediaControls::mediaElementFocused() {
-  if (mediaElement().shouldShowControls()) {
-    show();
-    resetHideMediaControlsTimer();
-  }
 }
 
 void MediaControls::hide() {
@@ -483,32 +478,6 @@ void MediaControls::updateCurrentTimeDisplay() {
       LayoutTheme::theme().formatMediaControlsCurrentTime(now, duration),
       IGNORE_EXCEPTION);
   m_currentTimeDisplay->setCurrentValue(now);
-}
-
-void MediaControls::updateVolume() {
-  m_muteButton->updateDisplayType();
-  // Invalidate the mute button because it paints differently according to
-  // volume.
-  invalidate(m_muteButton);
-
-  if (mediaElement().muted())
-    m_volumeSlider->setVolume(0);
-  else
-    m_volumeSlider->setVolume(mediaElement().volume());
-
-  // Update the visibility of our audio elements.
-  // We never want the volume slider if there's no audio.
-  // If there is audio, then we want it unless we prefer to hide it.
-  BatchedControlUpdate batch(this);
-  m_volumeSlider->setIsWanted(mediaElement().hasAudio() &&
-                              !preferHiddenVolumeControls(document()));
-
-  // If there is no audio track, then hide the mute button.
-  m_muteButton->setIsWanted(mediaElement().hasAudio());
-
-  // Invalidate the volume slider because it paints differently according to
-  // volume.
-  invalidate(m_volumeSlider);
 }
 
 void MediaControls::changedClosedCaptionsVisibility() {
@@ -727,6 +696,28 @@ bool MediaControls::containsRelatedTarget(Event* event) {
   return contains(relatedTarget->toNode());
 }
 
+void MediaControls::onVolumeChange() {
+  m_muteButton->updateDisplayType();
+  m_volumeSlider->setVolume(mediaElement().muted() ? 0
+                                                   : mediaElement().volume());
+
+  // Update visibility of volume controls.
+  // TODO(mlamouri): it should not be part of the volumechange handling because
+  // it is using audio availability as input.
+  BatchedControlUpdate batch(this);
+  m_volumeSlider->setIsWanted(mediaElement().hasAudio() &&
+                              !preferHiddenVolumeControls(document()));
+  m_muteButton->setIsWanted(mediaElement().hasAudio());
+}
+
+void MediaControls::onFocusIn() {
+  if (!mediaElement().shouldShowControls())
+    return;
+
+  show();
+  resetHideMediaControlsTimer();
+}
+
 void MediaControls::notifyPanelWidthChanged(const LayoutUnit& newWidth) {
   // Don't bother to do any work if this matches the most recent panel
   // width, since we're called after layout.
@@ -918,6 +909,7 @@ DEFINE_TRACE(MediaControls) {
   visitor->trace(m_overflowList);
   visitor->trace(m_castButton);
   visitor->trace(m_overlayCastButton);
+  visitor->trace(m_mediaEventListener);
   visitor->trace(m_windowEventListener);
   HTMLDivElement::trace(visitor);
 }

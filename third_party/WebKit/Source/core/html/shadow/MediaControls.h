@@ -33,6 +33,7 @@
 namespace blink {
 
 class Event;
+class MediaControlsMediaEventListener;
 class MediaControlsWindowEventListener;
 
 class CORE_EXPORT MediaControls final : public HTMLDivElement {
@@ -56,8 +57,6 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
 
   void updateCurrentTimeDisplay();
 
-  void updateVolume();
-
   void changedClosedCaptionsVisibility();
   void refreshClosedCaptionsButtonVisibility();
   void toggleTextTrackList();
@@ -76,8 +75,6 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
   void refreshCastButtonVisibilityWithoutUpdate();
 
   void setAllowHiddenVolumeControls(bool);
-
-  void mediaElementFocused();
 
   // Returns the layout object for the part of the controls that should be
   // used for overlap checking during text track layout. May be null.
@@ -105,6 +102,7 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
   DECLARE_VIRTUAL_TRACE();
 
  private:
+  friend class MediaControlsMediaEventListener;
   friend class MediaControlsTest;
 
   void invalidate(Element*);
@@ -148,6 +146,10 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
   void defaultEventHandler(Event*) override;
   bool containsRelatedTarget(Event*);
 
+  // Methods called by MediaControlsMediaEventListener.
+  void onVolumeChange();
+  void onFocusIn();
+
   Member<HTMLMediaElement> m_mediaElement;
 
   // Media control elements.
@@ -172,6 +174,7 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
   Member<MediaControlFullscreenButtonElement> m_fullscreenButton;
   Member<MediaControlDownloadButtonElement> m_downloadButton;
 
+  Member<MediaControlsMediaEventListener> m_mediaEventListener;
   Member<MediaControlsWindowEventListener> m_windowEventListener;
 
   Timer<MediaControls> m_hideMediaControlsTimer;

@@ -299,7 +299,12 @@ void MediaControlMuteButtonElement::defaultEventHandler(Event* event) {
 }
 
 void MediaControlMuteButtonElement::updateDisplayType() {
-  setDisplayType(mediaElement().muted() ? MediaUnMuteButton : MediaMuteButton);
+  // TODO(mlamouri): checking for volume == 0 because the mute button will look
+  // 'muted' when the volume is 0 even if the element is not muted. This allows
+  // the painting and the display type to actually match.
+  setDisplayType((mediaElement().muted() || mediaElement().volume() == 0)
+                     ? MediaUnMuteButton
+                     : MediaMuteButton);
   updateOverflowString();
 }
 

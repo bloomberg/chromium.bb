@@ -353,7 +353,6 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
   void didBecomeFullscreenElement() final;
   void willStopBeingFullscreenElement() final;
   bool isInteractiveContent() const final;
-  void defaultEventHandler(Event*) final;
 
   // ActiveDOMObject functions.
   void contextDestroyed() final;
