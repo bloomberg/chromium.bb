@@ -89,7 +89,9 @@ MockErrorReporter::MockErrorReporter(
                                            cookies_preference) {}
 
 void MockErrorReporter::SendExtendedReportingReport(
-    const std::string& serialized_report) {
+    const std::string& serialized_report,
+    const base::Callback<void()>& success_callback,
+    const base::Callback<void(const GURL&, int)>& error_callback) {
   certificate_reporting::ErrorReport report;
   ASSERT_TRUE(report.InitializeFromString(serialized_report));
   latest_hostname_reported_ = report.hostname();

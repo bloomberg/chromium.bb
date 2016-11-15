@@ -9,6 +9,8 @@
 #include "base/base64.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -65,6 +67,12 @@ std::unique_ptr<base::Value> NetLogPingEndCallback(
   event_params->SetInteger("error", status.error());
   net_log.source().AddToEventParameters(event_params.get());
   return std::move(event_params);
+}
+
+// Records an UMA histogram of the net errors when certificate reports
+// fail to send.
+void RecordUMAOnFailure(const GURL& report_uri, int net_error) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("SSL.CertificateErrorReportFailure", -net_error);
 }
 
 }  // namespace
@@ -186,7 +194,8 @@ void SafeBrowsingPingManager::ReportThreatDetails(const std::string& report) {
 void SafeBrowsingPingManager::ReportInvalidCertificateChain(
     const std::string& serialized_report) {
   DCHECK(certificate_error_reporter_);
-  certificate_error_reporter_->SendExtendedReportingReport(serialized_report);
+  certificate_error_reporter_->SendExtendedReportingReport(
+      serialized_report, base::Closure(), base::Bind(RecordUMAOnFailure));
 }
 
 void SafeBrowsingPingManager::SetCertificateErrorReporterForTesting(

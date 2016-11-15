@@ -5,17 +5,27 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/safe_browsing/ping_manager.h"
+#include "components/certificate_reporting/error_reporter.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_source_type.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
+#include "net/test/url_request/url_request_failed_job.h"
+#include "net/url_request/report_sender.h"
 #include "net/url_request/test_url_fetcher_factory.h"
+#include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
@@ -26,6 +36,8 @@ using safe_browsing::ThreatSource;
 static const char kUrlPrefix[] = "https://prefix.com/foo";
 static const char kClient[] = "unittest";
 static const char kAppVer[] = "1.0";
+// Histogram for certificate reporting failures:
+static const char kFailureHistogramName[] = "SSL.CertificateErrorReportFailure";
 
 namespace safe_browsing {
 
@@ -308,6 +320,53 @@ TEST_F(SafeBrowsingPingManagerTest, TestReportSafeBrowsingHit) {
   // We don't really care what the source_dependency value is, just making sure
   // it's there.
   EXPECT_TRUE(end_entry.params->HasKey("source_dependency"));
+}
+
+class SafeBrowsingPingManagerCertReportingTest : public testing::Test {
+ public:
+  SafeBrowsingPingManagerCertReportingTest() {}
+
+ protected:
+  void SetUp() override {
+    message_loop_.reset(new base::MessageLoopForIO());
+    io_thread_.reset(new content::TestBrowserThread(content::BrowserThread::IO,
+                                                    message_loop_.get()));
+    url_request_context_getter_ =
+        new net::TestURLRequestContextGetter(message_loop_->task_runner());
+    net::URLRequestFailedJob::AddUrlHandler();
+  }
+
+  net::URLRequestContextGetter* url_request_context_getter() {
+    return url_request_context_getter_.get();
+  }
+
+ private:
+  std::unique_ptr<base::MessageLoopForIO> message_loop_;
+  std::unique_ptr<content::TestBrowserThread> io_thread_;
+
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+};
+
+TEST_F(SafeBrowsingPingManagerCertReportingTest, UMAOnFailure) {
+  base::HistogramTester histograms;
+  histograms.ExpectTotalCount(kFailureHistogramName, 0);
+
+  SafeBrowsingProtocolConfig config;
+  config.client_name = kClient;
+  config.url_prefix = kUrlPrefix;
+  std::unique_ptr<SafeBrowsingPingManager> ping_manager(
+      new SafeBrowsingPingManager(url_request_context_getter(), config));
+  const GURL kReportURL =
+      net::URLRequestFailedJob::GetMockHttpsUrl(net::ERR_CONNECTION_FAILED);
+
+  ping_manager->certificate_error_reporter_->set_upload_url_for_testing(
+      kReportURL);
+  ping_manager->ReportInvalidCertificateChain("report");
+  base::RunLoop().RunUntilIdle();
+
+  histograms.ExpectTotalCount(kFailureHistogramName, 1);
+  histograms.ExpectBucketCount(kFailureHistogramName,
+                               -net::ERR_CONNECTION_FAILED, 1);
 }
 
 }  // namespace safe_browsing

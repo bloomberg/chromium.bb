@@ -16,10 +16,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/histogram_tester.h"
 #include "components/certificate_reporting/encrypted_cert_logger.pb.h"
 #include "crypto/curve25519.h"
 #include "net/test/url_request/url_request_failed_job.h"
+#include "net/test/url_request/url_request_mock_data_job.h"
 #include "net/url_request/report_sender.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,7 +32,15 @@ const char kDummyHttpReportUri[] = "http://example.test";
 const char kDummyHttpsReportUri[] = "https://example.test";
 const char kDummyReport[] = "a dummy report";
 const uint32_t kServerPublicKeyTestVersion = 16;
-const char kFailureHistogramName[] = "SSL.CertificateErrorReportFailure";
+
+void ErrorCallback(bool* called, const GURL& report_uri, int net_error) {
+  EXPECT_NE(net::OK, net_error);
+  *called = true;
+}
+
+void SuccessCallback(bool* called) {
+  *called = true;
+}
 
 // A mock ReportSender that keeps track of the last report
 // sent.
@@ -118,7 +126,8 @@ TEST_F(ErrorReporterTest, ExtendedReportingSendReport) {
   ErrorReporter https_reporter(https_url, server_public_key_,
                                kServerPublicKeyTestVersion,
                                base::WrapUnique(mock_report_sender));
-  https_reporter.SendExtendedReportingReport(kDummyReport);
+  https_reporter.SendExtendedReportingReport(
+      kDummyReport, base::Closure(), base::Callback<void(const GURL&, int)>());
   EXPECT_EQ(mock_report_sender->latest_report_uri(), https_url);
   EXPECT_EQ(mock_report_sender->latest_report(), kDummyReport);
 
@@ -129,7 +138,8 @@ TEST_F(ErrorReporterTest, ExtendedReportingSendReport) {
   ErrorReporter http_reporter(http_url, server_public_key_,
                               kServerPublicKeyTestVersion,
                               base::WrapUnique(http_mock_report_sender));
-  http_reporter.SendExtendedReportingReport(kDummyReport);
+  http_reporter.SendExtendedReportingReport(
+      kDummyReport, base::Closure(), base::Callback<void(const GURL&, int)>());
 
   EXPECT_EQ(http_mock_report_sender->latest_report_uri(), http_url);
   EXPECT_EQ("application/octet-stream",
@@ -150,11 +160,8 @@ TEST_F(ErrorReporterTest, ExtendedReportingSendReport) {
 }
 
 // Tests that an UMA histogram is recorded if a report fails to send.
-TEST_F(ErrorReporterTest, UMAOnFailure) {
+TEST_F(ErrorReporterTest, ErroredRequestCallsCallback) {
   net::URLRequestFailedJob::AddUrlHandler();
-
-  base::HistogramTester histograms;
-  histograms.ExpectTotalCount(kFailureHistogramName, 0);
 
   base::RunLoop run_loop;
   net::TestURLRequestContext context(true);
@@ -167,12 +174,42 @@ TEST_F(ErrorReporterTest, UMAOnFailure) {
       net::URLRequestFailedJob::GetMockHttpUrl(net::ERR_CONNECTION_FAILED));
   ErrorReporter reporter(&context, report_uri,
                          net::ReportSender::DO_NOT_SEND_COOKIES);
-  reporter.SendExtendedReportingReport(kDummyReport);
+
+  bool error_callback_called = false;
+  bool success_callback_called = false;
+  reporter.SendExtendedReportingReport(
+      kDummyReport, base::Bind(&SuccessCallback, &success_callback_called),
+      base::Bind(&ErrorCallback, &error_callback_called));
   run_loop.Run();
 
-  histograms.ExpectTotalCount(kFailureHistogramName, 1);
-  histograms.ExpectBucketCount(kFailureHistogramName,
-                               -net::ERR_CONNECTION_FAILED, 1);
+  EXPECT_TRUE(error_callback_called);
+  EXPECT_FALSE(success_callback_called);
+}
+
+// Tests that an UMA histogram is recorded if a report fails to send.
+TEST_F(ErrorReporterTest, SuccessfulRequestCallsCallback) {
+  net::URLRequestMockDataJob::AddUrlHandler();
+
+  base::RunLoop run_loop;
+  net::TestURLRequestContext context(true);
+  TestCertificateReporterNetworkDelegate test_delegate;
+  test_delegate.set_url_request_destroyed_callback(run_loop.QuitClosure());
+  context.set_network_delegate(&test_delegate);
+  context.Init();
+
+  GURL report_uri(net::URLRequestMockDataJob::GetMockHttpUrl("some data", 1));
+  ErrorReporter reporter(&context, report_uri,
+                         net::ReportSender::DO_NOT_SEND_COOKIES);
+
+  bool error_callback_called = false;
+  bool success_callback_called = false;
+  reporter.SendExtendedReportingReport(
+      kDummyReport, base::Bind(&SuccessCallback, &success_callback_called),
+      base::Bind(&ErrorCallback, &error_callback_called));
+  run_loop.Run();
+
+  EXPECT_FALSE(error_callback_called);
+  EXPECT_TRUE(success_callback_called);
 }
 
 // This test decrypts a "known gold" report. It's intentionally brittle

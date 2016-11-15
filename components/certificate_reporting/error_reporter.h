@@ -61,7 +61,9 @@ class ErrorReporter {
   // unsupported platforms, callers must send extended reporting reports
   // over SSL.
   virtual void SendExtendedReportingReport(
-      const std::string& serialized_report);
+      const std::string& serialized_report,
+      const base::Callback<void()>& success_callback,
+      const base::Callback<void(const GURL&, int)>& error_callback);
 
   // Used by tests.
   static bool DecryptErrorReport(
@@ -69,10 +71,12 @@ class ErrorReporter {
       const EncryptedCertLoggerRequest& encrypted_report,
       std::string* decrypted_serialized_report);
 
+  void set_upload_url_for_testing(const GURL& url) { upload_url_ = url; }
+
  private:
   std::unique_ptr<net::ReportSender> certificate_report_sender_;
 
-  const GURL upload_url_;
+  GURL upload_url_;
 
   const uint8_t* server_public_key_;
   const uint32_t server_public_key_version_;

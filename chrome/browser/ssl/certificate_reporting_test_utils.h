@@ -40,7 +40,9 @@ class MockErrorReporter : public certificate_reporting::ErrorReporter {
 
   // ErrorReporter implementation.
   void SendExtendedReportingReport(
-      const std::string& serialized_report) override;
+      const std::string& serialized_report,
+      const base::Callback<void()>& success_callback,
+      const base::Callback<void(const GURL&, int)>& error_callback) override;
 
   // Returns the hostname in the report for the last call to |SendReport|.
   const std::string& latest_hostname_reported() {
