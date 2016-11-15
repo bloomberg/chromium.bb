@@ -405,8 +405,9 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
 
   // TODO(tommycli): Remove this once all flakiness resolved.
   bool PixelTestsEnabled() {
-#if defined(OS_WIN) || defined(ADDRESS_SANITIZER)
-    // Flaky on Windows and Asan bots. See crbug.com/549285.
+#if defined(OS_WIN) || defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
+    // Flaky on Windows, Asan, and Msan bots.
+    // See crbug.com/549285 and crbug.com/512140.
     return false;
 #elif defined(OS_CHROMEOS)
     // Because ChromeOS cannot use software rendering and the pixel tests
