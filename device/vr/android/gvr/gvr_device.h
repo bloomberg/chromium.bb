@@ -26,15 +26,14 @@ class GvrDevice : public VRDevice {
 
   // VRDevice
   mojom::VRDisplayInfoPtr GetVRDevice() override;
-  mojom::VRPosePtr GetPose(VRServiceImpl* service) override;
-  void ResetPose(VRServiceImpl* service) override;
+  mojom::VRPosePtr GetPose() override;
+  void ResetPose() override;
 
-  bool RequestPresent(VRServiceImpl* service, bool secure_origin) override;
-  void ExitPresent(VRServiceImpl* service) override;
+  bool RequestPresent(bool secure_origin) override;
+  void ExitPresent() override;
 
-  void SubmitFrame(VRServiceImpl* service, mojom::VRPosePtr pose) override;
-  void UpdateLayerBounds(VRServiceImpl* service,
-                         mojom::VRLayerBoundsPtr leftBounds,
+  void SubmitFrame(mojom::VRPosePtr pose) override;
+  void UpdateLayerBounds(mojom::VRLayerBoundsPtr leftBounds,
                          mojom::VRLayerBoundsPtr rightBounds) override;
 
   void SetDelegate(const base::WeakPtr<GvrDelegate>& delegate);

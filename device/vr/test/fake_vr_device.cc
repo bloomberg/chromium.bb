@@ -63,23 +63,22 @@ mojom::VRDisplayInfoPtr FakeVRDevice::GetVRDevice() {
   return display.Clone();
 }
 
-mojom::VRPosePtr FakeVRDevice::GetPose(VRServiceImpl* service) {
+mojom::VRPosePtr FakeVRDevice::GetPose() {
   return pose_.Clone();
 }
 
-void FakeVRDevice::ResetPose(VRServiceImpl* service) {}
+void FakeVRDevice::ResetPose() {}
 
 // TODO(shaobo.yan@intel.com): Will implemenate for VRDeviceServiceImpl tests.
-bool FakeVRDevice::RequestPresent(VRServiceImpl* service, bool secure_origin) {
+bool FakeVRDevice::RequestPresent(bool secure_origin) {
   return true;
 }
 
-void FakeVRDevice::ExitPresent(VRServiceImpl* service) {}
+void FakeVRDevice::ExitPresent() {}
 
-void FakeVRDevice::SubmitFrame(VRServiceImpl* service, mojom::VRPosePtr pose) {}
+void FakeVRDevice::SubmitFrame(mojom::VRPosePtr pose) {}
 
-void FakeVRDevice::UpdateLayerBounds(VRServiceImpl* service,
-                                     mojom::VRLayerBoundsPtr leftBounds,
+void FakeVRDevice::UpdateLayerBounds(mojom::VRLayerBoundsPtr leftBounds,
                                      mojom::VRLayerBoundsPtr rightBounds) {}
 
 }  // namespace device

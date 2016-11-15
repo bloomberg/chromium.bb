@@ -32,14 +32,13 @@ class DEVICE_VR_EXPORT VRDevice {
   unsigned int id() const { return id_; }
 
   virtual mojom::VRDisplayInfoPtr GetVRDevice() = 0;
-  virtual mojom::VRPosePtr GetPose(VRServiceImpl* service) = 0;
-  virtual void ResetPose(VRServiceImpl* service) = 0;
+  virtual mojom::VRPosePtr GetPose() = 0;
+  virtual void ResetPose() = 0;
 
-  virtual bool RequestPresent(VRServiceImpl* service, bool secure_origin) = 0;
-  virtual void ExitPresent(VRServiceImpl* service) = 0;
-  virtual void SubmitFrame(VRServiceImpl* service, mojom::VRPosePtr pose) = 0;
-  virtual void UpdateLayerBounds(VRServiceImpl* service,
-                                 mojom::VRLayerBoundsPtr leftBounds,
+  virtual bool RequestPresent(bool secure_origin) = 0;
+  virtual void ExitPresent() = 0;
+  virtual void SubmitFrame(mojom::VRPosePtr pose) = 0;
+  virtual void UpdateLayerBounds(mojom::VRLayerBoundsPtr leftBounds,
                                  mojom::VRLayerBoundsPtr rightBounds) = 0;
 
   virtual void AddService(VRServiceImpl* service);
@@ -51,11 +50,16 @@ class DEVICE_VR_EXPORT VRDevice {
   virtual bool IsPresentingService(VRServiceImpl* service);
 
   virtual void OnDisplayChanged();
-  virtual void OnExitPresent(VRServiceImpl* service);
+  virtual void OnExitPresent();
   virtual void OnDisplayBlur();
   virtual void OnDisplayFocus();
 
  protected:
+  friend class VRDisplayImpl;
+
+  void SetPresentingService(VRServiceImpl* service);
+
+ private:
   // Each Service have one VRDisplay with one VRDevice.
   // TODO(shaobo.yan@intel.com): Since the VRDisplayImpl knows its VRServiceImpl
   // we should
@@ -66,7 +70,6 @@ class DEVICE_VR_EXPORT VRDevice {
   // TODO(shaobo.yan@intel.com): Should track presenting VRDisplayImpl instead.
   VRServiceImpl* presenting_service_;
 
- private:
   unsigned int id_;
 
   static unsigned int next_id_;

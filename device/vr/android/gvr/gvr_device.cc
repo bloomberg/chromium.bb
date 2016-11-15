@@ -129,11 +129,8 @@ mojom::VRDisplayInfoPtr GvrDevice::GetVRDevice() {
   return device;
 }
 
-mojom::VRPosePtr GvrDevice::GetPose(VRServiceImpl* service) {
+mojom::VRPosePtr GvrDevice::GetPose() {
   TRACE_EVENT0("input", "GvrDevice::GetSensorState");
-
-  if (!IsAccessAllowed(service))
-    return nullptr;
 
   mojom::VRPosePtr pose = mojom::VRPose::New();
 
@@ -194,10 +191,7 @@ mojom::VRPosePtr GvrDevice::GetPose(VRServiceImpl* service) {
   return pose;
 }
 
-void GvrDevice::ResetPose(VRServiceImpl* service) {
-  if (!IsAccessAllowed(service))
-    return;
-
+void GvrDevice::ResetPose() {
   gvr::GvrApi* gvr_api = GetGvrApi();
 
   // Should never call RecenterTracking when using with Daydream viewers. On
@@ -206,15 +200,7 @@ void GvrDevice::ResetPose(VRServiceImpl* service) {
     gvr_api->RecenterTracking();
 }
 
-bool GvrDevice::RequestPresent(VRServiceImpl* service, bool secure_origin) {
-  if (!IsAccessAllowed(service))
-    return false;
-
-  // One service could present on several devices at the same time
-  // and different service could present on different devices the same time
-  if (presenting_service_ == nullptr)
-    presenting_service_ = service;
-
+bool GvrDevice::RequestPresent(bool secure_origin) {
   secure_origin_ = secure_origin;
   if (delegate_)
     delegate_->SetWebVRSecureOrigin(secure_origin_);
@@ -222,24 +208,19 @@ bool GvrDevice::RequestPresent(VRServiceImpl* service, bool secure_origin) {
   return gvr_provider_->RequestPresent();
 }
 
-void GvrDevice::ExitPresent(VRServiceImpl* service) {
-  if (IsPresentingService(service))
-    presenting_service_ = nullptr;
-
+void GvrDevice::ExitPresent() {
   gvr_provider_->ExitPresent();
-  OnExitPresent(service);
+  OnExitPresent();
 }
 
-void GvrDevice::SubmitFrame(VRServiceImpl* service, mojom::VRPosePtr pose) {
-  if (!IsPresentingService(service) || !delegate_)
-    return;
-  delegate_->SubmitWebVRFrame();
+void GvrDevice::SubmitFrame(mojom::VRPosePtr pose) {
+  if (delegate_)
+    delegate_->SubmitWebVRFrame();
 }
 
-void GvrDevice::UpdateLayerBounds(VRServiceImpl* service,
-                                  mojom::VRLayerBoundsPtr leftBounds,
+void GvrDevice::UpdateLayerBounds(mojom::VRLayerBoundsPtr leftBounds,
                                   mojom::VRLayerBoundsPtr rightBounds) {
-  if (!IsAccessAllowed(service) || !delegate_)
+  if (!delegate_)
     return;
 
   delegate_->UpdateWebVRTextureBounds(0,  // Left eye

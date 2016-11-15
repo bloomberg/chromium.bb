@@ -18,7 +18,7 @@ VRDevice::VRDevice() : presenting_service_(nullptr), id_(next_id_) {
 
 VRDevice::~VRDevice() {}
 
-bool VRDevice::RequestPresent(VRServiceImpl* service, bool secure_origin) {
+bool VRDevice::RequestPresent(bool secure_origin) {
   return true;
 };
 
@@ -29,7 +29,8 @@ void VRDevice::AddService(VRServiceImpl* service) {
 }
 
 void VRDevice::RemoveService(VRServiceImpl* service) {
-  ExitPresent(service);
+  if (IsPresentingService(service))
+    ExitPresent();
   displays_.erase(service);
 }
 
@@ -50,10 +51,12 @@ void VRDevice::OnDisplayChanged() {
     display.second->client()->OnDisplayChanged(vr_device_info.Clone());
 }
 
-void VRDevice::OnExitPresent(VRServiceImpl* service) {
-  DisplayClientMap::iterator it = displays_.find(service);
+void VRDevice::OnExitPresent() {
+  DisplayClientMap::iterator it = displays_.find(presenting_service_);
   if (it != displays_.end())
     it->second->client()->OnExitPresent();
+
+  SetPresentingService(nullptr);
 }
 
 void VRDevice::OnDisplayBlur() {
@@ -64,6 +67,10 @@ void VRDevice::OnDisplayBlur() {
 void VRDevice::OnDisplayFocus() {
   for (const auto& display : displays_)
     display.second->client()->OnDisplayFocus();
+}
+
+void VRDevice::SetPresentingService(VRServiceImpl* service) {
+  presenting_service_ = service;
 }
 
 }  // namespace device

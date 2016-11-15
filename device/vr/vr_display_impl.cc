@@ -21,29 +21,51 @@ VRDisplayImpl::VRDisplayImpl(device::VRDevice* device, VRServiceImpl* service)
 VRDisplayImpl::~VRDisplayImpl() {}
 
 void VRDisplayImpl::GetPose(const GetPoseCallback& callback) {
-  callback.Run(device_->GetPose(service_.get()));
+  if (!device_->IsAccessAllowed(service_.get())) {
+    callback.Run(nullptr);
+    return;
+  }
+
+  callback.Run(device_->GetPose());
 }
 
 void VRDisplayImpl::ResetPose() {
-  device_->ResetPose(service_.get());
+  if (!device_->IsAccessAllowed(service_.get()))
+    return;
+
+  device_->ResetPose();
 }
 
 void VRDisplayImpl::RequestPresent(bool secureOrigin,
                                    const RequestPresentCallback& callback) {
-  callback.Run(device_->RequestPresent(service_.get(), secureOrigin));
+  if (!device_->IsAccessAllowed(service_.get())) {
+    callback.Run(false);
+    return;
+  }
+
+  bool success = device_->RequestPresent(secureOrigin);
+  if (success) {
+    device_->SetPresentingService(service_.get());
+  }
+  callback.Run(success);
 }
 
 void VRDisplayImpl::ExitPresent() {
-  device_->ExitPresent(service_.get());
+  if (device_->IsPresentingService(service_.get()))
+    device_->ExitPresent();
 }
 
 void VRDisplayImpl::SubmitFrame(mojom::VRPosePtr pose) {
-  device_->SubmitFrame(service_.get(), std::move(pose));
+  if (!device_->IsPresentingService(service_.get()))
+    return;
+  device_->SubmitFrame(std::move(pose));
 }
 
 void VRDisplayImpl::UpdateLayerBounds(mojom::VRLayerBoundsPtr leftBounds,
                                       mojom::VRLayerBoundsPtr rightBounds) {
-  device_->UpdateLayerBounds(service_.get(), std::move(leftBounds),
-                             std::move(rightBounds));
+  if (!device_->IsAccessAllowed(service_.get()))
+    return;
+
+  device_->UpdateLayerBounds(std::move(leftBounds), std::move(rightBounds));
 }
 }

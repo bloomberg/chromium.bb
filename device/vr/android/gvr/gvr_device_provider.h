@@ -16,6 +16,7 @@
 
 namespace device {
 
+class GvrDelegateProvider;
 class GvrDelegate;
 class GvrDevice;
 class VRServiceImpl;
@@ -38,6 +39,8 @@ class DEVICE_VR_EXPORT GvrDeviceProvider : public VRDeviceProvider {
   void OnDisplayFocus();
 
  private:
+  void SwitchToNonPresentingDelegate();
+
   std::unique_ptr<GvrDevice> vr_device_;
 
   base::WeakPtrFactory<GvrDeviceProvider> weak_ptr_factory_;

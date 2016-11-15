@@ -23,14 +23,13 @@ class FakeVRDevice : public VRDevice {
   void SetPose(const mojom::VRPosePtr& state);
 
   mojom::VRDisplayInfoPtr GetVRDevice() override;
-  mojom::VRPosePtr GetPose(VRServiceImpl* service) override;
-  void ResetPose(VRServiceImpl* service) override;
+  mojom::VRPosePtr GetPose() override;
+  void ResetPose() override;
 
-  bool RequestPresent(VRServiceImpl* service, bool secure_origin) override;
-  void ExitPresent(VRServiceImpl* service) override;
-  void SubmitFrame(VRServiceImpl* service, mojom::VRPosePtr pose) override;
-  void UpdateLayerBounds(VRServiceImpl* service,
-                         mojom::VRLayerBoundsPtr leftBounds,
+  bool RequestPresent(bool secure_origin) override;
+  void ExitPresent() override;
+  void SubmitFrame(mojom::VRPosePtr pose) override;
+  void UpdateLayerBounds(mojom::VRLayerBoundsPtr leftBounds,
                          mojom::VRLayerBoundsPtr rightBounds) override;
 
  private:

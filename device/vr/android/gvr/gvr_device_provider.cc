@@ -63,21 +63,9 @@ bool GvrDeviceProvider::RequestPresent() {
   return delegate_provider->RequestWebVRPresent(weak_ptr_factory_.GetWeakPtr());
 }
 
+// VR presentation exit requested by the API.
 void GvrDeviceProvider::ExitPresent() {
-  if (!vr_device_)
-    return;
-
-  device::GvrDelegateProvider* delegate_provider =
-      device::GvrDelegateProvider::GetInstance();
-  if (!delegate_provider)
-    return;
-
-  vr_device_->SetDelegate(delegate_provider->GetNonPresentingDelegate());
-
-  GamepadDataFetcherManager::GetInstance()->RemoveSourceFactory(
-      GAMEPAD_SOURCE_GVR);
-
-  delegate_provider->ExitWebVRPresent();
+  SwitchToNonPresentingDelegate();
 }
 
 void GvrDeviceProvider::OnGvrDelegateReady(
@@ -89,8 +77,13 @@ void GvrDeviceProvider::OnGvrDelegateReady(
       new GvrGamepadDataFetcher::Factory(delegate, vr_device_->id()));
 }
 
+// VR presentation exit requested by the delegate (probably via UI).
 void GvrDeviceProvider::OnGvrDelegateRemoved() {
-  ExitPresent();
+  if (!vr_device_)
+    return;
+
+  SwitchToNonPresentingDelegate();
+  vr_device_->OnExitPresent();
 }
 
 void GvrDeviceProvider::OnDisplayBlur() {
@@ -103,6 +96,21 @@ void GvrDeviceProvider::OnDisplayFocus() {
   if (!vr_device_)
     return;
   vr_device_->OnDisplayFocus();
+}
+
+void GvrDeviceProvider::SwitchToNonPresentingDelegate() {
+  GvrDelegateProvider* delegate_provider = GvrDelegateProvider::GetInstance();
+  if (!vr_device_ || !delegate_provider)
+    return;
+
+  vr_device_->SetDelegate(delegate_provider->GetNonPresentingDelegate());
+
+  // Remove GVR gamepad polling.
+  GamepadDataFetcherManager::GetInstance()->RemoveSourceFactory(
+      GAMEPAD_SOURCE_GVR);
+
+  // If we're presenting currently stop.
+  delegate_provider->ExitWebVRPresent();
 }
 
 }  // namespace device
