@@ -14,7 +14,7 @@ namespace chromeos {
 
 namespace {
 // Minimum power for a USB power source to be classified as AC.
-constexpr double kUsbMinAcWatts = 24;
+const double kUsbMinAcWatts = 24;
 }
 
 FakePowerManagerClient::FakePowerManagerClient()
@@ -181,12 +181,6 @@ void FakePowerManagerClient::SendSuspendDone() {
 void FakePowerManagerClient::SendDarkSuspendImminent() {
   for (auto& observer : observers_)
     observer.DarkSuspendImminent();
-}
-
-void FakePowerManagerClient::SendBrightnessChanged(int level,
-                                                   bool user_initiated) {
-  for (auto& observer : observers_)
-    observer.BrightnessChanged(level, user_initiated);
 }
 
 void FakePowerManagerClient::SendPowerButtonEvent(

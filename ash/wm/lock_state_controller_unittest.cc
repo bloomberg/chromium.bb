@@ -1067,5 +1067,44 @@ TEST_F(LockStateControllerTest, Screenshot) {
   EXPECT_EQ(1, delegate->handle_take_screenshot_count());
 }
 
+// Tests that a lock action is cancellable when quick lock is turned on and
+// maximize mode is not active.
+TEST_F(LockStateControllerTest, QuickLockWhileNotInMaximizeMode) {
+  Initialize(false, LoginStatus::USER);
+  power_button_controller_->set_enable_quick_lock_for_test(true);
+  EnableMaximizeMode(false);
+
+  PressPowerButton();
+
+  ExpectPreLockAnimationStarted();
+  EXPECT_TRUE(test_api_->is_animating_lock());
+  EXPECT_TRUE(lock_state_controller_->CanCancelLockAnimation());
+
+  ReleasePowerButton();
+
+  EXPECT_EQ(0, session_manager_client_->request_lock_screen_call_count());
+}
+
+// Tests that a lock action is not cancellable when quick lock is turned on and
+// maximize mode is active.
+TEST_F(LockStateControllerTest, QuickLockWhileInMaximizeMode) {
+  Initialize(false, LoginStatus::USER);
+  power_button_controller_->set_enable_quick_lock_for_test(true);
+  EnableMaximizeMode(true);
+
+  PressPowerButton();
+
+  ExpectPreLockAnimationStarted();
+  EXPECT_TRUE(test_api_->is_animating_lock());
+  EXPECT_FALSE(lock_state_controller_->CanCancelLockAnimation());
+
+  ReleasePowerButton();
+
+  ExpectPreLockAnimationStarted();
+
+  test_animator_->CompleteAllAnimations(true);
+  EXPECT_EQ(1, session_manager_client_->request_lock_screen_call_count());
+}
+
 }  // namespace test
 }  // namespace ash
