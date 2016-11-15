@@ -17,10 +17,11 @@
           "metrics::mojom::CallStackProfileCollector"
         ],
         "ash": [
+          // Under classic ash the browser provides ash interfaces to itself.
           "ash::mojom::LocaleNotificationController",
           "ash::mojom::NewWindowClient",
           "ash::mojom::ShelfController",
-          "ash::mojom::ShutdownClient",
+          "ash::mojom::ShutdownController",
           "ash::mojom::SystemTray",
           "ash::mojom::SystemTrayClient",
           "ash::mojom::WallpaperController",

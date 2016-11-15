@@ -20,10 +20,5 @@ LockStateControllerTestApi::LockStateControllerTestApi(
 
 LockStateControllerTestApi::~LockStateControllerTestApi() {}
 
-void LockStateControllerTestApi::SetShutdownClient(
-    std::unique_ptr<mojom::ShutdownClient> client) {
-  controller_->shutdown_client_ = std::move(client);
-}
-
 }  // namespace test
 }  // namespace ash

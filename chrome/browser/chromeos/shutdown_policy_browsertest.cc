@@ -146,78 +146,74 @@ class ShutdownPolicyInSessionTest
   ShutdownPolicyInSessionTest() {}
   ~ShutdownPolicyInSessionTest() override {}
 
-  void SetUpOnMainThread() override {
-    ShutdownPolicyBaseTest::SetUpOnMainThread();
+  // Opens the system tray menu. This creates the tray views.
+  void OpenSystemTrayMenu() {
+    ash::Shell::GetInstance()->GetPrimarySystemTray()->ShowDefaultView(
+        ash::BUBBLE_CREATE_NEW);
+  }
+
+  // Closes the system tray menu. This deletes the tray views.
+  void CloseSystemTrayMenu() {
+    ash::Shell::GetInstance()->GetPrimarySystemTray()->CloseSystemBubble();
+  }
+
+  // Gets the shutdown button view.
+  const views::View* GetShutdownButton() {
+    ash::SystemTray* tray = ash::Shell::GetInstance()->GetPrimarySystemTray();
     if (ash::MaterialDesignController::IsSystemTrayMenuMaterial()) {
-      ash::TrayTiles* tray_tiles = ash::Shell::GetInstance()
-                                       ->GetPrimarySystemTray()
-                                       ->GetTrayTilesForTesting();
-      ASSERT_TRUE(tray_tiles);
-      tiles_default_view_.reset(static_cast<ash::TilesDefaultView*>(
-          tray_tiles->CreateDefaultViewForTesting(ash::LoginStatus::USER)));
-      ASSERT_TRUE(tiles_default_view_);
-    } else {
-      ash::TrayDate* tray_date = ash::Shell::GetInstance()
-                                     ->GetPrimarySystemTray()
-                                     ->GetTrayDateForTesting();
-      ASSERT_TRUE(tray_date);
-      date_default_view_.reset(static_cast<ash::DateDefaultView*>(
-          tray_date->CreateDefaultViewForTesting(ash::LoginStatus::USER)));
-      ASSERT_TRUE(date_default_view_);
+      return tray->GetTrayTilesForTesting()
+          ->GetDefaultViewForTesting()
+          ->GetShutdownButtonViewForTest();
     }
+    return tray->GetTrayDateForTesting()
+        ->GetDefaultViewForTesting()
+        ->GetShutdownButtonViewForTest();
   }
 
-  void TearDownOnMainThread() override {
-    if (ash::MaterialDesignController::IsSystemTrayMenuMaterial())
-      tiles_default_view_.reset();
-    else
-      date_default_view_.reset();
-    ShutdownPolicyBaseTest::TearDownOnMainThread();
-  }
-
-  // Get the shutdown and reboot button view from the date default view.
-  const views::CustomButton* GetShutdownButton() {
-    if (ash::MaterialDesignController::IsSystemTrayMenuMaterial())
-      return tiles_default_view_->GetShutdownButtonViewForTest();
-    return static_cast<const views::CustomButton*>(
-        date_default_view_->GetShutdownButtonViewForTest());
-  }
-
-  bool HasButtonTooltipText(const views::CustomButton* button,
-                            int message_id) const {
+  // Returns true if the shutdown button's tooltip matches the text of the
+  // resource |message_id|.
+  bool HasShutdownButtonTooltip(int message_id) {
+    const views::View* button = GetShutdownButton();
     base::string16 actual_tooltip;
     button->GetTooltipText(gfx::Point(), &actual_tooltip);
     return l10n_util::GetStringUTF16(message_id) == actual_tooltip;
   }
 
  private:
-  // Not used in material design.
-  std::unique_ptr<ash::DateDefaultView> date_default_view_;
-
-  // Only used in material design.
-  std::unique_ptr<ash::TilesDefaultView> tiles_default_view_;
-
   DISALLOW_COPY_AND_ASSIGN(ShutdownPolicyInSessionTest);
 };
 
+// Tests that by default the shutdown button tooltip is "shutdown".
 IN_PROC_BROWSER_TEST_F(ShutdownPolicyInSessionTest, TestBasic) {
-  const views::CustomButton* shutdown_button = GetShutdownButton();
-  EXPECT_TRUE(
-      HasButtonTooltipText(shutdown_button, IDS_ASH_STATUS_TRAY_SHUTDOWN));
+  OpenSystemTrayMenu();
+  EXPECT_TRUE(HasShutdownButtonTooltip(IDS_ASH_STATUS_TRAY_SHUTDOWN));
+  CloseSystemTrayMenu();
 }
 
+// Tests that enabling the reboot-on-shutdown policy changes the shutdown button
+// tooltip to "restart". Note that the tooltip doesn't change dynamically if the
+// menu is open during the policy change -- that's a rare condition and
+// supporting it would add complexity.
 IN_PROC_BROWSER_TEST_F(ShutdownPolicyInSessionTest, PolicyChange) {
-  const views::CustomButton* shutdown_button = GetShutdownButton();
-
+  // Change the policy to reboot and let it propagate over mojo to ash.
   UpdateRebootOnShutdownPolicy(true);
   SyncRefreshDevicePolicy();
-  EXPECT_TRUE(
-      HasButtonTooltipText(shutdown_button, IDS_ASH_STATUS_TRAY_REBOOT));
+  content::RunAllPendingInMessageLoop();
 
+  // When the menu is opened the tooltip reads "reboot".
+  OpenSystemTrayMenu();
+  EXPECT_TRUE(HasShutdownButtonTooltip(IDS_ASH_STATUS_TRAY_REBOOT));
+  CloseSystemTrayMenu();
+
+  // Change the policy to shutdown and let it propagate over mojo to ash.
   UpdateRebootOnShutdownPolicy(false);
   SyncRefreshDevicePolicy();
-  EXPECT_TRUE(
-      HasButtonTooltipText(shutdown_button, IDS_ASH_STATUS_TRAY_SHUTDOWN));
+  content::RunAllPendingInMessageLoop();
+
+  // When the menu is opened the tooltip reads "shutdown".
+  OpenSystemTrayMenu();
+  EXPECT_TRUE(HasShutdownButtonTooltip(IDS_ASH_STATUS_TRAY_SHUTDOWN));
+  CloseSystemTrayMenu();
 }
 
 class ShutdownPolicyLockerTest : public ShutdownPolicyBaseTest {

@@ -7,6 +7,7 @@
         "ash": [
           "ash::mojom::LocaleNotificationController",
           "ash::mojom::ShelfController",
+          "ash::mojom::ShutdownController",
           "ash::mojom::SystemTray",
           "ash::mojom::WallpaperController"
         ],

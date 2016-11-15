@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/common/shelf/shelf_controller.h"
+#include "ash/common/shutdown_controller.h"
 #include "ash/common/system/locale/locale_notification_controller.h"
 #include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/wallpaper/wallpaper_controller.h"
@@ -26,6 +27,11 @@ void BindLocaleNotificationControllerOnMainThread(
 
 void BindShelfRequestOnMainThread(mojom::ShelfControllerRequest request) {
   WmShell::Get()->shelf_controller()->BindRequest(std::move(request));
+}
+
+void BindShutdownControllerRequestOnMainThread(
+    mojom::ShutdownControllerRequest request) {
+  WmShell::Get()->shutdown_controller()->BindRequest(std::move(request));
 }
 
 void BindSystemTrayRequestOnMainThread(mojom::SystemTrayRequest request) {
@@ -48,6 +54,8 @@ void RegisterInterfaces(
       base::Bind(&BindLocaleNotificationControllerOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindShelfRequestOnMainThread),
+                         main_thread_task_runner);
+  registry->AddInterface(base::Bind(&BindShutdownControllerRequestOnMainThread),
                          main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindSystemTrayRequestOnMainThread),
                          main_thread_task_runner);

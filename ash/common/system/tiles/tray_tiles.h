@@ -24,6 +24,7 @@ class ASH_EXPORT TrayTiles : public SystemTrayItem {
   // Accessor needed to obtain the help button view for the first-run flow.
   views::View* GetHelpButtonView() const;
 
+  TilesDefaultView* GetDefaultViewForTesting() const;
   views::View* CreateDefaultViewForTesting(LoginStatus status);
 
  private:

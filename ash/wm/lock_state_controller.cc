@@ -11,13 +11,13 @@
 #include "ash/cancel_mode.h"
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/shell_delegate.h"
+#include "ash/common/shutdown_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/shutdown.mojom.h"
 #include "ash/shell.h"
 #include "ash/wm/session_state_animator.h"
 #include "ash/wm/session_state_animator_impl.h"
-#include "ash/wm/shutdown_client_proxy.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -72,7 +72,8 @@ const int LockStateController::kLockFailTimeoutMs = 8000 * kTimeoutMultiplier;
 const int LockStateController::kLockToShutdownTimeoutMs = 150;
 const int LockStateController::kShutdownRequestDelayMs = 50;
 
-LockStateController::LockStateController(service_manager::Connector* connector)
+LockStateController::LockStateController(
+    ShutdownController* shutdown_controller)
     : animator_(new SessionStateAnimatorImpl()),
       login_status_(LoginStatus::NOT_LOGGED_IN),
       system_is_locked_(false),
@@ -80,8 +81,9 @@ LockStateController::LockStateController(service_manager::Connector* connector)
       shutdown_after_lock_(false),
       animating_lock_(false),
       can_cancel_lock_animation_(false),
-      shutdown_client_(base::MakeUnique<ShutdownClientProxy>(connector)),
+      shutdown_controller_(shutdown_controller),
       weak_ptr_factory_(this) {
+  DCHECK(shutdown_controller_);
   Shell::GetPrimaryRootWindow()->GetHost()->AddObserver(this);
 }
 
@@ -308,25 +310,9 @@ void LockStateController::StartRealShutdownTimer(bool with_animation_time) {
 void LockStateController::OnRealPowerTimeout() {
   VLOG(1) << "OnRealPowerTimeout";
   DCHECK(shutting_down_);
-#if defined(OS_CHROMEOS)
-  if (!base::SysInfo::IsRunningOnChromeOS()) {
-    ShellDelegate* delegate = WmShell::Get()->delegate();
-    if (delegate) {
-      delegate->Exit();
-      return;
-    }
-  }
-#endif
   WmShell::Get()->RecordUserMetricsAction(UMA_ACCEL_SHUT_DOWN_POWER_BUTTON);
-
-  // Connect to the browser to tell it to shutdown the computer. It will either
-  // shut down or restart the computer based on the device settings.
-  //
-  // TODO(erg): Once CrosSettings has been moved out of chrome/,
-  // LockStateController should become a preference observer of it, and we
-  // should move the current content_browser implementation here.
-  // crbug.com/628792
-  shutdown_client_->RequestShutdown();
+  // Shut down or reboot based on device policy.
+  shutdown_controller_->ShutDownOrReboot();
 }
 
 void LockStateController::StartCancellableShutdownAnimation() {

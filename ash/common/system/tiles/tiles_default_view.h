@@ -7,9 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/login_status.h"
-#include "ash/common/system/chromeos/shutdown_policy_observer.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -24,8 +22,7 @@ class SystemTrayItem;
 // The container view for the tiles in the bottom row of the system menu
 // (settings, help, lock, and power).
 class ASH_EXPORT TilesDefaultView : public views::View,
-                                    public views::ButtonListener,
-                                    public ShutdownPolicyObserver {
+                                    public views::ButtonListener {
  public:
   TilesDefaultView(SystemTrayItem* owner, LoginStatus login);
   ~TilesDefaultView() override;
@@ -37,9 +34,6 @@ class ASH_EXPORT TilesDefaultView : public views::View,
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  // ShutdownPolicyObserver:
-  void OnShutdownPolicyChanged(bool reboot_on_shutdown) override;
 
   // Accessor needed to obtain the help button view for the first-run flow.
   views::View* GetHelpButtonView() const;
@@ -59,8 +53,6 @@ class ASH_EXPORT TilesDefaultView : public views::View,
   views::CustomButton* help_button_;
   views::CustomButton* lock_button_;
   views::CustomButton* power_button_;
-
-  base::WeakPtrFactory<TilesDefaultView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TilesDefaultView);
 };

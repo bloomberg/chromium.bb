@@ -22,6 +22,10 @@ views::View* TrayTiles::GetHelpButtonView() const {
   return default_view_->GetHelpButtonView();
 }
 
+TilesDefaultView* TrayTiles::GetDefaultViewForTesting() const {
+  return default_view_;
+}
+
 views::View* TrayTiles::CreateDefaultViewForTesting(LoginStatus status) {
   return CreateDefaultView(status);
 }

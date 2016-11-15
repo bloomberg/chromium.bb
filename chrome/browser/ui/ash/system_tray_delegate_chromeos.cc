@@ -19,7 +19,6 @@
 #include "ash/common/system/chromeos/bluetooth/bluetooth_observer.h"
 #include "ash/common/system/chromeos/power/power_status.h"
 #include "ash/common/system/chromeos/session/logout_button_observer.h"
-#include "ash/common/system/chromeos/shutdown_policy_observer.h"
 #include "ash/common/system/date/clock_observer.h"
 #include "ash/common/system/ime/ime_observer.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
@@ -55,7 +54,6 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/profiles/multiprofiles_intro_dialog.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
@@ -175,8 +173,6 @@ SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
                  base::Unretained(this)));
 
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
-  shutdown_policy_handler_.reset(
-      new ShutdownPolicyHandler(CrosSettings::Get(), this));
 }
 
 void SystemTrayDelegateChromeOS::Initialize() {
@@ -593,21 +589,6 @@ void SystemTrayDelegateChromeOS::RemoveCustodianInfoTrayObserver(
   custodian_info_changed_observers_.RemoveObserver(observer);
 }
 
-void SystemTrayDelegateChromeOS::AddShutdownPolicyObserver(
-    ash::ShutdownPolicyObserver* observer) {
-  shutdown_policy_observers_.AddObserver(observer);
-}
-
-void SystemTrayDelegateChromeOS::RemoveShutdownPolicyObserver(
-    ash::ShutdownPolicyObserver* observer) {
-  shutdown_policy_observers_.RemoveObserver(observer);
-}
-
-void SystemTrayDelegateChromeOS::ShouldRebootOnShutdown(
-    const ash::RebootOnShutdownCallback& callback) {
-  shutdown_policy_handler_->CheckIfRebootOnShutdown(callback);
-}
-
 ash::VPNDelegate* SystemTrayDelegateChromeOS::GetVPNDelegate() const {
   return vpn_delegate_.get();
 }
@@ -979,13 +960,6 @@ void SystemTrayDelegateChromeOS::OnAccessibilityStatusChanged(
     accessibility_subscription_.reset();
   else
     OnAccessibilityModeChanged(details.notify);
-}
-
-void SystemTrayDelegateChromeOS::OnShutdownPolicyChanged(
-    bool reboot_on_shutdown) {
-  // Notify all observers.
-  for (ash::ShutdownPolicyObserver& observer : shutdown_policy_observers_)
-    observer.OnShutdownPolicyChanged(reboot_on_shutdown);
 }
 
 void SystemTrayDelegateChromeOS::ImeMenuActivationChanged(bool is_active) {

@@ -33,13 +33,14 @@ class LoginLockStateNotifier;
 class LowDiskNotification;
 class MagnificationManager;
 class NetworkPrefStateObserver;
+class NetworkThrottlingObserver;
 class PeripheralBatteryObserver;
 class PowerPrefs;
 class RendererFreezer;
 class SessionManagerObserver;
+class ShutdownPolicyForwarder;
 class SwapMetrics;
 class WakeOnWifiManager;
-class NetworkThrottlingObserver;
 
 namespace default_app_order {
 class ExternalLoader;
@@ -86,6 +87,8 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<internal::DBusServices> dbus_services_;
 
   std::unique_ptr<session_manager::SessionManager> session_manager_;
+
+  std::unique_ptr<ShutdownPolicyForwarder> shutdown_policy_forwarder_;
 
   std::unique_ptr<EventRewriterController> keyboard_event_rewriters_;
 

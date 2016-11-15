@@ -539,8 +539,7 @@ void OobeUI::InitializeHandlers() {
       new ShutdownPolicyHandler(CrosSettings::Get(), this));
 
   // Trigger an initial update.
-  shutdown_policy_handler_->CheckIfRebootOnShutdown(
-      base::Bind(&OobeUI::OnShutdownPolicyChanged, base::Unretained(this)));
+  shutdown_policy_handler_->NotifyDelegateWithShutdownPolicy();
 }
 
 void OobeUI::OnScreenAssetsLoaded(const std::string& async_assets_load_id) {

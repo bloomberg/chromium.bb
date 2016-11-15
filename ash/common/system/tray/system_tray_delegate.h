@@ -32,7 +32,6 @@ struct IMEInfo;
 struct IMEPropertyInfo;
 
 class CustodianInfoTrayObserver;
-class ShutdownPolicyObserver;
 class SystemTray;
 class SystemTrayItem;
 
@@ -75,8 +74,6 @@ struct ASH_EXPORT UpdateInfo {
 class CastConfigDelegate;
 class NetworkingConfigDelegate;
 class VPNDelegate;
-
-using RebootOnShutdownCallback = base::Callback<void(bool)>;
 
 // SystemTrayDelegate is intended for delegating tasks in the System Tray to the
 // application (e.g. Chrome). These tasks should be limited to application
@@ -222,18 +219,6 @@ class ASH_EXPORT SystemTrayDelegate {
 
   virtual void RemoveCustodianInfoTrayObserver(
       CustodianInfoTrayObserver* observer);
-
-  // Adds an observer whose |OnShutdownPolicyChanged| function is called when
-  // the |DeviceRebootOnShutdown| policy changes. If this policy is set to
-  // true, a device cannot be shut down anymore but only rebooted.
-  virtual void AddShutdownPolicyObserver(ShutdownPolicyObserver* observer);
-
-  virtual void RemoveShutdownPolicyObserver(ShutdownPolicyObserver* observer);
-
-  // Determines whether the device is automatically rebooted when shut down as
-  // specified by the device policy |DeviceRebootOnShutdown|. This function
-  // asynchronously calls |callback| once a trusted policy becomes available.
-  virtual void ShouldRebootOnShutdown(const RebootOnShutdownCallback& callback);
 
   // Returns VPNDelegate. May return nullptr.
   virtual VPNDelegate* GetVPNDelegate() const;

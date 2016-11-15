@@ -21,6 +21,7 @@
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_window_watcher.h"
 #include "ash/common/shell_delegate.h"
+#include "ash/common/shutdown_controller.h"
 #include "ash/common/system/brightness_control_delegate.h"
 #include "ash/common/system/keyboard_brightness_control_delegate.h"
 #include "ash/common/system/locale/locale_notification_controller.h"
@@ -248,6 +249,7 @@ WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
       new_window_client_(base::MakeUnique<NewWindowClientProxy>(
           delegate_->GetShellConnector())),
       shelf_controller_(base::MakeUnique<ShelfController>()),
+      shutdown_controller_(base::MakeUnique<ShutdownController>()),
       system_tray_controller_(base::MakeUnique<SystemTrayController>(
           delegate_->GetShellConnector())),
       system_tray_notifier_(base::MakeUnique<SystemTrayNotifier>()),

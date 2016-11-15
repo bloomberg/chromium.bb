@@ -62,6 +62,7 @@ class ShelfModel;
 class ShelfWindowWatcher;
 class ShellDelegate;
 class ShellObserver;
+class ShutdownController;
 class SystemTrayDelegate;
 class SystemTrayController;
 class SystemTrayNotifier;
@@ -156,6 +157,10 @@ class ASH_EXPORT WmShell {
   ShelfDelegate* shelf_delegate() { return shelf_delegate_.get(); }
 
   ShelfModel* shelf_model();
+
+  ShutdownController* shutdown_controller() {
+    return shutdown_controller_.get();
+  }
 
   SystemTrayController* system_tray_controller() {
     return system_tray_controller_.get();
@@ -485,6 +490,7 @@ class ASH_EXPORT WmShell {
   std::unique_ptr<ShelfController> shelf_controller_;
   std::unique_ptr<ShelfDelegate> shelf_delegate_;
   std::unique_ptr<ShelfWindowWatcher> shelf_window_watcher_;
+  std::unique_ptr<ShutdownController> shutdown_controller_;
   std::unique_ptr<SystemTrayController> system_tray_controller_;
   std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;
   std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;

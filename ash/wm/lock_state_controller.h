@@ -22,19 +22,13 @@ class Rect;
 class Size;
 }
 
-namespace service_manager {
-class Connector;
-}
-
 namespace ui {
 class Layer;
 }
 
 namespace ash {
 
-namespace mojom {
-class ShutdownClient;
-}
+class ShutdownController;
 
 namespace test {
 class LockStateControllerTest;
@@ -88,7 +82,7 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   // the animation time to finish.
   static const int kShutdownRequestDelayMs;
 
-  explicit LockStateController(service_manager::Connector* connector);
+  explicit LockStateController(ShutdownController* shutdown_controller);
   ~LockStateController() override;
 
   // Starts locking (with slow animation) that can be cancelled.
@@ -245,8 +239,8 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
   // How long has it been since the request to lock the screen?
   std::unique_ptr<base::ElapsedTimer> lock_duration_timer_;
 
-  // The client that we request to shut down the machine.
-  std::unique_ptr<mojom::ShutdownClient> shutdown_client_;
+  // Controller used to trigger the actual shutdown.
+  ShutdownController* shutdown_controller_;
 
   // Started when we request that the screen be locked.  When it fires, we
   // assume that our request got dropped.

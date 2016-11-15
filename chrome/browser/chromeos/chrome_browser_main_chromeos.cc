@@ -80,6 +80,7 @@
 #include "chrome/browser/chromeos/resource_reporter/resource_reporter.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/chromeos/settings/shutdown_policy_forwarder.h"
 #include "chrome/browser/chromeos/status/data_promo_notification.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/ui/low_disk_notification.h"
@@ -768,6 +769,10 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
     keyboard_event_rewriters_->Init();
   }
 
+  // In classic ash must occur after ash::WmShell is initialized. Triggers a
+  // fetch of the initial CrosSettings DeviceRebootOnShutdown policy.
+  shutdown_policy_forwarder_ = base::MakeUnique<ShutdownPolicyForwarder>();
+
   ChromeBrowserMainPartsLinux::PostBrowserStart();
 }
 
@@ -779,6 +784,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   arc_service_launcher_->Shutdown();
   arc_kiosk_app_manager_.reset();
+
+  // Unregister CrosSettings observers before CrosSettings is destroyed.
+  shutdown_policy_forwarder_.reset();
 
   // Destroy the application name notifier for Kiosk mode.
   KioskModeIdleAppNameNotification::Shutdown();

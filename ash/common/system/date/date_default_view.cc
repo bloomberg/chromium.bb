@@ -6,11 +6,11 @@
 
 #include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shutdown_controller.h"
 #include "ash/common/system/date/date_view.h"
 #include "ash/common/system/tray/special_popup_row.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_controller.h"
-#include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_header_button.h"
 #include "ash/common/wm_shell.h"
@@ -44,8 +44,7 @@ DateDefaultView::DateDefaultView(SystemTrayItem* owner, LoginStatus login)
     : help_button_(nullptr),
       shutdown_button_(nullptr),
       lock_button_(nullptr),
-      date_view_(nullptr),
-      weak_factory_(this) {
+      date_view_(nullptr) {
   SetLayoutManager(new views::FillLayout);
 
   date_view_ = new tray::DateView(owner);
@@ -90,6 +89,11 @@ DateDefaultView::DateDefaultView(SystemTrayItem* owner, LoginStatus login)
     shutdown_button_->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SHUTDOWN));
     view->AddViewToRowNonMd(shutdown_button_, true);
+    // This object is recreated every time the menu opens. Don't bother updating
+    // the tooltip if the shutdown policy changes while the menu is open.
+    bool reboot = WmShell::Get()->shutdown_controller()->reboot_on_shutdown();
+    shutdown_button_->SetTooltipText(l10n_util::GetStringUTF16(
+        reboot ? IDS_ASH_STATUS_TRAY_REBOOT : IDS_ASH_STATUS_TRAY_SHUTDOWN));
   }
 
   if (shell->GetSessionStateDelegate()->CanLockScreen()) {
@@ -101,20 +105,10 @@ DateDefaultView::DateDefaultView(SystemTrayItem* owner, LoginStatus login)
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_LOCK));
     view->AddViewToRowNonMd(lock_button_, true);
   }
-  SystemTrayDelegate* system_tray_delegate = shell->system_tray_delegate();
-  system_tray_delegate->AddShutdownPolicyObserver(this);
-  system_tray_delegate->ShouldRebootOnShutdown(base::Bind(
-      &DateDefaultView::OnShutdownPolicyChanged, weak_factory_.GetWeakPtr()));
 #endif  // !defined(OS_WIN)
 }
 
-DateDefaultView::~DateDefaultView() {
-  // We need the check as on shell destruction, the delegate is destroyed first.
-  SystemTrayDelegate* system_tray_delegate =
-      WmShell::Get()->system_tray_delegate();
-  if (system_tray_delegate)
-    system_tray_delegate->RemoveShutdownPolicyObserver(this);
-}
+DateDefaultView::~DateDefaultView() {}
 
 views::View* DateDefaultView::GetHelpButtonView() {
   return help_button_;
@@ -152,15 +146,6 @@ void DateDefaultView::ButtonPressed(views::Button* sender,
     NOTREACHED();
   }
   date_view_->CloseSystemBubble();
-}
-
-void DateDefaultView::OnShutdownPolicyChanged(bool reboot_on_shutdown) {
-  if (!shutdown_button_)
-    return;
-
-  shutdown_button_->SetTooltipText(l10n_util::GetStringUTF16(
-      reboot_on_shutdown ? IDS_ASH_STATUS_TRAY_REBOOT
-                         : IDS_ASH_STATUS_TRAY_SHUTDOWN));
 }
 
 }  // namespace ash

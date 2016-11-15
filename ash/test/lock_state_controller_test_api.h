@@ -25,7 +25,9 @@ class LockStateControllerTestApi {
   explicit LockStateControllerTestApi(LockStateController* controller);
   ~LockStateControllerTestApi();
 
-  void SetShutdownClient(std::unique_ptr<mojom::ShutdownClient> client);
+  void set_shutdown_controller(ShutdownController* shutdown_controller) {
+    controller_->shutdown_controller_ = shutdown_controller;
+  }
 
   bool lock_fail_timer_is_running() const {
     return controller_->lock_fail_timer_.IsRunning();

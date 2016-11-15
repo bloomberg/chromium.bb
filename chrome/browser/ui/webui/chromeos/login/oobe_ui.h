@@ -118,7 +118,7 @@ class OobeUI : public content::WebUIController,
   GaiaScreenHandler* GetGaiaScreenActor();
   UserBoardView* GetUserBoardScreenActor();
 
-  // ShutdownPolicyObserver::Delegate
+  // ShutdownPolicyHandler::Delegate
   void OnShutdownPolicyChanged(bool reboot_on_shutdown) override;
 
   // Collects localized strings from the owned handlers.

@@ -6,6 +6,7 @@
 
 #include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shutdown_controller.h"
 #include "ash/common/system/tray/system_menu_button.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_controller.h"
@@ -44,18 +45,9 @@ TilesDefaultView::TilesDefaultView(SystemTrayItem* owner, LoginStatus login)
       settings_button_(nullptr),
       help_button_(nullptr),
       lock_button_(nullptr),
-      power_button_(nullptr),
-      weak_factory_(this) {}
+      power_button_(nullptr) {}
 
-TilesDefaultView::~TilesDefaultView() {
-  SystemTrayDelegate* system_tray_delegate =
-      WmShell::Get()->system_tray_delegate();
-
-  // Perform this check since the delegate is destroyed first upon shell
-  // destruction.
-  if (system_tray_delegate)
-    system_tray_delegate->RemoveShutdownPolicyObserver(this);
-}
+TilesDefaultView::~TilesDefaultView() {}
 
 void TilesDefaultView::Init() {
   WmShell* shell = WmShell::Get();
@@ -109,10 +101,11 @@ void TilesDefaultView::Init() {
       new SystemMenuButton(this, SystemMenuButton::InkDropStyle::FLOOD_FILL,
                            kSystemMenuPowerIcon, IDS_ASH_STATUS_TRAY_SHUTDOWN);
   AddChildView(power_button_);
-  SystemTrayDelegate* system_tray_delegate = shell->system_tray_delegate();
-  system_tray_delegate->AddShutdownPolicyObserver(this);
-  system_tray_delegate->ShouldRebootOnShutdown(base::Bind(
-      &TilesDefaultView::OnShutdownPolicyChanged, weak_factory_.GetWeakPtr()));
+  // This object is recreated every time the menu opens. Don't bother updating
+  // the tooltip if the shutdown policy changes while the menu is open.
+  bool reboot = WmShell::Get()->shutdown_controller()->reboot_on_shutdown();
+  power_button_->SetTooltipText(l10n_util::GetStringUTF16(
+      reboot ? IDS_ASH_STATUS_TRAY_REBOOT : IDS_ASH_STATUS_TRAY_SHUTDOWN));
 #endif  // !defined(OS_WIN)
 }
 
@@ -139,15 +132,6 @@ void TilesDefaultView::ButtonPressed(views::Button* sender,
   }
 
   owner_->system_tray()->CloseSystemBubble();
-}
-
-void TilesDefaultView::OnShutdownPolicyChanged(bool reboot_on_shutdown) {
-  if (!power_button_)
-    return;
-
-  power_button_->SetTooltipText(l10n_util::GetStringUTF16(
-      reboot_on_shutdown ? IDS_ASH_STATUS_TRAY_REBOOT
-                         : IDS_ASH_STATUS_TRAY_SHUTDOWN));
 }
 
 views::View* TilesDefaultView::GetHelpButtonView() const {

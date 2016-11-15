@@ -158,15 +158,6 @@ void SystemTrayDelegate::AddCustodianInfoTrayObserver(
 void SystemTrayDelegate::RemoveCustodianInfoTrayObserver(
     CustodianInfoTrayObserver* observer) {}
 
-void SystemTrayDelegate::AddShutdownPolicyObserver(
-    ShutdownPolicyObserver* observer) {}
-
-void SystemTrayDelegate::RemoveShutdownPolicyObserver(
-    ShutdownPolicyObserver* observer) {}
-
-void SystemTrayDelegate::ShouldRebootOnShutdown(
-    const RebootOnShutdownCallback& callback) {}
-
 VPNDelegate* SystemTrayDelegate::GetVPNDelegate() const {
   return nullptr;
 }

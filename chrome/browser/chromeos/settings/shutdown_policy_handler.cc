@@ -14,44 +14,28 @@ namespace chromeos {
 ShutdownPolicyHandler::ShutdownPolicyHandler(CrosSettings* cros_settings,
                                              Delegate* delegate)
     : cros_settings_(cros_settings), delegate_(delegate), weak_factory_(this) {
-  if (delegate_) {
-    shutdown_policy_subscription_ = cros_settings_->AddSettingsObserver(
-        kRebootOnShutdown,
-        base::Bind(&ShutdownPolicyHandler::OnShutdownPolicyChanged,
-                   weak_factory_.GetWeakPtr()));
-  }
+  DCHECK(cros_settings_);
+  DCHECK(delegate);
+  shutdown_policy_subscription_ = cros_settings_->AddSettingsObserver(
+      kRebootOnShutdown,
+      base::Bind(&ShutdownPolicyHandler::NotifyDelegateWithShutdownPolicy,
+                 weak_factory_.GetWeakPtr()));
 }
 
 ShutdownPolicyHandler::~ShutdownPolicyHandler() {}
 
-void ShutdownPolicyHandler::Shutdown() {
-  shutdown_policy_subscription_.reset();
-  delegate_ = nullptr;
-}
-
-void ShutdownPolicyHandler::CallDelegate(bool reboot_on_shutdown) {
-  if (delegate_)
-    delegate_->OnShutdownPolicyChanged(reboot_on_shutdown);
-}
-
-void ShutdownPolicyHandler::OnShutdownPolicyChanged() {
-  CheckIfRebootOnShutdown(base::Bind(&ShutdownPolicyHandler::CallDelegate,
-                          weak_factory_.GetWeakPtr()));
-}
-
-void ShutdownPolicyHandler::CheckIfRebootOnShutdown(
-    const RebootOnShutdownCallback& callback) {
+void ShutdownPolicyHandler::NotifyDelegateWithShutdownPolicy() {
   CrosSettingsProvider::TrustedStatus status =
       cros_settings_->PrepareTrustedValues(
-          base::Bind(&ShutdownPolicyHandler::CheckIfRebootOnShutdown,
-                     weak_factory_.GetWeakPtr(), callback));
+          base::Bind(&ShutdownPolicyHandler::NotifyDelegateWithShutdownPolicy,
+                     weak_factory_.GetWeakPtr()));
   if (status != CrosSettingsProvider::TRUSTED)
     return;
 
   // Get the updated policy.
   bool reboot_on_shutdown = false;
   cros_settings_->GetBoolean(kRebootOnShutdown, &reboot_on_shutdown);
-  callback.Run(reboot_on_shutdown);
+  delegate_->OnShutdownPolicyChanged(reboot_on_shutdown);
 }
 
 }  // namespace chromeos

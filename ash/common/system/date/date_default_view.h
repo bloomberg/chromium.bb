@@ -7,9 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/login_status.h"
-#include "ash/common/system/chromeos/shutdown_policy_observer.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -26,8 +24,7 @@ class TrayPopupHeaderButton;
 // TODO(tdanderson): Remove this class once material design is enabled by
 // default. See crbug.com/614453.
 class ASH_EXPORT DateDefaultView : public views::View,
-                                   public views::ButtonListener,
-                                   public ShutdownPolicyObserver {
+                                   public views::ButtonListener {
  public:
   DateDefaultView(SystemTrayItem* owner, LoginStatus login);
 
@@ -39,9 +36,6 @@ class ASH_EXPORT DateDefaultView : public views::View,
   tray::DateView* GetDateView();
   const tray::DateView* GetDateView() const;
 
-  // ash::ShutdownPolicyObserver:
-  void OnShutdownPolicyChanged(bool reboot_on_shutdown) override;
-
  private:
   // Overridden from views::ButtonListener.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -50,8 +44,6 @@ class ASH_EXPORT DateDefaultView : public views::View,
   TrayPopupHeaderButton* shutdown_button_;
   TrayPopupHeaderButton* lock_button_;
   tray::DateView* date_view_;
-
-  base::WeakPtrFactory<DateDefaultView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DateDefaultView);
 };

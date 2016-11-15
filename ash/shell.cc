@@ -724,8 +724,8 @@ void Shell::Init(const ShellInitParams& init_params) {
   screen_pinning_controller_.reset(
       new ScreenPinningController(window_tree_host_manager_.get()));
 
-  lock_state_controller_ = base::MakeUnique<LockStateController>(
-      wm_shell_->delegate()->GetShellConnector());
+  lock_state_controller_ =
+      base::MakeUnique<LockStateController>(wm_shell_->shutdown_controller());
   power_button_controller_.reset(
       new PowerButtonController(lock_state_controller_.get()));
 #if defined(OS_CHROMEOS)

@@ -16,7 +16,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
-#include "chrome/browser/chromeos/power/shutdown_client_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/app_list/app_list_presenter_service.h"
@@ -126,13 +125,6 @@ class FactoryImpl {
                                            std::move(request));
   }
 
-  void BindRequest(ash::mojom::ShutdownClientRequest request) {
-    if (!shutdown_client_)
-      shutdown_client_ = base::MakeUnique<ShutdownClientImpl>();
-    shutdown_client_bindings_.AddBinding(shutdown_client_.get(),
-                                         std::move(request));
-  }
-
   void BindRequest(ash::mojom::SystemTrayClientRequest request) {
     system_tray_client_bindings_.AddBinding(SystemTrayClient::Get(),
                                             std::move(request));
@@ -162,8 +154,6 @@ class FactoryImpl {
   std::unique_ptr<ChromeLaunchable> launchable_;
   std::unique_ptr<ChromeNewWindowClient> new_window_client_;
   mojo::BindingSet<ash::mojom::NewWindowClient> new_window_client_bindings_;
-  std::unique_ptr<ShutdownClientImpl> shutdown_client_;
-  mojo::BindingSet<ash::mojom::ShutdownClient> shutdown_client_bindings_;
   mojo::BindingSet<ash::mojom::SystemTrayClient> system_tray_client_bindings_;
   std::unique_ptr<VolumeController> volume_controller_;
   std::unique_ptr<AppListPresenterService> app_list_presenter_service_;
@@ -187,14 +177,15 @@ bool ChromeInterfaceFactory::OnConnect(
     const service_manager::Identity& remote_identity,
     service_manager::InterfaceRegistry* registry,
     service_manager::Connector* connector) {
+  // TODO(jamescook): Only register the interfaces needed for a particular
+  // |remote_identity|. For example, a connection from service:ash needs these,
+  // but a connection from service:content_gpu does not.
   FactoryImpl::AddFactory<keyboard::mojom::Keyboard>(registry,
                                                      main_thread_task_runner_);
   FactoryImpl::AddFactory<mash::mojom::Launchable>(registry,
                                                    main_thread_task_runner_);
   FactoryImpl::AddFactory<ash::mojom::NewWindowClient>(
       registry, main_thread_task_runner_);
-  FactoryImpl::AddFactory<ash::mojom::ShutdownClient>(registry,
-                                                      main_thread_task_runner_);
   FactoryImpl::AddFactory<ash::mojom::SystemTrayClient>(
       registry, main_thread_task_runner_);
   FactoryImpl::AddFactory<ash::mojom::VolumeController>(

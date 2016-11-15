@@ -19,12 +19,8 @@ namespace chromeos {
 // calling its OnShutdownPolicyChanged method with the new state of the policy.
 class ShutdownPolicyHandler {
  public:
-  // This callback is passed to CheckIfRebootOnShutdown, which invokes it with
-  // the current state of the |DeviceRebootOnShutdown| policy once a trusted of
-  // policies is established.
-  using RebootOnShutdownCallback = base::Callback<void(bool)>;
-
   // This delegate is called when the |DeviceRebootOnShutdown| policy changes.
+  // NotifyDelegateWithShutdownPolicy() can manually request a notification.
   class Delegate {
    public:
     virtual void OnShutdownPolicyChanged(bool reboot_on_shutdown) = 0;
@@ -36,18 +32,11 @@ class ShutdownPolicyHandler {
   ShutdownPolicyHandler(CrosSettings* cros_settings, Delegate* delegate);
   ~ShutdownPolicyHandler();
 
-  // Once a trusted set of policies is established, this function calls
-  // |callback| with the trusted state of the |DeviceRebootOnShutdown| policy.
-  void CheckIfRebootOnShutdown(const RebootOnShutdownCallback& callback);
-
-  // Resets the policy subscription and clears the delegate.
-  void Shutdown();
+  // Once a trusted set of policies is established, this function notifies
+  // |delegate_| with the trusted state of the |DeviceRebootOnShutdown| policy.
+  void NotifyDelegateWithShutdownPolicy();
 
  private:
-  void CallDelegate(bool reboot_on_shutdown);
-
-  void OnShutdownPolicyChanged();
-
   CrosSettings* cros_settings_;
 
   Delegate* delegate_;
