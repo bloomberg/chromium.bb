@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_BROWSER_TEST_CAST_BROWSER_TEST_H_
-#define CHROMECAST_BROWSER_TEST_CAST_BROWSER_TEST_H_
+#ifndef CHROMECAST_BROWSER_TEST_CHROMECAST_BROWSER_TEST_H_
+#define CHROMECAST_BROWSER_TEST_CHROMECAST_BROWSER_TEST_H_
 
 #include <memory>
 
@@ -25,16 +25,15 @@ class CastContentWindow;
 // case, then shuts down the entire shell.
 // Note that this process takes 7-10 seconds per test case on Chromecast, so
 // fewer test cases with more assertions are preferable.
-class CastBrowserTest : public content::BrowserTestBase {
+class ChromecastBrowserTest : public content::BrowserTestBase {
  protected:
-  CastBrowserTest();
-  ~CastBrowserTest() override;
+  ChromecastBrowserTest();
+  ~ChromecastBrowserTest() override;
 
   // content::BrowserTestBase implementation:
-  void SetUp() final;
+  void SetUp() override;
   void TearDownOnMainThread() override;
-  void SetUpCommandLine(base::CommandLine* command_line) override;
-  void RunTestOnMainThreadLoop() final;
+  void RunTestOnMainThreadLoop() override;
 
   content::WebContents* NavigateToURL(const GURL& url);
 
@@ -42,10 +41,10 @@ class CastBrowserTest : public content::BrowserTestBase {
   std::unique_ptr<CastContentWindow> window_;
   std::unique_ptr<content::WebContents> web_contents_;
 
-  DISALLOW_COPY_AND_ASSIGN(CastBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(ChromecastBrowserTest);
 };
 
 }  // namespace shell
 }  // namespace chromecast
 
-#endif  // CHROMECAST_BROWSER_TEST_CAST_BROWSER_TEST_H_
+#endif  // CHROMECAST_BROWSER_TEST_CHROMECAST_BROWSER_TEST_H_

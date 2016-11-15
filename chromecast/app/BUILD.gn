@@ -56,23 +56,8 @@ source_set("cast_crash_client") {
   }
 }
 
-source_set("test_support") {
-  testonly = true
-  sources = [
-    "cast_test_launcher.cc",
-  ]
-
-  deps = [
-    ":app",
-    "//base",
-    "//base/test:test_support",
-    "//chromecast/base",
-    "//content/test:test_support",
-  ]
-}
-
-source_set("unittests") {
-  testonly = true
+# TODO(kmackay) Consider renaming this.
+test("cast_shell_unittests") {
   sources = [
     "linux/cast_crash_reporter_client_unittest.cc",
   ]
@@ -80,6 +65,7 @@ source_set("unittests") {
   deps = [
     ":cast_crash_client",
     "//base",
+    "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//chromecast/base:test_support",
     "//chromecast/crash",

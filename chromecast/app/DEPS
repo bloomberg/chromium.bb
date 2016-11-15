@@ -10,9 +10,3 @@ include_rules = [
   "+content/public/common",
   "+ui/base",
 ]
-
-specific_include_rules = {
-  "cast_test_launcher\.cc": [
-    "+content/public/test",
-  ],
-}

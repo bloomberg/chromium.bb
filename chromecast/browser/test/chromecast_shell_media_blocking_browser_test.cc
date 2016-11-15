@@ -7,7 +7,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/browser/cast_media_blocker.h"
-#include "chromecast/browser/test/cast_browser_test.h"
+#include "chromecast/browser/test/chromecast_browser_test.h"
 #include "chromecast/chromecast_features.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/web_contents.h"
@@ -19,16 +19,16 @@
 namespace chromecast {
 namespace shell {
 
-class CastMediaBlockerBrowserTest : public CastBrowserTest {
+class ChromecastShellMediaBlockingBrowserTest : public ChromecastBrowserTest {
  public:
-  CastMediaBlockerBrowserTest() {}
+  ChromecastShellMediaBlockingBrowserTest() {}
 
  protected:
-  // CastBrowserTest implementation.
+  // ChromecastBrowserTest implementation.
   void TearDownOnMainThread() override {
     blocker_.reset();
 
-    CastBrowserTest::TearDownOnMainThread();
+    ChromecastBrowserTest::TearDownOnMainThread();
   }
 
   void PlayMedia(const std::string& tag, const std::string& media_file) {
@@ -83,10 +83,11 @@ class CastMediaBlockerBrowserTest : public CastBrowserTest {
   content::WebContents* web_contents_;
   std::unique_ptr<CastMediaBlocker> blocker_;
 
-  DISALLOW_COPY_AND_ASSIGN(CastMediaBlockerBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(ChromecastShellMediaBlockingBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(CastMediaBlockerBrowserTest, Audio_BlockUnblock) {
+IN_PROC_BROWSER_TEST_F(ChromecastShellMediaBlockingBrowserTest,
+                       Audio_BlockUnblock) {
   PlayMedia("audio", "bear-audio-10s-CBR-has-TOC.mp3");
 
   BlockAndTestPlayerState("audio", true);
@@ -94,7 +95,8 @@ IN_PROC_BROWSER_TEST_F(CastMediaBlockerBrowserTest, Audio_BlockUnblock) {
 }
 
 #if !BUILDFLAG(IS_CAST_AUDIO_ONLY)
-IN_PROC_BROWSER_TEST_F(CastMediaBlockerBrowserTest, Video_BlockUnblock) {
+IN_PROC_BROWSER_TEST_F(ChromecastShellMediaBlockingBrowserTest,
+                       Video_BlockUnblock) {
   PlayMedia("video", "tulip2.webm");
 
   BlockAndTestPlayerState("video", true);

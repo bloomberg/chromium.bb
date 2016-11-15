@@ -53,26 +53,24 @@ class CastDevToolsManagerDelegateTest
   DISALLOW_COPY_AND_ASSIGN(CastDevToolsManagerDelegateTest);
 };
 
-// TODO(derekjchow): Make the tests pass on cast testbots.
-// crbug.com/665118
-TEST_F(CastDevToolsManagerDelegateTest, DISABLED_TestSingletonGetter) {
+TEST_F(CastDevToolsManagerDelegateTest, TestSingletonGetter) {
   EXPECT_EQ(devtools_manager_delegate_.get(),
             CastDevToolsManagerDelegate::GetInstance());
 }
 
-TEST_F(CastDevToolsManagerDelegateTest, DISABLED_NoWebContents) {
+TEST_F(CastDevToolsManagerDelegateTest, NoWebContents) {
   EXPECT_TRUE(devtools_manager_delegate_->DiscoverTargets(
       base::Bind(&CastDevToolsManagerDelegateTest::TestDiscoveredTargets,
                  base::Unretained(this), WebContentsSet())));
 }
 
-TEST_F(CastDevToolsManagerDelegateTest, DISABLED_DisabledWebContents) {
+TEST_F(CastDevToolsManagerDelegateTest, DisabledWebContents) {
   EXPECT_TRUE(devtools_manager_delegate_->DiscoverTargets(
       base::Bind(&CastDevToolsManagerDelegateTest::TestDiscoveredTargets,
                  base::Unretained(this), WebContentsSet())));
 }
 
-TEST_F(CastDevToolsManagerDelegateTest, DISABLED_EnabledWebContents) {
+TEST_F(CastDevToolsManagerDelegateTest, EnabledWebContents) {
   devtools_manager_delegate_->EnableWebContentsForDebugging(web_contents());
   WebContentsSet enabled_web_contents({web_contents()});
   EXPECT_TRUE(devtools_manager_delegate_->DiscoverTargets(

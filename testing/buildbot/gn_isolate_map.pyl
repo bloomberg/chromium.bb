@@ -225,12 +225,12 @@
     "label": "//chromecast:cast_shell_apk",
     "type": "additional_compile_target",
   },
-  "cast_shell_browsertests": {
-    "label": "//chromecast/browser:cast_shell_browsertests",
-    "type": "console_test_launcher",
-  },
   "cast_shell_unittests": {
     "label": "//chromecast/app:cast_shell_unittests",
+    "type": "console_test_launcher",
+  },
+  "cast_shell_browser_test": {
+    "label": "//chromecast/browser:cast_shell_browser_test",
     "type": "console_test_launcher",
   },
   "cast_unittests": {
