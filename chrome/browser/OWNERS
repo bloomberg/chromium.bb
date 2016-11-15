@@ -28,10 +28,9 @@ per-file chrome_content_browser_client.h=*
 per-file chrome_content_browser_client_browsertest.cc=*
 per-file chrome_content_browser_client_unittest.cc=*
 
-per-file content_browser_manifest_overlay.json=set noparent
-per-file content_browser_manifest_overlay.json=file://ipc/SECURITY_OWNERS
-per-file content_utility_manifest_overlay.json=set noparent
-per-file content_utility_manifest_overlay.json=file://ipc/SECURITY_OWNERS
+# Mojo manfiests
+per-file *manifest_overlay.json=set noparent
+per-file *manifest_overlay.json=file://ipc/SECURITY_OWNERS
 
 per-file chrome_browser_field_trials*=file://components/variations/OWNERS
 
