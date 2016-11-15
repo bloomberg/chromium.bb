@@ -25,7 +25,7 @@
     Recent tabs
   </message>
 
-  <message name="IDS_NTP_BOOKMARK_SUGGESTIONS_SECTION_HEADER" desc="Header of the bookmarks section, which is a list of the user's most recently used bookmarks displayed as cards on the New Tab Page.">
+  <message name="IDS_NTP_BOOKMARK_SUGGESTIONS_SECTION_HEADER" desc="Header of the bookmarks section. The bookmarks section shows a list of recently *visited* bookmarks, irrespective of their creation date. It is *not* a list of recently *created* bookmarks">
     Recent bookmarks
   </message>
 
