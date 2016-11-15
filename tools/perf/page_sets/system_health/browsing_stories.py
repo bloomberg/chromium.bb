@@ -88,7 +88,8 @@ class _NewsBrowsingStory(_BrowsingStory):
 
 # TODO(ulan): Enable this story on mobile once it uses less memory and does not
 # crash with OOM.
-@decorators.Disabled('android')
+@decorators.Disabled('android',
+                     'win') # crbug.com/665465
 class CnnStory(_NewsBrowsingStory):
   """The second top website in http://www.alexa.com/topsites/category/News"""
   NAME = 'browse:news:cnn'
