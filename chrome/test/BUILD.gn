@@ -3279,6 +3279,7 @@ test("unit_tests") {
     "../browser/services/gcm/fake_gcm_profile_service.cc",
     "../browser/services/gcm/fake_gcm_profile_service.h",
     "../browser/sessions/restore_on_startup_policy_handler_unittest.cc",
+    "../browser/sessions/session_common_utils_unittest.cc",
     "../browser/shell_integration_win_unittest.cc",
     "../browser/signin/account_reconcilor_unittest.cc",
     "../browser/signin/chrome_signin_client_unittest.cc",

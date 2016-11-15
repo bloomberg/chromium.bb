@@ -241,6 +241,7 @@ Polymer({
   onDisconnectClosed_: function() {
     if (settings.getCurrentRoute() == settings.Route.SIGN_OUT)
       settings.navigateToPreviousRoute();
+    this.fire('signout-dialog-closed');
   },
 
   /** @private */
@@ -257,7 +258,15 @@ Polymer({
   onDisconnectConfirm_: function() {
     var deleteProfile = !!this.syncStatus.domain ||
         (this.$.deleteProfile && this.$.deleteProfile.checked);
-    this.syncBrowserProxy_.signOut(deleteProfile);
+    // Trigger the sign out event after the navigateToPreviousRoute().
+    // So that the navigation to the setting page could be finished before the
+    // sign out if navigateToPreviousRoute() returns synchronously even the
+    // browser is closed after the sign out. Otherwise, the navigation will be
+    // finshed during session restore if the browser is closed before the async
+    // callback executed.
+    listenOnce(this, 'signout-dialog-closed', function() {
+      this.syncBrowserProxy_.signOut(deleteProfile);
+    }.bind(this));
 
     this.$.disconnectDialog.close();
   },
