@@ -9,8 +9,11 @@ function test()
 
     var totalResourceCount = 4;
     InspectorTest.makeFetch("resources/style.css", {}, ensureAllResources);
-    InspectorTest.makeFetch("resources/abe.png", {}, ensureAllResources);
-    InspectorTest.makeFetch("resources/abe.png", {}, ensureAllResources);
+    InspectorTest.makeFetch("resources/abe.png", {}, () => {
+        // Ensures result is cached.
+        InspectorTest.makeFetch("resources/abe.png", {}, ensureAllResources);
+        ensureAllResources();
+    });
     InspectorTest.makeFetch("missing/foo.bar", {}, ensureAllResources);
     var filterChecks = [{
         filterText: "-.css",
@@ -44,6 +47,12 @@ function test()
         isRegex: false
     }, {
         filterText: "-missing",
+        isRegex: false
+    }, {
+        filterText: "is:from-cache",
+        isRegex: false
+    }, {
+        filterText: "-is:from-cache",
         isRegex: false
     }];
 

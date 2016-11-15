@@ -44,4 +44,12 @@ filterText: -missing
 isRegex: false
 Found results: 3
 
+filterText: is:from-cache
+isRegex: false
+Found results: 1
+
+filterText: -is:from-cache
+isRegex: false
+Found results: 3
+
 
