@@ -1761,12 +1761,11 @@ void WebMediaPlayerImpl::SetSuspendState(bool is_suspended) {
   if (IsNetworkStateError(network_state_))
     return;
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
+#if defined(OS_LINUX)
   // TODO(sandersd): idle suspend is disabled if decoder owns video frame.
-  // Used on Windows+Chromecast. Since GetCurrentFrameFromCompositor is a
-  // synchronous cross-thread post, avoid the cost on platforms that always
-  // allow suspend. Need to find a better mechanism for this. See
-  // http://crbug.com/602708
+  // Used on Chromecast. Since GetCurrentFrameFromCompositor is a synchronous
+  // cross-thread post, avoid the cost on platforms that always allow suspend.
+  // Need to find a better mechanism for this. See http://crbug.com/602708
   if (can_suspend_state_ == CanSuspendState::UNKNOWN) {
     scoped_refptr<VideoFrame> frame = GetCurrentFrameFromCompositor();
     if (frame) {

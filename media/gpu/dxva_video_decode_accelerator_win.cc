@@ -486,6 +486,7 @@ DXVAVideoDecodeAccelerator::PendingSampleInfo::~PendingSampleInfo() {}
 DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
     const GetGLContextCallback& get_gl_context_cb,
     const MakeGLContextCurrentCallback& make_context_current_cb,
+    const BindGLImageCallback& bind_image_cb,
     const gpu::GpuDriverBugWorkarounds& workarounds,
     const gpu::GpuPreferences& gpu_preferences)
     : client_(NULL),
@@ -498,6 +499,7 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       sent_drain_message_(false),
       get_gl_context_cb_(get_gl_context_cb),
       make_context_current_cb_(make_context_current_cb),
+      bind_image_cb_(bind_image_cb),
       codec_(kUnknownVideoCodec),
       decoder_thread_("DXVAVideoDecoderThread"),
       pending_flush_(false),
@@ -885,6 +887,15 @@ void DXVAVideoDecodeAccelerator::AssignPictureBuffers(
     RETURN_AND_NOTIFY_ON_FAILURE(picture_buffer.get(),
                                  "Failed to allocate picture buffer",
                                  PLATFORM_FAILURE, );
+    if (bind_image_cb_) {
+      for (uint32_t client_id : buffers[buffer_index].client_texture_ids()) {
+        // The picture buffer handles the actual binding of its contents to
+        // texture ids. This call just causes the texture manager to hold a
+        // reference to the GLImage as long as either texture exists.
+        bind_image_cb_.Run(client_id, GetTextureTarget(),
+                           picture_buffer->gl_image(), true);
+      }
+    }
 
     bool inserted =
         output_picture_buffers_
@@ -1936,7 +1947,7 @@ void DXVAVideoDecodeAccelerator::RequestPictureBuffers(int width, int height) {
         kNumPictureBuffers,
         provide_nv12_textures ? PIXEL_FORMAT_NV12 : PIXEL_FORMAT_UNKNOWN,
         provide_nv12_textures ? 2 : 1, gfx::Size(width, height),
-        provide_nv12_textures ? GL_TEXTURE_EXTERNAL_OES : GL_TEXTURE_2D);
+        GetTextureTarget());
   }
 }
 
@@ -2747,6 +2758,11 @@ void DXVAVideoDecodeAccelerator::ConfigChanged(const Config& config) {
       FROM_HERE,
       base::Bind(&DXVAVideoDecodeAccelerator::DecodePendingInputBuffers,
                  base::Unretained(this)));
+}
+
+uint32_t DXVAVideoDecodeAccelerator::GetTextureTarget() const {
+  bool provide_nv12_textures = share_nv12_textures_ || copy_nv12_textures_;
+  return provide_nv12_textures ? GL_TEXTURE_EXTERNAL_OES : GL_TEXTURE_2D;
 }
 
 }  // namespace media

@@ -10,6 +10,7 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_fence.h"
+#include "ui/gl/gl_image.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/scoped_binders.h"
 
@@ -20,6 +21,73 @@ namespace {
 void LogDXVAError(int line) {
   LOG(ERROR) << "Error in dxva_picture_buffer_win.cc on line " << line;
 }
+
+// These GLImage subclasses are just used to hold references to the underlying
+// image content so it can be destroyed when the textures are.
+class DummyGLImage : public gl::GLImage {
+ public:
+  DummyGLImage(const gfx::Size& size) : size_(size) {}
+
+  // gl::GLImage implementation.
+  gfx::Size GetSize() override { return size_; }
+  unsigned GetInternalFormat() override { return GL_BGRA_EXT; }
+  bool BindTexImage(unsigned target) override { return false; }
+  void ReleaseTexImage(unsigned target) override {}
+  bool CopyTexImage(unsigned target) override { return false; }
+  bool CopyTexSubImage(unsigned target,
+                       const gfx::Point& offset,
+                       const gfx::Rect& rect) override {
+    return false;
+  }
+  bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+                            int z_order,
+                            gfx::OverlayTransform transform,
+                            const gfx::Rect& bounds_rect,
+                            const gfx::RectF& crop_rect) override {
+    return false;
+  }
+  void Flush() override {}
+  void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
+                    uint64_t process_tracing_id,
+                    const std::string& dump_name) override {}
+
+ protected:
+  ~DummyGLImage() override {}
+
+ private:
+  gfx::Size size_;
+};
+
+class GLImagePbuffer : public DummyGLImage {
+ public:
+  GLImagePbuffer(const gfx::Size& size, EGLSurface surface)
+      : DummyGLImage(size), surface_(surface) {}
+
+ private:
+  ~GLImagePbuffer() override {
+    EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
+
+    eglReleaseTexImage(egl_display, surface_, EGL_BACK_BUFFER);
+
+    eglDestroySurface(egl_display, surface_);
+  }
+
+  EGLSurface surface_;
+};
+
+class GLImageEGLStream : public DummyGLImage {
+ public:
+  GLImageEGLStream(const gfx::Size& size, EGLStreamKHR stream)
+      : DummyGLImage(size), stream_(stream) {}
+
+ private:
+  ~GLImageEGLStream() override {
+    EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
+    eglDestroyStreamKHR(egl_display, stream_);
+  }
+
+  EGLStreamKHR stream_;
+};
 
 }  // namespace
 
@@ -138,6 +206,7 @@ bool PbufferPictureBuffer::Initialize(const DXVAVideoDecodeAccelerator& decoder,
       egl_display, EGL_D3D_TEXTURE_2D_SHARE_HANDLE_ANGLE, texture_share_handle_,
       egl_config, attrib_list);
   RETURN_ON_FAILURE(decoding_surface_, "Failed to create surface", false);
+  gl_image_ = make_scoped_refptr(new GLImagePbuffer(size(), decoding_surface_));
   if (decoder.d3d11_device_ && decoder.use_keyed_mutex_) {
     void* keyed_mutex = nullptr;
     EGLBoolean ret =
@@ -313,14 +382,7 @@ PbufferPictureBuffer::PbufferPictureBuffer(const PictureBuffer& buffer)
       use_rgb_(true) {}
 
 PbufferPictureBuffer::~PbufferPictureBuffer() {
-  if (decoding_surface_) {
-    EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
-
-    eglReleaseTexImage(egl_display, decoding_surface_, EGL_BACK_BUFFER);
-
-    eglDestroySurface(egl_display, decoding_surface_);
-    decoding_surface_ = NULL;
-  }
+  // decoding_surface_ will be deleted by gl_image_.
 }
 
 bool PbufferPictureBuffer::ReusePictureBuffer() {
@@ -344,11 +406,7 @@ EGLStreamPictureBuffer::EGLStreamPictureBuffer(const PictureBuffer& buffer)
     : DXVAPictureBuffer(buffer), stream_(nullptr) {}
 
 EGLStreamPictureBuffer::~EGLStreamPictureBuffer() {
-  if (stream_) {
-    EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
-    eglDestroyStreamKHR(egl_display, stream_);
-    stream_ = nullptr;
-  }
+  // stream_ will be deleted by gl_image_.
 }
 
 bool EGLStreamPictureBuffer::Initialize() {
@@ -365,6 +423,7 @@ bool EGLStreamPictureBuffer::Initialize() {
   };
   stream_ = eglCreateStreamKHR(egl_display, stream_attributes);
   RETURN_ON_FAILURE(!!stream_, "Could not create stream", false);
+  gl_image_ = make_scoped_refptr(new GLImageEGLStream(size(), stream_));
   gl::ScopedActiveTexture texture0(GL_TEXTURE0);
   gl::ScopedTextureBinder texture0_binder(
       GL_TEXTURE_EXTERNAL_OES, picture_buffer_.service_texture_ids()[0]);
@@ -453,11 +512,7 @@ EGLStreamCopyPictureBuffer::EGLStreamCopyPictureBuffer(
     : DXVAPictureBuffer(buffer), stream_(nullptr) {}
 
 EGLStreamCopyPictureBuffer::~EGLStreamCopyPictureBuffer() {
-  if (stream_) {
-    EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
-    eglDestroyStreamKHR(egl_display, stream_);
-    stream_ = nullptr;
-  }
+  // stream_ will be deleted by gl_image_.
 }
 
 bool EGLStreamCopyPictureBuffer::Initialize(
@@ -475,6 +530,7 @@ bool EGLStreamCopyPictureBuffer::Initialize(
   };
   stream_ = eglCreateStreamKHR(egl_display, stream_attributes);
   RETURN_ON_FAILURE(!!stream_, "Could not create stream", false);
+  gl_image_ = make_scoped_refptr(new GLImageEGLStream(size(), stream_));
   gl::ScopedActiveTexture texture0(GL_TEXTURE0);
   gl::ScopedTextureBinder texture0_binder(
       GL_TEXTURE_EXTERNAL_OES, picture_buffer_.service_texture_ids()[0]);

@@ -116,6 +116,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   DXVAVideoDecodeAccelerator(
       const GetGLContextCallback& get_gl_context_cb,
       const MakeGLContextCurrentCallback& make_context_current_cb,
+      const BindGLImageCallback& bind_image_cb,
       const gpu::GpuDriverBugWorkarounds& workarounds,
       const gpu::GpuPreferences& gpu_preferences);
   ~DXVAVideoDecodeAccelerator() override;
@@ -359,6 +360,8 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // decoder here.
   void ConfigChanged(const Config& config);
 
+  uint32_t GetTextureTarget() const;
+
   // To expose client callbacks from VideoDecodeAccelerator.
   VideoDecodeAccelerator::Client* client_;
 
@@ -453,6 +456,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   GetGLContextCallback get_gl_context_cb_;
   // Callback to set the correct gl context.
   MakeGLContextCurrentCallback make_context_current_cb_;
+  BindGLImageCallback bind_image_cb_;
 
   // Which codec we are decoding with hardware acceleration.
   VideoCodec codec_;

@@ -161,9 +161,9 @@ GpuVideoDecodeAcceleratorFactory::CreateDXVAVDA(
   std::unique_ptr<VideoDecodeAccelerator> decoder;
   if (base::win::GetVersion() >= base::win::VERSION_WIN7) {
     DVLOG(0) << "Initializing DXVA HW decoder for windows.";
-    decoder.reset(new DXVAVideoDecodeAccelerator(get_gl_context_cb_,
-                                                 make_context_current_cb_,
-                                                 workarounds, gpu_preferences));
+    decoder.reset(new DXVAVideoDecodeAccelerator(
+        get_gl_context_cb_, make_context_current_cb_, bind_image_cb_,
+        workarounds, gpu_preferences));
   }
   return decoder;
 }
