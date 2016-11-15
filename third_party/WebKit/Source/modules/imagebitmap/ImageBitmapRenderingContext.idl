@@ -5,7 +5,6 @@
 // https://html.spec.whatwg.org/multipage/scripting.html#the-imagebitmap-rendering-context
 
 [
-    RuntimeEnabled=ExperimentalCanvasFeatures,
     SetWrapperReferenceFrom=canvas,
 ] interface ImageBitmapRenderingContext {
     // back-reference to the canvas
