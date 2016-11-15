@@ -10,6 +10,16 @@
 Polymer({
   is: 'repeat-button',
 
+  hostAttributes: {
+    role: 'button',
+    tabindex: 0
+  },
+
+  behaviors: [
+    Polymer.IronButtonState,
+    Polymer.IronControlState
+  ],
+
   properties: {
     'repeatMode': {
       type: String,
@@ -20,6 +30,18 @@ Polymer({
 
   listeners: {
     tap: '_tapHandler'
+  },
+
+  observers: [
+    '_focusedChanged(receivedFocusFromKeyboard)'
+  ],
+
+  _focusedChanged: function(receivedFocusFromKeyboard) {
+    if (receivedFocusFromKeyboard) {
+      this.classList.add('keyboard-focus');
+    } else {
+      this.classList.remove('keyboard-focus');
+    }
   },
 
   /**
