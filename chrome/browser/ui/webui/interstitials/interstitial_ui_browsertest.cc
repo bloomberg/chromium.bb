@@ -32,34 +32,55 @@ class InterstitialUITest : public InProcessBrowserTest {
   }
 };
 
-// The following test is disabled due to flakiness:
-// https://crbug.com/405869,
-// https://crbug.com/400503.
-IN_PROC_BROWSER_TEST_F(InterstitialUITest, DISABLED_OpenInterstitial) {
+IN_PROC_BROWSER_TEST_F(InterstitialUITest, HomePage) {
   TestInterstitial(
       GURL("chrome://interstitials"),
       "Interstitials");
+}
+
+IN_PROC_BROWSER_TEST_F(InterstitialUITest, InvalidURLShouldOpenHomePage) {
   // Invalid path should open the main page:
   TestInterstitial(
       GURL("chrome://interstitials/--invalid--"),
       "Interstitials");
+}
+
+IN_PROC_BROWSER_TEST_F(InterstitialUITest, SSLInterstitial) {
   TestInterstitial(
       GURL("chrome://interstitials/ssl"),
       "Privacy error");
+}
+
+IN_PROC_BROWSER_TEST_F(InterstitialUITest, MalwareInterstitial) {
   TestInterstitial(
       GURL("chrome://interstitials/safebrowsing?type=malware"),
       "Security error");
+}
+
+IN_PROC_BROWSER_TEST_F(InterstitialUITest, PhishingInterstitial) {
   TestInterstitial(
       GURL("chrome://interstitials/safebrowsing?type=phishing"),
       "Security error");
+}
+
+IN_PROC_BROWSER_TEST_F(InterstitialUITest, ClientsideMalwareInterstitial) {
   TestInterstitial(
       GURL("chrome://interstitials/safebrowsing?type=clientside_malware"),
       "Security error");
+}
+
+IN_PROC_BROWSER_TEST_F(InterstitialUITest, ClientsidePhishingInterstitial) {
   TestInterstitial(
       GURL("chrome://interstitials/safebrowsing?type=clientside_phishing"),
       "Security error");
+}
+
+IN_PROC_BROWSER_TEST_F(InterstitialUITest, CaptivePortalInterstitial) {
   TestInterstitial(GURL("chrome://interstitials/captiveportal"),
                    "Connect to network");
+}
+
+IN_PROC_BROWSER_TEST_F(InterstitialUITest, CaptivePortalInterstitialWifi) {
   TestInterstitial(GURL("chrome://interstitials/captiveportal?is_wifi=1"),
                    "Connect to Wi-Fi");
 }
