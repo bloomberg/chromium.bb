@@ -242,7 +242,6 @@ struct CONTENT_EXPORT WebPreferences {
   // Used by Android_WebView only to support legacy apps that inject script into
   // a top-level initial empty document and expect it to persist on navigation.
   bool resue_global_for_unowned_main_frame;
-  bool autoplay_muted_videos_enabled;
   ProgressBarCompletion progress_bar_completion;
   // Specifies default setting for spellcheck when the spellcheck attribute is
   // not explicitly specified.

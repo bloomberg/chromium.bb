@@ -32,7 +32,6 @@ namespace {
 // in other locations in the code base (e.g. chrome/, components/, etc).
 const base::Feature* kFeaturesExposedToJava[] = {
     &autofill::kAutofillScanCardholderName,
-    &features::kAutoplayMutedVideos,
     &features::kConsistentOmniboxGeolocation,
     &features::kCredentialManagementAPI,
     &features::kSimplifiedFullscreenUI,

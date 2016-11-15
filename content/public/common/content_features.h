@@ -66,7 +66,6 @@ CONTENT_EXPORT
 extern const base::Feature kSendBeaconThrowForBlobWithNonSimpleType;
 
 #if defined(OS_ANDROID)
-CONTENT_EXPORT extern const base::Feature kAutoplayMutedVideos;
 CONTENT_EXPORT extern const base::Feature kImeThread;
 CONTENT_EXPORT extern const base::Feature kSeccompSandboxAndroid;
 CONTENT_EXPORT extern const base::Feature kWebPayments;

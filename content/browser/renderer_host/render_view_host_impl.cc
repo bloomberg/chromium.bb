@@ -438,8 +438,6 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   prefs.user_gesture_required_for_media_playback = !command_line.HasSwitch(
       switches::kDisableGestureRequirementForMediaPlayback) &&
           (autoplay_group_name.empty() || autoplay_group_name != "Enabled");
-  prefs.autoplay_muted_videos_enabled =
-      base::FeatureList::IsEnabled(features::kAutoplayMutedVideos);
 
   prefs.progress_bar_completion = GetProgressBarCompletionPolicy();
 

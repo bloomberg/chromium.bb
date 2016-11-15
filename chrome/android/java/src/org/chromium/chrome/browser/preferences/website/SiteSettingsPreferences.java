@@ -10,9 +10,7 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 
-import org.chromium.base.FieldTrialList;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.LocationSettings;
@@ -51,11 +49,6 @@ public class SiteSettingsPreferences extends PreferenceFragment
     static final String TRANSLATE_KEY = "translate";
     static final String USB_KEY = "usb";
 
-    static final String AUTOPLAY_MUTED_VIDEOS = "AutoplayMutedVideos";
-
-    // Whether the Autoplay menu is available for display.
-    boolean mAutoplayMenuAvailable = false;
-
     // Whether the Protected Content menu is available for display.
     boolean mProtectedContentMenuAvailable = false;
 
@@ -69,11 +62,6 @@ public class SiteSettingsPreferences extends PreferenceFragment
         getActivity().setTitle(R.string.prefs_site_settings);
 
         mProtectedContentMenuAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
-
-        String autoplayTrialGroupName =
-                FieldTrialList.findFullName("MediaElementGestureOverrideExperiment");
-        mAutoplayMenuAvailable = autoplayTrialGroupName.startsWith("Enabled")
-                || ChromeFeatureList.isEnabled(AUTOPLAY_MUTED_VIDEOS);
 
         String category = "";
         if (getArguments() != null) {
@@ -133,15 +121,9 @@ public class SiteSettingsPreferences extends PreferenceFragment
         } else {
             // If both Autoplay and Protected Content menus are available, they'll be tucked under
             // the Media key. Otherwise, we can remove the Media menu entry.
-            if (!mAutoplayMenuAvailable || !mProtectedContentMenuAvailable) {
+            if (!mProtectedContentMenuAvailable) {
                 getPreferenceScreen().removePreference(findPreference(MEDIA_KEY));
-
-                if (!mAutoplayMenuAvailable) {
-                    getPreferenceScreen().removePreference(findPreference(AUTOPLAY_KEY));
-                }
-                if (!mProtectedContentMenuAvailable) {
-                    getPreferenceScreen().removePreference(findPreference(PROTECTED_CONTENT_KEY));
-                }
+                getPreferenceScreen().removePreference(findPreference(PROTECTED_CONTENT_KEY));
             } else {
                 // These two will be tucked under the Media subkey, so no reason to show them now.
                 getPreferenceScreen().removePreference(findPreference(AUTOPLAY_KEY));
@@ -165,12 +147,9 @@ public class SiteSettingsPreferences extends PreferenceFragment
             websitePrefs.add(PROTECTED_CONTENT_KEY);
             websitePrefs.add(AUTOPLAY_KEY);
         } else {
-            // When showing the main menu, only one of these two will be visible, at most.
-            if (mProtectedContentMenuAvailable && !mAutoplayMenuAvailable) {
-                websitePrefs.add(PROTECTED_CONTENT_KEY);
-            } else if (mAutoplayMenuAvailable && !mProtectedContentMenuAvailable) {
-                websitePrefs.add(AUTOPLAY_KEY);
-            }
+            // When showing the main menu, if Protected Content is not available, only Autoplay
+            // will be visible.
+            if (!mProtectedContentMenuAvailable) websitePrefs.add(AUTOPLAY_KEY);
             websitePrefs.add(BACKGROUND_SYNC_KEY);
             websitePrefs.add(CAMERA_KEY);
             websitePrefs.add(COOKIES_KEY);

@@ -5869,12 +5869,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           <message name="IDS_FLAGS_IMPORTANT_SITES_IN_CBD_DESCRIPTION" desc="Description for the flag for using important sites whitelisting in the clear browsing dialog.">
               Include the option to whitelist important sites in the clear browsing data dialog.
           </message>
-          <message name="IDS_FLAGS_ENABLE_AUTOPLAY_MUTED_VIDEOS_NAME" desc="Title for the flag to enable autoplay of muted videos.">
-              Autoplay muted videos
-          </message>
-          <message name="IDS_FLAGS_ENABLE_AUTOPLAY_MUTED_VIDEOS_DESCRIPTION" desc="Description for the flag to enable autoplay of muted videos.">
-              Allow muted videos to autoplay.
-          </message>
       </if>
       <if expr="use_ash">
         <message name="IDS_FLAGS_ASH_MD" desc="Title of the flag which enables or disables material design in Chrome OS system UI.">
