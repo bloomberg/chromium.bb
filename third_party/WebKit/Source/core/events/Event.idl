@@ -35,8 +35,8 @@
     const unsigned short BUBBLING_PHASE = 3;
     readonly attribute unsigned short eventPhase;
 
-    void stopPropagation();
-    void stopImmediatePropagation();
+    [Measure] void stopPropagation();
+    [Measure] void stopImmediatePropagation();
 
     readonly attribute boolean bubbles;
     readonly attribute boolean cancelable;
