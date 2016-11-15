@@ -275,7 +275,7 @@ void InputEventFilter::SendMessageOnIOThread(
   if (!sender_)
     return;  // Filter was removed.
 
-  CHECK(sender_->Send(message.release())) << "Send message failed";
+  sender_->Send(message.release());
 }
 
 void InputEventFilter::HandleEventOnMainThread(
