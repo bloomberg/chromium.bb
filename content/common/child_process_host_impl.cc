@@ -186,7 +186,7 @@ bool ChildProcessHostImpl::Send(IPC::Message* message) {
 }
 
 void ChildProcessHostImpl::AllocateSharedMemory(
-      size_t buffer_size, base::ProcessHandle child_process_handle,
+      size_t buffer_size,
       base::SharedMemoryHandle* shared_memory_handle) {
   base::SharedMemory shared_buf;
   if (!shared_buf.CreateAnonymous(buffer_size)) {
@@ -194,7 +194,7 @@ void ChildProcessHostImpl::AllocateSharedMemory(
     NOTREACHED() << "Cannot create shared memory buffer";
     return;
   }
-  shared_buf.GiveToProcess(child_process_handle, shared_memory_handle);
+  *shared_memory_handle = shared_buf.TakeHandle();
 }
 
 int ChildProcessHostImpl::GenerateChildProcessUniqueId() {
@@ -310,7 +310,7 @@ void ChildProcessHostImpl::OnBadMessageReceived(const IPC::Message& message) {
 void ChildProcessHostImpl::OnAllocateSharedMemory(
     uint32_t buffer_size,
     base::SharedMemoryHandle* handle) {
-  AllocateSharedMemory(buffer_size, peer_process_.Handle(), handle);
+  AllocateSharedMemory(buffer_size, handle);
 }
 
 void ChildProcessHostImpl::OnShutdownRequest() {
@@ -332,7 +332,7 @@ void ChildProcessHostImpl::OnAllocateGpuMemoryBuffer(
   // sure |usage| is supported here.
   if (gpu::GpuMemoryBufferImplSharedMemory::IsUsageSupported(usage)) {
     *handle = gpu::GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(
-        id, gfx::Size(width, height), format, peer_process_.Handle());
+        id, gfx::Size(width, height), format);
   }
 }
 

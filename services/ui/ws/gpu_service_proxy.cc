@@ -110,41 +110,8 @@ void GpuServiceProxy::CreateGpuMemoryBuffer(
     callback.Run(gfx::GpuMemoryBufferHandle());
     return;
   }
-
-  size_t bytes = 0;
-  if (!gfx::BufferSizeForBufferFormatChecked(size, format, &bytes)) {
-    callback.Run(gfx::GpuMemoryBufferHandle());
-    return;
-  }
-
-  mojo::ScopedSharedBufferHandle mojo_handle =
-      mojo::SharedBufferHandle::Create(bytes);
-  if (!mojo_handle.is_valid()) {
-    callback.Run(gfx::GpuMemoryBufferHandle());
-    return;
-  }
-
-  base::SharedMemoryHandle shm_handle;
-  size_t shm_size;
-  bool readonly;
-  MojoResult result = mojo::UnwrapSharedMemoryHandle(
-      std::move(mojo_handle), &shm_handle, &shm_size, &readonly);
-  if (result != MOJO_RESULT_OK) {
-    callback.Run(gfx::GpuMemoryBufferHandle());
-    return;
-  }
-  DCHECK_EQ(shm_size, bytes);
-  DCHECK(!readonly);
-  const int stride = base::checked_cast<int>(
-      gfx::RowSizeForBufferFormat(size.width(), format, 0));
-
-  gfx::GpuMemoryBufferHandle gmb_handle;
-  gmb_handle.type = gfx::SHARED_MEMORY_BUFFER;
-  gmb_handle.id = id;
-  gmb_handle.handle = shm_handle;
-  gmb_handle.offset = 0;
-  gmb_handle.stride = stride;
-  callback.Run(gmb_handle);
+  callback.Run(gpu::GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(
+      id, size, format));
 }
 
 void GpuServiceProxy::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,

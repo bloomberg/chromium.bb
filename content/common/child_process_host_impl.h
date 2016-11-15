@@ -43,7 +43,7 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
 
   // Public and static for reuse by RenderMessageFilter.
   static void AllocateSharedMemory(
-      size_t buffer_size, base::ProcessHandle child_process,
+      size_t buffer_size,
       base::SharedMemoryHandle* handle);
 
   // Returns a unique ID to identify a child process. On construction, this

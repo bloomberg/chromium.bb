@@ -62,8 +62,7 @@ gfx::GpuMemoryBufferHandle
 GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
-    gfx::BufferFormat format,
-    base::ProcessHandle child_process) {
+    gfx::BufferFormat format) {
   size_t buffer_size = 0u;
   if (!gfx::BufferSizeForBufferFormatChecked(size, format, &buffer_size))
     return gfx::GpuMemoryBufferHandle();
@@ -78,7 +77,7 @@ GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(
   handle.offset = 0;
   handle.stride = static_cast<int32_t>(
       gfx::RowSizeForBufferFormat(size.width(), format, 0));
-  shared_memory.GiveToProcess(child_process, &handle.handle);
+  handle.handle = shared_memory.TakeHandle();
   return handle;
 }
 

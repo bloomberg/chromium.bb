@@ -288,7 +288,7 @@ void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForChildProcess(
   }
 
   callback.Run(gpu::GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(
-      id, size, format, child_process_handle));
+      id, size, format));
 }
 
 void BrowserGpuMemoryBufferManager::SetDestructionSyncToken(

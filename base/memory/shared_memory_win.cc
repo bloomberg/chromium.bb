@@ -384,4 +384,12 @@ SharedMemoryHandle SharedMemory::handle() const {
   return SharedMemoryHandle(mapped_file_.Get(), base::GetCurrentProcId());
 }
 
+SharedMemoryHandle SharedMemory::TakeHandle() {
+  SharedMemoryHandle handle(mapped_file_.Take(), base::GetCurrentProcId());
+  handle.SetOwnershipPassesToIPC(true);
+  memory_ = nullptr;
+  mapped_size_ = 0;
+  return handle;
+}
+
 }  // namespace base

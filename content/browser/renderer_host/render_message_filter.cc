@@ -340,8 +340,7 @@ void RenderMessageFilter::AllocateSharedMemoryOnFileThread(
     uint32_t buffer_size,
     IPC::Message* reply_msg) {
   base::SharedMemoryHandle handle;
-  ChildProcessHostImpl::AllocateSharedMemory(buffer_size, PeerHandle(),
-                                             &handle);
+  ChildProcessHostImpl::AllocateSharedMemory(buffer_size, &handle);
   ChildProcessHostMsg_SyncAllocateSharedMemory::WriteReplyParams(reply_msg,
                                                                  handle);
   Send(reply_msg);
