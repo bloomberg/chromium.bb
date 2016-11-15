@@ -21,6 +21,10 @@ class BuildbucketClientTest(cros_test_lib.MockTestCase):
     self.mock_http = mock.MagicMock()
     self.PatchObject(auth, 'AuthorizedHttp', return_value=self.mock_http)
     self.success_response = {'status': 200}
+
+    self.PatchObject(buildbucket_lib.BuildbucketClient,
+                     '_GetHost',
+                     return_value=buildbucket_lib.BUILDBUCKET_TEST_HOST)
     self.client = buildbucket_lib.BuildbucketClient()
 
   def testPutBuildRequest(self):
@@ -37,13 +41,11 @@ class BuildbucketClientTest(cros_test_lib.MockTestCase):
         'bucket': 'test-bucket',
     })
 
-    result_content = self.client.PutBuildRequest(
-        body, False, False)
+    result_content = self.client.PutBuildRequest(body, False)
     self.assertEqual(buildbucket_lib.GetBuildId(result_content), buildbucket_id)
 
     # Test dryrun
-    result_content_2 = self.client.PutBuildRequest(
-        body, False, True)
+    result_content_2 = self.client.PutBuildRequest(body, True)
     self.assertIsNone(result_content_2)
 
   def testGetBuildRequest(self):
@@ -58,13 +60,13 @@ class BuildbucketClientTest(cros_test_lib.MockTestCase):
     })
     self.mock_http.request.return_value = (self.success_response, content)
     result_content = self.client.GetBuildRequest(
-        buildbucket_id, False, False)
+        buildbucket_id, False)
     self.assertEqual(buildbucket_lib.GetBuildStatus(result_content),
                      complete_status)
 
     # Test dryrun
     result_content_2 = self.client.GetBuildRequest(
-        buildbucket_id, False, True)
+        buildbucket_id, True)
     self.assertIsNone(result_content_2)
 
   def testCancelBuildRequest(self):
@@ -79,12 +81,12 @@ class BuildbucketClientTest(cros_test_lib.MockTestCase):
     })
     self.mock_http.request.return_value = (self.success_response, content)
     result_content = self.client.CancelBuildRequest(
-        buildbucket_id, False, False)
+        buildbucket_id, False)
     self.assertEqual(buildbucket_lib.GetBuildResult(result_content), result)
 
     # Test dryrun
     result_content_2 = self.client.CancelBuildRequest(
-        buildbucket_id, False, True)
+        buildbucket_id, True)
     self.assertIsNone(result_content_2)
 
   def testCancelBatchBuildsRequest(self):
@@ -111,7 +113,7 @@ class BuildbucketClientTest(cros_test_lib.MockTestCase):
     })
     self.mock_http.request.return_value = (self.success_response, content)
     result_content = self.client.CancelBatchBuildsRequest(
-        [buildbucket_id_1, buildbucket_id_2], False, False)
+        [buildbucket_id_1, buildbucket_id_2], False)
 
     result_map = buildbucket_lib.GetResultMap(result_content)
     self.assertIsNotNone(buildbucket_lib.GetNestedAttr(
@@ -125,7 +127,7 @@ class BuildbucketClientTest(cros_test_lib.MockTestCase):
 
     # Test dryrun
     result_content_2 = self.client.CancelBatchBuildsRequest(
-        [buildbucket_id_1, buildbucket_id_2], False, True)
+        [buildbucket_id_1, buildbucket_id_2], True)
     self.assertIsNone(result_content_2)
 
   def testRetryBuildRequest(self):
@@ -143,7 +145,7 @@ class BuildbucketClientTest(cros_test_lib.MockTestCase):
 
     self.mock_http.request.return_value = (self.success_response, content)
     result_content = self.client.RetryBuildRequest(
-        buildbucket_id, False, False)
+        buildbucket_id, False)
     self.assertEqual(buildbucket_lib.GetBuildId(result_content),
                      buildbucket_id_2)
 
@@ -158,7 +160,7 @@ class BuildbucketClientTest(cros_test_lib.MockTestCase):
 
     self.mock_http.request.return_value = (self.success_response, content)
     result_content = self.client.RetryBuildRequest(
-        buildbucket_id, False, False)
+        buildbucket_id, False)
     self.assertEqual(buildbucket_lib.GetErrorReason(result_content),
                      reason)
     self.assertEqual(buildbucket_lib.GetErrorMessage(result_content),
@@ -166,7 +168,7 @@ class BuildbucketClientTest(cros_test_lib.MockTestCase):
 
     # Test dryrun
     result_content = self.client.RetryBuildRequest(
-        buildbucket_id, False, True)
+        buildbucket_id, True)
     self.assertIsNone(result_content)
 
   def testSearchBuildsRequest(self):
@@ -197,7 +199,6 @@ class BuildbucketClientTest(cros_test_lib.MockTestCase):
     self.mock_http.request.return_value = (self.success_response, content)
     result_content = self.client.SearchBuildsRequest(
         False,
-        False,
         buckets=[constants.TRYSERVER_BUILDBUCKET_BUCKET,],
         tags=['build_type:tryjob', 'bot_id:build265-m2'],
         status=constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED,
@@ -210,7 +211,6 @@ class BuildbucketClientTest(cros_test_lib.MockTestCase):
 
      # Test dryrun
     result_content_2 = self.client.SearchBuildsRequest(
-        False,
         True,
         buckets=[constants.TRYSERVER_BUILDBUCKET_BUCKET,
                  constants.CHROMEOS_BUILDBUCKET_BUCKET,],
@@ -220,7 +220,7 @@ class BuildbucketClientTest(cros_test_lib.MockTestCase):
 
   def _MockSearchContent(self, *args, **kwargs):
     """Mock searched content."""
-    dryrun = args[1]
+    dryrun = args[0]
     if dryrun:
       return
 
@@ -252,7 +252,6 @@ class BuildbucketClientTest(cros_test_lib.MockTestCase):
 
     return self.client.SearchAllBuilds(
         False,
-        False,
         limit=limit,
         buckets=[constants.TRYSERVER_BUILDBUCKET_BUCKET,],
         tags=['build_type:tryjob', 'bot_id:build265-m2'],
@@ -271,7 +270,7 @@ class BuildbucketClientTest(cros_test_lib.MockTestCase):
                      'SearchBuildsRequest',
                      side_effect=self._MockSearchContent)
 
-    all_builds = self.client.SearchAllBuilds(False, False, limit=2)
+    all_builds = self.client.SearchAllBuilds(False, limit=2)
     self.assertEqual(len(all_builds), 2)
 
     max_builds = 5
@@ -285,10 +284,10 @@ class BuildbucketClientTest(cros_test_lib.MockTestCase):
     self.PatchObject(buildbucket_lib.BuildbucketClient,
                      'SearchBuildsRequest', return_value=content_dict)
 
-    all_builds = self.client.SearchAllBuilds(False, False)
+    all_builds = self.client.SearchAllBuilds(False)
     self.assertEqual(len(all_builds), max_builds)
 
-    all_builds = self.client.SearchAllBuilds(False, False, limit=50)
+    all_builds = self.client.SearchAllBuilds(False, limit=50)
     self.assertEqual(len(all_builds), max_builds)
 
 

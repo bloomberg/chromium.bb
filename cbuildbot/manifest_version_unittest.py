@@ -176,7 +176,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     manager = manifest_version.BuildSpecsManager(
         repo, self.manifest_repo, self.build_names, self.incr_type, False,
         branch=self.branch, dry_run=True,
-        testjob=False, buildbucket_client=buildbucket_client)
+        buildbucket_client=buildbucket_client)
     manager.manifest_dir = self.tmpmandir
     # Shorten the sleep between attempts.
     manager.SLEEP_TIMEOUT = 1

@@ -618,7 +618,7 @@ class BuildSpecsManager(object):
 
   def __init__(self, source_repo, manifest_repo, build_names, incr_type, force,
                branch, manifest=constants.DEFAULT_MANIFEST, dry_run=True,
-               master=False, testjob=False, buildbucket_client=None):
+               master=False, buildbucket_client=None):
     """Initializes a build specs manager.
 
     Args:
@@ -633,7 +633,6 @@ class BuildSpecsManager(object):
       manifest: Manifest to use for checkout. E.g. 'full' or 'buildtools'.
       dry_run: Whether we actually commit changes we make or not.
       master: Whether we are the master builder.
-      testjob: Whether to use the test instance of the buildbucket server.
       buildbucket_client: Instance of buildbucket_lib.buildbucket_client.
     """
     self.cros_source = source_repo
@@ -651,7 +650,6 @@ class BuildSpecsManager(object):
     self.manifest = manifest
     self.dry_run = dry_run
     self.master = master
-    self.testjob = testjob
     self.buildbucket_client = buildbucket_client
 
     # Directories and specifications are set once we load the specs.
@@ -892,7 +890,7 @@ class BuildSpecsManager(object):
     for build_config, buildbucket_id in buildbucket_id_dict.iteritems():
       try:
         content = self.buildbucket_client.GetBuildRequest(
-            buildbucket_id, self.testjob, self.dry_run)
+            buildbucket_id, self.dry_run)
         status = buildbucket_lib.GetBuildStatus(content)
         result = buildbucket_lib.GetBuildResult(content)
         status_dict[build_config] = {'status': status, 'result': result}

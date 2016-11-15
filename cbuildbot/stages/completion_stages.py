@@ -345,8 +345,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         assert buildbucket_id is not None, 'buildbucket_id is None'
         try:
           content = self.buildbucket_client.GetBuildRequest(
-              buildbucket_id, self._run.options.test_tryjob,
-              self._run.options.debug)
+              buildbucket_id, self._run.options.debug)
 
           status = buildbucket_lib.GetBuildStatus(content)
           result = buildbucket_lib.GetBuildResult(content)

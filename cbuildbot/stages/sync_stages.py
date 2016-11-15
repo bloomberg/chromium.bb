@@ -526,8 +526,7 @@ class SyncStage(generic_stages.BuilderStage):
                 'cbb_master_build_id:%s' % master_build_id]
     })
 
-    content = self.buildbucket_client.PutBuildRequest(
-        body, self._run.options.test_tryjob, dryrun)
+    content = self.buildbucket_client.PutBuildRequest(body, dryrun)
 
     buildbucket_id = buildbucket_lib.GetBuildId(content)
     created_ts = buildbucket_lib.GetBuildCreated_ts(content)
@@ -708,7 +707,6 @@ class ManifestVersionedSyncStage(SyncStage):
         branch=self._run.manifest_branch,
         dry_run=dry_run,
         master=self._run.config.master,
-        testjob=self._run.options.test_tryjob,
         buildbucket_client=self.buildbucket_client))
 
   def _SetAndroidVersionIfApplicable(self, manifest):
@@ -938,7 +936,6 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
         branch=self._run.manifest_branch,
         dry_run=self._run.options.debug,
         master=self._run.config.master,
-        testjob=self._run.options.test_tryjob,
         buildbucket_client=self.buildbucket_client)
 
   def Initialize(self):
@@ -1659,24 +1656,23 @@ class PreCQLauncherStage(SyncStage):
         pool.RemoveReady(change, reason=config)
         pool.UpdateCLPreCQStatus(change, constants.CL_STATUS_FAILED)
 
-  def _CancelPreCQIfNeeded(self, db, old_build_action, testjob=False):
+  def _CancelPreCQIfNeeded(self, db, old_build_action):
     """Cancel the pre-cq if it's still running.
 
     Args:
       db: CIDB connection instance.
       old_build_action: Old patch build action.
-      testjob: Whether to use the test instance of the buildbucket server.
     """
     buildbucket_id = old_build_action.buildbucket_id
     get_content = self.buildbucket_client.GetBuildRequest(
-        buildbucket_id, testjob, dryrun=self._run.options.debug)
+        buildbucket_id, dryrun=self._run.options.debug)
 
     status = buildbucket_lib.GetBuildStatus(get_content)
     if status in [constants.BUILDBUCKET_BUILDER_STATUS_SCHEDULED,
                   constants.BUILDBUCKET_BUILDER_STATUS_STARTED]:
       logging.info('Cancelling old build %s %s', buildbucket_id, status)
       cancel_content = self.buildbucket_client.CancelBuildRequest(
-          buildbucket_id, testjob, dryrun=self._run.options.debug)
+          buildbucket_id, dryrun=self._run.options.debug)
       cancel_status = buildbucket_lib.GetBuildStatus(cancel_content)
       if cancel_status:
         logging.info('Cancelled buildbucket_id: %s status: %s \ncontent: %s',
@@ -1706,8 +1702,7 @@ class PreCQLauncherStage(SyncStage):
         change, action_history, min_timestamp)
     for old_build_action in old_pre_cq_build_actions:
       try:
-        self._CancelPreCQIfNeeded(
-            db, old_build_action, testjob=self._run.options.test_tryjob)
+        self._CancelPreCQIfNeeded(db, old_build_action)
       except Exception as e:
         # Log errors; do not raise exceptions.
         logging.error('_CancelPreCQIfNeeded failed. '

@@ -310,6 +310,9 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
     self.PatchObject(buildbucket_lib.BuildbucketClient,
                      'SendBuildbucketRequest',
                      return_value=None)
+    self.PatchObject(buildbucket_lib.BuildbucketClient,
+                     '_GetHost',
+                     return_value=buildbucket_lib.BUILDBUCKET_TEST_HOST)
 
     self._Prepare()
 

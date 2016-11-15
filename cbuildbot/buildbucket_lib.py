@@ -45,6 +45,16 @@ WATERFALL_BUCKET_MAP = {
         constants.CHROMIUMOS_BUILDBUCKET_BUCKET,
 }
 
+# A running build on a buildbot should determin the buildbucket
+# instance based on the topology information.
+# To trigger a tryjob using buildbucket, the buildbucket instance
+# should be determined by the test-tryjob option in cbuildbot.
+
+# Buildbucket host instance
+BUILDBUCKET_HOST = 'cr-buildbucket.appspot.com'
+# Buildbucket test host instance
+BUILDBUCKET_TEST_HOST = 'cr-buildbucket-test.appspot.com'
+
 class BuildbucketResponseException(Exception):
   """Exception got from Buildbucket Response."""
 
@@ -97,16 +107,21 @@ def GetScheduledBuildDict(scheduled_slave_list):
 class BuildbucketClient(object):
   """Buildbucket client to interact with the Buildbucket server."""
 
-  def __init__(self, service_account=None):
+  def __init__(self, service_account=None, host=None):
+    """Init a BuildbucketClient instance.
+
+    Args:
+      service_account: The path to the service account json file.
+      host: The buildbucket instance to interact.
+    """
     self.http = auth.AuthorizedHttp(
         auth.GetAccessToken,
         service_account_json=service_account)
+    self.host = self._GetHost() if host is None else host
 
-  def GetHost(self, testjob):
-    """Get buildbucket Server host."""
-    return topology.topology[
-        topology.BUILDBUCKET_TEST_HOST_KEY if testjob
-        else topology.BUILDBUCKET_HOST_KEY]
+  def _GetHost(self):
+    """Get buildbucket Server host from topology."""
+    return topology.topology.get(topology.BUILDBUCKET_HOST_KEY)
 
   def SendBuildbucketRequest(self, url, method, body, dryrun):
     """Generic buildbucket request.
@@ -148,103 +163,97 @@ class BuildbucketClient(object):
 
     return retry_util.GenericRetry(lambda _: True, 3, try_method)
 
-  def PutBuildRequest(self, body, testjob, dryrun):
+  def PutBuildRequest(self, body, dryrun):
     """Send Put request to buildbucket server.
 
     Args:
       body: See body in SendBuildbucketRequest for details.
-      testjob: Whether to use the test instance of the buildbucket server.
       dryrun: Whether a dryrun.
 
     Returns:
       See return type of SendBuildbucketRequest.
     """
     url = 'https://%(hostname)s/_ah/api/buildbucket/v1/builds' % {
-        'hostname': self.GetHost(testjob)
+        'hostname': self.host
     }
 
     return self.SendBuildbucketRequest(url, PUT_METHOD, body, dryrun)
 
-  def GetBuildRequest(self, buildbucket_id, testjob, dryrun):
+  def GetBuildRequest(self, buildbucket_id, dryrun):
     """Send Get request to buildbucket server.
 
     Args:
       buildbucket_id: Buildbucket_id (string) of the build to get.
-      testjob: Whether to use the test instance of the buildbucket server.
       dryrun: Whether a dryrun.
 
     Returns:
       See return type of SendBuildbucketRequest.
     """
     url = 'https://%(hostname)s/_ah/api/buildbucket/v1/builds/%(id)s' % {
-        'hostname': self.GetHost(testjob),
+        'hostname': self.host,
         'id': buildbucket_id
     }
 
     return self.SendBuildbucketRequest(url, GET_METHOD, None, dryrun)
 
-  def CancelBuildRequest(self, buildbucket_id, testjob, dryrun):
+  def CancelBuildRequest(self, buildbucket_id, dryrun):
     """Send Cancel request to buildbucket server.
 
     Args:
       buildbucket_id: Buildbucket_id (string) of the build to cancel.
-      testjob: Whether to use the test instance of the buildbucket server.
       dryrun: Whether a dryrun.
 
     Returns:
       See return type of SendBuildbucketRequest.
     """
     url = 'https://%(hostname)s/_ah/api/buildbucket/v1/builds/%(id)s/cancel' % {
-        'hostname': self.GetHost(testjob),
+        'hostname': self.host,
         'id': buildbucket_id
     }
 
     return self.SendBuildbucketRequest(url, POST_METHOD, '{}', dryrun)
 
-  def CancelBatchBuildsRequest(self, buildbucket_ids, testjob, dryrun):
+  def CancelBatchBuildsRequest(self, buildbucket_ids, dryrun):
     """Send CancelBatch request to buildbucket server.
 
     Args:
       buildbucket_ids: buildbucket_ids (string list) of the builds to cancel.
-      testjob: Whether to use the test instance of the buildbucket server.
       dryrun: Whether a dryrun.
 
     Returns:
       See return type of SendBuildbucketRequest.
     """
     url = 'https://%(hostname)s/_ah/api/buildbucket/v1/builds/cancel' % {
-        'hostname': self.GetHost(testjob)
+        'hostname': self.host
     }
 
     body = json.dumps({'build_ids': buildbucket_ids})
 
     return self.SendBuildbucketRequest(url, POST_METHOD, body, dryrun)
 
-  def RetryBuildRequest(self, buildbucket_id, testjob, dryrun):
+  def RetryBuildRequest(self, buildbucket_id, dryrun):
     """Send a Retry request to the Buildbucket server.
 
     Args:
       buildbucket_id: Buildbucket_id (string) of the build to retry.
-      testjob: Whether to use the test instance of the buildbucket server.
       dryrun: Whether a dryrun.
 
     Returns:
       See return type of SendBuildbucketRequest.
     """
     url = 'https://%(hostname)s/_ah/api/buildbucket/v1/builds/%(id)s/retry' % {
-        'hostname': self.GetHost(testjob),
+        'hostname': self.host,
         'id': buildbucket_id
     }
 
     return self.SendBuildbucketRequest(url, PUT_METHOD, '{}', dryrun)
 
-  def SearchBuildsRequest(self, testjob, dryrun, buckets=None, tags=None,
+  def SearchBuildsRequest(self, dryrun, buckets=None, tags=None,
                           status=None, start_cursor=None,
                           max_builds=MAX_BUILDS_DEFAULT):
     """Send Search requests to the Buildbucket server.
 
     Args:
-      testjob: Whether to use the test instance of the buildbucket server.
       dryrun: Whether a dryrun.
       buckets: Search for builds in the buckets (string list).
       tags: Search for builds containing all the tags (string list).
@@ -280,16 +289,15 @@ class BuildbucketClient(object):
     params_str = urllib.urlencode(params)
 
     url = ('https://%(hostname)s/_ah/api/buildbucket/v1/search?%(params_str)s'
-           % {'hostname': self.GetHost(testjob), 'params_str': params_str})
+           % {'hostname': self.host, 'params_str': params_str})
 
     return self.SendBuildbucketRequest(url, GET_METHOD, None, dryrun)
 
-  def SearchAllBuilds(self, testjob, dryrun, limit=SEARCH_LIMIT_DEFAULT,
+  def SearchAllBuilds(self, dryrun, limit=SEARCH_LIMIT_DEFAULT,
                       buckets=None, tags=None, status=None):
     """Search all qualified builds.
 
     Args:
-      testjob: Whether to use the test instance of the buildbucket server.
       limit: The limit count of search results.
       dryrun: Whether a dryrun.
       buckets: Search for builds in the buckets (string list).
@@ -313,7 +321,7 @@ class BuildbucketClient(object):
                     else current_limit)
 
       content = self.SearchBuildsRequest(
-          testjob, dryrun, buckets=buckets, tags=tags, status=status,
+          dryrun, buckets=buckets, tags=tags, status=status,
           start_cursor=next_cursor, max_builds=max_builds)
 
       builds = GetNestedAttr(content, ['builds'], default=[])

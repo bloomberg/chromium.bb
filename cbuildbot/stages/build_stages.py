@@ -117,7 +117,6 @@ class CleanUpStage(generic_stages.BuilderStage):
       for status in [constants.BUILDBUCKET_BUILDER_STATUS_SCHEDULED,
                      constants.BUILDBUCKET_BUILDER_STATUS_STARTED]:
         builds = buildbucket_client.SearchAllBuilds(
-            self._run.options.test_tryjob,
             self._run.options.debug,
             buckets=[constants.CHROMIUMOS_BUILDBUCKET_BUCKET,
                      constants.CHROMEOS_BUILDBUCKET_BUCKET],
@@ -131,13 +130,10 @@ class CleanUpStage(generic_stages.BuilderStage):
           buildbucket_ids.extend(ids)
 
       if buildbucket_ids:
-        # Only enable cancellation when debug is False and cidb is in Prod mode
-        cancel_dryrun = self._run.options.debug or not self._run.InProduction()
         logging.info('Going to cancel buildbucket_ids: %s', buildbucket_ids)
         cancel_content = buildbucket_client.CancelBatchBuildsRequest(
             buildbucket_ids,
-            self._run.options.test_tryjob,
-            dryrun=cancel_dryrun)
+            dryrun=self._run.options.debug)
 
         result_map = buildbucket_lib.GetResultMap(cancel_content)
         for build_id, result in result_map.iteritems():

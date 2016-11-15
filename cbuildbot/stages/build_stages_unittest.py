@@ -334,6 +334,9 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
                      return_value=True)
     self.PatchObject(auth.AuthorizedHttp, '__init__',
                      return_value=None)
+    self.PatchObject(buildbucket_lib.BuildbucketClient,
+                     '_GetHost',
+                     return_value=buildbucket_lib.BUILDBUCKET_TEST_HOST)
     self._Prepare()
 
   def ConstructStage(self):

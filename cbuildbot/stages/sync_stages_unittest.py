@@ -363,6 +363,9 @@ class SyncStageTest(generic_stages_unittest.AbstractStageTestCase):
                      return_value='server_account')
     self.PatchObject(auth.AuthorizedHttp, '__init__',
                      return_value=None)
+    self.PatchObject(buildbucket_lib.BuildbucketClient,
+                     '_GetHost',
+                     return_value=buildbucket_lib.BUILDBUCKET_TEST_HOST)
     # Create and set up a fake cidb instance.
     self.fake_db = fake_cidb.FakeCIDBConnection()
     cidb.CIDBConnectionFactory.SetupMockCidb(self.fake_db)
@@ -533,6 +536,9 @@ class BaseCQTestCase(generic_stages_unittest.StageTestCase):
     self.PatchObject(buildbucket_lib.BuildbucketClient,
                      'SendBuildbucketRequest',
                      return_value=None)
+    self.PatchObject(buildbucket_lib.BuildbucketClient,
+                     '_GetHost',
+                     return_value=buildbucket_lib.BUILDBUCKET_TEST_HOST)
 
     # Create a fake repo / manifest on disk that is used by subclasses.
     for subdir in ('repo', 'manifests'):
@@ -1385,21 +1391,21 @@ pre-cq-configs: link-pre-cq
         datetime.datetime.now() - datetime.timedelta(hours=1), '100')
     self.sync_stage._CancelPreCQIfNeeded(db, old_build_action)
     mock_cancel.assert_called_once_with(
-        '100', False, dryrun=self.sync_stage._run.options.debug)
+        '100', dryrun=self.sync_stage._run.options.debug)
 
     mock_cancel.reset_mock()
     self.PatchObject(buildbucket_lib.BuildbucketClient, 'GetBuildRequest',
                      return_value=scheduled_content)
     self.sync_stage._CancelPreCQIfNeeded(db, old_build_action)
     mock_cancel.assert_called_twice_with(
-        '100', False, dryrun=self.sync_stage._run.options.debug)
+        '100', dryrun=self.sync_stage._run.options.debug)
 
     mock_cancel.reset_mock()
     self.PatchObject(buildbucket_lib.BuildbucketClient, 'GetBuildRequest',
                      return_value=completed_content)
     self.sync_stage._CancelPreCQIfNeeded(db, old_build_action)
     mock_cancel.assert_called_twice_with(
-        '100', False, dryrun=self.sync_stage._run.options.debug)
+        '100', dryrun=self.sync_stage._run.options.debug)
 
   def test_ProcessOldPatchPreCQRuns(self):
     """Test _ProcessOldPatchPreCQRuns."""
@@ -1425,7 +1431,7 @@ pre-cq-configs: link-pre-cq
     mock_cancel = self.PatchObject(sync_stages.PreCQLauncherStage,
                                    '_CancelPreCQIfNeeded')
     self.sync_stage._ProcessOldPatchPreCQRuns(db, change, action_history)
-    mock_cancel.assert_called_once_with(db, c2, testjob=False)
+    mock_cancel.assert_called_once_with(db, c2)
 
 class MasterSlaveLKGMSyncTest(generic_stages_unittest.StageTestCase):
   """Unit tests for MasterSlaveLKGMSyncStage"""
@@ -1459,6 +1465,9 @@ class MasterSlaveLKGMSyncTest(generic_stages_unittest.StageTestCase):
                      return_value=True)
     self.PatchObject(auth.AuthorizedHttp, '__init__',
                      return_value=None)
+    self.PatchObject(buildbucket_lib.BuildbucketClient,
+                     '_GetHost',
+                     return_value=buildbucket_lib.BUILDBUCKET_TEST_HOST)
 
     self._Prepare()
 
