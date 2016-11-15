@@ -368,9 +368,6 @@ are declared in build/common.gypi.
       <message name="IDS_WEBSITE_SETTINGS_DETAILS_LINK" desc="Link in the Website Settings that opens up additional security details about the current page in the DevTools Security panel.">
         Details
       </message>
-      <message name="IDS_WEBSITE_SETTINGS_CT_ERROR" desc="Text that is displayed in the header of the Website Settings popup if the website has provided Signed Certificate Timestamps but none are valid.">
-        This site supplied invalid Certificate Transparency information.
-      </message>
       <message name="IDS_WEBSITE_SETTINGS_BROKEN_TRANSPORT" desc="Text that is displayed in the header of the Website Settings popup if the website uses nominally secure transport that had authentication or other cryptpgraphic errors.">
         Your connection to this site is not private. Attackers might be trying to steal your information (for example, photos, passwords, messages and credit cards) from <ph name="DOMAIN">$1<ex>www.example.com</ex></ph>.
       </message>
@@ -9146,14 +9143,8 @@ I don't think this site should be blocked!
       <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_NO_CT" desc="The text of the identity section when the page is secured with an EV cert and no Certificate Transparency information is present.">
         The identity of <ph name="ORGANIZATION">$1<ex>Google</ex></ph> at <ph name="LOCALITY">$2<ex>Mountain View, CA US</ex></ph> has been verified by <ph name="ISSUER">$3<ex>VeriSign</ex></ph>. No Certificate Transparency information was supplied by the server.
       </message>
-      <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_CT_VERIFIED" desc="The text of the identity section when the page is secured with an EV cert and a Signed Certificate Timestamp from a known Certificate Transparency log is present and valid.">
-        The identity of <ph name="ORGANIZATION">$1<ex>Google</ex></ph> at <ph name="LOCALITY">$2<ex>Mountain View, CA US</ex></ph> has been verified by <ph name="ISSUER">$3<ex>VeriSign</ex></ph>. Valid Certificate Transparency information was supplied by the server.
-      </message>
-      <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_CT_UNVERIFIED" desc="The text of the identity section when the page is secured with an EV cert and contains a Signed Certificate Timestamp from an unknown Certificate Transparency log.">
-        The identity of <ph name="ORGANIZATION">$1<ex>Google</ex></ph> at <ph name="LOCALITY">$2<ex>Mountain View, CA US</ex></ph> has been verified by <ph name="ISSUER">$3<ex>VeriSign</ex></ph>. Certificate Transparency information was supplied by the server, but one or more of the Certificate Transparency logs were not recognized.
-      </message>
-      <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_CT_INVALID" desc="The text of the identity section when the page is secured with an EV cert, but it contains a Signed Certificate Timestamp from a known Certificate Transparency log that failed to verify.">
-        The identity of <ph name="ORGANIZATION">$1<ex>Google</ex></ph> at <ph name="LOCALITY">$2<ex>Mountain View, CA US</ex></ph> has been verified by <ph name="ISSUER">$3<ex>VeriSign</ex></ph>. Certificate Transparency information was supplied by the server, but it was invalid.
+      <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_VERIFIED" desc="The text of the identity section when the page is secured with a valid EV cert.">
+        The identity of <ph name="ORGANIZATION">$1<ex>Google</ex></ph> at <ph name="LOCALITY">$2<ex>Mountain View, CA US</ex></ph> has been verified by <ph name="ISSUER">$3<ex>VeriSign</ex></ph>.
       </message>
 
       <!-- Screen Capture strings -->

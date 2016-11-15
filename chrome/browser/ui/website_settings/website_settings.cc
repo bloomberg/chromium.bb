@@ -193,60 +193,6 @@ void GetSiteIdentityByMaliciousContentStatus(
   }
 }
 
-// Returns true if any of the given statuses match |status|.
-bool CertificateTransparencyStatusMatchAny(
-    const std::vector<net::ct::SCTVerifyStatus>& sct_verify_statuses,
-    net::ct::SCTVerifyStatus status) {
-  for (const auto& verify_status : sct_verify_statuses) {
-    if (verify_status == status)
-      return true;
-  }
-  return false;
-}
-
-int GetSiteIdentityDetailsMessageByCTInfo(
-    const std::vector<net::ct::SCTVerifyStatus>& sct_verify_statuses,
-    bool is_ev) {
-  // No SCTs - no CT information.
-  if (sct_verify_statuses.empty())
-    return (is_ev ? IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_NO_CT
-                  : IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_NO_CT);
-
-  // Any valid SCT.
-  if (CertificateTransparencyStatusMatchAny(sct_verify_statuses,
-                                            net::ct::SCT_STATUS_OK))
-    return (is_ev ? IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_CT_VERIFIED
-                  : IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_CT_VERIFIED);
-
-  // Any invalid SCT.
-  if (CertificateTransparencyStatusMatchAny(
-          sct_verify_statuses, net::ct::SCT_STATUS_INVALID_TIMESTAMP) ||
-      CertificateTransparencyStatusMatchAny(
-          sct_verify_statuses, net::ct::SCT_STATUS_INVALID_SIGNATURE))
-    return (is_ev ? IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_CT_INVALID
-                  : IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_CT_INVALID);
-
-  // All SCTs are from unknown logs.
-  return (is_ev ? IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_CT_UNVERIFIED
-                : IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_CT_UNVERIFIED);
-}
-
-// This function will return SITE_IDENTITY_STATUS_CERT or
-// SITE_IDENTITY_STATUS_EV_CERT depending on |is_ev| unless all SCTs
-// failed verification, in which case it will return
-// SITE_IDENTITY_STATUS_ERROR.
-WebsiteSettings::SiteIdentityStatus GetSiteIdentityStatusByCTInfo(
-    const std::vector<net::ct::SCTVerifyStatus>& sct_verify_statuses,
-    bool is_ev) {
-  if (sct_verify_statuses.empty() ||
-      CertificateTransparencyStatusMatchAny(sct_verify_statuses,
-                                            net::ct::SCT_STATUS_OK))
-    return is_ev ? WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT
-                 : WebsiteSettings::SITE_IDENTITY_STATUS_CERT;
-
-  return WebsiteSettings::SITE_IDENTITY_STATUS_CT_ERROR;
-}
-
 base::string16 GetSimpleSiteName(const GURL& url) {
   return url_formatter::FormatUrlForSecurityDisplay(
       url, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
@@ -497,9 +443,7 @@ void WebsiteSettings::Init(
       }
 
       site_identity_details_.assign(l10n_util::GetStringFUTF16(
-          GetSiteIdentityDetailsMessageByCTInfo(
-              security_info.sct_verify_statuses, false /* not EV */),
-          issuer_name));
+          IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_VERIFIED, issuer_name));
 
       site_identity_details_ += ASCIIToUTF16("\n\n");
       if (security_info.cert_status &
@@ -514,10 +458,10 @@ void WebsiteSettings::Init(
         NOTREACHED() << "Need to specify string for this warning";
       }
     } else {
+      // No major or minor errors.
       if (security_info.cert_status & net::CERT_STATUS_IS_EV) {
         // EV HTTPS page.
-        site_identity_status_ = GetSiteIdentityStatusByCTInfo(
-            security_info.sct_verify_statuses, true);
+        site_identity_status_ = SITE_IDENTITY_STATUS_EV_CERT;
         DCHECK(!certificate_->subject().organization_names.empty());
         organization_name_ =
             UTF8ToUTF16(certificate_->subject().organization_names[0]);
@@ -540,15 +484,12 @@ void WebsiteSettings::Init(
         }
         DCHECK(!certificate_->subject().organization_names.empty());
         site_identity_details_.assign(l10n_util::GetStringFUTF16(
-            GetSiteIdentityDetailsMessageByCTInfo(
-                security_info.sct_verify_statuses, true /* is EV */),
+            IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_VERIFIED,
             UTF8ToUTF16(certificate_->subject().organization_names[0]),
-            locality,
-            UTF8ToUTF16(certificate_->issuer().GetDisplayName())));
+            locality, UTF8ToUTF16(certificate_->issuer().GetDisplayName())));
       } else {
         // Non-EV OK HTTPS page.
-        site_identity_status_ = GetSiteIdentityStatusByCTInfo(
-            security_info.sct_verify_statuses, false);
+        site_identity_status_ = SITE_IDENTITY_STATUS_CERT;
         base::string16 issuer_name(
             UTF8ToUTF16(certificate_->issuer().GetDisplayName()));
         if (issuer_name.empty()) {
@@ -557,9 +498,7 @@ void WebsiteSettings::Init(
         }
 
         site_identity_details_.assign(l10n_util::GetStringFUTF16(
-            GetSiteIdentityDetailsMessageByCTInfo(
-                security_info.sct_verify_statuses, false /* not EV */),
-            issuer_name));
+            IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_VERIFIED, issuer_name));
       }
       switch (security_info.sha1_deprecation_status) {
         case SecurityStateModel::DEPRECATED_SHA1_MINOR:
@@ -749,7 +688,6 @@ void WebsiteSettings::Init(
       site_connection_status_ ==
           SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE ||
       site_identity_status_ == SITE_IDENTITY_STATUS_ERROR ||
-      site_identity_status_ == SITE_IDENTITY_STATUS_CT_ERROR ||
       site_identity_status_ == SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN ||
       site_identity_status_ == SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT ||
       site_identity_status_ ==
