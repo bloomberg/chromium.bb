@@ -53,7 +53,7 @@ public class ClientManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     public void testValidSessionNoWarmup() {
-        mClientManager.newSession(mSession, mUid, null);
+        mClientManager.newSession(mSession, mUid, null, null);
         assertEquals(ClientManager.SESSION_NO_WARMUP_NOT_CALLED,
                 mClientManager.getWarmupState(mSession));
     }
@@ -61,7 +61,7 @@ public class ClientManagerTest extends NativeLibraryTestBase {
     @SmallTest
     public void testValidSessionOtherWarmup() {
         mClientManager.recordUidHasCalledWarmup(mUid + 1);
-        mClientManager.newSession(mSession, mUid, null);
+        mClientManager.newSession(mSession, mUid, null, null);
         assertEquals(ClientManager.SESSION_NO_WARMUP_ALREADY_CALLED,
                 mClientManager.getWarmupState(mSession));
     }
@@ -69,25 +69,25 @@ public class ClientManagerTest extends NativeLibraryTestBase {
     @SmallTest
     public void testValidSessionWarmup() {
         mClientManager.recordUidHasCalledWarmup(mUid);
-        mClientManager.newSession(mSession, mUid, null);
+        mClientManager.newSession(mSession, mUid, null, null);
         assertEquals(ClientManager.SESSION_WARMUP, mClientManager.getWarmupState(mSession));
     }
 
     @SmallTest
     public void testValidSessionWarmupSeveralCalls() {
         mClientManager.recordUidHasCalledWarmup(mUid);
-        mClientManager.newSession(mSession, mUid, null);
+        mClientManager.newSession(mSession, mUid, null, null);
         assertEquals(ClientManager.SESSION_WARMUP, mClientManager.getWarmupState(mSession));
 
         CustomTabsSessionToken token = CustomTabsSessionToken.createDummySessionTokenForTesting();
-        mClientManager.newSession(token, mUid, null);
+        mClientManager.newSession(token, mUid, null, null);
         assertEquals(ClientManager.SESSION_WARMUP, mClientManager.getWarmupState(token));
     }
 
     @SmallTest
     @RetryOnFailure
     public void testPredictionOutcomeSuccess() {
-        assertTrue(mClientManager.newSession(mSession, mUid, null));
+        assertTrue(mClientManager.newSession(mSession, mUid, null, null));
         assertTrue(mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, URL));
         assertEquals(
                 ClientManager.GOOD_PREDICTION, mClientManager.getPredictionOutcome(mSession, URL));
@@ -95,7 +95,7 @@ public class ClientManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     public void testPredictionOutcomeNoPrediction() {
-        assertTrue(mClientManager.newSession(mSession, mUid, null));
+        assertTrue(mClientManager.newSession(mSession, mUid, null, null));
         mClientManager.recordUidHasCalledWarmup(mUid);
         assertEquals(
                 ClientManager.NO_PREDICTION, mClientManager.getPredictionOutcome(mSession, URL));
@@ -103,7 +103,7 @@ public class ClientManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     public void testPredictionOutcomeBadPrediction() {
-        assertTrue(mClientManager.newSession(mSession, mUid, null));
+        assertTrue(mClientManager.newSession(mSession, mUid, null, null));
         assertTrue(mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, URL));
         assertEquals(
                 ClientManager.BAD_PREDICTION,
@@ -112,7 +112,7 @@ public class ClientManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     public void testPredictionOutcomeIgnoreFragment() {
-        assertTrue(mClientManager.newSession(mSession, mUid, null));
+        assertTrue(mClientManager.newSession(mSession, mUid, null, null));
         assertTrue(mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, URL));
         mClientManager.setIgnoreFragmentsForSession(mSession, true);
         assertEquals(

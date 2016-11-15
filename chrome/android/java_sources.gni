@@ -274,6 +274,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/customtabs/CustomTabsConnection.java",
   "java/src/org/chromium/chrome/browser/customtabs/CustomTabsConnectionService.java",
   "java/src/org/chromium/chrome/browser/customtabs/CustomTabTabPersistencePolicy.java",
+  "java/src/org/chromium/chrome/browser/customtabs/PostMessageHandler.java",
   "java/src/org/chromium/chrome/browser/customtabs/RequestThrottler.java",
   "java/src/org/chromium/chrome/browser/customtabs/SeparateTaskCustomTabActivity.java",
   "java/src/org/chromium/chrome/browser/customtabs/SeparateTaskCustomTabActivity0.java",

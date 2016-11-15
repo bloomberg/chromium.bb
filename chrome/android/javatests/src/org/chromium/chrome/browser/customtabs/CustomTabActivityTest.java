@@ -27,6 +27,7 @@ import android.os.Bundle;
 import android.support.customtabs.CustomTabsCallback;
 import android.support.customtabs.CustomTabsClient;
 import android.support.customtabs.CustomTabsIntent;
+import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.CustomTabsServiceConnection;
 import android.support.customtabs.CustomTabsSession;
 import android.support.customtabs.CustomTabsSessionToken;
@@ -78,6 +79,7 @@ import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.net.test.util.TestWebServer;
 
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
@@ -100,6 +102,30 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     private static final String TEST_MENU_TITLE = "testMenuTitle";
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
     private static final String WEBLITE_PREFIX = "http://googleweblight.com/?lite_url=";
+    private static final String JS_MESSAGE = "from_js";
+    private static final String TITLE_FROM_POSTMESSAGE_TO_CHANNEL =
+            "<!DOCTYPE html><html><body>"
+            + "    <script>"
+            + "        var received = '';"
+            + "        onmessage = function (e) {"
+            + "            var myport = e.ports[0];"
+            + "            myport.onmessage = function (f) {"
+            + "                received += f.data;"
+            + "                document.title = received;"
+            + "            }"
+            + "        }"
+            + "   </script>"
+            + "</body></html>";
+    private static final String MESSAGE_FROM_PAGE_TO_CHANNEL =
+            "<!DOCTYPE html><html><body>"
+            + "    <script>"
+            + "        onmessage = function (e) {"
+            + "            if (e.ports != null && e.ports.length > 0) {"
+            + "               e.ports[0].postMessage(\"" + JS_MESSAGE + "\");"
+            + "            }"
+            + "        }"
+            + "   </script>"
+            + "</body></html>";
 
     private static int sIdToIncrement = 1;
 
@@ -107,6 +133,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     private String mTestPage;
     private String mTestPage2;
     private EmbeddedTestServer mTestServer;
+    private TestWebServer mWebServer;
 
     @Override
     protected void setUp() throws Exception {
@@ -117,6 +144,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         mTestPage2 = mTestServer.getURL(TEST_PAGE_2);
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
         LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
+        mWebServer = TestWebServer.start();
     }
 
     @Override
@@ -133,7 +161,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                 if (handler != null) handler.hideAppMenu();
             }
         });
-
+        mWebServer.shutdown();
         super.tearDown();
     }
 
@@ -846,6 +874,171 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                 }
             });
         } catch (InterruptedException e) {
+            fail();
+        }
+    }
+
+    /**
+     * Tests that when we use a pre-created renderer, the page loaded is the
+     * only one in the navigation history.
+     */
+    @SmallTest
+    @RetryOnFailure
+    public void testPostMessageBasic() throws InterruptedException {
+        final CustomTabsConnection connection = warmUpAndWait();
+        Context context = getInstrumentation().getTargetContext();
+        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage);
+        final CustomTabsSessionToken token =
+                CustomTabsSessionToken.getSessionTokenFromIntent(intent);
+        assertTrue(connection.newSession(token));
+        assertTrue(connection.validatePostMessageOrigin(token));
+        try {
+            startCustomTabActivityWithIntent(intent);
+        } catch (InterruptedException e) {
+            fail();
+        }
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                final Tab currentTab = getActivity().getActivityTab();
+                return mTestPage.equals(currentTab.getUrl());
+            }
+        });
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return connection.postMessage(token, "Message", null)
+                        == CustomTabsService.RESULT_SUCCESS;
+            }
+        });
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                getActivity().getActivityTab().loadUrl(new LoadUrlParams(mTestPage2));
+            }
+        });
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                final Tab currentTab = getActivity().getActivityTab();
+                return mTestPage2.equals(currentTab.getUrl());
+            }
+        });
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return connection.postMessage(token, "Message", null)
+                        == CustomTabsService.RESULT_FAILURE_MESSAGING_ERROR;
+            }
+        });
+    }
+
+    @SmallTest
+    @RetryOnFailure
+    public void testPostMessageRequiresValidation() throws InterruptedException {
+        final CustomTabsConnection connection = warmUpAndWait();
+        Context context = getInstrumentation().getTargetContext();
+        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage);
+        final CustomTabsSessionToken token =
+                CustomTabsSessionToken.getSessionTokenFromIntent(intent);
+        assertTrue(connection.newSession(token));
+        try {
+            startCustomTabActivityWithIntent(intent);
+        } catch (InterruptedException e) {
+            fail();
+        }
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                final Tab currentTab = getActivity().getActivityTab();
+                return mTestPage.equals(currentTab.getUrl());
+            }
+        });
+        assertEquals(connection.postMessage(token, "Message", null),
+                CustomTabsService.RESULT_FAILURE_MESSAGING_ERROR);
+    }
+
+    @SmallTest
+    @RetryOnFailure
+    public void testPostMessageReceivedInPage() throws InterruptedException {
+        final String url =
+                mWebServer.setResponse("/test.html", TITLE_FROM_POSTMESSAGE_TO_CHANNEL, null);
+        final CustomTabsConnection connection = warmUpAndWait();
+        Context context = getInstrumentation().getTargetContext();
+        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, url);
+        final CustomTabsSessionToken token =
+                CustomTabsSessionToken.getSessionTokenFromIntent(intent);
+        assertTrue(connection.newSession(token));
+        assertTrue(connection.validatePostMessageOrigin(token));
+        try {
+            startCustomTabActivityWithIntent(intent);
+        } catch (InterruptedException e) {
+            fail();
+        }
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                final Tab currentTab = getActivity().getActivityTab();
+                return url.equals(currentTab.getUrl());
+            }
+        });
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return connection.postMessage(token, "New title", null)
+                        == CustomTabsService.RESULT_SUCCESS;
+            }
+        });
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                final Tab currentTab = getActivity().getActivityTab();
+                return "New title".equals(currentTab.getTitle());
+            }
+        });
+    }
+
+    @SmallTest
+    @RetryOnFailure
+    public void testPostMessageReceivedFromPage() throws InterruptedException {
+        final String url = mWebServer.setResponse("/test.html", MESSAGE_FROM_PAGE_TO_CHANNEL, null);
+        warmUpAndWait();
+        final CallbackHelper channelReadyHelper = new CallbackHelper();
+        final CallbackHelper messageReceivedHelper = new CallbackHelper();
+        final CustomTabsSession session = bindWithCallback(new CustomTabsCallback() {
+            @Override
+            public void onMessageChannelReady(Uri origin, Bundle extras) {
+                channelReadyHelper.notifyCalled();
+            }
+
+            @Override
+            public void onPostMessage(String message, Bundle extras) {
+                messageReceivedHelper.notifyCalled();
+            }
+        });
+        session.validatePostMessageOrigin();
+        Intent intent = new CustomTabsIntent.Builder(session).build().intent;
+        intent.setData(Uri.parse(url));
+        intent.setComponent(new ComponentName(
+                getInstrumentation().getTargetContext(), ChromeLauncherActivity.class));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        assertEquals(session.postMessage("Message", null),
+                CustomTabsService.RESULT_FAILURE_MESSAGING_ERROR);
+
+        try {
+            startCustomTabActivityWithIntent(intent);
+        } catch (InterruptedException e) {
+            fail();
+        }
+        try {
+            channelReadyHelper.waitForCallback(0);
+        } catch (TimeoutException e) {
+            fail();
+        }
+        try {
+            messageReceivedHelper.waitForCallback(0);
+        } catch (TimeoutException e) {
             fail();
         }
     }

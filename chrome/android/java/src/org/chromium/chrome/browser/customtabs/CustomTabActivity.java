@@ -206,6 +206,15 @@ public class CustomTabActivity extends ChromeActivity {
     }
 
     /**
+     * @return Whether the given session is the currently active session.
+     */
+    public static boolean isActiveSession(CustomTabsSessionToken session) {
+        if (sActiveContentHandler == null) return false;
+        if (session == null || sActiveContentHandler.getSession() == null) return false;
+        return sActiveContentHandler.getSession().equals(session);
+    }
+
+    /**
      * Checks whether the active {@link CustomTabContentHandler} belongs to the given session, and
      * if true, update toolbar's custom button.
      * @param session     The {@link IBinder} that the calling client represents.
@@ -501,6 +510,7 @@ public class CustomTabActivity extends ChromeActivity {
         RecordHistogram.recordEnumeratedHistogram("CustomTabs.WebcontentsStateOnLaunch",
                 webContentsStateOnLaunch, WEBCONTENTS_STATE_MAX);
         if (webContents == null) webContents = WebContentsFactory.createWebContents(false, false);
+        customTabsConnection.resetPostMessageHandlerForSession(mSession, webContents);
         tab.initialize(
                 webContents, getTabContentManager(),
                 new CustomTabDelegateFactory(

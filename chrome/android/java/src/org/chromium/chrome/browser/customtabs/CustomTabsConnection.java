@@ -36,6 +36,7 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.device.DeviceClassManager;
@@ -158,11 +159,11 @@ public class CustomTabsConnection {
      * No rate-limiting, can be spammy if the app is misbehaved.
      *
      * @param name Call name to log.
-     * @param success Whether the call was successful.
+     * @param The return value for the logged call.
      */
-    void logCall(String name, boolean success) {
+    void logCall(String name, Object result) {
         if (mLogRequests) {
-            Log.w(TAG, "%s = %b, Calling UID = %d", name, success, Binder.getCallingUid());
+            Log.w(TAG, "%s = %b, Calling UID = %d", name, result, Binder.getCallingUid());
         }
     }
 
@@ -179,7 +180,8 @@ public class CustomTabsConnection {
                 cancelPrerender(session);
             }
         };
-        return mClientManager.newSession(session, Binder.getCallingUid(), onDisconnect);
+        PostMessageHandler handler = new PostMessageHandler(session);
+        return mClientManager.newSession(session, Binder.getCallingUid(), onDisconnect, handler);
     }
 
     /** Warmup activities that should only happen once. */
@@ -422,6 +424,55 @@ public class CustomTabsConnection {
             }
         }
         return result;
+    }
+
+    /**
+     * Sends a request to look for a valid postMessage origin that is associated with the app
+     * owning the given {@link CustomTabsSessionToken}.
+     * @param session The session that the request is associated with
+     * @return Whether the validation request was accepted.
+     */
+    public boolean validatePostMessageOrigin(CustomTabsSessionToken session) {
+        boolean success = validatePostMessageOriginInternal(session);
+        logCall("validatePostMessageOrigin()", success);
+        return success;
+    }
+
+    private boolean validatePostMessageOriginInternal(final CustomTabsSessionToken session) {
+        if (!mWarmupHasBeenCalled.get()) return false;
+        if (!isCallerForegroundOrSelf()) return false;
+        ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // If the API is not enabled, we don't set the post message origin, which will
+                // avoid PostMessageHandler initialization and disallow postMessage calls.
+                if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_POST_MESSAGE_API)) return;
+                mClientManager.setPostMessageOriginForSession(session, Uri.EMPTY);
+            }
+        });
+        return true;
+    }
+
+    public int postMessage(CustomTabsSessionToken session, String message, Bundle extras) {
+        int result;
+        if (!mWarmupHasBeenCalled.get()) result = CustomTabsService.RESULT_FAILURE_DISALLOWED;
+        if (!isCallerForegroundOrSelf() && !CustomTabActivity.isActiveSession(session)) {
+            result = CustomTabsService.RESULT_FAILURE_DISALLOWED;
+        }
+        // If called before a validatePostMessageOrigin, the post message origin will be invalid and
+        // will return a failure result here.
+        result = mClientManager.postMessage(session, message);
+        logCall("postMessage", result);
+        return result;
+    }
+
+    /**
+     * See
+     * {@link ClientManager#resetPostMessageHandlerForSession(CustomTabsSessionToken, WebContents)}.
+     */
+    public void resetPostMessageHandlerForSession(
+            CustomTabsSessionToken session, WebContents webContents) {
+        mClientManager.resetPostMessageHandlerForSession(session, webContents);
     }
 
     /**

@@ -40,6 +40,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kWebPayments,
     &kAndroidPayIntegrationV1,
     &kCCTExternalLinkHandling,
+    &kCCTPostMessageAPI,
     &kChromeHomeFeature,
     &kContextualSearchSingleActions,
     &kDownloadsUiFeature,
@@ -73,6 +74,9 @@ const base::Feature kAndroidPayIntegrationV1{"AndroidPayIntegrationV1",
 
 const base::Feature kCCTExternalLinkHandling{"CCTExternalLinkHandling",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kCCTPostMessageAPI{"CCTPostMessageAPI",
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kChromeHomeFeature{"ChromeHome",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
