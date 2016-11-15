@@ -210,6 +210,11 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
   PrintAndCheckCall(
       [os.path.join(FFMPEG_DIR, 'configure')] + configure_flags, cwd=config_dir)
 
+  RewriteFile(
+      os.path.join(config_dir, 'config.h'),
+      r'(#define HAVE_VALGRIND_VALGRIND_H [01])',
+      (r'#define HAVE_VALGRIND_VALGRIND_H 0 /* \1 -- forced to 0. See https://crbug.com/590440 */'))
+
   if target_os in (host_os, host_os + '-noasm', 'android') and not config_only:
     libraries = [
         os.path.join('libavcodec', GetDsoName(target_os, 'avcodec', 57)),
