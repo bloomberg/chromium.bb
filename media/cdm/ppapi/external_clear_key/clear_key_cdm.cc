@@ -46,14 +46,6 @@ MSVC_POP_WARNING();
 #if !defined COMPONENT_BUILD
 static base::AtExitManager g_at_exit_manager;
 #endif
-
-// Prepare media library.
-static bool InitializeFFmpegLibraries() {
-  media::InitializeMediaLibrary();
-  return true;
-}
-static bool g_ffmpeg_lib_initialized = InitializeFFmpegLibraries();
-
 #endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
 
 const char kClearKeyCdmVersion[] = "0.1.0.1";
@@ -221,6 +213,7 @@ void ConvertCdmKeysInfo(const std::vector<media::CdmKeyInformation*>& keys_info,
 void INITIALIZE_CDM_MODULE() {
   DVLOG(1) << __FUNCTION__;
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
+  media::InitializeMediaLibrary();
   av_register_all();
 #endif  // CLEAR_KEY_CDM_USE_FFMPEG_DECODER
 }
