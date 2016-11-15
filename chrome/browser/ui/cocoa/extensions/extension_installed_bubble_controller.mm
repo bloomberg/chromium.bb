@@ -44,6 +44,7 @@
 #include "components/bubble/bubble_ui.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/user_metrics.h"
 #include "extensions/browser/install/extension_install_ui.h"
 #include "extensions/common/extension.h"
 #import "skia/ext/skia_utils_mac.h"
@@ -311,6 +312,11 @@ std::unique_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
 
   // Find window origin, taking into account bubble size and arrow location.
   [self updateAnchorPosition];
+
+  if (syncPromoController_) {
+    content::RecordAction(base::UserMetricsAction(
+        "Signin_Impression_FromExtensionInstallBubble"));
+  }
   [super showWindow:sender];
 }
 

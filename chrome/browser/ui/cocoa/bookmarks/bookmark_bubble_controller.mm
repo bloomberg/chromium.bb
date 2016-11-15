@@ -74,6 +74,9 @@ using bookmarks::BookmarkNode;
 
   Browser* browser = chrome::FindBrowserWithWindow(self.parentWindow);
   if (SyncPromoUI::ShouldShowSyncPromo(browser->profile())) {
+    content::RecordAction(
+        base::UserMetricsAction("Signin_Impression_FromBookmarkBubble"));
+
     syncPromoController_.reset(
         [[BubbleSyncPromoController alloc]
             initWithBrowser:browser
