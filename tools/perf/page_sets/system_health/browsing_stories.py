@@ -126,6 +126,7 @@ class FlipboardMobileStory(_NewsBrowsingStory):
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
 
 
+@decorators.Disabled('mac') # crbug.com/663025
 class FlipboardDesktopStory(_NewsBrowsingStory):
   NAME = 'browse:news:flipboard'
   URL = 'https://flipboard.com/explore'
