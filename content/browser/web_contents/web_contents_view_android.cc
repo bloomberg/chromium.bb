@@ -29,10 +29,8 @@ using base::android::ScopedJavaLocalRef;
 
 namespace content {
 
-// static
-void WebContentsView::GetDefaultScreenInfo(ScreenInfo* results) {
-  const display::Display& display =
-      display::Screen::GetScreen()->GetPrimaryDisplay();
+namespace {
+void DisplayToScreenInfo(const display::Display& display, ScreenInfo* results) {
   results->rect = display.bounds();
   // TODO(husky): Remove any system controls from availableRect.
   results->available_rect = display.work_area();
@@ -44,6 +42,13 @@ void WebContentsView::GetDefaultScreenInfo(ScreenInfo* results) {
   results->depth = display.color_depth();
   results->depth_per_component = display.depth_per_component();
   results->is_monochrome = display.is_monochrome();
+}
+}
+
+// static
+void WebContentsView::GetDefaultScreenInfo(ScreenInfo* results) {
+  DisplayToScreenInfo(display::Screen::GetScreen()->GetPrimaryDisplay(),
+                      results);
 }
 
 // static
@@ -124,8 +129,14 @@ gfx::NativeWindow WebContentsViewAndroid::GetTopLevelNativeWindow() const {
 }
 
 void WebContentsViewAndroid::GetScreenInfo(ScreenInfo* result) const {
-  // ScreenInfo isn't tied to the widget on Android. Always return the default.
-  WebContentsView::GetDefaultScreenInfo(result);
+  // Since API 17 Android supports multiple displays with different properties.
+
+  gfx::NativeView native_view = GetNativeView();
+  display::Display display =
+      native_view
+          ? display::Screen::GetScreen()->GetDisplayNearestWindow(native_view)
+          : display::Screen::GetScreen()->GetPrimaryDisplay();
+  DisplayToScreenInfo(display, result);
 }
 
 void WebContentsViewAndroid::GetContainerBounds(gfx::Rect* out) const {
