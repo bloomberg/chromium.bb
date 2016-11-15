@@ -724,6 +724,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=655147)
     self.Fail('conformance2/rendering/uniform-block-buffer-size.html',
         ['linux', 'amd'], bug=658844)
+    self.Fail('conformance2/glsl3/valid-invariant.html',
+        ['linux', 'amd'], bug=639760)
 
     # Conflicting expectations to test that the
     # "Expectations Have No collisions" unittest works.
