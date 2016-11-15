@@ -241,23 +241,26 @@ public class CrashFileManagerTest extends CrashTestCase {
     @SmallTest
     @Feature({"Android-AppBase"})
     public void testAttemptNumber() {
-        assertEquals(0, CrashFileManager.readAttemptNumber("file.dmp"));
-        assertEquals(0, CrashFileManager.readAttemptNumber(".try"));
-        assertEquals(0, CrashFileManager.readAttemptNumber("try1"));
+        assertEquals(-1, CrashFileManager.readAttemptNumber("file.dmp"));
+        assertEquals(-1, CrashFileManager.readAttemptNumber(".try"));
+        assertEquals(-1, CrashFileManager.readAttemptNumber("try1"));
         assertEquals(1, CrashFileManager.readAttemptNumber("file.try1.dmp"));
         assertEquals(1, CrashFileManager.readAttemptNumber("file.dmp.try1"));
         assertEquals(2, CrashFileManager.readAttemptNumber(".try2"));
         assertEquals(2, CrashFileManager.readAttemptNumber("file.try2.dmp"));
         assertEquals(2, CrashFileManager.readAttemptNumber("file.dmp.try2"));
         assertEquals(2, CrashFileManager.readAttemptNumber(".try2"));
-        assertEquals(0, CrashFileManager.readAttemptNumber("file.tryN.dmp"));
+        assertEquals(-1, CrashFileManager.readAttemptNumber("file.tryN.dmp"));
+        assertEquals(-1, CrashFileManager.readAttemptNumber("file.tryN.dmp1"));
         assertEquals(9, CrashFileManager.readAttemptNumber("file.try9.dmp"));
         assertEquals(10, CrashFileManager.readAttemptNumber("file.try10.dmp"));
         assertEquals(9, CrashFileManager.readAttemptNumber("file.dmp.try9"));
         assertEquals(10, CrashFileManager.readAttemptNumber("file.dmp.try10"));
         assertEquals(300, CrashFileManager.readAttemptNumber("file.dmp.try300"));
-        assertEquals(0, CrashFileManager.readAttemptNumber("file.dmp202.try"));
-        assertEquals(0, CrashFileManager.readAttemptNumber("file.try.dmp1"));
+        assertEquals(-1, CrashFileManager.readAttemptNumber("file.dmp202.try"));
+        assertEquals(-1, CrashFileManager.readAttemptNumber("file.try.dmp1"));
+        assertEquals(-1, CrashFileManager.readAttemptNumber("file.try-2.dmp1"));
+        assertEquals(-1, CrashFileManager.readAttemptNumber("file.try-20.dmp1"));
     }
 
     @SmallTest
@@ -275,8 +278,13 @@ public class CrashFileManagerTest extends CrashTestCase {
                 CrashFileManager.filenameWithIncrementedAttemptNumber("f.try1.dmp"));
         assertEquals("f.tryN.dmp.try1",
                 CrashFileManager.filenameWithIncrementedAttemptNumber("f.tryN.dmp"));
+        // Cover the case where there exists a number after (but not immediately after) ".try".
+        assertEquals("f.tryN.dmp2.try1",
+                CrashFileManager.filenameWithIncrementedAttemptNumber("f.tryN.dmp2"));
         assertEquals("f.forced.try3",
                 CrashFileManager.filenameWithIncrementedAttemptNumber("f.forced.try2"));
+        assertEquals("file.dmp.try1",
+                CrashFileManager.filenameWithIncrementedAttemptNumber("file.dmp.try0"));
     }
 
     @SmallTest

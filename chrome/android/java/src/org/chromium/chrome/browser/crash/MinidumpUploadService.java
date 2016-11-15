@@ -222,6 +222,10 @@ public class MinidumpUploadService extends IntentService {
             return;
         }
         int tries = CrashFileManager.readAttemptNumber(minidumpFileName);
+        // -1 means no attempt number was read.
+        if (tries == -1) {
+            tries = 0;
+        }
 
         // Since we do not rename a file after reaching max number of tries,
         // files that have maxed out tries will NOT reach this.

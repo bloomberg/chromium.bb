@@ -126,11 +126,14 @@ public class CrashFileManager {
     @VisibleForTesting
     public static String filenameWithIncrementedAttemptNumber(String filename) {
         int numTried = readAttemptNumber(filename);
-        if (numTried > 0) {
+        if (numTried >= 0) {
             int newCount = numTried + 1;
             return filename.replace(
                     UPLOAD_ATTEMPT_DELIMITER + numTried, UPLOAD_ATTEMPT_DELIMITER + newCount);
         } else {
+            // readAttemptNumber returning -1 means there is no UPLOAD_ATTEMPT_DELIMITER in the file
+            // name (or that there is a delimiter but no attempt number). So, we have to add the
+            // delimiter and attempt number ourselves.
             return filename + UPLOAD_ATTEMPT_DELIMITER + "1";
         }
     }
@@ -173,6 +176,11 @@ public class CrashFileManager {
         return filename.replace(NOT_YET_UPLOADED_MINIDUMP_SUFFIX, UPLOAD_FORCED_MINIDUMP_SUFFIX);
     }
 
+    /**
+     * Returns how many times we've tried to upload a certain Minidump file.
+     * @return the number of attempts to upload the given Minidump file, parsed from its file name,
+     *     returns -1 if an attempt-number cannot be parsed from the file-name.
+     */
     @VisibleForTesting
     public static int readAttemptNumber(String filename) {
         int tryIndex = filename.lastIndexOf(UPLOAD_ATTEMPT_DELIMITER);
@@ -183,12 +191,12 @@ public class CrashFileManager {
             try {
                 int nextInt = numTriesScanner.nextInt();
                 // Only return the number if it occurs just after the UPLOAD_ATTEMPT_DELIMITER.
-                return numTriesString.indexOf(Integer.toString(nextInt)) == 0 ? nextInt : 0;
+                return numTriesString.indexOf(Integer.toString(nextInt)) == 0 ? nextInt : -1;
             } catch (NoSuchElementException e) {
-                return 0;
+                return -1;
             }
         }
-        return 0;
+        return -1;
     }
 
     /**
