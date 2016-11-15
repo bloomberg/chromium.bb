@@ -11,7 +11,6 @@
 #include "base/containers/hash_tables.h"
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
-#include "base/memory/linked_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"

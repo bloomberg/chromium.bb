@@ -6,10 +6,10 @@
 #define EXTENSIONS_COMMON_EVENT_FILTER_H_
 
 #include <map>
+#include <memory>
 #include <set>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "components/url_matcher/url_matcher.h"
 #include "extensions/common/event_filtering_info.h"
 #include "extensions/common/event_matcher.h"
@@ -88,10 +88,11 @@ class EventFilter {
   };
 
   // Maps from a matcher id to an event matcher entry.
-  typedef std::map<MatcherID, linked_ptr<EventMatcherEntry> > EventMatcherMap;
+  using EventMatcherMap =
+      std::map<MatcherID, std::unique_ptr<EventMatcherEntry>>;
 
   // Maps from event name to the map of matchers that are registered for it.
-  typedef std::map<std::string, EventMatcherMap> EventMatcherMultiMap;
+  using EventMatcherMultiMap = std::map<std::string, EventMatcherMap>;
 
   // Adds the list of URL filters in |matcher| to the URL matcher, having
   // matches for those URLs map to |id|.

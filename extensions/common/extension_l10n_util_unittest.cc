@@ -9,7 +9,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
@@ -211,7 +210,7 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsDuplicateKeys) {
 
 // Caller owns the returned object.
 MessageBundle* CreateManifestBundle() {
-  linked_ptr<base::DictionaryValue> catalog(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> catalog(new base::DictionaryValue);
 
   base::DictionaryValue* name_tree = new base::DictionaryValue();
   name_tree->SetString("message", "name");
@@ -259,8 +258,8 @@ MessageBundle* CreateManifestBundle() {
   url_country_tree->SetString("message", "de");
   catalog->Set("country", url_country_tree);
 
-  std::vector<linked_ptr<base::DictionaryValue> > catalogs;
-  catalogs.push_back(catalog);
+  std::vector<std::unique_ptr<base::DictionaryValue>> catalogs;
+  catalogs.push_back(std::move(catalog));
 
   std::string error;
   MessageBundle* bundle = MessageBundle::Create(catalogs, &error);

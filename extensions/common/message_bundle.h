@@ -8,10 +8,9 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
-
-#include "base/memory/linked_ptr.h"
 
 namespace base {
 class DictionaryValue;
@@ -24,8 +23,8 @@ namespace extensions {
 // locale does not provide are pulled from the default locale.
 class MessageBundle {
  public:
-  typedef std::map<std::string, std::string> SubstitutionMap;
-  typedef std::vector<linked_ptr<base::DictionaryValue> > CatalogVector;
+  using SubstitutionMap = std::map<std::string, std::string>;
+  using CatalogVector = std::vector<std::unique_ptr<base::DictionaryValue>>;
 
   // JSON keys of interest for messages file.
   static const char kContentKey[];

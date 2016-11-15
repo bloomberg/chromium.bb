@@ -15,7 +15,6 @@
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
-#include "base/memory/linked_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -36,9 +35,10 @@ namespace {
 // Loads contents of the messages file for given locale. If file is not found,
 // or there was parsing error we return NULL and set |error|.
 // Caller owns the returned object.
-base::DictionaryValue* LoadMessageFile(const base::FilePath& locale_path,
-                                       const std::string& locale,
-                                       std::string* error) {
+std::unique_ptr<base::DictionaryValue> LoadMessageFile(
+    const base::FilePath& locale_path,
+    const std::string& locale,
+    std::string* error) {
   base::FilePath file =
       locale_path.AppendASCII(locale).Append(extensions::kMessagesFilename);
   JSONFileValueDeserializer messages_deserializer(file);
@@ -59,7 +59,7 @@ base::DictionaryValue* LoadMessageFile(const base::FilePath& locale_path,
     }
   }
 
-  return dictionary.release();
+  return dictionary;
 }
 
 // Localizes manifest value of string type for a given key.
@@ -376,21 +376,21 @@ extensions::MessageBundle* LoadMessageCatalogs(
   GetAllFallbackLocales(
       application_locale, default_locale, &all_fallback_locales);
 
-  std::vector<linked_ptr<base::DictionaryValue> > catalogs;
+  std::vector<std::unique_ptr<base::DictionaryValue>> catalogs;
   for (size_t i = 0; i < all_fallback_locales.size(); ++i) {
     // Skip all parent locales that are not supplied.
     base::FilePath this_locale_path =
         locale_path.AppendASCII(all_fallback_locales[i]);
     if (!base::PathExists(this_locale_path))
       continue;
-    linked_ptr<base::DictionaryValue> catalog(
-        LoadMessageFile(locale_path, all_fallback_locales[i], error));
+    std::unique_ptr<base::DictionaryValue> catalog =
+        LoadMessageFile(locale_path, all_fallback_locales[i], error);
     if (!catalog.get()) {
       // If locale is valid, but messages.json is corrupted or missing, return
       // an error.
-      return NULL;
+      return nullptr;
     } else {
-      catalogs.push_back(catalog);
+      catalogs.push_back(std::move(catalog));
     }
   }
 
@@ -415,8 +415,8 @@ bool ValidateExtensionLocales(const base::FilePath& extension_path,
        locale != valid_locales.end();
        ++locale) {
     std::string locale_error;
-    std::unique_ptr<base::DictionaryValue> catalog(
-        LoadMessageFile(locale_path, *locale, &locale_error));
+    std::unique_ptr<base::DictionaryValue> catalog =
+        LoadMessageFile(locale_path, *locale, &locale_error);
 
     if (!locale_error.empty()) {
       if (!error->empty())

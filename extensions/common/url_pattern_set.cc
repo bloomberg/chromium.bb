@@ -8,7 +8,6 @@
 #include <ostream>
 
 #include "base/logging.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/values.h"
