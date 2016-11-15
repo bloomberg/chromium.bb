@@ -206,6 +206,9 @@ AM_CONDITIONAL(ENABLE_DRM_COMPOSITOR, test x$enable_drm_compositor = xyes)
 if test x$enable_drm_compositor = xyes; then
   AC_DEFINE([BUILD_DRM_COMPOSITOR], [1], [Build the DRM compositor])
   PKG_CHECK_MODULES(DRM_COMPOSITOR, [libudev >= 136 libdrm >= 2.4.30 gbm])
+  PKG_CHECK_MODULES(DRM_COMPOSITOR_ATOMIC, [libdrm >= 2.4.62],
+		    [AC_DEFINE([HAVE_DRM_ATOMIC], 1, [libdrm supports atomic API])],
+		    [AC_MSG_WARN([libdrm does not support atomic modesetting, will omit that capability])])
   PKG_CHECK_MODULES(DRM_COMPOSITOR_GBM, [gbm >= 10.2],
 		    [AC_DEFINE([HAVE_GBM_FD_IMPORT], 1, [gbm supports dmabuf import])],
 		    [AC_MSG_WARN([gbm does not support dmabuf import, will omit that capability])])
