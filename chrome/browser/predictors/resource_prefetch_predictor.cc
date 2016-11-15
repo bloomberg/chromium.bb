@@ -392,6 +392,36 @@ ResourcePrefetchPredictor::ResourcePrefetchPredictor(
 
 ResourcePrefetchPredictor::~ResourcePrefetchPredictor() {}
 
+void ResourcePrefetchPredictor::StartInitialization() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  DCHECK_EQ(NOT_INITIALIZED, initialization_state_);
+  initialization_state_ = INITIALIZING;
+
+  // Create local caches using the database as loaded.
+  auto url_data_map = base::MakeUnique<PrefetchDataMap>();
+  auto host_data_map = base::MakeUnique<PrefetchDataMap>();
+  auto url_redirect_data_map = base::MakeUnique<RedirectDataMap>();
+  auto host_redirect_data_map = base::MakeUnique<RedirectDataMap>();
+
+  // Get raw pointers to pass to the first task. Ownership of the unique_ptrs
+  // will be passed to the reply task.
+  auto url_data_map_ptr = url_data_map.get();
+  auto host_data_map_ptr = host_data_map.get();
+  auto url_redirect_data_map_ptr = url_redirect_data_map.get();
+  auto host_redirect_data_map_ptr = host_redirect_data_map.get();
+
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(&ResourcePrefetchPredictorTables::GetAllData, tables_,
+                 url_data_map_ptr, host_data_map_ptr, url_redirect_data_map_ptr,
+                 host_redirect_data_map_ptr),
+      base::Bind(&ResourcePrefetchPredictor::CreateCaches, AsWeakPtr(),
+                 base::Passed(&url_data_map), base::Passed(&host_data_map),
+                 base::Passed(&url_redirect_data_map),
+                 base::Passed(&host_redirect_data_map)));
+}
+
 void ResourcePrefetchPredictor::RecordURLRequest(
     const URLRequestSummary& request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -642,36 +672,6 @@ bool ResourcePrefetchPredictor::PopulatePrefetcherRequest(
   }
 
   return urls->size() > initial_size;
-}
-
-void ResourcePrefetchPredictor::StartInitialization() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  DCHECK_EQ(NOT_INITIALIZED, initialization_state_);
-  initialization_state_ = INITIALIZING;
-
-  // Create local caches using the database as loaded.
-  auto url_data_map = base::MakeUnique<PrefetchDataMap>();
-  auto host_data_map = base::MakeUnique<PrefetchDataMap>();
-  auto url_redirect_data_map = base::MakeUnique<RedirectDataMap>();
-  auto host_redirect_data_map = base::MakeUnique<RedirectDataMap>();
-
-  // Get raw pointers to pass to the first task. Ownership of the unique_ptrs
-  // will be passed to the reply task.
-  auto url_data_map_ptr = url_data_map.get();
-  auto host_data_map_ptr = host_data_map.get();
-  auto url_redirect_data_map_ptr = url_redirect_data_map.get();
-  auto host_redirect_data_map_ptr = host_redirect_data_map.get();
-
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(&ResourcePrefetchPredictorTables::GetAllData, tables_,
-                 url_data_map_ptr, host_data_map_ptr, url_redirect_data_map_ptr,
-                 host_redirect_data_map_ptr),
-      base::Bind(&ResourcePrefetchPredictor::CreateCaches, AsWeakPtr(),
-                 base::Passed(&url_data_map), base::Passed(&host_data_map),
-                 base::Passed(&url_redirect_data_map),
-                 base::Passed(&host_redirect_data_map)));
 }
 
 void ResourcePrefetchPredictor::CreateCaches(

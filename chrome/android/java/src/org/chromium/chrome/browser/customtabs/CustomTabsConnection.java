@@ -248,6 +248,9 @@ public class CustomTabsConnection {
                     // violation on the first access. Make sure that this access is not in
                     // mayLauchUrl.
                     RequestThrottler.getForUid(mApplication, uid);
+
+                    Profile profile = Profile.getLastUsedProfile();
+                    new ResourcePrefetchPredictor(profile).startInitialization();
                 }
                 mWarmupHasBeenFinished.set(true);
             }

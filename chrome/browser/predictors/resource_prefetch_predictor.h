@@ -119,6 +119,10 @@ class ResourcePrefetchPredictor
                             Profile* profile);
   ~ResourcePrefetchPredictor() override;
 
+  // Starts initialization by posting a task to the DB thread to read the
+  // predictor database.
+  void StartInitialization();
+
   // Thread safe.
   static bool ShouldRecordRequest(net::URLRequest* request,
                                   content::ResourceType resource_type);
@@ -247,10 +251,6 @@ class ResourcePrefetchPredictor
   bool PopulatePrefetcherRequest(const std::string& main_frame_key,
                                  const PrefetchDataMap& data_map,
                                  std::vector<GURL>* urls);
-
-  // Starts initialization by posting a task to the DB thread to read the
-  // predictor database.
-  void StartInitialization();
 
   // Callback for task to read predictor database. Takes ownership of
   // all arguments.
