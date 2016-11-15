@@ -76,8 +76,12 @@ ChromeBrowserProvider* GetChromeBrowserProvider();
 // ios_chrome_browser target.
 class ChromeBrowserProvider {
  public:
+  // The constructor is called before web startup.
   ChromeBrowserProvider();
   virtual ~ChromeBrowserProvider();
+
+  // This is called after web startup.
+  virtual void Initialize() const;
 
   // Asserts all iOS-specific |BrowserContextKeyedServiceFactory| are built.
   virtual void AssertBrowserContextKeyedFactoriesBuilt();
@@ -175,6 +179,13 @@ class ChromeBrowserProvider {
 
   // Returns the NativeAppWhitelistManager implementation.
   virtual id<NativeAppWhitelistManager> GetNativeAppWhitelistManager() const;
+
+  // Hides immediately the modals related to this provider.
+  virtual void HideModalViewStack() const;
+
+  // Logs if any modals created by this provider are still presented. It does
+  // not dismiss them.
+  virtual void LogIfModalViewsArePresented() const;
 };
 
 }  // namespace ios
