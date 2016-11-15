@@ -1868,6 +1868,7 @@ base::Value* ProfileSyncService::GetTypeStatusMap() {
 
   SyncBackendHost::Status detailed_status = backend_->GetDetailedStatus();
   ModelTypeSet& throttled_types(detailed_status.throttled_types);
+  ModelTypeSet& backed_off_types(detailed_status.backed_off_types);
   ModelTypeSet registered = GetRegisteredDataTypes();
   std::unique_ptr<base::DictionaryValue> type_status_header(
       new base::DictionaryValue());
@@ -1912,12 +1913,18 @@ base::Value* ProfileSyncService::GetTypeStatusMap() {
     } else if (throttled_types.Has(type) && passive_types.Has(type)) {
       type_status->SetString("status", "warning");
       type_status->SetString("value", "Passive, Throttled");
+    } else if (backed_off_types.Has(type) && passive_types.Has(type)) {
+      type_status->SetString("status", "warning");
+      type_status->SetString("value", "Passive, Backed off");
     } else if (passive_types.Has(type)) {
       type_status->SetString("status", "warning");
       type_status->SetString("value", "Passive");
     } else if (throttled_types.Has(type)) {
       type_status->SetString("status", "warning");
       type_status->SetString("value", "Throttled");
+    } else if (backed_off_types.Has(type)) {
+      type_status->SetString("status", "warning");
+      type_status->SetString("value", "Backed off");
     } else if (active_types.Has(type)) {
       type_status->SetString("status", "ok");
       type_status->SetString(

@@ -69,7 +69,7 @@ void NormalGetUpdatesDelegate::HelpPopulateGuMessage(
     ModelType type =
         GetModelTypeFromSpecificsFieldNumber(progress_marker->data_type_id());
 
-    DCHECK(!nudge_tracker_.IsTypeThrottled(type))
+    DCHECK(!nudge_tracker_.IsTypeBlocked(type))
         << "Throttled types should have been removed from the request_types.";
 
     nudge_tracker_.SetLegacyNotificationHint(type, progress_marker);

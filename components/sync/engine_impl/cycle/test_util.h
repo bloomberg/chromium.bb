@@ -59,6 +59,8 @@ void SimulateTypesThrottledImpl(SyncCycle* cycle,
                                 ModelTypeSet types,
                                 const base::TimeDelta& delta);
 
+void SimulatePartialFailureImpl(SyncCycle* cycle, ModelTypeSet types);
+
 // Works with poll cycles.
 void SimulatePollIntervalUpdateImpl(ModelTypeSet requested_types,
                                     SyncCycle* cycle,
@@ -76,6 +78,10 @@ ACTION_P(SimulateThrottled, throttle) {
 
 ACTION_P2(SimulateTypesThrottled, types, throttle) {
   SimulateTypesThrottledImpl(arg0, types, throttle);
+}
+
+ACTION_P(SimulatePartialFailure, types) {
+  SimulatePartialFailureImpl(arg0, types);
 }
 
 ACTION_P(SimulatePollIntervalUpdate, poll) {

@@ -189,6 +189,9 @@ class SyncerTest : public testing::Test,
                         const base::TimeDelta& throttle_duration) override {
     scheduler_->OnTypesThrottled(types, throttle_duration);
   }
+  void OnTypesBackedOff(ModelTypeSet types) override {
+    scheduler_->OnTypesBackedOff(types);
+  }
   bool IsCurrentlyThrottled() override { return false; }
   void OnReceivedLongPollIntervalUpdate(
       const base::TimeDelta& new_interval) override {
@@ -241,6 +244,7 @@ class SyncerTest : public testing::Test,
   void OnActionableError(const SyncProtocolError& error) override {}
   void OnRetryTimeChanged(base::Time retry_time) override {}
   void OnThrottledTypesChanged(ModelTypeSet throttled_types) override {}
+  void OnBackedOffTypesChanged(ModelTypeSet backed_off_types) override {}
   void OnMigrationRequested(ModelTypeSet types) override {}
 
   void ResetCycle() { cycle_.reset(SyncCycle::Build(context_.get(), this)); }
@@ -621,11 +625,11 @@ TEST_F(SyncerTest, GetCommitIdsFiltersThrottledEntries) {
 
   // Now sync without enabling bookmarks.
   mock_server_->ExpectGetUpdatesRequestTypes(
-      Difference(context_->GetEnabledTypes(), ModelTypeSet(BOOKMARKS)));
+      Difference(context_->GetEnabledTypes(), throttled_types));
   ResetCycle();
   syncer_->NormalSyncShare(
-      Difference(context_->GetEnabledTypes(), ModelTypeSet(BOOKMARKS)),
-      &nudge_tracker_, cycle_.get());
+      Difference(context_->GetEnabledTypes(), throttled_types), &nudge_tracker_,
+      cycle_.get());
 
   {
     // Nothing should have been committed as bookmarks is throttled.
@@ -917,8 +921,8 @@ TEST_F(SyncerTest, GetUpdatesPartialThrottled) {
   // Set BOOKMARKS throttled but PREFERENCES not,
   // then BOOKMARKS should not get synced but PREFERENCES should.
   ModelTypeSet throttled_types(BOOKMARKS);
-  mock_server_->set_partial_throttling(true);
-  mock_server_->SetThrottledTypes(throttled_types);
+  mock_server_->set_throttling(true);
+  mock_server_->SetPartialFailureTypes(throttled_types);
 
   mock_server_->AddUpdateSpecifics(1, 0, "E", 20, 20, true, 0, bookmark,
                                    foreign_cache_guid(), "-1");
@@ -949,7 +953,7 @@ TEST_F(SyncerTest, GetUpdatesPartialThrottled) {
   }
 
   // Unthrottled BOOKMARKS, then BOOKMARKS should get synced now.
-  mock_server_->set_partial_throttling(false);
+  mock_server_->set_throttling(false);
 
   mock_server_->AddUpdateSpecifics(1, 0, "E", 30, 30, true, 0, bookmark,
                                    foreign_cache_guid(), "-1");
@@ -961,6 +965,87 @@ TEST_F(SyncerTest, GetUpdatesPartialThrottled) {
   EXPECT_TRUE(SyncShareNudge());
   {
     // BOOKMARKS unthrottled.
+    syncable::ReadTransaction rtrans(FROM_HERE, directory());
+    VERIFY_ENTRY(1, false, false, false, 0, 31, 31, ids_, &rtrans);
+    VERIFY_ENTRY(2, false, false, false, 1, 31, 31, ids_, &rtrans);
+    VERIFY_ENTRY(3, false, false, false, 1, 31, 31, ids_, &rtrans);
+    VERIFY_ENTRY(4, false, false, false, 0, 30, 30, ids_, &rtrans);
+  }
+}
+
+TEST_F(SyncerTest, GetUpdatesPartialFailure) {
+  sync_pb::EntitySpecifics bookmark, pref;
+  bookmark.mutable_bookmark()->set_title("title");
+  pref.mutable_preference()->set_name("name");
+  AddDefaultFieldValue(BOOKMARKS, &bookmark);
+  AddDefaultFieldValue(PREFERENCES, &pref);
+
+  // Normal sync, all the data types should get synced.
+  mock_server_->AddUpdateSpecifics(1, 0, "A", 10, 10, true, 0, bookmark,
+                                   foreign_cache_guid(), "-1");
+  mock_server_->AddUpdateSpecifics(2, 1, "B", 10, 10, false, 2, bookmark,
+                                   foreign_cache_guid(), "-2");
+  mock_server_->AddUpdateSpecifics(3, 1, "C", 10, 10, false, 1, bookmark,
+                                   foreign_cache_guid(), "-3");
+  mock_server_->AddUpdateSpecifics(4, 0, "D", 10, 10, false, 0, pref);
+
+  EXPECT_TRUE(SyncShareNudge());
+  {
+    // Initial state. Everything is normal.
+    syncable::ReadTransaction rtrans(FROM_HERE, directory());
+    VERIFY_ENTRY(1, false, false, false, 0, 10, 10, ids_, &rtrans);
+    VERIFY_ENTRY(2, false, false, false, 1, 10, 10, ids_, &rtrans);
+    VERIFY_ENTRY(3, false, false, false, 1, 10, 10, ids_, &rtrans);
+    VERIFY_ENTRY(4, false, false, false, 0, 10, 10, ids_, &rtrans);
+  }
+
+  // Set BOOKMARKS failure but PREFERENCES not,
+  // then BOOKMARKS should not get synced but PREFERENCES should.
+  ModelTypeSet failed_types(BOOKMARKS);
+  mock_server_->set_partial_failure(true);
+  mock_server_->SetPartialFailureTypes(failed_types);
+
+  mock_server_->AddUpdateSpecifics(1, 0, "E", 20, 20, true, 0, bookmark,
+                                   foreign_cache_guid(), "-1");
+  mock_server_->AddUpdateSpecifics(2, 1, "F", 20, 20, false, 2, bookmark,
+                                   foreign_cache_guid(), "-2");
+  mock_server_->AddUpdateSpecifics(3, 1, "G", 20, 20, false, 1, bookmark,
+                                   foreign_cache_guid(), "-3");
+  mock_server_->AddUpdateSpecifics(4, 0, "H", 20, 20, false, 0, pref);
+  {
+    syncable::WriteTransaction wtrans(FROM_HERE, UNITTEST, directory());
+    MutableEntry A(&wtrans, GET_BY_ID, ids_.FromNumber(1));
+    MutableEntry B(&wtrans, GET_BY_ID, ids_.FromNumber(2));
+    MutableEntry C(&wtrans, GET_BY_ID, ids_.FromNumber(3));
+    MutableEntry D(&wtrans, GET_BY_ID, ids_.FromNumber(4));
+    A.PutIsUnsynced(true);
+    B.PutIsUnsynced(true);
+    C.PutIsUnsynced(true);
+    D.PutIsUnsynced(true);
+  }
+  EXPECT_TRUE(SyncShareNudge());
+  {
+    // BOOKMARKS failed.
+    syncable::ReadTransaction rtrans(FROM_HERE, directory());
+    VERIFY_ENTRY(1, false, true, false, 0, 10, 10, ids_, &rtrans);
+    VERIFY_ENTRY(2, false, true, false, 1, 10, 10, ids_, &rtrans);
+    VERIFY_ENTRY(3, false, true, false, 1, 10, 10, ids_, &rtrans);
+    VERIFY_ENTRY(4, false, false, false, 0, 21, 21, ids_, &rtrans);
+  }
+
+  // Set BOOKMARKS not partial failed, then BOOKMARKS should get synced now.
+  mock_server_->set_partial_failure(false);
+
+  mock_server_->AddUpdateSpecifics(1, 0, "E", 30, 30, true, 0, bookmark,
+                                   foreign_cache_guid(), "-1");
+  mock_server_->AddUpdateSpecifics(2, 1, "F", 30, 30, false, 2, bookmark,
+                                   foreign_cache_guid(), "-2");
+  mock_server_->AddUpdateSpecifics(3, 1, "G", 30, 30, false, 1, bookmark,
+                                   foreign_cache_guid(), "-3");
+  mock_server_->AddUpdateSpecifics(4, 0, "H", 30, 30, false, 0, pref);
+  EXPECT_TRUE(SyncShareNudge());
+  {
+    // BOOKMARKS not failed.
     syncable::ReadTransaction rtrans(FROM_HERE, directory());
     VERIFY_ENTRY(1, false, false, false, 0, 31, 31, ids_, &rtrans);
     VERIFY_ENTRY(2, false, false, false, 1, 31, 31, ids_, &rtrans);

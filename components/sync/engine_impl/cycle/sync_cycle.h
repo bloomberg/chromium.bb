@@ -47,6 +47,9 @@ class SyncCycle {
     virtual void OnTypesThrottled(ModelTypeSet types,
                                   const base::TimeDelta& throttle_duration) = 0;
 
+    // Some of the client's types were backed off.
+    virtual void OnTypesBackedOff(ModelTypeSet types) = 0;
+
     // Silenced intervals can be out of phase with individual cycles, so the
     // delegate is the only thing that can give an authoritative answer for
     // "is syncing silenced right now". This shouldn't be necessary very often

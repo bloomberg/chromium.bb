@@ -97,9 +97,13 @@ void SimulateThrottledImpl(SyncCycle* cycle, const base::TimeDelta& delta) {
 void SimulateTypesThrottledImpl(SyncCycle* cycle,
                                 ModelTypeSet types,
                                 const base::TimeDelta& delta) {
-  cycle->mutable_status_controller()->set_last_download_updates_result(
-      SERVER_RETURN_THROTTLED);
+  cycle->mutable_status_controller()->set_commit_result(SYNCER_OK);
   cycle->delegate()->OnTypesThrottled(types, delta);
+}
+
+void SimulatePartialFailureImpl(SyncCycle* cycle, ModelTypeSet types) {
+  cycle->mutable_status_controller()->set_commit_result(SYNCER_OK);
+  cycle->delegate()->OnTypesBackedOff(types);
 }
 
 void SimulatePollIntervalUpdateImpl(ModelTypeSet requested_types,

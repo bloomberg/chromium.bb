@@ -21,6 +21,29 @@ namespace syncer {
 
 class InvalidationInterface;
 
+struct WaitInterval {
+  enum BlockingMode {
+    // Uninitialized state, should not be set in practice.
+    UNKNOWN = -1,
+    // We enter a series of increasingly longer WaitIntervals if we experience
+    // repeated transient failures.  We retry at the end of each interval.
+    EXPONENTIAL_BACKOFF,
+    // A server-initiated throttled interval.  We do not allow any syncing
+    // during such an interval.
+    THROTTLED,
+    // We re retrying for exponetial backoff.
+    EXPONENTIAL_BACKOFF_RETRYING,
+  };
+  WaitInterval();
+  WaitInterval(BlockingMode mode, base::TimeDelta length);
+  ~WaitInterval();
+
+  static const char* GetModeString(BlockingMode mode);
+
+  BlockingMode mode;
+  base::TimeDelta length;
+};
+
 // A class to track the per-type scheduling data.
 class DataTypeTracker {
  public:
@@ -52,6 +75,10 @@ class DataTypeTracker {
   // Generally, this means that all local changes have been committed and all
   // remote changes have been downloaded, so we can clear any flags related to
   // pending work.
+  // But if partial throttling and backoff happen, this function also will be
+  // called since we count those cases as success. So we need to check if the
+  // datatype is in partial throttling or backoff in the beginning of this
+  // function.
   void RecordSuccessfulSyncCycle();
 
   // Updates the size of the invalidations payload buffer.
@@ -91,24 +118,36 @@ class DataTypeTracker {
   // handle a request.
   void FillGetUpdatesTriggersMessage(sync_pb::GetUpdateTriggers* msg) const;
 
-  // Returns true if the type is currently throttled.
-  bool IsThrottled() const;
+  // Returns true if the type is currently throttled or backed off.
+  bool IsBlocked() const;
 
-  // Returns the time until this type's throttling interval expires.  Should not
-  // be called unless IsThrottled() returns true.  The returned value will be
-  // increased to zero if it would otherwise have been negative.
-  base::TimeDelta GetTimeUntilUnthrottle(base::TimeTicks now) const;
+  // Returns the time until this type's throttling or backoff interval expires.
+  // Should not be called unless IsThrottled() or IsBackedOff() returns true.
+  // The returned value will be increased to zero if it would otherwise have
+  // been negative.
+  base::TimeDelta GetTimeUntilUnblock() const;
+
+  // Returns the last backoff interval.
+  base::TimeDelta GetLastBackoffInterval() const;
 
   // Throttles the type from |now| until |now| + |duration|.
   void ThrottleType(base::TimeDelta duration, base::TimeTicks now);
 
-  // Unthrottles the type if |now| >= the throttle expiry time.
-  void UpdateThrottleState(base::TimeTicks now);
+  // Backs off the type from |now| until |now| + |duration|.
+  void BackOffType(base::TimeDelta duration, base::TimeTicks now);
+
+  // Unblocks the type if base::TimeTicks::Now() >= |unblock_time_| expiry time.
+  void UpdateThrottleOrBackoffState();
 
   // Update the local change nudge delay for this type.
   void UpdateLocalNudgeDelay(base::TimeDelta delay);
 
+  // Return the BlockingMode for this type.
+  WaitInterval::BlockingMode GetBlockingMode() const;
+
  private:
+  friend class SyncSchedulerImplTest;
+
   // Number of local change nudges received for this type since the last
   // successful sync cycle.
   int local_nudge_count_;
@@ -133,9 +172,13 @@ class DataTypeTracker {
   // Set to true if this type need to get update to resolve conflict issue.
   bool sync_required_to_resolve_conflict_;
 
-  // If !unthrottle_time_.is_null(), this type is throttled and may not download
-  // or commit data until the specified time.
-  base::TimeTicks unthrottle_time_;
+  // If !unblock_time_.is_null(), this type is throttled or backed off, check
+  // |wait_interval_->mode| for specific reason. Now the datatype may not
+  // download or commit data until the specified time.
+  base::TimeTicks unblock_time_;
+
+  // Current wait state.  Null if we're not in backoff or throttling.
+  std::unique_ptr<WaitInterval> wait_interval_;
 
   // A helper to keep track invalidations we dropped due to overflow.
   std::unique_ptr<InvalidationInterface> last_dropped_invalidation_;

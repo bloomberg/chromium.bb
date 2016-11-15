@@ -50,6 +50,8 @@ void FakeSyncScheduler::OnTypesThrottled(
     ModelTypeSet types,
     const base::TimeDelta& throttle_duration) {}
 
+void FakeSyncScheduler::OnTypesBackedOff(ModelTypeSet types) {}
+
 bool FakeSyncScheduler::IsCurrentlyThrottled() {
   return false;
 }

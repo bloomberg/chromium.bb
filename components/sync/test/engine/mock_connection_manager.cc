@@ -45,7 +45,7 @@ MockConnectionManager::MockConnectionManager(syncable::Directory* directory,
       directory_(directory),
       mid_commit_observer_(nullptr),
       throttling_(false),
-      partialThrottling_(false),
+      partial_failure_(false),
       fail_non_periodic_get_updates_(false),
       next_position_in_parent_(2),
       use_legacy_bookmarks_protocol_(false),
@@ -152,20 +152,27 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
   {
     base::AutoLock lock(response_code_override_lock_);
     if (throttling_) {
-      response.set_error_code(SyncEnums::THROTTLED);
-      throttling_ = false;
-    }
-
-    if (partialThrottling_) {
       sync_pb::ClientToServerResponse_Error* response_error =
           response.mutable_error();
-      response_error->set_error_type(SyncEnums::PARTIAL_FAILURE);
-      for (ModelTypeSet::Iterator it = throttled_type_.First(); it.Good();
+      response_error->set_error_type(SyncEnums::THROTTLED);
+      for (ModelTypeSet::Iterator it = partial_failure_type_.First(); it.Good();
            it.Inc()) {
         response_error->add_error_data_type_ids(
             GetSpecificsFieldNumberFromModelType(it.Get()));
       }
-      partialThrottling_ = false;
+      throttling_ = false;
+    }
+
+    if (partial_failure_) {
+      sync_pb::ClientToServerResponse_Error* response_error =
+          response.mutable_error();
+      response_error->set_error_type(SyncEnums::PARTIAL_FAILURE);
+      for (ModelTypeSet::Iterator it = partial_failure_type_.First(); it.Good();
+           it.Inc()) {
+        response_error->add_error_data_type_ids(
+            GetSpecificsFieldNumberFromModelType(it.Get()));
+      }
+      partial_failure_ = false;
     }
   }
 

@@ -70,6 +70,7 @@ class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
   void OnThrottled(const base::TimeDelta& throttle_duration) override;
   void OnTypesThrottled(ModelTypeSet types,
                         const base::TimeDelta& throttle_duration) override;
+  void OnTypesBackedOff(ModelTypeSet types) override;
   bool IsCurrentlyThrottled() override;
   void OnReceivedShortPollIntervalUpdate(
       const base::TimeDelta& new_interval) override;
@@ -121,27 +122,6 @@ class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerTest, FailedRetry);
   FRIEND_TEST_ALL_PREFIXES(SyncSchedulerTest, ReceiveNewRetryDelay);
 
-  struct WaitInterval {
-    enum Mode {
-      // Uninitialized state, should not be set in practice.
-      UNKNOWN = -1,
-      // We enter a series of increasingly longer WaitIntervals if we experience
-      // repeated transient failures.  We retry at the end of each interval.
-      EXPONENTIAL_BACKOFF,
-      // A server-initiated throttled interval.  We do not allow any syncing
-      // during such an interval.
-      THROTTLED,
-    };
-    WaitInterval();
-    ~WaitInterval();
-    WaitInterval(Mode mode, base::TimeDelta length);
-
-    static const char* GetModeString(Mode mode);
-
-    Mode mode;
-    base::TimeDelta length;
-  };
-
   static const char* GetModeString(Mode mode);
 
   // Invoke the syncer to perform a nudge job.
@@ -168,7 +148,7 @@ class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
   // resets the poll interval, depedning on the flag's value.
   void AdjustPolling(PollAdjustType type);
 
-  // Helper to restart waiting with |wait_interval_|'s timer.
+  // Helper to restart pending_wakeup_timer_.
   void RestartWaiting();
 
   // Determines if we're allowed to contact the server right now.
@@ -187,8 +167,8 @@ class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
   // Helper to signal listeners about changed retry time.
   void NotifyRetryTime(base::Time retry_time);
 
-  // Helper to signal listeners about changed throttled types.
-  void NotifyThrottledTypesChanged(ModelTypeSet types);
+  // Helper to signal listeners about changed throttled or backed off types.
+  void NotifyBlockedTypesChanged(ModelTypeSet types);
 
   // Looks for pending work and, if it finds any, run this work at "canary"
   // priority.
@@ -200,15 +180,17 @@ class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
   void TrySyncCycleJobImpl();
 
   // Transitions out of the THROTTLED WaitInterval then calls TryCanaryJob().
+  // This function is for global throttling.
   void Unthrottle();
 
-  // Called when a per-type throttling interval expires.
-  void TypeUnthrottle(base::TimeTicks unthrottle_time);
+  // Called when a per-type throttling or backing off interval expires.
+  void OnTypesUnblocked();
 
   // Runs a normal nudge job when the scheduled timer expires.
   void PerformDelayedNudge();
 
   // Attempts to exit EXPONENTIAL_BACKOFF by calling TryCanaryJob().
+  // This function is for global backoff.
   void ExponentialBackoffRetry();
 
   // Called when the root cause of the current connection error is fixed.
@@ -220,8 +202,9 @@ class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
   // Creates a cycle for a retry and performs the sync.
   void RetryTimerCallback();
 
-  // Returns the set of types that are enabled and not currently throttled.
-  ModelTypeSet GetEnabledAndUnthrottledTypes();
+  // Returns the set of types that are enabled and not currently throttled and
+  // backed off.
+  ModelTypeSet GetEnabledAndUnblockedTypes();
 
   // Called as we are started to broadcast an initial cycle snapshot
   // containing data like initial_sync_ended.  Important when the client starts
@@ -262,19 +245,15 @@ class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
   std::unique_ptr<BackoffDelayProvider> delay_provider_;
 
   // The event that will wake us up.
+  // When the whole client got throttling or backoff, we will delay this timer
+  // as well.
   base::OneShotTimer pending_wakeup_timer_;
-
-  // An event that fires when data type throttling expires.
-  base::OneShotTimer type_unthrottle_timer_;
 
   // Storage for variables related to an in-progress configure request.  Note
   // that (mode_ != CONFIGURATION_MODE) \implies !pending_configure_params_.
   std::unique_ptr<ConfigurationParams> pending_configure_params_;
 
   std::unique_ptr<ClearParams> pending_clear_params_;
-
-  // If we have a nudge pending to run soon, it will be listed here.
-  base::TimeTicks scheduled_nudge_time_;
 
   // Keeps track of work that the syncer needs to handle.
   NudgeTracker nudge_tracker_;

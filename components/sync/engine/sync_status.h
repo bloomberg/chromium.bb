@@ -81,6 +81,9 @@ struct SyncStatus {
   // Per-datatype throttled status.
   ModelTypeSet throttled_types;
 
+  // Per-datatype backed off status.
+  ModelTypeSet backed_off_types;
+
   // The unique identifer for the sync store.
   std::string sync_id;
 

@@ -33,6 +33,9 @@ class SyncEngineEventListener {
   // This event is sent when types are throttled or unthrottled.
   virtual void OnThrottledTypesChanged(ModelTypeSet throttled_types) = 0;
 
+  // This event is sent when types are backed off or unbacked off.
+  virtual void OnBackedOffTypesChanged(ModelTypeSet backed_off_types) = 0;
+
   // This event is sent when the server requests a migration.
   virtual void OnMigrationRequested(ModelTypeSet migration_types) = 0;
 

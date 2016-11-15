@@ -131,6 +131,7 @@ class SyncManagerImpl
   void OnActionableError(const SyncProtocolError& error) override;
   void OnRetryTimeChanged(base::Time retry_time) override;
   void OnThrottledTypesChanged(ModelTypeSet throttled_types) override;
+  void OnBackedOffTypesChanged(ModelTypeSet backed_off_types) override;
   void OnMigrationRequested(ModelTypeSet types) override;
   void OnProtocolEvent(const ProtocolEvent& event) override;
 

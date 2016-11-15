@@ -7,9 +7,37 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "components/sync/engine_impl/cycle/nudge_tracker.h"
 
 namespace syncer {
+
+namespace {
+
+#define ENUM_CASE(x) \
+  case x:            \
+    return #x;       \
+    break;
+
+}  // namespace
+
+WaitInterval::WaitInterval() : mode(UNKNOWN) {}
+
+WaitInterval::WaitInterval(BlockingMode mode, base::TimeDelta length)
+    : mode(mode), length(length) {}
+
+WaitInterval::~WaitInterval() {}
+
+const char* WaitInterval::GetModeString(BlockingMode mode) {
+  switch (mode) {
+    ENUM_CASE(UNKNOWN);
+    ENUM_CASE(EXPONENTIAL_BACKOFF);
+    ENUM_CASE(THROTTLED);
+    ENUM_CASE(EXPONENTIAL_BACKOFF_RETRYING);
+  }
+  NOTREACHED();
+  return "";
+}
 
 DataTypeTracker::DataTypeTracker()
     : local_nudge_count_(0),
@@ -97,10 +125,14 @@ void DataTypeTracker::RecordCommitConflict() {
 }
 
 void DataTypeTracker::RecordSuccessfulSyncCycle() {
-  // If we were throttled, then we would have been excluded from this cycle's
+  // If we were bloacked, then we would have been excluded from this cycle's
   // GetUpdates and Commit actions.  Our state remains unchanged.
-  if (IsThrottled())
+  if (IsBlocked())
     return;
+
+  // Reset throttling and backoff state.
+  unblock_time_ = base::TimeTicks();
+  wait_interval_.reset();
 
   local_nudge_count_ = 0;
   local_refresh_request_count_ = 0;
@@ -131,11 +163,11 @@ void DataTypeTracker::UpdatePayloadBufferSize(size_t new_size) {
 }
 
 bool DataTypeTracker::IsSyncRequired() const {
-  return !IsThrottled() && (HasLocalChangePending() || IsGetUpdatesRequired());
+  return !IsBlocked() && (HasLocalChangePending() || IsGetUpdatesRequired());
 }
 
 bool DataTypeTracker::IsGetUpdatesRequired() const {
-  return !IsThrottled() &&
+  return !IsBlocked() &&
          (HasRefreshRequestPending() || HasPendingInvalidation() ||
           IsInitialSyncRequired() || IsSyncRequiredToResolveConflict());
 }
@@ -162,8 +194,8 @@ bool DataTypeTracker::IsSyncRequiredToResolveConflict() const {
 
 void DataTypeTracker::SetLegacyNotificationHint(
     sync_pb::DataTypeProgressMarker* progress) const {
-  DCHECK(!IsThrottled())
-      << "We should not make requests if the type is throttled.";
+  DCHECK(!IsBlocked())
+      << "We should not make requests if the type is throttled or backed off.";
 
   if (!pending_invalidations_.empty() &&
       !pending_invalidations_.back()->IsUnknownVersion()) {
@@ -203,32 +235,62 @@ void DataTypeTracker::FillGetUpdatesTriggersMessage(
       sync_required_to_resolve_conflict_);
 }
 
-bool DataTypeTracker::IsThrottled() const {
-  return !unthrottle_time_.is_null();
+bool DataTypeTracker::IsBlocked() const {
+  return wait_interval_.get() &&
+         (wait_interval_->mode == WaitInterval::THROTTLED ||
+          wait_interval_->mode == WaitInterval::EXPONENTIAL_BACKOFF);
 }
 
-base::TimeDelta DataTypeTracker::GetTimeUntilUnthrottle(
-    base::TimeTicks now) const {
-  if (!IsThrottled()) {
+base::TimeDelta DataTypeTracker::GetTimeUntilUnblock() const {
+  DCHECK(IsBlocked());
+  return std::max(base::TimeDelta::FromSeconds(0),
+                  unblock_time_ - base::TimeTicks::Now());
+}
+
+base::TimeDelta DataTypeTracker::GetLastBackoffInterval() const {
+  if (GetBlockingMode() != WaitInterval::EXPONENTIAL_BACKOFF_RETRYING) {
     NOTREACHED();
     return base::TimeDelta::FromSeconds(0);
   }
-  return std::max(base::TimeDelta::FromSeconds(0), unthrottle_time_ - now);
+  return wait_interval_->length;
 }
 
 void DataTypeTracker::ThrottleType(base::TimeDelta duration,
                                    base::TimeTicks now) {
-  unthrottle_time_ = std::max(unthrottle_time_, now + duration);
+  unblock_time_ = std::max(unblock_time_, now + duration);
+  wait_interval_ =
+      base::MakeUnique<WaitInterval>(WaitInterval::THROTTLED, duration);
 }
 
-void DataTypeTracker::UpdateThrottleState(base::TimeTicks now) {
-  if (now >= unthrottle_time_) {
-    unthrottle_time_ = base::TimeTicks();
+void DataTypeTracker::BackOffType(base::TimeDelta duration,
+                                  base::TimeTicks now) {
+  unblock_time_ = std::max(unblock_time_, now + duration);
+  wait_interval_ = base::MakeUnique<WaitInterval>(
+      WaitInterval::EXPONENTIAL_BACKOFF, duration);
+}
+
+void DataTypeTracker::UpdateThrottleOrBackoffState() {
+  if (base::TimeTicks::Now() >= unblock_time_) {
+    if (wait_interval_.get() &&
+        (wait_interval_->mode == WaitInterval::EXPONENTIAL_BACKOFF ||
+         wait_interval_->mode == WaitInterval::EXPONENTIAL_BACKOFF_RETRYING)) {
+      wait_interval_->mode = WaitInterval::EXPONENTIAL_BACKOFF_RETRYING;
+    } else {
+      unblock_time_ = base::TimeTicks();
+      wait_interval_.reset();
+    }
   }
 }
 
 void DataTypeTracker::UpdateLocalNudgeDelay(base::TimeDelta delay) {
   nudge_delay_ = delay;
+}
+
+WaitInterval::BlockingMode DataTypeTracker::GetBlockingMode() const {
+  if (!wait_interval_.get()) {
+    return WaitInterval::UNKNOWN;
+  }
+  return wait_interval_->mode;
 }
 
 }  // namespace syncer

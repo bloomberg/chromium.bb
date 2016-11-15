@@ -46,6 +46,7 @@ class FakeSyncScheduler : public SyncScheduler {
   void OnThrottled(const base::TimeDelta& throttle_duration) override;
   void OnTypesThrottled(ModelTypeSet types,
                         const base::TimeDelta& throttle_duration) override;
+  void OnTypesBackedOff(ModelTypeSet types) override;
   bool IsCurrentlyThrottled() override;
   void OnReceivedShortPollIntervalUpdate(
       const base::TimeDelta& new_interval) override;

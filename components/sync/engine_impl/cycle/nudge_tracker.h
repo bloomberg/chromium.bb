@@ -84,21 +84,31 @@ class NudgeTracker {
                               base::TimeDelta length,
                               base::TimeTicks now);
 
-  // Removes any throttling that have expired by time |now|.
-  void UpdateTypeThrottlingState(base::TimeTicks now);
+  // Marks |type| as being backed off from |now| until |now| + |length|.
+  void SetTypeBackedOff(ModelType type,
+                        base::TimeDelta length,
+                        base::TimeTicks now);
 
-  // Returns the time of the next type unthrottling, relative to
-  // the input |now| value.
-  base::TimeDelta GetTimeUntilNextUnthrottle(base::TimeTicks now) const;
+  // Removes any throttling and backoff that have expired.
+  void UpdateTypeThrottlingAndBackoffState();
 
-  // Returns true if any type is currenlty throttled.
-  bool IsAnyTypeThrottled() const;
+  // Returns the time of the next type unthrottling or unbackoff.
+  base::TimeDelta GetTimeUntilNextUnblock() const;
 
-  // Returns true if |type| is currently throttled.
-  bool IsTypeThrottled(ModelType type) const;
+  // Returns the time of for type last backing off interval.
+  base::TimeDelta GetTypeLastBackoffInterval(ModelType type) const;
 
-  // Returns the set of currently throttled types.
-  ModelTypeSet GetThrottledTypes() const;
+  // Returns true if any type is currenlty throttled or backed off.
+  bool IsAnyTypeBlocked() const;
+
+  // Returns true if |type| is currently blocked.
+  bool IsTypeBlocked(ModelType type) const;
+
+  // Returns |type|'s blocking mode.
+  WaitInterval::BlockingMode GetTypeBlockingMode(ModelType type) const;
+
+  // Returns the set of currently throttled or backed off types.
+  ModelTypeSet GetBlockedTypes() const;
 
   // Returns the set of types with local changes pending.
   ModelTypeSet GetNudgedTypes() const;
@@ -157,6 +167,8 @@ class NudgeTracker {
 
  private:
   using TypeTrackerMap = std::map<ModelType, std::unique_ptr<DataTypeTracker>>;
+
+  friend class SyncSchedulerImplTest;
 
   TypeTrackerMap type_trackers_;
 

@@ -100,6 +100,11 @@ void AllStatus::OnThrottledTypesChanged(ModelTypeSet throttled_types) {
   status_.throttled_types = throttled_types;
 }
 
+void AllStatus::OnBackedOffTypesChanged(ModelTypeSet backed_off_types) {
+  ScopedStatusLock lock(this);
+  status_.backed_off_types = backed_off_types;
+}
+
 void AllStatus::OnMigrationRequested(ModelTypeSet) {}
 
 void AllStatus::OnProtocolEvent(const ProtocolEvent&) {}

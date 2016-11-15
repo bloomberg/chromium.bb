@@ -855,6 +855,8 @@ void SyncManagerImpl::OnRetryTimeChanged(base::Time) {}
 
 void SyncManagerImpl::OnThrottledTypesChanged(ModelTypeSet) {}
 
+void SyncManagerImpl::OnBackedOffTypesChanged(ModelTypeSet) {}
+
 void SyncManagerImpl::OnMigrationRequested(ModelTypeSet types) {
   for (auto& observer : observers_) {
     observer.OnMigrationRequested(types);

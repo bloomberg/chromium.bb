@@ -78,6 +78,15 @@ class NudgeTrackerTest : public ::testing::Test {
     return MockInvalidation::BuildUnknownVersion();
   }
 
+  bool IsTypeThrottled(ModelType type) {
+    return nudge_tracker_.GetTypeBlockingMode(type) == WaitInterval::THROTTLED;
+  }
+
+  bool IsTypeBackedOff(ModelType type) {
+    return nudge_tracker_.GetTypeBlockingMode(type) ==
+           WaitInterval::EXPONENTIAL_BACKOFF;
+  }
+
  protected:
   NudgeTracker nudge_tracker_;
 };
@@ -430,11 +439,10 @@ TEST_F(NudgeTrackerTest, IsGetUpdatesRequired) {
   EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
 }
 
-// Test IsSyncRequired() responds correctly to data type throttling.
-TEST_F(NudgeTrackerTest, IsSyncRequired_Throttling) {
-  const base::TimeTicks t0 = base::TimeTicks::FromInternalValue(1234);
-  const base::TimeDelta throttle_length = base::TimeDelta::FromMinutes(10);
-  const base::TimeTicks t1 = t0 + throttle_length;
+// Test IsSyncRequired() responds correctly to data type throttling and backoff.
+TEST_F(NudgeTrackerTest, IsSyncRequired_Throttling_Backoff) {
+  const base::TimeTicks now = base::TimeTicks::Now();
+  const base::TimeDelta throttle_length = base::TimeDelta::FromMinutes(0);
 
   EXPECT_FALSE(nudge_tracker_.IsSyncRequired());
 
@@ -444,30 +452,42 @@ TEST_F(NudgeTrackerTest, IsSyncRequired_Throttling) {
 
   // But the throttling of sessions unsets it.
   nudge_tracker_.SetTypesThrottledUntil(ModelTypeSet(SESSIONS), throttle_length,
-                                        t0);
+                                        now);
+  EXPECT_TRUE(IsTypeThrottled(SESSIONS));
   EXPECT_FALSE(nudge_tracker_.IsSyncRequired());
 
   // A refresh request for bookmarks means we have reason to sync again.
   nudge_tracker_.RecordLocalRefreshRequest(ModelTypeSet(BOOKMARKS));
   EXPECT_TRUE(nudge_tracker_.IsSyncRequired());
 
-  // A successful sync cycle means we took care of bookmarks.
+  // But the backoff of bookmarks unsets it.
+  nudge_tracker_.SetTypeBackedOff(BOOKMARKS, throttle_length, now);
+  EXPECT_TRUE(IsTypeThrottled(SESSIONS));
+  EXPECT_TRUE(IsTypeBackedOff(BOOKMARKS));
+  EXPECT_FALSE(nudge_tracker_.IsSyncRequired());
+
+  // A refresh request for preferences means we have reason to sync again.
+  nudge_tracker_.RecordLocalRefreshRequest(ModelTypeSet(PREFERENCES));
+  EXPECT_TRUE(nudge_tracker_.IsSyncRequired());
+
+  // A successful sync cycle means we took care of preferences.
   nudge_tracker_.RecordSuccessfulSyncCycle();
   EXPECT_FALSE(nudge_tracker_.IsSyncRequired());
 
-  // But we still haven't dealt with sessions.  We'll need to remember
-  // that sessions are out of sync and re-enable the flag when their
-  // throttling interval expires.
-  nudge_tracker_.UpdateTypeThrottlingState(t1);
-  EXPECT_FALSE(nudge_tracker_.IsTypeThrottled(SESSIONS));
+  // But we still haven't dealt with sessions and bookmarks. We'll need to
+  // remember that sessions and bookmarks are out of sync and re-enable the flag
+  // when their throttling and backoff interval expires.
+  nudge_tracker_.UpdateTypeThrottlingAndBackoffState();
+  EXPECT_FALSE(nudge_tracker_.IsTypeBlocked(SESSIONS));
+  EXPECT_FALSE(nudge_tracker_.IsTypeBlocked(BOOKMARKS));
   EXPECT_TRUE(nudge_tracker_.IsSyncRequired());
 }
 
-// Test IsGetUpdatesRequired() responds correctly to data type throttling.
-TEST_F(NudgeTrackerTest, IsGetUpdatesRequired_Throttling) {
-  const base::TimeTicks t0 = base::TimeTicks::FromInternalValue(1234);
-  const base::TimeDelta throttle_length = base::TimeDelta::FromMinutes(10);
-  const base::TimeTicks t1 = t0 + throttle_length;
+// Test IsGetUpdatesRequired() responds correctly to data type throttling and
+// backoff.
+TEST_F(NudgeTrackerTest, IsGetUpdatesRequired_Throttling_Backoff) {
+  const base::TimeTicks now = base::TimeTicks::Now();
+  const base::TimeDelta throttle_length = base::TimeDelta::FromMinutes(0);
 
   EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
 
@@ -477,88 +497,159 @@ TEST_F(NudgeTrackerTest, IsGetUpdatesRequired_Throttling) {
 
   // But the throttling of sessions unsets it.
   nudge_tracker_.SetTypesThrottledUntil(ModelTypeSet(SESSIONS), throttle_length,
-                                        t0);
+                                        now);
   EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
 
   // A refresh request for bookmarks means we have reason to sync again.
   nudge_tracker_.RecordLocalRefreshRequest(ModelTypeSet(BOOKMARKS));
   EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired());
 
-  // A successful sync cycle means we took care of bookmarks.
+  // But the backoff of bookmarks unsets it.
+  nudge_tracker_.SetTypeBackedOff(BOOKMARKS, throttle_length, now);
+  EXPECT_TRUE(IsTypeThrottled(SESSIONS));
+  EXPECT_TRUE(IsTypeBackedOff(BOOKMARKS));
+  EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
+
+  // A refresh request for preferences means we have reason to sync again.
+  nudge_tracker_.RecordLocalRefreshRequest(ModelTypeSet(PREFERENCES));
+  EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired());
+
+  // A successful sync cycle means we took care of preferences.
   nudge_tracker_.RecordSuccessfulSyncCycle();
   EXPECT_FALSE(nudge_tracker_.IsGetUpdatesRequired());
 
-  // But we still haven't dealt with sessions.  We'll need to remember
-  // that sessions are out of sync and re-enable the flag when their
-  // throttling interval expires.
-  nudge_tracker_.UpdateTypeThrottlingState(t1);
-  EXPECT_FALSE(nudge_tracker_.IsTypeThrottled(SESSIONS));
+  // But we still haven't dealt with sessions and bookmarks. We'll need to
+  // remember that sessions and bookmarks are out of sync and re-enable the flag
+  // when their throttling and backoff interval expires.
+  nudge_tracker_.UpdateTypeThrottlingAndBackoffState();
+  EXPECT_FALSE(nudge_tracker_.IsTypeBlocked(SESSIONS));
+  EXPECT_FALSE(nudge_tracker_.IsTypeBlocked(BOOKMARKS));
   EXPECT_TRUE(nudge_tracker_.IsGetUpdatesRequired());
 }
 
-// Tests throttling-related getter functions when no types are throttled.
-TEST_F(NudgeTrackerTest, NoTypesThrottled) {
-  EXPECT_FALSE(nudge_tracker_.IsAnyTypeThrottled());
-  EXPECT_FALSE(nudge_tracker_.IsTypeThrottled(SESSIONS));
-  EXPECT_TRUE(nudge_tracker_.GetThrottledTypes().Empty());
+// Tests blocking-related getter functions when no types are blocked.
+TEST_F(NudgeTrackerTest, NoTypesBlocked) {
+  EXPECT_FALSE(nudge_tracker_.IsAnyTypeBlocked());
+  EXPECT_FALSE(nudge_tracker_.IsTypeBlocked(SESSIONS));
+  EXPECT_TRUE(nudge_tracker_.GetBlockedTypes().Empty());
 }
 
 // Tests throttling-related getter functions when some types are throttled.
 TEST_F(NudgeTrackerTest, ThrottleAndUnthrottle) {
-  const base::TimeTicks t0 = base::TimeTicks::FromInternalValue(1234);
-  const base::TimeDelta throttle_length = base::TimeDelta::FromMinutes(10);
-  const base::TimeTicks t1 = t0 + throttle_length;
+  const base::TimeTicks now = base::TimeTicks::Now();
+  const base::TimeDelta throttle_length = base::TimeDelta::FromMinutes(0);
 
   nudge_tracker_.SetTypesThrottledUntil(ModelTypeSet(SESSIONS, PREFERENCES),
-                                        throttle_length, t0);
+                                        throttle_length, now);
 
-  EXPECT_TRUE(nudge_tracker_.IsAnyTypeThrottled());
-  EXPECT_TRUE(nudge_tracker_.IsTypeThrottled(SESSIONS));
-  EXPECT_TRUE(nudge_tracker_.IsTypeThrottled(PREFERENCES));
-  EXPECT_FALSE(nudge_tracker_.GetThrottledTypes().Empty());
-  EXPECT_EQ(throttle_length, nudge_tracker_.GetTimeUntilNextUnthrottle(t0));
+  EXPECT_TRUE(nudge_tracker_.IsAnyTypeBlocked());
+  EXPECT_TRUE(IsTypeThrottled(SESSIONS));
+  EXPECT_TRUE(IsTypeThrottled(PREFERENCES));
+  EXPECT_FALSE(nudge_tracker_.GetBlockedTypes().Empty());
+  EXPECT_EQ(throttle_length, nudge_tracker_.GetTimeUntilNextUnblock());
 
-  nudge_tracker_.UpdateTypeThrottlingState(t1);
+  nudge_tracker_.UpdateTypeThrottlingAndBackoffState();
 
-  EXPECT_FALSE(nudge_tracker_.IsAnyTypeThrottled());
-  EXPECT_FALSE(nudge_tracker_.IsTypeThrottled(SESSIONS));
-  EXPECT_TRUE(nudge_tracker_.GetThrottledTypes().Empty());
+  EXPECT_FALSE(nudge_tracker_.IsAnyTypeBlocked());
+  EXPECT_FALSE(nudge_tracker_.IsTypeBlocked(SESSIONS));
+  EXPECT_TRUE(nudge_tracker_.GetBlockedTypes().Empty());
+}
+
+// Tests backoff-related getter functions when some types are backed off.
+TEST_F(NudgeTrackerTest, BackoffAndUnbackoff) {
+  const base::TimeTicks now = base::TimeTicks::Now();
+  const base::TimeDelta backoff_length = base::TimeDelta::FromMinutes(0);
+
+  nudge_tracker_.SetTypeBackedOff(SESSIONS, backoff_length, now);
+  nudge_tracker_.SetTypeBackedOff(PREFERENCES, backoff_length, now);
+
+  EXPECT_TRUE(nudge_tracker_.IsAnyTypeBlocked());
+  EXPECT_TRUE(IsTypeBackedOff(SESSIONS));
+  EXPECT_TRUE(IsTypeBackedOff(PREFERENCES));
+  EXPECT_FALSE(nudge_tracker_.GetBlockedTypes().Empty());
+  EXPECT_EQ(backoff_length, nudge_tracker_.GetTimeUntilNextUnblock());
+
+  nudge_tracker_.UpdateTypeThrottlingAndBackoffState();
+
+  EXPECT_FALSE(nudge_tracker_.IsAnyTypeBlocked());
+  EXPECT_FALSE(nudge_tracker_.IsTypeBlocked(SESSIONS));
+  EXPECT_TRUE(nudge_tracker_.GetBlockedTypes().Empty());
 }
 
 TEST_F(NudgeTrackerTest, OverlappingThrottleIntervals) {
-  const base::TimeTicks t0 = base::TimeTicks::FromInternalValue(1234);
-  const base::TimeDelta throttle1_length = base::TimeDelta::FromMinutes(10);
+  const base::TimeTicks now = base::TimeTicks::Now();
+  const base::TimeDelta throttle1_length = base::TimeDelta::FromMinutes(0);
   const base::TimeDelta throttle2_length = base::TimeDelta::FromMinutes(20);
-  const base::TimeTicks t1 = t0 + throttle1_length;
-  const base::TimeTicks t2 = t0 + throttle2_length;
 
   // Setup the longer of two intervals.
   nudge_tracker_.SetTypesThrottledUntil(ModelTypeSet(SESSIONS, PREFERENCES),
-                                        throttle2_length, t0);
+                                        throttle2_length, now);
   EXPECT_TRUE(ModelTypeSetEquals(ModelTypeSet(SESSIONS, PREFERENCES),
-                                 nudge_tracker_.GetThrottledTypes()));
-  EXPECT_EQ(throttle2_length, nudge_tracker_.GetTimeUntilNextUnthrottle(t0));
+                                 nudge_tracker_.GetBlockedTypes()));
+  EXPECT_TRUE(IsTypeThrottled(SESSIONS));
+  EXPECT_TRUE(IsTypeThrottled(PREFERENCES));
+  EXPECT_GE(throttle2_length, nudge_tracker_.GetTimeUntilNextUnblock());
 
   // Setup the shorter interval.
   nudge_tracker_.SetTypesThrottledUntil(ModelTypeSet(SESSIONS, BOOKMARKS),
-                                        throttle1_length, t0);
+                                        throttle1_length, now);
   EXPECT_TRUE(ModelTypeSetEquals(ModelTypeSet(SESSIONS, PREFERENCES, BOOKMARKS),
-                                 nudge_tracker_.GetThrottledTypes()));
-  EXPECT_EQ(throttle1_length, nudge_tracker_.GetTimeUntilNextUnthrottle(t0));
+                                 nudge_tracker_.GetBlockedTypes()));
+  EXPECT_TRUE(IsTypeThrottled(SESSIONS));
+  EXPECT_TRUE(IsTypeThrottled(PREFERENCES));
+  EXPECT_TRUE(IsTypeThrottled(BOOKMARKS));
+  EXPECT_GE(throttle1_length, nudge_tracker_.GetTimeUntilNextUnblock());
 
   // Expire the first interval.
-  nudge_tracker_.UpdateTypeThrottlingState(t1);
+  nudge_tracker_.UpdateTypeThrottlingAndBackoffState();
 
   // SESSIONS appeared in both intervals.  We expect it will be throttled for
   // the longer of the two, so it's still throttled at time t1.
   EXPECT_TRUE(ModelTypeSetEquals(ModelTypeSet(SESSIONS, PREFERENCES),
-                                 nudge_tracker_.GetThrottledTypes()));
-  EXPECT_EQ(throttle2_length - throttle1_length,
-            nudge_tracker_.GetTimeUntilNextUnthrottle(t1));
+                                 nudge_tracker_.GetBlockedTypes()));
+  EXPECT_TRUE(IsTypeThrottled(SESSIONS));
+  EXPECT_TRUE(IsTypeThrottled(PREFERENCES));
+  EXPECT_FALSE(IsTypeThrottled(BOOKMARKS));
+  EXPECT_GE(throttle2_length - throttle1_length,
+            nudge_tracker_.GetTimeUntilNextUnblock());
+}
 
-  // Expire the second interval.
-  nudge_tracker_.UpdateTypeThrottlingState(t2);
-  EXPECT_TRUE(nudge_tracker_.GetThrottledTypes().Empty());
+TEST_F(NudgeTrackerTest, OverlappingBackoffIntervals) {
+  const base::TimeTicks now = base::TimeTicks::Now();
+  const base::TimeDelta backoff1_length = base::TimeDelta::FromMinutes(0);
+  const base::TimeDelta backoff2_length = base::TimeDelta::FromMinutes(20);
+
+  // Setup the longer of two intervals.
+  nudge_tracker_.SetTypeBackedOff(SESSIONS, backoff2_length, now);
+  nudge_tracker_.SetTypeBackedOff(PREFERENCES, backoff2_length, now);
+  EXPECT_TRUE(ModelTypeSetEquals(ModelTypeSet(SESSIONS, PREFERENCES),
+                                 nudge_tracker_.GetBlockedTypes()));
+  EXPECT_TRUE(IsTypeBackedOff(SESSIONS));
+  EXPECT_TRUE(IsTypeBackedOff(PREFERENCES));
+  EXPECT_GE(backoff2_length, nudge_tracker_.GetTimeUntilNextUnblock());
+
+  // Setup the shorter interval.
+  nudge_tracker_.SetTypeBackedOff(SESSIONS, backoff1_length, now);
+  nudge_tracker_.SetTypeBackedOff(BOOKMARKS, backoff1_length, now);
+  EXPECT_TRUE(ModelTypeSetEquals(ModelTypeSet(SESSIONS, PREFERENCES, BOOKMARKS),
+                                 nudge_tracker_.GetBlockedTypes()));
+  EXPECT_TRUE(IsTypeBackedOff(SESSIONS));
+  EXPECT_TRUE(IsTypeBackedOff(PREFERENCES));
+  EXPECT_TRUE(IsTypeBackedOff(BOOKMARKS));
+  EXPECT_GE(backoff1_length, nudge_tracker_.GetTimeUntilNextUnblock());
+
+  // Expire the first interval.
+  nudge_tracker_.UpdateTypeThrottlingAndBackoffState();
+
+  // SESSIONS appeared in both intervals.  We expect it will be backed off for
+  // the longer of the two, so it's still backed off at time t1.
+  EXPECT_TRUE(ModelTypeSetEquals(ModelTypeSet(SESSIONS, PREFERENCES),
+                                 nudge_tracker_.GetBlockedTypes()));
+  EXPECT_TRUE(IsTypeBackedOff(SESSIONS));
+  EXPECT_TRUE(IsTypeBackedOff(PREFERENCES));
+  EXPECT_FALSE(IsTypeBackedOff(BOOKMARKS));
+  EXPECT_GE(backoff2_length - backoff1_length,
+            nudge_tracker_.GetTimeUntilNextUnblock());
 }
 
 TEST_F(NudgeTrackerTest, Retry) {
