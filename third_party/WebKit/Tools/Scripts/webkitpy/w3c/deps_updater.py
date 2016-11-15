@@ -188,7 +188,8 @@ class DepsUpdater(object):
 
         _log.info('Cleaning out tests from LayoutTests/imported/%s.', dest_dir_name)
         dest_path = self.path_from_webkit_base('LayoutTests', 'imported', dest_dir_name)
-        files_to_delete = self.fs.files_under(dest_path, file_filter=self.is_not_baseline)
+        is_not_baseline_filter = lambda fs, dirname, basename: not self.is_baseline(basename)
+        files_to_delete = self.fs.files_under(dest_path, file_filter=is_not_baseline_filter)
         for subpath in files_to_delete:
             self.remove('LayoutTests', 'imported', subpath)
 
@@ -200,13 +201,17 @@ class DepsUpdater(object):
         self.run(['git', 'add', '--all', 'LayoutTests/imported/%s' % dest_dir_name])
 
         _log.info('Deleting any orphaned baselines.')
-        previous_baselines = self.fs.files_under(dest_path, file_filter=self.is_baseline)
+
+        is_baseline_filter = lambda fs, dirname, basename: self.is_baseline(basename)
+        previous_baselines = self.fs.files_under(dest_path, file_filter=is_baseline_filter)
+
         for subpath in previous_baselines:
             full_path = self.fs.join(dest_path, subpath)
             if self.fs.glob(full_path.replace('-expected.txt', '*')) == [full_path]:
                 self.fs.remove(full_path)
 
         self._generate_manifest(temp_repo_path, dest_path)
+
         if not keep_w3c_repos_around:
             _log.info('Deleting temp repo directory %s.', temp_repo_path)
             self.rmtree(temp_repo_path)
@@ -236,12 +241,9 @@ class DepsUpdater(object):
             _log.info('Done: no changes to import.')
             return False
 
-    # Callback for FileSystem.files_under; not all arguments used - pylint: disable=unused-argument
-    def is_baseline(self, fs, dirname, basename):
+    @staticmethod
+    def is_baseline(basename):
         return basename.endswith('-expected.txt')
-
-    def is_not_baseline(self, fs, dirname, basename):
-        return not self.is_baseline(fs, dirname, basename)
 
     def run(self, cmd, exit_on_failure=True, cwd=None):
         _log.debug('Running command: %s', ' '.join(cmd))

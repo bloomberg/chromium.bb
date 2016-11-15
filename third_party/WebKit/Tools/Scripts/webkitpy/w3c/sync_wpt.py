@@ -27,6 +27,7 @@ def main():
     host = Host()
 
     # TODO(jeffcarp): the script does not handle reverted changes right now
+    # TODO(jeffcarp): it also doesn't handle changes to -expected.html files
 
     local_wpt = LocalWPT(host, no_fetch=options.no_fetch, use_github=True)
     chromium_wpt = ChromiumWPT(host)

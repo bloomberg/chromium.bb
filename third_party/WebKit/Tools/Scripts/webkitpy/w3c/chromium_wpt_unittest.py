@@ -39,7 +39,7 @@ class ChromiumWPTTest(unittest.TestCase):
 
         def run_command_fn(_):
             return ("something/something.html\n"
-                    "third_party/WebKit/LayoutTests/imported/wpt/something-expected.html\n"
+                    "third_party/WebKit/LayoutTests/imported/wpt/something-expected.txt\n"
                     "-expected.txt\n")
 
         host.executive = MockExecutive2(run_command_fn=run_command_fn)

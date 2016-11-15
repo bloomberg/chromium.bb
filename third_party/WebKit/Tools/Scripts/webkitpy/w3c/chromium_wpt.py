@@ -10,6 +10,7 @@ CHROMIUM_WPT_DIR = 'third_party/WebKit/LayoutTests/imported/wpt/'
 
 from webkitpy.common.memoized import memoized
 from webkitpy.common.webkit_finder import WebKitFinder
+from webkitpy.w3c.deps_updater import DepsUpdater
 
 
 class ChromiumWPT(object):
@@ -41,8 +42,7 @@ class ChromiumWPT(object):
             '--name-only', '-r', chromium_commit
         ]).splitlines()
 
-        # TODO(jeffcarp): Use DepsUpdater.is_baseline
-        return any(f.startswith(CHROMIUM_WPT_DIR) and '-expected' not in f for f in files)
+        return any(f.startswith(CHROMIUM_WPT_DIR) and not DepsUpdater.is_baseline(f) for f in files)
 
     def chromium_commits_since(self, chromium_commit):
         return self.host.executive.run_command([
