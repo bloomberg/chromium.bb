@@ -649,6 +649,19 @@ int PropertyTreeManager::switchToEffectNode(
       << &nextEffect;
   m_isFirstEffectEver = false;
 #endif
+
+  // Now the current effect is the lowest common ancestor of previous effect
+  // and the next effect. That implies it is an existing node that already has
+  // at least one paint chunk or child effect, and we are going to either attach
+  // another paint chunk or child effect to it. We can no longer omit render
+  // surface for it even for opacity-only nodes.
+  // See comments in PropertyTreeManager::buildEffectNodesRecursively().
+  // TODO(crbug.com/504464): Remove premature optimization here.
+  if (currentEffectNode() && currentEffectNode()->opacity() != 1.f) {
+    effectTree().Node(compositorIdForCurrentEffectNode())->has_render_surface =
+        true;
+  }
+
   buildEffectNodesRecursively(&nextEffect);
 
   return compositorIdForCurrentEffectNode();
@@ -689,6 +702,15 @@ void PropertyTreeManager::buildEffectNodesRecursively(
       cc::EffectNode(), compositorIdForCurrentEffectNode()));
   effectNode.owner_id = dummyLayer->id();
   effectNode.clip_id = dummyClip.id;
+  // Every effect is supposed to have render surface enabled for grouping,
+  // but we can get away without one if the effect is opacity-only and has only
+  // one compositing child. This is both for optimization and not introducing
+  // sub-pixel differences in layout tests.
+  // See PropertyTreeManager::switchToEffectNode() where we retrospectively
+  // enable render surface when more than one compositing child is detected.
+  // TODO(crbug.com/504464): There is ongoing work in cc to delay render surface
+  // decision until later phase of the pipeline. Remove premature optimization
+  // here once the work is ready.
   effectNode.opacity = nextEffect->opacity();
   m_effectStack.append(BlinkEffectAndCcIdPair{nextEffect, effectNode.id});
 
