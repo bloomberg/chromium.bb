@@ -133,7 +133,7 @@ void TextControlInnerEditorElement::defaultEventHandler(Event* event) {
 
 LayoutObject* TextControlInnerEditorElement::createLayoutObject(
     const ComputedStyle&) {
-  return new LayoutTextControlInnerBlock(this);
+  return new LayoutTextControlInnerEditor(this);
 }
 
 PassRefPtr<ComputedStyle>

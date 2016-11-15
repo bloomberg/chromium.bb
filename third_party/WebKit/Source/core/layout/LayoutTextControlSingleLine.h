@@ -92,9 +92,9 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTextControlSingleLine, isTextField());
 
 // ----------------------------
 
-class LayoutTextControlInnerBlock : public LayoutBlockFlow {
+class LayoutTextControlInnerEditor : public LayoutBlockFlow {
  public:
-  LayoutTextControlInnerBlock(Element* element) : LayoutBlockFlow(element) {}
+  LayoutTextControlInnerEditor(Element* element) : LayoutBlockFlow(element) {}
   bool shouldIgnoreOverflowPropertyForInlineBlockBaseline() const override {
     return true;
   }
