@@ -114,7 +114,7 @@ SerializedScriptValue::SerializedScriptValue()
     : m_externallyAllocatedMemory(0) {}
 
 SerializedScriptValue::SerializedScriptValue(const String& wireData)
-    : m_data(wireData.isolatedCopy()), m_externallyAllocatedMemory(0) {}
+    : m_dataString(wireData.isolatedCopy()), m_externallyAllocatedMemory(0) {}
 
 SerializedScriptValue::~SerializedScriptValue() {
   // If the allocated memory was not registered before, then this class is
@@ -131,19 +131,53 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValue::nullValue() {
   return create(ScriptValueSerializer::serializeNullValue());
 }
 
+String SerializedScriptValue::toWireString() const {
+  if (!m_dataString.isNull())
+    return m_dataString;
+
+  // Add the padding '\0', but don't put it in |m_dataBuffer|.
+  // This requires direct use of uninitialized strings, though.
+  UChar* destination;
+  size_t stringSizeBytes = (m_dataBufferSize + 1) & ~1;
+  String wireString =
+      String::createUninitialized(stringSizeBytes / 2, destination);
+  memcpy(destination, m_dataBuffer.get(), m_dataBufferSize);
+  if (stringSizeBytes > m_dataBufferSize)
+    reinterpret_cast<char*>(destination)[stringSizeBytes - 1] = '\0';
+  return wireString;
+}
+
 // Convert serialized string to big endian wire data.
 void SerializedScriptValue::toWireBytes(Vector<char>& result) const {
-  ASSERT(result.isEmpty());
-  size_t length = m_data.length();
+  DCHECK(result.isEmpty());
+
+  if (m_dataString.isNull()) {
+    size_t wireSizeBytes = (m_dataBufferSize + 1) & ~1;
+    result.resize(wireSizeBytes);
+
+    const UChar* src = reinterpret_cast<UChar*>(m_dataBuffer.get());
+    UChar* dst = reinterpret_cast<UChar*>(result.data());
+    for (size_t i = 0; i < m_dataBufferSize / 2; i++)
+      dst[i] = htons(src[i]);
+
+    // This is equivalent to swapping the byte order of the two bytes (x, 0),
+    // depending on endianness.
+    if (m_dataBufferSize % 1)
+      dst[wireSizeBytes / 2 - 1] = m_dataBuffer[m_dataBufferSize - 1] << 8;
+
+    return;
+  }
+
+  size_t length = m_dataString.length();
   result.resize(length * sizeof(UChar));
   UChar* dst = reinterpret_cast<UChar*>(result.data());
 
-  if (m_data.is8Bit()) {
-    const LChar* src = m_data.characters8();
+  if (m_dataString.is8Bit()) {
+    const LChar* src = m_dataString.characters8();
     for (size_t i = 0; i < length; i++)
       dst[i] = htons(static_cast<UChar>(src[i]));
   } else {
-    const UChar* src = m_data.characters16();
+    const UChar* src = m_dataString.characters16();
     for (size_t i = 0; i < length; i++)
       dst[i] = htons(src[i]);
   }
@@ -417,7 +451,8 @@ SerializedScriptValue::transferArrayBufferContents(
 void SerializedScriptValue::registerMemoryAllocatedWithCurrentScriptContext() {
   if (m_externallyAllocatedMemory)
     return;
-  m_externallyAllocatedMemory = static_cast<intptr_t>(m_data.length());
+
+  m_externallyAllocatedMemory = static_cast<intptr_t>(dataLengthInBytes());
   v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
       m_externallyAllocatedMemory);
 }

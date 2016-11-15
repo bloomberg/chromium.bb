@@ -81,6 +81,11 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725")
   v8::Maybe<bool> WriteHostObject(v8::Isolate*,
                                   v8::Local<v8::Object> message) override;
 
+  void* ReallocateBufferMemory(void* oldBuffer,
+                               size_t,
+                               size_t* actualSize) override;
+  void FreeBufferMemory(void* buffer) override;
+
   RefPtr<ScriptState> m_scriptState;
   RefPtr<SerializedScriptValue> m_serializedScriptValue;
   v8::ValueSerializer m_serializer;

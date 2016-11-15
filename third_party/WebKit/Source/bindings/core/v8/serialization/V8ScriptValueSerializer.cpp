@@ -19,6 +19,7 @@
 #include "public/platform/WebBlobInfo.h"
 #include "wtf/AutoReset.h"
 #include "wtf/DateMath.h"
+#include "wtf/allocator/Partitions.h"
 #include "wtf/text/StringUTF8Adaptor.h"
 
 namespace blink {
@@ -63,13 +64,9 @@ RefPtr<SerializedScriptValue> V8ScriptValueSerializer::serialize(
     return nullptr;
 
   // Finalize the results.
-  std::vector<uint8_t> buffer = m_serializer.ReleaseBuffer();
-  // Currently, the output must be padded to a multiple of two bytes.
-  // TODO(jbroman): Remove this old conversion to WTF::String.
-  if (buffer.size() % 2)
-    buffer.push_back(0);
+  std::pair<uint8_t*, size_t> buffer = m_serializer.Release();
   m_serializedScriptValue->setData(
-      String(reinterpret_cast<const UChar*>(&buffer[0]), buffer.size() / 2));
+      SerializedScriptValue::DataBufferPtr(buffer.first), buffer.second);
   return std::move(m_serializedScriptValue);
 }
 
@@ -370,6 +367,18 @@ v8::Maybe<bool> V8ScriptValueSerializer::WriteHostObject(
         DataCloneError, interface + " object could not be cloned.");
   }
   return v8::Nothing<bool>();
+}
+
+void* V8ScriptValueSerializer::ReallocateBufferMemory(void* oldBuffer,
+                                                      size_t size,
+                                                      size_t* actualSize) {
+  *actualSize = WTF::Partitions::bufferActualSize(size);
+  return WTF::Partitions::bufferRealloc(oldBuffer, size,
+                                        "SerializedScriptValue buffer");
+}
+
+void V8ScriptValueSerializer::FreeBufferMemory(void* buffer) {
+  return WTF::Partitions::bufferFree(buffer);
 }
 
 }  // namespace blink

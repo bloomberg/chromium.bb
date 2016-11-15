@@ -90,6 +90,11 @@ class WTF_EXPORT Partitions {
   ALWAYS_INLINE static void* bufferMalloc(size_t n, const char* typeName) {
     return partitionAllocGeneric(bufferPartition(), n, typeName);
   }
+  ALWAYS_INLINE static void* bufferRealloc(void* p,
+                                           size_t n,
+                                           const char* typeName) {
+    return partitionReallocGeneric(bufferPartition(), p, n, typeName);
+  }
   ALWAYS_INLINE static void bufferFree(void* p) {
     partitionFreeGeneric(bufferPartition(), p);
   }

@@ -29,10 +29,8 @@ V8ScriptValueDeserializer::V8ScriptValueDeserializer(
     : m_scriptState(std::move(scriptState)),
       m_serializedScriptValue(std::move(serializedScriptValue)),
       m_deserializer(m_scriptState->isolate(),
-                     reinterpret_cast<const uint8_t*>(
-                         m_serializedScriptValue->data().ensure16Bit(),
-                         m_serializedScriptValue->data().characters16()),
-                     m_serializedScriptValue->data().length() * 2,
+                     m_serializedScriptValue->data(),
+                     m_serializedScriptValue->dataLengthInBytes(),
                      this) {
   DCHECK(RuntimeEnabledFeatures::v8BasedStructuredCloneEnabled());
   m_deserializer.SetSupportsLegacyWireFormat(true);

@@ -813,7 +813,7 @@ void ScriptValueSerializer::transferData(
     ExceptionState& exceptionState,
     SerializedScriptValue* serializedValue) {
   serializedValue->setData(m_writer.takeWireString());
-  DCHECK(serializedValue->data().impl()->hasOneRef());
+  DCHECK(serializedValue->dataHasOneRef());
   if (!transferables)
     return;
 
