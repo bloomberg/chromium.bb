@@ -23,7 +23,5 @@ const char kEngineTransport[] = "engine-transport";
 
 const char kDownloadWholeDocument[] = "download-whole-document";
 
-const char kAndroidFontsPath[] = "android-fonts-path";
-
 }  // namespace switches
 }  // namespace blimp
