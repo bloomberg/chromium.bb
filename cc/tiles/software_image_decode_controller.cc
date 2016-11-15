@@ -594,10 +594,14 @@ SoftwareImageDecodeController::GetSubrectImageDecode(
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                  "SoftwareImageDecodeController::GetSubrectImageDecode - "
                  "allocate subrect pixels");
+    // TODO(vmpstr): This is using checked math to diagnose a problem reported
+    // in crbug.com/662217. If this is causing crashes, then it should be fixed
+    // elsewhere by skipping images that are too large.
+    base::CheckedNumeric<size_t> byte_size = subrect_info.minRowBytes();
+    byte_size *= subrect_info.height();
     subrect_pixels =
         base::DiscardableMemoryAllocator::GetInstance()
-            ->AllocateLockedDiscardableMemory(subrect_info.minRowBytes() *
-                                              subrect_info.height());
+            ->AllocateLockedDiscardableMemory(byte_size.ValueOrDie());
   }
   {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
