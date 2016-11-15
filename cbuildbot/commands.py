@@ -438,9 +438,9 @@ def RunCrosSigningTests(buildroot):
   Args:
     buildroot: The buildroot of the current build.
   """
-  test_runner = os.path.join(
-      buildroot, 'cros-signing', 'signer', 'run_tests.py')
-  cros_build_lib.RunCommand([test_runner], cwd=buildroot)
+  test_runner = path_util.ToChrootPath(os.path.join(
+      buildroot, 'cros-signing', 'signer', 'run_tests.py'))
+  cros_build_lib.RunCommand([test_runner], enter_chroot=True)
 
 
 def UpdateBinhostJson(buildroot):
