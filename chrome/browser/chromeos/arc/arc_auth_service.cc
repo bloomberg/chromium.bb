@@ -353,11 +353,7 @@ std::string ArcAuthService::GetAndResetAuthCode() {
 void ArcAuthService::GetAuthCodeDeprecated0(
     const GetAuthCodeDeprecated0Callback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(!IsOptInVerificationDisabled());
-  // For robot account we must use RequestAccountInfo because it allows to
-  // specify account type.
-  DCHECK(!IsArcKioskMode());
-  callback.Run(GetAndResetAuthCode());
+  NOTREACHED() << "GetAuthCodeDeprecated0() should no longer be callable";
 }
 
 void ArcAuthService::GetAuthCodeDeprecated(
