@@ -142,10 +142,17 @@ Polymer({
 
   /** @protected */
   currentRouteChanged: function() {
-    if (settings.getCurrentRoute() == settings.Route.SIGN_OUT)
-      this.$.disconnectDialog.showModal();
-    else if (this.$.disconnectDialog.open)
+    if (settings.getCurrentRoute() == settings.Route.SIGN_OUT) {
+      // If the sync status has not been fetched yet, optimistically display
+      // the disconnect dialog. There is another check when the sync status is
+      // fetched. The dialog will be closed then the user is not signed in.
+      if (this.syncStatus && !this.syncStatus.signedIn)
+        settings.navigateToPreviousRoute();
+      else
+        this.$.disconnectDialog.showModal();
+    } else if (this.$.disconnectDialog.open) {
       this.$.disconnectDialog.close();
+    }
   },
 
 <if expr="chromeos">
@@ -184,9 +191,12 @@ Polymer({
    * @private
    */
   handleSyncStatus_: function(syncStatus) {
-    if (!this.syncStatus && syncStatus && !syncStatus.signedIn) {
+    if (!this.syncStatus && syncStatus && !syncStatus.signedIn)
       chrome.metricsPrivate.recordUserAction('Signin_Impression_FromSettings');
-    }
+
+    if (!syncStatus.signedIn && this.$.disconnectDialog.open)
+      this.$.disconnectDialog.close();
+
     this.syncStatus = syncStatus;
   },
 

@@ -171,17 +171,13 @@ cr.define('settings_people_page', function() {
           assertTrue(!!disconnectConfirm);
           assertFalse(disconnectConfirm.hidden);
 
-          // Wait for exit of dialog route.
-          var dialogExitPromise = new Promise(function(resolve) {
-            window.addEventListener('popstate', function callback() {
-              window.removeEventListener('popstate', callback);
-              resolve();
-            });
+          var popstatePromise = new Promise(function(resolve) {
+            listenOnce(window, 'popstate', resolve);
           });
 
           MockInteractions.tap(disconnectConfirm);
 
-          return dialogExitPromise;
+          return popstatePromise;
         }).then(function() {
           return browserProxy.whenCalled('signOut');
         }).then(function(deleteProfile) {
@@ -206,11 +202,47 @@ cr.define('settings_people_page', function() {
           assertFalse(disconnectManagedProfileConfirm.hidden);
 
           browserProxy.resetResolver('signOut');
+
+          var popstatePromise = new Promise(function(resolve) {
+            listenOnce(window, 'popstate', resolve);
+          });
+
           MockInteractions.tap(disconnectManagedProfileConfirm);
 
+          return popstatePromise;
+        }).then(function() {
           return browserProxy.whenCalled('signOut');
         }).then(function(deleteProfile) {
           assertTrue(deleteProfile);
+        });
+      });
+
+      test('Signout dialog suppressed when not signed in', function() {
+        return browserProxy.whenCalled('getSyncStatus').then(function() {
+          Polymer.dom.flush();
+
+          settings.navigateTo(settings.Route.SIGN_OUT);
+          Polymer.dom.flush();
+
+          assertTrue(peoplePage.$.disconnectDialog.open);
+
+          var popstatePromise = new Promise(function(resolve) {
+            listenOnce(window, 'popstate', resolve);
+          });
+
+          cr.webUIListenerCallback('sync-status-changed', {
+            signedIn: false,
+          });
+
+          return popstatePromise;
+        }).then(function() {
+          var popstatePromise = new Promise(function(resolve) {
+            listenOnce(window, 'popstate', resolve);
+          });
+
+          settings.navigateTo(settings.Route.SIGN_OUT);
+
+          return popstatePromise;
         });
       });
 
