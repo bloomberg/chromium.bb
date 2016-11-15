@@ -75,6 +75,10 @@ constexpr char kIsMetricsEnabled[] = "isMetricsEnabled";
 constexpr char kIsBackupRestoreEnabled[] = "isBackupRestoreEnabled";
 constexpr char kIsLocationServiceEnabled[] = "isLocationServiceEnabled";
 
+// "onRetryClicked" is fired when a user clicks "RETRY" button on the error
+// page.
+constexpr char kEventOnRetryClicked[] = "onRetryClicked";
+
 // "onSendFeedbackClicked" is fired when a user clicks "Send Feedback" button.
 constexpr char kEventOnSendFeedbackClicked[] = "onSendFeedbackClicked";
 
@@ -375,6 +379,8 @@ void ArcSupportHost::OnMessage(const base::DictionaryValue& message) {
     } else {
       NOTREACHED();
     }
+  } else if (event == kEventOnRetryClicked) {
+    observer_->OnRetryClicked();
   } else if (event == kEventOnSendFeedbackClicked) {
     observer_->OnSendFeedbackClicked();
   } else {

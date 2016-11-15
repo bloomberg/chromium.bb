@@ -60,11 +60,53 @@ class ArcAuthService : public ArcService,
                        public sync_preferences::PrefServiceSyncableObserver,
                        public sync_preferences::SyncedPrefObserver {
  public:
+  // Represents each State of ARC session.
+  // NOT_INITIALIZED: represents the state that the Profile is not yet ready
+  //   so that this service is not yet initialized, or Chrome is being shut
+  //   down so that this is destroyed.
+  // STOPPED: ARC session is not running, or being terminated.
+  // SHOWING_TERMS_OF_SERVICE: "Terms Of Service" page is shown on ARC support
+  //   Chrome app.
+  // CHECKING_ANDROID_MANAGEMENT: Checking Android management status. Note that
+  //   the status is checked for each ARC session starting, but this is the
+  //   state only for the first boot case (= opt-in case). The second time and
+  //   later the management check is running in parallel with ARC session
+  //   starting, and in such a case, State is ACTIVE, instead.
+  // FETCHING_CODE: Fetching an auth token. Similar to
+  //   CHECKING_ANDROID_MANAGEMENT case, this is only for the first boot case.
+  //   In re-auth flow (fetching an auth token while ARC is running), the
+  //   State should be ACTIVE.
+  //   TODO(hidehiko): Migrate into re-auth flow, then remove this state.
+  // ACTIVE: ARC is running.
+  //
+  // State transition should be as follows:
+  //
+  // NOT_INITIALIZED -> STOPPED: when the primary Profile gets ready.
+  // ...(any)... -> NOT_INITIALIZED: when the Chrome is being shutdown.
+  // ...(any)... -> STOPPED: on error.
+  //
+  // In the first boot case (no OOBE case):
+  //   STOPPED -> SHOWING_TERMS_OF_SERVICE: when arc.enabled preference is set.
+  //   SHOWING_TERMS_OF_SERVICE -> CHECKING_ANDROID_MANAGEMENT: when a user
+  //     agree with "Terms Of Service"
+  //   CHECKING_ANDROID_MANAGEMENT -> FETCHING_CODE: when Android management
+  //     check passes.
+  //   FETCHING_CODE -> ACTIVE: when the auth token is successfully fetched.
+  //
+  // In the first boot case (OOBE case):
+  //   STOPPED -> FETCHING_CODE: When arc.enabled preference is set.
+  //   FETCHING_CODE -> ACTIVE: when the auth token is successfully fetched.
+  //
+  // In the second (or later) boot case:
+  //   STOPPED -> ACTIVE: when arc.enabled preference is checked that it is
+  //     true. Practically, this is when the primary Profile gets ready.
   enum class State {
-    NOT_INITIALIZED,  // Service is not initialized.
-    STOPPED,          // ARC is not running.
-    FETCHING_CODE,    // ARC may be running or not. Auth code is fetching.
-    ACTIVE,           // ARC is running.
+    NOT_INITIALIZED,
+    STOPPED,
+    SHOWING_TERMS_OF_SERVICE,
+    CHECKING_ANDROID_MANAGEMENT,
+    FETCHING_CODE,
+    ACTIVE,
   };
 
   class Observer {
@@ -144,9 +186,6 @@ class ArcAuthService : public ArcService,
 
   void OnSignInFailedInternal(ProvisioningResult result);
 
-  // Called from Arc support platform app to start LSO.
-  void StartLso();
-
   // Called from Arc support platform app to set auth code and start arc.
   void SetAuthCodeAndStartArc(const std::string& auth_code);
 
@@ -184,6 +223,7 @@ class ArcAuthService : public ArcService,
                      bool is_backup_and_restore_enabled,
                      bool is_location_service_enabled) override;
   void OnAuthSucceeded(const std::string& auth_code) override;
+  void OnRetryClicked() override;
   void OnSendFeedbackClicked() override;
 
   // arc::ArcOptInPreferenceHandlerObserver:
@@ -227,7 +267,6 @@ class ArcAuthService : public ArcService,
                                const base::string16& status);
   void OnOptInPreferenceChanged();
   void StartUI();
-  void StartAndroidManagementClient();
   void OnAndroidManagementPassed();
   void OnArcDataRemoved(bool success);
   void OnArcSignInTimeout();
@@ -238,6 +277,8 @@ class ArcAuthService : public ArcService,
       std::unique_ptr<AccountInfoNotifier> account_info_notifier);
   void OnAccountInfoReady(mojom::AccountInfoPtr account_info);
   void OnRobotAuthCodeFetched(const std::string& auth_code);
+
+  void StartArcAndroidManagementCheck();
 
   // Called when the Android management check is done in opt-in flow or
   // re-auth flow.

@@ -30,13 +30,6 @@ var port = null;
 var currentDeviceId = null;
 
 /**
- * Indicates that terms were accepted by user.
- * @type {boolean}
- * TODO: This should be a part of TermsOfServicePage.
- */
-var termsAccepted = false;
-
-/**
  * Host window inner default width.
  * @const {number}
  */
@@ -280,8 +273,6 @@ class TermsOfServicePage {
 
   /** Called when the TermsOfService page is shown. */
   onShow() {
-    termsAccepted = false;
-
     if (this.isManaged_ || this.state_ == LoadState.LOADED) {
       // Note: in managed case, because it does not show the contents of terms
       // of service, it is ok to show the content container immediately.
@@ -367,8 +358,6 @@ class TermsOfServicePage {
 
   /** Called when "AGREE" button is clicked. */
   onAgree() {
-    termsAccepted = true;
-
     sendNativeMessage('onAgreed', {
       isMetricsEnabled: this.metricsCheckbox_.isChecked(),
       isBackupRestoreEnabled: this.backupRestoreCheckbox_.isChecked(),
@@ -469,16 +458,8 @@ function onNativeMessage(message) {
       appWindow.close();
     }
   } else if (message.action == 'showPage') {
-    if (message.page != 'terms') {
-      // Explicit request to start not from start page. Assume terms are
-      // accepted in this case.
-      // TODO: this is only for controling "RETRY" button. Remove this.
-      termsAccepted = true;
-    }
     showPage(message.page);
   } else if (message.action == 'showErrorPage') {
-    // TODO: this is only for controling "RETRY" button. Remove this.
-    termsAccepted = true;
     showErrorPage(message.errorMessage, message.shouldShowSendFeedback);
   } else if (message.action == 'setWindowBounds') {
     setWindowBounds();
@@ -706,15 +687,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
     lsoView.addEventListener('contentload', onLsoViewContentLoad);
 
     var onRetry = function() {
-      if (termsAccepted) {
-        // Reuse the onAgree() in case that the user has already accepted
-        // the ToS.
-        termsPage.onAgree();
-      } else {
-        // Here 'error' page should be visible. So switch to 'terms' page
-        // to show the progress page, which triggers reloading.
-        showPage('terms');
-      }
+      sendNativeMessage('onRetryClicked');
     };
 
     var onSendFeedback = function() {

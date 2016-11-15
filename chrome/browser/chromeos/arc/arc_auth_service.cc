@@ -446,7 +446,9 @@ void ArcAuthService::PrepareContextForAuthCodeRequest() {
   // 3. For any other state on Android side that leads device appears in
   // non-signed state.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(state_ != State::ACTIVE || IsAuthCodeRequest());
+  DCHECK(state_ == State::FETCHING_CODE || state_ == State::ACTIVE);
+  if (state_ == State::ACTIVE)
+    DCHECK(IsAuthCodeRequest());
   DCHECK(!IsArcKioskMode());
   context_->PrepareContext();
 }
@@ -597,6 +599,7 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
     preference_handler_->Start();
   }
 
+  DCHECK_EQ(State::NOT_INITIALIZED, state_);
   SetState(State::STOPPED);
 
   PrefServiceSyncableFromProfile(profile_)->AddSyncedPrefObserver(
@@ -691,16 +694,7 @@ void ArcAuthService::ShowUI(ArcSupportHost::UIPage page,
 
 void ArcAuthService::OnContextReady() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  // TODO(hidehiko): The check is not necessary if this is a part of re-auth
-  // flow and OOBE OptIn where Android Management check must be a part of
-  // checking if Arc OptIn should be skip. Remove this.
-  android_management_checker_.reset(new ArcAndroidManagementChecker(
-      profile_, context_->token_service(), context_->account_id(),
-      false /* retry_on_error */));
-  android_management_checker_->StartCheck(
-      base::Bind(&ArcAuthService::OnAndroidManagementChecked,
-                 weak_ptr_factory_.GetWeakPtr()));
+  FetchAuthCode();
 }
 
 void ArcAuthService::OnSyncedPrefChanged(const std::string& path,
@@ -850,8 +844,6 @@ void ArcAuthService::SetAuthCodeAndStartArc(const std::string& auth_code) {
   DCHECK(!auth_code.empty());
 
   if (IsAuthCodeRequest()) {
-    DCHECK_EQ(state_, State::FETCHING_CODE);
-    SetState(State::ACTIVE);
     account_info_notifier_->Notify(!IsOptInVerificationDisabled(), auth_code,
                                    GetAccountType(),
                                    policy_util::IsAccountManaged(profile_));
@@ -859,7 +851,9 @@ void ArcAuthService::SetAuthCodeAndStartArc(const std::string& auth_code) {
     return;
   }
 
-  if (state_ != State::FETCHING_CODE) {
+  if (state_ != State::SHOWING_TERMS_OF_SERVICE &&
+      state_ != State::CHECKING_ANDROID_MANAGEMENT &&
+      state_ != State::FETCHING_CODE) {
     ShutdownBridgeAndCloseUI();
     return;
   }
@@ -881,25 +875,6 @@ void ArcAuthService::OnArcSignInTimeout() {
   OnSignInFailedInternal(ProvisioningResult::OVERALL_SIGN_IN_TIMEOUT);
 }
 
-void ArcAuthService::StartLso() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  // Terms were accepted
-  profile_->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
-
-  // Update UMA only if error (with or without feedback) is currently shown.
-  if (ui_page_ == ArcSupportHost::UIPage::ERROR) {
-    UpdateOptInActionUMA(OptInActionType::RETRY);
-  } else if (ui_page_ == ArcSupportHost::UIPage::ERROR_WITH_FEEDBACK) {
-    UpdateOptInActionUMA(OptInActionType::RETRY);
-    ShutdownBridge();
-  }
-
-  DCHECK(arc_bridge_service()->stopped());
-  SetState(State::FETCHING_CODE);
-  PrepareContextForAuthCodeRequest();
-}
-
 void ArcAuthService::CancelAuthCode() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -911,7 +886,9 @@ void ArcAuthService::CancelAuthCode() {
   // In case |state_| is ACTIVE, |ui_page_| can be START_PROGRESS (which means
   // normal Arc booting) or  ERROR or ERROR_WITH_FEEDBACK (in case Arc can not
   // be started). If Arc is booting normally dont't stop it on progress close.
-  if (state_ != State::FETCHING_CODE &&
+  if ((state_ != State::FETCHING_CODE &&
+       state_ != State::SHOWING_TERMS_OF_SERVICE &&
+       state_ != State::CHECKING_ANDROID_MANAGEMENT) &&
       ui_page_ != ArcSupportHost::UIPage::ERROR &&
       ui_page_ != ArcSupportHost::UIPage::ERROR_WITH_FEEDBACK) {
     return;
@@ -985,7 +962,7 @@ void ArcAuthService::StartUI() {
     return;
   }
 
-  SetState(State::FETCHING_CODE);
+  SetState(State::SHOWING_TERMS_OF_SERVICE);
   ShowUI(ArcSupportHost::UIPage::TERMS, base::string16());
 }
 
@@ -1011,12 +988,35 @@ void ArcAuthService::OnAuthCodeFailed() {
   UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
 }
 
+void ArcAuthService::StartArcAndroidManagementCheck() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(arc_bridge_service()->stopped());
+  DCHECK(state_ == State::SHOWING_TERMS_OF_SERVICE ||
+         state_ == State::CHECKING_ANDROID_MANAGEMENT);
+  SetState(State::CHECKING_ANDROID_MANAGEMENT);
+
+  android_management_checker_.reset(new ArcAndroidManagementChecker(
+      profile_, context_->token_service(), context_->account_id(),
+      false /* retry_on_error */));
+  android_management_checker_->StartCheck(
+      base::Bind(&ArcAuthService::OnAndroidManagementChecked,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
 void ArcAuthService::OnAndroidManagementChecked(
     policy::AndroidManagementClient::Result result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_EQ(state_, State::CHECKING_ANDROID_MANAGEMENT);
+
   switch (result) {
     case policy::AndroidManagementClient::Result::UNMANAGED:
-      OnAndroidManagementPassed();
+      if (IsOptInVerificationDisabled()) {
+        StartArc();
+      } else {
+        // TODO(hidehiko): Merge this prefetching into re-auth case.
+        SetState(State::FETCHING_CODE);
+        PrepareContextForAuthCodeRequest();
+      }
       break;
     case policy::AndroidManagementClient::Result::MANAGED:
       ShutdownBridgeAndShowUI(
@@ -1069,23 +1069,6 @@ void ArcAuthService::FetchAuthCode() {
   }
 }
 
-void ArcAuthService::OnAndroidManagementPassed() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (state_ == State::ACTIVE) {
-    if (IsAuthCodeRequest())
-      FetchAuthCode();
-    return;
-  }
-
-  if (profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn) ||
-      IsOptInVerificationDisabled()) {
-    StartArc();
-  } else {
-    FetchAuthCode();
-  }
-}
-
 void ArcAuthService::OnWindowClosed() {
   CancelAuthCode();
 }
@@ -1093,6 +1076,9 @@ void ArcAuthService::OnWindowClosed() {
 void ArcAuthService::OnTermsAgreed(bool is_metrics_enabled,
                                    bool is_backup_and_restore_enabled,
                                    bool is_location_service_enabled) {
+  // Terms were accepted
+  profile_->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
+
   // This is ARC support's UI event callback, so this is called only when
   // the UI is visible. The condition to open the UI is
   // !g_disable_ui_for_testing && !IsOptInVerificationDisabled() (see ShowUI())
@@ -1103,11 +1089,37 @@ void ArcAuthService::OnTermsAgreed(bool is_metrics_enabled,
   preference_handler_->EnableMetrics(is_metrics_enabled);
   preference_handler_->EnableBackupRestore(is_backup_and_restore_enabled);
   preference_handler_->EnableLocationService(is_location_service_enabled);
-  StartLso();
+  StartArcAndroidManagementCheck();
 }
 
 void ArcAuthService::OnAuthSucceeded(const std::string& auth_code) {
   SetAuthCodeAndStartArc(auth_code);
+}
+
+void ArcAuthService::OnRetryClicked() {
+  UpdateOptInActionUMA(OptInActionType::RETRY);
+  // ERROR_WITH_FEEDBACK is set in OnSignInFailed(). In the case, we postpone
+  // to stop the ARC to obtain the internal state.
+  // Here, on retry, stop it.
+  if (ui_page_ == ArcSupportHost::UIPage::ERROR_WITH_FEEDBACK)
+    ShutdownBridge();
+
+  switch (state_) {
+    case State::NOT_INITIALIZED:
+      NOTREACHED();
+      break;
+    case State::STOPPED:
+    case State::SHOWING_TERMS_OF_SERVICE:
+      ShowUI(ArcSupportHost::UIPage::TERMS, base::string16());
+      break;
+    case State::CHECKING_ANDROID_MANAGEMENT:
+      StartArcAndroidManagementCheck();
+      break;
+    case State::FETCHING_CODE:
+    case State::ACTIVE:
+      PrepareContextForAuthCodeRequest();
+      break;
+  }
 }
 
 void ArcAuthService::OnSendFeedbackClicked() {
@@ -1138,6 +1150,10 @@ std::ostream& operator<<(std::ostream& os, const ArcAuthService::State& state) {
       return os << "NOT_INITIALIZED";
     case ArcAuthService::State::STOPPED:
       return os << "STOPPED";
+    case ArcAuthService::State::SHOWING_TERMS_OF_SERVICE:
+      return os << "SHOWING_TERMS_OF_SERVICE";
+    case ArcAuthService::State::CHECKING_ANDROID_MANAGEMENT:
+      return os << "CHECKING_ANDROID_MANAGEMENT";
     case ArcAuthService::State::FETCHING_CODE:
       return os << "FETCHING_CODE";
     case ArcAuthService::State::ACTIVE:

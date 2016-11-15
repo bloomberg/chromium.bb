@@ -132,7 +132,8 @@ TEST_F(ArcAuthServiceTest, PrefChangeTriggersService) {
   ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
 
   pref->SetBoolean(prefs::kArcEnabled, true);
-  ASSERT_EQ(ArcAuthService::State::FETCHING_CODE, auth_service()->state());
+  ASSERT_EQ(ArcAuthService::State::SHOWING_TERMS_OF_SERVICE,
+            auth_service()->state());
 
   pref->SetBoolean(prefs::kArcEnabled, false);
   ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
@@ -195,8 +196,12 @@ TEST_F(ArcAuthServiceTest, BaseWorkflow) {
   profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
 
   // Setting profile and pref initiates a code fetching process.
-  ASSERT_EQ(ArcAuthService::State::FETCHING_CODE, auth_service()->state());
+  ASSERT_EQ(ArcAuthService::State::SHOWING_TERMS_OF_SERVICE,
+            auth_service()->state());
 
+  // TODO(hidehiko): Verify state transition from SHOWINING_TERMS_OF_SERVICE ->
+  // CHECKING_ANDROID_MANAGEMENT -> FETCHING_CODE, when we extract
+  // ArcSessionManager.
   auth_service()->SetAuthCodeAndStartArc(kTestAuthCode);
 
   ASSERT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
@@ -214,13 +219,15 @@ TEST_F(ArcAuthServiceTest, BaseWorkflow) {
   auth_service()->OnPrimaryUserProfilePrepared(profile());
 
   // Setting profile initiates a code fetching process.
-  ASSERT_EQ(ArcAuthService::State::FETCHING_CODE, auth_service()->state());
+  ASSERT_EQ(ArcAuthService::State::SHOWING_TERMS_OF_SERVICE,
+            auth_service()->state());
 
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
 
   // UI is disabled in unit tests and this code is unchanged.
-  ASSERT_EQ(ArcAuthService::State::FETCHING_CODE, auth_service()->state());
+  ASSERT_EQ(ArcAuthService::State::SHOWING_TERMS_OF_SERVICE,
+            auth_service()->state());
 
   // Correctly stop service.
   auth_service()->Shutdown();
@@ -231,7 +238,8 @@ TEST_F(ArcAuthServiceTest, CancelFetchingDisablesArc) {
 
   auth_service()->OnPrimaryUserProfilePrepared(profile());
   pref->SetBoolean(prefs::kArcEnabled, true);
-  ASSERT_EQ(ArcAuthService::State::FETCHING_CODE, auth_service()->state());
+  ASSERT_EQ(ArcAuthService::State::SHOWING_TERMS_OF_SERVICE,
+            auth_service()->state());
 
   auth_service()->CancelAuthCode();
   ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
@@ -280,7 +288,8 @@ TEST_F(ArcAuthServiceTest, SignInStatus) {
   prefs->SetBoolean(prefs::kArcEnabled, true);
 
   auth_service()->OnPrimaryUserProfilePrepared(profile());
-  EXPECT_EQ(ArcAuthService::State::FETCHING_CODE, auth_service()->state());
+  EXPECT_EQ(ArcAuthService::State::SHOWING_TERMS_OF_SERVICE,
+            auth_service()->state());
   auth_service()->SetAuthCodeAndStartArc(kTestAuthCode);
   EXPECT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
   EXPECT_TRUE(bridge_service()->ready());
