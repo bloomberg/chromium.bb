@@ -95,14 +95,8 @@ public class Desktop
      */
     private boolean mHasPhysicalKeyboard;
 
-    /** Tracks whether the activity is in the resumed (running) state. */
-    private boolean mIsActivityRunning = false;
-
-    /**
-     * Tracks whether the activity is in windowed mode. This mode cannot change during the lifetime
-     * of the activity so it does not receive a value until the first time it is initialized.
-     */
-    private Boolean mIsInWindowedMode = null;
+    /** Tracks whether the activity is in windowed mode. */
+    private boolean mIsInWindowedMode = false;
 
     /** Called when the activity is first created. */
     @Override
@@ -150,6 +144,17 @@ public class Desktop
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             attachSystemUiResizeListener();
+
+            // Suspend the ActionBar timer when the user interacts with the options menu.
+            getSupportActionBar().addOnMenuVisibilityListener(new OnMenuVisibilityListener() {
+                public void onMenuVisibilityChanged(boolean isVisible) {
+                    if (isVisible) {
+                        stopActionBarAutoHideTimer();
+                    } else {
+                        startActionBarAutoHideTimer();
+                    }
+                }
+            });
         } else {
             mRemoteHostDesktop.setFitsSystemWindows(true);
         }
@@ -165,11 +170,16 @@ public class Desktop
 
     @Override
     public void onResume() {
-        mIsActivityRunning = true;
         super.onResume();
         mActivityLifecycleListener.onActivityResumed(this);
         mClient.enableVideoChannel(true);
-        if (!inWindowedMode()) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            // We want to call the change handler with an initial value as onMultiWindowModeChanged
+            // won't be called if the state hasn't changed, such as when the user resizes in
+            // split-screen, and we want to ensure we have a default value set (even though it may
+            // change soon after).
+            onMultiWindowModeChanged(isInMultiWindowMode());
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             setUpAutoHideToolbar();
             syncActionBarToSystemUiState();
         }
@@ -177,16 +187,17 @@ public class Desktop
 
     @Override
     protected void onPause() {
-        if (isFinishing()) mActivityLifecycleListener.onActivityPaused(this);
+        if (isFinishing()) {
+            mActivityLifecycleListener.onActivityPaused(this);
+        }
         super.onPause();
         // The activity is paused in windowed mode when the user switches to another window.  In
         // that case we should leave the video channel running so they continue to see updates from
         // their remote machine.  The video channel will be stopped when onStop() is called.
-        if (!inWindowedMode()) {
+        if (!mIsInWindowedMode) {
             mClient.enableVideoChannel(false);
         }
         stopActionBarAutoHideTimer();
-        mIsActivityRunning = false;
     }
 
     @Override
@@ -201,6 +212,22 @@ public class Desktop
     protected void onDestroy() {
         mRemoteHostDesktop.destroy();
         super.onDestroy();
+    }
+
+    @Override
+    public void onMultiWindowModeChanged(boolean isInMultiWindowMode) {
+        super.onMultiWindowModeChanged(isInMultiWindowMode);
+
+        mIsInWindowedMode = isInMultiWindowMode;
+        if (!mIsInWindowedMode) {
+            setUpAutoHideToolbar();
+            syncActionBarToSystemUiState();
+        } else if (mActionBarAutoHideTask != null) {
+            stopActionBarAutoHideTimer();
+            mActionBarAutoHideTask = null;
+            showSystemUi();
+            syncActionBarToSystemUiState();
+        }
     }
 
     /** Called to initialize the action bar. */
@@ -350,27 +377,8 @@ public class Desktop
         });
     }
 
-    private boolean inWindowedMode() {
-        if (mIsInWindowedMode == null) {
-            // NOTE: This method should only be called after OnResume() is called, otherwise
-            // isInMultiWindowMode() may not be accurate.  The value returned by this method is
-            // updated on a background thread and there is a race-condition between when the UX
-            // changes and this value is updated.  Hence, calling this method from onCreate() is not
-            // safe and we need to be careful when we query this value.
-            Preconditions.isTrue(mIsActivityRunning);
-
-            mIsInWindowedMode =
-                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInMultiWindowMode();
-        }
-
-        return mIsInWindowedMode;
-    }
-
     private void setUpAutoHideToolbar() {
-        // Configure the auto-hiding taskbar if the activity is not in multi-window mode and the
-        // application is run on an OS which supports fullscreen mode (KitKat or higher).
-        Preconditions.isTrue(!inWindowedMode());
-        if (mActionBarAutoHideTask != null || Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+        if (mActionBarAutoHideTask != null) {
             return;
         }
 
@@ -381,17 +389,6 @@ public class Desktop
                 }
             }
         };
-
-        // Suspend the ActionBar timer when the user interacts with the options menu.
-        getSupportActionBar().addOnMenuVisibilityListener(new OnMenuVisibilityListener() {
-            public void onMenuVisibilityChanged(boolean isVisible) {
-                if (isVisible) {
-                    stopActionBarAutoHideTimer();
-                } else {
-                    startActionBarAutoHideTimer();
-                }
-            }
-        });
     }
 
     // Posts a deplayed task to hide the ActionBar.  If an existing task has already been scheduled,
@@ -614,7 +611,7 @@ public class Desktop
                 // the canvas so they can see where they are typing in the first case and in the
                 // second, the System UI is always present so the user needs a way to position the
                 // canvas so all parts of the desktop can be made visible.
-                if (mSoftInputVisible || (inWindowedMode() && isSystemUiVisible())) {
+                if (mSoftInputVisible || (mIsInWindowedMode && isSystemUiVisible())) {
                     mOnSystemUiVisibilityChanged.raise(
                             new SystemUiVisibilityChangedEventParameter(left, top, right, bottom));
                 } else {
@@ -641,7 +638,7 @@ public class Desktop
 
     /**
      * Called once when a keyboard key is pressed, then again when that same key is released. This
-     * is not guaranteed to be notified of all soft keyboard events: certian keyboards might not
+     * is not guaranteed to be notified of all soft keyboard events: certain keyboards might not
      * call it at all, while others might skip it in certain situations (e.g. swipe input).
      */
     @Override
