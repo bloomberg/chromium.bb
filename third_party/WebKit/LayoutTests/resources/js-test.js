@@ -15,10 +15,10 @@ if (self.testRunner) {
 var isJsTest = true;
 
 var description, debug, successfullyParsed, getOrCreateTestElement;
+
 var expectingError; // set by shouldHaveError()
 var expectedErrorMessage; // set by onerror when expectingError is true
 var unexpectedErrorMessage; // set by onerror when expectingError is not true
-var defaultTimeoutForShouldBecome = self.defaultTimeoutForShouldBecome || 500;
 
 (function() {
 
@@ -280,7 +280,7 @@ function shouldBecomeEqual(_a, _b, _completionHandler, _timeout)
     debug("WARN: shouldBecomeEqual() expects string arguments");
 
   if (_timeout === undefined)
-    _timeout = defaultTimeoutForShouldBecome;
+    _timeout = 500;
 
   var _bv;
   var _condition = function() {
@@ -413,7 +413,7 @@ function shouldBecomeDifferent(_a, _b, _completionHandler, _timeout)
   if (typeof _a != "string" || typeof _b != "string")
     debug("WARN: shouldBecomeDifferent() expects string arguments");
   if (_timeout === undefined)
-    _timeout = defaultTimeoutForShouldBecome;
+    _timeout = 500;
 
   var _bv;
   var _condition = function() {
