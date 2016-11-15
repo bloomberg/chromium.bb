@@ -37,7 +37,9 @@ const char kEscapeClosingQuote[] = "\\\\E";
 // A wrapper struct for static RE2 objects to be held as LazyInstance.
 struct Patterns {
   Patterns();
-  ~Patterns();
+  // Patterns is only instantiated as a leaky LazyInstance, so the destructor
+  // is never called.
+  ~Patterns() = delete;
   const RE2 transfer_padding_pattern;
   const RE2 crlf_pattern;
   const RE2 closing_pattern;
@@ -69,8 +71,6 @@ Patterns::Patterns()
                           kCharacterPattern +
                           "*)") {
 }
-
-Patterns::~Patterns() {}
 
 base::LazyInstance<Patterns>::Leaky g_patterns = LAZY_INSTANCE_INITIALIZER;
 
