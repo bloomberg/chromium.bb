@@ -557,8 +557,11 @@ void DisplayConfigurator::OnDisplayControlTaken(
   display_control_changing_ = false;
   display_externally_controlled_ = !success;
   if (success) {
+    // Force a configuration since the display configuration may have changed.
     force_configure_ = true;
-    RunPendingConfiguration();
+    // Restore the last power state used before releasing control.
+    SetDisplayPower(requested_power_state_, kSetDisplayPowerNoFlags,
+                    base::Bind(&DoNothing));
   }
 
   callback.Run(success);
@@ -582,13 +585,29 @@ void DisplayConfigurator::RelinquishControl(
     return;
   }
 
-  // Set the flag early such that an incoming configuration event won't start
-  // while we're releasing control of the displays.
   display_control_changing_ = true;
-  display_externally_controlled_ = true;
-  native_display_delegate_->RelinquishDisplayControl(
-      base::Bind(&DisplayConfigurator::OnDisplayControlRelinquished,
+
+  // Turn off the displays before releasing control since we're no longer using
+  // them for output.
+  SetDisplayPowerInternal(
+      chromeos::DISPLAY_POWER_ALL_OFF, kSetDisplayPowerNoFlags,
+      base::Bind(&DisplayConfigurator::SendRelinquishDisplayControl,
                  weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void DisplayConfigurator::SendRelinquishDisplayControl(
+    const DisplayControlCallback& callback, bool success) {
+  if (success) {
+    // Set the flag early such that an incoming configuration event won't start
+    // while we're releasing control of the displays.
+    display_externally_controlled_ = true;
+    native_display_delegate_->RelinquishDisplayControl(
+        base::Bind(&DisplayConfigurator::OnDisplayControlRelinquished,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+  } else {
+    display_control_changing_ = false;
+    callback.Run(false);
+  }
 }
 
 void DisplayConfigurator::OnDisplayControlRelinquished(

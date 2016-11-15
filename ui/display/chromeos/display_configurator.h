@@ -381,6 +381,13 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   void OnDisplayControlRelinquished(const DisplayControlCallback& callback,
                                     bool success);
 
+  // Helper function that sends the actual command.
+  // |callback| is called upon completion of the relinquish command.
+  // |success| is the result from calling SetDisplayPowerInternal() in
+  // RelinquishDisplay().
+  void SendRelinquishDisplayControl(const DisplayControlCallback& callback,
+                                    bool success);
+
   StateController* state_controller_;
   SoftwareMirroringController* mirroring_controller_;
   std::unique_ptr<NativeDisplayDelegate> native_display_delegate_;

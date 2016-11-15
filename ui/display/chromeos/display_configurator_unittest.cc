@@ -1740,8 +1740,14 @@ TEST_F(DisplayConfiguratorTest, ExternalControl) {
       base::Bind(&DisplayConfiguratorTest::OnDisplayControlUpdated,
                  base::Unretained(this)));
   EXPECT_EQ(CALLBACK_SUCCESS, PopDisplayControlResult());
-  EXPECT_EQ(JoinActions(kRelinquishDisplayControl, nullptr),
-            log_->GetActionsAndClear());
+  EXPECT_EQ(
+      JoinActions(
+          kGrab,
+          GetFramebufferAction(small_mode_.size(), outputs_[0].get(), nullptr)
+              .c_str(),
+          GetCrtcAction(*outputs_[0], nullptr, gfx::Point(0, 0)).c_str(),
+          kUngrab, kRelinquishDisplayControl, nullptr),
+      log_->GetActionsAndClear());
   configurator_.TakeControl(
       base::Bind(&DisplayConfiguratorTest::OnDisplayControlUpdated,
                  base::Unretained(this)));
@@ -1752,7 +1758,7 @@ TEST_F(DisplayConfiguratorTest, ExternalControl) {
           GetFramebufferAction(small_mode_.size(), outputs_[0].get(), nullptr)
               .c_str(),
           GetCrtcAction(*outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
-          kUngrab, nullptr),
+          kForceDPMS, kUngrab, nullptr),
       log_->GetActionsAndClear());
 }
 
