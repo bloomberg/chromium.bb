@@ -680,6 +680,29 @@ void AddResetStrings(content::WebUIDataSource* html_source) {
 #endif
 }
 
+#if !defined(OS_CHROMEOS)
+void AddImportDataStrings(content::WebUIDataSource* html_source) {
+  LocalizedString localized_strings[] = {
+    {"importTitle", IDS_SETTINGS_IMPORT_SETTINGS_TITLE},
+    {"importFromLabel", IDS_SETTINGS_IMPORT_FROM_LABEL},
+    {"importDescription", IDS_SETTINGS_IMPORT_ITEMS_LABEL},
+    {"importLoading", IDS_SETTINGS_IMPORT_LOADING_PROFILES},
+    {"importHistory", IDS_SETTINGS_IMPORT_HISTORY_CHECKBOX},
+    {"importFavorites", IDS_SETTINGS_IMPORT_FAVORITES_CHECKBOX},
+    {"importPasswords", IDS_SETTINGS_IMPORT_PASSWORDS_CHECKBOX},
+    {"importSearch", IDS_SETTINGS_IMPORT_SEARCH_ENGINES_CHECKBOX},
+    {"importAutofillFormData", IDS_SETTINGS_IMPORT_AUTOFILL_FORM_DATA_CHECKBOX},
+    {"importSucceeded", IDS_SETTINGS_IMPORT_SUCCEEDED},
+    {"importChooseFile", IDS_SETTINGS_IMPORT_CHOOSE_FILE},
+    {"importCommit", IDS_SETTINGS_IMPORT_COMMIT},
+    {"noProfileFound", IDS_SETTINGS_IMPORT_NO_PROFILE_FOUND},
+    {"findYourImportedBookmarks", IDS_SETTINGS_IMPORT_FIND_YOUR_BOOKMARKS},
+  };
+  AddLocalizedStringsBulk(html_source, localized_strings,
+                          arraysize(localized_strings));
+}
+#endif
+
 #if defined(OS_CHROMEOS)
 void AddDateTimeStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
@@ -737,26 +760,6 @@ void AddEasyUnlockStrings(content::WebUIDataSource* html_source) {
 
   html_source->AddString("easyUnlockLearnMoreURL",
                          chrome::kEasyUnlockLearnMoreUrl);
-}
-
-void AddImportDataStrings(content::WebUIDataSource* html_source) {
-  LocalizedString localized_strings[] = {
-    {"importFromLabel", IDS_SETTINGS_IMPORT_FROM_LABEL},
-    {"importDescription", IDS_SETTINGS_IMPORT_ITEMS_LABEL},
-    {"importLoading", IDS_SETTINGS_IMPORT_LOADING_PROFILES},
-    {"importHistory", IDS_SETTINGS_IMPORT_HISTORY_CHECKBOX},
-    {"importFavorites", IDS_SETTINGS_IMPORT_FAVORITES_CHECKBOX},
-    {"importPasswords", IDS_SETTINGS_IMPORT_PASSWORDS_CHECKBOX},
-    {"importSearch", IDS_SETTINGS_IMPORT_SEARCH_ENGINES_CHECKBOX},
-    {"importAutofillFormData", IDS_SETTINGS_IMPORT_AUTOFILL_FORM_DATA_CHECKBOX},
-    {"importSucceeded", IDS_SETTINGS_IMPORT_SUCCEEDED},
-    {"importChooseFile", IDS_SETTINGS_IMPORT_CHOOSE_FILE},
-    {"importCommit", IDS_SETTINGS_IMPORT_COMMIT},
-    {"noProfileFound", IDS_SETTINGS_IMPORT_NO_PROFILE_FOUND},
-    {"findYourImportedBookmarks", IDS_SETTINGS_IMPORT_FIND_YOUR_BOOKMARKS},
-  };
-  AddLocalizedStringsBulk(html_source, localized_strings,
-                          arraysize(localized_strings));
 }
 
 void AddInternetStrings(content::WebUIDataSource* html_source) {
@@ -1785,12 +1788,12 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddDateTimeStrings(html_source);
   AddDeviceStrings(html_source);
   AddEasyUnlockStrings(html_source);
-  AddImportDataStrings(html_source);
   AddInternetStrings(html_source);
   AddMultiProfilesStrings(html_source, profile);
 #else
-  AddSystemStrings(html_source);
   AddDefaultBrowserStrings(html_source);
+  AddImportDataStrings(html_source);
+  AddSystemStrings(html_source);
 #endif
 
 #if defined(USE_NSS_CERTS)

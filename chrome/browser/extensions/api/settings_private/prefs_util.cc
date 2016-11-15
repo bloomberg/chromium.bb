@@ -298,6 +298,20 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kHardwareAccelerationModeEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
+
+  // Import data
+  (*s_whitelist)[::prefs::kImportAutofillFormData] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[::prefs::kImportBookmarks] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[::prefs::kImportHistory] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[::prefs::kImportHomepage] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[::prefs::kImportSavedPasswords] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[::prefs::kImportSearchEngine] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
 #endif
 
   // Proxy settings.

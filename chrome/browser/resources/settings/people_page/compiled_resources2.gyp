@@ -180,5 +180,14 @@
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
+    {
+      'target_name': 'import_data_dialog',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
+        'import_data_browser_proxy',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
   ],
 }

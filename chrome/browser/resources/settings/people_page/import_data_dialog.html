@@ -1,0 +1,73 @@
+<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="/controls/settings_checkbox.html">
+<link rel="import" href="/md_select_css.html">
+<link rel="import" href="/people_page/import_data_browser_proxy.html">
+
+<dom-module id="settings-import-data-dialog">
+  <template>
+    <style include="settings-shared md-select">
+      #description {
+        align-items: center;
+        display: flex;
+        min-height: var(--settings-row-min-height);
+      }
+    </style>
+    <dialog is="cr-dialog" id="dialog">
+      <div class="title">$i18n{importTitle}</div>
+      <div class="body">
+        <span class="md-select-wrapper">
+          <select id="browserSelect" class="md-select" on-change="onChange_">
+            <template is="dom-repeat" items="[[browserProfiles_]]">
+              <option value="[[item.index]]">[[item.name]]</option>
+            </template>
+          </select>
+          <span class="md-select-underline"></span>
+        </span>
+        <div id="description">$i18n{importDescription}</div>
+        <div>
+          <settings-checkbox
+              hidden="[[!selected_.history]]"
+              pref="{{prefs.import_history}}"
+              label="$i18n{importHistory}">
+          </settings-checkbox>
+          <settings-checkbox
+              hidden="[[!selected_.favorites]]"
+              pref="{{prefs.import_bookmarks}}"
+              label="$i18n{importFavorites}">
+          </settings-checkbox>
+          <settings-checkbox
+              hidden="[[!selected_.passwords]]"
+              pref="{{prefs.import_saved_passwords}}"
+              label="$i18n{importPasswords}">
+          </settings-checkbox>
+          <settings-checkbox
+              hidden="[[!selected_.search]]"
+              pref="{{prefs.import_search_engine}}"
+              label="$i18n{importSearch}">
+          </settings-checkbox>
+          <settings-checkbox
+              hidden="[[!selected_.autofillFormData]]"
+              pref="{{prefs.import_autofill_form_data}}"
+              label="$i18n{importAutofillFormData}">
+          </settings-checkbox>
+        </div>
+      </div>
+      <div class="button-container">
+        <div class="action-buttons">
+          <paper-button class="cancel-button" id="cancel" on-tap="onCancelTap_">
+            $i18n{cancel}
+          </paper-button>
+          <paper-button id="actionButton" class="action-button"
+              on-tap="onActionButtonTap_">
+            [[getActionButtonText_(selected_)]]
+          </paper-button>
+        </div>
+      </div>
+    </dialog>
+  </template>
+  <script src="import_data_dialog.js"></script>
+</dom-module>

@@ -26,6 +26,7 @@
 <link rel="import" href="/people_page/users_page.html">
 </if>
 <if expr="not chromeos">
+<link rel="import" href="/people_page/import_data_dialog.html">
 <link rel="import" href="/people_page/manage_profile.html">
 </if>
 
@@ -264,6 +265,13 @@
           <button class="subpage-arrow" is="paper-icon-button-light"></button>
         </div>
 
+<if expr="not chromeos">
+        <div class="settings-box" on-tap="onImportDataTap_" actionable>
+          <div class="start">$i18n{importTitle}</div>
+          <button class="subpage-arrow" is="paper-icon-button-light"></button>
+        </div>
+</if>
+
         <template is="dom-if" if=[[profileManagesSupervisedUsers_]]>
           <div id="manageSupervisedUsersContainer" class="settings-box two-line"
               on-tap="onManageSupervisedUsers_" actionable>
@@ -350,6 +358,12 @@
         </paper-button>
       </div>
     </dialog>
+
+    <template is="dom-if" if="[[showImportDataDialog_]]" restamp>
+      <settings-import-data-dialog prefs="{{prefs}}"
+          on-close="onImportDataDialogClosed_">
+      </settings-import-data-dialog>
+    </template>
 
 <if expr="chromeos">
     <template is="dom-if" if="[[easyUnlockEnabled_]]">

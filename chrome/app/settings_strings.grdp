@@ -2152,9 +2152,11 @@
     Control how Google uses your browsing history to personalize Search, ads, and other Google services
   </message>
 
-  <!-- Import Settings Dialog -->
-  <!-- Android uses custom UI for Bookmark importing -->
-  <if expr="not is_android">
+  <if expr="not chromeos">
+    <!-- Import Settings Dialog -->
+    <message name="IDS_SETTINGS_IMPORT_SETTINGS_TITLE" desc="Dialog title for import dialog.">
+      Import bookmarks and settings
+    </message>
     <message name="IDS_SETTINGS_IMPORT_FROM_LABEL" desc="Label before profile select combo box">
       From:
     </message>

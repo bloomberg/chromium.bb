@@ -48,6 +48,14 @@ Polymer({
      */
     profileManagesSupervisedUsers_: Boolean,
 
+<if expr="not chromeos">
+    /** @private */
+    showImportDataDialog_: {
+      type: Boolean,
+      value: false,
+    },
+</if>
+
     /** @private {!settings.SyncBrowserProxy} */
     syncBrowserProxy_: {
       type: Object,
@@ -347,6 +355,16 @@ Polymer({
     var innerSpan =
         '<span id="managed-by-domain-name">' + domain + '</span>';
     return loadTimeData.getStringF('domainManagedProfile', innerSpan);
+  },
+
+  /** @private */
+  onImportDataTap_: function() {
+    this.showImportDataDialog_ = true;
+  },
+
+  /** @private */
+  onImportDataDialogClosed_: function() {
+    this.showImportDataDialog_ = false;
   },
 </if>
 
