@@ -5,6 +5,7 @@
 #include <memory>
 #include "base/optional.h"
 #include "base/path_service.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/test/browser_test.h"
@@ -48,6 +49,13 @@ class EmbedderMojoTest : public HeadlessBrowserTest,
         http_policy_(http_policy) {}
 
   ~EmbedderMojoTest() override {}
+
+  void SetUp() override {
+    // Set service names before they are used during main thread initialization.
+    options()->mojo_service_names.insert("embedder_test::TestEmbedderService");
+
+    HeadlessBrowserTest::SetUp();
+  }
 
   void SetUpOnMainThread() override {
     base::ThreadRestrictions::SetIOAllowed(true);

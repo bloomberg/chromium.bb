@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "base/callback.h"
@@ -115,6 +116,10 @@ struct HeadlessBrowser::Options {
   // string can be used to disable GL rendering (e.g., WebGL support).
   std::string gl_implementation;
 
+  // Names of mojo services exposed by the browser to the renderer. These
+  // services will be added to the browser's service manifest.
+  std::unordered_set<std::string> mojo_service_names;
+
   // Default per-context options, can be specialized on per-context basis.
 
   std::string user_agent;
@@ -159,6 +164,7 @@ class HeadlessBrowser::Options::Builder {
   Builder& SetSingleProcessMode(bool single_process_mode);
   Builder& SetDisableSandbox(bool disable_sandbox);
   Builder& SetGLImplementation(const std::string& gl_implementation);
+  Builder& AddMojoServiceName(const std::string& mojo_service_name);
 
   // Per-context settings.
 

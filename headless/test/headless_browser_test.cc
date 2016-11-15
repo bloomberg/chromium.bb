@@ -151,6 +151,10 @@ HeadlessBrowser* HeadlessBrowserTest::browser() const {
   return HeadlessContentMainDelegate::GetInstance()->browser();
 }
 
+HeadlessBrowser::Options* HeadlessBrowserTest::options() const {
+  return HeadlessContentMainDelegate::GetInstance()->browser()->options();
+}
+
 bool HeadlessBrowserTest::WaitForLoad(HeadlessWebContents* web_contents) {
   SynchronousLoadObserver load_observer(this, web_contents);
   RunAsynchronousTest();

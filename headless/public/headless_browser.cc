@@ -82,6 +82,11 @@ Builder& Builder::SetGLImplementation(const std::string& gl_implementation) {
   return *this;
 }
 
+Builder& Builder::AddMojoServiceName(const std::string& mojo_service_name) {
+  options_.mojo_service_names.insert(mojo_service_name);
+  return *this;
+}
+
 Builder& Builder::SetUserDataDir(const base::FilePath& user_data_dir) {
   options_.user_data_dir = user_data_dir;
   return *this;

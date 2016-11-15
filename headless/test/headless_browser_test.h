@@ -80,6 +80,10 @@ class HeadlessBrowserTest : public content::BrowserTestBase {
   // Returns the browser for the test.
   HeadlessBrowser* browser() const;
 
+  // Returns the options used by the browser. Modify with caution, since some
+  // options only take effect if they were set before browser creation.
+  HeadlessBrowser::Options* options() const;
+
  private:
   std::unique_ptr<base::RunLoop> run_loop_;
 

@@ -5,6 +5,7 @@
 #include "headless/lib/browser/headless_content_browser_client.h"
 
 #include <memory>
+#include <unordered_set>
 
 #include "base/callback.h"
 #include "base/json/json_reader.h"
@@ -22,6 +23,11 @@
 #include "ui/base/resource/resource_bundle.h"
 
 namespace headless {
+
+namespace {
+const char kCapabilityPath[] =
+    "interface_provider_specs.navigation:frame.provides.renderer";
+}  // namespace
 
 HeadlessContentBrowserClient::HeadlessContentBrowserClient(
     HeadlessBrowserImpl* browser)
@@ -56,12 +62,28 @@ HeadlessContentBrowserClient::GetDevToolsManagerDelegate() {
 std::unique_ptr<base::Value>
 HeadlessContentBrowserClient::GetServiceManifestOverlay(
     const std::string& name) {
-  if (name != content::kBrowserServiceName)
+  if (name != content::kBrowserServiceName ||
+      browser_->options()->mojo_service_names.empty())
     return nullptr;
-  base::StringPiece manifest_contents =
+
+  base::StringPiece manifest_template =
       ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_HEADLESS_BROWSER_MANIFEST_OVERLAY);
-  return base::JSONReader::Read(manifest_contents);
+          IDR_HEADLESS_BROWSER_MANIFEST_OVERLAY_TEMPLATE);
+  std::unique_ptr<base::Value> manifest =
+      base::JSONReader::Read(manifest_template);
+
+  // Add mojo_service_names to renderer capability specified in options.
+  base::DictionaryValue* manifest_dictionary = nullptr;
+  CHECK(manifest->GetAsDictionary(&manifest_dictionary));
+
+  base::ListValue* capability_list = nullptr;
+  CHECK(manifest_dictionary->GetList(kCapabilityPath, &capability_list));
+
+  for (std::string service_name : browser_->options()->mojo_service_names) {
+    capability_list->AppendString(service_name);
+  }
+
+  return manifest;
 }
 
 }  // namespace headless

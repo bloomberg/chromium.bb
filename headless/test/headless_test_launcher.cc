@@ -47,7 +47,8 @@ class HeadlessTestLauncherDelegate : public content::TestLauncherDelegate {
 
  protected:
   content::ContentMainDelegate* CreateContentMainDelegate() override {
-    // Use HeadlessBrowserTest::SetBrowserOptions to override these defaults.
+    // Use HeadlessBrowserTest::options() or HeadlessBrowserContextOptions to
+    // modify these defaults.
     HeadlessBrowser::Options::Builder options_builder;
     std::unique_ptr<HeadlessBrowserImpl> browser(
         new HeadlessBrowserImplForTest(options_builder.Build()));
