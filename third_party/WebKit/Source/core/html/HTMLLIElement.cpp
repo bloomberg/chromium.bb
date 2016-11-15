@@ -26,6 +26,7 @@
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutListItem.h"
 #include "core/layout/api/LayoutLIItem.h"
 
@@ -124,9 +125,8 @@ inline void HTMLLIElement::parseValue(const AtomicString& value) {
   DCHECK(layoutObject());
   DCHECK(layoutObject()->isListItem());
 
-  bool valueOK;
-  int requestedValue = value.toInt(&valueOK);
-  if (valueOK)
+  int requestedValue = 0;
+  if (parseHTMLInteger(value, requestedValue))
     toLayoutListItem(layoutObject())->setExplicitValue(requestedValue);
   else
     toLayoutListItem(layoutObject())->clearExplicitValue();
