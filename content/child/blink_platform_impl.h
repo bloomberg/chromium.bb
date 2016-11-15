@@ -20,9 +20,10 @@
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebGestureDevice.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
+#include "third_party/WebKit/public/public_features.h"
 #include "ui/base/layout.h"
 
-#if defined(USE_DEFAULT_RENDER_THEME)
+#if BUILDFLAG(USE_DEFAULT_RENDER_THEME)
 #include "content/child/webthemeengine_impl_default.h"
 #elif defined(OS_WIN)
 #include "content/child/webthemeengine_impl_win.h"

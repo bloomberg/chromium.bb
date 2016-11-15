@@ -598,7 +598,7 @@ component("base") {
 
   # Aura clipboard.
   if (use_aura) {
-    if (use_clipboard_aurax11) {
+    if (use_x11 && is_desktop_linux) {
       sources += [
         "clipboard/clipboard_aurax11.cc",
         "clipboard/clipboard_aurax11.h",

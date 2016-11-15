@@ -275,7 +275,6 @@ places are noted in the table below.
 | `use_athena` (0/1)                      | `use_athena` (true/false)                      | `//build/config/ui.gni`       |
 | `use_aura` (0/1)                        | `use_aura` (true/false)                        | `//build/config/ui.gni`       |
 | `use_cairo` (0/1)                       | `use_cairo` (true/false)                       | `//build/config/ui.gni`       |
-| `use_clipboard_aurax11` (0/1)           | `use_aura && use_x11`                          |                               |
 | `use_cups` (0/1)                        | `use_cups` (true/false)                        | `//build/config/features.gni` |
 | `use_dbus` (0/1)                        | `use_dbus` (true/false)                        | `//build/config/features.gni` |
 | `use_gconf` (0/1)                       | `use_gconf` (true/false)                       | `//build/config/features.gni` |

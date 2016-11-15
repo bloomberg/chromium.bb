@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//third_party/WebKit/public/public_features.gni")
 
 if (is_component_build) {
   link_target_type = "source_set"
@@ -244,6 +245,7 @@ target(link_target_type, "child") {
     "//skia",
     "//storage/common",
     "//third_party/WebKit/public:blink_headers",
+    "//third_party/WebKit/public:features",
     "//third_party/WebKit/public:image_resources",
     "//third_party/WebKit/public:resources",
     "//third_party/ced",

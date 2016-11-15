@@ -123,6 +123,7 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/WebKit/public/public_features.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebColorSuggestion.h"
 #include "third_party/WebKit/public/web/WebDOMEvent.h"
@@ -2213,7 +2214,7 @@ void RenderViewImpl::OnSetRendererPrefs(
   UpdateThemePrefs();
   blink::setCaretBlinkInterval(renderer_prefs.caret_blink_interval);
 
-#if defined(USE_DEFAULT_RENDER_THEME)
+#if BUILDFLAG(USE_DEFAULT_RENDER_THEME)
   if (renderer_prefs.use_custom_colors) {
     blink::setFocusRingColor(renderer_prefs.focus_ring_color);
 
@@ -2226,7 +2227,7 @@ void RenderViewImpl::OnSetRendererPrefs(
       webview()->themeChanged();
     }
   }
-#endif  // defined(USE_DEFAULT_RENDER_THEME)
+#endif  // BUILDFLAG(USE_DEFAULT_RENDER_THEME)
 
   if (webview() &&
       old_accept_languages != renderer_preferences_.accept_languages) {

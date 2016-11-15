@@ -9,6 +9,7 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
+import("//third_party/WebKit/public/public_features.gni")
 import("//v8/gni/v8.gni")
 
 # Use a static library here because many test binaries depend on this but don't

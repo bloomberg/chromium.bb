@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ui.gni")
+
 declare_args() {
   # If debug_devtools is set to true, JavaScript files for DevTools are stored
   # as is and loaded from disk. Otherwise, a concatenated file is stored in
@@ -9,6 +11,8 @@ declare_args() {
   # --debug-devtools cmdline switch.
   debug_devtools = false
 }
+
+use_default_render_theme = use_aura && !is_android
 
 # Use Minikin hyphenation engine.
 use_minikin_hyphenation = is_android

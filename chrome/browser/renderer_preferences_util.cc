@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
+#include "third_party/WebKit/public/public_features.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
@@ -111,7 +112,7 @@ void UpdateFromSystemSettings(content::RendererPreferences* prefs,
                  &prefs->webrtc_udp_max_port);
 #endif
 
-#if defined(USE_DEFAULT_RENDER_THEME)
+#if BUILDFLAG(USE_DEFAULT_RENDER_THEME)
   prefs->focus_ring_color = SkColorSetRGB(0x4D, 0x90, 0xFE);
 #if defined(OS_CHROMEOS)
   // This color is 0x544d90fe modulated with 0xffffff.

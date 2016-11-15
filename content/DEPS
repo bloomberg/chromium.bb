@@ -78,8 +78,7 @@ include_rules = [
   "+third_party/webrtc",
   "+third_party/webrtc_overrides",
   "+third_party/zlib/google",
-  "+third_party/WebKit/public/platform",
-  "+third_party/WebKit/public/web",
+  "+third_party/WebKit/public",
 
   "+ui/accelerated_widget_mac",
   "+ui/accessibility",
