@@ -77,10 +77,22 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
                          message_length);
   }
 
-  if (IsEnabled()) {
-    content::WebContents* parent_web_contents =
-        WebContentsObserver::web_contents();
+  content::WebContents* parent_web_contents =
+      WebContentsObserver::web_contents();
+  bool foremost = IsWebContentsForemost(parent_web_contents);
+  switch (message_type) {
+    case content::JAVASCRIPT_MESSAGE_TYPE_ALERT:
+      UMA_HISTOGRAM_BOOLEAN("JSDialogs.IsForemost.Alert", foremost);
+      break;
+    case content::JAVASCRIPT_MESSAGE_TYPE_CONFIRM:
+      UMA_HISTOGRAM_BOOLEAN("JSDialogs.IsForemost.Confirm", foremost);
+      break;
+    case content::JAVASCRIPT_MESSAGE_TYPE_PROMPT:
+      UMA_HISTOGRAM_BOOLEAN("JSDialogs.IsForemost.Prompt", foremost);
+      break;
+  }
 
+  if (IsEnabled()) {
     if (!IsWebContentsForemost(parent_web_contents) &&
         message_type == content::JAVASCRIPT_MESSAGE_TYPE_PROMPT) {
       // Don't allow "prompt" dialogs to steal the user's focus. TODO(avi):
