@@ -8,10 +8,10 @@
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_timeline.h"
-#include "cc/animation/element_id.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/output/filter_operations.h"
 #include "cc/test/geometry_test_utils.h"
+#include "cc/trees/element_id.h"
 
 namespace cc {
 class AnimationPlayer;

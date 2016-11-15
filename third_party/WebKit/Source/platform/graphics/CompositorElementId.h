@@ -5,7 +5,7 @@
 #ifndef CompositorElementId_h
 #define CompositorElementId_h
 
-#include "cc/animation/element_id.h"
+#include "cc/trees/element_id.h"
 #include "platform/PlatformExport.h"
 
 namespace blink {

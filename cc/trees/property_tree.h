@@ -11,11 +11,11 @@
 #include <unordered_map>
 #include <vector>
 
-#include "cc/animation/element_id.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/synced_property.h"
 #include "cc/layers/layer_sticky_position_constraint.h"
 #include "cc/output/filter_operations.h"
+#include "cc/trees/element_id.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/transform.h"

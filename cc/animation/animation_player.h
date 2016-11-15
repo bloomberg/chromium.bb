@@ -13,8 +13,8 @@
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/element_animations.h"
-#include "cc/animation/element_id.h"
 #include "cc/base/cc_export.h"
+#include "cc/trees/element_id.h"
 
 namespace cc {
 

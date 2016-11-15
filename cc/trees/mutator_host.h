@@ -9,7 +9,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
-#include "cc/animation/element_id.h"
+#include "cc/trees/element_id.h"
 #include "cc/trees/mutator_host_client.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"

@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/trace_event/trace_event_argument.h"
-#include "cc/animation/element_id.h"
 #include "cc/base/math_util.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/proto/gfx_conversions.h"
+#include "cc/trees/element_id.h"
 #include "cc/trees/scroll_node.h"
 
 namespace cc {

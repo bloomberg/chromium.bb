@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_ANIMATION_ELEMENT_ID_H_
-#define CC_ANIMATION_ELEMENT_ID_H_
+#ifndef CC_TREES_ELEMENT_ID_H_
+#define CC_TREES_ELEMENT_ID_H_
 
 #include <stddef.h>
 
@@ -67,4 +67,4 @@ CC_EXPORT std::ostream& operator<<(std::ostream& out, const ElementId& id);
 
 }  // namespace cc
 
-#endif  // CC_ANIMATION_ELEMENT_ID_H_
+#endif  // CC_TREES_ELEMENT_ID_H_

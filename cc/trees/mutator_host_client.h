@@ -6,9 +6,9 @@
 #define CC_TREES_MUTATOR_HOST_CLIENT_H_
 
 // TODO(loyso) Move these headers out of cc/animation.
-#include "cc/animation/element_id.h"
 #include "cc/animation/property_animation_state.h"
 #include "cc/animation/target_property.h"
+#include "cc/trees/element_id.h"
 
 namespace gfx {
 class Transform;
