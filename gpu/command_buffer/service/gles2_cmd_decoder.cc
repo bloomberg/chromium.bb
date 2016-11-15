@@ -17538,29 +17538,31 @@ error::Error GLES2DecoderImpl::HandleMapBufferRange(
         "MAP_FLUSH_EXPLICIT_BIT set without MAP_WRITE_BIT");
     return error::kNoError;
   }
-  if (AllBitsSet(access, GL_MAP_INVALIDATE_BUFFER_BIT)) {
+  GLbitfield filtered_access = access;
+  if (AllBitsSet(filtered_access, GL_MAP_INVALIDATE_BUFFER_BIT)) {
     // To be on the safe side, always map GL_MAP_INVALIDATE_BUFFER_BIT to
     // GL_MAP_INVALIDATE_RANGE_BIT.
-    access = (access & ~GL_MAP_INVALIDATE_BUFFER_BIT);
-    access = (access | GL_MAP_INVALIDATE_RANGE_BIT);
+    filtered_access = (filtered_access & ~GL_MAP_INVALIDATE_BUFFER_BIT);
+    filtered_access = (filtered_access | GL_MAP_INVALIDATE_RANGE_BIT);
   }
   // Always filter out GL_MAP_UNSYNCHRONIZED_BIT to get rid of undefined
   // behaviors.
-  access = (access & ~GL_MAP_UNSYNCHRONIZED_BIT);
-  if (AllBitsSet(access, GL_MAP_WRITE_BIT) &&
-      !AllBitsSet(access, GL_MAP_INVALIDATE_RANGE_BIT)) {
-    access = (access | GL_MAP_READ_BIT);
+  filtered_access = (filtered_access & ~GL_MAP_UNSYNCHRONIZED_BIT);
+  if (AllBitsSet(filtered_access, GL_MAP_WRITE_BIT) &&
+      !AllBitsSet(filtered_access, GL_MAP_INVALIDATE_RANGE_BIT)) {
+    filtered_access = (filtered_access | GL_MAP_READ_BIT);
   }
-  void* ptr = glMapBufferRange(target, offset, size, access);
+  void* ptr = glMapBufferRange(target, offset, size, filtered_access);
   if (ptr == nullptr) {
     // This should mean GL_OUT_OF_MEMORY (or context loss).
     LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(func_name);
     return error::kNoError;
   }
+  // The un-filtered bits in |access| are deliberately used here.
   buffer->SetMappedRange(offset, size, access, ptr,
                          GetSharedMemoryBuffer(data_shm_id),
                          static_cast<unsigned int>(data_shm_offset));
-  if ((access & GL_MAP_INVALIDATE_RANGE_BIT) == 0) {
+  if ((filtered_access & GL_MAP_INVALIDATE_RANGE_BIT) == 0) {
     memcpy(mem, ptr, size);
   }
   *result = 1;

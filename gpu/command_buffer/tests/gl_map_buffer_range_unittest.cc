@@ -473,6 +473,29 @@ TEST_F(ES3MapBufferRangeTest, TransformFeedback) {
   GLTestHelper::CheckGLError("no errors", __LINE__);
 }
 
+TEST_F(ES3MapBufferRangeTest, GetBufferParameteriv) {
+  if (ShouldSkipTest())
+    return;
+
+  GLuint buffer;
+  glGenBuffers(1, &buffer);
+  EXPECT_LT(0u, buffer);
+  glBindBuffer(GL_ARRAY_BUFFER, buffer);
+  glBufferData(GL_ARRAY_BUFFER, 64, 0, GL_STATIC_READ);
+
+  GLbitfield access = GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT;
+  glMapBufferRange(GL_ARRAY_BUFFER, 16, 32, access);
+  GLint param = 0;
+  glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_ACCESS_FLAGS, &param);
+  EXPECT_EQ(access, static_cast<GLbitfield>(param));
+  glUnmapBuffer(GL_ARRAY_BUFFER);
+  param = 0;
+  glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_ACCESS_FLAGS, &param);
+  EXPECT_EQ(0u, static_cast<GLbitfield>(param));
+
+  GLTestHelper::CheckGLError("no errors", __LINE__);
+}
+
 // TODO(zmo): add tests for uniform buffer mapping.
 
 // TODO(zmo): add tests for CopyBufferSubData case.
