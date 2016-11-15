@@ -40,7 +40,7 @@ class VRDisplayImpl : public mojom::VRDisplay {
   mojo::Binding<mojom::VRDisplay> binding_;
   mojom::VRDisplayClientPtr client_;
   device::VRDevice* device_;
-  std::unique_ptr<VRServiceImpl> service_;
+  VRServiceImpl* service_;
 };
 
 }  // namespace device

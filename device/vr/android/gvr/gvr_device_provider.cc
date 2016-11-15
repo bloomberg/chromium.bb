@@ -26,12 +26,15 @@ namespace device {
 GvrDeviceProvider::GvrDeviceProvider() : weak_ptr_factory_(this) {}
 
 GvrDeviceProvider::~GvrDeviceProvider() {
+  GamepadDataFetcherManager::GetInstance()->RemoveSourceFactory(
+      GAMEPAD_SOURCE_GVR);
+
   device::GvrDelegateProvider* delegate_provider =
       device::GvrDelegateProvider::GetInstance();
-  if (delegate_provider)
+  if (delegate_provider) {
+    delegate_provider->ExitWebVRPresent();
     delegate_provider->DestroyNonPresentingDelegate();
-
-  ExitPresent();
+  }
 }
 
 void GvrDeviceProvider::GetDevices(std::vector<VRDevice*>* devices) {

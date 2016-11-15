@@ -104,10 +104,12 @@ base::WeakPtr<device::GvrDelegate> VrShellDelegate::GetNonPresentingDelegate() {
 }
 
 void VrShellDelegate::DestroyNonPresentingDelegate() {
-  non_presenting_delegate_.reset(nullptr);
-  JNIEnv* env = AttachCurrentThread();
-  Java_VrShellDelegate_shutdownNonPresentingNativeContext(
-      env, j_vr_shell_delegate_.obj());
+  if (non_presenting_delegate_) {
+    non_presenting_delegate_.reset(nullptr);
+    JNIEnv* env = AttachCurrentThread();
+    Java_VrShellDelegate_shutdownNonPresentingNativeContext(
+        env, j_vr_shell_delegate_.obj());
+  }
 }
 
 // ----------------------------------------------------------------------------
