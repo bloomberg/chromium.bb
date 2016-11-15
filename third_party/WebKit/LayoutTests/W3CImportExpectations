@@ -248,6 +248,7 @@ imported/wpt/html-media-capture [ Skip ]
 imported/wpt/http [ Skip ]
 ## Owners: none; No tests in the directory.
 # imported/wpt/images [ Pass ]
+imported/wpt/imagebitmap-renderingcontext [ Skip ]
 imported/wpt/infrastructure [ Skip ]
 imported/wpt/innerText [ Skip ]
 imported/wpt/js [ Skip ]

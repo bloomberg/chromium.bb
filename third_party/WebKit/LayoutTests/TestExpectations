@@ -1420,7 +1420,6 @@ crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reft
 crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-006.xhtml [ Failure ]
 crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-007.xhtml [ Failure ]
 crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/writing-modes-3/logical-physical-mapping-001.html [ Failure ]
-crbug.com/626703 imported/wpt/imagebitmap-renderingcontext/bitmaprenderer-as-imagesource.html [ Crash Timeout ]
 crbug.com/626703 imported/wpt/dom/events/EventTarget-dispatchEvent.html [ Failure ]
 crbug.com/626703 imported/wpt/html/browsers/history/the-history-interface/non-automated/traverse_the_history_unload_prompt_1-manual.html [ Failure ]
 crbug.com/626703 imported/wpt/html/browsers/history/the-history-interface/non-automated/traverse_the_history_unload_prompt_2-manual.html [ Failure ]

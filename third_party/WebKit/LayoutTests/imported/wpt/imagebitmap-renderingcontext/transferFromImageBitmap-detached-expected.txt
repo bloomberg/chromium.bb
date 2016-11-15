@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Test transferFromImageBitmap(image) with a detached image should throw InvalidStateError assert_not_equals: got disallowed value undefined
-Harness: the test ran to completion.
-
