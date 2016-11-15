@@ -66,7 +66,7 @@ Dst GetMaxConvertibleToFloat() {
 #define TEST_EXPECTED_VALIDITY(expected, actual)                           \
   EXPECT_EQ(expected, CheckedNumeric<Dst>(actual).IsValid())               \
       << "Result test: Value " << +(actual).ValueUnsafe() << " as " << dst \
-      << " on line " << line;
+      << " on line " << line
 
 #define TEST_EXPECTED_SUCCESS(actual) TEST_EXPECTED_VALIDITY(true, actual)
 #define TEST_EXPECTED_FAILURE(actual) TEST_EXPECTED_VALIDITY(false, actual)
@@ -75,7 +75,7 @@ Dst GetMaxConvertibleToFloat() {
   EXPECT_EQ(static_cast<Dst>(expected),                                      \
             CheckedNumeric<Dst>(actual).ValueOrDie())                        \
       << "Result test: Value " << +((actual).ValueUnsafe()) << " as " << dst \
-      << " on line " << line;
+      << " on line " << line
 
 // Signed integer arithmetic.
 template <typename Dst>
@@ -106,6 +106,7 @@ static void TestSpecializedArithmetic(
 
   TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(DstLimits::min()) / -1);
   TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(-1) / 2);
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(DstLimits::min()) * -1);
 
   // Modulus is legal only for integers.
   TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>() % 1);
@@ -256,6 +257,8 @@ static void TestArithmetic(const char* dst, int line) {
   if (numeric_limits<Dst>::is_signed) {
     TEST_EXPECTED_VALUE(-1, (CheckedNumeric<Dst>() - 1));
     TEST_EXPECTED_VALUE(-2, (CheckedNumeric<Dst>(-1) - 1));
+  } else {
+    TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(DstLimits::max()) - -1);
   }
 
   // Generic multiplication.
@@ -266,6 +269,10 @@ static void TestArithmetic(const char* dst, int line) {
     TEST_EXPECTED_VALUE(0, (CheckedNumeric<Dst>(-1) * 0));
     TEST_EXPECTED_VALUE(0, (CheckedNumeric<Dst>(0) * -1));
     TEST_EXPECTED_VALUE(-2, (CheckedNumeric<Dst>(-1) * 2));
+  } else {
+    TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(DstLimits::max()) * -2);
+    TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(DstLimits::max()) *
+                          CheckedNumeric<uintmax_t>(-2));
   }
   TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(DstLimits::max()) *
                         DstLimits::max());
@@ -320,7 +327,7 @@ struct TestNumericConversion {};
 #define TEST_EXPECTED_RANGE(expected, actual)                                  \
   EXPECT_EQ(expected, base::internal::DstRangeRelationToSrcRange<Dst>(actual)) \
       << "Conversion test: " << src << " value " << actual << " to " << dst    \
-      << " on line " << line;
+      << " on line " << line
 
 template <typename Dst, typename Src>
 struct TestNumericConversion<Dst, Src, SIGN_PRESERVING_VALUE_PRESERVING> {
