@@ -2226,7 +2226,7 @@ void DXVAVideoDecodeAccelerator::SetState(State new_state) {
 }
 
 void DXVAVideoDecodeAccelerator::StartDecoderThread() {
-  decoder_thread_.init_com_with_mta(false);
+  decoder_thread_.init_com_with_mta(true);
   decoder_thread_.Start();
   decoder_thread_task_runner_ = decoder_thread_.task_runner();
 }
