@@ -14,6 +14,7 @@
 #include "blimp/client/app/linux/blimp_display_manager.h"
 #include "blimp/client/app/linux/blimp_display_manager_delegate_main.h"
 #include "blimp/client/core/settings/settings_prefs.h"
+#include "blimp/client/core/switches/blimp_client_switches.h"
 #include "blimp/client/public/blimp_client_context.h"
 #include "blimp/client/public/contents/blimp_navigation_controller.h"
 #include "blimp/client/support/compositor/compositor_dependencies_impl.h"
@@ -22,6 +23,10 @@
 #include "components/prefs/in_memory_pref_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
+#include "skia/ext/fontmgr_default_linux.h"
+#include "third_party/skia/include/ports/SkFontConfigInterface.h"
+#include "third_party/skia/include/ports/SkFontMgr.h"
+#include "third_party/skia/include/ports/SkFontMgr_android.h"
 #include "ui/gfx/x/x11_connection.h"
 
 namespace {
@@ -39,11 +44,55 @@ class BlimpShellCommandLinePrefStore : public CommandLinePrefStore {
  protected:
   ~BlimpShellCommandLinePrefStore() override = default;
 };
+
+bool HasAndroidFontSwitch() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      blimp::switches::kAndroidFontsPath);
+}
+
+std::string GetAndroidFontsDirectory() {
+  std::string android_fonts_dir =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          blimp::switches::kAndroidFontsPath);
+  if (android_fonts_dir.size() > 0 && android_fonts_dir.back() != '/') {
+    android_fonts_dir += '/';
+  }
+  return android_fonts_dir;
+}
+
+sk_sp<SkFontMgr> CreateAndroidFontMgr(std::string android_fonts_dir) {
+  SkFontMgr_Android_CustomFonts custom;
+  custom.fSystemFontUse =
+      SkFontMgr_Android_CustomFonts::SystemFontUse::kOnlyCustom;
+  custom.fBasePath = android_fonts_dir.c_str();
+
+  std::string font_config;
+  std::string fallback_font_config;
+  if (android_fonts_dir.find("kitkat") != std::string::npos) {
+    font_config = android_fonts_dir + "system_fonts.xml";
+    fallback_font_config = android_fonts_dir + "fallback_fonts.xml";
+    custom.fFallbackFontsXml = fallback_font_config.c_str();
+  } else {
+    font_config = android_fonts_dir + "fonts.xml";
+    custom.fFallbackFontsXml = nullptr;
+  }
+  custom.fFontsXml = font_config.c_str();
+  custom.fIsolated = true;
+
+  return sk_sp<SkFontMgr>(SkFontMgr_New_Android(&custom));
+}
+
+void SetupAndroidFontManager() {
+  if (HasAndroidFontSwitch()) {
+    SetDefaultSkiaFactory(CreateAndroidFontMgr(GetAndroidFontsDirectory()));
+  }
+}
 }  // namespace
 
 int main(int argc, const char**argv) {
   base::AtExitManager at_exit;
   base::CommandLine::Init(argc, argv);
+  SetupAndroidFontManager();
 
   CHECK(gfx::InitializeThreadedX11());
 
