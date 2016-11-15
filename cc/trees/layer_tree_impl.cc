@@ -1887,16 +1887,15 @@ static void FindClosestMatchingLayer(const gfx::PointF& screen_space_point,
   }
 }
 
-static bool ScrollsOrScrollbarAnyDrawnRenderSurfaceLayerListMember(
-    LayerImpl* layer) {
-  return layer->scrolls_drawn_descendant() ||
+static bool IsScrollableOrDrawnScrollbarLayer(LayerImpl* layer) {
+  return layer->scrollable() ||
          (layer->ToScrollbarLayer() &&
           layer->is_drawn_render_surface_layer_list_member());
 }
 
 struct FindScrollingLayerOrScrollbarLayerFunctor {
   bool operator()(LayerImpl* layer) const {
-    return ScrollsOrScrollbarAnyDrawnRenderSurfaceLayerListMember(layer);
+    return IsScrollableOrDrawnScrollbarLayer(layer);
   }
 };
 
@@ -1913,7 +1912,7 @@ LayerTreeImpl::FindFirstScrollingLayerOrScrollbarLayerThatIsHitByPoint(
 struct HitTestVisibleScrollableOrTouchableFunctor {
   bool operator()(LayerImpl* layer) const {
     return layer->is_drawn_render_surface_layer_list_member() ||
-           ScrollsOrScrollbarAnyDrawnRenderSurfaceLayerListMember(layer) ||
+           IsScrollableOrDrawnScrollbarLayer(layer) ||
            !layer->touch_event_handler_region().IsEmpty();
   }
 };

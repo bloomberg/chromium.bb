@@ -423,12 +423,6 @@ class CC_EXPORT LayerImpl {
 
   virtual gfx::Rect GetEnclosingRectInTargetSpace() const;
 
-  void set_scrolls_drawn_descendant(bool scrolls_drawn_descendant) {
-    scrolls_drawn_descendant_ = scrolls_drawn_descendant;
-  }
-
-  bool scrolls_drawn_descendant() { return scrolls_drawn_descendant_; }
-
   int num_copy_requests_in_target_subtree();
 
   void UpdatePropertyTreeForScrollingAndAnimationIfNeeded();
@@ -584,7 +578,6 @@ class CC_EXPORT LayerImpl {
   gfx::Size preferred_raster_bounds_;
 
   bool has_preferred_raster_bounds_ : 1;
-  bool scrolls_drawn_descendant_ : 1;
   bool has_will_change_transform_hint_ : 1;
   bool needs_push_properties_ : 1;
   bool scrollbars_hidden_ : 1;

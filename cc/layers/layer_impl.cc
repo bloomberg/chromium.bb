@@ -80,7 +80,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       mutable_properties_(MutableProperty::kNone),
       debug_info_(nullptr),
       has_preferred_raster_bounds_(false),
-      scrolls_drawn_descendant_(false),
       has_will_change_transform_hint_(false),
       needs_push_properties_(false),
       scrollbars_hidden_(false) {

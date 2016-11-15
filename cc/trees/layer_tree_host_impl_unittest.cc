@@ -8660,7 +8660,7 @@ TEST_F(LayerTreeHostImplTest, ScrollUnknownScrollAncestorMismatch) {
             status.main_thread_scrolling_reasons);
 }
 
-TEST_F(LayerTreeHostImplTest, NotScrollInvisibleScroller) {
+TEST_F(LayerTreeHostImplTest, ScrollInvisibleScroller) {
   gfx::Size content_size(100, 100);
   SetupScrollAndContentsLayers(content_size);
 
@@ -8680,110 +8680,8 @@ TEST_F(LayerTreeHostImplTest, NotScrollInvisibleScroller) {
 
   DrawFrame();
 
-  // We should not have scrolled |child_scroll| even though we technically "hit"
-  // it. The reason for this is that if the scrolling the scroll would not move
-  // any layer that is a drawn RSLL member, then we can ignore the hit.
-  //
-  // Why SCROLL_STARTED? In this case, it's because we've bubbled out and
-  // started scrolling the viewport.
-  EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
-            host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
-                                    InputHandler::WHEEL)
-                .thread);
-
-  EXPECT_EQ(117, host_impl_->CurrentlyScrollingLayer()->id());
-}
-
-TEST_F(LayerTreeHostImplTest, ScrollInvisibleScrollerWithVisibleDescendent) {
-  gfx::Size content_size(100, 100);
-  SetupScrollAndContentsLayers(content_size);
-
-  LayerImpl* root = host_impl_->active_tree()->LayerById(1);
-  LayerImpl* root_scroll_layer = host_impl_->active_tree()->LayerById(2);
-
-  std::unique_ptr<LayerImpl> invisible_scroll_layer =
-      CreateScrollableLayer(7, content_size, root);
-  invisible_scroll_layer->SetDrawsContent(false);
-
-  std::unique_ptr<LayerImpl> child_layer =
-      LayerImpl::Create(host_impl_->active_tree(), 8);
-  child_layer->SetDrawsContent(false);
-
-  std::unique_ptr<LayerImpl> grand_child_layer =
-      LayerImpl::Create(host_impl_->active_tree(), 9);
-  grand_child_layer->SetDrawsContent(true);
-  grand_child_layer->SetBounds(content_size);
-  // Move the grand child so it's not hit by our test point.
-  grand_child_layer->SetPosition(gfx::PointF(10.f, 10.f));
-
-  child_layer->test_properties()->AddChild(std::move(grand_child_layer));
-  invisible_scroll_layer->test_properties()->AddChild(std::move(child_layer));
-  root_scroll_layer->test_properties()->AddChild(
-      std::move(invisible_scroll_layer));
-  host_impl_->active_tree()->BuildPropertyTreesForTesting();
-
-  DrawFrame();
-
-  // We should have scrolled |invisible_scroll_layer| as it was hit and it has
-  // a descendant which is a drawn RSLL member.
-  EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
-            host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
-                                    InputHandler::WHEEL)
-                .thread);
-
-  EXPECT_EQ(7, host_impl_->CurrentlyScrollingLayer()->id());
-}
-
-TEST_F(LayerTreeHostImplTest, ScrollInvisibleScrollerWithVisibleScrollChild) {
-  // This test case is very similar to the one above with one key difference:
-  // the invisible scroller has a scroll child that is indeed draw contents.
-  // If we attempt to initiate a gesture scroll off of the visible scroll child
-  // we should still start the scroll child.
-  gfx::Size content_size(100, 100);
-  SetupScrollAndContentsLayers(content_size);
-
-  LayerImpl* root = host_impl_->active_tree()->LayerById(1);
-
-  int scroll_layer_id = 2;
-  LayerImpl* scroll_layer =
-      host_impl_->active_tree()->LayerById(scroll_layer_id);
-
-  int scroll_child_id = 6;
-  std::unique_ptr<LayerImpl> scroll_child =
-      LayerImpl::Create(host_impl_->active_tree(), scroll_child_id);
-  scroll_child->SetDrawsContent(true);
-  scroll_child->SetBounds(content_size);
-  // Move the scroll child so it's not hit by our test point.
-  scroll_child->SetPosition(gfx::PointF(10.f, 10.f));
-
-  int invisible_scroll_layer_id = 7;
-  std::unique_ptr<LayerImpl> invisible_scroll =
-      CreateScrollableLayer(invisible_scroll_layer_id, content_size, root);
-  invisible_scroll->SetDrawsContent(false);
-
-  int container_id = 8;
-  std::unique_ptr<LayerImpl> container =
-      LayerImpl::Create(host_impl_->active_tree(), container_id);
-
-  std::unique_ptr<std::set<LayerImpl*>> scroll_children(
-      new std::set<LayerImpl*>);
-  scroll_children->insert(scroll_child.get());
-  invisible_scroll->test_properties()->scroll_children.reset(
-      scroll_children.release());
-
-  scroll_child->test_properties()->scroll_parent = invisible_scroll.get();
-
-  container->test_properties()->AddChild(std::move(invisible_scroll));
-  container->test_properties()->AddChild(std::move(scroll_child));
-
-  scroll_layer->test_properties()->AddChild(std::move(container));
-  host_impl_->active_tree()->BuildPropertyTreesForTesting();
-
-  DrawFrame();
-
-  // We should have scrolled |child_scroll| even though it is invisible.
-  // The reason for this is that if the scrolling the scroll would move a layer
-  // that is a drawn RSLL member, then we should accept this hit.
+  // We should have scrolled |child_scroll| even though it does not move
+  // any layer that is a drawn RSLL member.
   EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
             host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
                                     InputHandler::WHEEL)

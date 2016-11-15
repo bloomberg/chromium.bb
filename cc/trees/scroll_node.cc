@@ -25,8 +25,7 @@ ScrollNode::ScrollNode()
       should_flatten(false),
       user_scrollable_horizontal(false),
       user_scrollable_vertical(false),
-      transform_id(0),
-      num_drawn_descendants(0) {}
+      transform_id(0) {}
 
 ScrollNode::ScrollNode(const ScrollNode& other) = default;
 

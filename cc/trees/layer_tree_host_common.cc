@@ -212,15 +212,8 @@ static inline void ClearMaskLayersAreDrawnRenderSurfaceLayerListMembers(
 static inline void ClearIsDrawnRenderSurfaceLayerListMember(
     LayerImplList* layer_list,
     ScrollTree* scroll_tree) {
-  for (LayerImpl* layer : *layer_list) {
-    if (layer->is_drawn_render_surface_layer_list_member()) {
-      DCHECK_GT(
-          scroll_tree->Node(layer->scroll_tree_index())->num_drawn_descendants,
-          0);
-      scroll_tree->Node(layer->scroll_tree_index())->num_drawn_descendants--;
-    }
+  for (LayerImpl* layer : *layer_list)
     layer->set_is_drawn_render_surface_layer_list_member(false);
-  }
 }
 
 static bool CdpPerfTracingEnabled() {
@@ -293,33 +286,11 @@ enum PropertyTreeOption {
   DONT_BUILD_PROPERTY_TREES
 };
 
-static void ComputeLayerScrollsDrawnDescendants(LayerTreeImpl* layer_tree_impl,
-                                                ScrollTree* scroll_tree) {
-  for (int i = static_cast<int>(scroll_tree->size()) - 1; i > 0; --i) {
-    ScrollNode* node = scroll_tree->Node(i);
-    scroll_tree->parent(node)->num_drawn_descendants +=
-        node->num_drawn_descendants;
-  }
-  for (LayerImpl* layer : *layer_tree_impl) {
-    bool scrolls_drawn_descendant = false;
-    if (layer->scrollable()) {
-      ScrollNode* node = scroll_tree->Node(layer->scroll_tree_index());
-      if (node->num_drawn_descendants > 0)
-        scrolls_drawn_descendant = true;
-    }
-    layer->set_scrolls_drawn_descendant(scrolls_drawn_descendant);
-  }
-}
-
 static void ComputeInitialRenderSurfaceLayerList(
     LayerTreeImpl* layer_tree_impl,
     PropertyTrees* property_trees,
     LayerImplList* render_surface_layer_list,
     bool can_render_to_separate_surface) {
-  ScrollTree* scroll_tree = &property_trees->scroll_tree;
-  for (int i = 0; i < static_cast<int>(scroll_tree->size()); ++i)
-    scroll_tree->Node(i)->num_drawn_descendants = 0;
-
   // Add all non-skipped surfaces to the initial render surface layer list. Add
   // all non-skipped layers to the layer list of their target surface, and
   // add their content rect to their target surface's accumulated content rect.
@@ -391,7 +362,6 @@ static void ComputeInitialRenderSurfaceLayerList(
       continue;
 
     layer->set_is_drawn_render_surface_layer_list_member(true);
-    scroll_tree->Node(layer->scroll_tree_index())->num_drawn_descendants++;
     layer->render_target()->layer_list().push_back(layer);
 
     // The layer contributes its drawable content rect to its render target.
@@ -487,9 +457,6 @@ static void CalculateRenderSurfaceLayerList(
   ComputeListOfNonEmptySurfaces(layer_tree_impl, property_trees,
                                 &initial_render_surface_list,
                                 render_surface_layer_list);
-
-  ComputeLayerScrollsDrawnDescendants(layer_tree_impl,
-                                      &property_trees->scroll_tree);
 }
 
 void CalculateDrawPropertiesInternal(
