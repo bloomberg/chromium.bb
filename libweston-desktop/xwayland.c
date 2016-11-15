@@ -92,9 +92,11 @@ weston_desktop_xwayland_surface_change_state(struct weston_desktop_xwayland_surf
 			weston_desktop_surface_unset_relative_to(surface->surface);
 			weston_desktop_api_surface_added(surface->desktop,
 							 surface->surface);
+			surface->added = true;
 		} else if (surface->added) {
 			weston_desktop_api_surface_removed(surface->desktop,
 							   surface->surface);
+			surface->added = false;
 		}
 
 		if (state == XWAYLAND) {
@@ -106,7 +108,6 @@ weston_desktop_xwayland_surface_change_state(struct weston_desktop_xwayland_surf
 		}
 
 		surface->state = state;
-		surface->added = to_add;
 	}
 
 	if (parent != NULL)
