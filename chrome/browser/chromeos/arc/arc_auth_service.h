@@ -105,7 +105,6 @@ class ArcAuthService : public ArcService,
     STOPPED,
     SHOWING_TERMS_OF_SERVICE,
     CHECKING_ANDROID_MANAGEMENT,
-    FETCHING_CODE,
     ACTIVE,
   };
 
@@ -153,8 +152,6 @@ class ArcAuthService : public ArcService,
 
   State state() const { return state_; }
 
-  std::string GetAndResetAuthCode();
-
   // Adds or removes observers.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -187,7 +184,7 @@ class ArcAuthService : public ArcService,
   void OnSignInFailedInternal(ProvisioningResult result);
 
   // Called from Arc support platform app to set auth code and start arc.
-  void SetAuthCodeAndStartArc(const std::string& auth_code);
+  void OnAuthCodeObtained(const std::string& auth_code);
 
   // Called from Arc support platform app when user cancels signing.
   void CancelAuthCode();
@@ -251,11 +248,12 @@ class ArcAuthService : public ArcService,
 
   ArcSupportHost* support_host() { return support_host_.get(); }
 
+  void StartArc();
+
  private:
   using AccountInfoCallback = base::Callback<void(mojom::AccountInfoPtr)>;
   class AccountInfoNotifier;
 
-  void StartArc();
   // TODO(hidehiko): move UI methods/fields to ArcSupportHost.
   void ShowUI(ArcSupportHost::UIPage page, const base::string16& status);
   void CloseUI();
@@ -300,7 +298,6 @@ class ArcAuthService : public ArcService,
   State state_ = State::NOT_INITIALIZED;
   base::ObserverList<Observer> observer_list_;
   std::unique_ptr<ArcAppLauncher> playstore_launcher_;
-  std::string auth_code_;
   ArcSupportHost::UIPage ui_page_ = ArcSupportHost::UIPage::NO_PAGE;
   base::string16 ui_page_status_;
   bool clear_required_ = false;

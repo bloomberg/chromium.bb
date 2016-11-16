@@ -44,12 +44,6 @@
 
 namespace arc {
 
-namespace {
-
-const char kTestAuthCode[] = "4/Qa3CPIhh-WcMfWSf9HZaYcGUhEeax-F9sQK9CNRhZWs";
-
-}  // namespace
-
 class ArcAuthServiceTest : public testing::Test {
  public:
   ArcAuthServiceTest()
@@ -186,7 +180,6 @@ TEST_F(ArcAuthServiceTest, DisabledForEphemeralDataUsers) {
 TEST_F(ArcAuthServiceTest, BaseWorkflow) {
   ASSERT_FALSE(bridge_service()->ready());
   ASSERT_EQ(ArcAuthService::State::NOT_INITIALIZED, auth_service()->state());
-  ASSERT_EQ(std::string(), auth_service()->GetAndResetAuthCode());
 
   auth_service()->OnPrimaryUserProfilePrepared(profile());
 
@@ -199,21 +192,16 @@ TEST_F(ArcAuthServiceTest, BaseWorkflow) {
   ASSERT_EQ(ArcAuthService::State::SHOWING_TERMS_OF_SERVICE,
             auth_service()->state());
 
-  // TODO(hidehiko): Verify state transition from SHOWINING_TERMS_OF_SERVICE ->
-  // CHECKING_ANDROID_MANAGEMENT -> FETCHING_CODE, when we extract
-  // ArcSessionManager.
-  auth_service()->SetAuthCodeAndStartArc(kTestAuthCode);
+  // TODO(hidehiko): Verify state transition from SHOWING_TERMS_OF_SERVICE ->
+  // CHECKING_ANDROID_MANAGEMENT, when we extract ArcSessionManager.
+  auth_service()->StartArc();
 
   ASSERT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
   ASSERT_TRUE(bridge_service()->ready());
-  // Auth code valid only for one call.
-  ASSERT_EQ(kTestAuthCode, auth_service()->GetAndResetAuthCode());
-  ASSERT_EQ(std::string(), auth_service()->GetAndResetAuthCode());
 
   auth_service()->Shutdown();
   ASSERT_EQ(ArcAuthService::State::NOT_INITIALIZED, auth_service()->state());
   ASSERT_FALSE(bridge_service()->ready());
-  ASSERT_EQ(std::string(), auth_service()->GetAndResetAuthCode());
 
   // Send profile and don't provide a code.
   auth_service()->OnPrimaryUserProfilePrepared(profile());
@@ -255,7 +243,7 @@ TEST_F(ArcAuthServiceTest, CloseUIKeepsArcEnabled) {
   auth_service()->OnPrimaryUserProfilePrepared(profile());
   pref->SetBoolean(prefs::kArcEnabled, true);
 
-  auth_service()->SetAuthCodeAndStartArc(kTestAuthCode);
+  auth_service()->StartArc();
 
   ASSERT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
 
@@ -290,7 +278,7 @@ TEST_F(ArcAuthServiceTest, SignInStatus) {
   auth_service()->OnPrimaryUserProfilePrepared(profile());
   EXPECT_EQ(ArcAuthService::State::SHOWING_TERMS_OF_SERVICE,
             auth_service()->state());
-  auth_service()->SetAuthCodeAndStartArc(kTestAuthCode);
+  auth_service()->StartArc();
   EXPECT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
   EXPECT_TRUE(bridge_service()->ready());
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
@@ -326,7 +314,7 @@ TEST_F(ArcAuthServiceTest, DisabledForDeviceLocalAccount) {
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
   prefs->SetBoolean(prefs::kArcEnabled, true);
   auth_service()->OnPrimaryUserProfilePrepared(profile());
-  auth_service()->SetAuthCodeAndStartArc(kTestAuthCode);
+  auth_service()->StartArc();
   EXPECT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
 
   // Create device local account and set it as active.
@@ -354,7 +342,7 @@ TEST_F(ArcAuthServiceTest, DisabledForDeviceLocalAccount) {
 TEST_F(ArcAuthServiceTest, DisabledForNonPrimaryProfile) {
   profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
   auth_service()->OnPrimaryUserProfilePrepared(profile());
-  auth_service()->SetAuthCodeAndStartArc(kTestAuthCode);
+  auth_service()->StartArc();
   EXPECT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
 
   // Create a second profile and set it as the active profile.
