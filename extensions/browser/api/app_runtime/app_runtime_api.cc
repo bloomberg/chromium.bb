@@ -52,8 +52,8 @@ void DispatchOnLaunchedEventImpl(
     app_runtime::LaunchSource source,
     std::unique_ptr<base::DictionaryValue> launch_data,
     BrowserContext* context) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Extensions.AppLaunchSource", source, NUM_APP_LAUNCH_SOURCES);
+  UMA_HISTOGRAM_ENUMERATION("Extensions.AppLaunchSource", source,
+                            app_runtime::LaunchSource::LAUNCH_SOURCE_LAST + 1);
 
   // "Forced app mode" is true for Chrome OS kiosk mode.
   launch_data->SetBoolean(
@@ -76,53 +76,42 @@ void DispatchOnLaunchedEventImpl(
       ->SetLastLaunchTime(extension_id, base::Time::Now());
 }
 
+#define ASSERT_ENUM_EQUAL(Name) ASSERT_ENUM_EQUAL_FULL(Name, Name)
+
+#define ASSERT_ENUM_EQUAL_FULL(Name, Name2)                        \
+  static_assert(static_cast<int>(extensions::Name) ==              \
+                    static_cast<int>(app_runtime::LAUNCH_##Name2), \
+                "The value of extensions::" #Name                  \
+                " and app_runtime::LAUNCH_" #Name2 " should be the same");
+
 app_runtime::LaunchSource GetLaunchSourceEnum(
     extensions::AppLaunchSource source) {
-  switch (source) {
-    case extensions::SOURCE_UNTRACKED:
-      return app_runtime::LAUNCH_SOURCE_UNTRACKED;
-    case extensions::SOURCE_APP_LAUNCHER:
-      return app_runtime::LAUNCH_SOURCE_APP_LAUNCHER;
-    case extensions::SOURCE_NEW_TAB_PAGE:
-      return app_runtime::LAUNCH_SOURCE_NEW_TAB_PAGE;
-    case extensions::SOURCE_RELOAD:
-      return app_runtime::LAUNCH_SOURCE_RELOAD;
-    case extensions::SOURCE_RESTART:
-      return app_runtime::LAUNCH_SOURCE_RESTART;
-    case extensions::SOURCE_LOAD_AND_LAUNCH:
-      return app_runtime::LAUNCH_SOURCE_LOAD_AND_LAUNCH;
-    case extensions::SOURCE_COMMAND_LINE:
-      return app_runtime::LAUNCH_SOURCE_COMMAND_LINE;
-    case extensions::SOURCE_FILE_HANDLER:
-      return app_runtime::LAUNCH_SOURCE_FILE_HANDLER;
-    case extensions::SOURCE_URL_HANDLER:
-      return app_runtime::LAUNCH_SOURCE_URL_HANDLER;
-    case extensions::SOURCE_SYSTEM_TRAY:
-      return app_runtime::LAUNCH_SOURCE_SYSTEM_TRAY;
-    case extensions::SOURCE_ABOUT_PAGE:
-      return app_runtime::LAUNCH_SOURCE_ABOUT_PAGE;
-    case extensions::SOURCE_KEYBOARD:
-      return app_runtime::LAUNCH_SOURCE_KEYBOARD;
-    case extensions::SOURCE_EXTENSIONS_PAGE:
-      return app_runtime::LAUNCH_SOURCE_EXTENSIONS_PAGE;
-    case extensions::SOURCE_MANAGEMENT_API:
-      return app_runtime::LAUNCH_SOURCE_MANAGEMENT_API;
-    case extensions::SOURCE_EPHEMERAL_APP_DEPRECATED:
-      return app_runtime::LAUNCH_SOURCE_EPHEMERAL_APP;
-    case extensions::SOURCE_BACKGROUND:
-      return app_runtime::LAUNCH_SOURCE_BACKGROUND;
-    case extensions::SOURCE_KIOSK:
-      return app_runtime::LAUNCH_SOURCE_KIOSK;
-    case extensions::SOURCE_CHROME_INTERNAL:
-      return app_runtime::LAUNCH_SOURCE_CHROME_INTERNAL;
-    case extensions::SOURCE_TEST:
-      return app_runtime::LAUNCH_SOURCE_TEST;
-    case extensions::SOURCE_INSTALLED_NOTIFICATION:
-      return app_runtime::LAUNCH_SOURCE_INSTALLED_NOTIFICATION;
+  ASSERT_ENUM_EQUAL(SOURCE_NONE);
+  ASSERT_ENUM_EQUAL(SOURCE_UNTRACKED);
+  ASSERT_ENUM_EQUAL(SOURCE_APP_LAUNCHER);
+  ASSERT_ENUM_EQUAL(SOURCE_NEW_TAB_PAGE);
+  ASSERT_ENUM_EQUAL(SOURCE_RELOAD);
+  ASSERT_ENUM_EQUAL(SOURCE_RESTART);
+  ASSERT_ENUM_EQUAL(SOURCE_LOAD_AND_LAUNCH);
+  ASSERT_ENUM_EQUAL(SOURCE_COMMAND_LINE);
+  ASSERT_ENUM_EQUAL(SOURCE_FILE_HANDLER);
+  ASSERT_ENUM_EQUAL(SOURCE_URL_HANDLER);
+  ASSERT_ENUM_EQUAL(SOURCE_SYSTEM_TRAY);
+  ASSERT_ENUM_EQUAL(SOURCE_ABOUT_PAGE);
+  ASSERT_ENUM_EQUAL(SOURCE_KEYBOARD);
+  ASSERT_ENUM_EQUAL(SOURCE_EXTENSIONS_PAGE);
+  ASSERT_ENUM_EQUAL(SOURCE_MANAGEMENT_API);
+  ASSERT_ENUM_EQUAL_FULL(SOURCE_EPHEMERAL_APP_DEPRECATED, SOURCE_EPHEMERAL_APP);
+  ASSERT_ENUM_EQUAL(SOURCE_BACKGROUND);
+  ASSERT_ENUM_EQUAL(SOURCE_KIOSK);
+  ASSERT_ENUM_EQUAL(SOURCE_CHROME_INTERNAL);
+  ASSERT_ENUM_EQUAL(SOURCE_TEST);
+  ASSERT_ENUM_EQUAL(SOURCE_INSTALLED_NOTIFICATION);
+  static_assert(extensions::NUM_APP_LAUNCH_SOURCES ==
+                    app_runtime::LaunchSource::LAUNCH_SOURCE_LAST + 1,
+                "");
 
-    default:
-      return app_runtime::LAUNCH_SOURCE_NONE;
-  }
+  return static_cast<app_runtime::LaunchSource>(source);
 }
 
 }  // namespace

@@ -117,10 +117,14 @@ extern const uint8_t kWebstoreSignaturesPublicKey[];
 extern const int kWebstoreSignaturesPublicKeySize;
 
 // Enumeration of possible app launch sources.
+// This should be kept in sync with LaunchSource in
+// extensions/common/api/app_runtime.idl, and GetLaunchSourceEnum() in
+// extensions/browser/api/app_runtime/app_runtime_api.cc.
 // Note the enumeration is used in UMA histogram so entries
 // should not be re-ordered or removed.
 enum AppLaunchSource {
-  SOURCE_UNTRACKED = 0,
+  SOURCE_NONE,
+  SOURCE_UNTRACKED,
   SOURCE_APP_LAUNCHER,
   SOURCE_NEW_TAB_PAGE,
   SOURCE_RELOAD,
@@ -140,7 +144,6 @@ enum AppLaunchSource {
   SOURCE_CHROME_INTERNAL,
   SOURCE_TEST,
   SOURCE_INSTALLED_NOTIFICATION,
-
   NUM_APP_LAUNCH_SOURCES
 };
 
