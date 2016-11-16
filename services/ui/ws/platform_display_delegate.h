@@ -25,6 +25,9 @@ class PlatformDisplayDelegate {
   // Returns the root window of this display.
   virtual ServerWindow* GetRootWindow() = 0;
 
+  // Called once when the AcceleratedWidget is available for drawing.
+  virtual void OnAcceleratedWidgetAvailable() = 0;
+
   virtual bool IsInHighContrastMode() = 0;
 
   // Called when an event arrives.

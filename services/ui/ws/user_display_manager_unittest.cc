@@ -200,8 +200,8 @@ TEST_F(UserDisplayManagerTest, AddRemoveDisplay) {
             display_manager_observer1.GetAndClearObserverCalls());
 
   // Add another display.
-  Display* display2 = new Display(window_server(), PlatformDisplayInitParams());
-  display2->Init(nullptr);
+  Display* display2 = new Display(window_server());
+  display2->Init(PlatformDisplayInitParams(), nullptr);
 
   // Observer should be notified immediately as frame decorations were set.
   EXPECT_EQ("OnDisplaysChanged 2",

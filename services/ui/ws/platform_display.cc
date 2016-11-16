@@ -4,6 +4,8 @@
 
 #include "services/ui/ws/platform_display.h"
 
+#include <utility>
+
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
 #include "cc/ipc/quads.mojom.h"
@@ -44,12 +46,12 @@ namespace ws {
 PlatformDisplayFactory* PlatformDisplay::factory_ = nullptr;
 
 // static
-PlatformDisplay* PlatformDisplay::Create(
+std::unique_ptr<PlatformDisplay> PlatformDisplay::Create(
     const PlatformDisplayInitParams& init_params) {
   if (factory_)
     return factory_->CreatePlatformDisplay();
 
-  return new DefaultPlatformDisplay(init_params);
+  return base::MakeUnique<DefaultPlatformDisplay>(init_params);
 }
 
 DefaultPlatformDisplay::DefaultPlatformDisplay(
@@ -257,6 +259,10 @@ void DefaultPlatformDisplay::OnLostCapture() {
 void DefaultPlatformDisplay::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget,
     float device_scale_factor) {
+  // This will get called after Init() is called, either synchronously as part
+  // of the Init() callstack or async after Init() has returned, depending on
+  // the platform.
+  delegate_->OnAcceleratedWidgetAvailable();
   frame_generator_->OnAcceleratedWidgetAvailable(widget);
 }
 

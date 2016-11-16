@@ -5,6 +5,8 @@
 #ifndef SERVICES_UI_WS_PLATFORM_DISPLAY_FACTORY_H_
 #define SERVICES_UI_WS_PLATFORM_DISPLAY_FACTORY_H_
 
+#include <memory>
+
 namespace ui {
 namespace ws {
 
@@ -14,7 +16,7 @@ class PlatformDisplay;
 // PlatformDisplays.
 class PlatformDisplayFactory {
  public:
-  virtual PlatformDisplay* CreatePlatformDisplay() = 0;
+  virtual std::unique_ptr<PlatformDisplay> CreatePlatformDisplay() = 0;
 };
 
 }  // namespace ws

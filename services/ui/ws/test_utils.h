@@ -248,7 +248,7 @@ class TestPlatformDisplayFactory : public PlatformDisplayFactory {
   ~TestPlatformDisplayFactory();
 
   // PlatformDisplayFactory:
-  PlatformDisplay* CreatePlatformDisplay() override;
+  std::unique_ptr<PlatformDisplay> CreatePlatformDisplay() override;
 
  private:
   mojom::Cursor* cursor_storage_;
@@ -610,11 +610,11 @@ class WindowEventTargetingHelper {
   WindowServerTestHelper ws_test_helper_;
   // TestWindowTreeClient that is used for the WM client. Owned by
   // |window_server_delegate_|
-  TestWindowTreeClient* wm_client_;
+  TestWindowTreeClient* wm_client_ = nullptr;
   // Owned by WindowServer
-  TestDisplayBinding* display_binding_;
+  TestDisplayBinding* display_binding_ = nullptr;
   // Owned by WindowServer's DisplayManager.
-  Display* display_;
+  Display* display_ = nullptr;
   scoped_refptr<DisplayCompositor> display_compositor_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowEventTargetingHelper);

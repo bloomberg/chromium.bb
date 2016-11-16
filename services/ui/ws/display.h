@@ -58,12 +58,13 @@ class Display : public PlatformDisplayDelegate,
                 public UserIdTrackerObserver,
                 public WindowManagerWindowTreeFactorySetObserver {
  public:
-  Display(WindowServer* window_server,
-          const PlatformDisplayInitParams& platform_display_init_params);
+  explicit Display(WindowServer* window_server);
   ~Display() override;
 
-  // Initializes state that depends on the existence of a Display.
-  void Init(std::unique_ptr<DisplayBinding> binding);
+  // Initializes the display root ServerWindow and PlatformDisplay. Adds this to
+  // DisplayManager as a pending display, until accelerated widget is available.
+  void Init(const PlatformDisplayInitParams& init_params,
+            std::unique_ptr<DisplayBinding> binding);
 
   int64_t GetId() const;
 
@@ -75,6 +76,7 @@ class Display : public PlatformDisplayDelegate,
   // Returns a display::Display corresponding to this ws::Display.
   display::Display ToDisplay() const;
 
+  // Returns the size of the display in physical pixels.
   gfx::Size GetSize() const;
 
   WindowServer* window_server() { return window_server_; }
@@ -147,7 +149,7 @@ class Display : public PlatformDisplayDelegate,
       std::map<UserId, WindowManagerDisplayRoot*>;
 
   // Inits the necessary state once the display is ready.
-  void InitWindowManagerDisplayRootsIfNecessary();
+  void InitWindowManagerDisplayRoots();
 
   // Creates the set of WindowManagerDisplayRoots from the
   // WindowManagerWindowTreeFactorySet.
@@ -162,6 +164,7 @@ class Display : public PlatformDisplayDelegate,
 
   // PlatformDisplayDelegate:
   ServerWindow* GetRootWindow() override;
+  void OnAcceleratedWidgetAvailable() override;
   bool IsInHighContrastMode() override;
   void OnEvent(const ui::Event& event) override;
   void OnNativeCaptureLost() override;
@@ -184,8 +187,6 @@ class Display : public PlatformDisplayDelegate,
       WindowManagerWindowTreeFactory* factory) override;
 
   std::unique_ptr<DisplayBinding> binding_;
-  // Set once Init() has been called.
-  bool init_called_ = false;
   WindowServer* const window_server_;
   std::unique_ptr<ServerWindow> root_;
   std::unique_ptr<PlatformDisplay> platform_display_;

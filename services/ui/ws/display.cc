@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/debug/debugger.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/common/common_type_converters.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
@@ -32,17 +31,8 @@
 namespace ui {
 namespace ws {
 
-Display::Display(WindowServer* window_server,
-                 const PlatformDisplayInitParams& platform_display_init_params)
+Display::Display(WindowServer* window_server)
     : window_server_(window_server), last_cursor_(mojom::Cursor::CURSOR_NULL) {
-  CreateRootWindow(platform_display_init_params.metrics.pixel_size);
-
-  // Pass the display root ServerWindow to PlatformDisplay.
-  PlatformDisplayInitParams param_copy = platform_display_init_params;
-  param_copy.root_window = root_.get();
-  platform_display_.reset(PlatformDisplay::Create(param_copy));
-  platform_display_->Init(this);
-
   window_server_->window_manager_window_tree_factory_set()->AddObserver(this);
   window_server_->user_id_tracker()->AddObserver(this);
 }
@@ -70,11 +60,17 @@ Display::~Display() {
   }
 }
 
-void Display::Init(std::unique_ptr<DisplayBinding> binding) {
-  init_called_ = true;
+void Display::Init(const PlatformDisplayInitParams& init_params,
+                   std::unique_ptr<DisplayBinding> binding) {
   binding_ = std::move(binding);
   display_manager()->AddDisplay(this);
-  InitWindowManagerDisplayRootsIfNecessary();
+
+  CreateRootWindow(init_params.metrics.pixel_size);
+  PlatformDisplayInitParams params_copy = init_params;
+  params_copy.root_window = root_.get();
+
+  platform_display_ = PlatformDisplay::Create(params_copy);
+  platform_display_->Init(this);
 }
 
 int64_t Display::GetId() const {
@@ -106,7 +102,8 @@ display::Display Display::ToDisplay() const {
 }
 
 gfx::Size Display::GetSize() const {
-  return platform_display_->GetBounds().size();
+  DCHECK(root_);
+  return root_->bounds().size();
 }
 
 ServerWindow* Display::GetRootWithId(const WindowId& id) {
@@ -207,11 +204,7 @@ void Display::SetTitle(const mojo::String& title) {
   platform_display_->SetTitle(title.To<base::string16>());
 }
 
-void Display::InitWindowManagerDisplayRootsIfNecessary() {
-  if (!init_called_ || !root_)
-    return;
-
-  display_manager()->OnDisplayAcceleratedWidgetAvailable(this);
+void Display::InitWindowManagerDisplayRoots() {
   if (binding_) {
     std::unique_ptr<WindowManagerDisplayRoot> display_root_ptr(
         new WindowManagerDisplayRoot(this));
@@ -267,11 +260,15 @@ void Display::CreateRootWindow(const gfx::Size& size) {
   root_->SetVisible(true);
   focus_controller_ = base::MakeUnique<FocusController>(this, root_.get());
   focus_controller_->AddObserver(this);
-  InitWindowManagerDisplayRootsIfNecessary();
 }
 
 ServerWindow* Display::GetRootWindow() {
   return root_.get();
+}
+
+void Display::OnAcceleratedWidgetAvailable() {
+  display_manager()->OnDisplayAcceleratedWidgetAvailable(this);
+  InitWindowManagerDisplayRoots();
 }
 
 bool Display::IsInHighContrastMode() {

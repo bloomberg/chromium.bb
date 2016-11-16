@@ -7,9 +7,7 @@
 
 #include <stdint.h>
 
-#include <map>
 #include <memory>
-#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -26,10 +24,6 @@
 #include "ui/display/display.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
-namespace cc {
-class CopyOutputRequest;
-}  // namespace cc
-
 namespace gfx {
 class Rect;
 }
@@ -39,18 +33,13 @@ class GpuChannelHost;
 }
 
 namespace ui {
+
 class CursorLoader;
 class PlatformWindow;
 struct TextInputState;
-}  // namespace ui
-
-namespace ui {
-
-class FrameGenerator;
 
 namespace ws {
 
-class EventDispatcher;
 class PlatformDisplayFactory;
 struct PlatformDisplayInitParams;
 class ServerWindow;
@@ -60,7 +49,8 @@ class PlatformDisplay {
  public:
   virtual ~PlatformDisplay() {}
 
-  static PlatformDisplay* Create(const PlatformDisplayInitParams& init_params);
+  static std::unique_ptr<PlatformDisplay> Create(
+      const PlatformDisplayInitParams& init_params);
 
   virtual int64_t GetId() const = 0;
 

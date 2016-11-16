@@ -40,7 +40,9 @@ class TestPlatformDisplay : public PlatformDisplay {
   ~TestPlatformDisplay() override {}
 
   // PlatformDisplay:
-  void Init(PlatformDisplayDelegate* delegate) override {}
+  void Init(PlatformDisplayDelegate* delegate) override {
+    delegate->OnAcceleratedWidgetAvailable();
+  }
   int64_t GetId() const override { return id_; }
   void SetViewportSize(const gfx::Size& size) override {}
   void SetTitle(const base::string16& title) override {}
@@ -99,10 +101,11 @@ TestPlatformDisplayFactory::TestPlatformDisplayFactory(
 
 TestPlatformDisplayFactory::~TestPlatformDisplayFactory() {}
 
-PlatformDisplay* TestPlatformDisplayFactory::CreatePlatformDisplay() {
+std::unique_ptr<PlatformDisplay>
+TestPlatformDisplayFactory::CreatePlatformDisplay() {
   bool is_primary = (next_display_id_ == kFirstDisplayId);
-  return new TestPlatformDisplay(next_display_id_++, is_primary,
-                                 cursor_storage_);
+  return base::MakeUnique<TestPlatformDisplay>(next_display_id_++, is_primary,
+                                               cursor_storage_);
 }
 
 // TestFrameGeneratorDelegate -------------------------------------------------
@@ -412,8 +415,8 @@ void TestWindowServerDelegate::CreateDisplays(int num_displays) {
 
 Display* TestWindowServerDelegate::AddDisplay() {
   // Display manages its own lifetime.
-  Display* display = new Display(window_server_, PlatformDisplayInitParams());
-  display->Init(nullptr);
+  Display* display = new Display(window_server_);
+  display->Init(PlatformDisplayInitParams(), nullptr);
   return display;
 }
 
@@ -457,12 +460,11 @@ WindowServerTestHelper::~WindowServerTestHelper() {
 
 // WindowEventTargetingHelper ------------------------------------------------
 
-WindowEventTargetingHelper::WindowEventTargetingHelper()
-    : wm_client_(nullptr), display_binding_(nullptr), display_(nullptr) {
-  PlatformDisplayInitParams display_init_params;
-  display_ = new Display(window_server(), display_init_params);
+WindowEventTargetingHelper::WindowEventTargetingHelper() {
+  display_ = new Display(window_server());
   display_binding_ = new TestDisplayBinding(window_server());
-  display_->Init(base::WrapUnique(display_binding_));
+  display_->Init(PlatformDisplayInitParams(),
+                 base::WrapUnique(display_binding_));
   wm_client_ = ws_test_helper_.window_server_delegate()->last_client();
   wm_client_->tracker()->changes()->clear();
 }

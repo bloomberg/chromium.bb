@@ -4,6 +4,8 @@
 
 #include "services/ui/ws/display_manager.h"
 
+#include <vector>
+
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "services/ui/display/platform_screen.h"
@@ -176,8 +178,8 @@ void DisplayManager::OnDisplayAdded(int64_t id,
   params.display_id = id;
   params.metrics = metrics;
 
-  ws::Display* display = new ws::Display(window_server_, params);
-  display->Init(nullptr);
+  ws::Display* display = new ws::Display(window_server_);
+  display->Init(params, nullptr);
 
   window_server_->delegate()->UpdateTouchTransforms();
 }

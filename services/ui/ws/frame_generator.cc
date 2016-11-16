@@ -76,7 +76,7 @@ void FrameGenerator::OnAcceleratedWidgetAvailable(
     root_window_->CreateCompositorFrameSink(
         mojom::CompositorFrameSinkType::DEFAULT, widget_,
         gpu_channel_->gpu_memory_buffer_manager(),
-        new SurfacesContextProvider(widget_, std::move(gpu_channel_)),
+        new SurfacesContextProvider(widget_, gpu_channel_),
         std::move(request), binding_.CreateInterfacePtrAndBind());
     // TODO(fsamuel): This means we're always requesting a new BeginFrame signal
     // even when we don't need it. Once surface ID propagation work is done,
