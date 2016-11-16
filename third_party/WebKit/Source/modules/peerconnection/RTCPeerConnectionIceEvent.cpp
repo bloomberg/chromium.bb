@@ -22,35 +22,48 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/peerconnection/RTCIceCandidateEvent.h"
+#include "modules/peerconnection/RTCPeerConnectionIceEvent.h"
 
 #include "modules/peerconnection/RTCIceCandidate.h"
+#include "modules/peerconnection/RTCPeerConnectionIceEventInit.h"
 
 namespace blink {
 
-RTCIceCandidateEvent* RTCIceCandidateEvent::create(bool canBubble,
-                                                   bool cancelable,
-                                                   RTCIceCandidate* candidate) {
-  return new RTCIceCandidateEvent(canBubble, cancelable, candidate);
+RTCPeerConnectionIceEvent* RTCPeerConnectionIceEvent::create(
+    bool canBubble,
+    bool cancelable,
+    RTCIceCandidate* candidate) {
+  return new RTCPeerConnectionIceEvent(canBubble, cancelable, candidate);
 }
 
-RTCIceCandidateEvent::RTCIceCandidateEvent(bool canBubble,
-                                           bool cancelable,
-                                           RTCIceCandidate* candidate)
+RTCPeerConnectionIceEvent* RTCPeerConnectionIceEvent::create(
+    const AtomicString& type,
+    const RTCPeerConnectionIceEventInit& initializer) {
+  return new RTCPeerConnectionIceEvent(type, initializer);
+}
+
+RTCPeerConnectionIceEvent::RTCPeerConnectionIceEvent(bool canBubble,
+                                                     bool cancelable,
+                                                     RTCIceCandidate* candidate)
     : Event(EventTypeNames::icecandidate, canBubble, cancelable),
       m_candidate(candidate) {}
 
-RTCIceCandidateEvent::~RTCIceCandidateEvent() {}
+RTCPeerConnectionIceEvent::RTCPeerConnectionIceEvent(
+    const AtomicString& type,
+    const RTCPeerConnectionIceEventInit& initializer)
+    : Event(type, initializer), m_candidate(initializer.candidate()) {}
 
-RTCIceCandidate* RTCIceCandidateEvent::candidate() const {
+RTCPeerConnectionIceEvent::~RTCPeerConnectionIceEvent() {}
+
+RTCIceCandidate* RTCPeerConnectionIceEvent::candidate() const {
   return m_candidate.get();
 }
 
-const AtomicString& RTCIceCandidateEvent::interfaceName() const {
-  return EventNames::RTCIceCandidateEvent;
+const AtomicString& RTCPeerConnectionIceEvent::interfaceName() const {
+  return EventNames::RTCPeerConnectionIceEvent;
 }
 
-DEFINE_TRACE(RTCIceCandidateEvent) {
+DEFINE_TRACE(RTCPeerConnectionIceEvent) {
   visitor->trace(m_candidate);
   Event::trace(visitor);
 }

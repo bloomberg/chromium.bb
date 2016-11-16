@@ -4090,6 +4090,10 @@ interface RTCPeerConnection : EventTarget
     setter onnegotiationneeded
     setter onremovestream
     setter onsignalingstatechange
+interface RTCPeerConnectionIceEvent : Event
+    attribute @@toStringTag
+    getter candidate
+    method constructor
 interface RTCSessionDescription
     attribute @@toStringTag
     getter sdp

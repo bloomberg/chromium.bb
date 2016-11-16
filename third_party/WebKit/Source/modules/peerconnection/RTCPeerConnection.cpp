@@ -60,10 +60,10 @@
 #include "modules/peerconnection/RTCDTMFSender.h"
 #include "modules/peerconnection/RTCDataChannel.h"
 #include "modules/peerconnection/RTCDataChannelEvent.h"
-#include "modules/peerconnection/RTCIceCandidateEvent.h"
 #include "modules/peerconnection/RTCIceServer.h"
 #include "modules/peerconnection/RTCOfferOptions.h"
 #include "modules/peerconnection/RTCPeerConnectionErrorCallback.h"
+#include "modules/peerconnection/RTCPeerConnectionIceEvent.h"
 #include "modules/peerconnection/RTCSessionDescription.h"
 #include "modules/peerconnection/RTCSessionDescriptionCallback.h"
 #include "modules/peerconnection/RTCSessionDescriptionInit.h"
@@ -1260,11 +1260,12 @@ void RTCPeerConnection::didGenerateICECandidate(
   DCHECK(!m_closed);
   DCHECK(getExecutionContext()->isContextThread());
   if (webCandidate.isNull()) {
-    scheduleDispatchEvent(RTCIceCandidateEvent::create(false, false, nullptr));
+    scheduleDispatchEvent(
+        RTCPeerConnectionIceEvent::create(false, false, nullptr));
   } else {
     RTCIceCandidate* iceCandidate = RTCIceCandidate::create(webCandidate);
     scheduleDispatchEvent(
-        RTCIceCandidateEvent::create(false, false, iceCandidate));
+        RTCPeerConnectionIceEvent::create(false, false, iceCandidate));
   }
 }
 

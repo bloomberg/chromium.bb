@@ -34,7 +34,7 @@ generate_event_interfaces("modules_bindings_generated_event_interfaces") {
     "//third_party/WebKit/Source/modules/payments/PaymentRequestUpdateEvent.idl",
     "//third_party/WebKit/Source/modules/peerconnection/RTCDTMFToneChangeEvent.idl",
     "//third_party/WebKit/Source/modules/peerconnection/RTCDataChannelEvent.idl",
-    "//third_party/WebKit/Source/modules/peerconnection/RTCIceCandidateEvent.idl",
+    "//third_party/WebKit/Source/modules/peerconnection/RTCPeerConnectionIceEvent.idl",
     "//third_party/WebKit/Source/modules/presentation/PresentationConnectionAvailableEvent.idl",
     "//third_party/WebKit/Source/modules/presentation/PresentationConnectionCloseEvent.idl",
     "//third_party/WebKit/Source/modules/push_messaging/PushEvent.idl",

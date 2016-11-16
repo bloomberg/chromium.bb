@@ -22,24 +22,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RTCIceCandidateEvent_h
-#define RTCIceCandidateEvent_h
+#ifndef RTCPeerConnectionIceEvent_h
+#define RTCPeerConnectionIceEvent_h
 
 #include "modules/EventModules.h"
 #include "wtf/text/AtomicString.h"
 
 namespace blink {
 class RTCIceCandidate;
+class RTCPeerConnectionIceEventInit;
 
-class RTCIceCandidateEvent final : public Event {
+class RTCPeerConnectionIceEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  ~RTCIceCandidateEvent() override;
+  ~RTCPeerConnectionIceEvent() override;
 
-  static RTCIceCandidateEvent* create(bool canBubble,
-                                      bool cancelable,
-                                      RTCIceCandidate*);
+  static RTCPeerConnectionIceEvent* create(bool canBubble,
+                                           bool cancelable,
+                                           RTCIceCandidate*);
+
+  static RTCPeerConnectionIceEvent* create(
+      const AtomicString& type,
+      const RTCPeerConnectionIceEventInit&);
 
   RTCIceCandidate* candidate() const;
 
@@ -48,11 +53,14 @@ class RTCIceCandidateEvent final : public Event {
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  RTCIceCandidateEvent(bool canBubble, bool cancelable, RTCIceCandidate*);
+  RTCPeerConnectionIceEvent(bool canBubble, bool cancelable, RTCIceCandidate*);
+
+  RTCPeerConnectionIceEvent(const AtomicString& type,
+                            const RTCPeerConnectionIceEventInit&);
 
   Member<RTCIceCandidate> m_candidate;
 };
 
 }  // namespace blink
 
-#endif  // RTCIceCandidateEvent_h
+#endif  // RTCPeerConnectionIceEvent_h
