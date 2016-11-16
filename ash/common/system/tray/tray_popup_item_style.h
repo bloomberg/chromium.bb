@@ -71,6 +71,9 @@ class TrayPopupItemStyle {
     BUTTON,
   };
 
+  static SkColor GetIconColor(const ui::NativeTheme* theme,
+                              ColorStyle color_style);
+
   TrayPopupItemStyle(const ui::NativeTheme* theme, FontStyle font_style);
   ~TrayPopupItemStyle();
 
@@ -95,6 +98,9 @@ class TrayPopupItemStyle {
 
  private:
   // The theme that the styles are dervied from.
+  // NOTE the styles are not currently derived from |theme_| but see TODO below.
+  // TODO(bruthig|tdanderson): Determine if TrayPopupItemStyle should depend on
+  // a NativeTheme. See http://crbug.com/665891.
   const ui::NativeTheme* theme_;
 
   FontStyle font_style_;

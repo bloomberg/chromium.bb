@@ -14,9 +14,6 @@
 namespace ash {
 namespace {
 
-// TODO(bruthig|tdanderson): Figure out why the theme providers aren't providing
-// the desired colors. See http://crbug.com/614453.
-
 // The base color used to compute the effective text colors.
 const SkColor kBaseTextColor = SK_ColorBLACK;
 
@@ -32,6 +29,27 @@ const int kInactiveIconAlpha = 0x8A;
 const int kDisabledIconAlpha = 0x61;
 
 }  // namespace
+
+// static
+SkColor TrayPopupItemStyle::GetIconColor(const ui::NativeTheme* theme,
+                                         ColorStyle color_style) {
+  // TODO(bruthig|tdanderson): Determine if TrayPopupItemStyle should depend on
+  // a NativeTheme and if so use it here. See http://crbug.com/665891.
+  switch (color_style) {
+    case ColorStyle::ACTIVE:
+      return SkColorSetA(kBaseIconColor, kActiveIconAlpha);
+    case ColorStyle::INACTIVE:
+      return SkColorSetA(kBaseIconColor, kInactiveIconAlpha);
+    case ColorStyle::DISABLED:
+      return SkColorSetA(kBaseIconColor, kDisabledIconAlpha);
+    case ColorStyle::CONNECTED:
+      // Use a noticeable color to help notice undefined color styles for icons.
+      return SK_ColorMAGENTA;
+  }
+  NOTREACHED();
+  // Use a noticeable color to help notice unhandled cases.
+  return SK_ColorMAGENTA;
+}
 
 TrayPopupItemStyle::TrayPopupItemStyle(const ui::NativeTheme* theme,
                                        FontStyle font_style)
@@ -61,20 +79,7 @@ SkColor TrayPopupItemStyle::GetTextColor() const {
 }
 
 SkColor TrayPopupItemStyle::GetIconColor() const {
-  switch (color_style_) {
-    case ColorStyle::ACTIVE:
-      return SkColorSetA(kBaseIconColor, kActiveIconAlpha);
-    case ColorStyle::INACTIVE:
-      return SkColorSetA(kBaseIconColor, kInactiveIconAlpha);
-    case ColorStyle::DISABLED:
-      return SkColorSetA(kBaseIconColor, kDisabledIconAlpha);
-    case ColorStyle::CONNECTED:
-      // Use a noticeable color to help notice undefined color styles for icons.
-      return SK_ColorMAGENTA;
-  }
-  NOTREACHED();
-  // Use a noticeable color to help notice unhandled cases.
-  return SK_ColorMAGENTA;
+  return GetIconColor(theme_, color_style_);
 }
 
 void TrayPopupItemStyle::SetupLabel(views::Label* label) const {

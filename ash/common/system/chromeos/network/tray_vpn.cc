@@ -4,6 +4,7 @@
 
 #include "ash/common/system/chromeos/network/tray_vpn.h"
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/chromeos/network/network_icon.h"
 #include "ash/common/system/chromeos/network/network_icon_animation.h"
@@ -17,11 +18,13 @@
 #include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
 #include "ash/common/wm_shell.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "grit/ash_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/paint_vector_icon.h"
 
 using chromeos::NetworkHandler;
 using chromeos::NetworkState;
@@ -114,13 +117,20 @@ class VpnDefaultView : public TrayItemMore,
   void GetNetworkStateHandlerImageAndLabel(gfx::ImageSkia* image,
                                            base::string16* label,
                                            bool* animating) {
-    // TODO(bruthig): Update the image to use the proper color. See
-    // https://crbug.com/632147.
     NetworkStateHandler* handler =
         NetworkHandler::Get()->network_state_handler();
     const NetworkState* vpn =
         handler->FirstNetworkByType(NetworkTypePattern::VPN());
-    *image = network_icon::GetVpnImage();
+    if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+      *image = gfx::CreateVectorIcon(
+          kNetworkVpnIcon, TrayPopupItemStyle::GetIconColor(
+                               GetNativeTheme(),
+                               vpn->IsConnectedState()
+                                   ? TrayPopupItemStyle::ColorStyle::ACTIVE
+                                   : TrayPopupItemStyle::ColorStyle::INACTIVE));
+    } else {
+      *image = network_icon::GetVpnImage();
+    }
     if (!IsVpnConnected()) {
       if (label) {
         *label =
