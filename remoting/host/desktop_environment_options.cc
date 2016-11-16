@@ -6,18 +6,22 @@
 
 #include <utility>
 
-#include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
-
 namespace remoting {
+
+using DesktopCaptureOptions = webrtc::DesktopCaptureOptions;
 
 // static
 DesktopEnvironmentOptions DesktopEnvironmentOptions::CreateDefault() {
-  DesktopCaptureOptionsPtr capture_options =
-      webrtc::DesktopCaptureOptions::CreateDefault();
-  return DesktopEnvironmentOptions(std::move(capture_options));
+  DesktopEnvironmentOptions options;
+  options.desktop_capture_options_ = DesktopCaptureOptions::CreateDefault();
+  options.Initialize();
+  return options;
 }
 
-DesktopEnvironmentOptions::DesktopEnvironmentOptions() = default;
+DesktopEnvironmentOptions::DesktopEnvironmentOptions() {
+  Initialize();
+}
+
 DesktopEnvironmentOptions::DesktopEnvironmentOptions(
     DesktopEnvironmentOptions&& other) = default;
 DesktopEnvironmentOptions::DesktopEnvironmentOptions(
@@ -30,56 +34,18 @@ DesktopEnvironmentOptions&
 DesktopEnvironmentOptions::operator=(
     const DesktopEnvironmentOptions& other) = default;
 
-DesktopEnvironmentOptions::DesktopEnvironmentOptions(
-    DesktopCaptureOptionsPtr&& desktop_capture_options)
-    : desktop_capture_options_(std::move(desktop_capture_options)) {}
-
-DesktopEnvironmentOptions::
-DesktopCaptureOptionsPtr::DesktopCaptureOptionsPtr()
-    : DesktopCaptureOptionsPtr(webrtc::DesktopCaptureOptions()) {}
-
-DesktopEnvironmentOptions::
-DesktopCaptureOptionsPtr::DesktopCaptureOptionsPtr(
-    webrtc::DesktopCaptureOptions&& option)
-    : desktop_capture_options(
-        new webrtc::DesktopCaptureOptions(std::move(option))) {
-  desktop_capture_options->set_detect_updated_region(true);
+void DesktopEnvironmentOptions::Initialize() {
+  desktop_capture_options_.set_detect_updated_region(true);
 }
 
-DesktopEnvironmentOptions::
-DesktopCaptureOptionsPtr::DesktopCaptureOptionsPtr(
-    DesktopCaptureOptionsPtr&& other) = default;
-
-DesktopEnvironmentOptions::
-DesktopCaptureOptionsPtr::DesktopCaptureOptionsPtr(
-    const DesktopCaptureOptionsPtr& other) {
-  desktop_capture_options.reset(new webrtc::DesktopCaptureOptions(
-      *other.desktop_capture_options));
-}
-
-DesktopEnvironmentOptions::
-DesktopCaptureOptionsPtr::~DesktopCaptureOptionsPtr() = default;
-
-DesktopEnvironmentOptions::DesktopCaptureOptionsPtr&
-DesktopEnvironmentOptions::DesktopCaptureOptionsPtr::operator=(
-    DesktopEnvironmentOptions::DesktopCaptureOptionsPtr&& other) = default;
-
-DesktopEnvironmentOptions::DesktopCaptureOptionsPtr&
-DesktopEnvironmentOptions::DesktopCaptureOptionsPtr::operator=(
-    const DesktopEnvironmentOptions::DesktopCaptureOptionsPtr& other) {
-  desktop_capture_options.reset(new webrtc::DesktopCaptureOptions(
-        *other.desktop_capture_options));
-  return *this;
-}
-
-const webrtc::DesktopCaptureOptions*
+const DesktopCaptureOptions*
 DesktopEnvironmentOptions::desktop_capture_options() const {
-  return desktop_capture_options_.desktop_capture_options.get();
+  return &desktop_capture_options_;
 }
 
-webrtc::DesktopCaptureOptions*
+DesktopCaptureOptions*
 DesktopEnvironmentOptions::desktop_capture_options() {
-  return desktop_capture_options_.desktop_capture_options.get();
+  return &desktop_capture_options_;
 }
 
 bool DesktopEnvironmentOptions::enable_curtaining() const {

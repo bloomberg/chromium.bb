@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 
 namespace webrtc {
 class DesktopCaptureOptions;
@@ -42,24 +43,8 @@ class DesktopEnvironmentOptions final {
   webrtc::DesktopCaptureOptions* desktop_capture_options();
 
  private:
-  // A copyable DesktopCaptureOptions without needing to include the definition
-  // of DesktopCaptureOptions. Uses std::unique_ptr to avoid including
-  // desktop_capture_options.h, which contains a set of evil macros from Xlib to
-  // break build.
-  struct DesktopCaptureOptionsPtr final {
-    DesktopCaptureOptionsPtr();
-    DesktopCaptureOptionsPtr(webrtc::DesktopCaptureOptions&& option);
-    DesktopCaptureOptionsPtr(DesktopCaptureOptionsPtr&& other);
-    DesktopCaptureOptionsPtr(const DesktopCaptureOptionsPtr& other);
-    ~DesktopCaptureOptionsPtr();
-
-    DesktopCaptureOptionsPtr& operator=(DesktopCaptureOptionsPtr&& other);
-    DesktopCaptureOptionsPtr& operator=(const DesktopCaptureOptionsPtr& other);
-
-    std::unique_ptr<webrtc::DesktopCaptureOptions> desktop_capture_options;
-  };
-
-  DesktopEnvironmentOptions(DesktopCaptureOptionsPtr&& desktop_capture_options);
+  // Sets default values for default constructor and CreateDefault() function.
+  void Initialize();
 
   // True if the curtain mode should be enabled by the DesktopEnvironment
   // instances. Note, not all DesktopEnvironments support curtain mode.
@@ -69,10 +54,7 @@ class DesktopEnvironmentOptions final {
   bool enable_user_interface_ = true;
 
   // The DesktopCaptureOptions to initialize DesktopCapturer.
-  // |desktop_capture_options_| needs to be copyable and copy-assignable, but
-  // std::unique_ptr is not copyable. So work around the issue by using
-  // DesktopCaptureOptionsPtr.
-  DesktopCaptureOptionsPtr desktop_capture_options_;
+  webrtc::DesktopCaptureOptions desktop_capture_options_;
 };
 
 }  // namespace remoting
