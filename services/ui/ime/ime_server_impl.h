@@ -22,7 +22,7 @@ class IMEServerImpl : public mojom::IMEServer {
   IMEServerImpl();
   ~IMEServerImpl() override;
 
-  void Init(service_manager::Connector* connector);
+  void Init(service_manager::Connector* connector, bool is_test_config);
   void AddBinding(mojom::IMEServerRequest request);
   void OnDriverChanged(mojom::IMEDriverPtr driver);
 

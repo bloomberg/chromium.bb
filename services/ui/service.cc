@@ -193,7 +193,7 @@ void Service::OnStart() {
     touch_controller_.reset(
         new ws::TouchController(window_server_->display_manager()));
 
-  ime_server_.Init(context()->connector());
+  ime_server_.Init(context()->connector(), test_config_);
 }
 
 bool Service::OnConnect(const service_manager::ServiceInfo& remote_info,

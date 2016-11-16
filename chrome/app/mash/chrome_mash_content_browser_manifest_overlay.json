@@ -16,13 +16,15 @@
           "ash::mojom::WallpaperManager",
           "app_list::mojom::AppListPresenter",
           "keyboard::mojom::Keyboard"
-        ]
+        ],
+        "ime:ime_driver": [ "ui::mojom::IMEDriver" ]
       },
       "requires": {
         "ash": [ "ash" ],
         "accessibility_autoclick": [ "ash:autoclick" ],
         "mash_session": [ "app" ],
-        "task_viewer": [ "mash:launchable" ]
+        "task_viewer": [ "mash:launchable" ],
+        "ui": [ "ui:ime_registrar" ]
       }
     }
   }
