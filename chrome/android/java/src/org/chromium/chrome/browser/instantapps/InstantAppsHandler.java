@@ -19,6 +19,7 @@ import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -176,6 +177,7 @@ public class InstantAppsHandler {
                 || IntentUtils.safeGetBooleanExtra(intent, DO_NOT_LAUNCH_EXTRA, false)
                 || IntentUtils.safeGetBooleanExtra(
                         intent, IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false)
+                || IntentUtils.safeHasExtra(intent, ShortcutHelper.EXTRA_SOURCE)
                 || (isCustomTabsIntent && !IntentUtils.safeGetBooleanExtra(
                         intent, CUSTOM_APPS_INSTANT_APP_EXTRA, false))
                 || isIntentFromChrome(context, intent)
