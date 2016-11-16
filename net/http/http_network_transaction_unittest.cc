@@ -135,7 +135,7 @@ class TestNetworkStreamThrottler : public NetworkThrottleManager {
   void UnthrottleAllRequests() {
     std::set<TestThrottle*> outstanding_throttles_copy(outstanding_throttles_);
     for (auto& throttle : outstanding_throttles_copy) {
-      if (throttle->IsBlocked())
+      if (throttle->IsThrottled())
         throttle->Unthrottle();
     }
   }
@@ -162,11 +162,7 @@ class TestNetworkStreamThrottler : public NetworkThrottleManager {
     ~TestThrottle() override { throttler_->OnThrottleDestroyed(this); }
 
     // Throttle
-    bool IsBlocked() const override { return throttled_; }
-    RequestPriority Priority() const override {
-      NOTREACHED();
-      return IDLE;
-    }
+    bool IsThrottled() const override { return throttled_; }
     void SetPriority(RequestPriority priority) override {
       throttler_->SetPriorityCalled(priority);
     }
@@ -180,7 +176,7 @@ class TestNetworkStreamThrottler : public NetworkThrottleManager {
       EXPECT_TRUE(throttled_);
 
       throttled_ = false;
-      delegate_->OnThrottleUnblocked(this);
+      delegate_->OnThrottleStateChanged();
     }
 
     bool throttled_;

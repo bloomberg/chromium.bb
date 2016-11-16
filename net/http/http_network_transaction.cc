@@ -593,10 +593,9 @@ void HttpNetworkTransaction::GetConnectionAttempts(
   *out = connection_attempts_;
 }
 
-void HttpNetworkTransaction::OnThrottleUnblocked(
-    NetworkThrottleManager::Throttle* throttle) {
+void HttpNetworkTransaction::OnThrottleStateChanged() {
   // TODO(rdsmith): This DCHECK is dependent on the only transition
-  // being from blocked->unblocked.  That is true right now, but may not
+  // being from throttled->unthrottled.  That is true right now, but may not
   // be so in the future.
   DCHECK_EQ(STATE_THROTTLE_COMPLETE, next_state_);
 
@@ -799,12 +798,11 @@ int HttpNetworkTransaction::DoLoop(int result) {
 }
 
 int HttpNetworkTransaction::DoThrottle() {
-  DCHECK(!throttle_);
   throttle_ = session_->throttler()->CreateThrottle(
       this, priority_, (request_->load_flags & LOAD_IGNORE_LIMITS) != 0);
   next_state_ = STATE_THROTTLE_COMPLETE;
 
-  if (throttle_->IsBlocked()) {
+  if (throttle_->IsThrottled()) {
     net_log_.BeginEvent(NetLogEventType::HTTP_TRANSACTION_THROTTLED);
     return ERR_IO_PENDING;
   }
@@ -814,7 +812,7 @@ int HttpNetworkTransaction::DoThrottle() {
 
 int HttpNetworkTransaction::DoThrottleComplete() {
   DCHECK(throttle_);
-  DCHECK(!throttle_->IsBlocked());
+  DCHECK(!throttle_->IsThrottled());
 
   next_state_ = STATE_NOTIFY_BEFORE_CREATE_STREAM;
 

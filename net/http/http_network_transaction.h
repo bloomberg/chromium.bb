@@ -124,7 +124,7 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   void GetConnectionAttempts(ConnectionAttempts* out) const override;
 
   // NetworkThrottleManager::Delegate methods:
-  void OnThrottleUnblocked(NetworkThrottleManager::Throttle* throttle) override;
+  void OnThrottleStateChanged() override;
 
  private:
   friend class HttpNetworkTransactionSSLTest;
