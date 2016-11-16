@@ -33,10 +33,11 @@
 #import "chrome/browser/ui/cocoa/floating_bar_backing_view.h"
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
 #include "chrome/browser/ui/cocoa/fullscreen_low_power_coordinator.h"
-#import "chrome/browser/ui/cocoa/fullscreen_toolbar_controller.h"
+#import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/fullscreen_window.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
+#include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_button_controller.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_icon_controller.h"
 #import "chrome/browser/ui/cocoa/status_bubble_mac.h"
@@ -862,12 +863,12 @@ willPositionSheet:(NSWindow*)sheet
   [layout setWindowSize:windowSize];
 
   [layout setInAnyFullscreen:[self isInAnyFullscreenMode]];
-  [layout setFullscreenToolbarStyle:fullscreenToolbarController_.get()
-                                        .toolbarStyle];
-  [layout
-      setFullscreenMenubarOffset:[fullscreenToolbarController_ menubarOffset]];
-  [layout setFullscreenToolbarFraction:[fullscreenToolbarController_
-                                           toolbarFraction]];
+
+  FullscreenToolbarLayout fullscreenToolbarLayout =
+      [fullscreenToolbarController_ computeLayout];
+  [layout setFullscreenToolbarStyle:fullscreenToolbarLayout.toolbarStyle];
+  [layout setFullscreenMenubarOffset:fullscreenToolbarLayout.menubarOffset];
+  [layout setFullscreenToolbarFraction:fullscreenToolbarLayout.toolbarFraction];
 
   [layout setHasTabStrip:[self hasTabStrip]];
   [layout setFullscreenButtonFrame:[self fullscreenButtonFrame]];

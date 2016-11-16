@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_animation_controller.h"
 
-#import "chrome/browser/ui/cocoa/fullscreen_toolbar_controller.h"
+#import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller.h"
 
 namespace {
 
@@ -94,7 +94,7 @@ bool FullscreenToolbarAnimationController::IsAnimationRunning() const {
 
 void FullscreenToolbarAnimationController::AnimationProgressed(
     const gfx::Animation* animation) {
-  [owner_ updateToolbar];
+  [owner_ updateToolbarLayout];
 }
 
 void FullscreenToolbarAnimationController::AnimationEnded(

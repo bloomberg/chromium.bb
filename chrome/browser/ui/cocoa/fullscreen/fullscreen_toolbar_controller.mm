@@ -1,14 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/fullscreen_toolbar_controller.h"
-
-#include <algorithm>
+#import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller.h"
 
 #include "base/command_line.h"
-#import "base/mac/mac_util.h"
-#include "base/mac/sdk_forward_declarations.h"
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_menubar_tracker.h"
@@ -18,8 +14,6 @@
 #import "chrome/browser/ui/cocoa/fullscreen/immersive_fullscreen_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "ui/base/cocoa/appkit_utils.h"
-#import "ui/base/cocoa/nsview_additions.h"
 
 namespace {
 
@@ -30,13 +24,11 @@ const CGFloat kShowFraction = 1.0;
 // The amount by which the toolbar is offset downwards (to avoid the menu)
 // when the toolbar style is TOOLBAR_HIDDEN. (We can't use
 // |-[NSMenu menuBarHeight]| since it returns 0 when the menu bar is hidden.)
-const CGFloat kToolbarVerticalOffset = 22;
+const CGFloat kToolbarVerticalOffset = -22;
 
 }  // end namespace
 
 @implementation FullscreenToolbarController
-
-@synthesize toolbarStyle = toolbarStyle_;
 
 - (id)initWithBrowserController:(BrowserWindowController*)controller {
   if ((self = [super init])) {
@@ -104,59 +96,6 @@ const CGFloat kToolbarVerticalOffset = 22;
   animationController_->AnimateToolbarForTabstripChanges();
 }
 
-- (void)updateToolbarStyleExitingTabFullscreen:(BOOL)isExitingTabFullscreen {
-  FullscreenToolbarStyle oldStyle = toolbarStyle_;
-
-  if ([browserController_ isFullscreenForTabContentOrExtension] &&
-      !isExitingTabFullscreen) {
-    toolbarStyle_ = FullscreenToolbarStyle::TOOLBAR_NONE;
-  } else {
-    PrefService* prefs = [browserController_ profile]->GetPrefs();
-    toolbarStyle_ = prefs->GetBoolean(prefs::kShowFullscreenToolbar)
-                        ? FullscreenToolbarStyle::TOOLBAR_PRESENT
-                        : FullscreenToolbarStyle::TOOLBAR_HIDDEN;
-  }
-
-  if (oldStyle != toolbarStyle_)
-    [self updateToolbar];
-}
-
-- (void)updateToolbar {
-  [browserController_ layoutSubviews];
-  animationController_->ToolbarDidUpdate();
-  [mouseTracker_ updateTrackingArea];
-}
-
-- (BrowserWindowController*)browserWindowController {
-  return browserController_;
-}
-
-- (FullscreenToolbarVisibilityLockController*)visibilityLockController {
-  return visibilityLockController_.get();
-}
-
-// This method works, but is fragile.
-//
-// It gets used during view layout, which sometimes needs to be done at the
-// beginning of an animation. As such, this method needs to reflect the
-// menubarOffset expected at the end of the animation. This information is not
-// readily available. (The layout logic needs a refactor).
-//
-// For AppKit Fullscreen, the menubar always starts hidden, and
-// menubarFraction_ always starts at 0, so the logic happens to work. For
-// Immersive Fullscreen, this class controls the visibility of the menu bar, so
-// the logic is correct and not fragile.
-- (CGFloat)menubarOffset {
-  if ([browserController_ isInAppKitFullscreen]) {
-    return -std::floor([menubarTracker_ menubarFraction] *
-                       kToolbarVerticalOffset);
-  }
-
-  return [immersiveFullscreenController_ shouldShowMenubar]
-             ? -kToolbarVerticalOffset
-             : 0;
-}
-
 - (CGFloat)toolbarFraction {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
     return kHideFraction;
@@ -177,6 +116,22 @@ const CGFloat kToolbarVerticalOffset = 22;
   }
 }
 
+- (FullscreenToolbarLayout)computeLayout {
+  FullscreenToolbarLayout layout;
+  layout.toolbarStyle = toolbarStyle_;
+  layout.toolbarFraction = [self toolbarFraction];
+
+  if ([browserController_ isInAppKitFullscreen]) {
+    layout.menubarOffset = [menubarTracker_ menubarFraction];
+  } else {
+    layout.menubarOffset =
+        [immersiveFullscreenController_ shouldShowMenubar] ? 1 : 0;
+  }
+  layout.menubarOffset *= kToolbarVerticalOffset;
+
+  return layout;
+}
+
 - (BOOL)mustShowFullscreenToolbar {
   if (!inFullscreenMode_)
     return NO;
@@ -193,14 +148,44 @@ const CGFloat kToolbarVerticalOffset = 22;
          [visibilityLockController_ isToolbarVisibilityLocked];
 }
 
-- (BOOL)isInFullscreen {
-  return inFullscreenMode_;
-}
-
 - (void)updateToolbarFrame:(NSRect)frame {
   if (mouseTracker_.get())
     [mouseTracker_ updateToolbarFrame:frame];
 }
 
-@end
+- (void)updateToolbarStyleExitingTabFullscreen:(BOOL)isExitingTabFullscreen {
+  FullscreenToolbarStyle oldStyle = toolbarStyle_;
 
+  if ([browserController_ isFullscreenForTabContentOrExtension] &&
+      !isExitingTabFullscreen) {
+    toolbarStyle_ = FullscreenToolbarStyle::TOOLBAR_NONE;
+  } else {
+    PrefService* prefs = [browserController_ profile]->GetPrefs();
+    toolbarStyle_ = prefs->GetBoolean(prefs::kShowFullscreenToolbar)
+                        ? FullscreenToolbarStyle::TOOLBAR_PRESENT
+                        : FullscreenToolbarStyle::TOOLBAR_HIDDEN;
+  }
+
+  if (oldStyle != toolbarStyle_)
+    [self updateToolbarLayout];
+}
+
+- (void)updateToolbarLayout {
+  [browserController_ layoutSubviews];
+  animationController_->ToolbarDidUpdate();
+  [mouseTracker_ updateTrackingArea];
+}
+
+- (BOOL)isInFullscreen {
+  return inFullscreenMode_;
+}
+
+- (BrowserWindowController*)browserWindowController {
+  return browserController_;
+}
+
+- (FullscreenToolbarVisibilityLockController*)visibilityLockController {
+  return visibilityLockController_.get();
+}
+
+@end

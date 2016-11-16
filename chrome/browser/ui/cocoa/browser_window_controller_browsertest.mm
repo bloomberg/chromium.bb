@@ -33,7 +33,7 @@
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#import "chrome/browser/ui/cocoa/fullscreen_toolbar_controller.h"
+#import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_base_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
@@ -353,7 +353,9 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
   }
 
   void VerifyFullscreenToolbarVisibility(FullscreenToolbarStyle style) {
-    EXPECT_EQ([[controller() fullscreenToolbarController] toolbarStyle], style);
+    EXPECT_EQ(
+        [[controller() fullscreenToolbarController] computeLayout].toolbarStyle,
+        style);
 
     NSRect toolbarFrame = [[[controller() toolbarController] view] frame];
     NSRect screenFrame = [[[controller() window] screen] frame];

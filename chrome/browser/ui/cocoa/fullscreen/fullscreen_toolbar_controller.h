@@ -1,15 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_FULLSCREEN_TOOLBAR_CONTROLLER_H_
-#define CHROME_BROWSER_UI_COCOA_FULLSCREEN_TOOLBAR_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_COCOA_FULLSCREEN_FULLSCREEN_TOOLBAR_CONTROLLER_H_
+#define CHROME_BROWSER_UI_COCOA_FULLSCREEN_FULLSCREEN_TOOLBAR_CONTROLLER_H_
 
-#include <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/mac_util.h"
-#include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#include "base/mac/scoped_nsobject.h"
 
 @class BrowserWindowController;
 @class FullscreenMenubarTracker;
@@ -32,12 +31,22 @@ enum class FullscreenToolbarStyle {
   TOOLBAR_NONE,
 };
 
-// Provides a controller to fullscreen toolbar for a single browser
-// window.  This class handles running animations, showing and hiding the
-// fullscreen toolbar, and managing the tracking area associated with the
-// toolbar.  This class does not directly manage any views -- the
-// BrowserWindowController is responsible for positioning and z-ordering views.
-//
+// This struct contains the calculated values of the fullscreen toolbar layout.
+struct FullscreenToolbarLayout {
+  // The toolbar style.
+  FullscreenToolbarStyle toolbarStyle;
+
+  // The fraction of the toolbar that is shown in the screen.
+  CGFloat toolbarFraction;
+
+  // The amount the menuber should be offset from the top of the screen.
+  CGFloat menubarOffset;
+};
+
+// Provides a controller to the fullscreen toolbar for a single browser
+// window. This class sets up the animation manager, visibility locks, menubar
+// tracking, and mouse tracking associated with the toolbar. It receives input
+// from these objects to update and recompute the fullscreen toolbar laytout.
 
 // TODO (spqchan): Write tests for this class. See crbug.com/640064.
 @interface FullscreenToolbarController : NSObject {
@@ -66,9 +75,10 @@ enum class FullscreenToolbarStyle {
   // Controller for immersive fullscreen.
   base::scoped_nsobject<ImmersiveFullscreenController>
       immersiveFullscreenController_;
-}
 
-@property(nonatomic, assign) FullscreenToolbarStyle toolbarStyle;
+  // The style of the fullscreen toolbar.
+  FullscreenToolbarStyle toolbarStyle_;
+}
 
 // Designated initializer.
 - (id)initWithBrowserController:(BrowserWindowController*)controller;
@@ -86,16 +96,14 @@ enum class FullscreenToolbarStyle {
 // Animates the toolbar dropping down to show changes to the tab strip.
 - (void)revealToolbarForTabStripChanges;
 
-// In any fullscreen mode, the y offset to use for the content at the top of
-// the screen (tab strip, omnibox, bookmark bar, etc).
-// Ranges from 0 to -22.
-- (CGFloat)menubarOffset;
-
 // Returns the fraction of the toolbar exposed at the top.
 // It returns 1.0 if the toolbar is fully shown and 0.0 if the toolbar is
 // hidden. Otherwise, if the toolbar is in progress of animating, it will
 // return a float that ranges from (0, 1).
 - (CGFloat)toolbarFraction;
+
+// Computes and return the layout for the fullscreen toolbar.
+- (FullscreenToolbarLayout)computeLayout;
 
 // Returns YES if the fullscreen toolbar must be shown.
 - (BOOL)mustShowFullscreenToolbar;
@@ -103,15 +111,15 @@ enum class FullscreenToolbarStyle {
 // Called by the BrowserWindowController to update toolbar frame.
 - (void)updateToolbarFrame:(NSRect)frame;
 
-// Returns YES if the browser in in fullscreen.
-- (BOOL)isInFullscreen;
-
 // Updates the toolbar style. If the style has changed, then the toolbar will
 // relayout.
 - (void)updateToolbarStyleExitingTabFullscreen:(BOOL)isExitingTabFullscreen;
 
-// Updates the toolbar by updating the layout, menubar and dock.
-- (void)updateToolbar;
+// Updates the toolbar by updating the layout.
+- (void)updateToolbarLayout;
+
+// Returns YES if the browser in in fullscreen.
+- (BOOL)isInFullscreen;
 
 // Returns |browserController_|.
 - (BrowserWindowController*)browserWindowController;
@@ -131,4 +139,4 @@ enum class FullscreenToolbarStyle {
 
 @end
 
-#endif  // CHROME_BROWSER_UI_COCOA_FULLSCREEN_TOOLBAR_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_COCOA_FULLSCREEN_FULLSCREEN_TOOLBAR_CONTROLLER_H_

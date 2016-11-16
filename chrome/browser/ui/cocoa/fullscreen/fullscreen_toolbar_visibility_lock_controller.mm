@@ -7,7 +7,7 @@
 #include "base/mac/scoped_nsobject.h"
 
 #import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_animation_controller.h"
-#import "chrome/browser/ui/cocoa/fullscreen_toolbar_controller.h"
+#import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller.h"
 
 @interface FullscreenToolbarVisibilityLockController () {
   // Stores the objects that are locking the toolbar visibility.
@@ -57,7 +57,7 @@ initWithFullscreenToolbarController:(FullscreenToolbarController*)owner
   if (animate)
     animationController_->AnimateToolbarIn();
   else
-    [owner_ updateToolbar];
+    [owner_ updateToolbarLayout];
 }
 
 - (void)releaseToolbarVisibilityForOwner:(id)owner withAnimation:(BOOL)animate {
@@ -69,7 +69,7 @@ initWithFullscreenToolbarController:(FullscreenToolbarController*)owner
   if (animate)
     animationController_->AnimateToolbarOutIfPossible();
   else
-    [owner_ updateToolbar];
+    [owner_ updateToolbarLayout];
 }
 
 @end

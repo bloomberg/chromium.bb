@@ -8,7 +8,7 @@
 
 #include "base/macros.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#import "chrome/browser/ui/cocoa/fullscreen_toolbar_controller.h"
+#import "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller.h"
 #include "ui/base/cocoa/appkit_utils.h"
 
 namespace {
@@ -138,7 +138,7 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 
   menubarFraction_ = progress;
 
-  [owner_ updateToolbar];
+  [owner_ updateToolbarLayout];
 }
 
 - (BOOL)isMouseOnScreen {
@@ -149,7 +149,7 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 - (void)activeSpaceDidChange:(NSNotification*)notification {
   menubarFraction_ = 0.0;
   state_ = FullscreenMenubarState::HIDDEN;
-  [owner_ updateToolbar];
+  [owner_ updateToolbarLayout];
 }
 
 @end
