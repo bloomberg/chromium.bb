@@ -1,42 +1,28 @@
 <!DOCTYPE html>
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
-</head>
-<body>
-<div id="source" contenteditable="true" spellcheck="false">You has the right.</div>
-<div id="target" contenteditable="true" spellcheck="true"></div>
-
+<div id="warning">
+This test requires window.internals. If you use content_shell,
+"--expose-internals-for-testing" command flag enables it.
+</div>
+<div id="div" contenteditable>You has the right.</div>
 <script>
-description('This tests whether WebKit can render grammar markers when pasting text if it has a grammar-checker. To test manually, copy the text in the first div element and paste it to the second div element. This test succeeds when WebKit renders a grammar marker under a word "has".');
-
 jsTestIsAsync = true;
-if (window.testRunner)
-    testRunner.setMockSpellCheckerEnabled(true);
-
-function verifyGrammarMarker(destination, ungrammaticalPhrase)
-{
-    if (internals.hasGrammarMarker(document, destination.innerHTML.indexOf(ungrammaticalPhrase), ungrammaticalPhrase.length)) {
-        testPassed("ungrammatical phrase '" + ungrammaticalPhrase + "' on '" + destination.innerHTML + "'");
-        return true;
-    } else
-        return false;
-}
-
 if (window.testRunner) {
-    testRunner.dumpAsTextWithPixelResults();
-    testRunner.setBackingScaleFactor(2, function () {
-        shouldBecomeEqual('verifyGrammarMarker(target, "has")', 'true', finishJSTest);
-    });
+  testRunner.setBackingScaleFactor(
+      2,
+      () => setTimeout(() => testRunner.notifyDone(), 0));
 }
 
-var source = document.getElementById('source');
-window.getSelection().selectAllChildren(source);
-document.execCommand('Copy');
-var target = document.getElementById('target');
-window.getSelection().selectAllChildren(target);
-document.execCommand('Paste');
+// This tests the appearance of the grammar markers rendered by Blink.
 
+const div = document.getElementById('div');
+const text = div.firstChild;
+
+// Mark 'has' with grammar marker.
+const range = document.createRange();
+range.setStart(text, 4);
+range.setEnd(text, 7);
+if (window.internals) {
+  document.getElementById('warning').style.display = 'none';
+  internals.setMarker(document, range, 'grammar');
+}
 </script>
-</body>
-</html>
