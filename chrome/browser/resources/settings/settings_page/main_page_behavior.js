@@ -39,14 +39,12 @@ var MainPageBehaviorImpl = {
     var scrollToSection =
         !settings.lastRouteChangeWasPopstate() || oldRouteWasSection;
 
-    // If this is the first route, or the page was hidden, allow the page to
-    // render before expanding the section.
-    if (!oldRoute && newRoute.contains(settings.getCurrentRoute()) ||
-        this.scrollHeight == 0) {
+    // For previously uncreated pages (including on first load), allow the page
+    // to render before scrolling to or expanding the section.
+    if (!oldRoute || this.scrollHeight == 0)
       setTimeout(this.tryTransitionToSection_.bind(this, scrollToSection));
-    } else {
+    else
       this.tryTransitionToSection_(scrollToSection);
-    }
   },
 
   /**
