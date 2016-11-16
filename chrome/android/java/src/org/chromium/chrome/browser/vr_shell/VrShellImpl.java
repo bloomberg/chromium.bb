@@ -349,6 +349,11 @@ public class VrShellImpl extends GvrLayout implements GLSurfaceView.Renderer, Vr
         return this;
     }
 
+    @Override
+    public void setCloseButtonListener(Runnable runner) {
+        getUiLayout().setCloseButtonListener(runner);
+    }
+
     /**
      * Create a new GLES11Ext.GL_TEXTURE_EXTERNAL_OES texture handle.
      * @return New texture handle.

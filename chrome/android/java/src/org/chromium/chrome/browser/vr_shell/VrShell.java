@@ -47,4 +47,9 @@ public interface VrShell {
      * Returns the GVRLayout as a FrameLayout.
      */
     FrameLayout getContainer();
+
+    /**
+     * Sets a callback to be run when the close button is tapped.
+     */
+    void setCloseButtonListener(Runnable runner);
 }

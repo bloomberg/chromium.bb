@@ -161,6 +161,12 @@ public class VrShellDelegate {
         mVrShell.initializeNative(mTab, this);
         if (inWebVR) mVrShell.setWebVrModeEnabled(true);
         mVrShell.setVrModeEnabled(true);
+        mVrShell.setCloseButtonListener(new Runnable() {
+            @Override
+            public void run() {
+                exitVRIfNecessary();
+            }
+        });
         // onResume needs to be called on GvrLayout after initialization to make sure DON flow work
         // properly.
         mVrShell.resume();
