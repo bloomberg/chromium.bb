@@ -44,7 +44,9 @@ void AddPossiblyRoundRectToPath(const gfx::Rect& rectangle, SkPath* path) {
 const char ProgressBar::kViewClassName[] = "ProgressBar";
 
 ProgressBar::ProgressBar(int preferred_height)
-    : preferred_height_(preferred_height) {}
+    : preferred_height_(preferred_height) {
+  EnableCanvasFlippingForRTLUI(true);
+}
 
 ProgressBar::~ProgressBar() {
 }
