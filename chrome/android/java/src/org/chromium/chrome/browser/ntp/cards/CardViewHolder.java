@@ -12,6 +12,7 @@ import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnAttachStateChangeListener;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.animation.Interpolator;
@@ -128,6 +129,21 @@ public class CardViewHolder extends NewTabPageViewHolder {
         // Reset the transparency and translation in case a dismissed card is being recycled.
         itemView.setAlpha(1f);
         itemView.setTranslationX(0f);
+
+        itemView.addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
+            @Override
+            public void onViewAttachedToWindow(View view) {}
+
+            @Override
+            public void onViewDetachedFromWindow(View view) {
+                // In some cases a view can be removed while a user is interacting with it, without
+                // calling ItemTouchHelper.Callback#clearView(), which we rely on for bottomSpacer
+                // calculations. So we call this explicitly here instead.
+                // See https://crbug.com/664466, b/32900699
+                mRecyclerView.onItemDismissFinished(mRecyclerView.findContainingViewHolder(view));
+                itemView.removeOnAttachStateChangeListener(this);
+            }
+        });
 
         // Make sure we use the right background.
         updateLayoutParams();

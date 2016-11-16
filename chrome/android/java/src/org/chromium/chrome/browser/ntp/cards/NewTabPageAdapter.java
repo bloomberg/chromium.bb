@@ -110,6 +110,9 @@ public class NewTabPageAdapter
             assert viewHolder instanceof NewTabPageViewHolder;
 
             // The item has already been removed. We have nothing more to do.
+            // In some cases a removed children may call this method when unrelated items are
+            // interacted with, but this check also covers the case.
+            // See https://crbug.com/664466, b/32900699
             if (viewHolder.getAdapterPosition() == RecyclerView.NO_POSITION) return;
 
             // We use our own implementation of the dismissal animation, so we don't call the

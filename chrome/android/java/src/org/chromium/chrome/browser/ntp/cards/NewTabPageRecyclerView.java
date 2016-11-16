@@ -388,7 +388,8 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
 
     /** Called when an item has finished being removed from the view. */
     public void onItemDismissFinished(ViewHolder viewHolder) {
-        assert mCompensationHeightMap.containsKey(viewHolder);
+        if (!mCompensationHeightMap.containsKey(viewHolder)) return;
+
         mCompensationHeight -= mCompensationHeightMap.remove(viewHolder);
 
         assert mCompensationHeight >= 0;
