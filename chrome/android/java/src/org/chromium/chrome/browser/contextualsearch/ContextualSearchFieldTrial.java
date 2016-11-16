@@ -59,6 +59,9 @@ public class ContextualSearchFieldTrial {
     @VisibleForTesting
     static final String ENABLE_SERVER_CONTROLLED_ONEBOX = "enable_server_controlled_onebox";
 
+    /** Hide Contextual Cards data.*/
+    private static final String HIDE_CONTEXTUAL_CARDS_DATA = "hide_contextual_cards_data";
+
     // Quick Answers.
     private static final String ENABLE_QUICK_ANSWERS = "enable_quick_answers";
 
@@ -102,6 +105,7 @@ public class ContextualSearchFieldTrial {
     private static Boolean sIsBarOverlapCollectionEnabled;
     private static Boolean sIsBarOverlapSuppressionEnabled;
     private static Integer sSuppressionTaps;
+    private static Boolean sShouldHideContextualCardsData;
     private static Boolean sIsContextualCardsBarIntegrationEnabled;
     private static Boolean sIsOnlineDetectionDisabled;
     private static Boolean sIsAmpAsSeparateTabEnabled;
@@ -394,6 +398,13 @@ public class ContextualSearchFieldTrial {
                     ChromeSwitches.CONTEXTUAL_SEARCH_CONTEXTUAL_CARDS_BAR_INTEGRATION);
         }
         return sIsContextualCardsBarIntegrationEnabled;
+    }
+
+    static boolean shouldHideContextualCardsData() {
+        if (sShouldHideContextualCardsData == null) {
+            sShouldHideContextualCardsData = getBooleanParam(HIDE_CONTEXTUAL_CARDS_DATA);
+        }
+        return sShouldHideContextualCardsData;
     }
 
     /**

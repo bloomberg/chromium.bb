@@ -696,6 +696,16 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
             doLiteralSearch = true;
         }
 
+        boolean receivedContextualCardsData = !TextUtils.isEmpty(caption)
+                || !TextUtils.isEmpty(thumbnailUrl);
+        if (ContextualSearchFieldTrial.shouldHideContextualCardsData()) {
+            // Clear the thumbnail URL and caption so that they are not displayed in the bar. This
+            // is used to determine the CTR on contextual searches where we would have shown
+            // contextual cards data had it not been disabled via a field trial.
+            thumbnailUrl = "";
+            caption = "";
+        }
+
         mSearchPanel.onSearchTermResolved(message, thumbnailUrl, quickActionUri,
                 quickActionCategory);
         if (!TextUtils.isEmpty(caption)) {
@@ -707,8 +717,6 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         }
 
         if (ContextualSearchFieldTrial.isContextualCardsBarIntegrationEnabled()) {
-            boolean receivedContextualCardsData = !TextUtils.isEmpty(caption)
-                    || !TextUtils.isEmpty(thumbnailUrl);
             ContextualSearchUma.logContextualCardsDataShown(receivedContextualCardsData);
             mSearchPanel.getPanelMetrics().setWasContextualCardsDataShown(
                     receivedContextualCardsData);
