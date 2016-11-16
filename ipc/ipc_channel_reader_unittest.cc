@@ -12,6 +12,7 @@
 #include <set>
 
 #include "base/run_loop.h"
+#include "ipc/brokerable_attachment.h"
 #include "ipc/ipc_channel_reader.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -38,7 +39,7 @@ class MockChannelReader : public ChannelReader {
 
   bool ShouldDispatchInputMessage(Message* msg) override { return true; }
 
-  bool GetAttachments(Message* msg) override { return true; }
+  bool GetNonBrokeredAttachments(Message* msg) override { return true; }
 
   bool DidEmptyInputBuffers() override { return true; }
 

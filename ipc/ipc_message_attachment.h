@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/pickle.h"
 #include "build/build_config.h"
-#include "ipc/ipc.mojom.h"
 #include "ipc/ipc_export.h"
 
 namespace IPC {
@@ -19,9 +18,17 @@ namespace IPC {
 // or a mojo |MessagePipe|. |GetType()| returns the type of the subclass.
 class IPC_EXPORT MessageAttachment : public base::Pickle::Attachment {
  public:
-  using Type = mojom::SerializedHandle::Type;
+  enum Type {
+    TYPE_PLATFORM_FILE,          // The instance is |PlatformFileAttachment|.
+    TYPE_MOJO_HANDLE,            // The instance is |MojoHandleAttachment|.
+    TYPE_BROKERABLE_ATTACHMENT,  // The instance is |BrokerableAttachment|.
+  };
 
   virtual Type GetType() const = 0;
+
+#if defined(OS_POSIX)
+  virtual base::PlatformFile TakePlatformFile() = 0;
+#endif  // OS_POSIX
 
  protected:
   friend class base::RefCountedThreadSafe<MessageAttachment>;

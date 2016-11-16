@@ -20,7 +20,7 @@ PlatformFileAttachment::~PlatformFileAttachment() {
 }
 
 MessageAttachment::Type PlatformFileAttachment::GetType() const {
-  return Type::PLATFORM_FILE;
+  return TYPE_PLATFORM_FILE;
 }
 
 base::PlatformFile PlatformFileAttachment::TakePlatformFile() {
@@ -30,7 +30,7 @@ base::PlatformFile PlatformFileAttachment::TakePlatformFile() {
 
 base::PlatformFile GetPlatformFile(
     scoped_refptr<MessageAttachment> attachment) {
-  DCHECK_EQ(attachment->GetType(), MessageAttachment::Type::PLATFORM_FILE);
+  DCHECK_EQ(attachment->GetType(), MessageAttachment::TYPE_PLATFORM_FILE);
   return static_cast<PlatformFileAttachment*>(attachment.get())->file();
 }
 

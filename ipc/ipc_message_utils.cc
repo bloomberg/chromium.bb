@@ -658,14 +658,8 @@ bool ParamTraits<base::FileDescriptor>::Read(const base::Pickle* m,
   if (!m->ReadAttachment(iter, &attachment))
     return false;
 
-  if (static_cast<MessageAttachment*>(attachment.get())->GetType() !=
-      MessageAttachment::Type::PLATFORM_FILE) {
-    return false;
-  }
-
   *r = base::FileDescriptor(
-      static_cast<internal::PlatformFileAttachment*>(attachment.get())
-          ->TakePlatformFile(),
+      static_cast<MessageAttachment*>(attachment.get())->TakePlatformFile(),
       true);
   return true;
 }
