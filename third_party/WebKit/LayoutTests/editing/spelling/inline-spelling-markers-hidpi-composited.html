@@ -1,7 +1,6 @@
+<!doctype html>
 <html>
 <head>
-<script src="../../resources/js-test.js"></script>
-<script src="../../editing/editing.js"></script>
 <style>
 .testDiv {
     width: 200px;
@@ -24,16 +23,10 @@
 </style>
 </head>
 <body>
-
-<script>
-description("This tests the correct placement of inline spelling and grammar "
-    + "markers in text. Spelling markers should line up exactly under misspelled "
-    + "words in all cases.");
-
-jsTestIsAsync = true;
-if (window.testRunner)
-    testRunner.setMockSpellCheckerEnabled(true);
-</script>
+<div id="warning">
+This test requires window.internals. If you use content_shell,
+"--expose-internals-for-testing" command flag enables it.
+</div>
 
 LTR
 <div id="testLTR" class="testDiv" contenteditable="true">the the adlj adaasj sdklj. there there</div>
@@ -48,62 +41,43 @@ RTL (text-overflow:ellipses)
 <div id="testRTLEllipses" class="testDiv forcertl ellipses" contenteditable="true">the the adlj adaasj sdklj. there there</div>
 
 <script>
-function moveCursorOverAllWords(id)
-{
-    div = document.getElementById(id);
-    div.focus();
-
-    debug(id + ":");
-    // Move cursor over all words so inline spellchecking is activated for all.
-    for (var i = 0; i < div.innerHTML.length; i++)
-        moveSelectionForwardByWordCommand();
-
-    verifyMarkers();
-}
-
-function verifyMarkers()
-{
-    if (!window.internals)
-        return done();
-
-    // Take care of spelling markers first.
-    shouldBecomeEqual('internals.hasSpellingMarker(document, 8, 4)', 'true', function() { // Verifies 'adlj'.
-        shouldBecomeEqual('internals.hasSpellingMarker(document, 13, 6)', 'true', function() { // Verifies 'adaasj'.
-            shouldBecomeEqual('internals.hasSpellingMarker(document, 20, 5)', 'true', verifyGrammarMarkers) // Verifies 'sdklj'.
-        })
-    });
-
-    function verifyGrammarMarkers() {
-        shouldBecomeEqual('internals.hasGrammarMarker(document, 4, 3)', 'true', function() { // Verifies second 'the'.
-            shouldBecomeEqual('internals.hasGrammarMarker(document, 33, 5)', 'true', function() { // Verifies second 'there'.
-                // Markers of next element can not be found after modification selection without blur event.
-                div.blur();
-                done();
-            })
-        });
-    }
-}
-
-var tests = [ function() { moveCursorOverAllWords('testLTR'); },
-              function() { moveCursorOverAllWords('testRTL'); },
-              function() { moveCursorOverAllWords('testLTREllipses'); },
-              function() { moveCursorOverAllWords('testRTLEllipses'); } ];
-
-function done()
-{
-    var next = tests.shift();
-    if (next)
-        return window.setTimeout(next, 0);
-
-    finishJSTest();
-}
-
+if (window.internals)
+  document.getElementById('warning').style.display = 'none';
 if (window.testRunner) {
-    testRunner.dumpAsTextWithPixelResults();
-    testRunner.setBackingScaleFactor(2, function () {
-        done();
-    });
+  testRunner.setBackingScaleFactor(
+      2,
+      () => setTimeout(() => testRunner.notifyDone(), 0));
 }
+
+// This tests the correct placement of inline spelling and grammar markers in
+// text. Markers should line up exactly under misspelled words in all cases.
+
+// 'adlj', adaasj', 'sdklj'.
+const spellingMarkerRanges = [[8, 4], [13, 6], [20, 5]];
+
+// 'the', 'there'.
+const grammarMarkerRanges = [[4, 3], [33, 5]];
+
+['testLTR', 'testRTL', 'testLTREllipses', 'testRTLEllipses'].forEach(id => {
+  const div = document.getElementById(id);
+  const text = div.firstChild;
+
+  spellingMarkerRanges.forEach(markerRange => {
+    const range = document.createRange();
+    range.setStart(text, markerRange[0]);
+    range.setEnd(text, markerRange[0] + markerRange[1]);
+    if (window.internals)
+      internals.setMarker(document, range, 'spelling');
+  });
+
+  grammarMarkerRanges.forEach(markerRange => {
+    const range = document.createRange();
+    range.setStart(text, markerRange[0]);
+    range.setEnd(text, markerRange[0] + markerRange[1]);
+    if (window.internals)
+      internals.setMarker(document, range, 'grammar');
+  });
+});
 </script>
 </body>
 </html>
