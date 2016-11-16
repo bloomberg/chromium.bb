@@ -100,7 +100,7 @@ class ArcNotificationManagerTest : public testing::Test {
     data->message = "MESSAGE";
 
     std::vector<unsigned char> icon_data;
-    data->icon_data.Swap(&icon_data);
+    data->icon_data = icon_data;
 
     arc_notification_manager()->OnNotificationPosted(std::move(data));
 

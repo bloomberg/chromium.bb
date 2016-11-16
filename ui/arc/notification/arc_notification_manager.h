@@ -41,7 +41,7 @@ class ArcNotificationManager
 
   // mojom::NotificationsHost implementation:
   void OnNotificationPosted(mojom::ArcNotificationDataPtr data) override;
-  void OnNotificationRemoved(const mojo::String& key) override;
+  void OnNotificationRemoved(const std::string& key) override;
   void OnToastPosted(mojom::ArcToastDataPtr data) override;
   void OnToastCancelled(mojom::ArcToastDataPtr data) override;
 

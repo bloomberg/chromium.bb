@@ -5,6 +5,7 @@
 #include "ui/arc/notification/arc_notification_item.h"
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/memory/ptr_util.h"
@@ -159,26 +160,26 @@ void ArcNotificationItem::UpdateWithArcNotificationData(
     case mojom::ArcNotificationType::LIST:
       type = message_center::NOTIFICATION_TYPE_MULTIPLE;
 
-      if (data->texts.is_null())
+      if (!data->texts.has_value())
         break;
 
       for (size_t i = 0;
-           i < std::min(data->texts.size(),
+           i < std::min(data->texts->size(),
                         message_center::kNotificationMaximumItems - 1);
            i++) {
-        rich_data.items.emplace_back(
-            base::string16(), base::UTF8ToUTF16(data->texts.at(i).get()));
+        rich_data.items.emplace_back(base::string16(),
+                                     base::UTF8ToUTF16(data->texts->at(i)));
       }
 
-      if (data->texts.size() > message_center::kNotificationMaximumItems) {
+      if (data->texts->size() > message_center::kNotificationMaximumItems) {
         // Show an elipsis as the 5th item if there are more than 5 items.
         rich_data.items.emplace_back(base::string16(), gfx::kEllipsisUTF16);
-      } else if (data->texts.size() ==
+      } else if (data->texts->size() ==
                  message_center::kNotificationMaximumItems) {
         // Show the 5th item if there are exact 5 items.
         rich_data.items.emplace_back(
             base::string16(),
-            base::UTF8ToUTF16(data->texts.at(data->texts.size() - 1).get()));
+            base::UTF8ToUTF16(data->texts->at(data->texts->size() - 1)));
       }
       break;
     case mojom::ArcNotificationType::IMAGE:
@@ -204,7 +205,7 @@ void ArcNotificationItem::UpdateWithArcNotificationData(
 
   for (size_t i = 0; i < data->buttons.size(); i++) {
     rich_data.buttons.emplace_back(
-        base::UTF8ToUTF16(data->buttons.at(i)->label.get()));
+        base::UTF8ToUTF16(data->buttons.at(i)->label));
   }
 
   // If the client is old (version < 1), both |no_clear| and |ongoing_event|
@@ -221,18 +222,15 @@ void ArcNotificationItem::UpdateWithArcNotificationData(
       message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId);
   notifier_id.profile_id = profile_id_.GetUserEmail();
 
-  DCHECK(!data->title.is_null());
-  DCHECK(!data->message.is_null());
   SetNotification(base::MakeUnique<message_center::Notification>(
-      type, notification_id_, base::UTF8ToUTF16(data->title.get()),
-      base::UTF8ToUTF16(data->message.get()),
+      type, notification_id_, base::UTF8ToUTF16(data->title),
+      base::UTF8ToUTF16(data->message),
       gfx::Image(),              // icon image: Will be overriden later.
       base::UTF8ToUTF16("arc"),  // display source
       GURL(),                    // empty origin url, for system component
       notifier_id, rich_data,
       new ArcNotificationDelegate(weak_ptr_factory_.GetWeakPtr())));
 
-  DCHECK(!data->icon_data.is_null());
   if (data->icon_data.size() == 0) {
     OnImageDecoded(SkBitmap());  // Pass an empty bitmap.
     return;
@@ -241,7 +239,7 @@ void ArcNotificationItem::UpdateWithArcNotificationData(
   // TODO(yoshiki): Remove decoding by passing a bitmap directly from Android.
   base::PostTaskAndReplyWithResult(
       base::WorkerPool::GetTaskRunner(true).get(), FROM_HERE,
-      base::Bind(&DecodeImage, data->icon_data.storage()),
+      base::Bind(&DecodeImage, data->icon_data),
       base::Bind(&ArcNotificationItem::OnImageDecoded,
                  weak_ptr_factory_.GetWeakPtr()));
 }

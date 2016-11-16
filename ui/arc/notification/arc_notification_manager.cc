@@ -11,6 +11,7 @@
 #include "ash/common/wm_shell.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/arc/arc_bridge_service.h"
 #include "mojo/common/common_type_converters.h"
 #include "ui/arc/notification/arc_custom_notification_item.h"
@@ -92,8 +93,8 @@ void ArcNotificationManager::OnNotificationPosted(
   it->second->UpdateWithArcNotificationData(std::move(data));
 }
 
-void ArcNotificationManager::OnNotificationRemoved(const mojo::String& key) {
-  auto it = items_.find(key.get());
+void ArcNotificationManager::OnNotificationRemoved(const std::string& key) {
+  auto it = items_.find(key);
   if (it == items_.end()) {
     VLOG(3) << "Android requests to remove a notification (key: " << key
             << "), but it is already gone.";
@@ -236,9 +237,12 @@ void ArcNotificationManager::CloseNotificationWindow(const std::string& key) {
 }
 
 void ArcNotificationManager::OnToastPosted(mojom::ArcToastDataPtr data) {
+  const base::string16 text16(
+      base::UTF8ToUTF16(data->text.has_value() ? *data->text : std::string()));
+  const base::string16 dismiss_text16(base::UTF8ToUTF16(
+      data->dismiss_text.has_value() ? *data->dismiss_text : std::string()));
   ash::WmShell::Get()->toast_manager()->Show(
-      ash::ToastData(data->id, data->text.To<base::string16>(), data->duration,
-                     data->dismiss_text.To<base::string16>()));
+      ash::ToastData(data->id, text16, data->duration, dismiss_text16));
 }
 
 void ArcNotificationManager::OnToastCancelled(mojom::ArcToastDataPtr data) {

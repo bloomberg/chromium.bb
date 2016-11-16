@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_ARC_TEST_FAKE_NOTIFICATIONS_INSTANCE_H_
 #define COMPONENTS_ARC_TEST_FAKE_NOTIFICATIONS_INSTANCE_H_
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -20,16 +21,16 @@ class FakeNotificationsInstance : public mojom::NotificationsInstance {
   void Init(mojom::NotificationsHostPtr host_ptr) override;
 
   void SendNotificationEventToAndroid(
-      const mojo::String& key,
+      const std::string& key,
       mojom::ArcNotificationEvent event) override;
-  void CreateNotificationWindow(const mojo::String& key) override;
-  void CloseNotificationWindow(const mojo::String& key) override;
+  void CreateNotificationWindow(const std::string& key) override;
+  void CloseNotificationWindow(const std::string& key) override;
 
-  const std::vector<std::pair<mojo::String, mojom::ArcNotificationEvent>>&
+  const std::vector<std::pair<std::string, mojom::ArcNotificationEvent>>&
   events() const;
 
  private:
-  std::vector<std::pair<mojo::String, mojom::ArcNotificationEvent>> events_;
+  std::vector<std::pair<std::string, mojom::ArcNotificationEvent>> events_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeNotificationsInstance);
 };

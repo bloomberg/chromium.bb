@@ -4,6 +4,10 @@
 
 #include "ui/arc/notification/arc_custom_notification_item.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -68,19 +72,17 @@ void ArcCustomNotificationItem::UpdateWithArcNotificationData(
   rich_data.priority = ConvertAndroidPriority(data->priority);
   if (data->small_icon)
     rich_data.small_image = gfx::Image::CreateFrom1xBitmap(*data->small_icon);
-  if (!data->accessible_name.is_null())
-    rich_data.accessible_name = base::UTF8ToUTF16(data->accessible_name.get());
+  if (data->accessible_name.has_value())
+    rich_data.accessible_name = base::UTF8ToUTF16(*data->accessible_name);
 
   message_center::NotifierId notifier_id(
       message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId);
   notifier_id.profile_id = profile_id().GetUserEmail();
 
-  DCHECK(!data->title.is_null());
-  DCHECK(!data->message.is_null());
   SetNotification(base::MakeUnique<message_center::Notification>(
       message_center::NOTIFICATION_TYPE_CUSTOM, notification_id(),
-      base::UTF8ToUTF16(data->title.get()),
-      base::UTF8ToUTF16(data->message.get()), gfx::Image(),
+      base::UTF8ToUTF16(data->title), base::UTF8ToUTF16(data->message),
+      gfx::Image(),
       base::UTF8ToUTF16("arc"),  // display source
       GURL(),                    // empty origin url, for system component
       notifier_id, rich_data, new ArcNotificationDelegate(this)));
