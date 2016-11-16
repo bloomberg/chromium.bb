@@ -276,6 +276,53 @@ public class ClassName {
                                               ('P_B', 1)]),
                      definition.entries)
 
+  def testParseSingleLineEnum(self):
+    test_data = """
+      // GENERATED_JAVA_ENUM_PACKAGE: other.package
+      // GENERATED_JAVA_PREFIX_TO_STRIP: P_
+      enum EnumTwo { P_A, P_B };
+    """.split('\n')
+    definitions = HeaderParser(test_data).ParseDefinitions()
+    definition = definitions[0]
+    self.assertEqual('EnumTwo', definition.class_name)
+    self.assertEqual('other.package', definition.enum_package)
+    self.assertEqual(collections.OrderedDict([('A', 0),
+                                              ('B', 1)]),
+                     definition.entries)
+
+  def testParseSingleLineAndRegularEnum(self):
+    test_data = """
+      // GENERATED_JAVA_ENUM_PACKAGE: test.namespace
+      enum EnumOne {
+        ENUM_ONE_A = 1,
+        // Comment there
+        ENUM_ONE_B = A,
+      };
+
+      // GENERATED_JAVA_ENUM_PACKAGE: other.package
+      enum EnumTwo { P_A, P_B };
+
+      // GENERATED_JAVA_ENUM_PACKAGE: test.namespace
+      // GENERATED_JAVA_CLASS_NAME_OVERRIDE: OverrideName
+      enum EnumName {
+        ENUM_NAME_FOO
+      };
+    """.split('\n')
+    definitions = HeaderParser(test_data).ParseDefinitions()
+    definition = definitions[0]
+    self.assertEqual(
+        collections.OrderedDict([('A', '1'), ('B', 'A')]), definition.entries)
+    self.assertEqual(collections.OrderedDict([('ENUM_ONE_B', 'Comment there')]),
+                     definition.comments)
+
+    self.assertEqual(3, len(definitions))
+    definition = definitions[1]
+    self.assertEqual(
+        collections.OrderedDict([('P_A', 0), ('P_B', 1)]), definition.entries)
+
+    definition = definitions[2]
+    self.assertEqual(collections.OrderedDict([('FOO', 0)]), definition.entries)
+
   def testParseThrowsOnUnknownDirective(self):
     test_data = """
       // GENERATED_JAVA_UNKNOWN: Value

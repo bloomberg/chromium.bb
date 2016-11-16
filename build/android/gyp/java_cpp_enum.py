@@ -151,7 +151,9 @@ class HeaderParser(object):
   optional_fixed_type_re = r'(\:\s*(\w+\s*\w+?))?'
   enum_start_re = re.compile(r'^\s*(?:\[cpp.*\])?\s*enum\s+' +
       optional_class_or_struct_re + '\s*' + enum_name_re + '\s*' +
-      optional_fixed_type_re + '\s*{\s*$')
+      optional_fixed_type_re + '\s*{\s*')
+  enum_single_line_re = re.compile(
+      r'^\s*(?:\[cpp.*\])?\s*enum.*{(?P<enum_entries>.*)}.*$')
 
   def __init__(self, lines, path=''):
     self._lines = lines
@@ -192,11 +194,18 @@ class HeaderParser(object):
       if comment:
         self._current_comments.append(comment)
     elif HeaderParser.enum_end_re.match(line):
-      self._FinalizeCurrentEnumEntry()
+      self._FinalizeCurrentEnumDefinition()
     else:
       self._AddToCurrentEnumEntry(line)
       if ',' in line:
         self._ParseCurrentEnumEntry()
+
+  def _ParseSingleLineEnum(self, line):
+    for entry in line.split(','):
+      self._AddToCurrentEnumEntry(entry)
+      self._ParseCurrentEnumEntry()
+
+    self._FinalizeCurrentEnumDefinition()
 
   def _ParseCurrentEnumEntry(self):
     if not self._current_enum_entry:
@@ -219,12 +228,13 @@ class HeaderParser(object):
   def _AddToCurrentEnumEntry(self, line):
     self._current_enum_entry += ' ' + line.strip()
 
-  def _FinalizeCurrentEnumEntry(self):
+  def _FinalizeCurrentEnumDefinition(self):
     if self._current_enum_entry:
       self._ParseCurrentEnumEntry()
     self._ApplyGeneratorDirectives()
     self._current_definition.Finalize()
     self._enum_definitions.append(self._current_definition)
+    self._current_definition = None
     self._in_enum = False
 
   def _ParseMultiLineDirectiveLine(self, line):
@@ -252,6 +262,7 @@ class HeaderParser(object):
     generator_directive = HeaderParser.generator_directive_re.match(line)
     multi_line_generator_directive_start = (
         HeaderParser.multi_line_generator_directive_start_re.match(line))
+    single_line_enum = HeaderParser.enum_single_line_re.match(line)
 
     if generator_directive_error:
       raise Exception('Malformed directive declaration in ' + self._path +
@@ -266,13 +277,15 @@ class HeaderParser(object):
       directive_name = multi_line_generator_directive_start.groups()[0]
       directive_value = multi_line_generator_directive_start.groups()[1]
       self._multi_line_generator_directive = (directive_name, [directive_value])
-    elif enum_start:
+    elif enum_start or single_line_enum:
       if self._generator_directives.empty:
         return
       self._current_definition = EnumDefinition(
           original_enum_name=enum_start.groups()[1],
           fixed_type=enum_start.groups()[3])
       self._in_enum = True
+      if single_line_enum:
+        self._ParseSingleLineEnum(single_line_enum.group('enum_entries'))
 
 def GetScriptName():
   return os.path.basename(os.path.abspath(sys.argv[0]))
