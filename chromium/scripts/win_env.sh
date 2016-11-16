@@ -22,7 +22,7 @@ if [ ! -d $1 ]; then
   exit 1
 fi
 
-VSPATH=$1/win_toolchain/vs_files/95ddda401ec5678f15eeed01d2bee08fcbc5ee97
+VSPATH=$1/win_toolchain/vs_files/d5dc33b15d1b2c086f2f6632e2fd15882f80dbd3
 
 if [ ! -d $VSPATH ]; then
   echo "Visual Studio 2015 toolchain not found: $VSPATH"
