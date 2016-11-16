@@ -260,19 +260,17 @@ TEST_F(TabletPowerButtonControllerTest, ConvertibleOnLaptopMode) {
   power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, true);
   EXPECT_FALSE(GetBacklightsForcedOff());
 
-  // Touchpad mouse event should SetBacklightsForcedOff(false).
+  // Synthesized mouse event should not SetBacklightsForcedOff(false).
   PressPowerButton();
   ReleasePowerButton();
   power_manager_client_->SendBrightnessChanged(0, true);
   EXPECT_TRUE(GetBacklightsForcedOff());
-  generator_->PressTouch();
-  power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, true);
-  EXPECT_FALSE(GetBacklightsForcedOff());
+  generator_->set_flags(ui::EF_IS_SYNTHESIZED);
+  generator_->MoveMouseBy(1, 1);
+  generator_->set_flags(ui::EF_NONE);
+  EXPECT_TRUE(GetBacklightsForcedOff());
 
   // Stylus mouse event should not SetBacklightsForcedOff(false).
-  PressPowerButton();
-  ReleasePowerButton();
-  power_manager_client_->SendBrightnessChanged(0, true);
   EXPECT_TRUE(GetBacklightsForcedOff());
   generator_->EnterPenPointerMode();
   generator_->MoveMouseBy(1, 1);
@@ -293,9 +291,6 @@ TEST_F(TabletPowerButtonControllerTest, ConvertibleOnMaximizeMode) {
   EXPECT_TRUE(GetBacklightsForcedOff());
 
   generator_->MoveMouseBy(1, 1);
-  EXPECT_TRUE(GetBacklightsForcedOff());
-
-  generator_->PressTouch();
   EXPECT_TRUE(GetBacklightsForcedOff());
 
   generator_->EnterPenPointerMode();
