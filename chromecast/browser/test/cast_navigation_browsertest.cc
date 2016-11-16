@@ -5,7 +5,7 @@
 #include "base/macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromecast/browser/test/chromecast_browser_test.h"
+#include "chromecast/browser/test/cast_browser_test.h"
 #include "chromecast/chromecast_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/test_data_util.h"
@@ -20,9 +20,9 @@ const char kError[] = "ERROR";
 const char kFailed[] = "FAILED";
 }
 
-class ChromecastShellBrowserTest : public ChromecastBrowserTest {
+class CastNavigationBrowserTest : public CastBrowserTest {
  public:
-  ChromecastShellBrowserTest() {}
+  CastNavigationBrowserTest() {}
 
   void LoadAboutBlank() {
     content::WebContents* web_contents =
@@ -40,8 +40,7 @@ class ChromecastShellBrowserTest : public ChromecastBrowserTest {
   }
 
  private:
-  void PlayMedia(const std::string& tag,
-                 const std::string& media_file) {
+  void PlayMedia(const std::string& tag, const std::string& media_file) {
     base::StringPairs query_params;
     query_params.push_back(std::make_pair(tag, media_file));
     RunMediaTestPage("player.html", query_params, kEnded);
@@ -52,15 +51,13 @@ class ChromecastShellBrowserTest : public ChromecastBrowserTest {
                         const std::string& expected_title) {
     std::string query = media::GetURLQueryString(query_params);
     GURL gurl = content::GetFileUrlWithQuery(
-        media::GetTestDataFilePath(html_page),
-        query);
+        media::GetTestDataFilePath(html_page), query);
 
     std::string final_title = RunTest(gurl, expected_title);
     EXPECT_EQ(expected_title, final_title);
   }
 
-  std::string RunTest(const GURL& gurl,
-                      const std::string& expected_title) {
+  std::string RunTest(const GURL& gurl, const std::string& expected_title) {
     content::WebContents* web_contents = NavigateToURL(gurl);
     content::TitleWatcher title_watcher(web_contents,
                                         base::ASCIIToUTF16(expected_title));
@@ -71,20 +68,20 @@ class ChromecastShellBrowserTest : public ChromecastBrowserTest {
     return base::UTF16ToASCII(result);
   }
 
-  DISALLOW_COPY_AND_ASSIGN(ChromecastShellBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(CastNavigationBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ChromecastShellBrowserTest, EmptyTest) {
+IN_PROC_BROWSER_TEST_F(CastNavigationBrowserTest, EmptyTest) {
   // Run an entire browser lifecycle to ensure nothing breaks.
   LoadAboutBlank();
 }
 
-IN_PROC_BROWSER_TEST_F(ChromecastShellBrowserTest, AudioPlaybackWavPcm) {
+IN_PROC_BROWSER_TEST_F(CastNavigationBrowserTest, AudioPlaybackWavPcm) {
   PlayAudio("bear_pcm.wav");
 }
 
 #if !BUILDFLAG(IS_CAST_AUDIO_ONLY)
-IN_PROC_BROWSER_TEST_F(ChromecastShellBrowserTest, VideoPlaybackMp4) {
+IN_PROC_BROWSER_TEST_F(CastNavigationBrowserTest, VideoPlaybackMp4) {
   PlayVideo("bear.mp4");
 }
 #endif

@@ -61,8 +61,8 @@ cast_test_group("cast_tests") {
 
   if (!is_android) {
     tests += [
-      "//chromecast/app:cast_shell_unittests",
-      "//chromecast/browser:cast_shell_browser_test",
+      ":cast_shell_browsertests",
+      ":cast_shell_unittests",
       "//chromecast/media:cast_media_unittests",
       "//ipc:ipc_tests",
       "//jingle:jingle_unittests",
@@ -77,8 +77,8 @@ cast_test_group("cast_tests") {
     }
     filters += [ cast_media_unittests_filter ]
 
-    cast_shell_browser_test_filter = {
-      test_name = "cast_shell_browser_test"
+    cast_shell_browsertests_filter = {
+      test_name = "cast_shell_browsertests"
 
       # --enable-local-file-accesses => to load sample media files
       # --test-launcher-jobs=1 => so internal code can bind to port
@@ -93,7 +93,7 @@ cast_test_group("cast_tests") {
         args += [ "--use-gpu-in-tests" ]
       }
     }
-    filters += [ cast_shell_browser_test_filter ]
+    filters += [ cast_shell_browsertests_filter ]
 
     ipc_tests_filter = {
       test_name = "ipc_tests"
@@ -273,6 +273,29 @@ if (is_android) {
     run_list_path = "$root_out_dir/junit/run_junit_test_list.txt"
     build_tests = true
     test_groups = [ ":cast_junit_tests" ]
+  }
+}
+
+test("cast_shell_unittests") {
+  deps = [
+    ":cast_shell_lib",
+    "//chromecast/app:test_support",
+    "//chromecast/app:unittests",
+    "//chromecast/browser:unittests",
+  ]
+}
+
+test("cast_shell_browsertests") {
+  deps = [
+    ":cast_shell_lib",
+    "//chromecast/app:test_support",
+    "//chromecast/browser:browsertests",
+  ]
+
+  if (chromecast_branding == "public") {
+    # Link default libcast_media_1.0 statically not to link dummy one
+    # dynamically for public unittests.
+    deps += [ "//chromecast/media/base:libcast_media_1.0_default_core" ]
   }
 }
 
