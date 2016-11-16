@@ -90,6 +90,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::enablePushMessaging(false);
   }
 
+  if (!base::FeatureList::IsEnabled(features::kNotificationContentImage))
+    WebRuntimeFeatures::enableNotificationContentImage(false);
+
   // For the time being, enable wasm serialization when wasm is enabled,
   // since the whole wasm space is experimental. We have the flexibility
   // to decouple the two.

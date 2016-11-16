@@ -90,6 +90,7 @@ class WebRuntimeFeatures {
   BLINK_EXPORT static void enableNavigatorContentUtils(bool);
   BLINK_EXPORT static void enableNetworkInformation(bool);
   BLINK_EXPORT static void enableNotificationConstructor(bool);
+  BLINK_EXPORT static void enableNotificationContentImage(bool);
   BLINK_EXPORT static void enableNotifications(bool);
   BLINK_EXPORT static void enableOrientationEvent(bool);
   BLINK_EXPORT static void enableOverlayScrollbars(bool);

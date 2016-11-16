@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/notifications/notification_id_generator.h"
 #include "content/browser/notifications/page_notification_delegate.h"
@@ -22,6 +23,7 @@
 #include "content/public/browser/platform_notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationConstants.h"
 
@@ -51,10 +53,12 @@ PlatformNotificationData SanitizeNotificationData(
 
 // Returns true when |resources| looks ok, false otherwise.
 bool ValidateNotificationResources(const NotificationResources& resources) {
-  // TODO(johnme): Remove this once https://crbug.com/614456 ships to stable.
+  // TODO(johnme): Remove the command line check once https://crbug.com/614456
+  // ships to stable.
   if (!resources.image.drawsNothing() &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures)) {
+      !(base::FeatureList::IsEnabled(features::kNotificationContentImage) &&
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableExperimentalWebPlatformFeatures))) {
     return false;
   }
   if (resources.image.width() > blink::kWebNotificationMaxImageWidthPx ||

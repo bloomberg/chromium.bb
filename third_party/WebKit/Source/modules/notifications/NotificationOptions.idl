@@ -15,7 +15,7 @@ dictionary NotificationOptions {
     DOMString lang = "";
     DOMString body = "";
     DOMString tag = "";
-    [RuntimeEnabled=NotificationImage] USVString image;
+    [RuntimeEnabled=NotificationContentImage] USVString image;
     USVString icon;
     [RuntimeEnabled=NotificationBadge] USVString badge;
     // TODO(sh919.park): vibrate should be ([Clamp] unsigned long or sequence<unsigned long>)

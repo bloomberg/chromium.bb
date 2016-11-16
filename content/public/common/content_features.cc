@@ -116,6 +116,10 @@ const base::Feature kMemoryCoordinator {
 const base::Feature kNonValidatingReloadOnNormalReload{
     "NonValidatingReloadOnNormalReload", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Kill switch for Web Notification content images.
+const base::Feature kNotificationContentImage{"NotificationContentImage",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
 // An experiment to optimize resource loading IPC for small resources.
 // http://crbug.com/580928
 const base::Feature kOptimizeLoadingIPCForSmallResources{

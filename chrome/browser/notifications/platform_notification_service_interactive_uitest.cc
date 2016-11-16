@@ -29,6 +29,7 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/permission_type.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/filename_util.h"
@@ -703,3 +704,34 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
 }
 #endif
 
+class PlatformNotificationServiceWithoutContentImageBrowserTest
+    : public PlatformNotificationServiceBrowserTest {
+ public:
+  // InProcessBrowserTest overrides.
+  void SetUpInProcessBrowserTestFixture() override {
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kNotificationContentImage);
+    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    PlatformNotificationServiceWithoutContentImageBrowserTest,
+    KillSwitch) {
+  ASSERT_NO_FATAL_FAILURE(GrantNotificationPermissionForTest());
+
+  std::string script_result;
+  ASSERT_TRUE(
+      RunScript("DisplayPersistentAllOptionsNotification()", &script_result));
+  EXPECT_EQ("ok", script_result);
+
+  ASSERT_EQ(1u, ui_manager()->GetNotificationCount());
+  const Notification& notification = ui_manager()->GetNotificationAt(0);
+
+  // Since the kNotificationContentImage kill switch has disabled images, the
+  // notification should be shown without an image.
+  EXPECT_TRUE(notification.image().IsEmpty());
+}

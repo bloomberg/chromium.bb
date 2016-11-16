@@ -158,6 +158,10 @@ void WebRuntimeFeatures::enableNotificationConstructor(bool enable) {
   RuntimeEnabledFeatures::setNotificationConstructorEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableNotificationContentImage(bool enable) {
+  RuntimeEnabledFeatures::setNotificationContentImageEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableNotifications(bool enable) {
   RuntimeEnabledFeatures::setNotificationsEnabled(enable);
 }

@@ -65,7 +65,7 @@ enum NotificationPermission {
     readonly attribute DOMString lang;
     readonly attribute DOMString body;
     readonly attribute DOMString tag;
-    [RuntimeEnabled=NotificationImage] readonly attribute USVString image;
+    [RuntimeEnabled=NotificationContentImage] readonly attribute USVString image;
     readonly attribute USVString icon;
     [RuntimeEnabled=NotificationBadge] readonly attribute USVString badge;
 
