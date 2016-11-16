@@ -4,6 +4,8 @@
 
 #include "chrome/test/media_router/media_router_integration_browsertest.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
@@ -87,6 +89,17 @@ const char kFindSinkScript[] =
     "  if (sinks[i].textContent.trim() == '%s') {"
     "    domAutomationController.send(true);"
     "}}"
+    "domAutomationController.send(false);";
+const char kCheckDialogLoadedScript[] =
+    "var container = document.getElementById('media-router-container');"
+    "/** Wait until media router container is not undefined and "
+    "*   deviceMissingUrl is not undefined, "
+    "*   once deviceMissingUrl is not undefined, which means "
+    "*   the dialog is fully loaded."
+    "*/"
+    "if (container != undefined && container.deviceMissingUrl != undefined) {"
+    "  domAutomationController.send(true);"
+    "}"
     "domAutomationController.send(false);";
 
 std::string GetStartedConnectionId(content::WebContents* web_contents) {
@@ -201,6 +214,7 @@ content::WebContents* MediaRouterIntegrationBrowserTest::GetMRDialog(
       MediaRouterDialogControllerImpl::GetOrCreateForWebContents(web_contents);
   content::WebContents* dialog_contents = controller->GetMediaRouterDialog();
   CHECK(dialog_contents);
+  WaitUntilDialogFullyLoaded(dialog_contents);
   return dialog_contents;
 }
 
@@ -256,6 +270,7 @@ content::WebContents* MediaRouterIntegrationBrowserTest::OpenMRDialog(
   test_navigation_observer_->StopWatchingNewWebContents();
   content::WebContents* dialog_contents = controller->GetMediaRouterDialog();
   CHECK(dialog_contents);
+  WaitUntilDialogFullyLoaded(dialog_contents);
   return dialog_contents;
 }
 
@@ -394,6 +409,19 @@ void MediaRouterIntegrationBrowserTest::WaitUntilSinkDiscoveredOnUI() {
       base::TimeDelta::FromSeconds(30), base::TimeDelta::FromSeconds(1),
       base::Bind(&MediaRouterIntegrationBrowserTest::IsSinkDiscoveredOnUI,
                  base::Unretained(this))));
+}
+
+bool MediaRouterIntegrationBrowserTest::IsDialogLoaded(
+    content::WebContents* dialog_contents) {
+  return ExecuteScriptAndExtractBool(dialog_contents, kCheckDialogLoadedScript);
+}
+
+void MediaRouterIntegrationBrowserTest::WaitUntilDialogFullyLoaded(
+    content::WebContents* dialog_contents) {
+  ASSERT_TRUE(ConditionalWait(
+      base::TimeDelta::FromSeconds(30), base::TimeDelta::FromSeconds(1),
+      base::Bind(&MediaRouterIntegrationBrowserTest::IsDialogLoaded,
+                 base::Unretained(this), dialog_contents)));
 }
 
 void MediaRouterIntegrationBrowserTest::ParseCommandLine() {

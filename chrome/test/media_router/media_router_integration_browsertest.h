@@ -5,6 +5,7 @@
 #ifndef CHROME_TEST_MEDIA_ROUTER_MEDIA_ROUTER_INTEGRATION_BROWSERTEST_H_
 #define CHROME_TEST_MEDIA_ROUTER_MEDIA_ROUTER_INTEGRATION_BROWSERTEST_H_
 
+#include <memory>
 #include <string>
 
 #include "base/debug/stack_trace.h"
@@ -72,6 +73,7 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
   // Checks that the chrome modal dialog does not exist.
   bool IsDialogClosed(content::WebContents* web_contents);
   void WaitUntilDialogClosed(content::WebContents* web_contents);
+
   void CheckDialogRemainsOpen(content::WebContents* web_contents);
 
   void OpenTestPage(base::FilePath::StringPieceType file);
@@ -118,6 +120,12 @@ class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
   // Wait for the specific sink shows up in UI with a timeout. Fails if the sink
   // doesn't show up before the timeout.
   void WaitUntilSinkDiscoveredOnUI();
+
+  // Checks if media router dialog is fully loaded.
+  bool IsDialogLoaded(content::WebContents* dialog_contents);
+
+  // Wait until media router dialog is fully loaded.
+  void WaitUntilDialogFullyLoaded(content::WebContents* dialog_contents);
 
   std::string receiver() const { return receiver_; }
 
