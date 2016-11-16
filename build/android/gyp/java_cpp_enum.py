@@ -90,16 +90,20 @@ class EnumDefinition(object):
       if not all([w.startswith(prefix_to_strip) for w in self.entries.keys()]):
         prefix_to_strip = ''
 
-    entries = collections.OrderedDict()
-    for (k, v) in self.entries.iteritems():
-      stripped_key = k.replace(prefix_to_strip, '', 1)
-      if isinstance(v, basestring):
-        stripped_value = v.replace(prefix_to_strip, '', 1)
-      else:
-        stripped_value = v
-      entries[stripped_key] = stripped_value
+    def StripEntries(entries):
+      ret = collections.OrderedDict()
+      for (k, v) in entries.iteritems():
+        stripped_key = k.replace(prefix_to_strip, '', 1)
+        if isinstance(v, basestring):
+          stripped_value = v.replace(prefix_to_strip, '', 1)
+        else:
+          stripped_value = v
+        ret[stripped_key] = stripped_value
 
-    self.entries = entries
+      return ret
+
+    self.entries = StripEntries(self.entries)
+    self.comments = StripEntries(self.comments)
 
 class DirectiveSet(object):
   class_name_override_key = 'CLASS_NAME_OVERRIDE'
@@ -208,9 +212,9 @@ class HeaderParser(object):
     enum_value = enum_entry.groups()[2]
     self._current_definition.AppendEntry(enum_key, enum_value)
     if self._current_comments:
-       self._current_definition.AppendEntryComment(
-               enum_key, ' '.join(self._current_comments))
-       self._current_comments = []
+      self._current_definition.AppendEntryComment(
+          enum_key, ' '.join(self._current_comments))
+      self._current_comments = []
     self._current_enum_entry = ''
 
   def _AddToCurrentEnumEntry(self, line):

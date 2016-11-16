@@ -202,7 +202,7 @@ public class ClassName {
                                               ('B', 1)]),
                      definition.entries)
 
-  def testParseTwoEnums(self):
+  def testParsePreservesCommentsWhenPrefixStripping(self):
     test_data = """
       // GENERATED_JAVA_ENUM_PACKAGE: test.namespace
       enum EnumOne {
@@ -232,15 +232,48 @@ public class ClassName {
     self.assertEqual(collections.OrderedDict([('A', '1'),
                                               ('B', 'A')]),
                      definition.entries)
-    self.assertEqual(collections.OrderedDict([('ENUM_ONE_B', 'Comment there')]),
+    self.assertEqual(collections.OrderedDict([('B', 'Comment there')]),
                      definition.comments)
     definition = definitions[1]
     self.assertEqual('EnumTwo', definition.class_name)
     self.assertEqual('other.package', definition.enum_package)
     self.assertEqual(collections.OrderedDict(
-        [('P_B', 'This comment spans two lines.')]), definition.comments)
+        [('B', 'This comment spans two lines.')]), definition.comments)
     self.assertEqual(collections.OrderedDict([('A', 0),
                                               ('B', 1)]),
+                     definition.entries)
+
+  def testParseTwoEnums(self):
+    test_data = """
+      // GENERATED_JAVA_ENUM_PACKAGE: test.namespace
+      enum AnEnum {
+        ENUM_ONE_A = 1,
+        ENUM_ONE_B = A,
+      };
+
+      enum EnumIgnore {
+        C, D, E
+      };
+
+      // GENERATED_JAVA_ENUM_PACKAGE: other.package
+      enum EnumTwo {
+        P_A,
+        P_B
+      };
+    """.split('\n')
+    definitions = HeaderParser(test_data).ParseDefinitions()
+    self.assertEqual(2, len(definitions))
+    definition = definitions[0]
+    self.assertEqual('AnEnum', definition.class_name)
+    self.assertEqual('test.namespace', definition.enum_package)
+    self.assertEqual(collections.OrderedDict([('ENUM_ONE_A', '1'),
+                                              ('ENUM_ONE_B', 'A')]),
+                     definition.entries)
+    definition = definitions[1]
+    self.assertEqual('EnumTwo', definition.class_name)
+    self.assertEqual('other.package', definition.enum_package)
+    self.assertEqual(collections.OrderedDict([('P_A', 0),
+                                              ('P_B', 1)]),
                      definition.entries)
 
   def testParseThrowsOnUnknownDirective(self):
