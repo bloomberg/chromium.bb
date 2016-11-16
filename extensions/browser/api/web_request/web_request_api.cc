@@ -23,6 +23,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chromeos/login/login_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/user_metrics.h"
@@ -337,6 +338,16 @@ bool ShouldHideEvent(void* browser_context,
   return (!browser_context ||
           WebRequestPermissions::HideRequest(extension_info_map, request,
                                              navigation_ui_data));
+}
+
+// Returns true if we're in a Public Session.
+bool IsPublicSession() {
+#if defined(OS_CHROMEOS)
+  if (chromeos::LoginState::IsInitialized()) {
+    return chromeos::LoginState::Get()->IsPublicSessionUser();
+  }
+#endif
+  return false;
 }
 
 }  // namespace
@@ -1122,6 +1133,13 @@ void ExtensionWebRequestEventRouter::DispatchEventToListeners(
   Listeners* cross_event_listeners =
       cross_browser_context ? &listeners_[cross_browser_context][event_name]
                             : nullptr;
+
+  // In Public Sessions we want to restrict access to security or privacy
+  // sensitive data. Data is filtered for *all* listeners, not only extensions
+  // which are force-installed by policy.
+  if (IsPublicSession()) {
+    event_details->FilterForPublicSession();
+  }
 
   for (const EventListener::ID& id : *listener_ids) {
     // It's possible that the listener is no longer present. Check to make sure
@@ -2133,7 +2151,10 @@ WebRequestInternalAddEventListenerFunction::Run() {
     // http://www.example.com/bar/*.
     // For this reason we do only a coarse check here to warn the extension
     // developer if they do something obviously wrong.
-    if (extension->permissions_data()
+    // When we are in a Public Session, allow all URLs for webRequests initiated
+    // by a regular extension.
+    if (!(IsPublicSession() && extension->is_extension()) &&
+        extension->permissions_data()
             ->GetEffectiveHostPermissions()
             .is_empty() &&
         extension->permissions_data()
@@ -2195,6 +2216,16 @@ WebRequestInternalEventHandledFunction::Run() {
           extension_info_map()->GetInstallTime(extension_id_safe());
       response.reset(new ExtensionWebRequestEventRouter::EventResponse(
           extension_id_safe(), install_time));
+    }
+
+    // In Public Session we only want to allow "cancel".
+    if (IsPublicSession() &&
+        (value->HasKey("redirectUrl") ||
+         value->HasKey(keys::kAuthCredentialsKey) ||
+         value->HasKey("requestHeaders") ||
+         value->HasKey("responseHeaders"))) {
+      OnError(event_name, sub_event_name, request_id, std::move(response));
+      return RespondNow(Error(keys::kInvalidPublicSessionBlockingResponse));
     }
 
     if (value->HasKey("cancel")) {

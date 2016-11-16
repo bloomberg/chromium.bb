@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/values.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
@@ -126,7 +127,16 @@ class WebRequestEventDetails {
   // dictionary is empty.
   std::unique_ptr<base::DictionaryValue> GetAndClearDict();
 
+  // Filters the data, leaving only whitelisted data for Public Session.
+  void FilterForPublicSession();
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(
+      WebRequestEventDetailsTest, WhitelistedCopyForPublicSession);
+
+  // Empty constructor used in unittests.
+  WebRequestEventDetails();
+
   void OnDeterminedFrameData(
       std::unique_ptr<WebRequestEventDetails> self,
       const DeterminedFrameDataCallback& callback,

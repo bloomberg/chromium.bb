@@ -22,6 +22,7 @@
 #include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chromeos/login/login_state.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -161,6 +162,23 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestTypes) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionSubtest("webrequest", "test_types.html")) << message_;
 }
+
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestPublicSession) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  // Set Public Session state.
+  chromeos::LoginState::Get()->SetLoggedInState(
+      chromeos::LoginState::LOGGED_IN_ACTIVE,
+      chromeos::LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT);
+  // Disable a CHECK while doing api tests.
+  WebRequestPermissions::AllowAllExtensionLocationsInPublicSessionForTesting(
+      true);
+  ASSERT_TRUE(RunExtensionSubtest("webrequest_public_session", "test.html")) <<
+      message_;
+  WebRequestPermissions::AllowAllExtensionLocationsInPublicSessionForTesting(
+      false);
+}
+#endif  // defined(OS_CHROMEOS)
 
 // Test that a request to an OpenSearch description document (OSDD) generates
 // an event with the expected details.

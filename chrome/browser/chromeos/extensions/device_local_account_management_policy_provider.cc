@@ -664,12 +664,9 @@ const char* const kSafePermissionStrings[] = {
     // Privacy sensitive URL access.
     // "webNavigation",
 
-    // Provides access to cookies and form upload data. Options: (1) block,
-    // (2) strip all content in events.
-    // "webRequest",
-
-    // Fine once webRequest is adjusted.
-    // "webRequestBlocking",
+    // Sensitive content is stripped away.
+    "webRequest",
+    "webRequestBlocking",
 
     // This allows content scripts and capturing. However, the webview runs
     // within a separate storage partition, i.e. doesn't share cookies and other

@@ -7,6 +7,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "chromeos/login/login_state.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
@@ -34,6 +35,8 @@ bool HasWebRequestScheme(const GURL& url) {
           url.SchemeIs(url::kHttpsScheme) ||
           url.SchemeIs(extensions::kExtensionScheme));
 }
+
+bool g_allow_all_extension_locations_in_public_session = false;
 
 }  // namespace
 
@@ -105,6 +108,12 @@ bool WebRequestPermissions::HideRequest(
 }
 
 // static
+void WebRequestPermissions::
+     AllowAllExtensionLocationsInPublicSessionForTesting(bool value) {
+  g_allow_all_extension_locations_in_public_session = value;
+}
+
+// static
 PermissionsData::AccessType WebRequestPermissions::CanExtensionAccessURL(
     const extensions::InfoMap* extension_info_map,
     const std::string& extension_id,
@@ -120,6 +129,21 @@ PermissionsData::AccessType WebRequestPermissions::CanExtensionAccessURL(
       extension_info_map->extensions().GetByID(extension_id);
   if (!extension)
     return PermissionsData::ACCESS_DENIED;
+
+  // When we are in a Public Session, allow all URLs for webRequests initiated
+  // by a regular extension (but don't allow chrome:// URLs).
+#if defined(OS_CHROMEOS)
+  if (chromeos::LoginState::IsInitialized() &&
+      chromeos::LoginState::Get()->IsPublicSessionUser() &&
+      extension->is_extension() &&
+      !url.SchemeIs("chrome")) {
+    // Make sure that the extension is truly installed by policy (the assumption
+    // in Public Session is that all extensions are installed by policy).
+    CHECK(g_allow_all_extension_locations_in_public_session ||
+          extensions::Manifest::IsPolicyLocation(extension->location()));
+    return PermissionsData::ACCESS_ALLOWED;
+  }
+#endif
 
   // Check if this event crosses incognito boundaries when it shouldn't.
   if (crosses_incognito && !extension_info_map->CanCrossIncognito(extension))

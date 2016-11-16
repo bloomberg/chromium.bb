@@ -41,6 +41,10 @@ class WebRequestPermissions {
       const net::URLRequest* request,
       extensions::ExtensionNavigationUIData* navigation_ui_data);
 
+  // Helper function used only in tests, sets a variable which enables or
+  // disables a CHECK.
+  static void AllowAllExtensionLocationsInPublicSessionForTesting(bool value);
+
   // |host_permission_check| controls how permissions are checked with regard to
   // |url|.
   static extensions::PermissionsData::AccessType CanExtensionAccessURL(
