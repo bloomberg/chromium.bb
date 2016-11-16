@@ -277,6 +277,10 @@ if (is_android) {
 }
 
 group("cast_shell_lib") {
+  data_deps = [
+    ":cast_shell_pak",
+  ]
+
   deps = [
     "//chromecast/app",
     "//chromecast/browser",
@@ -296,7 +300,6 @@ executable("cast_shell") {
 
   deps = [
     ":cast_shell_lib",
-    ":cast_shell_pak",
     ":chromecast_locales_pak",
     "//build/config/sanitizers:deps",
     "//chromecast/app",
