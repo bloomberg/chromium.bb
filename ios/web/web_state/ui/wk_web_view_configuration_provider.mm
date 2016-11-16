@@ -7,7 +7,6 @@
 #import <Foundation/Foundation.h>
 #import <WebKit/WebKit.h>
 
-#include "base/ios/ios_util.h"
 #import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "ios/web/public/browser_state.h"
@@ -62,13 +61,6 @@ WKWebViewConfigurationProvider::GetWebViewConfiguration() {
       [configuration_
           setWebsiteDataStore:[WKWebsiteDataStore nonPersistentDataStore]];
     }
-// TODO(crbug.com/620878) Remove these guards after moving to iOS10 SDK.
-#if defined(__IPHONE_10_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
-    if (base::ios::IsRunningOnIOS10OrLater()) {
-      [configuration_ setDataDetectorTypes:WKDataDetectorTypeCalendarEvent |
-                                           WKDataDetectorTypeFlightNumber];
-    }
-#endif
     // API available on iOS 9, although doesn't appear to enable inline playback
     // Works as intended on iOS 10+
     [configuration_ setAllowsInlineMediaPlayback:YES];
