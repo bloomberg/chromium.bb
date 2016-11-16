@@ -18,9 +18,7 @@
 #include "net/base/escape.h"
 #include "url/gurl.h"
 
-namespace {
-char const kOfflineDirectory[] = "Offline";
-}  // namespace
+const char kReadingListOfflineDirectory[] = "Offline";
 
 // URLDownloader
 
@@ -176,7 +174,8 @@ URLDownloader::SuccessState URLDownloader::SaveDistilledHTML(
 }
 
 base::FilePath URLDownloader::OfflineRootDirectoryPath() {
-  return base_directory_.Append(FILE_PATH_LITERAL(kOfflineDirectory));
+  return base_directory_.Append(
+      FILE_PATH_LITERAL(kReadingListOfflineDirectory));
 }
 
 std::string URLDownloader::OfflineURLDirectoryID(const GURL& url) {

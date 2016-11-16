@@ -21,6 +21,10 @@ namespace dom_distiller {
 class DomDistillerService;
 }
 
+// This string contains the directory name in which offline pages are saved.
+// The directory is located in the profile directory.
+extern const char kReadingListOfflineDirectory[];
+
 // This class downloads and deletes offline versions of URLs using DOM distiller
 // to fetch the page and simplify it. Only one item is downloaded or deleted at
 // a time using a queue of tasks that are handled sequentially. Items (page +
