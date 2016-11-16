@@ -40,19 +40,16 @@ class PLATFORM_EXPORT CancellableTaskFactory {
   USING_FAST_MALLOC(CancellableTaskFactory);
 
  public:
-  // A pair of mutually exclusive factory methods are provided for constructing
-  // a CancellableTaskFactory, one for when a Oilpan heap object owns a
-  // CancellableTaskFactory, and one when that owning object isn't controlled
-  // by Oilpan.
+  // As WTF::Closure objects are off-heap, we have to construct the closure in
+  // such a manner that it doesn't end up referring back to the owning heap
+  // object with a strong Persistent<> GC root reference. If we do, this will
+  // create a heap <-> off-heap cycle and leak, the owning object can never be
+  // GCed. Instead, the closure will keep an off-heap persistent reference of
+  // the weak, which will refer back to the owner heap object safely (but
+  // weakly.)
   //
-  // In the Oilpan case, as WTF::Closure objects are off-heap, we have to
-  // construct the closure in such a manner that it doesn't end up referring
-  // back to the owning heap object with a strong Persistent<> GC root
-  // reference. If we do, this will create a heap <-> off-heap cycle and leak,
-  // the owning object can never be GCed. Instead, the closure will keep an
-  // off-heap persistent reference of the weak, which will refer back to the
-  // owner heap object safely (but weakly.)
-  //
+  // DEPRECATED: Please use WebTaskRunner::postCancellableTask instead.
+  // (https://crbug.com/665285)
   template <typename T>
   static std::unique_ptr<CancellableTaskFactory> create(
       T* thisObject,
@@ -61,16 +58,6 @@ class PLATFORM_EXPORT CancellableTaskFactory {
           nullptr) {
     return wrapUnique(new CancellableTaskFactory(
         WTF::bind(method, wrapWeakPersistent(thisObject))));
-  }
-
-  template <typename T>
-  static std::unique_ptr<CancellableTaskFactory> create(
-      T* thisObject,
-      void (T::*method)(),
-      typename std::enable_if<!IsGarbageCollectedType<T>::value>::type* =
-          nullptr) {
-    return wrapUnique(new CancellableTaskFactory(
-        WTF::bind(method, WTF::unretained(thisObject))));
   }
 
   bool isPending() const { return m_weakPtrFactory.hasWeakPtrs(); }

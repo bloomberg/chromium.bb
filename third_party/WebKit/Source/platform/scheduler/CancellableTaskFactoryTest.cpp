@@ -66,23 +66,6 @@ TEST_F(CancellableTaskFactoryTest, IsPending_TaskCreatedAndCancelled) {
   EXPECT_FALSE(factory.isPending());
 }
 
-class TestClass {
- public:
-  std::unique_ptr<CancellableTaskFactory> m_factory;
-
-  TestClass()
-      : m_factory(CancellableTaskFactory::create(this, &TestClass::TestFn)) {}
-
-  void TestFn() { EXPECT_FALSE(m_factory->isPending()); }
-};
-
-TEST_F(CancellableTaskFactoryTest, IsPending_InCallback) {
-  TestClass testClass;
-  std::unique_ptr<WebTaskRunner::Task> task =
-      wrapUnique(testClass.m_factory->cancelAndCreate());
-  task->run();
-}
-
 void AddOne(int* ptr) {
   *ptr += 1;
 }
