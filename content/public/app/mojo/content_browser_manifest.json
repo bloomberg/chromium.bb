@@ -1,5 +1,5 @@
 {
-  "name": "service:content_browser",
+  "name": "content_browser",
   "display_name": "Content (browser process)",
   "interface_provider_specs": {
     "service_manager:connector": {
@@ -44,18 +44,18 @@
       "requires": {
         "*": [ "app" ],
         // In classic ash, the browser supplies ash interfaces to itself.
-        "service:content_browser": [ "ash" ],
-        "service:content_gpu": [ "browser" ],
-        "service:content_plugin": [ "browser" ],
-        "service:content_renderer": [ "browser" ],
-        "service:content_utility": [ "browser" ],
-        "service:service_manager": [
+        "content_browser": [ "ash" ],
+        "content_gpu": [ "browser" ],
+        "content_plugin": [ "browser" ],
+        "content_renderer": [ "browser" ],
+        "content_utility": [ "browser" ],
+        "service_manager": [
           "service_manager:client_process",
           "service_manager:instance_name",
           "service_manager:user_id"
         ],
-        "service:file": [ "file:filesystem", "file:leveldb" ],
-        "service:media": [ "media:media" ]
+        "file": [ "file:filesystem", "file:leveldb" ],
+        "media": [ "media:media" ]
       }
     },
     "navigation:frame": {
@@ -90,7 +90,7 @@
         ]
       },
       "requires": {
-        "service:content_renderer": [ "browser" ]
+        "content_renderer": [ "browser" ]
       }
     }
   }

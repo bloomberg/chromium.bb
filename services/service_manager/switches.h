@@ -5,9 +5,6 @@
 #ifndef SERVICES_SERVICE_MANAGER_SWITCHES_H_
 #define SERVICES_SERVICE_MANAGER_SWITCHES_H_
 
-#include <set>
-#include <string>
-
 namespace service_manager {
 namespace switches {
 

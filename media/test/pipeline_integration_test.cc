@@ -699,7 +699,7 @@ class PipelineIntegrationTestHost : public service_manager::test::ServiceTest,
  public:
   PipelineIntegrationTestHost()
       : service_manager::test::ServiceTest(
-            "service:media_pipeline_integration_shelltests") {}
+            "media_pipeline_integration_shelltests") {}
 
   void SetUp() override {
     ServiceTest::SetUp();
@@ -710,7 +710,7 @@ class PipelineIntegrationTestHost : public service_manager::test::ServiceTest,
   std::unique_ptr<Renderer> CreateRenderer(
       ScopedVector<VideoDecoder> prepend_video_decoders,
       ScopedVector<AudioDecoder> prepend_audio_decoders) override {
-    connector()->ConnectToInterface("service:media", &media_interface_factory_);
+    connector()->ConnectToInterface("media", &media_interface_factory_);
 
     mojom::RendererPtr mojo_renderer;
     media_interface_factory_->CreateRenderer(std::string(),

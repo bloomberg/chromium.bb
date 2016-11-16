@@ -996,7 +996,7 @@ TEST_F(InMemoryURLIndexTest, WhitelistedURLs) {
     { "prospero://host.dom//pros/name", false },
     { "rsync://syler@lost.com/Source", false },
     { "rtsp://media.example.com:554/twister/audiotrack", false },
-    { "service:acap://some.where.net;authentication=KERBEROSV4", false },
+    { "acap://some.where.net;authentication=KERBEROSV4", false },
     { "shttp://www.terces.com/secret", false },
     { "sieve://example.com//script", false },
     { "sip:+1-212-555-1212:1234@gateway.com;user=phone", false },

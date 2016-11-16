@@ -151,7 +151,7 @@ bool WindowManagerApplication::OnConnect(
   mojo_interface_factory::RegisterInterfaces(
       registry, base::ThreadTaskRunnerHandle::Get());
 
-  if (remote_info.identity.name() == "service:mash_session") {
+  if (remote_info.identity.name() == "mash_session") {
     context()->connector()->ConnectToInterface(remote_info.identity, &session_);
     session_->AddScreenlockStateListener(
         screenlock_state_listener_binding_.CreateInterfacePtrAndBind());

@@ -1166,7 +1166,7 @@ AcceleratorController::GetAcceleratorProcessingRestriction(int action) {
 mojom::VolumeController* AcceleratorController::GetVolumeController() {
   if (!volume_controller_ && WmShell::Get()->delegate()->GetShellConnector()) {
     WmShell::Get()->delegate()->GetShellConnector()->ConnectToInterface(
-        "service:content_browser", &volume_controller_);
+        "content_browser", &volume_controller_);
     volume_controller_.set_connection_error_handler(
         base::Bind(&AcceleratorController::OnVolumeControllerConnectionError,
                    base::Unretained(this)));

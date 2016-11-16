@@ -21,7 +21,6 @@
 #include "services/catalog/reader.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
-#include "services/service_manager/public/cpp/names.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 namespace catalog {
@@ -40,7 +39,7 @@ bool IsPathNameValid(const std::string& name) {
 }
 
 base::FilePath GetPathForApplicationName(const std::string& application_name) {
-  static const char kServicePrefix[] = "service:";
+  static const char kServicePrefix[] = "";
   std::string path = application_name;
   const bool is_service = base::StartsWith(
       path, kServicePrefix, base::CompareCase::INSENSITIVE_ASCII);

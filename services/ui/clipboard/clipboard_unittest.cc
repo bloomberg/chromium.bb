@@ -30,14 +30,14 @@ const char* kHtmlData = "<html>data</html>";
 
 class ClipboardAppTest : public service_manager::test::ServiceTest {
  public:
-  ClipboardAppTest() : ServiceTest("service:mus_clipboard_unittests") {}
+  ClipboardAppTest() : ServiceTest("mus_clipboard_unittests") {}
   ~ClipboardAppTest() override {}
 
   // Overridden from service_manager::test::ServiceTest:
   void SetUp() override {
     ServiceTest::SetUp();
 
-    connector()->ConnectToInterface("service:ui", &clipboard_);
+    connector()->ConnectToInterface("ui", &clipboard_);
     ASSERT_TRUE(clipboard_);
   }
 

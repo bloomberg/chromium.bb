@@ -41,14 +41,14 @@ base::Callback<void(const base::UnguessableToken&)> CaptureToken(
 
 class RemoteIteratorTest : public service_manager::test::ServiceTest {
  public:
-  RemoteIteratorTest() : ServiceTest("service:leveldb_service_unittests") {}
+  RemoteIteratorTest() : ServiceTest("leveldb_service_unittests") {}
   ~RemoteIteratorTest() override {}
 
  protected:
   // Overridden from mojo::test::ApplicationTestBase:
   void SetUp() override {
     ServiceTest::SetUp();
-    connector()->ConnectToInterface("service:leveldb", &leveldb_);
+    connector()->ConnectToInterface("leveldb", &leveldb_);
 
     mojom::DatabaseError error;
     base::RunLoop run_loop;

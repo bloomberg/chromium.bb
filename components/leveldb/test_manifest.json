@@ -1,11 +1,11 @@
 {
-  "name": "service:leveldb_service_unittests",
+  "name": "leveldb_service_unittests",
   "display_name": "LevelDB Service Unittests",
   "interface_provider_specs": {
     "service_manager:connector": {
       "requires": {
-        "service:filesystem": [ "filesystem:filesystem" ],
-        "service:leveldb": [ "leveldb:leveldb" ]
+        "filesystem": [ "filesystem:filesystem" ],
+        "leveldb": [ "leveldb:leveldb" ]
       }
     }
   }

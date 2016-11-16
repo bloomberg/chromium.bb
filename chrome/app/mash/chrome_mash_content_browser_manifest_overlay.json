@@ -3,7 +3,7 @@
 //
 // The resulting manifest is output to
 // ${out}/Packages/chrome_mash_content_browser/manifest.json and is used as the
-// manifest for "service:content_browser" (i.e. the browser process) when Chrome
+// manifest for "content_browser" (i.e. the browser process) when Chrome
 // is run in a Mash environment.
 {
   "interface_provider_specs": {
@@ -19,10 +19,10 @@
         ]
       },
       "requires": {
-        "service:ash": [ "ash" ],
-        "service:accessibility_autoclick": [ "ash:autoclick" ],
-        "service:mash_session": [ "app" ],
-        "service:task_viewer": [ "mash:launchable" ]
+        "ash": [ "ash" ],
+        "accessibility_autoclick": [ "ash:autoclick" ],
+        "mash_session": [ "app" ],
+        "task_viewer": [ "mash:launchable" ]
       }
     }
   }

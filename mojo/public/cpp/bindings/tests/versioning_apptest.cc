@@ -24,7 +24,7 @@ class VersioningApplicationTest : public ApplicationTestBase {
   void SetUp() override {
     ApplicationTestBase::SetUp();
 
-    connector()->ConnectToInterface("service:versioning_test_service",
+    connector()->ConnectToInterface("versioning_test_service",
                                     &database_);
   }
 

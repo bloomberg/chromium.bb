@@ -1,5 +1,5 @@
 {
-  "name": "exe:navigation_unittests",
+  "name": "navigation_unittests",
   "display_name": "Navigation Unittests",
   "interface_provider_specs": {
     "service_manager:connector": {

@@ -36,9 +36,6 @@ import("//services/service_manager/public/constants.gni")
 #   packaged_services (optional)
 #       An array of names of the dependent services.
 #
-#   type (default is mojo)
-#       Possible values are 'mojo' and 'exe'. Default is 'mojo'.
-#
 # Outputs:
 #
 #   An instantiation of this template produces in
@@ -61,19 +58,10 @@ template("service_manifest") {
            "\"deps\" building the dependent packaged services must be " +
                "provided.")
   }
-  if (defined(invoker.type)) {
-    assert(invoker.type == "mojo" || invoker.type == "exe",
-           "\"type\" must be one of \"mojo\" or \"exe\".")
-  }
 
   action(target_name) {
     script =
         "//services/service_manager/public/tools/manifest/manifest_collator.py"
-
-    type = "mojo"
-    if (defined(invoker.type)) {
-      type = invoker.type
-    }
 
     name = invoker.name
     inputs = [
@@ -83,14 +71,10 @@ template("service_manifest") {
       inputs += invoker.overlays
     }
 
-    if (type == "mojo") {
-      if (defined(invoker.output_name)) {
-        output = "$root_out_dir/$packages_directory/${invoker.output_name}/manifest.json"
-      } else {
-        output = "$root_out_dir/$packages_directory/$name/manifest.json"
-      }
+    if (defined(invoker.output_name)) {
+      output = "$root_out_dir/$packages_directory/${invoker.output_name}/manifest.json"
     } else {
-      output = "$root_out_dir/${name}_manifest.json"
+      output = "$root_out_dir/$packages_directory/$name/manifest.json"
     }
     outputs = [
       output,
@@ -191,10 +175,6 @@ template("service_manifest_overlay") {
     assert(defined(invoker.deps),
            "\"deps\" building the dependent packaged services must be " +
                "provided.")
-  }
-  if (defined(invoker.type)) {
-    assert(invoker.type == "mojo" || invoker.type == "exe",
-           "\"type\" must be one of \"mojo\" or \"exe\".")
   }
 
   action(target_name) {

@@ -80,7 +80,7 @@ class InputMethodMusTest : public testing::Test {
 TEST_F(InputMethodMusTest, DispatchKeyEvent) {
   // test_ime_driver will register itself as the current IMEDriver. It echoes
   // back the character key events it receives.
-  EXPECT_TRUE(connector()->Connect("service:test_ime_driver"));
+  EXPECT_TRUE(connector()->Connect("test_ime_driver"));
 
   TestInputMethodDelegate input_method_delegate;
   InputMethodMus input_method(&input_method_delegate, nullptr);

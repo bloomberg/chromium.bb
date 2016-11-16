@@ -17,8 +17,8 @@
 namespace service_manager {
 namespace {
 
-const char kTestName[] = "service:background_service_manager_unittest";
-const char kAppName[] = "service:background_service_manager_test_service";
+const char kTestName[] = "background_service_manager_unittest";
+const char kAppName[] = "background_service_manager_test_service";
 
 class ServiceImpl : public Service {
  public:

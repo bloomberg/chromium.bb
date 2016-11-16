@@ -1,5 +1,5 @@
 {
-  "name": "service:webtest",
+  "name": "webtest",
   "display_name": "Web Test",
   "interface_provider_specs": {
     "service_manager:connector": {

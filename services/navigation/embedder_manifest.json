@@ -1,5 +1,5 @@
 {
-  "name": "exe:navigation",
+  "name": "navigation",
   "display_name": "Navigation Embedder",
   "interface_provider_specs": {}
 }

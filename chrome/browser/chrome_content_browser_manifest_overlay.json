@@ -1,5 +1,5 @@
 {
-  "name": "service:content_browser",
+  "name": "content_browser",
   "display_name": "Chrome",
   "interface_provider_specs": {
     "service_manager:connector": {
@@ -34,8 +34,8 @@
         ]
       },
       "requires": {
-        "service:ash": [ "ash" ],
-        "service:image_decoder": [ "decode" ]
+        "ash": [ "ash" ],
+        "image_decoder": [ "decode" ]
       }
     },
     "navigation:frame": {

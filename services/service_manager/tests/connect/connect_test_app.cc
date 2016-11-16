@@ -119,7 +119,7 @@ class ConnectTestApp : public Service,
       const ConnectToAllowedAppInBlockedPackageCallback& callback) override {
     base::RunLoop run_loop;
     std::unique_ptr<Connection> connection =
-        context()->connector()->Connect("service:connect_test_a");
+        context()->connector()->Connect("connect_test_a");
     connection->SetConnectionLostClosure(
         base::Bind(&ConnectTestApp::OnConnectionBlocked,
                    base::Unretained(this), callback, &run_loop));
@@ -139,7 +139,7 @@ class ConnectTestApp : public Service,
   void ConnectToClassInterface(
       const ConnectToClassInterfaceCallback& callback) override {
     std::unique_ptr<Connection> connection =
-        context()->connector()->Connect("service:connect_test_class_app");
+        context()->connector()->Connect("connect_test_class_app");
     test::mojom::ClassInterfacePtr class_interface;
     connection->GetInterface(&class_interface);
     std::string ping_response;

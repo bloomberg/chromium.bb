@@ -217,7 +217,7 @@ ServiceManagerContext::ServiceManagerContext() {
       { kPluginServiceName, IDR_MOJO_CONTENT_PLUGIN_MANIFEST },
       { kRendererServiceName, IDR_MOJO_CONTENT_RENDERER_MANIFEST },
       { kUtilityServiceName, IDR_MOJO_CONTENT_UTILITY_MANIFEST },
-      { "service:catalog", IDR_MOJO_CATALOG_MANIFEST },
+      { "catalog", IDR_MOJO_CATALOG_MANIFEST },
       { file::kFileServiceName, IDR_MOJO_FILE_MANIFEST }
     };
 
@@ -293,7 +293,7 @@ ServiceManagerContext::ServiceManagerContext() {
 
 #if (ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
   ServiceManagerConnection::GetForProcess()->AddServiceRequestHandler(
-      "service:media", base::Bind(&StartServiceInGpuProcess, "service:media"));
+      "media", base::Bind(&StartServiceInGpuProcess, "media"));
 #endif
 }
 

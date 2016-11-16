@@ -3001,7 +3001,7 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
 #if (ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
   content::ServiceInfo info;
   info.factory = base::Bind(&media::CreateMediaService);
-  services->insert(std::make_pair("service:media", info));
+  services->insert(std::make_pair("media", info));
 #endif
 #if defined(OS_CHROMEOS)
   content::ServiceManagerConnection::GetForProcess()->AddConnectionFilter(
@@ -3012,7 +3012,7 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
 void ChromeContentBrowserClient::RegisterOutOfProcessServices(
       OutOfProcessServiceMap* services) {
 #if defined(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
-  services->insert(std::make_pair("service:media",
+  services->insert(std::make_pair("media",
                                   base::ASCIIToUTF16("Media Service")));
 #endif
   services->insert(std::make_pair(image_decoder::kServiceName,

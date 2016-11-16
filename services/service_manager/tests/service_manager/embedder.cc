@@ -68,7 +68,7 @@ class Embedder : public service_manager::Service,
   // mojom::ServiceFactory:
   void CreateService(service_manager::mojom::ServiceRequest request,
                      const std::string& name) override {
-    if (name == "service:service_manager_unittest_singleton") {
+    if (name == "service_manager_unittest_singleton") {
       context_.reset(new service_manager::ServiceContext(
           base::MakeUnique<Singleton>(), std::move(request)));
     }

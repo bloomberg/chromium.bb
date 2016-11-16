@@ -29,12 +29,10 @@ void ShutdownPolicyForwarder::OnShutdownPolicyChanged(bool reboot_on_shutdown) {
 
   // Under mash the ShutdownController interface is in the ash process. In
   // classic ash the browser provides it to itself.
-  if (chrome::IsRunningInMash()) {
-    connector->ConnectToInterface("service:ash", &shutdown_controller);
-  } else {
-    connector->ConnectToInterface("service:content_browser",
-                                  &shutdown_controller);
-  }
+  if (chrome::IsRunningInMash())
+    connector->ConnectToInterface("ash", &shutdown_controller);
+  else
+    connector->ConnectToInterface("content_browser", &shutdown_controller);
 
   // Forward the setting to ash.
   shutdown_controller->SetRebootOnShutdown(reboot_on_shutdown);

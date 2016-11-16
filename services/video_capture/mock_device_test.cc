@@ -7,13 +7,13 @@
 namespace video_capture {
 
 MockDeviceTest::MockDeviceTest()
-    : service_manager::test::ServiceTest("service:video_capture_unittests") {}
+    : service_manager::test::ServiceTest("video_capture_unittests") {}
 
 MockDeviceTest::~MockDeviceTest() = default;
 
 void MockDeviceTest::SetUp() {
   ServiceTest::SetUp();
-  connector()->ConnectToInterface("service:video_capture", &service_);
+  connector()->ConnectToInterface("video_capture", &service_);
   service_->ConnectToMockDeviceFactory(mojo::GetProxy(&factory_));
 
   // Set up a mock device and add it to the factory

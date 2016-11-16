@@ -1,11 +1,11 @@
 {
-  "name": "service:mash_unittests",
+  "name": "mash_unittests",
   "display_name": "Mash Unittests",
   "interface_provider_specs": {
     "service_manager:connector": {
       "requires": {
         "*": [ "app", "test" ],
-        "service:ash": [ "mus:window_manager" ]
+        "ash": [ "mus:window_manager" ]
       }
     }
   }

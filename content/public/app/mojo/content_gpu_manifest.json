@@ -1,5 +1,5 @@
 {
-  "name": "service:content_gpu",
+  "name": "content_gpu",
   "display_name": "Content (GPU process)",
   "interface_provider_specs": {
     "service_manager:connector": {
@@ -13,7 +13,7 @@
         ]
       },
       "requires": {
-        "service:content_browser": [ "gpu" ]
+        "content_browser": [ "gpu" ]
       }
     }
   }

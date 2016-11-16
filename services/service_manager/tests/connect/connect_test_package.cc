@@ -201,10 +201,10 @@ class ConnectTestService
   // mojom::ServiceFactory:
   void CreateService(mojom::ServiceRequest request,
                      const std::string& name) override {
-    if (name == "service:connect_test_a") {
+    if (name == "connect_test_a") {
       provided_services_.emplace_back(
           base::MakeUnique<ProvidedService>("A", std::move(request)));
-    } else if (name == "service:connect_test_b") {
+    } else if (name == "connect_test_b") {
       provided_services_.emplace_back(
           base::MakeUnique<ProvidedService>("B", std::move(request)));
     }

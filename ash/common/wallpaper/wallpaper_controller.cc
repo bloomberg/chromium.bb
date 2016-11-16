@@ -197,7 +197,7 @@ void WallpaperController::OpenSetWallpaperPage() {
     return;
 
   mojom::WallpaperManagerPtr wallpaper_manager;
-  connector->ConnectToInterface("service:content_browser", &wallpaper_manager);
+  connector->ConnectToInterface("content_browser", &wallpaper_manager);
   wallpaper_manager->Open();
 }
 

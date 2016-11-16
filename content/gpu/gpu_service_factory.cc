@@ -21,7 +21,7 @@ void GpuServiceFactory::RegisterServices(ServiceMap* services) {
   ServiceInfo info;
   info.factory = base::Bind(&media::CreateMediaService);
   info.use_own_thread = true;
-  services->insert(std::make_pair("service:media", info));
+  services->insert(std::make_pair("media", info));
 #endif
 }
 

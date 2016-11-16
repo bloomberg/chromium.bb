@@ -1,5 +1,5 @@
 {
-  "name": "service:content_renderer",
+  "name": "content_renderer",
   "display_name": "Content (renderer process)",
   "interface_provider_specs": {
     "service_manager:connector": {
@@ -18,8 +18,8 @@
         ]
       },
       "requires": {
-        "service:content_browser": [ "renderer" ],
-        "service:ui": [ "ui:gpu_client" ]
+        "content_browser": [ "renderer" ],
+        "ui": [ "ui:gpu_client" ]
       }
     },
     "navigation:frame": {
@@ -31,7 +31,7 @@
         ]
       },
       "requires": {
-        "service:content_browser": [ "renderer" ]
+        "content_browser": [ "renderer" ]
       }
     }
   }

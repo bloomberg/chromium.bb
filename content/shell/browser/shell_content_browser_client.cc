@@ -200,14 +200,14 @@ void ShellContentBrowserClient::RegisterInProcessServices(
   {
     content::ServiceInfo info;
     info.factory = base::Bind(&media::CreateMediaServiceForTesting);
-    services->insert(std::make_pair("service:media", info));
+    services->insert(std::make_pair("media", info));
   }
 #endif
 #if defined(USE_AURA)
   {
     content::ServiceInfo info;
     info.factory = base::Bind(&navigation::CreateNavigationService);
-    services->insert(std::make_pair("service:navigation", info));
+    services->insert(std::make_pair("navigation", info));
   }
 #endif
 }

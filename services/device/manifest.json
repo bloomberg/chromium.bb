@@ -1,5 +1,5 @@
 {
-  "name": "service:device",
+  "name": "device",
   "process-group": "browser",
   "display_name": "Device Service",
   "interface_provider_specs": {

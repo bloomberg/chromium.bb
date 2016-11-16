@@ -65,7 +65,7 @@ class MockRendererClient : public mojom::RendererClient {
 class MediaServiceTest : public service_manager::test::ServiceTest {
  public:
   MediaServiceTest()
-      : ServiceTest("service:media_mojo_unittests"),
+      : ServiceTest("media_mojo_unittests"),
         renderer_client_binding_(&renderer_client_),
         video_stream_(DemuxerStream::VIDEO) {}
   ~MediaServiceTest() override {}
@@ -73,7 +73,7 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
   void SetUp() override {
     ServiceTest::SetUp();
 
-    connection_ = connector()->Connect("service:media");
+    connection_ = connector()->Connect("media");
     connection_->SetConnectionLostClosure(base::Bind(
         &MediaServiceTest::ConnectionClosed, base::Unretained(this)));
 

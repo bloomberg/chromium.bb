@@ -1,11 +1,11 @@
 {
-  "name": "service:test_ime_driver",
+  "name": "test_ime_driver",
   "display_name": "Test IME Driver",
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": { "ime:ime_driver": [ "ui::mojom::IMEDriver" ] },
       "requires": {
-        "service:ui": [ "ui:ime_registrar" ]
+        "ui": [ "ui:ime_registrar" ]
       }
     }
   }

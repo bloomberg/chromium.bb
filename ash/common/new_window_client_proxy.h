@@ -15,7 +15,7 @@ class Connector;
 namespace ash {
 
 // A NewWindowClient which lazily connects to an exported mojom::NewWindowClient
-// in "service:content_browser" on first use.
+// in "content_browser" on first use.
 class NewWindowClientProxy : public mojom::NewWindowClient {
  public:
   explicit NewWindowClientProxy(service_manager::Connector* connector);

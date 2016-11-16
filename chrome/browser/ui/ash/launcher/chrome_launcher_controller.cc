@@ -54,10 +54,9 @@ bool ChromeLauncherController::ConnectToShelfController() {
   // Under mash the ShelfController interface is in the ash process. In classic
   // ash we provide it to ourself.
   if (chrome::IsRunningInMash()) {
-    connector->ConnectToInterface("service:ash", &shelf_controller_);
+    connector->ConnectToInterface("ash", &shelf_controller_);
   } else {
-    connector->ConnectToInterface("service:content_browser",
-                                  &shelf_controller_);
+    connector->ConnectToInterface("content_browser", &shelf_controller_);
   }
   return true;
 }

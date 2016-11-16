@@ -128,8 +128,7 @@ bool SystemTrayController::ConnectToSystemTrayClient() {
     return true;
 
   // Connect (or reconnect) to the interface.
-  connector_->ConnectToInterface("service:content_browser",
-                                 &system_tray_client_);
+  connector_->ConnectToInterface("content_browser", &system_tray_client_);
 
   // Handle chrome crashes by forcing a reconnect on the next request.
   system_tray_client_.set_connection_error_handler(base::Bind(

@@ -1,5 +1,5 @@
 {
-  "name": "service:content_plugin",
+  "name": "content_plugin",
   "display_name": "Content (plugin process)",
   "interface_provider_specs": {
     "service_manager:connector": {
@@ -10,7 +10,7 @@
         ]
       },
       "requires": {
-        "service:content_browser": [ "plugin" ]
+        "content_browser": [ "plugin" ]
       }
     }
   }

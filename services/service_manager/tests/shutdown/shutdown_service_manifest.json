@@ -1,5 +1,5 @@
 {
-  "name": "service:shutdown_service",
+  "name": "shutdown_service",
   "display_name": "Shutdown Service",
   "interface_provider_specs": {
     "service_manager:connector": {
@@ -9,7 +9,7 @@
         ]
       },
       "requires": {
-        "service:service_manager": [ "service_manager:service_manager" ]
+        "service_manager": [ "service_manager:service_manager" ]
       }
     }
   }

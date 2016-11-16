@@ -88,7 +88,7 @@ class ServiceManagerTest : public test::ServiceTest,
                            public mojom::ServiceManagerListener {
  public:
   ServiceManagerTest()
-      : test::ServiceTest("service:service_manager_unittest"),
+      : test::ServiceTest("service_manager_unittest"),
         service_(nullptr),
         binding_(this) {}
   ~ServiceManagerTest() override {}
@@ -104,7 +104,7 @@ class ServiceManagerTest : public test::ServiceTest,
 
   void AddListenerAndWaitForApplications() {
     mojom::ServiceManagerPtr service_manager;
-    connector()->ConnectToInterface("service:service_manager",
+    connector()->ConnectToInterface("service_manager",
                                     &service_manager);
 
     service_manager->AddListener(binding_.CreateInterfacePtrAndBind());
@@ -181,7 +181,7 @@ class ServiceManagerTest : public test::ServiceTest,
                                                          child_token);
     service_manager::mojom::PIDReceiverPtr receiver;
 
-    service_manager::Identity target("service:service_manager_unittest_target",
+    service_manager::Identity target("service_manager_unittest_target",
                                      service_manager::mojom::kInheritUserID);
     service_manager::Connector::ConnectParams params(target);
     params.set_client_process_connection(std::move(client),
@@ -280,7 +280,7 @@ TEST_F(ServiceManagerTest, CreateInstance) {
 
   // 3. Validate that this test suite's name was received from the application
   //    manager.
-  EXPECT_TRUE(ContainsInstanceWithName("service:service_manager_unittest"));
+  EXPECT_TRUE(ContainsInstanceWithName("service_manager_unittest"));
 
   // 4. Validate that the right applications/processes were created.
   //    Note that the target process will be created even if the tests are
@@ -290,7 +290,7 @@ TEST_F(ServiceManagerTest, CreateInstance) {
     auto& instance = instances().back();
     // We learn about the target process id via a ping from it.
     EXPECT_EQ(target_identity(), instance.identity);
-    EXPECT_EQ("service:service_manager_unittest_target",
+    EXPECT_EQ("service_manager_unittest_target",
               instance.identity.name());
     EXPECT_NE(base::kNullProcessId, instance.pid);
   }
@@ -333,12 +333,12 @@ TEST_F(ServiceManagerTest, CreatePackagedSingletonInstance) {
         &failed_to_start, loop.QuitClosure()));
 
     std::unique_ptr<Connection> embedder_connection =
-        connector()->Connect("service:service_manager_unittest_embedder");
+        connector()->Connect("service_manager_unittest_embedder");
     loop.Run();
     EXPECT_FALSE(failed_to_start);
     EXPECT_FALSE(embedder_connection->IsPending());
     EXPECT_EQ(1, start_count);
-    EXPECT_EQ("service:service_manager_unittest_embedder", service_name);
+    EXPECT_EQ("service_manager_unittest_embedder", service_name);
   }
 
   {
@@ -355,12 +355,12 @@ TEST_F(ServiceManagerTest, CreatePackagedSingletonInstance) {
 
     // Connect to the packaged singleton service.
     std::unique_ptr<Connection> singleton_connection =
-        connector()->Connect("service:service_manager_unittest_singleton");
+        connector()->Connect("service_manager_unittest_singleton");
     loop.Run();
     EXPECT_FALSE(failed_to_start);
     EXPECT_FALSE(singleton_connection->IsPending());
     EXPECT_EQ(1, start_count);
-    EXPECT_EQ("service:service_manager_unittest_singleton", service_name);
+    EXPECT_EQ("service_manager_unittest_singleton", service_name);
   }
 }
 

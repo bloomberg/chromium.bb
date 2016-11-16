@@ -33,8 +33,7 @@ class WindowTreeClientDelegate : public ui::WindowTreeClientDelegate {
 
 class WindowManagerTest : public service_manager::test::ServiceTest {
  public:
-  WindowManagerTest()
-      : service_manager::test::ServiceTest("service:mash_unittests") {}
+  WindowManagerTest() : service_manager::test::ServiceTest("mash_unittests") {}
   ~WindowManagerTest() override {}
 
  private:
@@ -57,7 +56,7 @@ void OnEmbed(bool success) {
 TEST_F(WindowManagerTest, MAYBE_OpenWindow) {
   WindowTreeClientDelegate window_tree_delegate;
 
-  connector()->Connect("service:ash");
+  connector()->Connect("ash");
 
   // Connect to mus and create a new top level window. The request goes to
   // |ash|, but is async.

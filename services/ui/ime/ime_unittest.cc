@@ -44,15 +44,15 @@ class TestTextInputClient : public ui::mojom::TextInputClient {
 
 class IMEAppTest : public service_manager::test::ServiceTest {
  public:
-  IMEAppTest() : ServiceTest("service:mus_ime_unittests") {}
+  IMEAppTest() : ServiceTest("mus_ime_unittests") {}
   ~IMEAppTest() override {}
 
   // service_manager::test::ServiceTest:
   void SetUp() override {
     ServiceTest::SetUp();
     // test_ime_driver will register itself as the current IMEDriver.
-    connector()->Connect("service:test_ime_driver");
-    connector()->ConnectToInterface("service:ui", &ime_server_);
+    connector()->Connect("test_ime_driver");
+    connector()->ConnectToInterface("ui", &ime_server_);
   }
 
   bool ProcessKeyEvent(ui::mojom::InputMethodPtr* input_method,

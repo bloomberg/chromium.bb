@@ -20,7 +20,7 @@ Init::Init() {}
 Init::~Init() {}
 
 void Init::OnStart() {
-  context()->connector()->Connect("service:ui");
+  context()->connector()->Connect("ui");
   StartTracing();
   StartLogin();
 }
@@ -61,11 +61,11 @@ void Init::UserServiceQuit(const std::string& user_id) {
 }
 
 void Init::StartTracing() {
-  context()->connector()->Connect("service:tracing");
+  context()->connector()->Connect("tracing");
 }
 
 void Init::StartLogin() {
-  login_connection_ = context()->connector()->Connect("service:login");
+  login_connection_ = context()->connector()->Connect("login");
   mash::login::mojom::LoginPtr login;
   login_connection_->GetInterface(&login);
   login->ShowLoginUI();

@@ -1,11 +1,11 @@
 {
-  "name": "service:mus_ime_unittests",
+  "name": "mus_ime_unittests",
   "display_name": "IME Service Unittests",
   "interface_provider_specs": {
     "service_manager:connector": {
       "requires": {
-        "service:ui": [ "app" ],
-        "service:test_ime_driver": [ ]
+        "ui": [ "app" ],
+        "test_ime_driver": [ ]
       }
     }
   }

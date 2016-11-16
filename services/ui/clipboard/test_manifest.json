@@ -1,9 +1,9 @@
 {
-  "name": "service:mus_clipboard_unittests",
+  "name": "mus_clipboard_unittests",
   "display_name": "Clipboard Service Unittests",
   "interface_provider_specs": {
     "service_manager:connector": {
-      "requires": { "service:ui": [ "app" ] }
+      "requires": { "ui": [ "app" ] }
     }
   }
 }

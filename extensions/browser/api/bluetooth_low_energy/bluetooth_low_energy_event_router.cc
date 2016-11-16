@@ -486,7 +486,7 @@ BluetoothLowEnergyEventRouter::GetCharacteristics(
   BluetoothPermissionRequest request(service->GetUUID().value());
   if (!BluetoothManifestData::CheckRequest(extension, request)) {
     VLOG(1) << "App has no permission to access the characteristics of this "
-            << "service: " << instance_id;
+            << " " << instance_id;
     return kStatusErrorPermissionDenied;
   }
 

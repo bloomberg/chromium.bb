@@ -43,7 +43,7 @@ class ShutdownClientApp
   void ConnectAndWait(const ConnectAndWaitCallback& callback) override {
     mojom::ShutdownTestServicePtr service;
     context()->connector()->ConnectToInterface(
-        "service:shutdown_service", &service);
+        "shutdown_service", &service);
 
     mojo::Binding<mojom::ShutdownTestClient> client_binding(this);
 

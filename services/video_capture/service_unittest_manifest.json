@@ -1,10 +1,10 @@
 {
-  "name": "service:video_capture_unittests",
+  "name": "video_capture_unittests",
   "display_name": "Video Capture Unittests",
   "interface_provider_specs": {
     "service_manager:connector": {
       "requires": {
-        "service:video_capture": [ "tests" ]
+        "video_capture": [ "tests" ]
       }
     }
   }

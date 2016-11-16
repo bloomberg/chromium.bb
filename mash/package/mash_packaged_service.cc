@@ -72,26 +72,26 @@ std::unique_ptr<service_manager::Service> MashPackagedService::CreateService(
       base::debug::WaitForDebugger(120, true);
     }
   }
-  if (name == "service:ash")
+  if (name == "ash")
     return base::WrapUnique(new ash::mus::WindowManagerApplication);
-  if (name == "service:accessibility_autoclick")
+  if (name == "accessibility_autoclick")
     return base::WrapUnique(new ash::autoclick::AutoclickApplication);
-  if (name == "service:catalog_viewer")
+  if (name == "catalog_viewer")
     return base::WrapUnique(new mash::catalog_viewer::CatalogViewer);
-  if (name == "service:touch_hud")
+  if (name == "touch_hud")
     return base::WrapUnique(new ash::touch_hud::TouchHudApplication);
-  if (name == "service:mash_session")
+  if (name == "mash_session")
     return base::WrapUnique(new mash::session::Session);
-  if (name == "service:ui")
+  if (name == "ui")
     return base::WrapUnique(new ui::Service);
-  if (name == "service:quick_launch")
+  if (name == "quick_launch")
     return base::WrapUnique(new mash::quick_launch::QuickLaunch);
-  if (name == "service:task_viewer")
+  if (name == "task_viewer")
     return base::WrapUnique(new mash::task_viewer::TaskViewer);
-  if (name == "service:test_ime_driver")
+  if (name == "test_ime_driver")
     return base::WrapUnique(new ui::test::TestIMEApplication);
 #if defined(OS_LINUX)
-  if (name == "service:font_service")
+  if (name == "font_service")
     return base::WrapUnique(new font_service::FontServiceApp);
 #endif
   return nullptr;

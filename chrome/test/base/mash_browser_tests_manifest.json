@@ -1,5 +1,5 @@
 {
-  "name": "service:mash_browser_tests",
+  "name": "mash_browser_tests",
   "display_name": "Mash Browser Tests",
   "interface_provider_specs": {
     "service_manager:connector": {
@@ -10,7 +10,7 @@
       },
       "requires": {
         "*": [ "app" ],
-        "service:service_manager": [
+        "service_manager": [
            "service_manager:instance_per_child"
         ]
       }

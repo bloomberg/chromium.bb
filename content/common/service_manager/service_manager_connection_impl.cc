@@ -241,7 +241,7 @@ class ServiceManagerConnectionImpl::IOThreadContext
         FROM_HERE, base::Bind(on_connect_callback_, local_info_, remote_info));
 
     std::string remote_service = remote_info.identity.name();
-    if (remote_service == "service:service_manager") {
+    if (remote_service == "service_manager") {
       // Only expose the ServiceFactory interface to the Service Manager.
       registry->AddInterface<service_manager::mojom::ServiceFactory>(this);
       return true;
@@ -256,7 +256,7 @@ class ServiceManagerConnectionImpl::IOThreadContext
       }
     }
 
-    if (remote_service == "service:content_browser" &&
+    if (remote_service == "content_browser" &&
         !has_browser_connection_) {
       has_browser_connection_ = true;
       registry->set_default_binder(default_browser_binder_);

@@ -5,7 +5,6 @@
 #include "services/service_manager/public/cpp/identity.h"
 
 #include "base/guid.h"
-#include "services/service_manager/public/cpp/names.h"
 
 namespace service_manager {
 
@@ -41,7 +40,7 @@ bool Identity::operator==(const Identity& other) const {
 }
 
 bool Identity::IsValid() const {
-  return IsValidName(name_) && base::IsValidGUID(user_id_);
+  return !name_.empty() && base::IsValidGUID(user_id_);
 }
 
 }  // namespace service_manager

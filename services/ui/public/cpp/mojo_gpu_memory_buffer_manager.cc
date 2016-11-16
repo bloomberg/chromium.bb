@@ -49,7 +49,7 @@ MojoGpuMemoryBufferManager::~MojoGpuMemoryBufferManager() {
 }
 
 void MojoGpuMemoryBufferManager::InitThread() {
-  connector_->ConnectToInterface("service:ui", &gpu_service_);
+  connector_->ConnectToInterface("ui", &gpu_service_);
 }
 
 void MojoGpuMemoryBufferManager::TearDownThread() {

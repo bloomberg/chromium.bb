@@ -117,7 +117,7 @@ class QuickLaunchUI : public views::WidgetDelegateView,
     base::TrimWhitespace(input, base::TRIM_ALL, &working);
     GURL url(working);
     if (url.scheme() != "service" && url.scheme() != "exe")
-      working = base::ASCIIToUTF16("service:") + working;
+      working = base::ASCIIToUTF16("") + working;
     return base::UTF16ToUTF8(working);
   }
 
@@ -191,7 +191,7 @@ void QuickLaunch::Launch(uint32_t what, mojom::LaunchMode how) {
     return;
   }
   catalog::mojom::CatalogPtr catalog;
-  context()->connector()->ConnectToInterface("service:catalog", &catalog);
+  context()->connector()->ConnectToInterface("catalog", &catalog);
 
   views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
       new QuickLaunchUI(this, context()->connector(), std::move(catalog)),

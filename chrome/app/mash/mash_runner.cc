@@ -42,7 +42,7 @@ namespace {
 // kProcessType used to identify child processes.
 const char* kMashChild = "mash-child";
 
-const char kChromeMashServiceName[] = "service:chrome_mash";
+const char kChromeMashServiceName[] = "chrome_mash";
 
 const char kChromeMashContentBrowserPackageName[] =
     "chrome_mash_content_browser";
@@ -139,7 +139,7 @@ void MashRunner::RunMain() {
   // We need to send a sync messages to the Catalog, so we wait for a completed
   // connection first.
   std::unique_ptr<service_manager::Connection> catalog_connection =
-      context_->connector()->Connect("service:catalog");
+      context_->connector()->Connect("catalog");
   {
     base::RunLoop run_loop;
     catalog_connection->AddConnectionCompletedClosure(run_loop.QuitClosure());
@@ -163,7 +163,7 @@ void MashRunner::RunMain() {
       GetPackageManifestPath(kChromeContentUtilityPackageName)));
 
   // Ping mash_session to ensure an instance is brought up
-  context_->connector()->Connect("service:mash_session");
+  context_->connector()->Connect("mash_session");
   base::RunLoop().Run();
 }
 

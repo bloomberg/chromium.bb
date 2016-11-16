@@ -28,7 +28,7 @@ class Target : public service_manager::Service {
   void OnStart() override {
     CreateInstanceTestPtr service;
     context()->connector()->ConnectToInterface(
-        "service:service_manager_unittest", &service);
+        "service_manager_unittest", &service);
     service->SetTargetIdentity(context()->identity());
   }
 

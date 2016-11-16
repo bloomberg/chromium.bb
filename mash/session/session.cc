@@ -34,7 +34,7 @@ void Session::OnStart() {
   StartQuickLaunch();
 
   // Launch a chrome window for dev convience; don't do this in the long term.
-  context()->connector()->Connect("service:content_browser");
+  context()->connector()->Connect("content_browser");
 }
 
 bool Session::OnConnect(const service_manager::ServiceInfo& remote_info,
@@ -47,7 +47,7 @@ void Session::Logout() {
   // TODO(beng): Notify connected listeners that login is happening, potentially
   // give them the option to stop it.
   mash::login::mojom::LoginPtr login;
-  context()->connector()->ConnectToInterface("service:login", &login);
+  context()->connector()->ConnectToInterface("login", &login);
   login->ShowLoginUI();
   // This kills the user environment.
   base::MessageLoop::current()->QuitWhenIdle();
@@ -55,7 +55,7 @@ void Session::Logout() {
 
 void Session::SwitchUser() {
   mash::login::mojom::LoginPtr login;
-  context()->connector()->ConnectToInterface("service:login", &login);
+  context()->connector()->ConnectToInterface("login", &login);
   login->SwitchUser();
 }
 
@@ -93,27 +93,27 @@ void Session::Create(const service_manager::Identity& remote_identity,
 
 void Session::StartWindowManager() {
   StartRestartableService(
-      "service:ash",
+      "ash",
       base::Bind(&Session::StartWindowManager,
                  base::Unretained(this)));
 }
 
 void Session::StartQuickLaunch() {
   StartRestartableService(
-      "service:quick_launch",
+      "quick_launch",
       base::Bind(&Session::StartQuickLaunch,
                  base::Unretained(this)));
 }
 
 void Session::StartScreenlock() {
   StartRestartableService(
-      "service:screenlock",
+      "screenlock",
       base::Bind(&Session::StartScreenlock,
                  base::Unretained(this)));
 }
 
 void Session::StopScreenlock() {
-  auto connection = connections_.find("service:screenlock");
+  auto connection = connections_.find("screenlock");
   DCHECK(connections_.end() != connection);
   connections_.erase(connection);
 }

@@ -305,9 +305,9 @@ void SystemTrayClient::ConnectToSystemTray() {
   // Under mash the SystemTray interface is in the ash process. In classic ash
   // we provide it to ourself.
   if (chrome::IsRunningInMash())
-    connector->ConnectToInterface("service:ash", &system_tray_);
+    connector->ConnectToInterface("ash", &system_tray_);
   else
-    connector->ConnectToInterface("service:content_browser", &system_tray_);
+    connector->ConnectToInterface("content_browser", &system_tray_);
 
   // Tolerate ash crashing and coming back up.
   system_tray_.set_connection_error_handler(base::Bind(

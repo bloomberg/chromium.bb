@@ -840,7 +840,7 @@ void RenderFrameHostImpl::Create(
   media::mojom::MediaServicePtr media_service;
   service_manager::Connector* connector =
       ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->ConnectToInterface("service:media", &media_service);
+  connector->ConnectToInterface("media", &media_service);
   media_service->CreateInterfaceFactory(std::move(request),
                                         std::move(interfaces));
 }

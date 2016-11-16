@@ -80,11 +80,7 @@ def main():
 
   parent = ParseJSONFile(args.parent)
 
-  service_path = parent['name'].split(':')[1]
-  if service_path.startswith('//'):
-    raise ValueError("Service name path component '%s' must not start " \
-                     "with //" % service_path)
-
+  service_path = parent['name']
   if args.name and args.name != service_path:
     raise ValueError("Service name '%s' specified in build file does not " \
                      "match name '%s' specified in manifest." %

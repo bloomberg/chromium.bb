@@ -1,5 +1,5 @@
 {
-  "name": "service:content_plugin",
+  "name": "content_plugin",
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {

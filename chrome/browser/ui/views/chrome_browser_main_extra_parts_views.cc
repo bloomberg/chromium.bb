@@ -101,7 +101,7 @@ void ChromeBrowserMainExtraPartsViews::ServiceManagerConnectionStarted(
 
     input_device_client_.reset(new ui::InputDeviceClient());
     ui::mojom::InputDeviceServerPtr server;
-    connection->GetConnector()->ConnectToInterface("service:ui", &server);
+    connection->GetConnector()->ConnectToInterface("ui", &server);
     input_device_client_->Connect(std::move(server));
 
     window_manager_connection_ = views::WindowManagerConnection::Create(

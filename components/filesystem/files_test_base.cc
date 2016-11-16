@@ -13,7 +13,7 @@
 namespace filesystem {
 
 FilesTestBase::FilesTestBase()
-    : ServiceTest("service:filesystem_service_unittests") {
+    : ServiceTest("filesystem_service_unittests") {
 }
 
 FilesTestBase::~FilesTestBase() {
@@ -21,7 +21,7 @@ FilesTestBase::~FilesTestBase() {
 
 void FilesTestBase::SetUp() {
   ServiceTest::SetUp();
-  connector()->ConnectToInterface("service:filesystem", &files_);
+  connector()->ConnectToInterface("filesystem", &files_);
 }
 
 void FilesTestBase::GetTemporaryRoot(mojom::DirectoryPtr* directory) {

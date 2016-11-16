@@ -1,14 +1,14 @@
 {
-  "name": "service:shutdown_unittest",
+  "name": "shutdown_unittest",
   "display_name": "Shutdown Unittest",
   "interface_provider_specs": {
     "service_manager:connector": {
       "requires": {
-        "service:service_manager": [ "service_manager:service_manager" ],
-        "service:shutdown_client": [
+        "service_manager": [ "service_manager:service_manager" ],
+        "shutdown_client": [
           "shutdown_unittest:shutdown_test_client_controller"
         ],
-        "service:shutdown_service": [ "shutdown_unittest:shutdown_test_service" ]
+        "shutdown_service": [ "shutdown_unittest:shutdown_test_service" ]
       }
     }
   }

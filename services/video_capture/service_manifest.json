@@ -1,5 +1,5 @@
 {
-  "name": "service:video_capture",
+  "name": "video_capture",
   "display_name": "Video Capture",
   "interface_provider_specs": {
     "service_manager:connector": {
@@ -7,7 +7,7 @@
         "tests": [ "*" ]
       },
       "requires": {
-        "service:service_manager": [ "service_manager:all_users" ]
+        "service_manager": [ "service_manager:all_users" ]
       }
     }
   }

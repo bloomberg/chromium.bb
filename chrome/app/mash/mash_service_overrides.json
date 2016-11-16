@@ -1,18 +1,18 @@
 {
-  "service:content_browser": {
+  "content_browser": {
     "executable_path": "$EXE_DIR/chrome",
     "package_name": "chrome_mash_content_browser"
   },
-  "service:content_gpu": {
+  "content_gpu": {
     "package_name": "chrome_content_gpu"
   },
-  "service:content_plugin": {
+  "content_plugin": {
     "package_name": "chrome_content_plugin"
   },
-  "service:content_renderer": {
+  "content_renderer": {
     "package_name": "chrome_content_renderer"
   },
-  "service:content_utility": {
+  "content_utility": {
     "package_name": "chrome_content_utility"
   }
 }

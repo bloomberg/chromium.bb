@@ -7,7 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "services/catalog/store.h"
-#include "services/service_manager/public/cpp/names.h"
+
 
 namespace catalog {
 namespace {
@@ -139,18 +139,17 @@ std::unique_ptr<Entry> Entry::Deserialize(const base::DictionaryValue& value) {
   auto entry = base::MakeUnique<Entry>();
 
   // Name.
-  std::string name_string;
-  if (!value.GetString(Store::kNameKey, &name_string)) {
+  std::string name;
+  if (!value.GetString(Store::kNameKey, &name)) {
     LOG(ERROR) << "Entry::Deserialize: dictionary has no "
                << Store::kNameKey << " key";
     return nullptr;
   }
-  if (!service_manager::IsValidName(name_string)) {
-    LOG(ERROR) << "Entry::Deserialize: " << name_string << " is not a valid "
-               << "Mojo name";
+  if (name.empty()) {
+    LOG(ERROR) << "Entry::Deserialize: empty service name.";
     return nullptr;
   }
-  entry->set_name(name_string);
+  entry->set_name(name);
 
   // Human-readable name.
   std::string display_name;

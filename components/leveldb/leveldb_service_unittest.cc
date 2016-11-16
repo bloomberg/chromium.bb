@@ -105,15 +105,15 @@ void LevelDBSyncOpenInMemory(mojom::LevelDBService* leveldb,
 
 class LevelDBServiceTest : public service_manager::test::ServiceTest {
  public:
-  LevelDBServiceTest() : ServiceTest("service:leveldb_service_unittests") {}
+  LevelDBServiceTest() : ServiceTest("leveldb_service_unittests") {}
   ~LevelDBServiceTest() override {}
 
  protected:
   // Overridden from mojo::test::ApplicationTestBase:
   void SetUp() override {
     ServiceTest::SetUp();
-    connector()->ConnectToInterface("service:filesystem", &files_);
-    connector()->ConnectToInterface("service:leveldb", &leveldb_);
+    connector()->ConnectToInterface("filesystem", &files_);
+    connector()->ConnectToInterface("leveldb", &leveldb_);
   }
 
   void TearDown() override {

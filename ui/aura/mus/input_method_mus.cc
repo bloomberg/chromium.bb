@@ -32,7 +32,7 @@ InputMethodMus::InputMethodMus(ui::internal::InputMethodDelegate* delegate,
 InputMethodMus::~InputMethodMus() {}
 
 void InputMethodMus::Init(service_manager::Connector* connector) {
-  connector->ConnectToInterface("service:ui", &ime_server_);
+  connector->ConnectToInterface("ui", &ime_server_);
 }
 
 void InputMethodMus::DispatchKeyEvent(

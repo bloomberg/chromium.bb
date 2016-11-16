@@ -6,7 +6,7 @@
   // If you need to require or provide capabilities from Chrome itself within
   // the Mash environment, you should instead modify
   // chrome_mash_content_browser_manifest_overlay.json.
-  "name": "service:chrome_mash",
+  "name": "chrome_mash",
   "display_name": "Chrome Mash Packaged Services",
   "interface_provider_specs": {
     "service_manager:connector": {
@@ -16,9 +16,9 @@
         ]
       },
       "requires": {
-        "service:service_manager": [ "service_manager:instance_per_child" ],
-        "service:mash_session": [ "app" ],
-        "service:catalog": [ "control" ]
+        "service_manager": [ "service_manager:instance_per_child" ],
+        "mash_session": [ "app" ],
+        "catalog": [ "control" ]
       }
     }
   }

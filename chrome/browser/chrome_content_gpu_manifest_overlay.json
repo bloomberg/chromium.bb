@@ -1,5 +1,5 @@
 {
-  "name": "service:content_gpu",
+  "name": "content_gpu",
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {

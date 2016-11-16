@@ -1,5 +1,5 @@
 {
-  "name": "service:content_renderer",
+  "name": "content_renderer",
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {

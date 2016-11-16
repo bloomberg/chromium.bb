@@ -34,7 +34,7 @@ namespace usb {
 class PermissionProvider;
 
 // Implementation of the public DeviceManager interface. This interface can be
-// requested from the devices app located at "service:devices", if available.
+// requested from the devices app located at "devices", if available.
 class DeviceManagerImpl : public DeviceManager, public UsbService::Observer {
  public:
   static void Create(base::WeakPtr<PermissionProvider> permission_provider,

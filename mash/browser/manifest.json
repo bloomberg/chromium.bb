@@ -1,5 +1,5 @@
 {
-  "name": "service:browser",
+  "name": "browser",
   "display_name": "Browser",
   "interface_provider_specs": {
     "service_manager:connector": {

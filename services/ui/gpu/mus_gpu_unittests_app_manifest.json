@@ -1,5 +1,5 @@
 {
-  "name": "service:mus_gpu_unittests_app",
+  "name": "mus_gpu_unittests_app",
   "display_name": "Mus GPU Unittests",
   "interface_provider_specs": {
     "service_manager:connector": {

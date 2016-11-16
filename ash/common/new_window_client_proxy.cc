@@ -68,7 +68,7 @@ void NewWindowClientProxy::EnsureInterface() {
 
   if (client_)
     return;
-  connector_->ConnectToInterface("service:content_browser", &client_);
+  connector_->ConnectToInterface("content_browser", &client_);
   client_.set_connection_error_handler(base::Bind(
       &NewWindowClientProxy::OnClientConnectionError, base::Unretained(this)));
 }

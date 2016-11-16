@@ -1,12 +1,12 @@
 {
-  "name": "service:catalog_viewer",
+  "name": "catalog_viewer",
   "display_name": "Catalog Viewer",
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": { "mash:launchable": [ "mash::mojom::Launchable" ] },
       "requires": {
         "*": [ "app" ],
-        "service:catalog": [ "catalog:catalog" ]
+        "catalog": [ "catalog:catalog" ]
       }
     }
   }

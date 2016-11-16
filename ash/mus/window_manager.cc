@@ -57,7 +57,7 @@ void WindowManager::Init(
 
   // |connector_| will be null in some tests.
   if (connector_)
-    connector_->ConnectToInterface("service:ui", &display_controller_);
+    connector_->ConnectToInterface("ui", &display_controller_);
 
   screen_ = base::MakeUnique<display::ScreenBase>();
   display::Screen::SetScreenInstance(screen_.get());

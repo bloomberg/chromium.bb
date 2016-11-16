@@ -15,7 +15,7 @@ IMEServerImpl::~IMEServerImpl() {}
 
 void IMEServerImpl::Init(service_manager::Connector* connector) {
   connector_ = connector;
-  connector_->ConnectToInterface("service:catalog", &catalog_);
+  connector_->ConnectToInterface("catalog", &catalog_);
   catalog_->GetEntriesProvidingCapability(
       "ime:ime_driver",
       base::Bind(&IMEServerImpl::OnGotCatalogEntries, base::Unretained(this)));

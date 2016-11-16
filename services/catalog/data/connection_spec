@@ -1,10 +1,10 @@
 {
-  "name": "service:foo",
+  "name": "foo",
   "display_name": "Foo",
   "interface_provider_specs": {
     "service_manager:connector": {
       "requires": {
-        "service:bar": [ "bar:bar" ]
+        "bar": [ "bar:bar" ]
       }
     }
   }

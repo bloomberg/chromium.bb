@@ -1,6 +1,6 @@
 {
   "manifest_version": 1,
-  "name": "service:service_manager",
+  "name": "service_manager",
   "display_name": "Service Manager",
   "interface_provider_specs": {
     "service_manager:connector": {
@@ -30,8 +30,8 @@
       },
       "requires": {
         "*": [ "service_manager:service_factory" ],
-        "service:catalog": [ "service_manager:resolver" ],
-        "service:tracing": [ "app" ]
+        "catalog": [ "service_manager:resolver" ],
+        "tracing": [ "app" ]
       }
     }
   }

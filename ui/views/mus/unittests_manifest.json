@@ -1,5 +1,5 @@
 {
-  "name": "service:views_mus_unittests",
+  "name": "views_mus_unittests",
   "display_name": "Views Mus Unittests",
   "interface_provider_specs": {
     "service_manager:connector": {

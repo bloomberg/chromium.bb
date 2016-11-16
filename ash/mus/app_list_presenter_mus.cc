@@ -51,7 +51,7 @@ bool AppListPresenterMus::GetTargetVisibility() const {
 void AppListPresenterMus::ConnectIfNeeded() {
   if (!connector_ || HasConnection(&presenter_))
     return;
-  connector_->ConnectToInterface("service:content_browser", &presenter_);
+  connector_->ConnectToInterface("content_browser", &presenter_);
   CHECK(HasConnection(&presenter_))
       << "Could not connect to app_list::mojom::AppListPresenter.";
 }

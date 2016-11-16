@@ -1,5 +1,5 @@
 {
-  "name": "service:connect_test_package",
+  "name": "connect_test_package",
   "display_name": "Connect Test Package",
   "interface_provider_specs": {
     "service_manager:connector": {

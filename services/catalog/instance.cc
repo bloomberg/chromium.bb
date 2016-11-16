@@ -9,7 +9,6 @@
 #include "services/catalog/manifest_provider.h"
 #include "services/catalog/reader.h"
 #include "services/catalog/store.h"
-#include "services/service_manager/public/cpp/names.h"
 
 namespace catalog {
 namespace {
@@ -61,14 +60,6 @@ void Instance::CacheReady(EntryCache* cache) {
 void Instance::ResolveMojoName(const std::string& service_name,
                                const ResolveMojoNameCallback& callback) {
   DCHECK(system_cache_);
-
-  if (!service_manager::IsValidName(service_name)) {
-    std::unique_ptr<Entry> entry(new Entry(service_name));
-    service_manager::mojom::ResolveResultPtr result =
-        service_manager::mojom::ResolveResult::From(*entry);
-    callback.Run(std::move(result));
-    return;
-  }
 
   // TODO(beng): per-user catalogs.
   auto entry = system_cache_->find(service_name);

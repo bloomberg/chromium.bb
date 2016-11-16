@@ -73,10 +73,9 @@ void LocaleChangeGuard::ConnectToLocaleNotificationController() {
     return;
 
   if (chrome::IsRunningInMash()) {
-    connector->ConnectToInterface("service:ash", &notification_controller_);
+    connector->ConnectToInterface("ash", &notification_controller_);
   } else {
-    connector->ConnectToInterface("service:content_browser",
-                                  &notification_controller_);
+    connector->ConnectToInterface("content_browser", &notification_controller_);
   }
 }
 

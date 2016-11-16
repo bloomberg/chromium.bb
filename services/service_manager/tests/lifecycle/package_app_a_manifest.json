@@ -1,5 +1,5 @@
 {
-  "name": "service:lifecycle_unittest_package_app_a",
+  "name": "lifecycle_unittest_package_app_a",
   "display_name": "Lifecycle Unittest Package App A",
   "interface_provider_specs": {
     "service_manager:connector": {

@@ -17,14 +17,14 @@ class NavigationTest : public service_manager::test::ServiceTest,
                        public mojom::ViewClient {
  public:
   NavigationTest()
-      : service_manager::test::ServiceTest("exe:navigation_unittests"),
+      : service_manager::test::ServiceTest("navigation_unittests"),
         binding_(this) {}
   ~NavigationTest() override {}
 
  protected:
    void SetUp() override {
      service_manager::test::ServiceTest::SetUp();
-     window_manager_connection_ = connector()->Connect("service:test_wm");
+     window_manager_connection_ = connector()->Connect("test_wm");
    }
 
   mojom::ViewClientPtr GetViewClient() {
@@ -74,7 +74,7 @@ class NavigationTest : public service_manager::test::ServiceTest,
 // See crbug.com/619523
 TEST_F(NavigationTest, DISABLED_Navigate) {
   mojom::ViewFactoryPtr view_factory;
-  connector()->ConnectToInterface("exe:navigation", &view_factory);
+  connector()->ConnectToInterface("navigation", &view_factory);
 
   mojom::ViewPtr view;
   view_factory->CreateView(GetViewClient(), GetProxy(&view));

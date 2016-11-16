@@ -6,6 +6,6 @@
 
 namespace image_decoder {
 
-const char kServiceName[] = "service:image_decoder";
+const char kServiceName[] = "image_decoder";
 
 }  // namespace image_decoder

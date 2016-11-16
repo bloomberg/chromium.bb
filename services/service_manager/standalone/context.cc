@@ -37,7 +37,6 @@
 #include "services/catalog/store.h"
 #include "services/service_manager/connect_params.h"
 #include "services/service_manager/connect_util.h"
-#include "services/service_manager/public/cpp/names.h"
 #include "services/service_manager/runner/common/switches.h"
 #include "services/service_manager/runner/host/in_process_native_runner.h"
 #include "services/service_manager/runner/host/out_of_process_native_runner.h"
@@ -88,6 +87,8 @@ void OnInstanceQuit(const std::string& name, const Identity& identity) {
   if (name == identity.name())
     base::MessageLoop::current()->QuitWhenIdle();
 }
+
+const char kService[] = "service";
 
 }  // namespace
 
@@ -188,7 +189,7 @@ void Context::Init(std::unique_ptr<InitParams> init_params) {
   if (enable_stats_collection_bindings ||
       command_line.HasSwitch(switches::kEnableTracing)) {
     Identity source_identity = CreateServiceManagerIdentity();
-    Identity tracing_identity("service:tracing", mojom::kRootUserID);
+    Identity tracing_identity("tracing", mojom::kRootUserID);
     tracing::mojom::FactoryPtr factory;
     ConnectToInterface(service_manager(), source_identity, tracing_identity,
                        &factory);
@@ -246,18 +247,8 @@ void Context::OnShutdownComplete() {
 
 void Context::RunCommandLineApplication() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  base::CommandLine::StringVector args = command_line->GetArgs();
-  for (size_t i = 0; i < args.size(); ++i) {
-#if defined(OS_WIN)
-    std::string possible_app = base::WideToUTF8(args[i]);
-#else
-    std::string possible_app = args[i];
-#endif
-    if (IsValidName(possible_app)) {
-      Run(possible_app);
-      break;
-    }
-  }
+  if (command_line->HasSwitch(kService))
+    Run(command_line->GetSwitchValueASCII(kService));
 }
 
 void Context::Run(const std::string& name) {

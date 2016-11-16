@@ -15,7 +15,7 @@ namespace demo {
 
 namespace {
 
-const char kTestAppName[] = "service:mus_demo_unittests";
+const char kTestAppName[] = "mus_demo_unittests";
 
 void RunCallback(bool* success, const base::Closure& callback, bool result) {
   *success = result;
@@ -39,10 +39,10 @@ class MusDemoTest : public service_manager::test::ServiceTest {
 }  // namespace
 
 TEST_F(MusDemoTest, CheckMusDemoDraws) {
-  connector()->Connect("service:mus_demo");
+  connector()->Connect("mus_demo");
 
   ::ui::mojom::WindowServerTestPtr test_interface;
-  connector()->ConnectToInterface("service:ui", &test_interface);
+  connector()->ConnectToInterface("ui", &test_interface);
 
   base::RunLoop run_loop;
   bool success = false;

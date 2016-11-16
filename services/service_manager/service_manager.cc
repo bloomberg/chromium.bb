@@ -25,7 +25,6 @@
 #include "services/service_manager/connect_util.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
-#include "services/service_manager/public/cpp/names.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
@@ -37,8 +36,8 @@ namespace service_manager {
 
 namespace {
 
-const char kCatalogName[] = "service:catalog";
-const char kServiceManagerName[] = "service:service_manager";
+const char kCatalogName[] = "catalog";
+const char kServiceManagerName[] = "service_manager";
 const char kCapability_UserID[] = "service_manager:user_id";
 const char kCapability_ClientProcess[] = "service_manager:client_process";
 const char kCapability_InstanceName[] = "service_manager:instance_name";
@@ -298,8 +297,8 @@ class ServiceManager::Instance
 
   bool ValidateIdentity(const Identity& identity,
                         const ConnectCallback& callback) {
-    if (!IsValidName(identity.name())) {
-      LOG(ERROR) << "Error: invalid Name: " << identity.name();
+    if (identity.name().empty()) {
+      LOG(ERROR) << "Error: empty service name.";
       callback.Run(mojom::ConnectResult::INVALID_ARGUMENT,
                    mojom::kInheritUserID);
       return false;
@@ -322,7 +321,7 @@ class ServiceManager::Instance
         LOG(ERROR) << "Instance: " << identity_.name() << " attempting "
                    << "to register an instance for a process it created for "
                    << "target: " << target.name() << " without the "
-                   << "service:service_manager{client_process} capability "
+                   << "service_manager{client_process} capability "
                    << "class.";
         callback.Run(mojom::ConnectResult::ACCESS_DENIED,
                      mojom::kInheritUserID);
@@ -369,13 +368,13 @@ class ServiceManager::Instance
       return false;
     }
     if (!target.instance().empty() &&
-        target.instance() != GetNamePath(target.name()) &&
+        target.instance() != target.name() &&
         !HasCapability(connection_spec, kCapability_InstanceName)) {
       LOG(ERROR) << "Instance: " << identity_.name() << " attempting to "
                  << "connect to " << target.name()
                  << " using Instance name: " << target.instance()
                  << " without the "
-                 << "service:service_manager{instance_name} capability.";
+                 << "service_manager{instance_name} capability.";
       callback.Run(mojom::ConnectResult::ACCESS_DENIED, mojom::kInheritUserID);
       return false;
     }
@@ -542,8 +541,8 @@ ServiceManager::ServiceManager(
   spec.provides[kCapability_ServiceManager].insert(
       "service_manager::mojom::ServiceManager");
   spec.requires["*"].insert("service_manager:service_factory");
-  spec.requires["service:catalog"].insert("service_manager:resolver");
-  spec.requires["service:tracing"].insert("app");
+  spec.requires["catalog"].insert("service_manager:resolver");
+  spec.requires["tracing"].insert("app");
   InterfaceProviderSpecMap specs;
   specs[mojom::kServiceManager_ConnectorSpec] = spec;
 
@@ -673,7 +672,7 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params,
   TRACE_EVENT_INSTANT1("service_manager", "ServiceManager::Connect",
                        TRACE_EVENT_SCOPE_THREAD, "original_name",
                        params->target().name());
-  DCHECK(IsValidName(params->target().name()));
+  DCHECK(!params->target().name().empty());
   DCHECK(base::IsValidGUID(params->target().user_id()));
   DCHECK_NE(mojom::kInheritUserID, params->target().user_id());
   DCHECK(!service.is_bound() || !identity_to_instance_.count(params->target()));
@@ -820,8 +819,8 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
     return;
 
   std::string instance_name = params->target().instance();
-  if (instance_name == GetNamePath(params->target().name()) &&
-      result->qualifier != GetNamePath(result->resolved_name)) {
+  if (instance_name == params->target().name() &&
+      result->qualifier != result->resolved_name) {
     instance_name = result->qualifier;
   }
   // |result->interface_provider_specs| can be empty when there is no manifest,

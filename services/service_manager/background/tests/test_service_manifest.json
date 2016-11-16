@@ -1,5 +1,5 @@
 {
-  "name": "service:background_service_manager_test_service",
+  "name": "background_service_manager_test_service",
   "display_name": "Background Service Manager Test Service",
   "interface_provider_specs": {
     "service_manager:connector": {

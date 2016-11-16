@@ -1,5 +1,5 @@
 {
-  "name": "service:foo",
+  "name": "foo",
   "display_name": "Foo",
   "interface_provider_specs": { }
 }

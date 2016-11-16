@@ -1,10 +1,10 @@
 {
-  "name": "service:filesystem_service_unittests",
+  "name": "filesystem_service_unittests",
   "display_name": "Filesystem Service Unittests",
   "interface_provider_specs": {
     "service_manager:connector": {
       "requires": {
-        "service:filesystem": [ "filesystem:filesystem" ]
+        "filesystem": [ "filesystem:filesystem" ]
       }
     }
   }

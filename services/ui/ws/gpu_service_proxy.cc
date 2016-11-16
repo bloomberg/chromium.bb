@@ -35,7 +35,7 @@ GpuServiceProxy::GpuServiceProxy(GpuServiceProxyDelegate* delegate)
                       base::WaitableEvent::InitialState::NOT_SIGNALED) {
   gpu_main_.OnStart();
   // TODO(sad): Once GPU process is split, this would look like:
-  //   connector->ConnectToInterface("service:gpu", &gpu_service_);
+  //   connector->ConnectToInterface("gpu", &gpu_service_);
   gpu_main_.Create(GetProxy(&gpu_service_));
   gpu_service_->Initialize(
       base::Bind(&GpuServiceProxy::OnInitialized, base::Unretained(this)));

@@ -16,7 +16,6 @@
 #include "services/catalog/constants.h"
 #include "services/catalog/entry.h"
 #include "services/catalog/manifest_provider.h"
-#include "services/service_manager/public/cpp/names.h"
 
 namespace catalog {
 namespace {
@@ -25,18 +24,15 @@ base::FilePath GetManifestPath(const base::FilePath& package_dir,
                                const std::string& name,
                                const std::string& package_name_override) {
   // TODO(beng): think more about how this should be done for exe targets.
-  std::string path = service_manager::GetNamePath(name);
   std::string package_name =
-      package_name_override.empty() ? path : package_name_override;
+      package_name_override.empty() ? name : package_name_override;
   return package_dir.AppendASCII(kPackagesDirName).AppendASCII(
       package_name + "/manifest.json");
 }
 
 base::FilePath GetExecutablePath(const base::FilePath& package_dir,
                                  const std::string& name) {
-  // It's still a mojo: URL, use the default mapping scheme.
-  const std::string host = service_manager::GetNamePath(name);
-  return package_dir.AppendASCII(host + "/" + host + ".library");
+  return package_dir.AppendASCII(name + "/" + name + ".library");
 }
 
 std::unique_ptr<Entry> ProcessManifest(
@@ -91,8 +87,8 @@ void ScanDir(
     // build (e.g. for applications that are packaged into others) and are not
     // valid standalone packages.
     base::FilePath package_path = GetExecutablePath(package_dir, entry->name());
-    if (entry->name() != "service:service_manager" &&
-        entry->name() != "service:catalog" && !base::PathExists(package_path)) {
+    if (entry->name() != "service_manager" &&
+        entry->name() != "catalog" && !base::PathExists(package_path)) {
       continue;
     }
 

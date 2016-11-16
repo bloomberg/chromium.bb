@@ -1,5 +1,5 @@
 {
-  "name": "service:ui",
+  "name": "ui",
   "display_name": "UI Service",
   "interface_provider_specs": {
     "service_manager:connector": {
@@ -44,9 +44,9 @@
       },
       "requires": {
         "*": [ "app" ],
-        "service:catalog": [ "catalog:catalog" ],
-        "service:service_manager": [ "service_manager:all_users" ],
-        "service:ui": [ "ozone" ]
+        "catalog": [ "catalog:catalog" ],
+        "service_manager": [ "service_manager:all_users" ],
+        "ui": [ "ozone" ]
       }
     }
   }

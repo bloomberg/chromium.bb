@@ -1,5 +1,5 @@
 {
-  "name": "service:navigation",
+  "name": "navigation",
   "display_name": "Navigation",
   "interface_provider_specs": {
     "service_manager:connector": {
@@ -8,7 +8,7 @@
       },
       "requires": {
         "*": [ "app" ],
-        "service:service_manager": [
+        "service_manager": [
           "service_manager:client_process",
           "service_manager:user_id",
           "service_manager:instance_name"

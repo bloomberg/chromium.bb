@@ -372,15 +372,15 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
       NOTIMPLEMENTED();
     } else if (sender == lock_button_) {
       mash::session::mojom::SessionPtr session;
-      connector_->ConnectToInterface("service:mash_session", &session);
+      connector_->ConnectToInterface("mash_session", &session);
       session->LockScreen();
     } else if (sender == logout_button_) {
       mash::session::mojom::SessionPtr session;
-      connector_->ConnectToInterface("service:mash_session", &session);
+      connector_->ConnectToInterface("mash_session", &session);
       session->Logout();
     } else if (sender == switch_user_button_) {
       mash::session::mojom::SessionPtr session;
-      connector_->ConnectToInterface("service:mash_session", &session);
+      connector_->ConnectToInterface("mash_session", &session);
       session->SwitchUser();
     } else if (sender == widgets_button_) {
       NOTIMPLEMENTED();

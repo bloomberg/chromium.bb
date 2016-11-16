@@ -1,10 +1,10 @@
 {
-  "name": "service:mus_demo",
+  "name": "mus_demo",
   "display_name": "MUS Demo",
   "interface_provider_specs": {
     "service_manager:connector": {
       "requires": {
-        "service:ui": [ "app", "ui:window_manager" ]
+        "ui": [ "app", "ui:window_manager" ]
       }
     }
   }

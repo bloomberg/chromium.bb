@@ -1,5 +1,5 @@
 {
-  "name": "service:connect_test_class_app",
+  "name": "connect_test_class_app",
   "display_name": "Connect Test Class App",
   "interface_provider_specs": {
     "service_manager:connector": {

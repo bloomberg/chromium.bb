@@ -1,5 +1,5 @@
 {
-  "name": "service:catalog",
+  "name": "catalog",
   "display_name": "Application Resolver",
   "interface_provider_specs": {
     // NOTE: This manifest is for documentation purposes only. Relevant
@@ -13,7 +13,7 @@
         "control": [ "catalog::mojom::CatalogControl" ]
       },
       "requires": {
-        "service:service_manager": [ "service_manager:all_users" ]
+        "service_manager": [ "service_manager:all_users" ]
       }
     }
   }

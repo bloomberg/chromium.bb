@@ -6,6 +6,6 @@
 
 namespace device {
 
-const char kDeviceServiceName[] = "service:device";
+const char kDeviceServiceName[] = "device";
 
 }  // namespace device

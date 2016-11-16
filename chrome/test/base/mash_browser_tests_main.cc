@@ -32,7 +32,7 @@
 namespace {
 
 void ConnectToDefaultApps(service_manager::Connector* connector) {
-  connector->Connect("service:mash_session");
+  connector->Connect("mash_session");
 }
 
 class MashTestSuite : public ChromeTestSuite {

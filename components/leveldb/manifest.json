@@ -1,5 +1,5 @@
 {
-  "name": "service:leveldb",
+  "name": "leveldb",
   "display_name": "LevelDB Service",
   "interface_provider_specs": {
     "service_manager:connector": {

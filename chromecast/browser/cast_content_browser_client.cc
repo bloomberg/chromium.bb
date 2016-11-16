@@ -428,7 +428,7 @@ void CastContentBrowserClient::RegisterInProcessServices(
   content::ServiceInfo info;
   info.factory = base::Bind(&CreateMediaService, base::Unretained(this));
   info.task_runner = GetMediaTaskRunner();
-  services->insert(std::make_pair("service:media", info));
+  services->insert(std::make_pair("media", info));
 #endif
 }
 

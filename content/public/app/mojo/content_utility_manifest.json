@@ -1,5 +1,5 @@
 {
-  "name": "service:content_utility",
+  "name": "content_utility",
   "display_name": "Content (utility process)",
   "interface_provider_specs": {
     "service_manager:connector": {

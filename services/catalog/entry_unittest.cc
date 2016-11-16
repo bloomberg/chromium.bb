@@ -10,7 +10,6 @@
 #include "base/path_service.h"
 #include "base/values.h"
 #include "services/service_manager/public/cpp/interface_provider_spec.h"
-#include "services/service_manager/public/cpp/names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace catalog {
@@ -55,25 +54,25 @@ class EntryTest : public testing::Test {
 
 TEST_F(EntryTest, Simple) {
   std::unique_ptr<Entry> entry = ReadEntry("simple", nullptr);
-  EXPECT_EQ("service:foo", entry->name());
+  EXPECT_EQ("foo", entry->name());
   EXPECT_EQ("Foo", entry->display_name());
 }
 
 TEST_F(EntryTest, Instance) {
   std::unique_ptr<Entry> entry = ReadEntry("instance", nullptr);
-  EXPECT_EQ("service:foo", entry->name());
+  EXPECT_EQ("foo", entry->name());
   EXPECT_EQ("Foo", entry->display_name());
 }
 
 TEST_F(EntryTest, ConnectionSpec) {
   std::unique_ptr<Entry> entry = ReadEntry("connection_spec", nullptr);
 
-  EXPECT_EQ("service:foo", entry->name());
+  EXPECT_EQ("foo", entry->name());
   EXPECT_EQ("Foo", entry->display_name());
   service_manager::InterfaceProviderSpec spec;
   service_manager::CapabilitySet capabilities;
   capabilities.insert("bar:bar");
-  spec.requires["service:bar"] = capabilities;
+  spec.requires["bar"] = capabilities;
   service_manager::InterfaceProviderSpecMap specs;
   specs[service_manager::mojom::kServiceManager_ConnectorSpec] = spec;
   EXPECT_EQ(specs, entry->interface_provider_specs());

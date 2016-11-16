@@ -1,12 +1,12 @@
 {
-  "name": "service:window_type_launcher",
+  "name": "window_type_launcher",
   "display_name": "Window Type Launcher",
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": { "mash:launchable": [ "mash::mojom::Launchable" ] },
       "requires": {
         "*": [ "app" ],
-        "service:mash_session": [ "mash_session:session" ]
+        "mash_session": [ "mash_session:session" ]
       }
     }
   }

@@ -1,5 +1,5 @@
 {
-  "name": "service:lifecycle_unittest_parent",
+  "name": "lifecycle_unittest_parent",
   "display_name": "Lifecycle Unittest Parent",
   "interface_provider_specs": {
     "service_manager:connector": {
@@ -7,7 +7,7 @@
         "lifecycle_unittest:parent": [ "service_manager::test::mojom::Parent" ]
       },
       "requires": {
-        "service:lifecycle_unittest_app": [
+        "lifecycle_unittest_app": [
           "lifecycle_unittest:lifecycle_control"
         ]
       }

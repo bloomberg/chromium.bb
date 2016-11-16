@@ -30,8 +30,8 @@
 
 namespace {
 
-const char kTestRunnerName[] = "service:mash_browser_tests";
-const char kTestName[] = "service:content_browser";
+const char kTestRunnerName[] = "mash_browser_tests";
+const char kTestName[] = "content_browser";
 
 // BackgroundTestState maintains all the state necessary to bind the test to
 // mojo. This class is only used on the thread created by
@@ -70,7 +70,7 @@ class BackgroundTestState {
         new service_manager::ConnectParams);
     params->set_source(service_manager::CreateServiceManagerIdentity());
     // Use the default instance name (which should be "browser"). Otherwise a
-    // service (e.g. ash) that connects to the default "service:content_browser"
+    // service (e.g. ash) that connects to the default "content_browser"
     // will spawn a new instance.
     params->set_target(service_manager::Identity(
         kTestName, service_manager::mojom::kRootUserID));

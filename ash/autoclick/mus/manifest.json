@@ -1,5 +1,5 @@
 {
-  "name": "service:accessibility_autoclick",
+  "name": "accessibility_autoclick",
   "display_name": "Autoclick",
   "interface_provider_specs": {
     "service_manager:connector": {
@@ -9,7 +9,7 @@
       },
       "requires": {
         "*": [ "app" ],
-        "service:service_manager": [ "service_manager:service_manager" ]
+        "service_manager": [ "service_manager:service_manager" ]
       }
     }
   }

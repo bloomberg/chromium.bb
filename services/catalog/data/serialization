@@ -1,5 +1,5 @@
 {
-  "name": "service:foo",
+  "name": "foo",
   "display_name": "Foo",
   "interface_provider_specs": {
     "service_manager:connector": {
@@ -8,7 +8,7 @@
         "bar": [ "mojo::Bork" ]
       },
       "requires": {
-        "service:bar": [ "a", "b" ]
+        "bar": [ "a", "b" ]
       }
     }
   }

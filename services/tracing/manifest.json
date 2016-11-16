@@ -1,5 +1,5 @@
 {
-  "name": "service:tracing",
+  "name": "tracing",
   "display_name": "Tracing Collector",
   "interface_provider_specs": {
     "service_manager:connector": {
@@ -11,7 +11,7 @@
         ]
       },
       "requires": {
-        "service:service_manager": [ "service_manager:all_users" ]
+        "service_manager": [ "service_manager:all_users" ]
       }
     }
   }

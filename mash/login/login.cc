@@ -115,7 +115,7 @@ class UI : public views::WidgetDelegateView,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   void StartWindowManager(const service_manager::Identity& identity) {
-    mash_wm_connection_ = connector_->Connect("service:ash");
+    mash_wm_connection_ = connector_->Connect("ash");
     mash_wm_connection_->SetConnectionLostClosure(
         base::Bind(&UI::StartWindowManager, base::Unretained(this), identity));
     window_manager_connection_ =
@@ -144,8 +144,8 @@ class Login : public service_manager::Service,
   void LoginAs(const std::string& user_id) {
     user_access_manager_->SetActiveUser(user_id);
     mash::init::mojom::InitPtr init;
-    context()->connector()->ConnectToInterface("service:mash_init", &init);
-    init->StartService("service:mash_session", user_id);
+    context()->connector()->ConnectToInterface("mash_init", &init);
+    init->StartService("mash_session", user_id);
   }
 
  private:
@@ -158,7 +158,7 @@ class Login : public service_manager::Service,
         "views_mus_resources.pak");
 
     context()->connector()->ConnectToInterface(
-        "service:ui", &user_access_manager_);
+        "ui", &user_access_manager_);
     user_access_manager_->SetActiveUser(context()->identity().user_id());
   }
 

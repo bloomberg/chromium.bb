@@ -17,7 +17,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
-#include "services/service_manager/public/cpp/names.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/service_manager/public/interfaces/service_manager.mojom.h"
 #include "services/service_manager/tests/connect/connect_test.mojom.h"
@@ -31,12 +30,12 @@ namespace service_manager {
 
 namespace {
 
-const char kTestPackageName[] = "service:connect_test_package";
-const char kTestAppName[] = "service:connect_test_app";
-const char kTestAppAName[] = "service:connect_test_a";
-const char kTestAppBName[] = "service:connect_test_b";
-const char kTestClassAppName[] = "service:connect_test_class_app";
-const char kTestSingletonAppName[] = "service:connect_test_singleton_app";
+const char kTestPackageName[] = "connect_test_package";
+const char kTestAppName[] = "connect_test_app";
+const char kTestAppAName[] = "connect_test_a";
+const char kTestAppBName[] = "connect_test_b";
+const char kTestClassAppName[] = "connect_test_class_app";
+const char kTestSingletonAppName[] = "connect_test_singleton_app";
 
 void ReceiveOneString(std::string* out_string,
                       base::RunLoop* loop,
@@ -75,7 +74,7 @@ class ConnectTest : public test::ServiceTest,
                     public InterfaceFactory<test::mojom::ExposedInterface>,
                     public test::mojom::ExposedInterface {
  public:
-  ConnectTest() : ServiceTest("service:connect_unittests") {}
+  ConnectTest() : ServiceTest("connect_unittests") {}
   ~ConnectTest() override {}
 
  protected:
@@ -354,7 +353,7 @@ TEST_F(ConnectTest, ConnectToClientProcess_Blocked) {
 #else
           "connect_test_exe",
 #endif
-          service_manager::Identity("service:connect_test_exe",
+          service_manager::Identity("connect_test_exe",
                                     service_manager::mojom::kInheritUserID),
           connector(), &process);
   EXPECT_EQ(connection->GetResult(), mojom::ConnectResult::ACCESS_DENIED);
