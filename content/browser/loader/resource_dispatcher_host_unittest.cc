@@ -203,6 +203,9 @@ class ResourceIPCAccumulator {
   typedef std::vector< std::vector<IPC::Message> > ClassifiedMessages;
   void GetClassifiedMessages(ClassifiedMessages* msgs);
 
+  // Returns the reply of |msg|, which is a synchronous IPC message.
+  const IPC::Message* GetReply(const IPC::Message& msg);
+
  private:
   std::vector<IPC::Message> messages_;
 };
@@ -230,6 +233,17 @@ void ResourceIPCAccumulator::GetClassifiedMessages(ClassifiedMessages* msgs) {
     }
     messages_.erase(messages_.begin());
   }
+}
+
+const IPC::Message* ResourceIPCAccumulator::GetReply(const IPC::Message& msg) {
+  for (auto& reply : messages_) {
+    if (!reply.is_reply())
+      continue;
+    if (IPC::SyncMessage::GetMessageId(reply) ==
+        IPC::SyncMessage::GetMessageId(msg))
+      return &reply;
+  }
+  return nullptr;
 }
 
 // This is used to create a filter matching a specified child id.
@@ -1549,6 +1563,60 @@ TEST_P(ResourceDispatcherHostTest, DetachedResourceTimesOut) {
   EXPECT_EQ(1, network_delegate()->completed_requests());
   EXPECT_EQ(1, network_delegate()->canceled_requests());
   EXPECT_EQ(0, network_delegate()->error_count());
+}
+
+TEST_P(ResourceDispatcherHostTest, SyncLoadSuccess) {
+  ResourceRequest request = CreateResourceRequest(
+      "GET", RESOURCE_TYPE_XHR, net::URLRequestTestJob::test_url_1());
+  request.priority = net::MAXIMUM_PRIORITY;
+
+  // Successful sync load.
+  std::tuple<SyncLoadResult> result;
+  ResourceHostMsg_SyncLoad sync_load_msg(0, 1, request, &std::get<0>(result));
+  host_.OnMessageReceived(sync_load_msg, filter_.get());
+  base::RunLoop().RunUntilIdle();
+
+  const IPC::Message* reply = accum_.GetReply(sync_load_msg);
+  ASSERT_TRUE(reply);
+
+  ASSERT_TRUE(ResourceHostMsg_SyncLoad::ReadReplyParam(reply, &result));
+  EXPECT_EQ(net::OK, std::get<0>(result).error_code);
+}
+
+TEST_P(ResourceDispatcherHostTest, SyncLoadError) {
+  ResourceRequest request = CreateResourceRequest(
+      "GET", RESOURCE_TYPE_XHR, net::URLRequestTestJob::test_url_error());
+  request.priority = net::MAXIMUM_PRIORITY;
+
+  // Failued sync load.
+  std::tuple<SyncLoadResult> result;
+  ResourceHostMsg_SyncLoad sync_load_msg(0, 1, request, &std::get<0>(result));
+  host_.OnMessageReceived(sync_load_msg, filter_.get());
+  base::RunLoop().RunUntilIdle();
+
+  const IPC::Message* reply = accum_.GetReply(sync_load_msg);
+  ASSERT_TRUE(reply);
+
+  ASSERT_TRUE(ResourceHostMsg_SyncLoad::ReadReplyParam(reply, &result));
+  EXPECT_EQ(net::ERR_INVALID_URL, std::get<0>(result).error_code);
+}
+
+TEST_P(ResourceDispatcherHostTest, SyncLoadCancel) {
+  ResourceRequest request = CreateResourceRequest(
+      "GET", RESOURCE_TYPE_XHR, net::URLRequestTestJob::test_url_1());
+  request.priority = net::MAXIMUM_PRIORITY;
+
+  // Cancelled sync load.
+  SyncLoadResult result;
+  ResourceHostMsg_SyncLoad sync_load_msg(0, 1, request, &result);
+
+  host_.OnMessageReceived(sync_load_msg, filter_.get());
+  host_.CancelRequestsForProcess(filter_->child_id());
+  base::RunLoop().RunUntilIdle();
+
+  const IPC::Message* reply = accum_.GetReply(sync_load_msg);
+  ASSERT_TRUE(reply);
+  ASSERT_TRUE(reply->is_reply_error());
 }
 
 // If the filter has disappeared then detachable resources should continue to
