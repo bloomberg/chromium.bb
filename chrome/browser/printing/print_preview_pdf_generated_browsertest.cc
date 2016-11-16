@@ -373,24 +373,21 @@ class PrintPreviewPdfGeneratedBrowserTest : public InProcessBrowserTest {
       PdfRenderSettings settings(rect, kDpi, true);
 
       int int_max = std::numeric_limits<int>::max();
-      if (settings.area().width() > int_max / kColorChannels ||
-          settings.area().height() > int_max / (kColorChannels *
-              settings.area().width())) {
+      if (settings.area.width() > int_max / kColorChannels ||
+          settings.area.height() >
+              int_max / (kColorChannels * settings.area.width())) {
         FAIL() << "The dimensions of the image are too large."
                << "Decrease the DPI or the dimensions of the image.";
       }
 
-      std::vector<uint8_t> page_bitmap_data(
-          kColorChannels * settings.area().size().GetArea());
+      std::vector<uint8_t> page_bitmap_data(kColorChannels *
+                                            settings.area.size().GetArea());
 
       ASSERT_TRUE(chrome_pdf::RenderPDFPageToBitmap(
-          pdf_handle, i, page_bitmap_data.data(),
-          settings.area().size().width(), settings.area().size().height(),
-          settings.dpi(), true));
-      FillPng(&page_bitmap_data,
-              width_in_pixels,
-              max_width_in_pixels,
-              settings.area().size().height());
+          pdf_handle, i, page_bitmap_data.data(), settings.area.size().width(),
+          settings.area.size().height(), settings.dpi, settings.autorotate));
+      FillPng(&page_bitmap_data, width_in_pixels, max_width_in_pixels,
+              settings.area.size().height());
       bitmap_data.insert(bitmap_data.end(),
                          page_bitmap_data.begin(),
                          page_bitmap_data.end());

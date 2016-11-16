@@ -20,7 +20,6 @@
 
 namespace printing {
 
-class PdfRenderSettings;
 struct PwgRasterSettings;
 struct PageRange;
 

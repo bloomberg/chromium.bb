@@ -21,7 +21,6 @@ class Size;
 }
 
 namespace printing {
-class PdfRenderSettings;
 class PWGRasterConverter;
 }
 

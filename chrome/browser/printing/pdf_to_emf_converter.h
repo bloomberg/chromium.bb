@@ -10,14 +10,10 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted_memory.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace printing {
 
 class MetafilePlayer;
-class PdfRenderSettings;
+struct PdfRenderSettings;
 
 class PdfToEmfConverter {
  public:

@@ -1676,9 +1676,9 @@ struct FuzzTraits<ppapi::SocketOptionData> {
 template <>
 struct FuzzTraits<printing::PdfRenderSettings> {
   static bool Fuzz(printing::PdfRenderSettings* p, Fuzzer* fuzzer) {
-    gfx::Rect area = p->area();
-    int dpi = p->dpi();
-    bool autorotate = p->autorotate();
+    gfx::Rect area = p->area;
+    int dpi = p->dpi;
+    bool autorotate = p->autorotate;
     if (!FuzzParam(&area, fuzzer))
       return false;
     if (!FuzzParam(&dpi, fuzzer))

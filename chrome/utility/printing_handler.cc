@@ -168,10 +168,9 @@ bool PrintingHandler::RenderPdfPageToMetafile(int page_number,
   // original coordinates and we'll be able to print in full resolution.
   // Before playback we'll need to counter the scaling up that will happen
   // in the service (print_system_win.cc).
-  *scale_factor =
-      gfx::CalculatePageScale(metafile.context(),
-                              pdf_rendering_settings_.area().right(),
-                              pdf_rendering_settings_.area().bottom());
+  *scale_factor = gfx::CalculatePageScale(
+      metafile.context(), pdf_rendering_settings_.area.right(),
+      pdf_rendering_settings_.area.bottom());
   gfx::ScaleDC(metafile.context(), *scale_factor);
 
   // The underlying metafile is of type Emf and ignores the arguments passed
@@ -179,19 +178,18 @@ bool PrintingHandler::RenderPdfPageToMetafile(int page_number,
   metafile.StartPage(gfx::Size(), gfx::Rect(), 1);
   if (!chrome_pdf::RenderPDFPageToDC(
           pdf_handle_, page_number, metafile.context(),
-          pdf_rendering_settings_.dpi(), pdf_rendering_settings_.area().x(),
-          pdf_rendering_settings_.area().y(),
-          pdf_rendering_settings_.area().width(),
-          pdf_rendering_settings_.area().height(), true, false, true, true,
-          pdf_rendering_settings_.autorotate())) {
+          pdf_rendering_settings_.dpi, pdf_rendering_settings_.area.x(),
+          pdf_rendering_settings_.area.y(),
+          pdf_rendering_settings_.area.width(),
+          pdf_rendering_settings_.area.height(), true, false, true, true,
+          pdf_rendering_settings_.autorotate)) {
     return false;
   }
   metafile.FinishPage();
   metafile.FinishDocument();
   return metafile.SaveTo(&output_file);
 }
-
-#endif  // OS_WIN
+#endif  // defined(OS_WIN)
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 bool PrintingHandler::RenderPDFPagesToPWGRaster(
@@ -199,7 +197,6 @@ bool PrintingHandler::RenderPDFPagesToPWGRaster(
     const PdfRenderSettings& settings,
     const PwgRasterSettings& bitmap_settings,
     base::File bitmap_file) {
-  bool autoupdate = true;
   base::File::Info info;
   if (!pdf_file.GetInfo(&info) || info.size <= 0 ||
       info.size > std::numeric_limits<int>::max())
@@ -227,7 +224,7 @@ bool PrintingHandler::RenderPDFPagesToPWGRaster(
     return false;
   }
 
-  cloud_print::BitmapImage image(settings.area().size(),
+  cloud_print::BitmapImage image(settings.area.size(),
                                  cloud_print::BitmapImage::BGRA);
   bool ret = true;
   for (int i = 0; i < total_page_count; ++i) {
@@ -239,13 +236,12 @@ bool PrintingHandler::RenderPDFPagesToPWGRaster(
 
     if (!chrome_pdf::RenderPDFPageToBitmap(
             pdf_handle, page_number, image.pixel_data(), image.size().width(),
-            image.size().height(), settings.dpi(), autoupdate)) {
-      ret = false;
-      break;
+            image.size().height(), settings.dpi, settings.autorotate)) {
+      return false;
     }
 
     cloud_print::PwgHeaderInfo header_info;
-    header_info.dpi = settings.dpi();
+    header_info.dpi = settings.dpi;
     header_info.total_pages = total_page_count;
 
     // Transform odd pages.
