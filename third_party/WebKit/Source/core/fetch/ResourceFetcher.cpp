@@ -744,9 +744,12 @@ Resource* ResourceFetcher::createResourceForLoading(
   }
   resource->setCacheIdentifier(cacheIdentifier);
 
-  // Don't add main resource to cache to prevent reuse.
-  if (factory.type() != Resource::MainResource)
+  // - Don't add main resource to cache to prevent reuse.
+  // - Don't add the resource if its body will not be stored.
+  if (factory.type() != Resource::MainResource &&
+      request.options().dataBufferingPolicy != DoNotBufferData) {
     memoryCache()->add(resource);
+  }
   return resource;
 }
 
