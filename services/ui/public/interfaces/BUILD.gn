@@ -34,6 +34,7 @@ mojom("interfaces") {
   ]
 
   public_deps = [
+    ":constants",
     "//cc/ipc:interfaces",
     "//gpu/ipc/common:interfaces",
     "//services/ui/public/interfaces/display",
@@ -44,6 +45,12 @@ mojom("interfaces") {
   ]
 
   use_new_wrapper_types = false
+}
+
+mojom("constants") {
+  sources = [
+    "constants.mojom",
+  ]
 }
 
 test("ui_struct_traits_unittests") {

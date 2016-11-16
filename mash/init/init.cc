@@ -12,6 +12,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service_context.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
 
 namespace mash {
 namespace init {
@@ -20,7 +21,7 @@ Init::Init() {}
 Init::~Init() {}
 
 void Init::OnStart() {
-  context()->connector()->Connect("ui");
+  context()->connector()->Connect(ui::mojom::kServiceName);
   StartTracing();
   StartLogin();
 }

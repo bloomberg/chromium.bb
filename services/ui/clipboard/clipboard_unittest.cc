@@ -12,6 +12,7 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/ui/public/interfaces/clipboard.mojom.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
 
 using mojo::Array;
 using mojo::Map;
@@ -37,7 +38,7 @@ class ClipboardAppTest : public service_manager::test::ServiceTest {
   void SetUp() override {
     ServiceTest::SetUp();
 
-    connector()->ConnectToInterface("ui", &clipboard_);
+    connector()->ConnectToInterface(ui::mojom::kServiceName, &clipboard_);
     ASSERT_TRUE(clipboard_);
   }
 

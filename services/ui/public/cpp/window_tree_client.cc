@@ -24,6 +24,7 @@
 #include "services/ui/public/cpp/window_tracker.h"
 #include "services/ui/public/cpp/window_tree_client_delegate.h"
 #include "services/ui/public/cpp/window_tree_client_observer.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/window_manager_window_tree_factory.mojom.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/insets.h"
@@ -124,7 +125,7 @@ void WindowTreeClient::ConnectViaWindowTreeFactory(
   client_id_ = 101;
 
   mojom::WindowTreeFactoryPtr factory;
-  connector->ConnectToInterface("ui", &factory);
+  connector->ConnectToInterface(ui::mojom::kServiceName, &factory);
   mojom::WindowTreePtr window_tree;
   factory->CreateWindowTree(GetProxy(&window_tree),
                             binding_.CreateInterfacePtrAndBind());
@@ -136,7 +137,7 @@ void WindowTreeClient::ConnectAsWindowManager(
   DCHECK(window_manager_delegate_);
 
   mojom::WindowManagerWindowTreeFactoryPtr factory;
-  connector->ConnectToInterface("ui", &factory);
+  connector->ConnectToInterface(ui::mojom::kServiceName, &factory);
   mojom::WindowTreePtr window_tree;
   factory->CreateWindowTree(GetProxy(&window_tree),
                             binding_.CreateInterfacePtrAndBind());

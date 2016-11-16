@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
 #include "ui/gfx/buffer_format_util.h"
 
 namespace ui {
@@ -49,7 +50,7 @@ MojoGpuMemoryBufferManager::~MojoGpuMemoryBufferManager() {
 }
 
 void MojoGpuMemoryBufferManager::InitThread() {
-  connector_->ConnectToInterface("ui", &gpu_service_);
+  connector_->ConnectToInterface(ui::mojom::kServiceName, &gpu_service_);
 }
 
 void MojoGpuMemoryBufferManager::TearDownThread() {

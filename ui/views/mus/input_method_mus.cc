@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "services/ui/public/cpp/window.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/ime.mojom.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
@@ -30,7 +31,7 @@ InputMethodMus::InputMethodMus(ui::internal::InputMethodDelegate* delegate,
 InputMethodMus::~InputMethodMus() {}
 
 void InputMethodMus::Init(service_manager::Connector* connector) {
-  connector->ConnectToInterface("ui", &ime_server_);
+  connector->ConnectToInterface(ui::mojom::kServiceName, &ime_server_);
 }
 
 void InputMethodMus::DispatchKeyEvent(

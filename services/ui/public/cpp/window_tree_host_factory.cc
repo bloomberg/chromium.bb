@@ -8,6 +8,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "services/ui/public/cpp/window_tree_client_delegate.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
 
 namespace ui {
 
@@ -30,7 +31,7 @@ std::unique_ptr<WindowTreeClient> CreateWindowTreeHost(
     mojom::WindowTreeHostPtr* host,
     WindowManagerDelegate* window_manager_delegate) {
   mojom::WindowTreeHostFactoryPtr factory;
-  connector->ConnectToInterface("ui", &factory);
+  connector->ConnectToInterface(ui::mojom::kServiceName, &factory);
   return CreateWindowTreeHost(factory.get(), delegate, host,
                               window_manager_delegate);
 }

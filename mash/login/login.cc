@@ -23,6 +23,7 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/tracing/public/cpp/provider.h"
 #include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/user_access_manager.mojom.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/views/background.h"
@@ -157,8 +158,8 @@ class Login : public service_manager::Service,
         context()->connector(), context()->identity(),
         "views_mus_resources.pak");
 
-    context()->connector()->ConnectToInterface(
-        "ui", &user_access_manager_);
+    context()->connector()->ConnectToInterface(ui::mojom::kServiceName,
+                                               &user_access_manager_);
     user_access_manager_->SetActiveUser(context()->identity().user_id());
   }
 

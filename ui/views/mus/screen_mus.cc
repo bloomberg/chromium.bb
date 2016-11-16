@@ -10,6 +10,7 @@
 
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/mus/screen_mus_delegate.h"
@@ -47,7 +48,7 @@ ScreenMus::~ScreenMus() {
 }
 
 void ScreenMus::Init(service_manager::Connector* connector) {
-  connector->ConnectToInterface("ui", &display_manager_);
+  connector->ConnectToInterface(ui::mojom::kServiceName, &display_manager_);
 
   display_manager_->AddObserver(
       display_manager_observer_binding_.CreateInterfacePtrAndBind());

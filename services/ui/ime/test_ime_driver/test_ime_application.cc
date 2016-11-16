@@ -8,6 +8,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/ui/ime/test_ime_driver/test_ime_driver.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/ime.mojom.h"
 
 namespace ui {
@@ -23,7 +24,8 @@ void TestIMEApplication::OnStart() {
                           GetProxy(&ime_driver_ptr));
 
   ui::mojom::IMERegistrarPtr ime_registrar;
-  context()->connector()->ConnectToInterface("ui", &ime_registrar);
+  context()->connector()->ConnectToInterface(ui::mojom::kServiceName,
+                                             &ime_registrar);
   ime_registrar->RegisterDriver(std::move(ime_driver_ptr));
 }
 

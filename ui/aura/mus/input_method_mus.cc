@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/ime.mojom.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/mus/text_input_client_impl.h"
@@ -32,7 +33,7 @@ InputMethodMus::InputMethodMus(ui::internal::InputMethodDelegate* delegate,
 InputMethodMus::~InputMethodMus() {}
 
 void InputMethodMus::Init(service_manager::Connector* connector) {
-  connector->ConnectToInterface("ui", &ime_server_);
+  connector->ConnectToInterface(ui::mojom::kServiceName, &ime_server_);
 }
 
 void InputMethodMus::DispatchKeyEvent(

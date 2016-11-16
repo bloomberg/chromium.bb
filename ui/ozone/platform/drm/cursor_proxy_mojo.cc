@@ -5,17 +5,18 @@
 #include "ui/ozone/platform/drm/cursor_proxy_mojo.h"
 
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
 
 namespace ui {
 
 CursorProxyMojo::CursorProxyMojo(service_manager::Connector* connector)
     : connector_(connector->Clone()) {
-  connector->ConnectToInterface("ui", &main_cursor_ptr_);
+  connector->ConnectToInterface(ui::mojom::kServiceName, &main_cursor_ptr_);
 }
 
 void CursorProxyMojo::InitializeOnEvdev() {
   evdev_ref_ = base::PlatformThread::CurrentRef();
-  connector_->ConnectToInterface("ui", &evdev_cursor_ptr_);
+  connector_->ConnectToInterface(ui::mojom::kServiceName, &evdev_cursor_ptr_);
 }
 
 CursorProxyMojo::~CursorProxyMojo() {}

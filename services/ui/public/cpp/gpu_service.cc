@@ -13,6 +13,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/common/switches.h"
 #include "services/ui/public/cpp/mojo_gpu_memory_buffer_manager.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/gpu_service.mojom.h"
 
 namespace ui {
@@ -65,7 +66,7 @@ void GpuService::EstablishGpuChannel(
   if (gpu_service_)
     return;
 
-  connector_->ConnectToInterface("ui", &gpu_service_);
+  connector_->ConnectToInterface(ui::mojom::kServiceName, &gpu_service_);
   gpu_service_->EstablishGpuChannel(
       base::Bind(&GpuService::OnEstablishedGpuChannel, base::Unretained(this)));
 }
@@ -78,7 +79,7 @@ scoped_refptr<gpu::GpuChannelHost> GpuService::EstablishGpuChannelSync() {
   int client_id = 0;
   mojo::ScopedMessagePipeHandle channel_handle;
   gpu::GPUInfo gpu_info;
-  connector_->ConnectToInterface("ui", &gpu_service_);
+  connector_->ConnectToInterface(ui::mojom::kServiceName, &gpu_service_);
 
   mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
   if (!gpu_service_->EstablishGpuChannel(&client_id, &channel_handle,

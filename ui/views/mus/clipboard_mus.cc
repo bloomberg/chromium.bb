@@ -14,6 +14,7 @@
 #include "mojo/common/common_type_converters.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -46,7 +47,7 @@ ClipboardMus::ClipboardMus() {}
 ClipboardMus::~ClipboardMus() {}
 
 void ClipboardMus::Init(service_manager::Connector* connector) {
-  connector->ConnectToInterface("ui", &clipboard_);
+  connector->ConnectToInterface(ui::mojom::kServiceName, &clipboard_);
 }
 
 // TODO(erg): This isn't optimal. It would be better to move the entire

@@ -16,6 +16,7 @@
 #include "mash/task_viewer/task_viewer.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/ui/ime/test_ime_driver/test_ime_application.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/service.h"
 
 #if defined(OS_LINUX)
@@ -82,7 +83,7 @@ std::unique_ptr<service_manager::Service> MashPackagedService::CreateService(
     return base::WrapUnique(new ash::touch_hud::TouchHudApplication);
   if (name == "mash_session")
     return base::WrapUnique(new mash::session::Session);
-  if (name == "ui")
+  if (name == ui::mojom::kServiceName)
     return base::WrapUnique(new ui::Service);
   if (name == "quick_launch")
     return base::WrapUnique(new mash::quick_launch::QuickLaunch);

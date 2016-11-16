@@ -6,6 +6,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "services/service_manager/public/cpp/service_test.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/window_server_test.mojom.h"
 
 namespace ash {
@@ -44,7 +45,7 @@ TEST_F(AppLaunchTest, MAYBE_TestQuickLaunch) {
   connector()->Connect("quick_launch");
 
   ui::mojom::WindowServerTestPtr test_interface;
-  connector()->ConnectToInterface("ui", &test_interface);
+  connector()->ConnectToInterface(ui::mojom::kServiceName, &test_interface);
 
   base::RunLoop run_loop;
   bool success = false;
