@@ -1681,7 +1681,7 @@ static PARTITION_TYPE read_partition(AV1_COMMON *cm, MACROBLOCKD *xd,
       p = (PARTITION_TYPE)aom_read_tree(r, av1_ext_partition_tree, probs,
                                         ACCT_STR);
 #else
-#if CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
     p = (PARTITION_TYPE)aom_read_symbol(r, cm->fc->partition_cdf[ctx],
                                         PARTITION_TYPES, ACCT_STR);
 #else

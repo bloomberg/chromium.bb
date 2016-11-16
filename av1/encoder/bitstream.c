@@ -2181,7 +2181,7 @@ static void write_partition(const AV1_COMMON *const cm,
       av1_write_token(w, av1_ext_partition_tree, probs,
                       &ext_partition_encodings[p]);
 #else
-#if CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
     aom_write_symbol(w, p, cm->fc->partition_cdf[ctx], PARTITION_TYPES);
 #else
     av1_write_token(w, av1_partition_tree, probs, &partition_encodings[p]);

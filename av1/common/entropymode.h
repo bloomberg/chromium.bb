@@ -168,7 +168,6 @@ typedef struct frame_contexts {
 #if CONFIG_DAALA_EC
   aom_cdf_prob y_mode_cdf[BLOCK_SIZE_GROUPS][INTRA_MODES];
   aom_cdf_prob uv_mode_cdf[INTRA_MODES][INTRA_MODES];
-  aom_cdf_prob partition_cdf[PARTITION_CONTEXTS][PARTITION_TYPES];
   aom_cdf_prob switchable_interp_cdf[SWITCHABLE_FILTER_CONTEXTS]
                                     [SWITCHABLE_FILTERS];
   aom_cdf_prob inter_mode_cdf[INTER_MODE_CONTEXTS][INTER_MODES];
@@ -176,6 +175,9 @@ typedef struct frame_contexts {
   aom_cdf_prob intra_ext_tx_cdf[EXT_TX_SIZES][TX_TYPES][TX_TYPES];
   aom_cdf_prob inter_ext_tx_cdf[EXT_TX_SIZES][TX_TYPES];
 #endif
+#endif
+#if CONFIG_EC_MULTISYMBOL
+  aom_cdf_prob partition_cdf[PARTITION_CONTEXTS][PARTITION_TYPES];
 #endif
 #if CONFIG_DELTA_Q
   aom_prob delta_q_prob[DELTA_Q_CONTEXTS];
