@@ -4,13 +4,17 @@
 
 <dom-module id="settings-pdf-documents">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+    .secondary {
+      margin-top: 0;  /* Cancel separation between main and secondary text. */
+    }
+    </style>
     <div class="settings-box first two-line">
       <div class="start secondary">
-        $i18n{siteSettingsPdfInBrowser}
+        $i18n{siteSettingsPdfDifferentApplication}
       </div>
       <settings-toggle-button id="toggle" checked="{{categoryEnabled}}"
-          inverted on-change="onToggleChange_"
+          on-change="onToggleChange_"
           pref="{{prefs.plugins.always_open_pdf_externally}}">
       </settings-toggle-button>
     </div>
