@@ -3632,7 +3632,7 @@ bool LayoutBlockFlow::positionNewFloats(LayoutUnit logicalTop,
     // unplaced floats in our list that come from somewhere else, we have a bug.
     DCHECK_EQ(floatingObject.layoutObject()->containingBlock(), this);
 
-    positionAndLayoutFloat(floatingObject, logicalTop);
+    logicalTop = positionAndLayoutFloat(floatingObject, logicalTop);
 
     m_floatingObjects->addPlacedObject(floatingObject);
 
