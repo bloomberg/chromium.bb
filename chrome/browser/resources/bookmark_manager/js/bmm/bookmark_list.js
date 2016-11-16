@@ -149,6 +149,15 @@ cr.define('bmm', function() {
 
       this.fixWidth_();
       cr.dispatchSimpleEvent(this, 'load');
+
+      // Use the same histogram configuration as UMA_HISTOGRAM_COUNTS_1000().
+      chrome.metricsPrivate.recordValue({
+        'metricName': 'Bookmarks.BookmarksInFolder',
+        'type': chrome.metricsPrivate.MetricTypeType.HISTOGRAM_LOG,
+        'min': 1,
+        'max': 1000,
+        'buckets': 50
+      }, this.dataModel.length);
     },
 
     /**
