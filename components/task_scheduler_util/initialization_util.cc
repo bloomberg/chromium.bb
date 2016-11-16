@@ -4,7 +4,6 @@
 
 #include "components/task_scheduler_util/initialization_util.h"
 
-#include <algorithm>
 #include <vector>
 
 #include "base/bind.h"
@@ -12,7 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
-#include "base/sys_info.h"
+#include "base/task_scheduler/initialization_util.h"
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/task_scheduler/task_traits.h"
@@ -51,23 +50,21 @@ WorkerPoolVariationValues StringToWorkerPoolVariationValues(
   const std::vector<std::string> tokens =
       SplitString(pool_descriptor, ";",
                   base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  int minimum;
-  int maximum;
-  double multiplier;
+  int min;
+  int max;
+  double cores_multiplier;
   int offset;
   int detach_milliseconds;
   // Checking for a size greater than the expected amount allows us to be
   // forward compatible if we add more variation values.
-  if (tokens.size() >= 5 &&
-      base::StringToInt(tokens[0], &minimum) &&
-      base::StringToInt(tokens[1], &maximum) &&
-      base::StringToDouble(tokens[2], &multiplier) &&
+  if (tokens.size() >= 5 && base::StringToInt(tokens[0], &min) &&
+      base::StringToInt(tokens[1], &max) &&
+      base::StringToDouble(tokens[2], &cores_multiplier) &&
       base::StringToInt(tokens[3], &offset) &&
       base::StringToInt(tokens[4], &detach_milliseconds)) {
-    const int num_of_cores = base::SysInfo::NumberOfProcessors();
-    const int threads = std::ceil<int>(num_of_cores * multiplier) + offset;
     WorkerPoolVariationValues values;
-    values.threads = std::min(maximum, std::max(minimum, threads));
+    values.threads = base::RecommendedMaxNumberOfThreadsInPool(
+        min, max, cores_multiplier, offset);
     values.detach_period =
         base::TimeDelta::FromMilliseconds(detach_milliseconds);
     return values;
