@@ -44,7 +44,7 @@ class GvrDevice : public VRDevice {
   base::WeakPtr<GvrDelegate> delegate_;
   GvrDeviceProvider* gvr_provider_;
   bool secure_origin_ = false;
-  uint32_t pose_index_ = 0;
+  uint32_t pose_index_ = 1;
 
   DISALLOW_COPY_AND_ASSIGN(GvrDevice);
 };

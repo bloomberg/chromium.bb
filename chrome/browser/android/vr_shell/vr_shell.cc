@@ -538,7 +538,16 @@ void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
     // have working no-compositor rendering for WebVR.
     if (gvr_api_->GetAsyncReprojectionEnabled()) {
       uint32_t webvr_pose_frame = GetPixelEncodedPoseIndex();
-      head_pose = webvr_head_pose_[webvr_pose_frame % kPoseRingBufferSize];
+      // If we don't get a valid frame ID back we shouldn't attempt to reproject
+      // by an invalid matrix, so turn of reprojection instead.
+      if (webvr_pose_frame == 0) {
+        webvr_left_viewport_->SetReprojection(GVR_REPROJECTION_NONE);
+        webvr_right_viewport_->SetReprojection(GVR_REPROJECTION_NONE);
+      } else {
+        webvr_left_viewport_->SetReprojection(GVR_REPROJECTION_FULL);
+        webvr_right_viewport_->SetReprojection(GVR_REPROJECTION_FULL);
+        head_pose = webvr_head_pose_[webvr_pose_frame % kPoseRingBufferSize];
+      }
     }
   }
 
