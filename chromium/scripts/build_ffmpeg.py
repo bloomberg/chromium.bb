@@ -533,6 +533,14 @@ def main(argv):
         '--cc=clang',
         '--cxx=clang++',
     ])
+
+    # Mac dylib building resolves external symbols. We need to explicitly
+    # include -lopus to point to the system libopus so we can build
+    # libavcodec.XX.dylib.
+    configure_flags['Common'].extend([
+        '--extra-libs=-lopus',
+    ])
+
     if target_arch == 'x64':
       configure_flags['Common'].extend([
           '--arch=x86_64',
