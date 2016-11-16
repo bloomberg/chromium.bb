@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<style>
+td { width: 100px; height: 100px }
+tr { background-image: url(../../../fast/backgrounds/resources/red-green-animated.gif) }
+</style>
+<table>
+  <tr id="row">
+    <td id="cell1"></td>
+    <td id="cell2"></td>
+  </tr>
+</table>
+<img id="image">
+<script src="../resources/text-based-repaint.js"></script>
+<script>
+window.testIsAsync = true;
+function repaintTest() {
+  if (window.internals)
+    internals.advanceImageAnimation(image);
+  requestAnimationFrame(function() {
+    finishRepaintTest();
+  });
+}
+onload = function() {
+  // The image element ensures that the test runs just after the image
+  // resource is loaded, and will be used in advanceImageAnimation().
+  image.onload = runRepaintTest;
+  image.src="../../../fast/backgrounds/resources/red-green-animated.gif";
+}
+</script>

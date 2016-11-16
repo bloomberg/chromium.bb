@@ -1304,6 +1304,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   bool hasNonCompositedScrollbars() const final;
 
+  void ensureIsReadyForPaintInvalidation() override;
+
  protected:
   void willBeDestroyed() override;
 

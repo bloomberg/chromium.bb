@@ -9,23 +9,6 @@
 
 namespace blink {
 
-void LayoutTableBoxComponent::styleDidChange(StyleDifference diff,
-                                             const ComputedStyle* oldStyle) {
-  LayoutBox::styleDidChange(diff, oldStyle);
-
-  if (parent() && oldStyle) {
-    if (resolveColor(*oldStyle, CSSPropertyBackgroundColor) !=
-            resolveColor(CSSPropertyBackgroundColor) ||
-        oldStyle->backgroundLayers() != styleRef().backgroundLayers())
-      m_backgroundChangedSinceLastPaintInvalidation = true;
-  }
-}
-
-void LayoutTableBoxComponent::imageChanged(WrappedImagePtr, const IntRect*) {
-  setShouldDoFullPaintInvalidation();
-  m_backgroundChangedSinceLastPaintInvalidation = true;
-}
-
 bool LayoutTableBoxComponent::doCellsHaveDirtyWidth(
     const LayoutObject& tablePart,
     const LayoutTable& table,

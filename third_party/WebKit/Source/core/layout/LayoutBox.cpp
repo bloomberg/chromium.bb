@@ -1685,10 +1685,12 @@ void LayoutBox::imageChanged(WrappedImagePtr image, const IntRect*) {
             layer->image()->cachedImage() &&
             layer->image()->cachedImage()->getImage() &&
             layer->image()->cachedImage()->getImage()->maybeAnimated();
-        if (maybeAnimated)
+        if (maybeAnimated) {
           setMayNeedPaintInvalidationAnimatedBackgroundImage();
-        else
+        } else {
           setShouldDoFullPaintInvalidation();
+          setBackgroundChangedSinceLastPaintInvalidation();
+        }
         break;
       }
     }
@@ -1753,6 +1755,27 @@ bool LayoutBox::intersectsVisibleViewport() const {
   mapToVisualRectInAncestorSpace(layoutView, rect);
   return rect.intersects(LayoutRect(
       layoutView->frameView()->getScrollableArea()->visibleContentRect()));
+}
+
+void LayoutBox::ensureIsReadyForPaintInvalidation() {
+  LayoutBoxModelObject::ensureIsReadyForPaintInvalidation();
+
+  if (mayNeedPaintInvalidationAnimatedBackgroundImage() &&
+      !backgroundIsKnownToBeObscured())
+    setShouldDoFullPaintInvalidation(PaintInvalidationDelayedFull);
+
+  if (fullPaintInvalidationReason() != PaintInvalidationDelayedFull ||
+      !intersectsVisibleViewport())
+    return;
+
+  // Do regular full paint invalidation if the object with
+  // PaintInvalidationDelayedFull is onscreen.
+  if (intersectsVisibleViewport()) {
+    // Conservatively assume the delayed paint invalidation was caused by
+    // background image change.
+    setBackgroundChangedSinceLastPaintInvalidation();
+    setShouldDoFullPaintInvalidation(PaintInvalidationFull);
+  }
 }
 
 PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(

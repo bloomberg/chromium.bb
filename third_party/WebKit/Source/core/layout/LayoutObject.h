@@ -1676,6 +1676,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     void setShouldDoFullPaintInvalidation(PaintInvalidationReason reason) {
       m_layoutObject.setShouldDoFullPaintInvalidation(reason);
     }
+    void setBackgroundChangedSinceLastPaintInvalidation() {
+      m_layoutObject.setBackgroundChangedSinceLastPaintInvalidation();
+    }
     void ensureIsReadyForPaintInvalidation() {
       m_layoutObject.ensureIsReadyForPaintInvalidation();
     }
@@ -1790,6 +1793,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   bool hasPreviousBoxGeometries() const {
     return m_bitfields.hasPreviousBoxGeometries();
+  }
+
+  bool backgroundChangedSinceLastPaintInvalidation() const {
+    return m_bitfields.backgroundChangedSinceLastPaintInvalidation();
+  }
+  void setBackgroundChangedSinceLastPaintInvalidation() {
+    m_bitfields.setBackgroundChangedSinceLastPaintInvalidation(true);
   }
 
  protected:
@@ -1925,9 +1935,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     m_previousVisualRect = rect;
   }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   virtual bool paintInvalidationStateIsDirty() const {
-    return shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState();
+    return backgroundChangedSinceLastPaintInvalidation() ||
+           shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState();
   }
 #endif
 
@@ -2135,6 +2146,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           m_hasPreviousSelectionVisualRect(false),
           m_hasPreviousBoxGeometries(false),
           m_needsPaintPropertyUpdate(true),
+          m_backgroundChangedSinceLastPaintInvalidation(false),
           m_positionedState(IsStaticallyPositioned),
           m_selectionState(SelectionNone),
           m_backgroundObscurationState(BackgroundObscurationStatusInvalid),
@@ -2307,9 +2319,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // LayoutObject::needsPaintPropertyUpdate().
     ADD_BOOLEAN_BITFIELD(needsPaintPropertyUpdate, NeedsPaintPropertyUpdate);
 
+    ADD_BOOLEAN_BITFIELD(backgroundChangedSinceLastPaintInvalidation,
+                         BackgroundChangedSinceLastPaintInvalidation);
+
    protected:
     // Use protected to avoid warning about unused variable.
-    unsigned m_unusedBits : 9;
+    unsigned m_unusedBits : 8;
 
    private:
     // This is the cached 'position' value of this object

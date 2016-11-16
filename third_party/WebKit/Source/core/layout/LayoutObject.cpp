@@ -1891,6 +1891,13 @@ void LayoutObject::styleDidChange(StyleDifference diff,
       frame->localFrameRoot()->eventHandler().scheduleCursorUpdate();
     }
   }
+
+  if (diff.needsPaintInvalidation() && oldStyle) {
+    if (resolveColor(*oldStyle, CSSPropertyBackgroundColor) !=
+            resolveColor(CSSPropertyBackgroundColor) ||
+        oldStyle->backgroundLayers() != styleRef().backgroundLayers())
+      setBackgroundChangedSinceLastPaintInvalidation();
+  }
 }
 
 void LayoutObject::propagateStyleToAnonymousChildren() {
@@ -3451,6 +3458,7 @@ void LayoutObject::clearPaintInvalidationFlags() {
   m_bitfields.setMayNeedPaintInvalidationSubtree(false);
   m_bitfields.setMayNeedPaintInvalidationAnimatedBackgroundImage(false);
   m_bitfields.setShouldInvalidateSelection(false);
+  m_bitfields.setBackgroundChangedSinceLastPaintInvalidation(false);
 }
 
 bool LayoutObject::isAllowedToModifyLayoutTreeStructure(Document& document) {

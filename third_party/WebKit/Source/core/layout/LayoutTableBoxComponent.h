@@ -15,21 +15,13 @@ class LayoutTable;
 // Common super class for LayoutTableCol, LayoutTableSection and LayoutTableRow.
 class CORE_EXPORT LayoutTableBoxComponent : public LayoutBox {
  public:
-  bool backgroundChangedSinceLastPaintInvalidation() const {
-    return m_backgroundChangedSinceLastPaintInvalidation;
-  }
-  void clearBackgroundChangedSinceLastPaintInvalidation() {
-    m_backgroundChangedSinceLastPaintInvalidation = false;
-  }
   static bool doCellsHaveDirtyWidth(const LayoutObject& tablePart,
                                     const LayoutTable&,
                                     const StyleDifference&,
                                     const ComputedStyle& oldStyle);
 
  protected:
-  explicit LayoutTableBoxComponent(Element* element)
-      : LayoutBox(element),
-        m_backgroundChangedSinceLastPaintInvalidation(false) {}
+  explicit LayoutTableBoxComponent(Element* element) : LayoutBox(element) {}
 
   const LayoutObjectChildList* children() const { return &m_children; }
   LayoutObjectChildList* children() { return &m_children; }
@@ -43,21 +35,6 @@ class CORE_EXPORT LayoutTableBoxComponent : public LayoutBox {
     return children()->lastChild();
   }
 
-  void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
-  void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
-
-  void clearPaintInvalidationFlags() override {
-    LayoutBox::clearPaintInvalidationFlags();
-    m_backgroundChangedSinceLastPaintInvalidation = false;
-  }
-
-#if ENABLE(ASSERT)
-  bool paintInvalidationStateIsDirty() const override {
-    return m_backgroundChangedSinceLastPaintInvalidation ||
-           LayoutBox::paintInvalidationStateIsDirty();
-  }
-#endif
-
  private:
   // If you have a LayoutTableBoxComponent, use firstChild or lastChild instead.
   void slowFirstChild() const = delete;
@@ -69,7 +46,6 @@ class CORE_EXPORT LayoutTableBoxComponent : public LayoutBox {
   }
 
   LayoutObjectChildList m_children;
-  bool m_backgroundChangedSinceLastPaintInvalidation;
 };
 
 }  // namespace blink

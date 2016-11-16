@@ -112,26 +112,8 @@ PaintInvalidationReason BoxPaintInvalidator::computePaintInvalidationReason() {
       ObjectPaintInvalidatorWithContext(m_box, m_context)
           .computePaintInvalidationReason();
 
-  if (isImmediateFullPaintInvalidationReason(reason) ||
-      reason == PaintInvalidationNone)
+  if (reason != PaintInvalidationIncremental)
     return reason;
-
-  if (m_box.mayNeedPaintInvalidationAnimatedBackgroundImage() &&
-      !m_box.backgroundIsKnownToBeObscured())
-    reason = PaintInvalidationDelayedFull;
-
-  // If the current paint invalidation reason is PaintInvalidationDelayedFull,
-  // then this paint invalidation can delayed if the LayoutBox in question is
-  // not on-screen. The logic to decide whether this is appropriate exists at
-  // the site of the original paint invalidation that chose
-  // PaintInvalidationDelayedFull.
-  if (reason == PaintInvalidationDelayedFull) {
-    // Do regular full paint invalidation if the object is onscreen.
-    return m_box.intersectsVisibleViewport() ? PaintInvalidationFull
-                                             : PaintInvalidationDelayedFull;
-  }
-
-  DCHECK(reason == PaintInvalidationIncremental);
 
   if (m_box.isLayoutView()) {
     const LayoutView& layoutView = toLayoutView(m_box);

@@ -28,6 +28,9 @@ PaintInvalidationReason TablePaintInvalidator::invalidatePaintIfNeeded() {
   bool hasColChangedBackground = false;
   for (LayoutTableCol* col = m_table.firstColumn(); col;
        col = col->nextColumn()) {
+    // This ensures that the backgroundChangedSinceLastPaintInvalidation flag
+    // is up-to-date.
+    col->ensureIsReadyForPaintInvalidation();
     if (col->backgroundChangedSinceLastPaintInvalidation()) {
       hasColChangedBackground = true;
       break;
@@ -38,12 +41,14 @@ PaintInvalidationReason TablePaintInvalidator::invalidatePaintIfNeeded() {
     if (!child->isTableSection())
       continue;
     LayoutTableSection* section = toLayoutTableSection(child);
+    section->ensureIsReadyForPaintInvalidation();
     ObjectPaintInvalidator sectionInvalidator(*section);
     if (!hasColChangedBackground &&
         !section
              ->shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState())
       continue;
     for (LayoutTableRow* row = section->firstRow(); row; row = row->nextRow()) {
+      row->ensureIsReadyForPaintInvalidation();
       if (!hasColChangedBackground &&
           !section->backgroundChangedSinceLastPaintInvalidation() &&
           !row->backgroundChangedSinceLastPaintInvalidation())
