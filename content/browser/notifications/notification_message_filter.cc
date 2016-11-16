@@ -53,12 +53,8 @@ PlatformNotificationData SanitizeNotificationData(
 
 // Returns true when |resources| looks ok, false otherwise.
 bool ValidateNotificationResources(const NotificationResources& resources) {
-  // TODO(johnme): Remove the command line check once https://crbug.com/614456
-  // ships to stable.
   if (!resources.image.drawsNothing() &&
-      !(base::FeatureList::IsEnabled(features::kNotificationContentImage) &&
-        base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableExperimentalWebPlatformFeatures))) {
+      !base::FeatureList::IsEnabled(features::kNotificationContentImage)) {
     return false;
   }
   if (resources.image.width() > blink::kWebNotificationMaxImageWidthPx ||
