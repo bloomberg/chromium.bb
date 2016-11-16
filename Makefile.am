@@ -170,14 +170,12 @@ endif
 
 TESTS = $(built_test_programs)
 
-check_PROGRAMS =				\
-	$(built_test_programs)			\
-	exec-fd-leak-checker
-
 noinst_PROGRAMS =				\
+	$(built_test_programs)			\
+	exec-fd-leak-checker			\
 	fixed-benchmark
 
-check_LTLIBRARIES = libtest-runner.la
+noinst_LTLIBRARIES += libtest-runner.la
 
 libtest_runner_la_SOURCES =			\
 	tests/test-runner.c			\
