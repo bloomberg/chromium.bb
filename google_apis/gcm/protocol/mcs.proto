@@ -245,7 +245,7 @@ message DataMessageStanza {
 
   // How long has the message been queued before the flush, in seconds.
   // This is needed to account for the time difference between server and
-  // client: server should adjust 'sent' based on his 'receive' time.
+  // client: server should adjust 'sent' based on its 'receive' time.
   optional int32 queued = 19;
 
   optional int64 status = 20;
