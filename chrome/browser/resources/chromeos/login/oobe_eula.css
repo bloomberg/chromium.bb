@@ -34,3 +34,7 @@ a {
 #accept-button-text {
   text-transform: uppercase;
 }
+
+.bottom-buttons {
+  padding: 0 24px;
+}

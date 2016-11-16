@@ -123,21 +123,21 @@ Polymer({
     return [
       {
         customItemName: 'proxySettingsMenuName',
-        polymerIcon: 'oobe-welcome:add',
+        polymerIcon: 'oobe-welcome-20:add-proxy',
         customData: {
           onTap: function() { self.OpenProxySettingsDialog_(); },
         },
       },
       {
         customItemName: 'addWiFiNetworkMenuName',
-        polymerIcon: 'oobe-welcome:add',
+        polymerIcon: 'oobe-welcome-20:add-wifi',
         customData: {
           onTap: function() { self.OpenAddWiFiNetworkDialog_(); },
         },
       },
       {
         customItemName: 'addMobileNetworkMenuName',
-        polymerIcon: 'oobe-welcome:add',
+        polymerIcon: 'oobe-welcome-20:add-cellular',
         customData: {
           onTap: function() { self.OpenAddWiFiNetworkDialog_(); },
         },
@@ -274,6 +274,17 @@ Polymer({
   onNetworkListCustomItemSelected_: function(e) {
     var itemState = e.detail;
     itemState.customData.onTap();
+  },
+
+  /**
+   * Handle "<- Back" button on network selection screen.
+   *
+   * @private
+   */
+  onNetworkSelectionBackButtonPressed_: function() {
+    this.networkLastSelectedGuid_ = '';
+    this.hideAllScreens_();
+    this.welcomeScreenShown = true;
   },
 
   /**

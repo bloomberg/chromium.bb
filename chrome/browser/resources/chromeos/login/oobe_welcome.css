@@ -18,6 +18,10 @@
   font: 13px Roboto, sans-serif;
 }
 
+#languageScreen .bottom-buttons {
+  padding: 0 24px;
+}
+
 /************* Accessibility Screen **************/
 #accessibilityScreen oobe-a11y-option {
   border-top: 1px solid lightgrey;
@@ -26,4 +30,13 @@
 
 #accessibilityScreen oobe-a11y-option:last-of-type {
   border-bottom: 1px solid rgba(0, 0, 0, 0.14);
+}
+
+#accessibilityScreen .bottom-buttons {
+  padding: 0 24px;
+}
+
+/************* Accessibility Screen **************/
+#networkSelectionScreen .bottom-buttons {
+  padding: 0 6px; /* = 8px - 2px back button border */
 }

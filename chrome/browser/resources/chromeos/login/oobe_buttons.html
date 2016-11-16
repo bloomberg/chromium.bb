@@ -2,20 +2,33 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-fab/paper-fab.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+
+<iron-iconset-svg name="oobe-buttons" size="24">
+  <svg>
+    <defs>
+      <g id="arrow-back">
+        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z">
+        </path>
+      </g>
+    </defs>
+  </svg>
+</iron-iconset-svg>
 
 <!--
   Material design square button for text-labelled buttons.
   By default, text is blue, background is white.
   |inverse| makes text white on a blue background.
+  Note, that content must have separate DOM node (i.e. a separate div).
 
   Example:
-    <oobe-icon-button i18n-content="oobeOKButtonText" inverse>
+    <oobe-icon-button inverse>
+      <div i18n-content="oobeOKButtonText"></div>
     </oobe-icon-button>
-    <oobe-icon-button i18n-content="oobeCancelButtonText"></oobe-icon-button>
 
   Attributes:
     'disabled' - button is disabled when the attribute is set.
@@ -32,12 +45,35 @@
 </dom-module>
 
 <!--
+  Material design square "<- Back" button.
+  Text is blue, background is white.
+
+  Example:
+    <oobe-back-button on-tap="handleOnTap_">
+    </oobe-back-button>
+
+  Attributes:
+    'disabled' - button is disabled when the attribute is set.
+-->
+<dom-module id="oobe-back-button">
+  <link rel="stylesheet" href="oobe_back_button.css">
+  <template>
+    <paper-button id="button" on-tap="onClick_" disabled="[[disabled]]">
+      <div class="flex horizontal layout start center">
+        <iron-icon icon="oobe-buttons:arrow-back"></iron-icon>
+        <div id="text" i18n-content="back"></div>
+      </div>
+    </paper-button>
+  </template>
+</dom-module>
+
+<!--
   Material design button that shows an icon and displays text.
 
   Example:
-    <oobe-welcome-secondary-button icon="close"
-        i18n-content="oobeCloseButtonText">
-    </oobe-icon-button>
+    <oobe-welcome-secondary-button icon="close">
+      <div i18n-content="oobeCloseButtonText"></div>
+    </oobe-welcome-secondary-button>
 
   Attributes:
     'icon' - a name of icon from material design set to show on button.
