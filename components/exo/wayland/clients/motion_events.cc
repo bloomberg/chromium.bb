@@ -105,8 +105,8 @@ const size_t kBuffers = 8;
 // Rotation speed (degrees/second).
 const double kRotationSpeed = 360.0;
 
-// Benchmark interval in seconds.
-const int kBenchmarkInterval = 5;
+// Benchmark warmup frames before starting measurement.
+const int kBenchmarkWarmupFrames = 10;
 
 struct Globals {
   std::unique_ptr<wl_compositor> compositor;
@@ -305,6 +305,8 @@ class MotionEvents {
                size_t max_frames_pending,
                bool fullscreen,
                bool show_fps_counter,
+               size_t num_benchmark_runs,
+               base::TimeDelta benchmark_interval,
                const std::string* use_drm)
       : width_(width),
         height_(height),
@@ -313,6 +315,8 @@ class MotionEvents {
         max_frames_pending_(max_frames_pending),
         fullscreen_(fullscreen),
         show_fps_counter_(show_fps_counter),
+        num_benchmark_runs_(num_benchmark_runs),
+        benchmark_interval_(benchmark_interval),
         use_drm_(use_drm) {}
 
   // Initialize and run client main loop.
@@ -328,6 +332,8 @@ class MotionEvents {
   const size_t max_frames_pending_;
   const bool fullscreen_;
   const bool show_fps_counter_;
+  const size_t num_benchmark_runs_;
+  const base::TimeDelta benchmark_interval_;
   const std::string* use_drm_;
 
   Globals globals_;
@@ -530,9 +536,8 @@ int MotionEvents::Run() {
   std::deque<wl_buffer*> pending_frames;
 
   uint32_t frames = 0;
-  base::TimeTicks benchmark_time = base::TimeTicks::Now();
-  base::TimeDelta benchmark_interval =
-      base::TimeDelta::FromSeconds(kBenchmarkInterval);
+  size_t num_benchmark_runs_left = num_benchmark_runs_;
+  base::TimeTicks benchmark_time;
   base::TimeDelta benchmark_wall_time;
   base::TimeDelta benchmark_cpu_time;
   std::string fps_counter_text("??");
@@ -556,29 +561,39 @@ int MotionEvents::Run() {
         return 1;
       }
 
-      base::TimeTicks wall_time_start = base::TimeTicks::Now();
-      if ((wall_time_start - benchmark_time) > benchmark_interval) {
-        // Print benchmark statistics for the frames produced.
-        // Note: frames produced is not necessarily the same as frames
-        // displayed.
-        std::cout << frames << " frames in " << benchmark_interval.InSeconds()
-                  << " seconds: " << frames / benchmark_interval.InSecondsF()
-                  << " fps (wall="
-                  << benchmark_wall_time.InMillisecondsF() / frames
-                  << " cpu=" << benchmark_cpu_time.InMillisecondsF() / frames
-                  << ")" << std::endl;
+      base::TimeTicks wall_time_start;
+      base::ThreadTicks cpu_time_start;
+      if (num_benchmark_runs_ || show_fps_counter_) {
+        wall_time_start = base::TimeTicks::Now();
+        if (frames <= kBenchmarkWarmupFrames)
+          benchmark_time = wall_time_start;
 
-        // Set FPS counter text in case it's being shown.
-        fps_counter_text = base::UintToString(
-            std::round(frames / benchmark_interval.InSecondsF()));
+        if ((wall_time_start - benchmark_time) > benchmark_interval_) {
+          uint32_t benchmark_frames = frames - kBenchmarkWarmupFrames;
+          if (num_benchmark_runs_left) {
+            // Print benchmark statistics for the frames produced and exit.
+            // Note: frames produced is not necessarily the same as frames
+            // displayed.
+            std::cout << benchmark_frames << '\t'
+                      << benchmark_wall_time.InMilliseconds() << '\t'
+                      << benchmark_cpu_time.InMilliseconds() << '\t'
+                      << std::endl;
+            if (!--num_benchmark_runs_left)
+              return 0;
+          }
 
-        frames = 0;
-        benchmark_time = wall_time_start;
-        benchmark_wall_time = base::TimeDelta();
-        benchmark_cpu_time = base::TimeDelta();
+          // Set FPS counter text in case it's being shown.
+          fps_counter_text = base::UintToString(
+              std::round(benchmark_frames / benchmark_interval_.InSecondsF()));
+
+          frames = kBenchmarkWarmupFrames;
+          benchmark_time = wall_time_start;
+          benchmark_wall_time = base::TimeDelta();
+          benchmark_cpu_time = base::TimeDelta();
+        }
+
+        cpu_time_start = base::ThreadTicks::Now();
       }
-
-      base::ThreadTicks cpu_time_start = base::ThreadTicks::Now();
 
       SkCanvas* canvas = buffer->sk_surface->getCanvas();
       if (event_times.empty()) {
@@ -647,9 +662,11 @@ int MotionEvents::Run() {
       buffer->busy = true;
       pending_frames.push_back(buffer->buffer.get());
 
-      ++frames;
-      benchmark_wall_time += base::TimeTicks::Now() - wall_time_start;
-      benchmark_cpu_time += base::ThreadTicks::Now() - cpu_time_start;
+      if (num_benchmark_runs_ || show_fps_counter_) {
+        ++frames;
+        benchmark_wall_time += base::TimeTicks::Now() - wall_time_start;
+        benchmark_cpu_time += base::ThreadTicks::Now() - cpu_time_start;
+      }
       continue;
     }
 
@@ -784,6 +801,17 @@ const char kFullscreen[] = "fullscreen";
 // Specifies if FPS counter should be shown.
 const char kShowFpsCounter[] = "show-fps-counter";
 
+// Enables benchmark mode and specifies the number of benchmark runs to
+// perform before client will exit. Client will print the results to
+// standard output as a tab seperated list.
+//
+//  The output format is:
+//   "frames wall-time-ms cpu-time-ms"
+const char kBenchmark[] = "benchmark";
+
+// Specifies the number of milliseconds to use as benchmark interval.
+const char kBenchmarkInterval[] = "benchmark-interval";
+
 // Use drm buffer instead of shared memory.
 const char kUseDrm[] = "use-drm";
 
@@ -829,6 +857,24 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
+  size_t num_benchmark_runs = 0;
+  if (command_line->HasSwitch(switches::kBenchmark) &&
+      (!base::StringToSizeT(
+          command_line->GetSwitchValueASCII(switches::kBenchmark),
+          &num_benchmark_runs))) {
+    LOG(ERROR) << "Invalid value for " << switches::kBenchmark;
+    return 1;
+  }
+
+  size_t benchmark_interval_ms = 5000;  // 5 seconds.
+  if (command_line->HasSwitch(switches::kBenchmarkInterval) &&
+      (!base::StringToSizeT(
+          command_line->GetSwitchValueASCII(switches::kBenchmark),
+          &benchmark_interval_ms))) {
+    LOG(ERROR) << "Invalid value for " << switches::kBenchmark;
+    return 1;
+  }
+
   std::unique_ptr<std::string> use_drm;
   if (command_line->HasSwitch(switches::kUseDrm)) {
     use_drm.reset(
@@ -838,6 +884,7 @@ int main(int argc, char* argv[]) {
   exo::wayland::clients::MotionEvents client(
       width, height, scale, num_rects, max_frames_pending,
       command_line->HasSwitch(switches::kFullscreen),
-      command_line->HasSwitch(switches::kShowFpsCounter), use_drm.get());
+      command_line->HasSwitch(switches::kShowFpsCounter), num_benchmark_runs,
+      base::TimeDelta::FromMilliseconds(benchmark_interval_ms), use_drm.get());
   return client.Run();
 }
