@@ -112,15 +112,16 @@ by a child template that "extends" this file.
         android:icon="@mipmap/app_icon"
         android:label="@string/app_name"
         android:largeHeap="false"
-        android:allowBackup="false"
         android:manageSpaceActivity="@string/manage_space_activity"
-        android:fullBackupContent="@xml/chromebackupscheme"
+        android:supportsRtl="true"
+        {% if backup_key is defined %}
+        android:allowBackup="true"
+        android:backupAgent="org.chromium.chrome.browser.ChromeBackupAgent"
         android:fullBackupOnly="false"
         android:restoreAnyVersion="true"
-        {% block android_backup_agent %}
-        android:backupAgent="org.chromium.chrome.browser.ChromeBackupAgent"
-        {% endblock %}
-        android:supportsRtl="true"
+        {% else %}
+        android:allowBackup="false"
+        {% endif %}
         {% if target_sdk_version|int >= 24 %}
         android:networkSecurityConfig="@xml/network_security_config"
         {% endif %}
@@ -135,6 +136,12 @@ by a child template that "extends" this file.
             android:value="singleTask" />
         <meta-data android:name="com.samsung.android.sdk.multiwindow.penwindow.enable"
             android:value="true"/>
+
+        {% if backup_key is defined %}
+        <!-- Backup keys are channel dependent -->
+        <meta-data android:name="com.google.android.backup.api_key"
+            android:value="{{ backup_key }}" />
+        {% endif %}
 
         {% if channel in ['dev', 'canary', 'default'] %}
         <meta-data android:name="com.sec.android.support.multiwindow" android:value="true" />

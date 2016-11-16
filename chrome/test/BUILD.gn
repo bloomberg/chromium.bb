@@ -3055,6 +3055,7 @@ test("unit_tests") {
     "../browser/android/history_report/usage_reports_buffer_backend_unittest.cc",
 
     # TODO(newt): move this to test_support_unit?
+    "../browser/android/chrome_backup_agent_unittest.cc",
     "../browser/android/mock_location_settings.cc",
     "../browser/android/mock_location_settings.h",
     "../browser/android/net/external_estimate_provider_android_unittest.cc",
