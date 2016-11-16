@@ -305,6 +305,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     private boolean mIsHidden = true;
 
+    /** Whether the renderer is currently unresponsive. */
+    private boolean mIsRendererUnresponsive;
+
     /**
      * The last time this tab was shown or the time of its initialization if it wasn't yet shown.
      */
@@ -344,7 +347,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private float mPreviousTopControlsOffsetY = Float.NaN;
     private float mPreviousBottomControlsOffsetY = Float.NaN;
     private float mPreviousContentOffsetY = Float.NaN;
-    private int mFullscreenHungRendererToken = FullscreenManager.INVALID_TOKEN;
 
     /**
      * Indicates whether this tab has been detached from its activity and the corresponding
@@ -1322,8 +1324,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             // Clean up any fullscreen state that might impact other tabs.
             if (mFullscreenManager != null) {
                 mFullscreenManager.setPersistentFullscreenMode(false);
-                mFullscreenManager.hideControlsPersistent(mFullscreenHungRendererToken);
-                mFullscreenHungRendererToken = FullscreenManager.INVALID_TOKEN;
             }
 
             if (mTabUma != null) mTabUma.onHide();
@@ -1644,7 +1644,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         updateTitle();
         removeSadTabIfPresent();
 
-        clearHungRendererState();
+        if (mIsRendererUnresponsive) handleRendererResponsive();
 
         if (mTabUma != null) mTabUma.onPageLoadStarted();
 
@@ -2587,19 +2587,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
-     * Clears hung renderer state.
-     */
-    private void clearHungRendererState() {
-        if (mFullscreenManager == null) return;
-
-        if (mFullscreenHungRendererToken != FullscreenManager.INVALID_TOKEN) {
-            mFullscreenManager.hideControlsPersistent(mFullscreenHungRendererToken);
-            mFullscreenHungRendererToken = FullscreenManager.INVALID_TOKEN;
-            updateFullscreenEnabledState();
-        }
-    }
-
-    /**
      * Called when offset values related with fullscreen functionality has been changed by the
      * compositor.
      * @param topControlsOffsetY The Y offset of the top controls in physical pixels.
@@ -2710,13 +2697,10 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     @BrowserControlsStateEnum
     public int getBrowserControlsStateConstraints() {
-        boolean enableHidingBrowserControls = isHidingBrowserControlsEnabled();
-        boolean enableShowingBrowserControls = isShowingBrowserControlsEnabled();
-
         int constraints = BrowserControlsState.BOTH;
-        if (!enableShowingBrowserControls) {
+        if (!isShowingBrowserControlsEnabled()) {
             constraints = BrowserControlsState.HIDDEN;
-        } else if (!enableHidingBrowserControls) {
+        } else if (!isHidingBrowserControlsEnabled()) {
             constraints = BrowserControlsState.SHOWN;
         }
         return constraints;
@@ -2744,7 +2728,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                         mPreviousBottomControlsOffsetY,
                         mPreviousContentOffsetY);
             }
-            mFullscreenManager.showControlsTransient();
             updateFullscreenEnabledState();
         }
 
@@ -3101,16 +3084,24 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     void handleRendererUnresponsive() {
+        mIsRendererUnresponsive = true;
         if (mFullscreenManager == null) return;
-        mFullscreenHungRendererToken =
-                mFullscreenManager.showControlsPersistentAndClearOldToken(
-                        mFullscreenHungRendererToken);
+
+        mFullscreenManager.setPositionsForTabToNonFullscreen();
+        updateBrowserControlsState(BrowserControlsState.SHOWN, false);
     }
 
     void handleRendererResponsive() {
+        mIsRendererUnresponsive = false;
         if (mFullscreenManager == null) return;
-        mFullscreenManager.hideControlsPersistent(mFullscreenHungRendererToken);
-        mFullscreenHungRendererToken = FullscreenManager.INVALID_TOKEN;
+        updateFullscreenEnabledState();
+    }
+
+    /**
+     * @return Whether the renderer is currently unresponsive.
+     */
+    protected boolean isRendererUnresponsive() {
+        return mIsRendererUnresponsive;
     }
 
     /**

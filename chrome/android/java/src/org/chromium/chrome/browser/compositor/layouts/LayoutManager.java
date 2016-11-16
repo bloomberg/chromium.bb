@@ -459,13 +459,15 @@ public abstract class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         ChromeFullscreenManager fullscreenManager = mHost.getFullscreenManager();
         if (fullscreenManager != null) {
             // Release any old fullscreen token we were holding.
-            fullscreenManager.hideControlsPersistent(mFullscreenToken);
+            fullscreenManager.getBrowserVisibilityDelegate().hideControlsPersistent(
+                    mFullscreenToken);
             mFullscreenToken = FullscreenManager.INVALID_TOKEN;
 
             // Grab a new fullscreen token if this layout can't be in fullscreen.
             final int flags = getActiveLayout().getSizingFlags();
             if ((flags & SizingFlags.ALLOW_TOOLBAR_HIDE) == 0) {
-                mFullscreenToken = fullscreenManager.showControlsPersistent();
+                mFullscreenToken =
+                        fullscreenManager.getBrowserVisibilityDelegate().showControlsPersistent();
             }
 
             // Hide the toolbar immediately if the layout wants it gone quickly.

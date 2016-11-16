@@ -45,36 +45,6 @@ public abstract class FullscreenManager {
     }
 
     /**
-     * Trigger a temporary showing of the browser controls.
-     */
-    public abstract void showControlsTransient();
-
-    /**
-     * Trigger a permanent showing of the browser controls until requested otherwise.
-     *
-     * @return The token that determines whether the requester still needs persistent controls to
-     *         be present on the screen.
-     * @see #hideControlsPersistent(int)
-     */
-    public abstract int showControlsPersistent();
-
-    /**
-     * Same behavior as {@link #showControlsPersistent()} but also handles removing a previously
-     * requested token if necessary.
-     *
-     * @param oldToken The old fullscreen token to be cleared.
-     * @return The fullscreen token as defined in {@link #showControlsPersistent()}.
-     */
-    public abstract int showControlsPersistentAndClearOldToken(int oldToken);
-
-    /**
-     * Notify the manager that the browser controls are no longer required for the given token.
-     *
-     * @param token The fullscreen token returned from {@link #showControlsPersistent()}.
-     */
-    public abstract void hideControlsPersistent(int token);
-
-    /**
      * @return The height of the top controls in pixels.
      */
     public abstract int getTopControlsHeight();

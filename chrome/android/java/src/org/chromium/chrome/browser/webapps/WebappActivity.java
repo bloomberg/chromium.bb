@@ -30,7 +30,6 @@ import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.document.DocumentUtils;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.metrics.WebappUma;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -38,7 +37,6 @@ import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.content.browser.ScreenOrientationProvider;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.NetworkChangeNotifier;
@@ -568,14 +566,6 @@ public class WebappActivity extends FullScreenActivity {
     @VisibleForTesting
     boolean isUrlBarVisible() {
         return findViewById(R.id.control_container).getVisibility() == View.VISIBLE;
-    }
-
-    @Override
-    protected ChromeFullscreenManager createFullscreenManager() {
-        return new ChromeFullscreenManager(this,
-                (ControlContainer) findViewById(R.id.control_container),
-                getTabModelSelector(), getControlContainerHeightResource(),
-                false /* supportsBrowserOverride */, false /* isBottomControls */);
     }
 
     @Override

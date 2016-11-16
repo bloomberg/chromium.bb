@@ -56,7 +56,7 @@ public class TabDelegateFactory {
      * @return {@link BrowserControlsVisibilityDelegate} to be used for the given tab.
      */
     public BrowserControlsVisibilityDelegate createBrowserControlsVisibilityDelegate(Tab tab) {
-        return new BrowserControlsVisibilityDelegate(tab);
+        return new TabStateBrowserControlsVisibilityDelegate(tab);
     }
 
     public TabDelegateFactory createNewTabDelegateFactory() {

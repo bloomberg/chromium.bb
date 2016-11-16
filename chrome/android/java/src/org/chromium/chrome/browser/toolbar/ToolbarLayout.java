@@ -29,7 +29,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.compositor.Invalidator;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
-import org.chromium.chrome.browser.fullscreen.FullscreenManager;
+import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omnibox.LocationBar;
@@ -325,9 +325,10 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     public void destroy() { }
 
     /**
-     * Sets the FullscreenManager, which controls when the toolbar is shown.
+     * Sets the delegate to handle visibility of browser controls.
      */
-    public void setFullscreenManager(FullscreenManager manager) { }
+    public void setBrowserControlsVisibilityDelegate(
+            BrowserStateBrowserControlsVisibilityDelegate controlsVisibilityDelegate) { }
 
     /**
      * Sets the OnClickListener that will be notified when the TabSwitcher button is pressed.

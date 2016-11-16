@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
+import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
@@ -51,7 +52,7 @@ public class WebappDelegateFactory extends FullScreenDelegateFactory {
     }
 
     @VisibleForTesting
-    static class BrowserControlsDelegate extends BrowserControlsVisibilityDelegate {
+    static class BrowserControlsDelegate extends TabStateBrowserControlsVisibilityDelegate {
         private final WebappActivity mActivity;
 
         public BrowserControlsDelegate(WebappActivity activity, Tab tab) {

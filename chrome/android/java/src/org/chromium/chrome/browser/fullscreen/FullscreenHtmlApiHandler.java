@@ -297,6 +297,10 @@ public class FullscreenHtmlApiHandler {
         };
         contentView.addOnLayoutChangeListener(mFullscreenOnLayoutChangeListener);
         contentView.setSystemUiVisibility(systemUiVisibility);
+
+        // Request a layout so the updated system visibility takes affect.
+        contentView.getRootView().requestLayout();
+
         mContentViewCoreInFullscreen = contentViewCore;
         mTabInFullscreen = tab;
     }

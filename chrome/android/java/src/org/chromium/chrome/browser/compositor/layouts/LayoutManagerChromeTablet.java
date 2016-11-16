@@ -114,7 +114,9 @@ public class LayoutManagerChromeTablet extends LayoutManagerChrome {
     @Override
     protected void tabCreated(int id, int sourceId, TabLaunchType launchType, boolean incognito,
             boolean willBeSelected, float originX, float originY) {
-        if (getFullscreenManager() != null) getFullscreenManager().showControlsTransient();
+        if (getFullscreenManager() != null) {
+            getFullscreenManager().getBrowserVisibilityDelegate().showControlsTransient();
+        }
         super.tabCreated(id, sourceId, launchType, incognito, willBeSelected, originX, originY);
     }
 

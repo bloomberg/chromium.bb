@@ -49,7 +49,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
 import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.pageinfo.WebsiteSettingsPopup;
@@ -141,6 +141,7 @@ public class CustomTabActivity extends ChromeActivity {
     private static class CustomTabCreator extends ChromeTabCreator {
         private final boolean mSupportsUrlBarHiding;
         private final boolean mIsOpenedByChrome;
+        private final BrowserStateBrowserControlsVisibilityDelegate mVisibilityDelegate;
 
         public CustomTabCreator(
                 ChromeActivity activity, WindowAndroid nativeWindow, boolean incognito,
@@ -148,11 +149,13 @@ public class CustomTabActivity extends ChromeActivity {
             super(activity, nativeWindow, incognito);
             mSupportsUrlBarHiding = supportsUrlBarHiding;
             mIsOpenedByChrome = isOpenedByChrome;
+            mVisibilityDelegate = activity.getFullscreenManager().getBrowserVisibilityDelegate();
         }
 
         @Override
         public TabDelegateFactory createDefaultTabDelegateFactory() {
-            return new CustomTabDelegateFactory(mSupportsUrlBarHiding, mIsOpenedByChrome);
+            return new CustomTabDelegateFactory(
+                    mSupportsUrlBarHiding, mIsOpenedByChrome, mVisibilityDelegate);
         }
     }
 
@@ -399,7 +402,9 @@ public class CustomTabActivity extends ChromeActivity {
         if (getContextualSearchManager() != null) {
             getContextualSearchManager().setFindToolbarManager(mFindToolbarManager);
         }
-        getToolbarManager().initializeWithNative(getTabModelSelector(), getFullscreenManager(),
+        getToolbarManager().initializeWithNative(
+                getTabModelSelector(),
+                getFullscreenManager().getBrowserVisibilityDelegate(),
                 mFindToolbarManager, null, layoutDriver, null, null, null,
                 new OnClickListener() {
                     @Override
@@ -515,7 +520,8 @@ public class CustomTabActivity extends ChromeActivity {
                 webContents, getTabContentManager(),
                 new CustomTabDelegateFactory(
                         mIntentDataProvider.shouldEnableUrlBarHiding(),
-                        mIntentDataProvider.isOpenedByChrome()),
+                        mIntentDataProvider.isOpenedByChrome(),
+                        getFullscreenManager().getBrowserVisibilityDelegate()),
                 false, false);
         initializeMainTab(tab);
         return tab;
@@ -918,13 +924,6 @@ public class CustomTabActivity extends ChromeActivity {
             url = DataReductionProxySettings.getInstance().maybeRewriteWebliteUrl(url);
         }
         return url;
-    }
-
-    @Override
-    protected ChromeFullscreenManager createFullscreenManager() {
-        return new ChromeFullscreenManager(this,
-                (ToolbarControlContainer) findViewById(R.id.control_container),
-                getTabModelSelector(), getControlContainerHeightResource(), true, false);
     }
 
     /** Sets the initial background color for the Tab, shown before the page content is ready. */

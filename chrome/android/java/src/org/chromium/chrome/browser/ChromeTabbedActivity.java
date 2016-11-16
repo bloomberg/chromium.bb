@@ -67,6 +67,7 @@ import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.incognito.IncognitoNotificationManager;
 import org.chromium.chrome.browser.infobar.DataReductionPromoInfoBar;
 import org.chromium.chrome.browser.locale.LocaleManager;
@@ -89,6 +90,7 @@ import org.chromium.chrome.browser.snackbar.undo.UndoBarController;
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
+import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
@@ -242,7 +244,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     }
 
     private class TabbedModeBrowserControlsVisibilityDelegate
-            extends BrowserControlsVisibilityDelegate {
+            extends TabStateBrowserControlsVisibilityDelegate {
         public TabbedModeBrowserControlsVisibilityDelegate(Tab tab) {
             super(tab);
         }
@@ -263,7 +265,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     private class TabbedModeTabDelegateFactory extends TabDelegateFactory {
         @Override
         public BrowserControlsVisibilityDelegate createBrowserControlsVisibilityDelegate(Tab tab) {
-            return new TabbedModeBrowserControlsVisibilityDelegate(tab);
+            return new ComposedBrowserControlsVisibilityDelegate(
+                    new TabbedModeBrowserControlsVisibilityDelegate(tab),
+                    getFullscreenManager().getBrowserVisibilityDelegate());
         }
     }
 
@@ -591,7 +595,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 }
             };
 
-            getToolbarManager().initializeWithNative(mTabModelSelectorImpl, getFullscreenManager(),
+            getToolbarManager().initializeWithNative(mTabModelSelectorImpl,
+                    getFullscreenManager().getBrowserVisibilityDelegate(),
                     mFindToolbarManager, mLayoutManager, mLayoutManager,
                     tabSwitcherClickHandler, newTabClickHandler, bookmarkClickHandler, null);
 
@@ -1683,10 +1688,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
     @Override
     protected ChromeFullscreenManager createFullscreenManager() {
-        return new ChromeFullscreenManager(this,
-                (ToolbarControlContainer) findViewById(R.id.control_container),
-                getTabModelSelector(), getControlContainerHeightResource(), true,
-                FeatureUtilities.isChromeHomeEnabled());
+        return new ChromeFullscreenManager(this, FeatureUtilities.isChromeHomeEnabled());
     }
 
     /**
