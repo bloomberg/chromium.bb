@@ -493,15 +493,6 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                      GLint,
                      GLenum,
                      GLenum,
-                     HTMLCanvasElement*,
-                     ExceptionState&);
-  void texSubImage3D(GLenum,
-                     GLint,
-                     GLint,
-                     GLint,
-                     GLint,
-                     GLenum,
-                     GLenum,
                      HTMLVideoElement*,
                      ExceptionState&);
   void texSubImage3D(GLenum,
@@ -836,6 +827,8 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   bool checkAndTranslateAttachments(const char* functionName,
                                     GLenum,
                                     Vector<GLenum>&);
+
+  IntRect getTextureSourceSubRectangle(GLsizei width, GLsizei height);
 
   /* WebGLRenderingContextBase overrides */
   unsigned getMaxWebGLLocationLength() const override { return 1024; };

@@ -201,6 +201,8 @@ class PLATFORM_EXPORT DrawingBuffer
                              GLint level,
                              bool premultiplyAlpha,
                              bool flipY,
+                             const IntPoint& destTextureOffset,
+                             const IntRect& sourceSubRectangle,
                              SourceDrawingBuffer);
 
   bool paintRenderingResultsToImageData(int&,

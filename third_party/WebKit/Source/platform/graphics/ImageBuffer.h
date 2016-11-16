@@ -141,7 +141,7 @@ class PLATFORM_EXPORT ImageBuffer {
   WebLayer* platformLayer() const;
 
   // Destroys the TEXTURE_2D binding for the active texture unit of the passed
-  // context.
+  // context. Assumes the destination texture has already been allocated.
   // FIXME: Current implementations of this method only work with textures that
   // are RGB or RGBA format, UNSIGNED_BYTE type and level 0, as specified in
   // Extensions3D::canUseCopyTextureCHROMIUM().
@@ -151,7 +151,9 @@ class PLATFORM_EXPORT ImageBuffer {
                              GLenum destType,
                              GLint level,
                              bool premultiplyAlpha,
-                             bool flipY);
+                             bool flipY,
+                             const IntPoint& destPoint,
+                             const IntRect& sourceSubRectangle);
 
   bool copyRenderingResultsFromDrawingBuffer(DrawingBuffer*,
                                              SourceDrawingBuffer);

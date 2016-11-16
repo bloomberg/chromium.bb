@@ -214,7 +214,9 @@ bool ImageBuffer::copyToPlatformTexture(gpu::gles2::GLES2Interface* gl,
                                         GLenum destType,
                                         GLint level,
                                         bool premultiplyAlpha,
-                                        bool flipY) {
+                                        bool flipY,
+                                        const IntPoint& destPoint,
+                                        const IntRect& sourceSubRectangle) {
   if (!Extensions3DUtil::canUseCopyTextureCHROMIUM(
           GL_TEXTURE_2D, internalFormat, destType, level))
     return false;
@@ -264,9 +266,14 @@ bool ImageBuffer::copyToPlatformTexture(gpu::gles2::GLES2Interface* gl,
   // The canvas is stored in a premultiplied format, so unpremultiply if
   // necessary. The canvas is also stored in an inverted position, so the flip
   // semantics are reversed.
-  gl->CopyTextureCHROMIUM(sourceTexture, texture, internalFormat, destType,
-                          flipY ? GL_FALSE : GL_TRUE, GL_FALSE,
-                          premultiplyAlpha ? GL_FALSE : GL_TRUE);
+  // It is expected that callers of this method have already allocated
+  // the platform texture with the appropriate size.
+  gl->CopySubTextureCHROMIUM(sourceTexture, texture, destPoint.x(),
+                             destPoint.y(), sourceSubRectangle.x(),
+                             sourceSubRectangle.y(), sourceSubRectangle.width(),
+                             sourceSubRectangle.height(),
+                             flipY ? GL_FALSE : GL_TRUE, GL_FALSE,
+                             premultiplyAlpha ? GL_FALSE : GL_TRUE);
 
   gl->DeleteTextures(1, &sourceTexture);
 
@@ -306,7 +313,8 @@ bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(
   gl->Flush();
 
   return drawingBuffer->copyToPlatformTexture(
-      gl, textureId, GL_RGBA, GL_UNSIGNED_BYTE, 0, true, false, sourceBuffer);
+      gl, textureId, GL_RGBA, GL_UNSIGNED_BYTE, 0, true, false, IntPoint(0, 0),
+      IntRect(IntPoint(0, 0), drawingBuffer->size()), sourceBuffer);
 }
 
 void ImageBuffer::draw(GraphicsContext& context,

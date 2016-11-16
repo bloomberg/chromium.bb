@@ -1023,6 +1023,12 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                     const IntRect&,
                     GLsizei depth,
                     GLint unpackImageHeight);
+
+  template <typename T>
+  IntRect getTextureSourceSize(T* textureSource) {
+    return IntRect(0, 0, textureSource->width(), textureSource->height());
+  }
+
   template <typename T>
   bool validateTexImageSubRectangle(const char* functionName,
                                     TexImageFunctionID functionID,
@@ -1083,7 +1089,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   }
 
   // Copy from the source directly to the texture via the gpu, without a
-  // read-back to system memory.  Souce could be canvas or imageBitmap.
+  // read-back to system memory.  Source could be canvas or imageBitmap.
   void texImageByGPU(TexImageByGPUType,
                      WebGLTexture*,
                      GLenum target,
@@ -1093,7 +1099,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                      GLint xoffset,
                      GLint yoffset,
                      GLint zoffset,
-                     CanvasImageSource*);
+                     CanvasImageSource*,
+                     const IntRect& sourceSubRectangle);
   virtual bool canUseTexImageByGPU(TexImageFunctionID,
                                    GLint internalformat,
                                    GLenum type);
@@ -1566,6 +1573,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                        GLint,
                                        GLint,
                                        HTMLCanvasElement*,
+                                       const IntRect&,
+                                       GLsizei,
+                                       GLint,
                                        ExceptionState&);
   void texImageHelperHTMLVideoElement(TexImageFunctionID,
                                       GLenum,
@@ -1615,7 +1625,14 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                 ScriptState*,
                                 const CanvasContextCreationAttributes&,
                                 unsigned);
-  void texImageCanvasByGPU(HTMLCanvasElement*, GLuint, GLenum, GLenum, GLint);
+  void texImageCanvasByGPU(HTMLCanvasElement*,
+                           GLuint,
+                           GLenum,
+                           GLenum,
+                           GLint,
+                           GLint,
+                           GLint,
+                           const IntRect& sourceSubRectangle);
   void texImageBitmapByGPU(ImageBitmap*, GLuint, GLenum, GLenum, GLint, bool);
 
   const unsigned m_version;

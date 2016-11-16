@@ -435,6 +435,46 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/framebufferblit/rect_04.html',
         ['mac', 'intel'], bug=483282)
 
+    self.Fail('conformance/textures/canvas_sub_rectangle/' +
+              'tex-2d-rgba-rgba-unsigned_byte.html',
+              ['mac', 'intel'], bug=665656)
+    self.Fail('conformance/textures/canvas_sub_rectangle/' +
+              'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
+              ['mac', 'intel'], bug=665656)
+    self.Fail('conformance/textures/canvas_sub_rectangle/' +
+              'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
+              ['mac', 'intel'], bug=665656)
+    self.Fail('conformance/textures/canvas_sub_rectangle/' +
+              'tex-2d-rgb-rgb-unsigned_byte.html',
+              ['mac', 'intel'], bug=665656)
+    self.Fail('conformance/textures/canvas_sub_rectangle/' +
+              'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
+              ['mac', 'intel'], bug=665656)
+    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
+              'tex-2d-r8-red-unsigned_byte.html',
+              ['mac', 'intel'], bug=665656)
+    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
+              'tex-2d-r8ui-red_integer-unsigned_byte.html',
+              ['mac', 'intel'], bug=665656)
+    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
+              'tex-2d-rg8-rg-unsigned_byte.html',
+              ['mac', 'intel'], bug=665656)
+    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
+              'tex-2d-rg8ui-rg_integer-unsigned_byte.html',
+              ['mac', 'intel'], bug=665656)
+    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
+              'tex-2d-rgb8-rgb-unsigned_byte.html',
+              ['mac', 'intel'], bug=665656)
+    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
+              'tex-2d-rgb8ui-rgb_integer-unsigned_byte.html',
+              ['mac', 'intel'], bug=665656)
+    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
+              'tex-2d-rgba8-rgba-unsigned_byte.html',
+              ['mac', 'intel'], bug=665656)
+    self.Fail('conformance2/textures/canvas_sub_rectangle/' +
+              'tex-2d-rgba8ui-rgba_integer-unsigned_byte.html',
+              ['mac', 'intel'], bug=665656)
+
     self.Fail('conformance2/textures/image_data/' +
         'tex-2d-rgba8ui-rgba_integer-unsigned_byte.html',
         ['mac', 'intel'], bug=665197)
