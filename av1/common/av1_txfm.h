@@ -67,6 +67,7 @@ static const int32_t cospi_arr[7][64] = {
 };
 
 static INLINE int32_t round_shift(int32_t value, int bit) {
+  assert(bit >= 1);
   return (value + (1 << (bit - 1))) >> bit;
 }
 

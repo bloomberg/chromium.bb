@@ -2821,6 +2821,7 @@ static void scale_and_extend_frame(const YV12_BUFFER_CONFIG *src,
   const int taps = interp_filter_params.taps;
   int x, y, i;
 
+  assert(planes <= 3);
   for (y = 0; y < dst_h; y += 16) {
     for (x = 0; x < dst_w; x += 16) {
       for (i = 0; i < planes; ++i) {
