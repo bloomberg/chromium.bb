@@ -105,9 +105,15 @@ struct SSLStatus;
 // Returns YES if there is a pending entry.
 - (BOOL)hasPendingEntry;
 
+// Inserts history state from the given CRWSessionController to the front of
+// this controller.
+- (void)insertStateFromSessionController:(CRWSessionController*)otherController;
+
 // Copies history state from the given CRWSessionController and adds it to this
 // controller. If |replaceState|, replaces the state of this controller with
 // the state of |otherSession|, instead of appending.
+// DEPRECATED, use insertStateFromSessionController: instead.
+// TODO(crbug.com/664344): Remove this method.
 - (void)copyStateFromAndPrune:(CRWSessionController*)otherSession
                  replaceState:(BOOL)replaceState;
 

@@ -571,6 +571,10 @@ NSString* const kWindowNameKey = @"windowName";
   return _pendingEntry != nil;
 }
 
+- (void)insertStateFromSessionController:(CRWSessionController*)other {
+  [self copyStateFromAndPrune:other replaceState:NO];
+}
+
 - (void)copyStateFromAndPrune:(CRWSessionController*)otherSession
                  replaceState:(BOOL)replaceState {
   DCHECK(otherSession);
