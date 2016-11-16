@@ -5,6 +5,7 @@
 // https://w3c.github.io/remote-playback/#idl-def-remoteplayback
 
 enum RemotePlaybackState {
+    "connecting",
     "connected",
     "disconnected"
 };
