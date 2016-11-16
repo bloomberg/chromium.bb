@@ -21,7 +21,6 @@
 #include "third_party/icu/source/i18n/unicode/smpdtfmt.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
@@ -51,8 +50,7 @@ const int kVerticalClockMinutesTopOffset = -4;
 const int kVerticalClockMinutesTopOffsetMD = -2;
 
 // Leading padding used to draw the tray background to the left of the clock
-// when the shelf is horizontally aligned, and on the top when the shelf is
-// vertically aligned.
+// when the shelf is vertically aligned.
 const int kClockLeadingPadding = 8;
 
 bool UseMd() {
@@ -376,13 +374,10 @@ void TimeView::UpdateClockLayout(ClockLayout clock_layout) {
 }
 
 void TimeView::SetBorderFromLayout(ClockLayout clock_layout) {
-  if (MaterialDesignController::IsShelfMaterial())
-    return;
-
   if (clock_layout == ClockLayout::HORIZONTAL_CLOCK) {
-    SetBorder(views::CreateEmptyBorder(
-        0, kTrayLabelItemHorizontalPaddingBottomAlignment, 0,
-        kTrayLabelItemHorizontalPaddingBottomAlignment));
+    SetBorder(views::CreateEmptyBorder(gfx::Insets(
+        0, UseMd() ? GetTrayConstant(TRAY_IMAGE_ITEM_PADDING)
+                   : kTrayLabelItemHorizontalPaddingBottomAlignment)));
   } else {
     SetBorder(views::NullBorder());
   }
