@@ -63,6 +63,13 @@ struct VRLayerBounds {
   float height;
 };
 
+enum VRDisplayEventReason {
+  NONE = 0,
+  NAVIGATION = 1,
+  MOUNTED = 2,
+  UNMOUNTED = 3
+};
+
 // TODO(shaobo.yan@intel.com) : Add comments to describe these interfaces about how to use and where they live.
 interface VRService {
   // TODO(shaobo.yan@intel.com) : Use a factory function which took a VRServiceClient
@@ -75,7 +82,6 @@ interface VRServiceClient {
 };
 
 interface VRDisplay {
-
   [Sync]
   GetPose() => (VRPose? pose);
   ResetPose();
@@ -87,8 +93,10 @@ interface VRDisplay {
 };
 
 interface VRDisplayClient {
-  OnDisplayChanged(VRDisplayInfo display);
+  OnChanged(VRDisplayInfo display);
   OnExitPresent();
-  OnDisplayBlur();
-  OnDisplayFocus();
+  OnBlur();
+  OnFocus();
+  OnActivate(VRDisplayEventReason reason);
+  OnDeactivate(VRDisplayEventReason reason);
 };

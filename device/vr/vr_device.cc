@@ -42,13 +42,13 @@ bool VRDevice::IsPresentingService(VRServiceImpl* service) {
   return (presenting_service_ && presenting_service_ == service);
 }
 
-void VRDevice::OnDisplayChanged() {
+void VRDevice::OnChanged() {
   mojom::VRDisplayInfoPtr vr_device_info = GetVRDevice();
   if (vr_device_info.is_null())
     return;
 
   for (const auto& display : displays_)
-    display.second->client()->OnDisplayChanged(vr_device_info.Clone());
+    display.second->client()->OnChanged(vr_device_info.Clone());
 }
 
 void VRDevice::OnExitPresent() {
@@ -59,14 +59,24 @@ void VRDevice::OnExitPresent() {
   SetPresentingService(nullptr);
 }
 
-void VRDevice::OnDisplayBlur() {
+void VRDevice::OnBlur() {
   for (const auto& display : displays_)
-    display.second->client()->OnDisplayBlur();
+    display.second->client()->OnBlur();
 }
 
-void VRDevice::OnDisplayFocus() {
+void VRDevice::OnFocus() {
   for (const auto& display : displays_)
-    display.second->client()->OnDisplayFocus();
+    display.second->client()->OnFocus();
+}
+
+void VRDevice::OnActivate(mojom::VRDisplayEventReason reason) {
+  for (const auto& display : displays_)
+    display.second->client()->OnActivate(reason);
+}
+
+void VRDevice::OnDeactivate(mojom::VRDisplayEventReason reason) {
+  for (const auto& display : displays_)
+    display.second->client()->OnDeactivate(reason);
 }
 
 void VRDevice::SetPresentingService(VRServiceImpl* service) {

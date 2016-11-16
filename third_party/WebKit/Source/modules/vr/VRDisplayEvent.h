@@ -24,6 +24,12 @@ class VRDisplayEvent final : public Event {
     return new VRDisplayEvent(type, canBubble, cancelable, display, reason);
   }
   static VRDisplayEvent* create(const AtomicString& type,
+                                bool canBubble,
+                                bool cancelable,
+                                VRDisplay*,
+                                device::mojom::blink::VRDisplayEventReason);
+
+  static VRDisplayEvent* create(const AtomicString& type,
                                 const VRDisplayEventInit& initializer) {
     return new VRDisplayEvent(type, initializer);
   }

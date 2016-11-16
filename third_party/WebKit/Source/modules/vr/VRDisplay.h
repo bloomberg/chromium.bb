@@ -104,14 +104,18 @@ class VRDisplay final : public GarbageCollectedFinalized<VRDisplay>,
   void onFullscreenCheck(TimerBase*);
   void onPresentComplete(ScriptPromiseResolver*, bool);
 
-  void onDisplayConnected();
-  void onDisplayDisconnected();
+  void onConnected();
+  void onDisconnected();
+
+  void OnPresentChange();
 
   // VRDisplayClient
-  void OnDisplayChanged(device::mojom::blink::VRDisplayInfoPtr) override;
+  void OnChanged(device::mojom::blink::VRDisplayInfoPtr) override;
   void OnExitPresent() override;
-  void OnDisplayBlur() override;
-  void OnDisplayFocus() override;
+  void OnBlur() override;
+  void OnFocus() override;
+  void OnActivate(device::mojom::blink::VRDisplayEventReason) override;
+  void OnDeactivate(device::mojom::blink::VRDisplayEventReason) override;
 
   ScriptedAnimationController& ensureScriptedAnimationController(Document*);
 

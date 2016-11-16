@@ -7,6 +7,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
+#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
@@ -17,6 +18,7 @@
 #include "modules/vr/VRDisplay.h"
 #include "modules/vr/VRGetDevicesCallback.h"
 #include "modules/vr/VRPose.h"
+#include "platform/UserGestureIndicator.h"
 #include "public/platform/Platform.h"
 #include "wtf/PtrUtil.h"
 
@@ -100,26 +102,18 @@ const char* NavigatorVR::supplementName() {
   return "NavigatorVR";
 }
 
-void NavigatorVR::fireVRDisplayPresentChange(VRDisplay* display) {
+void NavigatorVR::enqueueVREvent(VRDisplayEvent* event) {
   if (frame() && frame()->localDOMWindow()) {
-    frame()->localDOMWindow()->enqueueWindowEvent(VRDisplayEvent::create(
-        EventTypeNames::vrdisplaypresentchange, true, false, display, ""));
+    frame()->localDOMWindow()->enqueueWindowEvent(event);
   }
 }
 
-void NavigatorVR::fireVrDisplayOnBlur(VRDisplay* display) {
-  fireVREvent(VRDisplayEvent::create(EventTypeNames::vrdisplayblur, true, false,
-                                     display, ""));
-}
-
-void NavigatorVR::fireVrDisplayOnFocus(VRDisplay* display) {
-  fireVREvent(VRDisplayEvent::create(EventTypeNames::vrdisplayfocus, true,
-                                     false, display, ""));
-}
-
-void NavigatorVR::fireVREvent(VRDisplayEvent* event) {
+void NavigatorVR::dispatchVRGestureEvent(VRDisplayEvent* event) {
   if (frame() && frame()->localDOMWindow()) {
-    frame()->localDOMWindow()->enqueueWindowEvent(event);
+    UserGestureIndicator gestureIndicator(
+        DocumentUserGestureToken::create(frame()->document()));
+    event->setTarget(frame()->localDOMWindow());
+    frame()->localDOMWindow()->dispatchEvent(event);
   }
 }
 

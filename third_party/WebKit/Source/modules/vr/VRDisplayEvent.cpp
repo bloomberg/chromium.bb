@@ -6,6 +6,37 @@
 
 namespace blink {
 
+namespace {
+
+String VRDisplayEventReasonToString(
+    device::mojom::blink::VRDisplayEventReason reason) {
+  switch (reason) {
+    case device::mojom::blink::VRDisplayEventReason::NONE:
+      return "";
+    case device::mojom::blink::VRDisplayEventReason::NAVIGATION:
+      return "navigation";
+    case device::mojom::blink::VRDisplayEventReason::MOUNTED:
+      return "mounted";
+    case device::mojom::blink::VRDisplayEventReason::UNMOUNTED:
+      return "unmounted";
+  }
+
+  NOTREACHED();
+  return "";
+}
+
+}  // namespace
+
+VRDisplayEvent* VRDisplayEvent::create(
+    const AtomicString& type,
+    bool canBubble,
+    bool cancelable,
+    VRDisplay* display,
+    device::mojom::blink::VRDisplayEventReason reason) {
+  return new VRDisplayEvent(type, canBubble, cancelable, display,
+                            VRDisplayEventReasonToString(reason));
+}
+
 VRDisplayEvent::VRDisplayEvent() {}
 
 VRDisplayEvent::VRDisplayEvent(const AtomicString& type,

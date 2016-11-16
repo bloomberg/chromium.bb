@@ -244,7 +244,7 @@ void GvrDevice::SetDelegate(const base::WeakPtr<GvrDelegate>& delegate) {
   // Notify the clients that this device has changed
   if (delegate_) {
     delegate_->SetWebVRSecureOrigin(secure_origin_);
-    OnDisplayChanged();
+    OnChanged();
   }
 }
 

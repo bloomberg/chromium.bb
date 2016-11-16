@@ -195,12 +195,14 @@ void VRDisplay::cancelAnimationFrame(int id) {
   m_scriptedAnimationController->cancelCallback(id);
 }
 
-void VRDisplay::OnDisplayBlur() {
+void VRDisplay::OnBlur() {
   m_displayBlurred = true;
-  m_navigatorVR->fireVrDisplayOnBlur(this);
+
+  m_navigatorVR->enqueueVREvent(VRDisplayEvent::create(
+      EventTypeNames::vrdisplayblur, true, false, this, ""));
 }
 
-void VRDisplay::OnDisplayFocus() {
+void VRDisplay::OnFocus() {
   m_displayBlurred = false;
   // Restart our internal doc requestAnimationFrame callback, if it fired while
   // the display was blurred.
@@ -213,7 +215,8 @@ void VRDisplay::OnDisplayFocus() {
       return;
     doc->requestAnimationFrame(new VRDisplayFrameRequestCallback(this));
   }
-  m_navigatorVR->fireVrDisplayOnFocus(this);
+  m_navigatorVR->enqueueVREvent(VRDisplayEvent::create(
+      EventTypeNames::vrdisplayfocus, true, false, this, ""));
 }
 
 void VRDisplay::serviceScriptedAnimations(double monotonicAnimationStartTime) {
@@ -429,7 +432,7 @@ void VRDisplay::beginPresent(ScriptPromiseResolver* resolver) {
   updateLayerBounds();
 
   resolver->resolve();
-  m_navigatorVR->fireVRDisplayPresentChange(this);
+  OnPresentChange();
 }
 
 void VRDisplay::forceExitPresent() {
@@ -440,7 +443,7 @@ void VRDisplay::forceExitPresent() {
     } else {
       // Can't get into this presentation mode, so nothing to do here.
     }
-    m_navigatorVR->fireVRDisplayPresentChange(this);
+    OnPresentChange();
   }
 
   m_isPresenting = false;
@@ -558,8 +561,12 @@ void VRDisplay::submitFrame() {
   m_canUpdateFramePose = true;
 }
 
-void VRDisplay::OnDisplayChanged(
-    device::mojom::blink::VRDisplayInfoPtr display) {
+void VRDisplay::OnPresentChange() {
+  m_navigatorVR->enqueueVREvent(VRDisplayEvent::create(
+      EventTypeNames::vrdisplaypresentchange, true, false, this, ""));
+}
+
+void VRDisplay::OnChanged(device::mojom::blink::VRDisplayInfoPtr display) {
   update(display);
 }
 
@@ -567,14 +574,25 @@ void VRDisplay::OnExitPresent() {
   forceExitPresent();
 }
 
-void VRDisplay::onDisplayConnected() {
-  m_navigatorVR->fireVREvent(VRDisplayEvent::create(
+void VRDisplay::onConnected() {
+  m_navigatorVR->enqueueVREvent(VRDisplayEvent::create(
       EventTypeNames::vrdisplayconnect, true, false, this, "connect"));
 }
 
-void VRDisplay::onDisplayDisconnected() {
-  m_navigatorVR->fireVREvent(VRDisplayEvent::create(
+void VRDisplay::onDisconnected() {
+  m_navigatorVR->enqueueVREvent(VRDisplayEvent::create(
       EventTypeNames::vrdisplaydisconnect, true, false, this, "disconnect"));
+}
+
+void VRDisplay::OnActivate(device::mojom::blink::VRDisplayEventReason reason) {
+  m_navigatorVR->dispatchVRGestureEvent(VRDisplayEvent::create(
+      EventTypeNames::vrdisplayactivate, true, false, this, reason));
+}
+
+void VRDisplay::OnDeactivate(
+    device::mojom::blink::VRDisplayEventReason reason) {
+  m_navigatorVR->enqueueVREvent(VRDisplayEvent::create(
+      EventTypeNames::vrdisplaydeactivate, true, false, this, reason));
 }
 
 void VRDisplay::onFullscreenCheck(TimerBase*) {
@@ -585,7 +603,7 @@ void VRDisplay::onFullscreenCheck(TimerBase*) {
   // adding a bunch of notification plumbing to Fullscreen.
   if (!Fullscreen::isCurrentFullScreenElement(*m_layer.source())) {
     m_isPresenting = false;
-    m_navigatorVR->fireVRDisplayPresentChange(this);
+    OnPresentChange();
     m_fullscreenCheckTimer.stop();
     if (!m_display)
       return;

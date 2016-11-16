@@ -92,13 +92,13 @@ void GvrDeviceProvider::OnGvrDelegateRemoved() {
 void GvrDeviceProvider::OnDisplayBlur() {
   if (!vr_device_)
     return;
-  vr_device_->OnDisplayBlur();
+  vr_device_->OnBlur();
 }
 
 void GvrDeviceProvider::OnDisplayFocus() {
   if (!vr_device_)
     return;
-  vr_device_->OnDisplayFocus();
+  vr_device_->OnFocus();
 }
 
 void GvrDeviceProvider::SwitchToNonPresentingDelegate() {

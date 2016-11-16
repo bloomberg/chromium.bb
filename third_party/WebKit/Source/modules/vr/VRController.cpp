@@ -62,7 +62,7 @@ void VRController::OnDisplayConnected(
   VRDisplay* vrDisplay =
       new VRDisplay(m_navigatorVR, std::move(display), std::move(request));
   vrDisplay->update(displayInfo);
-  vrDisplay->onDisplayConnected();
+  vrDisplay->onConnected();
   m_displays.append(vrDisplay);
 
   if (m_displays.size() == m_numberOfSyncedDisplays) {

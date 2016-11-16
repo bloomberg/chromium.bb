@@ -49,10 +49,12 @@ class DEVICE_VR_EXPORT VRDevice {
   virtual bool IsAccessAllowed(VRServiceImpl* service);
   virtual bool IsPresentingService(VRServiceImpl* service);
 
-  virtual void OnDisplayChanged();
+  virtual void OnChanged();
   virtual void OnExitPresent();
-  virtual void OnDisplayBlur();
-  virtual void OnDisplayFocus();
+  virtual void OnBlur();
+  virtual void OnFocus();
+  virtual void OnActivate(mojom::VRDisplayEventReason reason);
+  virtual void OnDeactivate(mojom::VRDisplayEventReason reason);
 
  protected:
   friend class VRDisplayImpl;
