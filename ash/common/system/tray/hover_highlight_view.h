@@ -48,6 +48,13 @@ class HoverHighlightView : public ActionableView {
                        const base::string16& text,
                        bool highlight);
 
+  // Convenience function for adding an icon, a main label, and a sub label.
+  // This also sets the accessible name besed on the main label. Used for
+  // scrollable rows in detailed views in material design.
+  void AddIconAndLabels(const gfx::ImageSkia& image,
+                        const base::string16& text,
+                        const base::string16& sub_text);
+
   // Convenience function for adding an icon and a label. This also sets the
   // accessible name. This method allows the indent and spacing between elements
   // to be set by the caller. |icon_size| is the size of the icon. |indent| is
@@ -111,6 +118,7 @@ class HoverHighlightView : public ActionableView {
   void set_text_default_color(SkColor color) { text_default_color_ = color; }
 
   views::Label* text_label() { return text_label_; }
+  views::Label* sub_text_label() { return sub_text_label_; }
 
   bool hover() const { return hover_; }
 
@@ -139,6 +147,14 @@ class HoverHighlightView : public ActionableView {
                            const base::string16& text,
                            TrayPopupItemStyle::FontStyle font_style);
 
+  // Adds the image, main label and sub label to the row with the main label
+  // being styled using |font_style| and the sub label being styled using
+  // FontStyle::CAPTION and ColorStyle::INACTIVE. Only used in material design.
+  void DoAddIconAndLabelsMd(const gfx::ImageSkia& image,
+                            const base::string16& text,
+                            TrayPopupItemStyle::FontStyle font_style,
+                            const base::string16& sub_text);
+
   // Overridden from ActionableView:
   bool PerformAction(const ui::Event& event) override;
 
@@ -155,6 +171,7 @@ class HoverHighlightView : public ActionableView {
 
   ViewClickListener* listener_ = nullptr;
   views::Label* text_label_ = nullptr;
+  views::Label* sub_text_label_ = nullptr;
   views::BoxLayout* box_layout_ = nullptr;  // Not used in material design.
   views::ImageView* left_icon_ = nullptr;
   views::ImageView* right_icon_ = nullptr;

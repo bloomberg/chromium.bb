@@ -5,6 +5,7 @@
 #include "ash/common/system/tray/tray_popup_item_style.h"
 
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
 #include "ui/native_theme/native_theme.h"
@@ -51,6 +52,8 @@ SkColor TrayPopupItemStyle::GetTextColor() const {
       return SkColorSetA(kBaseTextColor, kInactiveTextAlpha);
     case ColorStyle::DISABLED:
       return SkColorSetA(kBaseTextColor, kDisabledTextAlpha);
+    case ColorStyle::CONNECTED:
+      return gfx::kGoogleGreen700;
   }
   NOTREACHED();
   // Use a noticeable color to help notice unhandled cases.
@@ -65,6 +68,9 @@ SkColor TrayPopupItemStyle::GetIconColor() const {
       return SkColorSetA(kBaseIconColor, kInactiveIconAlpha);
     case ColorStyle::DISABLED:
       return SkColorSetA(kBaseIconColor, kDisabledIconAlpha);
+    case ColorStyle::CONNECTED:
+      // Use a noticeable color to help notice undefined color styles for icons.
+      return SK_ColorMAGENTA;
   }
   NOTREACHED();
   // Use a noticeable color to help notice unhandled cases.

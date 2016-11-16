@@ -245,8 +245,10 @@ class BluetoothDetailedView : public TrayDetailsView {
     WmShell::Get()->system_tray_delegate()->GetAvailableBluetoothDevices(&list);
     for (size_t i = 0; i < list.size(); ++i) {
       if (list[i].connecting) {
-        list[i].display_name = l10n_util::GetStringFUTF16(
-            IDS_ASH_STATUS_TRAY_BLUETOOTH_CONNECTING, list[i].display_name);
+        if (!UseMd()) {
+          list[i].display_name = l10n_util::GetStringFUTF16(
+              IDS_ASH_STATUS_TRAY_BLUETOOTH_CONNECTING, list[i].display_name);
+        }
         new_connecting_devices.insert(list[i].address);
         UpdateBluetoothDeviceListHelper(&connecting_devices_, list[i]);
       } else if (list[i].connected && list[i].paired) {
@@ -340,9 +342,8 @@ class BluetoothDetailedView : public TrayDetailsView {
         gfx::ImageSkia icon_image = CreateVectorIcon(
             GetBluetoothDeviceIcon(list[i].device_type, list[i].connected),
             kMenuIconColor);
-        container = AddScrollListItemWithIcon(list[i].display_name, highlight,
-                                              checked, enabled, icon_image);
-
+        container = AddScrollListItemMd(list[i].display_name, icon_image,
+                                        list[i].connected, list[i].connecting);
       } else {
         container = AddScrollListItem(list[i].display_name, highlight, checked,
                                       enabled);
@@ -366,23 +367,41 @@ class BluetoothDetailedView : public TrayDetailsView {
     return container;
   }
 
-  HoverHighlightView* AddScrollListItemWithIcon(const base::string16& text,
-                                                bool highlight,
-                                                bool checked,
-                                                bool enabled,
-                                                const gfx::ImageSkia& image) {
+  HoverHighlightView* AddScrollListItemMd(const base::string16& text,
+                                          const gfx::ImageSkia& image,
+                                          bool connected,
+                                          bool connecting) {
+    DCHECK(UseMd());
     HoverHighlightView* container = new HoverHighlightView(this);
-    const int padding = (kMenuButtonSize - image.width()) / 2;
-    container->AddIconAndLabelCustomSize(
-        image, text, highlight,
-        image.width() + kMenuSeparatorVerticalPadding * 2, padding, padding);
-    gfx::ImageSkia check_mark =
-        CreateVectorIcon(gfx::VectorIconId::CHECK_CIRCLE, gfx::kGoogleGreen700);
-    container->AddRightIcon(check_mark, check_mark.width());
-    container->SetRightIconVisible(checked);
-    container->text_label()->SetEnabled(enabled);
+    if (connected) {
+      SetupConnectedItemMd(container, text, image);
+    } else if (connecting) {
+      SetupConnectingItemMd(container, text, image);
+    } else {
+      container->AddIconAndLabel(image, text, false);
+    }
     scroll_content()->AddChildView(container);
     return container;
+  }
+
+  void SetupConnectedItemMd(HoverHighlightView* container,
+                            const base::string16& text,
+                            const gfx::ImageSkia& image) {
+    container->AddIconAndLabels(
+        image, text, l10n_util::GetStringUTF16(
+                         IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED));
+    TrayPopupItemStyle style(GetNativeTheme(),
+                             TrayPopupItemStyle::FontStyle::CAPTION);
+    style.set_color_style(TrayPopupItemStyle::ColorStyle::CONNECTED);
+    style.SetupLabel(container->sub_text_label());
+  }
+
+  void SetupConnectingItemMd(HoverHighlightView* container,
+                             const base::string16& text,
+                             const gfx::ImageSkia& image) {
+    container->AddIconAndLabels(
+        image, text, l10n_util::GetStringUTF16(
+                         IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTING));
   }
 
   // Add settings entries.
@@ -416,11 +435,14 @@ class BluetoothDetailedView : public TrayDetailsView {
   // it's not NULL.
   bool FoundDevice(const std::string& device_id,
                    const BluetoothDeviceList& device_list,
-                   base::string16* display_name) {
+                   base::string16* display_name,
+                   device::BluetoothDeviceType* device_type) {
     for (size_t i = 0; i < device_list.size(); ++i) {
       if (device_list[i].address == device_id) {
         if (display_name)
           *display_name = device_list[i].display_name;
+        if (device_type)
+          *device_type = device_list[i].device_type;
         return true;
       }
     }
@@ -432,13 +454,24 @@ class BluetoothDetailedView : public TrayDetailsView {
   void UpdateClickedDevice(const std::string& device_id,
                            views::View* item_container) {
     base::string16 display_name;
-    if (FoundDevice(device_id, paired_not_connected_devices_, &display_name)) {
-      display_name = l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_BLUETOOTH_CONNECTING, display_name);
-
+    device::BluetoothDeviceType device_type;
+    if (FoundDevice(device_id, paired_not_connected_devices_, &display_name,
+                    &device_type)) {
       item_container->RemoveAllChildViews(true);
-      static_cast<HoverHighlightView*>(item_container)
-          ->AddCheckableLabel(display_name, true /* highlight */, false);
+      HoverHighlightView* container =
+          static_cast<HoverHighlightView*>(item_container);
+      if (UseMd()) {
+        TrayPopupItemStyle style(
+            GetNativeTheme(),
+            TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL);
+        gfx::ImageSkia icon_image = CreateVectorIcon(
+            GetBluetoothDeviceIcon(device_type, false), style.GetIconColor());
+        SetupConnectingItemMd(container, display_name, icon_image);
+      } else {
+        display_name = l10n_util::GetStringFUTF16(
+            IDS_ASH_STATUS_TRAY_BLUETOOTH_CONNECTING, display_name);
+        container->AddCheckableLabel(display_name, true /* highlight */, false);
+      }
       scroll_content()->SizeToPreferredSize();
       static_cast<views::View*>(scroller())->Layout();
     }
@@ -469,7 +502,7 @@ class BluetoothDetailedView : public TrayDetailsView {
       return;
 
     const std::string device_id = find->second;
-    if (FoundDevice(device_id, connecting_devices_, nullptr))
+    if (FoundDevice(device_id, connecting_devices_, nullptr, nullptr))
       return;
 
     UpdateClickedDevice(device_id, view);

@@ -50,6 +50,8 @@ class TrayPopupItemStyle {
     INACTIVE,
     // Disabled and not clickable.
     DISABLED,
+    // Color for "Connected" labels.
+    CONNECTED,
   };
 
   // The different font styles that row text can have.
