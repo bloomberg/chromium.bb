@@ -263,8 +263,6 @@ class HostView : public views::View {
  public:
   HostView() {}
 
-  void Initialize(views::View* title_view, views::View* main_view);
-
  private:
   // views::View:
   void ViewHierarchyChanged(
@@ -276,12 +274,6 @@ class HostView : public views::View {
 
   DISALLOW_COPY_AND_ASSIGN(HostView);
 };
-
-void HostView::Initialize(views::View* title_view, views::View* main_view) {
-  title_view_ = title_view;
-  AddChildView(main_view);
-  SetLayoutManager(new views::FillLayout());
-}
 
 void HostView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
