@@ -589,14 +589,7 @@ IN_PROC_BROWSER_TEST_F(DragAndDropBrowserTest, DropTextFromOutside) {
   }
 }
 
-// The test is disabled on Ozone because of trouble with mouse simulation
-// during the test - see https://crbug.com/665042.
-#if defined(USE_OZONE)
-#define MAYBE_DragStartInFrame DISABLED_DragStartInFrame
-#else
-#define MAYBE_DragStartInFrame DragStartInFrame
-#endif
-IN_PROC_BROWSER_TEST_F(DragAndDropBrowserTest, MAYBE_DragStartInFrame) {
+IN_PROC_BROWSER_TEST_F(DragAndDropBrowserTest, DragStartInFrame) {
   std::string frame_site = "b.com";
   ASSERT_TRUE(NavigateToTestPage("a.com"));
   ASSERT_TRUE(NavigateLeftFrame(frame_site, "image_source.html"));
