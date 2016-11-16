@@ -203,7 +203,7 @@ class CacheManager(object):
     abc_len = len(self._DIR_ALPHABET)
     tried = set()
     while len(tried) < 1000:
-      i = random.randint(0, abc_len * abc_len)
+      i = random.randint(0, abc_len * abc_len - 1)
       rel_path = (
         self._DIR_ALPHABET[i / abc_len] +
         self._DIR_ALPHABET[i % abc_len])
