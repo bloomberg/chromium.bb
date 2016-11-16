@@ -90,6 +90,11 @@ class VIEWS_EXPORT ScrollBar : public View {
   // Default is 0.
   virtual int GetContentOverlapSize() const;
 
+  // Called when a ScrollEvent (in any, or no, direction) is seen by the parent
+  // ScrollView. E.g., this may reveal an overlay scrollbar to indicate
+  // possible scrolling directions to the user.
+  virtual void ObserveScrollEvent(const ui::ScrollEvent& event);
+
  protected:
   // Create new scrollbar, either horizontal or vertical. These are protected
   // since you need to be creating either a NativeScrollBar or a

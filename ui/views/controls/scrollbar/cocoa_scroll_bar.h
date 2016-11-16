@@ -26,8 +26,11 @@ class VIEWS_EXPORT CocoaScrollBar : public BaseScrollBar,
   explicit CocoaScrollBar(bool horizontal);
   ~CocoaScrollBar() override;
 
-  // BaseScrollBar:
-  void ScrollToPosition(int position) override;
+  // ScrollBar:
+  void Update(int viewport_size,
+              int content_size,
+              int contents_scroll_offset) override;
+  void ObserveScrollEvent(const ui::ScrollEvent& event) override;
 
   // ViewsScrollbarBridgeDelegate:
   void OnScrollerStyleChanged() override;
@@ -65,6 +68,8 @@ class VIEWS_EXPORT CocoaScrollBar : public BaseScrollBar,
   void OnPaint(gfx::Canvas* canvas) override;
 
  private:
+  friend class BaseScrollBar;  // For BaseScrollBar::GetHideTimerForTest().
+
   // Methods to change the visibility of the scrollbar.
   void ShowScrollbar();
   void HideScrollbar();
@@ -99,6 +104,9 @@ class VIEWS_EXPORT CocoaScrollBar : public BaseScrollBar,
   // The animation expands the scrollbar as the showing animation and shrinks
   // the scrollbar as the hiding animation.
   gfx::SlideAnimation thickness_animation_;
+
+  // The scroll offset from the last adjustment to the scrollbar.
+  int last_contents_scroll_offset_;
 
   // True when the scrollbar is expanded.
   bool is_expanded_;

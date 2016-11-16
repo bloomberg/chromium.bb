@@ -550,6 +550,22 @@ void EventGenerator::ScrollSequence(const gfx::Point& start,
   Dispatch(&fling_start);
 }
 
+void EventGenerator::GenerateTrackpadRest() {
+  int num_fingers = 2;
+  ui::ScrollEvent scroll(ui::ET_SCROLL, current_location_,
+                         ui::EventTimeForNow(), 0, 0, 0, 0, 0, num_fingers,
+                         EventMomentumPhase::MAY_BEGIN);
+  Dispatch(&scroll);
+}
+
+void EventGenerator::CancelTrackpadRest() {
+  int num_fingers = 2;
+  ui::ScrollEvent scroll(ui::ET_SCROLL, current_location_,
+                         ui::EventTimeForNow(), 0, 0, 0, 0, 0, num_fingers,
+                         EventMomentumPhase::END);
+  Dispatch(&scroll);
+}
+
 void EventGenerator::PressKey(ui::KeyboardCode key_code, int flags) {
   DispatchKeyEvent(true, key_code, flags);
 }

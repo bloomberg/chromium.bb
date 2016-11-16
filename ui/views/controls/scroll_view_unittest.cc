@@ -9,6 +9,8 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/scrollbar/base_scroll_bar_thumb.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
@@ -50,6 +52,10 @@ class ScrollViewTestApi {
   }
 
   gfx::ScrollOffset CurrentOffset() { return scroll_view_->CurrentOffset(); }
+
+  base::Timer* GetScrollBarHideTimer(ScrollBarOrientation orientation) {
+    return BaseScrollBar::GetHideTimerForTest(GetBaseScrollBar(orientation));
+  }
 
   View* corner_view() { return scroll_view_->corner_view_; }
   View* contents_viewport() { return scroll_view_->contents_viewport_; }
@@ -174,16 +180,21 @@ class WidgetScrollViewTest : public test::WidgetTest,
   static const int kDefaultHeight = 100;
   static const int kDefaultWidth = 100;
 
-  WidgetScrollViewTest() {
-#if defined(OS_MACOSX)
-    // Disable scrollbar hiding (i.e. disable overlay scrollbars) by default.
-    scroller_style_.reset(new ui::test::ScopedPreferredScrollerStyle(false));
-#endif
+  WidgetScrollViewTest() {}
+
+  // Call this before adding the ScrollView to test with overlay scrollbars.
+  void SetUseOverlayScrollers() {
+    use_overlay_scrollers_ = true;
   }
 
   // Adds a ScrollView with the given |contents_view| and does layout.
   ScrollView* AddScrollViewWithContents(View* contents,
                                         bool commit_layers = true) {
+#if defined(OS_MACOSX)
+    scroller_style_.reset(
+        new ui::test::ScopedPreferredScrollerStyle(use_overlay_scrollers_));
+#endif
+
     const gfx::Rect default_bounds(50, 50, kDefaultWidth, kDefaultHeight);
     widget_ = CreateTopLevelFramelessPlatformWidget();
 
@@ -253,6 +264,9 @@ class WidgetScrollViewTest : public test::WidgetTest,
   void OnCompositingShuttingDown(ui::Compositor* compositor) override {}
 
   Widget* widget_ = nullptr;
+
+  // Disable scrollbar hiding (i.e. disable overlay scrollbars) by default.
+  bool use_overlay_scrollers_ = false;
 
   base::Closure quit_closure_;
 
@@ -739,7 +753,91 @@ TEST_F(ScrollViewTest, CocoaOverlayScrollBars) {
   EXPECT_NE(0, scroll_view_.GetScrollBarWidth());
   EXPECT_NE(0, scroll_view_.GetScrollBarHeight());
 }
-#endif
+
+// Test overlay scrollbar behavior when just resting fingers on the trackpad.
+TEST_F(WidgetScrollViewTest, ScrollersOnRest) {
+  // Allow expectations to distinguish between fade outs and immediate changes.
+  ui::ScopedAnimationDurationScaleMode really_animate(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  const float kMaxOpacity = 0.8f;  // Constant from cocoa_scroll_bar.mm.
+
+  SetUseOverlayScrollers();
+
+  // Set up with both scrollers.
+  ScrollView* scroll_view = AddScrollViewWithContentSize(
+      gfx::Size(kDefaultWidth * 5, kDefaultHeight * 5));
+  ScrollViewTestApi test_api(scroll_view);
+  BaseScrollBar* bar[]{test_api.GetBaseScrollBar(HORIZONTAL),
+                       test_api.GetBaseScrollBar(VERTICAL)};
+  base::Timer* hide_timer[]{test_api.GetScrollBarHideTimer(HORIZONTAL),
+                            test_api.GetScrollBarHideTimer(VERTICAL)};
+
+  EXPECT_EQ(0, bar[HORIZONTAL]->layer()->opacity());
+  EXPECT_EQ(0, bar[VERTICAL]->layer()->opacity());
+
+  ui::test::EventGenerator generator(
+      GetContext(), scroll_view->GetWidget()->GetNativeWindow());
+
+  generator.GenerateTrackpadRest();
+  // Scrollers should be max opacity without an animation.
+  EXPECT_EQ(kMaxOpacity, bar[HORIZONTAL]->layer()->opacity());
+  EXPECT_EQ(kMaxOpacity, bar[VERTICAL]->layer()->opacity());
+  EXPECT_FALSE(hide_timer[HORIZONTAL]->IsRunning());
+  EXPECT_FALSE(hide_timer[VERTICAL]->IsRunning());
+
+  generator.CancelTrackpadRest();
+  // Scrollers should start fading out, but only after a delay.
+  for (ScrollBarOrientation orientation : {HORIZONTAL, VERTICAL}) {
+    EXPECT_EQ(kMaxOpacity, bar[orientation]->layer()->GetTargetOpacity());
+    EXPECT_TRUE(hide_timer[orientation]->IsRunning());
+    // Trigger the timer. Should then be fading out.
+    hide_timer[orientation]->user_task().Run();
+    hide_timer[orientation]->Stop();
+    EXPECT_EQ(0, bar[orientation]->layer()->GetTargetOpacity());
+  }
+
+  // Rest again.
+  generator.GenerateTrackpadRest();
+  EXPECT_EQ(kMaxOpacity, bar[HORIZONTAL]->layer()->GetTargetOpacity());
+  EXPECT_EQ(kMaxOpacity, bar[VERTICAL]->layer()->GetTargetOpacity());
+
+  // Scroll vertically.
+  const float y_offset = 3;
+  const int kSteps = 1;
+  const int kNnumFingers = 2;
+  generator.ScrollSequence(generator.current_location(), base::TimeDelta(), 0,
+                           y_offset, kSteps, kNnumFingers);
+
+  // Horizontal scroller should start fading out immediately.
+  EXPECT_EQ(kMaxOpacity, bar[HORIZONTAL]->layer()->opacity());
+  EXPECT_EQ(0, bar[HORIZONTAL]->layer()->GetTargetOpacity());
+  EXPECT_FALSE(hide_timer[HORIZONTAL]->IsRunning());
+
+  // Vertical should remain visible, but ready to fade out after a delay.
+  EXPECT_EQ(kMaxOpacity, bar[VERTICAL]->layer()->opacity());
+  EXPECT_EQ(kMaxOpacity, bar[VERTICAL]->layer()->GetTargetOpacity());
+  EXPECT_TRUE(hide_timer[VERTICAL]->IsRunning());
+
+  // Scrolling should have occurred.
+  EXPECT_EQ(gfx::ScrollOffset(0, y_offset), test_api.CurrentOffset());
+
+  // Then, scrolling horizontally should show the horizontal scroller. The
+  // vertical scroller should still be visible, running its hide timer.
+  const float x_offset = 5;
+  generator.ScrollSequence(generator.current_location(), base::TimeDelta(),
+                           x_offset, 0, kSteps, kNnumFingers);
+  for (ScrollBarOrientation orientation : {HORIZONTAL, VERTICAL}) {
+    EXPECT_EQ(kMaxOpacity, bar[orientation]->layer()->opacity());
+    EXPECT_EQ(kMaxOpacity, bar[orientation]->layer()->GetTargetOpacity());
+    EXPECT_TRUE(hide_timer[orientation]->IsRunning());
+  }
+
+  // Now scrolling has occurred in both directions.
+  EXPECT_EQ(gfx::ScrollOffset(x_offset, y_offset), test_api.CurrentOffset());
+}
+
+#endif  // OS_MACOSX
 
 // Test that increasing the size of the viewport "below" scrolled content causes
 // the content to scroll up so that it still fills the viewport.

@@ -259,6 +259,7 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnTouchEvent(ui::TouchEvent* event) override;
+  void OnScrollEvent(ui::ScrollEvent* event) override;
 
   // Overridden from ui::EventSource:
   ui::EventProcessor* GetEventProcessor() override { return this; }
@@ -317,6 +318,14 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
   std::unique_ptr<base::mac::ScopedObjCClassSwizzler> swizzle_location_;
   std::unique_ptr<base::mac::ScopedObjCClassSwizzler> swizzle_current_event_;
   base::scoped_nsobject<NSMenu> fake_menu_;
+
+  // Mac always sends trackpad scroll events between begin/end phase event
+  // markers. If |in_trackpad_scroll| is false, a phase begin event is sent
+  // before any trackpad scroll update.
+  bool in_trackpad_scroll = false;
+
+  // Timestamp on the last scroll update, used to simulate scroll momentum.
+  base::TimeTicks last_scroll_timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(EventGeneratorDelegateMac);
 };
@@ -390,6 +399,87 @@ void EventGeneratorDelegateMac::OnKeyEvent(ui::KeyEvent* event) {
 
 void EventGeneratorDelegateMac::OnTouchEvent(ui::TouchEvent* event) {
   NOTREACHED() << "Touchscreen events not supported on Chrome Mac.";
+}
+
+void EventGeneratorDelegateMac::OnScrollEvent(ui::ScrollEvent* event) {
+  // Ignore FLING_CANCEL. Cocoa provides a continuous stream of events during a
+  // fling. For now, this method simulates a momentum stream using a single
+  // update with a momentum phase (plus begin/end phase events), triggered when
+  // the EventGenerator requests a FLING_START.
+  if (event->type() == ui::ET_SCROLL_FLING_CANCEL)
+    return;
+
+  NSPoint location = ConvertRootPointToTarget(window_, event->location());
+
+  // MAY_BEGIN/END comes from the EventGenerator for trackpad rests.
+  if (event->momentum_phase() == ui::EventMomentumPhase::MAY_BEGIN ||
+      event->momentum_phase() == ui::EventMomentumPhase::END) {
+    DCHECK_EQ(0, event->x_offset());
+    DCHECK_EQ(0, event->y_offset());
+    NSEventPhase phase =
+        event->momentum_phase() == ui::EventMomentumPhase::MAY_BEGIN
+            ? NSEventPhaseMayBegin
+            : NSEventPhaseCancelled;
+
+    NSEvent* rest = cocoa_test_event_utils::TestScrollEvent(
+        location, window_, 0, 0, true, phase, NSEventPhaseNone);
+    EmulateSendEvent(window_, rest);
+
+    // Allow the next ScrollSequence to skip the "begin".
+    in_trackpad_scroll = phase == NSEventPhaseMayBegin;
+    return;
+  }
+
+  NSEventPhase event_phase = NSEventPhaseBegan;
+  NSEventPhase momentum_phase = NSEventPhaseNone;
+
+  // Treat FLING_START as the beginning of a momentum phase.
+  if (event->type() == ui::ET_SCROLL_FLING_START) {
+    DCHECK(in_trackpad_scroll);
+    // First end the non-momentum phase.
+    NSEvent* end = cocoa_test_event_utils::TestScrollEvent(
+        location, window_, 0, 0, true, NSEventPhaseEnded, NSEventPhaseNone);
+    EmulateSendEvent(window_, end);
+    in_trackpad_scroll = false;
+
+    // Assume a zero time delta means no fling. Just end the event phase.
+    if (event->time_stamp() == last_scroll_timestamp_)
+      return;
+
+    // Otherwise, switch phases for the "fling".
+    std::swap(event_phase, momentum_phase);
+  }
+
+  // Send a begin for the current event phase, unless it's already in progress.
+  if (!in_trackpad_scroll) {
+    NSEvent* begin = cocoa_test_event_utils::TestScrollEvent(
+        location, window_, 0, 0, true, event_phase, momentum_phase);
+    EmulateSendEvent(window_, begin);
+    in_trackpad_scroll = true;
+  }
+
+  if (event->type() == ui::ET_SCROLL) {
+    NSEvent* update = cocoa_test_event_utils::TestScrollEvent(
+        location, window_, -event->x_offset(), -event->y_offset(), true,
+        NSEventPhaseChanged, NSEventPhaseNone);
+    EmulateSendEvent(window_, update);
+  } else {
+    DCHECK_EQ(event->type(), ui::ET_SCROLL_FLING_START);
+    // Mac generates a stream of events. For the purposes of testing, just
+    // generate one.
+    NSEvent* update = cocoa_test_event_utils::TestScrollEvent(
+        location, window_, -event->x_offset(), -event->y_offset(), true,
+        NSEventPhaseNone, NSEventPhaseChanged);
+    EmulateSendEvent(window_, update);
+
+    // Never leave the momentum part hanging.
+    NSEvent* end = cocoa_test_event_utils::TestScrollEvent(
+        location, window_, 0, 0, true, NSEventPhaseNone, NSEventPhaseEnded);
+    EmulateSendEvent(window_, end);
+    in_trackpad_scroll = false;
+  }
+
+  last_scroll_timestamp_ = event->time_stamp();
 }
 
 void EventGeneratorDelegateMac::SetContext(ui::test::EventGenerator* owner,

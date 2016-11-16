@@ -458,9 +458,20 @@ bool ScrollView::OnMouseWheel(const ui::MouseWheelEvent& e) {
 
 void ScrollView::OnScrollEvent(ui::ScrollEvent* event) {
 #if defined(OS_MACOSX)
+  if (!contents_)
+    return;
+
   // TODO(tapted): Send |event| to a cc::InputHandler. For now, there's nothing
   // to do because Widget::OnScrollEvent() will automatically process an
   // unhandled ScrollEvent as a MouseWheelEvent.
+
+  // A direction might not be known when the event stream starts, notify both
+  // scrollbars that they may be about scroll, or that they may need to cancel
+  // UI feedback once the scrolling direction is known.
+  if (horiz_sb_)
+    horiz_sb_->ObserveScrollEvent(*event);
+  if (vert_sb_)
+    vert_sb_->ObserveScrollEvent(*event);
 #endif
 }
 

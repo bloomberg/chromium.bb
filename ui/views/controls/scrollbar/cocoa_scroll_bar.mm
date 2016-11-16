@@ -168,6 +168,7 @@ CocoaScrollBar::CocoaScrollBar(bool horizontal)
           base::Bind(&CocoaScrollBar::HideScrollbar, base::Unretained(this)),
           false),
       thickness_animation_(this),
+      last_contents_scroll_offset_(0),
       is_expanded_(false),
       did_start_dragging_(false) {
   bridge_.reset([[ViewsScrollbarBridge alloc] initWithDelegate:this]);
@@ -322,10 +323,24 @@ void CocoaScrollBar::OnMouseExited(const ui::MouseEvent& event) {
 }
 
 //////////////////////////////////////////////////////////////////
-// CocoaScrollBar::BaseScrollBar:
+// CocoaScrollBar::ScrollBar:
 
-void CocoaScrollBar::ScrollToPosition(int position) {
-  BaseScrollBar::ScrollToPosition(position);
+void CocoaScrollBar::Update(int viewport_size,
+                            int content_size,
+                            int contents_scroll_offset) {
+  // TODO(tapted): Pass in overscroll amounts from the Layer and "Squish" the
+  // scroller thumb accordingly.
+  BaseScrollBar::Update(viewport_size, content_size, contents_scroll_offset);
+
+  // Only reveal the scroller when |contents_scroll_offset| changes. Note this
+  // is different to GetPosition() which can change due to layout. A layout
+  // change can also change the offset; show the scroller in these cases. This
+  // is consistent with WebContents (Cocoa will also show a scroller with any
+  // mouse-initiated layout, but not programmatic size changes).
+  if (contents_scroll_offset == last_contents_scroll_offset_)
+    return;
+
+  last_contents_scroll_offset_ = contents_scroll_offset;
 
   if (GetCocoaScrollBarThumb()->IsStatePressed())
     did_start_dragging_ = true;
@@ -333,6 +348,42 @@ void CocoaScrollBar::ScrollToPosition(int position) {
   if (scroller_style_ == NSScrollerStyleOverlay) {
     ShowScrollbar();
     hide_scrollbar_timer_.Reset();
+  }
+}
+
+void CocoaScrollBar::ObserveScrollEvent(const ui::ScrollEvent& event) {
+  // Do nothing if the delayed hide timer is running. This means there has been
+  // some recent scrolling in this direction already.
+  if (scroller_style_ != NSScrollerStyleOverlay ||
+      hide_scrollbar_timer_.IsRunning()) {
+    return;
+  }
+
+  // Otherwise, when starting the event stream, show an overlay scrollbar to
+  // indicate possible scroll directions, but do not start the hide timer.
+  if (event.momentum_phase() == ui::EventMomentumPhase::MAY_BEGIN) {
+    // Show only if the direction isn't yet known.
+    if (event.x_offset() == 0 && event.y_offset() == 0)
+      ShowScrollbar();
+    return;
+  }
+
+  // If the direction matches, do nothing. This is needed in addition to the
+  // hide timer check because Update() is called asynchronously, after event
+  // processing. So when |event| is the first event in a particular direction
+  // the hide timer will not have started.
+  if ((IsHorizontal() ? event.x_offset() : event.y_offset()) != 0)
+    return;
+
+  // Otherwise, scrolling has started, but not in this scroller direction. If
+  // already faded out, don't start another fade animation since that would
+  // immediately finish the first fade animation.
+  if (layer()->GetTargetOpacity() != 0) {
+    // If canceling rather than picking a direction, fade out after a delay.
+    if (event.momentum_phase() == ui::EventMomentumPhase::END)
+      hide_scrollbar_timer_.Reset();
+    else
+      HideScrollbar();  // Fade out immediately.
   }
 }
 
@@ -483,6 +534,11 @@ void CocoaScrollBar::SetScrolltrackVisible(bool visible) {
 
 CocoaScrollBarThumb* CocoaScrollBar::GetCocoaScrollBarThumb() const {
   return static_cast<CocoaScrollBarThumb*>(GetThumb());
+}
+
+// static
+base::Timer* BaseScrollBar::GetHideTimerForTest(BaseScrollBar* scroll_bar) {
+  return &static_cast<CocoaScrollBar*>(scroll_bar)->hide_scrollbar_timer_;
 }
 
 }  // namespace views
