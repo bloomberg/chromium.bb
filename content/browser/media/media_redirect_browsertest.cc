@@ -21,7 +21,7 @@ class MediaRedirectTest : public MediaBrowserTest {
     std::unique_ptr<net::EmbeddedTestServer> http_test_server(
         new net::EmbeddedTestServer());
     http_test_server->ServeFilesFromSourceDirectory(media::GetTestDataPath());
-    CHECK(http_test_server->Start());
+    CHECK(http_test_server->InitializeAndListen());
 
     const GURL player_url =
         http_test_server->GetURL("/player.html?video=" + kHiddenPath);
@@ -30,6 +30,7 @@ class MediaRedirectTest : public MediaBrowserTest {
     http_test_server->RegisterRequestHandler(
         base::Bind(&MediaRedirectTest::RedirectResponseHandler,
                    base::Unretained(this), dest_url));
+    http_test_server->StartAcceptingConnections();
 
     // Run the normal media playback test.
     EXPECT_EQ(kEnded, RunTest(player_url, kEnded));

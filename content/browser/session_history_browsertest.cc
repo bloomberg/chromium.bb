@@ -55,11 +55,11 @@ class SessionHistoryTest : public ContentBrowserTest {
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
 
-    ASSERT_TRUE(embedded_test_server()->Start());
     SetupCrossSiteRedirector(embedded_test_server());
     embedded_test_server()->RegisterRequestHandler(
         base::Bind(&HandleEchoTitleRequest, "/echotitle"));
 
+    ASSERT_TRUE(embedded_test_server()->Start());
     NavigateToURL(shell(), GURL(url::kAboutBlankURL));
   }
 
@@ -333,9 +333,6 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, CrossFrameFormBackForward) {
 // navigations. Bug 730379.
 // If this flakes use http://crbug.com/61619.
 IN_PROC_BROWSER_TEST_F(SessionHistoryTest, FragmentBackForward) {
-  embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&HandleEchoTitleRequest, "/echotitle"));
-
   ASSERT_FALSE(CanGoBack());
 
   GURL fragment(GetURL("fragment.html"));
