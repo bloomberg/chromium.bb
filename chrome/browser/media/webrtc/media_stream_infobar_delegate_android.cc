@@ -198,7 +198,8 @@ GURL MediaStreamInfoBarDelegateAndroid::GetLinkURL() const {
   return GURL(chrome::kMediaAccessLearnMoreUrl);
 }
 
-std::vector<int> MediaStreamInfoBarDelegateAndroid::content_settings() const {
+std::vector<int> MediaStreamInfoBarDelegateAndroid::content_settings_types()
+    const {
   std::vector<int> types;
   if (controller_->IsAskingForAudio())
     types.push_back(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);

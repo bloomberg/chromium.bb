@@ -11,6 +11,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/permissions/permission_infobar_delegate.h"
 #include "chrome/browser/ui/android/infobars/confirm_infobar.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -55,10 +56,10 @@ ScopedJavaLocalRef<jobject> PermissionInfoBar::CreateRenderInfoBar(
     java_bitmap = gfx::ConvertToJavaBitmap(delegate->GetIcon().ToSkBitmap());
   }
 
-  std::vector<int> content_settings{delegate->content_settings()};
+  std::vector<int> content_settings{delegate->content_settings_types()};
 
   return Java_PermissionInfoBar_create(
-      env, GetWindowAndroid().obj(), GetEnumeratedIconId(), java_bitmap.obj(),
+      env, GetTab()->GetJavaObject(), GetEnumeratedIconId(), java_bitmap.obj(),
       message_text.obj(), link_text.obj(), ok_button_text.obj(),
       cancel_button_text.obj(),
       base::android::ToJavaIntArray(env, content_settings).obj(),

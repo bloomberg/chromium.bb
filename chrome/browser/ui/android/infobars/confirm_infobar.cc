@@ -9,9 +9,9 @@
 
 #include "base/android/jni_string.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
-#include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ConfirmInfoBar_jni.h"
 #include "ui/android/window_android.h"
@@ -35,6 +35,27 @@ ConfirmInfoBar::ConfirmInfoBar(std::unique_ptr<ConfirmInfoBarDelegate> delegate)
     : InfoBarAndroid(std::move(delegate)) {}
 
 ConfirmInfoBar::~ConfirmInfoBar() {
+}
+
+base::string16 ConfirmInfoBar::GetTextFor(
+    ConfirmInfoBarDelegate::InfoBarButton button) {
+  ConfirmInfoBarDelegate* delegate = GetDelegate();
+  return (delegate->GetButtons() & button) ?
+      delegate->GetButtonLabel(button) : base::string16();
+}
+
+ConfirmInfoBarDelegate* ConfirmInfoBar::GetDelegate() {
+  return delegate()->AsConfirmInfoBarDelegate();
+}
+
+TabAndroid* ConfirmInfoBar::GetTab() {
+  content::WebContents* web_contents =
+      InfoBarService::WebContentsFromInfoBar(this);
+  DCHECK(web_contents);
+
+  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
+  DCHECK(tab);
+  return tab;
 }
 
 ScopedJavaLocalRef<jobject> ConfirmInfoBar::CreateRenderInfoBar(JNIEnv* env) {
@@ -61,16 +82,6 @@ ScopedJavaLocalRef<jobject> ConfirmInfoBar::CreateRenderInfoBar(JNIEnv* env) {
                                     cancel_button_text);
 }
 
-ScopedJavaLocalRef<jobject> ConfirmInfoBar::GetWindowAndroid() {
-  content::WebContents* web_contents =
-      InfoBarService::WebContentsFromInfoBar(this);
-  DCHECK(web_contents);
-  content::ContentViewCore* cvc =
-      content::ContentViewCore::FromWebContents(web_contents);
-  DCHECK(cvc);
-  return cvc->GetWindowAndroid()->GetJavaObject();
-}
-
 void ConfirmInfoBar::OnLinkClicked(JNIEnv* env,
                                    const JavaParamRef<jobject>& obj) {
   if (!owner())
@@ -90,15 +101,4 @@ void ConfirmInfoBar::ProcessButton(int action) {
   if ((action == InfoBarAndroid::ACTION_OK) ?
       delegate->Accept() : delegate->Cancel())
     RemoveSelf();
-}
-
-ConfirmInfoBarDelegate* ConfirmInfoBar::GetDelegate() {
-  return delegate()->AsConfirmInfoBarDelegate();
-}
-
-base::string16 ConfirmInfoBar::GetTextFor(
-    ConfirmInfoBarDelegate::InfoBarButton button) {
-  ConfirmInfoBarDelegate* delegate = GetDelegate();
-  return (delegate->GetButtons() & button) ?
-      delegate->GetButtonLabel(button) : base::string16();
 }

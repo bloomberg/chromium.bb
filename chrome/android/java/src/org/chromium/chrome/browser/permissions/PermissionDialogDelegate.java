@@ -4,12 +4,9 @@
 
 package org.chromium.chrome.browser.permissions;
 
-import android.app.Activity;
-
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Delegate class for modal permission dialogs. Contains all of the data displayed in a prompt,
@@ -43,21 +40,17 @@ public class PermissionDialogDelegate {
     private String mSecondaryButtonText;
 
     /** The {@link ContentSettingsType}s requested in this dialog.  */
-    private int[] mContentSettings;
+    private int[] mContentSettingsTypes;
 
     /** Whether or not to show a toggle for opting out of persisting the decision. */
     private boolean mShowPersistenceToggle;
 
-    public Activity getActivity() {
-        return WindowAndroid.activityFromContext(getWindow().getContext().get());
+    public Tab getTab() {
+        return mTab;
     }
 
-    public WindowAndroid getWindow() {
-        return mTab.getWindowAndroid();
-    }
-
-    public int[] getContentSettings() {
-        return mContentSettings.clone();
+    public int[] getContentSettingsTypes() {
+        return mContentSettingsTypes.clone();
     }
 
     public int getDrawableId() {
@@ -115,7 +108,7 @@ public class PermissionDialogDelegate {
      *
      * @param nativeDelegatePtr     The native counterpart that this object owns.
      * @param tab                   The tab to create the dialog for.
-     * @param contentSettings       The content settings requested by this dialog.
+     * @param contentSettingsTypes  The content settings types requested by this dialog.
      * @param iconResourceId        The id of the icon to display in the dialog.
      * @param message               The message to display in the dialog.
      * @param linkText              The text to display in the link (if any).
@@ -125,9 +118,9 @@ public class PermissionDialogDelegate {
      */
     @CalledByNative
     private static PermissionDialogDelegate create(long nativeDelegatePtr, Tab tab,
-            int[] contentSettings, int enumeratedIconId, String message, String linkText,
+            int[] contentSettingsTypes, int enumeratedIconId, String message, String linkText,
             String primaryButtonText, String secondaryButtonText, boolean showPersistenceToggle) {
-        return new PermissionDialogDelegate(nativeDelegatePtr, tab, contentSettings,
+        return new PermissionDialogDelegate(nativeDelegatePtr, tab, contentSettingsTypes,
                 enumeratedIconId, message, linkText, primaryButtonText, secondaryButtonText,
                 showPersistenceToggle);
     }
@@ -135,12 +128,12 @@ public class PermissionDialogDelegate {
     /**
      * Upon construction, this class takes ownership of the passed in native delegate.
      */
-    private PermissionDialogDelegate(long nativeDelegatePtr, Tab tab, int[] contentSettings,
+    private PermissionDialogDelegate(long nativeDelegatePtr, Tab tab, int[] contentSettingsTypes,
             int enumeratedIconId, String message, String linkText, String primaryButtonText,
             String secondaryButtonText, boolean showPersistenceToggle) {
         mNativeDelegatePtr = nativeDelegatePtr;
         mTab = tab;
-        mContentSettings = contentSettings;
+        mContentSettingsTypes = contentSettingsTypes;
         mDrawableId = ResourceId.mapToDrawableId(enumeratedIconId);
         mMessageText = message;
         mLinkText = linkText;

@@ -83,7 +83,7 @@ PermissionInfoBarDelegate::~PermissionInfoBarDelegate() {
   }
 }
 
-std::vector<int> PermissionInfoBarDelegate::content_settings() const {
+std::vector<int> PermissionInfoBarDelegate::content_settings_types() const {
   return std::vector<int>{content_settings_type_};
 }
 

@@ -8,6 +8,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "chrome/browser/android/resource_mapper.h"
+#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/permissions/grouped_permission_infobar_delegate_android.h"
 #include "jni/GroupedPermissionInfoBar_jni.h"
 
@@ -71,12 +72,12 @@ GroupedPermissionInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   }
 
   return Java_GroupedPermissionInfoBar_create(
-      env, message_text, ok_button_text, cancel_button_text,
-      base::android::ToJavaIntArray(env, permission_icons),
+      env, GetTab()->GetJavaObject(),
+      base::android::ToJavaIntArray(env, content_settings_types), message_text,
+      ok_button_text, cancel_button_text,
+      delegate->ShouldShowPersistenceToggle(),
       base::android::ToJavaArrayOfStrings(env, permission_strings),
-      GetWindowAndroid(),
-      base::android::ToJavaIntArray(env, content_settings_types),
-      delegate->ShouldShowPersistenceToggle());
+      base::android::ToJavaIntArray(env, permission_icons));
 }
 
 void GroupedPermissionInfoBar::SetJavaInfoBar(

@@ -119,7 +119,17 @@ public class PermissionDialogController implements AndroidPermissionRequester.Re
 
         mDecision = NOT_DECIDED;
         mDialogDelegate = mRequestQueue.remove(0);
-        Activity activity = mDialogDelegate.getActivity();
+        Activity activity = mDialogDelegate.getTab().getWindowAndroid().getActivity().get();
+
+        // It's possible for the activity to be null if we reach here just after the user
+        // backgrounds the browser and cleanup has happened. In that case, we can't show a prompt,
+        // so act as though the user dismissed it.
+        if (activity == null) {
+            mDialogDelegate.onDismiss();
+            mDialogDelegate.destroy();
+            return;
+        }
+
         LayoutInflater inflater = LayoutInflater.from(activity);
         View view = inflater.inflate(R.layout.permission_dialog, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.AlertDialogTheme);
@@ -183,14 +193,12 @@ public class PermissionDialogController implements AndroidPermissionRequester.Re
                 if (mDecision == ACCEPTED) {
                     // Request Android permissions if necessary. This will call back into either
                     // onAndroidPermissionAccepted or onAndroidPermissionCanceled, which will
-                    // schedule the next permission dialog.
-                    AndroidPermissionRequester requester = new AndroidPermissionRequester(
-                            mDialogDelegate.getWindow(), PermissionDialogController.this,
-                            mDialogDelegate.getContentSettings());
-                    if (requester.shouldSkipPermissionRequest()) {
+                    // schedule the next permission dialog. If it returns false, no system level
+                    // permissions need to be requested, so just run the accept callback.
+                    if (!AndroidPermissionRequester.requestAndroidPermissions(
+                                mDialogDelegate.getTab(), mDialogDelegate.getContentSettingsTypes(),
+                                PermissionDialogController.this)) {
                         onAndroidPermissionAccepted();
-                    } else {
-                        requester.requestAndroidPermissions();
                     }
                 } else {
                     // Otherwise, run the necessary delegate callback immediately and schedule the

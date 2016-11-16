@@ -94,12 +94,13 @@ ScopedJavaLocalRef<jobject> PermissionDialogDelegate::CreateJavaDelegate(
   TabAndroid* tab = TabAndroid::FromWebContents(web_contents());
   DCHECK(tab);
 
-  std::vector<int> content_settings{infobar_delegate_->content_settings()};
+  std::vector<int> content_settings_types{
+      infobar_delegate_->content_settings_types()};
 
   return Java_PermissionDialogDelegate_create(
       env, reinterpret_cast<uintptr_t>(this),
       tab->GetJavaObject(),
-      base::android::ToJavaIntArray(env, content_settings).obj(),
+      base::android::ToJavaIntArray(env, content_settings_types).obj(),
       ResourceMapper::MapFromChromiumId(infobar_delegate_->GetIconId()),
       ConvertUTF16ToJavaString(env, infobar_delegate_->GetMessageText()),
       ConvertUTF16ToJavaString(env, infobar_delegate_->GetLinkText()),

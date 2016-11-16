@@ -15,25 +15,15 @@ import android.widget.TextView;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.PermissionCallback;
 
 /**
- * An object to handle requesting native permissions from Android when the user grants a website
- * a permission.
+ * Methods to handle requesting native permissions from Android when the user grants a website a
+ * permission.
  */
 public class AndroidPermissionRequester {
-
-    private WindowAndroid mWindowAndroid;
-    private RequestDelegate mDelegate;
-
-    /**
-     * Mapping between the required {@link ContentSettingsType}s and their associated Android
-     * runtime permissions.  Only {@link ContentSettingsType}s that are associated with runtime
-     * permissions will be included in this list while all others will be excluded.
-     */
-    private SparseArray<String> mContentSettingsToPermissionsMap;
-
     /**
     * An interface for classes which need to be informed of the outcome of asking a user to grant an
     * Android permission.
@@ -43,36 +33,27 @@ public class AndroidPermissionRequester {
         void onAndroidPermissionCanceled();
     }
 
-    public AndroidPermissionRequester(WindowAndroid windowAndroid,
-            RequestDelegate delegate, int[] contentSettings) {
-        mWindowAndroid = windowAndroid;
-        mDelegate = delegate;
-        mContentSettingsToPermissionsMap = generatePermissionsMapping(contentSettings);
-    }
-
-    public void setWindowAndroid(WindowAndroid windowAndroid) {
-        mWindowAndroid = windowAndroid;
-    }
-
-    private SparseArray<String> generatePermissionsMapping(int[] contentSettings) {
+    private static SparseArray<String> generatePermissionsMapping(
+            WindowAndroid windowAndroid, int[] contentSettingsTypes) {
         SparseArray<String> permissionsToRequest = new SparseArray<String>();
-        for (int i = 0; i < contentSettings.length; i++) {
+        for (int i = 0; i < contentSettingsTypes.length; i++) {
             String permission = PrefServiceBridge.getAndroidPermissionForContentSetting(
-                    contentSettings[i]);
-            if (permission != null && !mWindowAndroid.hasPermission(permission)) {
-                permissionsToRequest.append(contentSettings[i], permission);
+                    contentSettingsTypes[i]);
+            if (permission != null && !windowAndroid.hasPermission(permission)) {
+                permissionsToRequest.append(contentSettingsTypes[i], permission);
             }
         }
         return permissionsToRequest;
     }
 
-    private int getDeniedPermissionResourceId(String permission) {
+    private static int getDeniedPermissionResourceId(
+            SparseArray<String> contentSettingsTypesToPermissionsMap, String permission) {
         int contentSettingsType = 0;
         // SparseArray#indexOfValue uses == instead of .equals, so we need to manually iterate
         // over the list.
-        for (int i = 0; i < mContentSettingsToPermissionsMap.size(); i++) {
-            if (permission.equals(mContentSettingsToPermissionsMap.valueAt(i))) {
-                contentSettingsType = mContentSettingsToPermissionsMap.keyAt(i);
+        for (int i = 0; i < contentSettingsTypesToPermissionsMap.size(); i++) {
+            if (permission.equals(contentSettingsTypesToPermissionsMap.valueAt(i))) {
+                contentSettingsType = contentSettingsTypesToPermissionsMap.keyAt(i);
             }
         }
 
@@ -89,12 +70,23 @@ public class AndroidPermissionRequester {
         return R.string.infobar_missing_multiple_permissions_text;
     }
 
-    public boolean shouldSkipPermissionRequest() {
-        return (mWindowAndroid == null || mContentSettingsToPermissionsMap == null
-                || mContentSettingsToPermissionsMap.size() == 0);
-    }
+    /**
+     * Returns true if any of the permissions in contentSettingsTypes must be requested from the
+     * system. Otherwise returns false.
+     *
+     * If true is returned, this method will asynchronously request the necessary permissions using
+     * a dialog, running methods on the RequestDelegate when the user has made a decision.
+     */
+    public static boolean requestAndroidPermissions(
+            final Tab tab, final int[] contentSettingsTypes, final RequestDelegate delegate) {
+        final WindowAndroid windowAndroid = tab.getWindowAndroid();
+        if (windowAndroid == null) return false;
 
-    public void requestAndroidPermissions() {
+        final SparseArray<String> contentSettingsTypesToPermissionsMap =
+                generatePermissionsMapping(windowAndroid, contentSettingsTypes);
+
+        if (contentSettingsTypesToPermissionsMap.size() == 0) return false;
+
         PermissionCallback callback = new PermissionCallback() {
             @Override
             public void onRequestPermissionsResult(
@@ -108,16 +100,17 @@ public class AndroidPermissionRequester {
                         if (deniedCount > 1) {
                             deniedStringId = R.string.infobar_missing_multiple_permissions_text;
                         } else {
-                            deniedStringId = getDeniedPermissionResourceId(permissions[i]);
+                            deniedStringId = getDeniedPermissionResourceId(
+                                    contentSettingsTypesToPermissionsMap, permissions[i]);
                         }
 
-                        if (mWindowAndroid.canRequestPermission(permissions[i])) {
+                        if (windowAndroid.canRequestPermission(permissions[i])) {
                             requestableCount++;
                         }
                     }
                 }
 
-                Activity activity = mWindowAndroid.getActivity().get();
+                Activity activity = windowAndroid.getActivity().get();
                 if (deniedCount > 0 && requestableCount > 0 && activity != null) {
                     View view = activity.getLayoutInflater().inflate(
                             R.layout.update_permissions_dialog, null);
@@ -125,35 +118,35 @@ public class AndroidPermissionRequester {
                     dialogText.setText(deniedStringId);
 
                     AlertDialog.Builder builder =
-                            new AlertDialog.Builder(activity, R.style.AlertDialogTheme)
-                            .setView(view)
-                            .setPositiveButton(R.string.infobar_update_permissions_button_text,
-                                    new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int id) {
-                                            requestAndroidPermissions();
-                                        }
-                                    })
-                             .setOnCancelListener(new DialogInterface.OnCancelListener() {
-                                     @Override
-                                     public void onCancel(DialogInterface dialog) {
-                                         mDelegate.onAndroidPermissionCanceled();
-                                     }
-                             });
+                            new AlertDialog.Builder(activity, R.style.AlertDialogTheme);
+                    builder.setView(view);
+                    builder.setPositiveButton(R.string.infobar_update_permissions_button_text,
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int id) {
+                                    requestAndroidPermissions(tab, contentSettingsTypes, delegate);
+                                }
+                            });
+                    builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialog) {
+                            delegate.onAndroidPermissionCanceled();
+                        }
+                    });
                     builder.create().show();
                 } else if (deniedCount > 0) {
-                    mDelegate.onAndroidPermissionCanceled();
+                    delegate.onAndroidPermissionCanceled();
                 } else {
-                    mDelegate.onAndroidPermissionAccepted();
+                    delegate.onAndroidPermissionAccepted();
                 }
             }
         };
 
-        String[] permissionsToRequest = new String[mContentSettingsToPermissionsMap.size()];
-        for (int i = 0; i < mContentSettingsToPermissionsMap.size(); i++) {
-            permissionsToRequest[i] = mContentSettingsToPermissionsMap.valueAt(i);
+        String[] permissionsToRequest = new String[contentSettingsTypesToPermissionsMap.size()];
+        for (int i = 0; i < contentSettingsTypesToPermissionsMap.size(); i++) {
+            permissionsToRequest[i] = contentSettingsTypesToPermissionsMap.valueAt(i);
         }
-        mWindowAndroid.requestPermissions(permissionsToRequest, callback);
+        windowAndroid.requestPermissions(permissionsToRequest, callback);
+        return true;
     }
-
 }

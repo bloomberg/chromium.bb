@@ -50,7 +50,7 @@ class MediaStreamInfoBarDelegateAndroid : public PermissionInfoBarDelegate {
   base::string16 GetLinkText() const override;
   GURL GetLinkURL() const override;
   int GetMessageResourceId() const override;
-  std::vector<int> content_settings() const override;
+  std::vector<int> content_settings_types() const override;
 
   std::unique_ptr<MediaStreamDevicesController> controller_;
 

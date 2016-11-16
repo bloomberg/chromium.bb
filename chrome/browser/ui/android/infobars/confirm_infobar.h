@@ -11,21 +11,24 @@
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 
+class TabAndroid;
+
 class ConfirmInfoBar : public InfoBarAndroid {
  public:
   explicit ConfirmInfoBar(std::unique_ptr<ConfirmInfoBarDelegate> delegate);
   ~ConfirmInfoBar() override;
 
  protected:
-  base::string16 GetTextFor(ConfirmInfoBarDelegate::InfoBarButton button);
   ConfirmInfoBarDelegate* GetDelegate();
-  void OnLinkClicked(JNIEnv* env,
-                     const base::android::JavaParamRef<jobject>& obj) override;
-  base::android::ScopedJavaLocalRef<jobject> GetWindowAndroid();
+  TabAndroid* GetTab();
+  base::string16 GetTextFor(ConfirmInfoBarDelegate::InfoBarButton button);
 
   // InfoBarAndroid overrides.
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;
+
+  void OnLinkClicked(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& obj) override;
 
   void ProcessButton(int action) override;
 
