@@ -94,8 +94,6 @@ var SiteSettingsBehaviorImpl = {
         return 'settings:videocam';
       case settings.ContentSettingsTypes.COOKIES:
         return 'settings:cookie';
-      case settings.ContentSettingsTypes.FULLSCREEN:
-        return 'cr:fullscreen';
       case settings.ContentSettingsTypes.GEOLOCATION:
         return 'settings:location-on';
       case settings.ContentSettingsTypes.IMAGES:
@@ -144,8 +142,6 @@ var SiteSettingsBehaviorImpl = {
         return loadTimeData.getString('siteSettingsCamera');
       case settings.ContentSettingsTypes.COOKIES:
         return loadTimeData.getString('siteSettingsCookies');
-      case settings.ContentSettingsTypes.FULLSCREEN:
-        return loadTimeData.getString('siteSettingsFullscreen');
       case settings.ContentSettingsTypes.GEOLOCATION:
         return loadTimeData.getString('siteSettingsLocation');
       case settings.ContentSettingsTypes.IMAGES:

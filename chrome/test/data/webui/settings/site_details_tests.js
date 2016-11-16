@@ -49,14 +49,6 @@ cr.define('site_details', function() {
               source: 'preference',
             },
           ],
-          fullscreen: [
-            {
-              embeddingOrigin: 'https://foo-allow.com:443',
-              origin: 'https://foo-allow.com:443',
-              setting: 'allow',
-              source: 'preference',
-            },
-          ],
           geolocation: [
             {
               embeddingOrigin: 'https://foo-allow.com:443',
@@ -160,7 +152,6 @@ cr.define('site_details', function() {
         var msg = 'No category should be showing, height';
         assertEquals(0, testElement.$.camera.offsetHeight, msg);
         assertEquals(0, testElement.$.cookies.offsetHeight, msg);
-        assertEquals(0, testElement.$.fullscreen.offsetHeight, msg);
         assertEquals(0, testElement.$.geolocation.offsetHeight, msg);
         assertEquals(0, testElement.$.javascript.offsetHeight, msg);
         assertEquals(0, testElement.$.mic.offsetHeight, msg);
@@ -183,7 +174,6 @@ cr.define('site_details', function() {
         var msg = 'All categories should be showing';
         assertFalse(testElement.$.camera.hidden, msg);
         assertFalse(testElement.$.cookies.hidden, msg);
-        assertFalse(testElement.$.fullscreen.hidden, msg);
         assertFalse(testElement.$.geolocation.hidden, msg);
         assertFalse(testElement.$.javascript.hidden, msg);
         assertFalse(testElement.$.mic.hidden, msg);

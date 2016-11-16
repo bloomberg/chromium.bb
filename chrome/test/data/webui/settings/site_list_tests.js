@@ -30,7 +30,6 @@ cr.define('site_list', function() {
           background_sync: [],
           camera: [],
           cookies: [],
-          fullscreen: [],
           geolocation: [
             {
               embeddingOrigin: 'https://foo-allow.com:443',
@@ -101,7 +100,6 @@ cr.define('site_list', function() {
           background_sync: [],
           camera: [],
           cookies: [],
-          fullscreen: [],
           geolocation: [
             {
               origin: 'https://foo.com',
@@ -139,7 +137,6 @@ cr.define('site_list', function() {
           background_sync: [],
           camera: [],
           cookies: [],
-          fullscreen: [],
           geolocation: [
             {
               embeddingOrigin: 'https://foo.com',

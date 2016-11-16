@@ -20,7 +20,6 @@ settings.ContentSettingsTypes = {
   POPUPS: 'popups',
   GEOLOCATION: 'location',
   NOTIFICATIONS: 'notifications',
-  FULLSCREEN: 'fullscreen',
   MIC: 'media-stream-mic',
   CAMERA: 'media-stream-camera',
   PROTOCOL_HANDLERS: 'register-protocol-handler',

@@ -1679,9 +1679,6 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_USB_DEVICES" desc="Label for the USB devices in site settings.">
     USB devices
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_FULLSCREEN" desc="Label for the fullscreen site settings.">
-    Fullscreen
-  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_ZOOM_LEVELS" desc="Label for the Zoom levels category in site settings.">
     Zoom levels
   </message>
@@ -1691,7 +1688,7 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_ASK_FIRST" desc="Label for ask first option in site settings.">
     Ask first
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_ASK_FIRST_RECOMMENDED" desc="The 'ask first' label in site settings -- a recommended setting for some categories, such as when sites want to use Full Screen.">
+  <message name="IDS_SETTINGS_SITE_SETTINGS_ASK_FIRST_RECOMMENDED" desc="The 'ask first' label in site settings -- a recommended setting for some categories, such as when sites want to use Geolocation.">
     Ask first (recommended)
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_ASK_BEFORE_ACCESSING" desc="The 'ask before accessing' label in site settings.">

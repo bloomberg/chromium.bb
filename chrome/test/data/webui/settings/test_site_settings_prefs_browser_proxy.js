@@ -12,7 +12,6 @@ var prefsEmpty = {
     background_sync: '',
     camera: '',
     cookies: '',
-    fullscreen: '',
     geolocation: '',
     javascript: '',
     keygen: '',
@@ -27,7 +26,6 @@ var prefsEmpty = {
     background_sync: [],
     camera: [],
     cookies: [],
-    fullscreen: [],
     geolocation: [],
     javascript: [],
     keygen: [],
@@ -141,8 +139,6 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
       pref = this.prefs_.defaults.camera;
     } else if (contentType == settings.ContentSettingsTypes.COOKIES) {
       pref = this.prefs_.defaults.cookies;
-    } else if (contentType == settings.ContentSettingsTypes.FULLSCREEN) {
-      pref = this.prefs_.defaults.fullscreen;
     } else if (contentType == settings.ContentSettingsTypes.GEOLOCATION) {
       pref = this.prefs_.defaults.geolocation;
     } else if (contentType == settings.ContentSettingsTypes.IMAGES) {
@@ -185,8 +181,6 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
       pref = this.prefs_.exceptions.camera;
     else if (contentType == settings.ContentSettingsTypes.COOKIES)
       pref = this.prefs_.exceptions.cookies;
-    else if (contentType == settings.ContentSettingsTypes.FULLSCREEN)
-      pref = this.prefs_.exceptions.fullscreen;
     else if (contentType == settings.ContentSettingsTypes.GEOLOCATION)
       pref = this.prefs_.exceptions.geolocation;
     else if (contentType == settings.ContentSettingsTypes.IMAGES)
