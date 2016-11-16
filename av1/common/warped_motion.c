@@ -16,7 +16,7 @@
 
 #include "av1/common/warped_motion.h"
 
-#define ERRORADV_CLAMP  128
+#define ERRORADV_CLAMP 128
 
 static ProjectPointsFunc get_project_points_type(TransformationType type) {
   switch (type) {

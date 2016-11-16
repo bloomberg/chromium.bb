@@ -1861,7 +1861,7 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
 
       if (use_rect_tx) {
         mbmi->tx_size = max_txsize_rect_lookup[bsize];
-        set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, xd);
+        set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
       } else {
 #endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
         mbmi->min_tx_size = TX_SIZES_ALL;
