@@ -122,7 +122,11 @@ class HttpTest : public ::testing::Test {
     grpc_support::StartQuicTestServer();
     TestServer::Start();
 
+    [Cronet setRequestFilterBlock:^(NSURLRequest* request) {
+      return YES;
+    }];
     StartCronetIfNecessary(grpc_support::GetQuicTestServerPort());
+    [Cronet registerHttpProtocolHandler];
     NSURLSessionConfiguration* config =
         [NSURLSessionConfiguration ephemeralSessionConfiguration];
     [Cronet installIntoSessionConfiguration:config];
@@ -155,8 +159,15 @@ class HttpTest : public ::testing::Test {
 
 TEST_F(HttpTest, NSURLSessionReceivesData) {
   NSURL* url = net::NSURLWithGURL(GURL(grpc_support::kTestServerUrl));
+  __block BOOL block_used = NO;
   NSURLSessionDataTask* task = [session_ dataTaskWithURL:url];
+  [Cronet setRequestFilterBlock:^(NSURLRequest* request) {
+    block_used = YES;
+    EXPECT_EQ([request URL], url);
+    return YES;
+  }];
   StartDataTaskAndWaitForCompletion(task);
+  EXPECT_TRUE(block_used);
   EXPECT_EQ(nil, [delegate_ error]);
   EXPECT_STREQ(grpc_support::kHelloBodyValue,
                base::SysNSStringToUTF8([delegate_ responseBody]).c_str());
@@ -197,10 +208,29 @@ TEST_F(HttpTest, NSURLSessionAcceptLanguage) {
 TEST_F(HttpTest, SetUserAgentIsExact) {
   NSURL* url =
       net::NSURLWithGURL(GURL(TestServer::GetEchoHeaderURL("User-Agent")));
+  [Cronet setRequestFilterBlock:nil];
   NSURLSessionDataTask* task = [session_ dataTaskWithURL:url];
   StartDataTaskAndWaitForCompletion(task);
   EXPECT_EQ(nil, [delegate_ error]);
   EXPECT_STREQ(kUserAgent, [[delegate_ responseBody] UTF8String]);
+}
+
+TEST_F(HttpTest, FilterOutRequest) {
+  NSURL* url =
+      net::NSURLWithGURL(GURL(TestServer::GetEchoHeaderURL("User-Agent")));
+  __block BOOL block_used = NO;
+  NSURLSessionDataTask* task = [session_ dataTaskWithURL:url];
+  [Cronet setRequestFilterBlock:^(NSURLRequest* request) {
+    block_used = YES;
+    EXPECT_EQ([request URL], url);
+    return NO;
+  }];
+  StartDataTaskAndWaitForCompletion(task);
+  EXPECT_TRUE(block_used);
+  EXPECT_EQ(nil, [delegate_ error]);
+  EXPECT_FALSE([[delegate_ responseBody]
+      containsString:base::SysUTF8ToNSString(kUserAgent)]);
+  EXPECT_TRUE([[delegate_ responseBody] containsString:@"CFNetwork"]);
 }
 
 }  // namespace cronet

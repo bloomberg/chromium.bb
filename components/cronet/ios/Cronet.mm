@@ -67,7 +67,7 @@ class CronetHttpProtocolHandlerDelegate
 
   void SetRequestFilterBlock(RequestFilterBlock filter) {
     base::AutoLock auto_lock(lock_);
-    filter_.reset(filter);
+    filter_.reset(filter, base::scoped_policy::RETAIN);
   }
 
  private:

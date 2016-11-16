@@ -44,7 +44,7 @@ namespace cronet {
 bool TestServer::Start() {
   DCHECK(!g_test_server.get());
   g_test_server = base::MakeUnique<net::EmbeddedTestServer>(
-      net::EmbeddedTestServer::TYPE_HTTPS);
+      net::EmbeddedTestServer::TYPE_HTTP);
   g_test_server->RegisterRequestHandler(base::Bind(&EchoHeaderInRequest));
   CHECK(g_test_server->Start());
   return true;
