@@ -217,13 +217,15 @@ void TabContentManager::CacheTab(JNIEnv* env,
   content::WebContents* web_contents = tab_android->web_contents();
   DCHECK(web_contents);
 
+  if (pending_tab_readbacks_.find(tab_id) != pending_tab_readbacks_.end())
+    return;
+
   if (thumbnail_cache_->CheckAndUpdateThumbnailMetaData(tab_id, url)) {
     if (!web_contents->GetRenderViewHost() ||
         !web_contents->GetRenderViewHost()->GetWidget() ||
         !web_contents->GetRenderViewHost()
              ->GetWidget()
              ->CanCopyFromBackingStore() ||
-        pending_tab_readbacks_.find(tab_id) != pending_tab_readbacks_.end() ||
         pending_tab_readbacks_.size() >= kMaxReadbacks) {
       thumbnail_cache_->Remove(tab_id);
       return;
