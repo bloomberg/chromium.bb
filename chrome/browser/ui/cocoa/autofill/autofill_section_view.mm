@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/autofill/autofill_section_view.h"
 
-#import "chrome/browser/ui/chrome_style.h"
+#import "chrome/browser/ui/cocoa/chrome_style.h"
 #include "skia/ext/skia_utils_mac.h"
 
 namespace {

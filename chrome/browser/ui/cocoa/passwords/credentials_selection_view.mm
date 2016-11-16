@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 
-#include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/bubble_combobox.h"
+#include "chrome/browser/ui/cocoa/chrome_style.h"
 #import "chrome/browser/ui/cocoa/passwords/passwords_bubble_utils.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "ui/base/models/simple_combobox_model.h"

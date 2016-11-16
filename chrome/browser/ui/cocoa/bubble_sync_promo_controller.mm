@@ -9,7 +9,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/chrome_style.h"
+#include "chrome/browser/ui/cocoa/chrome_style.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkColor.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"

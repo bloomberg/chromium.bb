@@ -2268,8 +2268,6 @@ split_static_library("ui") {
     sources += [
       "certificate_viewer_mac.h",
       "certificate_viewer_mac.mm",
-      "chrome_style.cc",
-      "chrome_style.h",
       "cocoa/accelerator_utils_cocoa.mm",
       "cocoa/accelerators_cocoa.h",
       "cocoa/accelerators_cocoa.mm",
@@ -2287,6 +2285,8 @@ split_static_library("ui") {
       "cocoa/browser_window_command_handler.mm",
       "cocoa/chrome_command_dispatcher_delegate.h",
       "cocoa/chrome_command_dispatcher_delegate.mm",
+      "cocoa/chrome_style.cc",
+      "cocoa/chrome_style.h",
       "cocoa/color_chooser_mac.mm",
       "cocoa/confirm_quit.h",
       "cocoa/confirm_quit_panel_controller.h",

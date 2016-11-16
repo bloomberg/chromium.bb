@@ -10,7 +10,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/chrome_style.h"
+#include "chrome/browser/ui/cocoa/chrome_style.h"
 #import "chrome/browser/ui/cocoa/passwords/base_passwords_content_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/password_item_views.h"
 #import "chrome/browser/ui/cocoa/passwords/passwords_bubble_utils.h"

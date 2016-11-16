@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_CHROME_STYLE_H_
-#define CHROME_BROWSER_UI_CHROME_STYLE_H_
+#ifndef CHROME_BROWSER_UI_COCOA_CHROME_STYLE_H_
+#define CHROME_BROWSER_UI_COCOA_CHROME_STYLE_H_
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -37,4 +37,4 @@ const ui::ResourceBundle::FontStyle kTitleFontStyle =
 
 }  // namespace chrome_style
 
-#endif  // CHROME_BROWSER_UI_CHROME_STYLE_H_
+#endif  // CHROME_BROWSER_UI_COCOA_CHROME_STYLE_H_

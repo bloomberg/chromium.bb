@@ -10,7 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/chrome_style.h"
+#include "chrome/browser/ui/cocoa/chrome_style.h"
 #import "chrome/browser/ui/cocoa/passwords/account_avatar_fetcher_manager.h"
 #import "chrome/browser/ui/cocoa/passwords/credential_item_button.h"
 #import "chrome/browser/ui/cocoa/passwords/passwords_bubble_utils.h"

@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/ui/chrome_style.h"
+#include "chrome/browser/ui/cocoa/chrome_style.h"
 #include "chrome/browser/ui/cocoa/infobars/infobar_cocoa.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "skia/ext/skia_utils_mac.h"

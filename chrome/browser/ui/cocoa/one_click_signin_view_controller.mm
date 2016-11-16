@@ -7,7 +7,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
-#import "chrome/browser/ui/chrome_style.h"
+#import "chrome/browser/ui/cocoa/chrome_style.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"

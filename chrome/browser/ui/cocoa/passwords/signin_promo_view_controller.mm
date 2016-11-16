@@ -5,7 +5,7 @@
 #import "chrome/browser/ui/cocoa/passwords/signin_promo_view_controller.h"
 
 #include "base/mac/scoped_nsobject.h"
-#include "chrome/browser/ui/chrome_style.h"
+#include "chrome/browser/ui/cocoa/chrome_style.h"
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 #include "chrome/browser/ui/cocoa/passwords/passwords_bubble_utils.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"

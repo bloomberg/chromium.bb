@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #import "base/mac/scoped_nsobject.h"
-#import "chrome/browser/ui/chrome_style.h"
+#import "chrome/browser/ui/cocoa/chrome_style.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
 #include "content/public/common/content_switches.h"
 #include "skia/ext/skia_utils_mac.h"
