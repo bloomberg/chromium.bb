@@ -20,7 +20,7 @@
     </div>
 </div>
 This test verifies scroll position restores correctly when a thumb drag has been cancelled in RTL mode.<br/>
-This test is expected to fail on Mac because it doesn't cancel scrolling when mouse cursor is out of a certain range. It is Aura-specific behavior.
+This test is expected to fail on Mac and Linux because those platforms don't cancel scrolling when mouse cursor is out of a certain range. It is Windows-specific behavior.
 <script src="../../resources/js-test.js"></script>
 <script>
     var container = document.getElementById("container");
