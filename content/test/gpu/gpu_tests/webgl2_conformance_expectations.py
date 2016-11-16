@@ -27,7 +27,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('WebglExtension_WEBGL_compressed_texture_etc',
         ['win', 'mac', 'linux'])
     self.Skip('WebglExtension_WEBGL_compressed_texture_etc1',
-        ['mac', 'linux'])
+        ['win', 'mac', 'linux'])
     self.Skip('WebglExtension_WEBGL_compressed_texture_pvrtc',
         ['win', 'mac', 'linux'])
     self.Skip('WebglExtension_WEBGL_compressed_texture_s3tc_srgb',
