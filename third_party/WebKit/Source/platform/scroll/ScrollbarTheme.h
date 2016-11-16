@@ -88,7 +88,7 @@ class PLATFORM_EXPORT ScrollbarTheme {
                                  const IntRect& cornerRect);
   virtual void paintTickmarks(GraphicsContext&,
                               const Scrollbar&,
-                              const IntRect&) {}
+                              const IntRect&);
 
   virtual bool shouldCenterOnThumb(const ScrollbarThemeClient&,
                                    const PlatformMouseEvent&);
@@ -176,6 +176,7 @@ class PLATFORM_EXPORT ScrollbarTheme {
   static bool mockScrollbarsEnabled();
 
  protected:
+  virtual int tickmarkBorderWidth() { return 0; }
   static DisplayItem::Type buttonPartToDisplayItemType(ScrollbarPart);
   static DisplayItem::Type trackPiecePartToDisplayItemType(ScrollbarPart);
 

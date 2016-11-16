@@ -132,76 +132,13 @@ ScrollbarTheme& ScrollbarTheme::nativeTheme() {
   return overlayTheme;
 }
 
-void ScrollbarThemeMac::paintGivenTickmarks(SkCanvas* canvas,
-                                            const Scrollbar& scrollbar,
-                                            const IntRect& rect,
-                                            const Vector<IntRect>& tickmarks) {
-  if (scrollbar.orientation() != VerticalScrollbar)
-    return;
-
-  if (rect.height() <= 0 || rect.width() <= 0)
-    return;  // nothing to draw on.
-
-  if (!tickmarks.size())
-    return;
-
-  SkAutoCanvasRestore stateSaver(canvas, true);
-
-  SkPaint strokePaint;
-  strokePaint.setAntiAlias(false);
-  strokePaint.setColor(SkColorSetRGB(0xCC, 0xAA, 0x00));
-  strokePaint.setStyle(SkPaint::kStroke_Style);
-
-  SkPaint fillPaint;
-  fillPaint.setAntiAlias(false);
-  fillPaint.setColor(SkColorSetRGB(0xFF, 0xDD, 0x00));
-  fillPaint.setStyle(SkPaint::kFill_Style);
-
-  for (Vector<IntRect>::const_iterator i = tickmarks.begin();
-       i != tickmarks.end(); ++i) {
-    // Calculate how far down (in %) the tick-mark should appear.
-    const float percent = static_cast<float>(i->y()) / scrollbar.totalSize();
-    if (percent < 0.0 || percent > 1.0)
-      continue;
-
-    // Calculate how far down (in pixels) the tick-mark should appear.
-    const int yPos = rect.y() + (rect.height() * percent);
-
-    // Paint.
-    FloatRect tickRect(rect.x(), yPos, rect.width(), 2);
-    canvas->drawRect(tickRect, fillPaint);
-    canvas->drawRect(tickRect, strokePaint);
-  }
-}
-
 void ScrollbarThemeMac::paintTickmarks(GraphicsContext& context,
                                        const Scrollbar& scrollbar,
                                        const IntRect& rect) {
-  // Note: This is only used for css-styled scrollbars on mac.
-  if (scrollbar.orientation() != VerticalScrollbar)
-    return;
-
-  if (rect.height() <= 0 || rect.width() <= 0)
-    return;
-
-  Vector<IntRect> tickmarks;
-  scrollbar.getTickmarks(tickmarks);
-  if (!tickmarks.size())
-    return;
-
-  if (DrawingRecorder::useCachedDrawingIfPossible(
-          context, scrollbar, DisplayItem::kScrollbarTickmarks))
-    return;
-
-  DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarTickmarks,
-                           rect);
-
-  // Inset a bit.
   IntRect tickmarkTrackRect = rect;
   tickmarkTrackRect.setX(tickmarkTrackRect.x() + 1);
-  tickmarkTrackRect.setWidth(tickmarkTrackRect.width() - 2);
-  paintGivenTickmarks(context.canvas(), scrollbar, tickmarkTrackRect,
-                      tickmarks);
+  tickmarkTrackRect.setWidth(tickmarkTrackRect.width() - 1);
+  ScrollbarTheme::paintTickmarks(context, scrollbar, tickmarkTrackRect);
 }
 
 ScrollbarThemeMac::~ScrollbarThemeMac() {}

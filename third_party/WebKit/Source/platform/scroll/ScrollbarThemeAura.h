@@ -54,9 +54,6 @@ class PLATFORM_EXPORT ScrollbarThemeAura : public ScrollbarTheme {
                     bool painting = false) override;
   int minimumThumbLength(const ScrollbarThemeClient&) override;
 
-  void paintTickmarks(GraphicsContext&,
-                      const Scrollbar&,
-                      const IntRect&) override;
   void paintTrackBackground(GraphicsContext&,
                             const Scrollbar&,
                             const IntRect&) override;
