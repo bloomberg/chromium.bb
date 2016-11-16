@@ -103,8 +103,12 @@ green received pointermove at phase=target
 PASS receivedPEsAtTarget[5].isPrimary is true
 PASS receivedPEsAtTarget[5].button is -1
 PASS receivedPEsAtTarget[5].buttons is 1
-PASS receivedPEsAtTarget[5].clientX is 168
-PASS receivedPEsAtTarget[5].clientY is 176
+PASS receivedPEsAtTarget[5].clientX is 168.5
+PASS receivedPEsAtTarget[5].clientY is 175.25
+PASS receivedPEsAtTarget[5].screenX is 168.5
+PASS receivedPEsAtTarget[5].screenY is 175.25
+PASS receivedPEsAtTarget[5].pageX is 168.5
+PASS receivedPEsAtTarget[5].pageY is 175.25
 PASS receivedPEsAtTarget.length is 6
 green received pointerup at phase=target
 green received pointerout at phase=target

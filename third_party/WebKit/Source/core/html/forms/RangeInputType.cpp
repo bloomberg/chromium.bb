@@ -167,7 +167,7 @@ void RangeInputType::handleMouseDownEvent(MouseEvent* event) {
   SliderThumbElement* thumb = sliderThumbElement();
   if (targetNode == thumb)
     return;
-  thumb->dragFrom(event->absoluteLocation());
+  thumb->dragFrom(LayoutPoint(event->absoluteLocation()));
 }
 
 void RangeInputType::handleKeydownEvent(KeyboardEvent* event) {

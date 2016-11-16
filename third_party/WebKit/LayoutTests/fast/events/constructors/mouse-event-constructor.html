@@ -61,40 +61,55 @@ shouldBe("new MouseEvent('eventType', { get view() { return window; } }).view", 
 shouldThrow("new MouseEvent('eventType', { get view() { return 123; } }).view");
 shouldThrow("new MouseEvent('eventType', { get view() { throw 'MouseEvent Error'; } })");
 
-// Max/min for client positions (LayoutUnit max/min).
-var MAX_CLIENT_SIZE = "33554431";
-var MIN_CLIENT_SIZE = "-33554432";
+// detail is passed.
+// Numeric values.
+shouldBeEqualToNumber("new MouseEvent('eventType', { detail: 0 }).detail", 0);
+shouldBeEqualToNumber("new MouseEvent('eventType', { detail: 1 }).detail", 1);
+shouldBeEqualToNumber("new MouseEvent('eventType', { detail: -1 }).detail", -1);
+shouldBeEqualToNumber("new MouseEvent('eventType', { detail: 2147483647 }).detail", 2147483647);
+shouldBeEqualToNumber("new MouseEvent('eventType', { detail: -2147483648 }).detail", -2147483648);
+shouldBeEqualToNumber("new MouseEvent('eventType', { detail: 123.45 }).detail", 123);
+shouldBeEqualToNumber("new MouseEvent('eventType', { detail: -123.45 }).detail", -123);
+shouldBeEqualToNumber("new MouseEvent('eventType', { detail: NaN }).detail", 0);
+// Non-numeric values.
+shouldBeEqualToNumber("new MouseEvent('eventType', { detail: undefined }).detail", 0);
+shouldBeEqualToNumber("new MouseEvent('eventType', { detail: null }).detail", 0);
+shouldBeEqualToNumber("new MouseEvent('eventType', { detail: '' }).detail", 0);
+shouldBeEqualToNumber("new MouseEvent('eventType', { detail: '12345' }).detail", 12345);
+shouldBeEqualToNumber("new MouseEvent('eventType', { detail: '12345a' }).detail", 0);
+shouldBeEqualToNumber("new MouseEvent('eventType', { detail: 'abc' }).detail", 0);
+shouldBeEqualToNumber("new MouseEvent('eventType', { detail: [] }).detail", 0);
+shouldBeEqualToNumber("new MouseEvent('eventType', { detail: [12345] }).detail", 12345);
+shouldBeEqualToNumber("new MouseEvent('eventType', { detail: [12345, 67890] }).detail", 0);
+shouldBeEqualToNumber("new MouseEvent('eventType', { detail: {} }).detail", 0);
+shouldBeEqualToNumber("new MouseEvent('eventType', { detail: {moemoe: 12345} }).detail", 0);
+shouldBeEqualToNumber("new MouseEvent('eventType', { detail: {valueOf: function () { return 12345; }} }).detail", 12345);
 
-// detail, screenX, screenY, clientX and clientY are passed.
-["detail", "screenX", "screenY", "clientX", "clientY"].forEach(function (attr) {
-    // numbers within the long range.
-    shouldBe("new MouseEvent('eventType', { " + attr + ": 0 })." + attr, "0");
-    shouldBe("new MouseEvent('eventType', { " + attr + ": 2147483647 })." + attr, attr == "clientX" || attr == "clientY" ? MAX_CLIENT_SIZE : "2147483647");
-    shouldBe("new MouseEvent('eventType', { " + attr + ": -1 })." + attr, "-1");
-    shouldBe("new MouseEvent('eventType', { " + attr + ": -2147483648 })." + attr, attr == "clientX" || attr == "clientY" ? MIN_CLIENT_SIZE : "-2147483648");
-
-    // numbers out of the long range.
-    shouldBe("new MouseEvent('eventType', { " + attr + ": 4294967295 })." + attr, "-1");
-    // 2^{53}-1, the largest number that can be exactly represented by double.
-    shouldBe("new MouseEvent('eventType', { " + attr + ": 9007199254740991 })." + attr, "-1");
-    // 2^{64}-1
-    shouldBe("new MouseEvent('eventType', { " + attr + ": 18446744073709551615 })." + attr, "0");
-    shouldBe("new MouseEvent('eventType', { " + attr + ": 123.45 })." + attr, "123");
-    shouldBe("new MouseEvent('eventType', { " + attr + ": NaN })." + attr, "0");
+// screenX, screenY, clientX and clientY are passed.
+["screenX", "screenY", "clientX", "clientY"].forEach(function (attr) {
+    // Numeric values.
+    shouldBeEqualToNumber("new MouseEvent('eventType', { " + attr + ": 0 })." + attr, 0);
+    shouldBeEqualToNumber("new MouseEvent('eventType', { " + attr + ": 1 })." + attr, 1);
+    shouldBeEqualToNumber("new MouseEvent('eventType', { " + attr + ": -1 })." + attr, -1);
+    shouldBeEqualToNumber("new MouseEvent('eventType', { " + attr + ": 2147483647 })." + attr, 2147483647);
+    shouldBeEqualToNumber("new MouseEvent('eventType', { " + attr + ": -2147483648 })." + attr, -2147483648);
+    shouldBeEqualToNumber("new MouseEvent('eventType', { " + attr + ": 123.45 })." + attr, 123);
+    shouldBeEqualToNumber("new MouseEvent('eventType', { " + attr + ": -123.45 })." + attr, -123);
+    shouldThrow("new MouseEvent('eventType', { " + attr + ": NaN })." + attr);
 
     // Non-numeric values.
-    shouldBe("new MouseEvent('eventType', { " + attr + ": undefined })." + attr, "0");
-    shouldBe("new MouseEvent('eventType', { " + attr + ": null })." + attr, "0");
-    shouldBe("new MouseEvent('eventType', { " + attr + ": '' })." + attr, "0");
-    shouldBe("new MouseEvent('eventType', { " + attr + ": '12345' })." + attr, "12345");
-    shouldBe("new MouseEvent('eventType', { " + attr + ": '12345a' })." + attr, "0");
-    shouldBe("new MouseEvent('eventType', { " + attr + ": 'abc' })." + attr, "0");
-    shouldBe("new MouseEvent('eventType', { " + attr + ": [] })." + attr, "0");
-    shouldBe("new MouseEvent('eventType', { " + attr + ": [12345] })." + attr, "12345");
-    shouldBe("new MouseEvent('eventType', { " + attr + ": [12345, 67890] })." + attr, "0");
-    shouldBe("new MouseEvent('eventType', { " + attr + ": {} })." + attr, "0");
-    shouldBe("new MouseEvent('eventType', { " + attr + ": {moemoe: 12345} })." + attr, "0");
-    shouldBe("new MouseEvent('eventType', { " + attr + ": {valueOf: function () { return 12345; }} })." + attr, "12345");
+    shouldBeEqualToNumber("new MouseEvent('eventType', { " + attr + ": undefined })." + attr, 0);
+    shouldBeEqualToNumber("new MouseEvent('eventType', { " + attr + ": null })." + attr, 0);
+    shouldBeEqualToNumber("new MouseEvent('eventType', { " + attr + ": '' })." + attr, 0);
+    shouldBeEqualToNumber("new MouseEvent('eventType', { " + attr + ": '12345' })." + attr, 12345);
+    shouldThrow("new MouseEvent('eventType', { " + attr + ": '12345a' })." + attr);
+    shouldThrow("new MouseEvent('eventType', { " + attr + ": 'abc' })." + attr);
+    shouldBeEqualToNumber("new MouseEvent('eventType', { " + attr + ": [] })." + attr, 0);
+    shouldBeEqualToNumber("new MouseEvent('eventType', { " + attr + ": [12345] })." + attr, 12345);
+    shouldThrow("new MouseEvent('eventType', { " + attr + ": [12345, 67890] })." + attr);
+    shouldThrow("new MouseEvent('eventType', { " + attr + ": {} })." + attr);
+    shouldThrow("new MouseEvent('eventType', { " + attr + ": {moemoe: 12345} })." + attr);
+    shouldBeEqualToNumber("new MouseEvent('eventType', { " + attr + ": {valueOf: function () { return 12345; }} })." + attr, 12345);
 });
 
 // ctrlKey, altKey, shiftKey and metaKey are passed.

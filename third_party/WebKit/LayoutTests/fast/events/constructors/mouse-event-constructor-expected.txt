@@ -40,13 +40,12 @@ PASS new MouseEvent('eventType', { get view() { return window; } }).view is wind
 PASS new MouseEvent('eventType', { get view() { return 123; } }).view threw exception TypeError: Failed to construct 'MouseEvent': member view is not of type Window..
 PASS new MouseEvent('eventType', { get view() { throw 'MouseEvent Error'; } }) threw exception MouseEvent Error.
 PASS new MouseEvent('eventType', { detail: 0 }).detail is 0
-PASS new MouseEvent('eventType', { detail: 2147483647 }).detail is 2147483647
+PASS new MouseEvent('eventType', { detail: 1 }).detail is 1
 PASS new MouseEvent('eventType', { detail: -1 }).detail is -1
+PASS new MouseEvent('eventType', { detail: 2147483647 }).detail is 2147483647
 PASS new MouseEvent('eventType', { detail: -2147483648 }).detail is -2147483648
-PASS new MouseEvent('eventType', { detail: 4294967295 }).detail is -1
-PASS new MouseEvent('eventType', { detail: 9007199254740991 }).detail is -1
-PASS new MouseEvent('eventType', { detail: 18446744073709551615 }).detail is 0
 PASS new MouseEvent('eventType', { detail: 123.45 }).detail is 123
+PASS new MouseEvent('eventType', { detail: -123.45 }).detail is -123
 PASS new MouseEvent('eventType', { detail: NaN }).detail is 0
 PASS new MouseEvent('eventType', { detail: undefined }).detail is 0
 PASS new MouseEvent('eventType', { detail: null }).detail is 0
@@ -61,88 +60,84 @@ PASS new MouseEvent('eventType', { detail: {} }).detail is 0
 PASS new MouseEvent('eventType', { detail: {moemoe: 12345} }).detail is 0
 PASS new MouseEvent('eventType', { detail: {valueOf: function () { return 12345; }} }).detail is 12345
 PASS new MouseEvent('eventType', { screenX: 0 }).screenX is 0
-PASS new MouseEvent('eventType', { screenX: 2147483647 }).screenX is 2147483647
+PASS new MouseEvent('eventType', { screenX: 1 }).screenX is 1
 PASS new MouseEvent('eventType', { screenX: -1 }).screenX is -1
+PASS new MouseEvent('eventType', { screenX: 2147483647 }).screenX is 2147483647
 PASS new MouseEvent('eventType', { screenX: -2147483648 }).screenX is -2147483648
-PASS new MouseEvent('eventType', { screenX: 4294967295 }).screenX is -1
-PASS new MouseEvent('eventType', { screenX: 9007199254740991 }).screenX is -1
-PASS new MouseEvent('eventType', { screenX: 18446744073709551615 }).screenX is 0
 PASS new MouseEvent('eventType', { screenX: 123.45 }).screenX is 123
-PASS new MouseEvent('eventType', { screenX: NaN }).screenX is 0
+PASS new MouseEvent('eventType', { screenX: -123.45 }).screenX is -123
+PASS new MouseEvent('eventType', { screenX: NaN }).screenX threw exception TypeError: Failed to construct 'MouseEvent': The provided double value is non-finite..
 PASS new MouseEvent('eventType', { screenX: undefined }).screenX is 0
 PASS new MouseEvent('eventType', { screenX: null }).screenX is 0
 PASS new MouseEvent('eventType', { screenX: '' }).screenX is 0
 PASS new MouseEvent('eventType', { screenX: '12345' }).screenX is 12345
-PASS new MouseEvent('eventType', { screenX: '12345a' }).screenX is 0
-PASS new MouseEvent('eventType', { screenX: 'abc' }).screenX is 0
+PASS new MouseEvent('eventType', { screenX: '12345a' }).screenX threw exception TypeError: Failed to construct 'MouseEvent': The provided double value is non-finite..
+PASS new MouseEvent('eventType', { screenX: 'abc' }).screenX threw exception TypeError: Failed to construct 'MouseEvent': The provided double value is non-finite..
 PASS new MouseEvent('eventType', { screenX: [] }).screenX is 0
 PASS new MouseEvent('eventType', { screenX: [12345] }).screenX is 12345
-PASS new MouseEvent('eventType', { screenX: [12345, 67890] }).screenX is 0
-PASS new MouseEvent('eventType', { screenX: {} }).screenX is 0
-PASS new MouseEvent('eventType', { screenX: {moemoe: 12345} }).screenX is 0
+PASS new MouseEvent('eventType', { screenX: [12345, 67890] }).screenX threw exception TypeError: Failed to construct 'MouseEvent': The provided double value is non-finite..
+PASS new MouseEvent('eventType', { screenX: {} }).screenX threw exception TypeError: Failed to construct 'MouseEvent': The provided double value is non-finite..
+PASS new MouseEvent('eventType', { screenX: {moemoe: 12345} }).screenX threw exception TypeError: Failed to construct 'MouseEvent': The provided double value is non-finite..
 PASS new MouseEvent('eventType', { screenX: {valueOf: function () { return 12345; }} }).screenX is 12345
 PASS new MouseEvent('eventType', { screenY: 0 }).screenY is 0
-PASS new MouseEvent('eventType', { screenY: 2147483647 }).screenY is 2147483647
+PASS new MouseEvent('eventType', { screenY: 1 }).screenY is 1
 PASS new MouseEvent('eventType', { screenY: -1 }).screenY is -1
+PASS new MouseEvent('eventType', { screenY: 2147483647 }).screenY is 2147483647
 PASS new MouseEvent('eventType', { screenY: -2147483648 }).screenY is -2147483648
-PASS new MouseEvent('eventType', { screenY: 4294967295 }).screenY is -1
-PASS new MouseEvent('eventType', { screenY: 9007199254740991 }).screenY is -1
-PASS new MouseEvent('eventType', { screenY: 18446744073709551615 }).screenY is 0
 PASS new MouseEvent('eventType', { screenY: 123.45 }).screenY is 123
-PASS new MouseEvent('eventType', { screenY: NaN }).screenY is 0
+PASS new MouseEvent('eventType', { screenY: -123.45 }).screenY is -123
+PASS new MouseEvent('eventType', { screenY: NaN }).screenY threw exception TypeError: Failed to construct 'MouseEvent': The provided double value is non-finite..
 PASS new MouseEvent('eventType', { screenY: undefined }).screenY is 0
 PASS new MouseEvent('eventType', { screenY: null }).screenY is 0
 PASS new MouseEvent('eventType', { screenY: '' }).screenY is 0
 PASS new MouseEvent('eventType', { screenY: '12345' }).screenY is 12345
-PASS new MouseEvent('eventType', { screenY: '12345a' }).screenY is 0
-PASS new MouseEvent('eventType', { screenY: 'abc' }).screenY is 0
+PASS new MouseEvent('eventType', { screenY: '12345a' }).screenY threw exception TypeError: Failed to construct 'MouseEvent': The provided double value is non-finite..
+PASS new MouseEvent('eventType', { screenY: 'abc' }).screenY threw exception TypeError: Failed to construct 'MouseEvent': The provided double value is non-finite..
 PASS new MouseEvent('eventType', { screenY: [] }).screenY is 0
 PASS new MouseEvent('eventType', { screenY: [12345] }).screenY is 12345
-PASS new MouseEvent('eventType', { screenY: [12345, 67890] }).screenY is 0
-PASS new MouseEvent('eventType', { screenY: {} }).screenY is 0
-PASS new MouseEvent('eventType', { screenY: {moemoe: 12345} }).screenY is 0
+PASS new MouseEvent('eventType', { screenY: [12345, 67890] }).screenY threw exception TypeError: Failed to construct 'MouseEvent': The provided double value is non-finite..
+PASS new MouseEvent('eventType', { screenY: {} }).screenY threw exception TypeError: Failed to construct 'MouseEvent': The provided double value is non-finite..
+PASS new MouseEvent('eventType', { screenY: {moemoe: 12345} }).screenY threw exception TypeError: Failed to construct 'MouseEvent': The provided double value is non-finite..
 PASS new MouseEvent('eventType', { screenY: {valueOf: function () { return 12345; }} }).screenY is 12345
 PASS new MouseEvent('eventType', { clientX: 0 }).clientX is 0
-PASS new MouseEvent('eventType', { clientX: 2147483647 }).clientX is 33554431
+PASS new MouseEvent('eventType', { clientX: 1 }).clientX is 1
 PASS new MouseEvent('eventType', { clientX: -1 }).clientX is -1
-PASS new MouseEvent('eventType', { clientX: -2147483648 }).clientX is -33554432
-PASS new MouseEvent('eventType', { clientX: 4294967295 }).clientX is -1
-PASS new MouseEvent('eventType', { clientX: 9007199254740991 }).clientX is -1
-PASS new MouseEvent('eventType', { clientX: 18446744073709551615 }).clientX is 0
+PASS new MouseEvent('eventType', { clientX: 2147483647 }).clientX is 2147483647
+PASS new MouseEvent('eventType', { clientX: -2147483648 }).clientX is -2147483648
 PASS new MouseEvent('eventType', { clientX: 123.45 }).clientX is 123
-PASS new MouseEvent('eventType', { clientX: NaN }).clientX is 0
+PASS new MouseEvent('eventType', { clientX: -123.45 }).clientX is -123
+PASS new MouseEvent('eventType', { clientX: NaN }).clientX threw exception TypeError: Failed to construct 'MouseEvent': The provided double value is non-finite..
 PASS new MouseEvent('eventType', { clientX: undefined }).clientX is 0
 PASS new MouseEvent('eventType', { clientX: null }).clientX is 0
 PASS new MouseEvent('eventType', { clientX: '' }).clientX is 0
 PASS new MouseEvent('eventType', { clientX: '12345' }).clientX is 12345
-PASS new MouseEvent('eventType', { clientX: '12345a' }).clientX is 0
-PASS new MouseEvent('eventType', { clientX: 'abc' }).clientX is 0
+PASS new MouseEvent('eventType', { clientX: '12345a' }).clientX threw exception TypeError: Failed to construct 'MouseEvent': The provided double value is non-finite..
+PASS new MouseEvent('eventType', { clientX: 'abc' }).clientX threw exception TypeError: Failed to construct 'MouseEvent': The provided double value is non-finite..
 PASS new MouseEvent('eventType', { clientX: [] }).clientX is 0
 PASS new MouseEvent('eventType', { clientX: [12345] }).clientX is 12345
-PASS new MouseEvent('eventType', { clientX: [12345, 67890] }).clientX is 0
-PASS new MouseEvent('eventType', { clientX: {} }).clientX is 0
-PASS new MouseEvent('eventType', { clientX: {moemoe: 12345} }).clientX is 0
+PASS new MouseEvent('eventType', { clientX: [12345, 67890] }).clientX threw exception TypeError: Failed to construct 'MouseEvent': The provided double value is non-finite..
+PASS new MouseEvent('eventType', { clientX: {} }).clientX threw exception TypeError: Failed to construct 'MouseEvent': The provided double value is non-finite..
+PASS new MouseEvent('eventType', { clientX: {moemoe: 12345} }).clientX threw exception TypeError: Failed to construct 'MouseEvent': The provided double value is non-finite..
 PASS new MouseEvent('eventType', { clientX: {valueOf: function () { return 12345; }} }).clientX is 12345
 PASS new MouseEvent('eventType', { clientY: 0 }).clientY is 0
-PASS new MouseEvent('eventType', { clientY: 2147483647 }).clientY is 33554431
+PASS new MouseEvent('eventType', { clientY: 1 }).clientY is 1
 PASS new MouseEvent('eventType', { clientY: -1 }).clientY is -1
-PASS new MouseEvent('eventType', { clientY: -2147483648 }).clientY is -33554432
-PASS new MouseEvent('eventType', { clientY: 4294967295 }).clientY is -1
-PASS new MouseEvent('eventType', { clientY: 9007199254740991 }).clientY is -1
-PASS new MouseEvent('eventType', { clientY: 18446744073709551615 }).clientY is 0
+PASS new MouseEvent('eventType', { clientY: 2147483647 }).clientY is 2147483647
+PASS new MouseEvent('eventType', { clientY: -2147483648 }).clientY is -2147483648
 PASS new MouseEvent('eventType', { clientY: 123.45 }).clientY is 123
-PASS new MouseEvent('eventType', { clientY: NaN }).clientY is 0
+PASS new MouseEvent('eventType', { clientY: -123.45 }).clientY is -123
+PASS new MouseEvent('eventType', { clientY: NaN }).clientY threw exception TypeError: Failed to construct 'MouseEvent': The provided double value is non-finite..
 PASS new MouseEvent('eventType', { clientY: undefined }).clientY is 0
 PASS new MouseEvent('eventType', { clientY: null }).clientY is 0
 PASS new MouseEvent('eventType', { clientY: '' }).clientY is 0
 PASS new MouseEvent('eventType', { clientY: '12345' }).clientY is 12345
-PASS new MouseEvent('eventType', { clientY: '12345a' }).clientY is 0
-PASS new MouseEvent('eventType', { clientY: 'abc' }).clientY is 0
+PASS new MouseEvent('eventType', { clientY: '12345a' }).clientY threw exception TypeError: Failed to construct 'MouseEvent': The provided double value is non-finite..
+PASS new MouseEvent('eventType', { clientY: 'abc' }).clientY threw exception TypeError: Failed to construct 'MouseEvent': The provided double value is non-finite..
 PASS new MouseEvent('eventType', { clientY: [] }).clientY is 0
 PASS new MouseEvent('eventType', { clientY: [12345] }).clientY is 12345
-PASS new MouseEvent('eventType', { clientY: [12345, 67890] }).clientY is 0
-PASS new MouseEvent('eventType', { clientY: {} }).clientY is 0
-PASS new MouseEvent('eventType', { clientY: {moemoe: 12345} }).clientY is 0
+PASS new MouseEvent('eventType', { clientY: [12345, 67890] }).clientY threw exception TypeError: Failed to construct 'MouseEvent': The provided double value is non-finite..
+PASS new MouseEvent('eventType', { clientY: {} }).clientY threw exception TypeError: Failed to construct 'MouseEvent': The provided double value is non-finite..
+PASS new MouseEvent('eventType', { clientY: {moemoe: 12345} }).clientY threw exception TypeError: Failed to construct 'MouseEvent': The provided double value is non-finite..
 PASS new MouseEvent('eventType', { clientY: {valueOf: function () { return 12345; }} }).clientY is 12345
 PASS new MouseEvent('eventType', { ctrlKey: false }).ctrlKey is false
 PASS new MouseEvent('eventType', { ctrlKey: true }).ctrlKey is true

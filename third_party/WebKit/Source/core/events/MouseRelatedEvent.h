@@ -41,31 +41,56 @@ class CORE_EXPORT MouseRelatedEvent : public UIEventWithKeyState {
     // position.
     Positionless
   };
+
   // Note that these values are adjusted to counter the effects of zoom, so that
   // values exposed via DOM APIs are invariant under zooming.
-  int screenX() const { return m_screenLocation.x(); }
-  int screenY() const { return m_screenLocation.y(); }
-  const IntPoint& screenLocation() const { return m_screenLocation; }
-  int clientX() const { return m_clientLocation.x().toInt(); }
-  int clientY() const { return m_clientLocation.y().toInt(); }
-  int movementX() const { return m_movementDelta.x().toInt(); }
-  int movementY() const { return m_movementDelta.y().toInt(); }
-  const LayoutPoint& clientLocation() const { return m_clientLocation; }
+  // TODO(mustaq): Remove the PointerEvent specific code when mouse has
+  // fractional coordinates. See crbug.com/655786.
+  double screenX() const {
+    return isPointerEvent() ? m_screenLocation.x()
+                            : static_cast<int>(m_screenLocation.x());
+  }
+  double screenY() const {
+    return isPointerEvent() ? m_screenLocation.y()
+                            : static_cast<int>(m_screenLocation.y());
+  }
+
+  double clientX() const {
+    return isPointerEvent() ? m_clientLocation.x()
+                            : static_cast<int>(m_clientLocation.x());
+  }
+  double clientY() const {
+    return isPointerEvent() ? m_clientLocation.y()
+                            : static_cast<int>(m_clientLocation.y());
+  }
+
+  int movementX() const { return m_movementDelta.x(); }
+  int movementY() const { return m_movementDelta.y(); }
+
   int layerX();
   int layerY();
+
   int offsetX();
   int offsetY();
-  int pageX() const;
-  int pageY() const;
-  int x() const;
-  int y() const;
+
+  double pageX() const {
+    return isPointerEvent() ? m_pageLocation.x()
+                            : static_cast<int>(m_pageLocation.x());
+  }
+  double pageY() const {
+    return isPointerEvent() ? m_pageLocation.y()
+                            : static_cast<int>(m_pageLocation.y());
+  }
+
+  double x() const { return clientX(); }
+  double y() const { return clientY(); }
+
   bool hasPosition() const { return m_positionType == PositionType::Position; }
 
   // Page point in "absolute" coordinates (i.e. post-zoomed, page-relative
   // coords, usable with LayoutObject::absoluteToLocal) relative to view(), i.e.
   // the local frame.
-  const LayoutPoint& absoluteLocation() const { return m_absoluteLocation; }
-  void setAbsoluteLocation(const LayoutPoint& p) { m_absoluteLocation = p; }
+  const DoublePoint& absoluteLocation() const { return m_absoluteLocation; }
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -90,22 +115,22 @@ class CORE_EXPORT MouseRelatedEvent : public UIEventWithKeyState {
   MouseRelatedEvent(const AtomicString& type,
                     const MouseEventInit& initializer);
 
-  void initCoordinates(const LayoutPoint& clientLocation);
+  void initCoordinates(const double clientX, const double clientY);
   void receivedTarget() final;
 
   void computePageLocation();
   void computeRelativePosition();
 
   // Expose these so MouseEvent::initMouseEvent can set them.
-  IntPoint m_screenLocation;
-  LayoutPoint m_clientLocation;
-  LayoutPoint m_movementDelta;
+  DoublePoint m_screenLocation;
+  DoublePoint m_clientLocation;
+  DoublePoint m_movementDelta;
 
  private:
-  LayoutPoint m_pageLocation;
-  LayoutPoint m_layerLocation;
-  LayoutPoint m_offsetLocation;
-  LayoutPoint m_absoluteLocation;
+  DoublePoint m_pageLocation;
+  DoublePoint m_layerLocation;
+  DoublePoint m_offsetLocation;
+  DoublePoint m_absoluteLocation;
   PositionType m_positionType;
   bool m_hasCachedRelativePosition;
 };

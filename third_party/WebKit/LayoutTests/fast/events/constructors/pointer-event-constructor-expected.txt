@@ -3,10 +3,11 @@ This tests the constructor for the PointerEvent DOM class.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
---- tests for intrinsic attributes ---
+--- tests for intrinsic attributes plus screen & client coordinates ---
 -- no init --
 PASS new PointerEvent('eventType').pointerId is 0
 -- init with valid long values --
+PASS new PointerEvent('eventType', { pointerId: 0 }).pointerId is 0
 PASS new PointerEvent('eventType', { pointerId: 123 }).pointerId is 123
 PASS new PointerEvent('eventType', { pointerId: -123 }).pointerId is -123
 PASS new PointerEvent('eventType', { pointerId: 2147483647 }).pointerId is 2147483647
@@ -29,6 +30,7 @@ PASS new PointerEvent('eventType', { pointerId: {valueOf: function () { return 1
 -- no init --
 PASS new PointerEvent('eventType').tiltX is 0
 -- init with valid long values --
+PASS new PointerEvent('eventType', { tiltX: 0 }).tiltX is 0
 PASS new PointerEvent('eventType', { tiltX: 123 }).tiltX is 123
 PASS new PointerEvent('eventType', { tiltX: -123 }).tiltX is -123
 PASS new PointerEvent('eventType', { tiltX: 2147483647 }).tiltX is 2147483647
@@ -51,6 +53,7 @@ PASS new PointerEvent('eventType', { tiltX: {valueOf: function () { return 123; 
 -- no init --
 PASS new PointerEvent('eventType').tiltY is 0
 -- init with valid long values --
+PASS new PointerEvent('eventType', { tiltY: 0 }).tiltY is 0
 PASS new PointerEvent('eventType', { tiltY: 123 }).tiltY is 123
 PASS new PointerEvent('eventType', { tiltY: -123 }).tiltY is -123
 PASS new PointerEvent('eventType', { tiltY: 2147483647 }).tiltY is 2147483647
@@ -73,12 +76,15 @@ PASS new PointerEvent('eventType', { tiltY: {valueOf: function () { return 123; 
 -- no init --
 PASS new PointerEvent('eventType').width is 1
 -- init with valid float/double values --
+PASS new PointerEvent('eventType', { width: 0 }).width is 0
 PASS new PointerEvent('eventType', { width: 123 }).width is 123
 PASS new PointerEvent('eventType', { width: -123 }).width is -123
 PASS new PointerEvent('eventType', { width: 123.45 }).width is within 0.00001 of 123.45
 PASS new PointerEvent('eventType', { width: -123.45 }).width is within 0.00001 of -123.45
 PASS new PointerEvent('eventType', { width: 1.23e5 }).width is within 0.00001 of 123000
 PASS new PointerEvent('eventType', { width: -1.2e-3 }).width is within 0.00001 of -0.0012
+PASS new PointerEvent('eventType', { width: 16777215 }).width is 16777215
+PASS new PointerEvent('eventType', { width: -16777216 }).width is -16777216
 -- init with non-float/double values --
 PASS new PointerEvent('eventType', { width: '123abc' }).width threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
 PASS new PointerEvent('eventType', { width: 'dummy' }).width threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
@@ -95,12 +101,15 @@ PASS new PointerEvent('eventType', { width: {valueOf: function () { return 123; 
 -- no init --
 PASS new PointerEvent('eventType').height is 1
 -- init with valid float/double values --
+PASS new PointerEvent('eventType', { height: 0 }).height is 0
 PASS new PointerEvent('eventType', { height: 123 }).height is 123
 PASS new PointerEvent('eventType', { height: -123 }).height is -123
 PASS new PointerEvent('eventType', { height: 123.45 }).height is within 0.00001 of 123.45
 PASS new PointerEvent('eventType', { height: -123.45 }).height is within 0.00001 of -123.45
 PASS new PointerEvent('eventType', { height: 1.23e5 }).height is within 0.00001 of 123000
 PASS new PointerEvent('eventType', { height: -1.2e-3 }).height is within 0.00001 of -0.0012
+PASS new PointerEvent('eventType', { height: 16777215 }).height is 16777215
+PASS new PointerEvent('eventType', { height: -16777216 }).height is -16777216
 -- init with non-float/double values --
 PASS new PointerEvent('eventType', { height: '123abc' }).height threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
 PASS new PointerEvent('eventType', { height: 'dummy' }).height threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
@@ -117,12 +126,15 @@ PASS new PointerEvent('eventType', { height: {valueOf: function () { return 123;
 -- no init --
 PASS new PointerEvent('eventType').pressure is 0
 -- init with valid float/double values --
+PASS new PointerEvent('eventType', { pressure: 0 }).pressure is 0
 PASS new PointerEvent('eventType', { pressure: 123 }).pressure is 123
 PASS new PointerEvent('eventType', { pressure: -123 }).pressure is -123
 PASS new PointerEvent('eventType', { pressure: 123.45 }).pressure is within 0.00001 of 123.45
 PASS new PointerEvent('eventType', { pressure: -123.45 }).pressure is within 0.00001 of -123.45
 PASS new PointerEvent('eventType', { pressure: 1.23e5 }).pressure is within 0.00001 of 123000
 PASS new PointerEvent('eventType', { pressure: -1.2e-3 }).pressure is within 0.00001 of -0.0012
+PASS new PointerEvent('eventType', { pressure: 16777215 }).pressure is 16777215
+PASS new PointerEvent('eventType', { pressure: -16777216 }).pressure is -16777216
 -- init with non-float/double values --
 PASS new PointerEvent('eventType', { pressure: '123abc' }).pressure threw exception TypeError: Failed to construct 'PointerEvent': The provided float value is non-finite..
 PASS new PointerEvent('eventType', { pressure: 'dummy' }).pressure threw exception TypeError: Failed to construct 'PointerEvent': The provided float value is non-finite..
@@ -136,15 +148,111 @@ PASS new PointerEvent('eventType', { pressure: {} }).pressure threw exception Ty
 PASS new PointerEvent('eventType', { pressure: {abc:1} }).pressure threw exception TypeError: Failed to construct 'PointerEvent': The provided float value is non-finite..
 PASS new PointerEvent('eventType', { pressure: {} }).pressure threw exception TypeError: Failed to construct 'PointerEvent': The provided float value is non-finite..
 PASS new PointerEvent('eventType', { pressure: {valueOf: function () { return 123; }} }).pressure is 123
---- tests for inherited attributes ---
+-- no init --
+PASS new PointerEvent('eventType').screenX is 0
+-- init with valid float/double values --
+PASS new PointerEvent('eventType', { screenX: 0 }).screenX is 0
+PASS new PointerEvent('eventType', { screenX: 123 }).screenX is 123
+PASS new PointerEvent('eventType', { screenX: -123 }).screenX is -123
+PASS new PointerEvent('eventType', { screenX: 123.45 }).screenX is within 0.00001 of 123.45
+PASS new PointerEvent('eventType', { screenX: -123.45 }).screenX is within 0.00001 of -123.45
+PASS new PointerEvent('eventType', { screenX: 1.23e5 }).screenX is within 0.00001 of 123000
+PASS new PointerEvent('eventType', { screenX: -1.2e-3 }).screenX is within 0.00001 of -0.0012
+PASS new PointerEvent('eventType', { screenX: 16777215 }).screenX is 16777215
+PASS new PointerEvent('eventType', { screenX: -16777216 }).screenX is -16777216
+-- init with non-float/double values --
+PASS new PointerEvent('eventType', { screenX: '123abc' }).screenX threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
+PASS new PointerEvent('eventType', { screenX: 'dummy' }).screenX threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
+PASS new PointerEvent('eventType', { screenX: NaN }).screenX threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
+PASS new PointerEvent('eventType', { screenX: null }).screenX is 0
+PASS new PointerEvent('eventType', { screenX: undefined }).screenX is 0
+PASS new PointerEvent('eventType', { screenX: [] }).screenX is 0
+PASS new PointerEvent('eventType', { screenX: [12] }).screenX is 12
+PASS new PointerEvent('eventType', { screenX: [12, 34] }).screenX threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
+PASS new PointerEvent('eventType', { screenX: {} }).screenX threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
+PASS new PointerEvent('eventType', { screenX: {abc:1} }).screenX threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
+PASS new PointerEvent('eventType', { screenX: {} }).screenX threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
+PASS new PointerEvent('eventType', { screenX: {valueOf: function () { return 123; }} }).screenX is 123
+-- no init --
+PASS new PointerEvent('eventType').screenY is 0
+-- init with valid float/double values --
+PASS new PointerEvent('eventType', { screenY: 0 }).screenY is 0
+PASS new PointerEvent('eventType', { screenY: 123 }).screenY is 123
+PASS new PointerEvent('eventType', { screenY: -123 }).screenY is -123
+PASS new PointerEvent('eventType', { screenY: 123.45 }).screenY is within 0.00001 of 123.45
+PASS new PointerEvent('eventType', { screenY: -123.45 }).screenY is within 0.00001 of -123.45
+PASS new PointerEvent('eventType', { screenY: 1.23e5 }).screenY is within 0.00001 of 123000
+PASS new PointerEvent('eventType', { screenY: -1.2e-3 }).screenY is within 0.00001 of -0.0012
+PASS new PointerEvent('eventType', { screenY: 16777215 }).screenY is 16777215
+PASS new PointerEvent('eventType', { screenY: -16777216 }).screenY is -16777216
+-- init with non-float/double values --
+PASS new PointerEvent('eventType', { screenY: '123abc' }).screenY threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
+PASS new PointerEvent('eventType', { screenY: 'dummy' }).screenY threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
+PASS new PointerEvent('eventType', { screenY: NaN }).screenY threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
+PASS new PointerEvent('eventType', { screenY: null }).screenY is 0
+PASS new PointerEvent('eventType', { screenY: undefined }).screenY is 0
+PASS new PointerEvent('eventType', { screenY: [] }).screenY is 0
+PASS new PointerEvent('eventType', { screenY: [12] }).screenY is 12
+PASS new PointerEvent('eventType', { screenY: [12, 34] }).screenY threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
+PASS new PointerEvent('eventType', { screenY: {} }).screenY threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
+PASS new PointerEvent('eventType', { screenY: {abc:1} }).screenY threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
+PASS new PointerEvent('eventType', { screenY: {} }).screenY threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
+PASS new PointerEvent('eventType', { screenY: {valueOf: function () { return 123; }} }).screenY is 123
+-- no init --
+PASS new PointerEvent('eventType').clientX is 0
+-- init with valid float/double values --
+PASS new PointerEvent('eventType', { clientX: 0 }).clientX is 0
+PASS new PointerEvent('eventType', { clientX: 123 }).clientX is 123
+PASS new PointerEvent('eventType', { clientX: -123 }).clientX is -123
+PASS new PointerEvent('eventType', { clientX: 123.45 }).clientX is within 0.00001 of 123.45
+PASS new PointerEvent('eventType', { clientX: -123.45 }).clientX is within 0.00001 of -123.45
+PASS new PointerEvent('eventType', { clientX: 1.23e5 }).clientX is within 0.00001 of 123000
+PASS new PointerEvent('eventType', { clientX: -1.2e-3 }).clientX is within 0.00001 of -0.0012
+PASS new PointerEvent('eventType', { clientX: 16777215 }).clientX is 16777215
+PASS new PointerEvent('eventType', { clientX: -16777216 }).clientX is -16777216
+-- init with non-float/double values --
+PASS new PointerEvent('eventType', { clientX: '123abc' }).clientX threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
+PASS new PointerEvent('eventType', { clientX: 'dummy' }).clientX threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
+PASS new PointerEvent('eventType', { clientX: NaN }).clientX threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
+PASS new PointerEvent('eventType', { clientX: null }).clientX is 0
+PASS new PointerEvent('eventType', { clientX: undefined }).clientX is 0
+PASS new PointerEvent('eventType', { clientX: [] }).clientX is 0
+PASS new PointerEvent('eventType', { clientX: [12] }).clientX is 12
+PASS new PointerEvent('eventType', { clientX: [12, 34] }).clientX threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
+PASS new PointerEvent('eventType', { clientX: {} }).clientX threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
+PASS new PointerEvent('eventType', { clientX: {abc:1} }).clientX threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
+PASS new PointerEvent('eventType', { clientX: {} }).clientX threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
+PASS new PointerEvent('eventType', { clientX: {valueOf: function () { return 123; }} }).clientX is 123
+-- no init --
+PASS new PointerEvent('eventType').clientY is 0
+-- init with valid float/double values --
+PASS new PointerEvent('eventType', { clientY: 0 }).clientY is 0
+PASS new PointerEvent('eventType', { clientY: 123 }).clientY is 123
+PASS new PointerEvent('eventType', { clientY: -123 }).clientY is -123
+PASS new PointerEvent('eventType', { clientY: 123.45 }).clientY is within 0.00001 of 123.45
+PASS new PointerEvent('eventType', { clientY: -123.45 }).clientY is within 0.00001 of -123.45
+PASS new PointerEvent('eventType', { clientY: 1.23e5 }).clientY is within 0.00001 of 123000
+PASS new PointerEvent('eventType', { clientY: -1.2e-3 }).clientY is within 0.00001 of -0.0012
+PASS new PointerEvent('eventType', { clientY: 16777215 }).clientY is 16777215
+PASS new PointerEvent('eventType', { clientY: -16777216 }).clientY is -16777216
+-- init with non-float/double values --
+PASS new PointerEvent('eventType', { clientY: '123abc' }).clientY threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
+PASS new PointerEvent('eventType', { clientY: 'dummy' }).clientY threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
+PASS new PointerEvent('eventType', { clientY: NaN }).clientY threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
+PASS new PointerEvent('eventType', { clientY: null }).clientY is 0
+PASS new PointerEvent('eventType', { clientY: undefined }).clientY is 0
+PASS new PointerEvent('eventType', { clientY: [] }).clientY is 0
+PASS new PointerEvent('eventType', { clientY: [12] }).clientY is 12
+PASS new PointerEvent('eventType', { clientY: [12, 34] }).clientY threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
+PASS new PointerEvent('eventType', { clientY: {} }).clientY threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
+PASS new PointerEvent('eventType', { clientY: {abc:1} }).clientY threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
+PASS new PointerEvent('eventType', { clientY: {} }).clientY threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
+PASS new PointerEvent('eventType', { clientY: {valueOf: function () { return 123; }} }).clientY is 123
+--- tests for inherited attributes (other than screen & client coordinates) ---
 PASS new PointerEvent('eventType').bubbles is false
 PASS new PointerEvent('eventType').cancelable is false
 PASS new PointerEvent('eventType').view is null
 PASS new PointerEvent('eventType').detail is 0
-PASS new PointerEvent('eventType').screenX is 0
-PASS new PointerEvent('eventType').screenY is 0
-PASS new PointerEvent('eventType').clientX is 0
-PASS new PointerEvent('eventType').clientY is 0
 PASS new PointerEvent('eventType').ctrlKey is false
 PASS new PointerEvent('eventType').shiftKey is false
 PASS new PointerEvent('eventType').altKey is false

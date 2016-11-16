@@ -104,8 +104,8 @@ MouseEvent* MouseEvent::create(const AtomicString& eventType,
   if (underlyingEvent && underlyingEvent->isMouseEvent()) {
     syntheticType = PlatformMouseEvent::RealOrIndistinguishable;
     MouseEvent* mouseEvent = toMouseEvent(underlyingEvent);
-    screenX = mouseEvent->screenLocation().x();
-    screenY = mouseEvent->screenLocation().y();
+    screenX = mouseEvent->screenX();
+    screenY = mouseEvent->screenY();
   }
 
   double timestamp = underlyingEvent ? underlyingEvent->platformTimeStamp()
@@ -119,7 +119,7 @@ MouseEvent* MouseEvent::create(const AtomicString& eventType,
   createdEvent->setUnderlyingEvent(underlyingEvent);
   if (syntheticType == PlatformMouseEvent::RealOrIndistinguishable) {
     MouseEvent* mouseEvent = toMouseEvent(createdEvent->underlyingEvent());
-    createdEvent->initCoordinates(mouseEvent->clientLocation());
+    createdEvent->initCoordinates(mouseEvent->clientX(), mouseEvent->clientY());
   }
 
   return createdEvent;
@@ -258,7 +258,7 @@ void MouseEvent::initMouseEventInternal(
   m_relatedTarget = relatedTarget;
   m_modifiers = modifiers;
 
-  initCoordinates(IntPoint(clientX, clientY));
+  initCoordinates(clientX, clientY);
 
   // FIXME: SyntheticEventType is not set to RealOrIndistinguishable here.
 }

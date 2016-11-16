@@ -62,71 +62,108 @@ shouldBe("new WheelEvent('eventType', { get view() { return window; } }).view", 
 shouldThrow("new WheelEvent('eventType', { get view() { return 123; } }).view");
 shouldThrow("new WheelEvent('eventType', { get view() { throw 'WheelEvent Error'; } })");
 
-// Max/min for client positions (LayoutUnit max/min).
-var MAX_CLIENT_SIZE = "33554431";
-var MIN_CLIENT_SIZE = "-33554432";
+// detail is passed.
+// Numeric values.
+shouldBeEqualToNumber("new WheelEvent('eventType', { detail: 0 }).detail", 0);
+shouldBeEqualToNumber("new WheelEvent('eventType', { detail: 1 }).detail", 1);
+shouldBeEqualToNumber("new WheelEvent('eventType', { detail: -1 }).detail", -1);
+shouldBeEqualToNumber("new WheelEvent('eventType', { detail: 2147483647 }).detail", 2147483647);
+shouldBeEqualToNumber("new WheelEvent('eventType', { detail: -2147483648 }).detail", -2147483648);
+shouldBeEqualToNumber("new WheelEvent('eventType', { detail: 123.45 }).detail", 123);
+shouldBeEqualToNumber("new WheelEvent('eventType', { detail: -123.45 }).detail", -123);
+shouldBeEqualToNumber("new WheelEvent('eventType', { detail: NaN }).detail", 0);
+// Non-numeric values.
+shouldBeEqualToNumber("new WheelEvent('eventType', { detail: undefined }).detail", 0);
+shouldBeEqualToNumber("new WheelEvent('eventType', { detail: null }).detail", 0);
+shouldBeEqualToNumber("new WheelEvent('eventType', { detail: '' }).detail", 0);
+shouldBeEqualToNumber("new WheelEvent('eventType', { detail: '12345' }).detail", 12345);
+shouldBeEqualToNumber("new WheelEvent('eventType', { detail: '12345a' }).detail", 0);
+shouldBeEqualToNumber("new WheelEvent('eventType', { detail: 'abc' }).detail", 0);
+shouldBeEqualToNumber("new WheelEvent('eventType', { detail: [] }).detail", 0);
+shouldBeEqualToNumber("new WheelEvent('eventType', { detail: [12345] }).detail", 12345);
+shouldBeEqualToNumber("new WheelEvent('eventType', { detail: [12345, 67890] }).detail", 0);
+shouldBeEqualToNumber("new WheelEvent('eventType', { detail: {} }).detail", 0);
+shouldBeEqualToNumber("new WheelEvent('eventType', { detail: {moemoe: 12345} }).detail", 0);
+shouldBeEqualToNumber("new WheelEvent('eventType', { detail: {valueOf: function () { return 12345; }} }).detail", 12345);
 
-// detail, screenX, screenY, clientX, clientY, wheelDeltaX and wheelDeltaY are passed.
-["detail", "screenX", "screenY", "clientX", "clientY", "wheelDeltaX", "wheelDeltaY"].forEach(function (attr) {
-    // numbers within the long range.
-    shouldBe("new WheelEvent('eventType', { " + attr + ": 0 })." + attr, "0");
-    shouldBe("new WheelEvent('eventType', { " + attr + ": 2147483647 })." + attr, attr == "clientX" || attr == "clientY" ? MAX_CLIENT_SIZE : "2147483647");
-    shouldBe("new WheelEvent('eventType', { " + attr + ": -1 })." + attr, "-1");
-    shouldBe("new WheelEvent('eventType', { " + attr + ": -2147483648 })." + attr, attr == "clientX" || attr == "clientY" ? MIN_CLIENT_SIZE : "-2147483648");
-
-    // numbers out of the long range.
-    shouldBe("new WheelEvent('eventType', { " + attr + ": 4294967295 })." + attr, "-1");
-    // 2^{53}-1, the largest number that can be exactly represented by double.
-    shouldBe("new WheelEvent('eventType', { " + attr + ": 9007199254740991 })." + attr, "-1");
-    // 2^{64}-1
-    shouldBe("new WheelEvent('eventType', { " + attr + ": 18446744073709551615 })." + attr, "0");
-    shouldBe("new WheelEvent('eventType', { " + attr + ": 123.45 })." + attr, "123");
-    shouldBe("new WheelEvent('eventType', { " + attr + ": NaN })." + attr, "0");
-
-    // Non-numeric values.
-    shouldBe("new WheelEvent('eventType', { " + attr + ": undefined })." + attr, "0");
-    shouldBe("new WheelEvent('eventType', { " + attr + ": null })." + attr, "0");
-    shouldBe("new WheelEvent('eventType', { " + attr + ": '' })." + attr, "0");
-    shouldBe("new WheelEvent('eventType', { " + attr + ": '12345' })." + attr, "12345");
-    shouldBe("new WheelEvent('eventType', { " + attr + ": '12345a' })." + attr, "0");
-    shouldBe("new WheelEvent('eventType', { " + attr + ": 'abc' })." + attr, "0");
-    shouldBe("new WheelEvent('eventType', { " + attr + ": [] })." + attr, "0");
-    shouldBe("new WheelEvent('eventType', { " + attr + ": [12345] })." + attr, "12345");
-    shouldBe("new WheelEvent('eventType', { " + attr + ": [12345, 67890] })." + attr, "0");
-    shouldBe("new WheelEvent('eventType', { " + attr + ": {} })." + attr, "0");
-    shouldBe("new WheelEvent('eventType', { " + attr + ": {moemoe: 12345} })." + attr, "0");
-    shouldBe("new WheelEvent('eventType', { " + attr + ": {valueOf: function () { return 12345; }} })." + attr, "12345");
-});
-
-["deltaX", "deltaY", "deltaZ"].forEach(function (attr) {
-    // numbers within the long range.
-    shouldBe("new WheelEvent('eventType', { " + attr + ": 0 })." + attr, "0");
-    shouldBe("new WheelEvent('eventType', { " + attr + ": 2147483647 })." + attr, "2147483647");
-    shouldBe("new WheelEvent('eventType', { " + attr + ": -1 })." + attr, "-1");
-    shouldBe("new WheelEvent('eventType', { " + attr + ": -2147483648 })." + attr, "-2147483648");
-
-    // numbers out of the long range.
-    shouldBe("new WheelEvent('eventType', { " + attr + ": 4294967295 })." + attr, "4294967295");
-    // 2^{53}-1, the largest number that can be exactly represented by double.
-    shouldBe("new WheelEvent('eventType', { " + attr + ": 9007199254740991 })." + attr, "9007199254740991");
-    // 2^{64}-1
-    shouldBe("new WheelEvent('eventType', { " + attr + ": 18446744073709551615 })." + attr, "18446744073709551615");
-    shouldBe("new WheelEvent('eventType', { " + attr + ": 123.45 })." + attr, "123.45");
+// screenX, screenY, clientX and clientY are passed.
+["screenX", "screenY", "clientX", "clientY"].forEach(function (attr) {
+    // Numeric values.
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": 0 })." + attr, 0);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": 1 })." + attr, 1);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": -1 })." + attr, -1);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": 2147483647 })." + attr, 2147483647);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": -2147483648 })." + attr, -2147483648);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": 123.45 })." + attr, 123);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": -123.45 })." + attr, -123);
     shouldThrow("new WheelEvent('eventType', { " + attr + ": NaN })." + attr);
 
     // Non-numeric values.
-    shouldBe("new WheelEvent('eventType', { " + attr + ": undefined })." + attr, "0");
-    shouldBe("new WheelEvent('eventType', { " + attr + ": null })." + attr, "0");
-    shouldBe("new WheelEvent('eventType', { " + attr + ": '' })." + attr, "0");
-    shouldBe("new WheelEvent('eventType', { " + attr + ": '12345' })." + attr, "12345");
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": undefined })." + attr, 0);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": null })." + attr, 0);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": '' })." + attr, 0);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": '12345' })." + attr, 12345);
     shouldThrow("new WheelEvent('eventType', { " + attr + ": '12345a' })." + attr);
     shouldThrow("new WheelEvent('eventType', { " + attr + ": 'abc' })." + attr);
-    shouldBe("new WheelEvent('eventType', { " + attr + ": [] })." + attr, "0");
-    shouldBe("new WheelEvent('eventType', { " + attr + ": [12345] })." + attr, "12345");
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": [] })." + attr, 0);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": [12345] })." + attr, 12345);
     shouldThrow("new WheelEvent('eventType', { " + attr + ": [12345, 67890] })." + attr);
     shouldThrow("new WheelEvent('eventType', { " + attr + ": {} })." + attr);
     shouldThrow("new WheelEvent('eventType', { " + attr + ": {moemoe: 12345} })." + attr);
-    shouldBe("new WheelEvent('eventType', { " + attr + ": {valueOf: function () { return 12345; }} })." + attr, "12345");
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": {valueOf: function () { return 12345; }} })." + attr, 12345);
+});
+
+// wheelDeltaX and wheelDeltaY are passed.
+["wheelDeltaX", "wheelDeltaY"].forEach(function (attr) {
+    // Numeric values.
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": 0 })." + attr, 0);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": 1 })." + attr, 1);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": -1 })." + attr, -1);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": 2147483647 })." + attr, 2147483647);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": -2147483648 })." + attr, -2147483648);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": 123.45 })." + attr, 123);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": -123.45 })." + attr, -123);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": NaN })." + attr, 0);
+
+    // Non-numeric values.
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": undefined })." + attr, 0);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": null })." + attr, 0);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": '' })." + attr, 0);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": '12345' })." + attr, 12345);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": '12345a' })." + attr, 0);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": 'abc' })." + attr, 0);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": [] })." + attr, 0);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": [12345] })." + attr, 12345);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": [12345, 67890] })." + attr, 0);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": {} })." + attr, 0);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": {moemoe: 12345} })." + attr, 0);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": {valueOf: function () { return 12345; }} })." + attr, 12345);
+});
+
+["deltaX", "deltaY", "deltaZ"].forEach(function (attr) {
+    // Numeric values.
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": 0 })." + attr, 0);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": 1 })." + attr, 1);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": -1 })." + attr, -1);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": 2147483647 })." + attr, 2147483647);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": -2147483648 })." + attr, -2147483648);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": 123.45 })." + attr, 123.45);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": -123.45 })." + attr, -123.45);
+    shouldThrow("new WheelEvent('eventType', { " + attr + ": NaN })." + attr);
+
+    // Non-numeric values.
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": undefined })." + attr, 0);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": null })." + attr, 0);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": '' })." + attr, 0);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": '12345' })." + attr, 12345);
+    shouldThrow("new WheelEvent('eventType', { " + attr + ": '12345a' })." + attr);
+    shouldThrow("new WheelEvent('eventType', { " + attr + ": 'abc' })." + attr);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": [] })." + attr, 0);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": [12345] })." + attr, 12345);
+    shouldThrow("new WheelEvent('eventType', { " + attr + ": [12345, 67890] })." + attr);
+    shouldThrow("new WheelEvent('eventType', { " + attr + ": {} })." + attr);
+    shouldThrow("new WheelEvent('eventType', { " + attr + ": {moemoe: 12345} })." + attr);
+    shouldBeEqualToNumber("new WheelEvent('eventType', { " + attr + ": {valueOf: function () { return 12345; }} })." + attr, 12345);
 });
 
 // deltaMode is passed.

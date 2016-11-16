@@ -74,16 +74,16 @@ MouseRelatedEvent::MouseRelatedEvent(
       m_screenLocation(screenLocation),
       m_movementDelta(movementDelta),
       m_positionType(positionType) {
-  LayoutPoint adjustedPageLocation;
-  LayoutSize scrollOffset;
+  DoublePoint adjustedPageLocation;
+  DoubleSize scrollOffset;
 
   LocalFrame* frame = view() && view()->isLocalDOMWindow()
                           ? toLocalDOMWindow(view())->frame()
                           : nullptr;
   if (frame && hasPosition()) {
     if (FrameView* frameView = frame->view()) {
-      scrollOffset = LayoutSize(frameView->scrollOffsetInt());
       adjustedPageLocation = frameView->rootFrameToContents(rootFrameLocation);
+      scrollOffset = frameView->scrollOffsetInt();
       float scaleFactor = 1 / frame->pageZoomFactor();
       if (scaleFactor != 1.0f) {
         adjustedPageLocation.scale(scaleFactor, scaleFactor);
@@ -107,18 +107,20 @@ MouseRelatedEvent::MouseRelatedEvent(
 MouseRelatedEvent::MouseRelatedEvent(const AtomicString& eventType,
                                      const MouseEventInit& initializer)
     : UIEventWithKeyState(eventType, initializer),
-      m_screenLocation(IntPoint(initializer.screenX(), initializer.screenY())),
+      m_screenLocation(
+          DoublePoint(initializer.screenX(), initializer.screenY())),
       m_movementDelta(
           IntPoint(initializer.movementX(), initializer.movementY())),
       m_positionType(PositionType::Position) {
-  initCoordinates(IntPoint(initializer.clientX(), initializer.clientY()));
+  initCoordinates(initializer.clientX(), initializer.clientY());
 }
 
-void MouseRelatedEvent::initCoordinates(const LayoutPoint& clientLocation) {
+void MouseRelatedEvent::initCoordinates(const double clientX,
+                                        const double clientY) {
   // Set up initial values for coordinates.
   // Correct values are computed lazily, see computeRelativePosition.
-  m_clientLocation = clientLocation;
-  m_pageLocation = clientLocation + contentsScrollOffset(view());
+  m_clientLocation = DoublePoint(clientX, clientY);
+  m_pageLocation = m_clientLocation + DoubleSize(contentsScrollOffset(view()));
 
   m_layerLocation = m_pageLocation;
   m_offsetLocation = m_pageLocation;
@@ -138,8 +140,7 @@ static float pageZoomFactor(const UIEvent* event) {
 
 void MouseRelatedEvent::computePageLocation() {
   float scaleFactor = pageZoomFactor(this);
-  setAbsoluteLocation(
-      LayoutPoint(FloatPoint(pageX() * scaleFactor, pageY() * scaleFactor)));
+  m_absoluteLocation = m_pageLocation.scaledBy(scaleFactor);
 }
 
 void MouseRelatedEvent::receivedTarget() {
@@ -187,7 +188,7 @@ void MouseRelatedEvent::computeRelativePosition() {
       localPos.move(-layoutBox->borderLeft(), -layoutBox->borderTop());
     }
 
-    m_offsetLocation = LayoutPoint(localPos);
+    m_offsetLocation = DoublePoint(localPos);
     float scaleFactor = 1 / pageZoomFactor(this);
     if (scaleFactor != 1.0f)
       m_offsetLocation.scale(scaleFactor, scaleFactor);
@@ -204,8 +205,10 @@ void MouseRelatedEvent::computeRelativePosition() {
   if (n) {
     // FIXME: This logic is a wrong implementation of convertToLayerCoords.
     for (PaintLayer* layer = n->layoutObject()->enclosingLayer(); layer;
-         layer = layer->parent())
-      m_layerLocation -= toLayoutSize(layer->location());
+         layer = layer->parent()) {
+      m_layerLocation -= DoubleSize(layer->location().x().toDouble(),
+                                    layer->location().y().toDouble());
+    }
   }
 
   m_hasCachedRelativePosition = true;
@@ -214,13 +217,21 @@ void MouseRelatedEvent::computeRelativePosition() {
 int MouseRelatedEvent::layerX() {
   if (!m_hasCachedRelativePosition)
     computeRelativePosition();
-  return m_layerLocation.x().toInt();
+
+  // TODO(mustaq): Remove the PointerEvent specific code when mouse has
+  // fractional coordinates. See crbug.com/655786.
+  return isPointerEvent() ? m_layerLocation.x()
+                          : static_cast<int>(m_layerLocation.x());
 }
 
 int MouseRelatedEvent::layerY() {
   if (!m_hasCachedRelativePosition)
     computeRelativePosition();
-  return m_layerLocation.y().toInt();
+
+  // TODO(mustaq): Remove the PointerEvent specific code when mouse has
+  // fractional coordinates. See crbug.com/655786.
+  return isPointerEvent() ? m_layerLocation.y()
+                          : static_cast<int>(m_layerLocation.y());
 }
 
 int MouseRelatedEvent::offsetX() {
@@ -228,7 +239,7 @@ int MouseRelatedEvent::offsetX() {
     return 0;
   if (!m_hasCachedRelativePosition)
     computeRelativePosition();
-  return roundToInt(m_offsetLocation.x());
+  return std::round(m_offsetLocation.x());
 }
 
 int MouseRelatedEvent::offsetY() {
@@ -236,29 +247,7 @@ int MouseRelatedEvent::offsetY() {
     return 0;
   if (!m_hasCachedRelativePosition)
     computeRelativePosition();
-  return roundToInt(m_offsetLocation.y());
-}
-
-int MouseRelatedEvent::pageX() const {
-  return m_pageLocation.x().toInt();
-}
-
-int MouseRelatedEvent::pageY() const {
-  return m_pageLocation.y().toInt();
-}
-
-int MouseRelatedEvent::x() const {
-  // FIXME: This is not correct.
-  // See Microsoft documentation and
-  // <http://www.quirksmode.org/dom/w3c_events.html>.
-  return m_clientLocation.x().toInt();
-}
-
-int MouseRelatedEvent::y() const {
-  // FIXME: This is not correct.
-  // See Microsoft documentation and
-  // <http://www.quirksmode.org/dom/w3c_events.html>.
-  return m_clientLocation.y().toInt();
+  return std::round(m_offsetLocation.y());
 }
 
 DEFINE_TRACE(MouseRelatedEvent) {

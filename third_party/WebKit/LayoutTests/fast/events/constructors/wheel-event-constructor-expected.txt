@@ -42,13 +42,12 @@ PASS new WheelEvent('eventType', { get view() { return window; } }).view is wind
 PASS new WheelEvent('eventType', { get view() { return 123; } }).view threw exception TypeError: Failed to construct 'WheelEvent': member view is not of type Window..
 PASS new WheelEvent('eventType', { get view() { throw 'WheelEvent Error'; } }) threw exception WheelEvent Error.
 PASS new WheelEvent('eventType', { detail: 0 }).detail is 0
-PASS new WheelEvent('eventType', { detail: 2147483647 }).detail is 2147483647
+PASS new WheelEvent('eventType', { detail: 1 }).detail is 1
 PASS new WheelEvent('eventType', { detail: -1 }).detail is -1
+PASS new WheelEvent('eventType', { detail: 2147483647 }).detail is 2147483647
 PASS new WheelEvent('eventType', { detail: -2147483648 }).detail is -2147483648
-PASS new WheelEvent('eventType', { detail: 4294967295 }).detail is -1
-PASS new WheelEvent('eventType', { detail: 9007199254740991 }).detail is -1
-PASS new WheelEvent('eventType', { detail: 18446744073709551615 }).detail is 0
 PASS new WheelEvent('eventType', { detail: 123.45 }).detail is 123
+PASS new WheelEvent('eventType', { detail: -123.45 }).detail is -123
 PASS new WheelEvent('eventType', { detail: NaN }).detail is 0
 PASS new WheelEvent('eventType', { detail: undefined }).detail is 0
 PASS new WheelEvent('eventType', { detail: null }).detail is 0
@@ -63,97 +62,92 @@ PASS new WheelEvent('eventType', { detail: {} }).detail is 0
 PASS new WheelEvent('eventType', { detail: {moemoe: 12345} }).detail is 0
 PASS new WheelEvent('eventType', { detail: {valueOf: function () { return 12345; }} }).detail is 12345
 PASS new WheelEvent('eventType', { screenX: 0 }).screenX is 0
-PASS new WheelEvent('eventType', { screenX: 2147483647 }).screenX is 2147483647
+PASS new WheelEvent('eventType', { screenX: 1 }).screenX is 1
 PASS new WheelEvent('eventType', { screenX: -1 }).screenX is -1
+PASS new WheelEvent('eventType', { screenX: 2147483647 }).screenX is 2147483647
 PASS new WheelEvent('eventType', { screenX: -2147483648 }).screenX is -2147483648
-PASS new WheelEvent('eventType', { screenX: 4294967295 }).screenX is -1
-PASS new WheelEvent('eventType', { screenX: 9007199254740991 }).screenX is -1
-PASS new WheelEvent('eventType', { screenX: 18446744073709551615 }).screenX is 0
 PASS new WheelEvent('eventType', { screenX: 123.45 }).screenX is 123
-PASS new WheelEvent('eventType', { screenX: NaN }).screenX is 0
+PASS new WheelEvent('eventType', { screenX: -123.45 }).screenX is -123
+PASS new WheelEvent('eventType', { screenX: NaN }).screenX threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
 PASS new WheelEvent('eventType', { screenX: undefined }).screenX is 0
 PASS new WheelEvent('eventType', { screenX: null }).screenX is 0
 PASS new WheelEvent('eventType', { screenX: '' }).screenX is 0
 PASS new WheelEvent('eventType', { screenX: '12345' }).screenX is 12345
-PASS new WheelEvent('eventType', { screenX: '12345a' }).screenX is 0
-PASS new WheelEvent('eventType', { screenX: 'abc' }).screenX is 0
+PASS new WheelEvent('eventType', { screenX: '12345a' }).screenX threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
+PASS new WheelEvent('eventType', { screenX: 'abc' }).screenX threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
 PASS new WheelEvent('eventType', { screenX: [] }).screenX is 0
 PASS new WheelEvent('eventType', { screenX: [12345] }).screenX is 12345
-PASS new WheelEvent('eventType', { screenX: [12345, 67890] }).screenX is 0
-PASS new WheelEvent('eventType', { screenX: {} }).screenX is 0
-PASS new WheelEvent('eventType', { screenX: {moemoe: 12345} }).screenX is 0
+PASS new WheelEvent('eventType', { screenX: [12345, 67890] }).screenX threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
+PASS new WheelEvent('eventType', { screenX: {} }).screenX threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
+PASS new WheelEvent('eventType', { screenX: {moemoe: 12345} }).screenX threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
 PASS new WheelEvent('eventType', { screenX: {valueOf: function () { return 12345; }} }).screenX is 12345
 PASS new WheelEvent('eventType', { screenY: 0 }).screenY is 0
-PASS new WheelEvent('eventType', { screenY: 2147483647 }).screenY is 2147483647
+PASS new WheelEvent('eventType', { screenY: 1 }).screenY is 1
 PASS new WheelEvent('eventType', { screenY: -1 }).screenY is -1
+PASS new WheelEvent('eventType', { screenY: 2147483647 }).screenY is 2147483647
 PASS new WheelEvent('eventType', { screenY: -2147483648 }).screenY is -2147483648
-PASS new WheelEvent('eventType', { screenY: 4294967295 }).screenY is -1
-PASS new WheelEvent('eventType', { screenY: 9007199254740991 }).screenY is -1
-PASS new WheelEvent('eventType', { screenY: 18446744073709551615 }).screenY is 0
 PASS new WheelEvent('eventType', { screenY: 123.45 }).screenY is 123
-PASS new WheelEvent('eventType', { screenY: NaN }).screenY is 0
+PASS new WheelEvent('eventType', { screenY: -123.45 }).screenY is -123
+PASS new WheelEvent('eventType', { screenY: NaN }).screenY threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
 PASS new WheelEvent('eventType', { screenY: undefined }).screenY is 0
 PASS new WheelEvent('eventType', { screenY: null }).screenY is 0
 PASS new WheelEvent('eventType', { screenY: '' }).screenY is 0
 PASS new WheelEvent('eventType', { screenY: '12345' }).screenY is 12345
-PASS new WheelEvent('eventType', { screenY: '12345a' }).screenY is 0
-PASS new WheelEvent('eventType', { screenY: 'abc' }).screenY is 0
+PASS new WheelEvent('eventType', { screenY: '12345a' }).screenY threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
+PASS new WheelEvent('eventType', { screenY: 'abc' }).screenY threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
 PASS new WheelEvent('eventType', { screenY: [] }).screenY is 0
 PASS new WheelEvent('eventType', { screenY: [12345] }).screenY is 12345
-PASS new WheelEvent('eventType', { screenY: [12345, 67890] }).screenY is 0
-PASS new WheelEvent('eventType', { screenY: {} }).screenY is 0
-PASS new WheelEvent('eventType', { screenY: {moemoe: 12345} }).screenY is 0
+PASS new WheelEvent('eventType', { screenY: [12345, 67890] }).screenY threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
+PASS new WheelEvent('eventType', { screenY: {} }).screenY threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
+PASS new WheelEvent('eventType', { screenY: {moemoe: 12345} }).screenY threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
 PASS new WheelEvent('eventType', { screenY: {valueOf: function () { return 12345; }} }).screenY is 12345
 PASS new WheelEvent('eventType', { clientX: 0 }).clientX is 0
-PASS new WheelEvent('eventType', { clientX: 2147483647 }).clientX is 33554431
+PASS new WheelEvent('eventType', { clientX: 1 }).clientX is 1
 PASS new WheelEvent('eventType', { clientX: -1 }).clientX is -1
-PASS new WheelEvent('eventType', { clientX: -2147483648 }).clientX is -33554432
-PASS new WheelEvent('eventType', { clientX: 4294967295 }).clientX is -1
-PASS new WheelEvent('eventType', { clientX: 9007199254740991 }).clientX is -1
-PASS new WheelEvent('eventType', { clientX: 18446744073709551615 }).clientX is 0
+PASS new WheelEvent('eventType', { clientX: 2147483647 }).clientX is 2147483647
+PASS new WheelEvent('eventType', { clientX: -2147483648 }).clientX is -2147483648
 PASS new WheelEvent('eventType', { clientX: 123.45 }).clientX is 123
-PASS new WheelEvent('eventType', { clientX: NaN }).clientX is 0
+PASS new WheelEvent('eventType', { clientX: -123.45 }).clientX is -123
+PASS new WheelEvent('eventType', { clientX: NaN }).clientX threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
 PASS new WheelEvent('eventType', { clientX: undefined }).clientX is 0
 PASS new WheelEvent('eventType', { clientX: null }).clientX is 0
 PASS new WheelEvent('eventType', { clientX: '' }).clientX is 0
 PASS new WheelEvent('eventType', { clientX: '12345' }).clientX is 12345
-PASS new WheelEvent('eventType', { clientX: '12345a' }).clientX is 0
-PASS new WheelEvent('eventType', { clientX: 'abc' }).clientX is 0
+PASS new WheelEvent('eventType', { clientX: '12345a' }).clientX threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
+PASS new WheelEvent('eventType', { clientX: 'abc' }).clientX threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
 PASS new WheelEvent('eventType', { clientX: [] }).clientX is 0
 PASS new WheelEvent('eventType', { clientX: [12345] }).clientX is 12345
-PASS new WheelEvent('eventType', { clientX: [12345, 67890] }).clientX is 0
-PASS new WheelEvent('eventType', { clientX: {} }).clientX is 0
-PASS new WheelEvent('eventType', { clientX: {moemoe: 12345} }).clientX is 0
+PASS new WheelEvent('eventType', { clientX: [12345, 67890] }).clientX threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
+PASS new WheelEvent('eventType', { clientX: {} }).clientX threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
+PASS new WheelEvent('eventType', { clientX: {moemoe: 12345} }).clientX threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
 PASS new WheelEvent('eventType', { clientX: {valueOf: function () { return 12345; }} }).clientX is 12345
 PASS new WheelEvent('eventType', { clientY: 0 }).clientY is 0
-PASS new WheelEvent('eventType', { clientY: 2147483647 }).clientY is 33554431
+PASS new WheelEvent('eventType', { clientY: 1 }).clientY is 1
 PASS new WheelEvent('eventType', { clientY: -1 }).clientY is -1
-PASS new WheelEvent('eventType', { clientY: -2147483648 }).clientY is -33554432
-PASS new WheelEvent('eventType', { clientY: 4294967295 }).clientY is -1
-PASS new WheelEvent('eventType', { clientY: 9007199254740991 }).clientY is -1
-PASS new WheelEvent('eventType', { clientY: 18446744073709551615 }).clientY is 0
+PASS new WheelEvent('eventType', { clientY: 2147483647 }).clientY is 2147483647
+PASS new WheelEvent('eventType', { clientY: -2147483648 }).clientY is -2147483648
 PASS new WheelEvent('eventType', { clientY: 123.45 }).clientY is 123
-PASS new WheelEvent('eventType', { clientY: NaN }).clientY is 0
+PASS new WheelEvent('eventType', { clientY: -123.45 }).clientY is -123
+PASS new WheelEvent('eventType', { clientY: NaN }).clientY threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
 PASS new WheelEvent('eventType', { clientY: undefined }).clientY is 0
 PASS new WheelEvent('eventType', { clientY: null }).clientY is 0
 PASS new WheelEvent('eventType', { clientY: '' }).clientY is 0
 PASS new WheelEvent('eventType', { clientY: '12345' }).clientY is 12345
-PASS new WheelEvent('eventType', { clientY: '12345a' }).clientY is 0
-PASS new WheelEvent('eventType', { clientY: 'abc' }).clientY is 0
+PASS new WheelEvent('eventType', { clientY: '12345a' }).clientY threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
+PASS new WheelEvent('eventType', { clientY: 'abc' }).clientY threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
 PASS new WheelEvent('eventType', { clientY: [] }).clientY is 0
 PASS new WheelEvent('eventType', { clientY: [12345] }).clientY is 12345
-PASS new WheelEvent('eventType', { clientY: [12345, 67890] }).clientY is 0
-PASS new WheelEvent('eventType', { clientY: {} }).clientY is 0
-PASS new WheelEvent('eventType', { clientY: {moemoe: 12345} }).clientY is 0
+PASS new WheelEvent('eventType', { clientY: [12345, 67890] }).clientY threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
+PASS new WheelEvent('eventType', { clientY: {} }).clientY threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
+PASS new WheelEvent('eventType', { clientY: {moemoe: 12345} }).clientY threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
 PASS new WheelEvent('eventType', { clientY: {valueOf: function () { return 12345; }} }).clientY is 12345
 PASS new WheelEvent('eventType', { wheelDeltaX: 0 }).wheelDeltaX is 0
-PASS new WheelEvent('eventType', { wheelDeltaX: 2147483647 }).wheelDeltaX is 2147483647
+PASS new WheelEvent('eventType', { wheelDeltaX: 1 }).wheelDeltaX is 1
 PASS new WheelEvent('eventType', { wheelDeltaX: -1 }).wheelDeltaX is -1
+PASS new WheelEvent('eventType', { wheelDeltaX: 2147483647 }).wheelDeltaX is 2147483647
 PASS new WheelEvent('eventType', { wheelDeltaX: -2147483648 }).wheelDeltaX is -2147483648
-PASS new WheelEvent('eventType', { wheelDeltaX: 4294967295 }).wheelDeltaX is -1
-PASS new WheelEvent('eventType', { wheelDeltaX: 9007199254740991 }).wheelDeltaX is -1
-PASS new WheelEvent('eventType', { wheelDeltaX: 18446744073709551615 }).wheelDeltaX is 0
 PASS new WheelEvent('eventType', { wheelDeltaX: 123.45 }).wheelDeltaX is 123
+PASS new WheelEvent('eventType', { wheelDeltaX: -123.45 }).wheelDeltaX is -123
 PASS new WheelEvent('eventType', { wheelDeltaX: NaN }).wheelDeltaX is 0
 PASS new WheelEvent('eventType', { wheelDeltaX: undefined }).wheelDeltaX is 0
 PASS new WheelEvent('eventType', { wheelDeltaX: null }).wheelDeltaX is 0
@@ -168,13 +162,12 @@ PASS new WheelEvent('eventType', { wheelDeltaX: {} }).wheelDeltaX is 0
 PASS new WheelEvent('eventType', { wheelDeltaX: {moemoe: 12345} }).wheelDeltaX is 0
 PASS new WheelEvent('eventType', { wheelDeltaX: {valueOf: function () { return 12345; }} }).wheelDeltaX is 12345
 PASS new WheelEvent('eventType', { wheelDeltaY: 0 }).wheelDeltaY is 0
-PASS new WheelEvent('eventType', { wheelDeltaY: 2147483647 }).wheelDeltaY is 2147483647
+PASS new WheelEvent('eventType', { wheelDeltaY: 1 }).wheelDeltaY is 1
 PASS new WheelEvent('eventType', { wheelDeltaY: -1 }).wheelDeltaY is -1
+PASS new WheelEvent('eventType', { wheelDeltaY: 2147483647 }).wheelDeltaY is 2147483647
 PASS new WheelEvent('eventType', { wheelDeltaY: -2147483648 }).wheelDeltaY is -2147483648
-PASS new WheelEvent('eventType', { wheelDeltaY: 4294967295 }).wheelDeltaY is -1
-PASS new WheelEvent('eventType', { wheelDeltaY: 9007199254740991 }).wheelDeltaY is -1
-PASS new WheelEvent('eventType', { wheelDeltaY: 18446744073709551615 }).wheelDeltaY is 0
 PASS new WheelEvent('eventType', { wheelDeltaY: 123.45 }).wheelDeltaY is 123
+PASS new WheelEvent('eventType', { wheelDeltaY: -123.45 }).wheelDeltaY is -123
 PASS new WheelEvent('eventType', { wheelDeltaY: NaN }).wheelDeltaY is 0
 PASS new WheelEvent('eventType', { wheelDeltaY: undefined }).wheelDeltaY is 0
 PASS new WheelEvent('eventType', { wheelDeltaY: null }).wheelDeltaY is 0
@@ -189,13 +182,12 @@ PASS new WheelEvent('eventType', { wheelDeltaY: {} }).wheelDeltaY is 0
 PASS new WheelEvent('eventType', { wheelDeltaY: {moemoe: 12345} }).wheelDeltaY is 0
 PASS new WheelEvent('eventType', { wheelDeltaY: {valueOf: function () { return 12345; }} }).wheelDeltaY is 12345
 PASS new WheelEvent('eventType', { deltaX: 0 }).deltaX is 0
-PASS new WheelEvent('eventType', { deltaX: 2147483647 }).deltaX is 2147483647
+PASS new WheelEvent('eventType', { deltaX: 1 }).deltaX is 1
 PASS new WheelEvent('eventType', { deltaX: -1 }).deltaX is -1
+PASS new WheelEvent('eventType', { deltaX: 2147483647 }).deltaX is 2147483647
 PASS new WheelEvent('eventType', { deltaX: -2147483648 }).deltaX is -2147483648
-PASS new WheelEvent('eventType', { deltaX: 4294967295 }).deltaX is 4294967295
-PASS new WheelEvent('eventType', { deltaX: 9007199254740991 }).deltaX is 9007199254740991
-PASS new WheelEvent('eventType', { deltaX: 18446744073709551615 }).deltaX is 18446744073709551615
 PASS new WheelEvent('eventType', { deltaX: 123.45 }).deltaX is 123.45
+PASS new WheelEvent('eventType', { deltaX: -123.45 }).deltaX is -123.45
 PASS new WheelEvent('eventType', { deltaX: NaN }).deltaX threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
 PASS new WheelEvent('eventType', { deltaX: undefined }).deltaX is 0
 PASS new WheelEvent('eventType', { deltaX: null }).deltaX is 0
@@ -210,13 +202,12 @@ PASS new WheelEvent('eventType', { deltaX: {} }).deltaX threw exception TypeErro
 PASS new WheelEvent('eventType', { deltaX: {moemoe: 12345} }).deltaX threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
 PASS new WheelEvent('eventType', { deltaX: {valueOf: function () { return 12345; }} }).deltaX is 12345
 PASS new WheelEvent('eventType', { deltaY: 0 }).deltaY is 0
-PASS new WheelEvent('eventType', { deltaY: 2147483647 }).deltaY is 2147483647
+PASS new WheelEvent('eventType', { deltaY: 1 }).deltaY is 1
 PASS new WheelEvent('eventType', { deltaY: -1 }).deltaY is -1
+PASS new WheelEvent('eventType', { deltaY: 2147483647 }).deltaY is 2147483647
 PASS new WheelEvent('eventType', { deltaY: -2147483648 }).deltaY is -2147483648
-PASS new WheelEvent('eventType', { deltaY: 4294967295 }).deltaY is 4294967295
-PASS new WheelEvent('eventType', { deltaY: 9007199254740991 }).deltaY is 9007199254740991
-PASS new WheelEvent('eventType', { deltaY: 18446744073709551615 }).deltaY is 18446744073709551615
 PASS new WheelEvent('eventType', { deltaY: 123.45 }).deltaY is 123.45
+PASS new WheelEvent('eventType', { deltaY: -123.45 }).deltaY is -123.45
 PASS new WheelEvent('eventType', { deltaY: NaN }).deltaY threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
 PASS new WheelEvent('eventType', { deltaY: undefined }).deltaY is 0
 PASS new WheelEvent('eventType', { deltaY: null }).deltaY is 0
@@ -231,13 +222,12 @@ PASS new WheelEvent('eventType', { deltaY: {} }).deltaY threw exception TypeErro
 PASS new WheelEvent('eventType', { deltaY: {moemoe: 12345} }).deltaY threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
 PASS new WheelEvent('eventType', { deltaY: {valueOf: function () { return 12345; }} }).deltaY is 12345
 PASS new WheelEvent('eventType', { deltaZ: 0 }).deltaZ is 0
-PASS new WheelEvent('eventType', { deltaZ: 2147483647 }).deltaZ is 2147483647
+PASS new WheelEvent('eventType', { deltaZ: 1 }).deltaZ is 1
 PASS new WheelEvent('eventType', { deltaZ: -1 }).deltaZ is -1
+PASS new WheelEvent('eventType', { deltaZ: 2147483647 }).deltaZ is 2147483647
 PASS new WheelEvent('eventType', { deltaZ: -2147483648 }).deltaZ is -2147483648
-PASS new WheelEvent('eventType', { deltaZ: 4294967295 }).deltaZ is 4294967295
-PASS new WheelEvent('eventType', { deltaZ: 9007199254740991 }).deltaZ is 9007199254740991
-PASS new WheelEvent('eventType', { deltaZ: 18446744073709551615 }).deltaZ is 18446744073709551615
 PASS new WheelEvent('eventType', { deltaZ: 123.45 }).deltaZ is 123.45
+PASS new WheelEvent('eventType', { deltaZ: -123.45 }).deltaZ is -123.45
 PASS new WheelEvent('eventType', { deltaZ: NaN }).deltaZ threw exception TypeError: Failed to construct 'WheelEvent': The provided double value is non-finite..
 PASS new WheelEvent('eventType', { deltaZ: undefined }).deltaZ is 0
 PASS new WheelEvent('eventType', { deltaZ: null }).deltaZ is 0

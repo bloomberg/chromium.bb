@@ -230,7 +230,7 @@ void SliderThumbElement::defaultEventHandler(Event* event) {
   }
   if (eventType == EventTypeNames::mousemove) {
     if (m_inDragMode)
-      setPositionFromPoint(mouseEvent->absoluteLocation());
+      setPositionFromPoint(LayoutPoint(mouseEvent->absoluteLocation()));
     return;
   }
 

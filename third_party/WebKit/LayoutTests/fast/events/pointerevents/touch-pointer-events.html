@@ -83,13 +83,17 @@ function testPEParamsSingleTouch(x, y) {
   }
   shouldBeEqualToNumber("receivedPEsAtTarget.length", i);
 
-  eventSender.updateTouchPoint(0, x+20, y+20);
+  eventSender.updateTouchPoint(0, x+20.5, y+19.25);
   eventSender.touchMove();
   shouldBeTrue("receivedPEsAtTarget["+i+"].isPrimary");
   shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].button", -1);
   shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].buttons", 1);
-  shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].clientX", x+20);
-  shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].clientY", y+20);
+  shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].clientX", x+20.5);
+  shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].clientY", y+19.25);
+  shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].screenX", x+20.5);
+  shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].screenY", y+19.25);
+  shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].pageX", x+20.5);
+  shouldBeEqualToNumber("receivedPEsAtTarget["+i+"].pageY", y+19.25);
   shouldBeEqualToNumber("receivedPEsAtTarget.length", ++i);
 
   eventSender.releaseTouchPoint(0);

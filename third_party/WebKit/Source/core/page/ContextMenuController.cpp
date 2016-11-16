@@ -154,7 +154,7 @@ std::unique_ptr<ContextMenu> ContextMenuController::createContextMenu(
 
   MouseEvent* mouseEvent = toMouseEvent(event);
   return createContextMenu(event->target()->toNode()->document().frame(),
-                           mouseEvent->absoluteLocation());
+                           LayoutPoint(mouseEvent->absoluteLocation()));
 }
 
 std::unique_ptr<ContextMenu> ContextMenuController::createContextMenu(

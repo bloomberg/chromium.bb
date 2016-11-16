@@ -23,10 +23,10 @@
     Constructor(DOMString type, optional MouseEventInit eventInitDict),
     ConstructorCallWith=ScriptState,
 ] interface MouseEvent : UIEvent {
-    readonly attribute long             screenX;
-    readonly attribute long             screenY;
-    readonly attribute long             clientX;
-    readonly attribute long             clientY;
+    readonly attribute double           screenX;
+    readonly attribute double           screenY;
+    readonly attribute double           clientX;
+    readonly attribute double           clientY;
     readonly attribute boolean          ctrlKey;
     readonly attribute boolean          shiftKey;
     readonly attribute boolean          altKey;
@@ -54,16 +54,12 @@
                                                         [Default=Undefined] optional unsigned short button,
                                                         [Default=Undefined] optional EventTarget? relatedTarget);
 
-    // CSSOM View Module
-    // http://dev.w3.org/csswg/cssom-view/#extensions-to-the-mouseevent-interface
-    // TODO(foolip): These attributes should be of type double, and the spec
-    // also redefines screenX/Y and clientX/Y as double.
-    readonly attribute long pageX;
-    readonly attribute long pageY;
-    [MeasureAs=MouseEventX] readonly attribute long x;
-    [MeasureAs=MouseEventY] readonly attribute long y;
-    [MeasureAs=MouseEventOffsetX] readonly attribute long offsetX;
-    [MeasureAs=MouseEventOffsetY] readonly attribute long offsetY;
+    readonly attribute double pageX;
+    readonly attribute double pageY;
+    [MeasureAs=MouseEventX] readonly attribute double x;
+    [MeasureAs=MouseEventY] readonly attribute double y;
+    [MeasureAs=MouseEventOffsetX] readonly attribute double offsetX;
+    [MeasureAs=MouseEventOffsetY] readonly attribute double offsetY;
 
     // Pointer Lock
     // https://dvcs.w3.org/hg/pointerlock/raw-file/default/index.html#extensions-to-the-mouseevent-interface
