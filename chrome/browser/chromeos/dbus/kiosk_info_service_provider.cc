@@ -9,28 +9,11 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/version.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
-
-namespace {
-
-// Creates target version prefix from a given platform version. Target version
-// prefix needs to end with a "." when the given platform version does not have
-// all 3 components.
-std::string GetTargetVersionPrefix(const std::string& platform_version) {
-  const base::Version version(platform_version);
-  if (!version.IsValid() || version.components().size() > 3u)
-    return std::string();
-
-  return version.components().size() < 3u ? version.GetString() + "."
-                                          : version.GetString();
-}
-
-}  // namespace
 
 KioskInfoService::KioskInfoService() : weak_ptr_factory_(this) {}
 
@@ -59,8 +42,8 @@ void KioskInfoService::GetKioskAppRequiredPlatformVersion(
   std::unique_ptr<dbus::Response> response =
       dbus::Response::FromMethodCall(method_call);
   dbus::MessageWriter writer(response.get());
-  writer.AppendString(GetTargetVersionPrefix(
-      KioskAppManager::Get()->GetAutoLaunchAppRequiredPlatformVersion()));
+  writer.AppendString(
+      KioskAppManager::Get()->GetAutoLaunchAppRequiredPlatformVersion());
   response_sender.Run(std::move(response));
 }
 
