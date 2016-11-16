@@ -430,12 +430,6 @@ bool PathProvider(int key, base::FilePath* result) {
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("custom_wallpapers"));
       break;
-    case chrome::DIR_CHROMEOS_PPD_CACHE:
-      if (!PathService::Get(chrome::DIR_USER_DATA, &cur))
-        return false;
-      cur = cur.Append(FILE_PATH_LITERAL("PpdCache"));
-      create_dir = true;
-      break;
 #endif
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #if defined(OS_LINUX)

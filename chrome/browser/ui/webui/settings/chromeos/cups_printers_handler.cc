@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
@@ -79,9 +80,13 @@ CupsPrintersHandler::CupsPrintersHandler(content::WebUI* webui)
     : printer_discoverer_(nullptr),
       profile_(Profile::FromWebUI(webui)),
       weak_factory_(this) {
-  base::FilePath ppd_cache_path;
-  CHECK(
-      base::PathService::Get(chrome::DIR_CHROMEOS_PPD_CACHE, &ppd_cache_path));
+  base::FilePath ppd_cache_path =
+      profile_->GetPath().Append(FILE_PATH_LITERAL("PPDCache"));
+  if (!base::PathExists(ppd_cache_path) &&
+      !base::CreateDirectory(ppd_cache_path)) {
+    LOG(ERROR) << "Failed to create ppd cache directory "
+               << ppd_cache_path.MaybeAsASCII();
+  }
   ppd_provider_ = chromeos::printing::PpdProvider::Create(
       google_apis::GetAPIKey(), g_browser_process->system_request_context(),
       content::BrowserThread::GetTaskRunnerForThread(

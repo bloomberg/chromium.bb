@@ -105,8 +105,6 @@ enum {
                                       // wallpaper thumbnails reside.
   DIR_CHROMEOS_CUSTOM_WALLPAPERS,     // Directory where custom wallpapers
                                       // reside.
-  DIR_CHROMEOS_PPD_CACHE,             // Directory where printing drivers are
-                                      // cached.
 #endif
   DIR_SUPERVISED_USERS_DEFAULT_APPS,  // Directory where installer places .crx
                                       // files to be installed when managed user
