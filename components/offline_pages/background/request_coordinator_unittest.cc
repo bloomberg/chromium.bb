@@ -1311,7 +1311,14 @@ TEST_F(RequestCoordinatorTest, MAYBE_PauseAndResumeObserver) {
   PumpLoop();
 
   EXPECT_TRUE(observer().changed_called());
-  EXPECT_EQ(SavePageRequest::RequestState::OFFLINING, observer().state());
+
+  // Now whether request is offlining or just available depends on whether test
+  // is run on svelte device or not.
+  if (base::SysInfo::IsLowEndDevice()) {
+    EXPECT_EQ(SavePageRequest::RequestState::AVAILABLE, observer().state());
+  } else {
+    EXPECT_EQ(SavePageRequest::RequestState::OFFLINING, observer().state());
+  }
 }
 
 TEST_F(RequestCoordinatorTest, RemoveRequest) {
@@ -1409,6 +1416,8 @@ TEST_F(RequestCoordinatorTest, SavePageDoesntStartProcessingWhenDisconnected) {
 
 TEST_F(RequestCoordinatorTest,
        SavePageDoesStartProcessingWhenPoorlyConnected) {
+  // If low end device, pretend it is not so that immediate start can happen.
+  SetIsLowEndDeviceForTest(false);
   // Set specific network type for 2G with poor effective connection.
   SetNetworkConditionsForTest(
       net::NetworkChangeNotifier::ConnectionType::CONNECTION_2G);
