@@ -4,42 +4,44 @@
 
 body {
   font-family: Sans-Serif;
-  font-size: 14px;
+  font-size: .9em;
 }
 .physicalWebTemplate {
   display: flex;
   width: 100%;
-  margin-bottom: 15px;
+  margin-bottom: .8em;
   text-decoration: none;
 }
 .physicalWebIcon {
-  width: 32px;
+  flex: 0 0 2.5em;
+  padding-left: .2em;
+}
+.physicalWebIcon img {
+  width: 75%;
 }
 .physicalWebText {
   flex: 1;
+  padding-top: .2em;
+  min-width: 0;
 }
-.physicalWebIcon img {
-  padding-top: 1px;
-  width: 75%;
-}
-.physicalWebTemplate .title {
+.physicalWebText .title {
   display: block;
   color: #222;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 3px;
+  margin-bottom: .2em;
 }
-.physicalWebTemplate .resolvedUrl {
+.physicalWebText .resolvedUrl {
   display: block;
   width: 100%;
   font-size: 80%;
   color: #888;
-  margin-bottom: 4px;
+  margin-bottom: .1em;
   word-wrap: break-word;
   word-break: break-all;
 }
-.physicalWebTemplate .description {
+.physicalWebText .description {
   display: block;
   height: 2.5em;
   font-size: 90%;
