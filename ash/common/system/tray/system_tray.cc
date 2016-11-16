@@ -4,6 +4,10 @@
 
 #include "ash/common/system/tray/system_tray.h"
 
+#include <algorithm>
+#include <map>
+#include <vector>
+
 #include "ash/common/key_event_watcher.h"
 #include "ash/common/login_status.h"
 #include "ash/common/material_design/material_design_controller.h"
@@ -113,7 +117,7 @@ class PaddingTrayItem : public SystemTrayItem {
 
 // The minimum width of the system tray menu.
 const int kMinimumSystemTrayMenuWidth = 300;
-const int kMinimumSystemTrayMenuWidthMd = 332;
+const int kMinimumSystemTrayMenuWidthMd = 352;
 
 // Class to initialize and manage the SystemTrayBubble and TrayBubbleWrapper
 // instances for a bubble.
@@ -596,12 +600,15 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     // the menu is full (or not) doesn't change even if a "single property"
     // (like network) replaces most of the menu.
     full_system_tray_menu_ = items.size() > 1;
-    // The menu width is fixed, and it is a per language setting.
-    int menu_width = std::max(
-        MaterialDesignController::IsSystemTrayMenuMaterial()
-            ? kMinimumSystemTrayMenuWidthMd
-            : kMinimumSystemTrayMenuWidth,
-        WmShell::Get()->system_tray_delegate()->GetSystemTrayMenuWidth());
+
+    // The menu width is fixed for all languages in material design.
+    int menu_width = kMinimumSystemTrayMenuWidthMd;
+    if (!MaterialDesignController::IsSystemTrayMenuMaterial()) {
+      // The menu width is fixed, and it is a per language setting.
+      menu_width = std::max(
+          kMinimumSystemTrayMenuWidth,
+          WmShell::Get()->system_tray_delegate()->GetSystemTrayMenuWidth());
+    }
 
     TrayBubbleView::InitParams init_params(TrayBubbleView::ANCHOR_TYPE_TRAY,
                                            GetAnchorAlignment(), menu_width,

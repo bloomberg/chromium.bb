@@ -200,6 +200,8 @@ class ASH_EXPORT SystemTrayDelegate {
   virtual bool GetSessionLengthLimit(base::TimeDelta* session_length_limit);
 
   // Get the system tray menu size in pixels (dependent on the language).
+  // This is not used in material design and should be removed during pre-MD
+  // code cleanup. See https://crbug.com/614453.
   virtual int GetSystemTrayMenuWidth();
 
   // The active user has been changed. This will be called when the UI is ready
