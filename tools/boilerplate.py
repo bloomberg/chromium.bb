@@ -38,7 +38,7 @@ def _GetHeader(filename):
 
 
 def _CppHeader(filename):
-  guard = filename.upper + '_'
+  guard = filename.upper() + '_'
   for char in '/.+':
     guard = guard.replace(char, '_')
   return '\n'.join([
