@@ -209,28 +209,40 @@ class SubresourceFilteringRulesetServiceTest : public ::testing::Test {
                     const IndexedRulesetVersion& indexed_version,
                     const base::FilePath& license_path = base::FilePath()) {
     return RulesetService::WriteRuleset(
-               indexed_version.GetSubdirectoryPathForVersion(base_dir()),
-               license_path, test_ruleset_pair.indexed.contents.data(),
+               GetExpectedVersionDirPath(indexed_version), license_path,
+               test_ruleset_pair.indexed.contents.data(),
                test_ruleset_pair.indexed.contents.size()) ==
            RulesetService::IndexAndWriteRulesetResult::SUCCESS;
   }
 
+  void DeleteObsoleteRulesets(const base::FilePath& indexed_ruleset_base_dir,
+                              const IndexedRulesetVersion& version_to_keep) {
+    return IndexedRulesetLocator::DeleteObsoleteRulesets(
+        indexed_ruleset_base_dir, version_to_keep);
+  }
+
+  base::FilePath GetExpectedVersionDirPath(
+      const IndexedRulesetVersion& indexed_version) const {
+    return IndexedRulesetLocator::GetSubdirectoryPathForVersion(
+        base_dir(), indexed_version);
+  }
+
   base::FilePath GetExpectedRulesetDataFilePath(
       const IndexedRulesetVersion& version) const {
-    return RulesetService::GetRulesetDataFilePath(
-        version.GetSubdirectoryPathForVersion(base_dir()));
+    return IndexedRulesetLocator::GetRulesetDataFilePath(
+        GetExpectedVersionDirPath(version));
   }
 
   base::FilePath GetExpectedLicenseFilePath(
       const IndexedRulesetVersion& version) const {
-    return RulesetService::GetLicenseFilePath(
-        version.GetSubdirectoryPathForVersion(base_dir()));
+    return IndexedRulesetLocator::GetLicenseFilePath(
+        GetExpectedVersionDirPath(version));
   }
 
   base::FilePath GetExpectedSentinelFilePath(
       const IndexedRulesetVersion& version) const {
-    return RulesetService::GetSentinelFilePath(
-        version.GetSubdirectoryPathForVersion(base_dir()));
+    return IndexedRulesetLocator::GetSentinelFilePath(
+        GetExpectedVersionDirPath(version));
   }
 
   void RunUntilIdle() { task_runner_->RunUntilIdle(); }
@@ -411,6 +423,49 @@ TEST_F(SubresourceFilteringRulesetServiceTest, WriteRuleset_EmptyLicensePath) {
   EXPECT_FALSE(base::PathExists(GetExpectedLicenseFilePath(indexed_version)));
 }
 
+TEST_F(SubresourceFilteringRulesetServiceTest, DeleteObsoleteRulesets_Noop) {
+  ASSERT_FALSE(base::DirectoryExists(base_dir()));
+  DeleteObsoleteRulesets(base_dir(), IndexedRulesetVersion());
+  EXPECT_TRUE(base::IsDirectoryEmpty(base_dir()));
+}
+
+TEST_F(SubresourceFilteringRulesetServiceTest, DeleteObsoleteRulesets) {
+  IndexedRulesetVersion legacy_format_content_version_1(
+      kTestContentVersion1, IndexedRulesetVersion::CurrentFormatVersion() - 1);
+  IndexedRulesetVersion legacy_format_content_version_2(
+      kTestContentVersion2, IndexedRulesetVersion::CurrentFormatVersion() - 1);
+  IndexedRulesetVersion current_format_content_version_1(
+      kTestContentVersion1, IndexedRulesetVersion::CurrentFormatVersion());
+  IndexedRulesetVersion current_format_content_version_2(
+      kTestContentVersion2, IndexedRulesetVersion::CurrentFormatVersion());
+  IndexedRulesetVersion current_format_content_version_3(
+      kTestContentVersion3, IndexedRulesetVersion::CurrentFormatVersion());
+
+  WriteRuleset(test_ruleset_1(), legacy_format_content_version_1);
+  WriteRuleset(test_ruleset_2(), legacy_format_content_version_2);
+  base::WriteFile(GetExpectedSentinelFilePath(legacy_format_content_version_2),
+                  nullptr, 0);
+
+  WriteRuleset(test_ruleset_1(), current_format_content_version_1);
+  WriteRuleset(test_ruleset_2(), current_format_content_version_2);
+  WriteRuleset(test_ruleset_3(), current_format_content_version_3);
+  base::WriteFile(GetExpectedSentinelFilePath(current_format_content_version_3),
+                  nullptr, 0);
+
+  DeleteObsoleteRulesets(base_dir(), current_format_content_version_2);
+
+  EXPECT_FALSE(base::PathExists(
+      GetExpectedVersionDirPath(legacy_format_content_version_1)));
+  EXPECT_FALSE(base::PathExists(
+      GetExpectedVersionDirPath(legacy_format_content_version_2)));
+  EXPECT_FALSE(base::PathExists(
+      GetExpectedVersionDirPath(current_format_content_version_1)));
+  EXPECT_TRUE(base::PathExists(
+      GetExpectedRulesetDataFilePath(current_format_content_version_2)));
+  EXPECT_TRUE(base::PathExists(
+      GetExpectedSentinelFilePath(current_format_content_version_3)));
+}
+
 TEST_F(SubresourceFilteringRulesetServiceTest, Startup_NoRulesetNotPublished) {
   RunUntilIdle();
   EXPECT_EQ(0u, mock_delegate()->published_rulesets().size());
@@ -432,7 +487,7 @@ TEST_F(SubresourceFilteringRulesetServiceTest,
 }
 
 TEST_F(SubresourceFilteringRulesetServiceTest,
-       Startup_LegacyFormatRulesetNotPublished) {
+       Startup_LegacyFormatRulesetNotPublishedButDeleted) {
   int legacy_format_version = IndexedRulesetVersion::CurrentFormatVersion() - 1;
   IndexedRulesetVersion legacy_version(kTestContentVersion1,
                                        legacy_format_version);
@@ -440,13 +495,23 @@ TEST_F(SubresourceFilteringRulesetServiceTest,
   legacy_version.SaveToPrefs(prefs());
   WriteRuleset(test_ruleset_1(), legacy_version);
 
+  ASSERT_FALSE(base::IsDirectoryEmpty(base_dir()));
+
   ResetRulesetService();
   RunUntilIdle();
   EXPECT_EQ(0u, mock_delegate()->published_rulesets().size());
+
+  mock_delegate()->SimulateStartupCompleted();
+  RunUntilIdle();
+
+  IndexedRulesetVersion stored_version;
+  stored_version.ReadFromPrefs(prefs());
+  EXPECT_FALSE(stored_version.IsValid());
+  EXPECT_TRUE(base::IsDirectoryEmpty(base_dir()));
 }
 
 TEST_F(SubresourceFilteringRulesetServiceTest,
-       Startup_ExistingRulesetPublished) {
+       Startup_ExistingRulesetPublishedAndNotDeleted) {
   IndexedRulesetVersion current_version(
       kTestContentVersion1, IndexedRulesetVersion::CurrentFormatVersion());
   current_version.SaveToPrefs(prefs());
@@ -462,7 +527,10 @@ TEST_F(SubresourceFilteringRulesetServiceTest,
 
   mock_delegate()->SimulateStartupCompleted();
   RunUntilIdle();
+
   EXPECT_EQ(1u, mock_delegate()->published_rulesets().size());
+  EXPECT_TRUE(
+      base::PathExists(GetExpectedRulesetDataFilePath(current_version)));
 }
 
 TEST_F(SubresourceFilteringRulesetServiceTest, NewRuleset_Published) {
@@ -503,12 +571,16 @@ TEST_F(SubresourceFilteringRulesetServiceTest,
 
 TEST_F(SubresourceFilteringRulesetServiceTest, NewRuleset_Persisted) {
   base::HistogramTester histogram_tester;
-  mock_delegate()->SimulateStartupCompleted();
 
   base::FilePath original_license_path;
   CreateTestLicenseFile(kTestLicenseContents, &original_license_path);
   IndexAndStoreAndPublishUpdatedRuleset(test_ruleset_1(), kTestContentVersion1,
                                         original_license_path);
+
+  // Indexing should be queued, and will be performed in a deferred manner,
+  // after start-up, at the same time with cleaning up obsoleted rulesets. Make
+  // sure it does not get immediately deleted.
+  mock_delegate()->SimulateStartupCompleted();
   RunUntilIdle();
 
   IndexedRulesetVersion stored_version;
@@ -517,6 +589,7 @@ TEST_F(SubresourceFilteringRulesetServiceTest, NewRuleset_Persisted) {
   EXPECT_EQ(IndexedRulesetVersion::CurrentFormatVersion(),
             stored_version.format_version);
 
+  EXPECT_TRUE(base::PathExists(GetExpectedRulesetDataFilePath(stored_version)));
   EXPECT_FALSE(base::PathExists(GetExpectedSentinelFilePath(stored_version)));
 
   // The unindexed ruleset was accompanied by a LICENSE file, ensure it is
@@ -533,6 +606,11 @@ TEST_F(SubresourceFilteringRulesetServiceTest, NewRuleset_Persisted) {
   ASSERT_NO_FATAL_FAILURE(AssertValidRulesetFileWithContents(
       &mock_delegate()->published_rulesets()[0],
       test_ruleset_1().indexed.contents));
+
+  mock_delegate()->SimulateStartupCompleted();
+  RunUntilIdle();
+
+  EXPECT_TRUE(base::PathExists(GetExpectedRulesetDataFilePath(stored_version)));
 
   histogram_tester.ExpectTotalCount(
       "SubresourceFilter.IndexRuleset.WallDuration", 1);
@@ -554,7 +632,9 @@ TEST_F(SubresourceFilteringRulesetServiceTest,
        NewRuleset_OverwritesBadCopyOfSameVersionOnDisk) {
   mock_delegate()->SimulateStartupCompleted();
   // Emulate a bad ruleset by writing |test_ruleset_2| into the directory
-  // corresponding to |test_ruleset_1| and not updating prefs.
+  // corresponding to |test_ruleset_1| and not updating prefs. This must come
+  // after SimulateStartupCompleted, otherwise it gets deleted by the clean-up
+  // routines, rendering this test pointless.
   IndexedRulesetVersion same_version_but_incomplete(
       kTestContentVersion1, IndexedRulesetVersion::CurrentFormatVersion());
   WriteRuleset(test_ruleset_2(), same_version_but_incomplete);
@@ -656,9 +736,13 @@ TEST_F(SubresourceFilteringRulesetServiceTest, NewRuleset_ParseFailure) {
 
   // Expect that a sentinel file is left behind. The parse failure is most
   // likely permanent, there is no point to retrying indexing on next start-up.
+  // However, as versions with sentinel files present will not be cleaned up
+  // until the format version is increased, expect no ruleset file.
   IndexedRulesetVersion failed_version(
       kTestContentVersion1, IndexedRulesetVersion::CurrentFormatVersion());
   EXPECT_TRUE(base::PathExists(GetExpectedSentinelFilePath(failed_version)));
+  EXPECT_FALSE(
+      base::PathExists(GetExpectedRulesetDataFilePath(failed_version)));
 
   ASSERT_EQ(0u, mock_delegate()->published_rulesets().size());
 
@@ -690,9 +774,13 @@ TEST_F(SubresourceFilteringRulesetServiceDeathTest, NewRuleset_IndexingCrash) {
 
   // Expect that a sentinel file is left behind as a warning not to attempt
   // indexing this version again, and thus to prevent crashing again.
+  // However, as versions with sentinel files present will not be cleaned up
+  // until the format version is increased, expect no ruleset file.
   IndexedRulesetVersion crashed_version(
       kTestContentVersion1, IndexedRulesetVersion::CurrentFormatVersion());
   EXPECT_TRUE(base::PathExists(GetExpectedSentinelFilePath(crashed_version)));
+  EXPECT_FALSE(
+      base::PathExists(GetExpectedRulesetDataFilePath(crashed_version)));
 
   base::HistogramTester histogram_tester;
   ResetRulesetService();

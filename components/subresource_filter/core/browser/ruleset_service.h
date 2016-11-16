@@ -72,7 +72,6 @@ struct IndexedRulesetVersion {
   IndexedRulesetVersion& operator=(const IndexedRulesetVersion&);
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
-
   static int CurrentFormatVersion();
 
   bool IsValid() const;
@@ -80,11 +79,55 @@ struct IndexedRulesetVersion {
 
   void SaveToPrefs(PrefService* local_state) const;
   void ReadFromPrefs(PrefService* local_state);
-  base::FilePath GetSubdirectoryPathForVersion(
-      const base::FilePath& base_dir) const;
 
   std::string content_version;
   int format_version = 0;
+};
+
+// Contains all utility functions that govern how files pertaining to indexed
+// ruleset version should be organized on disk.
+//
+// The various indexed ruleset versions are kept in a two-level directory
+// hierarchy based on their format and content version numbers, like so:
+//
+//   |base_dir|
+//    |
+//    +--10 (format_version)
+//    |  |
+//    |  +--1 (content_version)
+//    |  |   \...
+//    |  |
+//    |  +--2 (content_version)
+//    |      \...
+//    |
+//    +--11 (format_version)
+//       |
+//       +--2 (content_version)
+//           \...
+//
+class IndexedRulesetLocator {
+ public:
+  // Returns a path to a directory under |base_dir| where files corresponding to
+  // the given |version| should be stored.
+  static base::FilePath GetSubdirectoryPathForVersion(
+      const base::FilePath& base_dir,
+      const IndexedRulesetVersion& version);
+
+  static base::FilePath GetRulesetDataFilePath(
+      const base::FilePath& version_directory);
+  static base::FilePath GetLicenseFilePath(
+      const base::FilePath& version_directory);
+  static base::FilePath GetSentinelFilePath(
+      const base::FilePath& version_directory);
+
+  // Cleans up the |indexed_ruleset_base_dir| by deleting all obsoleted ruleset
+  // versions, keeping only:
+  //  -- the |most_recent_version|, if it is valid,
+  //  -- versions of the current format that have a sentinel file present.
+  // To be called on the |blocking_task_runner_|.
+  static void DeleteObsoleteRulesets(
+      const base::FilePath& indexed_ruleset_base_dir,
+      const IndexedRulesetVersion& most_recent_version);
 };
 
 // Responsible for indexing subresource filtering rules that are downloaded
@@ -156,13 +199,6 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
 
   using WriteRulesetCallback =
       base::Callback<void(const IndexedRulesetVersion&)>;
-
-  static base::FilePath GetRulesetDataFilePath(
-      const base::FilePath& version_directory);
-  static base::FilePath GetLicenseFilePath(
-      const base::FilePath& version_directory);
-  static base::FilePath GetSentinelFilePath(
-      const base::FilePath& version_directory);
 
   // Reads the ruleset described in |unindexed_ruleset_info|, indexes it, and
   // calls WriteRuleset() to persist the indexed ruleset. Returns the resulting
