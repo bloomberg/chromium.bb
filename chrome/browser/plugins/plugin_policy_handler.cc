@@ -10,6 +10,7 @@
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
@@ -19,8 +20,6 @@
 #include "content/public/common/content_constants.h"
 
 namespace {
-
-const char kAdobeFlashPlayerName[] = "Adobe Flash Player";
 
 // Retrieves a list typed policy or nullptr if not present or not a list.
 const base::ListValue* GetListPolicy(const policy::PolicyMap& policies,
@@ -60,7 +59,8 @@ void PluginPolicyHandler::ProcessPolicy(const policy::PolicyMap& policies,
           prefs::kPluginsAlwaysOpenPdfExternally,
           base::MakeUnique<base::FundamentalValue>(disable_pdf_plugin));
     }
-    if ((base::MatchPattern(kAdobeFlashPlayerName, plugin) ||
+    if ((base::MatchPattern(
+             PluginMetadata::kAdobeFlashPlayerGroupName, plugin) ||
          base::MatchPattern(content::kFlashPluginName, plugin)) &&
         !policies.GetValue(policy::key::kDefaultPluginsSetting)) {
       prefs->SetValue(
@@ -110,7 +110,8 @@ void PluginPolicyHandler::ApplyPolicySettings(const policy::PolicyMap& policies,
         !policies.GetValue(policy::key::kAlwaysOpenPdfExternally)) {
       prefs->RemoveValue(prefs::kPluginsAlwaysOpenPdfExternally);
     }
-    if ((base::MatchPattern(kAdobeFlashPlayerName, plugin) ||
+    if ((base::MatchPattern(
+            PluginMetadata::kAdobeFlashPlayerGroupName, plugin) ||
          base::MatchPattern(content::kFlashPluginName, plugin)) &&
         !policies.GetValue(policy::key::kDefaultPluginsSetting)) {
       prefs->RemoveValue(prefs::kManagedDefaultPluginsSetting);

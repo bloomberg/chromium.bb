@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/pattern.h"
@@ -23,6 +24,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/plugins/plugin_installer.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_prefs_factory.h"
@@ -32,11 +34,15 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/pref_names.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/common/webplugininfo.h"
 
 #if !defined(DISABLE_NACL)
@@ -63,6 +69,12 @@ bool IsComponentUpdatedPepperFlash(const base::FilePath& plugin) {
 
 bool IsPDFViewerPlugin(const base::string16& plugin_name) {
   return plugin_name == base::ASCIIToUTF16(ChromeContentClient::kPDFPluginName);
+}
+
+bool IsAdobeFlashPlayerPlugin(const base::string16& plugin_name) {
+  return (plugin_name == base::ASCIIToUTF16(content::kFlashPluginName) ||
+          plugin_name == base::ASCIIToUTF16(
+              PluginMetadata::kAdobeFlashPlayerGroupName));
 }
 
 }  // namespace
@@ -339,6 +351,7 @@ void PluginPrefs::ListValueToStringSet(const base::ListValue* src,
 void PluginPrefs::SetPrefs(PrefService* prefs) {
   prefs_ = prefs;
   bool update_internal_dir = false;
+  bool plugins_migrated = false;
   base::FilePath last_internal_dir =
       prefs_->GetFilePath(prefs::kPluginsLastInternalDirectory);
   base::FilePath cur_internal_dir;
@@ -360,10 +373,27 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
           continue;  // Oops, don't know what to do with this item.
         }
 
-        base::string16 group_name;
         bool enabled;
         if (!plugin->GetBoolean("enabled", &enabled))
           enabled = true;
+
+        // Migrate disabled plugins and re-enable them all internally.
+        // TODO(http://crbug.com/662006): Remove migration eventually.
+        if (!enabled) {
+          base::string16 name;
+          plugin->GetString("name", &name);
+          if (IsPDFViewerPlugin(name))
+            prefs->SetBoolean(prefs::kPluginsAlwaysOpenPdfExternally, true);
+          if (IsAdobeFlashPlayerPlugin(name)) {
+            HostContentSettingsMapFactory::GetForProfile(profile_)
+                ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                           CONTENT_SETTING_BLOCK);
+          }
+          // TODO(http://crbug.com/662002): Remove the enabled flag completely.
+          enabled = true;
+          plugin->SetBoolean("enabled", true);
+          plugins_migrated = true;
+        }
 
         base::FilePath::StringType path;
         // The plugin list constains all the plugin files in addition to the
@@ -412,9 +442,6 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
           }
 
           plugin_state_.Set(plugin_path, enabled);
-        } else if (!enabled && plugin->GetString("name", &group_name)) {
-          // Otherwise this is a list of groups.
-          plugin_group_state_[group_name] = false;
         }
       }
     } else {
@@ -429,8 +456,11 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
     }
   }  // Scoped update of prefs::kPluginsPluginsList.
 
+  UMA_HISTOGRAM_BOOLEAN("Plugin.EnabledStatusMigrationDone", plugins_migrated);
+
   // Build the set of policy enabled/disabled plugin patterns once and cache it.
   // Don't do this in the constructor, there's no profile available there.
+  // TODO(http://crbug.com/662002): : Remove the prefs completely.
   ListValueToStringSet(prefs_->GetList(prefs::kPluginsDisabledPlugins),
                        &policy_disabled_plugin_patterns_);
   ListValueToStringSet(

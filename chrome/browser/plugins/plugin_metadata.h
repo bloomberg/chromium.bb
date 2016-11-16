@@ -33,6 +33,7 @@ class PluginMetadata {
   static const char kJavaGroupName[];
   static const char kQuickTimeGroupName[];
   static const char kShockwaveGroupName[];
+  static const char kAdobeFlashPlayerGroupName[];
   static const char kRealPlayerGroupName[];
   static const char kSilverlightGroupName[];
   static const char kWindowsMediaPlayerGroupName[];
