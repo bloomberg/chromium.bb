@@ -122,8 +122,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   void LoadUIContent();
   void DrawVrShell(const gvr::Mat4f& head_pose, gvr::Frame &frame);
   void DrawUiView(const gvr::Mat4f* head_pose,
-                  const std::vector<const ContentRectangle*>& elements,
-                  bool clear);
+                  const std::vector<const ContentRectangle*>& elements);
   void DrawElements(const gvr::Mat4f& render_matrix,
                     const std::vector<const ContentRectangle*>& elements);
   void DrawCursor(const gvr::Mat4f& render_matrix);

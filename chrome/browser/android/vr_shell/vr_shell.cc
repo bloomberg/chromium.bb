@@ -565,14 +565,16 @@ void VrShell::DrawVrShell(const gvr::Mat4f& head_pose,
 
   bool not_web_vr = html_interface_->GetMode() != UiInterface::Mode::WEB_VR;
 
+  glEnable(GL_CULL_FACE);
+  glEnable(GL_DEPTH_TEST);
+  glDepthMask(GL_TRUE);
+
   if (not_web_vr) {
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_SCISSOR_TEST);
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
 
-  DrawUiView(&head_pose, world_elements, not_web_vr);
+  DrawUiView(&head_pose, world_elements);
 
   if (!head_locked_elements.empty()) {
     // Switch to head-locked viewports.
@@ -585,13 +587,13 @@ void VrShell::DrawVrShell(const gvr::Mat4f& head_pose,
     // Bind the headlocked framebuffer.
     frame.BindBuffer(kFrameHeadlockedBuffer);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    DrawUiView(nullptr, head_locked_elements, true);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    DrawUiView(nullptr, head_locked_elements);
   }
 }
 
 void VrShell::DrawUiView(const gvr::Mat4f* head_pose,
-                         const std::vector<const ContentRectangle*>& elements,
-                         bool clear) {
+                         const std::vector<const ContentRectangle*>& elements) {
   for (auto eye : {GVR_LEFT_EYE, GVR_RIGHT_EYE}) {
     buffer_viewport_list_->GetBufferViewport(eye, buffer_viewport_.get());
 
@@ -605,13 +607,6 @@ void VrShell::DrawUiView(const gvr::Mat4f* head_pose,
     glViewport(pixel_rect.left, pixel_rect.bottom,
                pixel_rect.right - pixel_rect.left,
                pixel_rect.top - pixel_rect.bottom);
-    glScissor(pixel_rect.left, pixel_rect.bottom,
-              pixel_rect.right - pixel_rect.left,
-              pixel_rect.top - pixel_rect.bottom);
-
-    if (clear) {
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    }
 
     const gvr::Mat4f render_matrix = MatrixMul(
         PerspectiveMatrixFromView(
