@@ -479,11 +479,6 @@ class CORE_EXPORT ScriptValueSerializer {
   uint32_t m_nextObjectReference;
   WebBlobInfoArray* m_blobInfo;
   BlobDataHandleMap* m_blobDataHandles;
-
-  // Counts of object types encountered while serializing the object graph.
-  int m_primitiveCount = 0;
-  int m_jsObjectCount = 0;
-  int m_domWrapperCount = 0;
 };
 
 class ScriptValueDeserializer;

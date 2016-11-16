@@ -23,7 +23,6 @@
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileList.h"
-#include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebBlobInfo.h"
@@ -750,30 +749,10 @@ void ScriptValueSerializer::copyTransferables(
   }
 }
 
-static void recordValueCounts(int primitiveCount,
-                              int jsObjectCount,
-                              int domWrapperCount) {
-  struct ObjectCountHistograms {
-    CustomCountHistogram primitiveCount{
-        "Blink.ScriptValueSerializer.PrimitiveCount", 0, 100000, 50};
-    CustomCountHistogram jsObjectCount{
-        "Blink.ScriptValueSerializer.JSObjectCount", 0, 100000, 50};
-    CustomCountHistogram domWrapperCount{
-        "Blink.ScriptValueSerializer.DOMWrapperCount", 0, 100000, 50};
-  };
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ObjectCountHistograms, histograms,
-                                  new ObjectCountHistograms);
-  histograms.primitiveCount.count(primitiveCount);
-  histograms.jsObjectCount.count(jsObjectCount);
-  histograms.domWrapperCount.count(domWrapperCount);
-}
-
 PassRefPtr<SerializedScriptValue> ScriptValueSerializer::serialize(
     v8::Local<v8::Value> value,
     Transferables* transferables,
     ExceptionState& exceptionState) {
-  m_primitiveCount = m_jsObjectCount = m_domWrapperCount = 0;
-
   DCHECK(!m_blobDataHandles);
 
   RefPtr<SerializedScriptValue> serializedValue =
@@ -791,7 +770,6 @@ PassRefPtr<SerializedScriptValue> ScriptValueSerializer::serialize(
 
   switch (m_status) {
     case Status::Success:
-      recordValueCounts(m_primitiveCount, m_jsObjectCount, m_domWrapperCount);
       transferData(transferables, exceptionState, serializedValue.get());
       break;
     case Status::InputError:
@@ -861,15 +839,9 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerialize(
     m_writer.writeObjectReference(objectReference);
     return nullptr;
   }
-  if (value->IsObject()) {
-    if (V8DOMWrapper::isWrapper(isolate(), value))
-      m_domWrapperCount++;
-    else
-      m_jsObjectCount++;
+  if (value->IsObject())
     return doSerializeObject(value.As<v8::Object>(), next);
-  }
 
-  m_primitiveCount++;
   if (value->IsUndefined()) {
     m_writer.writeUndefined();
   } else if (value->IsNull()) {
