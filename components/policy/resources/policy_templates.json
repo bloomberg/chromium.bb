@@ -5796,9 +5796,7 @@
       'id': 152,
       'caption': '''Disable mounting of external storage''',
       'tags': [],
-      'desc': '''Disable mounting of external storage.
-
-      When this policy is set to true, external storage will not be available in the file browser.
+      'desc': '''When this policy is set to true, external storage will not be available in the file browser.
 
       This policy affects all types of storage media. For example: USB flash drives, external hard drives, SD and other memory cards, optical storage etc. Internal storage is not affected, therefore files saved in the Download folder can still be accessed. Google Drive is also not affected by this policy.
 
