@@ -242,3 +242,13 @@ weston_desktop_api_minimized_requested(struct weston_desktop *desktop,
 	if (desktop->api.minimized_requested != NULL)
 		desktop->api.minimized_requested(surface, desktop->user_data);
 }
+
+void
+weston_desktop_api_set_xwayland_position(struct weston_desktop *desktop,
+					 struct weston_desktop_surface *surface,
+					 int32_t x, int32_t y)
+{
+	if (desktop->api.set_xwayland_position != NULL)
+		desktop->api.set_xwayland_position(surface, x, y,
+						   desktop->user_data);
+}

@@ -258,6 +258,16 @@ set_toplevel(struct weston_desktop_xwayland_surface *surface)
 }
 
 static void
+set_toplevel_with_position(struct weston_desktop_xwayland_surface *surface,
+			   int32_t x, int32_t y)
+{
+	weston_desktop_xwayland_surface_change_state(surface, TOPLEVEL, NULL,
+						     0, 0);
+	weston_desktop_api_set_xwayland_position(surface->desktop,
+						 surface->surface, x, y);
+}
+
+static void
 set_parent(struct weston_desktop_xwayland_surface *surface,
 	   struct weston_surface *wparent)
 {
@@ -361,6 +371,7 @@ set_pid(struct weston_desktop_xwayland_surface *surface, pid_t pid)
 static const struct weston_desktop_xwayland_interface weston_desktop_xwayland_interface = {
 	.create_surface = create_surface,
 	.set_toplevel = set_toplevel,
+	.set_toplevel_with_position = set_toplevel_with_position,
 	.set_parent = set_parent,
 	.set_transient = set_transient,
 	.set_fullscreen = set_fullscreen,

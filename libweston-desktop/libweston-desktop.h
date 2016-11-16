@@ -80,6 +80,39 @@ struct weston_desktop_api {
 				    bool maximized, void *user_data);
 	void (*minimized_requested)(struct weston_desktop_surface *surface,
 				    void *user_data);
+
+	/** Position suggestion for an Xwayland window
+	 *
+	 * X11 applications assume they can position their windows as necessary,
+	 * which is not possible in Wayland where positioning is driven by the
+	 * shell alone. This function is used to relay absolute position wishes
+	 * from Xwayland clients to the shell.
+	 *
+	 * This is particularly used for mapping windows at specified locations,
+	 * e.g. via the commonly used '-geometry' command line option. In such
+	 * case, a call to surface_added() is immediately followed by
+	 * xwayland_position() if the X11 application specified a position.
+	 * The committed() call that will map the window occurs later, so it
+	 * is recommended to usually store and honour the given position for
+	 * windows that are not yet mapped.
+	 *
+	 * Calls to this function may happen also at other times.
+	 *
+	 * The given coordinates are in the X11 window system coordinate frame
+	 * relative to the X11 root window. Care should be taken to ensure the
+	 * window gets mapped to coordinates that correspond to the proposed
+	 * position from the X11 client perspective.
+	 *
+	 * \param surface The surface in question.
+	 * \param x The absolute X11 coordinate for x.
+	 * \param y The absolute X11 coordinate for y.
+	 * \param user_data The user_data argument passed in to
+	 * weston_desktop_create().
+	 *
+	 * This callback can be NULL.
+	 */
+	void (*set_xwayland_position)(struct weston_desktop_surface *surface,
+				      int32_t x, int32_t y, void *user_data);
 };
 
 void
