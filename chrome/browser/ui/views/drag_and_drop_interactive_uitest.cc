@@ -379,7 +379,8 @@ const char kTestPagePath[] = "/drag_and_drop/page.html";
 
 }  // namespace
 
-class DragAndDropBrowserTest : public InProcessBrowserTest {
+class DragAndDropBrowserTest : public InProcessBrowserTest,
+                               public testing::WithParamInterface<bool> {
  public:
   DragAndDropBrowserTest(){};
 
@@ -389,6 +390,11 @@ class DragAndDropBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(embedded_test_server()->Start());
     content::SetupCrossSiteRedirector(embedded_test_server());
     drag_simulator_.reset(new DragAndDropSimulator(web_contents()));
+  }
+
+  bool use_cross_site_subframe() {
+    // This is controlled by gtest's test param from INSTANTIATE_TEST_CASE_P.
+    return GetParam();
   }
 
   content::RenderFrameHost* left_frame() {
@@ -558,9 +564,10 @@ class DragAndDropBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(DragAndDropBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(DragAndDropBrowserTest, DropTextFromOutside) {
+IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, DropTextFromOutside) {
+  std::string frame_site = use_cross_site_subframe() ? "b.com" : "a.com";
   ASSERT_TRUE(NavigateToTestPage("a.com"));
-  ASSERT_TRUE(NavigateRightFrame("b.com", "drop_target.html"));
+  ASSERT_TRUE(NavigateRightFrame(frame_site, "drop_target.html"));
 
   // Setup test expectations.
   DOMDragEventVerifier expected_dom_event_data;
@@ -589,8 +596,8 @@ IN_PROC_BROWSER_TEST_F(DragAndDropBrowserTest, DropTextFromOutside) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(DragAndDropBrowserTest, DragStartInFrame) {
-  std::string frame_site = "b.com";
+IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, DragStartInFrame) {
+  std::string frame_site = use_cross_site_subframe() ? "b.com" : "a.com";
   ASSERT_TRUE(NavigateToTestPage("a.com"));
   ASSERT_TRUE(NavigateLeftFrame(frame_site, "image_source.html"));
 
@@ -638,5 +645,11 @@ IN_PROC_BROWSER_TEST_F(DragAndDropBrowserTest, DragStartInFrame) {
   // Try to leave everything in a clean state.
   SimulateMouseUp();
 }
+
+INSTANTIATE_TEST_CASE_P(
+    SameSiteSubframe, DragAndDropBrowserTest, ::testing::Values(false));
+
+INSTANTIATE_TEST_CASE_P(
+    CrossSiteSubframe, DragAndDropBrowserTest, ::testing::Values(true));
 
 }  // namespace chrome
