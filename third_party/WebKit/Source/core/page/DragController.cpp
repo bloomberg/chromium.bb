@@ -790,13 +790,13 @@ Node* DragController::draggableNode(const LocalFrame* src,
         return node;
       }
       // Other draggable elements are considered unselectable.
+      if (dragMode == DRAG_ELEMENT) {
+        candidateDragType = DragSourceActionDHTML;
+        break;
+      }
       if (isHTMLAnchorElement(*node) &&
           toHTMLAnchorElement(node)->isLiveLink()) {
         candidateDragType = DragSourceActionLink;
-        break;
-      }
-      if (dragMode == DRAG_ELEMENT) {
-        candidateDragType = DragSourceActionDHTML;
         break;
       }
     }
@@ -894,6 +894,15 @@ bool DragController::populateDragDataTransfer(LocalFrame* src,
   DataTransfer* dataTransfer = state.m_dragDataTransfer.get();
   Node* node = state.m_dragSrc.get();
 
+  if (isHTMLAnchorElement(*node) && toHTMLAnchorElement(node)->isLiveLink() &&
+      !linkURL.isEmpty()) {
+    // Simplify whitespace so the title put on the clipboard resembles what
+    // the user sees on the web page. This includes replacing newlines with
+    // spaces.
+    dataTransfer->writeURL(node, linkURL,
+                           hitTestResult.textContent().simplifyWhiteSpace());
+  }
+
   if (state.m_dragType == DragSourceActionSelection) {
     dataTransfer->writeSelection(src->selection());
   } else if (state.m_dragType == DragSourceActionImage) {
@@ -905,13 +914,23 @@ bool DragController::populateDragDataTransfer(LocalFrame* src,
   } else if (state.m_dragType == DragSourceActionLink) {
     if (linkURL.isEmpty())
       return false;
-    // Simplify whitespace so the title put on the clipboard resembles what the
-    // user sees on the web page. This includes replacing newlines with spaces.
-    dataTransfer->writeURL(node, linkURL,
-                           hitTestResult.textContent().simplifyWhiteSpace());
+  } else if (state.m_dragType == DragSourceActionDHTML) {
+    LayoutObject* layoutObject = node->layoutObject();
+    if (!layoutObject) {
+      // The layoutObject has disappeared, this can happen if the onStartDrag
+      // handler has hidden the element in some way. In this case we just kill
+      // the drag.
+      return false;
+    }
+
+    IntRect boundingIncludingDescendants =
+        layoutObject->absoluteBoundingBoxRectIncludingDescendants();
+    IntSize delta = dragOrigin - boundingIncludingDescendants.location();
+    dataTransfer->setDragImageElement(node, IntPoint(delta));
+
+    // FIXME: For DHTML/draggable element drags, write element markup to
+    // clipboard.
   }
-  // FIXME: For DHTML/draggable element drags, write element markup to
-  // clipboard.
   return true;
 }
 

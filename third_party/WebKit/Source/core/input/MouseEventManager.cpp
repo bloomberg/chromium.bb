@@ -819,23 +819,6 @@ bool MouseEventManager::tryStartDrag(
 
   dragState().m_dragDataTransfer = createDraggingDataTransfer();
 
-  // Check to see if this a DOM based drag, if it is get the DOM specified drag
-  // image and offset
-  if (dragState().m_dragType == DragSourceActionDHTML) {
-    if (LayoutObject* layoutObject = dragState().m_dragSrc->layoutObject()) {
-      IntRect boundingIncludingDescendants =
-          layoutObject->absoluteBoundingBoxRectIncludingDescendants();
-      IntSize delta = m_mouseDownPos - boundingIncludingDescendants.location();
-      dragState().m_dragDataTransfer->setDragImageElement(
-          dragState().m_dragSrc.get(), IntPoint(delta));
-    } else {
-      // The layoutObject has disappeared, this can happen if the onStartDrag
-      // handler has hidden the element in some way. In this case we just kill
-      // the drag.
-      return false;
-    }
-  }
-
   DragController& dragController = m_frame->page()->dragController();
   if (!dragController.populateDragDataTransfer(m_frame, dragState(),
                                                m_mouseDownPos))
