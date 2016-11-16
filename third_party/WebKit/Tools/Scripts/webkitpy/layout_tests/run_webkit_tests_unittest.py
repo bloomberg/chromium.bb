@@ -860,7 +860,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         logging_run(['--no-show-results', 'reftests/foo/'], tests_included=True, host=host)
         results = parse_full_results(host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json'))
 
-        self.assertEqual(results["tests"]["reftests"]["foo"]["unlistedtest.html"]["actual"], "MISSING"),
+        self.assertEqual(results["tests"]["reftests"]["foo"]["unlistedtest.html"]["actual"], "MISSING")
         self.assertEqual(results["num_regressions"], 5)
         self.assertEqual(results["num_flaky"], 0)
 

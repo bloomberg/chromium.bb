@@ -222,7 +222,7 @@ class SharderTests(unittest.TestCase):
                               'http/tests/websocket/tests/websocket-protocol-ignored.html']),
                                ('locked_shard_2',
                                 ['http/tests/xmlhttprequest/supported-xml-content-types.html',
-                                 'perf/object-keys.html'])]),
+                                 'perf/object-keys.html'])])
         self.assert_shards(unlocked,
                            [('virtual/threaded/dir', ['virtual/threaded/dir/test.html']),
                             ('virtual/threaded/fast/foo', ['virtual/threaded/fast/foo/test.html']),
