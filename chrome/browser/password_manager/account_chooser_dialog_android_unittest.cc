@@ -99,9 +99,6 @@ TEST_F(AccountChooserDialogAndroidTest,
   dialog->Destroy(base::android::AttachCurrentThread(), nullptr);
 
   histogram_tester.ExpectUniqueSample(
-      "PasswordManager.AccountChooserDialog",
-      password_manager::metrics_util::ACCOUNT_CHOOSER_CREDENTIAL_CHOSEN, 1);
-  histogram_tester.ExpectUniqueSample(
       "PasswordManager.AccountChooserDialogOneAccount",
       password_manager::metrics_util::ACCOUNT_CHOOSER_CREDENTIAL_CHOSEN, 1);
   histogram_tester.ExpectTotalCount(
@@ -120,9 +117,6 @@ TEST_F(AccountChooserDialogAndroidTest,
       true /* signin_button_clicked */);
   dialog->Destroy(base::android::AttachCurrentThread(), nullptr);
   histogram_tester.ExpectUniqueSample(
-      "PasswordManager.AccountChooserDialog",
-      password_manager::metrics_util::ACCOUNT_CHOOSER_SIGN_IN, 1);
-  histogram_tester.ExpectUniqueSample(
       "PasswordManager.AccountChooserDialogOneAccount",
       password_manager::metrics_util::ACCOUNT_CHOOSER_SIGN_IN, 1);
   histogram_tester.ExpectTotalCount(
@@ -140,9 +134,6 @@ TEST_F(AccountChooserDialogAndroidTest, CheckHistogramsReportingManyAccounts) {
       false /* signin_button_clicked */);
   dialog->Destroy(base::android::AttachCurrentThread(), nullptr);
 
-  histogram_tester.ExpectUniqueSample(
-      "PasswordManager.AccountChooserDialog",
-      password_manager::metrics_util::ACCOUNT_CHOOSER_CREDENTIAL_CHOSEN, 1);
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.AccountChooserDialogMultipleAccounts",
       password_manager::metrics_util::ACCOUNT_CHOOSER_CREDENTIAL_CHOSEN, 1);

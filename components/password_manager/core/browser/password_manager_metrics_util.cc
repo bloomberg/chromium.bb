@@ -91,18 +91,12 @@ void LogAutoSigninPromoUserAction(AutoSigninPromoUserAction action) {
 void LogAccountChooserUserActionOneAccount(AccountChooserUserAction action) {
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.AccountChooserDialogOneAccount",
                             action, ACCOUNT_CHOOSER_ACTION_COUNT);
-  // TODO(vasilii): deprecate the histogram when the new ones hit the Stable.
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.AccountChooserDialog", action,
-                            ACCOUNT_CHOOSER_ACTION_COUNT);
 }
 
 void LogAccountChooserUserActionManyAccounts(AccountChooserUserAction action) {
   UMA_HISTOGRAM_ENUMERATION(
       "PasswordManager.AccountChooserDialogMultipleAccounts", action,
       ACCOUNT_CHOOSER_ACTION_COUNT);
-  // TODO(vasilii): deprecate the histogram when the new ones hit the Stable.
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.AccountChooserDialog", action,
-                            ACCOUNT_CHOOSER_ACTION_COUNT);
 }
 
 void LogAutoSigninPromoUserAction(SyncSignInUserAction action) {

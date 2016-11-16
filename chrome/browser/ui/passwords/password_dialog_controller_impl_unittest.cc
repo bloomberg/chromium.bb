@@ -112,9 +112,6 @@ TEST_F(PasswordDialogControllerTest, ShowAccountChooser) {
       *local_form_ptr,
       password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
   histogram_tester.ExpectUniqueSample(
-      "PasswordManager.AccountChooserDialog",
-       password_manager::metrics_util::ACCOUNT_CHOOSER_CREDENTIAL_CHOSEN, 1);
-  histogram_tester.ExpectUniqueSample(
       "PasswordManager.AccountChooserDialogMultipleAccounts",
        password_manager::metrics_util::ACCOUNT_CHOOSER_CREDENTIAL_CHOSEN, 1);
   histogram_tester.ExpectTotalCount(
@@ -143,9 +140,6 @@ TEST_F(PasswordDialogControllerTest, ShowAccountChooserAndSignIn) {
       password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD));
   controller().OnSignInClicked();
   histogram_tester.ExpectUniqueSample(
-      "PasswordManager.AccountChooserDialog",
-       password_manager::metrics_util::ACCOUNT_CHOOSER_SIGN_IN, 1);
-  histogram_tester.ExpectUniqueSample(
       "PasswordManager.AccountChooserDialogOneAccount",
        password_manager::metrics_util::ACCOUNT_CHOOSER_SIGN_IN, 1);
   histogram_tester.ExpectTotalCount(
@@ -163,9 +157,6 @@ TEST_F(PasswordDialogControllerTest, AccountChooserClosed) {
 
   EXPECT_CALL(ui_controller_mock(), OnDialogHidden());
   controller().OnCloseDialog();
-  histogram_tester.ExpectUniqueSample(
-      "PasswordManager.AccountChooserDialog",
-       password_manager::metrics_util::ACCOUNT_CHOOSER_DISMISSED, 1);
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.AccountChooserDialogOneAccount",
        password_manager::metrics_util::ACCOUNT_CHOOSER_DISMISSED, 1);
