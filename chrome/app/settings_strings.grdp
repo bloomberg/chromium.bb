@@ -98,11 +98,6 @@
     Checking for updates
   </message>
 
-  <!-- Policy Indicators -->
-  <message name="IDS_SETTINGS_CONTROLLED_SETTING_EXTENSION" desc="Text displayed in the controlled settings indicator tooltip when a setting's value is enforced by an extension.">
-    This setting is controlled by extension <ph name="NAME">$1<ex>Settings Extension</ex></ph>
-  </message>
-
   <!-- Accessibility Page -->
   <message name="IDS_SETTINGS_ACCESSIBILITY" desc="Name of the settings page which displays accessibility preferences.">
     Accessibility
@@ -466,9 +461,6 @@
     <message name="IDS_SETTINGS_BLUETOOTH_START_CONNECTING">
       Connecting to "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>".
     </message>
-    <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_UNKNOWN_ERROR">
-      An unknown error occurred trying to connect to "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>".
-    </message>
     <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_IN_PROGRESS">
       Connection to "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>" still in progress.
     </message>
@@ -510,12 +502,6 @@
     </message>
     <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_WRITE_NOT_PERMITTED">
       Write operation is not permitted on: "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>".
-    </message>
-    <message name="IDS_SETTINGS_BLUETOOTH_DISCONNECT_FAILED">
-      Failed to disconnect from "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>".
-    </message>
-    <message name="IDS_SETTINGS_BLUETOOTH_FORGET_FAILED">
-      Failed to disconnect and unpair from "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>".
     </message>
   </if>
 
@@ -1160,9 +1146,6 @@
     </message>
     <message name="IDS_SETTINGS_NETWORK_TYPE_WIMAX" desc="The wimax network type.">
       WiMAX
-    </message>
-    <message name="IDS_SETTINGS_NETWORK_TYPE_BLUETOOTH" desc="The bluetooth network type.">
-      Bluetooth
     </message>
     <message name="IDS_SETTINGS_NETWORK_TYPE_CELLULAR" desc="The cellular network type.">
       Cellular
@@ -1908,6 +1891,115 @@
     No sites added
   </message>
 
+  <message name="IDS_SETTINGS_ADD_SITE_LINK" desc="Link text to show (to open the Add Site dialog)">
+    Add site exception
+  </message>
+  <message name="IDS_SETTINGS_ADD_SITE_HEADER" desc="Header for the Add Site dialog">
+    Add an exception for a site
+  </message>
+  <message name="IDS_SETTINGS_ADD_SITE" desc="The label for the input box for adding a site">
+    Site
+  </message>
+
+  <!-- Cookies Window -->
+  <message name="IDS_SETTINGS_COOKIES_COOKIE_NAME_LABEL" desc="The Cookie Name label">
+    Name
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_COOKIE_CONTENT_LABEL" desc="The Cookie Content label">
+    Content
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_COOKIE_DOMAIN_LABEL" desc="The Cookie Domain label">
+    Domain
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_COOKIE_PATH_LABEL" desc="The Cookie Path label">
+    Path
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_COOKIE_SENDFOR_LABEL" desc="The Cookie Send For label">
+    Send for
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_COOKIE_ACCESSIBLE_TO_SCRIPT_LABEL" desc="The Cookie Accessible to Script label">
+    Accessible to script
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_COOKIE_CREATED_LABEL" desc="The Cookie Created label">
+    Created
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_COOKIE_EXPIRES_LABEL" desc="The Cookie Expires label">
+    Expires
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_APPLICATION_CACHE" desc="The text shown when there is an Application Cache (name of an HTML standard) in the Cookies table">
+    Application cache
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_FLASH_LSO" desc="The text shown when Flash has Local Shared Objects (informally known as 'Flash cookies') stored">
+    Flash data
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_APPLICATION_CACHE_MANIFEST_LABEL" desc="The Manifest label (manifest is a URL specified by the application cache)">
+    Manifest
+  </message>
+
+  <message name="IDS_SETTINGS_COOKIES_SINGLE_COOKIE" desc="The text displayed when there is one cookie in the Cookies table">
+    1 cookie
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_PLURAL_COOKIES" desc="The text displayed when there are two or more cookies in the Cookies table">
+    <ph name="COOKIES">$1<ex>42</ex></ph> cookies
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_WEB_DATABASE_DESCRIPTION_LABEL" desc="The Database Description label">
+    Description
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL" desc="The Local Storage Origin label">
+    Origin
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL" desc="The Local Storage Size on disk label">
+    Size on disk
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL" desc="The Local Storage Last modified label">
+    Last modified
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_DATABASE_STORAGE" desc="The text shown when there is either Web Database or Indexed Database Storage (names of HTML standards) in the Cookies table">
+    Database storage
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_LOCAL_STORAGE" desc="Label for local storage (name of an HTML standard)">
+    Local storage
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_MEDIA_LICENSE" desc="The text shown when there is an Media License in the Cookies table">
+    Media license
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_FILE_SYSTEM" desc="The text shown when there is a file system (name of an HTML standard) in the Cookies table">
+    File system
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_FILE_SYSTEM_TEMPORARY_USAGE_LABEL" desc="Label for a temporary file system's disk usage.">
+    Temporary storage
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_FILE_SYSTEM_PERSISTENT_USAGE_LABEL" desc="Label for a persistent file system's disk usage.">
+    Persistent storage
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_LAST_ACCESSED_LABEL" desc="The last access date label">
+    Last accessed
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_CHANNEL_ID" desc="The text shown when there is a channel id in the Cookies table">
+    Channel ID
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_CHANNEL_ID_ORIGIN_LABEL" desc="The channel id label for the server domain">
+    Domain
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_CHANNEL_ID_TYPE_LABEL" desc="The channel id Type label">
+    Certificate Type
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_CHANNEL_ID_CREATED_LABEL" desc="The channel id Created label">
+    Created
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_CHANNEL_ID_EXPIRES_LABEL" desc="The channel id Expires label">
+    Expires
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_SERVICE_WORKER" desc="The text shown when there is data for Service Workers within an origin (name of a Web standard) in the Cookies table">
+    Service Workers
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_SERVICE_WORKER_SCOPES_LABEL" desc="Label for list of Service Worker (name of an HTML standard) patterns">
+    Scopes
+  </message>
+  <message name="IDS_SETTINGS_COOKIES_CACHE_STORAGE" desc="The text shown when there is Cache Storage (name of a Web standard) in the Cookies table">
+    Cache Storage
+  </message>
+
   <!-- Sync / People Page -->
   <message name="IDS_SETTINGS_PEOPLE" desc="Name of the settings page which manages Chrome's signed-in Google profile.">
     People
@@ -2283,9 +2375,6 @@
   </message>
   <message name="IDS_SETTINGS_MINIMUM_FONT_SIZE_LABEL" desc="Label for the minimum font size slider in settings.">
     Minimum font size
-  </message>
-  <message name="IDS_SETTINGS_ENCODING_LABEL" desc="Label for the text encoding in settings.">
-    Encoding
   </message>
   <message name="IDS_SETTINGS_TINY_FONT_SIZE" desc="The small end of the minimum font size slider in settings.">
     Tiny
