@@ -4798,7 +4798,11 @@ static void encode_frame_internal(AV1_COMP *cpi) {
       if (ref_buf) {
         aom_clear_system_state();
         if (compute_global_motion_feature_based(GLOBAL_TRANS_TYPES - 1,
-                                                cpi->Source, ref_buf, params)) {
+                                                cpi->Source, ref_buf,
+#if CONFIG_AOM_HIGHBITDEPTH
+                                                cpi->common.bit_depth,
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+                                                params)) {
           convert_model_to_params(params, &cm->global_motion[frame]);
           if (cm->global_motion[frame].wmtype != IDENTITY) {
             refine_integerized_param(

@@ -31,6 +31,9 @@ extern "C" {
 int compute_global_motion_feature_based(TransformationType type,
                                         YV12_BUFFER_CONFIG *frm,
                                         YV12_BUFFER_CONFIG *ref,
+#if CONFIG_AOM_HIGHBITDEPTH
+                                        int bit_depth,
+#endif
                                         double *params);
 #ifdef __cplusplus
 }  // extern "C"

@@ -34,6 +34,10 @@ int aom_free_frame_buffer(YV12_BUFFER_CONFIG *ybf) {
       aom_free(ybf->buffer_alloc);
     }
 
+#if CONFIG_AOM_HIGHBITDEPTH && CONFIG_GLOBAL_MOTION
+    if (ybf->y_buffer_8bit) free(ybf->y_buffer_8bit);
+#endif
+
     /* buffer_alloc isn't accessed by most functions.  Rather y_buffer,
       u_buffer and v_buffer point to buffer_alloc and are used.  Clear out
       all of this so that a freed pointer isn't inadvertently used */
@@ -162,6 +166,13 @@ int aom_realloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
         (uint8_t *)yv12_align_addr(buf + yplane_size + uvplane_size +
                                        (uv_border_h * uv_stride) + uv_border_w,
                                    aom_byte_align);
+
+#if CONFIG_AOM_HIGHBITDEPTH && CONFIG_GLOBAL_MOTION
+    if (ybf->y_buffer_8bit) {
+      free(ybf->y_buffer_8bit);
+      ybf->y_buffer_8bit = NULL;
+    }
+#endif
 
     ybf->corrupted = 0; /* assume not corrupted by errors */
     return 0;
