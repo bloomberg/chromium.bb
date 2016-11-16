@@ -25,13 +25,21 @@ var MainPageBehaviorImpl = {
    * @param {settings.Route} oldRoute
    */
   currentRouteChanged: function(newRoute, oldRoute) {
+    // Scroll to the section except for back/forward. Also scroll for any
+    // back/forward navigations that are in-page.
+    var oldRouteWasSection =
+        !!oldRoute && !!oldRoute.parent && !!oldRoute.section &&
+        oldRoute.parent.section != oldRoute.section;
+    var scrollToSection =
+        !settings.lastRouteChangeWasPopstate() || oldRouteWasSection;
+
     // If this is the first route, or the page was hidden, allow the page to
     // render before expanding the section.
     if (!oldRoute && newRoute.contains(settings.getCurrentRoute()) ||
         this.scrollHeight == 0) {
-      setTimeout(this.tryTransitionToSection_.bind(this));
+      setTimeout(this.tryTransitionToSection_.bind(this, scrollToSection));
     } else {
-      this.tryTransitionToSection_();
+      this.tryTransitionToSection_(scrollToSection);
     }
   },
 
@@ -41,9 +49,10 @@ var MainPageBehaviorImpl = {
    * that one, then schedules this function again. This ensures the current
    * section is quickly shown, without getting the page into a broken state --
    * if currentRoute changes in between calls, just transition to the new route.
+   * @param {boolean} scrollToSection
    * @private
    */
-  tryTransitionToSection_: function() {
+  tryTransitionToSection_: function(scrollToSection) {
     var currentRoute = settings.getCurrentRoute();
     var currentSection = this.getSection(currentRoute.section);
 
@@ -63,7 +72,7 @@ var MainPageBehaviorImpl = {
       if (!currentRoute.isSubpage() || expandedSection != currentSection) {
         promise = this.collapseSection_(expandedSection);
         // Scroll to the collapsed section.
-        if (currentSection && !settings.lastRouteChangeWasPopstate())
+        if (currentSection && scrollToSection)
           currentSection.scrollIntoView();
       } else {
         // Scroll to top while sliding to another subpage.
@@ -73,14 +82,14 @@ var MainPageBehaviorImpl = {
       // Expand the section into a subpage or scroll to it on the main page.
       if (currentRoute.isSubpage())
         promise = this.expandSection_(currentSection);
-      else if (!settings.lastRouteChangeWasPopstate())
+      else if (scrollToSection)
         currentSection.scrollIntoView();
     }
 
     // When this animation ends, another may be necessary. Call this function
     // again after the promise resolves.
     if (promise)
-      promise.then(this.tryTransitionToSection_.bind(this));
+      promise.then(this.tryTransitionToSection_.bind(this, scrollToSection));
   },
 
   /**
