@@ -53,12 +53,10 @@ Channel::MessagePtr WaitForBrokerMessage(PlatformHandle platform_handle,
   BOOL result = ::ReadFile(platform_handle.handle, buffer,
                            kMaxBrokerMessageSize, &bytes_read, nullptr);
   if (!result) {
+    // The pipe may be broken if the browser side has been closed, e.g. during
+    // browser shutdown. In that case the ReadFile call will fail and we
+    // shouldn't continue waiting.
     PLOG(ERROR) << "Error reading broker pipe";
-
-    DWORD error = GetLastError();
-    base::debug::Alias(&platform_handle);
-    base::debug::Alias(&error);
-    CHECK(false);
     return nullptr;
   }
 
@@ -95,7 +93,11 @@ Broker::Broker(ScopedPlatformHandle handle) : sync_channel_(std::move(handle)) {
   CHECK(sync_channel_.is_valid());
   Channel::MessagePtr message =
       WaitForBrokerMessage(sync_channel_.get(), BrokerMessageType::INIT);
-  CHECK(message);
+
+  // If we fail to read a message (broken pipe), just return early. The parent
+  // handle will be null and callers must handle this gracefully.
+  if (!message)
+    return;
 
   if (!TakeHandlesFromBrokerMessage(message.get(), 1, &parent_channel_)) {
     // If the message has no handles, we expect it to carry pipe name instead.
