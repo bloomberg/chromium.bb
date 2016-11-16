@@ -198,19 +198,18 @@ def _CreateSymlinkTree(entry_output_dir, symlink_dir, desired_files,
     os.symlink(relpath, symlinked_path)
 
 
-def _CreateJavaSourceDir(output_dir, entry_output_dir, java_sources_file):
+def _CreateJavaSourceDir(output_dir, entry_output_dir, java_files):
   """Computes and constructs when necessary the list of java source directories.
 
   1. Computes the root java source directories from the list of files.
   2. Determines whether there are any .java files in them that are not included
-     in |java_sources_file|.
+     in |java_files|.
   3. If not, returns the list of java source directories. If so, constructs a
-     tree of symlinks within |entry_output_dir| of all files in
-     |java_sources_file|.
+     tree of symlinks within |entry_output_dir| of all files in |java_files|.
   """
   java_dirs = []
-  if java_sources_file:
-    java_files = _RebasePath(build_utils.ReadSourcesList(java_sources_file))
+  if java_files:
+    java_files = _RebasePath(java_files)
     java_dirs = _ComputeJavaSourceDirs(java_files)
 
     found_java_files = build_utils.FindInDirectories(java_dirs, '*.java')
@@ -395,6 +394,7 @@ def main():
   build_vars = _ReadBuildVars(output_dir)
   project_entries = []
   srcjar_tuples = []
+  generated_inputs = []
   for entry in all_entries:
     if entry.GetType() not in ('android_apk', 'java_library'):
       continue
@@ -408,11 +408,12 @@ def main():
       srcjars += _RebasePath(build_config['javac']['srcjars'])
 
     java_sources_file = build_config['gradle'].get('java_sources_file')
+    java_files = []
     if java_sources_file:
       java_sources_file = _RebasePath(java_sources_file)
+      java_files = build_utils.ReadSourcesList(java_sources_file)
 
-    java_dirs = _CreateJavaSourceDir(output_dir, entry_output_dir,
-                                     java_sources_file)
+    java_dirs = _CreateJavaSourceDir(output_dir, entry_output_dir, java_files)
     if srcjars:
       java_dirs.append(os.path.join(entry_output_dir, _SRCJARS_SUBDIR))
 
@@ -421,6 +422,11 @@ def main():
                                jinja_processor)
     if data:
       project_entries.append(entry)
+      # Build all paths references by .gradle that exist within output_dir.
+      generated_inputs.extend(srcjars)
+      generated_inputs.extend(p for p in java_files if not p.startswith('..'))
+      generated_inputs.extend(build_config['gradle']['dependent_prebuilt_jars'])
+
       srcjar_tuples.extend(
           (s, os.path.join(entry_output_dir, _SRCJARS_SUBDIR)) for s in srcjars)
       _WriteFile(os.path.join(entry_output_dir, 'build.gradle'), data)
@@ -435,11 +441,14 @@ def main():
   _WriteFile(os.path.join(gradle_output_dir, 'local.properties'),
              _GenerateLocalProperties(sdk_path))
 
-  if srcjar_tuples:
-    logging.warning('Building all .srcjar files...')
-    targets = _RebasePath([s[0] for s in srcjar_tuples], output_dir)
+  if generated_inputs:
+    logging.warning('Building generated source files...')
+    targets = _RebasePath(generated_inputs, output_dir)
     _RunNinja(output_dir, targets)
+
+  if srcjar_tuples:
     _ExtractSrcjars(gradle_output_dir, srcjar_tuples)
+
   logging.warning('Project created! (%d subprojects)', len(project_entries))
   logging.warning('Generated projects work best with Android Studio 2.2')
   logging.warning('For more tips: https://chromium.googlesource.com/chromium'
