@@ -239,6 +239,8 @@ ScriptPromise OffscreenCanvas::convertToBlob(ScriptState* scriptState,
 
 DEFINE_TRACE(OffscreenCanvas) {
   visitor->trace(m_context);
+  visitor->trace(m_executionContext);
+  EventTarget::trace(visitor);
 }
 
 }  // namespace blink

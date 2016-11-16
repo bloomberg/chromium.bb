@@ -23,6 +23,9 @@ void OffscreenCanvasModules::getContext(
     return;
   }
 
+  // OffscreenCanvas cannot be transferred after getContext, so this execution
+  // context will always be the right one from here on.
+  offscreenCanvas.setExecutionContext(scriptState->getExecutionContext());
   CanvasRenderingContext* context =
       offscreenCanvas.getCanvasRenderingContext(scriptState, id, attributes);
   if (context)

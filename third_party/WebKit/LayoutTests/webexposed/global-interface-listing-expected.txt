@@ -4330,7 +4330,7 @@ interface OfflineAudioContext : BaseAudioContext
     method startRendering
     method suspend
     setter oncomplete
-interface OffscreenCanvas
+interface OffscreenCanvas : EventTarget
     attribute @@toStringTag
     getter height
     getter width

@@ -15,6 +15,7 @@ core/html/track/TextTrackCue
 core/html/track/TextTrackList
 core/html/track/VideoTrackList
 core/loader/appcache/ApplicationCache
+core/offscreencanvas/OffscreenCanvas
 core/page/EventSource
 core/timing/Performance
 core/frame/VisualViewport ImplementedAs=DOMVisualViewport

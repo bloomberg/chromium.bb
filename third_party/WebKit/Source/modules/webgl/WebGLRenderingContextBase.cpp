@@ -547,7 +547,7 @@ struct ContextProviderCreationInfo {
   // Inputs.
   Platform::ContextAttributes contextAttributes;
   Platform::GraphicsInfo* glInfo;
-  ScriptState* scriptState;
+  KURL url;
   // Outputs.
   std::unique_ptr<WebGraphicsContext3DProvider> createdContextProvider;
 };
@@ -558,8 +558,7 @@ static void createContextProviderOnMainThread(
   ASSERT(isMainThread());
   creationInfo->createdContextProvider =
       wrapUnique(Platform::current()->createOffscreenGraphicsContext3DProvider(
-          creationInfo->contextAttributes,
-          creationInfo->scriptState->getExecutionContext()->url(), 0,
+          creationInfo->contextAttributes, creationInfo->url, 0,
           creationInfo->glInfo));
   waitableEvent->signal();
 }
@@ -568,12 +567,12 @@ static std::unique_ptr<WebGraphicsContext3DProvider>
 createContextProviderOnWorkerThread(
     Platform::ContextAttributes contextAttributes,
     Platform::GraphicsInfo* glInfo,
-    ScriptState* scriptState) {
+    const KURL& url) {
   WaitableEvent waitableEvent;
   ContextProviderCreationInfo creationInfo;
   creationInfo.contextAttributes = contextAttributes;
   creationInfo.glInfo = glInfo;
-  creationInfo.scriptState = scriptState;
+  creationInfo.url = url;
   WebTaskRunner* taskRunner =
       Platform::current()->mainThread()->getWebTaskRunner();
   taskRunner->postTask(BLINK_FROM_HERE,
@@ -599,15 +598,15 @@ WebGLRenderingContextBase::createContextProviderInternal(
       toPlatformContextAttributes(attributes, webGLVersion);
   Platform::GraphicsInfo glInfo;
   std::unique_ptr<WebGraphicsContext3DProvider> contextProvider;
+  const auto& url = canvas ? canvas->document().topDocument().url()
+                           : scriptState->getExecutionContext()->url();
   if (isMainThread()) {
-    const auto& url = canvas ? canvas->document().topDocument().url()
-                             : scriptState->getExecutionContext()->url();
     contextProvider = wrapUnique(
         Platform::current()->createOffscreenGraphicsContext3DProvider(
             contextAttributes, url, 0, &glInfo));
   } else {
-    contextProvider = createContextProviderOnWorkerThread(contextAttributes,
-                                                          &glInfo, scriptState);
+    contextProvider =
+        createContextProviderOnWorkerThread(contextAttributes, &glInfo, url);
   }
   if (contextProvider && !contextProvider->bindToCurrentThread()) {
     contextProvider = nullptr;
@@ -1034,6 +1033,14 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
                                             m_maxViewportDims);
 
   RefPtr<DrawingBuffer> buffer;
+  // On Mac OS, DrawingBuffer is using an IOSurface as its backing storage, this
+  // allows WebGL-rendered canvases to be composited by the OS rather than
+  // Chrome.
+  // IOSurfaces are only compatible with the GL_TEXTURE_RECTANGLE_ARB binding
+  // target. So to avoid the knowledge of GL_TEXTURE_RECTANGLE_ARB type textures
+  // being introduced into more areas of the code, we use the code path of
+  // non-WebGLImageChromium for OffscreenCanvas.
+  // See detailed discussion in crbug.com/649668.
   if (passedOffscreenCanvas)
     buffer = createDrawingBuffer(std::move(contextProvider),
                                  DrawingBuffer::DisallowChromiumImage);
@@ -7356,7 +7363,10 @@ bool WebGLRenderingContextBase::validateDrawElements(const char* functionName,
 void WebGLRenderingContextBase::dispatchContextLostEvent(TimerBase*) {
   WebGLContextEvent* event = WebGLContextEvent::create(
       EventTypeNames::webglcontextlost, false, true, "");
-  canvas()->dispatchEvent(event);
+  if (getOffscreenCanvas())
+    getOffscreenCanvas()->dispatchEvent(event);
+  else
+    canvas()->dispatchEvent(event);
   m_restoreAllowed = event->defaultPrevented();
   if (m_restoreAllowed && !m_isHidden) {
     if (m_autoRecoveryMethod == Auto)
@@ -7376,15 +7386,17 @@ void WebGLRenderingContextBase::maybeRestoreContext(TimerBase*) {
   if (!m_restoreAllowed)
     return;
 
-  LocalFrame* frame = canvas()->document().frame();
-  if (!frame)
-    return;
+  if (canvas()) {
+    LocalFrame* frame = canvas()->document().frame();
+    if (!frame)
+      return;
 
-  Settings* settings = frame->settings();
+    Settings* settings = frame->settings();
 
-  if (!frame->loader().client()->allowWebGL(settings &&
-                                            settings->webGLEnabled()))
-    return;
+    if (!frame->loader().client()->allowWebGL(settings &&
+                                              settings->webGLEnabled()))
+      return;
+  }
 
   // If the context was lost due to RealLostContext, we need to destroy the old
   // DrawingBuffer before creating new DrawingBuffer to ensure resource budget
@@ -7397,16 +7409,29 @@ void WebGLRenderingContextBase::maybeRestoreContext(TimerBase*) {
   Platform::ContextAttributes attributes =
       toPlatformContextAttributes(creationAttributes(), version());
   Platform::GraphicsInfo glInfo;
-  std::unique_ptr<WebGraphicsContext3DProvider> contextProvider =
-      wrapUnique(Platform::current()->createOffscreenGraphicsContext3DProvider(
-          attributes, canvas()->document().topDocument().url(), 0, &glInfo));
+  std::unique_ptr<WebGraphicsContext3DProvider> contextProvider;
+  const auto& url = canvas()
+                        ? canvas()->document().topDocument().url()
+                        : getOffscreenCanvas()->getExecutionContext()->url();
+  if (isMainThread()) {
+    contextProvider = wrapUnique(
+        Platform::current()->createOffscreenGraphicsContext3DProvider(
+            attributes, url, 0, &glInfo));
+  } else {
+    contextProvider =
+        createContextProviderOnWorkerThread(attributes, &glInfo, url);
+  }
   RefPtr<DrawingBuffer> buffer;
   if (contextProvider && contextProvider->bindToCurrentThread()) {
     // Construct a new drawing buffer with the new GL context.
-    // TODO(xidachen): make sure that the second parameter is correct for
-    // OffscreenCanvas.
-    buffer = createDrawingBuffer(std::move(contextProvider),
-                                 DrawingBuffer::AllowChromiumImage);
+    if (canvas()) {
+      buffer = createDrawingBuffer(std::move(contextProvider),
+                                   DrawingBuffer::AllowChromiumImage);
+    } else {
+      // Please refer to comment at Line 1040 in this file.
+      buffer = createDrawingBuffer(std::move(contextProvider),
+                                   DrawingBuffer::DisallowChromiumImage);
+    }
     // If DrawingBuffer::create() fails to allocate a fbo, |drawingBuffer| is
     // set to null.
   }
@@ -7437,8 +7462,12 @@ void WebGLRenderingContextBase::maybeRestoreContext(TimerBase*) {
   setupFlags();
   initializeNewContext();
   markContextChanged(CanvasContextChanged);
-  canvas()->dispatchEvent(WebGLContextEvent::create(
-      EventTypeNames::webglcontextrestored, false, true, ""));
+  WebGLContextEvent* event = WebGLContextEvent::create(
+      EventTypeNames::webglcontextrestored, false, true, "");
+  if (canvas())
+    canvas()->dispatchEvent(event);
+  else
+    getOffscreenCanvas()->dispatchEvent(event);
 }
 
 String WebGLRenderingContextBase::ensureNotNull(const String& text) const {

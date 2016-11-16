@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/events/EventTarget.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/canvas/CanvasImageSource.h"
 #include "core/offscreencanvas/ImageEncodeOptions.h"
@@ -25,14 +26,13 @@ class
 typedef OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContext
     OffscreenRenderingContext;
 
-class CORE_EXPORT OffscreenCanvas final
-    : public GarbageCollectedFinalized<OffscreenCanvas>,
-      public ScriptWrappable,
-      public CanvasImageSource {
+class CORE_EXPORT OffscreenCanvas final : public EventTargetWithInlineData,
+                                          public CanvasImageSource {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   static OffscreenCanvas* create(unsigned width, unsigned height);
+  ~OffscreenCanvas() override {}
 
   // IDL attributes
   unsigned width() const { return m_size.width(); }
@@ -89,6 +89,18 @@ class CORE_EXPORT OffscreenCanvas final
   uint64_t nonceHigh() const { return m_nonceHigh; }
   uint64_t nonceLow() const { return m_nonceLow; }
 
+  void setExecutionContext(ExecutionContext* context) {
+    m_executionContext = context;
+  }
+
+  // EventTarget implementation
+  const AtomicString& interfaceName() const final {
+    return EventTargetNames::OffscreenCanvas;
+  }
+  ExecutionContext* getExecutionContext() const {
+    return m_executionContext.get();
+  }
+
   // CanvasImageSource implementation
   PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*,
                                             AccelerationHint,
@@ -115,6 +127,7 @@ class CORE_EXPORT OffscreenCanvas final
   static CanvasRenderingContextFactory* getRenderingContextFactory(int);
 
   Member<CanvasRenderingContext> m_context;
+  WeakMember<ExecutionContext> m_executionContext;
 
   enum {
     kNoPlaceholderCanvas = -1,  // DOMNodeIds starts from 0, using -1 to
