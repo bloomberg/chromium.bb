@@ -213,8 +213,10 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest,
       new base::StringValue(GetTestUrl("guest_from_opener.html").spec())));
 }
 
-IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest,
-                       ContentScriptIsInjectedAfterTerminateAndReloadWebView) {
+// https://crbug.com/665512.
+IN_PROC_BROWSER_TEST_F(
+    WebUIWebViewBrowserTest,
+    DISABLED_ContentScriptIsInjectedAfterTerminateAndReloadWebView) {
   ui_test_utils::NavigateToURL(browser(), GetWebViewEnabledWebUIURL());
 
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
