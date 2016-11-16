@@ -1828,10 +1828,11 @@ void TemplateURLService::GoogleBaseURLChanged() {
   if (!loaded_) {
     if (initial_default_search_provider_.get() &&
         initial_default_search_provider_->HasGoogleBaseURLs(
-            search_terms_data()))
+            search_terms_data())) {
       initial_default_search_provider_->InvalidateCachedValues();
       initial_default_search_provider_->ResetKeywordIfNecessary(
           search_terms_data(), false);
+    }
     return;
   }
 
