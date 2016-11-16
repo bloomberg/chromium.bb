@@ -900,7 +900,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 ((FrameLayout.LayoutParams) mRequestView.getLayoutParams()).height =
                         LayoutParams.MATCH_PARENT;
                 mRequestView.requestLayout();
-                expand(mSelectedSection);
             }
         }
     }
