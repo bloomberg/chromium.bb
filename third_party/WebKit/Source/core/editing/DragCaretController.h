@@ -48,6 +48,7 @@ class DragCaretController final
   void setCaretPosition(const PositionWithAffinity&);
   void clear() { setCaretPosition(PositionWithAffinity()); }
 
+  void nodeChildrenWillBeRemoved(ContainerNode&);
   void nodeWillBeRemoved(Node&);
 
   DECLARE_TRACE();
