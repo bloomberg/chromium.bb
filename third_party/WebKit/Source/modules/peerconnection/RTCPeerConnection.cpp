@@ -494,7 +494,8 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context,
               this,
               &RTCPeerConnection::dispatchScheduledEvent)),
       m_stopped(false),
-      m_closed(false) {
+      m_closed(false),
+      m_hasDataChannels(false) {
   ThreadState::current()->registerPreFinalizer(this);
   Document* document = toDocument(getExecutionContext());
 
