@@ -1607,7 +1607,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
       av1_write_token(w, av1_compound_type_tree,
                       cm->fc->compound_type_prob[bsize],
                       &compound_type_encodings[mbmi->interinter_compound]);
-      if (mbmi->interinter_compound) {
+      if (mbmi->interinter_compound == COMPOUND_WEDGE) {
         aom_write_literal(w, mbmi->interinter_wedge_index,
                           get_wedge_bits_lookup(bsize));
         aom_write_bit(w, mbmi->interinter_wedge_sign);

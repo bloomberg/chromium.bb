@@ -1773,7 +1773,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
         r, av1_compound_type_tree, cm->fc->compound_type_prob[bsize], ACCT_STR);
     if (xd->counts)
       xd->counts->compound_interinter[bsize][mbmi->interinter_compound]++;
-    if (mbmi->interinter_compound) {
+    if (mbmi->interinter_compound == COMPOUND_WEDGE) {
       mbmi->interinter_wedge_index =
           aom_read_literal(r, get_wedge_bits_lookup(bsize), ACCT_STR);
       mbmi->interinter_wedge_sign = aom_read_bit(r, ACCT_STR);

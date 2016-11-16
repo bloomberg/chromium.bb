@@ -7513,7 +7513,7 @@ static int64_t handle_inter_mode(
 
     *compmode_wedge_cost = compound_type_cost[mbmi->interinter_compound];
 
-    if (mbmi->interinter_compound)
+    if (mbmi->interinter_compound == COMPOUND_WEDGE)
       *compmode_wedge_cost +=
           av1_cost_literal(get_interinter_wedge_bits(bsize));
   }
