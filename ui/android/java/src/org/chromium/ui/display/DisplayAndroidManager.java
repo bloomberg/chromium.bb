@@ -17,11 +17,15 @@ import android.view.WindowManager;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
 /**
  * DisplayAndroidManager is a class that informs its observers Display changes.
  */
+@JNINamespace("ui")
 /* package */ class DisplayAndroidManager {
     /**
      * DisplayListenerBackend is an interface that abstract the mechanism used for the actual
@@ -66,12 +70,7 @@ import org.chromium.ui.gfx.DeviceDisplayInfo;
 
         private static final long POLLING_DELAY = 500;
 
-        private int mMainSdkDisplayId;
         private int mAccurateCount;
-
-        public DisplayListenerAPI16(int sdkDisplayId) {
-            mMainSdkDisplayId = sdkDisplayId;
-        }
 
         // DisplayListenerBackend implementation:
 
@@ -159,6 +158,13 @@ import org.chromium.ui.gfx.DeviceDisplayInfo;
 
         @Override
         public void onDisplayRemoved(int sdkDisplayId) {
+            // Never remove the primary display.
+            if (sdkDisplayId == mMainSdkDisplayId) return;
+
+            DisplayAndroid displayAndroid = mIdMap.get(sdkDisplayId);
+            if (displayAndroid == null) return;
+
+            if (mNativePointer != 0) nativeRemoveDisplay(mNativePointer, sdkDisplayId);
             mIdMap.remove(sdkDisplayId);
         }
 
@@ -174,12 +180,18 @@ import org.chromium.ui.gfx.DeviceDisplayInfo;
 
     private static DisplayAndroidManager sDisplayAndroidManager;
 
+    private long mNativePointer;
+    private int mMainSdkDisplayId;
     private SparseArray<DisplayAndroid> mIdMap;
-    private final DisplayListenerBackend mBackend;
+    private DisplayListenerBackend mBackend;
 
+    @SuppressFBWarnings("LI_LAZY_INIT_UPDATE_STATIC")
     /* package */ static DisplayAndroidManager getInstance() {
         if (sDisplayAndroidManager == null) {
+            // Split between creation and initialization to allow for calls
+            // from DisplayAndroid to DisplayAndroidManager during initialize().
             sDisplayAndroidManager = new DisplayAndroidManager();
+            sDisplayAndroidManager.initialize();
         }
         return sDisplayAndroidManager;
     }
@@ -206,16 +218,45 @@ import org.chromium.ui.gfx.DeviceDisplayInfo;
         DeviceDisplayInfo.create(getContext()).updateNativeSharedDisplayInfo();
     }
 
-    private DisplayAndroidManager() {
+    @CalledByNative
+    private static void onNativeSideCreated(long nativePointer) {
+        DisplayAndroidManager singleton = getInstance();
+        singleton.setNativePointer(nativePointer);
+    }
+
+    private DisplayAndroidManager() {}
+
+    private void initialize() {
         mIdMap = new SparseArray<>();
+        Display display;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             mBackend = new DisplayListenerBackendImpl();
+            // Make sure the display map contains the built-in primary display.
+            // The primary display is never removed.
+            display = getDisplayManager().getDisplay(Display.DEFAULT_DISPLAY);
+
+            // Android documentation on Display.DEFAULT_DISPLAY suggests that the above
+            // method might return null. In that case we retrieve the default display
+            // from the application context and take it as the primary display.
+            if (display == null) display = getDefaultDisplayForContext(getContext());
         } else {
-            Display display = getDefaultDisplayForContext(getContext());
-            mBackend = new DisplayListenerAPI16(display.getDisplayId());
-            addDisplay(display);  // Note this display is never removed.
+            mBackend = new DisplayListenerAPI16();
+            display = getDefaultDisplayForContext(getContext());
         }
+
+        mMainSdkDisplayId = display.getDisplayId();
+        addDisplay(display); // Note this display is never removed.
+
         mBackend.startListening();
+    }
+
+    private void setNativePointer(long nativePointer) {
+        mNativePointer = nativePointer;
+        nativeSetPrimaryDisplayId(mNativePointer, mMainSdkDisplayId);
+
+        for (int i = 0; i < mIdMap.size(); ++i) {
+            updateDisplayOnNativeSide(mIdMap.valueAt(i));
+        }
     }
 
     /* package */ DisplayAndroid getDisplayAndroid(Display display) {
@@ -239,6 +280,24 @@ import org.chromium.ui.gfx.DeviceDisplayInfo;
         int sdkDisplayId = display.getDisplayId();
         DisplayAndroid displayAndroid = new DisplayAndroid(display);
         mIdMap.put(sdkDisplayId, displayAndroid);
+
+        displayAndroid.updateFromDisplay(display);
         return displayAndroid;
     }
+
+    /* package */ void updateDisplayOnNativeSide(DisplayAndroid displayAndroid) {
+        if (mNativePointer == 0) return;
+        nativeUpdateDisplay(mNativePointer, displayAndroid.getSdkDisplayId(),
+                displayAndroid.getPhysicalDisplayWidth(), displayAndroid.getPhysicalDisplayHeight(),
+                displayAndroid.getDisplayWidth(), displayAndroid.getDisplayHeight(),
+                displayAndroid.getDipScale(), displayAndroid.getRotationDegrees(),
+                displayAndroid.getBitsPerPixel(), displayAndroid.getBitsPerComponent());
+    }
+
+    private native void nativeUpdateDisplay(long nativeDisplayAndroidManager, int sdkDisplayId,
+            int physicalWidth, int physicalHeight, int width, int height, float dipScale,
+            int rotationDegrees, int bitsPerPixel, int bitsPerComponent);
+    private native void nativeRemoveDisplay(long nativeDisplayAndroidManager, int sdkDisplayId);
+    private native void nativeSetPrimaryDisplayId(
+            long nativeDisplayAndroidManager, int sdkDisplayId);
 }

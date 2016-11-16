@@ -18,6 +18,10 @@
 #include "ui/android/view_android.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
+namespace display {
+class DisplayAndroidManager;
+}
+
 namespace ui {
 
 class WindowAndroidCompositor;
@@ -27,7 +31,7 @@ class WindowAndroidObserver;
 // WindowAndroid is also the root of a ViewAndroid tree.
 class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
  public:
-  WindowAndroid(JNIEnv* env, jobject obj);
+  WindowAndroid(JNIEnv* env, jobject obj, int display_id);
 
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
@@ -80,12 +84,18 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
   void DestroyForTesting();
 
  private:
+  friend class DisplayAndroidManager;
+
   ~WindowAndroid() override;
 
   // ViewAndroid overrides.
   WindowAndroid* GetWindowAndroid() const override;
 
+  // The ID of the display that this window belongs to.
+  int display_id() const { return display_id_; }
+
   base::android::ScopedJavaGlobalRef<jobject> java_window_;
+  const int display_id_;
   gfx::Vector2dF content_offset_;
   WindowAndroidCompositor* compositor_;
 

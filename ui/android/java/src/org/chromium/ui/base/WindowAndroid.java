@@ -181,8 +181,12 @@ public class WindowAndroid {
     }
 
     @CalledByNative
-    private static WindowAndroid createForTesting(Context context) {
-        return new WindowAndroid(context);
+    private static long createForTesting(Context context) {
+        WindowAndroid windowAndroid = new WindowAndroid(context);
+        // |windowAndroid.getNativePointer()| creates native WindowAndroid object
+        // which stores a global ref to |windowAndroid|. Therefore |windowAndroid|
+        // is not immediately eligible for gc.
+        return windowAndroid.getNativePointer();
     }
 
     @CalledByNative
@@ -533,7 +537,7 @@ public class WindowAndroid {
      */
     public long getNativePointer() {
         if (mNativeWindowAndroid == 0) {
-            mNativeWindowAndroid = nativeInit();
+            mNativeWindowAndroid = nativeInit(mDisplayAndroid.getSdkDisplayId());
         }
         return mNativeWindowAndroid;
     }
@@ -675,7 +679,7 @@ public class WindowAndroid {
         }
     }
 
-    private native long nativeInit();
+    private native long nativeInit(int displayId);
     private native void nativeOnVSync(long nativeWindowAndroid,
                                       long vsyncTimeMicros,
                                       long vsyncPeriodMicros);

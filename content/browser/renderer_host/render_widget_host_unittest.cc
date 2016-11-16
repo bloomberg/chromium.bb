@@ -40,6 +40,7 @@
 #include "content/browser/renderer_host/context_provider_factory_impl_android.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/test/mock_gpu_channel_establish_factory.h"
+#include "ui/android/screen_android.h"
 #endif
 
 #if defined(USE_AURA) || defined(OS_MACOSX)
@@ -476,6 +477,7 @@ class RenderWidgetHostTest : public testing::Test {
     ContextProviderFactoryImpl::Initialize(&gpu_channel_factory_);
     ui::ContextProviderFactory::SetInstance(
         ContextProviderFactoryImpl::GetInstance());
+    ui::SetScreenAndroid();  // calls display::Screen::SetScreenInstance().
 #endif
 #if defined(USE_AURA)
     screen_.reset(aura::TestScreen::Create(gfx::Size()));
@@ -506,6 +508,7 @@ class RenderWidgetHostTest : public testing::Test {
     ImageTransportFactory::Terminate();
 #endif
 #if defined(OS_ANDROID)
+    display::Screen::SetScreenInstance(nullptr);
     ui::ContextProviderFactory::SetInstance(nullptr);
     ContextProviderFactoryImpl::Terminate();
 #endif

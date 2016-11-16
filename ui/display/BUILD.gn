@@ -7,7 +7,6 @@ import("//testing/test.gni")
 
 component("display") {
   sources = [
-    "android/screen_android.cc",
     "chromeos/apply_content_protection_task.cc",
     "chromeos/apply_content_protection_task.h",
     "chromeos/configure_displays_task.cc",
@@ -117,9 +116,7 @@ component("display") {
   if (!use_aura) {
     sources -= [ "screen_aura.cc" ]
   }
-  if (is_android && use_aura) {
-    sources -= [ "android/screen_android.cc" ]
-  }
+
   if (is_mac) {
     libs = [
       "AppKit.framework",
