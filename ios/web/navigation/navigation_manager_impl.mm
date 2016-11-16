@@ -256,8 +256,14 @@ int NavigationManagerImpl::GetCurrentItemIndex() const {
 }
 
 int NavigationManagerImpl::GetPendingItemIndex() const {
-  if ([session_controller_ hasPendingEntry])
+  if ([session_controller_ hasPendingEntry]) {
+    if ([session_controller_ pendingEntryIndex] != -1) {
+      return [session_controller_ pendingEntryIndex];
+    }
+    // TODO(crbug.com/665189): understand why current item index is
+    // returned here.
     return GetCurrentItemIndex();
+  }
   return -1;
 }
 

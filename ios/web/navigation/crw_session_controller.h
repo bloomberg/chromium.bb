@@ -30,6 +30,9 @@ struct SSLStatus;
 @property(nonatomic, readonly, copy) NSString* tabId;
 @property(nonatomic, readonly, assign) NSInteger currentNavigationIndex;
 @property(nonatomic, readonly, assign) NSInteger previousNavigationIndex;
+// The index of the pending entry if it is in entries_, or -1 if pendingEntry is
+// a new entry (created by addPendingEntry:).
+@property(nonatomic, readwrite, assign) NSInteger pendingEntryIndex;
 @property(nonatomic, readonly, strong) NSArray* entries;
 @property(nonatomic, copy) NSString* windowName;
 // Indicates whether the page was opened by DOM (e.g. with |window.open|

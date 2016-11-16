@@ -74,4 +74,23 @@ TEST_F(NavigationManagerTest, GetPendingItemIndexWithPendingEntry) {
   EXPECT_EQ(0, navigation_manager()->GetPendingItemIndex());
 }
 
+// Tests that GetPendingItemIndex() returns same index as was set by
+// -[CRWSessionController setPendingEntryIndex:].
+TEST_F(NavigationManagerTest, GetPendingItemIndexWithIndexedPendingEntry) {
+  [session_controller() addPendingEntry:GURL("http://www.url.com")
+                               referrer:Referrer()
+                             transition:ui::PAGE_TRANSITION_TYPED
+                      rendererInitiated:NO];
+  [session_controller() commitPendingEntry];
+  [session_controller() addPendingEntry:GURL("http://www.url.com/0")
+                               referrer:Referrer()
+                             transition:ui::PAGE_TRANSITION_TYPED
+                      rendererInitiated:NO];
+  [session_controller() commitPendingEntry];
+
+  EXPECT_EQ(-1, navigation_manager()->GetPendingItemIndex());
+  [session_controller() setPendingEntryIndex:0];
+  EXPECT_EQ(0, navigation_manager()->GetPendingItemIndex());
+}
+
 }  // namespace web
