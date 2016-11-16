@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
 
@@ -20,6 +21,10 @@ class SkRegion;
 
 namespace gfx {
 class Rect;
+}
+
+namespace views {
+class Widget;
 }
 
 namespace ash {
@@ -31,7 +36,7 @@ class WmWindow;
 // class allows transforming the windows with a helper to determine the best
 // fit in certain bounds. The window's state is restored on destruction of this
 // object.
-class ASH_EXPORT ScopedTransformOverviewWindow {
+class ASH_EXPORT ScopedTransformOverviewWindow : public ui::EventHandler {
  public:
   class OverviewContentMask;
   using ScopedAnimationSettings =
@@ -59,7 +64,7 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
                                             const gfx::Rect& dst_rect);
 
   explicit ScopedTransformOverviewWindow(WmWindow* window);
-  ~ScopedTransformOverviewWindow();
+  ~ScopedTransformOverviewWindow() override;
 
   // Starts an animation sequence which will use animation settings specified by
   // |animation_type|. The |animation_settings| container is populated with
@@ -103,10 +108,6 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
   // Restores and animates the managed window to it's non overview mode state.
   void RestoreWindow();
 
-  // Forces the managed window to be shown (ie not hidden or minimized) when
-  // calling RestoreWindow().
-  void ShowWindowOnExit();
-
   // Informs the ScopedTransformOverviewWindow that the window being watched was
   // destroyed. This resets the internal window pointer.
   void OnWindowDestroyed();
@@ -128,25 +129,33 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
   // Shows the window header that is hidden by HideHeader().
   void ShowHeader();
 
+  // Creates/Deletes a mirror window for minimized windows.
+  void UpdateMirrorWindowForMinimizedState();
+
   WmWindow* window() const { return window_; }
 
   // Closes the transient root of the window managed by |this|.
   void Close();
 
+  // Returns the window used to show the content in overview mdoe.
+  // For minmiezd window, this will be a window that hosts mirrored layers.
+  WmWindow* GetOverviewWindow() const;
+
+  // Returns the window created for minimized window, or nullptr
+  // if it does not exit.
+  WmWindow* GetOverviewWindowForMinimizedState() const;
+
+  // ui::EventHandler:
+  void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
+
  private:
   friend class WindowSelectorTest;
 
-  enum OriginalVisibility {
-    ORIGINALLY_VISIBLE,
-    ORIGINALLY_MINIMIZED,
-    ORIGINALLY_DOCKED_MINIMIZED,
-  };
-
-  // Shows the window if it was minimized.
-  void ShowWindowIfMinimized();
-
   // Closes the window managed by |this|.
   void CloseWidget();
+
+  void CreateMirrorWindowForMinimizedState();
 
   // Makes Close() execute synchronously when used in tests.
   static void SetImmediateCloseForTests();
@@ -161,10 +170,6 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
   // been determined that window shape was not originally set on the |window_|.
   bool determined_original_window_shape_;
 
-  // Original visibility of |window_| upon entering overview mode that needs to
-  // be restored unless the window gets selected.
-  OriginalVisibility original_visibility_;
-
   // Tracks if this window was ignored by the shelf.
   bool ignored_by_shelf_;
 
@@ -174,8 +179,8 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
   // The original transform of the window before entering overview mode.
   gfx::Transform original_transform_;
 
-  // The original opacity of the window before entering overview mode.
-  float original_opacity_;
+  // A window that holds the content for minimized window.
+  std::unique_ptr<views::Widget> minimized_widget_;
 
   base::WeakPtrFactory<ScopedTransformOverviewWindow> weak_ptr_factory_;
 

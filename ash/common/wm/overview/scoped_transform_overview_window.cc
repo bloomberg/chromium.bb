@@ -11,6 +11,9 @@
 #include "ash/common/wm/overview/scoped_overview_animation_settings_factory.h"
 #include "ash/common/wm/overview/window_selector_item.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_lookup.h"
+#include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
 #include "base/macros.h"
@@ -20,6 +23,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/transform_util.h"
+#include "ui/views/widget/widget.h"
 
 using WmWindows = std::vector<ash::WmWindow*>;
 
@@ -29,9 +33,6 @@ namespace {
 
 // When set to true by tests makes closing the widget synchronous.
 bool immediate_close_for_tests = false;
-
-// The opacity level that windows will be set to when they are restored.
-const float kRestoreWindowOpacity = 1.0f;
 
 // Delay closing window to allow it to shrink and fade out.
 const int kCloseWindowDelayInMilliseconds = 150;
@@ -169,56 +170,36 @@ TransientDescendantIteratorRange GetTransientTreeIterator(WmWindow* window) {
 ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(WmWindow* window)
     : window_(window),
       determined_original_window_shape_(false),
-      original_visibility_(
-          window->GetWindowState()->GetStateType() ==
-                  wm::WINDOW_STATE_TYPE_DOCKED_MINIMIZED
-              ? ORIGINALLY_DOCKED_MINIMIZED
-              : (window->GetShowState() == ui::SHOW_STATE_MINIMIZED
-                     ? ORIGINALLY_MINIMIZED
-                     : ORIGINALLY_VISIBLE)),
       ignored_by_shelf_(window->GetWindowState()->ignored_by_shelf()),
       overview_started_(false),
       original_transform_(window->GetTargetTransform()),
-      original_opacity_(window->GetTargetOpacity()),
       weak_ptr_factory_(this) {}
 
 ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() {}
 
 void ScopedTransformOverviewWindow::RestoreWindow() {
+  ShowHeader();
+  if (minimized_widget_) {
+    // TODO(oshima): Use unminimize animation instead of hiding animation.
+    minimized_widget_->CloseNow();
+    minimized_widget_.reset();
+    return;
+  }
   ScopedAnimationSettings animation_settings_list;
   BeginScopedAnimation(OverviewAnimationType::OVERVIEW_ANIMATION_RESTORE_WINDOW,
                        &animation_settings_list);
   SetTransform(window()->GetRootWindow(), original_transform_);
-
   std::unique_ptr<ScopedOverviewAnimationSettings> animation_settings =
       CreateScopedOverviewAnimationSettings(
           OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS,
           window_);
-  gfx::Transform transform;
-  if ((original_visibility_ == ORIGINALLY_MINIMIZED &&
-       window_->GetShowState() != ui::SHOW_STATE_MINIMIZED) ||
-      (original_visibility_ == ORIGINALLY_DOCKED_MINIMIZED &&
-       window_->GetWindowState()->GetStateType() !=
-           wm::WINDOW_STATE_TYPE_DOCKED_MINIMIZED)) {
-    // Setting opacity 0 and visible false ensures that the property change
-    // to SHOW_STATE_MINIMIZED will not animate the window from its original
-    // bounds to the minimized position.
-    // Hiding the window needs to be done before the target opacity is 0,
-    // otherwise the layer's visibility will not be updated
-    // (See VisibilityController::UpdateLayerVisibility).
-    window_->Hide();
-    window_->SetOpacity(0);
-    window_->SetShowState(ui::SHOW_STATE_MINIMIZED);
-  }
   window_->GetWindowState()->set_ignored_by_shelf(ignored_by_shelf_);
-  SetOpacity(original_opacity_);
-  ShowHeader();
 }
 
 void ScopedTransformOverviewWindow::BeginScopedAnimation(
     OverviewAnimationType animation_type,
     ScopedAnimationSettings* animation_settings) {
-  for (auto* window : GetTransientTreeIterator(window_)) {
+  for (auto* window : GetTransientTreeIterator(GetOverviewWindow())) {
     animation_settings->push_back(
         CreateScopedOverviewAnimationSettings(animation_type, window));
   }
@@ -229,15 +210,18 @@ bool ScopedTransformOverviewWindow::Contains(const WmWindow* target) const {
     if (window->Contains(target))
       return true;
   }
-  return false;
+  WmWindow* mirror = GetOverviewWindowForMinimizedState();
+  return mirror && mirror->Contains(target);
 }
 
 gfx::Rect ScopedTransformOverviewWindow::GetTargetBoundsInScreen() const {
   gfx::Rect bounds;
-  for (auto* window : GetTransientTreeIterator(window_)) {
+  WmWindow* overview_window = GetOverviewWindow();
+  for (auto* window : GetTransientTreeIterator(overview_window)) {
     // Ignore other window types when computing bounding box of window
     // selector target item.
-    if (window != window_ && window->GetType() != ui::wm::WINDOW_TYPE_NORMAL &&
+    if (window != overview_window &&
+        window->GetType() != ui::wm::WINDOW_TYPE_NORMAL &&
         window->GetType() != ui::wm::WINDOW_TYPE_PANEL) {
       continue;
     }
@@ -248,16 +232,15 @@ gfx::Rect ScopedTransformOverviewWindow::GetTargetBoundsInScreen() const {
 }
 
 gfx::Rect ScopedTransformOverviewWindow::GetTransformedBounds() const {
-  if (window_->GetWindowState()->IsMinimized())
-    return window_->GetMinimizeAnimationTargetBoundsInScreen();
-
   const int top_inset = GetTopInset();
   gfx::Rect bounds;
-  for (auto* window : GetTransientTreeIterator(window_)) {
+  WmWindow* overview_window = GetOverviewWindow();
+  for (auto* window : GetTransientTreeIterator(overview_window)) {
     // Ignore other window types when computing bounding box of window
     // selector target item.
-    if (window != window_ && (window->GetType() != ui::wm::WINDOW_TYPE_NORMAL &&
-                              window->GetType() != ui::wm::WINDOW_TYPE_PANEL)) {
+    if (window != overview_window &&
+        (window->GetType() != ui::wm::WINDOW_TYPE_NORMAL &&
+         window->GetType() != ui::wm::WINDOW_TYPE_PANEL)) {
       continue;
     }
     gfx::RectF window_bounds(window->GetTargetBounds());
@@ -294,6 +277,9 @@ SkColor ScopedTransformOverviewWindow::GetTopColor() const {
 }
 
 int ScopedTransformOverviewWindow::GetTopInset() const {
+  // Mirror window doesn't have insets.
+  if (minimized_widget_)
+    return 0;
   for (auto* window : GetTransientTreeIterator(window_)) {
     // If there are regular windows in the transient ancestor tree, all those
     // windows are shown in the same overview item and the header is not masked.
@@ -303,24 +289,6 @@ int ScopedTransformOverviewWindow::GetTopInset() const {
     }
   }
   return window_->GetIntProperty(WmWindowProperty::TOP_VIEW_INSET);
-}
-
-void ScopedTransformOverviewWindow::ShowWindowIfMinimized() {
-  if ((original_visibility_ == ORIGINALLY_MINIMIZED &&
-       window_->GetShowState() == ui::SHOW_STATE_MINIMIZED) ||
-      (original_visibility_ == ORIGINALLY_DOCKED_MINIMIZED &&
-       window_->GetWindowState()->GetStateType() ==
-           wm::WINDOW_STATE_TYPE_DOCKED_MINIMIZED)) {
-    window_->Show();
-  }
-}
-
-void ScopedTransformOverviewWindow::ShowWindowOnExit() {
-  if (original_visibility_ != ORIGINALLY_VISIBLE) {
-    original_visibility_ = ORIGINALLY_VISIBLE;
-    original_transform_ = gfx::Transform();
-    original_opacity_ = kRestoreWindowOpacity;
-  }
 }
 
 void ScopedTransformOverviewWindow::OnWindowDestroyed() {
@@ -380,8 +348,7 @@ void ScopedTransformOverviewWindow::SetTransform(
   }
 
   gfx::Point target_origin(GetTargetBoundsInScreen().origin());
-
-  for (auto* window : GetTransientTreeIterator(window_)) {
+  for (auto* window : GetTransientTreeIterator(GetOverviewWindow())) {
     WmWindow* parent_window = window->GetParent();
     gfx::Point original_origin =
         parent_window->ConvertRectToScreen(window->GetTargetBounds()).origin();
@@ -394,12 +361,15 @@ void ScopedTransformOverviewWindow::SetTransform(
 }
 
 void ScopedTransformOverviewWindow::SetOpacity(float opacity) {
-  for (auto* window : GetTransientTreeIterator(window_)) {
+  for (auto* window : GetTransientTreeIterator(GetOverviewWindow())) {
     window->SetOpacity(opacity);
   }
 }
 
 void ScopedTransformOverviewWindow::HideHeader() {
+  // Mirrored Window does not have a header.
+  if (minimized_widget_)
+    return;
   gfx::Rect bounds(GetTargetBoundsInScreen().size());
   const int inset = GetTopInset();
   if (inset > 0) {
@@ -409,8 +379,9 @@ void ScopedTransformOverviewWindow::HideHeader() {
     region->setRect(RectToSkIRect(bounds));
     if (original_window_shape_)
       region->op(*original_window_shape_, SkRegion::kIntersect_Op);
-    window()->GetLayer()->SetAlphaShape(std::move(region));
-    window()->SetMasksToBounds(true);
+    WmWindow* window = GetOverviewWindow();
+    window->GetLayer()->SetAlphaShape(std::move(region));
+    window->SetMasksToBounds(true);
   }
 }
 
@@ -423,6 +394,17 @@ void ScopedTransformOverviewWindow::ShowHeader() {
     layer->SetAlphaShape(nullptr);
   }
   window()->SetMasksToBounds(false);
+}
+
+void ScopedTransformOverviewWindow::UpdateMirrorWindowForMinimizedState() {
+  // TODO(oshima): Disable animation.
+  if (window_->GetShowState() == ui::SHOW_STATE_MINIMIZED) {
+    if (!minimized_widget_)
+      CreateMirrorWindowForMinimizedState();
+  } else {
+    minimized_widget_->CloseNow();
+    minimized_widget_.reset();
+  }
 }
 
 void ScopedTransformOverviewWindow::Close() {
@@ -440,7 +422,8 @@ void ScopedTransformOverviewWindow::PrepareForOverview() {
   DCHECK(!overview_started_);
   overview_started_ = true;
   window_->GetWindowState()->set_ignored_by_shelf(true);
-  ShowWindowIfMinimized();
+  if (window_->GetShowState() == ui::SHOW_STATE_MINIMIZED)
+    CreateMirrorWindowForMinimizedState();
 }
 
 void ScopedTransformOverviewWindow::CloseWidget() {
@@ -452,6 +435,66 @@ void ScopedTransformOverviewWindow::CloseWidget() {
 // static
 void ScopedTransformOverviewWindow::SetImmediateCloseForTests() {
   immediate_close_for_tests = true;
+}
+
+WmWindow* ScopedTransformOverviewWindow::GetOverviewWindow() const {
+  if (minimized_widget_)
+    return GetOverviewWindowForMinimizedState();
+  return window_;
+}
+
+void ScopedTransformOverviewWindow::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_TAP) {
+    window_->Show();
+    window_->Activate();
+  }
+}
+
+void ScopedTransformOverviewWindow::OnMouseEvent(ui::MouseEvent* event) {
+  if (event->type() == ui::ET_MOUSE_PRESSED && event->IsOnlyLeftMouseButton()) {
+    window_->Show();
+    window_->Activate();
+  }
+}
+
+WmWindow* ScopedTransformOverviewWindow::GetOverviewWindowForMinimizedState()
+    const {
+  return minimized_widget_
+             ? WmLookup::Get()->GetWindowForWidget(minimized_widget_.get())
+             : nullptr;
+}
+
+void ScopedTransformOverviewWindow::CreateMirrorWindowForMinimizedState() {
+  DCHECK(!minimized_widget_.get());
+  views::Widget::InitParams params;
+  params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.visible_on_all_workspaces = true;
+  params.name = "OverviewModeMinimized";
+  params.activatable = views::Widget::InitParams::Activatable::ACTIVATABLE_NO;
+  params.accept_events = true;
+  minimized_widget_.reset(new views::Widget);
+  window_->GetRootWindow()
+      ->GetRootWindowController()
+      ->ConfigureWidgetInitParamsForContainer(
+          minimized_widget_.get(), window_->GetParent()->GetShellWindowId(),
+          &params);
+  minimized_widget_->set_focus_on_creation(false);
+  minimized_widget_->Init(params);
+
+  views::View* mirror_view = window_->CreateViewWithRecreatedLayers().release();
+  mirror_view->SetVisible(true);
+  mirror_view->SetTargetHandler(this);
+  minimized_widget_->SetContentsView(mirror_view);
+  gfx::Rect bounds(window_->GetBoundsInScreen());
+  gfx::Size preferred = mirror_view->GetPreferredSize();
+  // In unit tests, the content view can have empty size.
+  if (!preferred.IsEmpty()) {
+    int inset = bounds.height() - preferred.height();
+    bounds.Inset(0, 0, 0, inset);
+  }
+  minimized_widget_->SetBounds(bounds);
+  minimized_widget_->Show();
 }
 
 }  // namespace ash

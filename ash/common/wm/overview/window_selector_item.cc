@@ -441,10 +441,6 @@ void WindowSelectorItem::Shutdown() {
   FadeOut(std::move(window_label_));
 }
 
-void WindowSelectorItem::ShowWindowOnExit() {
-  transform_window_.ShowWindowOnExit();
-}
-
 void WindowSelectorItem::PrepareForOverview() {
   transform_window_.PrepareForOverview();
   UpdateHeaderLayout(HeaderFadeInMode::ENTER,
@@ -514,6 +510,10 @@ void WindowSelectorItem::CloseWindow() {
 
 void WindowSelectorItem::HideHeader() {
   transform_window_.HideHeader();
+}
+
+void WindowSelectorItem::OnMinimizedStateChanged() {
+  transform_window_.UpdateMirrorWindowForMinimizedState();
 }
 
 void WindowSelectorItem::SetDimmed(bool dimmed) {
@@ -623,12 +623,12 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
   params_label.activatable =
       views::Widget::InitParams::Activatable::ACTIVATABLE_DEFAULT;
   params_label.accept_events = true;
+  window_label_.reset(new views::Widget);
   root_window_->GetRootWindowController()
       ->ConfigureWidgetInitParamsForContainer(
           window_label_.get(),
           transform_window_.window()->GetParent()->GetShellWindowId(),
           &params_label);
-  window_label_.reset(new views::Widget);
   window_label_->set_focus_on_creation(false);
   window_label_->Init(params_label);
   window_label_button_view_ = new OverviewLabelButton(this, title);
@@ -785,6 +785,10 @@ void WindowSelectorItem::FadeOut(std::unique_ptr<views::Widget> widget) {
 
 gfx::SlideAnimation* WindowSelectorItem::GetBackgroundViewAnimation() {
   return background_view_ ? background_view_->animation() : nullptr;
+}
+
+WmWindow* WindowSelectorItem::GetOverviewWindowForMinimizedStateForTest() {
+  return transform_window_.GetOverviewWindowForMinimizedState();
 }
 
 }  // namespace ash

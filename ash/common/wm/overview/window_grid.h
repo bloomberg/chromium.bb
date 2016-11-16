@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "ash/common/wm/overview/window_selector.h"
+#include "ash/common/wm/window_state_observer.h"
 #include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
@@ -45,11 +46,10 @@ class WindowSelectorItem;
 // Example sequences:
 //  - Going right to left
 //    0, 1, 2, 3, 4, 5, 6
-//  - Going "top" to "bottom"
-//    0, 3, 6, 1, 4, 2, 5
 // The selector is switched to the next window grid (if available) or wrapped if
 // it reaches the end of its movement sequence.
-class ASH_EXPORT WindowGrid : public WmWindowObserver {
+class ASH_EXPORT WindowGrid : public WmWindowObserver,
+                              public wm::WindowStateObserver {
  public:
   WindowGrid(WmWindow* root_window,
              const std::vector<WmWindow*>& window_list,
@@ -123,6 +123,10 @@ class ASH_EXPORT WindowGrid : public WmWindowObserver {
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
 
+  // wm::WindowStateObserver:
+  void OnPostWindowStateTypeChange(wm::WindowState* window_state,
+                                   wm::WindowStateType old_type) override;
+
  private:
   friend class WindowSelectorTest;
 
@@ -167,6 +171,7 @@ class ASH_EXPORT WindowGrid : public WmWindowObserver {
   ScopedVector<WindowSelectorItem> window_list_;
 
   ScopedObserver<WmWindow, WindowGrid> window_observer_;
+  ScopedObserver<wm::WindowState, WindowGrid> window_state_observer_;
 
   // Widget that darkens the screen background.
   std::unique_ptr<views::Widget> shield_widget_;
