@@ -328,9 +328,10 @@ static void initializeV8Common(v8::Isolate* isolate) {
   if (RuntimeEnabledFeatures::traceWrappablesEnabled()) {
     std::unique_ptr<ScriptWrappableVisitor> visitor(
         new ScriptWrappableVisitor(isolate));
-    isolate->SetEmbedderHeapTracer(visitor.get());
     V8PerIsolateData::from(isolate)->setScriptWrappableVisitor(
         std::move(visitor));
+    isolate->SetEmbedderHeapTracer(
+        V8PerIsolateData::from(isolate)->scriptWrappableVisitor());
   }
 
   v8::Debug::SetLiveEditEnabled(isolate, false);

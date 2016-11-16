@@ -381,4 +381,17 @@ TEST(ScriptWrappableVisitorTest, WriteBarrierTriggersOnMarkedContainer) {
   rawVisitor->TraceEpilogue();
 }
 
+TEST(ScriptWrappableVisitorTest, VtableAtObjectStart) {
+  // This test makes sure that the subobject v8::EmbedderHeapTracer is placed
+  // at the start of a ScriptWrappableVisitor object. We do this to mitigate
+  // potential problems that could be caused by LTO when passing
+  // v8::EmbedderHeapTracer across the API boundary.
+  V8TestingScope scope;
+  std::unique_ptr<blink::ScriptWrappableVisitor> visitor(
+      new ScriptWrappableVisitor(scope.isolate()));
+  CHECK_EQ(
+      static_cast<void*>(visitor.get()),
+      static_cast<void*>(dynamic_cast<v8::EmbedderHeapTracer*>(visitor.get())));
+}
+
 }  // namespace blink

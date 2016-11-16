@@ -84,8 +84,10 @@ class WrapperMarkingData {
  * TraceEpilogue. Everytime V8 finds new wrappers, it will let the tracer know
  * using RegisterV8References.
  */
-class CORE_EXPORT ScriptWrappableVisitor : public WrapperVisitor,
-                                           public v8::EmbedderHeapTracer {
+class CORE_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer,
+                                           public WrapperVisitor {
+  DISALLOW_IMPLICIT_CONSTRUCTORS(ScriptWrappableVisitor);
+
  public:
   ScriptWrappableVisitor(v8::Isolate* isolate) : m_isolate(isolate){};
   ~ScriptWrappableVisitor() override;
