@@ -324,7 +324,7 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
 
   // If external surfaces are not supported we can complete initialization now.
-  CompleteInitialization();
+  CompleteInitialization(SurfaceManager::kNoSurfaceID);
 }
 
 void GpuVideoDecoder::OnSurfaceAvailable(int surface_id) {
@@ -337,17 +337,19 @@ void GpuVideoDecoder::OnSurfaceAvailable(int surface_id) {
     return;
   }
 
-  vda_->SetSurface(surface_id);
-
-  // If initialization has already completed, there's nothing left to do.
-  if (init_cb_.is_null())
+  // If initialization has already completed, there's nothing to do but try to
+  // set the surface. If we're still initializing, we must pass the surface via
+  // the config since the remote VDA has not yet been created.
+  if (init_cb_.is_null()) {
+    vda_->SetSurface(surface_id);
     return;
+  }
 
   // Otherwise initialization was waiting for the surface, so complete it now.
-  CompleteInitialization();
+  CompleteInitialization(surface_id);
 }
 
-void GpuVideoDecoder::CompleteInitialization() {
+void GpuVideoDecoder::CompleteInitialization(int surface_id) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   DCHECK(vda_);
   DCHECK(!init_cb_.is_null());
@@ -356,6 +358,7 @@ void GpuVideoDecoder::CompleteInitialization() {
   vda_config.profile = config_.profile();
   vda_config.cdm_id = cdm_id_;
   vda_config.is_encrypted = config_.is_encrypted();
+  vda_config.surface_id = surface_id;
   vda_config.is_deferred_initialization_allowed = true;
   vda_config.initial_expected_coded_size = config_.coded_size();
 

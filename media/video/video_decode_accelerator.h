@@ -141,6 +141,11 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
     // Whether the client supports deferred initialization.
     bool is_deferred_initialization_allowed = false;
 
+    // An optional graphics surface that the VDA should render to. For setting
+    // an output SurfaceView on Android. It's only valid when not equal to
+    // |kNoSurfaceID|.
+    int surface_id = SurfaceManager::kNoSurfaceID;
+
     // Coded size of the video frame hint, subject to change.
     gfx::Size initial_expected_coded_size = gfx::Size(320, 240);
 

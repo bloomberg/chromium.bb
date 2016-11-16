@@ -163,7 +163,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   // completing initialization. This will be called by OnSurfaceAvailable() once
   // the surface is known or immediately by Initialize() if external surfaces
   // are unsupported.
-  void CompleteInitialization();
+  void CompleteInitialization(int surface_id);
 
   bool needs_bitstream_conversion_;
 

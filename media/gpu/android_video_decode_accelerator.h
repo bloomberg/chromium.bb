@@ -383,7 +383,6 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // Has a value if a SetSurface() call has occurred and a new surface should be
   // switched to when possible. Cleared during OnDestroyingSurface() and if all
   // pictures have been rendered in DequeueOutput().
-  int32_t surface_id_;
   base::Optional<int32_t> pending_surface_id_;
 
   // Copy of the VDA::Config we were given.
