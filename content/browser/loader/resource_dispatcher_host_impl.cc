@@ -100,6 +100,7 @@
 #include "net/base/upload_data_stream.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cookies/cookie_monster.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/ssl/client_cert_store.h"
@@ -113,6 +114,7 @@
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/file_permission_policy.h"
 #include "storage/browser/fileapi/file_system_context.h"
+#include "url/third_party/mozilla/url_parse.h"
 #include "url/url_constants.h"
 
 using base::Time;
@@ -2312,10 +2314,14 @@ int ResourceDispatcherHostImpl::CalculateApproximateMemoryCost(
   // The following fields should be a minor size contribution (experimentally
   // on the order of 100). However since they are variable length, it could
   // in theory be a sizeable contribution.
-  int strings_cost = request->extra_request_headers().ToString().size() +
-                     request->original_url().spec().size() +
-                     request->referrer().size() +
-                     request->method().size();
+  int strings_cost = 0;
+  for (net::HttpRequestHeaders::Iterator it(request->extra_request_headers());
+       it.GetNext();) {
+    strings_cost += it.name().length() + it.value().length();
+  }
+  strings_cost +=
+      request->original_url().parsed_for_possibly_invalid_spec().Length() +
+      request->referrer().size() + request->method().size();
 
   // Note that this expression will typically be dominated by:
   // |kAvgBytesPerOutstandingRequest|.

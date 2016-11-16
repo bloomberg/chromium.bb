@@ -43,6 +43,7 @@
 #include "net/base/request_priority.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/url_request/url_request.h"
+#include "url/gurl.h"
 
 namespace base {
 class FilePath;

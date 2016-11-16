@@ -2262,15 +2262,13 @@ TEST_P(ResourceDispatcherHostTest, CalculateApproximateMemoryCost) {
   net::URLRequestContext context;
   std::unique_ptr<net::URLRequest> req(context.CreateRequest(
       GURL("http://www.google.com"), net::DEFAULT_PRIORITY, NULL));
-  EXPECT_EQ(
-      4427,
-      ResourceDispatcherHostImpl::CalculateApproximateMemoryCost(req.get()));
+  EXPECT_EQ(4425, ResourceDispatcherHostImpl::CalculateApproximateMemoryCost(
+                      req.get()));
 
   // Add 9 bytes of referrer.
   req->SetReferrer("123456789");
-  EXPECT_EQ(
-      4436,
-      ResourceDispatcherHostImpl::CalculateApproximateMemoryCost(req.get()));
+  EXPECT_EQ(4434, ResourceDispatcherHostImpl::CalculateApproximateMemoryCost(
+                      req.get()));
 
   // Add 33 bytes of upload content.
   std::string upload_content;
@@ -2283,9 +2281,8 @@ TEST_P(ResourceDispatcherHostTest, CalculateApproximateMemoryCost) {
       net::ElementsUploadDataStream::CreateWithReader(std::move(reader), 0));
 
   // Since the upload throttling is disabled, this has no effect on the cost.
-  EXPECT_EQ(
-      4436,
-      ResourceDispatcherHostImpl::CalculateApproximateMemoryCost(req.get()));
+  EXPECT_EQ(4434, ResourceDispatcherHostImpl::CalculateApproximateMemoryCost(
+                      req.get()));
 }
 
 // Test that too much memory for outstanding requests for a particular
