@@ -69,7 +69,9 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
 }
 
 RenderWidgetHostViewChildFrame::~RenderWidgetHostViewChildFrame() {
-  surface_factory_->EvictSurface();
+  if (local_frame_id_.is_valid())
+    surface_factory_->Destroy(local_frame_id_);
+
   if (GetSurfaceManager())
     GetSurfaceManager()->InvalidateFrameSinkId(frame_sink_id_);
 }
@@ -398,22 +400,10 @@ void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
     current_surface_scale_factor_ = scale_factor;
   }
 
-  bool allocated_new_local_frame_id = false;
   if (!local_frame_id_.is_valid()) {
     local_frame_id_ = id_allocator_->GenerateId();
-    allocated_new_local_frame_id = true;
-  }
+    surface_factory_->Create(local_frame_id_);
 
-  cc::SurfaceFactory::DrawCallback ack_callback =
-      base::Bind(&RenderWidgetHostViewChildFrame::SurfaceDrawn, AsWeakPtr(),
-                 compositor_frame_sink_id);
-  ack_pending_count_++;
-  // If this value grows very large, something is going wrong.
-  DCHECK_LT(ack_pending_count_, 1000U);
-  surface_factory_->SubmitCompositorFrame(local_frame_id_, std::move(frame),
-                                          ack_callback);
-
-  if (allocated_new_local_frame_id) {
     cc::SurfaceSequence sequence =
         cc::SurfaceSequence(frame_sink_id_, next_surface_sequence_++);
     // The renderer process will satisfy this dependency when it creates a
@@ -425,6 +415,16 @@ void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
         cc::SurfaceId(frame_sink_id_, local_frame_id_), frame_size,
         scale_factor, sequence);
   }
+
+  cc::SurfaceFactory::DrawCallback ack_callback =
+      base::Bind(&RenderWidgetHostViewChildFrame::SurfaceDrawn, AsWeakPtr(),
+                 compositor_frame_sink_id);
+  ack_pending_count_++;
+  // If this value grows very large, something is going wrong.
+  DCHECK_LT(ack_pending_count_, 1000U);
+  surface_factory_->SubmitCompositorFrame(local_frame_id_, std::move(frame),
+                                          ack_callback);
+
   ProcessFrameSwappedCallbacks();
 }
 
@@ -619,7 +619,7 @@ void RenderWidgetHostViewChildFrame::SubmitSurfaceCopyRequest(
   if (!src_subrect.IsEmpty())
     request->set_area(src_subrect);
 
-  surface_factory_->RequestCopyOfSurface(std::move(request));
+  surface_factory_->RequestCopyOfSurface(local_frame_id_, std::move(request));
 }
 
 void RenderWidgetHostViewChildFrame::CopyFromCompositingSurfaceToVideoFrame(
@@ -726,7 +726,8 @@ RenderWidgetHostViewChildFrame::CreateBrowserAccessibilityManager(
 }
 
 void RenderWidgetHostViewChildFrame::ClearCompositorSurfaceIfNecessary() {
-  surface_factory_->EvictSurface();
+  if (local_frame_id_.is_valid())
+    surface_factory_->Destroy(local_frame_id_);
   local_frame_id_ = cc::LocalFrameId();
 }
 

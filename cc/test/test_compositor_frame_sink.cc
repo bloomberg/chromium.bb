@@ -111,7 +111,8 @@ bool TestCompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
 void TestCompositorFrameSink::DetachFromClient() {
   // Some tests make BindToClient fail on purpose. ^__^
   if (bound_) {
-    surface_factory_->EvictSurface();
+    if (delegated_local_frame_id_.is_valid())
+      surface_factory_->Destroy(delegated_local_frame_id_);
     surface_manager_->UnregisterSurfaceFactoryClient(frame_sink_id_);
     surface_manager_->InvalidateFrameSinkId(frame_sink_id_);
     display_ = nullptr;
@@ -129,6 +130,7 @@ void TestCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
 
   if (!delegated_local_frame_id_.is_valid()) {
     delegated_local_frame_id_ = surface_id_allocator_->GenerateId();
+    surface_factory_->Create(delegated_local_frame_id_);
   }
   display_->SetLocalFrameId(delegated_local_frame_id_,
                             frame.metadata.device_scale_factor);
@@ -152,7 +154,8 @@ void TestCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
                                           std::move(frame), draw_callback);
 
   for (std::unique_ptr<CopyOutputRequest>& copy_request : copy_requests_) {
-    surface_factory_->RequestCopyOfSurface(std::move(copy_request));
+    surface_factory_->RequestCopyOfSurface(delegated_local_frame_id_,
+                                           std::move(copy_request));
   }
   copy_requests_.clear();
 

@@ -129,6 +129,7 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
 
     current_frame_ = base::MakeUnique<FrameData>();
     current_frame_->local_frame_id = surface_id_allocator_->GenerateId();
+    surface_factory_->Create(current_frame_->local_frame_id);
 
     current_frame_->surface_size = surface_size;
     current_frame_->top_controls_height = frame.metadata.top_controls_height;
@@ -191,7 +192,7 @@ void DelegatedFrameHostAndroid::DestroyDelegatedContent() {
 
   content_layer_->RemoveFromParent();
   content_layer_ = nullptr;
-  surface_factory_->EvictSurface();
+  surface_factory_->Destroy(current_frame_->local_frame_id);
   current_frame_.reset();
 
   UpdateBackgroundLayer();

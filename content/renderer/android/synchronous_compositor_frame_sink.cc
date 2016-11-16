@@ -48,8 +48,7 @@ namespace content {
 namespace {
 
 const int64_t kFallbackTickTimeoutInMilliseconds = 100;
-const cc::FrameSinkId kRootFrameSinkId(1, 1);
-const cc::FrameSinkId kChildFrameSinkId(1, 2);
+const cc::FrameSinkId kFrameSinkId(1, 1);
 
 // Do not limit number of resources, so use an unrealistically high value.
 const size_t kNumResourcesLimit = 10 * 1000 * 1000;
@@ -123,12 +122,8 @@ SynchronousCompositorFrameSink::SynchronousCompositorFrameSink(
       frame_swap_message_queue_(frame_swap_message_queue),
       surface_manager_(new cc::SurfaceManager),
       surface_id_allocator_(new cc::SurfaceIdAllocator()),
-      root_factory_(new cc::SurfaceFactory(kRootFrameSinkId,
-                                           surface_manager_.get(),
-                                           this)),
-      child_factory_(new cc::SurfaceFactory(kChildFrameSinkId,
-                                            surface_manager_.get(),
-                                            this)),
+      surface_factory_(
+          new cc::SurfaceFactory(kFrameSinkId, surface_manager_.get(), this)),
       begin_frame_source_(std::move(begin_frame_source)) {
   DCHECK(registry_);
   DCHECK(sender_);
@@ -173,10 +168,8 @@ bool SynchronousCompositorFrameSink::BindToClient(
                  base::Unretained(this)));
   registry_->RegisterCompositorFrameSink(routing_id_, this);
 
-  surface_manager_->RegisterFrameSinkId(kRootFrameSinkId);
-  surface_manager_->RegisterFrameSinkId(kChildFrameSinkId);
-  surface_manager_->RegisterSurfaceFactoryClient(kRootFrameSinkId, this);
-  surface_manager_->RegisterSurfaceFactoryClient(kChildFrameSinkId, this);
+  surface_manager_->RegisterFrameSinkId(kFrameSinkId);
+  surface_manager_->RegisterSurfaceFactoryClient(kFrameSinkId, this);
 
   cc::RendererSettings software_renderer_settings;
 
@@ -191,9 +184,8 @@ bool SynchronousCompositorFrameSink::BindToClient(
   display_.reset(new cc::Display(
       nullptr /* shared_bitmap_manager */,
       nullptr /* gpu_memory_buffer_manager */, software_renderer_settings,
-      kRootFrameSinkId, nullptr /* begin_frame_source */,
-      std::move(output_surface), nullptr /* scheduler */,
-      nullptr /* texture_mailbox_deleter */));
+      kFrameSinkId, nullptr /* begin_frame_source */, std::move(output_surface),
+      nullptr /* scheduler */, nullptr /* texture_mailbox_deleter */));
   display_->Initialize(&display_client_, surface_manager_.get());
   display_->SetVisible(true);
   return true;
@@ -206,16 +198,15 @@ void SynchronousCompositorFrameSink::DetachFromClient() {
   begin_frame_source_ = nullptr;
   registry_->UnregisterCompositorFrameSink(routing_id_, this);
   client_->SetTreeActivationCallback(base::Closure());
-  root_factory_->EvictSurface();
-  child_factory_->EvictSurface();
-  surface_manager_->UnregisterSurfaceFactoryClient(kRootFrameSinkId);
-  surface_manager_->UnregisterSurfaceFactoryClient(kChildFrameSinkId);
-  surface_manager_->InvalidateFrameSinkId(kRootFrameSinkId);
-  surface_manager_->InvalidateFrameSinkId(kChildFrameSinkId);
+  if (root_local_frame_id_.is_valid()) {
+    surface_factory_->Destroy(root_local_frame_id_);
+    surface_factory_->Destroy(child_local_frame_id_);
+  }
+  surface_manager_->UnregisterSurfaceFactoryClient(kFrameSinkId);
+  surface_manager_->InvalidateFrameSinkId(kFrameSinkId);
   software_output_surface_ = nullptr;
   display_ = nullptr;
-  child_factory_ = nullptr;
-  root_factory_ = nullptr;
+  surface_factory_ = nullptr;
   surface_id_allocator_ = nullptr;
   surface_manager_ = nullptr;
   cc::CompositorFrameSink::DetachFromClient();
@@ -246,7 +237,9 @@ void SynchronousCompositorFrameSink::SubmitCompositorFrame(
 
     if (!root_local_frame_id_.is_valid()) {
       root_local_frame_id_ = surface_id_allocator_->GenerateId();
+      surface_factory_->Create(root_local_frame_id_);
       child_local_frame_id_ = surface_id_allocator_->GenerateId();
+      surface_factory_->Create(child_local_frame_id_);
     }
 
     display_->SetLocalFrameId(root_local_frame_id_,
@@ -291,15 +284,15 @@ void SynchronousCompositorFrameSink::SubmitCompositorFrame(
         child_transform, child_size, gfx::Rect(child_size),
         gfx::Rect() /* clip_rect */, false /* is_clipped */, 1.f /* opacity */,
         SkXfermode::kSrcOver_Mode, 0 /* sorting_context_id */);
-    surface_quad->SetNew(
-        shared_quad_state, gfx::Rect(child_size), gfx::Rect(child_size),
-        cc::SurfaceId(kChildFrameSinkId, child_local_frame_id_));
+    surface_quad->SetNew(shared_quad_state, gfx::Rect(child_size),
+                         gfx::Rect(child_size),
+                         cc::SurfaceId(kFrameSinkId, child_local_frame_id_));
 
-    child_factory_->SubmitCompositorFrame(
+    surface_factory_->SubmitCompositorFrame(
         child_local_frame_id_, std::move(frame), base::Bind(&NoOpDrawCallback));
-    root_factory_->SubmitCompositorFrame(root_local_frame_id_,
-                                         std::move(embed_frame),
-                                         base::Bind(&NoOpDrawCallback));
+    surface_factory_->SubmitCompositorFrame(root_local_frame_id_,
+                                            std::move(embed_frame),
+                                            base::Bind(&NoOpDrawCallback));
     display_->DrawAndSwap();
   } else {
     // For hardware draws we send the whole frame to the client so it can draw
