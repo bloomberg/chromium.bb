@@ -17,6 +17,7 @@ const char kChromeUICreditsURL[] = "chrome://credits/";
 const char kChromeUIFlagsURL[] = "chrome://flags/";
 const char kChromeUIHistoryURL[] = "chrome://history/";
 const char kChromeUINewTabURL[] = "chrome://newtab/";
+const char kChromeUIOfflineURL[] = "chrome://offline/";
 const char kChromeUIPhysicalWebURL[] = "chrome://physical-web/";
 const char kChromeUIPopularSitesInternalsURL[] =
     "chrome://popular-sites-internals/";
@@ -38,6 +39,7 @@ const char kChromeUIHistoryFrameHost[] = "history-frame";
 const char kChromeUIHistoryHost[] = "history";
 const char kChromeUINetExportHost[] = "net-export";
 const char kChromeUINewTabHost[] = "newtab";
+const char kChromeUIOfflineHost[] = "offline";
 const char kChromeUIOmahaHost[] = "omaha";
 const char kChromeUIPhysicalWebHost[] = "physical-web";
 const char kChromeUIPopularSitesInternalsHost[] = "popular-sites-internals";
