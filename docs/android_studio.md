@@ -109,7 +109,6 @@ resources, native libraries, etc.
 
 ### What doesn't work (yet) ([crbug](https://bugs.chromium.org/p/chromium/issues/detail?id=620034))
 
- * JUnit Test targets
  * Better support for instrumentation tests (they are treated as non-test .apks right now)
  * Make gradle aware of resources and assets
  * Make gradle aware of native code via pointing it at the location of our .so

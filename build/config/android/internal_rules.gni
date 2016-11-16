@@ -331,6 +331,16 @@ template("write_build_config") {
           rebase_path(invoker.proguard_configs, root_build_dir)
       args += [ "--proguard-configs=$_rebased_proguard_configs" ]
     }
+    if (defined(invoker.gradle_treat_as_prebuilt) &&
+        invoker.gradle_treat_as_prebuilt) {
+      args += [ "--gradle-treat-as-prebuilt" ]
+    }
+    if (defined(invoker.main_class)) {
+      args += [
+        "--main-class",
+        invoker.main_class,
+      ]
+    }
     if (current_toolchain != default_toolchain) {
       # This has to be a built-time error rather than a GN assert because many
       # packages have a mix of java and non-java targets. For example, the
@@ -2298,7 +2308,9 @@ if (enable_java_templates) {
       write_build_config(build_config_target_name) {
         forward_variables_from(invoker,
                                [
+                                 "gradle_treat_as_prebuilt",
                                  "input_jars_paths",
+                                 "main_class",
                                  "proguard_configs",
                                ])
         if (defined(invoker.is_java_binary) && invoker.is_java_binary) {

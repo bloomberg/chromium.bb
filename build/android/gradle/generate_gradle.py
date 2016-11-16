@@ -36,13 +36,18 @@ _JAVA_SUBDIR = 'symlinked-java'
 _SRCJARS_SUBDIR = 'extracted-srcjars'
 
 _DEFAULT_TARGETS = [
-    '//android_webview:system_webview_apk',
+    # TODO(agrieve): Requires alternate android.jar to compile.
+    # '//android_webview:system_webview_apk',
     '//android_webview/test:android_webview_apk',
     '//android_webview/test:android_webview_test_apk',
+    '//base:base_junit_tests',
+    '//chrome/android:chrome_junit_tests',
     '//chrome/android:chrome_public_apk',
     '//chrome/android:chrome_public_test_apk',
     '//chrome/android:chrome_sync_shell_apk',
     '//chrome/android:chrome_sync_shell_test_apk',
+    '//content/public/android:content_junit_tests',
+    '//content/shell/android:content_shell_apk',
 ]
 
 def _RebasePath(path_or_list, new_cwd=None, old_cwd=None):
@@ -165,12 +170,15 @@ def _ComputeJavaSourceDirs(java_files):
   for path in java_files:
     path_root = path
     # Recognize these tokens as top-level.
-    while os.path.basename(path_root) not in ('javax', 'org', 'com', 'src'):
-      assert path_root, 'Failed to find source dir for ' + path
+    while True:
       path_root = os.path.dirname(path_root)
-    # Assume that if we've hit "src", the we're at the root.
-    if os.path.basename(path_root) != 'src':
-      path_root = os.path.dirname(path_root)
+      basename = os.path.basename(path_root)
+      assert basename, 'Failed to find source dir for ' + path
+      if basename in ('java', 'src'):
+        break
+      if basename in ('javax', 'org', 'com'):
+        path_root = os.path.dirname(path_root)
+        break
     found_roots.add(path_root)
   return list(found_roots)
 
@@ -183,8 +191,6 @@ def _CreateSymlinkTree(entry_output_dir, symlink_dir, desired_files,
   it not listed by |desired_files|.
   """
   assert _IsSubpathOf(symlink_dir, entry_output_dir)
-  if os.path.exists(symlink_dir):
-    shutil.rmtree(symlink_dir)
 
   for target_path in desired_files:
     prefix = next(d for d in parent_dirs if target_path.startswith(d))
@@ -218,9 +224,12 @@ def _CreateJavaSourceDir(output_dir, entry_output_dir, java_files):
     # Warn only about non-generated files that are missing.
     missing_java_files = [p for p in missing_java_files
                           if not p.startswith(output_dir)]
+
+    symlink_dir = os.path.join(entry_output_dir, _JAVA_SUBDIR)
+    shutil.rmtree(symlink_dir, True)
+
     if unwanted_java_files:
       logging.debug('Target requires .java symlinks: %s', entry_output_dir)
-      symlink_dir = os.path.join(entry_output_dir, _JAVA_SUBDIR)
       _CreateSymlinkTree(entry_output_dir, symlink_dir, java_files, java_dirs)
       java_dirs = [symlink_dir]
 
@@ -244,17 +253,32 @@ def _GenerateGradleFile(build_config, build_vars, java_dirs, relativize,
   deps_info = build_config['deps_info']
   gradle = build_config['gradle']
 
+  variables = {
+      'sourceSetName': 'main',
+      'depCompileName': 'compile',
+  }
   if deps_info['type'] == 'android_apk':
     target_type = 'android_apk'
-  elif deps_info['type'] == 'java_library' and not deps_info['is_prebuilt']:
+  elif deps_info['type'] == 'java_library':
+    if deps_info['is_prebuilt'] or deps_info['gradle_treat_as_prebuilt']:
+      return None
+
     if deps_info['requires_android']:
       target_type = 'android_library'
     else:
       target_type = 'java_library'
+  elif deps_info['type'] == 'java_binary':
+    if gradle['main_class'] == 'org.chromium.testing.local.JunitTestMain':
+      target_type = 'android_junit'
+      variables['sourceSetName'] = 'test'
+      variables['depCompileName'] = 'testCompile'
+    else:
+      target_type = 'java_binary'
+      variables['main_class'] = gradle['main_class']
   else:
     return None
 
-  variables = {}
+  variables['target_name'] = os.path.splitext(deps_info['name'])[0]
   variables['template_type'] = target_type
   variables['use_gradle_process_resources'] = use_gradle_process_resources
   variables['build_tools_version'] = (
@@ -264,6 +288,8 @@ def _GenerateGradleFile(build_config, build_vars, java_dirs, relativize,
                                 _DEFAULT_ANDROID_MANIFEST_PATH)
   variables['android_manifest'] = relativize(android_manifest)
   variables['java_dirs'] = relativize(java_dirs)
+  # TODO(agrieve): Add an option to use interface jars and see if that speeds
+  # things up at all.
   variables['prebuilts'] = relativize(gradle['dependent_prebuilt_jars'])
   deps = [_ProjectEntry.FromBuildConfigPath(p)
           for p in gradle['dependent_android_projects']]
@@ -304,8 +330,7 @@ def _ExtractSrcjars(entry_output_dir, srcjar_tuples):
   extracted_paths = set(s[1] for s in srcjar_tuples)
   for extracted_path in extracted_paths:
     assert _IsSubpathOf(extracted_path, entry_output_dir)
-    if os.path.exists(extracted_path):
-      shutil.rmtree(extracted_path)
+    shutil.rmtree(extracted_path, True)
 
   for srcjar_path, extracted_path in srcjar_tuples:
     logging.info('Extracting %s to %s', srcjar_path, extracted_path)
@@ -375,6 +400,8 @@ def main():
     # TODO(agrieve): See if it makes sense to utilize Gradle's test constructs
     # for our instrumentation tests.
     targets = [re.sub(r'_test_apk$', '_test_apk__apk', t) for t in targets]
+    targets = [re.sub(r'_junit_tests$', '_junit_tests__java_binary', t)
+               for t in targets]
 
   main_entries = [_ProjectEntry(t) for t in targets]
 
@@ -396,7 +423,7 @@ def main():
   srcjar_tuples = []
   generated_inputs = []
   for entry in all_entries:
-    if entry.GetType() not in ('android_apk', 'java_library'):
+    if entry.GetType() not in ('android_apk', 'java_library', 'java_binary'):
       continue
 
     entry_output_dir = os.path.join(gradle_output_dir, entry.GradleSubdir())

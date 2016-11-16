@@ -113,6 +113,9 @@ java_library("robolectric_java") {
             "robolectric/robolectric/src/main/resources/robolectric-version.properties"),
         "robolectric-version.properties",
       ] ]
+
+  # Work-around for gradle generator not yet supporting additional_jar_files.
+  gradle_treat_as_prebuilt = true
 }
 
 java_library("robolectric_annotations_java") {
@@ -160,6 +163,9 @@ java_library("robolectric_processor_java") {
     "robolectric/robolectric-processor/src/main/java/org/robolectric/annotation/processing/validator/Validator.java",
     "robolectric/robolectric-processor/src/main/java/org/robolectric/annotation/processing/validator/package-info.java",
   ]
+
+  # Work-around for gradle generator not yet supporting annotation processors.
+  gradle_treat_as_prebuilt = true
 }
 
 java_library("robolectric_resources_java") {
@@ -639,6 +645,9 @@ template("shadows_core") {
       "//third_party/sqlite4java:sqlite4java_java",
     ]
     deps += invoker.android_sdk_deps
+
+    # Work-around for gradle generator not yet supporting annotation processors.
+    gradle_treat_as_prebuilt = true
   }
 }
 
@@ -672,4 +681,7 @@ java_library("shadows-multidex-3.0_java") {
     "//third_party/android_tools:android_support_multidex_java",
     "//third_party/guava:guava_java",
   ]
+
+  # Work-around for gradle generator not yet supporting annotation processors.
+  gradle_treat_as_prebuilt = true
 }
