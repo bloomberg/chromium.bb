@@ -1054,10 +1054,9 @@ void Gtk2UI::UpdateDeviceScaleFactor() {
   // changes.  This is to allow flags to override the DPI settings
   // during startup.
   float scale = GetRawDeviceScaleFactor();
-
-  // Blacklist scaling factors <130% (crbug.com/484400) and round
+  // Blacklist scaling factors <120% (crbug.com/484400) and round
   // to 1 decimal to prevent rendering problems (crbug.com/485183).
-  device_scale_factor_ = scale < 1.3f ? 1.0f : roundf(scale * 10) / 10;
+  device_scale_factor_ = scale < 1.2f ? 1.0f : roundf(scale * 10) / 10;
   UpdateDefaultFont();
 }
 
