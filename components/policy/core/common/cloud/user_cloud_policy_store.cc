@@ -394,11 +394,7 @@ void UserCloudPolicyStore::Validate(
                                  verification_key,
                                  owning_domain);
     // Loading from cache, so don't allow key rotation.
-    const bool no_rotation = false;
-    validator->ValidateSignature(cached_key->signing_key(),
-                                 verification_key,
-                                 owning_domain,
-                                 no_rotation);
+    validator->ValidateSignature(cached_key->signing_key());
   } else {
     // No passed cached_key - this is not validating the initial policy load
     // from cache, but rather an update from the server.
@@ -412,9 +408,8 @@ void UserCloudPolicyStore::Validate(
       // rotation - the verification key will prevent invalid policy from being
       // injected. |policy_key_| is already known to be valid, so no need to
       // verify via ValidateCachedKey().
-      const bool allow_rotation = true;
-      validator->ValidateSignature(
-          policy_key_, verification_key, owning_domain, allow_rotation);
+      validator->ValidateSignatureAllowingRotation(
+          policy_key_, verification_key, owning_domain);
     }
   }
 

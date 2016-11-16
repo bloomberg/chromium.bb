@@ -122,15 +122,21 @@ void CloudPolicyValidatorBase::ValidateCachedKey(
   cached_key_signature_ = cached_key_signature;
 }
 
-void CloudPolicyValidatorBase::ValidateSignature(
+void CloudPolicyValidatorBase::ValidateSignature(const std::string& key) {
+  validation_flags_ |= VALIDATE_SIGNATURE;
+  DCHECK(key_.empty() || key_ == key);
+  key_ = key;
+}
+
+void CloudPolicyValidatorBase::ValidateSignatureAllowingRotation(
     const std::string& key,
     const std::string& verification_key,
-    const std::string& owning_domain,
-    bool allow_key_rotation) {
+    const std::string& owning_domain) {
   validation_flags_ |= VALIDATE_SIGNATURE;
-  set_verification_key_and_domain(verification_key, owning_domain);
+  DCHECK(key_.empty() || key_ == key);
   key_ = key;
-  allow_key_rotation_ = allow_key_rotation;
+  set_verification_key_and_domain(verification_key, owning_domain);
+  allow_key_rotation_ = true;
 }
 
 void CloudPolicyValidatorBase::ValidateInitialKey(

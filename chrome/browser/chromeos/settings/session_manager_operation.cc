@@ -185,10 +185,7 @@ void SessionManagerOperation::ValidateDeviceSettings(
   validator->ValidatePayload();
   // We don't check the DMServer verification key below, because the signing
   // key is validated when it is installed.
-  validator->ValidateSignature(public_key_->as_string(),
-                               std::string(),  // No key validation check.
-                               std::string(),
-                               false);
+  validator->ValidateSignature(public_key_->as_string());
   validator->StartValidation(
       base::Bind(&SessionManagerOperation::ReportValidatorStatus,
                  weak_factory_.GetWeakPtr()));

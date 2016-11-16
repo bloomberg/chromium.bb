@@ -59,10 +59,9 @@ void DeviceCloudPolicyStoreChromeOS::Store(
 
   std::unique_ptr<DeviceCloudPolicyValidator> validator(
       CreateValidator(policy));
-  validator->ValidateSignature(public_key->as_string(),
-                               GetPolicyVerificationKey(),
-                               install_attributes_->GetDomain(),
-                               true);
+  validator->ValidateSignatureAllowingRotation(
+      public_key->as_string(), GetPolicyVerificationKey(),
+      install_attributes_->GetDomain());
   validator->ValidateAgainstCurrentPolicy(
       device_settings_service_->policy_data(),
       CloudPolicyValidatorBase::TIMESTAMP_FULLY_VALIDATED,

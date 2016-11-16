@@ -187,22 +187,26 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
                          const std::string& owning_domain);
 
   // Instruct the validator to check that the signature on the policy blob
-  // verifies against |key|. If |allow_key_rotation| is true and there is a key
-  // rotation present in the policy blob, this checks the signature on the new
-  // key against |key| and the policy blob against the new key. New key is also
-  // validated using the passed |verification_key| and |owning_domain|, and the
-  // |new_public_key_verification_signature| field.
-  void ValidateSignature(const std::string& key,
-                         const std::string& verification_key,
-                         const std::string& owning_domain,
-                         bool allow_key_rotation);
+  // verifies against |key|.
+  void ValidateSignature(const std::string& key);
+
+  // Instruct the validator to check that the signature on the policy blob
+  // verifies against |key|. If there is a key rotation present in the policy
+  // blob, this checks the signature on the new key against |key| and the policy
+  // blob against the new key. New key is also validated using the passed
+  // |verification_key| and |owning_domain| against the proto's
+  // new_public_key_verification_signature_deprecated field.
+  void ValidateSignatureAllowingRotation(const std::string& key,
+                                         const std::string& verification_key,
+                                         const std::string& owning_domain);
 
   // Similar to ValidateSignature(), this instructs the validator to check the
   // signature on the policy blob. However, this variant expects a new policy
   // key set in the policy blob and makes sure the policy is signed using that
   // key. This should be called at setup time when there is no existing policy
   // key present to check against. New key is validated using the passed
-  // |verification_key| and the new_public_key_verification_signature field.
+  // |verification_key| against the proto's
+  // new_public_key_verification_signature_deprecated field.
   void ValidateInitialKey(const std::string& verification_key,
                           const std::string& owning_domain);
 
