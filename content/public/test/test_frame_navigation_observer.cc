@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/test_frame_navigation_observer.h"
+#include "content/public/test/test_frame_navigation_observer.h"
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
@@ -17,26 +17,37 @@
 
 namespace content {
 
+namespace {
+
+RenderFrameHostImpl* ToRenderFrameHostImpl(const ToRenderFrameHost& frame) {
+  return static_cast<RenderFrameHostImpl*>(frame.render_frame_host());
+}
+
+}  // namespace
+
 TestFrameNavigationObserver::TestFrameNavigationObserver(
-    FrameTreeNode* node)
+    const ToRenderFrameHost& adapter)
     : WebContentsObserver(
-          node->current_frame_host()->delegate()->GetAsWebContents()),
-      frame_tree_node_id_(node->frame_tree_node_id()),
+          ToRenderFrameHostImpl(adapter)->delegate()->GetAsWebContents()),
+      frame_tree_node_id_(ToRenderFrameHostImpl(adapter)->GetFrameTreeNodeId()),
       navigation_started_(false),
       has_committed_(false),
       wait_for_commit_(false),
       message_loop_runner_(new MessageLoopRunner) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
-TestFrameNavigationObserver::~TestFrameNavigationObserver() {
-}
+TestFrameNavigationObserver::~TestFrameNavigationObserver() {}
 
 void TestFrameNavigationObserver::Wait() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   wait_for_commit_ = false;
   message_loop_runner_->Run();
 }
 
 void TestFrameNavigationObserver::WaitForCommit() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   if (has_committed_)
     return;
 

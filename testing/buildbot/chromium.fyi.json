@@ -12082,7 +12082,8 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--site-per-process",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.interactive_ui_tests.filter"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true

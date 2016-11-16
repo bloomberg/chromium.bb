@@ -12,22 +12,23 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 
 class GURL;
 
 namespace content {
-class FrameTreeNode;
-class WebContents;
+class RenderFrameHost;
 
-// For content_browsertests, which run on the UI thread, run a second
-// MessageLoop and quit when the navigation in a specific frame (and all of its
-// subframes) has completed loading.
+// Helper for waiting until the navigation in a specific frame tree node (and
+// all of its subframes) has completed loading.
 class TestFrameNavigationObserver : public WebContentsObserver {
  public:
   // Create and register a new TestFrameNavigationObserver which will track
-  // navigations performed in the specified |node| of the frame tree.
-  explicit TestFrameNavigationObserver(FrameTreeNode* node);
+  // navigations performed in the frame tree node associated with |adapter|.
+  // Note that RenderFrameHost associated with |frame| might be destroyed during
+  // the navigation (e.g. if the content commits in a new renderer process).
+  explicit TestFrameNavigationObserver(const ToRenderFrameHost& adapter);
 
   ~TestFrameNavigationObserver() override;
 

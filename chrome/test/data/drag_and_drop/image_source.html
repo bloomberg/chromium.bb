@@ -19,6 +19,7 @@
   <script src="event_monitoring.js"></script>
   <script>
     function dragstart_handler(ev) {
+      ev.dataTransfer.effectAllowed = "copy";
       window.reportDragAndDropEvent(ev);
     }
 
@@ -30,5 +31,5 @@
 <body>
   <img  ondragstart="dragstart_handler(event);"
         ondragend="dragend_handler(event);"
-        src="/single_face.jpg">
+        src="/image_decoding/droids.jpg">
 </body>

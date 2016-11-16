@@ -93,6 +93,8 @@ static_library("test_support") {
     "../public/test/test_file_system_context.h",
     "../public/test/test_file_system_options.cc",
     "../public/test/test_file_system_options.h",
+    "../public/test/test_frame_navigation_observer.cc",
+    "../public/test/test_frame_navigation_observer.h",
     "../public/test/test_launcher.cc",
     "../public/test/test_launcher.h",
     "../public/test/test_navigation_observer.cc",
@@ -171,8 +173,6 @@ static_library("test_support") {
     "test_content_browser_client.h",
     "test_content_client.cc",
     "test_content_client.h",
-    "test_frame_navigation_observer.cc",
-    "test_frame_navigation_observer.h",
     "test_navigation_url_loader.cc",
     "test_navigation_url_loader.h",
     "test_navigation_url_loader_delegate.cc",
@@ -824,10 +824,6 @@ test("content_browsertests") {
 
   if (is_chromeos) {
     deps += [ "//chromeos" ]
-  }
-
-  if (use_aura) {
-    sources += [ "../browser/web_contents/drag_and_drop_browsertest.cc" ]
   }
 
   if (use_aura && !is_win) {

@@ -436,7 +436,9 @@ if (!is_android) {
 
     configs += [ "//build/config:precompiled_headers" ]
 
-    data_deps = []
+    data_deps = [
+      "//testing/buildbot/filters:interactive_ui_tests_filters",
+    ]
 
     data = [
       "data/",
@@ -517,6 +519,10 @@ if (!is_android) {
       "//ppapi:ppapi_tests",
       "//third_party/mesa:osmesa",
     ]
+
+    if (use_aura) {
+      sources += [ "../browser/ui/views/drag_and_drop_interactive_uitest.cc" ]
+    }
 
     if (toolkit_views) {
       sources += [
