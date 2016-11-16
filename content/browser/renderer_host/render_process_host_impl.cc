@@ -1264,11 +1264,23 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
                          file_task_runner);
 #endif
 
-  // These callbacks will be run immediately on the IO thread.
+#if defined(OS_ANDROID)
+  // On Android the device sensors implementations need to run on the UI thread
+  // to communicate to Java.
+  AddUIThreadInterface(registry.get(), base::Bind(&DeviceLightHost::Create));
+  AddUIThreadInterface(registry.get(), base::Bind(&DeviceMotionHost::Create));
+  AddUIThreadInterface(registry.get(),
+                       base::Bind(&DeviceOrientationHost::Create));
+  AddUIThreadInterface(registry.get(),
+                       base::Bind(&DeviceOrientationAbsoluteHost::Create));
+#else
+  // On platforms other than Android the device sensors implementations run on
+  // the IO thread.
   registry->AddInterface(base::Bind(&DeviceLightHost::Create));
   registry->AddInterface(base::Bind(&DeviceMotionHost::Create));
   registry->AddInterface(base::Bind(&DeviceOrientationHost::Create));
   registry->AddInterface(base::Bind(&DeviceOrientationAbsoluteHost::Create));
+#endif  // defined(OS_ANDROID)
 
   registry->AddInterface(
       base::Bind(&VideoCaptureHost::Create,

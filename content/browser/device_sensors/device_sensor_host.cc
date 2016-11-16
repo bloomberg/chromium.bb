@@ -21,7 +21,11 @@ void DeviceSensorHost<MojoInterface, consumer_type>::Create(
 template <typename MojoInterface, ConsumerType consumer_type>
 DeviceSensorHost<MojoInterface, consumer_type>::DeviceSensorHost()
     : is_started_(false) {
+#if defined(OS_ANDROID)
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+#else
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+#endif
 }
 
 template <typename MojoInterface, ConsumerType consumer_type>

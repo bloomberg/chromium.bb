@@ -33,7 +33,7 @@ class CONTENT_EXPORT SensorManagerAndroid {
   // Must be called at startup, before GetInstance().
   static bool Register(JNIEnv* env);
 
-  // Needs to be thread-safe, because accessed from different threads.
+  // Should be called only on the UI thread.
   static SensorManagerAndroid* GetInstance();
 
   // Called from Java via JNI.
@@ -109,20 +109,6 @@ class CONTENT_EXPORT SensorManagerAndroid {
   // Returns the number of active sensors corresponding to
   // ConsumerType.DEVICE_MOTION.
   virtual int GetNumberActiveDeviceMotionSensors();
-
-  void StartFetchingLightDataOnUI(DeviceLightHardwareBuffer* buffer);
-  void StopFetchingLightDataOnUI();
-
-  void StartFetchingMotionDataOnUI(DeviceMotionHardwareBuffer* buffer);
-  void StopFetchingMotionDataOnUI();
-
-  void StartFetchingOrientationDataOnUI(
-      DeviceOrientationHardwareBuffer* buffer);
-  void StopFetchingOrientationDataOnUI();
-
-  void StartFetchingOrientationAbsoluteDataOnUI(
-      DeviceOrientationHardwareBuffer* buffer);
-  void StopFetchingOrientationAbsoluteDataOnUI();
 
  private:
   friend struct base::DefaultSingletonTraits<SensorManagerAndroid>;

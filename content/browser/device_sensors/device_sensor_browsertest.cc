@@ -28,21 +28,34 @@ namespace {
 
 class FakeDataFetcher : public DataFetcherSharedMemory {
  public:
-  FakeDataFetcher()
-      : started_orientation_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                             base::WaitableEvent::InitialState::NOT_SIGNALED),
-        stopped_orientation_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                             base::WaitableEvent::InitialState::NOT_SIGNALED),
-        started_motion_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                        base::WaitableEvent::InitialState::NOT_SIGNALED),
-        stopped_motion_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                        base::WaitableEvent::InitialState::NOT_SIGNALED),
-        started_light_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                       base::WaitableEvent::InitialState::NOT_SIGNALED),
-        stopped_light_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                       base::WaitableEvent::InitialState::NOT_SIGNALED),
-        sensor_data_available_(true) {}
+  FakeDataFetcher() : sensor_data_available_(true) {}
   ~FakeDataFetcher() override {}
+
+  void SetMotionStartedCallback(base::Closure motion_started_callback) {
+    motion_started_callback_ = motion_started_callback;
+  }
+
+  void SetMotionStoppedCallback(base::Closure motion_stopped_callback) {
+    motion_stopped_callback_ = motion_stopped_callback;
+  }
+
+  void SetLightStartedCallback(base::Closure light_started_callback) {
+    light_started_callback_ = light_started_callback;
+  }
+
+  void SetLightStoppedCallback(base::Closure light_stopped_callback) {
+    light_stopped_callback_ = light_stopped_callback;
+  }
+
+  void SetOrientationStartedCallback(
+      base::Closure orientation_started_callback) {
+    orientation_started_callback_ = orientation_started_callback;
+  }
+
+  void SetOrientationStoppedCallback(
+      base::Closure orientation_stopped_callback) {
+    orientation_stopped_callback_ = orientation_stopped_callback;
+  }
 
   bool Start(ConsumerType consumer_type, void* buffer) override {
     EXPECT_TRUE(buffer);
@@ -54,7 +67,8 @@ class FakeDataFetcher : public DataFetcherSharedMemory {
         if (sensor_data_available_)
           UpdateMotion(motion_buffer);
         SetMotionBufferReady(motion_buffer);
-        started_motion_.Signal();
+        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                                motion_started_callback_);
       } break;
       case CONSUMER_TYPE_ORIENTATION: {
         DeviceOrientationHardwareBuffer* orientation_buffer =
@@ -62,7 +76,8 @@ class FakeDataFetcher : public DataFetcherSharedMemory {
         if (sensor_data_available_)
           UpdateOrientation(orientation_buffer);
         SetOrientationBufferReady(orientation_buffer);
-        started_orientation_.Signal();
+        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                                orientation_started_callback_);
       } break;
       case CONSUMER_TYPE_LIGHT: {
         DeviceLightHardwareBuffer* light_buffer =
@@ -71,7 +86,8 @@ class FakeDataFetcher : public DataFetcherSharedMemory {
                     sensor_data_available_
                         ? 100
                         : std::numeric_limits<double>::infinity());
-        started_light_.Signal();
+        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                                light_started_callback_);
       } break;
       default:
         return false;
@@ -82,13 +98,16 @@ class FakeDataFetcher : public DataFetcherSharedMemory {
   bool Stop(ConsumerType consumer_type) override {
     switch (consumer_type) {
       case CONSUMER_TYPE_MOTION:
-        stopped_motion_.Signal();
+        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                                motion_stopped_callback_);
         break;
       case CONSUMER_TYPE_ORIENTATION:
-        stopped_orientation_.Signal();
+        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                                orientation_stopped_callback_);
         break;
       case CONSUMER_TYPE_LIGHT:
-        stopped_light_.Signal();
+        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                                light_stopped_callback_);
         break;
       default:
         return false;
@@ -164,12 +183,13 @@ class FakeDataFetcher : public DataFetcherSharedMemory {
     buffer->seqlock.WriteEnd();
   }
 
-  base::WaitableEvent started_orientation_;
-  base::WaitableEvent stopped_orientation_;
-  base::WaitableEvent started_motion_;
-  base::WaitableEvent stopped_motion_;
-  base::WaitableEvent started_light_;
-  base::WaitableEvent stopped_light_;
+  // The below callbacks should be run on the UI thread.
+  base::Closure motion_started_callback_;
+  base::Closure orientation_started_callback_;
+  base::Closure light_started_callback_;
+  base::Closure motion_stopped_callback_;
+  base::Closure orientation_stopped_callback_;
+  base::Closure light_stopped_callback_;
   bool sensor_data_available_;
 
  private:
@@ -185,16 +205,41 @@ class DeviceSensorBrowserTest : public ContentBrowserTest {
             base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   void SetUpOnMainThread() override {
+    // Initialize the RunLoops now that the main thread has been created.
+    light_started_runloop_.reset(new base::RunLoop());
+    light_stopped_runloop_.reset(new base::RunLoop());
+    motion_started_runloop_.reset(new base::RunLoop());
+    motion_stopped_runloop_.reset(new base::RunLoop());
+    orientation_started_runloop_.reset(new base::RunLoop());
+    orientation_stopped_runloop_.reset(new base::RunLoop());
+#if defined(OS_ANDROID)
+    // On Android, the DeviceSensorService lives on the UI thread.
+    SetUpFetcher();
+#else
+    // On all other platforms, the DeviceSensorService lives on the IO thread.
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&DeviceSensorBrowserTest::SetUpOnIOThread,
                    base::Unretained(this)));
     io_loop_finished_event_.Wait();
+#endif
+  }
+
+  void SetUpFetcher() {
+    fetcher_ = new FakeDataFetcher();
+    fetcher_->SetLightStartedCallback(light_started_runloop_->QuitClosure());
+    fetcher_->SetLightStoppedCallback(light_stopped_runloop_->QuitClosure());
+    fetcher_->SetMotionStartedCallback(motion_started_runloop_->QuitClosure());
+    fetcher_->SetMotionStoppedCallback(motion_stopped_runloop_->QuitClosure());
+    fetcher_->SetOrientationStartedCallback(
+        orientation_started_runloop_->QuitClosure());
+    fetcher_->SetOrientationStoppedCallback(
+        orientation_stopped_runloop_->QuitClosure());
+    DeviceSensorService::GetInstance()->SetDataFetcherForTesting(fetcher_);
   }
 
   void SetUpOnIOThread() {
-    fetcher_ = new FakeDataFetcher();
-    DeviceSensorService::GetInstance()->SetDataFetcherForTesting(fetcher_);
+    SetUpFetcher();
     io_loop_finished_event_.Signal();
   }
 
@@ -224,6 +269,15 @@ class DeviceSensorBrowserTest : public ContentBrowserTest {
 
   FakeDataFetcher* fetcher_;
 
+  // NOTE: These can only be initialized once the main thread has been created
+  // and so must be pointers instead of plain objects.
+  std::unique_ptr<base::RunLoop> light_started_runloop_;
+  std::unique_ptr<base::RunLoop> light_stopped_runloop_;
+  std::unique_ptr<base::RunLoop> motion_started_runloop_;
+  std::unique_ptr<base::RunLoop> motion_stopped_runloop_;
+  std::unique_ptr<base::RunLoop> orientation_started_runloop_;
+  std::unique_ptr<base::RunLoop> orientation_stopped_runloop_;
+
  private:
   base::WaitableEvent io_loop_finished_event_;
 };
@@ -236,8 +290,8 @@ IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, OrientationTest) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 2);
 
   EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
-  fetcher_->started_orientation_.Wait();
-  fetcher_->stopped_orientation_.Wait();
+  orientation_started_runloop_->Run();
+  orientation_stopped_runloop_->Run();
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, LightTest) {
@@ -249,8 +303,8 @@ IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, LightTest) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 2);
 
   EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
-  fetcher_->started_light_.Wait();
-  fetcher_->stopped_light_.Wait();
+  light_started_runloop_->Run();
+  light_stopped_runloop_->Run();
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, MotionTest) {
@@ -261,8 +315,8 @@ IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, MotionTest) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 2);
 
   EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
-  fetcher_->started_motion_.Wait();
-  fetcher_->stopped_motion_.Wait();
+  motion_started_runloop_->Run();
+  motion_stopped_runloop_->Run();
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, LightOneOffInfintyTest) {
@@ -276,8 +330,8 @@ IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, LightOneOffInfintyTest) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 2);
 
   EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
-  fetcher_->started_light_.Wait();
-  fetcher_->stopped_light_.Wait();
+  light_started_runloop_->Run();
+  light_stopped_runloop_->Run();
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, OrientationNullTest) {
@@ -290,8 +344,8 @@ IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, OrientationNullTest) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 2);
 
   EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
-  fetcher_->started_orientation_.Wait();
-  fetcher_->stopped_orientation_.Wait();
+  orientation_started_runloop_->Run();
+  orientation_stopped_runloop_->Run();
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, MotionNullTest) {
@@ -303,15 +357,15 @@ IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, MotionNullTest) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 2);
 
   EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
-  fetcher_->started_motion_.Wait();
-  fetcher_->stopped_motion_.Wait();
+  motion_started_runloop_->Run();
+  motion_stopped_runloop_->Run();
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, NullTestWithAlert) {
-  // The test page registers an event handlers for motion/orientation events
-  // and expects to get events with null values. The test raises a modal alert
-  // dialog with a delay to test that the one-off null-events still propagate
-  // to window after the alert is dismissed and the callbacks are invoked which
+  // The test page registers an event handlers for motion/orientation events and
+  // expects to get events with null values. The test raises a modal alert
+  // dialog with a delay to test that the one-off null-events still propagate to
+  // window after the alert is dismissed and the callbacks are invoked which
   // eventually navigate to #pass.
   fetcher_->SetSensorDataAvailable(false);
   TestNavigationObserver same_tab_observer(shell()->web_contents(), 2);
@@ -324,10 +378,10 @@ IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest, NullTestWithAlert) {
   // delay, crbug.com/360044.
   WaitForAlertDialogAndQuitAfterDelay(base::TimeDelta::FromMilliseconds(500));
 
-  fetcher_->started_motion_.Wait();
-  fetcher_->stopped_motion_.Wait();
-  fetcher_->started_orientation_.Wait();
-  fetcher_->stopped_orientation_.Wait();
+  motion_started_runloop_->Run();
+  motion_stopped_runloop_->Run();
+  orientation_started_runloop_->Run();
+  orientation_stopped_runloop_->Run();
   same_tab_observer.Wait();
   EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
 }
