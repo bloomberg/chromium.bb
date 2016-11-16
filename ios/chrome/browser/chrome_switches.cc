@@ -132,9 +132,4 @@ const char kIOSTestingFixedHttpsPort[] = "testing-fixed-https-port";
 // Enables grouping websites by domain and filtering them by period.
 const char kHistoryEnableGroupByDomain[] = "enable-grouped-history";
 
-// Use to opt-in to marking HTTP as non-secure.
-const char kMarkNonSecureAs[] = "mark-non-secure-as";
-const char kMarkNonSecureAsNeutral[] = "neutral";
-const char kMarkNonSecureAsNonSecure[] = "non-secure";
-
 }  // namespace switches
