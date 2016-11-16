@@ -1430,7 +1430,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         try {
             // ensureInitialized() calls native code to check the version right after library load
             // and will error with the message below if library loading was skipped
-            CronetLibraryLoader.ensureInitialized(getContext(), builder);
+            CronetLibraryLoader.ensureInitialized(getContext().getApplicationContext(), builder);
             fail("Native library should not be loaded");
         } catch (UnsatisfiedLinkError e) {
             assertTrue(loader.wasCalled());

@@ -74,9 +74,15 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
      */
     public static class Builder extends CronetEngine.Builder {
         /**
-         * Default config enables SPDY, disables QUIC, SDCH and HTTP cache.
+         * Constructs a {@link Builder} object that facilitates creating a
+         * {@link CronetEngine}. The default configuration enables HTTP/2 and
+         * disables QUIC, SDCH and the HTTP cache.
          *
-         * @param context Android {@link Context} for engine to use.
+         * @param context Android {@link Context}, which is used by
+         *                {@link Builder} to retrieve the application
+         *                context. A reference to only the application
+         *                context will be kept, so as to avoid extending
+         *                the lifetime of {@code context} unnecessarily.
          */
         public Builder(Context context) {
             super(context);

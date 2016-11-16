@@ -33,13 +33,13 @@ public class CronetLibraryLoader {
      * any thread, the load and initialization is performed on main thread.
      */
     public static void ensureInitialized(
-            final Context context, final CronetEngineBuilderImpl builder) {
+            final Context applicationContext, final CronetEngineBuilderImpl builder) {
         synchronized (sLoadLock) {
             if (sInitStarted) {
                 return;
             }
             sInitStarted = true;
-            ContextUtils.initApplicationContext(context.getApplicationContext());
+            ContextUtils.initApplicationContext(applicationContext);
             if (builder.libraryLoader() != null) {
                 builder.libraryLoader().loadLibrary(builder.libraryName());
             } else {
@@ -57,7 +57,7 @@ public class CronetLibraryLoader {
             Runnable task = new Runnable() {
                 @Override
                 public void run() {
-                    ensureInitializedOnMainThread(context);
+                    ensureInitializedOnMainThread(applicationContext);
                 }
             };
             // Run task immediately or post it to the UI thread.

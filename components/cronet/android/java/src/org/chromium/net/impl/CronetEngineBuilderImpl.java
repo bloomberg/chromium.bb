@@ -80,7 +80,7 @@ public class CronetEngineBuilderImpl extends ICronetEngineBuilder {
 
     // Private fields are simply storage of configuration for the resulting CronetEngine.
     // See setters below for verbose descriptions.
-    private final Context mContext;
+    private final Context mApplicationContext;
     private final List<QuicHint> mQuicHints = new LinkedList<>();
     private final List<Pkp> mPkps = new LinkedList<>();
     private boolean mPublicKeyPinningBypassForLocalTrustAnchorsEnabled;
@@ -109,7 +109,7 @@ public class CronetEngineBuilderImpl extends ICronetEngineBuilder {
      * @param context Android {@link Context} for engine to use.
      */
     public CronetEngineBuilderImpl(Context context) {
-        mContext = context;
+        mApplicationContext = context.getApplicationContext();
         setLibraryName("cronet");
         enableLegacyMode(false);
         enableQuic(false);
@@ -122,7 +122,7 @@ public class CronetEngineBuilderImpl extends ICronetEngineBuilder {
 
     @Override
     public String getDefaultUserAgent() {
-        return UserAgent.from(mContext);
+        return UserAgent.from(mApplicationContext);
     }
 
     @Override
@@ -199,7 +199,7 @@ public class CronetEngineBuilderImpl extends ICronetEngineBuilder {
      * @return QUIC User Agent ID string.
      */
     String getDefaultQuicUserAgentId() {
-        return mQuicEnabled ? UserAgent.getQuicUserAgentIdFrom(mContext) : "";
+        return mQuicEnabled ? UserAgent.getQuicUserAgentIdFrom(mApplicationContext) : "";
     }
 
     @Override
@@ -455,7 +455,7 @@ public class CronetEngineBuilderImpl extends ICronetEngineBuilder {
      * @return {@link Context} for builder.
      */
     Context getContext() {
-        return mContext;
+        return mApplicationContext;
     }
 
     @Override
