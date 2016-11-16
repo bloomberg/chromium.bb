@@ -36,6 +36,9 @@ class WindowServerDelegate {
     WINDOW_MANAGER,
   };
 
+  // WindowServer signal that display initialization can start.
+  virtual void StartDisplayInit() = 0;
+
   // Called once when the AcceleratedWidget of a Display is available.
   virtual void OnFirstDisplayReady();
 

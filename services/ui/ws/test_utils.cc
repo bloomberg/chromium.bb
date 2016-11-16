@@ -417,6 +417,8 @@ Display* TestWindowServerDelegate::AddDisplay() {
   return display;
 }
 
+void TestWindowServerDelegate::StartDisplayInit() {}
+
 void TestWindowServerDelegate::OnNoMoreDisplays() {
   got_on_no_more_displays_ = true;
 }

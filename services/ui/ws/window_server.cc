@@ -750,6 +750,9 @@ void WindowServer::OnGpuChannelEstablished(
   const std::set<Display*>& displays = display_manager()->displays();
   for (auto* display : displays)
     display->platform_display()->OnGpuChannelEstablished(gpu_channel_);
+  // TODO(kylechar): When gpu channel is removed, this can instead happen
+  // earlier, after GpuServiceProxy::OnInitialized().
+  delegate_->StartDisplayInit();
 }
 
 void WindowServer::OnSurfaceCreated(const cc::SurfaceId& surface_id,

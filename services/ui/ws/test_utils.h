@@ -522,6 +522,7 @@ class TestWindowServerDelegate : public WindowServerDelegate {
   Display* AddDisplay();
 
   // WindowServerDelegate:
+  void StartDisplayInit() override;
   void OnNoMoreDisplays() override;
   std::unique_ptr<WindowTreeBinding> CreateWindowTreeBinding(
       BindingType type,

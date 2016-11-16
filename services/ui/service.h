@@ -105,6 +105,7 @@ class Service
                  service_manager::InterfaceRegistry* registry) override;
 
   // WindowServerDelegate:
+  void StartDisplayInit() override;
   void OnFirstDisplayReady() override;
   void OnNoMoreDisplays() override;
   bool IsTestConfig() const override;
