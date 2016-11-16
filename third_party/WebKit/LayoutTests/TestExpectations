@@ -558,8 +558,6 @@ Bug(github) imported/wpt/uievents/keyboard/key-manual.css [ Skip ]
 Bug(github) imported/wpt/uievents/keyboard/key-manual.js [ Skip ]
 crbug.com/441355 imported/wpt/dom/nodes/MutationObserver-childList.html [ Skip ]
 
-crbug.com/636961 [ Linux Debug ] virtual/threaded/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-vertical-rl-anchors.html [ Pass Failure ]
-
 crbug.com/387740 imported/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https.html [ Skip ]
 crbug.com/387740 imported/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-video-is-black.https.html [ Skip ]
 crbug.com/387740 imported/wpt/mediacapture-streams/MediaStreamTrack-end.https.html [ Skip ]
@@ -876,12 +874,6 @@ crbug.com/504706 [ Linux ] inspector/profiler/heap-snapshot-containment-sorting.
 
 crbug.com/425345 [ Mac ] fast/text/line-break-after-question-mark.html [ Failure ]
 
-crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll-interrupted.html [ Skip ]
-crbug.com/587165 [ Win7 Debug ] virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll-interrupted.html [ Pass Failure ]
-crbug.com/587165 [ Linux ] virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll-interrupted.html [ Pass Failure ]
-
-crbug.com/624247 [ Linux Win7 ] virtual/threaded/fast/scroll-behavior/smooth-scroll/track-scroll.html [ Failure Pass ]
-
 # When drawing subpixel smoothed glyphs, CoreGraphics will fake bold the glyphs.
 # In this configuration, the pixel smoothed glyphs will be created from subpixel smoothed glyphs.
 # This means that CoreGraphics may draw outside the reported glyph bounds, and in this case does.
@@ -904,18 +896,24 @@ crbug.com/651343 fast/text/international/inline-plaintext-relayout-with-leading-
 
 crbug.com/385014 crbug.com/410145 accessibility/canvas-fallback-content-2.html [ Pass Failure Timeout ]
 
+crbug.com/574283 [ Mac ] fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-anchors.html [ Skip ]
+crbug.com/574283 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-anchors.html [ Skip ]
+crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/first-scroll-runs-on-compositor.html [ Skip ]
 crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/fixed-background-in-iframe.html [ Skip ]
 crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/horizontal-smooth-scroll-in-rtl.html [ Skip ]
 crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/main-thread-scrolling-reason-added.html [ Skip ]
 crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/main-thread-scrolling-reason-correctness.html [ Skip ]
-crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/first-scroll-runs-on-compositor.html [ Skip ]
+crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll-interrupted.html [ Skip ]
 crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-anchors.html [ Skip ]
-crbug.com/574283 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-anchors.html [ Skip ]
-crbug.com/574283 [ Mac ] fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-anchors.html [ Skip ]
 
-crbug.com/487880 virtual/threaded/fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Pass Timeout ]
-crbug.com/487880 virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Pass Timeout ]
-crbug.com/552556 virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll.html [ Pass Failure ]
+crbug.com/665577 virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Pass Timeout ]
+crbug.com/665577 virtual/threaded/fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Pass Timeout ]
+crbug.com/665577 virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll.html [ Pass Failure ]
+crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scroll/horizontal-smooth-scroll-in-rtl.html [ Pass Failure ]
+crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll-interrupted.html [ Pass Failure ]
+crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-vertical-rl-anchors.html [ Pass Failure ]
+crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scroll/track-scroll.html [ Pass Failure ]
+
 crbug.com/480769 http/tests/inspector/service-workers/service-workers-redundant.html [ Pass Failure ]
 
 crbug.com/569901 [ Debug ] http/tests/serviceworker/navigation-redirect.html [ Pass Failure ]
@@ -1276,8 +1274,6 @@ crbug.com/634264 http/tests/security/xss-DENIED-cross-origin-stack-overflow.html
 crbug.com/594672 fast/events/iframe-object-onload.html [ Failure Pass ]
 crbug.com/594672 fast/events/scale-and-scroll-iframe-body.html [ Failure Pass ]
 crbug.com/594672 fast/events/updateLayoutForHitTest.html [ Failure Pass ]
-
-crbug.com/593568 [ Win Debug ] virtual/threaded/fast/scroll-behavior/smooth-scroll/horizontal-smooth-scroll-in-rtl.html [ Failure ]
 
 crbug.com/453002 [ Win ] fast/text/international/text-combine-image-test.html [ Failure Pass ]
 crbug.com/453002 [ Win ] fast/text/international/vertical-text-glyph-test.html [ Failure Pass ]
