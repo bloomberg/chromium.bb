@@ -92,6 +92,8 @@ source_set("test_support") {
     "signin/fake_chrome_identity_interaction_manager.mm",
     "signin/fake_chrome_identity_service.h",
     "signin/fake_chrome_identity_service.mm",
+    "signin/test_signin_resources_provider.h",
+    "signin/test_signin_resources_provider.mm",
     "test_chrome_browser_provider.h",
     "test_chrome_browser_provider.mm",
     "test_chrome_provider_initializer.h",

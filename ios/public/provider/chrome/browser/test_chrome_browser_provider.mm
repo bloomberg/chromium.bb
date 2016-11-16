@@ -10,8 +10,9 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "ios/public/provider/chrome/browser/distribution/test_app_distribution_provider.h"
-#include "ios/public/provider/chrome/browser/omaha/omaha_service_provider.h"
+#include "ios/public/provider/chrome/browser/omaha/test_omaha_service_provider.h"
 #include "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
+#include "ios/public/provider/chrome/browser/signin/test_signin_resources_provider.h"
 #import "ios/public/provider/chrome/browser/voice/test_voice_search_provider.h"
 #import "ios/public/provider/chrome/browser/voice/voice_search_language.h"
 
@@ -31,7 +32,9 @@ namespace ios {
 TestChromeBrowserProvider::TestChromeBrowserProvider()
     : app_distribution_provider_(
           base::MakeUnique<TestAppDistributionProvider>()),
-      omaha_service_provider_(base::MakeUnique<OmahaServiceProvider>()),
+      omaha_service_provider_(base::MakeUnique<TestOmahaServiceProvider>()),
+      signin_resources_provider_(
+          base::MakeUnique<TestSigninResourcesProvider>()),
       voice_search_provider_(base::MakeUnique<TestVoiceSearchProvider>()) {}
 
 TestChromeBrowserProvider::~TestChromeBrowserProvider() {}
@@ -41,6 +44,11 @@ TestChromeBrowserProvider* TestChromeBrowserProvider::GetTestProvider() {
   ChromeBrowserProvider* provider = GetChromeBrowserProvider();
   DCHECK(provider);
   return static_cast<TestChromeBrowserProvider*>(provider);
+}
+
+SigninResourcesProvider*
+TestChromeBrowserProvider::GetSigninResourcesProvider() {
+  return signin_resources_provider_.get();
 }
 
 void TestChromeBrowserProvider::SetChromeIdentityServiceForTesting(
