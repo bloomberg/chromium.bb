@@ -26,7 +26,7 @@ source_set("resources") {
 # Strings exposed to the embedder. The embedder will generate target to depend on this, so no
 # visibility here.
 grit("strings") {
-  source = "blimp_strings.grd"
+  source = "blimp_support_strings.grd"
   use_qualified_include = true
   outputs = [
     "grit/blimp_strings.h",
