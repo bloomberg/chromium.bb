@@ -60,8 +60,8 @@ static sk_sp<SkPicture> PlaybackToPicture(
 
   // Play back raster_source into temp SkPicture.
   SkPictureRecorder recorder;
-  sk_sp<SkCanvas> canvas = sk_ref_sp(
-      recorder.beginRecording(resource_size.width(), resource_size.height()));
+  SkCanvas* canvas =
+      recorder.beginRecording(resource_size.width(), resource_size.height());
   canvas->save();
 
   // The GPU image decode controller assumes that Skia is done with an image
@@ -73,7 +73,7 @@ static sk_sp<SkPicture> PlaybackToPicture(
   // later picture rasterization.
   RasterSource::PlaybackSettings settings = playback_settings;
   settings.use_image_hijack_canvas = false;
-  raster_source->PlaybackToCanvas(canvas.get(), raster_full_rect, playback_rect,
+  raster_source->PlaybackToCanvas(canvas, raster_full_rect, playback_rect,
                                   scales, settings);
   canvas->restore();
   return recorder.finishRecordingAsPicture();

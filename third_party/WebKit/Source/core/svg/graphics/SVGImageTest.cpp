@@ -27,7 +27,7 @@ class SVGImageTest : public ::testing::Test {
 
   void pumpFrame() {
     Image* image = m_image.get();
-    sk_sp<SkCanvas> nullCanvas(SkCreateNullCanvas());
+    std::unique_ptr<SkCanvas> nullCanvas = SkMakeNullCanvas();
     SkPaint paint;
     FloatRect dummyRect(0, 0, 100, 100);
     image->draw(nullCanvas.get(), paint, dummyRect, dummyRect,

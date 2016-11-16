@@ -14,15 +14,15 @@
 
 namespace ui {
 
+// This class records a reference to the context, the canvas returned
+// by its recorder_, and the cache. Thus all 3 of these must remain
+// valid for the lifetime of this object.
 PaintRecorder::PaintRecorder(const PaintContext& context,
                              const gfx::Size& recording_size,
                              PaintCache* cache)
     : context_(context),
-      // The SkCanvas reference returned by beginRecording is shared with
-      // the recorder_ so no need to store a RefPtr to it on this class, we just
-      // store the gfx::Canvas.
-      canvas_(sk_ref_sp(context.recorder_->beginRecording(
-                        gfx::RectToSkRect(gfx::Rect(recording_size)))),
+      canvas_(context.recorder_->beginRecording(
+                  gfx::RectToSkRect(gfx::Rect(recording_size))),
               context.device_scale_factor_),
       cache_(cache),
       bounds_in_layer_(context.ToLayerSpaceBounds(recording_size)) {

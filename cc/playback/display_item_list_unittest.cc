@@ -52,9 +52,7 @@ scoped_refptr<DisplayItemList> CreateDefaultList() {
 
 sk_sp<const SkPicture> CreateRectPicture(const gfx::Rect& bounds) {
   SkPictureRecorder recorder;
-  sk_sp<SkCanvas> canvas;
-
-  canvas = sk_ref_sp(recorder.beginRecording(bounds.width(), bounds.height()));
+  SkCanvas* canvas = recorder.beginRecording(bounds.width(), bounds.height());
   canvas->drawRect(
       SkRect::MakeXYWH(bounds.x(), bounds.y(), bounds.width(), bounds.height()),
       SkPaint());
@@ -65,13 +63,12 @@ void AppendFirstSerializationTestPicture(scoped_refptr<DisplayItemList> list,
                                          const gfx::Size& layer_size) {
   gfx::PointF offset(2.f, 3.f);
   SkPictureRecorder recorder;
-  sk_sp<SkCanvas> canvas;
 
   SkPaint red_paint;
   red_paint.setColor(SK_ColorRED);
 
-  canvas = sk_ref_sp(recorder.beginRecording(SkRect::MakeXYWH(
-      offset.x(), offset.y(), layer_size.width(), layer_size.height())));
+  SkCanvas* canvas = recorder.beginRecording(SkRect::MakeXYWH(
+      offset.x(), offset.y(), layer_size.width(), layer_size.height()));
   canvas->translate(offset.x(), offset.y());
   canvas->drawRectCoords(0.f, 0.f, 4.f, 4.f, red_paint);
   list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
@@ -82,13 +79,12 @@ void AppendSecondSerializationTestPicture(scoped_refptr<DisplayItemList> list,
                                           const gfx::Size& layer_size) {
   gfx::PointF offset(2.f, 2.f);
   SkPictureRecorder recorder;
-  sk_sp<SkCanvas> canvas;
 
   SkPaint blue_paint;
   blue_paint.setColor(SK_ColorBLUE);
 
-  canvas = sk_ref_sp(recorder.beginRecording(SkRect::MakeXYWH(
-      offset.x(), offset.y(), layer_size.width(), layer_size.height())));
+  SkCanvas* canvas = recorder.beginRecording(SkRect::MakeXYWH(
+      offset.x(), offset.y(), layer_size.width(), layer_size.height()));
   canvas->translate(offset.x(), offset.y());
   canvas->drawRectCoords(3.f, 3.f, 7.f, 7.f, blue_paint);
   list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
@@ -295,7 +291,6 @@ TEST(DisplayItemListTest, SerializeTransformItem) {
 TEST(DisplayItemListTest, SingleDrawingItem) {
   gfx::Rect layer_rect(100, 100);
   SkPictureRecorder recorder;
-  sk_sp<SkCanvas> canvas;
   SkPaint blue_paint;
   blue_paint.setColor(SK_ColorBLUE);
   SkPaint red_paint;
@@ -307,8 +302,8 @@ TEST(DisplayItemListTest, SingleDrawingItem) {
 
   gfx::PointF offset(8.f, 9.f);
   gfx::RectF recording_rect(offset, gfx::SizeF(layer_rect.size()));
-  canvas =
-      sk_ref_sp(recorder.beginRecording(gfx::RectFToSkRect(recording_rect)));
+  SkCanvas* canvas =
+      recorder.beginRecording(gfx::RectFToSkRect(recording_rect));
   canvas->translate(offset.x(), offset.y());
   canvas->drawRectCoords(0.f, 0.f, 60.f, 60.f, red_paint);
   canvas->drawRectCoords(50.f, 50.f, 75.f, 75.f, blue_paint);
@@ -337,7 +332,6 @@ TEST(DisplayItemListTest, SingleDrawingItem) {
 TEST(DisplayItemListTest, ClipItem) {
   gfx::Rect layer_rect(100, 100);
   SkPictureRecorder recorder;
-  sk_sp<SkCanvas> canvas;
   SkPaint blue_paint;
   blue_paint.setColor(SK_ColorBLUE);
   SkPaint red_paint;
@@ -349,8 +343,8 @@ TEST(DisplayItemListTest, ClipItem) {
 
   gfx::PointF first_offset(8.f, 9.f);
   gfx::RectF first_recording_rect(first_offset, gfx::SizeF(layer_rect.size()));
-  canvas = sk_ref_sp(
-      recorder.beginRecording(gfx::RectFToSkRect(first_recording_rect)));
+  SkCanvas* canvas =
+      recorder.beginRecording(gfx::RectFToSkRect(first_recording_rect));
   canvas->translate(first_offset.x(), first_offset.y());
   canvas->drawRectCoords(0.f, 0.f, 60.f, 60.f, red_paint);
   list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
@@ -363,8 +357,7 @@ TEST(DisplayItemListTest, ClipItem) {
   gfx::PointF second_offset(2.f, 3.f);
   gfx::RectF second_recording_rect(second_offset,
                                    gfx::SizeF(layer_rect.size()));
-  canvas = sk_ref_sp(
-      recorder.beginRecording(gfx::RectFToSkRect(second_recording_rect)));
+  canvas = recorder.beginRecording(gfx::RectFToSkRect(second_recording_rect));
   canvas->translate(second_offset.x(), second_offset.y());
   canvas->drawRectCoords(50.f, 50.f, 75.f, 75.f, blue_paint);
   list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
@@ -396,7 +389,6 @@ TEST(DisplayItemListTest, ClipItem) {
 TEST(DisplayItemListTest, TransformItem) {
   gfx::Rect layer_rect(100, 100);
   SkPictureRecorder recorder;
-  sk_sp<SkCanvas> canvas;
   SkPaint blue_paint;
   blue_paint.setColor(SK_ColorBLUE);
   SkPaint red_paint;
@@ -408,8 +400,8 @@ TEST(DisplayItemListTest, TransformItem) {
 
   gfx::PointF first_offset(8.f, 9.f);
   gfx::RectF first_recording_rect(first_offset, gfx::SizeF(layer_rect.size()));
-  canvas = sk_ref_sp(
-      recorder.beginRecording(gfx::RectFToSkRect(first_recording_rect)));
+  SkCanvas* canvas =
+      recorder.beginRecording(gfx::RectFToSkRect(first_recording_rect));
   canvas->translate(first_offset.x(), first_offset.y());
   canvas->drawRectCoords(0.f, 0.f, 60.f, 60.f, red_paint);
   list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
@@ -422,8 +414,7 @@ TEST(DisplayItemListTest, TransformItem) {
   gfx::PointF second_offset(2.f, 3.f);
   gfx::RectF second_recording_rect(second_offset,
                                    gfx::SizeF(layer_rect.size()));
-  canvas = sk_ref_sp(
-      recorder.beginRecording(gfx::RectFToSkRect(second_recording_rect)));
+  canvas = recorder.beginRecording(gfx::RectFToSkRect(second_recording_rect));
   canvas->translate(second_offset.x(), second_offset.y());
   canvas->drawRectCoords(50.f, 50.f, 75.f, 75.f, blue_paint);
   list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
@@ -485,13 +476,12 @@ TEST(DisplayItemListTest, FilterItem) {
   // Include a rect drawing so that filter is actually applied to something.
   {
     SkPictureRecorder recorder;
-    sk_sp<SkCanvas> canvas;
 
     SkPaint red_paint;
     red_paint.setColor(SK_ColorRED);
 
-    canvas = sk_ref_sp(recorder.beginRecording(
-        SkRect::MakeXYWH(0, 0, layer_rect.width(), layer_rect.height())));
+    SkCanvas* canvas = recorder.beginRecording(
+        SkRect::MakeXYWH(0, 0, layer_rect.width(), layer_rect.height()));
     canvas->drawRectCoords(filter_bounds.x(), filter_bounds.y(),
                            filter_bounds.right(), filter_bounds.bottom(),
                            red_paint);
@@ -520,7 +510,6 @@ TEST(DisplayItemListTest, FilterItem) {
 TEST(DisplayItemListTest, CompactingItems) {
   gfx::Rect layer_rect(100, 100);
   SkPictureRecorder recorder;
-  sk_sp<SkCanvas> canvas;
   SkPaint blue_paint;
   blue_paint.setColor(SK_ColorBLUE);
   SkPaint red_paint;
@@ -534,8 +523,8 @@ TEST(DisplayItemListTest, CompactingItems) {
   scoped_refptr<DisplayItemList> list_without_caching =
       DisplayItemList::Create(no_caching_settings);
 
-  canvas =
-      sk_ref_sp(recorder.beginRecording(gfx::RectFToSkRect(recording_rect)));
+  SkCanvas* canvas =
+      recorder.beginRecording(gfx::RectFToSkRect(recording_rect));
   canvas->translate(offset.x(), offset.y());
   canvas->drawRectCoords(0.f, 0.f, 60.f, 60.f, red_paint);
   canvas->drawRectCoords(50.f, 50.f, 75.f, 75.f, blue_paint);

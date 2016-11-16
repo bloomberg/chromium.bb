@@ -104,7 +104,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   SkPaint current_paint_;
   std::unique_ptr<ResourceProvider::ScopedWriteLockSoftware>
       current_framebuffer_lock_;
-  sk_sp<SkCanvas> current_framebuffer_canvas_;
+  std::unique_ptr<SkCanvas> current_framebuffer_canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareRenderer);
 };

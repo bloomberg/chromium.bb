@@ -391,10 +391,8 @@ void* PlatformImageData::Map() {
       return NULL;
 
     const bool is_opaque = false;
-    mapped_canvas_ =
-        sk_sp<SkCanvas>(transport_dib_->GetPlatformCanvas(desc_.size.width,
-                                                          desc_.size.height,
-                                                          is_opaque));
+    mapped_canvas_ = transport_dib_->GetPlatformCanvas(
+        desc_.size.width, desc_.size.height, is_opaque);
     if (!mapped_canvas_.get())
       return NULL;
   }

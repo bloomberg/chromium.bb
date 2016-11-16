@@ -40,8 +40,8 @@ class MaskContentLayerClient : public ContentLayerClient {
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       PaintingControlSetting picture_control) override {
     SkPictureRecorder recorder;
-    sk_sp<SkCanvas> canvas = sk_ref_sp(
-        recorder.beginRecording(gfx::RectToSkRect(gfx::Rect(bounds_))));
+    SkCanvas* canvas =
+        recorder.beginRecording(gfx::RectToSkRect(gfx::Rect(bounds_)));
 
     SkPaint paint;
     paint.setStyle(SkPaint::kStroke_Style);
@@ -163,8 +163,8 @@ class CheckerContentLayerClient : public ContentLayerClient {
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       PaintingControlSetting picture_control) override {
     SkPictureRecorder recorder;
-    sk_sp<SkCanvas> canvas = sk_ref_sp(
-        recorder.beginRecording(gfx::RectToSkRect(gfx::Rect(bounds_))));
+    SkCanvas* canvas =
+        recorder.beginRecording(gfx::RectToSkRect(gfx::Rect(bounds_)));
 
     SkPaint paint;
     paint.setStyle(SkPaint::kStroke_Style);
@@ -207,8 +207,8 @@ class CircleContentLayerClient : public ContentLayerClient {
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList(
       PaintingControlSetting picture_control) override {
     SkPictureRecorder recorder;
-    sk_sp<SkCanvas> canvas = sk_ref_sp(
-        recorder.beginRecording(gfx::RectToSkRect(gfx::Rect(bounds_))));
+    SkCanvas* canvas =
+        recorder.beginRecording(gfx::RectToSkRect(gfx::Rect(bounds_)));
 
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);

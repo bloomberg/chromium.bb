@@ -3645,7 +3645,7 @@ TEST_P(RenderTextTest, TextDoesntClip) {
 
   sk_sp<SkSurface> surface =
       SkSurface::MakeRasterN32Premul(kCanvasSize.width(), kCanvasSize.height());
-  Canvas canvas(sk_ref_sp(surface->getCanvas()), 1.0f);
+  Canvas canvas(surface->getCanvas(), 1.0f);
   RenderText* render_text = GetRenderText();
   render_text->SetHorizontalAlignment(ALIGN_LEFT);
   render_text->SetColor(SK_ColorBLACK);
@@ -3738,7 +3738,7 @@ TEST_P(RenderTextTest, TextDoesClip) {
 
   sk_sp<SkSurface> surface =
       SkSurface::MakeRasterN32Premul(kCanvasSize.width(), kCanvasSize.height());
-  Canvas canvas(sk_ref_sp(surface->getCanvas()), 1.0f);
+  Canvas canvas(surface->getCanvas(), 1.0f);
   RenderText* render_text = GetRenderText();
   render_text->SetHorizontalAlignment(ALIGN_LEFT);
   render_text->SetColor(SK_ColorBLACK);

@@ -1798,7 +1798,7 @@ int PepperPluginInstanceImpl::PrintBegin(const WebPrintParams& print_params) {
   if (!num_pages)
     return 0;
   current_print_settings_ = print_settings;
-  canvas_.reset();
+  canvas_ = nullptr;
   ranges_.clear();
   return num_pages;
 }
@@ -1817,7 +1817,7 @@ void PepperPluginInstanceImpl::PrintPage(int page_number,
 #endif  // defined(OS_MACOSX)
   if (save_for_later) {
     ranges_.push_back(page_range);
-    canvas_ = sk_ref_sp(canvas);
+    canvas_ = canvas;
   } else {
     PrintPageHelper(&page_range, 1, canvas);
   }
@@ -1849,8 +1849,8 @@ void PepperPluginInstanceImpl::PrintEnd() {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PepperPluginInstanceImpl> ref(this);
   if (!ranges_.empty())
-    PrintPageHelper(&(ranges_.front()), ranges_.size(), canvas_.get());
-  canvas_.reset();
+    PrintPageHelper(&(ranges_.front()), ranges_.size(), canvas_);
+  canvas_ = nullptr;
   ranges_.clear();
 
   DCHECK(plugin_print_interface_);

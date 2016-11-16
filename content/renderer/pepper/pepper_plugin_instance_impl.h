@@ -839,8 +839,9 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // is preserved in PrintWebViewHelper::PrintPages. This makes it possible
   // to generate the entire PDF given the variables below:
   //
-  // The most recently used WebCanvas, guaranteed to be valid.
-  sk_sp<blink::WebCanvas> canvas_;
+  // The most recently used WebCanvas to be used in printEnd(). Caller must
+  // ensure that it remains valid until that point.
+  blink::WebCanvas* canvas_;
   // An array of page ranges.
   std::vector<PP_PrintPageNumberRange_Dev> ranges_;
 

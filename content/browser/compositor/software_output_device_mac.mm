@@ -114,8 +114,8 @@ SkCanvas* SoftwareOutputDeviceMac::BeginPaint(
       IOSurfaceGetBaseAddress(io_surfaces_[current_index_]));
   size_t stride = IOSurfaceGetBytesPerRow(io_surfaces_[current_index_]);
 
-  canvas_ = sk_sp<SkCanvas>(SkCanvas::NewRasterDirectN32(
-      pixel_size_.width(), pixel_size_.height(), pixels, stride));
+  canvas_ = SkCanvas::MakeRasterDirectN32(pixel_size_.width(),
+                                          pixel_size_.height(), pixels, stride);
 
   CopyPreviousBufferDamage(SkRegion(gfx::RectToSkIRect(new_damage_rect)));
 

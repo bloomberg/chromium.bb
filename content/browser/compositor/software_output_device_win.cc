@@ -139,9 +139,9 @@ SkCanvas* SoftwareOutputDeviceWin::BeginPaint(const gfx::Rect& damage_rect) {
       }
     }
     if (can_create_contents) {
-      contents_ = sk_sp<SkCanvas>(skia::CreatePlatformCanvas(
+      contents_ = skia::CreatePlatformCanvas(
           viewport_pixel_size_.width(), viewport_pixel_size_.height(), true,
-          shared_section, skia::CRASH_ON_FAILURE));
+          shared_section, skia::CRASH_ON_FAILURE);
     }
   }
 
@@ -192,7 +192,6 @@ void SoftwareOutputDeviceWin::EndPaint() {
 }
 
 void SoftwareOutputDeviceWin::ReleaseContents() {
-  DCHECK(!contents_ || contents_->unique());
   DCHECK(!in_paint_);
   contents_.reset();
 }

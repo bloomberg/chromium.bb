@@ -10,6 +10,7 @@
 #include <limits>
 
 #include "base/containers/adapters.h"
+#include "base/memory/ptr_util.h"
 #include "cc/base/math_util.h"
 #include "cc/playback/display_item_list.h"
 #include "third_party/skia/include/utils/SkNWayCanvas.h"
@@ -189,10 +190,10 @@ DiscardableImageMap::DiscardableImageMap() {}
 
 DiscardableImageMap::~DiscardableImageMap() {}
 
-sk_sp<SkCanvas> DiscardableImageMap::BeginGeneratingMetadata(
+std::unique_ptr<SkCanvas> DiscardableImageMap::BeginGeneratingMetadata(
     const gfx::Size& bounds) {
   DCHECK(all_images_.empty());
-  return sk_make_sp<DiscardableImagesMetadataCanvas>(
+  return base::MakeUnique<DiscardableImagesMetadataCanvas>(
       bounds.width(), bounds.height(), &all_images_);
 }
 

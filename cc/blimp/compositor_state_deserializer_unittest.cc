@@ -339,11 +339,11 @@ TEST_F(CompositorStateDeserializerTest, PictureLayer) {
 
   gfx::PointF offset(2.f, 3.f);
   SkPictureRecorder recorder;
-  sk_sp<SkCanvas> canvas;
+  SkCanvas* canvas;
   SkPaint red_paint;
   red_paint.setColor(SK_ColorRED);
-  canvas = sk_ref_sp(recorder.beginRecording(SkRect::MakeXYWH(
-      offset.x(), offset.y(), layer_size.width(), layer_size.height())));
+  canvas = recorder.beginRecording(SkRect::MakeXYWH(
+      offset.x(), offset.y(), layer_size.width(), layer_size.height()));
   canvas->translate(offset.x(), offset.y());
   canvas->drawRectCoords(0.f, 0.f, 4.f, 4.f, red_paint);
   sk_sp<SkPicture> test_picture = recorder.finishRecordingAsPicture();

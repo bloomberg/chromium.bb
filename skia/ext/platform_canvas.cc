@@ -5,6 +5,7 @@
 #include "skia/ext/platform_canvas.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "skia/ext/platform_device.h"
 #include "third_party/skia/include/core/SkMetaData.h"
@@ -65,14 +66,14 @@ size_t PlatformCanvasStrideForWidth(unsigned width) {
   return 4 * width;
 }
 
-SkCanvas* CreateCanvas(const sk_sp<SkBaseDevice>& device,
-                       OnFailureType failureType) {
+std::unique_ptr<SkCanvas> CreateCanvas(const sk_sp<SkBaseDevice>& device,
+                                       OnFailureType failureType) {
   if (!device) {
     if (CRASH_ON_FAILURE == failureType)
       SK_CRASH();
     return nullptr;
   }
-  return new SkCanvas(device.get());
+  return base::MakeUnique<SkCanvas>(device.get());
 }
 
 SkMetaData& GetMetaData(const SkCanvas& canvas) {

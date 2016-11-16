@@ -78,7 +78,7 @@ GraphicsContext::GraphicsContext(PaintController& paintController,
   m_paintState = m_paintStateStack.last().get();
 
   if (contextDisabled()) {
-    DEFINE_STATIC_LOCAL(SkCanvas*, nullCanvas, (SkCreateNullCanvas()));
+    DEFINE_STATIC_LOCAL(SkCanvas*, nullCanvas, (SkMakeNullCanvas().release()));
     m_canvas = nullCanvas;
   }
 }
