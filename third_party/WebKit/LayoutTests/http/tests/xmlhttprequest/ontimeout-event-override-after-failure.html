@@ -1,3 +1,4 @@
+<!doctype html>
 <html>
 <body>
 <pre id='console'></pre>
@@ -42,7 +43,7 @@ if (window.testRunner) {
     }
 
     xhr.open("GET", "http://localhost:8000/xmlhttprequest/resources/access-control-basic-denied.cgi");
-    xhr.timeout = 100;
+    xhr.timeout = 180;
     xhr.send();
 
     setTimeout(performAssertions, 200);
