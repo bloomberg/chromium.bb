@@ -67,10 +67,12 @@
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/native_window_delegate.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/login/auth/key.h"
@@ -87,6 +89,7 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -520,6 +523,8 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("removeUser", &SigninScreenHandler::HandleRemoveUser);
   AddCallback("toggleEnrollmentScreen",
               &SigninScreenHandler::HandleToggleEnrollmentScreen);
+  AddCallback("toggleEnrollmentAd",
+              &SigninScreenHandler::HandleToggleEnrollmentAd);
   AddCallback("toggleEnableDebuggingScreen",
               &SigninScreenHandler::HandleToggleEnableDebuggingScreen);
   AddCallback("toggleKioskEnableScreen",
@@ -1175,6 +1180,16 @@ void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {
 void SigninScreenHandler::HandleToggleEnrollmentScreen() {
   if (delegate_)
     delegate_->ShowEnterpriseEnrollmentScreen();
+}
+
+void SigninScreenHandler::HandleToggleEnrollmentAd() {
+  if (chrome::GetChannel() == version_info::Channel::BETA ||
+      chrome::GetChannel() == version_info::Channel::STABLE) {
+    return;
+  }
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      chromeos::switches::kEnableAd);
+  HandleToggleEnrollmentScreen();
 }
 
 void SigninScreenHandler::HandleToggleEnableDebuggingScreen() {

@@ -355,6 +355,7 @@ class SigninScreenHandler
   void HandleRemoveUser(const AccountId& account_id);
   void HandleShowAddUser(const base::ListValue* args);
   void HandleToggleEnrollmentScreen();
+  void HandleToggleEnrollmentAd();
   void HandleToggleEnableDebuggingScreen();
   void HandleToggleKioskEnableScreen();
   void HandleToggleResetScreen();
