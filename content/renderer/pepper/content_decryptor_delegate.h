@@ -20,6 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/cdm_promise_adapter.h"
+#include "media/base/cdm_session_tracker.h"
 #include "media/base/channel_layout.h"
 #include "media/base/decryptor.h"
 #include "media/base/media_keys.h"
@@ -239,6 +240,8 @@ class ContentDecryptorDelegate {
   media::ChannelLayout audio_channel_layout_;
 
   media::CdmPromiseAdapter cdm_promise_adapter_;
+
+  media::CdmSessionTracker cdm_session_tracker_;
 
   base::WeakPtr<ContentDecryptorDelegate> weak_this_;
   base::WeakPtrFactory<ContentDecryptorDelegate> weak_ptr_factory_;

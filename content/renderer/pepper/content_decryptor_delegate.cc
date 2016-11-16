@@ -755,6 +755,7 @@ void ContentDecryptorDelegate::OnPromiseResolvedWithSession(uint32_t promise_id,
                                                             PP_Var session_id) {
   StringVar* session_id_string = StringVar::FromPPVar(session_id);
   DCHECK(session_id_string);
+  cdm_session_tracker_.AddSession(session_id_string->value());
   cdm_promise_adapter_.ResolvePromise(promise_id, session_id_string->value());
 }
 
@@ -834,13 +835,12 @@ void ContentDecryptorDelegate::OnSessionExpirationChange(
 }
 
 void ContentDecryptorDelegate::OnSessionClosed(PP_Var session_id) {
-  if (session_closed_cb_.is_null())
-    return;
-
   StringVar* session_id_string = StringVar::FromPPVar(session_id);
   DCHECK(session_id_string);
 
-  session_closed_cb_.Run(session_id_string->value());
+  cdm_session_tracker_.RemoveSession(session_id_string->value());
+  if (!session_closed_cb_.is_null())
+    session_closed_cb_.Run(session_id_string->value());
 }
 
 void ContentDecryptorDelegate::DecoderInitializeDone(
@@ -1277,6 +1277,8 @@ void ContentDecryptorDelegate::SatisfyAllPendingCallbacksOnError() {
     video_decode_cb_.ResetAndReturn().Run(media::Decryptor::kError, NULL);
 
   cdm_promise_adapter_.Clear();
+
+  cdm_session_tracker_.CloseRemainingSessions(session_closed_cb_);
 }
 
 }  // namespace content

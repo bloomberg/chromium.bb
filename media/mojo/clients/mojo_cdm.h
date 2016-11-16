@@ -17,6 +17,7 @@
 #include "base/threading/thread_checker.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_initialized_promise.h"
+#include "media/base/cdm_session_tracker.h"
 #include "media/base/media_keys.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -41,13 +42,13 @@ class MojoCdm : public MediaKeys,
   static void Create(
       const std::string& key_system,
       const GURL& security_origin,
-      const media::CdmConfig& cdm_config,
+      const CdmConfig& cdm_config,
       mojom::ContentDecryptionModulePtr remote_cdm,
-      const media::SessionMessageCB& session_message_cb,
-      const media::SessionClosedCB& session_closed_cb,
-      const media::SessionKeysChangeCB& session_keys_change_cb,
-      const media::SessionExpirationUpdateCB& session_expiration_update_cb,
-      const media::CdmCreatedCB& cdm_created_cb);
+      const SessionMessageCB& session_message_cb,
+      const SessionClosedCB& session_closed_cb,
+      const SessionKeysChangeCB& session_keys_change_cb,
+      const SessionExpirationUpdateCB& session_expiration_update_cb,
+      const CdmCreatedCB& cdm_created_cb);
 
   // MediaKeys implementation.
   void SetServerCertificate(const std::vector<uint8_t>& certificate,
@@ -71,7 +72,7 @@ class MojoCdm : public MediaKeys,
 
   // CdmContext implementation. Can be called on a different thread.
   // All GetDecryptor() calls must be made on the same thread.
-  media::Decryptor* GetDecryptor() final;
+  Decryptor* GetDecryptor() final;
   int GetCdmId() const final;
 
  private:
@@ -85,7 +86,7 @@ class MojoCdm : public MediaKeys,
 
   void InitializeCdm(const std::string& key_system,
                      const GURL& security_origin,
-                     const media::CdmConfig& cdm_config,
+                     const CdmConfig& cdm_config,
                      std::unique_ptr<CdmInitializedPromise> promise);
 
   void OnConnectionError();
@@ -151,6 +152,9 @@ class MojoCdm : public MediaKeys,
 
   // Pending promise for InitializeCdm().
   std::unique_ptr<CdmInitializedPromise> pending_init_promise_;
+
+  // Keep track of current sessions.
+  CdmSessionTracker cdm_session_tracker_;
 
   // This must be the last member.
   base::WeakPtrFactory<MojoCdm> weak_factory_;

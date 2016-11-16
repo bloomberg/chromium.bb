@@ -28,9 +28,19 @@ PlayerUtils.registerDefaultEventListeners = function(player) {
 
   player.video.addEventListener('error', function(error) {
     // This most likely happens on pipeline failures (e.g. when the CDM
-    // crashes).
+    // crashes). Don't report a failure if the test is checking that sessions
+    // are closed on a crash.
     Utils.timeLog('onHTMLElementError', error);
-    Utils.failTest(error);
+    if (player.testConfig.keySystem == CRASH_TEST_KEYSYSTEM) {
+      // On failure the session should have been closed, so verify.
+      player.session.closed.then(
+          function(result) {
+            Utils.setResultInTitle(EME_SESSION_CLOSED_AND_ERROR);
+          },
+          function(error) { Utils.failTest(error); });
+    } else {
+      Utils.failTest(error);
+    }
   });
 };
 
@@ -59,10 +69,10 @@ PlayerUtils.registerEMEEventListeners = function(player) {
     try {
       if (player.testConfig.sessionToLoad) {
         Utils.timeLog('Loading session: ' + player.testConfig.sessionToLoad);
-        var session =
+        player.session =
             message.target.mediaKeys.createSession('persistent-license');
-        addMediaKeySessionListeners(session);
-        session.load(player.testConfig.sessionToLoad)
+        addMediaKeySessionListeners(player.session);
+        player.session.load(player.testConfig.sessionToLoad)
             .then(
                 function(result) {
                   if (!result)
@@ -73,14 +83,13 @@ PlayerUtils.registerEMEEventListeners = function(player) {
         Utils.timeLog('Creating new media key session for initDataType: ' +
                       message.initDataType + ', initData: ' +
                       Utils.getHexString(new Uint8Array(message.initData)));
-        var session = message.target.mediaKeys.createSession();
-        addMediaKeySessionListeners(session);
-        session.generateRequest(message.initDataType, message.initData)
+        player.session = message.target.mediaKeys.createSession();
+        addMediaKeySessionListeners(player.session);
+        player.session.generateRequest(message.initDataType, message.initData)
             .catch(function(error) {
               // Ignore the error if a crash is expected. This ensures that
               // the decoder actually detects and reports the error.
-              if (this.testConfig.keySystem !=
-                  'org.chromium.externalclearkey.crash') {
+              if (this.testConfig.keySystem != CRASH_TEST_KEYSYSTEM) {
                 Utils.failTest(error, EME_GENERATEREQUEST_FAILED);
               }
             });
@@ -199,6 +208,7 @@ PlayerUtils.createPlayer = function(video, testConfig) {
       case CLEARKEY:
       case EXTERNAL_CLEARKEY:
       case EXTERNAL_CLEARKEY_RENEWAL:
+      case CRASH_TEST_KEYSYSTEM:
         return ClearKeyPlayer;
       case FILE_IO_TEST_KEYSYSTEM:
       case OUTPUT_PROTECTION_TEST_KEYSYSTEM:

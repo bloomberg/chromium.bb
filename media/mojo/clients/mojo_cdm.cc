@@ -36,13 +36,13 @@ static void RejectPromise(std::unique_ptr<PromiseType> promise,
 void MojoCdm::Create(
     const std::string& key_system,
     const GURL& security_origin,
-    const media::CdmConfig& cdm_config,
+    const CdmConfig& cdm_config,
     mojom::ContentDecryptionModulePtr remote_cdm,
-    const media::SessionMessageCB& session_message_cb,
-    const media::SessionClosedCB& session_closed_cb,
-    const media::SessionKeysChangeCB& session_keys_change_cb,
-    const media::SessionExpirationUpdateCB& session_expiration_update_cb,
-    const media::CdmCreatedCB& cdm_created_cb) {
+    const SessionMessageCB& session_message_cb,
+    const SessionClosedCB& session_closed_cb,
+    const SessionKeysChangeCB& session_keys_change_cb,
+    const SessionExpirationUpdateCB& session_expiration_update_cb,
+    const CdmCreatedCB& cdm_created_cb) {
   scoped_refptr<MojoCdm> mojo_cdm(
       new MojoCdm(std::move(remote_cdm), session_message_cb, session_closed_cb,
                   session_keys_change_cb, session_expiration_update_cb));
@@ -98,7 +98,7 @@ MojoCdm::~MojoCdm() {
 
 void MojoCdm::InitializeCdm(const std::string& key_system,
                             const GURL& security_origin,
-                            const media::CdmConfig& cdm_config,
+                            const CdmConfig& cdm_config,
                             std::unique_ptr<CdmInitializedPromise> promise) {
   DVLOG(1) << __FUNCTION__ << ": " << key_system;
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -126,13 +126,14 @@ void MojoCdm::OnConnectionError() {
   LOG(ERROR) << "Remote CDM connection error.";
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // We only handle initial connection error.
-  if (!pending_init_promise_)
-    return;
+  // Handle initial connection error.
+  if (pending_init_promise_) {
+    pending_init_promise_->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
+                                  "Mojo CDM creation failed.");
+    pending_init_promise_.reset();
+  }
 
-  pending_init_promise_->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
-                                "Mojo CDM creation failed.");
-  pending_init_promise_.reset();
+  cdm_session_tracker_.CloseRemainingSessions(session_closed_cb_);
 }
 
 void MojoCdm::SetServerCertificate(const std::vector<uint8_t>& certificate,
@@ -208,7 +209,7 @@ CdmContext* MojoCdm::GetCdmContext() {
   return this;
 }
 
-media::Decryptor* MojoCdm::GetDecryptor() {
+Decryptor* MojoCdm::GetDecryptor() {
   base::AutoLock auto_lock(lock_);
 
   if (!decryptor_task_runner_)
@@ -247,6 +248,7 @@ void MojoCdm::OnSessionClosed(const std::string& session_id) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  cdm_session_tracker_.RemoveSession(session_id);
   session_closed_cb_.Run(session_id);
 }
 
@@ -269,11 +271,11 @@ void MojoCdm::OnSessionKeysChange(
     }
   }
 
-  media::CdmKeysInfo key_data;
+  CdmKeysInfo key_data;
   key_data.reserve(keys_info.size());
   for (size_t i = 0; i < keys_info.size(); ++i) {
     key_data.push_back(
-        keys_info[i].To<std::unique_ptr<media::CdmKeyInformation>>().release());
+        keys_info[i].To<std::unique_ptr<CdmKeyInformation>>().release());
   }
   session_keys_change_cb_.Run(session_id, has_additional_usable_key,
                               std::move(key_data));
@@ -334,9 +336,10 @@ void MojoCdm::OnNewSessionCdmPromiseResult(
     std::unique_ptr<NewSessionCdmPromise> promise,
     mojom::CdmPromiseResultPtr result,
     const std::string& session_id) {
-  if (result->success)
+  if (result->success) {
+    cdm_session_tracker_.AddSession(session_id);
     promise->resolve(session_id);
-  else
+  } else
     RejectPromise(std::move(promise), std::move(result));
 }
 

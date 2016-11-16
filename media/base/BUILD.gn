@@ -105,6 +105,8 @@ target(link_target_type, "base") {
     "cdm_promise.h",
     "cdm_promise_adapter.cc",
     "cdm_promise_adapter.h",
+    "cdm_session_tracker.cc",
+    "cdm_session_tracker.h",
     "channel_mixer.cc",
     "channel_mixer.h",
     "channel_mixing_matrix.cc",

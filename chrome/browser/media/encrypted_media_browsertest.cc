@@ -83,6 +83,7 @@ const char kEmeUpdateFailed[] = "EME_UPDATE_FAILED";
 const char kEmeErrorEvent[] = "EME_ERROR_EVENT";
 const char kEmeMessageUnexpectedType[] = "EME_MESSAGE_UNEXPECTED_TYPE";
 const char kEmeRenewalMissingHeader[] = "EME_RENEWAL_MISSING_HEADER";
+const char kEmeSessionClosedAndError[] = "EME_SESSION_CLOSED_AND_ERROR";
 
 const char kDefaultEmePlayer[] = "eme_player.html";
 
@@ -610,20 +611,20 @@ IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, InitializeCDMFail) {
                        kEmeNotSupportedError);
 }
 
-// When CDM crashes, we should still get a decode error. |kError| is reported
-// when the HTMLVideoElement error event fires, indicating an error happened
-// during playback.
+// When CDM crashes, we should still get a decode error and all sessions should
+// be closed.
 IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, CDMCrashDuringDecode) {
   IgnorePluginCrash();
-  TestNonPlaybackCases(kExternalClearKeyCrashKeySystem, kError);
+  TestNonPlaybackCases(kExternalClearKeyCrashKeySystem,
+                       kEmeSessionClosedAndError);
 }
 
 // Testing that the media browser test does fail on plugin crash.
 IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, CDMExpectedCrash) {
   // Plugin crash is not ignored by default, the test is expected to fail.
-  EXPECT_NONFATAL_FAILURE(
-      TestNonPlaybackCases(kExternalClearKeyCrashKeySystem, kError),
-      "Failing test due to plugin crash.");
+  EXPECT_NONFATAL_FAILURE(TestNonPlaybackCases(kExternalClearKeyCrashKeySystem,
+                                               kEmeSessionClosedAndError),
+                          "Failing test due to plugin crash.");
 }
 
 IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, FileIOTest) {

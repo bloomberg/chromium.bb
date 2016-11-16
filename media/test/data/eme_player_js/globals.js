@@ -29,6 +29,7 @@ var EME_UPDATE_FAILED = 'EME_UPDATE_FAILED';
 var EME_ERROR_EVENT = 'EME_ERROR_EVENT';
 var EME_MESSAGE_UNEXPECTED_TYPE = 'EME_MESSAGE_UNEXPECTED_TYPE';
 var EME_RENEWAL_MISSING_HEADER = 'EME_RENEWAL_MISSING_HEADER';
+var EME_SESSION_CLOSED_AND_ERROR = 'EME_SESSION_CLOSED_AND_ERROR';
 
 // Headers used when running some specific unittests in the external CDM.
 var UNIT_TEST_RESULT_HEADER = 'UNIT_TEST_RESULT';
@@ -43,6 +44,7 @@ var OUTPUT_PROTECTION_TEST_KEYSYSTEM =
     'org.chromium.externalclearkey.outputprotectiontest';
 var PLATFORM_VERIFICATION_TEST_KEYSYSTEM =
     'org.chromium.externalclearkey.platformverificationtest';
+var CRASH_TEST_KEYSYSTEM = 'org.chromium.externalclearkey.crash';
 
 // Key system name:value map to show on the document page.
 var KEY_SYSTEMS = {
