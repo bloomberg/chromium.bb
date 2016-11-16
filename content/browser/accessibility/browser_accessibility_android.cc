@@ -278,6 +278,11 @@ bool BrowserAccessibilityAndroid::IsVisibleToUser() const {
 }
 
 bool BrowserAccessibilityAndroid::IsInterestingOnAndroid() const {
+  // The root is not interesting if it doesn't have a title, even
+  // though it's focusable.
+  if (GetRole() == ui::AX_ROLE_ROOT_WEB_AREA && GetText().empty())
+    return false;
+
   // Focusable nodes are always interesting. Note that IsFocusable()
   // already skips over things like iframes and child frames that are
   // technically focusable but shouldn't be exposed as focusable on Android.
@@ -452,6 +457,13 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
 
   if (text.empty())
     text = value;
+
+  // If this is the root element, give up now, allow it to have no
+  // accessible text. For almost all other focusable nodes we try to
+  // get text from contents, but for the root element that's redundant
+  // and often way too verbose.
+  if (GetRole() == ui::AX_ROLE_ROOT_WEB_AREA)
+    return text;
 
   // This is called from PlatformIsLeaf, so don't call PlatformChildCount
   // from within this!
