@@ -122,7 +122,11 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     /** This is used to make sure there is one show request to one close request. */
     private boolean mPanelShown;
 
-    /** Cache the viewport height of the screen to filter SceneOverlay#onSizeChanged events. */
+    /**
+     * Cache the viewport width and height of the screen to filter SceneOverlay#onSizeChanged
+     * events.
+     */
+    private float mViewportWidth;
     private float mViewportHeight;
 
     // ============================================================================================
@@ -802,10 +806,11 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     @Override
     public void onSizeChanged(float width, float height, float visibleViewportOffsetY,
             int orientation) {
-        // Filter events that don't change the viewport height.
-        if (height != mViewportHeight) {
-            // We only care if the orientation is changing, which will certainly change the screen's
-            // viewport height.
+        // Filter events that don't change the viewport width or height.
+        if (height != mViewportHeight || width != mViewportWidth) {
+          // We only care if the orientation is changing or we're shifting in/out of multi-window.
+          // In either case the screen's viewport width or height will certainly change.
+            mViewportWidth = width;
             mViewportHeight = height;
             resizePanelContentViewCore(width, height);
             onLayoutChanged(width, height, visibleViewportOffsetY);
