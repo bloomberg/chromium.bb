@@ -40,6 +40,8 @@ const char kHistogramDismissedUnvisited[] =
     "NewTabPage.ContentSuggestions.DismissedUnvisited";
 const char kHistogramDismissedVisited[] =
     "NewTabPage.ContentSuggestions.DismissedVisited";
+const char kHistogramUsageTimeLocal[] =
+    "NewTabPage.ContentSuggestions.UsageTimeLocal";
 const char kHistogramVisitDuration[] =
     "NewTabPage.ContentSuggestions.VisitDuration";
 const char kHistogramMoreButtonShown[] =
@@ -159,6 +161,23 @@ void LogCategoryHistogramScore(const char* base_name,
   UmaHistogramScore(name, score);
 }
 
+// Records ContentSuggestions usage. Therefore the day is sliced into 20min
+// buckets. Depending on the current local time the count of the corresponding
+// bucket is increased.
+void RecordContentSuggestionsUsage() {
+  const int kBucketSizeMins = 20;
+  const int kNumBuckets = 24 * 60 / kBucketSizeMins;
+
+  base::Time::Exploded now_exploded;
+  base::Time::Now().LocalExplode(&now_exploded);
+  size_t bucket =
+      (now_exploded.hour * 60 + now_exploded.minute) / kBucketSizeMins;
+
+  UMA_HISTOGRAM_ENUMERATION(kHistogramUsageTimeLocal, bucket, kNumBuckets);
+
+  LOG(ERROR) << " ****************** Zine Usage";
+}
+
 }  // namespace
 
 void OnPageShown(
@@ -188,6 +207,13 @@ void OnSuggestionShown(int global_position,
   LogCategoryHistogramAge(kHistogramShownAge, category, age);
 
   LogCategoryHistogramScore(kHistogramShownScore, category, score);
+
+  // When the first of the articles suggestions is shown, then we count this as
+  // a single usage of content suggestions.
+  if (category.IsKnownCategory(KnownCategories::ARTICLES) &&
+      category_position == 0) {
+    RecordContentSuggestionsUsage();
+  }
 }
 
 void OnSuggestionOpened(int global_position,
@@ -212,6 +238,10 @@ void OnSuggestionOpened(int global_position,
   LogCategoryHistogramEnumeration(
       kHistogramOpenDisposition, category, static_cast<int>(disposition),
       static_cast<int>(WindowOpenDisposition::MAX_VALUE) + 1);
+
+  if (category.IsKnownCategory(KnownCategories::ARTICLES)) {
+    RecordContentSuggestionsUsage();
+  }
 }
 
 void OnSuggestionMenuOpened(int global_position,
