@@ -49,8 +49,6 @@ void TrayCastTestAPI::OnCastingSessionStartedOrStopped(bool is_casting) {
 }
 
 void TrayCastTestAPI::ReleaseConfigCallbacks() {
-  tray_cast_->added_observer_ = false;
-
   if (WmShell::Get() && WmShell::Get()->system_tray_delegate()) {
     WmShell::Get()
         ->system_tray_delegate()

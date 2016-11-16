@@ -8,6 +8,8 @@
 #include "ash/common/cast_config_delegate.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 namespace media_router {
 class MediaRouter;
@@ -16,28 +18,33 @@ class MediaRouter;
 class CastDeviceCache;
 
 // A class which allows the ash tray to communicate with the media router.
-class CastConfigDelegateMediaRouter : public ash::CastConfigDelegate {
+class CastConfigDelegateMediaRouter : public ash::CastConfigDelegate,
+                                      public content::NotificationObserver {
  public:
   CastConfigDelegateMediaRouter();
   ~CastConfigDelegateMediaRouter() override;
 
-  // The MediaRouter is not always enabled. We only use this backend when it is
-  // enabled.
-  static bool IsEnabled();
   static void SetMediaRouterForTest(media_router::MediaRouter* media_router);
 
  private:
   // CastConfigDelegate:
   void RequestDeviceRefresh() override;
-  void CastToSink(const std::string& sink_id) override;
-  void StopCasting(const std::string& route_id) override;
+  void CastToSink(const Sink& sink) override;
+  void StopCasting(const Route& route) override;
   void AddObserver(ash::CastConfigDelegate::Observer* observer) override;
   void RemoveObserver(ash::CastConfigDelegate::Observer* observer) override;
+
+  // content::NotificationObserver:
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
   // |devices_| stores the current source/route status that we query from.
   // This will return null until the media router is initialized.
   CastDeviceCache* devices();
   std::unique_ptr<CastDeviceCache> devices_;
+
+  content::NotificationRegistrar registrar_;
 
   base::ObserverList<ash::CastConfigDelegate::Observer> observer_list_;
 
