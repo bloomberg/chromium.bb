@@ -113,8 +113,9 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
 
   DrawWindowTree(render_pass.get(), root_window_, gfx::Vector2d(), 1.0f);
 
-  cc::CompositorFrame frame;
-  frame.render_pass_list.push_back(std::move(render_pass));
+  std::unique_ptr<cc::DelegatedFrameData> frame_data(
+      new cc::DelegatedFrameData);
+  frame_data->render_pass_list.push_back(std::move(render_pass));
   if (delegate_->IsInHighContrastMode()) {
     std::unique_ptr<cc::RenderPass> invert_pass = cc::RenderPass::Create();
     invert_pass->SetNew(cc::RenderPassId(2, 0), output_rect, output_rect,
@@ -132,9 +133,11 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
                  gfx::Vector2dF() /* filters_scale */,
                  gfx::PointF() /* filters_origin */,
                  cc::FilterOperations() /* background_filters */);
-    frame.render_pass_list.push_back(std::move(invert_pass));
+    frame_data->render_pass_list.push_back(std::move(invert_pass));
   }
 
+  cc::CompositorFrame frame;
+  frame.delegated_frame_data = std::move(frame_data);
   return frame;
 }
 

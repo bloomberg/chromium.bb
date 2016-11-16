@@ -50,6 +50,10 @@ class ScopedTooltipDisabler;
 }
 }
 
+namespace cc {
+class DelegatedFrameData;
+}
+
 namespace gfx {
 class Display;
 class Point;

@@ -1824,7 +1824,10 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
     view_->DidReceiveRendererFrame();
   } else {
     cc::ReturnedResourceArray resources;
-    cc::TransferableResource::ReturnResources(frame.resource_list, &resources);
+    if (frame.delegated_frame_data) {
+      cc::TransferableResource::ReturnResources(
+          frame.delegated_frame_data->resource_list, &resources);
+    }
     SendReclaimCompositorResources(routing_id_, compositor_frame_sink_id,
                                    process_->GetID(), true /* is_swap_ack */,
                                    resources);

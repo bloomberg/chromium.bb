@@ -17,7 +17,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/quads/render_pass_id.h"
 #include "cc/surfaces/frame_sink_id.h"
@@ -61,7 +60,8 @@ class CC_SURFACES_EXPORT Surface {
           copy_requests);
 
   // Returns the most recent frame that is eligible to be rendered.
-  // You must check whether HasFrame() returns true before calling this method.
+  // If the CompositorFrame's DelegateFrameData is null then there is
+  // no eligible frame.
   const CompositorFrame& GetEligibleFrame();
 
   // Returns a number that increments by 1 every time a new frame is enqueued.
@@ -89,20 +89,18 @@ class CC_SURFACES_EXPORT Surface {
     return referenced_surfaces_;
   }
 
-  bool HasFrame() const { return current_frame_.has_value(); }
-
   bool destroyed() const { return destroyed_; }
   void set_destroyed(bool destroyed) { destroyed_ = destroyed; }
 
  private:
-  void UnrefFrameResources(const CompositorFrame& frame_data);
+  void UnrefFrameResources(DelegatedFrameData* frame_data);
   void ClearCopyRequests();
 
   SurfaceId surface_id_;
   SurfaceId previous_frame_surface_id_;
   base::WeakPtr<SurfaceFactory> factory_;
   // TODO(jamesr): Support multiple frames in flight.
-  base::Optional<CompositorFrame> current_frame_;
+  CompositorFrame current_frame_;
   int frame_index_;
   bool destroyed_;
   std::vector<SurfaceSequence> destruction_dependencies_;

@@ -1655,12 +1655,13 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
     }
   }
 
+  auto data = base::MakeUnique<DelegatedFrameData>();
+  resource_provider_->PrepareSendToParent(resources, &data->resource_list);
+  data->render_pass_list = std::move(frame->render_passes);
 
   CompositorFrame compositor_frame;
   compositor_frame.metadata = std::move(metadata);
-  resource_provider_->PrepareSendToParent(resources,
-                                          &compositor_frame.resource_list);
-  compositor_frame.render_pass_list = std::move(frame->render_passes);
+  compositor_frame.delegated_frame_data = std::move(data);
   compositor_frame_sink_->SubmitCompositorFrame(std::move(compositor_frame));
 
   // The next frame should start by assuming nothing has changed, and changes

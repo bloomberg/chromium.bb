@@ -135,7 +135,8 @@ void TestCompositorFrameSink::SubmitCompositorFrame(CompositorFrame frame) {
   display_->SetLocalFrameId(delegated_local_frame_id_,
                             frame.metadata.device_scale_factor);
 
-  gfx::Size frame_size = frame.render_pass_list.back()->output_rect.size();
+  gfx::Size frame_size =
+      frame.delegated_frame_data->render_pass_list.back()->output_rect.size();
   display_->Resize(frame_size);
 
   bool synchronous = !display_->has_scheduler();

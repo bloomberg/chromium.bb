@@ -198,6 +198,7 @@ class CCSerializationPerfTest : public testing::Test {
                                      uint32_t num_passes,
                                      UseSingleSharedQuadState single_sqs) {
     CompositorFrame frame;
+    frame.delegated_frame_data.reset(new DelegatedFrameData);
 
     for (uint32_t i = 0; i < num_passes; ++i) {
       std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
@@ -213,7 +214,8 @@ class CCSerializationPerfTest : public testing::Test {
         quad->SetNew(render_pass->shared_quad_state_list.back(), bounds, bounds,
                      SK_ColorRED, kForceAntiAliasingOff);
       }
-      frame.render_pass_list.push_back(std::move(render_pass));
+      frame.delegated_frame_data->render_pass_list.push_back(
+          std::move(render_pass));
     }
     RunTest(test_name, std::move(frame));
   }

@@ -77,8 +77,11 @@ class DirectCompositorFrameSinkTest : public testing::Test {
     render_pass->SetNew(RenderPassId(1, 1), display_rect_, damage_rect,
                         gfx::Transform());
 
+    auto frame_data = base::MakeUnique<DelegatedFrameData>();
+    frame_data->render_pass_list.push_back(std::move(render_pass));
+
     CompositorFrame frame;
-    frame.render_pass_list.push_back(std::move(render_pass));
+    frame.delegated_frame_data = std::move(frame_data);
 
     compositor_frame_sink_->SubmitCompositorFrame(std::move(frame));
   }

@@ -132,8 +132,11 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
   surface_quad->SetNew(quad_state, gfx::Rect(quad_state->quad_layer_bounds),
                        gfx::Rect(quad_state->quad_layer_bounds), child_id);
 
+  std::unique_ptr<cc::DelegatedFrameData> delegated_frame(
+      new cc::DelegatedFrameData);
+  delegated_frame->render_pass_list.push_back(std::move(render_pass));
   cc::CompositorFrame frame;
-  frame.render_pass_list.push_back(std::move(render_pass));
+  frame.delegated_frame_data = std::move(delegated_frame);
   frame.metadata.referenced_surfaces = child_ids_;
 
   if (!root_id_.is_valid()) {
@@ -166,6 +169,8 @@ void SurfacesInstance::RemoveChildId(const cc::SurfaceId& child_id) {
 
 void SurfacesInstance::SetEmptyRootFrame() {
   cc::CompositorFrame empty_frame;
+  empty_frame.delegated_frame_data =
+      base::WrapUnique(new cc::DelegatedFrameData);
   empty_frame.metadata.referenced_surfaces = child_ids_;
   surface_factory_->SubmitCompositorFrame(root_id_, std::move(empty_frame),
                                           cc::SurfaceFactory::DrawCallback());

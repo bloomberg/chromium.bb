@@ -13,4 +13,5 @@ CompositorFrame::CompositorFrame(CompositorFrame&& other) = default;
 CompositorFrame::~CompositorFrame() {}
 
 CompositorFrame& CompositorFrame::operator=(CompositorFrame&& other) = default;
+
 }  // namespace cc

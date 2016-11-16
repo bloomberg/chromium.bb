@@ -915,7 +915,7 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
   SetBackgroundColor(frame.metadata.root_background_color);
 
   last_scroll_offset_ = frame.metadata.root_scroll_offset;
-  if (frame.render_pass_list.empty())
+  if (!frame.delegated_frame_data)
     return;
 
   cc::Selection<gfx::SelectionBound> selection = frame.metadata.selection;

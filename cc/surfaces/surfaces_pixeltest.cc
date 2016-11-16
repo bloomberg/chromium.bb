@@ -75,9 +75,12 @@ TEST_F(SurfacesPixelTest, DrawSimpleFrame) {
                      SK_ColorGREEN,
                      force_anti_aliasing_off);
 
+  std::unique_ptr<DelegatedFrameData> delegated_frame_data(
+      new DelegatedFrameData);
+  delegated_frame_data->render_pass_list.push_back(std::move(pass));
 
   CompositorFrame root_frame;
-  root_frame.render_pass_list.push_back(std::move(pass));
+  root_frame.delegated_frame_data = std::move(delegated_frame_data);
 
   LocalFrameId root_local_frame_id = allocator_.GenerateId();
   SurfaceId root_surface_id(factory_.frame_sink_id(), root_local_frame_id);
@@ -91,7 +94,8 @@ TEST_F(SurfacesPixelTest, DrawSimpleFrame) {
 
   bool discard_alpha = false;
   ExactPixelComparator pixel_comparator(discard_alpha);
-  RenderPassList* pass_list = &aggregated_frame.render_pass_list;
+  RenderPassList* pass_list =
+      &aggregated_frame.delegated_frame_data->render_pass_list;
   EXPECT_TRUE(RunPixelTest(pass_list,
                            base::FilePath(FILE_PATH_LITERAL("green.png")),
                            pixel_comparator));
@@ -132,8 +136,12 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
                        SK_ColorYELLOW,
                        force_anti_aliasing_off);
 
+    std::unique_ptr<DelegatedFrameData> delegated_frame_data(
+        new DelegatedFrameData);
+    delegated_frame_data->render_pass_list.push_back(std::move(pass));
+
     CompositorFrame root_frame;
-    root_frame.render_pass_list.push_back(std::move(pass));
+    root_frame.delegated_frame_data = std::move(delegated_frame_data);
 
     factory_.SubmitCompositorFrame(root_local_frame_id, std::move(root_frame),
                                    SurfaceFactory::DrawCallback());
@@ -157,8 +165,12 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
                        SK_ColorBLUE,
                        force_anti_aliasing_off);
 
+    std::unique_ptr<DelegatedFrameData> delegated_frame_data(
+        new DelegatedFrameData);
+    delegated_frame_data->render_pass_list.push_back(std::move(pass));
+
     CompositorFrame child_frame;
-    child_frame.render_pass_list.push_back(std::move(pass));
+    child_frame.delegated_frame_data = std::move(delegated_frame_data);
 
     factory_.SubmitCompositorFrame(child_local_frame_id, std::move(child_frame),
                                    SurfaceFactory::DrawCallback());
@@ -169,7 +181,8 @@ TEST_F(SurfacesPixelTest, DrawSimpleAggregatedFrame) {
 
   bool discard_alpha = false;
   ExactPixelComparator pixel_comparator(discard_alpha);
-  RenderPassList* pass_list = &aggregated_frame.render_pass_list;
+  RenderPassList* pass_list =
+      &aggregated_frame.delegated_frame_data->render_pass_list;
   EXPECT_TRUE(RunPixelTest(pass_list,
                            base::FilePath(FILE_PATH_LITERAL("blue_yellow.png")),
                            pixel_comparator));
@@ -226,8 +239,12 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
                                gfx::Rect(child_size),
                                right_child_id);
 
+    std::unique_ptr<DelegatedFrameData> delegated_frame_data(
+        new DelegatedFrameData);
+    delegated_frame_data->render_pass_list.push_back(std::move(pass));
+
     CompositorFrame root_frame;
-    root_frame.render_pass_list.push_back(std::move(pass));
+    root_frame.delegated_frame_data = std::move(delegated_frame_data);
 
     factory_.SubmitCompositorFrame(root_local_frame_id, std::move(root_frame),
                                    SurfaceFactory::DrawCallback());
@@ -259,8 +276,12 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
                               SK_ColorBLUE,
                               force_anti_aliasing_off);
 
+    std::unique_ptr<DelegatedFrameData> delegated_frame_data(
+        new DelegatedFrameData);
+    delegated_frame_data->render_pass_list.push_back(std::move(pass));
+
     CompositorFrame child_frame;
-    child_frame.render_pass_list.push_back(std::move(pass));
+    child_frame.delegated_frame_data = std::move(delegated_frame_data);
 
     factory_.SubmitCompositorFrame(left_child_local_id, std::move(child_frame),
                                    SurfaceFactory::DrawCallback());
@@ -292,8 +313,12 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
                               SK_ColorGREEN,
                               force_anti_aliasing_off);
 
+    std::unique_ptr<DelegatedFrameData> delegated_frame_data(
+        new DelegatedFrameData);
+    delegated_frame_data->render_pass_list.push_back(std::move(pass));
+
     CompositorFrame child_frame;
-    child_frame.render_pass_list.push_back(std::move(pass));
+    child_frame.delegated_frame_data = std::move(delegated_frame_data);
 
     factory_.SubmitCompositorFrame(right_child_local_id, std::move(child_frame),
                                    SurfaceFactory::DrawCallback());
@@ -304,7 +329,8 @@ TEST_F(SurfacesPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
 
   bool discard_alpha = false;
   ExactPixelComparator pixel_comparator(discard_alpha);
-  RenderPassList* pass_list = &aggregated_frame.render_pass_list;
+  RenderPassList* pass_list =
+      &aggregated_frame.delegated_frame_data->render_pass_list;
   EXPECT_TRUE(RunPixelTest(
       pass_list,
       base::FilePath(FILE_PATH_LITERAL("four_blue_green_checkers.png")),

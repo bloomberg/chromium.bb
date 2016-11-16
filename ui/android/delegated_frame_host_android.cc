@@ -108,7 +108,8 @@ DelegatedFrameHostAndroid::FrameData::~FrameData() = default;
 void DelegatedFrameHostAndroid::SubmitCompositorFrame(
     cc::CompositorFrame frame,
     cc::SurfaceFactory::DrawCallback draw_callback) {
-  cc::RenderPass* root_pass = frame.render_pass_list.back().get();
+  cc::RenderPass* root_pass =
+      frame.delegated_frame_data->render_pass_list.back().get();
   gfx::Size surface_size = root_pass->output_rect.size();
 
   if (!current_frame_ || surface_size != current_frame_->surface_size ||

@@ -21,6 +21,7 @@
 namespace cc {
 
 class CompositorFrame;
+class DelegatedFrameData;
 class ResourceProvider;
 class Surface;
 class SurfaceDrawQuad;
@@ -90,7 +91,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
                         RenderPassId parent_pass,
                         PrewalkResult* result);
   void CopyUndrawnSurfaces(PrewalkResult* prewalk);
-  void CopyPasses(const CompositorFrame& frame, Surface* surface);
+  void CopyPasses(const DelegatedFrameData* frame_data, Surface* surface);
 
   // Remove Surfaces that were referenced before but aren't currently
   // referenced from the ResourceProvider.
