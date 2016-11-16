@@ -6,6 +6,8 @@
 
 import logging
 
+from webkitpy.w3c.chromium_commit import ChromiumCommit
+
 WPT_REPO_URL = 'https://chromium.googlesource.com/external/w3c/web-platform-tests.git'
 WPT_TMP_DIR = '/tmp/wpt'
 CHROMIUM_WPT_DIR = 'third_party/WebKit/LayoutTests/imported/wpt/'
@@ -33,9 +35,8 @@ class LocalWPT(object):
 
         if self.host.filesystem.exists(self.path):
             _log.info('WPT checkout exists at %s, fetching latest', self.path)
-            self.run(['git', 'checkout', 'master'])
             self.run(['git', 'fetch', '--all'])
-            self.run(['git', 'merge', '--ff-only', 'origin/master'])
+            self.run(['git', 'checkout', 'origin/master'])
         else:
             _log.info('Cloning %s into %s', WPT_REPO_URL, self.path)
             self.host.executive.run_command(['git', 'clone', WPT_REPO_URL, self.path])
@@ -59,12 +60,14 @@ class LocalWPT(object):
         position = self.run(['git', 'footers', '--position', sha])
         position = position.strip()
         assert position
-        return sha, position
+
+        chromium_commit = ChromiumCommit(self.host, position=position)
+        return sha, chromium_commit
 
     def clean(self):
         self.run(['git', 'reset', '--hard', 'HEAD'])
         self.run(['git', 'clean', '-fdx'])
-        self.run(['git', 'checkout', 'master'])
+        self.run(['git', 'checkout', 'origin/master'])
 
     def all_branches(self):
         return self.run(['git', 'branch', '-a']).splitlines()
@@ -94,3 +97,8 @@ class LocalWPT(object):
         self.run(['git', 'apply', '-'], input=patch)
         self.run(['git', 'commit', '-am', message])
         self.run(['git', 'push', 'github', branch_name])
+
+    def commits_behind_master(self, commit):
+        return len(self.run([
+            'git', 'rev-list', '{}..origin/master'.format(commit)
+        ]).splitlines())

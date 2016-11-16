@@ -22,32 +22,33 @@ class ChromiumWPT(object):
         """
         self.host = host
 
-    def exportable_commits_since(self, chromium_commit):
-        chromium_commits = self.chromium_commits_since(chromium_commit)
+    # TODO(jeffcarp): add tests for this
+    def exportable_commits_since(self, commit):
+        toplevel = self.host.executive.run_command([
+            'git', 'rev-parse', '--show-toplevel'
+        ]).strip()
 
+        commits = self.host.executive.run_command([
+            'git', 'rev-list', '{}..HEAD'.format(commit),
+            '--', toplevel + '/' + CHROMIUM_WPT_DIR
+        ]).splitlines()
+
+        # TODO(jeffcarp): this is temporary until I solve
+        #     the import/export differentiation problem
         def is_exportable(chromium_commit):
-            return self.has_changes_in_wpt(chromium_commit) and not self.is_import_commit(chromium_commit)
+            return (
+                'export' in self.message(chromium_commit)
+            )
 
-        return filter(is_exportable, chromium_commits)
+        return filter(is_exportable, commits)
 
-    def is_import_commit(self, chromium_commit):
-        return self.subject(chromium_commit).startswith('Import wpt@')
-
-    def has_changes_in_wpt(self, chromium_commit):
-        """Detects if a Chromium revision has modified files in the WPT directory."""
-
-        assert chromium_commit
+    def _has_expectations(self, chromium_commit):
         files = self.host.executive.run_command([
             'git', 'diff-tree', '--no-commit-id',
             '--name-only', '-r', chromium_commit
         ]).splitlines()
 
-        return any(f.startswith(CHROMIUM_WPT_DIR) and not DepsUpdater.is_baseline(f) for f in files)
-
-    def chromium_commits_since(self, chromium_commit):
-        return self.host.executive.run_command([
-            'git', 'rev-list', '--reverse', '{}..HEAD'.format(chromium_commit)
-        ]).splitlines()
+        return any(DepsUpdater.is_baseline(f) for f in files)
 
     def subject(self, chromium_commit):
         return self.host.executive.run_command([
@@ -77,3 +78,9 @@ class ChromiumWPT(object):
     def absolute_chromium_wpt_dir(self):
         finder = WebKitFinder(self.host.filesystem)
         return finder.path_from_webkit_base('LayoutTests', 'imported', 'wpt')
+
+    # TODO(jeffcarp): this is duplicated in LocalWPT, maybe move into a GitRepo base class?
+    def commits_behind_master(self, commit):
+        return len(self.host.executive.run_command([
+            'git', 'rev-list', '{}..origin/master'.format(commit)
+        ]).splitlines())

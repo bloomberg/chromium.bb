@@ -19,10 +19,9 @@ class LocalWPTTest(unittest.TestCase):
 
         LocalWPT(host)
 
-        self.assertEqual(len(host.executive.calls), 3)
-        self.assertEqual(host.executive.calls[0][1], 'checkout')
-        self.assertEqual(host.executive.calls[1][1], 'fetch')
-        self.assertEqual(host.executive.calls[2][1], 'merge')
+        self.assertEqual(len(host.executive.calls), 2)
+        self.assertEqual(host.executive.calls[0][1], 'fetch')
+        self.assertEqual(host.executive.calls[1][1], 'checkout')
 
     def test_clones_if_wpt_does_not_exist(self):
         host = MockHost()
@@ -56,6 +55,7 @@ class LocalWPTTest(unittest.TestCase):
     def test_last_wpt_exported_commit(self):
         host = MockHost()
         return_vals = [
+            'deadbeefcafe',
             '123',
             '9ea4fc353a4b1c11c6e524270b11baa4d1ddfde8',
         ]
@@ -63,8 +63,10 @@ class LocalWPTTest(unittest.TestCase):
         host.filesystem = MockFileSystem()
         local_wpt = LocalWPT(host, no_fetch=True)
 
-        commit = local_wpt.most_recent_chromium_commit()
-        self.assertEqual(commit, ('9ea4fc353a4b1c11c6e524270b11baa4d1ddfde8', '123'))
+        wpt_sha, chromium_commit = local_wpt.most_recent_chromium_commit()
+        self.assertEqual(wpt_sha, '9ea4fc353a4b1c11c6e524270b11baa4d1ddfde8')
+        self.assertEqual(chromium_commit.position, '123')
+        self.assertEqual(chromium_commit.sha, 'deadbeefcafe')
 
     def test_last_wpt_exported_commit_not_found(self):
         host = MockHost()
