@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
@@ -209,7 +210,7 @@ class InterfacePtrState<Interface, false> {
 template <typename Interface>
 class InterfacePtrState<Interface, true> {
  public:
-  InterfacePtrState() : version_(0u) {}
+  InterfacePtrState() : version_(0u), weak_ptr_factory_(this) {}
 
   ~InterfacePtrState() {
     endpoint_client_.reset();
@@ -331,6 +332,17 @@ class InterfacePtrState<Interface, true> {
     router_->EnableTestingMode();
   }
 
+  base::Callback<void(Message)> GetThreadSafePtrAcceptCallback() {
+    return base::Bind(&InterfacePtrState::ForwardMessage,
+                      weak_ptr_factory_.GetWeakPtr());
+  }
+
+  base::Callback<void(Message, std::unique_ptr<MessageReceiver>)>
+  GetThreadSafePtrAcceptWithResponderCallback() {
+    return base::Bind(&InterfacePtrState::ForwardMessageWithResponder,
+                      weak_ptr_factory_.GetWeakPtr());
+  }
+
  private:
   using Proxy = typename Interface::Proxy_;
 
@@ -361,16 +373,25 @@ class InterfacePtrState<Interface, true> {
         // will not be used.
         0u));
     proxy_.reset(new Proxy(endpoint_client_.get()));
-    if (Interface::PassesAssociatedKinds_) {
-      proxy_->serialization_context()->group_controller =
-          endpoint_client_->group_controller();
-    }
+    if (Interface::PassesAssociatedKinds_)
+      proxy_->set_group_controller(endpoint_client_->group_controller());
   }
 
   void OnQueryVersion(const base::Callback<void(uint32_t)>& callback,
                       uint32_t version) {
     version_ = version;
     callback.Run(version);
+  }
+
+  void ForwardMessage(Message message) {
+    ConfigureProxyIfNecessary();
+    endpoint_client_->Accept(&message);
+  }
+
+  void ForwardMessageWithResponder(Message message,
+                                   std::unique_ptr<MessageReceiver> responder) {
+    ConfigureProxyIfNecessary();
+    endpoint_client_->AcceptWithResponder(&message, responder.release());
   }
 
   scoped_refptr<MultiplexRouter> router_;
@@ -385,6 +406,8 @@ class InterfacePtrState<Interface, true> {
   scoped_refptr<base::SingleThreadTaskRunner> runner_;
 
   uint32_t version_;
+
+  base::WeakPtrFactory<InterfacePtrState> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InterfacePtrState);
 };

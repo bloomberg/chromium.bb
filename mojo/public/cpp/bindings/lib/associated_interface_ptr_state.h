@@ -103,8 +103,7 @@ class AssociatedInterfacePtrState {
         std::move(runner), 0u));
     proxy_.reset(new Proxy(endpoint_client_.get()));
     if (Interface::PassesAssociatedKinds_) {
-      proxy_->serialization_context()->group_controller =
-          endpoint_client_->group_controller();
+      proxy_->set_group_controller(endpoint_client_->group_controller());
     }
   }
 

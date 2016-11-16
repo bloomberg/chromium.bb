@@ -9,8 +9,11 @@
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/threading/thread.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 #include "mojo/public/interfaces/bindings/tests/math_calculator.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/sample_interfaces.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/sample_service.mojom.h"
@@ -806,6 +809,45 @@ TEST_F(InterfacePtrTest, CallbackOwnsInterfacePtr) {
   // response callbacks being destroyed, which will in turn lead to the proxy
   // being destroyed. This should not crash.
   request.PassMessagePipe();
+  run_loop.Run();
+}
+
+TEST_F(InterfacePtrTest, ThreadSafeInterfacePointer) {
+  math::CalculatorPtr ptr;
+  MathCalculatorImpl calc_impl(GetProxy(&ptr));
+  scoped_refptr<math::ThreadSafeCalculatorPtr> thread_safe_ptr =
+      math::ThreadSafeCalculatorPtr::Create(std::move(ptr));
+
+  base::RunLoop run_loop;
+
+  // Create and start the thread from where we'll call the interface pointer.
+  base::Thread other_thread("service test thread");
+  other_thread.Start();
+
+  auto run_method = base::Bind(
+      [](const scoped_refptr<base::TaskRunner>& main_task_runner,
+         const base::Closure& quit_closure,
+         const scoped_refptr<math::ThreadSafeCalculatorPtr>& thread_safe_ptr) {
+        auto calc_callback = base::Bind(
+            [](const scoped_refptr<base::TaskRunner>& main_task_runner,
+               const base::Closure& quit_closure,
+               base::PlatformThreadId thread_id,
+               double result) {
+              EXPECT_EQ(123, result);
+              // Validate the callback is invoked on the calling thread.
+              EXPECT_EQ(thread_id, base::PlatformThread::CurrentId());
+              // Notify the run_loop to quit.
+              main_task_runner->PostTask(FROM_HERE, quit_closure);
+            });
+        (*thread_safe_ptr)->Add(
+            123, base::Bind(calc_callback, main_task_runner, quit_closure,
+                            base::PlatformThread::CurrentId()));
+      },
+      base::SequencedTaskRunnerHandle::Get(), run_loop.QuitClosure(),
+      thread_safe_ptr);
+  other_thread.message_loop()->task_runner()->PostTask(FROM_HERE, run_method);
+
+  // Block until the method callback is called on the background thread.
   run_loop.Run();
 }
 

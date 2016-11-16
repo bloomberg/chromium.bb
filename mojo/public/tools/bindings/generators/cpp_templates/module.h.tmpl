@@ -55,6 +55,7 @@ namespace {{variant}} {
 #include "mojo/public/cpp/bindings/raw_ptr_impl_ref_traits.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
+#include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 #include "mojo/public/cpp/bindings/union_traits.h"
 #include "{{module.path}}-shared.h"
 {%- for import in imports %}
@@ -111,6 +112,8 @@ extern const {{constant.kind|cpp_pod_type}} {{constant.name}};
 class {{interface.name}};
 using {{interface.name}}Ptr = mojo::InterfacePtr<{{interface.name}}>;
 using {{interface.name}}PtrInfo = mojo::InterfacePtrInfo<{{interface.name}}>;
+using ThreadSafe{{interface.name}}Ptr =
+    mojo::ThreadSafeInterfacePtr<{{interface.name}}>;
 using {{interface.name}}Request = mojo::InterfaceRequest<{{interface.name}}>;
 using {{interface.name}}AssociatedPtr =
     mojo::AssociatedInterfacePtr<{{interface.name}}>;

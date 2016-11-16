@@ -159,19 +159,21 @@ bool {{class_name}}_{{method.name}}_ForwardToCallback::Accept(
 {%-   if method.sync %}
 bool {{proxy_name}}::{{method.name}}(
     {{interface_macros.declare_sync_method_params("param_", method)}}) {
+   mojo::internal::SerializationContext serialization_context(
+      group_controller_);
   {{struct_macros.get_serialized_size(params_struct, "param_%s",
-                                      "&serialization_context_")}}
+                                      "&serialization_context")}}
 
   mojo::internal::RequestMessageBuilder builder({{message_name}}, size,
                                                 mojo::Message::kFlagIsSync);
 
   {{build_message(params_struct, "param_%s", params_description,
-                  "&serialization_context_")}}
+                  "&serialization_context")}}
 
   bool result = false;
   mojo::MessageReceiver* responder =
       new {{class_name}}_{{method.name}}_HandleSyncResponse(
-          serialization_context_.group_controller, &result
+          group_controller_, &result
 {%-     for param in method.response_parameters -%}
           , param_{{param.name}}
 {%-     endfor %});
@@ -183,8 +185,10 @@ bool {{proxy_name}}::{{method.name}}(
 
 void {{proxy_name}}::{{method.name}}(
     {{interface_macros.declare_request_params("in_", method)}}) {
+   mojo::internal::SerializationContext serialization_context(
+      group_controller_);
   {{struct_macros.get_serialized_size(params_struct, "in_%s",
-                                      "&serialization_context_")}}
+                                      "&serialization_context")}}
 
 {%- if method.response_parameters != None %}
   mojo::internal::RequestMessageBuilder builder({{message_name}}, size);
@@ -193,12 +197,12 @@ void {{proxy_name}}::{{method.name}}(
 {%- endif %}
 
   {{build_message(params_struct, "in_%s", params_description,
-                  "&serialization_context_")}}
+                  "&serialization_context")}}
 
 {%- if method.response_parameters != None %}
   mojo::MessageReceiver* responder =
       new {{class_name}}_{{method.name}}_ForwardToCallback(
-          callback, serialization_context_.group_controller);
+          callback, group_controller_);
   if (!receiver_->AcceptWithResponder(builder.message(), responder))
     delete responder;
 {%- else %}
