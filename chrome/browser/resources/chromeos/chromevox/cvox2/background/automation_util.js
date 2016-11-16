@@ -312,4 +312,19 @@ AutomationUtil.getLeastCommonAncestor = function(prevNode, node) {
   return ancestors[divergence - 1];
 };
 
+/**
+ * Gets the accessible text for this node based on its role.
+ * This text is suitable for caret navigation and selection in the node.
+ * @param {AutomationNode} node
+ * @return {string}
+ */
+AutomationUtil.getText = function(node) {
+  if (!node)
+    return '';
+
+  if (node.role === RoleType.textField)
+    return node.value;
+  return node.name || '';
+};
+
 });  // goog.scope

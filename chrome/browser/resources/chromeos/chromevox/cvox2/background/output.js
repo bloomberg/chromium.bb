@@ -1403,6 +1403,7 @@ Output.prototype = {
       return buff;
     }.bind(this);
 
+    var unit = range.isInlineText() ? cursors.Unit.LINE : cursors.Unit.NODE;
     while (cursor.node &&
         range.end.node &&
         AutomationUtil.getDirection(cursor.node, range.end.node) ==
@@ -1410,7 +1411,7 @@ Output.prototype = {
       var node = cursor.node;
       rangeBuff.push.apply(rangeBuff, formatNodeAndAncestors(node, prevNode));
       prevNode = node;
-      cursor = cursor.move(cursors.Unit.NODE,
+      cursor = cursor.move(unit,
                            cursors.Movement.DIRECTIONAL,
                            Dir.FORWARD);
 
