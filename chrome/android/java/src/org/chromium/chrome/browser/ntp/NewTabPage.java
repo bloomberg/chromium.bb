@@ -375,7 +375,11 @@ public class NewTabPage
                 return;
             }
 
-            NewTabPageUma.monitorContentSuggestionVisit(mTab, article.mCategory);
+            // TODO(treib): Also track other dispositions. crbug.com/665915
+            if (windowOpenDisposition == WindowOpenDisposition.CURRENT_TAB) {
+                NewTabPageUma.monitorContentSuggestionVisit(mTab, article.mCategory);
+            }
+
             LoadUrlParams loadUrlParams =
                     new LoadUrlParams(article.mUrl, PageTransition.AUTO_BOOKMARK);
 
