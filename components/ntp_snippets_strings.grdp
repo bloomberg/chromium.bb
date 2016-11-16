@@ -37,6 +37,10 @@
     Recent tabs
   </message>
 
+  <message name="IDS_NTP_FOREIGN_SESSIONS_SUGGESTIONS_SECTION_EMPTY" desc="On the New Tab Page, text of the card explaining to the user that they can expect to see tabs from other devices in this area in the future.">
+    Your recent tabs from other devices appear here
+  </message>
+
   <message name="IDS_NTP_SUGGESTIONS_SECTION_EMPTY" desc="On the New Tab Page, text of card explaining to the user that they can expect to see some sort of content suggestions in this area in the future.">
     Your suggestions appear here
   </message>
