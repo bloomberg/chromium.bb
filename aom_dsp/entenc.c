@@ -514,7 +514,7 @@ unsigned char *od_ec_enc_done(od_ec_enc *enc, uint32_t *nbytes) {
   unsigned char *out;
   uint32_t storage;
   uint16_t *buf;
-  uint32_t offs;
+  int offs;
   uint32_t end_offs;
   int nend_bits;
   od_ec_window m;
@@ -554,7 +554,7 @@ unsigned char *od_ec_enc_done(od_ec_enc *enc, uint32_t *nbytes) {
   if (s > 0) {
     unsigned n;
     storage = enc->precarry_storage;
-    if (offs + ((s + 7) >> 3) > storage) {
+    if (offs + ((s + 7) >> 3) > (int)storage) {
       storage = storage * 2 + ((s + 7) >> 3);
       buf = (uint16_t *)realloc(buf, sizeof(*buf) * storage);
       if (buf == NULL) {
@@ -566,7 +566,7 @@ unsigned char *od_ec_enc_done(od_ec_enc *enc, uint32_t *nbytes) {
     }
     n = (1 << (c + 16)) - 1;
     do {
-      OD_ASSERT(offs < storage);
+      OD_ASSERT(offs < (int)storage);
       buf[offs++] = (uint16_t)(e >> (c + 16));
       e &= n;
       s -= 8;

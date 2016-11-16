@@ -1464,7 +1464,8 @@ void av1_highbd_quantize_b_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
 #else
         const uint32_t abs_qcoeff =
             (uint32_t)((tmp2 * quant_shift_ptr[rc != 0]) >> shift);
-        qcoeff_ptr[rc] = (tran_low_t)((abs_qcoeff ^ coeff_sign) - coeff_sign);
+        qcoeff_ptr[rc] =
+            (tran_low_t)((int)(abs_qcoeff ^ coeff_sign) - coeff_sign);
         dqcoeff_ptr[rc] = qcoeff_ptr[rc] * dequant_ptr[rc != 0] / scale;
 #endif  // CONFIG_AOM_QM
         if (abs_qcoeff) eob = i;
