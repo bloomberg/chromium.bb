@@ -8,6 +8,17 @@
 
 namespace offline_pages {
 
+OfflinePageModel::SavePageParams::SavePageParams()
+    : proposed_offline_id(OfflinePageModel::kInvalidOfflineId) {
+}
+
+OfflinePageModel::SavePageParams::SavePageParams(const SavePageParams& other) {
+  url = other.url;
+  client_id = other.client_id;
+  proposed_offline_id = other.proposed_offline_id;
+  original_url = other.original_url;
+}
+
 // static
 bool OfflinePageModel::CanSaveURL(const GURL& url) {
   return url.is_valid() && url.SchemeIsHTTPOrHTTPS();

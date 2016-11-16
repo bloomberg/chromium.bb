@@ -48,6 +48,25 @@ struct OfflinePageItem;
 // * how to cancel requests and what to expect
 class OfflinePageModel : public base::SupportsUserData {
  public:
+  // Describes the parameters to control how to save a page.
+  struct SavePageParams {
+    SavePageParams();
+    SavePageParams(const SavePageParams& other);
+
+    // The last committed URL of the page to save.
+    GURL url;
+
+    // The identification used by the client.
+    ClientId client_id;
+
+    // Used for the offline_id for the saved file if non-zero. If it is
+    // kInvalidOfflineId, a new, random ID will be generated.
+    int64_t proposed_offline_id;
+
+    // The original URL of the page to save. Empty if no redirect occurs.
+    GURL original_url;
+  };
+
   // Observer of the OfflinePageModel.
   class Observer {
    public:
@@ -84,14 +103,10 @@ class OfflinePageModel : public base::SupportsUserData {
 
   static const int64_t kInvalidOfflineId = 0;
 
-  // Attempts to save a page addressed by |url| offline. Requires that the model
-  // is loaded.  Generates a new offline id and returns
-  // it. |proposed_offline_id| is used for the offline_id for the saved file if
-  // it is non-zero.  If it is kInvalidOfflineId, a new, random ID will be
-  // generated.
-  virtual void SavePage(const GURL& url,
-                        const ClientId& client_id,
-                        int64_t proposed_offline_id,
+  // Attempts to save a page offline per |save_page_params|. Requires that the
+  // model is loaded.  Generates a new offline id or uses the proposed offline
+  // id in |save_page_params| and returns it.
+  virtual void SavePage(const SavePageParams& save_page_params,
                         std::unique_ptr<OfflinePageArchiver> archiver,
                         const SavePageCallback& callback) = 0;
 

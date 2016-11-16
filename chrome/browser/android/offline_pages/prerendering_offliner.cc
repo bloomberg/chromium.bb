@@ -85,13 +85,17 @@ void PrerenderingOffliner::OnLoadPageDone(
     DCHECK(web_contents);
     std::unique_ptr<OfflinePageArchiver> archiver(
         new OfflinePageMHTMLArchiver(web_contents));
-    // Pass in the URL from the WebContents in case it is redirected from
-    // the requested URL. This is to work around a check in the
-    // OfflinePageModel implementation that ensures URL passed in here is
-    // same as LastCommittedURL from the snapshot.
-    // TODO(dougarnett): Raise issue of how to better deal with redirects.
-    SavePage(web_contents->GetLastCommittedURL(), request.client_id(),
-             request.request_id(), std::move(archiver),
+
+    OfflinePageModel::SavePageParams save_page_params;
+    save_page_params.url = web_contents->GetLastCommittedURL();
+    save_page_params.client_id = request.client_id();
+    save_page_params.proposed_offline_id = request.request_id();
+    // Pass in the original URL if it is different from the last committed URL
+    // when redirects occur.
+    if (save_page_params.url != request.url())
+      save_page_params.original_url = request.url();
+
+    SavePage(save_page_params, std::move(archiver),
              base::Bind(&PrerenderingOffliner::OnSavePageDone,
                         weak_ptr_factory_.GetWeakPtr(), request));
   } else {
@@ -242,14 +246,12 @@ void PrerenderingOffliner::SetApplicationStateForTesting(
 }
 
 void PrerenderingOffliner::SavePage(
-    const GURL& url,
-    const ClientId& client_id,
-    int64_t proposed_offline_id,
+    const OfflinePageModel::SavePageParams& save_page_params,
     std::unique_ptr<OfflinePageArchiver> archiver,
     const SavePageCallback& save_callback) {
   DCHECK(offline_page_model_);
-  offline_page_model_->SavePage(url, client_id, proposed_offline_id,
-                                std::move(archiver), save_callback);
+  offline_page_model_->SavePage(
+      save_page_params, std::move(archiver), save_callback);
 }
 
 PrerenderingLoader* PrerenderingOffliner::GetOrCreateLoader() {

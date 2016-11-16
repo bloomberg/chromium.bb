@@ -91,10 +91,12 @@ void RecentTabHelper::ObserveAndDownloadCurrentPage(
     return;
 
   // If snapshot already happened and we missed it, go ahead and snapshot now.
+  OfflinePageModel::SavePageParams save_page_params;
+  save_page_params.url = web_contents()->GetLastCommittedURL();
+  save_page_params.client_id = client_id;
+  save_page_params.proposed_offline_id = request_id;
   page_model_->SavePage(
-      web_contents()->GetLastCommittedURL(),
-      client_id,
-      request_id,
+      save_page_params,
       delegate_->CreatePageArchiver(web_contents()),
       base::Bind(&RecentTabHelper::SavePageCallback,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -241,9 +243,11 @@ void RecentTabHelper::ContinueSnapshotAfterPurge(
     return;
   }
 
-  page_model_->SavePage(snapshot_url_,
-                        download_info_->client_id_,
-                        download_info_->request_id_,
+  OfflinePageModel::SavePageParams save_page_params;
+  save_page_params.url = snapshot_url_;
+  save_page_params.client_id = download_info_->client_id_;
+  save_page_params.proposed_offline_id = download_info_->request_id_;
+  page_model_->SavePage(save_page_params,
                         delegate_->CreatePageArchiver(web_contents()),
                         base::Bind(&RecentTabHelper::SavePageCallback,
                                    weak_ptr_factory_.GetWeakPtr()));

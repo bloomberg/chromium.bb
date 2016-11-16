@@ -69,7 +69,8 @@ bool OfflinePageItem::operator==(const OfflinePageItem& other) const {
          expiration_time == other.expiration_time &&
          access_count == other.access_count &&
          title == other.title &&
-         flags == other.flags;
+         flags == other.flags &&
+         original_url == other.original_url;
 }
 
 bool OfflinePageItem::IsExpired() const {

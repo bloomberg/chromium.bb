@@ -34,6 +34,7 @@ namespace offline_pages {
 // * In M54 title was added,
 // * In M55 we dropped the following fields (never used): version, status,
 //   offline_url, user_initiated.
+// * In M56 original_url was added.
 //
 // Here is a procedure to update the schema for this store:
 // * Decide how to detect that the store is on a particular version, which

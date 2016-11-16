@@ -61,6 +61,10 @@ class OfflinePageUtilsTest
   void SetUp() override;
   void RunUntilIdle();
 
+  void SavePage(const GURL& url,
+                const ClientId& client_id,
+                std::unique_ptr<OfflinePageArchiver> archiver);
+
   // Necessary callbacks for the offline page model.
   void OnSavePageDone(SavePageResult result, int64_t offlineId);
   void OnClearAllDone();
@@ -111,6 +115,20 @@ void OfflinePageUtilsTest::RunUntilIdle() {
   base::RunLoop().RunUntilIdle();
 }
 
+void OfflinePageUtilsTest::SavePage(
+    const GURL& url,
+    const ClientId& client_id,
+    std::unique_ptr<OfflinePageArchiver> archiver) {
+  OfflinePageModel::SavePageParams save_page_params;
+  save_page_params.url = url;
+  save_page_params.client_id = client_id;
+  OfflinePageModelFactory::GetForBrowserContext(profile())->SavePage(
+      save_page_params,
+      std::move(archiver),
+      base::Bind(&OfflinePageUtilsTest::OnSavePageDone, AsWeakPtr()));
+  RunUntilIdle();
+}
+
 void OfflinePageUtilsTest::OnSavePageDone(SavePageResult result,
                                           int64_t offline_id) {
   offline_id_ = offline_id;
@@ -141,27 +159,19 @@ void OfflinePageUtilsTest::CreateOfflinePages() {
   offline_pages::ClientId client_id;
   client_id.name_space = kDownloadNamespace;
   client_id.id = kTestPage1ClientId;
-  model->SavePage(
-      kTestPage1Url, client_id, 0l, std::move(archiver),
-      base::Bind(&OfflinePageUtilsTest::OnSavePageDone, AsWeakPtr()));
-  RunUntilIdle();
+  SavePage(kTestPage1Url, client_id, std::move(archiver));
 
   // Create page 2.
   archiver = BuildArchiver(kTestPage2Url,
                            base::FilePath(FILE_PATH_LITERAL("page2.mhtml")));
   client_id.id = kTestPage2ClientId;
-  model->SavePage(
-      kTestPage2Url, client_id, 0l, std::move(archiver),
-      base::Bind(&OfflinePageUtilsTest::OnSavePageDone, AsWeakPtr()));
-  RunUntilIdle();
+  SavePage(kTestPage2Url, client_id, std::move(archiver));
 
   // Create page 4 - expired page.
   archiver = BuildArchiver(kTestPage4Url,
                            base::FilePath(FILE_PATH_LITERAL("page4.mhtml")));
   client_id.id = kTestPage4ClientId;
-  model->SavePage(
-      kTestPage4Url, client_id, 0l, std::move(archiver),
-      base::Bind(&OfflinePageUtilsTest::OnSavePageDone, AsWeakPtr()));
+  SavePage(kTestPage4Url, client_id, std::move(archiver));
   RunUntilIdle();
   model->ExpirePages(
       std::vector<int64_t>({offline_id()}), base::Time::Now(),

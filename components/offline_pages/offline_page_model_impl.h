@@ -66,9 +66,7 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
   // Implemented methods:
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
-  void SavePage(const GURL& url,
-                const ClientId& client_id,
-                int64_t proposed_offline_id,
+  void SavePage(const SavePageParams& save_page_params,
                 std::unique_ptr<OfflinePageArchiver> archiver,
                 const SavePageCallback& callback) override;
   void MarkPageAccessed(int64_t offline_id) override;
@@ -155,9 +153,8 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
                   const std::vector<OfflinePageItem>& offline_pages);
 
   // Steps for saving a page offline.
-  void OnCreateArchiveDone(const GURL& requested_url,
+  void OnCreateArchiveDone(const SavePageParams& save_page_params,
                            int64_t offline_id,
-                           const ClientId& client_id,
                            const base::Time& start_time,
                            const SavePageCallback& callback,
                            OfflinePageArchiver* archiver,

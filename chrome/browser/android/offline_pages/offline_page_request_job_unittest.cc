@@ -237,6 +237,10 @@ class OfflinePageRequestJobTest : public testing::Test {
   void SimulateHasNetworkConnectivity(bool has_connectivity);
   void RunUntilIdle();
 
+  void SavePage(const GURL& url,
+                const ClientId& client_id,
+                std::unique_ptr<OfflinePageArchiver> archiver);
+
   void InterceptRequest(const GURL& url,
                         const std::string& method,
                         const std::string& extra_header_name,
@@ -350,11 +354,7 @@ void OfflinePageRequestJobTest::SetUp() {
   std::unique_ptr<TestOfflinePageArchiver> archiver(
       new TestOfflinePageArchiver(kTestUrl, archive_file_path, kTestFileSize));
 
-  model->SavePage(
-      kTestUrl, kTestClientId, 0, std::move(archiver),
-      base::Bind(&OfflinePageRequestJobTest::OnSavePageDone,
-                base::Unretained(this)));
-  RunUntilIdle();
+  SavePage(kTestUrl, kTestClientId, std::move(archiver));
 
   // Save another offline page associated with same online URL as above, but
   // pointing to different archive file.
@@ -368,11 +368,7 @@ void OfflinePageRequestJobTest::SetUp() {
   // Make sure that the creation time of 2nd offline file is later.
   clock_.Advance(base::TimeDelta::FromMinutes(10));
 
-  model->SavePage(
-      kTestUrl, kTestClientId2, 0, std::move(archiver2),
-      base::Bind(&OfflinePageRequestJobTest::OnSavePageDone,
-                base::Unretained(this)));
-  RunUntilIdle();
+  SavePage(kTestUrl, kTestClientId2, std::move(archiver2));
 
   // Save an offline page associated with online URL that has a fragment
   // identifier.
@@ -383,11 +379,7 @@ void OfflinePageRequestJobTest::SetUp() {
       new TestOfflinePageArchiver(
           kTestUrl3WithFragment, archive_file_path3, kTestFileSize3));
 
-  model->SavePage(
-      kTestUrl3WithFragment, kTestClientId3, 0, std::move(archiver3),
-      base::Bind(&OfflinePageRequestJobTest::OnSavePageDone,
-                base::Unretained(this)));
-  RunUntilIdle();
+  SavePage(kTestUrl3WithFragment, kTestClientId3, std::move(archiver3));
 
   // Create a context with delayed initialization.
   test_url_request_context_.reset(new net::TestURLRequestContext(true));
@@ -462,6 +454,21 @@ void OfflinePageRequestJobTest::ExpectAggregatedRequestResultHistogramWithCount(
     OfflinePageRequestJob::AggregatedRequestResult result, int count) {
   histogram_tester_.ExpectUniqueSample(
       kAggregatedRequestResultHistogram, static_cast<int>(result), count);
+}
+
+void OfflinePageRequestJobTest::SavePage(
+    const GURL& url,
+    const ClientId& client_id,
+    std::unique_ptr<OfflinePageArchiver> archiver) {
+  OfflinePageModel::SavePageParams save_page_params;
+  save_page_params.url = url;
+  save_page_params.client_id = client_id;
+  OfflinePageModelFactory::GetForBrowserContext(profile())->SavePage(
+      save_page_params,
+      std::move(archiver),
+      base::Bind(&OfflinePageRequestJobTest::OnSavePageDone,
+                 base::Unretained(this)));
+  RunUntilIdle();
 }
 
 void OfflinePageRequestJobTest::OnSavePageDone(SavePageResult result,

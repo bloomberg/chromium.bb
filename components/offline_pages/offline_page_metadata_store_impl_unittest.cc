@@ -30,6 +30,7 @@ namespace {
 
 const char kTestClientNamespace[] = "CLIENT_NAMESPACE";
 const char kTestURL[] = "https://example.com";
+const char kOriginalTestURL[] = "https://example.com/foo";
 const ClientId kTestClientId1(kTestClientNamespace, "1234");
 const ClientId kTestClientId2(kTestClientNamespace, "5678");
 const base::FilePath::CharType kFilePath[] =
@@ -180,6 +181,48 @@ void BuildTestStoreWithSchemaFromM54(const base::FilePath& file) {
       connection.DoesColumnExist(OFFLINE_PAGES_TABLE_V1, "offline_url"));
 }
 
+void BuildTestStoreWithSchemaFromM55(const base::FilePath& file) {
+  sql::Connection connection;
+  ASSERT_TRUE(
+      connection.Open(file.Append(FILE_PATH_LITERAL("OfflinePages.db"))));
+  ASSERT_TRUE(connection.is_open());
+  ASSERT_TRUE(connection.BeginTransaction());
+  ASSERT_TRUE(connection.Execute("CREATE TABLE " OFFLINE_PAGES_TABLE_V1
+                                 "(offline_id INTEGER PRIMARY KEY NOT NULL, "
+                                 "creation_time INTEGER NOT NULL, "
+                                 "file_size INTEGER NOT NULL, "
+                                 "last_access_time INTEGER NOT NULL, "
+                                 "access_count INTEGER NOT NULL, "
+                                 "expiration_time INTEGER NOT NULL DEFAULT 0, "
+                                 "client_namespace VARCHAR NOT NULL, "
+                                 "client_id VARCHAR NOT NULL, "
+                                 "online_url VARCHAR NOT NULL, "
+                                 "file_path VARCHAR NOT NULL, "
+                                 "title VARCHAR NOT NULL DEFAULT ''"
+                                 ")"));
+  ASSERT_TRUE(connection.CommitTransaction());
+  sql::Statement statement(connection.GetUniqueStatement(
+      "INSERT INTO " OFFLINE_PAGES_TABLE_V1
+      "(offline_id, creation_time, file_size, "
+      "last_access_time, access_count, client_namespace, "
+      "client_id, online_url, file_path, expiration_time, title) "
+      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+  statement.BindInt64(0, kOfflineId);
+  statement.BindInt(1, 0);
+  statement.BindInt64(2, kFileSize);
+  statement.BindInt(3, 0);
+  statement.BindInt(4, 1);
+  statement.BindCString(5, kTestClientNamespace);
+  statement.BindString(6, kTestClientId2.id);
+  statement.BindCString(7, kTestURL);
+  statement.BindString(8, base::FilePath(kFilePath).MaybeAsASCII());
+  statement.BindInt64(9, base::Time::Now().ToInternalValue());
+  statement.BindString16(10, base::UTF8ToUTF16("Test title"));
+  ASSERT_TRUE(statement.Run());
+  ASSERT_TRUE(connection.DoesTableExist(OFFLINE_PAGES_TABLE_V1));
+  ASSERT_TRUE(connection.DoesColumnExist(OFFLINE_PAGES_TABLE_V1, "title"));
+}
+
 class OfflinePageMetadataStoreFactory {
  public:
   OfflinePageMetadataStore* BuildStore(const base::FilePath& file_path) {
@@ -208,6 +251,13 @@ class OfflinePageMetadataStoreFactory {
         base::ThreadTaskRunnerHandle::Get(), file_path);
     return store;
   }
+
+  OfflinePageMetadataStore* BuildStoreM55(const base::FilePath& file_path) {
+    BuildTestStoreWithSchemaFromM55(file_path);
+    OfflinePageMetadataStoreSQL* store = new OfflinePageMetadataStoreSQL(
+        base::ThreadTaskRunnerHandle::Get(), file_path);
+    return store;
+  }
 };
 
 enum CalledCallback { NONE, LOAD, ADD, UPDATE, REMOVE, RESET };
@@ -227,6 +277,7 @@ class OfflinePageMetadataStoreTest : public testing::Test {
   std::unique_ptr<OfflinePageMetadataStore> BuildStoreWithSchemaFromM52();
   std::unique_ptr<OfflinePageMetadataStore> BuildStoreWithSchemaFromM53();
   std::unique_ptr<OfflinePageMetadataStore> BuildStoreWithSchemaFromM54();
+  std::unique_ptr<OfflinePageMetadataStore> BuildStoreWithSchemaFromM55();
 
   void PumpLoop();
 
@@ -327,6 +378,7 @@ void OfflinePageMetadataStoreTest::CheckThatOfflinePageCanBeSaved(
   offline_page.title = base::UTF8ToUTF16("a title");
   base::Time expiration_time = base::Time::Now();
   offline_page.expiration_time = expiration_time;
+  offline_page.original_url = GURL(kOriginalTestURL);
 
   store->AddOfflinePage(offline_page,
                         base::Bind(&OfflinePageMetadataStoreTest::AddCallback,
@@ -391,6 +443,18 @@ std::unique_ptr<OfflinePageMetadataStore>
 OfflinePageMetadataStoreTest::BuildStoreWithSchemaFromM54() {
   std::unique_ptr<OfflinePageMetadataStore> store(
       factory_.BuildStoreM53(temp_directory_.GetPath()));
+  PumpLoop();
+  store->GetOfflinePages(
+      base::Bind(&OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
+                 base::Unretained(this)));
+  PumpLoop();
+  return store;
+}
+
+std::unique_ptr<OfflinePageMetadataStore>
+OfflinePageMetadataStoreTest::BuildStoreWithSchemaFromM55() {
+  std::unique_ptr<OfflinePageMetadataStore> store(
+      factory_.BuildStoreM55(temp_directory_.GetPath()));
   PumpLoop();
   store->GetOfflinePages(
       base::Bind(&OfflinePageMetadataStoreTest::GetOfflinePagesCallback,
@@ -519,6 +583,19 @@ TEST_F(OfflinePageMetadataStoreTest, LoadVersion54Store) {
   CheckThatOfflinePageCanBeSaved(std::move(store));
 }
 
+// Loads a string with schema from M55.
+// Because for now we only reduce the number of fields it just makes sure there
+// are no crashes in the process.
+// TODO(romax): Move this to sql_unittest.
+TEST_F(OfflinePageMetadataStoreTest, LoadVersion55Store) {
+  std::unique_ptr<OfflinePageMetadataStore> store(
+      BuildStoreWithSchemaFromM55());
+
+  OfflinePageItem item = CheckThatStoreHasOneItem();
+
+  CheckThatOfflinePageCanBeSaved(std::move(store));
+}
+
 // Adds metadata of an offline page into a store and then opens the store
 // again to make sure that stored metadata survives store restarts.
 TEST_F(OfflinePageMetadataStoreTest, AddOfflinePage) {
@@ -618,12 +695,6 @@ TEST_F(OfflinePageMetadataStoreTest, AddRemoveMultipleOfflinePages) {
   // Add an offline page.
   OfflinePageItem offline_page_1(GURL(kTestURL), 12345LL, kTestClientId1,
                                  base::FilePath(kFilePath), kFileSize);
-  base::FilePath file_path_2 =
-      base::FilePath(FILE_PATH_LITERAL("//other.page.com.mhtml"));
-  OfflinePageItem offline_page_2(GURL("https://other.page.com"), 5678LL,
-                                 kTestClientId2, file_path_2, 12345,
-                                 base::Time::Now());
-  offline_page_2.expiration_time = base::Time::Now();
   store->AddOfflinePage(offline_page_1,
                         base::Bind(&OfflinePageMetadataStoreTest::AddCallback,
                                    base::Unretained(this)));
@@ -634,6 +705,13 @@ TEST_F(OfflinePageMetadataStoreTest, AddRemoveMultipleOfflinePages) {
   ClearResults();
 
   // Add anther offline page.
+  base::FilePath file_path_2 =
+      base::FilePath(FILE_PATH_LITERAL("//other.page.com.mhtml"));
+  OfflinePageItem offline_page_2(GURL("https://other.page.com"), 5678LL,
+                                 kTestClientId2, file_path_2, 12345,
+                                 base::Time::Now());
+  offline_page_2.expiration_time = base::Time::Now();
+  offline_page_2.original_url = GURL("https://example.com/bar");
   store->AddOfflinePage(offline_page_2,
                         base::Bind(&OfflinePageMetadataStoreTest::AddCallback,
                                    base::Unretained(this)));
@@ -723,6 +801,7 @@ TEST_F(OfflinePageMetadataStoreTest, UpdateOfflinePage) {
   offline_page.file_size = kFileSize + 1;
   offline_page.access_count++;
   offline_page.expiration_time = base::Time::Now();
+  offline_page.original_url = GURL("https://example.com/bar");
   std::vector<OfflinePageItem> items_to_update;
   items_to_update.push_back(offline_page);
   store->UpdateOfflinePages(

@@ -335,37 +335,36 @@ void OfflinePageModelImpl::RemoveObserver(Observer* observer) {
 }
 
 void OfflinePageModelImpl::SavePage(
-    const GURL& url,
-    const ClientId& client_id,
-    int64_t proposed_offline_id,
+    const SavePageParams& save_page_params,
     std::unique_ptr<OfflinePageArchiver> archiver,
     const SavePageCallback& callback) {
   DCHECK(is_loaded_);
 
   // Skip saving the page that is not intended to be saved, like local file
   // page.
-  if (!OfflinePageModel::CanSaveURL(url)) {
-    InformSavePageDone(callback, SavePageResult::SKIPPED, client_id,
-                       kInvalidOfflineId);
+  if (!OfflinePageModel::CanSaveURL(save_page_params.url)) {
+    InformSavePageDone(callback, SavePageResult::SKIPPED,
+                       save_page_params.client_id, kInvalidOfflineId);
     return;
   }
 
   // The web contents is not available if archiver is not created and passed.
   if (!archiver.get()) {
-    InformSavePageDone(callback, SavePageResult::CONTENT_UNAVAILABLE, client_id,
-                       kInvalidOfflineId);
+    InformSavePageDone(callback, SavePageResult::CONTENT_UNAVAILABLE,
+                       save_page_params.client_id, kInvalidOfflineId);
     return;
   }
 
   // If we already have an offline id, use it.  If not, generate one.
-  if (proposed_offline_id == kInvalidOfflineId)
-    proposed_offline_id = GenerateOfflineId();
+  int64_t offline_id = save_page_params.proposed_offline_id;
+  if (offline_id == kInvalidOfflineId)
+    offline_id = GenerateOfflineId();
 
   archiver->CreateArchive(
-      archives_dir_, proposed_offline_id,
+      archives_dir_, offline_id,
       base::Bind(&OfflinePageModelImpl::OnCreateArchiveDone,
-                 weak_ptr_factory_.GetWeakPtr(), url, proposed_offline_id,
-                 client_id, GetCurrentTime(), callback));
+                 weak_ptr_factory_.GetWeakPtr(), save_page_params, offline_id,
+                 GetCurrentTime(), callback));
   pending_archivers_.push_back(std::move(archiver));
 }
 
@@ -732,36 +731,38 @@ OfflineEventLogger* OfflinePageModelImpl::GetLogger() {
   return &offline_event_logger_;
 }
 
-void OfflinePageModelImpl::OnCreateArchiveDone(const GURL& requested_url,
-                                               int64_t offline_id,
-                                               const ClientId& client_id,
-                                               const base::Time& start_time,
-                                               const SavePageCallback& callback,
-                                               OfflinePageArchiver* archiver,
-                                               ArchiverResult archiver_result,
-                                               const GURL& url,
-                                               const base::FilePath& file_path,
-                                               const base::string16& title,
-                                               int64_t file_size) {
-  if (requested_url != url) {
+void OfflinePageModelImpl::OnCreateArchiveDone(
+    const SavePageParams& save_page_params,
+    int64_t offline_id,
+    const base::Time& start_time,
+    const SavePageCallback& callback,
+    OfflinePageArchiver* archiver,
+    ArchiverResult archiver_result,
+    const GURL& url,
+    const base::FilePath& file_path,
+    const base::string16& title,
+    int64_t file_size) {
+  if (save_page_params.url != url) {
     DVLOG(1) << "Saved URL does not match requested URL.";
     // TODO(fgorski): We have created an archive for a wrong URL. It should be
     // deleted from here, once archiver has the right functionality.
     InformSavePageDone(callback, SavePageResult::ARCHIVE_CREATION_FAILED,
-                       client_id, offline_id);
+                       save_page_params.client_id, offline_id);
     DeletePendingArchiver(archiver);
     return;
   }
 
   if (archiver_result != ArchiverResult::SUCCESSFULLY_CREATED) {
     SavePageResult result = ToSavePageResult(archiver_result);
-    InformSavePageDone(callback, result, client_id, offline_id);
+    InformSavePageDone(
+        callback, result, save_page_params.client_id, offline_id);
     DeletePendingArchiver(archiver);
     return;
   }
-  OfflinePageItem offline_page_item(url, offline_id, client_id, file_path,
-                                    file_size, start_time);
+  OfflinePageItem offline_page_item(url, offline_id, save_page_params.client_id,
+                                    file_path, file_size, start_time);
   offline_page_item.title = title;
+  offline_page_item.original_url = save_page_params.original_url;
   store_->AddOfflinePage(offline_page_item,
                          base::Bind(&OfflinePageModelImpl::OnAddOfflinePageDone,
                                     weak_ptr_factory_.GetWeakPtr(), archiver,

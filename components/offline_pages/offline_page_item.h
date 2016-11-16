@@ -59,7 +59,8 @@ struct OfflinePageItem {
   // Returns whether the offline page is expired.
   bool IsExpired() const;
 
-  // The URL of the page.
+  // The URL of the page. This is the last committed URL. In the case that
+  // redirects occur, access |original_url| for the original URL.
   GURL url;
   // The primary key/ID for this page in offline pages internal database.
   int64_t offline_id;
@@ -85,6 +86,9 @@ struct OfflinePageItem {
   base::string16 title;
   // Flags about the state and behavior of the offline page.
   Flags flags;
+  // The original URL of the page if not empty. Otherwise, this is set to empty
+  // and |url| should be accessed instead.
+  GURL original_url;
 };
 
 }  // namespace offline_pages
