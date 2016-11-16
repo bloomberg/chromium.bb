@@ -54,17 +54,18 @@ const Trigram kUndefinedTrigram = -1;
 class Index {
  public:
   Index();
+  // Index is only instantiated as a leak LazyInstance, so the destructor is
+  // never called.
+  ~Index() = delete;
+
   Time LastModifiedTimeForFile(const FilePath& file_path);
   void SetTrigramsForFile(const FilePath& file_path,
                           const vector<Trigram>& index,
                           const Time& time);
   vector<FilePath> Search(string query);
-  void PrintStats();
   void NormalizeVectors();
 
  private:
-  ~Index();
-
   FileId GetFileId(const FilePath& file_path);
 
   typedef map<FilePath, FileId> FileIdsMap;
@@ -137,8 +138,6 @@ Index::Index() : last_file_id_(0) {
   is_normalized_.resize(kTrigramCount);
   std::fill(is_normalized_.begin(), is_normalized_.end(), true);
 }
-
-Index::~Index() {}
 
 Time Index::LastModifiedTimeForFile(const FilePath& file_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
@@ -225,26 +224,6 @@ void Index::NormalizeVectors() {
       is_normalized_[i] = true;
     }
   }
-}
-
-void Index::PrintStats() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  LOG(ERROR) << "Index stats:";
-  size_t size = 0;
-  size_t maxSize = 0;
-  size_t capacity = 0;
-  for (size_t i = 0; i < kTrigramCount; ++i) {
-    if (index_[i].size() > maxSize)
-      maxSize = index_[i].size();
-    size += index_[i].size();
-    capacity += index_[i].capacity();
-  }
-  LOG(ERROR) << "  - total trigram count: " << size;
-  LOG(ERROR) << "  - max file count per trigram: " << maxSize;
-  LOG(ERROR) << "  - total vectors capacity " << capacity;
-  size_t total_index_size =
-      capacity * sizeof(FileId) + sizeof(vector<FileId>) * kTrigramCount;
-  LOG(ERROR) << "  - estimated total index size " << total_index_size;
 }
 
 typedef Callback<void(bool, const vector<bool>&)> IndexerCallback;
