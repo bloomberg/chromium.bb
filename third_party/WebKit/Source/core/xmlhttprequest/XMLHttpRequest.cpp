@@ -1025,6 +1025,10 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody,
     resourceLoaderOptions.dataBufferingPolicy = DoNotBufferData;
   }
 
+  if (m_async) {
+    resourceLoaderOptions.dataBufferingPolicy = DoNotBufferData;
+  }
+
   m_exceptionCode = 0;
   m_error = false;
 

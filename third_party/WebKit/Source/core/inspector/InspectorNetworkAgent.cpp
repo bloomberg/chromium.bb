@@ -752,6 +752,16 @@ void InspectorNetworkAgent::didFinishLoading(unsigned long identifier,
                                              double monotonicFinishTime,
                                              int64_t encodedDataLength) {
   String requestId = IdentifiersFactory::requestId(identifier);
+  NetworkResourcesData::ResourceData const* resourceData =
+      m_resourcesData->data(requestId);
+  if (resourceData &&
+      (!resourceData->cachedResource() ||
+       resourceData->cachedResource()->getDataBufferingPolicy() ==
+           DoNotBufferData ||
+       isErrorStatusCode(resourceData->httpStatusCode()))) {
+    m_resourcesData->maybeAddResourceData(requestId, "", 0);
+  }
+
   m_resourcesData->maybeDecodeDataToContent(requestId);
   if (!monotonicFinishTime)
     monotonicFinishTime = monotonicallyIncreasingTime();
