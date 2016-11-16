@@ -128,6 +128,22 @@ void AutocompleteMatchToAssistedQuery(
       *subtype = 39;
       return;
     }
+    case AutocompleteMatchType::CALCULATOR: {
+      *type = 6;
+      return;
+    }
+    case AutocompleteMatchType::CLIPBOARD: {
+      *subtype = 177;
+      return;
+    }
+    case AutocompleteMatchType::PHYSICAL_WEB: {
+      *subtype = 190;
+      return;
+    }
+    case AutocompleteMatchType::PHYSICAL_WEB_OVERFLOW: {
+      *subtype = 191;
+      return;
+    }
     default: {
       // This value indicates a native chrome suggestion with no named subtype
       // (yet).
