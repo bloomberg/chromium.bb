@@ -36,10 +36,10 @@ enum BubbleAlignment {
   kAlignArrowToAnchor,
   // The edge nearest to the arrow is lined up with the anchor point.
   kAlignEdgeToAnchorEdge,
-  // Align the right edge to the anchor point.
-  kAlignRightEdgeToAnchorEdge,
-  // Align the left edge to the anchor point.
-  kAlignLeftEdgeToAnchorEdge,
+  // Align the trailing edge (right in LTR, left in RTL) to the anchor point.
+  kAlignTrailingEdgeToAnchorEdge,
+  // Align the leading edge (left in LTR, right in RTL)  to the anchor point.
+  kAlignLeadingEdgeToAnchorEdge,
 };
 
 }  // namespace info_bubble

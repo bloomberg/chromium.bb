@@ -14,6 +14,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
+#include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_model_observer_bridge.h"
 #include "components/bubble/bubble_controller.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
@@ -403,6 +404,7 @@
   NSWindow* window = [self window];
   NSPoint origin = anchor_;
 
+  BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
   switch ([bubble_ alignment]) {
     case info_bubble::kAlignArrowToAnchor: {
       NSSize offsets = NSMakeSize(info_bubble::kBubbleArrowXOffset +
@@ -434,12 +436,14 @@
       }
       break;
 
-    case info_bubble::kAlignRightEdgeToAnchorEdge:
-      origin.x -= NSWidth([window frame]);
+    case info_bubble::kAlignTrailingEdgeToAnchorEdge:
+      if (!isRTL)
+        origin.x -= NSWidth([window frame]);
       break;
 
-    case info_bubble::kAlignLeftEdgeToAnchorEdge:
-      // Nothing to do.
+    case info_bubble::kAlignLeadingEdgeToAnchorEdge:
+      if (isRTL)
+        origin.x -= NSWidth([window frame]);
       break;
 
     default:

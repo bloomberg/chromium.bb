@@ -94,7 +94,7 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
     delegate_ = delegate;
 
     ui::NativeTheme* nativeTheme = ui::NativeThemeMac::instance();
-    [[self bubble] setAlignment:info_bubble::kAlignRightEdgeToAnchorEdge];
+    [[self bubble] setAlignment:info_bubble::kAlignTrailingEdgeToAnchorEdge];
     [[self bubble] setArrowLocation:info_bubble::kNoArrow];
     [[self bubble] setBackgroundColor:
         skia::SkColorToCalibratedNSColor(nativeTheme->GetSystemColor(

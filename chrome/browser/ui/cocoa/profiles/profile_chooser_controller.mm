@@ -1367,7 +1367,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
         l10n_util::GetNSString(IDS_PROFILES_NEW_AVATAR_MENU_ACCESSIBLE_NAME)
                              forAttribute:NSAccessibilityHelpAttribute];
 
-    [[self bubble] setAlignment:info_bubble::kAlignRightEdgeToAnchorEdge];
+    [[self bubble] setAlignment:info_bubble::kAlignTrailingEdgeToAnchorEdge];
     [[self bubble] setArrowLocation:info_bubble::kNoArrow];
     [[self bubble] setBackgroundColor:GetDialogBackgroundColor()];
     [self initMenuContentsWithView:viewMode_];
