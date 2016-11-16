@@ -138,6 +138,11 @@ void ArcBridgeHostImpl::OnIntentHelperInstanceReady(
                   std::move(intent_helper_ptr));
 }
 
+void ArcBridgeHostImpl::OnKioskInstanceReady(
+    mojom::KioskInstancePtr kiosk_ptr) {
+  OnInstanceReady(ArcBridgeService::Get()->kiosk(), std::move(kiosk_ptr));
+}
+
 void ArcBridgeHostImpl::OnMetricsInstanceReady(
     mojom::MetricsInstancePtr metrics_ptr) {
   OnInstanceReady(ArcBridgeService::Get()->metrics(), std::move(metrics_ptr));

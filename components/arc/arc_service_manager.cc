@@ -18,6 +18,7 @@
 #include "components/arc/crash_collector/arc_crash_collector_bridge.h"
 #include "components/arc/ime/arc_ime_service.h"
 #include "components/arc/intent_helper/activity_icon_loader.h"
+#include "components/arc/kiosk/arc_kiosk_bridge.h"
 #include "components/arc/metrics/arc_metrics_service.h"
 #include "components/arc/net/arc_net_host_impl.h"
 #include "components/arc/obb_mounter/arc_obb_mounter_bridge.h"
@@ -61,6 +62,7 @@ ArcServiceManager::ArcServiceManager(
   AddService(base::MakeUnique<ArcCrashCollectorBridge>(arc_bridge_service(),
                                                        blocking_task_runner_));
   AddService(base::MakeUnique<ArcImeService>(arc_bridge_service()));
+  AddService(base::MakeUnique<ArcKioskBridge>(arc_bridge_service()));
   AddService(base::MakeUnique<ArcMetricsService>(arc_bridge_service()));
   AddService(base::MakeUnique<ArcNetHostImpl>(arc_bridge_service()));
   AddService(base::MakeUnique<ArcObbMounterBridge>(arc_bridge_service()));
