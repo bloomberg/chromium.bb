@@ -350,10 +350,10 @@ void BrowserGpuChannelHostFactory::GpuChannelEstablished() {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "466866 BrowserGpuChannelHostFactory::GpuChannelEstablished2"));
 
-  for (size_t n = 0; n < established_callbacks_.size(); n++)
-    established_callbacks_[n].Run(gpu_channel_);
-
-  established_callbacks_.clear();
+  std::vector<gpu::GpuChannelEstablishedCallback> established_callbacks;
+  established_callbacks_.swap(established_callbacks);
+  for (auto& callback : established_callbacks)
+    callback.Run(gpu_channel_);
 }
 
 // static
