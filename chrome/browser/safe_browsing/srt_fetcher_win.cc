@@ -147,6 +147,7 @@ const wchar_t kFoundUwsValueName[] = L"FoundUws";
 const wchar_t kMemoryUsedValueName[] = L"MemoryUsed";
 const wchar_t kLogsUploadResultValueName[] = L"LogsUploadResult";
 const wchar_t kExitCodeValueName[] = L"ExitCode";
+const wchar_t kEngineErrorCodeValueName[] = L"EngineErrorCode";
 
 const char kFoundUwsMetricName[] = "SoftwareReporter.FoundUwS";
 const char kFoundUwsReadErrorMetricName[] =
@@ -160,6 +161,7 @@ const char kLogsUploadResultMetricName[] = "SoftwareReporter.LogsUploadResult";
 const char kLogsUploadResultRegistryErrorMetricName[] =
     "SoftwareReporter.LogsUploadResultRegistryError";
 const char kExitCodeMetricName[] = "SoftwareReporter.ExitCodeFromRegistry";
+const char kEngineErrorCodeMetricName[] = "SoftwareReporter.EngineErrorCode";
 
 // The max value for histogram SoftwareReporter.LogsUploadResult, which is used
 // to send UMA information about the result of Software Reporter's attempt to
@@ -224,6 +226,20 @@ class UMAHistogramReporter {
 
     RecordSparseHistogram(kExitCodeMetricName, exit_code_in_registry);
     reporter_key.DeleteValue(kExitCodeValueName);
+  }
+
+  void ReportEngineErrorCode() const {
+    base::win::RegKey reporter_key;
+    DWORD engine_error_code;
+    if (reporter_key.Open(HKEY_CURRENT_USER, registry_key_.c_str(),
+                          KEY_QUERY_VALUE | KEY_SET_VALUE) != ERROR_SUCCESS ||
+        reporter_key.ReadValueDW(kEngineErrorCodeValueName,
+                                 &engine_error_code) != ERROR_SUCCESS) {
+      return;
+    }
+
+    RecordSparseHistogram(kEngineErrorCodeMetricName, engine_error_code);
+    reporter_key.DeleteValue(kEngineErrorCodeValueName);
   }
 
   // Reports UwS found by the software reporter tool via UMA and RAPPOR.
@@ -831,6 +847,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
     UMAHistogramReporter uma(finished_invocation.suffix);
     uma.ReportVersion(version);
     uma.ReportExitCode(exit_code);
+    uma.ReportEngineErrorCode();
     uma.ReportFoundUwS(finished_invocation.BehaviourIsSupported(
         SwReporterInvocation::BEHAVIOUR_LOG_TO_RAPPOR));
 
