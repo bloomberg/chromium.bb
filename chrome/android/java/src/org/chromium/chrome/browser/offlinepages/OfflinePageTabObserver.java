@@ -19,9 +19,9 @@ import java.util.Map;
 
 /**
  * A class that observes events for a tab which has an associated offline page. It is created when
- * the first offline page is loaded in any tab. When there is more offline pages opened, the are all
- * watched by the same observer. This observer will decide when to show a reload snackbar for such
- * tabs. The following conditions need to be met to show the snackbar:
+ * the first offline page is loaded in any tab. When additional offline pages are opened, they are
+ * all watched by the same observer. This observer will decide when to show a reload snackbar for
+ * those tabs. The following conditions need to be met to show the snackbar:
  * <ul>
  *   <li>Tab has to be shown,</li>
  *   <li>Offline page has to be loaded,</li>
