@@ -30,6 +30,12 @@ var MainPageBehaviorImpl = {
     var oldRouteWasSection =
         !!oldRoute && !!oldRoute.parent && !!oldRoute.section &&
         oldRoute.parent.section != oldRoute.section;
+
+    if (oldRouteWasSection && newRoute == settings.Route.BASIC) {
+      this.scroller.scrollTop = 0;
+      return;
+    }
+
     var scrollToSection =
         !settings.lastRouteChangeWasPopstate() || oldRouteWasSection;
 

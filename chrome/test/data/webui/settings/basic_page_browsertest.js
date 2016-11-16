@@ -52,13 +52,15 @@ TEST_F('SettingsBasicPageBrowserTest', 'MAYBE_Load', function() {
       }
     });
 
-    // This test checks for a regression that occurred with scrollToSection_
-    // failing to find its host element.
     test('scroll to section', function() {
       // Setting the page and section will cause a scrollToSection_.
       settings.navigateTo(settings.Route.ON_STARTUP);
 
+      var page = self.getPage('basic');
+
       return new Promise(function(resolve, reject) {
+        // This test checks for a regression that occurred with scrollToSection_
+        // failing to find its host element.
         var intervalId = window.setInterval(function() {
           var page = self.getPage('basic');
           if (self.getSection(page, settings.getCurrentRoute().section)) {
@@ -66,7 +68,18 @@ TEST_F('SettingsBasicPageBrowserTest', 'MAYBE_Load', function() {
             resolve();
           }
         }, 55);
-      }.bind(self));
+      }.bind(self)).then(function() {
+        // Should be scrolled to the On Startup section.
+        assertNotEquals(0, page.scroller.scrollTop);
+
+        return new Promise(function(resolve) {
+          listenOnce(window, 'popstate', resolve);
+          settings.navigateToPreviousRoute();
+        });
+      }).then(function() {
+        // Should be at the top of the page after going Back from the section.
+        assertEquals(0, page.scroller.scrollTop);
+      });
     });
   });
 
