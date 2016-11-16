@@ -639,14 +639,6 @@ NSString* const kWindowNameKey = @"windowName";
   return 0 <= index && static_cast<NSUInteger>(index) < _entries.count;
 }
 
-- (void)goBack {
-  [self goDelta:-1];
-}
-
-- (void)goForward {
-  [self goDelta:1];
-}
-
 - (void)goDelta:(int)delta {
   if (delta != 0 && [self canGoDelta:delta]) {
     NSInteger newNavigationIndex = [self indexOfEntryForDelta:delta];

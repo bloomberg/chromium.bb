@@ -122,10 +122,6 @@ struct SSLStatus;
 - (BOOL)canGoBack;
 - (BOOL)canGoForward;
 - (BOOL)canGoDelta:(int)delta;
-// Adjusts the current entry to reflect the navigation in the corresponding
-// direction in history.
-- (void)goBack;
-- (void)goForward;
 // Calls goBack or goForward the appropriate number of times to adjust
 // currentNavigationIndex_ by delta.
 - (void)goDelta:(int)delta;
