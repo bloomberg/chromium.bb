@@ -44,8 +44,8 @@ class ExtensionUninstallDialogViews
   ~ExtensionUninstallDialogViews() override;
 
   // Called when the ExtensionUninstallDialogDelegate has been destroyed to make
-  // sure we invalidate pointers.
-  void DialogDelegateDestroyed() { view_ = NULL; }
+  // sure we invalidate pointers. This object will also be freed.
+  void DialogDelegateDestroyed();
 
   // Forwards the accept and cancels to the delegate.
   void DialogAccepted(bool handle_report_abuse);
@@ -140,8 +140,17 @@ void ExtensionUninstallDialogViews::Show() {
   constrained_window::CreateBrowserModalDialogViews(view_, parent_)->Show();
 }
 
+void ExtensionUninstallDialogViews::DialogDelegateDestroyed() {
+  // Checks view_ to ensure OnDialogClosed() will not be called twice.
+  if (view_) {
+    view_ = nullptr;
+    OnDialogClosed(CLOSE_ACTION_CANCELED);
+  }
+}
+
 void ExtensionUninstallDialogViews::DialogAccepted(bool report_abuse_checked) {
   // The widget gets destroyed when the dialog is accepted.
+  DCHECK(view_);
   view_->DialogDestroyed();
   view_ = nullptr;
   OnDialogClosed(report_abuse_checked ?
@@ -150,6 +159,7 @@ void ExtensionUninstallDialogViews::DialogAccepted(bool report_abuse_checked) {
 
 void ExtensionUninstallDialogViews::DialogCanceled() {
   // The widget gets destroyed when the dialog is canceled.
+  DCHECK(view_);
   view_->DialogDestroyed();
   view_ = nullptr;
   OnDialogClosed(CLOSE_ACTION_CANCELED);

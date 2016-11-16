@@ -60,7 +60,7 @@ class WidgetModalDialogHostObserverViews
   }
 
   // WidgetObserver overrides
-  void OnWidgetClosing(views::Widget* widget) override { delete this; }
+  void OnWidgetDestroying(views::Widget* widget) override { delete this; }
 
   // WebContentsModalDialogHostObserver overrides
   void OnPositionRequiresUpdate() override {
