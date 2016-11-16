@@ -1,6 +1,6 @@
 include_rules = [
-  "+chromecast/android",
-  "+chromecast/app/android",
-  "+chromecast/browser/android",
   "+jni",
+
+  # TODO(sanfin): Remove cyclic dependency between content and android.
+  "!chromecast/browser/android",
 ]
