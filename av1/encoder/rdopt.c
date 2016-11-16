@@ -4330,6 +4330,9 @@ static int cost_mv_ref(const AV1_COMP *const cpi, PREDICTION_MODE mode,
 }
 
 #if CONFIG_GLOBAL_MOTION
+#define GLOBAL_MOTION_COST_AMORTIZATION_BLKS 8
+
+#if GLOBAL_MOTION_COST_AMORTIZATION_BLKS > 0
 static int get_gmbitcost(const WarpedMotionParams *gm, const aom_prob *probs) {
   int gmtype_cost[TRANS_TYPES];
   int bits;
@@ -4354,9 +4357,6 @@ static int get_gmbitcost(const WarpedMotionParams *gm, const aom_prob *probs) {
   return bits ? (bits << AV1_PROB_COST_SHIFT) + gmtype_cost[type] : 0;
 }
 
-#define GLOBAL_MOTION_COST_AMORTIZATION_BLKS 8
-
-#if GLOBAL_MOTION_COST_AMORTIZATION_BLKS > 0
 #define GLOBAL_MOTION_RATE(ref)                                         \
   (cpi->global_motion_used[ref] >= GLOBAL_MOTION_COST_AMORTIZATION_BLKS \
        ? 0                                                              \

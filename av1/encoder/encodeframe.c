@@ -4785,10 +4785,8 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 
 #if CONFIG_GLOBAL_MOTION
   av1_zero(cpi->global_motion_used);
-  for (i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {
-    set_default_gmparams(&cm->global_motion[i]);
-  }
-  if (cpi->common.frame_type == INTER_FRAME && cpi->Source) {
+  if (cpi->common.frame_type == INTER_FRAME && cpi->Source &&
+      !cpi->global_motion_search_done) {
     YV12_BUFFER_CONFIG *ref_buf;
     int frame;
     double erroradvantage = 0;
@@ -4831,6 +4829,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
         aom_clear_system_state();
       }
     }
+    cpi->global_motion_search_done = 1;
   }
 #endif  // CONFIG_GLOBAL_MOTION
 

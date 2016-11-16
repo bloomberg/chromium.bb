@@ -330,10 +330,10 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
                                  : tokens[i][1].dqc;
         if (sz) tokens[i][1].dqc = -tokens[i][1].dqc;
 #else
-        // The 32x32 transform coefficient uses half quantization step size.
-        // Account for the rounding difference in the dequantized coefficeint
-        // value when the quantization index is dropped from an even number
-        // to an odd number.
+// The 32x32 transform coefficient uses half quantization step size.
+// Account for the rounding difference in the dequantized coefficeint
+// value when the quantization index is dropped from an even number
+// to an odd number.
 
 #if CONFIG_AOM_QM
         tran_low_t offset = dqv >> shift;

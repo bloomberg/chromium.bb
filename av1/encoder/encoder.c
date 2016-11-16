@@ -2878,6 +2878,23 @@ static int scale_down(AV1_COMP *cpi, int q) {
   return scale;
 }
 
+#if CONFIG_GLOBAL_MOTION
+#define MIN_GLOBAL_MOTION_BLKS 4
+static int recode_loop_test_global_motion(AV1_COMP *cpi) {
+  int i;
+  int recode = 0;
+  AV1_COMMON *const cm = &cpi->common;
+  for (i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {
+    if (cm->global_motion[i].wmtype != IDENTITY &&
+        cpi->global_motion_used[i] < MIN_GLOBAL_MOTION_BLKS) {
+      set_default_gmparams(&cm->global_motion[i]);
+      recode |= (cpi->global_motion_used[i] > 0);
+    }
+  }
+  return recode;
+}
+#endif  // CONFIG_GLOBAL_MOTION
+
 // Function to test for conditions that indicate we should loop
 // back and recode a frame.
 static int recode_loop_test(AV1_COMP *cpi, int high_limit, int low_limit, int q,
@@ -3699,6 +3716,13 @@ static void set_mv_search_params(AV1_COMP *cpi) {
 }
 
 static void set_size_independent_vars(AV1_COMP *cpi) {
+#if CONFIG_GLOBAL_MOTION
+  int i;
+  for (i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {
+    set_default_gmparams(&cpi->common.global_motion[i]);
+  }
+  cpi->global_motion_search_done = 0;
+#endif  // CONFIG_GLOBAL_MOTION
   av1_set_speed_features_framesize_independent(cpi);
   av1_set_rd_speed_thresholds(cpi);
   av1_set_rd_speed_thresholds_sub8x8(cpi);
@@ -4210,6 +4234,12 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
     if (rc->is_src_frame_alt_ref &&
         rc->projected_frame_size < rc->max_frame_bandwidth)
       loop = 0;
+
+#if CONFIG_GLOBAL_MOTION
+    if (recode_loop_test_global_motion(cpi)) {
+      loop = 1;
+    }
+#endif  // CONFIG_GLOBAL_MOTION
 
     if (loop) {
       ++loop_count;

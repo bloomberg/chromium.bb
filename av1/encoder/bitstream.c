@@ -4014,12 +4014,10 @@ static void write_global_motion(AV1_COMP *cpi, aom_writer *w) {
     write_global_motion_params(&cm->global_motion[frame],
                                cm->fc->global_motion_types_prob, w);
     /*
-    printf("Enc Ref %d [%d/%d] (used %d): %d %d %d %d\n",
-           frame, cm->current_video_frame, cm->show_frame,
-           cpi->global_motion_used[frame],
-           cm->global_motion[frame].wmmat[0],
-           cm->global_motion[frame].wmmat[1],
-           cm->global_motion[frame].wmmat[2],
+    printf("Frame %d/%d: Enc Ref %d (used %d): %d %d %d %d\n",
+           cm->current_video_frame, cm->show_frame, frame,
+           cpi->global_motion_used[frame], cm->global_motion[frame].wmmat[0],
+           cm->global_motion[frame].wmmat[1], cm->global_motion[frame].wmmat[2],
            cm->global_motion[frame].wmmat[3]);
            */
   }
