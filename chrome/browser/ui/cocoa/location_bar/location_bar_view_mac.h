@@ -254,6 +254,10 @@ class LocationBarViewMac : public LocationBar,
   // Updates the security state bubble decoration.
   void UpdateSecurityState(bool tab_changed);
 
+  // Returns true if the security state can animate for the |level|.
+  bool CanAnimateSecurityLevel(
+      security_state::SecurityStateModel::SecurityLevel level) const;
+
   // Returns true if |level| is SECURE or EV_SECURE.
   bool IsSecureConnection(
       security_state::SecurityStateModel::SecurityLevel level) const;
