@@ -41,13 +41,6 @@ android_library("custom_tabs_client_shared_java") {
   chromium_code = true
 }
 
-# TODO(agrieve): Delete once no longer referenced downstream.
-java_group("custom_tabs_support_lib") {
-  deps = [
-    ":custom_tabs_support_java",
-  ]
-}
-
 android_library("custom_tabs_support_java") {
   java_files = [
     "src/customtabs/src/android/support/customtabs/CustomTabsCallback.java",

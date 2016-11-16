@@ -33,8 +33,6 @@ _java_target_whitelist = [
   "*android_webview/glue:glue",
   "//build/android/rezip:rezip",
   "//chrome/test/android/cast_emulator:cast_emulator",
-  "//mojo/public/java:bindings",
-  "//third_party/custom_tabs_client:custom_tabs_support_lib",
 ]
 
 # Targets that match the whitelist but are not actually java targets.

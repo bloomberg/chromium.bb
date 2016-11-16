@@ -4,13 +4,6 @@
 
 import("//build/config/android/rules.gni")
 
-# TODO(agrieve): Remove once no longer used by downstream.
-java_group("bindings") {
-  deps = [
-    ":bindings_java",
-  ]
-}
-
 android_library("system_java") {
   java_files = [
     "system/src/org/chromium/mojo/system/Core.java",
