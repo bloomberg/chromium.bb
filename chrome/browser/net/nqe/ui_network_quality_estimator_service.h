@@ -37,7 +37,8 @@ class UINetworkQualityEstimatorService
   // Must be called on the UI thread.
   net::EffectiveConnectionType GetEffectiveConnectionType() const override;
   // Must be called on the UI thread. |observer| will be notified on the UI
-  // thread.
+  // thread.  |observer| would be notified of the current effective connection
+  // type in the next message pump.
   void AddEffectiveConnectionTypeObserver(
       net::NetworkQualityEstimator::EffectiveConnectionTypeObserver* observer)
       override;
@@ -64,6 +65,12 @@ class UINetworkQualityEstimatorService
 
  private:
   class IONetworkQualityObserver;
+
+  // Notifies |observer| of the current effective connection type if |observer|
+  // is still registered as an observer.
+  void NotifyEffectiveConnectionTypeObserverIfPresent(
+      net::NetworkQualityEstimator::EffectiveConnectionTypeObserver* observer)
+      const;
 
   // KeyedService implementation:
   void Shutdown() override;

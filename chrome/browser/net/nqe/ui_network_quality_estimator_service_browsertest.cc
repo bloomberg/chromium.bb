@@ -6,6 +6,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
@@ -31,7 +32,8 @@ namespace {
 class TestEffectiveConnectionTypeObserver
     : public net::NetworkQualityEstimator::EffectiveConnectionTypeObserver {
  public:
-  TestEffectiveConnectionTypeObserver() {}
+  TestEffectiveConnectionTypeObserver()
+      : effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {}
   ~TestEffectiveConnectionTypeObserver() override {}
 
   // net::NetworkQualityEstimator::EffectiveConnectionTypeObserver
@@ -186,6 +188,26 @@ IN_PROC_BROWSER_TEST_F(UINetworkQualityEstimatorServiceBrowserTest,
             nqe_service->GetEffectiveConnectionType());
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
             nqe_observer.effective_connection_type());
+
+  // Observer should be notified on addition.
+  TestEffectiveConnectionTypeObserver nqe_observer_2;
+  nqe_service->AddEffectiveConnectionTypeObserver(&nqe_observer_2);
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
+            nqe_observer_2.effective_connection_type());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE,
+            nqe_observer_2.effective_connection_type());
+
+  // |nqe_observer_3| should be not notified since it unregisters before the
+  // message loop is run.
+  TestEffectiveConnectionTypeObserver nqe_observer_3;
+  nqe_service->AddEffectiveConnectionTypeObserver(&nqe_observer_3);
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
+            nqe_observer_3.effective_connection_type());
+  nqe_service->RemoveEffectiveConnectionTypeObserver(&nqe_observer_3);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
+            nqe_observer_3.effective_connection_type());
 }
 
 // Verify that prefs are not writen when writing of the prefs is not enabled

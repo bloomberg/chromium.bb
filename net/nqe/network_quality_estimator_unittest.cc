@@ -359,8 +359,9 @@ TEST(NetworkQualityEstimatorTest, Caching) {
   base::RunLoop().RunUntilIdle();
 
   // Verify that the cached network quality was read, and observers were
-  // notified.
-  EXPECT_EQ(1U, observer.effective_connection_types().size());
+  // notified. |observer| must be notified once right after it was added, and
+  // once again after the cached network quality was read.
+  EXPECT_EQ(2U, observer.effective_connection_types().size());
   EXPECT_EQ(1U, rtt_observer.observations().size());
   EXPECT_EQ(1U, throughput_observer.observations().size());
 }
@@ -1462,6 +1463,22 @@ TEST(NetworkQualityEstimatorTest, TestEffectiveConnectionTypeObserver) {
   estimator.set_start_time_null_http_rtt(
       base::TimeDelta::FromMilliseconds(100));
   EXPECT_EQ(2U, observer.effective_connection_types().size());
+
+  TestEffectiveConnectionTypeObserver observer_2;
+  estimator.AddEffectiveConnectionTypeObserver(&observer_2);
+  EXPECT_EQ(0U, observer_2.effective_connection_types().size());
+  base::RunLoop().RunUntilIdle();
+  // |observer_2| must be notified as soon as it is added.
+  EXPECT_EQ(1U, observer_2.effective_connection_types().size());
+
+  // |observer_3| should not be notified since it unregisters before the
+  // message loop is run.
+  TestEffectiveConnectionTypeObserver observer_3;
+  estimator.AddEffectiveConnectionTypeObserver(&observer_3);
+  EXPECT_EQ(0U, observer_3.effective_connection_types().size());
+  estimator.RemoveEffectiveConnectionTypeObserver(&observer_3);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0U, observer_3.effective_connection_types().size());
 }
 
 // Tests that the network quality is computed at the specified interval, and
@@ -1539,6 +1556,33 @@ TEST(NetworkQualityEstimatorTest, TestRTTAndThroughputEstimatesObserver) {
       base::TimeDelta::FromMilliseconds(10000));
   estimator.set_start_time_null_http_rtt(base::TimeDelta::FromMilliseconds(1));
   EXPECT_EQ(0, observer.notifications_received() - notifications_received);
+
+  TestRTTAndThroughputEstimatesObserver observer_2;
+  estimator.AddRTTAndThroughputEstimatesObserver(&observer_2);
+  EXPECT_EQ(nqe::internal::InvalidRTT(), observer_2.http_rtt());
+  EXPECT_EQ(nqe::internal::InvalidRTT(), observer_2.transport_rtt());
+  EXPECT_EQ(nqe::internal::kInvalidThroughput,
+            observer_2.downstream_throughput_kbps());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_NE(nqe::internal::InvalidRTT(), observer_2.http_rtt());
+  EXPECT_NE(nqe::internal::InvalidRTT(), observer_2.transport_rtt());
+  EXPECT_NE(nqe::internal::kInvalidThroughput,
+            observer_2.downstream_throughput_kbps());
+
+  // |observer_3| should not be notified because it is unregisters before the
+  // message loop is run.
+  TestRTTAndThroughputEstimatesObserver observer_3;
+  estimator.AddRTTAndThroughputEstimatesObserver(&observer_3);
+  EXPECT_EQ(nqe::internal::InvalidRTT(), observer_3.http_rtt());
+  EXPECT_EQ(nqe::internal::InvalidRTT(), observer_3.transport_rtt());
+  EXPECT_EQ(nqe::internal::kInvalidThroughput,
+            observer_3.downstream_throughput_kbps());
+  estimator.RemoveRTTAndThroughputEstimatesObserver(&observer_3);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(nqe::internal::InvalidRTT(), observer_3.http_rtt());
+  EXPECT_EQ(nqe::internal::InvalidRTT(), observer_3.transport_rtt());
+  EXPECT_EQ(nqe::internal::kInvalidThroughput,
+            observer_3.downstream_throughput_kbps());
 }
 
 // Tests that the effective connection type is computed on every RTT

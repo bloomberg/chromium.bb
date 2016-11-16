@@ -126,12 +126,6 @@ class UINetworkQualityEstimatorService::IONetworkQualityObserver
     if (!network_quality_estimator_)
       return;
     network_quality_estimator_->AddEffectiveConnectionTypeObserver(this);
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::Bind(
-            &UINetworkQualityEstimatorService::EffectiveConnectionTypeChanged,
-            service_,
-            network_quality_estimator_->GetEffectiveConnectionType()));
   }
 
   // net::NetworkQualityEstimator::EffectiveConnectionTypeObserver
@@ -215,6 +209,14 @@ void UINetworkQualityEstimatorService::AddEffectiveConnectionTypeObserver(
     net::NetworkQualityEstimator::EffectiveConnectionTypeObserver* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   effective_connection_type_observer_list_.AddObserver(observer);
+
+  // Notify the |observer| on the next message pump since |observer| may not
+  // be completely set up for receiving the callbacks.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&UINetworkQualityEstimatorService::
+                     NotifyEffectiveConnectionTypeObserverIfPresent,
+                 weak_factory_.GetWeakPtr(), observer));
 }
 
 void UINetworkQualityEstimatorService::RemoveEffectiveConnectionTypeObserver(
@@ -240,6 +242,19 @@ void UINetworkQualityEstimatorService::ClearPrefs() {
   if (!prefs_manager_)
     return;
   prefs_manager_->ClearPrefs();
+}
+
+void UINetworkQualityEstimatorService::
+    NotifyEffectiveConnectionTypeObserverIfPresent(
+        net::NetworkQualityEstimator::EffectiveConnectionTypeObserver* observer)
+        const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (!effective_connection_type_observer_list_.HasObserver(observer))
+    return;
+  if (type_ == net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN)
+    return;
+  observer->OnEffectiveConnectionTypeChanged(type_);
 }
 
 // static
