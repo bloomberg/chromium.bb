@@ -671,7 +671,7 @@ def compare_build_artifacts(first_dir, second_dir, target_platform,
           'expected_diffs': expected_diffs,
           'unexpected_diffs': unexpected_diffs,
       }
-      with open(json_output) as f:
+      with open(json_output, 'w') as f:
         json.dump(out, f)
     except Exception as e:
       print('failed to write json output: %s' % e)
