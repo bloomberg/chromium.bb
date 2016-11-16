@@ -57,16 +57,22 @@ void PageNavigationThrottle::AlwaysProceed() {
 void PageNavigationThrottle::Resume() {
   if (!navigation_deferred_)
     return;
-  navigation_handle()->Resume();
   navigation_deferred_ = false;
+  navigation_handle()->Resume();
+
+  // Do not add code after this as the PageNavigationThrottle may be deleted by
+  // the line above.
 }
 
 void PageNavigationThrottle::CancelDeferredNavigation(
     NavigationThrottle::ThrottleCheckResult result) {
   if (!navigation_deferred_)
     return;
-  navigation_handle()->CancelDeferredNavigation(result);
   navigation_deferred_ = false;
+  navigation_handle()->CancelDeferredNavigation(result);
+
+  // Do not add code after this as the PageNavigationThrottle may be deleted by
+  // the line above.
 }
 
 }  // namespace devtools

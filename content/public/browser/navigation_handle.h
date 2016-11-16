@@ -180,11 +180,15 @@ class CONTENT_EXPORT NavigationHandle {
   virtual net::HttpResponseInfo::ConnectionInfo GetConnectionInfo() = 0;
 
   // Resumes a navigation that was previously deferred by a NavigationThrottle.
+  // Note: this may lead to the deletion of the NavigationHandle and its
+  // associated NavigationThrottles.
   virtual void Resume() = 0;
 
   // Cancels a navigation that was previously deferred by a NavigationThrottle.
   // |result| should be equal to NavigationThrottle::CANCEL or
   // NavigationThrottle::CANCEL_AND_IGNORE.
+  // Note: this may lead to the deletion of the NavigationHandle and its
+  // associated NavigationThrottles.
   virtual void CancelDeferredNavigation(
       NavigationThrottle::ThrottleCheckResult result) = 0;
 

@@ -10,6 +10,4 @@
 -NavigationControllerBrowserTest.SamePageBrowserInitiated
 
 # Fail in Debug
--DevToolsProtocolTest.ControlNavigationsMainFrame
--IsolatedDevToolsProtocolTest.ControlNavigationsChildFrames
 -NavigationControllerBrowserTest.RaceCrossOriginNavigationAndSamePageHistoryNavigation
