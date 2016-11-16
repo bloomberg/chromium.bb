@@ -657,7 +657,9 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, ExpandingSmallPlugin) {
   VerifyPluginMarkedEssential(GetActiveWebContents(), "plugin");
 }
 
-IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, BackgroundTabPlugins) {
+// Flaky on all bots. crbug.com/665706
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest,
+                       DISABLED_BackgroundTabPlugins) {
   content::WebContents* background_contents = LoadHTMLInBackgroundTab(
       "<object id='same_origin' data='fake.swf' "
       "    type='application/x-shockwave-flash'></object>"
