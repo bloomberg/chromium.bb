@@ -21,7 +21,7 @@ namespace {
 const SkColor kBaseTextColor = SK_ColorBLACK;
 
 const int kActiveTextAlpha = 0xDE;
-const int kInactiveTextAlpha = 0x8A;
+const int kInactiveTextAlpha = 0xDE;
 const int kDisabledTextAlpha = 0x61;
 
 // The base color used to compute the effective icon colors.
