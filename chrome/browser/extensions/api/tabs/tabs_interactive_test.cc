@@ -12,18 +12,17 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/common/test_util.h"
 
-namespace api_test_utils = extensions::api_test_utils;
-namespace keys = extensions::tabs_constants;
+namespace extensions {
+
+namespace keys = tabs_constants;
 namespace utils = extension_function_test_utils;
 
-typedef InProcessBrowserTest ExtensionTabsTest;
+using ExtensionTabsTest = InProcessBrowserTest;
 
 // http://crbug.com/154081 for Aura specific
 // http://crbug.com/179063 for other general failures on try bots.
@@ -37,6 +36,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_GetLastFocusedWindow) {
   // Create a new window which making it the "last focused" window.
   // Note that "last focused" means the "top" most window.
   Browser* new_browser = CreateBrowser(browser()->profile());
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(new_browser));
+
+  GURL url("about:blank");
+  AddTabAtIndexToBrowser(new_browser, 0, url, ui::PAGE_TRANSITION_LINK, true);
+
   int focused_window_id =
       extensions::ExtensionTabUtil::GetWindowId(new_browser);
 
@@ -75,14 +79,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryLastFocusedWindowTabs) {
     CreateBrowser(browser()->profile());
 
   Browser* focused_window = CreateBrowser(browser()->profile());
-#if defined(OS_MACOSX)
-  // See BrowserWindowCocoa::Show. In tests, Browser::window()->IsActive won't
-  // work unless we fake the browser being launched by the user.
-  ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
-      focused_window->window()->GetNativeWindow()));
-#endif
-  ui_test_utils::BrowserActivationWaiter waiter(focused_window);
-  waiter.WaitForActivation();
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(focused_window));
 
   GURL url("about:blank");
   AddTabAtIndexToBrowser(focused_window, 0, url, ui::PAGE_TRANSITION_LINK,
@@ -137,3 +134,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryLastFocusedWindowTabs) {
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TabCurrentWindow) {
   ASSERT_TRUE(RunExtensionTest("tabs/current_window")) << message_;
 }
+
+}  // namespace extensions

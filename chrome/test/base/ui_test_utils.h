@@ -295,7 +295,7 @@ class HistoryEnumerator {
 // this class can be modified to support that.
 class BrowserActivationWaiter : public chrome::BrowserListObserver {
  public:
-  explicit BrowserActivationWaiter(Browser* browser);
+  explicit BrowserActivationWaiter(const Browser* browser);
   ~BrowserActivationWaiter() override;
 
   // Returns when the |browser_| which is supplied by the constructor becomes
@@ -307,7 +307,7 @@ class BrowserActivationWaiter : public chrome::BrowserListObserver {
   // chrome::BrowserListObserver override:
   void OnBrowserSetLastActive(Browser* browser) override;
 
-  Browser* browser_;
+  const Browser* browser_;
   bool observed_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 

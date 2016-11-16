@@ -331,9 +331,6 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabsRememberFocus) {
 
 // Tabs remember focus with find-in-page box.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabsRememberFocusFindInPage) {
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-  ui_test_utils::BrowserActivationWaiter waiter(browser());
-  waiter.WaitForActivation();
   const GURL url = embedded_test_server()->GetURL(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -419,10 +416,6 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest,
 
 // Page cannot steal focus when focus is on location bar.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, LocationBarLockFocus) {
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-  ui_test_utils::BrowserActivationWaiter waiter(browser());
-  waiter.WaitForActivation();
-
   // Open the page that steals focus.
   const GURL url = embedded_test_server()->GetURL(kStealFocusPage);
   ui_test_utils::NavigateToURL(browser(), url);
@@ -562,10 +555,6 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabInitialFocus) {
 
 // Tests that focus goes where expected when using reload.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-  ui_test_utils::BrowserActivationWaiter waiter(browser());
-  waiter.WaitForActivation();
-
   // Open the new tab, reload.
   {
     content::WindowedNotificationObserver observer(
@@ -685,10 +674,9 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, NavigateFromOmniboxIntoNewTab) {
 #define MAYBE_FocusOnNavigate FocusOnNavigate
 #endif
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusOnNavigate) {
+  // Needed on Mac.
+  // TODO(warx): check why it is needed on Mac.
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-  ui_test_utils::BrowserActivationWaiter waiter(browser());
-  waiter.WaitForActivation();
-
   // Load the NTP.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   EXPECT_TRUE(IsViewFocused(VIEW_ID_OMNIBOX));

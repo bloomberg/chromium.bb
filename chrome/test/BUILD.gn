@@ -374,6 +374,7 @@ if (!is_android) {
       "../browser/browser_keyevents_browsertest.cc",
       "../browser/extensions/api/extension_action/browser_action_interactive_test.cc",
       "../browser/extensions/api/omnibox/omnibox_api_interactive_test.cc",
+      "../browser/extensions/api/tabs/tabs_interactive_test.cc",
       "../browser/extensions/browsertest_util.cc",
       "../browser/extensions/chrome_extension_test_notification_observer.cc",
       "../browser/extensions/chrome_extension_test_notification_observer.h",
@@ -612,16 +613,6 @@ if (!is_android) {
         sources += [ "//chrome/browser/renderer_host/site_per_process_text_input_browsertest.cc" ]
         deps += [ "//ui/touch_selection" ]
       }
-    }
-
-    if (!is_desktop_linux) {
-      # Everything but desktop Linux.
-      sources += [
-        # TODO(port): Everything here times out. Attempts have been made to fix
-        # the individual failures, but each time I disable a test from these
-        # suites, it seems like one or another starts timing out too.
-        "../browser/extensions/api/tabs/tabs_interactive_test.cc",
-      ]
     }
 
     if (is_chromeos) {

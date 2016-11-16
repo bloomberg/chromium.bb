@@ -540,7 +540,7 @@ void WaitForHistoryToLoad(history::HistoryService* history_service) {
   }
 }
 
-BrowserActivationWaiter::BrowserActivationWaiter(Browser* browser)
+BrowserActivationWaiter::BrowserActivationWaiter(const Browser* browser)
     : browser_(browser), observed_(false) {
   if (chrome::FindLastActive() == browser_) {
     observed_ = true;
