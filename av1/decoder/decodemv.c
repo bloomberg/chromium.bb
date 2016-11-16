@@ -196,7 +196,7 @@ static PREDICTION_MODE read_inter_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
   // Invalid prediction mode.
   assert(0);
 #else
-#if CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
   const int mode = av1_inter_mode_inv[aom_read_symbol(
       r, cm->fc->inter_mode_cdf[ctx], INTER_MODES, ACCT_STR)];
 #else

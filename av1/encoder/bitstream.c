@@ -197,6 +197,8 @@ void av1_encode_token_init(void) {
 #if CONFIG_DAALA_EC
   av1_indices_from_tree(av1_intra_mode_ind, av1_intra_mode_inv, INTRA_MODES,
                         av1_intra_mode_tree);
+#endif
+#if CONFIG_EC_MULTISYMBOL
   av1_indices_from_tree(av1_inter_mode_ind, av1_inter_mode_inv, INTER_MODES,
                         av1_inter_mode_tree);
 #endif
@@ -262,7 +264,7 @@ static void write_inter_mode(AV1_COMMON *cm, aom_writer *w,
   }
 #else
   assert(is_inter_mode(mode));
-#if CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
   aom_write_symbol(w, av1_inter_mode_ind[INTER_OFFSET(mode)],
                    cm->fc->inter_mode_cdf[mode_ctx], INTER_MODES);
 #else
