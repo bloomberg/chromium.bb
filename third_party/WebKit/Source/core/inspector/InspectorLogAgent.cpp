@@ -171,6 +171,8 @@ static PerformanceMonitor::Violation parseViolation(const String& name) {
     return PerformanceMonitor::kLongLayout;
   if (name == ViolationSetting::NameEnum::BlockedEvent)
     return PerformanceMonitor::kBlockedEvent;
+  if (name == ViolationSetting::NameEnum::BlockedParser)
+    return PerformanceMonitor::kBlockedParser;
   return PerformanceMonitor::kAfterLast;
 }
 
@@ -207,7 +209,7 @@ void InspectorLogAgent::reportLongTask(
     const HeapHashSet<Member<Frame>>& contextFrames) {
   double time = (endTime - startTime) * 1000;
   String messageText =
-      String::format("Long running JavaScript task took %ldms.", lround(time));
+      String::format("Long running JavaScript task took %ldms", lround(time));
   ConsoleMessage* message = ConsoleMessage::create(
       ViolationMessageSource, WarningMessageLevel, messageText);
   consoleMessageAdded(message);
@@ -215,7 +217,7 @@ void InspectorLogAgent::reportLongTask(
 
 void InspectorLogAgent::reportLongLayout(double duration) {
   String messageText =
-      String::format("Forced reflow while executing JavaScript took %ldms.",
+      String::format("Forced reflow while executing JavaScript took %ldms",
                      lround(duration * 1000));
   ConsoleMessage* message = ConsoleMessage::create(
       ViolationMessageSource, WarningMessageLevel, messageText);
@@ -226,9 +228,8 @@ void InspectorLogAgent::reportGenericViolation(PerformanceMonitor::Violation,
                                                const String& text,
                                                double time,
                                                SourceLocation* location) {
-  ConsoleMessage* message =
-      ConsoleMessage::create(ViolationMessageSource, WarningMessageLevel, text,
-                             location ? location->clone() : nullptr);
+  ConsoleMessage* message = ConsoleMessage::create(
+      ViolationMessageSource, WarningMessageLevel, text, location->clone());
   consoleMessageAdded(message);
 };
 

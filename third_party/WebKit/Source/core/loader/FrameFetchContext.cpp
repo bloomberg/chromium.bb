@@ -125,6 +125,8 @@ bool shouldDisallowFetchForMainFrameScript(ResourceRequest& request,
   if (defer != FetchRequest::NoDefer)
     return false;
 
+  PerformanceMonitor::documentWriteFetchScript(&document);
+
   if (!request.url().protocolIsInHTTPFamily())
     return false;
 

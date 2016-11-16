@@ -9,6 +9,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/Frame.h"
 #include "core/frame/LocalFrame.h"
+#include "core/html/parser/HTMLDocumentParser.h"
 #include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"
 
@@ -63,6 +64,17 @@ void PerformanceMonitor::didRecalculateStyle(Document* document) {
 }
 
 // static
+void PerformanceMonitor::documentWriteFetchScript(Document* document) {
+  PerformanceMonitor* performanceMonitor =
+      PerformanceMonitor::instrumentingMonitor(document);
+  if (!performanceMonitor)
+    return;
+  String text = "Parser was blocked due to document.write(<script>)";
+  performanceMonitor->reportGenericViolation(
+      kBlockedParser, text, 0, SourceLocation::capture(document).get());
+}
+
+// static
 double PerformanceMonitor::threshold(ExecutionContext* context,
                                      Violation violation) {
   PerformanceMonitor* monitor =
@@ -80,13 +92,7 @@ void PerformanceMonitor::reportGenericViolation(ExecutionContext* context,
       PerformanceMonitor::instrumentingMonitor(context);
   if (!monitor)
     return;
-  ClientThresholds* clientThresholds = monitor->m_subscriptions.get(violation);
-  if (!clientThresholds)
-    return;
-  for (const auto& it : *clientThresholds) {
-    if (it.value < time)
-      it.key->reportGenericViolation(violation, text, time, location);
-  }
+  monitor->reportGenericViolation(violation, text, time, location);
 }
 
 // static
@@ -213,15 +219,27 @@ void PerformanceMonitor::willProcessTask() {
 }
 
 void PerformanceMonitor::didProcessTask() {
-  double threshold = m_thresholds[kLongLayout];
-  if (!threshold || m_perTaskStyleAndLayoutTime < threshold)
+  double layoutThreshold = m_thresholds[kLongLayout];
+  if (!layoutThreshold || m_perTaskStyleAndLayoutTime < layoutThreshold)
     return;
-
   ClientThresholds* clientThresholds = m_subscriptions.get(kLongLayout);
   DCHECK(clientThresholds);
   for (const auto& it : *clientThresholds) {
     if (it.value < m_perTaskStyleAndLayoutTime)
       it.key->reportLongLayout(m_perTaskStyleAndLayoutTime);
+  }
+}
+
+void PerformanceMonitor::reportGenericViolation(Violation violation,
+                                                const String& text,
+                                                double time,
+                                                SourceLocation* location) {
+  ClientThresholds* clientThresholds = m_subscriptions.get(violation);
+  if (!clientThresholds)
+    return;
+  for (const auto& it : *clientThresholds) {
+    if (it.value < time)
+      it.key->reportGenericViolation(violation, text, time, location);
   }
 }
 

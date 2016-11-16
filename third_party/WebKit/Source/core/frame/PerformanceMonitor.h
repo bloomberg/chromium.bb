@@ -31,7 +31,13 @@ class CORE_EXPORT PerformanceMonitor final
   WTF_MAKE_NONCOPYABLE(PerformanceMonitor);
 
  public:
-  enum Violation : size_t { kLongTask, kLongLayout, kBlockedEvent, kAfterLast };
+  enum Violation : size_t {
+    kLongTask,
+    kLongLayout,
+    kBlockedEvent,
+    kBlockedParser,
+    kAfterLast
+  };
 
   class CORE_EXPORT Client : public GarbageCollectedMixin {
    public:
@@ -54,6 +60,7 @@ class CORE_EXPORT PerformanceMonitor final
   static void didUpdateLayout(Document*);
   static void willRecalculateStyle(Document*);
   static void didRecalculateStyle(Document*);
+  static void documentWriteFetchScript(Document*);
   static void reportGenericViolation(ExecutionContext*,
                                      Violation,
                                      const String& text,
@@ -85,6 +92,10 @@ class CORE_EXPORT PerformanceMonitor final
   void didUpdateLayout();
   void willRecalculateStyle();
   void didRecalculateStyle();
+  void reportGenericViolation(Violation,
+                              const String& text,
+                              double time,
+                              SourceLocation*);
 
   // WebThread::TaskObserver implementation.
   void willProcessTask() override;
