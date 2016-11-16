@@ -1379,14 +1379,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return defaultImage;
 }
 
-- (BOOL)canGoBack {
-  return _webStateImpl->GetNavigationManagerImpl().CanGoBack();
-}
-
-- (BOOL)canGoForward {
-  return _webStateImpl->GetNavigationManagerImpl().CanGoForward();
-}
-
 - (CGPoint)scrollPosition {
   CGPoint position = CGPointMake(0.0, 0.0);
   if (!self.webScrollView)
@@ -2281,14 +2273,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 }
 
-- (void)goBack {
-  [self goDelta:-1];
-}
-
-- (void)goForward {
-  [self goDelta:1];
-}
-
 - (void)goDelta:(int)delta {
   if (delta == 0) {
     [self reload];
@@ -3032,13 +3016,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (BOOL)handleWindowHistoryBackMessage:(base::DictionaryValue*)message
                                context:(NSDictionary*)context {
-  [self goBack];
+  [self goDelta:-1];
   return YES;
 }
 
 - (BOOL)handleWindowHistoryForwardMessage:(base::DictionaryValue*)message
                                   context:(NSDictionary*)context {
-  [self goForward];
+  [self goDelta:1];
   return YES;
 }
 

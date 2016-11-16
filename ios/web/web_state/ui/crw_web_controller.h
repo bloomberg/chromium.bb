@@ -102,10 +102,6 @@ class WebStateImpl;
 // (nothing loaded) and 1.0 (fully loaded).
 @property(nonatomic, readonly) double loadingProgress;
 
-// Returns whether the page can navigate backwards or forwards.
-@property(nonatomic, readonly) BOOL canGoBack;
-@property(nonatomic, readonly) BOOL canGoForward;
-
 // Returns the x, y offset the content has been scrolled.
 @property(nonatomic, readonly) CGPoint scrollPosition;
 
@@ -195,9 +191,6 @@ class WebStateImpl;
 // used when deliberately pre-triggering a load without displaying.
 - (void)triggerPendingLoad;
 
-// Navigate forwards or backwards by one page.
-- (void)goBack;
-- (void)goForward;
 // Navigates forwards or backwards by |delta| pages. No-op if delta is out of
 // bounds.
 - (void)goDelta:(int)delta;
