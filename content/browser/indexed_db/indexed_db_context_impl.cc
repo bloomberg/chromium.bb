@@ -335,7 +335,7 @@ void IndexedDBContextImpl::DeleteForOrigin(const Origin& origin) {
   } else {
     // LevelDB does not delete empty directories; work around this.
     // TODO(jsbell): Remove when upstream bug is fixed.
-    // https://code.google.com/p/leveldb/issues/detail?id=209
+    // https://github.com/google/leveldb/issues/215
     const bool kNonRecursive = false;
     base::DeleteFile(idb_directory, kNonRecursive);
   }
