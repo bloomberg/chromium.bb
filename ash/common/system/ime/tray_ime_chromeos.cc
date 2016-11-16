@@ -21,6 +21,7 @@
 #include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/system/tray/tray_utils.h"
+#include "ash/common/system/tray/tri_view.h"
 #include "ash/common/system/tray_accessibility.h"
 #include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -157,8 +158,16 @@ class IMEDetailedView : public ImeListView {
   }
 
   void CreateExtraTitleRowButtons() override {
-    if (MaterialDesignController::IsSystemTrayMenuMaterial())
-      settings_button_ = title_row()->AddSettingsButton(this, login_);
+    if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+      // It is possible that the settings button has already been created
+      // through a previous call to Update().
+      if (settings_button_)
+        return;
+
+      tri_view()->SetContainerVisible(TriView::Container::END, true);
+      settings_button_ = CreateSettingsButton(login_);
+      tri_view()->AddView(TriView::Container::END, settings_button_);
+    }
   }
 
   void AppendSettings() {

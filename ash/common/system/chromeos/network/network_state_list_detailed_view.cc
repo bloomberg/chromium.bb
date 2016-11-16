@@ -30,6 +30,7 @@
 #include "ash/common/system/tray/tray_details_view.h"
 #include "ash/common/system/tray/tray_popup_header_button.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
+#include "ash/common/system/tray/tri_view.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
@@ -478,12 +479,16 @@ void NetworkStateListDetailedView::CreateExtraTitleRowButtons() {
     if (login_ == LoginStatus::LOCKED)
       return;
 
+    DCHECK(!info_button_md_);
+    tri_view()->SetContainerVisible(TriView::Container::END, true);
+
     info_button_md_ = new SystemMenuButton(
         this, SystemMenuButton::InkDropStyle::SQUARE, kSystemMenuInfoIcon,
         IDS_ASH_STATUS_TRAY_NETWORK_INFO);
-    title_row()->AddViewToTitleRow(info_button_md_);
+    tri_view()->AddView(TriView::Container::END, info_button_md_);
 
     if (login_ != LoginStatus::NOT_LOGGED_IN) {
+      DCHECK(!settings_button_md_);
       settings_button_md_ = new SystemMenuButton(
           this, SystemMenuButton::InkDropStyle::SQUARE, kSystemMenuSettingsIcon,
           IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS);
@@ -495,7 +500,7 @@ void NetworkStateListDetailedView::CreateExtraTitleRowButtons() {
       if (!WmShell::Get()->system_tray_delegate()->ShouldShowSettings())
         settings_button_md_->SetState(views::Button::STATE_DISABLED);
 
-      title_row()->AddViewToTitleRow(settings_button_md_);
+      tri_view()->AddView(TriView::Container::END, settings_button_md_);
     } else {
       proxy_settings_button_md_ = new SystemMenuButton(
           this, SystemMenuButton::InkDropStyle::SQUARE, kSystemMenuSettingsIcon,
@@ -661,7 +666,8 @@ void NetworkStateListDetailedView::UpdateHeaderButtons() {
     }
   }
 
-  static_cast<views::View*>(title_row())->Layout();
+  if (!UseMd())
+    static_cast<views::View*>(title_row())->Layout();
 }
 
 void NetworkStateListDetailedView::SetScanningStateForThrobberView(

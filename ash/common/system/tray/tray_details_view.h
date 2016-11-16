@@ -14,8 +14,10 @@
 
 namespace views {
 class BoxLayout;
-class ScrollView;
+class CustomButton;
+class Label;
 class ProgressBar;
+class ScrollView;
 }  // namespace views
 
 namespace ash {
@@ -26,6 +28,7 @@ class TrayDetailsViewTest;
 class FixedSizedScrollView;
 class ScrollBorder;
 class SystemTrayItem;
+class TriView;
 
 class ASH_EXPORT TrayDetailsView : public views::View,
                                    public ViewClickListener,
@@ -76,8 +79,23 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   // |progress_bar_| doesn't already exist it will be created.
   void ShowProgress(double value, bool visible);
 
+  // Helper functions which create and return the settings and help buttons,
+  // respectively, used in the material design top-most header row. The caller
+  // assumes ownership of the returned buttons.
+  views::CustomButton* CreateSettingsButton(LoginStatus status);
+  views::CustomButton* CreateHelpButton(LoginStatus status);
+
+  TriView* tri_view() { return tri_view_; }
+
  private:
   friend class test::TrayDetailsViewTest;
+
+  // views::View:
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+
+  // Updates the style of |label_| based on the current native theme, if it
+  // exists. Only used for material design.
+  void UpdateStyle();
 
   // Overridden to handle clicks on subclass-specific views.
   virtual void HandleViewClicked(views::View* view);
@@ -94,14 +112,25 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   // details view.
   void TransitionToDefaultView();
 
+  // Helper function which creates and returns the back button used in the
+  // material design top-most header row. The caller assumes ownership of the
+  // returned button.
+  views::Button* CreateBackButton();
+
   SystemTrayItem* owner_;
   views::BoxLayout* box_layout_;
-  SpecialPopupRow* title_row_;
+  SpecialPopupRow* title_row_;  // Not used in material design.
   FixedSizedScrollView* scroller_;
   views::View* scroll_content_;
   views::ProgressBar* progress_bar_;
 
   ScrollBorder* scroll_border_;  // Weak reference
+
+  // The container view for the top-most title row in material design.
+  TriView* tri_view_;
+
+  // The label used in the top-most title row for material design.
+  views::Label* label_;
 
   // The back button that appears in the material design title row. Not owned.
   views::Button* back_button_;

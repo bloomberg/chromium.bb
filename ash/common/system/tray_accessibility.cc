@@ -19,6 +19,7 @@
 #include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
 #include "ash/common/system/tray/tray_popup_utils.h"
+#include "ash/common/system/tray/tri_view.h"
 #include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/strings/utf_string_conversions.h"
@@ -336,8 +337,15 @@ void AccessibilityDetailedView::HandleButtonPressed(views::Button* sender,
 
 void AccessibilityDetailedView::CreateExtraTitleRowButtons() {
   if (UseMdMenu()) {
-    help_view_ = title_row()->AddHelpButton(this, login_);
-    settings_view_ = title_row()->AddSettingsButton(this, login_);
+    DCHECK(!help_view_);
+    DCHECK(!settings_view_);
+
+    tri_view()->SetContainerVisible(TriView::Container::END, true);
+
+    help_view_ = CreateHelpButton(login_);
+    settings_view_ = CreateSettingsButton(login_);
+    tri_view()->AddView(TriView::Container::END, help_view_);
+    tri_view()->AddView(TriView::Container::END, settings_view_);
   }
 }
 

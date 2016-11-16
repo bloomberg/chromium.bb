@@ -84,11 +84,8 @@ bool IsProhibitedByPolicy(const chromeos::NetworkState* network) {
 class NetworkListViewMd::SectionHeaderRowView : public views::View,
                                                 public views::ButtonListener {
  public:
-  SectionHeaderRowView(int title_id, int toggle_accessible_name_id)
-      : title_id_(title_id),
-        toggle_accessible_name_id_(toggle_accessible_name_id),
-        container_(nullptr),
-        toggle_(nullptr) {}
+  explicit SectionHeaderRowView(int title_id)
+      : title_id_(title_id), container_(nullptr), toggle_(nullptr) {}
 
   ~SectionHeaderRowView() override {}
 
@@ -164,20 +161,17 @@ class NetworkListViewMd::SectionHeaderRowView : public views::View,
 
   void AddToggleButton(bool enabled) {
     toggle_ = new views::ToggleButton(this);
-    toggle_->SetAccessibleName(
-        l10n_util::GetStringUTF16(toggle_accessible_name_id_));
+    toggle_->SetAccessibleName(l10n_util::GetStringUTF16(title_id_));
     toggle_->SetIsOn(enabled, false);
-    // TODO(varkha): Implement focus painter and spoken feedback for toggle. See
+    // TODO(varkha): Implement focus painter for toggle. See
     // https://crbug.com/652677 for context.
     toggle_->SetFocusForPlatform();
     container_->AddChildView(toggle_);
   }
 
-  // Resource ID for the string to use as the title of the section.
+  // Resource ID for the string to use as the title of the section and for the
+  // accessible text on the section header toggle button.
   const int title_id_;
-
-  // Resource ID for the string to use as the accessible name for the toggle.
-  const int toggle_accessible_name_id_;
 
   // View containing header row views, including title, toggle, and extra
   // buttons.
@@ -194,8 +188,7 @@ namespace {
 class CellularHeaderRowView : public NetworkListViewMd::SectionHeaderRowView {
  public:
   CellularHeaderRowView()
-      : SectionHeaderRowView(IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR,
-                             IDS_ASH_STATUS_TRAY_ENABLE_MOBILE) {}
+      : SectionHeaderRowView(IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR) {}
 
   ~CellularHeaderRowView() override {}
 
@@ -216,8 +209,7 @@ class CellularHeaderRowView : public NetworkListViewMd::SectionHeaderRowView {
 class WifiHeaderRowView : public NetworkListViewMd::SectionHeaderRowView {
  public:
   explicit WifiHeaderRowView(NetworkListDelegate* network_list_delegate)
-      : SectionHeaderRowView(IDS_ASH_STATUS_TRAY_NETWORK_WIFI,
-                             IDS_ASH_STATUS_TRAY_ENABLE_WIFI),
+      : SectionHeaderRowView(IDS_ASH_STATUS_TRAY_NETWORK_WIFI),
         network_list_delegate_(network_list_delegate),
         join_(nullptr) {}
 

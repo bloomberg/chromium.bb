@@ -18,6 +18,7 @@
 #include "ash/common/system/tray/tray_popup_header_button.h"
 #include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/system/tray/tray_popup_utils.h"
+#include "ash/common/system/tray/tri_view.h"
 #include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "device/bluetooth/bluetooth_common.h"
@@ -533,8 +534,22 @@ class BluetoothDetailedView : public TrayDetailsView {
       return;
 
     if (UseMd()) {
-      toggle_ = title_row()->AddToggleButton(this);
-      settings_ = title_row()->AddSettingsButton(this, login_);
+      DCHECK(!toggle_);
+      DCHECK(!settings_);
+
+      tri_view()->SetContainerVisible(TriView::Container::END, true);
+
+      // TODO(tdanderson): Move common toggle-creation logic to TrayPopupUtils.
+      // See crbug.com/614453.
+      toggle_ = new views::ToggleButton(this);
+      toggle_->SetFocusForPlatform();
+      toggle_->SetAccessibleName(
+          ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
+              IDS_ASH_STATUS_TRAY_BLUETOOTH));
+      tri_view()->AddView(TriView::Container::END, toggle_);
+
+      settings_ = CreateSettingsButton(login_);
+      tri_view()->AddView(TriView::Container::END, settings_);
       return;
     }
 

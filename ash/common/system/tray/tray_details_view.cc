@@ -7,17 +7,24 @@
 #include "ash/common/ash_view_ids.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/fixed_sized_scroll_view.h"
+#include "ash/common/system/tray/system_menu_button.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/system/tray/tray_popup_item_style.h"
+#include "ash/common/system/tray/tray_popup_utils.h"
+#include "ash/common/system/tray/tri_view.h"
 #include "base/containers/adapters.h"
+#include "grit/ash_strings.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
@@ -279,6 +286,8 @@ TrayDetailsView::TrayDetailsView(SystemTrayItem* owner)
       scroll_content_(nullptr),
       progress_bar_(nullptr),
       scroll_border_(nullptr),
+      tri_view_(nullptr),
+      label_(nullptr),
       back_button_(nullptr) {
   SetLayoutManager(box_layout_);
   set_background(views::Background::CreateSolidBackground(kBackgroundColor));
@@ -306,13 +315,26 @@ void TrayDetailsView::ButtonPressed(views::Button* sender,
 }
 
 void TrayDetailsView::CreateTitleRow(int string_id) {
+  DCHECK(!tri_view_);
   DCHECK(!title_row_);
-  title_row_ = new SpecialPopupRow();
-  title_row_->SetTextLabel(string_id, this);
+
   if (UseMd()) {
-    title_row_->SetBorder(views::CreateEmptyBorder(kTitleRowPaddingTop, 0,
-                                                   kTitleRowPaddingBottom, 0));
-    AddChildViewAt(title_row_, 0);
+    tri_view_ = TrayPopupUtils::CreateDefaultRowView();
+
+    back_button_ = CreateBackButton();
+    tri_view_->AddView(TriView::Container::START, back_button_);
+
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    label_ = TrayPopupUtils::CreateDefaultLabel();
+    label_->SetText(rb.GetLocalizedString(string_id));
+    UpdateStyle();
+    tri_view_->AddView(TriView::Container::CENTER, label_);
+
+    tri_view_->SetContainerVisible(TriView::Container::END, false);
+
+    tri_view_->SetBorder(views::CreateEmptyBorder(kTitleRowPaddingTop, 0,
+                                                  kTitleRowPaddingBottom, 0));
+    AddChildViewAt(tri_view_, 0);
     views::Separator* separator =
         new views::Separator(views::Separator::HORIZONTAL);
     separator->SetColor(kHorizontalSeparatorColor);
@@ -321,14 +343,12 @@ void TrayDetailsView::CreateTitleRow(int string_id) {
         kTitleRowProgressBarHeight - kTitleRowSeparatorHeight, 0, 0, 0));
     AddChildViewAt(separator, kTitleRowSeparatorIndex);
   } else {
+    title_row_ = new SpecialPopupRow();
+    title_row_->SetTextLabel(string_id, this);
     AddChildViewAt(title_row_, child_count());
   }
 
   CreateExtraTitleRowButtons();
-
-  if (UseMd())
-    back_button_ = title_row_->AddBackButton(this);
-
   Layout();
 }
 
@@ -371,11 +391,13 @@ void TrayDetailsView::Reset() {
   scroll_content_ = nullptr;
   progress_bar_ = nullptr;
   back_button_ = nullptr;
+  label_ = nullptr;
+  tri_view_ = nullptr;
 }
 
 void TrayDetailsView::ShowProgress(double value, bool visible) {
   DCHECK(UseMd());
-  DCHECK(title_row_);
+  DCHECK(tri_view_);
   if (!progress_bar_) {
     progress_bar_ = new views::ProgressBar(kTitleRowProgressBarHeight);
     progress_bar_->SetVisible(false);
@@ -385,6 +407,40 @@ void TrayDetailsView::ShowProgress(double value, bool visible) {
   progress_bar_->SetValue(value);
   progress_bar_->SetVisible(visible);
   child_at(kTitleRowSeparatorIndex)->SetVisible(!visible);
+}
+
+views::CustomButton* TrayDetailsView::CreateSettingsButton(LoginStatus status) {
+  DCHECK(UseMd());
+  SystemMenuButton* button = new SystemMenuButton(
+      this, SystemMenuButton::InkDropStyle::SQUARE, kSystemMenuSettingsIcon,
+      IDS_ASH_STATUS_TRAY_SETTINGS);
+  if (!TrayPopupUtils::CanOpenWebUISettings(status))
+    button->SetState(views::Button::STATE_DISABLED);
+  return button;
+}
+
+views::CustomButton* TrayDetailsView::CreateHelpButton(LoginStatus status) {
+  DCHECK(UseMd());
+  SystemMenuButton* button =
+      new SystemMenuButton(this, SystemMenuButton::InkDropStyle::SQUARE,
+                           kSystemMenuHelpIcon, IDS_ASH_STATUS_TRAY_HELP);
+  if (!TrayPopupUtils::CanOpenWebUISettings(status))
+    button->SetState(views::Button::STATE_DISABLED);
+  return button;
+}
+
+void TrayDetailsView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  if (UseMd())
+    UpdateStyle();
+}
+
+void TrayDetailsView::UpdateStyle() {
+  if (!GetNativeTheme() || !label_)
+    return;
+
+  TrayPopupItemStyle style(GetNativeTheme(),
+                           TrayPopupItemStyle::FontStyle::TITLE);
+  style.SetupLabel(label_);
 }
 
 void TrayDetailsView::HandleViewClicked(views::View* view) {
@@ -413,6 +469,14 @@ void TrayDetailsView::TransitionToDefaultView() {
   }
   owner->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
   owner->set_restore_focus(false);
+}
+
+views::Button* TrayDetailsView::CreateBackButton() {
+  DCHECK(UseMd());
+  SystemMenuButton* button = new SystemMenuButton(
+      this, SystemMenuButton::InkDropStyle::SQUARE, kSystemMenuArrowBackIcon,
+      IDS_ASH_STATUS_TRAY_PREVIOUS_MENU);
+  return button;
 }
 
 void TrayDetailsView::Layout() {
