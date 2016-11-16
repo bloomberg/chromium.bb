@@ -160,6 +160,7 @@ WindowTreeHostX11::WindowTreeHostX11(const gfx::Rect& bounds)
   // We need a WM_CLIENT_MACHINE and WM_LOCALE_NAME value so we integrate with
   // the desktop environment.
   XSetWMProperties(xdisplay_, xwindow_, NULL, NULL, NULL, 0, NULL, NULL, NULL);
+  ui::SetWindowClassHint(xdisplay_, xwindow_, "chromiumos", "ChromiumOS");
 
   // Likewise, the X server needs to know this window's pid so it knows which
   // program to kill if the window hangs.
