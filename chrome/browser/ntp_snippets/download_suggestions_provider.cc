@@ -139,9 +139,10 @@ DownloadSuggestionsProvider::DownloadSuggestionsProvider(
 
   if (download_manager_)
     download_manager_->AddObserver(this);
-  // No need to explicitly fetch the asset downloads, since for each of them
-  // |OnDownloadCreated| is fired.
-  AsynchronouslyFetchOfflinePagesDownloads(/*notify=*/true);
+
+  // We explicitly fetch the asset downloads in case some of |OnDownloadCreated|
+  // happened earlier and, therefore, were missed.
+  AsynchronouslyFetchAllDownloadsAndSubmitSuggestions();
 }
 
 DownloadSuggestionsProvider::~DownloadSuggestionsProvider() {
@@ -292,6 +293,7 @@ void DownloadSuggestionsProvider::
 void DownloadSuggestionsProvider::OfflinePageModelLoaded(
     offline_pages::OfflinePageModel* model) {
   DCHECK_EQ(offline_page_model_, model);
+  AsynchronouslyFetchOfflinePagesDownloads(/*notify=*/true);
 }
 
 void DownloadSuggestionsProvider::OfflinePageModelChanged(
@@ -375,14 +377,25 @@ void DownloadSuggestionsProvider::NotifyStatusChanged(
 
 void DownloadSuggestionsProvider::AsynchronouslyFetchOfflinePagesDownloads(
     bool notify) {
-  if (offline_page_model_) {
-    offline_page_model_->GetPagesMatchingQuery(
-        BuildOfflinePageDownloadsQuery(offline_page_model_),
-        base::Bind(&DownloadSuggestionsProvider::UpdateOfflinePagesCache,
-                   weak_ptr_factory_.GetWeakPtr(), notify));
-  } else {
+  if (!offline_page_model_) {
+    // Offline pages are explicitly turned off, so we propagate "no pages"
+    // further e.g. to clean its prefs.
     UpdateOfflinePagesCache(notify, std::vector<OfflinePageItem>());
+    return;
   }
+
+  if (!offline_page_model_->is_loaded()) {
+    // Offline pages model is not ready yet and may return no offline pages.
+    if (notify)
+      SubmitContentSuggestions();
+
+    return;
+  }
+
+  offline_page_model_->GetPagesMatchingQuery(
+      BuildOfflinePageDownloadsQuery(offline_page_model_),
+      base::Bind(&DownloadSuggestionsProvider::UpdateOfflinePagesCache,
+                 weak_ptr_factory_.GetWeakPtr(), notify));
 }
 
 void DownloadSuggestionsProvider::FetchAssetsDownloads() {
@@ -592,6 +605,8 @@ void DownloadSuggestionsProvider::UpdateOfflinePagesCache(
     bool notify,
     const std::vector<offline_pages::OfflinePageItem>&
         downloads_offline_pages) {
+  DCHECK(!offline_page_model_ || offline_page_model_->is_loaded());
+
   std::set<std::string> old_dismissed_ids =
       ReadOfflinePageDismissedIDsFromPrefs();
   std::set<std::string> retained_dismissed_ids;
