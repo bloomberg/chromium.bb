@@ -507,15 +507,19 @@ def RunBuild(options, base, target, queue):
     else:
       mtarget = 'config'
     cmd = base + ['%s_%s' % (uboard, mtarget)]
-    result = cros_build_lib.RunCommand(cmd, **kwargs)
+    result = cros_build_lib.RunCommand(cmd, capture_output=True,
+                                       combine_stdout_stderr=True, **kwargs)
     if result.returncode:
-      sys.exit()
+      print("cmd: '%s', output: '%s'" % (result.cmdstr, result.output))
+      sys.exit(result.returncode)
 
   # Do the actual build.
   if options.build:
-    result = cros_build_lib.RunCommand(base + [target], **kwargs)
+    result = cros_build_lib.RunCommand(base + [target], capture_output=True,
+                                       combine_stdout_stderr=True, **kwargs)
     if result.returncode:
-      sys.exit()
+      print("cmd: '%s', output: '%s'" % (result.cmdstr, result.output))
+      sys.exit(result.returncode)
 
   files = ['%s/u-boot' % outdir]
   spl = glob.glob('%s/spl/u-boot-spl' % outdir)
