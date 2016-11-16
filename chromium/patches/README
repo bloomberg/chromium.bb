@@ -62,6 +62,9 @@ Current patches:
     TODO(chcunningham/dalecurtis): https://crbug.com/504623 - Determine whether
     these changes are still necessary and either remove or document them.
 
+  In libavformat/wavdec.c, exclude code block completely to remove reference to
+    symbol not in our builds, conditioned by CONFIG_SPDIF_DEMUXER.
+
   Changes to libavutil/arm/intmath.h
     Remove static av_always_inline av_const unsigned av_clip_uintp2_arm() and
     av_clip_intp2_arm() due to compilation failure.

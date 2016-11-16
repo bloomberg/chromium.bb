@@ -62,6 +62,7 @@ typedef struct WAVDemuxContext {
 
 static void set_spdif(AVFormatContext *s, WAVDemuxContext *wav)
 {
+#if CONFIG_SPDIF_DEMUXER
     if (CONFIG_SPDIF_DEMUXER && s->streams[0]->codecpar->codec_tag == 1) {
         enum AVCodecID codec;
         uint8_t *buf = NULL;
@@ -93,6 +94,7 @@ end:
             av_log(s, AV_LOG_WARNING, "Cannot check for SPDIF\n");
         av_free(buf);
     }
+#endif
 }
 
 #if CONFIG_WAV_DEMUXER
