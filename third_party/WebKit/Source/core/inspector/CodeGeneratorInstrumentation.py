@@ -284,7 +284,7 @@ class Method:
 
     def generate_ref_ptr(self, param):
         if param.is_prp:
-            return "\n        RefPtr<%s> %s = %s;" % (param.inner_type, param.value, param.name)
+            return "\n    RefPtr<%s> %s = %s;" % (param.inner_type, param.value, param.name)
         else:
             return ""
 
