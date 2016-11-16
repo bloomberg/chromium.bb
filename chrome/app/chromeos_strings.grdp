@@ -6195,7 +6195,7 @@ All users must sign out to continue.
     Device Location
   </message>
   <message name="IDS_AD_MACHINE_NAME_INPUT_LABEL" desc="Label for machine name input field on the AD domain join screen. User should tell us the name of his machine.">
-    Computer name
+    Chromebook machine name
   </message>
   <message name="IDS_AD_DOMAIN_JOIN_WELCOME_MESSAGE" desc="Welcome message on the AD domain join screen.">
     Join AD domain
