@@ -16,6 +16,7 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/common/resource_request_completion_status.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/common/resource_response.h"
 #include "mojo/public/c/system/data_pipe.h"
@@ -111,6 +112,10 @@ MojoAsyncResourceHandler::MojoAsyncResourceHandler(
       url_loader_client_(std::move(url_loader_client)) {
   DCHECK(url_loader_client_);
   InitializeResourceBufferConstants();
+  // This unretained pointer is safe, because |binding_| is owned by |this| and
+  // the callback will never be called after |this| is destroyed.
+  binding_.set_connection_error_handler(
+      base::Bind(&MojoAsyncResourceHandler::Cancel, base::Unretained(this)));
 }
 
 MojoAsyncResourceHandler::~MojoAsyncResourceHandler() {
@@ -240,10 +245,6 @@ void MojoAsyncResourceHandler::OnDataDownloaded(int bytes_downloaded) {
 }
 
 void MojoAsyncResourceHandler::FollowRedirect() {
-  NOTIMPLEMENTED();
-}
-
-void MojoAsyncResourceHandler::Cancel() {
   NOTIMPLEMENTED();
 }
 
@@ -398,6 +399,12 @@ bool MojoAsyncResourceHandler::CheckForSufficientResource() {
 
 void MojoAsyncResourceHandler::OnWritable(MojoResult unused) {
   Resume();
+}
+
+void MojoAsyncResourceHandler::Cancel() {
+  const ResourceRequestInfoImpl* info = GetRequestInfo();
+  ResourceDispatcherHostImpl::Get()->CancelRequestFromRenderer(
+      GlobalRequestID(info->GetChildID(), info->GetRequestID()));
 }
 
 }  // namespace content

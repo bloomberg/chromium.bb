@@ -66,7 +66,6 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
 
   // mojom::URLLoader implementation
   void FollowRedirect() override;
-  void Cancel() override;
 
   void ResumeForTesting();
   static void SetAllocationSizeForTesting(size_t size);
@@ -94,6 +93,7 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
   void OnDefer();
   bool CheckForSufficientResource();
   void OnWritable(MojoResult result);
+  void Cancel();
 
   ResourceDispatcherHostImpl* rdh_;
   mojo::AssociatedBinding<mojom::URLLoader> binding_;

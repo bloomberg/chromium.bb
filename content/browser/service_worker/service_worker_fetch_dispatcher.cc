@@ -46,13 +46,23 @@ class DelegatingURLLoader final : public mojom::URLLoader {
   ~DelegatingURLLoader() override {}
 
   void FollowRedirect() override { loader_->FollowRedirect(); }
-  void Cancel() override { loader_->Cancel(); }
 
   mojom::URLLoaderPtr CreateInterfacePtrAndBind() {
-    return binding_.CreateInterfacePtrAndBind();
+    auto p = binding_.CreateInterfacePtrAndBind();
+    // This unretained pointer is safe, because |binding_| is owned by |this|
+    // and the callback will never be called after |this| is destroyed.
+    binding_.set_connection_error_handler(
+        base::Bind(&DelegatingURLLoader::Cancel, base::Unretained(this)));
+    return p;
   }
 
  private:
+  // Called when the mojom::URLLoaderPtr in the service worker is deleted.
+  void Cancel() {
+    // Cancel loading as stated in url_loader.mojom.
+    loader_ = nullptr;
+  }
+
   mojo::Binding<mojom::URLLoader> binding_;
   mojom::URLLoaderAssociatedPtr loader_;
 

@@ -1806,26 +1806,8 @@ bool ResourceDispatcherHostImpl::Send(IPC::Message* message) {
   return false;
 }
 
-// Note that this cancel is subtly different from the other
-// CancelRequest methods in this file, which also tear down the loader.
 void ResourceDispatcherHostImpl::OnCancelRequest(int request_id) {
-  int child_id = filter_->child_id();
-
-  // When the old renderer dies, it sends a message to us to cancel its
-  // requests.
-  if (IsTransferredNavigation(GlobalRequestID(child_id, request_id)))
-    return;
-
-  ResourceLoader* loader = GetLoader(child_id, request_id);
-
-  // It is possible that the request has been completed and removed from the
-  // loader queue but the client has not processed the request completed message
-  // before issuing a cancel. This happens frequently for beacons which are
-  // canceled in the response received handler.
-  if (!loader)
-    return;
-
-  loader->CancelRequest(true);
+  CancelRequestFromRenderer(GlobalRequestID(filter_->child_id(), request_id));
 }
 
 ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
@@ -2452,6 +2434,25 @@ void ResourceDispatcherHostImpl::BeginURLRequest(
 int ResourceDispatcherHostImpl::MakeRequestID() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return --request_id_;
+}
+
+void ResourceDispatcherHostImpl::CancelRequestFromRenderer(
+    GlobalRequestID request_id) {
+  // When the old renderer dies, it sends a message to us to cancel its
+  // requests.
+  if (IsTransferredNavigation(request_id))
+    return;
+
+  ResourceLoader* loader = GetLoader(request_id);
+
+  // It is possible that the request has been completed and removed from the
+  // loader queue but the client has not processed the request completed message
+  // before issuing a cancel. This happens frequently for beacons which are
+  // canceled in the response received handler.
+  if (!loader)
+    return;
+
+  loader->CancelRequest(true);
 }
 
 void ResourceDispatcherHostImpl::StartLoading(

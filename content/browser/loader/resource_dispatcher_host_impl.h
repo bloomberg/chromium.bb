@@ -342,6 +342,12 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // of |request_id_| for the details. Must be called on the IO thread.
   int MakeRequestID();
 
+  // Cancels a request as requested by a renderer. This function is called when
+  // a mojo connection is lost.
+  // Note that this cancel is subtly different from the other CancelRequest
+  // methods in this file, which also tear down the loader.
+  void CancelRequestFromRenderer(GlobalRequestID request_id);
+
  private:
   friend class ResourceDispatcherHostTest;
 

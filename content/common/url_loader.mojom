@@ -13,16 +13,12 @@ struct URLResponseHead;
 [Native]
 struct URLLoaderStatus;
 
+// Destroying a URLLoader will cancel the associated request.
 interface URLLoader {
   // If the associated request has |auto_follow_redirects| set to false,
   // then upon receiving an URLResponse with a non-NULL |redirect_url| field,
   // |FollowRedirect| may be called to load the URL indicated by the redirect.
   FollowRedirect();
-
-  // Cancels the request. The service will cancel loading, but there may be some
-  // time lag and it is possible that the client gets some notification after
-  // calling this method for a while.
-  Cancel();
 };
 
 interface URLLoaderClient {
