@@ -1197,11 +1197,30 @@ drm_plane_state_put_back(struct drm_plane_state *state)
 	(void) drm_plane_state_alloc(state_output, plane);
 }
 
+static bool
+drm_view_transform_supported(struct weston_view *ev, struct weston_output *output)
+{
+	struct weston_buffer_viewport *viewport = &ev->surface->buffer_viewport;
+
+	/* This will incorrectly disallow cases where the combination of
+	 * buffer and view transformations match the output transform.
+	 * Fixing this requires a full analysis of the transformation
+	 * chain. */
+	if (ev->transform.enabled &&
+	    ev->transform.matrix.type >= WESTON_MATRIX_TRANSFORM_ROTATE)
+		return false;
+
+	if (viewport->buffer.transform != output->transform)
+		return false;
+
+	return true;
+}
+
 /**
  * Given a weston_view, fill the drm_plane_state's co-ordinates to display on
  * a given plane.
  */
-static void
+static bool
 drm_plane_state_coords_for_view(struct drm_plane_state *state,
 				struct weston_view *ev)
 {
@@ -1210,6 +1229,9 @@ drm_plane_state_coords_for_view(struct drm_plane_state *state,
 	pixman_region32_t dest_rect, src_rect;
 	pixman_box32_t *box, tbox;
 	float sxf1, syf1, sxf2, syf2;
+
+	if (!drm_view_transform_supported(ev, &output->base))
+		return false;
 
 	/* Update the base weston_plane co-ordinates. */
 	box = pixman_region32_extents(&ev->transform.boundingbox);
@@ -1279,6 +1301,8 @@ drm_plane_state_coords_for_view(struct drm_plane_state *state,
 		state->src_w = (buffer->width << 16) - state->src_x;
 	if (state->src_h > (uint32_t) ((buffer->height << 16) - state->src_y))
 		state->src_h = (buffer->height << 16) - state->src_y;
+
+	return true;
 }
 
 /**
@@ -1618,13 +1642,6 @@ drm_output_assign_state(struct drm_output_state *state,
 	}
 }
 
-static int
-drm_view_transform_supported(struct weston_view *ev)
-{
-	return !ev->transform.enabled ||
-		(ev->transform.matrix.type < WESTON_MATRIX_TRANSFORM_ROTATE);
-}
-
 static bool
 drm_view_is_opaque(struct weston_view *ev)
 {
@@ -1681,11 +1698,9 @@ drm_output_prepare_scanout_view(struct drm_output_state *output_state,
 		return NULL;
 	if (ev->geometry.scissor_enabled)
 		return NULL;
-	if (viewport->buffer.transform != output->base.transform)
-		return NULL;
 	if (viewport->buffer.scale != output->base.current_scale)
 		return NULL;
-	if (!drm_view_transform_supported(ev))
+	if (!drm_view_transform_supported(ev, &output->base))
 		return NULL;
 
 	if (ev->alpha != 1.0f)
@@ -2737,7 +2752,6 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 {
 	struct drm_output *output = output_state->output;
 	struct weston_compositor *ec = output->base.compositor;
-	struct weston_buffer_viewport *viewport = &ev->surface->buffer_viewport;
 	struct drm_backend *b = to_drm_backend(ec);
 	struct wl_resource *buffer_resource;
 	struct drm_plane *p;
@@ -2763,13 +2777,6 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 	if (wl_shm_buffer_get(buffer_resource))
 		return NULL;
 
-	if (viewport->buffer.transform != output->base.transform)
-		return NULL;
-	if (viewport->buffer.scale != output->base.current_scale)
-		return NULL;
-	if (!drm_view_transform_supported(ev))
-		return NULL;
-
 	if (ev->alpha != 1.0f)
 		return NULL;
 
@@ -2792,6 +2799,14 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 	/* No sprites available */
 	if (!state)
 		return NULL;
+
+	state->output = output;
+	if (!drm_plane_state_coords_for_view(state, ev))
+		goto err;
+
+	if (state->src_w != state->dest_w << 16 ||
+	    state->src_h != state->dest_h << 16)
+		goto err;
 
 	if ((dmabuf = linux_dmabuf_buffer_get(buffer_resource))) {
 #ifdef HAVE_GBM_FD_IMPORT
@@ -2850,9 +2865,6 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 		goto err;
 
 	drm_fb_set_buffer(state->fb, ev->surface->buffer_ref.buffer);
-
-	state->output = output;
-	drm_plane_state_coords_for_view(state, ev);
 
 	return &p->base;
 
