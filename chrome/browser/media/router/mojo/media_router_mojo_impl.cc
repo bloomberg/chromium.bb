@@ -37,6 +37,17 @@
 
 namespace media_router {
 
+namespace {
+
+void RunRouteRequestCallbacks(
+    std::unique_ptr<RouteRequestResult> result,
+    const std::vector<MediaRouteResponseCallback>& callbacks) {
+  for (const MediaRouteResponseCallback& callback : callbacks)
+    callback.Run(*result);
+}
+
+}  // namespace
+
 using SinkAvailability = mojom::MediaRouter::SinkAvailability;
 
 MediaRouterMojoImpl::MediaRoutesQuery::MediaRoutesQuery() = default;
@@ -236,6 +247,7 @@ void MediaRouterMojoImpl::RouteResponseReceived(
     const std::string& presentation_id,
     bool is_incognito,
     const std::vector<MediaRouteResponseCallback>& callbacks,
+    bool is_join,
     mojom::MediaRoutePtr media_route,
     const base::Optional<std::string>& error_text,
     mojom::RouteRequestResultCode result_code) {
@@ -257,9 +269,12 @@ void MediaRouterMojoImpl::RouteResponseReceived(
         media_route.To<std::unique_ptr<MediaRoute>>(), presentation_id);
   }
 
-  // TODO(imcheng): Add UMA histogram based on result code (crbug.com/583044).
-  for (const MediaRouteResponseCallback& callback : callbacks)
-    callback.Run(*result);
+  if (is_join)
+    MediaRouterMojoMetrics::RecordJoinRouteResultCode(result->result_code());
+  else
+    MediaRouterMojoMetrics::RecordCreateRouteResultCode(result->result_code());
+
+  RunRouteRequestCallbacks(std::move(result), callbacks);
 }
 
 void MediaRouterMojoImpl::CreateRoute(
@@ -274,11 +289,10 @@ void MediaRouterMojoImpl::CreateRoute(
 
   if (!origin.is_valid()) {
     DVLOG_WITH_INSTANCE(1) << "Invalid origin: " << origin;
-    std::unique_ptr<RouteRequestResult> error_result(
-        RouteRequestResult::FromError("Invalid origin",
-                                      RouteRequestResult::INVALID_ORIGIN));
-    for (const MediaRouteResponseCallback& callback : callbacks)
-      callback.Run(*error_result);
+    std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
+        "Invalid origin", RouteRequestResult::INVALID_ORIGIN);
+    MediaRouterMojoMetrics::RecordCreateRouteResultCode(result->result_code());
+    RunRouteRequestCallbacks(std::move(result), callbacks);
     return;
   }
 
@@ -312,8 +326,9 @@ void MediaRouterMojoImpl::JoinRoute(
   }
 
   if (error_result) {
-    for (const MediaRouteResponseCallback& callback : callbacks)
-      callback.Run(*error_result);
+    MediaRouterMojoMetrics::RecordJoinRouteResultCode(
+        error_result->result_code());
+    RunRouteRequestCallbacks(std::move(error_result), callbacks);
     return;
   }
 
@@ -339,8 +354,8 @@ void MediaRouterMojoImpl::ConnectRouteByRouteId(
     DVLOG_WITH_INSTANCE(1) << "Invalid origin: " << origin;
     std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
         "Invalid origin", RouteRequestResult::INVALID_ORIGIN);
-    for (const MediaRouteResponseCallback& callback : callbacks)
-      callback.Run(*result);
+    MediaRouterMojoMetrics::RecordJoinRouteResultCode(result->result_code());
+    RunRouteRequestCallbacks(std::move(result), callbacks);
     return;
   }
 
@@ -600,8 +615,8 @@ void MediaRouterMojoImpl::DoCreateRoute(
   media_route_provider_->CreateRoute(
       source_id, sink_id, presentation_id, origin, tab_id, timeout, incognito,
       base::Bind(&MediaRouterMojoImpl::RouteResponseReceived,
-                 base::Unretained(this), presentation_id, incognito,
-                 callbacks));
+                 base::Unretained(this), presentation_id, incognito, callbacks,
+                 false));
 }
 
 void MediaRouterMojoImpl::DoJoinRoute(
@@ -618,8 +633,8 @@ void MediaRouterMojoImpl::DoJoinRoute(
   media_route_provider_->JoinRoute(
       source_id, presentation_id, origin, tab_id, timeout, incognito,
       base::Bind(&MediaRouterMojoImpl::RouteResponseReceived,
-                 base::Unretained(this), presentation_id, incognito,
-                 callbacks));
+                 base::Unretained(this), presentation_id, incognito, callbacks,
+                 true));
 }
 
 void MediaRouterMojoImpl::DoConnectRouteByRouteId(
@@ -638,8 +653,8 @@ void MediaRouterMojoImpl::DoConnectRouteByRouteId(
   media_route_provider_->ConnectRouteByRouteId(
       source_id, route_id, presentation_id, origin, tab_id, timeout, incognito,
       base::Bind(&MediaRouterMojoImpl::RouteResponseReceived,
-                 base::Unretained(this), presentation_id, incognito,
-                 callbacks));
+                 base::Unretained(this), presentation_id, incognito, callbacks,
+                 true));
 }
 
 void MediaRouterMojoImpl::DoTerminateRoute(const MediaRoute::Id& route_id) {

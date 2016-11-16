@@ -87,6 +87,16 @@ class MediaRouterMojoMetrics {
   // page.
   static void RecordMediaRouteProviderWakeup(MediaRouteProviderWakeup wakeup);
 
+  // Records the outcome of a create route request to the Media Route Provider
+  // Manager.
+  static void RecordCreateRouteResultCode(
+      RouteRequestResult::ResultCode result_code);
+
+  // Records the outcome of a join route request to the Media Route Provider
+  // Manager.
+  static void RecordJoinRouteResultCode(
+      RouteRequestResult::ResultCode result_code);
+
   // Records the outcome of a call to terminateRoute() on the Media Route
   // Provider Manager.
   static void RecordMediaRouteProviderTerminateRoute(

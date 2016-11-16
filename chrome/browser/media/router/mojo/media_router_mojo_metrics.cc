@@ -50,6 +50,24 @@ void MediaRouterMojoMetrics::RecordMediaRouteProviderWakeup(
 }
 
 // static
+void MediaRouterMojoMetrics::RecordCreateRouteResultCode(
+    RouteRequestResult::ResultCode result_code) {
+  DCHECK_LT(result_code, RouteRequestResult::ResultCode::TOTAL_COUNT);
+  UMA_HISTOGRAM_ENUMERATION("MediaRouter.Provider.CreateRoute.Result",
+                            result_code,
+                            RouteRequestResult::ResultCode::TOTAL_COUNT);
+}
+
+// static
+void MediaRouterMojoMetrics::RecordJoinRouteResultCode(
+    RouteRequestResult::ResultCode result_code) {
+  DCHECK_LT(result_code, RouteRequestResult::ResultCode::TOTAL_COUNT);
+  UMA_HISTOGRAM_ENUMERATION("MediaRouter.Provider.JoinRoute.Result",
+                            result_code,
+                            RouteRequestResult::ResultCode::TOTAL_COUNT);
+}
+
+// static
 void MediaRouterMojoMetrics::RecordMediaRouteProviderTerminateRoute(
     RouteRequestResult::ResultCode result_code) {
   DCHECK_LT(result_code, RouteRequestResult::ResultCode::TOTAL_COUNT);

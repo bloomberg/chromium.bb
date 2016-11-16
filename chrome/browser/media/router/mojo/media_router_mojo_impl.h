@@ -317,6 +317,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       const std::string& presentation_id,
       bool is_incognito,
       const std::vector<MediaRouteResponseCallback>& callbacks,
+      bool is_join,
       mojom::MediaRoutePtr media_route,
       const base::Optional<std::string>& error_text,
       mojom::RouteRequestResultCode result_code);

@@ -221,6 +221,7 @@ TEST_F(MediaRouterMojoImplTest, CreateRoute) {
       kSource, kSinkId, GURL(kOrigin), nullptr, route_response_callbacks,
       base::TimeDelta::FromMilliseconds(kTimeoutMillis), false);
   run_loop.Run();
+  ExpectResultBucketCount("CreateRoute", RouteRequestResult::ResultCode::OK, 1);
 }
 
 TEST_F(MediaRouterMojoImplTest, CreateIncognitoRoute) {
@@ -259,6 +260,7 @@ TEST_F(MediaRouterMojoImplTest, CreateIncognitoRoute) {
       kSource, kSinkId, GURL(kOrigin), nullptr, route_response_callbacks,
       base::TimeDelta::FromMilliseconds(kTimeoutMillis), true);
   run_loop.Run();
+  ExpectResultBucketCount("CreateRoute", RouteRequestResult::ResultCode::OK, 1);
 }
 
 TEST_F(MediaRouterMojoImplTest, CreateRouteFails) {
@@ -287,6 +289,8 @@ TEST_F(MediaRouterMojoImplTest, CreateRouteFails) {
       kSource, kSinkId, GURL(kOrigin), nullptr, route_response_callbacks,
       base::TimeDelta::FromMilliseconds(kTimeoutMillis), false);
   run_loop.Run();
+  ExpectResultBucketCount("CreateRoute",
+                          RouteRequestResult::ResultCode::TIMED_OUT, 1);
 }
 
 TEST_F(MediaRouterMojoImplTest, CreateRouteIncognitoMismatchFails) {
@@ -316,6 +320,8 @@ TEST_F(MediaRouterMojoImplTest, CreateRouteIncognitoMismatchFails) {
       kSource, kSinkId, GURL(kOrigin), nullptr, route_response_callbacks,
       base::TimeDelta::FromMilliseconds(kTimeoutMillis), true);
   run_loop.Run();
+  ExpectResultBucketCount(
+      "CreateRoute", RouteRequestResult::ResultCode::INCOGNITO_MISMATCH, 1);
 }
 
 TEST_F(MediaRouterMojoImplTest, IncognitoRoutesTerminatedOnProfileShutdown) {
@@ -404,6 +410,7 @@ TEST_F(MediaRouterMojoImplTest, JoinRoute) {
                       route_response_callbacks,
                       base::TimeDelta::FromMilliseconds(kTimeoutMillis), false);
   run_loop.Run();
+  ExpectResultBucketCount("JoinRoute", RouteRequestResult::ResultCode::OK, 1);
 }
 
 TEST_F(MediaRouterMojoImplTest, JoinRouteNotFoundFails) {
@@ -419,6 +426,8 @@ TEST_F(MediaRouterMojoImplTest, JoinRouteNotFoundFails) {
                       route_response_callbacks,
                       base::TimeDelta::FromMilliseconds(kTimeoutMillis), false);
   run_loop.Run();
+  ExpectResultBucketCount("JoinRoute",
+                          RouteRequestResult::ResultCode::ROUTE_NOT_FOUND, 1);
 }
 
 TEST_F(MediaRouterMojoImplTest, JoinRouteTimedOutFails) {
@@ -455,6 +464,8 @@ TEST_F(MediaRouterMojoImplTest, JoinRouteTimedOutFails) {
                       route_response_callbacks,
                       base::TimeDelta::FromMilliseconds(kTimeoutMillis), false);
   run_loop.Run();
+  ExpectResultBucketCount("JoinRoute",
+                          RouteRequestResult::ResultCode::TIMED_OUT, 1);
 }
 
 TEST_F(MediaRouterMojoImplTest, JoinRouteIncognitoMismatchFails) {
@@ -497,6 +508,8 @@ TEST_F(MediaRouterMojoImplTest, JoinRouteIncognitoMismatchFails) {
                       route_response_callbacks,
                       base::TimeDelta::FromMilliseconds(kTimeoutMillis), true);
   run_loop.Run();
+  ExpectResultBucketCount(
+      "JoinRoute", RouteRequestResult::ResultCode::INCOGNITO_MISMATCH, 1);
 }
 
 TEST_F(MediaRouterMojoImplTest, ConnectRouteByRouteId) {
@@ -535,6 +548,7 @@ TEST_F(MediaRouterMojoImplTest, ConnectRouteByRouteId) {
       kSource, kRouteId, GURL(kOrigin), nullptr, route_response_callbacks,
       base::TimeDelta::FromMilliseconds(kTimeoutMillis), false);
   run_loop.Run();
+  ExpectResultBucketCount("JoinRoute", RouteRequestResult::ResultCode::OK, 1);
 }
 
 TEST_F(MediaRouterMojoImplTest, ConnectRouteByRouteIdFails) {
@@ -564,6 +578,8 @@ TEST_F(MediaRouterMojoImplTest, ConnectRouteByRouteIdFails) {
       kSource, kRouteId, GURL(kOrigin), nullptr, route_response_callbacks,
       base::TimeDelta::FromMilliseconds(kTimeoutMillis), true);
   run_loop.Run();
+  ExpectResultBucketCount("JoinRoute",
+                          RouteRequestResult::ResultCode::TIMED_OUT, 1);
 }
 
 TEST_F(MediaRouterMojoImplTest, ConnectRouteByIdIncognitoMismatchFails) {
@@ -599,6 +615,8 @@ TEST_F(MediaRouterMojoImplTest, ConnectRouteByIdIncognitoMismatchFails) {
       kSource, kRouteId, GURL(kOrigin), nullptr, route_response_callbacks,
       base::TimeDelta::FromMilliseconds(kTimeoutMillis), true);
   run_loop.Run();
+  ExpectResultBucketCount(
+      "JoinRoute", RouteRequestResult::ResultCode::INCOGNITO_MISMATCH, 1);
 }
 
 TEST_F(MediaRouterMojoImplTest, DetachRoute) {
