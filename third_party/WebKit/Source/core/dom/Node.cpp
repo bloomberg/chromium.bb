@@ -2159,11 +2159,17 @@ void Node::defaultEventHandler(Event* event) {
       // LayoutTextControlSingleLine::scrollHeight
       document().updateStyleAndLayoutIgnorePendingStylesheets();
       LayoutObject* layoutObject = this->layoutObject();
-      while (layoutObject &&
-             (!layoutObject->isBox() ||
-              !toLayoutBox(layoutObject)->canBeScrolledAndHasScrollableArea()))
-        layoutObject = layoutObject->parent();
-
+      while (
+          layoutObject &&
+          (!layoutObject->isBox() ||
+           !toLayoutBox(layoutObject)->canBeScrolledAndHasScrollableArea())) {
+        if (layoutObject->node() && layoutObject->node()->isDocumentNode()) {
+          Element* owner = toDocument(layoutObject->node())->localOwner();
+          layoutObject = owner ? owner->layoutObject() : nullptr;
+        } else {
+          layoutObject = layoutObject->parent();
+        }
+      }
       if (layoutObject) {
         if (LocalFrame* frame = document().frame())
           frame->eventHandler().startMiddleClickAutoscroll(layoutObject);

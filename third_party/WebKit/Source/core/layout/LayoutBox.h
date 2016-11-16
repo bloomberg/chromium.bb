@@ -998,7 +998,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   IntSize calculateAutoscrollDirection(const IntPoint& pointInRootFrame) const;
   static LayoutBox* findAutoscrollable(LayoutObject*);
   virtual void stopAutoscroll() {}
-  virtual void middleClickAutoscroll(const IntPoint&);
 
   DISABLE_CFI_PERF bool hasAutoVerticalScrollbar() const {
     return hasOverflowClip() && (style()->overflowY() == OverflowAuto ||
