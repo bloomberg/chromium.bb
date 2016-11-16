@@ -13,6 +13,8 @@
 
 namespace blink {
 
+class CSSParserTokenRange;
+
 // This class helps lazy parsing by retaining necessary state. It should not
 // outlive the StyleSheetContents that initiated the parse, as it retains a raw
 // reference to the UseCounter associated with the style sheet.
@@ -26,7 +28,8 @@ class CSSLazyParsingState
 
   const CSSParserContext& context();
 
-  bool shouldLazilyParseProperties(const CSSSelectorList&);
+  bool shouldLazilyParseProperties(const CSSSelectorList&,
+                                   const CSSParserTokenRange& block);
 
   DEFINE_INLINE_TRACE() { visitor->trace(m_owningContents); }
 

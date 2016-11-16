@@ -1052,6 +1052,7 @@ source_set("unit_tests") {
     "css/cssom/CSSVariableReferenceValueTest.cpp",
     "css/cssom/FilteredComputedStylePropertyMapTest.cpp",
     "css/invalidation/InvalidationSetTest.cpp",
+    "css/parser/CSSLazyParsingTest.cpp",
     "css/parser/CSSParserFastPathsTest.cpp",
     "css/parser/CSSParserTokenTest.cpp",
     "css/parser/CSSPropertyParserTest.cpp",

@@ -125,6 +125,9 @@ class CORE_EXPORT StyleRule : public StyleRuleBase {
   DECLARE_TRACE_AFTER_DISPATCH();
 
  private:
+  friend class CSSLazyParsingTest;
+  bool hasParsedProperties() const;
+
   StyleRule(CSSSelectorList, StylePropertySet*);
   StyleRule(CSSSelectorList, CSSLazyPropertyParser*);
   StyleRule(const StyleRule&);
@@ -132,6 +135,17 @@ class CORE_EXPORT StyleRule : public StyleRuleBase {
   CSSSelectorList m_selectorList;
   mutable Member<StylePropertySet> m_properties;
   mutable Member<CSSLazyPropertyParser> m_lazyPropertyParser;
+
+  // Whether or not we should consider this for matching rules. Usually we try
+  // to avoid considering empty property sets, as an optimization. This is
+  // not possible for lazy properties, which always need to be considered. The
+  // lazy parser does its best to avoid lazy parsing for properties that look
+  // empty due to lack of tokens.
+  enum ConsiderForMatching {
+    AlwaysConsider,
+    ConsiderIfNonEmpty,
+  };
+  mutable ConsiderForMatching m_shouldConsiderForMatchingRules;
 };
 
 class StyleRuleFontFace : public StyleRuleBase {

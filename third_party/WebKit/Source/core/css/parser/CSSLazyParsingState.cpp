@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "core/css/parser/CSSLazyParsingState.h"
+#include "core/css/parser/CSSParserTokenRange.h"
 #include "core/frame/UseCounter.h"
 
 namespace blink {
@@ -24,21 +25,30 @@ const CSSParserContext& CSSLazyParsingState::context() {
   return m_context;
 }
 
-//  Disallow lazy parsing for blocks which have
-//  - before/after in their selector list. This ensures we don't cause a
-//  collectFeatures() when we trigger parsing for attr() functions which would
-//  trigger expensive invalidation propagation.
-//
-//  Note: another optimization might be to disallow lazy parsing for rules which
-//  will end up being empty. This is hard to know without parsing but we may be
-//  able to catch the {}, { } cases. This would be to hit
-//  StyleRule::shouldConsiderForMatchingRules more.
 bool CSSLazyParsingState::shouldLazilyParseProperties(
-    const CSSSelectorList& selectors) {
+    const CSSSelectorList& selectors,
+    const CSSParserTokenRange& block) {
+  // Simple heuristic for an empty block. Note that |block| here does not
+  // include {} brackets. We avoid lazy parsing empty blocks so we can avoid
+  // considering them when possible for matching. Lazy blocks must always be
+  // considered. Three tokens is a reasonable minimum for a block:
+  // ident ':' <value>.
+  if (block.end() - block.begin() <= 2)
+    return false;
+
+  //  Disallow lazy parsing for blocks which have before/after in their selector
+  //  list. This ensures we don't cause a collectFeatures() when we trigger
+  //  parsing for attr() functions which would trigger expensive invalidation
+  //  propagation.
   for (const auto* s = selectors.first(); s; s = CSSSelectorList::next(*s)) {
-    const CSSSelector::PseudoType type(s->getPseudoType());
-    if (type == CSSSelector::PseudoBefore || type == CSSSelector::PseudoAfter)
-      return false;
+    for (const CSSSelector* current = s; current;
+         current = current->tagHistory()) {
+      const CSSSelector::PseudoType type(current->getPseudoType());
+      if (type == CSSSelector::PseudoBefore || type == CSSSelector::PseudoAfter)
+        return false;
+      if (current->relation() != CSSSelector::SubSelector)
+        break;
+    }
   }
   return true;
 }

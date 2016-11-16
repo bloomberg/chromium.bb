@@ -790,7 +790,7 @@ StyleRule* CSSParserImpl::consumeStyleRule(CSSParserTokenRange prelude,
   if (m_observerWrapper) {
     observeSelectors(*m_observerWrapper, prelude);
   } else if (m_lazyState &&
-             m_lazyState->shouldLazilyParseProperties(selectorList)) {
+             m_lazyState->shouldLazilyParseProperties(selectorList, block)) {
     DCHECK(m_styleSheet);
     return StyleRule::createLazy(
         std::move(selectorList),
