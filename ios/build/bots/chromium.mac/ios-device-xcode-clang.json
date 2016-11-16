@@ -1,6 +1,6 @@
 {
   "owners": [
-    "dpranke",
+    "sdefresne",
     "smut"
   ],
   "comments": [
@@ -24,7 +24,8 @@
     "is_component_build=false",
     "use_goma=true",
     "goma_dir=\"$(goma_dir)\"",
-    "target_cpu=\"arm\""
+    "target_cpu=\"arm\"",
+    "use_xcode_clang=true"
   ],
   "mb_type": "gn",
   "compiler": "ninja",

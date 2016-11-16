@@ -35,7 +35,6 @@
   ],
   "mb_type": "gn",
   "compiler": "ninja",
-  "additional_compiler_targets": [ "gn_all" ],
   "configuration": "Debug",
   "sdk": "iphonesimulator10.0",
   "tests": [
