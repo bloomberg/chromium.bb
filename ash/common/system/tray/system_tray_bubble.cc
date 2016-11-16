@@ -195,8 +195,7 @@ void SystemTrayBubble::InitView(views::View* anchor,
   } else if (bubble_type_ == BUBBLE_TYPE_NOTIFICATION) {
     init_params->close_on_deactivate = false;
   }
-  // The TrayBubbleView will use |anchor| and |tray_| to determine the parent
-  // container for the bubble.
+
   bubble_view_ = TrayBubbleView::Create(anchor, tray_, init_params);
   bubble_view_->set_adjust_if_offscreen(false);
   CreateItemViews(login_status);

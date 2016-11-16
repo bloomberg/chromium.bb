@@ -42,7 +42,6 @@ class ASH_EXPORT TrayBrightness
   void DestroyDefaultView() override;
   void DestroyDetailedView() override;
   void UpdateAfterLoginStatusChange(LoginStatus status) override;
-  bool ShouldHideArrow() const override;
   bool ShouldShowShelf() const override;
 
   // Overriden from PowerManagerClient::Observer.

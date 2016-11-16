@@ -247,10 +247,6 @@ void TrayBrightness::DestroyDetailedView() {
 
 void TrayBrightness::UpdateAfterLoginStatusChange(LoginStatus status) {}
 
-bool TrayBrightness::ShouldHideArrow() const {
-  return true;
-}
-
 bool TrayBrightness::ShouldShowShelf() const {
   return false;
 }

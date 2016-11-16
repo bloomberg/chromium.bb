@@ -245,12 +245,15 @@ void TrayBackgroundView::TrayContainer::UpdateLayout() {
                           : gfx::Insets(kHitRegionPadding, 0,
                                         kHitRegionPadding + kSeparatorWidth, 0)
           : gfx::Insets(kBackgroundAdjustPadding));
-  const gfx::Insets margin(
-      is_horizontal ? gfx::Insets(cross_axis_margin_, main_axis_margin_)
-                    : gfx::Insets(main_axis_margin_, cross_axis_margin_));
-  SetBorder(views::CreateEmptyBorder(insets + margin));
+  SetBorder(views::CreateEmptyBorder(insets));
 
-  views::BoxLayout* layout = new views::BoxLayout(orientation, 0, 0, 0);
+  int horizontal_margin = main_axis_margin_;
+  int vertical_margin = cross_axis_margin_;
+  if (!is_horizontal)
+    std::swap(horizontal_margin, vertical_margin);
+  views::BoxLayout* layout =
+      new views::BoxLayout(orientation, horizontal_margin, vertical_margin, 0);
+
   if (!ash::MaterialDesignController::IsShelfMaterial())
     layout->SetDefaultFlex(1);
   layout->set_minimum_cross_axis_size(kTrayItemSize);
@@ -416,6 +419,7 @@ void TrayBackgroundView::SetContents(views::View* contents) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   AddChildView(contents);
 }
+
 void TrayBackgroundView::SetContentsBackground(bool draws_active) {
   background_ = new TrayBackground(this, draws_active);
   tray_container_->set_background(background_);
@@ -456,84 +460,6 @@ void TrayBackgroundView::HideTransformation() {
   layer()->SetTransform(transform);
 }
 
-gfx::Rect TrayBackgroundView::GetBubbleAnchorRect(
-    views::Widget* anchor_widget,
-    TrayBubbleView::AnchorType anchor_type,
-    TrayBubbleView::AnchorAlignment anchor_alignment) const {
-  gfx::Rect rect;
-  if (anchor_widget && anchor_widget->IsVisible()) {
-    rect = anchor_widget->GetWindowBoundsInScreen();
-    if (anchor_type == TrayBubbleView::ANCHOR_TYPE_TRAY) {
-      if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM) {
-        bool rtl = base::i18n::IsRTL();
-        rect.Inset(rtl ? kBubblePaddingHorizontalSide : 0,
-                   kBubblePaddingHorizontalBottom,
-                   rtl ? 0 : kBubblePaddingHorizontalSide, 0);
-      } else if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_LEFT) {
-        rect.Inset(0, 0, kBubblePaddingVerticalSide + 4,
-                   kBubblePaddingVerticalBottom);
-      } else if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_RIGHT) {
-        rect.Inset(kBubblePaddingVerticalSide, 0, 0,
-                   kBubblePaddingVerticalBottom);
-      } else {
-        // TODO(bruthig) May need to handle other ANCHOR_ALIGNMENT_ values.
-        // ie. ANCHOR_ALIGNMENT_TOP
-        DCHECK(false) << "Unhandled anchor alignment.";
-      }
-    } else if (anchor_type == TrayBubbleView::ANCHOR_TYPE_BUBBLE) {
-      // Invert the offsets to align with the bubble below.
-      // Note that with the alternate shelf layout the tips are not shown and
-      // the offsets for left and right alignment do not need to be applied.
-      int vertical_alignment = 0;
-      int horizontal_alignment = kBubblePaddingVerticalBottom;
-      if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_LEFT)
-        rect.Inset(vertical_alignment, 0, 0, horizontal_alignment);
-      else if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_RIGHT)
-        rect.Inset(0, 0, vertical_alignment, horizontal_alignment);
-    } else {
-      DCHECK(false) << "Unhandled anchor type.";
-    }
-  } else {
-    WmWindow* target_root = anchor_widget
-                                ? WmLookup::Get()
-                                      ->GetWindowForWidget(anchor_widget)
-                                      ->GetRootWindow()
-                                : WmShell::Get()->GetPrimaryRootWindow();
-    rect = target_root->GetBounds();
-    if (anchor_type == TrayBubbleView::ANCHOR_TYPE_TRAY) {
-      if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM) {
-        rect = gfx::Rect(
-            base::i18n::IsRTL()
-                ? kPaddingFromRightEdgeOfScreenBottomAlignment
-                : rect.width() - kPaddingFromRightEdgeOfScreenBottomAlignment,
-            rect.height() - kPaddingFromBottomOfScreenBottomAlignment, 0, 0);
-        rect = target_root->ConvertRectToScreen(rect);
-      } else if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_LEFT) {
-        rect = gfx::Rect(
-            kPaddingFromRightEdgeOfScreenBottomAlignment,
-            rect.height() - kPaddingFromBottomOfScreenBottomAlignment, 1, 1);
-        rect = target_root->ConvertRectToScreen(rect);
-      } else if (anchor_alignment == TrayBubbleView::ANCHOR_ALIGNMENT_RIGHT) {
-        rect = gfx::Rect(
-            rect.width() - kPaddingFromRightEdgeOfScreenBottomAlignment,
-            rect.height() - kPaddingFromBottomOfScreenBottomAlignment, 1, 1);
-        rect = target_root->ConvertRectToScreen(rect);
-      } else {
-        // TODO(bruthig) May need to handle other ANCHOR_ALIGNMENT_ values.
-        // ie. ANCHOR_ALIGNMENT_TOP
-        DCHECK(false) << "Unhandled anchor alignment.";
-      }
-    } else {
-      rect = gfx::Rect(
-          base::i18n::IsRTL()
-              ? kPaddingFromRightEdgeOfScreenBottomAlignment
-              : rect.width() - kPaddingFromRightEdgeOfScreenBottomAlignment,
-          rect.height() - kPaddingFromBottomOfScreenBottomAlignment, 0, 0);
-    }
-  }
-  return rect;
-}
-
 TrayBubbleView::AnchorAlignment TrayBackgroundView::GetAnchorAlignment() const {
   if (shelf_alignment_ == SHELF_ALIGNMENT_LEFT)
     return TrayBubbleView::ANCHOR_ALIGNMENT_LEFT;
@@ -571,6 +497,30 @@ void TrayBackgroundView::UpdateShelfItemBackground(int alpha) {
 void TrayBackgroundView::SetSeparatorVisibility(bool is_shown) {
   is_separator_visible_ = is_shown;
   SchedulePaint();
+}
+
+views::View* TrayBackgroundView::GetBubbleAnchor() const {
+  return tray_container_;
+}
+
+gfx::Insets TrayBackgroundView::GetBubbleAnchorInsets() const {
+  gfx::Insets anchor_insets = GetBubbleAnchor()->GetInsets();
+  gfx::Insets tray_bg_insets = GetInsets();
+  // TODO(estade): for reasons I don't understand, BubbleBorder distances the
+  // bubble by the arrow's "interior" thickness even when the paint type is
+  // PAINT_NONE.
+  const int kBigShadowArrowInteriorThickness = 9;
+  if (GetAnchorAlignment() == TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM) {
+    return gfx::Insets(kBigShadowArrowInteriorThickness - tray_bg_insets.top(),
+                       anchor_insets.left(), -tray_bg_insets.bottom(),
+                       anchor_insets.right());
+  } else {
+    return gfx::Insets(
+        anchor_insets.top(),
+        kBigShadowArrowInteriorThickness - tray_bg_insets.left(),
+        anchor_insets.bottom(),
+        kBigShadowArrowInteriorThickness - tray_bg_insets.right());
+  }
 }
 
 std::unique_ptr<views::InkDropMask> TrayBackgroundView::CreateInkDropMask()

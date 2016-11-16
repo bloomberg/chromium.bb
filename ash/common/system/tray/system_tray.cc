@@ -47,6 +47,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/message_center/message_center_style.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
@@ -131,15 +132,15 @@ class SystemBubbleWrapper {
   // Initializes the bubble view and creates |bubble_wrapper_|.
   void InitView(TrayBackgroundView* tray,
                 views::View* anchor,
+                const gfx::Insets& anchor_insets,
                 TrayBubbleView::InitParams* init_params,
                 bool is_persistent) {
     DCHECK(anchor);
     LoginStatus login_status =
         WmShell::Get()->system_tray_delegate()->GetUserLoginStatus();
     bubble_->InitView(anchor, login_status, init_params);
+    bubble_->bubble_view()->set_anchor_view_insets(anchor_insets);
     bubble_wrapper_.reset(new TrayBubbleWrapper(tray, bubble_->bubble_view()));
-    // The system bubble should not have an arrow.
-    bubble_->bubble_view()->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
     is_persistent_ = is_persistent;
 
     // If ChromeVox is enabled, focus the default item if no item is focused and
@@ -351,13 +352,13 @@ const std::vector<SystemTrayItem*>& SystemTray::GetTrayItems() const {
 }
 
 void SystemTray::ShowDefaultView(BubbleCreationType creation_type) {
-  ShowDefaultViewWithOffset(
-      creation_type, TrayBubbleView::InitParams::kArrowDefaultOffset, false);
+  if (creation_type != BUBBLE_USE_EXISTING)
+    WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_MENU_OPENED);
+  ShowItems(items_.get(), false, true, creation_type, false);
 }
 
 void SystemTray::ShowPersistentDefaultView() {
-  ShowItems(items_.get(), false, false, BUBBLE_CREATE_NEW,
-            TrayBubbleView::InitParams::kArrowDefaultOffset, true);
+  ShowItems(items_.get(), false, false, BUBBLE_CREATE_NEW, true);
 }
 
 void SystemTray::ShowDetailedView(SystemTrayItem* item,
@@ -371,8 +372,7 @@ void SystemTray::ShowDetailedView(SystemTrayItem* item,
   bool persistent =
       (!activate && close_delay > 0 && creation_type == BUBBLE_CREATE_NEW);
   items.push_back(item);
-  ShowItems(items, true, activate, creation_type, GetTrayXOffset(item),
-            persistent);
+  ShowItems(items, true, activate, creation_type, persistent);
   if (system_bubble_)
     system_bubble_->bubble()->StartAutoCloseTimer(close_delay);
 }
@@ -533,41 +533,10 @@ base::string16 SystemTray::GetAccessibleNameForTray() {
                                     time, battery);
 }
 
-int SystemTray::GetTrayXOffset(SystemTrayItem* item) const {
-  // Don't attempt to align the arrow if the shelf is on the left or right.
-  if (!IsHorizontalAlignment(shelf_alignment()))
-    return TrayBubbleView::InitParams::kArrowDefaultOffset;
-
-  std::map<SystemTrayItem*, views::View*>::const_iterator it =
-      tray_item_map_.find(item);
-  if (it == tray_item_map_.end())
-    return TrayBubbleView::InitParams::kArrowDefaultOffset;
-
-  const views::View* item_view = it->second;
-  if (item_view->bounds().IsEmpty()) {
-    // The bounds of item could be still empty if it does not have a visible
-    // tray view. In that case, use the default (minimum) offset.
-    return TrayBubbleView::InitParams::kArrowDefaultOffset;
-  }
-
-  gfx::Point point(item_view->width() / 2, 0);
-  ConvertPointToWidget(item_view, &point);
-  return point.x();
-}
-
-void SystemTray::ShowDefaultViewWithOffset(BubbleCreationType creation_type,
-                                           int arrow_offset,
-                                           bool persistent) {
-  if (creation_type != BUBBLE_USE_EXISTING)
-    WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_MENU_OPENED);
-  ShowItems(items_.get(), false, true, creation_type, arrow_offset, persistent);
-}
-
 void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
                            bool detailed,
                            bool can_activate,
                            BubbleCreationType creation_type,
-                           int arrow_offset,
                            bool persistent) {
   // No system tray bubbles in kiosk mode.
   if (WmShell::Get()->system_tray_delegate()->GetUserLoginStatus() ==
@@ -610,32 +579,25 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
           WmShell::Get()->system_tray_delegate()->GetSystemTrayMenuWidth());
     }
 
-    TrayBubbleView::InitParams init_params(TrayBubbleView::ANCHOR_TYPE_TRAY,
-                                           GetAnchorAlignment(), menu_width,
+    TrayBubbleView::InitParams init_params(GetAnchorAlignment(), menu_width,
                                            kTrayPopupMaxWidth);
     // TODO(oshima): Change TrayBubbleView itself.
     init_params.can_activate = false;
-    init_params.first_item_has_no_margin = true;
     if (detailed) {
       // This is the case where a volume control or brightness control bubble
       // is created.
       init_params.max_height = default_bubble_height_;
-      init_params.arrow_color = kBackgroundColor;
+      init_params.bg_color = kBackgroundColor;
     } else {
-      init_params.arrow_color = kHeaderBackgroundColor;
+      init_params.bg_color = kHeaderBackgroundColor;
     }
-    init_params.arrow_offset = arrow_offset;
     if (bubble_type == SystemTrayBubble::BUBBLE_TYPE_DEFAULT)
       init_params.close_on_deactivate = !persistent;
-    // For Volume and Brightness we don't want to show an arrow when
-    // they are shown in a bubble by themselves.
-    init_params.arrow_paint_type = views::BubbleBorder::PAINT_NORMAL;
-    if (items.size() == 1 && items[0]->ShouldHideArrow())
-      init_params.arrow_paint_type = views::BubbleBorder::PAINT_NONE;
     SystemTrayBubble* bubble = new SystemTrayBubble(this, items, bubble_type);
 
     system_bubble_.reset(new SystemBubbleWrapper(bubble));
-    system_bubble_->InitView(this, tray_container(), &init_params, persistent);
+    system_bubble_->InitView(this, GetBubbleAnchor(), GetBubbleAnchorInsets(),
+                             &init_params, persistent);
 
     activation_observer_.reset(persistent ? nullptr
                                           : new ActivationObserver(this));
@@ -668,6 +630,9 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     SetIsActive(true);
 }
 
+// TODO(estade): there's only one thing that triggers a notification bubble,
+// and that's TraySms. We could delete a lot of code in SystemTray if that
+// used the message center notifications instead. See crbug.com/630641
 void SystemTray::UpdateNotificationBubble() {
   // Only show the notification bubble if we have notifications.
   if (notification_items_.empty()) {
@@ -679,28 +644,25 @@ void SystemTray::UpdateNotificationBubble() {
   SystemTrayBubble* notification_bubble;
   notification_bubble = new SystemTrayBubble(
       this, notification_items_, SystemTrayBubble::BUBBLE_TYPE_NOTIFICATION);
-  views::View* anchor;
-  TrayBubbleView::AnchorType anchor_type;
   // Tray items might want to show notifications while we are creating and
   // initializing the |system_bubble_| - but it might not be fully initialized
   // when coming here - this would produce a crashed like crbug.com/247416.
   // As such we check the existence of the widget here.
+  TrayBubbleView::InitParams init_params(
+      GetAnchorAlignment(), kTrayPopupMinWidth, kTrayPopupMaxWidth);
+  views::View* anchor = GetBubbleAnchor();
+  gfx::Insets anchor_insets = GetBubbleAnchorInsets();
+  // If there's already a system menu bubble, stack this one on top.
   if (system_bubble_.get() && system_bubble_->bubble_view() &&
       system_bubble_->bubble_view()->GetWidget()) {
     anchor = system_bubble_->bubble_view();
-    anchor_type = TrayBubbleView::ANCHOR_TYPE_BUBBLE;
-  } else {
-    anchor = tray_container();
-    anchor_type = TrayBubbleView::ANCHOR_TYPE_TRAY;
+    anchor_insets.Set(-message_center::kMarginBetweenItems, 0, 0, 0);
+    init_params.anchor_alignment = TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM;
   }
-  TrayBubbleView::InitParams init_params(anchor_type, GetAnchorAlignment(),
-                                         kTrayPopupMinWidth,
-                                         kTrayPopupMaxWidth);
-  init_params.first_item_has_no_margin = true;
-  init_params.arrow_color = kBackgroundColor;
-  init_params.arrow_offset = GetTrayXOffset(notification_items_[0]);
+  init_params.bg_color = kBackgroundColor;
   notification_bubble_.reset(new SystemBubbleWrapper(notification_bubble));
-  notification_bubble_->InitView(this, anchor, &init_params, false);
+  notification_bubble_->InitView(this, anchor, anchor_insets, &init_params,
+                                 false);
 
   if (notification_bubble->bubble_view()->child_count() == 0) {
     // It is possible that none of the items generated actual notifications.
@@ -813,13 +775,6 @@ base::string16 SystemTray::GetAccessibleNameForBubble() {
   return GetAccessibleNameForTray();
 }
 
-gfx::Rect SystemTray::GetAnchorRect(
-    views::Widget* anchor_widget,
-    TrayBubbleView::AnchorType anchor_type,
-    TrayBubbleView::AnchorAlignment anchor_alignment) const {
-  return GetBubbleAnchorRect(anchor_widget, anchor_type, anchor_alignment);
-}
-
 void SystemTray::OnBeforeBubbleWidgetInit(
     views::Widget* anchor_widget,
     views::Widget* bubble_widget,
@@ -910,17 +865,7 @@ bool SystemTray::PerformAction(const ui::Event& event) {
   if (HasSystemBubbleType(SystemTrayBubble::BUBBLE_TYPE_DEFAULT)) {
     system_bubble_->bubble()->Close();
   } else {
-    int arrow_offset = TrayBubbleView::InitParams::kArrowDefaultOffset;
-    if (event.IsMouseEvent() || event.type() == ui::ET_GESTURE_TAP) {
-      const ui::LocatedEvent& located_event =
-          static_cast<const ui::LocatedEvent&>(event);
-      if (IsHorizontalAlignment(shelf_alignment())) {
-        gfx::Point point(located_event.x(), 0);
-        ConvertPointToWidget(this, &point);
-        arrow_offset = point.x();
-      }
-    }
-    ShowDefaultViewWithOffset(BUBBLE_CREATE_NEW, arrow_offset, false);
+    ShowDefaultView(BUBBLE_CREATE_NEW);
     if (event.IsKeyEvent() || (event.flags() & ui::EF_TOUCH_ACCESSIBILITY))
       ActivateBubble();
   }

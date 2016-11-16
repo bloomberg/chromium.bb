@@ -70,11 +70,10 @@ void MessageBubbleBase::SetMaxHeight(int height) {
 views::TrayBubbleView::InitParams MessageBubbleBase::GetDefaultInitParams(
     views::TrayBubbleView::AnchorAlignment anchor_alignment) {
   views::TrayBubbleView::InitParams init_params(
-      views::TrayBubbleView::ANCHOR_TYPE_TRAY,
       anchor_alignment,
       kNotificationWidth,
       kNotificationWidth);
-  init_params.arrow_color = kBackgroundDarkColor;
+  init_params.bg_color = kBackgroundDarkColor;
   return init_params;
 }
 

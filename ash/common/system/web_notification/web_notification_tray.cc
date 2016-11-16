@@ -87,7 +87,8 @@ const SkColor kWebNotificationColorNoUnread =
     SkColorSetARGB(128, 255, 255, 255);
 const SkColor kWebNotificationColorWithUnread = SK_ColorWHITE;
 const int kNoUnreadIconSize = 18;
-}
+
+}  // namespace
 
 // Class to initialize and manage the WebNotificationBubble and
 // TrayBubbleWrapper instances for a bubble.
@@ -101,19 +102,10 @@ class WebNotificationBubbleWrapper {
         tray->GetAnchorAlignment();
     views::TrayBubbleView::InitParams init_params =
         bubble->GetInitParams(anchor_alignment);
-    views::View* anchor = tray->tray_container();
-    if (anchor_alignment == views::TrayBubbleView::ANCHOR_ALIGNMENT_BOTTOM) {
-      gfx::Point bounds(anchor->width() / 2, 0);
-      views::View::ConvertPointToWidget(anchor, &bounds);
-      init_params.arrow_offset = bounds.x();
-    }
-    DCHECK(anchor);
-    // TrayBubbleView uses |anchor| and |tray| to determine the parent
-    // container. See WebNotificationTray::OnBeforeBubbleWidgetInit().
-    views::TrayBubbleView* bubble_view =
-        views::TrayBubbleView::Create(anchor, tray, &init_params);
+    views::TrayBubbleView* bubble_view = views::TrayBubbleView::Create(
+        tray->GetBubbleAnchor(), tray, &init_params);
+    bubble_view->set_anchor_view_insets(tray->GetBubbleAnchorInsets());
     bubble_wrapper_.reset(new TrayBubbleWrapper(tray, bubble_view));
-    bubble_view->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
     bubble->InitializeContents(bubble_view);
   }
 
@@ -359,7 +351,7 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
   should_block_shelf_auto_hide_ = true;
   message_center::MessageCenterBubble* message_center_bubble =
       new message_center::MessageCenterBubble(message_center(),
-                                              message_center_tray_.get(), true);
+                                              message_center_tray_.get());
 
   int max_height;
   if (IsHorizontalAlignment(shelf_alignment())) {
@@ -500,13 +492,6 @@ void WebNotificationTray::OnMouseExitedView() {}
 
 base::string16 WebNotificationTray::GetAccessibleNameForBubble() {
   return GetAccessibleNameForTray();
-}
-
-gfx::Rect WebNotificationTray::GetAnchorRect(
-    views::Widget* anchor_widget,
-    views::TrayBubbleView::AnchorType anchor_type,
-    views::TrayBubbleView::AnchorAlignment anchor_alignment) const {
-  return GetBubbleAnchorRect(anchor_widget, anchor_type, anchor_alignment);
 }
 
 void WebNotificationTray::OnBeforeBubbleWidgetInit(

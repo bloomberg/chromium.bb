@@ -111,12 +111,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // is in the active state.
   void SetContentsBackground(bool draws_active);
 
-  // Returns the anchor rect for the bubble.
-  gfx::Rect GetBubbleAnchorRect(
-      views::Widget* anchor_widget,
-      views::TrayBubbleView::AnchorType anchor_type,
-      views::TrayBubbleView::AnchorAlignment anchor_alignment) const;
-
   // Returns the bubble anchor alignment based on |shelf_alignment_|.
   views::TrayBubbleView::AnchorAlignment GetAnchorAlignment() const;
 
@@ -136,6 +130,13 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
 
   // Updates the visibility of this tray's separator.
   void SetSeparatorVisibility(bool is_show);
+
+  // Gets the anchor for bubbles, which is tray_container().
+  views::View* GetBubbleAnchor() const;
+
+  // Gets additional insets for positioning bubbles relative to
+  // tray_container().
+  gfx::Insets GetBubbleAnchorInsets() const;
 
  protected:
   // ActionableView:

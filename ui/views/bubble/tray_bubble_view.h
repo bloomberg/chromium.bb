@@ -20,7 +20,6 @@ class Widget;
 namespace views {
 
 namespace internal {
-class TrayBubbleBorder;
 class TrayBubbleContentMask;
 }
 
@@ -31,26 +30,16 @@ class TrayBubbleContentMask;
 class VIEWS_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
                                     public views::MouseWatcherListener {
  public:
-  // AnchorType differentiates between bubbles that are anchored on a tray
-  // element (ANCHOR_TYPE_TRAY) and display an arrow, or that are floating on
-  // the screen away from the tray (ANCHOR_TYPE_BUBBLE).
-  enum AnchorType {
-    ANCHOR_TYPE_TRAY,
-    ANCHOR_TYPE_BUBBLE,
-  };
-
   // AnchorAlignment determines to which side of the anchor the bubble will
   // align itself.
   enum AnchorAlignment {
     ANCHOR_ALIGNMENT_BOTTOM,
     ANCHOR_ALIGNMENT_LEFT,
     ANCHOR_ALIGNMENT_RIGHT,
-    ANCHOR_ALIGNMENT_TOP
   };
 
   class VIEWS_EXPORT Delegate {
    public:
-    typedef TrayBubbleView::AnchorType AnchorType;
     typedef TrayBubbleView::AnchorAlignment AnchorAlignment;
 
     Delegate() {}
@@ -70,13 +59,6 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
     // accessible name for the bubble.
     virtual base::string16 GetAccessibleNameForBubble() = 0;
 
-    // Passes responsibility for BubbleDialogDelegateView::GetAnchorRect to the
-    // delegate.
-    virtual gfx::Rect GetAnchorRect(
-        views::Widget* anchor_widget,
-        AnchorType anchor_type,
-        AnchorAlignment anchor_alignment) const = 0;
-
     // Called before Widget::Init() on |bubble_widget|. Allows |params| to be
     // modified.
     virtual void OnBeforeBubbleWidgetInit(Widget* anchor_widget,
@@ -92,27 +74,15 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   };
 
   struct VIEWS_EXPORT InitParams {
-    static const int kArrowDefaultOffset;
-
-    InitParams(AnchorType anchor_type,
-               AnchorAlignment anchor_alignment,
-               int min_width,
-               int max_width);
+    InitParams(AnchorAlignment anchor_alignment, int min_width, int max_width);
     InitParams(const InitParams& other);
-    AnchorType anchor_type;
     AnchorAlignment anchor_alignment;
     int min_width;
     int max_width;
     int max_height;
     bool can_activate;
     bool close_on_deactivate;
-    SkColor arrow_color;
-    bool first_item_has_no_margin;
-    views::BubbleBorder::Arrow arrow;
-    int arrow_offset;
-    views::BubbleBorder::ArrowPaintType arrow_paint_type;
-    views::BubbleBorder::Shadow shadow;
-    views::BubbleBorder::BubbleAlignment arrow_alignment;
+    SkColor bg_color;
   };
 
   // Constructs and returns a TrayBubbleView. |init_params| may be modified.
@@ -135,9 +105,6 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   // Sets the bubble width.
   void SetWidth(int width);
 
-  // Sets whether or not to paint the bubble border arrow.
-  void SetArrowPaintType(views::BubbleBorder::ArrowPaintType arrow_paint_type);
-
   // Returns the border insets. Called by TrayEventFilter.
   gfx::Insets GetBorderInsets() const;
 
@@ -157,7 +124,6 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   base::string16 GetAccessibleWindowTitle() const override;
 
   // Overridden from views::BubbleDialogDelegateView.
-  gfx::Rect GetAnchorRect() const override;
   void OnBeforeBubbleWidgetInit(Widget::InitParams* params,
                                 Widget* bubble_widget) const override;
 
@@ -192,7 +158,7 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   int preferred_width_;
   // |bubble_border_| and |owned_bubble_border_| point to the same thing, but
   // the latter ensures we don't leak it before passing off ownership.
-  internal::TrayBubbleBorder* bubble_border_;
+  BubbleBorder* bubble_border_;
   std::unique_ptr<views::BubbleBorder> owned_bubble_border_;
   std::unique_ptr<internal::TrayBubbleContentMask> bubble_content_mask_;
   bool is_gesture_dragging_;

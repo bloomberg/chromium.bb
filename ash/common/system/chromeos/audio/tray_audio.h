@@ -58,7 +58,6 @@ class ASH_EXPORT TrayAudio : public TrayImageItem,
   views::View* CreateDetailedView(LoginStatus status) override;
   void DestroyDefaultView() override;
   void DestroyDetailedView() override;
-  bool ShouldHideArrow() const override;
   bool ShouldShowShelf() const override;
 
   // Overridden from CrasAudioHandler::AudioObserver.

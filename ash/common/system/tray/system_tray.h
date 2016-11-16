@@ -147,9 +147,6 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   void OnMouseEnteredView() override;
   void OnMouseExitedView() override;
   base::string16 GetAccessibleNameForBubble() override;
-  gfx::Rect GetAnchorRect(views::Widget* anchor_widget,
-                          AnchorType anchor_type,
-                          AnchorAlignment anchor_alignment) const override;
   void OnBeforeBubbleWidgetInit(
       views::Widget* anchor_widget,
       views::Widget* bubble_widget,
@@ -201,15 +198,6 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   // tray bar.
   base::string16 GetAccessibleTimeString(const base::Time& now) const;
 
-  // Calculates the x-offset for the item in the tray. Returns -1 if its tray
-  // item view is not visible.
-  int GetTrayXOffset(SystemTrayItem* item) const;
-
-  // Shows the default view and its arrow position is shifted by |x_offset|.
-  void ShowDefaultViewWithOffset(BubbleCreationType creation_type,
-                                 int x_offset,
-                                 bool persistent);
-
   // Constructs or re-constructs |system_bubble_| and populates it with |items|.
   // Specify |change_tray_status| to true if want to change the tray background
   // status. The bubble will be opened in inactive state. If |can_activate| is
@@ -221,7 +209,6 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
                  bool details,
                  bool can_activate,
                  BubbleCreationType creation_type,
-                 int x_offset,
                  bool persistent);
 
   // Constructs or re-constructs |notification_bubble_| and populates it with

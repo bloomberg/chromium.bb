@@ -92,10 +92,6 @@ void TrayAudio::DestroyDetailedView() {
   }
 }
 
-bool TrayAudio::ShouldHideArrow() const {
-  return true;
-}
-
 bool TrayAudio::ShouldShowShelf() const {
   return !pop_up_volume_view_;
 }

@@ -212,10 +212,8 @@ bool PaletteTray::ShowPalette() {
 
   DCHECK(tray_container());
 
-  views::TrayBubbleView::InitParams init_params(
-      views::TrayBubbleView::ANCHOR_TYPE_TRAY, GetAnchorAlignment(),
-      kPaletteWidth, kPaletteWidth);
-  init_params.first_item_has_no_margin = true;
+  views::TrayBubbleView::InitParams init_params(GetAnchorAlignment(),
+                                                kPaletteWidth, kPaletteWidth);
   init_params.can_activate = true;
   init_params.close_on_deactivate = true;
 
@@ -231,8 +229,8 @@ bool PaletteTray::ShowPalette() {
 
   // Create and customize bubble view.
   views::TrayBubbleView* bubble_view =
-      views::TrayBubbleView::Create(tray_container(), this, &init_params);
-  bubble_view->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
+      views::TrayBubbleView::Create(GetBubbleAnchor(), this, &init_params);
+  bubble_view->set_anchor_view_insets(GetBubbleAnchorInsets());
   bubble_view->set_margins(
       gfx::Insets(kPalettePaddingOnTop, 0, kPalettePaddingOnBottom, 0));
 
@@ -309,31 +307,6 @@ void PaletteTray::OnMouseExitedView() {}
 
 base::string16 PaletteTray::GetAccessibleNameForBubble() {
   return GetAccessibleNameForTray();
-}
-
-gfx::Rect PaletteTray::GetAnchorRect(
-    views::Widget* anchor_widget,
-    views::TrayBubbleView::AnchorType anchor_type,
-    views::TrayBubbleView::AnchorAlignment anchor_alignment) const {
-  gfx::Rect r =
-      GetBubbleAnchorRect(anchor_widget, anchor_type, anchor_alignment);
-
-  // Move the palette to the left so the right edge of the palette aligns with
-  // the right edge of the tray button.
-  if (IsHorizontalAlignment(shelf_alignment())) {
-    // TODO(jdufault): Figure out a more robust adjustment method that does not
-    // break in md-shelf.
-    int icon_size = tray_container()->width();
-    if (tray_container()->border())
-      icon_size -= tray_container()->border()->GetInsets().width();
-
-    r.Offset(-r.width() + icon_size + x(), 0);
-  } else {
-    // Vertical layout doesn't need the border adjustment that horizontal needs.
-    r.Offset(0, -r.height() + tray_container()->height());
-  }
-
-  return r;
 }
 
 void PaletteTray::OnBeforeBubbleWidgetInit(

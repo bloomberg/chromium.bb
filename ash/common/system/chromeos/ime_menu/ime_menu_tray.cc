@@ -317,15 +317,13 @@ ImeMenuTray::~ImeMenuTray() {
 void ImeMenuTray::ShowImeMenuBubble() {
   should_block_shelf_auto_hide_ = true;
   views::TrayBubbleView::InitParams init_params(
-      views::TrayBubbleView::ANCHOR_TYPE_TRAY, GetAnchorAlignment(),
-      kTrayPopupMinWidth, kTrayPopupMaxWidth);
-  init_params.first_item_has_no_margin = true;
+      GetAnchorAlignment(), kTrayPopupMinWidth, kTrayPopupMaxWidth);
   init_params.can_activate = true;
   init_params.close_on_deactivate = true;
 
   views::TrayBubbleView* bubble_view =
-      views::TrayBubbleView::Create(tray_container(), this, &init_params);
-  bubble_view->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
+      views::TrayBubbleView::Create(GetBubbleAnchor(), this, &init_params);
+  bubble_view->set_anchor_view_insets(GetBubbleAnchorInsets());
 
   // In the material design, we will add a title item with a separator on the
   // top of the IME menu.
@@ -488,26 +486,6 @@ void ImeMenuTray::OnMouseExitedView() {}
 
 base::string16 ImeMenuTray::GetAccessibleNameForBubble() {
   return l10n_util::GetStringUTF16(IDS_ASH_IME_MENU_ACCESSIBLE_NAME);
-}
-
-gfx::Rect ImeMenuTray::GetAnchorRect(views::Widget* anchor_widget,
-                                     AnchorType anchor_type,
-                                     AnchorAlignment anchor_alignment) const {
-  gfx::Rect rect =
-      GetBubbleAnchorRect(anchor_widget, anchor_type, anchor_alignment);
-
-  if (IsHorizontalAlignment(shelf_alignment())) {
-    // Moves the bubble to make its center aligns the center of the tray.
-    int horizontal_offset =
-        -rect.width() + (tray_container()->width() + kTrayPopupMinWidth) / 2;
-    rect.Offset(horizontal_offset, 0);
-  } else {
-    // For vertical alignment, sets the bubble's bottom aligned to the bottom
-    // of the icon for now.
-    int vertical_offset = -rect.height() + tray_container()->height();
-    rect.Offset(0, vertical_offset);
-  }
-  return rect;
 }
 
 void ImeMenuTray::OnBeforeBubbleWidgetInit(
