@@ -76,10 +76,10 @@ class _NewsBrowsingStory(_BrowsingStory):
 
   def _ReadNewsItem(self, action_runner):
     action_runner.tab.WaitForDocumentReadyStateToBeComplete()
-    action_runner.Wait(self.ITEM_READ_TIME_IN_SECONDS/2)
+    action_runner.Wait(self.ITEM_READ_TIME_IN_SECONDS/2.0)
     action_runner.RepeatableBrowserDrivenScroll(
         repeat_count=self.ITEM_SCROLL_REPEAT)
-    action_runner.Wait(self.ITEM_READ_TIME_IN_SECONDS/2)
+    action_runner.Wait(self.ITEM_READ_TIME_IN_SECONDS/2.0)
 
   def _ScrollMainPage(self, action_runner):
     action_runner.tab.WaitForDocumentReadyStateToBeComplete()
