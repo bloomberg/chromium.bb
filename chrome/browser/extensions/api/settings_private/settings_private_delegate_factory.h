@@ -34,6 +34,8 @@ class SettingsPrivateDelegateFactory
   // BrowserContextKeyedBaseFactory implementation.
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
+  content::BrowserContext* GetBrowserContextToUse(
+    content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsPrivateDelegateFactory);
 };
