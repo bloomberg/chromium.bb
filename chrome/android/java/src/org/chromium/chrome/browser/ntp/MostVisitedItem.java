@@ -88,6 +88,7 @@ public class MostVisitedItem
     /**
      * @return The URL of this most visited item.
      */
+    @Override
     public String getUrl() {
         return mUrl;
     }
@@ -170,10 +171,5 @@ public class MostVisitedItem
     @Override
     public void removeItem() {
         mManager.removeMostVisitedItem(MostVisitedItem.this);
-    }
-
-    @Override
-    public boolean canBeSavedOffline() {
-        return false;
     }
 }

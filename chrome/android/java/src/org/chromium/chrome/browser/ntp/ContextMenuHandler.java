@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.ntp;
 
 import android.support.annotation.IntDef;
+import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -15,6 +16,8 @@ import android.view.View;
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
+import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.lang.annotation.Retention;
@@ -46,8 +49,9 @@ public class ContextMenuHandler implements OnMenuItemClickListener {
         /** Removed the current item. */
         void removeItem();
 
-        /** @return whether the current item can be saved offline. */
-        boolean canBeSavedOffline();
+        /** @return the url for the the current item, or {@code null} if not applicable. */
+        @Nullable
+        String getUrl();
     }
 
     /** Interface for a view that can be set to stop responding to touches. */
@@ -72,8 +76,11 @@ public class ContextMenuHandler implements OnMenuItemClickListener {
                 return true;
             case ID_OPEN_IN_INCOGNITO_TAB:
                 return mManager.isOpenInIncognitoEnabled();
-            case ID_SAVE_FOR_OFFLINE:
-                return mDelegate.canBeSavedOffline();
+            case ID_SAVE_FOR_OFFLINE: {
+                if (!SnippetsConfig.isSaveToOfflineEnabled()) return false;
+                String itemUrl = mDelegate.getUrl();
+                return itemUrl != null && OfflinePageBridge.canSavePage(itemUrl);
+            }
             case ID_REMOVE:
                 return true;
 

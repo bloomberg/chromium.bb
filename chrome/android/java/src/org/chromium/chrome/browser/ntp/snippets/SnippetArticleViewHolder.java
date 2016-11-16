@@ -37,7 +37,6 @@ import org.chromium.chrome.browser.ntp.cards.CardsVariationParameters;
 import org.chromium.chrome.browser.ntp.cards.DisplayStyleObserverAdapter;
 import org.chromium.chrome.browser.ntp.cards.ImpressionTracker;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.net.URI;
@@ -125,10 +124,8 @@ public class SnippetArticleViewHolder
     }
 
     @Override
-    public boolean canBeSavedOffline() {
-        // TODO(peconn): Only show 'Save for Offline' for appropriate snippet types.
-        return SnippetsConfig.isSaveToOfflineEnabled()
-                && OfflinePageBridge.canSavePage(mArticle.mUrl);
+    public String getUrl() {
+        return mArticle.mUrl;
     }
 
     @Override
