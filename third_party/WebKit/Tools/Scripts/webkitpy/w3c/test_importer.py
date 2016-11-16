@@ -255,14 +255,19 @@ class TestImporter(object):
                     test_basename = self.filesystem.basename(test_info['test'])
                     # Add the ref file, following WebKit style.
                     # FIXME: Ideally we'd support reading the metadata
-                    # directly rather than relying  on a naming convention.
+                    # directly rather than relying on a naming convention.
                     # Using a naming convention creates duplicate copies of the
-                    # reference files.
+                    # reference files (http://crrev.com/268729).
                     ref_file = self.filesystem.splitext(test_basename)[0] + '-expected'
                     # Make sure to use the extension from the *reference*, not
                     # from the test, because at least flexbox tests use XHTML
                     # references but HTML tests.
                     ref_file += self.filesystem.splitext(test_info['reference'])[1]
+
+                    if not self.filesystem.exists(test_info['reference']):
+                        _log.warning('%s skipped because ref file %s was not found.',
+                                     path_full, ref_file)
+                        continue
 
                     if self.path_too_long(path_full.replace(filename, ref_file)):
                         _log.warning('%s skipped because path of ref file %s would be too long. '
@@ -345,7 +350,7 @@ class TestImporter(object):
                     continue
 
                 if not self.filesystem.exists(orig_filepath):
-                    _log.warning('%s not found. Possible error in the test.', orig_filepath)
+                    _log.error('%s not found. Possible error in the test.', orig_filepath)
                     continue
 
                 new_filepath = self.filesystem.join(new_path, file_to_copy['dest'])
@@ -372,8 +377,10 @@ class TestImporter(object):
                 mimetype = mimetypes.guess_type(orig_filepath)
                 if 'is_jstest' not in file_to_copy and (
                         'html' in str(mimetype[0]) or 'xml' in str(mimetype[0]) or 'css' in str(mimetype[0])):
-                    converted_file = convert_for_webkit(new_path, filename=orig_filepath,
-                                                        reference_support_info=reference_support_info)
+                    converted_file = convert_for_webkit(
+                        new_path, filename=orig_filepath,
+                        reference_support_info=reference_support_info,
+                        host=self.host)
 
                     if not converted_file:
                         if not self.import_in_place and not self.options.dry_run:
@@ -385,9 +392,7 @@ class TestImporter(object):
 
                         prefixed_properties.extend(set(converted_file[0]) - set(prefixed_properties))
                         if not self.options.dry_run:
-                            outfile = open(new_filepath, 'wb')
-                            outfile.write(converted_file[1].encode('utf-8'))
-                            outfile.close()
+                            self.filesystem.write_text_file(new_filepath, converted_file[1])
                 else:
                     if not self.import_in_place and not self.options.dry_run:
                         self.filesystem.copyfile(orig_filepath, new_filepath)

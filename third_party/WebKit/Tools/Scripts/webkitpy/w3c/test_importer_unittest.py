@@ -136,3 +136,40 @@ class TestImporterTest(unittest.TestCase):
         self.assertEqual(
             host.filesystem.executable_files,
             set(['/mock-checkout/third_party/WebKit/LayoutTests/w3c/blink/w3c/dir/has_shebang.txt']))
+
+    def test_ref_test_with_ref_is_copied(self):
+        host = MockHost()
+        host.filesystem = MockFileSystem(files={
+            '/blink/w3c/dir1/my-ref-test.html': '<html><head><link rel="match" href="ref-file.html" />test</head></html>',
+            '/blink/w3c/dir1/ref-file.html': '<html><head>test</head></html>',
+            '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations': '',
+            '/mock-checkout/third_party/WebKit/Source/core/css/CSSProperties.in': '',
+        })
+        importer = TestImporter(host, FAKE_SOURCE_REPO_DIR, self.options())
+        importer.find_importable_tests()
+        self.assertEqual(
+            importer.import_list,
+            [
+                {
+                    'copy_list': [
+                        {'src': '/blink/w3c/dir1/ref-file.html', 'dest': 'ref-file.html'},
+                        {'src': '/blink/w3c/dir1/ref-file.html', 'dest': 'my-ref-test-expected.html', 'reference_support_info': {}},
+                        {'src': '/blink/w3c/dir1/my-ref-test.html', 'dest': 'my-ref-test.html'}
+                    ],
+                    'dirname': '/blink/w3c/dir1',
+                    'jstests': 0,
+                    'reftests': 1,
+                    'total_tests': 1
+                }
+            ])
+
+    def test_ref_test_without_ref_is_skipped(self):
+        host = MockHost()
+        host.filesystem = MockFileSystem(files={
+            '/blink/w3c/dir1/my-ref-test.html': '<html><head><link rel="match" href="not-here.html" /></head></html>',
+            '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations': '',
+            '/mock-checkout/third_party/WebKit/Source/core/css/CSSProperties.in': '',
+        })
+        importer = TestImporter(host, FAKE_SOURCE_REPO_DIR, self.options())
+        importer.find_importable_tests()
+        self.assertEqual(importer.import_list, [])
