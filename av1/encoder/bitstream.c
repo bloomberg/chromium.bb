@@ -180,7 +180,7 @@ void av1_encode_token_init(void) {
                        av1_switchable_restore_tree);
 #endif  // CONFIG_LOOP_RESTORATION
 
-#if CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
   /* This hack is necessary when CONFIG_EXT_INTERP is enabled because the five
       SWITCHABLE_FILTERS are not consecutive, e.g., 0, 1, 2, 3, 4, when doing
       an in-order traversal of the av1_switchable_interp_tree structure. */
@@ -193,6 +193,8 @@ void av1_encode_token_init(void) {
   av1_indices_from_tree(av1_ext_tx_ind, av1_ext_tx_inv, TX_TYPES,
                         av1_ext_tx_tree);
 #endif
+#endif
+#if CONFIG_DAALA_EC
   av1_indices_from_tree(av1_intra_mode_ind, av1_intra_mode_inv, INTRA_MODES,
                         av1_intra_mode_tree);
   av1_indices_from_tree(av1_inter_mode_ind, av1_inter_mode_inv, INTER_MODES,
@@ -1215,7 +1217,7 @@ static void write_tx_type(const AV1_COMMON *const cm,
 #endif  // CONFIG_SUPERTX
         !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
       if (is_inter) {
-#if CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
         aom_write_symbol(w, av1_ext_tx_ind[mbmi->tx_type],
                          cm->fc->inter_ext_tx_cdf[tx_size], TX_TYPES);
 #else

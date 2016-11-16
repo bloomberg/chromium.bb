@@ -742,7 +742,7 @@ static void read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
         !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
       FRAME_COUNTS *counts = xd->counts;
       if (inter_block) {
-#if CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
         mbmi->tx_type = av1_ext_tx_inv[aom_read_symbol(
             r, cm->fc->inter_ext_tx_cdf[tx_size], TX_TYPES, ACCT_STR)];
 #else
