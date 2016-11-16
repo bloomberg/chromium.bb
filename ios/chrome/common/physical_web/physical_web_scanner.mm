@@ -115,8 +115,6 @@ enum BeaconType {
                    CBCentralManagerOptionShowPowerAlertKey : @NO
                  }]);
     unresolvedDevices_.reset([[NSMutableArray alloc] init]);
-    [[NSHTTPCookieStorage sharedHTTPCookieStorage]
-        setCookieAcceptPolicy:NSHTTPCookieAcceptPolicyNever];
   }
   return self;
 }

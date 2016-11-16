@@ -118,9 +118,11 @@ std::string GetUserAgent() {
 
   startDate_.reset([[NSDate date] retain]);
   // Starts the request.
+  NSURLSessionConfiguration* sessionConfiguration =
+      [NSURLSessionConfiguration ephemeralSessionConfiguration];
+  sessionConfiguration.HTTPCookieAcceptPolicy = NSHTTPCookieAcceptPolicyNever;
   NSURLSession* session =
-      [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration
-                                                 ephemeralSessionConfiguration]
+      [NSURLSession sessionWithConfiguration:sessionConfiguration
                                     delegate:nil
                                delegateQueue:[NSOperationQueue mainQueue]];
   base::WeakNSObject<PhysicalWebRequest> weakSelf(self);
