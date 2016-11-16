@@ -656,9 +656,7 @@ class ColorSpaceToColorSpaceTransform : public ColorTransform {
     for (size_t i = 0; i < num; i++) {
       TriStim c = colors[i];
       a_.TransformPoint(&c);
-      c.set_x(ToLinear(from_.transfer_, c.x()));
-      c.set_y(ToLinear(from_.transfer_, c.y()));
-      c.set_z(ToLinear(from_.transfer_, c.z()));
+      c = ToLinear(from_.transfer_, c);
       b_.TransformPoint(&c);
       c.set_x(FromLinear(to_.transfer_, c.x()));
       c.set_y(FromLinear(to_.transfer_, c.y()));
