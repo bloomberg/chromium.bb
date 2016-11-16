@@ -74,9 +74,9 @@ class MediaRoute {
   bool for_display() const { return for_display_; }
 
   // Set this to true when the route was created by an incognito profile.
-  void set_incognito(bool incognito) { incognito_ = incognito; }
+  void set_incognito(bool is_incognito) { is_incognito_ = is_incognito; }
 
-  bool incognito() const { return incognito_; }
+  bool is_incognito() const { return is_incognito_; }
 
   bool Equals(const MediaRoute& other) const;
 
@@ -88,7 +88,7 @@ class MediaRoute {
   bool is_local_;
   std::string custom_controller_path_;
   bool for_display_;
-  bool incognito_;
+  bool is_incognito_;
 };
 
 }  // namespace media_router

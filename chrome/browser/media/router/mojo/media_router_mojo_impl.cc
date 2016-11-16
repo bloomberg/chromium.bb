@@ -234,7 +234,7 @@ void MediaRouterMojoImpl::OnRoutesUpdated(
 
 void MediaRouterMojoImpl::RouteResponseReceived(
     const std::string& presentation_id,
-    bool incognito,
+    bool is_incognito,
     const std::vector<MediaRouteResponseCallback>& callbacks,
     mojom::MediaRoutePtr media_route,
     const base::Optional<std::string>& error_text,
@@ -246,10 +246,10 @@ void MediaRouterMojoImpl::RouteResponseReceived(
         ? *error_text : std::string("Unknown error.");
     result = RouteRequestResult::FromError(
         error, mojo::RouteRequestResultCodeFromMojo(result_code));
-  } else if (media_route->incognito != incognito) {
+  } else if (media_route->is_incognito != is_incognito) {
     std::string error = base::StringPrintf(
-        "Mismatch in incognito status: request = %d, response = %d", incognito,
-        media_route->incognito);
+        "Mismatch in incognito status: request = %d, response = %d",
+        is_incognito, media_route->is_incognito);
     result = RouteRequestResult::FromError(
         error, RouteRequestResult::INCOGNITO_MISMATCH);
   } else {

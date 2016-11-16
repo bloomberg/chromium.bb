@@ -80,7 +80,7 @@ define('media_router_bindings', [
       // Begin newly added properties, followed by the milestone they were
       // added.  The guard should be safe to remove N+2 milestones later.
       'for_display': route.forDisplay, // M47
-      'incognito': !!route.offTheRecord  // M50
+      'is_incognito': !!route.offTheRecord  // M50
     });
   }
 

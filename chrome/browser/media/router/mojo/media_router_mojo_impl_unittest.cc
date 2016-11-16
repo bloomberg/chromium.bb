@@ -105,7 +105,7 @@ mojom::MediaRoutePtr CreateMojoRoute() {
   route->description = kDescription;
   route->is_local = true;
   route->for_display = true;
-  route->incognito = false;
+  route->is_incognito = false;
   return route;
 }
 
@@ -242,7 +242,7 @@ TEST_F(MediaRouterMojoImplTest, CreateIncognitoRoute) {
             mojom::MediaRoutePtr route = CreateMojoRoute();
             route->custom_controller_path =
                 std::string("custom/controller/path");
-            route->incognito = true;
+            route->is_incognito = true;
             cb.Run(std::move(route), std::string(),
                    mojom::RouteRequestResultCode::OK);
           }));
@@ -320,7 +320,7 @@ TEST_F(MediaRouterMojoImplTest, CreateRouteIncognitoMismatchFails) {
 
 TEST_F(MediaRouterMojoImplTest, IncognitoRoutesTerminatedOnProfileShutdown) {
   mojom::MediaRoutePtr route = CreateMojoRoute();
-  route->incognito = true;
+  route->is_incognito = true;
 
   EXPECT_CALL(mock_media_route_provider_,
               CreateRoute(kSource, kSinkId, _, kOrigin, kInvalidTabId,
@@ -332,7 +332,7 @@ TEST_F(MediaRouterMojoImplTest, IncognitoRoutesTerminatedOnProfileShutdown) {
              int tab_id, base::TimeDelta timeout, bool incognito,
              const mojom::MediaRouteProvider::CreateRouteCallback& cb) {
             mojom::MediaRoutePtr route = CreateMojoRoute();
-            route->incognito = true;
+            route->is_incognito = true;
             cb.Run(std::move(route), std::string(),
                    mojom::RouteRequestResultCode::OK);
           }));
@@ -886,7 +886,7 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaRoutesObserver) {
   mojo_routes[0] = CreateMojoRoute();
   mojo_routes[1] = CreateMojoRoute();
   mojo_routes[1]->media_route_id = kRouteId2;
-  mojo_routes[1]->incognito = true;
+  mojo_routes[1]->is_incognito = true;
 
   EXPECT_CALL(routes_observer, OnRoutesUpdated(SequenceEquals(expected_routes),
                                                expected_joinable_route_ids));

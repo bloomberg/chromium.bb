@@ -32,7 +32,7 @@ class MediaRouterBase::InternalMediaRoutesObserver
     // via |joinable_route_ids|, and check here if it is non-empty.
     has_route = !routes.empty();
     for (const auto& route : routes) {
-      if (route.incognito())
+      if (route.is_incognito())
         incognito_route_ids.push_back(route.media_route_id());
     }
   }

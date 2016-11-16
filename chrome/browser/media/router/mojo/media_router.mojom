@@ -49,7 +49,7 @@ struct MediaRoute {
   // Set to true if this route should be displayed for |media_sink_id| in UI.
   bool for_display;
   // Set to true if this route was created by an incognito profile.
-  bool incognito;
+  bool is_incognito;
 };
 
 // Notifications or an actionable events to be shown to the user.
