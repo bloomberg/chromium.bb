@@ -61,7 +61,7 @@ class SANDBOX_EXPORT BrokerFilePermission {
   // or a pointer the matched path in the whitelist if an absolute
   // match.
   // If not NULL |unlink_after_open| is set to point to true if the
-  // caller should unlink the path after openning.
+  // caller should unlink the path after opening.
   // Async signal safe if |file_to_open| is NULL.
   bool CheckOpen(const char* requested_filename,
                  int flags,

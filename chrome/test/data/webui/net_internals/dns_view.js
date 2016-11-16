@@ -260,7 +260,7 @@ TEST_F('NetInternalsTest', 'netInternalsDnsViewAddTwoTwice', function() {
 });
 
 /**
- * Makes sure that openning and then closing an incognito window clears the
+ * Makes sure that opening and then closing an incognito window clears the
  * DNS cache.  To keep things simple, we add a fake cache entry ourselves,
  * rather than having the incognito browser create one.
  */

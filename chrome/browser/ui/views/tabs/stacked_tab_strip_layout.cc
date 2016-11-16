@@ -320,7 +320,7 @@ void StackedTabStripLayout::ResetToIdealState() {
 }
 
 void StackedTabStripLayout::MakeVisible(int index) {
-  // Currently no need to support tabs openning before |index| visible.
+  // Currently no need to support tabs opening before |index| visible.
   if (index <= active_index() || !requires_stacking() || !IsStacked(index))
     return;
 

@@ -200,7 +200,7 @@ cr.define('media', function() {
 
       var footerRow = document.createElement('tr');
       var footerCell = document.createElement('td');
-      footerCell.textContent = 'Out of ' + (this.size || 'unkown size');
+      footerCell.textContent = 'Out of ' + (this.size || 'unknown size');
       footerCell.setAttribute('colspan', 2);
       footerRow.appendChild(footerCell);
       footer.appendChild(footerRow);

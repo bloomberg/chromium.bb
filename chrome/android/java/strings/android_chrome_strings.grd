@@ -237,10 +237,10 @@ CHAR-LIMIT guidelines:
       <message name="IDS_SIGN_IN_TO_CHROME_SUMMARY" desc="Summary for the button to sign in to Chrome, explaining benefits of signing in.">
         Sign in to get your bookmarks, history, passwords, and other settings on all your devices
       </message>
-      <message name="IDS_SIGN_IN_GOOGLE_ACTIVITY_CONTROLS" desc="Title of Google activity controls preference in signed in accouts settings screen">
+      <message name="IDS_SIGN_IN_GOOGLE_ACTIVITY_CONTROLS" desc="Title of Google activity controls preference in signed in accounts settings screen">
         Google Activity Controls
       </message>
-      <message name="IDS_SIGN_IN_GOOGLE_ACTIVITY_CONTROLS_MESSAGE" desc="Message of Google activity controls preference in signed in accouts settings screen">
+      <message name="IDS_SIGN_IN_GOOGLE_ACTIVITY_CONTROLS_MESSAGE" desc="Message of Google activity controls preference in signed in accounts settings screen">
         Control how Google uses your browsing history to personalize Search, ads, and other Google services.
       </message>
       <message name="IDS_SIGN_IN_SYNC_ERROR_WIDGET" desc="Accessibility description of the sync error widget in settings screen">
@@ -1487,14 +1487,14 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
 
       <!-- App banner accessibility strings, used for touch exploration -->
-      <message name="IDS_APP_BANNER_VIEW_NATIVE_APP_ACCESSIBILITY" desc="Accessibililty text: Describes a prompt promoting the installation of an app related to the current page, including the app's name and its rating.">
+      <message name="IDS_APP_BANNER_VIEW_NATIVE_APP_ACCESSIBILITY" desc="Accessibility text: Describes a prompt promoting the installation of an app related to the current page, including the app's name and its rating.">
         View app <ph name="APP_NAME">%1$s<ex>Gmail</ex></ph> on the Play Store.  Rating: <ph name="APP_RATING">%2$.1f<ex>4.2</ex></ph>.
       </message>
       <message name="IDS_APP_BANNER_VIEW_NATIVE_APP_INSTALL_ACCESSIBILITY" desc="Accessibility text: Indicates that clicking on the button will either purchase the app or install it.">
         Get the app from the Google Play Store: <ph name="APP_ACTION">%s<ex>Install</ex></ph>
       </message>
 
-      <message name="IDS_APP_BANNER_VIEW_WEB_APP_ACCESSIBILITY" desc="Accessibililty text: Details the web app being promoted by the current page, including the app name and its URL.">
+      <message name="IDS_APP_BANNER_VIEW_WEB_APP_ACCESSIBILITY" desc="Accessibility text: Details the web app being promoted by the current page, including the app name and its URL.">
         <ph name="APP_NAME">%1$s<ex>Gmail</ex></ph>, web app. <ph name="APP_URL">%2$s<ex>google.com</ex></ph>
       </message>
 
@@ -1850,7 +1850,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_SIGNIN_ADD_ACCOUNT" desc="Text for adding another Google Account">
         Add account
       </message>
-      <message name="IDS_SIGNIN_OPEN_ADD_GOOGLE_ACCOUNT_PAGE_FAILED" desc="Message for openning add Google Account page in device's Settings app failed">
+      <message name="IDS_SIGNIN_OPEN_ADD_GOOGLE_ACCOUNT_PAGE_FAILED" desc="Message for opening add Google Account page in device's Settings app failed">
         Add a Google Account from the Accounts page in your device's Settings app.
       </message>
       <message name="IDS_SIGNIN_OPEN_SETTINGS_ACCOUNTS" desc="Text for button to open Accounts page in device's Settings app">
@@ -1890,10 +1890,10 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_ACCESSIBILITY_STOP" desc="Content description for the stop button that stops playing the media.">
         Stop
       </message>
-      <message name="IDS_ACCESSIBILITY_PREVIOUS_TRACK" desc="Content description for the previous track button that switchs media to the previous track.">
+      <message name="IDS_ACCESSIBILITY_PREVIOUS_TRACK" desc="Content description for the previous track button that switches media to the previous track.">
         Previous track
       </message>
-      <message name="IDS_ACCESSIBILITY_NEXT_TRACK" desc="Content description for the next track button that switchs media to the next track.">
+      <message name="IDS_ACCESSIBILITY_NEXT_TRACK" desc="Content description for the next track button that switches media to the next track.">
         Next track
       </message>
 

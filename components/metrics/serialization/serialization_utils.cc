@@ -184,7 +184,7 @@ bool SerializationUtils::WriteMetricToFile(const MetricSample& sample,
                                       READ_WRITE_ALL_FILE_FLAGS));
 
   if (file_descriptor.get() < 0) {
-    DPLOG(ERROR) << "error openning the file: " << filename;
+    DPLOG(ERROR) << "error opening the file: " << filename;
     return false;
   }
 

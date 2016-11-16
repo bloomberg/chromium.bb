@@ -69,7 +69,7 @@ const int kNewItemAnimationDurationMs = 800;
 const int kShelfAnimationDurationMs = 120;
 
 // Amount of time to delay if the mouse leaves the shelf by way of entering
-// another window. This is much larger than the normal delay as openning a
+// another window. This is much larger than the normal delay as opening a
 // download is most likely going to trigger a new window to appear over the
 // button. Delay the time so that the user has a chance to quickly close the
 // other app and return to chrome with the download shelf still open.
