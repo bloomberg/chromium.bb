@@ -4,6 +4,10 @@
 
 #include "ios/net/cookies/cookie_store_ios_client.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 // The CookieStoreIOSClient.
 net::CookieStoreIOSClient* g_client;

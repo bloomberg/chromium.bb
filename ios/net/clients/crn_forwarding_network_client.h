@@ -14,7 +14,7 @@
 // client. Suitable for injecting via RequestTracker.
 @interface CRNForwardingNetworkClient : NSObject<CRNNetworkClientProtocol>
 
-@property(nonatomic, assign) id<CRNNetworkClientProtocol> underlyingClient;
+@property(nonatomic, weak) id<CRNNetworkClientProtocol> underlyingClient;
 
 @end
 

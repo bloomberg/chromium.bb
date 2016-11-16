@@ -11,6 +11,10 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // Key holding the creation-time in NSHTTPCookie properties.
 // This key is undocumented, and its value has type NSNumber.
 NSString* const kHTTPCookieCreated = @"Created";

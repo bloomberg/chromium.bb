@@ -13,6 +13,8 @@ source_set("net") {
     "//url:url_features",
   ]
 
+  configs += [ "//build/config/compiler:enable_arc" ]
+
   sources = [
     "clients/crn_forwarding_network_client.h",
     "clients/crn_forwarding_network_client.mm",

@@ -8,6 +8,10 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/threading/thread_checker.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @implementation CRNForwardingNetworkClient {
   // Next client in the client chain.
   base::scoped_nsprotocol<id<CRNNetworkClientProtocol>> _underlyingClient;
@@ -81,7 +85,7 @@
 - (void)setUnderlyingClient:(id<CRNNetworkClientProtocol>)underlyingClient {
   DCHECK(_threadChecker.CalledOnValidThread());
   DCHECK(underlyingClient);
-  _underlyingClient.reset([underlyingClient retain]);
+  _underlyingClient.reset(underlyingClient);
 }
 
 @end

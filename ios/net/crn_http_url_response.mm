@@ -6,6 +6,10 @@
 
 #include "base/mac/scoped_nsobject.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface CRNHTTPURLResponse () {
   base::scoped_nsobject<NSString> _cr_HTTPVersion;
 }

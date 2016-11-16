@@ -8,6 +8,10 @@
 #include "base/memory/weak_ptr.h"
 #import "ios/net/clients/crn_forwarding_network_client.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @implementation CRNForwardingNetworkClientFactory
 
 // Init just sanity checks that the factory class has sane ordering rules.

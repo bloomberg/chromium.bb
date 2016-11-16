@@ -25,6 +25,10 @@
 #if !BUILDFLAG(USE_PLATFORM_ICU_ALTERNATIVES)
 #include "base/i18n/encoding_detection.h"  // nogncheck
 #include "base/i18n/icu_string_conversions.h"  // nogncheck
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 #endif  // !BUILDFLAG(USE_PLATFORM_ICU_ALTERNATIVES)
 
 namespace {
@@ -84,10 +88,10 @@ NSURLResponse* GetNSURLResponseForRequest(URLRequest* request) {
     // The default iOS stack computes the length of the decoded string. If we
     // wanted to do that we would have to decode the string now. However, using
     // the unknown length (-1) seems to be working.
-    return [[[NSURLResponse alloc] initWithURL:url
-                                      MIMEType:mime_type
-                         expectedContentLength:-1
-                              textEncodingName:charset] autorelease];
+    return [[NSURLResponse alloc] initWithURL:url
+                                     MIMEType:mime_type
+                        expectedContentLength:-1
+                             textEncodingName:charset];
   } else {
     // Iterate over all the headers and copy them.
     bool has_content_type_header = false;
@@ -173,10 +177,10 @@ NSURLResponse* GetNSURLResponseForRequest(URLRequest* request) {
                                                   http_version.minor_value()];
     }
 
-    return [[[CRNHTTPURLResponse alloc] initWithURL:url
-                                         statusCode:request->GetResponseCode()
-                                        HTTPVersion:version_string
-                                       headerFields:header_fields] autorelease];
+    return [[CRNHTTPURLResponse alloc] initWithURL:url
+                                        statusCode:request->GetResponseCode()
+                                       HTTPVersion:version_string
+                                      headerFields:header_fields];
   }
 }
 

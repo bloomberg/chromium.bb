@@ -13,6 +13,10 @@
 #include "net/base/auth.h"
 #include "net/url_request/url_request.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // When the protocol is invalidated, no synchronization (lock) is needed:
 // - The actual calls to the protocol and its invalidation are all done on
 //   clientThread_ and thus are serialized.
@@ -73,9 +77,9 @@
     // hope that our tasks are executed even if the client thread changes mode
     // later on.
     if ([mode isEqualToString:NSRunLoopCommonModes])
-      _runLoopModes.reset([@[ NSRunLoopCommonModes ] retain]);
+      _runLoopModes.reset(@[ NSRunLoopCommonModes ]);
     else
-      _runLoopModes.reset([@[ mode, NSRunLoopCommonModes ] retain]);
+      _runLoopModes.reset(@[ mode, NSRunLoopCommonModes ]);
     _queuedInvocations.reset([[NSMutableArray alloc] init]);
   }
   return self;
@@ -126,7 +130,7 @@
   size_t arg_index = 2;
   va_list args;
   va_start(args, aSelector);
-  NSObject* arg = va_arg(args, NSObject*);
+  __unsafe_unretained NSObject* arg = va_arg(args, NSObject*);
   while (arg != nil) {
     [inv setArgument:&arg atIndex:arg_index];
     arg = va_arg(args, NSObject*);

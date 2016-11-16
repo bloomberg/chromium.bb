@@ -8,6 +8,10 @@
 #include "base/mac/scoped_nsobject.h"
 #import "ios/net/clients/crn_forwarding_network_client.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface CRNSimpleNetworkClientFactory () {
   base::scoped_nsprotocol<Class> _clientClass;
 }
@@ -18,13 +22,13 @@
 - (instancetype)initWithClass:(Class)clientClass {
   if (self = [super init]) {
     DCHECK([clientClass isSubclassOfClass:[CRNForwardingNetworkClient class]]);
-    _clientClass.reset([clientClass retain]);
+    _clientClass.reset(clientClass);
   }
   return self;
 }
 
 - (CRNForwardingNetworkClient*)clientHandlingAnyRequest {
-  return [[[_clientClass alloc] init] autorelease];
+  return [[_clientClass alloc] init];
 }
 
 - (Class)clientClass {

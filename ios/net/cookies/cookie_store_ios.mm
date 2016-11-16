@@ -33,6 +33,10 @@
 #include "net/cookies/parsed_cookie.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace net {
 
 namespace {
@@ -293,7 +297,7 @@ CookieStoreIOS::CookieStoreIOS(
     net::CookieMonster::PersistentCookieStore* persistent_store,
     NSHTTPCookieStorage* system_store)
     : cookie_monster_(new net::CookieMonster(persistent_store, nullptr)),
-      system_store_([system_store retain]),
+      system_store_(system_store),
       creation_time_manager_(new CookieCreationTimeManager),
       metrics_enabled_(false),
       flush_delay_(base::TimeDelta::FromSeconds(10)),

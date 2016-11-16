@@ -40,6 +40,10 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace net {
 class HttpProtocolHandlerCore;
 }
@@ -551,9 +555,9 @@ void HttpProtocolHandlerCore::OnReadCompleted(URLRequest* request,
     if ([data length] > 0) {
       // If the data is not encoded in UTF8, the NSString is nil.
       DVLOG(3) << "To client:" << std::endl
-               << base::SysNSStringToUTF8([[[NSString alloc]
+               << base::SysNSStringToUTF8([[NSString alloc]
                       initWithData:data
-                          encoding:NSUTF8StringEncoding] autorelease]);
+                          encoding:NSUTF8StringEncoding]);
       [top_level_client_ didLoadData:data];
     }
     if (bytes_read == 0) {
@@ -1064,7 +1068,6 @@ void HttpProtocolHandlerCore::PushClients(NSArray* clients) {
 
 - (void)dealloc {
   [self scheduleCancelRequest];
-  [super dealloc];
 }
 
 #pragma mark NSURLProtocol overrides.
