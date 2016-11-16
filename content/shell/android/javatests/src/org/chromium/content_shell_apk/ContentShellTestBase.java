@@ -58,6 +58,7 @@ public class ContentShellTestBase
 
     @Override
     protected void setUp() throws Exception {
+        super.setUp();
         assertScreenIsOn();
     }
 
