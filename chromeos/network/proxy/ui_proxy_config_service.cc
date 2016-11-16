@@ -200,8 +200,17 @@ void UIProxyConfigService::DetermineEffectiveConfig(
 }
 
 void UIProxyConfigService::OnPreferenceChanged(const std::string& pref_name) {
-  if (!current_ui_network_guid_.empty())
-    UpdateFromPrefs(current_ui_network_guid_);
+  if (current_ui_network_guid_.empty())
+    return;
+  const NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
+          current_ui_network_guid_);
+  if (!network)
+    return;
+  UpdateFromPrefs(current_ui_network_guid_);
+  NetworkHandler::Get()
+      ->network_state_handler()
+      ->SendUpdateNotificationForNetwork(network->path());
 }
 
 }  // namespace chromeos

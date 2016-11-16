@@ -365,6 +365,14 @@ void NetworkStateHandler::RequestUpdateForNetwork(
                                              service_path);
 }
 
+void NetworkStateHandler::SendUpdateNotificationForNetwork(
+    const std::string& service_path) {
+  const NetworkState* network = GetNetworkState(service_path);
+  if (!network)
+    return;
+  NotifyNetworkPropertiesUpdated(network);
+}
+
 void NetworkStateHandler::ClearLastErrorForNetwork(
     const std::string& service_path) {
   NetworkState* network = GetModifiableNetworkState(service_path);

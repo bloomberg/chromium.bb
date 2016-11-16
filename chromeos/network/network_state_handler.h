@@ -215,6 +215,11 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // properties actually changed.
   void RequestUpdateForNetwork(const std::string& service_path);
 
+  // Informs NetworkStateHandler to notify observers that the properties for
+  // the network may have changed. Called e.g. when the proxy properties may
+  // have changed.
+  void SendUpdateNotificationForNetwork(const std::string& service_path);
+
   // Clears the last_error value for the NetworkState for |service_path|.
   void ClearLastErrorForNetwork(const std::string& service_path);
 

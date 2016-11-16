@@ -527,6 +527,14 @@ var availableTests = [
             Effective: 'UserPolicy',
             UserPolicy: 'My WiFi Network'
           },
+          ProxySettings: {
+            Type: {
+              Active: 'Direct',
+              Effective: 'UserPolicy',
+              UserEditable: false,
+              UserPolicy: 'Direct'
+            }
+          },
           Source: 'UserPolicy',
           Type: NetworkType.WI_FI,
           WiFi: {

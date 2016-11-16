@@ -16,6 +16,8 @@ const char kAugmentationSharedSetting[] = "SharedSetting";
 const char kAugmentationUserEditable[] = "UserEditable";
 const char kAugmentationDeviceEditable[] = "DeviceEditable";
 
+const char kAugmentationActiveExtension[] = "ActiveExtension";
+
 // Common keys/values.
 const char kRecommended[] = "Recommended";
 const char kRemove[] = "Remove";

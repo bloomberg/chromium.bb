@@ -100,7 +100,9 @@ class NetworkingPrivateChromeOS : public NetworkingPrivateDelegate {
   // Callback for both GetProperties and GetManagedProperties. Copies
   // |dictionary| and appends any networkingPrivate API specific properties,
   // then calls |callback| with the result.
-  void GetPropertiesCallback(const DictionaryCallback& callback,
+  void GetPropertiesCallback(const std::string& guid,
+                             bool managed,
+                             const DictionaryCallback& callback,
                              const std::string& service_path,
                              const base::DictionaryValue& dictionary);
 
@@ -108,6 +110,10 @@ class NetworkingPrivateChromeOS : public NetworkingPrivateDelegate {
   // VPNs. The provider name needs to be looked up from the list of extensions
   // which is not available to the chromeos/network module.
   void AppendThirdPartyProviderName(base::DictionaryValue* dictionary);
+
+  // Sets the active proxy values in managed network configurations.
+  void SetManagedActiveProxyValues(const std::string& guid,
+                                   base::DictionaryValue* dictionary);
 
   // Handles connection failures, possibly showing UI for configuration
   // failures, then calls the appropriate callback.

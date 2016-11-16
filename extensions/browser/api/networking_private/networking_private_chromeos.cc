@@ -4,10 +4,13 @@
 
 #include "extensions/browser/api/networking_private/networking_private_chromeos.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_manager_client.h"
@@ -25,7 +28,10 @@
 #include "chromeos/network/onc/onc_translator.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
+#include "chromeos/network/proxy/ui_proxy_config.h"
+#include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "components/onc/onc_constants.h"
+#include "components/proxy_config/proxy_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/api/networking_private/networking_private_api.h"
 #include "extensions/browser/extension_registry.h"
@@ -40,6 +46,7 @@ using chromeos::NetworkHandler;
 using chromeos::NetworkStateHandler;
 using chromeos::NetworkTypePattern;
 using chromeos::ShillManagerClient;
+using chromeos::UIProxyConfig;
 using extensions::NetworkingPrivateDelegate;
 
 namespace private_api = extensions::api::networking_private;
@@ -214,6 +221,75 @@ const chromeos::DeviceState* GetCellularDeviceState(const std::string& guid) {
   return device_state;
 }
 
+// Ensures that |container| has a DictionaryValue for |key| and returns it.
+base::DictionaryValue* EnsureDictionaryValue(const std::string& key,
+                                             base::DictionaryValue* container) {
+  base::DictionaryValue* dict;
+  if (!container->GetDictionary(key, &dict)) {
+    container->SetWithoutPathExpansion(
+        key, base::MakeUnique<base::DictionaryValue>());
+    container->GetDictionary(key, &dict);
+  }
+  return dict;
+}
+
+// Sets the active and effective ONC dictionary values of |dict| based on
+// |state|. Also sets the UserEditable property to false.
+void SetProxyEffectiveValue(base::DictionaryValue* dict,
+                            ProxyPrefs::ConfigState state,
+                            std::unique_ptr<base::Value> value) {
+  // NOTE: ProxyPrefs::ConfigState only exposes 'CONFIG_POLICY' so just use
+  // 'UserPolicy' here for the effective type. The existing UI does not
+  // differentiate between policy types. TODO(stevenjb): Eliminate UIProxyConfig
+  // and instead generate a proper ONC dictionary with the correct policy source
+  // preserved. crbug.com/662529.
+  dict->SetStringWithoutPathExpansion(::onc::kAugmentationEffectiveSetting,
+                                      state == ProxyPrefs::CONFIG_EXTENSION
+                                          ? ::onc::kAugmentationActiveExtension
+                                          : ::onc::kAugmentationUserPolicy);
+  if (state != ProxyPrefs::CONFIG_EXTENSION) {
+    std::unique_ptr<base::Value> value_copy(value->CreateDeepCopy());
+    dict->SetWithoutPathExpansion(::onc::kAugmentationUserPolicy,
+                                  std::move(value_copy));
+  }
+  dict->SetWithoutPathExpansion(::onc::kAugmentationActiveSetting,
+                                std::move(value));
+  dict->SetBooleanWithoutPathExpansion(::onc::kAugmentationUserEditable, false);
+}
+
+std::string GetProxySettingsType(const UIProxyConfig::Mode& mode) {
+  switch (mode) {
+    case UIProxyConfig::MODE_DIRECT:
+      return ::onc::proxy::kDirect;
+    case UIProxyConfig::MODE_AUTO_DETECT:
+      return ::onc::proxy::kWPAD;
+    case UIProxyConfig::MODE_PAC_SCRIPT:
+      return ::onc::proxy::kPAC;
+    case UIProxyConfig::MODE_SINGLE_PROXY:
+    case UIProxyConfig::MODE_PROXY_PER_SCHEME:
+      return ::onc::proxy::kManual;
+  }
+  NOTREACHED();
+  return ::onc::proxy::kDirect;
+}
+
+void SetManualProxy(base::DictionaryValue* manual,
+                    ProxyPrefs::ConfigState state,
+                    const std::string& key,
+                    const UIProxyConfig::ManualProxy& proxy) {
+  base::DictionaryValue* dict = EnsureDictionaryValue(key, manual);
+  base::DictionaryValue* host_dict =
+      EnsureDictionaryValue(::onc::proxy::kHost, dict);
+  SetProxyEffectiveValue(host_dict, state,
+                         base::MakeUnique<base::StringValue>(
+                             proxy.server.host_port_pair().host()));
+  uint16_t port = proxy.server.host_port_pair().port();
+  base::DictionaryValue* port_dict =
+      EnsureDictionaryValue(::onc::proxy::kPort, dict);
+  SetProxyEffectiveValue(port_dict, state,
+                         base::MakeUnique<base::FundamentalValue>(port));
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -227,8 +303,7 @@ NetworkingPrivateChromeOS::NetworkingPrivateChromeOS(
       browser_context_(browser_context),
       weak_ptr_factory_(this) {}
 
-NetworkingPrivateChromeOS::~NetworkingPrivateChromeOS() {
-}
+NetworkingPrivateChromeOS::~NetworkingPrivateChromeOS() {}
 
 void NetworkingPrivateChromeOS::GetProperties(
     const std::string& guid,
@@ -249,7 +324,8 @@ void NetworkingPrivateChromeOS::GetProperties(
   GetManagedConfigurationHandler()->GetProperties(
       user_id_hash, service_path,
       base::Bind(&NetworkingPrivateChromeOS::GetPropertiesCallback,
-                 weak_ptr_factory_.GetWeakPtr(), success_callback),
+                 weak_ptr_factory_.GetWeakPtr(), guid, false /* managed */,
+                 success_callback),
       base::Bind(&NetworkHandlerFailureCallback, failure_callback));
 }
 
@@ -272,7 +348,8 @@ void NetworkingPrivateChromeOS::GetManagedProperties(
   GetManagedConfigurationHandler()->GetManagedProperties(
       user_id_hash, service_path,
       base::Bind(&NetworkingPrivateChromeOS::GetPropertiesCallback,
-                 weak_ptr_factory_.GetWeakPtr(), success_callback),
+                 weak_ptr_factory_.GetWeakPtr(), guid, true /* managed */,
+                 success_callback),
       base::Bind(&NetworkHandlerFailureCallback, failure_callback));
 }
 
@@ -583,11 +660,10 @@ NetworkingPrivateChromeOS::GetDeviceStateList() {
   }
 
   // For any technologies that we do not have a DeviceState entry for, append
-  // an entry if the technolog is available.
-  const char* technology_types[] = {::onc::network_type::kEthernet,
-                                    ::onc::network_type::kWiFi,
-                                    ::onc::network_type::kWimax,
-                                    ::onc::network_type::kCellular};
+  // an entry if the technology is available.
+  const char* technology_types[] = {
+      ::onc::network_type::kEthernet, ::onc::network_type::kWiFi,
+      ::onc::network_type::kWimax, ::onc::network_type::kCellular};
   for (const char* technology : technology_types) {
     if (base::ContainsValue(technologies_found, technology))
       continue;
@@ -625,15 +701,18 @@ bool NetworkingPrivateChromeOS::RequestScan() {
 // Private methods
 
 void NetworkingPrivateChromeOS::GetPropertiesCallback(
+    const std::string& guid,
+    bool managed,
     const DictionaryCallback& callback,
     const std::string& service_path,
     const base::DictionaryValue& dictionary) {
   std::unique_ptr<base::DictionaryValue> dictionary_copy(dictionary.DeepCopy());
   AppendThirdPartyProviderName(dictionary_copy.get());
+  if (managed)
+    SetManagedActiveProxyValues(guid, dictionary_copy.get());
   callback.Run(std::move(dictionary_copy));
 }
 
-// Populate ThirdPartyVPN.kProviderName for third-party VPNs.
 void NetworkingPrivateChromeOS::AppendThirdPartyProviderName(
     base::DictionaryValue* dictionary) {
   base::DictionaryValue* third_party_vpn =
@@ -654,6 +733,80 @@ void NetworkingPrivateChromeOS::AppendThirdPartyProviderName(
       break;
     }
   }
+}
+
+void NetworkingPrivateChromeOS::SetManagedActiveProxyValues(
+    const std::string& guid,
+    base::DictionaryValue* dictionary) {
+  // NOTE: We use UIProxyConfigService and UIProxyConfig for historical
+  // reasons. The model and service were written for a much older UI but
+  // contain a fair amount of subtle logic which is why we use them.
+  // TODO(stevenjb): Re-factor this code and eliminate UIProxyConfig once
+  // the old options UI is abandoned. crbug.com/662529.
+  chromeos::UIProxyConfigService* ui_proxy_config_service =
+      NetworkHandler::Get()->ui_proxy_config_service();
+  ui_proxy_config_service->UpdateFromPrefs(guid);
+  UIProxyConfig config;
+  ui_proxy_config_service->GetProxyConfig(guid, &config);
+  ProxyPrefs::ConfigState state = config.state;
+
+  VLOG(1) << "CONFIG STATE FOR: " << guid << ": " << state
+          << " MODE: " << config.mode;
+
+  if (state != ProxyPrefs::CONFIG_POLICY &&
+      state != ProxyPrefs::CONFIG_EXTENSION &&
+      state != ProxyPrefs::CONFIG_OTHER_PRECEDE) {
+    return;
+  }
+
+  // Ensure that the ProxySettings dictionary exists.
+  base::DictionaryValue* proxy_settings =
+      EnsureDictionaryValue(::onc::network_config::kProxySettings, dictionary);
+  VLOG(2) << " PROXY: " << *proxy_settings;
+
+  // Ensure that the ProxySettings.Type dictionary exists and set the Type
+  // value to the value from |ui_proxy_config_service|.
+  base::DictionaryValue* proxy_type_dict =
+      EnsureDictionaryValue(::onc::network_config::kType, proxy_settings);
+  SetProxyEffectiveValue(proxy_type_dict, state,
+                         base::WrapUnique<base::Value>(new base::StringValue(
+                             GetProxySettingsType(config.mode))));
+
+  // Update any appropriate sub dictionary based on the new type.
+  switch (config.mode) {
+    case UIProxyConfig::MODE_SINGLE_PROXY: {
+      // Use the same proxy value (config.single_proxy) for all proxies.
+      base::DictionaryValue* manual =
+          EnsureDictionaryValue(::onc::proxy::kManual, proxy_settings);
+      SetManualProxy(manual, state, ::onc::proxy::kHttp, config.single_proxy);
+      SetManualProxy(manual, state, ::onc::proxy::kHttps, config.single_proxy);
+      SetManualProxy(manual, state, ::onc::proxy::kFtp, config.single_proxy);
+      SetManualProxy(manual, state, ::onc::proxy::kSocks, config.single_proxy);
+      break;
+    }
+    case UIProxyConfig::MODE_PROXY_PER_SCHEME: {
+      base::DictionaryValue* manual =
+          EnsureDictionaryValue(::onc::proxy::kManual, proxy_settings);
+      SetManualProxy(manual, state, ::onc::proxy::kHttp, config.http_proxy);
+      SetManualProxy(manual, state, ::onc::proxy::kHttps, config.https_proxy);
+      SetManualProxy(manual, state, ::onc::proxy::kFtp, config.ftp_proxy);
+      SetManualProxy(manual, state, ::onc::proxy::kSocks, config.socks_proxy);
+      break;
+    }
+    case UIProxyConfig::MODE_PAC_SCRIPT: {
+      base::DictionaryValue* pac =
+          EnsureDictionaryValue(::onc::proxy::kPAC, proxy_settings);
+      SetProxyEffectiveValue(
+          pac, state, base::WrapUnique<base::Value>(new base::StringValue(
+                          config.automatic_proxy.pac_url.spec())));
+      break;
+    }
+    case UIProxyConfig::MODE_DIRECT:
+    case UIProxyConfig::MODE_AUTO_DETECT:
+      break;
+  }
+
+  VLOG(2) << " NEW PROXY: " << *proxy_settings;
 }
 
 void NetworkingPrivateChromeOS::ConnectFailureCallback(

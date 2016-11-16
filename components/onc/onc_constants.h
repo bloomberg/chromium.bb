@@ -37,6 +37,10 @@ ONC_EXPORT extern const char kAugmentationSharedSetting[];
 ONC_EXPORT extern const char kAugmentationUserEditable[];
 ONC_EXPORT extern const char kAugmentationDeviceEditable[];
 
+// Special key for indicating that the Effective value is the Active value
+// and was set by an extension. Used for ProxySettings.
+ONC_EXPORT extern const char kAugmentationActiveExtension[];
+
 // Common keys/values.
 ONC_EXPORT extern const char kRecommended[];
 ONC_EXPORT extern const char kRemove[];
