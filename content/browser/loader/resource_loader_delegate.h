@@ -7,6 +7,8 @@
 
 #include "content/common/content_export.h"
 
+class GURL;
+
 namespace net {
 class AuthChallengeInfo;
 class ClientCertStore;

@@ -25,6 +25,7 @@
 #include "content/common/resource_messages.h"
 #include "content/common/resource_request_completion_status.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/resource_response.h"

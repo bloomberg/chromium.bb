@@ -25,12 +25,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
-#include "content/browser/download/save_types.h"
 #include "content/browser/loader/global_routing_id.h"
-#include "content/browser/loader/resource_loader.h"
 #include "content/browser/loader/resource_loader_delegate.h"
-#include "content/browser/loader/resource_scheduler.h"
 #include "content/common/content_export.h"
 #include "content/common/url_loader.mojom.h"
 #include "content/public/browser/global_request_id.h"
@@ -39,14 +35,18 @@
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
 #include "ipc/ipc_message.h"
-#include "mojo/public/cpp/system/data_pipe.h"
+#include "net/base/load_states.h"
 #include "net/base/request_priority.h"
-#include "net/cookies/canonical_cookie.h"
-#include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
 namespace base {
 class FilePath;
+class RepeatingTimer;
+}
+
+namespace net {
+class URLRequest;
+class HttpRequestHeaders;
 }
 
 namespace storage {
@@ -62,18 +62,16 @@ class NavigationUIData;
 class RenderFrameHostImpl;
 class ResourceContext;
 class ResourceDispatcherHostDelegate;
+class ResourceLoader;
 class ResourceHandler;
 class ResourceMessageDelegate;
 class ResourceMessageFilter;
 class ResourceRequestInfoImpl;
+class ResourceScheduler;
 class ServiceWorkerNavigationHandleCore;
 struct NavigationRequestInfo;
 struct Referrer;
 struct ResourceRequest;
-
-namespace mojom {
-class URLLoader;
-}  // namespace mojom
 
 using CreateDownloadHandlerIntercept =
     base::Callback<std::unique_ptr<ResourceHandler>(net::URLRequest*)>;
@@ -380,6 +378,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
     LoadInfo();
     LoadInfo(const LoadInfo& other);
     ~LoadInfo();
+
     ResourceRequestInfo::WebContentsGetter web_contents_getter;
     GURL url;
     net::LoadStateWithParam load_state;

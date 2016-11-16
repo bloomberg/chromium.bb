@@ -8,6 +8,8 @@
 
 namespace content {
 
+ResourceHandler::~ResourceHandler() {}
+
 ResourceHandler::ResourceHandler(net::URLRequest* request)
     : controller_(NULL),
       request_(request) {

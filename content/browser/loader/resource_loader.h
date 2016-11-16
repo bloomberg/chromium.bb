@@ -7,10 +7,10 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/timer/timer.h"
-#include "content/browser/loader/resource_handler.h"
+#include "base/time/time.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/common/content_export.h"
@@ -23,6 +23,7 @@ class X509Certificate;
 
 namespace content {
 class ResourceDispatcherHostLoginDelegate;
+class ResourceHandler;
 class ResourceLoaderDelegate;
 class ResourceRequestInfoImpl;
 
