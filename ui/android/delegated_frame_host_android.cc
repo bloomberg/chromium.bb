@@ -180,8 +180,7 @@ void DelegatedFrameHostAndroid::RequestCopyOfSurface(
   if (!src_subrect_in_pixel.IsEmpty())
     copy_output_request->set_area(src_subrect_in_pixel);
 
-  surface_factory_->RequestCopyOfSurface(current_frame_->local_frame_id,
-                                         std::move(copy_output_request));
+  readback_layer->RequestCopyOfOutput(std::move(copy_output_request));
 }
 
 void DelegatedFrameHostAndroid::DestroyDelegatedContent() {

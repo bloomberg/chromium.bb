@@ -10,6 +10,7 @@ import android.os.Handler;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
@@ -174,7 +175,11 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
             @Override
             public void onPageLoadStarted(Tab tab, String url) {
                 String previousUrl = tab.getUrl();
-                mTabContentManager.invalidateTabThumbnail(tab.getId(), previousUrl);
+                if (NativePageFactory.isNativePageUrl(previousUrl, tab.isIncognito())) {
+                    mTabContentManager.invalidateTabThumbnail(tab.getId(), previousUrl);
+                } else {
+                    mTabContentManager.removeTabThumbnail(tab.getId());
+                }
             }
 
             @Override
