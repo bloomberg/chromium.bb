@@ -1387,6 +1387,7 @@ class CORE_EXPORT UseCounter {
     TouchEventPreventedForcedDocumentPassiveNoTouchAction = 1683,
     V8Event_StopPropagation_Method = 1684,
     V8Event_StopImmediatePropagation_Method = 1685,
+    ImageCaptureConstructor = 1686,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

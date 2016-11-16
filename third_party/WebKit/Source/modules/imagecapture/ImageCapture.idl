@@ -9,6 +9,7 @@
     ConstructorCallWith=ExecutionContext,
     Constructor(MediaStreamTrack track),
     DependentLifetime,
+    MeasureAs=ImageCaptureConstructor,
     RaisesException=Constructor,
     OriginTrialEnabled=ImageCapture,
 ] interface ImageCapture {
