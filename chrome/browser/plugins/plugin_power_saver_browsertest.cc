@@ -603,13 +603,7 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, LargePostersNotThrottled) {
   VerifyPluginMarkedEssential(GetActiveWebContents(), "poster_large");
 }
 
-// Flaky on ASAN bots: crbug.com/560765.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_OriginWhitelisting DISABLED_OriginWhitelisting
-#else
-#define MAYBE_OriginWhitelisting OriginWhitelisting
-#endif
-IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, MAYBE_OriginWhitelisting) {
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, OriginWhitelisting) {
   LoadHTML(
       "<object id='plugin_small' data='http://a.com/fake1.swf' "
       "    type='application/x-shockwave-flash' width='100' height='100'>"
