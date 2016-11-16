@@ -330,6 +330,9 @@ void LoadablePluginPlaceholder::DidFinishLoadingCallback() {
 }
 
 void LoadablePluginPlaceholder::DidFinishIconRepositionForTestingCallback() {
+  if (!plugin())
+    return;
+
   // Set an attribute and post an event, so browser tests can wait for the
   // placeholder to be ready to receive simulated user input.
   blink::WebElement element = plugin()->container()->element();
