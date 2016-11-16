@@ -12,6 +12,8 @@ static_library("ntp_tiles") {
     "constants.h",
     "country_code_ios.h",
     "country_code_ios.mm",
+    "field_trial.cc",
+    "field_trial.h",
     "icon_cacher.cc",
     "icon_cacher.h",
     "metrics.cc",
