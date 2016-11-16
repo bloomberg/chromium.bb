@@ -66,14 +66,6 @@ GURL GetTranslateRankerURL() {
                   : kTranslateRankerModelURL);
 }
 
-bool IsQueryEnabled() {
-  return base::FeatureList::IsEnabled(kTranslateRankerQuery);
-}
-
-bool IsEnforcementEnabled() {
-  return base::FeatureList::IsEnabled(kTranslateRankerEnforcement);
-}
-
 void ReportModelStatus(ModelStatus model_status) {
   UMA_HISTOGRAM_ENUMERATION("Translate.Ranker.Model.Status", model_status,
                             MODEL_STATUS_MAX);
@@ -100,6 +92,16 @@ bool TranslateRanker::IsEnabled() {
 // static
 bool TranslateRanker::IsLoggingEnabled() {
   return base::FeatureList::IsEnabled(kTranslateRankerLogging);
+}
+
+// static
+bool TranslateRanker::IsQueryEnabled() {
+  return base::FeatureList::IsEnabled(kTranslateRankerQuery);
+}
+
+// static
+bool TranslateRanker::IsEnforcementEnabled() {
+  return base::FeatureList::IsEnabled(kTranslateRankerEnforcement);
 }
 
 // static

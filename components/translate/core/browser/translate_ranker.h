@@ -44,6 +44,12 @@ class TranslateRanker {
   // Returns true if translate events logging is enabled.
   static bool IsLoggingEnabled();
 
+  // Returns true if querying is enabled.
+  static bool IsQueryEnabled();
+
+  // Returns true if enforcement is enabled.
+  static bool IsEnforcementEnabled();
+
   // Returns the singleton TranslateRanker instance.
   static TranslateRanker* GetInstance();
 

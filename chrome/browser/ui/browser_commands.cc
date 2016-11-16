@@ -51,6 +51,7 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/translate/translate_bubble_view_state_transition.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/content_restriction.h"
 #include "chrome/common/features.h"
@@ -118,8 +119,36 @@
 #endif
 
 namespace {
+
 const char kOsOverrideForTabletSite[] = "Linux; Android 4.0.3";
+
+translate::TranslateBubbleUiEvent TranslateBubbleResultToUiEvent(
+    ShowTranslateBubbleResult result) {
+  switch (result) {
+    default:
+      NOTREACHED();
+      // Fall through.
+    case ShowTranslateBubbleResult::SUCCESS:
+      return translate::TranslateBubbleUiEvent::BUBBLE_SHOWN;
+    case ShowTranslateBubbleResult::BROWSER_WINDOW_NOT_VALID:
+      return translate::TranslateBubbleUiEvent::
+          BUBBLE_NOT_SHOWN_WINDOW_NOT_VALID;
+    case ShowTranslateBubbleResult::BROWSER_WINDOW_MINIMIZED:
+      return translate::TranslateBubbleUiEvent::
+          BUBBLE_NOT_SHOWN_WINDOW_MINIMIZED;
+    case ShowTranslateBubbleResult::BROWSER_WINDOW_NOT_ACTIVE:
+      return translate::TranslateBubbleUiEvent::
+          BUBBLE_NOT_SHOWN_WINDOW_NOT_ACTIVE;
+    case ShowTranslateBubbleResult::WEB_CONTENTS_NOT_ACTIVE:
+      return translate::TranslateBubbleUiEvent::
+          BUBBLE_NOT_SHOWN_WEB_CONTENTS_NOT_ACTIVE;
+    case ShowTranslateBubbleResult::EDITABLE_FIELD_IS_ACTIVE:
+      return translate::TranslateBubbleUiEvent::
+          BUBBLE_NOT_SHOWN_EDITABLE_FIELD_IS_ACTIVE;
+  }
 }
+
+}  // namespace
 
 using base::UserMetricsAction;
 using bookmarks::BookmarkModel;
@@ -828,8 +857,10 @@ void Translate(Browser* browser) {
     else if (chrome_translate_client->GetLanguageState().IsPageTranslated())
       step = translate::TRANSLATE_STEP_AFTER_TRANSLATE;
   }
-  browser->window()->ShowTranslateBubble(
+  ShowTranslateBubbleResult result = browser->window()->ShowTranslateBubble(
       web_contents, step, translate::TranslateErrors::NONE, true);
+  if (result != ShowTranslateBubbleResult::SUCCESS)
+    translate::ReportUiAction(TranslateBubbleResultToUiEvent(result));
 }
 
 void ManagePasswordsForPage(Browser* browser) {

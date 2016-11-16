@@ -111,6 +111,22 @@ message TranslateEventProto {
     // The translation was not offered because the URL is not
     // supported (e.g. New Tab Page).
     UNSUPPORTED_URL = 17;
+    // The previous page was in the same language, so the translate UI was
+    // suppressed.
+    MATCHES_PREVIOUS_LANGUAGE = 18;
+    // The translate UI was not shown because the browser window associated with
+    // the translate event has gone away.
+    BROWSER_WINDOW_IS_INVALID = 19;
+    // The translate UI was not shown because the browser window for the
+    // translate prompt is no longer active.
+    BROWSER_WINDOW_NOT_ACTIVE = 20;
+    // The translate UI was not shown because the browser window is minimized.
+    BROWSER_WINDOW_IS_MINIMIZED = 21;
+    // The translate UI was not shown because the web context for the translate
+    // prompt is no longer active.
+    WEB_CONTENTS_NOT_ACTIVE = 22;
+    // The translate UI was not shown because the user is editing a form field.
+    EDITABLE_FIELD_IS_ACTIVE = 23;
   }
 
   // Event received from translate UI.

@@ -36,6 +36,8 @@ class TranslatePrefs;
 class TranslateManager;
 }  // namespace translate
 
+enum class ShowTranslateBubbleResult;
+
 class ChromeTranslateClient
     : public translate::TranslateClient,
       public translate::ContentTranslateDriver::Observer,
@@ -117,8 +119,9 @@ class ChromeTranslateClient
   void WebContentsDestroyed() override;
 
   // Shows the translate bubble.
-  void ShowBubble(translate::TranslateStep step,
-                  translate::TranslateErrors::Type error_type);
+  ShowTranslateBubbleResult ShowBubble(
+      translate::TranslateStep step,
+      translate::TranslateErrors::Type error_type);
 
   translate::ContentTranslateDriver translate_driver_;
   std::unique_ptr<translate::TranslateManager> translate_manager_;

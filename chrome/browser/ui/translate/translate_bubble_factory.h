@@ -10,6 +10,7 @@
 #include "components/translate/core/common/translate_errors.h"
 
 class BrowserWindow;
+enum class ShowTranslateBubbleResult;
 
 namespace content {
 class WebContents;
@@ -22,10 +23,11 @@ class TranslateBubbleFactory {
 
   // Shows the translate bubble. The behavior depends on the current factory's
   // implementation.
-  static void Show(BrowserWindow* window,
-                   content::WebContents* web_contents,
-                   translate::TranslateStep step,
-                   translate::TranslateErrors::Type error_type);
+  static ShowTranslateBubbleResult Show(
+      BrowserWindow* window,
+      content::WebContents* web_contents,
+      translate::TranslateStep step,
+      translate::TranslateErrors::Type error_type);
 
   // Sets the factory to change the behavior how to show the bubble.
   // TranslateBubbleFactory doesn't take the ownership of |factory|.
@@ -33,7 +35,7 @@ class TranslateBubbleFactory {
 
  protected:
   // Shows the translate bubble.
-  virtual void ShowImplementation(
+  virtual ShowTranslateBubbleResult ShowImplementation(
       BrowserWindow* window,
       content::WebContents* web_contents,
       translate::TranslateStep step,

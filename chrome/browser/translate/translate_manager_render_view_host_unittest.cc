@@ -23,6 +23,7 @@
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/translate/translate_bubble_factory.h"
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_model_impl.h"
@@ -72,7 +73,7 @@ class MockTranslateBubbleFactory : public TranslateBubbleFactory {
  public:
   MockTranslateBubbleFactory() {}
 
-  void ShowImplementation(
+  ShowTranslateBubbleResult ShowImplementation(
       BrowserWindow* window,
       content::WebContents* web_contents,
       translate::TranslateStep step,
@@ -80,7 +81,7 @@ class MockTranslateBubbleFactory : public TranslateBubbleFactory {
     if (model_) {
       model_->SetViewState(
           TranslateBubbleModelImpl::TranslateStepToViewState(step));
-      return;
+      return ShowTranslateBubbleResult::SUCCESS;
     }
 
     ChromeTranslateClient* chrome_translate_client =
@@ -96,6 +97,7 @@ class MockTranslateBubbleFactory : public TranslateBubbleFactory {
             chrome_translate_client->GetTranslateManager()->GetWeakPtr(),
             source_language, target_language));
     model_.reset(new TranslateBubbleModelImpl(step, std::move(ui_delegate)));
+    return ShowTranslateBubbleResult::SUCCESS;
   }
 
   bool DismissBubble() {

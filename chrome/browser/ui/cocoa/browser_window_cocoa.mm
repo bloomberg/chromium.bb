@@ -619,7 +619,7 @@ autofill::SaveCardBubbleView* BrowserWindowCocoa::ShowSaveCreditCardBubble(
   return new autofill::SaveCardBubbleViewBridge(controller, controller_);
 }
 
-void BrowserWindowCocoa::ShowTranslateBubble(
+ShowTranslateBubbleResult BrowserWindowCocoa::ShowTranslateBubble(
     content::WebContents* contents,
     translate::TranslateStep step,
     translate::TranslateErrors::Type error_type,
@@ -633,6 +633,8 @@ void BrowserWindowCocoa::ShowTranslateBubble(
   [controller_ showTranslateBubbleForWebContents:contents
                                             step:step
                                        errorType:error_type];
+
+  return ShowTranslateBubbleResult::SUCCESS;
 }
 
 #if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)

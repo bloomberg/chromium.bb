@@ -21,6 +21,10 @@
 class GURL;
 class PrefService;
 
+namespace metrics {
+class TranslateEventProto;
+}
+
 namespace translate {
 
 extern const base::Feature kTranslateLanguageByULP;
@@ -57,6 +61,10 @@ class TranslateManager {
   // Sets the sequence number of the current page, for use while sending
   // messages to the renderer.
   void set_current_seq_no(int page_seq_no) { page_seq_no_ = page_seq_no; }
+
+  metrics::TranslateEventProto* mutable_translate_event() {
+    return translate_event_.get();
+  }
 
   // Returns the language to translate to. The language returned is the
   // first language found in the following list that is supported by the
@@ -108,6 +116,11 @@ class TranslateManager {
   // Gets the LanguageState associated with the TranslateManager
   LanguageState& GetLanguageState();
 
+  // Record an event of the given |event_type| using the currently saved
+  // |translate_event_| as context. |event_type| must be one of the values
+  // defined by metrics::TranslateEventProto::EventType.
+  void RecordTranslateEvent(int event_type);
+
   // By default, don't offer to translate in builds lacking an API key. For
   // testing, set to true to offer anyway.
   static void SetIgnoreMissingKeyForTesting(bool ignore);
@@ -138,6 +151,11 @@ class TranslateManager {
                                       bool success,
                                       const std::string& data);
 
+  // Helper function to initialize a translate event metric proto.
+  void InitTranslateEvent(const std::string& src_lang,
+                          const std::string& dst_lang,
+                          const TranslatePrefs& translate_prefs);
+
   // Sequence number of the current page.
   int page_seq_no_;
 
@@ -148,6 +166,8 @@ class TranslateManager {
   TranslateDriver* translate_driver_;  // Weak.
 
   LanguageState language_state_;
+
+  std::unique_ptr<metrics::TranslateEventProto> translate_event_;
 
   base::WeakPtrFactory<TranslateManager> weak_method_factory_;
 
