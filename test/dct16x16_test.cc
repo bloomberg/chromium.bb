@@ -931,10 +931,10 @@ INSTANTIATE_TEST_CASE_P(MSA, Trans16x16DCT,
                         ::testing::Values(make_tuple(&aom_fdct16x16_msa,
                                                      &aom_idct16x16_256_add_msa,
                                                      0, AOM_BITS_8)));
-#if 0
-// ToDo(yaowu): re-enable this after msa versions are updated to match C.
+#if !CONFIG_EXT_TX
+// TODO(yaowu): re-enable this after msa versions are updated to match C.
 INSTANTIATE_TEST_CASE_P(
-    MSA, Trans16x16HT,
+    DISABLED_MSA, Trans16x16HT,
     ::testing::Values(
         make_tuple(&av1_fht16x16_msa, &av1_iht16x16_256_add_msa, 0, AOM_BITS_8),
         make_tuple(&av1_fht16x16_msa, &av1_iht16x16_256_add_msa, 1, AOM_BITS_8),
