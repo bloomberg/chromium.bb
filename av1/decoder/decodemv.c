@@ -812,18 +812,19 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 #if CONFIG_CB4X4
   (void)i;
   mbmi->mode =
-#if CONFIG_DAALA_EC
-      read_intra_mode(r, get_y_mode_cdf(cm, mi, above_mi, left_mi, 0));
+#if CONFIG_EC_MULTISYMBOL
+      read_intra_mode_cdf(r, get_y_mode_cdf(cm, mi, above_mi, left_mi, 0));
 #else
       read_intra_mode(r, get_y_mode_probs(cm, mi, above_mi, left_mi, 0));
-#endif  // CONFIG_DAALA_EC
+#endif
 #else
   switch (bsize) {
     case BLOCK_4X4:
       for (i = 0; i < 4; ++i)
         mi->bmi[i].as_mode =
-#if CONFIG_DAALA_EC
-            read_intra_mode(r, get_y_mode_cdf(cm, mi, above_mi, left_mi, i));
+#if CONFIG_EC_MULTISYMBOL
+            read_intra_mode_cdf(r,
+                                get_y_mode_cdf(cm, mi, above_mi, left_mi, i));
 #else
             read_intra_mode(r, get_y_mode_probs(cm, mi, above_mi, left_mi, i));
 #endif
@@ -831,36 +832,36 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
       break;
     case BLOCK_4X8:
       mi->bmi[0].as_mode = mi->bmi[2].as_mode =
-#if CONFIG_DAALA_EC
-          read_intra_mode(r, get_y_mode_cdf(cm, mi, above_mi, left_mi, 0));
+#if CONFIG_EC_MULTISYMBOL
+          read_intra_mode_cdf(r, get_y_mode_cdf(cm, mi, above_mi, left_mi, 0));
 #else
           read_intra_mode(r, get_y_mode_probs(cm, mi, above_mi, left_mi, 0));
 #endif
       mi->bmi[1].as_mode = mi->bmi[3].as_mode = mbmi->mode =
-#if CONFIG_DAALA_EC
-          read_intra_mode(r, get_y_mode_cdf(cm, mi, above_mi, left_mi, 1));
+#if CONFIG_EC_MULTISYMBOL
+          read_intra_mode_cdf(r, get_y_mode_cdf(cm, mi, above_mi, left_mi, 1));
 #else
           read_intra_mode(r, get_y_mode_probs(cm, mi, above_mi, left_mi, 1));
 #endif
       break;
     case BLOCK_8X4:
       mi->bmi[0].as_mode = mi->bmi[1].as_mode =
-#if CONFIG_DAALA_EC
-          read_intra_mode(r, get_y_mode_cdf(cm, mi, above_mi, left_mi, 0));
+#if CONFIG_EC_MULTISYMBOL
+          read_intra_mode_cdf(r, get_y_mode_cdf(cm, mi, above_mi, left_mi, 0));
 #else
           read_intra_mode(r, get_y_mode_probs(cm, mi, above_mi, left_mi, 0));
 #endif
       mi->bmi[2].as_mode = mi->bmi[3].as_mode = mbmi->mode =
-#if CONFIG_DAALA_EC
-          read_intra_mode(r, get_y_mode_cdf(cm, mi, above_mi, left_mi, 2));
+#if CONFIG_EC_MULTISYMBOL
+          read_intra_mode_cdf(r, get_y_mode_cdf(cm, mi, above_mi, left_mi, 2));
 #else
           read_intra_mode(r, get_y_mode_probs(cm, mi, above_mi, left_mi, 2));
 #endif
       break;
     default:
       mbmi->mode =
-#if CONFIG_DAALA_EC
-          read_intra_mode(r, get_y_mode_cdf(cm, mi, above_mi, left_mi, 0));
+#if CONFIG_EC_MULTISYMBOL
+          read_intra_mode_cdf(r, get_y_mode_cdf(cm, mi, above_mi, left_mi, 0));
 #else
           read_intra_mode(r, get_y_mode_probs(cm, mi, above_mi, left_mi, 0));
 #endif

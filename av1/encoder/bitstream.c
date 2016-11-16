@@ -1699,7 +1699,7 @@ static void write_mb_modes_kf(AV1_COMMON *cm, const MACROBLOCKD *xd,
     write_selected_tx_size(cm, xd, w);
 
   if (bsize >= BLOCK_8X8 || unify_bsize) {
-#if CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
     aom_write_symbol(w, av1_intra_mode_ind[mbmi->mode],
                      get_y_mode_cdf(cm, mi, above_mi, left_mi, 0), INTRA_MODES);
 #else
@@ -1714,7 +1714,7 @@ static void write_mb_modes_kf(AV1_COMMON *cm, const MACROBLOCKD *xd,
     for (idy = 0; idy < 2; idy += num_4x4_h) {
       for (idx = 0; idx < 2; idx += num_4x4_w) {
         const int block = idy * 2 + idx;
-#if CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
         aom_write_symbol(w, av1_intra_mode_ind[mi->bmi[block].as_mode],
                          get_y_mode_cdf(cm, mi, above_mi, left_mi, block),
                          INTRA_MODES);
@@ -4238,7 +4238,7 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #endif  // CONFIG_EC_ADAPT, CONFIG_DAALA_EC
   if (frame_is_intra_only(cm)) {
     av1_copy(cm->kf_y_prob, av1_kf_y_mode_prob);
-#if CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
     av1_copy(cm->kf_y_cdf, av1_kf_y_mode_cdf);
 #endif
 

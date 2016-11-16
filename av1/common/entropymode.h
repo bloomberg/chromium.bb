@@ -286,7 +286,7 @@ typedef struct FRAME_COUNTS {
 
 extern const aom_prob av1_kf_y_mode_prob[INTRA_MODES][INTRA_MODES]
                                         [INTRA_MODES - 1];
-#if CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
 extern aom_cdf_prob av1_kf_y_mode_cdf[INTRA_MODES][INTRA_MODES][INTRA_MODES];
 #endif
 #if CONFIG_PALETTE

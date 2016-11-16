@@ -16,7 +16,7 @@
 #include "av1/common/onyxc_int.h"
 #include "av1/common/seg_common.h"
 
-#if CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
 aom_cdf_prob av1_kf_y_mode_cdf[INTRA_MODES][INTRA_MODES][INTRA_MODES];
 #endif
 
@@ -1775,8 +1775,6 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #if CONFIG_DAALA_EC
   av1_tree_to_cdf_1D(av1_intra_mode_tree, fc->uv_mode_prob, fc->uv_mode_cdf,
                      INTRA_MODES);
-  av1_tree_to_cdf_2D(av1_intra_mode_tree, av1_kf_y_mode_prob, av1_kf_y_mode_cdf,
-                     INTRA_MODES, INTRA_MODES);
 #endif
 #if CONFIG_EC_MULTISYMBOL
   av1_tree_to_cdf_1D(av1_intra_mode_tree, fc->y_mode_prob, fc->y_mode_cdf,
@@ -1793,6 +1791,8 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_tree_to_cdf_1D(av1_ext_tx_tree, fc->inter_ext_tx_prob,
                      fc->inter_ext_tx_cdf, EXT_TX_SIZES);
 #endif
+  av1_tree_to_cdf_2D(av1_intra_mode_tree, av1_kf_y_mode_prob, av1_kf_y_mode_cdf,
+                     INTRA_MODES, INTRA_MODES);
   av1_tree_to_cdf(av1_segment_tree, fc->seg.tree_probs, fc->seg.tree_cdf);
 #endif
 #if CONFIG_DELTA_Q
@@ -1815,6 +1815,11 @@ void av1_set_mode_cdfs(struct AV1Common *cm) {
   for (i = 0; i < PARTITION_CONTEXTS; ++i)
     av1_tree_to_cdf(av1_partition_tree, fc->partition_prob[i],
                     fc->partition_cdf[i]);
+
+  for (i = 0; i < INTRA_MODES; ++i)
+    for (j = 0; j < INTRA_MODES; ++j)
+      av1_tree_to_cdf(av1_intra_mode_tree, cm->kf_y_prob[i][j],
+                      cm->kf_y_cdf[i][j]);
 
   for (j = 0; j < SWITCHABLE_FILTER_CONTEXTS; ++j)
     av1_tree_to_cdf(av1_switchable_interp_tree, fc->switchable_interp_prob[j],
@@ -1841,11 +1846,6 @@ void av1_set_mode_cdfs(struct AV1Common *cm) {
   for (i = 0; i < INTRA_MODES; ++i)
     av1_tree_to_cdf(av1_intra_mode_tree, fc->uv_mode_prob[i],
                     fc->uv_mode_cdf[i]);
-
-  for (i = 0; i < INTRA_MODES; ++i)
-    for (j = 0; j < INTRA_MODES; ++j)
-      av1_tree_to_cdf(av1_intra_mode_tree, cm->kf_y_prob[i][j],
-                      cm->kf_y_cdf[i][j]);
 
 #endif
 }

@@ -4259,7 +4259,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 
   if (frame_is_intra_only(cm)) {
     av1_copy(cm->kf_y_prob, av1_kf_y_mode_prob);
-#if CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
     av1_copy(cm->kf_y_cdf, av1_kf_y_mode_cdf);
 #endif
 #if !CONFIG_EC_ADAPT
