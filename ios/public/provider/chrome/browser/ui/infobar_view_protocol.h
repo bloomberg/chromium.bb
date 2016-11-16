@@ -5,9 +5,9 @@
 #ifndef IOS_PUBLIC_PROVIDER_CHROME_BROWSER_UI_INFOBAR_VIEW_PROTOCOL_H_
 #define IOS_PUBLIC_PROVIDER_CHROME_BROWSER_UI_INFOBAR_VIEW_PROTOCOL_H_
 
+#import <CoreGraphics/CoreGraphics.h>
 #import <Foundation/Foundation.h>
 
-struct CGSize;
 class InfoBarViewDelegate;
 @class UIImage;
 

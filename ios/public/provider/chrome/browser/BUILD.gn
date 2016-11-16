@@ -18,6 +18,7 @@ source_set("browser") {
     "native_app_launcher/native_app_whitelist_manager.h",
     "omaha/omaha_service_provider.h",
     "omaha/omaha_service_provider.mm",
+    "sessions/live_tab_context_provider.h",
     "signin/chrome_identity.h",
     "signin/chrome_identity.mm",
     "signin/chrome_identity_browser_opener.h",
@@ -86,6 +87,10 @@ source_set("test_support") {
     "distribution/test_app_distribution_provider.mm",
     "omaha/test_omaha_service_provider.h",
     "omaha/test_omaha_service_provider.mm",
+    "sessions/test_live_tab_context_provider.cc",
+    "sessions/test_live_tab_context_provider.h",
+    "sessions/test_synced_window_delegates_getter.cc",
+    "sessions/test_synced_window_delegates_getter.h",
     "signin/fake_chrome_identity.h",
     "signin/fake_chrome_identity.mm",
     "signin/fake_chrome_identity_interaction_manager.h",
@@ -98,6 +103,10 @@ source_set("test_support") {
     "test_chrome_browser_provider.mm",
     "test_chrome_provider_initializer.h",
     "test_chrome_provider_initializer.mm",
+    "ui/test_infobar_view.h",
+    "ui/test_infobar_view.mm",
+    "ui/test_styled_text_field.h",
+    "ui/test_styled_text_field.mm",
     "voice/test_voice_search_provider.h",
     "voice/test_voice_search_provider.mm",
   ]
@@ -106,6 +115,7 @@ source_set("test_support") {
     ":browser",
     "//base",
     "//components/signin/ios/browser:test_support",
+    "//components/sync_sessions",
     "//testing/gtest",
   ]
   public_deps = [

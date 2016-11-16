@@ -11,27 +11,22 @@
 #include "base/memory/ptr_util.h"
 #include "ios/public/provider/chrome/browser/distribution/test_app_distribution_provider.h"
 #include "ios/public/provider/chrome/browser/omaha/test_omaha_service_provider.h"
+#include "ios/public/provider/chrome/browser/sessions/test_live_tab_context_provider.h"
+#include "ios/public/provider/chrome/browser/sessions/test_synced_window_delegates_getter.h"
 #include "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #include "ios/public/provider/chrome/browser/signin/test_signin_resources_provider.h"
+#import "ios/public/provider/chrome/browser/ui/test_infobar_view.h"
+#import "ios/public/provider/chrome/browser/ui/test_styled_text_field.h"
 #import "ios/public/provider/chrome/browser/voice/test_voice_search_provider.h"
 #import "ios/public/provider/chrome/browser/voice/voice_search_language.h"
-
-@interface TestStyledTextField : UITextField<TextFieldStyling>
-@end
-
-@implementation TestStyledTextField
-@synthesize placeholderStyle = _placeholderStyle;
-@synthesize textValidator = _textValidator;
-
-- (void)setUseErrorStyling:(BOOL)error {
-}
-@end
 
 namespace ios {
 
 TestChromeBrowserProvider::TestChromeBrowserProvider()
     : app_distribution_provider_(
           base::MakeUnique<TestAppDistributionProvider>()),
+      live_tab_context_provider_(
+          base::MakeUnique<TestLiveTabContextProvider>()),
       omaha_service_provider_(base::MakeUnique<TestOmahaServiceProvider>()),
       signin_resources_provider_(
           base::MakeUnique<TestSigninResourcesProvider>()),
@@ -44,6 +39,12 @@ TestChromeBrowserProvider* TestChromeBrowserProvider::GetTestProvider() {
   ChromeBrowserProvider* provider = GetChromeBrowserProvider();
   DCHECK(provider);
   return static_cast<TestChromeBrowserProvider*>(provider);
+}
+
+InfoBarViewPlaceholder TestChromeBrowserProvider::CreateInfoBarView(
+    CGRect frame,
+    InfoBarViewDelegate* delegate) {
+  return [[TestInfoBarView alloc] init];
 }
 
 SigninResourcesProvider*
@@ -61,6 +62,10 @@ ChromeIdentityService* TestChromeBrowserProvider::GetChromeIdentityService() {
     chrome_identity_service_.reset(new FakeChromeIdentityService());
   }
   return chrome_identity_service_.get();
+}
+
+LiveTabContextProvider* TestChromeBrowserProvider::GetLiveTabContextProvider() {
+  return live_tab_context_provider_.get();
 }
 
 UITextField<TextFieldStyling>* TestChromeBrowserProvider::CreateStyledTextField(
@@ -84,6 +89,12 @@ AppDistributionProvider* TestChromeBrowserProvider::GetAppDistributionProvider()
 OmahaServiceProvider* TestChromeBrowserProvider::GetOmahaServiceProvider()
     const {
   return omaha_service_provider_.get();
+}
+
+std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>
+TestChromeBrowserProvider::CreateSyncedWindowDelegatesGetter(
+    ios::ChromeBrowserState* browser_state) {
+  return base::MakeUnique<TestSyncedWindowDelegatesGetter>();
 }
 
 id<NativeAppWhitelistManager>
