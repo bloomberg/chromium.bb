@@ -8,7 +8,9 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ime/input_method_initializer.h"
+#include "ui/base/test/test_clipboard.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/views/test/platform_test_helper.h"
 #include "ui/views/test/test_views_delegate.h"
@@ -58,9 +60,11 @@ ScopedViewsTestHelper::ScopedViewsTestHelper(
 #endif
 
   ui::InitializeInputMethodForTesting();
+  ui::TestClipboard::CreateForCurrentThread();
 }
 
 ScopedViewsTestHelper::~ScopedViewsTestHelper() {
+  ui::Clipboard::DestroyClipboardForCurrentThread();
   ui::ShutdownInputMethodForTesting();
   test_helper_->TearDown();
   test_helper_.reset();

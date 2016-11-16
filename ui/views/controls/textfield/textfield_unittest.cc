@@ -2605,8 +2605,7 @@ TEST_F(TextfieldTest, KeepInitiallySelectedWord) {
 }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-// flaky: http://crbug.com/396477
-TEST_F(TextfieldTest, DISABLED_SelectionClipboard) {
+TEST_F(TextfieldTest, SelectionClipboard) {
   InitTextfield();
   textfield_->SetText(ASCIIToUTF16("0123"));
   gfx::Point point_1(GetCursorPositionX(1), 0);
@@ -2691,7 +2690,7 @@ TEST_F(TextfieldTest, DISABLED_SelectionClipboard) {
   EXPECT_STR_EQ("0123", GetClipboardText(ui::CLIPBOARD_TYPE_SELECTION));
 
   // Middle clicking with an empty selection clipboard should still focus.
-  SetClipboardText(ui::CLIPBOARD_TYPE_COPY_PASTE, std::string());
+  SetClipboardText(ui::CLIPBOARD_TYPE_SELECTION, std::string());
   textfield_->GetFocusManager()->ClearFocus();
   EXPECT_FALSE(textfield_->HasFocus());
   textfield_->OnMousePressed(middle);
@@ -2748,8 +2747,8 @@ TEST_F(TextfieldTest, DISABLED_SelectionClipboard) {
 }
 
 // Verify that the selection clipboard is not updated for selections on a
-// password textfield. Disabled due to http://crbug.com/396477.
-TEST_F(TextfieldTest, DISABLED_SelectionClipboard_Password) {
+// password textfield.
+TEST_F(TextfieldTest, SelectionClipboard_Password) {
   InitTextfields(2);
   textfield_->SetText(ASCIIToUTF16("abcd"));
 

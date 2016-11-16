@@ -922,9 +922,8 @@ TEST_F(LabelSelectionTest, MouseDragWord) {
 }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-// Verify selection clipboard behavior on text selection. Disabled due to
-// http://crbug.com/396477.
-TEST_F(LabelSelectionTest, DISABLED_SelectionClipboard) {
+// Verify selection clipboard behavior on text selection.
+TEST_F(LabelSelectionTest, SelectionClipboard) {
   label()->SetText(ASCIIToUTF16("Label selection clipboard"));
   label()->SizeToPreferredSize();
   ASSERT_TRUE(label()->SetSelectable(true));
