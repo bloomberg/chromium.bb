@@ -1772,13 +1772,11 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #if CONFIG_LOOP_RESTORATION
   av1_copy(fc->switchable_restore_prob, default_switchable_restore_prob);
 #endif  // CONFIG_LOOP_RESTORATION
-#if CONFIG_DAALA_EC
-  av1_tree_to_cdf_1D(av1_intra_mode_tree, fc->uv_mode_prob, fc->uv_mode_cdf,
-                     INTRA_MODES);
-#endif
 #if CONFIG_EC_MULTISYMBOL
   av1_tree_to_cdf_1D(av1_intra_mode_tree, fc->y_mode_prob, fc->y_mode_cdf,
                      BLOCK_SIZE_GROUPS);
+  av1_tree_to_cdf_1D(av1_intra_mode_tree, fc->uv_mode_prob, fc->uv_mode_cdf,
+                     INTRA_MODES);
   av1_tree_to_cdf_1D(av1_switchable_interp_tree, fc->switchable_interp_prob,
                      fc->switchable_interp_cdf, SWITCHABLE_FILTER_CONTEXTS);
   av1_tree_to_cdf_1D(av1_partition_tree, fc->partition_prob, fc->partition_cdf,
@@ -1812,6 +1810,10 @@ void av1_set_mode_cdfs(struct AV1Common *cm) {
                     cm->fc->seg.tree_cdf);
   }
 
+  for (i = 0; i < INTRA_MODES; ++i)
+    av1_tree_to_cdf(av1_intra_mode_tree, fc->uv_mode_prob[i],
+                    fc->uv_mode_cdf[i]);
+
   for (i = 0; i < PARTITION_CONTEXTS; ++i)
     av1_tree_to_cdf(av1_partition_tree, fc->partition_prob[i],
                     fc->partition_cdf[i]);
@@ -1841,12 +1843,6 @@ void av1_set_mode_cdfs(struct AV1Common *cm) {
   for (i = TX_4X4; i < EXT_TX_SIZES; ++i)
     av1_tree_to_cdf(av1_ext_tx_tree, fc->inter_ext_tx_prob[i],
                     fc->inter_ext_tx_cdf[i]);
-#endif
-#if CONFIG_DAALA_EC
-  for (i = 0; i < INTRA_MODES; ++i)
-    av1_tree_to_cdf(av1_intra_mode_tree, fc->uv_mode_prob[i],
-                    fc->uv_mode_cdf[i]);
-
 #endif
 }
 #endif

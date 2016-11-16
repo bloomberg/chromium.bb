@@ -1370,7 +1370,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
         }
       }
     }
-#if CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
     aom_write_symbol(w, av1_intra_mode_ind[mbmi->uv_mode],
                      cm->fc->uv_mode_cdf[mode], INTRA_MODES);
 #else
@@ -1725,7 +1725,7 @@ static void write_mb_modes_kf(AV1_COMMON *cm, const MACROBLOCKD *xd,
       }
     }
   }
-#if CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
   aom_write_symbol(w, av1_intra_mode_ind[mbmi->uv_mode],
                    cm->fc->uv_mode_cdf[mbmi->mode], INTRA_MODES);
 #else
