@@ -146,8 +146,8 @@ TEST_F(RangeTest, SplitTextNodeRangeOutsideText) {
 }
 
 TEST_F(RangeTest, updateOwnerDocumentIfNeeded) {
-  Element* foo = document().createElement("foo", ASSERT_NO_EXCEPTION);
-  Element* bar = document().createElement("bar", ASSERT_NO_EXCEPTION);
+  Element* foo = document().createElement("foo");
+  Element* bar = document().createElement("bar");
   foo->appendChild(bar);
 
   Range* range = Range::create(document(), Position(bar, 0), Position(foo, 1));

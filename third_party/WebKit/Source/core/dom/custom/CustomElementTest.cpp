@@ -186,7 +186,7 @@ TEST(CustomElementTest, StateByCreateElement) {
   std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create();
   Document& document = pageHolder->document();
   for (const auto& data : createElementData) {
-    Element* element = document.createElement(data.name, ASSERT_NO_EXCEPTION);
+    Element* element = document.createElement(data.name);
     EXPECT_EQ(data.state, element->getCustomElementState()) << data.name;
     EXPECT_EQ(data.v0state, element->getV0CustomElementState()) << data.name;
 

@@ -35,7 +35,7 @@ TEST_F(ReplaceSelectionCommandTest, pastingEmptySpan) {
                                       .build());
 
   DocumentFragment* fragment = document().createDocumentFragment();
-  fragment->appendChild(document().createElement("span", ASSERT_NO_EXCEPTION));
+  fragment->appendChild(document().createElement("span"));
 
   // |options| are taken from |Editor::replaceSelectionWithFragment()| with
   // |selectReplacement| and |smartReplace|.

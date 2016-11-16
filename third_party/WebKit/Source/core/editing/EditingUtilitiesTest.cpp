@@ -107,7 +107,7 @@ TEST_F(EditingUtilitiesTest, isEditablePositionWithTable) {
   // However, |setBodyContent()| automatically creates HTML, HEAD and BODY
   // element. So, we build DOM tree manually.
   // Note: This is unusual HTML taken from http://crbug.com/574230
-  Element* table = document().createElement("table", ASSERT_NO_EXCEPTION);
+  Element* table = document().createElement("table");
   table->setInnerHTML("<caption>foo</caption>", ASSERT_NO_EXCEPTION);
   while (document().firstChild())
     document().firstChild()->remove();

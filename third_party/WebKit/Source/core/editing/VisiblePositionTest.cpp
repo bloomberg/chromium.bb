@@ -69,7 +69,7 @@ TEST_F(VisiblePositionTest, NonNullInvalidatedAfterDOMChange) {
   VisiblePosition nullVisiblePosition;
   VisiblePosition nonNullVisiblePosition = createVisiblePosition(position);
 
-  Element* div = document().createElement("div", ASSERT_NO_EXCEPTION);
+  Element* div = document().createElement("div");
   document().body()->appendChild(div);
 
   EXPECT_TRUE(nullVisiblePosition.isValid());

@@ -296,7 +296,7 @@ class SelectionControllerTest : public EditingTestBase {
 };
 
 TEST_F(FrameSelectionTest, SelectAllWithUnselectableRoot) {
-  Element* select = document().createElement("select", ASSERT_NO_EXCEPTION);
+  Element* select = document().createElement("select");
   document().replaceChild(select, document().documentElement());
   selection().selectAll();
   EXPECT_TRUE(selection().isNone()) << "Nothing should be selected if the "

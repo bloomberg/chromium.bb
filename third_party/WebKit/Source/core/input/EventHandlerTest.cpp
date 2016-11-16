@@ -237,7 +237,7 @@ TEST_F(EventHandlerTest, sendContextMenuEventWithHover) {
       "<style>*:hover { color: red; }</style>"
       "<div>foo</div>");
   document().settings()->setScriptEnabled(true);
-  Element* script = document().createElement("script", ASSERT_NO_EXCEPTION);
+  Element* script = document().createElement("script");
   script->setInnerHTML(
       "document.addEventListener('contextmenu', event => "
       "event.preventDefault());",

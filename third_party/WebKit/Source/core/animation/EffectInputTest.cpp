@@ -20,7 +20,7 @@
 namespace blink {
 
 Element* appendElement(Document& document) {
-  Element* element = document.createElement("foo", ASSERT_NO_EXCEPTION);
+  Element* element = document.createElement("foo");
   document.documentElement()->appendChild(element);
   return element;
 }

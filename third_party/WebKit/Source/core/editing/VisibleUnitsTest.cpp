@@ -204,7 +204,7 @@ TEST_F(VisibleUnitsTest, canonicalPositionOfWithHTMLHtmlElement) {
   Node* two = document().querySelector("#two");
   Node* three = document().querySelector("#three");
   Node* four = document().querySelector("#four");
-  Element* html = document().createElement("html", ASSERT_NO_EXCEPTION);
+  Element* html = document().createElement("html");
   // Move two, three and four into second html element.
   html->appendChild(two);
   html->appendChild(three);
@@ -1036,7 +1036,7 @@ TEST_F(VisibleUnitsTest, isVisuallyEquivalentCandidateWithHTMLHtmlElement) {
   Node* two = document().querySelector("#two");
   Node* three = document().querySelector("#three");
   Node* four = document().querySelector("#four");
-  Element* html = document().createElement("html", ASSERT_NO_EXCEPTION);
+  Element* html = document().createElement("html");
   // Move two, three and four into second html element.
   html->appendChild(two);
   html->appendChild(three);

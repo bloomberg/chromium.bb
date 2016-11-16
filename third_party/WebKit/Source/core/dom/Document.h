@@ -326,7 +326,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   Location* location() const;
 
-  Element* createElement(const AtomicString& name, ExceptionState&);
+  Element* createElement(const AtomicString& name,
+                         ExceptionState& = ASSERT_NO_EXCEPTION);
   DocumentFragment* createDocumentFragment();
   Text* createTextNode(const String& data);
   Comment* createComment(const String& data);
@@ -1139,7 +1140,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   Element* createElement(const AtomicString& localName,
                          const StringOrDictionary&,
-                         ExceptionState&);
+                         ExceptionState& = ASSERT_NO_EXCEPTION);
   Element* createElementNS(const AtomicString& namespaceURI,
                            const AtomicString& qualifiedName,
                            const StringOrDictionary&,

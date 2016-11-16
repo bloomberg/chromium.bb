@@ -808,7 +808,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventIsComposing) {
   document().settings()->setScriptEnabled(true);
   Element* editable = insertHTMLElement(
       "<div id='sample' contentEditable='true'></div>", "sample");
-  Element* script = document().createElement("script", ASSERT_NO_EXCEPTION);
+  Element* script = document().createElement("script");
   script->setInnerHTML(
       "document.getElementById('sample').addEventListener('beforeinput', "
       "function(event) {"
@@ -843,7 +843,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventData) {
   document().settings()->setScriptEnabled(true);
   Element* editable = insertHTMLElement(
       "<div id='sample' contentEditable='true'></div>", "sample");
-  Element* script = document().createElement("script", ASSERT_NO_EXCEPTION);
+  Element* script = document().createElement("script");
   script->setInnerHTML(
       "document.getElementById('sample').addEventListener('beforeinput', "
       "function(event) {"

@@ -25,7 +25,7 @@ namespace blink {
 class KeyframeEffectTest : public ::testing::Test {
  protected:
   KeyframeEffectTest() : pageHolder(DummyPageHolder::create()) {
-    element = document().createElement("foo", ASSERT_NO_EXCEPTION);
+    element = document().createElement("foo");
 
     document().animationClock().resetTimeForTesting(
         document().timeline().zeroTime());

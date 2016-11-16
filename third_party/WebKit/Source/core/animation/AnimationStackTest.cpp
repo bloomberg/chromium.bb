@@ -24,7 +24,7 @@ class AnimationAnimationStackTest : public ::testing::Test {
     document = &pageHolder->document();
     document->animationClock().resetTimeForTesting();
     timeline = DocumentTimeline::create(document.get());
-    element = document->createElement("foo", ASSERT_NO_EXCEPTION);
+    element = document->createElement("foo");
   }
 
   Animation* play(KeyframeEffect* effect, double startTime) {

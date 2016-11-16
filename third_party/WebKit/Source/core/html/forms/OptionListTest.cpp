@@ -43,8 +43,7 @@ TEST_F(OptionListTest, OptionOnly) {
   select().setInnerHTML(
       "text<input><option id=o1></option><input><option id=o2></option><input>",
       ASSERT_NO_EXCEPTION);
-  HTMLElement* div = toHTMLElement(
-      select().document().createElement("div", ASSERT_NO_EXCEPTION));
+  HTMLElement* div = toHTMLElement(select().document().createElement("div"));
   div->setInnerHTML("<option id=o3></option>", ASSERT_NO_EXCEPTION);
   select().appendChild(div);
   OptionList list = select().optionList();

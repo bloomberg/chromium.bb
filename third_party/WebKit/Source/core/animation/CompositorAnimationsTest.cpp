@@ -106,7 +106,7 @@ class AnimationCompositorAnimationsTest : public ::testing::Test {
 
     m_timeline = AnimationTimeline::create(m_document.get());
     m_timeline->resetForTesting();
-    m_element = m_document->createElement("test", ASSERT_NO_EXCEPTION);
+    m_element = m_document->createElement("test");
   }
 
  public:
@@ -1191,8 +1191,7 @@ TEST_F(AnimationCompositorAnimationsTest,
 
 TEST_F(AnimationCompositorAnimationsTest,
        cancelIncompatibleCompositorAnimations) {
-  Persistent<Element> element =
-      m_document->createElement("shared", ASSERT_NO_EXCEPTION);
+  Persistent<Element> element = m_document->createElement("shared");
 
   LayoutObjectProxy* layoutObject = LayoutObjectProxy::create(element.get());
   element->setLayoutObject(layoutObject);

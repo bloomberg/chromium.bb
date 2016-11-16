@@ -42,7 +42,7 @@ class ScriptRunnerTest : public testing::Test {
  public:
   ScriptRunnerTest()
       : m_document(Document::create()),
-        m_element(m_document->createElement("foo", ASSERT_NO_EXCEPTION)) {}
+        m_element(m_document->createElement("foo")) {}
 
   void SetUp() override {
     // We have to create ScriptRunner after initializing platform, because we
