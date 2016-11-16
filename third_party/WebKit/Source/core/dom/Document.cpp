@@ -3688,8 +3688,13 @@ void Document::notifyResizeForViewportUnits() {
 }
 
 void Document::styleResolverMayHaveChanged() {
-  styleEngine().resolverChanged(
-      hasNodesWithPlaceholderStyle() ? FullStyleUpdate : AnalyzedStyleUpdate);
+  styleEngine().resolverChanged(AnalyzedStyleUpdate);
+
+  if (hasNodesWithPlaceholderStyle()) {
+    setNeedsStyleRecalc(SubtreeStyleChange,
+                        StyleChangeReasonForTracing::create(
+                            StyleChangeReason::CleanupPlaceholderStyles));
+  }
 
   if (didLayoutWithPendingStylesheets() &&
       !styleEngine().hasPendingScriptBlockingSheets()) {
