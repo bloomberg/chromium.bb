@@ -206,7 +206,8 @@ void PrintPreviewMessageHandler::OnSetOptionsFromDocument(
 }
 
 bool PrintPreviewMessageHandler::OnMessageReceived(
-    const IPC::Message& message) {
+    const IPC::Message& message,
+    content::RenderFrameHost* render_frame_host) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintPreviewMessageHandler, message)
     IPC_MESSAGE_HANDLER(PrintHostMsg_RequestPrintPreview,

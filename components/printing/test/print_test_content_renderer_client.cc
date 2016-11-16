@@ -16,8 +16,8 @@ namespace {
 class PrintWebViewHelperDelegate : public PrintWebViewHelper::Delegate {
  public:
   ~PrintWebViewHelperDelegate() override {}
-  bool CancelPrerender(content::RenderView* render_view,
-                       int routing_id) override {
+
+  bool CancelPrerender(content::RenderFrame* render_frame) override {
     return false;
   }
   blink::WebElement GetPdfElement(blink::WebLocalFrame* frame) override {
@@ -41,10 +41,10 @@ PrintTestContentRendererClient::PrintTestContentRendererClient() {
 PrintTestContentRendererClient::~PrintTestContentRendererClient() {
 }
 
-void PrintTestContentRendererClient::RenderViewCreated(
-    content::RenderView* render_view) {
-  new printing::PrintWebViewHelper(
-      render_view, base::MakeUnique<PrintWebViewHelperDelegate>());
+void PrintTestContentRendererClient::RenderFrameCreated(
+    content::RenderFrame* render_frame) {
+  new PrintWebViewHelper(render_frame,
+                         base::MakeUnique<PrintWebViewHelperDelegate>());
 }
 
 }  // namespace printing

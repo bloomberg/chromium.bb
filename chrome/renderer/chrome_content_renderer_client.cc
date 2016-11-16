@@ -475,6 +475,11 @@ void ChromeContentRendererClient::RenderFrameCreated(
   safe_browsing::ThreatDOMDetails::Create(render_frame);
 #endif
 
+#if BUILDFLAG(ENABLE_PRINTING)
+  new printing::PrintWebViewHelper(
+      render_frame, base::MakeUnique<ChromePrintWebViewHelperDelegate>());
+#endif
+
   new NetErrorHelper(render_frame);
 
   if (render_frame->IsMainFrame()) {
@@ -522,11 +527,6 @@ void ChromeContentRendererClient::RenderViewCreated(
     content::RenderView* render_view) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   ChromeExtensionsRendererClient::GetInstance()->RenderViewCreated(render_view);
-#endif
-#if BUILDFLAG(ENABLE_PRINTING)
-  new printing::PrintWebViewHelper(
-      render_view, std::unique_ptr<printing::PrintWebViewHelper::Delegate>(
-                       new ChromePrintWebViewHelperDelegate()));
 #endif
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   new SpellCheckProvider(render_view, spellcheck_.get());

@@ -33,6 +33,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/printing/print_view_manager_basic.h"
+#include "chrome/browser/printing/print_view_manager_common.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -669,10 +670,10 @@ bool TabAndroid::Print(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   printing::PrintViewManagerBasic::CreateForWebContents(web_contents());
   printing::PrintViewManagerBasic* print_view_manager =
       printing::PrintViewManagerBasic::FromWebContents(web_contents());
-  if (print_view_manager == NULL)
+  if (!print_view_manager)
     return false;
 
-  print_view_manager->PrintNow();
+  print_view_manager->PrintNow(printing::GetFrameToPrint(web_contents()));
   return true;
 }
 

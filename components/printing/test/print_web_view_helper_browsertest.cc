@@ -18,6 +18,7 @@
 #include "components/printing/test/mock_printer.h"
 #include "components/printing/test/print_mock_render_thread.h"
 #include "components/printing/test/print_test_content_renderer_client.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/test/render_view_test.h"
 #include "ipc/ipc_listener.h"
@@ -224,7 +225,7 @@ class PrintWebViewHelperTestBase : public content::RenderViewTest {
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
   void OnPrintPages() {
-    PrintWebViewHelper::Get(view_)->OnPrintPages();
+    GetPrintWebViewHelper()->OnPrintPages();
     ProcessPendingMessages();
   }
 #endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
@@ -239,7 +240,7 @@ class PrintWebViewHelperTestBase : public content::RenderViewTest {
   }
 
   void OnPrintPreview(const base::DictionaryValue& dict) {
-    PrintWebViewHelper* print_web_view_helper = PrintWebViewHelper::Get(view_);
+    PrintWebViewHelper* print_web_view_helper = GetPrintWebViewHelper();
     print_web_view_helper->OnInitiatePrintPreview(false);
     base::RunLoop run_loop;
     DidPreviewPageListener filter(&run_loop);
@@ -252,10 +253,15 @@ class PrintWebViewHelperTestBase : public content::RenderViewTest {
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
   void OnPrintForPrintPreview(const base::DictionaryValue& dict) {
-    PrintWebViewHelper::Get(view_)->OnPrintForPrintPreview(dict);
+    GetPrintWebViewHelper()->OnPrintForPrintPreview(dict);
     ProcessPendingMessages();
   }
 #endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
+
+  PrintWebViewHelper* GetPrintWebViewHelper() {
+    return PrintWebViewHelper::Get(
+        content::RenderFrame::FromWebFrame(GetMainFrame()));
+  }
 
   // Naked pointer as ownership is with content::RenderViewTest::render_thread_.
   PrintMockRenderThread* print_render_thread_;
@@ -302,7 +308,7 @@ TEST_F(MAYBE_PrintWebViewHelperTest, BlockScriptInitiatedPrinting) {
   VerifyPagesPrinted(false);
 
   // Unblock script initiated printing and verify printing works.
-  PrintWebViewHelper::Get(view_)->scripting_throttler_.Reset();
+  GetPrintWebViewHelper()->scripting_throttler_.Reset();
   print_render_thread_->printer()->ResetPrinter();
   PrintWithJavaScript();
   VerifyPageCount(1);
@@ -389,12 +395,11 @@ TEST_F(MAYBE_PrintWebViewHelperTest, PrintWithIframe) {
 
   // Find the frame and set it as the focused one.  This should mean that that
   // the printout should only contain the contents of that frame.
-  WebFrame* sub1_frame =
-      view_->GetWebView()->findFrameByName(WebString::fromUTF8("sub1"));
+  auto* web_view = view_->GetWebView();
+  WebFrame* sub1_frame = web_view->findFrameByName(WebString::fromUTF8("sub1"));
   ASSERT_TRUE(sub1_frame);
-  view_->GetWebView()->setFocusedFrame(sub1_frame);
-  ASSERT_NE(view_->GetWebView()->focusedFrame(),
-            view_->GetWebView()->mainFrame());
+  web_view->setFocusedFrame(sub1_frame);
+  ASSERT_NE(web_view->focusedFrame(), web_view->mainFrame());
 
   // Initiate printing.
   OnPrintPages();
@@ -623,12 +628,12 @@ class MAYBE_PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
 
 TEST_F(MAYBE_PrintWebViewHelperPreviewTest, BlockScriptInitiatedPrinting) {
   LoadHTML(kHelloWorldHTML);
-  PrintWebViewHelper* print_web_view_helper = PrintWebViewHelper::Get(view_);
-  print_web_view_helper->SetScriptedPrintBlocked(true);
+  PrintWebViewHelper* print_web_view_helper = GetPrintWebViewHelper();
+  print_web_view_helper->OnSetPrintingEnabled(false);
   PrintWithJavaScript();
   VerifyPreviewRequest(false);
 
-  print_web_view_helper->SetScriptedPrintBlocked(false);
+  print_web_view_helper->OnSetPrintingEnabled(true);
   PrintWithJavaScript();
   VerifyPreviewRequest(true);
 }
