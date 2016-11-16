@@ -1652,23 +1652,22 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest,
       Document::NoDismissal)
     return;
 
+  ResourceRequest& resourceRequest = frameLoadRequest.resourceRequest();
   NavigationType navigationType = determineNavigationType(
-      type,
-      frameLoadRequest.resourceRequest().httpBody() || frameLoadRequest.form(),
+      type, resourceRequest.httpBody() || frameLoadRequest.form(),
       frameLoadRequest.triggeringEvent());
-  frameLoadRequest.resourceRequest().setRequestContext(
+  resourceRequest.setRequestContext(
       determineRequestContextFromNavigationType(navigationType));
-  frameLoadRequest.resourceRequest().setFrameType(
-      m_frame->isMainFrame() ? WebURLRequest::FrameTypeTopLevel
-                             : WebURLRequest::FrameTypeNested);
-  ResourceRequest& request = frameLoadRequest.resourceRequest();
+  resourceRequest.setFrameType(m_frame->isMainFrame()
+                                   ? WebURLRequest::FrameTypeTopLevel
+                                   : WebURLRequest::FrameTypeNested);
 
   // Record the latest requiredCSP value that will be used when sending this
   // request.
   recordLatestRequiredCSP();
-  modifyRequestForCSP(request, nullptr);
+  modifyRequestForCSP(resourceRequest, nullptr);
   if (!shouldContinueForNavigationPolicy(
-          request, frameLoadRequest.substituteData(), nullptr,
+          resourceRequest, frameLoadRequest.substituteData(), nullptr,
           frameLoadRequest.shouldCheckMainWorldContentSecurityPolicy(),
           navigationType, navigationPolicy,
           type == FrameLoadTypeReplaceCurrentItem,
@@ -1686,9 +1685,10 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest,
     return;
 
   m_provisionalDocumentLoader = client()->createDocumentLoader(
-      m_frame, request, frameLoadRequest.substituteData().isValid()
-                            ? frameLoadRequest.substituteData()
-                            : defaultSubstituteDataForURL(request.url()),
+      m_frame, resourceRequest,
+      frameLoadRequest.substituteData().isValid()
+          ? frameLoadRequest.substituteData()
+          : defaultSubstituteDataForURL(resourceRequest.url()),
       frameLoadRequest.clientRedirect());
   m_provisionalDocumentLoader->setNavigationType(navigationType);
   m_provisionalDocumentLoader->setReplacesCurrentHistoryItem(
