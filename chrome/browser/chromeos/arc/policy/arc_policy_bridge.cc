@@ -15,12 +15,16 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/onc/onc_constants.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/policy_constants.h"
+#include "components/prefs/pref_service.h"
 #include "components/safe_json/safe_json_parser.h"
 #include "components/user_manager/user.h"
 #include "mojo/public/cpp/bindings/string.h"
@@ -29,8 +33,11 @@ namespace arc {
 
 namespace {
 
-const char kArcGlobalAppRestrictions[] = "globalAppRestrictions";
-const char kArcCaCerts[] = "caCerts";
+constexpr char kArcGlobalAppRestrictions[] = "globalAppRestrictions";
+constexpr char kArcCaCerts[] = "caCerts";
+constexpr char kNonComplianceDetails[] = "nonComplianceDetails";
+constexpr char kPolicyCompliantJson[] = "{ \"policyCompliant\": true }";
+constexpr char kPolicyNonCompliantJson[] = "{ \"policyCompliant\": false }";
 
 // invert_bool_value: If the Chrome policy and the ARC policy with boolean value
 // have opposite semantics, set this to true so the bool is inverted before
@@ -257,6 +264,12 @@ ArcPolicyBridge::~ArcPolicyBridge() {
   arc_bridge_service()->policy()->RemoveObserver(this);
 }
 
+// static
+void ArcPolicyBridge::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kArcPolicyCompliant, false);
+}
+
 void ArcPolicyBridge::OverrideIsManagedForTesting(bool is_managed) {
   is_managed_ = is_managed;
 }
@@ -296,16 +309,33 @@ void ArcPolicyBridge::GetPolicies(const GetPoliciesCallback& callback) {
 void OnReportComplianceParseSuccess(
     const ArcPolicyBridge::ReportComplianceCallback& callback,
     std::unique_ptr<base::Value> parsed_json) {
-  // TODO(poromov@): Track the report and start ARC++ kiosk app when the report
-  // is empty, that means that CloudDpc applied all policies.
-  // Currently do nothing with the report, return 'true' if JSON is parsed.
-  callback.Run("{ \"policyCompliant\": true }");
+  const base::DictionaryValue* dict;
+  if (!parsed_json || !parsed_json->GetAsDictionary(&dict)) {
+    callback.Run(kPolicyNonCompliantJson);
+    return;
+  }
+
+  const user_manager::User* const primary_user =
+      user_manager::UserManager::Get()->GetPrimaryUser();
+  Profile* const profile =
+      chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user);
+  if (!dict || !profile) {
+    callback.Run(kPolicyNonCompliantJson);
+    return;
+  }
+
+  const base::ListValue* value = nullptr;
+  dict->GetList(kNonComplianceDetails, &value);
+  // Compliant when there is no "nonComplianceDetails" entries.
+  bool compliant = dict->empty() || !value || value->empty();
+  profile->GetPrefs()->SetBoolean(prefs::kArcPolicyCompliant, compliant);
+  callback.Run(compliant ? kPolicyCompliantJson : kPolicyNonCompliantJson);
 }
 
 void OnReportComplianceParseFailure(
     const ArcPolicyBridge::ReportComplianceCallback& callback,
     const std::string& error) {
-  callback.Run("{ \"policyCompliant\": false }");
+  callback.Run(kPolicyNonCompliantJson);
 }
 
 void ArcPolicyBridge::ReportCompliance(

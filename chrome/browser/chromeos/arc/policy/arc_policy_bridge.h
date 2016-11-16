@@ -12,6 +12,7 @@
 #include "components/arc/common/policy.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "components/policy/core/common/policy_service.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace policy {
@@ -40,6 +41,8 @@ class ArcPolicyBridge : public ArcService,
   ArcPolicyBridge(ArcBridgeService* bridge_service,
                   policy::PolicyService* policy_service);
   ~ArcPolicyBridge() override;
+
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   void OverrideIsManagedForTesting(bool is_managed);
 
