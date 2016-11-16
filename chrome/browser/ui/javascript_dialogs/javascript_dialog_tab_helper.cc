@@ -38,12 +38,32 @@ bool IsWebContentsForemost(content::WebContents* web_contents) {
 
 }  // namespace
 
+// A note on the interaction between the JavaScriptDialogTabHelper and the
+// JavaScriptDialog classes.
+//
+// Either side can start the process of closing a dialog, and we need to ensure
+// that everything is properly torn down no matter which side initiates.
+//
+// If closing is initiated by the JavaScriptDialogTabHelper, then it will call
+// CloseDialog(), which calls JavaScriptDialog::CloseDialogWithoutCallback().
+// That will clear the callback inside of JavaScriptDialog, and start the
+// JavaScriptDialog on its own path of destruction. CloseDialog() then calls
+// ClearDialogInfo() which removes observers.
+//
+// If closing is initiated by the JavaScriptDialog, which is a self-deleting
+// object, then it will make its callback. The callback will have been wrapped
+// within JavaScriptDialogTabHelper::RunJavaScriptDialog() to be a call to
+// JavaScriptDialogTabHelper::OnDialogClosed(), which, after doing the callback,
+// again calls ClearDialogInfo() to remove observers.
+
 JavaScriptDialogTabHelper::JavaScriptDialogTabHelper(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {
 }
 
 JavaScriptDialogTabHelper::~JavaScriptDialogTabHelper() {
+  if (dialog_)
+    CloseDialog(true /*suppress_callback*/, false, base::string16());
 }
 
 void JavaScriptDialogTabHelper::SetDialogShownCallbackForTesting(
@@ -119,7 +139,9 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
     dialog_callback_ = callback;
     dialog_ = JavaScriptDialog::Create(
         parent_web_contents, alerting_web_contents, title, message_type,
-        message_text, default_prompt_text, callback);
+        message_text, default_prompt_text,
+        base::Bind(&JavaScriptDialogTabHelper::OnDialogClosed,
+                   base::Unretained(this), callback));
 
     BrowserList::AddObserver(this);
 
@@ -222,6 +244,15 @@ void JavaScriptDialogTabHelper::OnBrowserSetLastActive(Browser* browser) {
     CloseDialog(false, false, base::string16());
 }
 
+void JavaScriptDialogTabHelper::OnDialogClosed(
+    DialogClosedCallback callback,
+    bool success,
+    const base::string16& user_input) {
+  callback.Run(success, user_input);
+
+  ClearDialogInfo();
+}
+
 void JavaScriptDialogTabHelper::CloseDialog(bool suppress_callback,
                                             bool success,
                                             const base::string16& user_input) {
@@ -231,6 +262,10 @@ void JavaScriptDialogTabHelper::CloseDialog(bool suppress_callback,
   if (!suppress_callback)
     dialog_callback_.Run(success, user_input);
 
+  ClearDialogInfo();
+}
+
+void JavaScriptDialogTabHelper::ClearDialogInfo() {
   dialog_.reset();
   dialog_callback_.Reset();
   BrowserList::RemoveObserver(this);
