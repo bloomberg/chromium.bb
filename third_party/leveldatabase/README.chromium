@@ -10,9 +10,8 @@ Description:
 Alternative to SQLite used as the backend for IndexedDB and internally by the
 FileSystem API implementation and others.
 
-Currently using the reuse-manifest branch to get leveldb's (not yet released)
-manifest reuse feature. Intend to switch to official release (or master branch)
-once leveldb puts this feature into master.
+Currently using (not yet released) manifest reuse feature for all platforms
+except Chrome OS.
 
 Local Additions:
 * gyp file for building in chromium
