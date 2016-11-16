@@ -26,6 +26,38 @@
   "Win 10 4 Core Low-End Perf Tests": {
     "isolated_scripts": [
       {
+        "args": [],
+        "isolate_name": "angle_perftests",
+        "name": "angle_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": {
+            "gpu": "8086:22b1",
+            "id": "build48-b4",
+            "os": "Windows-10-10586",
+            "pool": "Chrome-perf"
+          },
+          "expiration": 21600,
+          "hard_timeout": 7200
+        }
+      },
+      {
+        "args": [],
+        "isolate_name": "cc_perftests",
+        "name": "cc_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": {
+            "gpu": "8086:22b1",
+            "id": "build47-b4",
+            "os": "Windows-10-10586",
+            "pool": "Chrome-perf"
+          },
+          "expiration": 21600,
+          "hard_timeout": 7200
+        }
+      },
+      {
         "args": [
           "dromaeo.cssqueryjquery",
           "-v",
@@ -53,108 +85,6 @@
         }
       },
       {
-        "args": [],
-        "isolate_name": "gpu_perftests",
-        "name": "gpu_perftests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:22b1",
-              "id": "build47b4",
-              "os": "Windows-10-10586",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 14400
-        }
-      },
-      {
-        "args": [],
-        "isolate_name": "load_library_perf_tests",
-        "name": "load_library_perf_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:22b1",
-              "id": "build47-b4",
-              "os": "Windows-10-10586",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 14400
-        }
-      },
-      {
-        "args": [],
-        "isolate_name": "performance_browser_tests",
-        "name": "performance_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:22b1",
-              "id": "build48-b4",
-              "os": "Windows-10-10586",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 14400
-        }
-      },
-      {
-        "args": [],
-        "isolate_name": "cc_perftests",
-        "name": "cc_perftests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:22b1",
-              "id": "build48-b4",
-              "os": "Windows-10-10586",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 14400
-        }
-      },
-      {
-        "args": [],
-        "isolate_name": "angle_perftests",
-        "name": "angle_perftests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:22b1",
-              "id": "build48-b4",
-              "os": "Windows-10-10586",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 14400
-        }
-      },
-      {
-        "args": [],
-        "isolate_name": "tracing_perftests",
-        "name": "tracing_perftests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:22b1",
-              "id": "build48-b4",
-              "os": "Windows-10-10586",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 14400
-        }
-      },
-      {
         "args": [
           "dromaeo.cssqueryjquery",
           "-v",
@@ -178,6 +108,38 @@
               "pool": "Chrome-perf"
             }
           ],
+          "expiration": 21600,
+          "hard_timeout": 7200
+        }
+      },
+      {
+        "args": [],
+        "isolate_name": "gpu_perftests",
+        "name": "gpu_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": {
+            "gpu": "8086:22b1",
+            "id": "build47-b4",
+            "os": "Windows-10-10586",
+            "pool": "Chrome-perf"
+          },
+          "expiration": 21600,
+          "hard_timeout": 7200
+        }
+      },
+      {
+        "args": [],
+        "isolate_name": "load_library_perf_tests",
+        "name": "load_library_perf_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": {
+            "gpu": "8086:22b1",
+            "id": "build47-b4",
+            "os": "Windows-10-10586",
+            "pool": "Chrome-perf"
+          },
           "expiration": 21600,
           "hard_timeout": 7200
         }
@@ -233,6 +195,22 @@
               "pool": "Chrome-perf"
             }
           ],
+          "expiration": 21600,
+          "hard_timeout": 7200
+        }
+      },
+      {
+        "args": [],
+        "isolate_name": "performance_browser_tests",
+        "name": "performance_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": {
+            "gpu": "8086:22b1",
+            "id": "build48-b4",
+            "os": "Windows-10-10586",
+            "pool": "Chrome-perf"
+          },
           "expiration": 21600,
           "hard_timeout": 7200
         }
@@ -398,6 +376,22 @@
               "pool": "Chrome-perf"
             }
           ],
+          "expiration": 21600,
+          "hard_timeout": 7200
+        }
+      },
+      {
+        "args": [],
+        "isolate_name": "tracing_perftests",
+        "name": "tracing_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": {
+            "gpu": "8086:22b1",
+            "id": "build48-b4",
+            "os": "Windows-10-10586",
+            "pool": "Chrome-perf"
+          },
           "expiration": 21600,
           "hard_timeout": 7200
         }
