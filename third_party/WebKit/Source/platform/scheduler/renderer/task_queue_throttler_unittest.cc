@@ -497,7 +497,7 @@ TEST_F(TaskQueueThrottlerTest, TimeBudgetPool) {
 
   base::TimeTicks time_zero = clock_->NowTicks();
 
-  pool->SetTimeBudget(time_zero, 0.1);
+  pool->SetTimeBudgetRecoveryRate(time_zero, 0.1);
 
   EXPECT_TRUE(pool->HasEnoughBudgetToRun(time_zero));
   EXPECT_EQ(time_zero, pool->GetNextAllowedRunTime());
@@ -543,7 +543,7 @@ TEST_F(TaskQueueThrottlerTest, TimeBasedThrottling) {
       task_queue_throttler_->CreateTimeBudgetPool("test", base::nullopt,
                                                   base::nullopt);
 
-  pool->SetTimeBudget(base::TimeTicks(), 0.1);
+  pool->SetTimeBudgetRecoveryRate(base::TimeTicks(), 0.1);
   pool->AddQueue(base::TimeTicks(), timer_queue_.get());
 
   task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
@@ -594,7 +594,7 @@ TEST_F(TaskQueueThrottlerTest, EnableAndDisableTimeBudgetPool) {
                                                   base::nullopt);
   EXPECT_TRUE(pool->IsThrottlingEnabled());
 
-  pool->SetTimeBudget(base::TimeTicks(), 0.1);
+  pool->SetTimeBudgetRecoveryRate(base::TimeTicks(), 0.1);
   pool->AddQueue(base::TimeTicks(), timer_queue_.get());
 
   task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
@@ -654,7 +654,7 @@ TEST_F(TaskQueueThrottlerTest, ImmediateTasksTimeBudgetThrottling) {
       task_queue_throttler_->CreateTimeBudgetPool("test", base::nullopt,
                                                   base::nullopt);
 
-  pool->SetTimeBudget(base::TimeTicks(), 0.1);
+  pool->SetTimeBudgetRecoveryRate(base::TimeTicks(), 0.1);
   pool->AddQueue(base::TimeTicks(), timer_queue_.get());
 
   task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
@@ -703,7 +703,7 @@ TEST_F(TaskQueueThrottlerTest, TwoQueuesTimeBudgetThrottling) {
       task_queue_throttler_->CreateTimeBudgetPool("test", base::nullopt,
                                                   base::nullopt);
 
-  pool->SetTimeBudget(base::TimeTicks(), 0.1);
+  pool->SetTimeBudgetRecoveryRate(base::TimeTicks(), 0.1);
   pool->AddQueue(base::TimeTicks(), timer_queue_.get());
   pool->AddQueue(base::TimeTicks(), second_queue.get());
 
@@ -737,7 +737,7 @@ TEST_F(TaskQueueThrottlerTest, DisabledTimeBudgetDoesNotAffectThrottledQueues) {
   TaskQueueThrottler::TimeBudgetPool* pool =
       task_queue_throttler_->CreateTimeBudgetPool("test", base::nullopt,
                                                   base::nullopt);
-  pool->SetTimeBudget(lazy_now.Now(), 0.1);
+  pool->SetTimeBudgetRecoveryRate(lazy_now.Now(), 0.1);
   pool->DisableThrottling(&lazy_now);
 
   pool->AddQueue(lazy_now.Now(), timer_queue_.get());
@@ -766,7 +766,7 @@ TEST_F(TaskQueueThrottlerTest,
   TaskQueueThrottler::TimeBudgetPool* pool =
       task_queue_throttler_->CreateTimeBudgetPool("test", base::nullopt,
                                                   base::nullopt);
-  pool->SetTimeBudget(base::TimeTicks(), 0.1);
+  pool->SetTimeBudgetRecoveryRate(base::TimeTicks(), 0.1);
 
   LazyNow lazy_now(clock_.get());
   pool->DisableThrottling(&lazy_now);
@@ -797,7 +797,7 @@ TEST_F(TaskQueueThrottlerTest,
   TaskQueueThrottler::TimeBudgetPool* pool =
       task_queue_throttler_->CreateTimeBudgetPool("test", base::nullopt,
                                                   base::nullopt);
-  pool->SetTimeBudget(clock_->NowTicks(), 0.1);
+  pool->SetTimeBudgetRecoveryRate(clock_->NowTicks(), 0.1);
 
   pool->AddQueue(clock_->NowTicks(), timer_queue_.get());
 
@@ -820,7 +820,7 @@ TEST_F(TaskQueueThrottlerTest, MaxThrottlingDuration) {
       task_queue_throttler_->CreateTimeBudgetPool(
           "test", base::nullopt, base::TimeDelta::FromMinutes(1));
 
-  pool->SetTimeBudget(base::TimeTicks(), 0.001);
+  pool->SetTimeBudgetRecoveryRate(base::TimeTicks(), 0.001);
   pool->AddQueue(base::TimeTicks(), timer_queue_.get());
 
   task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
@@ -921,7 +921,7 @@ TEST_F(TaskQueueThrottlerTest, ReportThrottling) {
       task_queue_throttler_->CreateTimeBudgetPool("test", base::nullopt,
                                                   base::nullopt);
 
-  pool->SetTimeBudget(base::TimeTicks(), 0.1);
+  pool->SetTimeBudgetRecoveryRate(base::TimeTicks(), 0.1);
   pool->AddQueue(base::TimeTicks(), timer_queue_.get());
 
   pool->SetReportingCallback(
@@ -949,6 +949,43 @@ TEST_F(TaskQueueThrottlerTest, ReportThrottling) {
   EXPECT_THAT(reported_throttling_times,
               ElementsAre(base::TimeDelta::FromMilliseconds(1255),
                           base::TimeDelta::FromMilliseconds(1755)));
+
+  pool->RemoveQueue(clock_->NowTicks(), timer_queue_.get());
+  task_queue_throttler_->DecreaseThrottleRefCount(timer_queue_.get());
+  pool->Close();
+}
+
+TEST_F(TaskQueueThrottlerTest, GrantAdditionalBudget) {
+  std::vector<base::TimeTicks> run_times;
+
+  TaskQueueThrottler::TimeBudgetPool* pool =
+      task_queue_throttler_->CreateTimeBudgetPool("test", base::nullopt,
+                                                  base::nullopt);
+
+  pool->SetTimeBudgetRecoveryRate(base::TimeTicks(), 0.1);
+  pool->AddQueue(base::TimeTicks(), timer_queue_.get());
+  pool->GrantAdditionalBudget(base::TimeTicks(),
+                              base::TimeDelta::FromMilliseconds(500));
+
+  task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
+
+  // Submit five tasks. First three will not be throttled because they have
+  // budget to run.
+  for (int i = 0; i < 5; ++i) {
+    timer_queue_->PostDelayedTask(
+        FROM_HERE, base::Bind(&ExpensiveTestTask, &run_times, clock_.get()),
+        base::TimeDelta::FromMilliseconds(200));
+  }
+
+  mock_task_runner_->RunUntilIdle();
+
+  EXPECT_THAT(
+      run_times,
+      ElementsAre(base::TimeTicks() + base::TimeDelta::FromMilliseconds(1000),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(1250),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(1500),
+                  base::TimeTicks() + base::TimeDelta::FromSeconds(3),
+                  base::TimeTicks() + base::TimeDelta::FromSeconds(6)));
 
   pool->RemoveQueue(clock_->NowTicks(), timer_queue_.get());
   task_queue_throttler_->DecreaseThrottleRefCount(timer_queue_.get());

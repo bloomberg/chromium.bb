@@ -56,7 +56,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TimeDomain::Observer {
     // Throttle task queues from this time budget pool if tasks are running
     // for more than |cpu_percentage| per cent of wall time.
     // This function does not affect internal time budget level.
-    void SetTimeBudget(base::TimeTicks now, double cpu_percentage);
+    void SetTimeBudgetRecoveryRate(base::TimeTicks now, double cpu_percentage);
 
     // Adds |queue| to given pool. If the pool restriction does not allow
     // a task to be run immediately and |queue| is throttled, |queue| becomes
@@ -82,6 +82,11 @@ class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TimeDomain::Observer {
     void DisableThrottling(LazyNow* now);
 
     bool IsThrottlingEnabled() const;
+
+    // Increase budget level by given value. This function DOES NOT unblock
+    // queues even if they are allowed to run with increased budget level.
+    void GrantAdditionalBudget(base::TimeTicks now,
+                               base::TimeDelta budget_level);
 
     const char* Name() const;
 

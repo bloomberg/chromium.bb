@@ -81,8 +81,9 @@ TaskQueueThrottler::TimeBudgetPool::TimeBudgetPool(
 
 TaskQueueThrottler::TimeBudgetPool::~TimeBudgetPool() {}
 
-void TaskQueueThrottler::TimeBudgetPool::SetTimeBudget(base::TimeTicks now,
-                                                       double cpu_percentage) {
+void TaskQueueThrottler::TimeBudgetPool::SetTimeBudgetRecoveryRate(
+    base::TimeTicks now,
+    double cpu_percentage) {
   Advance(now);
   cpu_percentage_ = cpu_percentage;
   EnforceBudgetLevelRestrictions();
@@ -153,6 +154,14 @@ void TaskQueueThrottler::TimeBudgetPool::DisableThrottling(LazyNow* lazy_now) {
 
 bool TaskQueueThrottler::TimeBudgetPool::IsThrottlingEnabled() const {
   return is_enabled_;
+}
+
+void TaskQueueThrottler::TimeBudgetPool::GrantAdditionalBudget(
+    base::TimeTicks now,
+    base::TimeDelta budget_level) {
+  Advance(now);
+  current_budget_level_ += budget_level;
+  EnforceBudgetLevelRestrictions();
 }
 
 void TaskQueueThrottler::TimeBudgetPool::SetReportingCallback(

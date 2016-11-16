@@ -28,13 +28,15 @@ constexpr base::TimeDelta kDefaultMaxBackgroundBudgetLevel =
     base::TimeDelta::FromSeconds(3);
 constexpr base::TimeDelta kDefaultMaxBackgroundThrottlingDelay =
     base::TimeDelta::FromMinutes(1);
+constexpr base::TimeDelta kDefaultInitialBackgroundBudget =
+    base::TimeDelta::FromSeconds(1);
 
 // Values coming from WebViewSchedulerSettings are interpreted as follows:
 //   -1 is "not set". Scheduler should use a reasonable default.
 //   0 is "none". base::nullopt will be used if value is optional.
 //   other values are left without changes.
 
-double GetBackgroundBudget(
+double GetBackgroundBudgetRecoveryRate(
     WebViewScheduler::WebViewSchedulerSettings* settings) {
   if (!settings)
     return kBackgroundBudgetAsCPUFraction;
@@ -66,6 +68,17 @@ base::Optional<base::TimeDelta> GetMaxThrottlingDelay(
   if (max_delay == 0.0)
     return base::nullopt;
   return base::TimeDelta::FromSecondsD(max_delay);
+}
+
+base::TimeDelta GetInitialBudget(
+    WebViewSchedulerImpl::WebViewSchedulerSettings* settings) {
+  if (!settings)
+    return kDefaultInitialBackgroundBudget;
+  double initial_budget =
+      settings->expensiveBackgroundThrottlingInitialBudget();
+  if (initial_budget == -1.0)
+    return kDefaultMaxBackgroundBudgetLevel;
+  return base::TimeDelta::FromSecondsD(initial_budget);
 }
 
 }  // namespace
@@ -265,8 +278,11 @@ void WebViewSchedulerImpl::MaybeInitializeBackgroundTimeBudgetPool() {
     background_time_budget_pool_->EnableThrottling(&lazy_now);
   }
 
-  background_time_budget_pool_->SetTimeBudget(lazy_now.Now(),
-                                              GetBackgroundBudget(settings_));
+  background_time_budget_pool_->SetTimeBudgetRecoveryRate(
+      lazy_now.Now(), GetBackgroundBudgetRecoveryRate(settings_));
+
+  background_time_budget_pool_->GrantAdditionalBudget(
+      lazy_now.Now(), GetInitialBudget(settings_));
 }
 
 void WebViewSchedulerImpl::OnThrottlingReported(
