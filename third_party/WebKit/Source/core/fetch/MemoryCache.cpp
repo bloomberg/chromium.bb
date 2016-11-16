@@ -107,7 +107,7 @@ inline MemoryCache::MemoryCache()
       m_liveSize(0),
       m_deadSize(0) {
   MemoryCacheDumpProvider::instance()->setMemoryCache(this);
-  if (ProcessHeap::isLowEndDevice())
+  if (MemoryCoordinator::instance().isLowEndDevice())
     MemoryCoordinator::instance().registerClient(this);
 }
 

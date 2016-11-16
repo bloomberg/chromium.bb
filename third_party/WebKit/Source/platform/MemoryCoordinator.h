@@ -42,6 +42,8 @@ class PLATFORM_EXPORT MemoryCoordinator final
 
   void onMemoryStateChange(MemoryState);
 
+  bool isLowEndDevice() const { return m_isLowEndDevice; }
+
   DECLARE_TRACE();
 
  private:
@@ -50,6 +52,8 @@ class PLATFORM_EXPORT MemoryCoordinator final
   void clearMemory();
 
   HeapHashSet<WeakMember<MemoryCoordinatorClient>> m_clients;
+
+  bool m_isLowEndDevice;
 };
 
 }  // namespace blink
