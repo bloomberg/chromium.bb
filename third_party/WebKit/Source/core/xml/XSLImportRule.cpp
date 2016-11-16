@@ -26,7 +26,7 @@
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/RawResource.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/fetch/XSLStyleSheetResource.h"
+#include "core/loader/resource/XSLStyleSheetResource.h"
 #include "platform/SharedBuffer.h"
 #include "wtf/text/TextEncoding.h"
 

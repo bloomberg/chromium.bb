@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourceOwner.h"
-#include "core/fetch/ScriptResource.h"
+#include "core/loader/resource/ScriptResource.h"
 
 namespace blink {
 

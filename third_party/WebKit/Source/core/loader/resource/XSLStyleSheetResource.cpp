@@ -24,7 +24,7 @@
     sheets and html pages from the web. It has a memory cache for these objects.
 */
 
-#include "core/fetch/XSLStyleSheetResource.h"
+#include "core/loader/resource/XSLStyleSheetResource.h"
 
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceClientWalker.h"

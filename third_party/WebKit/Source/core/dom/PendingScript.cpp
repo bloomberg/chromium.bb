@@ -27,7 +27,6 @@
 
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "core/dom/Element.h"
-#include "core/fetch/ScriptResource.h"
 #include "core/frame/SubresourceIntegrity.h"
 #include "platform/SharedBuffer.h"
 #include "wtf/CurrentTime.h"

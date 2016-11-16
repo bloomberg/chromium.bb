@@ -6,7 +6,7 @@
 #define SVGResourceClient_h
 
 #include "core/CoreExport.h"
-#include "core/fetch/DocumentResource.h"
+#include "core/loader/resource/DocumentResource.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

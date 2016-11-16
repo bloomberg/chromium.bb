@@ -24,7 +24,7 @@
     sheets and html pages from the web. It has a memory cache for these objects.
 */
 
-#include "core/fetch/ScriptResource.h"
+#include "core/loader/resource/ScriptResource.h"
 
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/IntegrityMetadata.h"

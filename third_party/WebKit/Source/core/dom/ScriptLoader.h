@@ -26,7 +26,7 @@
 #include "core/dom/ScriptRunner.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceClient.h"
-#include "core/fetch/ScriptResource.h"
+#include "core/loader/resource/ScriptResource.h"
 #include "wtf/text/TextPosition.h"
 #include "wtf/text/WTFString.h"
 

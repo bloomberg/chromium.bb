@@ -29,7 +29,7 @@
 #include "core/dom/ParserContentPolicy.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/fetch/ResourceClient.h"
-#include "core/fetch/ScriptResource.h"
+#include "core/loader/resource/ScriptResource.h"
 #include "core/xml/parser/XMLErrors.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/SegmentedString.h"

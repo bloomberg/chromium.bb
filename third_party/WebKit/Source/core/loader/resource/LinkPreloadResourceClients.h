@@ -10,8 +10,8 @@
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/RawResource.h"
 #include "core/fetch/ResourceOwner.h"
-#include "core/fetch/ScriptResource.h"
 #include "core/fetch/StyleSheetResourceClient.h"
+#include "core/loader/resource/ScriptResource.h"
 
 namespace blink {
 

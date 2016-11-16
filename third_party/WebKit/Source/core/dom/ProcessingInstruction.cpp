@@ -30,7 +30,7 @@
 #include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/fetch/XSLStyleSheetResource.h"
+#include "core/loader/resource/XSLStyleSheetResource.h"
 #include "core/xml/DocumentXSLT.h"
 #include "core/xml/XSLStyleSheet.h"
 #include "core/xml/parser/XMLDocumentParser.h"  // for parseAttributes()

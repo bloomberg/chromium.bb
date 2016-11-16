@@ -5,7 +5,7 @@
 #ifndef SVGElementProxy_h
 #define SVGElementProxy_h
 
-#include "core/fetch/DocumentResource.h"
+#include "core/loader/resource/DocumentResource.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"

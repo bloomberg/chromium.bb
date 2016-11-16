@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/LinkPreloadResourceClients.h"
+#include "core/loader/resource/LinkPreloadResourceClients.h"
 
 #include "core/loader/LinkLoader.h"
 

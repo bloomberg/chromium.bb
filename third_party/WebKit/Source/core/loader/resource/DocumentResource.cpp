@@ -20,7 +20,7 @@
     Boston, MA 02110-1301, USA.
 */
 
-#include "core/fetch/DocumentResource.h"
+#include "core/loader/resource/DocumentResource.h"
 
 #include "core/dom/XMLDocument.h"
 #include "core/fetch/FetchRequest.h"
