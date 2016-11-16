@@ -43,6 +43,16 @@ using chromeos::NetworkTypePattern;
 namespace ash {
 namespace tray {
 
+namespace {
+
+// Returns the connected, non-virtual (aka VPN), network.
+const NetworkState* GetConnectedNetwork() {
+  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
+  return handler->ConnectedNetworkByType(NetworkTypePattern::NonVirtual());
+}
+
+}  // namespace
+
 class NetworkTrayView : public TrayItemView,
                         public network_icon::AnimationObserver {
  public:
@@ -59,8 +69,6 @@ class NetworkTrayView : public TrayItemView,
   const char* GetClassName() const override { return "NetworkTrayView"; }
 
   void UpdateNetworkStateHandlerIcon() {
-    NetworkStateHandler* handler =
-        NetworkHandler::Get()->network_state_handler();
     gfx::ImageSkia image;
     base::string16 name;
     bool animating = false;
@@ -73,8 +81,7 @@ class NetworkTrayView : public TrayItemView,
     else
       network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
     // Update accessibility.
-    const NetworkState* connected_network =
-        handler->ConnectedNetworkByType(NetworkTypePattern::NonVirtual());
+    const NetworkState* connected_network = GetConnectedNetwork();
     if (connected_network) {
       UpdateConnectionStatus(base::UTF8ToUTF16(connected_network->name()),
                              true);
@@ -146,6 +153,7 @@ class NetworkDefaultView : public TrayItemMore,
     SetImage(image);
     SetLabel(label);
     SetAccessibleName(label);
+    UpdateStyle();
   }
 
   // network_icon::AnimationObserver
@@ -154,9 +162,11 @@ class NetworkDefaultView : public TrayItemMore,
  protected:
   // TrayItemMore:
   std::unique_ptr<TrayPopupItemStyle> CreateStyle() const override {
-    // TODO(bruthig): Apply different ColorStyles based on network state. See
-    // https://crbug.com/632027.
-    return TrayItemMore::CreateStyle();
+    std::unique_ptr<TrayPopupItemStyle> style = TrayItemMore::CreateStyle();
+    style->set_color_style(GetConnectedNetwork() != nullptr
+                               ? TrayPopupItemStyle::ColorStyle::ACTIVE
+                               : TrayPopupItemStyle::ColorStyle::INACTIVE);
+    return style;
   }
 
  private:
