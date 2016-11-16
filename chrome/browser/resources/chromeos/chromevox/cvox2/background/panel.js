@@ -139,18 +139,6 @@ Panel.init = function() {
   }, false);
 
   Panel.searchInput_.addEventListener('blur', Panel.onSearchInputBlur, false);
-
-  // If OOBE is showing, automatically trigger the tutorial.
-  chrome.automation.getDesktop(function(desktop) {
-    var loadCompleteType = chrome.automation.EventType.loadComplete;
-    var watchForOobe = function(evt) {
-      if (evt.target.url == 'chrome://oobe/oobe') {
-        desktop.removeEventListener(loadCompleteType, watchForOobe, false);
-        Panel.onTutorial();
-      }
-    };
-    desktop.addEventListener(loadCompleteType, watchForOobe, false);
-  });
 };
 
 /**
