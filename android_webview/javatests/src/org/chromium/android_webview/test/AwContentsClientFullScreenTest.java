@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
-import org.chromium.android_webview.test.util.VideoSurfaceViewUtils;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -446,11 +445,6 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
             }
         });
         // TODO: Test that inline video is actually displayed.
-    }
-
-    private void assertContainsContentVideoView() throws Exception {
-        VideoSurfaceViewUtils.assertContainsOneContentVideoView(this,
-                mContentsClient.getCustomView());
     }
 
     private JavascriptEventObserver registerObserver(final String observerName) throws Throwable {
