@@ -56,9 +56,6 @@ const struct Accelerator {
     {ui::VKEY_F4, ui::EF_ALT_DOWN}};
 
 void UpdateShelfStateForFullscreenChange(views::Widget* widget) {
-  ash::wm::WindowState* window_state =
-      ash::wm::GetWindowState(widget->GetNativeWindow());
-  window_state->set_hide_shelf_when_fullscreen(false);
   for (ash::WmWindow* root_window : ash::WmShell::Get()->GetAllRootWindows())
     ash::WmShelf::ForWindow(root_window)->UpdateVisibilityState();
 }
@@ -167,6 +164,9 @@ class CustomWindowStateDelegate : public ash::wm::WindowStateDelegate,
     if (widget_) {
       bool enter_fullscreen = !window_state->IsFullscreen();
       widget_->SetFullscreen(enter_fullscreen);
+      ash::wm::WindowState* window_state =
+          ash::wm::GetWindowState(widget_->GetNativeWindow());
+      window_state->set_in_immersive_fullscreen(enter_fullscreen);
       UpdateShelfStateForFullscreenChange(widget_);
     }
     return true;
@@ -1048,6 +1048,9 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
   // Disable movement if initial bounds were specified.
   widget_->set_movement_disabled(!initial_bounds_.IsEmpty());
   window_state->set_ignore_keyboard_bounds_change(!initial_bounds_.IsEmpty());
+
+  // AutoHide shelf in fullscreen state.
+  window_state->set_hide_shelf_when_fullscreen(false);
 
   // Allow Ash to manage the position of a top-level shell surfaces if show
   // state is one that allows auto positioning and |initial_bounds_| has
