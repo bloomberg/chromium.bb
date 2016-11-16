@@ -36,7 +36,15 @@ namespace WTF {
 
 using namespace WTF::Unicode;
 
-const int nonCharacter = -1;
+// We'll use nonCharacter* constants to signal invalid utf-8.
+// The number in the name signals how many input bytes were invalid.
+const int nonCharacter1 = -1;
+const int nonCharacter2 = -2;
+const int nonCharacter3 = -3;
+
+bool isNonCharacter(int character) {
+  return character >= nonCharacter3 && character <= nonCharacter1;
+}
 
 std::unique_ptr<TextCodec> TextCodecUTF8::create(const TextEncoding&,
                                                  const void*) {
@@ -87,9 +95,9 @@ static inline int decodeNonASCIISequence(const uint8_t* sequence,
   if (length == 2) {
     ASSERT(sequence[0] <= 0xDF);
     if (sequence[0] < 0xC2)
-      return nonCharacter;
+      return nonCharacter1;
     if (sequence[1] < 0x80 || sequence[1] > 0xBF)
-      return nonCharacter;
+      return nonCharacter1;
     return ((sequence[0] << 6) + sequence[1]) - 0x00003080;
   }
   if (length == 3) {
@@ -97,18 +105,18 @@ static inline int decodeNonASCIISequence(const uint8_t* sequence,
     switch (sequence[0]) {
       case 0xE0:
         if (sequence[1] < 0xA0 || sequence[1] > 0xBF)
-          return nonCharacter;
+          return nonCharacter1;
         break;
       case 0xED:
         if (sequence[1] < 0x80 || sequence[1] > 0x9F)
-          return nonCharacter;
+          return nonCharacter1;
         break;
       default:
         if (sequence[1] < 0x80 || sequence[1] > 0xBF)
-          return nonCharacter;
+          return nonCharacter1;
     }
     if (sequence[2] < 0x80 || sequence[2] > 0xBF)
-      return nonCharacter;
+      return nonCharacter2;
     return ((sequence[0] << 12) + (sequence[1] << 6) + sequence[2]) -
            0x000E2080;
   }
@@ -117,28 +125,28 @@ static inline int decodeNonASCIISequence(const uint8_t* sequence,
   switch (sequence[0]) {
     case 0xF0:
       if (sequence[1] < 0x90 || sequence[1] > 0xBF)
-        return nonCharacter;
+        return nonCharacter1;
       break;
     case 0xF4:
       if (sequence[1] < 0x80 || sequence[1] > 0x8F)
-        return nonCharacter;
+        return nonCharacter1;
       break;
     default:
       if (sequence[1] < 0x80 || sequence[1] > 0xBF)
-        return nonCharacter;
+        return nonCharacter1;
   }
   if (sequence[2] < 0x80 || sequence[2] > 0xBF)
-    return nonCharacter;
+    return nonCharacter2;
   if (sequence[3] < 0x80 || sequence[3] > 0xBF)
-    return nonCharacter;
+    return nonCharacter3;
   return ((sequence[0] << 18) + (sequence[1] << 12) + (sequence[2] << 6) +
           sequence[3]) -
          0x03C82080;
 }
 
 static inline UChar* appendCharacter(UChar* destination, int character) {
-  ASSERT(character != nonCharacter);
-  ASSERT(!U_IS_SURROGATE(character));
+  DCHECK(!isNonCharacter(character));
+  DCHECK(!U_IS_SURROGATE(character));
   if (U_IS_BMP(character)) {
     *destination++ = static_cast<UChar>(character);
   } else {
@@ -256,7 +264,7 @@ bool TextCodecUTF8::handlePartialSequence<UChar>(UChar*& destination,
       m_partialSequenceSize = count;
     }
     int character = decodeNonASCIISequence(m_partialSequence, count);
-    if (character == nonCharacter) {
+    if (isNonCharacter(character)) {
       handleError(destination, stopOnError, sawError);
       if (stopOnError)
         return false;
@@ -328,7 +336,7 @@ String TextCodecUTF8::decode(const char* bytes,
       int count = nonASCIISequenceLength(*source);
       int character;
       if (count == 0) {
-        character = nonCharacter;
+        character = nonCharacter1;
       } else {
         if (count > end - source) {
           SECURITY_DCHECK(end - source <
@@ -341,7 +349,7 @@ String TextCodecUTF8::decode(const char* bytes,
         }
         character = decodeNonASCIISequence(source, count);
       }
-      if (character == nonCharacter) {
+      if (isNonCharacter(character)) {
         sawError = true;
         if (stopOnError)
           break;
@@ -409,7 +417,7 @@ upConvertTo16Bit:
       int count = nonASCIISequenceLength(*source);
       int character;
       if (count == 0) {
-        character = nonCharacter;
+        character = nonCharacter1;
       } else {
         if (count > end - source) {
           SECURITY_DCHECK(end - source <
@@ -422,13 +430,18 @@ upConvertTo16Bit:
         }
         character = decodeNonASCIISequence(source, count);
       }
-      if (character == nonCharacter) {
+      if (isNonCharacter(character)) {
         sawError = true;
         if (stopOnError)
           break;
-        // Each error generates a replacement character and consumes one byte.
+        // Each error generates one replacement character and consumes the
+        // 'largest subpart' of the incomplete character.
+        // Note that the nonCharacterX constants go from -1..-3 and contain
+        // the negative of number of bytes comprising the broken encoding
+        // detected. So subtracting c (when isNonCharacter(c)) adds the number
+        // of broken bytes.
         *destination16++ = replacementCharacter;
-        ++source;
+        source -= character;
         continue;
       }
       source += count;

@@ -8,8 +8,8 @@
 // UTF-8 codec emits replacement characters
 testDecode('UTF-8', '%C3%22', 'U+FFFD/U+0022');
 testDecode('UTF-8', '%E2%22', 'U+FFFD/U+0022');
-testDecode('UTF-8', '%E2%A0%22', 'U+FFFD/U+FFFD/U+0022');
-testDecode('UTF-8', '%F0%90%80%22', 'U+FFFD/U+FFFD/U+FFFD/U+0022');
+testDecode('UTF-8', '%E2%A0%22', 'U+FFFD/U+0022');
+testDecode('UTF-8', '%F0%90%80%22', 'U+FFFD/U+0022');
 
 // When a trail byte is in the ASCII range and lead+trail does not
 // encode a character, the ASCII trail byte has to be added back to
