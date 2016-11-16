@@ -2538,7 +2538,8 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     if differs:
       if not force:
         ask_for_data(
-            'Do you want to submit latest Gerrit patchset and bypass hooks?')
+            'Do you want to submit latest Gerrit patchset and bypass hooks?\n'
+            'Press Enter to continue, Ctrl+C to abort.')
       print('WARNING: bypassing hooks and submitting latest uploaded patchset')
     elif not bypass_hooks:
       hook_results = self.RunHook(
