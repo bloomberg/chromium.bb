@@ -13,9 +13,9 @@
 #include "ui/views/controls/menu/menu_runner.h"
 
 DownloadShelfContextMenuView::DownloadShelfContextMenuView(
-    content::DownloadItem* download_item)
-    : DownloadShelfContextMenu(download_item) {
-}
+    DownloadItemView* download_item_view)
+    : DownloadShelfContextMenu(download_item_view->download()),
+      download_item_view_(download_item_view) {}
 
 DownloadShelfContextMenuView::~DownloadShelfContextMenuView() {}
 
@@ -54,4 +54,18 @@ void DownloadShelfContextMenuView::OnMenuClosed(
     on_menu_closed_callback.Run();
 
   menu_runner_.reset();
+}
+
+void DownloadShelfContextMenuView::ExecuteCommand(int command_id,
+                                                  int event_flags) {
+  DownloadCommands::Command command =
+      static_cast<DownloadCommands::Command>(command_id);
+  DCHECK_NE(command, DownloadCommands::DISCARD);
+
+  if (command == DownloadCommands::KEEP) {
+    download_item_view_->MaybeSubmitDownloadToFeedbackService(
+        DownloadCommands::KEEP);
+  } else {
+    DownloadShelfContextMenu::ExecuteCommand(command_id, event_flags);
+  }
 }

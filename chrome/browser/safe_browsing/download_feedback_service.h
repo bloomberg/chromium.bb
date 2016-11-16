@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/safe_browsing/download_protection_service.h"
 #include "content/public/browser/download_danger_type.h"
 
@@ -63,10 +64,11 @@ class DownloadFeedbackService {
   static void RecordEligibleDownloadShown(
       content::DownloadDangerType danger_type);
 
-  // Begin download feedback for |download|. The |download| will be deleted
-  // when this function returns. This must only be called if
-  // IsEnabledForDownload is true for |download|.
-  void BeginFeedbackForDownload(content::DownloadItem* download);
+  // Begin download feedback for |download|. Then delete download file if
+  // |download_command| is DISCARD, or run the KEEP command otherwise.This must
+  // only be called if IsEnabledForDownload is true for |download|.
+  void BeginFeedbackForDownload(content::DownloadItem* download,
+                                DownloadCommands::Command download_command);
 
  private:
   static void BeginFeedbackOrDeleteFile(

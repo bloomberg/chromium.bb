@@ -1539,7 +1539,7 @@ TEST_F(DownloadItemTest, CompleteDelegate_BlockTwice) {
   EXPECT_EQ(DownloadItem::COMPLETE, item->GetState());
 }
 
-TEST_F(DownloadItemTest, StealDangerousDownload) {
+TEST_F(DownloadItemTest, StealDangerousDownloadAndDiscard) {
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =
       DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE);
@@ -1551,12 +1551,34 @@ TEST_F(DownloadItemTest, StealDangerousDownload) {
   EXPECT_CALL(*download_file, Detach());
   EXPECT_CALL(*mock_delegate(), DownloadRemoved(_));
   base::WeakPtrFactory<DownloadItemTest> weak_ptr_factory(this);
+  item->OnAllDataSaved(0, std::unique_ptr<crypto::SecureHash>());
   item->StealDangerousDownload(
+      true,  // delete_file_after_feedback
       base::Bind(&DownloadItemTest::OnDownloadFileAcquired,
                  weak_ptr_factory.GetWeakPtr(),
                  base::Unretained(&returned_path)));
   RunAllPendingInMessageLoops();
   EXPECT_EQ(full_path, returned_path);
+}
+
+TEST_F(DownloadItemTest, StealDangerousDownloadAndKeep) {
+  DownloadItemImpl* item = CreateDownloadItem();
+  MockDownloadFile* download_file =
+      DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE);
+  ASSERT_TRUE(item->IsDangerous());
+  base::FilePath full_path(FILE_PATH_LITERAL("foo.txt"));
+  base::FilePath returned_path;
+  EXPECT_CALL(*download_file, FullPath()).WillOnce(ReturnRefOfCopy(full_path));
+  base::WeakPtrFactory<DownloadItemTest> weak_ptr_factory(this);
+  item->OnAllDataSaved(0, std::unique_ptr<crypto::SecureHash>());
+  item->StealDangerousDownload(
+      false,  // delete_file_after_feedback
+      base::Bind(&DownloadItemTest::OnDownloadFileAcquired,
+                 weak_ptr_factory.GetWeakPtr(),
+                 base::Unretained(&returned_path)));
+  RunAllPendingInMessageLoops();
+  EXPECT_NE(full_path, returned_path);
+  CleanupItem(item, download_file, DownloadItem::IN_PROGRESS);
 }
 
 TEST_F(DownloadItemTest, StealInterruptedDangerousDownload) {
@@ -1575,10 +1597,11 @@ TEST_F(DownloadItemTest, StealInterruptedDangerousDownload) {
 
   EXPECT_CALL(*mock_delegate(), DownloadRemoved(_));
   base::WeakPtrFactory<DownloadItemTest> weak_ptr_factory(this);
+  item->OnAllDataSaved(0, std::unique_ptr<crypto::SecureHash>());
   item->StealDangerousDownload(
-      base::Bind(&DownloadItemTest::OnDownloadFileAcquired,
-                 weak_ptr_factory.GetWeakPtr(),
-                 base::Unretained(&returned_path)));
+      true, base::Bind(&DownloadItemTest::OnDownloadFileAcquired,
+                       weak_ptr_factory.GetWeakPtr(),
+                       base::Unretained(&returned_path)));
   RunAllPendingInMessageLoops();
   EXPECT_EQ(full_path, returned_path);
 }
@@ -1596,10 +1619,11 @@ TEST_F(DownloadItemTest, StealInterruptedNonResumableDangerousDownload) {
 
   EXPECT_CALL(*mock_delegate(), DownloadRemoved(_));
   base::WeakPtrFactory<DownloadItemTest> weak_ptr_factory(this);
+  item->OnAllDataSaved(0, std::unique_ptr<crypto::SecureHash>());
   item->StealDangerousDownload(
-      base::Bind(&DownloadItemTest::OnDownloadFileAcquired,
-                 weak_ptr_factory.GetWeakPtr(),
-                 base::Unretained(&returned_path)));
+      true, base::Bind(&DownloadItemTest::OnDownloadFileAcquired,
+                       weak_ptr_factory.GetWeakPtr(),
+                       base::Unretained(&returned_path)));
   RunAllPendingInMessageLoops();
   EXPECT_TRUE(returned_path.empty());
 }

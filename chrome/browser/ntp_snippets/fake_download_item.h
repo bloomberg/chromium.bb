@@ -65,7 +65,8 @@ class FakeDownloadItem : public content::DownloadItem {
 
   // The methods below are not supported and are not expected to be called.
   void ValidateDangerousDownload() override;
-  void StealDangerousDownload(const AcquireFileCallback& callback) override;
+  void StealDangerousDownload(bool delete_file_afterward,
+                              const AcquireFileCallback& callback) override;
   void Pause() override;
   void Resume() override;
   void Cancel(bool user_cancel) override;

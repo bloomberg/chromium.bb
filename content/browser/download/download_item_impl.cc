@@ -93,6 +93,21 @@ static base::FilePath DownloadFileDetach(
   return full_path;
 }
 
+static base::FilePath MakeCopyOfDownloadFile(DownloadFile* download_file) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::FilePath temp_file_path;
+  if (base::CreateTemporaryFile(&temp_file_path) &&
+      base::CopyFile(download_file->FullPath(), temp_file_path)) {
+    return temp_file_path;
+  } else {
+    // Deletes the file at |temp_file_path|.
+    if (!base::DirectoryExists(temp_file_path))
+      base::DeleteFile(temp_file_path, false);
+    temp_file_path.clear();
+    return base::FilePath();
+  }
+}
+
 static void DownloadFileCancel(std::unique_ptr<DownloadFile> download_file) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   download_file->Cancel();
@@ -299,23 +314,32 @@ void DownloadItemImpl::ValidateDangerousDownload() {
 }
 
 void DownloadItemImpl::StealDangerousDownload(
+    bool delete_file_afterward,
     const AcquireFileCallback& callback) {
   DVLOG(20) << __func__ << "() download = " << DebugString(true);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsDangerous());
+  DCHECK(AllDataSaved());
 
-  if (download_file_) {
+  if (delete_file_afterward) {
+    if (download_file_) {
+      BrowserThread::PostTaskAndReplyWithResult(
+          BrowserThread::FILE, FROM_HERE,
+          base::Bind(&DownloadFileDetach, base::Passed(&download_file_)),
+          callback);
+    } else {
+      callback.Run(current_path_);
+    }
+    current_path_.clear();
+    Remove();
+    // Download item has now been deleted.
+  } else if (download_file_) {
     BrowserThread::PostTaskAndReplyWithResult(
-        BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&DownloadFileDetach, base::Passed(&download_file_)),
-        callback);
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&MakeCopyOfDownloadFile, download_file_.get()), callback);
   } else {
     callback.Run(current_path_);
   }
-  current_path_.clear();
-  Remove();
-  // We have now been deleted.
 }
 
 void DownloadItemImpl::Pause() {
@@ -1375,7 +1399,6 @@ void DownloadItemImpl::MaybeCompleteDownload() {
           base::Bind(&DownloadItemImpl::MaybeCompleteDownload,
                      weak_ptr_factory_.GetWeakPtr())))
     return;
-
   // Confirm we're in the proper set of states to be here; have all data, have a
   // history handle, (validated or safe).
   DCHECK_EQ(IN_PROGRESS_INTERNAL, state_);

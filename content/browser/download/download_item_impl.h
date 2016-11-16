@@ -101,7 +101,8 @@ class CONTENT_EXPORT DownloadItemImpl
   void RemoveObserver(DownloadItem::Observer* observer) override;
   void UpdateObservers() override;
   void ValidateDangerousDownload() override;
-  void StealDangerousDownload(const AcquireFileCallback& callback) override;
+  void StealDangerousDownload(bool need_removal,
+                              const AcquireFileCallback& callback) override;
   void Pause() override;
   void Resume() override;
   void Cancel(bool user_cancel) override;

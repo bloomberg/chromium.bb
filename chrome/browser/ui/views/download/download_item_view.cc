@@ -257,6 +257,28 @@ void DownloadItemView::OnExtractIconComplete(gfx::Image* icon_bitmap) {
     shelf_->SchedulePaint();
 }
 
+void DownloadItemView::MaybeSubmitDownloadToFeedbackService(
+    DownloadCommands::Command download_command) {
+  PrefService* prefs = shelf_->browser()->profile()->GetPrefs();
+  if (model_.MightBeMalicious() && model_.ShouldAllowDownloadFeedback() &&
+      !shelf_->browser()->profile()->IsOffTheRecord()) {
+    if (safe_browsing::ExtendedReportingPrefExists(*prefs)) {
+      SubmitDownloadWhenFeedbackServiceEnabled(
+          download_command, safe_browsing::IsExtendedReportingEnabled(*prefs));
+    } else {
+      // Show dialog, because the dialog hasn't been shown before.
+      DownloadFeedbackDialogView::Show(
+          shelf_->get_parent()->GetNativeWindow(), shelf_->browser()->profile(),
+          shelf_->GetNavigator(),
+          base::Bind(
+              &DownloadItemView::SubmitDownloadWhenFeedbackServiceEnabled,
+              weak_ptr_factory_.GetWeakPtr(), download_command));
+    }
+  } else {
+    DownloadCommands(download()).ExecuteCommand(download_command);
+  }
+}
+
 // DownloadObserver interface.
 
 // Update the progress graphic on the icon and our text status label
@@ -573,26 +595,10 @@ void DownloadItemView::ButtonPressed(views::Button* sender,
     return;
   }
 
-  // WARNING: all end states after this point delete |this|.
   DCHECK_EQ(discard_button_, sender);
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.discard_download", warning_duration);
-  Profile* profile = shelf_->browser()->profile();
-  if (!model_.IsMalicious() && model_.ShouldAllowDownloadFeedback() &&
-      !profile->IsOffTheRecord()) {
-    if (!safe_browsing::ExtendedReportingPrefExists(*profile->GetPrefs())) {
-      // Show dialog, because the dialog hasn't been shown before.
-      DownloadFeedbackDialogView::Show(
-          shelf_->get_parent()->GetNativeWindow(), profile,
-          shelf_->GetNavigator(),
-          base::Bind(&DownloadItemView::PossiblySubmitDownloadToFeedbackService,
-                     weak_ptr_factory_.GetWeakPtr()));
-    } else {
-      PossiblySubmitDownloadToFeedbackService(
-          safe_browsing::IsExtendedReportingEnabled(*profile->GetPrefs()));
-    }
-    return;
-  }
-  download()->Remove();
+  MaybeSubmitDownloadToFeedbackService(DownloadCommands::DISCARD);
+  // WARNING: 'this' maybe deleted at this point. Don't access 'this'.
 }
 
 SkColor DownloadItemView::GetVectorIconBaseColor() const {
@@ -757,7 +763,8 @@ void DownloadItemView::OpenDownload() {
   download()->OpenDownload();
 }
 
-bool DownloadItemView::SubmitDownloadToFeedbackService() {
+bool DownloadItemView::SubmitDownloadToFeedbackService(
+    DownloadCommands::Command download_command) {
 #if defined(FULL_SAFE_BROWSING)
   safe_browsing::SafeBrowsingService* sb_service =
       g_browser_process->safe_browsing_service();
@@ -768,7 +775,7 @@ bool DownloadItemView::SubmitDownloadToFeedbackService() {
   if (!download_protection_service)
     return false;
   download_protection_service->feedback_service()->BeginFeedbackForDownload(
-      download());
+      download(), download_command);
   // WARNING: we are deleted at this point.  Don't access 'this'.
   return true;
 #else
@@ -777,9 +784,13 @@ bool DownloadItemView::SubmitDownloadToFeedbackService() {
 #endif
 }
 
-void DownloadItemView::PossiblySubmitDownloadToFeedbackService(bool enabled) {
-  if (!enabled || !SubmitDownloadToFeedbackService())
-    download()->Remove();
+void DownloadItemView::SubmitDownloadWhenFeedbackServiceEnabled(
+    DownloadCommands::Command download_command,
+    bool feedback_enabled) {
+  if (feedback_enabled && SubmitDownloadToFeedbackService(download_command))
+    return;
+
+  DownloadCommands(download()).ExecuteCommand(download_command);
   // WARNING: 'this' is deleted at this point. Don't access 'this'.
 }
 
@@ -829,7 +840,7 @@ void DownloadItemView::ShowContextMenuImpl(const gfx::Rect& rect,
       ->SetMouseHandler(nullptr);
 
   if (!context_menu_.get())
-    context_menu_.reset(new DownloadShelfContextMenuView(download()));
+    context_menu_.reset(new DownloadShelfContextMenuView(this));
   context_menu_->Run(GetWidget()->GetTopLevelWidget(), rect, source_type,
                      base::Bind(&DownloadItemView::ReleaseDropdown,
                                 weak_ptr_factory_.GetWeakPtr()));

@@ -123,6 +123,7 @@ void FakeDownloadItem::ValidateDangerousDownload() {
 }
 
 void FakeDownloadItem::StealDangerousDownload(
+    bool delete_file_afterward,
     const AcquireFileCallback& callback) {
   NOTREACHED();
   callback.Run(base::FilePath());
