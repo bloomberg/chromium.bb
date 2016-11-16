@@ -38,6 +38,8 @@ struct weston_desktop_xwayland_interface {
 						      struct weston_surface *surface,
 						      const struct weston_xwayland_client_interface *client);
 	void (*set_toplevel)(struct weston_desktop_xwayland_surface *shsurf);
+	void (*set_toplevel_with_position)(struct weston_desktop_xwayland_surface *shsurf,
+					   int32_t x, int32_t y);
 	void (*set_parent)(struct weston_desktop_xwayland_surface *shsurf,
 			   struct weston_surface *parent);
 	void (*set_transient)(struct weston_desktop_xwayland_surface *shsurf,
