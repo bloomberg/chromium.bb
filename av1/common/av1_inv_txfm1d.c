@@ -735,7 +735,6 @@ void av1_iadst4_new(const int32_t *input, int32_t *output,
 
   // stage 3
   stage++;
-  cospi = cospi_arr[cos_bit[stage] - cos_bit_min];
   bf0 = step;
   bf1 = output;
   bf1[0] = bf0[0] + bf0[2];
@@ -808,7 +807,6 @@ void av1_iadst8_new(const int32_t *input, int32_t *output,
 
   // stage 3
   stage++;
-  cospi = cospi_arr[cos_bit[stage] - cos_bit_min];
   bf0 = step;
   bf1 = output;
   bf1[0] = bf0[0] + bf0[2];
@@ -838,7 +836,6 @@ void av1_iadst8_new(const int32_t *input, int32_t *output,
 
   // stage 5
   stage++;
-  cospi = cospi_arr[cos_bit[stage] - cos_bit_min];
   bf0 = step;
   bf1 = output;
   bf1[0] = bf0[0] + bf0[4];
@@ -939,7 +936,6 @@ void av1_iadst16_new(const int32_t *input, int32_t *output,
 
   // stage 3
   stage++;
-  cospi = cospi_arr[cos_bit[stage] - cos_bit_min];
   bf0 = step;
   bf1 = output;
   bf1[0] = bf0[0] + bf0[2];
@@ -985,7 +981,6 @@ void av1_iadst16_new(const int32_t *input, int32_t *output,
 
   // stage 5
   stage++;
-  cospi = cospi_arr[cos_bit[stage] - cos_bit_min];
   bf0 = step;
   bf1 = output;
   bf1[0] = bf0[0] + bf0[4];
@@ -1031,7 +1026,6 @@ void av1_iadst16_new(const int32_t *input, int32_t *output,
 
   // stage 7
   stage++;
-  cospi = cospi_arr[cos_bit[stage] - cos_bit_min];
   bf0 = step;
   bf1 = output;
   bf1[0] = bf0[0] + bf0[8];
@@ -1188,7 +1182,6 @@ void av1_iadst32_new(const int32_t *input, int32_t *output,
 
   // stage 3
   stage++;
-  cospi = cospi_arr[cos_bit[stage] - cos_bit_min];
   bf0 = step;
   bf1 = output;
   bf1[0] = bf0[0] + bf0[2];
@@ -1266,7 +1259,6 @@ void av1_iadst32_new(const int32_t *input, int32_t *output,
 
   // stage 5
   stage++;
-  cospi = cospi_arr[cos_bit[stage] - cos_bit_min];
   bf0 = step;
   bf1 = output;
   bf1[0] = bf0[0] + bf0[4];
@@ -1344,7 +1336,6 @@ void av1_iadst32_new(const int32_t *input, int32_t *output,
 
   // stage 7
   stage++;
-  cospi = cospi_arr[cos_bit[stage] - cos_bit_min];
   bf0 = step;
   bf1 = output;
   bf1[0] = bf0[0] + bf0[8];
@@ -1422,7 +1413,6 @@ void av1_iadst32_new(const int32_t *input, int32_t *output,
 
   // stage 9
   stage++;
-  cospi = cospi_arr[cos_bit[stage] - cos_bit_min];
   bf0 = step;
   bf1 = output;
   bf1[0] = bf0[0] + bf0[16];
