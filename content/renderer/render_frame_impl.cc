@@ -1504,11 +1504,6 @@ MediaStreamDispatcher* RenderFrameImpl::GetMediaStreamDispatcher() {
              : nullptr;
 }
 
-void RenderFrameImpl::ScriptedPrint(bool user_initiated) {
-  for (auto& observer : observers_)
-    observer.ScriptedPrint(user_initiated);
-}
-
 bool RenderFrameImpl::Send(IPC::Message* message) {
   return RenderThread::Get()->Send(message);
 }

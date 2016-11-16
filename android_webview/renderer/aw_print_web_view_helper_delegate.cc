@@ -8,10 +8,11 @@
 
 namespace android_webview {
 
-AwPrintWebViewHelperDelegate::~AwPrintWebViewHelperDelegate() {}
+AwPrintWebViewHelperDelegate::~AwPrintWebViewHelperDelegate(){
+}
 
 bool AwPrintWebViewHelperDelegate::CancelPrerender(
-    content::RenderFrame* render_frame) {
+    content::RenderView* render_view, int routing_id) {
   return false;
 }
 

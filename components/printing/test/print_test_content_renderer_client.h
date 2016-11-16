@@ -14,7 +14,7 @@ class PrintTestContentRendererClient : public content::ContentRendererClient {
   PrintTestContentRendererClient();
   ~PrintTestContentRendererClient() override;
 
-  void RenderFrameCreated(content::RenderFrame* render_frame) override;
+  void RenderViewCreated(content::RenderView* render_view) override;
 };
 
 }  // namespace printing

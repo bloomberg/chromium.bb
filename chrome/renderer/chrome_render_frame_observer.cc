@@ -221,7 +221,7 @@ void ChromeRenderFrameObserver::OnRequestThumbnailForContextNode(
 void ChromeRenderFrameObserver::OnPrintNodeUnderContextMenu() {
 #if BUILDFLAG(ENABLE_PRINTING)
   printing::PrintWebViewHelper* helper =
-      printing::PrintWebViewHelper::Get(render_frame());
+      printing::PrintWebViewHelper::Get(render_frame()->GetRenderView());
   if (helper)
     helper->PrintNode(render_frame()->GetWebFrame()->contextMenuNode());
 #endif

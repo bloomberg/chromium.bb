@@ -231,8 +231,8 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
 
 - (void)handlesPrintScriptCommand:(NSScriptCommand*)command {
   AppleScript::LogAppleScriptUMA(AppleScript::AppleScriptCommand::TAB_PRINT);
-  bool initiated = printing::PrintViewManager::FromWebContents(webContents_)
-                       ->PrintNow(webContents_->GetMainFrame());
+  bool initiated =
+      printing::PrintViewManager::FromWebContents(webContents_)->PrintNow();
   if (!initiated) {
     AppleScript::SetError(AppleScript::errInitiatePrinting);
   }

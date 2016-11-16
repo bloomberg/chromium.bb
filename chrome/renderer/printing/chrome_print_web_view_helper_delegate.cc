@@ -26,16 +26,17 @@
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-ChromePrintWebViewHelperDelegate::~ChromePrintWebViewHelperDelegate() {}
+ChromePrintWebViewHelperDelegate::~ChromePrintWebViewHelperDelegate(){
+}
 
 bool ChromePrintWebViewHelperDelegate::CancelPrerender(
-    content::RenderFrame* render_frame) {
-  if (!prerender::PrerenderHelper::IsPrerendering(render_frame))
+    content::RenderView* render_view, int routing_id) {
+  if (!render_view || !prerender::PrerenderHelper::IsPrerendering(
+      render_view->GetMainRenderFrame()))
     return false;
 
-  auto* render_view = render_frame->GetRenderView();
-  return render_view->Send(new ChromeViewHostMsg_CancelPrerenderForPrinting(
-      render_view->GetRoutingID()));
+  return render_view->Send(
+      new ChromeViewHostMsg_CancelPrerenderForPrinting(routing_id));
 }
 
 // Return the PDF object element if |frame| is the out of process PDF extension.

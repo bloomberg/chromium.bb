@@ -12,7 +12,8 @@ class ChromePrintWebViewHelperDelegate
  public:
   ~ChromePrintWebViewHelperDelegate() override;
 
-  bool CancelPrerender(content::RenderFrame* render_frame) override;
+  bool CancelPrerender(content::RenderView* render_view,
+                       int routing_id) override;
 
   blink::WebElement GetPdfElement(blink::WebLocalFrame* frame) override;
 

@@ -380,8 +380,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // NULL.
   MediaStreamDispatcher* GetMediaStreamDispatcher();
 
-  void ScriptedPrint(bool user_initiated);
-
 #if defined(USE_EXTERNAL_POPUP_MENU)
   void DidHideExternalPopupMenu();
 #endif

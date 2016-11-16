@@ -37,8 +37,7 @@ class PrintPreviewMessageHandler
   ~PrintPreviewMessageHandler() override;
 
   // content::WebContentsObserver implementation.
-  bool OnMessageReceived(const IPC::Message& message,
-                         content::RenderFrameHost* render_frame_host) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   explicit PrintPreviewMessageHandler(content::WebContents* web_contents);

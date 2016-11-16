@@ -320,12 +320,12 @@ IPC_STRUCT_END()
 // Messages sent from the browser to the renderer.
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-// Tells the RenderFrame to initiate print preview for the entire document.
-IPC_MESSAGE_ROUTED1(PrintMsg_InitiatePrintPreview, bool /* has_selection */)
-#endif
+// Tells the render view to initiate print preview for the entire document.
+IPC_MESSAGE_ROUTED1(PrintMsg_InitiatePrintPreview, bool /* selection_only */)
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
-// Tells the RenderFrame to initiate printing or print preview for a particular
-// node, depending on which mode the RenderFrame is in.
+// Tells the render frame to initiate printing or print preview for a particular
+// node, depending on which mode the render frame is in.
 IPC_MESSAGE_ROUTED0(PrintMsg_PrintNodeUnderContextMenu)
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -337,30 +337,35 @@ IPC_MESSAGE_ROUTED1(PrintMsg_PrintForPrintPreview,
 #endif  // BUILDFLAG(ENABLE_BASIC_PRINTING) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
-// Tells the RenderFrame to switch the CSS to print media type, renders every
+// Tells the render view to switch the CSS to print media type, renders every
 // requested pages and switch back the CSS to display media type.
 IPC_MESSAGE_ROUTED0(PrintMsg_PrintPages)
 
 // Like PrintMsg_PrintPages, but using the print preview document's frame/node.
 IPC_MESSAGE_ROUTED0(PrintMsg_PrintForSystemDialog)
-#endif
+#endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
-// Tells the RenderFrame that printing is done so it can clean up.
+// Tells the render view that printing is done so it can clean up.
 IPC_MESSAGE_ROUTED1(PrintMsg_PrintingDone,
                     bool /* success */)
 
-// Tells the RenderFrame whether printing is enabled or not.
-IPC_MESSAGE_ROUTED1(PrintMsg_SetPrintingEnabled, bool /* enabled */)
+// Tells the render view whether scripted printing is blocked or not.
+IPC_MESSAGE_ROUTED1(PrintMsg_SetScriptedPrintingBlocked,
+                    bool /* blocked */)
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-// Tells the RenderFrame to switch the CSS to print media type, renders every
+// Tells the render view to switch the CSS to print media type, renders every
 // requested pages for print preview using the given |settings|. This gets
 // called multiple times as the user updates settings.
 IPC_MESSAGE_ROUTED1(PrintMsg_PrintPreview,
                     base::DictionaryValue /* settings */)
-#endif
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 // Messages sent from the renderer to the browser.
+
+// Check if printing is enabled.
+IPC_SYNC_MESSAGE_ROUTED0_1(PrintHostMsg_IsPrintingEnabled,
+                           bool /* is_enabled */)
 
 // Tells the browser that the renderer is done calculating the number of
 // rendered pages according to the specified settings.

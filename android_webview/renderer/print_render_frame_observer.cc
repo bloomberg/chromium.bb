@@ -33,7 +33,7 @@ bool PrintRenderFrameObserver::OnMessageReceived(
 
 void PrintRenderFrameObserver::OnPrintNodeUnderContextMenu() {
   printing::PrintWebViewHelper* helper =
-      printing::PrintWebViewHelper::Get(render_frame());
+      printing::PrintWebViewHelper::Get(render_frame()->GetRenderView());
   if (helper)
     helper->PrintNode(render_frame()->GetWebFrame()->contextMenuNode());
 }

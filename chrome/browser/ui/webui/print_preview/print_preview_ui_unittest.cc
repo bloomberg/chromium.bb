@@ -51,7 +51,6 @@ class PrintPreviewUIUnitTest : public PrintPreviewTest {
  protected:
   void SetUp() override;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewUIUnitTest);
 };
 
@@ -76,7 +75,7 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
 
   printing::PrintViewManager* print_view_manager =
       printing::PrintViewManager::FromWebContents(initiator);
-  print_view_manager->PrintPreviewNow(initiator->GetMainFrame(), false);
+  print_view_manager->PrintPreviewNow(false);
   WebContents* preview_dialog = controller->GetOrCreatePreviewDialog(initiator);
 
   EXPECT_NE(initiator, preview_dialog);
@@ -129,7 +128,7 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewDraftPages) {
 
   printing::PrintViewManager* print_view_manager =
       printing::PrintViewManager::FromWebContents(initiator);
-  print_view_manager->PrintPreviewNow(initiator->GetMainFrame(), false);
+  print_view_manager->PrintPreviewNow(false);
   WebContents* preview_dialog = controller->GetOrCreatePreviewDialog(initiator);
 
   EXPECT_NE(initiator, preview_dialog);
@@ -189,7 +188,7 @@ TEST_F(PrintPreviewUIUnitTest, GetCurrentPrintPreviewStatus) {
 
   printing::PrintViewManager* print_view_manager =
       printing::PrintViewManager::FromWebContents(initiator);
-  print_view_manager->PrintPreviewNow(initiator->GetMainFrame(), false);
+  print_view_manager->PrintPreviewNow(false);
   WebContents* preview_dialog = controller->GetOrCreatePreviewDialog(initiator);
 
   EXPECT_NE(initiator, preview_dialog);

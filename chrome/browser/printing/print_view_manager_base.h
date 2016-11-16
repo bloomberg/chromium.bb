@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_PRINTING_PRINT_VIEW_MANAGER_BASE_H_
 #define CHROME_BROWSER_PRINTING_PRINT_VIEW_MANAGER_BASE_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
@@ -19,10 +17,6 @@
 #include "printing/printed_pages_source.h"
 
 struct PrintHostMsg_DidPrintPage_Params;
-
-namespace content {
-class RenderFrameHost;
-}
 
 namespace printing {
 
@@ -43,11 +37,11 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // Prints the current document immediately. Since the rendering is
   // asynchronous, the actual printing will not be completed on the return of
   // this function. Returns false if printing is impossible at the moment.
-  virtual bool PrintNow(content::RenderFrameHost* rfh);
+  virtual bool PrintNow();
 #endif  // ENABLE_BASIC_PRINTING
 
-  // Whether printing is enabled or not.
-  void UpdatePrintingEnabled();
+  // Whether to block scripted printing for our tab or not.
+  void UpdateScriptedPrintingBlocked();
 
   // PrintedPagesSource implementation.
   base::string16 RenderSourceName() override;
@@ -56,15 +50,13 @@ class PrintViewManagerBase : public content::NotificationObserver,
   explicit PrintViewManagerBase(content::WebContents* web_contents);
 
   // Helper method for Print*Now().
-  bool PrintNowInternal(content::RenderFrameHost* rfh,
-                        std::unique_ptr<IPC::Message> message);
+  bool PrintNowInternal(IPC::Message* message);
 
-  void SetPrintingRFH(content::RenderFrameHost* rfh);
+  // Terminates or cancels the print job if one was pending.
+  void RenderProcessGone(base::TerminationStatus status) override;
 
   // content::WebContentsObserver implementation.
-  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
-  bool OnMessageReceived(const IPC::Message& message,
-                         content::RenderFrameHost* render_frame_host) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   // content::NotificationObserver implementation.
@@ -109,6 +101,9 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // disconnect from it.
   void DisconnectFromCurrentPrintJob();
 
+  // Notify that the printing is done.
+  void PrintingDone(bool success);
+
   // Terminates the print job. No-op if no print job has been created. If
   // |cancel| is true, cancel it instead of waiting for the job to finish. Will
   // call ReleasePrintJob().
@@ -132,13 +127,7 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // Release the PrinterQuery associated with our |cookie_|.
   void ReleasePrinterQuery();
 
-  // Helper method for UpdatePrintingEnabled().
-  void SendPrintingEnabled(bool enabled, content::RenderFrameHost* rfh);
-
   content::NotificationRegistrar registrar_;
-
-  // The current RFH that is printing with a system printing dialog.
-  content::RenderFrameHost* printing_rfh_;
 
   // Manages the low-level talk to the printer.
   scoped_refptr<PrintJob> print_job_;

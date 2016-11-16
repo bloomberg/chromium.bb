@@ -211,9 +211,6 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
       const std::vector<content::FileChooserFileInfo>& files,
       FileChooserParams::Mode permissions) = 0;
 
-  // Returns true if the frame has a selection.
-  virtual bool HasSelection() = 0;
-
   // Text surrounding selection.
   typedef base::Callback<
       void(const base::string16& content, int start_offset, int end_offset)>

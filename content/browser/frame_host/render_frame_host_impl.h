@@ -163,7 +163,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   int GetProxyCount() override;
   void FilesSelectedInChooser(const std::vector<FileChooserFileInfo>& files,
                               FileChooserParams::Mode permissions) override;
-  bool HasSelection() override;
   void RequestTextSurroundingSelection(
       const TextSurroundingSelectionCallback& callback,
       int max_length) override;
@@ -1036,9 +1035,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // If true the associated WebUI should be reused when CommitPendingWebUI is
   // called (no pending instance should be set).
   bool should_reuse_web_ui_;
-
-  // If true, then the RenderFrame has selected text.
-  bool has_selection_;
 
   // PlzNavigate: The LoFi state of the last navigation. This is used during
   // history navigation of subframes to ensure that subframes navigate with the

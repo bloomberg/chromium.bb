@@ -4,7 +4,6 @@
 
 #include "chrome/browser/printing/print_view_manager_common.h"
 
-#include "content/public/browser/render_frame_host.h"
 #include "extensions/features/features.h"
 #include "printing/features/features.h"
 
@@ -20,7 +19,6 @@
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 namespace printing {
-
 namespace {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 // Stores |guest_contents| in |result| and returns true if |guest_contents| is a
@@ -53,73 +51,43 @@ content::WebContents* GetWebContentsToUse(content::WebContents* contents) {
   return contents;
 }
 
-// Pick the right RenderFrameHost based on the WebContentses.
-content::RenderFrameHost* GetRenderFrameHostToUse(
-    content::WebContents* original_contents,
-    content::WebContents* contents_to_use) {
-  if (original_contents != contents_to_use)
-    return contents_to_use->GetMainFrame();
-  return GetFrameToPrint(contents_to_use);
-}
-
 }  // namespace
 
 void StartPrint(content::WebContents* contents,
                 bool print_preview_disabled,
-                bool has_selection) {
+                bool selection_only) {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   using PrintViewManagerImpl = PrintViewManager;
 #else
   using PrintViewManagerImpl = PrintViewManagerBasic;
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
-  content::WebContents* contents_to_use = GetWebContentsToUse(contents);
   auto* print_view_manager =
-      PrintViewManagerImpl::FromWebContents(contents_to_use);
+      PrintViewManagerImpl::FromWebContents(GetWebContentsToUse(contents));
   if (!print_view_manager)
     return;
-
-  content::RenderFrameHost* rfh_to_use =
-      GetRenderFrameHostToUse(contents, contents_to_use);
-  if (!rfh_to_use)
-    return;
-
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   if (!print_preview_disabled) {
-    print_view_manager->PrintPreviewNow(rfh_to_use, has_selection);
+    print_view_manager->PrintPreviewNow(selection_only);
     return;
   }
 #endif  // ENABLE_PRINT_PREVIEW
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
-  print_view_manager->PrintNow(rfh_to_use);
+  print_view_manager->PrintNow();
 #endif  // ENABLE_BASIC_PRINTING
 }
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
 void StartBasicPrint(content::WebContents* contents) {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  content::WebContents* contents_to_use = GetWebContentsToUse(contents);
   PrintViewManager* print_view_manager =
-      PrintViewManager::FromWebContents(contents_to_use);
+      PrintViewManager::FromWebContents(GetWebContentsToUse(contents));
   if (!print_view_manager)
     return;
-
-  content::RenderFrameHost* rfh_to_use =
-      GetRenderFrameHostToUse(contents, contents_to_use);
-  if (!rfh_to_use)
-    return;
-
-  print_view_manager->BasicPrint(rfh_to_use);
+  print_view_manager->BasicPrint();
 #endif  // ENABLE_PRINT_PREVIEW
 }
 #endif  // ENABLE_BASIC_PRINTING
-
-content::RenderFrameHost* GetFrameToPrint(content::WebContents* contents) {
-  auto* focused_frame = contents->GetFocusedFrame();
-  return (focused_frame && focused_frame->HasSelection())
-             ? focused_frame
-             : contents->GetMainFrame();
-}
 
 }  // namespace printing

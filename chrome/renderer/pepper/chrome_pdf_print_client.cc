@@ -6,7 +6,7 @@
 
 #include "components/printing/renderer/print_web_view_helper.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
-#include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -26,15 +26,14 @@ printing::PrintWebViewHelper* GetPrintWebViewHelper(
     const blink::WebElement& element) {
   if (element.isNull())
     return nullptr;
-  auto* render_frame =
-      content::RenderFrame::FromWebFrame(element.document().frame());
-  return printing::PrintWebViewHelper::Get(render_frame);
+  blink::WebView* view = element.document().frame()->view();
+  content::RenderView* render_view = content::RenderView::FromWebView(view);
+  return printing::PrintWebViewHelper::Get(render_view);
 }
 
 }  // namespace
 
 ChromePDFPrintClient::ChromePDFPrintClient() {}
-
 ChromePDFPrintClient::~ChromePDFPrintClient() {}
 
 bool ChromePDFPrintClient::IsPrintingEnabled(PP_Instance instance_id) {

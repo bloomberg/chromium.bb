@@ -6,8 +6,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
-#include <algorithm>
 #include <string>
 #include <utility>
 
@@ -508,7 +506,7 @@ PrintMsg_Print_Params CalculatePrintParamsForCss(
       double factor = FitPrintParamsToPage(params, &result_params);
       if (scale_factor)
         *scale_factor = (*scale_factor) * factor;
-    } else {
+    } else { // !fit_to_page
       // Already scaled the page, need to also scale the CSS margins since they
       // are begin applied
       result_params.margin_left =
@@ -755,13 +753,10 @@ void PrepareFrameAndViewForPrint::ResizeForPrinting() {
 
   if (!frame())
     return;
-
-  // Backup size and offset if it's a local frame.
   blink::WebView* web_view = frame_.view();
-  if (blink::WebFrame* web_frame = web_view->mainFrame()) {
-    if (web_frame->isWebLocalFrame())
-      prev_scroll_offset_ = web_frame->scrollOffset();
-  }
+  // Backup size and offset.
+  if (blink::WebFrame* web_frame = web_view->mainFrame())
+    prev_scroll_offset_ = web_frame->scrollOffset();
   prev_view_size_ = web_view->size();
 
   web_view->resize(print_layout_size);
@@ -848,13 +843,10 @@ void PrepareFrameAndViewForPrint::CallOnReady() {
 }
 
 void PrepareFrameAndViewForPrint::RestoreSize() {
-  if (!frame())
-    return;
-
-  blink::WebView* web_view = frame_.GetFrame()->view();
-  web_view->resize(prev_view_size_);
-  if (blink::WebFrame* web_frame = web_view->mainFrame()) {
-    if (web_frame->isWebLocalFrame())
+  if (frame()) {
+    blink::WebView* web_view = frame_.GetFrame()->view();
+    web_view->resize(prev_view_size_);
+    if (blink::WebFrame* web_frame = web_view->mainFrame())
       web_frame->setScrollOffset(prev_scroll_offset_);
   }
 }
@@ -890,14 +882,14 @@ bool PrintWebViewHelper::Delegate::IsScriptedPrintEnabled() {
   return true;
 }
 
-PrintWebViewHelper::PrintWebViewHelper(content::RenderFrame* render_frame,
+PrintWebViewHelper::PrintWebViewHelper(content::RenderView* render_view,
                                        std::unique_ptr<Delegate> delegate)
-    : content::RenderFrameObserver(render_frame),
-      content::RenderFrameObserverTracker<PrintWebViewHelper>(render_frame),
+    : content::RenderViewObserver(render_view),
+      content::RenderViewObserverTracker<PrintWebViewHelper>(render_view),
       reset_prep_frame_view_(false),
       is_print_ready_metafile_sent_(false),
       ignore_css_margins_(false),
-      is_printing_enabled_(true),
+      is_scripted_printing_blocked_(false),
       notify_browser_of_print_failure_(true),
       print_for_preview_(false),
       delegate_(std::move(delegate)),
@@ -920,27 +912,23 @@ void PrintWebViewHelper::DisablePreview() {
 
 bool PrintWebViewHelper::IsScriptInitiatedPrintAllowed(blink::WebFrame* frame,
                                                        bool user_initiated) {
-  if (!is_printing_enabled_ || !delegate_->IsScriptedPrintEnabled())
+  if (!delegate_->IsScriptedPrintEnabled())
     return false;
 
   // If preview is enabled, then the print dialog is tab modal, and the user
   // can always close the tab on a mis-behaving page (the system print dialog
   // is app modal). If the print was initiated through user action, don't
   // throttle. Or, if the command line flag to skip throttling has been set.
-  return user_initiated || g_is_preview_enabled ||
-         scripting_throttler_.IsAllowed(frame);
+  return !is_scripted_printing_blocked_ &&
+         (user_initiated || g_is_preview_enabled ||
+          scripting_throttler_.IsAllowed(frame));
 }
 
-void PrintWebViewHelper::DidStartProvisionalLoad() {
+void PrintWebViewHelper::DidStartLoading() {
   is_loading_ = true;
 }
 
-void PrintWebViewHelper::DidFailProvisionalLoad(
-    const blink::WebURLError& error) {
-  DidFinishLoad();
-}
-
-void PrintWebViewHelper::DidFinishLoad() {
+void PrintWebViewHelper::DidStopLoading() {
   is_loading_ = false;
   if (!on_stop_loading_closure_.is_null()) {
     on_stop_loading_closure_.Run();
@@ -948,26 +936,29 @@ void PrintWebViewHelper::DidFinishLoad() {
   }
 }
 
-void PrintWebViewHelper::ScriptedPrint(bool user_initiated) {
+// Prints |frame| which called window.print().
+void PrintWebViewHelper::PrintPage(blink::WebLocalFrame* frame,
+                                   bool user_initiated) {
+  DCHECK(frame);
+
   // Allow Prerendering to cancel this print request if necessary.
-  if (delegate_->CancelPrerender(render_frame()))
+  if (delegate_->CancelPrerender(render_view(), routing_id()))
     return;
 
-  blink::WebLocalFrame* web_frame = render_frame()->GetWebFrame();
-  if (!IsScriptInitiatedPrintAllowed(web_frame, user_initiated))
+  if (!IsScriptInitiatedPrintAllowed(frame, user_initiated))
     return;
 
-  if (delegate_->OverridePrint(web_frame))
+  if (delegate_->OverridePrint(frame))
     return;
 
   if (g_is_preview_enabled) {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-    print_preview_context_.InitWithFrame(web_frame);
+    print_preview_context_.InitWithFrame(frame);
     RequestPrintPreview(PRINT_PREVIEW_SCRIPTED);
 #endif
   } else {
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
-    Print(web_frame, blink::WebNode(), true /* is_scripted? */);
+    Print(frame, blink::WebNode(), true);
 #endif
   }
 }
@@ -996,7 +987,8 @@ bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PrintMsg_PrintPreview, OnPrintPreview)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintingDone, OnPrintingDone)
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
-    IPC_MESSAGE_HANDLER(PrintMsg_SetPrintingEnabled, OnSetPrintingEnabled)
+    IPC_MESSAGE_HANDLER(PrintMsg_SetScriptedPrintingBlocked,
+                        SetScriptedPrintBlocked)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -1008,17 +1000,33 @@ void PrintWebViewHelper::OnDestruct() {
   delete this;
 }
 
+bool PrintWebViewHelper::GetPrintFrame(blink::WebLocalFrame** frame) {
+  DCHECK(frame);
+  blink::WebView* webView = render_view()->GetWebView();
+  DCHECK(webView);
+  if (!webView)
+    return false;
+
+  // If the user has selected text in the currently focused frame we print
+  // only that frame (this makes print selection work for multiple frames).
+  blink::WebLocalFrame* focusedFrame = webView->focusedFrame();
+  *frame = focusedFrame->hasSelection()
+               ? focusedFrame
+               : webView->mainFrame()->toWebLocalFrame();
+  return true;
+}
+
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
 void PrintWebViewHelper::OnPrintPages() {
   if (ipc_nesting_level_> 1)
     return;
-
-  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
-
+  blink::WebLocalFrame* frame;
+  if (!GetPrintFrame(&frame))
+    return;
   // If we are printing a PDF extension frame, find the plugin node and print
   // that instead.
   auto plugin = delegate_->GetPdfElement(frame);
-  Print(frame, plugin, false /* is_scripted? */);
+  Print(frame, plugin, false);
 }
 
 void PrintWebViewHelper::OnPrintForSystemDialog() {
@@ -1041,7 +1049,13 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
   if (prep_frame_view_)
     return;
 
-  blink::WebDocument document = render_frame()->GetWebFrame()->document();
+  if (!render_view()->GetWebView())
+    return;
+  blink::WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
+  if (!main_frame)
+    return;
+
+  blink::WebDocument document = main_frame->document();
   // <object>/<iframe> with id="pdf-viewer" is created in
   // chrome/browser/resources/print_preview/print_preview.js
   blink::WebElement pdf_element = document.getElementById("pdf-viewer");
@@ -1188,7 +1202,7 @@ void PrintWebViewHelper::PrepareFrameForPreviewDocument() {
       print_params, print_preview_context_.source_frame(),
       print_preview_context_.source_node(), ignore_css_margins_));
   prep_frame_view_->CopySelectionIfNeeded(
-      render_frame()->GetWebkitPreferences(),
+      render_view()->GetWebkitPreferences(),
       base::Bind(&PrintWebViewHelper::OnFramePreparedForPreviewDocument,
                  base::Unretained(this)));
 }
@@ -1373,17 +1387,17 @@ void PrintWebViewHelper::OnPrintingDone(bool success) {
   DidFinishPrinting(success ? OK : FAIL_PRINT);
 }
 
-void PrintWebViewHelper::OnSetPrintingEnabled(bool enabled) {
-  is_printing_enabled_ = enabled;
+void PrintWebViewHelper::SetScriptedPrintBlocked(bool blocked) {
+  is_scripted_printing_blocked_ = blocked;
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-void PrintWebViewHelper::OnInitiatePrintPreview(bool has_selection) {
+void PrintWebViewHelper::OnInitiatePrintPreview(bool selection_only) {
   if (ipc_nesting_level_ > 1)
     return;
-
-  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
-
+  blink::WebLocalFrame* frame = NULL;
+  GetPrintFrame(&frame);
+  DCHECK(frame);
   // If we are printing a PDF extension frame, find the plugin node and print
   // that instead.
   auto plugin = delegate_->GetPdfElement(frame);
@@ -1392,14 +1406,16 @@ void PrintWebViewHelper::OnInitiatePrintPreview(bool has_selection) {
     return;
   }
   print_preview_context_.InitWithFrame(frame);
-  RequestPrintPreview(has_selection
+  RequestPrintPreview(selection_only
                           ? PRINT_PREVIEW_USER_INITIATED_SELECTION
                           : PRINT_PREVIEW_USER_INITIATED_ENTIRE_FRAME);
 }
 #endif
 
-bool PrintWebViewHelper::IsPrintingEnabled() const {
-  return is_printing_enabled_;
+bool PrintWebViewHelper::IsPrintingEnabled() {
+  bool result = false;
+  Send(new PrintHostMsg_IsPrintingEnabled(routing_id(), &result));
+  return result;
 }
 
 void PrintWebViewHelper::PrintNode(const blink::WebNode& node) {
@@ -1794,7 +1810,7 @@ bool PrintWebViewHelper::RenderPagesForPrint(blink::WebLocalFrame* frame,
   DCHECK(!print_pages_params_->params.selection_only ||
          print_pages_params_->pages.empty());
   prep_frame_view_->CopySelectionIfNeeded(
-      render_frame()->GetWebkitPreferences(),
+      render_view()->GetWebkitPreferences(),
       base::Bind(&PrintWebViewHelper::OnFramePreparedForPrintPages,
                  base::Unretained(this)));
   return true;

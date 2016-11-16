@@ -15,8 +15,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/public/renderer/render_frame_observer.h"
-#include "content/public/renderer/render_frame_observer_tracker.h"
+#include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer_tracker.h"
 #include "printing/features/features.h"
 #include "printing/pdf_metafile_skia.h"
 #include "third_party/WebKit/public/platform/WebCanvas.h"
@@ -78,16 +78,17 @@ class FrameReference {
 // We plan on making print asynchronous and that will require copying the DOM
 // of the document and creating a new WebView with the contents.
 class PrintWebViewHelper
-    : public content::RenderFrameObserver,
-      public content::RenderFrameObserverTracker<PrintWebViewHelper> {
+    : public content::RenderViewObserver,
+      public content::RenderViewObserverTracker<PrintWebViewHelper> {
  public:
   class Delegate {
    public:
     virtual ~Delegate() {}
 
-    // Cancels prerender if it's currently in progress and returns true if the
-    // cancellation succeeded.
-    virtual bool CancelPrerender(content::RenderFrame* render_frame) = 0;
+    // Cancels prerender if it's currently in progress and returns |true| if
+    // the cancellation was done with success.
+    virtual bool CancelPrerender(content::RenderView* render_view,
+                                 int routing_id) = 0;
 
     // Returns the element to be printed. Returns a null WebElement if
     // a pdf plugin element can't be extracted from the frame.
@@ -108,7 +109,7 @@ class PrintWebViewHelper
     virtual bool OverridePrint(blink::WebLocalFrame* frame) = 0;
   };
 
-  PrintWebViewHelper(content::RenderFrame* render_frame,
+  PrintWebViewHelper(content::RenderView* render_view,
                      std::unique_ptr<Delegate> delegate);
   ~PrintWebViewHelper() override;
 
@@ -121,7 +122,7 @@ class PrintWebViewHelper
   // printing is build-in. This method is used by CEF.
   static void DisablePreview();
 
-  bool IsPrintingEnabled() const;
+  bool IsPrintingEnabled();
 
   void PrintNode(const blink::WebNode& node);
 
@@ -167,13 +168,12 @@ class PrintWebViewHelper
     PRINT_PREVIEW_SCRIPTED  // triggered by window.print().
   };
 
-  // RenderFrameObserver implementation.
-  void OnDestruct() override;
-  void DidStartProvisionalLoad() override;
-  void DidFailProvisionalLoad(const blink::WebURLError& error) override;
-  void DidFinishLoad() override;
-  void ScriptedPrint(bool user_initiated) override;
+  // RenderViewObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
+  void PrintPage(blink::WebLocalFrame* frame, bool user_initiated) override;
+  void DidStartLoading() override;
+  void DidStopLoading() override;
+  void OnDestruct() override;
 
   // Message handlers ---------------------------------------------------------
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
@@ -182,7 +182,7 @@ class PrintWebViewHelper
   void OnPrintForPrintPreview(const base::DictionaryValue& job_settings);
 #endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  void OnInitiatePrintPreview(bool has_selection);
+  void OnInitiatePrintPreview(bool selection_only);
   void OnPrintPreview(const base::DictionaryValue& settings);
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
   void OnPrintingDone(bool success);
@@ -216,8 +216,9 @@ class PrintWebViewHelper
   bool FinalizePrintReadyDocument();
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
-  // Enable/Disable printing.
-  void OnSetPrintingEnabled(bool enabled);
+  // Enable/Disable window.print calls.  If |blocked| is true window.print
+  // calls will silently fail.  Call with |blocked| set to false to reenable.
+  void SetScriptedPrintBlocked(bool blocked);
 
   // Main printing code -------------------------------------------------------
 
@@ -340,6 +341,8 @@ class PrintWebViewHelper
                                    const PrintMsg_Print_Params& params);
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
+  bool GetPrintFrame(blink::WebLocalFrame** frame);
+
   // Script Initiated Printing ------------------------------------------------
 
   // Return true if script initiated printing is currently
@@ -376,7 +379,8 @@ class PrintWebViewHelper
   bool is_print_ready_metafile_sent_;
   bool ignore_css_margins_;
 
-  bool is_printing_enabled_;
+  // Used for scripted initiated printing blocking.
+  bool is_scripted_printing_blocked_;
 
   // Let the browser process know of a printing failure. Only set to false when
   // the failure came from the browser in the first place.

@@ -906,11 +906,11 @@ void ShowWebsiteSettings(Browser* browser,
 
 void Print(Browser* browser) {
 #if BUILDFLAG(ENABLE_PRINTING)
-  auto* web_contents = browser->tab_strip_model()->GetActiveWebContents();
-  printing::StartPrint(web_contents, browser->profile()->GetPrefs()->GetBoolean(
-                                         prefs::kPrintPreviewDisabled),
-                       false /* has_selection? */);
-#endif
+  printing::StartPrint(
+      browser->tab_strip_model()->GetActiveWebContents(),
+      browser->profile()->GetPrefs()->GetBoolean(prefs::kPrintPreviewDisabled),
+      false);
+#endif  // BUILDFLAG(ENABLE_PRINTING)
 }
 
 bool CanPrint(Browser* browser) {

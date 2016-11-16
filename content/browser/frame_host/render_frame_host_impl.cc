@@ -299,7 +299,6 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       web_ui_type_(WebUI::kNoWebUI),
       pending_web_ui_type_(WebUI::kNoWebUI),
       should_reuse_web_ui_(false),
-      has_selection_(false),
       last_navigation_lofi_state_(LOFI_UNSPECIFIED),
       frame_host_binding_(this),
       waiting_for_init_(renderer_initiated_creation),
@@ -2111,7 +2110,6 @@ void RenderFrameHostImpl::OnSerializeAsMHTMLResponse(
 void RenderFrameHostImpl::OnSelectionChanged(const base::string16& text,
                                              uint32_t offset,
                                              const gfx::Range& range) {
-  has_selection_ = !text.empty();
   GetRenderWidgetHost()->SelectionChanged(text, offset, range);
 }
 
@@ -2891,10 +2889,6 @@ void RenderFrameHostImpl::FilesSelectedInChooser(
   }
 
   Send(new FrameMsg_RunFileChooserResponse(routing_id_, files));
-}
-
-bool RenderFrameHostImpl::HasSelection() {
-  return has_selection_;
 }
 
 void RenderFrameHostImpl::GetInterfaceProvider(
