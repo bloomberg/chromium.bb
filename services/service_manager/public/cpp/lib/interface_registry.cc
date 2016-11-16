@@ -6,6 +6,7 @@
 
 #include <sstream>
 
+#include "base/logging.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "services/service_manager/public/cpp/connection.h"
 
@@ -201,13 +202,17 @@ void InterfaceRegistry::GetInterface(const std::string& interface_name,
     } else if (!default_binder_.is_null()) {
       default_binder_.Run(interface_name, std::move(handle));
     } else {
-      std::stringstream ss;
-      ss << "Failed to locate a binder for interface: " << interface_name
-         << " requested by: " << remote_identity_.name() << " exposed by: "
-         << local_identity_.name() << " via InterfaceProviderSpec \"" << name_
-         << "\".";
-      Serialize(&ss);
-      LOG(ERROR) << ss.str();
+      // TODO(miu): Disable spammy logging until client --> embedder service
+      // issue is fixed. https://crbug.com/664595
+      if (VLOG_IS_ON(1)) {
+        std::stringstream ss;
+        ss << "Failed to locate a binder for interface: " << interface_name
+           << " requested by: " << remote_identity_.name() << " exposed by: "
+           << local_identity_.name() << " via InterfaceProviderSpec \"" << name_
+           << "\".";
+        Serialize(&ss);
+        VLOG(1) << ss.str();
+      }
     }
   } else {
     std::stringstream ss;
