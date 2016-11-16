@@ -330,7 +330,7 @@ class NET_EXPORT URLRequestJob : public base::PowerObserver {
   void ReadRawDataComplete(int bytes_read);
 
   // The request that initiated this job. This value will never be nullptr.
-  URLRequest* request_;
+  URLRequest* const request_;
 
  private:
   class URLRequestJobSourceStream;
