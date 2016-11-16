@@ -281,9 +281,6 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
 
   double elapsedTime = WTF::monotonicallyIncreasingTime() - commitStartTime;
 
-  // TODO(crbug.com/663916): The off-main-thread metrics are commented-out
-  // because they cause thread check errors (static variable accessed in many
-  // threads)
   switch (commitType) {
     case CommitGPUCanvasGPUCompositing:
       if (isMainThread()) {
@@ -292,13 +289,14 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
             ("Blink.Canvas.OffscreenCommit.GPUCanvasGPUCompositingMain", 0,
              10000000, 50));
         commitGPUCanvasGPUCompositingMainTimer.count(elapsedTime * 1000000.0);
-      } /* else {
-        DEFINE_STATIC_LOCAL(
+      } else {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(
             CustomCountHistogram, commitGPUCanvasGPUCompositingWorkerTimer,
-            ("Blink.Canvas.OffscreenCommit.GPUCanvasGPUCompositingWorker", 0,
-             10000000, 50));
+            new CustomCountHistogram(
+                "Blink.Canvas.OffscreenCommit.GPUCanvasGPUCompositingWorker", 0,
+                10000000, 50));
         commitGPUCanvasGPUCompositingWorkerTimer.count(elapsedTime * 1000000.0);
-      } */
+      }
       break;
     case CommitGPUCanvasSoftwareCompositing:
       if (isMainThread()) {
@@ -308,14 +306,15 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
              10000000, 50));
         commitGPUCanvasSoftwareCompositingMainTimer.count(elapsedTime *
                                                           1000000.0);
-      } /* else {
-        DEFINE_STATIC_LOCAL(
+      } else {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(
             CustomCountHistogram, commitGPUCanvasSoftwareCompositingWorkerTimer,
-            ("Blink.Canvas.OffscreenCommit.GPUCanvasSoftwareCompositingWorker",
-             0, 10000000, 50));
+            new CustomCountHistogram("Blink.Canvas.OffscreenCommit."
+                                     "GPUCanvasSoftwareCompositingWorker",
+                                     0, 10000000, 50));
         commitGPUCanvasSoftwareCompositingWorkerTimer.count(elapsedTime *
                                                             1000000.0);
-      } */
+      }
       break;
     case CommitSoftwareCanvasGPUCompositing:
       if (isMainThread()) {
@@ -325,14 +324,15 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
              10000000, 50));
         commitSoftwareCanvasGPUCompositingMainTimer.count(elapsedTime *
                                                           1000000.0);
-      } /* else {
-        DEFINE_STATIC_LOCAL(
+      } else {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(
             CustomCountHistogram, commitSoftwareCanvasGPUCompositingWorkerTimer,
-            ("Blink.Canvas.OffscreenCommit.SoftwareCanvasGPUCompositingWorker",
-             0, 10000000, 50));
+            new CustomCountHistogram("Blink.Canvas.OffscreenCommit."
+                                     "SoftwareCanvasGPUCompositingWorker",
+                                     0, 10000000, 50));
         commitSoftwareCanvasGPUCompositingWorkerTimer.count(elapsedTime *
                                                             1000000.0);
-      } */
+      }
       break;
     case CommitSoftwareCanvasSoftwareCompositing:
       if (isMainThread()) {
@@ -343,15 +343,16 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
                              0, 10000000, 50));
         commitSoftwareCanvasSoftwareCompositingMainTimer.count(elapsedTime *
                                                                1000000.0);
-      } /* else {
-        DEFINE_STATIC_LOCAL(CustomCountHistogram,
-                            commitSoftwareCanvasSoftwareCompositingWorkerTimer,
-                            ("Blink.Canvas.OffscreenCommit."
-                             "SoftwareCanvasSoftwareCompositingWorker",
-                             0, 10000000, 50));
+      } else {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(
+            CustomCountHistogram,
+            commitSoftwareCanvasSoftwareCompositingWorkerTimer,
+            new CustomCountHistogram("Blink.Canvas.OffscreenCommit."
+                                     "SoftwareCanvasSoftwareCompositingWorker",
+                                     0, 10000000, 50));
         commitSoftwareCanvasSoftwareCompositingWorkerTimer.count(elapsedTime *
                                                                  1000000.0);
-      } */
+      }
       break;
     case OffscreenCanvasCommitTypeCount:
       NOTREACHED();
