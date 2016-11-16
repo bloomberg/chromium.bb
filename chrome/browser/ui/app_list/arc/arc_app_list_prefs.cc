@@ -688,23 +688,19 @@ void ArcAppListPrefs::OnInstanceClosed() {
   package_list_initial_refreshed_ = false;
 }
 
-void ArcAppListPrefs::MaybeAddNonLaunchableApp(const std::string& name,
-                                               const std::string& package_name,
-                                               const std::string& activity) {
+void ArcAppListPrefs::MaybeAddNonLaunchableApp(
+    const base::Optional<std::string>& name,
+    const std::string& package_name,
+    const std::string& activity) {
   DCHECK(IsArcEnabled());
   if (IsRegistered(GetAppId(package_name, activity)))
     return;
 
-  AddAppAndShortcut(true /* app_ready */,
-                    name, package_name,
-                    activity,
-                    std::string() /* intent_uri */,
-                    std::string() /* icon_resource_id */,
-                    false /* sticky */,
-                    false /* notifications_enabled */,
-                    false /* shortcut */,
-                    false /* launchable */,
-                    arc::mojom::OrientationLock::NONE);
+  AddAppAndShortcut(true /* app_ready */, name.has_value() ? *name : "",
+                    package_name, activity, std::string() /* intent_uri */,
+                    std::string() /* icon_resource_id */, false /* sticky */,
+                    false /* notifications_enabled */, false /* shortcut */,
+                    false /* launchable */, arc::mojom::OrientationLock::NONE);
 }
 
 void ArcAppListPrefs::AddAppAndShortcut(
@@ -866,7 +862,7 @@ void ArcAppListPrefs::RemovePackageFromPrefs(PrefService* prefs,
 }
 
 void ArcAppListPrefs::OnAppListRefreshed(
-    mojo::Array<arc::mojom::AppInfoPtr> apps) {
+    std::vector<arc::mojom::AppInfoPtr> apps) {
   DCHECK(IsArcEnabled());
   std::vector<std::string> old_apps = GetAppIds();
 
@@ -916,8 +912,8 @@ void ArcAppListPrefs::OnTaskOrientationLockRequested(
 }
 
 void ArcAppListPrefs::AddApp(const arc::mojom::AppInfo& app_info) {
-  if ((app_info.name.get().empty() || app_info.package_name.get().empty() ||
-       app_info.activity.get().empty())) {
+  if ((app_info.name.empty() || app_info.package_name.empty() ||
+       app_info.activity.empty())) {
     VLOG(2) << "App Name, package name, and activity cannot be empty.";
     return;
   }
@@ -940,9 +936,9 @@ void ArcAppListPrefs::OnAppAddedDeprecated(arc::mojom::AppInfoPtr app) {
 }
 
 void ArcAppListPrefs::OnPackageAppListRefreshed(
-    const mojo::String& package_name,
-    mojo::Array<arc::mojom::AppInfoPtr> apps) {
-  if (package_name.get().empty()) {
+    const std::string& package_name,
+    std::vector<arc::mojom::AppInfoPtr> apps) {
+  if (package_name.empty()) {
     VLOG(2) << "Package name cannot be empty.";
     return;
   }
@@ -959,7 +955,7 @@ void ArcAppListPrefs::OnPackageAppListRefreshed(
 }
 
 void ArcAppListPrefs::OnInstallShortcut(arc::mojom::ShortcutInfoPtr shortcut) {
-  if ((shortcut->name.get().empty() || shortcut->intent_uri.get().empty())) {
+  if ((shortcut->name.empty() || shortcut->intent_uri.empty())) {
     VLOG(2) << "Shortcut Name, and intent_uri cannot be empty.";
     return;
   }
@@ -1005,7 +1001,7 @@ std::unordered_set<std::string> ArcAppListPrefs::GetAppsForPackage(
   return app_set;
 }
 
-void ArcAppListPrefs::OnPackageRemoved(const mojo::String& package_name) {
+void ArcAppListPrefs::OnPackageRemoved(const std::string& package_name) {
   const std::unordered_set<std::string> apps_to_remove =
       GetAppsForPackage(package_name);
   for (const auto& app_id : apps_to_remove)
@@ -1016,10 +1012,10 @@ void ArcAppListPrefs::OnPackageRemoved(const mojo::String& package_name) {
     observer.OnPackageRemoved(package_name);
 }
 
-void ArcAppListPrefs::OnAppIcon(const mojo::String& package_name,
-                                const mojo::String& activity,
+void ArcAppListPrefs::OnAppIcon(const std::string& package_name,
+                                const std::string& activity,
                                 arc::mojom::ScaleFactor scale_factor,
-                                mojo::Array<uint8_t> icon_png_data) {
+                                const std::vector<uint8_t>& icon_png_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_NE(0u, icon_png_data.size());
 
@@ -1030,12 +1026,12 @@ void ArcAppListPrefs::OnAppIcon(const mojo::String& package_name,
   }
 
   InstallIcon(app_id, static_cast<ui::ScaleFactor>(scale_factor),
-              icon_png_data.To<std::vector<uint8_t>>());
+              icon_png_data);
 }
 
-void ArcAppListPrefs::OnIcon(const mojo::String& app_id,
+void ArcAppListPrefs::OnIcon(const std::string& app_id,
                              arc::mojom::ScaleFactor scale_factor,
-                             mojo::Array<uint8_t> icon_png_data) {
+                             const std::vector<uint8_t>& icon_png_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_NE(0u, icon_png_data.size());
 
@@ -1045,13 +1041,13 @@ void ArcAppListPrefs::OnIcon(const mojo::String& app_id,
   }
 
   InstallIcon(app_id, static_cast<ui::ScaleFactor>(scale_factor),
-              icon_png_data.To<std::vector<uint8_t>>());
+              icon_png_data);
 }
 
 void ArcAppListPrefs::OnTaskCreated(int32_t task_id,
-                                    const mojo::String& package_name,
-                                    const mojo::String& activity,
-                                    const mojo::String& name) {
+                                    const std::string& package_name,
+                                    const std::string& activity,
+                                    const base::Optional<std::string>& name) {
   MaybeAddNonLaunchableApp(name, package_name, activity);
   for (auto& observer : observer_list_)
     observer.OnTaskCreated(task_id, package_name, activity);
@@ -1068,7 +1064,7 @@ void ArcAppListPrefs::OnTaskSetActive(int32_t task_id) {
 }
 
 void ArcAppListPrefs::OnNotificationsEnabledChanged(
-    const mojo::String& package_name,
+    const std::string& package_name,
     bool enabled) {
   const base::DictionaryValue* apps = prefs_->GetDictionary(prefs::kArcApps);
   for (base::DictionaryValue::Iterator app(*apps); !app.IsAtEnd();
@@ -1140,7 +1136,7 @@ void ArcAppListPrefs::OnPackageModified(
 }
 
 void ArcAppListPrefs::OnPackageListRefreshed(
-    mojo::Array<arc::mojom::ArcPackageInfoPtr> packages) {
+    std::vector<arc::mojom::ArcPackageInfoPtr> packages) {
   DCHECK(IsArcEnabled());
 
   const std::vector<std::string> old_packages(GetPackagesFromPrefs());

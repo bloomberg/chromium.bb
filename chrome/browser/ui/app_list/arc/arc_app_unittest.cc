@@ -661,12 +661,12 @@ TEST_F(ArcAppModelBuilderTest, LaunchShortcuts) {
   item_last->Activate(0);
   item_first->Activate(0);
 
-  const std::vector<std::unique_ptr<mojo::String>>& launch_intents =
+  const std::vector<std::string>& launch_intents =
       app_instance()->launch_intents();
   ASSERT_EQ(3u, launch_intents.size());
-  EXPECT_EQ(app_first.intent_uri, *launch_intents[0]);
-  EXPECT_EQ(app_last.intent_uri, *launch_intents[1]);
-  EXPECT_EQ(app_first.intent_uri, *launch_intents[2]);
+  EXPECT_EQ(app_first.intent_uri, launch_intents[0]);
+  EXPECT_EQ(app_last.intent_uri, launch_intents[1]);
+  EXPECT_EQ(app_first.intent_uri, launch_intents[2]);
 
   // Test an attempt to launch of a not-ready shortcut.
   arc_test()->StopArcInstance();

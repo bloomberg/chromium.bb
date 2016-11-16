@@ -81,42 +81,42 @@ class FakeAppInstance : public mojom::AppInstance {
   // mojom::AppInstance overrides:
   void Init(mojom::AppHostPtr host_ptr) override {}
   void RefreshAppList() override;
-  void LaunchApp(const mojo::String& package_name,
-                 const mojo::String& activity,
+  void LaunchApp(const std::string& package_name,
+                 const std::string& activity,
                  const base::Optional<gfx::Rect>& dimension) override;
-  void RequestAppIcon(const mojo::String& package_name,
-                      const mojo::String& activity,
+  void RequestAppIcon(const std::string& package_name,
+                      const std::string& activity,
                       mojom::ScaleFactor scale_factor) override;
   void LaunchIntent(
-      const mojo::String& intent_uri,
+      const std::string& intent_uri,
       const base::Optional<gfx::Rect>& dimension_on_screen) override;
-  void RequestIcon(const mojo::String& icon_resource_id,
+  void RequestIcon(const std::string& icon_resource_id,
                    mojom::ScaleFactor scale_factor,
                    const RequestIconCallback& callback) override;
-  void RemoveCachedIcon(const mojo::String& icon_resource_id) override;
+  void RemoveCachedIcon(const std::string& icon_resource_id) override;
   void CanHandleResolution(
-      const mojo::String& package_name,
-      const mojo::String& activity,
+      const std::string& package_name,
+      const std::string& activity,
       const gfx::Rect& dimension,
       const CanHandleResolutionCallback& callback) override;
-  void UninstallPackage(const mojo::String& package_name) override;
+  void UninstallPackage(const std::string& package_name) override;
   void GetTaskInfo(int32_t task_id,
                    const GetTaskInfoCallback& callback) override;
   void SetTaskActive(int32_t task_id) override;
   void CloseTask(int32_t task_id) override;
-  void ShowPackageInfoDeprecated(const mojo::String& package_name,
+  void ShowPackageInfoDeprecated(const std::string& package_name,
                                  const gfx::Rect& dimension_on_screen) override;
-  void ShowPackageInfoOnPage(const mojo::String& package_name,
+  void ShowPackageInfoOnPage(const std::string& package_name,
                              mojom::ShowPackageInfoPage page,
                              const gfx::Rect& dimension_on_screen) override;
-  void SetNotificationsEnabled(const mojo::String& package_name,
+  void SetNotificationsEnabled(const std::string& package_name,
                                bool enabled) override;
   void InstallPackage(mojom::ArcPackageInfoPtr arcPackageInfo) override;
 
   // Methods to reply messages.
   void SendRefreshAppList(const std::vector<mojom::AppInfo>& apps);
   void SendAppAdded(const mojom::AppInfo& app);
-  void SendPackageAppListRefreshed(const mojo::String& package_name,
+  void SendPackageAppListRefreshed(const std::string& package_name,
                                    const std::vector<mojom::AppInfo>& apps);
   void SendTaskCreated(int32_t taskId, const mojom::AppInfo& app);
   void SendTaskDestroyed(int32_t taskId);
@@ -131,7 +131,7 @@ class FakeAppInstance : public mojom::AppInstance {
   void SendRefreshPackageList(
       const std::vector<mojom::ArcPackageInfo>& packages);
   void SendPackageAdded(const mojom::ArcPackageInfo& package);
-  void SendPackageUninstalled(const mojo::String& pacakge_name);
+  void SendPackageUninstalled(const std::string& pacakge_name);
 
   int refresh_app_list_count() const { return refresh_app_list_count_; }
 
@@ -139,7 +139,7 @@ class FakeAppInstance : public mojom::AppInstance {
     return launch_requests_;
   }
 
-  const std::vector<std::unique_ptr<mojo::String>>& launch_intents() const {
+  const std::vector<std::string>& launch_intents() const {
     return launch_intents_;
   }
 
@@ -161,7 +161,7 @@ class FakeAppInstance : public mojom::AppInstance {
   // Keeps information about launch requests.
   std::vector<std::unique_ptr<Request>> launch_requests_;
   // Keeps information about launch intents.
-  std::vector<std::unique_ptr<mojo::String>> launch_intents_;
+  std::vector<std::string> launch_intents_;
   // Keeps information about icon load requests.
   std::vector<std::unique_ptr<IconRequest>> icon_requests_;
   // Keeps information about shortcut icon load requests.

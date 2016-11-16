@@ -47,14 +47,14 @@ void FakeAppInstance::RefreshAppList() {
   ++refresh_app_list_count_;
 }
 
-void FakeAppInstance::LaunchApp(const mojo::String& package_name,
-                                const mojo::String& activity,
+void FakeAppInstance::LaunchApp(const std::string& package_name,
+                                const std::string& activity,
                                 const base::Optional<gfx::Rect>& dimension) {
   launch_requests_.push_back(base::MakeUnique<Request>(package_name, activity));
 }
 
-void FakeAppInstance::RequestAppIcon(const mojo::String& package_name,
-                                     const mojo::String& activity,
+void FakeAppInstance::RequestAppIcon(const std::string& package_name,
+                                     const std::string& activity,
                                      mojom::ScaleFactor scale_factor) {
   icon_requests_.push_back(
       base::MakeUnique<IconRequest>(package_name, activity, scale_factor));
@@ -62,15 +62,19 @@ void FakeAppInstance::RequestAppIcon(const mojo::String& package_name,
 
 void FakeAppInstance::SendRefreshAppList(
     const std::vector<mojom::AppInfo>& apps) {
-  app_host_->OnAppListRefreshed(mojo::Array<mojom::AppInfoPtr>::From(apps));
+  std::vector<mojom::AppInfoPtr> v;
+  for (const auto& app : apps)
+    v.emplace_back(app.Clone());
+  app_host_->OnAppListRefreshed(std::move(v));
 }
 
 void FakeAppInstance::SendPackageAppListRefreshed(
-    const mojo::String& package_name,
+    const std::string& package_name,
     const std::vector<mojom::AppInfo>& apps) {
-  app_host_->OnPackageAppListRefreshed(
-      package_name,
-      mojo::Array<mojom::AppInfoPtr>::From(apps));
+  std::vector<mojom::AppInfoPtr> v;
+  for (const auto& app : apps)
+    v.emplace_back(app.Clone());
+  app_host_->OnPackageAppListRefreshed(package_name, std::move(v));
 }
 
 void FakeAppInstance::SendInstallShortcuts(
@@ -168,27 +172,29 @@ void FakeAppInstance::SetTaskInfo(int32_t task_id,
 
 void FakeAppInstance::SendRefreshPackageList(
     const std::vector<mojom::ArcPackageInfo>& packages) {
-  app_host_->OnPackageListRefreshed(
-      mojo::Array<mojom::ArcPackageInfoPtr>::From(packages));
+  std::vector<mojom::ArcPackageInfoPtr> v;
+  for (const auto& package : packages)
+    v.emplace_back(package.Clone());
+  app_host_->OnPackageListRefreshed(std::move(v));
 }
 
 void FakeAppInstance::SendPackageAdded(const mojom::ArcPackageInfo& package) {
   app_host_->OnPackageAdded(mojom::ArcPackageInfoPtr(package.Clone()));
 }
 
-void FakeAppInstance::SendPackageUninstalled(const mojo::String& package_name) {
+void FakeAppInstance::SendPackageUninstalled(const std::string& package_name) {
   app_host_->OnPackageRemoved(package_name);
 }
 
 void FakeAppInstance::CanHandleResolution(
-    const mojo::String& package_name,
-    const mojo::String& activity,
+    const std::string& package_name,
+    const std::string& activity,
     const gfx::Rect& dimension,
     const CanHandleResolutionCallback& callback) {
   callback.Run(true);
 }
 
-void FakeAppInstance::UninstallPackage(const mojo::String& package_name) {
+void FakeAppInstance::UninstallPackage(const std::string& package_name) {
   app_host_->OnPackageRemoved(package_name);
 }
 
@@ -198,7 +204,7 @@ void FakeAppInstance::GetTaskInfo(int32_t task_id,
   if (it != task_id_to_info_.end())
     callback.Run(it->second->package_name(), it->second->activity());
   else
-    callback.Run(mojo::String(), mojo::String());
+    callback.Run(std::string(), std::string());
 }
 
 void FakeAppInstance::SetTaskActive(int32_t task_id) {
@@ -208,29 +214,28 @@ void FakeAppInstance::CloseTask(int32_t task_id) {
 }
 
 void FakeAppInstance::ShowPackageInfoDeprecated(
-    const mojo::String& package_name,
+    const std::string& package_name,
     const gfx::Rect& dimension_on_screen) {}
 
 void FakeAppInstance::ShowPackageInfoOnPage(
-    const mojo::String& package_name,
+    const std::string& package_name,
     mojom::ShowPackageInfoPage page,
     const gfx::Rect& dimension_on_screen) {}
 
-void FakeAppInstance::SetNotificationsEnabled(const mojo::String& package_name,
-                                              bool enabled) {
-}
+void FakeAppInstance::SetNotificationsEnabled(const std::string& package_name,
+                                              bool enabled) {}
 
 void FakeAppInstance::InstallPackage(mojom::ArcPackageInfoPtr arcPackageInfo) {
   app_host_->OnPackageAdded(std::move(arcPackageInfo));
 }
 
 void FakeAppInstance::LaunchIntent(
-    const mojo::String& intent_uri,
+    const std::string& intent_uri,
     const base::Optional<gfx::Rect>& dimension_on_screen) {
-  launch_intents_.push_back(base::MakeUnique<mojo::String>(intent_uri));
+  launch_intents_.push_back(intent_uri);
 }
 
-void FakeAppInstance::RequestIcon(const mojo::String& icon_resource_id,
+void FakeAppInstance::RequestIcon(const std::string& icon_resource_id,
                                   arc::mojom::ScaleFactor scale_factor,
                                   const RequestIconCallback& callback) {
   shortcut_icon_requests_.push_back(
@@ -242,6 +247,6 @@ void FakeAppInstance::RequestIcon(const mojo::String& icon_resource_id,
   }
 }
 
-void FakeAppInstance::RemoveCachedIcon(const mojo::String& icon_resource_id) {}
+void FakeAppInstance::RemoveCachedIcon(const std::string& icon_resource_id) {}
 
 }  // namespace arc

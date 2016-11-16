@@ -57,25 +57,26 @@ std::string GetTestApp2Id() {
   return ArcAppListPrefs::GetAppId(kTestAppPackage, kTestAppActivity2);
 }
 
-mojo::Array<arc::mojom::AppInfoPtr> GetTestAppsList(bool multi_app) {
-  std::vector<arc::mojom::AppInfo> apps;
+std::vector<arc::mojom::AppInfoPtr> GetTestAppsList(bool multi_app) {
+  std::vector<arc::mojom::AppInfoPtr> apps;
 
-  arc::mojom::AppInfo app;
-  app.name = kTestAppName;
-  app.package_name = kTestAppPackage;
-  app.activity = kTestAppActivity;
-  app.sticky = false;
-  apps.push_back(app);
+  arc::mojom::AppInfoPtr app(arc::mojom::AppInfo::New());
+  app->name = kTestAppName;
+  app->package_name = kTestAppPackage;
+  app->activity = kTestAppActivity;
+  app->sticky = false;
+  apps.push_back(std::move(app));
 
   if (multi_app) {
-    app.name = kTestAppName2;
-    app.package_name = kTestAppPackage;
-    app.activity = kTestAppActivity2;
-    app.sticky = false;
-    apps.push_back(app);
+    app = arc::mojom::AppInfo::New();
+    app->name = kTestAppName2;
+    app->package_name = kTestAppPackage;
+    app->activity = kTestAppActivity2;
+    app->sticky = false;
+    apps.push_back(std::move(app));
   }
 
-  return mojo::Array<arc::mojom::AppInfoPtr>::From(apps);
+  return apps;
 }
 
 ChromeLauncherController* chrome_controller() {
