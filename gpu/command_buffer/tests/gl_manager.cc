@@ -31,6 +31,7 @@
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
@@ -55,6 +56,14 @@ namespace gpu {
 namespace {
 
 uint64_t g_next_command_buffer_id = 0;
+
+void InitializeGpuPreferencesForTestingFromCommandLine(
+    const base::CommandLine& command_line,
+    GpuPreferences* preferences) {
+  // Only initialize specific GpuPreferences members used for testing.
+  preferences->use_passthrough_cmd_decoder =
+      command_line.HasSwitch(switches::kUsePassthroughCmdDecoder);
+}
 
 class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
@@ -250,6 +259,9 @@ void GLManager::InitializeWithCommandLine(
 
   context_lost_allowed_ = options.context_lost_allowed;
 
+  InitializeGpuPreferencesForTestingFromCommandLine(command_line,
+                                                    &gpu_preferences_);
+
   gles2::MailboxManager* mailbox_manager = NULL;
   if (options.share_mailbox_manager) {
     mailbox_manager = options.share_mailbox_manager->mailbox_manager();
@@ -273,7 +285,8 @@ void GLManager::InitializeWithCommandLine(
   }
 
   gl::GLContext* real_gl_context = NULL;
-  if (options.virtual_manager) {
+  if (options.virtual_manager &&
+      !gpu_preferences_.use_passthrough_cmd_decoder) {
     real_gl_context = options.virtual_manager->context();
   }
 
@@ -296,6 +309,7 @@ void GLManager::InitializeWithCommandLine(
       options.image_factory != nullptr;
   attribs.offscreen_framebuffer_size = options.size;
   attribs.buffer_preserved = options.preserve_backbuffer;
+  attribs.bind_generates_resource = options.bind_generates_resource;
 
   if (!context_group) {
     GpuDriverBugWorkarounds gpu_driver_bug_workaround(&command_line);
