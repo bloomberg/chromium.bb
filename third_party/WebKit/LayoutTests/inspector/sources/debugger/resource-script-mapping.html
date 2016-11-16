@@ -14,7 +14,7 @@ function test()
         InspectorTest.createWorkspace();
         InspectorTest.testTargetManager.addTarget(target);
         defaultScriptMapping = InspectorTest.testDebuggerWorkspaceBinding._targetToData.get(target)._defaultMapping;
-        var resourceScriptMapping = new Bindings.ResourceScriptMapping(InspectorTest.debuggerModel, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping, InspectorTest.testDebuggerWorkspaceBinding);
+        var resourceScriptMapping = new Bindings.ResourceScriptMapping(InspectorTest.debuggerModel, InspectorTest.testWorkspace, InspectorTest.testDebuggerWorkspaceBinding);
         return resourceScriptMapping;
     }
 

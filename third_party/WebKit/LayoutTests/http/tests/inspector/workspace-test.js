@@ -9,10 +9,9 @@ InspectorTest.createWorkspace = function(ignoreEvents)
     InspectorTest.testTargetManager = new SDK.TargetManager();
     InspectorTest.testWorkspace = new Workspace.Workspace();
     InspectorTest.testFileSystemWorkspaceBinding = new Bindings.FileSystemWorkspaceBinding(Workspace.isolatedFileSystemManager, InspectorTest.testWorkspace);
-    InspectorTest.testNetworkMapping = new Bindings.NetworkMapping(InspectorTest.testWorkspace);
     InspectorTest.testNetworkProjectManager = new Bindings.NetworkProjectManager(InspectorTest.testTargetManager, InspectorTest.testWorkspace);
-    InspectorTest.testDebuggerWorkspaceBinding = new Bindings.DebuggerWorkspaceBinding(InspectorTest.testTargetManager, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping);
-    InspectorTest.testCSSWorkspaceBinding = new Bindings.CSSWorkspaceBinding(InspectorTest.testTargetManager, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping);
+    InspectorTest.testDebuggerWorkspaceBinding = new Bindings.DebuggerWorkspaceBinding(InspectorTest.testTargetManager, InspectorTest.testWorkspace);
+    InspectorTest.testCSSWorkspaceBinding = new Bindings.CSSWorkspaceBinding(InspectorTest.testTargetManager, InspectorTest.testWorkspace);
 
     InspectorTest.testTargetManager.observeTargets({
         targetAdded: function(target)
