@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/updater/local_extension_cache.h"
 
 #include "base/bind.h"
+#include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/sequenced_task_runner.h"
@@ -251,16 +252,29 @@ void LocalExtensionCache::BackendCheckCacheStatus(
     base::WeakPtr<LocalExtensionCache> local_cache,
     const base::FilePath& cache_dir,
     const base::Closure& callback) {
-  const bool exists =
-      base::PathExists(cache_dir.AppendASCII(kCacheReadyFlagFileName));
+  base::FilePath ready_flag_file =
+      cache_dir.AppendASCII(kCacheReadyFlagFileName);
+  bool exists = base::PathExists(ready_flag_file);
 
-  static bool first_check = true;
-  if (first_check && !exists && !base::SysInfo::IsRunningOnChromeOS()) {
-    LOG(WARNING) << "Extensions will not be installed from update URLs until "
-                 << cache_dir.AppendASCII(kCacheReadyFlagFileName).value()
-                 << " exists.";
+  static bool already_warned = false;
+  if (!exists && !base::SysInfo::IsRunningOnChromeOS()) {
+    // This is a developer build. Automatically create the directory.
+    if (base::CreateDirectory(cache_dir)) {
+      base::File file(ready_flag_file, base::File::FLAG_OPEN_ALWAYS);
+      if (file.IsValid()) {
+        exists = true;
+      } else if (!already_warned) {
+        LOG(WARNING) << "Could not create cache file "
+                     << ready_flag_file.value()
+                     << "; extensions cannot be installed from update URLs.";
+        already_warned = true;
+      }
+    } else if (!already_warned) {
+      LOG(WARNING) << "Could not create cache directory " << cache_dir.value()
+                   << "; extensions cannot be installed from update URLs.";
+      already_warned = true;
+    }
   }
-  first_check = false;
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,

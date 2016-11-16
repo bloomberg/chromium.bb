@@ -52,22 +52,14 @@ class LocalExtensionCacheTest : public testing::Test {
         pool_owner_->pool()->GetNamedSequenceToken("background"));
   }
 
-  base::FilePath CreateCacheDir(bool initialized) {
+  base::FilePath CreateCacheDir() {
     EXPECT_TRUE(cache_dir_.CreateUniqueTempDir());
-    if (initialized)
-      CreateFlagFile(cache_dir_.GetPath());
     return cache_dir_.GetPath();
   }
 
   base::FilePath CreateTempDir() {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     return temp_dir_.GetPath();
-  }
-
-  void CreateFlagFile(const base::FilePath& dir) {
-    CreateFile(dir.Append(
-        extensions::LocalExtensionCache::kCacheReadyFlagFileName),
-        0, base::Time::Now());
   }
 
   void CreateExtensionFile(const base::FilePath& dir,
@@ -152,7 +144,7 @@ static void SimpleCallback(bool* ptr) {
 }
 
 TEST_F(LocalExtensionCacheTest, Basic) {
-  base::FilePath cache_dir(CreateCacheDir(false));
+  base::FilePath cache_dir(CreateCacheDir());
 
   LocalExtensionCache cache(cache_dir,
                             1000,
@@ -162,9 +154,6 @@ TEST_F(LocalExtensionCacheTest, Basic) {
 
   bool initialized = false;
   cache.Init(true, base::Bind(&SimpleCallback, &initialized));
-
-  WaitForCompletion();
-  EXPECT_FALSE(initialized);
 
   base::FilePath file10, file01, file20, file30;
   CreateExtensionFile(cache_dir, kTestExtensionId1, "1.0", 100,
@@ -179,8 +168,6 @@ TEST_F(LocalExtensionCacheTest, Basic) {
   CreateExtensionFile(cache_dir, kTestExtensionId3, "3.0", 900,
                       base::Time::Now() - base::TimeDelta::FromDays(41),
                       &file30);
-
-  CreateFlagFile(cache_dir);
 
   WaitForCompletion();
   ASSERT_TRUE(initialized);
@@ -206,7 +193,7 @@ TEST_F(LocalExtensionCacheTest, Basic) {
 }
 
 TEST_F(LocalExtensionCacheTest, KeepHashed) {
-  base::FilePath cache_dir(CreateCacheDir(false));
+  base::FilePath cache_dir(CreateCacheDir());
 
   LocalExtensionCache cache(cache_dir, 1000, base::TimeDelta::FromDays(30),
                             background_task_runner());
@@ -214,9 +201,6 @@ TEST_F(LocalExtensionCacheTest, KeepHashed) {
 
   bool initialized = false;
   cache.Init(true, base::Bind(&SimpleCallback, &initialized));
-
-  WaitForCompletion();
-  EXPECT_FALSE(initialized);
 
   // Add three identical extensions with different hash sums
   const base::Time time = base::Time::Now() - base::TimeDelta::FromDays(1);
@@ -226,8 +210,6 @@ TEST_F(LocalExtensionCacheTest, KeepHashed) {
       cache_dir, kTestExtensionId1, "1.0", 100, time, &file1);
   const std::string hash2 = CreateSignedExtensionFile(
       cache_dir, kTestExtensionId1, "1.0", 123, time, &file2);
-
-  CreateFlagFile(cache_dir);
 
   WaitForCompletion();
   ASSERT_TRUE(initialized);
@@ -247,7 +229,7 @@ TEST_F(LocalExtensionCacheTest, KeepHashed) {
 }
 
 TEST_F(LocalExtensionCacheTest, KeepLatest) {
-  base::FilePath cache_dir(CreateCacheDir(false));
+  base::FilePath cache_dir(CreateCacheDir());
 
   LocalExtensionCache cache(cache_dir, 1000, base::TimeDelta::FromDays(30),
                             background_task_runner());
@@ -255,9 +237,6 @@ TEST_F(LocalExtensionCacheTest, KeepLatest) {
 
   bool initialized = false;
   cache.Init(true, base::Bind(&SimpleCallback, &initialized));
-
-  WaitForCompletion();
-  EXPECT_FALSE(initialized);
 
   // All extension files are hashed, but have different versions
   const base::Time time = base::Time::Now() - base::TimeDelta::FromDays(1);
@@ -268,8 +247,6 @@ TEST_F(LocalExtensionCacheTest, KeepLatest) {
       cache_dir, kTestExtensionId1, "2.0", 101, time, &file21);
   const std::string hash22 = CreateSignedExtensionFile(
       cache_dir, kTestExtensionId1, "2.0", 123, time, &file22);
-
-  CreateFlagFile(cache_dir);
 
   WaitForCompletion();
   ASSERT_TRUE(initialized);
@@ -287,7 +264,7 @@ TEST_F(LocalExtensionCacheTest, KeepLatest) {
 }
 
 TEST_F(LocalExtensionCacheTest, Complex) {
-  base::FilePath cache_dir(CreateCacheDir(false));
+  base::FilePath cache_dir(CreateCacheDir());
 
   LocalExtensionCache cache(cache_dir, 1000, base::TimeDelta::FromDays(30),
                             background_task_runner());
@@ -295,9 +272,6 @@ TEST_F(LocalExtensionCacheTest, Complex) {
 
   bool initialized = false;
   cache.Init(true, base::Bind(&SimpleCallback, &initialized));
-
-  WaitForCompletion();
-  EXPECT_FALSE(initialized);
 
   // Like in KeepHashed test, but with two different versions
   const base::Time time = base::Time::Now() - base::TimeDelta::FromDays(1);
@@ -312,8 +286,6 @@ TEST_F(LocalExtensionCacheTest, Complex) {
       cache_dir, kTestExtensionId1, "2.0", 104, time, &file21);
   const std::string hash22 = CreateSignedExtensionFile(
       cache_dir, kTestExtensionId1, "2.0", 105, time, &file22);
-
-  CreateFlagFile(cache_dir);
 
   WaitForCompletion();
   ASSERT_TRUE(initialized);
@@ -358,7 +330,7 @@ static void PutExtensionAndWait(LocalExtensionCache& cache,
 }
 
 TEST_F(LocalExtensionCacheTest, PutExtensionCases) {
-  base::FilePath cache_dir(CreateCacheDir(false));
+  base::FilePath cache_dir(CreateCacheDir());
 
   LocalExtensionCache cache(cache_dir, 1000, base::TimeDelta::FromDays(30),
                             background_task_runner());
@@ -366,9 +338,6 @@ TEST_F(LocalExtensionCacheTest, PutExtensionCases) {
 
   bool initialized = false;
   cache.Init(true, base::Bind(&SimpleCallback, &initialized));
-
-  WaitForCompletion();
-  EXPECT_FALSE(initialized);
 
   // Initialize cache with several different files
   const base::Time time = base::Time::Now() - base::TimeDelta::FromDays(1);
@@ -380,8 +349,6 @@ TEST_F(LocalExtensionCacheTest, PutExtensionCases) {
   CreateSignedExtensionFile(cache_dir, kTestExtensionId2, "0.2", 200, time,
                             &file2);
   CreateExtensionFile(cache_dir, kTestExtensionId3, "0.3", 300, time, &file3);
-
-  CreateFlagFile(cache_dir);
 
   WaitForCompletion();
   ASSERT_TRUE(initialized);
