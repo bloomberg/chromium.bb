@@ -42,6 +42,9 @@ message WebApk {
   // The Web App Manifest.
   optional WebAppManifest manifest = 7;
 
+  // The cpu abi of the browser making the request.
+  optional string android_abi = 8;
+
   reserved 4;
 }
 

@@ -86,6 +86,27 @@ std::string ColorToString(int64_t color) {
   return base::StringPrintf("rgba(%d,%d,%d,%.2f)", r, g, b, a);
 }
 
+// Get Chrome's current ABI. It depends on whether Chrome is running as a 32 bit
+// app or 64 bit, and the device's cpu architecture as well. Note: please keep
+// this function stay in sync with |chromium_android_linker::GetCpuAbi()|.
+std::string getCurrentAbi() {
+#if defined(__arm__) && defined(__ARM_ARCH_7A__)
+  return "armeabi-v7a";
+#elif defined(__arm__)
+  return "armeabi";
+#elif defined(__i386__)
+  return  "x86";
+#elif defined(__mips__)
+  return "mips";
+#elif defined(__x86_64__)
+  return "x86_64";
+#elif defined(__aarch64__)
+  return "arm64-v8a";
+#else
+#error "Unsupported target abi"
+#endif
+}
+
 // Populates webapk::WebApk and returns it.
 // Must be called on a worker thread because it encodes an SkBitmap.
 std::unique_ptr<webapk::WebApk> BuildWebApkProtoInBackground(
@@ -99,6 +120,7 @@ std::unique_ptr<webapk::WebApk> BuildWebApkProtoInBackground(
   webapk->set_requester_application_package(
       base::android::BuildInfo::GetInstance()->package_name());
   webapk->set_requester_application_version(version_info::GetVersionNumber());
+  webapk->set_android_abi(getCurrentAbi());
 
   webapk::WebAppManifest* web_app_manifest = webapk->mutable_manifest();
   web_app_manifest->set_name(base::UTF16ToUTF8(shortcut_info.name));
