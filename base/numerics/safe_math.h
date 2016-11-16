@@ -195,12 +195,12 @@ class CheckedNumeric {
 //  * We skip range checks for floating points.
 //  * We skip range checks for destination integers with sufficient range.
 // TODO(jschuh): extract these out into templates.
-#define BASE_NUMERIC_ARITHMETIC_OPERATORS(NAME, OP, COMPOUND_OP)              \
+#define BASE_NUMERIC_ARITHMETIC_OPERATORS(NAME, OP, COMPOUND_OP, PROMOTION)   \
   /* Binary arithmetic operator for CheckedNumerics of the same type. */      \
   template <typename L, typename R>                                           \
-  CheckedNumeric<typename ArithmeticPromotion<L, R>::type> operator OP(       \
-      const CheckedNumeric<L>& lhs, const CheckedNumeric<R>& rhs) {           \
-    using P = typename ArithmeticPromotion<L, R>::type;                       \
+  CheckedNumeric<typename ArithmeticPromotion<PROMOTION, L, R>::type>         \
+  operator OP(const CheckedNumeric<L>& lhs, const CheckedNumeric<R>& rhs) {   \
+    using P = typename ArithmeticPromotion<PROMOTION, L, R>::type;            \
     if (!rhs.IsValid() || !lhs.IsValid())                                     \
       return CheckedNumeric<P>(0, false);                                     \
     /* Floating point always takes the fast path */                           \
@@ -222,24 +222,24 @@ class CheckedNumeric {
   template <typename L, typename R,                                           \
             typename std::enable_if<std::is_arithmetic<R>::value>::type* =    \
                 nullptr>                                                      \
-  CheckedNumeric<typename ArithmeticPromotion<L, R>::type> operator OP(       \
-      const CheckedNumeric<L>& lhs, R rhs) {                                  \
+  CheckedNumeric<typename ArithmeticPromotion<PROMOTION, L, R>::type>         \
+  operator OP(const CheckedNumeric<L>& lhs, R rhs) {                          \
     return lhs OP CheckedNumeric<R>(rhs);                                     \
   }                                                                           \
   /* Binary arithmetic operator for left numeric and right CheckedNumeric. */ \
   template <typename L, typename R,                                           \
             typename std::enable_if<std::is_arithmetic<L>::value>::type* =    \
                 nullptr>                                                      \
-  CheckedNumeric<typename ArithmeticPromotion<L, R>::type> operator OP(       \
-      L lhs, const CheckedNumeric<R>& rhs) {                                  \
+  CheckedNumeric<typename ArithmeticPromotion<PROMOTION, L, R>::type>         \
+  operator OP(L lhs, const CheckedNumeric<R>& rhs) {                          \
     return CheckedNumeric<L>(lhs) OP rhs;                                     \
   }
 
-BASE_NUMERIC_ARITHMETIC_OPERATORS(Add, +, += )
-BASE_NUMERIC_ARITHMETIC_OPERATORS(Sub, -, -= )
-BASE_NUMERIC_ARITHMETIC_OPERATORS(Mul, *, *= )
-BASE_NUMERIC_ARITHMETIC_OPERATORS(Div, /, /= )
-BASE_NUMERIC_ARITHMETIC_OPERATORS(Mod, %, %= )
+BASE_NUMERIC_ARITHMETIC_OPERATORS(Add, +, +=, MAX_EXPONENT_PROMOTION)
+BASE_NUMERIC_ARITHMETIC_OPERATORS(Sub, -, -=, MAX_EXPONENT_PROMOTION)
+BASE_NUMERIC_ARITHMETIC_OPERATORS(Mul, *, *=, MAX_EXPONENT_PROMOTION)
+BASE_NUMERIC_ARITHMETIC_OPERATORS(Div, /, /=, MAX_EXPONENT_PROMOTION)
+BASE_NUMERIC_ARITHMETIC_OPERATORS(Mod, %, %=, MAX_EXPONENT_PROMOTION)
 
 #undef BASE_NUMERIC_ARITHMETIC_OPERATORS
 

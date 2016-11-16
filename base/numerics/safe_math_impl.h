@@ -127,26 +127,103 @@ constexpr T BinaryComplement(T x) {
   return static_cast<T>(~x);
 }
 
-// For integers less than 128-bit and floats 32-bit or larger, we have the type
-// with the larger maximum exponent take precedence.
-enum ArithmeticPromotionCategory { LEFT_PROMOTION, RIGHT_PROMOTION };
+enum ArithmeticPromotionCategory {
+  LEFT_PROMOTION,          // Use the type of the left-hand argument.
+  RIGHT_PROMOTION,         // Use the type of the right-hand argument.
+  MAX_EXPONENT_PROMOTION,  // Use the type supporting the largest exponent.
+  BIG_ENOUGH_PROMOTION     // Attempt to find a big enough type.
+};
+
+template <ArithmeticPromotionCategory Promotion,
+          typename Lhs,
+          typename Rhs = Lhs>
+struct ArithmeticPromotion;
 
 template <typename Lhs,
-          typename Rhs = Lhs,
+          typename Rhs,
           ArithmeticPromotionCategory Promotion =
               (MaxExponent<Lhs>::value > MaxExponent<Rhs>::value)
                   ? LEFT_PROMOTION
                   : RIGHT_PROMOTION>
-struct ArithmeticPromotion;
+struct MaxExponentPromotion;
 
 template <typename Lhs, typename Rhs>
-struct ArithmeticPromotion<Lhs, Rhs, LEFT_PROMOTION> {
-  typedef Lhs type;
+struct MaxExponentPromotion<Lhs, Rhs, LEFT_PROMOTION> {
+  using type = Lhs;
 };
 
 template <typename Lhs, typename Rhs>
-struct ArithmeticPromotion<Lhs, Rhs, RIGHT_PROMOTION> {
-  typedef Rhs type;
+struct MaxExponentPromotion<Lhs, Rhs, RIGHT_PROMOTION> {
+  using type = Rhs;
+};
+
+template <typename Lhs,
+          typename Rhs = Lhs,
+          bool is_intmax_type =
+              std::is_integral<
+                  typename MaxExponentPromotion<Lhs, Rhs>::type>::value &&
+              sizeof(typename MaxExponentPromotion<Lhs, Rhs>::type) ==
+                  sizeof(intmax_t),
+          bool is_max_exponent =
+              StaticDstRangeRelationToSrcRange<
+                  typename MaxExponentPromotion<Lhs, Rhs>::type,
+                  Lhs>::value ==
+              NUMERIC_RANGE_CONTAINED&& StaticDstRangeRelationToSrcRange<
+                  typename MaxExponentPromotion<Lhs, Rhs>::type,
+                  Rhs>::value == NUMERIC_RANGE_CONTAINED>
+struct BigEnoughPromotion;
+
+// The side with the max exponent is big enough.
+template <typename Lhs, typename Rhs, bool is_intmax_type>
+struct BigEnoughPromotion<Lhs, Rhs, is_intmax_type, true> {
+  using type = typename MaxExponentPromotion<Lhs, Rhs>::type;
+  static const bool is_contained = true;
+};
+
+// We can use a twice wider type to fit.
+template <typename Lhs, typename Rhs>
+struct BigEnoughPromotion<Lhs, Rhs, false, false> {
+  using type = typename IntegerForSizeAndSign<
+      sizeof(typename MaxExponentPromotion<Lhs, Rhs>::type) * 2,
+      std::is_signed<Lhs>::value || std::is_signed<Rhs>::value>::type;
+  static const bool is_contained = true;
+};
+
+// No type is large enough.
+template <typename Lhs, typename Rhs>
+struct BigEnoughPromotion<Lhs, Rhs, true, false> {
+  using type = typename MaxExponentPromotion<Lhs, Rhs>::type;
+  static const bool is_contained = false;
+};
+
+// These are the four supported promotion types.
+
+// Use the type of the left-hand argument.
+template <typename Lhs, typename Rhs>
+struct ArithmeticPromotion<LEFT_PROMOTION, Lhs, Rhs> {
+  using type = Lhs;
+  static const bool is_contained = true;
+};
+
+// Use the type of the right-hand argument.
+template <typename Lhs, typename Rhs>
+struct ArithmeticPromotion<RIGHT_PROMOTION, Lhs, Rhs> {
+  using type = Rhs;
+  static const bool is_contained = true;
+};
+
+// Use the type supporting the largest exponent.
+template <typename Lhs, typename Rhs>
+struct ArithmeticPromotion<MAX_EXPONENT_PROMOTION, Lhs, Rhs> {
+  using type = typename MaxExponentPromotion<Lhs, Rhs>::type;
+  static const bool is_contained = true;
+};
+
+// Attempt to find a big enough type.
+template <typename Lhs, typename Rhs>
+struct ArithmeticPromotion<BIG_ENOUGH_PROMOTION, Lhs, Rhs> {
+  using type = typename BigEnoughPromotion<Lhs, Rhs>::type;
+  static const bool is_contained = BigEnoughPromotion<Lhs, Rhs>::is_contained;
 };
 
 // Here are the actual portable checked integer math implementations.
@@ -178,7 +255,8 @@ typename std::enable_if<std::numeric_limits<T>::is_integer &&
                             std::numeric_limits<V>::is_integer,
                         bool>::type
 CheckedAdd(T x, U y, V* result) {
-  using Promotion = typename ArithmeticPromotion<T, U>::type;
+  using Promotion =
+      typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
   // Fail if either operand is out of range for the promoted type.
   // TODO(jschuh): This could be made to work for a broader range of values.
   if (!IsValueInRangeForNumericType<Promotion>(x) ||
@@ -217,7 +295,8 @@ typename std::enable_if<std::numeric_limits<T>::is_integer &&
                             std::numeric_limits<V>::is_integer,
                         bool>::type
 CheckedSub(T x, U y, V* result) {
-  using Promotion = typename ArithmeticPromotion<T, U>::type;
+  using Promotion =
+      typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
   // Fail if either operand is out of range for the promoted type.
   // TODO(jschuh): This could be made to work for a broader range of values.
   if (!IsValueInRangeForNumericType<Promotion>(x) ||
@@ -293,7 +372,8 @@ typename std::enable_if<std::numeric_limits<T>::is_integer &&
                             std::numeric_limits<V>::is_integer,
                         bool>::type
 CheckedMul(T x, U y, V* result) {
-  using Promotion = typename ArithmeticPromotion<T, U>::type;
+  using Promotion =
+      typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
   // Fail if either operand is out of range for the promoted type.
   // TODO(jschuh): This could be made to work for a broader range of values.
   if (!IsValueInRangeForNumericType<Promotion>(x) ||
@@ -327,7 +407,8 @@ typename std::enable_if<std::numeric_limits<T>::is_integer &&
                             std::numeric_limits<V>::is_integer,
                         bool>::type
 CheckedDiv(T x, U y, V* result) {
-  using Promotion = typename ArithmeticPromotion<T, U>::type;
+  using Promotion =
+      typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
   // Fail if either operand is out of range for the promoted type.
   // TODO(jschuh): This could be made to work for a broader range of values.
   if (!IsValueInRangeForNumericType<Promotion>(x) ||
@@ -372,7 +453,8 @@ typename std::enable_if<std::numeric_limits<T>::is_integer &&
                             std::numeric_limits<V>::is_integer,
                         bool>::type
 CheckedMod(T x, U y, V* result) {
-  using Promotion = typename ArithmeticPromotion<T, U>::type;
+  using Promotion =
+      typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
   Promotion presult;
   bool is_valid = CheckedModImpl(static_cast<Promotion>(x),
                                  static_cast<Promotion>(y), &presult);
