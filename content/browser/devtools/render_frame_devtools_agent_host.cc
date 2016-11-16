@@ -16,6 +16,7 @@
 #include "content/browser/devtools/devtools_frame_trace_recorder.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/devtools_protocol_handler.h"
+#include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/page_navigation_throttle.h"
 #include "content/browser/devtools/protocol/dom_handler.h"
 #include "content/browser/devtools/protocol/emulation_handler.h"
@@ -149,7 +150,7 @@ RenderFrameDevToolsAgentHost::FrameHostHolder::~FrameHostHolder() {
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::Attach() {
   host_->Send(new DevToolsAgentMsg_Attach(
-      host_->GetRoutingID(), agent_->GetId(), agent_->session_id()));
+      host_->GetRoutingID(), agent_->GetId(), agent_->session()->session_id()));
   GrantPolicy();
   attached_ = true;
 }
@@ -159,7 +160,7 @@ void RenderFrameDevToolsAgentHost::FrameHostHolder::Reattach(
   if (old)
     chunk_processor_.set_state_cookie(old->chunk_processor_.state_cookie());
   host_->Send(new DevToolsAgentMsg_Reattach(
-      host_->GetRoutingID(), agent_->GetId(), agent_->session_id(),
+      host_->GetRoutingID(), agent_->GetId(), agent_->session()->session_id(),
       chunk_processor_.state_cookie()));
   if (old) {
     for (const auto& pair : old->sent_messages_) {
@@ -518,29 +519,33 @@ bool RenderFrameDevToolsAgentHost::DispatchProtocolMessage(
     const std::string& message) {
   int call_id = 0;
   std::string method;
-  if (protocol_handler_->HandleOptionalMessage(session_id(), message, &call_id,
-                                               &method))
+  if (protocol_handler_->HandleOptionalMessage(session()->session_id(), message,
+                                               &call_id, &method))
     return true;
 
   if (!navigating_handles_.empty()) {
     DCHECK(IsBrowserSideNavigationEnabled());
     in_navigation_protocol_message_buffer_[call_id] =
-        { session_id(), method, message };
+        { session()->session_id(), method, message };
     return true;
   }
 
-  if (current_)
-    current_->DispatchProtocolMessage(session_id(), call_id, method, message);
-  if (pending_)
-    pending_->DispatchProtocolMessage(session_id(), call_id, method, message);
+  if (current_) {
+    current_->DispatchProtocolMessage(
+        session()->session_id(), call_id, method, message);
+  }
+  if (pending_) {
+    pending_->DispatchProtocolMessage(
+        session()->session_id(), call_id, method, message);
+  }
   return true;
 }
 
 void RenderFrameDevToolsAgentHost::InspectElement(int x, int y) {
   if (current_)
-    current_->InspectElement(session_id(), x, y);
+    current_->InspectElement(session()->session_id(), x, y);
   if (pending_)
-    pending_->InspectElement(session_id(), x, y);
+    pending_->InspectElement(session()->session_id(), x, y);
 }
 
 void RenderFrameDevToolsAgentHost::OnClientAttached() {

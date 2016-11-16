@@ -23,6 +23,7 @@ class Message;
 namespace content {
 
 class BrowserContext;
+class DevToolsSession;
 
 // Describes interface for managing devtools agents from the browser process.
 class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost,
@@ -54,6 +55,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost,
   void ConnectWebContents(WebContents* wc) override;
 
   bool Inspect();
+  void SendMessageToClient(int session_id, const std::string& message);
 
   // DevToolsProtocolDelegate implementation.
   void SendProtocolResponse(int session_id,
@@ -71,10 +73,9 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost,
 
   void NotifyCreated();
   void HostClosed();
-  void SendMessageToClient(int session_id, const std::string& message);
   devtools::DevToolsIOContext* GetIOContext() { return &io_context_; }
 
-  int session_id() { DCHECK(client_); return session_id_; }
+  DevToolsSession* session() { return session_.get(); }
 
  private:
   friend class DevToolsAgentHost; // for static methods
@@ -86,6 +87,8 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost,
 
   const std::string id_;
   int session_id_;
+  int last_session_id_;
+  std::unique_ptr<DevToolsSession> session_;
   DevToolsAgentHostClient* client_;
   devtools::DevToolsIOContext io_context_;
   static int s_attached_count_;

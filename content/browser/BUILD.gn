@@ -423,6 +423,8 @@ source_set("browser") {
     "devtools/devtools_manager.h",
     "devtools/devtools_protocol_handler.cc",
     "devtools/devtools_protocol_handler.h",
+    "devtools/devtools_session.cc",
+    "devtools/devtools_session.h",
     "devtools/forwarding_agent_host.cc",
     "devtools/forwarding_agent_host.h",
     "devtools/page_navigation_throttle.cc",

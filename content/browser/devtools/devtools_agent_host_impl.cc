@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
 #include "content/browser/devtools/devtools_manager.h"
+#include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/forwarding_agent_host.h"
 #include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
@@ -103,7 +104,7 @@ scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetForWorker(
 
 DevToolsAgentHostImpl::DevToolsAgentHostImpl(const std::string& id)
     : id_(id),
-      session_id_(0),
+      last_session_id_(0),
       client_(NULL) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
@@ -140,12 +141,12 @@ bool DevToolsAgentHostImpl::InnerAttach(DevToolsAgentHostClient* client,
     return false;
 
   scoped_refptr<DevToolsAgentHostImpl> protect(this);
-  ++session_id_;
   if (client_) {
     client_->AgentHostClosed(this, true);
     InnerDetach();
   }
   client_ = client;
+  session_.reset(new DevToolsSession(this, ++last_session_id_));
   Attach();
   NotifyAttached();
   return true;
@@ -180,6 +181,7 @@ bool DevToolsAgentHostImpl::DispatchProtocolMessage(
 void DevToolsAgentHostImpl::InnerDetach() {
   Detach();
   io_context_.DiscardAllStreams();
+  session_.reset();
   NotifyDetached();
 }
 
@@ -250,7 +252,7 @@ void DevToolsAgentHostImpl::SendProtocolResponse(int session_id,
 
 void DevToolsAgentHostImpl::SendProtocolNotification(
     const std::string& message) {
-  SendMessageToClient(session_id_, message);
+  SendMessageToClient(session_ ? session_->session_id() : 0, message);
 }
 
 void DevToolsAgentHostImpl::HostClosed() {
@@ -273,7 +275,7 @@ void DevToolsAgentHostImpl::SendMessageToClient(int session_id,
   if (!client_)
     return;
   // Filter any messages from previous sessions.
-  if (session_id != session_id_)
+  if (!session_ || session_id != session_->session_id())
     return;
   client_->DispatchProtocolMessage(this, message);
 }

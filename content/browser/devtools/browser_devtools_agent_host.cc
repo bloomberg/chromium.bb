@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "content/browser/devtools/devtools_protocol_handler.h"
+#include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/protocol/io_handler.h"
 #include "content/browser/devtools/protocol/memory_handler.h"
 #include "content/browser/devtools/protocol/system_info_handler.h"
@@ -80,7 +81,8 @@ void BrowserDevToolsAgentHost::Reload() {
 
 bool BrowserDevToolsAgentHost::DispatchProtocolMessage(
     const std::string& message) {
-  protocol_handler_->HandleMessage(session_id(), message);
+  protocol_handler_->HandleMessage(session() ? session()->session_id() : 0,
+                                   message);
   return true;
 }
 
