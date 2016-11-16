@@ -576,7 +576,8 @@ public class NewTabPageView extends FrameLayout
                 / transitionLength, 0f, 1f);
     }
 
-    ViewGroup getWrapperView() {
+    @VisibleForTesting
+    public ViewGroup getWrapperView() {
         return mUseCardsUi ? mRecyclerView : mScrollView;
     }
 

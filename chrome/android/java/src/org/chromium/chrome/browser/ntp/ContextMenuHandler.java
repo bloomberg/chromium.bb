@@ -31,11 +31,11 @@ public class ContextMenuHandler implements OnMenuItemClickListener {
             ID_SAVE_FOR_OFFLINE})
     @Retention(RetentionPolicy.SOURCE)
     @interface ContextMenuItemId {}
-    static final int ID_OPEN_IN_NEW_WINDOW = 0;
-    static final int ID_OPEN_IN_NEW_TAB = 1;
-    static final int ID_OPEN_IN_INCOGNITO_TAB = 2;
-    static final int ID_REMOVE = 3;
-    static final int ID_SAVE_FOR_OFFLINE = 4;
+    public static final int ID_OPEN_IN_NEW_WINDOW = 0;
+    public static final int ID_OPEN_IN_NEW_TAB = 1;
+    public static final int ID_OPEN_IN_INCOGNITO_TAB = 2;
+    public static final int ID_REMOVE = 3;
+    public static final int ID_SAVE_FOR_OFFLINE = 4;
 
     private final NewTabPageManager mManager;
     private final Delegate mDelegate;

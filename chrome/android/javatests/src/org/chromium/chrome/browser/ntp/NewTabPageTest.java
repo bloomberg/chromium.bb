@@ -122,8 +122,8 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
         viewRenderer.renderAndCompare(mNtp.getView().getRootView(), "new_tab_page");
 
         // Scroll to search bar
-        final NewTabPageRecyclerView recyclerView = (NewTabPageRecyclerView)
-                mNtp.getNewTabPageView().findViewById(R.id.ntp_scrollview);
+        final NewTabPageRecyclerView recyclerView =
+                (NewTabPageRecyclerView) mNtp.getNewTabPageView().getWrapperView();
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override

@@ -112,6 +112,7 @@ public class NewTabPage
             "https://www.googleapis.com/auth/chrome-content-suggestions";
 
     private static MostVisitedSites sMostVisitedSitesForTests;
+    private static SuggestionsSource sSuggestionsSourceForTests;
 
     private final Tab mTab;
     private final TabModelSelector mTabModelSelector;
@@ -217,8 +218,13 @@ public class NewTabPage
     }
 
     @VisibleForTesting
-    static void setMostVisitedSitesForTests(MostVisitedSites mostVisitedSitesForTests) {
+    public static void setMostVisitedSitesForTests(MostVisitedSites mostVisitedSitesForTests) {
         sMostVisitedSitesForTests = mostVisitedSitesForTests;
+    }
+
+    @VisibleForTesting
+    public static void setSuggestionsSourceForTests(SuggestionsSource suggestionsSource) {
+        sSuggestionsSourceForTests = suggestionsSource;
     }
 
     private final NewTabPageManager mNewTabPageManager = new NewTabPageManager() {
@@ -653,6 +659,7 @@ public class NewTabPage
 
         @Override
         public SuggestionsSource getSuggestionsSource() {
+            if (sSuggestionsSourceForTests != null) return sSuggestionsSourceForTests;
             return mSnippetsBridge;
         }
 
@@ -777,7 +784,7 @@ public class NewTabPage
 
     /** @return The view container for the new tab page. */
     @VisibleForTesting
-    NewTabPageView getNewTabPageView() {
+    public NewTabPageView getNewTabPageView() {
         return mNewTabPageView;
     }
 

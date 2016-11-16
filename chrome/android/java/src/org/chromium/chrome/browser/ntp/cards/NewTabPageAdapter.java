@@ -384,6 +384,10 @@ public class NewTabPageAdapter
         return RecyclerView.NO_POSITION;
     }
 
+    public int getSignInPromoPosition() {
+        return getChildPositionOffset(mSigninPromo);
+    }
+
     public int getBottomSpacerPosition() {
         return getChildPositionOffset(mBottomSpacer);
     }
@@ -567,7 +571,8 @@ public class NewTabPageAdapter
         return mRecyclerView.findViewHolderForAdapterPosition(siblingPosDelta + swipePos);
     }
 
-    private boolean hasAllBeenDismissed() {
+    @VisibleForTesting
+    public boolean hasAllBeenDismissed() {
         return mSections.isEmpty() && !mSigninPromo.isVisible();
     }
 
