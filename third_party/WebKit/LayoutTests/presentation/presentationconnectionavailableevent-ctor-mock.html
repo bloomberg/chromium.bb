@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/presentation-service-mock.js"></script>
+<button>click me</button>
+<script>
+
+function waitForClick(callback) {
+  var button = document.querySelector('button');
+  button.addEventListener('click', callback, { once: true });
+
+  if (!('eventSender' in window))
+    return;
+
+  var boundingRect = button.getBoundingClientRect();
+  var x = boundingRect.left + boundingRect.width / 2;
+  var y = boundingRect.top + boundingRect.height / 2;
+
+  eventSender.mouseMoveTo(x, y);
+  eventSender.mouseDown();
+  eventSender.mouseUp();
+}
+
+async_test(t => {
+  presentationServiceMock.then(t.step_func(mockService => {
+    // This is receiving the user gesture and runs the callback.
+    waitForClick(t.step_func(_ => {
+      new PresentationRequest('https://example.com').start().then(
+      t.step_func_done(result => {
+        var e = new PresentationConnectionAvailableEvent(
+            'connectionavailable', { connection: result });
+        assert_not_equals(e, null);
+        assert_equals(e.connection, result);
+      }));
+    }));
+  }));
+}, "Test that the PresentationConnectionAvailableEvent ctor can take a valid PresentationConnection.")
+
+</script>
+</body>
+</html>

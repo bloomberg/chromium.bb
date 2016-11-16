@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+
+test(function() {
+  assert_true('PresentationConnectionAvailableEvent' in window);
+}, "Test that the PresentationConnectionAvailableEvent interface is present.")
+
+test(function() {
+  assert_throws(new TypeError, () => {
+    new PresentationConnectionAvailableEvent('connectionavailable')
+  });
+  assert_throws(new TypeError, () => {
+    new PresentationConnectionAvailableEvent('connectionavailable', {})
+  });
+  assert_throws(new TypeError, () => {
+    new PresentationConnectionAvailableEvent('connectionavailable', { connection: null })
+  });
+}, "Test that the PresentationConnectionAvailableEvent ctor requires connection parameter.")
+
+// It is not possible to check that passing a valid constructor works in this
+// test because some mocking is required in order to get a
+// PresentationConnection.
+
+</script>
+</body>
+</html>
