@@ -88,7 +88,9 @@ void SyncBackendHostImpl::Initialize(
   CHECK(sync_thread);
   sync_thread_ = sync_thread;
 
-  registrar_ = base::MakeUnique<SyncBackendRegistrar>(name_, sync_client_);
+  registrar_ = base::MakeUnique<SyncBackendRegistrar>(
+      name_, base::Bind(&SyncClient::CreateModelWorkerForGroup,
+                        base::Unretained(sync_client_)));
 
   DCHECK(frontend);
   frontend_ = frontend;

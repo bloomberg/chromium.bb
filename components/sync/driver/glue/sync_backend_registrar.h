@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
@@ -23,7 +24,6 @@
 namespace syncer {
 
 class ChangeProcessor;
-class SyncClient;
 struct UserShare;
 
 // A class that keep track of the workers, change processors, and
@@ -31,8 +31,12 @@ struct UserShare;
 // events to the right processors.
 class SyncBackendRegistrar : public SyncManager::ChangeDelegate {
  public:
+  using ModelSafeWorkerFactory =
+      base::Callback<scoped_refptr<ModelSafeWorker>(ModelSafeGroup)>;
+
   // |name| is used for debugging. Must be created on the UI thread.
-  SyncBackendRegistrar(const std::string& name, SyncClient* sync_client);
+  SyncBackendRegistrar(const std::string& name,
+                       ModelSafeWorkerFactory worker_factory);
 
   // A SyncBackendRegistrar is owned by a SyncBackendHostImpl. It is destroyed
   // by SyncBackendHostImpl::Shutdown() which performs the following operations
@@ -115,8 +119,10 @@ class SyncBackendRegistrar : public SyncManager::ChangeDelegate {
   typedef std::map<ModelSafeGroup, scoped_refptr<ModelSafeWorker>> WorkerMap;
   typedef std::map<ModelType, ChangeProcessor*> ProcessorMap;
 
-  // Add a worker for |group| to the worker map if one can be created.
-  void MaybeAddWorker(ModelSafeGroup group);
+  // Add a worker for |group| to the worker map if one is successfully created
+  // by |worker_factory|.
+  void MaybeAddWorker(ModelSafeWorkerFactory worker_factory,
+                      ModelSafeGroup group);
 
   // Returns the change processor for the given model, or null if none
   // exists.  Must be called from |group|'s native thread.
@@ -138,9 +144,6 @@ class SyncBackendRegistrar : public SyncManager::ChangeDelegate {
 
   // Name used for debugging.
   const std::string name_;
-
-  // A pointer to the sync client.
-  SyncClient* const sync_client_;
 
   // Checker for the UI thread (where this object is constructed).
   base::ThreadChecker ui_thread_checker_;

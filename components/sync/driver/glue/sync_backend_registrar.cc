@@ -11,22 +11,21 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "components/sync/driver/change_processor.h"
-#include "components/sync/driver/sync_client.h"
 #include "components/sync/syncable/user_share.h"
 
 namespace syncer {
 
-SyncBackendRegistrar::SyncBackendRegistrar(const std::string& name,
-                                           SyncClient* sync_client)
-    : name_(name), sync_client_(sync_client) {
-  DCHECK(sync_client_);
-
-  MaybeAddWorker(GROUP_DB);
-  MaybeAddWorker(GROUP_FILE);
-  MaybeAddWorker(GROUP_UI);
-  MaybeAddWorker(GROUP_PASSIVE);
-  MaybeAddWorker(GROUP_HISTORY);
-  MaybeAddWorker(GROUP_PASSWORD);
+SyncBackendRegistrar::SyncBackendRegistrar(
+    const std::string& name,
+    ModelSafeWorkerFactory worker_factory)
+    : name_(name) {
+  DCHECK(!worker_factory.is_null());
+  MaybeAddWorker(worker_factory, GROUP_DB);
+  MaybeAddWorker(worker_factory, GROUP_FILE);
+  MaybeAddWorker(worker_factory, GROUP_UI);
+  MaybeAddWorker(worker_factory, GROUP_PASSIVE);
+  MaybeAddWorker(worker_factory, GROUP_HISTORY);
+  MaybeAddWorker(worker_factory, GROUP_PASSWORD);
 }
 
 void SyncBackendRegistrar::RegisterNonBlockingType(ModelType type) {
@@ -276,9 +275,9 @@ SyncBackendRegistrar::~SyncBackendRegistrar() {
   DCHECK(processors_.empty());
 }
 
-void SyncBackendRegistrar::MaybeAddWorker(ModelSafeGroup group) {
-  const scoped_refptr<ModelSafeWorker> worker =
-      sync_client_->CreateModelWorkerForGroup(group);
+void SyncBackendRegistrar::MaybeAddWorker(ModelSafeWorkerFactory worker_factory,
+                                          ModelSafeGroup group) {
+  scoped_refptr<ModelSafeWorker> worker = worker_factory.Run(group);
   if (worker) {
     DCHECK(workers_.find(group) == workers_.end());
     workers_[group] = worker;
