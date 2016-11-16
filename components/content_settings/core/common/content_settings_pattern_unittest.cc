@@ -181,6 +181,17 @@ TEST(ContentSettingsPatternTest, FromURLNoWildcard) {
       GURL("filesystem:https://foo.www.google.com/temporary/")));
 }
 
+// The static Wildcard() method goes through a fast path and avoids the Builder
+// pattern. Ensure that it yields the exact same behavior.
+TEST(ContentSettingsPatternTest, ValidWildcardFastPath) {
+  std::unique_ptr<ContentSettingsPattern::BuilderInterface> builder(
+      ContentSettingsPattern::CreateBuilder(true));
+  builder->WithSchemeWildcard()->WithDomainWildcard()->WithPortWildcard()->
+           WithPathWildcard();
+  ContentSettingsPattern built_wildcard = builder->Build();
+  EXPECT_EQ(built_wildcard, ContentSettingsPattern::Wildcard());
+}
+
 TEST(ContentSettingsPatternTest, Wildcard) {
   EXPECT_TRUE(ContentSettingsPattern::Wildcard().IsValid());
 

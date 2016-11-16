@@ -374,11 +374,12 @@ BuilderInterface* ContentSettingsPattern::CreateBuilder(
 
 // static
 ContentSettingsPattern ContentSettingsPattern::Wildcard() {
-  std::unique_ptr<ContentSettingsPattern::BuilderInterface> builder(
-      ContentSettingsPattern::CreateBuilder(true));
-  builder->WithSchemeWildcard()->WithDomainWildcard()->WithPortWildcard()->
-           WithPathWildcard();
-  return builder->Build();
+  PatternParts parts;
+  parts.is_scheme_wildcard = true;
+  parts.has_domain_wildcard = true;
+  parts.is_port_wildcard = true;
+  parts.is_path_wildcard = true;
+  return ContentSettingsPattern(parts, true);
 }
 
 // static
