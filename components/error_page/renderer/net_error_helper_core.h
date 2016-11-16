@@ -195,7 +195,7 @@ class NetErrorHelperCore {
   bool ShouldSuppressErrorPage(FrameType frame_type, const GURL& url);
 
   void set_timer_for_testing(std::unique_ptr<base::Timer> timer) {
-    auto_reload_timer_.reset(timer.release());
+    auto_reload_timer_ = std::move(timer);
   }
 
   // Execute the effect of pressing the specified button.

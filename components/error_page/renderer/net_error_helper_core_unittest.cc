@@ -358,7 +358,7 @@ class NetErrorHelperCoreTest : public testing::Test,
                                   std::string* html) const override {
     last_can_show_network_diagnostics_dialog_ =
         can_show_network_diagnostics_dialog;
-    last_error_page_params_.reset(params.release());
+    last_error_page_params_ = std::move(params);
     *reload_button_shown = false;
     *show_saved_copy_button_shown = false;
     *show_cached_copy_button_shown = false;
