@@ -7,11 +7,10 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-static_library("security_state") {
+static_library("core") {
   sources = [
-    "security_state_model.cc",
-    "security_state_model.h",
-    "security_state_model_client.h",
+    "security_state.cc",
+    "security_state.h",
     "switches.cc",
     "switches.h",
   ]
@@ -25,7 +24,7 @@ static_library("security_state") {
 if (is_android) {
   java_cpp_enum("security_state_enums_java") {
     sources = [
-      "security_state_model.h",
+      "security_state.h",
     ]
   }
 }
@@ -33,11 +32,11 @@ if (is_android) {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "security_state_model_unittest.cc",
+    "security_state_unittest.cc",
   ]
 
   deps = [
-    ":security_state",
+    ":core",
     "//net:test_support",
     "//testing/gtest",
   ]

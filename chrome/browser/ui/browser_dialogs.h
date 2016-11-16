@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
-#include "components/security_state/security_state_model.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -53,6 +52,10 @@ namespace net {
 class AuthChallengeInfo;
 class URLRequest;
 }
+
+namespace security_state {
+struct SecurityInfo;
+}  // namespace security_state
 
 namespace task_manager {
 class TaskManagerTableModel;
@@ -134,7 +137,7 @@ void ShowWebsiteSettingsBubbleViewsAtPoint(
     Profile* profile,
     content::WebContents* web_contents,
     const GURL& virtual_url,
-    const security_state::SecurityStateModel::SecurityInfo& security_info);
+    const security_state::SecurityInfo& security_info);
 
 // Show a Views bookmark bubble at the given point. This occurs when the
 // bookmark star is clicked or "Bookmark This Page..." is selected from a menu

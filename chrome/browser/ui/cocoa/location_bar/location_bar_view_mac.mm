@@ -128,7 +128,7 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
       should_animate_secure_verbose_(false),
       should_animate_nonsecure_verbose_(false),
       is_width_available_for_security_verbose_(false),
-      security_level_(security_state::SecurityStateModel::NONE),
+      security_level_(security_state::NONE),
       weak_ptr_factory_(this) {
   ScopedVector<ContentSettingImageModel> models =
       ContentSettingImageModel::GenerateContentSettingImageModels();
@@ -699,7 +699,7 @@ WebContents* LocationBarViewMac::GetWebContents() {
 
 bool LocationBarViewMac::ShouldShowEVBubble() const {
   return GetToolbarModel()->GetSecurityLevel(false) ==
-         security_state::SecurityStateModel::EV_SECURE;
+         security_state::EV_SECURE;
 }
 
 bool LocationBarViewMac::ShouldShowSecurityState() const {
@@ -708,17 +708,17 @@ bool LocationBarViewMac::ShouldShowSecurityState() const {
     return false;
   }
 
-  security_state::SecurityStateModel::SecurityLevel security =
+  security_state::SecurityLevel security =
       GetToolbarModel()->GetSecurityLevel(false);
 
-  if (security == security_state::SecurityStateModel::EV_SECURE)
+  if (security == security_state::EV_SECURE)
     return true;
-  else if (security == security_state::SecurityStateModel::SECURE)
+  else if (security == security_state::SECURE)
     return should_show_secure_verbose_;
 
   return should_show_nonsecure_verbose_ &&
-         (security == security_state::SecurityStateModel::DANGEROUS ||
-          security == security_state::SecurityStateModel::HTTP_SHOW_WARNING);
+         (security == security_state::DANGEROUS ||
+          security == security_state::HTTP_SHOW_WARNING);
 }
 
 bool LocationBarViewMac::IsLocationBarDark() const {
@@ -750,11 +750,11 @@ SkColor LocationBarViewMac::GetLocationBarIconColor() const {
   if (ShouldShowEVBubble())
     return gfx::kGoogleGreen700;
 
-  security_state::SecurityStateModel::SecurityLevel security_level =
+  security_state::SecurityLevel security_level =
       GetToolbarModel()->GetSecurityLevel(false);
 
-  if (security_level == security_state::SecurityStateModel::NONE ||
-      security_level == security_state::SecurityStateModel::HTTP_SHOW_WARNING) {
+  if (security_level == security_state::NONE ||
+      security_level == security_state::HTTP_SHOW_WARNING) {
     return gfx::kChromeIconGrey;
   }
 
@@ -900,7 +900,7 @@ bool LocationBarViewMac::UpdateZoomDecoration(bool default_zoom_changed) {
 }
 
 void LocationBarViewMac::UpdateSecurityState(bool tab_changed) {
-  using SecurityLevel = security_state::SecurityStateModel::SecurityLevel;
+  using SecurityLevel = security_state::SecurityLevel;
   SecurityLevel new_security_level = GetToolbarModel()->GetSecurityLevel(false);
 
   // If there's enough space, but the secure state decoration had animated
@@ -927,8 +927,8 @@ void LocationBarViewMac::UpdateSecurityState(bool tab_changed) {
 }
 
 bool LocationBarViewMac::CanAnimateSecurityLevel(
-    security_state::SecurityStateModel::SecurityLevel level) const {
-  using SecurityLevel = security_state::SecurityStateModel::SecurityLevel;
+    security_state::SecurityLevel level) const {
+  using SecurityLevel = security_state::SecurityLevel;
   if (IsSecureConnection(level)) {
     return should_animate_secure_verbose_;
   } else if (security_level_ == SecurityLevel::DANGEROUS ||
@@ -940,9 +940,9 @@ bool LocationBarViewMac::CanAnimateSecurityLevel(
 }
 
 bool LocationBarViewMac::IsSecureConnection(
-    security_state::SecurityStateModel::SecurityLevel level) const {
-  return level == security_state::SecurityStateModel::SECURE ||
-         level == security_state::SecurityStateModel::EV_SECURE;
+    security_state::SecurityLevel level) const {
+  return level == security_state::SECURE ||
+         level == security_state::EV_SECURE;
 }
 
 void LocationBarViewMac::UpdateAccessibilityViewPosition(

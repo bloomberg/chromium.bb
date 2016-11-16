@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "components/security_state/security_state_model.h"
+#include "components/security_state/core/security_state.h"
 #include "url/gurl.h"
 
 namespace gfx {
@@ -40,7 +40,7 @@ class ToolbarModel {
   // |ignore_editing| is true, the result reflects the underlying state of the
   // page without regard to any user edits that may be in progress in the
   // omnibox.
-  virtual security_state::SecurityStateModel::SecurityLevel GetSecurityLevel(
+  virtual security_state::SecurityLevel GetSecurityLevel(
       bool ignore_editing) const = 0;
 
   // Returns the id of the icon to show to the left of the address, based on the

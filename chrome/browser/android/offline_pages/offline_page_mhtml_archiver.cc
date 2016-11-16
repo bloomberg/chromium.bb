@@ -15,8 +15,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/ssl/chrome_security_state_model_client.h"
-#include "components/security_state/security_state_model.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "components/security_state/core/security_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/mhtml_generation_params.h"
@@ -160,13 +160,13 @@ void OfflinePageMHTMLArchiver::OnGenerateMHTMLDone(
 }
 
 bool OfflinePageMHTMLArchiver::HasConnectionSecurityError() {
-  ChromeSecurityStateModelClient::CreateForWebContents(web_contents_);
-  ChromeSecurityStateModelClient* model_client =
-      ChromeSecurityStateModelClient::FromWebContents(web_contents_);
-  DCHECK(model_client);
-  security_state::SecurityStateModel::SecurityInfo security_info;
-  model_client->GetSecurityInfo(&security_info);
-  return security_state::SecurityStateModel::SecurityLevel::DANGEROUS ==
+  SecurityStateTabHelper::CreateForWebContents(web_contents_);
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(web_contents_);
+  DCHECK(helper);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  return security_state::SecurityLevel::DANGEROUS ==
          security_info.security_level;
 }
 

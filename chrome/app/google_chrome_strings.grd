@@ -1300,15 +1300,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
           Select <ph name="SMALL_PRODUCT_LOGO">&lt;div class="logo-small"&gt;&lt;/div&gt;</ph> <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Google Chrome<ph name="END_BOLD">&lt;/strong&gt;</ph>
         </message>
       </if>
-
-      <!-- Strings describing Chrome security policy for DevTools security panel -->
-      <message name="IDS_PRIVATE_USER_DATA_INPUT_FUTURE_DESCRIPTION" desc="Description of a security problem where the site collects private user data on an insecure page, which will result in an omnibox warning in future versions of Chrome." translateable="false">
-        This page includes a password or credit card input over HTTP. A warning will appear in the URL bar starting in Chrome 56 (Jan 2017).
-      </message>
-      <message name="IDS_PRIVATE_USER_DATA_INPUT_DESCRIPTION" desc="Description of a security problem where the site collects private user data on an insecure page, which results in an omnibox warning." translateable="false">
-        This page includes a password or credit card input over HTTP. A warning has been added the URL bar.
-      </message>
-
     </messages>
   </release>
 </grit>

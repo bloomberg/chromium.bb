@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "components/prefs/pref_member.h"
 #include "components/search_engines/template_url_service_observer.h"
-#include "components/security_state/security_state_model.h"
+#include "components/security_state/core/security_state.h"
 #include "components/zoom/zoom_event_manager_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -97,8 +97,7 @@ class LocationBarView : public LocationBar,
     virtual void ShowWebsiteSettings(
         content::WebContents* web_contents,
         const GURL& virtual_url,
-        const security_state::SecurityStateModel::SecurityInfo&
-            security_info) = 0;
+        const security_state::SecurityInfo& security_info) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -144,7 +143,7 @@ class LocationBarView : public LocationBar,
   // Returns the color to be used for security text in the context of
   // |security_level|.
   SkColor GetSecureTextColor(
-      security_state::SecurityStateModel::SecurityLevel security_level) const;
+      security_state::SecurityLevel security_level) const;
 
   // Returns the delegate.
   Delegate* delegate() const { return delegate_; }

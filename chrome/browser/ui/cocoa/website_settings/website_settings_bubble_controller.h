@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
-#include "components/security_state/security_state_model.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class WebsiteSettingsUIBridge;
@@ -22,6 +21,10 @@ class WebContents;
 namespace net {
 class X509Certificate;
 }
+
+namespace security_state {
+struct SecurityInfo;
+}  // namespace security_state
 
 // This NSWindowController subclass manages the InfoBubbleWindow and view that
 // are displayed when the user clicks the favicon or security lock icon.
@@ -124,15 +127,13 @@ class WebsiteSettingsUIBridge : public content::WebContentsObserver,
   // is the currently active window. |profile| points to the currently active
   // profile. |web_contents| points to the WebContents that wraps the currently
   // active tab. |virtual_url| is the virtual GURL of the currently active
-  // tab. |security_info| is the
-  // |security_state::SecurityStateModel::SecurityInfo| of
-  // the connection to the website in the currently active tab.
-  static void Show(
-      gfx::NativeWindow parent,
-      Profile* profile,
-      content::WebContents* web_contents,
-      const GURL& virtual_url,
-      const security_state::SecurityStateModel::SecurityInfo& security_info);
+  // tab. |security_info| is the |security_state::SecurityInfo| of the
+  // connection to the website in the currently active tab.
+  static void Show(gfx::NativeWindow parent,
+                   Profile* profile,
+                   content::WebContents* web_contents,
+                   const GURL& virtual_url,
+                   const security_state::SecurityInfo& security_info);
 
   void set_bubble_controller(
       WebsiteSettingsBubbleController* bubble_controller);

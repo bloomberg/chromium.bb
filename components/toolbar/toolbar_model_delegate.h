@@ -9,7 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
-#include "components/security_state/security_state_model.h"
+#include "components/security_state/core/security_state.h"
 
 class GURL;
 
@@ -20,7 +20,7 @@ class X509Certificate;
 // Delegate which is used by ToolbarModel class.
 class ToolbarModelDelegate {
  public:
-  using SecurityLevel = security_state::SecurityStateModel::SecurityLevel;
+  using SecurityLevel = security_state::SecurityLevel;
 
   // Formats |url| using AutocompleteInput::FormattedStringWithEquivalentMeaning
   // providing an appropriate AutocompleteSchemeClassifier for the embedder.

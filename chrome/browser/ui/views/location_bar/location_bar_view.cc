@@ -355,19 +355,17 @@ SkColor LocationBarView::GetColor(
 }
 
 SkColor LocationBarView::GetSecureTextColor(
-    security_state::SecurityStateModel::SecurityLevel security_level) const {
-  if (security_level ==
-      security_state::SecurityStateModel::SECURE_WITH_POLICY_INSTALLED_CERT) {
+    security_state::SecurityLevel security_level) const {
+  if (security_level == security_state::SECURE_WITH_POLICY_INSTALLED_CERT) {
     return GetColor(DEEMPHASIZED_TEXT);
   }
 
   SkColor text_color = GetColor(TEXT);
   if (!color_utils::IsDark(GetColor(BACKGROUND))) {
-    if ((security_level == security_state::SecurityStateModel::EV_SECURE) ||
-        (security_level == security_state::SecurityStateModel::SECURE)) {
+    if ((security_level == security_state::EV_SECURE) ||
+        (security_level == security_state::SECURE)) {
       text_color = gfx::kGoogleGreen700;
-    } else if (security_level ==
-               security_state::SecurityStateModel::DANGEROUS) {
+    } else if (security_level == security_state::DANGEROUS) {
       text_color = gfx::kGoogleRed700;
     }
   }
@@ -832,13 +830,12 @@ void LocationBarView::RefreshLocationIcon() {
   if (!omnibox_view_)
     return;
 
-  security_state::SecurityStateModel::SecurityLevel security_level =
+  security_state::SecurityLevel security_level =
       GetToolbarModel()->GetSecurityLevel(false);
-  SkColor icon_color =
-      (security_level == security_state::SecurityStateModel::NONE ||
-       security_level == security_state::SecurityStateModel::HTTP_SHOW_WARNING)
-          ? color_utils::DeriveDefaultIconColor(GetColor(TEXT))
-          : GetSecureTextColor(security_level);
+  SkColor icon_color = (security_level == security_state::NONE ||
+                        security_level == security_state::HTTP_SHOW_WARNING)
+                           ? color_utils::DeriveDefaultIconColor(GetColor(TEXT))
+                           : GetSecureTextColor(security_level);
   location_icon_view_->SetImage(gfx::CreateVectorIcon(
       omnibox_view_->GetVectorIcon(), kIconWidth, icon_color));
 }
@@ -1007,8 +1004,8 @@ bool LocationBarView::HasValidSuggestText() const {
 }
 
 base::string16 LocationBarView::GetSecurityText() const {
-  bool has_ev_cert = (GetToolbarModel()->GetSecurityLevel(false) ==
-                      security_state::SecurityStateModel::EV_SECURE);
+  bool has_ev_cert =
+      (GetToolbarModel()->GetSecurityLevel(false) == security_state::EV_SECURE);
   return has_ev_cert ? GetToolbarModel()->GetEVCertName()
                      : GetToolbarModel()->GetSecureVerboseText();
 }
@@ -1019,7 +1016,7 @@ bool LocationBarView::ShouldShowKeywordBubble() const {
 }
 
 bool LocationBarView::ShouldShowSecurityChip() const {
-  using SecurityLevel = security_state::SecurityStateModel::SecurityLevel;
+  using SecurityLevel = security_state::SecurityLevel;
   const SecurityLevel level = GetToolbarModel()->GetSecurityLevel(false);
   if (level == SecurityLevel::EV_SECURE) {
     return true;
@@ -1033,7 +1030,7 @@ bool LocationBarView::ShouldShowSecurityChip() const {
 }
 
 bool LocationBarView::ShouldAnimateSecurityChip() const {
-  using SecurityLevel = security_state::SecurityStateModel::SecurityLevel;
+  using SecurityLevel = security_state::SecurityLevel;
   SecurityLevel level = GetToolbarModel()->GetSecurityLevel(false);
   if (!ShouldShowSecurityChip())
     return false;

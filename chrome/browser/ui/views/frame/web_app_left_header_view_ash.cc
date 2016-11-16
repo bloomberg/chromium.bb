@@ -7,9 +7,10 @@
 #include "ash/common/frame/caption_buttons/frame_caption_button.h"
 #include "ash/common/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/ssl/chrome_security_state_model_client.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "components/security_state/core/security_state.h"
 #include "components/toolbar/toolbar_model.h"
 #include "content/public/browser/navigation_entry.h"
 #include "ui/gfx/vector_icons_public.h"
@@ -88,12 +89,11 @@ void WebAppLeftHeaderView::ShowWebsiteSettings() const {
   if (!nav_entry)
     return;
 
-  ChromeSecurityStateModelClient* security_model_client =
-      ChromeSecurityStateModelClient::FromWebContents(tab);
-  DCHECK(security_model_client);
+  SecurityStateTabHelper* helper = SecurityStateTabHelper::FromWebContents(tab);
+  DCHECK(helper);
 
-  security_state::SecurityStateModel::SecurityInfo security_info;
-  security_model_client->GetSecurityInfo(&security_info);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
   chrome::ShowWebsiteSettings(browser_view_->browser(), tab,
                               nav_entry->GetVirtualURL(), security_info);
 }

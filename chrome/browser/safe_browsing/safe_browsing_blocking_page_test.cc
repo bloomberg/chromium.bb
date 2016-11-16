@@ -26,7 +26,7 @@
 #include "chrome/browser/safe_browsing/threat_details.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
-#include "chrome/browser/ssl/chrome_security_state_model_client.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -42,6 +42,7 @@
 #include "components/safe_browsing_db/util.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
+#include "components/security_state/core/security_state.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -581,28 +582,26 @@ class SafeBrowsingBlockingPageBrowserTest
 
   void ExpectSecurityIndicatorDowngrade(content::WebContents* tab,
                                         net::CertStatus cert_status) {
-    ChromeSecurityStateModelClient* model_client =
-        ChromeSecurityStateModelClient::FromWebContents(tab);
-    ASSERT_TRUE(model_client);
-    security_state::SecurityStateModel::SecurityInfo security_info;
-    model_client->GetSecurityInfo(&security_info);
-    EXPECT_EQ(security_state::SecurityStateModel::DANGEROUS,
-              security_info.security_level);
-    EXPECT_NE(security_state::SecurityStateModel::MALICIOUS_CONTENT_STATUS_NONE,
+    SecurityStateTabHelper* helper =
+        SecurityStateTabHelper::FromWebContents(tab);
+    ASSERT_TRUE(helper);
+    security_state::SecurityInfo security_info;
+    helper->GetSecurityInfo(&security_info);
+    EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
+    EXPECT_NE(security_state::MALICIOUS_CONTENT_STATUS_NONE,
               security_info.malicious_content_status);
     // TODO(felt): Restore this check when https://crbug.com/641187 is fixed.
-    // EXPECT_EQ(cert_status, model_client->GetSecurityInfo().cert_status);
+    // EXPECT_EQ(cert_status, helper->GetSecurityInfo().cert_status);
   }
 
   void ExpectNoSecurityIndicatorDowngrade(content::WebContents* tab) {
-    ChromeSecurityStateModelClient* model_client =
-        ChromeSecurityStateModelClient::FromWebContents(tab);
-    ASSERT_TRUE(model_client);
-    security_state::SecurityStateModel::SecurityInfo security_info;
-    model_client->GetSecurityInfo(&security_info);
-    EXPECT_EQ(security_state::SecurityStateModel::NONE,
-              security_info.security_level);
-    EXPECT_EQ(security_state::SecurityStateModel::MALICIOUS_CONTENT_STATUS_NONE,
+    SecurityStateTabHelper* helper =
+        SecurityStateTabHelper::FromWebContents(tab);
+    ASSERT_TRUE(helper);
+    security_state::SecurityInfo security_info;
+    helper->GetSecurityInfo(&security_info);
+    EXPECT_EQ(security_state::NONE, security_info.security_level);
+    EXPECT_EQ(security_state::MALICIOUS_CONTENT_STATUS_NONE,
               security_info.malicious_content_status);
   }
 

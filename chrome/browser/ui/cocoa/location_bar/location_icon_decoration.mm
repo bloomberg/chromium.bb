@@ -6,7 +6,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/ssl/chrome_security_state_model_client.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -15,6 +15,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/favicon/content/content_favicon_driver.h"
+#include "components/security_state/core/security_state.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -134,11 +135,10 @@ bool LocationIconDecoration::OnMousePressed(NSRect frame, NSPoint location) {
     return true;
   Browser* browser = chrome::FindBrowserWithWebContents(tab);
 
-  ChromeSecurityStateModelClient* security_model_client =
-      ChromeSecurityStateModelClient::FromWebContents(tab);
-  DCHECK(security_model_client);
-  security_state::SecurityStateModel::SecurityInfo security_info;
-  security_model_client->GetSecurityInfo(&security_info);
+  SecurityStateTabHelper* helper = SecurityStateTabHelper::FromWebContents(tab);
+  DCHECK(helper);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
 
   chrome::ShowWebsiteSettings(browser, tab, nav_entry->GetVirtualURL(),
                               security_info);

@@ -12,7 +12,7 @@ source_set("omnibox") {
   deps = [
     "//base",
     "//components/omnibox/browser",
-    "//components/security_state",
+    "//components/security_state/core",
     "//ios/chrome/app/theme",
   ]
 }

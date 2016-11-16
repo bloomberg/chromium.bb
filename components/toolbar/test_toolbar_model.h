@@ -25,7 +25,7 @@ class TestToolbarModel : public ToolbarModel {
   ~TestToolbarModel() override;
   base::string16 GetFormattedURL(size_t* prefix_end) const override;
   GURL GetURL() const override;
-  security_state::SecurityStateModel::SecurityLevel GetSecurityLevel(
+  security_state::SecurityLevel GetSecurityLevel(
       bool ignore_editing) const override;
   gfx::VectorIconId GetVectorIcon() const override;
   base::string16 GetSecureVerboseText() const override;
@@ -33,9 +33,8 @@ class TestToolbarModel : public ToolbarModel {
   bool ShouldDisplayURL() const override;
 
   void set_text(const base::string16& text) { text_ = text; }
-  void set_url(const GURL& url) { url_ = url;}
-  void set_security_level(
-      security_state::SecurityStateModel::SecurityLevel security_level) {
+  void set_url(const GURL& url) { url_ = url; }
+  void set_security_level(security_state::SecurityLevel security_level) {
     security_level_ = security_level;
   }
   void set_icon(gfx::VectorIconId icon) { icon_ = icon; }
@@ -49,7 +48,7 @@ class TestToolbarModel : public ToolbarModel {
  private:
   base::string16 text_;
   GURL url_;
-  security_state::SecurityStateModel::SecurityLevel security_level_;
+  security_state::SecurityLevel security_level_;
   gfx::VectorIconId icon_;
   base::string16 ev_cert_name_;
   bool should_display_url_;

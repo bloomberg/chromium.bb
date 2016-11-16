@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "chrome/common/features.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "components/security_state/security_state_model.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "ui/base/base_window.h"
@@ -57,6 +56,10 @@ namespace gfx {
 class Rect;
 class Size;
 }
+
+namespace security_state {
+struct SecurityInfo;
+}  // namespace security_state
 
 namespace signin_metrics {
 enum class AccessPoint;
@@ -301,8 +304,7 @@ class BrowserWindow : public ui::BaseWindow {
       Profile* profile,
       content::WebContents* web_contents,
       const GURL& virtual_url,
-      const security_state::SecurityStateModel::SecurityInfo&
-          security_info) = 0;
+      const security_state::SecurityInfo& security_info) = 0;
 
   // Shows the app menu (for accessibility).
   virtual void ShowAppMenu() = 0;

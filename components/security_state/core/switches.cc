@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/security_state/switches.h"
+#include "components/security_state/core/switches.h"
 
 namespace security_state {
 namespace switches {

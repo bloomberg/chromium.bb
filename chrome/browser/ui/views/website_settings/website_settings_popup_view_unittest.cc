@@ -45,7 +45,7 @@ class WebsiteSettingsPopupViewTestApi {
     if (view_)
       view_->GetWidget()->CloseNow();
 
-    security_state::SecurityStateModel::SecurityInfo security_info;
+    security_state::SecurityInfo security_info;
     views::View* anchor_view = nullptr;
     view_ =
         new WebsiteSettingsPopupView(anchor_view, parent_, profile_,

@@ -6,7 +6,7 @@
 #define IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_UTIL_H_
 
 #include "components/omnibox/browser/autocomplete_match_type.h"
-#include "components/security_state/security_state_model.h"
+#include "components/security_state/core/security_state.h"
 
 // Converts |type| to a resource identifier for the appropriate icon for this
 // type to show in the omnibox.
@@ -16,7 +16,6 @@ int GetIconForAutocompleteMatchType(AutocompleteMatchType::Type type,
 
 // Converts |security_level| to a resource identifier for the appropriate icon
 // for this security level in the omnibox.
-int GetIconForSecurityState(
-    security_state::SecurityStateModel::SecurityLevel security_level);
+int GetIconForSecurityState(security_state::SecurityLevel security_level);
 
 #endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_UTIL_H_

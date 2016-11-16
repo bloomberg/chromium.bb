@@ -9,7 +9,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/prefs/pref_service.h"
-#include "components/security_state/security_state_model.h"
+#include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/toolbar/toolbar_model_delegate.h"
 #include "components/url_formatter/elide_url.h"
@@ -20,8 +20,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/vector_icons_public.h"
-
-using security_state::SecurityStateModel;
 
 ToolbarModelImpl::ToolbarModelImpl(ToolbarModelDelegate* delegate,
                                    size_t max_url_display_chars)
@@ -61,29 +59,29 @@ GURL ToolbarModelImpl::GetURL() const {
   return delegate_->GetURL(&url) ? url : GURL(url::kAboutBlankURL);
 }
 
-SecurityStateModel::SecurityLevel ToolbarModelImpl::GetSecurityLevel(
+security_state::SecurityLevel ToolbarModelImpl::GetSecurityLevel(
     bool ignore_editing) const {
   // When editing or empty, assume no security style.
   return ((input_in_progress() && !ignore_editing) || !ShouldDisplayURL())
-             ? SecurityStateModel::NONE
+             ? security_state::NONE
              : delegate_->GetSecurityLevel();
 }
 
 gfx::VectorIconId ToolbarModelImpl::GetVectorIcon() const {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   switch (GetSecurityLevel(false)) {
-    case SecurityStateModel::NONE:
-    case SecurityStateModel::HTTP_SHOW_WARNING:
+    case security_state::NONE:
+    case security_state::HTTP_SHOW_WARNING:
       return gfx::VectorIconId::LOCATION_BAR_HTTP;
-    case SecurityStateModel::EV_SECURE:
-    case SecurityStateModel::SECURE:
+    case security_state::EV_SECURE:
+    case security_state::SECURE:
       return gfx::VectorIconId::LOCATION_BAR_HTTPS_VALID;
-    case SecurityStateModel::SECURITY_WARNING:
+    case security_state::SECURITY_WARNING:
       // Surface Dubious as Neutral.
       return gfx::VectorIconId::LOCATION_BAR_HTTP;
-    case SecurityStateModel::SECURE_WITH_POLICY_INSTALLED_CERT:
+    case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
       return gfx::VectorIconId::BUSINESS;
-    case SecurityStateModel::DANGEROUS:
+    case security_state::DANGEROUS:
       return gfx::VectorIconId::LOCATION_BAR_HTTPS_INVALID;
   }
 #endif
@@ -92,7 +90,7 @@ gfx::VectorIconId ToolbarModelImpl::GetVectorIcon() const {
 }
 
 base::string16 ToolbarModelImpl::GetEVCertName() const {
-  if (GetSecurityLevel(false) != SecurityStateModel::EV_SECURE)
+  if (GetSecurityLevel(false) != security_state::EV_SECURE)
     return base::string16();
 
   // Note: cert is guaranteed non-NULL or the security level would be NONE.
@@ -110,11 +108,11 @@ base::string16 ToolbarModelImpl::GetEVCertName() const {
 
 base::string16 ToolbarModelImpl::GetSecureVerboseText() const {
   switch (GetSecurityLevel(false)) {
-    case SecurityStateModel::HTTP_SHOW_WARNING:
+    case security_state::HTTP_SHOW_WARNING:
       return l10n_util::GetStringUTF16(IDS_NOT_SECURE_VERBOSE_STATE);
-    case SecurityStateModel::SECURE:
+    case security_state::SECURE:
       return l10n_util::GetStringUTF16(IDS_SECURE_VERBOSE_STATE);
-    case SecurityStateModel::DANGEROUS:
+    case security_state::DANGEROUS:
       return l10n_util::GetStringUTF16(delegate_->FailsMalwareCheck()
                                            ? IDS_DANGEROUS_VERBOSE_STATE
                                            : IDS_NOT_SECURE_VERBOSE_STATE);

@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/prefs/pref_member.h"
-#include "components/security_state/security_state_model.h"
+#include "components/security_state/core/security_state.h"
 #include "components/zoom/zoom_event_manager_observer.h"
 
 @class AutocompleteTextField;
@@ -255,12 +255,10 @@ class LocationBarViewMac : public LocationBar,
   void UpdateSecurityState(bool tab_changed);
 
   // Returns true if the security state can animate for the |level|.
-  bool CanAnimateSecurityLevel(
-      security_state::SecurityStateModel::SecurityLevel level) const;
+  bool CanAnimateSecurityLevel(security_state::SecurityLevel level) const;
 
   // Returns true if |level| is SECURE or EV_SECURE.
-  bool IsSecureConnection(
-      security_state::SecurityStateModel::SecurityLevel level) const;
+  bool IsSecureConnection(security_state::SecurityLevel level) const;
 
   // Returns pointers to all of the LocationBarDecorations owned by this
   // LocationBarViewMac. This helper function is used for positioning and
@@ -340,7 +338,7 @@ class LocationBarViewMac : public LocationBar,
   bool is_width_available_for_security_verbose_;
 
   // The security level of the location bar icon.
-  security_state::SecurityStateModel::SecurityLevel security_level_;
+  security_state::SecurityLevel security_level_;
 
   // Used to schedule a task for the first run info bubble.
   base::WeakPtrFactory<LocationBarViewMac> weak_ptr_factory_;

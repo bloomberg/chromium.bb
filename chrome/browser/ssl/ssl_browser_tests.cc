@@ -34,9 +34,9 @@
 #include "chrome/browser/ssl/cert_report_helper.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/browser/ssl/certificate_reporting_test_utils.h"
-#include "chrome/browser/ssl/chrome_security_state_model_client.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/common_name_mismatch_handler.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
 #include "chrome/browser/ui/browser.h"
@@ -57,8 +57,8 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
-#include "components/security_state/security_state_model.h"
-#include "components/security_state/switches.h"
+#include "components/security_state/core/security_state.h"
+#include "components/security_state/core/switches.h"
 #include "components/ssl_errors/error_classification.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -164,13 +164,11 @@ void Check(const NavigationEntry& entry, int expected_authentication_state) {
 
 namespace SecurityStyle {
 
-void Check(
-    WebContents* tab,
-    security_state::SecurityStateModel::SecurityLevel expected_security_level) {
-  ChromeSecurityStateModelClient* model_client =
-      ChromeSecurityStateModelClient::FromWebContents(tab);
-  security_state::SecurityStateModel::SecurityInfo security_info;
-  model_client->GetSecurityInfo(&security_info);
+void Check(WebContents* tab,
+           security_state::SecurityLevel expected_security_level) {
+  SecurityStateTabHelper* helper = SecurityStateTabHelper::FromWebContents(tab);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
   EXPECT_EQ(expected_security_level, security_info.security_level);
 }
 
@@ -196,11 +194,10 @@ void Check(const NavigationEntry& entry, net::CertStatus error) {
 
 }  // namespace CertError
 
-void CheckSecurityState(
-    WebContents* tab,
-    net::CertStatus expected_error,
-    security_state::SecurityStateModel::SecurityLevel expected_security_level,
-    int expected_authentication_state) {
+void CheckSecurityState(WebContents* tab,
+                        net::CertStatus expected_error,
+                        security_state::SecurityLevel expected_security_level,
+                        int expected_authentication_state) {
   ASSERT_FALSE(tab->IsCrashed());
   NavigationEntry* entry = tab->GetController().GetActiveEntry();
   ASSERT_TRUE(entry);
@@ -321,23 +318,20 @@ class SSLUITest
 
   void CheckAuthenticatedState(WebContents* tab,
                                int expected_authentication_state) {
-    CheckSecurityState(tab, CertError::NONE,
-                       security_state::SecurityStateModel::SECURE,
+    CheckSecurityState(tab, CertError::NONE, security_state::SECURE,
                        expected_authentication_state);
   }
 
   void CheckUnauthenticatedState(WebContents* tab,
                                  int expected_authentication_state) {
-    CheckSecurityState(tab, CertError::NONE,
-                       security_state::SecurityStateModel::NONE,
+    CheckSecurityState(tab, CertError::NONE, security_state::NONE,
                        expected_authentication_state);
   }
 
   void CheckAuthenticationBrokenState(WebContents* tab,
                                       net::CertStatus error,
                                       int expected_authentication_state) {
-    CheckSecurityState(tab, error,
-                       security_state::SecurityStateModel::DANGEROUS,
+    CheckSecurityState(tab, error, security_state::DANGEROUS,
                        expected_authentication_state);
     // CERT_STATUS_UNABLE_TO_CHECK_REVOCATION doesn't lower the security level
     // to DANGEROUS.
@@ -976,7 +970,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorCausedByClockUsingBuildTime) {
   EXPECT_EQ(BadClockBlockingPage::kTypeForTesting,
             clock_interstitial->GetDelegateForTesting()->GetTypeForTesting());
   CheckSecurityState(clock_tab, net::CERT_STATUS_DATE_INVALID,
-                     security_state::SecurityStateModel::DANGEROUS,
+                     security_state::DANGEROUS,
                      AuthState::SHOWING_INTERSTITIAL);
 }
 
@@ -1000,7 +994,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorCausedByClockUsingNetwork) {
   EXPECT_EQ(BadClockBlockingPage::kTypeForTesting,
             clock_interstitial->GetDelegateForTesting()->GetTypeForTesting());
   CheckSecurityState(clock_tab, net::CERT_STATUS_DATE_INVALID,
-                     security_state::SecurityStateModel::DANGEROUS,
+                     security_state::DANGEROUS,
                      AuthState::SHOWING_INTERSTITIAL);
 }
 
@@ -1206,15 +1200,14 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MarkFileAsNonSecure) {
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
 
-  ChromeSecurityStateModelClient* model_client =
-      ChromeSecurityStateModelClient::FromWebContents(contents);
-  ASSERT_TRUE(model_client);
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
 
   ui_test_utils::NavigateToURL(browser(), GURL("file:///"));
-  security_state::SecurityStateModel::SecurityInfo security_info;
-  model_client->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::SecurityStateModel::NONE,
-            security_info.security_level);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::NONE, security_info.security_level);
 }
 
 IN_PROC_BROWSER_TEST_F(SSLUITest, MarkAboutAsNonSecure) {
@@ -1226,15 +1219,14 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MarkAboutAsNonSecure) {
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
 
-  ChromeSecurityStateModelClient* model_client =
-      ChromeSecurityStateModelClient::FromWebContents(contents);
-  ASSERT_TRUE(model_client);
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
 
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  security_state::SecurityStateModel::SecurityInfo security_info;
-  model_client->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::SecurityStateModel::NONE,
-            security_info.security_level);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::NONE, security_info.security_level);
 }
 
 IN_PROC_BROWSER_TEST_F(SSLUITest, MarkDataAsNonSecure) {
@@ -1246,15 +1238,14 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MarkDataAsNonSecure) {
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
 
-  ChromeSecurityStateModelClient* model_client =
-      ChromeSecurityStateModelClient::FromWebContents(contents);
-  ASSERT_TRUE(model_client);
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
 
   ui_test_utils::NavigateToURL(browser(), GURL("data:text/plain,hello"));
-  security_state::SecurityStateModel::SecurityInfo security_info;
-  model_client->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::SecurityStateModel::NONE,
-            security_info.security_level);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::NONE, security_info.security_level);
 }
 
 IN_PROC_BROWSER_TEST_F(SSLUITest, MarkBlobAsNonSecure) {
@@ -1266,17 +1257,16 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MarkBlobAsNonSecure) {
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
 
-  ChromeSecurityStateModelClient* model_client =
-      ChromeSecurityStateModelClient::FromWebContents(contents);
-  ASSERT_TRUE(model_client);
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
 
   ui_test_utils::NavigateToURL(
       browser(),
       GURL("blob:chrome://newtab/49a463bb-fac8-476c-97bf-5d7076c3ea1a"));
-  security_state::SecurityStateModel::SecurityInfo security_info;
-  model_client->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::SecurityStateModel::NONE,
-            security_info.security_level);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::NONE, security_info.security_level);
 }
 
 #if defined(USE_NSS_CERTS)
@@ -1487,7 +1477,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestDisplaysInsecureContent) {
                                https_server_.GetURL(replacement_path));
 
   CheckSecurityState(browser()->tab_strip_model()->GetActiveWebContents(),
-                     CertError::NONE, security_state::SecurityStateModel::NONE,
+                     CertError::NONE, security_state::NONE,
                      AuthState::DISPLAYED_INSECURE_CONTENT);
 }
 
@@ -1717,8 +1707,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   EXPECT_TRUE(js_result);
 
   // We should now have insecure content.
-  CheckSecurityState(tab, CertError::NONE,
-                     security_state::SecurityStateModel::NONE,
+  CheckSecurityState(tab, CertError::NONE, security_state::NONE,
                      AuthState::DISPLAYED_INSECURE_CONTENT);
 }
 
@@ -1756,8 +1745,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureContentTwoTabs) {
   observer.Wait();
 
   // The new tab has insecure content.
-  CheckSecurityState(tab2, CertError::NONE,
-                     security_state::SecurityStateModel::NONE,
+  CheckSecurityState(tab2, CertError::NONE, security_state::NONE,
                      AuthState::DISPLAYED_INSECURE_CONTENT);
 
   // The original tab should not be contaminated.
@@ -1833,8 +1821,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysCachedInsecureContent) {
   // content (even though the image comes from the WebCore memory cache).
   const GURL url_https = https_server_.GetURL(replacement_path);
   ui_test_utils::NavigateToURL(browser(), url_https);
-  CheckSecurityState(tab, CertError::NONE,
-                     security_state::SecurityStateModel::NONE,
+  CheckSecurityState(tab, CertError::NONE, security_state::NONE,
                      AuthState::DISPLAYED_INSECURE_CONTENT);
 }
 
@@ -2183,8 +2170,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWaitForDOMNotification,
                              "document.body.appendChild(img);"));
 
   run_loop.Run();
-  CheckSecurityState(tab, CertError::NONE,
-                     security_state::SecurityStateModel::NONE,
+  CheckSecurityState(tab, CertError::NONE, security_state::NONE,
                      AuthState::DISPLAYED_INSECURE_CONTENT);
 }
 
@@ -2464,14 +2450,13 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsInWorkerWithUserException) {
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
                                  AuthState::NONE);
 
-  ChromeSecurityStateModelClient* client =
-      ChromeSecurityStateModelClient::FromWebContents(tab);
-  ASSERT_TRUE(client);
-  security_state::SecurityStateModel::SecurityInfo security_info;
-  client->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::SecurityStateModel::CONTENT_STATUS_NONE,
+  SecurityStateTabHelper* helper = SecurityStateTabHelper::FromWebContents(tab);
+  ASSERT_TRUE(helper);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::CONTENT_STATUS_NONE,
             security_info.mixed_content_status);
-  EXPECT_EQ(security_state::SecurityStateModel::CONTENT_STATUS_NONE,
+  EXPECT_EQ(security_state::CONTENT_STATUS_NONE,
             security_info.content_with_cert_errors_status);
 
   // Navigate to safe page that has Worker loading unsafe content.
@@ -2485,10 +2470,10 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsInWorkerWithUserException) {
   CheckWorkerLoadResult(tab, true);  // Worker loads insecure content
   CheckAuthenticationBrokenState(tab, CertError::NONE, AuthState::NONE);
 
-  client->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::SecurityStateModel::CONTENT_STATUS_NONE,
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::CONTENT_STATUS_NONE,
             security_info.mixed_content_status);
-  EXPECT_EQ(security_state::SecurityStateModel::CONTENT_STATUS_RAN,
+  EXPECT_EQ(security_state::CONTENT_STATUS_RAN,
             security_info.content_with_cert_errors_status);
 }
 
@@ -2500,16 +2485,14 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsWithUserException) {
       "/ssl/page_with_unsafe_contents.html"));
   CheckAuthenticationBrokenState(tab, CertError::NONE, AuthState::NONE);
 
-  ChromeSecurityStateModelClient* client =
-      ChromeSecurityStateModelClient::FromWebContents(tab);
-  ASSERT_TRUE(client);
-  security_state::SecurityStateModel::SecurityInfo security_info;
-  client->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::SecurityStateModel::CONTENT_STATUS_NONE,
+  SecurityStateTabHelper* helper = SecurityStateTabHelper::FromWebContents(tab);
+  ASSERT_TRUE(helper);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::CONTENT_STATUS_NONE,
             security_info.mixed_content_status);
-  EXPECT_EQ(
-      security_state::SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN,
-      security_info.content_with_cert_errors_status);
+  EXPECT_EQ(security_state::CONTENT_STATUS_DISPLAYED_AND_RAN,
+            security_info.content_with_cert_errors_status);
 
   int img_width;
   EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
@@ -2539,12 +2522,11 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsWithUserException) {
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
                                  AuthState::NONE);
 
-  client->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::SecurityStateModel::CONTENT_STATUS_NONE,
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::CONTENT_STATUS_NONE,
             security_info.mixed_content_status);
-  EXPECT_EQ(
-      security_state::SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN,
-      security_info.content_with_cert_errors_status);
+  EXPECT_EQ(security_state::CONTENT_STATUS_DISPLAYED_AND_RAN,
+            security_info.content_with_cert_errors_status);
 }
 
 // Like the test above, but only displaying inactive content (an image).
@@ -2553,17 +2535,15 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeImageWithUserException) {
   ASSERT_NO_FATAL_FAILURE(
       SetUpUnsafeContentsWithUserException("/ssl/page_with_unsafe_image.html"));
 
-  ChromeSecurityStateModelClient* client =
-      ChromeSecurityStateModelClient::FromWebContents(tab);
-  ASSERT_TRUE(client);
-  security_state::SecurityStateModel::SecurityInfo security_info;
-  client->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::SecurityStateModel::CONTENT_STATUS_NONE,
+  SecurityStateTabHelper* helper = SecurityStateTabHelper::FromWebContents(tab);
+  ASSERT_TRUE(helper);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::CONTENT_STATUS_NONE,
             security_info.mixed_content_status);
-  EXPECT_EQ(security_state::SecurityStateModel::CONTENT_STATUS_DISPLAYED,
+  EXPECT_EQ(security_state::CONTENT_STATUS_DISPLAYED,
             security_info.content_with_cert_errors_status);
-  EXPECT_EQ(security_state::SecurityStateModel::NONE,
-            security_info.security_level);
+  EXPECT_EQ(security_state::NONE, security_info.security_level);
   EXPECT_EQ(0u, security_info.cert_status);
 
   int img_width;
@@ -3413,8 +3393,7 @@ IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
   ui_test_utils::NavigateToURL(browser(), https_server_mismatched_url);
   observer.Wait();
 
-  CheckSecurityState(contents, CertError::NONE,
-                     security_state::SecurityStateModel::SECURE,
+  CheckSecurityState(contents, CertError::NONE, security_state::SECURE,
                      AuthState::NONE);
   replacements.SetHostStr("mail.example.com");
   GURL https_server_new_url = https_server_url.ReplaceComponents(replacements);
@@ -3472,8 +3451,7 @@ IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
   ui_test_utils::NavigateToURL(browser(), https_server_mismatched_url);
   observer.Wait();
 
-  CheckSecurityState(contents, CertError::NONE,
-                     security_state::SecurityStateModel::SECURE,
+  CheckSecurityState(contents, CertError::NONE, security_state::SECURE,
                      AuthState::NONE);
 }
 
@@ -3718,7 +3696,7 @@ IN_PROC_BROWSER_TEST_F(CertVerifierBrowserTest, MockCertVerifierSmokeTest) {
 
   CheckSecurityState(browser()->tab_strip_model()->GetActiveWebContents(),
                      net::CERT_STATUS_NAME_CONSTRAINT_VIOLATION,
-                     security_state::SecurityStateModel::DANGEROUS,
+                     security_state::DANGEROUS,
                      AuthState::SHOWING_INTERSTITIAL);
 }
 
@@ -3837,8 +3815,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, ClientRedirectToMixedContentSSLState) {
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 2);
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  CheckSecurityState(tab, CertError::NONE,
-                     security_state::SecurityStateModel::NONE,
+  CheckSecurityState(tab, CertError::NONE, security_state::NONE,
                      AuthState::DISPLAYED_INSECURE_CONTENT);
 }
 

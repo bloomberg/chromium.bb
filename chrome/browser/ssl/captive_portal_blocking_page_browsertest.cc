@@ -16,7 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/cert_report_helper.h"
 #include "chrome/browser/ssl/certificate_reporting_test_utils.h"
-#include "chrome/browser/ssl/chrome_security_state_model_client.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -24,6 +24,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/captive_portal/captive_portal_detector.h"
 #include "components/prefs/pref_service.h"
+#include "components/security_state/core/security_state.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -168,13 +169,12 @@ void CaptivePortalBlockingPageTest::TestInterstitial(
                                          kGenericLoginURLText));
 
   // Check that a red/dangerous lock icon is showing on the interstitial.
-  ChromeSecurityStateModelClient* security_model =
-      ChromeSecurityStateModelClient::FromWebContents(contents);
-  ASSERT_TRUE(security_model);
-  security_state::SecurityStateModel::SecurityInfo security_info;
-  security_model->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::SecurityStateModel::DANGEROUS,
-            security_info.security_level);
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
 }
 
 void CaptivePortalBlockingPageTest::TestInterstitial(

@@ -7,7 +7,7 @@
 #include "ui/gfx/vector_icons_public.h"
 
 TestToolbarModel::TestToolbarModel()
-    : security_level_(security_state::SecurityStateModel::NONE),
+    : security_level_(security_state::NONE),
 #if defined(TOOLKIT_VIEWS)
       icon_(gfx::VectorIconId::LOCATION_BAR_HTTP),
 #else
@@ -26,8 +26,8 @@ GURL TestToolbarModel::GetURL() const {
   return url_;
 }
 
-security_state::SecurityStateModel::SecurityLevel
-TestToolbarModel::GetSecurityLevel(bool ignore_editing) const {
+security_state::SecurityLevel TestToolbarModel::GetSecurityLevel(
+    bool ignore_editing) const {
   return security_level_;
 }
 
@@ -40,9 +40,8 @@ base::string16 TestToolbarModel::GetSecureVerboseText() const {
 }
 
 base::string16 TestToolbarModel::GetEVCertName() const {
-  return (security_level_ == security_state::SecurityStateModel::EV_SECURE)
-             ? ev_cert_name_
-             : base::string16();
+  return (security_level_ == security_state::EV_SECURE) ? ev_cert_name_
+                                                        : base::string16();
 }
 
 bool TestToolbarModel::ShouldDisplayURL() const {

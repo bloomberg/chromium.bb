@@ -17,7 +17,7 @@ static_library("toolbar") {
     "//components/google/core/browser",
     "//components/prefs",
     "//components/resources",
-    "//components/security_state",
+    "//components/security_state/core",
     "//components/strings",
     "//components/url_formatter",
     "//net",

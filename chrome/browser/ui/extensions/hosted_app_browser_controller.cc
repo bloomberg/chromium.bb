@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ssl/chrome_security_state_model_client.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
@@ -14,7 +14,7 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
-#include "components/security_state/security_state_model.h"
+#include "components/security_state/core/security_state.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -95,14 +95,14 @@ bool HostedAppBrowserController::ShouldShowLocationBar() const {
   if (web_contents->GetLastCommittedURL().is_empty())
     return false;
 
-  const ChromeSecurityStateModelClient* model_client =
-      ChromeSecurityStateModelClient::FromWebContents(web_contents);
-  security_state::SecurityStateModel::SecurityInfo security_info;
-  model_client->GetSecurityInfo(&security_info);
-  if (model_client &&
-      security_info.security_level ==
-          security_state::SecurityStateModel::DANGEROUS)
-    return true;
+  const SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(web_contents);
+  if (helper) {
+    security_state::SecurityInfo security_info;
+    helper->GetSecurityInfo(&security_info);
+    if (security_info.security_level == security_state::DANGEROUS)
+      return true;
+  }
 
   GURL launch_url = AppLaunchInfo::GetLaunchWebURL(extension);
   return !(IsSameOriginOrMoreSecure(launch_url,

@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/omnibox_view.h"
-#include "components/security_state/security_state_model.h"
+#include "components/security_state/core/security_state.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/range/range.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -208,7 +208,7 @@ class OmniboxViewViews
 
   std::unique_ptr<OmniboxPopupView> popup_view_;
 
-  security_state::SecurityStateModel::SecurityLevel security_level_;
+  security_state::SecurityLevel security_level_;
 
   // Selection persisted across temporary text changes, like popup suggestions.
   gfx::Range saved_temporary_selection_;

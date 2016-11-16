@@ -134,8 +134,7 @@ class ToolbarView : public views::AccessiblePaneView,
   void ShowWebsiteSettings(
       content::WebContents* web_contents,
       const GURL& virtual_url,
-      const security_state::SecurityStateModel::SecurityInfo& security_info)
-      override;
+      const security_state::SecurityInfo& security_info) override;
 
   // CommandObserver:
   void EnabledStateChangedForCommand(int id, bool enabled) override;

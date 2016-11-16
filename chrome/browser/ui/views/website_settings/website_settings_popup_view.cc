@@ -419,7 +419,7 @@ void WebsiteSettingsPopupView::ShowPopup(
     Profile* profile,
     content::WebContents* web_contents,
     const GURL& url,
-    const security_state::SecurityStateModel::SecurityInfo& security_info) {
+    const security_state::SecurityInfo& security_info) {
   gfx::NativeView parent_window =
       anchor_view ? nullptr : web_contents->GetNativeView();
   if (url.SchemeIs(content::kChromeUIScheme) ||
@@ -453,7 +453,7 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
     Profile* profile,
     content::WebContents* web_contents,
     const GURL& url,
-    const security_state::SecurityStateModel::SecurityInfo& security_info)
+    const security_state::SecurityInfo& security_info)
     : content::WebContentsObserver(web_contents),
       BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
       profile_(profile),

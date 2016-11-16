@@ -49,21 +49,20 @@ int GetIconForAutocompleteMatchType(AutocompleteMatchType::Type type,
   }
 }
 
-int GetIconForSecurityState(
-    security_state::SecurityStateModel::SecurityLevel security_level) {
+int GetIconForSecurityState(security_state::SecurityLevel security_level) {
   switch (security_level) {
-    case security_state::SecurityStateModel::NONE:
-    case security_state::SecurityStateModel::HTTP_SHOW_WARNING:
+    case security_state::NONE:
+    case security_state::HTTP_SHOW_WARNING:
       return IDR_IOS_OMNIBOX_HTTP;
-    case security_state::SecurityStateModel::EV_SECURE:
-    case security_state::SecurityStateModel::SECURE:
+    case security_state::EV_SECURE:
+    case security_state::SECURE:
       return IDR_IOS_OMNIBOX_HTTPS_VALID;
-    case security_state::SecurityStateModel::SECURITY_WARNING:
+    case security_state::SECURITY_WARNING:
       // Surface Dubious as Neutral.
       return IDR_IOS_OMNIBOX_HTTP;
-    case security_state::SecurityStateModel::SECURE_WITH_POLICY_INSTALLED_CERT:
+    case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
       return IDR_IOS_OMNIBOX_HTTPS_POLICY_WARNING;
-    case security_state::SecurityStateModel::DANGEROUS:
+    case security_state::DANGEROUS:
       return IDR_IOS_OMNIBOX_HTTPS_INVALID;
   }
 }

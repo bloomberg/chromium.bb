@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/ssl/ios_chrome_security_state_model_client.h"
+#include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "components/security_state/core/security_state.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/origin_util.h"
@@ -15,38 +18,28 @@
 #include "ios/web/public/web_state/web_state.h"
 #include "net/cert/x509_certificate.h"
 
-DEFINE_WEB_STATE_USER_DATA_KEY(IOSChromeSecurityStateModelClient);
+DEFINE_WEB_STATE_USER_DATA_KEY(IOSSecurityStateTabHelper);
 
-IOSChromeSecurityStateModelClient::IOSChromeSecurityStateModelClient(
-    web::WebState* web_state)
-    : web_state_(web_state),
-      security_state_model_(new security_state::SecurityStateModel()) {
-  security_state_model_->SetClient(this);
+IOSSecurityStateTabHelper::IOSSecurityStateTabHelper(web::WebState* web_state)
+    : web_state_(web_state) {}
+
+IOSSecurityStateTabHelper::~IOSSecurityStateTabHelper() {}
+
+void IOSSecurityStateTabHelper::GetSecurityInfo(
+    security_state::SecurityInfo* result) const {
+  security_state::GetSecurityInfo(GetVisibleSecurityState(),
+                                  false /* used policy installed certificate */,
+                                  base::Bind(&web::IsOriginSecure), result);
 }
 
-IOSChromeSecurityStateModelClient::~IOSChromeSecurityStateModelClient() {}
+std::unique_ptr<security_state::VisibleSecurityState>
+IOSSecurityStateTabHelper::GetVisibleSecurityState() const {
+  auto state = base::MakeUnique<security_state::VisibleSecurityState>();
 
-void IOSChromeSecurityStateModelClient::GetSecurityInfo(
-    security_state::SecurityStateModel::SecurityInfo* result) const {
-  return security_state_model_->GetSecurityInfo(result);
-}
-
-bool IOSChromeSecurityStateModelClient::UsedPolicyInstalledCertificate() {
-  return false;
-}
-
-bool IOSChromeSecurityStateModelClient::IsOriginSecure(const GURL& url) {
-  return web::IsOriginSecure(url);
-}
-
-void IOSChromeSecurityStateModelClient::GetVisibleSecurityState(
-    security_state::SecurityStateModel::VisibleSecurityState* state) {
   web::NavigationItem* item =
       web_state_->GetNavigationManager()->GetVisibleItem();
-  if (!item || item->GetSSL().security_style == web::SECURITY_STYLE_UNKNOWN) {
-    *state = security_state::SecurityStateModel::VisibleSecurityState();
-    return;
-  }
+  if (!item || item->GetSSL().security_style == web::SECURITY_STYLE_UNKNOWN)
+    return state;
 
   state->connection_info_initialized = true;
   state->url = item->GetURL();
@@ -58,4 +51,5 @@ void IOSChromeSecurityStateModelClient::GetVisibleSecurityState(
   state->displayed_mixed_content =
       (ssl.content_status & web::SSLStatus::DISPLAYED_INSECURE_CONTENT) ? true
                                                                         : false;
+  return state;
 }

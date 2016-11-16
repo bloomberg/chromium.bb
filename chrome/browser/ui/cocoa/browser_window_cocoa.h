@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/common/features.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "components/security_state/security_state_model.h"
 #include "ui/base/ui_base_types.h"
 
 class Browser;
@@ -28,6 +27,10 @@ class ActiveTabPermissionGranter;
 class Command;
 class Extension;
 }
+
+namespace security_state {
+struct SecurityInfo;
+}  // namespace security_state
 
 // An implementation of BrowserWindow for Cocoa. Bridges between C++ and
 // the Cocoa NSWindow. Cross-platform code will interact with this object when
@@ -130,8 +133,7 @@ class BrowserWindowCocoa
       Profile* profile,
       content::WebContents* web_contents,
       const GURL& virtual_url,
-      const security_state::SecurityStateModel::SecurityInfo& security_info)
-      override;
+      const security_state::SecurityInfo& security_info) override;
   void ShowAppMenu() override;
   bool PreHandleKeyboardEvent(const content::NativeWebKeyboardEvent& event,
                               bool* is_keyboard_shortcut) override;

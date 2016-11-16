@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/chrome_security_state_model_client.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -10,7 +10,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
-#include "chrome/browser/ssl/chrome_security_state_model_client.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -18,11 +17,12 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
-#include "components/security_state/switches.h"
+#include "components/security_state/core/security_state.h"
+#include "components/security_state/core/switches.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -55,8 +55,6 @@
 #include "net/url_request/url_request_test_util.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "ui/base/l10n/l10n_util.h"
-
-using security_state::SecurityStateModel;
 
 namespace {
 
@@ -130,7 +128,7 @@ void CheckBrokenSecurityStyle(const SecurityStyleTestObserver& observer,
   // Check the associated certificate.
   net::X509Certificate* cert = browser->tab_strip_model()
                                    ->GetActiveWebContents()
-                                    ->GetController()
+                                   ->GetController()
                                    .GetActiveEntry()
                                    ->GetSSL()
                                    .certificate.get();
@@ -168,8 +166,8 @@ void CheckSecureExplanations(
 
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
-  SecurityStateModel::SecurityInfo security_info;
-  ChromeSecurityStateModelClient::FromWebContents(web_contents)
+  security_state::SecurityInfo security_info;
+  SecurityStateTabHelper::FromWebContents(web_contents)
       ->GetSecurityInfo(&security_info);
 
   const char *protocol, *key_exchange, *cipher, *mac;
@@ -206,18 +204,18 @@ void CheckSecureExplanations(
 
 void CheckSecurityInfoForSecure(
     content::WebContents* contents,
-    SecurityStateModel::SecurityLevel expect_security_level,
-    SecurityStateModel::SHA1DeprecationStatus expect_sha1_status,
-    SecurityStateModel::ContentStatus expect_mixed_content_status,
+    security_state::SecurityLevel expect_security_level,
+    security_state::SHA1DeprecationStatus expect_sha1_status,
+    security_state::ContentStatus expect_mixed_content_status,
     bool pkp_bypassed,
     bool expect_cert_error) {
   ASSERT_TRUE(contents);
 
-  ChromeSecurityStateModelClient* model_client =
-      ChromeSecurityStateModelClient::FromWebContents(contents);
-  ASSERT_TRUE(model_client);
-  SecurityStateModel::SecurityInfo security_info;
-  model_client->GetSecurityInfo(&security_info);
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
   EXPECT_EQ(expect_security_level, security_info.security_level);
   EXPECT_EQ(expect_sha1_status, security_info.sha1_deprecation_status);
   EXPECT_EQ(expect_mixed_content_status, security_info.mixed_content_status);
@@ -233,15 +231,15 @@ void CheckSecurityInfoForSecure(
 void CheckSecurityInfoForNonSecure(content::WebContents* contents) {
   ASSERT_TRUE(contents);
 
-  ChromeSecurityStateModelClient* model_client =
-      ChromeSecurityStateModelClient::FromWebContents(contents);
-  ASSERT_TRUE(model_client);
-  SecurityStateModel::SecurityInfo security_info;
-  model_client->GetSecurityInfo(&security_info);
-  EXPECT_EQ(SecurityStateModel::NONE, security_info.security_level);
-  EXPECT_EQ(SecurityStateModel::NO_DEPRECATED_SHA1,
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::NONE, security_info.security_level);
+  EXPECT_EQ(security_state::NO_DEPRECATED_SHA1,
             security_info.sha1_deprecation_status);
-  EXPECT_EQ(SecurityStateModel::CONTENT_STATUS_NONE,
+  EXPECT_EQ(security_state::CONTENT_STATUS_NONE,
             security_info.mixed_content_status);
   EXPECT_TRUE(security_info.sct_verify_statuses.empty());
   EXPECT_FALSE(security_info.scheme_is_cryptographic);
@@ -273,9 +271,9 @@ void GetFilePathWithHostAndPortReplacement(
       original_file_path, replacement_text, replacement_path);
 }
 
-class ChromeSecurityStateModelClientTest : public CertVerifierBrowserTest {
+class SecurityStateTabHelperTest : public CertVerifierBrowserTest {
  public:
-  ChromeSecurityStateModelClientTest()
+  SecurityStateTabHelperTest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
     https_server_.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
   }
@@ -300,7 +298,7 @@ class ChromeSecurityStateModelClientTest : public CertVerifierBrowserTest {
   net::EmbeddedTestServer https_server_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeSecurityStateModelClientTest);
+  DISALLOW_COPY_AND_ASSIGN(SecurityStateTabHelperTest);
 };
 
 GURL GetURLWithNonLocalHostname(net::EmbeddedTestServer* server,
@@ -310,12 +308,12 @@ GURL GetURLWithNonLocalHostname(net::EmbeddedTestServer* server,
   return server->GetURL(path).ReplaceComponents(replace_host);
 }
 
-class ChromeSecurityStateModelClientTestWithPasswordCcSwitch
-    : public ChromeSecurityStateModelClientTest,
+class SecurityStateTabHelperTestWithPasswordCcSwitch
+    : public SecurityStateTabHelperTest,
       public testing::WithParamInterface<bool> {
  public:
-  ChromeSecurityStateModelClientTestWithPasswordCcSwitch()
-      : ChromeSecurityStateModelClientTest() {}
+  SecurityStateTabHelperTestWithPasswordCcSwitch()
+      : SecurityStateTabHelperTest() {}
 
   void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->Start());
@@ -325,7 +323,7 @@ class ChromeSecurityStateModelClientTestWithPasswordCcSwitch
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ChromeSecurityStateModelClientTest::SetUpCommandLine(command_line);
+    SecurityStateTabHelperTest::SetUpCommandLine(command_line);
     if (GetParam()) {
       command_line->AppendSwitchASCII(
           security_state::switches::kMarkHttpAs,
@@ -339,8 +337,7 @@ class ChromeSecurityStateModelClientTestWithPasswordCcSwitch
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(
-      ChromeSecurityStateModelClientTestWithPasswordCcSwitch);
+  DISALLOW_COPY_AND_ASSIGN(SecurityStateTabHelperTestWithPasswordCcSwitch);
 };
 
 class SecurityStyleChangedTest : public InProcessBrowserTest {
@@ -362,7 +359,7 @@ class SecurityStyleChangedTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(SecurityStyleChangedTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, HttpPage) {
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, HttpPage) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/ssl/google.html"));
@@ -370,15 +367,15 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, HttpPage) {
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
 
-  ChromeSecurityStateModelClient* model_client =
-      ChromeSecurityStateModelClient::FromWebContents(contents);
-  ASSERT_TRUE(model_client);
-  SecurityStateModel::SecurityInfo security_info;
-  model_client->GetSecurityInfo(&security_info);
-  EXPECT_EQ(SecurityStateModel::NONE, security_info.security_level);
-  EXPECT_EQ(SecurityStateModel::NO_DEPRECATED_SHA1,
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::NONE, security_info.security_level);
+  EXPECT_EQ(security_state::NO_DEPRECATED_SHA1,
             security_info.sha1_deprecation_status);
-  EXPECT_EQ(SecurityStateModel::CONTENT_STATUS_NONE,
+  EXPECT_EQ(security_state::CONTENT_STATUS_NONE,
             security_info.mixed_content_status);
   EXPECT_TRUE(security_info.sct_verify_statuses.empty());
   EXPECT_FALSE(security_info.scheme_is_cryptographic);
@@ -388,7 +385,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, HttpPage) {
   EXPECT_EQ(0, security_info.connection_status);
 }
 
-IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, HttpsPage) {
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, HttpsPage) {
   ASSERT_TRUE(https_server_.Start());
   SetUpMockCertVerifierForHttpsServer(0, net::OK);
 
@@ -396,12 +393,12 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, HttpsPage) {
                                https_server_.GetURL("/ssl/google.html"));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::SECURE, SecurityStateModel::NO_DEPRECATED_SHA1,
-      SecurityStateModel::CONTENT_STATUS_NONE, false,
+      security_state::SECURE, security_state::NO_DEPRECATED_SHA1,
+      security_state::CONTENT_STATUS_NONE, false,
       false /* expect cert status error */);
 }
 
-IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, SHA1Broken) {
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, SHA1Broken) {
   ASSERT_TRUE(https_server_.Start());
   // The test server uses a long-lived cert by default, so a SHA1
   // signature in it will register as a "broken" condition rather than
@@ -413,12 +410,12 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, SHA1Broken) {
                                https_server_.GetURL("/ssl/google.html"));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::DANGEROUS, SecurityStateModel::DEPRECATED_SHA1_MAJOR,
-      SecurityStateModel::CONTENT_STATUS_NONE, false,
+      security_state::DANGEROUS, security_state::DEPRECATED_SHA1_MAJOR,
+      security_state::CONTENT_STATUS_NONE, false,
       false /* expect cert status error */);
 }
 
-IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, MixedContent) {
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, MixedContent) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
   SetUpMockCertVerifierForHttpsServer(0, net::OK);
@@ -431,26 +428,26 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, MixedContent) {
   // Navigate to an HTTPS page that displays mixed content.
   std::string replacement_path;
   GetFilePathWithHostAndPortReplacement(
-      "/ssl/page_displays_insecure_content.html",
-      replacement_pair, &replacement_path);
+      "/ssl/page_displays_insecure_content.html", replacement_pair,
+      &replacement_path);
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::NONE, SecurityStateModel::NO_DEPRECATED_SHA1,
-      SecurityStateModel::CONTENT_STATUS_DISPLAYED, false,
+      security_state::NONE, security_state::NO_DEPRECATED_SHA1,
+      security_state::CONTENT_STATUS_DISPLAYED, false,
       false /* expect cert status error */);
 
   // Navigate to an HTTPS page that displays mixed content dynamically.
   GetFilePathWithHostAndPortReplacement(
-      "/ssl/page_with_dynamic_insecure_content.html",
-      replacement_pair, &replacement_path);
+      "/ssl/page_with_dynamic_insecure_content.html", replacement_pair,
+      &replacement_path);
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::SECURE, SecurityStateModel::NO_DEPRECATED_SHA1,
-      SecurityStateModel::CONTENT_STATUS_NONE, false,
+      security_state::SECURE, security_state::NO_DEPRECATED_SHA1,
+      security_state::CONTENT_STATUS_NONE, false,
       false /* expect cert status error */);
   // Load the insecure image.
   bool js_result = false;
@@ -460,32 +457,31 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, MixedContent) {
   EXPECT_TRUE(js_result);
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::NONE, SecurityStateModel::NO_DEPRECATED_SHA1,
-      SecurityStateModel::CONTENT_STATUS_DISPLAYED, false,
+      security_state::NONE, security_state::NO_DEPRECATED_SHA1,
+      security_state::CONTENT_STATUS_DISPLAYED, false,
       false /* expect cert status error */);
 
   // Navigate to an HTTPS page that runs mixed content.
-  GetFilePathWithHostAndPortReplacement(
-      "/ssl/page_runs_insecure_content.html",
-      replacement_pair, &replacement_path);
+  GetFilePathWithHostAndPortReplacement("/ssl/page_runs_insecure_content.html",
+                                        replacement_pair, &replacement_path);
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::DANGEROUS, SecurityStateModel::NO_DEPRECATED_SHA1,
-      SecurityStateModel::CONTENT_STATUS_RAN, false,
+      security_state::DANGEROUS, security_state::NO_DEPRECATED_SHA1,
+      security_state::CONTENT_STATUS_RAN, false,
       false /* expect cert status error */);
 
   // Navigate to an HTTPS page that runs and displays mixed content.
   GetFilePathWithHostAndPortReplacement(
-      "/ssl/page_runs_and_displays_insecure_content.html",
-      replacement_pair, &replacement_path);
+      "/ssl/page_runs_and_displays_insecure_content.html", replacement_pair,
+      &replacement_path);
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::DANGEROUS, SecurityStateModel::NO_DEPRECATED_SHA1,
-      SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN, false,
+      security_state::DANGEROUS, security_state::NO_DEPRECATED_SHA1,
+      security_state::CONTENT_STATUS_DISPLAYED_AND_RAN, false,
       false /* expect cert status error */);
 
   // Navigate to an HTTPS page that runs mixed content in an iframe.
@@ -504,12 +500,12 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, MixedContent) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::DANGEROUS, SecurityStateModel::NO_DEPRECATED_SHA1,
-      SecurityStateModel::CONTENT_STATUS_RAN, false,
+      security_state::DANGEROUS, security_state::NO_DEPRECATED_SHA1,
+      security_state::CONTENT_STATUS_RAN, false,
       false /* expect cert status error */);
 }
 
-IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
                        ActiveContentWithCertErrors) {
   ASSERT_TRUE(https_server_.Start());
   SetUpMockCertVerifierForHttpsServer(0, net::OK);
@@ -526,19 +522,19 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
   entry->GetSSL().content_status |=
       content::SSLStatus::RAN_CONTENT_WITH_CERT_ERRORS;
 
-  ChromeSecurityStateModelClient* model_client =
-      ChromeSecurityStateModelClient::FromWebContents(web_contents);
-  ASSERT_TRUE(model_client);
-  SecurityStateModel::SecurityInfo security_info;
-  model_client->GetSecurityInfo(&security_info);
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(web_contents);
+  ASSERT_TRUE(helper);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
 
   EXPECT_FALSE(net::IsCertStatusError(security_info.cert_status));
-  EXPECT_EQ(SecurityStateModel::DANGEROUS, security_info.security_level);
-  EXPECT_EQ(SecurityStateModel::CONTENT_STATUS_RAN,
+  EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
+  EXPECT_EQ(security_state::CONTENT_STATUS_RAN,
             security_info.content_with_cert_errors_status);
 }
 
-IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
                        PassiveContentWithCertErrors) {
   ASSERT_TRUE(https_server_.Start());
   SetUpMockCertVerifierForHttpsServer(0, net::OK);
@@ -555,19 +551,19 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
   entry->GetSSL().content_status |=
       content::SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS;
 
-  ChromeSecurityStateModelClient* model_client =
-      ChromeSecurityStateModelClient::FromWebContents(web_contents);
-  ASSERT_TRUE(model_client);
-  SecurityStateModel::SecurityInfo security_info;
-  model_client->GetSecurityInfo(&security_info);
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(web_contents);
+  ASSERT_TRUE(helper);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
 
   EXPECT_FALSE(net::IsCertStatusError(security_info.cert_status));
-  EXPECT_EQ(SecurityStateModel::NONE, security_info.security_level);
-  EXPECT_EQ(SecurityStateModel::CONTENT_STATUS_DISPLAYED,
+  EXPECT_EQ(security_state::NONE, security_info.security_level);
+  EXPECT_EQ(security_state::CONTENT_STATUS_DISPLAYED,
             security_info.content_with_cert_errors_status);
 }
 
-IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
                        ActiveAndPassiveContentWithCertErrors) {
   ASSERT_TRUE(https_server_.Start());
   SetUpMockCertVerifierForHttpsServer(0, net::OK);
@@ -586,21 +582,20 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
   entry->GetSSL().content_status |=
       content::SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS;
 
-  ChromeSecurityStateModelClient* model_client =
-      ChromeSecurityStateModelClient::FromWebContents(web_contents);
-  ASSERT_TRUE(model_client);
-  SecurityStateModel::SecurityInfo security_info;
-  model_client->GetSecurityInfo(&security_info);
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(web_contents);
+  ASSERT_TRUE(helper);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
 
   EXPECT_FALSE(net::IsCertStatusError(security_info.cert_status));
-  EXPECT_EQ(SecurityStateModel::DANGEROUS, security_info.security_level);
-  EXPECT_EQ(SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN,
+  EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
+  EXPECT_EQ(security_state::CONTENT_STATUS_DISPLAYED_AND_RAN,
             security_info.content_with_cert_errors_status);
 }
 
 // Same as the test above but with a long-lived SHA1 cert.
-IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
-                       MixedContentWithBrokenSHA1) {
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, MixedContentWithBrokenSHA1) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
   // The test server uses a long-lived cert by default, so a SHA1
@@ -618,26 +613,26 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
   // Navigate to an HTTPS page that displays mixed content.
   std::string replacement_path;
   GetFilePathWithHostAndPortReplacement(
-      "/ssl/page_displays_insecure_content.html",
-      replacement_pair, &replacement_path);
+      "/ssl/page_displays_insecure_content.html", replacement_pair,
+      &replacement_path);
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::DANGEROUS, SecurityStateModel::DEPRECATED_SHA1_MAJOR,
-      SecurityStateModel::CONTENT_STATUS_DISPLAYED, false,
+      security_state::DANGEROUS, security_state::DEPRECATED_SHA1_MAJOR,
+      security_state::CONTENT_STATUS_DISPLAYED, false,
       false /* expect cert status error */);
 
   // Navigate to an HTTPS page that displays mixed content dynamically.
   GetFilePathWithHostAndPortReplacement(
-      "/ssl/page_with_dynamic_insecure_content.html",
-      replacement_pair, &replacement_path);
+      "/ssl/page_with_dynamic_insecure_content.html", replacement_pair,
+      &replacement_path);
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::DANGEROUS, SecurityStateModel::DEPRECATED_SHA1_MAJOR,
-      SecurityStateModel::CONTENT_STATUS_NONE, false,
+      security_state::DANGEROUS, security_state::DEPRECATED_SHA1_MAJOR,
+      security_state::CONTENT_STATUS_NONE, false,
       false /* expect cert status error */);
   // Load the insecure image.
   bool js_result = false;
@@ -647,39 +642,37 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
   EXPECT_TRUE(js_result);
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::DANGEROUS, SecurityStateModel::DEPRECATED_SHA1_MAJOR,
-      SecurityStateModel::CONTENT_STATUS_DISPLAYED, false,
+      security_state::DANGEROUS, security_state::DEPRECATED_SHA1_MAJOR,
+      security_state::CONTENT_STATUS_DISPLAYED, false,
       false /* expect cert status error */);
 
   // Navigate to an HTTPS page that runs mixed content.
-  GetFilePathWithHostAndPortReplacement(
-      "/ssl/page_runs_insecure_content.html",
-      replacement_pair, &replacement_path);
+  GetFilePathWithHostAndPortReplacement("/ssl/page_runs_insecure_content.html",
+                                        replacement_pair, &replacement_path);
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::DANGEROUS, SecurityStateModel::DEPRECATED_SHA1_MAJOR,
-      SecurityStateModel::CONTENT_STATUS_RAN, false,
+      security_state::DANGEROUS, security_state::DEPRECATED_SHA1_MAJOR,
+      security_state::CONTENT_STATUS_RAN, false,
       false /* expect cert status error */);
 
   // Navigate to an HTTPS page that runs and displays mixed content.
   GetFilePathWithHostAndPortReplacement(
-      "/ssl/page_runs_and_displays_insecure_content.html",
-      replacement_pair, &replacement_path);
+      "/ssl/page_runs_and_displays_insecure_content.html", replacement_pair,
+      &replacement_path);
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::DANGEROUS, SecurityStateModel::DEPRECATED_SHA1_MAJOR,
-      SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN, false,
+      security_state::DANGEROUS, security_state::DEPRECATED_SHA1_MAJOR,
+      security_state::CONTENT_STATUS_DISPLAYED_AND_RAN, false,
       false /* expect cert status error */);
 }
 
 // Tests that the Content Security Policy block-all-mixed-content
 // directive stops mixed content from running.
-IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
-                       MixedContentStrictBlocking) {
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, MixedContentStrictBlocking) {
   ASSERT_TRUE(https_server_.Start());
   SetUpMockCertVerifierForHttpsServer(0, net::OK);
 
@@ -698,12 +691,12 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::SECURE, SecurityStateModel::NO_DEPRECATED_SHA1,
-      SecurityStateModel::CONTENT_STATUS_NONE, false,
+      security_state::SECURE, security_state::NO_DEPRECATED_SHA1,
+      security_state::CONTENT_STATUS_NONE, false,
       false /* expect cert status error */);
 }
 
-IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, BrokenHTTPS) {
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, BrokenHTTPS) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
   SetUpMockCertVerifierForHttpsServer(net::CERT_STATUS_DATE_INVALID,
@@ -713,8 +706,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, BrokenHTTPS) {
                                https_server_.GetURL("/ssl/google.html"));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::DANGEROUS, SecurityStateModel::NO_DEPRECATED_SHA1,
-      SecurityStateModel::CONTENT_STATUS_NONE, false,
+      security_state::DANGEROUS, security_state::NO_DEPRECATED_SHA1,
+      security_state::CONTENT_STATUS_NONE, false,
       true /* expect cert status error */);
 
   ProceedThroughInterstitial(
@@ -722,8 +715,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, BrokenHTTPS) {
 
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::DANGEROUS, SecurityStateModel::NO_DEPRECATED_SHA1,
-      SecurityStateModel::CONTENT_STATUS_NONE, false,
+      security_state::DANGEROUS, security_state::NO_DEPRECATED_SHA1,
+      security_state::CONTENT_STATUS_NONE, false,
       true /* expect cert status error */);
 
   // Navigate to a broken HTTPS page that displays mixed content.
@@ -735,14 +728,14 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, BrokenHTTPS) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::DANGEROUS, SecurityStateModel::NO_DEPRECATED_SHA1,
-      SecurityStateModel::CONTENT_STATUS_DISPLAYED, false,
+      security_state::DANGEROUS, security_state::NO_DEPRECATED_SHA1,
+      security_state::CONTENT_STATUS_DISPLAYED, false,
       true /* expect cert status error */);
 }
 
 const char kReportURI[] = "https://report-hpkp.test";
 
-class PKPModelClientTest : public ChromeSecurityStateModelClientTest {
+class PKPModelClientTest : public SecurityStateTabHelperTest {
  public:
   void SetUpOnMainThread() override {
     ASSERT_TRUE(https_server_.Start());
@@ -796,8 +789,8 @@ IN_PROC_BROWSER_TEST_F(PKPModelClientTest, PKPBypass) {
 
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::SECURE, SecurityStateModel::NO_DEPRECATED_SHA1,
-      SecurityStateModel::CONTENT_STATUS_NONE, true, false);
+      security_state::SECURE, security_state::NO_DEPRECATED_SHA1,
+      security_state::CONTENT_STATUS_NONE, true, false);
 
   const content::SecurityStyleExplanations& explanation =
       observer.latest_explanations();
@@ -853,11 +846,10 @@ void InstallLoadingInterceptor(const std::string& host) {
       std::unique_ptr<net::URLRequestInterceptor>(new PendingJobInterceptor()));
 }
 
-class SecurityStateModelLoadingTest
-    : public ChromeSecurityStateModelClientTest {
+class SecurityStateLoadingTest : public SecurityStateTabHelperTest {
  public:
-  SecurityStateModelLoadingTest() : ChromeSecurityStateModelClientTest() {}
-  ~SecurityStateModelLoadingTest() override{};
+  SecurityStateLoadingTest() : SecurityStateTabHelperTest() {}
+  ~SecurityStateLoadingTest() override{};
 
  protected:
   void SetUpOnMainThread() override {
@@ -869,12 +861,12 @@ class SecurityStateModelLoadingTest
                    embedded_test_server()->GetURL("/title1.html").host()));
   }
 
-  DISALLOW_COPY_AND_ASSIGN(SecurityStateModelLoadingTest);
+  DISALLOW_COPY_AND_ASSIGN(SecurityStateLoadingTest);
 };
 
 // Tests that navigation state changes cause the security state to be
 // updated.
-IN_PROC_BROWSER_TEST_F(SecurityStateModelLoadingTest, NavigationStateChanges) {
+IN_PROC_BROWSER_TEST_F(SecurityStateLoadingTest, NavigationStateChanges) {
   ASSERT_TRUE(https_server_.Start());
   SetUpMockCertVerifierForHttpsServer(0, net::OK);
 
@@ -883,8 +875,8 @@ IN_PROC_BROWSER_TEST_F(SecurityStateModelLoadingTest, NavigationStateChanges) {
                                https_server_.GetURL("/ssl/google.html"));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::SECURE, SecurityStateModel::NO_DEPRECATED_SHA1,
-      SecurityStateModel::CONTENT_STATUS_NONE, false,
+      security_state::SECURE, security_state::NO_DEPRECATED_SHA1,
+      security_state::CONTENT_STATUS_NONE, false,
       false /* expect cert status error */);
 
   // Navigate to a page that doesn't finish loading. Test that the
@@ -896,75 +888,25 @@ IN_PROC_BROWSER_TEST_F(SecurityStateModelLoadingTest, NavigationStateChanges) {
       browser()->tab_strip_model()->GetActiveWebContents());
 }
 
-// Tests that the NavigationEntry's flags for nonsecure password/credit
-// card inputs are reflected in the VisibleSecurityState.
-IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
-                       VisibleSecurityStateNonsecureFormInputs) {
-  ASSERT_TRUE(https_server_.Start());
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("/ssl/google.html"));
-
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(contents);
-
-  ChromeSecurityStateModelClient* model_client =
-      ChromeSecurityStateModelClient::FromWebContents(contents);
-  ASSERT_TRUE(model_client);
-
-  // First, test that if the flags aren't set on the NavigationEntry,
-  // then they also aren't set on the VisibleSecurityState.
-  content::SSLStatus& ssl_status =
-      contents->GetController().GetVisibleEntry()->GetSSL();
-  ASSERT_FALSE(ssl_status.content_status &
-               content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
-  ASSERT_FALSE(ssl_status.content_status &
-               content::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP);
-  SecurityStateModel::VisibleSecurityState
-      visible_security_state_no_sensitive_inputs;
-  model_client->GetVisibleSecurityState(
-      &visible_security_state_no_sensitive_inputs);
-  EXPECT_FALSE(visible_security_state_no_sensitive_inputs
-                   .displayed_password_field_on_http);
-  EXPECT_FALSE(visible_security_state_no_sensitive_inputs
-                   .displayed_credit_card_field_on_http);
-
-  // Now, set the flags on the NavigationEntry and test that they are
-  // reflected in the VisibleSecurityState.
-  ssl_status.content_status |=
-      content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP;
-  ssl_status.content_status |=
-      content::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP;
-  SecurityStateModel::VisibleSecurityState
-      visible_security_state_sensitive_inputs;
-  model_client->GetVisibleSecurityState(
-      &visible_security_state_sensitive_inputs);
-  EXPECT_TRUE(
-      visible_security_state_sensitive_inputs.displayed_password_field_on_http);
-  EXPECT_TRUE(visible_security_state_sensitive_inputs
-                  .displayed_credit_card_field_on_http);
-}
-
 // Tests that when a visible password field is detected on an HTTP page
 // load, and when the command-line flag is set, the security level is
 // downgraded to HTTP_SHOW_WARNING.
-IN_PROC_BROWSER_TEST_P(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
+IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTestWithPasswordCcSwitch,
                        PasswordSecurityLevelDowngraded) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
 
-  ChromeSecurityStateModelClient* model_client =
-      ChromeSecurityStateModelClient::FromWebContents(contents);
-  ASSERT_TRUE(model_client);
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
 
   ui_test_utils::NavigateToURL(
       browser(), GetURLWithNonLocalHostname(embedded_test_server(),
                                             "/password/simple_password.html"));
-  security_state::SecurityStateModel::SecurityInfo security_info;
-  model_client->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::SecurityStateModel::HTTP_SHOW_WARNING,
-            security_info.security_level);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
 
   content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
   ASSERT_TRUE(entry);
@@ -975,24 +917,23 @@ IN_PROC_BROWSER_TEST_P(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
 // Tests that when an invisible password field is present on an HTTP page
 // load, and when the command-line flag is set, the security level is
 // *not* downgraded to HTTP_SHOW_WARNING.
-IN_PROC_BROWSER_TEST_P(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
+IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTestWithPasswordCcSwitch,
                        PasswordSecurityLevelNotDowngradedForInvisibleInput) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
 
-  ChromeSecurityStateModelClient* model_client =
-      ChromeSecurityStateModelClient::FromWebContents(contents);
-  ASSERT_TRUE(model_client);
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
 
   ui_test_utils::NavigateToURL(
       browser(),
       GetURLWithNonLocalHostname(embedded_test_server(),
                                  "/password/invisible_password.html"));
-  security_state::SecurityStateModel::SecurityInfo security_info;
-  model_client->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::SecurityStateModel::NONE,
-            security_info.security_level);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::NONE, security_info.security_level);
 
   content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
   ASSERT_TRUE(entry);
@@ -1003,24 +944,23 @@ IN_PROC_BROWSER_TEST_P(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
 // Tests that when a visible password field is detected inside an iframe
 // on an HTTP page load, and when the command-line flag is set, the
 // security level is downgraded to HTTP_SHOW_WARNING.
-IN_PROC_BROWSER_TEST_P(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
+IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTestWithPasswordCcSwitch,
                        PasswordSecurityLevelDowngradedFromIframe) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
 
-  ChromeSecurityStateModelClient* model_client =
-      ChromeSecurityStateModelClient::FromWebContents(contents);
-  ASSERT_TRUE(model_client);
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
 
   ui_test_utils::NavigateToURL(
       browser(),
       GetURLWithNonLocalHostname(embedded_test_server(),
                                  "/password/simple_password_in_iframe.html"));
-  security_state::SecurityStateModel::SecurityInfo security_info;
-  model_client->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::SecurityStateModel::HTTP_SHOW_WARNING,
-            security_info.security_level);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
 
   content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
   ASSERT_TRUE(entry);
@@ -1040,15 +980,15 @@ IN_PROC_BROWSER_TEST_P(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
 #define MAYBE_PasswordSecurityLevelDowngradedFromHttpsIframe \
   PasswordSecurityLevelDowngradedFromHttpsIframe
 #endif
-IN_PROC_BROWSER_TEST_P(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
+IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTestWithPasswordCcSwitch,
                        MAYBE_PasswordSecurityLevelDowngradedFromHttpsIframe) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
 
-  ChromeSecurityStateModelClient* model_client =
-      ChromeSecurityStateModelClient::FromWebContents(contents);
-  ASSERT_TRUE(model_client);
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
 
   // Navigate to an HTTP URL, which loads an iframe using the host and port of
   // |https_server_|.
@@ -1059,10 +999,9 @@ IN_PROC_BROWSER_TEST_P(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
   ui_test_utils::NavigateToURL(
       browser(),
       GetURLWithNonLocalHostname(embedded_test_server(), replacement_path));
-  security_state::SecurityStateModel::SecurityInfo security_info;
-  model_client->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::SecurityStateModel::HTTP_SHOW_WARNING,
-            security_info.security_level);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
 
   content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
   ASSERT_TRUE(entry);
@@ -1073,7 +1012,7 @@ IN_PROC_BROWSER_TEST_P(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
 // Tests that when a visible password field is detected on an HTTP page
 // load, and when the command-line flag is *not* set, the security level is
 // *not* downgraded to HTTP_SHOW_WARNING.
-IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
                        PasswordSecurityLevelNotDowngradedWithoutSwitch) {
   ASSERT_TRUE(embedded_test_server()->Start());
   host_resolver()->AddRule("*", embedded_test_server()->GetURL("/").host());
@@ -1082,19 +1021,18 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
 
-  ChromeSecurityStateModelClient* model_client =
-      ChromeSecurityStateModelClient::FromWebContents(contents);
-  ASSERT_TRUE(model_client);
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
 
   ui_test_utils::NavigateToURL(
       browser(), GetURLWithNonLocalHostname(embedded_test_server(),
                                             "/password/simple_password.html"));
   // The security level should not be HTTP_SHOW_WARNING, because the
   // command-line switch was not set.
-  security_state::SecurityStateModel::SecurityInfo security_info;
-  model_client->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::SecurityStateModel::NONE,
-            security_info.security_level);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::NONE, security_info.security_level);
 
   // The appropriate SSLStatus flags should be set, however.
   content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
@@ -1106,25 +1044,24 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
 // Tests that when a visible password field is detected on an HTTPS page
 // load, and when the command-line flag is set, the security level is
 // *not* downgraded to HTTP_SHOW_WARNING.
-IN_PROC_BROWSER_TEST_P(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
+IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTestWithPasswordCcSwitch,
                        PasswordSecurityLevelNotDowngradedOnHttps) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
 
-  ChromeSecurityStateModelClient* model_client =
-      ChromeSecurityStateModelClient::FromWebContents(contents);
-  ASSERT_TRUE(model_client);
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
 
   GURL url = GetURLWithNonLocalHostname(&https_server_,
                                         "/password/simple_password.html");
   ui_test_utils::NavigateToURL(browser(), url);
   // The security level should not be HTTP_SHOW_WARNING, because the page was
   // HTTPS instead of HTTP.
-  security_state::SecurityStateModel::SecurityInfo security_info;
-  model_client->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::SecurityStateModel::SECURE,
-            security_info.security_level);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::SECURE, security_info.security_level);
 
   // The SSLStatus flags should only be set if the top-level page load was HTTP,
   // which it was not in this case.
@@ -1202,7 +1139,7 @@ void CheckForOneFutureHttpWarningConsoleMessage(
 // Tests that console messages are printed upon a call to
 // GetSecurityInfo() on an HTTP_SHOW_WARNING page, exactly once per
 // main-frame navigation.
-IN_PROC_BROWSER_TEST_P(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
+IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTestWithPasswordCcSwitch,
                        ConsoleMessage) {
   ConsoleWebContentsDelegate* delegate = new ConsoleWebContentsDelegate(
       Browser::CreateParams(browser()->profile()));
@@ -1235,13 +1172,12 @@ IN_PROC_BROWSER_TEST_P(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
   first_message.Run();
 
   // Check that the HTTP_SHOW_WARNING state was actually triggered.
-  ChromeSecurityStateModelClient* client =
-      ChromeSecurityStateModelClient::FromWebContents(contents);
-  ASSERT_TRUE(client);
-  security_state::SecurityStateModel::SecurityInfo security_info;
-  client->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::SecurityStateModel::HTTP_SHOW_WARNING,
-            security_info.security_level);
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
 
   // Check that the expected console message is present.
   ASSERT_NO_FATAL_FAILURE(CheckForOneHttpWarningConsoleMessage(delegate));
@@ -1263,9 +1199,8 @@ IN_PROC_BROWSER_TEST_P(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
   contents->OnPasswordInputShownOnHttp();
   second_message.Run();
 
-  client->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::SecurityStateModel::HTTP_SHOW_WARNING,
-            security_info.security_level);
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
 
   ASSERT_NO_FATAL_FAILURE(CheckForOneHttpWarningConsoleMessage(delegate));
 }
@@ -1273,7 +1208,7 @@ IN_PROC_BROWSER_TEST_P(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
 // Tests that console messages are printed upon a call to
 // GetSecurityInfo() on a NONE page that will be marked
 // HTTP_SHOW_WARNING in future, exactly once per main-frame navigation.
-IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, ConsoleMessage) {
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, ConsoleMessage) {
   ASSERT_TRUE(embedded_test_server()->Start());
   host_resolver()->AddRule("*", embedded_test_server()->GetURL("/").host());
   ConsoleWebContentsDelegate* delegate = new ConsoleWebContentsDelegate(
@@ -1307,13 +1242,12 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, ConsoleMessage) {
   first_message.Run();
 
   // Check that the correct state was actually triggered.
-  ChromeSecurityStateModelClient* client =
-      ChromeSecurityStateModelClient::FromWebContents(contents);
-  ASSERT_TRUE(client);
-  security_state::SecurityStateModel::SecurityInfo security_info;
-  client->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::SecurityStateModel::NONE,
-            security_info.security_level);
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::NONE, security_info.security_level);
   EXPECT_TRUE(security_info.displayed_password_field_on_http);
 
   // Check that the expected console message is present.
@@ -1336,9 +1270,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, ConsoleMessage) {
   contents->OnPasswordInputShownOnHttp();
   second_message.Run();
 
-  client->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::SecurityStateModel::NONE,
-            security_info.security_level);
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::NONE, security_info.security_level);
   EXPECT_TRUE(security_info.displayed_password_field_on_http);
   EXPECT_FALSE(security_info.displayed_credit_card_field_on_http);
 
@@ -1356,9 +1289,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, ConsoleMessage) {
   contents->OnCreditCardInputShownOnHttp();
   third_message.Run();
 
-  client->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::SecurityStateModel::NONE,
-            security_info.security_level);
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::NONE, security_info.security_level);
   EXPECT_TRUE(security_info.displayed_credit_card_field_on_http);
 
   ASSERT_NO_FATAL_FAILURE(CheckForOneFutureHttpWarningConsoleMessage(delegate));
@@ -1366,7 +1298,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, ConsoleMessage) {
 
 // Tests that additional HTTP_SHOW_WARNING console messages are not
 // printed after subframe navigations.
-IN_PROC_BROWSER_TEST_P(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
+IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTestWithPasswordCcSwitch,
                        ConsoleMessageNotPrintedForFrameNavigation) {
   ConsoleWebContentsDelegate* delegate = new ConsoleWebContentsDelegate(
       Browser::CreateParams(browser()->profile()));
@@ -1399,13 +1331,12 @@ IN_PROC_BROWSER_TEST_P(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
   first_message.Run();
 
   // Check that the HTTP_SHOW_WARNING state was actually triggered.
-  ChromeSecurityStateModelClient* client =
-      ChromeSecurityStateModelClient::FromWebContents(contents);
-  ASSERT_TRUE(client);
-  security_state::SecurityStateModel::SecurityInfo security_info;
-  client->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::SecurityStateModel::HTTP_SHOW_WARNING,
-            security_info.security_level);
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
 
   // Check that the expected console message is present.
   ASSERT_NO_FATAL_FAILURE(CheckForOneHttpWarningConsoleMessage(delegate));
@@ -1424,8 +1355,7 @@ IN_PROC_BROWSER_TEST_P(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
       contents, "document.getElementById('navFrame').src = '/title2.html';"));
   subframe_observer.Wait();
   contents->OnCreditCardInputShownOnHttp();
-  EXPECT_EQ(security_state::SecurityStateModel::HTTP_SHOW_WARNING,
-            security_info.security_level);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
 
   // Do a main frame navigation and then trigger HTTP_SHOW_WARNING
   // again. From the above subframe navigation and this main-frame
@@ -1442,15 +1372,14 @@ IN_PROC_BROWSER_TEST_P(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
   contents->OnPasswordInputShownOnHttp();
   second_message.Run();
 
-  client->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::SecurityStateModel::HTTP_SHOW_WARNING,
-            security_info.security_level);
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
   ASSERT_NO_FATAL_FAILURE(CheckForOneHttpWarningConsoleMessage(delegate));
 }
 
 // Tests that additional HTTP_SHOW_WARNING console messages are not
 // printed after pushState navigations.
-IN_PROC_BROWSER_TEST_P(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
+IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTestWithPasswordCcSwitch,
                        ConsoleMessageNotPrintedForPushStateNavigation) {
   ConsoleWebContentsDelegate* delegate = new ConsoleWebContentsDelegate(
       Browser::CreateParams(browser()->profile()));
@@ -1483,13 +1412,12 @@ IN_PROC_BROWSER_TEST_P(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
   first_message.Run();
 
   // Check that the HTTP_SHOW_WARNING state was actually triggered.
-  ChromeSecurityStateModelClient* client =
-      ChromeSecurityStateModelClient::FromWebContents(contents);
-  ASSERT_TRUE(client);
-  security_state::SecurityStateModel::SecurityInfo security_info;
-  client->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::SecurityStateModel::HTTP_SHOW_WARNING,
-            security_info.security_level);
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(contents);
+  ASSERT_TRUE(helper);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
 
   // Check that the expected console message is present.
   ASSERT_NO_FATAL_FAILURE(CheckForOneHttpWarningConsoleMessage(delegate));
@@ -1503,8 +1431,7 @@ IN_PROC_BROWSER_TEST_P(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
   EXPECT_TRUE(content::ExecuteScript(
       contents, "history.pushState({ foo: 'bar' }, 'foo', 'bar');"));
   contents->OnCreditCardInputShownOnHttp();
-  EXPECT_EQ(security_state::SecurityStateModel::HTTP_SHOW_WARNING,
-            security_info.security_level);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
 
   // Do a main frame navigation and then trigger HTTP_SHOW_WARNING
   // again. From the above pushState navigation and this main-frame
@@ -1521,22 +1448,21 @@ IN_PROC_BROWSER_TEST_P(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
   contents->OnPasswordInputShownOnHttp();
   second_message.Run();
 
-  client->GetSecurityInfo(&security_info);
-  EXPECT_EQ(security_state::SecurityStateModel::HTTP_SHOW_WARNING,
-            security_info.security_level);
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, security_info.security_level);
   ASSERT_NO_FATAL_FAILURE(CheckForOneHttpWarningConsoleMessage(delegate));
 }
 
-INSTANTIATE_TEST_CASE_P(ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
-                        ChromeSecurityStateModelClientTestWithPasswordCcSwitch,
+INSTANTIATE_TEST_CASE_P(SecurityStateTabHelperTestWithPasswordCcSwitch,
+                        SecurityStateTabHelperTestWithPasswordCcSwitch,
                         // Here 'true' means that the omnibox warning + form
                         // warning are enabled, and 'false' means just the
                         // omnibox warning is enabled.
                         testing::Bool());
 
-// Tests that the SecurityStateModel for a WebContents is up to date
-// when the WebContents is inserted into a Browser's TabStripModel.
-IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, AddedTab) {
+// Tests that the security state for a WebContents is up to date when the
+// WebContents is inserted into a Browser's TabStripModel.
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, AddedTab) {
   ASSERT_TRUE(https_server_.Start());
   SetUpMockCertVerifierForHttpsServer(0, net::OK);
 
@@ -1547,21 +1473,21 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, AddedTab) {
   content::WebContents* new_contents = content::WebContents::Create(
       content::WebContents::CreateParams(tab->GetBrowserContext()));
   content::NavigationController& controller = new_contents->GetController();
-  ChromeSecurityStateModelClient::CreateForWebContents(new_contents);
+  SecurityStateTabHelper::CreateForWebContents(new_contents);
   CheckSecurityInfoForNonSecure(new_contents);
   controller.LoadURL(https_server_.GetURL("/title1.html"), content::Referrer(),
                      ui::PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(content::WaitForLoadStop(new_contents));
-  CheckSecurityInfoForSecure(new_contents, SecurityStateModel::SECURE,
-                             SecurityStateModel::NO_DEPRECATED_SHA1,
-                             SecurityStateModel::CONTENT_STATUS_NONE, false,
+  CheckSecurityInfoForSecure(new_contents, security_state::SECURE,
+                             security_state::NO_DEPRECATED_SHA1,
+                             security_state::CONTENT_STATUS_NONE, false,
                              false /* expect cert status error */);
 
   browser()->tab_strip_model()->InsertWebContentsAt(0, new_contents,
                                                     TabStripModel::ADD_NONE);
-  CheckSecurityInfoForSecure(new_contents, SecurityStateModel::SECURE,
-                             SecurityStateModel::NO_DEPRECATED_SHA1,
-                             SecurityStateModel::CONTENT_STATUS_NONE, false,
+  CheckSecurityInfoForSecure(new_contents, security_state::SECURE,
+                             security_state::NO_DEPRECATED_SHA1,
+                             security_state::CONTENT_STATUS_NONE, false,
                              false /* expect cert status error */);
 }
 
@@ -2081,12 +2007,12 @@ IN_PROC_BROWSER_TEST_F(BrowserTestURLRequestWithSCTs,
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
-  ChromeSecurityStateModelClient* model_client =
-      ChromeSecurityStateModelClient::FromWebContents(web_contents);
-  ASSERT_TRUE(model_client);
-  SecurityStateModel::SecurityInfo security_info;
-  model_client->GetSecurityInfo(&security_info);
-  EXPECT_EQ(SecurityStateModel::SECURE, security_info.security_level);
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(web_contents);
+  ASSERT_TRUE(helper);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  EXPECT_EQ(security_state::SECURE, security_info.security_level);
   EXPECT_EQ(kTestSCTStatuses, security_info.sct_verify_statuses);
 }
 

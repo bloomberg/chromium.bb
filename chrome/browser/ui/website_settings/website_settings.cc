@@ -82,7 +82,6 @@ using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
 using base::UTF16ToUTF8;
 using content::BrowserThread;
-using security_state::SecurityStateModel;
 
 namespace {
 
@@ -126,28 +125,28 @@ bool ShouldShowPermission(ContentSettingsType type) {
   return true;
 }
 
-void CheckContentStatus(SecurityStateModel::ContentStatus content_status,
+void CheckContentStatus(security_state::ContentStatus content_status,
                         bool* displayed,
                         bool* ran) {
   switch (content_status) {
-    case SecurityStateModel::CONTENT_STATUS_DISPLAYED:
+    case security_state::CONTENT_STATUS_DISPLAYED:
       *displayed = true;
       break;
-    case SecurityStateModel::CONTENT_STATUS_RAN:
+    case security_state::CONTENT_STATUS_RAN:
       *ran = true;
       break;
-    case SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN:
+    case security_state::CONTENT_STATUS_DISPLAYED_AND_RAN:
       *displayed = true;
       *ran = true;
       break;
-    case SecurityStateModel::CONTENT_STATUS_UNKNOWN:
-    case SecurityStateModel::CONTENT_STATUS_NONE:
+    case security_state::CONTENT_STATUS_UNKNOWN:
+    case security_state::CONTENT_STATUS_NONE:
       break;
   }
 }
 
 void CheckForInsecureContent(
-    const SecurityStateModel::SecurityInfo& security_info,
+    const security_state::SecurityInfo& security_info,
     bool* displayed,
     bool* ran) {
   CheckContentStatus(security_info.mixed_content_status, displayed, ran);
@@ -165,27 +164,24 @@ void CheckForInsecureContent(
 }
 
 void GetSiteIdentityByMaliciousContentStatus(
-    security_state::SecurityStateModel::MaliciousContentStatus
-        malicious_content_status,
+    security_state::MaliciousContentStatus malicious_content_status,
     WebsiteSettings::SiteIdentityStatus* status,
     base::string16* details) {
   switch (malicious_content_status) {
-    case security_state::SecurityStateModel::MALICIOUS_CONTENT_STATUS_NONE:
+    case security_state::MALICIOUS_CONTENT_STATUS_NONE:
       NOTREACHED();
       break;
-    case security_state::SecurityStateModel::MALICIOUS_CONTENT_STATUS_MALWARE:
+    case security_state::MALICIOUS_CONTENT_STATUS_MALWARE:
       *status = WebsiteSettings::SITE_IDENTITY_STATUS_MALWARE;
       *details =
           l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_MALWARE_DETAILS);
       break;
-    case security_state::SecurityStateModel::
-        MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING:
+    case security_state::MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING:
       *status = WebsiteSettings::SITE_IDENTITY_STATUS_SOCIAL_ENGINEERING;
       *details = l10n_util::GetStringUTF16(
           IDS_WEBSITE_SETTINGS_SOCIAL_ENGINEERING_DETAILS);
       break;
-    case security_state::SecurityStateModel::
-        MALICIOUS_CONTENT_STATUS_UNWANTED_SOFTWARE:
+    case security_state::MALICIOUS_CONTENT_STATUS_UNWANTED_SOFTWARE:
       *status = WebsiteSettings::SITE_IDENTITY_STATUS_UNWANTED_SOFTWARE;
       *details = l10n_util::GetStringUTF16(
           IDS_WEBSITE_SETTINGS_UNWANTED_SOFTWARE_DETAILS);
@@ -219,7 +215,7 @@ WebsiteSettings::WebsiteSettings(
     TabSpecificContentSettings* tab_specific_content_settings,
     content::WebContents* web_contents,
     const GURL& url,
-    const SecurityStateModel::SecurityInfo& security_info)
+    const security_state::SecurityInfo& security_info)
     : TabSpecificContentSettings::SiteDataObserver(
           tab_specific_content_settings),
       content::WebContentsObserver(web_contents),
@@ -234,7 +230,7 @@ WebsiteSettings::WebsiteSettings(
           ChromeSSLHostStateDelegateFactory::GetForProfile(profile)),
       did_revoke_user_ssl_decisions_(false),
       profile_(profile),
-      security_level_(security_state::SecurityStateModel::NONE) {
+      security_level_(security_state::NONE) {
   Init(url, security_info);
 
   PresentSitePermissions();
@@ -258,26 +254,24 @@ void WebsiteSettings::RecordWebsiteSettingsAction(
   std::string histogram_name;
 
   if (site_url_.SchemeIsCryptographic()) {
-    if (security_level_ == security_state::SecurityStateModel::SECURE ||
-        security_level_ == security_state::SecurityStateModel::EV_SECURE) {
+    if (security_level_ == security_state::SECURE ||
+        security_level_ == security_state::EV_SECURE) {
       UMA_HISTOGRAM_ENUMERATION("Security.PageInfo.Action.HttpsUrl.Valid",
                                 action, WEBSITE_SETTINGS_COUNT);
-    } else if (security_level_ == security_state::SecurityStateModel::NONE) {
+    } else if (security_level_ == security_state::NONE) {
       UMA_HISTOGRAM_ENUMERATION("Security.PageInfo.Action.HttpsUrl.Downgraded",
                                 action, WEBSITE_SETTINGS_COUNT);
-    } else if (security_level_ ==
-               security_state::SecurityStateModel::DANGEROUS) {
+    } else if (security_level_ == security_state::DANGEROUS) {
       UMA_HISTOGRAM_ENUMERATION("Security.PageInfo.Action.HttpsUrl.Dangerous",
                                 action, WEBSITE_SETTINGS_COUNT);
     }
     return;
   }
 
-  if (security_level_ ==
-      security_state::SecurityStateModel::HTTP_SHOW_WARNING) {
+  if (security_level_ == security_state::HTTP_SHOW_WARNING) {
     UMA_HISTOGRAM_ENUMERATION("Security.PageInfo.Action.HttpUrl.Warning",
                               action, WEBSITE_SETTINGS_COUNT);
-  } else if (security_level_ == security_state::SecurityStateModel::DANGEROUS) {
+  } else if (security_level_ == security_state::DANGEROUS) {
     UMA_HISTOGRAM_ENUMERATION("Security.PageInfo.Action.HttpUrl.Dangerous",
                               action, WEBSITE_SETTINGS_COUNT);
   } else {
@@ -375,9 +369,8 @@ void WebsiteSettings::OnRevokeSSLErrorBypassButtonPressed() {
   did_revoke_user_ssl_decisions_ = true;
 }
 
-void WebsiteSettings::Init(
-    const GURL& url,
-    const SecurityStateModel::SecurityInfo& security_info) {
+void WebsiteSettings::Init(const GURL& url,
+                           const security_state::SecurityInfo& security_info) {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   // On desktop, internal URLs aren't handled by this class. Instead, a
   // custom and simpler popup is shown.
@@ -419,7 +412,7 @@ void WebsiteSettings::Init(
   certificate_ = security_info.certificate;
 
   if (security_info.malicious_content_status !=
-      security_state::SecurityStateModel::MALICIOUS_CONTENT_STATUS_NONE) {
+      security_state::MALICIOUS_CONTENT_STATUS_NONE) {
     // The site has been flagged by Safe Browsing as dangerous.
     GetSiteIdentityByMaliciousContentStatus(
         security_info.malicious_content_status, &site_identity_status_,
@@ -429,7 +422,7 @@ void WebsiteSettings::Init(
               net::IsCertStatusMinorError(security_info.cert_status))) {
     // HTTPS with no or minor errors.
     if (security_info.security_level ==
-        SecurityStateModel::SECURE_WITH_POLICY_INSTALLED_CERT) {
+        security_state::SECURE_WITH_POLICY_INSTALLED_CERT) {
       site_identity_status_ = SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT;
       site_identity_details_ = l10n_util::GetStringFUTF16(
           IDS_CERT_POLICY_PROVIDED_CERT_MESSAGE, UTF8ToUTF16(url.host()));
@@ -501,7 +494,7 @@ void WebsiteSettings::Init(
             IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_VERIFIED, issuer_name));
       }
       switch (security_info.sha1_deprecation_status) {
-        case SecurityStateModel::DEPRECATED_SHA1_MINOR:
+        case security_state::DEPRECATED_SHA1_MINOR:
           site_identity_status_ =
               SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM_MINOR;
           site_identity_details_ +=
@@ -509,7 +502,7 @@ void WebsiteSettings::Init(
               l10n_util::GetStringUTF16(
                   IDS_PAGE_INFO_SECURITY_TAB_DEPRECATED_SIGNATURE_ALGORITHM_MINOR);
           break;
-        case SecurityStateModel::DEPRECATED_SHA1_MAJOR:
+        case security_state::DEPRECATED_SHA1_MAJOR:
           site_identity_status_ =
               SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM_MAJOR;
           site_identity_details_ +=
@@ -517,10 +510,10 @@ void WebsiteSettings::Init(
               l10n_util::GetStringUTF16(
                   IDS_PAGE_INFO_SECURITY_TAB_DEPRECATED_SIGNATURE_ALGORITHM_MAJOR);
           break;
-        case SecurityStateModel::NO_DEPRECATED_SHA1:
+        case security_state::NO_DEPRECATED_SHA1:
           // Nothing to do.
           break;
-        case SecurityStateModel::UNKNOWN_SHA1:
+        case security_state::UNKNOWN_SHA1:
           // UNKNOWN_SHA1 should only appear when certificate info has not been
           // initialized, in which case this if-statement should not be running
           // because there is no other cert info.
@@ -576,7 +569,7 @@ void WebsiteSettings::Init(
     // Security strength is unknown.  Say nothing.
     site_connection_status_ = SITE_CONNECTION_STATUS_ENCRYPTED_ERROR;
   } else if (security_info.security_bits == 0) {
-    DCHECK_NE(security_info.security_level, SecurityStateModel::NONE);
+    DCHECK_NE(security_info.security_level, security_state::NONE);
     site_connection_status_ = SITE_CONNECTION_STATUS_ENCRYPTED_ERROR;
     site_connection_details_.assign(l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
