@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Note: The official spec is WIP at wiki.whatwg.org/wiki/OffscreenCanvas.
+// https://html.spec.whatwg.org/multipage/scripting.html#the-offscreen-2d-rendering-context
 
 [
     Exposed=(Window,Worker),
