@@ -31,6 +31,12 @@ Polymer({
       observer: 'networkPropertiesChanged_',
     },
 
+    /** Preferences state. */
+    prefs: {
+      type: Object,
+      notify: true,
+    },
+
     /**
      * Highest priority connected network or null.
      * @type {?CrOnc.NetworkStateProperties}

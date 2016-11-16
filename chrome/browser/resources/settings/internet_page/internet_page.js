@@ -22,6 +22,12 @@ Polymer({
       value: chrome.networkingPrivate,
     },
 
+    /** Preferences state. */
+    prefs: {
+      type: Object,
+      notify: true,
+    },
+
     /**
      * The network type for the known networks subpage.
      * @private

@@ -138,6 +138,7 @@ CrOnc.Source = {
   DEVICE_POLICY: 'DevicePolicy',
   USER: 'User',
   USER_POLICY: 'UserPolicy',
+  ACTIVE_EXTENSION: 'ActiveExtension',
 };
 
 /**

@@ -30,7 +30,7 @@
       <template is="dom-if" if="[[showPage(pageVisibility.internet)]]" restamp>
         <settings-section page-title="$i18n{internetPageTitle}"
             section="internet">
-          <settings-internet-page>
+          <settings-internet-page prefs="{{prefs}}">
           </settings-internet-page>
         </settings-section>
       </template>

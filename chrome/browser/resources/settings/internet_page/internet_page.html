@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
+<link rel="import" href="/prefs/prefs.html">
 <link rel="import" href="/route.html">
 <link rel="import" href="/settings_page/settings_animated_pages.html">
 <link rel="import" href="/settings_page/settings_subpage.html">
@@ -63,7 +64,7 @@
       </neon-animatable>
       <template is="dom-if" route-path="/networkDetail" no-search>
         <settings-subpage page-title="$i18n{internetDetailPageTitle}">
-          <settings-internet-detail-page
+          <settings-internet-detail-page prefs="{{prefs}}"
               default-network="[[defaultNetwork]]"
               networking-private="[[networkingPrivate]]">
           </settings-internet-detail-page>

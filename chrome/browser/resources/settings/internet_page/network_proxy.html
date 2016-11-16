@@ -1,12 +1,16 @@
 <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_indicator.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input-container.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="/i18n_setup.html">
 <link rel="import" href="/md_select_css.html">
+<link rel="import" href="/prefs/prefs_behavior.html">
 <link rel="import" href="internet_shared_css.html">
 <link rel="import" href="network_proxy_exclusions.html">
 <link rel="import" href="network_proxy_input.html">
@@ -14,7 +18,8 @@
 <dom-module id="network-proxy">
   <template>
     <style include="internet-shared md-select">
-      cr-policy-network-indicator {
+      cr-policy-network-indicator,
+      cr-policy-pref-indicator {
         -webkit-margin-end: 10px;
       }
 
@@ -25,6 +30,10 @@
       /* Use .middle spacing but no flex. */
       .settings-box .middle {
         flex: none;
+      }
+
+      .settings-box.indent {
+        @apply(--settings-list-frame-padding);
       }
 
       #exceptionsDiv {
@@ -39,15 +48,22 @@
         padding: 10px 0;
       }
     </style>
+
     <!-- Policy indicator -->
     <div class="settings-box first single-column"
-        hidden$="[[!isNetworkPolicyControlled(
-                 networkProperties.ProxySettings.Type)]]">
-      <div class="layout horizontal center">
+        hidden$="[[!isControlled(networkProperties.ProxySettings.Type)]]">
+      <div class="layout horizontal center"
+          hidden$="[[!getShowNetworkPolicyIndicator_(networkProperties)]]">
         <cr-policy-network-indicator
             property="[[networkProperties.ProxySettings.Type]]">
         </cr-policy-network-indicator>
-        <div>$i18n{networkProxyEnforced}</div>
+        <div>$i18n{networkProxyEnforcedPolicy}</div>
+      </div>
+      <div class="layout horizontal center"
+          hidden$="[[!getShowPrefPolicyIndicator_(networkProperties)]]">
+        <cr-policy-pref-indicator pref="[[prefs.proxy]]">
+        </cr-policy-pref-indicator>
+        <div>$i18n{networkProxyControlledExtension}</div>
       </div>
     </div>
 
@@ -56,9 +72,10 @@
       <div class="start">$i18n{networkProxyConnectionType}</div>
       <div class="md-select-wrapper">
         <select id="proxyType" class="md-select" on-change="onTypeChange_"
-            value="[[proxy.Type]]">
+            value="[[proxy.Type]]"
+            disabled="[[!isProxyEditable_(networkProperties, editable)]]">
           <template is="dom-repeat" items="[[proxyTypes_]]">
-            <option value="[[item]]">[[proxyTypeDesc_(item)]]</option>
+            <option value="[[item]]">[[getProxyTypeDesc_(item)]]</option>
           </template>
         </select>
         <span class="md-select-underline"></span>
@@ -66,34 +83,35 @@
     </div>
 
     <!-- Autoconfiguration (PAC) -->
-    <div class="settings-box continuation"
+    <div class="settings-box continuation indent"
         hidden$="[[!matches_(proxy.Type, ProxySettingsType_.PAC)]]">
       <div>$i18n{networkProxyAutoConfig}</div>
       <paper-input no-label-float class="middle" value="{{proxy.PAC}}"
-          disabled="[[isNetworkPolicyEnforced(
-                    networkProperties.ProxySettings.PAC)]]"
+          disabled="[[!isEditable_(networkProperties.ProxySettings.PAC)]]"
           on-blur="onProxyInputChange_">
       </paper-input>
     </div>
 
     <!-- Web Proxy Auto Discovery (WPAD) -->
-    <div class="settings-box continuation"
+    <div class="settings-box continuation indent"
         hidden$="[[!matches_(proxy.Type, ProxySettingsType_.WPAD)]]">
       <div>$i18n{networkSectionWpad}</div>
       <div class="middle">[[WPAD]]</div>
     </div>
 
     <!-- Manual -->
-    <div id="proxyDiv" class="settings-box continuation single-column"
+    <div id="proxyDiv" class="settings-box continuation single-column indent"
         hidden$="[[!matches_(proxy.Type, ProxySettingsType_.MANUAL)]]">
-      <paper-checkbox checked="{{useSameProxy_}}">
+      <paper-checkbox checked="{{useSameProxy_}}"
+          disabled="[[!isProxyEditable_(networkProperties, editable)]]">
         $i18n{networkProxyUseSame}
       </paper-checkbox>
       <div hidden$="[[!useSameProxy_]]" class="layout vertical">
         <network-proxy-input 
             on-proxy-change="onProxyInputChange_"
-            editable="[[isPropertyEditable_(editable, networkProperties,
-                      'ProxySettings.Manual.HTTPProxy')]]"
+            editable="[[isEditable_(
+                      networkProperties.ProxySettings.Manual.HTTPProxy.Host,
+                      editable)]]"
             value="{{proxy.Manual.HTTPProxy}}"
             label="$i18n{networkProxy}">
         </network-proxy-input>
@@ -101,35 +119,40 @@
       <div hidden$="[[useSameProxy_]]" class="layout vertical">
         <network-proxy-input
             on-proxy-change="onProxyInputChange_"
-            editable="[[isPropertyEditable_(editable, networkProperties,
-                      'ProxySettings.Manual.HTTPProxy)')]]"
+            editable="[[isEditable_(
+                      networkProperties.ProxySettings.Manual.HTTPProxy.Host,
+                      editable)]]"
             value="{{proxy.Manual.HTTPProxy}}"
             label="$i18n{networkProxyHttp}">
         </network-proxy-input>
         <network-proxy-input
             on-proxy-change="onProxyInputChange_"
-            editable="[[isPropertyEditable_(editable, networkProperties,
-                      'ProxySettings.Manual.SecureHTTPProxy)')]]"
+            editable="[[isEditable_(
+                      networkProperties.ProxySettings.Manual.SecureHTTPProxy.Host,
+                      editable)]]"
             value="{{proxy.Manual.SecureHTTPProxy}}"
             label="$i18n{networkProxyShttp}">
         </network-proxy-input>
         <network-proxy-input
             on-proxy-change="onProxyInputChange_"
-            editable="[[isPropertyEditable_(editable, networkProperties,
-                      'ProxySettings.Manual.FTPProxy)')]]"
+            editable="[[isEditable_(
+                      networkProperties.ProxySettings.Manual.FTPProxy.Host,
+                      editable)]]"
             value="{{proxy.Manual.FTPProxy}}"
             label="$i18n{networkProxyFtp}">
         </network-proxy-input>
         <network-proxy-input
             on-proxy-change="onProxyInputChange_"
-            editable="[[isPropertyEditable_(editable, networkProperties,
-                      'ProxySettings.Manual.SOCKS)')]]"
+            editable="[[isEditable_(
+                      networkProperties.ProxySettings.Manual.SOCKS.Host,
+                      editable)]]"
             value="{{proxy.Manual.SOCKS}}"
             label="$i18n{networkProxySocks}">
         </network-proxy-input>
       </div>
 
-      <div id="exceptionsDiv">
+      <div id="exceptionsDiv"
+          hidden="[[!isProxyEditable_(networkProperties, editable)]]">
         <div>$i18n{networkProxyExceptionList}</div>
         <network-proxy-exclusions on-proxy-change="onProxyExclusionsChange_"
             exclusions="{{proxy.ExcludeDomains}}">

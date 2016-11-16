@@ -31,6 +31,26 @@ var CrPolicyNetworkBehavior = {
 
   /**
    * @param {!CrOnc.ManagedProperty|undefined} property
+   * @return {boolean} True if the network property is controlled by an
+   *     extension.
+   */
+  isExtensionControlled: function(property) {
+    return typeof property == 'object' &&
+        property.Effective == 'ActiveExtension';
+  },
+
+  /**
+   * @param {!CrOnc.ManagedProperty|undefined} property
+   * @return {boolean} True if the network property is controlled by a policy
+   *     or an extension.
+   */
+  isControlled: function(property) {
+    return this.isNetworkPolicyControlled(property) ||
+        this.isExtensionControlled(property);
+  },
+
+  /**
+   * @param {!CrOnc.ManagedProperty|undefined} property
    * @return {boolean} True if the network property is enforced by a policy.
    */
   isNetworkPolicyEnforced: function(property) {

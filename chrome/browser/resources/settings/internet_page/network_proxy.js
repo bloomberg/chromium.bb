@@ -9,7 +9,7 @@
 Polymer({
   is: 'network-proxy',
 
-  behaviors: [CrPolicyNetworkBehavior],
+  behaviors: [CrPolicyNetworkBehavior, I18nBehavior, PrefsBehavior],
 
   properties: {
     /**
@@ -102,6 +102,13 @@ Polymer({
    */
   savedExcludeDomains_: undefined,
 
+  /**
+   * Set to true the first time we receive a manual proxy. Used to set the
+   * initial |useSameProxy_| value.
+   * @private {boolean}
+   */
+  receivedManualProxy_: false,
+
   /** @private */
   networkPropertiesChanged_: function() {
     if (!this.networkProperties)
@@ -125,6 +132,14 @@ Polymer({
             CrOnc.getSimpleActiveProperties(proxySettings.Manual.FTPProxy));
         proxy.Manual.SOCKS = /** @type {!CrOnc.ProxyLocation|undefined} */ (
             CrOnc.getSimpleActiveProperties(proxySettings.Manual.SOCKS));
+        if (!this.receivedManualProxy_) {
+          let json_http = JSON.stringify(proxy.Manual.HTTPProxy);
+          this.useSameProxy_ =
+              json_http == JSON.stringify(proxy.Manual.SecureHTTPProxy) &&
+              json_http == JSON.stringify(proxy.Manual.FTPProxy) &&
+              json_http == JSON.stringify(proxy.Manual.SOCKS);
+          this.receivedManualProxy_ = true;
+        }
       }
       if (proxySettings.ExcludeDomains) {
         proxy.ExcludeDomains = /** @type {!Array<string>|undefined} */ (
@@ -150,6 +165,8 @@ Polymer({
 
   /** @private */
   useSameProxyChanged_: function() {
+    if (!this.receivedManualProxy_)
+      return;
     this.sendProxyChange_();
   },
 
@@ -255,30 +272,58 @@ Polymer({
    * @return {string} The description for |proxyType|.
    * @private
    */
-  proxyTypeDesc_: function(proxyType) {
-    // TODO(stevenjb): Translate.
+  getProxyTypeDesc_: function(proxyType) {
     if (proxyType == CrOnc.ProxySettingsType.MANUAL)
-      return 'Manual proxy configuration';
+      return this.i18n('networkProxyTypeManual');
     if (proxyType == CrOnc.ProxySettingsType.PAC)
-      return 'Automatic proxy configuration';
+      return this.i18n('networkProxyTypePac');
     if (proxyType == CrOnc.ProxySettingsType.WPAD)
-      return 'Web proxy autodiscovery';
-    return 'Direct Internet connection';
+      return this.i18n('networkProxyTypeWpad');
+    return this.i18n('networkProxyTypeDirect');
   },
 
   /**
-   * @param {boolean} editable
-   * @param {!CrOnc.NetworkProperties} networkProperties
-   * @param {string} key
-   * @return {boolean} Whether the property is editable.
+   * @return {boolean}
    * @private
    */
-  isPropertyEditable_: function(editable, networkProperties, key) {
-    if (!editable)
-      return false;
-    var property = /** @type {!CrOnc.ManagedProperty|undefined} */ (
-        this.get(key, networkProperties));
-    return !this.isNetworkPolicyEnforced(property);
+  getShowNetworkPolicyIndicator_: function() {
+    let property = /** @type {!CrOnc.ManagedProperty|undefined}*/ (
+        this.get('ProxySettings.Type', this.networkProperties));
+    return !!property && !this.isExtensionControlled(property) &&
+        this.isNetworkPolicyEnforced(property);
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  getShowPrefPolicyIndicator_: function() {
+    let property = /** @type {!CrOnc.ManagedProperty|undefined}*/ (
+        this.get('ProxySettings.Type', this.networkProperties));
+    return !!property && this.isExtensionControlled(property);
+  },
+
+  /**
+   * @param {!CrOnc.ManagedProperty|undefined} property
+   * @return {boolean} Whether the property setting is enforced.
+   * @private
+   */
+  isEditable_: function(property) {
+    return this.editable && !this.isNetworkPolicyEnforced(property) &&
+        !this.isExtensionControlled(property);
+  },
+
+  /**
+   * Used to check the editable state for proxy related UI that may or may
+   * not be directly controlled by a policy. We use the enforced state of the
+   * 'ProxySettings.Type' property for these controls.
+   * @return {boolean} Whether the proxy control is editable.
+   * @private
+   */
+  isProxyEditable_: function() {
+    let property = /** @type {!CrOnc.ManagedProperty|undefined}*/ (
+        this.get('ProxySettings.Type', this.networkProperties));
+    return !!property && this.isEditable_(property);
   },
 
   /**

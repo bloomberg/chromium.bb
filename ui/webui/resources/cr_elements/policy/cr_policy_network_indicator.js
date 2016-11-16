@@ -37,7 +37,7 @@ Polymer({
    * @private
    */
   propertyChanged_: function(property) {
-    if (!this.isNetworkPolicyControlled(property)) {
+    if (!this.isControlled(property)) {
       this.indicatorType = CrPolicyIndicatorType.NONE;
       return;
     }
@@ -62,6 +62,8 @@ Polymer({
       this.indicatorType = CrPolicyIndicatorType.USER_POLICY;
     } else if (effective == 'DevicePolicy') {
       this.indicatorType = CrPolicyIndicatorType.DEVICE_POLICY;
+    } else if (effective == 'ActiveExtension') {
+      this.indicatorType = CrPolicyIndicatorType.EXTENSION;
     } else {
       this.indicatorType = CrPolicyIndicatorType.NONE;
     }

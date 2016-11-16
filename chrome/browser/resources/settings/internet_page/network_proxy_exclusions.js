@@ -13,6 +13,12 @@ Polymer({
   is: 'network-proxy-exclusions',
 
   properties: {
+    /** Whether or not the proxy values can be edited. */
+    editable: {
+      type: Boolean,
+      value: false,
+    },
+
     /**
      * The list of exclusions.
      * @type {!Array<string>}

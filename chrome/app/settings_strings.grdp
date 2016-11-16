@@ -1017,125 +1017,140 @@
     <message name="IDS_SETTINGS_INTERNET_NETWORK_SECTION_WPAD" desc="Settings > Internet > Network details: Web Proxy Auto Discovery (WPAD) section label.">
       Web Proxy Auto Discovery URL:
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SHARED" desc="Settings > Internet > Netwok details: Text to show when a network is shared.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SHARED" desc="Settings > Internet > Network details: Text to show when a network is shared.">
       This network is shared with other users.
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_ENFORCED" desc="Settings > Internet > Netwok details: Text to show when a network proxy is policy enforced.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_CONTROLLED_EXTENSION" desc="Settings > Internet > Network details: Text to show when a network proxy is controlled by an extension.">
+      The network proxy is controlled by an extension.
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_ENFORCED_POLICY" desc="Settings > Internet > Network details: Text to show when a network proxy is policy enforced.">
       This proxy is enforced by your administrator.
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_USE_SAME" desc="Settings > Internet > Netwok details: Label for checkbox indicating that a network proxy uses the same value for all protocols.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_TYPE_DIRECT" desc="Radio used to tell it to just connect directly, not use a proxy.">
+      Direct Internet connection
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_TYPE_MANUAL" desc="Radio used to tell it to configure manually.">
+      Manual proxy configuration
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_TYPE_PAC" desc="Radio to select configuring from a URL.">
+      Automatic proxy configuration
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_TYPE_WPAD" desc="Label for the checkbox that controls whether to use an autoconfiguration URL.">
+      Web proxy autodiscovery
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_USE_SAME" desc="Settings > Internet > Network details: Label for checkbox indicating that a network proxy uses the same value for all protocols.">
       Use the same proxy for all protocols
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_EXCEPTION_LIST" desc="Settings > Internet > Netwok details: Label for list of network proxy exceptions.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_EXCEPTION_LIST" desc="Settings > Internet > Network details: Label for list of network proxy exceptions.">
       Do not use the proxy settings for these hosts and domains:
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_ADD_EXCEPTION" desc="Settings > Internet > Netwok details: Label for button to add a network proxy exception.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_ADD_EXCEPTION" desc="Settings > Internet > Network details: Label for button to add a network proxy exception.">
       Add exception
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_CONNECTION_TYPE" desc="Settings > Internet > Netwok details: Label for proxy connection type dropdown.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_CONNECTION_TYPE" desc="Settings > Internet > Network details: Label for proxy connection type dropdown.">
       Connection type
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_AUTO_CONFIG" desc="Settings > Internet > Netwok details: Label for proxy autoconfiguration URL input.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_AUTO_CONFIG" desc="Settings > Internet > Network details: Label for proxy autoconfiguration URL input.">
       Autoconfiguration URL:
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_PROXY" desc="Settings > Internet > Netwok details: Label for all proxies.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_PROXY" desc="Settings > Internet > Network details: Label for all proxies.">
       Proxy
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_HTTP_PROXY" desc="Settings > Internet > Netwok details: Label for HTTP proxy.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_HTTP_PROXY" desc="Settings > Internet > Network details: Label for HTTP proxy.">
       HTTP Proxy
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_SHTTP_PROXY" desc="Settings > Internet > Netwok details: Label for SHTTP proxy.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_SHTTP_PROXY" desc="Settings > Internet > Network details: Label for SHTTP proxy.">
       Secure HTTP Proxy
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_FTP_PROXY" desc="Settings > Internet > Netwok details: Label for FTP proxy.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_FTP_PROXY" desc="Settings > Internet > Network details: Label for FTP proxy.">
       FTP Proxy
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_SOCKS_HOST" desc="Settings > Internet > Netwok details: Label for SOCKS host proxy.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_SOCKS_HOST" desc="Settings > Internet > Network details: Label for SOCKS host proxy.">
       SOCKS Host
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_PORT" desc="Settings > Internet > Netwok details: Label for proxy port input.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_PORT" desc="Settings > Internet > Network details: Label for proxy port input.">
       Port
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_CHANGE_PIN" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Label for buton to change the PIN.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_CHANGE_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for buton to change the PIN.">
       Change PIN
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_CARD_MISSING" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Message when SIM card is missing.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_CARD_MISSING" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when SIM card is missing.">
       Missing SIM card
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_CARD_LOCKED" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Message when SIM card is locked.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_CARD_LOCKED" desc="Settings > Internet > Network details > Lock/unlock SIM card: Message when SIM card is locked.">
       SIM card is locked
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCK_ENABLE" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Label for checkbox to enable SIM card locking.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCK_ENABLE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for checkbox to enable SIM card locking.">
       Enable SIM card locking (require PIN to use mobile data)
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_BUTTON_CHANGE" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Label for dialog button to change a PIN.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_BUTTON_CHANGE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for dialog button to change a PIN.">
       Change
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_BUTTON_ENTER" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Label for dialog button to enter a PIN.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_BUTTON_ENTER" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for dialog button to enter a PIN.">
       Enter
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_BUTTON_UNLOCK" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Label for button to unlock the SIM card.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_BUTTON_UNLOCK" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for button to unlock the SIM card.">
       Unlock
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PIN_TITLE" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Title for enter PIN dialog.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PIN_TITLE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Title for enter PIN dialog.">
       Enter SIM PIN
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_CHANGE_PIN_TITLE" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Title for change PIN dialog.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_CHANGE_PIN_TITLE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Title for change PIN dialog.">
       Change SIM PIN
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_TITLE" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Title for SIM locked dialog.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_TITLE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Title for SIM locked dialog.">
       SIM Card is locked
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_WARNING" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Warning for SIM locked dialog when PUK is required.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_WARNING" desc="Settings > Internet > Network details > Lock/unlock SIM card: Warning for SIM locked dialog when PUK is required.">
       Your SIM card will be permanently disabled if you cannot enter
       the correct PIN Unlock Key.
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PIN" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Label for entering a PIN.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for entering a PIN.">
       Enter PIN
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_OLD_PIN" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Label for entering an old (current) PIN.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_OLD_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for entering an old (current) PIN.">
       Enter old PIN
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_NEW_PIN" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Label for entering a new PIN.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_NEW_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for entering a new PIN.">
       Enter new PIN
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_RE_ENTER_NEW_PIN" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Label for re-entering a new PIN.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_RE_ENTER_NEW_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for re-entering a new PIN.">
       Re-enter new PIN
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PUK" desc="Settings > Internet > Netwok details > Lock/unlock SIM card: Label for entering a PUK.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PUK" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for entering a PUK.">
       Enter PIN Unlock Key
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_PREFER" desc="Settings > Internet > Netwok details: Label for the checkbox determining whether a network is preferred over other networks.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PREFER" desc="Settings > Internet > Network details: Label for the checkbox determining whether a network is preferred over other networks.">
       Prefer this network
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_AUTO_CONNECT" desc="Settings > Internet > Netwok details: Label for the checkbox determining whether to automatically connect to the network.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_AUTO_CONNECT" desc="Settings > Internet > Network details: Label for the checkbox determining whether to automatically connect to the network.">
       Automatically connect to this network
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_IP_CONFIG_AUTO" desc="Settings > Internet > Netwok details: Label for the checkbox determining whether to automatically configure the network IP config.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_IP_CONFIG_AUTO" desc="Settings > Internet > Network details: Label for the checkbox determining whether to automatically configure the network IP config.">
       Configure IP address automatically
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_IP_ADDRESS" desc="Settings > Internet > Netwok details: Label for the network IP Address.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_IP_ADDRESS" desc="Settings > Internet > Network details: Label for the network IP Address.">
       IP Address
     </message>
-    <message name="IDS_SETTINGS_INTERNET_BUTTON_FORGET" desc="Settings > Internet > Netwok details: The label for the button to forget a network (remove from the list of known networks).">
+    <message name="IDS_SETTINGS_INTERNET_BUTTON_FORGET" desc="Settings > Internet > Network details: The label for the button to forget a network (remove from the list of known networks).">
       Forget
     </message>
-    <message name="IDS_SETTINGS_INTERNET_BUTTON_VIEW_ACCOUNT" desc="Settings > Internet > Netwok details: The label for the button to view the account details for a Cellular network.">
+    <message name="IDS_SETTINGS_INTERNET_BUTTON_VIEW_ACCOUNT" desc="Settings > Internet > Network details: The label for the button to view the account details for a Cellular network.">
       View Account
     </message>
-    <message name="IDS_SETTINGS_INTERNET_BUTTON_ACTIVATE" desc="Settings > Internet > Netwok details: The label for the button to activate a Cellular network.">
+    <message name="IDS_SETTINGS_INTERNET_BUTTON_ACTIVATE" desc="Settings > Internet > Network details: The label for the button to activate a Cellular network.">
       Activate
     </message>
-    <message name="IDS_SETTINGS_INTERNET_BUTTON_CONFIGURE" desc="Settings > Internet > Netwok details: The label for the button to configure a network (change its settings).">
+    <message name="IDS_SETTINGS_INTERNET_BUTTON_CONFIGURE" desc="Settings > Internet > Network details: The label for the button to configure a network (change its settings).">
       Configure
     </message>
-    <message name="IDS_SETTINGS_INTERNET_BUTTON_CONNECT" desc="Settings > Internet > Netwok details: The label for the button to connect to a network.">
+    <message name="IDS_SETTINGS_INTERNET_BUTTON_CONNECT" desc="Settings > Internet > Network details: The label for the button to connect to a network.">
       Connect
     </message>
-    <message name="IDS_SETTINGS_INTERNET_BUTTON_DISCONNECT" desc="Settings > Internet > Netwok details: The label for the button to disconnect from a network.">
+    <message name="IDS_SETTINGS_INTERNET_BUTTON_DISCONNECT" desc="Settings > Internet > Network details: The label for the button to disconnect from a network.">
       Disconnect
     </message>
-    <message name="IDS_SETTINGS_INTERNET_BUTTON_SAVE_APN" desc="Settings > Internet > Netwok details: The label for the button to save an APN configuration.">
+    <message name="IDS_SETTINGS_INTERNET_BUTTON_SAVE_APN" desc="Settings > Internet > Network details: The label for the button to save an APN configuration.">
       Save
     </message>
     <message name="IDS_SETTINGS_NETWORK_TYPE_ETHERNET" desc="The ethernet network type.">
