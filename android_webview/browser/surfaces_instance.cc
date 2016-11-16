@@ -85,8 +85,7 @@ SurfacesInstance::~SurfacesInstance() {
   g_surfaces_instance = nullptr;
 
   DCHECK(child_ids_.empty());
-  if (root_id_.is_valid())
-    surface_factory_->Destroy(root_id_);
+  surface_factory_->EvictSurface();
 
   surface_manager_->InvalidateFrameSinkId(frame_sink_id_);
 }
@@ -138,7 +137,6 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
 
   if (!root_id_.is_valid()) {
     root_id_ = surface_id_allocator_->GenerateId();
-    surface_factory_->Create(root_id_);
     display_->SetLocalFrameId(root_id_, 1.f);
   }
   surface_factory_->SubmitCompositorFrame(root_id_, std::move(frame),

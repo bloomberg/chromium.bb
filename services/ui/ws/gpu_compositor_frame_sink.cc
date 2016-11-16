@@ -52,7 +52,7 @@ GpuCompositorFrameSink::~GpuCompositorFrameSink() {
   // SurfaceFactory's destructor will attempt to return resources which will
   // call back into here and access |client_| so we should destroy
   // |surface_factory_|'s resources early on.
-  surface_factory_.DestroyAll();
+  surface_factory_.EvictSurface();
   display_compositor_->manager()->UnregisterSurfaceFactoryClient(
       frame_sink_id_);
   display_compositor_->manager()->InvalidateFrameSinkId(frame_sink_id_);
@@ -68,10 +68,7 @@ void GpuCompositorFrameSink::SubmitCompositorFrame(cc::CompositorFrame frame) {
   // If the size of the CompostiorFrame has changed then destroy the existing
   // Surface and create a new one of the appropriate size.
   if (!local_frame_id_.is_valid() || frame_size != last_submitted_frame_size_) {
-    if (local_frame_id_.is_valid())
-      surface_factory_.Destroy(local_frame_id_);
     local_frame_id_ = surface_id_allocator_.GenerateId();
-    surface_factory_.Create(local_frame_id_);
     if (display_)
       display_->Resize(frame_size);
   }

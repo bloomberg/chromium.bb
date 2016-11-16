@@ -192,8 +192,7 @@ void BlimpCompositor::RequestCopyOfOutput(
     host_->SetNeedsCommit();
   } else if (local_frame_id_.is_valid()) {
     // Make a copy request for the surface directly.
-    surface_factory_->RequestCopyOfSurface(local_frame_id_,
-                                           std::move(copy_request));
+    surface_factory_->RequestCopyOfSurface(std::move(copy_request));
   }
 }
 
@@ -325,7 +324,6 @@ void BlimpCompositor::SubmitCompositorFrame(cc::CompositorFrame frame) {
     DCHECK(layer_->children().empty());
 
     local_frame_id_ = surface_id_allocator_->GenerateId();
-    surface_factory_->Create(local_frame_id_);
     current_surface_size_ = surface_size;
 
     // manager must outlive compositors using it.
@@ -350,8 +348,7 @@ void BlimpCompositor::SubmitCompositorFrame(cc::CompositorFrame frame) {
                  weak_ptr_factory_.GetWeakPtr()));
 
   for (auto& copy_request : copy_requests_for_next_swap_) {
-    surface_factory_->RequestCopyOfSurface(local_frame_id_,
-                                           std::move(copy_request));
+    surface_factory_->RequestCopyOfSurface(std::move(copy_request));
   }
   copy_requests_for_next_swap_.clear();
 }
@@ -423,7 +420,7 @@ void BlimpCompositor::DestroyDelegatedContent() {
   // Remove any references for the surface layer that uses this
   // |local_frame_id_|.
   layer_->RemoveAllChildren();
-  surface_factory_->Destroy(local_frame_id_);
+  surface_factory_->EvictSurface();
   local_frame_id_ = cc::LocalFrameId();
 }
 

@@ -19,7 +19,6 @@ OffscreenCanvasCompositorFrameSink::OffscreenCanvasCompositorFrameSink(
   surface_factory_ = base::MakeUnique<cc::SurfaceFactory>(
       surface_id_.frame_sink_id(), manager, this);
   manager->RegisterFrameSinkId(surface_id_.frame_sink_id());
-  surface_factory_->Create(surface_id_.local_frame_id());
 }
 
 OffscreenCanvasCompositorFrameSink::~OffscreenCanvasCompositorFrameSink() {
@@ -31,7 +30,7 @@ OffscreenCanvasCompositorFrameSink::~OffscreenCanvasCompositorFrameSink() {
   } else {
     manager->InvalidateFrameSinkId(surface_id_.frame_sink_id());
   }
-  surface_factory_->Destroy(surface_id_.local_frame_id());
+  surface_factory_->EvictSurface();
 }
 
 // static
