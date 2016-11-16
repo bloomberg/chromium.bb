@@ -4,13 +4,9 @@
 
 package org.chromium.net;
 
-import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.concurrent.Executor;
 
@@ -19,7 +15,7 @@ import java.util.concurrent.Executor;
  *
  * {@hide} as it's a prototype.
  */
-public final class RequestFinishedInfo {
+public abstract class RequestFinishedInfo {
     /**
      * Listens for finished requests for the purpose of collecting metrics.
      *
@@ -246,15 +242,6 @@ public final class RequestFinishedInfo {
         public abstract Long getReceivedBytesCount();
     }
 
-    private final String mUrl;
-    private final Collection<Object> mAnnotations;
-    private final Metrics mMetrics;
-
-    /** @hide */
-    @IntDef({SUCCEEDED, FAILED, CANCELED})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface FinishedReason {}
-
     /**
      * Reason value indicating that the request succeeded. Returned from {@link #getFinishedReason}.
      */
@@ -270,40 +257,12 @@ public final class RequestFinishedInfo {
      */
     public static final int CANCELED = 2;
 
-    @FinishedReason
-    private final int mFinishedReason;
-
-    @Nullable
-    private final UrlResponseInfo mResponseInfo;
-    @Nullable
-    private final UrlRequestException mException;
-
-    /**
-     * @hide only used by internal implementation.
-     */
-    public RequestFinishedInfo(String url, Collection<Object> annotations, Metrics metrics,
-            @FinishedReason int finishedReason, @Nullable UrlResponseInfo responseInfo,
-            @Nullable UrlRequestException exception) {
-        mUrl = url;
-        mAnnotations = annotations;
-        mMetrics = metrics;
-        mFinishedReason = finishedReason;
-        mResponseInfo = responseInfo;
-        mException = exception;
-    }
 
     /** Returns the request's original URL. */
-    public String getUrl() {
-        return mUrl;
-    }
+    public abstract String getUrl();
 
     /** Returns the objects that the caller has supplied when initiating the request. */
-    public Collection<Object> getAnnotations() {
-        if (mAnnotations == null) {
-            return Collections.emptyList();
-        }
-        return mAnnotations;
-    }
+    public abstract Collection<Object> getAnnotations();
 
     // TODO(klm): Collect and return a chain of Metrics objects for redirect responses.
     // TODO(mgersh): Update this javadoc when new metrics are fully implemented
@@ -319,27 +278,20 @@ public final class RequestFinishedInfo {
      *
      * @return metrics collected for this request.
      */
-    public Metrics getMetrics() {
-        return mMetrics;
-    }
+    public abstract Metrics getMetrics();
 
     /**
      * Returns the reason why the request finished.
      * @return one of {@link #SUCCEEDED}, {@link #FAILED}, or {@link #CANCELED}
      */
-    @FinishedReason
-    public int getFinishedReason() {
-        return mFinishedReason;
-    }
+    public abstract int getFinishedReason();
 
     /**
      * Returns a {@link UrlResponseInfo} for the request, if its response had started.
      * @return {@link UrlResponseInfo} for the request, if its response had started.
      */
     @Nullable
-    public UrlResponseInfo getResponseInfo() {
-        return mResponseInfo;
-    }
+    public abstract UrlResponseInfo getResponseInfo();
 
     /**
      * If the request failed, returns the same {@link UrlRequestException} provided to
@@ -348,7 +300,5 @@ public final class RequestFinishedInfo {
      * @return the request's {@link UrlRequestException}, if the request failed
      */
     @Nullable
-    public UrlRequestException getException() {
-        return mException;
-    }
+    public abstract UrlRequestException getException();
 }

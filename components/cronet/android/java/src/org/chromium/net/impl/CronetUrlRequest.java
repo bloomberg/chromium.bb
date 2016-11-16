@@ -17,7 +17,6 @@ import org.chromium.net.RequestPriority;
 import org.chromium.net.UploadDataProvider;
 import org.chromium.net.UrlRequest;
 import org.chromium.net.UrlRequestException;
-import org.chromium.net.UrlResponseInfo;
 
 import java.nio.ByteBuffer;
 import java.util.AbstractMap;
@@ -81,7 +80,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
     private String mInitialMethod;
     private final HeadersList mRequestHeaders = new HeadersList();
     private final Collection<Object> mRequestAnnotations;
-    @RequestFinishedInfo.FinishedReason
+    @RequestFinishedInfoImpl.FinishedReason
     private int mFinishedReason;
     private UrlRequestException mException;
     private final boolean mDisableCache;
@@ -89,7 +88,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
 
     private CronetUploadDataStream mUploadDataStream;
 
-    private UrlResponseInfo mResponseInfo;
+    private UrlResponseInfoImpl mResponseInfo;
 
     /*
      * Listener callback is repeatedly invoked when each read is completed, so it
@@ -388,7 +387,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
         }
     }
 
-    private UrlResponseInfo prepareResponseInfoOnNetworkThread(int httpStatusCode,
+    private UrlResponseInfoImpl prepareResponseInfoOnNetworkThread(int httpStatusCode,
             String httpStatusText, String[] headers, boolean wasCached, String negotiatedProtocol,
             String proxyServer) {
         HeadersList headersList = new HeadersList();
@@ -396,8 +395,8 @@ public final class CronetUrlRequest extends UrlRequestBase {
             headersList.add(new AbstractMap.SimpleImmutableEntry<String, String>(
                     headers[i], headers[i + 1]));
         }
-        return new UrlResponseInfo(new ArrayList<String>(mUrlChain), httpStatusCode, httpStatusText,
-                headersList, wasCached, negotiatedProtocol, proxyServer);
+        return new UrlResponseInfoImpl(new ArrayList<String>(mUrlChain), httpStatusCode,
+                httpStatusText, headersList, wasCached, negotiatedProtocol, proxyServer);
     }
 
     private void checkNotStarted() {
@@ -493,7 +492,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
     private void onRedirectReceived(final String newLocation, int httpStatusCode,
             String httpStatusText, String[] headers, boolean wasCached, String negotiatedProtocol,
             String proxyServer, long receivedBytesCount) {
-        final UrlResponseInfo responseInfo = prepareResponseInfoOnNetworkThread(httpStatusCode,
+        final UrlResponseInfoImpl responseInfo = prepareResponseInfoOnNetworkThread(httpStatusCode,
                 httpStatusText, headers, wasCached, negotiatedProtocol, proxyServer);
         mReceivedBytesCountFromRedirects += receivedBytesCount;
         responseInfo.setReceivedBytesCount(mReceivedBytesCountFromRedirects);
@@ -709,8 +708,8 @@ public final class CronetUrlRequest extends UrlRequestBase {
     }
 
     private RequestFinishedInfo getRequestFinishedInfo() {
-        return new RequestFinishedInfo(mInitialUrl, mRequestAnnotations, mMetrics, mFinishedReason,
-                mResponseInfo, mException);
+        return new RequestFinishedInfoImpl(mInitialUrl, mRequestAnnotations, mMetrics,
+                mFinishedReason, mResponseInfo, mException);
     }
 
     /** Enforces prohibition of direct execution. */

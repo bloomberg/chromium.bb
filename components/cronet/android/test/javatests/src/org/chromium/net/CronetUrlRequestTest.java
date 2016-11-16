@@ -14,6 +14,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.net.TestUrlRequestCallback.FailureType;
 import org.chromium.net.TestUrlRequestCallback.ResponseStep;
 import org.chromium.net.impl.CronetUrlRequest;
+import org.chromium.net.impl.UrlResponseInfoImpl;
 import org.chromium.net.test.FailurePhase;
 
 import java.io.IOException;
@@ -143,7 +144,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
             headersList.add(new AbstractMap.SimpleImmutableEntry<String, String>(
                     headers[i], headers[i + 1]));
         }
-        UrlResponseInfo unknown = new UrlResponseInfo(
+        UrlResponseInfoImpl unknown = new UrlResponseInfoImpl(
                 Arrays.asList(urls), statusCode, message, headersList, false, "unknown", ":0");
         unknown.setReceivedBytesCount(receivedBytes);
         return unknown;

@@ -139,7 +139,7 @@ public class CronetBidirectionalStream extends ExperimentalBidirectionalStream {
     private State mWriteState = State.NOT_STARTED;
 
     // Only modified on the network thread.
-    private UrlResponseInfo mResponseInfo;
+    private UrlResponseInfoImpl mResponseInfo;
 
     /*
      * OnReadCompleted callback is repeatedly invoked when each read is completed, so it
@@ -571,7 +571,7 @@ public class CronetBidirectionalStream extends ExperimentalBidirectionalStream {
     @CalledByNative
     private void onResponseTrailersReceived(String[] trailers) {
         final UrlResponseInfo.HeaderBlock trailersBlock =
-                new UrlResponseInfo.HeaderBlock(headersListFromStrings(trailers));
+                new UrlResponseInfoImpl.HeaderBlockImpl(headersListFromStrings(trailers));
         postTaskToExecutor(new Runnable() {
             public void run() {
                 synchronized (mNativeStreamLock) {
@@ -651,7 +651,7 @@ public class CronetBidirectionalStream extends ExperimentalBidirectionalStream {
             } else {
                 finishedReason = RequestFinishedInfo.FAILED;
             }
-            final RequestFinishedInfo requestFinishedInfo = new RequestFinishedInfo(mInitialUrl,
+            final RequestFinishedInfo requestFinishedInfo = new RequestFinishedInfoImpl(mInitialUrl,
                     mRequestAnnotations, mMetrics, finishedReason, mResponseInfo, mException);
             mRequestContext.reportFinished(requestFinishedInfo);
         }
@@ -720,10 +720,10 @@ public class CronetBidirectionalStream extends ExperimentalBidirectionalStream {
         }
     }
 
-    private UrlResponseInfo prepareResponseInfoOnNetworkThread(int httpStatusCode,
+    private UrlResponseInfoImpl prepareResponseInfoOnNetworkThread(int httpStatusCode,
             String negotiatedProtocol, String[] headers, long receivedBytesCount) {
-        UrlResponseInfo responseInfo =
-                new UrlResponseInfo(Arrays.asList(mInitialUrl), httpStatusCode, "",
+        UrlResponseInfoImpl responseInfo =
+                new UrlResponseInfoImpl(Arrays.asList(mInitialUrl), httpStatusCode, "",
                         headersListFromStrings(headers), false, negotiatedProtocol, null);
         responseInfo.setReceivedBytesCount(receivedBytesCount);
         return responseInfo;

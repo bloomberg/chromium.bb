@@ -550,7 +550,7 @@ final class JavaUrlRequest extends UrlRequestBase {
                 // Important to copy the list here, because although we never concurrently modify
                 // the list ourselves, user code might iterate over it while we're redirecting, and
                 // that would throw ConcurrentModificationException.
-                mUrlResponseInfo = new UrlResponseInfo(new ArrayList<>(mUrlChain), responseCode,
+                mUrlResponseInfo = new UrlResponseInfoImpl(new ArrayList<>(mUrlChain), responseCode,
                         connection.getResponseMessage(), Collections.unmodifiableList(headerList),
                         false, selectedTransport, "");
                 // TODO(clm) actual redirect handling? post -> get and whatnot?

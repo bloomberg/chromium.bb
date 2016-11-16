@@ -10,6 +10,7 @@ import android.test.AndroidTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.impl.UrlResponseInfoImpl;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -38,8 +39,8 @@ public class UrlResponseInfoTest extends AndroidTestCase {
         final String negotiatedProtocol = "quic/1+spdy/3";
         final String proxyServer = "example.com";
 
-        final UrlResponseInfo info = new UrlResponseInfo(urlChain, httpStatusCode, httpStatusText,
-                allHeadersList, wasCached, negotiatedProtocol, proxyServer);
+        final UrlResponseInfo info = new UrlResponseInfoImpl(urlChain, httpStatusCode,
+                httpStatusText, allHeadersList, wasCached, negotiatedProtocol, proxyServer);
         assertEquals(info.getUrlChain(), urlChain);
         try {
             info.getUrlChain().add("example.com");
