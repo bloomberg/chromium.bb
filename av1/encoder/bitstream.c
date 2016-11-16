@@ -1111,7 +1111,7 @@ static void write_mb_interp_filter(AV1_COMP *cpi, const MACROBLOCKD *xd,
 #else
     {
       const int ctx = av1_get_pred_context_switchable_interp(xd);
-#if CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
       aom_write_symbol(w, av1_switchable_interp_ind[mbmi->interp_filter],
                        cm->fc->switchable_interp_cdf[ctx], SWITCHABLE_FILTERS);
 #else

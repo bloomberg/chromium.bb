@@ -1775,14 +1775,14 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
                      BLOCK_SIZE_GROUPS);
   av1_tree_to_cdf_1D(av1_intra_mode_tree, fc->uv_mode_prob, fc->uv_mode_cdf,
                      INTRA_MODES);
-  av1_tree_to_cdf_1D(av1_switchable_interp_tree, fc->switchable_interp_prob,
-                     fc->switchable_interp_cdf, SWITCHABLE_FILTER_CONTEXTS);
   av1_tree_to_cdf_1D(av1_inter_mode_tree, fc->inter_mode_probs,
                      fc->inter_mode_cdf, INTER_MODE_CONTEXTS);
   av1_tree_to_cdf_2D(av1_intra_mode_tree, av1_kf_y_mode_prob, av1_kf_y_mode_cdf,
                      INTRA_MODES, INTRA_MODES);
 #endif
 #if CONFIG_EC_MULTISYMBOL
+  av1_tree_to_cdf_1D(av1_switchable_interp_tree, fc->switchable_interp_prob,
+                     fc->switchable_interp_cdf, SWITCHABLE_FILTER_CONTEXTS);
   av1_tree_to_cdf_1D(av1_partition_tree, fc->partition_prob, fc->partition_cdf,
                      PARTITION_CONTEXTS);
 #if !CONFIG_EXT_TX
@@ -1798,12 +1798,10 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #endif
 }
 
-#if CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
 int av1_switchable_interp_ind[SWITCHABLE_FILTERS];
 int av1_switchable_interp_inv[SWITCHABLE_FILTERS];
-#endif
 
-#if CONFIG_EC_MULTISYMBOL
 void av1_set_mode_cdfs(struct AV1Common *cm) {
   FRAME_CONTEXT *fc = cm->fc;
   int i, j;
@@ -1815,6 +1813,10 @@ void av1_set_mode_cdfs(struct AV1Common *cm) {
   for (i = 0; i < PARTITION_CONTEXTS; ++i)
     av1_tree_to_cdf(av1_partition_tree, fc->partition_prob[i],
                     fc->partition_cdf[i]);
+
+  for (j = 0; j < SWITCHABLE_FILTER_CONTEXTS; ++j)
+    av1_tree_to_cdf(av1_switchable_interp_tree, fc->switchable_interp_prob[j],
+                    fc->switchable_interp_cdf[j]);
 
 #if !CONFIG_EXT_TX
   for (i = TX_4X4; i < EXT_TX_SIZES; ++i)
@@ -1835,10 +1837,6 @@ void av1_set_mode_cdfs(struct AV1Common *cm) {
     for (j = 0; j < INTRA_MODES; ++j)
       av1_tree_to_cdf(av1_intra_mode_tree, cm->kf_y_prob[i][j],
                       cm->kf_y_cdf[i][j]);
-
-  for (j = 0; j < SWITCHABLE_FILTER_CONTEXTS; ++j)
-    av1_tree_to_cdf(av1_switchable_interp_tree, fc->switchable_interp_prob[j],
-                    fc->switchable_interp_cdf[j]);
 
   for (i = 0; i < INTER_MODE_CONTEXTS; ++i)
     av1_tree_to_cdf(av1_inter_mode_tree, fc->inter_mode_probs[i],
