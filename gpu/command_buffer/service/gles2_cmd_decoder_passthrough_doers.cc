@@ -1147,8 +1147,10 @@ error::Error GLES2DecoderPassthroughImpl::DoGetUniformfv(GLuint program,
                                                          GLsizei bufsize,
                                                          GLsizei* length,
                                                          GLfloat* params) {
+  // GetUniform*RobustANGLE entry points expect bufsize in bytes like the entry
+  // points in GL_EXT_robustness
   glGetUniformfvRobustANGLE(GetProgramServiceID(program, resources_), location,
-                            bufsize, length, params);
+                            bufsize * sizeof(*params), length, params);
   return error::kNoError;
 }
 
@@ -1157,8 +1159,10 @@ error::Error GLES2DecoderPassthroughImpl::DoGetUniformiv(GLuint program,
                                                          GLsizei bufsize,
                                                          GLsizei* length,
                                                          GLint* params) {
+  // GetUniform*RobustANGLE entry points expect bufsize in bytes like the entry
+  // points in GL_EXT_robustness
   glGetUniformivRobustANGLE(GetProgramServiceID(program, resources_), location,
-                            bufsize, length, params);
+                            bufsize * sizeof(*params), length, params);
   return error::kNoError;
 }
 
@@ -1167,8 +1171,10 @@ error::Error GLES2DecoderPassthroughImpl::DoGetUniformuiv(GLuint program,
                                                           GLsizei bufsize,
                                                           GLsizei* length,
                                                           GLuint* params) {
+  // GetUniform*RobustANGLE entry points expect bufsize in bytes like the entry
+  // points in GL_EXT_robustness
   glGetUniformuivRobustANGLE(GetProgramServiceID(program, resources_), location,
-                             bufsize, length, params);
+                             bufsize * sizeof(*params), length, params);
   return error::kNoError;
 }
 
