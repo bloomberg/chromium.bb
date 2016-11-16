@@ -4,7 +4,6 @@
 
 #include "platform/MemoryCoordinator.h"
 
-#include "base/sys_info.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/ImageDecodingStore.h"
 #include "platform/tracing/TraceEvent.h"
@@ -19,8 +18,7 @@ MemoryCoordinator& MemoryCoordinator::instance() {
   return *external.get();
 }
 
-MemoryCoordinator::MemoryCoordinator()
-    : m_isLowEndDevice(base::SysInfo::IsLowEndDevice()) {}
+MemoryCoordinator::MemoryCoordinator() {}
 
 void MemoryCoordinator::registerClient(MemoryCoordinatorClient* client) {
   DCHECK(isMainThread());
