@@ -333,9 +333,8 @@ class PDFEngineExports {
   static PDFEngineExports* Get();
 
 #if defined(OS_WIN)
-  // See the definition of RenderPDFPageToDC in pdf.cc for details.
-  virtual bool RenderPDFPageToDC(const void* pdf_buffer,
-                                 int buffer_size,
+  // See the definitions of the corresponding functions in pdf.h for details.
+  virtual bool RenderPDFPageToDC(void* pdf_handle,
                                  int page_number,
                                  const RenderingSettings& settings,
                                  HDC dc) = 0;
@@ -346,9 +345,7 @@ class PDFEngineExports {
   virtual void SetPDFUseGDIPrinting(bool enable) = 0;
 #endif  // defined(OS_WIN)
 
-  // See the definition of RenderPDFPageToBitmap in pdf.cc for details.
-  virtual bool RenderPDFPageToBitmap(const void* pdf_buffer,
-                                     int pdf_buffer_size,
+  virtual bool RenderPDFPageToBitmap(void* pdf_handle,
                                      int page_number,
                                      const RenderingSettings& settings,
                                      void* bitmap_buffer) = 0;
@@ -356,12 +353,15 @@ class PDFEngineExports {
   virtual bool GetPDFDocInfo(const void* pdf_buffer,
                              int buffer_size,
                              int* page_count,
-                             double* max_page_width) = 0;
+                             double* max_page_width,
+                             void** pdf_handle) = 0;
 
-  // See the definition of GetPDFPageSizeByIndex in pdf.cc for details.
-  virtual bool GetPDFPageSizeByIndex(const void* pdf_buffer,
-                                     int pdf_buffer_size, int page_number,
-                                     double* width, double* height) = 0;
+  virtual void ReleasePDFHandle(void* pdf_handle) = 0;
+
+  virtual bool GetPDFPageSizeByIndex(void* pdf_handle,
+                                     int page_number,
+                                     double* width,
+                                     double* height) = 0;
 };
 
 }  // namespace chrome_pdf

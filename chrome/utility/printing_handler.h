@@ -36,7 +36,7 @@ class PrintingHandler : public UtilityMessageHandler {
  private:
   // IPC message handlers.
 #if defined(OS_WIN)
-  void OnRenderPDFPagesToMetafile(IPC::PlatformFileForTransit pdf_transit,
+  void OnRenderPDFPagesToMetafileStart(IPC::PlatformFileForTransit pdf_transit,
                                   const PdfRenderSettings& settings,
                                   bool print_text_with_gdi);
   void OnRenderPDFPagesToMetafileGetPage(
@@ -70,6 +70,7 @@ class PrintingHandler : public UtilityMessageHandler {
 #if defined(OS_WIN)
   std::vector<char> pdf_data_;
   PdfRenderSettings pdf_rendering_settings_;
+  void* pdf_handle_ = nullptr;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PrintingHandler);
