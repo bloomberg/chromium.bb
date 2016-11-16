@@ -98,9 +98,9 @@ chromeos_dev_list="libbluetooth-dev libxkbcommon-dev realpath"
 
 # Packages needed for development
 dev_list="bison cdbs curl dpkg-dev elfutils devscripts fakeroot
-          flex fonts-ipafont fonts-thai-tlwg g++ git-core git-svn gperf
-          language-pack-da language-pack-fr language-pack-he
-          language-pack-zh-hant libasound2-dev libbrlapi-dev libav-tools
+          flex fonts-thai-tlwg g++ git-core git-svn gperf language-pack-da
+          language-pack-fr language-pack-he language-pack-zh-hant
+          libasound2-dev libbrlapi-dev libav-tools
           libbz2-dev libcairo2-dev libcap-dev libcups2-dev libcurl4-gnutls-dev
           libdrm-dev libelf-dev libffi-dev libgconf2-dev libglib2.0-dev
           libglu1-mesa-dev libgnome-keyring-dev libgtk2.0-dev libkrb5-dev
@@ -256,6 +256,14 @@ if package_exists php7.0-cgi; then
   dev_list="${dev_list} php7.0-cgi libapache2-mod-php7.0"
 else
   dev_list="${dev_list} php5-cgi libapache2-mod-php5"
+fi
+# Ubuntu 16.04 has this package deleted.
+if package_exists ttf-kochi-gothic; then
+  dev_list="${dev_list} ttf-kochi-gothic"
+fi
+# Ubuntu 16.04 has this package deleted.
+if package_exists ttf-kochi-mincho; then
+  dev_list="${dev_list} ttf-kochi-mincho"
 fi
 
 # Some packages are only needed if the distribution actually supports
