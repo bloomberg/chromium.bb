@@ -772,7 +772,6 @@ void RenderFrameHostImpl::AccessibilityFatalError() {
     Send(new AccessibilityMsg_FatalError(routing_id_));
   } else {
     accessibility_reset_token_ = g_next_accessibility_reset_token++;
-    UMA_HISTOGRAM_COUNTS("Accessibility.FrameResetCount", 1);
     Send(new AccessibilityMsg_Reset(routing_id_, accessibility_reset_token_));
   }
 }
@@ -2829,10 +2828,6 @@ BrowserAccessibilityManager*
     bool is_root_frame = !frame_tree_node()->parent();
     browser_accessibility_manager_.reset(
         view->CreateBrowserAccessibilityManager(this, is_root_frame));
-    if (browser_accessibility_manager_)
-      UMA_HISTOGRAM_COUNTS("Accessibility.FrameEnabledCount", 1);
-    else
-      UMA_HISTOGRAM_COUNTS("Accessibility.FrameDidNotEnableCount", 1);
   }
   return browser_accessibility_manager_.get();
 }
