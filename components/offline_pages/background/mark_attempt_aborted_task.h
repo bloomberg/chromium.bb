@@ -7,11 +7,12 @@
 
 #include <stdint.h>
 
-#include "components/offline_pages/background/request_queue_store.h"
 #include "components/offline_pages/background/update_request_task.h"
 #include "components/offline_pages/core/task.h"
 
 namespace offline_pages {
+
+class RequestQueueStore;
 
 class MarkAttemptAbortedTask : public UpdateRequestTask {
  public:
