@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/time/time.h"
 #include "base/win/iunknown_impl.h"
+#include "device/generic_sensor/generic_sensor_consts.h"
 #include "device/generic_sensor/public/cpp/platform_sensor_configuration.h"
 #include "device/generic_sensor/public/cpp/sensor_reading.h"
 
@@ -24,7 +25,6 @@ struct ReaderInitParams {
   using ReaderFunctor = base::Callback<HRESULT(ISensorDataReport& report,
                                                SensorReading& reading)>;
   SENSOR_TYPE_ID sensor_type_id;
-  mojom::ReportingMode reporting_mode;
   ReaderFunctor reader_func;
   unsigned long min_reporting_interval_ms = 0;
 };
@@ -51,32 +51,134 @@ bool GetReadingValueForProperty(REFPROPERTYKEY key,
   return false;
 }
 
+// Ambient light sensor reader initialization parameters.
+std::unique_ptr<ReaderInitParams> CreateAmbientLightReaderInitParams() {
+  auto params = base::MakeUnique<ReaderInitParams>();
+  params->sensor_type_id = SENSOR_TYPE_AMBIENT_LIGHT;
+  params->reader_func =
+      base::Bind([](ISensorDataReport& report, SensorReading& reading) {
+        double lux = 0.0;
+        if (!GetReadingValueForProperty(SENSOR_DATA_TYPE_LIGHT_LEVEL_LUX,
+                                        report, &lux)) {
+          return E_FAIL;
+        }
+        reading.values[0] = lux;
+        return S_OK;
+      });
+  return params;
+}
+
+// Accelerometer sensor reader initialization parameters.
+std::unique_ptr<ReaderInitParams> CreateAccelerometerReaderInitParams() {
+  auto params = base::MakeUnique<ReaderInitParams>();
+  params->sensor_type_id = SENSOR_TYPE_ACCELEROMETER_3D;
+  params->reader_func =
+      base::Bind([](ISensorDataReport& report, SensorReading& reading) {
+        double x = 0.0;
+        double y = 0.0;
+        double z = 0.0;
+        if (!GetReadingValueForProperty(SENSOR_DATA_TYPE_ACCELERATION_X_G,
+                                        report, &x) ||
+            !GetReadingValueForProperty(SENSOR_DATA_TYPE_ACCELERATION_Y_G,
+                                        report, &y) ||
+            !GetReadingValueForProperty(SENSOR_DATA_TYPE_ACCELERATION_Z_G,
+                                        report, &z)) {
+          return E_FAIL;
+        }
+
+        // Windows uses coordinate system where Z axis points down from device
+        // screen, therefore, using right hand notation, we have to reverse
+        // sign for each axis. Values are converted from G/s^2 to m/s^2.
+        reading.values[0] = -x * kMeanGravity;
+        reading.values[1] = -y * kMeanGravity;
+        reading.values[2] = -z * kMeanGravity;
+        return S_OK;
+      });
+  return params;
+}
+
+// Gyroscope sensor reader initialization parameters.
+std::unique_ptr<ReaderInitParams> CreateGyroscopeReaderInitParams() {
+  auto params = base::MakeUnique<ReaderInitParams>();
+  params->sensor_type_id = SENSOR_TYPE_GYROMETER_3D;
+  params->reader_func = base::Bind([](ISensorDataReport& report,
+                                      SensorReading& reading) {
+    double x = 0.0;
+    double y = 0.0;
+    double z = 0.0;
+    if (!GetReadingValueForProperty(
+            SENSOR_DATA_TYPE_ANGULAR_ACCELERATION_X_DEGREES_PER_SECOND_SQUARED,
+            report, &x) ||
+        !GetReadingValueForProperty(
+            SENSOR_DATA_TYPE_ANGULAR_ACCELERATION_Y_DEGREES_PER_SECOND_SQUARED,
+            report, &y) ||
+        !GetReadingValueForProperty(
+            SENSOR_DATA_TYPE_ANGULAR_ACCELERATION_Z_DEGREES_PER_SECOND_SQUARED,
+            report, &z)) {
+      return E_FAIL;
+    }
+
+    // Windows uses coordinate system where Z axis points down from device
+    // screen, therefore, using right hand notation, we have to reverse
+    // sign for each axis. Values are converted from deg/s^2 to rad/s^2.
+    reading.values[0] = -x * kRadiansInDegreesPerSecond;
+    reading.values[1] = -y * kRadiansInDegreesPerSecond;
+    reading.values[2] = -z * kRadiansInDegreesPerSecond;
+    return S_OK;
+  });
+  return params;
+}
+
+// Magnetometer sensor reader initialization parameters.
+std::unique_ptr<ReaderInitParams> CreateMagnetometerReaderInitParams() {
+  auto params = base::MakeUnique<ReaderInitParams>();
+  params->sensor_type_id = SENSOR_TYPE_COMPASS_3D;
+  params->reader_func =
+      base::Bind([](ISensorDataReport& report, SensorReading& reading) {
+        double x = 0.0;
+        double y = 0.0;
+        double z = 0.0;
+        if (!GetReadingValueForProperty(
+                SENSOR_DATA_TYPE_MAGNETIC_FIELD_STRENGTH_X_MILLIGAUSS, report,
+                &x) ||
+            !GetReadingValueForProperty(
+                SENSOR_DATA_TYPE_MAGNETIC_FIELD_STRENGTH_Y_MILLIGAUSS, report,
+                &y) ||
+            !GetReadingValueForProperty(
+                SENSOR_DATA_TYPE_MAGNETIC_FIELD_STRENGTH_Z_MILLIGAUSS, report,
+                &z)) {
+          return E_FAIL;
+        }
+
+        // Windows uses coordinate system where Z axis points down from device
+        // screen, therefore, using right hand notation, we have to reverse
+        // sign for each axis. Values are converted from Milligaus to
+        // Microtesla.
+        reading.values[0] = -x * kMicroteslaInMilligauss;
+        reading.values[1] = -y * kMicroteslaInMilligauss;
+        reading.values[2] = -z * kMicroteslaInMilligauss;
+        return S_OK;
+      });
+  return params;
+}
+
 // Creates ReaderInitParams params structure. To implement support for new
 // sensor types, new switch case should be added and appropriate fields must
 // be set:
 // sensor_type_id - GUID of the sensor supported by Windows.
-// reporting_mode - mode of reporting (ON_CHANGE | CONTINUOUS).
 // reader_func    - Functor that is responsible to populate SensorReading from
 //                  ISensorDataReport data.
 std::unique_ptr<ReaderInitParams> CreateReaderInitParamsForSensor(
     mojom::SensorType type) {
-  auto params = std::make_unique<ReaderInitParams>();
   switch (type) {
-    case mojom::SensorType::AMBIENT_LIGHT: {
-      params->sensor_type_id = SENSOR_TYPE_AMBIENT_LIGHT;
-      params->reporting_mode = mojom::ReportingMode::ON_CHANGE;
-      params->reader_func =
-          base::Bind([](ISensorDataReport& report, SensorReading& reading) {
-            double lux = 0.0;
-            if (!GetReadingValueForProperty(SENSOR_DATA_TYPE_LIGHT_LEVEL_LUX,
-                                            report, &lux)) {
-              return E_FAIL;
-            }
-            reading.values[0] = lux;
-            return S_OK;
-          });
-      return params;
-    }
+    case mojom::SensorType::AMBIENT_LIGHT:
+      return CreateAmbientLightReaderInitParams();
+    case mojom::SensorType::ACCELEROMETER:
+      return CreateAccelerometerReaderInitParams();
+    case mojom::SensorType::GYROSCOPE:
+      return CreateGyroscopeReaderInitParams();
+    case mojom::SensorType::MAGNETOMETER:
+      return CreateMagnetometerReaderInitParams();
     default:
       NOTIMPLEMENTED();
       return nullptr;
@@ -329,10 +431,6 @@ void PlatformSensorReaderWin::SensorError() {
 
 unsigned long PlatformSensorReaderWin::GetMinimalReportingIntervalMs() const {
   return init_params_->min_reporting_interval_ms;
-}
-
-mojom::ReportingMode PlatformSensorReaderWin::GetReportingMode() const {
-  return init_params_->reporting_mode;
 }
 
 }  // namespace device

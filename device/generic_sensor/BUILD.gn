@@ -11,6 +11,7 @@ if (is_android) {
 component("generic_sensor") {
   output_name = "generic_sensor"
   sources = [
+    "generic_sensor_consts.h",
     "linux/platform_sensor_utils_linux.cc",
     "linux/platform_sensor_utils_linux.h",
     "linux/sensor_data_linux.cc",
@@ -68,10 +69,6 @@ component("generic_sensor") {
 
   if (is_mac || is_linux) {
     deps += [ "//device/sensors/public/cpp" ]
-  }
-
-  if (is_linux) {
-    sources += [ "generic_sensor_consts.h" ]
   }
 
   if (is_mac) {

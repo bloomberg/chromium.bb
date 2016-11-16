@@ -39,7 +39,6 @@ class PlatformSensorReaderWin {
   // Following methods are thread safe.
   void SetClient(Client* client);
   unsigned long GetMinimalReportingIntervalMs() const;
-  mojom::ReportingMode GetReportingMode() const;
   bool StartSensor(const PlatformSensorConfiguration& configuration);
   void StopSensor();
 

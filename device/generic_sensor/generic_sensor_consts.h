@@ -5,6 +5,7 @@
 #ifndef DEVICE_GENERIC_SENSOR_GENERIC_SENSOR_CONSTS_H_
 #define DEVICE_GENERIC_SENSOR_GENERIC_SENSOR_CONSTS_H_
 
+#define _USE_MATH_DEFINES
 #include <math.h>
 
 namespace device {
@@ -17,6 +18,9 @@ constexpr double kRadiansInDegreesPerSecond = M_PI / 180.0;
 
 // Required for conversion from Gauss to uT.
 constexpr double kMicroteslaInGauss = 100.0;
+
+// Required for conversion from Milligauss to Microtesla.
+constexpr double kMicroteslaInMilligauss = 0.1;
 
 // Default rate for returning value of the ambient light sensor.
 constexpr int kDefaultAmbientLightFrequencyHz = 5;

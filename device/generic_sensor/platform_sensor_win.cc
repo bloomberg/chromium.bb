@@ -29,7 +29,9 @@ PlatformSensorConfiguration PlatformSensorWin::GetDefaultConfiguration() {
 }
 
 mojom::ReportingMode PlatformSensorWin::GetReportingMode() {
-  return sensor_reader_->GetReportingMode();
+  // All Windows sensors, even with high accuracy / sensitivity will not report
+  // reading updates continuously. Therefore, return ON_CHANGE by default.
+  return mojom::ReportingMode::ON_CHANGE;
 }
 
 double PlatformSensorWin::GetMaximumSupportedFrequency() {
@@ -41,8 +43,9 @@ double PlatformSensorWin::GetMaximumSupportedFrequency() {
 }
 
 void PlatformSensorWin::OnReadingUpdated(const SensorReading& reading) {
-  UpdateSensorReading(reading,
-                      GetReportingMode() == mojom::ReportingMode::ON_CHANGE);
+  // Default reporting mode is ON_CHANGE, thus, set notify_clients parameter
+  // to true.
+  UpdateSensorReading(reading, true);
 }
 
 void PlatformSensorWin::OnSensorError() {

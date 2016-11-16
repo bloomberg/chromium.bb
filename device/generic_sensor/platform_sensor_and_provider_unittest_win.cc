@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/win/iunknown_impl.h"
+#include "device/generic_sensor/generic_sensor_consts.h"
 #include "device/generic_sensor/platform_sensor_provider_win.h"
 #include "device/generic_sensor/public/interfaces/sensor_provider.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -20,8 +21,10 @@ using ::testing::IsNull;
 using ::testing::NiceMock;
 using ::testing::NotNull;
 using ::testing::Return;
+using ::testing::WithArgs;
 
 namespace device {
+
 using mojom::SensorType;
 
 template <class Interface>
@@ -296,9 +299,18 @@ class PlatformSensorAndProviderTestWin : public ::testing::Test {
     sensor_events_->OnStateChanged(sensor_.get(), state);
   }
 
+  struct PropertyKeyCompare {
+    bool operator()(REFPROPERTYKEY a, REFPROPERTYKEY b) const {
+      if (a.fmtid == b.fmtid)
+        return a.pid < b.pid;
+      return false;
+    }
+  };
+  using SensorData = std::map<PROPERTYKEY, double, PropertyKeyCompare>;
+
   // Generates OnDataUpdated event and creates ISensorDataReport with fake
   // |value| for property with |key|.
-  void GenerateDataUpdatedEvent(REFPROPERTYKEY key, double value) {
+  void GenerateDataUpdatedEvent(const SensorData& values) {
     if (!sensor_events_)
       return;
 
@@ -317,12 +329,17 @@ class PlatformSensorAndProviderTestWin : public ::testing::Test {
           return S_OK;
         }));
 
-    EXPECT_CALL(*mock_report, GetSensorValue(key, _))
-        .WillOnce(Invoke([value](REFPROPERTYKEY, PROPVARIANT* variant) {
-          variant->vt = VT_R8;
-          variant->dblVal = value;
-          return S_OK;
-        }));
+    EXPECT_CALL(*mock_report, GetSensorValue(_, _))
+        .WillRepeatedly(WithArgs<0, 1>(
+            Invoke([&values](REFPROPERTYKEY key, PROPVARIANT* variant) {
+              auto it = values.find(key);
+              if (it == values.end())
+                return E_FAIL;
+
+              variant->vt = VT_R8;
+              variant->dblVal = it->second;
+              return S_OK;
+            })));
 
     sensor_events_->OnDataUpdated(sensor_.get(), data_report.get());
   }
@@ -367,10 +384,9 @@ class MockPlatformSensorClient : public PlatformSensor::Client {
 // Tests that PlatformSensorManager returns null sensor when sensor
 // is not implemented.
 TEST_F(PlatformSensorAndProviderTestWin, SensorIsNotImplemented) {
-  EXPECT_CALL(*sensor_manager_,
-              GetSensorsByType(SENSOR_TYPE_ACCELEROMETER_3D, _))
+  EXPECT_CALL(*sensor_manager_, GetSensorsByType(SENSOR_TYPE_PRESSURE, _))
       .Times(0);
-  EXPECT_FALSE(CreateSensor(SensorType::ACCELEROMETER));
+  EXPECT_FALSE(CreateSensor(SensorType::PRESSURE));
 }
 
 // Tests that PlatformSensorManager returns null sensor when sensor
@@ -436,7 +452,7 @@ TEST_F(PlatformSensorAndProviderTestWin, SensorStarted) {
   EXPECT_TRUE(sensor->StartListening(client.get(), configuration));
 
   EXPECT_CALL(*client, OnSensorReadingChanged()).Times(1);
-  GenerateDataUpdatedEvent(SENSOR_DATA_TYPE_LIGHT_LEVEL_LUX, 3.14);
+  GenerateDataUpdatedEvent({{SENSOR_DATA_TYPE_LIGHT_LEVEL_LUX, 3.14}});
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
 }
@@ -502,6 +518,118 @@ TEST_F(PlatformSensorAndProviderTestWin, GetMaximumSupportedFrequencyFallback) {
   auto sensor = CreateSensor(SensorType::AMBIENT_LIGHT);
   EXPECT_TRUE(sensor);
   EXPECT_THAT(sensor->GetMaximumSupportedFrequency(), 5);
+}
+
+// Tests that Accelerometer readings are correctly converted.
+TEST_F(PlatformSensorAndProviderTestWin, CheckAccelerometerReadingConversion) {
+  mojo::ScopedSharedBufferHandle handle =
+      PlatformSensorProviderWin::GetInstance()->CloneSharedBufferHandle();
+  mojo::ScopedSharedBufferMapping mapping = handle->MapAtOffset(
+      sizeof(SensorReadingSharedBuffer),
+      SensorReadingSharedBuffer::GetOffset(SensorType::ACCELEROMETER));
+
+  SetSupportedSensor(SENSOR_TYPE_ACCELEROMETER_3D);
+  auto sensor = CreateSensor(SensorType::ACCELEROMETER);
+  EXPECT_TRUE(sensor);
+
+  auto client = base::MakeUnique<NiceMock<MockPlatformSensorClient>>(sensor);
+  PlatformSensorConfiguration configuration(10);
+  EXPECT_TRUE(sensor->StartListening(client.get(), configuration));
+  EXPECT_CALL(*client, OnSensorReadingChanged()).Times(1);
+
+  double x_accel = 0.25;
+  double y_accel = -0.25;
+  double z_accel = -0.5;
+  GenerateDataUpdatedEvent({{SENSOR_DATA_TYPE_ACCELERATION_X_G, x_accel},
+                            {SENSOR_DATA_TYPE_ACCELERATION_Y_G, y_accel},
+                            {SENSOR_DATA_TYPE_ACCELERATION_Z_G, z_accel}});
+
+  base::RunLoop().RunUntilIdle();
+  SensorReadingSharedBuffer* buffer =
+      static_cast<SensorReadingSharedBuffer*>(mapping.get());
+  EXPECT_THAT(buffer->reading.values[0], -x_accel * kMeanGravity);
+  EXPECT_THAT(buffer->reading.values[1], -y_accel * kMeanGravity);
+  EXPECT_THAT(buffer->reading.values[2], -z_accel * kMeanGravity);
+  EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
+}
+
+// Tests that Gyroscope readings are correctly converted.
+TEST_F(PlatformSensorAndProviderTestWin, CheckGyroscopeReadingConversion) {
+  mojo::ScopedSharedBufferHandle handle =
+      PlatformSensorProviderWin::GetInstance()->CloneSharedBufferHandle();
+  mojo::ScopedSharedBufferMapping mapping = handle->MapAtOffset(
+      sizeof(SensorReadingSharedBuffer),
+      SensorReadingSharedBuffer::GetOffset(SensorType::GYROSCOPE));
+
+  SetSupportedSensor(SENSOR_TYPE_GYROMETER_3D);
+  auto sensor = CreateSensor(SensorType::GYROSCOPE);
+  EXPECT_TRUE(sensor);
+
+  auto client = base::MakeUnique<NiceMock<MockPlatformSensorClient>>(sensor);
+  PlatformSensorConfiguration configuration(10);
+  EXPECT_TRUE(sensor->StartListening(client.get(), configuration));
+  EXPECT_CALL(*client, OnSensorReadingChanged()).Times(1);
+
+  double x_ang_accel = 0.0;
+  double y_ang_accel = -1.8;
+  double z_ang_accel = -98.7;
+
+  GenerateDataUpdatedEvent(
+      {{SENSOR_DATA_TYPE_ANGULAR_ACCELERATION_X_DEGREES_PER_SECOND_SQUARED,
+        x_ang_accel},
+       {SENSOR_DATA_TYPE_ANGULAR_ACCELERATION_Y_DEGREES_PER_SECOND_SQUARED,
+        y_ang_accel},
+       {SENSOR_DATA_TYPE_ANGULAR_ACCELERATION_Z_DEGREES_PER_SECOND_SQUARED,
+        z_ang_accel}});
+
+  base::RunLoop().RunUntilIdle();
+  SensorReadingSharedBuffer* buffer =
+      static_cast<SensorReadingSharedBuffer*>(mapping.get());
+  EXPECT_THAT(buffer->reading.values[0],
+              -x_ang_accel * kRadiansInDegreesPerSecond);
+  EXPECT_THAT(buffer->reading.values[1],
+              -y_ang_accel * kRadiansInDegreesPerSecond);
+  EXPECT_THAT(buffer->reading.values[2],
+              -z_ang_accel * kRadiansInDegreesPerSecond);
+  EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
+}
+
+// Tests that Magnetometer readings are correctly converted.
+TEST_F(PlatformSensorAndProviderTestWin, CheckMagnetometerReadingConversion) {
+  mojo::ScopedSharedBufferHandle handle =
+      PlatformSensorProviderWin::GetInstance()->CloneSharedBufferHandle();
+  mojo::ScopedSharedBufferMapping mapping = handle->MapAtOffset(
+      sizeof(SensorReadingSharedBuffer),
+      SensorReadingSharedBuffer::GetOffset(SensorType::MAGNETOMETER));
+
+  SetSupportedSensor(SENSOR_TYPE_COMPASS_3D);
+  auto sensor = CreateSensor(SensorType::MAGNETOMETER);
+  EXPECT_TRUE(sensor);
+
+  auto client = base::MakeUnique<NiceMock<MockPlatformSensorClient>>(sensor);
+  PlatformSensorConfiguration configuration(10);
+  EXPECT_TRUE(sensor->StartListening(client.get(), configuration));
+  EXPECT_CALL(*client, OnSensorReadingChanged()).Times(1);
+
+  double x_magn_field = 112.0;
+  double y_magn_field = -162.0;
+  double z_magn_field = 457.0;
+
+  GenerateDataUpdatedEvent(
+      {{SENSOR_DATA_TYPE_MAGNETIC_FIELD_STRENGTH_X_MILLIGAUSS, x_magn_field},
+       {SENSOR_DATA_TYPE_MAGNETIC_FIELD_STRENGTH_Y_MILLIGAUSS, y_magn_field},
+       {SENSOR_DATA_TYPE_MAGNETIC_FIELD_STRENGTH_Z_MILLIGAUSS, z_magn_field}});
+
+  base::RunLoop().RunUntilIdle();
+  SensorReadingSharedBuffer* buffer =
+      static_cast<SensorReadingSharedBuffer*>(mapping.get());
+  EXPECT_THAT(buffer->reading.values[0],
+              -x_magn_field * kMicroteslaInMilligauss);
+  EXPECT_THAT(buffer->reading.values[1],
+              -y_magn_field * kMicroteslaInMilligauss);
+  EXPECT_THAT(buffer->reading.values[2],
+              -z_magn_field * kMicroteslaInMilligauss);
+  EXPECT_TRUE(sensor->StopListening(client.get(), configuration));
 }
 
 }  // namespace device
