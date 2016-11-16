@@ -1329,10 +1329,12 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     /**
      * Tests that a Tap gesture followed by tapping a non-text character doesn't select.
+     * @SmallTest
+     * @Feature({"ContextualSearch"})
+     * @RetryOnFailure
+     * crbug.com/665633
      */
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    @RetryOnFailure
+    @DisabledTest
     public void testTapGestureFollowedByNonTextTap() throws InterruptedException, TimeoutException {
         clickWordNode("states-far");
         waitForPanelToPeek();
