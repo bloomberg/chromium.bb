@@ -1225,7 +1225,7 @@ static void write_tx_type(const AV1_COMMON *const cm,
                         &ext_tx_encodings[mbmi->tx_type]);
 #endif
       } else {
-#if CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
         aom_write_symbol(
             w, av1_ext_tx_ind[mbmi->tx_type],
             cm->fc->intra_ext_tx_cdf[tx_size]

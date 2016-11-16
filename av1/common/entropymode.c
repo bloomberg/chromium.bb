@@ -1779,10 +1779,6 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
                      fc->switchable_interp_cdf, SWITCHABLE_FILTER_CONTEXTS);
   av1_tree_to_cdf_1D(av1_inter_mode_tree, fc->inter_mode_probs,
                      fc->inter_mode_cdf, INTER_MODE_CONTEXTS);
-#if !CONFIG_EXT_TX
-  av1_tree_to_cdf_2D(av1_ext_tx_tree, fc->intra_ext_tx_prob,
-                     fc->intra_ext_tx_cdf, EXT_TX_SIZES, TX_TYPES);
-#endif
   av1_tree_to_cdf_2D(av1_intra_mode_tree, av1_kf_y_mode_prob, av1_kf_y_mode_cdf,
                      INTRA_MODES, INTRA_MODES);
 #endif
@@ -1790,6 +1786,8 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_tree_to_cdf_1D(av1_partition_tree, fc->partition_prob, fc->partition_cdf,
                      PARTITION_CONTEXTS);
 #if !CONFIG_EXT_TX
+  av1_tree_to_cdf_2D(av1_ext_tx_tree, fc->intra_ext_tx_prob,
+                     fc->intra_ext_tx_cdf, EXT_TX_SIZES, TX_TYPES);
   av1_tree_to_cdf_1D(av1_ext_tx_tree, fc->inter_ext_tx_prob,
                      fc->inter_ext_tx_cdf, EXT_TX_SIZES);
 #endif
@@ -1820,6 +1818,11 @@ void av1_set_mode_cdfs(struct AV1Common *cm) {
 
 #if !CONFIG_EXT_TX
   for (i = TX_4X4; i < EXT_TX_SIZES; ++i)
+    for (j = 0; j < TX_TYPES; ++j)
+      av1_tree_to_cdf(av1_ext_tx_tree, fc->intra_ext_tx_prob[i][j],
+                      fc->intra_ext_tx_cdf[i][j]);
+
+  for (i = TX_4X4; i < EXT_TX_SIZES; ++i)
     av1_tree_to_cdf(av1_ext_tx_tree, fc->inter_ext_tx_prob[i],
                     fc->inter_ext_tx_cdf[i]);
 #endif
@@ -1844,12 +1847,6 @@ void av1_set_mode_cdfs(struct AV1Common *cm) {
   for (i = 0; i < BLOCK_SIZE_GROUPS; ++i)
     av1_tree_to_cdf(av1_intra_mode_tree, fc->y_mode_prob[i], fc->y_mode_cdf[i]);
 
-#if !CONFIG_EXT_TX
-  for (i = TX_4X4; i < EXT_TX_SIZES; ++i)
-    for (j = 0; j < TX_TYPES; ++j)
-      av1_tree_to_cdf(av1_ext_tx_tree, fc->intra_ext_tx_prob[i][j],
-                      fc->intra_ext_tx_cdf[i][j]);
-#endif
 #endif
 }
 #endif

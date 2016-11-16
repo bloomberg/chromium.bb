@@ -752,7 +752,7 @@ static void read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
         if (counts) ++counts->inter_ext_tx[tx_size][mbmi->tx_type];
       } else {
         const TX_TYPE tx_type_nom = intra_mode_to_tx_type_context[mbmi->mode];
-#if CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
         mbmi->tx_type = av1_ext_tx_inv[aom_read_symbol(
             r, cm->fc->intra_ext_tx_cdf[tx_size][tx_type_nom], TX_TYPES,
             ACCT_STR)];

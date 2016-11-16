@@ -171,13 +171,11 @@ typedef struct frame_contexts {
   aom_cdf_prob switchable_interp_cdf[SWITCHABLE_FILTER_CONTEXTS]
                                     [SWITCHABLE_FILTERS];
   aom_cdf_prob inter_mode_cdf[INTER_MODE_CONTEXTS][INTER_MODES];
-#if !CONFIG_EXT_TX
-  aom_cdf_prob intra_ext_tx_cdf[EXT_TX_SIZES][TX_TYPES][TX_TYPES];
-#endif
 #endif
 #if CONFIG_EC_MULTISYMBOL
   aom_cdf_prob partition_cdf[PARTITION_CONTEXTS][PARTITION_TYPES];
 #if !CONFIG_EXT_TX
+  aom_cdf_prob intra_ext_tx_cdf[EXT_TX_SIZES][TX_TYPES][TX_TYPES];
   aom_cdf_prob inter_ext_tx_cdf[EXT_TX_SIZES][TX_TYPES];
 #endif
 #endif
