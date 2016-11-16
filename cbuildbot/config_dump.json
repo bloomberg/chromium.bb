@@ -19363,9 +19363,13 @@
     },
     "samus-cheets-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "samus-cheets"
-        ]
+        ],
+        "buildslave_type": "gce_beefy",
+        "chrome_sdk_build_chrome": false,
+        "vm_tests": []
     },
     "samus-cheets-release-afdo": {
         "_template": "release_afdo_generate",
@@ -24667,9 +24671,12 @@
     },
     "veyron_minnie-cheets-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "veyron_minnie-cheets"
         ],
+        "buildslave_type": "gce_beefy",
+        "chrome_sdk_build_chrome": false,
         "vm_tests": [],
         "vm_tests_override": null
     },
