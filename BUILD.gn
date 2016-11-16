@@ -853,11 +853,7 @@ group("gn_only") {
   }
 
   if (is_android) {
-    deps += [
-      "//build/android/gyp/test:hello_world",
-      "//build/android/incremental_install:bootstrap_java",
-      "//build/android/java_assertion_enabler",
-    ]
+    deps += [ "//build/android/gyp/test:hello_world" ]
   }
 
   if (is_linux && use_ozone) {
