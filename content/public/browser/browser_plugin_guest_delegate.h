@@ -85,7 +85,7 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
 
   // Sets the position of the context menu for the guest contents. The value
   // reported from the guest renderer should be ignored. The reported value
-  // fromt he guest renderer is incorrect in situations where BrowserPlugin is
+  // from the guest renderer is incorrect in situations where BrowserPlugin is
   // subject to CSS transforms.
   virtual void SetContextMenuPosition(const gfx::Point& position) {}
 

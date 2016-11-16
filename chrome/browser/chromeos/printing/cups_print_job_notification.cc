@@ -132,8 +132,8 @@ void CupsPrintJobNotification::UpdateNotification() {
   UpdateNotificationType();
   UpdateNotificationButtons();
 
-  // |STATE_PAGE_DONE| is special since if the user closes the notificaiton in
-  // the middle, which means he's not interested in the printing progress, we
+  // |STATE_PAGE_DONE| is special since if the user closes the notification in
+  // the middle, which means they're not interested in the printing progress, we
   // should prevent showing the following printing progress.
   if (print_job_->state() == CupsPrintJob::State::STATE_PAGE_DONE) {
     if (closed_in_middle_) {
