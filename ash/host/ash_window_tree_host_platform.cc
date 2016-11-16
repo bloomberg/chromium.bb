@@ -33,6 +33,7 @@ AshWindowTreeHostPlatform::AshWindowTreeHostPlatform(
 
 AshWindowTreeHostPlatform::AshWindowTreeHostPlatform()
     : transformer_helper_(this) {
+  CreateCompositor();
   transformer_helper_.Init();
 }
 

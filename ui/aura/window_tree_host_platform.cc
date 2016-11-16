@@ -40,6 +40,7 @@ WindowTreeHost* WindowTreeHost::Create(const gfx::Rect& bounds) {
 
 WindowTreeHostPlatform::WindowTreeHostPlatform(const gfx::Rect& bounds)
     : WindowTreeHostPlatform() {
+  CreateCompositor();
 #if defined(USE_OZONE)
   window_ =
       ui::OzonePlatform::GetInstance()->CreatePlatformWindow(this, bounds);
@@ -60,7 +61,6 @@ WindowTreeHostPlatform::WindowTreeHostPlatform(
     : WindowTreeHost(std::move(window_port)),
       widget_(gfx::kNullAcceleratedWidget),
       current_cursor_(ui::kCursorNull) {
-  CreateCompositor();
 }
 
 void WindowTreeHostPlatform::SetPlatformWindow(

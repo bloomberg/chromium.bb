@@ -72,7 +72,8 @@ NativeWidget* MusClient::CreateNativeWidget(
         base::WrapUnique(init_params.desktop_window_tree_host));
   } else {
     native_widget->SetDesktopWindowTreeHost(
-        base::MakeUnique<DesktopWindowTreeHostMus>(delegate, native_widget));
+        base::MakeUnique<DesktopWindowTreeHostMus>(delegate, native_widget,
+                                                   init_params));
   }
   return native_widget;
 }

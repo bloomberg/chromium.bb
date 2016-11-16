@@ -30,6 +30,7 @@ class Window;
 class WindowPortMusTestApi;
 class WindowTreeClient;
 class WindowTreeClientPrivate;
+class WindowTreeHostMus;
 
 // WindowPortMus is a WindowPort that forwards calls to WindowTreeClient
 // so that changes are propagated to the server. All changes from
@@ -71,6 +72,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   friend class WindowPortMusTestApi;
   friend class WindowTreeClient;
   friend class WindowTreeClientPrivate;
+  friend class WindowTreeHostMus;
 
   using ServerChangeIdType = uint8_t;
 

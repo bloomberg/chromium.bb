@@ -11,6 +11,7 @@ namespace blimp {
 namespace engine {
 
 BlimpWindowTreeHost::BlimpWindowTreeHost() : aura::WindowTreeHostPlatform() {
+  CreateCompositor();
   SetPlatformWindow(base::WrapUnique(new ui::StubWindow(this)));
 }
 

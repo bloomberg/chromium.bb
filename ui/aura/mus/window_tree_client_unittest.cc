@@ -904,6 +904,35 @@ TEST_F(WindowTreeClientClientTest,
   EXPECT_EQ(initial_root_count, window_tree_client_impl()->GetRoots().size());
 }
 
+TEST_F(WindowTreeClientClientTest, NewTopLevelWindowGetsProperties) {
+  const uint8_t property_value = 11;
+  SetPropertyConverter(base::MakeUnique<TestPropertyConverter>());
+  std::map<std::string, std::vector<uint8_t>> properties;
+  properties[kTestPropertyServerKey1].resize(1);
+  properties[kTestPropertyServerKey1][0] = property_value;
+  std::unique_ptr<WindowTreeHostMus> window_tree_host =
+      base::MakeUnique<WindowTreeHostMus>(window_tree_client_impl(),
+                                          &properties);
+  // Verify the property made it to the window.
+  EXPECT_EQ(property_value,
+            window_tree_host->window()->GetProperty(kTestPropertyKey1));
+
+  // Get the id of the in flight change for creating the new top level window.
+  uint32_t change_id;
+  ASSERT_TRUE(window_tree()->GetAndRemoveFirstChangeOfType(
+      WindowTreeChangeType::NEW_TOP_LEVEL, &change_id));
+
+  // Verify the property was sent to the server.
+  mojo::Map<mojo::String, mojo::Array<uint8_t>> transport_properties =
+      window_tree()->GetLastNewWindowProperties();
+  ASSERT_FALSE(transport_properties.is_null());
+  std::map<std::string, std::vector<uint8_t>> properties2 =
+      transport_properties.To<std::map<std::string, std::vector<uint8_t>>>();
+  ASSERT_EQ(1u, properties2.count(kTestPropertyServerKey1));
+  ASSERT_EQ(1u, properties2[kTestPropertyServerKey1].size());
+  EXPECT_EQ(property_value, properties2[kTestPropertyServerKey1][0]);
+}
+
 // Tests both SetCapture and ReleaseCapture, to ensure that Window is properly
 // updated on failures.
 TEST_F(WindowTreeClientWmTest, ExplicitCapture) {

@@ -23,7 +23,7 @@ bool IsUsingTestContext() {
   return aura::Env::GetInstance()->context_factory()->DoesCreateTestContexts();
 }
 
-}
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHostMus, public:
@@ -31,6 +31,7 @@ bool IsUsingTestContext() {
 WindowTreeHostMus::WindowTreeHostMus(NativeWidgetMus* native_widget,
                                      ui::Window* window)
     : native_widget_(native_widget) {
+  CreateCompositor();
   gfx::AcceleratedWidget accelerated_widget;
   if (IsUsingTestContext()) {
     accelerated_widget = gfx::kNullAcceleratedWidget;

@@ -13,6 +13,7 @@
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/views/mus/mus_export.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 
@@ -23,7 +24,8 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
  public:
   DesktopWindowTreeHostMus(
       internal::NativeWidgetDelegate* native_widget_delegate,
-      DesktopNativeWidgetAura* desktop_native_widget_aura);
+      DesktopNativeWidgetAura* desktop_native_widget_aura,
+      const Widget::InitParams& init_params);
   ~DesktopWindowTreeHostMus() override;
 
  private:

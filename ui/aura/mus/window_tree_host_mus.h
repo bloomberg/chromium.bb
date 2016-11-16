@@ -5,7 +5,12 @@
 #ifndef UI_AURA_MUS_WINDOW_TREE_HOST_MUS_H_
 #define UI_AURA_MUS_WINDOW_TREE_HOST_MUS_H_
 
+#include <stdint.h>
+
+#include <map>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -25,10 +30,15 @@ class WindowTreeHostMusDelegate;
 
 class AURA_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
  public:
-  WindowTreeHostMus(std::unique_ptr<WindowPortMus> window_port,
-                    WindowTreeHostMusDelegate* delegate,
-                    int64_t display_id);
-  explicit WindowTreeHostMus(WindowTreeClient* window_tree_client);
+  WindowTreeHostMus(
+      std::unique_ptr<WindowPortMus> window_port,
+      WindowTreeHostMusDelegate* delegate,
+      int64_t display_id,
+      const std::map<std::string, std::vector<uint8_t>>* properties = nullptr);
+  WindowTreeHostMus(
+      WindowTreeClient* window_tree_client,
+      const std::map<std::string, std::vector<uint8_t>>* properties = nullptr);
+
   ~WindowTreeHostMus() override;
 
   // Sets the bounds in dips.

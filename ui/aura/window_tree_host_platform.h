@@ -43,6 +43,8 @@ class AURA_EXPORT WindowTreeHostPlatform
   void OnCursorVisibilityChangedNative(bool show) override;
 
  protected:
+  // NOTE: neither of these calls CreateCompositor(); subclasses must call
+  // CreateCompositor() at the appropriate time.
   WindowTreeHostPlatform();
   explicit WindowTreeHostPlatform(std::unique_ptr<WindowPort> window_port);
 

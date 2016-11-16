@@ -29,8 +29,8 @@ NativeWidget* CreatePlatformNativeWidgetImplAuraMus(
       new TestPlatformNativeWidget<DesktopNativeWidgetAura>(
           widget, type == kStubCapture, destroyed);
   desktop_native_widget_aura->SetDesktopWindowTreeHost(
-      base::MakeUnique<DesktopWindowTreeHostMus>(widget,
-                                                 desktop_native_widget_aura));
+      base::MakeUnique<DesktopWindowTreeHostMus>(
+          widget, desktop_native_widget_aura, init_params));
   return desktop_native_widget_aura;
 }
 
