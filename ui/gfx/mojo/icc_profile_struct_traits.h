@@ -11,13 +11,19 @@
 #include "base/strings/string_piece.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "ui/gfx/icc_profile.h"
+#include "ui/gfx/ipc/color/gfx_param_traits.h"
 #include "ui/gfx/mojo/icc_profile.mojom.h"
 
 namespace mojo {
 
 template <>
 struct StructTraits<gfx::mojom::ICCProfileDataView, gfx::ICCProfile> {
-  static bool valid(const gfx::ICCProfile& profile) { return profile.valid_; }
+  static gfx::ICCProfile::Type type(const gfx::ICCProfile& profile) {
+    return profile.type_;
+  }
+  static gfx::ColorSpace color_space(const gfx::ICCProfile& profile) {
+    return profile.color_space_;
+  }
   static base::StringPiece data(const gfx::ICCProfile& profile) {
     return base::StringPiece(profile.data_.data(), profile.data_.size());
   }

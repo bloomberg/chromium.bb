@@ -14,7 +14,10 @@ using Traits = StructTraits<gfx::mojom::ICCProfileDataView, gfx::ICCProfile>;
 
 // static
 bool Traits::Read(gfx::mojom::ICCProfileDataView data, gfx::ICCProfile* out) {
-  out->valid_ = data.valid();
+  if (!data.ReadType(&out->type_))
+    return false;
+  if (!data.ReadColorSpace(&out->color_space_))
+    return false;
   out->id_ = data.id();
 
   mojo::StringDataView view;

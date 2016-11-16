@@ -11,4 +11,10 @@ sources = [
 public_deps = [
   "//ui/gfx",
 ]
-type_mappings = [ "gfx.mojom.ICCProfile=gfx::ICCProfile" ]
+deps = [
+  "//ui/gfx/ipc/color",
+]
+type_mappings = [
+  "gfx.mojom.ICCProfile.Type=gfx::ICCProfile::Type",
+  "gfx.mojom.ICCProfile=gfx::ICCProfile",
+]

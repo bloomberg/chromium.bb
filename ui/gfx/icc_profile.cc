@@ -43,18 +43,28 @@ ICCProfile& ICCProfile::operator=(const ICCProfile& other) = default;
 ICCProfile::~ICCProfile() = default;
 
 bool ICCProfile::operator==(const ICCProfile& other) const {
-  return valid_ == other.valid_ && data_ == other.data_;
+  if (type_ != other.type_)
+    return false;
+  switch (type_) {
+    case Type::INVALID:
+      return true;
+    case Type::FROM_COLOR_SPACE:
+      return color_space_ == other.color_space_;
+    case Type::FROM_DATA:
+      return data_ == other.data_;
+  }
+  return false;
 }
 
 // static
 ICCProfile ICCProfile::FromData(const char* data, size_t size) {
   ICCProfile icc_profile;
   if (IsValidProfileLength(size)) {
-    icc_profile.valid_ = true;
+    icc_profile.type_ = Type::FROM_DATA;
     icc_profile.data_.insert(icc_profile.data_.begin(), data, data + size);
+  } else {
+    return ICCProfile();
   }
-  if (!icc_profile.valid_)
-    return icc_profile;
 
   Cache& cache = g_cache.Get();
   base::AutoLock lock(cache.lock);
@@ -85,7 +95,11 @@ ICCProfile ICCProfile::FromBestMonitor() {
 
 // static
 ICCProfile ICCProfile::FromColorSpace(const gfx::ColorSpace& color_space) {
-  // Retrieve ICC profiles from the cache.
+  if (color_space == gfx::ColorSpace())
+    return ICCProfile();
+
+  // If |color_space| was created from an ICC profile, retrieve that exact
+  // profile.
   if (color_space.icc_profile_id_) {
     Cache& cache = g_cache.Get();
     base::AutoLock lock(cache.lock);
@@ -95,9 +109,13 @@ ICCProfile ICCProfile::FromColorSpace(const gfx::ColorSpace& color_space) {
       return found->second;
     }
   }
+
   // TODO(ccameron): Support constructing ICC profiles from arbitrary ColorSpace
   // objects.
-  return ICCProfile();
+  ICCProfile icc_profile;
+  icc_profile.type_ = gfx::ICCProfile::Type::FROM_COLOR_SPACE;
+  icc_profile.color_space_ = color_space;
+  return icc_profile;
 }
 
 const std::vector<char>& ICCProfile::GetData() const {
@@ -105,8 +123,10 @@ const std::vector<char>& ICCProfile::GetData() const {
 }
 
 ColorSpace ICCProfile::GetColorSpace() const {
-  if (!valid_)
+  if (type_ == Type::INVALID)
     return gfx::ColorSpace();
+  if (type_ == Type::FROM_COLOR_SPACE)
+    return color_space_;
 
   ColorSpace color_space(ColorSpace::PrimaryID::CUSTOM,
                          ColorSpace::TransferID::CUSTOM,

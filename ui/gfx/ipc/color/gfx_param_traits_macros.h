@@ -24,8 +24,11 @@ IPC_ENUM_TRAITS_MAX_VALUE(gfx::ColorSpace::MatrixID,
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::ColorSpace::RangeID,
                           gfx::ColorSpace::RangeID::LAST);
 
+IPC_ENUM_TRAITS_MAX_VALUE(gfx::ICCProfile::Type, gfx::ICCProfile::Type::LAST);
+
 IPC_STRUCT_TRAITS_BEGIN(gfx::ICCProfile)
-  IPC_STRUCT_TRAITS_MEMBER(valid_)
+  IPC_STRUCT_TRAITS_MEMBER(type_)
+  IPC_STRUCT_TRAITS_MEMBER(color_space_)
   IPC_STRUCT_TRAITS_MEMBER(data_)
   IPC_STRUCT_TRAITS_MEMBER(id_)
 IPC_STRUCT_TRAITS_END()
