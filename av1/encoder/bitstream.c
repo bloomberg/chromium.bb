@@ -193,12 +193,8 @@ void av1_encode_token_init(void) {
   av1_indices_from_tree(av1_ext_tx_ind, av1_ext_tx_inv, TX_TYPES,
                         av1_ext_tx_tree);
 #endif
-#endif
-#if CONFIG_DAALA_EC
   av1_indices_from_tree(av1_intra_mode_ind, av1_intra_mode_inv, INTRA_MODES,
                         av1_intra_mode_tree);
-#endif
-#if CONFIG_EC_MULTISYMBOL
   av1_indices_from_tree(av1_inter_mode_ind, av1_inter_mode_inv, INTER_MODES,
                         av1_inter_mode_tree);
 #endif
@@ -1351,7 +1347,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
 
   if (!is_inter) {
     if (bsize >= BLOCK_8X8 || unify_bsize) {
-#if CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
       aom_write_symbol(w, av1_intra_mode_ind[mode],
                        cm->fc->y_mode_cdf[size_group_lookup[bsize]],
                        INTRA_MODES);
@@ -1365,7 +1361,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
       for (idy = 0; idy < 2; idy += num_4x4_h) {
         for (idx = 0; idx < 2; idx += num_4x4_w) {
           const PREDICTION_MODE b_mode = mi->bmi[idy * 2 + idx].as_mode;
-#if CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
           aom_write_symbol(w, av1_intra_mode_ind[b_mode], cm->fc->y_mode_cdf[0],
                            INTRA_MODES);
 #else

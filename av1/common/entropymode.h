@@ -166,10 +166,10 @@ typedef struct frame_contexts {
   aom_prob switchable_restore_prob[RESTORE_SWITCHABLE_TYPES - 1];
 #endif  // CONFIG_LOOP_RESTORATION
 #if CONFIG_DAALA_EC
-  aom_cdf_prob y_mode_cdf[BLOCK_SIZE_GROUPS][INTRA_MODES];
   aom_cdf_prob uv_mode_cdf[INTRA_MODES][INTRA_MODES];
 #endif
 #if CONFIG_EC_MULTISYMBOL
+  aom_cdf_prob y_mode_cdf[BLOCK_SIZE_GROUPS][INTRA_MODES];
   aom_cdf_prob partition_cdf[PARTITION_CONTEXTS][PARTITION_TYPES];
   aom_cdf_prob switchable_interp_cdf[SWITCHABLE_FILTER_CONTEXTS]
                                     [SWITCHABLE_FILTERS];
@@ -307,11 +307,9 @@ extern const aom_prob av1_default_palette_uv_color_prob[PALETTE_MAX_SIZE - 1]
 
 extern const aom_tree_index av1_intra_mode_tree[TREE_SIZE(INTRA_MODES)];
 extern const aom_tree_index av1_inter_mode_tree[TREE_SIZE(INTER_MODES)];
-#if CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
 extern int av1_intra_mode_ind[INTRA_MODES];
 extern int av1_intra_mode_inv[INTRA_MODES];
-#endif
-#if CONFIG_EC_MULTISYMBOL
 extern int av1_inter_mode_ind[INTER_MODES];
 extern int av1_inter_mode_inv[INTER_MODES];
 #endif

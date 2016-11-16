@@ -57,6 +57,12 @@ static PREDICTION_MODE read_intra_mode(aom_reader *r, const aom_prob *p) {
   return (PREDICTION_MODE)aom_read_tree(r, av1_intra_mode_tree, p, ACCT_STR);
 }
 #endif
+#if CONFIG_EC_MULTISYMBOL
+static PREDICTION_MODE read_intra_mode_cdf(aom_reader *r, aom_cdf_prob *cdf) {
+  return (PREDICTION_MODE)
+      av1_intra_mode_inv[aom_read_symbol(r, cdf, INTRA_MODES, ACCT_STR)];
+}
+#endif
 
 #if CONFIG_DELTA_Q
 static int read_delta_qindex(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
@@ -97,8 +103,8 @@ static int read_delta_qindex(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
 static PREDICTION_MODE read_intra_mode_y(AV1_COMMON *cm, MACROBLOCKD *xd,
                                          aom_reader *r, int size_group) {
   const PREDICTION_MODE y_mode =
-#if CONFIG_DAALA_EC
-      read_intra_mode(r, cm->fc->y_mode_cdf[size_group]);
+#if CONFIG_EC_MULTISYMBOL
+      read_intra_mode_cdf(r, cm->fc->y_mode_cdf[size_group]);
 #else
       read_intra_mode(r, cm->fc->y_mode_prob[size_group]);
 #endif

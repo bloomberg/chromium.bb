@@ -583,9 +583,9 @@ static const aom_prob default_obmc_prob[BLOCK_SIZES] = {
 static const aom_prob default_delta_q_probs[DELTA_Q_CONTEXTS] = { 220, 220,
                                                                   220 };
 #endif
+#if CONFIG_EC_MULTISYMBOL
 int av1_intra_mode_ind[INTRA_MODES];
 int av1_intra_mode_inv[INTRA_MODES];
-#if CONFIG_EC_MULTISYMBOL
 int av1_inter_mode_ind[INTER_MODES];
 int av1_inter_mode_inv[INTER_MODES];
 #endif
@@ -1773,14 +1773,14 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->switchable_restore_prob, default_switchable_restore_prob);
 #endif  // CONFIG_LOOP_RESTORATION
 #if CONFIG_DAALA_EC
-  av1_tree_to_cdf_1D(av1_intra_mode_tree, fc->y_mode_prob, fc->y_mode_cdf,
-                     BLOCK_SIZE_GROUPS);
   av1_tree_to_cdf_1D(av1_intra_mode_tree, fc->uv_mode_prob, fc->uv_mode_cdf,
                      INTRA_MODES);
   av1_tree_to_cdf_2D(av1_intra_mode_tree, av1_kf_y_mode_prob, av1_kf_y_mode_cdf,
                      INTRA_MODES, INTRA_MODES);
 #endif
 #if CONFIG_EC_MULTISYMBOL
+  av1_tree_to_cdf_1D(av1_intra_mode_tree, fc->y_mode_prob, fc->y_mode_cdf,
+                     BLOCK_SIZE_GROUPS);
   av1_tree_to_cdf_1D(av1_switchable_interp_tree, fc->switchable_interp_prob,
                      fc->switchable_interp_cdf, SWITCHABLE_FILTER_CONTEXTS);
   av1_tree_to_cdf_1D(av1_partition_tree, fc->partition_prob, fc->partition_cdf,
@@ -1824,6 +1824,9 @@ void av1_set_mode_cdfs(struct AV1Common *cm) {
     av1_tree_to_cdf(av1_inter_mode_tree, fc->inter_mode_probs[i],
                     fc->inter_mode_cdf[i]);
 
+  for (i = 0; i < BLOCK_SIZE_GROUPS; ++i)
+    av1_tree_to_cdf(av1_intra_mode_tree, fc->y_mode_prob[i], fc->y_mode_cdf[i]);
+
 #if !CONFIG_EXT_TX
   for (i = TX_4X4; i < EXT_TX_SIZES; ++i)
     for (j = 0; j < TX_TYPES; ++j)
@@ -1843,9 +1846,6 @@ void av1_set_mode_cdfs(struct AV1Common *cm) {
     for (j = 0; j < INTRA_MODES; ++j)
       av1_tree_to_cdf(av1_intra_mode_tree, cm->kf_y_prob[i][j],
                       cm->kf_y_cdf[i][j]);
-
-  for (i = 0; i < BLOCK_SIZE_GROUPS; ++i)
-    av1_tree_to_cdf(av1_intra_mode_tree, fc->y_mode_prob[i], fc->y_mode_cdf[i]);
 
 #endif
 }
