@@ -116,9 +116,6 @@ class SyncBackendRegistrar : public SyncManager::ChangeDelegate {
   void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out);
 
  private:
-  typedef std::map<ModelSafeGroup, scoped_refptr<ModelSafeWorker>> WorkerMap;
-  typedef std::map<ModelType, ChangeProcessor*> ProcessorMap;
-
   // Add a worker for |group| to the worker map if one is successfully created
   // by |worker_factory|.
   void MaybeAddWorker(ModelSafeWorkerFactory worker_factory,
@@ -152,12 +149,13 @@ class SyncBackendRegistrar : public SyncManager::ChangeDelegate {
   mutable base::Lock lock_;
 
   // Workers created by this SyncBackendRegistrar.
-  WorkerMap workers_;
-
-  ModelSafeRoutingInfo routing_info_;
+  std::map<ModelSafeGroup, scoped_refptr<ModelSafeWorker>> workers_;
 
   // The change processors that handle the different data types.
-  ProcessorMap processors_;
+  std::map<ModelType, ChangeProcessor*> processors_;
+
+  // Maps ModelType to ModelSafeGroup.
+  ModelSafeRoutingInfo routing_info_;
 
   // The types that were enabled as of the last configuration. Updated on each
   // call to ConfigureDataTypes as well as SetInitialTypes.

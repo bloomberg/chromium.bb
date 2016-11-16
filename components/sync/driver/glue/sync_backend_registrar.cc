@@ -142,9 +142,8 @@ ModelTypeSet SyncBackendRegistrar::GetLastConfiguredTypes() const {
 void SyncBackendRegistrar::RequestWorkerStopOnUIThread() {
   DCHECK(ui_thread_checker_.CalledOnValidThread());
   base::AutoLock lock(lock_);
-  for (WorkerMap::const_iterator it = workers_.begin(); it != workers_.end();
-       ++it) {
-    it->second->RequestStop();
+  for (const auto& kv : workers_) {
+    kv.second->RequestStop();
   }
 }
 
@@ -213,9 +212,8 @@ void SyncBackendRegistrar::GetWorkers(
     std::vector<scoped_refptr<ModelSafeWorker>>* out) {
   base::AutoLock lock(lock_);
   out->clear();
-  for (WorkerMap::const_iterator it = workers_.begin(); it != workers_.end();
-       ++it) {
-    out->push_back(it->second.get());
+  for (const auto& kv : workers_) {
+    out->push_back(kv.second.get());
   }
 }
 
@@ -240,8 +238,7 @@ ChangeProcessor* SyncBackendRegistrar::GetProcessor(ModelType type) const {
 ChangeProcessor* SyncBackendRegistrar::GetProcessorUnsafe(
     ModelType type) const {
   lock_.AssertAcquired();
-  std::map<ModelType, ChangeProcessor*>::const_iterator it =
-      processors_.find(type);
+  auto it = processors_.find(type);
 
   // Until model association happens for a datatype, it will not
   // appear in the processors list.  During this time, it is OK to
