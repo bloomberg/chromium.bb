@@ -953,6 +953,24 @@
             ]
         }
     ],
+    "NTPRecentForeignTabs": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled-ThreeHour",
+                    "params": {
+                        "max_foreign_tabs_age_in_minutes": "180"
+                    },
+                    "enable_features": [
+                        "NTPForeignSessionsSuggestions"
+                    ]
+                }
+            ]
+        }
+    ],
     "NTPSnippets": [
         {
             "platforms": [
