@@ -10,7 +10,7 @@
 #include "url/gurl.h"
 
 namespace base {
-class Value;
+class DictionaryValue;
 }
 
 namespace extensions {
@@ -60,8 +60,7 @@ class EventFilteringInfo {
   bool has_service_type() const { return !service_type_.empty(); }
   const std::string& service_type() const { return service_type_; }
 
-  std::unique_ptr<base::Value> AsValue() const;
-  bool IsEmpty() const;
+  std::unique_ptr<base::DictionaryValue> AsValue() const;
 
  private:
   bool has_url_;

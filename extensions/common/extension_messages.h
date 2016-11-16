@@ -121,6 +121,23 @@ IPC_STRUCT_BEGIN(ExtensionHostMsg_Request_Params)
   IPC_STRUCT_MEMBER(int64_t, service_worker_version_id)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(ExtensionMsg_DispatchEvent_Params)
+  // The id of the extension to dispatch the event to.
+  IPC_STRUCT_MEMBER(std::string, extension_id)
+
+  // The name of the event to dispatch.
+  IPC_STRUCT_MEMBER(std::string, event_name)
+
+  // The id of the event for use in the EventAck response message.
+  IPC_STRUCT_MEMBER(int, event_id)
+
+  // Whether or not the event is part of a user gesture.
+  IPC_STRUCT_MEMBER(bool, is_user_gesture)
+
+  // Additional filtering info for the event.
+  IPC_STRUCT_MEMBER(base::DictionaryValue, filtering_info)
+IPC_STRUCT_END()
+
 // Allows an extension to execute code in a tab.
 IPC_STRUCT_BEGIN(ExtensionMsg_ExecuteCode_Params)
   // The extension API request id, for responding.
@@ -434,6 +451,13 @@ IPC_MESSAGE_ROUTED4(ExtensionMsg_Response,
                     base::ListValue /* response wrapper (see comment above) */,
                     std::string /* error */)
 
+// Sent to the renderer to dispatch an event to an extension.
+// Note: |event_args| is separate from the params to avoid having the message
+// take ownership.
+IPC_MESSAGE_CONTROL2(ExtensionMsg_DispatchEvent,
+                     ExtensionMsg_DispatchEvent_Params /* params */,
+                     base::ListValue /* event_args */)
+
 // This message is optionally routed.  If used as a control message, it will
 // call a javascript function |function_name| from module |module_name| in
 // every registered context in the target process.  If routed, it will be
@@ -442,12 +466,11 @@ IPC_MESSAGE_ROUTED4(ExtensionMsg_Response,
 // If |extension_id| is non-empty, the function will be invoked only in
 // contexts owned by the extension. |args| is a list of primitive Value types
 // that are passed to the function.
-IPC_MESSAGE_ROUTED5(ExtensionMsg_MessageInvoke,
+IPC_MESSAGE_ROUTED4(ExtensionMsg_MessageInvoke,
                     std::string /* extension_id */,
                     std::string /* module_name */,
                     std::string /* function_name */,
-                    base::ListValue /* args */,
-                    bool /* delivered as part of a user gesture */)
+                    base::ListValue /* args */)
 
 // Set the top-level frame to the provided name.
 IPC_MESSAGE_ROUTED1(ExtensionMsg_SetFrameName,

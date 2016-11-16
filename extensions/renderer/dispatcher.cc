@@ -100,6 +100,7 @@
 #include "extensions/renderer/wake_event_page.h"
 #include "extensions/renderer/worker_script_context_set.h"
 #include "extensions/renderer/worker_thread_dispatcher.h"
+#include "gin/converter.h"
 #include "grit/extensions_renderer_resources.h"
 #include "mojo/public/js/constants.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -203,6 +204,34 @@ class ChromeNativeHandler : public ObjectBackedNativeHandler {
 
 base::LazyInstance<WorkerScriptContextSet> g_worker_script_context_set =
     LAZY_INSTANCE_INITIALIZER;
+
+// Dispatches the event with the given name, arguments, and filtering info in
+// the given |context|.
+void DispatchEventInContext(const std::string& event_name,
+                            const base::ListValue* event_args,
+                            const base::DictionaryValue* filtering_info,
+                            ScriptContext* context) {
+  v8::HandleScope handle_scope(context->isolate());
+  v8::Context::Scope context_scope(context->v8_context());
+
+  std::vector<v8::Local<v8::Value>> arguments;
+  arguments.push_back(gin::StringToSymbol(context->isolate(), event_name));
+
+  {
+    std::unique_ptr<content::V8ValueConverter> converter(
+        content::V8ValueConverter::create());
+    arguments.push_back(
+        converter->ToV8Value(event_args, context->v8_context()));
+    if (!filtering_info->empty()) {
+      arguments.push_back(
+          converter->ToV8Value(filtering_info, context->v8_context()));
+    }
+  }
+
+  context->module_system()->CallModuleMethodSafe(
+      kEventBindings, kEventDispatchFunction, arguments.size(),
+      arguments.data());
+}
 
 }  // namespace
 
@@ -623,58 +652,41 @@ void Dispatcher::OnExtensionResponse(int request_id,
   request_sender_->HandleResponse(request_id, success, response, error);
 }
 
-void Dispatcher::DispatchEvent(const std::string& extension_id,
-                               const std::string& event_name) const {
-  base::ListValue args;
-  args.Set(0, new base::StringValue(event_name));
-  args.Set(1, new base::ListValue());
+void Dispatcher::DispatchEvent(
+    const std::string& extension_id,
+    const std::string& event_name,
+    const base::ListValue& event_args,
+    const base::DictionaryValue& filtering_info) const {
+  script_context_set_->ForEach(extension_id, nullptr,
+                               base::Bind(&DispatchEventInContext, event_name,
+                                          &event_args, &filtering_info));
 
-  // Needed for Windows compilation, since kEventBindings is declared extern.
-  const char* local_event_bindings = kEventBindings;
-  script_context_set_->ForEach(
-      extension_id, base::Bind(&CallModuleMethod, local_event_bindings,
-                               kEventDispatchFunction, &args));
+  // Reset the idle handler each time there's any activity like event or message
+  // dispatch.
+  // TODO(devlin): It's likely this is totally wrong. See
+  // https://groups.google.com/a/chromium.org/forum/#!msg/scheduler-dev/iTRVbcmmpAs/pfqyUyEeAAAJ
+  if (set_idle_notifications_) {
+    RenderThread::Get()->ScheduleIdleHandler(
+        kInitialExtensionIdleHandlerDelayMs);
+  }
 }
 
 void Dispatcher::InvokeModuleSystemMethod(content::RenderFrame* render_frame,
                                           const std::string& extension_id,
                                           const std::string& module_name,
                                           const std::string& function_name,
-                                          const base::ListValue& args,
-                                          bool user_gesture) {
-  std::unique_ptr<WebScopedUserGesture> web_user_gesture;
-  if (user_gesture) {
-    blink::WebLocalFrame* web_frame =
-        render_frame ? render_frame->GetWebFrame() : nullptr;
-    web_user_gesture.reset(new WebScopedUserGesture(web_frame));
-  }
-
+                                          const base::ListValue& args) {
   script_context_set_->ForEach(
       extension_id, render_frame,
       base::Bind(&CallModuleMethod, module_name, function_name, &args));
 
   // Reset the idle handler each time there's any activity like event or message
-  // dispatch, for which Invoke is the chokepoint.
+  // dispatch.
+  // TODO(devlin): It's likely this is totally wrong. See
+  // https://groups.google.com/a/chromium.org/forum/#!msg/scheduler-dev/iTRVbcmmpAs/pfqyUyEeAAAJ
   if (set_idle_notifications_) {
     RenderThread::Get()->ScheduleIdleHandler(
         kInitialExtensionIdleHandlerDelayMs);
-  }
-
-  // Tell the browser process when an event has been dispatched with a lazy
-  // background page active.
-  const Extension* extension =
-      RendererExtensionRegistry::Get()->GetByID(extension_id);
-  if (extension && BackgroundInfo::HasLazyBackgroundPage(extension) &&
-      module_name == kEventBindings &&
-      function_name == kEventDispatchFunction) {
-    content::RenderFrame* background_frame =
-        ExtensionFrameHelper::GetBackgroundPageFrame(extension_id);
-    if (background_frame) {
-      int message_id;
-      args.GetInteger(3, &message_id);
-      background_frame->Send(new ExtensionHostMsg_EventAck(
-          background_frame->GetRoutingID(), message_id));
-    }
   }
 }
 
@@ -923,6 +935,7 @@ bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
   IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchOnDisconnect, OnDispatchOnDisconnect)
   IPC_MESSAGE_HANDLER(ExtensionMsg_Loaded, OnLoaded)
   IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnMessageInvoke)
+  IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchEvent, OnDispatchEvent)
   IPC_MESSAGE_HANDLER(ExtensionMsg_SetSessionInfo, OnSetSessionInfo)
   IPC_MESSAGE_HANDLER(ExtensionMsg_SetScriptingWhitelist,
                       OnSetScriptingWhitelist)
@@ -1013,7 +1026,8 @@ void Dispatcher::OnActivateExtension(const std::string& extension_id) {
 }
 
 void Dispatcher::OnCancelSuspend(const std::string& extension_id) {
-  DispatchEvent(extension_id, kOnSuspendCanceledEvent);
+  DispatchEvent(extension_id, kOnSuspendCanceledEvent, base::ListValue(),
+                base::DictionaryValue());
 }
 
 void Dispatcher::OnDeliverMessage(int target_port_id,
@@ -1091,10 +1105,33 @@ void Dispatcher::OnLoaded(
 void Dispatcher::OnMessageInvoke(const std::string& extension_id,
                                  const std::string& module_name,
                                  const std::string& function_name,
-                                 const base::ListValue& args,
-                                 bool user_gesture) {
-  InvokeModuleSystemMethod(
-      NULL, extension_id, module_name, function_name, args, user_gesture);
+                                 const base::ListValue& args) {
+  InvokeModuleSystemMethod(nullptr, extension_id, module_name, function_name,
+                           args);
+}
+
+void Dispatcher::OnDispatchEvent(
+    const ExtensionMsg_DispatchEvent_Params& params,
+    const base::ListValue& event_args) {
+  std::unique_ptr<WebScopedUserGesture> web_user_gesture;
+  if (params.is_user_gesture)
+    web_user_gesture.reset(new WebScopedUserGesture(nullptr));
+
+  DispatchEvent(params.extension_id, params.event_name, event_args,
+                params.filtering_info);
+
+  // Tell the browser process when an event has been dispatched with a lazy
+  // background page active.
+  const Extension* extension =
+      RendererExtensionRegistry::Get()->GetByID(params.extension_id);
+  if (extension && BackgroundInfo::HasLazyBackgroundPage(extension)) {
+    content::RenderFrame* background_frame =
+        ExtensionFrameHelper::GetBackgroundPageFrame(params.extension_id);
+    if (background_frame) {
+      background_frame->Send(new ExtensionHostMsg_EventAck(
+          background_frame->GetRoutingID(), params.event_id));
+    }
+  }
 }
 
 void Dispatcher::OnSetSessionInfo(version_info::Channel channel,
@@ -1138,7 +1175,8 @@ void Dispatcher::OnSuspend(const std::string& extension_id) {
   // the browser know when we are starting and stopping the event dispatch, so
   // that it still considers the extension idle despite any activity the suspend
   // event creates.
-  DispatchEvent(extension_id, kOnSuspendEvent);
+  DispatchEvent(extension_id, kOnSuspendEvent, base::ListValue(),
+                base::DictionaryValue());
   RenderThread::Get()->Send(new ExtensionHostMsg_SuspendAck(extension_id));
 }
 

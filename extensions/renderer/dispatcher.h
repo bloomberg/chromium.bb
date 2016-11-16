@@ -38,6 +38,7 @@ class ChromeRenderViewTest;
 class GURL;
 class ModuleSystem;
 class URLPattern;
+struct ExtensionMsg_DispatchEvent_Params;
 struct ExtensionMsg_ExternalConnectionInfo;
 struct ExtensionMsg_Loaded_Params;
 struct ExtensionMsg_TabConnectionInfo;
@@ -130,15 +131,16 @@ class Dispatcher : public content::RenderThreadObserver,
 
   // Dispatches the event named |event_name| to all render views.
   void DispatchEvent(const std::string& extension_id,
-                     const std::string& event_name) const;
+                     const std::string& event_name,
+                     const base::ListValue& event_args,
+                     const base::DictionaryValue& filtering_info) const;
 
   // Shared implementation of the various MessageInvoke IPCs.
   void InvokeModuleSystemMethod(content::RenderFrame* render_frame,
                                 const std::string& extension_id,
                                 const std::string& module_name,
                                 const std::string& function_name,
-                                const base::ListValue& args,
-                                bool user_gesture);
+                                const base::ListValue& args);
 
   // Returns a list of (module name, resource id) pairs for the JS modules to
   // add to the source map.
@@ -177,8 +179,9 @@ class Dispatcher : public content::RenderThreadObserver,
   void OnMessageInvoke(const std::string& extension_id,
                        const std::string& module_name,
                        const std::string& function_name,
-                       const base::ListValue& args,
-                       bool user_gesture);
+                       const base::ListValue& args);
+  void OnDispatchEvent(const ExtensionMsg_DispatchEvent_Params& params,
+                       const base::ListValue& event_args);
   void OnSetSessionInfo(version_info::Channel channel,
                         FeatureSessionType session_type);
   void OnSetScriptingWhitelist(

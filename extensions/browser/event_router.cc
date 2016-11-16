@@ -103,26 +103,14 @@ void EventRouter::DispatchExtensionMessage(IPC::Sender* ipc_sender,
   NotifyEventDispatched(browser_context_id, extension_id, event_name,
                         *event_args);
 
-  // TODO(chirantan): Make event dispatch a separate IPC so that it doesn't
-  // piggyback off MessageInvoke, which is used for other things.
-  ListValue args;
-  args.Set(0, new base::StringValue(event_name));
-  args.Set(1, event_args);
-  args.Set(2, info.AsValue().release());
-  args.Set(3, new base::FundamentalValue(event_id));
-  ipc_sender->Send(new ExtensionMsg_MessageInvoke(
-      MSG_ROUTING_CONTROL,
-      extension_id,
-      kEventBindings,
-      "dispatchEvent",
-      args,
-      user_gesture == USER_GESTURE_ENABLED));
+  ExtensionMsg_DispatchEvent_Params params;
+  params.extension_id = extension_id;
+  params.event_name = event_name;
+  params.event_id = event_id;
+  params.is_user_gesture = user_gesture == USER_GESTURE_ENABLED;
+  params.filtering_info.Swap(info.AsValue().get());
 
-  // DispatchExtensionMessage does _not_ take ownership of event_args, so we
-  // must ensure that the destruction of args does not attempt to free it.
-  std::unique_ptr<base::Value> removed_event_args;
-  args.Remove(1, &removed_event_args);
-  ignore_result(removed_event_args.release());
+  ipc_sender->Send(new ExtensionMsg_DispatchEvent(params, *event_args));
 }
 
 // static

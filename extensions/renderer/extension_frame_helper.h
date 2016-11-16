@@ -139,8 +139,7 @@ class ExtensionFrameHelper
   void OnExtensionMessageInvoke(const std::string& extension_id,
                                 const std::string& module_name,
                                 const std::string& function_name,
-                                const base::ListValue& args,
-                                bool user_gesture);
+                                const base::ListValue& args);
   void OnAssignPortId(int port_id, int request_id);
 
   // Type of view associated with the RenderFrame.

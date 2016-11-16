@@ -126,19 +126,15 @@ bool HasWarning(const WarningSet& warnings,
 }
 
 // Parses the JSON data attached to the |message| and tries to return it.
-// |param| must outlive |out|. Returns NULL on failure.
+// |param| must outlive |out|.
 void GetPartOfMessageArguments(IPC::Message* message,
                                const base::DictionaryValue** out,
-                               ExtensionMsg_MessageInvoke::Param* param) {
-  ASSERT_EQ(ExtensionMsg_MessageInvoke::ID, message->type());
-  ASSERT_TRUE(ExtensionMsg_MessageInvoke::Read(message, param));
-  ASSERT_GE(std::get<3>(*param).GetSize(), 2u);
-  const base::Value* value = NULL;
-  ASSERT_TRUE(std::get<3>(*param).Get(1, &value));
-  const base::ListValue* list = NULL;
-  ASSERT_TRUE(value->GetAsList(&list));
-  ASSERT_EQ(1u, list->GetSize());
-  ASSERT_TRUE(list->GetDictionary(0, out));
+                               ExtensionMsg_DispatchEvent::Param* param) {
+  ASSERT_EQ(ExtensionMsg_DispatchEvent::ID, message->type());
+  ASSERT_TRUE(ExtensionMsg_DispatchEvent::Read(message, param));
+  const base::ListValue& list = std::get<1>(*param);
+  ASSERT_EQ(1u, list.GetSize());
+  ASSERT_TRUE(list.GetDictionary(0, out));
 }
 
 }  // namespace
@@ -168,7 +164,7 @@ class TestIPCSender : public IPC::Sender {
  private:
   // IPC::Sender
   bool Send(IPC::Message* message) override {
-    EXPECT_EQ(ExtensionMsg_MessageInvoke::ID, message->type());
+    EXPECT_EQ(ExtensionMsg_DispatchEvent::ID, message->type());
 
     EXPECT_FALSE(task_queue_.empty());
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
@@ -699,8 +695,8 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
     SCOPED_TRACE(testing::Message("iteration number ") << test);
     EXPECT_NE(i, ipc_sender_.sent_end());
     message = (i++)->get();
-    const base::DictionaryValue* details;
-    ExtensionMsg_MessageInvoke::Param param;
+    const base::DictionaryValue* details = nullptr;
+    ExtensionMsg_DispatchEvent::Param param;
     GetPartOfMessageArguments(message, &details, &param);
     ASSERT_TRUE(details != NULL);
     const base::Value* result = NULL;
@@ -791,7 +787,7 @@ TEST_F(ExtensionWebRequestTest, MinimalAccessRequestBodyData) {
     EXPECT_NE(i, ipc_sender_.sent_end());
     IPC::Message* message = i->get();
     const base::DictionaryValue* details = nullptr;
-    ExtensionMsg_MessageInvoke::Param param;
+    ExtensionMsg_DispatchEvent::Param param;
     GetPartOfMessageArguments(message, &details, &param);
     ASSERT_TRUE(details != nullptr);
     EXPECT_EQ(kExpected[test], details->HasKey(keys::kRequestBodyKey));
@@ -847,8 +843,8 @@ TEST_F(ExtensionWebRequestTest, NoAccessRequestBodyData) {
     SCOPED_TRACE(testing::Message("iteration number ") << test);
     EXPECT_NE(i, ipc_sender_.sent_end());
     IPC::Message* message = i->get();
-    const base::DictionaryValue* details = NULL;
-    ExtensionMsg_MessageInvoke::Param param;
+    const base::DictionaryValue* details = nullptr;
+    ExtensionMsg_DispatchEvent::Param param;
     GetPartOfMessageArguments(message, &details, &param);
     ASSERT_TRUE(details != NULL);
     EXPECT_FALSE(details->HasKey(keys::kRequestBodyKey));
@@ -1138,31 +1134,27 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
   TestIPCSender::SentMessages::const_iterator i;
   for (i = ipc_sender_.sent_begin(); i != ipc_sender_.sent_end(); ++i) {
     IPC::Message* message = i->get();
-    if (ExtensionMsg_MessageInvoke::ID != message->type())
+    if (ExtensionMsg_DispatchEvent::ID != message->type())
       continue;
-    ExtensionMsg_MessageInvoke::Param message_tuple;
-    ExtensionMsg_MessageInvoke::Read(message, &message_tuple);
-    base::ListValue& args = std::get<3>(message_tuple);
+    ExtensionMsg_DispatchEvent::Param message_tuple;
+    ExtensionMsg_DispatchEvent::Read(message, &message_tuple);
+    const ExtensionMsg_DispatchEvent_Params& params =
+        std::get<0>(message_tuple);
 
-    std::string event_name;
-    if (!args.GetString(0, &event_name) ||
-        event_name !=  std::string(keys::kOnSendHeadersEvent) + "/3") {
+    if (params.event_name != std::string(keys::kOnSendHeadersEvent) + "/3")
       continue;
-    }
 
-    base::ListValue* event_arg = NULL;
-    ASSERT_TRUE(args.GetList(1, &event_arg));
+    const base::ListValue& event_args = std::get<1>(message_tuple);
+    const base::DictionaryValue* event_arg_dict = nullptr;
+    ASSERT_TRUE(event_args.GetDictionary(0, &event_arg_dict));
 
-    base::DictionaryValue* event_arg_dict = NULL;
-    ASSERT_TRUE(event_arg->GetDictionary(0, &event_arg_dict));
-
-    base::ListValue* request_headers = NULL;
+    const base::ListValue* request_headers = nullptr;
     ASSERT_TRUE(event_arg_dict->GetList(keys::kRequestHeadersKey,
                                         &request_headers));
 
     net::HttpRequestHeaders observed_headers;
     for (size_t j = 0; j < request_headers->GetSize(); ++j) {
-      base::DictionaryValue* header = NULL;
+      const base::DictionaryValue* header = nullptr;
       ASSERT_TRUE(request_headers->GetDictionary(j, &header));
       std::string key;
       std::string value;

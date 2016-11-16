@@ -390,11 +390,9 @@ void ExtensionFrameHelper::OnExtensionMessageInvoke(
     const std::string& extension_id,
     const std::string& module_name,
     const std::string& function_name,
-    const base::ListValue& args,
-    bool user_gesture) {
-  extension_dispatcher_->InvokeModuleSystemMethod(render_frame(), extension_id,
-                                                  module_name, function_name,
-                                                  args, user_gesture);
+    const base::ListValue& args) {
+  extension_dispatcher_->InvokeModuleSystemMethod(
+      render_frame(), extension_id, module_name, function_name, args);
 }
 
 void ExtensionFrameHelper::OnAssignPortId(int port_id, int request_id) {
