@@ -39,7 +39,10 @@
   <template>
     <paper-button id="textButton" on-tap="onClick_" disabled="[[disabled]]"
         inverse$="[[inverse]]">
-      <content></content>
+      <div id="container"
+          class="flex layout horizontal center center-justified self-stretch">
+        <content></content>
+      </div>
     </paper-button>
   </template>
 </dom-module>
@@ -82,10 +85,14 @@
 <dom-module id="oobe-welcome-secondary-button">
   <link rel="stylesheet" href="oobe_welcome_secondary_button.css">
   <template>
-    <paper-button id="container" class="layout horizontal center"
-        aria-label="[[ariaLabel]]">
-      <iron-icon icon="[[icon]]" class="oobe-icon"></iron-icon>
-      <content></content>
+    <paper-button id="button" aria-label="[[ariaLabel]]">
+      <div id="container" class="flex layout vertical center self-stretch">
+        <div id="subcontainer"
+            class="flex layout horizontal center self-stretch">
+          <iron-icon icon="[[icon]]" class="oobe-icon"></iron-icon>
+          <content></content>
+        </div>
+      </div>
     </paper-button>
   </template>
 </dom-module>

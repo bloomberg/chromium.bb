@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 .vertical-margin {
-  width: 24px;
+  width: 22px; /* = 24 - (button border 2px) */
 }
 
 #bottom-margin {

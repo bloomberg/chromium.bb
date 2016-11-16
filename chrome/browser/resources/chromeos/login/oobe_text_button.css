@@ -3,17 +3,35 @@
    found in the LICENSE file. */
 
 #textButton {
-  height: 28px;
+  --paper-button-flat-keyboard-focus: {
+    border-color: rgba(66, 133, 244, 0.4); /* #4284f4 */
+    border-radius: 2px;
+    border-style: solid;
+    border-width: 2px;
+  };
+  height: 32px; /* = 28px + 2 * 2px border */
   margin: 0;
+  padding: 0;
+}
+
+#textButton:not([focused]) {
+  border-color: transparent;
+  border-radius: 2px;
+  border-style: solid;
+  border-width: 2px;
+}
+
+#container {
+  border-radius: 2px;
   padding: 0 16px;
 }
 
-#textButton:not([inverse]):not([disabled]) {
+#textButton:not([inverse]):not([disabled]) #container {
   background-color: white
   color: var(--google-blue-500);
 }
 
-#textButton[inverse]:not([disabled]) {
+#textButton[inverse]:not([disabled]) #container {
   background-color: var(--google-blue-500);
   color: white;
 }
