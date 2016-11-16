@@ -499,6 +499,7 @@ static uint16_t highbd_warp_interpolate(uint16_t *ref, int x, int y, int width,
 static INLINE int highbd_error_measure(int err, int bd) {
   const int b = bd - 8;
   const int bmask = (1 << b) - 1;
+  const int v = (1 << b);
   int e1, e2;
   err = abs(err);
   e1 = err >> b;
@@ -532,8 +533,8 @@ static double highbd_warp_erroradv(WarpedMotionParams *wm, uint8_t *ref8,
                                        stride, bd);
       no_gm_err = dst[(j - p_col) + (i - p_row) * p_stride] -
                   ref[(j - p_col) + (i - p_row) * stride];
-      gm_sumerr += highbd_error_measure(gm_err, bd];
-      no_gm_sumerr += highbd_error_measure(no_gm_err bd);
+      gm_sumerr += highbd_error_measure(gm_err, bd);
+      no_gm_sumerr += highbd_error_measure(no_gm_err, bd);
     }
   }
   return (double)gm_sumerr / no_gm_sumerr;
