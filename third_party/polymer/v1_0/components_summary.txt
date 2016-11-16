@@ -252,9 +252,9 @@ Tree link: https://github.com/PolymerElements/paper-icon-button/tree/v1.1.2
 
 Name: paper-input
 Repository: git://github.com/PolymerElements/paper-input.git
-Tree: v1.1.19
-Revision: d248dad17af3ee46a0701a664e0f304c1619770d
-Tree link: https://github.com/PolymerElements/paper-input/tree/v1.1.19
+Tree: v1.1.21
+Revision: 2628898fe8541df9df66bb353417c2ee168e7c6a
+Tree link: https://github.com/PolymerElements/paper-input/tree/v1.1.21
 
 Name: paper-item
 Repository: git://github.com/PolymerElements/paper-item.git
