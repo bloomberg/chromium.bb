@@ -129,7 +129,6 @@ mojom("arc_bindings_old_types") {
     "common/bitmap.mojom",
     "common/bluetooth.mojom",
     "common/enterprise_reporting.mojom",
-    "common/intent_helper.mojom",
     "common/net.mojom",
     "common/video_accelerator.mojom",
   ]
@@ -152,6 +151,7 @@ mojom("arc_bindings") {
     "common/crash_collector.mojom",
     "common/file_system.mojom",
     "common/ime.mojom",
+    "common/intent_helper.mojom",
     "common/metrics.mojom",
     "common/notifications.mojom",
     "common/obb_mounter.mojom",

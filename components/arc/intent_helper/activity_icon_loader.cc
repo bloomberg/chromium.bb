@@ -68,7 +68,7 @@ ActivityIconLoader::GetResult ActivityIconLoader::GetActivityIcons(
     const std::vector<ActivityName>& activities,
     const OnIconsReadyCallback& cb) {
   std::unique_ptr<ActivityToIconsMap> result(new ActivityToIconsMap);
-  mojo::Array<mojom::ActivityNamePtr> activities_to_fetch;
+  std::vector<mojom::ActivityNamePtr> activities_to_fetch;
 
   for (const auto& activity : activities) {
     const auto& it = cached_icons_.find(activity);
@@ -139,7 +139,7 @@ bool ActivityIconLoader::HasIconsReadyCallbackRun(GetResult result) {
 void ActivityIconLoader::OnIconsReady(
     std::unique_ptr<ActivityToIconsMap> cached_result,
     const OnIconsReadyCallback& cb,
-    mojo::Array<mojom::ActivityIconPtr> icons) {
+    std::vector<mojom::ActivityIconPtr> icons) {
   ArcServiceManager* manager = ArcServiceManager::Get();
   base::PostTaskAndReplyWithResult(
       manager->blocking_task_runner().get(), FROM_HERE,
@@ -149,7 +149,7 @@ void ActivityIconLoader::OnIconsReady(
 }
 
 std::unique_ptr<ActivityIconLoader::ActivityToIconsMap>
-ActivityIconLoader::ResizeIcons(mojo::Array<mojom::ActivityIconPtr> icons) {
+ActivityIconLoader::ResizeIcons(std::vector<mojom::ActivityIconPtr> icons) {
   // Runs only on the blocking pool.
   DCHECK(thread_checker_.CalledOnValidThread());
   std::unique_ptr<ActivityToIconsMap> result(new ActivityToIconsMap);
@@ -179,10 +179,12 @@ ActivityIconLoader::ResizeIcons(mojo::Array<mojom::ActivityIconPtr> icons) {
         original, skia::ImageOperations::RESIZE_BEST,
         gfx::Size(kSmallIconSizeInDip, kSmallIconSizeInDip)));
 
-    result->insert(
-        std::make_pair(ActivityName(icon->activity->package_name,
-                                    icon->activity->activity_name),
-                       Icons(gfx::Image(icon_small), gfx::Image(icon_large))));
+    const std::string activity_name = icon->activity->activity_name.has_value()
+                                          ? (*icon->activity->activity_name)
+                                          : std::string();
+    result->insert(std::make_pair(
+        ActivityName(icon->activity->package_name, activity_name),
+        Icons(gfx::Image(icon_small), gfx::Image(icon_large))));
   }
 
   return result;

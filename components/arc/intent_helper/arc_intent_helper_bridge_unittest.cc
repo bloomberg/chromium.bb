@@ -27,14 +27,14 @@ TEST(ArcIntentHelperTest, TestIsIntentHelperPackage) {
 // Tests if FilterOutIntentHelper removes handlers as expected.
 TEST(ArcIntentHelperTest, TestFilterOutIntentHelper) {
   {
-    mojo::Array<mojom::IntentHandlerInfoPtr> orig;
-    mojo::Array<mojom::IntentHandlerInfoPtr> filtered =
+    std::vector<mojom::IntentHandlerInfoPtr> orig;
+    std::vector<mojom::IntentHandlerInfoPtr> filtered =
         ArcIntentHelperBridge::FilterOutIntentHelper(std::move(orig));
     EXPECT_EQ(0U, filtered.size());
   }
 
   {
-    mojo::Array<mojom::IntentHandlerInfoPtr> orig;
+    std::vector<mojom::IntentHandlerInfoPtr> orig;
     orig.push_back(mojom::IntentHandlerInfo::New());
     orig[0]->name = "0";
     orig[0]->package_name = "package_name0";
@@ -43,13 +43,13 @@ TEST(ArcIntentHelperTest, TestFilterOutIntentHelper) {
     orig[1]->package_name = "package_name1";
 
     // FilterOutIntentHelper is no-op in this case.
-    mojo::Array<mojom::IntentHandlerInfoPtr> filtered =
+    std::vector<mojom::IntentHandlerInfoPtr> filtered =
         ArcIntentHelperBridge::FilterOutIntentHelper(std::move(orig));
     EXPECT_EQ(2U, filtered.size());
   }
 
   {
-    mojo::Array<mojom::IntentHandlerInfoPtr> orig;
+    std::vector<mojom::IntentHandlerInfoPtr> orig;
     orig.push_back(mojom::IntentHandlerInfo::New());
     orig[0]->name = "0";
     orig[0]->package_name = ArcIntentHelperBridge::kArcIntentHelperPackageName;
@@ -58,7 +58,7 @@ TEST(ArcIntentHelperTest, TestFilterOutIntentHelper) {
     orig[1]->package_name = "package_name1";
 
     // FilterOutIntentHelper should remove the first element.
-    mojo::Array<mojom::IntentHandlerInfoPtr> filtered =
+    std::vector<mojom::IntentHandlerInfoPtr> filtered =
         ArcIntentHelperBridge::FilterOutIntentHelper(std::move(orig));
     ASSERT_EQ(1U, filtered.size());
     EXPECT_EQ("1", filtered[0]->name);
@@ -66,7 +66,7 @@ TEST(ArcIntentHelperTest, TestFilterOutIntentHelper) {
   }
 
   {
-    mojo::Array<mojom::IntentHandlerInfoPtr> orig;
+    std::vector<mojom::IntentHandlerInfoPtr> orig;
     orig.push_back(mojom::IntentHandlerInfo::New());
     orig[0]->name = "0";
     orig[0]->package_name = ArcIntentHelperBridge::kArcIntentHelperPackageName;
@@ -78,7 +78,7 @@ TEST(ArcIntentHelperTest, TestFilterOutIntentHelper) {
     orig[2]->package_name = ArcIntentHelperBridge::kArcIntentHelperPackageName;
 
     // FilterOutIntentHelper should remove two elements.
-    mojo::Array<mojom::IntentHandlerInfoPtr> filtered =
+    std::vector<mojom::IntentHandlerInfoPtr> filtered =
         ArcIntentHelperBridge::FilterOutIntentHelper(std::move(orig));
     ASSERT_EQ(1U, filtered.size());
     EXPECT_EQ("1", filtered[0]->name);
@@ -86,7 +86,7 @@ TEST(ArcIntentHelperTest, TestFilterOutIntentHelper) {
   }
 
   {
-    mojo::Array<mojom::IntentHandlerInfoPtr> orig;
+    std::vector<mojom::IntentHandlerInfoPtr> orig;
     orig.push_back(mojom::IntentHandlerInfo::New());
     orig[0]->name = "0";
     orig[0]->package_name = ArcIntentHelperBridge::kArcIntentHelperPackageName;
@@ -95,7 +95,7 @@ TEST(ArcIntentHelperTest, TestFilterOutIntentHelper) {
     orig[1]->package_name = ArcIntentHelperBridge::kArcIntentHelperPackageName;
 
     // FilterOutIntentHelper should remove all elements.
-    mojo::Array<mojom::IntentHandlerInfoPtr> filtered =
+    std::vector<mojom::IntentHandlerInfoPtr> filtered =
         ArcIntentHelperBridge::FilterOutIntentHelper(std::move(orig));
     EXPECT_EQ(0U, filtered.size());
   }

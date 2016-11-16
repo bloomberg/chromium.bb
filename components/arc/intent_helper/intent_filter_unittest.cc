@@ -32,7 +32,9 @@ class IntentFilterBuilder {
     mojom::AuthorityEntryPtr ae = mojom::AuthorityEntry::New();
     ae->host = host;
     ae->port = port;
-    filter_spec_->data_authorities.push_back(std::move(ae));
+    if (!filter_spec_->data_authorities.has_value())
+      filter_spec_->data_authorities = std::vector<mojom::AuthorityEntryPtr>();
+    filter_spec_->data_authorities->push_back(std::move(ae));
     return *this;
   }
 
@@ -41,7 +43,9 @@ class IntentFilterBuilder {
     mojom::PatternMatcherPtr p = mojom::PatternMatcher::New();
     p->pattern = path;
     p->type = type;
-    filter_spec_->data_paths.push_back(std::move(p));
+    if (!filter_spec_->data_paths.has_value())
+      filter_spec_->data_paths = std::vector<mojom::PatternMatcherPtr>();
+    filter_spec_->data_paths->push_back(std::move(p));
     return *this;
   }
 

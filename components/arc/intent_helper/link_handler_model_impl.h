@@ -6,6 +6,7 @@
 #define COMPONENTS_ARC_INTENT_HELPER_LINK_HANDLER_MODEL_IMPL_H_
 
 #include <memory>
+#include <vector>
 
 #include "ash/link_handler_model.h"
 #include "base/memory/ref_counted.h"
@@ -35,7 +36,7 @@ class LinkHandlerModelImpl : public ash::LinkHandlerModel {
 
  private:
   mojom::IntentHelperInstance* GetIntentHelper();
-  void OnUrlHandlerList(mojo::Array<mojom::IntentHandlerInfoPtr> handlers);
+  void OnUrlHandlerList(std::vector<mojom::IntentHandlerInfoPtr> handlers);
   void NotifyObserver(
       std::unique_ptr<ActivityIconLoader::ActivityToIconsMap> icons);
 
@@ -48,7 +49,7 @@ class LinkHandlerModelImpl : public ash::LinkHandlerModel {
   base::ObserverList<Observer> observer_list_;
 
   // Url handler info passed from ARC.
-  mojo::Array<mojom::IntentHandlerInfoPtr> handlers_;
+  std::vector<mojom::IntentHandlerInfoPtr> handlers_;
   // Activity icon info passed from ARC.
   ActivityIconLoader::ActivityToIconsMap icons_;
 

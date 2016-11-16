@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+#include <string>
+
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -18,14 +21,14 @@ namespace arc {
 
 namespace {
 
-const char kArcUrl[] = "content://org.chromium.foo/bar";
-const int64_t kSize = 123456;
+constexpr char kArcUrl[] = "content://org.chromium.foo/bar";
+constexpr int64_t kSize = 123456;
 
 class ArcIntentHelperInstanceTestImpl : public FakeIntentHelperInstance {
  public:
-  void GetFileSize(const mojo::String& url,
+  void GetFileSize(const std::string& url,
                    const GetFileSizeCallback& callback) override {
-    EXPECT_EQ(kArcUrl, url.get());
+    EXPECT_EQ(kArcUrl, url);
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   base::Bind(callback, kSize));
   }

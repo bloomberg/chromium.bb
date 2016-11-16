@@ -20,7 +20,8 @@ mojom::IntentFilterPtr GetIntentFilter(const std::string& host) {
   mojom::AuthorityEntryPtr authority_entry = mojom::AuthorityEntry::New();
   authority_entry->host = host;
   authority_entry->port = -1;
-  filter->data_authorities.push_back(std::move(authority_entry));
+  filter->data_authorities = std::vector<mojom::AuthorityEntryPtr>();
+  filter->data_authorities->push_back(std::move(authority_entry));
   return filter;
 }
 
@@ -40,7 +41,7 @@ TEST(LocalActivityResolverTest, TestDefault) {
 TEST(LocalActivityResolverTest, TestSingleFilter) {
   scoped_refptr<LocalActivityResolver> resolver(new LocalActivityResolver());
 
-  mojo::Array<mojom::IntentFilterPtr> array;
+  std::vector<mojom::IntentFilterPtr> array;
   array.push_back(GetIntentFilter("www.google.com"));
   resolver->UpdateIntentFilters(std::move(array));
 
@@ -55,7 +56,7 @@ TEST(LocalActivityResolverTest, TestSingleFilter) {
 TEST(LocalActivityResolverTest, TestMultipleFilters) {
   scoped_refptr<LocalActivityResolver> resolver(new LocalActivityResolver());
 
-  mojo::Array<mojom::IntentFilterPtr> array;
+  std::vector<mojom::IntentFilterPtr> array;
   array.push_back(GetIntentFilter("www.google.com"));
   array.push_back(GetIntentFilter("www.google.co.uk"));
   array.push_back(GetIntentFilter("dev.chromium.org"));
@@ -79,7 +80,7 @@ TEST(LocalActivityResolverTest, TestMultipleFilters) {
 TEST(LocalActivityResolverTest, TestNonHttp) {
   scoped_refptr<LocalActivityResolver> resolver(new LocalActivityResolver());
 
-  mojo::Array<mojom::IntentFilterPtr> array;
+  std::vector<mojom::IntentFilterPtr> array;
   array.push_back(GetIntentFilter("www.google.com"));
   resolver->UpdateIntentFilters(std::move(array));
 
@@ -92,12 +93,12 @@ TEST(LocalActivityResolverTest, TestNonHttp) {
 TEST(LocalActivityResolverTest, TestMultipleUpdate) {
   scoped_refptr<LocalActivityResolver> resolver(new LocalActivityResolver());
 
-  mojo::Array<mojom::IntentFilterPtr> array;
+  std::vector<mojom::IntentFilterPtr> array;
   array.push_back(GetIntentFilter("www.google.com"));
   array.push_back(GetIntentFilter("dev.chromium.org"));
   resolver->UpdateIntentFilters(std::move(array));
 
-  mojo::Array<mojom::IntentFilterPtr> array2;
+  std::vector<mojom::IntentFilterPtr> array2;
   array2.push_back(GetIntentFilter("www.google.co.uk"));
   array2.push_back(GetIntentFilter("dev.chromium.org"));
   array2.push_back(GetIntentFilter("www.android.com"));

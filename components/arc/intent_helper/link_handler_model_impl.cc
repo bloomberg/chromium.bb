@@ -6,7 +6,6 @@
 
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "components/arc/arc_bridge_service.h"
@@ -89,7 +88,7 @@ void LinkHandlerModelImpl::OpenLinkWithHandler(const GURL& url,
 }
 
 void LinkHandlerModelImpl::OnUrlHandlerList(
-    mojo::Array<mojom::IntentHandlerInfoPtr> handlers) {
+    std::vector<mojom::IntentHandlerInfoPtr> handlers) {
   handlers_ = ArcIntentHelperBridge::FilterOutIntentHelper(std::move(handlers));
 
   bool icon_info_notified = false;
@@ -129,7 +128,7 @@ void LinkHandlerModelImpl::NotifyObserver(
     if (it != icons_.end())
       icon = it->second.icon16;
     // Use the handler's index as an ID.
-    ash::LinkHandlerInfo handler = {handlers_[i]->name.get(), icon, i};
+    ash::LinkHandlerInfo handler = {handlers_[i]->name, icon, i};
     handlers.push_back(handler);
   }
   for (auto& observer : observer_list_)

@@ -5,8 +5,6 @@
 #include "chrome/browser/chromeos/arc/intent_helper/arc_external_protocol_dialog.h"
 
 #include <memory>
-#include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
@@ -100,9 +98,9 @@ GetActionResult GetActionInternal(
     const GURL& original_url,
     const mojom::IntentHandlerInfoPtr& handler,
     std::pair<GURL, std::string>* out_url_and_package) {
-  if (!handler->fallback_url.is_null()) {
-    *out_url_and_package = std::make_pair(GURL(handler->fallback_url.get()),
-                                          handler->package_name.get());
+  if (handler->fallback_url.has_value()) {
+    *out_url_and_package =
+        std::make_pair(GURL(*handler->fallback_url), handler->package_name);
     if (ArcIntentHelperBridge::IsIntentHelperPackage(handler->package_name)) {
       // Since |package_name| is "Chrome", and |fallback_url| is not null, the
       // URL must be either http or https. Check it just in case, and if not,
@@ -119,8 +117,7 @@ GetActionResult GetActionInternal(
 
   // Unlike |handler->fallback_url|, the |original_url| should always be handled
   // in ARC since it's external to Chrome.
-  *out_url_and_package =
-      std::make_pair(original_url, handler->package_name.get());
+  *out_url_and_package = std::make_pair(original_url, handler->package_name);
   return GetActionResult::HANDLE_URL_IN_ARC;
 }
 
@@ -133,7 +130,7 @@ GetActionResult GetActionInternal(
 // |out_url_and_package| is filled accordingly.
 GetActionResult GetAction(
     const GURL& original_url,
-    const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers,
+    const std::vector<mojom::IntentHandlerInfoPtr>& handlers,
     size_t selected_app_index,
     std::pair<GURL, std::string>* out_url_and_package) {
   DCHECK(out_url_and_package);
@@ -177,7 +174,7 @@ GetActionResult GetAction(
 bool HandleUrl(int render_process_host_id,
                int routing_id,
                const GURL& url,
-               const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers,
+               const std::vector<mojom::IntentHandlerInfoPtr>& handlers,
                size_t selected_app_index,
                GetActionResult* out_result) {
   std::pair<GURL, std::string> url_and_package;
@@ -207,7 +204,7 @@ bool HandleUrl(int render_process_host_id,
 // Returns a fallback http(s) in |handlers| which Chrome can handle. Returns
 // an empty GURL if none found.
 GURL GetUrlToNavigateOnDeactivate(
-    const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers) {
+    const std::vector<mojom::IntentHandlerInfoPtr>& handlers) {
   const GURL empty_url;
   for (size_t i = 0; i < handlers.size(); ++i) {
     std::pair<GURL, std::string> url_and_package;
@@ -225,7 +222,7 @@ GURL GetUrlToNavigateOnDeactivate(
 void OnIntentPickerDialogDeactivated(
     int render_process_host_id,
     int routing_id,
-    const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers) {
+    const std::vector<mojom::IntentHandlerInfoPtr>& handlers) {
   const GURL url_to_open_in_chrome = GetUrlToNavigateOnDeactivate(handlers);
   if (url_to_open_in_chrome.is_empty())
     CloseTabIfNeeded(render_process_host_id, routing_id);
@@ -238,7 +235,7 @@ void OnIntentPickerDialogDeactivated(
 void OnIntentPickerClosed(int render_process_host_id,
                           int routing_id,
                           const GURL& url,
-                          mojo::Array<mojom::IntentHandlerInfoPtr> handlers,
+                          std::vector<mojom::IntentHandlerInfoPtr> handlers,
                           const std::string& selected_app_package,
                           ArcNavigationThrottle::CloseReason close_reason) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -306,7 +303,7 @@ void OnAppIconsReceived(
     int render_process_host_id,
     int routing_id,
     const GURL& url,
-    mojo::Array<mojom::IntentHandlerInfoPtr> handlers,
+    std::vector<mojom::IntentHandlerInfoPtr> handlers,
     std::unique_ptr<ActivityIconLoader::ActivityToIconsMap> icons) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -334,7 +331,7 @@ void OnAppIconsReceived(
 void OnUrlHandlerList(int render_process_host_id,
                       int routing_id,
                       const GURL& url,
-                      mojo::Array<mojom::IntentHandlerInfoPtr> handlers) {
+                      std::vector<mojom::IntentHandlerInfoPtr> handlers) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   auto* instance = ArcIntentHelperBridge::GetIntentHelperInstance(
@@ -433,7 +430,7 @@ bool ShouldIgnoreNavigationForTesting(ui::PageTransition page_transition) {
 
 GetActionResult GetActionForTesting(
     const GURL& original_url,
-    const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers,
+    const std::vector<mojom::IntentHandlerInfoPtr>& handlers,
     size_t selected_app_index,
     std::pair<GURL, std::string>* out_url_and_package) {
   return GetAction(original_url, handlers, selected_app_index,
@@ -441,7 +438,7 @@ GetActionResult GetActionForTesting(
 }
 
 GURL GetUrlToNavigateOnDeactivateForTesting(
-    const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers) {
+    const std::vector<mojom::IntentHandlerInfoPtr>& handlers) {
   return GetUrlToNavigateOnDeactivate(handlers);
 }
 

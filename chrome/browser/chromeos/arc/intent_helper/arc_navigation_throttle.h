@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "components/arc/intent_helper/activity_icon_loader.h"
 #include "content/public/browser/navigation_throttle.h"
-#include "mojo/public/cpp/bindings/array.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
@@ -78,7 +77,7 @@ class ArcNavigationThrottle : public content::NavigationThrottle {
   // Finds |selected_app_package| from the |handlers| array and returns the
   // index. If the app is not found, returns |handlers.size()|.
   static size_t GetAppIndex(
-      const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers,
+      const std::vector<mojom::IntentHandlerInfoPtr>& handlers,
       const std::string& selected_app_package);
   // Determines the destination of the current navigation. We know that if the
   // |close_reason| is either ERROR or DIALOG_DEACTIVATED the navigation MUST
@@ -96,13 +95,13 @@ class ArcNavigationThrottle : public content::NavigationThrottle {
   // When swap is needed, fills |out_indices| and returns true. If |handlers|
   // do not have Chrome, returns false.
   static bool IsSwapElementsNeeded(
-      const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers,
+      const std::vector<mojom::IntentHandlerInfoPtr>& handlers,
       std::pair<size_t, size_t>* out_indices);
 
   static bool IsAppAvailableForTesting(
-      const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers);
+      const std::vector<mojom::IntentHandlerInfoPtr>& handlers);
   static size_t FindPreferredAppForTesting(
-      const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers);
+      const std::vector<mojom::IntentHandlerInfoPtr>& handlers);
 
  private:
   // content::Navigation implementation:
@@ -111,11 +110,11 @@ class ArcNavigationThrottle : public content::NavigationThrottle {
 
   NavigationThrottle::ThrottleCheckResult HandleRequest();
   void OnAppCandidatesReceived(
-      mojo::Array<mojom::IntentHandlerInfoPtr> handlers);
+      std::vector<mojom::IntentHandlerInfoPtr> handlers);
   void OnAppIconsReceived(
-      mojo::Array<mojom::IntentHandlerInfoPtr> handlers,
+      std::vector<mojom::IntentHandlerInfoPtr> handlers,
       std::unique_ptr<ActivityIconLoader::ActivityToIconsMap> icons);
-  void OnIntentPickerClosed(mojo::Array<mojom::IntentHandlerInfoPtr> handlers,
+  void OnIntentPickerClosed(std::vector<mojom::IntentHandlerInfoPtr> handlers,
                             const std::string& selected_app_package,
                             CloseReason close_reason);
   GURL GetStartingGURL() const;

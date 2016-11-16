@@ -11,13 +11,18 @@
 namespace arc {
 
 IntentFilter::IntentFilter(const mojom::IntentFilterPtr& mojo_intent_filter) {
-  for (const mojom::AuthorityEntryPtr& authorityptr :
-       mojo_intent_filter->data_authorities) {
-    authorities_.emplace_back(authorityptr);
+  // TODO(yusukes): Use mojo typemaps to simplify the constructor.
+  if (mojo_intent_filter->data_authorities.has_value()) {
+    for (const mojom::AuthorityEntryPtr& authorityptr :
+         *mojo_intent_filter->data_authorities) {
+      authorities_.emplace_back(authorityptr);
+    }
   }
-  for (const mojom::PatternMatcherPtr& pattern :
-       mojo_intent_filter->data_paths) {
-    paths_.emplace_back(pattern);
+  if (mojo_intent_filter->data_paths.has_value()) {
+    for (const mojom::PatternMatcherPtr& pattern :
+         *mojo_intent_filter->data_paths) {
+      paths_.emplace_back(pattern);
+    }
   }
 }
 
@@ -67,7 +72,7 @@ bool IntentFilter::MatchDataAuthority(const GURL& url) const {
 
 IntentFilter::AuthorityEntry::AuthorityEntry(
     const mojom::AuthorityEntryPtr& entry)
-    : host_(entry->host.get()), port_(entry->port) {
+    : host_(entry->host), port_(entry->port) {
   // Wildcards are only allowed at the front of the host string.
   wild_ = !host_.empty() && host_[0] == '*';
   if (wild_) {
@@ -112,7 +117,7 @@ bool IntentFilter::AuthorityEntry::Match(const GURL& url) const {
 
 IntentFilter::PatternMatcher::PatternMatcher(
     const mojom::PatternMatcherPtr& pattern)
-    : pattern_(pattern->pattern.get()), match_type_(pattern->type) {}
+    : pattern_(pattern->pattern), match_type_(pattern->type) {}
 
 // Transcribed from android's PatternMatcher#matchPattern.
 bool IntentFilter::PatternMatcher::Match(const std::string& str) const {

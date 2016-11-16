@@ -7,9 +7,9 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "components/arc/common/intent_helper.mojom.h"
-#include "mojo/public/cpp/bindings/array.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -47,12 +47,12 @@ bool ShouldIgnoreNavigationForTesting(ui::PageTransition page_transition);
 
 GetActionResult GetActionForTesting(
     const GURL& original_url,
-    const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers,
+    const std::vector<mojom::IntentHandlerInfoPtr>& handlers,
     size_t selected_app_index,
     std::pair<GURL, std::string>* out_url_and_package);
 
 GURL GetUrlToNavigateOnDeactivateForTesting(
-    const mojo::Array<mojom::IntentHandlerInfoPtr>& handlers);
+    const std::vector<mojom::IntentHandlerInfoPtr>& handlers);
 
 }  // namespace arc
 

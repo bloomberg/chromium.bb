@@ -93,11 +93,11 @@ class ActivityIconLoader : public base::RefCounted<ActivityIconLoader> {
   // A function called when the mojo IPC returns.
   void OnIconsReady(std::unique_ptr<ActivityToIconsMap> cached_result,
                     const OnIconsReadyCallback& cb,
-                    mojo::Array<mojom::ActivityIconPtr> icons);
+                    std::vector<mojom::ActivityIconPtr> icons);
 
   // Resize |icons| and returns the results as ActivityToIconsMap.
   std::unique_ptr<ActivityToIconsMap> ResizeIcons(
-      mojo::Array<mojom::ActivityIconPtr> icons);
+      std::vector<mojom::ActivityIconPtr> icons);
 
   // A function called when ResizeIcons finishes. Append items in |result| to
   // |cached_icons_|.

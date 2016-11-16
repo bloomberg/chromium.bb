@@ -28,7 +28,7 @@ bool LocalActivityResolver::ShouldChromeHandleUrl(const GURL& url) {
 }
 
 void LocalActivityResolver::UpdateIntentFilters(
-    mojo::Array<mojom::IntentFilterPtr> mojo_intent_filters) {
+    std::vector<mojom::IntentFilterPtr> mojo_intent_filters) {
   intent_filters_.clear();
   for (mojom::IntentFilterPtr& mojo_filter : mojo_intent_filters)
     intent_filters_.emplace_back(mojo_filter);

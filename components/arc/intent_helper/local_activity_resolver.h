@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/intent_helper/intent_filter.h"
-#include "mojo/public/cpp/bindings/array.h"
 
 class GURL;
 
@@ -30,7 +29,7 @@ class LocalActivityResolver : public base::RefCounted<LocalActivityResolver> {
   bool ShouldChromeHandleUrl(const GURL& url);
 
   // Called when the list of intent filters on ARC side is updated.
-  void UpdateIntentFilters(mojo::Array<mojom::IntentFilterPtr> intent_filters);
+  void UpdateIntentFilters(std::vector<mojom::IntentFilterPtr> intent_filters);
 
  private:
   friend class base::RefCounted<LocalActivityResolver>;

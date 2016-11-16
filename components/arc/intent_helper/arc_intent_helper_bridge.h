@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "ash/link_handler_model_factory.h"
 #include "base/macros.h"
@@ -57,13 +58,13 @@ class ArcIntentHelperBridge
   void OnInstanceClosed() override;
 
   // mojom::IntentHelperHost
-  void OnIconInvalidated(const mojo::String& package_name) override;
+  void OnIconInvalidated(const std::string& package_name) override;
   void OnIntentFiltersUpdated(
-      mojo::Array<mojom::IntentFilterPtr> intent_filters) override;
+      std::vector<mojom::IntentFilterPtr> intent_filters) override;
   void OnOpenDownloads() override;
-  void OnOpenUrl(const mojo::String& url) override;
+  void OnOpenUrl(const std::string& url) override;
   void OpenWallpaperPicker() override;
-  void SetWallpaperDeprecated(mojo::Array<uint8_t> jpeg_data) override;
+  void SetWallpaperDeprecated(const std::vector<uint8_t>& jpeg_data) override;
 
   // ash::LinkHandlerModelFactory
   std::unique_ptr<ash::LinkHandlerModel> CreateModel(const GURL& url) override;
@@ -73,8 +74,8 @@ class ArcIntentHelperBridge
 
   // Filters out handlers that belong to the intent_helper apk and returns
   // a new array.
-  static mojo::Array<mojom::IntentHandlerInfoPtr> FilterOutIntentHelper(
-      mojo::Array<mojom::IntentHandlerInfoPtr> handlers);
+  static std::vector<mojom::IntentHandlerInfoPtr> FilterOutIntentHelper(
+      std::vector<mojom::IntentHandlerInfoPtr> handlers);
 
   // Gets the mojo instance if it's available. On failure, returns nullptr and
   // updates |out_error_code| if it's not nullptr.

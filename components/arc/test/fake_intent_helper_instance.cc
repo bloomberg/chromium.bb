@@ -8,10 +8,10 @@ namespace arc {
 
 FakeIntentHelperInstance::FakeIntentHelperInstance() {}
 
-FakeIntentHelperInstance::Broadcast::Broadcast(const mojo::String& action,
-                                               const mojo::String& package_name,
-                                               const mojo::String& cls,
-                                               const mojo::String& extras)
+FakeIntentHelperInstance::Broadcast::Broadcast(const std::string& action,
+                                               const std::string& package_name,
+                                               const std::string& cls,
+                                               const std::string& extras)
     : action(action), package_name(package_name), cls(cls), extras(extras) {}
 
 FakeIntentHelperInstance::Broadcast::Broadcast(const Broadcast& broadcast)
@@ -25,31 +25,31 @@ FakeIntentHelperInstance::Broadcast::~Broadcast() {}
 FakeIntentHelperInstance::~FakeIntentHelperInstance() {}
 
 void FakeIntentHelperInstance::AddPreferredPackage(
-    const mojo::String& package_name) {}
+    const std::string& package_name) {}
 
 void FakeIntentHelperInstance::GetFileSize(
-    const mojo::String& url,
+    const std::string& url,
     const GetFileSizeCallback& callback) {}
 
 void FakeIntentHelperInstance::HandleIntent(mojom::IntentInfoPtr intent,
                                             mojom::ActivityNamePtr activity) {}
 
-void FakeIntentHelperInstance::HandleUrl(const mojo::String& url,
-                                         const mojo::String& package_name) {}
+void FakeIntentHelperInstance::HandleUrl(const std::string& url,
+                                         const std::string& package_name) {}
 
 void FakeIntentHelperInstance::HandleUrlList(
-    mojo::Array<mojom::UrlWithMimeTypePtr> urls,
+    std::vector<mojom::UrlWithMimeTypePtr> urls,
     mojom::ActivityNamePtr activity,
     mojom::ActionType action) {}
 
 void FakeIntentHelperInstance::Init(mojom::IntentHelperHostPtr host_ptr) {}
 
 void FakeIntentHelperInstance::OpenFileToRead(
-    const mojo::String& url,
+    const std::string& url,
     const OpenFileToReadCallback& callback) {}
 
 void FakeIntentHelperInstance::RequestActivityIcons(
-    mojo::Array<mojom::ActivityNamePtr> activities,
+    std::vector<mojom::ActivityNamePtr> activities,
     ::arc::mojom::ScaleFactor scale_factor,
     const RequestActivityIconsCallback& callback) {}
 
@@ -58,17 +58,17 @@ void FakeIntentHelperInstance::RequestIntentHandlerList(
     const RequestIntentHandlerListCallback& callback) {}
 
 void FakeIntentHelperInstance::RequestUrlHandlerList(
-    const mojo::String& url,
+    const std::string& url,
     const RequestUrlHandlerListCallback& callback) {}
 
 void FakeIntentHelperInstance::RequestUrlListHandlerList(
-    mojo::Array<mojom::UrlWithMimeTypePtr> urls,
+    std::vector<mojom::UrlWithMimeTypePtr> urls,
     const RequestUrlListHandlerListCallback& callback) {}
 
-void FakeIntentHelperInstance::SendBroadcast(const mojo::String& action,
-                                             const mojo::String& package_name,
-                                             const mojo::String& cls,
-                                             const mojo::String& extras) {
+void FakeIntentHelperInstance::SendBroadcast(const std::string& action,
+                                             const std::string& package_name,
+                                             const std::string& cls,
+                                             const std::string& extras) {
   broadcasts_.emplace_back(action, package_name, cls, extras);
 }
 

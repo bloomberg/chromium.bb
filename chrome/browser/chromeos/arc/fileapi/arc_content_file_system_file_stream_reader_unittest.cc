@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+#include <utility>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
@@ -19,8 +22,8 @@ namespace arc {
 
 namespace {
 
-const char kArcUrl[] = "content://org.chromium.foo/bar";
-const char kData[] = "abcdefghijklmnopqrstuvwxyz";
+constexpr char kArcUrl[] = "content://org.chromium.foo/bar";
+constexpr char kData[] = "abcdefghijklmnopqrstuvwxyz";
 
 class ArcIntentHelperInstanceTestImpl : public FakeIntentHelperInstance {
  public:
@@ -29,18 +32,18 @@ class ArcIntentHelperInstanceTestImpl : public FakeIntentHelperInstance {
 
   ~ArcIntentHelperInstanceTestImpl() override = default;
 
-  void GetFileSize(const mojo::String& url,
+  void GetFileSize(const std::string& url,
                    const GetFileSizeCallback& callback) override {
-    EXPECT_EQ(kArcUrl, url.get());
+    EXPECT_EQ(kArcUrl, url);
     base::File::Info info;
     EXPECT_TRUE(base::GetFileInfo(file_path_, &info));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, info.size));
   }
 
-  void OpenFileToRead(const mojo::String& url,
+  void OpenFileToRead(const std::string& url,
                       const OpenFileToReadCallback& callback) override {
-    EXPECT_EQ(kArcUrl, url.get());
+    EXPECT_EQ(kArcUrl, url);
 
     base::File file(file_path_, base::File::FLAG_OPEN | base::File::FLAG_READ);
     EXPECT_TRUE(file.IsValid());
