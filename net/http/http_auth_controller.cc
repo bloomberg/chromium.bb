@@ -156,7 +156,8 @@ int HttpAuthController::MaybeGenerateAuthToken(
   DCHECK(callback_.is_null());
   int rv = handler_->GenerateAuthToken(
       credentials, request,
-      base::Bind(&HttpAuthController::OnIOComplete, base::Unretained(this)),
+      base::Bind(&HttpAuthController::OnGenerateAuthTokenDone,
+                 base::Unretained(this)),
       &auth_token_);
 
   if (rv == ERR_IO_PENDING) {
@@ -481,8 +482,10 @@ int HttpAuthController::HandleGenerateTokenResult(int result) {
       // failed to use default credentials to recover and use explicit
       // credentials.
       //
-      // If the handler does not support any remaining identity sources, then
-      // the authentication controller will pick another authentication handler.
+      // The current handler may be tied to external state that is no longer
+      // valid, hence should be discarded. Since the scheme is still valid, a
+      // new handler can be created for the current scheme.
+      InvalidateCurrentHandler(INVALIDATE_HANDLER_AND_CACHED_CREDENTIALS);
       auth_token_.clear();
       return OK;
 
@@ -503,7 +506,7 @@ int HttpAuthController::HandleGenerateTokenResult(int result) {
 
       // In these cases, disable the current scheme as it cannot
       // succeed.
-      DisableAuthScheme(handler_->auth_scheme());
+      InvalidateCurrentHandler(INVALIDATE_HANDLER_AND_DISABLE_SCHEME);
       auth_token_.clear();
       return OK;
 
@@ -512,7 +515,7 @@ int HttpAuthController::HandleGenerateTokenResult(int result) {
   }
 }
 
-void HttpAuthController::OnIOComplete(int result) {
+void HttpAuthController::OnGenerateAuthTokenDone(int result) {
   DCHECK(CalledOnValidThread());
   result = HandleGenerateTokenResult(result);
   if (!callback_.is_null()) {
