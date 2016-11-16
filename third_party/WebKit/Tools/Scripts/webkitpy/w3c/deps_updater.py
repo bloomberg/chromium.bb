@@ -304,7 +304,7 @@ class DepsUpdater(object):
         _log.info('Triggering try jobs.')
         for try_bot in self.host.builders.all_try_builder_names():
             self.git_cl.run(['try', '-b', try_bot])
-        try_results = self.git_cl.wait_for_try_jobs()
+        try_results = self.git_cl.wait_for_try_jobs(timeout_seconds=180 * 60)
         if not try_results:
             _log.error('Timed out waiting for try results.')
             return
@@ -313,7 +313,7 @@ class DepsUpdater(object):
 
         # Second try: if there are failures, then abort.
         self.git_cl.run(['set-commit', '--rietveld'])
-        try_results = self.git_cl.wait_for_try_jobs()
+        try_results = self.git_cl.wait_for_try_jobs(timeout_seconds=180 * 60)
         if not try_results:
             _log.info('Timed out waiting for try results.')
             self.git_cl.run(['set-close'])
