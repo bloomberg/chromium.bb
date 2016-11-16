@@ -8,16 +8,27 @@ module blink.mojom;
 
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
-// Because "//ui/gfx/geometry/mojo" is not exposed to blink, we need to declare
+// Since "//ui/gfx/geometry/mojo" is not exposed to blink, we need to declare
 // a wrapper struct, so that gfx.mojom.RectF will not be directly referenced
-// inside blink, and browser can still use gfx types.
+// inside Blink, and browser can still use gfx types.
 struct FaceDetectionResult {
   array<gfx.mojom.RectF> boundingBoxes;
 };
 
+struct BarcodeDetectionResult {
+  // Barcode or QR extracted contents (see e.g.
+  // https://github.com/zxing/zxing/wiki/Barcode-Contents).
+  string raw_value;
+  gfx.mojom.RectF bounding_box;
+};
+
 interface ShapeDetection {
-  // frame_data contains tightly packed image pixels in ARGB32 format,
+  // |frame_data| contains tightly packed image pixels in ARGB32 format,
   // row-major order.
-  DetectFace(handle<shared_buffer> frame_data, uint32 width, uint32 height)
+  // TODO(mcasas): Consider using mojo::Bitmap here, https://crbug.com/665488.
+  DetectFaces(handle<shared_buffer> frame_data, uint32 width, uint32 height)
     => (FaceDetectionResult result);
+
+  DetectBarcodes(handle<shared_buffer> frame_data, uint32 width, uint32 height)
+    => (array<BarcodeDetectionResult> results);
 };

@@ -6,9 +6,15 @@ import("//third_party/WebKit/Source/modules/modules.gni")
 
 blink_modules_sources("shapedetection") {
   sources = [
+    "BarcodeDetector.cpp",
+    "BarcodeDetector.h",
+    "DetectedBarcode.cpp",
+    "DetectedBarcode.h",
     "DetectedFace.cpp",
     "DetectedFace.h",
     "FaceDetector.cpp",
     "FaceDetector.h",
+    "ShapeDetector.cpp",
+    "ShapeDetector.h",
   ]
 }

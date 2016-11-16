@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FaceDetector_h
-#define FaceDetector_h
+#ifndef BarcodeDetector_h
+#define BarcodeDetector_h
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
@@ -17,21 +17,21 @@ namespace blink {
 
 class LocalFrame;
 
-class MODULES_EXPORT FaceDetector final : public ShapeDetector,
-                                          public ScriptWrappable {
+class MODULES_EXPORT BarcodeDetector final : public ShapeDetector,
+                                             public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static FaceDetector* create(ScriptState*);
+  static BarcodeDetector* create(ScriptState*);
 
   ScriptPromise detect(ScriptState*, const CanvasImageSourceUnion&);
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  explicit FaceDetector(LocalFrame&);
-  ~FaceDetector() override = default;
+  explicit BarcodeDetector(LocalFrame&);
+  ~BarcodeDetector() override = default;
 };
 
 }  // namespace blink
 
-#endif  // FaceDetector_h
+#endif  // BarcodeDetector_h

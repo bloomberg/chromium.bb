@@ -238,6 +238,8 @@ modules_idl_files =
                     "serviceworkers/ServiceWorkerMessageEvent.idl",
                     "serviceworkers/ServiceWorkerRegistration.idl",
                     "serviceworkers/WindowClient.idl",
+                    "shapedetection/BarcodeDetector.idl",
+                    "shapedetection/DetectedBarcode.idl",
                     "shapedetection/DetectedFace.idl",
                     "shapedetection/FaceDetector.idl",
                     "speech/SpeechGrammar.idl",

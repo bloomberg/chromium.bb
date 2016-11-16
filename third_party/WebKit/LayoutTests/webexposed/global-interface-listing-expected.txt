@@ -256,6 +256,10 @@ interface BarProp
     attribute @@toStringTag
     getter visible
     method constructor
+interface BarcodeDetector
+    attribute @@toStringTag
+    method constructor
+    method detect
 interface BaseAudioContext : EventTarget
     attribute @@toStringTag
     getter currentTime
@@ -1222,6 +1226,11 @@ interface DataView
 interface DelayNode : AudioNode
     attribute @@toStringTag
     getter delayTime
+    method constructor
+interface DetectedBarcode
+    attribute @@toStringTag
+    getter boundingBox
+    getter rawValue
     method constructor
 interface DetectedFace
     attribute @@toStringTag

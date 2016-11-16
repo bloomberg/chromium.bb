@@ -22,7 +22,7 @@ let mockShapeDetectionReady = define(
       bindings.StubBindings(this.stub_).delegate = this;
     }
 
-    detectFace(frame_data, width, height) {
+    detectFaces(frame_data, width, height) {
       let receivedStruct = mojo.mapBuffer(frame_data, 0, width*height*4, 0);
       this.buffer_data_ = new Uint32Array(receivedStruct.buffer);
       return Promise.resolve({
@@ -33,6 +33,24 @@ let mockShapeDetectionReady = define(
               { x : 3.0, y: 3.0, width: 300.0, height: 300.0 },
           ]
         }
+      });
+      mojo.unmapBuffer(receivedStruct.buffer);
+    }
+
+    detectBarcodes(frame_data, width, height) {
+      let receivedStruct = mojo.mapBuffer(frame_data, 0, width*height*4, 0);
+      this.buffer_data_ = new Uint32Array(receivedStruct.buffer);
+      return Promise.resolve({
+        results: [
+          {
+            raw_value : "cats",
+            bounding_box: { x : 1.0, y: 1.0, width: 100.0, height: 100.0 },
+          },
+          {
+            raw_value : "dogs",
+            bounding_box: { x : 2.0, y: 2.0, width: 50.0, height: 50.0 },
+          },
+        ],
       });
       mojo.unmapBuffer(receivedStruct.buffer);
     }

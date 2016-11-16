@@ -15,4 +15,16 @@ test(function() {
   assert_true(faceDetector instanceof FaceDetector);
 }, 'FaceDetector instance can be created.');
 
+// This test verifies that DetectedBarcode can be created
+test(function() {
+  var detectedBarcode = new DetectedBarcode();
+  assert_true(detectedBarcode instanceof DetectedBarcode);
+}, 'DetectedBarcode instance can be created.');
+
+// This test verifies that BarcodeDetector can be created
+test(function() {
+  var barcodeDetector = new BarcodeDetector();
+  assert_true(barcodeDetector instanceof BarcodeDetector);
+}, 'BarcodeDetector instance can be created.');
+
 </script>
