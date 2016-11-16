@@ -27,9 +27,8 @@ class Bug(object):
 
     Args:
       bug_modifier: a string representing a bug modifier. According to
-        http://www.chromium.org/developers/testing/webkit-layout-tests/\
-        testexpectations
-        Bug identifiers are of the form "webkit.org/b/12345", "crbug.com/12345",
+        //docs/testing/layout_test_expectations.md
+        bug identifiers are of the form "webkit.org/b/12345", "crbug.com/12345",
          "code.google.com/p/v8/issues/detail?id=12345" or "Bug(username)"
     """
     match = re.match('Bug\((\w+)\)$', bug_modifier)

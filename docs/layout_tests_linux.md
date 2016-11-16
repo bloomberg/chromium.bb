@@ -10,8 +10,7 @@
         `src/third_party/WebKit/LayoutTests/fast/`.
 1.  When the tests finish, any unexpected results should be displayed.
 
-See
-[Running WebKit Layout Tests](http://dev.chromium.org/developers/testing/webkit-layout-tests)
+See [Layout Tests](testing/layout_tests.md)
 for full documentation about set up and available options.
 
 ## Pixel Tests

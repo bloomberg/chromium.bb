@@ -13,8 +13,8 @@ from webkitpy.layout_tests.models.test_expectations import *
 DEFAULT_TEST_EXPECTATIONS_LOCATION = (
     'http://src.chromium.org/blink/trunk/LayoutTests/TestExpectations')
 
-# The following is from test expectation syntax. The detail can be found in
-# http://www.chromium.org/developers/testing/webkit-layout-tests#TOC-Test-Expectations
+# The following is from test expectation syntax.
+# See: //docs/testing/layout_test_expectations.md
 # <decision> ::== [SKIP] [WONTFIX] [SLOW]
 DECISION_NAMES = ['SKIP', 'WONTFIX', 'SLOW']
 # <config> ::== RELEASE | DEBUG

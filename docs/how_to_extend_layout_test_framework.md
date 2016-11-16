@@ -12,8 +12,8 @@ to help people who want to actually the framework to test whatever they want.
 ## Background
 
 Before you can start actually extending the framework, you should be familiar
-with how to use it. This wiki is basically all you need to learn how to use it
-http://www.chromium.org/developers/testing/webkit-layout-tests
+with how to use it. See the
+[layout tests documentation](testing/layout_tests.md).
 
 ## How to Extend the Framework
 
@@ -129,7 +129,7 @@ Here are some of the functions that most likely need to be overridden.
 *   `layout_tests_dir`
     *   This tells the port where to look for all the and everything associated
         with them such as resources files.
-    *   By default it returns absolute path to the webkit tests.
+    *   By default it returns the absolute path to the layout tests directory.
     *   If you are planning on running something in the chromium src/ directory,
         there are helper functions to allow you to return a path relative to the
         base of the chromium src directory.

@@ -298,8 +298,7 @@ You might want to add stars `*` to each as a regular expression, e.g.
 
 ## Running Blink Layout Tests
 
-See
-https://sites.google.com/a/chromium.org/dev/developers/testing/webkit-layout-tests
+See [Layout Tests](testing/layout_tests.md).
 
 ## Running GPU tests
 

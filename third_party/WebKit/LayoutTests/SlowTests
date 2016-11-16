@@ -1,4 +1,5 @@
-# See http://www.chromium.org/developers/testing/webkit-layout-tests/testexpectations for more information on this file.
+# See //docs/testing/layout_test_expectations.md
+# for more information on this file.
 
 # This file should only mark tests as Slow. If they are failing in some other way, that listing should be in TestExpectations.
 # Lines listed in both files will have the *union* of the expectations.
