@@ -2876,14 +2876,14 @@ err:
 /**
  * Update the image for the current cursor surface
  *
- * @param b DRM backend structure
- * @param bo GBM buffer object to write into
- * @param ev View to use for cursor image
+ * @param plane_state DRM cursor plane state
+ * @param ev Source view for cursor
  */
 static void
-cursor_bo_update(struct drm_backend *b, struct gbm_bo *bo,
-		 struct weston_view *ev)
+cursor_bo_update(struct drm_plane_state *plane_state, struct weston_view *ev)
 {
+	struct drm_backend *b = plane_state->plane->backend;
+	struct gbm_bo *bo = plane_state->fb->bo;
 	struct weston_buffer *buffer = ev->surface->buffer_ref.buffer;
 	uint32_t buf[b->cursor_width * b->cursor_height];
 	int32_t stride;
@@ -2892,18 +2892,18 @@ cursor_bo_update(struct drm_backend *b, struct gbm_bo *bo,
 
 	assert(buffer && buffer->shm_buffer);
 	assert(buffer->shm_buffer == wl_shm_buffer_get(buffer->resource));
-	assert(ev->surface->width <= b->cursor_width);
-	assert(ev->surface->height <= b->cursor_height);
+	assert(buffer->width <= b->cursor_width);
+	assert(buffer->height <= b->cursor_height);
 
 	memset(buf, 0, sizeof buf);
 	stride = wl_shm_buffer_get_stride(buffer->shm_buffer);
 	s = wl_shm_buffer_get_data(buffer->shm_buffer);
 
 	wl_shm_buffer_begin_access(buffer->shm_buffer);
-	for (i = 0; i < ev->surface->height; i++)
+	for (i = 0; i < buffer->height; i++)
 		memcpy(buf + i * b->cursor_width,
 		       s + i * stride,
-		       ev->surface->width * 4);
+		       buffer->width * 4);
 	wl_shm_buffer_end_access(buffer->shm_buffer);
 
 	if (gbm_bo_write(bo, buf, sizeof buf) < 0)
@@ -2918,10 +2918,8 @@ drm_output_prepare_cursor_view(struct drm_output_state *output_state,
 	struct drm_backend *b = to_drm_backend(output->base.compositor);
 	struct drm_plane *plane = output->cursor_plane;
 	struct drm_plane_state *plane_state;
-	struct weston_buffer_viewport *viewport = &ev->surface->buffer_viewport;
 	struct wl_shm_buffer *shmbuf;
 	bool needs_update = false;
-	float x, y;
 
 	if (!plane)
 		return NULL;
@@ -2951,25 +2949,24 @@ drm_output_prepare_cursor_view(struct drm_output_state *output_state,
 	if (wl_shm_buffer_get_format(shmbuf) != WL_SHM_FORMAT_ARGB8888)
 		return NULL;
 
-	if (output->base.transform != WL_OUTPUT_TRANSFORM_NORMAL)
-		return NULL;
-	if (ev->transform.enabled &&
-	    (ev->transform.matrix.type > WESTON_MATRIX_TRANSFORM_TRANSLATE))
-		return NULL;
-	if (viewport->buffer.scale != output->base.current_scale)
-		return NULL;
-	if (ev->geometry.scissor_enabled)
-		return NULL;
-
-	if (ev->surface->width > b->cursor_width ||
-	    ev->surface->height > b->cursor_height)
-		return NULL;
-
 	plane_state =
 		drm_output_state_get_plane(output_state, output->cursor_plane);
 
 	if (plane_state && plane_state->fb)
 		return NULL;
+
+	/* We can't scale with the legacy API, and we don't try to account for
+	 * simple cropping/translation in cursor_bo_update. */
+	plane_state->output = output;
+	if (!drm_plane_state_coords_for_view(plane_state, ev))
+		goto err;
+
+	if (plane_state->src_x != 0 || plane_state->src_y != 0 ||
+	    plane_state->src_w > (unsigned) b->cursor_width << 16 ||
+	    plane_state->src_h > (unsigned) b->cursor_height << 16 ||
+	    plane_state->src_w != plane_state->dest_w << 16 ||
+	    plane_state->src_h != plane_state->dest_h << 16)
+		goto err;
 
 	/* Since we're setting plane state up front, we need to work out
 	 * whether or not we need to upload a new cursor. We can't use the
@@ -2987,26 +2984,27 @@ drm_output_prepare_cursor_view(struct drm_output_state *output_state,
 	}
 
 	output->cursor_view = ev;
-	weston_view_to_global_float(ev, 0, 0, &x, &y);
-	plane->base.x = x;
-	plane->base.y = y;
 
 	plane_state->fb =
 		drm_fb_ref(output->gbm_cursor_fb[output->current_cursor]);
-	plane_state->output = output;
-	plane_state->src_x = 0;
-	plane_state->src_y = 0;
+
+	if (needs_update)
+		cursor_bo_update(plane_state, ev);
+
+	/* The cursor API is somewhat special: in cursor_bo_update(), we upload
+	 * a buffer which is always cursor_width x cursor_height, even if the
+	 * surface we want to promote is actually smaller than this. Manually
+	 * mangle the plane state to deal with this. */
 	plane_state->src_w = b->cursor_width << 16;
 	plane_state->src_h = b->cursor_height << 16;
-	plane_state->dest_x = (x - output->base.x) * output->base.current_scale;
-	plane_state->dest_y = (y - output->base.y) * output->base.current_scale;
 	plane_state->dest_w = b->cursor_width;
 	plane_state->dest_h = b->cursor_height;
 
-	if (needs_update)
-		cursor_bo_update(b, plane_state->fb->bo, ev);
-
 	return &plane->base;
+
+err:
+	drm_plane_state_put_back(plane_state);
+	return NULL;
 }
 
 static void
