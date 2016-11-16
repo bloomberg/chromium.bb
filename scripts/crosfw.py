@@ -502,7 +502,12 @@ def RunBuild(options, base, target, queue):
   if not options.incremental:
     # Ignore any error from this, some older U-Boots fail on this.
     cros_build_lib.RunCommand(base + ['distclean'], **kwargs)
-    result = cros_build_lib.RunCommand(base + ['%s_config' % uboard], **kwargs)
+    if os.path.exists('tools/genboardscfg.py'):
+      mtarget = 'defconfig'
+    else:
+      mtarget = 'config'
+    cmd = base + ['%s_%s' % (uboard, mtarget)]
+    result = cros_build_lib.RunCommand(cmd, **kwargs)
     if result.returncode:
       sys.exit()
 
