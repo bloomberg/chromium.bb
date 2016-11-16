@@ -1,6 +1,7 @@
 # Chromium docs
 
-This directory contains chromium project documentation in [Markdown].
+This directory contains chromium project documentation in
+[Gitiles-flavored Markdown].
 It is automatically
 [rendered by Gitiles](https://chromium.googlesource.com/chromium/src/+/master/docs/).
 
@@ -25,6 +26,6 @@ git cl patch <CL number or URL>
 ./tools/md_browser/md_browser.py
 ```
 
-[Markdown]: https://gerrit.googlesource.com/gitiles/+/master/Documentation/markdown.md
+[Gitiles-flavored Markdown]: https://gerrit.googlesource.com/gitiles/+/master/Documentation/markdown.md
 [style guide]: https://github.com/google/styleguide/tree/gh-pages/docguide
 [md_browser]: ../tools/md_browser/
