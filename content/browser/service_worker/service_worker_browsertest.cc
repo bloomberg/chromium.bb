@@ -2031,10 +2031,10 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerNavigationPreloadTest, RejectRedirects) {
   EXPECT_EQ(1, GetRequestCount(kPageUrl));
   // The redirected request must not be sent.
   EXPECT_EQ(0, GetRequestCount(kRedirectedPageUrl));
-  // TODO(horo): When MojoAsyncResourceHandler will support redirection, we
-  // shold provide more specific error message.
-  EXPECT_EQ("NetworkError: Service Worker navigation preload network error.",
-            GetTextContent());
+  EXPECT_EQ(
+      "NetworkError: Service Worker navigation preload doesn't suport "
+      "redirect.",
+      GetTextContent());
 }
 
 // Tests responding with the navigation preload response when the navigation

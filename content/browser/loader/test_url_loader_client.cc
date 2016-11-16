@@ -6,6 +6,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
@@ -16,8 +17,22 @@ void TestURLLoaderClient::OnReceiveResponse(
     const ResourceResponseHead& response_head) {
   has_received_response_ = true;
   response_head_ = response_head;
-  if (quit_closure_for_on_received_response_)
-    quit_closure_for_on_received_response_.Run();
+  if (quit_closure_for_on_receive_response_)
+    quit_closure_for_on_receive_response_.Run();
+}
+
+void TestURLLoaderClient::OnReceiveRedirect(
+    const net::RedirectInfo& redirect_info,
+    const ResourceResponseHead& response_head) {
+  EXPECT_FALSE(response_body_.is_valid());
+  EXPECT_FALSE(has_received_response_);
+  // Use ClearHasReceivedRedirect to accept more redirects.
+  EXPECT_FALSE(has_received_redirect_);
+  has_received_redirect_ = true;
+  redirect_info_ = redirect_info;
+  response_head_ = response_head;
+  if (quit_closure_for_on_receive_redirect_)
+    quit_closure_for_on_receive_redirect_.Run();
 }
 
 void TestURLLoaderClient::OnDataDownloaded(int64_t data_length,
@@ -44,6 +59,10 @@ void TestURLLoaderClient::OnComplete(
     quit_closure_for_on_complete_.Run();
 }
 
+void TestURLLoaderClient::ClearHasReceivedRedirect() {
+  has_received_redirect_ = false;
+}
+
 mojom::URLLoaderClientAssociatedPtrInfo
 TestURLLoaderClient::CreateRemoteAssociatedPtrInfo(
     mojo::AssociatedGroup* associated_group) {
@@ -59,9 +78,16 @@ void TestURLLoaderClient::Unbind() {
 
 void TestURLLoaderClient::RunUntilResponseReceived() {
   base::RunLoop run_loop;
-  quit_closure_for_on_received_response_ = run_loop.QuitClosure();
+  quit_closure_for_on_receive_response_ = run_loop.QuitClosure();
   run_loop.Run();
-  quit_closure_for_on_received_response_.Reset();
+  quit_closure_for_on_receive_response_.Reset();
+}
+
+void TestURLLoaderClient::RunUntilRedirectReceived() {
+  base::RunLoop run_loop;
+  quit_closure_for_on_receive_redirect_ = run_loop.QuitClosure();
+  run_loop.Run();
+  quit_closure_for_on_receive_redirect_.Reset();
 }
 
 void TestURLLoaderClient::RunUntilDataDownloaded() {

@@ -1546,18 +1546,10 @@ crbug.com/602693 imported/wpt/service-workers/service-worker/referer.https.html 
 
 # mojo-loading: This is an experimental feature. failing virtual tests are
 # listed below.
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/access-control-and-redirects-async-same-origin.html [ Failure Timeout ]
 crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/blob-response-type-warm-cache.html [ Failure Timeout ]
 crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/cross-origin-preflight-get-response-type-blob.html [ Failure Timeout ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/onloadend-event-after-error.html [ Failure ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/open-in-body-onload-sync-to-invalid-redirect-response-handling.html [ Failure Timeout ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/redirect-cors-origin-null.html [ Failure ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html [ Failure ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/redirect-loop.html [ Failure Timeout ]
 crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/response-document.html [ Failure ]
 crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/response-text.html [ Failure ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/responseURL.html [ Failure ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/responsexml-type.html [ Failure ]
 crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/upload-onload-event.html [ Failure Timeout ]
 crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/upload-onloadend-event-after-load.html [ Failure Timeout ]
 crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/upload-onprogress-event.html [ Failure ]
@@ -1568,13 +1560,7 @@ crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/workers/upload-o
 crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/workers/xmlhttprequest-response-type-blob-sync.html [ Failure Timeout ]
 crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/workers/xmlhttprequest-response-type-blob.html [ Failure Timeout ]
 crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/xmlhttprequest-response-type-blob.html [ Failure Timeout ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/redirect-cross-origin.html [ Timeout Failure ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/access-control-and-redirects-async.html [ Timeout ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/xmlhttprequest-unsafe-redirect.html [ Timeout ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/redirect-cross-origin-2.html [ Timeout ]
 crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/upload-onloadend-event-after-abort.html [ Timeout ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Timeout ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/access-control-and-redirects.html [ Timeout ]
 
 # TODO(yhirano): There is an entry for the base test, but this test is flakier
 # than that. Fix this test so that we can move the entry to the base test

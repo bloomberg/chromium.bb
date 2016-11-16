@@ -33,9 +33,7 @@ struct ResourceResponse;
 // load events from the resource dispatcher host. This class is used only
 // when LoadingWithMojo runtime flag is enabled.
 //
-// TODO(yhirano): Implement redirects.
 // TODO(yhirano): Add histograms.
-// TODO(yhirano): Set zoom level.
 // TODO(yhirano): Send cached metadata.
 //
 // This class can be inherited only for tests.
@@ -67,7 +65,7 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
   // mojom::URLLoader implementation
   void FollowRedirect() override;
 
-  void ResumeForTesting();
+  void OnWritableForTesting();
   static void SetAllocationSizeForTesting(size_t size);
   static constexpr size_t kDefaultAllocationSize = 512 * 1024;
 
@@ -89,11 +87,11 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
   bool AllocateWriterIOBuffer(scoped_refptr<net::IOBufferWithSize>* buf,
                               bool* defer);
 
-  void Resume();
-  void OnDefer();
   bool CheckForSufficientResource();
   void OnWritable(MojoResult result);
   void Cancel();
+  // This function can be overriden only for tests.
+  virtual void ReportBadMessage(const std::string& error);
 
   ResourceDispatcherHostImpl* rdh_;
   mojo::AssociatedBinding<mojom::URLLoader> binding_;
@@ -101,7 +99,8 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
   bool has_checked_for_sufficient_resources_ = false;
   bool sent_received_response_message_ = false;
   bool is_using_io_buffer_not_from_writer_ = false;
-  bool did_defer_ = false;
+  bool did_defer_on_writing_ = false;
+  bool did_defer_on_redirect_ = false;
   base::TimeTicks response_started_ticks_;
   int64_t reported_total_received_bytes_ = 0;
 

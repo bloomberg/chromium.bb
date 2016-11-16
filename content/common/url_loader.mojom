@@ -11,6 +11,9 @@ struct URLRequest;
 struct URLResponseHead;
 
 [Native]
+struct URLRequestRedirectInfo;
+
+[Native]
 struct URLLoaderStatus;
 
 // Destroying a URLLoader will cancel the associated request.
@@ -24,6 +27,10 @@ interface URLLoader {
 interface URLLoaderClient {
   // Called when the response head is received.
   OnReceiveResponse(URLResponseHead head);
+
+  // Called when the request has been redirected. The receiver is expected to
+  // call FollowRedirect or cancel the request.
+  OnReceiveRedirect(URLRequestRedirectInfo redirect_info, URLResponseHead head);
 
   // Called when some data from a resource request has been downloaded to the
   // file. This is only called in the 'download_to_file' case and replaces

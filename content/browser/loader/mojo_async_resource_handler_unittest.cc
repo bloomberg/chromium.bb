@@ -246,6 +246,7 @@ class MojoAsyncResourceHandlerWithCustomDataPipeOperations
     is_end_write_expectation_set_ = true;
     end_write_expectation_ = end_write_expectation;
   }
+  bool has_received_bad_message() const { return has_received_bad_message_; }
 
  private:
   MojoResult BeginWrite(void** data, uint32_t* available) override {
@@ -258,9 +259,13 @@ class MojoAsyncResourceHandlerWithCustomDataPipeOperations
       return end_write_expectation_;
     return MojoAsyncResourceHandler::EndWrite(written);
   }
+  void ReportBadMessage(const std::string& error) override {
+    has_received_bad_message_ = true;
+  }
 
   bool is_begin_write_expectation_set_ = false;
   bool is_end_write_expectation_set_ = false;
+  bool has_received_bad_message_ = false;
   MojoResult begin_write_expectation_ = MOJO_RESULT_UNKNOWN;
   MojoResult end_write_expectation_ = MOJO_RESULT_UNKNOWN;
 
@@ -839,7 +844,7 @@ TEST_F(MojoAsyncResourceHandlerTest,
   url_loader_client_.RunUntilResponseBodyArrived();
   ASSERT_TRUE(url_loader_client_.response_body().is_valid());
   handler_->ResetBeginWriteExpectation();
-  handler_->ResumeForTesting();
+  handler_->OnWritableForTesting();
 
   std::string actual;
   while (actual.size() < written) {
@@ -1075,6 +1080,76 @@ TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest, CancelWhileWaiting) {
   }
 
   base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, resource_controller_.num_resume_calls());
+}
+
+TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest, RedirectHandling) {
+  rdh_delegate_.set_num_on_response_started_calls_expectation(1);
+  bool defer = false;
+
+  ASSERT_TRUE(handler_->OnWillStart(request_->url(), &defer));
+  ASSERT_FALSE(defer);
+  scoped_refptr<ResourceResponse> response = new ResourceResponse();
+  net::RedirectInfo redirect_info;
+  redirect_info.status_code = 301;
+  ASSERT_TRUE(
+      handler_->OnRequestRedirected(redirect_info, response.get(), &defer));
+  ASSERT_TRUE(defer);
+
+  ASSERT_FALSE(url_loader_client_.has_received_response());
+  ASSERT_FALSE(url_loader_client_.has_received_redirect());
+  url_loader_client_.RunUntilRedirectReceived();
+
+  ASSERT_FALSE(url_loader_client_.has_received_response());
+  ASSERT_TRUE(url_loader_client_.has_received_redirect());
+  EXPECT_EQ(301, url_loader_client_.redirect_info().status_code);
+
+  EXPECT_EQ(0, resource_controller_.num_resume_calls());
+  handler_->FollowRedirect();
+  EXPECT_EQ(1, resource_controller_.num_resume_calls());
+
+  url_loader_client_.ClearHasReceivedRedirect();
+  // Redirect once more.
+  defer = false;
+  redirect_info.status_code = 302;
+  ASSERT_TRUE(
+      handler_->OnRequestRedirected(redirect_info, response.get(), &defer));
+  ASSERT_TRUE(defer);
+
+  ASSERT_FALSE(url_loader_client_.has_received_response());
+  ASSERT_FALSE(url_loader_client_.has_received_redirect());
+  url_loader_client_.RunUntilRedirectReceived();
+
+  ASSERT_FALSE(url_loader_client_.has_received_response());
+  ASSERT_TRUE(url_loader_client_.has_received_redirect());
+  EXPECT_EQ(302, url_loader_client_.redirect_info().status_code);
+
+  EXPECT_EQ(1, resource_controller_.num_resume_calls());
+  handler_->FollowRedirect();
+  EXPECT_EQ(2, resource_controller_.num_resume_calls());
+
+  // Give the final response.
+  defer = false;
+  ASSERT_TRUE(handler_->OnResponseStarted(response.get(), &defer));
+  ASSERT_FALSE(defer);
+
+  net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, net::OK);
+  handler_->OnResponseCompleted(status, &defer);
+  ASSERT_FALSE(defer);
+
+  ASSERT_FALSE(url_loader_client_.has_received_completion());
+  url_loader_client_.RunUntilComplete();
+
+  ASSERT_TRUE(url_loader_client_.has_received_response());
+  ASSERT_TRUE(url_loader_client_.has_received_completion());
+  EXPECT_EQ(net::OK, url_loader_client_.completion_status().error_code);
+}
+
+TEST_P(MojoAsyncResourceHandlerWithAllocationSizeTest,
+       MalformedFollowRedirectRequest) {
+  handler_->FollowRedirect();
+
+  EXPECT_TRUE(handler_->has_received_bad_message());
   EXPECT_EQ(0, resource_controller_.num_resume_calls());
 }
 

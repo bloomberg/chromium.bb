@@ -280,7 +280,15 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
                               blink::WebString::fromUTF8(header_value));
     }
     response_->setResponseTime(response_head.response_time.ToInternalValue());
-    MaybeReportToClient();
+    MaybeReportResponseToClient();
+  }
+
+  void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
+                         const ResourceResponseHead& response_head) override {
+    // Cancel the request.
+    url_loader_ = nullptr;
+    ReportErrorToClient(
+        "Service Worker navigation preload doesn't suport redirect.");
   }
 
   void OnDataDownloaded(int64_t data_length,
@@ -292,7 +300,7 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
       mojo::ScopedDataPipeConsumerHandle body) override {
     DCHECK(!body_.is_valid());
     body_ = std::move(body);
-    MaybeReportToClient();
+    MaybeReportResponseToClient();
   }
 
   void OnComplete(const ResourceRequestCompletionStatus& status) override {
@@ -301,21 +309,11 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
     if (result_reported_)
       return;
     DCHECK_NE(0, status.error_code);
-    ServiceWorkerContextClient* client =
-        ServiceWorkerContextClient::ThreadSpecificInstance();
-    if (!client)
-      return;
-    client->OnNavigationPreloadError(
-        fetch_event_id_,
-        base::MakeUnique<blink::WebServiceWorkerError>(
-            blink::WebServiceWorkerError::ErrorTypeNetwork,
-            blink::WebString::fromUTF8(
-                "Service Worker navigation preload network error.")));
-    result_reported_ = true;
+    ReportErrorToClient("Service Worker navigation preload network error.");
   }
 
  private:
-  void MaybeReportToClient() {
+  void MaybeReportResponseToClient() {
     DCHECK(!result_reported_);
     if (!response_ || !body_.is_valid())
       return;
@@ -327,6 +325,18 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
     client->OnNavigationPreloadResponse(
         fetch_event_id_, std::move(response_),
         base::MakeUnique<WebDataConsumerHandleImpl>(std::move(body_)));
+    result_reported_ = true;
+  }
+
+  void ReportErrorToClient(const char* error_message) {
+    ServiceWorkerContextClient* client =
+        ServiceWorkerContextClient::ThreadSpecificInstance();
+    if (!client)
+      return;
+    client->OnNavigationPreloadError(
+        fetch_event_id_, base::MakeUnique<blink::WebServiceWorkerError>(
+                             blink::WebServiceWorkerError::ErrorTypeNetwork,
+                             blink::WebString::fromUTF8(error_message)));
     result_reported_ = true;
   }
 

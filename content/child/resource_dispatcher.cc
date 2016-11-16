@@ -98,6 +98,14 @@ class URLLoaderClientImpl final : public mojom::URLLoaderClient {
         ResourceMsg_ReceivedResponse(request_id_, response_head));
   }
 
+  void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
+                         const ResourceResponseHead& response_head) override {
+    DCHECK(!has_received_response_);
+    DCHECK(!body_consumer_);
+    resource_dispatcher_->OnMessageReceived(ResourceMsg_ReceivedRedirect(
+        request_id_, redirect_info, response_head));
+  }
+
   void OnDataDownloaded(int64_t data_len, int64_t encoded_data_len) override {
     resource_dispatcher_->OnMessageReceived(
         ResourceMsg_DataDownloaded(request_id_, data_len, encoded_data_len));
@@ -410,8 +418,14 @@ void ResourceDispatcher::FollowPendingRedirect(
     int request_id,
     PendingRequestInfo* request_info) {
   IPC::Message* msg = request_info->pending_redirect_message.release();
-  if (msg)
-    message_sender_->Send(msg);
+  if (msg) {
+    if (request_info->url_loader) {
+      request_info->url_loader->FollowRedirect();
+      delete msg;
+    } else {
+      message_sender_->Send(msg);
+    }
+  }
 }
 
 void ResourceDispatcher::OnRequestComplete(

@@ -84,6 +84,10 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
   void OnReceiveResponse(const ResourceResponseHead& head) override {
     client_->OnReceiveResponse(head);
   }
+  void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
+                         const ResourceResponseHead& head) override {
+    client_->OnReceiveRedirect(redirect_info, head);
+  }
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override {
     client_->OnStartLoadingResponseBody(std::move(body));
