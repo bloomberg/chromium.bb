@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_UDP_FUZZED_DATAGRAM_CLIENT_SOCKET_H_
-#define NET_UDP_FUZZED_DATAGRAM_CLIENT_SOCKET_H_
+#ifndef NET_SOCKET_FUZZED_DATAGRAM_CLIENT_SOCKET_H_
+#define NET_SOCKET_FUZZED_DATAGRAM_CLIENT_SOCKET_H_
 
-#include "net/udp/datagram_client_socket.h"
+#include "net/socket/datagram_client_socket.h"
 
 #include <stdint.h>
 
@@ -78,4 +78,4 @@ class FuzzedDatagramClientSocket : public DatagramClientSocket {
 
 }  // namespace net
 
-#endif  // NET_UDP_FUZZED_DATAGRAM_CLIENT_SOCKET_H_
+#endif  // NET_SOCKET_FUZZED_DATAGRAM_CLIENT_SOCKET_H_

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_UDP_DATAGRAM_SERVER_SOCKET_H_
-#define NET_UDP_DATAGRAM_SERVER_SOCKET_H_
+#ifndef NET_SOCKET_DATAGRAM_SERVER_SOCKET_H_
+#define NET_SOCKET_DATAGRAM_SERVER_SOCKET_H_
 
 #include <stdint.h>
 
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
-#include "net/udp/datagram_socket.h"
-#include "net/udp/diff_serv_code_point.h"
+#include "net/socket/datagram_socket.h"
+#include "net/socket/diff_serv_code_point.h"
 
 namespace net {
 
@@ -112,4 +112,4 @@ class NET_EXPORT DatagramServerSocket : public DatagramSocket {
 
 }  // namespace net
 
-#endif  // NET_UDP_DATAGRAM_SERVER_SOCKET_H_
+#endif  // NET_SOCKET_DATAGRAM_SERVER_SOCKET_H_

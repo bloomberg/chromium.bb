@@ -12,7 +12,7 @@
 #include "mojo/public/cpp/bindings/array.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
-#include "net/udp/udp_socket.h"
+#include "net/socket/udp_socket.h"
 
 namespace extensions {
 

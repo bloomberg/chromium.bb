@@ -2,10 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/udp/udp_socket.h"
-
-#include "net/udp/udp_client_socket.h"
-#include "net/udp/udp_server_socket.h"
+#include "net/socket/udp_socket.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -25,6 +22,8 @@
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
+#include "net/socket/udp_client_socket.h"
+#include "net/socket/udp_server_socket.h"
 #include "net/test/gtest_util.h"
 #include "net/test/net_test_suite.h"
 #include "testing/gmock/include/gmock/gmock.h"

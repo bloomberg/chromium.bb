@@ -21,7 +21,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
-#include "net/udp/udp_socket.h"
+#include "net/socket/udp_socket.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/ppb_udp_socket.h"

@@ -22,7 +22,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/rand_callback.h"
 #include "net/log/net_log_source.h"
-#include "net/udp/udp_socket.h"
+#include "net/socket/udp_socket.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/host/dispatch_host_message.h"

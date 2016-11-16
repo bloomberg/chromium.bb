@@ -18,7 +18,7 @@
 #include "chrome/browser/local_discovery/service_discovery_client_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/dns/mdns_client.h"
-#include "net/udp/datagram_server_socket.h"
+#include "net/socket/datagram_server_socket.h"
 
 namespace net {
 class IPAddress;

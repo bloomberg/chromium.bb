@@ -38,7 +38,7 @@
 #include "media/cast/test/utility/udp_proxy.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/udp/udp_socket.h"
+#include "net/socket/udp_socket.h"
 
 namespace media {
 namespace cast {

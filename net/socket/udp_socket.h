@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_UDP_UDP_SOCKET_H_
-#define NET_UDP_UDP_SOCKET_H_
+#ifndef NET_SOCKET_UDP_SOCKET_H_
+#define NET_SOCKET_UDP_SOCKET_H_
 
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
-#include "net/udp/udp_socket_win.h"
+#include "net/socket/udp_socket_win.h"
 #elif defined(OS_POSIX)
-#include "net/udp/udp_socket_posix.h"
+#include "net/socket/udp_socket_posix.h"
 #endif
 
 namespace net {
@@ -43,4 +43,4 @@ typedef UDPSocketPosix UDPSocket;
 
 }  // namespace net
 
-#endif  // NET_UDP_UDP_SOCKET_H_
+#endif  // NET_SOCKET_UDP_SOCKET_H_

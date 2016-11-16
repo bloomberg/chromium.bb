@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/udp/udp_socket_win.h"
+#include "net/socket/udp_socket_win.h"
 
 #include <mstcpip.h>
 
@@ -28,7 +28,7 @@
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_source_type.h"
 #include "net/socket/socket_descriptor.h"
-#include "net/udp/udp_net_log_parameters.h"
+#include "net/socket/udp_net_log_parameters.h"
 
 namespace {
 

@@ -22,8 +22,8 @@
 #include "content/common/content_export.h"
 #include "content/common/p2p_socket_type.h"
 #include "net/base/ip_endpoint.h"
-#include "net/udp/diff_serv_code_point.h"
-#include "net/udp/udp_server_socket.h"
+#include "net/socket/diff_serv_code_point.h"
+#include "net/socket/udp_server_socket.h"
 #include "third_party/webrtc/base/asyncpacketsocket.h"
 
 namespace content {

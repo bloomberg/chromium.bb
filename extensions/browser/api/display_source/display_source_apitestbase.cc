@@ -11,7 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_source.h"
-#include "net/udp/udp_socket.h"
+#include "net/socket/udp_socket.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {

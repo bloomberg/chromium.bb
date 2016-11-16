@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_UDP_DATAGRAM_CLIENT_SOCKET_H_
-#define NET_UDP_DATAGRAM_CLIENT_SOCKET_H_
+#ifndef NET_SOCKET_DATAGRAM_CLIENT_SOCKET_H_
+#define NET_SOCKET_DATAGRAM_CLIENT_SOCKET_H_
 
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
+#include "net/socket/datagram_socket.h"
 #include "net/socket/socket.h"
-#include "net/udp/datagram_socket.h"
 
 namespace net {
 
@@ -45,4 +45,4 @@ class NET_EXPORT_PRIVATE DatagramClientSocket : public DatagramSocket,
 
 }  // namespace net
 
-#endif  // NET_UDP_DATAGRAM_CLIENT_SOCKET_H_
+#endif  // NET_SOCKET_DATAGRAM_CLIENT_SOCKET_H_

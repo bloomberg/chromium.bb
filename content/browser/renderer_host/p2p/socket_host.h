@@ -16,7 +16,7 @@
 #include "content/common/p2p_socket_type.h"
 #include "content/public/browser/render_process_host.h"
 #include "net/base/ip_endpoint.h"
-#include "net/udp/datagram_socket.h"
+#include "net/socket/datagram_socket.h"
 
 namespace IPC {
 class Sender;

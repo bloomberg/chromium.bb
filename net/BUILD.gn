@@ -1553,7 +1553,7 @@ if (!is_ios) {
       "disk_cache/disk_cache_perftest.cc",
       "extras/sqlite/sqlite_persistent_cookie_store_perftest.cc",
       "proxy/proxy_resolver_perftest.cc",
-      "udp/udp_socket_perftest.cc",
+      "socket/udp_socket_perftest.cc",
     ]
 
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
@@ -1594,12 +1594,12 @@ source_set("net_fuzzer_test_support") {
     "base/fuzzer_test_support.cc",
     "filter/fuzzed_source_stream.cc",
     "filter/fuzzed_source_stream.h",
+    "socket/fuzzed_datagram_client_socket.cc",
+    "socket/fuzzed_datagram_client_socket.h",
     "socket/fuzzed_socket.cc",
     "socket/fuzzed_socket.h",
     "socket/fuzzed_socket_factory.cc",
     "socket/fuzzed_socket_factory.h",
-    "udp/fuzzed_datagram_client_socket.cc",
-    "udp/fuzzed_datagram_client_socket.h",
   ]
   public_deps = [
     "//base/test:test_support",

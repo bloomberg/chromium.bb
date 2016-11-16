@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/udp/fuzzed_datagram_client_socket.h"
+#include "net/socket/fuzzed_datagram_client_socket.h"
 
 #include <algorithm>
 

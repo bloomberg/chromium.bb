@@ -20,8 +20,8 @@
 #include "media/cast/net/pacing/paced_sender.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
-#include "net/udp/diff_serv_code_point.h"
-#include "net/udp/udp_socket.h"
+#include "net/socket/diff_serv_code_point.h"
+#include "net/socket/udp_socket.h"
 
 namespace net {
 class NetLog;

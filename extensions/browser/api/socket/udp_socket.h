@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "extensions/browser/api/socket/socket.h"
-#include "net/udp/udp_socket.h"
+#include "net/socket/udp_socket.h"
 
 namespace extensions {
 

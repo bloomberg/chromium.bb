@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_UDP_UDP_NET_LOG_PARAMETERS_H_
-#define NET_UDP_UDP_NET_LOG_PARAMETERS_H_
+#ifndef NET_SOCKET_UDP_NET_LOG_PARAMETERS_H_
+#define NET_SOCKET_UDP_NET_LOG_PARAMETERS_H_
 
 #include "net/base/network_change_notifier.h"
 #include "net/log/net_log_parameters_callback.h"
@@ -30,4 +30,4 @@ NetLogParametersCallback CreateNetLogUDPConnectCallback(
 
 }  // namespace net
 
-#endif  // NET_UDP_UDP_NET_LOG_PARAMETERS_H_
+#endif  // NET_SOCKET_UDP_NET_LOG_PARAMETERS_H_

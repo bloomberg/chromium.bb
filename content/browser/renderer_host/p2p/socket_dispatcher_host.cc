@@ -24,7 +24,7 @@
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/client_socket_factory.h"
-#include "net/udp/datagram_client_socket.h"
+#include "net/socket/datagram_client_socket.h"
 #include "net/url_request/url_request_context_getter.h"
 
 using content::BrowserMessageFilter;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/udp/udp_net_log_parameters.h"
+#include "net/socket/udp_net_log_parameters.h"
 
 #include <utility>
 

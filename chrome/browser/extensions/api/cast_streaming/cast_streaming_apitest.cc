@@ -32,7 +32,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/rand_callback.h"
 #include "net/log/net_log_source.h"
-#include "net/udp/udp_server_socket.h"
+#include "net/socket/udp_server_socket.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using media::cast::test::GetFreeLocalPort;

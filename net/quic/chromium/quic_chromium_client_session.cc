@@ -31,13 +31,13 @@
 #include "net/quic/core/quic_client_promised_info.h"
 #include "net/quic/core/quic_crypto_client_stream_factory.h"
 #include "net/quic/core/spdy_utils.h"
+#include "net/socket/datagram_client_socket.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_session.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
 #include "net/ssl/token_binding.h"
-#include "net/udp/datagram_client_socket.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
 namespace net {

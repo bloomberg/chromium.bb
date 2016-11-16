@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_UDP_DIFF_SERV_CODE_POINT_H_
-#define NET_UDP_DIFF_SERV_CODE_POINT_H_
+#ifndef NET_SOCKET_DIFF_SERV_CODE_POINT_H_
+#define NET_SOCKET_DIFF_SERV_CODE_POINT_H_
 
 namespace net {
 
@@ -39,4 +39,4 @@ enum DiffServCodePoint {
 
 }  // namespace net
 
-#endif  // NET_UDP_DIFF_SERV_CODE_POINT_H_
+#endif  // NET_SOCKET_DIFF_SERV_CODE_POINT_H_
