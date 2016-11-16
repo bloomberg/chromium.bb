@@ -12,12 +12,12 @@ PerfTestRunner.measureRunsPerSecond({
     PerfTestRunner.gc();
   },
   run: () => {
-    const num_words = 1000;
-    for (let i = 0; i < num_words; i++) {
-      let a = document.createElement('a');
-      a.append(i);
-      container.append(a);
-      container.append(' ');
+    const num_words = 300;
+    for (var i = 0; i < num_words; i++) {
+      var a = document.createElement('a');
+      a.appendChild(document.createTextNode('' + i));
+      container.appendChild(a);
+      container.appendChild(document.createTextNode(' '));
     }
     PerfTestRunner.forceLayout();
   }
