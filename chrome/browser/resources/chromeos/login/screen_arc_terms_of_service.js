@@ -66,14 +66,15 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
     /**
      * Sets current metrics mode.
      * @param {string} text Describes current metrics state.
-     * @param {boolean} canEnable Defines if user is allowed to change this
-     *                            metrics option.
-     * @param {boolean} on Defines if metrics are active currently.
+     * @param {boolean} visible If metrics text is visible.
      */
-    setMetricsMode: function(text, canEnable, on) {
-      $('arc-enable-metrics').hidden = !canEnable;
-      $('arc-enable-metrics').checked = on;
+    setMetricsMode: function(text, visible) {
+      $('arc-text-metrics').hidden = !visible;
       $('arc-text-metrics').innerHTML = text;
+
+      if (!visible) {
+        return;
+      }
 
       var self = this;
       var leanMoreStatisticsText =
@@ -154,15 +155,11 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos',
         $('arc-tos-skip-button').disabled = true;
         $('arc-tos-accept-button').disabled = true;
 
-        var enableMetrics = $('arc-enable-metrics');
-        var isMetricsEnabled = !enableMetrics.hidden && enableMetrics.checked;
         var isBackupRestoreEnabled = $('arc-enable-backup-restore').checked;
         var isLocationServiceEnabled = $('arc-enable-location-service').checked;
 
         chrome.send('arcTermsOfServiceAccept',
-            [isMetricsEnabled,
-             isBackupRestoreEnabled,
-             isLocationServiceEnabled]);
+            [isBackupRestoreEnabled, isLocationServiceEnabled]);
       });
       buttons.push(acceptButton);
 

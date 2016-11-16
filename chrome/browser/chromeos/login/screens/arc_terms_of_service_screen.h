@@ -30,9 +30,7 @@ class ArcTermsOfServiceScreen : public BaseScreen,
 
   // ArcTermsOfServiceScreenActor::Delegate:
   void OnSkip() override;
-  void OnAccept(bool enable_metrics,
-                bool enable_backup_restore,
-                bool enable_location_services) override;
+  void OnAccept() override;
   void OnActorDestroyed(ArcTermsOfServiceScreenActor* actor) override;
 
  private:

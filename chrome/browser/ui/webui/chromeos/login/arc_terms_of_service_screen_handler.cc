@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/arc/optin/arc_optin_preference_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/login/localized_values_builder.h"
 #include "content/public/browser/web_contents.h"
@@ -61,24 +62,29 @@ void ArcTermsOfServiceScreenHandler::DeclareLocalizedValues(
 
 void ArcTermsOfServiceScreenHandler::OnMetricsModeChanged(bool enabled,
                                                           bool managed) {
-  int message_id;
-  const Profile* const profile = Profile::FromBrowserContext(
-      web_ui()->GetWebContents()->GetBrowserContext());
+  const Profile* const profile = ProfileManager::GetActiveUserProfile();
   CHECK(profile);
-  const bool owner_profile = chromeos::ProfileHelper::IsOwnerProfile(profile);
-  if (managed || !owner_profile) {
-    message_id = enabled ?
+
+  const user_manager::User* user =
+      ProfileHelper::Get()->GetUserByProfile(profile);
+  CHECK(user);
+
+  const AccountId owner =
+      user_manager::UserManager::Get()->GetOwnerAccountId();
+
+  // Owner may not be set in case of initial account setup. Note, in case of
+  // enterprise enrolled devices owner is always empty and we need to account
+  // managed flag.
+  const bool owner_profile = !owner.is_valid() || user->GetAccountId() == owner;
+
+  if (owner_profile && !managed) {
+    CallJS("setMetricsMode", base::string16(), false);
+  } else {
+    int message_id = enabled ?
         IDS_ARC_OOBE_TERMS_DIALOG_METRICS_MANAGED_ENABLED :
         IDS_ARC_OOBE_TERMS_DIALOG_METRICS_MANAGED_DISABLED;
-  } else {
-    message_id = enabled ?
-        IDS_ARC_OOBE_TERMS_DIALOG_METRICS_ENABLED :
-        IDS_ARC_OOBE_TERMS_DIALOG_METRICS_DISABLED;
+    CallJS("setMetricsMode", l10n_util::GetStringUTF16(message_id), true);
   }
-
-  const bool checkbox_enabled = !enabled && !managed && owner_profile;
-  CallJS("setMetricsMode", l10n_util::GetStringUTF16(message_id),
-      checkbox_enabled, enabled);
 }
 
 void ArcTermsOfServiceScreenHandler::OnBackupAndRestoreModeChanged(
@@ -117,10 +123,8 @@ void ArcTermsOfServiceScreenHandler::Initialize() {
 }
 
 void ArcTermsOfServiceScreenHandler::DoShow() {
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui()->GetWebContents()->GetBrowserContext());
+  Profile* profile = ProfileManager::GetActiveUserProfile();
   CHECK(profile);
-
   pref_handler_.reset(new arc::ArcOptInPreferenceHandler(
       this, profile->GetPrefs()));
   pref_handler_->Start();
@@ -133,12 +137,12 @@ void ArcTermsOfServiceScreenHandler::HandleSkip() {
 }
 
 void ArcTermsOfServiceScreenHandler::HandleAccept(
-    bool enable_metrics,
     bool enable_backup_restore,
     bool enable_location_services) {
   if (screen_) {
-    screen_->OnAccept(
-        enable_metrics, enable_backup_restore, enable_location_services);
+    pref_handler_->EnableBackupRestore(enable_backup_restore);
+    pref_handler_->EnableLocationService(enable_location_services);
+    screen_->OnAccept();
   }
 }
 

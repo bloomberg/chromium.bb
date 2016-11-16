@@ -23,9 +23,7 @@ class ArcTermsOfServiceScreenActor {
     virtual void OnSkip() = 0;
 
     // Called when the user accepts the PlayStore Terms of Service.
-    virtual void OnAccept(bool enable_metrics,
-                          bool enable_backup_restore,
-                          bool enable_location_services) = 0;
+    virtual void OnAccept() = 0;
 
     // Called when actor is destroyed so there is no dead reference to it.
     virtual void OnActorDestroyed(ArcTermsOfServiceScreenActor* actor) = 0;

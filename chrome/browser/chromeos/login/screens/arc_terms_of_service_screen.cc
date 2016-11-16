@@ -51,18 +51,7 @@ void ArcTermsOfServiceScreen::OnSkip() {
   ApplyTerms(false);
 }
 
-void ArcTermsOfServiceScreen::OnAccept(bool enable_metrics,
-                                       bool enable_backup_restore,
-                                       bool enable_location_services) {
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  if (enable_metrics)
-    ChangeMetricsReportingState(true);
-
-  profile->GetPrefs()->SetBoolean(prefs::kArcBackupRestoreEnabled,
-                                  enable_backup_restore);
-  profile->GetPrefs()->SetBoolean(prefs::kArcLocationServiceEnabled,
-                                  enable_location_services);
-
+void ArcTermsOfServiceScreen::OnAccept() {
   ApplyTerms(true);
 }
 

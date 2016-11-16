@@ -48,8 +48,7 @@ class ArcTermsOfServiceScreenHandler :
 
   void DoShow();
   void HandleSkip();
-  void HandleAccept(bool enable_metrics,
-                    bool enable_backup_restore,
+  void HandleAccept(bool enable_backup_restore,
                     bool enable_location_services);
 
   // arc::ArcOptInPreferenceHandlerObserver:
