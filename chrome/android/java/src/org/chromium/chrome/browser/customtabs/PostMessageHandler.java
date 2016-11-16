@@ -143,6 +143,9 @@ public class PostMessageHandler {
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
+                // It is still possible that the page has navigated while this task is in the queue.
+                // If that happens fail gracefully.
+                if (mChannel == null || mChannel[0].isClosed()) return;
                 mChannel[0].postMessage(message, null);
             }
         });
