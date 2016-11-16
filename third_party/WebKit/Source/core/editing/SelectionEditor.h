@@ -82,7 +82,7 @@ class SelectionEditor final
   // layout if needed.
   void updateIfNeeded();
 
-  DECLARE_VIRTUAL_TRACE();
+  DECLARE_TRACE();
 
  private:
   explicit SelectionEditor(FrameSelection&);
