@@ -9,8 +9,18 @@ import("//components/policy/resources/policy_templates.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//tools/grit/grit_rule.gni")
 
+# To test policy generation for platforms different than your OS, override and
+# enable these flags (but don't check that in!).
+gen_policy_templates_common = true
+gen_policy_templates_win = is_win
+gen_policy_templates_linux = is_linux
+gen_policy_templates_android = is_android
+gen_policy_templates_mac = is_mac
+
 if (is_mac) {
   import("//build/util/branding.gni")
+} else if (gen_policy_templates_mac) {
+  chrome_mac_bundle_id = "DUMMY_MAC_BUNDLE_ID"
 }
 
 if (is_component_build) {
@@ -29,7 +39,7 @@ if (is_component_build) {
   }
 }
 
-# Used by taregts that compile into the implementation.
+# Used by targets that compile into the implementation.
 config("component_implementation") {
   defines = [ "POLICY_COMPONENT_IMPLEMENTATION" ]
 }
@@ -105,20 +115,31 @@ if (enable_configuration_policy) {
     source = policy_templates_grd_file
     use_qualified_include = true
     output_dir = "$root_gen_dir/chrome"
-    outputs = policy_templates_doc_outputs
-    if (is_android) {
-      outputs += policy_templates_android_outputs
-    }
-    if (is_linux) {
-      outputs += policy_templates_linux_outputs
-    }
-    if (is_mac) {
-      outputs += policy_templates_mac_outputs
+    outputs = []
+    defines = []
 
-      defines = [ "mac_bundle_id=$chrome_mac_bundle_id" ]
+    if (gen_policy_templates_common) {
+      outputs += policy_templates_doc_outputs
+      defines += [ "gen_policy_templates_common" ]
     }
-    if (is_win) {
+    if (gen_policy_templates_android) {
+      outputs += policy_templates_android_outputs
+      defines += [ "gen_policy_templates_android" ]
+    }
+    if (gen_policy_templates_linux) {
+      outputs += policy_templates_linux_outputs
+      defines += [ "gen_policy_templates_linux" ]
+    }
+    if (gen_policy_templates_mac) {
+      outputs += policy_templates_mac_outputs
+      defines += [
+        "mac_bundle_id=$chrome_mac_bundle_id",
+        "gen_policy_templates_mac",
+      ]
+    }
+    if (gen_policy_templates_win) {
       outputs += policy_templates_windows_outputs
+      defines += [ "gen_policy_templates_win" ]
     }
   }
 
@@ -176,7 +197,7 @@ if (enable_configuration_policy) {
     ]
   }
 
-  if (is_android) {
+  if (gen_policy_templates_android && is_android) {
     import("//build/config/android/rules.gni")
 
     _generated_resources_dir = "$root_gen_dir/chrome/app/policy/android"
@@ -208,7 +229,7 @@ if (enable_configuration_policy) {
         ":policy_templates_grit",
       ]
     }
-  } else if (is_mac) {
+  } else if (gen_policy_templates_mac && is_mac) {
     action("convert_mcx_plist") {
       script = "//build/config/mac/xcrun.py"
       sources = [
@@ -277,7 +298,7 @@ if (enable_configuration_policy) {
     }
   }
 
-  if (is_win) {
+  if (gen_policy_templates_common && gen_policy_templates_win) {
     version_file = "VERSION"
     version_path = "$policy_templates_base_dir/$version_file"
 
@@ -315,6 +336,10 @@ if (enable_configuration_policy) {
                version_file,
                "--grit_info",
                rebase_path(grit_info_script, root_build_dir),
+               "-D",
+               "gen_policy_templates_common",
+               "-D",
+               "gen_policy_templates_win",
              ] + grit_defines
       deps = [
         ":add_version",

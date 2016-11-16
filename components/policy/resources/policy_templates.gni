@@ -72,6 +72,7 @@ policy_templates_linux_outputs =
 policy_templates_mac_outputs = [
   "$policy_templates_base_dir/ios/chrome_policy.plist",
   "$policy_templates_base_dir/mac/app-Manifest.plist",
+
   "$policy_templates_base_dir/mac/strings/am.lproj/Localizable.strings",
   "$policy_templates_base_dir/mac/strings/ar.lproj/Localizable.strings",
   "$policy_templates_base_dir/mac/strings/bg.lproj/Localizable.strings",
@@ -128,6 +129,9 @@ policy_templates_mac_outputs = [
 ]
 
 policy_templates_windows_outputs = [
+  "$policy_templates_base_dir/windows/examples/chrome.reg",
+  "$policy_templates_base_dir/windows/admx/chrome.admx",
+
   "$policy_templates_base_dir/windows/adm/am/chrome.adm",
   "$policy_templates_base_dir/windows/adm/ar/chrome.adm",
   "$policy_templates_base_dir/windows/adm/bg/chrome.adm",
@@ -181,12 +185,12 @@ policy_templates_windows_outputs = [
   "$policy_templates_base_dir/windows/adm/vi/chrome.adm",
   "$policy_templates_base_dir/windows/adm/zh-CN/chrome.adm",
   "$policy_templates_base_dir/windows/adm/zh-TW/chrome.adm",
+
   "$policy_templates_base_dir/windows/admx/am/chrome.adml",
   "$policy_templates_base_dir/windows/admx/ar/chrome.adml",
   "$policy_templates_base_dir/windows/admx/bg/chrome.adml",
   "$policy_templates_base_dir/windows/admx/bn/chrome.adml",
   "$policy_templates_base_dir/windows/admx/ca/chrome.adml",
-  "$policy_templates_base_dir/windows/admx/chrome.admx",
   "$policy_templates_base_dir/windows/admx/cs/chrome.adml",
   "$policy_templates_base_dir/windows/admx/da/chrome.adml",
   "$policy_templates_base_dir/windows/admx/de/chrome.adml",
@@ -235,5 +239,4 @@ policy_templates_windows_outputs = [
   "$policy_templates_base_dir/windows/admx/vi/chrome.adml",
   "$policy_templates_base_dir/windows/admx/zh-CN/chrome.adml",
   "$policy_templates_base_dir/windows/admx/zh-TW/chrome.adml",
-  "$policy_templates_base_dir/windows/examples/chrome.reg",
 ]
