@@ -92,7 +92,7 @@ import java.util.concurrent.TimeoutException;
  *     // performed tasks.
  *     doSomeOperationAndWait(codeUnerTest, delegate.getOnOperationFailedHelper());
  *
- *     // The helper can be resued for as many calls as needed, just be sure to get the count each
+ *     // The helper can be reused for as many calls as needed, just be sure to get the count each
  *     // time.
  *     onOperationFailedCallCount = delegate.getOnOperationFailedHelper().getCallCount();
  *     codeUnderTest.doSomethingElseButStillFailOnAnotherThread();
@@ -109,8 +109,8 @@ import java.util.concurrent.TimeoutException;
  * // Shows how to turn an async operation + completion callback into a synchronous operation.
  * private void doSomeOperationAndWait(final CodeUnderTest underTest,
  *         CallbackHelper operationHelper) throws InterruptedException, TimeoutException {
- *     final int callCount = operaitonHelper.getCallCount();
- *     getInstrumentaiton().runOnMainSync(new Runnable() {
+ *     final int callCount = operationHelper.getCallCount();
+ *     getInstrumentation().runOnMainSync(new Runnable() {
  *         @Override
  *         public void run() {
  *             // This schedules a call to a method on the injected TestDelegate. The TestDelegate

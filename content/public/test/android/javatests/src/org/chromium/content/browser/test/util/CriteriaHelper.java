@@ -29,7 +29,7 @@ import java.util.concurrent.Callable;
  * public void waitForTabFullyLoaded(final Tab tab) {
  *     CriteriaHelper.pollUiThread(new Criteria() {
  *         {@literal @}Override
- *         public boolean isSatisified() {
+ *         public boolean isSatisfied() {
  *             if (tab.getWebContents() == null) {
  *                 updateFailureReason("Tab has no web contents");
  *                 return false;
