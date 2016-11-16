@@ -55,6 +55,9 @@ bool IsSpotlightActionsEnabled();
 // Whether the iOS MDM integration is enabled.
 bool IsMDMIntegrationEnabled();
 
+// Whether the back-forward navigation uses pending index.
+bool IsPendingIndexNavigationEnabled();
+
 }  // namespace experimental_flags
 
 #endif  // IOS_CHROME_BROWSER_EXPERIMENTAL_FLAGS_H_

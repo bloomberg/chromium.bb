@@ -29,6 +29,8 @@ NSString* const kHeuristicsForPasswordGeneration =
 NSString* const kEnableReadingList = @"EnableReadingList";
 NSString* const kEnableNewClearBrowsingDataUI = @"EnableNewClearBrowsingDataUI";
 NSString* const kMDMIntegrationDisabled = @"MDMIntegrationDisabled";
+NSString* const kPendingIndexNavigationEnabled =
+    @"PendingIndexNavigationEnabled";
 }  // namespace
 
 namespace experimental_flags {
@@ -178,6 +180,11 @@ bool IsSpotlightActionsEnabled() {
 bool IsMDMIntegrationEnabled() {
   return ![[NSUserDefaults standardUserDefaults]
       boolForKey:kMDMIntegrationDisabled];
+}
+
+bool IsPendingIndexNavigationEnabled() {
+  return [[NSUserDefaults standardUserDefaults]
+      boolForKey:kPendingIndexNavigationEnabled];
 }
 
 }  // namespace experimental_flags
