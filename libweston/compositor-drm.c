@@ -1198,6 +1198,97 @@ drm_plane_state_put_back(struct drm_plane_state *state)
 }
 
 /**
+ * Given a weston_view, fill the drm_plane_state's co-ordinates to display on
+ * a given plane.
+ */
+static void
+drm_plane_state_coords_for_view(struct drm_plane_state *state,
+				struct weston_view *ev)
+{
+	struct drm_output *output = state->output;
+	struct weston_buffer_viewport *viewport = &ev->surface->buffer_viewport;
+	pixman_region32_t dest_rect, src_rect;
+	pixman_box32_t *box, tbox;
+	wl_fixed_t sx1, sy1, sx2, sy2;
+
+	/* Update the base weston_plane co-ordinates. */
+	box = pixman_region32_extents(&ev->transform.boundingbox);
+	state->plane->base.x = box->x1;
+	state->plane->base.y = box->y1;
+
+	/* First calculate the destination co-ordinates by taking the
+	 * area of the view which is visible on this output, performing any
+	 * transforms to account for output rotation and scale as necessary. */
+	pixman_region32_init(&dest_rect);
+	pixman_region32_intersect(&dest_rect, &ev->transform.boundingbox,
+				  &output->base.region);
+	pixman_region32_translate(&dest_rect, -output->base.x, -output->base.y);
+	box = pixman_region32_extents(&dest_rect);
+	tbox = weston_transformed_rect(output->base.width,
+				       output->base.height,
+				       output->base.transform,
+				       output->base.current_scale,
+				       *box);
+	state->dest_x = tbox.x1;
+	state->dest_y = tbox.y1;
+	state->dest_w = tbox.x2 - tbox.x1;
+	state->dest_h = tbox.y2 - tbox.y1;
+	pixman_region32_fini(&dest_rect);
+
+	/* Now calculate the source rectangle, by finding the extents of the
+	 * view, and working backwards to source co-ordinates. */
+	pixman_region32_init(&src_rect);
+	pixman_region32_intersect(&src_rect, &ev->transform.boundingbox,
+				  &output->base.region);
+	box = pixman_region32_extents(&src_rect);
+
+	/* Accounting for any transformations made to this particular surface
+	 * view, find the source rectangle to use. */
+	weston_view_from_global_fixed(ev,
+				      wl_fixed_from_int(box->x1),
+				      wl_fixed_from_int(box->y1),
+				      &sx1, &sy1);
+	weston_view_from_global_fixed(ev,
+				      wl_fixed_from_int(box->x2),
+				      wl_fixed_from_int(box->y2),
+				      &sx2, &sy2);
+
+	/* Clamp our source co-ordinates to surface bounds; it's possible
+	 * for intermediate translations to give us slightly incorrect
+	 * co-ordinates if we have, for example, multiple zooming
+	 * transformations. View bounding boxes are also explicitly rounded
+	 * greedily. */
+	if (sx1 < 0)
+		sx1 = 0;
+	if (sy1 < 0)
+		sy1 = 0;
+	if (sx2 > wl_fixed_from_int(ev->surface->width))
+		sx2 = wl_fixed_from_int(ev->surface->width);
+	if (sy2 > wl_fixed_from_int(ev->surface->height))
+		sy2 = wl_fixed_from_int(ev->surface->height);
+
+	tbox.x1 = sx1;
+	tbox.y1 = sy1;
+	tbox.x2 = sx2;
+	tbox.y2 = sy2;
+	pixman_region32_fini(&src_rect);
+
+	/* Apply viewport transforms in reverse, to get the source co-ordinates
+	 * in buffer space. */
+	tbox = weston_transformed_rect(wl_fixed_from_int(ev->surface->width),
+				       wl_fixed_from_int(ev->surface->height),
+				       viewport->buffer.transform,
+				       viewport->buffer.scale,
+				       tbox);
+
+	/* Shift from S23.8 wl_fixed to U16.16 KMS fixed-point encoding. */
+	state->src_x = tbox.x1 << 8;
+	state->src_y = tbox.y1 << 8;
+	state->src_w = (tbox.x2 - tbox.x1) << 8;
+	state->src_h = (tbox.y2 - tbox.y1) << 8;
+}
+
+/**
  * Return a plane state from a drm_output_state.
  */
 static struct drm_plane_state *
@@ -2653,16 +2744,13 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 {
 	struct drm_output *output = output_state->output;
 	struct weston_compositor *ec = output->base.compositor;
-	struct drm_backend *b = to_drm_backend(ec);
 	struct weston_buffer_viewport *viewport = &ev->surface->buffer_viewport;
+	struct drm_backend *b = to_drm_backend(ec);
 	struct wl_resource *buffer_resource;
 	struct drm_plane *p;
 	struct drm_plane_state *state = NULL;
 	struct linux_dmabuf_buffer *dmabuf;
 	struct gbm_bo *bo = NULL;
-	pixman_region32_t dest_rect, src_rect;
-	pixman_box32_t *box, tbox;
-	wl_fixed_t sx1, sy1, sx2, sy2;
 	unsigned int i;
 
 	if (b->sprites_are_broken)
@@ -2771,71 +2859,7 @@ drm_output_prepare_overlay_view(struct drm_output_state *output_state,
 	drm_fb_set_buffer(state->fb, ev->surface->buffer_ref.buffer);
 
 	state->output = output;
-
-	box = pixman_region32_extents(&ev->transform.boundingbox);
-	p->base.x = box->x1;
-	p->base.y = box->y1;
-
-	/*
-	 * Calculate the source & dest rects properly based on actual
-	 * position (note the caller has called weston_view_update_transform()
-	 * for us already).
-	 */
-	pixman_region32_init(&dest_rect);
-	pixman_region32_intersect(&dest_rect, &ev->transform.boundingbox,
-				  &output->base.region);
-	pixman_region32_translate(&dest_rect, -output->base.x, -output->base.y);
-	box = pixman_region32_extents(&dest_rect);
-	tbox = weston_transformed_rect(output->base.width,
-				       output->base.height,
-				       output->base.transform,
-				       output->base.current_scale,
-				       *box);
-	state->dest_x = tbox.x1;
-	state->dest_y = tbox.y1;
-	state->dest_w = tbox.x2 - tbox.x1;
-	state->dest_h = tbox.y2 - tbox.y1;
-	pixman_region32_fini(&dest_rect);
-
-	pixman_region32_init(&src_rect);
-	pixman_region32_intersect(&src_rect, &ev->transform.boundingbox,
-				  &output->base.region);
-	box = pixman_region32_extents(&src_rect);
-
-	weston_view_from_global_fixed(ev,
-				      wl_fixed_from_int(box->x1),
-				      wl_fixed_from_int(box->y1),
-				      &sx1, &sy1);
-	weston_view_from_global_fixed(ev,
-				      wl_fixed_from_int(box->x2),
-				      wl_fixed_from_int(box->y2),
-				      &sx2, &sy2);
-
-	if (sx1 < 0)
-		sx1 = 0;
-	if (sy1 < 0)
-		sy1 = 0;
-	if (sx2 > wl_fixed_from_int(ev->surface->width))
-		sx2 = wl_fixed_from_int(ev->surface->width);
-	if (sy2 > wl_fixed_from_int(ev->surface->height))
-		sy2 = wl_fixed_from_int(ev->surface->height);
-
-	tbox.x1 = sx1;
-	tbox.y1 = sy1;
-	tbox.x2 = sx2;
-	tbox.y2 = sy2;
-
-	tbox = weston_transformed_rect(wl_fixed_from_int(ev->surface->width),
-				       wl_fixed_from_int(ev->surface->height),
-				       viewport->buffer.transform,
-				       viewport->buffer.scale,
-				       tbox);
-
-	state->src_x = tbox.x1 << 8;
-	state->src_y = tbox.y1 << 8;
-	state->src_w = (tbox.x2 - tbox.x1) << 8;
-	state->src_h = (tbox.y2 - tbox.y1) << 8;
-	pixman_region32_fini(&src_rect);
+	drm_plane_state_coords_for_view(state, ev);
 
 	return &p->base;
 
