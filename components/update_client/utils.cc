@@ -72,11 +72,9 @@ std::string HexStringToID(const std::string& hexstr) {
 
 std::string GetOSVersion() {
 #if defined(OS_WIN)
-  int32_t major = 0;
-  int32_t minor = 0;
-  int32_t bugfix = 0;
-  base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
-  return base::StringPrintf("%d.%d.%d", major, minor, bugfix);
+  const auto ver = base::win::OSInfo::GetInstance()->version_number();
+  return base::StringPrintf("%d.%d.%d.%d", ver.major, ver.minor, ver.build,
+                            ver.patch);
 #else
   return base::SysInfo().OperatingSystemVersion();
 #endif
