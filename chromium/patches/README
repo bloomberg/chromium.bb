@@ -24,12 +24,6 @@ Current patches:
     strtod.h was added, so it may not appear in diffs that ignore additions.
     f3299330654ac1b40c50b3cbcae619f42eb7d838 added an include to snprintf.c.
 
-  Fix pthreads emulation on Windows XP (compat/w32pthreads.h & libavcodec/vp8.c)
-    Emulation assumes Vista+ inside (_WIN32_WINNT >= 0x0600) checks. Replace
-    with WINDOWS_XP_SUPPORT_NEEDED define in compat/w32pthreads.h.
-
-    Add call to w32thread_init() in libavcodec/vp8.c.
-
   Remove UNCHECKED_BITSTREAM_READER defines in libavcodec/
     Remove "#define UNCHECKED_BITSTREAM_READER 1" from all codecs.
     In Chromium, all codecs should use the safe bitstream reader.

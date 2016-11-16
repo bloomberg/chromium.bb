@@ -2731,13 +2731,6 @@ int vp78_decode_init(AVCodecContext *avctx, int is_vp7)
     avctx->pix_fmt = AV_PIX_FMT_YUV420P;
     avctx->internal->allocate_progress = 1;
 
-    // TODO(dalecurtis): w32pthreads.h includes static variables which result
-    // in multiple copies for each includer.  Hack around our version not being
-    // initialized by calling initialize again.
-#if HAVE_W32THREADS
-    w32thread_init();
-#endif
-
     ff_videodsp_init(&s->vdsp, 8);
 
     ff_vp78dsp_init(&s->vp8dsp);

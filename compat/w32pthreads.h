@@ -39,10 +39,7 @@
 #include <windows.h>
 #include <process.h>
 
-// TODO(dalecurtis): Upstream incorrectly assumes Vista+.  Reported.
-#define WINDOWS_XP_SUPPORT_NEEDED
-
-#if defined(WINDOWS_XP_SUPPORT_NEEDED) && defined(__MINGW32__)
+#if _WIN32_WINNT < 0x0600 && defined(__MINGW32__)
 #undef MemoryBarrier
 #define MemoryBarrier __sync_synchronize
 #endif
@@ -73,7 +70,7 @@ typedef struct pthread_cond_t {
 } pthread_cond_t;
 #endif
 
-#if !defined(WINDOWS_XP_SUPPORT_NEEDED)
+#if _WIN32_WINNT >= 0x0600
 #define InitializeCriticalSection(x) InitializeCriticalSectionEx(x, 0, 0)
 #define WaitForSingleObject(a, b) WaitForSingleObjectEx(a, b, FALSE)
 #endif
@@ -136,7 +133,7 @@ static inline int pthread_mutex_unlock(pthread_mutex_t *m)
     return 0;
 }
 
-#if !defined(WINDOWS_XP_SUPPORT_NEEDED)
+#if _WIN32_WINNT >= 0x0600
 typedef INIT_ONCE pthread_once_t;
 #define PTHREAD_ONCE_INIT INIT_ONCE_STATIC_INIT
 
@@ -180,7 +177,7 @@ static inline int pthread_cond_signal(pthread_cond_t *cond)
     return 0;
 }
 
-#else // WINDOWS_XP_SUPPORT_NEEDED
+#else // _WIN32_WINNT < 0x0600
 
 /* atomic init state of dynamically loaded functions */
 static LONG w32thread_init_state = 0;
@@ -399,7 +396,7 @@ static av_unused int pthread_cond_signal(pthread_cond_t *cond)
 
 static av_unused void w32thread_init(void)
 {
-#if defined(WINDOWS_XP_SUPPORT_NEEDED)
+#if _WIN32_WINNT < 0x0600
     HANDLE kernel_dll = GetModuleHandle(TEXT("kernel32.dll"));
     /* if one is available, then they should all be available */
     cond_init      =
