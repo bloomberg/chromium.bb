@@ -330,7 +330,6 @@ typedef unsigned long long GLuint64;
     void texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLenum format, GLenum type, ArrayBufferView pixels, optional GLuint srcOffset = 0);
 
     // TODO(zmo): Obsolete, remove after WebGL2 conformance tests are updated.
-    [RaisesException] void texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, HTMLVideoElement video);
     [RaisesException] void texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, ImageBitmap bitmap);
 
     void copyTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height);

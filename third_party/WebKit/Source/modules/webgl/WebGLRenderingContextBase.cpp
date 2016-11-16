@@ -5137,6 +5137,9 @@ void WebGLRenderingContextBase::texImageHelperHTMLVideoElement(
     GLint yoffset,
     GLint zoffset,
     HTMLVideoElement* video,
+    const IntRect& sourceImageRect,
+    GLsizei depth,
+    GLint unpackImageHeight,
     ExceptionState& exceptionState) {
   const char* funcName = getTexImageFunctionName(functionID);
   if (isContextLost())
@@ -5147,7 +5150,7 @@ void WebGLRenderingContextBase::texImageHelperHTMLVideoElement(
   if (!texture)
     return;
   TexImageFunctionType functionType;
-  if (functionID == TexImage2D)
+  if (functionID == TexImage2D || functionID == TexImage3D)
     functionType = TexImage;
   else
     functionType = TexSubImage;
@@ -5157,7 +5160,15 @@ void WebGLRenderingContextBase::texImageHelperHTMLVideoElement(
                        yoffset, zoffset))
     return;
 
-  if (functionID == TexImage2D) {
+  bool sourceImageRectIsDefault =
+      sourceImageRect == sentinelEmptyRect() ||
+      sourceImageRect ==
+          IntRect(0, 0, video->videoWidth(), video->videoHeight());
+  if (functionID == TexImage2D && sourceImageRectIsDefault && depth == 1 &&
+      unpackImageHeight == 0) {
+    DCHECK_EQ(xoffset, 0);
+    DCHECK_EQ(yoffset, 0);
+    DCHECK_EQ(zoffset, 0);
     // Go through the fast path doing a GPU-GPU textures copy without a readback
     // to system memory if possible.  Otherwise, it will fall back to the normal
     // SW path.
@@ -5214,8 +5225,8 @@ void WebGLRenderingContextBase::texImageHelperHTMLVideoElement(
   texImageImpl(functionID, target, level, internalformat, xoffset, yoffset,
                zoffset, format, type, image.get(),
                WebGLImageConversion::HtmlDomVideo, m_unpackFlipY,
-               m_unpackPremultiplyAlpha,
-               IntRect(0, 0, video->videoWidth(), video->videoHeight()), 1, 0);
+               m_unpackPremultiplyAlpha, sourceImageRect, depth,
+               unpackImageHeight);
 }
 
 void WebGLRenderingContextBase::texImageBitmapByGPU(ImageBitmap* bitmap,
@@ -5237,7 +5248,8 @@ void WebGLRenderingContextBase::texImage2D(GLenum target,
                                            HTMLVideoElement* video,
                                            ExceptionState& exceptionState) {
   texImageHelperHTMLVideoElement(TexImage2D, target, level, internalformat,
-                                 format, type, 0, 0, 0, video, exceptionState);
+                                 format, type, 0, 0, 0, video,
+                                 sentinelEmptyRect(), 1, 0, exceptionState);
 }
 
 void WebGLRenderingContextBase::texImageHelperImageBitmap(
@@ -5496,7 +5508,8 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target,
                                               HTMLVideoElement* video,
                                               ExceptionState& exceptionState) {
   texImageHelperHTMLVideoElement(TexSubImage2D, target, level, 0, format, type,
-                                 xoffset, yoffset, 0, video, exceptionState);
+                                 xoffset, yoffset, 0, video,
+                                 sentinelEmptyRect(), 1, 0, exceptionState);
 }
 
 void WebGLRenderingContextBase::texSubImage2D(GLenum target,

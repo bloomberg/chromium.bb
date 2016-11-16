@@ -484,17 +484,6 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                      GLenum,
                      GLenum,
                      DOMArrayBufferView*);
-  void
-  texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLenum, GLenum, ImageData*);
-  void texSubImage3D(GLenum,
-                     GLint,
-                     GLint,
-                     GLint,
-                     GLint,
-                     GLenum,
-                     GLenum,
-                     HTMLVideoElement*,
-                     ExceptionState&);
   void texSubImage3D(GLenum,
                      GLint,
                      GLint,
