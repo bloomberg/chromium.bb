@@ -28,7 +28,6 @@ BRANDINGS = [
     'Chrome',
     'ChromeOS',
     'Chromium',
-    'ChromiumOS',
 ]
 
 
@@ -86,7 +85,6 @@ Resulting binaries will be placed in:
   build.TARGET_ARCH.TARGET_OS/Chrome/out/
   build.TARGET_ARCH.TARGET_OS/ChromeOS/out/
   build.TARGET_ARCH.TARGET_OS/Chromium/out/
-  build.TARGET_ARCH.TARGET_OS/ChromiumOS/out/
   """
 
 
@@ -336,11 +334,11 @@ def main(argv):
       '--disable-videotoolbox',
 
       # Common codecs.
-      '--enable-decoder=vorbis,libopus',
+      '--enable-decoder=vorbis,libopus,flac',
       '--enable-decoder=pcm_u8,pcm_s16le,pcm_s24le,pcm_s32le,pcm_f32le',
       '--enable-decoder=pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw',
-      '--enable-demuxer=ogg,matroska,wav',
-      '--enable-parser=opus,vorbis',
+      '--enable-demuxer=ogg,matroska,wav,flac',
+      '--enable-parser=opus,vorbis,flac',
 
       # Setup include path so Chromium's libopus can be used.
       '--extra-cflags=-I' + os.path.join(CHROMIUM_ROOT_DIR,
@@ -573,15 +571,6 @@ def main(argv):
       '--enable-parser=aac,h264,mpegaudio',
   ])
 
-  # ChromiumOS specific configuration.
-  # Warning: do *NOT* add avi, aac, h264, mp3, mp4, amr*
-  # Flac support.
-  configure_flags['ChromiumOS'].extend([
-      '--enable-demuxer=flac',
-      '--enable-decoder=flac',
-      '--enable-parser=flac',
-  ])
-
   # Google ChromeOS specific configuration.
   # We want to make sure to play everything Android generates and plays.
   # http://developer.android.com/guide/appendix/media-formats.html
@@ -593,10 +582,6 @@ def main(argv):
       # Enable playing Android 3gp files.
       '--enable-demuxer=amr',
       '--enable-decoder=amrnb,amrwb',
-      # Flac support.
-      '--enable-demuxer=flac',
-      '--enable-decoder=flac',
-      '--enable-parser=flac',
       # Wav files for playing phone messages.
       '--enable-decoder=gsm_ms',
       '--enable-demuxer=gsm',
@@ -642,11 +627,6 @@ def main(argv):
                     configure_args)
 
   if target_os in ['linux', 'linux-noasm']:
-    do_build_ffmpeg('ChromiumOS',
-                    configure_flags['Common'] +
-                    configure_flags['Chromium'] +
-                    configure_flags['ChromiumOS'] +
-                    configure_args)
     # ChromeOS enables MPEG4 which requires error resilience :(
     chrome_os_flags = (configure_flags['Common'] +
                        configure_flags['Chrome'] +
