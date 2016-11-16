@@ -426,7 +426,8 @@ error::Error GLES2DecoderPassthroughImpl::DoCompressedTexImage2D(
     GLint border,
     GLsizei imageSize,
     const void* data) {
-  NOTIMPLEMENTED();
+  glCompressedTexImage2D(target, level, internalformat, width, height, border,
+                         imageSize, data);
   return error::kNoError;
 }
 
@@ -440,7 +441,8 @@ error::Error GLES2DecoderPassthroughImpl::DoCompressedTexSubImage2D(
     GLenum format,
     GLsizei imageSize,
     const void* data) {
-  NOTIMPLEMENTED();
+  glCompressedTexSubImage2D(target, level, xoffset, yoffset, width, height,
+                            format, imageSize, data);
   return error::kNoError;
 }
 
@@ -454,7 +456,8 @@ error::Error GLES2DecoderPassthroughImpl::DoCompressedTexImage3D(
     GLint border,
     GLsizei imageSize,
     const void* data) {
-  NOTIMPLEMENTED();
+  glCompressedTexImage3D(target, level, internalformat, width, height, depth,
+                         border, imageSize, data);
   return error::kNoError;
 }
 
@@ -470,7 +473,8 @@ error::Error GLES2DecoderPassthroughImpl::DoCompressedTexSubImage3D(
     GLenum format,
     GLsizei imageSize,
     const void* data) {
-  NOTIMPLEMENTED();
+  glCompressedTexSubImage3D(target, level, xoffset, yoffset, zoffset, width,
+                            height, depth, format, imageSize, data);
   return error::kNoError;
 }
 
@@ -866,7 +870,7 @@ error::Error GLES2DecoderPassthroughImpl::DoGetAttachedShaders(
 error::Error GLES2DecoderPassthroughImpl::DoGetAttribLocation(GLuint program,
                                                               const char* name,
                                                               GLint* result) {
-  NOTIMPLEMENTED();
+  *result = glGetAttribLocation(GetProgramServiceID(program, resources_), name);
   return error::kNoError;
 }
 
@@ -915,7 +919,8 @@ error::Error GLES2DecoderPassthroughImpl::DoGetFragDataLocation(
     GLuint program,
     const char* name,
     GLint* result) {
-  NOTIMPLEMENTED();
+  *result =
+      glGetFragDataLocation(GetProgramServiceID(program, resources_), name);
   return error::kNoError;
 }
 
