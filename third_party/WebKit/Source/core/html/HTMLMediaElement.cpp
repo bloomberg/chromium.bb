@@ -93,6 +93,7 @@
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackClient.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackState.h"
+#include "wtf/AutoReset.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/MathExtras.h"
 #include "wtf/PtrUtil.h"
@@ -3453,9 +3454,16 @@ bool HTMLMediaElement::hasPendingActivity() const {
   if (m_networkState == kNetworkLoading)
     return true;
 
-  // When playing or if playback may continue, timeupdate events may be fired.
-  if (couldPlayIfEnoughData())
-    return true;
+  {
+    // Disable potential updating of playback position, as that will
+    // require v8 allocations; not allowed while GCing
+    // (hasPendingActivity() is called during a v8 GC.)
+    AutoReset<bool> scope(&m_officialPlaybackPositionNeedsUpdate, false);
+
+    // When playing or if playback may continue, timeupdate events may be fired.
+    if (couldPlayIfEnoughData())
+      return true;
+  }
 
   // When the seek finishes timeupdate and seeked events will be fired.
   if (m_seeking)
