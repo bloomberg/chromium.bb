@@ -89,7 +89,7 @@ class CORE_EXPORT SerializedScriptValue
   static PassRefPtr<SerializedScriptValue> create(const char* data,
                                                   size_t length);
 
-  virtual ~SerializedScriptValue();
+  ~SerializedScriptValue();
 
   static PassRefPtr<SerializedScriptValue> nullValue();
 
