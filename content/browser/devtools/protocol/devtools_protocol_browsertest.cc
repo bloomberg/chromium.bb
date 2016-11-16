@@ -762,8 +762,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, NavigationPreservesMessages) {
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CrossSiteNoDetach) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->Start());
   content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL test_url1 = embedded_test_server()->GetURL(
       "A.com", "/devtools/navigation.html");
@@ -795,8 +795,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, ReconnectPreservesState) {
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CrossSitePauseInBeforeUnload) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->Start());
   content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   NavigateToURLBlockUntilNavigationsComplete(shell(),
       embedded_test_server()->GetURL("A.com", "/devtools/navigation.html"), 1);
@@ -817,8 +817,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CrossSitePauseInBeforeUnload) {
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, InspectDuringFrameSwap) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->Start());
   content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL test_url1 =
       embedded_test_server()->GetURL("A.com", "/devtools/navigation.html");
@@ -1066,8 +1066,8 @@ class IsolatedDevToolsProtocolTest : public DevToolsProtocolTest {
 IN_PROC_BROWSER_TEST_F(IsolatedDevToolsProtocolTest,
                        ControlNavigationsChildFrames) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(embedded_test_server()->Start());
   content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
 
   // Navigate to about:blank first so we can make sure there is a target page we
   // can attach to, and have Page.setControlNavigations complete before we start
@@ -1336,8 +1336,8 @@ class SitePerProcessDevToolsProtocolTest : public DevToolsProtocolTest {
   void SetUpOnMainThread() override {
     DevToolsProtocolTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
+    content::SetupCrossSiteRedirector(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
-    SetupCrossSiteRedirector(embedded_test_server());
   }
 };
 
