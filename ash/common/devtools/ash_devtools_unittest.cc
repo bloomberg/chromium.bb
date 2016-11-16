@@ -226,7 +226,7 @@ TEST_F(AshDevToolsTest, WindowDestroyedChildNodeRemoved) {
   ExpectChildNodeRemoved(parent_node->getNodeId(), child_node->getNodeId());
 }
 
-TEST_F(AshDevToolsTest, WindowReorganizedChildNodeRearranged) {
+TEST_F(AshDevToolsTest, WindowReorganizedChildNodeRemovedAndInserted) {
   // Initialize DOMAgent
   std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
@@ -245,35 +245,6 @@ TEST_F(AshDevToolsTest, WindowReorganizedChildNodeRearranged) {
 
   Compare(target_window, target_node);
   Compare(child_window, child_node);
-  target_window->AddChild(child_window);
-  ExpectChildNodeRemoved(parent_node->getNodeId(), child_node->getNodeId());
-  ExpectChildNodeInserted(target_node->getNodeId(), sibling_node->getNodeId());
-}
-
-TEST_F(AshDevToolsTest, WindowReorganizedChildNodeRemovedAndInserted) {
-  WmWindow* root_window = WmShell::Get()->GetPrimaryRootWindow();
-  WmWindow* target_window = root_window->GetChildren()[1];
-  WmWindow* parent_window = root_window->GetChildren()[0];
-  std::unique_ptr<WindowOwner> child_owner(CreateChildWindow(parent_window));
-  WmWindow* child_window = child_owner->window();
-
-  // Initialize DOMAgent
-  std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
-  dom_agent()->getDocument(&root);
-  DOM::Node* root_node = root->getChildren(nullptr)->get(0);
-
-  DOM::Node* parent_node = root_node->getChildren(nullptr)->get(0);
-  DOM::Node* target_node = root_node->getChildren(nullptr)->get(1);
-  Array<DOM::Node>* target_node_children = target_node->getChildren(nullptr);
-  DOM::Node* sibling_node =
-      target_node_children->get(target_node_children->length() - 1);
-  Array<DOM::Node>* parent_node_children = parent_node->getChildren(nullptr);
-  DOM::Node* child_node =
-      parent_node_children->get(parent_node_children->length() - 1);
-
-  Compare(target_window, target_node);
-  Compare(child_window, child_node);
-  parent_window->RemoveChild(child_window);
   target_window->AddChild(child_window);
   ExpectChildNodeRemoved(parent_node->getNodeId(), child_node->getNodeId());
   ExpectChildNodeInserted(target_node->getNodeId(), sibling_node->getNodeId());
