@@ -39,6 +39,7 @@ _packages_dev = (
   'elfutils',
   'fakeroot',
   'flex',
+  'fonts-ipafont',
   'fonts-thai-tlwg',
   'g++',
   'git-core',
@@ -99,8 +100,6 @@ _packages_dev = (
   'subversion',
   'ttf-dejavu-core',
   'ttf-indic-fonts',
-  'ttf-kochi-gothic',
-  'ttf-kochi-mincho',
   'wdiff',
   'zip',
 )

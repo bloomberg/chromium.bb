@@ -15,8 +15,10 @@
 namespace gfx {
 
 const char* const kSystemFontsForFontconfig[] = {
-  "/usr/share/fonts/truetype/kochi/kochi-gothic.ttf",
-  "/usr/share/fonts/truetype/kochi/kochi-mincho.ttf",
+  "/usr/share/fonts/opentype/ipafont-gothic/ipag.ttf",
+  "/usr/share/fonts/opentype/ipafont-gothic/ipagp.ttf",
+  "/usr/share/fonts/opentype/ipafont-mincho/ipam.ttf",
+  "/usr/share/fonts/opentype/ipafont-mincho/ipamp.ttf",
   "/usr/share/fonts/truetype/msttcorefonts/Arial.ttf",
   "/usr/share/fonts/truetype/msttcorefonts/Arial_Bold.ttf",
   "/usr/share/fonts/truetype/msttcorefonts/Arial_Bold_Italic.ttf",
