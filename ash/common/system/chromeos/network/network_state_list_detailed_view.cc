@@ -951,10 +951,12 @@ views::View* NetworkStateListDetailedView::CreateViewForNetwork(
     const NetworkInfo& info) {
   HoverHighlightView* view = new HoverHighlightView(this);
   view->AddIconAndLabel(info.image, info.label, info.highlight);
-  view->SetBorder(
-      views::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0, 0));
-  views::View* controlled_icon = CreateControlledByExtensionView(info);
   view->set_tooltip(info.tooltip);
+  if (!UseMd()) {
+    view->SetBorder(
+        views::CreateEmptyBorder(0, kTrayPopupPaddingHorizontal, 0, 0));
+  }
+  views::View* controlled_icon = CreateControlledByExtensionView(info);
   if (controlled_icon)
     view->AddChildView(controlled_icon);
   return view;
