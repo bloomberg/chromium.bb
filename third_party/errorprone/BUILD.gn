@@ -13,6 +13,7 @@ java_prebuilt("error_prone_annotations_java") {
 }
 
 java_prebuilt("javac_java") {
+  output_name = "javac_java"
   jar_path = "lib/javac-1.9.0-dev-r2644-1.jar"
 }
 
