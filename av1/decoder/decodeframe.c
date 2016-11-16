@@ -4303,7 +4303,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #else
   av1_set_mv_cdfs(&fc->nmvc);
 #endif
-#if CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
   av1_set_mode_cdfs(cm);
 #endif
 #endif

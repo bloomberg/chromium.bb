@@ -297,7 +297,7 @@ static PREDICTION_MODE read_inter_compound_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif  // CONFIG_EXT_INTER
 
 static int read_segment_id(aom_reader *r, struct segmentation_probs *segp) {
-#if CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
   return aom_read_symbol(r, segp->tree_cdf, MAX_SEGMENTS, ACCT_STR);
 #else
   return aom_read_tree(r, av1_segment_tree, segp->tree_probs, ACCT_STR);

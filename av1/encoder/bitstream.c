@@ -913,7 +913,7 @@ static void pack_txb_tokens(aom_writer *w, const TOKENEXTRA **tp,
 static void write_segment_id(aom_writer *w, const struct segmentation *seg,
                              struct segmentation_probs *segp, int segment_id) {
   if (seg->enabled && seg->update_map) {
-#if CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
     aom_write_symbol(w, segment_id, segp->tree_cdf, MAX_SEGMENTS);
 #else
     aom_write_tree(w, av1_segment_tree, segp->tree_probs, segment_id, 3, 0);
@@ -4351,7 +4351,7 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #else
   av1_set_mv_cdfs(&fc->nmvc);
 #endif
-#if CONFIG_DAALA_EC
+#if CONFIG_EC_MULTISYMBOL
   av1_set_mode_cdfs(cm);
 #endif
 #endif
