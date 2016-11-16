@@ -29,6 +29,7 @@
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceClientWalker.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/fetch/ResourceLoader.h"
 #include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
 #include "platform/fonts/FontCustomPlatformData.h"
@@ -39,6 +40,8 @@ namespace blink {
 
 // Durations of font-display periods.
 // https://tabatkins.github.io/specs/css-font-display/#font-display-desc
+// TODO(shaochuan): Revisit short limit value once cache-aware font display is
+// launched. crbug.com/570205
 static const double fontLoadWaitShortLimitSec = 0.1;
 static const double fontLoadWaitLongLimitSec = 3.0;
 
@@ -95,6 +98,12 @@ FontResource::~FontResource() {}
 void FontResource::didAddClient(ResourceClient* c) {
   DCHECK(FontResourceClient::isExpectedType(c));
   Resource::didAddClient(c);
+
+  // Block client callbacks if currently loading from cache.
+  if (isLoading() && loader()->isCacheAwareLoadingActivated())
+    return;
+
+  ProhibitAddRemoveClientInScope prohibitAddRemoveClient(this);
   if (m_loadLimitState == ShortLimitExceeded ||
       m_loadLimitState == LongLimitExceeded)
     static_cast<FontResourceClient*>(c)->fontLoadShortLimitExceeded(this);
@@ -143,21 +152,53 @@ FontPlatformData FontResource::platformDataFromCustomData(
   return m_fontData->fontPlatformData(size, bold, italic, orientation);
 }
 
+void FontResource::willReloadAfterDiskCacheMiss() {
+  DCHECK(isLoading());
+  DCHECK(loader()->isCacheAwareLoadingActivated());
+
+  if (m_loadLimitState == ShortLimitExceeded ||
+      m_loadLimitState == LongLimitExceeded)
+    notifyClientsShortLimitExceeded();
+  if (m_loadLimitState == LongLimitExceeded)
+    notifyClientsLongLimitExceeded();
+
+  DEFINE_STATIC_LOCAL(
+      EnumerationHistogram, loadLimitHistogram,
+      ("WebFont.LoadLimitOnDiskCacheMiss", LoadLimitStateEnumMax));
+  loadLimitHistogram.count(m_loadLimitState);
+}
+
 void FontResource::fontLoadShortLimitCallback(TimerBase*) {
-  if (!isLoading())
-    return;
+  DCHECK(isLoading());
   DCHECK_EQ(m_loadLimitState, UnderLimit);
   m_loadLimitState = ShortLimitExceeded;
+
+  // Block client callbacks if currently loading from cache.
+  if (loader()->isCacheAwareLoadingActivated())
+    return;
+  notifyClientsShortLimitExceeded();
+}
+
+void FontResource::fontLoadLongLimitCallback(TimerBase*) {
+  DCHECK(isLoading());
+  DCHECK_EQ(m_loadLimitState, ShortLimitExceeded);
+  m_loadLimitState = LongLimitExceeded;
+
+  // Block client callbacks if currently loading from cache.
+  if (loader()->isCacheAwareLoadingActivated())
+    return;
+  notifyClientsLongLimitExceeded();
+}
+
+void FontResource::notifyClientsShortLimitExceeded() {
+  ProhibitAddRemoveClientInScope prohibitAddRemoveClient(this);
   ResourceClientWalker<FontResourceClient> walker(clients());
   while (FontResourceClient* client = walker.next())
     client->fontLoadShortLimitExceeded(this);
 }
 
-void FontResource::fontLoadLongLimitCallback(TimerBase*) {
-  if (!isLoading())
-    return;
-  DCHECK_EQ(m_loadLimitState, ShortLimitExceeded);
-  m_loadLimitState = LongLimitExceeded;
+void FontResource::notifyClientsLongLimitExceeded() {
+  ProhibitAddRemoveClientInScope prohibitAddRemoveClient(this);
   ResourceClientWalker<FontResourceClient> walker(clients());
   while (FontResourceClient* client = walker.next())
     client->fontLoadLongLimitExceeded(this);

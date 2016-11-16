@@ -26,6 +26,7 @@
 #ifndef FontResource_h
 #define FontResource_h
 
+#include "base/gtest_prod_util.h"
 #include "core/CoreExport.h"
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceClient.h"
@@ -72,6 +73,8 @@ class CORE_EXPORT FontResource final : public Resource {
   // font is not needed for painting the text.
   bool isLowPriorityLoadingAllowedForRemoteFont() const;
 
+  void willReloadAfterDiskCacheMiss() override;
+
  private:
   class FontResourceFactory : public ResourceFactory {
    public:
@@ -88,12 +91,16 @@ class CORE_EXPORT FontResource final : public Resource {
   void checkNotify() override;
   void fontLoadShortLimitCallback(TimerBase*);
   void fontLoadLongLimitCallback(TimerBase*);
+  void notifyClientsShortLimitExceeded();
+  void notifyClientsLongLimitExceeded();
 
+  // This is used in UMA histograms, should not change order.
   enum LoadLimitState {
     LoadNotStarted,
     UnderLimit,
     ShortLimitExceeded,
-    LongLimitExceeded
+    LongLimitExceeded,
+    LoadLimitStateEnumMax
   };
 
   std::unique_ptr<FontCustomPlatformData> m_fontData;
@@ -104,6 +111,7 @@ class CORE_EXPORT FontResource final : public Resource {
   Timer<FontResource> m_fontLoadLongLimitTimer;
 
   friend class MemoryCache;
+  FRIEND_TEST_ALL_PREFIXES(ResourceFetcherTest, CacheAwareFontLoading);
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(Font);
@@ -115,6 +123,10 @@ class FontResourceClient : public ResourceClient {
     return client->getResourceClientType() == FontType;
   }
   ResourceClientType getResourceClientType() const final { return FontType; }
+
+  // If cache-aware loading is activated, both callbacks will be blocked until
+  // disk cache miss. Calls to addClient() and removeClient() in both callbacks
+  // are prohibited to prevent race issues regarding current loading state.
   virtual void fontLoadShortLimitExceeded(FontResource*) {}
   virtual void fontLoadLongLimitExceeded(FontResource*) {}
 
