@@ -161,10 +161,6 @@ static void RecordVideoCodecStats(const VideoDecoderConfig& video_config,
     UMA_HISTOGRAM_ENUMERATION("Media.VideoCodecProfile", video_config.profile(),
                               VIDEO_CODEC_PROFILE_MAX + 1);
   }
-  UMA_HISTOGRAM_COUNTS_10000("Media.VideoCodedWidth",
-                             video_config.coded_size().width());
-  UmaHistogramAspectRatio("Media.VideoCodedAspectRatio",
-                          video_config.coded_size());
   UMA_HISTOGRAM_COUNTS_10000("Media.VideoVisibleWidth",
                              video_config.visible_rect().width());
   UmaHistogramAspectRatio("Media.VideoVisibleAspectRatio",
@@ -1509,8 +1505,6 @@ void FFmpegDemuxer::LogMetadata(AVFormatContext* avctx,
       params.SetString("video_codec_name" + suffix, GetCodecName(video_codec));
       params.SetInteger("width" + suffix, video_codec->width);
       params.SetInteger("height" + suffix, video_codec->height);
-      params.SetInteger("coded_width" + suffix, video_codec->coded_width);
-      params.SetInteger("coded_height" + suffix, video_codec->coded_height);
       params.SetString("time_base" + suffix,
                        base::StringPrintf("%d/%d", video_codec->time_base.num,
                                           video_codec->time_base.den));

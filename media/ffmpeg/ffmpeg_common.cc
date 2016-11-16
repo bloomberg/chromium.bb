@@ -441,7 +441,10 @@ void AudioDecoderConfigToAVCodecContext(const AudioDecoderConfig& config,
 
 bool AVStreamToVideoDecoderConfig(const AVStream* stream,
                                   VideoDecoderConfig* config) {
-  gfx::Size coded_size(stream->codec->coded_width, stream->codec->coded_height);
+  // Anticipating AVStream.codec.coded_{width,height} will be inaccessible in
+  // ffmpeg soon, just use the width and height, padded below, as hints of the
+  // coded size.
+  gfx::Size coded_size(stream->codec->width, stream->codec->height);
 
   // TODO(vrk): This assumes decoded frame data starts at (0, 0), which is true
   // for now, but may not always be true forever. Fix this in the future.
