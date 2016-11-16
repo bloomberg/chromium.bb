@@ -854,7 +854,7 @@ void QuicChromiumClientSession::OnCryptoHandshakeEvent(
     // Update |connect_end| only when handshake is confirmed. This should also
     // take care of any failed 0-RTT request.
     connect_timing_.connect_end = base::TimeTicks::Now();
-    DCHECK(connect_timing_.connect_start < connect_timing_.connect_end);
+    DCHECK_LE(connect_timing_.connect_start, connect_timing_.connect_end);
     UMA_HISTOGRAM_TIMES(
         "Net.QuicSession.HandshakeConfirmedTime",
         connect_timing_.connect_end - connect_timing_.connect_start);
