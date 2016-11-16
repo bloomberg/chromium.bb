@@ -469,7 +469,6 @@ Document::Document(const DocumentInit& initializer,
       m_hasReceivedUserGesture(false),
       m_hasAnnotatedRegions(false),
       m_annotatedRegionsDirty(false),
-      m_useSecureKeyboardEntryWhenActive(false),
       m_documentClasses(documentClasses),
       m_isViewSource(false),
       m_sawElementsInKnownNamespaces(false),
@@ -5271,18 +5270,6 @@ HTMLLinkElement* Document::linkManifest() const {
   }
 
   return 0;
-}
-
-void Document::setUseSecureKeyboardEntryWhenActive(bool usesSecureKeyboard) {
-  if (m_useSecureKeyboardEntryWhenActive == usesSecureKeyboard)
-    return;
-
-  m_useSecureKeyboardEntryWhenActive = usesSecureKeyboard;
-  m_frame->selection().updateSecureKeyboardEntryIfActive();
-}
-
-bool Document::useSecureKeyboardEntryWhenActive() const {
-  return m_useSecureKeyboardEntryWhenActive;
 }
 
 void Document::initSecurityContext(const DocumentInit& initializer) {

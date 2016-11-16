@@ -33,6 +33,7 @@
 
 #include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
+#include "core/editing/FrameSelection.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/FormController.h"
@@ -78,13 +79,17 @@ bool PasswordInputType::shouldRespectListAttribute() {
 }
 
 void PasswordInputType::enableSecureTextInput() {
-  if (element().document().frame())
-    element().document().setUseSecureKeyboardEntryWhenActive(true);
+  LocalFrame* frame = element().document().frame();
+  if (!frame)
+    return;
+  frame->selection().setUseSecureKeyboardEntryWhenActive(true);
 }
 
 void PasswordInputType::disableSecureTextInput() {
-  if (element().document().frame())
-    element().document().setUseSecureKeyboardEntryWhenActive(false);
+  LocalFrame* frame = element().document().frame();
+  if (!frame)
+    return;
+  frame->selection().setUseSecureKeyboardEntryWhenActive(false);
 }
 
 void PasswordInputType::onAttachWithLayoutObject() {

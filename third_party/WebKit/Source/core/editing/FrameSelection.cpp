@@ -700,6 +700,7 @@ void FrameSelection::documentAttached(Document* document) {
   DCHECK(document);
   DCHECK(!m_document) << "FrameSelection is already attached to " << m_document;
   m_document = document;
+  m_useSecureKeyboardEntryWhenActive = false;
   m_selectionEditor->documentAttached(document);
 }
 
@@ -987,7 +988,7 @@ void FrameSelection::focusedOrActiveStateChanged() {
   m_frame->eventHandler().capsLockStateMayHaveChanged();
 
   // Secure keyboard entry is set by the active frame.
-  if (document().useSecureKeyboardEntryWhenActive())
+  if (m_useSecureKeyboardEntryWhenActive)
     setUseSecureKeyboardEntry(activeAndFocused);
 }
 
@@ -996,8 +997,17 @@ void FrameSelection::pageActivationChanged() {
 }
 
 void FrameSelection::updateSecureKeyboardEntryIfActive() {
-  if (isFocusedAndActive())
-    setUseSecureKeyboardEntry(document().useSecureKeyboardEntryWhenActive());
+  if (!isFocusedAndActive())
+    return;
+  setUseSecureKeyboardEntry(m_useSecureKeyboardEntryWhenActive);
+}
+
+void FrameSelection::setUseSecureKeyboardEntryWhenActive(
+    bool usesSecureKeyboard) {
+  if (m_useSecureKeyboardEntryWhenActive == usesSecureKeyboard)
+    return;
+  m_useSecureKeyboardEntryWhenActive = usesSecureKeyboard;
+  updateSecureKeyboardEntryIfActive();
 }
 
 void FrameSelection::setUseSecureKeyboardEntry(bool enable) {

@@ -979,9 +979,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // Returns null if there is no such element.
   HTMLLinkElement* linkManifest() const;
 
-  void setUseSecureKeyboardEntryWhenActive(bool);
-  bool useSecureKeyboardEntryWhenActive() const;
-
   void updateFocusAppearanceSoon(SelectionBehaviorOnFocus);
   void cancelFocusAppearanceUpdate();
 
@@ -1583,8 +1580,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // the cache object's references will be traced by a stack walk.
   GC_PLUGIN_IGNORE("461878")
   NthIndexCache* m_nthIndexCache = nullptr;
-
-  bool m_useSecureKeyboardEntryWhenActive;
 
   DocumentClassFlags m_documentClasses;
 

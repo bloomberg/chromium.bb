@@ -234,6 +234,7 @@ class CORE_EXPORT FrameSelection final
   bool isFocusedAndActive() const;
   void pageActivationChanged();
 
+  void setUseSecureKeyboardEntryWhenActive(bool);
   void updateSecureKeyboardEntryIfActive();
 
   // Returns true if a word is selected.
@@ -339,6 +340,7 @@ class CORE_EXPORT FrameSelection final
   std::unique_ptr<GranularityStrategy> m_granularityStrategy;
 
   const Member<FrameCaret> m_frameCaret;
+  bool m_useSecureKeyboardEntryWhenActive = false;
 };
 
 inline EditingStyle* FrameSelection::typingStyle() const {
