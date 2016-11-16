@@ -198,7 +198,6 @@ class CORE_EXPORT Node : public EventTarget {
   Node* firstChild() const;
   Node* lastChild() const;
   Node* getRootNode(const GetRootNodeOptions&) const;
-  Text* nextTextSibling() const;
   Node& treeRoot() const;
   Node& shadowIncludingRoot() const;
   // closed-shadow-hidden is defined at

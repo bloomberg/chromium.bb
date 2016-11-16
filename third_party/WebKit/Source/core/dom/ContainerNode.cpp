@@ -1287,7 +1287,7 @@ void ContainerNode::recalcDescendantStyles(StyleRecalcChange change) {
     } else if (child->isElementNode()) {
       Element* element = toElement(child);
       if (element->shouldCallRecalcStyle(change))
-        element->recalcStyle(change);
+        element->recalcStyle(change, lastTextNode);
       else if (element->supportsStyleSharing())
         styleResolver.addToStyleSharingList(*element);
       if (element->layoutObject())

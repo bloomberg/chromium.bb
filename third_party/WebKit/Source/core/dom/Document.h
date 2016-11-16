@@ -41,8 +41,10 @@
 #include "core/dom/DocumentTiming.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/MutationObserver.h"
+#include "core/dom/StyleReattachData.h"
 #include "core/dom/SynchronousMutationNotifier.h"
 #include "core/dom/SynchronousMutationObserver.h"
+#include "core/dom/Text.h"
 #include "core/dom/TextLinkColors.h"
 #include "core/dom/TreeScope.h"
 #include "core/dom/UserActionElementSet.h"
@@ -53,6 +55,7 @@
 #include "core/frame/HostsUsingFeatures.h"
 #include "core/html/parser/ParserSynchronizationPolicy.h"
 #include "core/page/PageVisibilityState.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/Length.h"
 #include "platform/Timer.h"
 #include "platform/weborigin/KURL.h"
@@ -161,7 +164,6 @@ class StringOrDictionary;
 class StyleEngine;
 class StyleResolver;
 class StyleSheetList;
-class Text;
 class TextAutosizer;
 class Touch;
 class TouchList;
@@ -348,8 +350,8 @@ class CORE_EXPORT Document : public ContainerNode,
   Range* caretRangeFromPoint(int x, int y);
   Element* scrollingElement();
 
-  void addNonAttachedStyle(Element&, RefPtr<ComputedStyle>);
-  ComputedStyle* getNonAttachedStyle(Element&);
+  void addStyleReattachData(Element&, StyleReattachData&);
+  StyleReattachData getStyleReattachData(Element&);
 
   String readyState() const;
 
@@ -1443,7 +1445,7 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<DocumentParser> m_parser;
   Member<ContextFeatures> m_contextFeatures;
 
-  HeapHashMap<Member<Element>, RefPtr<ComputedStyle>> m_nonAttachedStyle;
+  HeapHashMap<Member<Element>, StyleReattachData> m_styleReattachDataMap;
 
   bool m_wellFormed;
 

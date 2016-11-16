@@ -261,6 +261,7 @@ blink_core_sources("dom") {
     "StyleEngine.h",
     "StyleEngineContext.cpp",
     "StyleEngineContext.h",
+    "StyleReattachData.h",
     "StyleSheetCandidate.cpp",
     "StyleSheetCandidate.h",
     "StyleSheetCollection.cpp",

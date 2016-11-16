@@ -390,18 +390,6 @@ Node* Node::getRootNode(const GetRootNodeOptions& options) const {
                                                        : &treeRoot();
 }
 
-Text* Node::nextTextSibling() const {
-  for (Node* sibling = nextSibling();
-       sibling &&
-       (!sibling->isElementNode() || !toElement(sibling)->layoutObject());
-       sibling = sibling->nextSibling()) {
-    if (sibling->isTextNode()) {
-      return toText(sibling);
-    }
-  }
-  return nullptr;
-}
-
 Node* Node::insertBefore(Node* newChild,
                          Node* refChild,
                          ExceptionState& exceptionState) {

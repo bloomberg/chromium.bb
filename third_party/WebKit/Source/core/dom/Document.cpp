@@ -1288,13 +1288,13 @@ Element* Document::scrollingElement() {
 // We use HashMap::set over HashMap::add here as we want to
 // replace the ComputedStyle but not the Element if the Element is
 // already present.
-void Document::addNonAttachedStyle(Element& element,
-                                   RefPtr<ComputedStyle> computedStyle) {
-  m_nonAttachedStyle.set(&element, computedStyle);
+void Document::addStyleReattachData(Element& element,
+                                    StyleReattachData& styleReattachData) {
+  m_styleReattachDataMap.set(&element, styleReattachData);
 }
 
-ComputedStyle* Document::getNonAttachedStyle(Element& element) {
-  return m_nonAttachedStyle.get(&element);
+StyleReattachData Document::getStyleReattachData(Element& element) {
+  return m_styleReattachDataMap.get(&element);
 }
 
 /*
@@ -1977,7 +1977,7 @@ void Document::updateStyle() {
 
   // Only retain the HashMap for the duration of StyleRecalc and
   // LayoutTreeConstruction.
-  m_nonAttachedStyle.clear();
+  m_styleReattachDataMap.clear();
   clearChildNeedsStyleRecalc();
   clearChildNeedsReattachLayoutTree();
 
@@ -1989,7 +1989,7 @@ void Document::updateStyle() {
   DCHECK(!childNeedsReattachLayoutTree());
   DCHECK(inStyleRecalc());
   DCHECK_EQ(styleResolver(), &resolver);
-  DCHECK(m_nonAttachedStyle.isEmpty());
+  DCHECK(m_styleReattachDataMap.isEmpty());
   m_lifecycle.advanceTo(DocumentLifecycle::StyleClean);
   if (shouldRecordStats) {
     TRACE_EVENT_END2("blink,blink_style", "Document::updateStyle",
@@ -6401,7 +6401,7 @@ DEFINE_TRACE(Document) {
   visitor->trace(m_snapCoordinator);
   visitor->trace(m_resizeObserverController);
   visitor->trace(m_propertyRegistry);
-  visitor->trace(m_nonAttachedStyle);
+  visitor->trace(m_styleReattachDataMap);
   Supplementable<Document>::trace(visitor);
   TreeScope::trace(visitor);
   ContainerNode::trace(visitor);
