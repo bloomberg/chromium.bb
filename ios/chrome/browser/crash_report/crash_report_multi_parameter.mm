@@ -13,6 +13,10 @@
 #include "base/values.h"
 #import "ios/chrome/browser/crash_report/breakpad_helper.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 // Maximum size of a breakpad parameter. The length of the dictionary serialized
 // into JSON cannot exceed this length. See declaration in (BreakPad.h) for

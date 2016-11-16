@@ -17,6 +17,9 @@ source_set("crash_report") {
     "crash_upload_list.cc",
     "crash_upload_list.h",
   ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
   deps = [
     "//base",
     "//breakpad:client",

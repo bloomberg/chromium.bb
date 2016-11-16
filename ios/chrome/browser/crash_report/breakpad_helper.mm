@@ -26,6 +26,10 @@
 // is fixed. For now, put it at the end to avoid compiler errors.
 #import "breakpad/src/client/ios/BreakpadController.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace breakpad_helper {
 
 namespace {
@@ -194,7 +198,6 @@ void AddReportParameter(NSString* key, NSString* value, bool async) {
     dispatch_semaphore_signal(semaphore);
   }];
   dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
-  dispatch_release(semaphore);
 }
 
 int GetCrashReportCount() {
@@ -205,7 +208,6 @@ int GetCrashReportCount() {
     dispatch_semaphore_signal(semaphore);
   }];
   dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
-  dispatch_release(semaphore);
   return outerCrashReportCount;
 }
 
