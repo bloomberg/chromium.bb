@@ -77,14 +77,14 @@ class Rietveld(object):
         return sorted(builder_to_latest_build.values())
 
     def changed_files(self, issue_number):
-        """Lists the files included in a CL, or None if this can't be determined.
+        """Lists the files included in a CL that are changed but not deleted.
 
         File paths are sorted and relative to the repository root.
         """
         try:
             url = self._latest_patchset_url(issue_number)
             issue_data = self._get_json(url)
-            return sorted(issue_data['files'])
+            return sorted(path for path, file_change in issue_data['files'].iteritems() if file_change['status'] != 'D')
         except (urllib2.URLError, ValueError, KeyError):
             _log.warning('Failed to list changed files for issue %s.', issue_number)
             return None

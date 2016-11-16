@@ -48,6 +48,7 @@ class RietveldTest(LoggingTestCase):
                 'files': {
                     'some/path/foo.cc': {'status': 'M'},
                     'some/path/bar.html': {'status': 'M'},
+                    'some/path/deleted.html': {'status': 'D'},
                 }
             }),
             'https://codereview.chromium.org/api/11113333': 'my non-JSON contents',

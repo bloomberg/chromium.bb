@@ -169,13 +169,6 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             'INFO: Rebaselining svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html\n',
         ])
 
-    def test_execute_with_nonexistent_test(self):
-        self.command.execute(self.command_options(issue=11112222), ['some/non/existent/test.html'], self.tool)
-        self.assertLog([
-            'WARNING: /test.checkout/LayoutTests/some/non/existent/test.html not found, removing from list.\n',
-            'INFO: No tests to rebaseline; exiting.\n',
-        ])
-
     def test_execute_with_trigger_jobs_option(self):
         self.command.execute(self.command_options(issue=11112222, trigger_jobs=True), [], self.tool)
         self.assertLog([

@@ -15,7 +15,6 @@ import optparse
 from webkitpy.common.net.rietveld import Rietveld
 from webkitpy.common.net.web import Web
 from webkitpy.common.net.git_cl import GitCL
-from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.models.test_expectations import BASELINE_SUFFIX_LIST
 from webkitpy.tool.commands.rebaseline import AbstractParallelRebaselineCommand
 
@@ -73,27 +72,11 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             test_prefix_list = self._test_prefix_list(
                 issue_number, only_changed_tests=options.only_changed_tests)
 
-        # TODO(qyearsley): Fix places where non-existing tests may be added:
-        #  1. Make sure that the tests obtained when passing --only-changed-tests include only existing tests.
-        test_prefix_list = self._filter_existing(test_prefix_list)
-
         self._log_test_prefix_list(test_prefix_list)
 
         if options.dry_run:
             return
         self.rebaseline(options, test_prefix_list)
-
-    def _filter_existing(self, test_prefix_list):
-        """Filters out entries in |test_prefix_list| for tests that don't exist."""
-        new_test_prefix_list = {}
-        port = self._tool.port_factory.get()
-        for test in test_prefix_list:
-            path = port.abspath_for_test(test)
-            if self._tool.filesystem.exists(path):
-                new_test_prefix_list[test] = test_prefix_list[test]
-            else:
-                _log.warning('%s not found, removing from list.', path)
-        return new_test_prefix_list
 
     def _get_issue_number(self, options):
         """Gets the Rietveld CL number from either |options| or from the current local branch."""
