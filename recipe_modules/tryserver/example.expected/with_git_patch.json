@@ -46,7 +46,7 @@
     "cmd": [
       "patch",
       "--dir",
-      "[SLAVE_BUILD]",
+      "[START_DIR]",
       "--force",
       "--forward",
       "--remove-empty-files",
@@ -72,7 +72,7 @@
       "--cached",
       "--name-only"
     ],
-    "cwd": "[SLAVE_BUILD]/v8",
+    "cwd": "[START_DIR]/v8",
     "name": "git diff to analyze patch",
     "stdout": "/path/to/tmp/",
     "~followup_annotations": [

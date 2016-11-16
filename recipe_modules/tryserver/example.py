@@ -15,7 +15,7 @@ DEPS = [
 
 
 def RunSteps(api):
-  api.path['checkout'] = api.path['slave_build']
+  api.path['checkout'] = api.path['start_dir']
   if api.properties.get('patch_text'):
     api.step('patch_text test', [
         'echo', str(api.tryserver.get_footers(api.properties['patch_text']))])

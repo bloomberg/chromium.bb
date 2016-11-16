@@ -17,7 +17,7 @@
       "--cached",
       "--name-only"
     ],
-    "cwd": "[SLAVE_BUILD]\\sub\\project",
+    "cwd": "[START_DIR]\\sub\\project",
     "name": "git diff to analyze patch",
     "stdout": "/path/to/tmp/",
     "~followup_annotations": [

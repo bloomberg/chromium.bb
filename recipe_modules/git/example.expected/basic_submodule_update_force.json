@@ -5,7 +5,7 @@
       "-u",
       "RECIPE_MODULE[depot_tools::git]/resources/git_setup.py",
       "--path",
-      "[SLAVE_BUILD]/src",
+      "[START_DIR]/src",
       "--url",
       "https://chromium.googlesource.com/chromium/src.git"
     ],
@@ -20,7 +20,7 @@
       "master",
       "--recurse-submodules"
     ],
-    "cwd": "[SLAVE_BUILD]/src",
+    "cwd": "[START_DIR]/src",
     "env": {
       "PATH": "RECIPE_PACKAGE_REPO[depot_tools]:%(PATH)s"
     },
@@ -33,7 +33,7 @@
       "-f",
       "FETCH_HEAD"
     ],
-    "cwd": "[SLAVE_BUILD]/src",
+    "cwd": "[START_DIR]/src",
     "name": "git checkout"
   },
   {
@@ -42,7 +42,7 @@
       "rev-parse",
       "HEAD"
     ],
-    "cwd": "[SLAVE_BUILD]/src",
+    "cwd": "[START_DIR]/src",
     "name": "read revision",
     "stdout": "/path/to/tmp/",
     "~followup_annotations": [
@@ -57,7 +57,7 @@
       "-d",
       "-x"
     ],
-    "cwd": "[SLAVE_BUILD]/src",
+    "cwd": "[START_DIR]/src",
     "name": "git clean"
   },
   {
@@ -66,7 +66,7 @@
       "submodule",
       "sync"
     ],
-    "cwd": "[SLAVE_BUILD]/src",
+    "cwd": "[START_DIR]/src",
     "name": "submodule sync"
   },
   {
@@ -78,7 +78,7 @@
       "--recursive",
       "--force"
     ],
-    "cwd": "[SLAVE_BUILD]/src",
+    "cwd": "[START_DIR]/src",
     "name": "submodule update"
   },
   {
@@ -89,7 +89,7 @@
       "count-objects",
       "-v"
     ],
-    "cwd": "[SLAVE_BUILD]/src",
+    "cwd": "[START_DIR]/src",
     "name": "count-objects",
     "stdout": "/path/to/tmp/"
   },
@@ -100,7 +100,7 @@
       "--get",
       "remote.origin.url"
     ],
-    "cwd": "[SLAVE_BUILD]/src",
+    "cwd": "[START_DIR]/src",
     "name": "git config remote.origin.url",
     "stdout": "/path/to/tmp/",
     "~followup_annotations": [
@@ -115,7 +115,7 @@
       "--format=%at",
       "-s"
     ],
-    "cwd": "[SLAVE_BUILD]/src",
+    "cwd": "[START_DIR]/src",
     "name": "git show",
     "stdout": "/path/to/tmp/"
   },
@@ -126,7 +126,7 @@
       "origin",
       "--tags"
     ],
-    "cwd": "[SLAVE_BUILD]/src",
+    "cwd": "[START_DIR]/src",
     "name": "git fetch tags"
   },
   {
@@ -134,7 +134,7 @@
       "git",
       "status"
     ],
-    "cwd": "[SLAVE_BUILD]/src",
+    "cwd": "[START_DIR]/src",
     "name": "git status"
   },
   {
@@ -142,7 +142,7 @@
       "git",
       "status"
     ],
-    "cwd": "[SLAVE_BUILD]/src",
+    "cwd": "[START_DIR]/src",
     "name": "git status can_fail_build"
   },
   {
@@ -150,7 +150,7 @@
       "git",
       "status"
     ],
-    "cwd": "[SLAVE_BUILD]/src",
+    "cwd": "[START_DIR]/src",
     "name": "git status cannot_fail_build"
   },
   {
@@ -159,7 +159,7 @@
       "new-branch",
       "refactor"
     ],
-    "cwd": "[SLAVE_BUILD]/src",
+    "cwd": "[START_DIR]/src",
     "env": {
       "PATH": "RECIPE_PACKAGE_REPO[depot_tools]:%(PATH)s"
     },
@@ -173,7 +173,7 @@
       "--upstream",
       "refactor"
     ],
-    "cwd": "[SLAVE_BUILD]/src",
+    "cwd": "[START_DIR]/src",
     "env": {
       "PATH": "RECIPE_PACKAGE_REPO[depot_tools]:%(PATH)s"
     },
@@ -185,7 +185,7 @@
       "rebase",
       "origin/master"
     ],
-    "cwd": "[SLAVE_BUILD]/src",
+    "cwd": "[START_DIR]/src",
     "name": "my repo rebase"
   },
   {
@@ -193,10 +193,10 @@
       "git",
       "bundle",
       "create",
-      "[SLAVE_BUILD]/all.bundle",
+      "[START_DIR]/all.bundle",
       "--all"
     ],
-    "cwd": "[SLAVE_BUILD]/src",
+    "cwd": "[START_DIR]/src",
     "name": "git bundle"
   },
   {

@@ -81,7 +81,7 @@ def RunSteps(api):
   api.gclient.checkout(
       gclient_config=bl_cfg,
       with_branch_heads=True,
-      cwd=api.path['slave_build'].join('src', 'third_party'))
+      cwd=api.path['start_dir'].join('src', 'third_party'))
 
   api.gclient.break_locks()
 

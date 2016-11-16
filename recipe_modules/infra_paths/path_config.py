@@ -14,6 +14,8 @@ def infra_common(c):
 @CONFIG_CTX(includes=['infra_common'])
 def infra_buildbot(c):
   c.base_paths['root'] = c.START_DIR[:-4]
+  # slave_build is DEPRECATED in favor of start_dir
+  # TODO(nodir): remove it
   c.base_paths['slave_build'] = c.START_DIR
   c.base_paths['cache'] = c.base_paths['root'] + (
       'build', 'slave', 'cache')
@@ -28,6 +30,8 @@ def infra_buildbot(c):
 @CONFIG_CTX(includes=['infra_common'])
 def infra_kitchen(c):
   c.base_paths['root'] = c.START_DIR
+  # slave_build is DEPRECATED in favor of start_dir
+  # TODO(nodir): remove it
   c.base_paths['slave_build'] = c.START_DIR
   # TODO(phajdan.jr): have one cache dir, let clients append suffixes.
 

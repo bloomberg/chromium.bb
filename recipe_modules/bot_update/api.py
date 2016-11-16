@@ -301,7 +301,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
         # first solution.
         if step_result.json.output['did_run']:
           co_root = step_result.json.output['root']
-          cwd = kwargs.get('cwd', self.m.path['slave_build'])
+          cwd = kwargs.get('cwd', self.m.path['start_dir'])
           if 'checkout' not in self.m.path:
             self.m.path['checkout'] = cwd.join(*co_root.split(self.m.path.sep))
 

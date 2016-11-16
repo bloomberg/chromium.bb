@@ -51,7 +51,7 @@ class CIPDApi(recipe_api.RecipeApi):
         script=self.resource('bootstrap.py'),
         args=[
           '--platform', self.platform_suffix(),
-          '--dest-directory', self.m.path['slave_build'].join('cipd'),
+          '--dest-directory', self.m.path['start_dir'].join('cipd'),
           '--json-output', self.m.json.output(),
         ] +
         (['--version', version] if version else []),

@@ -238,7 +238,7 @@ class GclientApi(recipe_api.RecipeApi):
         name = 'recurse (git config %s)' % var
         self(name, ['recurse', 'git', 'config', var, val], **kwargs)
     finally:
-      cwd = kwargs.get('cwd', self.m.path['slave_build'])
+      cwd = kwargs.get('cwd', self.m.path['start_dir'])
       if 'checkout' not in self.m.path:
         self.m.path['checkout'] = cwd.join(
           *cfg.solutions[0].name.split(self.m.path.sep))
@@ -297,7 +297,7 @@ class GclientApi(recipe_api.RecipeApi):
                 print 'deleting %s' % path_to_file
                 os.remove(path_to_file)
       """,
-      args=[self.m.path['slave_build']],
+      args=[self.m.path['start_dir']],
       infra_step=True,
     )
 

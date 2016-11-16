@@ -186,7 +186,7 @@ class GitApi(recipe_api.RecipeApi):
       # ex: ssh://host:repo/foobar/.git
       dir_path = dir_path or dir_path.rsplit('/', 1)[-1]
 
-      dir_path = self.m.path['slave_build'].join(dir_path)
+      dir_path = self.m.path['start_dir'].join(dir_path)
 
     if 'checkout' not in self.m.path:
       self.m.path['checkout'] = dir_path
