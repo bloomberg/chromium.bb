@@ -566,7 +566,9 @@ class SyncStage(generic_stages.BuilderStage):
         buildbucket_id, created_ts = self.PostSlaveBuildToBuildbucket(
             slave_name, slave_config, build_id, buildset_tag, dryrun)
 
-        scheduled_slave_builds.append((slave_name, buildbucket_id, created_ts))
+        if slave_config.important:
+          scheduled_slave_builds.append(
+              (slave_name, buildbucket_id, created_ts))
       except buildbucket_lib.BuildbucketResponseException as e:
         # Use 16-digit ts to be consistent with the created_ts from Buildbucket
         current_ts = int(round(time.time() * 1000000))

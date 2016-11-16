@@ -491,7 +491,7 @@ class SyncStageTest(generic_stages_unittest.AbstractStageTestCase):
     stage.ScheduleSlaveBuildsViaBuildbucket(important_only=False, dryrun=True)
 
     scheduled_slaves = self._run.attrs.metadata.GetValue('scheduled_slaves')
-    self.assertEqual(len(scheduled_slaves), 2)
+    self.assertEqual(len(scheduled_slaves), 1)
     unscheduled_slaves = self._run.attrs.metadata.GetValue('unscheduled_slaves')
     self.assertEqual(len(unscheduled_slaves), 0)
 
