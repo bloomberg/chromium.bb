@@ -77,7 +77,6 @@ const char* const kDesktopSwitches[] = {
   "disable-web-resources",
   "safebrowsing-disable-auto-update",
   "disable-client-side-phishing-detection",
-  "disable-component-update",
   "disable-default-apps",
   "enable-logging",
   "log-level=0",
