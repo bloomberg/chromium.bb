@@ -36,6 +36,9 @@ class BaseRenderer {
  protected:
   BaseRenderer(ShaderID vertex_id, ShaderID fragment_id);
 
+  void PrepareToDraw(GLuint combined_matrix_handle,
+                     const gvr::Mat4f& combined_matrix);
+
   GLuint program_handle_;
   GLuint position_handle_;
   GLuint tex_coord_handle_;

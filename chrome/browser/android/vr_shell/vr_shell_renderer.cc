@@ -202,22 +202,12 @@ BaseRenderer::BaseRenderer(ShaderID vertex_id, ShaderID fragment_id) {
 
 BaseRenderer::~BaseRenderer() = default;
 
-TexturedQuadRenderer::TexturedQuadRenderer()
-    : BaseRenderer(TEXTURE_QUAD_VERTEX_SHADER, TEXTURE_QUAD_FRAGMENT_SHADER) {
-  combined_matrix_handle_ =
-      glGetUniformLocation(program_handle_, "u_CombinedMatrix");
-  tex_uniform_handle_ = glGetUniformLocation(program_handle_, "u_Texture");
-  copy_rect_uniform_handle_ =
-      glGetUniformLocation(program_handle_, "u_CopyRect");
-}
-
-void TexturedQuadRenderer::Draw(int texture_data_handle,
-                                const gvr::Mat4f& combined_matrix,
-                                const Rectf& copy_rect) {
+void BaseRenderer::PrepareToDraw(GLuint combined_matrix_handle,
+                                 const gvr::Mat4f& combined_matrix) {
   glUseProgram(program_handle_);
 
   // Pass in model view project matrix.
-  glUniformMatrix4fv(combined_matrix_handle_, 1, false,
+  glUniformMatrix4fv(combined_matrix_handle, 1, false,
                      MatrixToGLArray(combined_matrix).data());
 
   // Pass in texture coordinate.
@@ -231,6 +221,21 @@ void TexturedQuadRenderer::Draw(int texture_data_handle,
 
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+TexturedQuadRenderer::TexturedQuadRenderer()
+    : BaseRenderer(TEXTURE_QUAD_VERTEX_SHADER, TEXTURE_QUAD_FRAGMENT_SHADER) {
+  combined_matrix_handle_ =
+      glGetUniformLocation(program_handle_, "u_CombinedMatrix");
+  tex_uniform_handle_ = glGetUniformLocation(program_handle_, "u_Texture");
+  copy_rect_uniform_handle_ =
+      glGetUniformLocation(program_handle_, "u_CopyRect");
+}
+
+void TexturedQuadRenderer::Draw(int texture_data_handle,
+                                const gvr::Mat4f& combined_matrix,
+                                const Rectf& copy_rect) {
+  PrepareToDraw(combined_matrix_handle_, combined_matrix);
 
   // Link texture data with texture unit.
   glActiveTexture(GL_TEXTURE0);
@@ -327,21 +332,7 @@ ReticleRenderer::ReticleRenderer()
 }
 
 void ReticleRenderer::Draw(const gvr::Mat4f& combined_matrix) {
-  glUseProgram(program_handle_);
-
-  glUniformMatrix4fv(combined_matrix_handle_, 1, false,
-                     MatrixToGLArray(combined_matrix).data());
-
-  glVertexAttribPointer(tex_coord_handle_, kTextureCoordinateDataSize,
-                        GL_FLOAT, false, 0, kTexturedQuadTextureCoordinates);
-  glEnableVertexAttribArray(tex_coord_handle_);
-
-  glVertexAttribPointer(position_handle_, kPositionDataSize, GL_FLOAT, false, 0,
-                        kTextureQuadPosition);
-  glEnableVertexAttribArray(position_handle_);
-
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  PrepareToDraw(combined_matrix_handle_, combined_matrix);
 
   glUniform4f(color_handle_, kReticleColor[0], kReticleColor[1],
               kReticleColor[2], kReticleColor[3]);
@@ -384,21 +375,7 @@ LaserRenderer::LaserRenderer()
 }
 
 void LaserRenderer::Draw(const gvr::Mat4f& combined_matrix) {
-  glUseProgram(program_handle_);
-
-  glUniformMatrix4fv(combined_matrix_handle_, 1, false,
-                     MatrixToGLArray(combined_matrix).data());
-
-  glVertexAttribPointer(tex_coord_handle_, kTextureCoordinateDataSize,
-                        GL_FLOAT, false, 0, kTexturedQuadTextureCoordinates);
-  glEnableVertexAttribArray(tex_coord_handle_);
-
-  glVertexAttribPointer(position_handle_, kPositionDataSize, GL_FLOAT, false, 0,
-                        kTextureQuadPosition);
-  glEnableVertexAttribArray(position_handle_);
-
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  PrepareToDraw(combined_matrix_handle_, combined_matrix);
 
   // Link texture data with texture unit.
   glActiveTexture(GL_TEXTURE0);
