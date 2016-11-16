@@ -15,6 +15,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -52,7 +53,11 @@ void LayoutButton(LabelButton* button,
       row_bounds->right(),
       row_bounds->y() + (row_bounds->height() - button_height) / 2,
       size.width(), button_height);
-  row_bounds->set_width(row_bounds->width() - kRelatedButtonHSpacing);
+  int spacing = ViewsDelegate::GetInstance()
+                    ? ViewsDelegate::GetInstance()
+                          ->GetDialogRelatedButtonHorizontalSpacing()
+                    : kRelatedButtonHSpacing;
+  row_bounds->set_width(row_bounds->width() - spacing);
 }
 
 }  // namespace
@@ -73,6 +78,9 @@ DialogClientView::DialogClientView(Widget* owner, View* contents_view)
   // Doing this now ensures this accelerator will have lower priority than
   // one set by the contents view.
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
+
+  if (ViewsDelegate::GetInstance())
+    button_row_insets_ = ViewsDelegate::GetInstance()->GetDialogButtonInsets();
 }
 
 DialogClientView::~DialogClientView() {

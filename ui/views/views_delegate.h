@@ -193,6 +193,13 @@ class VIEWS_EXPORT ViewsDelegate {
   // Returns a blocking pool task runner given a TaskRunnerType.
   virtual scoped_refptr<base::TaskRunner> GetBlockingPoolTaskRunner();
 
+  // Returns the insets that should be applied around a DialogClientView.
+  virtual gfx::Insets GetDialogButtonInsets();
+
+  // Returns the spacing between a pair of related horizontal buttons, used for
+  // dialog layout.
+  virtual int GetDialogRelatedButtonHorizontalSpacing();
+
  protected:
   ViewsDelegate();
 
