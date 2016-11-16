@@ -234,6 +234,7 @@ struct drm_backend {
 struct drm_mode {
 	struct weston_mode base;
 	drmModeModeInfo mode_info;
+	uint32_t blob_id;
 };
 
 enum drm_fb_type {
@@ -3368,6 +3369,7 @@ drm_output_add_mode(struct drm_output *output, const drmModeModeInfo *info)
 
 	mode->base.refresh = refresh;
 	mode->mode_info = *info;
+	mode->blob_id = 0;
 
 	if (info->type & DRM_MODE_TYPE_PREFERRED)
 		mode->base.flags |= WL_OUTPUT_MODE_PREFERRED;
@@ -3375,6 +3377,18 @@ drm_output_add_mode(struct drm_output *output, const drmModeModeInfo *info)
 	wl_list_insert(output->base.mode_list.prev, &mode->base.link);
 
 	return mode;
+}
+
+/**
+ * Destroys a mode, and removes it from the list.
+ */
+static void
+drm_output_destroy_mode(struct drm_backend *backend, struct drm_mode *mode)
+{
+	if (mode->blob_id)
+		drmModeDestroyPropertyBlob(backend->drm.fd, mode->blob_id);
+	wl_list_remove(&mode->base.link);
+	free(mode);
 }
 
 static int
@@ -4332,10 +4346,8 @@ drm_output_destroy(struct weston_output *base)
 	}
 
 	wl_list_for_each_safe(drm_mode, next, &output->base.mode_list,
-			      base.link) {
-		wl_list_remove(&drm_mode->base.link);
-		free(drm_mode);
-	}
+			      base.link)
+		drm_output_destroy_mode(b, drm_mode);
 
 	if (output->pageflip_timer)
 		wl_event_source_remove(output->pageflip_timer);
